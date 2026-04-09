@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
-import { music } from '../systems/MusicSystem';
+import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 
 /**
  * MenuScene — polished main menu with animated title and floating haggis mascot.
@@ -122,12 +122,12 @@ export class MenuScene extends Phaser.Scene {
       const s = loadSave();
       s.settings.musicOn = on;
       writeSave(s);
-      if (on) { music.start(); } else { music.stop(); }
+      musicEngine.setEnabled(on);
     }, 1050);
 
     // Apply saved audio settings on scene load
     audio.setEnabled(save.settings.soundOn);
-    if (!save.settings.musicOn) music.stop();
+    musicEngine.setEnabled(save.settings.musicOn);
 
     // Version tag
     this.add.text(width - 8, height - 8, 'v1.0', {

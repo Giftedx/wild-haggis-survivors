@@ -14,7 +14,7 @@ import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
 import { recordRun, loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
-import { music } from '../systems/MusicSystem';
+import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
 
 /**
@@ -149,7 +149,7 @@ export class GameScene extends Phaser.Scene {
     const audioSave = loadSave();
     audio.setEnabled(audioSave.settings.soundOn);
     if (audioSave.settings.musicOn) {
-      music.start();
+      musicEngine.start();
     }
 
     // Treasure chest timer — spawns every 45 seconds
@@ -265,7 +265,15 @@ export class GameScene extends Phaser.Scene {
     // Boss HP bar + edge indicators
     this.updateBossHPBar();
     this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
-    music.update(this.spawnSystem.getGameTimeSec());
+    const musicState: GameMusicState = {
+      hp: this.player.getHp(),
+      maxHp: this.player.getMaxHp(),
+      gameTimeSec: this.spawnSystem.getGameTimeSec(),
+      enemyCount: this.spawnSystem.getActiveCount(),
+      comboCount: this.juice.getComboCount(),
+      bossActive: this.spawnSystem.isBossActive(),
+    };
+    musicEngine.update(delta, musicState);
 
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
@@ -520,7 +528,7 @@ export class GameScene extends Phaser.Scene {
         musicOn = !musicOn;
         musicText.setText(`Music: ${musicOn ? 'ON' : 'OFF'}`);
         musicText.setColor(musicOn ? '#88cc88' : '#886666');
-        if (musicOn) { music.start(); } else { music.stop(); }
+        musicEngine.setEnabled(musicOn);
         const s = loadSave(); s.settings.musicOn = musicOn; writeSave(s);
       });
       this.pauseElements.push(musicText);
@@ -530,7 +538,7 @@ export class GameScene extends Phaser.Scene {
         .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
       quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
       quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
-      quitBtn.on('pointerdown', () => { music.stop(); this.scene.start('Menu'); });
+      quitBtn.on('pointerdown', () => { musicEngine.stop(); this.scene.start('Menu'); });
       this.pauseElements.push(quitBtn);
       this.pauseElements.push(
         this.add.text(width / 2, height * 0.72, 'QUIT', {
@@ -597,7 +605,7 @@ export class GameScene extends Phaser.Scene {
 
     this.isPaused = true;
     this.physics.pause();
-    music.stop();
+    musicEngine.playResolution();
 
     const { width, height } = this.scale;
     const d = 200;
@@ -673,7 +681,7 @@ export class GameScene extends Phaser.Scene {
     this.isPaused = true;
     this.physics.pause();
     audio.playDeath();
-    music.stop();
+    musicEngine.fadeOut(2000);
     this.juice.flashRed(400);
     this.cameras.main.shake(500, 0.02);
 

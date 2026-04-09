@@ -17,6 +17,9 @@ export class SpawnSystem {
 
   /** Track which bosses have already spawned */
   private spawnedBossKeys: Set<string> = new Set();
+  /** Cached boss-active flag — avoids iterating 400 enemies per frame */
+  private bossActive: boolean = false;
+  private bossCheckFrame: number = -1;
 
   /** Emits 'bossWarning' and 'bossKilled' events */
   readonly events = new Phaser.Events.EventEmitter();
@@ -107,6 +110,7 @@ export class SpawnSystem {
       enemy.setScale(boss.scale);
       enemy.setBaseTint(0xff4444);
       enemy.markAsBoss();
+      this.bossActive = true;
 
       // Dramatic entrance — camera zoom pulse + shake
       const cam = this.scene.cameras.main;
@@ -255,4 +259,18 @@ export class SpawnSystem {
   getEnemyGroup(): Phaser.GameObjects.Group { return this.pool; }
   getActiveCount(): number { return this.pool.countActive(true); }
   getGameTimeSec(): number { return this.gameTimeSec; }
+
+  isBossActive(): boolean {
+    const frame = Math.floor(this.gameTimeSec * 60);
+    if (frame === this.bossCheckFrame) return this.bossActive;
+    this.bossCheckFrame = frame;
+    if (!this.bossActive) return false;
+    const active = this.pool.getChildren() as Enemy[];
+    let found = false;
+    for (let i = 0; i < active.length; i++) {
+      if (active[i].active && (active[i] as Enemy).isBoss()) { found = true; break; }
+    }
+    this.bossActive = found;
+    return this.bossActive;
+  }
 }

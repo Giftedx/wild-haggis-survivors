@@ -266,6 +266,9 @@ export class JuiceSystem {
     this.comboText.setVisible(false);
   }
 
+  /** Current kill combo count (for music Conductor) */
+  getComboCount(): number { return this.comboCount; }
+
   /** Heavy screen shake for boss events */
   bossShake(): void {
     this.scene.cameras.main.shake(400, 0.015);
