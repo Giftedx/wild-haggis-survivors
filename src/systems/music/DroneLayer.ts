@@ -14,9 +14,9 @@ export class DroneLayer {
   private bandpass: BiquadFilterNode | null = null;
 
   private readonly BASE_FREQ = 110;
-  private readonly BASE_DETUNE = 1;
-  private readonly BASE_BANDPASS = 300;
-  private readonly BASE_VOLUME = 0.2;
+  private readonly BASE_DETUNE = 1.5;
+  private readonly BASE_BANDPASS = 500;
+  private readonly BASE_VOLUME = 0.3;
 
   start(ctx: AudioContext, output: AudioNode): void {
     this.saw1 = ctx.createOscillator();
@@ -38,7 +38,7 @@ export class DroneLayer {
     this.bandpass = ctx.createBiquadFilter();
     this.bandpass.type = 'bandpass';
     this.bandpass.frequency.value = this.BASE_BANDPASS;
-    this.bandpass.Q.value = 2;
+    this.bandpass.Q.value = 0.8;
 
     this.saw1.connect(this.droneGain);
     this.saw2.connect(this.droneGain);

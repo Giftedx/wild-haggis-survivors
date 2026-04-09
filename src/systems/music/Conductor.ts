@@ -120,13 +120,15 @@ export class Conductor {
     this.phraseNotesRemaining--;
     this.phraseNoteIndex++;
 
-    let interval = 3.0 - this.intensity * 2.2;
-    if (this.danger > 0.2) interval *= 1.0 + this.danger * 0.4;
-    interval *= 0.8 + Math.random() * 0.4;
+    // Note spacing: 1.8s at calm → 0.5s at peak intensity
+    let interval = 1.8 - this.intensity * 1.3;
+    if (this.danger > 0.2) interval *= 1.0 + this.danger * 0.3;
+    interval *= 0.85 + Math.random() * 0.3;
 
     if (this.phraseNotesRemaining <= 0 && !this.resolutionMode) {
       this.inRest = true;
-      interval += interval * 2.5;
+      // Rest between phrases: 1.5x the note interval (not 2.5x — that was too long)
+      interval += interval * 1.5;
     }
 
     return { freq, velocity, intervalSec: interval };
@@ -226,11 +228,12 @@ export class Conductor {
   }
 
   private computeVelocity(): number {
-    let vel = 0.12 + this.intensity * 0.06;
-    if (this.danger > 0.2) vel *= 0.6 + (1 - this.danger) * 0.4;
+    // Base velocity higher so piano is clearly audible from the start
+    let vel = 0.35 + this.intensity * 0.15;
+    if (this.danger > 0.2) vel *= 0.5 + (1 - this.danger) * 0.5;
     if (this.triumph > 0.2) vel *= 1.0 + this.triumph * 0.3;
     vel *= 0.85 + Math.random() * 0.3;
-    return Math.min(1, Math.max(0.05, vel));
+    return Math.min(1, Math.max(0.1, vel));
   }
 
   private updateKillHistory(gameTimeSec: number, comboCount: number): void {
