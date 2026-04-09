@@ -9,6 +9,7 @@ import { GrowthSystem } from '../systems/GrowthSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
+import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
@@ -30,6 +31,7 @@ export class GameScene extends Phaser.Scene {
   private hud!: HUD;
   private juice!: JuiceSystem;
   private edgeIndicators!: EdgeIndicators;
+  private minimap!: Minimap;
   private iFrames: boolean = false;
   private isPaused: boolean = false;
 
@@ -84,21 +86,22 @@ export class GameScene extends Phaser.Scene {
 
     // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.applyUpgrade(card));
+    this.upgradeUI.setRerollCallback(() => this.rerollUpgradeCards());
 
     // When an enemy is killed
     this.weaponSystem.events.on('enemyKilled', (x: number, y: number, xpValue: number, enemyKey: string, wasBoss: boolean) => {
       this.xpSystem.spawnGem(x, y, xpValue);
       this.killCount++;
       this.juice.showKillBurst(x, y);
+      this.juice.hitFreeze();
       audio.playKill();
 
       if (wasBoss) {
         this.bossKillCount++;
         // Scale boss gold with difficulty — xpValue is 25/50/75/100/200 for each boss
         this.bossGoldEarned += Math.ceil(xpValue * 2);
-        this.juice.bossShake();
+        this.juice.bossDeathSpectacle(x, y);
         this.juice.slowMotion();
-        this.juice.flashWhite(400);
 
         // Check for victory — Taxman killed
         if (enemyKey === 'taxman') {
@@ -143,6 +146,7 @@ export class GameScene extends Phaser.Scene {
     this.hud = new HUD(this);
     this.juice = new JuiceSystem(this);
     this.edgeIndicators = new EdgeIndicators(this);
+    this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.togglePause());
 
     // Apply saved audio settings and start background music
@@ -265,6 +269,7 @@ export class GameScene extends Phaser.Scene {
     // Boss HP bar + edge indicators
     this.updateBossHPBar();
     this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
+    this.minimap.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
     const musicState: GameMusicState = {
       hp: this.player.getHp(),
       maxHp: this.player.getMaxHp(),
@@ -325,7 +330,35 @@ export class GameScene extends Phaser.Scene {
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
     const cards = drawCards(pool, cardCount, luckBonus);
 
+    this.upgradeUI.grantReroll();
     this.upgradeUI.show(cards, newLevel);
+  }
+
+  /** Reroll the upgrade cards — draws fresh cards from the same pool */
+  private rerollUpgradeCards(): void {
+    const level = this.xpSystem.getLevel();
+    const ownedWeapons = this.weaponSystem.getWeapons().map(w => w.config.key);
+    const weaponLevels: Record<string, number> = {};
+    for (const w of this.weaponSystem.getWeapons()) {
+      weaponLevels[w.config.key] = w.level;
+    }
+
+    let pool = buildCardPool(ownedWeapons, this.ownedPassives, weaponLevels, this.evolvedWeapons);
+    if (this.player.getHp() >= this.player.getMaxHp()) {
+      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && c.effect.stat === 'heal'));
+    }
+
+    const save = loadSave();
+    let luckBonus = 0;
+    if (this.ownedPassives.includes('sporran')) luckBonus += 15;
+    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 5;
+
+    const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
+    const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
+    const cards = drawCards(pool, cardCount, luckBonus);
+
+    this.upgradeUI.show(cards, level);
+    audio.playClick();
   }
 
   private applyUpgrade(card: UpgradeCard): void {

@@ -14,6 +14,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private enemyKey: string = '';
   private behavior: EnemyBehavior = 'chase';
   private bossFlag: boolean = false;
+  private eliteFlag: boolean = false;
 
   /** Dive enemies lock their angle on spawn and don't re-aim */
   private diveAngle: number = 0;
@@ -76,6 +77,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.xpValue = config.xpValue;
     this.behavior = config.behavior;
     this.bossFlag = false;
+    this.eliteFlag = false;
     this.baseTint = 0;
     this.diveStarted = false;
     this.rangedCooldown = 0;
@@ -317,4 +319,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hpBarBg?.setVisible(false);
     this.hpBarFill?.setVisible(false);
   }
+
+  /** Make this enemy an elite variant — bigger, tougher, more rewarding */
+  markAsElite(): void {
+    this.eliteFlag = true;
+    this.maxHp = Math.ceil(this.maxHp * 2);
+    this.hp = this.maxHp;
+    this.speed = Math.ceil(this.speed * 1.3);
+    this.xpValue = this.xpValue * 3;
+    this.setScale(this.scaleX * 1.3);
+    this.setBaseTint(0xffdd44); // golden glow
+    this.showHpBar = true;
+    if (!this.hpBarBg) {
+      this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, 0x333333).setDepth(30);
+      this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, 0xffdd44).setOrigin(0, 0.5).setDepth(31);
+    }
+    this.hpBarBg!.setVisible(true);
+    this.hpBarFill!.setVisible(true).setFillStyle(0xffdd44);
+  }
+
+  isElite(): boolean { return this.eliteFlag; }
 }
