@@ -1,0 +1,72 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 3** (v3.90+) and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
+
+## Commands
+
+- `npm run dev` — Start Vite dev server on port 3000 (auto-opens browser)
+- `npm run build` — Type-check with `tsc --noEmit` then build with Vite to `dist/`
+- `npm run preview` — Serve the production build locally
+
+No test framework is configured.
+
+## Architecture
+
+### Scene Flow
+`BootScene` → `MenuScene` → `GameScene` → `ShopScene` (between runs)
+
+- **BootScene** (`src/scenes/BootScene.ts`): Generates ALL sprite textures programmatically using Phaser Graphics — there are no external image assets. Every entity, projectile, and effect is drawn in code here.
+- **MenuScene**: Title screen and run start.
+- **GameScene**: Core gameplay loop — orchestrates all systems, handles collisions, level-ups, pause, and game-over.
+- **ShopScene**: Between-run shop for spending Golden Haggis on permanent upgrades.
+
+### System Architecture (all instantiated by GameScene)
+- **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
+- **WeaponSystem**: Manages all 6 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form).
+- **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
+- **GrowthSystem**: Player visual/hitbox scaling as they level up.
+- **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails.
+- **AudioSystem / MusicSystem**: Global singletons (`audio`, `music`) for SFX and background music.
+
+### Data-Driven Design
+Game balance is defined in data files, not scattered through logic:
+- `src/config.ts` — Global constants (world size, player base stats, XP curve, enemy caps, colors)
+- `src/data/weapons.ts` — Weapon definitions with `WeaponDef` interface (behavior, scaling per level)
+- `src/data/enemies.ts` — Enemy types with `EnemyConfig` (behavior, spawn timing) and `BossConfig`
+- `src/data/upgrades.ts` — Level-up card pool with rarity-weighted draws and evolution recipes (`EVOLUTION_RECIPES`)
+- `src/data/permanentUpgrades.ts` — Between-run upgrades bought with Golden Haggis currency
+
+### Player Stats Model
+Player stats use a layered calculation: **base value × level scaling + upgrade bonuses**. Bonuses accumulate and are never wiped. The `recalcStats()` method in `Player.ts` is the single source of truth for final stat computation.
+
+### Key Mechanics
+- **The Drift**: A constant clockwise rotational offset on input (configurable in `PLAYER.DRIFT_DEGREES`). Reduced by leveling and upgrades. Core identity of the game.
+- **Weapon Evolution**: Each of the 6 weapons has a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool.
+- **Soft World Boundaries**: No hard walls — player slows near edges with a gentle push-back force.
+- **Persistence**: `localStorage` via `src/utils/save.ts` (key: `whs_save`). Stores gold, permanent upgrades, settings, and run stats.
+
+### Path Alias
+`@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`).
+
+### Rendering
+Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing). Uses Phaser's Arcade Physics with zero gravity (top-down).
+
+## Phaser 3 Gotchas
+
+- **Scene reuse**: `scene.start('Game')` reuses the same instance — `create()` must reset ALL transient state (field initializers only run at construction). See the reset block at top of `GameScene.create()`.
+- **`scene.time` vs `physics.pause()`**: `scene.time` timers keep running when physics is paused. Use guards like `if (this.scene.physics.world.isPaused) return` in timer callbacks, or defer work via flags (see `pendingChest` pattern).
+- **`delta` is raw wall-clock time**: Not scaled by timeScale. Cap it (`Math.min(delta, 100)`) to prevent time warps from tab-backgrounding.
+- **`body.velocity +=` bypasses mass**: Phaser's mass only affects collision resolution. For knockback, divide force by `body.mass` manually.
+- **`clearTint()` removes ALL tints**: Including persistent ones (boss red, hazard orange). Use a `baseTint` field and restore it after damage flashes.
+- **Circle body radius and sprite scale**: Phaser auto-scales circular hitboxes via `updateBounds()`. Pass unscaled radius to `setCircle()` — see comment in `Player.onLevelUp`.
+
+## Common Patterns
+
+- **Timer overshoot carry-over**: Use `remaining += cooldownMs` (not `= cooldownMs`) for accurate timing, but cap with `Math.max(remaining, -cooldownMs)` to prevent burst-firing after lag spikes.
+- **Audio throttling**: AoE weapons hit many targets per frame. Throttle sound effects via `AudioContext.currentTime` comparison (see `lastHitTime` in AudioSystem).
+- **Dedicated state flags**: Don't reuse `iFrames` for unrelated invincibility (e.g., victory). Use separate flags with clear ownership (`victoryPending`).
+- **Percentage bonuses should use base config values** (`PLAYER.SPEED`, `PLAYER.MAX_HP`), not current computed stats — prevents order-dependent bonus amounts.
