@@ -29,7 +29,7 @@ export class NoteScheduler {
   }
 
   start(now: number): void {
-    this.nextMelodyTime = now + 1.0;
+    this.nextMelodyTime = now + 0.3; // short delay, then first note
     this.nextRhythmTime = now;
     this.nextHeartbeatTime = now;
   }

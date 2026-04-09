@@ -44,11 +44,11 @@ class ProceduralMusicEngine {
 
     this.masterFilter = ctx.createBiquadFilter();
     this.masterFilter.type = 'lowpass';
-    this.masterFilter.frequency.value = 800;
-    this.masterFilter.Q.value = 0.7;
+    this.masterFilter.frequency.value = 2500;
+    this.masterFilter.Q.value = 0.5;
 
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = this.enabled ? 0.08 : 0;
+    this.masterGain.gain.value = this.enabled ? 0.22 : 0;
 
     const output = getOutputNode();
     this.masterFilter.connect(this.masterGain);
@@ -127,12 +127,12 @@ class ProceduralMusicEngine {
     this.drone.applyMood(this.ctx, mood.intensity, mood.danger, mood.triumph);
 
     if (this.masterFilter) {
-      const freq = 800 + mood.intensity * 3000;
+      const freq = 2500 + mood.intensity * 2500;
       this.masterFilter.frequency.linearRampToValueAtTime(freq, this.ctx.currentTime + 1);
     }
 
     if (this.masterGain && this.enabled) {
-      const vol = 0.06 + mood.intensity * 0.06;
+      const vol = 0.18 + mood.intensity * 0.10;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
 
@@ -160,7 +160,7 @@ class ProceduralMusicEngine {
     this.enabled = on;
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.linearRampToValueAtTime(
-        on ? 0.08 : 0,
+        on ? 0.22 : 0,
         this.ctx.currentTime + 0.3
       );
     }
@@ -174,14 +174,14 @@ class ProceduralMusicEngine {
     pianoSend.connect(this.masterFilter!);
 
     this.fogDelay = ctx.createDelay(4);
-    this.fogDelay.delayTime.value = 2.0;
+    this.fogDelay.delayTime.value = 1.5;
 
     this.fogFilter = ctx.createBiquadFilter();
     this.fogFilter.type = 'lowpass';
-    this.fogFilter.frequency.value = 600;
+    this.fogFilter.frequency.value = 1200;
 
     this.fogFeedback = ctx.createGain();
-    this.fogFeedback.gain.value = 0.35;
+    this.fogFeedback.gain.value = 0.4;
 
     pianoSend.connect(this.fogDelay);
     this.fogDelay.connect(this.fogFilter);

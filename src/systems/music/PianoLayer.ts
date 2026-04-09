@@ -51,17 +51,19 @@ export class PianoLayer {
     modulator.frequency.value = freq * 2;
 
     const modGain = ctx.createGain();
-    const modDepth = freq * 0.8 * velocity;
+    // Higher mod depth = brighter, more "struck" character
+    const modDepth = freq * 1.2 * velocity;
     modGain.gain.setValueAtTime(modDepth, time);
-    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.1), time + 0.05);
-    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.02), time + 0.3);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.2), time + 0.08);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.05), time + 0.5);
 
     const voiceGain = ctx.createGain();
-    const peak = 0.25 * velocity;
+    // Louder, more present piano
+    const peak = 0.4 * velocity;
     voiceGain.gain.setValueAtTime(0, time);
-    voiceGain.gain.linearRampToValueAtTime(peak, time + 0.005);
-    voiceGain.gain.linearRampToValueAtTime(peak * 0.5, time + 0.2);
-    voiceGain.gain.linearRampToValueAtTime(peak * 0.3, time + 0.5);
+    voiceGain.gain.linearRampToValueAtTime(peak, time + 0.003);
+    voiceGain.gain.linearRampToValueAtTime(peak * 0.6, time + 0.15);
+    voiceGain.gain.linearRampToValueAtTime(peak * 0.35, time + 0.6);
     voiceGain.gain.linearRampToValueAtTime(0.001, time + releaseSec);
 
     modulator.connect(modGain);
