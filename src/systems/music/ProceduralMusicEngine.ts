@@ -35,7 +35,7 @@ class ProceduralMusicEngine {
   private rhythmBPM = 90;
 
   start(): void {
-    if (this.playing) return;
+    if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
     const ctx = getAudioContext();
     if (!ctx) return;
     this.ctx = ctx;
@@ -90,7 +90,7 @@ class ProceduralMusicEngine {
     this.piano.stop();
     this.percussion.stop();
     this.disconnectGraph();
-    if (this.ctx) this.ctx.suspend();
+    // Do NOT suspend the shared AudioContext — SFX still need it
     this.playing = false;
     this.conductor = new Conductor();
     this.scheduler.reset();

@@ -50,9 +50,10 @@ export class Minimap {
       const dy = mapY + e.y * scaleY;
 
       if (e.isBoss()) {
-        // Boss: larger red diamond
+        // Boss: red diamond shape
         this.gfx.fillStyle(0xff4444, 1);
-        this.gfx.fillRect(dx - 2, dy - 2, 4, 4);
+        this.gfx.fillTriangle(dx, dy - 3, dx + 3, dy, dx, dy + 3);
+        this.gfx.fillTriangle(dx, dy - 3, dx - 3, dy, dx, dy + 3);
       } else if (e.isElite()) {
         // Elite: gold dot
         this.gfx.fillStyle(0xffdd44, 0.9);

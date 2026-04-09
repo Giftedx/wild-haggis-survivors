@@ -35,6 +35,11 @@ export class NoteScheduler {
   }
 
   tick(now: number): void {
+    // Clamp to prevent burst-firing hundreds of missed notes after suspend/resume
+    this.nextMelodyTime = Math.max(this.nextMelodyTime, now - 0.1);
+    this.nextRhythmTime = Math.max(this.nextRhythmTime, now - 0.1);
+    this.nextHeartbeatTime = Math.max(this.nextHeartbeatTime, now - 0.1);
+
     const horizon = now + this.SCHEDULE_AHEAD;
 
     if (this.melodyCallback) {

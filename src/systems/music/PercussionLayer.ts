@@ -49,13 +49,14 @@ export class PercussionLayer {
 
   scheduleRhythmHit(time: number, intensity: number, swing: number): void {
     if (!this.ctx || !this.rhythmGain) return;
-    const isHit = this.pattern[this.patternIdx];
-    const isEvenSlot = this.patternIdx % 2 === 0;
-    const swingDelay = isEvenSlot ? 0 : swing;
+    const currentIdx = this.patternIdx;
+    const isHit = this.pattern[currentIdx];
+    const swingDelay = currentIdx % 2 === 0 ? 0 : swing;
     const hitTime = time + swingDelay;
     this.patternIdx = (this.patternIdx + 1) % this.pattern.length;
     if (!isHit) return;
-    if (this.patternIdx % 2 === 1) {
+    // Kick on even slots (downbeats), hat on odd slots
+    if (currentIdx % 2 === 0) {
       this.playKick(hitTime, 0.08 + intensity * 0.06);
     } else {
       this.playHat(hitTime, 0.02 + intensity * 0.02);

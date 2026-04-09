@@ -47,12 +47,13 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
       if (this.active) this.setVelocity(0, 0);
     });
 
-    // Gentle glow pulse
+    // Gentle glow pulse — use relative scale so high-value gems stay big
+    const baseScale = this.scaleX;
     this.setAlpha(0.9);
     this.scene.tweens.add({
       targets: this,
       alpha: { from: 0.7, to: 1 },
-      scale: { from: 0.9, to: 1.15 },
+      scale: { from: baseScale * 0.9, to: baseScale * 1.1 },
       duration: 400 + Math.random() * 300,
       yoyo: true,
       repeat: -1,
