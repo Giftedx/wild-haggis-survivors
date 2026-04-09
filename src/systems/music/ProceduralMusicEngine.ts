@@ -33,6 +33,7 @@ class ProceduralMusicEngine {
   private scheduler = new NoteScheduler();
 
   private rhythmBPM = 90;
+  private fadeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
@@ -86,11 +87,15 @@ class ProceduralMusicEngine {
 
   stop(): void {
     if (!this.playing) return;
+    // Cancel any pending fade-out timeout so it doesn't kill a new run's music
+    if (this.fadeTimeout !== null) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
     this.drone.stop();
     this.piano.stop();
     this.percussion.stop();
     this.disconnectGraph();
-    // Do NOT suspend the shared AudioContext — SFX still need it
     this.playing = false;
     this.conductor = new Conductor();
     this.scheduler.reset();
@@ -100,13 +105,18 @@ class ProceduralMusicEngine {
     if (!this.playing || !this.ctx || !this.masterGain) return;
     const t = this.ctx.currentTime;
     this.masterGain.gain.linearRampToValueAtTime(0, t + ms / 1000);
-    setTimeout(() => this.stop(), ms + 100);
+    this.fadeTimeout = setTimeout(() => {
+      this.fadeTimeout = null;
+      this.stop();
+    }, ms + 100);
   }
 
   playResolution(): void {
     if (!this.playing) return;
     this.conductor.enterResolution();
+    const conductorRef = this.conductor; // capture reference to detect reset
     const checkDone = () => {
+      if (!this.playing || this.conductor !== conductorRef) return; // stopped or reset
       if (this.conductor.isResolutionComplete()) {
         this.fadeOut(3000);
       } else {
