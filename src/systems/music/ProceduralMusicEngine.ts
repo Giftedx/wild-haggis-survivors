@@ -24,6 +24,11 @@ class ProceduralMusicEngine {
   private fogDelay: DelayNode | null = null;
   private fogFilter: BiquadFilterNode | null = null;
   private fogFeedback: GainNode | null = null;
+  private tap1: DelayNode | null = null;
+  private tap2: DelayNode | null = null;
+  private tap1Gain: GainNode | null = null;
+  private tap2Gain: GainNode | null = null;
+  private reverbMix: GainNode | null = null;
 
   private drone = new DroneLayer();
   private piano = new PianoLayer();
@@ -187,59 +192,66 @@ class ProceduralMusicEngine {
     pianoSend.connect(this.masterFilter!); // dry signal
 
     // Reverb bus: multiple delays mixed together
-    const reverbMix = ctx.createGain();
-    reverbMix.gain.value = 0.35; // wet/dry balance
-    reverbMix.connect(this.masterFilter!);
+    this.reverbMix = ctx.createGain();
+    this.reverbMix.gain.value = 0.35;
+    this.reverbMix.connect(this.masterFilter!);
 
     // Tap 1: short early reflection
-    const tap1 = ctx.createDelay(1);
-    tap1.delayTime.value = 0.11; // ~110ms
-    const tap1Gain = ctx.createGain();
-    tap1Gain.gain.value = 0.4;
+    this.tap1 = ctx.createDelay(1);
+    this.tap1.delayTime.value = 0.11;
+    this.tap1Gain = ctx.createGain();
+    this.tap1Gain.gain.value = 0.4;
 
     // Tap 2: medium reflection
-    const tap2 = ctx.createDelay(1);
-    tap2.delayTime.value = 0.27; // ~270ms
-    const tap2Gain = ctx.createGain();
-    tap2Gain.gain.value = 0.3;
+    this.tap2 = ctx.createDelay(1);
+    this.tap2.delayTime.value = 0.27;
+    this.tap2Gain = ctx.createGain();
+    this.tap2Gain.gain.value = 0.3;
 
     // Tap 3: late reflection with feedback for tail
     this.fogDelay = ctx.createDelay(2);
-    this.fogDelay.delayTime.value = 0.53; // ~530ms
+    this.fogDelay.delayTime.value = 0.53;
 
     this.fogFilter = ctx.createBiquadFilter();
     this.fogFilter.type = 'lowpass';
-    this.fogFilter.frequency.value = 1800; // darken each repeat gently
+    this.fogFilter.frequency.value = 1800;
 
     this.fogFeedback = ctx.createGain();
-    this.fogFeedback.gain.value = 0.35; // moderate feedback for tail
+    this.fogFeedback.gain.value = 0.35;
 
     // Wire taps
-    pianoSend.connect(tap1);
-    tap1.connect(tap1Gain);
-    tap1Gain.connect(reverbMix);
+    pianoSend.connect(this.tap1);
+    this.tap1.connect(this.tap1Gain);
+    this.tap1Gain.connect(this.reverbMix);
 
-    pianoSend.connect(tap2);
-    tap2.connect(tap2Gain);
-    tap2Gain.connect(reverbMix);
+    pianoSend.connect(this.tap2);
+    this.tap2.connect(this.tap2Gain);
+    this.tap2Gain.connect(this.reverbMix);
 
     pianoSend.connect(this.fogDelay);
     this.fogDelay.connect(this.fogFilter);
     this.fogFilter.connect(this.fogFeedback);
     this.fogFeedback.connect(this.fogDelay); // feedback loop on tap 3 only
-    this.fogDelay.connect(reverbMix);
+    this.fogDelay.connect(this.reverbMix);
 
     return pianoSend;
   }
 
   private disconnectGraph(): void {
     try {
+      this.tap1?.disconnect();
+      this.tap2?.disconnect();
+      this.tap1Gain?.disconnect();
+      this.tap2Gain?.disconnect();
+      this.reverbMix?.disconnect();
       this.masterFilter?.disconnect();
       this.masterGain?.disconnect();
       this.fogDelay?.disconnect();
       this.fogFilter?.disconnect();
       this.fogFeedback?.disconnect();
     } catch { /* already disconnected */ }
+    this.tap1 = this.tap2 = null;
+    this.tap1Gain = this.tap2Gain = this.reverbMix = null;
     this.masterFilter = null;
     this.masterGain = null;
     this.fogDelay = null;

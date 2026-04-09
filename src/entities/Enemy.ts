@@ -239,27 +239,32 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
 
     let hit = false;
+    const spawnedPlayer = (this.scene as any).getPlayer?.();
+    if (!spawnedPlayer) { net.destroy(); return; }
 
     const cleanup = () => {
-      if (!hit) {
-        hit = true;
+      if (hit) return;
+      hit = true;
+      try {
         this.scene.physics.world.removeCollider(overlapRef);
-        net.destroy();
-      }
+        if (net.active) net.destroy();
+      } catch { /* scene may have restarted */ }
     };
 
-    const gameScene = this.scene as any;
-    const player = gameScene.getPlayer?.();
-    if (!player) { net.destroy(); return; }
-
-    const overlapRef = this.scene.physics.add.overlap(net, player, () => {
+    const overlapRef = this.scene.physics.add.overlap(net, spawnedPlayer, () => {
       if (hit) return;
       cleanup();
 
-      // Debuff-stack safe: only one slow applied regardless of how many nets hit
-      player.applyNetSlow();
+      // Guard: only apply slow if this is still the same player (not a new run)
+      const currentPlayer = (this.scene as any).getPlayer?.();
+      if (currentPlayer !== spawnedPlayer) return;
+
+      spawnedPlayer.applyNetSlow();
       this.scene.time.delayedCall(2000, () => {
-        player.removeNetSlow();
+        const stillSamePlayer = (this.scene as any).getPlayer?.();
+        if (stillSamePlayer === spawnedPlayer) {
+          spawnedPlayer.removeNetSlow();
+        }
       });
     });
 
