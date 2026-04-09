@@ -147,8 +147,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Max HP: base + upgrade bonus (level doesn't reduce HP)
     this.maxHp = PLAYER.MAX_HP + this.bonusMaxHp;
 
-    // Pickup radius: base + upgrade bonus
-    this.pickupRadius = PLAYER.PICKUP_RADIUS + this.bonusPickupRadius;
+    // Pickup radius: base + upgrade bonus + 3% per level (satisfying vacuum growth)
+    this.pickupRadius = (PLAYER.PICKUP_RADIUS + this.bonusPickupRadius) * (1 + 0.03 * (level - 1));
   }
 
   takeDamage(amount: number): boolean {
