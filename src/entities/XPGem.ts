@@ -27,6 +27,12 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     this.magnetized = false;
     this.setVelocity(0, 0);
 
+    // Scale and tint by value — high-value gems are bigger and brighter
+    this.setScale(Math.min(2, 0.8 + value * 0.15));
+    this.clearTint();
+    if (value >= 5) this.setTint(0xffffff);       // boss gems: bright white
+    else if (value >= 3) this.setTint(0xffee66);   // elite gems: pale gold
+
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
 

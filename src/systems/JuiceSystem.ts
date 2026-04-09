@@ -102,16 +102,21 @@ export class JuiceSystem {
     text.setPosition(x + Phaser.Math.Between(-10, 10), y - 10);
     text.setVisible(true);
     text.setAlpha(1);
-    text.setScale(isCrit ? 1.3 : 1);
-    text.setColor(isCrit ? '#ffff00' : '#ffffff');
+
+    // Scale with damage — big hits look big
+    const sizeScale = Math.min(2.0, 0.8 + damage * 0.04);
+    text.setScale(isCrit ? sizeScale * 1.4 : sizeScale);
+    text.setColor(isCrit ? '#ffff00' : damage >= 20 ? '#ffcc44' : '#ffffff');
+    text.setRotation(Phaser.Math.FloatBetween(-0.25, 0.25));
 
     this.scene.tweens.add({
       targets: text,
-      y: text.y - 30,
+      y: text.y - 25 - damage * 0.3,
       alpha: 0,
+      rotation: text.rotation * 0.5,
       duration: 600,
       ease: 'Power2',
-      onComplete: () => text.setVisible(false),
+      onComplete: () => { text.setVisible(false); text.setRotation(0); },
     });
   }
 
