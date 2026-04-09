@@ -1,54 +1,72 @@
 /**
- * Highland Drone — two detuned sawtooth oscillators through a bandpass
- * filter with LFO tremolo. Sounds like distant bagpipes humming.
+ * Highland Pad — soft, evolving triangle-wave pad.
  *
- * The Conductor controls detuning (dissonance), bandpass frequency
- * (brightness), and volume.
+ * NOT a buzzing bagpipe drone. A gentle harmonic wash that sits
+ * underneath the piano, barely noticeable until intensity rises.
+ * Starts SILENT and fades in as the game progresses.
+ *
+ * Two detuned triangle oscillators + a sub-octave sine for warmth,
+ * through a lowpass filter. The detuning creates slow organic beating.
  */
 export class DroneLayer {
-  private saw1: OscillatorNode | null = null;
-  private saw2: OscillatorNode | null = null;
+  private osc1: OscillatorNode | null = null;
+  private osc2: OscillatorNode | null = null;
+  private sub: OscillatorNode | null = null;
+  private padGain: GainNode | null = null;
+  private subGain: GainNode | null = null;
+  private filter: BiquadFilterNode | null = null;
   private lfo: OscillatorNode | null = null;
   private lfoGain: GainNode | null = null;
-  private droneGain: GainNode | null = null;
-  private bandpass: BiquadFilterNode | null = null;
 
-  private readonly BASE_FREQ = 110;
-  private readonly BASE_DETUNE = 1.5;
-  private readonly BASE_BANDPASS = 500;
-  private readonly BASE_VOLUME = 0.3;
+  private readonly BASE_FREQ = 110; // A2
 
   start(ctx: AudioContext, output: AudioNode): void {
-    this.saw1 = ctx.createOscillator();
-    this.saw1.type = 'sawtooth';
-    this.saw1.frequency.value = this.BASE_FREQ;
+    // Main pad: two slightly detuned triangles for gentle chorusing
+    this.osc1 = ctx.createOscillator();
+    this.osc1.type = 'triangle';
+    this.osc1.frequency.value = this.BASE_FREQ;
 
-    this.saw2 = ctx.createOscillator();
-    this.saw2.type = 'sawtooth';
-    this.saw2.frequency.value = this.BASE_FREQ + this.BASE_DETUNE;
+    this.osc2 = ctx.createOscillator();
+    this.osc2.type = 'triangle';
+    this.osc2.frequency.value = this.BASE_FREQ + 0.8; // very slight detune
 
+    // Sub-octave sine for low-end warmth
+    this.sub = ctx.createOscillator();
+    this.sub.type = 'sine';
+    this.sub.frequency.value = this.BASE_FREQ / 2; // A1 = 55Hz
+
+    this.subGain = ctx.createGain();
+    this.subGain.gain.value = 0;
+
+    // Pad mix — starts SILENT, fades in with intensity
+    this.padGain = ctx.createGain();
+    this.padGain.gain.value = 0;
+
+    // Gentle lowpass to keep it soft
+    this.filter = ctx.createBiquadFilter();
+    this.filter.type = 'lowpass';
+    this.filter.frequency.value = 400;
+    this.filter.Q.value = 0.5;
+
+    // Very slow LFO for gentle volume swell (breathing feel)
     this.lfo = ctx.createOscillator();
-    this.lfo.frequency.value = 2.5;
+    this.lfo.frequency.value = 0.15; // one cycle every ~7 seconds
     this.lfoGain = ctx.createGain();
-    this.lfoGain.gain.value = 0.06;
+    this.lfoGain.gain.value = 0.03;
 
-    this.droneGain = ctx.createGain();
-    this.droneGain.gain.value = this.BASE_VOLUME;
-
-    this.bandpass = ctx.createBiquadFilter();
-    this.bandpass.type = 'bandpass';
-    this.bandpass.frequency.value = this.BASE_BANDPASS;
-    this.bandpass.Q.value = 0.8;
-
-    this.saw1.connect(this.droneGain);
-    this.saw2.connect(this.droneGain);
+    // Wire: oscs → padGain → filter → output
+    this.osc1.connect(this.padGain);
+    this.osc2.connect(this.padGain);
+    this.sub.connect(this.subGain);
+    this.subGain.connect(this.padGain);
     this.lfo.connect(this.lfoGain);
-    this.lfoGain.connect(this.droneGain.gain);
-    this.droneGain.connect(this.bandpass);
-    this.bandpass.connect(output);
+    this.lfoGain.connect(this.padGain.gain);
+    this.padGain.connect(this.filter);
+    this.filter.connect(output);
 
-    this.saw1.start();
-    this.saw2.start();
+    this.osc1.start();
+    this.osc2.start();
+    this.sub.start();
     this.lfo.start();
   }
 
@@ -57,40 +75,49 @@ export class DroneLayer {
     intensity: number,
     danger: number,
     triumph: number,
-    transitionSec: number = 1.0
+    transitionSec: number = 2.0
   ): void {
-    if (!this.saw1 || !this.saw2 || !this.bandpass || !this.droneGain || !this.lfo) return;
+    if (!this.osc1 || !this.osc2 || !this.padGain || !this.filter || !this.subGain) return;
     const t = ctx.currentTime + transitionSec;
 
-    const pitchOffset = -danger * 10;
-    this.saw1.frequency.linearRampToValueAtTime(this.BASE_FREQ + pitchOffset, t);
+    // Volume: silent at start, fades in as intensity grows
+    // Only becomes noticeable after intensity > 0.15 (~3 minutes in)
+    const vol = Math.max(0, (intensity - 0.15) * 0.25);
+    this.padGain.gain.linearRampToValueAtTime(vol, t);
 
-    const detune = this.BASE_DETUNE + danger * 7;
-    this.saw2.frequency.linearRampToValueAtTime(this.BASE_FREQ + pitchOffset + detune, t);
+    // Sub bass: fades in with chaos for low-end rumble
+    const subVol = Math.max(0, (intensity - 0.3) * 0.12);
+    this.subGain.gain.linearRampToValueAtTime(subVol, t);
 
-    const bpFreq = this.BASE_BANDPASS + intensity * 900 + triumph * 500;
-    this.bandpass.frequency.linearRampToValueAtTime(bpFreq, t);
+    // Filter opens slowly with intensity
+    const freq = 400 + intensity * 600 + triumph * 400;
+    this.filter.frequency.linearRampToValueAtTime(freq, t);
 
-    const vol = this.BASE_VOLUME + intensity * 0.04;
-    this.droneGain.gain.linearRampToValueAtTime(vol, t);
+    // Danger: detune widens (dissonant), pitch drops
+    const detune = 0.8 + danger * 6;
+    this.osc2.frequency.linearRampToValueAtTime(this.BASE_FREQ + detune, t);
 
-    this.lfo.frequency.linearRampToValueAtTime(2.5 + intensity * 4, t);
+    const pitchDrop = danger * 8;
+    this.osc1.frequency.linearRampToValueAtTime(this.BASE_FREQ - pitchDrop, t);
   }
 
   stop(): void {
     try {
-      this.saw1?.stop();
-      this.saw2?.stop();
+      this.osc1?.stop();
+      this.osc2?.stop();
+      this.sub?.stop();
       this.lfo?.stop();
-      this.saw1?.disconnect();
-      this.saw2?.disconnect();
+      this.osc1?.disconnect();
+      this.osc2?.disconnect();
+      this.sub?.disconnect();
+      this.subGain?.disconnect();
       this.lfo?.disconnect();
       this.lfoGain?.disconnect();
-      this.droneGain?.disconnect();
-      this.bandpass?.disconnect();
+      this.padGain?.disconnect();
+      this.filter?.disconnect();
     } catch { /* nodes may already be stopped */ }
-    this.saw1 = this.saw2 = this.lfo = null;
-    this.lfoGain = this.droneGain = null;
-    this.bandpass = null;
+    this.osc1 = this.osc2 = this.sub = this.lfo = null;
+    this.lfoGain = this.subGain = this.padGain = null;
+    this.filter = null;
   }
 }
