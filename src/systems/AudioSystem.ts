@@ -6,6 +6,8 @@
  * precise envelope shaping. Pitch is slightly randomized per call
  * to prevent repetition fatigue.
  */
+import { getAudioContext, getOutputNode } from './audioContext';
+
 export class AudioSystem {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
@@ -18,15 +20,18 @@ export class AudioSystem {
 
   private ensureContext(): AudioContext | null {
     if (this.ctx) return this.ctx;
-    try {
-      this.ctx = new AudioContext();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.value = 0.3; // Master volume
-      this.masterGain.connect(this.ctx.destination);
-      return this.ctx;
-    } catch {
-      return null;
+    const ctx = getAudioContext();
+    if (!ctx) return null;
+    this.ctx = ctx;
+    this.masterGain = ctx.createGain();
+    this.masterGain.gain.value = 0.3;
+    const output = getOutputNode();
+    if (output) {
+      this.masterGain.connect(output);
+    } else {
+      this.masterGain.connect(ctx.destination);
     }
+    return ctx;
   }
 
   setEnabled(on: boolean): void {
