@@ -14,10 +14,22 @@ export class UpgradeCardsUI {
   private elements: Phaser.GameObjects.GameObject[] = [];
   private pendingTimers: Phaser.Time.TimerEvent[] = [];
   private onSelect: (card: UpgradeCard) => void;
+  private onReroll: (() => void) | null = null;
+  private rerollsLeft: number = 0;
 
   constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void) {
     this.scene = scene;
     this.onSelect = onSelect;
+  }
+
+  /** Set the reroll callback and grant one reroll per level-up */
+  setRerollCallback(cb: () => void): void {
+    this.onReroll = cb;
+  }
+
+  /** Grant rerolls (called each time a level-up screen opens) */
+  grantReroll(): void {
+    this.rerollsLeft = 1;
   }
 
   show(cards: UpgradeCard[], level: number): void {
@@ -43,6 +55,27 @@ export class UpgradeCardsUI {
       fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
+
+    // Reroll button
+    if (this.rerollsLeft > 0 && this.onReroll) {
+      const rerollBtn = this.scene.add.text(width / 2, height - 40, `Reroll (${this.rerollsLeft})`, {
+        fontFamily: 'monospace', fontSize: '14px', color: '#d4a017',
+        fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
+        backgroundColor: '#2a2a3a', padding: { x: 12, y: 6 },
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 3)
+        .setInteractive({ useHandCursor: true });
+      this.elements.push(rerollBtn);
+
+      rerollBtn.on('pointerover', () => rerollBtn.setColor('#ffcc44'));
+      rerollBtn.on('pointerout', () => rerollBtn.setColor('#d4a017'));
+      rerollBtn.on('pointerdown', () => {
+        if (this.rerollsLeft > 0) {
+          this.rerollsLeft--;
+          this.hide();
+          this.onReroll!();
+        }
+      });
+    }
 
     // Card layout — scale down if too many cards for the screen width
     const maxCardW = 180;

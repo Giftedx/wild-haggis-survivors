@@ -274,6 +274,72 @@ export class JuiceSystem {
     this.scene.cameras.main.shake(400, 0.015);
   }
 
+  /** Boss kill celebration — gold particle shower + expanded kill burst */
+  bossDeathSpectacle(x: number, y: number): void {
+    // Big white flash
+    this.flashWhite(400);
+
+    // Heavy shake
+    this.scene.cameras.main.shake(600, 0.025);
+
+    // Gold particle shower — 30 particles in all directions
+    const goldColors = [0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00];
+    for (let i = 0; i < 30; i++) {
+      const angle = (i / 30) * Math.PI * 2 + Math.random() * 0.4;
+      const speed = 80 + Math.random() * 200;
+      const size = Phaser.Math.Between(3, 8);
+      const color = Phaser.Utils.Array.GetRandom(goldColors) as number;
+      const particle = this.scene.add.circle(x, y, size, color, 0.9);
+      this.scene.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * speed,
+        y: y + Math.sin(angle) * speed,
+        alpha: 0,
+        scale: 0,
+        duration: 800 + Math.random() * 600,
+        ease: 'Power2',
+        onComplete: () => particle.destroy(),
+      });
+    }
+
+    // Expanding ring
+    const ring = this.scene.add.circle(x, y, 10, 0xd4a017, 0.5);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: 80,
+      alpha: 0,
+      duration: 500,
+      onComplete: () => ring.destroy(),
+    });
+
+    // Second delayed ring
+    this.scene.time.delayedCall(150, () => {
+      const ring2 = this.scene.add.circle(x, y, 10, 0xffcc44, 0.3);
+      this.scene.tweens.add({
+        targets: ring2,
+        radius: 120,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => ring2.destroy(),
+      });
+    });
+  }
+
+  /** Hit freeze — 20ms time pause on kill for combat impact.
+   *  Throttled to max once per 100ms to prevent stutter during AoE. */
+  private lastFreezeTime = 0;
+  hitFreeze(): void {
+    const now = performance.now();
+    if (now - this.lastFreezeTime < 100) return;
+    this.lastFreezeTime = now;
+    this.scene.time.timeScale = 0;
+    this.scene.time.delayedCall(1, () => { // 1 tick at timeScale 0 ≈ ~20ms
+      if (!this.slowMotionActive) {
+        this.scene.time.timeScale = 1;
+      }
+    });
+  }
+
   /** Brief slow-motion effect — guarded against overlapping calls */
   private slowMotionActive = false;
   slowMotion(durationMs = 300): void {

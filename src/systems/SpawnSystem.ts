@@ -190,6 +190,12 @@ export class SpawnSystem {
         }
         const scatter = j > 0 ? Phaser.Math.Between(-30, 30) : 0;
         enemy.spawn(pos.x + scatter, pos.y + scatter, config, this.gameTimeSec);
+
+        // Elite chance: 10% after 2 minutes, not on hazards or swarm packs
+        if (this.gameTimeSec > 120 && config.behavior !== 'hazard' &&
+            config.packSize <= 1 && Math.random() < 0.10) {
+          enemy.markAsElite();
+        }
       }
     }
   }
