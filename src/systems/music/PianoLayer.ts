@@ -26,7 +26,7 @@ export class PianoLayer {
 
     this.filter = ctx.createBiquadFilter();
     this.filter.type = 'lowpass';
-    this.filter.frequency.value = 2000;
+    this.filter.frequency.value = 3000; // let the gentle FM warmth through
 
     this.mixGain = ctx.createGain();
     this.mixGain.gain.value = 1.0;
@@ -51,20 +51,21 @@ export class PianoLayer {
     modulator.frequency.value = freq * 2;
 
     const modGain = ctx.createGain();
-    // Higher mod depth = brighter, more "struck" character
-    const modDepth = freq * 1.2 * velocity;
+    // Gentle FM — just enough to add warmth, not metallic brightness
+    // Low mod index = soft, round tone. C418 piano, not DX7 electric piano.
+    const modDepth = freq * 0.3 * velocity;
     modGain.gain.setValueAtTime(modDepth, time);
-    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.2), time + 0.08);
-    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.05), time + 0.5);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.08), time + 0.12);
+    modGain.gain.exponentialRampToValueAtTime(Math.max(0.01, freq * 0.01), time + 0.8);
 
     const voiceGain = ctx.createGain();
-    // Louder, more present piano
-    const peak = 0.4 * velocity;
+    // Soft, intimate piano — like it's in the next room
+    const peak = 0.3 * velocity;
     voiceGain.gain.setValueAtTime(0, time);
-    voiceGain.gain.linearRampToValueAtTime(peak, time + 0.003);
-    voiceGain.gain.linearRampToValueAtTime(peak * 0.6, time + 0.15);
-    voiceGain.gain.linearRampToValueAtTime(peak * 0.35, time + 0.6);
-    voiceGain.gain.linearRampToValueAtTime(0.001, time + releaseSec);
+    voiceGain.gain.linearRampToValueAtTime(peak, time + 0.008);        // soft attack
+    voiceGain.gain.linearRampToValueAtTime(peak * 0.55, time + 0.3);   // gentle decay
+    voiceGain.gain.linearRampToValueAtTime(peak * 0.25, time + 1.0);   // long sustain
+    voiceGain.gain.linearRampToValueAtTime(0.001, time + releaseSec);   // fade to silence
 
     modulator.connect(modGain);
     modGain.connect(carrier.frequency);

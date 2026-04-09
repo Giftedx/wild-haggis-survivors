@@ -44,11 +44,11 @@ class ProceduralMusicEngine {
 
     this.masterFilter = ctx.createBiquadFilter();
     this.masterFilter.type = 'lowpass';
-    this.masterFilter.frequency.value = 2500;
+    this.masterFilter.frequency.value = 3500; // open enough to hear piano warmth
     this.masterFilter.Q.value = 0.5;
 
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = this.enabled ? 0.22 : 0;
+    this.masterGain.gain.value = this.enabled ? 0.25 : 0;
 
     const output = getOutputNode();
     this.masterFilter.connect(this.masterGain);
@@ -127,12 +127,12 @@ class ProceduralMusicEngine {
     this.drone.applyMood(this.ctx, mood.intensity, mood.danger, mood.triumph);
 
     if (this.masterFilter) {
-      const freq = 2500 + mood.intensity * 2500;
+      const freq = 3500 + mood.intensity * 2000;
       this.masterFilter.frequency.linearRampToValueAtTime(freq, this.ctx.currentTime + 1);
     }
 
     if (this.masterGain && this.enabled) {
-      const vol = 0.18 + mood.intensity * 0.10;
+      const vol = 0.20 + mood.intensity * 0.10;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
 
@@ -160,7 +160,7 @@ class ProceduralMusicEngine {
     this.enabled = on;
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.linearRampToValueAtTime(
-        on ? 0.22 : 0,
+        on ? 0.25 : 0,
         this.ctx.currentTime + 0.3
       );
     }
@@ -169,26 +169,55 @@ class ProceduralMusicEngine {
   isPlaying(): boolean { return this.playing; }
 
   private buildFogDelay(ctx: AudioContext): AudioNode {
+    // Multi-tap reverb: instead of one long delay with feedback (which creates
+    // obvious "echo echo echo"), use several short delays at prime-number
+    // intervals. The overlapping taps create a diffuse wash — like a room, not a canyon.
     const pianoSend = ctx.createGain();
     pianoSend.gain.value = 1.0;
-    pianoSend.connect(this.masterFilter!);
+    pianoSend.connect(this.masterFilter!); // dry signal
 
-    this.fogDelay = ctx.createDelay(4);
-    this.fogDelay.delayTime.value = 1.5;
+    // Reverb bus: multiple delays mixed together
+    const reverbMix = ctx.createGain();
+    reverbMix.gain.value = 0.35; // wet/dry balance
+    reverbMix.connect(this.masterFilter!);
+
+    // Tap 1: short early reflection
+    const tap1 = ctx.createDelay(1);
+    tap1.delayTime.value = 0.11; // ~110ms
+    const tap1Gain = ctx.createGain();
+    tap1Gain.gain.value = 0.4;
+
+    // Tap 2: medium reflection
+    const tap2 = ctx.createDelay(1);
+    tap2.delayTime.value = 0.27; // ~270ms
+    const tap2Gain = ctx.createGain();
+    tap2Gain.gain.value = 0.3;
+
+    // Tap 3: late reflection with feedback for tail
+    this.fogDelay = ctx.createDelay(2);
+    this.fogDelay.delayTime.value = 0.53; // ~530ms
 
     this.fogFilter = ctx.createBiquadFilter();
     this.fogFilter.type = 'lowpass';
-    this.fogFilter.frequency.value = 1200;
+    this.fogFilter.frequency.value = 1800; // darken each repeat gently
 
     this.fogFeedback = ctx.createGain();
-    this.fogFeedback.gain.value = 0.4;
+    this.fogFeedback.gain.value = 0.35; // moderate feedback for tail
+
+    // Wire taps
+    pianoSend.connect(tap1);
+    tap1.connect(tap1Gain);
+    tap1Gain.connect(reverbMix);
+
+    pianoSend.connect(tap2);
+    tap2.connect(tap2Gain);
+    tap2Gain.connect(reverbMix);
 
     pianoSend.connect(this.fogDelay);
     this.fogDelay.connect(this.fogFilter);
     this.fogFilter.connect(this.fogFeedback);
-    this.fogFeedback.connect(this.fogDelay);
-
-    this.fogDelay.connect(this.masterFilter!);
+    this.fogFeedback.connect(this.fogDelay); // feedback loop on tap 3 only
+    this.fogDelay.connect(reverbMix);
 
     return pianoSend;
   }
