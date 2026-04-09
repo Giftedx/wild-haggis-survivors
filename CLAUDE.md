@@ -29,8 +29,9 @@ No test framework is configured.
 - **WeaponSystem**: Manages all 6 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form).
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **GrowthSystem**: Player visual/hitbox scaling as they level up.
-- **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails.
-- **AudioSystem / MusicSystem**: Global singletons (`audio`, `music`) for SFX and background music.
+- **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
+- **AudioSystem**: Global singleton (`audio`) for SFX. Uses shared `AudioContext` from `src/systems/audioContext.ts`.
+- **ProceduralMusicEngine** (`src/systems/music/`): Game-state-reactive procedural music. Singleton `musicEngine`. Layers: Highland pad drone, FM felt piano (4-voice polyphony), heartbeat pulse, Euclidean rhythm. A `Conductor` reads game state each frame and computes mood axes (intensity, danger, chaos, triumph) that drive all layers. Lookahead scheduler replaces setTimeout/setInterval.
 
 ### Data-Driven Design
 Game balance is defined in data files, not scattered through logic:
@@ -48,6 +49,10 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 - **Weapon Evolution**: Each of the 6 weapons has a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool.
 - **Soft World Boundaries**: No hard walls — player slows near edges with a gentle push-back force.
 - **Persistence**: `localStorage` via `src/utils/save.ts` (key: `whs_save`). Stores gold, permanent upgrades, settings, and run stats.
+- **Elite Enemies**: 10% spawn chance after 2 minutes. Golden glow, 2× HP, 1.3× speed, 3× XP. Marked via `Enemy.markAsElite()`. Never applied to bosses or hazards.
+- **Card Reroll**: 1 free reroll per level-up. Managed by `UpgradeCardsUI.grantReroll()` / `rerollsLeft` counter.
+- **Minimap** (`src/ui/Minimap.ts`): Corner radar showing enemy dots, elite (gold), boss (diamond), player (green), camera viewport.
+- **Hit Freeze**: 20ms `timeScale = 0` on kills via `JuiceSystem.hitFreeze()`. Uses real `setTimeout` (not delayedCall). Skipped during slow-motion.
 
 ### Path Alias
 `@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`).
@@ -63,6 +68,7 @@ Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing).
 - **`body.velocity +=` bypasses mass**: Phaser's mass only affects collision resolution. For knockback, divide force by `body.mass` manually.
 - **`clearTint()` removes ALL tints**: Including persistent ones (boss red, hazard orange). Use a `baseTint` field and restore it after damage flashes.
 - **Circle body radius and sprite scale**: Phaser auto-scales circular hitboxes via `updateBounds()`. Pass unscaled radius to `setCircle()` — see comment in `Player.onLevelUp`.
+- **`scene.time.delayedCall` respects `timeScale`**: At `timeScale = 0` (hit freeze), delayed calls never fire. Use real `setTimeout` for wall-clock-timed operations that must execute regardless of timeScale.
 
 ## Common Patterns
 
@@ -70,3 +76,6 @@ Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing).
 - **Audio throttling**: AoE weapons hit many targets per frame. Throttle sound effects via `AudioContext.currentTime` comparison (see `lastHitTime` in AudioSystem).
 - **Dedicated state flags**: Don't reuse `iFrames` for unrelated invincibility (e.g., victory). Use separate flags with clear ownership (`victoryPending`).
 - **Percentage bonuses should use base config values** (`PLAYER.SPEED`, `PLAYER.MAX_HP`), not current computed stats — prevents order-dependent bonus amounts.
+- **Shared AudioContext**: SFX (`AudioSystem`) and music (`ProceduralMusicEngine`) share one `AudioContext` via `src/systems/audioContext.ts`. Never call `ctx.suspend()` on it — that silences both systems. A `DynamicsCompressorNode` on the output prevents clipping.
+- **Overlay input blocking**: All full-screen overlays (level-up, pause, death, victory) must have `.setInteractive()` to prevent the mobile virtual joystick from activating through them.
+- **Stale callback guards**: `setTimeout`/`delayedCall` callbacks from a prior run can fire after scene restart (same instance reused). Guard with reference identity checks (capture object ref at creation, compare to current before acting).
