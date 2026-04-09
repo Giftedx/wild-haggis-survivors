@@ -336,13 +336,15 @@ export class JuiceSystem {
   hitFreeze(): void {
     const now = performance.now();
     if (now - this.lastFreezeTime < 100) return;
+    if (this.slowMotionActive) return; // don't interrupt slow-mo
     this.lastFreezeTime = now;
     this.scene.time.timeScale = 0;
-    this.scene.time.delayedCall(1, () => { // 1 tick at timeScale 0 ≈ ~20ms
+    // Use real setTimeout — scene.time.delayedCall won't fire at timeScale 0
+    setTimeout(() => {
       if (!this.slowMotionActive) {
         this.scene.time.timeScale = 1;
       }
-    });
+    }, 20);
   }
 
   /** Brief slow-motion effect — guarded against overlapping calls */
