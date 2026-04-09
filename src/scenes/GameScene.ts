@@ -300,6 +300,7 @@ export class GameScene extends Phaser.Scene {
       gameTimeSec: this.spawnSystem.getGameTimeSec(),
       enemyCount: this.spawnSystem.getActiveCount(),
       comboCount: this.juice.getComboCount(),
+      killCount: this.killCount,
       bossActive: this.spawnSystem.isBossActive(),
     };
     musicEngine.update(delta, musicState);

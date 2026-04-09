@@ -11,6 +11,7 @@ export interface GameMusicState {
   gameTimeSec: number;
   enemyCount: number;
   comboCount: number;
+  killCount: number;
   bossActive: boolean;
 }
 
@@ -75,7 +76,7 @@ export class Conductor {
     );
     this.chaos = lerp(this.chaos, chaosTarget, delta * 0.002);
 
-    this.updateKillHistory(state.gameTimeSec, state.comboCount);
+    this.updateKillHistory(state.gameTimeSec, state.killCount);
     const killRate = this.getRecentKillRate(state.gameTimeSec);
     let triumphTarget = 0;
     if (state.comboCount > 8 && hpFrac > 0.5) {
@@ -237,8 +238,8 @@ export class Conductor {
     return Math.min(0.8, Math.max(0.1, vel));
   }
 
-  private updateKillHistory(gameTimeSec: number, comboCount: number): void {
-    this.killHistory.push({ time: gameTimeSec, count: comboCount });
+  private updateKillHistory(gameTimeSec: number, killCount: number): void {
+    this.killHistory.push({ time: gameTimeSec, count: killCount });
     while (this.killHistory.length > 0 && this.killHistory[0].time < gameTimeSec - 10) {
       this.killHistory.shift();
     }
