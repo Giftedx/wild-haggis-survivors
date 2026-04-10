@@ -130,6 +130,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeVariant = selectedVariant;
     this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2, selectedVariant.textureKey, this.timeManager);
 
+    // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
+    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
+    this.cameras.main.setZoom(1.2);
+    this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+
     // Spawn map hazard and healing zones
     this.spawnMapZones();
 
@@ -262,13 +267,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       undefined,
       this
     );
-
-    // Camera
-    this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    // 1.2× zoom so the larger sprites fill the screen better while still
-    // leaving enough peripheral vision for enemy-awareness gameplay.
-    this.cameras.main.setZoom(1.2);
-    this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
 
     // HUD + Juice
     this.hud = new HUD(this);

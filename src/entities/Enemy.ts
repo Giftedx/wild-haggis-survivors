@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
-import { ENEMIES } from '../config';
+import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 
 /**
@@ -97,6 +97,25 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     (this.body as Phaser.Physics.Arcade.Body).enable = false;
+  }
+
+  /**
+   * Acquire a pooled enemy or grow the group. Phaser's Group.add() is a no-op
+   * when isFull(), which would otherwise leave a stray active sprite outside
+   * the pool and under-count toward MAX_ACTIVE.
+   */
+  static acquireFromPool(pool: Phaser.GameObjects.Group, scene: Phaser.Scene & ISceneContext): Enemy | null {
+    let enemy = pool.getFirstDead(false) as Enemy | null;
+    if (enemy) return enemy;
+    if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return null;
+    enemy = new Enemy(scene, 0, 0);
+    const lenBefore = pool.getLength();
+    pool.add(enemy);
+    if (pool.getLength() === lenBefore) {
+      enemy.destroy();
+      return null;
+    }
+    return enemy;
   }
 
   spawn(x: number, y: number, config: EnemyConfig, gameTimeSec: number): void {
@@ -384,13 +403,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Self-destruct if way off screen (account for camera zoom)
     const cam = this.scene.cameras.main;
-    const viewW = cam.width / cam.zoom;
-    const viewH = cam.height / cam.zoom;
+    const z = Math.max(0.001, cam.zoom);
+    const viewW = cam.width / z;
+    const viewH = cam.height / z;
     const margin = 300;
-    if (
+    const farFromView =
       this.x < cam.scrollX - margin || this.x > cam.scrollX + viewW + margin ||
-      this.y < cam.scrollY - margin || this.y > cam.scrollY + viewH + margin
-    ) {
+      this.y < cam.scrollY - margin || this.y > cam.scrollY + viewH + margin;
+    const farFromWorld =
+      this.x < -margin || this.x > GAME.WORLD_WIDTH + margin ||
+      this.y < -margin || this.y > GAME.WORLD_HEIGHT + margin;
+    if (farFromView || farFromWorld) {
       this.die();
     }
   }
@@ -511,12 +534,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.spawnerCooldown = 4000;
       const spawnSystem = this.ctx.getSpawnSystem();
       const pool = spawnSystem.getEnemyGroup();
-      let minion = pool.getFirstDead(false) as Enemy | null;
-      if (!minion) {
-        if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return;
-        minion = new Enemy(this.ctxScene, 0, 0);
-        pool.add(minion);
-      }
+      const minion = Enemy.acquireFromPool(pool, this.ctxScene);
+      if (!minion) return;
       const angle = Math.random() * Math.PI * 2;
       const dist = 20;
       const terrier = { key: 'terrier', texture: 'terrier', speed: 130, hp: 2, damage: 3, xpValue: 1, appearsAt: 0, behavior: 'swarm' as EnemyBehavior, packSize: 1 };
@@ -780,12 +799,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const spawnSystem = this.ctx.getSpawnSystem();
       const pool = spawnSystem.getEnemyGroup();
       for (let i = 0; i < 3; i++) {
-        let minion = pool.getFirstDead(false) as Enemy | null;
-        if (!minion) {
-          if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) break;
-          minion = new Enemy(this.ctxScene, 0, 0);
-          pool.add(minion);
-        }
+        const minion = Enemy.acquireFromPool(pool, this.ctxScene);
+        if (!minion) break;
         const a = (i / 3) * Math.PI * 2;
         const chef = { key: 'chef', texture: 'chef', speed: 100, hp: 8, damage: 8, xpValue: 3, appearsAt: 0, behavior: 'chase' as EnemyBehavior, packSize: 1 };
         // Use current game time so late-game phase-2 minions scale with the run
