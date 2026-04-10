@@ -7,6 +7,7 @@ import {
   VariantDef,
   getVariantByKey,
 } from '../data/variants';
+import { achievementManager } from '../core/AchievementManager';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
 
 /**
@@ -33,6 +34,7 @@ export class BootScene extends Phaser.Scene {
   create(): void {
     // Initialize global meta progression exactly once (above the Scene lifecycle).
     metaProgressSystem.start();
+    achievementManager.start();
 
     const { width, height } = this.scale;
 

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import type { SettingsManager } from '../core/SettingsManager';
+import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
 
 /**
@@ -13,6 +15,7 @@ export class JuiceSystem {
   private scene: Phaser.Scene;
   private time: TimeManager;
   private tickers: import('../utils/UpdateTickers').UpdateTickers;
+  private readonly settings: SettingsManager;
   private dmgTextPool: Phaser.GameObjects.Text[] = [];
   /** Pool of reusable impact rings — used on every enemy hit. Unpooled
    *  creation per hit was a real perf concern at 60fps × pierce weapons. */
@@ -40,10 +43,16 @@ export class JuiceSystem {
 
   private slowMotionRemainingMs: number = 0;
 
-  constructor(scene: Phaser.Scene, time: TimeManager, tickers: import('../utils/UpdateTickers').UpdateTickers) {
+  constructor(
+    scene: Phaser.Scene,
+    time: TimeManager,
+    tickers: import('../utils/UpdateTickers').UpdateTickers,
+    settings?: SettingsManager
+  ) {
     this.scene = scene;
     this.time = time;
     this.tickers = tickers;
+    this.settings = settings ?? getSettingsManager();
 
     // Danger vignette — red border glow, hidden by default
     this.vignette = scene.add.graphics().setScrollFactor(0).setDepth(45).setAlpha(0);
@@ -150,6 +159,7 @@ export class JuiceSystem {
 
   /** Show a floating damage number at world position */
   showDamageNumber(x: number, y: number, damage: number, isCrit = false): void {
+    if (!this.settings.load().damageNumbers) return;
     const text = this.dmgTextPool.find(t => !t.visible);
     if (!text) return;
 
@@ -189,9 +199,11 @@ export class JuiceSystem {
 
   /** Visual burst when an enemy dies — colored particles + combo tracking */
   showKillBurst(x: number, y: number, color: number = 0xcc4444): void {
-    // Particle burst — 6 small dots scatter outward
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
+    const lowFx = this.settings.load().reduceParticles;
+    const dots = lowFx ? 3 : 6;
+    // Particle burst — small dots scatter outward
+    for (let i = 0; i < dots; i++) {
+      const angle = (i / dots) * Math.PI * 2;
       const dot = this.scene.add.circle(x, y, Phaser.Math.Between(2, 4), color, 0.8);
       this.scene.tweens.add({
         targets: dot,
@@ -349,21 +361,26 @@ export class JuiceSystem {
 
   /** Heavy screen shake for boss events */
   bossShake(): void {
+    if (!this.settings.load().screenShake) return;
     this.scene.cameras.main.shake(400, 0.015);
   }
 
   /** Boss kill celebration — gold particle shower + expanded kill burst */
   bossDeathSpectacle(x: number, y: number): void {
+    const lowFx = this.settings.load().reduceParticles;
+    const shakeOn = this.settings.load().screenShake;
     // Big white flash
     this.flashWhite(400);
 
-    // Heavy shake
-    this.scene.cameras.main.shake(600, 0.025);
+    if (shakeOn) {
+      this.scene.cameras.main.shake(600, 0.025);
+    }
 
-    // Gold particle shower — 30 particles in all directions
+    const particleCount = lowFx ? 12 : 30;
+    // Gold particle shower
     const goldColors = [0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00];
-    for (let i = 0; i < 30; i++) {
-      const angle = (i / 30) * Math.PI * 2 + Math.random() * 0.4;
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
       const speed = 80 + Math.random() * 200;
       const size = Phaser.Math.Between(3, 8);
       const color = Phaser.Utils.Array.GetRandom(goldColors) as number;
@@ -406,6 +423,7 @@ export class JuiceSystem {
   /** Hit freeze — 20ms time pause on kill for combat impact.
    *  Throttled to max once per 100ms to prevent stutter during AoE. */
   hitFreeze(): void {
+    if (this.settings.load().reduceParticles) return;
     if (this.slowMotionActive) return; // don't interrupt slow-mo
     if (this.freezeCooldownMs > 0) return;
     this.freezeCooldownMs = 100;

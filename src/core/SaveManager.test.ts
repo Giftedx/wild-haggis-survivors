@@ -8,12 +8,13 @@ class MemoryStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV3 = {
-  saveVersion: 3 as const,
+const defaultV4 = {
+  saveVersion: 4 as const,
   totalKills: 0,
   unlockedWeapons: [] as string[],
   unlockedUpgrades: [] as string[],
   activeRun: null,
+  unlockedAchievements: [] as string[],
 };
 
 const sampleRun = (): IRunState => ({
@@ -35,24 +36,26 @@ const sampleRun = (): IRunState => ({
 });
 
 describe('SaveManager', () => {
-  it('saves and loads persisted meta progression (v3)', () => {
+  it('saves and loads persisted meta progression (v4)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
 
     mgr.save({
-      saveVersion: 3,
+      saveVersion: 4,
       totalKills: 42,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: ['speed_tier_1'],
       activeRun: null,
+      unlockedAchievements: ['ach_kills_1000'],
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(3);
+    expect(loaded.saveVersion).toBe(4);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
     expect(loaded.activeRun).toBeNull();
+    expect(loaded.unlockedAchievements).toEqual(['ach_kills_1000']);
   });
 
   it('recovers from corrupted JSON without throwing', () => {
@@ -61,23 +64,24 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(() => mgr.load()).not.toThrow();
-    expect(mgr.load()).toEqual(defaultV3);
+    expect(mgr.load()).toEqual(defaultV4);
   });
 
-  it('migrates v1 JSON to v3 with defaults', () => {
+  it('migrates v1 JSON to v4 with defaults', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 5, unlockedWeapons: ['thistle_shot'] }));
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 3,
+      saveVersion: 4,
       totalKills: 5,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: [],
       activeRun: null,
+      unlockedAchievements: [],
     });
   });
 
-  it('migrates v2 JSON to v3 preserving upgrades', () => {
+  it('migrates v2 JSON to v4 preserving upgrades', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -90,32 +94,57 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 3,
+      saveVersion: 4,
       totalKills: 3,
       unlockedWeapons: [],
       unlockedUpgrades: ['speed_tier_1'],
       activeRun: null,
+      unlockedAchievements: [],
+    });
+  });
+
+  it('migrates v3 JSON to v4 preserving activeRun', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'k',
+      JSON.stringify({
+        saveVersion: 3,
+        totalKills: 2,
+        unlockedWeapons: [],
+        unlockedUpgrades: [],
+        activeRun: null,
+      })
+    );
+    const mgr = new SaveManager({ storage, key: 'k' });
+    expect(mgr.load()).toEqual({
+      saveVersion: 4,
+      totalKills: 2,
+      unlockedWeapons: [],
+      unlockedUpgrades: [],
+      activeRun: null,
+      unlockedAchievements: [],
     });
   });
 
   it('coerces malformed fields safely', () => {
     const storage = new MemoryStorage();
-    storage.setItem('k', JSON.stringify({ saveVersion: 3, totalKills: 'nope', unlockedWeapons: [123, 'ok'] }));
+    storage.setItem('k', JSON.stringify({ saveVersion: 4, totalKills: 'nope', unlockedWeapons: [123, 'ok'] }));
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 3,
+      saveVersion: 4,
       totalKills: 0,
       unlockedWeapons: ['ok'],
       unlockedUpgrades: [],
       activeRun: null,
+      unlockedAchievements: [],
     });
   });
 
   it('saveActiveRun persists coerced mid-run snapshot', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
-    mgr.save({ ...defaultV3, totalKills: 1 });
+    mgr.save({ ...defaultV4, totalKills: 1 });
     mgr.saveActiveRun(sampleRun());
     const loaded = mgr.load();
     expect(loaded.activeRun).not.toBeNull();

@@ -130,5 +130,27 @@ export class MainMenuScene extends Phaser.Scene {
     metaTxt.on('pointerdown', () => {
       this.scene.start('MetaShop');
     });
+
+    const optY = metaY + btnH + 14;
+    const optBtn = this.add
+      .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
+      .setInteractive({ useHandCursor: true });
+    const optTxt = this.add
+      .text(bx, optY, 'OPTIONS', {
+        fontFamily: 'monospace',
+        fontSize: '17px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    optBtn.on('pointerover', () => optBtn.setFillStyle(0x3d4e72));
+    optBtn.on('pointerout', () => optBtn.setFillStyle(0x2d3e62));
+    optBtn.on('pointerdown', () => {
+      this.scene.start('Settings');
+    });
+    optTxt.setInteractive({ useHandCursor: true });
+    optTxt.on('pointerdown', () => {
+      this.scene.start('Settings');
+    });
   }
 }

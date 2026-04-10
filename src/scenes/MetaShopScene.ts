@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
+import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
@@ -93,16 +94,22 @@ export class MetaShopScene extends Phaser.Scene {
       const item = META_SHOP_ITEMS[key];
       const y = 124 + index * 72;
       const owned = save.unlockedUpgrades.includes(key);
-      const canAfford = !owned && save.totalKills >= item.cost;
+      const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
+      const achievementMet = !req || save.unlockedAchievements.includes(req);
+      const locked = !achievementMet && !owned;
+      const canAfford = !owned && achievementMet && save.totalKills >= item.cost;
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1b2337 : 0x172031, 0.82);
       const nameText = this.add.text(34, y + 6, item.name, {
         fontFamily: 'monospace',
         fontSize: '16px',
-        color: owned ? '#73c37d' : '#ffffff',
+        color: owned ? '#73c37d' : locked ? '#8a7a98' : '#ffffff',
         fontStyle: 'bold',
       });
-      const descText = this.add.text(34, y + 28, item.description, {
+      const descExtra = req && !achievementMet
+        ? `\nRequires: ${ACHIEVEMENT_DEFS[req]?.title ?? req}`
+        : '';
+      const descText = this.add.text(34, y + 28, item.description + descExtra, {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#9ea7b9',
@@ -118,6 +125,17 @@ export class MetaShopScene extends Phaser.Scene {
           fontStyle: 'bold',
         }).setOrigin(0.5);
         this.rowElements.push(maxLabel);
+        return;
+      }
+
+      if (locked) {
+        const lockLabel = this.add.text(width - 80, y + 28, 'LOCKED', {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: '#7a6a88',
+          fontStyle: 'bold',
+        }).setOrigin(0.5);
+        this.rowElements.push(lockLabel);
         return;
       }
 

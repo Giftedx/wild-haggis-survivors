@@ -25,6 +25,10 @@ import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager, type IRunState } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
+import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
+import { getSettingsManager } from '../core/SettingsManager';
+import { globalEventBus } from '../core/GlobalEventBus';
+import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
 
 /**
@@ -100,8 +104,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lavaZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private readonly metaSaveManager = new SaveManager();
+  private readonly settingsManager = getSettingsManager();
   private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
+  private lastEmittedRunSecond = -1;
+  private achievementUnsub: (() => void) | null = null;
 
   constructor() {
     super({ key: 'Game' });
@@ -139,6 +146,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hintHideHandle = null;
     this.lavaZones = [];
     this.healZones = [];
+    this.lastEmittedRunSecond = -1;
 
     // Destroy lazy-init visual overlays from prior run (they're stored in fields
     // that only init once at construction)
@@ -323,7 +331,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // HUD + Juice
     this.hud = new HUD(this);
-    this.juice = new JuiceSystem(this, this.timeManager, this.updateTickers);
+    this.juice = new JuiceSystem(this, this.timeManager, this.updateTickers, this.settingsManager);
+    this.achievementUnsub?.();
+    this.achievementUnsub = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
+      this.juice.showToast(`★ ${p.title}`, '#ffdd88');
+    });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.toggleUiPause());
@@ -337,9 +349,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.registerDebugTimeTravelApi();
     this.registerMidRunPersistenceHooks();
 
-    // Apply saved audio settings and start background music
-    audio.setEnabled(save.settings.soundOn);
-    if (save.settings.musicOn) {
+    const prefs = this.settingsManager.load();
+    applyAudioFromUserSettings(prefs);
+    if (prefs.musicVolume > 0.001) {
       musicEngine.start();
     }
 
@@ -366,6 +378,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
+      this.achievementUnsub?.();
+      this.achievementUnsub = null;
       this.unregisterMidRunPersistenceHooks();
       this.unregisterDebugTimeTravelApi();
       try { this.subs.dispose(); } catch { /* ignore */ }
@@ -481,6 +495,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.player.update(delta);
     this.player.tickRegen(delta);
     this.spawnSystem.update(delta, this.player.x, this.player.y);
+
+    const runSec = Math.floor(this.spawnSystem.getGameTimeSec());
+    if (runSec !== this.lastEmittedRunSecond) {
+      this.lastEmittedRunSecond = runSec;
+      globalEventBus.emit('GLOBAL_RUN_TIME_SEC', {
+        gameTimeSec: this.spawnSystem.getGameTimeSec(),
+        wholeSecond: runSec,
+      });
+    }
 
     // Pass player facing and upgrade multipliers to weapon system
     const body = this.player.body as Phaser.Physics.Arcade.Body;
@@ -1023,7 +1046,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         sfxOn = !sfxOn;
         sfxText.setText(`SFX: ${sfxOn ? 'ON' : 'OFF'}`);
         sfxText.setColor(sfxOn ? '#88cc88' : '#886666');
-        audio.setEnabled(sfxOn);
+        this.settingsManager.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
+        applyAudioFromUserSettings(this.settingsManager.load());
         const s = loadSave(); s.settings.soundOn = sfxOn; writeSave(s);
       });
       this.pauseElements.push(sfxText);
@@ -1038,7 +1062,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         musicOn = !musicOn;
         musicText.setText(`Music: ${musicOn ? 'ON' : 'OFF'}`);
         musicText.setColor(musicOn ? '#88cc88' : '#886666');
-        musicEngine.setEnabled(musicOn);
+        this.settingsManager.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
+        applyAudioFromUserSettings(this.settingsManager.load());
+        if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
         const s = loadSave(); s.settings.musicOn = musicOn; writeSave(s);
       });
       this.pauseElements.push(musicText);
@@ -1123,7 +1149,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Scale shake intensity with damage proportion
     const dmgFrac = incomingDmg / this.player.getMaxHp();
     const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
-    this.cameras.main.shake(100 + dmgFrac * 200, shakeIntensity);
+    tryCameraShake(this.cameras.main, 100 + dmgFrac * 200, shakeIntensity, this.settingsManager);
     audio.playPlayerHit();
     this.juice.flashRed();
 
@@ -1146,7 +1172,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.heal(Math.ceil(this.player.getMaxHp() * 0.5));
       this.juice.showToast('SECOND WIND!', '#44ddff');
       this.juice.flashWhite(300);
-      this.cameras.main.shake(300, 0.015);
+      tryCameraShake(this.cameras.main, 300, 0.015, this.settingsManager);
       this.player.setAlpha(0.5);
       this.armIFrames(2000);
     } else {
@@ -1175,7 +1201,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     audio.playDeath();
     musicEngine.fadeOut(2000);
     this.juice.flashRed(400);
-    this.cameras.main.shake(500, 0.02);
+    tryCameraShake(this.cameras.main, 500, 0.02, this.settingsManager);
 
     // Death particle burst — the haggis explodes
     const px = this.player.x;

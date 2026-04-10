@@ -18,6 +18,8 @@ class ProceduralMusicEngine {
   private ctx: AudioContext | null = null;
   private playing = false;
   private enabled = true;
+  /** 0–1 user preference multiplier (SettingsManager.musicVolume × masterVolume). */
+  private userMusicVolume = 1;
 
   private masterGain: GainNode | null = null;
   private masterFilter: BiquadFilterNode | null = null;
@@ -58,7 +60,7 @@ class ProceduralMusicEngine {
     this.masterFilter.Q.value = 0.5;
 
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = this.enabled ? 0.25 : 0;
+    this.masterGain.gain.value = this.enabled ? 0.25 * this.userMusicVolume : 0;
 
     const output = getOutputNode();
     this.masterFilter.connect(this.masterGain);
@@ -142,7 +144,7 @@ class ProceduralMusicEngine {
     }
 
     if (this.masterGain && this.enabled) {
-      const vol = 0.20 + mood.intensity * 0.10;
+      const vol = (0.20 + mood.intensity * 0.10) * this.userMusicVolume;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
 
@@ -170,9 +172,21 @@ class ProceduralMusicEngine {
     this.enabled = on;
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.linearRampToValueAtTime(
-        on ? 0.25 : 0,
+        on ? 0.25 * this.userMusicVolume : 0,
         this.ctx.currentTime + 0.3
       );
+    }
+  }
+
+  /** Air-gapped prefs — scales dynamic music level. */
+  applyUserVolume(masterVolume: number, musicVolume: number): void {
+    this.userMusicVolume = Math.max(0, Math.min(1, masterVolume)) * Math.max(0, Math.min(1, musicVolume));
+    if (this.masterGain && this.ctx) {
+      const t = this.ctx.currentTime;
+      const target = this.enabled ? 0.25 * this.userMusicVolume : 0;
+      this.masterGain.gain.cancelScheduledValues(t);
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
+      this.masterGain.gain.linearRampToValueAtTime(target, t + 0.15);
     }
   }
 

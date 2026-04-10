@@ -4,11 +4,12 @@ import { tryPurchaseMetaUpgrade } from './MetaPurchase';
 import { StatComposer } from './StatComposer';
 
 const baseSave = (): ISaveData => ({
-  saveVersion: 3,
+  saveVersion: 4,
   totalKills: 100,
   unlockedWeapons: [],
   unlockedUpgrades: [],
   activeRun: null,
+  unlockedAchievements: [],
 });
 
 describe('tryPurchaseMetaUpgrade', () => {
@@ -56,5 +57,26 @@ describe('tryPurchaseMetaUpgrade', () => {
     const r = tryPurchaseMetaUpgrade(save, StatComposer.UPGRADE_HEALTH_TIER_1);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('ALREADY_OWNED');
+  });
+
+  it('rejects gated item without achievement', () => {
+    const r = tryPurchaseMetaUpgrade(
+      { ...baseSave(), totalKills: 200 },
+      StatComposer.UPGRADE_PICKUP_TIER_1
+    );
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe('LOCKED_ACHIEVEMENT');
+  });
+
+  it('allows gated item when achievement is present', () => {
+    const r = tryPurchaseMetaUpgrade(
+      {
+        ...baseSave(),
+        totalKills: 200,
+        unlockedAchievements: ['ach_survive_10m'],
+      },
+      StatComposer.UPGRADE_PICKUP_TIER_1
+    );
+    expect(r.ok).toBe(true);
   });
 });
