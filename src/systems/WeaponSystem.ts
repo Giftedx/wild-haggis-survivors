@@ -543,7 +543,11 @@ export class WeaponSystem {
     proj.onDeactivateCallback = () => {
       const ex = proj.x, ey = proj.y;
 
-      if (!this.scene?.sys?.isActive()) return; // Guard against scene shutdown
+      // Guard against both scene shutdown AND this WeaponSystem being replaced
+      // by a fresh instance after Play Again (scene stays active on restart,
+      // but `this` is the old instance — destroyed = true means we shouldn't
+      // create new visuals/damage on the live scene).
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
 
       const blast = this.scene.add.circle(ex, ey, 10, 0xff6600, 0.6);
       this.scene.tweens.add({

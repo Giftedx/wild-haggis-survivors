@@ -53,6 +53,11 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.isBouncing = false;
     this.bouncingHitEnemies.clear();
     this.onDeactivateCallback = null; // Clear any prior override
+    // Clear weapon key — non-projectile fire paths (bouncing, homing,
+    // exploding, rapid bounce) don't set it, so a stale 'caber_toss' key
+    // from a previous run of this pool slot would incorrectly trigger
+    // burn application in onProjectileHitEnemy.
+    this.weaponKey = '';
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
