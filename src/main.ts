@@ -5,6 +5,7 @@ import { MainMenuScene } from './scenes/MainMenuScene';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
+import { MetaShopScene } from './scenes/MetaShopScene';
 import { ShopScene } from './scenes/ShopScene';
 
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */
@@ -25,7 +26,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: GAME.PHYSICS_DEBUG,
     },
   },
-  scene: [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene],
+  scene: [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene],
   render: {
     pixelArt: true,
     antialias: false,

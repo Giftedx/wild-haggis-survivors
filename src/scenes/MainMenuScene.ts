@@ -28,7 +28,7 @@ export class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 154, `Lifetime kills (meta): ${meta.totalKills}`, {
+      .text(width / 2, 154, `Kill credits: ${meta.totalKills}`, {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#95a5c3',
@@ -43,16 +43,17 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    const btnW = 220;
+    const btnW = 240;
     const btnH = 48;
     const bx = width / 2;
-    const by = height / 2 + 40;
+    const startY = height / 2 + 12;
+    const metaY = startY + btnH + 14;
 
     const startBtn = this.add
-      .rectangle(bx, by, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
+      .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
       .setInteractive({ useHandCursor: true });
     const startTxt = this.add
-      .text(bx, by, 'START RUN', {
+      .text(bx, startY, 'START RUN', {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
@@ -69,6 +70,27 @@ export class MainMenuScene extends Phaser.Scene {
     startTxt.setInteractive({ useHandCursor: true });
     startTxt.on('pointerdown', () => {
       this.scene.start('Menu');
+    });
+
+    const metaBtn = this.add
+      .rectangle(bx, metaY, btnW, btnH, 0x2d6a3e, 1)
+      .setInteractive({ useHandCursor: true });
+    const metaTxt = this.add
+      .text(bx, metaY, 'META UPGRADES', {
+        fontFamily: 'monospace',
+        fontSize: '18px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    metaBtn.on('pointerover', () => metaBtn.setFillStyle(0x3a8f4f));
+    metaBtn.on('pointerout', () => metaBtn.setFillStyle(0x2d6a3e));
+    metaBtn.on('pointerdown', () => {
+      this.scene.start('MetaShop');
+    });
+    metaTxt.setInteractive({ useHandCursor: true });
+    metaTxt.on('pointerdown', () => {
+      this.scene.start('MetaShop');
     });
   }
 }
