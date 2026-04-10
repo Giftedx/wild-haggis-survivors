@@ -800,6 +800,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       case 'highland_shield':
         this.player.enableShield();
         break;
+      case 'tartan_sash':
+        this.player.addDamageMultiplier(0.08);
+        break;
     }
   }
 
@@ -1100,6 +1103,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           kilt: 'Kilt (+15% Max HP)', tam_o_shanter: "Tam o' Shanter (+10% Speed)",
           irn_bru: 'Irn Bru (+20% Atk Spd)', loch_water: 'Loch Water (+25% Pickup)',
           thistle_crown: 'Thistle Crown (Crit+Thorns)', highland_shield: 'Highland Shield (Death Save)',
+          tartan_sash: 'Tartan Sash (+8% Dmg, Claymore Evo)',
         };
         const names = this.ownedPassives.map(k => PASSIVE_NAMES[k] ?? k);
         let passiveList: string;

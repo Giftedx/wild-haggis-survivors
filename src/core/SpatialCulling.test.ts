@@ -34,4 +34,11 @@ describe('spatial culling (camera margin)', () => {
       isEnemySpatialPhysicsCulled(2500, 300, VIEW_800_600, m, false, 'hazard')
     ).toBe(false);
   });
+
+  it('never culls midgie-style swarms flagged spatialCullImmune', () => {
+    const m = BALANCE.spatial.cullMarginPx;
+    expect(
+      isEnemySpatialPhysicsCulled(2500, 300, VIEW_800_600, m, false, 'swarm', true)
+    ).toBe(false);
+  });
 });

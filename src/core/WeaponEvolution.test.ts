@@ -57,4 +57,16 @@ describe('weapon evolution (chest-gated)', () => {
     );
     expect(low).toBeNull();
   });
+
+  it('offers william_blade when claymore is maxed with tartan_sash', () => {
+    const r = findEligibleChestEvolution(
+      ['claymore'],
+      ['tartan_sash'],
+      { claymore: 5 },
+      []
+    );
+    expect(r).not.toBeNull();
+    expect(r!.evolvedWeapon).toBe('william_blade');
+    expect(r!.requiredPassive).toBe('tartan_sash');
+  });
 });

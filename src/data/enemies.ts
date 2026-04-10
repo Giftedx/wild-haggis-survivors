@@ -10,7 +10,18 @@
  *  - 'hazard':  Static, invincible, damages on contact
  */
 
-export type EnemyBehavior = 'chase' | 'swarm' | 'tank' | 'dive' | 'ranged' | 'hazard' | 'orbit' | 'flee' | 'spawner' | 'phase';
+export type EnemyBehavior =
+  | 'chase'
+  | 'swarm'
+  | 'tank'
+  | 'dive'
+  | 'ranged'
+  | 'hazard'
+  | 'orbit'
+  | 'flee'
+  | 'spawner'
+  | 'phase'
+  | 'flank';
 
 export interface EnemyConfig {
   key: string;
@@ -24,6 +35,8 @@ export interface EnemyConfig {
   behavior: EnemyBehavior;
   /** How many spawn per burst (swarmers spawn more) */
   packSize: number;
+  /** When true, never spatial-cull physics/AI (dense off-screen swarms). */
+  spatialCullImmune?: boolean;
 }
 
 export const ENEMY_TYPES: Record<string, EnemyConfig> = {
@@ -169,6 +182,29 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     appearsAt: 240,    // 4:00
     behavior: 'flee',
     packSize: 4,
+  },
+  kelpie: {
+    key: 'kelpie',
+    texture: 'kelpie',
+    speed: 155,
+    hp: 8,
+    damage: 7,
+    xpValue: 2,
+    appearsAt: 300,    // 5:00 — water-horse skirmisher
+    behavior: 'flank',
+    packSize: 1,
+  },
+  midgie_swarm: {
+    key: 'midgie_swarm',
+    texture: 'midgie_swarm',
+    speed: 95,
+    hp: 1,
+    damage: 1,
+    xpValue: 1,
+    appearsAt: 450,    // 7:30 — biting cloud (always simulated off-camera)
+    behavior: 'swarm',
+    packSize: 16,
+    spatialCullImmune: true,
   },
 };
 

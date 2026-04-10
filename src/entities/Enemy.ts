@@ -20,6 +20,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private xpValue: number = 0;
   private enemyKey: string = '';
   private behavior: EnemyBehavior = 'chase';
+  /** Dense swarms that must keep simulating when off-screen. */
+  private spatialCullImmune: boolean = false;
   private bossFlag: boolean = false;
   private eliteFlag: boolean = false;
 
@@ -171,6 +173,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const r = config.texture.startsWith('boss') ? 32
       : config.key === 'highland_cow' ? 26
       : config.key === 'terrier' ? 12
+      : config.key === 'midgie_swarm' ? 10
+      : config.key === 'kelpie' ? 14
       : config.key === 'sheep' ? 13
       : config.key === 'eagle' ? 16
       : config.key === 'deep_fryer' ? 20
@@ -180,6 +184,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.setCircle(r, this.width / 2 - r, this.height / 2 - r);
 
     this.enemyKey = config.key;
+    this.spatialCullImmune = Boolean(config.spatialCullImmune);
     this.speed = config.speed;
     this.baseSpeed = config.speed;
     this.damage = config.damage;
@@ -330,7 +335,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       wv,
       BALANCE.spatial.cullMarginPx,
       this.bossFlag,
-      this.behavior
+      this.behavior,
+      this.spatialCullImmune
     );
 
     // Update HP bar position
@@ -413,6 +419,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'swarm':
         this.behaviorChase(targetX, targetY);
         break;
+      case 'flank':
+        this.behaviorFlank(targetX, targetY);
+        break;
       case 'tank':
         this.behaviorTank(targetX, targetY);
         break;
@@ -443,6 +452,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private behaviorChase(tx: number, ty: number): void {
     const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
     this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+  }
+
+  /** Blend chase with perpendicular strafe so the enemy tries to circle the player. */
+  private behaviorFlank(tx: number, ty: number): void {
+    const toP = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const perp = toP + Math.PI / 2;
+    const blend = 0.42;
+    let vx = Math.cos(toP) * (1 - blend) + Math.cos(perp) * blend;
+    let vy = Math.sin(toP) * (1 - blend) + Math.sin(perp) * blend;
+    const len = Math.hypot(vx, vy) || 1;
+    vx /= len;
+    vy /= len;
+    this.setVelocity(vx * this.speed, vy * this.speed);
   }
 
   private behaviorTank(tx: number, ty: number): void {

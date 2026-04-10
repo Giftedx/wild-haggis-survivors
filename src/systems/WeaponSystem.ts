@@ -261,6 +261,9 @@ export class WeaponSystem {
       case 'arc_sweep':
         this.fireArcSweep(w, px, py);
         break;
+      case 'aura_pulse':
+        this.fireAuraPulse(w, px, py);
+        break;
     }
   }
 
@@ -482,6 +485,9 @@ export class WeaponSystem {
       case 'nessie_unleashed':
         this.fireFullSweep(px, py, dmg, radius * 2, w.config.key);
         break;
+      case 'william_blade':
+        this.fireWilliamBladeWaves(w, px, py, dmg);
+        break;
       default:
         this.fireProjectile(w, px, py, 'thistle');
         break;
@@ -517,6 +523,45 @@ export class WeaponSystem {
 
       proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800);
       proj.setWeaponKey(w.config.key);
+    }
+  }
+
+  /** Ceòl Mòr bagpipes — pulse damage + slow in a standing ring. */
+  private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+    const ring = this.scene.add.circle(px, py, radius, 0x339955, 0.38);
+    this.scene.tweens.add({
+      targets: ring,
+      alpha: 0.1,
+      duration: 280,
+      yoyo: true,
+      onComplete: () => {
+        if (ring.active) ring.destroy();
+      },
+    });
+
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
+      if (dist <= radius) {
+        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+        enemy.applyFreeze(0.42, 1400);
+      }
+    }
+  }
+
+  /** William Blade — chained sonic shockwaves from the claymore stance. */
+  private fireWilliamBladeWaves(w: ActiveWeapon, px: number, py: number, baseDmg: number): void {
+    const maxR = this.effectiveAoe(w) * 2.9;
+    const waveDmg = Math.ceil(baseDmg * 0.52);
+    const weaponKey = w.config.key;
+    for (let wave = 0; wave < 4; wave++) {
+      this.scene.getUpdateTickers().addOnce('scaled', wave * 170, () => {
+        if (this.destroyed || !this.scene?.sys?.isActive()) return;
+        this.fireExpandingRing(px, py, waveDmg, maxR, weaponKey);
+      });
     }
   }
 

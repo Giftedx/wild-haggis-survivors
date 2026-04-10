@@ -118,6 +118,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Nessie Unleashed',
       description: 'Multiple massive tentacles sweep the entire screen.',
     },
+    william_blade: {
+      name: 'William Blade',
+      description: 'Legendary claymore shockwaves tear across the moor in rapid succession.',
+    },
   },
   achievement: {
     ach_kills_1000: {

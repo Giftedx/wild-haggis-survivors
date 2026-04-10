@@ -12,7 +12,9 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 90, add: 'chef' },
     { t: 180, add: 'terrier' },
     { t: 240, add: 'sheep' },
+    { t: 300, add: 'kelpie' },
     { t: 420, add: 'eagle' },
+    { t: 450, add: 'midgie_swarm' },
     { t: 480, add: 'piper' },
     { t: 540, add: 'ghost' },
     { t: 600, add: 'haggis_hunter' },
@@ -148,6 +150,13 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     evolvedWeapon: 'nessie_unleashed',
     nameKey: 'evolution.nessie_unleashed.name',
     descriptionKey: 'evolution.nessie_unleashed.description',
+  },
+  {
+    baseWeapon: 'claymore',
+    requiredPassive: 'tartan_sash',
+    evolvedWeapon: 'william_blade',
+    nameKey: 'evolution.william_blade.name',
+    descriptionKey: 'evolution.william_blade.description',
   },
 ];
 
