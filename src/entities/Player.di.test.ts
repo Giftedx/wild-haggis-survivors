@@ -19,7 +19,6 @@ describe('Player strict dependency injection', () => {
     const { Player } = await import('./Player');
     expect(() => {
       // Force an invalid call-site to simulate a developer mistake.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       new (Player as any)({} as any, 0, 0, 'haggis_classic', undefined);
     }).toThrow(/TimeManager/i);
   });

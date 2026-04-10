@@ -23,6 +23,9 @@ jobs:
       - name: Time authority guard
         run: npm run guard:time
 
+      - name: Lint
+        run: npm run lint
+
       - name: Test
         run: npm test
 

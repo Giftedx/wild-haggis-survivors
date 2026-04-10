@@ -35,8 +35,6 @@ export class EdgeIndicators {
     const cam = this.scene.cameras.main;
     const viewW = cam.width / cam.zoom;
     const viewH = cam.height / cam.zoom;
-    const halfW = viewW / 2;
-    const halfH = viewH / 2;
     const screenW = cam.width;
     const screenH = cam.height;
 
