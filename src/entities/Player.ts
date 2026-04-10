@@ -16,6 +16,7 @@ import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private inputManager: InputManager;
   private time: TimeManager;
+  private onSpaceDown?: () => void;
 
   // Base stats (from level scaling only)
   private baseMoveSpeed: number = PLAYER.SPEED;
@@ -109,9 +110,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Dash on spacebar
     if (scene.input.keyboard) {
-      scene.input.keyboard.on('keydown-SPACE', () => {
-        this.tryDash();
-      });
+      this.onSpaceDown = () => this.tryDash();
+      scene.input.keyboard.on('keydown-SPACE', this.onSpaceDown);
     }
   }
 
@@ -456,5 +456,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.netSlowStacks === 0) {
       this.addSpeed(this.NET_SLOW_AMOUNT);
     }
+  }
+
+  destroy(fromScene?: boolean): void {
+    for (const h of this.dashTrailHandles) h.cancel();
+    this.dashTrailHandles = [];
+
+    // Unbind keyboard listener
+    if (this.onSpaceDown && this.scene?.input?.keyboard) {
+      this.scene.input.keyboard.off('keydown-SPACE', this.onSpaceDown);
+    }
+    this.onSpaceDown = undefined;
+
+    // InputManager owns touch pointer listeners (must be explicitly torn down)
+    this.inputManager.destroy();
+
+    this.shadow?.destroy();
+    this.shadow = null;
+
+    super.destroy(fromScene);
   }
 }

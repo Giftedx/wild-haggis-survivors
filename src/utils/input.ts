@@ -21,6 +21,9 @@ export class InputManager {
   private joystickThumb: Phaser.GameObjects.Arc | null = null;
 
   private isTouchDevice: boolean;
+  private onPointerDown?: (pointer: Phaser.Input.Pointer) => void;
+  private onPointerMove?: (pointer: Phaser.Input.Pointer) => void;
+  private onPointerUp?: (pointer: Phaser.Input.Pointer) => void;
 
   constructor(private scene: Phaser.Scene) {
     this.isTouchDevice = scene.sys.game.device.input.touch;
@@ -92,20 +95,23 @@ export class InputManager {
   private setupTouchJoystick(): void {
     const scene = this.scene;
 
-    // Create joystick visuals (hidden until touch)
-    this.joystickBase = scene.add
-      .circle(0, 0, this.JOYSTICK_MAX_DIST, 0xffffff, 0.15)
-      .setScrollFactor(0)
-      .setDepth(1000)
-      .setVisible(false);
+    const ensureVisuals = () => {
+      if (this.joystickBase && this.joystickThumb) return;
+      // Create joystick visuals (hidden until touch)
+      this.joystickBase = scene.add
+        .circle(0, 0, this.JOYSTICK_MAX_DIST, 0xffffff, 0.15)
+        .setScrollFactor(0)
+        .setDepth(1000)
+        .setVisible(false);
 
-    this.joystickThumb = scene.add
-      .circle(0, 0, 20, 0xffffff, 0.4)
-      .setScrollFactor(0)
-      .setDepth(1001)
-      .setVisible(false);
+      this.joystickThumb = scene.add
+        .circle(0, 0, 20, 0xffffff, 0.4)
+        .setScrollFactor(0)
+        .setDepth(1001)
+        .setVisible(false);
+    };
 
-    scene.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+    this.onPointerDown = (pointer: Phaser.Input.Pointer) => {
       // Don't activate joystick if the pointer hit an interactive game object
       // (e.g., upgrade cards, pause buttons) — those should consume the tap
       const hitObjects = scene.input.hitTestPointer(pointer);
@@ -113,6 +119,7 @@ export class InputManager {
 
       // Only use left half of screen for joystick, and only if no joystick active
       if (!this.joystickActive && pointer.x < scene.scale.width * 0.6) {
+        ensureVisuals();
         this.joystickActive = true;
         this.joystickPointerId = pointer.id;
         this.joystickOrigin.x = pointer.x;
@@ -125,9 +132,9 @@ export class InputManager {
           this.joystickThumb.setPosition(pointer.x, pointer.y).setVisible(true);
         }
       }
-    });
+    };
 
-    scene.input.on('pointermove', (pointer: Phaser.Input.Pointer) => {
+    this.onPointerMove = (pointer: Phaser.Input.Pointer) => {
       if (this.joystickActive && pointer.id === this.joystickPointerId && pointer.isDown) {
         this.joystickCurrent.x = pointer.x;
         this.joystickCurrent.y = pointer.y;
@@ -148,14 +155,37 @@ export class InputManager {
           }
         }
       }
-    });
+    };
 
-    scene.input.on('pointerup', (pointer: Phaser.Input.Pointer) => {
+    this.onPointerUp = (pointer: Phaser.Input.Pointer) => {
       if (pointer.id !== this.joystickPointerId) return;
       this.joystickActive = false;
       this.joystickPointerId = -1;
       if (this.joystickBase) this.joystickBase.setVisible(false);
       if (this.joystickThumb) this.joystickThumb.setVisible(false);
-    });
+    };
+
+    scene.input.on('pointerdown', this.onPointerDown);
+    scene.input.on('pointermove', this.onPointerMove);
+    scene.input.on('pointerup', this.onPointerUp);
+  }
+
+  destroy(): void {
+    // Unbind pointer listeners (critical for scene restart GC)
+    if (this.isTouchDevice) {
+      if (this.onPointerDown) this.scene.input.off('pointerdown', this.onPointerDown);
+      if (this.onPointerMove) this.scene.input.off('pointermove', this.onPointerMove);
+      if (this.onPointerUp) this.scene.input.off('pointerup', this.onPointerUp);
+    }
+    this.onPointerDown = undefined;
+    this.onPointerMove = undefined;
+    this.onPointerUp = undefined;
+
+    this.joystickBase?.destroy();
+    this.joystickThumb?.destroy();
+    this.joystickBase = null;
+    this.joystickThumb = null;
+    this.joystickActive = false;
+    this.joystickPointerId = -1;
   }
 }
