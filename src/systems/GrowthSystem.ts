@@ -10,17 +10,25 @@ import { Player } from '../entities/Player';
 export class GrowthSystem {
   private scene: Phaser.Scene;
   private player: Player;
-  private targetZoom: number = 1;
+  private targetZoom: number;
+  private readonly baseZoom: number;
 
   constructor(scene: Phaser.Scene, player: Player) {
     this.scene = scene;
     this.player = player;
+    // Preserve the scene's configured zoom (GameScene sets this to 1.2).
+    // Camera zoom affects all rendered objects, including scrollFactor(0) UI,
+    // so we keep zoom stable to guarantee HUD text stays pixel-consistent.
+    this.baseZoom = scene.cameras.main.zoom;
+    this.targetZoom = this.baseZoom;
   }
 
   /** Call when the player levels up to update camera zoom target */
   onLevelUp(newLevel: number): void {
-    // Zoom out as level increases: 1.0 at level 1, ~0.75 at level 30
-    this.targetZoom = Math.max(0.75, 1.0 - (newLevel - 1) * 0.008);
+    // IMPORTANT: UI is rendered in the same camera. Dynamic zoom would
+    // shrink UI text/frames. Keep zoom stable for now.
+    void newLevel;
+    this.targetZoom = this.baseZoom;
   }
 
   /** Smoothly interpolate camera zoom each frame */

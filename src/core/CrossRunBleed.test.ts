@@ -55,6 +55,7 @@ vi.mock('../entities/XPGem', () => {
 });
 
 vi.mock('../entities/Enemy', () => {
+  const MAX = 400;
   class Enemy {
     active = false;
     visible = false;
@@ -68,13 +69,21 @@ vi.mock('../entities/Enemy', () => {
     setBaseDisplayScale() {}
     setBaseTint() {}
     destroy() { this.active = false; this.visible = false; }
+    static acquireFromPool(pool: any, _scene: any) {
+      const e = pool.getFirstDead(false);
+      if (e) return e;
+      if (pool.countActive(true) >= MAX) return null;
+      const n = new Enemy();
+      pool.add(n);
+      return n;
+    }
   }
   return { Enemy };
 });
 
-import { TimeManager } from './TimeManager';
-import { XPSystem } from './XPSystem';
-import { SpawnSystem } from './SpawnSystem';
+import { TimeManager } from '../systems/TimeManager';
+import { XPSystem } from '../systems/XPSystem';
+import { SpawnSystem } from '../systems/SpawnSystem';
 
 async function makeFakeScene(tm: TimeManager) {
   // Avoid relying on Phaser's Group constructor signature (typings expect args).

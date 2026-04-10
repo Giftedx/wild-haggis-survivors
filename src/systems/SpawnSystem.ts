@@ -18,6 +18,8 @@ export class SpawnSystem {
 
   /** Track which bosses have already spawned */
   private spawnedBossKeys: Set<string> = new Set();
+  /** Boss intro scheduled (warning + timer) — avoids duplicate banners; key moves to spawnedBossKeys only after the entity spawns. */
+  private bossSpawnScheduled: Set<string> = new Set();
   /** Cached boss-active flag — avoids iterating 400 enemies per frame */
   private bossActive: boolean = false;
   /** Set when a boss is ready to spawn but physics is paused (level-up / manual pause).
@@ -49,6 +51,7 @@ export class SpawnSystem {
     this.spawnInterval = 1.5;
     this.burstSize = 2;
     this.spawnedBossKeys.clear();
+    this.bossSpawnScheduled.clear();
     this.bossActive = false;
     this.pendingBossSpawn = null;
     this.bossCheckFrame = -1;
@@ -106,10 +109,10 @@ export class SpawnSystem {
   private checkBossSpawns(playerX: number, playerY: number): void {
     for (const boss of BOSSES) {
       if (this.spawnedBossKeys.has(boss.key)) continue;
-      if (this.gameTimeSec >= boss.spawnTimeSec) {
-        this.spawnedBossKeys.add(boss.key);
-        this.spawnBoss(boss, playerX, playerY);
-      }
+      if (this.gameTimeSec < boss.spawnTimeSec) continue;
+      if (this.bossSpawnScheduled.has(boss.key)) continue;
+      this.bossSpawnScheduled.add(boss.key);
+      this.spawnBoss(boss, playerX, playerY);
     }
   }
 
@@ -126,11 +129,11 @@ export class SpawnSystem {
       const camera = this.scene.cameras.main;
       const pos = this.getSpawnPosition(camera, currentX, currentY);
 
-      let enemy = this.pool.getFirstDead(false) as Enemy | null;
+      const enemy = Enemy.acquireFromPool(this.pool, this.scene);
       if (!enemy) {
-        if (this.pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return;
-        enemy = new Enemy(this.scene, 0, 0);
-        this.pool.add(enemy);
+        // Pool saturated — retry next unpaused tick (do not consume spawnedBossKeys).
+        this.pendingBossSpawn = doSpawn;
+        return;
       }
 
       // Bosses use the chase EnemyConfig shape
@@ -155,6 +158,7 @@ export class SpawnSystem {
       enemy.setBaseTint(0xff4444);
       enemy.markAsBoss();
       this.bossActive = true;
+      this.spawnedBossKeys.add(boss.key);
 
       // Dramatic entrance — camera zoom pulse + shake
       const cam = this.scene.cameras.main;
@@ -238,12 +242,8 @@ export class SpawnSystem {
 
       const count = config.packSize || 1;
       for (let j = 0; j < count; j++) {
-        let enemy = this.pool.getFirstDead(false) as Enemy | null;
-        if (!enemy) {
-          if (this.pool.countActive(true) >= ENEMIES.MAX_ACTIVE) continue;
-          enemy = new Enemy(this.scene, 0, 0);
-          this.pool.add(enemy);
-        }
+        const enemy = Enemy.acquireFromPool(this.pool, this.scene);
+        if (!enemy) continue;
         const scatter = j > 0 ? Phaser.Math.Between(-30, 30) : 0;
         enemy.spawn(pos.x + scatter, pos.y + scatter, config, this.gameTimeSec);
 
@@ -268,8 +268,9 @@ export class SpawnSystem {
     playerY: number
   ): { x: number; y: number } {
     const buffer = ENEMIES.SPAWN_BUFFER;
-    const halfW = camera.width / (2 * camera.zoom);
-    const halfH = camera.height / (2 * camera.zoom);
+    const z = Math.max(0.001, camera.zoom);
+    const halfW = camera.width / (2 * z);
+    const halfH = camera.height / (2 * z);
 
     const left = playerX - halfW - buffer;
     const right = playerX + halfW + buffer;
