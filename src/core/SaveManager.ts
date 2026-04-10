@@ -10,14 +10,22 @@ export interface ISaveDataV1 {
   unlockedWeapons: string[];
 }
 
-export type ISaveData = ISaveDataV1;
+export interface ISaveDataV2 {
+  saveVersion: 2;
+  totalKills: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+}
 
-export const CURRENT_SAVE_VERSION = 1 as const;
+export type ISaveData = ISaveDataV2;
+
+export const CURRENT_SAVE_VERSION = 2 as const;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
   totalKills: 0,
   unlockedWeapons: [],
+  unlockedUpgrades: [],
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -73,25 +81,38 @@ export class SaveManager {
     const obj = (typeof input === 'object' && input !== null) ? (input as Record<string, unknown>) : {};
     const v = clampInt(obj.saveVersion, CURRENT_SAVE_VERSION);
 
-    // Future-proofing: accept older versions and upgrade.
     if (v <= 0) {
       return { ...DEFAULT_SAVE };
     }
 
-    // v1 is current.
+    const totalKills = clampInt(obj.totalKills, 0);
+    const unlockedWeapons = toStringArray(obj.unlockedWeapons);
+    const unlockedUpgrades = toStringArray(obj.unlockedUpgrades);
+
     if (v === 1) {
       return {
-        saveVersion: 1,
-        totalKills: clampInt(obj.totalKills, 0),
-        unlockedWeapons: toStringArray(obj.unlockedWeapons),
+        saveVersion: 2,
+        totalKills,
+        unlockedWeapons,
+        unlockedUpgrades: [],
       };
     }
 
-    // Unknown newer version: keep safe subset and downgrade to current.
+    if (v === 2) {
+      return {
+        saveVersion: 2,
+        totalKills,
+        unlockedWeapons,
+        unlockedUpgrades,
+      };
+    }
+
+    // Unknown newer version: keep safe subset and normalize to current.
     return {
       saveVersion: CURRENT_SAVE_VERSION,
-      totalKills: clampInt(obj.totalKills, 0),
-      unlockedWeapons: toStringArray(obj.unlockedWeapons),
+      totalKills,
+      unlockedWeapons,
+      unlockedUpgrades,
     };
   }
 }
@@ -108,4 +129,3 @@ function defaultStorage(): StorageLike {
     removeItem: (k) => { mem.delete(k); },
   };
 }
-

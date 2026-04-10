@@ -6,6 +6,7 @@ import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { BALANCE } from '../core/BalanceConfig';
+import type { ComposedPlayerStats } from '../core/StatComposer';
 
 /**
  * Player — the wild haggis.
@@ -21,6 +22,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private subs = new SubscriptionBag();
   /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
   private readonly driftScratch = { x: 0, y: 0 };
+
+  /** Run baseline before variant / shop modifiers (from StatComposer + level scaling). */
+  private readonly runBaseSpeed: number;
+  private readonly runBaseMaxHp: number;
+  private readonly runBaseDrift: number;
+  private readonly runBasePickup: number;
 
   // Base stats (from level scaling only)
   private baseMoveSpeed: number = PLAYER.SPEED;
@@ -77,18 +84,38 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly NET_SLOW_AMOUNT = BALANCE.player.netSlowAmount;
   private netSlowTimersMs: number[] = [];
   private currentLevel: number = 1;
-  private hp: number = PLAYER.MAX_HP;
-  private maxHp: number = PLAYER.MAX_HP;
-  private pickupRadius: number = PLAYER.PICKUP_RADIUS;
+  private hp: number;
+  private maxHp: number;
+  private pickupRadius: number;
 
   private readonly BASE_HITBOX_RADIUS = BALANCE.player.baseHitboxRadius;
   private dashTrailHandles: TickerHandle[] = [];
 
-  constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic', timeManager: TimeManager) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    textureKey: string = 'haggis_classic',
+    timeManager: TimeManager,
+    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius'>
+  ) {
     if (!timeManager) {
       throw new Error('Player requires a TimeManager (strict DI).');
     }
     super(scene, x, y, textureKey);
+
+    this.runBaseSpeed = composed?.speed ?? PLAYER.SPEED;
+    this.runBaseMaxHp = composed?.maxHp ?? PLAYER.MAX_HP;
+    this.runBaseDrift = composed?.driftDegrees ?? PLAYER.DRIFT_DEGREES;
+    this.runBasePickup = composed?.pickupRadius ?? PLAYER.PICKUP_RADIUS;
+
+    this.baseMoveSpeed = this.runBaseSpeed;
+    this.baseDriftDegrees = this.runBaseDrift;
+    this.hp = this.runBaseMaxHp;
+    this.maxHp = this.runBaseMaxHp;
+    this.pickupRadius = this.runBasePickup;
+    this.moveSpeed = this.runBaseSpeed;
+    this.driftDegrees = this.runBaseDrift;
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
@@ -285,19 +312,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Speed: base * level reduction + flat bonus from upgrades
     const levelSpeedMul = Math.max(0.7, 1 - PLAYER.SPEED_REDUCTION_PER_LEVEL * (level - 1));
-    this.baseMoveSpeed = PLAYER.SPEED * levelSpeedMul;
+    this.baseMoveSpeed = this.runBaseSpeed * levelSpeedMul;
     this.moveSpeed = Math.max(20, this.baseMoveSpeed + this.bonusSpeed);
 
     // Drift: base * level reduction * upgrade reduction
     const levelDriftMul = Math.max(0.3, 1 - PLAYER.DRIFT_REDUCTION_PER_LEVEL * (level - 1));
-    this.baseDriftDegrees = PLAYER.DRIFT_DEGREES * levelDriftMul;
+    this.baseDriftDegrees = this.runBaseDrift * levelDriftMul;
     this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction);
 
     // Max HP: base + upgrade bonus (level doesn't reduce HP)
-    this.maxHp = PLAYER.MAX_HP + this.bonusMaxHp;
+    this.maxHp = this.runBaseMaxHp + this.bonusMaxHp;
 
     // Pickup radius: base + upgrade bonus + 3% per level (satisfying vacuum growth)
-    this.pickupRadius = (PLAYER.PICKUP_RADIUS + this.bonusPickupRadius) * (1 + 0.03 * (level - 1));
+    this.pickupRadius = (this.runBasePickup + this.bonusPickupRadius) * (1 + 0.03 * (level - 1));
   }
 
   takeDamage(amount: number): boolean {
@@ -325,6 +352,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   getHp(): number { return this.hp; }
   getMaxHp(): number { return this.maxHp; }
+  getRunBaseSpeed(): number { return this.runBaseSpeed; }
+  getRunBaseMaxHp(): number { return this.runBaseMaxHp; }
+  getRunBasePickupRadius(): number { return this.runBasePickup; }
+  getRunBaseDriftDegrees(): number { return this.runBaseDrift; }
   getLevel(): number { return this.currentLevel; }
   getPickupRadius(): number { return this.pickupRadius; }
   getMoveSpeed(): number { return this.moveSpeed; }
