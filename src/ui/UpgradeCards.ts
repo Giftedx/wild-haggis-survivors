@@ -34,7 +34,11 @@ export class UpgradeCardsUI {
     this.rerollsLeft = 1;
   }
 
-  show(cards: UpgradeCard[], level: number): void {
+  show(
+    cards: UpgradeCard[],
+    level: number,
+    opts?: { bannerTitle?: string; bannerSubtitle?: string; hideReroll?: boolean }
+  ): void {
     this.hide();
 
     const { width, height } = this.scene.scale;
@@ -46,20 +50,23 @@ export class UpgradeCardsUI {
       .setScrollFactor(0).setDepth(depth).setInteractive();
     this.elements.push(overlay);
 
+    const titleStr = opts?.bannerTitle ?? `LEVEL ${level}`;
+    const subtitleStr = opts?.bannerSubtitle ?? 'Choose an upgrade';
+
     // Title
-    const title = this.scene.add.text(width / 2, 55, `LEVEL ${level}`, {
+    const title = this.scene.add.text(width / 2, 55, titleStr, {
       fontFamily: 'monospace', fontSize: '40px', color: '#d4a017',
       fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(title);
 
-    const subtitle = this.scene.add.text(width / 2, 100, 'Choose an upgrade', {
+    const subtitle = this.scene.add.text(width / 2, 100, subtitleStr, {
       fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
 
     // Reroll button
-    if (this.rerollsLeft > 0 && this.onReroll) {
+    if (this.rerollsLeft > 0 && this.onReroll && !opts?.hideReroll) {
       const rerollBtn = this.scene.add.text(width / 2, height - 48, `Reroll (${this.rerollsLeft})`, {
         fontFamily: 'monospace', fontSize: '18px', color: '#d4a017',
         fontStyle: 'bold', stroke: '#000', strokeThickness: 3,

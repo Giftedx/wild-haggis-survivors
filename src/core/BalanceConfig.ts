@@ -85,6 +85,67 @@ export const BALANCE = {
   },
 } as const;
 
+/**
+ * Weapon evolution synergy — max-level base weapon + required passive.
+ * `evolvedWeapon` is the evolution id used by WeaponSystem / HUD (e.g. thistle_storm).
+ * Offered from treasure chests (not the random level-up pool).
+ */
+export type EvolutionRecipeDef = {
+  baseWeapon: string;
+  requiredPassive: string;
+  evolvedWeapon: string;
+  name: string;
+  description: string;
+};
+
+export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
+  {
+    baseWeapon: 'thistle_shot',
+    requiredPassive: 'sporran',
+    evolvedWeapon: 'thistle_storm',
+    name: 'Thistle Storm',
+    description: '8 homing thistles seek enemies across the screen.',
+  },
+  {
+    baseWeapon: 'bagpipe_blast',
+    requiredPassive: 'whisky_flask',
+    evolvedWeapon: 'highland_fling',
+    name: 'The Highland Fling',
+    description: 'Massive pulsating sonic ring shatters all enemies.',
+  },
+  {
+    baseWeapon: 'caber_toss',
+    requiredPassive: 'kilt',
+    evolvedWeapon: 'highland_games',
+    name: 'Highland Games',
+    description: 'Caber explodes on final pierce, leaving a burning zone.',
+  },
+  {
+    baseWeapon: 'scotch_mist',
+    requiredPassive: 'tam_o_shanter',
+    evolvedWeapon: 'the_haar',
+    name: 'The Haar',
+    description: 'Dense fog covers 40% of the screen, melting enemies.',
+  },
+  {
+    baseWeapon: 'haggis_hurler',
+    requiredPassive: 'irn_bru',
+    evolvedWeapon: 'haggis_cannon',
+    name: 'Haggis Cannon',
+    description: 'Rapid-fire haggis that explode on each bounce.',
+  },
+  {
+    baseWeapon: 'nessie_tentacle',
+    requiredPassive: 'loch_water',
+    evolvedWeapon: 'nessie_unleashed',
+    name: 'Nessie Unleashed',
+    description: 'Multiple massive tentacles sweep the entire screen.',
+  },
+];
+
+/** Max weapon level before an evolution can be offered from a chest. */
+export const EVOLUTION_MIN_WEAPON_LEVEL = 5;
+
 /** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
 export type AchievementId =
   | 'ach_kills_1000'

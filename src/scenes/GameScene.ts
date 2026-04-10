@@ -28,6 +28,7 @@ import { StatComposer } from '../core/StatComposer';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
+import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from '../core/evolutionChest';
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
@@ -1427,6 +1428,29 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   // ── Treasure Chests ──
 
+  /** If a weapon is maxed with its synergy passive, next chest opens a forced evolution pick. */
+  private offerTreasureEvolutionIfEligible(): void {
+    const ownedWeapons = this.weaponSystem.getWeapons().map((w) => w.config.key);
+    const weaponLevels: Record<string, number> = {};
+    for (const w of this.weaponSystem.getWeapons()) {
+      weaponLevels[w.config.key] = w.level;
+    }
+    const recipe = findEligibleChestEvolution(
+      ownedWeapons,
+      this.ownedPassives,
+      weaponLevels,
+      this.evolvedWeapons
+    );
+    if (!recipe) return;
+    this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
+    const card = evolutionRecipeToUpgradeCard(recipe);
+    this.upgradeUI.show([card], this.xpSystem.getLevel(), {
+      bannerTitle: 'CHEST EVOLUTION',
+      bannerSubtitle: 'The relic inside awakens a weapon.',
+      hideReroll: true,
+    });
+  }
+
   private spawnTreasure(): void {
     // Spawn near the player but not on top of them
     const angle = Math.random() * Math.PI * 2;
@@ -1487,6 +1511,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       chest.destroy();
       glow.destroy();
       this.physics.world.removeCollider(overlapColl);
+      this.offerTreasureEvolutionIfEligible();
     });
 
     despawnHandle = this.updateTickers.addOnce('scaled', 15000 + this.chestDurationBonusMs, () => {
@@ -1560,6 +1585,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
       chest.destroy(); glow.destroy();
       this.physics.world.removeCollider(overlapColl);
+      this.offerTreasureEvolutionIfEligible();
     });
 
     despawnHandle = this.updateTickers.addOnce('scaled', 12000 + this.chestDurationBonusMs, () => {

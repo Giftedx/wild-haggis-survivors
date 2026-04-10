@@ -5,6 +5,8 @@
  * Rarity determines border color and drop chance.
  */
 
+import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 
 export type UpgradeEffect =
@@ -14,29 +16,8 @@ export type UpgradeEffect =
   | { type: 'stat_boost'; stat: string; amount: number }
   | { type: 'evolve_weapon'; weaponKey: string; evolutionKey: string };
 
-/** Weapon evolution recipes — weapon at lv5 + matching passive = legendary evolution */
-export interface EvolutionRecipe {
-  weaponKey: string;
-  passiveKey: string;
-  evolutionKey: string;
-  name: string;
-  description: string;
-}
-
-export const EVOLUTION_RECIPES: EvolutionRecipe[] = [
-  { weaponKey: 'thistle_shot', passiveKey: 'sporran', evolutionKey: 'thistle_storm',
-    name: 'Thistle Storm', description: '8 homing thistles seek enemies across the screen.' },
-  { weaponKey: 'bagpipe_blast', passiveKey: 'whisky_flask', evolutionKey: 'highland_fling',
-    name: 'The Highland Fling', description: 'Massive pulsating sonic ring shatters all enemies.' },
-  { weaponKey: 'caber_toss', passiveKey: 'kilt', evolutionKey: 'highland_games',
-    name: 'Highland Games', description: 'Caber explodes on final pierce, leaving a burning zone.' },
-  { weaponKey: 'scotch_mist', passiveKey: 'tam_o_shanter', evolutionKey: 'the_haar',
-    name: 'The Haar', description: 'Dense fog covers 40% of the screen, melting enemies.' },
-  { weaponKey: 'haggis_hurler', passiveKey: 'irn_bru', evolutionKey: 'haggis_cannon',
-    name: 'Haggis Cannon', description: 'Rapid-fire haggis that explode on each bounce.' },
-  { weaponKey: 'nessie_tentacle', passiveKey: 'loch_water', evolutionKey: 'nessie_unleashed',
-    name: 'Nessie Unleashed', description: 'Multiple massive tentacles sweep the entire screen.' },
-];
+/** @deprecated Use EvolutionRecipeDef from BalanceConfig */
+export type EvolutionRecipe = import('../core/BalanceConfig').EvolutionRecipeDef;
 
 export interface UpgradeCard {
   id: string;
@@ -332,9 +313,9 @@ export function buildCardPool(
     const level = weaponLevels[key] ?? 1;
     if (level < 5) {
       // Add evolution hint on level 4→5 cards
-      const recipe = EVOLUTION_RECIPES.find(r => r.weaponKey === key);
+      const recipe = EVOLUTION_RECIPES.find((r) => r.baseWeapon === key);
       const hint = level === 4 && recipe
-        ? ` Evolves with ${formatWeaponName(recipe.passiveKey)}!`
+        ? ` Evolves with ${formatWeaponName(recipe.requiredPassive)}!`
         : '';
       pool.push({
         id: `levelup_${key}_${level + 1}`,
@@ -347,22 +328,7 @@ export function buildCardPool(
     }
   }
 
-  // Evolution cards — weapon at lv5 + matching passive owned + not already evolved
-  for (const recipe of EVOLUTION_RECIPES) {
-    if (evolvedWeaponKeys.includes(recipe.weaponKey)) continue;
-    if (!ownedWeaponKeys.includes(recipe.weaponKey)) continue;
-    const wLevel = weaponLevels[recipe.weaponKey] ?? 0;
-    if (wLevel >= 5 && ownedPassiveKeys.includes(recipe.passiveKey)) {
-      pool.push({
-        id: `evolve_${recipe.evolutionKey}`,
-        name: recipe.name,
-        description: recipe.description,
-        rarity: 'legendary',
-        icon: 'xp_gem',
-        effect: { type: 'evolve_weapon', weaponKey: recipe.weaponKey, evolutionKey: recipe.evolutionKey },
-      });
-    }
-  }
+  // Weapon evolutions: see EVOLUTION_RECIPES in BalanceConfig — offered from treasure chests only.
 
   // New weapon cards (only if not already owned, max 6 weapons)
   if (ownedWeaponKeys.length < 6) {
