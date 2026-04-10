@@ -63,8 +63,8 @@ export class MenuScene extends Phaser.Scene {
 
     // Title with slide-in animation
     const title = this.add.text(width / 2, height * 0.32, 'Wild Haggis\nSurvivors', {
-      fontFamily: 'monospace', fontSize: '48px', color: '#d4a017',
-      align: 'center', fontStyle: 'bold', stroke: '#000', strokeThickness: 6,
+      fontFamily: 'monospace', fontSize: '60px', color: '#d4a017',
+      align: 'center', fontStyle: 'bold', stroke: '#000', strokeThickness: 7,
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -77,7 +77,7 @@ export class MenuScene extends Phaser.Scene {
 
     // Subtitle fades in after title
     const subtitle = this.add.text(width / 2, height * 0.45, 'Survive the Highlands', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#aaaaaa',
+      fontFamily: 'monospace', fontSize: '20px', color: '#aaaaaa',
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
@@ -91,9 +91,9 @@ export class MenuScene extends Phaser.Scene {
     if (save.totalRuns > 0) {
       const bestMins = Math.floor(save.bestTime / 60);
       const bestSecs = Math.floor(save.bestTime % 60);
-      const stats = this.add.text(width / 2, height * 0.51,
-        `Best: ${bestMins}:${bestSecs.toString().padStart(2, '0')}  |  Runs: ${save.totalRuns}  |  Gold: ${save.gold}`, {
-        fontFamily: 'monospace', fontSize: '12px', color: '#888888',
+      const stats = this.add.text(width / 2, height * 0.50,
+        `Best: ${bestMins}:${bestSecs.toString().padStart(2, '0')}  |  Kills: ${save.bestKills ?? 0}  |  Combo: ${save.bestCombo ?? 0}x\nRuns: ${save.totalRuns}  |  Gold: ${save.gold}  |  Total: ${save.totalKills ?? 0} kills`, {
+        fontFamily: 'monospace', fontSize: '14px', color: '#888888', align: 'center',
       }).setOrigin(0.5).setAlpha(0);
 
       this.tweens.add({ targets: stats, alpha: 1, delay: 600, duration: 600 });
@@ -110,15 +110,15 @@ export class MenuScene extends Phaser.Scene {
       this.fadeToScene('Shop');
     }, 0x444444, 850);
 
-    // Sound/Music toggles
-    this.createToggle(width - 100, height - 30, 'SFX', save.settings.soundOn, (on) => {
+    // Sound/Music toggles — positioned with enough gap for the 14px bold font
+    this.createToggle(width - 180, height - 30, 'SFX', save.settings.soundOn, (on) => {
       const s = loadSave();
       s.settings.soundOn = on;
       writeSave(s);
       audio.setEnabled(on);
     }, 1000);
 
-    this.createToggle(width - 40, height - 30, 'Music', save.settings.musicOn, (on) => {
+    this.createToggle(width - 70, height - 30, 'Music', save.settings.musicOn, (on) => {
       const s = loadSave();
       s.settings.musicOn = on;
       writeSave(s);
@@ -129,9 +129,25 @@ export class MenuScene extends Phaser.Scene {
     audio.setEnabled(save.settings.soundOn);
     musicEngine.setEnabled(save.settings.musicOn);
 
+    // Decorative enemy parade in background
+    const enemyTextures = ['tourist', 'chef', 'terrier', 'highland_cow', 'eagle', 'sheep'];
+    for (let i = 0; i < 8; i++) {
+      const tex = enemyTextures[i % enemyTextures.length];
+      const ey = Phaser.Math.Between(Math.floor(height * 0.6), Math.floor(height * 0.92));
+      const sprite = this.add.sprite(-20, ey, tex).setAlpha(0.15).setScale(1.5);
+      this.tweens.add({
+        targets: sprite,
+        x: width + 20,
+        duration: Phaser.Math.Between(6000, 12000),
+        delay: i * 800,
+        repeat: -1,
+        onRepeat: () => { sprite.setY(Phaser.Math.Between(Math.floor(height * 0.6), Math.floor(height * 0.92))); },
+      });
+    }
+
     // Version tag
-    this.add.text(width - 8, height - 8, 'v1.0', {
-      fontFamily: 'monospace', fontSize: '10px', color: '#333333',
+    this.add.text(width - 8, height - 8, 'v2.0', {
+      fontFamily: 'monospace', fontSize: '13px', color: '#444444',
     }).setOrigin(1, 1);
   }
 
@@ -156,7 +172,7 @@ export class MenuScene extends Phaser.Scene {
   ): void {
     let on = initialState;
     const text = this.add.text(x, y, `${label}: ${on ? 'ON' : 'OFF'}`, {
-      fontFamily: 'monospace', fontSize: '11px',
+      fontFamily: 'monospace', fontSize: '14px', fontStyle: 'bold',
       color: on ? '#88cc88' : '#886666',
     }).setOrigin(0.5).setAlpha(0).setInteractive({ useHandCursor: true });
 
@@ -174,11 +190,11 @@ export class MenuScene extends Phaser.Scene {
     x: number, y: number, label: string, onClick: () => void,
     color: number = COLORS.SCOTTISH_BLUE, delay: number = 0
   ): void {
-    const bg = this.add.rectangle(x, y + 30, 200, 45, color)
+    const bg = this.add.rectangle(x, y + 30, 240, 56, color)
       .setInteractive({ useHandCursor: true }).setAlpha(0);
 
     const text = this.add.text(x, y + 30, label, {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
+      fontFamily: 'monospace', fontSize: '26px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0);
 
     // Slide up + fade in

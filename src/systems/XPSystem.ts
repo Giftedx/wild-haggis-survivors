@@ -53,8 +53,13 @@ export class XPSystem {
     gem.drop(x, y, value);
   }
 
-  /** Update magnet behavior and check collection */
-  update(playerX: number, playerY: number, pickupRadius: number): void {
+  /** Update magnet behavior and check collection.
+   *  hpFraction: when < 0.15, pickup radius triples (XP magnet pulse) */
+  update(playerX: number, playerY: number, pickupRadius: number, hpFraction: number = 1): void {
+    // XP magnet pulse: triple pickup radius at critical HP
+    if (hpFraction > 0 && hpFraction < 0.15) {
+      pickupRadius *= 3;
+    }
     const gems = this.gemPool.getChildren() as XPGem[];
     for (const gem of gems) {
       if (!gem.active) continue;

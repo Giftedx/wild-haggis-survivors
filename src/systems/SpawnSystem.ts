@@ -141,15 +141,15 @@ export class SpawnSystem {
     audio.playBossWarning();
     const { width, height } = this.scene.scale;
 
-    const bg = this.scene.add.rectangle(width / 2, height / 2, width, 60, 0x000000, 0.7)
+    const bg = this.scene.add.rectangle(width / 2, height / 2, width, 76, 0x000000, 0.75)
       .setScrollFactor(0).setDepth(150);
     const label = this.scene.add.text(width / 2, height / 2, text, {
       fontFamily: 'monospace',
-      fontSize: '28px',
+      fontSize: '36px',
       color: '#ff4444',
       fontStyle: 'bold',
       stroke: '#000',
-      strokeThickness: 4,
+      strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
     // Flash and fade
@@ -195,6 +195,12 @@ export class SpawnSystem {
         if (this.gameTimeSec > 120 && config.behavior !== 'hazard' &&
             config.packSize <= 1 && Math.random() < 0.10) {
           enemy.markAsElite();
+          // Golden flash at spawn position to warn player
+          const flash = this.scene.add.circle(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
+          this.scene.tweens.add({
+            targets: flash, scale: 2, alpha: 0, duration: 400,
+            onComplete: () => flash.destroy(),
+          });
         }
       }
     }

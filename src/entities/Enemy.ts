@@ -22,15 +22,49 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Persistent tint color to restore after damage flash (bosses = red, hazards = orange) */
   private baseTint: number = 0;
+  private enraged: boolean = false;
+  private phase2Done: boolean = false;
 
   /** Ranged enemies track distance to maintain standoff */
   private rangedCooldown: number = 0;
   private readonly RANGED_STANDOFF = 200;
 
+  /** Orbit enemies circle the player */
+  private orbitAngle: number = 0;
+  private readonly ORBIT_RADIUS = 180;
+
+  /** Flee enemies run away but with wool armor */
+  private woolArmor: number = 0;
+
+  /** Spawner enemies summon minions periodically */
+  private spawnerCooldown: number = 0;
+
+  /** Phase enemies toggle between solid and intangible */
+  private phaseTimer: number = 0;
+  private isPhased: boolean = false;
+
+  /** Status effects */
+  private burnDamage: number = 0;
+  private burnTimer: number = 0;
+  private burnTickAccum: number = 0;
+  private freezeTimer: number = 0;
+  private freezeSpeedMul: number = 1;
+  private poisonDamage: number = 0;
+  private poisonTimer: number = 0;
+  private poisonTickAccum: number = 0;
+  /** Unscaled base speed (config.speed) — reference point for derivative scaling */
+  private baseSpeed: number = 0;
+  /** Berserker HP-based scaling applied on top of baseSpeed (1.0 = no scaling) */
+  private berserkerSpeedMul: number = 1;
+
   /** Mini HP bar for tanky enemies */
   private hpBarBg: Phaser.GameObjects.Rectangle | null = null;
   private hpBarFill: Phaser.GameObjects.Rectangle | null = null;
   private showHpBar: boolean = false;
+  /** Soft ground shadow that follows the sprite */
+  private shadow: Phaser.GameObjects.Image | null = null;
+  /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
+  private bobPhase: number = 0;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y, 'tourist');
@@ -47,7 +81,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setActive(true);
     this.setVisible(true);
     this.setScale(1);
+    this.setFlipX(false);
     this.clearTint();
+
+    // Ground shadow — boss uses the bigger shadow texture. Depth -1 sits
+    // above the terrain (-10 to -5) but below entities (default 0).
+    const shadowKey = config.texture.startsWith('boss') ? 'boss_shadow' : 'entity_shadow';
+    if (!this.shadow) {
+      this.shadow = this.scene.add.image(x, y, shadowKey).setDepth(-2);
+    } else {
+      this.shadow.setTexture(shadowKey);
+    }
+    this.shadow.setVisible(true).setActive(true).setPosition(x, y).setAlpha(1);
+    // Hazards don't need a shadow (they're static props)
+    if (config.behavior === 'hazard') this.shadow.setVisible(false);
 
     // Kill stale tweens from prior pool cycle, then fade in
     this.scene.tweens.killTweensOf(this);
@@ -64,15 +111,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.setCollideWorldBounds(false);
     body.setBounce(0, 0);
 
-    // Size hitbox based on texture — boss texture is 60x60, others are 20-44px
-    const r = config.texture === 'boss' ? 24
-      : config.key === 'highland_cow' ? 18
-      : config.key === 'terrier' ? 8
-      : 14;
+    // Size hitbox based on texture. Bigger sprites (BootScene v2) bumped most
+    // canvases by ~1.5×, so radii here bump proportionally. Offset math uses
+    // this.width/this.height so it tracks whichever texture is assigned.
+    const r = config.texture.startsWith('boss') ? 32
+      : config.key === 'highland_cow' ? 26
+      : config.key === 'terrier' ? 12
+      : config.key === 'sheep' ? 13
+      : config.key === 'eagle' ? 16
+      : config.key === 'deep_fryer' ? 20
+      : config.key === 'nest' ? 16
+      : config.key === 'ghost' ? 16
+      : 20; // default — tourist/chef/hunter/scotsman/piper
     body.setCircle(r, this.width / 2 - r, this.height / 2 - r);
 
     this.enemyKey = config.key;
     this.speed = config.speed;
+    this.baseSpeed = config.speed;
     this.damage = config.damage;
     this.xpValue = config.xpValue;
     this.behavior = config.behavior;
@@ -81,10 +136,29 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.baseTint = 0;
     this.diveStarted = false;
     this.rangedCooldown = 0;
+    this.enraged = false;
+    this.phase2Done = false;
+    this.orbitAngle = Math.random() * Math.PI * 2;
+    this.burnDamage = 0; this.burnTimer = 0; this.burnTickAccum = 0;
+    this.freezeTimer = 0; this.freezeSpeedMul = 1;
+    this.berserkerSpeedMul = 1;
+    this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
+    this.woolArmor = config.key === 'sheep' ? 1 : 0;
+    // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
+    // so they matter even if killed soon after spawn, then 4s cycles after
+    this.spawnerCooldown = config.behavior === 'spawner' ? 500 : 4000;
+    // Reset Ghost phase state — if a Ghost died mid-phase, the next
+    // recycled enemy would inherit invisibility + projectile-immunity
+    this.phaseTimer = 2000;
+    this.isPhased = false;
+    body.checkCollision.none = false;
 
     // Reset bouncing-projectile hit tracking ID so recycled pool objects
     // aren't confused with their prior incarnation
     (this as any).__bouncingHitId = Math.random();
+
+    // Random idle-bob phase so a pack of enemies doesn't visually pulse in sync
+    this.bobPhase = Math.random() * Math.PI * 2;
 
     // Scale HP and damage with game time
     const hpMul = 1 + ENEMIES.HP_SCALE_PER_MINUTE * (gameTimeSec / 60);
@@ -132,6 +206,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
       this.hpBarBg.setVisible(true).setPosition(this.x, this.y - 20);
       this.hpBarFill!.setVisible(true).setPosition(this.x - 12, this.y - 20);
+      this.hpBarFill!.setFillStyle(0xcc3333); // Reset to red (may have been gold from prior elite cycle)
       this.hpBarFill!.width = 24;
     } else {
       this.hpBarBg?.setVisible(false);
@@ -143,11 +218,39 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   chaseTarget(targetX: number, targetY: number, delta: number = 16): void {
     if (!this.active) return;
 
+    // Tick status effects (burn/freeze/poison)
+    this.tickStatusEffects(delta);
+    if (!this.active) return; // May have died from DoT
+
     // Update HP bar position
     if (this.showHpBar && this.hpBarBg && this.hpBarFill) {
       this.hpBarBg.setPosition(this.x, this.y - 20);
       this.hpBarFill.setPosition(this.x - 12, this.y - 20);
       this.hpBarFill.width = 24 * (this.hp / this.maxHp);
+    }
+
+    // Ground shadow follows the sprite (shadow stays flat — doesn't bob).
+    if (this.shadow) {
+      this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.35);
+    }
+
+    // Idle breathing — subtle scaleY wobble. Skips bosses (which have custom
+    // scales 2.0-3.0 from BossConfig), hazards (static), and spawners (nests).
+    // Anchored to eliteFlag so elite 1.3× scaling is preserved.
+    if (!this.bossFlag && this.behavior !== 'hazard' && this.behavior !== 'spawner') {
+      this.bobPhase += 0.08;
+      const baseScale = this.eliteFlag ? 1.3 : 1;
+      const wobble = Math.sin(this.bobPhase) * 0.04;
+      this.setScale(baseScale, baseScale * (1 + wobble));
+    }
+
+    // Face direction of travel (skip for bosses and static hazards which have
+    // asymmetric art baked in)
+    if (!this.bossFlag && this.behavior !== 'hazard') {
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      if (Math.abs(body.velocity.x) > 10) {
+        this.setFlipX(body.velocity.x < 0);
+      }
     }
 
     switch (this.behavior) {
@@ -166,6 +269,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'hazard':
         // Static — do nothing
+        break;
+      case 'orbit':
+        this.behaviorOrbit(targetX, targetY, delta);
+        break;
+      case 'flee':
+        this.behaviorFlee(targetX, targetY);
+        break;
+      case 'spawner':
+        this.behaviorSpawner(delta);
+        break;
+      case 'phase':
+        this.behaviorPhase(targetX, targetY, delta);
         break;
     }
   }
@@ -260,37 +375,363 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (currentPlayer !== spawnedPlayer) return;
 
       spawnedPlayer.applyNetSlow();
-      this.scene.time.delayedCall(2000, () => {
-        const stillSamePlayer = (this.scene as any).getPlayer?.();
-        if (stillSamePlayer === spawnedPlayer) {
-          spawnedPlayer.removeNetSlow();
-        }
-      });
+      // Use real setTimeout — delayedCall respects timeScale, so slow-motion
+      // after a boss kill would stretch the 2s slow to ~7s of real time
+      const capturedPlayer = spawnedPlayer;
+      setTimeout(() => {
+        try {
+          const stillSamePlayer = (this.scene as any).getPlayer?.();
+          if (stillSamePlayer === capturedPlayer) {
+            capturedPlayer.removeNetSlow();
+          }
+        } catch { /* scene may have been destroyed */ }
+      }, 2000);
     });
 
     // Auto-cleanup after 2 seconds if it misses
     this.scene.time.delayedCall(2000, cleanup);
   }
 
+  private behaviorOrbit(tx: number, ty: number, delta: number): void {
+    // Circle the player at ORBIT_RADIUS distance
+    this.orbitAngle += (this.speed / this.ORBIT_RADIUS) * (delta / 1000);
+    const targetX = tx + Math.cos(this.orbitAngle) * this.ORBIT_RADIUS;
+    const targetY = ty + Math.sin(this.orbitAngle) * this.ORBIT_RADIUS;
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+    const dist = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
+    const moveSpeed = Math.min(this.speed, dist * 2); // slow as approach target
+    this.setVelocity(Math.cos(angle) * moveSpeed, Math.sin(angle) * moveSpeed);
+
+    // Pipers buff nearby enemies — increase their speed by 30% (visual: pulse)
+    const enemies = (this.scene as any).getSpawnSystem?.()?.getEnemyGroup?.()?.getChildren?.();
+    if (enemies && Math.random() < 0.02) {
+      for (const e of enemies) {
+        if (!e.active || e === this || (e as Enemy).isBoss()) continue;
+        const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+        if (d < 120) {
+          const body = e.body as Phaser.Physics.Arcade.Body;
+          const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
+          if (speed > 0) {
+            body.velocity.x *= 1.3;
+            body.velocity.y *= 1.3;
+          }
+        }
+      }
+    }
+  }
+
+  private behaviorPhase(tx: number, ty: number, delta: number): void {
+    // Chase the player
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+
+    // Toggle phased state every 2 seconds
+    this.phaseTimer -= delta;
+    if (this.phaseTimer <= 0) {
+      this.phaseTimer = 2000;
+      this.isPhased = !this.isPhased;
+      this.setAlpha(this.isPhased ? 0.3 : 1);
+      // When phased, disable physics body so projectiles pass through
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      if (this.isPhased) {
+        body.checkCollision.none = true;
+      } else {
+        body.checkCollision.none = false;
+      }
+    }
+  }
+
+  private behaviorSpawner(delta: number): void {
+    // Stationary — summon a terrier on spawnerCooldown interval
+    this.setVelocity(0, 0);
+    this.spawnerCooldown -= delta;
+    if (this.spawnerCooldown <= 0) {
+      this.spawnerCooldown = 4000;
+      const spawnSystem = (this.scene as any).getSpawnSystem?.();
+      if (!spawnSystem) return;
+      const pool = spawnSystem.getEnemyGroup();
+      let minion = pool.getFirstDead(false) as Enemy | null;
+      if (!minion) {
+        if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return;
+        minion = new Enemy(this.scene, 0, 0);
+        pool.add(minion);
+      }
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 20;
+      const terrier = { key: 'terrier', texture: 'terrier', speed: 130, hp: 2, damage: 3, xpValue: 1, appearsAt: 0, behavior: 'swarm' as EnemyBehavior, packSize: 1 };
+      // Pass current game time so spawned terriers inherit HP/damage scaling
+      const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
+      minion.spawn(this.x + Math.cos(angle) * dist, this.y + Math.sin(angle) * dist, terrier, gameTime);
+    }
+  }
+
+  private behaviorFlee(tx: number, ty: number): void {
+    // Run away from the player
+    const angle = Phaser.Math.Angle.Between(tx, ty, this.x, this.y);
+    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+  }
+
+  /** Recompute this.speed from baseSpeed * all active multipliers.
+   *  Call whenever any contributing factor changes (freeze, berserker HP-scaling, enrage).
+   *  Enrage is baked into baseSpeed directly because it's permanent. */
+  private recomputeSpeed(): void {
+    this.speed = Math.ceil(this.baseSpeed * this.berserkerSpeedMul * this.freezeSpeedMul);
+  }
+
+  // ── Status Effects ──
+
+  /** Apply burn: damage over time for duration */
+  applyBurn(dps: number, durationMs: number): void {
+    if (this.behavior === 'hazard') return;
+    this.burnDamage = Math.max(this.burnDamage, dps); // Refresh, don't stack
+    this.burnTimer = Math.max(this.burnTimer, durationMs);
+  }
+
+  /** Apply freeze: slow movement for duration */
+  applyFreeze(speedMul: number, durationMs: number): void {
+    if (this.behavior === 'hazard') return;
+    this.freezeSpeedMul = Math.min(this.freezeSpeedMul, speedMul);
+    this.freezeTimer = Math.max(this.freezeTimer, durationMs);
+  }
+
+  /** Apply poison: stacking damage over time */
+  applyPoison(dps: number, durationMs: number): void {
+    if (this.behavior === 'hazard') return;
+    this.poisonDamage += dps; // Stacks!
+    this.poisonTimer = Math.max(this.poisonTimer, durationMs);
+
+    // Synergy: Burn + Poison = Chemical Explosion (50 damage + 25 AoE)
+    if (this.burnTimer > 0 && this.poisonTimer > 0) {
+      this.burnTimer = 0; this.poisonTimer = 0;
+      this.burnDamage = 0; this.poisonDamage = 0;
+      // Capture scene ref before takeDamageInternal (which may call die() and clear state)
+      const scene = this.scene;
+      const ex = this.x, ey = this.y;
+      this.takeDamageInternal(50);
+      // Visual explosion
+      if (scene && scene.sys.isActive()) {
+        const blast = scene.add.circle(ex, ey, 10, 0xff8800, 0.6);
+        scene.tweens.add({
+          targets: blast, radius: 60, alpha: 0, duration: 300,
+          onComplete: () => blast.destroy(),
+        });
+        // Damage nearby enemies — use internal path so kills emit events too
+        const pool = (scene as any).getSpawnSystem?.()?.getEnemyGroup?.();
+        if (pool) {
+          const nearby = pool.getChildren() as Enemy[];
+          for (const e of nearby) {
+            if (!e.active || e === this) continue;
+            const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
+            if (d <= 60) (e as Enemy).takeDamageInternalPublic(25);
+          }
+        }
+      }
+    }
+  }
+
+  /** Public wrapper for status-effect AoE damage — ensures kill events fire */
+  takeDamageInternalPublic(amount: number): boolean {
+    return this.takeDamageInternal(amount);
+  }
+
+  /** Tick status effects — call each frame from chaseTarget */
+  private tickStatusEffects(delta: number): void {
+    // Burn: periodic damage + orange tint
+    if (this.burnTimer > 0) {
+      this.burnTimer -= delta;
+      this.burnTickAccum += delta;
+      if (this.burnTickAccum >= 500) { // tick every 500ms
+        this.burnTickAccum -= 500;
+        const killed = this.takeDamageInternal(Math.ceil(this.burnDamage * 0.5));
+        // Fire particle
+        if (this.active) {
+          const spark = this.scene.add.circle(
+            this.x + Phaser.Math.Between(-8, 8),
+            this.y + Phaser.Math.Between(-8, 8),
+            2, 0xff6600, 0.8
+          );
+          this.scene.tweens.add({
+            targets: spark, y: spark.y - 10, alpha: 0, duration: 300,
+            onComplete: () => spark.destroy(),
+          });
+        }
+        if (killed) return;
+      }
+      if (this.burnTimer <= 0) { this.burnDamage = 0; this.burnTickAccum = 0; }
+    }
+
+    // Freeze: slow speed + blue tint (basic enemies) or snowflake particle (elites/bosses).
+    // Does not write this.speed directly — recomputeSpeed() composes all
+    // active multipliers (baseSpeed × berserkerSpeedMul × freezeSpeedMul).
+    if (this.freezeTimer > 0) {
+      this.freezeTimer -= delta;
+      this.recomputeSpeed();
+      // baseTint is set for bosses/hazards/elites — don't clobber their persistent tints,
+      // instead spawn a snowflake particle so the player still sees the freeze effect
+      if (!this.baseTint) {
+        this.setTint(0x6688ff);
+      } else if (this.active && Math.random() < 0.08) {
+        const flake = this.scene.add.text(
+          this.x + Phaser.Math.Between(-10, 10), this.y - 12,
+          '❄', { fontSize: '14px', color: '#88ccff' }
+        ).setDepth(15).setOrigin(0.5);
+        this.scene.tweens.add({
+          targets: flake, y: flake.y - 12, alpha: 0, duration: 500,
+          onComplete: () => flake.destroy(),
+        });
+      }
+      if (this.freezeTimer <= 0) {
+        this.freezeSpeedMul = 1;
+        this.recomputeSpeed();
+        if (!this.baseTint) this.clearTint();
+        if (this.baseTint) this.setTint(this.baseTint);
+      }
+    }
+
+    // Poison: stacking DoT + green tint
+    if (this.poisonTimer > 0) {
+      this.poisonTimer -= delta;
+      this.poisonTickAccum += delta;
+      if (this.poisonTickAccum >= 400) { // tick every 400ms
+        this.poisonTickAccum -= 400;
+        const killed = this.takeDamageInternal(Math.ceil(this.poisonDamage * 0.4));
+        // Poison bubble
+        if (this.active) {
+          const bubble = this.scene.add.circle(
+            this.x + Phaser.Math.Between(-6, 6), this.y - 5,
+            Phaser.Math.Between(1, 3), 0x44cc44, 0.7
+          );
+          this.scene.tweens.add({
+            targets: bubble, y: bubble.y - 8, alpha: 0, scale: 0, duration: 400,
+            onComplete: () => bubble.destroy(),
+          });
+        }
+        if (killed) return;
+      }
+      if (this.poisonTimer <= 0) { this.poisonDamage = 0; this.poisonTickAccum = 0; }
+    }
+  }
+
+  /** Force-kill this enemy bypassing wool armor / invincibility.
+   *  Used by banish-style effects. Returns true if killed. */
+  forceKill(): boolean {
+    if (this.behavior === 'hazard') return false;
+    this.hp = 0;
+    this.woolArmor = 0;
+    this.die();
+    return true;
+  }
+
+  /** Internal damage that triggers kill events via the scene's WeaponSystem
+   *  (ensures DoT kills give XP and count toward kill totals) */
+  private takeDamageInternal(amount: number): boolean {
+    if (this.behavior === 'hazard') return false;
+    this.hp -= amount;
+    if (this.hp <= 0) {
+      const wasBoss = this.bossFlag;
+      const wasElite = this.eliteFlag;
+      const killX = this.x, killY = this.y;
+      const xp = this.xpValue, key = this.enemyKey;
+      this.die();
+      // Emit kill event through the scene's WeaponSystem so XP gems drop
+      const ws = (this.scene as any).getWeaponSystem?.();
+      ws?.events?.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
+      return true;
+    }
+    return false;
+  }
+
   takeDamage(amount: number): boolean {
     if (this.behavior === 'hazard') return false; // invincible
+
+    // Ghost: 50% damage resistance while phased (in addition to projectile pass-through)
+    if (this.behavior === 'phase' && this.isPhased) {
+      amount = Math.ceil(amount * 0.5);
+    }
+
+    // Wool armor absorbs one hit
+    if (this.woolArmor > 0) {
+      this.woolArmor--;
+      this.setTintFill(0xffffff);
+      this.scene.time.delayedCall(80, () => {
+        if (!this.active) return;
+        this.clearTint();
+        if (this.baseTint) this.setTint(this.baseTint);
+      });
+      return false;
+    }
 
     this.hp -= amount;
     if (this.hp <= 0) {
       this.die();
       return true;
     }
-    this.setTintFill(0xffffff);
-    this.scene.time.delayedCall(50, () => {
-      if (!this.active) return;
-      // Restore persistent tint (e.g. boss red) instead of clearing all tints
-      if (this.baseTint) {
-        this.clearTint();
-        this.setTint(this.baseTint);
-      } else {
-        this.clearTint();
+
+    // Berserker: speed increases as HP drops (up to 2x at 1 HP).
+    // Writes to the multiplier (not this.speed) so it composes with freeze.
+    if (this.enemyKey === 'berserker') {
+      const hpFrac = this.hp / this.maxHp;
+      this.berserkerSpeedMul = 1 + (1 - hpFrac);
+      this.recomputeSpeed();
+    }
+
+    // Boss phase 2 at 25% HP — summon 3 minions
+    if (this.bossFlag && !this.phase2Done && this.hp <= this.maxHp * 0.25) {
+      this.phase2Done = true;
+      const spawnSystem = (this.scene as any).getSpawnSystem?.();
+      if (spawnSystem) {
+        const pool = spawnSystem.getEnemyGroup();
+        for (let i = 0; i < 3; i++) {
+          let minion = pool.getFirstDead(false) as Enemy | null;
+          if (!minion) {
+            if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) break;
+            minion = new Enemy(this.scene, 0, 0);
+            pool.add(minion);
+          }
+          const a = (i / 3) * Math.PI * 2;
+          const chef = { key: 'chef', texture: 'chef', speed: 100, hp: 8, damage: 8, xpValue: 3, appearsAt: 0, behavior: 'chase' as EnemyBehavior, packSize: 1 };
+          // Use current game time so late-game phase-2 minions scale with the run
+          const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
+          minion.spawn(this.x + Math.cos(a) * 30, this.y + Math.sin(a) * 30, chef, gameTime);
+          minion.markAsElite();
+        }
       }
+      // Visual indicator
+      this.scene.cameras.main.shake(150, 0.008);
+    }
+
+    // Boss enrage at 50% HP — speed +50%, tint changes to bright red.
+    // Bake into baseSpeed so freeze/berserker multipliers still apply on top.
+    if (this.bossFlag && !this.enraged && this.hp <= this.maxHp * 0.5) {
+      this.enraged = true;
+      this.baseSpeed = Math.ceil(this.baseSpeed * 1.5);
+      this.recomputeSpeed();
+      this.damage = Math.ceil(this.damage * 1.25);
+      this.baseTint = 0xff2200;
+      this.setTint(0xff2200);
+      this.scene.cameras.main.shake(200, 0.01);
+    }
+
+    this.setTintFill(0xffffff);
+    this.scene.time.delayedCall(60, () => {
+      if (!this.active) return;
+      // Restore persistent tint (e.g. boss red, elite gold) instead of clearing all tints
+      this.clearTint();
+      if (this.baseTint) this.setTint(this.baseTint);
     });
+
+    // Impact ring — tiny white burst expanding outward from hit point.
+    // Throttle for bosses and very-tanky enemies to avoid visual spam on piercing weapons.
+    const ring = this.scene.add.circle(this.x, this.y, 4, 0xffffff, 0.8).setDepth(12);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: 14,
+      alpha: 0,
+      duration: 180,
+      ease: 'Cubic.easeOut',
+      onComplete: () => ring.destroy(),
+    });
+
     return false;
   }
 
@@ -302,6 +743,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0, 0);
     this.hpBarBg?.setVisible(false);
     this.hpBarFill?.setVisible(false);
+    this.shadow?.setVisible(false);
+  }
+
+  destroy(fromScene?: boolean): void {
+    this.hpBarBg?.destroy();
+    this.hpBarFill?.destroy();
+    this.shadow?.destroy();
+    this.hpBarBg = null;
+    this.hpBarFill = null;
+    this.shadow = null;
+    super.destroy(fromScene);
   }
 
   getDamage(): number { return this.damage; }
@@ -330,7 +782,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.eliteFlag = true;
     this.maxHp = Math.ceil(this.maxHp * 2);
     this.hp = this.maxHp;
-    this.speed = Math.ceil(this.speed * 1.3);
+    // Bake speed bonus into baseSpeed so freeze/berserker multipliers
+    // compose on top via recomputeSpeed() — writing this.speed directly
+    // would be wiped by the first status-effect recompute.
+    this.baseSpeed = Math.ceil(this.baseSpeed * 1.3);
+    this.recomputeSpeed();
     this.xpValue = this.xpValue * 3;
     this.setScale(this.scaleX * 1.3);
     this.setBaseTint(0xffdd44); // golden glow

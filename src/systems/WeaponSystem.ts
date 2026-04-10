@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { Projectile } from '../entities/Projectile';
 import { Enemy } from '../entities/Enemy';
 import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
-import { GAME } from '../config';
 import { audio } from './AudioSystem';
 
 /** Runtime state for an equipped weapon */
@@ -42,9 +41,16 @@ export class WeaponSystem {
   private damageMultiplier: number = 1;
   private aoeMultiplier: number = 1;
   private attackSpeedMultiplier: number = 1;
+  private critChance: number = 0.10;
+  private critDamageMultiplier: number = 2.0;
+  private cooldownReduction: number = 0;
 
-  /** Emits 'enemyKilled' (x, y, xpValue) and 'damageDealt' (x, y, amount) */
+  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite) and 'damageDealt' (x, y, amount, isCrit) */
   readonly events = new Phaser.Events.EventEmitter();
+
+  /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
+  private destroyed: boolean = false;
+  destroy(): void { this.destroyed = true; }
 
   constructor(scene: Phaser.Scene, enemyGroup: Phaser.GameObjects.Group) {
     this.scene = scene;
@@ -120,8 +126,10 @@ export class WeaponSystem {
     w.evolved = true;
     w.evolutionKey = evolutionKey;
 
-    // Evolved weapons get massive stat boosts
-    w.damage = Math.ceil(w.damage * 2.5);
+    // Evolved weapons get significant but not game-breaking stat boosts.
+    // Previously 2.5x damage allowed Thistle Storm to one-shot the Taxman.
+    // 1.8x keeps evolutions strong while preserving late-game challenge.
+    w.damage = Math.ceil(w.damage * 1.8);
     w.cooldownMs = Math.max(150, w.cooldownMs * 0.5);
     w.projectileCount = Math.max(w.projectileCount, 3);
     w.aoeRadius = w.aoeRadius * 2;
@@ -136,10 +144,13 @@ export class WeaponSystem {
   }
 
   /** Update multipliers from player stats (called by GameScene each frame) */
-  setMultipliers(damage: number, aoe: number, attackSpeed: number): void {
+  setMultipliers(damage: number, aoe: number, attackSpeed: number, critChance: number = 0.10, cooldownReduction: number = 0, critDmgMul: number = 2.0): void {
     this.damageMultiplier = damage;
     this.aoeMultiplier = aoe;
     this.attackSpeedMultiplier = attackSpeed;
+    this.critChance = critChance;
+    this.cooldownReduction = cooldownReduction;
+    this.critDamageMultiplier = critDmgMul;
   }
 
   update(delta: number, playerX: number, playerY: number): void {
@@ -157,25 +168,36 @@ export class WeaponSystem {
       }
     }
 
-    // Tick each weapon (attackSpeedMultiplier reduces effective cooldown)
+    // Tick each weapon (attackSpeedMultiplier + cooldownReduction reduce effective cooldown)
     for (const weapon of this.weapons) {
       weapon.cooldownRemaining -= delta * this.attackSpeedMultiplier;
       if (weapon.cooldownRemaining <= 0) {
-        // Carry over small overshoots for accurate fire rate, but cap to prevent
-        // burst-firing after lag spikes (don't let deficit exceed one full cycle)
-        weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -weapon.cooldownMs)
-          + weapon.cooldownMs;
+        // Scale the cooldown reset by attackSpeedMultiplier and cooldownReduction.
+        // Enforce an absolute 50ms minimum so extreme stacking can't produce
+        // a per-frame fire rate that crashes the projectile pool.
+        const effectiveCooldown = Math.max(
+          50,
+          (weapon.cooldownMs * (1 - this.cooldownReduction)) / this.attackSpeedMultiplier
+        );
+        weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
+          + effectiveCooldown;
         this.fireWeapon(weapon, playerX, playerY);
-        audio.playShoot();
+        // Only play shoot sound for projectile-type weapons — AoE/trail/sweep have wrong sound
+        const b = weapon.config.behavior;
+        if (b === 'projectile' || b === 'piercing' || b === 'bouncing') {
+          audio.playShoot();
+        }
       }
     }
   }
 
   // ── Fire dispatch ──
 
-  /** Compute effective damage with global multiplier */
-  private effectiveDamage(w: ActiveWeapon): number {
-    return Math.ceil(w.damage * this.damageMultiplier);
+  /** Compute effective damage with global multiplier + crit roll */
+  private effectiveDamage(w: ActiveWeapon): { damage: number; isCrit: boolean } {
+    const baseDmg = Math.ceil(w.damage * this.damageMultiplier);
+    const isCrit = Math.random() < this.critChance;
+    return { damage: isCrit ? Math.ceil(baseDmg * this.critDamageMultiplier) : baseDmg, isCrit };
   }
 
   /** Compute effective AoE radius with global multiplier */
@@ -233,7 +255,9 @@ export class WeaponSystem {
         ty = py + Math.sin(base + offset) * 500;
       }
 
-      proj.fire(px, py, tx, ty, w.config.projectileSpeed, this.effectiveDamage(w), w.pierce, w.config.range);
+      const { damage, isCrit } = this.effectiveDamage(w);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
+      proj.setWeaponKey(w.config.key);
     }
   }
 
@@ -251,7 +275,8 @@ export class WeaponSystem {
       const tx = px + Math.cos(angle) * 500;
       const ty = py + Math.sin(angle) * 500;
 
-      proj.fire(px, py, tx, ty, w.config.projectileSpeed, this.effectiveDamage(w), 0, w.config.range);
+      const { damage, isCrit } = this.effectiveDamage(w);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, 0, w.config.range, isCrit);
       proj.setBouncing();
     }
   }
@@ -260,7 +285,7 @@ export class WeaponSystem {
 
   private fireAoePulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
-    const dmg = this.effectiveDamage(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
     // Visual pulse ring
     const ring = this.scene.add.circle(px, py, 10, 0x4488ff, 0.4);
@@ -278,7 +303,10 @@ export class WeaponSystem {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
       if (dist <= radius) {
-        this.dealDamageToEnemy(enemy, dmg);
+        this.dealDamageToEnemy(enemy, dmg, isCrit);
+
+        // Bagpipe Blast applies brief freeze (slow 50% for 1s)
+        enemy.applyFreeze(0.5, 1000);
 
         // Knockback — divided by mass so tanks resist being pushed
         if (enemy.active && w.config.knockback > 0) {
@@ -296,7 +324,7 @@ export class WeaponSystem {
 
   private fireTrail(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
-    const dmg = this.effectiveDamage(w);
+    const { damage: dmg } = this.effectiveDamage(w);
 
     // Create a fading mist zone
     const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.3);
@@ -315,6 +343,8 @@ export class WeaponSystem {
             const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
             if (dist <= radius) {
               this.dealDamageToEnemy(enemy, dmg);
+              // Scotch Mist applies poison (stacking DoT)
+              enemy.applyPoison(2, 3000);
             }
           }
         }
@@ -337,7 +367,7 @@ export class WeaponSystem {
 
   private fireArcSweep(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
-    const dmg = this.effectiveDamage(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const halfArc = Phaser.Math.DegToRad(w.config.arcDegrees / 2);
 
     // If stationary, aim at nearest enemy instead of stale facing angle
@@ -380,7 +410,7 @@ export class WeaponSystem {
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
       if (Math.abs(angleDiff) <= halfArc) {
-        this.dealDamageToEnemy(enemy, dmg);
+        this.dealDamageToEnemy(enemy, dmg, isCrit);
 
         // Knockback — divided by mass so tanks resist being pushed
         if (enemy.active && w.config.knockback > 0) {
@@ -398,42 +428,29 @@ export class WeaponSystem {
   // ── Evolved weapon behaviors ──
 
   private fireEvolved(w: ActiveWeapon, px: number, py: number): void {
-    const dmg = this.effectiveDamage(w);
+    const { damage: dmg } = this.effectiveDamage(w);
     const radius = this.effectiveAoe(w);
 
     switch (w.evolutionKey) {
       case 'thistle_storm':
-        // 8 homing projectiles that seek different enemies
         this.fireHomingBurst(w, px, py, dmg, 8);
         break;
-
       case 'highland_fling':
-        // Massive expanding ring that damages everything it touches
         this.fireExpandingRing(px, py, dmg, radius * 3);
         break;
-
       case 'highland_games':
-        // Piercing caber that explodes on final hit
         this.fireExplodingProjectile(w, px, py, dmg);
         break;
-
       case 'the_haar':
-        // Huge fog zone covering massive area
         this.fireMassiveFog(px, py, dmg, radius * 3);
         break;
-
       case 'haggis_cannon':
-        // Rapid-fire bouncing projectiles in all directions
         this.fireRapidBounce(w, px, py, dmg, 5);
         break;
-
       case 'nessie_unleashed':
-        // Full 360-degree sweep
         this.fireFullSweep(px, py, dmg, radius * 2);
         break;
-
       default:
-        // Fallback to base behavior
         this.fireProjectile(w, px, py, 'thistle');
         break;
     }
@@ -481,6 +498,7 @@ export class WeaponSystem {
       delay: 50,
       repeat: 15,
       callback: () => {
+        if (this.destroyed || !this.scene?.sys?.isActive()) { expandTimer.destroy(); return; }
         prevRadius = currentRadius;
         currentRadius += (maxRadius - 20) / 16;
         ring.setRadius(currentRadius);
@@ -502,7 +520,7 @@ export class WeaponSystem {
     });
 
     this.scene.time.delayedCall(850, () => {
-      if (!this.scene?.sys?.isActive()) return;
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
       expandTimer.destroy();
       if (ring.active) ring.destroy();
     });
@@ -548,6 +566,7 @@ export class WeaponSystem {
       delay: 300,
       repeat: Math.floor(duration / 300) - 1,
       callback: () => {
+        if (!this.scene?.sys?.isActive()) { timer.destroy(); return; }
         if (this.scene.physics.world.isPaused) return;
         const enemies = this.enemyGroup.getChildren() as Enemy[];
         for (const enemy of enemies) {
@@ -612,12 +631,13 @@ export class WeaponSystem {
     }
   }
 
-  private dealDamageToEnemy(enemy: Enemy, damage: number): void {
-    this.events.emit('damageDealt', enemy.x, enemy.y, damage);
+  private dealDamageToEnemy(enemy: Enemy, damage: number, isCrit: boolean = false): void {
+    this.events.emit('damageDealt', enemy.x, enemy.y, damage, isCrit);
     const wasBoss = enemy.isBoss();
+    const wasElite = enemy.isElite();
     const killed = enemy.takeDamage(damage);
     if (killed) {
-      this.events.emit('enemyKilled', enemy.x, enemy.y, enemy.getXpValue(), enemy.getEnemyKey(), wasBoss);
+      this.events.emit('enemyKilled', enemy.x, enemy.y, enemy.getXpValue(), enemy.getEnemyKey(), wasBoss, wasElite);
     }
   }
 
@@ -661,7 +681,13 @@ export class WeaponSystem {
     // Check if this hit should be processed (bouncing projectiles track per-enemy hits)
     if (proj.shouldSkipHit(enemy)) return;
 
-    this.dealDamageToEnemy(enemy, proj.getDamage());
+    this.dealDamageToEnemy(enemy, proj.getDamage(), proj.isCrit());
+
+    // Caber Toss applies burn (3 dps for 3s)
+    if (proj.getWeaponKey() === 'caber_toss') {
+      enemy.applyBurn(3, 3000);
+    }
+
     proj.onHitEnemy();
   }
 

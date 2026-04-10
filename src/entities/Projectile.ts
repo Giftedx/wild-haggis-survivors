@@ -6,7 +6,9 @@ import Phaser from 'phaser';
  */
 export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private damage: number = 0;
+  private critFlag: boolean = false;
   private pierceCount: number = 0;
+  private weaponKey: string = '';
   private maxRange: number = 600;
   private spawnX: number = 0;
   private spawnY: number = 0;
@@ -36,7 +38,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     speed: number,
     damage: number,
     pierce: number = 0,
-    maxRange: number = 600
+    maxRange: number = 600,
+    isCrit: boolean = false
   ): void {
     this.setPosition(fromX, fromY);
     this.setActive(true);
@@ -44,6 +47,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.spawnX = fromX;
     this.spawnY = fromY;
     this.damage = damage;
+    this.critFlag = isCrit;
     this.pierceCount = pierce;
     this.maxRange = maxRange;
     this.isBouncing = false;
@@ -94,7 +98,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
 
     this.bouncingHitEnemies.add(id);
     this.scene.time.delayedCall(500, () => {
-      this.bouncingHitEnemies.delete(id);
+      if (this.active) this.bouncingHitEnemies.delete(id);
     });
     return false;
   }
@@ -131,9 +135,13 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setVelocity(0, 0);
+    this.bouncingHitEnemies.clear(); // Prevent stale IDs leaking into next pool cycle
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = false;
   }
 
   getDamage(): number { return this.damage; }
+  isCrit(): boolean { return this.critFlag; }
+  getWeaponKey(): string { return this.weaponKey; }
+  setWeaponKey(key: string): void { this.weaponKey = key; }
 }

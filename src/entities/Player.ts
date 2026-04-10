@@ -26,13 +26,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private bonusDamageMultiplier: number = 1.0;  // Global damage multiplier
   private bonusAoeMultiplier: number = 1.0;     // AoE radius multiplier
   private bonusAttackSpeedMultiplier: number = 1.0; // Cooldown multiplier
+  private bonusCritChance: number = 0;             // Added to base 10%
+  private bonusArmor: number = 0;                  // Flat damage reduction
+  private hpRegen: number = 0;                     // HP per second
+  private regenAccumulator: number = 0;            // Sub-HP regen accumulator
+  private bonusCooldownReduction: number = 0;      // Fraction reduced (0-1)
+  private bonusXpMultiplier: number = 1.0;         // XP gain multiplier
+  private bonusLifesteal: number = 0;              // HP healed per kill
+  private bonusCritDamageMultiplier: number = 2.0; // Crit damage multiplier (base 2x)
+  private thornsDamage: number = 0;                // Damage reflected on contact
+  private bonusProjectileSpeedMul: number = 1.0;   // Projectile speed multiplier
+  private bonusKnockbackMul: number = 1.0;         // Knockback multiplier
+  private bonusBossHealFrac: number = 0;           // HP% healed on boss kill
+  private shieldActive: boolean = false;           // One-time death prevention
+  private shieldCooldown: number = 0;              // Shield recharge timer
+  private readonly SHIELD_COOLDOWN_MS = 20000;
 
   // Final computed stats
   private moveSpeed: number = PLAYER.SPEED;
   private driftDegrees: number = PLAYER.DRIFT_DEGREES;
 
+  // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
+  private dashCooldown: number = 0;
+  private readonly DASH_COOLDOWN_MS = 2000;
+  private readonly DASH_SPEED = 600;
+  private readonly DASH_DURATION_MS = 150;
+  private isDashing: boolean = false;
+  private dashInvincible: boolean = false;
+  private maxDashCharges: number = 1;
+  private dashCharges: number = 1;
+
   // Squash-stretch animation
   private wobblePhase: number = 0;
+
+  /** Soft ground shadow that follows the player */
+  private shadow: Phaser.GameObjects.Image | null = null;
 
   // Net slow debuff tracking — only apply once regardless of how many nets hit
   private netSlowStacks: number = 0;
@@ -53,12 +81,91 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Soft boundary — no hard wall, player slows near edges
     this.setCollideWorldBounds(false);
     const body = this.body as Phaser.Physics.Arcade.Body;
-    body.setCircle(this.BASE_HITBOX_RADIUS, 4, 4);
+    // Dynamic offset so the hitbox stays centered regardless of texture size
+    // (haggis texture grew from 48 → 56 in the art pass).
+    body.setCircle(
+      this.BASE_HITBOX_RADIUS,
+      (this.width / 2) - this.BASE_HITBOX_RADIUS,
+      (this.height / 2) - this.BASE_HITBOX_RADIUS
+    );
+
+    // Ground shadow — rendered below the sprite. Terrain lives at depth -10 to -5,
+    // so depth -1 places the shadow above terrain but below all entities (which
+    // default to depth 0).
+    this.shadow = scene.add.image(x, y + 22, 'entity_shadow').setDepth(-2).setScale(1.1);
 
     this.inputManager = new InputManager(scene);
+
+    // Dash on spacebar
+    if (scene.input.keyboard) {
+      scene.input.keyboard.on('keydown-SPACE', () => {
+        this.tryDash();
+      });
+    }
   }
 
-  update(): void {
+  private tryDash(): void {
+    if (this.dashCharges <= 0 || this.isDashing) return;
+    const dir = this.inputManager.getDirection();
+    if (dir.x === 0 && dir.y === 0) return;
+
+    this.isDashing = true;
+    this.dashInvincible = true;
+    this.dashCharges--;
+    // Start regen timer only if it isn't already running (sharing one timer
+    // across all missing charges).
+    if (this.dashCooldown <= 0) this.dashCooldown = this.DASH_COOLDOWN_MS;
+    this.setAlpha(0.5);
+
+    // Apply burst velocity in movement direction
+    this.setVelocity(dir.x * this.DASH_SPEED, dir.y * this.DASH_SPEED);
+
+    // Dash trail effect
+    const trailCount = 5;
+    for (let i = 0; i < trailCount; i++) {
+      const delay = i * (this.DASH_DURATION_MS / trailCount);
+      this.scene.time.delayedCall(delay, () => {
+        if (!this.active) return;
+        const afterImage = this.scene.add.circle(this.x, this.y, 12, 0xd4a017, 0.4).setDepth(3);
+        this.scene.tweens.add({
+          targets: afterImage, alpha: 0, scale: 0.3, duration: 200,
+          onComplete: () => afterImage.destroy(),
+        });
+      });
+    }
+
+    // End dash
+    setTimeout(() => {
+      this.isDashing = false;
+      // Brief post-dash invincibility (50ms extra grace)
+      setTimeout(() => {
+        this.dashInvincible = false;
+        if (this.active) this.setAlpha(1);
+      }, 50);
+    }, this.DASH_DURATION_MS);
+  }
+
+  update(delta: number = 16): void {
+    // Keep the ground shadow locked under the haggis at all times.
+    if (this.shadow) {
+      this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.4);
+    }
+
+    // Tick dash cooldown — regen one charge at a time, then re-arm if still
+    // below max (so Double Dash takes 2 × DASH_COOLDOWN_MS to fully refill).
+    if (this.dashCharges < this.maxDashCharges && this.dashCooldown > 0) {
+      this.dashCooldown -= delta;
+      if (this.dashCooldown <= 0) {
+        this.dashCharges++;
+        this.dashCooldown = this.dashCharges < this.maxDashCharges ? this.DASH_COOLDOWN_MS : 0;
+      }
+    }
+    // Tick shield cooldown
+    if (this.shieldCooldown > 0) this.shieldCooldown -= delta;
+
+    // Skip normal movement during dash — velocity is set by tryDash
+    if (this.isDashing) return;
+
     const dir = this.inputManager.getDirection();
 
     if (dir.x === 0 && dir.y === 0) {
@@ -152,8 +259,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   takeDamage(amount: number): boolean {
-    this.hp -= amount;
+    // Armor reduces incoming damage (minimum 1)
+    const mitigated = Math.max(1, amount - this.bonusArmor);
+    this.hp -= mitigated;
     if (this.hp <= 0) {
+      // Highland Shield: survive one lethal hit with 1 HP
+      if (this.shieldActive && this.shieldCooldown <= 0) {
+        this.hp = 1;
+        this.shieldCooldown = this.SHIELD_COOLDOWN_MS;
+        return false;
+      }
       this.hp = 0;
       return true;
     }
@@ -175,6 +290,53 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getDamageMultiplier(): number { return this.bonusDamageMultiplier; }
   getAoeMultiplier(): number { return this.bonusAoeMultiplier; }
   getAttackSpeedMultiplier(): number { return this.bonusAttackSpeedMultiplier; }
+  getCritChance(): number { return 0.10 + this.bonusCritChance; }
+  getArmor(): number { return this.bonusArmor; }
+  getHpRegen(): number { return this.hpRegen; }
+  getCooldownReduction(): number { return this.bonusCooldownReduction; }
+  isDashInvincible(): boolean { return this.dashInvincible; }
+  /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
+  getDashCooldownFraction(): number {
+    if (this.dashCharges >= this.maxDashCharges) return 0;
+    return Math.max(0, this.dashCooldown / this.DASH_COOLDOWN_MS);
+  }
+  getDashCharges(): number { return this.dashCharges; }
+  getMaxDashCharges(): number { return this.maxDashCharges; }
+  /** Double Dash perk: grant an extra max charge (also tops up current charges). */
+  addDashCharge(): void {
+    this.maxDashCharges++;
+    this.dashCharges = this.maxDashCharges;
+  }
+  getXpMultiplier(): number { return this.bonusXpMultiplier; }
+
+  addXpMultiplier(fraction: number): void {
+    this.bonusXpMultiplier += fraction;
+  }
+
+  addLifesteal(amount: number): void {
+    // Cap at 3 HP/kill — at ~10 kills/sec late-game, 3 lifesteal = 30 HP/sec
+    // which combined with regen cap (5) keeps max sustain around 35 HP/sec
+    this.bonusLifesteal = Math.min(3, this.bonusLifesteal + amount);
+  }
+
+  getLifesteal(): number { return this.bonusLifesteal; }
+  getCritDamageMultiplier(): number { return this.bonusCritDamageMultiplier; }
+
+  addCritDamageMultiplier(amount: number): void {
+    this.bonusCritDamageMultiplier += amount;
+  }
+
+  setThorns(damage: number): void { this.thornsDamage = damage; }
+  getThornsDamage(): number { return this.thornsDamage; }
+  getProjectileSpeedMul(): number { return this.bonusProjectileSpeedMul; }
+  getKnockbackMul(): number { return this.bonusKnockbackMul; }
+  addProjectileSpeedMul(amount: number): void { this.bonusProjectileSpeedMul += amount; }
+  addKnockbackMul(amount: number): void { this.bonusKnockbackMul += amount; }
+  getBossHealFrac(): number { return this.bonusBossHealFrac; }
+  addBossHealFrac(amount: number): void { this.bonusBossHealFrac += amount; }
+
+  enableShield(): void { this.shieldActive = true; this.shieldCooldown = 0; }
+  hasShield(): boolean { return this.shieldActive && this.shieldCooldown <= 0; }
 
   // ── Upgrade bonuses (accumulated, never wiped) ──
 
@@ -209,6 +371,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   addAttackSpeedMultiplier(fraction: number): void {
     this.bonusAttackSpeedMultiplier += fraction;
+  }
+
+  addCritChance(fraction: number): void {
+    this.bonusCritChance += fraction;
+  }
+
+  addArmor(amount: number): void {
+    this.bonusArmor += amount;
+  }
+
+  addHpRegen(amount: number): void {
+    // Cap at 5.0 HP/sec — stacking Highland Spring + Natural Recovery + other
+    // regen sources previously trivialized late-game survivability
+    this.hpRegen = Math.min(5.0, this.hpRegen + amount);
+  }
+
+  addCooldownReduction(fraction: number): void {
+    this.bonusCooldownReduction = 1 - (1 - this.bonusCooldownReduction) * (1 - fraction);
+  }
+
+  /** Tick HP regeneration — call each frame with delta in ms */
+  tickRegen(delta: number): void {
+    if (this.hpRegen <= 0 || this.hp >= this.maxHp) return;
+    this.regenAccumulator += this.hpRegen * (delta / 1000);
+    if (this.regenAccumulator >= 1) {
+      const healed = Math.floor(this.regenAccumulator);
+      this.regenAccumulator -= healed;
+      this.heal(healed);
+    }
   }
 
   /** Apply net slow — only takes effect on first stack, subsequent nets just increment counter */

@@ -40,6 +40,7 @@ export class Conductor {
   triumph = 0;
 
   private killHistory: { time: number; count: number }[] = [];
+  private lastRecordedKillCount = 0;
 
   private currentDegree = 0;
   private currentOctave = 0;
@@ -146,7 +147,10 @@ export class Conductor {
   }
 
   isResolutionComplete(): boolean {
-    return this.resolutionMode && this.currentDegree === 0 && this.currentOctave === 0;
+    return this.resolutionMode
+      && this.currentDegree === 0
+      && this.currentOctave === 0
+      && this.phraseNotesRemaining <= 0;
   }
 
   private startNewPhrase(): void {
@@ -239,7 +243,11 @@ export class Conductor {
   }
 
   private updateKillHistory(gameTimeSec: number, killCount: number): void {
-    this.killHistory.push({ time: gameTimeSec, count: killCount });
+    // Only record when killCount changes to avoid 60fps array bloat
+    if (killCount !== this.lastRecordedKillCount) {
+      this.lastRecordedKillCount = killCount;
+      this.killHistory.push({ time: gameTimeSec, count: killCount });
+    }
     while (this.killHistory.length > 0 && this.killHistory[0].time < gameTimeSec - 10) {
       this.killHistory.shift();
     }

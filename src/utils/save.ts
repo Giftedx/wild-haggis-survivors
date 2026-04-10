@@ -21,6 +21,18 @@ export interface SaveData {
   /** Best survival time in seconds */
   bestTime: number;
 
+  /** Best kills in a single run */
+  bestKills: number;
+
+  /** Total kills across all runs */
+  totalKills: number;
+
+  /** Total gold earned across all runs */
+  totalGoldEarned: number;
+
+  /** Best combo in a single run */
+  bestCombo: number;
+
   /** Settings */
   settings: {
     soundOn: boolean;
@@ -34,6 +46,10 @@ const DEFAULT_SAVE: SaveData = {
   unlockedVariants: ['classic'],
   totalRuns: 0,
   bestTime: 0,
+  bestKills: 0,
+  totalKills: 0,
+  totalGoldEarned: 0,
+  bestCombo: 0,
   settings: {
     soundOn: true,
     musicOn: true,
@@ -69,7 +85,9 @@ export function writeSave(data: SaveData): void {
 export function recordRun(
   timeSurvivedSec: number,
   enemiesKilled: number,
-  bossGold: number
+  bossGold: number,
+  coinGold: number = 0,
+  bestCombo: number = 0
 ): number {
   const save = loadSave();
   save.totalRuns++;
@@ -77,14 +95,23 @@ export function recordRun(
   if (timeSurvivedSec > save.bestTime) {
     save.bestTime = timeSurvivedSec;
   }
+  if (enemiesKilled > (save.bestKills ?? 0)) {
+    save.bestKills = enemiesKilled;
+  }
+  save.totalKills = (save.totalKills ?? 0) + enemiesKilled;
+  if (bestCombo > (save.bestCombo ?? 0)) {
+    save.bestCombo = bestCombo;
+  }
 
-  // Gold formula: base on time + kills + scaled boss bonus
+  // Gold formula: base on time + kills + boss bonus + coin drops
   const goldEarned = Math.floor(
     timeSurvivedSec * 0.5 +
     enemiesKilled * 0.2 +
-    bossGold
+    bossGold +
+    coinGold
   );
   save.gold += goldEarned;
+  save.totalGoldEarned = (save.totalGoldEarned ?? 0) + goldEarned;
 
   writeSave(save);
   return goldEarned;
