@@ -138,7 +138,11 @@ export class WeaponSystem {
     return true;
   }
 
-  /** Evolve a weapon — massively upgrades its behavior */
+  /**
+   * Evolve a weapon in-place: the base slot stays the source weapon key for saves,
+   * but combat switches to `evolutionKey` (see fireEvolved). Idempotent — returns
+   * false if already evolved or missing.
+   */
   evolveWeapon(weaponKey: string, evolutionKey: string): boolean {
     const w = this.weapons.find(w => w.config.key === weaponKey);
     if (!w || w.evolved) return false;

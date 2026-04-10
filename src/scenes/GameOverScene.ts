@@ -212,7 +212,7 @@ export class GameOverScene extends Phaser.Scene {
       'Tip: Press SPACE to dash through enemies.',
       'Tip: Combos boost your damage when you keep killing.',
       'Tip: Armor reduces all incoming damage.',
-      'Tip: Max a weapon plus its passive to evolve it.',
+      'Tip: Max a weapon plus its passive, then open a treasure chest to evolve it.',
       'Tip: Pipers buff nearby enemies. Kill them first.',
       'Tip: Clockwise kiting works with the drift.',
     ];
