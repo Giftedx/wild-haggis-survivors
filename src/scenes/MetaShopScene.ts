@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
+import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
@@ -31,7 +32,7 @@ export class MetaShopScene extends Phaser.Scene {
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
     this.add
-      .text(width / 2, 32, 'META UPGRADES', {
+      .text(width / 2, 32, t('ui.metaShop.title'), {
         fontFamily: 'monospace',
         fontSize: '32px',
         color: '#77c977',
@@ -51,7 +52,7 @@ export class MetaShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 94, 'Spend lifetime kills on permanent run bonuses.', {
+      .text(width / 2, 94, t('ui.metaShop.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#8a93a8',
@@ -67,7 +68,7 @@ export class MetaShopScene extends Phaser.Scene {
       .rectangle(width / 2, height - 28, 200, 38, 0x3a4357, 1)
       .setInteractive({ useHandCursor: true });
     this.add
-      .text(width / 2, height - 28, 'BACK', {
+      .text(width / 2, height - 28, t('ui.metaShop.back'), {
         fontFamily: 'monospace',
         fontSize: '15px',
         color: '#ffffff',
@@ -96,7 +97,7 @@ export class MetaShopScene extends Phaser.Scene {
 
     this.clearElements(this.rowElements);
     const save = this.saveManager.load();
-    this.killsText.setText(`Kill credits: ${save.totalKills}`);
+    this.killsText.setText(t('ui.metaShop.kill_credits', { count: save.totalKills }));
 
     const { width } = this.scale;
     const keys = listMetaShopItemKeys();
@@ -112,16 +113,16 @@ export class MetaShopScene extends Phaser.Scene {
       const canAfford = !owned && achievementMet && save.totalKills >= item.cost;
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1b2337 : 0x172031, 0.82);
-      const nameText = this.add.text(34, y + 6, item.name, {
+      const nameText = this.add.text(34, y + 6, t(item.nameKey), {
         fontFamily: 'monospace',
         fontSize: '16px',
         color: owned ? '#73c37d' : locked ? '#8a7a98' : '#ffffff',
         fontStyle: 'bold',
       });
       const descExtra = req && !achievementMet
-        ? `\nRequires: ${ACHIEVEMENT_DEFS[req]?.title ?? req}`
+        ? `\n${t('ui.metaShop.requires', { title: t(ACHIEVEMENT_DEFS[req]!.titleKey) })}`
         : '';
-      const descText = this.add.text(34, y + 28, item.description + descExtra, {
+      const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra, {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#9ea7b9',
@@ -130,7 +131,7 @@ export class MetaShopScene extends Phaser.Scene {
       this.rowElements.push(rowBg, nameText, descText);
 
       if (owned) {
-        const maxLabel = this.add.text(width - 80, y + 28, 'OWNED', {
+        const maxLabel = this.add.text(width - 80, y + 28, t('ui.gameOver.owned'), {
           fontFamily: 'monospace',
           fontSize: '14px',
           color: '#73c37d',
@@ -141,7 +142,7 @@ export class MetaShopScene extends Phaser.Scene {
       }
 
       if (locked) {
-        const lockLabel = this.add.text(width - 80, y + 28, 'LOCKED', {
+        const lockLabel = this.add.text(width - 80, y + 28, t('ui.gameOver.locked'), {
           fontFamily: 'monospace',
           fontSize: '13px',
           color: '#7a6a88',
@@ -158,7 +159,7 @@ export class MetaShopScene extends Phaser.Scene {
         .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x475163, 1)
         .setInteractive({ useHandCursor: canAfford });
       const buyText = this.add
-        .text(width - 80, y + 32, `${item.cost} kills`, {
+        .text(width - 80, y + 32, t('ui.gameOver.meta_buy', { cost: item.cost }), {
           fontFamily: 'monospace',
           fontSize: '12px',
           color: buttonTextColor,

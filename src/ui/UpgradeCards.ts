@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { t } from '../core/i18n';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 
 /**
@@ -169,14 +170,14 @@ export class UpgradeCardsUI {
     this.elements.push(icon);
 
     // Name
-    const name = this.scene.add.text(x, y - 18, card.name, {
+    const name = this.scene.add.text(x, y - 18, t(card.name), {
       fontFamily: 'monospace', fontSize: '17px', color: '#ffffff',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(name);
 
     // Description
-    const desc = this.scene.add.text(x, y + 30, card.description, {
+    const desc = this.scene.add.text(x, y + 30, t(card.description), {
       fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
       align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);

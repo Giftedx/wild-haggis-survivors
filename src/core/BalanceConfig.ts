@@ -101,8 +101,9 @@ export type EvolutionRecipeDef = {
   baseWeapon: string;
   requiredPassive: string;
   evolvedWeapon: string;
-  name: string;
-  description: string;
+  /** Dot-path key for `i18n.t()` — e.g. `evolution.thistle_storm.name`. */
+  nameKey: string;
+  descriptionKey: string;
 };
 
 export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
@@ -110,43 +111,43 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     baseWeapon: 'thistle_shot',
     requiredPassive: 'sporran',
     evolvedWeapon: 'thistle_storm',
-    name: 'Thistle Storm',
-    description: '8 homing thistles seek enemies across the screen.',
+    nameKey: 'evolution.thistle_storm.name',
+    descriptionKey: 'evolution.thistle_storm.description',
   },
   {
     baseWeapon: 'bagpipe_blast',
     requiredPassive: 'whisky_flask',
     evolvedWeapon: 'highland_fling',
-    name: 'The Highland Fling',
-    description: 'Massive pulsating sonic ring shatters all enemies.',
+    nameKey: 'evolution.highland_fling.name',
+    descriptionKey: 'evolution.highland_fling.description',
   },
   {
     baseWeapon: 'caber_toss',
     requiredPassive: 'kilt',
     evolvedWeapon: 'highland_games',
-    name: 'Highland Games',
-    description: 'Caber explodes on final pierce, leaving a burning zone.',
+    nameKey: 'evolution.highland_games.name',
+    descriptionKey: 'evolution.highland_games.description',
   },
   {
     baseWeapon: 'scotch_mist',
     requiredPassive: 'tam_o_shanter',
     evolvedWeapon: 'the_haar',
-    name: 'The Haar',
-    description: 'Dense fog covers 40% of the screen, melting enemies.',
+    nameKey: 'evolution.the_haar.name',
+    descriptionKey: 'evolution.the_haar.description',
   },
   {
     baseWeapon: 'haggis_hurler',
     requiredPassive: 'irn_bru',
     evolvedWeapon: 'haggis_cannon',
-    name: 'Haggis Cannon',
-    description: 'Rapid-fire haggis that explode on each bounce.',
+    nameKey: 'evolution.haggis_cannon.name',
+    descriptionKey: 'evolution.haggis_cannon.description',
   },
   {
     baseWeapon: 'nessie_tentacle',
     requiredPassive: 'loch_water',
     evolvedWeapon: 'nessie_unleashed',
-    name: 'Nessie Unleashed',
-    description: 'Multiple massive tentacles sweep the entire screen.',
+    nameKey: 'evolution.nessie_unleashed.name',
+    descriptionKey: 'evolution.nessie_unleashed.description',
   },
 ];
 
@@ -162,21 +163,21 @@ export type AchievementId =
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
   {
-    title: string;
-    description: string;
+    titleKey: string;
+    descriptionKey: string;
   }
 > = {
   ach_kills_1000: {
-    title: 'Cull of the Glen',
-    description: 'Reach 1,000 lifetime kills (meta).',
+    titleKey: 'achievement.ach_kills_1000.title',
+    descriptionKey: 'achievement.ach_kills_1000.description',
   },
   ach_survive_10m: {
-    title: 'Heather Marathon',
-    description: 'Survive 10 minutes in a single run.',
+    titleKey: 'achievement.ach_survive_10m.title',
+    descriptionKey: 'achievement.ach_survive_10m.description',
   },
   ach_defeat_taxman: {
-    title: 'Tax-Free Zone',
-    description: 'Defeat the Taxman.',
+    titleKey: 'achievement.ach_defeat_taxman.title',
+    descriptionKey: 'achievement.ach_defeat_taxman.description',
   },
 };
 

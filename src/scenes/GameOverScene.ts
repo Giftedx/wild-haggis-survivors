@@ -6,6 +6,7 @@ import { getVariantByKey, VariantKey } from '../data/variants';
 import { WEAPON_DEFS } from '../data/weapons';
 import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import type { GameOverPayload } from './gameOverPayload';
+import { t } from '../core/i18n';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -34,7 +35,12 @@ export class GameOverScene extends Phaser.Scene {
     const titleColor = isVictory ? '#d4a017' : '#cc3333';
     const panelStroke = isVictory ? COLORS.WHISKY_GOLD : 0xaa4444;
     const summaryTime = this.formatClockTime(summary.timeSurvivedSec);
-    const goldBreakdown = `Time ${Math.floor(summary.timeSurvivedSec * 0.4)}  |  Kills ${Math.floor(summary.enemiesKilled * 0.4)}  |  Boss ${summary.bossGold}  |  Coins ${summary.coinGold ?? 0}`;
+    const goldBreakdown = t('ui.gameOver.gold_breakdown', {
+      timeGold: Math.floor(summary.timeSurvivedSec * 0.4),
+      killGold: Math.floor(summary.enemiesKilled * 0.4),
+      bossGold: summary.bossGold,
+      coinGold: summary.coinGold ?? 0,
+    });
 
     const overlay = this.add
       .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
@@ -50,7 +56,7 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
     const title = this.add
-      .text(width / 2, 86, isVictory ? 'VICTORY!' : 'YOU DIED', {
+      .text(width / 2, 86, isVictory ? t('ui.gameOver.victory_title') : t('ui.gameOver.death_title'), {
         fontFamily: 'monospace',
         fontSize: isVictory ? '56px' : '52px',
         color: titleColor,
@@ -64,7 +70,7 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0)
       .setScale(isVictory ? 0.7 : 1.4);
     const subtitle = this.add
-      .text(width / 2, 126, isVictory ? 'The Highlands are safe... for now.' : 'The glen took its due. Bank the run and go again.', {
+      .text(width / 2, 126, isVictory ? t('ui.gameOver.victory_sub') : t('ui.gameOver.death_sub'), {
         fontFamily: 'monospace',
         fontSize: '16px',
         color: '#a8b0c0',
@@ -91,7 +97,7 @@ export class GameOverScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x355079, 1)
       .setAlpha(0);
     const variantText = this.add
-      .text(width / 2, 168, `Run Variant: ${this.payload.variantLabel}`, {
+      .text(width / 2, 168, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#d7e3ff',
@@ -132,17 +138,17 @@ export class GameOverScene extends Phaser.Scene {
 
     const statBaseY = 214;
     const statGap = 142;
-    this.createResultStat(width / 2 - statGap, statBaseY, 'Time', summaryTime, d + 3, 600);
-    this.createResultStat(width / 2, statBaseY, 'Kills', `${summary.enemiesKilled}`, d + 3, 660);
-    this.createResultStat(width / 2 + statGap, statBaseY, 'Level', `${this.payload.xpLevel}`, d + 3, 720);
-    this.createResultStat(width / 2 - statGap / 2, statBaseY + 42, 'Bosses', `${this.payload.bossKillCount}`, d + 3, 780);
-    this.createResultStat(width / 2 + statGap / 2, statBaseY + 42, 'Passives', `${this.payload.ownedPassiveCount}`, d + 3, 840);
+    this.createResultStat(width / 2 - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600);
+    this.createResultStat(width / 2, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660);
+    this.createResultStat(width / 2 + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720);
+    this.createResultStat(width / 2 - statGap / 2, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
+    this.createResultStat(width / 2 + statGap / 2, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
 
     const loadoutSummary = this.add
       .text(
         width / 2,
         276,
-        `Weapons ${this.payload.weaponCount} (${this.payload.evolvedCount} evolved)\n${this.payload.buildSummary}`,
+        `${t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount })}\n${this.payload.buildSummary}`,
         {
           fontFamily: 'monospace',
           fontSize: '12px',
@@ -159,7 +165,7 @@ export class GameOverScene extends Phaser.Scene {
 
     const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary);
     const weaponHeading = this.add
-      .text(width / 2, 304, 'DAMAGE BY WEAPON', {
+      .text(width / 2, 304, t('ui.gameOver.damage_by_weapon'), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#7f8ca7',
@@ -186,7 +192,7 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: [weaponHeading, weaponBody], alpha: 1, duration: 260, delay: 940 });
 
     const goldTitle = this.add
-      .text(width / 2, 431, `+${runResult.goldEarned} Gold`, {
+      .text(width / 2, 431, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
         fontFamily: 'monospace',
         fontSize: '28px',
         color: '#d4a017',
@@ -221,17 +227,17 @@ export class GameOverScene extends Phaser.Scene {
 
     this.addRunResultUnlockContent(width / 2, 507, d + 3, runResult.newlyUnlockedVariants, 1140);
 
-    this.createResultActionButton(width / 2 - 196, 647, 172, 42, 'PLAY AGAIN', COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
+    this.createResultActionButton(width / 2 - 196, 647, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Game');
     });
-    this.createResultActionButton(width / 2, 647, 172, 42, 'UPGRADES', COLORS.WHISKY_GOLD, '#000000', 1300, () => {
+    this.createResultActionButton(width / 2, 647, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
     });
-    this.createResultActionButton(width / 2 + 196, 647, 172, 42, 'MENU', 0x444444, '#ffffff', 1360, () => {
+    this.createResultActionButton(width / 2 + 196, 647, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');
@@ -246,19 +252,19 @@ export class GameOverScene extends Phaser.Scene {
     delay: number
   ): void {
     const tips = [
-      'Tip: Press SPACE to dash through enemies.',
-      'Tip: Combos boost your damage when you keep killing.',
-      'Tip: Armor reduces all incoming damage.',
-      'Tip: Max a weapon plus its passive, then open a treasure chest to evolve it.',
-      'Tip: Pipers buff nearby enemies. Kill them first.',
-      'Tip: Clockwise kiting works with the drift.',
+      t('ui.tips.dash'),
+      t('ui.tips.combo'),
+      t('ui.tips.armor'),
+      t('ui.tips.evolve'),
+      t('ui.tips.piper'),
+      t('ui.tips.kite'),
     ];
     const hasUnlocks = variantKeys.length > 0;
     const headingText = hasUnlocks
       ? variantKeys.length === 1
-        ? 'NEW VARIANT UNLOCKED'
-        : 'NEW VARIANTS UNLOCKED'
-      : 'NEXT RUN TIP';
+        ? t('ui.gameOver.unlock_single')
+        : t('ui.gameOver.unlock_multi')
+      : t('ui.gameOver.next_tip');
     const headingColor = hasUnlocks ? '#77c977' : '#8aa4d7';
 
     const heading = this.add
@@ -422,10 +428,14 @@ export class GameOverScene extends Phaser.Scene {
     const entries = sortedWeaponDamageEntries(weaponDamage);
     const maxD = entries[0]?.damage ?? 1;
     const lines: string[] = [
-      `Kills ${summary.enemiesKilled}  ·  Time ${this.formatClockTime(summary.timeSurvivedSec)}  ·  Gold +${this.payload.runResult.goldEarned}`,
+      t('ui.gameOver.damage_summary', {
+        kills: summary.enemiesKilled,
+        time: this.formatClockTime(summary.timeSurvivedSec),
+        gold: this.payload.runResult.goldEarned,
+      }),
     ];
     if (entries.length === 0) {
-      lines.push('(no weapon damage recorded)');
+      lines.push(t('ui.gameOver.no_weapon_damage'));
       return lines.join('\n');
     }
     const barW = 14;
@@ -437,7 +447,7 @@ export class GameOverScene extends Phaser.Scene {
       lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}  ${bar}`);
     }
     if (entries.length > 6) {
-      lines.push(`… +${entries.length - 6} more`);
+      lines.push(t('ui.gameOver.more_weapons', { count: entries.length - 6 }));
     }
     return lines.join('\n');
   }
