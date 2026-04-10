@@ -15,8 +15,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private isBouncing: boolean = false;
   /** Time-to-live in ms for bouncing projectiles (range check is unreliable with bounces) */
   private bouncingTTL: number = 0;
-  /** Tracks enemies already hit by bouncing projectiles to prevent per-frame damage */
-  private bouncingHitEnemies: Set<number> = new Set();
+  /** Tracks enemies already hit by this bouncing projectile (per-lifetime). */
+  private hitTargets: Set<Phaser.GameObjects.GameObject> = new Set();
   /** Optional callback fired when this projectile deactivates (used by Highland Games explosion) */
   onDeactivateCallback: (() => void) | null = null;
 
@@ -51,7 +51,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.pierceCount = pierce;
     this.maxRange = maxRange;
     this.isBouncing = false;
-    this.bouncingHitEnemies.clear();
+    this.hitTargets.clear();
     this.onDeactivateCallback = null; // Clear any prior override
     // Clear weapon key — non-projectile fire paths (bouncing, homing,
     // exploding, rapid bounce) don't set it, so a stale 'caber_toss' key
@@ -92,19 +92,13 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
 
   /**
    * For bouncing projectiles: checks if this enemy was already hit recently.
-   * Records the hit and sets a cooldown so the same enemy can be hit again on a later bounce.
-   * Returns true if the hit should be skipped (already hit recently).
+   * Records the hit so the same target cannot be hit twice by the same projectile.
+   * Returns true if the hit should be skipped (already hit).
    */
   shouldSkipHit(enemy: Phaser.GameObjects.GameObject): boolean {
     if (!this.isBouncing) return false;
-
-    const id = (enemy as any).__bouncingHitId ?? ((enemy as any).__bouncingHitId = Math.random());
-    if (this.bouncingHitEnemies.has(id)) return true;
-
-    this.bouncingHitEnemies.add(id);
-    this.scene.time.delayedCall(500, () => {
-      if (this.active) this.bouncingHitEnemies.delete(id);
-    });
+    if (this.hitTargets.has(enemy)) return true;
+    this.hitTargets.add(enemy);
     return false;
   }
 
@@ -140,7 +134,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setVelocity(0, 0);
-    this.bouncingHitEnemies.clear(); // Prevent stale IDs leaking into next pool cycle
+    this.hitTargets.clear(); // Prevent stale refs leaking into next pool cycle
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = false;
   }
