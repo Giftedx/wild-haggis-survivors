@@ -3,6 +3,7 @@ import { XPGem } from '../entities/XPGem';
 import { XP } from '../config';
 import { audio } from './AudioSystem';
 import { BALANCE } from '../core/BalanceConfig';
+import { ISceneContext } from '../core/ISceneContext';
 
 /**
  * XPSystem — manages XP gem pool, collection, and level-up triggers.
@@ -11,7 +12,7 @@ import { BALANCE } from '../core/BalanceConfig';
  * for pausing and showing upgrade cards.
  */
 export class XPSystem {
-  private scene: Phaser.Scene;
+  private scene: Phaser.Scene & ISceneContext;
   private gemPool: Phaser.GameObjects.Group;
 
   private currentXP: number = 0;
@@ -21,7 +22,7 @@ export class XPSystem {
   /** Event emitter for level-up */
   readonly events = new Phaser.Events.EventEmitter();
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene & ISceneContext) {
     this.scene = scene;
     this.xpToNextLevel = this.calcXpRequired(2);
 
@@ -108,7 +109,7 @@ export class XPSystem {
   private collectGem(gem: XPGem): void {
     const value = gem.collect();
     this.currentXP += value;
-    audio.playXPCollect();
+    this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
 
     // Queue all pending level-ups
     while (this.currentXP >= this.xpToNextLevel && this.currentLevel < XP.MAX_LEVEL) {

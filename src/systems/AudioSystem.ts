@@ -2,13 +2,19 @@
  * AudioSystem — procedurally generated sound effects using Web Audio API.
  * Zero external audio files needed. All sounds are synthesized at runtime.
  *
- * Each sound function creates a short-lived oscillator/noise with
- * precise envelope shaping. Pitch is slightly randomized per call
- * to prevent repetition fatigue.
+ * Gameplay scenes should prefer `scene.getSFXManager().tryPlay(key, () => audio.play*Immediate())`
+ * so concurrency is visible on ISceneContext. Menu code may call `playClick()` / gated helpers directly.
+ * Oscillator detune spreads identical clips slightly to reduce phasing.
  */
 import { getAudioContext, getOutputNode } from './audioContext';
+import { sfxManager } from './audio/SFXManager';
 
 const BASE_SFX_GAIN = 0.3;
+
+/** Random detune in cents — keeps stacked identical SFX from comb-filtering. */
+function applySfxDetune(osc: OscillatorNode): void {
+  osc.detune.value = Math.random() * 200 - 100;
+}
 
 export class AudioSystem {
   private ctx: AudioContext | null = null;
@@ -54,24 +60,23 @@ export class AudioSystem {
     this.masterGain.gain.value = BASE_SFX_GAIN * this.sfxGainMultiplier * (this.enabled ? 1 : 0);
   }
 
-  /** Throttle: max one hit sound per 50ms to prevent audio spam from AoE weapons */
-  private lastHitTime: number = 0;
+  private gatedSfx(key: string, play: () => void): void {
+    if (!this.enabled) return;
+    sfxManager.tryPlay(key, play);
+  }
 
-  /** Enemy hit — short noise burst with quick decay */
-  playHit(): void {
+  /** Enemy hit — use inside `getSFXManager().tryPlay('hit', …)` from gameplay. */
+  playHitImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
-    // Throttle — AoE weapons can deal 10+ hits per frame
     const t = ctx.currentTime;
-    if (t - this.lastHitTime < 0.05) return;
-    this.lastHitTime = t;
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'square';
+    applySfxDetune(osc);
     osc.frequency.value = 200 + Math.random() * 100;
     osc.frequency.exponentialRampToValueAtTime(80, t + 0.08);
 
@@ -84,23 +89,22 @@ export class AudioSystem {
     osc.stop(t + 0.08);
   }
 
-  /** Throttle: max one kill sound per 30ms to prevent audio spam from AoE kills */
-  private lastKillTime: number = 0;
+  /** Gated fallback when no scene / SFXManager routing. */
+  playHit(): void {
+    this.gatedSfx('hit', () => this.playHitImmediate());
+  }
 
-  /** Enemy killed — satisfying "pop" */
-  playKill(): void {
+  playKillImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
     const t = ctx.currentTime;
-    if (t - this.lastKillTime < 0.03) return;
-    this.lastKillTime = t;
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'sine';
+    applySfxDetune(osc);
     osc.frequency.value = 400 + Math.random() * 200;
     osc.frequency.exponentialRampToValueAtTime(100, t + 0.15);
 
@@ -113,23 +117,21 @@ export class AudioSystem {
     osc.stop(t + 0.15);
   }
 
-  /** Throttle: max one collect sound per 40ms to prevent audio spam from gem vacuum */
-  private lastCollectTime: number = 0;
+  playKill(): void {
+    this.gatedSfx('kill', () => this.playKillImmediate());
+  }
 
-  /** XP gem collected — tiny ascending blip */
-  playXPCollect(): void {
+  playXPCollectImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
     const t = ctx.currentTime;
-    if (t - this.lastCollectTime < 0.04) return;
-    this.lastCollectTime = t;
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'sine';
+    applySfxDetune(osc);
     osc.frequency.value = 800 + Math.random() * 400;
     osc.frequency.exponentialRampToValueAtTime(1200 + Math.random() * 200, t + 0.05);
 
@@ -140,6 +142,10 @@ export class AudioSystem {
     gain.connect(this.masterGain);
     osc.start(t);
     osc.stop(t + 0.06);
+  }
+
+  playXPCollect(): void {
+    this.gatedSfx('xp_pickup', () => this.playXPCollectImmediate());
   }
 
   /** Level up — ascending three-note arpeggio */
@@ -156,6 +162,7 @@ export class AudioSystem {
       const gain = ctx.createGain();
 
       osc.type = 'sine';
+      applySfxDetune(osc);
       osc.frequency.value = freq;
 
       const start = t + i * 0.1;
@@ -181,6 +188,7 @@ export class AudioSystem {
     const gain = ctx.createGain();
 
     osc.type = 'sawtooth';
+    applySfxDetune(osc);
     osc.frequency.value = 80;
     osc.frequency.exponentialRampToValueAtTime(30, t + 0.2);
 
@@ -204,6 +212,7 @@ export class AudioSystem {
     const gain = ctx.createGain();
 
     osc.type = 'sawtooth';
+    applySfxDetune(osc);
     osc.frequency.value = 60;
     osc.frequency.exponentialRampToValueAtTime(200, t + 0.8);
 
@@ -231,6 +240,7 @@ export class AudioSystem {
       const gain = ctx.createGain();
 
       osc.type = 'triangle';
+      applySfxDetune(osc);
       osc.frequency.value = freq;
 
       const start = t + i * 0.2;
@@ -244,23 +254,17 @@ export class AudioSystem {
     });
   }
 
-  /** Throttle: max one shoot sound per 100ms to prevent spam from multi-weapon fire */
-  private lastShootTime: number = 0;
-
-  /** Weapon fire — quick zap */
-  playShoot(): void {
+  playShootImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
 
     const t = ctx.currentTime;
-    if (t - this.lastShootTime < 0.1) return;
-    this.lastShootTime = t;
-
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
 
     osc.type = 'square';
+    applySfxDetune(osc);
     osc.frequency.value = 600 + Math.random() * 200;
     osc.frequency.exponentialRampToValueAtTime(200, t + 0.06);
 
@@ -273,26 +277,32 @@ export class AudioSystem {
     osc.stop(t + 0.06);
   }
 
+  playShoot(): void {
+    this.gatedSfx('shoot', () => this.playShootImmediate());
+  }
+
   /** Menu button click */
   playClick(): void {
-    if (!this.enabled) return;
-    const ctx = this.ensureContext();
-    if (!ctx || !this.masterGain) return;
+    this.gatedSfx('click', () => {
+      const ctx = this.ensureContext();
+      if (!ctx || !this.masterGain) return;
 
-    const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
+      const t = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
 
-    osc.type = 'sine';
-    osc.frequency.value = 700;
+      osc.type = 'sine';
+      applySfxDetune(osc);
+      osc.frequency.value = 700;
 
-    gain.gain.setValueAtTime(0.1, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+      gain.gain.setValueAtTime(0.1, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
 
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(t);
-    osc.stop(t + 0.05);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t);
+      osc.stop(t + 0.05);
+    });
   }
 }
 

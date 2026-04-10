@@ -2,6 +2,7 @@ import { Player } from '../entities/Player';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { TimeManager } from '../systems/TimeManager';
 import { WeaponSystem } from '../systems/WeaponSystem';
+import type { SFXManager } from '../systems/audio/SFXManager';
 import { UpdateTickers } from '../utils/UpdateTickers';
 
 /**
@@ -14,5 +15,6 @@ export interface ISceneContext {
   getUpdateTickers(): UpdateTickers;
   getSpawnSystem(): SpawnSystem;
   getWeaponSystem(): WeaponSystem;
+  getSFXManager(): SFXManager;
 }
 

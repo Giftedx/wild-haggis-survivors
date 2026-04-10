@@ -211,7 +211,7 @@ export class WeaponSystem {
         // Only play shoot sound for projectile-type weapons — AoE/trail/sweep have wrong sound
         const b = weapon.config.behavior;
         if (b === 'projectile' || b === 'piercing' || b === 'bouncing') {
-          audio.playShoot();
+          this.scene.getSFXManager().tryPlay('shoot', () => audio.playShootImmediate());
         }
       }
     }
