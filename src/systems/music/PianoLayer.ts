@@ -88,6 +88,16 @@ export class PianoLayer {
       if (this.voices[slotIdx]?.carrier === carrier) {
         this.voices[slotIdx] = null;
       }
+      // Disconnect the voice chain — carrier + modulator auto-disconnect,
+      // but modGain and voiceGain persist in the audio graph (held as inputs
+      // to carrier.frequency and this.filter) and accumulate across notes
+      // otherwise. This gets worse at 4-voice polyphony over a long run.
+      try {
+        carrier.disconnect();
+        modulator.disconnect();
+        modGain.disconnect();
+        voiceGain.disconnect();
+      } catch { /* already disconnected */ }
     };
   }
 
