@@ -32,6 +32,11 @@ export class JuiceSystem {
   // Screen flash overlay
   private flashRect: Phaser.GameObjects.Rectangle;
 
+  // Hit-freeze (game-tick, no wall-clock timers)
+  private freezeCooldownMs: number = 0;
+  private freezeRemainingMs: number = 0;
+  private freezePausedPhysics: boolean = false;
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
 
@@ -99,6 +104,21 @@ export class JuiceSystem {
 
   /** Call each frame */
   update(delta: number, hpFraction?: number): void {
+    const timeScale = this.scene?.time?.timeScale ?? 1;
+    const scaledDelta = delta * timeScale;
+
+    // Tick hit-freeze
+    if (this.freezeCooldownMs > 0) this.freezeCooldownMs -= scaledDelta;
+    if (this.freezeRemainingMs > 0) {
+      this.freezeRemainingMs -= scaledDelta;
+      if (this.freezeRemainingMs <= 0) {
+        if (this.freezePausedPhysics && this.scene.sys.isActive()) {
+          this.scene.physics.world.resume();
+        }
+        this.freezePausedPhysics = false;
+      }
+    }
+
     // Combo timer
     if (this.comboCount > 0) {
       this.comboTimer -= delta;
@@ -380,22 +400,21 @@ export class JuiceSystem {
 
   /** Hit freeze — 20ms time pause on kill for combat impact.
    *  Throttled to max once per 100ms to prevent stutter during AoE. */
-  private lastFreezeTime = 0;
   hitFreeze(): void {
-    const now = performance.now();
-    if (now - this.lastFreezeTime < 100) return;
     if (this.slowMotionActive) return; // don't interrupt slow-mo
-    this.lastFreezeTime = now;
-    this.scene.time.timeScale = 0;
-    // Use real setTimeout — scene.time.delayedCall won't fire at timeScale 0
-    // Capture scene ref to guard against stale callback after scene restart
-    const sceneRef = this.scene;
-    setTimeout(() => {
-      if (!sceneRef.sys.isActive()) return; // scene was restarted/destroyed
-      if (!this.slowMotionActive) {
-        sceneRef.time.timeScale = 1;
-      }
-    }, 20);
+    if (this.freezeCooldownMs > 0) return;
+    this.freezeCooldownMs = 100;
+    this.freezeRemainingMs = 20;
+
+    // Freeze gameplay by pausing physics. We intentionally do not touch
+    // timeScale here to avoid deadlocking time-scaled systems.
+    const alreadyPaused = this.scene.physics.world.isPaused;
+    if (!alreadyPaused) {
+      this.scene.physics.world.pause();
+      this.freezePausedPhysics = true;
+    } else {
+      this.freezePausedPhysics = false;
+    }
   }
 
   /** Brief slow-motion effect — guarded against overlapping calls */
