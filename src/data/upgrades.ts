@@ -88,6 +88,22 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'xp_gem',
     effect: { type: 'add_weapon', weaponKey: 'nessie_tentacle' },
   },
+  {
+    id: 'add_claymore',
+    name: 'Highland Claymore',
+    description: 'Wide, slow melee cleave — evolves with Tartan Sash.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'add_weapon', weaponKey: 'claymore' },
+  },
+  {
+    id: 'add_bagpipes',
+    name: 'Ceòl Mòr Bagpipes',
+    description: 'Standing drone pulses damage and slows nearby foes.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'add_weapon', weaponKey: 'bagpipes' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -156,6 +172,14 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'rare',
     icon: 'xp_gem',
     effect: { type: 'add_passive', passiveKey: 'highland_shield' },
+  },
+  {
+    id: 'add_tartan_sash',
+    name: 'Tartan Sash',
+    description: '+8% damage. Evolves the Highland Claymore.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'add_passive', passiveKey: 'tartan_sash' },
   },
 ];
 

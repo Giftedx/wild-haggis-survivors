@@ -80,6 +80,8 @@ export class BootScene extends Phaser.Scene {
     this.createEagle();
     this.createHaggisHunter();
     this.createAngryScotsman();
+    this.createKelpie();
+    this.createMidgieSwarm();
     this.createBoss();
     this.createThistle();
     this.createCaber();
@@ -229,6 +231,9 @@ export class BootScene extends Phaser.Scene {
     this.createHighlandFlingIcon();
     this.createTheHaarIcon();
     this.createNessieUnleashedIcon();
+    this.createWeaponIconFromTexture('wicon_claymore', 'caber');
+    this.createWeaponIconFromTexture('wicon_bagpipes', 'wicon_bagpipe_blast');
+    this.createWilliamBladeIcon();
   }
 
   /** Use an existing texture as a weapon icon (for projectile weapons). */
@@ -889,6 +894,48 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 4, cy - 14, 1);
 
     g.generateTexture('angry_scotsman', s, s);
+    g.destroy();
+  }
+
+  /** Kelpie — lean water-horse silhouette, reads fast at small size. */
+  private createKelpie(): void {
+    const s = 44;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+    g.fillStyle(0x0a2233, 1);
+    g.fillEllipse(cx, cy + 2, 36, 14);
+    g.fillStyle(0x1a5577, 1);
+    g.fillEllipse(cx - 2, cy + 1, 30, 11);
+    g.fillStyle(0x113344, 1);
+    g.fillEllipse(cx + 10, cy - 4, 12, 10);
+    g.fillStyle(0x226688, 1);
+    g.fillCircle(cx + 14, cy - 6, 4);
+    g.fillStyle(0xffeedd, 1);
+    g.fillCircle(cx + 15, cy - 7, 1.2);
+    g.fillStyle(0x004466, 1);
+    g.fillTriangle(cx - 18, cy + 4, cx - 8, cy + 2, cx - 14, cy + 10);
+    g.generateTexture('kelpie', s, s);
+    g.destroy();
+  }
+
+  /** Midgie swarm unit — smaller, angrier cousin of the terrier midge. */
+  private createMidgieSwarm(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 1;
+    g.fillStyle(0x221122, 0.35);
+    g.fillCircle(cx, cy, 9);
+    g.fillStyle(0x441a2a, 1);
+    g.fillEllipse(cx, cy + 1, 10, 7);
+    g.fillStyle(0x661144, 1);
+    g.fillCircle(cx, cy - 2, 3);
+    g.fillStyle(0xff2244, 1);
+    g.fillCircle(cx - 1, cy - 3, 1);
+    g.fillCircle(cx + 1, cy - 3, 1);
+    g.lineStyle(1, 0x110511, 0.9);
+    g.lineBetween(cx - 3, cy + 4, cx - 5, cy + 7);
+    g.lineBetween(cx + 3, cy + 4, cx + 5, cy + 7);
+    g.generateTexture('midgie_swarm', s, s);
     g.destroy();
   }
 
@@ -1884,6 +1931,23 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0x000000, 1);
     g.fillCircle(cx, cy, 1);
     g.generateTexture('wicon_nessie_unleashed', s, s);
+    g.destroy();
+  }
+
+  /** William Blade — evolved claymore HUD icon (gold flash + blade). */
+  private createWilliamBladeIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    g.fillStyle(0xffcc33, 0.5);
+    g.fillCircle(cx, cy, 9);
+    g.fillStyle(0xddaa11, 1);
+    g.fillRect(cx - 2, cy - 8, 4, 14);
+    g.fillStyle(0xeeeeff, 1);
+    g.fillRect(cx - 1, cy - 7, 2, 10);
+    g.fillStyle(0x886600, 1);
+    g.fillRect(cx - 4, cy + 4, 8, 2);
+    g.generateTexture('wicon_william_blade', s, s);
     g.destroy();
   }
 

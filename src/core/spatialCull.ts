@@ -35,8 +35,9 @@ export function isEnemySpatialPhysicsCulled(
   view: WorldViewRect,
   marginPx: number,
   bossFlag: boolean,
-  behavior: string
+  behavior: string,
+  spatialCullImmune: boolean = false
 ): boolean {
-  if (bossFlag || behavior === 'hazard') return false;
+  if (bossFlag || behavior === 'hazard' || spatialCullImmune) return false;
   return !isWorldPointInSpatialActiveZone(worldX, worldY, view, marginPx);
 }

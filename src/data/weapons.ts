@@ -8,6 +8,7 @@
  *  - 'aoe_pulse':  Damages all enemies in radius around player (Bagpipe Blast)
  *  - 'trail':      Drops damage zones behind the player (Scotch Mist)
  *  - 'arc_sweep':  Damages enemies in a frontal arc (Nessie's Tentacle)
+ *  - 'aura_pulse': Persistent radial pulses (damage + slow) around the player
  */
 
 export type WeaponBehavior =
@@ -16,7 +17,8 @@ export type WeaponBehavior =
   | 'bouncing'
   | 'aoe_pulse'
   | 'trail'
-  | 'arc_sweep';
+  | 'arc_sweep'
+  | 'aura_pulse';
 
 export interface WeaponDef {
   key: string;
@@ -187,6 +189,52 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.15,
+    },
+  },
+
+  claymore: {
+    key: 'claymore',
+    name: 'Highland Claymore',
+    description: 'Brutal wide melee cleave — slow, heavy hits.',
+    behavior: 'arc_sweep',
+    cooldownMs: 3400,
+    damage: 28,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 145,
+    arcDegrees: 168,
+    knockback: 95,
+    levelScaling: {
+      damage: 1.28,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.12,
+    },
+  },
+
+  bagpipes: {
+    key: 'bagpipes',
+    name: 'Ceòl Mòr Bagpipes',
+    description: 'Standing drone — pulsing ring harms and slows nearby foes.',
+    behavior: 'aura_pulse',
+    cooldownMs: 1900,
+    damage: 7,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 108,
+    arcDegrees: 360,
+    knockback: 0,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.86,
+      countAt: [],
+      pierce: 0,
+      radius: 1.14,
     },
   },
 };
