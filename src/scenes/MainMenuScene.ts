@@ -1,12 +1,14 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { SaveManager } from '../core/SaveManager';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
  */
 export class MainMenuScene extends Phaser.Scene {
   private saveManager = new SaveManager();
+  private gamepadNav: GamepadMenuNav | null = null;
 
   constructor() {
     super({ key: 'MainMenu' });
@@ -57,6 +59,8 @@ export class MainMenuScene extends Phaser.Scene {
     const bx = width / 2;
     const startY = height / 2 + 12;
     let metaY = startY + btnH + 14;
+    let abandonBtn: Phaser.GameObjects.Rectangle | null = null;
+    let goLoadoutFresh: (() => void) | null = null;
 
     const startBtn = this.add
       .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
@@ -88,7 +92,11 @@ export class MainMenuScene extends Phaser.Scene {
     if (suspended) {
       const newY = startY + btnH + 10;
       metaY = newY + btnH + 14;
-      const abandonBtn = this.add
+      goLoadoutFresh = () => {
+        this.saveManager.clearActiveRun();
+        this.scene.start('Menu');
+      };
+      abandonBtn = this.add
         .rectangle(bx, newY, btnW, 42, 0x3a4357, 1)
         .setInteractive({ useHandCursor: true });
       const abandonTxt = this.add
@@ -99,12 +107,8 @@ export class MainMenuScene extends Phaser.Scene {
           fontStyle: 'bold',
         })
         .setOrigin(0.5);
-      const goLoadoutFresh = () => {
-        this.saveManager.clearActiveRun();
-        this.scene.start('Menu');
-      };
-      abandonBtn.on('pointerover', () => abandonBtn.setFillStyle(0x4a5568));
-      abandonBtn.on('pointerout', () => abandonBtn.setFillStyle(0x3a4357));
+      abandonBtn.on('pointerover', () => abandonBtn!.setFillStyle(0x4a5568));
+      abandonBtn.on('pointerout', () => abandonBtn!.setFillStyle(0x3a4357));
       abandonBtn.on('pointerdown', goLoadoutFresh);
       abandonTxt.setInteractive({ useHandCursor: true });
       abandonTxt.on('pointerdown', goLoadoutFresh);
@@ -151,6 +155,18 @@ export class MainMenuScene extends Phaser.Scene {
     optTxt.setInteractive({ useHandCursor: true });
     optTxt.on('pointerdown', () => {
       this.scene.start('Settings');
+    });
+
+    const entries: GamepadMenuEntry[] = [{ rect: startBtn, activate: goPrimary }];
+    if (abandonBtn && goLoadoutFresh) entries.push({ rect: abandonBtn, activate: goLoadoutFresh });
+    entries.push(
+      { rect: metaBtn, activate: () => this.scene.start('MetaShop') },
+      { rect: optBtn, activate: () => this.scene.start('Settings') }
+    );
+    this.gamepadNav = new GamepadMenuNav(this, entries);
+    this.events.once('shutdown', () => {
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
     });
   }
 }

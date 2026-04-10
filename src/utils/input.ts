@@ -1,28 +1,34 @@
 import Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
+import { gamepadStickToMove, mergeMoveVectors } from './inputMath';
+
+const GAMEPAD_MOVE_DEADZONE = 0.22;
 
 /**
- * Unified input: reads WASD/arrow keys on desktop,
- * virtual joystick on mobile, and returns a normalized direction vector.
+ * Unified input: virtual joystick (touch), gamepad (sticks + D-pad), and WASD / arrows.
+ * Movement is merged with max length 1. Dash: Space, gamepad South / RT, right-half tap (touch).
  */
 export class InputManager {
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private wasd: Record<string, Phaser.Input.Keyboard.Key> | undefined;
+  private spaceKey: Phaser.Input.Keyboard.Key | undefined;
 
   // Virtual joystick state (mobile)
   private joystickActive = false;
-  private joystickPointerId: number = -1; // Track which finger owns the joystick
+  private joystickPointerId: number = -1;
   private joystickOrigin = { x: 0, y: 0 };
   private joystickCurrent = { x: 0, y: 0 };
   private readonly JOYSTICK_DEAD_ZONE = 15;
   private readonly JOYSTICK_MAX_DIST = 60;
 
-  // Joystick visual elements
   private joystickBase: Phaser.GameObjects.Arc | null = null;
   private joystickThumb: Phaser.GameObjects.Arc | null = null;
 
   private isTouchDevice: boolean;
   private subs = new SubscriptionBag();
+
+  private pendingTouchDash = false;
+  private prevGamepadDash = false;
 
   constructor(private scene: Phaser.Scene) {
     this.isTouchDevice = scene.sys.game.device.input.touch;
@@ -35,21 +41,59 @@ export class InputManager {
         S: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
         D: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       };
+      this.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
     if (this.isTouchDevice) {
-      this.setupTouchJoystick();
+      this.setupTouchInput();
     }
   }
 
-  /** Returns a normalized {x, y} direction vector. Zero vector = no input. */
+  /**
+   * True once when Space (JustDown), gamepad South / RT edge, or right-zone tap fires.
+   * Call at most once per frame (e.g. start of Player.update).
+   */
+  consumeDashPressed(): boolean {
+    if (this.pendingTouchDash) {
+      this.pendingTouchDash = false;
+      return true;
+    }
+    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      return true;
+    }
+    if (this.pollGamepadDashEdge()) return true;
+    return false;
+  }
+
+  private pollGamepadDashEdge(): boolean {
+    const pad = this.scene.input.gamepad?.pad1;
+    if (!pad?.connected) {
+      this.prevGamepadDash = false;
+      return false;
+    }
+    const south = pad.buttons[0]?.pressed ?? false;
+    const rt = (pad.buttons[7]?.value ?? 0) > 0.35;
+    const now = south || rt;
+    const edge = now && !this.prevGamepadDash;
+    this.prevGamepadDash = now;
+    return edge;
+  }
+
+  /** Returns a normalized {x, y} direction vector. Zero vector = no input. Length ≤ 1. */
   getDirection(): { x: number; y: number } {
-    // Touch joystick takes priority if active
     if (this.joystickActive) {
       return this.getJoystickDirection();
     }
 
-    // Keyboard input
+    const kb = this.getKeyboardDirection();
+    const gp = this.getGamepadMoveVector();
+
+    if (kb.x === 0 && kb.y === 0) return gp;
+    if (gp.x === 0 && gp.y === 0) return kb;
+    return mergeMoveVectors(kb, gp, 1);
+  }
+
+  private getKeyboardDirection(): { x: number; y: number } {
     let x = 0;
     let y = 0;
 
@@ -67,12 +111,38 @@ export class InputManager {
       if (this.wasd.S.isDown) y += 1;
     }
 
-    // Normalize diagonal movement
-    const len = Math.sqrt(x * x + y * y);
+    const len = Math.hypot(x, y);
     if (len > 0) {
       return { x: x / len, y: y / len };
     }
     return { x: 0, y: 0 };
+  }
+
+  private getGamepadMoveVector(): { x: number; y: number } {
+    const pad = this.scene.input.gamepad?.pad1;
+    if (!pad?.connected) return { x: 0, y: 0 };
+
+    let lx = pad.leftStick.x;
+    let ly = pad.leftStick.y;
+    const v = gamepadStickToMove(lx, ly, GAMEPAD_MOVE_DEADZONE);
+    if (v.x !== 0 || v.y !== 0) return v;
+
+    // D-pad digital (Phaser mapped) — unit vectors, merged as second pass
+    let dx = 0;
+    let dy = 0;
+    if (pad.left) dx -= 1;
+    if (pad.right) dx += 1;
+    if (pad.up) dy -= 1;
+    if (pad.down) dy += 1;
+    const dlen = Math.hypot(dx, dy);
+    if (dlen > 0) {
+      return { x: dx / dlen, y: dy / dlen };
+    }
+
+    // Right stick as look/move fallback (Steam Deck / twin-stick comfort)
+    lx = pad.rightStick.x;
+    ly = pad.rightStick.y;
+    return gamepadStickToMove(lx, ly, GAMEPAD_MOVE_DEADZONE);
   }
 
   private getJoystickDirection(): { x: number; y: number } {
@@ -84,19 +154,18 @@ export class InputManager {
       return { x: 0, y: 0 };
     }
 
-    // Normalize to unit vector — consistent with keyboard (always full speed)
     return {
       x: dx / dist,
       y: dy / dist,
     };
   }
 
-  private setupTouchJoystick(): void {
+  /** One pointerdown listener — dash on the right 40%, joystick on the left 60%. */
+  private setupTouchInput(): void {
     const scene = this.scene;
 
     const ensureVisuals = () => {
       if (this.joystickBase && this.joystickThumb) return;
-      // Create joystick visuals (hidden until touch)
       this.joystickBase = scene.add
         .circle(0, 0, this.JOYSTICK_MAX_DIST, 0xffffff, 0.15)
         .setScrollFactor(0)
@@ -111,12 +180,14 @@ export class InputManager {
     };
 
     const onPointerDown = (pointer: Phaser.Input.Pointer) => {
-      // Don't activate joystick if the pointer hit an interactive game object
-      // (e.g., upgrade cards, pause buttons) — those should consume the tap
       const hitObjects = scene.input.hitTestPointer(pointer);
-      if (hitObjects.some(obj => obj.input?.enabled)) return;
+      if (hitObjects.some((obj) => obj.input?.enabled)) return;
 
-      // Only use left half of screen for joystick, and only if no joystick active
+      if (pointer.x >= scene.scale.width * 0.6) {
+        this.pendingTouchDash = true;
+        return;
+      }
+
       if (!this.joystickActive && pointer.x < scene.scale.width * 0.6) {
         ensureVisuals();
         this.joystickActive = true;
@@ -138,7 +209,6 @@ export class InputManager {
         this.joystickCurrent.x = pointer.x;
         this.joystickCurrent.y = pointer.y;
 
-        // Clamp thumb visual to max distance
         if (this.joystickThumb) {
           const dx = pointer.x - this.joystickOrigin.x;
           const dy = pointer.y - this.joystickOrigin.y;
@@ -178,5 +248,7 @@ export class InputManager {
     this.joystickThumb = null;
     this.joystickActive = false;
     this.joystickPointerId = -1;
+    this.pendingTouchDash = false;
+    this.prevGamepadDash = false;
   }
 }

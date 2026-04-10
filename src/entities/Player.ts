@@ -142,12 +142,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.inputManager = new InputManager(scene);
     this.time = timeManager;
-
-    // Dash on spacebar
-    if (scene.input.keyboard) {
-      const onSpaceDown = () => this.tryDash();
-      this.subs.listen(scene.input.keyboard as any, 'keydown-SPACE', onSpaceDown);
-    }
   }
 
   private tryDash(): void {
@@ -238,6 +232,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Skip normal movement during dash — velocity is set by tryDash
     if (this.isDashing) return;
+
+    if (this.inputManager.consumeDashPressed()) {
+      this.tryDash();
+    }
 
     const dir = this.inputManager.getDirection();
 
