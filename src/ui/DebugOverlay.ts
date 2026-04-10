@@ -24,7 +24,7 @@ export class DebugOverlay {
     const { width } = scene.scale;
     const d = 220;
 
-    this.bg = scene.add.rectangle(8, 8, Math.min(420, width - 16), 138, 0x000000, 0.65)
+    this.bg = scene.add.rectangle(8, 8, Math.min(420, width - 16), 158, 0x000000, 0.65)
       .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(d)
@@ -90,11 +90,14 @@ export class DebugOverlay {
     const tokens = timeManager.getActiveTokenKeys();
 
     const saturated = enemiesActive >= ENEMIES.MAX_ACTIVE || enemiesTotal >= ENEMIES.MAX_ACTIVE;
+    const stall = spawnSystem.getSpawnStallReason();
+    const stallLabel = stall === null ? 'OK' : stall;
 
     this.text.setText([
       `Enemies: ${enemiesActive}/${ENEMIES.MAX_ACTIVE}  (pool: ${enemiesTotal}) ${saturated ? 'MAXED' : ''}`,
       `Projectiles: ${projActive}  (pool: ${projTotal})`,
       `Spawn: t=${spawnT.toFixed(2)}s / i=${spawnI.toFixed(2)}s  burst=${spawnSystem.getBurstSize()}`,
+      `Status: [${stallLabel}]`,
       `Boss: active=${bossActive}  spawned=${bossSpawned}  scheduled=${bossScheduled}`,
       `Time: paused=${paused}  scale=${timeScale.toFixed(2)}  tokens=[${tokens.join(', ')}]`,
     ].join('\n'));
