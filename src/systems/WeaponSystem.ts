@@ -168,9 +168,13 @@ export class WeaponSystem {
       }
     }
 
-    // Tick each weapon (attackSpeedMultiplier + cooldownReduction reduce effective cooldown)
+    // Tick each weapon. The reset formula below already bakes in
+    // attackSpeedMultiplier and cooldownReduction, so the decrement itself
+    // is plain delta — multiplying it by attackSpeedMultiplier would
+    // compound and make fire rate quadratic in the stat (20% attack speed
+    // was actually giving ~44% faster fire).
     for (const weapon of this.weapons) {
-      weapon.cooldownRemaining -= delta * this.attackSpeedMultiplier;
+      weapon.cooldownRemaining -= delta;
       if (weapon.cooldownRemaining <= 0) {
         // Scale the cooldown reset by attackSpeedMultiplier and cooldownReduction.
         // Enforce an absolute 50ms minimum so extreme stacking can't produce
@@ -566,20 +570,18 @@ export class WeaponSystem {
       delay: 300,
       repeat: Math.floor(duration / 300) - 1,
       callback: () => {
-        if (!this.scene?.sys?.isActive()) { timer.destroy(); return; }
+        if (this.destroyed || !this.scene?.sys?.isActive()) { timer.destroy(); return; }
         if (this.scene.physics.world.isPaused) return;
         const enemies = this.enemyGroup.getChildren() as Enemy[];
         for (const enemy of enemies) {
           if (!enemy.active) continue;
           if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
             this.dealDamageToEnemy(enemy, dmg);
-            // Slow enemies in the fog — cap at 30% of original speed to prevent freeze-lock
-            const body = enemy.body as Phaser.Physics.Arcade.Body;
-            const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
-            if (speed > 20) {
-              body.velocity.x *= 0.7;
-              body.velocity.y *= 0.7;
-            }
+            // Slow enemies in the fog — apply through the freeze system so the
+            // slow persists across behavior ticks (writing to body.velocity
+            // here was a no-op because behaviorChase rewrites velocity from
+            // this.speed every frame before the next fog tick fires).
+            enemy.applyFreeze(0.7, 400);
           }
         }
       },
