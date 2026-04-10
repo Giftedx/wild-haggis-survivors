@@ -29,3 +29,8 @@ Next:
   - Type escape hatches: multiple `as any` in Enemy/SpawnSystem/Projectile/UpgradeCards.
   - Scene reach-through: Enemy uses getPlayer/getSpawnSystem/getWeaponSystem via `this.scene as any`.
 - Repo hygiene remains critical: git status shows dist/ and node_modules/ changes tracked/untracked.
+
+[2026-04-10] Phase 2: Remote binding attempt
+- Added remote origin = git@github.com:AutomatedOps/core-engine.git
+- Push failed (SSH auth): Permission denied (publickey).
+- Failsafe engaged: continuing with stabilization work without remote push.
