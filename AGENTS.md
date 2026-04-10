@@ -23,10 +23,13 @@ Before claiming anything is “fixed” or “done”, run at least `npm test` a
 - **`delayedCall` respects `timeScale`**: at `timeScale = 0` it will not advance; use real timers only when you explicitly need wall-clock behavior.
 
 ## Repo hygiene (CRITICAL)
-This repo currently contains churn from `dist/` and `node_modules/`. Unless the user explicitly requests otherwise:
-- **Do not commit `node_modules/`**.
-- **Do not commit `dist/`** (prefer CI deployment / build artifacts outside normal commits).
-- Add/maintain `.gitignore` accordingly.
+**This is a Source Repo.** Build artifacts are produced, not committed.
+
+Unless the user explicitly requests otherwise:
+- **Never commit `node_modules/`** (vendor blobs).
+- **Never commit `dist/`** (build output).
+- **Never commit `.env*`** (secrets).
+- Keep `.gitignore` enforcing these rules.
 
 If you are asked to commit `node_modules/` or `dist/`, do it, but call out the consequences (huge diffs, slow clones, merge pain).
 
