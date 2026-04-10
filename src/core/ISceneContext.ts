@@ -3,6 +3,7 @@ import { SpawnSystem } from '../systems/SpawnSystem';
 import { TimeManager } from '../systems/TimeManager';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import type { SFXManager } from '../systems/audio/SFXManager';
+import type { RunStatsTracker } from '../systems/RunStatsTracker';
 import { UpdateTickers } from '../utils/UpdateTickers';
 
 /**
@@ -16,5 +17,6 @@ export interface ISceneContext {
   getSpawnSystem(): SpawnSystem;
   getWeaponSystem(): WeaponSystem;
   getSFXManager(): SFXManager;
+  getRunStatsTracker(): RunStatsTracker;
 }
 

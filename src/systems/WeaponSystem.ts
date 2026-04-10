@@ -48,7 +48,7 @@ export class WeaponSystem {
   private critDamageMultiplier: number = 2.0;
   private cooldownReduction: number = 0;
 
-  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite) and 'damageDealt' (x, y, amount, isCrit) */
+  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
   readonly events = new Phaser.Events.EventEmitter();
 
   /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
@@ -308,6 +308,7 @@ export class WeaponSystem {
       const { damage, isCrit } = this.effectiveDamage(w);
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, 0, w.config.range, isCrit);
       proj.setBouncing();
+      proj.setWeaponKey(w.config.key);
     }
   }
 
@@ -333,7 +334,7 @@ export class WeaponSystem {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
       if (dist <= radius) {
-        this.dealDamageToEnemy(enemy, dmg, isCrit);
+        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
         // Bagpipe Blast applies brief freeze (slow 50% for 1s)
         enemy.applyFreeze(0.5, 1000);
@@ -355,6 +356,7 @@ export class WeaponSystem {
   private fireTrail(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg } = this.effectiveDamage(w);
+    const weaponKey = w.config.key;
 
     // Create a fading mist zone
     const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.3);
@@ -372,7 +374,7 @@ export class WeaponSystem {
             if (!enemy.active) continue;
             const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
             if (dist <= radius) {
-              this.dealDamageToEnemy(enemy, dmg);
+              this.dealDamageToEnemy(enemy, dmg, false, weaponKey);
               // Scotch Mist applies poison (stacking DoT)
               enemy.applyPoison(2, 3000);
             }
@@ -441,7 +443,7 @@ export class WeaponSystem {
       while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
 
       if (Math.abs(angleDiff) <= halfArc) {
-        this.dealDamageToEnemy(enemy, dmg, isCrit);
+        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
         // Knockback via impulse system (persistent for 150ms, then behavior resumes).
         if (enemy.active && w.config.knockback > 0) {
@@ -466,19 +468,19 @@ export class WeaponSystem {
         this.fireHomingBurst(w, px, py, dmg, 8);
         break;
       case 'highland_fling':
-        this.fireExpandingRing(px, py, dmg, radius * 3);
+        this.fireExpandingRing(px, py, dmg, radius * 3, w.config.key);
         break;
       case 'highland_games':
         this.fireExplodingProjectile(w, px, py, dmg);
         break;
       case 'the_haar':
-        this.fireMassiveFog(px, py, dmg, radius * 3);
+        this.fireMassiveFog(px, py, dmg, radius * 3, w.config.key);
         break;
       case 'haggis_cannon':
         this.fireRapidBounce(w, px, py, dmg, 5);
         break;
       case 'nessie_unleashed':
-        this.fireFullSweep(px, py, dmg, radius * 2);
+        this.fireFullSweep(px, py, dmg, radius * 2, w.config.key);
         break;
       default:
         this.fireProjectile(w, px, py, 'thistle');
@@ -514,11 +516,12 @@ export class WeaponSystem {
       }
 
       proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800);
+      proj.setWeaponKey(w.config.key);
     }
   }
 
   /** Highland Fling — massive expanding damage ring */
-  private fireExpandingRing(px: number, py: number, dmg: number, maxRadius: number): void {
+  private fireExpandingRing(px: number, py: number, dmg: number, maxRadius: number, weaponKey: string): void {
     const ring = this.scene.add.circle(px, py, 20, 0x4488ff, 0.5);
     let currentRadius = 20;
     const hitEnemies = new Set<Enemy>();
@@ -537,7 +540,7 @@ export class WeaponSystem {
           const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
           if (dist <= currentRadius) {
             hitEnemies.add(enemy);
-            this.dealDamageToEnemy(enemy, dmg);
+            this.dealDamageToEnemy(enemy, dmg, false, weaponKey);
           }
         }
       }
@@ -557,7 +560,9 @@ export class WeaponSystem {
 
     const proj = this.getProjectile('caber');
     if (!proj) return;
+    const weaponKey = w.config.key;
     proj.fire(px, py, target.x, target.y, w.config.projectileSpeed, dmg, w.pierce, w.config.range);
+    proj.setWeaponKey(weaponKey);
 
     // Use the safe callback field instead of monkey-patching deactivate
     proj.onDeactivateCallback = () => {
@@ -579,14 +584,14 @@ export class WeaponSystem {
       for (const enemy of enemies) {
         if (!enemy.active) continue;
         if (Phaser.Math.Distance.Between(ex, ey, enemy.x, enemy.y) <= 80) {
-          this.dealDamageToEnemy(enemy, Math.ceil(dmg * 0.6));
+          this.dealDamageToEnemy(enemy, Math.ceil(dmg * 0.6), false, weaponKey);
         }
       }
     };
   }
 
   /** The Haar — massive fog zone covering huge area */
-  private fireMassiveFog(px: number, py: number, dmg: number, radius: number): void {
+  private fireMassiveFog(px: number, py: number, dmg: number, radius: number, weaponKey: string): void {
     const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.25);
     const duration = 4000;
 
@@ -597,7 +602,7 @@ export class WeaponSystem {
       for (const enemy of enemies) {
         if (!enemy.active) continue;
         if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
-          this.dealDamageToEnemy(enemy, dmg);
+          this.dealDamageToEnemy(enemy, dmg, false, weaponKey);
           // Slow enemies in the fog to 50% speed. Duration matches the
           // tick interval + a small overlap so the slow is continuous
           // rather than flickering on and off between ticks.
@@ -623,11 +628,12 @@ export class WeaponSystem {
         w.config.projectileSpeed * 1.5, dmg, 0, 2000
       );
       proj.setBouncing();
+      proj.setWeaponKey(w.config.key);
     }
   }
 
   /** Nessie Unleashed — full 360-degree sweep */
-  private fireFullSweep(px: number, py: number, dmg: number, radius: number): void {
+  private fireFullSweep(px: number, py: number, dmg: number, radius: number, weaponKey: string): void {
     const gfx = this.scene.add.graphics();
     gfx.fillStyle(0x226644, 0.35);
     gfx.fillCircle(px, py, radius);
@@ -641,7 +647,7 @@ export class WeaponSystem {
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       if (Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y) <= radius) {
-        this.dealDamageToEnemy(enemy, dmg);
+        this.dealDamageToEnemy(enemy, dmg, false, weaponKey);
         // Knockback via impulse system — persistent enough to actually shove.
         const angle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
         const body = enemy.body as Phaser.Physics.Arcade.Body;
@@ -651,8 +657,13 @@ export class WeaponSystem {
     }
   }
 
-  private dealDamageToEnemy(enemy: Enemy, damage: number, isCrit: boolean = false): void {
-    this.events.emit('damageDealt', enemy.x, enemy.y, damage, isCrit);
+  private dealDamageToEnemy(
+    enemy: Enemy,
+    damage: number,
+    isCrit: boolean = false,
+    weaponKey: string = 'unknown'
+  ): void {
+    this.events.emit('damageDealt', enemy.x, enemy.y, damage, isCrit, weaponKey);
     const wasBoss = enemy.isBoss();
     const wasElite = enemy.isElite();
     const killed = enemy.takeDamage(damage);
@@ -707,7 +718,7 @@ export class WeaponSystem {
     // Check if this hit should be processed (bouncing projectiles track per-enemy hits)
     if (proj.shouldSkipHit(enemy)) return;
 
-    this.dealDamageToEnemy(enemy, proj.getDamage(), proj.isCrit());
+    this.dealDamageToEnemy(enemy, proj.getDamage(), proj.isCrit(), proj.getWeaponKey() || 'unknown');
 
     // Caber Toss applies burn (3 dps for 3s)
     if (proj.getWeaponKey() === 'caber_toss') {
