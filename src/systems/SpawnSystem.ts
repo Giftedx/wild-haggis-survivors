@@ -385,4 +385,27 @@ export class SpawnSystem {
     if (this.getDirectorEnemyConfigs().length === 0) return 'NO_TYPES_AVAILABLE';
     return null;
   }
+
+  /**
+   * Dev tooling: snap the run clock and refresh the wave director (no boss bookkeeping).
+   * Use `applyResumeTime` when restoring a saved run.
+   */
+  timeTravelToSeconds(sec: number): void {
+    this.gameTimeSec = Math.max(0, sec);
+    this.syncWaveDirectorFromTimeline();
+    this.spawnTimer = Math.min(this.spawnTimer, this.spawnInterval);
+  }
+
+  /**
+   * Mid-run resume: clock + director + suppress boss intros that are already in the past.
+   */
+  applyResumeTime(sec: number): void {
+    this.gameTimeSec = Math.max(0, sec);
+    this.syncWaveDirectorFromTimeline();
+    this.spawnTimer = 0;
+    this.bossSpawnScheduled.clear();
+    for (const b of BOSSES) {
+      if (b.spawnTimeSec <= sec) this.spawnedBossKeys.add(b.key);
+    }
+  }
 }

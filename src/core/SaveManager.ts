@@ -17,15 +17,48 @@ export interface ISaveDataV2 {
   unlockedUpgrades: string[];
 }
 
-export type ISaveData = ISaveDataV2;
+/** Serialized weapon row for mid-run resume. */
+export interface IRunWeaponSlot {
+  key: string;
+  level: number;
+  evolved: boolean;
+  evolutionKey: string;
+}
 
-export const CURRENT_SAVE_VERSION = 2 as const;
+/** Strict mid-run snapshot (meta save `activeRun`). */
+export interface IRunState {
+  gameTimeSec: number;
+  playerX: number;
+  playerY: number;
+  playerHealth: number;
+  playerMaxHp: number;
+  currentXp: number;
+  currentLevel: number;
+  acquiredWeapons: IRunWeaponSlot[];
+  selectedVariantKey: string;
+  killCount: number;
+  ownedPassives: string[];
+  evolvedWeaponKeys: string[];
+}
+
+export interface ISaveDataV3 {
+  saveVersion: 3;
+  totalKills: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+}
+
+export type ISaveData = ISaveDataV3;
+
+export const CURRENT_SAVE_VERSION = 3 as const;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
   totalKills: 0,
   unlockedWeapons: [],
   unlockedUpgrades: [],
+  activeRun: null,
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -33,9 +66,56 @@ function clampInt(n: unknown, fallback: number): number {
   return Math.max(0, Math.floor(n));
 }
 
+function clampNumber(n: unknown, fallback: number): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return fallback;
+  return n;
+}
+
 function toStringArray(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   return v.filter((x): x is string => typeof x === 'string');
+}
+
+function coerceWeaponSlot(raw: unknown): IRunWeaponSlot | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const o = raw as Record<string, unknown>;
+  const key = typeof o.key === 'string' ? o.key : '';
+  if (!key) return null;
+  const level = Math.max(1, clampInt(o.level, 1));
+  const evolved = Boolean(o.evolved);
+  const evolutionKey = typeof o.evolutionKey === 'string' ? o.evolutionKey : '';
+  return { key, level, evolved, evolutionKey };
+}
+
+function coerceIRunState(raw: unknown): IRunState | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  const wraw = o.acquiredWeapons;
+  const weapons: IRunWeaponSlot[] = [];
+  if (Array.isArray(wraw)) {
+    for (const x of wraw) {
+      const s = coerceWeaponSlot(x);
+      if (s) weapons.push(s);
+    }
+  }
+  const variant = typeof o.selectedVariantKey === 'string' ? o.selectedVariantKey : '';
+  if (!variant || weapons.length === 0) return null;
+
+  return {
+    gameTimeSec: Math.max(0, clampNumber(o.gameTimeSec, 0)),
+    playerX: clampNumber(o.playerX, 0),
+    playerY: clampNumber(o.playerY, 0),
+    playerHealth: Math.max(0, clampNumber(o.playerHealth, 1)),
+    playerMaxHp: Math.max(1, clampNumber(o.playerMaxHp, 1)),
+    currentXp: Math.max(0, clampInt(o.currentXp, 0)),
+    currentLevel: Math.max(1, clampInt(o.currentLevel, 1)),
+    acquiredWeapons: weapons,
+    selectedVariantKey: variant,
+    killCount: Math.max(0, clampInt(o.killCount, 0)),
+    ownedPassives: toStringArray(o.ownedPassives),
+    evolvedWeaponKeys: toStringArray(o.evolvedWeaponKeys),
+  };
 }
 
 export class SaveManager {
@@ -55,13 +135,11 @@ export class SaveManager {
       const parsed: unknown = JSON.parse(raw);
       return this.migrateAndCoerce(parsed);
     } catch {
-      // Corrupt JSON: recover safely.
       return { ...DEFAULT_SAVE };
     }
   }
 
   save(data: ISaveData): void {
-    // Always coerce before persisting so external callers can't store junk.
     const coerced = this.migrateAndCoerce(data);
     this.storage.setItem(this.key, JSON.stringify(coerced));
   }
@@ -70,11 +148,21 @@ export class SaveManager {
     this.storage.removeItem(this.key);
   }
 
-  /** Convenience helper: read-modify-write atomically. */
   update(fn: (current: ISaveData) => ISaveData): ISaveData {
     const next = fn(this.load());
     this.save(next);
     return next;
+  }
+
+  /** Persist in-progress run (tab close / background). */
+  saveActiveRun(run: IRunState): void {
+    const coercedRun = coerceIRunState(run);
+    if (!coercedRun) return;
+    this.update((cur) => ({ ...cur, activeRun: coercedRun }));
+  }
+
+  clearActiveRun(): void {
+    this.update((cur) => ({ ...cur, activeRun: null }));
   }
 
   private migrateAndCoerce(input: unknown): ISaveData {
@@ -88,40 +176,51 @@ export class SaveManager {
     const totalKills = clampInt(obj.totalKills, 0);
     const unlockedWeapons = toStringArray(obj.unlockedWeapons);
     const unlockedUpgrades = toStringArray(obj.unlockedUpgrades);
+    const activeRun = coerceIRunState(obj.activeRun);
 
     if (v === 1) {
       return {
-        saveVersion: 2,
+        saveVersion: 3,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades: [],
+        activeRun: null,
       };
     }
 
     if (v === 2) {
       return {
-        saveVersion: 2,
+        saveVersion: 3,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
+        activeRun: null,
       };
     }
 
-    // Unknown newer version: keep safe subset and normalize to current.
+    if (v === 3) {
+      return {
+        saveVersion: 3,
+        totalKills,
+        unlockedWeapons,
+        unlockedUpgrades,
+        activeRun,
+      };
+    }
+
     return {
       saveVersion: CURRENT_SAVE_VERSION,
       totalKills,
       unlockedWeapons,
       unlockedUpgrades,
+      activeRun,
     };
   }
 }
 
 function defaultStorage(): StorageLike {
-  // localStorage exists in browser runtime; tests inject a fake storage.
   const ls = (globalThis as unknown as { localStorage?: StorageLike }).localStorage;
   if (ls) return ls;
-  // Minimal in-memory fallback (avoids crashing in non-browser contexts).
   const mem = new Map<string, string>();
   return {
     getItem: (k) => mem.get(k) ?? null,

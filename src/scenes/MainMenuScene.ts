@@ -35,25 +35,34 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const suspended = meta.activeRun != null;
+
     this.add
-      .text(width / 2, 196, 'Choose your loadout on the next screen.', {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: '#6a7390',
-      })
+      .text(
+        width / 2,
+        196,
+        suspended ? 'Suspended run on disk — resume or start a new loadout.' : 'Choose your loadout on the next screen.',
+        {
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          color: '#6a7390',
+          align: 'center',
+          wordWrap: { width: width - 80 },
+        }
+      )
       .setOrigin(0.5);
 
     const btnW = 240;
     const btnH = 48;
     const bx = width / 2;
     const startY = height / 2 + 12;
-    const metaY = startY + btnH + 14;
+    let metaY = startY + btnH + 14;
 
     const startBtn = this.add
       .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
       .setInteractive({ useHandCursor: true });
     const startTxt = this.add
-      .text(bx, startY, 'START RUN', {
+      .text(bx, startY, suspended ? 'RESUME RUN' : 'START RUN', {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
@@ -61,16 +70,45 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
+    const goPrimary = () => {
+      if (suspended) {
+        this.scene.start('Game');
+      } else {
+        this.scene.start('Menu');
+      }
+    };
+
     startBtn.on('pointerover', () => startBtn.setFillStyle(Phaser.Display.Color.ValueToColor(COLORS.SCOTTISH_BLUE).lighten(18).color));
     startBtn.on('pointerout', () => startBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
-    startBtn.on('pointerdown', () => {
-      this.scene.start('Menu');
-    });
+    startBtn.on('pointerdown', goPrimary);
 
     startTxt.setInteractive({ useHandCursor: true });
-    startTxt.on('pointerdown', () => {
-      this.scene.start('Menu');
-    });
+    startTxt.on('pointerdown', goPrimary);
+
+    if (suspended) {
+      const newY = startY + btnH + 10;
+      metaY = newY + btnH + 14;
+      const abandonBtn = this.add
+        .rectangle(bx, newY, btnW, 42, 0x3a4357, 1)
+        .setInteractive({ useHandCursor: true });
+      const abandonTxt = this.add
+        .text(bx, newY, 'NEW RUN (LOADOUT)', {
+          fontFamily: 'monospace',
+          fontSize: '16px',
+          color: '#e0e4ee',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      const goLoadoutFresh = () => {
+        this.saveManager.clearActiveRun();
+        this.scene.start('Menu');
+      };
+      abandonBtn.on('pointerover', () => abandonBtn.setFillStyle(0x4a5568));
+      abandonBtn.on('pointerout', () => abandonBtn.setFillStyle(0x3a4357));
+      abandonBtn.on('pointerdown', goLoadoutFresh);
+      abandonTxt.setInteractive({ useHandCursor: true });
+      abandonTxt.on('pointerdown', goLoadoutFresh);
+    }
 
     const metaBtn = this.add
       .rectangle(bx, metaY, btnW, btnH, 0x2d6a3e, 1)

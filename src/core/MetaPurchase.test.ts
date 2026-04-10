@@ -4,10 +4,11 @@ import { tryPurchaseMetaUpgrade } from './MetaPurchase';
 import { StatComposer } from './StatComposer';
 
 const baseSave = (): ISaveData => ({
-  saveVersion: 2,
+  saveVersion: 3,
   totalKills: 100,
   unlockedWeapons: [],
   unlockedUpgrades: [],
+  activeRun: null,
 });
 
 describe('tryPurchaseMetaUpgrade', () => {

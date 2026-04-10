@@ -155,6 +155,16 @@ export class XPSystem {
     }
   }
 
+  /** Restore bar + level without emitting `levelup` (mid-run resume). */
+  hydrateRunState(level: number, currentXp: number): void {
+    const L = Math.max(1, Math.min(XP.MAX_LEVEL, Math.floor(level)));
+    this.currentLevel = L;
+    this.currentXP = Math.max(0, Math.floor(currentXp));
+    this.pendingLevelUps = [];
+    this.levelUpInProgress = false;
+    this.xpToNextLevel = L >= XP.MAX_LEVEL ? 1 : this.calcXpRequired(L + 1);
+  }
+
   getCurrentXP(): number { return this.currentXP; }
   getXPToNext(): number { return this.xpToNextLevel; }
   getLevel(): number { return this.currentLevel; }

@@ -5,10 +5,11 @@ import { StatComposer } from './StatComposer';
 import type { ISaveData } from './SaveManager';
 
 const pristine: ISaveData = {
-  saveVersion: 2,
+  saveVersion: 3,
   totalKills: 0,
   unlockedWeapons: [],
   unlockedUpgrades: [],
+  activeRun: null,
 };
 
 describe('StatComposer', () => {
