@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
 import { ENEMIES } from '../config';
+import { ISceneContext } from '../core/ISceneContext';
 
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
  */
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
+  private ctx: ISceneContext;
+  private ctxScene: Phaser.Scene & ISceneContext;
   private hp: number = 0;
   private maxHp: number = 0;
   private speed: number = 0;
@@ -82,8 +85,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
   private bobPhase: number = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  private bouncingHitId: number = 0;
+
+  constructor(scene: Phaser.Scene & ISceneContext, x: number, y: number) {
     super(scene, x, y, 'tourist');
+    this.ctxScene = scene;
+    this.ctx = scene;
     scene.add.existing(this);
     scene.physics.add.existing(this);
     this.setActive(false);
@@ -178,7 +185,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Reset bouncing-projectile hit tracking ID so recycled pool objects
     // aren't confused with their prior incarnation
-    (this as any).__bouncingHitId = Math.random();
+    this.bouncingHitId = Math.random();
 
     // Random idle-bob phase so a pack of enemies doesn't visually pulse in sync
     this.bobPhase = Math.random() * Math.PI * 2;
@@ -420,8 +427,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
 
     let hit = false;
-    const spawnedPlayer = (this.scene as any).getPlayer?.();
-    if (!spawnedPlayer) { net.destroy(); return; }
+    const spawnedPlayer = this.ctx.getPlayer();
 
     const cleanup = () => {
       if (hit) return;
@@ -437,7 +443,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       cleanup();
 
       // Guard: only apply slow if this is still the same player (not a new run)
-      const currentPlayer = (this.scene as any).getPlayer?.();
+      const currentPlayer = this.ctx.getPlayer();
       if (currentPlayer !== spawnedPlayer) return;
 
       // Apply a game-tick net slow (duration freezes with timeScale/pause).
@@ -464,14 +470,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // the buff was visually absent most frames; now it's a real speed stat
     // change that persists and re-applies naturally every frame from spawn
     // behavior's setVelocity(... * this.speed).
-    const enemies = (this.scene as any).getSpawnSystem?.()?.getEnemyGroup?.()?.getChildren?.();
-    if (enemies) {
-      for (const e of enemies) {
-        if (!e.active || e === this || (e as Enemy).isBoss()) continue;
-        const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-        if (d < 120) {
-          (e as Enemy).applySpeedBuff(1.3, 500);
-        }
+    const enemies = this.ctx.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (!e.active || e === this || e.isBoss()) continue;
+      const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
+      if (d < 120) {
+        e.applySpeedBuff(1.3, 500);
       }
     }
   }
@@ -503,13 +507,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.spawnerCooldown -= delta;
     if (this.spawnerCooldown <= 0) {
       this.spawnerCooldown = 4000;
-      const spawnSystem = (this.scene as any).getSpawnSystem?.();
-      if (!spawnSystem) return;
+      const spawnSystem = this.ctx.getSpawnSystem();
       const pool = spawnSystem.getEnemyGroup();
       let minion = pool.getFirstDead(false) as Enemy | null;
       if (!minion) {
         if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return;
-        minion = new Enemy(this.scene, 0, 0);
+        minion = new Enemy(this.ctxScene, 0, 0);
         pool.add(minion);
       }
       const angle = Math.random() * Math.PI * 2;
@@ -602,14 +605,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Damage nearby enemies. Use takeDamage() (not the internal path)
         // so wool armor still blocks the splash — sheep caught in a
         // chemical explosion shouldn't lose their one-hit shield.
-        const pool = (scene as any).getSpawnSystem?.()?.getEnemyGroup?.();
-        if (pool) {
-          const nearby = pool.getChildren() as Enemy[];
-          for (const e of nearby) {
-            if (!e.active || e === this) continue;
-            const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
-            if (d <= 60) (e as Enemy).takeDamage(25);
-          }
+        const pool = this.ctx.getSpawnSystem().getEnemyGroup();
+        const nearby = pool.getChildren() as Enemy[];
+        for (const e of nearby) {
+          if (!e.active || e === this) continue;
+          const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
+          if (d <= 60) e.takeDamage(25);
         }
       }
     }
@@ -729,8 +730,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const xp = this.xpValue, key = this.enemyKey;
       this.die();
       // Emit kill event through the scene's WeaponSystem so XP gems drop
-      const ws = (this.scene as any).getWeaponSystem?.();
-      ws?.events?.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
+      const ws = this.ctx.getWeaponSystem();
+      ws.events.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
       return true;
     }
     return false;
@@ -773,23 +774,21 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Boss phase 2 at 25% HP — summon 3 minions
     if (this.bossFlag && !this.phase2Done && this.hp <= this.maxHp * 0.25) {
       this.phase2Done = true;
-      const spawnSystem = (this.scene as any).getSpawnSystem?.();
-      if (spawnSystem) {
-        const pool = spawnSystem.getEnemyGroup();
-        for (let i = 0; i < 3; i++) {
-          let minion = pool.getFirstDead(false) as Enemy | null;
-          if (!minion) {
-            if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) break;
-            minion = new Enemy(this.scene, 0, 0);
-            pool.add(minion);
-          }
-          const a = (i / 3) * Math.PI * 2;
-          const chef = { key: 'chef', texture: 'chef', speed: 100, hp: 8, damage: 8, xpValue: 3, appearsAt: 0, behavior: 'chase' as EnemyBehavior, packSize: 1 };
-          // Use current game time so late-game phase-2 minions scale with the run
-          const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
-          minion.spawn(this.x + Math.cos(a) * 30, this.y + Math.sin(a) * 30, chef, gameTime);
-          minion.markAsElite();
+      const spawnSystem = this.ctx.getSpawnSystem();
+      const pool = spawnSystem.getEnemyGroup();
+      for (let i = 0; i < 3; i++) {
+        let minion = pool.getFirstDead(false) as Enemy | null;
+        if (!minion) {
+          if (pool.countActive(true) >= ENEMIES.MAX_ACTIVE) break;
+          minion = new Enemy(this.ctxScene, 0, 0);
+          pool.add(minion);
         }
+        const a = (i / 3) * Math.PI * 2;
+        const chef = { key: 'chef', texture: 'chef', speed: 100, hp: 8, damage: 8, xpValue: 3, appearsAt: 0, behavior: 'chase' as EnemyBehavior, packSize: 1 };
+        // Use current game time so late-game phase-2 minions scale with the run
+        const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
+        minion.spawn(this.x + Math.cos(a) * 30, this.y + Math.sin(a) * 30, chef, gameTime);
+        minion.markAsElite();
       }
       // Visual indicator
       this.scene.cameras.main.shake(150, 0.008);
