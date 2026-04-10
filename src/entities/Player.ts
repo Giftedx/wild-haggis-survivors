@@ -53,6 +53,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private readonly DASH_DURATION_MS = 150;
   private isDashing: boolean = false;
   private dashInvincible: boolean = false;
+  private dashRemainingMs: number = 0;
+  private postDashInvincibilityRemainingMs: number = 0;
   private maxDashCharges: number = 1;
   private dashCharges: number = 1;
 
@@ -65,6 +67,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // Net slow debuff tracking — only apply once regardless of how many nets hit
   private netSlowStacks: number = 0;
   private readonly NET_SLOW_AMOUNT = 80;
+  private netSlowTimersMs: number[] = [];
   private currentLevel: number = 1;
   private hp: number = PLAYER.MAX_HP;
   private maxHp: number = PLAYER.MAX_HP;
@@ -111,6 +114,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.isDashing = true;
     this.dashInvincible = true;
+    this.dashRemainingMs = this.DASH_DURATION_MS;
+    this.postDashInvincibilityRemainingMs = 0;
     this.dashCharges--;
     // Start regen timer only if it isn't already running (sharing one timer
     // across all missing charges).
@@ -133,19 +138,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         });
       });
     }
-
-    // End dash
-    setTimeout(() => {
-      this.isDashing = false;
-      // Brief post-dash invincibility (50ms extra grace)
-      setTimeout(() => {
-        this.dashInvincible = false;
-        if (this.active) this.setAlpha(1);
-      }, 50);
-    }, this.DASH_DURATION_MS);
   }
 
   update(delta: number = 16): void {
+    const timeScale = this.scene?.time?.timeScale ?? 1;
+    const scaledDelta = delta * timeScale;
+
     // Keep the ground shadow locked under the haggis at all times.
     if (this.shadow) {
       this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.4);
@@ -154,14 +152,42 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Tick dash cooldown — regen one charge at a time, then re-arm if still
     // below max (so Double Dash takes 2 × DASH_COOLDOWN_MS to fully refill).
     if (this.dashCharges < this.maxDashCharges && this.dashCooldown > 0) {
-      this.dashCooldown -= delta;
+      this.dashCooldown -= scaledDelta;
       if (this.dashCooldown <= 0) {
         this.dashCharges++;
         this.dashCooldown = this.dashCharges < this.maxDashCharges ? this.DASH_COOLDOWN_MS : 0;
       }
     }
     // Tick shield cooldown
-    if (this.shieldCooldown > 0) this.shieldCooldown -= delta;
+    if (this.shieldCooldown > 0) this.shieldCooldown -= scaledDelta;
+
+    // Tick dash lifecycle (bound to timeScale)
+    if (this.isDashing) {
+      this.dashRemainingMs -= scaledDelta;
+      if (this.dashRemainingMs <= 0) {
+        this.isDashing = false;
+        // Brief post-dash invincibility (50ms extra grace)
+        this.postDashInvincibilityRemainingMs = 50;
+      }
+    }
+    if (!this.isDashing && this.dashInvincible && this.postDashInvincibilityRemainingMs > 0) {
+      this.postDashInvincibilityRemainingMs -= scaledDelta;
+      if (this.postDashInvincibilityRemainingMs <= 0) {
+        this.dashInvincible = false;
+        if (this.active) this.setAlpha(1);
+      }
+    }
+
+    // Tick net slow debuff timers (bound to timeScale)
+    if (this.netSlowTimersMs.length > 0) {
+      for (let i = this.netSlowTimersMs.length - 1; i >= 0; i--) {
+        this.netSlowTimersMs[i] -= scaledDelta;
+        if (this.netSlowTimersMs[i] <= 0) {
+          this.netSlowTimersMs.splice(i, 1);
+          this.removeNetSlow();
+        }
+      }
+    }
 
     // Skip normal movement during dash — velocity is set by tryDash
     if (this.isDashing) return;
@@ -403,7 +429,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   /** Apply net slow — only takes effect on first stack, subsequent nets just increment counter */
-  applyNetSlow(): void {
+  applyNetSlow(durationMs: number = 2000): void {
+    this.netSlowTimersMs.push(durationMs);
     this.netSlowStacks++;
     if (this.netSlowStacks === 1) {
       this.addSpeed(-this.NET_SLOW_AMOUNT);

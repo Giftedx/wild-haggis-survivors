@@ -440,18 +440,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const currentPlayer = (this.scene as any).getPlayer?.();
       if (currentPlayer !== spawnedPlayer) return;
 
-      spawnedPlayer.applyNetSlow();
-      // Use real setTimeout — delayedCall respects timeScale, so slow-motion
-      // after a boss kill would stretch the 2s slow to ~7s of real time
-      const capturedPlayer = spawnedPlayer;
-      setTimeout(() => {
-        try {
-          const stillSamePlayer = (this.scene as any).getPlayer?.();
-          if (stillSamePlayer === capturedPlayer) {
-            capturedPlayer.removeNetSlow();
-          }
-        } catch { /* scene may have been destroyed */ }
-      }, 2000);
+      // Apply a game-tick net slow (duration freezes with timeScale/pause).
+      spawnedPlayer.applyNetSlow(2000);
     });
 
     // Auto-cleanup after 2 seconds if it misses
