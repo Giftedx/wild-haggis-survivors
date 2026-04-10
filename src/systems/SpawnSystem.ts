@@ -5,6 +5,15 @@ import { getAvailableEnemyTypes, getSpawnWeight, EnemyConfig, BOSSES, BossConfig
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 
+/** First matching reason wins — see `getSpawnStallReason()`. */
+export type SpawnStallReason =
+  | 'PAUSED'
+  | 'PENDING_BOSS'
+  | 'BOSS_ACTIVE'
+  | 'POOL_SATURATED'
+  | 'INTERVAL_WAIT'
+  | 'NO_TYPES_AVAILABLE';
+
 /**
  * SpawnSystem — manages enemy object pool, wave spawning, and boss spawns.
  */
@@ -346,5 +355,21 @@ export class SpawnSystem {
     }
     this.bossActive = found;
     return this.bossActive;
+  }
+
+  /**
+   * Why regular spawn bursts are not executing *right now* (telemetry).
+   * Priority: PAUSED → PENDING_BOSS → BOSS_ACTIVE → POOL_SATURATED → INTERVAL_WAIT → NO_TYPES_AVAILABLE.
+   * Returns null when the director would fire a burst on the next evaluation (timer satisfied, types exist, pool has capacity).
+   */
+  getSpawnStallReason(): SpawnStallReason | null {
+    const tm = this.scene.getTimeManager();
+    if (tm.isGameplayPaused()) return 'PAUSED';
+    if (this.pendingBossSpawn !== null) return 'PENDING_BOSS';
+    if (this.isBossActive()) return 'BOSS_ACTIVE';
+    if (this.pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return 'POOL_SATURATED';
+    if (this.spawnTimer < this.spawnInterval) return 'INTERVAL_WAIT';
+    if (getAvailableEnemyTypes(this.gameTimeSec).length === 0) return 'NO_TYPES_AVAILABLE';
+    return null;
   }
 }

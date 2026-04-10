@@ -51,6 +51,7 @@ describe('DebugOverlay', () => {
         getSpawnTimerSec: () => 1,
         getSpawnIntervalSec: () => 0.3,
         getBurstSize: () => 15,
+        getSpawnStallReason: () => 'POOL_SATURATED',
         isBossActive: () => false,
         getSpawnedBossCount: () => 1,
         getBossScheduledCount: () => 1,
@@ -68,6 +69,7 @@ describe('DebugOverlay', () => {
     overlay.setVisible(true);
     overlay.update(16);
     expect(textObj.value).toContain('MAXED');
+    expect(textObj.value).toContain('Status: [POOL_SATURATED]');
   });
 });
 
