@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVector } from '../utils/math';
+import { TimeManager } from '../systems/TimeManager';
 
 /**
  * Player — the wild haggis.
@@ -13,6 +14,7 @@ import { rotateVector } from '../utils/math';
  */
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private inputManager: InputManager;
+  private time: TimeManager;
 
   // Base stats (from level scaling only)
   private baseMoveSpeed: number = PLAYER.SPEED;
@@ -75,7 +77,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private readonly BASE_HITBOX_RADIUS = 20;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic') {
+  constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic', timeManager?: TimeManager) {
     super(scene, x, y, textureKey);
 
     scene.add.existing(this);
@@ -98,6 +100,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.shadow = scene.add.image(x, y + 22, 'entity_shadow').setDepth(-2).setScale(1.1);
 
     this.inputManager = new InputManager(scene);
+    this.time = timeManager ?? (scene as any).timeManager;
 
     // Dash on spacebar
     if (scene.input.keyboard) {
@@ -141,7 +144,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   update(delta: number = 16): void {
-    const timeScale = this.scene?.time?.timeScale ?? 1;
+    const timeScale = this.time?.getEffectiveTimeScale?.() ?? 1;
     const scaledDelta = delta * timeScale;
 
     // Keep the ground shadow locked under the haggis at all times.
