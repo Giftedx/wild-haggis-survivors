@@ -45,6 +45,13 @@ export function getActiveWaveTimelineEntry(gameTimeSec: number): WaveTimelineEnt
 }
 
 export const BALANCE = {
+  /** Run cap — finale clears mobs and spawns `FINAL_BOSS_KEY` (see SpawnSystem). */
+  run: {
+    /** Seconds from run start until timeline spawns stop and the final boss sequence runs. */
+    RUN_WIN_TIME_SEC: 900,
+    /** Must match a `BOSSES[].key` in `data/enemies.ts` (defeat → victory). */
+    FINAL_BOSS_KEY: 'taxman',
+  },
   /** Camera-relative tuning — off-screen enemies throttle physics / AI. */
   spatial: {
     /** Pixels beyond `cameras.main.worldView` where bodies disable and AI is skipped. */

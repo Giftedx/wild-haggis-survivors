@@ -4,7 +4,7 @@ import { tryCameraShake } from '../utils/cameraShake';
 import { Enemy } from '../entities/Enemy';
 import { ENEMIES, GAME } from '../config';
 import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
-import { getActiveWaveTimelineEntry } from '../core/BalanceConfig';
+import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 
@@ -13,7 +13,8 @@ export type SpawnStallReason =
   | 'PAUSED'
   | 'POOL_SATURATED'
   | 'INTERVAL_WAIT'
-  | 'NO_TYPES_AVAILABLE';
+  | 'NO_TYPES_AVAILABLE'
+  | 'RUN_FINALE';
 
 /**
  * SpawnSystem — manages enemy object pool, wave spawning, and boss spawns.
@@ -34,6 +35,10 @@ export class SpawnSystem {
   private bossSpawnScheduled: Set<string> = new Set();
   /** Cached boss-active flag — avoids iterating 400 enemies per frame */
   private bossActive: boolean = false;
+  /** One-shot: run reached `RUN_WIN_TIME_SEC` — timeline bursts off, finale boss queued. */
+  private runWinFinaleStarted: boolean = false;
+  /** When true, `spawnBurst` is a no-op (final boss phase). */
+  private regularSpawnsDisabled: boolean = false;
   /** Set when a boss is ready to spawn but physics is paused (level-up / manual pause).
    *  The next unpaused update() tick will flush and clear it. */
   private pendingBossSpawn: (() => void) | null = null;
@@ -74,6 +79,8 @@ export class SpawnSystem {
     this.bossActive = false;
     this.pendingBossSpawn = null;
     this.bossCheckFrame = -1;
+    this.runWinFinaleStarted = false;
+    this.regularSpawnsDisabled = false;
     this.events.removeAllListeners();
 
     const enemies = this.pool.getChildren() as Enemy[];
@@ -105,6 +112,10 @@ export class SpawnSystem {
       const fn = this.pendingBossSpawn;
       this.pendingBossSpawn = null;
       fn();
+    }
+
+    if (!this.runWinFinaleStarted && this.gameTimeSec >= BALANCE.run.RUN_WIN_TIME_SEC) {
+      this.beginRunWinFinale(playerX, playerY);
     }
 
     this.syncWaveDirectorFromTimeline();
@@ -142,6 +153,9 @@ export class SpawnSystem {
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
     const doSpawn = () => {
+      if (boss.key !== BALANCE.run.FINAL_BOSS_KEY && this.spawnedBossKeys.has(boss.key)) {
+        return;
+      }
       const player = this.scene.getPlayer();
       const currentX = player?.x ?? _playerX;
       const currentY = player?.y ?? _playerY;
@@ -255,7 +269,39 @@ export class SpawnSystem {
     return getEnemyConfigsByKeys(this.directorEnemyKeys);
   }
 
+  private beginRunWinFinale(playerX: number, playerY: number): void {
+    if (this.runWinFinaleStarted) return;
+    this.runWinFinaleStarted = true;
+    this.regularSpawnsDisabled = true;
+
+    for (const b of BOSSES) {
+      if (b.key !== BALANCE.run.FINAL_BOSS_KEY) {
+        this.spawnedBossKeys.add(b.key);
+      }
+    }
+
+    this.clearNonBossEnemiesForFinale();
+
+    const finalBoss = BOSSES.find(b => b.key === BALANCE.run.FINAL_BOSS_KEY);
+    if (!finalBoss) return;
+    if (this.spawnedBossKeys.has(BALANCE.run.FINAL_BOSS_KEY)) return;
+
+    this.bossSpawnScheduled.add(BALANCE.run.FINAL_BOSS_KEY);
+    this.spawnBoss(finalBoss, playerX, playerY);
+  }
+
+  /** Removes active non-boss enemies without kill XP (screen wipe for finale). */
+  private clearNonBossEnemiesForFinale(): void {
+    const enemies = this.pool.getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (!e.active) continue;
+      if (e.isBoss()) continue;
+      e.forceKill();
+    }
+  }
+
   private spawnBurst(playerX: number, playerY: number): void {
+    if (this.regularSpawnsDisabled) return;
     const availableTypes = this.getDirectorEnemyConfigs();
     if (availableTypes.length === 0) return;
 
@@ -375,13 +421,14 @@ export class SpawnSystem {
 
   /**
    * Why regular spawn bursts are not executing *right now* (telemetry).
-   * Priority: PAUSED → POOL_SATURATED → INTERVAL_WAIT → NO_TYPES_AVAILABLE.
+   * Priority: PAUSED → RUN_FINALE → POOL_SATURATED → INTERVAL_WAIT → NO_TYPES_AVAILABLE.
    * Boss intro / active boss do not gate regular waves — omit from this signal.
    * Returns null when the director would fire a burst on the next evaluation (timer satisfied, types exist, pool has capacity).
    */
   getSpawnStallReason(): SpawnStallReason | null {
     const tm = this.scene.getTimeManager();
     if (tm.isGameplayPaused()) return 'PAUSED';
+    if (this.regularSpawnsDisabled) return 'RUN_FINALE';
     if (this.pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return 'POOL_SATURATED';
     if (this.spawnTimer < this.spawnInterval) return 'INTERVAL_WAIT';
     if (this.getDirectorEnemyConfigs().length === 0) return 'NO_TYPES_AVAILABLE';
@@ -408,6 +455,15 @@ export class SpawnSystem {
     this.bossSpawnScheduled.clear();
     for (const b of BOSSES) {
       if (b.spawnTimeSec <= sec) this.spawnedBossKeys.add(b.key);
+    }
+    if (sec >= BALANCE.run.RUN_WIN_TIME_SEC) {
+      this.runWinFinaleStarted = true;
+      this.regularSpawnsDisabled = true;
+      for (const b of BOSSES) {
+        if (b.key !== BALANCE.run.FINAL_BOSS_KEY) {
+          this.spawnedBossKeys.add(b.key);
+        }
+      }
     }
   }
 }
