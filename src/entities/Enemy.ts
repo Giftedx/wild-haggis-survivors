@@ -85,8 +85,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
   private bobPhase: number = 0;
 
-  private bouncingHitId: number = 0;
-
   constructor(scene: Phaser.Scene & ISceneContext, x: number, y: number) {
     super(scene, x, y, 'tourist');
     this.ctxScene = scene;
@@ -182,10 +180,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.phaseTimer = 2000;
     this.isPhased = false;
     body.checkCollision.none = false;
-
-    // Reset bouncing-projectile hit tracking ID so recycled pool objects
-    // aren't confused with their prior incarnation
-    this.bouncingHitId = Math.random();
 
     // Random idle-bob phase so a pack of enemies doesn't visually pulse in sync
     this.bobPhase = Math.random() * Math.PI * 2;
