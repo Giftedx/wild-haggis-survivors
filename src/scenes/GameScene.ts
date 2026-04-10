@@ -35,6 +35,13 @@ import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { TutorialSystem } from '../systems/TutorialSystem';
+import {
+  computeAutoBattleSteering,
+  installAutoBattleTimeScale,
+  isAutoBattleEnabled,
+  reportAutoBattleRunEnd,
+  uninstallAutoBattleTimeScale,
+} from '../dev/AutoBattler';
 
 /**
  * GameScene — the core gameplay loop.
@@ -166,6 +173,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Single authority over timeScale + physics pause state
     this.timeManager = new TimeManager(createPhaserTimeAdapter(this));
     this.timeManager.reset();
+
+    if (isAutoBattleEnabled()) {
+      installAutoBattleTimeScale(this);
+    }
 
     // Set world bounds
     this.physics.world.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
@@ -393,6 +404,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
       try {
+        uninstallAutoBattleTimeScale(this);
+      } catch {
+        /* ignore */
+      }
+      try {
         getAnalyticsManager().endGameplaySession();
       } catch {
         /* ignore */
@@ -509,6 +525,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tickIFrameWindow(scaledDelta);
     this.tickVictoryDefer(delta);
     this.tickDeathResultOverlay(delta);
+
+    if (isAutoBattleEnabled()) {
+      this.player.setAutoBattleSteering(
+        computeAutoBattleSteering({
+          playerX: this.player.x,
+          playerY: this.player.y,
+          gems: this.xpSystem.getGemPositionsForAutoBattle(),
+          worldWidth: GAME.WORLD_WIDTH,
+          worldHeight: GAME.WORLD_HEIGHT,
+          timeSec: this.spawnSystem.getGameTimeSec(),
+        })
+      );
+    } else {
+      this.player.setAutoBattleSteering(null);
+    }
 
     if (this.timeManager.isGameplayPaused()) return;
 
@@ -1270,6 +1301,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Stops GameScene (Phase 13 shutdown cascade) then hands UI to GameOverScene.
    */
   private transitionToGameOver(payload: GameOverPayload): void {
+    try {
+      reportAutoBattleRunEnd({
+        outcome: payload.mode === 'victory' ? 'victory' : 'death',
+        gameTimeSec: payload.summary.timeSurvivedSec,
+        weaponDamage: payload.weaponDamage,
+      });
+    } catch {
+      /* ignore */
+    }
     try {
       globalEventBus.emit('GLOBAL_RUN_ENDED', {
         outcome: payload.mode,

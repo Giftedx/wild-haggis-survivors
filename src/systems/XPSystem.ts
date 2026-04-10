@@ -65,6 +65,15 @@ export class XPSystem {
     try { (this.gemPool as any).clear?.(true, true); } catch { /* ignore */ }
   }
 
+  /** Lightweight gem positions for dev auto-battler steering (no Phaser deps in consumer). */
+  getGemPositionsForAutoBattle(): Array<{ x: number; y: number; active: boolean }> {
+    return (this.gemPool.getChildren() as XPGem[]).map((g) => ({
+      x: g.x,
+      y: g.y,
+      active: g.active,
+    }));
+  }
+
   /** Spawn a gem at a position (called when an enemy dies) */
   spawnGem(x: number, y: number, value: number): void {
     // Don't spawn gems after max level — they'd be meaningless clutter

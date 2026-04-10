@@ -22,6 +22,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private subs = new SubscriptionBag();
   /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
   private readonly driftScratch = { x: 0, y: 0 };
+  /** When set, overrides joystick/keyboard for automated balance runs. */
+  private autoBattleSteering: { x: number; y: number } | null = null;
 
   /** Run baseline before variant / shop modifiers (from StatComposer + level scaling). */
   private readonly runBaseSpeed: number;
@@ -233,11 +235,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Skip normal movement during dash — velocity is set by tryDash
     if (this.isDashing) return;
 
-    if (this.inputManager.consumeDashPressed()) {
+    if (!this.autoBattleSteering && this.inputManager.consumeDashPressed()) {
       this.tryDash();
     }
 
-    const dir = this.inputManager.getDirection();
+    const dir = this.autoBattleSteering
+      ? { x: this.autoBattleSteering.x, y: this.autoBattleSteering.y }
+      : this.inputManager.getDirection();
 
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(0, 0);
@@ -498,6 +502,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.netSlowStacks === 0) {
       this.addSpeed(this.NET_SLOW_AMOUNT);
     }
+  }
+
+  /** Dev / balance: override movement direction (normalized world vector). */
+  setAutoBattleSteering(dir: { x: number; y: number } | null): void {
+    this.autoBattleSteering = dir;
   }
 
   destroy(fromScene?: boolean): void {

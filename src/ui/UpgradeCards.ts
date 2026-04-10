@@ -106,6 +106,17 @@ export class UpgradeCardsUI {
       });
       this.pendingHandles.push(handle);
     });
+
+    if (typeof globalThis !== 'undefined') {
+      const win = globalThis as unknown as { AUTO_BATTLE?: boolean };
+      if (win.AUTO_BATTLE && cards.length > 0) {
+        const first = cards[0];
+        const maxStaggerMs = (cards.length - 1) * 120;
+        this.tickers.addOnce('raw', maxStaggerMs + 100, () => {
+          this.onSelect(first);
+        });
+      }
+    }
   }
 
   private createCard(
