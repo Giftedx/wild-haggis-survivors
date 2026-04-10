@@ -103,22 +103,15 @@ describe('SpawnSystem.getSpawnStallReason priority', () => {
     expect(ss.getSpawnStallReason()).toBe('PAUSED');
   });
 
-  it('PENDING_BOSS beats POOL_SATURATED', () => {
+  it('POOL_SATURATED when boss is active and pool is full (boss does not mask stall)', () => {
+    vi.spyOn(SpawnSystem.prototype, 'isBossActive').mockReturnValue(true);
     const scene: any = makeScene(tm);
     const ss = new SpawnSystem(scene);
     (ss as any).pendingBossSpawn = () => {};
     vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(ENEMIES_MAX);
-    expect(ss.getSpawnStallReason()).toBe('PENDING_BOSS');
-  });
-
-  it('BOSS_ACTIVE beats POOL_SATURATED', () => {
-    vi.spyOn(SpawnSystem.prototype, 'isBossActive').mockReturnValue(true);
-    const scene: any = makeScene(tm);
-    const ss = new SpawnSystem(scene);
-    vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(ENEMIES_MAX);
     (ss as any).spawnTimer = 99;
     (ss as any).spawnInterval = 0.1;
-    expect(ss.getSpawnStallReason()).toBe('BOSS_ACTIVE');
+    expect(ss.getSpawnStallReason()).toBe('POOL_SATURATED');
   });
 
   it('POOL_SATURATED when pool is at cap (no higher-priority stall)', () => {
