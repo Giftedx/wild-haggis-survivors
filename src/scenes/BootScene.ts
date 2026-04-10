@@ -7,6 +7,7 @@ import {
   VariantDef,
   getVariantByKey,
 } from '../data/variants';
+import { metaProgressSystem } from '../core/MetaProgressSystem';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -30,6 +31,9 @@ export class BootScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Initialize global meta progression exactly once (above the Scene lifecycle).
+    metaProgressSystem.start();
+
     const { width, height } = this.scale;
 
     // Brief splash screen — textures are already generated, show a quick brand moment

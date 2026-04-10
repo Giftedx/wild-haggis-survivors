@@ -5,6 +5,7 @@ import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import { globalEventBus } from '../core/GlobalEventBus';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -653,6 +654,12 @@ export class WeaponSystem {
     const killed = enemy.takeDamage(damage);
     if (killed) {
       this.events.emit('enemyKilled', enemy.x, enemy.y, enemy.getXpValue(), enemy.getEnemyKey(), wasBoss, wasElite);
+      globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+        enemyKey: enemy.getEnemyKey(),
+        xpValue: enemy.getXpValue(),
+        wasBoss,
+        wasElite,
+      });
     }
   }
 
