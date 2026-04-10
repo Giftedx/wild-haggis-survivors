@@ -4,6 +4,7 @@ import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
 import { loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
+import { t } from '../core/i18n';
 
 type SettingsGpRow =
   | { kind: 'volume'; minus: () => void; plus: () => void; mark: Phaser.GameObjects.Rectangle }
@@ -38,7 +39,7 @@ export class SettingsScene extends Phaser.Scene {
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
     this.add
-      .text(width / 2, 36, 'OPTIONS', {
+      .text(width / 2, 36, t('ui.settings.title'), {
         fontFamily: 'monospace',
         fontSize: '28px',
         color: '#9ec8ff',
@@ -47,7 +48,7 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 68, 'Stored separately from meta progression / run saves.', {
+      .text(width / 2, 68, t('ui.settings.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#6a7390',
@@ -55,18 +56,18 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.rowY = 104;
-    this.addVolumeRow('Master volume', 'masterVolume', 0, 1);
-    this.addVolumeRow('SFX volume', 'sfxVolume', 0, 1);
-    this.addVolumeRow('Music volume', 'musicVolume', 0, 1);
-    this.addToggleRow('Screen shake', 'screenShake');
-    this.addToggleRow('Damage numbers', 'damageNumbers');
-    this.addToggleRow('Reduce particles (perf)', 'reduceParticles');
+    this.addVolumeRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1);
+    this.addVolumeRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1);
+    this.addVolumeRow(t('ui.settings.music_volume'), 'musicVolume', 0, 1);
+    this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
+    this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
+    this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
 
     const back = this.add
       .rectangle(width / 2, height - 36, 200, 40, 0x3a4357, 1)
       .setInteractive({ useHandCursor: true });
     this.add
-      .text(width / 2, height - 36, 'BACK', {
+      .text(width / 2, height - 36, t('ui.settings.back'), {
         fontFamily: 'monospace',
         fontSize: '16px',
         color: '#ffffff',
@@ -253,7 +254,7 @@ export class SettingsScene extends Phaser.Scene {
       .rectangle(width - 88, y + 8, 72, 28, this.working[key] ? onColor : offColor, 1)
       .setInteractive({ useHandCursor: true });
     const txt = this.add
-      .text(width - 88, y + 8, this.working[key] ? 'ON' : 'OFF', {
+      .text(width - 88, y + 8, this.working[key] ? t('ui.settings.on') : t('ui.settings.off'), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#ffffff',
@@ -263,7 +264,7 @@ export class SettingsScene extends Phaser.Scene {
 
     const sync = () => {
       btn.setFillStyle(this.working[key] ? onColor : offColor);
-      txt.setText(this.working[key] ? 'ON' : 'OFF');
+      txt.setText(this.working[key] ? t('ui.settings.on') : t('ui.settings.off'));
     };
 
     const doToggle = () => {

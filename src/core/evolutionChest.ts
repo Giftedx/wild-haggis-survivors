@@ -25,8 +25,8 @@ export function findEligibleChestEvolution(
 export function evolutionRecipeToUpgradeCard(r: EvolutionRecipeDef): UpgradeCard {
   return {
     id: `evolve_${r.evolvedWeapon}`,
-    name: r.name,
-    description: r.description,
+    name: r.nameKey,
+    description: r.descriptionKey,
     rarity: 'legendary',
     icon: 'xp_gem',
     effect: {

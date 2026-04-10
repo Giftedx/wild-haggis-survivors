@@ -1,5 +1,6 @@
 import type { AchievementId } from './BalanceConfig';
 import { ACHIEVEMENT_DEFS } from './BalanceConfig';
+import { t } from './i18n';
 import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 
@@ -62,7 +63,7 @@ export class AchievementManager {
     if (did) {
       globalEventBus.emit('ACHIEVEMENT_UNLOCKED', {
         id,
-        title: ACHIEVEMENT_DEFS[id].title,
+        title: t(ACHIEVEMENT_DEFS[id].titleKey),
       });
     }
   }

@@ -2,28 +2,29 @@ import type { AchievementId } from '../core/BalanceConfig';
 
 /**
  * Meta shop — spend SaveManager `totalKills` on persistent stat keys (StatComposer).
+ * Display strings resolve via `i18n.t(nameKey)` / `t(descriptionKey)`.
  */
 export const META_SHOP_ITEMS = {
   speed_tier_1: {
     cost: 50,
-    name: 'Sprint Boots',
-    description: '+10% base move speed for new runs.',
+    nameKey: 'metaItem.speed_tier_1.name',
+    descriptionKey: 'metaItem.speed_tier_1.description',
   },
   health_tier_1: {
     cost: 50,
-    name: 'Thick Pelt',
-    description: '+10% base max HP for new runs.',
+    nameKey: 'metaItem.health_tier_1.name',
+    descriptionKey: 'metaItem.health_tier_1.description',
   },
   pickup_tier_1: {
     cost: 60,
-    name: 'Magnetic Whiskers',
-    description: '+22 pickup radius on new runs.',
+    nameKey: 'metaItem.pickup_tier_1.name',
+    descriptionKey: 'metaItem.pickup_tier_1.description',
     requiresAchievement: 'ach_survive_10m' as AchievementId,
   },
   damage_tier_1: {
     cost: 75,
-    name: 'Highland Temper',
-    description: '+5% damage on new runs.',
+    nameKey: 'metaItem.damage_tier_1.name',
+    descriptionKey: 'metaItem.damage_tier_1.description',
     requiresAchievement: 'ach_kills_1000' as AchievementId,
   },
 } as const;

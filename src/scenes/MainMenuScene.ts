@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { SaveManager } from '../core/SaveManager';
+import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
 /**
@@ -21,7 +22,7 @@ export class MainMenuScene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
 
     this.add
-      .text(width / 2, 96, 'Wild Haggis Survivors', {
+      .text(width / 2, 96, t('ui.menu.title'), {
         fontFamily: 'monospace',
         fontSize: '36px',
         color: '#d4a017',
@@ -30,7 +31,7 @@ export class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 154, `Kill credits: ${meta.totalKills}`, {
+      .text(width / 2, 154, t('ui.menu.kill_credits', { count: meta.totalKills }), {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#95a5c3',
@@ -43,7 +44,7 @@ export class MainMenuScene extends Phaser.Scene {
       .text(
         width / 2,
         196,
-        suspended ? 'Suspended run on disk — resume or start a new loadout.' : 'Choose your loadout on the next screen.',
+        suspended ? t('ui.menu.hint_suspended') : t('ui.menu.hint_fresh'),
         {
           fontFamily: 'monospace',
           fontSize: '14px',
@@ -66,7 +67,7 @@ export class MainMenuScene extends Phaser.Scene {
       .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
       .setInteractive({ useHandCursor: true });
     const startTxt = this.add
-      .text(bx, startY, suspended ? 'RESUME RUN' : 'START RUN', {
+      .text(bx, startY, suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run'), {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: '#ffffff',
@@ -100,7 +101,7 @@ export class MainMenuScene extends Phaser.Scene {
         .rectangle(bx, newY, btnW, 42, 0x3a4357, 1)
         .setInteractive({ useHandCursor: true });
       const abandonTxt = this.add
-        .text(bx, newY, 'NEW RUN (LOADOUT)', {
+        .text(bx, newY, t('ui.menu.new_run_loadout'), {
           fontFamily: 'monospace',
           fontSize: '16px',
           color: '#e0e4ee',
@@ -118,7 +119,7 @@ export class MainMenuScene extends Phaser.Scene {
       .rectangle(bx, metaY, btnW, btnH, 0x2d6a3e, 1)
       .setInteractive({ useHandCursor: true });
     const metaTxt = this.add
-      .text(bx, metaY, 'META UPGRADES', {
+      .text(bx, metaY, t('ui.menu.meta_upgrades'), {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: '#ffffff',
@@ -140,7 +141,7 @@ export class MainMenuScene extends Phaser.Scene {
       .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
       .setInteractive({ useHandCursor: true });
     const optTxt = this.add
-      .text(bx, optY, 'OPTIONS', {
+      .text(bx, optY, t('ui.menu.options'), {
         fontFamily: 'monospace',
         fontSize: '17px',
         color: '#ffffff',
