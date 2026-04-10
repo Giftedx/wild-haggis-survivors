@@ -1,3 +1,49 @@
+/** One segment of the spawn director — active while `gameTimeSec >= timeSec` until a later segment wins. */
+export type WaveTimelineEntry = {
+  timeSec: number;
+  intervalSec: number;
+  burstSize: number;
+  enemyKeys: readonly string[];
+};
+
+function buildWaveTimeline(): WaveTimelineEntry[] {
+  const milestones: { t: number; add: string }[] = [
+    { t: 0, add: 'tourist' },
+    { t: 90, add: 'chef' },
+    { t: 180, add: 'terrier' },
+    { t: 240, add: 'sheep' },
+    { t: 420, add: 'eagle' },
+    { t: 480, add: 'piper' },
+    { t: 540, add: 'ghost' },
+    { t: 600, add: 'haggis_hunter' },
+    { t: 660, add: 'nest' },
+    { t: 780, add: 'angry_scotsman' },
+    { t: 840, add: 'berserker' },
+    { t: 900, add: 'deep_fryer' },
+  ];
+  const keys: string[] = [];
+  return milestones.map(({ t, add }) => {
+    keys.push(add);
+    return {
+      timeSec: t,
+      intervalSec: Math.max(0.3, 1.5 - t * 0.002),
+      burstSize: Math.min(15, Math.floor(2 + Math.log2(1 + t / 30))),
+      enemyKeys: [...keys],
+    };
+  });
+}
+
+/** Data-driven wave / spawn director — tune without editing SpawnSystem. */
+export const WAVE_TIMELINE: readonly WaveTimelineEntry[] = buildWaveTimeline();
+
+export function getActiveWaveTimelineEntry(gameTimeSec: number): WaveTimelineEntry {
+  let active = WAVE_TIMELINE[0];
+  for (const e of WAVE_TIMELINE) {
+    if (gameTimeSec >= e.timeSec) active = e;
+  }
+  return active;
+}
+
 export const BALANCE = {
   xp: {
     gemPoolMax: 500,
