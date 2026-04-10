@@ -45,6 +45,11 @@ export function getActiveWaveTimelineEntry(gameTimeSec: number): WaveTimelineEnt
 }
 
 export const BALANCE = {
+  /** Camera-relative tuning — off-screen enemies throttle physics / AI. */
+  spatial: {
+    /** Pixels beyond `cameras.main.worldView` where bodies disable and AI is skipped. */
+    cullMarginPx: 200,
+  },
   xp: {
     gemPoolMax: 500,
     gemPrewarm: 50,
