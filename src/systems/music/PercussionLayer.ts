@@ -45,6 +45,11 @@ export class PercussionLayer {
     gain.connect(this.heartbeatGain!);
     osc.start(time);
     osc.stop(time + 0.15);
+    // Disconnect downstream nodes after the oscillator finishes — the osc
+    // auto-disconnects itself when stopped, but the gain node it feeds stays
+    // in the audio graph (held by heartbeatGain's input list) and accumulates
+    // over a run otherwise.
+    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch {} };
   }
 
   scheduleRhythmHit(time: number, intensity: number, swing: number): void {
@@ -81,6 +86,7 @@ export class PercussionLayer {
     gain.connect(this.rhythmGain!);
     osc.start(time);
     osc.stop(time + 0.15);
+    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch {} };
   }
 
   private playHat(time: number, vol: number): void {
@@ -99,6 +105,7 @@ export class PercussionLayer {
     gain.connect(this.rhythmGain!);
     osc.start(time);
     osc.stop(time + 0.04);
+    osc.onended = () => { try { osc.disconnect(); hpf.disconnect(); gain.disconnect(); } catch {} };
   }
 
   updatePattern(density: number): void {

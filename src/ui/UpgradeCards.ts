@@ -191,8 +191,10 @@ export class UpgradeCardsUI {
 
     bg.on('pointerout', () => {
       bg.setFillStyle(0x1a1a2e);
-      // Reset scales
-      icon.setScale(2);
+      // Reset scales — must match the values set at creation (icon is 2.5,
+      // everything else is 1). Using 2 here permanently shrinks the icon
+      // every time the player hovers-then-unhovers a card.
+      icon.setScale(2.5);
       name.setScale(1);
       desc.setScale(1);
       rarityLabel.setScale(1);
