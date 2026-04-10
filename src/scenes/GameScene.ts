@@ -32,6 +32,7 @@ import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from '../cor
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
+import { RunStatsTracker } from '../systems/RunStatsTracker';
 
 /**
  * GameScene — the core gameplay loop.
@@ -107,6 +108,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private readonly metaSaveManager = new SaveManager();
   private readonly settingsManager = getSettingsManager();
+  private readonly runStatsTracker = new RunStatsTracker();
   private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
@@ -149,6 +151,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.lavaZones = [];
     this.healZones = [];
     this.lastEmittedRunSecond = -1;
+    this.runStatsTracker.reset();
 
     // Destroy lazy-init visual overlays from prior run (they're stored in fields
     // that only init once at construction)
@@ -303,10 +306,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     // Floating damage numbers + hit sound + DPS tracking + impact ring burst
-    this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean) => {
+    this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean, weaponKey?: string) => {
       this.juice.showDamageNumber(x, y, amount, isCrit);
       this.juice.spawnImpactRing(x, y);
       this.hud.logDamage(amount);
+      this.runStatsTracker.addWeaponDamage(weaponKey ?? 'unknown', amount);
       this.getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
     });
 
@@ -1370,6 +1374,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   ): GameOverPayload {
     return {
       mode,
+      isVictory: mode === 'victory',
       summary,
       runResult,
       xpLevel: this.xpSystem.getLevel(),
@@ -1379,6 +1384,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       evolvedCount: this.evolvedWeapons.length,
       buildSummary: this.getRunBuildSummary(),
       variantLabel: formatRunVariantLabel(this.activeVariant),
+      weaponDamage: this.runStatsTracker.snapshot(),
     };
   }
 
@@ -1990,6 +1996,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getUpdateTickers(): UpdateTickers { return this.updateTickers; }
   getSpawnSystem(): SpawnSystem { return this.spawnSystem; }
   getWeaponSystem(): WeaponSystem { return this.weaponSystem; }
+  getRunStatsTracker(): RunStatsTracker {
+    return this.runStatsTracker;
+  }
   getSFXManager(): SFXManager {
     return sfxManager;
   }
