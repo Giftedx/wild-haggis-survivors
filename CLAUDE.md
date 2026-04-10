@@ -9,10 +9,11 @@ Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Pha
 ## Commands
 
 - `npm run dev` — Start Vite dev server on port 3000 (auto-opens browser)
+- `npm test` — Run unit tests (Vitest)
 - `npm run build` — Type-check with `tsc --noEmit` then build with Vite to `dist/`
 - `npm run preview` — Serve the production build locally
 
-No test framework is configured.
+Vitest is configured (see `src/utils/save.test.ts`).
 
 ## Architecture
 
