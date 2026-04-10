@@ -37,6 +37,32 @@ export class XPSystem {
     }
   }
 
+  /** Reset all run-scoped XP state (used by destroy and cross-run invariants). */
+  resetRunState(): void {
+    this.currentXP = 0;
+    this.currentLevel = 1;
+    this.xpToNextLevel = this.calcXpRequired(2);
+    this.pendingLevelUps = [];
+    this.levelUpInProgress = false;
+
+    // Deactivate all gems so no orphaned pickups bleed into the next run.
+    const gems = this.gemPool.getChildren() as XPGem[];
+    for (const g of gems) {
+      if (g.active) g.collect();
+    }
+
+    this.events.removeAllListeners();
+  }
+
+  destroy(): void {
+    this.resetRunState();
+    const gems = this.gemPool.getChildren() as XPGem[];
+    for (const g of gems) {
+      try { (g as any).destroy?.(); } catch { /* ignore */ }
+    }
+    try { (this.gemPool as any).clear?.(true, true); } catch { /* ignore */ }
+  }
+
   /** Spawn a gem at a position (called when an enemy dies) */
   spawnGem(x: number, y: number, value: number): void {
     // Don't spawn gems after max level — they'd be meaningless clutter

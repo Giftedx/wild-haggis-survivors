@@ -51,6 +51,16 @@ export class TimeManager {
     this.recomputeAndApply();
   }
 
+  /** Teardown hook (run-scoped). Flushes all tokens and restores defaults. */
+  destroy(): void {
+    this.reset();
+  }
+
+  /** Test/debug hook: number of active tokens. */
+  getTokenCount(): number {
+    return this.tokens.size;
+  }
+
   request(key: string, spec: TimeTokenSpec): void {
     const token: ActiveToken = {
       timeScale: spec.timeScale,

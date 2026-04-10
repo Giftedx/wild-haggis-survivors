@@ -51,7 +51,24 @@ export class WeaponSystem {
 
   /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
   private destroyed: boolean = false;
-  destroy(): void { this.destroyed = true; }
+  destroy(): void {
+    this.destroyed = true;
+    // Clear run-scoped state so pooled objects can't bleed into a new run
+    this.events.removeAllListeners();
+    this.weapons = [];
+    this.trailCounter = 0;
+    this.playerFacing = 0;
+
+    const projectiles = this.projectilePool.getChildren() as Projectile[];
+    for (const p of projectiles) {
+      if (p.active) {
+        try { (p as any).destroy?.(); } catch { /* ignore */ }
+        (p as any).active = false;
+        (p as any).visible = false;
+      }
+    }
+    try { (this.projectilePool as any).clear?.(true, true); } catch { /* ignore */ }
+  }
 
   constructor(scene: Phaser.Scene & ISceneContext, enemyGroup: Phaser.GameObjects.Group) {
     this.scene = scene;
