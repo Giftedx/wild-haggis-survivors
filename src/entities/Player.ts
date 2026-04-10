@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
-import { rotateVector } from '../utils/math';
+import { rotateVectorInto } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -18,6 +18,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private inputManager: InputManager;
   private time: TimeManager;
   private subs = new SubscriptionBag();
+  /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
+  private readonly driftScratch = { x: 0, y: 0 };
 
   // Base stats (from level scaling only)
   private baseMoveSpeed: number = PLAYER.SPEED;
@@ -215,7 +217,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Apply a fixed clockwise rotation bias to the input vector.
-    const drifted = rotateVector(dir.x, dir.y, this.driftDegrees);
+    const drifted = rotateVectorInto(this.driftScratch, dir.x, dir.y, this.driftDegrees);
 
     // Soft boundary — slow down near world edges
     const edgeMargin = 150;
