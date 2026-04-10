@@ -11,6 +11,7 @@ const allowedFiles = new Set([
 const forbidden = [
   { re: /\.time\.timeScale\b/, label: 'direct timeScale access' },
   { re: /\.physics\.world\.(pause|resume)\s*\(/, label: 'direct physics pause/resume' },
+  { re: /\.physics\.world\.isPaused\b/, label: 'direct physics pause state read' },
   { re: /\.physics\.(pause|resume)\s*\(/, label: 'direct physics pause/resume' },
 ];
 

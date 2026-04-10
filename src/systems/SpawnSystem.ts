@@ -51,7 +51,7 @@ export class SpawnSystem {
     // pause), but we don't want a boss to materialize and bossActive to flip
     // while the player is picking cards. The callback sets this closure
     // which we run here on the next unpaused tick.
-    if (this.pendingBossSpawn && !this.scene.physics.world.isPaused) {
+    if (this.pendingBossSpawn && !this.scene.getTimeManager().isGameplayPaused()) {
       const fn = this.pendingBossSpawn;
       this.pendingBossSpawn = null;
       fn();
@@ -159,7 +159,7 @@ export class SpawnSystem {
     // and vignette flash) to the next unpaused update() tick instead of
     // letting the boss materialize during card selection.
     this.scene.time.delayedCall(1500, () => {
-      if (this.scene.physics.world.isPaused) {
+      if (this.scene.getTimeManager().isGameplayPaused()) {
         this.pendingBossSpawn = doSpawn;
       } else {
         doSpawn();
