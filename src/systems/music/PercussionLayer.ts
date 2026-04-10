@@ -49,7 +49,7 @@ export class PercussionLayer {
     // auto-disconnects itself when stopped, but the gain node it feeds stays
     // in the audio graph (held by heartbeatGain's input list) and accumulates
     // over a run otherwise.
-    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch {} };
+    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch { /* ignore */ } };
   }
 
   scheduleRhythmHit(time: number, intensity: number, swing: number): void {
@@ -86,7 +86,7 @@ export class PercussionLayer {
     gain.connect(this.rhythmGain!);
     osc.start(time);
     osc.stop(time + 0.15);
-    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch {} };
+    osc.onended = () => { try { osc.disconnect(); gain.disconnect(); } catch { /* ignore */ } };
   }
 
   private playHat(time: number, vol: number): void {
@@ -105,7 +105,7 @@ export class PercussionLayer {
     gain.connect(this.rhythmGain!);
     osc.start(time);
     osc.stop(time + 0.04);
-    osc.onended = () => { try { osc.disconnect(); hpf.disconnect(); gain.disconnect(); } catch {} };
+    osc.onended = () => { try { osc.disconnect(); hpf.disconnect(); gain.disconnect(); } catch { /* ignore */ } };
   }
 
   updatePattern(density: number): void {
@@ -144,7 +144,7 @@ function euclidean(hits: number, slots: number): boolean[] {
 
   let level = 0;
   while (true) {
-    let zerosStart = pattern.findIndex(p => p[p.length - 1] === 0);
+    const zerosStart = pattern.findIndex(p => p[p.length - 1] === 0);
     if (zerosStart < 0 || zerosStart >= pattern.length - 1) break;
 
     const newPattern: number[][] = [];

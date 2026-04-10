@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "guard:time": "node scripts/guard-time-authority.mjs",
+    "lint": "eslint \"src/**/*.ts\"",
     "test": "npm run guard:time && vitest run",
     "build": "npm run guard:time && tsc --noEmit && vite build",
     "preview": "vite preview"
@@ -14,8 +15,11 @@
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@rollup/rollup-win32-x64-msvc": "^4.60.1",
+    "eslint": "^10.2.0",
     "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.1",
     "vite": "^6.4.2",
     "vitest": "^3.2.4"
   }

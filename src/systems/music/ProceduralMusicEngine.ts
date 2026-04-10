@@ -50,7 +50,7 @@ class ProceduralMusicEngine {
     if (!ctx) return;
     this.ctx = ctx;
 
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') void ctx.resume();
 
     this.masterFilter = ctx.createBiquadFilter();
     this.masterFilter.type = 'lowpass';
@@ -129,7 +129,7 @@ class ProceduralMusicEngine {
   update(delta: number, state: GameMusicState): void {
     if (!this.playing || !this.ctx) return;
 
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') void this.ctx.resume();
 
     this.conductor.updateMood(delta, state);
     const mood = this.conductor.getMood();

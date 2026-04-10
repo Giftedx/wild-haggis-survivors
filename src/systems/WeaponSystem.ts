@@ -515,12 +515,10 @@ export class WeaponSystem {
   private fireExpandingRing(px: number, py: number, dmg: number, maxRadius: number): void {
     const ring = this.scene.add.circle(px, py, 20, 0x4488ff, 0.5);
     let currentRadius = 20;
-    let prevRadius = 0;
     const hitEnemies = new Set<Enemy>();
 
     const expandHandle = this.scene.getUpdateTickers().addInterval('scaled', 50, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
-      prevRadius = currentRadius;
       currentRadius += (maxRadius - 20) / 16;
       ring.setRadius(currentRadius);
       ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));

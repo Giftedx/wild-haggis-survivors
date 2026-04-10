@@ -78,7 +78,7 @@ export class Conductor {
     this.chaos = lerp(this.chaos, chaosTarget, delta * 0.002);
 
     this.updateKillHistory(state.gameTimeSec, state.killCount);
-    const killRate = this.getRecentKillRate(state.gameTimeSec);
+    const killRate = this.getRecentKillRate();
     let triumphTarget = 0;
     if (state.comboCount > 8 && hpFrac > 0.5) {
       triumphTarget = Math.min(1, Math.max(0, (killRate - 3) / 10));
@@ -253,7 +253,7 @@ export class Conductor {
     }
   }
 
-  private getRecentKillRate(gameTimeSec: number): number {
+  private getRecentKillRate(): number {
     if (this.killHistory.length < 2) return 0;
     const oldest = this.killHistory[0];
     const newest = this.killHistory[this.killHistory.length - 1];

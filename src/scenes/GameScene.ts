@@ -1625,27 +1625,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Enable physics for overlap detection
     this.physics.add.existing(chest, true);
     let collected = false;
-    let overlapColl!: Phaser.Physics.Arcade.Collider;
     let despawnHandle: TickerHandle | null = null;
 
-    despawnHandle = this.updateTickers.addOnce('scaled', 15000 + this.chestDurationBonusMs, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.add({
-        targets: [chest, glow],
-        alpha: 0,
-        duration: 500,
-        onComplete: () => {
-          chest.destroy();
-          glow.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-
     // Collect on overlap with player
-    overlapColl = this.physics.add.overlap(this.player, chest, () => {
+    const overlapColl = this.physics.add.overlap(this.player, chest, () => {
       if (collected) return;
       collected = true;
       despawnHandle?.cancel();
@@ -1667,6 +1650,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       chest.destroy();
       glow.destroy();
       this.physics.world.removeCollider(overlapColl);
+    });
+
+    despawnHandle = this.updateTickers.addOnce('scaled', 15000 + this.chestDurationBonusMs, () => {
+      if (collected) return;
+      collected = true;
+      this.tweens.killTweensOf(glow);
+      this.tweens.add({
+        targets: [chest, glow],
+        alpha: 0,
+        duration: 500,
+        onComplete: () => {
+          chest.destroy();
+          glow.destroy();
+          this.physics.world.removeCollider(overlapColl);
+        },
+      });
     });
     this.pickupDespawnHandles.push(despawnHandle);
   }
@@ -1710,8 +1709,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(chest, true);
     let collected = false;
-    let overlapColl!: Phaser.Physics.Arcade.Collider;
     let despawnHandle: TickerHandle | null = null;
+
+    const overlapColl = this.physics.add.overlap(this.player, chest, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+      const goldReward = Phaser.Math.Between(5, 15);
+      this.coinGoldEarned += goldReward;
+      this.juice.showToast(`GOLDEN CHEST! +${goldReward}g`, '#ffaa00');
+      this.juice.flashWhite(150);
+      audio.playLevelUp();
+      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
+      chest.destroy(); glow.destroy();
+      this.physics.world.removeCollider(overlapColl);
+    });
 
     despawnHandle = this.updateTickers.addOnce('scaled', 12000 + this.chestDurationBonusMs, () => {
       if (collected) return;
@@ -1725,20 +1737,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.physics.world.removeCollider(overlapColl);
         },
       });
-    });
-
-    overlapColl = this.physics.add.overlap(this.player, chest, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-      const goldReward = Phaser.Math.Between(5, 15);
-      this.coinGoldEarned += goldReward;
-      this.juice.showToast(`GOLDEN CHEST! +${goldReward}g`, '#ffaa00');
-      this.juice.flashWhite(150);
-      audio.playLevelUp();
-      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
-      chest.destroy(); glow.destroy();
-      this.physics.world.removeCollider(overlapColl);
     });
     this.pickupDespawnHandles.push(despawnHandle);
   }
@@ -1779,21 +1777,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(coin, true);
     let collected = false;
-    let overlapColl!: Phaser.Physics.Arcade.Collider;
     let despawnHandle: TickerHandle | null = null;
 
-    despawnHandle = this.updateTickers.addOnce('scaled', 12000, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.add({
-        targets: coin, alpha: 0, duration: 400, onComplete: () => {
-          coin.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-
-    overlapColl = this.physics.add.overlap(this.player, coin, () => {
+    const overlapColl = this.physics.add.overlap(this.player, coin, () => {
       if (collected) return;
       collected = true;
       despawnHandle?.cancel();
@@ -1809,6 +1795,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       audio.playXPCollect();
       coin.destroy();
       this.physics.world.removeCollider(overlapColl);
+    });
+
+    despawnHandle = this.updateTickers.addOnce('scaled', 12000, () => {
+      if (collected) return;
+      collected = true;
+      this.tweens.add({
+        targets: coin, alpha: 0, duration: 400, onComplete: () => {
+          coin.destroy();
+          this.physics.world.removeCollider(overlapColl);
+        },
+      });
     });
     this.pickupDespawnHandles.push(despawnHandle);
   }
@@ -1830,8 +1827,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(orb, true);
     let collected = false;
-    let overlapColl!: Phaser.Physics.Arcade.Collider;
     let despawnHandle: TickerHandle | null = null;
+
+    const overlapColl = this.physics.add.overlap(this.player, orb, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+      this.player.heal(healAmount);
+      this.juice.showDamageNumber(this.player.x, this.player.y - 20, healAmount, false);
+      this.tweens.killTweensOf(glow);
+      orb.destroy();
+      glow.destroy();
+      this.physics.world.removeCollider(overlapColl);
+    });
 
     despawnHandle = this.updateTickers.addOnce('scaled', 10000, () => {
       if (collected) return;
@@ -1844,18 +1852,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.physics.world.removeCollider(overlapColl);
         },
       });
-    });
-
-    overlapColl = this.physics.add.overlap(this.player, orb, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-      this.player.heal(healAmount);
-      this.juice.showDamageNumber(this.player.x, this.player.y - 20, healAmount, false);
-      this.tweens.killTweensOf(glow);
-      orb.destroy();
-      glow.destroy();
-      this.physics.world.removeCollider(overlapColl);
     });
     this.pickupDespawnHandles.push(despawnHandle);
   }
@@ -2035,7 +2031,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const wr = rng.between(30, 60);
 
       // Dark water base
-      const waterBase = this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a3a5a, 0.5).setDepth(-1);
+      this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a3a5a, 0.5).setDepth(-1);
       // Lighter shimmer overlay that pulses
       const shimmer = this.add.ellipse(wx - 5, wy - 3, wr * 1.4, wr * 0.8, 0x3a6a9a, 0.15).setDepth(-1);
       this.tweens.add({
@@ -2094,7 +2090,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const ly = rng.between(200, H - 200);
       const lr = rng.between(35, 55);
 
-      const lavaBase = this.add.ellipse(lx, ly, lr * 2, lr * 1.5, 0xcc3300, 0.4).setDepth(-1);
+      this.add.ellipse(lx, ly, lr * 2, lr * 1.5, 0xcc3300, 0.4).setDepth(-1);
       const lavaGlow = this.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, 0xff6600, 0.2).setDepth(-1);
       this.tweens.add({
         targets: lavaGlow,
@@ -2113,7 +2109,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const hy = rng.between(200, H - 200);
       const hr = rng.between(30, 45);
 
-      const healBase = this.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
+      this.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
       const healGlow = this.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
       this.tweens.add({
         targets: healGlow,
