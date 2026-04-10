@@ -8,6 +8,7 @@ import {
   getVariantByKey,
 } from '../data/variants';
 import { achievementManager } from '../core/AchievementManager';
+import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { validateAndRepairBootTextures } from '../core/AssetValidator';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
 
@@ -34,6 +35,7 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     validateAndRepairBootTextures(this);
+    getAnalyticsManager().ensureBusHandlersStarted();
 
     // Initialize global meta progression exactly once (above the Scene lifecycle).
     metaProgressSystem.start();

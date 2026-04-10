@@ -17,10 +17,20 @@ export type AchievementUnlockPayload = {
   title: string;
 };
 
+export type GlobalRunEndedPayload = {
+  outcome: 'death' | 'victory';
+  gameTimeSec: number;
+  enemiesKilled: number;
+};
+
+export type TutorialCompletedPayload = Record<string, never>;
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
   ACHIEVEMENT_UNLOCKED: AchievementUnlockPayload;
+  GLOBAL_RUN_ENDED: GlobalRunEndedPayload;
+  TUTORIAL_COMPLETED: TutorialCompletedPayload;
 };
 
 type Handler<T> = (payload: T) => void;
