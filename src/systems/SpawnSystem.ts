@@ -328,6 +328,11 @@ export class SpawnSystem {
   getEnemyGroup(): Phaser.GameObjects.Group { return this.pool; }
   getActiveCount(): number { return this.pool.countActive(true); }
   getGameTimeSec(): number { return this.gameTimeSec; }
+  getSpawnTimerSec(): number { return this.spawnTimer; }
+  getSpawnIntervalSec(): number { return this.spawnInterval; }
+  getBurstSize(): number { return this.burstSize; }
+  getSpawnedBossCount(): number { return this.spawnedBossKeys.size; }
+  getBossScheduledCount(): number { return this.bossSpawnScheduled.size; }
 
   isBossActive(): boolean {
     const frame = Math.floor(this.gameTimeSec * 60);
