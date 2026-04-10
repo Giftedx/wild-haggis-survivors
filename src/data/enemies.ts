@@ -179,13 +179,16 @@ export function getAvailableEnemyTypes(gameTimeSec: number): EnemyConfig[] {
 /**
  * Get a spawn weight for an enemy type based on game time.
  * Newer enemies are weighted higher; early enemies fade out over time.
- * Returns a weight >= 1 (never fully removes enemies, just makes them rare).
+ * Floor of 3 so old enemies remain a chunk of late-game variety (tourists
+ * at minute 20 are actually dangerous thanks to HP scaling, and always
+ * spawning the newest enemy type was making late game monotonous).
  */
 export function getSpawnWeight(config: EnemyConfig, gameTimeSec: number): number {
   const timeSinceAppear = gameTimeSec - config.appearsAt;
-  // Weight decays over 10 minutes after the enemy type first appears
-  // Fresh enemies: weight ~10, old enemies: weight ~1
-  return Math.max(1, 10 - timeSinceAppear / 60);
+  // Weight decays over 7 minutes after the enemy type first appears.
+  // Fresh enemies: weight ~10, old enemies: weight ~3 (was ~1, which
+  // effectively removed them from the spawn pool).
+  return Math.max(3, 10 - timeSinceAppear / 42);
 }
 
 // ── Boss definitions ──
@@ -203,6 +206,12 @@ export interface BossConfig {
   scale: number;
 }
 
+// Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
+// melting bosses in <5 seconds because player DPS outpaced these numbers
+// badly. Target kill time is now 20-40 seconds — enough for the fight to
+// feel like a fight instead of a cutscene. NOTE: bosses spawn with
+// gameTimeSec=0 in SpawnSystem (line 109) so they do NOT get HP_SCALE_PER_MINUTE
+// applied on top — these raw numbers are the final HP.
 export const BOSSES: BossConfig[] = [
   {
     key: 'gordon',
@@ -211,7 +220,7 @@ export const BOSSES: BossConfig[] = [
     spawnTimeSec: 300,     // 5:00
     texture: 'boss_gordon',
     speed: 100,
-    hp: 150,
+    hp: 500,
     damage: 20,
     xpValue: 25,
     scale: 2.0,
@@ -223,7 +232,7 @@ export const BOSSES: BossConfig[] = [
     spawnTimeSec: 600,     // 10:00
     texture: 'boss_tour_bus',
     speed: 50,
-    hp: 400,
+    hp: 2000,
     damage: 25,
     xpValue: 50,
     scale: 2.5,
@@ -235,7 +244,7 @@ export const BOSSES: BossConfig[] = [
     spawnTimeSec: 900,     // 15:00
     texture: 'boss_laird',
     speed: 80,
-    hp: 600,
+    hp: 3500,
     damage: 30,
     xpValue: 75,
     scale: 2.2,
@@ -247,7 +256,7 @@ export const BOSSES: BossConfig[] = [
     spawnTimeSec: 1200,    // 20:00
     texture: 'boss_hunter_general',
     speed: 90,
-    hp: 800,
+    hp: 5500,
     damage: 35,
     xpValue: 100,
     scale: 2.3,
@@ -259,7 +268,7 @@ export const BOSSES: BossConfig[] = [
     spawnTimeSec: 1500,    // 25:00
     texture: 'boss_taxman',
     speed: 130,
-    hp: 1500,
+    hp: 10000,
     damage: 50,
     xpValue: 200,
     scale: 3.0,

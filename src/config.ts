@@ -42,11 +42,12 @@ export const PLAYER = {
 } as const;
 
 export const XP = {
-  /** Base XP needed for level 2 */
-  BASE_REQUIREMENT: 10,
+  /** Base XP needed for level 2. Bumped 10 → 12 to stop the L2 instant-ding.*/
+  BASE_REQUIREMENT: 12,
 
-  /** Multiplier per level (exponential curve) */
-  SCALING_FACTOR: 1.15,
+  /** Multiplier per level (exponential curve). 1.15 → 1.17 makes the
+   *  mid-game ramp slightly steeper without pushing L30 out of reach. */
+  SCALING_FACTOR: 1.17,
 
   /** Maximum player level */
   MAX_LEVEL: 30,
@@ -62,8 +63,12 @@ export const ENEMIES = {
   /** Spawn distance from camera edge (pixels outside view) */
   SPAWN_BUFFER: 80,
 
-  /** HP scaling per minute of game time (percentage) */
-  HP_SCALE_PER_MINUTE: 0.05,
+  /** HP scaling per minute of game time (percentage).
+   *  Rebalanced 0.05 → 0.08: player damage scales via level-ups + weapon
+   *  levels + passives at roughly 5-8× by minute 25, while enemy HP was
+   *  only scaling to 2.25×. Late game was trivial. New scale brings min-25
+   *  enemy HP to 3.0×, keeping pressure without being unfair. */
+  HP_SCALE_PER_MINUTE: 0.08,
 } as const;
 
 export const COLORS = {

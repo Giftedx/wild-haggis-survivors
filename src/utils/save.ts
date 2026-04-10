@@ -103,10 +103,13 @@ export function recordRun(
     save.bestCombo = bestCombo;
   }
 
-  // Gold formula: base on time + kills + boss bonus + coin drops
+  // Gold formula: base on time + kills + boss bonus + coin drops.
+  // Rebalanced: time 0.5 → 0.4, kills 0.2 → 0.4. The old ratio penalized
+  // aggressive play — a passive 20-minute run outearned a kill-heavy
+  // 10-minute run. Equal weighting rewards both survival and kill density.
   const goldEarned = Math.floor(
-    timeSurvivedSec * 0.5 +
-    enemiesKilled * 0.2 +
+    timeSurvivedSec * 0.4 +
+    enemiesKilled * 0.4 +
     bossGold +
     coinGold
   );

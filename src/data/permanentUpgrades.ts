@@ -39,7 +39,10 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
     name: 'Sharp Thistles',
     description: '+5% damage',
     maxLevel: 5,
-    baseCost: 75,
+    // Rebalanced 75 → 120: damage is the strongest multiplicative stat in
+    // the game, and at 5 levels it's +25%. Was dominant over every other
+    // starting-stat pick because of the implicit compounding.
+    baseCost: 120,
     costMultiplier: 1.5,
     effectPerLevel: 'damage_5pct',
   },
@@ -55,11 +58,14 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   {
     key: 'lucky_heather',
     name: 'Lucky Heather',
-    description: '+5% card rarity',
+    // Rebalanced +5% → +10% per level. At +5%, the effect on the luck-weighted
+    // card draw was statistically invisible. At +10% (with adjusted luck
+    // multipliers in drawCards), the stat is actually felt.
+    description: '+10% card rarity',
     maxLevel: 3,
     baseCost: 100,
     costMultiplier: 1.5,
-    effectPerLevel: 'luck_5pct',
+    effectPerLevel: 'luck_10pct',
   },
   {
     key: 'drift_control',
@@ -75,7 +81,10 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
     name: 'Extra Choice',
     description: '4 cards on level-up instead of 3',
     maxLevel: 1,
-    baseCost: 500,
+    // Rebalanced 500 → 800: a 4th card per level is run-defining (extra
+    // ~33% chance per level-up to hit your evolution/passive target). Was
+    // priced below its power level, making it a universally correct pick.
+    baseCost: 800,
     costMultiplier: 1,
     effectPerLevel: 'extra_card',
   },
@@ -100,18 +109,23 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   {
     key: 'crit_power',
     name: 'Deadly Precision',
-    description: '+25% critical hit damage',
+    // Rebalanced: +25% crit damage alone at base 10% crit rate averages
+    // +2.5% expected DPS per level — a dead pick. Now also bumps crit
+    // chance by +3% per level, making the crit damage bonus meaningful.
+    description: '+3% crit chance, +25% crit damage',
     maxLevel: 3,
     baseCost: 120,
     costMultiplier: 1.5,
-    effectPerLevel: 'crit_dmg_25pct',
+    effectPerLevel: 'crit_power_v2',
   },
   {
     key: 'xp_boost',
     name: 'Scholar\'s Mind',
     description: '+8% XP gain',
     maxLevel: 5,
-    baseCost: 60,
+    // Rebalanced 60 → 90: +40% XP at max is a ~2-3 extra level-up in a
+    // 20-minute run, which is a strong compounding benefit.
+    baseCost: 90,
     costMultiplier: 1.5,
     effectPerLevel: 'xp_8pct',
   },
@@ -138,7 +152,9 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
     name: 'Second Wind',
     description: 'Revive once per run with 50% HP',
     maxLevel: 1,
-    baseCost: 400,
+    // Rebalanced 400 → 600: a free life is enormously valuable in a run-based
+    // game; was the second-best shop pick after extra_choice at its old price.
+    baseCost: 600,
     costMultiplier: 1,
     effectPerLevel: 'revival',
   },
@@ -156,7 +172,9 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
     name: 'Treasure Magnet',
     description: '+5s chest duration',
     maxLevel: 3,
-    baseCost: 60,
+    // Rebalanced 60 → 40: niche utility pick, was priced in line with
+    // combat stats but shouldn't compete directly with them.
+    baseCost: 40,
     costMultiplier: 1.5,
     effectPerLevel: 'chest_5s',
   },

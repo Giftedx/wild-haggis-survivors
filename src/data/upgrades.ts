@@ -47,12 +47,13 @@ export interface UpgradeCard {
   effect: UpgradeEffect;
 }
 
-/** Rarity drop weights */
+/** Rarity drop weights. Rebalanced 60/25/12/3 → 55/28/13/4 for slightly
+ *  more uncommon/rare/legendary variety at baseline. */
 export const RARITY_WEIGHTS: Record<Rarity, number> = {
-  common: 60,
-  uncommon: 25,
-  rare: 12,
-  legendary: 3,
+  common: 55,
+  uncommon: 28,
+  rare: 13,
+  legendary: 4,
 };
 
 /** Rarity colors for card borders */
@@ -395,12 +396,15 @@ function formatWeaponName(key: string): string {
 export function drawCards(pool: UpgradeCard[], count: number, luckBonus: number = 0): UpgradeCard[] {
   if (pool.length <= count) return [...pool];
 
-  // Adjusted weights — luck boosts rare and legendary chances
+  // Adjusted weights — luck boosts rare and legendary chances. Luck
+  // multipliers doubled so the stat is actually felt: at max luck
+  // (sporran + 3× lucky_heather = 15 + 30 = 45) commons drop from 55 to
+  // ~10, rares rise from 13 to ~40, legendaries from 4 to ~22.
   const weights: Record<Rarity, number> = {
-    common: Math.max(10, RARITY_WEIGHTS.common - luckBonus * 0.5),
+    common: Math.max(5, RARITY_WEIGHTS.common - luckBonus * 1.0),
     uncommon: RARITY_WEIGHTS.uncommon,
-    rare: RARITY_WEIGHTS.rare + luckBonus * 0.3,
-    legendary: RARITY_WEIGHTS.legendary + luckBonus * 0.2,
+    rare: RARITY_WEIGHTS.rare + luckBonus * 0.6,
+    legendary: RARITY_WEIGHTS.legendary + luckBonus * 0.4,
   };
 
   const drawn: UpgradeCard[] = [];

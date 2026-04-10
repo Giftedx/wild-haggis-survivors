@@ -108,8 +108,17 @@ class ProceduralMusicEngine {
   }
 
   fadeOut(ms: number): void {
+    // Clear any prior pending fade timeout so a second fadeOut call doesn't
+    // lose its reference — otherwise the first setTimeout's stop() could
+    // fire during or after the second fade, cutting it short.
+    if (this.fadeTimeout !== null) {
+      clearTimeout(this.fadeTimeout);
+      this.fadeTimeout = null;
+    }
     if (!this.playing || !this.ctx || !this.masterGain) return;
     const t = this.ctx.currentTime;
+    this.masterGain.gain.cancelScheduledValues(t);
+    this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
     this.masterGain.gain.linearRampToValueAtTime(0, t + ms / 1000);
     this.fadeTimeout = setTimeout(() => {
       this.fadeTimeout = null;

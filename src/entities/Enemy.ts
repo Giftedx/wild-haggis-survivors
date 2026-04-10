@@ -289,6 +289,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.knockbackVx = 0;
         this.knockbackVy = 0;
       }
+      // Tick behavior-specific state-machine timers that would otherwise
+      // freeze while behavior is skipped. Without this, a ghost hit by
+      // repeated AoE knockback would stay phased indefinitely, and a
+      // ranged enemy's firing cooldown would drift.
+      if (this.behavior === 'phase') {
+        this.phaseTimer -= delta;
+        if (this.phaseTimer <= 0) {
+          this.phaseTimer = 2000;
+          this.isPhased = !this.isPhased;
+          this.setAlpha(this.isPhased ? 0.3 : 1);
+          const body = this.body as Phaser.Physics.Arcade.Body;
+          body.checkCollision.none = this.isPhased;
+        }
+      } else if (this.behavior === 'ranged') {
+        this.rangedCooldown -= delta;
+      } else if (this.behavior === 'spawner') {
+        this.spawnerCooldown -= delta;
+      }
       return; // skip behavior — the push is what the enemy is doing this frame
     }
 
@@ -554,6 +572,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.knockbackVx = vx;
     this.knockbackVy = vy;
     this.knockbackTimer = durationMs;
+    // Dive enemies lock their angle on the first behaviorDive tick; if one
+    // is mid-flight when knockback hits, the lock is now stale because the
+    // push moved us sideways. Reset so the next behaviorDive tick re-locks
+    // toward the current player position.
+    if (this.behavior === 'dive') this.diveStarted = false;
   }
 
   /** Apply poison: stacking damage over time */
@@ -577,14 +600,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           targets: blast, radius: 60, alpha: 0, duration: 300,
           onComplete: () => blast.destroy(),
         });
-        // Damage nearby enemies — use internal path so kills emit events too
+        // Damage nearby enemies. Use takeDamage() (not the internal path)
+        // so wool armor still blocks the splash — sheep caught in a
+        // chemical explosion shouldn't lose their one-hit shield.
         const pool = (scene as any).getSpawnSystem?.()?.getEnemyGroup?.();
         if (pool) {
           const nearby = pool.getChildren() as Enemy[];
           for (const e of nearby) {
             if (!e.active || e === this) continue;
             const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
-            if (d <= 60) (e as Enemy).takeDamageInternalPublic(25);
+            if (d <= 60) (e as Enemy).takeDamage(25);
           }
         }
       }
@@ -848,8 +873,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hpBarFill?.setVisible(false);
   }
 
-  /** Make this enemy an elite variant — bigger, tougher, more rewarding */
+  /** Make this enemy an elite variant — bigger, tougher, more rewarding.
+   *  Idempotent: subsequent calls on an already-elite enemy are no-ops,
+   *  preventing HP/scale from compounding if the same enemy is elite-marked
+   *  twice through different code paths. */
   markAsElite(): void {
+    if (this.eliteFlag) return;
     this.eliteFlag = true;
     this.maxHp = Math.ceil(this.maxHp * 2);
     this.hp = this.maxHp;
