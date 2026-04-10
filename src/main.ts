@@ -1,4 +1,7 @@
+import { registerSW } from 'virtual:pwa-register';
 import Phaser from 'phaser';
+
+registerSW({ immediate: true });
 import { GAME } from './config';
 import { BootScene } from './scenes/BootScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
