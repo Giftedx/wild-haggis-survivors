@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { XPGem } from '../entities/XPGem';
 import { XP } from '../config';
 import { audio } from './AudioSystem';
+import { BALANCE } from '../core/BalanceConfig';
 
 /**
  * XPSystem — manages XP gem pool, collection, and level-up triggers.
@@ -27,12 +28,12 @@ export class XPSystem {
     // Create gem pool
     this.gemPool = scene.add.group({
       classType: XPGem,
-      maxSize: 500,
+      maxSize: BALANCE.xp.gemPoolMax,
       runChildUpdate: false,
     });
 
     // Pre-populate
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < BALANCE.xp.gemPrewarm; i++) {
       this.gemPool.add(new XPGem(scene));
     }
   }
@@ -71,7 +72,7 @@ export class XPSystem {
     let gem = this.gemPool.getFirstDead(false) as XPGem | null;
 
     if (!gem) {
-      if (this.gemPool.getLength() >= 500) return;
+      if (this.gemPool.getLength() >= BALANCE.xp.gemPoolMax) return;
       gem = new XPGem(this.scene);
       this.gemPool.add(gem);
     }
@@ -83,8 +84,8 @@ export class XPSystem {
    *  hpFraction: when < 0.15, pickup radius triples (XP magnet pulse) */
   update(playerX: number, playerY: number, pickupRadius: number, hpFraction: number = 1): void {
     // XP magnet pulse: triple pickup radius at critical HP
-    if (hpFraction > 0 && hpFraction < 0.15) {
-      pickupRadius *= 3;
+    if (hpFraction > 0 && hpFraction < BALANCE.xp.criticalHpMagnetThreshold) {
+      pickupRadius *= BALANCE.xp.criticalHpMagnetMultiplier;
     }
     const gems = this.gemPool.getChildren() as XPGem[];
     for (const gem of gems) {
@@ -94,7 +95,7 @@ export class XPSystem {
 
       // Check if close enough to collect
       const dist = Phaser.Math.Distance.Between(gem.x, gem.y, playerX, playerY);
-      if (dist < 20) {
+      if (dist < BALANCE.xp.collectDistancePx) {
         this.collectGem(gem);
       }
     }

@@ -4,6 +4,7 @@ import { Enemy } from '../entities/Enemy';
 import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
+import { BALANCE } from '../core/BalanceConfig';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -77,10 +78,10 @@ export class WeaponSystem {
     // Projectile pool (shared across all projectile-based weapons)
     this.projectilePool = scene.add.group({
       classType: Projectile,
-      maxSize: 200,
+      maxSize: BALANCE.weapons.projectilePoolMax,
       runChildUpdate: false,
     });
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < BALANCE.weapons.projectilePrewarm; i++) {
       this.projectilePool.add(new Projectile(scene));
     }
 
@@ -177,7 +178,7 @@ export class WeaponSystem {
 
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
-    const spawnTrail = this.trailCounter % 3 === 0;
+    const spawnTrail = this.trailCounter % BALANCE.weapons.trailEveryNFrames === 0;
     const projectiles = this.projectilePool.getChildren() as Projectile[];
     for (const proj of projectiles) {
       if (proj.active) {
@@ -200,7 +201,7 @@ export class WeaponSystem {
         // Enforce an absolute 50ms minimum so extreme stacking can't produce
         // a per-frame fire rate that crashes the projectile pool.
         const effectiveCooldown = Math.max(
-          50,
+          BALANCE.weapons.minEffectiveCooldownMs,
           (weapon.cooldownMs * (1 - this.cooldownReduction)) / this.attackSpeedMultiplier
         );
         weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
@@ -660,7 +661,7 @@ export class WeaponSystem {
   private getProjectile(texture: string): Projectile | null {
     let proj = this.projectilePool.getFirstDead(false) as Projectile | null;
     if (!proj) {
-      if (this.projectilePool.getLength() >= 200) return null;
+      if (this.projectilePool.getLength() >= BALANCE.weapons.projectilePoolMax) return null;
       proj = new Projectile(this.scene);
       this.projectilePool.add(proj);
     }

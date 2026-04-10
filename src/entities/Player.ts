@@ -5,6 +5,7 @@ import { rotateVectorInto } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
+import { BALANCE } from '../core/BalanceConfig';
 
 /**
  * Player — the wild haggis.
@@ -47,7 +48,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private bonusBossHealFrac: number = 0;           // HP% healed on boss kill
   private shieldActive: boolean = false;           // One-time death prevention
   private shieldCooldown: number = 0;              // Shield recharge timer
-  private readonly SHIELD_COOLDOWN_MS = 20000;
+  private readonly SHIELD_COOLDOWN_MS = BALANCE.player.shieldCooldownMs;
 
   // Final computed stats
   private moveSpeed: number = PLAYER.SPEED;
@@ -55,9 +56,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
   private dashCooldown: number = 0;
-  private readonly DASH_COOLDOWN_MS = 2000;
-  private readonly DASH_SPEED = 600;
-  private readonly DASH_DURATION_MS = 150;
+  private readonly DASH_COOLDOWN_MS = BALANCE.player.dashCooldownMs;
+  private readonly DASH_SPEED = BALANCE.player.dashSpeed;
+  private readonly DASH_DURATION_MS = BALANCE.player.dashDurationMs;
   private isDashing: boolean = false;
   private dashInvincible: boolean = false;
   private dashRemainingMs: number = 0;
@@ -73,14 +74,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   // Net slow debuff tracking — only apply once regardless of how many nets hit
   private netSlowStacks: number = 0;
-  private readonly NET_SLOW_AMOUNT = 80;
+  private readonly NET_SLOW_AMOUNT = BALANCE.player.netSlowAmount;
   private netSlowTimersMs: number[] = [];
   private currentLevel: number = 1;
   private hp: number = PLAYER.MAX_HP;
   private maxHp: number = PLAYER.MAX_HP;
   private pickupRadius: number = PLAYER.PICKUP_RADIUS;
 
-  private readonly BASE_HITBOX_RADIUS = 20;
+  private readonly BASE_HITBOX_RADIUS = BALANCE.player.baseHitboxRadius;
   private dashTrailHandles: TickerHandle[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic', timeManager: TimeManager) {
@@ -137,7 +138,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(dir.x * this.DASH_SPEED, dir.y * this.DASH_SPEED);
 
     // Dash trail effect
-    const trailCount = 5;
+    const trailCount = BALANCE.player.dashAfterImageCount;
     for (const h of this.dashTrailHandles) h.cancel();
     this.dashTrailHandles = [];
     const tickers = (this.scene as unknown as { getUpdateTickers?: () => UpdateTickers }).getUpdateTickers?.();
@@ -181,8 +182,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.dashRemainingMs -= scaledDelta;
       if (this.dashRemainingMs <= 0) {
         this.isDashing = false;
-        // Brief post-dash invincibility (50ms extra grace)
-        this.postDashInvincibilityRemainingMs = 50;
+        // Brief post-dash invincibility extra grace
+        this.postDashInvincibilityRemainingMs = BALANCE.player.postDashGraceMs;
       }
     }
     if (!this.isDashing && this.dashInvincible && this.postDashInvincibilityRemainingMs > 0) {
