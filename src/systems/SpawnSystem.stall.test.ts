@@ -103,6 +103,26 @@ describe('SpawnSystem.getSpawnStallReason priority', () => {
     expect(ss.getSpawnStallReason()).toBe('PAUSED');
   });
 
+  it('PAUSED beats RUN_FINALE', () => {
+    paused = true;
+    const scene: any = makeScene(tm);
+    const ss = new SpawnSystem(scene);
+    (ss as any).regularSpawnsDisabled = true;
+    (ss as any).spawnTimer = 99;
+    (ss as any).spawnInterval = 0.1;
+    expect(ss.getSpawnStallReason()).toBe('PAUSED');
+  });
+
+  it('RUN_FINALE beats POOL_SATURATED', () => {
+    const scene: any = makeScene(tm);
+    const ss = new SpawnSystem(scene);
+    (ss as any).regularSpawnsDisabled = true;
+    vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(ENEMIES_MAX);
+    (ss as any).spawnTimer = 99;
+    (ss as any).spawnInterval = 0.1;
+    expect(ss.getSpawnStallReason()).toBe('RUN_FINALE');
+  });
+
   it('POOL_SATURATED when boss is active and pool is full (boss does not mask stall)', () => {
     vi.spyOn(SpawnSystem.prototype, 'isBossActive').mockReturnValue(true);
     const scene: any = makeScene(tm);
