@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
 import { GAME } from './config';
 import { BootScene } from './scenes/BootScene';
+import { MainMenuScene } from './scenes/MainMenuScene';
 import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
+import { GameOverScene } from './scenes/GameOverScene';
 import { ShopScene } from './scenes/ShopScene';
 
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */
@@ -23,7 +25,7 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: GAME.PHYSICS_DEBUG,
     },
   },
-  scene: [BootScene, MenuScene, GameScene, ShopScene],
+  scene: [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene],
   render: {
     pixelArt: true,
     antialias: false,

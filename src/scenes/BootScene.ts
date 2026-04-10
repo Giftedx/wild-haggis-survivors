@@ -58,7 +58,7 @@ export class BootScene extends Phaser.Scene {
           alpha: 0,
           delay: 600,
           duration: 300,
-          onComplete: () => this.scene.start('Menu'),
+          onComplete: () => this.scene.start('MainMenu'),
         });
       },
     });
