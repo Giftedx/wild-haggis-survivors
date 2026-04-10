@@ -148,7 +148,9 @@ export class HUD {
     killCount: number,
     enemyCount: number,
     weapons?: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
-    passives?: string[]
+    passives?: string[],
+    /** When reusing a pre-sized weapons buffer, only the first N entries are read. */
+    weaponSlotCount?: number
   ): void {
     const hpFrac = Math.max(0, hp / maxHp);
     this.hpBarFill.width = this.HP_BAR_W * hpFrac;
@@ -195,7 +197,8 @@ export class HUD {
 
     // Update weapon slots
     if (weapons) {
-      this.updateWeaponSlots(weapons);
+      const wCount = weaponSlotCount ?? weapons.length;
+      this.updateWeaponSlots(weapons, wCount);
     }
 
     // Update passive items display
@@ -228,14 +231,17 @@ export class HUD {
     this.bossNameText.setText(boss.name);
   }
 
-  private updateWeaponSlots(weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[]): void {
+  private updateWeaponSlots(
+    weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
+    weaponCount: number
+  ): void {
     const startX = 12;
     const y = 58;
     const size = 40;
     const gap = 6;
 
     // Only rebuild if count changed
-    if (this.weaponSlots.length !== weapons.length) {
+    if (this.weaponSlots.length !== weaponCount) {
       for (const slot of this.weaponSlots) {
         for (const obj of [slot.bg, slot.icon, slot.label, slot.cdFill]) {
           const idx = this.elements.indexOf(obj);
@@ -245,7 +251,8 @@ export class HUD {
       }
       this.weaponSlots = [];
 
-      weapons.forEach((w, i) => {
+      for (let i = 0; i < weaponCount; i++) {
+        const w = weapons[i];
         const x = startX + i * (size + gap);
         const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, 0x1a1a2e, 0.85)
           .setOrigin(0, 0).setStrokeStyle(2, 0x666666)
@@ -269,11 +276,12 @@ export class HUD {
           stroke: '#000', strokeThickness: 2,
         }).setOrigin(1, 1).setScrollFactor(0).setDepth(this.DEPTH + 3));
         this.weaponSlots.push({ bg, icon, label, cdFill });
-      });
+      }
     }
 
     // Update icon texture, level pip, evolved indicator, and cooldown fill
-    weapons.forEach((w, i) => {
+    for (let i = 0; i < weaponCount; i++) {
+      const w = weapons[i];
       if (i < this.weaponSlots.length) {
         const slot = this.weaponSlots[i];
         // Evolved weapons use their evolution icon (wicon_{evolutionKey});
@@ -295,7 +303,7 @@ export class HUD {
         slot.cdFill.height = size * cdFrac;
         slot.cdFill.setFillStyle(cdFrac >= 1 ? 0x44cc44 : 0x005eb8, 0.4);
       }
-    });
+    }
   }
 
   private updatePassiveSlots(passives: string[]): void {

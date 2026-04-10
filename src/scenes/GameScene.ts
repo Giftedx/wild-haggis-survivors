@@ -79,6 +79,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private subs = new SubscriptionBag();
   private debugOverlay: DebugOverlay | null = null;
 
+  /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
+  private readonly musicStateScratch: GameMusicState = {
+    hp: 0, maxHp: 0, gameTimeSec: 0, enemyCount: 0, comboCount: 0, killCount: 0, bossActive: false,
+  };
+  /** Reused HUD weapon rows — mutated in place; length capped at max equippable weapons. */
+  private readonly hudWeaponScratch: Array<{
+    key: string;
+    level: number;
+    evolved: boolean;
+    evolutionKey: string;
+    cooldownFrac: number;
+  }> = Array.from({ length: 12 }, () => ({
+    key: '', level: 0, evolved: false, evolutionKey: '', cooldownFrac: 0,
+  }));
+
   private lavaZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
 
@@ -450,16 +465,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.updateBossHPBar();
     this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
     this.minimap.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
-    const musicState: GameMusicState = {
-      hp: this.player.getHp(),
-      maxHp: this.player.getMaxHp(),
-      gameTimeSec: this.spawnSystem.getGameTimeSec(),
-      enemyCount: this.spawnSystem.getActiveCount(),
-      comboCount: this.juice.getComboCount(),
-      killCount: this.killCount,
-      bossActive: this.spawnSystem.isBossActive(),
-    };
-    musicEngine.update(delta, musicState);
+    const ms = this.musicStateScratch;
+    ms.hp = this.player.getHp();
+    ms.maxHp = this.player.getMaxHp();
+    ms.gameTimeSec = this.spawnSystem.getGameTimeSec();
+    ms.enemyCount = this.spawnSystem.getActiveCount();
+    ms.comboCount = this.juice.getComboCount();
+    ms.killCount = this.killCount;
+    ms.bossActive = this.spawnSystem.isBossActive();
+    musicEngine.update(delta, ms);
 
     // Dash cooldown indicator (small arc under player)
     this.updateDashIndicator();
@@ -469,6 +483,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
+    const weapons = this.weaponSystem.getWeapons();
+    const wn = weapons.length;
+    for (let i = 0; i < wn; i++) {
+      const w = weapons[i];
+      const row = this.hudWeaponScratch[i];
+      row.key = w.config.key;
+      row.level = w.level;
+      row.evolved = w.evolved;
+      row.evolutionKey = w.evolutionKey;
+      row.cooldownFrac = Math.max(0, 1 - (w.cooldownRemaining / w.cooldownMs));
+    }
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
       this.xpSystem.getLevel(),
@@ -476,12 +501,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.spawnSystem.getGameTimeSec(),
       this.killCount,
       this.spawnSystem.getActiveCount(),
-      this.weaponSystem.getWeapons().map(w => ({
-        key: w.config.key, level: w.level, evolved: w.evolved,
-        evolutionKey: w.evolutionKey,
-        cooldownFrac: Math.max(0, 1 - (w.cooldownRemaining / w.cooldownMs)),
-      })),
-      this.ownedPassives
+      this.hudWeaponScratch,
+      this.ownedPassives,
+      wn
     );
   }
 
