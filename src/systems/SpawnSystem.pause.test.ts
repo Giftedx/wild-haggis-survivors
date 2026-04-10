@@ -25,7 +25,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     const ss: any = Object.create(SpawnSystem.prototype);
     ss.scene = scene;
     ss.pendingBossSpawn = () => calls.push('spawned');
-    ss.updateDifficulty = vi.fn();
+    ss.syncWaveDirectorFromTimeline = vi.fn();
     ss.checkBossSpawns = vi.fn();
     ss.spawnBurst = vi.fn();
     ss.pool = { getChildren: () => [] };
@@ -50,7 +50,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     const ss: any = Object.create(SpawnSystem.prototype);
     ss.scene = scene;
     ss.pendingBossSpawn = () => calls.push('spawned');
-    ss.updateDifficulty = vi.fn();
+    ss.syncWaveDirectorFromTimeline = vi.fn();
     ss.checkBossSpawns = vi.fn();
     ss.spawnBurst = vi.fn();
     ss.pool = { getChildren: () => [] };

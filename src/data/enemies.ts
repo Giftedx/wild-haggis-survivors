@@ -176,6 +176,16 @@ export function getAvailableEnemyTypes(gameTimeSec: number): EnemyConfig[] {
   return Object.values(ENEMY_TYPES).filter(e => gameTimeSec >= e.appearsAt);
 }
 
+/** Resolve spawn director keys to configs (unknown keys skipped). */
+export function getEnemyConfigsByKeys(keys: readonly string[]): EnemyConfig[] {
+  const out: EnemyConfig[] = [];
+  for (const k of keys) {
+    const c = ENEMY_TYPES[k];
+    if (c) out.push(c);
+  }
+  return out;
+}
+
 /**
  * Get a spawn weight for an enemy type based on game time.
  * Newer enemies are weighted higher; early enemies fade out over time.

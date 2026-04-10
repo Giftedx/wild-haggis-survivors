@@ -1,7 +1,8 @@
 import Phaser from 'phaser';
 import { Enemy } from '../entities/Enemy';
 import { ENEMIES, GAME } from '../config';
-import { getAvailableEnemyTypes, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
+import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
+import { getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 
@@ -22,6 +23,8 @@ export class SpawnSystem {
   private gameTimeSec: number = 0;
   private spawnInterval: number = 1.5;
   private burstSize: number = 2;
+  /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
+  private directorEnemyKeys: string[] = [];
 
   /** Track which bosses have already spawned */
   private spawnedBossKeys: Set<string> = new Set();
@@ -49,14 +52,21 @@ export class SpawnSystem {
     for (let i = 0; i < 100; i++) {
       this.pool.add(new Enemy(scene, 0, 0));
     }
+
+    const init = getActiveWaveTimelineEntry(this.gameTimeSec);
+    this.spawnInterval = init.intervalSec;
+    this.burstSize = init.burstSize;
+    this.directorEnemyKeys = [...init.enemyKeys];
   }
 
   /** Reset run-scoped spawn state and deactivate pooled enemies. */
   resetRunState(): void {
     this.spawnTimer = 0;
     this.gameTimeSec = 0;
-    this.spawnInterval = 1.5;
-    this.burstSize = 2;
+    const init = getActiveWaveTimelineEntry(0);
+    this.spawnInterval = init.intervalSec;
+    this.burstSize = init.burstSize;
+    this.directorEnemyKeys = [...init.enemyKeys];
     this.spawnedBossKeys.clear();
     this.bossSpawnScheduled.clear();
     this.bossActive = false;
@@ -95,7 +105,7 @@ export class SpawnSystem {
       fn();
     }
 
-    this.updateDifficulty();
+    this.syncWaveDirectorFromTimeline();
     this.checkBossSpawns(playerX, playerY);
 
     if (this.spawnTimer >= this.spawnInterval) {
@@ -232,13 +242,19 @@ export class SpawnSystem {
 
   // ── Regular spawning ──
 
-  private updateDifficulty(): void {
-    this.spawnInterval = Math.max(0.3, 1.5 - this.gameTimeSec * 0.002);
-    this.burstSize = Math.min(15, Math.floor(2 + Math.log2(1 + this.gameTimeSec / 30)));
+  private syncWaveDirectorFromTimeline(): void {
+    const seg = getActiveWaveTimelineEntry(this.gameTimeSec);
+    this.spawnInterval = seg.intervalSec;
+    this.burstSize = seg.burstSize;
+    this.directorEnemyKeys = [...seg.enemyKeys];
+  }
+
+  private getDirectorEnemyConfigs(): EnemyConfig[] {
+    return getEnemyConfigsByKeys(this.directorEnemyKeys);
   }
 
   private spawnBurst(playerX: number, playerY: number): void {
-    const availableTypes = getAvailableEnemyTypes(this.gameTimeSec);
+    const availableTypes = this.getDirectorEnemyConfigs();
     if (availableTypes.length === 0) return;
 
     const camera = this.scene.cameras.main;
@@ -366,7 +382,7 @@ export class SpawnSystem {
     if (tm.isGameplayPaused()) return 'PAUSED';
     if (this.pool.countActive(true) >= ENEMIES.MAX_ACTIVE) return 'POOL_SATURATED';
     if (this.spawnTimer < this.spawnInterval) return 'INTERVAL_WAIT';
-    if (getAvailableEnemyTypes(this.gameTimeSec).length === 0) return 'NO_TYPES_AVAILABLE';
+    if (this.getDirectorEnemyConfigs().length === 0) return 'NO_TYPES_AVAILABLE';
     return null;
   }
 }

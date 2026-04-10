@@ -129,7 +129,7 @@ describe('SpawnSystem.getSpawnStallReason priority', () => {
     vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(0);
     (ss as any).spawnTimer = 0;
     (ss as any).spawnInterval = 9;
-    vi.spyOn(enemies, 'getAvailableEnemyTypes').mockReturnValue([]);
+    vi.spyOn(enemies, 'getEnemyConfigsByKeys').mockReturnValue([]);
     expect(ss.getSpawnStallReason()).toBe('INTERVAL_WAIT');
   });
 
@@ -139,7 +139,7 @@ describe('SpawnSystem.getSpawnStallReason priority', () => {
     vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(0);
     (ss as any).spawnTimer = 5;
     (ss as any).spawnInterval = 1;
-    vi.spyOn(enemies, 'getAvailableEnemyTypes').mockReturnValue([]);
+    vi.spyOn(enemies, 'getEnemyConfigsByKeys').mockReturnValue([]);
     expect(ss.getSpawnStallReason()).toBe('NO_TYPES_AVAILABLE');
   });
 
@@ -149,7 +149,7 @@ describe('SpawnSystem.getSpawnStallReason priority', () => {
     vi.spyOn(ss.getEnemyGroup() as any, 'countActive').mockReturnValue(0);
     (ss as any).spawnTimer = 2;
     (ss as any).spawnInterval = 1;
-    vi.spyOn(enemies, 'getAvailableEnemyTypes').mockReturnValue([{ key: 'tourist' } as EnemyConfig]);
+    vi.spyOn(enemies, 'getEnemyConfigsByKeys').mockReturnValue([{ key: 'tourist' } as EnemyConfig]);
     expect(ss.getSpawnStallReason()).toBeNull();
   });
 });
