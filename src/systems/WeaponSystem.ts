@@ -3,6 +3,7 @@ import { Projectile } from '../entities/Projectile';
 import { Enemy } from '../entities/Enemy';
 import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
 import { audio } from './AudioSystem';
+import { ISceneContext } from '../core/ISceneContext';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -26,7 +27,7 @@ export interface ActiveWeapon {
  * Area weapons (bagpipe_blast, scotch_mist, nessie_tentacle) directly query enemies.
  */
 export class WeaponSystem {
-  private scene: Phaser.Scene;
+  private scene: Phaser.Scene & ISceneContext;
   private weapons: ActiveWeapon[] = [];
   private projectilePool: Phaser.GameObjects.Group;
   private enemyGroup: Phaser.GameObjects.Group;
@@ -52,7 +53,7 @@ export class WeaponSystem {
   private destroyed: boolean = false;
   destroy(): void { this.destroyed = true; }
 
-  constructor(scene: Phaser.Scene, enemyGroup: Phaser.GameObjects.Group) {
+  constructor(scene: Phaser.Scene & ISceneContext, enemyGroup: Phaser.GameObjects.Group) {
     this.scene = scene;
     this.enemyGroup = enemyGroup;
 
@@ -342,7 +343,7 @@ export class WeaponSystem {
       delay: 400,
       repeat: Math.floor(duration / 400) - 1,
       callback: () => {
-        if (!this.scene.physics.world.isPaused) {
+        if (!this.scene.getTimeManager().isGameplayPaused()) {
           const enemies = this.enemyGroup.getChildren() as Enemy[];
           for (const enemy of enemies) {
             if (!enemy.active) continue;
@@ -510,7 +511,7 @@ export class WeaponSystem {
         ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
 
         // Damage enemies in the newly swept annular band (each enemy hit once)
-        if (!this.scene.physics.world.isPaused) {
+        if (!this.scene.getTimeManager().isGameplayPaused()) {
           const enemies = this.enemyGroup.getChildren() as Enemy[];
           for (const enemy of enemies) {
             if (!enemy.active || hitEnemies.has(enemy)) continue;
@@ -576,7 +577,7 @@ export class WeaponSystem {
       repeat: Math.floor(duration / 300) - 1,
       callback: () => {
         if (this.destroyed || !this.scene?.sys?.isActive()) { timer.destroy(); return; }
-        if (this.scene.physics.world.isPaused) return;
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
         const enemies = this.enemyGroup.getChildren() as Enemy[];
         for (const enemy of enemies) {
           if (!enemy.active) continue;

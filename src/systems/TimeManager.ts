@@ -84,6 +84,11 @@ export class TimeManager {
     return this.appliedPhysicsPaused;
   }
 
+  /** Alias for gameplay systems: physics pause is the gameplay pause gate. */
+  isGameplayPaused(): boolean {
+    return this.isPhysicsPaused();
+  }
+
   /** Tick durations and apply any resulting state changes. */
   update(deltaMs: number): void {
     if (this.tokens.size === 0) return;
