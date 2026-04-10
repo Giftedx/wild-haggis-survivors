@@ -33,6 +33,7 @@ import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
+import { TutorialSystem } from '../systems/TutorialSystem';
 
 /**
  * GameScene — the core gameplay loop.
@@ -42,6 +43,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private spawnSystem!: SpawnSystem;
   private weaponSystem!: WeaponSystem;
   private xpSystem!: XPSystem;
+  private tutorialSystem!: TutorialSystem;
   private growthSystem!: GrowthSystem;
   private upgradeUI!: UpgradeCardsUI;
   private hud!: HUD;
@@ -352,6 +354,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       timeManager: this.timeManager,
     });
 
+    this.tutorialSystem = new TutorialSystem(this, this.metaSaveManager);
+    this.tutorialSystem.startRunIfNeeded();
+
     this.registerDebugTimeTravelApi();
     this.registerMidRunPersistenceHooks();
 
@@ -397,6 +402,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.timeManager?.destroy(); } catch { /* ignore */ }
       try { this.weaponSystem?.destroy(); } catch { /* ignore */ }
       try { this.spawnSystem?.destroy(); } catch { /* ignore */ }
+      try { this.tutorialSystem?.dispose(); } catch { /* ignore */ }
       try { this.xpSystem?.destroy(); } catch { /* ignore */ }
     });
 
@@ -577,6 +583,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private onLevelUp(newLevel: number): void {
+    this.tutorialSystem.notifyFirstLevelReached(newLevel);
     // Vacuum all XP gems + audio fanfare
     this.xpSystem.vacuumAllGems();
     audio.playLevelUp();
@@ -1996,11 +2003,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getUpdateTickers(): UpdateTickers { return this.updateTickers; }
   getSpawnSystem(): SpawnSystem { return this.spawnSystem; }
   getWeaponSystem(): WeaponSystem { return this.weaponSystem; }
+  getXPSystem(): XPSystem { return this.xpSystem; }
+  getTutorialSystem(): TutorialSystem {
+    return this.tutorialSystem;
+  }
   getRunStatsTracker(): RunStatsTracker {
     return this.runStatsTracker;
   }
   getSFXManager(): SFXManager {
     return sfxManager;
   }
-  getXPSystem(): XPSystem { return this.xpSystem; }
 }

@@ -79,6 +79,7 @@ export class XPSystem {
     }
 
     gem.drop(x, y, value);
+    this.events.emit('gemSpawned', x, y, value);
   }
 
   /** Update magnet behavior and check collection.
