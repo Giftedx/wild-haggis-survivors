@@ -11,6 +11,7 @@ import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
+import { TimeManager } from '../systems/TimeManager';
 import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
 import { recordRun, loadSave, writeSave, RunResult, RunSummary } from '../utils/save';
@@ -31,6 +32,7 @@ export class GameScene extends Phaser.Scene {
   private upgradeUI!: UpgradeCardsUI;
   private hud!: HUD;
   private juice!: JuiceSystem;
+  private timeManager!: TimeManager;
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
   private iFrames: boolean = false;
@@ -91,8 +93,14 @@ export class GameScene extends Phaser.Scene {
     this.boundaryWarning?.destroy();
     this.boundaryWarning = null;
 
-    // Ensure timeScale is normal (could be stuck at 0.3 if slow-mo was active on scene exit)
-    this.time.timeScale = 1;
+    // Single authority over timeScale + physics pause state
+    this.timeManager = new TimeManager({
+      setTimeScale: (v) => { this.time.timeScale = v; },
+      pausePhysics: () => { this.physics.world.pause(); },
+      resumePhysics: () => { this.physics.world.resume(); },
+      getPhysicsPaused: () => this.physics.world.isPaused,
+    });
+    this.timeManager.reset();
 
     // Set world bounds
     this.physics.world.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
@@ -248,7 +256,7 @@ export class GameScene extends Phaser.Scene {
 
     // HUD + Juice
     this.hud = new HUD(this);
-    this.juice = new JuiceSystem(this);
+    this.juice = new JuiceSystem(this, this.timeManager);
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.togglePause());
@@ -317,7 +325,7 @@ export class GameScene extends Phaser.Scene {
 
     // Start countdown — game is paused until it finishes
     this.isPaused = true;
-    this.physics.pause();
+    this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
     this.showCountdown();
   }
 
@@ -329,7 +337,7 @@ export class GameScene extends Phaser.Scene {
     const showNext = () => {
       if (i >= steps.length) {
         this.isPaused = false;
-        this.physics.resume();
+        this.timeManager.release('COUNTDOWN');
         return;
       }
 
@@ -374,11 +382,12 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(_time: number, delta: number): void {
-    if (this.isPaused) return;
-
     // Cap delta to prevent time warps from tab-backgrounding (browser throttles
     // requestAnimationFrame to ~1fps when backgrounded, producing huge deltas on return)
     delta = Math.min(delta, 100);
+
+    this.timeManager.update(delta);
+    if (this.isPaused) return;
 
     this.player.update(delta);
     this.player.tickRegen(delta);
@@ -462,7 +471,7 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.isPaused = true;
-    this.physics.pause();
+    this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
     this.player.onLevelUp(newLevel);
     this.growthSystem.onLevelUp(newLevel);
 
@@ -515,7 +524,7 @@ export class GameScene extends Phaser.Scene {
     if (cards.length === 0) {
       this.juice.showToast('LEVEL UP!', '#ffdd00');
       this.isPaused = false;
-      this.physics.resume();
+      this.timeManager.release('LEVEL_UP');
       this.xpSystem.processNextLevelUp();
       return;
     }
@@ -597,7 +606,7 @@ export class GameScene extends Phaser.Scene {
     } else {
       this.xpSystem.processNextLevelUp(); // Clears levelUpInProgress flag
       this.isPaused = false;
-      this.physics.resume();
+      this.timeManager.release('LEVEL_UP');
 
       // Brief invincibility after level-up (1s grace period)
       // Bump generation counter so pending 500ms clearIFrames callbacks
@@ -819,7 +828,7 @@ export class GameScene extends Phaser.Scene {
       // Resume
       this.isManualPause = false;
       this.isPaused = false;
-      this.physics.resume();
+      this.timeManager.release('UI_PAUSE');
       for (const el of this.pauseElements) el.destroy();
       this.pauseElements = [];
       // Spawn deferred treasure chest if one was due during pause
@@ -832,7 +841,7 @@ export class GameScene extends Phaser.Scene {
       // Pause
       this.isManualPause = true;
       this.isPaused = true;
-      this.physics.pause();
+      this.timeManager.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
 
       const { width, height } = this.scale;
       const d = 250;
@@ -1064,7 +1073,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     this.isPaused = true;
-    this.physics.pause();
+    this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     musicEngine.playResolution();
 
     const summary = this.buildRunSummary(true);
@@ -1074,7 +1083,7 @@ export class GameScene extends Phaser.Scene {
 
   private handlePlayerDeath(): void {
     this.isPaused = true;
-    this.physics.pause();
+    this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     audio.playDeath();
     musicEngine.fadeOut(2000);
     this.juice.flashRed(400);

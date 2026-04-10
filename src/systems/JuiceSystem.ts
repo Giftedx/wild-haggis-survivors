@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { TimeManager } from './TimeManager';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -10,6 +11,7 @@ import Phaser from 'phaser';
  */
 export class JuiceSystem {
   private scene: Phaser.Scene;
+  private time: TimeManager;
   private dmgTextPool: Phaser.GameObjects.Text[] = [];
   /** Pool of reusable impact rings — used on every enemy hit. Unpooled
    *  creation per hit was a real perf concern at 60fps × pierce weapons. */
@@ -32,13 +34,12 @@ export class JuiceSystem {
   // Screen flash overlay
   private flashRect: Phaser.GameObjects.Rectangle;
 
-  // Hit-freeze (game-tick, no wall-clock timers)
+  // Hit-freeze throttling (engine mutations handled by TimeManager)
   private freezeCooldownMs: number = 0;
-  private freezeRemainingMs: number = 0;
-  private freezePausedPhysics: boolean = false;
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene, time: TimeManager) {
     this.scene = scene;
+    this.time = time;
 
     // Danger vignette — red border glow, hidden by default
     this.vignette = scene.add.graphics().setScrollFactor(0).setDepth(45).setAlpha(0);
@@ -104,20 +105,11 @@ export class JuiceSystem {
 
   /** Call each frame */
   update(delta: number, hpFraction?: number): void {
-    const timeScale = this.scene?.time?.timeScale ?? 1;
+    const timeScale = this.time.getEffectiveTimeScale();
     const scaledDelta = delta * timeScale;
 
-    // Tick hit-freeze
+    // Tick hit-freeze throttle (bound to timeScale so pause freezes cooldown)
     if (this.freezeCooldownMs > 0) this.freezeCooldownMs -= scaledDelta;
-    if (this.freezeRemainingMs > 0) {
-      this.freezeRemainingMs -= scaledDelta;
-      if (this.freezeRemainingMs <= 0) {
-        if (this.freezePausedPhysics && this.scene.sys.isActive()) {
-          this.scene.physics.world.resume();
-        }
-        this.freezePausedPhysics = false;
-      }
-    }
 
     // Combo timer
     if (this.comboCount > 0) {
@@ -404,17 +396,8 @@ export class JuiceSystem {
     if (this.slowMotionActive) return; // don't interrupt slow-mo
     if (this.freezeCooldownMs > 0) return;
     this.freezeCooldownMs = 100;
-    this.freezeRemainingMs = 20;
-
-    // Freeze gameplay by pausing physics. We intentionally do not touch
-    // timeScale here to avoid deadlocking time-scaled systems.
-    const alreadyPaused = this.scene.physics.world.isPaused;
-    if (!alreadyPaused) {
-      this.scene.physics.world.pause();
-      this.freezePausedPhysics = true;
-    } else {
-      this.freezePausedPhysics = false;
-    }
+    // Freeze gameplay by pausing physics (no timeScale mutation).
+    this.time.requestForDuration('HIT_FREEZE', { pausePhysics: true }, 20);
   }
 
   /** Brief slow-motion effect — guarded against overlapping calls */
@@ -422,10 +405,8 @@ export class JuiceSystem {
   slowMotion(durationMs = 300): void {
     if (this.slowMotionActive) return; // Prevent overlapping slow-mo
     this.slowMotionActive = true;
-
-    this.scene.time.timeScale = 0.3;
-    this.scene.time.delayedCall(durationMs * 0.3, () => {
-      this.scene.time.timeScale = 1;
+    this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, durationMs);
+    this.scene.time.delayedCall(durationMs, () => {
       this.slowMotionActive = false;
     });
   }
