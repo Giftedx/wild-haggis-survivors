@@ -11,7 +11,7 @@ import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
-import { TimeManager } from '../systems/TimeManager';
+import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
 import { recordRun, loadSave, writeSave, RunResult, RunSummary } from '../utils/save';
@@ -94,12 +94,7 @@ export class GameScene extends Phaser.Scene {
     this.boundaryWarning = null;
 
     // Single authority over timeScale + physics pause state
-    this.timeManager = new TimeManager({
-      setTimeScale: (v) => { this.time.timeScale = v; },
-      pausePhysics: () => { this.physics.world.pause(); },
-      resumePhysics: () => { this.physics.world.resume(); },
-      getPhysicsPaused: () => this.physics.world.isPaused,
-    });
+    this.timeManager = new TimeManager(createPhaserTimeAdapter(this));
     this.timeManager.reset();
 
     // Set world bounds
@@ -111,7 +106,7 @@ export class GameScene extends Phaser.Scene {
     // Create the player at world center
     const selectedVariant = getVariantByKey(save.selectedVariant);
     this.activeVariant = selectedVariant;
-    this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2, selectedVariant.textureKey);
+    this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2, selectedVariant.textureKey, this.timeManager);
 
     // Spawn map hazard and healing zones
     this.spawnMapZones();

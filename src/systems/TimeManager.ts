@@ -13,12 +13,23 @@ type ActiveToken = {
   remainingMs: number | null;
 };
 
+import Phaser from 'phaser';
+
 export type TimeAdapter = {
   setTimeScale: (value: number) => void;
   pausePhysics: () => void;
   resumePhysics: () => void;
   getPhysicsPaused: () => boolean;
 };
+
+export function createPhaserTimeAdapter(scene: Phaser.Scene): TimeAdapter {
+  return {
+    setTimeScale: (v) => { scene.time.timeScale = v; },
+    pausePhysics: () => { scene.physics.world.pause(); },
+    resumePhysics: () => { scene.physics.world.resume(); },
+    getPhysicsPaused: () => scene.physics.world.isPaused,
+  };
+}
 
 /**
  * TimeManager is the single authority for timeScale + physics pause state.
