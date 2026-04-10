@@ -11,6 +11,9 @@ import Phaser from 'phaser';
 export class JuiceSystem {
   private scene: Phaser.Scene;
   private dmgTextPool: Phaser.GameObjects.Text[] = [];
+  /** Pool of reusable impact rings — used on every enemy hit. Unpooled
+   *  creation per hit was a real perf concern at 60fps × pierce weapons. */
+  private impactRingPool: Phaser.GameObjects.Arc[] = [];
 
   // Kill combo tracking
   private comboCount: number = 0;
@@ -65,6 +68,33 @@ export class JuiceSystem {
       stroke: '#000000',
       strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
+
+    // Pre-allocate impact ring pool — 40 slots is enough for heavy piercing
+    // weapons and max-combo scenarios without creating per-hit GameObjects.
+    for (let i = 0; i < 40; i++) {
+      const r = scene.add.circle(0, 0, 4, 0xffffff, 0.8)
+        .setDepth(12)
+        .setVisible(false);
+      this.impactRingPool.push(r);
+    }
+  }
+
+  /** Spawn a small white burst at a hit location — pooled, overflow is dropped. */
+  spawnImpactRing(x: number, y: number): void {
+    const ring = this.impactRingPool.find(r => !r.visible);
+    if (!ring) return; // All 40 in flight — drop silently (visual only)
+    ring.setPosition(x, y);
+    ring.setRadius(4);
+    ring.setAlpha(0.8);
+    ring.setVisible(true);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: 14,
+      alpha: 0,
+      duration: 180,
+      ease: 'Cubic.easeOut',
+      onComplete: () => ring.setVisible(false),
+    });
   }
 
   /** Call each frame */

@@ -194,12 +194,22 @@ export class BootScene extends Phaser.Scene {
   // instead of cryptic text labels like "TS1" / "CT3".
 
   private createWeaponIcons(): void {
+    // Base weapon icons
     this.createWeaponIconFromTexture('wicon_thistle_shot', 'thistle');
     this.createWeaponIconFromTexture('wicon_caber_toss', 'caber');
     this.createWeaponIconFromTexture('wicon_haggis_hurler', 'haggis_ball');
     this.createBagpipeBlastIcon();
     this.createScotchMistIcon();
     this.createNessieTentacleIcon();
+    // Evolution icons — drawn distinctly so the HUD slot visibly changes
+    // when a weapon evolves (previously evolved weapons stuck on their
+    // base icon because wicon_{evolutionKey} didn't exist).
+    this.createThistleStormIcon();
+    this.createHighlandGamesIcon();
+    this.createHaggisCannonIcon();
+    this.createHighlandFlingIcon();
+    this.createTheHaarIcon();
+    this.createNessieUnleashedIcon();
   }
 
   /** Use an existing texture as a weapon icon (for projectile weapons). */
@@ -1620,6 +1630,169 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx, cy + 3, 22);
 
     g.generateTexture('deep_fryer', s, s);
+    g.destroy();
+  }
+
+  // === Evolution weapon icons ===
+
+  /** Thistle Storm — multiple thistles in a radiating burst */
+  private createThistleStormIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Central bright core
+    g.fillStyle(0xbb88ee, 1);
+    g.fillCircle(cx, cy, 3);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(cx, cy, 1.5);
+    // 5 thistle heads radiating out
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      const tx = cx + Math.cos(a) * 7;
+      const ty = cy + Math.sin(a) * 7;
+      g.fillStyle(0x442266, 1);
+      g.fillCircle(tx, ty, 2.5);
+      g.fillStyle(0x9966cc, 1);
+      g.fillCircle(tx, ty, 2);
+      // Tiny spikes
+      g.fillStyle(0xbb88ee, 1);
+      g.fillCircle(tx + Math.cos(a) * 2, ty + Math.sin(a) * 2, 0.8);
+    }
+    g.generateTexture('wicon_thistle_storm', s, s);
+    g.destroy();
+  }
+
+  /** Highland Games — flaming caber */
+  private createHighlandGamesIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Caber body (rotated diagonally)
+    g.fillStyle(0x3a2808, 1);
+    g.fillRect(cx - 8, cy - 2, 16, 5);
+    g.fillStyle(0x8b6914, 1);
+    g.fillRect(cx - 7, cy - 1, 14, 3);
+    g.fillStyle(0xa07818, 1);
+    g.fillRect(cx - 7, cy - 1, 14, 1);
+    // Flames at one end
+    g.fillStyle(0xff3300, 0.9);
+    g.fillCircle(cx + 9, cy, 3);
+    g.fillStyle(0xff8800, 1);
+    g.fillCircle(cx + 9, cy - 1, 2);
+    g.fillStyle(0xffdd00, 1);
+    g.fillCircle(cx + 9, cy - 2, 1);
+    // Flame tips
+    g.fillStyle(0xff6600, 0.7);
+    g.fillTriangle(cx + 9, cy - 4, cx + 11, cy, cx + 7, cy - 2);
+    g.generateTexture('wicon_highland_games', s, s);
+    g.destroy();
+  }
+
+  /** Haggis Cannon — multiple haggis balls radiating */
+  private createHaggisCannonIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Central haggis
+    g.fillStyle(0x3a2808, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0x6b4e0a, 1);
+    g.fillCircle(cx, cy, 3);
+    // Motion trails radiating out
+    g.fillStyle(0x8b6914, 1);
+    g.fillCircle(cx - 6, cy - 4, 2);
+    g.fillCircle(cx + 6, cy - 4, 2);
+    g.fillCircle(cx - 6, cy + 4, 2);
+    g.fillCircle(cx + 6, cy + 4, 2);
+    g.fillCircle(cx + 8, cy, 1.5);
+    g.fillCircle(cx - 8, cy, 1.5);
+    // Motion lines
+    g.lineStyle(1, 0xa07818, 0.7);
+    g.lineBetween(cx, cy, cx - 6, cy - 4);
+    g.lineBetween(cx, cy, cx + 6, cy - 4);
+    g.lineBetween(cx, cy, cx - 6, cy + 4);
+    g.lineBetween(cx, cy, cx + 6, cy + 4);
+    g.generateTexture('wicon_haggis_cannon', s, s);
+    g.destroy();
+  }
+
+  /** Highland Fling — massive expanding ring */
+  private createHighlandFlingIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Concentric rings (the shockwave)
+    g.lineStyle(2, 0x4488ff, 1);
+    g.strokeCircle(cx, cy, 9);
+    g.lineStyle(2, 0x6699ff, 0.8);
+    g.strokeCircle(cx, cy, 6);
+    g.lineStyle(2, 0x88bbff, 0.6);
+    g.strokeCircle(cx, cy, 3);
+    // Bright center
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx, cy, 1.5);
+    // Motion hints
+    g.fillStyle(0xaaccff, 0.7);
+    g.fillCircle(cx - 10, cy, 1);
+    g.fillCircle(cx + 10, cy, 1);
+    g.fillCircle(cx, cy - 10, 1);
+    g.fillCircle(cx, cy + 10, 1);
+    g.generateTexture('wicon_highland_fling', s, s);
+    g.destroy();
+  }
+
+  /** The Haar — dense fog cloud */
+  private createTheHaarIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Layered fog cloud
+    g.fillStyle(0x445566, 0.7);
+    g.fillCircle(cx - 4, cy + 2, 5);
+    g.fillCircle(cx + 4, cy + 2, 5);
+    g.fillCircle(cx, cy - 2, 6);
+    g.fillStyle(0x667788, 0.8);
+    g.fillCircle(cx - 3, cy + 1, 4);
+    g.fillCircle(cx + 3, cy + 1, 4);
+    g.fillCircle(cx, cy - 1, 5);
+    g.fillStyle(0x99aabb, 0.9);
+    g.fillCircle(cx - 2, cy, 3);
+    g.fillCircle(cx + 2, cy, 3);
+    // Bright wisps
+    g.fillStyle(0xccddee, 1);
+    g.fillCircle(cx, cy - 2, 1.5);
+    g.fillCircle(cx - 4, cy + 1, 1);
+    g.fillCircle(cx + 4, cy + 1, 1);
+    g.generateTexture('wicon_the_haar', s, s);
+    g.destroy();
+  }
+
+  /** Nessie Unleashed — full tentacle swirl */
+  private createNessieUnleashedIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    // Swirling tentacle — multiple arcs
+    g.fillStyle(0x114422, 1);
+    g.fillCircle(cx, cy, 9);
+    g.fillStyle(0x226644, 1);
+    g.fillCircle(cx, cy, 7);
+    // Tentacle segments swirling outward
+    g.fillStyle(0x66aa77, 1);
+    const segs = 8;
+    for (let i = 0; i < segs; i++) {
+      const a = (i / segs) * Math.PI * 2;
+      const r = 3 + (i % 2) * 2;
+      const px = cx + Math.cos(a) * r;
+      const py = cy + Math.sin(a) * r;
+      g.fillCircle(px, py, 1.3);
+    }
+    // Bright eye center
+    g.fillStyle(0xffcc22, 1);
+    g.fillCircle(cx, cy, 2);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx, cy, 1);
+    g.generateTexture('wicon_nessie_unleashed', s, s);
     g.destroy();
   }
 

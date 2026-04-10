@@ -147,7 +147,7 @@ export class HUD {
     gameTimeSec: number,
     killCount: number,
     enemyCount: number,
-    weapons?: { key: string; level: number; evolved?: boolean; cooldownFrac?: number }[],
+    weapons?: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
     passives?: string[]
   ): void {
     const hpFrac = Math.max(0, hp / maxHp);
@@ -228,7 +228,7 @@ export class HUD {
     this.bossNameText.setText(boss.name);
   }
 
-  private updateWeaponSlots(weapons: { key: string; level: number; evolved?: boolean; cooldownFrac?: number }[]): void {
+  private updateWeaponSlots(weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[]): void {
     const startX = 12;
     const y = 58;
     const size = 40;
@@ -253,11 +253,14 @@ export class HUD {
         const cdFill = this.addEl(this.scene.add.rectangle(x, y + size, size, 0, 0x005eb8, 0.45)
           .setOrigin(0, 1).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Rectangle;
         // Weapon icon — real sprite instead of cryptic "TS1" abbreviation.
-        // Each weapon has a pre-rendered `wicon_{key}` texture from BootScene.
-        // Fall back to thistle_shot if the weapon (e.g. an evolved form) has
-        // no dedicated icon, so evolved slots don't end up blank or stale.
-        const desiredKey = `wicon_${w.key}`;
-        const initialKey = this.scene.textures.exists(desiredKey) ? desiredKey : 'wicon_thistle_shot';
+        // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
+        // texture from BootScene. Pick the evolved one if it exists, else the
+        // base, else the thistle_shot fallback.
+        const evoInitKey = w.evolved && w.evolutionKey ? `wicon_${w.evolutionKey}` : '';
+        const baseInitKey = `wicon_${w.key}`;
+        const initialKey = (evoInitKey && this.scene.textures.exists(evoInitKey))
+          ? evoInitKey
+          : (this.scene.textures.exists(baseInitKey) ? baseInitKey : 'wicon_thistle_shot');
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
           .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(1.4)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
@@ -273,9 +276,15 @@ export class HUD {
     weapons.forEach((w, i) => {
       if (i < this.weaponSlots.length) {
         const slot = this.weaponSlots[i];
-        const iconKey = `wicon_${w.key}`;
-        if (this.scene.textures.exists(iconKey) && slot.icon.texture.key !== iconKey) {
-          slot.icon.setTexture(iconKey);
+        // Evolved weapons use their evolution icon (wicon_{evolutionKey});
+        // fall back to base icon if the evolution texture doesn't exist.
+        const evoKey = w.evolved ? `wicon_${w.evolutionKey}` : '';
+        const baseKey = `wicon_${w.key}`;
+        const desiredKey = (evoKey && this.scene.textures.exists(evoKey))
+          ? evoKey
+          : (this.scene.textures.exists(baseKey) ? baseKey : 'wicon_thistle_shot');
+        if (slot.icon.texture.key !== desiredKey) {
+          slot.icon.setTexture(desiredKey);
         }
         slot.label.setText(w.evolved ? '★' : `${w.level}`);
         slot.label.setColor(w.evolved ? '#ffdd44' : '#ffffff');

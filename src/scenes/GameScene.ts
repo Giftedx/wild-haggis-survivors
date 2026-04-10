@@ -146,7 +146,9 @@ export class GameScene extends Phaser.Scene {
         audio.playLevelUp();
       }
 
-      // Death ripple — push nearby enemies away from the kill (max 6)
+      // Death ripple — push nearby enemies away from the kill (max 6).
+      // Uses applyKnockback so the push actually persists past the next
+      // behavior-chase velocity reset.
       const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
       let pushed = 0;
       for (let i = 0; i < enemies.length && pushed < 6; i++) {
@@ -156,9 +158,8 @@ export class GameScene extends Phaser.Scene {
         if (d < 50 && d > 0) {
           const angle = Phaser.Math.Angle.Between(x, y, e.x, e.y);
           const body = e.body as Phaser.Physics.Arcade.Body;
-          const force = 100 / body.mass;
-          body.velocity.x += Math.cos(angle) * force;
-          body.velocity.y += Math.sin(angle) * force;
+          const force = 120 / body.mass;
+          e.applyKnockback(Math.cos(angle) * force, Math.sin(angle) * force, 120);
           pushed++;
         }
       }
@@ -200,9 +201,10 @@ export class GameScene extends Phaser.Scene {
       }
     });
 
-    // Floating damage numbers + hit sound + DPS tracking
+    // Floating damage numbers + hit sound + DPS tracking + impact ring burst
     this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean) => {
       this.juice.showDamageNumber(x, y, amount, isCrit);
+      this.juice.spawnImpactRing(x, y);
       this.hud.logDamage(amount);
       audio.playHit();
     });
@@ -424,6 +426,7 @@ export class GameScene extends Phaser.Scene {
       this.spawnSystem.getActiveCount(),
       this.weaponSystem.getWeapons().map(w => ({
         key: w.config.key, level: w.level, evolved: w.evolved,
+        evolutionKey: w.evolutionKey,
         cooldownFrac: Math.max(0, 1 - (w.cooldownRemaining / w.cooldownMs)),
       })),
       this.ownedPassives
@@ -497,6 +500,17 @@ export class GameScene extends Phaser.Scene {
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
     const cards = drawCards(pool, cardCount, luckBonus);
+
+    // Safety valve: if the pool somehow resolves to zero cards (all weapons
+    // maxed + all passives owned + all evolved + heal filter hit), don't
+    // freeze the game on an empty card screen. Auto-resume and show a toast.
+    if (cards.length === 0) {
+      this.juice.showToast('LEVEL UP!', '#ffdd00');
+      this.isPaused = false;
+      this.physics.resume();
+      this.xpSystem.processNextLevelUp();
+      return;
+    }
 
     this.upgradeUI.grantReroll();
     this.upgradeUI.show(cards, newLevel);
@@ -1498,9 +1512,10 @@ export class GameScene extends Phaser.Scene {
       this.physics.world.removeCollider(overlap);
     });
 
-    // Despawn after 12 seconds (Treasure Magnet extends)
+    // Despawn after 12 seconds. treasure_magnet is scoped to chests only —
+    // coins are a separate kill-drop mechanic, so don't extend them.
     const capturedRunId = this.runId;
-    this.time.delayedCall(12000 + this.chestDurationBonusMs, () => {
+    this.time.delayedCall(12000, () => {
       if (this.runId !== capturedRunId) return; // stale across scene restart
       if (collected) return;
       collected = true;

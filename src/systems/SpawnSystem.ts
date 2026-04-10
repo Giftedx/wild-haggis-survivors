@@ -121,7 +121,9 @@ export class SpawnSystem {
       // Pass gameTimeSec=0 so boss HP isn't double-scaled — BOSSES data
       // already defines HP balanced for each boss's spawn time.
       enemy.spawn(pos.x, pos.y, bossAsConfig, 0);
-      enemy.setScale(boss.scale);
+      // setBaseDisplayScale updates the anchor the idle bob wobbles around,
+      // so bosses actually breathe now instead of being frozen at base scale.
+      enemy.setBaseDisplayScale(boss.scale);
       enemy.setBaseTint(0xff4444);
       enemy.markAsBoss();
       this.bossActive = true;
