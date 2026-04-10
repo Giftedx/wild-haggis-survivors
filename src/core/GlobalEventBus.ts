@@ -5,8 +5,22 @@ export type GlobalEnemyKilledPayload = {
   wasElite: boolean;
 };
 
+export type GlobalRunTimePayload = {
+  /** Continuous run clock (seconds). */
+  gameTimeSec: number;
+  /** Floor(gameTimeSec), emitted once per crossed integer second. */
+  wholeSecond: number;
+};
+
+export type AchievementUnlockPayload = {
+  id: string;
+  title: string;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
+  GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
+  ACHIEVEMENT_UNLOCKED: AchievementUnlockPayload;
 };
 
 type Handler<T> = (payload: T) => void;

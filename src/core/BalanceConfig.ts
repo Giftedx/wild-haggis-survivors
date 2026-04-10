@@ -80,3 +80,30 @@ export const BALANCE = {
   },
 } as const;
 
+/** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
+export type AchievementId =
+  | 'ach_kills_1000'
+  | 'ach_survive_10m'
+  | 'ach_defeat_taxman';
+
+export const ACHIEVEMENT_DEFS: Record<
+  AchievementId,
+  {
+    title: string;
+    description: string;
+  }
+> = {
+  ach_kills_1000: {
+    title: 'Cull of the Glen',
+    description: 'Reach 1,000 lifetime kills (meta).',
+  },
+  ach_survive_10m: {
+    title: 'Heather Marathon',
+    description: 'Survive 10 minutes in a single run.',
+  },
+  ach_defeat_taxman: {
+    title: 'Tax-Free Zone',
+    description: 'Defeat the Taxman.',
+  },
+};
+

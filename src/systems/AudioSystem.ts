@@ -8,10 +8,14 @@
  */
 import { getAudioContext, getOutputNode } from './audioContext';
 
+const BASE_SFX_GAIN = 0.3;
+
 export class AudioSystem {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private enabled: boolean = true;
+  /** masterVolume × sfxVolume from SettingsManager */
+  private sfxGainMultiplier: number = 1;
 
   constructor() {
     // AudioContext requires user interaction to start on most browsers
@@ -24,7 +28,7 @@ export class AudioSystem {
     if (!ctx) return null;
     this.ctx = ctx;
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = 0.3;
+    this.masterGain.gain.value = BASE_SFX_GAIN * this.sfxGainMultiplier * (this.enabled ? 1 : 0);
     const output = getOutputNode();
     if (output) {
       this.masterGain.connect(output);
@@ -36,6 +40,18 @@ export class AudioSystem {
 
   setEnabled(on: boolean): void {
     this.enabled = on;
+    this.refreshOutputGain();
+  }
+
+  /** Air-gapped prefs — does not touch meta save. */
+  applyFromSettings(masterVolume: number, sfxVolume: number): void {
+    this.sfxGainMultiplier = Math.max(0, Math.min(1, masterVolume)) * Math.max(0, Math.min(1, sfxVolume));
+    this.refreshOutputGain();
+  }
+
+  private refreshOutputGain(): void {
+    if (!this.masterGain) return;
+    this.masterGain.gain.value = BASE_SFX_GAIN * this.sfxGainMultiplier * (this.enabled ? 1 : 0);
   }
 
   /** Throttle: max one hit sound per 50ms to prevent audio spam from AoE weapons */

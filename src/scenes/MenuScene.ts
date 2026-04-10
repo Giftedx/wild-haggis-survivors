@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
+import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
+import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
-import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
@@ -149,19 +150,21 @@ export class MenuScene extends Phaser.Scene {
       this.fadeToScene('Shop');
     }, 660);
 
-    audio.setEnabled(this.saveData.settings.soundOn);
-    musicEngine.setEnabled(this.saveData.settings.musicOn);
+    const prefs = getSettingsManager().load();
+    applyAudioFromUserSettings(prefs);
 
     this.createToggle(104, height - 26, 'SFX', this.saveData.settings.soundOn, (on) => {
       this.saveData.settings.soundOn = on;
       this.commitSave();
-      audio.setEnabled(on);
+      getSettingsManager().update((st) => ({ ...st, sfxVolume: on ? 1 : 0 }));
+      applyAudioFromUserSettings(getSettingsManager().load());
     }, 760);
 
     this.createToggle(218, height - 26, 'Music', this.saveData.settings.musicOn, (on) => {
       this.saveData.settings.musicOn = on;
       this.commitSave();
-      musicEngine.setEnabled(on);
+      getSettingsManager().update((st) => ({ ...st, musicVolume: on ? 1 : 0 }));
+      applyAudioFromUserSettings(getSettingsManager().load());
     }, 820);
 
     const enemyTextures = ['tourist', 'chef', 'terrier', 'highland_cow', 'eagle', 'sheep'];

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { getSettingsManager } from '../core/SettingsManager';
+import { tryCameraShake } from '../utils/cameraShake';
 import { Enemy } from '../entities/Enemy';
 import { ENEMIES, GAME } from '../config';
 import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
@@ -179,7 +181,7 @@ export class SpawnSystem {
 
       // Dramatic entrance — camera zoom pulse + shake
       const cam = this.scene.cameras.main;
-      cam.shake(400, 0.015);
+      tryCameraShake(cam, 400, 0.015, getSettingsManager());
 
       // Brief zoom-in then back out
       const originalZoom = cam.zoom;

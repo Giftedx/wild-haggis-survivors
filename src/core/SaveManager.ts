@@ -49,9 +49,18 @@ export interface ISaveDataV3 {
   activeRun: IRunState | null;
 }
 
-export type ISaveData = ISaveDataV3;
+export interface ISaveDataV4 {
+  saveVersion: 4;
+  totalKills: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+}
 
-export const CURRENT_SAVE_VERSION = 3 as const;
+export type ISaveData = ISaveDataV4;
+
+export const CURRENT_SAVE_VERSION = 4 as const;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
@@ -59,6 +68,7 @@ const DEFAULT_SAVE: ISaveData = {
   unlockedWeapons: [],
   unlockedUpgrades: [],
   activeRun: null,
+  unlockedAchievements: [],
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -177,34 +187,49 @@ export class SaveManager {
     const unlockedWeapons = toStringArray(obj.unlockedWeapons);
     const unlockedUpgrades = toStringArray(obj.unlockedUpgrades);
     const activeRun = coerceIRunState(obj.activeRun);
+    const unlockedAchievements = toStringArray(obj.unlockedAchievements);
 
     if (v === 1) {
       return {
-        saveVersion: 3,
+        saveVersion: 4,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades: [],
         activeRun: null,
+        unlockedAchievements: [],
       };
     }
 
     if (v === 2) {
       return {
-        saveVersion: 3,
+        saveVersion: 4,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun: null,
+        unlockedAchievements: [],
       };
     }
 
     if (v === 3) {
       return {
-        saveVersion: 3,
+        saveVersion: 4,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
+        unlockedAchievements: [],
+      };
+    }
+
+    if (v === 4) {
+      return {
+        saveVersion: 4,
+        totalKills,
+        unlockedWeapons,
+        unlockedUpgrades,
+        activeRun,
+        unlockedAchievements,
       };
     }
 
@@ -214,6 +239,7 @@ export class SaveManager {
       unlockedWeapons,
       unlockedUpgrades,
       activeRun,
+      unlockedAchievements,
     };
   }
 }

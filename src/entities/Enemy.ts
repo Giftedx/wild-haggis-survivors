@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { getSettingsManager } from '../core/SettingsManager';
+import { tryCameraShake } from '../utils/cameraShake';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
 import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
@@ -812,7 +814,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         minion.markAsElite();
       }
       // Visual indicator
-      this.scene.cameras.main.shake(150, 0.008);
+      tryCameraShake(this.scene.cameras.main, 150, 0.008, getSettingsManager());
     }
 
     // Boss enrage at 50% HP — speed +50%, tint changes to bright red.
@@ -824,7 +826,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.damage = Math.ceil(this.damage * 1.25);
       this.baseTint = 0xff2200;
       this.setTint(0xff2200);
-      this.scene.cameras.main.shake(200, 0.01);
+      tryCameraShake(this.scene.cameras.main, 200, 0.01, getSettingsManager());
     }
 
     this.setTintFill(0xffffff);

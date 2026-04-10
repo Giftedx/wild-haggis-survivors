@@ -97,7 +97,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     y: number,
     textureKey: string = 'haggis_classic',
     timeManager: TimeManager,
-    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius'>
+    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus'>
   ) {
     if (!timeManager) {
       throw new Error('Player requires a TimeManager (strict DI).');
@@ -116,6 +116,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.pickupRadius = this.runBasePickup;
     this.moveSpeed = this.runBaseSpeed;
     this.driftDegrees = this.runBaseDrift;
+
+    if (composed?.damagePctBonus) {
+      this.addDamageMultiplier(composed.damagePctBonus);
+    }
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
