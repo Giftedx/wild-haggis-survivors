@@ -75,8 +75,10 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
     name: 'Bagpipe Blast',
     description: 'Periodic shockwave pushes enemies back.',
     behavior: 'aoe_pulse',
-    cooldownMs: 3000,
-    damage: 8,
+    // Rebalanced: was cooldown 3000 / damage 8 — too weak early because the
+    // 3s gap left gaps in dense swarms. Now fires 20% faster with +25% base damage.
+    cooldownMs: 2400,
+    damage: 10,
     projectileSpeed: 0,
     projectileCount: 0,
     pierce: 0,
@@ -121,8 +123,11 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
     name: 'Scotch Mist',
     description: 'Leave a damaging fog trail behind you.',
     behavior: 'trail',
-    cooldownMs: 800,
-    damage: 3,
+    // Rebalanced: was damage 3 / cooldown 800 / radius scaling 1.2. Trail DPS
+    // was ~2.5× peer weapons at L5 because zones overlap at high fire rates.
+    // Damage + cooldown + radius scaling all dialed back.
+    cooldownMs: 1000,
+    damage: 2,
     projectileSpeed: 0,
     projectileCount: 0,
     pierce: 0,
@@ -135,7 +140,7 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
       cooldown: 0.9,
       countAt: [],
       pierce: 0,
-      radius: 1.2,
+      radius: 1.12,
     },
   },
 

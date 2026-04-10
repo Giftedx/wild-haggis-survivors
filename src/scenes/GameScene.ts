@@ -495,7 +495,7 @@ export class GameScene extends Phaser.Scene {
     const save = loadSave();
     let luckBonus = 0;
     if (this.ownedPassives.includes('sporran')) luckBonus += 15;
-    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 5;
+    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
 
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
@@ -533,7 +533,7 @@ export class GameScene extends Phaser.Scene {
     const save = loadSave();
     let luckBonus = 0;
     if (this.ownedPassives.includes('sporran')) luckBonus += 15;
-    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 5;
+    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
 
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
@@ -627,16 +627,25 @@ export class GameScene extends Phaser.Scene {
         this.player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.15));
         break;
       case 'loch_water':
-        this.player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.25);
+        // Rebalanced 25% → 40% pickup + small speed bonus so the passive
+        // isn't strictly QoL with no combat value.
+        this.player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.40);
+        this.player.addSpeed(PLAYER.SPEED * 0.05);
         break;
       case 'sporran':
-        // Luck — better card rarity (handled by card pool weighting)
+        // Luck card-rarity boost is handled by card pool weighting. Added
+        // a +10% XP bonus so sporran has real power alongside its rare-card
+        // nudging (was strictly a buff-your-draws stat, which is hard to
+        // feel directly).
+        this.player.addXpMultiplier(0.10);
         break;
       case 'whisky_flask':
         this.player.addAoeMultiplier(0.20);
         break;
       case 'irn_bru':
-        this.player.addAttackSpeedMultiplier(0.20);
+        // Rebalanced 20% → 15% attack speed. Was the dominant pick because
+        // attack speed is a global DPS multiplier affecting every weapon.
+        this.player.addAttackSpeedMultiplier(0.15);
         break;
       case 'thistle_crown':
         this.player.addCritChance(0.05);
@@ -747,7 +756,12 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < weaponTraining; i++) this.weaponSystem.levelUpWeapon('thistle_shot');
 
     const critPower = ups['crit_power'] ?? 0;
-    if (critPower > 0) this.player.addCritDamageMultiplier(0.25 * critPower);
+    if (critPower > 0) {
+      // v2: bumps crit chance (small flat) AND crit damage (big multiplicative),
+      // so the stat matters even on a fresh run where crit rate is just 10%.
+      this.player.addCritChance(0.03 * critPower);
+      this.player.addCritDamageMultiplier(0.25 * critPower);
+    }
 
     const xpBoost = ups['xp_boost'] ?? 0;
     if (xpBoost > 0) this.player.addXpMultiplier(0.08 * xpBoost);

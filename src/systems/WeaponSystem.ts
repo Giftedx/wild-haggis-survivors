@@ -127,13 +127,15 @@ export class WeaponSystem {
     w.evolutionKey = evolutionKey;
 
     // Evolved weapons get significant but not game-breaking stat boosts.
-    // Previously 2.5x damage allowed Thistle Storm to one-shot the Taxman.
-    // 1.8x keeps evolutions strong while preserving late-game challenge.
-    w.damage = Math.ceil(w.damage * 1.8);
-    w.cooldownMs = Math.max(150, w.cooldownMs * 0.5);
-    w.projectileCount = Math.max(w.projectileCount, 3);
-    w.aoeRadius = w.aoeRadius * 2;
-    w.pierce = Math.max(w.pierce, 5);
+    // Previously 1.8× damage × 2× count × 2× fire rate = ~7.2× DPS multiplier
+    // which let a single evolved weapon solve the game. Dialed down to ~3.5×
+    // effective DPS — still a big spike, still the target of builds, but no
+    // longer single-slot win condition.
+    w.damage = Math.ceil(w.damage * 1.5);
+    w.cooldownMs = Math.max(200, w.cooldownMs * 0.6);
+    w.projectileCount = Math.max(w.projectileCount, 2);
+    w.aoeRadius = w.aoeRadius * 1.6;
+    w.pierce = Math.max(w.pierce, 4);
 
     return true;
   }
