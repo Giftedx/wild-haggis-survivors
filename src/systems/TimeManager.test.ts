@@ -43,5 +43,30 @@ describe('TimeManager token stack', () => {
     expect(state.physicsPaused).toBe(false);
     expect(state.timeScale).toBe(1);
   });
+
+  it('keeps gameplay paused if LEVEL_UP remains after UI pause is dismissed', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+
+    // Level-up modal pauses gameplay indefinitely
+    tm.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
+    expect(state.physicsPaused).toBe(true);
+    expect(state.timeScale).toBe(0);
+
+    // User hits ESC during level-up: UI pause token is added.
+    tm.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
+    expect(state.physicsPaused).toBe(true);
+    expect(state.timeScale).toBe(0);
+
+    // Dismissing UI pause must not unpause while LEVEL_UP remains.
+    tm.release('UI_PAUSE');
+    expect(state.physicsPaused).toBe(true);
+    expect(state.timeScale).toBe(0);
+
+    // Only when LEVEL_UP is released should gameplay resume.
+    tm.release('LEVEL_UP');
+    expect(state.physicsPaused).toBe(false);
+    expect(state.timeScale).toBe(1);
+  });
 });
 

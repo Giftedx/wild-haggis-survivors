@@ -37,7 +37,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
   private iFrames: boolean = false;
-  private isPaused: boolean = false;
 
   private ownedPassives: string[] = [];
   private evolvedWeapons: string[] = [];
@@ -46,7 +45,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossGoldEarned: number = 0;
   private coinGoldEarned: number = 0;
   private pauseElements: Phaser.GameObjects.GameObject[] = [];
-  private isManualPause: boolean = false;
   private pendingChest: boolean = false;
   /** When a chest was deferred during pause, remember whether it should spawn golden. */
   private pendingChestIsGolden: boolean = false;
@@ -71,9 +69,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Reset all state — Phaser reuses the scene instance on restart,
     // so field initializers only run once at construction
-    this.isPaused = false;
     this.iFrames = false;
-    this.isManualPause = false;
     this.pauseElements = [];
     this.victoryPending = false;
     this.runId = {};
@@ -255,7 +251,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice = new JuiceSystem(this, this.timeManager);
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
-    this.hud.setOnPause(() => this.togglePause());
+    this.hud.setOnPause(() => this.toggleUiPause());
 
     // Apply saved audio settings and start background music
     audio.setEnabled(save.settings.soundOn);
@@ -273,7 +269,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       callback: () => {
         // 20% chance of golden chest (gold reward instead of heal)
         const golden = Math.random() < 0.2;
-        if (this.isPaused) {
+        if (this.timeManager.isGameplayPaused()) {
           // Remember both flag AND type so paused rolls aren't lost
           this.pendingChest = true;
           this.pendingChestIsGolden = golden;
@@ -288,7 +284,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // ESC to pause — remove prior listener to prevent accumulation on scene restart
     if (this.input.keyboard) {
       this.input.keyboard.off('keydown-ESC');
-      this.input.keyboard.on('keydown-ESC', () => this.togglePause());
+      this.input.keyboard.on('keydown-ESC', () => this.toggleUiPause());
     }
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
@@ -320,7 +316,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     // Start countdown — game is paused until it finishes
-    this.isPaused = true;
     this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
     this.showCountdown();
   }
@@ -332,7 +327,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     const showNext = () => {
       if (i >= steps.length) {
-        this.isPaused = false;
         this.timeManager.release('COUNTDOWN');
         return;
       }
@@ -383,7 +377,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     delta = Math.min(delta, 100);
 
     this.timeManager.update(delta);
-    if (this.isPaused) return;
+    if (this.timeManager.isGameplayPaused()) return;
 
     this.player.update(delta);
     this.player.tickRegen(delta);
@@ -466,7 +460,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       },
     });
 
-    this.isPaused = true;
     this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
     this.player.onLevelUp(newLevel);
     this.growthSystem.onLevelUp(newLevel);
@@ -519,7 +512,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // freeze the game on an empty card screen. Auto-resume and show a toast.
     if (cards.length === 0) {
       this.juice.showToast('LEVEL UP!', '#ffdd00');
-      this.isPaused = false;
       this.timeManager.release('LEVEL_UP');
       this.xpSystem.processNextLevelUp();
       return;
@@ -601,7 +593,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.xpSystem.processNextLevelUp();
     } else {
       this.xpSystem.processNextLevelUp(); // Clears levelUpInProgress flag
-      this.isPaused = false;
       this.timeManager.release('LEVEL_UP');
 
       // Brief invincibility after level-up (1s grace period)
@@ -816,14 +807,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (modifiers.cooldownReductionPct) this.player.addCooldownReduction(modifiers.cooldownReductionPct);
   }
 
-  private togglePause(): void {
-    // Don't toggle if upgrade cards are showing
-    if (this.isPaused && !this.isManualPause) return;
+  private toggleUiPause(): void {
+    // Don't open the pause menu while a modal owns pause (level-up, countdown, end screen).
+    if (this.timeManager.has('LEVEL_UP') || this.timeManager.has('COUNTDOWN') || this.timeManager.has('RUN_END')) return;
 
-    if (this.isManualPause) {
+    if (this.timeManager.has('UI_PAUSE')) {
       // Resume
-      this.isManualPause = false;
-      this.isPaused = false;
       this.timeManager.release('UI_PAUSE');
       for (const el of this.pauseElements) el.destroy();
       this.pauseElements = [];
@@ -835,8 +824,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }
     } else {
       // Pause
-      this.isManualPause = true;
-      this.isPaused = true;
       this.timeManager.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
 
       const { width, height } = this.scale;
@@ -873,7 +860,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
       resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
       resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
-      resumeBtn.on('pointerdown', () => this.togglePause());
+      resumeBtn.on('pointerdown', () => this.toggleUiPause());
       this.pauseElements.push(resumeBtn);
       this.pauseElements.push(
         this.add.text(width / 2, height * 0.5, 'RESUME', {
@@ -963,7 +950,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     _playerObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
     enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ): void {
-    if (this.iFrames || this.isPaused || this.victoryPending || this.player.isDashInvincible()) return;
+    if (this.iFrames || this.timeManager.isGameplayPaused() || this.victoryPending || this.player.isDashInvincible()) return;
 
     const enemy = enemyObj as Enemy;
     if (!enemy.active) return;
@@ -1009,7 +996,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (!this.player.active) return;
       // If a newer iFrame window was started, this callback is stale — abort
       if (myGen !== this.iFrameGeneration) return;
-      if (this.isPaused) {
+      if (this.timeManager.isGameplayPaused()) {
         this.time.delayedCall(100, clearIFrames);
         return;
       }
@@ -1054,11 +1041,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private handleVictory(): void {
     // Defer if level-up screen is showing — re-check after a short delay
-    if (this.xpSystem.hasPendingLevelUps() || (this.isPaused && !this.isManualPause)) {
+    if (this.xpSystem.hasPendingLevelUps() || this.timeManager.has('LEVEL_UP')) {
       const capturedRunId = this.runId;
       const waitForLevelUp = () => {
         if (this.runId !== capturedRunId) return;
-        if (this.xpSystem.hasPendingLevelUps() || (this.isPaused && !this.isManualPause)) {
+        if (this.xpSystem.hasPendingLevelUps() || this.timeManager.has('LEVEL_UP')) {
           this.time.delayedCall(200, waitForLevelUp);
           return;
         }
@@ -1068,7 +1055,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       return;
     }
 
-    this.isPaused = true;
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     musicEngine.playResolution();
 
@@ -1078,7 +1064,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private handlePlayerDeath(): void {
-    this.isPaused = true;
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     audio.playDeath();
     musicEngine.fadeOut(2000);
@@ -2013,7 +1998,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         delay: 500,
         loop: true,
         callback: () => {
-          if (this.isPaused || !this.player.active || this.victoryPending) return;
+          if (this.timeManager.isGameplayPaused() || !this.player.active || this.victoryPending) return;
           // Respect iFrames — lava shouldn't chip through post-hit invincibility
           if (this.iFrames || this.player.isDashInvincible()) return;
           const d = Phaser.Math.Distance.Between(lx, ly, this.player.x, this.player.y);
@@ -2045,7 +2030,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         delay: 1000,
         loop: true,
         callback: () => {
-          if (this.isPaused || !this.player.active) return;
+          if (this.timeManager.isGameplayPaused() || !this.player.active) return;
           const d = Phaser.Math.Distance.Between(hx, hy, this.player.x, this.player.y);
           if (d < hr) {
             this.player.heal(2);
