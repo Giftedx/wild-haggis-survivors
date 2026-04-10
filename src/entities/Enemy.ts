@@ -5,6 +5,7 @@ import { EnemyConfig, EnemyBehavior } from '../data/enemies';
 import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
@@ -271,6 +272,48 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  /** Re-enable Arcade body after off-screen culling — keeps hitbox aligned with the sprite. */
+  private ensureSpatialPhysicsActive(): void {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    if (!body.enable) {
+      body.enable = true;
+      body.reset(this.x, this.y);
+      body.setCollideWorldBounds(false);
+    }
+  }
+
+  /**
+   * Cheap drift toward the player while physics is disabled (far outside camera).
+   * Skips behavior AI, bob, and overlap checks until the enemy re-enters the margin.
+   */
+  private applySpatiallyCulledFrame(targetX: number, targetY: number, delta: number): void {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.enable = false;
+    body.setVelocity(0, 0);
+
+    const step = delta / 1000;
+
+    if (this.knockbackTimer > 0) {
+      this.knockbackTimer -= delta;
+      const k = Math.max(0, this.knockbackTimer / 150);
+      this.setPosition(
+        this.x + this.knockbackVx * k * step,
+        this.y + this.knockbackVy * k * step
+      );
+      if (this.knockbackTimer <= 0) {
+        this.knockbackVx = 0;
+        this.knockbackVy = 0;
+      }
+      return;
+    }
+
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
+    this.setPosition(
+      this.x + Math.cos(angle) * this.speed * step,
+      this.y + Math.sin(angle) * this.speed * step
+    );
+  }
+
   /** Update movement toward the player. Called by SpawnSystem each frame. */
   chaseTarget(targetX: number, targetY: number, delta: number = 16): void {
     if (!this.active) return;
@@ -278,6 +321,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Tick status effects (burn/freeze/poison)
     this.tickStatusEffects(delta);
     if (!this.active) return; // May have died from DoT
+
+    const cam = this.scene.cameras.main;
+    const wv = cam.worldView;
+    const spatialCull = isEnemySpatialPhysicsCulled(
+      this.x,
+      this.y,
+      wv,
+      BALANCE.spatial.cullMarginPx,
+      this.bossFlag,
+      this.behavior
+    );
 
     // Update HP bar position
     if (this.showHpBar && this.hpBarBg && this.hpBarFill) {
@@ -290,6 +344,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.shadow) {
       this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.35);
     }
+
+    if (spatialCull) {
+      this.applySpatiallyCulledFrame(targetX, targetY, delta);
+      return;
+    }
+
+    this.ensureSpatialPhysicsActive();
 
     // Idle breathing — subtle scaleY wobble anchored to baseDisplayScale
     // (tracks elite 1.3×, boss 2.0-3.0×, enraged hazard 1.5×). Hazards and
