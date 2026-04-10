@@ -72,8 +72,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private readonly BASE_HITBOX_RADIUS = 20;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
-    super(scene, x, y, 'haggis');
+  constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic') {
+    super(scene, x, y, textureKey);
 
     scene.add.existing(this);
     scene.physics.add.existing(this);

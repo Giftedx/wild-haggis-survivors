@@ -99,6 +99,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.baseDisplayScale = 1;
     this.setScale(1);
     this.setFlipX(false);
+    this.setRotation(0); // dive enemies set rotation; clear for pool reuse
     this.clearTint();
 
     // Ground shadow — boss uses the bigger shadow texture. Depth -1 sits
@@ -267,10 +268,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setScale(base, base * (1 + wobble));
     }
 
-    // Face direction of travel. Bosses keep their (asymmetric) art unflipped
-    // because the baked-in weapon sides would visibly teleport between left
-    // and right; the moonwalk is the lesser visual crime.
-    if (!this.bossFlag && this.behavior !== 'hazard') {
+    // Face direction of travel via horizontal flip. Skips:
+    //  - bosses (asymmetric art would teleport weapons between sides)
+    //  - hazards (static)
+    //  - dive enemies (the crow/eagle uses full rotation in behaviorDive
+    //    instead, so the sprite points along its flight path; flipping
+    //    would fight the rotation)
+    if (!this.bossFlag && this.behavior !== 'hazard' && this.behavior !== 'dive') {
       const body = this.body as Phaser.Physics.Arcade.Body;
       if (Math.abs(body.velocity.x) > 10) {
         this.setFlipX(body.velocity.x < 0);
@@ -363,6 +367,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       Math.cos(this.diveAngle) * this.speed,
       Math.sin(this.diveAngle) * this.speed
     );
+    // Rotate the sprite to point along the dive direction. The crow sprite
+    // is drawn facing +X at rotation 0, so setRotation(diveAngle) lines its
+    // head up with the direction of flight. Without this the crow would
+    // look sideways when diving vertically.
+    this.setRotation(this.diveAngle);
 
     // Self-destruct if way off screen (account for camera zoom)
     const cam = this.scene.cameras.main;

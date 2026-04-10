@@ -1,4 +1,12 @@
 import Phaser from 'phaser';
+import {
+  DEFAULT_VARIANT_KEY,
+  HaggisAccentStyle,
+  HaggisPalette,
+  VARIANTS,
+  VariantDef,
+  getVariantByKey,
+} from '../data/variants';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -32,7 +40,7 @@ export class BootScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0);
 
-    const mascot = this.add.sprite(width / 2, height * 0.55, 'haggis')
+    const mascot = this.add.sprite(width / 2, height * 0.55, getVariantByKey(DEFAULT_VARIANT_KEY).textureKey)
       .setScale(2).setAlpha(0);
 
     // Fade in title and mascot, then transition
@@ -53,7 +61,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generateAllTextures(): void {
-    this.createHaggis();
+    this.createHaggisTextures();
     this.createTourist();
     this.createChef();
     this.createTerrier();
@@ -295,26 +303,33 @@ export class BootScene extends Phaser.Scene {
 
   // === Player ===
 
-  private createHaggis(): void {
+  private createHaggisTextures(): void {
+    for (const variant of VARIANTS) {
+      this.createHaggisVariantTexture(variant);
+    }
+  }
+
+  private createHaggisVariantTexture(variant: VariantDef): void {
     const s = 56;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 - 2;
+    const { palette } = variant.appearance;
 
     // Dark outline body (draw first, slightly larger)
-    g.fillStyle(0x3a2808, 1);
+    g.fillStyle(palette.outline, 1);
     g.fillEllipse(cx, cy + 2, 44, 34);
     // Furry body — layered ellipses for a shaggy look
-    g.fillStyle(0x6b4e0a, 1);
+    g.fillStyle(palette.bodyDark, 1);
     g.fillEllipse(cx, cy + 2, 40, 30);
-    g.fillStyle(0x8b6914, 1);
+    g.fillStyle(palette.bodyLight, 1);
     g.fillEllipse(cx, cy, 34, 26);
     // Fur tuft highlights
-    g.fillStyle(0xa07818, 1);
+    g.fillStyle(palette.fur, 1);
     g.fillEllipse(cx - 5, cy - 4, 16, 11);
     g.fillEllipse(cx + 6, cy - 2, 10, 7);
 
     // Legs — left pair shorter than right (the drift gimmick!)
-    g.fillStyle(0x3a2808, 1);
+    g.fillStyle(palette.outline, 1);
     g.fillRect(cx - 13, cy + 11, 5, 9);
     g.fillRect(cx - 5,  cy + 11, 5, 9);
     g.fillRect(cx + 4,  cy + 11, 5, 13); // longer
@@ -334,14 +349,57 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 9, cy - 5, 1.2);
 
     // Snout
-    g.fillStyle(0xd4956b, 1);
+    g.fillStyle(palette.snout, 1);
     g.fillCircle(cx + 1, cy + 4, 4);
     // Nose
-    g.fillStyle(0x3a2808, 1);
+    g.fillStyle(palette.outline, 1);
     g.fillCircle(cx + 2, cy + 3, 1.5);
 
-    g.generateTexture('haggis', s, s);
+    this.drawHaggisVariantAccent(g, variant.appearance.accentStyle, cx, cy, palette);
+
+    g.generateTexture(variant.textureKey, s, s);
     g.destroy();
+  }
+
+  private drawHaggisVariantAccent(
+    g: Phaser.GameObjects.Graphics,
+    accentStyle: HaggisAccentStyle,
+    cx: number,
+    cy: number,
+    palette: HaggisPalette
+  ): void {
+    switch (accentStyle) {
+      case 'racing_band':
+        g.fillStyle(palette.accent, 1);
+        g.fillRect(cx - 17, cy - 9, 34, 3);
+        g.fillStyle(0xffffff, 0.5);
+        g.fillRect(cx - 14, cy - 8, 9, 1);
+        g.fillRect(cx + 3, cy - 8, 9, 1);
+        break;
+      case 'iron_belly':
+        g.fillStyle(0x2e333b, 1);
+        g.fillEllipse(cx + 2, cy + 6, 18, 10);
+        g.fillStyle(palette.accent, 1);
+        g.fillRect(cx - 4, cy + 2, 2, 8);
+        g.fillRect(cx + 2, cy + 2, 2, 8);
+        break;
+      case 'forager':
+        g.fillStyle(palette.accent, 1);
+        g.fillCircle(cx - 10, cy + 2, 3);
+        g.fillCircle(cx + 8, cy + 5, 2.5);
+        g.fillStyle(0xb7f08f, 0.8);
+        g.fillCircle(cx - 9, cy + 1, 1.2);
+        g.fillCircle(cx + 9, cy + 4, 1.2);
+        break;
+      case 'surefoot':
+        g.fillStyle(palette.accent, 1);
+        g.fillRect(cx - 6, cy - 12, 12, 3);
+        g.fillStyle(0xffffff, 0.8);
+        g.fillRect(cx - 1, cy - 13, 2, 5);
+        break;
+      default:
+        break;
+    }
   }
 
   // === Enemies ===
@@ -377,13 +435,24 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx, cy - 10, 9);
     g.fillStyle(0xffccaa, 1);
     g.fillCircle(cx, cy - 10, 8);
-    // Sunglasses band
+    // Round sunglass lenses — two circles with a thin bridge.
+    // Dark outline rings first, then blue lens, then highlight glint.
     g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 7, cy - 11, 14, 3);
-    // Lens glint
-    g.fillStyle(0x88ccff, 0.7);
-    g.fillRect(cx - 6, cy - 10, 4, 1);
-    g.fillRect(cx + 2, cy - 10, 4, 1);
+    g.fillCircle(cx - 4, cy - 10, 3);
+    g.fillCircle(cx + 4, cy - 10, 3);
+    g.fillStyle(0x2a4466, 1);
+    g.fillCircle(cx - 4, cy - 10, 2.2);
+    g.fillCircle(cx + 4, cy - 10, 2.2);
+    // Bridge connecting the two lenses
+    g.fillStyle(0x111111, 1);
+    g.fillRect(cx - 1, cy - 11, 2, 1);
+    // Lens glint (upper-left of each lens)
+    g.fillStyle(0xaaccee, 0.9);
+    g.fillCircle(cx - 5, cy - 11, 0.8);
+    g.fillCircle(cx + 3, cy - 11, 0.8);
+    // Smile beneath the shades so the face feels alive
+    g.fillStyle(0x884422, 1);
+    g.fillRect(cx - 2, cy - 5, 4, 1);
 
     // Iconic: huge sun hat
     g.fillStyle(0x886611, 1); // outline
@@ -477,62 +546,68 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
+  /** Highland Midge — swarm enemy replacing the terrier.
+   *  Scottish midges are iconic: tiny, fast, travel in packs, bite on
+   *  contact. Perfect match for the swarm behavior (packSize 5, low HP,
+   *  high speed). Much more recognizable at small size than a dog sprite. */
   private createTerrier(): void {
     const s = 32;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 2;
+    const cx = s / 2, cy = s / 2 + 1;
 
-    // Body outline
-    g.fillStyle(0x4a2a0a, 1);
-    g.fillEllipse(cx, cy + 1, 22, 14);
-    // Body
-    g.fillStyle(0x996633, 1);
-    g.fillEllipse(cx, cy, 20, 12);
-    // Lighter belly
-    g.fillStyle(0xccaa77, 1);
-    g.fillEllipse(cx, cy + 3, 14, 6);
+    // Fuzzy aura — slight motion blur halo around the midge
+    g.fillStyle(0x333344, 0.3);
+    g.fillCircle(cx, cy, 10);
 
-    // Legs
-    g.fillStyle(0x4a2a0a, 1);
-    g.fillRect(cx - 8, cy + 4, 3, 6);
-    g.fillRect(cx - 3, cy + 4, 3, 6);
-    g.fillRect(cx + 2, cy + 4, 3, 6);
-    g.fillRect(cx + 6, cy + 4, 3, 6);
+    // Wing blur — translucent ovals behind the body, angled outward.
+    // Drawn first so the body sits on top.
+    g.fillStyle(0xccddee, 0.35);
+    g.fillEllipse(cx - 6, cy - 4, 9, 5);
+    g.fillEllipse(cx + 6, cy - 4, 9, 5);
+    g.fillStyle(0xeeffff, 0.5);
+    g.fillEllipse(cx - 5, cy - 4, 6, 3);
+    g.fillEllipse(cx + 5, cy - 4, 6, 3);
 
-    // Head (front-right)
-    g.fillStyle(0x4a2a0a, 1);
-    g.fillCircle(cx + 7, cy - 3, 7);
-    g.fillStyle(0x886622, 1);
-    g.fillCircle(cx + 7, cy - 3, 6);
-    // Snout
-    g.fillStyle(0xccaa77, 1);
-    g.fillEllipse(cx + 11, cy - 1, 5, 4);
-    // Nose
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx + 13, cy - 2, 1.5);
-    // Tongue
+    // Body — chunky little oval, dark outline first
+    g.fillStyle(0x1a1a22, 1);
+    g.fillEllipse(cx, cy + 1, 12, 9);
+    g.fillStyle(0x332a1a, 1);
+    g.fillEllipse(cx, cy, 10, 7);
+    // Abdomen segments (horizontal stripes)
+    g.fillStyle(0x1a1a22, 0.7);
+    g.fillRect(cx - 4, cy, 8, 1);
+    g.fillRect(cx - 4, cy + 2, 8, 1);
+    // Abdomen highlight (tiny warm tone to read as insect)
+    g.fillStyle(0x5a4428, 1);
+    g.fillCircle(cx - 1, cy - 1, 2);
+
+    // Head — small dark bulb at the front
+    g.fillStyle(0x0a0a11, 1);
+    g.fillCircle(cx, cy - 4, 3);
+    // Giant buggy eyes (red, compound) — the iconic midge tell
+    g.fillStyle(0xcc2244, 1);
+    g.fillCircle(cx - 2, cy - 5, 1.5);
+    g.fillCircle(cx + 2, cy - 5, 1.5);
     g.fillStyle(0xff6688, 1);
-    g.fillRect(cx + 12, cy + 1, 3, 2);
+    g.fillCircle(cx - 2, cy - 5, 0.7);
+    g.fillCircle(cx + 2, cy - 5, 0.7);
 
-    // Eye
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx + 8, cy - 4, 2);
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx + 9, cy - 4, 1.2);
+    // Tiny proboscis poking forward
+    g.fillStyle(0x0a0a11, 1);
+    g.fillRect(cx, cy - 7, 1, 2);
 
-    // Iconic: pointy stand-up ears
-    g.fillStyle(0x3a1a04, 1);
-    g.fillTriangle(cx + 4, cy - 10, cx + 2, cy - 3, cx + 7, cy - 5);
-    g.fillTriangle(cx + 10, cy - 10, cx + 8, cy - 3, cx + 13, cy - 5);
-    g.fillStyle(0x664411, 1);
-    g.fillTriangle(cx + 5, cy - 9, cx + 4, cy - 4, cx + 7, cy - 5);
-    g.fillTriangle(cx + 10, cy - 9, cx + 9, cy - 4, cx + 12, cy - 5);
+    // Six spindly legs dangling below
+    g.lineStyle(1, 0x0a0a11, 1);
+    g.lineBetween(cx - 4, cy + 4, cx - 6, cy + 8);
+    g.lineBetween(cx - 1, cy + 4, cx - 2, cy + 9);
+    g.lineBetween(cx - 3, cy + 4, cx - 4, cy + 9);
+    g.lineBetween(cx + 4, cy + 4, cx + 6, cy + 8);
+    g.lineBetween(cx + 1, cy + 4, cx + 2, cy + 9);
+    g.lineBetween(cx + 3, cy + 4, cx + 4, cy + 9);
 
-    // Tail
-    g.fillStyle(0x4a2a0a, 1);
-    g.fillRect(cx - 11, cy - 2, 4, 3);
-    g.fillStyle(0x886622, 1);
-    g.fillRect(cx - 10, cy - 1, 3, 2);
+    // Thorax highlight
+    g.fillStyle(0x5a4428, 0.9);
+    g.fillCircle(cx, cy - 2, 1);
 
     g.generateTexture('terrier', s, s);
     g.destroy();
@@ -615,50 +690,55 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
+  /** Highland Crow — oriented with the head pointing RIGHT (Phaser
+   *  sprites default-face +X at rotation 0), so the crow is flying
+   *  forward into whatever direction it's moving rather than moonwalking
+   *  sideways. Body is horizontal, wings sweep up and down, tail trails
+   *  behind on the left, beak points out the right.
+   */
   private createEagle(): void {
-    const s = 44;
+    const s = 48;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
+    const cx = s / 2 - 2, cy = s / 2;
 
-    // Iconic: wide wings spread (outline first)
-    g.fillStyle(0x222222, 1);
-    g.fillTriangle(cx, cy, cx - 22, cy + 8, cx - 10, cy - 6);
-    g.fillTriangle(cx, cy, cx + 22, cy + 8, cx + 10, cy - 6);
-    // Wing gradient
-    g.fillStyle(0x555555, 1);
-    g.fillTriangle(cx, cy + 1, cx - 20, cy + 7, cx - 9, cy - 5);
-    g.fillTriangle(cx, cy + 1, cx + 20, cy + 7, cx + 9, cy - 5);
-    // Wing tip feathers
-    g.fillStyle(0x333333, 1);
-    g.fillTriangle(cx - 18, cy + 7, cx - 22, cy + 3, cx - 20, cy + 9);
-    g.fillTriangle(cx + 18, cy + 7, cx + 22, cy + 3, cx + 20, cy + 9);
+    // Wings — simple triangular sweep UP and DOWN from the body. All
+    // one dark color.
+    g.fillStyle(0x0a0a12, 1);
+    // Top wing (sweeps up + back)
+    g.fillTriangle(cx, cy, cx - 6, cy - 18, cx + 4, cy - 14);
+    // Bottom wing (sweeps down + back)
+    g.fillTriangle(cx, cy, cx - 6, cy + 18, cx + 4, cy + 14);
+    // Slightly lighter inner wing for depth
+    g.fillStyle(0x22222e, 1);
+    g.fillTriangle(cx + 1, cy, cx - 4, cy - 12, cx + 2, cy - 10);
+    g.fillTriangle(cx + 1, cy, cx - 4, cy + 12, cx + 2, cy + 10);
 
-    // Body
-    g.fillStyle(0x221100, 1);
-    g.fillEllipse(cx, cy, 14, 12);
-    g.fillStyle(0x5a3a1a, 1);
-    g.fillEllipse(cx, cy, 12, 10);
-    // Chest highlight
-    g.fillStyle(0x886633, 1);
-    g.fillEllipse(cx, cy + 2, 8, 5);
+    // Body — fat oval running LEFT-to-RIGHT (horizontal now)
+    g.fillStyle(0x0a0a12, 1);
+    g.fillEllipse(cx, cy, 14, 10);
+    g.fillStyle(0x22222e, 1);
+    g.fillEllipse(cx, cy, 12, 8);
 
-    // Head (white)
-    g.fillStyle(0x222222, 1);
-    g.fillCircle(cx, cy - 6, 6);
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx, cy - 6, 5);
+    // Tail — short wedge trailing behind on the LEFT
+    g.fillStyle(0x0a0a12, 1);
+    g.fillTriangle(cx - 6, cy - 3, cx - 6, cy + 3, cx - 11, cy);
 
-    // Iconic: yellow hooked beak
-    g.fillStyle(0x885500, 1);
-    g.fillTriangle(cx - 1, cy - 9, cx + 5, cy - 4, cx - 1, cy - 4);
-    g.fillStyle(0xffcc22, 1);
-    g.fillTriangle(cx, cy - 9, cx + 4, cy - 5, cx, cy - 5);
+    // Head — blends into the FRONT (right side) of the body, not a
+    // separate circle. Small bump forward so it reads as a head.
+    g.fillStyle(0x0a0a12, 1);
+    g.fillEllipse(cx + 8, cy, 7, 7);
+    g.fillStyle(0x22222e, 1);
+    g.fillEllipse(cx + 8, cy, 5, 5);
 
-    // Eye
-    g.fillStyle(0xffcc22, 1);
-    g.fillCircle(cx + 1, cy - 7, 2);
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx + 1, cy - 7, 1);
+    // Beak — yellow pointing RIGHT (forward), simple triangle
+    g.fillStyle(0xddaa22, 1);
+    g.fillTriangle(cx + 11, cy - 1, cx + 11, cy + 1, cx + 14, cy);
+
+    // Two tiny yellow eyes on the head, top and bottom — the only
+    // bright spots on the whole sprite so they pop against the black body
+    g.fillStyle(0xffdd44, 1);
+    g.fillRect(cx + 9, cy - 2, 1, 1);
+    g.fillRect(cx + 9, cy + 1, 1, 1);
 
     g.generateTexture('eagle', s, s);
     g.destroy();

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "vitest run",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview"
   },
@@ -14,6 +15,7 @@
   "devDependencies": {
     "@rollup/rollup-win32-x64-msvc": "^4.60.1",
     "typescript": "^6.0.2",
-    "vite": "^6.4.2"
+    "vite": "^6.4.2",
+    "vitest": "^3.2.4"
   }
 }

@@ -13,10 +13,11 @@ import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
-import { recordRun, loadSave, writeSave } from '../utils/save';
+import { recordRun, loadSave, writeSave, RunResult, RunSummary } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
+import { formatRunVariantLabel, getVariantByKey, VariantDef, VariantKey } from '../data/variants';
 
 /**
  * GameScene — the core gameplay loop.
@@ -54,6 +55,7 @@ export class GameScene extends Phaser.Scene {
   private runId: object = {};
   private revivalAvailable: boolean = false;
   private iFrameGeneration: number = 0;
+  private activeVariant!: VariantDef;
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
   private chestDurationBonusMs: number = 0;
 
@@ -62,6 +64,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(): void {
+    const save = loadSave();
+
     // Reset all state — Phaser reuses the scene instance on restart,
     // so field initializers only run once at construction
     this.isPaused = false;
@@ -97,7 +101,9 @@ export class GameScene extends Phaser.Scene {
     this.createHighlandTerrain();
 
     // Create the player at world center
-    this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2);
+    const selectedVariant = getVariantByKey(save.selectedVariant);
+    this.activeVariant = selectedVariant;
+    this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2, selectedVariant.textureKey);
 
     // Spawn map hazard and healing zones
     this.spawnMapZones();
@@ -114,6 +120,9 @@ export class GameScene extends Phaser.Scene {
     this.bossGoldEarned = 0;
     this.coinGoldEarned = 0;
     this.revivalAvailable = false;
+
+    // Variant modifiers establish the run archetype before permanent upgrades stack on top.
+    this.applyVariantModifiers(selectedVariant);
 
     // Apply permanent upgrades from save data
     this.applyPermanentUpgrades();
@@ -245,9 +254,8 @@ export class GameScene extends Phaser.Scene {
     this.hud.setOnPause(() => this.togglePause());
 
     // Apply saved audio settings and start background music
-    const audioSave = loadSave();
-    audio.setEnabled(audioSave.settings.soundOn);
-    if (audioSave.settings.musicOn) {
+    audio.setEnabled(save.settings.soundOn);
+    if (save.settings.musicOn) {
       musicEngine.start();
     }
 
@@ -789,6 +797,20 @@ export class GameScene extends Phaser.Scene {
     // extra_choice and lucky_heather affect the card system, not stats
   }
 
+  /** Variant modifiers are applied before permanent upgrades so both layers stack cleanly. */
+  private applyVariantModifiers(variant: VariantDef): void {
+    const { modifiers } = variant;
+
+    if (modifiers.moveSpeedPct) this.player.addSpeed(PLAYER.SPEED * modifiers.moveSpeedPct);
+    if (modifiers.maxHpFlat) this.player.addMaxHp(modifiers.maxHpFlat);
+    if (modifiers.armorFlat) this.player.addArmor(modifiers.armorFlat);
+    if (modifiers.pickupRadiusFlat) this.player.addPickupRadius(modifiers.pickupRadiusFlat);
+    if (modifiers.xpMultiplierPct) this.player.addXpMultiplier(modifiers.xpMultiplierPct);
+    if (modifiers.damagePct) this.player.addDamageMultiplier(modifiers.damagePct);
+    if (modifiers.driftReductionPct) this.player.reduceDrift(modifiers.driftReductionPct);
+    if (modifiers.cooldownReductionPct) this.player.addCooldownReduction(modifiers.cooldownReductionPct);
+  }
+
   private togglePause(): void {
     // Don't toggle if upgrade cards are showing
     if (this.isPaused && !this.isManualPause) return;
@@ -1045,83 +1067,9 @@ export class GameScene extends Phaser.Scene {
     this.physics.pause();
     musicEngine.playResolution();
 
-    const { width, height } = this.scale;
-    const d = 200;
-    const timeSurvived = this.spawnSystem.getGameTimeSec();
-    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned, this.coinGoldEarned, this.juice.getBestCombo());
-
-    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0)
-      .setScrollFactor(0).setDepth(d).setInteractive();
-    this.tweens.add({ targets: overlay, alpha: 0.85, duration: 800 });
-
-    const title = this.add.text(width / 2, height * 0.2, 'VICTORY!', {
-      fontFamily: 'monospace', fontSize: '60px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 7,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0).setScale(0.5);
-
-    this.tweens.add({
-      targets: title, alpha: 1, scale: 1, duration: 800, delay: 500, ease: 'Back.easeOut',
-    });
-
-    const subtitle = this.add.text(width / 2, height * 0.33, 'The Highlands are safe... for now.', {
-      fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    this.tweens.add({ targets: subtitle, alpha: 1, duration: 600, delay: 1200 });
-
-    const mins = Math.floor(timeSurvived / 60);
-    const secs = Math.floor(timeSurvived % 60);
-    const statsText = this.add.text(width / 2, height * 0.43,
-      `Time: ${mins}:${secs.toString().padStart(2, '0')}  |  Kills: ${this.killCount}  |  +${goldEarned} Gold`, {
-      fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    this.tweens.add({ targets: statsText, alpha: 1, duration: 600, delay: 1600 });
-
-    // Weapon build summary
-    const weaponSummary = this.weaponSystem.getWeapons()
-      .map(w => `${w.config.name} Lv${w.level}${w.evolved ? '★' : ''}`)
-      .join('  |  ');
-    const buildText = this.add.text(width / 2, height * 0.50, weaponSummary, {
-      fontFamily: 'monospace', fontSize: '13px', color: '#aaaaaa',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    this.tweens.add({ targets: buildText, alpha: 1, duration: 400, delay: 1800 });
-
-    const playAgainBtn = this.add.rectangle(width / 2, height * 0.60, 240, 50, COLORS.SCOTTISH_BLUE)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const playAgainText = this.add.text(width / 2, height * 0.60, 'PLAY AGAIN', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
-
-    const shopBtn = this.add.rectangle(width / 2, height * 0.71, 240, 50, COLORS.WHISKY_GOLD)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const shopText = this.add.text(width / 2, height * 0.71, 'UPGRADES', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#000000', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
-
-    const menuBtn = this.add.rectangle(width / 2, height * 0.82, 240, 50, 0x444444)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const menuText = this.add.text(width / 2, height * 0.82, 'MENU', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
-
-    // Buttons become interactive only after they fade in (prevents invisible click)
-    this.tweens.add({ targets: [playAgainBtn, playAgainText], alpha: 1, duration: 400, delay: 2000,
-      onComplete: () => playAgainBtn.setInteractive({ useHandCursor: true }) });
-    this.tweens.add({ targets: [shopBtn, shopText], alpha: 1, duration: 400, delay: 2150,
-      onComplete: () => shopBtn.setInteractive({ useHandCursor: true }) });
-    this.tweens.add({ targets: [menuBtn, menuText], alpha: 1, duration: 400, delay: 2300,
-      onComplete: () => menuBtn.setInteractive({ useHandCursor: true }) });
-
-    playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x0077dd));
-    playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
-    playAgainBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Game'); });
-
-    shopBtn.on('pointerover', () => shopBtn.setFillStyle(0xe8b420));
-    shopBtn.on('pointerout', () => shopBtn.setFillStyle(COLORS.WHISKY_GOLD));
-    shopBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Shop'); });
-
-    menuBtn.on('pointerover', () => menuBtn.setFillStyle(0x555555));
-    menuBtn.on('pointerout', () => menuBtn.setFillStyle(0x444444));
-    menuBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Menu'); });
+    const summary = this.buildRunSummary(true);
+    const runResult = recordRun(summary);
+    this.showRunResultScreen('victory', summary, runResult);
   }
 
   private handlePlayerDeath(): void {
@@ -1160,143 +1108,399 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    const timeSurvived = this.spawnSystem.getGameTimeSec();
-    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned, this.coinGoldEarned, this.juice.getBestCombo());
+    const summary = this.buildRunSummary(false);
+    const runResult = recordRun(summary);
 
     this.time.delayedCall(1200, () => {
-      this.showDeathScreen(timeSurvived, goldEarned);
+      this.showRunResultScreen('death', summary, runResult);
     });
   }
 
-  private showDeathScreen(timeSurvived: number, goldEarned: number): void {
+  private showRunResultScreen(
+    mode: 'victory' | 'death',
+    summary: RunSummary,
+    runResult: RunResult
+  ): void {
     const { width, height } = this.scale;
     const d = 200;
+    const isVictory = mode === 'victory';
+    const titleColor = isVictory ? '#d4a017' : '#cc3333';
+    const panelStroke = isVictory ? COLORS.WHISKY_GOLD : 0xaa4444;
+    const summaryTime = this.formatClockTime(summary.timeSurvivedSec);
+    const goldBreakdown = `Time ${Math.floor(summary.timeSurvivedSec * 0.4)}  |  Kills ${Math.floor(summary.enemiesKilled * 0.4)}  |  Boss ${summary.bossGold}  |  Coins ${summary.coinGold ?? 0}`;
 
-    // Dark overlay fades in — interactive to block joystick on touch devices
-    const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0)
-      .setScrollFactor(0).setDepth(d).setInteractive();
-    this.tweens.add({ targets: overlay, alpha: 0.85, duration: 600 });
+    const overlay = this.add
+      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .setScrollFactor(0)
+      .setDepth(d)
+      .setInteractive();
+    const panel = this.add
+      .rectangle(width / 2, height / 2, 684, 520, 0x101729, 0)
+      .setScrollFactor(0)
+      .setDepth(d + 1)
+      .setStrokeStyle(2, panelStroke, 1);
+    this.tweens.add({ targets: overlay, alpha: 0.82, duration: 420 });
+    this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
-    const mins = Math.floor(timeSurvived / 60);
-    const secs = Math.floor(timeSurvived % 60);
-
-    // Title — dramatic entrance
-    const title = this.add.text(width / 2, height * 0.18, 'YOU DIED', {
-      fontFamily: 'monospace', fontSize: '54px', color: '#cc3333',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 7,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0).setScale(2);
-
-    this.tweens.add({
-      targets: title, alpha: 1, scale: 1, duration: 500, delay: 300, ease: 'Back.easeOut',
-    });
-
-    // Stats — stagger reveal
-    const weaponCount = this.weaponSystem.getWeapons().length;
-    const evolvedCount = this.evolvedWeapons.length;
-    const passiveCount = this.ownedPassives.length;
-    const stats = [
-      { label: 'Survived', value: `${mins}:${secs.toString().padStart(2, '0')}` },
-      { label: 'Enemies Killed', value: `${this.killCount}` },
-      { label: 'Level Reached', value: `${this.xpSystem.getLevel()}` },
-      { label: 'Weapons', value: `${weaponCount} (${evolvedCount} evolved)` },
-      { label: 'Passives', value: `${passiveCount}` },
-      { label: 'Bosses Slain', value: `${this.bossKillCount}` },
-    ];
-
-    stats.forEach((stat, i) => {
-      const y = height * 0.34 + i * 32;
-      const labelText = this.add.text(width / 2 - 12, y, stat.label, {
-        fontFamily: 'monospace', fontSize: '16px', color: '#888888',
-      }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-
-      const valueText = this.add.text(width / 2 + 12, y, stat.value, {
-        fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-      }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-
-      const delay = 700 + i * 200;
-      const labelFinalX = labelText.x;
-      const valueFinalX = valueText.x;
-      labelText.setX(labelFinalX - 20);
-      valueText.setX(valueFinalX + 20);
-      this.tweens.add({ targets: labelText, alpha: 1, x: labelFinalX, duration: 300, delay });
-      this.tweens.add({ targets: valueText, alpha: 1, x: valueFinalX, duration: 300, delay: delay + 100 });
-    });
-
-    // Gold earned — with breakdown
-    const goldY = height * 0.60;
-    const timeGold = Math.floor(timeSurvived * 0.5);
-    const killGold = Math.floor(this.killCount * 0.2);
-    const goldLabel = this.add.text(width / 2, goldY, `+${goldEarned} Gold`, {
-      fontFamily: 'monospace', fontSize: '30px', color: '#d4a017', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 4,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const goldBreakdown = this.add.text(width / 2, goldY + 26,
-      `(Time: ${timeGold}  Kills: ${killGold}  Boss: ${this.bossGoldEarned}  Coins: ${this.coinGoldEarned})`, {
-      fontFamily: 'monospace', fontSize: '12px', color: '#aa8822',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
+    const title = this.add
+      .text(width / 2, 86, isVictory ? 'VICTORY!' : 'YOU DIED', {
+        fontFamily: 'monospace',
+        fontSize: isVictory ? '56px' : '52px',
+        color: titleColor,
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 7,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setAlpha(0)
+      .setScale(isVictory ? 0.7 : 1.4);
+    const subtitle = this.add
+      .text(width / 2, 126, isVictory ? 'The Highlands are safe... for now.' : 'The glen took its due. Bank the run and go again.', {
+        fontFamily: 'monospace',
+        fontSize: '16px',
+        color: '#a8b0c0',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setAlpha(0);
 
     this.tweens.add({
-      targets: goldLabel, alpha: 1, scale: { from: 0.5, to: 1 },
-      duration: 400, delay: 1400, ease: 'Back.easeOut',
+      targets: title,
+      alpha: 1,
+      scale: 1,
+      duration: 480,
+      delay: 180,
+      ease: 'Back.easeOut',
     });
-    this.tweens.add({ targets: goldBreakdown, alpha: 1, duration: 300, delay: 1600 });
+    this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
 
-    // Helpful tip
+    const variantChip = this.add
+      .rectangle(width / 2, 168, 596, 34, 0x16213a, 0.96)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setStrokeStyle(1, 0x355079, 1)
+      .setAlpha(0);
+    const variantText = this.add
+      .text(width / 2, 168, `Run Variant: ${formatRunVariantLabel(this.activeVariant)}`, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#d7e3ff',
+        wordWrap: { width: 560 },
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 3)
+      .setAlpha(0);
+    this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
+
+    const statsPanel = this.add
+      .rectangle(width / 2, 245, 596, 108, 0x131d32, 0.95)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setStrokeStyle(1, 0x283a5f, 1)
+      .setAlpha(0);
+    const goldPanel = this.add
+      .rectangle(width / 2, 343, 596, 72, 0x141d2f, 0.95)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setStrokeStyle(1, 0x2f435f, 1)
+      .setAlpha(0);
+    const unlockPanel = this.add
+      .rectangle(width / 2, 443, 596, 112, 0x121a2a, 0.95)
+      .setScrollFactor(0)
+      .setDepth(d + 2)
+      .setStrokeStyle(1, 0x283447, 1)
+      .setAlpha(0);
+    this.tweens.add({ targets: [statsPanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
+
+    const statBaseY = 214;
+    const statGap = 142;
+    this.createResultStat(width / 2 - statGap, statBaseY, 'Time', summaryTime, d + 3, 600);
+    this.createResultStat(width / 2, statBaseY, 'Kills', `${summary.enemiesKilled}`, d + 3, 660);
+    this.createResultStat(width / 2 + statGap, statBaseY, 'Level', `${this.xpSystem.getLevel()}`, d + 3, 720);
+    this.createResultStat(width / 2 - statGap / 2, statBaseY + 42, 'Bosses', `${this.bossKillCount}`, d + 3, 780);
+    this.createResultStat(width / 2 + statGap / 2, statBaseY + 42, 'Passives', `${this.ownedPassives.length}`, d + 3, 840);
+
+    const buildSummary = this.getRunBuildSummary();
+    const loadoutSummary = this.add
+      .text(
+        width / 2,
+        290,
+        `Weapons ${this.weaponSystem.getWeapons().length} (${this.evolvedWeapons.length} evolved)\n${buildSummary}`,
+        {
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          color: '#9ea8bb',
+          align: 'center',
+          wordWrap: { width: 560 },
+        }
+      )
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 3)
+      .setAlpha(0);
+    this.tweens.add({ targets: loadoutSummary, alpha: 1, duration: 260, delay: 900 });
+
+    const goldTitle = this.add
+      .text(width / 2, 326, `+${runResult.goldEarned} Gold`, {
+        fontFamily: 'monospace',
+        fontSize: '28px',
+        color: '#d4a017',
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 3)
+      .setAlpha(0);
+    const goldText = this.add
+      .text(width / 2, 355, goldBreakdown, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#b69643',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(d + 3)
+      .setAlpha(0);
+    this.tweens.add({
+      targets: goldTitle,
+      alpha: 1,
+      scale: { from: 0.7, to: 1 },
+      duration: 300,
+      delay: 980,
+      ease: 'Back.easeOut',
+    });
+    this.tweens.add({ targets: goldText, alpha: 1, duration: 240, delay: 1080 });
+
+    this.addRunResultUnlockContent(width / 2, 402, d + 3, runResult.newlyUnlockedVariants, 1140);
+
+    this.createResultActionButton(width / 2 - 196, 542, 172, 42, 'PLAY AGAIN', COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
+      audio.playClick();
+      musicEngine.stop();
+      this.scene.start('Game');
+    });
+    this.createResultActionButton(width / 2, 542, 172, 42, 'UPGRADES', COLORS.WHISKY_GOLD, '#000000', 1300, () => {
+      audio.playClick();
+      musicEngine.stop();
+      this.scene.start('Shop');
+    });
+    this.createResultActionButton(width / 2 + 196, 542, 172, 42, 'MENU', 0x444444, '#ffffff', 1360, () => {
+      audio.playClick();
+      musicEngine.stop();
+      this.scene.start('Menu');
+    });
+  }
+
+  private buildRunSummary(victory: boolean): RunSummary {
+    return {
+      timeSurvivedSec: this.spawnSystem.getGameTimeSec(),
+      enemiesKilled: this.killCount,
+      bossGold: this.bossGoldEarned,
+      coinGold: this.coinGoldEarned,
+      bestCombo: this.juice.getBestCombo(),
+      victory,
+    };
+  }
+
+  private addRunResultUnlockContent(
+    centerX: number,
+    y: number,
+    depth: number,
+    variantKeys: VariantKey[],
+    delay: number
+  ): void {
     const tips = [
-      'Tip: Press SPACE to dash through enemies!',
-      'Tip: Combos boost your damage — keep killing!',
+      'Tip: Press SPACE to dash through enemies.',
+      'Tip: Combos boost your damage when you keep killing.',
       'Tip: Armor reduces all incoming damage.',
-      'Tip: Max a weapon + its passive = EVOLUTION!',
-      'Tip: Health orbs drop from enemies — stay aggressive!',
-      'Tip: XP pickup radius triples at critical HP.',
-      'Tip: Gold coins drop from enemies — collect them!',
-      'Tip: Pipers buff nearby enemies — kill them first!',
-      'Tip: Clockwise kiting works with the drift!',
-      'Tip: Bosses enrage at 50% HP — be ready!',
+      'Tip: Max a weapon plus its passive to evolve it.',
+      'Tip: Pipers buff nearby enemies. Kill them first.',
+      'Tip: Clockwise kiting works with the drift.',
     ];
-    const tip = this.add.text(width / 2, height * 0.69,
-      tips[Math.floor(Math.random() * tips.length)], {
-      fontFamily: 'monospace', fontSize: '13px', color: '#888888', fontStyle: 'italic',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    this.tweens.add({ targets: tip, alpha: 1, duration: 300, delay: 1800 });
+    const hasUnlocks = variantKeys.length > 0;
+    const headingText = hasUnlocks
+      ? variantKeys.length === 1
+        ? 'NEW VARIANT UNLOCKED'
+        : 'NEW VARIANTS UNLOCKED'
+      : 'NEXT RUN TIP';
+    const headingColor = hasUnlocks ? '#77c977' : '#8aa4d7';
 
-    // Buttons — stagger in
-    const playAgainBtn = this.add.rectangle(width / 2, height * 0.76, 240, 46, COLORS.SCOTTISH_BLUE)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const playAgainText = this.add.text(width / 2, height * 0.76, 'PLAY AGAIN', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
+    const heading = this.add
+      .text(centerX, y, headingText, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: headingColor,
+        fontStyle: 'bold',
+        letterSpacing: 1,
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0);
+    this.tweens.add({ targets: heading, alpha: 1, duration: 260, delay });
 
-    const shopBtn = this.add.rectangle(width / 2, height * 0.85, 240, 46, COLORS.WHISKY_GOLD)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const shopText = this.add.text(width / 2, height * 0.85, 'UPGRADES', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#000000', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
+    if (!hasUnlocks) {
+      const tip = this.add
+        .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)], {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: '#a8b0c0',
+          fontStyle: 'italic',
+          align: 'center',
+          wordWrap: { width: 520 },
+        })
+        .setOrigin(0.5, 0)
+        .setScrollFactor(0)
+        .setDepth(depth)
+        .setAlpha(0);
+      this.tweens.add({ targets: tip, alpha: 1, duration: 260, delay: delay + 90 });
+      return;
+    }
 
-    const menuBtn = this.add.rectangle(width / 2, height * 0.94, 240, 46, 0x444444)
-      .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const menuText = this.add.text(width / 2, height * 0.94, 'MENU', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
+    if (variantKeys.length === 1) {
+      const variant = getVariantByKey(variantKeys[0]);
+      const nameText = this.add
+        .text(centerX, y + 26, variant.name, {
+          fontFamily: 'monospace',
+          fontSize: '26px',
+          color: '#ffffff',
+          fontStyle: 'bold',
+          align: 'center',
+        })
+        .setOrigin(0.5, 0)
+        .setScrollFactor(0)
+        .setDepth(depth)
+        .setAlpha(0);
+      const flavorText = this.add
+        .text(centerX, y + 58, variant.flavorText, {
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          color: '#9ea8bb',
+          align: 'center',
+          wordWrap: { width: 520 },
+        })
+        .setOrigin(0.5, 0)
+        .setScrollFactor(0)
+        .setDepth(depth)
+        .setAlpha(0);
+      this.tweens.add({ targets: [nameText, flavorText], alpha: 1, duration: 300, delay: delay + 90 });
+      return;
+    }
 
-    this.tweens.add({ targets: [playAgainBtn, playAgainText], alpha: 1, duration: 300, delay: 1700,
-      onComplete: () => playAgainBtn.setInteractive({ useHandCursor: true }) });
-    this.tweens.add({ targets: [shopBtn, shopText], alpha: 1, duration: 300, delay: 1850,
-      onComplete: () => shopBtn.setInteractive({ useHandCursor: true }) });
-    this.tweens.add({ targets: [menuBtn, menuText], alpha: 1, duration: 300, delay: 2000,
-      onComplete: () => menuBtn.setInteractive({ useHandCursor: true }) });
+    const bodyText = variantKeys.length === 2
+      ? variantKeys.map((key) => getVariantByKey(key).name).join('\n')
+      : variantKeys.map((key) => `- ${getVariantByKey(key).name}`).join('\n');
+    const unlockList = this.add
+      .text(centerX, y + 30, bodyText, {
+        fontFamily: 'monospace',
+        fontSize: variantKeys.length === 2 ? '18px' : '14px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+        align: 'center',
+        lineSpacing: 6,
+        wordWrap: { width: 500 },
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0);
+    this.tweens.add({ targets: unlockList, alpha: 1, duration: 300, delay: delay + 90 });
+  }
 
-    playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x0077dd));
-    playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
-    playAgainBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Game'); });
+  private createResultStat(
+    x: number,
+    y: number,
+    label: string,
+    value: string,
+    depth: number,
+    delay: number
+  ): void {
+    const labelText = this.add
+      .text(x, y, label, {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#7f8ca7',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0);
+    const valueText = this.add
+      .text(x, y + 18, value, {
+        fontFamily: 'monospace',
+        fontSize: '18px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0);
 
-    shopBtn.on('pointerover', () => shopBtn.setFillStyle(0xe8b420));
-    shopBtn.on('pointerout', () => shopBtn.setFillStyle(COLORS.WHISKY_GOLD));
-    shopBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Shop'); });
+    this.tweens.add({ targets: [labelText, valueText], alpha: 1, duration: 220, delay });
+  }
 
-    menuBtn.on('pointerover', () => menuBtn.setFillStyle(0x555555));
-    menuBtn.on('pointerout', () => menuBtn.setFillStyle(0x444444));
-    menuBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Menu'); });
+  private createResultActionButton(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    label: string,
+    fill: number,
+    textColor: string,
+    delay: number,
+    onClick: () => void
+  ): void {
+    const button = this.add
+      .rectangle(x, y, width, height, fill, 1)
+      .setScrollFactor(0)
+      .setDepth(203)
+      .setAlpha(0);
+    const text = this.add
+      .text(x, y, label, {
+        fontFamily: 'monospace',
+        fontSize: '18px',
+        color: textColor,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(204)
+      .setAlpha(0);
+
+    this.tweens.add({
+      targets: [button, text],
+      alpha: 1,
+      duration: 260,
+      delay,
+      onComplete: () => button.setInteractive({ useHandCursor: true }),
+    });
+
+    button.on('pointerover', () => button.setFillStyle(Phaser.Display.Color.ValueToColor(fill).lighten(16).color));
+    button.on('pointerout', () => button.setFillStyle(fill));
+    button.on('pointerdown', onClick);
+  }
+
+  private getRunBuildSummary(): string {
+    return this.weaponSystem
+      .getWeapons()
+      .map((weapon) => `${weapon.config.name} Lv${weapon.level}${weapon.evolved ? '*' : ''}`)
+      .join('  |  ');
+  }
+
+  private formatClockTime(totalSeconds: number): string {
+    const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+    const mins = Math.floor(safeSeconds / 60);
+    const secs = Math.floor(safeSeconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   }
 
   // ── Boss HP Bar ──

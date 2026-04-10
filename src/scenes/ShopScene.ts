@@ -1,144 +1,285 @@
 import Phaser from 'phaser';
-import { loadSave, writeSave } from '../utils/save';
-import { PERMANENT_UPGRADES, getUpgradeCost } from '../data/permanentUpgrades';
+import { SaveData, loadSave, writeSave } from '../utils/save';
+import { PERMANENT_UPGRADES, PermanentUpgrade, getUpgradeCost } from '../data/permanentUpgrades';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 
 /**
- * ShopScene — polished upgrade shop with animated rows and hover effects.
+ * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
  */
 export class ShopScene extends Phaser.Scene {
+  private currentPage = 0;
+  private readonly upgradesPerPage = 8;
+  private saveData!: SaveData;
+  private rowElements: Phaser.GameObjects.GameObject[] = [];
+  private footerElements: Phaser.GameObjects.GameObject[] = [];
+  private goldText!: Phaser.GameObjects.Text;
+  private pageText!: Phaser.GameObjects.Text;
+
   constructor() {
     super({ key: 'Shop' });
   }
 
+  init(data: { page?: number }): void {
+    this.currentPage = data.page ?? 0;
+  }
+
   create(): void {
     const { width, height } = this.scale;
-    const save = loadSave();
+    this.saveData = loadSave();
+    this.currentPage = Phaser.Math.Clamp(this.currentPage, 0, this.getTotalPages() - 1);
 
-    // Background
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);
 
-    // Fade in
     const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 1).setDepth(999);
-    this.tweens.add({ targets: fadeIn, alpha: 0, duration: 400, onComplete: () => fadeIn.destroy() });
+    this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
-    // Title
-    this.add.text(width / 2, 30, 'UPGRADES', {
-      fontFamily: 'monospace', fontSize: '36px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
-    }).setOrigin(0.5);
+    this.add
+      .text(width / 2, 32, 'UPGRADES', {
+        fontFamily: 'monospace',
+        fontSize: '36px',
+        color: '#d4a017',
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 5,
+      })
+      .setOrigin(0.5);
 
-    // Gold display with icon
-    this.add.text(width / 2, 68, `Gold: ${save.gold}`, {
-      fontFamily: 'monospace', fontSize: '20px', color: '#d4a017', fontStyle: 'bold',
-    }).setOrigin(0.5);
+    this.goldText = this.add
+      .text(width / 2, 70, '', {
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        color: '#d4a017',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
 
-    // Separator line
     const lineGfx = this.add.graphics();
     lineGfx.lineStyle(2, 0x444444, 1);
-    lineGfx.lineBetween(20, 90, width - 20, 90);
+    lineGfx.lineBetween(24, 92, width - 24, 92);
+    lineGfx.lineBetween(24, 510, width - 24, 510);
+    lineGfx.lineBetween(24, 548, width - 24, 548);
 
-    // Upgrade rows with staggered entrance
-    // NOTE: 16 upgrades × ~50px = ~800 — exceeds the 600 canvas height. This
-    // was pre-existing; the shop needs pagination/scrolling. Keeping rows
-    // tight so the text-size bump doesn't make overflow worse.
-    const startY = 100;
-    const rowH = 50;
+    this.pageText = this.add
+      .text(width / 2, 528, '', {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#aab4c7',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
 
-    PERMANENT_UPGRADES.forEach((upgrade, i) => {
-      const y = startY + i * rowH;
-      const currentLevel = save.upgrades[upgrade.key] ?? 0;
-      const isMaxed = currentLevel >= upgrade.maxLevel;
-      const cost = isMaxed ? 0 : getUpgradeCost(upgrade, currentLevel);
-      const canAfford = !isMaxed && save.gold >= cost;
+    this.updateHeader();
+    this.renderRows();
+    this.renderFooter();
+  }
 
-      // Row background (subtle stripe)
-      const rowBg = this.add.rectangle(width / 2, y + 12, width - 20, rowH - 4,
-        i % 2 === 0 ? 0x1e1e3a : 0x222244, 0.3
-      ).setAlpha(0);
-      this.tweens.add({ targets: rowBg, alpha: 1, duration: 200, delay: i * 60 });
+  private getTotalPages(): number {
+    return Math.max(1, Math.ceil(PERMANENT_UPGRADES.length / this.upgradesPerPage));
+  }
 
-      // Name
-      const nameText = this.add.text(24, y, upgrade.name, {
-        fontFamily: 'monospace', fontSize: '15px',
-        color: isMaxed ? '#66aa66' : '#ffffff', fontStyle: 'bold',
-      }).setAlpha(0);
-      this.tweens.add({ targets: nameText, alpha: 1, duration: 200, delay: i * 60 + 30 });
+  private updateHeader(): void {
+    this.goldText.setText(`Gold: ${this.saveData.gold}`);
+    this.pageText.setText(`Page ${this.currentPage + 1} / ${this.getTotalPages()}`);
+  }
 
-      // Description
-      const descText = this.add.text(24, y + 20, upgrade.description, {
-        fontFamily: 'monospace', fontSize: '12px', color: '#aaaaaa',
-      }).setAlpha(0);
-      this.tweens.add({ targets: descText, alpha: 1, duration: 200, delay: i * 60 + 60 });
+  private renderRows(): void {
+    this.clearElements(this.rowElements);
 
-      // Level pips
-      for (let l = 0; l < upgrade.maxLevel; l++) {
-        const px = width - 220 + l * 20;
-        const filled = l < currentLevel;
-        const pip = this.add.rectangle(px, y + 16, 14, 14,
-          filled ? COLORS.WHISKY_GOLD : 0x2a2a3a
-        ).setStrokeStyle(1, filled ? 0xffcc44 : 0x444444).setAlpha(0);
-        this.tweens.add({ targets: pip, alpha: 1, duration: 200, delay: i * 60 + 80 });
-      }
+    const { width } = this.scale;
+    const visibleUpgrades = PERMANENT_UPGRADES.slice(
+      this.currentPage * this.upgradesPerPage,
+      (this.currentPage + 1) * this.upgradesPerPage
+    );
 
-      // Buy button or MAX label
-      if (!isMaxed) {
-        const btnX = width - 70;
-        const btn = this.add.rectangle(btnX, y + 16, 90, 38,
-          canAfford ? COLORS.SCOTTISH_BLUE : 0x2a2a3a
-        ).setInteractive({ useHandCursor: canAfford }).setAlpha(0);
+    visibleUpgrades.forEach((upgrade, index) => {
+      this.renderUpgradeRow(upgrade, index, width);
+    });
+  }
 
-        const btnLabel = this.add.text(btnX, y + 16, `${cost}g`, {
-          fontFamily: 'monospace', fontSize: '14px',
-          color: canAfford ? '#ffffff' : '#888888', fontStyle: 'bold',
-        }).setOrigin(0.5).setAlpha(0);
+  private renderUpgradeRow(upgrade: PermanentUpgrade, index: number, width: number): void {
+    const y = 114 + index * 49;
+    const currentLevel = this.saveData.upgrades[upgrade.key] ?? 0;
+    const isMaxed = currentLevel >= upgrade.maxLevel;
+    const cost = isMaxed ? 0 : getUpgradeCost(upgrade, currentLevel);
+    const canAfford = !isMaxed && this.saveData.gold >= cost;
 
-        this.tweens.add({ targets: [btn, btnLabel], alpha: 1, duration: 200, delay: i * 60 + 100 });
-
-        if (canAfford) {
-          btn.on('pointerover', () => btn.setFillStyle(0x0077dd));
-          btn.on('pointerout', () => btn.setFillStyle(COLORS.SCOTTISH_BLUE));
-          btn.on('pointerdown', () => {
-            audio.playClick();
-            btn.disableInteractive();
-            const s = loadSave();
-            const lvl = s.upgrades[upgrade.key] ?? 0;
-            const c = getUpgradeCost(upgrade, lvl);
-            if (s.gold >= c && lvl < upgrade.maxLevel) {
-              s.gold -= c;
-              s.upgrades[upgrade.key] = lvl + 1;
-              writeSave(s);
-              audio.playLevelUp();
-              this.scene.restart();
-            }
-          });
-        }
-      } else {
-        const maxLabel = this.add.text(width - 70, y + 16, 'MAX', {
-          fontFamily: 'monospace', fontSize: '14px', color: '#66aa66', fontStyle: 'bold',
-        }).setOrigin(0.5).setAlpha(0);
-        this.tweens.add({ targets: maxLabel, alpha: 1, duration: 200, delay: i * 60 + 100 });
-      }
+    const rowBg = this.add.rectangle(
+      width / 2,
+      y + 18,
+      width - 30,
+      44,
+      index % 2 === 0 ? 0x1b2337 : 0x172031,
+      0.82
+    );
+    const nameText = this.add.text(34, y + 3, upgrade.name, {
+      fontFamily: 'monospace',
+      fontSize: '15px',
+      color: isMaxed ? '#73c37d' : '#ffffff',
+      fontStyle: 'bold',
+    });
+    const descText = this.add.text(34, y + 21, upgrade.description, {
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      color: '#9ea7b9',
+      wordWrap: { width: 320 },
     });
 
-    // Back button
-    const backBtn = this.add.rectangle(width / 2, height - 40, 180, 46, 0x444444)
-      .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2, height - 40, 'BACK', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
-    }).setOrigin(0.5);
+    this.rowElements.push(rowBg, nameText, descText);
 
-    backBtn.on('pointerover', () => backBtn.setFillStyle(0x555555));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(0x444444));
-    backBtn.on('pointerdown', () => {
+    for (let level = 0; level < upgrade.maxLevel; level++) {
+      const pipX = width - 228 + level * 18;
+      const filled = level < currentLevel;
+      const pip = this.add
+        .rectangle(pipX, y + 16, 12, 12, filled ? COLORS.WHISKY_GOLD : 0x273043, 1)
+        .setStrokeStyle(1, filled ? 0xffcc44 : 0x4a5569, 1);
+      this.rowElements.push(pip);
+    }
+
+    if (isMaxed) {
+      const maxLabel = this.add
+        .text(width - 74, y + 16, 'MAX', {
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          color: '#73c37d',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      this.rowElements.push(maxLabel);
+      return;
+    }
+
+    const buttonFill = canAfford ? COLORS.SCOTTISH_BLUE : 0x293140;
+    const buttonTextColor = canAfford ? '#ffffff' : '#7c8698';
+    const buyButton = this.add
+      .rectangle(width - 74, y + 16, 96, 36, buttonFill, 1)
+      .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x475163, 1)
+      .setInteractive({ useHandCursor: canAfford });
+    const buyText = this.add
+      .text(width - 74, y + 16, `${cost}g`, {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: buttonTextColor,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+
+    if (canAfford) {
+      buyButton.on('pointerover', () => buyButton.setFillStyle(0x0b73d1));
+      buyButton.on('pointerout', () => buyButton.setFillStyle(COLORS.SCOTTISH_BLUE));
+      buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade));
+    }
+
+    this.rowElements.push(buyButton, buyText);
+  }
+
+  private purchaseUpgrade(upgrade: PermanentUpgrade): void {
+    const currentLevel = this.saveData.upgrades[upgrade.key] ?? 0;
+    if (currentLevel >= upgrade.maxLevel) return;
+
+    const cost = getUpgradeCost(upgrade, currentLevel);
+    if (this.saveData.gold < cost) return;
+
+    audio.playClick();
+    this.saveData.gold -= cost;
+    this.saveData.upgrades[upgrade.key] = currentLevel + 1;
+    this.saveData = writeSave(this.saveData);
+    audio.playLevelUp();
+
+    this.updateHeader();
+    this.renderRows();
+    this.renderFooter();
+  }
+
+  private renderFooter(): void {
+    this.clearElements(this.footerElements);
+
+    const { width, height } = this.scale;
+    const totalPages = this.getTotalPages();
+
+    this.createPageButton(136, height - 20 - 52, '< PREV', this.currentPage > 0, () => {
       audio.playClick();
-      // Fade out
-      const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0).setDepth(999);
+      this.currentPage--;
+      this.updateHeader();
+      this.renderRows();
+      this.renderFooter();
+    });
+
+    this.createPageButton(width - 136, height - 20 - 52, 'NEXT >', this.currentPage < totalPages - 1, () => {
+      audio.playClick();
+      this.currentPage++;
+      this.updateHeader();
+      this.renderRows();
+      this.renderFooter();
+    });
+
+    const backButton = this.add
+      .rectangle(width / 2, height - 26, 188, 36, 0x3a4357, 1)
+      .setInteractive({ useHandCursor: true });
+    const backText = this.add
+      .text(width / 2, height - 26, 'BACK TO MENU', {
+        fontFamily: 'monospace',
+        fontSize: '15px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+
+    backButton.on('pointerover', () => backButton.setFillStyle(0x4a566f));
+    backButton.on('pointerout', () => backButton.setFillStyle(0x3a4357));
+    backButton.on('pointerdown', () => {
+      audio.playClick();
+      const fade = this.add
+        .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+        .setDepth(999);
       this.tweens.add({
-        targets: fade, alpha: 1, duration: 300,
+        targets: fade,
+        alpha: 1,
+        duration: 260,
         onComplete: () => this.scene.start('Menu'),
       });
     });
+
+    this.footerElements.push(backButton, backText);
+  }
+
+  private createPageButton(
+    x: number,
+    y: number,
+    label: string,
+    enabled: boolean,
+    onClick: () => void
+  ): void {
+    const fill = enabled ? 0x24314f : 0x1b2230;
+    const stroke = enabled ? 0x698ac2 : 0x343c4b;
+    const textColor = enabled ? '#d6e3ff' : '#6a7384';
+    const button = this.add
+      .rectangle(x, y, 116, 34, fill, 1)
+      .setStrokeStyle(1, stroke, 1)
+      .setInteractive({ useHandCursor: enabled });
+    const text = this.add
+      .text(x, y, label, {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: textColor,
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+
+    if (enabled) {
+      button.on('pointerover', () => button.setFillStyle(0x304269));
+      button.on('pointerout', () => button.setFillStyle(fill));
+      button.on('pointerdown', onClick);
+    }
+
+    this.footerElements.push(button, text);
+  }
+
+  private clearElements(elements: Phaser.GameObjects.GameObject[]): void {
+    for (const element of elements) {
+      element.destroy();
+    }
+    elements.length = 0;
   }
 }
