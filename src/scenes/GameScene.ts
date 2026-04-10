@@ -21,6 +21,8 @@ import { BOSSES } from '../data/enemies';
 import { formatRunVariantLabel, getVariantByKey, VariantDef, VariantKey } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
+import { SubscriptionBag } from '../utils/SubscriptionBag';
+import { DebugOverlay } from '../ui/DebugOverlay';
 
 /**
  * GameScene — the core gameplay loop.
@@ -74,6 +76,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private deathResultRemainingMs: number | null = null;
   private deathResultCallback: (() => void) | null = null;
   private hintHideHandle: TickerHandle | null = null;
+  private subs = new SubscriptionBag();
+  private debugOverlay: DebugOverlay | null = null;
 
   private lavaZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
@@ -275,6 +279,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.toggleUiPause());
 
+    this.debugOverlay = new DebugOverlay(this, {
+      spawnSystem: this.spawnSystem,
+      weaponSystem: this.weaponSystem,
+      timeManager: this.timeManager,
+    });
+
     // Apply saved audio settings and start background music
     audio.setEnabled(save.settings.soundOn);
     if (save.settings.musicOn) {
@@ -297,15 +307,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }
     });
 
-    // ESC to pause — remove prior listener to prevent accumulation on scene restart
     if (this.input.keyboard) {
-      this.input.keyboard.off('keydown-ESC');
-      this.input.keyboard.on('keydown-ESC', () => this.toggleUiPause());
+      this.subs.listen(this.input.keyboard as any, 'keydown-ESC', () => this.toggleUiPause());
+      this.subs.listen(this.input.keyboard as any, 'keydown-F3', () => this.debugOverlay?.toggle());
     }
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
-      this.input.keyboard?.off('keydown-ESC');
+      try { this.subs.dispose(); } catch { /* ignore */ }
+      try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
+      this.debugOverlay = null;
       // Flush run-scoped state on teardown to prevent "second run" bleed
       try { this.updateTickers.clear(); } catch { /* ignore */ }
       try { this.timeManager?.destroy(); } catch { /* ignore */ }
@@ -396,6 +407,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Raw tickers always advance (UI/run-end domain)
     this.updateTickers.tickRaw(delta);
+    this.debugOverlay?.update(delta);
 
     // Scaled tickers freeze whenever gameplay is paused (including HIT_FREEZE which pauses physics
     // without mutating timeScale).

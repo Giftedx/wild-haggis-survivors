@@ -61,6 +61,11 @@ export class TimeManager {
     return this.tokens.size;
   }
 
+  /** Debug/telemetry: stable-ordered list of active token keys. */
+  getActiveTokenKeys(): string[] {
+    return Array.from(this.tokens.keys()).sort();
+  }
+
   request(key: string, spec: TimeTokenSpec): void {
     const token: ActiveToken = {
       timeScale: spec.timeScale,
