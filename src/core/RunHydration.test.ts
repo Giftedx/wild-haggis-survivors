@@ -144,6 +144,7 @@ describe('Run hydration (mid-run persistence)', () => {
 
   it('XPSystem.hydrateRunState restores bar without emitting levelup', () => {
     const scene = {
+      getSFXManager: () => ({ tryPlay: (_k: string, fn: () => void) => { fn(); }, clear: () => {} }),
       add: {
         group: (opts: { classType: new (_s: unknown) => unknown }) => {
           const pool: unknown[] = [];

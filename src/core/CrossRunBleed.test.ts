@@ -106,6 +106,7 @@ async function makeFakeScene(tm: TimeManager) {
     getTimeManager: () => tm,
     getUpdateTickers: () => ({ addOnce: () => ({ cancel() {} }) }),
     getPlayer: () => ({ x: 0, y: 0 }),
+    getSFXManager: () => ({ tryPlay: (_k: string, fn: () => void) => { fn(); }, clear: () => {} }),
   };
   return scene;
 }

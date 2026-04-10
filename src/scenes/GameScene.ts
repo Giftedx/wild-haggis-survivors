@@ -28,6 +28,7 @@ import { StatComposer } from '../core/StatComposer';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
+import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import type { GameOverPayload } from './gameOverPayload';
 
@@ -230,7 +231,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.killCount++;
       this.juice.showKillBurst(x, y);
       this.juice.hitFreeze();
-      audio.playKill();
+      this.getSFXManager().tryPlay('kill', () => audio.playKillImmediate());
 
       // Lifesteal — heal on kill
       if (this.player.getLifesteal() > 0) {
@@ -305,7 +306,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice.showDamageNumber(x, y, amount, isCrit);
       this.juice.spawnImpactRing(x, y);
       this.hud.logDamage(amount);
-      audio.playHit();
+      this.getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
     });
 
     // Projectile trails — color based on weapon type
@@ -378,6 +379,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
+      sfxManager.clear();
       this.achievementUnsub?.();
       this.achievementUnsub = null;
       this.unregisterMidRunPersistenceHooks();
@@ -1627,7 +1629,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }).setDepth(80);
       this.tweens.add({ targets: txt, y: txt.y - 20, alpha: 0, duration: 600, onComplete: () => txt.destroy() });
 
-      audio.playXPCollect();
+      this.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
       coin.destroy();
       this.physics.world.removeCollider(overlapColl);
     });
@@ -1962,5 +1964,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getUpdateTickers(): UpdateTickers { return this.updateTickers; }
   getSpawnSystem(): SpawnSystem { return this.spawnSystem; }
   getWeaponSystem(): WeaponSystem { return this.weaponSystem; }
+  getSFXManager(): SFXManager {
+    return sfxManager;
+  }
   getXPSystem(): XPSystem { return this.xpSystem; }
 }
