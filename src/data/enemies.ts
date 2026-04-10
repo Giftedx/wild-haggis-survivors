@@ -10,7 +10,7 @@
  *  - 'hazard':  Static, invincible, damages on contact
  */
 
-export type EnemyBehavior = 'chase' | 'swarm' | 'tank' | 'dive' | 'ranged' | 'hazard';
+export type EnemyBehavior = 'chase' | 'swarm' | 'tank' | 'dive' | 'ranged' | 'hazard' | 'orbit' | 'flee' | 'spawner' | 'phase';
 
 export interface EnemyConfig {
   key: string;
@@ -115,6 +115,61 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'hazard',
     packSize: 1,
   },
+  piper: {
+    key: 'piper',
+    texture: 'piper',
+    speed: 70,
+    hp: 20,
+    damage: 4,
+    xpValue: 8,
+    appearsAt: 480,    // 8:00
+    behavior: 'orbit',
+    packSize: 1,
+  },
+  berserker: {
+    key: 'berserker',
+    texture: 'angry_scotsman',
+    speed: 80,
+    hp: 35,
+    damage: 15,
+    xpValue: 6,
+    appearsAt: 840,    // 14:00
+    behavior: 'chase',
+    packSize: 1,
+  },
+  ghost: {
+    key: 'ghost',
+    texture: 'ghost',
+    speed: 70,
+    hp: 25,        // buffed from 8 — was too fragile to matter at 9:00
+    damage: 8,
+    xpValue: 4,
+    appearsAt: 540,    // 9:00
+    behavior: 'phase',
+    packSize: 1,
+  },
+  nest: {
+    key: 'nest',
+    texture: 'nest',
+    speed: 0,
+    hp: 80,        // buffed from 30 — was dying before first spawn tick
+    damage: 0,
+    xpValue: 10,
+    appearsAt: 660,    // 11:00
+    behavior: 'spawner',
+    packSize: 1,
+  },
+  sheep: {
+    key: 'sheep',
+    texture: 'sheep',
+    speed: 90,
+    hp: 1,
+    damage: 2,
+    xpValue: 1,
+    appearsAt: 240,    // 4:00
+    behavior: 'flee',
+    packSize: 4,
+  },
 };
 
 export function getAvailableEnemyTypes(gameTimeSec: number): EnemyConfig[] {
@@ -154,7 +209,7 @@ export const BOSSES: BossConfig[] = [
     name: 'Gordon the Chef',
     warningText: 'A CHEF APPROACHES!',
     spawnTimeSec: 300,     // 5:00
-    texture: 'boss',
+    texture: 'boss_gordon',
     speed: 100,
     hp: 150,
     damage: 20,
@@ -166,7 +221,7 @@ export const BOSSES: BossConfig[] = [
     name: 'The Tour Bus',
     warningText: 'THE TOUR BUS IS COMING!',
     spawnTimeSec: 600,     // 10:00
-    texture: 'boss',
+    texture: 'boss_tour_bus',
     speed: 50,
     hp: 400,
     damage: 25,
@@ -178,7 +233,7 @@ export const BOSSES: BossConfig[] = [
     name: 'The Laird',
     warningText: 'THE LAIRD HAS ARRIVED!',
     spawnTimeSec: 900,     // 15:00
-    texture: 'boss',
+    texture: 'boss_laird',
     speed: 80,
     hp: 600,
     damage: 30,
@@ -190,7 +245,7 @@ export const BOSSES: BossConfig[] = [
     name: 'The Haggis Hunter General',
     warningText: 'THE HUNTER GENERAL APPROACHES!',
     spawnTimeSec: 1200,    // 20:00
-    texture: 'boss',
+    texture: 'boss_hunter_general',
     speed: 90,
     hp: 800,
     damage: 35,
@@ -202,7 +257,7 @@ export const BOSSES: BossConfig[] = [
     name: 'Death (The Taxman)',
     warningText: 'THE TAXMAN COMETH!',
     spawnTimeSec: 1500,    // 25:00
-    texture: 'boss',
+    texture: 'boss_taxman',
     speed: 130,
     hp: 1500,
     damage: 50,

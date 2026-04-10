@@ -109,8 +109,18 @@ export class PianoLayer {
     const v = this.voices[idx];
     if (!v) return;
     try {
-      v.carrier.stop();
-      v.modulator.stop();
+      // Ramp gain to zero before stopping to prevent audible click from waveform discontinuity
+      if (this.ctx) {
+        const now = this.ctx.currentTime;
+        v.voiceGain.gain.cancelScheduledValues(now);
+        v.voiceGain.gain.setValueAtTime(v.voiceGain.gain.value, now);
+        v.voiceGain.gain.linearRampToValueAtTime(0, now + 0.02);
+        v.carrier.stop(now + 0.02);
+        v.modulator.stop(now + 0.02);
+      } else {
+        v.carrier.stop();
+        v.modulator.stop();
+      }
       v.carrier.disconnect();
       v.modulator.disconnect();
       v.modGain.disconnect();

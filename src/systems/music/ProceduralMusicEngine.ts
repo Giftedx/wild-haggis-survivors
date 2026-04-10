@@ -29,6 +29,7 @@ class ProceduralMusicEngine {
   private tap1Gain: GainNode | null = null;
   private tap2Gain: GainNode | null = null;
   private reverbMix: GainNode | null = null;
+  private pianoSendGain: GainNode | null = null;
 
   private drone = new DroneLayer();
   private piano = new PianoLayer();
@@ -60,10 +61,10 @@ class ProceduralMusicEngine {
     this.masterFilter.connect(this.masterGain);
     this.masterGain.connect(output ?? ctx.destination);
 
-    const pianoOut = this.buildFogDelay(ctx);
+    this.pianoSendGain = this.buildFogDelay(ctx) as GainNode;
 
     this.drone.start(ctx, this.masterFilter);
-    this.piano.start(ctx, pianoOut);
+    this.piano.start(ctx, this.pianoSendGain);
     this.percussion.start(ctx, this.masterFilter);
 
     this.scheduler.setMelodyCallback((time) => {
@@ -249,9 +250,11 @@ class ProceduralMusicEngine {
       this.fogDelay?.disconnect();
       this.fogFilter?.disconnect();
       this.fogFeedback?.disconnect();
+      this.pianoSendGain?.disconnect();
     } catch { /* already disconnected */ }
     this.tap1 = this.tap2 = null;
     this.tap1Gain = this.tap2Gain = this.reverbMix = null;
+    this.pianoSendGain = null;
     this.masterFilter = null;
     this.masterGain = null;
     this.fogDelay = null;

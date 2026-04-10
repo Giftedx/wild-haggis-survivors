@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME, COLORS } from '../config';
+import { GAME } from '../config';
 import { Enemy } from '../entities/Enemy';
 
 /**
@@ -46,8 +46,9 @@ export class Minimap {
     for (let i = 0; i < enemies.length; i += 4) {
       const e = enemies[i];
       if (!e.active) continue;
-      const dx = mapX + e.x * scaleX;
-      const dy = mapY + e.y * scaleY;
+      // Clamp to minimap bounds so dots don't bleed outside the background rect
+      const dx = Phaser.Math.Clamp(mapX + e.x * scaleX, mapX, mapX + this.SIZE);
+      const dy = Phaser.Math.Clamp(mapY + e.y * scaleY, mapY, mapY + this.SIZE);
 
       if (e.isBoss()) {
         // Boss: red diamond shape

@@ -47,11 +47,11 @@ export class JuiceSystem {
     for (let i = 0; i < 30; i++) {
       const t = scene.add.text(0, 0, '', {
         fontFamily: 'monospace',
-        fontSize: '14px',
+        fontSize: '18px',
         color: '#ffffff',
         fontStyle: 'bold',
         stroke: '#000000',
-        strokeThickness: 2,
+        strokeThickness: 3,
       }).setDepth(80).setVisible(false);
       this.dmgTextPool.push(t);
     }
@@ -59,11 +59,11 @@ export class JuiceSystem {
     // Combo text — fixed to screen, shows during streaks
     this.comboText = scene.add.text(scene.scale.width / 2, scene.scale.height * 0.15, '', {
       fontFamily: 'monospace',
-      fontSize: '24px',
+      fontSize: '30px',
       color: '#ff8800',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 3,
+      strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
   }
 
@@ -161,9 +161,12 @@ export class JuiceSystem {
     // Track combo
     this.comboCount++;
     this.comboTimer = this.COMBO_TIMEOUT_MS;
+    if (this.comboCount > this.bestCombo) this.bestCombo = this.comboCount;
 
     if (this.comboCount >= 5) {
-      this.comboText.setText(`${this.comboCount}x COMBO!`);
+      const dmgBonus = Math.min(50, Math.floor(this.comboCount / 10) * 5);
+      const bonusText = dmgBonus > 0 ? ` +${dmgBonus}% DMG` : '';
+      this.comboText.setText(`${this.comboCount}x COMBO!${bonusText}`);
       this.comboText.setVisible(true);
       this.comboText.setScale(1);
       this.comboText.setColor('#ff8800'); // Reset to base before escalation check
@@ -175,6 +178,11 @@ export class JuiceSystem {
         duration: 100,
         yoyo: true,
       });
+
+      // Screen flash at major combo milestones
+      if (this.comboCount === 50 || this.comboCount === 100 || this.comboCount === 200) {
+        this.flashWhite(100);
+      }
 
       // Color escalation
       if (this.comboCount >= 50) {
@@ -190,13 +198,13 @@ export class JuiceSystem {
   /** Toast notification — slides in from the right and fades out, stacks vertically */
   showToast(message: string, color: string = '#ffffff'): void {
     const { width } = this.scene.scale;
-    const yOffset = 70 + this.activeToasts * 28;
+    const yOffset = 130 + this.activeToasts * 36;
     this.activeToasts++;
 
     const toast = this.scene.add.text(width + 10, yOffset, message, {
-      fontFamily: 'monospace', fontSize: '13px', color,
+      fontFamily: 'monospace', fontSize: '16px', color,
       fontStyle: 'bold', stroke: '#000000', strokeThickness: 3,
-      backgroundColor: '#00000088', padding: { x: 8, y: 4 },
+      backgroundColor: '#00000088', padding: { x: 10, y: 5 },
     }).setScrollFactor(0).setDepth(85).setOrigin(1, 0);
 
     // Slide in
@@ -274,6 +282,16 @@ export class JuiceSystem {
   /** Current kill combo count (for music Conductor) */
   getComboCount(): number { return this.comboCount; }
 
+  /** Best combo this run */
+  private bestCombo: number = 0;
+  getBestCombo(): number { return this.bestCombo; }
+
+  /** Combo damage multiplier — +5% per 10 combo, max +50% */
+  getComboDamageMultiplier(): number {
+    const bonus = Math.min(0.5, Math.floor(this.comboCount / 10) * 0.05);
+    return 1 + bonus;
+  }
+
   /** Heavy screen shake for boss events */
   bossShake(): void {
     this.scene.cameras.main.shake(400, 0.015);
@@ -340,9 +358,12 @@ export class JuiceSystem {
     this.lastFreezeTime = now;
     this.scene.time.timeScale = 0;
     // Use real setTimeout — scene.time.delayedCall won't fire at timeScale 0
+    // Capture scene ref to guard against stale callback after scene restart
+    const sceneRef = this.scene;
     setTimeout(() => {
+      if (!sceneRef.sys.isActive()) return; // scene was restarted/destroyed
       if (!this.slowMotionActive) {
-        this.scene.time.timeScale = 1;
+        sceneRef.time.timeScale = 1;
       }
     }, 20);
   }

@@ -45,23 +45,23 @@ export class UpgradeCardsUI {
     this.elements.push(overlay);
 
     // Title
-    const title = this.scene.add.text(width / 2, 50, `LEVEL ${level}`, {
-      fontFamily: 'monospace', fontSize: '32px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 4,
+    const title = this.scene.add.text(width / 2, 55, `LEVEL ${level}`, {
+      fontFamily: 'monospace', fontSize: '40px', color: '#d4a017',
+      fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(title);
 
-    const subtitle = this.scene.add.text(width / 2, 85, 'Choose an upgrade', {
-      fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
+    const subtitle = this.scene.add.text(width / 2, 100, 'Choose an upgrade', {
+      fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
 
     // Reroll button
     if (this.rerollsLeft > 0 && this.onReroll) {
-      const rerollBtn = this.scene.add.text(width / 2, height - 40, `Reroll (${this.rerollsLeft})`, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#d4a017',
+      const rerollBtn = this.scene.add.text(width / 2, height - 48, `Reroll (${this.rerollsLeft})`, {
+        fontFamily: 'monospace', fontSize: '18px', color: '#d4a017',
         fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
-        backgroundColor: '#2a2a3a', padding: { x: 12, y: 6 },
+        backgroundColor: '#2a2a3a', padding: { x: 16, y: 8 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 3)
         .setInteractive({ useHandCursor: true });
       this.elements.push(rerollBtn);
@@ -78,11 +78,11 @@ export class UpgradeCardsUI {
     }
 
     // Card layout — scale down if too many cards for the screen width
-    const maxCardW = 180;
+    const maxCardW = 210;
     const gap = 20;
     const availableW = width - 40; // 20px margin each side
     const cardW = Math.min(maxCardW, (availableW - (cards.length - 1) * gap) / cards.length);
-    const cardH = Math.round(cardW * (220 / 180)); // maintain aspect ratio
+    const cardH = Math.round(cardW * (260 / 210)); // maintain aspect ratio
     const totalW = cards.length * cardW + (cards.length - 1) * gap;
     const startX = (width - totalW) / 2 + cardW / 2;
     const cardY = height / 2 + 20;
@@ -155,38 +155,48 @@ export class UpgradeCardsUI {
     }
 
     // Icon placeholder
-    const icon = this.scene.add.sprite(x, y - 55, card.icon)
-      .setScale(2).setScrollFactor(0).setDepth(depth + 1);
+    const icon = this.scene.add.sprite(x, y - 65, card.icon)
+      .setScale(2.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 
     // Name
-    const name = this.scene.add.text(x, y - 15, card.name, {
-      fontFamily: 'monospace', fontSize: '14px', color: '#ffffff',
+    const name = this.scene.add.text(x, y - 18, card.name, {
+      fontFamily: 'monospace', fontSize: '17px', color: '#ffffff',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(name);
 
     // Description
-    const desc = this.scene.add.text(x, y + 25, card.description, {
-      fontFamily: 'monospace', fontSize: '11px', color: '#aaaaaa',
+    const desc = this.scene.add.text(x, y + 30, card.description, {
+      fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
       align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(desc);
 
     // Rarity label
-    const rarityLabel = this.scene.add.text(x, y + h / 2 - 15, card.rarity.toUpperCase(), {
-      fontFamily: 'monospace', fontSize: '10px',
+    const rarityLabel = this.scene.add.text(x, y + h / 2 - 18, card.rarity.toUpperCase(), {
+      fontFamily: 'monospace', fontSize: '13px', fontStyle: 'bold',
       color: `#${borderColor.toString(16).padStart(6, '0')}`,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(rarityLabel);
 
-    // Hover
+    // Hover — scale up card group
+    const cardElements = [bg, icon, name, desc, rarityLabel];
     bg.on('pointerover', () => {
       bg.setFillStyle(0x2a2a4e);
+      for (const el of cardElements) {
+        (el as any).setScale?.((el as any).scaleX * 1.05, (el as any).scaleY * 1.05);
+      }
     });
 
     bg.on('pointerout', () => {
       bg.setFillStyle(0x1a1a2e);
+      // Reset scales
+      icon.setScale(2);
+      name.setScale(1);
+      desc.setScale(1);
+      rarityLabel.setScale(1);
+      bg.setScale(1);
     });
 
     // Click to select

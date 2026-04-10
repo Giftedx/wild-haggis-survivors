@@ -40,10 +40,22 @@ export class GameScene extends Phaser.Scene {
   private killCount: number = 0;
   private bossKillCount: number = 0;
   private bossGoldEarned: number = 0;
+  private coinGoldEarned: number = 0;
   private pauseElements: Phaser.GameObjects.GameObject[] = [];
   private isManualPause: boolean = false;
   private pendingChest: boolean = false;
+  /** When a chest was deferred during pause, remember whether it should spawn golden. */
+  private pendingChestIsGolden: boolean = false;
   private victoryPending: boolean = false;
+  private dashIndicator: Phaser.GameObjects.Graphics | null = null;
+  private boundaryWarning: Phaser.GameObjects.Rectangle | null = null;
+  private treasureTimer: Phaser.Time.TimerEvent | null = null;
+  private mapZoneTimers: Phaser.Time.TimerEvent[] = [];
+  private runId: object = {};
+  private revivalAvailable: boolean = false;
+  private iFrameGeneration: number = 0;
+  /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
+  private chestDurationBonusMs: number = 0;
 
   constructor() {
     super({ key: 'Game' });
@@ -57,6 +69,23 @@ export class GameScene extends Phaser.Scene {
     this.isManualPause = false;
     this.pauseElements = [];
     this.victoryPending = false;
+    this.runId = {};
+    this.iFrameGeneration = 0;
+    this.chestDurationBonusMs = 0;
+    this.pendingChest = false;
+    this.pendingChestIsGolden = false;
+
+    // Clean up any map-zone timers from a prior run — they persist because
+    // scene.time only resets when the scene is fully destroyed, not on restart
+    for (const t of this.mapZoneTimers) t.destroy();
+    this.mapZoneTimers = [];
+
+    // Destroy lazy-init visual overlays from prior run (they're stored in fields
+    // that only init once at construction)
+    this.dashIndicator?.destroy();
+    this.dashIndicator = null;
+    this.boundaryWarning?.destroy();
+    this.boundaryWarning = null;
 
     // Ensure timeScale is normal (could be stuck at 0.3 if slow-mo was active on scene exit)
     this.time.timeScale = 1;
@@ -70,6 +99,9 @@ export class GameScene extends Phaser.Scene {
     // Create the player at world center
     this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2);
 
+    // Spawn map hazard and healing zones
+    this.spawnMapZones();
+
     // Systems
     this.spawnSystem = new SpawnSystem(this);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
@@ -80,6 +112,8 @@ export class GameScene extends Phaser.Scene {
     this.killCount = 0;
     this.bossKillCount = 0;
     this.bossGoldEarned = 0;
+    this.coinGoldEarned = 0;
+    this.revivalAvailable = false;
 
     // Apply permanent upgrades from save data
     this.applyPermanentUpgrades();
@@ -89,16 +123,25 @@ export class GameScene extends Phaser.Scene {
     this.upgradeUI.setRerollCallback(() => this.rerollUpgradeCards());
 
     // When an enemy is killed
-    this.weaponSystem.events.on('enemyKilled', (x: number, y: number, xpValue: number, enemyKey: string, wasBoss: boolean) => {
-      this.xpSystem.spawnGem(x, y, xpValue);
+    this.weaponSystem.events.on('enemyKilled', (x: number, y: number, xpValue: number, enemyKey: string, wasBoss: boolean, wasElite: boolean = false) => {
+      // Kill streak XP bonus: +1% XP per combo count (capped at +50%)
+      const comboXpBonus = Math.min(0.5, this.juice.getComboCount() * 0.01);
+      this.xpSystem.spawnGem(x, y, Math.ceil(xpValue * this.player.getXpMultiplier() * (1 + comboXpBonus)));
       this.killCount++;
       this.juice.showKillBurst(x, y);
       this.juice.hitFreeze();
       audio.playKill();
 
-      // Kill milestones — celebrate at round numbers
+      // Lifesteal — heal on kill
+      if (this.player.getLifesteal() > 0) {
+        this.player.heal(this.player.getLifesteal());
+      }
+
+      // Kill milestones — celebrate and reward gold
       if ([100, 250, 500, 1000, 2500, 5000].includes(this.killCount)) {
-        this.juice.showToast(`${this.killCount} KILLS!`, '#ffdd00');
+        const goldReward = Math.floor(this.killCount / 50);
+        this.coinGoldEarned += goldReward;
+        this.juice.showToast(`${this.killCount} KILLS! +${goldReward}g`, '#ffdd00');
         this.juice.flashWhite(150);
         audio.playLevelUp();
       }
@@ -120,8 +163,25 @@ export class GameScene extends Phaser.Scene {
         }
       }
 
+      // 5% chance to drop a health orb on kill (bosses always drop)
+      if (wasBoss || Math.random() < 0.05) {
+        this.spawnHealthOrb(x, y, wasBoss ? 25 : 5);
+      }
+
+      // 2% chance to drop gold coins (elites 10%, bosses always)
+      const goldChance = wasBoss ? 1 : (wasElite ? 0.10 : 0.02);
+      if (Math.random() < goldChance) {
+        this.spawnGoldCoin(x, y, wasBoss ? Phaser.Math.Between(5, 15) : Phaser.Math.Between(1, 3));
+      }
+
       if (wasBoss) {
         this.bossKillCount++;
+        // Boss kill heal (Trophy Hunter card)
+        if (this.player.getBossHealFrac() > 0) {
+          const healAmount = Math.ceil(this.player.getMaxHp() * this.player.getBossHealFrac());
+          this.player.heal(healAmount);
+          this.juice.showToast(`Boss Kill: +${healAmount} HP!`, '#44ff44');
+        }
         // Scale boss gold with difficulty — xpValue is 25/50/75/100/200 for each boss
         this.bossGoldEarned += Math.ceil(xpValue * 2);
         this.juice.bossDeathSpectacle(x, y);
@@ -131,20 +191,27 @@ export class GameScene extends Phaser.Scene {
         if (enemyKey === 'taxman') {
           // Dedicated flag — can't be cleared by a pre-existing iFrames timer
           this.victoryPending = true;
-          this.time.delayedCall(1500, () => this.handleVictory());
+          const capturedRunId = this.runId;
+          this.time.delayedCall(1500, () => {
+            if (this.runId !== capturedRunId) return;
+            this.handleVictory();
+          });
         }
       }
     });
 
-    // Floating damage numbers + hit sound
-    this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number) => {
-      this.juice.showDamageNumber(x, y, amount);
+    // Floating damage numbers + hit sound + DPS tracking
+    this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean) => {
+      this.juice.showDamageNumber(x, y, amount, isCrit);
+      this.hud.logDamage(amount);
       audio.playHit();
     });
 
-    // Projectile trails
+    // Projectile trails — color based on weapon type
     this.weaponSystem.events.on('projectileTrail', (x: number, y: number) => {
-      this.juice.spawnTrail(x, y, 0x9966cc);
+      // Vary trail color slightly each time for visual interest
+      const colors = [0x9966cc, 0xaa77dd, 0x8855bb];
+      this.juice.spawnTrail(x, y, colors[Math.floor(Math.random() * colors.length)]);
     });
 
     // When player levels up, pause and show upgrade choices
@@ -163,7 +230,9 @@ export class GameScene extends Phaser.Scene {
 
     // Camera
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
-    this.cameras.main.setZoom(1);
+    // 1.2× zoom so the larger sprites fill the screen better while still
+    // leaving enough peripheral vision for enemy-awareness gameplay.
+    this.cameras.main.setZoom(1.2);
     this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
 
     // HUD + Juice
@@ -183,22 +252,41 @@ export class GameScene extends Phaser.Scene {
     // Treasure chest timer — spawns every 45 seconds
     // Deferred if paused so level-up thinking time doesn't skip chests
     this.pendingChest = false;
-    this.time.addEvent({
+    this.pendingChestIsGolden = false;
+    this.treasureTimer = this.time.addEvent({
       delay: 45000,
       loop: true,
       callback: () => {
+        // 20% chance of golden chest (gold reward instead of heal)
+        const golden = Math.random() < 0.2;
         if (this.isPaused) {
+          // Remember both flag AND type so paused rolls aren't lost
           this.pendingChest = true;
+          this.pendingChestIsGolden = golden;
+        } else if (golden) {
+          this.spawnGoldenChest();
         } else {
           this.spawnTreasure();
         }
       },
     });
 
-    // ESC to pause
+    // ESC to pause — remove prior listener to prevent accumulation on scene restart
     if (this.input.keyboard) {
+      this.input.keyboard.off('keydown-ESC');
       this.input.keyboard.on('keydown-ESC', () => this.togglePause());
     }
+
+    // Clean up on scene shutdown (prevents stale timers/listeners on restart)
+    this.events.once('shutdown', () => {
+      this.treasureTimer?.destroy();
+      for (const t of this.mapZoneTimers) t.destroy();
+      this.mapZoneTimers = [];
+      this.input.keyboard?.off('keydown-ESC');
+      this.weaponSystem?.destroy();
+      this.weaponSystem?.events.removeAllListeners();
+      this.xpSystem?.events.removeAllListeners();
+    });
 
     // Fade in from black
     const fadeIn = this.add.rectangle(
@@ -206,6 +294,16 @@ export class GameScene extends Phaser.Scene {
       this.scale.width, this.scale.height, 0x000000, 1
     ).setScrollFactor(0).setDepth(999);
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 500, onComplete: () => fadeIn.destroy() });
+
+    // Controls hint — show for first 30 seconds then fade out
+    const { width: hintW, height: hintH } = this.scale;
+    const hint = this.add.text(hintW / 2, hintH - 36, 'WASD to move  •  SPACE to dash  •  ESC to pause', {
+      fontFamily: 'monospace', fontSize: '13px', color: '#888888',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
+    this.tweens.add({ targets: hint, alpha: 0.8, duration: 500, delay: 4000 });
+    this.time.delayedCall(30000, () => {
+      this.tweens.add({ targets: hint, alpha: 0, duration: 1000, onComplete: () => hint.destroy() });
+    });
 
     // Start countdown — game is paused until it finishes
     this.isPaused = true;
@@ -272,7 +370,8 @@ export class GameScene extends Phaser.Scene {
     // requestAnimationFrame to ~1fps when backgrounded, producing huge deltas on return)
     delta = Math.min(delta, 100);
 
-    this.player.update();
+    this.player.update(delta);
+    this.player.tickRegen(delta);
     this.spawnSystem.update(delta, this.player.x, this.player.y);
 
     // Pass player facing and upgrade multipliers to weapon system
@@ -281,12 +380,15 @@ export class GameScene extends Phaser.Scene {
       this.weaponSystem.setPlayerFacing(Math.atan2(body.velocity.y, body.velocity.x));
     }
     this.weaponSystem.setMultipliers(
-      this.player.getDamageMultiplier(),
+      this.player.getDamageMultiplier() * this.juice.getComboDamageMultiplier(),
       this.player.getAoeMultiplier(),
-      this.player.getAttackSpeedMultiplier()
+      this.player.getAttackSpeedMultiplier(),
+      this.player.getCritChance(),
+      this.player.getCooldownReduction(),
+      this.player.getCritDamageMultiplier()
     );
     this.weaponSystem.update(delta, this.player.x, this.player.y);
-    this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius());
+    this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHp() / this.player.getMaxHp());
     this.growthSystem.update();
     this.juice.update(delta, this.player.getHp() / this.player.getMaxHp());
 
@@ -305,6 +407,14 @@ export class GameScene extends Phaser.Scene {
     };
     musicEngine.update(delta, musicState);
 
+    // Dash cooldown indicator (small arc under player)
+    this.updateDashIndicator();
+
+    // World boundary warning — red tint when near edges
+    this.updateBoundaryWarning();
+
+    this.hud.updateDPS(delta);
+    this.hud.updateShield(this.player.hasShield());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
       this.xpSystem.getLevel(),
@@ -312,7 +422,11 @@ export class GameScene extends Phaser.Scene {
       this.spawnSystem.getGameTimeSec(),
       this.killCount,
       this.spawnSystem.getActiveCount(),
-      this.weaponSystem.getWeapons().map(w => ({ key: w.config.key, level: w.level, evolved: w.evolved }))
+      this.weaponSystem.getWeapons().map(w => ({
+        key: w.config.key, level: w.level, evolved: w.evolved,
+        cooldownFrac: Math.max(0, 1 - (w.cooldownRemaining / w.cooldownMs)),
+      })),
+      this.ownedPassives
     );
   }
 
@@ -323,6 +437,19 @@ export class GameScene extends Phaser.Scene {
     this.juice.flashWhite();
     this.juice.hideCombo();
 
+    // Brief level-up banner
+    const { width } = this.scale;
+    const banner = this.add.text(width / 2, 140, `LEVEL ${newLevel}`, {
+      fontFamily: 'monospace', fontSize: '36px', color: '#d4a017',
+      fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(199).setAlpha(0).setScale(0.5);
+    this.tweens.add({
+      targets: banner, alpha: 1, scale: 1.1, duration: 300, ease: 'Back.easeOut',
+      onComplete: () => {
+        this.tweens.add({ targets: banner, alpha: 0, scale: 1.3, duration: 400, delay: 200, onComplete: () => banner.destroy() });
+      },
+    });
+
     this.isPaused = true;
     this.physics.pause();
     this.player.onLevelUp(newLevel);
@@ -330,6 +457,22 @@ export class GameScene extends Phaser.Scene {
 
     // Leveling up heals 10% max HP — a small reward that helps sustain longer runs
     this.player.heal(Math.ceil(this.player.getMaxHp() * 0.10));
+
+    // Milestone damage pulse at levels 10, 20, 30 — screen-clearing celebration
+    if ([10, 20, 30].includes(newLevel)) {
+      const dmg = newLevel * 3; // 30/60/90 damage
+      const radius = 300 + newLevel * 10;
+      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      for (const e of enemies) {
+        if (!e.active || e.isBoss()) continue;
+        const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
+        if (d <= radius) e.takeDamage(dmg);
+      }
+      this.juice.flashWhite(400);
+      this.juice.showToast(`LEVEL ${newLevel} POWER SURGE!`, '#ff8800');
+      const ring = this.add.circle(this.player.x, this.player.y, 20, 0xffaa44, 0.5);
+      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 600, onComplete: () => ring.destroy() });
+    }
 
     // Build the card pool based on current state
     const ownedWeapons = this.weaponSystem.getWeapons().map(w => w.config.key);
@@ -342,7 +485,7 @@ export class GameScene extends Phaser.Scene {
 
     // Filter out heal card when at full HP — don't waste a card slot
     if (this.player.getHp() >= this.player.getMaxHp()) {
-      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && c.effect.stat === 'heal'));
+      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && (c.effect.stat === 'heal' || c.effect.stat === 'healPercent')));
     }
 
     // Luck bonus from Sporran passive + Lucky Heather permanent upgrade
@@ -370,7 +513,7 @@ export class GameScene extends Phaser.Scene {
 
     let pool = buildCardPool(ownedWeapons, this.ownedPassives, weaponLevels, this.evolvedWeapons);
     if (this.player.getHp() >= this.player.getMaxHp()) {
-      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && c.effect.stat === 'heal'));
+      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && (c.effect.stat === 'heal' || c.effect.stat === 'healPercent')));
     }
 
     const save = loadSave();
@@ -393,6 +536,12 @@ export class GameScene extends Phaser.Scene {
       case 'add_weapon':
         this.weaponSystem.addWeapon(effect.weaponKey);
         this.juice.showToast(`NEW: ${card.name}`, '#44dd44');
+        this.juice.flashWhite(200);
+        // Celebration ring
+        {
+          const ring = this.add.circle(this.player.x, this.player.y, 10, 0x44dd44, 0.5);
+          this.tweens.add({ targets: ring, radius: 80, alpha: 0, duration: 400, onComplete: () => ring.destroy() });
+        }
         break;
 
       case 'level_weapon':
@@ -428,6 +577,19 @@ export class GameScene extends Phaser.Scene {
       this.isPaused = false;
       this.physics.resume();
 
+      // Brief invincibility after level-up (1s grace period)
+      // Bump generation counter so pending 500ms clearIFrames callbacks
+      // from hits taken before leveling up don't stomp this window
+      this.iFrameGeneration++;
+      const luGen = this.iFrameGeneration;
+      this.iFrames = true;
+      this.player.setAlpha(0.7);
+      this.time.delayedCall(1000, () => {
+        if (luGen !== this.iFrameGeneration) return;
+        this.iFrames = false;
+        if (this.player.active) this.player.setAlpha(1);
+      });
+
       // Celebrate reaching max level
       if (this.xpSystem.getLevel() >= XP.MAX_LEVEL) {
         this.juice.showToast('MAX LEVEL!', '#ffdd00');
@@ -436,7 +598,8 @@ export class GameScene extends Phaser.Scene {
       // Spawn deferred treasure chest if one was due during pause
       if (this.pendingChest) {
         this.pendingChest = false;
-        this.spawnTreasure();
+        if (this.pendingChestIsGolden) this.spawnGoldenChest();
+        else this.spawnTreasure();
       }
     }
   }
@@ -461,6 +624,13 @@ export class GameScene extends Phaser.Scene {
       case 'irn_bru':
         this.player.addAttackSpeedMultiplier(0.20);
         break;
+      case 'thistle_crown':
+        this.player.addCritChance(0.05);
+        this.player.setThorns(3);
+        break;
+      case 'highland_shield':
+        this.player.enableShield();
+        break;
     }
   }
 
@@ -481,9 +651,58 @@ export class GameScene extends Phaser.Scene {
       case 'heal':
         this.player.heal(amount);
         break;
+      case 'healPercent':
+        this.player.heal(Math.ceil(this.player.getMaxHp() * amount));
+        break;
       case 'damage':
         this.player.addDamageMultiplier(amount);
         break;
+      case 'crit':
+        this.player.addCritChance(amount);
+        break;
+      case 'regen':
+        this.player.addHpRegen(amount);
+        break;
+      case 'armor':
+        this.player.addArmor(amount);
+        break;
+      case 'cooldown':
+        this.player.addCooldownReduction(amount);
+        break;
+      case 'xpMultiplier':
+        this.player.addXpMultiplier(amount);
+        break;
+      case 'lifesteal':
+        this.player.addLifesteal(amount);
+        break;
+      case 'projectileSpeed':
+        this.player.addProjectileSpeedMul(amount);
+        break;
+      case 'knockback':
+        this.player.addKnockbackMul(amount);
+        break;
+      case 'bossHeal':
+        this.player.addBossHealFrac(amount);
+        break;
+      case 'banish': {
+        // Instantly kill the N weakest enemies within 300px.
+        // Use forceKill() to bypass wool armor on sheep and any DR mechanics.
+        const BANISH_RANGE = 300;
+        const px = this.player.x, py = this.player.y;
+        const enemies = (this.spawnSystem.getEnemyGroup().getChildren() as Enemy[])
+          .filter(e => e.active && !e.isBoss() && e.getBehavior() !== 'hazard'
+            && Phaser.Math.Distance.Between(px, py, e.x, e.y) <= BANISH_RANGE)
+          .sort((a, b) => a.getHp() - b.getHp())
+          .slice(0, amount);
+        for (const e of enemies) {
+          this.juice.showKillBurst(e.x, e.y, 0xffffff);
+          this.xpSystem.spawnGem(e.x, e.y, e.getXpValue());
+          this.killCount++;
+          e.forceKill();
+        }
+        this.juice.flashWhite(200);
+        break;
+      }
     }
   }
 
@@ -507,6 +726,38 @@ export class GameScene extends Phaser.Scene {
     const driftControl = ups['drift_control'] ?? 0;
     for (let i = 0; i < driftControl; i++) this.player.reduceDrift(0.15);
 
+    const battleHardened = ups['battle_hardened'] ?? 0;
+    if (battleHardened > 0) this.player.addArmor(2 * battleHardened);
+
+    const weaponTraining = ups['weapon_training'] ?? 0;
+    for (let i = 0; i < weaponTraining; i++) this.weaponSystem.levelUpWeapon('thistle_shot');
+
+    const critPower = ups['crit_power'] ?? 0;
+    if (critPower > 0) this.player.addCritDamageMultiplier(0.25 * critPower);
+
+    const xpBoost = ups['xp_boost'] ?? 0;
+    if (xpBoost > 0) this.player.addXpMultiplier(0.08 * xpBoost);
+
+    const naturalRecovery = ups['natural_recovery'] ?? 0;
+    if (naturalRecovery > 0) this.player.addHpRegen(0.3 * naturalRecovery);
+
+    const revival = ups['revival'] ?? 0;
+    if (revival > 0) this.revivalAvailable = true;
+
+    const luckyStart = ups['lucky_start'] ?? 0;
+    if (luckyStart > 0) {
+      const passiveKeys = ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water'];
+      const randomPassive = passiveKeys[Math.floor(Math.random() * passiveKeys.length)];
+      this.ownedPassives.push(randomPassive);
+      this.applyPassiveEffect(randomPassive);
+    }
+
+    const doubleDash = ups['double_dash'] ?? 0;
+    if (doubleDash > 0) this.player.addDashCharge();
+
+    const treasureMagnet = ups['treasure_magnet'] ?? 0;
+    if (treasureMagnet > 0) this.chestDurationBonusMs = 5000 * treasureMagnet;
+
     // extra_choice and lucky_heather affect the card system, not stats
   }
 
@@ -524,7 +775,8 @@ export class GameScene extends Phaser.Scene {
       // Spawn deferred treasure chest if one was due during pause
       if (this.pendingChest) {
         this.pendingChest = false;
-        this.spawnTreasure();
+        if (this.pendingChestIsGolden) this.spawnGoldenChest();
+        else this.spawnTreasure();
       }
     } else {
       // Pause
@@ -540,14 +792,29 @@ export class GameScene extends Phaser.Scene {
           .setScrollFactor(0).setDepth(d).setInteractive()
       );
       this.pauseElements.push(
-        this.add.text(width / 2, height * 0.35, 'PAUSED', {
-          fontFamily: 'monospace', fontSize: '36px', color: '#ffffff',
-          fontStyle: 'bold', stroke: '#000', strokeThickness: 4,
+        this.add.text(width / 2, height * 0.22, 'PAUSED', {
+          fontFamily: 'monospace', fontSize: '46px', color: '#ffffff',
+          fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      );
+
+      // Run stats during pause
+      const timeSec = this.spawnSystem.getGameTimeSec();
+      const pMins = Math.floor(timeSec / 60);
+      const pSecs = Math.floor(timeSec % 60);
+      this.pauseElements.push(
+        this.add.text(width / 2, height * 0.37, [
+          `Time: ${pMins}:${pSecs.toString().padStart(2, '0')}`,
+          `Kills: ${this.killCount}  |  Level: ${this.xpSystem.getLevel()}`,
+          `Weapons: ${this.weaponSystem.getWeapons().length}  |  Passives: ${this.ownedPassives.length}`,
+        ].join('\n'), {
+          fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
+          align: 'center', lineSpacing: 6,
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
 
       // Resume button
-      const resumeBtn = this.add.rectangle(width / 2, height * 0.5, 180, 40, 0x005eb8)
+      const resumeBtn = this.add.rectangle(width / 2, height * 0.5, 220, 50, 0x005eb8)
         .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
       resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
       resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
@@ -555,15 +822,15 @@ export class GameScene extends Phaser.Scene {
       this.pauseElements.push(resumeBtn);
       this.pauseElements.push(
         this.add.text(width / 2, height * 0.5, 'RESUME', {
-          fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
+          fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       );
 
       // Sound toggles — side by side
       const save = loadSave();
       let sfxOn = save.settings.soundOn;
-      const sfxText = this.add.text(width / 2 - 60, height * 0.62, `SFX: ${sfxOn ? 'ON' : 'OFF'}`, {
-        fontFamily: 'monospace', fontSize: '13px',
+      const sfxText = this.add.text(width / 2 - 70, height * 0.59, `SFX: ${sfxOn ? 'ON' : 'OFF'}`, {
+        fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
         color: sfxOn ? '#88cc88' : '#886666',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
         .setInteractive({ useHandCursor: true });
@@ -577,8 +844,8 @@ export class GameScene extends Phaser.Scene {
       this.pauseElements.push(sfxText);
 
       let musicOn = save.settings.musicOn;
-      const musicText = this.add.text(width / 2 + 60, height * 0.62, `Music: ${musicOn ? 'ON' : 'OFF'}`, {
-        fontFamily: 'monospace', fontSize: '13px',
+      const musicText = this.add.text(width / 2 + 80, height * 0.59, `Music: ${musicOn ? 'ON' : 'OFF'}`, {
+        fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
         color: musicOn ? '#88cc88' : '#886666',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
         .setInteractive({ useHandCursor: true });
@@ -591,16 +858,47 @@ export class GameScene extends Phaser.Scene {
       });
       this.pauseElements.push(musicText);
 
+      // Passive items with descriptions — positioned so it always sits above
+      // the Quit button (0.72). Uses a 2-column layout for >4 passives to
+      // avoid vertical overflow on short screens.
+      if (this.ownedPassives.length > 0) {
+        const PASSIVE_NAMES: Record<string, string> = {
+          sporran: 'Sporran (+15% Luck)', whisky_flask: 'Whisky Flask (+20% AoE)',
+          kilt: 'Kilt (+15% Max HP)', tam_o_shanter: "Tam o' Shanter (+10% Speed)",
+          irn_bru: 'Irn Bru (+20% Atk Spd)', loch_water: 'Loch Water (+25% Pickup)',
+          thistle_crown: 'Thistle Crown (Crit+Thorns)', highland_shield: 'Highland Shield (Death Save)',
+        };
+        const names = this.ownedPassives.map(k => PASSIVE_NAMES[k] ?? k);
+        let passiveList: string;
+        if (names.length <= 4) {
+          passiveList = names.join('\n');
+        } else {
+          // 2-column layout: pair each row
+          const rows: string[] = [];
+          for (let i = 0; i < names.length; i += 2) {
+            rows.push(names[i] + (names[i + 1] ? '   •   ' + names[i + 1] : ''));
+          }
+          passiveList = rows.join('\n');
+        }
+        // Anchor above the Quit button (0.72) with some padding
+        this.pauseElements.push(
+          this.add.text(width / 2, height * 0.67, `Passives:\n${passiveList}`, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00',
+            align: 'center', lineSpacing: 3,
+          }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1)
+        );
+      }
+
       // Quit button
-      const quitBtn = this.add.rectangle(width / 2, height * 0.72, 180, 40, 0x444444)
+      const quitBtn = this.add.rectangle(width / 2, height * 0.77, 220, 50, 0x444444)
         .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
       quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
       quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
       quitBtn.on('pointerdown', () => { musicEngine.stop(); this.scene.start('Menu'); });
       this.pauseElements.push(quitBtn);
       this.pauseElements.push(
-        this.add.text(width / 2, height * 0.72, 'QUIT', {
-          fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
+        this.add.text(width / 2, height * 0.77, 'QUIT', {
+          fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       );
     }
@@ -610,12 +908,29 @@ export class GameScene extends Phaser.Scene {
     _playerObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
     enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ): void {
-    if (this.iFrames || this.isPaused || this.victoryPending) return;
+    if (this.iFrames || this.isPaused || this.victoryPending || this.player.isDashInvincible()) return;
 
     const enemy = enemyObj as Enemy;
     if (!enemy.active) return;
 
-    const dead = this.player.takeDamage(enemy.getDamage());
+    const incomingDmg = enemy.getDamage();
+    const armor = this.player.getArmor();
+    const dead = this.player.takeDamage(incomingDmg);
+
+    // Show armor absorption text if armor reduced damage
+    if (armor > 0 && incomingDmg > 1) {
+      const absorbed = Math.min(armor, incomingDmg - 1);
+      const shieldText = this.add.text(this.player.x, this.player.y - 30, `-${absorbed} blocked`, {
+        fontFamily: 'monospace', fontSize: '14px', color: '#88aaff', fontStyle: 'bold',
+        stroke: '#000', strokeThickness: 3,
+      }).setDepth(85);
+      this.tweens.add({ targets: shieldText, y: shieldText.y - 15, alpha: 0, duration: 500, onComplete: () => shieldText.destroy() });
+    }
+
+    // Thorns damage: hurt the enemy that touched us
+    if (this.player.getThornsDamage() > 0 && enemy.active) {
+      enemy.takeDamage(this.player.getThornsDamage());
+    }
 
     this.iFrames = true;
     this.player.setAlpha(0.5);
@@ -623,14 +938,22 @@ export class GameScene extends Phaser.Scene {
     this.time.delayedCall(80, () => {
       if (this.player.active) this.player.clearTint();
     });
-    this.cameras.main.shake(100, 0.005);
+    // Scale shake intensity with damage proportion
+    const dmgFrac = incomingDmg / this.player.getMaxHp();
+    const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
+    this.cameras.main.shake(100 + dmgFrac * 200, shakeIntensity);
     audio.playPlayerHit();
     this.juice.flashRed();
 
-    // iFrames timer that waits for unpause before clearing
+    // iFrames timer — uses a generation counter so a later longer-duration
+    // invincibility window (e.g. revival 2s, level-up 1s) isn't stomped by
+    // a prior pending 500ms clear.
+    this.iFrameGeneration++;
+    const myGen = this.iFrameGeneration;
     const clearIFrames = () => {
-      // Stop polling if the player died — game is permanently paused
       if (!this.player.active) return;
+      // If a newer iFrame window was started, this callback is stale — abort
+      if (myGen !== this.iFrameGeneration) return;
       if (this.isPaused) {
         this.time.delayedCall(100, clearIFrames);
         return;
@@ -640,25 +963,54 @@ export class GameScene extends Phaser.Scene {
     };
     this.time.delayedCall(500, clearIFrames);
 
-    if (dead) this.handlePlayerDeath();
+    if (dead) this.handlePlayerDeathOrRevive();
+  }
+
+  /**
+   * Unified death/revival handler. Called from any damage source that can
+   * reduce HP to zero (contact damage, lava zones, future DoT effects, etc.).
+   * Safe to no-op if victory is already pending.
+   */
+  private handlePlayerDeathOrRevive(): void {
+    if (this.victoryPending) return;
+
+    // Revival: respawn with 50% HP once per run
+    if (this.revivalAvailable) {
+      this.revivalAvailable = false;
+      this.player.heal(Math.ceil(this.player.getMaxHp() * 0.5));
+      this.juice.showToast('SECOND WIND!', '#44ddff');
+      this.juice.flashWhite(300);
+      this.cameras.main.shake(300, 0.015);
+      // Brief invincibility after revival — bump generation to invalidate
+      // any pending clearIFrames callback
+      this.iFrameGeneration++;
+      const revGen = this.iFrameGeneration;
+      this.iFrames = true;
+      this.player.setAlpha(0.5);
+      this.time.delayedCall(2000, () => {
+        if (revGen !== this.iFrameGeneration) return;
+        this.iFrames = false;
+        if (this.player.active) this.player.setAlpha(1);
+      });
+    } else {
+      this.handlePlayerDeath();
+    }
   }
 
   private handleVictory(): void {
     // Defer if level-up screen is showing — re-check after a short delay
-    if (this.xpSystem.hasPendingLevelUps() || this.upgradeUI !== undefined) {
-      // Poll until level-up is resolved
+    if (this.xpSystem.hasPendingLevelUps() || (this.isPaused && !this.isManualPause)) {
+      const capturedRunId = this.runId;
       const waitForLevelUp = () => {
-        if (this.xpSystem.hasPendingLevelUps()) {
+        if (this.runId !== capturedRunId) return;
+        if (this.xpSystem.hasPendingLevelUps() || (this.isPaused && !this.isManualPause)) {
           this.time.delayedCall(200, waitForLevelUp);
           return;
         }
         this.handleVictory();
       };
-      // Only defer if we're actually mid-level-up (isPaused from cards, not from this method)
-      if (this.isPaused && !this.isManualPause) {
-        this.time.delayedCall(200, waitForLevelUp);
-        return;
-      }
+      this.time.delayedCall(200, waitForLevelUp);
+      return;
     }
 
     this.isPaused = true;
@@ -668,15 +1020,15 @@ export class GameScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const d = 200;
     const timeSurvived = this.spawnSystem.getGameTimeSec();
-    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned);
+    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned, this.coinGoldEarned, this.juice.getBestCombo());
 
     const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0)
       .setScrollFactor(0).setDepth(d).setInteractive();
     this.tweens.add({ targets: overlay, alpha: 0.85, duration: 800 });
 
     const title = this.add.text(width / 2, height * 0.2, 'VICTORY!', {
-      fontFamily: 'monospace', fontSize: '48px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 6,
+      fontFamily: 'monospace', fontSize: '60px', color: '#d4a017',
+      fontStyle: 'bold', stroke: '#000', strokeThickness: 7,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0).setScale(0.5);
 
     this.tweens.add({
@@ -684,34 +1036,43 @@ export class GameScene extends Phaser.Scene {
     });
 
     const subtitle = this.add.text(width / 2, height * 0.33, 'The Highlands are safe... for now.', {
-      fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
+      fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 600, delay: 1200 });
 
     const mins = Math.floor(timeSurvived / 60);
     const secs = Math.floor(timeSurvived % 60);
-    const statsText = this.add.text(width / 2, height * 0.45,
+    const statsText = this.add.text(width / 2, height * 0.43,
       `Time: ${mins}:${secs.toString().padStart(2, '0')}  |  Kills: ${this.killCount}  |  +${goldEarned} Gold`, {
-      fontFamily: 'monospace', fontSize: '14px', color: '#ffffff',
+      fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
     this.tweens.add({ targets: statsText, alpha: 1, duration: 600, delay: 1600 });
 
-    const playAgainBtn = this.add.rectangle(width / 2, height * 0.58, 200, 40, COLORS.SCOTTISH_BLUE)
+    // Weapon build summary
+    const weaponSummary = this.weaponSystem.getWeapons()
+      .map(w => `${w.config.name} Lv${w.level}${w.evolved ? '★' : ''}`)
+      .join('  |  ');
+    const buildText = this.add.text(width / 2, height * 0.50, weaponSummary, {
+      fontFamily: 'monospace', fontSize: '13px', color: '#aaaaaa',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
+    this.tweens.add({ targets: buildText, alpha: 1, duration: 400, delay: 1800 });
+
+    const playAgainBtn = this.add.rectangle(width / 2, height * 0.60, 240, 50, COLORS.SCOTTISH_BLUE)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const playAgainText = this.add.text(width / 2, height * 0.58, 'PLAY AGAIN', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', fontStyle: 'bold',
+    const playAgainText = this.add.text(width / 2, height * 0.60, 'PLAY AGAIN', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
-    const shopBtn = this.add.rectangle(width / 2, height * 0.67, 200, 40, COLORS.WHISKY_GOLD)
+    const shopBtn = this.add.rectangle(width / 2, height * 0.71, 240, 50, COLORS.WHISKY_GOLD)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const shopText = this.add.text(width / 2, height * 0.67, 'UPGRADES', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#000000', fontStyle: 'bold',
+    const shopText = this.add.text(width / 2, height * 0.71, 'UPGRADES', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#000000', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
-    const menuBtn = this.add.rectangle(width / 2, height * 0.76, 200, 40, 0x444444)
+    const menuBtn = this.add.rectangle(width / 2, height * 0.82, 240, 50, 0x444444)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const menuText = this.add.text(width / 2, height * 0.76, 'MENU', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', fontStyle: 'bold',
+    const menuText = this.add.text(width / 2, height * 0.82, 'MENU', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
     // Buttons become interactive only after they fade in (prevents invisible click)
@@ -724,15 +1085,15 @@ export class GameScene extends Phaser.Scene {
 
     playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x0077dd));
     playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
-    playAgainBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Game'); });
+    playAgainBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Game'); });
 
     shopBtn.on('pointerover', () => shopBtn.setFillStyle(0xe8b420));
     shopBtn.on('pointerout', () => shopBtn.setFillStyle(COLORS.WHISKY_GOLD));
-    shopBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Shop'); });
+    shopBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Shop'); });
 
     menuBtn.on('pointerover', () => menuBtn.setFillStyle(0x555555));
     menuBtn.on('pointerout', () => menuBtn.setFillStyle(0x444444));
-    menuBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Menu'); });
+    menuBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Menu'); });
   }
 
   private handlePlayerDeath(): void {
@@ -772,7 +1133,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     const timeSurvived = this.spawnSystem.getGameTimeSec();
-    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned);
+    const goldEarned = recordRun(timeSurvived, this.killCount, this.bossGoldEarned, this.coinGoldEarned, this.juice.getBestCombo());
 
     this.time.delayedCall(1200, () => {
       this.showDeathScreen(timeSurvived, goldEarned);
@@ -792,9 +1153,9 @@ export class GameScene extends Phaser.Scene {
     const secs = Math.floor(timeSurvived % 60);
 
     // Title — dramatic entrance
-    const title = this.add.text(width / 2, height * 0.2, 'YOU DIED', {
-      fontFamily: 'monospace', fontSize: '42px', color: '#cc3333',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 6,
+    const title = this.add.text(width / 2, height * 0.18, 'YOU DIED', {
+      fontFamily: 'monospace', fontSize: '54px', color: '#cc3333',
+      fontStyle: 'bold', stroke: '#000', strokeThickness: 7,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0).setScale(2);
 
     this.tweens.add({
@@ -802,20 +1163,26 @@ export class GameScene extends Phaser.Scene {
     });
 
     // Stats — stagger reveal
+    const weaponCount = this.weaponSystem.getWeapons().length;
+    const evolvedCount = this.evolvedWeapons.length;
+    const passiveCount = this.ownedPassives.length;
     const stats = [
       { label: 'Survived', value: `${mins}:${secs.toString().padStart(2, '0')}` },
       { label: 'Enemies Killed', value: `${this.killCount}` },
       { label: 'Level Reached', value: `${this.xpSystem.getLevel()}` },
+      { label: 'Weapons', value: `${weaponCount} (${evolvedCount} evolved)` },
+      { label: 'Passives', value: `${passiveCount}` },
+      { label: 'Bosses Slain', value: `${this.bossKillCount}` },
     ];
 
     stats.forEach((stat, i) => {
-      const y = height * 0.38 + i * 36;
-      const labelText = this.add.text(width / 2 - 10, y, stat.label, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#888888',
+      const y = height * 0.34 + i * 32;
+      const labelText = this.add.text(width / 2 - 12, y, stat.label, {
+        fontFamily: 'monospace', fontSize: '16px', color: '#888888',
       }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
 
-      const valueText = this.add.text(width / 2 + 10, y, stat.value, {
-        fontFamily: 'monospace', fontSize: '18px', color: '#ffffff', fontStyle: 'bold',
+      const valueText = this.add.text(width / 2 + 12, y, stat.value, {
+        fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
       }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
 
       const delay = 700 + i * 200;
@@ -827,35 +1194,61 @@ export class GameScene extends Phaser.Scene {
       this.tweens.add({ targets: valueText, alpha: 1, x: valueFinalX, duration: 300, delay: delay + 100 });
     });
 
-    // Gold earned — special highlight
-    const goldY = height * 0.58;
+    // Gold earned — with breakdown
+    const goldY = height * 0.60;
+    const timeGold = Math.floor(timeSurvived * 0.5);
+    const killGold = Math.floor(this.killCount * 0.2);
     const goldLabel = this.add.text(width / 2, goldY, `+${goldEarned} Gold`, {
-      fontFamily: 'monospace', fontSize: '24px', color: '#d4a017', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 3,
+      fontFamily: 'monospace', fontSize: '30px', color: '#d4a017', fontStyle: 'bold',
+      stroke: '#000', strokeThickness: 4,
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
+    const goldBreakdown = this.add.text(width / 2, goldY + 26,
+      `(Time: ${timeGold}  Kills: ${killGold}  Boss: ${this.bossGoldEarned}  Coins: ${this.coinGoldEarned})`, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#aa8822',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
 
     this.tweens.add({
       targets: goldLabel, alpha: 1, scale: { from: 0.5, to: 1 },
       duration: 400, delay: 1400, ease: 'Back.easeOut',
     });
+    this.tweens.add({ targets: goldBreakdown, alpha: 1, duration: 300, delay: 1600 });
+
+    // Helpful tip
+    const tips = [
+      'Tip: Press SPACE to dash through enemies!',
+      'Tip: Combos boost your damage — keep killing!',
+      'Tip: Armor reduces all incoming damage.',
+      'Tip: Max a weapon + its passive = EVOLUTION!',
+      'Tip: Health orbs drop from enemies — stay aggressive!',
+      'Tip: XP pickup radius triples at critical HP.',
+      'Tip: Gold coins drop from enemies — collect them!',
+      'Tip: Pipers buff nearby enemies — kill them first!',
+      'Tip: Clockwise kiting works with the drift!',
+      'Tip: Bosses enrage at 50% HP — be ready!',
+    ];
+    const tip = this.add.text(width / 2, height * 0.69,
+      tips[Math.floor(Math.random() * tips.length)], {
+      fontFamily: 'monospace', fontSize: '13px', color: '#888888', fontStyle: 'italic',
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setAlpha(0);
+    this.tweens.add({ targets: tip, alpha: 1, duration: 300, delay: 1800 });
 
     // Buttons — stagger in
-    const playAgainBtn = this.add.rectangle(width / 2, height * 0.70, 200, 40, COLORS.SCOTTISH_BLUE)
+    const playAgainBtn = this.add.rectangle(width / 2, height * 0.76, 240, 46, COLORS.SCOTTISH_BLUE)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const playAgainText = this.add.text(width / 2, height * 0.70, 'PLAY AGAIN', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', fontStyle: 'bold',
+    const playAgainText = this.add.text(width / 2, height * 0.76, 'PLAY AGAIN', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
-    const shopBtn = this.add.rectangle(width / 2, height * 0.79, 200, 40, COLORS.WHISKY_GOLD)
+    const shopBtn = this.add.rectangle(width / 2, height * 0.85, 240, 46, COLORS.WHISKY_GOLD)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const shopText = this.add.text(width / 2, height * 0.79, 'UPGRADES', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#000000', fontStyle: 'bold',
+    const shopText = this.add.text(width / 2, height * 0.85, 'UPGRADES', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#000000', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
-    const menuBtn = this.add.rectangle(width / 2, height * 0.88, 200, 40, 0x444444)
+    const menuBtn = this.add.rectangle(width / 2, height * 0.94, 240, 46, 0x444444)
       .setScrollFactor(0).setDepth(d + 1).setAlpha(0);
-    const menuText = this.add.text(width / 2, height * 0.88, 'MENU', {
-      fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', fontStyle: 'bold',
+    const menuText = this.add.text(width / 2, height * 0.94, 'MENU', {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff', fontStyle: 'bold',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setAlpha(0);
 
     this.tweens.add({ targets: [playAgainBtn, playAgainText], alpha: 1, duration: 300, delay: 1700,
@@ -867,15 +1260,15 @@ export class GameScene extends Phaser.Scene {
 
     playAgainBtn.on('pointerover', () => playAgainBtn.setFillStyle(0x0077dd));
     playAgainBtn.on('pointerout', () => playAgainBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
-    playAgainBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Game'); });
+    playAgainBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Game'); });
 
     shopBtn.on('pointerover', () => shopBtn.setFillStyle(0xe8b420));
     shopBtn.on('pointerout', () => shopBtn.setFillStyle(COLORS.WHISKY_GOLD));
-    shopBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Shop'); });
+    shopBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Shop'); });
 
     menuBtn.on('pointerover', () => menuBtn.setFillStyle(0x555555));
     menuBtn.on('pointerout', () => menuBtn.setFillStyle(0x444444));
-    menuBtn.on('pointerdown', () => { audio.playClick(); this.scene.start('Menu'); });
+    menuBtn.on('pointerdown', () => { audio.playClick(); musicEngine.stop(); this.scene.start('Menu'); });
   }
 
   // ── Boss HP Bar ──
@@ -913,8 +1306,10 @@ export class GameScene extends Phaser.Scene {
     const x = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
     const y = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
 
-    // Create a glowing chest indicator
-    const chest = this.add.circle(x, y, 12, COLORS.WHISKY_GOLD, 0.8).setDepth(5);
+    this.juice.showToast('Treasure nearby!', '#ffcc44');
+
+    // Create a glowing chest with sprite
+    const chest = this.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5);
     const glow = this.add.circle(x, y, 18, COLORS.WHISKY_GOLD, 0.2).setDepth(4);
 
     // Pulsing glow animation
@@ -924,6 +1319,16 @@ export class GameScene extends Phaser.Scene {
       alpha: { from: 0.3, to: 0 },
       duration: 800,
       repeat: -1,
+    });
+
+    // Floating bob animation
+    this.tweens.add({
+      targets: chest,
+      y: y - 4,
+      duration: 600,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
     });
 
     // Enable physics for overlap detection
@@ -945,6 +1350,7 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.juice.flashWhite(100);
+      this.juice.showToast('TREASURE! +25% HP', '#ffcc44');
       audio.playLevelUp();
 
       this.tweens.killTweensOf(glow);
@@ -953,8 +1359,10 @@ export class GameScene extends Phaser.Scene {
       this.physics.world.removeCollider(overlap);
     });
 
-    // Chest despawns after 15 seconds if not collected
-    this.time.delayedCall(15000, () => {
+    // Chest despawns after 15 seconds if not collected (Treasure Magnet extends)
+    const capturedRunId = this.runId;
+    this.time.delayedCall(15000 + this.chestDurationBonusMs, () => {
+      if (this.runId !== capturedRunId) return; // stale across scene restart
       if (collected) return;
       collected = true;
       this.tweens.killTweensOf(glow);
@@ -965,6 +1373,184 @@ export class GameScene extends Phaser.Scene {
         onComplete: () => {
           chest.destroy();
           glow.destroy();
+          this.physics.world.removeCollider(overlap);
+        },
+      });
+    });
+  }
+
+  // ── Boundary Warning ──
+
+  private updateBoundaryWarning(): void {
+    if (!this.boundaryWarning) {
+      const { width, height } = this.scale;
+      this.boundaryWarning = this.add.rectangle(width / 2, height / 2, width, height, 0xff0000, 0)
+        .setScrollFactor(0).setDepth(44);
+    }
+    const margin = 200;
+    const distToEdge = Math.min(
+      this.player.x, this.player.y,
+      GAME.WORLD_WIDTH - this.player.x,
+      GAME.WORLD_HEIGHT - this.player.y
+    );
+    if (distToEdge < margin) {
+      this.boundaryWarning.setAlpha(0.15 * (1 - distToEdge / margin));
+    } else {
+      this.boundaryWarning.setAlpha(0);
+    }
+  }
+
+  // ── Golden Chest ──
+
+  private spawnGoldenChest(): void {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 150 + Math.random() * 200;
+    const x = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
+    const y = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
+
+    this.juice.showToast('Golden Chest nearby!', '#ffaa00');
+
+    const chest = this.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5).setTint(0xffdd44);
+    const glow = this.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
+
+    this.tweens.add({ targets: glow, scale: { from: 1, to: 1.6 }, alpha: { from: 0.3, to: 0 }, duration: 700, repeat: -1 });
+    this.tweens.add({ targets: chest, y: y - 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+
+    this.physics.add.existing(chest, true);
+    let collected = false;
+
+    const overlap = this.physics.add.overlap(this.player, chest, () => {
+      if (collected) return;
+      collected = true;
+      const goldReward = Phaser.Math.Between(5, 15);
+      this.coinGoldEarned += goldReward;
+      this.juice.showToast(`GOLDEN CHEST! +${goldReward}g`, '#ffaa00');
+      this.juice.flashWhite(150);
+      audio.playLevelUp();
+      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
+      chest.destroy(); glow.destroy();
+      this.physics.world.removeCollider(overlap);
+    });
+
+    const capturedRunId = this.runId;
+    this.time.delayedCall(12000 + this.chestDurationBonusMs, () => {
+      if (this.runId !== capturedRunId) return; // stale across scene restart
+      if (collected) return;
+      collected = true;
+      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
+      this.tweens.add({ targets: [chest, glow], alpha: 0, duration: 400, onComplete: () => {
+        chest.destroy(); glow.destroy(); this.physics.world.removeCollider(overlap);
+      }});
+    });
+  }
+
+  // ── Dash Indicator ──
+
+  private updateDashIndicator(): void {
+    if (!this.dashIndicator) {
+      this.dashIndicator = this.add.graphics().setDepth(10);
+    }
+    this.dashIndicator.clear();
+
+    const frac = this.player.getDashCooldownFraction();
+    if (frac <= 0) return; // Dash ready — no indicator
+
+    // Draw a small arc under the player showing cooldown
+    this.dashIndicator.lineStyle(2, 0xd4a017, 0.6);
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + (1 - frac) * Math.PI * 2;
+    this.dashIndicator.beginPath();
+    this.dashIndicator.arc(this.player.x, this.player.y + 20, 8, startAngle, endAngle, false);
+    this.dashIndicator.strokePath();
+  }
+
+  // ── Gold Coins ──
+
+  private spawnGoldCoin(x: number, y: number, goldAmount: number): void {
+    const coin = this.add.circle(x, y, 5, COLORS.WHISKY_GOLD, 1).setDepth(5);
+
+    // Spinning effect
+    this.tweens.add({
+      targets: coin,
+      scaleX: { from: 1, to: 0.3 },
+      duration: 300,
+      yoyo: true,
+      repeat: -1,
+    });
+
+    this.physics.add.existing(coin, true);
+    let collected = false;
+
+    const overlap = this.physics.add.overlap(this.player, coin, () => {
+      if (collected) return;
+      collected = true;
+      this.coinGoldEarned += goldAmount;
+
+      // Show gold pickup text
+      const txt = this.add.text(coin.x, coin.y - 12, `+${goldAmount}g`, {
+        fontFamily: 'monospace', fontSize: '16px', color: '#d4a017', fontStyle: 'bold',
+        stroke: '#000', strokeThickness: 3,
+      }).setDepth(80);
+      this.tweens.add({ targets: txt, y: txt.y - 20, alpha: 0, duration: 600, onComplete: () => txt.destroy() });
+
+      audio.playXPCollect();
+      coin.destroy();
+      this.physics.world.removeCollider(overlap);
+    });
+
+    // Despawn after 12 seconds (Treasure Magnet extends)
+    const capturedRunId = this.runId;
+    this.time.delayedCall(12000 + this.chestDurationBonusMs, () => {
+      if (this.runId !== capturedRunId) return; // stale across scene restart
+      if (collected) return;
+      collected = true;
+      this.tweens.add({ targets: coin, alpha: 0, duration: 400, onComplete: () => {
+        coin.destroy();
+        this.physics.world.removeCollider(overlap);
+      }});
+    });
+  }
+
+  // ── Health Orbs ──
+
+  private spawnHealthOrb(x: number, y: number, healAmount: number): void {
+    const orb = this.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
+    const glow = this.add.circle(x, y, 10, 0x44dd44, 0.3).setDepth(4);
+
+    // Pulsing glow
+    this.tweens.add({
+      targets: glow,
+      scale: { from: 1, to: 1.4 },
+      alpha: { from: 0.3, to: 0 },
+      duration: 600,
+      repeat: -1,
+    });
+
+    this.physics.add.existing(orb, true);
+    let collected = false;
+
+    const overlap = this.physics.add.overlap(this.player, orb, () => {
+      if (collected) return;
+      collected = true;
+      this.player.heal(healAmount);
+      this.juice.showDamageNumber(this.player.x, this.player.y - 20, healAmount, false);
+      this.tweens.killTweensOf(glow);
+      orb.destroy();
+      glow.destroy();
+      this.physics.world.removeCollider(overlap);
+    });
+
+    // Despawn after 10 seconds
+    const capturedRunId = this.runId;
+    this.time.delayedCall(10000, () => {
+      if (this.runId !== capturedRunId) return; // stale across scene restart
+      if (collected) return;
+      collected = true;
+      this.tweens.killTweensOf(glow);
+      this.tweens.add({
+        targets: [orb, glow], alpha: 0, duration: 400,
+        onComplete: () => {
+          orb.destroy(); glow.destroy();
           this.physics.world.removeCollider(overlap);
         },
       });
@@ -1004,7 +1590,10 @@ export class GameScene extends Phaser.Scene {
       mtGfx.fillTriangle(mx, baseY, mx + mw / 2, baseY - mh, mx + mw, baseY);
     }
 
-    const gfx = this.add.graphics();
+    // Depth stack:
+    //  -10 sky, -5 mountains, -4 terrain graphics, -3 deco sprites,
+    //  -2 entity shadows, 0+ entities & projectiles, HUD at 50+
+    const gfx = this.add.graphics().setDepth(-4);
     const W = GAME.WORLD_WIDTH;
     const H = GAME.WORLD_HEIGHT;
 
@@ -1072,6 +1661,39 @@ export class GameScene extends Phaser.Scene {
     gfx.lineStyle(4, 0x442200, 0.6);
     gfx.strokeRect(0, 0, W, H);
 
+    // === Decorative terrain sprites scattered across the world ===
+    // These are proper image sprites (drop shadows below entities already sit
+    // at depth -1, so terrain sprites go at depth -2 to stay behind everything).
+    const rngDeco = new Phaser.Math.RandomDataGenerator(['decorations']);
+    // Thistle patches — 120 scattered
+    for (let i = 0; i < 120; i++) {
+      const x = rngDeco.between(60, W - 60);
+      const y = rngDeco.between(60, H - 60);
+      this.add.image(x, y, 'deco_thistle')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.7, 1.2))
+        .setAlpha(rngDeco.realInRange(0.7, 1.0));
+    }
+    // Rocks — 60 scattered
+    for (let i = 0; i < 60; i++) {
+      const x = rngDeco.between(60, W - 60);
+      const y = rngDeco.between(60, H - 60);
+      this.add.image(x, y, 'deco_rock')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.6, 1.4))
+        .setFlipX(rngDeco.frac() > 0.5)
+        .setAlpha(rngDeco.realInRange(0.75, 1.0));
+    }
+    // Heather bushes — 80 scattered
+    for (let i = 0; i < 80; i++) {
+      const x = rngDeco.between(60, W - 60);
+      const y = rngDeco.between(60, H - 60);
+      this.add.image(x, y, 'deco_heather')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.8, 1.3))
+        .setAlpha(rngDeco.realInRange(0.75, 1.0));
+    }
+
     // === Water/loch patches with animated shimmer ===
     for (let i = 0; i < 6; i++) {
       const wx = rng.between(200, W - 200);
@@ -1079,9 +1701,9 @@ export class GameScene extends Phaser.Scene {
       const wr = rng.between(30, 60);
 
       // Dark water base
-      const waterBase = this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a3a5a, 0.5).setDepth(0);
+      const waterBase = this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a3a5a, 0.5).setDepth(-1);
       // Lighter shimmer overlay that pulses
-      const shimmer = this.add.ellipse(wx - 5, wy - 3, wr * 1.4, wr * 0.8, 0x3a6a9a, 0.15).setDepth(0);
+      const shimmer = this.add.ellipse(wx - 5, wy - 3, wr * 1.4, wr * 0.8, 0x3a6a9a, 0.15).setDepth(-1);
       this.tweens.add({
         targets: shimmer,
         alpha: { from: 0.1, to: 0.25 },
@@ -1092,7 +1714,7 @@ export class GameScene extends Phaser.Scene {
         ease: 'Sine.easeInOut',
       });
       // Tiny highlight dot that drifts
-      const glint = this.add.circle(wx + rng.between(-10, 10), wy - wr * 0.3, 2, 0x88bbdd, 0.3).setDepth(0);
+      const glint = this.add.circle(wx + rng.between(-10, 10), wy - wr * 0.3, 2, 0x88bbdd, 0.3).setDepth(-1);
       this.tweens.add({
         targets: glint,
         x: glint.x + rng.between(-15, 15),
@@ -1110,7 +1732,7 @@ export class GameScene extends Phaser.Scene {
       const mist = this.add.ellipse(mx, my,
         rng.between(40, 100), rng.between(20, 40),
         0xccddee, rng.realInRange(0.03, 0.08)
-      ).setDepth(1);
+      ).setDepth(-3);
 
       // Slow drift
       this.tweens.add({
@@ -1123,6 +1745,75 @@ export class GameScene extends Phaser.Scene {
         repeat: -1,
         ease: 'Sine.easeInOut',
       });
+    }
+  }
+
+  /** Spawn map hazard and healing zones */
+  private spawnMapZones(): void {
+    const W = GAME.WORLD_WIDTH;
+    const H = GAME.WORLD_HEIGHT;
+    const rng = new Phaser.Math.RandomDataGenerator(['zones']);
+
+    // 4 lava patches — deal damage to player standing in them
+    for (let i = 0; i < 4; i++) {
+      const lx = rng.between(200, W - 200);
+      const ly = rng.between(200, H - 200);
+      const lr = rng.between(35, 55);
+
+      const lavaBase = this.add.ellipse(lx, ly, lr * 2, lr * 1.5, 0xcc3300, 0.4).setDepth(-1);
+      const lavaGlow = this.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, 0xff6600, 0.2).setDepth(-1);
+      this.tweens.add({
+        targets: lavaGlow,
+        alpha: { from: 0.15, to: 0.35 },
+        scale: { from: 1, to: 1.1 },
+        duration: 1500 + rng.between(0, 800),
+        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+
+      // Periodic damage check
+      this.mapZoneTimers.push(this.time.addEvent({
+        delay: 500,
+        loop: true,
+        callback: () => {
+          if (this.isPaused || !this.player.active || this.victoryPending) return;
+          // Respect iFrames — lava shouldn't chip through post-hit invincibility
+          if (this.iFrames || this.player.isDashInvincible()) return;
+          const d = Phaser.Math.Distance.Between(lx, ly, this.player.x, this.player.y);
+          if (d < lr) {
+            const dead = this.player.takeDamage(3);
+            this.juice.flashRed(80);
+            if (dead) this.handlePlayerDeathOrRevive();
+          }
+        },
+      }));
+    }
+
+    // 3 healing circles — slowly heal the player while standing in them
+    for (let i = 0; i < 3; i++) {
+      const hx = rng.between(200, W - 200);
+      const hy = rng.between(200, H - 200);
+      const hr = rng.between(30, 45);
+
+      const healBase = this.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
+      const healGlow = this.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
+      this.tweens.add({
+        targets: healGlow,
+        alpha: { from: 0.08, to: 0.2 },
+        duration: 2000 + rng.between(0, 1000),
+        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+
+      this.mapZoneTimers.push(this.time.addEvent({
+        delay: 1000,
+        loop: true,
+        callback: () => {
+          if (this.isPaused || !this.player.active) return;
+          const d = Phaser.Math.Distance.Between(hx, hy, this.player.x, this.player.y);
+          if (d < hr) {
+            this.player.heal(2);
+          }
+        },
+      }));
     }
   }
 

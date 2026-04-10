@@ -54,6 +54,11 @@ export class PercussionLayer {
     const swingDelay = currentIdx % 2 === 0 ? 0 : swing;
     const hitTime = time + swingDelay;
     this.patternIdx = (this.patternIdx + 1) % this.pattern.length;
+    // Apply pending pattern at phrase boundary
+    if (this.patternIdx === 0 && this.pendingPattern) {
+      this.pattern = this.pendingPattern;
+      this.pendingPattern = null;
+    }
     if (!isHit) return;
     // Kick on even slots (downbeats), hat on odd slots
     if (currentIdx % 2 === 0) {
@@ -98,8 +103,16 @@ export class PercussionLayer {
 
   updatePattern(density: number): void {
     const n = Math.round(Math.max(1, Math.min(7, density * 7 + 1)));
-    this.pattern = euclidean(n, 8);
+    const newPattern = euclidean(n, 8);
+    // Only apply new pattern at phrase boundary to avoid mid-sequence kick/hat flip
+    if (this.patternIdx === 0) {
+      this.pattern = newPattern;
+    } else {
+      this.pendingPattern = newPattern;
+    }
   }
+
+  private pendingPattern: boolean[] | null = null;
 
   stop(): void {
     try {

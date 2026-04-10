@@ -159,6 +159,22 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     icon: 'xp_gem',
     effect: { type: 'add_passive', passiveKey: 'loch_water' },
   },
+  {
+    id: 'add_thistle_crown',
+    name: 'Thistle Crown',
+    description: '+5% Crit + thorns: enemies take 3 damage on contact.',
+    rarity: 'rare',
+    icon: 'xp_gem',
+    effect: { type: 'add_passive', passiveKey: 'thistle_crown' },
+  },
+  {
+    id: 'add_highland_shield',
+    name: 'Highland Shield',
+    description: 'Block 1 lethal hit every 20 seconds. Survive with 1 HP.',
+    rarity: 'rare',
+    icon: 'xp_gem',
+    effect: { type: 'add_passive', passiveKey: 'highland_shield' },
+  },
 ];
 
 // ── Stat boost cards (common filler) ──
@@ -207,10 +223,90 @@ export const STAT_CARDS: UpgradeCard[] = [
   {
     id: 'heal',
     name: 'Haggis Supper',
-    description: 'Restore 30 HP.',
+    description: 'Restore 25% Max HP.',
     rarity: 'common',
     icon: 'xp_gem',
-    effect: { type: 'stat_boost', stat: 'heal', amount: 30 },
+    effect: { type: 'stat_boost', stat: 'healPercent', amount: 0.25 },
+  },
+  {
+    id: 'boost_crit',
+    name: 'Eagle Eye',
+    description: '+5% Critical hit chance.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'crit', amount: 0.05 },
+  },
+  {
+    id: 'boost_regen',
+    name: 'Highland Spring',
+    description: '+0.5 HP/sec regeneration.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'regen', amount: 0.5 },
+  },
+  {
+    id: 'boost_armor',
+    name: 'Iron Hide',
+    description: '+3 Armor (reduces damage taken).',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'armor', amount: 3 },
+  },
+  {
+    id: 'boost_cooldown',
+    name: 'Battle Frenzy',
+    description: '-10% weapon cooldowns.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'cooldown', amount: 0.10 },
+  },
+  {
+    id: 'banish',
+    name: 'Highland Purge',
+    description: 'Instantly destroy 5 weakest enemies nearby.',
+    rarity: 'rare',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'banish', amount: 5 },
+  },
+  {
+    id: 'boost_lifesteal',
+    name: 'Vampiric Touch',
+    description: 'Heal 1 HP per enemy killed.',
+    rarity: 'rare',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'lifesteal', amount: 1 },
+  },
+  {
+    id: 'boost_projectile_speed',
+    name: 'Swift Thistles',
+    description: '+15% Projectile speed.',
+    rarity: 'common',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'projectileSpeed', amount: 0.15 },
+  },
+  {
+    id: 'boost_boss_heal',
+    name: 'Trophy Hunter',
+    description: 'Heal 20% Max HP on boss kill.',
+    rarity: 'rare',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'bossHeal', amount: 0.20 },
+  },
+  {
+    id: 'boost_knockback',
+    name: 'Highland Force',
+    description: '+25% Knockback on all weapons.',
+    rarity: 'common',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'knockback', amount: 0.25 },
+  },
+  {
+    id: 'boost_xp',
+    name: 'Wisdom of the Highlands',
+    description: '+15% XP gained from enemies.',
+    rarity: 'uncommon',
+    icon: 'xp_gem',
+    effect: { type: 'stat_boost', stat: 'xpMultiplier', amount: 0.15 },
   },
 ];
 
@@ -234,10 +330,15 @@ export function buildCardPool(
     if (evolvedWeaponKeys.includes(key)) continue; // Already evolved
     const level = weaponLevels[key] ?? 1;
     if (level < 5) {
+      // Add evolution hint on level 4→5 cards
+      const recipe = EVOLUTION_RECIPES.find(r => r.weaponKey === key);
+      const hint = level === 4 && recipe
+        ? ` Evolves with ${formatWeaponName(recipe.passiveKey)}!`
+        : '';
       pool.push({
         id: `levelup_${key}_${level + 1}`,
         name: `${formatWeaponName(key)} Lv${level + 1}`,
-        description: `Upgrade ${formatWeaponName(key)} to level ${level + 1}.`,
+        description: `Upgrade ${formatWeaponName(key)} to level ${level + 1}.${hint}`,
         rarity: level >= 3 ? 'rare' : 'uncommon',
         icon: 'xp_gem',
         effect: { type: 'level_weapon', weaponKey: key },
@@ -248,6 +349,7 @@ export function buildCardPool(
   // Evolution cards — weapon at lv5 + matching passive owned + not already evolved
   for (const recipe of EVOLUTION_RECIPES) {
     if (evolvedWeaponKeys.includes(recipe.weaponKey)) continue;
+    if (!ownedWeaponKeys.includes(recipe.weaponKey)) continue;
     const wLevel = weaponLevels[recipe.weaponKey] ?? 0;
     if (wLevel >= 5 && ownedPassiveKeys.includes(recipe.passiveKey)) {
       pool.push({
@@ -314,7 +416,7 @@ export function drawCards(pool: UpgradeCard[], count: number, luckBonus: number 
     let picked = remaining[remaining.length - 1];
     for (const card of remaining) {
       roll -= weights[card.rarity];
-      if (roll <= 0) {
+      if (roll < 0) {
         picked = card;
         break;
       }
