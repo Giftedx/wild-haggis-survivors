@@ -58,9 +58,20 @@ export interface ISaveDataV4 {
   unlockedAchievements: string[];
 }
 
-export type ISaveData = ISaveDataV4;
+export interface ISaveDataV5 {
+  saveVersion: 5;
+  totalKills: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  /** FTUE / one-shot onboarding — persisted in meta save. */
+  hasCompletedTutorial: boolean;
+}
 
-export const CURRENT_SAVE_VERSION = 4 as const;
+export type ISaveData = ISaveDataV5;
+
+export const CURRENT_SAVE_VERSION = 5 as const;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
@@ -69,6 +80,7 @@ const DEFAULT_SAVE: ISaveData = {
   unlockedUpgrades: [],
   activeRun: null,
   unlockedAchievements: [],
+  hasCompletedTutorial: false,
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -84,6 +96,11 @@ function clampNumber(n: unknown, fallback: number): number {
 function toStringArray(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   return v.filter((x): x is string => typeof x === 'string');
+}
+
+function toBool(v: unknown, fallback: boolean): boolean {
+  if (typeof v === 'boolean') return v;
+  return fallback;
 }
 
 function coerceWeaponSlot(raw: unknown): IRunWeaponSlot | null {
@@ -188,48 +205,53 @@ export class SaveManager {
     const unlockedUpgrades = toStringArray(obj.unlockedUpgrades);
     const activeRun = coerceIRunState(obj.activeRun);
     const unlockedAchievements = toStringArray(obj.unlockedAchievements);
+    const hasCompletedTutorial = toBool(obj.hasCompletedTutorial, false);
 
     if (v === 1) {
       return {
-        saveVersion: 4,
+        saveVersion: 5,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades: [],
         activeRun: null,
         unlockedAchievements: [],
+        hasCompletedTutorial: false,
       };
     }
 
     if (v === 2) {
       return {
-        saveVersion: 4,
+        saveVersion: 5,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun: null,
         unlockedAchievements: [],
+        hasCompletedTutorial: false,
       };
     }
 
     if (v === 3) {
       return {
-        saveVersion: 4,
+        saveVersion: 5,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
         unlockedAchievements: [],
+        hasCompletedTutorial: false,
       };
     }
 
     if (v === 4) {
       return {
-        saveVersion: 4,
+        saveVersion: 5,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
         unlockedAchievements,
+        hasCompletedTutorial,
       };
     }
 
@@ -240,6 +262,7 @@ export class SaveManager {
       unlockedUpgrades,
       activeRun,
       unlockedAchievements,
+      hasCompletedTutorial,
     };
   }
 }

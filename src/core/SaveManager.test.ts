@@ -8,13 +8,14 @@ class MemoryStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV4 = {
-  saveVersion: 4 as const,
+const defaultV5 = {
+  saveVersion: 5 as const,
   totalKills: 0,
   unlockedWeapons: [] as string[],
   unlockedUpgrades: [] as string[],
   activeRun: null,
   unlockedAchievements: [] as string[],
+  hasCompletedTutorial: false,
 };
 
 const sampleRun = (): IRunState => ({
@@ -36,26 +37,28 @@ const sampleRun = (): IRunState => ({
 });
 
 describe('SaveManager', () => {
-  it('saves and loads persisted meta progression (v4)', () => {
+  it('saves and loads persisted meta progression (v5)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
 
     mgr.save({
-      saveVersion: 4,
+      saveVersion: 5,
       totalKills: 42,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: ['speed_tier_1'],
       activeRun: null,
       unlockedAchievements: ['ach_kills_1000'],
+      hasCompletedTutorial: true,
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(4);
+    expect(loaded.saveVersion).toBe(5);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
     expect(loaded.activeRun).toBeNull();
     expect(loaded.unlockedAchievements).toEqual(['ach_kills_1000']);
+    expect(loaded.hasCompletedTutorial).toBe(true);
   });
 
   it('recovers from corrupted JSON without throwing', () => {
@@ -64,24 +67,25 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(() => mgr.load()).not.toThrow();
-    expect(mgr.load()).toEqual(defaultV4);
+    expect(mgr.load()).toEqual(defaultV5);
   });
 
-  it('migrates v1 JSON to v4 with defaults', () => {
+  it('migrates v1 JSON to v5 with defaults', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 5, unlockedWeapons: ['thistle_shot'] }));
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 4,
+      saveVersion: 5,
       totalKills: 5,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
+      hasCompletedTutorial: false,
     });
   });
 
-  it('migrates v2 JSON to v4 preserving upgrades', () => {
+  it('migrates v2 JSON to v5 preserving upgrades', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -94,16 +98,17 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 4,
+      saveVersion: 5,
       totalKills: 3,
       unlockedWeapons: [],
       unlockedUpgrades: ['speed_tier_1'],
       activeRun: null,
       unlockedAchievements: [],
+      hasCompletedTutorial: false,
     });
   });
 
-  it('migrates v3 JSON to v4 preserving activeRun', () => {
+  it('migrates v3 JSON to v5 preserving activeRun', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -117,13 +122,32 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 4,
+      saveVersion: 5,
       totalKills: 2,
       unlockedWeapons: [],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
+      hasCompletedTutorial: false,
     });
+  });
+
+  it('migrates v4 JSON to v5 preserving hasCompletedTutorial when present', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'k',
+      JSON.stringify({
+        saveVersion: 4,
+        totalKills: 0,
+        unlockedWeapons: [],
+        unlockedUpgrades: [],
+        activeRun: null,
+        unlockedAchievements: [],
+        hasCompletedTutorial: true,
+      })
+    );
+    const mgr = new SaveManager({ storage, key: 'k' });
+    expect(mgr.load().hasCompletedTutorial).toBe(true);
   });
 
   it('coerces malformed fields safely', () => {
@@ -132,19 +156,20 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 4,
+      saveVersion: 5,
       totalKills: 0,
       unlockedWeapons: ['ok'],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
+      hasCompletedTutorial: false,
     });
   });
 
   it('saveActiveRun persists coerced mid-run snapshot', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
-    mgr.save({ ...defaultV4, totalKills: 1 });
+    mgr.save({ ...defaultV5, totalKills: 1 });
     mgr.saveActiveRun(sampleRun());
     const loaded = mgr.load();
     expect(loaded.activeRun).not.toBeNull();

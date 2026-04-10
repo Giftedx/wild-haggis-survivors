@@ -2,6 +2,8 @@ import { Player } from '../entities/Player';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { TimeManager } from '../systems/TimeManager';
 import { WeaponSystem } from '../systems/WeaponSystem';
+import type { XPSystem } from '../systems/XPSystem';
+import type { TutorialSystem } from '../systems/TutorialSystem';
 import type { SFXManager } from '../systems/audio/SFXManager';
 import type { RunStatsTracker } from '../systems/RunStatsTracker';
 import { UpdateTickers } from '../utils/UpdateTickers';
@@ -16,7 +18,9 @@ export interface ISceneContext {
   getUpdateTickers(): UpdateTickers;
   getSpawnSystem(): SpawnSystem;
   getWeaponSystem(): WeaponSystem;
+  getXPSystem(): XPSystem;
   getSFXManager(): SFXManager;
   getRunStatsTracker(): RunStatsTracker;
+  getTutorialSystem(): TutorialSystem;
 }
 
