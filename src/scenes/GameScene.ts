@@ -20,6 +20,7 @@ import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEng
 import { BOSSES } from '../data/enemies';
 import { formatRunVariantLabel, getVariantByKey, VariantDef, VariantKey } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
+import { tickPickupTickers, type PickupTicker } from '../utils/pickupTickers';
 
 /**
  * GameScene — the core gameplay loop.
@@ -60,6 +61,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
   private chestDurationBonusMs: number = 0;
 
+  /** Pickup lifetimes — ticked in update (no scene.time.delayedCall despawn). */
+  private pickupTickers: PickupTicker[] = [];
+  /** Hit invincibility window — ticked with scaled delta. */
+  private iFrameRemainingMs = 0;
+  private iFrameTimerGen = 0;
+  /** Damage flash tint clear — ticked with scaled delta. */
+  private hitTintClearRemainingMs = 0;
+  /** Victory polling while level-up modal blocks (raw delta — runs during timeScale 0). */
+  private victoryDeferMs = 0;
+  /** Death → run result overlay delay (raw delta — runs during RUN_END pause). */
+  private deathResultRemainingMs: number | null = null;
+  private deathResultCallback: (() => void) | null = null;
+
   constructor() {
     super({ key: 'Game' });
   }
@@ -77,6 +91,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.chestDurationBonusMs = 0;
     this.pendingChest = false;
     this.pendingChestIsGolden = false;
+    this.pickupTickers = [];
+    this.iFrameRemainingMs = 0;
+    this.iFrameTimerGen = 0;
+    this.hitTintClearRemainingMs = 0;
+    this.victoryDeferMs = 0;
+    this.deathResultRemainingMs = null;
+    this.deathResultCallback = null;
 
     // Clean up any map-zone timers from a prior run — they persist because
     // scene.time only resets when the scene is fully destroyed, not on restart
@@ -377,6 +398,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     delta = Math.min(delta, 100);
 
     this.timeManager.update(delta);
+
+    const scaledDelta = delta * this.timeManager.getEffectiveTimeScale();
+    tickPickupTickers(this.pickupTickers, scaledDelta);
+    this.tickHitTintClear(scaledDelta);
+    this.tickIFrameWindow(scaledDelta);
+    this.tickVictoryDefer(delta);
+    this.tickDeathResultOverlay(delta);
+
     if (this.timeManager.isGameplayPaused()) return;
 
     this.player.update(delta);
@@ -596,17 +625,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.timeManager.release('LEVEL_UP');
 
       // Brief invincibility after level-up (1s grace period)
-      // Bump generation counter so pending 500ms clearIFrames callbacks
-      // from hits taken before leveling up don't stomp this window
-      this.iFrameGeneration++;
-      const luGen = this.iFrameGeneration;
-      this.iFrames = true;
       this.player.setAlpha(0.7);
-      this.time.delayedCall(1000, () => {
-        if (luGen !== this.iFrameGeneration) return;
-        this.iFrames = false;
-        if (this.player.active) this.player.setAlpha(1);
-      });
+      this.armIFrames(1000);
 
       // Celebrate reaching max level
       if (this.xpSystem.getLevel() >= XP.MAX_LEVEL) {
@@ -807,6 +827,52 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (modifiers.cooldownReductionPct) this.player.addCooldownReduction(modifiers.cooldownReductionPct);
   }
 
+  private armIFrames(durationMs: number): void {
+    this.iFrameGeneration++;
+    this.iFrameTimerGen = this.iFrameGeneration;
+    this.iFrameRemainingMs = durationMs;
+    this.iFrames = true;
+  }
+
+  private tickHitTintClear(scaledDelta: number): void {
+    if (this.hitTintClearRemainingMs <= 0) return;
+    this.hitTintClearRemainingMs -= scaledDelta;
+    if (this.hitTintClearRemainingMs <= 0) {
+      this.hitTintClearRemainingMs = 0;
+      if (this.player?.active) this.player.clearTint();
+    }
+  }
+
+  private tickIFrameWindow(scaledDelta: number): void {
+    if (this.iFrameRemainingMs <= 0) return;
+    this.iFrameRemainingMs -= scaledDelta;
+    if (this.iFrameRemainingMs <= 0 && this.iFrameTimerGen === this.iFrameGeneration) {
+      this.iFrameRemainingMs = 0;
+      this.iFrames = false;
+      if (this.player?.active) this.player.setAlpha(1);
+    }
+  }
+
+  private tickVictoryDefer(rawDelta: number): void {
+    if (this.victoryDeferMs <= 0) return;
+    this.victoryDeferMs -= rawDelta;
+    if (this.victoryDeferMs <= 0) {
+      this.victoryDeferMs = 0;
+      this.handleVictory();
+    }
+  }
+
+  private tickDeathResultOverlay(rawDelta: number): void {
+    if (this.deathResultRemainingMs === null || this.deathResultCallback === null) return;
+    this.deathResultRemainingMs -= rawDelta;
+    if (this.deathResultRemainingMs <= 0) {
+      const cb = this.deathResultCallback;
+      this.deathResultRemainingMs = null;
+      this.deathResultCallback = null;
+      cb();
+    }
+  }
+
   private toggleUiPause(): void {
     // Don't open the pause menu while a modal owns pause (level-up, countdown, end screen).
     if (this.timeManager.has('LEVEL_UP') || this.timeManager.has('COUNTDOWN') || this.timeManager.has('RUN_END')) return;
@@ -974,12 +1040,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       enemy.takeDamage(this.player.getThornsDamage());
     }
 
-    this.iFrames = true;
     this.player.setAlpha(0.5);
     this.player.setTintFill(0xff3333); // Red flash on the sprite itself
-    this.time.delayedCall(80, () => {
-      if (this.player.active) this.player.clearTint();
-    });
+    this.hitTintClearRemainingMs = 80;
     // Scale shake intensity with damage proportion
     const dmgFrac = incomingDmg / this.player.getMaxHp();
     const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
@@ -987,23 +1050,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     audio.playPlayerHit();
     this.juice.flashRed();
 
-    // iFrames timer — uses a generation counter so a later longer-duration
-    // invincibility window (e.g. revival 2s, level-up 1s) isn't stomped by
-    // a prior pending 500ms clear.
-    this.iFrameGeneration++;
-    const myGen = this.iFrameGeneration;
-    const clearIFrames = () => {
-      if (!this.player.active) return;
-      // If a newer iFrame window was started, this callback is stale — abort
-      if (myGen !== this.iFrameGeneration) return;
-      if (this.timeManager.isGameplayPaused()) {
-        this.time.delayedCall(100, clearIFrames);
-        return;
-      }
-      this.iFrames = false;
-      this.player.setAlpha(1);
-    };
-    this.time.delayedCall(500, clearIFrames);
+    this.armIFrames(500);
 
     if (dead) this.handlePlayerDeathOrRevive();
   }
@@ -1023,37 +1070,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice.showToast('SECOND WIND!', '#44ddff');
       this.juice.flashWhite(300);
       this.cameras.main.shake(300, 0.015);
-      // Brief invincibility after revival — bump generation to invalidate
-      // any pending clearIFrames callback
-      this.iFrameGeneration++;
-      const revGen = this.iFrameGeneration;
-      this.iFrames = true;
       this.player.setAlpha(0.5);
-      this.time.delayedCall(2000, () => {
-        if (revGen !== this.iFrameGeneration) return;
-        this.iFrames = false;
-        if (this.player.active) this.player.setAlpha(1);
-      });
+      this.armIFrames(2000);
     } else {
       this.handlePlayerDeath();
     }
   }
 
   private handleVictory(): void {
-    // Defer if level-up screen is showing — re-check after a short delay
+    // Defer if level-up screen is showing — poll on raw frame delta (works at timeScale 0)
     if (this.xpSystem.hasPendingLevelUps() || this.timeManager.has('LEVEL_UP')) {
-      const capturedRunId = this.runId;
-      const waitForLevelUp = () => {
-        if (this.runId !== capturedRunId) return;
-        if (this.xpSystem.hasPendingLevelUps() || this.timeManager.has('LEVEL_UP')) {
-          this.time.delayedCall(200, waitForLevelUp);
-          return;
-        }
-        this.handleVictory();
-      };
-      this.time.delayedCall(200, waitForLevelUp);
+      this.victoryDeferMs = 200;
       return;
     }
+    this.victoryDeferMs = 0;
 
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     musicEngine.playResolution();
@@ -1101,9 +1131,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const summary = this.buildRunSummary(false);
     const runResult = recordRun(summary);
 
-    this.time.delayedCall(1200, () => {
+    this.deathResultRemainingMs = 1200;
+    this.deathResultCallback = () => {
       this.showRunResultScreen('death', summary, runResult);
-    });
+    };
   }
 
   private showRunResultScreen(
@@ -1556,11 +1587,33 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Enable physics for overlap detection
     this.physics.add.existing(chest, true);
     let collected = false;
+    let overlapColl!: Phaser.Physics.Arcade.Collider;
+
+    const despawnTicker: PickupTicker = {
+      remainingMs: 15000 + this.chestDurationBonusMs,
+      cancelled: false,
+      expire: () => {
+        if (collected) return;
+        collected = true;
+        this.tweens.killTweensOf(glow);
+        this.tweens.add({
+          targets: [chest, glow],
+          alpha: 0,
+          duration: 500,
+          onComplete: () => {
+            chest.destroy();
+            glow.destroy();
+            this.physics.world.removeCollider(overlapColl);
+          },
+        });
+      },
+    };
 
     // Collect on overlap with player
-    const overlap = this.physics.add.overlap(this.player, chest, () => {
+    overlapColl = this.physics.add.overlap(this.player, chest, () => {
       if (collected) return;
       collected = true;
+      despawnTicker.cancelled = true;
 
       this.player.heal(Math.ceil(this.player.getMaxHp() * 0.25));
       for (let i = 0; i < 8; i++) {
@@ -1578,27 +1631,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.tweens.killTweensOf(glow);
       chest.destroy();
       glow.destroy();
-      this.physics.world.removeCollider(overlap);
+      this.physics.world.removeCollider(overlapColl);
     });
 
-    // Chest despawns after 15 seconds if not collected (Treasure Magnet extends)
-    const capturedRunId = this.runId;
-    this.time.delayedCall(15000 + this.chestDurationBonusMs, () => {
-      if (this.runId !== capturedRunId) return; // stale across scene restart
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.add({
-        targets: [chest, glow],
-        alpha: 0,
-        duration: 500,
-        onComplete: () => {
-          chest.destroy();
-          glow.destroy();
-          this.physics.world.removeCollider(overlap);
-        },
-      });
-    });
+    this.pickupTickers.push(despawnTicker);
   }
 
   // ── Boundary Warning ──
@@ -1640,10 +1676,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(chest, true);
     let collected = false;
+    let overlapColl!: Phaser.Physics.Arcade.Collider;
 
-    const overlap = this.physics.add.overlap(this.player, chest, () => {
+    const despawnTicker: PickupTicker = {
+      remainingMs: 12000 + this.chestDurationBonusMs,
+      cancelled: false,
+      expire: () => {
+        if (collected) return;
+        collected = true;
+        this.tweens.killTweensOf(glow);
+        this.tweens.killTweensOf(chest);
+        this.tweens.add({
+          targets: [chest, glow], alpha: 0, duration: 400, onComplete: () => {
+            chest.destroy();
+            glow.destroy();
+            this.physics.world.removeCollider(overlapColl);
+          },
+        });
+      },
+    };
+
+    overlapColl = this.physics.add.overlap(this.player, chest, () => {
       if (collected) return;
       collected = true;
+      despawnTicker.cancelled = true;
       const goldReward = Phaser.Math.Between(5, 15);
       this.coinGoldEarned += goldReward;
       this.juice.showToast(`GOLDEN CHEST! +${goldReward}g`, '#ffaa00');
@@ -1651,19 +1707,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       audio.playLevelUp();
       this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
       chest.destroy(); glow.destroy();
-      this.physics.world.removeCollider(overlap);
+      this.physics.world.removeCollider(overlapColl);
     });
 
-    const capturedRunId = this.runId;
-    this.time.delayedCall(12000 + this.chestDurationBonusMs, () => {
-      if (this.runId !== capturedRunId) return; // stale across scene restart
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
-      this.tweens.add({ targets: [chest, glow], alpha: 0, duration: 400, onComplete: () => {
-        chest.destroy(); glow.destroy(); this.physics.world.removeCollider(overlap);
-      }});
-    });
+    this.pickupTickers.push(despawnTicker);
   }
 
   // ── Dash Indicator ──
@@ -1702,10 +1749,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(coin, true);
     let collected = false;
+    let overlapColl!: Phaser.Physics.Arcade.Collider;
 
-    const overlap = this.physics.add.overlap(this.player, coin, () => {
+    const despawnTicker: PickupTicker = {
+      remainingMs: 12000,
+      cancelled: false,
+      expire: () => {
+        if (collected) return;
+        collected = true;
+        this.tweens.add({
+          targets: coin, alpha: 0, duration: 400, onComplete: () => {
+            coin.destroy();
+            this.physics.world.removeCollider(overlapColl);
+          },
+        });
+      },
+    };
+
+    overlapColl = this.physics.add.overlap(this.player, coin, () => {
       if (collected) return;
       collected = true;
+      despawnTicker.cancelled = true;
       this.coinGoldEarned += goldAmount;
 
       // Show gold pickup text
@@ -1717,21 +1781,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
       audio.playXPCollect();
       coin.destroy();
-      this.physics.world.removeCollider(overlap);
+      this.physics.world.removeCollider(overlapColl);
     });
 
-    // Despawn after 12 seconds. treasure_magnet is scoped to chests only —
-    // coins are a separate kill-drop mechanic, so don't extend them.
-    const capturedRunId = this.runId;
-    this.time.delayedCall(12000, () => {
-      if (this.runId !== capturedRunId) return; // stale across scene restart
-      if (collected) return;
-      collected = true;
-      this.tweens.add({ targets: coin, alpha: 0, duration: 400, onComplete: () => {
-        coin.destroy();
-        this.physics.world.removeCollider(overlap);
-      }});
-    });
+    this.pickupTickers.push(despawnTicker);
   }
 
   // ── Health Orbs ──
@@ -1751,33 +1804,38 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.physics.add.existing(orb, true);
     let collected = false;
+    let overlapColl!: Phaser.Physics.Arcade.Collider;
 
-    const overlap = this.physics.add.overlap(this.player, orb, () => {
+    const despawnTicker: PickupTicker = {
+      remainingMs: 10000,
+      cancelled: false,
+      expire: () => {
+        if (collected) return;
+        collected = true;
+        this.tweens.killTweensOf(glow);
+        this.tweens.add({
+          targets: [orb, glow], alpha: 0, duration: 400,
+          onComplete: () => {
+            orb.destroy(); glow.destroy();
+            this.physics.world.removeCollider(overlapColl);
+          },
+        });
+      },
+    };
+
+    overlapColl = this.physics.add.overlap(this.player, orb, () => {
       if (collected) return;
       collected = true;
+      despawnTicker.cancelled = true;
       this.player.heal(healAmount);
       this.juice.showDamageNumber(this.player.x, this.player.y - 20, healAmount, false);
       this.tweens.killTweensOf(glow);
       orb.destroy();
       glow.destroy();
-      this.physics.world.removeCollider(overlap);
+      this.physics.world.removeCollider(overlapColl);
     });
 
-    // Despawn after 10 seconds
-    const capturedRunId = this.runId;
-    this.time.delayedCall(10000, () => {
-      if (this.runId !== capturedRunId) return; // stale across scene restart
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.add({
-        targets: [orb, glow], alpha: 0, duration: 400,
-        onComplete: () => {
-          orb.destroy(); glow.destroy();
-          this.physics.world.removeCollider(overlap);
-        },
-      });
-    });
+    this.pickupTickers.push(despawnTicker);
   }
 
   // ── Terrain ──
