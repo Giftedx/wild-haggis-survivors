@@ -40,6 +40,7 @@ class ProceduralMusicEngine {
 
   private rhythmBPM = 90;
   private fadeTimeout: ReturnType<typeof setTimeout> | null = null;
+  private resolutionTimeouts: ReturnType<typeof setTimeout>[] = [];
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
@@ -98,6 +99,9 @@ class ProceduralMusicEngine {
       clearTimeout(this.fadeTimeout);
       this.fadeTimeout = null;
     }
+    // Cancel any pending resolution polling timeouts
+    for (const t of this.resolutionTimeouts) clearTimeout(t);
+    this.resolutionTimeouts = [];
     this.drone.stop();
     this.piano.stop();
     this.percussion.stop();
@@ -135,10 +139,10 @@ class ProceduralMusicEngine {
       if (this.conductor.isResolutionComplete()) {
         this.fadeOut(3000);
       } else {
-        setTimeout(checkDone, 200);
+        this.resolutionTimeouts.push(setTimeout(checkDone, 200));
       }
     };
-    setTimeout(checkDone, 500);
+    this.resolutionTimeouts.push(setTimeout(checkDone, 500));
   }
 
   update(delta: number, state: GameMusicState): void {
