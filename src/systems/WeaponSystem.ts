@@ -312,13 +312,13 @@ export class WeaponSystem {
         // Bagpipe Blast applies brief freeze (slow 50% for 1s)
         enemy.applyFreeze(0.5, 1000);
 
-        // Knockback — divided by mass so tanks resist being pushed
+        // Knockback — uses the impulse system so behaviorChase doesn't wipe it.
+        // Divided by mass so tanks resist being pushed.
         if (enemy.active && w.config.knockback > 0) {
           const angle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
           const body = enemy.body as Phaser.Physics.Arcade.Body;
           const kb = w.config.knockback / body.mass;
-          body.velocity.x += Math.cos(angle) * kb;
-          body.velocity.y += Math.sin(angle) * kb;
+          enemy.applyKnockback(Math.cos(angle) * kb, Math.sin(angle) * kb, 150);
         }
       }
     }
@@ -416,13 +416,12 @@ export class WeaponSystem {
       if (Math.abs(angleDiff) <= halfArc) {
         this.dealDamageToEnemy(enemy, dmg, isCrit);
 
-        // Knockback — divided by mass so tanks resist being pushed
+        // Knockback via impulse system (persistent for 150ms, then behavior resumes).
         if (enemy.active && w.config.knockback > 0) {
           const kbAngle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
           const body = enemy.body as Phaser.Physics.Arcade.Body;
           const kb = w.config.knockback / body.mass;
-          body.velocity.x += Math.cos(kbAngle) * kb;
-          body.velocity.y += Math.sin(kbAngle) * kb;
+          enemy.applyKnockback(Math.cos(kbAngle) * kb, Math.sin(kbAngle) * kb, 150);
         }
       }
     }
@@ -581,11 +580,10 @@ export class WeaponSystem {
           if (!enemy.active) continue;
           if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
             this.dealDamageToEnemy(enemy, dmg);
-            // Slow enemies in the fog — apply through the freeze system so the
-            // slow persists across behavior ticks (writing to body.velocity
-            // here was a no-op because behaviorChase rewrites velocity from
-            // this.speed every frame before the next fog tick fires).
-            enemy.applyFreeze(0.7, 400);
+            // Slow enemies in the fog to 50% speed. Duration matches the
+            // tick interval + a small overlap so the slow is continuous
+            // rather than flickering on and off between ticks.
+            enemy.applyFreeze(0.5, 500);
           }
         }
       },
@@ -627,12 +625,11 @@ export class WeaponSystem {
       if (!enemy.active) continue;
       if (Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y) <= radius) {
         this.dealDamageToEnemy(enemy, dmg);
-        // Knockback everything — divided by mass so tanks resist
+        // Knockback via impulse system — persistent enough to actually shove.
         const angle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
         const body = enemy.body as Phaser.Physics.Arcade.Body;
         const kb = 200 / body.mass;
-        body.velocity.x += Math.cos(angle) * kb;
-        body.velocity.y += Math.sin(angle) * kb;
+        enemy.applyKnockback(Math.cos(angle) * kb, Math.sin(angle) * kb, 200);
       }
     }
   }

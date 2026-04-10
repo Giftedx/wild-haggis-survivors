@@ -56,6 +56,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private baseSpeed: number = 0;
   /** Berserker HP-based scaling applied on top of baseSpeed (1.0 = no scaling) */
   private berserkerSpeedMul: number = 1;
+  /** Temporary speed buff (e.g. Piper aura) composed into recomputeSpeed. Decays over time. */
+  private buffSpeedMul: number = 1;
+  private buffSpeedTimer: number = 0;
+
+  /** Knockback impulse — overrides behavior-set velocity for a brief window so
+   *  pushes actually push (behaviorChase overwrites velocity every frame
+   *  otherwise, which made all additive `body.velocity +=` knockbacks invisible). */
+  private knockbackVx: number = 0;
+  private knockbackVy: number = 0;
+  private knockbackTimer: number = 0;
+
+  /** Display scale anchor — set whenever the enemy's "base" visual size
+   *  should change (elite 1.3×, boss 2.0-3.0×, enraged hazard 1.5×). The
+   *  idle bob reads this and wobbles around it, so bob no longer wipes
+   *  boss/elite scale. */
+  private baseDisplayScale: number = 1;
 
   /** Mini HP bar for tanky enemies */
   private hpBarBg: Phaser.GameObjects.Rectangle | null = null;
@@ -80,6 +96,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setTexture(config.texture);
     this.setActive(true);
     this.setVisible(true);
+    this.baseDisplayScale = 1;
     this.setScale(1);
     this.setFlipX(false);
     this.clearTint();
@@ -142,6 +159,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.burnDamage = 0; this.burnTimer = 0; this.burnTickAccum = 0;
     this.freezeTimer = 0; this.freezeSpeedMul = 1;
     this.berserkerSpeedMul = 1;
+    this.buffSpeedMul = 1;
+    this.buffSpeedTimer = 0;
+    this.knockbackVx = 0;
+    this.knockbackVy = 0;
+    this.knockbackTimer = 0;
     this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
@@ -175,6 +197,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.behavior === 'hazard') {
       this.baseTint = 0xff6600;
       this.setTint(0xff6600);
+      this.baseDisplayScale = 1.5;
       this.setScale(1.5);
       this.setVelocity(0, 0);
       // Hazards despawn after 10 seconds to prevent permanent pool slot exhaustion
@@ -234,23 +257,39 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.35);
     }
 
-    // Idle breathing — subtle scaleY wobble. Skips bosses (which have custom
-    // scales 2.0-3.0 from BossConfig), hazards (static), and spawners (nests).
-    // Anchored to eliteFlag so elite 1.3× scaling is preserved.
-    if (!this.bossFlag && this.behavior !== 'hazard' && this.behavior !== 'spawner') {
+    // Idle breathing — subtle scaleY wobble anchored to baseDisplayScale
+    // (tracks elite 1.3×, boss 2.0-3.0×, enraged hazard 1.5×). Hazards and
+    // spawners stay static; everything else breathes, bosses included.
+    if (this.behavior !== 'hazard' && this.behavior !== 'spawner') {
       this.bobPhase += 0.08;
-      const baseScale = this.eliteFlag ? 1.3 : 1;
       const wobble = Math.sin(this.bobPhase) * 0.04;
-      this.setScale(baseScale, baseScale * (1 + wobble));
+      const base = this.baseDisplayScale;
+      this.setScale(base, base * (1 + wobble));
     }
 
-    // Face direction of travel (skip for bosses and static hazards which have
-    // asymmetric art baked in)
+    // Face direction of travel. Bosses keep their (asymmetric) art unflipped
+    // because the baked-in weapon sides would visibly teleport between left
+    // and right; the moonwalk is the lesser visual crime.
     if (!this.bossFlag && this.behavior !== 'hazard') {
       const body = this.body as Phaser.Physics.Arcade.Body;
       if (Math.abs(body.velocity.x) > 10) {
         this.setFlipX(body.velocity.x < 0);
       }
+    }
+
+    // Knockback impulse takes priority over behavior velocity for the
+    // duration, then decays out. Without this, behaviorChase's setVelocity
+    // next frame would completely overwrite any `body.velocity +=` nudge
+    // the weapons try to apply — knockback would be invisible.
+    if (this.knockbackTimer > 0) {
+      this.knockbackTimer -= delta;
+      const k = Math.max(0, this.knockbackTimer / 150);
+      this.setVelocity(this.knockbackVx * k, this.knockbackVy * k);
+      if (this.knockbackTimer <= 0) {
+        this.knockbackVx = 0;
+        this.knockbackVy = 0;
+      }
+      return; // skip behavior — the push is what the enemy is doing this frame
     }
 
     switch (this.behavior) {
@@ -402,27 +441,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const moveSpeed = Math.min(this.speed, dist * 2); // slow as approach target
     this.setVelocity(Math.cos(angle) * moveSpeed, Math.sin(angle) * moveSpeed);
 
-    // Pipers buff nearby enemies — boost speed toward 1.3× their base speed.
-    // Clamps at baseSpeed * 1.5 so repeat ticks don't compound unboundedly
-    // (was a real bug: at 60fps with 0.02 per-frame probability, enemies
-    // reached ridiculous velocities after a few seconds in piper range).
+    // Pipers buff nearby enemies — 30% faster for 500ms, composed through
+    // recomputeSpeed() via the buffSpeedMul field. Previously used a one-frame
+    // body.velocity multiplication that behaviorChase promptly overwrote, so
+    // the buff was visually absent most frames; now it's a real speed stat
+    // change that persists and re-applies naturally every frame from spawn
+    // behavior's setVelocity(... * this.speed).
     const enemies = (this.scene as any).getSpawnSystem?.()?.getEnemyGroup?.()?.getChildren?.();
-    if (enemies && Math.random() < 0.02) {
+    if (enemies) {
       for (const e of enemies) {
         if (!e.active || e === this || (e as Enemy).isBoss()) continue;
         const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
         if (d < 120) {
-          const body = e.body as Phaser.Physics.Arcade.Body;
-          const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
-          if (speed <= 0) continue;
-          const baseSpeed = (e as Enemy).getBaseSpeed();
-          const cap = baseSpeed * 1.5;
-          const desired = Math.min(speed * 1.3, cap);
-          if (desired > speed) {
-            const ratio = desired / speed;
-            body.velocity.x *= ratio;
-            body.velocity.y *= ratio;
-          }
+          (e as Enemy).applySpeedBuff(1.3, 500);
         }
       }
     }
@@ -479,11 +510,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
   }
 
-  /** Recompute this.speed from baseSpeed * all active multipliers.
-   *  Call whenever any contributing factor changes (freeze, berserker HP-scaling, enrage).
+  /** Recompute this.speed from baseSpeed × all active multipliers.
+   *  Call whenever any contributing factor changes (freeze, berserker HP-scaling, enrage, piper buff).
    *  Enrage is baked into baseSpeed directly because it's permanent. */
   private recomputeSpeed(): void {
-    this.speed = Math.ceil(this.baseSpeed * this.berserkerSpeedMul * this.freezeSpeedMul);
+    this.speed = Math.ceil(
+      this.baseSpeed * this.berserkerSpeedMul * this.freezeSpeedMul * this.buffSpeedMul
+    );
   }
 
   // ── Status Effects ──
@@ -500,6 +533,27 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.behavior === 'hazard') return;
     this.freezeSpeedMul = Math.min(this.freezeSpeedMul, speedMul);
     this.freezeTimer = Math.max(this.freezeTimer, durationMs);
+    this.recomputeSpeed();
+  }
+
+  /** Temporary speed buff (e.g. Piper aura). Composes through recomputeSpeed
+   *  so it's bounded by its multiplier — no compound runaway. */
+  applySpeedBuff(mul: number, durationMs: number): void {
+    if (this.behavior === 'hazard') return;
+    this.buffSpeedMul = Math.max(this.buffSpeedMul, mul); // strongest wins
+    this.buffSpeedTimer = Math.max(this.buffSpeedTimer, durationMs);
+    this.recomputeSpeed();
+  }
+
+  /** Apply a knockback impulse that persists for durationMs, decaying linearly.
+   *  Unlike `body.velocity +=` (which behaviorChase wipes next frame), this
+   *  takes priority over behavior velocity for the duration, so knockback is
+   *  actually visible. */
+  applyKnockback(vx: number, vy: number, durationMs: number = 150): void {
+    if (this.behavior === 'hazard') return;
+    this.knockbackVx = vx;
+    this.knockbackVy = vy;
+    this.knockbackTimer = durationMs;
   }
 
   /** Apply poison: stacking damage over time */
@@ -618,6 +672,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       }
       if (this.poisonTimer <= 0) { this.poisonDamage = 0; this.poisonTickAccum = 0; }
     }
+
+    // Speed buff (Piper aura etc.) — decay to 1.0 when timer expires
+    if (this.buffSpeedTimer > 0) {
+      this.buffSpeedTimer -= delta;
+      if (this.buffSpeedTimer <= 0) {
+        this.buffSpeedMul = 1;
+        this.recomputeSpeed();
+      }
+    }
   }
 
   /** Force-kill this enemy bypassing wool armor / invincibility.
@@ -728,17 +791,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.baseTint) this.setTint(this.baseTint);
     });
 
-    // Impact ring — tiny white burst expanding outward from hit point.
-    // Throttle for bosses and very-tanky enemies to avoid visual spam on piercing weapons.
-    const ring = this.scene.add.circle(this.x, this.y, 4, 0xffffff, 0.8).setDepth(12);
-    this.scene.tweens.add({
-      targets: ring,
-      radius: 14,
-      alpha: 0,
-      duration: 180,
-      ease: 'Cubic.easeOut',
-      onComplete: () => ring.destroy(),
-    });
+    // Impact ring burst is spawned from the GameScene damageDealt listener
+    // via the shared JuiceSystem pool — keeps per-hit GameObject allocation
+    // out of the hot path (was 600+ rings/sec on piercing weapons).
 
     return false;
   }
@@ -774,6 +829,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   isBoss(): boolean { return this.bossFlag; }
   /** Public getter for base speed — used by Piper buff to clamp the compound buff. */
   getBaseSpeed(): number { return this.baseSpeed; }
+  /** Set the anchor scale used by the idle bob. Used by SpawnSystem to size
+   *  bosses correctly (2.0-3.0× from BossConfig). Applies the scale immediately. */
+  setBaseDisplayScale(scale: number): void {
+    this.baseDisplayScale = scale;
+    this.setScale(scale);
+  }
   setBaseTint(color: number): void {
     this.baseTint = color;
     this.setTint(color);
@@ -798,7 +859,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.baseSpeed = Math.ceil(this.baseSpeed * 1.3);
     this.recomputeSpeed();
     this.xpValue = this.xpValue * 3;
-    this.setScale(this.scaleX * 1.3);
+    // Bump the anchor scale so the idle bob wobbles around 1.3× instead of 1×
+    this.baseDisplayScale = this.baseDisplayScale * 1.3;
+    this.setScale(this.baseDisplayScale);
     this.setBaseTint(0xffdd44); // golden glow
     this.showHpBar = true;
     if (!this.hpBarBg) {
