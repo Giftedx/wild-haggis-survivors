@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
 import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
+import { BALANCE } from '../core/BalanceConfig';
 
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
@@ -30,11 +31,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Ranged enemies track distance to maintain standoff */
   private rangedCooldown: number = 0;
-  private readonly RANGED_STANDOFF = 200;
+  private readonly RANGED_STANDOFF = BALANCE.enemy.rangedStandoffPx;
 
   /** Orbit enemies circle the player */
   private orbitAngle: number = 0;
-  private readonly ORBIT_RADIUS = 180;
+  private readonly ORBIT_RADIUS = BALANCE.enemy.orbitRadiusPx;
 
   /** Flee enemies run away but with wool armor */
   private woolArmor: number = 0;
@@ -201,10 +202,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
     // so they matter even if killed soon after spawn, then 4s cycles after
-    this.spawnerCooldown = config.behavior === 'spawner' ? 500 : 4000;
+    this.spawnerCooldown = config.behavior === 'spawner'
+      ? BALANCE.enemy.spawnerWarmupMs
+      : BALANCE.enemy.spawnerIntervalMs;
     // Reset Ghost phase state — if a Ghost died mid-phase, the next
     // recycled enemy would inherit invisibility + projectile-immunity
-    this.phaseTimer = 2000;
+    this.phaseTimer = BALANCE.enemy.phaseToggleMs;
     this.isPhased = false;
     body.checkCollision.none = false;
 
@@ -231,7 +234,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(0, 0);
       // Hazards despawn after 10 seconds to prevent permanent pool slot exhaustion
       // (they're invincible, so without a TTL they accumulate until no enemies can spawn)
-      this.hazardTtlHandle = this.ctx.getUpdateTickers().addOnce('scaled', 10000, () => {
+      this.hazardTtlHandle = this.ctx.getUpdateTickers().addOnce('scaled', BALANCE.enemy.hazardTtlMs, () => {
         if (this.active && this.behavior === 'hazard') {
           this.scene.tweens.add({
             targets: this, alpha: 0, duration: 500,
@@ -406,7 +409,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const z = Math.max(0.001, cam.zoom);
     const viewW = cam.width / z;
     const viewH = cam.height / z;
-    const margin = 300;
+    const margin = BALANCE.enemy.diveDespawnMarginPx;
     const farFromView =
       this.x < cam.scrollX - margin || this.x > cam.scrollX + viewW + margin ||
       this.y < cam.scrollY - margin || this.y > cam.scrollY + viewH + margin;
@@ -436,7 +439,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Fire a "net" (slowing projectile) at the player on cooldown
     this.rangedCooldown -= delta;
     if (this.rangedCooldown <= 0 && dist <= this.RANGED_STANDOFF * 1.5) {
-      this.rangedCooldown = 3000; // 3 second cooldown
+      this.rangedCooldown = BALANCE.enemy.rangedCooldownMs;
       this.fireNet(tx, ty);
     }
   }
@@ -513,7 +516,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Toggle phased state every 2 seconds
     this.phaseTimer -= delta;
     if (this.phaseTimer <= 0) {
-      this.phaseTimer = 2000;
+      this.phaseTimer = BALANCE.enemy.phaseToggleMs;
       this.isPhased = !this.isPhased;
       this.setAlpha(this.isPhased ? 0.3 : 1);
       // When phased, disable physics body so projectiles pass through
@@ -531,7 +534,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0, 0);
     this.spawnerCooldown -= delta;
     if (this.spawnerCooldown <= 0) {
-      this.spawnerCooldown = 4000;
+      this.spawnerCooldown = BALANCE.enemy.spawnerIntervalMs;
       const spawnSystem = this.ctx.getSpawnSystem();
       const pool = spawnSystem.getEnemyGroup();
       const minion = Enemy.acquireFromPool(pool, this.ctxScene);
