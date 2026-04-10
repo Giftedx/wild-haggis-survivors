@@ -33,6 +33,12 @@ const config: Phaser.Types.Core.GameConfig = {
     antialias: false,
     roundPixels: true,
   },
+  input: {
+    keyboard: true,
+    mouse: true,
+    touch: true,
+    gamepad: true,
+  },
 };
 
 const game = new Phaser.Game(config);

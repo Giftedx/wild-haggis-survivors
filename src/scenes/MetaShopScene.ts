@@ -5,6 +5,7 @@ import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
 import { audio } from '../systems/AudioSystem';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -13,6 +14,8 @@ export class MetaShopScene extends Phaser.Scene {
   private saveManager = new SaveManager();
   private rowElements: Phaser.GameObjects.GameObject[] = [];
   private killsText!: Phaser.GameObjects.Text;
+  private backButton!: Phaser.GameObjects.Rectangle;
+  private gamepadNav: GamepadMenuNav | null = null;
 
   constructor() {
     super({ key: 'MetaShop' });
@@ -60,9 +63,7 @@ export class MetaShopScene extends Phaser.Scene {
     lineGfx.lineBetween(24, 108, width - 24, 108);
     lineGfx.lineBetween(24, 510, width - 24, 510);
 
-    this.renderRows();
-
-    const backButton = this.add
+    this.backButton = this.add
       .rectangle(width / 2, height - 28, 200, 38, 0x3a4357, 1)
       .setInteractive({ useHandCursor: true });
     this.add
@@ -74,21 +75,32 @@ export class MetaShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    backButton.on('pointerover', () => backButton.setFillStyle(0x4a566f));
-    backButton.on('pointerout', () => backButton.setFillStyle(0x3a4357));
-    backButton.on('pointerdown', () => {
+    this.backButton.on('pointerover', () => this.backButton.setFillStyle(0x4a566f));
+    this.backButton.on('pointerout', () => this.backButton.setFillStyle(0x3a4357));
+    this.backButton.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('MainMenu');
+    });
+
+    this.renderRows();
+
+    this.events.once('shutdown', () => {
+      this.gamepadNav?.destroy();
+      this.gamepadNav = null;
     });
   }
 
   private renderRows(): void {
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+
     this.clearElements(this.rowElements);
     const save = this.saveManager.load();
     this.killsText.setText(`Kill credits: ${save.totalKills}`);
 
     const { width } = this.scale;
     const keys = listMetaShopItemKeys();
+    const entries: GamepadMenuEntry[] = [];
 
     keys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
@@ -158,10 +170,20 @@ export class MetaShopScene extends Phaser.Scene {
         buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a8f4f));
         buyButton.on('pointerout', () => buyButton.setFillStyle(0x2d6a3e));
         buyButton.on('pointerdown', () => this.tryBuy(key));
+        entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       }
 
       this.rowElements.push(buyButton, buyText);
     });
+
+    entries.push({
+      rect: this.backButton,
+      activate: () => {
+        audio.playClick();
+        this.scene.start('MainMenu');
+      },
+    });
+    this.gamepadNav = new GamepadMenuNav(this, entries);
   }
 
   private tryBuy(key: MetaShopItemKey): void {
