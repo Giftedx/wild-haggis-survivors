@@ -10,6 +10,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
   private valueLabel: Phaser.GameObjects.Text | null = null;
   /** Soft aura circle that sits behind high-value gems for visibility at range */
   private aura: Phaser.GameObjects.Arc | null = null;
+  private settleHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
 
   constructor(scene: Phaser.Scene) {
     super(scene, 0, 0, 'xp_gem');
@@ -22,6 +23,8 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
 
   /** Drop this gem at a position with a given XP value */
   drop(x: number, y: number, value: number): void {
+    this.settleHandle?.cancel();
+    this.settleHandle = null;
     this.scene.tweens.killTweensOf(this); // Kill stale tweens from prior pool cycle
     this.setPosition(x, y);
     this.setActive(true);
@@ -46,9 +49,10 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     );
 
     // Slow down scatter
-    this.scene.time.delayedCall(200, () => {
+    const tickers = (this.scene as unknown as { getUpdateTickers?: () => import('../utils/UpdateTickers').UpdateTickers }).getUpdateTickers?.();
+    this.settleHandle = tickers?.addOnce('scaled', 200, () => {
       if (this.active) this.setVelocity(0, 0);
-    });
+    }) ?? null;
 
     // Show value label for high-value gems (3+)
     if (value >= 3) {
@@ -148,6 +152,8 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
 
   collect(): number {
     const value = this.xpValue;
+    this.settleHandle?.cancel();
+    this.settleHandle = null;
     this.scene.tweens.killTweensOf(this); // Stop infinite pulse tween
     if (this.aura) this.scene.tweens.killTweensOf(this.aura);
     this.setActive(false);

@@ -2,6 +2,7 @@ import { Player } from '../entities/Player';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { TimeManager } from '../systems/TimeManager';
 import { WeaponSystem } from '../systems/WeaponSystem';
+import { UpdateTickers } from '../utils/UpdateTickers';
 
 /**
  * ISceneContext — typed service locator owned by the composing Scene.
@@ -10,6 +11,7 @@ import { WeaponSystem } from '../systems/WeaponSystem';
 export interface ISceneContext {
   getPlayer(): Player;
   getTimeManager(): TimeManager;
+  getUpdateTickers(): UpdateTickers;
   getSpawnSystem(): SpawnSystem;
   getWeaponSystem(): WeaponSystem;
 }

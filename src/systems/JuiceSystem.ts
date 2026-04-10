@@ -12,6 +12,7 @@ import { TimeManager } from './TimeManager';
 export class JuiceSystem {
   private scene: Phaser.Scene;
   private time: TimeManager;
+  private tickers: import('../utils/UpdateTickers').UpdateTickers;
   private dmgTextPool: Phaser.GameObjects.Text[] = [];
   /** Pool of reusable impact rings — used on every enemy hit. Unpooled
    *  creation per hit was a real perf concern at 60fps × pierce weapons. */
@@ -37,9 +38,12 @@ export class JuiceSystem {
   // Hit-freeze throttling (engine mutations handled by TimeManager)
   private freezeCooldownMs: number = 0;
 
-  constructor(scene: Phaser.Scene, time: TimeManager) {
+  private slowMotionRemainingMs: number = 0;
+
+  constructor(scene: Phaser.Scene, time: TimeManager, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
     this.time = time;
+    this.tickers = tickers;
 
     // Danger vignette — red border glow, hidden by default
     this.vignette = scene.add.graphics().setScrollFactor(0).setDepth(45).setAlpha(0);
@@ -110,6 +114,15 @@ export class JuiceSystem {
 
     // Tick hit-freeze throttle (bound to timeScale so pause freezes cooldown)
     if (this.freezeCooldownMs > 0) this.freezeCooldownMs -= scaledDelta;
+
+    // Tick slow-motion guard (bound to timeScale)
+    if (this.slowMotionRemainingMs > 0) {
+      this.slowMotionRemainingMs -= scaledDelta;
+      if (this.slowMotionRemainingMs <= 0) {
+        this.slowMotionRemainingMs = 0;
+        this.slowMotionActive = false;
+      }
+    }
 
     // Combo timer
     if (this.comboCount > 0) {
@@ -378,7 +391,7 @@ export class JuiceSystem {
     });
 
     // Second delayed ring
-    this.scene.time.delayedCall(150, () => {
+    this.tickers.addOnce('scaled', 150, () => {
       const ring2 = this.scene.add.circle(x, y, 10, 0xffcc44, 0.3);
       this.scene.tweens.add({
         targets: ring2,
@@ -405,9 +418,7 @@ export class JuiceSystem {
   slowMotion(durationMs = 300): void {
     if (this.slowMotionActive) return; // Prevent overlapping slow-mo
     this.slowMotionActive = true;
+    this.slowMotionRemainingMs = durationMs;
     this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, durationMs);
-    this.scene.time.delayedCall(durationMs, () => {
-      this.slowMotionActive = false;
-    });
   }
 }

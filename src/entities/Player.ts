@@ -3,6 +3,7 @@ import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVector } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
+import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 
 /**
  * Player — the wild haggis.
@@ -76,6 +77,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private pickupRadius: number = PLAYER.PICKUP_RADIUS;
 
   private readonly BASE_HITBOX_RADIUS = 20;
+  private dashTrailHandles: TickerHandle[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number, textureKey: string = 'haggis_classic', timeManager: TimeManager) {
     if (!timeManager) {
@@ -133,9 +135,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Dash trail effect
     const trailCount = 5;
+    for (const h of this.dashTrailHandles) h.cancel();
+    this.dashTrailHandles = [];
+    const tickers = (this.scene as unknown as { getUpdateTickers?: () => UpdateTickers }).getUpdateTickers?.();
     for (let i = 0; i < trailCount; i++) {
       const delay = i * (this.DASH_DURATION_MS / trailCount);
-      this.scene.time.delayedCall(delay, () => {
+      const handle = tickers?.addOnce('scaled', delay, () => {
         if (!this.active) return;
         const afterImage = this.scene.add.circle(this.x, this.y, 12, 0xd4a017, 0.4).setDepth(3);
         this.scene.tweens.add({
@@ -143,6 +148,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
           onComplete: () => afterImage.destroy(),
         });
       });
+      if (handle) this.dashTrailHandles.push(handle);
     }
   }
 

@@ -339,10 +339,10 @@ export class WeaponSystem {
 
     // Damage enemies within the zone over its lifetime
     // Guard: skip damage tick if physics is paused (level-up screen)
-    const damageTimer = this.scene.time.addEvent({
-      delay: 400,
-      repeat: Math.floor(duration / 400) - 1,
-      callback: () => {
+    const damageHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      400,
+      () => {
         if (!this.scene.getTimeManager().isGameplayPaused()) {
           const enemies = this.enemyGroup.getChildren() as Enemy[];
           for (const enemy of enemies) {
@@ -356,7 +356,8 @@ export class WeaponSystem {
           }
         }
       },
-    });
+      { repeats: Math.floor(duration / 400) }
+    );
 
     // Fade out and destroy
     this.scene.tweens.add({
@@ -364,7 +365,7 @@ export class WeaponSystem {
       alpha: 0,
       duration: duration,
       onComplete: () => {
-        damageTimer.destroy();
+        damageHandle.cancel();
         if (zone.active) zone.destroy();
       },
     });
@@ -500,34 +501,30 @@ export class WeaponSystem {
     let prevRadius = 0;
     const hitEnemies = new Set<Enemy>();
 
-    const expandTimer = this.scene.time.addEvent({
-      delay: 50,
-      repeat: 15,
-      callback: () => {
-        if (this.destroyed || !this.scene?.sys?.isActive()) { expandTimer.destroy(); return; }
-        prevRadius = currentRadius;
-        currentRadius += (maxRadius - 20) / 16;
-        ring.setRadius(currentRadius);
-        ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
+    const expandHandle = this.scene.getUpdateTickers().addInterval('scaled', 50, () => {
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
+      prevRadius = currentRadius;
+      currentRadius += (maxRadius - 20) / 16;
+      ring.setRadius(currentRadius);
+      ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
 
-        // Damage enemies in the newly swept annular band (each enemy hit once)
-        if (!this.scene.getTimeManager().isGameplayPaused()) {
-          const enemies = this.enemyGroup.getChildren() as Enemy[];
-          for (const enemy of enemies) {
-            if (!enemy.active || hitEnemies.has(enemy)) continue;
-            const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
-            if (dist <= currentRadius) {
-              hitEnemies.add(enemy);
-              this.dealDamageToEnemy(enemy, dmg);
-            }
+      // Damage enemies in the newly swept annular band (each enemy hit once)
+      if (!this.scene.getTimeManager().isGameplayPaused()) {
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        for (const enemy of enemies) {
+          if (!enemy.active || hitEnemies.has(enemy)) continue;
+          const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
+          if (dist <= currentRadius) {
+            hitEnemies.add(enemy);
+            this.dealDamageToEnemy(enemy, dmg);
           }
         }
-      },
-    });
+      }
+    }, { repeats: 16 });
 
-    this.scene.time.delayedCall(850, () => {
+    this.scene.getUpdateTickers().addOnce('scaled', 850, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
-      expandTimer.destroy();
+      expandHandle.cancel();
       if (ring.active) ring.destroy();
     });
   }
@@ -572,29 +569,25 @@ export class WeaponSystem {
     const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.25);
     const duration = 4000;
 
-    const timer = this.scene.time.addEvent({
-      delay: 300,
-      repeat: Math.floor(duration / 300) - 1,
-      callback: () => {
-        if (this.destroyed || !this.scene?.sys?.isActive()) { timer.destroy(); return; }
-        if (this.scene.getTimeManager().isGameplayPaused()) return;
-        const enemies = this.enemyGroup.getChildren() as Enemy[];
-        for (const enemy of enemies) {
-          if (!enemy.active) continue;
-          if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
-            this.dealDamageToEnemy(enemy, dmg);
-            // Slow enemies in the fog to 50% speed. Duration matches the
-            // tick interval + a small overlap so the slow is continuous
-            // rather than flickering on and off between ticks.
-            enemy.applyFreeze(0.5, 500);
-          }
+    const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 300, () => {
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
+      if (this.scene.getTimeManager().isGameplayPaused()) return;
+      const enemies = this.enemyGroup.getChildren() as Enemy[];
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
+          this.dealDamageToEnemy(enemy, dmg);
+          // Slow enemies in the fog to 50% speed. Duration matches the
+          // tick interval + a small overlap so the slow is continuous
+          // rather than flickering on and off between ticks.
+          enemy.applyFreeze(0.5, 500);
         }
-      },
-    });
+      }
+    }, { repeats: Math.floor(duration / 300) });
 
     this.scene.tweens.add({
       targets: zone, alpha: 0, duration,
-      onComplete: () => { timer.destroy(); if (zone.active) zone.destroy(); },
+      onComplete: () => { tickHandle.cancel(); if (zone.active) zone.destroy(); },
     });
   }
 
