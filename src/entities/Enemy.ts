@@ -85,6 +85,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
   private bobPhase: number = 0;
 
+  private hazardTtlHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
+  private damageTintHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
+
   constructor(scene: Phaser.Scene & ISceneContext, x: number, y: number) {
     super(scene, x, y, 'tourist');
     this.ctxScene = scene;
@@ -97,6 +100,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   spawn(x: number, y: number, config: EnemyConfig, gameTimeSec: number): void {
+    // Cancel any scheduled effects from a previous pool cycle.
+    this.hazardTtlHandle?.cancel();
+    this.hazardTtlHandle = null;
+    this.damageTintHandle?.cancel();
+    this.damageTintHandle = null;
     this.setPosition(x, y);
     this.setTexture(config.texture);
     this.setActive(true);
@@ -204,7 +212,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(0, 0);
       // Hazards despawn after 10 seconds to prevent permanent pool slot exhaustion
       // (they're invincible, so without a TTL they accumulate until no enemies can spawn)
-      this.scene.time.delayedCall(10000, () => {
+      this.hazardTtlHandle = this.ctx.getUpdateTickers().addOnce('scaled', 10000, () => {
         if (this.active && this.behavior === 'hazard') {
           this.scene.tweens.add({
             targets: this, alpha: 0, duration: 500,
@@ -445,7 +453,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     });
 
     // Auto-cleanup after 2 seconds if it misses
-    this.scene.time.delayedCall(2000, cleanup);
+    this.ctx.getUpdateTickers().addOnce('scaled', 2000, cleanup);
   }
 
   private behaviorOrbit(tx: number, ty: number, delta: number): void {
@@ -743,7 +751,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.woolArmor > 0) {
       this.woolArmor--;
       this.setTintFill(0xffffff);
-      this.scene.time.delayedCall(80, () => {
+      this.damageTintHandle?.cancel();
+      this.damageTintHandle = this.ctx.getUpdateTickers().addOnce('scaled', 80, () => {
         if (!this.active) return;
         this.clearTint();
         if (this.baseTint) this.setTint(this.baseTint);
@@ -801,7 +810,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.setTintFill(0xffffff);
-    this.scene.time.delayedCall(60, () => {
+    this.damageTintHandle?.cancel();
+    this.damageTintHandle = this.ctx.getUpdateTickers().addOnce('scaled', 60, () => {
       if (!this.active) return;
       // Restore persistent tint (e.g. boss red, elite gold) instead of clearing all tints
       this.clearTint();
@@ -818,6 +828,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private die(): void {
     this.setActive(false);
     this.setVisible(false);
+    this.hazardTtlHandle?.cancel();
+    this.hazardTtlHandle = null;
+    this.damageTintHandle?.cancel();
+    this.damageTintHandle = null;
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = false;
     this.setVelocity(0, 0);

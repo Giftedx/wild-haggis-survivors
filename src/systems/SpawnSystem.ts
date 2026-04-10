@@ -154,11 +154,9 @@ export class SpawnSystem {
 
     // Spawn after the warning fades — use CURRENT player position, not the
     // stale coordinates from 1.5 seconds ago when the warning started.
-    // scene.time.delayedCall fires even while physics is paused, so if the
-    // player is mid-level-up we defer the work (including the camera shake
-    // and vignette flash) to the next unpaused update() tick instead of
-    // letting the boss materialize during card selection.
-    this.scene.time.delayedCall(1500, () => {
+    // Raw timer lives outside physics/timeScale; if the player is paused
+    // mid-level-up, defer the spawn work to the next unpaused update() tick.
+    this.scene.getUpdateTickers().addOnce('raw', 1500, () => {
       if (this.scene.getTimeManager().isGameplayPaused()) {
         this.pendingBossSpawn = doSpawn;
       } else {

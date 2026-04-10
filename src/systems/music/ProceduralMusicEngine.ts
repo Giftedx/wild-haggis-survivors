@@ -39,8 +39,10 @@ class ProceduralMusicEngine {
   private scheduler = new NoteScheduler();
 
   private rhythmBPM = 90;
-  private fadeTimeout: ReturnType<typeof setTimeout> | null = null;
-  private resolutionTimeouts: ReturnType<typeof setTimeout>[] = [];
+  private rafId: number | ReturnType<typeof setTimeout> | null = null;
+  private cancelFrame: ((id: number | ReturnType<typeof setTimeout>) => void) | null = null;
+  private fadeStopAtTimeSec: number | null = null;
+  private resolutionPolling = false;
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
@@ -94,14 +96,7 @@ class ProceduralMusicEngine {
 
   stop(): void {
     if (!this.playing) return;
-    // Cancel any pending fade-out timeout so it doesn't kill a new run's music
-    if (this.fadeTimeout !== null) {
-      clearTimeout(this.fadeTimeout);
-      this.fadeTimeout = null;
-    }
-    // Cancel any pending resolution polling timeouts
-    for (const t of this.resolutionTimeouts) clearTimeout(t);
-    this.resolutionTimeouts = [];
+    this.stopRafLoop();
     this.drone.stop();
     this.piano.stop();
     this.percussion.stop();
@@ -112,37 +107,23 @@ class ProceduralMusicEngine {
   }
 
   fadeOut(ms: number): void {
-    // Clear any prior pending fade timeout so a second fadeOut call doesn't
-    // lose its reference — otherwise the first setTimeout's stop() could
-    // fire during or after the second fade, cutting it short.
-    if (this.fadeTimeout !== null) {
-      clearTimeout(this.fadeTimeout);
-      this.fadeTimeout = null;
-    }
     if (!this.playing || !this.ctx || !this.masterGain) return;
     const t = this.ctx.currentTime;
     this.masterGain.gain.cancelScheduledValues(t);
     this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
-    this.masterGain.gain.linearRampToValueAtTime(0, t + ms / 1000);
-    this.fadeTimeout = setTimeout(() => {
-      this.fadeTimeout = null;
-      this.stop();
-    }, ms + 100);
+    const fadeEnd = t + ms / 1000;
+    this.masterGain.gain.linearRampToValueAtTime(0, fadeEnd);
+    // Use AudioContext time + a self-owned rAF loop so fade-stop persists
+    // across Phaser scene transitions (audio domain sits above scene domain).
+    this.fadeStopAtTimeSec = fadeEnd + 0.1;
+    this.startRafLoop();
   }
 
   playResolution(): void {
     if (!this.playing) return;
     this.conductor.enterResolution();
-    const conductorRef = this.conductor; // capture reference to detect reset
-    const checkDone = () => {
-      if (!this.playing || this.conductor !== conductorRef) return; // stopped or reset
-      if (this.conductor.isResolutionComplete()) {
-        this.fadeOut(3000);
-      } else {
-        this.resolutionTimeouts.push(setTimeout(checkDone, 200));
-      }
-    };
-    this.resolutionTimeouts.push(setTimeout(checkDone, 500));
+    this.resolutionPolling = true;
+    this.startRafLoop();
   }
 
   update(delta: number, state: GameMusicState): void {
@@ -196,6 +177,60 @@ class ProceduralMusicEngine {
   }
 
   isPlaying(): boolean { return this.playing; }
+
+  private startRafLoop(): void {
+    if (this.rafId !== null) return;
+    const requestFrame: (cb: FrameRequestCallback) => number | ReturnType<typeof setTimeout> =
+      typeof globalThis.requestAnimationFrame === 'function'
+        ? (cb) => globalThis.requestAnimationFrame(cb)
+        : (cb) => setTimeout(() => cb(performance.now()), 16);
+    this.cancelFrame =
+      typeof globalThis.cancelAnimationFrame === 'function'
+        ? (id) => globalThis.cancelAnimationFrame(id as number)
+        : (id) => clearTimeout(id as ReturnType<typeof setTimeout>);
+
+    const loop = () => {
+      this.rafId = requestFrame(loop as unknown as FrameRequestCallback);
+      this.tickRaf();
+    };
+    this.rafId = requestFrame(loop as unknown as FrameRequestCallback);
+  }
+
+  private stopRafLoop(): void {
+    if (this.rafId !== null) {
+      this.cancelFrame?.(this.rafId);
+      this.rafId = null;
+    }
+    this.cancelFrame = null;
+    this.fadeStopAtTimeSec = null;
+    this.resolutionPolling = false;
+  }
+
+  private tickRaf(): void {
+    if (!this.playing) return;
+
+    // Resolution polling (independent of Phaser scene lifecycle)
+    if (this.resolutionPolling) {
+      if (this.conductor.isResolutionComplete()) {
+        this.resolutionPolling = false;
+        this.fadeOut(3000);
+        return;
+      }
+    }
+
+    // Fade stop (independent of Phaser scene lifecycle)
+    if (this.fadeStopAtTimeSec !== null && this.ctx) {
+      if (this.ctx.currentTime >= this.fadeStopAtTimeSec) {
+        this.fadeStopAtTimeSec = null;
+        this.stop();
+      }
+    }
+
+    // If nothing needs rAF, stop the loop to avoid overhead.
+    if (!this.resolutionPolling && this.fadeStopAtTimeSec === null) {
+      this.stopRafLoop();
+    }
+  }
 
   private buildFogDelay(ctx: AudioContext): AudioNode {
     // Multi-tap reverb: instead of one long delay with feedback (which creates

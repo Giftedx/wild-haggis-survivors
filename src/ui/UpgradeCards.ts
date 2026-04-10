@@ -12,14 +12,16 @@ import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 export class UpgradeCardsUI {
   private scene: Phaser.Scene;
   private elements: Phaser.GameObjects.GameObject[] = [];
-  private pendingTimers: Phaser.Time.TimerEvent[] = [];
+  private pendingHandles: import('../utils/UpdateTickers').TickerHandle[] = [];
+  private tickers: import('../utils/UpdateTickers').UpdateTickers;
   private onSelect: (card: UpgradeCard) => void;
   private onReroll: (() => void) | null = null;
   private rerollsLeft: number = 0;
 
-  constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void) {
+  constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
     this.onSelect = onSelect;
+    this.tickers = tickers;
   }
 
   /** Set the reroll callback and grant one reroll per level-up */
@@ -90,11 +92,11 @@ export class UpgradeCardsUI {
     cards.forEach((card, i) => {
       const x = startX + i * (cardW + gap);
 
-      // Stagger animation — track timer for cleanup
-      const timer = this.scene.time.delayedCall(i * 120, () => {
+      // Stagger animation — raw tickers (UI continues during gameplay pause)
+      const handle = this.tickers.addOnce('raw', i * 120, () => {
         this.createCard(x, cardY, cardW, cardH, card, depth + 2);
       });
-      this.pendingTimers.push(timer);
+      this.pendingHandles.push(handle);
     });
   }
 
@@ -209,11 +211,8 @@ export class UpgradeCardsUI {
   }
 
   hide(): void {
-    // Cancel any pending stagger timers
-    for (const timer of this.pendingTimers) {
-      timer.destroy();
-    }
-    this.pendingTimers = [];
+    for (const h of this.pendingHandles) h.cancel();
+    this.pendingHandles = [];
 
     for (const el of this.elements) {
       this.scene.tweens.killTweensOf(el);
