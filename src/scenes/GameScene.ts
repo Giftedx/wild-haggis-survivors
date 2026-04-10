@@ -308,9 +308,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
       this.input.keyboard?.off('keydown-ESC');
-      this.weaponSystem?.destroy();
-      this.weaponSystem?.events.removeAllListeners();
-      this.xpSystem?.events.removeAllListeners();
+      // Flush run-scoped state on teardown to prevent "second run" bleed
+      try { this.updateTickers.clear(); } catch { /* ignore */ }
+      try { this.timeManager?.destroy(); } catch { /* ignore */ }
+      try { this.weaponSystem?.destroy(); } catch { /* ignore */ }
+      try { this.spawnSystem?.destroy(); } catch { /* ignore */ }
+      try { this.xpSystem?.destroy(); } catch { /* ignore */ }
     });
 
     // Fade in from black

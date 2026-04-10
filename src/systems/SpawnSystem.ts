@@ -42,6 +42,34 @@ export class SpawnSystem {
     }
   }
 
+  /** Reset run-scoped spawn state and deactivate pooled enemies. */
+  resetRunState(): void {
+    this.spawnTimer = 0;
+    this.gameTimeSec = 0;
+    this.spawnInterval = 1.5;
+    this.burstSize = 2;
+    this.spawnedBossKeys.clear();
+    this.bossActive = false;
+    this.pendingBossSpawn = null;
+    this.bossCheckFrame = -1;
+    this.events.removeAllListeners();
+
+    const enemies = this.pool.getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (e.active) {
+        try { (e as any).destroy?.(); } catch { /* ignore */ }
+        // Best-effort deactivate for pool implementations
+        (e as any).active = false;
+        (e as any).visible = false;
+      }
+    }
+  }
+
+  destroy(): void {
+    this.resetRunState();
+    try { (this.pool as any).clear?.(true, true); } catch { /* ignore */ }
+  }
+
   update(delta: number, playerX: number, playerY: number): void {
     this.gameTimeSec += delta / 1000;
     this.spawnTimer += delta / 1000;
