@@ -3,13 +3,14 @@ import { Enemy } from '../entities/Enemy';
 import { ENEMIES, GAME } from '../config';
 import { getAvailableEnemyTypes, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
 import { audio } from './AudioSystem';
+import { ISceneContext } from '../core/ISceneContext';
 
 /**
  * SpawnSystem — manages enemy object pool, wave spawning, and boss spawns.
  */
 export class SpawnSystem {
   private pool: Phaser.GameObjects.Group;
-  private scene: Phaser.Scene;
+  private scene: Phaser.Scene & ISceneContext;
   private spawnTimer: number = 0;
   private gameTimeSec: number = 0;
   private spawnInterval: number = 1.5;
@@ -27,7 +28,7 @@ export class SpawnSystem {
   /** Emits 'bossWarning' and 'bossKilled' events */
   readonly events = new Phaser.Events.EventEmitter();
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Phaser.Scene & ISceneContext) {
     this.scene = scene;
 
     this.pool = scene.add.group({
@@ -91,8 +92,7 @@ export class SpawnSystem {
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
     const doSpawn = () => {
-      const gameScene = this.scene as any;
-      const player = gameScene.getPlayer?.();
+      const player = this.scene.getPlayer();
       const currentX = player?.x ?? _playerX;
       const currentY = player?.y ?? _playerY;
       const camera = this.scene.cameras.main;

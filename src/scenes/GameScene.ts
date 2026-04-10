@@ -19,11 +19,12 @@ import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
 import { formatRunVariantLabel, getVariantByKey, VariantDef, VariantKey } from '../data/variants';
+import { ISceneContext } from '../core/ISceneContext';
 
 /**
  * GameScene — the core gameplay loop.
  */
-export class GameScene extends Phaser.Scene {
+export class GameScene extends Phaser.Scene implements ISceneContext {
   private player!: Player;
   private spawnSystem!: SpawnSystem;
   private weaponSystem!: WeaponSystem;
@@ -2055,6 +2056,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   getPlayer(): Player { return this.player; }
+  getTimeManager(): TimeManager { return this.timeManager; }
   getSpawnSystem(): SpawnSystem { return this.spawnSystem; }
   getWeaponSystem(): WeaponSystem { return this.weaponSystem; }
   getXPSystem(): XPSystem { return this.xpSystem; }
