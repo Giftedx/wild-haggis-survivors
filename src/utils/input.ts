@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SubscriptionBag } from './SubscriptionBag';
 
 /**
  * Unified input: reads WASD/arrow keys on desktop,
@@ -21,9 +22,7 @@ export class InputManager {
   private joystickThumb: Phaser.GameObjects.Arc | null = null;
 
   private isTouchDevice: boolean;
-  private onPointerDown?: (pointer: Phaser.Input.Pointer) => void;
-  private onPointerMove?: (pointer: Phaser.Input.Pointer) => void;
-  private onPointerUp?: (pointer: Phaser.Input.Pointer) => void;
+  private subs = new SubscriptionBag();
 
   constructor(private scene: Phaser.Scene) {
     this.isTouchDevice = scene.sys.game.device.input.touch;
@@ -111,7 +110,7 @@ export class InputManager {
         .setVisible(false);
     };
 
-    this.onPointerDown = (pointer: Phaser.Input.Pointer) => {
+    const onPointerDown = (pointer: Phaser.Input.Pointer) => {
       // Don't activate joystick if the pointer hit an interactive game object
       // (e.g., upgrade cards, pause buttons) — those should consume the tap
       const hitObjects = scene.input.hitTestPointer(pointer);
@@ -134,7 +133,7 @@ export class InputManager {
       }
     };
 
-    this.onPointerMove = (pointer: Phaser.Input.Pointer) => {
+    const onPointerMove = (pointer: Phaser.Input.Pointer) => {
       if (this.joystickActive && pointer.id === this.joystickPointerId && pointer.isDown) {
         this.joystickCurrent.x = pointer.x;
         this.joystickCurrent.y = pointer.y;
@@ -157,7 +156,7 @@ export class InputManager {
       }
     };
 
-    this.onPointerUp = (pointer: Phaser.Input.Pointer) => {
+    const onPointerUp = (pointer: Phaser.Input.Pointer) => {
       if (pointer.id !== this.joystickPointerId) return;
       this.joystickActive = false;
       this.joystickPointerId = -1;
@@ -165,21 +164,13 @@ export class InputManager {
       if (this.joystickThumb) this.joystickThumb.setVisible(false);
     };
 
-    scene.input.on('pointerdown', this.onPointerDown);
-    scene.input.on('pointermove', this.onPointerMove);
-    scene.input.on('pointerup', this.onPointerUp);
+    this.subs.listen(scene.input as any, 'pointerdown', onPointerDown);
+    this.subs.listen(scene.input as any, 'pointermove', onPointerMove);
+    this.subs.listen(scene.input as any, 'pointerup', onPointerUp);
   }
 
   destroy(): void {
-    // Unbind pointer listeners (critical for scene restart GC)
-    if (this.isTouchDevice) {
-      if (this.onPointerDown) this.scene.input.off('pointerdown', this.onPointerDown);
-      if (this.onPointerMove) this.scene.input.off('pointermove', this.onPointerMove);
-      if (this.onPointerUp) this.scene.input.off('pointerup', this.onPointerUp);
-    }
-    this.onPointerDown = undefined;
-    this.onPointerMove = undefined;
-    this.onPointerUp = undefined;
+    this.subs.dispose();
 
     this.joystickBase?.destroy();
     this.joystickThumb?.destroy();

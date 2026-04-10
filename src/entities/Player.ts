@@ -4,6 +4,7 @@ import { InputManager } from '../utils/input';
 import { rotateVector } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
+import { SubscriptionBag } from '../utils/SubscriptionBag';
 
 /**
  * Player — the wild haggis.
@@ -16,7 +17,7 @@ import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private inputManager: InputManager;
   private time: TimeManager;
-  private onSpaceDown?: () => void;
+  private subs = new SubscriptionBag();
 
   // Base stats (from level scaling only)
   private baseMoveSpeed: number = PLAYER.SPEED;
@@ -110,8 +111,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Dash on spacebar
     if (scene.input.keyboard) {
-      this.onSpaceDown = () => this.tryDash();
-      scene.input.keyboard.on('keydown-SPACE', this.onSpaceDown);
+      const onSpaceDown = () => this.tryDash();
+      this.subs.listen(scene.input.keyboard as any, 'keydown-SPACE', onSpaceDown);
     }
   }
 
@@ -461,12 +462,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   destroy(fromScene?: boolean): void {
     for (const h of this.dashTrailHandles) h.cancel();
     this.dashTrailHandles = [];
-
-    // Unbind keyboard listener
-    if (this.onSpaceDown && this.scene?.input?.keyboard) {
-      this.scene.input.keyboard.off('keydown-SPACE', this.onSpaceDown);
-    }
-    this.onSpaceDown = undefined;
+    this.subs.dispose();
 
     // InputManager owns touch pointer listeners (must be explicitly torn down)
     this.inputManager.destroy();

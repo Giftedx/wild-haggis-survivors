@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { describe, expect, it, vi } from 'vitest';
+import { SubscriptionBag } from './SubscriptionBag';
 
 // Phaser expects a browser environment. For this test we only need InputManager
 // to register/unregister pointer listeners on the scene input emitter.
@@ -23,6 +24,32 @@ function countListeners(emitter: any, event: string): number {
 }
 
 describe('Memory leak guardrails', () => {
+  it('SubscriptionBag disposes keyboard/physics/custom subscriptions together', () => {
+    const subs = new SubscriptionBag();
+
+    const keyboard = new EventEmitter();
+    const physics = new EventEmitter();
+    const system = new EventEmitter();
+
+    const onKey = () => {};
+    const onCollide = () => {};
+    const onCustom = () => {};
+
+    subs.listen(keyboard as any, 'keydown-SPACE', onKey);
+    subs.listen(physics as any, 'collide', onCollide);
+    subs.listen(system as any, 'enemyKilled', onCustom);
+
+    expect(countListeners(keyboard, 'keydown-SPACE')).toBe(1);
+    expect(countListeners(physics, 'collide')).toBe(1);
+    expect(countListeners(system, 'enemyKilled')).toBe(1);
+
+    subs.dispose();
+
+    expect(countListeners(keyboard, 'keydown-SPACE')).toBe(0);
+    expect(countListeners(physics, 'collide')).toBe(0);
+    expect(countListeners(system, 'enemyKilled')).toBe(0);
+  });
+
   it('InputManager destroys pointer listeners (touch joystick)', async () => {
     const inputEmitter = new EventEmitter();
 
