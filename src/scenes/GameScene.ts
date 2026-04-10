@@ -27,6 +27,7 @@ import { SaveManager, type IRunState } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
+import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from '../core/evolutionChest';
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
@@ -360,6 +361,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.registerDebugTimeTravelApi();
     this.registerMidRunPersistenceHooks();
 
+    getAnalyticsManager().beginGameplaySession({ variantKey: this.activeVariant.key });
+
     const prefs = this.settingsManager.load();
     applyAudioFromUserSettings(prefs);
     if (prefs.musicVolume > 0.001) {
@@ -389,6 +392,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
+      try {
+        getAnalyticsManager().endGameplaySession();
+      } catch {
+        /* ignore */
+      }
       sfxManager.clear();
       this.achievementUnsub?.();
       this.achievementUnsub = null;
@@ -1258,6 +1266,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Stops GameScene (Phase 13 shutdown cascade) then hands UI to GameOverScene.
    */
   private transitionToGameOver(payload: GameOverPayload): void {
+    try {
+      globalEventBus.emit('GLOBAL_RUN_ENDED', {
+        outcome: payload.mode,
+        gameTimeSec: payload.summary.timeSurvivedSec,
+        enemiesKilled: payload.summary.enemiesKilled,
+      });
+    } catch {
+      /* ignore */
+    }
     try {
       this.metaSaveManager.clearActiveRun();
     } catch {

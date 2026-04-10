@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { ISceneContext } from '../core/ISceneContext';
+import { globalEventBus } from '../core/GlobalEventBus';
 import { SaveManager } from '../core/SaveManager';
 import { t } from '../core/i18n';
 
@@ -55,6 +56,7 @@ export class TutorialSystem {
     this.clearVisuals();
     this.releaseTokens();
     this.metaSave.update((cur) => ({ ...cur, hasCompletedTutorial: true }));
+    globalEventBus.emit('TUTORIAL_COMPLETED', {});
     this.phase = 'done';
   }
 
