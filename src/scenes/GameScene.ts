@@ -23,6 +23,8 @@ import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { DebugOverlay } from '../ui/DebugOverlay';
+import { SaveManager } from '../core/SaveManager';
+import { StatComposer } from '../core/StatComposer';
 import type { GameOverPayload } from './gameOverPayload';
 
 /**
@@ -148,7 +150,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Create the player at world center
     const selectedVariant = getVariantByKey(save.selectedVariant);
     this.activeVariant = selectedVariant;
-    this.player = new Player(this, GAME.WORLD_WIDTH / 2, GAME.WORLD_HEIGHT / 2, selectedVariant.textureKey, this.timeManager);
+    const metaSave = new SaveManager().load();
+    const composedStats = StatComposer.getPlayerStats(metaSave);
+    this.player = new Player(
+      this,
+      GAME.WORLD_WIDTH / 2,
+      GAME.WORLD_HEIGHT / 2,
+      selectedVariant.textureKey,
+      this.timeManager,
+      composedStats
+    );
 
     // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
@@ -798,16 +809,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const ups = save.upgrades;
 
     const thickHide = ups['thick_hide'] ?? 0;
-    if (thickHide > 0) this.player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.05 * thickHide));
+    if (thickHide > 0) this.player.addMaxHp(Math.ceil(this.player.getRunBaseMaxHp() * 0.05 * thickHide));
 
     const strongLegs = ups['strong_legs'] ?? 0;
-    if (strongLegs > 0) this.player.addSpeed(PLAYER.SPEED * 0.03 * strongLegs);
+    if (strongLegs > 0) this.player.addSpeed(this.player.getRunBaseSpeed() * 0.03 * strongLegs);
 
     const sharpThistles = ups['sharp_thistles'] ?? 0;
     if (sharpThistles > 0) this.player.addDamageMultiplier(0.05 * sharpThistles);
 
     const magneticPersonality = ups['magnetic_personality'] ?? 0;
-    if (magneticPersonality > 0) this.player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.10 * magneticPersonality);
+    if (magneticPersonality > 0) this.player.addPickupRadius(this.player.getRunBasePickupRadius() * 0.10 * magneticPersonality);
 
     const driftControl = ups['drift_control'] ?? 0;
     for (let i = 0; i < driftControl; i++) this.player.reduceDrift(0.15);
@@ -856,7 +867,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private applyVariantModifiers(variant: VariantDef): void {
     const { modifiers } = variant;
 
-    if (modifiers.moveSpeedPct) this.player.addSpeed(PLAYER.SPEED * modifiers.moveSpeedPct);
+    if (modifiers.moveSpeedPct) this.player.addSpeed(this.player.getRunBaseSpeed() * modifiers.moveSpeedPct);
     if (modifiers.maxHpFlat) this.player.addMaxHp(modifiers.maxHpFlat);
     if (modifiers.armorFlat) this.player.addArmor(modifiers.armorFlat);
     if (modifiers.pickupRadiusFlat) this.player.addPickupRadius(modifiers.pickupRadiusFlat);

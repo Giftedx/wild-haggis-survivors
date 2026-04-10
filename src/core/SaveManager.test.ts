@@ -13,12 +13,18 @@ describe('SaveManager', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
 
-    mgr.save({ saveVersion: 1, totalKills: 42, unlockedWeapons: ['thistle_shot'] });
+    mgr.save({
+      saveVersion: 2,
+      totalKills: 42,
+      unlockedWeapons: ['thistle_shot'],
+      unlockedUpgrades: ['speed_tier_1'],
+    });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(1);
+    expect(loaded.saveVersion).toBe(2);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
+    expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
   });
 
   it('recovers from corrupted JSON without throwing', () => {
@@ -27,7 +33,19 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(() => mgr.load()).not.toThrow();
-    expect(mgr.load()).toEqual({ saveVersion: 1, totalKills: 0, unlockedWeapons: [] });
+    expect(mgr.load()).toEqual({ saveVersion: 2, totalKills: 0, unlockedWeapons: [], unlockedUpgrades: [] });
+  });
+
+  it('migrates v1 JSON to v2 with unlockedUpgrades default', () => {
+    const storage = new MemoryStorage();
+    storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 5, unlockedWeapons: ['thistle_shot'] }));
+    const mgr = new SaveManager({ storage, key: 'k' });
+    expect(mgr.load()).toEqual({
+      saveVersion: 2,
+      totalKills: 5,
+      unlockedWeapons: ['thistle_shot'],
+      unlockedUpgrades: [],
+    });
   });
 
   it('coerces malformed fields safely', () => {
@@ -35,7 +53,6 @@ describe('SaveManager', () => {
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 'nope', unlockedWeapons: [123, 'ok'] }));
 
     const mgr = new SaveManager({ storage, key: 'k' });
-    expect(mgr.load()).toEqual({ saveVersion: 1, totalKills: 0, unlockedWeapons: ['ok'] });
+    expect(mgr.load()).toEqual({ saveVersion: 2, totalKills: 0, unlockedWeapons: ['ok'], unlockedUpgrades: [] });
   });
 });
-
