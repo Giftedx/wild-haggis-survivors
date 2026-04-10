@@ -402,7 +402,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const moveSpeed = Math.min(this.speed, dist * 2); // slow as approach target
     this.setVelocity(Math.cos(angle) * moveSpeed, Math.sin(angle) * moveSpeed);
 
-    // Pipers buff nearby enemies — increase their speed by 30% (visual: pulse)
+    // Pipers buff nearby enemies — boost speed toward 1.3× their base speed.
+    // Clamps at baseSpeed * 1.5 so repeat ticks don't compound unboundedly
+    // (was a real bug: at 60fps with 0.02 per-frame probability, enemies
+    // reached ridiculous velocities after a few seconds in piper range).
     const enemies = (this.scene as any).getSpawnSystem?.()?.getEnemyGroup?.()?.getChildren?.();
     if (enemies && Math.random() < 0.02) {
       for (const e of enemies) {
@@ -411,9 +414,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (d < 120) {
           const body = e.body as Phaser.Physics.Arcade.Body;
           const speed = Math.sqrt(body.velocity.x ** 2 + body.velocity.y ** 2);
-          if (speed > 0) {
-            body.velocity.x *= 1.3;
-            body.velocity.y *= 1.3;
+          if (speed <= 0) continue;
+          const baseSpeed = (e as Enemy).getBaseSpeed();
+          const cap = baseSpeed * 1.5;
+          const desired = Math.min(speed * 1.3, cap);
+          if (desired > speed) {
+            const ratio = desired / speed;
+            body.velocity.x *= ratio;
+            body.velocity.y *= ratio;
           }
         }
       }
@@ -764,6 +772,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   getHp(): number { return this.hp; }
   getMaxHp(): number { return this.maxHp; }
   isBoss(): boolean { return this.bossFlag; }
+  /** Public getter for base speed — used by Piper buff to clamp the compound buff. */
+  getBaseSpeed(): number { return this.baseSpeed; }
   setBaseTint(color: number): void {
     this.baseTint = color;
     this.setTint(color);
