@@ -23,7 +23,7 @@ import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { DebugOverlay } from '../ui/DebugOverlay';
-import { SaveManager } from '../core/SaveManager';
+import { SaveManager, type IRunState } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
 import type { GameOverPayload } from './gameOverPayload';
 
@@ -99,6 +99,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private lavaZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
+  private readonly metaSaveManager = new SaveManager();
+  private pageHideBound?: () => void;
+  private devKeydownHandler?: (e: KeyboardEvent) => void;
 
   constructor() {
     super({ key: 'Game' });
@@ -106,6 +109,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   create(): void {
     const save = loadSave();
+
+    let resumeRun: IRunState | null = null;
+    const metaLoaded = this.metaSaveManager.load();
+    if (metaLoaded.activeRun) {
+      resumeRun = metaLoaded.activeRun;
+      this.metaSaveManager.save({ ...metaLoaded, activeRun: null });
+    }
 
     // Reset all state — Phaser reuses the scene instance on restart,
     // so field initializers only run once at construction
@@ -147,15 +157,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Draw the Highland ground
     this.createHighlandTerrain();
 
-    // Create the player at world center
-    const selectedVariant = getVariantByKey(save.selectedVariant);
+    // Create the player (resume position) or world center
+    const selectedVariant = resumeRun
+      ? getVariantByKey(resumeRun.selectedVariantKey)
+      : getVariantByKey(save.selectedVariant);
     this.activeVariant = selectedVariant;
-    const metaSave = new SaveManager().load();
+    const metaSave = this.metaSaveManager.load();
     const composedStats = StatComposer.getPlayerStats(metaSave);
+    const spawnPx = resumeRun
+      ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
+      : GAME.WORLD_WIDTH / 2;
+    const spawnPy = resumeRun
+      ? Phaser.Math.Clamp(resumeRun.playerY, 40, GAME.WORLD_HEIGHT - 40)
+      : GAME.WORLD_HEIGHT / 2;
     this.player = new Player(
       this,
-      GAME.WORLD_WIDTH / 2,
-      GAME.WORLD_HEIGHT / 2,
+      spawnPx,
+      spawnPy,
       selectedVariant.textureKey,
       this.timeManager,
       composedStats
@@ -187,6 +205,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Apply permanent upgrades from save data
     this.applyPermanentUpgrades();
+
+    if (resumeRun) {
+      this.applyResumeHydration(resumeRun);
+    }
 
     // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.applyUpgrade(card), this.updateTickers);
@@ -312,6 +334,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       timeManager: this.timeManager,
     });
 
+    this.registerDebugTimeTravelApi();
+    this.registerMidRunPersistenceHooks();
+
     // Apply saved audio settings and start background music
     audio.setEnabled(save.settings.soundOn);
     if (save.settings.musicOn) {
@@ -341,6 +366,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
+      this.unregisterMidRunPersistenceHooks();
+      this.unregisterDebugTimeTravelApi();
       try { this.subs.dispose(); } catch { /* ignore */ }
       try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
       this.debugOverlay = null;
@@ -1191,8 +1218,120 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Stops GameScene (Phase 13 shutdown cascade) then hands UI to GameOverScene.
    */
   private transitionToGameOver(payload: GameOverPayload): void {
+    try {
+      this.metaSaveManager.clearActiveRun();
+    } catch {
+      /* ignore */
+    }
     this.scene.stop('Game');
     this.scene.start('GameOver', payload);
+  }
+
+  private collectRunStateForMeta(): IRunState {
+    return {
+      gameTimeSec: this.spawnSystem.getGameTimeSec(),
+      playerX: this.player.x,
+      playerY: this.player.y,
+      playerHealth: this.player.getHp(),
+      playerMaxHp: this.player.getMaxHp(),
+      currentXp: this.xpSystem.getCurrentXP(),
+      currentLevel: this.xpSystem.getLevel(),
+      acquiredWeapons: this.weaponSystem.getWeapons().map((w) => ({
+        key: w.config.key,
+        level: w.level,
+        evolved: w.evolved,
+        evolutionKey: w.evolutionKey ?? '',
+      })),
+      selectedVariantKey: this.activeVariant.key,
+      killCount: this.killCount,
+      ownedPassives: [...this.ownedPassives],
+      evolvedWeaponKeys: [...this.evolvedWeapons],
+    };
+  }
+
+  private persistActiveRunToMeta(): void {
+    if (!this.timeManager) return;
+    if (this.timeManager.has('RUN_END')) return;
+    try {
+      this.metaSaveManager.saveActiveRun(this.collectRunStateForMeta());
+    } catch {
+      /* ignore */
+    }
+  }
+
+  private applyResumeHydration(run: IRunState): void {
+    this.xpSystem.hydrateRunState(run.currentLevel, run.currentXp);
+    for (let lv = 2; lv <= run.currentLevel; lv++) {
+      this.player.onLevelUp(lv);
+      this.growthSystem.onLevelUp(lv);
+    }
+    this.ownedPassives = [...run.ownedPassives];
+    this.evolvedWeapons = [...run.evolvedWeaponKeys];
+    for (const p of this.ownedPassives) {
+      this.applyPassiveEffect(p);
+    }
+    this.player.setResumeHealth(run.playerHealth);
+    this.weaponSystem.replaceWeaponsFromRun(run.acquiredWeapons);
+    this.spawnSystem.applyResumeTime(run.gameTimeSec);
+    this.killCount = run.killCount;
+  }
+
+  private registerDebugTimeTravelApi(): void {
+    const g = globalThis as unknown as {
+      DEBUG?: {
+        skipToMinute: (m: number) => void;
+        skipToGameSecond: (s: number) => void;
+      };
+    };
+    g.DEBUG = {
+      skipToMinute: (m: number) => {
+        this.spawnSystem.timeTravelToSeconds(Math.max(0, Number(m) || 0) * 60);
+      },
+      skipToGameSecond: (s: number) => {
+        this.spawnSystem.timeTravelToSeconds(Math.max(0, Number(s) || 0));
+      },
+    };
+
+    if (typeof window === 'undefined') return;
+    this.devKeydownHandler = (e: KeyboardEvent) => {
+      if (!e.shiftKey || e.code !== 'BracketRight') return;
+      if (!this.scene.isActive()) return;
+      e.preventDefault();
+      this.spawnSystem.timeTravelToSeconds(this.spawnSystem.getGameTimeSec() + 60);
+    };
+    window.addEventListener('keydown', this.devKeydownHandler);
+  }
+
+  private unregisterDebugTimeTravelApi(): void {
+    const g = globalThis as unknown as { DEBUG?: unknown };
+    if (g.DEBUG) {
+      delete g.DEBUG;
+    }
+    if (this.devKeydownHandler && typeof window !== 'undefined') {
+      window.removeEventListener('keydown', this.devKeydownHandler);
+      this.devKeydownHandler = undefined;
+    }
+  }
+
+  private registerMidRunPersistenceHooks(): void {
+    if (typeof window === 'undefined') return;
+    this.pageHideBound = () => {
+      try {
+        if (!this.scene.isActive()) return;
+        this.persistActiveRunToMeta();
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('pagehide', this.pageHideBound);
+    window.addEventListener('beforeunload', this.pageHideBound);
+  }
+
+  private unregisterMidRunPersistenceHooks(): void {
+    if (typeof window === 'undefined' || !this.pageHideBound) return;
+    window.removeEventListener('pagehide', this.pageHideBound);
+    window.removeEventListener('beforeunload', this.pageHideBound);
+    this.pageHideBound = undefined;
   }
 
   private buildGameOverPayload(

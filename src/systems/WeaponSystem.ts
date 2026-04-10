@@ -717,6 +717,26 @@ export class WeaponSystem {
     return this.weapons.some(w => w.config.key === key);
   }
 
+  /** Replace loadout from a saved run (default starter is restored if list is empty). */
+  replaceWeaponsFromRun(
+    slots: { key: string; level: number; evolved: boolean; evolutionKey: string }[]
+  ): void {
+    this.weapons = [];
+    for (const s of slots) {
+      if (!WEAPON_DEFS[s.key]) continue;
+      if (!this.addWeapon(s.key)) continue;
+      for (let lv = 2; lv <= Math.max(1, s.level); lv++) {
+        this.levelUpWeapon(s.key);
+      }
+      if (s.evolved && s.evolutionKey) {
+        this.evolveWeapon(s.key, s.evolutionKey);
+      }
+    }
+    if (this.weapons.length === 0) {
+      this.addWeapon('thistle_shot');
+    }
+  }
+
   getWeapons(): ActiveWeapon[] {
     return this.weapons;
   }

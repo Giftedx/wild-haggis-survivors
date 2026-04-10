@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
+import { SaveManager } from '../core/SaveManager';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
@@ -139,6 +140,7 @@ export class MenuScene extends Phaser.Scene {
 
     this.createButton(width / 2 - 128, 330, 220, 54, 'PLAY', COLORS.SCOTTISH_BLUE, () => {
       audio.playClick();
+      new SaveManager().clearActiveRun();
       this.fadeToScene('Game');
     }, 560);
 

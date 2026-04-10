@@ -348,6 +348,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.min(this.hp + amount, this.maxHp);
   }
 
+  /** Mid-run resume — clamp to current max HP after stats are rebuilt. */
+  setResumeHealth(hp: number): void {
+    this.hp = Math.max(0, Math.min(Math.floor(hp), this.maxHp));
+  }
+
   // ── Getters ──
 
   getHp(): number { return this.hp; }
