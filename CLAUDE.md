@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 3** (v3.90+) and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
 
+**Tone & UX north star**: `docs/DESIGN_SOUL.md` (Soul charter, weave matrix, shipping objectives).
+
 ## Commands
 
 - `npm run dev` — Start Vite dev server on port 3000 (auto-opens browser)
@@ -38,7 +40,7 @@ Vitest is configured (see `src/utils/save.test.ts`).
 Game balance is defined in data files, not scattered through logic:
 - `src/config.ts` — Global constants (world size, player base stats, XP curve, enemy caps, colors)
 - `src/data/weapons.ts` — Weapon definitions with `WeaponDef` interface (behavior, scaling per level)
-- `src/data/enemies.ts` — Enemy types with `EnemyConfig` (behavior, spawn timing) and `BossConfig`
+- `src/data/enemies.ts` — Enemy types with `EnemyConfig` (behavior, spawn timing) and `BossConfig` (boss `warningKey` is an i18n path, resolved with `t()` in `SpawnSystem`)
 - `src/data/upgrades.ts` — Level-up card pool with rarity-weighted draws and evolution recipes (`EVOLUTION_RECIPES`)
 - `src/data/permanentUpgrades.ts` — Between-run upgrades bought with Golden Haggis currency
 
