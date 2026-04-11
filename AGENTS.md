@@ -10,6 +10,9 @@ This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bun
 
 Before claiming anything is “fixed” or “done”, run at least `npm test` and (for shipped changes) `npm run build`.
 
+## Player experience & tone
+- **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; use it when changing menus, HUD, toasts, game-over, or copy.
+
 ## Architecture quick map
 - **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`
 - **Core systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`
