@@ -1,18 +1,27 @@
 import { defineConfig } from 'vite';
 import path from 'path';
+import { readFileSync } from 'node:fs';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const pkg = JSON.parse(
+  readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8')
+) as { version: string };
 
 export default defineConfig({
   /** Relative asset URLs so the build works on GitHub Pages project sites and file:// previews. */
   base: './',
+  /** Exposed at compile time so UI code reads a single source of truth for the app version. */
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Scottish Survivor',
-        short_name: 'Survivor',
-        description: 'Survive the Scottish horde — offline-capable roguelite.',
+        name: 'Wild Haggis Survivors',
+        short_name: 'Haggis Survivors',
+        description: 'Scrap through the glen as a wild haggis — warm, drifty, stubborn. Plays offline.',
         theme_color: '#1a1a2e',
         background_color: '#1a1a2e',
         display: 'standalone',

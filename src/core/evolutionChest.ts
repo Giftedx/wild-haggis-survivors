@@ -28,7 +28,7 @@ export function evolutionRecipeToUpgradeCard(r: EvolutionRecipeDef): UpgradeCard
     name: r.nameKey,
     description: r.descriptionKey,
     rarity: 'legendary',
-    icon: 'xp_gem',
+    icon: `wicon_${r.evolvedWeapon}`,
     effect: {
       type: 'evolve_weapon',
       weaponKey: r.baseWeapon,

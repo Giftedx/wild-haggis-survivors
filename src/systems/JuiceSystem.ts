@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import type { SettingsManager } from '../core/SettingsManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
+import { t } from '../core/i18n';
+import { getCameraViewport } from '../ui/cameraViewport';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -37,6 +39,11 @@ export class JuiceSystem {
 
   // Screen flash overlay
   private flashRect: Phaser.GameObjects.Rectangle;
+  private layoutX = 0;
+  private layoutY = 0;
+  private layoutWidth = 0;
+  private layoutHeight = 0;
+  private layoutZoom = 1;
 
   // Hit-freeze throttling (engine mutations handled by TimeManager)
   private freezeCooldownMs: number = 0;
@@ -54,14 +61,21 @@ export class JuiceSystem {
     this.tickers = tickers;
     this.settings = settings ?? getSettingsManager();
 
+    const { x, y, width, height, zoom } = this.getUiViewport();
+    this.layoutX = x;
+    this.layoutY = y;
+    this.layoutWidth = width;
+    this.layoutHeight = height;
+    this.layoutZoom = zoom;
+
     // Danger vignette — red border glow, hidden by default
     this.vignette = scene.add.graphics().setScrollFactor(0).setDepth(45).setAlpha(0);
     this.drawVignette();
 
     // Screen flash overlay — used for level-up/damage flashes
     this.flashRect = scene.add.rectangle(
-      scene.scale.width / 2, scene.scale.height / 2,
-      scene.scale.width, scene.scale.height,
+      width / 2, height / 2,
+      width, height,
       0xffffff, 0
     ).setScrollFactor(0).setDepth(95);
 
@@ -79,7 +93,7 @@ export class JuiceSystem {
     }
 
     // Combo text — fixed to screen, shows during streaks
-    this.comboText = scene.add.text(scene.scale.width / 2, scene.scale.height * 0.15, '', {
+    this.comboText = scene.add.text(width / 2, Math.max(height * 0.15, 140), '', {
       fontFamily: 'monospace',
       fontSize: '30px',
       color: '#ff8800',
@@ -118,6 +132,7 @@ export class JuiceSystem {
 
   /** Call each frame */
   update(delta: number, hpFraction?: number): void {
+    this.refreshFixedLayout();
     const timeScale = this.time.getEffectiveTimeScale();
     const scaledDelta = delta * timeScale;
 
@@ -135,11 +150,10 @@ export class JuiceSystem {
 
     // Combo timer
     if (this.comboCount > 0) {
-      this.comboTimer -= delta;
+      this.comboTimer -= scaledDelta;
       if (this.comboTimer <= 0) {
         this.comboCount = 0;
-        this.comboText.setVisible(false);
-        this.comboText.setColor('#ff8800'); // Reset to base color for next combo
+        this.syncComboText();
       }
     }
 
@@ -231,12 +245,7 @@ export class JuiceSystem {
     if (this.comboCount > this.bestCombo) this.bestCombo = this.comboCount;
 
     if (this.comboCount >= 5) {
-      const dmgBonus = Math.min(50, Math.floor(this.comboCount / 10) * 5);
-      const bonusText = dmgBonus > 0 ? ` +${dmgBonus}% DMG` : '';
-      this.comboText.setText(`${this.comboCount}x COMBO!${bonusText}`);
-      this.comboText.setVisible(true);
-      this.comboText.setScale(1);
-      this.comboText.setColor('#ff8800'); // Reset to base before escalation check
+      this.syncComboText();
 
       // Pulse effect
       this.scene.tweens.add({
@@ -250,34 +259,29 @@ export class JuiceSystem {
       if (this.comboCount === 50 || this.comboCount === 100 || this.comboCount === 200) {
         this.flashWhite(100);
       }
-
-      // Color escalation
-      if (this.comboCount >= 50) {
-        this.comboText.setColor('#ff0000');
-      } else if (this.comboCount >= 20) {
-        this.comboText.setColor('#ff4400');
-      } else if (this.comboCount >= 10) {
-        this.comboText.setColor('#ff8800');
-      }
     }
   }
 
   /** Toast notification — slides in from the right and fades out, stacks vertically */
   showToast(message: string, color: string = '#ffffff'): void {
-    const { width } = this.scene.scale;
-    const yOffset = 130 + this.activeToasts * 36;
+    const { x, y, width } = this.getUiViewport();
+    const stackIndex = Math.min(this.activeToasts, 2);
+    const yOffset = y + 130 + stackIndex * 36;
     this.activeToasts++;
 
-    const toast = this.scene.add.text(width + 10, yOffset, message, {
+    const wrapW = Math.max(160, Math.min(420, width - 24));
+    const toast = this.scene.add.text(x + width + 10, yOffset, message, {
       fontFamily: 'monospace', fontSize: '16px', color,
       fontStyle: 'bold', stroke: '#000000', strokeThickness: 3,
       backgroundColor: '#00000088', padding: { x: 10, y: 5 },
+      wordWrap: { width: wrapW },
+      align: 'right',
     }).setScrollFactor(0).setDepth(85).setOrigin(1, 0);
 
     // Slide in
     this.scene.tweens.add({
       targets: toast,
-      x: width - 10,
+      x: x + width - 10,
       duration: 300,
       ease: 'Power2',
       onComplete: () => {
@@ -322,8 +326,8 @@ export class JuiceSystem {
 
   /** Draw the vignette shape — radial gradient from transparent center to red edges */
   private drawVignette(): void {
-    const w = this.scene.scale.width;
-    const h = this.scene.scale.height;
+    const w = this.layoutWidth;
+    const h = this.layoutHeight;
     const gfx = this.vignette;
     gfx.clear();
 
@@ -352,11 +356,42 @@ export class JuiceSystem {
   /** Best combo this run */
   private bestCombo: number = 0;
   getBestCombo(): number { return this.bestCombo; }
+  setResumeBestCombo(bestCombo: number | undefined): void {
+    if (bestCombo === undefined || !Number.isFinite(bestCombo)) return;
+    this.bestCombo = Math.max(0, Math.floor(bestCombo));
+  }
+  getComboTimerRemainingMs(): number { return Math.max(0, Math.floor(this.comboTimer)); }
+  setResumeComboState(comboCount: number | undefined, comboTimerMs: number | undefined): void {
+    if (comboCount === undefined || comboTimerMs === undefined) return;
+    this.comboCount = Math.max(0, Math.floor(comboCount));
+    this.comboTimer = Math.max(0, Math.floor(comboTimerMs));
+    this.syncComboText();
+  }
 
   /** Combo damage multiplier — +5% per 10 combo, max +50% */
   getComboDamageMultiplier(): number {
     const bonus = Math.min(0.5, Math.floor(this.comboCount / 10) * 0.05);
     return 1 + bonus;
+  }
+
+  private syncComboText(): void {
+    if (this.comboCount < 5 || this.comboTimer <= 0) {
+      this.comboText.setVisible(false);
+      this.comboText.setColor('#ff8800');
+      return;
+    }
+    const dmgBonus = Math.min(50, Math.floor(this.comboCount / 10) * 5);
+    const bonusText = dmgBonus > 0 ? t('ui.hud.combo_bonus', { pct: dmgBonus }) : '';
+    this.comboText.setText(t('ui.hud.combo', { count: this.comboCount, bonus: bonusText }));
+    this.comboText.setVisible(true);
+    this.comboText.setScale(1);
+    if (this.comboCount >= 50) {
+      this.comboText.setColor('#ff0000');
+    } else if (this.comboCount >= 20) {
+      this.comboText.setColor('#ff4400');
+    } else {
+      this.comboText.setColor('#ff8800');
+    }
   }
 
   /** Heavy screen shake for boss events */
@@ -438,5 +473,25 @@ export class JuiceSystem {
     this.slowMotionActive = true;
     this.slowMotionRemainingMs = durationMs;
     this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, durationMs);
+  }
+
+  private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
+    return getCameraViewport(this.scene);
+  }
+
+  private refreshFixedLayout(): void {
+    const { x, y, width, height, zoom } = this.getUiViewport();
+    this.layoutX = x;
+    this.layoutY = y;
+    this.layoutWidth = width;
+    this.layoutHeight = height;
+    this.layoutZoom = zoom;
+
+    this.flashRect.setPosition(x + width / 2, y + height / 2);
+    this.flashRect.width = width;
+    this.flashRect.height = height;
+    this.comboText.setPosition(x + width / 2, y + Math.max(height * 0.2, 128 / Math.max(0.001, zoom)));
+    this.vignette.setPosition(x, y);
+    this.drawVignette();
   }
 }

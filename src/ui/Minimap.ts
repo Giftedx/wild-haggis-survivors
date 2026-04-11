@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { GAME } from '../config';
 import { Enemy } from '../entities/Enemy';
+import { getCameraViewport } from './cameraViewport';
 
 /**
  * Minimap — small corner radar showing player position, enemy clusters,
@@ -10,15 +11,20 @@ export class Minimap {
   private scene: Phaser.Scene;
   private gfx: Phaser.GameObjects.Graphics;
   private bg: Phaser.GameObjects.Rectangle;
-  private readonly SIZE = 90;
-  private readonly MARGIN = 10;
+  private readonly SIZE = 110;
+  private readonly MARGIN = 12;
   private readonly DEPTH = 48; // just below HUD
+
+  private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
+    const { x, y, width, height, zoom } = getCameraViewport(this.scene);
+    return { x, y, width, height, zoom };
+  }
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    const { width, height } = scene.scale;
-    const x = width - this.MARGIN - this.SIZE / 2;
-    const y = height - this.MARGIN - this.SIZE / 2 - 12; // above XP bar
+    const { x: left, y: top, width, height } = this.getUiViewport();
+    const x = Math.max(left + this.SIZE / 2, Math.min(left + width - this.SIZE / 2, left + width - this.MARGIN - this.SIZE / 2));
+    const y = Math.max(top + this.SIZE / 2, Math.min(top + height - this.SIZE / 2, top + height - this.MARGIN - this.SIZE / 2));
 
     // Background
     this.bg = scene.add.rectangle(x, y, this.SIZE, this.SIZE, 0x000000, 0.4)
@@ -32,12 +38,18 @@ export class Minimap {
       .setDepth(this.DEPTH + 1);
   }
 
-  update(playerX: number, playerY: number, enemyGroup: Phaser.GameObjects.Group): void {
+  update(
+    playerX: number,
+    playerY: number,
+    enemyGroup: Phaser.GameObjects.Group,
+    chestMarkers: Array<{ x: number; y: number; golden?: boolean }> = []
+  ): void {
     this.gfx.clear();
 
-    const { width, height } = this.scene.scale;
-    const mapX = width - this.MARGIN - this.SIZE;
-    const mapY = height - this.MARGIN - this.SIZE - 12;
+    const { x: left, y: top, width, height } = this.getUiViewport();
+    const mapX = Math.max(left, Math.min(left + width - this.SIZE, left + width - this.MARGIN - this.SIZE));
+    const mapY = Math.max(top, Math.min(top + height - this.SIZE, top + height - this.MARGIN - this.SIZE));
+    this.bg.setPosition(mapX + this.SIZE / 2, mapY + this.SIZE / 2);
     const scaleX = this.SIZE / GAME.WORLD_WIDTH;
     const scaleY = this.SIZE / GAME.WORLD_HEIGHT;
 
@@ -71,6 +83,16 @@ export class Minimap {
     const py = mapY + playerY * scaleY;
     this.gfx.fillStyle(0x44ff44, 1);
     this.gfx.fillCircle(px, py, 2.5);
+
+    // Chest markers: subtle squares (gold for golden chests)
+    for (const chest of chestMarkers) {
+      const cx = Phaser.Math.Clamp(mapX + chest.x * scaleX, mapX, mapX + this.SIZE);
+      const cy = Phaser.Math.Clamp(mapY + chest.y * scaleY, mapY, mapY + this.SIZE);
+      this.gfx.fillStyle(0x000000, 0.9);
+      this.gfx.fillRect(cx - 2.5, cy - 2.5, 5, 5);
+      this.gfx.fillStyle(chest.golden ? 0xffcc44 : 0x66ccff, 1);
+      this.gfx.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+    }
 
     // Camera viewport outline
     const cam = this.scene.cameras.main;

@@ -3,10 +3,12 @@ import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantKey } from '../data/variants';
+import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { WEAPON_DEFS } from '../data/weapons';
 import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
+import { getSettingsManager } from '../core/SettingsManager';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -29,6 +31,7 @@ export class GameOverScene extends Phaser.Scene {
     }
     const { width, height } = this.scale;
     const d = 200;
+    const { uiScale, highContrastUi } = getSettingsManager().load();
     const { mode, summary, runResult } = this.payload;
     const isVictory = this.payload.isVictory ?? (mode === 'victory');
     const weaponDamage = this.payload.weaponDamage ?? {};
@@ -48,10 +51,10 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(d)
       .setInteractive();
     const panel = this.add
-      .rectangle(width / 2, height / 2, 684, 648, 0x101729, 0)
+      .rectangle(width / 2, height / 2, 684, 656, highContrastUi ? 0x080d17 : 0x101729, 0)
       .setScrollFactor(0)
       .setDepth(d + 1)
-      .setStrokeStyle(2, panelStroke, 1);
+      .setStrokeStyle(2, highContrastUi ? 0x8fb4ff : panelStroke, 1);
     this.tweens.add({ targets: overlay, alpha: 0.82, duration: 420 });
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
@@ -69,21 +72,23 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(d + 2)
       .setAlpha(0)
       .setScale(isVictory ? 0.7 : 1.4);
+    title.setScale((isVictory ? 0.7 : 1.4) * uiScale);
     const subtitle = this.add
       .text(width / 2, 126, isVictory ? t('ui.gameOver.victory_sub') : t('ui.gameOver.death_sub'), {
         fontFamily: 'monospace',
-        fontSize: '16px',
+        fontSize: '17px',
         color: '#a8b0c0',
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setAlpha(0);
+    subtitle.setScale(uiScale);
 
     this.tweens.add({
       targets: title,
       alpha: 1,
-      scale: 1,
+      scale: uiScale,
       duration: 480,
       delay: 180,
       ease: 'Back.easeOut',
@@ -99,7 +104,7 @@ export class GameOverScene extends Phaser.Scene {
     const variantText = this.add
       .text(width / 2, 168, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
         fontFamily: 'monospace',
-        fontSize: '12px',
+        fontSize: '13px',
         color: '#d7e3ff',
         wordWrap: { width: 560 },
         align: 'center',
@@ -108,35 +113,36 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    variantText.setScale(uiScale);
     this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
 
     const statsPanel = this.add
-      .rectangle(width / 2, 245, 596, 108, 0x131d32, 0.95)
+      .rectangle(width / 2, 236, 596, 92, 0x131d32, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283a5f, 1)
       .setAlpha(0);
     const goldPanel = this.add
-      .rectangle(width / 2, 448, 596, 72, 0x141d2f, 0.95)
+      .rectangle(width / 2, 478, 596, 70, 0x141d2f, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x2f435f, 1)
       .setAlpha(0);
     const weaponDamagePanel = this.add
-      .rectangle(width / 2, 348, 596, 128, 0x0f1828, 0.95)
+      .rectangle(width / 2, 362, 596, 158, 0x0f1828, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x243552, 1)
       .setAlpha(0);
     const unlockPanel = this.add
-      .rectangle(width / 2, 548, 596, 112, 0x121a2a, 0.95)
+      .rectangle(width / 2, 560, 596, 94, 0x121a2a, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283447, 1)
       .setAlpha(0);
     this.tweens.add({ targets: [statsPanel, weaponDamagePanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
 
-    const statBaseY = 214;
+    const statBaseY = 210;
     const statGap = 142;
     this.createResultStat(width / 2 - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600);
     this.createResultStat(width / 2, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660);
@@ -144,30 +150,34 @@ export class GameOverScene extends Phaser.Scene {
     this.createResultStat(width / 2 - statGap / 2, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
     this.createResultStat(width / 2 + statGap / 2, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
 
+    const loadoutSummaryText = this.buildBoundedLoadoutSummary(this.payload.buildSummary, 2);
     const loadoutSummary = this.add
       .text(
         width / 2,
-        276,
-        `${t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount })}\n${this.payload.buildSummary}`,
+        298,
+        `${t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount })}\n${loadoutSummaryText}`,
         {
           fontFamily: 'monospace',
-          fontSize: '12px',
+          fontSize: '13px',
           color: '#9ea8bb',
           align: 'center',
+          lineSpacing: 6,
           wordWrap: { width: 560 },
         }
       )
-      .setOrigin(0.5)
+      .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    loadoutSummary.setScale(uiScale);
     this.tweens.add({ targets: loadoutSummary, alpha: 1, duration: 260, delay: 900 });
 
-    const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary);
+    const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary, 3);
+    const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
-      .text(width / 2, 304, t('ui.gameOver.damage_by_weapon'), {
+      .text(width / 2, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
         fontFamily: 'monospace',
-        fontSize: '11px',
+        fontSize: '13px',
         color: '#7f8ca7',
         fontStyle: 'bold',
         letterSpacing: 1,
@@ -176,10 +186,11 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    weaponHeading.setScale(uiScale);
     const weaponBody = this.add
-      .text(width / 2, 322, weaponRows, {
+      .text(width / 2, weaponHeading.y + 16, weaponRows, {
         fontFamily: 'monospace',
-        fontSize: '11px',
+        fontSize: '13px',
         color: '#c4cdd8',
         align: 'center',
         lineSpacing: 4,
@@ -189,10 +200,13 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    weaponBody.setScale(uiScale);
     this.tweens.add({ targets: [weaponHeading, weaponBody], alpha: 1, duration: 260, delay: 940 });
+    const weaponBodyBottom = weaponBody.y + weaponBody.height;
+    const goldTitleY = Math.max(452, weaponBodyBottom + 16);
 
     const goldTitle = this.add
-      .text(width / 2, 431, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
+      .text(width / 2, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
         fontFamily: 'monospace',
         fontSize: '28px',
         color: '#d4a017',
@@ -204,8 +218,9 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    goldTitle.setScale(uiScale);
     const goldText = this.add
-      .text(width / 2, 460, goldBreakdown, {
+      .text(width / 2, goldTitleY + 30, goldBreakdown, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#b69643',
@@ -215,6 +230,7 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
+    goldText.setScale(uiScale);
     this.tweens.add({
       targets: goldTitle,
       alpha: 1,
@@ -225,19 +241,19 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: goldText, alpha: 1, duration: 240, delay: 1080 });
 
-    this.addRunResultUnlockContent(width / 2, 507, d + 3, runResult.newlyUnlockedVariants, 1140);
+    this.addRunResultUnlockContent(width / 2, 522, d + 3, runResult.newlyUnlockedVariants, 1140);
 
-    this.createResultActionButton(width / 2 - 196, 647, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
+    this.createResultActionButton(width / 2 - 196, 644, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Game');
     });
-    this.createResultActionButton(width / 2, 647, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
+    this.createResultActionButton(width / 2, 644, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
     });
-    this.createResultActionButton(width / 2 + 196, 647, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
+    this.createResultActionButton(width / 2 + 196, 644, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');
@@ -360,7 +376,7 @@ export class GameOverScene extends Phaser.Scene {
     const labelText = this.add
       .text(x, y, label, {
         fontFamily: 'monospace',
-        fontSize: '11px',
+        fontSize: '12px',
         color: '#7f8ca7',
         fontStyle: 'bold',
       })
@@ -371,7 +387,7 @@ export class GameOverScene extends Phaser.Scene {
     const valueText = this.add
       .text(x, y + 18, value, {
         fontFamily: 'monospace',
-        fontSize: '18px',
+        fontSize: '20px',
         color: '#ffffff',
         fontStyle: 'bold',
       })
@@ -424,9 +440,25 @@ export class GameOverScene extends Phaser.Scene {
     button.on('pointerdown', onClick);
   }
 
-  private buildWeaponDamageRows(weaponDamage: Record<string, number>, summary: GameOverPayload['summary']): string {
+  private buildBoundedLoadoutSummary(rawSummary: string, maxDetailLines: number): string {
+    const detailLines = rawSummary
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const visible = detailLines.slice(0, maxDetailLines);
+    if (detailLines.length > maxDetailLines) {
+      visible.push(t('ui.gameOver.more_weapons', { count: detailLines.length - maxDetailLines }));
+    }
+    return visible.join('\n');
+  }
+
+  private buildWeaponDamageRows(
+    weaponDamage: Record<string, number>,
+    summary: GameOverPayload['summary'],
+    maxRows: number
+  ): string {
     const entries = sortedWeaponDamageEntries(weaponDamage);
-    const maxD = entries[0]?.damage ?? 1;
+    const totalDamage = entries.reduce((sum, e) => sum + e.damage, 0);
     const lines: string[] = [
       t('ui.gameOver.damage_summary', {
         kills: summary.enemiesKilled,
@@ -438,16 +470,15 @@ export class GameOverScene extends Phaser.Scene {
       lines.push(t('ui.gameOver.no_weapon_damage'));
       return lines.join('\n');
     }
-    const barW = 14;
-    for (const e of entries.slice(0, 6)) {
+    const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
+    for (const e of entries.slice(0, maxRows)) {
       const def = WEAPON_DEFS[e.key];
-      const label = (def?.name ?? e.key).slice(0, 18);
-      const filled = Math.max(1, Math.round((e.damage / maxD) * barW));
-      const bar = '█'.repeat(filled) + '░'.repeat(Math.max(0, barW - filled));
-      lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}  ${bar}`);
+      const label = (def?.name ?? evoDisplay.get(e.key) ?? e.key).slice(0, 18);
+      const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
+      lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);
     }
-    if (entries.length > 6) {
-      lines.push(t('ui.gameOver.more_weapons', { count: entries.length - 6 }));
+    if (entries.length > maxRows) {
+      lines.push(t('ui.gameOver.more_weapons', { count: entries.length - maxRows }));
     }
     return lines.join('\n');
   }

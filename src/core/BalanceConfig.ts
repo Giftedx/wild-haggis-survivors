@@ -73,10 +73,10 @@ export const BALANCE = {
     minEffectiveCooldownMs: 50,
   },
   player: {
-    dashCooldownMs: 2000,
-    dashSpeed: 600,
-    dashDurationMs: 150,
-    postDashGraceMs: 50,
+    dashCooldownMs: 1600,
+    dashSpeed: 760,
+    dashDurationMs: 180,
+    postDashGraceMs: 80,
     dashAfterImageCount: 5,
     netSlowAmount: 80,
     shieldCooldownMs: 20000,
@@ -91,6 +91,26 @@ export const BALANCE = {
     hazardTtlMs: 10000,
     diveDespawnMarginPx: 300,
     rangedCooldownMs: 3000,
+    /** Elites start spawning this many seconds into the run. */
+    ELITE_UNLOCK_SEC: 120,
+    /** Per-spawn chance that a non-hazard, non-swarm enemy upgrades to elite. */
+    ELITE_SPAWN_CHANCE: 0.10,
+  },
+  hud: {
+    /**
+     * Wave difficulty ladder displayed under the timer. Single source of
+     * truth — HUD reads from this, so tuning the wave arc stays consistent
+     * between the WAVE_TIMELINE (gameplay) and what the player sees.
+     */
+    WAVE_DIFFICULTY_MARKS: [
+      { minSec: 0,    label: 'I',   color: '#88cc88' },
+      { minSec: 180,  label: 'II',  color: '#cccc44' },
+      { minSec: 420,  label: 'III', color: '#dd8844' },
+      { minSec: 720,  label: 'IV',  color: '#dd4444' },
+      { minSec: 1200, label: 'V',   color: '#ff2222' },
+    ] as const,
+    /** Enemy count threshold above which the HUD flashes the "MAX" warning. */
+    ENEMY_WARN_THRESHOLD: 350,
   },
 } as const;
 

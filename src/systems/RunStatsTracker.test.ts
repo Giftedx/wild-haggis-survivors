@@ -27,4 +27,16 @@ describe('RunStatsTracker', () => {
     t.addWeaponDamage('x', -3);
     expect(t.snapshot()).toEqual({ unknown: 50 });
   });
+
+  it('restores a persisted snapshot and drops malformed entries', () => {
+    const t = new RunStatsTracker();
+    t.addWeaponDamage('old', 10);
+    t.restore({
+      thistle_shot: 1200,
+      caber_toss: -4,
+      garlic: Number.NaN,
+      unknown: 50.9,
+    } as Record<string, number>);
+    expect(t.snapshot()).toEqual({ thistle_shot: 1200, unknown: 50 });
+  });
 });

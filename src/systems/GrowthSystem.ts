@@ -16,7 +16,7 @@ export class GrowthSystem {
   constructor(scene: Phaser.Scene, player: Player) {
     this.scene = scene;
     this.player = player;
-    // Preserve the scene's configured zoom (GameScene sets this to 1.2).
+    // Preserve the scene's configured zoom (GameScene sets this to 1.3).
     // Camera zoom affects all rendered objects, including scrollFactor(0) UI,
     // so we keep zoom stable to guarantee HUD text stays pixel-consistent.
     this.baseZoom = scene.cameras.main.zoom;

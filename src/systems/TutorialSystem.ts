@@ -3,6 +3,7 @@ import type { ISceneContext } from '../core/ISceneContext';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { SaveManager } from '../core/SaveManager';
 import { t } from '../core/i18n';
+import { getCameraViewport } from '../ui/cameraViewport';
 
 const TOKEN_MOVE = 'TUTORIAL_MOVE';
 const TOKEN_GEM = 'TUTORIAL_GEM';
@@ -13,6 +14,7 @@ type Phase = 'done' | 'move' | 'await_gem' | 'await_level';
  * One-shot FTUE: movement tip → first gem tip → complete on first level-up (level 2).
  */
 export class TutorialSystem {
+  private inputBlocker: Phaser.GameObjects.Rectangle | null = null;
   private phase: Phase = 'done';
   private readonly scene: Phaser.Scene & ISceneContext;
   private readonly metaSave: SaveManager;
@@ -27,6 +29,11 @@ export class TutorialSystem {
     this.metaSave = metaSave;
   }
 
+  private getUiViewport(): { x: number; y: number; width: number; height: number } {
+    const { x, y, width, height } = getCameraViewport(this.scene);
+    return { x, y, width, height };
+  }
+
   dispose(): void {
     this.detachGemListener();
     this.detachKeyHandler();
@@ -35,7 +42,11 @@ export class TutorialSystem {
     this.phase = 'done';
   }
 
-  startRunIfNeeded(): void {
+  startRunIfNeeded(opts?: { resumeRun?: boolean }): void {
+    if (opts?.resumeRun) {
+      this.phase = 'done';
+      return;
+    }
     if (this.metaSave.load().hasCompletedTutorial) {
       this.phase = 'done';
       return;
@@ -67,6 +78,8 @@ export class TutorialSystem {
   }
 
   private clearModal(): void {
+    this.inputBlocker?.destroy();
+    this.inputBlocker = null;
     this.overlay?.destroy();
     this.overlay = null;
     this.bodyText?.destroy();
@@ -127,15 +140,20 @@ export class TutorialSystem {
     this.clearModal();
     this.scene.getTimeManager().request(token, { pausePhysics: true, timeScale: 0 });
 
-    const { width, height } = this.scene.scale;
+    const { x, y, width, height } = this.getUiViewport();
     const pad = 28;
+    this.inputBlocker = this.scene.add
+      .rectangle(x + width / 2, y + height / 2, width, height, 0x000000, 0)
+      .setScrollFactor(0)
+      .setDepth(599)
+      .setInteractive();
     this.overlay = this.scene.add
-      .rectangle(width / 2, height / 2, width - pad * 2, 120, 0x0a1020, 0.94)
+      .rectangle(x + width / 2, y + height / 2, width - pad * 2, 120, 0x0a1020, 0.94)
       .setStrokeStyle(2, 0x5a7ab8, 1)
       .setScrollFactor(0)
       .setDepth(600);
     this.bodyText = this.scene.add
-      .text(width / 2, height / 2, message, {
+      .text(x + width / 2, y + height / 2, message, {
         fontFamily: 'monospace',
         fontSize: '15px',
         color: '#e8eef8',
@@ -157,7 +175,7 @@ export class TutorialSystem {
     };
 
     this.keyDownHandler = (e: KeyboardEvent) => {
-      e.preventDefault();
+      if (!['Enter', ' ', 'Spacebar', 'Escape'].includes(e.key)) return;
       finish();
     };
     if (typeof window !== 'undefined') {

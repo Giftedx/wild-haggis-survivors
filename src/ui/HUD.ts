@@ -1,5 +1,9 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
+import { BALANCE } from '../core/BalanceConfig';
+import { getSettingsManager } from '../core/SettingsManager';
+import { getCameraViewport } from './cameraViewport';
+import { t } from '../core/i18n';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -19,11 +23,13 @@ export class HUD {
 
   private levelText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
+  private objectiveText!: Phaser.GameObjects.Text;
   private killText!: Phaser.GameObjects.Text;
+  private pauseText!: Phaser.GameObjects.Text;
 
-  private readonly HP_BAR_W = 200;
-  private readonly HP_BAR_H = 16;
-  private readonly XP_BAR_H = 10;
+  private readonly HP_BAR_W = 260;
+  private readonly HP_BAR_H = 20;
+  private readonly XP_BAR_H = 14;
   private readonly DEPTH = 50;
 
   // Pause button callback
@@ -43,13 +49,20 @@ export class HUD {
   private bossBarFill!: Phaser.GameObjects.Rectangle;
   private bossNameText!: Phaser.GameObjects.Text;
   private bossBarVisible: boolean = false;
+  private bossHpFraction = 1;
 
   // Passive items display
   private passiveSlots: Phaser.GameObjects.Text[] = [];
   private lastPassiveCount: number = 0;
 
-  // Shield indicator
-  private shieldText!: Phaser.GameObjects.Text;
+  // Shield + dash row (sprites for shield / pips — no emoji or font glyphs)
+  private shieldIcon!: Phaser.GameObjects.Image;
+  private dashPrefixText!: Phaser.GameObjects.Text;
+  private dashSuffixText!: Phaser.GameObjects.Text;
+  private dashPipImages: Phaser.GameObjects.Image[] = [];
+  private readonly dashPipPool = 4;
+  private dashHudAnchorX = 0;
+  private dashHudAnchorY = 0;
 
   // DPS tracking
   private dpsText!: Phaser.GameObjects.Text;
@@ -58,9 +71,41 @@ export class HUD {
 
   // Low-HP pulse state (for the fill's alpha/scale wobble)
   private lowHpPulse: number = 0;
+  private layoutWidth = 0;
+  private layoutHeight = 0;
+  private layoutX = 0;
+  private layoutY = 0;
+  private layoutZoom = 1;
+  private topSafePad = 12;
+  private readonly uiScale: number;
+  private readonly highContrastUi: boolean;
+  /** Cached stroke for weapon slot bgs when high-contrast mode is active. */
+  private hcSlotStroke: number | null = null;
+  /**
+   * High-contrast palette — populated once in build() when highContrastUi is on,
+   * then referenced every frame in update() so dynamic color changes (wave ladder,
+   * low-HP pulse, enemy cap warning) still respect the user's contrast preference.
+   */
+  private hcPalette: {
+    text: string;
+    textLowHp: string;
+    timer: string;
+    kill: string;
+    killWarn: string;
+    boss: string;
+    objective: string;
+    dps: string;
+  } | null = null;
+
+  private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
+    return getCameraViewport(this.scene);
+  }
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
+    const settings = getSettingsManager().load();
+    this.uiScale = settings.uiScale;
+    this.highContrastUi = settings.highContrastUi;
     this.build();
   }
 
@@ -70,9 +115,9 @@ export class HUD {
   }
 
   private build(): void {
-    const { width, height } = this.scene.scale;
+    const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
-    const style = { fontFamily: 'monospace', fontSize: '16px', color: '#ffffff' };
+    const style = { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' };
 
     // HP bar
     this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x333333)
@@ -80,17 +125,20 @@ export class HUD {
     this.hpBarFill = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, COLORS.HP_RED)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
     this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '', {
-      ...style, fontSize: '13px',
+      ...style, fontSize: '15px',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
 
     // Level
-    this.levelText = this.addEl(this.scene.add.text(12, 34, '', style)
+    this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
       .setScrollFactor(0).setDepth(d));
 
     // Timer
     this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '', {
-      ...style, fontSize: '22px', fontStyle: 'bold',
+      ...style, fontSize: '28px', fontStyle: 'bold',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
+    this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '', {
+      ...style, fontSize: '14px', color: '#9fb0cf',
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     // Kill count
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
@@ -104,40 +152,142 @@ export class HUD {
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
 
     // Pause button (visible on touch devices, small on desktop)
-    const pauseBtn = this.addEl(this.scene.add.text(width - 12, 34, '| |', {
-      fontFamily: 'monospace', fontSize: '20px', color: '#888888', fontStyle: 'bold',
+    this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |', {
+      fontFamily: 'monospace', fontSize: '24px', color: '#888888', fontStyle: 'bold',
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)
-      .setInteractive({ useHandCursor: true }));
-    (pauseBtn as Phaser.GameObjects.Text).on('pointerdown', () => {
+      .setInteractive({ useHandCursor: true })) as Phaser.GameObjects.Text;
+    this.pauseText.on('pointerdown', () => {
       if (this.onPause) this.onPause();
     });
-    (pauseBtn as Phaser.GameObjects.Text).on('pointerover', () => {
-      (pauseBtn as Phaser.GameObjects.Text).setColor('#ffffff');
+    this.pauseText.on('pointerover', () => {
+      this.pauseText.setColor('#ffffff');
     });
-    (pauseBtn as Phaser.GameObjects.Text).on('pointerout', () => {
-      (pauseBtn as Phaser.GameObjects.Text).setColor('#666666');
+    this.pauseText.on('pointerout', () => {
+      this.pauseText.setColor('#666666');
     });
 
-    // Shield status indicator
-    this.shieldText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 8, 12 + this.HP_BAR_H / 2, '', {
-      ...style, fontSize: '14px', color: '#88ccff',
-    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2)) as Phaser.GameObjects.Text;
+    this.shieldIcon = this.addEl(this.scene.add.image(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2, 'hud_shield')
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
+    const dashStyle = { ...style, fontSize: '12px', color: '#d4a017' };
+    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 18, '', {
+      ...dashStyle,
+    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    for (let i = 0; i < this.dashPipPool; i++) {
+      const pip = this.addEl(this.scene.add.image(0, 0, 'hud_dash_pip_full')
+        .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
+      this.dashPipImages.push(pip);
+    }
+    this.dashSuffixText = this.addEl(this.scene.add.text(0, 0, '', {
+      ...dashStyle,
+    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
 
     // DPS counter
     this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '', {
-      ...style, fontSize: '14px', color: '#aaaaaa',
+      ...style, fontSize: '16px', color: '#aaaaaa',
     }).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     // Boss HP bar (hidden by default) — positioned below weapon slots
     const bossBarW = width * 0.55;
-    const bossBarY = 90;
-    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 18, 0x333333)
+    const bossBarY = 98;
+    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x333333)
       .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 18, 0xff4444)
+    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, 0xff4444)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '', {
-      fontFamily: 'monospace', fontSize: '15px', color: '#ff9999', fontStyle: 'bold',
+      fontFamily: 'monospace', fontSize: '17px', color: '#ff9999', fontStyle: 'bold',
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    if (this.uiScale !== 1) {
+      const scaleTargets: Phaser.GameObjects.GameObject[] = [
+        this.hpText,
+        this.levelText,
+        this.timerText,
+        this.objectiveText,
+        this.killText,
+        this.pauseText,
+        this.shieldIcon,
+        this.dashPrefixText,
+        this.dashSuffixText,
+        this.dpsText,
+        this.bossNameText,
+      ];
+      for (const target of scaleTargets) {
+        (target as unknown as { setScale?: (x: number, y?: number) => void }).setScale?.(this.uiScale);
+      }
+    }
+    if (this.highContrastUi) {
+      // High-contrast palette — recolors every HUD text surface + bar backgrounds
+      // so the entire HUD shifts together, not just the objective/dps line.
+      // Respects the Soul Charter's "accessibility is part of kindness" principle.
+      // Stored as an instance field so update() can re-apply these colors every
+      // frame without losing them to wave-ladder / low-HP / cap-warning logic.
+      this.hcPalette = {
+        text: '#f0f6ff',     // general white-on-dark for numeric / label text
+        textLowHp: '#ffd0d6', // HP text when low — lifted from the default #ffcccc
+        timer: '#fff4d0',    // warmer timer to stand out against the wave ladder
+        kill: '#e0e8ff',     // kill / enemy readout when under cap
+        killWarn: '#ff9a9a', // kill readout when enemy cap warn triggers
+        boss: '#ff9595',     // boss name — lifted from the default dim red
+        objective: '#e6efff',
+        dps: '#d9e4ff',
+      };
+      this.hpBarBg.setFillStyle(0x080b12, 0.95);
+      this.xpBarBg.setFillStyle(0x080b12, 0.95);
+      this.objectiveText.setColor(this.hcPalette.objective);
+      this.dpsText.setColor(this.hcPalette.dps);
+      this.hpText.setColor(this.hcPalette.text);
+      this.levelText.setColor(this.hcPalette.text);
+      this.timerText.setColor(this.hcPalette.timer);
+      this.killText.setColor(this.hcPalette.kill);
+      this.pauseText.setColor(this.hcPalette.text);
+      this.bossNameText.setColor(this.hcPalette.boss);
+      // Cache slot stroke for weapon slot construction (applied in updateWeaponSlots)
+      this.hcSlotStroke = 0x8fb4ff;
+    }
+    this.refreshResponsiveLayout();
+  }
+
+  private refreshResponsiveLayout(): void {
+    const { x, y, width, height, zoom } = this.getUiViewport();
+    this.layoutX = x;
+    this.layoutY = y;
+    this.layoutWidth = width;
+    this.layoutHeight = height;
+    this.layoutZoom = zoom;
+
+    const padPx = Math.max(8, (12 * this.uiScale) / Math.max(0.001, zoom));
+    const bottomPad = Math.max(2, 4 / Math.max(0.001, zoom));
+    this.topSafePad = padPx;
+    const padX = Math.max(x + 8, Math.min(x + 12 * this.uiScale, x + Math.max(8, width - this.HP_BAR_W - 8)));
+    const padY = y + this.topSafePad;
+    const xpY = y + height - this.XP_BAR_H - bottomPad;
+
+    this.hpBarBg.setPosition(padX, padY);
+    this.hpBarFill.setPosition(padX, padY);
+    this.hpText.setPosition(padX + this.HP_BAR_W / 2, padY + this.HP_BAR_H / 2);
+    this.levelText.setPosition(padX, padY + 28 * this.uiScale);
+    this.shieldIcon.setPosition(padX + this.HP_BAR_W + 10, padY + this.HP_BAR_H / 2);
+    this.shieldIcon.setScale(this.uiScale * 0.92);
+    this.dashHudAnchorX = padX + this.HP_BAR_W + 10;
+    this.dashHudAnchorY = padY + this.HP_BAR_H / 2 + 18 * this.uiScale;
+
+    this.xpBarBg.setPosition(x, xpY);
+    this.xpBarBg.width = width;
+    this.xpBarFill.setPosition(x, xpY);
+
+    const topY = y + this.topSafePad;
+    this.timerText.setPosition(x + width / 2, topY);
+    this.objectiveText.setPosition(x + width / 2, topY + 30 * this.uiScale);
+    this.killText.setPosition(x + width - 12, topY);
+    this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
+    this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
+
+    const bossBarW = width * 0.55;
+    const bossBarY = Math.max(y + 44, Math.min(y + this.topSafePad + 86, y + Math.max(44, height - 80)));
+    this.bossBarBg.setPosition(x + width / 2, bossBarY);
+    this.bossBarBg.width = bossBarW;
+    this.bossBarFill.setPosition(x + width / 2 - bossBarW / 2, bossBarY);
+    this.bossBarFill.width = bossBarW * Math.max(0, this.bossHpFraction);
+    this.bossNameText.setPosition(x + width / 2, bossBarY - 14);
   }
 
   update(
@@ -147,53 +297,118 @@ export class HUD {
     gameTimeSec: number,
     killCount: number,
     enemyCount: number,
+    dashCharges?: number,
+    maxDashCharges?: number,
+    dashCooldownFrac?: number,
     weapons?: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
     passives?: string[],
     /** When reusing a pre-sized weapons buffer, only the first N entries are read. */
     weaponSlotCount?: number
   ): void {
-    const hpFrac = Math.max(0, hp / maxHp);
+    this.refreshResponsiveLayout();
+    const hpDisplay = Math.max(0, Math.round(hp));
+    const maxDisplay = Math.max(1, Math.round(maxHp));
+    const hpFrac = Math.max(0, Math.min(1, hpDisplay / maxDisplay));
     this.hpBarFill.width = this.HP_BAR_W * hpFrac;
-    this.hpText.setText(`${hp}/${maxHp}`);
+    this.hpText.setText(`${hpDisplay}/${maxDisplay}`);
 
     // Dynamic HP bar color: green > yellow > orange > red
     const hpColor = hpFrac > 0.6 ? 0x44cc44 : hpFrac > 0.35 ? 0xcccc44 : hpFrac > 0.15 ? 0xdd8844 : 0xcc3333;
     this.hpBarFill.setFillStyle(hpColor);
 
     // Low-HP urgency pulse — below 30% the fill softly pulses alpha and the
-    // HP text color shifts to match.
+    // HP text color shifts to match. High-contrast palette has its own
+    // low/normal text colors so the HP readout stays readable at all times.
     if (hpFrac < 0.3 && hpFrac > 0) {
       this.lowHpPulse += 0.12;
       const pulseAlpha = 0.7 + Math.sin(this.lowHpPulse) * 0.3;
       this.hpBarFill.setAlpha(pulseAlpha);
-      this.hpText.setColor('#ffcccc');
+      this.hpText.setColor(this.hcPalette?.textLowHp ?? '#ffcccc');
     } else {
       this.hpBarFill.setAlpha(1);
-      this.hpText.setColor('#ffffff');
+      this.hpText.setColor(this.hcPalette?.text ?? '#ffffff');
       this.lowHpPulse = 0;
     }
 
-    this.levelText.setText(`Lv ${level}`);
+    this.levelText.setText(t('ui.hud.level_fmt', { level }));
 
     const mins = Math.floor(gameTimeSec / 60);
     const secs = Math.floor(gameTimeSec % 60);
-    // Wave difficulty indicator + victory countdown
-    const wave = gameTimeSec < 180 ? 'I' : gameTimeSec < 420 ? 'II' : gameTimeSec < 720 ? 'III' : gameTimeSec < 1200 ? 'IV' : 'V';
-    const waveColor = gameTimeSec < 180 ? '#88cc88' : gameTimeSec < 420 ? '#cccc44' : gameTimeSec < 720 ? '#dd8844' : gameTimeSec < 1200 ? '#dd4444' : '#ff2222';
-    const victoryTime = 1500; // 25:00
-    const remaining = Math.max(0, victoryTime - gameTimeSec);
+    // Wave difficulty indicator — resolved from BALANCE.hud so tuning stays
+    // single-sourced with the wave timeline, not drifting inside UI code.
+    let wave: string = BALANCE.hud.WAVE_DIFFICULTY_MARKS[0].label;
+    let waveColor: string = BALANCE.hud.WAVE_DIFFICULTY_MARKS[0].color;
+    for (const mark of BALANCE.hud.WAVE_DIFFICULTY_MARKS) {
+      if (gameTimeSec >= mark.minSec) {
+        wave = mark.label;
+        waveColor = mark.color;
+      }
+    }
+    const remaining = Math.max(0, BALANCE.run.RUN_WIN_TIME_SEC - gameTimeSec);
     const remMins = Math.floor(remaining / 60);
     const remSecs = Math.floor(remaining % 60);
-    const goalText = remaining > 0 ? `  (-${remMins}:${remSecs.toString().padStart(2, '0')})` : '  FINAL!';
-    this.timerText.setText(`${mins}:${secs.toString().padStart(2, '0')}  W${wave}${goalText}`);
-    this.timerText.setColor(waveColor);
+    const goalText =
+      remaining > 0
+        ? t('ui.hud.goal_countdown', { m: remMins, s: remSecs.toString().padStart(2, '0') })
+        : t('ui.hud.goal_finale');
+    this.timerText.setText(`${mins}:${secs.toString().padStart(2, '0')}`);
+    this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
+    // In high-contrast mode the timer keeps its warm palette color so the
+    // HUD stays readable; the wave difficulty is still conveyed through the
+    // objective-line text (e.g. "Wave III — Goal 2:15"). Otherwise tint the
+    // timer with the ladder color for visual feedback on difficulty ramps.
+    this.timerText.setColor(this.hcPalette?.timer ?? waveColor);
+    this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
 
-    const enemyWarning = enemyCount >= 350 ? ' MAX!' : '';
-    const enemyColor = enemyCount >= 350 ? '#ff4444' : '#ffffff';
-    this.killText.setText(`Kills: ${killCount}  Enemies: ${enemyCount}${enemyWarning}`);
+    const overCap = enemyCount >= BALANCE.hud.ENEMY_WARN_THRESHOLD;
+    const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
+    const enemyColor = overCap
+      ? (this.hcPalette?.killWarn ?? '#ff4444')
+      : (this.hcPalette?.kill ?? '#ffffff');
+    this.killText.setText(
+      t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
+    );
     this.killText.setColor(enemyColor);
+    if (
+      dashCharges !== undefined
+      && maxDashCharges !== undefined
+      && maxDashCharges > 0
+    ) {
+      const clampedCharges = Phaser.Math.Clamp(Math.floor(dashCharges), 0, maxDashCharges);
+      const cooldownPct = dashCooldownFrac !== undefined
+        ? Math.round(Math.max(0, Math.min(1, dashCooldownFrac)) * 100)
+        : 0;
+      const suffix = clampedCharges > 0 ? t('ui.hud.dash_ready') : t('ui.hud.dash_cooldown_pct', { pct: cooldownPct });
+      const ay = this.dashHudAnchorY;
+      this.dashPrefixText.setVisible(true);
+      this.dashPrefixText.setText(t('ui.hud.dash_label'));
+      this.dashPrefixText.setPosition(this.dashHudAnchorX, ay);
+      const pipStride = 12 * this.uiScale;
+      let x = this.dashPrefixText.x + this.dashPrefixText.width + 2 * this.uiScale;
+      const fullKey = 'hud_dash_pip_full';
+      const emptyKey = 'hud_dash_pip_empty';
+      for (let i = 0; i < this.dashPipPool; i++) {
+        const pip = this.dashPipImages[i];
+        if (i < maxDashCharges) {
+          pip.setVisible(true);
+          pip.setTexture(i < clampedCharges ? fullKey : emptyKey);
+          pip.setScale(this.uiScale);
+          pip.setPosition(x + pipStride / 2, ay);
+          x += pipStride;
+        } else {
+          pip.setVisible(false);
+        }
+      }
+      this.dashSuffixText.setVisible(true);
+      this.dashSuffixText.setText(` ${suffix}`);
+      this.dashSuffixText.setPosition(x + 2 * this.uiScale, ay);
+    } else {
+      this.dashPrefixText.setVisible(false);
+      this.dashSuffixText.setVisible(false);
+      for (const pip of this.dashPipImages) pip.setVisible(false);
+    }
 
-    this.xpBarFill.width = this.scene.scale.width * xpFraction;
+    this.xpBarFill.width = this.layoutWidth * xpFraction;
 
     // Update weapon slots
     if (weapons) {
@@ -209,6 +424,7 @@ export class HUD {
 
   /** Show/update boss HP bar. Pass null to hide. */
   updateBossBar(boss: { name: string; hpFraction: number } | null): void {
+    this.refreshResponsiveLayout();
     if (!boss) {
       if (this.bossBarVisible) {
         this.bossBarBg.setVisible(false);
@@ -226,8 +442,9 @@ export class HUD {
       this.bossBarVisible = true;
     }
 
-    const barW = this.scene.scale.width * 0.5;
-    this.bossBarFill.width = barW * Math.max(0, boss.hpFraction);
+    this.bossHpFraction = Math.max(0, boss.hpFraction);
+    const barW = this.layoutWidth * 0.55;
+    this.bossBarFill.width = barW * this.bossHpFraction;
     this.bossNameText.setText(boss.name);
   }
 
@@ -235,8 +452,8 @@ export class HUD {
     weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
     weaponCount: number
   ): void {
-    const startX = 12;
-    const y = 58;
+    const startX = this.layoutX + 12;
+    const y = this.layoutY + this.topSafePad + 46;
     const size = 40;
     const gap = 6;
 
@@ -251,14 +468,15 @@ export class HUD {
       }
       this.weaponSlots = [];
 
+      const normalSlotStroke = this.hcSlotStroke ?? 0x666666;
       for (let i = 0; i < weaponCount; i++) {
         const w = weapons[i];
         const x = startX + i * (size + gap);
         const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, 0x1a1a2e, 0.85)
-          .setOrigin(0, 0).setStrokeStyle(2, 0x666666)
+          .setOrigin(0, 0).setStrokeStyle(2, normalSlotStroke)
           .setScrollFactor(0).setDepth(this.DEPTH));
-        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size, size, 0, 0x005eb8, 0.45)
-          .setOrigin(0, 1).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Rectangle;
+        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - 4, size, 4, 0x005eb8, 0.85)
+          .setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2)) as Phaser.GameObjects.Rectangle;
         // Weapon icon — real sprite instead of cryptic "TS1" abbreviation.
         // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
         // texture from BootScene. Pick the evolved one if it exists, else the
@@ -271,10 +489,10 @@ export class HUD {
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
           .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(1.4)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
-        const label = this.addEl(this.scene.add.text(x + size - 2, y + size - 2, '', {
+        const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '', {
           fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', fontStyle: 'bold',
           stroke: '#000', strokeThickness: 2,
-        }).setOrigin(1, 1).setScrollFactor(0).setDepth(this.DEPTH + 3));
+        }).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
         this.weaponSlots.push({ bg, icon, label, cdFill });
       }
     }
@@ -296,11 +514,11 @@ export class HUD {
         }
         slot.label.setText(w.evolved ? '★' : `${w.level}`);
         slot.label.setColor(w.evolved ? '#ffdd44' : '#ffffff');
-        slot.bg.setStrokeStyle(2, w.evolved ? 0xddaa00 : 0x666666);
+        slot.bg.setStrokeStyle(2, w.evolved ? 0xddaa00 : (this.hcSlotStroke ?? 0x666666));
 
-        // Cooldown fill: grows upward as cooldown progresses, full = ready to fire
+        // Cooldown bar: fills left-to-right along the bottom edge.
         const cdFrac = w.cooldownFrac ?? 1;
-        slot.cdFill.height = size * cdFrac;
+        slot.cdFill.width = size * cdFrac;
         slot.cdFill.setFillStyle(cdFrac >= 1 ? 0x44cc44 : 0x005eb8, 0.4);
       }
     }
@@ -321,8 +539,8 @@ export class HUD {
       tam_o_shanter: 'TAM', irn_bru: 'IRN', loch_water: 'LOC',
     };
 
-    const startX = 12;
-    const y = 100;
+    const startX = this.layoutX + 12;
+    const y = this.layoutY + this.topSafePad + 88;
 
     passives.forEach((key, i) => {
       const x = startX + i * 42;
@@ -336,7 +554,7 @@ export class HUD {
 
   /** Update shield indicator */
   updateShield(hasShield: boolean): void {
-    this.shieldText.setText(hasShield ? '🛡' : '');
+    this.shieldIcon.setVisible(hasShield);
   }
 
   /** Log damage dealt for DPS tracking */
@@ -351,7 +569,7 @@ export class HUD {
     if (this.damageWindow >= 1000) {
       const totalDmg = this.damageLog.reduce((a, b) => a + b, 0);
       const dps = Math.round(totalDmg / (this.damageWindow / 1000));
-      this.dpsText.setText(`DPS: ${dps}`);
+      this.dpsText.setText(t('ui.hud.dps_line', { dps }));
       this.damageLog = [];
       this.damageWindow = 0;
     }

@@ -103,6 +103,8 @@ const tenMinuteRun = (): IRunState => ({
   killCount: 900,
   ownedPassives: [],
   evolvedWeaponKeys: [],
+  spawnedBossKeys: [],
+  shieldCooldownMs: 0,
 });
 
 describe('Run hydration (mid-run persistence)', () => {
@@ -131,6 +133,7 @@ describe('Run hydration (mid-run persistence)', () => {
     expect(snapshot.currentLevel).toBe(7);
     expect(snapshot.currentXp).toBe(1200);
     expect(snapshot.acquiredWeapons.map((w) => w.key).sort()).toEqual(['bagpipe_blast', 'thistle_shot']);
+    expect(snapshot.shieldCooldownMs).toBe(0);
   });
 
   it('applyResumeTime(600) snaps SpawnSystem director to 10-minute timeline entry', () => {
@@ -141,6 +144,20 @@ describe('Run hydration (mid-run persistence)', () => {
     expect(ss.getSpawnIntervalSec()).toBe(expected.intervalSec);
     expect(ss.getBurstSize()).toBe(expected.burstSize);
     expect((ss as unknown as { directorEnemyKeys: string[] }).directorEnemyKeys).toEqual([...expected.enemyKeys]);
+  });
+
+  it('applyResumeTime honors persisted spawned boss keys (prevents duplicate finale re-spawn)', () => {
+    const ss = new SpawnSystem(makeSpawnScene() as never);
+    // 920s means finale time has passed; without persisted keys, taxman would
+    // be considered unspawned until 1500s timeline boss check.
+    ss.applyResumeTime(920, ['taxman']);
+    expect(ss.getSpawnedBossKeys()).toContain('taxman');
+  });
+
+  it('applyResumeTime treats persisted empty boss list as authoritative', () => {
+    const ss = new SpawnSystem(makeSpawnScene() as never);
+    ss.applyResumeTime(600, []);
+    expect(ss.getSpawnedBossKeys()).toEqual([]);
   });
 
   it('XPSystem.hydrateRunState restores bar without emitting levelup', () => {

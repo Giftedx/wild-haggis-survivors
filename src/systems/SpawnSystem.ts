@@ -7,6 +7,8 @@ import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, BOSSES, BossConfig 
 import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
+import { getCameraViewport } from '../ui/cameraViewport';
+import { t } from '../core/i18n';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -64,6 +66,11 @@ export class SpawnSystem {
     this.spawnInterval = init.intervalSec;
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
+  }
+
+  private getUiViewport(): { width: number; height: number } {
+    const { width, height } = getCameraViewport(this.scene);
+    return { width, height };
   }
 
   /** Reset run-scoped spawn state and deactivate pooled enemies. */
@@ -148,12 +155,14 @@ export class SpawnSystem {
 
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {
     // Show warning banner
-    this.showBossWarning(boss.warningText);
+    this.showBossWarning(t(boss.warningKey));
 
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
     const doSpawn = () => {
-      if (boss.key !== BALANCE.run.FINAL_BOSS_KEY && this.spawnedBossKeys.has(boss.key)) {
+      // Idempotency guard: stale/duplicate callbacks must never spawn another
+      // instance once this boss key has already been materialized.
+      if (this.spawnedBossKeys.has(boss.key)) {
         return;
       }
       const player = this.scene.getPlayer();
@@ -208,7 +217,7 @@ export class SpawnSystem {
       });
 
       // Dark vignette flash
-      const { width, height } = this.scene.scale;
+      const { width, height } = this.getUiViewport();
       const vig = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3)
         .setScrollFactor(0).setDepth(45);
       this.scene.tweens.add({
@@ -232,17 +241,24 @@ export class SpawnSystem {
 
   private showBossWarning(text: string): void {
     audio.playBossWarning();
-    const { width, height } = this.scene.scale;
+    const { width, height } = this.getUiViewport();
+    const settings = getSettingsManager().load();
+    // Accessibility: scale font by uiScale, swap palette when high-contrast.
+    // Boss warning is a Soul-critical moment — kindness applies here too.
+    const baseFontPx = 36;
+    const scaledFontPx = Math.round(baseFontPx * settings.uiScale);
+    const labelColor = settings.highContrastUi ? '#ffd8d8' : '#ff4444';
+    const strokeThickness = settings.highContrastUi ? 6 : 5;
 
     const bg = this.scene.add.rectangle(width / 2, height / 2, width, 76, 0x000000, 0.75)
       .setScrollFactor(0).setDepth(150);
     const label = this.scene.add.text(width / 2, height / 2, text, {
       fontFamily: 'monospace',
-      fontSize: '36px',
-      color: '#ff4444',
+      fontSize: `${scaledFontPx}px`,
+      color: labelColor,
       fontStyle: 'bold',
       stroke: '#000',
-      strokeThickness: 5,
+      strokeThickness,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
 
     // Flash and fade
@@ -318,9 +334,13 @@ export class SpawnSystem {
         const scatter = j > 0 ? Phaser.Math.Between(-30, 30) : 0;
         enemy.spawn(pos.x + scatter, pos.y + scatter, config, this.gameTimeSec);
 
-        // Elite chance: 10% after 2 minutes, not on hazards or swarm packs
-        if (this.gameTimeSec > 120 && config.behavior !== 'hazard' &&
-            config.packSize <= 1 && Math.random() < 0.10) {
+        // Elite chance: BALANCE.enemy.ELITE_SPAWN_CHANCE after ELITE_UNLOCK_SEC,
+        // never on hazards or swarm packs. Tuning lives in BalanceConfig so
+        // the gameplay feel matches what the HUD advertises.
+        if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
+            && config.behavior !== 'hazard'
+            && config.packSize <= 1
+            && Math.random() < BALANCE.enemy.ELITE_SPAWN_CHANCE) {
           enemy.markAsElite();
           // Golden flash at spawn position to warn player
           const flash = this.scene.add.circle(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
@@ -448,13 +468,21 @@ export class SpawnSystem {
   /**
    * Mid-run resume: clock + director + suppress boss intros that are already in the past.
    */
-  applyResumeTime(sec: number): void {
+  applyResumeTime(sec: number, spawnedBossKeys?: string[]): void {
     this.gameTimeSec = Math.max(0, sec);
     this.syncWaveDirectorFromTimeline();
     this.spawnTimer = 0;
+    this.spawnedBossKeys.clear();
     this.bossSpawnScheduled.clear();
-    for (const b of BOSSES) {
-      if (b.spawnTimeSec <= sec) this.spawnedBossKeys.add(b.key);
+    if (spawnedBossKeys !== undefined) {
+      const validBossKeys = new Set(BOSSES.map((b) => b.key));
+      for (const key of spawnedBossKeys) {
+        if (validBossKeys.has(key)) this.spawnedBossKeys.add(key);
+      }
+    } else {
+      for (const b of BOSSES) {
+        if (b.spawnTimeSec <= sec) this.spawnedBossKeys.add(b.key);
+      }
     }
     if (sec >= BALANCE.run.RUN_WIN_TIME_SEC) {
       this.runWinFinaleStarted = true;
@@ -465,5 +493,9 @@ export class SpawnSystem {
         }
       }
     }
+  }
+
+  getSpawnedBossKeys(): string[] {
+    return [...this.spawnedBossKeys];
   }
 }

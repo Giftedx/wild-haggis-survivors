@@ -155,11 +155,11 @@ export class WeaponSystem {
     // which let a single evolved weapon solve the game. Dialed down to ~3.5×
     // effective DPS — still a big spike, still the target of builds, but no
     // longer single-slot win condition.
-    w.damage = Math.ceil(w.damage * 1.5);
-    w.cooldownMs = Math.max(200, w.cooldownMs * 0.6);
+    w.damage = Math.ceil(w.damage * 1.35);
+    w.cooldownMs = Math.max(220, w.cooldownMs * 0.72);
     w.projectileCount = Math.max(w.projectileCount, 2);
-    w.aoeRadius = w.aoeRadius * 1.6;
-    w.pierce = Math.max(w.pierce, 4);
+    w.aoeRadius = w.aoeRadius * 1.35;
+    w.pierce = Math.max(w.pierce, 3);
 
     return true;
   }
@@ -294,7 +294,7 @@ export class WeaponSystem {
     }
   }
 
-  // ── Bouncing weapon (Haggis Hurler) ──
+  // ── Bouncing weapon (Jobby Hurler) ──
 
   private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
     const count = w.projectileCount;
@@ -413,9 +413,10 @@ export class WeaponSystem {
       facing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
     }
 
-    // Visual sweep arc
+    // Visual sweep arc — steel wedge for claymore, murky green for Nessie
     const gfx = this.scene.add.graphics();
-    gfx.fillStyle(0x226644, 0.4);
+    const isClaymore = w.config.key === 'claymore';
+    gfx.fillStyle(isClaymore ? 0xc8d8e8 : 0x226644, isClaymore ? 0.35 : 0.4);
     gfx.slice(
       px, py, radius,
       facing - halfArc,
@@ -423,6 +424,12 @@ export class WeaponSystem {
       false
     );
     gfx.fillPath();
+    if (isClaymore) {
+      gfx.lineStyle(2, 0x8899aa, 0.55);
+      gfx.beginPath();
+      gfx.arc(px, py, radius * 0.92, facing - halfArc, facing + halfArc, false);
+      gfx.strokePath();
+    }
 
     this.scene.tweens.add({
       targets: gfx,
@@ -468,22 +475,22 @@ export class WeaponSystem {
 
     switch (w.evolutionKey) {
       case 'thistle_storm':
-        this.fireHomingBurst(w, px, py, dmg, 8);
+        this.fireHomingBurst(w, px, py, dmg, 6);
         break;
       case 'highland_fling':
-        this.fireExpandingRing(px, py, dmg, radius * 3, w.config.key);
+        this.fireExpandingRing(px, py, dmg, radius * 2.2, w.config.key);
         break;
       case 'highland_games':
         this.fireExplodingProjectile(w, px, py, dmg);
         break;
       case 'the_haar':
-        this.fireMassiveFog(px, py, dmg, radius * 3, w.config.key);
+        this.fireMassiveFog(px, py, dmg, radius * 2, w.config.key);
         break;
       case 'haggis_cannon':
-        this.fireRapidBounce(w, px, py, dmg, 5);
+        this.fireRapidBounce(w, px, py, dmg, 4);
         break;
       case 'nessie_unleashed':
-        this.fireFullSweep(px, py, dmg, radius * 2, w.config.key);
+        this.fireFullSweep(px, py, dmg, radius * 1.6, w.config.key);
         break;
       case 'william_blade':
         this.fireWilliamBladeWaves(w, px, py, dmg);
@@ -555,9 +562,9 @@ export class WeaponSystem {
   /** William Blade — chained sonic shockwaves from the claymore stance. */
   private fireWilliamBladeWaves(w: ActiveWeapon, px: number, py: number, baseDmg: number): void {
     const maxR = this.effectiveAoe(w) * 2.9;
-    const waveDmg = Math.ceil(baseDmg * 0.52);
+    const waveDmg = Math.ceil(baseDmg * 0.45);
     const weaponKey = w.config.key;
-    for (let wave = 0; wave < 4; wave++) {
+    for (let wave = 0; wave < 3; wave++) {
       this.scene.getUpdateTickers().addOnce('scaled', wave * 170, () => {
         if (this.destroyed || !this.scene?.sys?.isActive()) return;
         this.fireExpandingRing(px, py, waveDmg, maxR, weaponKey);
@@ -592,7 +599,6 @@ export class WeaponSystem {
     }, { repeats: 16 });
 
     this.scene.getUpdateTickers().addOnce('scaled', 850, () => {
-      if (this.destroyed || !this.scene?.sys?.isActive()) return;
       expandHandle.cancel();
       if (ring.active) ring.destroy();
     });
@@ -638,9 +644,9 @@ export class WeaponSystem {
   /** The Haar — massive fog zone covering huge area */
   private fireMassiveFog(px: number, py: number, dmg: number, radius: number, weaponKey: string): void {
     const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.25);
-    const duration = 4000;
+    const duration = 2600;
 
-    const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 300, () => {
+    const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
       if (this.scene.getTimeManager().isGameplayPaused()) return;
       const enemies = this.enemyGroup.getChildren() as Enemy[];
@@ -654,7 +660,7 @@ export class WeaponSystem {
           enemy.applyFreeze(0.5, 500);
         }
       }
-    }, { repeats: Math.floor(duration / 300) });
+    }, { repeats: Math.floor(duration / 350) });
 
     this.scene.tweens.add({
       targets: zone, alpha: 0, duration,
@@ -662,7 +668,7 @@ export class WeaponSystem {
     });
   }
 
-  /** Haggis Cannon — rapid burst of bouncing projectiles in all directions */
+  /** Jobby Cannon — rapid burst of wee jobbies in all directions */
   private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number): void {
     for (let i = 0; i < count; i++) {
       const proj = this.getProjectile('haggis_ball');
@@ -756,6 +762,7 @@ export class WeaponSystem {
     projObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
     enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
   ): void {
+    if (this.destroyed || !this.scene?.sys?.isActive()) return;
     const proj = projObj as Projectile;
     const enemy = enemyObj as Enemy;
     if (!proj.active || !enemy.active) return;

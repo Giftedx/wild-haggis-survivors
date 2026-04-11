@@ -8,6 +8,13 @@ class MemoryStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
+class ThrowingStorage implements StorageLike {
+  private m = new Map<string, string>();
+  getItem(key: string) { return this.m.get(key) ?? null; }
+  setItem(_key: string, _value: string) { throw new Error('quota exceeded'); }
+  removeItem(key: string) { this.m.delete(key); }
+}
+
 const defaultV5 = {
   saveVersion: 5 as const,
   totalKills: 0,
@@ -34,6 +41,18 @@ const sampleRun = (): IRunState => ({
   killCount: 500,
   ownedPassives: ['kilt'],
   evolvedWeaponKeys: [],
+  bossKillCount: 2,
+  bossGoldEarned: 140,
+  coinGoldEarned: 37,
+  revivalAvailable: false,
+  bestCombo: 28,
+  comboCount: 12,
+  comboTimerMs: 900,
+  dashCharges: 1,
+  dashCooldownMs: 900,
+  weaponDamage: { thistle_shot: 1200, caber_toss: 450 },
+  spawnedBossKeys: ['tour_bus', 'taxman'],
+  shieldCooldownMs: 1800,
 });
 
 describe('SaveManager', () => {
@@ -176,6 +195,68 @@ describe('SaveManager', () => {
     expect(loaded.activeRun!.gameTimeSec).toBe(600);
     expect(loaded.activeRun!.currentLevel).toBe(9);
     expect(loaded.activeRun!.acquiredWeapons).toHaveLength(2);
+    expect(loaded.activeRun!.bossKillCount).toBe(2);
+    expect(loaded.activeRun!.bossGoldEarned).toBe(140);
+    expect(loaded.activeRun!.coinGoldEarned).toBe(37);
+    expect(loaded.activeRun!.revivalAvailable).toBe(false);
+    expect(loaded.activeRun!.bestCombo).toBe(28);
+    expect(loaded.activeRun!.comboCount).toBe(12);
+    expect(loaded.activeRun!.comboTimerMs).toBe(900);
+    expect(loaded.activeRun!.dashCharges).toBe(1);
+    expect(loaded.activeRun!.dashCooldownMs).toBe(900);
+    expect(loaded.activeRun!.weaponDamage).toEqual({ thistle_shot: 1200, caber_toss: 450 });
+    expect(loaded.activeRun!.spawnedBossKeys).toEqual(['tour_bus', 'taxman']);
+    expect(loaded.activeRun!.shieldCooldownMs).toBe(1800);
+  });
+
+  it('treats malformed spawnedBossKeys as undefined instead of empty list', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'k',
+      JSON.stringify({
+        ...defaultV5,
+        activeRun: {
+          ...sampleRun(),
+          spawnedBossKeys: null,
+        },
+      })
+    );
+    const mgr = new SaveManager({ storage, key: 'k' });
+    const loaded = mgr.load();
+    expect(loaded.activeRun).not.toBeNull();
+    expect(loaded.activeRun!.spawnedBossKeys).toBeUndefined();
+  });
+
+  it('drops malformed optional resume state instead of coercing to exploitable defaults', () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'k',
+      JSON.stringify({
+        ...defaultV5,
+        activeRun: {
+          ...sampleRun(),
+          revivalAvailable: 'yes please',
+          bestCombo: -3,
+          comboCount: -1,
+          comboTimerMs: 'soon',
+          dashCharges: 'full',
+          dashCooldownMs: null,
+          weaponDamage: { thistle_shot: 1200, bad: -5, nope: 'x' },
+          shieldCooldownMs: null,
+        },
+      })
+    );
+    const mgr = new SaveManager({ storage, key: 'k' });
+    const loaded = mgr.load();
+    expect(loaded.activeRun).not.toBeNull();
+    expect(loaded.activeRun!.revivalAvailable).toBeUndefined();
+    expect(loaded.activeRun!.bestCombo).toBeUndefined();
+    expect(loaded.activeRun!.comboCount).toBeUndefined();
+    expect(loaded.activeRun!.comboTimerMs).toBeUndefined();
+    expect(loaded.activeRun!.dashCharges).toBeUndefined();
+    expect(loaded.activeRun!.dashCooldownMs).toBeUndefined();
+    expect(loaded.activeRun!.weaponDamage).toEqual({ thistle_shot: 1200 });
+    expect(loaded.activeRun!.shieldCooldownMs).toBeUndefined();
   });
 
   it('clearActiveRun removes suspended run', () => {
@@ -184,5 +265,13 @@ describe('SaveManager', () => {
     mgr.saveActiveRun(sampleRun());
     mgr.clearActiveRun();
     expect(mgr.load().activeRun).toBeNull();
+  });
+
+  it('swallows storage write failures without throwing', () => {
+    const storage = new ThrowingStorage();
+    const mgr = new SaveManager({ storage, key: 'k' });
+    expect(() => mgr.save({ ...defaultV5, totalKills: 10 })).not.toThrow();
+    expect(() => mgr.saveActiveRun(sampleRun())).not.toThrow();
+    expect(() => mgr.clearActiveRun()).not.toThrow();
   });
 });

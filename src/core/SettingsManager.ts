@@ -16,6 +16,10 @@ export interface ISettingsData {
   damageNumbers: boolean;
   /** Fewer transient particles (kill bursts, boss fx) */
   reduceParticles: boolean;
+  /** UI scale multiplier for readability-sensitive HUD/menus. */
+  uiScale: number;
+  /** Boost contrast for key HUD/overlay text + panel strokes. */
+  highContrastUi: boolean;
 }
 
 const DEFAULT_SETTINGS: ISettingsData = {
@@ -26,6 +30,8 @@ const DEFAULT_SETTINGS: ISettingsData = {
   screenShake: true,
   damageNumbers: true,
   reduceParticles: false,
+  uiScale: 1,
+  highContrastUi: false,
 };
 
 function clamp01(n: unknown, fallback: number): number {
@@ -35,6 +41,11 @@ function clamp01(n: unknown, fallback: number): number {
 
 function toBool(v: unknown, fallback: boolean): boolean {
   return typeof v === 'boolean' ? v : fallback;
+}
+
+function clampRange(n: unknown, min: number, max: number, fallback: number): number {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
 }
 
 let singleton: SettingsManager | null = null;
@@ -70,7 +81,11 @@ export class SettingsManager {
   }
 
   save(data: ISettingsData): void {
-    this.storage.setItem(this.key, JSON.stringify(this.coerce(data)));
+    try {
+      this.storage.setItem(this.key, JSON.stringify(this.coerce(data)));
+    } catch {
+      // Keep gameplay/settings UI responsive if persistence is unavailable.
+    }
   }
 
   reset(): void {
@@ -102,6 +117,8 @@ export class SettingsManager {
       screenShake: toBool(o.screenShake, DEFAULT_SETTINGS.screenShake),
       damageNumbers: toBool(o.damageNumbers, DEFAULT_SETTINGS.damageNumbers),
       reduceParticles: toBool(o.reduceParticles, DEFAULT_SETTINGS.reduceParticles),
+      uiScale: clampRange(o.uiScale, 0.8, 1.4, DEFAULT_SETTINGS.uiScale),
+      highContrastUi: toBool(o.highContrastUi, DEFAULT_SETTINGS.highContrastUi),
     };
   }
 }

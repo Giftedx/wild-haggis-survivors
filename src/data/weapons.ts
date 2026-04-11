@@ -4,7 +4,7 @@
  * Behavior types:
  *  - 'projectile': Fires at nearest enemy (Thistle Shot)
  *  - 'piercing':   Fires through multiple enemies (Caber Toss)
- *  - 'bouncing':   Bounces off world edges (Haggis Hurler)
+ *  - 'bouncing':   Bounces off world edges (Jobby Hurler)
  *  - 'aoe_pulse':  Damages all enemies in radius around player (Bagpipe Blast)
  *  - 'trail':      Drops damage zones behind the player (Scotch Mist)
  *  - 'arc_sweep':  Damages enemies in a frontal arc (Nessie's Tentacle)
@@ -148,8 +148,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   haggis_hurler: {
     key: 'haggis_hurler',
-    name: 'Haggis Hurler',
-    description: 'Bouncing haggis balls ricochet off edges.',
+    name: 'Jobby Hurler',
+    description: 'Wee jobby balls ricochet off the edges.',
     behavior: 'bouncing',
     cooldownMs: 2000,
     damage: 10,

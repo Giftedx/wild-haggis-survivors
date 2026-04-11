@@ -6,6 +6,7 @@
  */
 
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+import { WEAPON_DEFS } from './weapons';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 
@@ -24,7 +25,7 @@ export interface UpgradeCard {
   name: string;
   description: string;
   rarity: Rarity;
-  icon: string;  // texture key (placeholder for now)
+  icon: string; // texture key — generated in BootScene (`wicon_*`, passives, etc.)
   effect: UpgradeEffect;
 }
 
@@ -51,57 +52,57 @@ export const WEAPON_CARDS: UpgradeCard[] = [
   {
     id: 'add_bagpipe_blast',
     name: 'Bagpipe Blast',
-    description: 'Periodic shockwave pushes enemies back.',
+    description: 'Blasts of sound in a ring around you — knocks foes outward.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_bagpipe_blast',
     effect: { type: 'add_weapon', weaponKey: 'bagpipe_blast' },
   },
   {
     id: 'add_caber_toss',
     name: 'Caber Toss',
-    description: 'Heavy caber pierces through enemies.',
+    description: 'Hurls a heavy caber through multiple enemies in a line.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_caber_toss',
     effect: { type: 'add_weapon', weaponKey: 'caber_toss' },
   },
   {
     id: 'add_scotch_mist',
     name: 'Scotch Mist',
-    description: 'Leave a damaging fog trail behind you.',
+    description: 'Leaves a trail of choking mist — poisons those who stand in it.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_scotch_mist',
     effect: { type: 'add_weapon', weaponKey: 'scotch_mist' },
   },
   {
     id: 'add_haggis_hurler',
-    name: 'Haggis Hurler',
-    description: 'Bouncing haggis balls ricochet off edges.',
+    name: 'Jobby Hurler',
+    description: 'Lobs wee jobbies that bounce off arena edges until they hit.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_haggis_hurler',
     effect: { type: 'add_weapon', weaponKey: 'haggis_hurler' },
   },
   {
     id: 'add_nessie_tentacle',
     name: "Nessie's Tentacle",
-    description: 'Sweeping tentacle attack in an arc.',
+    description: 'A sweeping arc in front of you — wide reach, meaty knockback.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_nessie_tentacle',
     effect: { type: 'add_weapon', weaponKey: 'nessie_tentacle' },
   },
   {
     id: 'add_claymore',
     name: 'Highland Claymore',
-    description: 'Wide, slow melee cleave — evolves with Tartan Sash.',
+    description: 'Slow, enormous frontal cleave. Pairs with Tartan Sash for evolution.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_claymore',
     effect: { type: 'add_weapon', weaponKey: 'claymore' },
   },
   {
     id: 'add_bagpipes',
     name: 'Ceòl Mòr Bagpipes',
-    description: 'Standing drone pulses damage and slows nearby foes.',
+    description: 'Great drone: pulsing ring damages and slows anything too close.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'wicon_bagpipes',
     effect: { type: 'add_weapon', weaponKey: 'bagpipes' },
   },
 ];
@@ -112,73 +113,73 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
   {
     id: 'add_sporran',
     name: 'Sporran',
-    description: '+15% Luck — better card rarity. Evolves Thistle Shot.',
+    description: '+15% Luck — uncommon, rare, and legendary cards show up more often. Evolves Thistle Shot.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_sporran',
     effect: { type: 'add_passive', passiveKey: 'sporran' },
   },
   {
     id: 'add_whisky_flask',
     name: 'Whisky Flask',
-    description: '+20% AoE radius on all weapons. Evolves Bagpipe Blast.',
+    description: '+20% radius on all AoE weapons and effects. Evolves Bagpipe Blast.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_whisky_flask',
     effect: { type: 'add_passive', passiveKey: 'whisky_flask' },
   },
   {
     id: 'add_kilt',
     name: 'Kilt',
-    description: '+15% Max HP. Evolves Caber Toss.',
+    description: '+15% max HP — room for one more mistake. Evolves Caber Toss.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_kilt',
     effect: { type: 'add_passive', passiveKey: 'kilt' },
   },
   {
     id: 'add_tam_o_shanter',
     name: "Tam o' Shanter",
-    description: '+10% Movement speed. Evolves Scotch Mist.',
+    description: '+10% move speed — easier kiting against the drift. Evolves Scotch Mist.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_tam_o_shanter',
     effect: { type: 'add_passive', passiveKey: 'tam_o_shanter' },
   },
   {
     id: 'add_irn_bru',
     name: 'Irn Bru',
-    description: '+20% Attack speed. Evolves Haggis Hurler.',
+    description: '+20% attack speed — weapons fire faster. Evolves Jobby Hurler.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_irn_bru',
     effect: { type: 'add_passive', passiveKey: 'irn_bru' },
   },
   {
     id: 'add_loch_water',
     name: 'Loch Water',
-    description: "+25% Pickup radius. Evolves Nessie's Tentacle.",
+    description: '+25% pickup radius — gems and drops come to you. Evolves Nessie\'s Tentacle.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_loch_water',
     effect: { type: 'add_passive', passiveKey: 'loch_water' },
   },
   {
     id: 'add_thistle_crown',
     name: 'Thistle Crown',
-    description: '+5% Crit + thorns: enemies take 3 damage on contact.',
+    description: '+5% crit chance. Thorns: enemies that collide with you take 3 damage.',
     rarity: 'rare',
-    icon: 'xp_gem',
+    icon: 'ucard_thistle_crown',
     effect: { type: 'add_passive', passiveKey: 'thistle_crown' },
   },
   {
     id: 'add_highland_shield',
     name: 'Highland Shield',
-    description: 'Block 1 lethal hit every 20 seconds. Survive with 1 HP.',
+    description: 'Every 20s, ignore a lethal hit — survive at 1 HP instead of dying.',
     rarity: 'rare',
-    icon: 'xp_gem',
+    icon: 'ucard_highland_shield',
     effect: { type: 'add_passive', passiveKey: 'highland_shield' },
   },
   {
     id: 'add_tartan_sash',
     name: 'Tartan Sash',
-    description: '+8% damage. Evolves the Highland Claymore.',
+    description: '+8% damage on all sources. Evolves Highland Claymore.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_tartan_sash',
     effect: { type: 'add_passive', passiveKey: 'tartan_sash' },
   },
 ];
@@ -189,132 +190,134 @@ export const STAT_CARDS: UpgradeCard[] = [
   {
     id: 'boost_hp',
     name: 'Thick Hide',
-    description: '+10 Max HP.',
+    description: '+10 max HP — flat buffer, stacks every time you pick this.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_health',
     effect: { type: 'stat_boost', stat: 'maxHp', amount: 10 },
   },
   {
     id: 'boost_speed',
     name: 'Quick Feet',
-    description: '+8% Movement speed.',
+    description: '+8% move speed — reposition faster, drift still applies.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_speed',
     effect: { type: 'stat_boost', stat: 'speed', amount: 0.08 },
   },
   {
     id: 'boost_pickup',
     name: 'Keen Nose',
-    description: '+15 Pickup radius.',
+    description: '+15 pickup radius — XP gems and drops reach you sooner.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_pickup',
     effect: { type: 'stat_boost', stat: 'pickup', amount: 15 },
   },
   {
     id: 'boost_damage',
     name: 'Sharpened Thistles',
-    description: '+10% Damage on all weapons.',
+    description: '+10% damage — every weapon and effect hits harder.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_damage',
     effect: { type: 'stat_boost', stat: 'damage', amount: 0.10 },
   },
   {
     id: 'boost_drift',
     name: 'Balanced Legs',
-    description: '-15% Movement drift.',
+    description: '-15% clockwise drift — inputs feel closer to where you aim.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_drift',
     effect: { type: 'stat_boost', stat: 'drift', amount: 0.15 },
   },
   {
     id: 'heal',
     name: 'Haggis Supper',
-    description: 'Restore 25% Max HP.',
+    description: 'Instantly heal 25% of your current max HP.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_health',
     effect: { type: 'stat_boost', stat: 'healPercent', amount: 0.25 },
   },
   {
     id: 'boost_crit',
     name: 'Eagle Eye',
-    description: '+5% Critical hit chance.',
+    description: '+5% crit chance — more lucky big hits.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_damage',
     effect: { type: 'stat_boost', stat: 'crit', amount: 0.05 },
   },
   {
     id: 'boost_regen',
     name: 'Highland Spring',
-    description: '+0.5 HP/sec regeneration.',
+    description: '+0.5 HP per second — slow but steady recovery.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_health',
     effect: { type: 'stat_boost', stat: 'regen', amount: 0.5 },
   },
   {
     id: 'boost_armor',
     name: 'Iron Hide',
-    description: '+3 Armor (reduces damage taken).',
+    description: '+3 armor — flat reduction to incoming damage.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_defense',
     effect: { type: 'stat_boost', stat: 'armor', amount: 3 },
   },
   {
     id: 'boost_cooldown',
     name: 'Battle Frenzy',
-    description: '-10% weapon cooldowns.',
+    description: '-10% weapon cooldowns — more swings, shots, and pulses.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_cooldown',
     effect: { type: 'stat_boost', stat: 'cooldown', amount: 0.10 },
   },
   {
     id: 'banish',
     name: 'Highland Purge',
-    description: 'Instantly destroy 5 weakest enemies nearby.',
+    description: 'Remove up to 5 of the weakest nearby enemies — breathing room now.',
     rarity: 'rare',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_utility',
     effect: { type: 'stat_boost', stat: 'banish', amount: 5 },
   },
   {
     id: 'boost_lifesteal',
     name: 'Vampiric Touch',
-    description: 'Heal 1 HP per enemy killed.',
+    description: '+1 HP each time you score a kill.',
     rarity: 'rare',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_health',
     effect: { type: 'stat_boost', stat: 'lifesteal', amount: 1 },
   },
   {
     id: 'boost_projectile_speed',
     name: 'Swift Thistles',
-    description: '+15% Projectile speed.',
+    description: '+15% projectile speed — thistles, cabers, and balls arrive faster.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_speed',
     effect: { type: 'stat_boost', stat: 'projectileSpeed', amount: 0.15 },
   },
   {
     id: 'boost_boss_heal',
     name: 'Trophy Hunter',
-    description: 'Heal 20% Max HP on boss kill.',
+    description: 'When a boss dies, heal 20% max HP — reward for the big fight.',
     rarity: 'rare',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_health',
     effect: { type: 'stat_boost', stat: 'bossHeal', amount: 0.20 },
   },
   {
     id: 'boost_knockback',
     name: 'Highland Force',
-    description: '+25% Knockback on all weapons.',
+    description: '+25% knockback — shove enemies harder on every hit.',
     rarity: 'common',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_knockback',
     effect: { type: 'stat_boost', stat: 'knockback', amount: 0.25 },
   },
   {
     id: 'boost_xp',
     name: 'Wisdom of the Highlands',
-    description: '+15% XP gained from enemies.',
+    description: '+15% XP from enemies — level up sooner.',
     rarity: 'uncommon',
-    icon: 'xp_gem',
+    icon: 'ucard_stat_utility',
     effect: { type: 'stat_boost', stat: 'xpMultiplier', amount: 0.15 },
   },
 ];
+
+const LEVELUP_DRIFT_CARD_ENABLED = false;
 
 /**
  * Build the available card pool based on current player state.
@@ -328,8 +331,12 @@ export function buildCardPool(
 ): UpgradeCard[] {
   const pool: UpgradeCard[] = [];
 
-  // Stat cards are always available (repeatable)
-  pool.push(...STAT_CARDS);
+  // Stat cards are always available (repeatable), except cards that are
+  // intentionally disabled during active tuning passes.
+  pool.push(...STAT_CARDS.filter((card) => (
+    LEVELUP_DRIFT_CARD_ENABLED
+    || !(card.effect.type === 'stat_boost' && card.effect.stat === 'drift')
+  )));
 
   // Weapon level-up cards for owned weapons below max level (and not evolved)
   for (const key of ownedWeaponKeys) {
@@ -339,14 +346,14 @@ export function buildCardPool(
       // Add evolution hint on level 4→5 cards
       const recipe = EVOLUTION_RECIPES.find((r) => r.baseWeapon === key);
       const hint = level === 4 && recipe
-        ? ` Evolves with ${formatWeaponName(recipe.requiredPassive)}!`
+        ? ` At Lv 5, open a treasure chest while carrying ${formatPassiveItemName(recipe.requiredPassive)} to evolve.`
         : '';
       pool.push({
         id: `levelup_${key}_${level + 1}`,
         name: `${formatWeaponName(key)} Lv${level + 1}`,
         description: `Upgrade ${formatWeaponName(key)} to level ${level + 1}.${hint}`,
-        rarity: level >= 3 ? 'rare' : 'uncommon',
-        icon: 'xp_gem',
+        rarity: level === 4 && recipe ? 'legendary' : (level >= 3 ? 'rare' : 'uncommon'),
+        icon: `wicon_${key}`,
         effect: { type: 'level_weapon', weaponKey: key },
       });
     }
@@ -376,7 +383,17 @@ export function buildCardPool(
 }
 
 function formatWeaponName(key: string): string {
-  return key.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const def = WEAPON_DEFS[key];
+  if (def) return def.name;
+  return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+function formatPassiveItemName(passiveKey: string): string {
+  const found = PASSIVE_CARDS.find(
+    (c) => c.effect.type === 'add_passive' && c.effect.passiveKey === passiveKey
+  );
+  return found?.name
+    ?? passiveKey.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
 /**
