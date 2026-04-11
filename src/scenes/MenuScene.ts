@@ -483,9 +483,18 @@ export class MenuScene extends Phaser.Scene {
   private formatStatsStrip(viewWidth: number): string {
     const bestMins = Math.floor(this.saveData.bestTime / 60);
     const bestSecs = Math.floor(this.saveData.bestTime % 60);
-    const firstLine = `Best ${bestMins}:${bestSecs.toString().padStart(2, '0')}  |  Kills ${this.saveData.bestKills}  |  Combo ${this.saveData.bestCombo}x`;
-    const secondLine = `Runs ${this.saveData.totalRuns}  |  Wins ${this.saveData.victories}  |  Gold ${this.saveData.gold}`;
-    return viewWidth < 1150 ? `${firstLine}\n${secondLine}` : `${firstLine}  |  ${secondLine}`;
+    const bestTime = `${bestMins}:${bestSecs.toString().padStart(2, '0')}`;
+    const vars = {
+      bestTime,
+      bestKills: this.saveData.bestKills,
+      bestCombo: this.saveData.bestCombo,
+      totalRuns: this.saveData.totalRuns,
+      victories: this.saveData.victories,
+      gold: this.saveData.gold,
+    };
+    return viewWidth < 1150
+      ? t('ui.menu.stats_long', vars)
+      : t('ui.menu.stats_short', vars);
   }
 
   private getMenuLayout(height: number): { buttonY: number; panelY: number; panelHeight: number; ambientEnemyMinY: number } {

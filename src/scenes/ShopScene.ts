@@ -114,13 +114,13 @@ export class ShopScene extends Phaser.Scene {
       index % 2 === 0 ? 0x1b2337 : 0x172031,
       0.82
     );
-    const nameText = this.add.text(34, y + 3, upgrade.name, {
+    const nameText = this.add.text(34, y + 3, t(upgrade.nameKey), {
       fontFamily: 'monospace',
       fontSize: '15px',
       color: isMaxed ? '#73c37d' : '#ffffff',
       fontStyle: 'bold',
     });
-    const descText = this.add.text(34, y + 21, upgrade.description, {
+    const descText = this.add.text(34, y + 21, t(upgrade.descriptionKey), {
       fontFamily: 'monospace',
       fontSize: '11px',
       color: '#9ea7b9',

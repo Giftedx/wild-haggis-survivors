@@ -93,8 +93,11 @@ describe('UpgradeCardsUI layout', () => {
     };
     const card: UpgradeCard = {
       id: 'damage_up',
-      name: 'Damage Up',
-      description: 'Hit harder.',
+      // Per the upgraded contract, both fields are i18n keys. These keys
+      // don't exist in the dictionary, so t() returns them unchanged —
+      // which still exercises the same resolution path the UI uses.
+      name: 'upgradeCard.test_damage_up.name',
+      description: 'upgradeCard.test_damage_up.description',
       rarity: 'common',
       icon: 'wicon_thistle_shot',
       effect: { type: 'stat_boost', stat: 'damagePct', amount: 0.1 },
@@ -142,8 +145,11 @@ describe('UpgradeCardsUI layout', () => {
     };
     const card: UpgradeCard = {
       id: 'damage_up',
-      name: 'Damage Up',
-      description: 'Hit harder.',
+      // Per the upgraded contract, both fields are i18n keys. These keys
+      // don't exist in the dictionary, so t() returns them unchanged —
+      // which still exercises the same resolution path the UI uses.
+      name: 'upgradeCard.test_damage_up.name',
+      description: 'upgradeCard.test_damage_up.description',
       rarity: 'common',
       icon: 'wicon_thistle_shot',
       effect: { type: 'stat_boost', stat: 'damagePct', amount: 0.1 },
@@ -194,8 +200,11 @@ describe('UpgradeCardsUI layout', () => {
     };
     const card: UpgradeCard = {
       id: 'damage_up',
-      name: 'Damage Up',
-      description: 'Hit harder.',
+      // Per the upgraded contract, both fields are i18n keys. These keys
+      // don't exist in the dictionary, so t() returns them unchanged —
+      // which still exercises the same resolution path the UI uses.
+      name: 'upgradeCard.test_damage_up.name',
+      description: 'upgradeCard.test_damage_up.description',
       rarity: 'common',
       icon: 'wicon_thistle_shot',
       effect: { type: 'stat_boost', stat: 'damagePct', amount: 0.1 },

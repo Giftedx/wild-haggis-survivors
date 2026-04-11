@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { t } from './i18n';
+import { WEAPON_DEFS } from '../data/weapons';
+import { BOSSES } from '../data/enemies';
+import { VARIANTS } from '../data/variants';
+import { PERMANENT_UPGRADES } from '../data/permanentUpgrades';
+import { WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS } from '../data/upgrades';
 
 describe('i18n.t', () => {
   it('resolves nested dot paths', () => {
@@ -37,5 +42,85 @@ describe('i18n.t', () => {
     expect(t('ui.bossWarning.taxman')).toContain('Taxman');
     expect(t('ui.game.kill_milestone', { count: 100, gold: 2 })).toContain('100');
     expect(t('ui.pause.stats_loadout', { w: 2, c: 3 })).toContain('2');
+  });
+});
+
+/**
+ * Regression fences — every data-file row that is player-facing must have
+ * a resolvable i18n key. If a new weapon / boss / variant / upgrade is added
+ * without wiring the corresponding dictionary entry, these tests fail loudly.
+ */
+describe('i18n regression fences — data-file coverage', () => {
+  function assertResolves(key: string, label: string): void {
+    const resolved = t(key);
+    expect(resolved, `${label}: ${key}`).not.toBe(key);
+    expect(resolved.length, `${label}: ${key} must be non-empty`).toBeGreaterThan(0);
+  }
+
+  it('every WEAPON_DEFS entry has resolving nameKey and descriptionKey', () => {
+    for (const w of Object.values(WEAPON_DEFS)) {
+      assertResolves(w.nameKey, `weapon.${w.key}.name`);
+      assertResolves(w.descriptionKey, `weapon.${w.key}.description`);
+    }
+  });
+
+  it('every BOSS entry has a resolving nameKey and warningKey', () => {
+    for (const b of BOSSES) {
+      assertResolves(b.nameKey, `boss.${b.key}.name`);
+      // warningKey lives under ui.bossWarning.* (already migrated earlier).
+      assertResolves(b.warningKey, b.warningKey);
+    }
+  });
+
+  it('every VARIANT entry has resolving nameKey and flavorKey', () => {
+    for (const v of VARIANTS) {
+      assertResolves(v.nameKey, `variant.${v.key}.name`);
+      assertResolves(v.flavorKey, `variant.${v.key}.flavor`);
+    }
+  });
+
+  it('variant modifier summary helper namespace is fully populated', () => {
+    for (const k of ['speed', 'hp', 'armor', 'pickup', 'xp', 'dmg', 'drift', 'cdr', 'baseline']) {
+      assertResolves(`variant.summary.${k}`, `variant.summary.${k}`);
+    }
+  });
+
+  it('variant unlock helper namespace is fully populated', () => {
+    for (const k of ['survive', 'best_kills', 'total_gold', 'victories', 'ready']) {
+      assertResolves(`variant.unlock.${k}`, `variant.unlock.${k}`);
+    }
+  });
+
+  it('every PERMANENT_UPGRADES entry has resolving nameKey and descriptionKey', () => {
+    for (const u of PERMANENT_UPGRADES) {
+      assertResolves(u.nameKey, `permanentUpgrade.${u.key}.name`);
+      assertResolves(u.descriptionKey, `permanentUpgrade.${u.key}.description`);
+    }
+  });
+
+  it('every UpgradeCard entry (WEAPON/PASSIVE/STAT) has resolving name and description keys', () => {
+    for (const arr of [WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS]) {
+      for (const c of arr) {
+        assertResolves(c.name, `upgradeCard.${c.id}.name`);
+        assertResolves(c.description, `upgradeCard.${c.id}.description`);
+      }
+    }
+  });
+
+  it('rarity labels are defined for all four rarities', () => {
+    for (const r of ['common', 'uncommon', 'rare', 'legendary']) {
+      assertResolves(`ui.common.rarity.${r}`, `ui.common.rarity.${r}`);
+    }
+  });
+
+  it('HUD passive abbreviation namespace is populated for all 6 passives', () => {
+    for (const k of ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water']) {
+      assertResolves(`ui.passive.hud_abbrev.${k}`, `ui.passive.hud_abbrev.${k}`);
+    }
+  });
+
+  it('menu stats line templates exist in short and long forms', () => {
+    assertResolves('ui.menu.stats_short', 'ui.menu.stats_short');
+    assertResolves('ui.menu.stats_long', 'ui.menu.stats_long');
   });
 });

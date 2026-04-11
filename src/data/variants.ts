@@ -1,3 +1,5 @@
+import { t } from '../core/i18n';
+
 export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot';
 
 export interface VariantModifier {
@@ -36,8 +38,14 @@ export interface VariantAppearance {
 
 export interface VariantDef {
   key: VariantKey;
+  /** i18n dot-path — resolved with `t(nameKey)` at render time. */
+  nameKey: string;
+  /** i18n dot-path — resolved with `t(flavorKey)` at render time. */
+  flavorKey: string;
+  /** @deprecated Use t(nameKey). Kept during migration for auto-battler logs. */
   name: string;
   textureKey: string;
+  /** @deprecated Use t(flavorKey). */
   flavorText: string;
   modifiers: VariantModifier;
   unlock: VariantUnlockCondition;
@@ -66,6 +74,8 @@ export const DEFAULT_VARIANT_KEY: VariantKey = 'classic';
 export const VARIANTS: VariantDef[] = [
   {
     key: 'classic',
+    nameKey: 'variant.classic.name',
+    flavorKey: 'variant.classic.flavor',
     name: 'Classic Haggis',
     textureKey: 'haggis_classic',
     flavorText: 'The baseline beast. Crooked legs, straight ambition.',
@@ -85,6 +95,8 @@ export const VARIANTS: VariantDef[] = [
   },
   {
     key: 'moor_runner',
+    nameKey: 'variant.moor_runner.name',
+    flavorKey: 'variant.moor_runner.flavor',
     name: 'Moor Runner',
     textureKey: 'haggis_moor_runner',
     flavorText: 'Lean and wind-cut, built to skim the heather.',
@@ -104,6 +116,8 @@ export const VARIANTS: VariantDef[] = [
   },
   {
     key: 'iron_belly',
+    nameKey: 'variant.iron_belly.name',
+    flavorKey: 'variant.iron_belly.flavor',
     name: 'Iron Belly',
     textureKey: 'haggis_iron_belly',
     flavorText: 'Heavy, stubborn, and hard to stop once it starts rolling.',
@@ -123,6 +137,8 @@ export const VARIANTS: VariantDef[] = [
   },
   {
     key: 'glen_forager',
+    nameKey: 'variant.glen_forager.name',
+    flavorKey: 'variant.glen_forager.flavor',
     name: 'Glen Forager',
     textureKey: 'haggis_glen_forager',
     flavorText: 'A scavenger of glens and glittering spoils.',
@@ -142,6 +158,8 @@ export const VARIANTS: VariantDef[] = [
   },
   {
     key: 'surefoot',
+    nameKey: 'variant.surefoot.name',
+    flavorKey: 'variant.surefoot.flavor',
     name: 'Surefoot',
     textureKey: 'haggis_surefoot',
     flavorText: 'The drift still whispers, but it no longer decides.',
@@ -219,7 +237,7 @@ export function getVariantUnlockProgress(
       return null;
     case 'best_time':
       return createUnlockProgress(
-        'Survive',
+        t('variant.unlock.survive'),
         progress.bestTime,
         variant.unlock.required,
         formatTime(progress.bestTime),
@@ -227,7 +245,7 @@ export function getVariantUnlockProgress(
       );
     case 'best_kills':
       return createUnlockProgress(
-        'Best kills',
+        t('variant.unlock.best_kills'),
         progress.bestKills,
         variant.unlock.required,
         `${progress.bestKills}`,
@@ -235,7 +253,7 @@ export function getVariantUnlockProgress(
       );
     case 'total_gold_earned':
       return createUnlockProgress(
-        'Total gold',
+        t('variant.unlock.total_gold'),
         progress.totalGoldEarned,
         variant.unlock.required,
         `${progress.totalGoldEarned}`,
@@ -243,7 +261,7 @@ export function getVariantUnlockProgress(
       );
     case 'victories':
       return createUnlockProgress(
-        'Victories',
+        t('variant.unlock.victories'),
         progress.victories,
         variant.unlock.required,
         `${progress.victories}`,
@@ -255,27 +273,35 @@ export function getVariantUnlockProgress(
 export function formatVariantModifierSummary(variant: VariantDef): string {
   const parts: string[] = [];
   const { modifiers } = variant;
+  const pctInterp = (value: number) => ({
+    sign: value > 0 ? '+' : '',
+    pct: Math.round(value * 100),
+  });
+  const flatInterp = (value: number) => ({
+    sign: value > 0 ? '+' : '',
+    val: value,
+  });
 
-  if (modifiers.moveSpeedPct) parts.push(`${formatSignedPercent(modifiers.moveSpeedPct)} speed`);
-  if (modifiers.maxHpFlat) parts.push(`${formatSignedNumber(modifiers.maxHpFlat)} HP`);
-  if (modifiers.armorFlat) parts.push(`${formatSignedNumber(modifiers.armorFlat)} armor`);
-  if (modifiers.pickupRadiusFlat) parts.push(`${formatSignedNumber(modifiers.pickupRadiusFlat)} pickup`);
-  if (modifiers.xpMultiplierPct) parts.push(`${formatSignedPercent(modifiers.xpMultiplierPct)} XP`);
-  if (modifiers.damagePct) parts.push(`${formatSignedPercent(modifiers.damagePct)} dmg`);
-  if (modifiers.driftReductionPct) parts.push(`${formatSignedPercent(modifiers.driftReductionPct)} drift`);
-  if (modifiers.cooldownReductionPct) parts.push(`${formatSignedPercent(modifiers.cooldownReductionPct)} CDR`);
+  if (modifiers.moveSpeedPct) parts.push(t('variant.summary.speed', pctInterp(modifiers.moveSpeedPct)));
+  if (modifiers.maxHpFlat) parts.push(t('variant.summary.hp', flatInterp(modifiers.maxHpFlat)));
+  if (modifiers.armorFlat) parts.push(t('variant.summary.armor', flatInterp(modifiers.armorFlat)));
+  if (modifiers.pickupRadiusFlat) parts.push(t('variant.summary.pickup', flatInterp(modifiers.pickupRadiusFlat)));
+  if (modifiers.xpMultiplierPct) parts.push(t('variant.summary.xp', pctInterp(modifiers.xpMultiplierPct)));
+  if (modifiers.damagePct) parts.push(t('variant.summary.dmg', pctInterp(modifiers.damagePct)));
+  if (modifiers.driftReductionPct) parts.push(t('variant.summary.drift', pctInterp(modifiers.driftReductionPct)));
+  if (modifiers.cooldownReductionPct) parts.push(t('variant.summary.cdr', pctInterp(modifiers.cooldownReductionPct)));
 
-  return parts.length > 0 ? parts.join('  |  ') : 'Baseline stats';
+  return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
 }
 
 export function formatVariantUnlockText(
   variant: VariantDef,
   progress: VariantProgressSnapshot
 ): string {
-  if (isVariantUnlocked(variant, progress)) return 'Requirement met';
+  if (isVariantUnlocked(variant, progress)) return t('variant.unlock.ready');
 
   const unlockProgress = getVariantUnlockProgress(variant, progress);
-  if (!unlockProgress) return 'Requirement met';
+  if (!unlockProgress) return t('variant.unlock.ready');
 
   return `${unlockProgress.label}: ${unlockProgress.currentText} / ${unlockProgress.requiredText}`;
 }

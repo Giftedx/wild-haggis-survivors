@@ -4,7 +4,13 @@
 
 export interface PermanentUpgrade {
   key: string;
+  /** i18n dot-path — resolved with `t(nameKey)` at render time. */
+  nameKey: string;
+  /** i18n dot-path — resolved with `t(descriptionKey)` at render time. */
+  descriptionKey: string;
+  /** @deprecated Use t(nameKey). Kept for analytics / debug paths. */
   name: string;
+  /** @deprecated Use t(descriptionKey). */
   description: string;
   maxLevel: number;
   /** Cost at level 1 */
@@ -18,6 +24,8 @@ export interface PermanentUpgrade {
 export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   {
     key: 'thick_hide',
+    nameKey: 'permanentUpgrade.thick_hide.name',
+    descriptionKey: 'permanentUpgrade.thick_hide.description',
     name: 'Thick Hide',
     description: '+5% starting HP',
     maxLevel: 5,
@@ -27,6 +35,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'strong_legs',
+    nameKey: 'permanentUpgrade.strong_legs.name',
+    descriptionKey: 'permanentUpgrade.strong_legs.description',
     name: 'Strong Legs',
     description: '+3% move speed',
     maxLevel: 5,
@@ -36,6 +46,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'sharp_thistles',
+    nameKey: 'permanentUpgrade.sharp_thistles.name',
+    descriptionKey: 'permanentUpgrade.sharp_thistles.description',
     name: 'Sharp Thistles',
     description: '+5% damage',
     maxLevel: 5,
@@ -48,6 +60,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'magnetic_personality',
+    nameKey: 'permanentUpgrade.magnetic_personality.name',
+    descriptionKey: 'permanentUpgrade.magnetic_personality.description',
     name: 'Magnetic Personality',
     description: '+10% pickup radius',
     maxLevel: 5,
@@ -57,6 +71,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'lucky_heather',
+    nameKey: 'permanentUpgrade.lucky_heather.name',
+    descriptionKey: 'permanentUpgrade.lucky_heather.description',
     name: 'Lucky Heather',
     // Rebalanced +5% → +10% per level. At +5%, the effect on the luck-weighted
     // card draw was statistically invisible. At +10% (with adjusted luck
@@ -69,6 +85,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'drift_control',
+    nameKey: 'permanentUpgrade.drift_control.name',
+    descriptionKey: 'permanentUpgrade.drift_control.description',
     name: 'Drift Control',
     description: '-15% movement drift',
     maxLevel: 3,
@@ -78,6 +96,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'extra_choice',
+    nameKey: 'permanentUpgrade.extra_choice.name',
+    descriptionKey: 'permanentUpgrade.extra_choice.description',
     name: 'Extra Choice',
     description: '4 cards on level-up instead of 3',
     maxLevel: 1,
@@ -90,6 +110,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'battle_hardened',
+    nameKey: 'permanentUpgrade.battle_hardened.name',
+    descriptionKey: 'permanentUpgrade.battle_hardened.description',
     name: 'Battle Hardened',
     description: '+2 starting armor',
     maxLevel: 3,
@@ -99,6 +121,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'weapon_training',
+    nameKey: 'permanentUpgrade.weapon_training.name',
+    descriptionKey: 'permanentUpgrade.weapon_training.description',
     name: 'Weapon Training',
     description: 'Start with Thistle Shot at +1 level',
     maxLevel: 2,
@@ -108,6 +132,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'crit_power',
+    nameKey: 'permanentUpgrade.crit_power.name',
+    descriptionKey: 'permanentUpgrade.crit_power.description',
     name: 'Deadly Precision',
     // Rebalanced: +25% crit damage alone at base 10% crit rate averages
     // +2.5% expected DPS per level — a dead pick. Now also bumps crit
@@ -120,6 +146,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'xp_boost',
+    nameKey: 'permanentUpgrade.xp_boost.name',
+    descriptionKey: 'permanentUpgrade.xp_boost.description',
     name: 'Scholar\'s Mind',
     description: '+8% XP gain',
     maxLevel: 5,
@@ -131,6 +159,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'lucky_start',
+    nameKey: 'permanentUpgrade.lucky_start.name',
+    descriptionKey: 'permanentUpgrade.lucky_start.description',
     name: 'Lucky Start',
     description: 'Start with a random passive item',
     maxLevel: 1,
@@ -140,6 +170,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'natural_recovery',
+    nameKey: 'permanentUpgrade.natural_recovery.name',
+    descriptionKey: 'permanentUpgrade.natural_recovery.description',
     name: 'Natural Recovery',
     description: '+0.3 HP/sec regeneration',
     maxLevel: 3,
@@ -149,6 +181,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'revival',
+    nameKey: 'permanentUpgrade.revival.name',
+    descriptionKey: 'permanentUpgrade.revival.description',
     name: 'Second Wind',
     description: 'Revive once per run with 50% HP',
     maxLevel: 1,
@@ -160,6 +194,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'double_dash',
+    nameKey: 'permanentUpgrade.double_dash.name',
+    descriptionKey: 'permanentUpgrade.double_dash.description',
     name: 'Double Dash',
     description: '2 dash charges instead of 1',
     maxLevel: 1,
@@ -169,6 +205,8 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
   },
   {
     key: 'treasure_magnet',
+    nameKey: 'permanentUpgrade.treasure_magnet.name',
+    descriptionKey: 'permanentUpgrade.treasure_magnet.description',
     name: 'Treasure Magnet',
     description: '+5s chest duration',
     maxLevel: 3,
