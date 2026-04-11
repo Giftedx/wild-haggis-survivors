@@ -131,7 +131,7 @@ export class MetaShopScene extends Phaser.Scene {
       this.rowElements.push(rowBg, nameText, descText);
 
       if (owned) {
-        const maxLabel = this.add.text(width - 80, y + 28, t('ui.gameOver.owned'), {
+        const maxLabel = this.add.text(width - 80, y + 28, t('ui.common.owned'), {
           fontFamily: 'monospace',
           fontSize: '14px',
           color: '#73c37d',
@@ -142,7 +142,7 @@ export class MetaShopScene extends Phaser.Scene {
       }
 
       if (locked) {
-        const lockLabel = this.add.text(width - 80, y + 28, t('ui.gameOver.locked'), {
+        const lockLabel = this.add.text(width - 80, y + 28, t('ui.common.locked'), {
           fontFamily: 'monospace',
           fontSize: '13px',
           color: '#7a6a88',
@@ -159,7 +159,7 @@ export class MetaShopScene extends Phaser.Scene {
         .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x475163, 1)
         .setInteractive({ useHandCursor: canAfford });
       const buyText = this.add
-        .text(width - 80, y + 32, t('ui.gameOver.meta_buy', { cost: item.cost }), {
+        .text(width - 80, y + 32, t('ui.common.buy_kills', { cost: item.cost }), {
           fontFamily: 'monospace',
           fontSize: '12px',
           color: buttonTextColor,
@@ -193,7 +193,7 @@ export class MetaShopScene extends Phaser.Scene {
     if (!r.ok) return;
     audio.playClick();
     this.saveManager.save(r.next);
-    audio.playLevelUp();
+    audio.playPurchase();
     this.renderRows();
   }
 

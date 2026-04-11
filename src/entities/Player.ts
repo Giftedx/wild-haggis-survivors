@@ -22,6 +22,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private subs = new SubscriptionBag();
   /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
   private readonly driftScratch = { x: 0, y: 0 };
+  /** Last non-zero movement intent, used as a dash fallback direction. */
+  private readonly lastMoveDir = { x: 0, y: -1 };
   /** When set, overrides joystick/keyboard for automated balance runs. */
   private autoBattleSteering: { x: number; y: number } | null = null;
 
@@ -148,8 +150,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private tryDash(): void {
     if (this.dashCharges <= 0 || this.isDashing) return;
-    const dir = this.inputManager.getDirection();
-    if (dir.x === 0 && dir.y === 0) return;
+    const inputDir = this.inputManager.getDirection();
+    const dir = { x: inputDir.x, y: inputDir.y };
+    if (dir.x === 0 && dir.y === 0) {
+      // Dash should still trigger when the player taps dash slightly before
+      // movement input settles on the same frame.
+      dir.x = this.lastMoveDir.x;
+      dir.y = this.lastMoveDir.y;
+    }
+    if (dir.x === 0 && dir.y === 0) {
+      // Ultimate fallback: current facing (sprite points "up", so subtract PI/2).
+      const facing = this.rotation - Math.PI / 2;
+      dir.x = Math.cos(facing);
+      dir.y = Math.sin(facing);
+    }
+    const len = Math.hypot(dir.x, dir.y);
+    if (len <= 0.0001) return;
+    dir.x /= len;
+    dir.y /= len;
 
     this.isDashing = true;
     this.dashInvincible = true;
@@ -233,15 +251,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Skip normal movement during dash — velocity is set by tryDash
-    if (this.isDashing) return;
+    if (this.isDashing) {
+      this.clampInsideWorld();
+      return;
+    }
 
     if (!this.autoBattleSteering && this.inputManager.consumeDashPressed()) {
       this.tryDash();
+      if (this.isDashing) return;
     }
 
     const dir = this.autoBattleSteering
       ? { x: this.autoBattleSteering.x, y: this.autoBattleSteering.y }
       : this.inputManager.getDirection();
+
+    if (dir.x !== 0 || dir.y !== 0) {
+      this.lastMoveDir.x = dir.x;
+      this.lastMoveDir.y = dir.y;
+    }
 
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(0, 0);
@@ -359,6 +386,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.max(0, Math.min(Math.floor(hp), this.maxHp));
   }
 
+  /** Mid-run resume — restore remaining shield cooldown if present. */
+  setResumeShieldCooldown(ms: number | undefined): void {
+    if (ms === undefined) return;
+    this.shieldCooldown = Math.max(0, Math.floor(ms));
+  }
+
+  /** Mid-run resume — restore partial dash recharge state if present. */
+  setResumeDashState(charges: number | undefined, cooldownMs: number | undefined): void {
+    if (charges === undefined && cooldownMs === undefined) return;
+    if (charges !== undefined) {
+      this.dashCharges = Phaser.Math.Clamp(Math.floor(charges), 0, this.maxDashCharges);
+    }
+    if (cooldownMs !== undefined) {
+      this.dashCooldown = Math.max(0, Math.floor(cooldownMs));
+    }
+    if (this.dashCharges >= this.maxDashCharges) {
+      this.dashCooldown = 0;
+    }
+  }
+
   // ── Getters ──
 
   getHp(): number { return this.hp; }
@@ -418,6 +465,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   addKnockbackMul(amount: number): void { this.bonusKnockbackMul += amount; }
   getBossHealFrac(): number { return this.bonusBossHealFrac; }
   addBossHealFrac(amount: number): void { this.bonusBossHealFrac += amount; }
+  getDashCooldownMs(): number { return Math.max(0, Math.floor(this.dashCooldown)); }
+  getShieldCooldownMs(): number { return Math.max(0, Math.floor(this.shieldCooldown)); }
 
   enableShield(): void { this.shieldActive = true; this.shieldCooldown = 0; }
   hasShield(): boolean { return this.shieldActive && this.shieldCooldown <= 0; }
@@ -507,6 +556,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Dev / balance: override movement direction (normalized world vector). */
   setAutoBattleSteering(dir: { x: number; y: number } | null): void {
     this.autoBattleSteering = dir;
+  }
+
+  /** Keep the haggis inside soft world bounds during high-speed dash bursts. */
+  private clampInsideWorld(): void {
+    const margin = this.BASE_HITBOX_RADIUS;
+    const clampedX = Phaser.Math.Clamp(this.x, margin, GAME.WORLD_WIDTH - margin);
+    const clampedY = Phaser.Math.Clamp(this.y, margin, GAME.WORLD_HEIGHT - margin);
+    if (clampedX !== this.x || clampedY !== this.y) {
+      this.setPosition(clampedX, clampedY);
+      if (this.isDashing) this.setVelocity(0, 0);
+    }
   }
 
   destroy(fromScene?: boolean): void {

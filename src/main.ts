@@ -1,7 +1,20 @@
 import { registerSW } from 'virtual:pwa-register';
 import Phaser from 'phaser';
 
-registerSW({ immediate: true });
+if (import.meta.env.PROD) {
+  registerSW({ immediate: true });
+}
+if (import.meta.env.DEV && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  // Defensive dev cleanup: prevent stale PWA code from masking layout fixes.
+  navigator.serviceWorker.getRegistrations()
+    .then((regs) => Promise.all(regs.map((r) => r.unregister())))
+    .catch(() => undefined);
+  if ('caches' in window) {
+    caches.keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .catch(() => undefined);
+  }
+}
 import { GAME } from './config';
 import { BootScene } from './scenes/BootScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
@@ -20,8 +33,10 @@ const config: Phaser.Types.Core.GameConfig = {
   height: GAME.HEIGHT,
   backgroundColor: '#1a1a2e',
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.RESIZE,
+    // RESIZE already tracks window size; centering can introduce offsets
+    // on some DPI/browser combinations and push fixed UI out of view.
+    autoCenter: Phaser.Scale.NO_CENTER,
   },
   physics: {
     default: 'arcade',
@@ -46,7 +61,15 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const game = new Phaser.Game(config);
 
-// Accessibility: label the canvas for screen readers
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  // Dev-only global for quick runtime inspection from browser console.
+  (window as Window & { game?: Phaser.Game }).game = game;
+}
+
+// Accessibility: label the canvas for screen readers.
+// The aria-label is intentionally hardcoded in English to match document lang="en".
+// When localized builds ship, derive this from t('ui.menu.title') + a per-locale
+// screen-reader instruction key (e.g. `ui.a11y.canvas_instructions`).
 game.events.once('ready', () => {
   const canvas = document.querySelector('canvas');
   if (canvas) {

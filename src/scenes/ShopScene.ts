@@ -3,6 +3,7 @@ import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade, getUpgradeCost } from '../data/permanentUpgrades';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
+import { t } from '../core/i18n';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -36,7 +37,7 @@ export class ShopScene extends Phaser.Scene {
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
     this.add
-      .text(width / 2, 32, 'UPGRADES', {
+      .text(width / 2, 32, t('ui.shop.title'), {
         fontFamily: 'monospace',
         fontSize: '36px',
         color: '#d4a017',
@@ -80,8 +81,8 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private updateHeader(): void {
-    this.goldText.setText(`Gold: ${this.saveData.gold}`);
-    this.pageText.setText(`Page ${this.currentPage + 1} / ${this.getTotalPages()}`);
+    this.goldText.setText(t('ui.shop.gold_bank', { count: this.saveData.gold }));
+    this.pageText.setText(t('ui.shop.page', { current: this.currentPage + 1, total: this.getTotalPages() }));
   }
 
   private renderRows(): void {
@@ -139,7 +140,7 @@ export class ShopScene extends Phaser.Scene {
 
     if (isMaxed) {
       const maxLabel = this.add
-        .text(width - 74, y + 16, 'MAX', {
+        .text(width - 74, y + 16, t('ui.shop.max'), {
           fontFamily: 'monospace',
           fontSize: '14px',
           color: '#73c37d',
@@ -157,7 +158,7 @@ export class ShopScene extends Phaser.Scene {
       .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x475163, 1)
       .setInteractive({ useHandCursor: canAfford });
     const buyText = this.add
-      .text(width - 74, y + 16, `${cost}g`, {
+      .text(width - 74, y + 16, t('ui.shop.cost_gold', { cost }), {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: buttonTextColor,
@@ -185,7 +186,7 @@ export class ShopScene extends Phaser.Scene {
     this.saveData.gold -= cost;
     this.saveData.upgrades[upgrade.key] = currentLevel + 1;
     this.saveData = writeSave(this.saveData);
-    audio.playLevelUp();
+    audio.playPurchase();
 
     this.updateHeader();
     this.renderRows();
@@ -198,7 +199,7 @@ export class ShopScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const totalPages = this.getTotalPages();
 
-    this.createPageButton(136, height - 20 - 52, '< PREV', this.currentPage > 0, () => {
+    this.createPageButton(136, height - 20 - 52, t('ui.shop.prev'), this.currentPage > 0, () => {
       audio.playClick();
       this.currentPage--;
       this.updateHeader();
@@ -206,7 +207,7 @@ export class ShopScene extends Phaser.Scene {
       this.renderFooter();
     });
 
-    this.createPageButton(width - 136, height - 20 - 52, 'NEXT >', this.currentPage < totalPages - 1, () => {
+    this.createPageButton(width - 136, height - 20 - 52, t('ui.shop.next'), this.currentPage < totalPages - 1, () => {
       audio.playClick();
       this.currentPage++;
       this.updateHeader();
@@ -218,7 +219,7 @@ export class ShopScene extends Phaser.Scene {
       .rectangle(width / 2, height - 26, 188, 36, 0x3a4357, 1)
       .setInteractive({ useHandCursor: true });
     const backText = this.add
-      .text(width / 2, height - 26, 'BACK TO MENU', {
+      .text(width / 2, height - 26, t('ui.shop.back_to_menu'), {
         fontFamily: 'monospace',
         fontSize: '15px',
         color: '#ffffff',
@@ -237,7 +238,7 @@ export class ShopScene extends Phaser.Scene {
         targets: fade,
         alpha: 1,
         duration: 260,
-        onComplete: () => this.scene.start('Menu'),
+        onComplete: () => this.scene.start('MainMenu'),
       });
     });
 

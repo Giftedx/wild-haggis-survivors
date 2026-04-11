@@ -48,20 +48,32 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 68, t('ui.settings.subtitle'), {
+      .text(width / 2, 64, t('ui.settings.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#6a7390',
       })
       .setOrigin(0.5);
 
-    this.rowY = 104;
+    this.add
+      .text(width / 2, 86, t('ui.settings.comfort_hint'), {
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        color: '#5a6478',
+        align: 'center',
+        wordWrap: { width: width - 48 },
+      })
+      .setOrigin(0.5);
+
+    this.rowY = 118;
     this.addVolumeRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1);
     this.addVolumeRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1);
     this.addVolumeRow(t('ui.settings.music_volume'), 'musicVolume', 0, 1);
+    this.addVolumeRow(t('ui.settings.ui_scale'), 'uiScale', 0.8, 1.4, 0.05);
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
+    this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
 
     const back = this.add
       .rectangle(width / 2, height - 36, 200, 40, 0x3a4357, 1)
@@ -186,7 +198,13 @@ export class SettingsScene extends Phaser.Scene {
     }
   }
 
-  private addVolumeRow(label: string, key: 'masterVolume' | 'sfxVolume' | 'musicVolume', min: number, max: number): void {
+  private addVolumeRow(
+    label: string,
+    key: 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale',
+    min: number,
+    max: number,
+    step: number = 0.1
+  ): void {
     const { width } = this.scale;
     const y = this.rowY;
     this.rowY += 44;
@@ -203,14 +221,14 @@ export class SettingsScene extends Phaser.Scene {
       color: '#88aacc',
     }).setOrigin(0.5, 0);
 
-    const step = 0.1;
     const bump = (delta: number) => {
       this.working[key] = Phaser.Math.Clamp(this.working[key] + delta, min, max);
-      valText.setText(`${Math.round(this.working[key] * 100)}%`);
+      const next = this.working[key];
+      valText.setText(key === 'uiScale' ? `${next.toFixed(2)}x` : `${Math.round(next * 100)}%`);
       this.persistAndApply();
     };
 
-    valText.setText(`${Math.round(this.working[key] * 100)}%`);
+    valText.setText(key === 'uiScale' ? `${this.working[key].toFixed(2)}x` : `${Math.round(this.working[key] * 100)}%`);
 
     const mkBtn = (x: number, t: string, d: number) => {
       const b = this.add.rectangle(x, y + 10, 36, 28, 0x3a4a62, 1).setInteractive({ useHandCursor: true });
@@ -237,7 +255,7 @@ export class SettingsScene extends Phaser.Scene {
     });
   }
 
-  private addToggleRow(label: string, key: 'screenShake' | 'damageNumbers' | 'reduceParticles'): void {
+  private addToggleRow(label: string, key: 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi'): void {
     const { width } = this.scale;
     const y = this.rowY;
     this.rowY += 40;

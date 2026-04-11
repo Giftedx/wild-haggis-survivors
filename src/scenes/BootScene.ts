@@ -11,6 +11,7 @@ import { achievementManager } from '../core/AchievementManager';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { validateAndRepairBootTextures } from '../core/AssetValidator';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
+import { t } from '../core/i18n';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -46,7 +47,7 @@ export class BootScene extends Phaser.Scene {
     // Brief splash screen — textures are already generated, show a quick brand moment
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
 
-    const title = this.add.text(width / 2, height * 0.4, 'Wild Haggis Survivors', {
+    const title = this.add.text(width / 2, height * 0.4, t('ui.menu.title'), {
       fontFamily: 'monospace', fontSize: '28px', color: '#d4a017',
       fontStyle: 'bold',
     }).setOrigin(0.5).setAlpha(0);
@@ -108,6 +109,58 @@ export class BootScene extends Phaser.Scene {
     this.createHeather();
     // Weapon HUD icons
     this.createWeaponIcons();
+    this.createUpgradeCardIcons();
+    this.createHudChromeTextures();
+  }
+
+  /** Small HUD sprites (shield, dash pips) — avoids emoji / font-dependent glyphs. */
+  private createHudChromeTextures(): void {
+    const s = 18;
+    const g = this.add.graphics();
+    const cx = s / 2;
+    const cy = s / 2;
+    g.fillStyle(0x3a7ca5, 1);
+    g.fillTriangle(cx, cy - 7, cx + 6, cy + 2, cx, cy + 7);
+    g.fillTriangle(cx, cy - 7, cx - 6, cy + 2, cx, cy + 7);
+    g.fillStyle(0x8fd4ff, 0.55);
+    g.fillTriangle(cx, cy - 5, cx + 3, cy + 1, cx, cy + 4);
+    g.fillTriangle(cx, cy - 5, cx - 3, cy + 1, cx, cy + 4);
+    g.generateTexture('hud_shield', s, s);
+    g.destroy();
+
+    const ps = 10;
+    const gf = this.add.graphics();
+    gf.fillStyle(0xd4a017, 1);
+    gf.fillCircle(ps / 2, ps / 2, 3.8);
+    gf.generateTexture('hud_dash_pip_full', ps, ps);
+    gf.destroy();
+
+    const ge = this.add.graphics();
+    ge.lineStyle(1.5, 0xd4a017, 0.9);
+    ge.strokeCircle(ps / 2, ps / 2, 3.5);
+    ge.generateTexture('hud_dash_pip_empty', ps, ps);
+    ge.destroy();
+
+    // Snowflake particle for Enemy freeze FX — replaces the raw ❄ emoji
+    // that used to be rendered as text. Keeps Enemy.ts consistent with the
+    // HUD's "no emoji / font glyphs" principle. Drawn as six radiating arms
+    // with a small bright centre dot so it reads as a snowflake even at 10px.
+    const snow = 10;
+    const gs = this.add.graphics();
+    const scx = snow / 2;
+    const scy = snow / 2;
+    gs.lineStyle(1.5, 0xcce6ff, 1);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      gs.beginPath();
+      gs.moveTo(scx, scy);
+      gs.lineTo(scx + Math.cos(a) * 4.5, scy + Math.sin(a) * 4.5);
+      gs.strokePath();
+    }
+    gs.fillStyle(0xffffff, 1);
+    gs.fillCircle(scx, scy, 1.3);
+    gs.generateTexture('fx_snowflake', snow, snow);
+    gs.destroy();
   }
 
   /** Soft elliptical shadow placed under each entity. Dark translucent.
@@ -231,9 +284,136 @@ export class BootScene extends Phaser.Scene {
     this.createHighlandFlingIcon();
     this.createTheHaarIcon();
     this.createNessieUnleashedIcon();
-    this.createWeaponIconFromTexture('wicon_claymore', 'caber');
+    this.createClaymoreWeaponIcon();
     this.createWeaponIconFromTexture('wicon_bagpipes', 'wicon_bagpipe_blast');
     this.createWilliamBladeIcon();
+  }
+
+  /** Upgrade-card icons (passives + stat families). */
+  private createUpgradeCardIcons(): void {
+    // Passives
+    this.createCardIcon('ucard_sporran', 0x3d2a20, 0xd4a017, 'bag');
+    this.createCardIcon('ucard_whisky_flask', 0x332211, 0xcc7711, 'flask');
+    this.createCardIcon('ucard_kilt', 0x1d2d5a, 0x5aa0ff, 'stripe');
+    this.createCardIcon('ucard_tam_o_shanter', 0x2a2238, 0xdd3355, 'cap');
+    this.createCardIcon('ucard_irn_bru', 0x44220f, 0xff7a1a, 'burst');
+    this.createCardIcon('ucard_loch_water', 0x12334a, 0x66ccff, 'drop');
+    this.createCardIcon('ucard_thistle_crown', 0x3a214d, 0xcc88ff, 'crown');
+    this.createCardIcon('ucard_highland_shield', 0x1f2b44, 0x88ccff, 'shield');
+    this.createCardIcon('ucard_tartan_sash', 0x3b1f2d, 0xff6677, 'sash');
+    // Stats (reused by related cards)
+    this.createCardIcon('ucard_stat_health', 0x2c1f2a, 0xff7788, 'heart');
+    this.createCardIcon('ucard_stat_speed', 0x213047, 0x88c8ff, 'bolt');
+    this.createCardIcon('ucard_stat_pickup', 0x243a22, 0x99dd88, 'magnet');
+    this.createCardIcon('ucard_stat_damage', 0x3c2318, 0xffaa44, 'cross');
+    this.createCardIcon('ucard_stat_drift', 0x2a2744, 0xc1a4ff, 'swirl');
+    this.createCardIcon('ucard_stat_defense', 0x1f2e3a, 0x8fd8ff, 'shield');
+    this.createCardIcon('ucard_stat_utility', 0x2d2d22, 0xd8d86e, 'star');
+    this.createCardIcon('ucard_stat_cooldown', 0x2a2238, 0xffaa66, 'hourglass');
+    this.createCardIcon('ucard_stat_knockback', 0x3a2818, 0xffcc88, 'waves');
+  }
+
+  private createCardIcon(
+    key: string,
+    bgColor: number,
+    accentColor: number,
+    shape: 'bag' | 'flask' | 'stripe' | 'cap' | 'burst' | 'drop' | 'crown' | 'shield' | 'sash' | 'heart' | 'bolt' | 'magnet' | 'cross' | 'swirl' | 'star' | 'hourglass' | 'waves'
+  ): void {
+    const s = 18;
+    const g = this.add.graphics();
+    const cx = s / 2;
+    const cy = s / 2;
+    g.fillStyle(0x0b111c, 1);
+    g.fillRoundedRect(1, 1, s - 2, s - 2, 4);
+    g.fillStyle(bgColor, 1);
+    g.fillRoundedRect(2, 2, s - 4, s - 4, 3);
+    g.fillStyle(accentColor, 1);
+    switch (shape) {
+      case 'bag':
+        g.fillEllipse(cx, cy + 1, 9, 7);
+        g.fillRect(cx - 2, cy - 4, 4, 2);
+        break;
+      case 'flask':
+        g.fillRect(cx - 2, cy - 5, 4, 3);
+        g.fillRoundedRect(cx - 4, cy - 2, 8, 8, 2);
+        break;
+      case 'stripe':
+        g.fillRect(4, 7, 10, 2);
+        g.fillRect(4, 10, 10, 2);
+        break;
+      case 'cap':
+        g.fillEllipse(cx, cy - 1, 10, 5);
+        g.fillRect(cx - 5, cy, 6, 2);
+        break;
+      case 'burst':
+        g.fillCircle(cx, cy, 3);
+        for (let i = 0; i < 6; i++) {
+          const a = (i / 6) * Math.PI * 2;
+          g.fillCircle(cx + Math.cos(a) * 5, cy + Math.sin(a) * 5, 1.2);
+        }
+        break;
+      case 'drop':
+        g.fillTriangle(cx, cy - 5, cx - 4, cy + 2, cx + 4, cy + 2);
+        g.fillCircle(cx, cy + 2, 3);
+        break;
+      case 'crown':
+        g.fillRect(cx - 5, cy + 1, 10, 3);
+        g.fillTriangle(cx - 5, cy + 1, cx - 3, cy - 4, cx - 1, cy + 1);
+        g.fillTriangle(cx - 1, cy + 1, cx, cy - 5, cx + 1, cy + 1);
+        g.fillTriangle(cx + 1, cy + 1, cx + 3, cy - 4, cx + 5, cy + 1);
+        break;
+      case 'shield':
+        g.fillRoundedRect(cx - 4, cy - 5, 8, 8, 2);
+        g.fillTriangle(cx - 4, cy + 2, cx, cy + 6, cx + 4, cy + 2);
+        break;
+      case 'sash':
+        g.fillRect(4, 11, 10, 2);
+        g.fillRect(6, 8, 10, 2);
+        break;
+      case 'heart':
+        g.fillCircle(cx - 2, cy - 1, 2.5);
+        g.fillCircle(cx + 2, cy - 1, 2.5);
+        g.fillTriangle(cx - 5, cy, cx + 5, cy, cx, cy + 6);
+        break;
+      case 'bolt':
+        g.fillTriangle(cx - 2, cy - 5, cx + 2, cy - 5, cx - 1, cy + 1);
+        g.fillTriangle(cx, cy + 1, cx + 4, cy + 1, cx - 2, cy + 6);
+        break;
+      case 'magnet':
+        g.fillRect(cx - 5, cy - 4, 3, 8);
+        g.fillRect(cx + 2, cy - 4, 3, 8);
+        g.fillRect(cx - 2, cy + 2, 4, 3);
+        break;
+      case 'cross':
+        g.fillRect(cx - 1, cy - 5, 2, 10);
+        g.fillRect(cx - 5, cy - 1, 10, 2);
+        break;
+      case 'swirl':
+        g.fillCircle(cx, cy, 4.5);
+        g.fillStyle(bgColor, 1);
+        g.fillCircle(cx + 2, cy, 3);
+        g.fillStyle(accentColor, 1);
+        g.fillCircle(cx - 3, cy, 1.4);
+        break;
+      case 'star':
+        g.fillTriangle(cx, cy - 5, cx + 2, cy, cx - 2, cy);
+        g.fillTriangle(cx - 4, cy - 1, cx, cy + 1, cx - 4, cy + 3);
+        g.fillTriangle(cx + 4, cy - 1, cx, cy + 1, cx + 4, cy + 3);
+        g.fillTriangle(cx - 2, cy + 2, cx + 2, cy + 2, cx, cy + 6);
+        break;
+      case 'hourglass':
+        g.fillTriangle(cx, cy - 5, cx - 4, cy - 1, cx + 4, cy - 1);
+        g.fillTriangle(cx, cy + 5, cx - 4, cy + 1, cx + 4, cy + 1);
+        g.fillRect(cx - 1, cy - 1, 2, 2);
+        break;
+      case 'waves':
+        g.fillRect(cx - 5, cy - 4, 10, 2);
+        g.fillRect(cx - 4, cy - 1, 8, 2);
+        g.fillRect(cx - 5, cy + 2, 10, 2);
+        break;
+    }
+    g.generateTexture(key, s, s);
+    g.destroy();
   }
 
   /** Use an existing texture as a weapon icon (for projectile weapons). */
@@ -1035,7 +1215,7 @@ export class BootScene extends Phaser.Scene {
     // Outline
     g.fillStyle(0x3a2808, 1);
     g.fillCircle(cx, cy, 7);
-    // Small round haggis
+    // Small round projectile (Jobby Hurler / Jobby Cannon)
     g.fillStyle(0x6b4e0a, 1);
     g.fillCircle(cx, cy, 6);
     g.fillStyle(0x8b6914, 0.8);
@@ -1826,12 +2006,12 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Haggis Cannon — multiple haggis balls radiating */
+  /** Jobby Cannon — multiple wee jobbies radiating */
   private createHaggisCannonIcon(): void {
     const s = 22;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Central haggis
+    // Central jobby
     g.fillStyle(0x3a2808, 1);
     g.fillCircle(cx, cy, 4);
     g.fillStyle(0x6b4e0a, 1);
@@ -1931,6 +2111,38 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0x000000, 1);
     g.fillCircle(cx, cy, 1);
     g.generateTexture('wicon_nessie_unleashed', s, s);
+    g.destroy();
+  }
+
+  /** Highland Claymore — broad two-handed sword (distinct from caber log projectile). */
+  private createClaymoreWeaponIcon(): void {
+    const s = 22;
+    const g = this.add.graphics();
+    const cx = s / 2;
+    const cy = s / 2;
+    // Broad blade, diagonal (upper-right → lower-left), chunky pixel read
+    g.fillStyle(0x5a6a78, 1);
+    g.fillTriangle(15, 4, 6, 17, 9, 17);
+    g.fillStyle(0xc8d8e8, 1);
+    g.fillTriangle(15, 4, 9, 17, 12, 15);
+    g.fillStyle(0xe8f4ff, 0.85);
+    g.fillTriangle(14, 6, 10, 14, 11, 13);
+    // Wide quillon crossguard
+    g.fillStyle(0x4a3828, 1);
+    g.fillRect(3, 15, 16, 3);
+    g.fillStyle(0x6a5848, 1);
+    g.fillRect(4, 16, 14, 1);
+    // Leather-wrapped grip
+    g.fillStyle(0x3a2418, 1);
+    g.fillRect(8, 17, 6, 4);
+    g.fillStyle(0x5a4030, 1);
+    g.fillRect(8, 18, 6, 1);
+    // Wheel pommel
+    g.fillStyle(0xb8942a, 1);
+    g.fillCircle(11, 19.5, 2.2);
+    g.fillStyle(0xe8c848, 0.9);
+    g.fillCircle(10.5, 19, 0.9);
+    g.generateTexture('wicon_claymore', s, s);
     g.destroy();
   }
 

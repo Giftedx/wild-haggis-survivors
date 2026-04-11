@@ -3,6 +3,7 @@ import { ENEMIES } from '../config';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import { TimeManager } from '../systems/TimeManager';
+import { getCameraViewport } from './cameraViewport';
 
 type DebugOverlayDeps = {
   spawnSystem: SpawnSystem;
@@ -21,16 +22,20 @@ export class DebugOverlay {
     this.scene = scene;
     this.deps = deps;
 
-    const { width } = scene.scale;
+    const { x, y, width, height } = getCameraViewport(scene);
     const d = 220;
+    const panelW = Math.max(180, Math.min(420, width - 16));
+    const panelH = Math.max(120, Math.min(158, height - 16));
+    const panelX = Math.max(x + 8, Math.min(x + width - panelW - 8, x + 8));
+    const panelY = Math.max(y + 8, Math.min(y + height - panelH - 8, y + 8));
 
-    this.bg = scene.add.rectangle(8, 8, Math.min(420, width - 16), 158, 0x000000, 0.65)
+    this.bg = scene.add.rectangle(panelX, panelY, panelW, panelH, 0x000000, 0.65)
       .setOrigin(0, 0)
       .setScrollFactor(0)
       .setDepth(d)
       .setVisible(false);
 
-    this.text = scene.add.text(14, 12, '', {
+    this.text = scene.add.text(panelX + 6, panelY + 4, '', {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#cfe9ff',
@@ -67,6 +72,14 @@ export class DebugOverlay {
   /** Update using raw delta (keeps diagnostics alive during timeScale === 0). */
   update(_rawDeltaMs: number): void {
     if (!this.visible) return;
+    const { x, y, width, height } = getCameraViewport(this.scene);
+    const panelW = Math.max(180, Math.min(420, width - 16));
+    const panelH = Math.max(120, Math.min(158, height - 16));
+    const panelX = Math.max(x + 8, Math.min(x + width - panelW - 8, x + 8));
+    const panelY = Math.max(y + 8, Math.min(y + height - panelH - 8, y + 8));
+    this.bg.setPosition(panelX, panelY);
+    this.bg.width = panelW;
+    this.text.setPosition(panelX + 6, panelY + 4);
 
     const { spawnSystem, weaponSystem, timeManager } = this.deps;
 
@@ -88,6 +101,18 @@ export class DebugOverlay {
     const paused = timeManager.isGameplayPaused();
     const timeScale = timeManager.getEffectiveTimeScale();
     const tokens = timeManager.getActiveTokenKeys();
+    const cam = this.scene.cameras?.main;
+    const scaleAny = this.scene.scale as unknown as {
+      gameSize?: { width: number; height: number };
+      baseSize?: { width: number; height: number };
+      displaySize?: { width: number; height: number };
+      width: number;
+      height: number;
+    };
+    const gameW = scaleAny.gameSize?.width ?? scaleAny.width;
+    const gameH = scaleAny.gameSize?.height ?? scaleAny.height;
+    const displayW = scaleAny.displaySize?.width ?? scaleAny.width;
+    const displayH = scaleAny.displaySize?.height ?? scaleAny.height;
 
     const saturated = enemiesActive >= ENEMIES.MAX_ACTIVE || enemiesTotal >= ENEMIES.MAX_ACTIVE;
     const stall = spawnSystem.getSpawnStallReason();
@@ -100,6 +125,8 @@ export class DebugOverlay {
       `Status: [${stallLabel}]`,
       `Boss: active=${bossActive}  spawned=${bossSpawned}  scheduled=${bossScheduled}`,
       `Time: paused=${paused}  scale=${timeScale.toFixed(2)}  tokens=[${tokens.join(', ')}]`,
+      `UI: x=${x.toFixed(1)} y=${y.toFixed(1)} w=${width.toFixed(1)} h=${height.toFixed(1)}`,
+      `Viewport: scale=${scaleAny.width}x${scaleAny.height} game=${gameW}x${gameH} display=${displayW}x${displayH} cam=${cam?.width ?? scaleAny.width}x${cam?.height ?? scaleAny.height} z=${(cam?.zoom ?? 1).toFixed(2)}`,
     ].join('\n'));
   }
 }

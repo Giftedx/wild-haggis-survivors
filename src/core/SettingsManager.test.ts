@@ -16,6 +16,13 @@ class MemoryStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
+class ThrowingStorage implements StorageLike {
+  private m = new Map<string, string>();
+  getItem(key: string) { return this.m.get(key) ?? null; }
+  setItem(_key: string, _value: string) { throw new Error('blocked storage'); }
+  removeItem(key: string) { this.m.delete(key); }
+}
+
 describe('SettingsManager air-gap', () => {
   beforeEach(() => {
     resetSettingsManagerSingletonForTests();
@@ -43,6 +50,8 @@ describe('SettingsManager air-gap', () => {
       screenShake: false,
       damageNumbers: true,
       reduceParticles: true,
+      uiScale: 1.1,
+      highContrastUi: true,
     });
 
     meta.reset();
@@ -52,6 +61,8 @@ describe('SettingsManager air-gap', () => {
     expect(st.masterVolume).toBe(0.5);
     expect(st.sfxVolume).toBe(0.8);
     expect(st.screenShake).toBe(false);
+    expect(st.uiScale).toBe(1.1);
+    expect(st.highContrastUi).toBe(true);
   });
 
   it('clearing meta storage does not remove settings', () => {
@@ -76,6 +87,8 @@ describe('SettingsManager air-gap', () => {
       screenShake: true,
       damageNumbers: false,
       reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
     });
 
     meta.reset();
@@ -106,6 +119,8 @@ describe('SettingsManager air-gap', () => {
       screenShake: true,
       damageNumbers: true,
       reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
     });
 
     settings.reset();
@@ -114,5 +129,21 @@ describe('SettingsManager air-gap', () => {
     const m = meta.load();
     expect(m.totalKills).toBe(77);
     expect(m.unlockedAchievements).toContain('ach_kills_1000');
+  });
+
+  it('does not throw when settings storage write fails', () => {
+    const settings = new SettingsManager({ storage: new ThrowingStorage(), key: 's' });
+    expect(() => settings.save({
+      settingsVersion: 1,
+      masterVolume: 0.7,
+      sfxVolume: 0.5,
+      musicVolume: 0.3,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+    })).not.toThrow();
+    expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });
 });

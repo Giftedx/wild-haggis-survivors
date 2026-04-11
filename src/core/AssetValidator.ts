@@ -74,6 +74,20 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     pushKey(out, seen, 'aux', k, k);
   }
 
+  for (const k of [
+    { id: 'hud_shield', key: 'hud_shield' },
+    { id: 'hud_dash_pip_full', key: 'hud_dash_pip_full' },
+    { id: 'hud_dash_pip_empty', key: 'hud_dash_pip_empty' },
+  ] as const) {
+    pushKey(out, seen, 'hud', k.id, k.key);
+  }
+
+  for (const k of [
+    { id: 'fx_snowflake', key: 'fx_snowflake' },
+  ] as const) {
+    pushKey(out, seen, 'fx', k.id, k.key);
+  }
+
   for (const arr of [WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS]) {
     for (const c of arr) {
       pushKey(out, seen, 'upgrade_card', c.id, c.icon);

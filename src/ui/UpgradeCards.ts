@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
+import { getCameraViewport } from './cameraViewport';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -25,6 +26,11 @@ export class UpgradeCardsUI {
     this.tickers = tickers;
   }
 
+  private getUiViewport(): { x: number; y: number; width: number; height: number } {
+    const { x, y, width, height } = getCameraViewport(this.scene);
+    return { x, y, width, height };
+  }
+
   /** Set the reroll callback and grant one reroll per level-up */
   setRerollCallback(cb: () => void): void {
     this.onReroll = cb;
@@ -42,33 +48,35 @@ export class UpgradeCardsUI {
   ): void {
     this.hide();
 
-    const { width, height } = this.scene.scale;
+    const { x: left, y: top, width, height } = this.getUiViewport();
     const depth = 200;
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
 
     // Dark overlay — high opacity to fully hide the green terrain behind
     // Interactive to block joystick/other input from activating through it
-    const overlay = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.85)
+    const overlay = this.scene.add.rectangle(centerX, centerY, width, height, 0x000000, 0.85)
       .setScrollFactor(0).setDepth(depth).setInteractive();
     this.elements.push(overlay);
 
-    const titleStr = opts?.bannerTitle ?? `LEVEL ${level}`;
-    const subtitleStr = opts?.bannerSubtitle ?? 'Choose an upgrade';
+    const titleStr = opts?.bannerTitle ?? t('ui.upgradeCards.level_title', { level });
+    const subtitleStr = opts?.bannerSubtitle ?? t('ui.upgradeCards.choose_upgrade');
 
     // Title
-    const title = this.scene.add.text(width / 2, 55, titleStr, {
+    const title = this.scene.add.text(centerX, top + 55, titleStr, {
       fontFamily: 'monospace', fontSize: '40px', color: '#d4a017',
       fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(title);
 
-    const subtitle = this.scene.add.text(width / 2, 100, subtitleStr, {
+    const subtitle = this.scene.add.text(centerX, top + 100, subtitleStr, {
       fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
 
     // Reroll button
     if (this.rerollsLeft > 0 && this.onReroll && !opts?.hideReroll) {
-      const rerollBtn = this.scene.add.text(width / 2, height - 48, `Reroll (${this.rerollsLeft})`, {
+      const rerollBtn = this.scene.add.text(centerX, top + height - 48, t('ui.upgradeCards.reroll', { count: this.rerollsLeft }), {
         fontFamily: 'monospace', fontSize: '18px', color: '#d4a017',
         fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
         backgroundColor: '#2a2a3a', padding: { x: 16, y: 8 },
@@ -89,13 +97,22 @@ export class UpgradeCardsUI {
 
     // Card layout — scale down if too many cards for the screen width
     const maxCardW = 210;
-    const gap = 20;
-    const availableW = width - 40; // 20px margin each side
-    const cardW = Math.min(maxCardW, (availableW - (cards.length - 1) * gap) / cards.length);
+    const gap = Math.max(10, Math.min(20, Math.round(width * 0.02)));
+    const sideMargin = Math.max(16, Math.round(width * 0.06));
+    const hoverScale = 1.05;
+    const availableW = Math.max(160, width - sideMargin * 2);
+    // Reserve room for hover expansion so edge cards do not clip at narrow widths.
+    let cardW = Math.min(maxCardW, ((availableW - (cards.length - 1) * gap) / cards.length) / hoverScale);
+    cardW = Math.max(90, cardW);
+    if (cards.length * cardW + (cards.length - 1) * gap > availableW) {
+      cardW = Math.max(72, (availableW - (cards.length - 1) * gap) / cards.length);
+    }
     const cardH = Math.round(cardW * (260 / 210)); // maintain aspect ratio
     const totalW = cards.length * cardW + (cards.length - 1) * gap;
-    const startX = (width - totalW) / 2 + cardW / 2;
-    const cardY = height / 2 + 20;
+    const startX = left + sideMargin + cardW / 2 + Math.max(0, (availableW - totalW) / 2);
+    const minCardY = cardH / 2 + 20;
+    const maxCardY = height - cardH / 2 - 72;
+    const cardY = top + Math.max(minCardY, Math.min(height / 2 + 20, maxCardY));
 
     cards.forEach((card, i) => {
       const x = startX + i * (cardW + gap);
@@ -112,9 +129,10 @@ export class UpgradeCardsUI {
       if (win.AUTO_BATTLE && cards.length > 0) {
         const first = cards[0];
         const maxStaggerMs = (cards.length - 1) * 120;
-        this.tickers.addOnce('raw', maxStaggerMs + 100, () => {
+        const autoPickHandle = this.tickers.addOnce('raw', maxStaggerMs + 100, () => {
           this.onSelect(first);
         });
+        this.pendingHandles.push(autoPickHandle);
       }
     }
   }
@@ -175,7 +193,12 @@ export class UpgradeCardsUI {
       this.elements.push(glow);
     }
 
-    // Icon placeholder
+    const textureManager = (this.scene as unknown as { textures?: { exists: (key: string) => boolean } }).textures;
+    if (textureManager && !textureManager.exists(card.icon)) {
+      throw new Error(`Missing upgrade card icon texture: ${card.icon} (${card.id})`);
+    }
+
+    // Card icon
     const icon = this.scene.add.sprite(x, y - 65, card.icon)
       .setScale(2.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
@@ -190,7 +213,8 @@ export class UpgradeCardsUI {
     // Description
     const desc = this.scene.add.text(x, y + 30, t(card.description), {
       fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
-      align: 'center', wordWrap: { width: w - 20 },
+      align: 'center', lineSpacing: 4,
+      wordWrap: { width: w - 20 },
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(desc);
 

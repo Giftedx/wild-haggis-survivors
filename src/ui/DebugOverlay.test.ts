@@ -3,9 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('phaser', () => {
   class MockGO {
     visible = true;
+    width = 0;
     setOrigin() { return this; }
     setScrollFactor() { return this; }
     setDepth() { return this; }
+    setPosition() { return this; }
     setVisible(v: boolean) { this.visible = v; return this; }
     destroy() {}
   }
@@ -32,11 +34,12 @@ describe('DebugOverlay', () => {
     const scene: any = {
       scale: { width: 800, height: 600 },
       add: {
-        rectangle: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setVisible() { return this; }, destroy() {} }),
+        rectangle: () => ({ setOrigin() { return this; }, setScrollFactor() { return this; }, setDepth() { return this; }, setPosition() { return this; }, setVisible() { return this; }, destroy() {} }),
         text: (_x: number, _y: number, _t: string) => ({
           setOrigin() { return this; },
           setScrollFactor() { return this; },
           setDepth() { return this; },
+          setPosition() { return this; },
           setVisible() { return this; },
           setText(t: string) { textObj.value = t; return this; },
           destroy() {},

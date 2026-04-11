@@ -6,6 +6,7 @@ import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
+import { globalEventBus } from '../core/GlobalEventBus';
 
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
@@ -719,7 +720,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         for (const e of nearby) {
           if (!e.active || e === this) continue;
           const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
-          if (d <= 60) e.takeDamage(25);
+          if (d <= 60) e.takeDamageWithKillEvents(25);
         }
       }
     }
@@ -767,10 +768,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (!this.baseTint) {
         this.setTint(0x6688ff);
       } else if (this.active && Math.random() < 0.08) {
-        const flake = this.scene.add.text(
+        // Sprite-based snowflake — no emoji, no font-dependent glyph fallback.
+        // Texture generated in BootScene.createHudChromeTextures().
+        const flake = this.scene.add.image(
           this.x + Phaser.Math.Between(-10, 10), this.y - 12,
-          '❄', { fontSize: '14px', color: '#88ccff' }
-        ).setDepth(15).setOrigin(0.5);
+          'fx_snowflake'
+        ).setDepth(15).setOrigin(0.5).setScale(1.2).setAlpha(0.9);
         this.scene.tweens.add({
           targets: flake, y: flake.y - 12, alpha: 0, duration: 500,
           onComplete: () => flake.destroy(),
@@ -838,12 +841,28 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const killX = this.x, killY = this.y;
       const xp = this.xpValue, key = this.enemyKey;
       this.die();
-      // Emit kill event through the scene's WeaponSystem so XP gems drop
-      const ws = this.ctx.getWeaponSystem();
-      ws.events.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
+      this.emitKillEvents(killX, killY, xp, key, wasBoss, wasElite);
       return true;
     }
     return false;
+  }
+
+  private emitKillEvents(
+    killX: number,
+    killY: number,
+    xp: number,
+    key: string,
+    wasBoss: boolean,
+    wasElite: boolean
+  ): void {
+    const ws = this.ctx.getWeaponSystem();
+    ws.events.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: key,
+      xpValue: xp,
+      wasBoss,
+      wasElite,
+    });
   }
 
   takeDamage(amount: number): boolean {
@@ -926,6 +945,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // out of the hot path (was 600+ rings/sec on piercing weapons).
 
     return false;
+  }
+
+  /** External damage path that preserves kill-side effects when lethal. */
+  takeDamageWithKillEvents(amount: number): boolean {
+    const wasBoss = this.bossFlag;
+    const wasElite = this.eliteFlag;
+    const killX = this.x;
+    const killY = this.y;
+    const xp = this.xpValue;
+    const key = this.enemyKey;
+    const killed = this.takeDamage(amount);
+    if (killed) this.emitKillEvents(killX, killY, xp, key, wasBoss, wasElite);
+    return killed;
   }
 
   private die(): void {

@@ -231,10 +231,15 @@ export function getEnemyConfigsByKeys(keys: readonly string[]): EnemyConfig[] {
  */
 export function getSpawnWeight(config: EnemyConfig, gameTimeSec: number): number {
   const timeSinceAppear = gameTimeSec - config.appearsAt;
-  // Weight decays over 7 minutes after the enemy type first appears.
-  // Fresh enemies: weight ~10, old enemies: weight ~3 (was ~1, which
-  // effectively removed them from the spawn pool).
-  return Math.max(3, 10 - timeSinceAppear / 42);
+  // Weight decays over ~7 minutes after the enemy type first appears:
+  //   BASE_WEIGHT   = 10  (fresh enemy)
+  //   MIN_WEIGHT    = 3   (old enemy — was 1, too low, removed them from the pool)
+  //   DECAY_DIVISOR = 42  (10 - 420/42 = 0 hits floor around 7 minutes)
+  // Future tuning pass may promote these to BALANCE.enemy.*_WEIGHT.
+  const BASE_WEIGHT = 10;
+  const MIN_WEIGHT = 3;
+  const DECAY_DIVISOR = 42;
+  return Math.max(MIN_WEIGHT, BASE_WEIGHT - timeSinceAppear / DECAY_DIVISOR);
 }
 
 // ── Boss definitions ──
@@ -242,7 +247,8 @@ export function getSpawnWeight(config: EnemyConfig, gameTimeSec: number): number
 export interface BossConfig {
   key: string;
   name: string;
-  warningText: string;
+  /** i18n dot-path — resolved with `t(warningKey)` at show time */
+  warningKey: string;
   spawnTimeSec: number;
   texture: string;
   speed: number;
@@ -262,7 +268,7 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'gordon',
     name: 'Gordon the Chef',
-    warningText: 'A CHEF APPROACHES!',
+    warningKey: 'ui.bossWarning.gordon',
     spawnTimeSec: 300,     // 5:00
     texture: 'boss_gordon',
     speed: 100,
@@ -274,7 +280,7 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'tour_bus',
     name: 'The Tour Bus',
-    warningText: 'THE TOUR BUS IS COMING!',
+    warningKey: 'ui.bossWarning.tour_bus',
     spawnTimeSec: 600,     // 10:00
     texture: 'boss_tour_bus',
     speed: 50,
@@ -286,7 +292,7 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'the_laird',
     name: 'The Laird',
-    warningText: 'THE LAIRD HAS ARRIVED!',
+    warningKey: 'ui.bossWarning.the_laird',
     spawnTimeSec: 900,     // 15:00
     texture: 'boss_laird',
     speed: 80,
@@ -298,7 +304,7 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'hunter_general',
     name: 'The Haggis Hunter General',
-    warningText: 'THE HUNTER GENERAL APPROACHES!',
+    warningKey: 'ui.bossWarning.hunter_general',
     spawnTimeSec: 1200,    // 20:00
     texture: 'boss_hunter_general',
     speed: 90,
@@ -310,7 +316,7 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'taxman',
     name: 'Death (The Taxman)',
-    warningText: 'THE TAXMAN COMETH!',
+    warningKey: 'ui.bossWarning.taxman',
     spawnTimeSec: 1500,    // 25:00
     texture: 'boss_taxman',
     speed: 130,

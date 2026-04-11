@@ -39,6 +39,30 @@ export interface IRunState {
   killCount: number;
   ownedPassives: string[];
   evolvedWeaponKeys: string[];
+  /** Boss kills already earned in this run (for Game Over stats). */
+  bossKillCount?: number;
+  /** Gold earned from boss kills so far this run. */
+  bossGoldEarned?: number;
+  /** Gold earned from coins/chests/kill milestones so far this run. */
+  coinGoldEarned?: number;
+  /** One-time revive remaining at snapshot time. */
+  revivalAvailable?: boolean;
+  /** Best combo reached before the snapshot. */
+  bestCombo?: number;
+  /** Current live combo chain at snapshot time. */
+  comboCount?: number;
+  /** Remaining lifetime on the current combo chain. */
+  comboTimerMs?: number;
+  /** Current dash charges remaining. */
+  dashCharges?: number;
+  /** Remaining cooldown on the next dash recharge. */
+  dashCooldownMs?: number;
+  /** Per-weapon damage totals accumulated so far this run. */
+  weaponDamage?: Record<string, number>;
+  /** Boss keys already spawned in this run (used to prevent duplicate intros on resume). */
+  spawnedBossKeys?: string[];
+  /** Highland Shield cooldown remaining in ms at snapshot time. */
+  shieldCooldownMs?: number;
 }
 
 export interface ISaveDataV3 {
@@ -103,6 +127,27 @@ function toBool(v: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
+function toOptionalBool(v: unknown): boolean | undefined {
+  return typeof v === 'boolean' ? v : undefined;
+}
+
+function toOptionalNonNegativeInt(v: unknown): number | undefined {
+  if (typeof v !== 'number' || !Number.isFinite(v)) return undefined;
+  if (v < 0) return undefined;
+  return Math.floor(v);
+}
+
+function toPositiveNumberRecord(v: unknown): Record<string, number> | undefined {
+  if (typeof v !== 'object' || v === null || Array.isArray(v)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [key, raw] of Object.entries(v)) {
+    if (typeof key !== 'string' || !key) continue;
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) continue;
+    out[key] = Math.floor(raw);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 function coerceWeaponSlot(raw: unknown): IRunWeaponSlot | null {
   if (typeof raw !== 'object' || raw === null) return null;
   const o = raw as Record<string, unknown>;
@@ -142,6 +187,20 @@ function coerceIRunState(raw: unknown): IRunState | null {
     killCount: Math.max(0, clampInt(o.killCount, 0)),
     ownedPassives: toStringArray(o.ownedPassives),
     evolvedWeaponKeys: toStringArray(o.evolvedWeaponKeys),
+    bossKillCount: toOptionalNonNegativeInt(o.bossKillCount),
+    bossGoldEarned: toOptionalNonNegativeInt(o.bossGoldEarned),
+    coinGoldEarned: toOptionalNonNegativeInt(o.coinGoldEarned),
+    revivalAvailable: toOptionalBool(o.revivalAvailable),
+    bestCombo: toOptionalNonNegativeInt(o.bestCombo),
+    comboCount: toOptionalNonNegativeInt(o.comboCount),
+    comboTimerMs: toOptionalNonNegativeInt(o.comboTimerMs),
+    dashCharges: toOptionalNonNegativeInt(o.dashCharges),
+    dashCooldownMs: toOptionalNonNegativeInt(o.dashCooldownMs),
+    weaponDamage: toPositiveNumberRecord(o.weaponDamage),
+    spawnedBossKeys: Array.isArray(o.spawnedBossKeys)
+      ? toStringArray(o.spawnedBossKeys)
+      : undefined,
+    shieldCooldownMs: toOptionalNonNegativeInt(o.shieldCooldownMs),
   };
 }
 
@@ -168,7 +227,12 @@ export class SaveManager {
 
   save(data: ISaveData): void {
     const coerced = this.migrateAndCoerce(data);
-    this.storage.setItem(this.key, JSON.stringify(coerced));
+    try {
+      this.storage.setItem(this.key, JSON.stringify(coerced));
+    } catch {
+      // Storage can throw in private mode, quota exhaustion, or blocked contexts.
+      // SaveManager callers should continue running even if persistence fails.
+    }
   }
 
   reset(): void {

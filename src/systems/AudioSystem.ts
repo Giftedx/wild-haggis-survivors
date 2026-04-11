@@ -177,6 +177,32 @@ export class AudioSystem {
     });
   }
 
+  /** Shop / meta purchase — short bright ding (distinct from level-up arpeggio). */
+  playPurchaseImmediate(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(660, t0);
+    osc.frequency.exponentialRampToValueAtTime(990, t0 + 0.1);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.16, t0 + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.2);
+  }
+
+  playPurchase(): void {
+    this.gatedSfx('purchase', () => this.playPurchaseImmediate());
+  }
+
   /** Player takes damage — low thud */
   playPlayerHit(): void {
     if (!this.enabled) return;

@@ -15,6 +15,16 @@ export class RunStatsTracker {
     return Object.fromEntries(this.weaponDamage);
   }
 
+  restore(snapshot: Record<string, number> | undefined): void {
+    this.weaponDamage.clear();
+    if (!snapshot) return;
+    for (const [key, raw] of Object.entries(snapshot)) {
+      if (typeof key !== 'string' || !key) continue;
+      if (!Number.isFinite(raw) || raw <= 0) continue;
+      this.weaponDamage.set(key, Math.floor(raw));
+    }
+  }
+
   reset(): void {
     this.weaponDamage.clear();
   }

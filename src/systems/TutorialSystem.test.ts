@@ -63,6 +63,9 @@ describe('TutorialSystem', () => {
           setDepth() {
             return this;
           },
+          setInteractive() {
+            return this;
+          },
           destroy() {},
         }),
         text: () => ({
@@ -115,6 +118,9 @@ describe('TutorialSystem', () => {
           setDepth() {
             return this;
           },
+          setInteractive() {
+            return this;
+          },
           destroy() {},
         }),
         text: () => ({
@@ -149,6 +155,61 @@ describe('TutorialSystem', () => {
     expect(requests[0].spec.timeScale).toBe(0);
   });
 
+  it('does not start tutorial overlays on resumed runs', () => {
+    save.save(makeV5Save());
+    const tm = {
+      request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
+        requests.push({ key, spec }),
+      release: (key: string) => releases.push(key),
+    };
+    const xpEvents = new EventEmitter();
+    const scene: any = {
+      scale: { width: 800, height: 600 },
+      add: {
+        rectangle: () => ({
+          setStrokeStyle() {
+            return this;
+          },
+          setScrollFactor() {
+            return this;
+          },
+          setDepth() {
+            return this;
+          },
+          setInteractive() {
+            return this;
+          },
+          destroy() {},
+        }),
+        text: () => ({
+          setOrigin() {
+            return this;
+          },
+          setScrollFactor() {
+            return this;
+          },
+          setDepth() {
+            return this;
+          },
+          destroy() {},
+        }),
+        circle: () => ({
+          setDepth() {
+            return this;
+          },
+          destroy() {},
+        }),
+      },
+      tweens: { add: vi.fn() },
+      input: { once: vi.fn() },
+      getTimeManager: () => tm,
+      getXPSystem: () => ({ events: xpEvents }),
+    };
+    const tut = new TutorialSystem(scene, save);
+    tut.startRunIfNeeded({ resumeRun: true });
+    expect(requests).toHaveLength(0);
+  });
+
   it('persists hasCompletedTutorial when first level-up threshold is reached', () => {
     save.save(makeV5Save());
     const tm = {
@@ -167,6 +228,9 @@ describe('TutorialSystem', () => {
             return this;
           },
           setDepth() {
+            return this;
+          },
+          setInteractive() {
             return this;
           },
           destroy() {},
@@ -200,5 +264,69 @@ describe('TutorialSystem', () => {
     expect(save.load().hasCompletedTutorial).toBe(false);
     tut.notifyFirstLevelReached(2);
     expect(save.load().hasCompletedTutorial).toBe(true);
+  });
+
+  it('lays tutorial overlays out against the UI viewport', () => {
+    save.save(makeV5Save());
+    const rectangles: Array<{ x: number; y: number; width: number; height: number }> = [];
+    const tm = {
+      request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
+        requests.push({ key, spec }),
+      release: (key: string) => releases.push(key),
+    };
+    const xpEvents = new EventEmitter();
+    const scene: any = {
+      scale: { width: 800, height: 600 },
+      cameras: { main: { zoom: 1.25 } },
+      add: {
+        rectangle: (x: number, y: number, width: number, height: number) => {
+          rectangles.push({ x, y, width, height });
+          return {
+            setStrokeStyle() {
+              return this;
+            },
+            setScrollFactor() {
+              return this;
+            },
+            setDepth() {
+              return this;
+            },
+            setInteractive() {
+              return this;
+            },
+            destroy() {},
+          };
+        },
+        text: () => ({
+          setOrigin() {
+            return this;
+          },
+          setScrollFactor() {
+            return this;
+          },
+          setDepth() {
+            return this;
+          },
+          destroy() {},
+        }),
+        circle: () => ({
+          setDepth() {
+            return this;
+          },
+          destroy() {},
+        }),
+      },
+      tweens: { add: vi.fn() },
+      input: { once: vi.fn() },
+      getTimeManager: () => tm,
+      getXPSystem: () => ({ events: xpEvents }),
+    };
+
+    const tut = new TutorialSystem(scene, save);
+    tut.startRunIfNeeded();
+
+    expect(rectangles[0]).toEqual({ x: 400, y: 300, width: 640, height: 480 });
+    expect(rectangles[1]?.x).toBe(400);
+    expect(rectangles[1]?.y).toBe(300);
   });
 });
