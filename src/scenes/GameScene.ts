@@ -1587,7 +1587,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private getRunBuildSummary(): string {
     const parts = this.weaponSystem
       .getWeapons()
-      .map((weapon) => `${weapon.config.name} Lv${weapon.level}${weapon.evolved ? '★' : ''}`);
+      .map((weapon) => {
+        const name = t(weapon.config.nameKey);
+        const lv = t('ui.hud.level_fmt', { level: weapon.level });
+        return `${name} ${lv}${weapon.evolved ? '★' : ''}`;
+      });
     const lines: string[] = [];
     for (let i = 0; i < parts.length; i += 3) {
       lines.push(parts.slice(i, i + 3).join('  |  '));
@@ -1613,7 +1617,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (activeBoss) {
       const bossDef = BOSSES.find(b => b.key === activeBoss!.getEnemyKey());
       this.hud.updateBossBar({
-        name: bossDef?.name ?? activeBoss.getEnemyKey(),
+        name: bossDef ? t(bossDef.nameKey) : activeBoss.getEnemyKey(),
         hpFraction: activeBoss.getHpFraction(),
       });
     } else {

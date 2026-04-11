@@ -534,17 +534,18 @@ export class HUD {
     this.passiveSlots = [];
     this.lastPassiveCount = passives.length;
 
-    const PASSIVE_ABBREVS: Record<string, string> = {
-      sporran: 'SPR', whisky_flask: 'WFL', kilt: 'KLT',
-      tam_o_shanter: 'TAM', irn_bru: 'IRN', loch_water: 'LOC',
-    };
-
     const startX = this.layoutX + 12;
     const y = this.layoutY + this.topSafePad + 88;
 
     passives.forEach((key, i) => {
       const x = startX + i * 42;
-      const label = this.addEl(this.scene.add.text(x + 16, y + 10, PASSIVE_ABBREVS[key] ?? key.slice(0, 3).toUpperCase(), {
+      // HUD pill labels live in ui.passive.hud_abbrev.<key>. When no entry
+      // exists (e.g. new passive added without an abbrev yet), fall back to
+      // the first three characters of the internal key.
+      const abbrevKey = `ui.passive.hud_abbrev.${key}`;
+      const resolved = t(abbrevKey);
+      const abbrev = resolved === abbrevKey ? key.slice(0, 3).toUpperCase() : resolved;
+      const label = this.addEl(this.scene.add.text(x + 16, y + 10, abbrev, {
         fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00', fontStyle: 'bold',
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));

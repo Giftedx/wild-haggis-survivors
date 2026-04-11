@@ -22,7 +22,18 @@ export type WeaponBehavior =
 
 export interface WeaponDef {
   key: string;
+  /** i18n dot-path — resolved with `t(nameKey)` at render time. */
+  nameKey: string;
+  /** i18n dot-path — resolved with `t(descriptionKey)` at render time. */
+  descriptionKey: string;
+  /**
+   * @deprecated Use t(nameKey) for player-facing text. Kept during the
+   * migration window so auto-battler debug logs still work.
+   */
   name: string;
+  /**
+   * @deprecated Use t(descriptionKey) for player-facing text.
+   */
   description: string;
   behavior: WeaponBehavior;
   cooldownMs: number;
@@ -51,6 +62,8 @@ export interface WeaponDef {
 export const WEAPON_DEFS: Record<string, WeaponDef> = {
   thistle_shot: {
     key: 'thistle_shot',
+    nameKey: 'weapon.thistle_shot.name',
+    descriptionKey: 'weapon.thistle_shot.description',
     name: 'Thistle Shot',
     description: 'Fires sharp thistles at the nearest enemy.',
     behavior: 'projectile',
@@ -74,6 +87,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   bagpipe_blast: {
     key: 'bagpipe_blast',
+    nameKey: 'weapon.bagpipe_blast.name',
+    descriptionKey: 'weapon.bagpipe_blast.description',
     name: 'Bagpipe Blast',
     description: 'Periodic shockwave pushes enemies back.',
     behavior: 'aoe_pulse',
@@ -99,6 +114,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   caber_toss: {
     key: 'caber_toss',
+    nameKey: 'weapon.caber_toss.name',
+    descriptionKey: 'weapon.caber_toss.description',
     name: 'Caber Toss',
     description: 'Heavy caber pierces through enemies.',
     behavior: 'piercing',
@@ -122,6 +139,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   scotch_mist: {
     key: 'scotch_mist',
+    nameKey: 'weapon.scotch_mist.name',
+    descriptionKey: 'weapon.scotch_mist.description',
     name: 'Scotch Mist',
     description: 'Leave a damaging fog trail behind you.',
     behavior: 'trail',
@@ -148,6 +167,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   haggis_hurler: {
     key: 'haggis_hurler',
+    nameKey: 'weapon.haggis_hurler.name',
+    descriptionKey: 'weapon.haggis_hurler.description',
     name: 'Jobby Hurler',
     description: 'Wee jobby balls ricochet off the edges.',
     behavior: 'bouncing',
@@ -171,6 +192,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   nessie_tentacle: {
     key: 'nessie_tentacle',
+    nameKey: 'weapon.nessie_tentacle.name',
+    descriptionKey: 'weapon.nessie_tentacle.description',
     name: "Nessie's Tentacle",
     description: 'Sweeping tentacle in a frontal arc.',
     behavior: 'arc_sweep',
@@ -194,6 +217,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   claymore: {
     key: 'claymore',
+    nameKey: 'weapon.claymore.name',
+    descriptionKey: 'weapon.claymore.description',
     name: 'Highland Claymore',
     description: 'Brutal wide melee cleave — slow, heavy hits.',
     behavior: 'arc_sweep',
@@ -217,6 +242,8 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
 
   bagpipes: {
     key: 'bagpipes',
+    nameKey: 'weapon.bagpipes.name',
+    descriptionKey: 'weapon.bagpipes.description',
     name: 'Ceòl Mòr Bagpipes',
     description: 'Standing drone — pulsing ring harms and slows nearby foes.',
     behavior: 'aura_pulse',

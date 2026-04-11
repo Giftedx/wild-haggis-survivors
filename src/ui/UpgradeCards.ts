@@ -218,8 +218,8 @@ export class UpgradeCardsUI {
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(desc);
 
-    // Rarity label
-    const rarityLabel = this.scene.add.text(x, y + h / 2 - 18, card.rarity.toUpperCase(), {
+    // Rarity label (resolved via i18n so future locales can translate)
+    const rarityLabel = this.scene.add.text(x, y + h / 2 - 18, t(`ui.common.rarity.${card.rarity}`), {
       fontFamily: 'monospace', fontSize: '13px', fontStyle: 'bold',
       color: `#${borderColor.toString(16).padStart(6, '0')}`,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);

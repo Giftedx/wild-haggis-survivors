@@ -31,7 +31,9 @@ describe('upgrade card icon contracts', () => {
   it('uses weapon definition display names on level-up cards', () => {
     const pool = buildCardPool(['bagpipes'], [], { bagpipes: 2 }, []);
     const levelCard = pool.find((c) => c.id === 'levelup_bagpipes_3');
-    expect(levelCard?.name).toBe('Ceòl Mòr Bagpipes Lv3');
+    // buildCardPool now resolves the weapon name via t() and the level format
+    // via `ui.hud.level_fmt`, yielding "Ceòl Mòr Bagpipes Lv 3" (with space).
+    expect(levelCard?.name).toBe('Ceòl Mòr Bagpipes Lv 3');
   });
 
   it('names evolution prep passive from passive card titles', () => {
