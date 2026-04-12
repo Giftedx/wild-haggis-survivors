@@ -255,15 +255,22 @@ export class UpgradeCardsUI {
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(desc);
 
-    // Rarity label (resolved via i18n so future locales can translate)
-    const rarityLabel = this.scene.add.text(x, y + h / 2 - 18, t(`ui.common.rarity.${card.rarity}`), {
-      fontFamily: 'monospace', fontSize: this.fs(13), fontStyle: 'bold',
+    // Rarity pill — colored background tag instead of plain text, so the
+    // rarity reads at a glance even during frantic level-up decisions.
+    const rarityPillY = y + h / 2 - 18;
+    const rarityText = t(`ui.common.rarity.${card.rarity}`);
+    const rarityPillBg = this.scene.add.rectangle(x, rarityPillY, rarityText.length * 9 + 16, 20, borderColor, 0.25)
+      .setScrollFactor(0).setDepth(depth + 1)
+      .setStrokeStyle(1, borderColor, 0.6);
+    this.elements.push(rarityPillBg);
+    const rarityLabel = this.scene.add.text(x, rarityPillY, rarityText, {
+      fontFamily: 'monospace', fontSize: this.fs(11), fontStyle: 'bold',
       color: `#${borderColor.toString(16).padStart(6, '0')}`,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2);
     this.elements.push(rarityLabel);
 
     // Hover — scale up card group
-    const cardElements = [bg, icon, name, desc, rarityLabel];
+    const cardElements = [bg, icon, name, desc, rarityLabel, rarityPillBg];
     bg.on('pointerover', () => {
       bg.setFillStyle(0x2a2a4e);
       for (const el of cardElements) {
@@ -280,6 +287,7 @@ export class UpgradeCardsUI {
       name.setScale(1);
       desc.setScale(1);
       rarityLabel.setScale(1);
+      rarityPillBg.setScale(1);
       bg.setScale(1);
     });
 
