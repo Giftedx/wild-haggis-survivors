@@ -6,6 +6,7 @@ import type { XPSystem } from '../systems/XPSystem';
 import type { TutorialSystem } from '../systems/TutorialSystem';
 import type { SFXManager } from '../systems/audio/SFXManager';
 import type { RunStatsTracker } from '../systems/RunStatsTracker';
+import type { StatusFxPool } from '../systems/StatusFxPool';
 import { UpdateTickers } from '../utils/UpdateTickers';
 
 /**
@@ -22,5 +23,6 @@ export interface ISceneContext {
   getSFXManager(): SFXManager;
   getRunStatsTracker(): RunStatsTracker;
   getTutorialSystem(): TutorialSystem;
+  getStatusFxPool(): StatusFxPool;
 }
 

@@ -295,6 +295,9 @@ export class UpgradeCardsUI {
 
     for (const el of this.elements) {
       this.scene.tweens.killTweensOf(el);
+      if ('removeAllListeners' in el) {
+        (el as Phaser.GameObjects.GameObject).removeAllListeners();
+      }
       el.destroy();
     }
     this.elements = [];

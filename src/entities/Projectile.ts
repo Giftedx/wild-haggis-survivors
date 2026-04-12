@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
+import type { StatusFxPool } from '../systems/StatusFxPool';
 
 /**
  * Projectile — poolable sprite that travels in a direction and damages enemies.
  * Deactivated after hitting an enemy or traveling beyond max range.
  */
 export class Projectile extends Phaser.Physics.Arcade.Sprite {
+  /** Shared FX pool — set once by WeaponSystem on init. */
+  static fxPool: StatusFxPool | null = null;
   private damage: number = 0;
   private critFlag: boolean = false;
   private pierceCount: number = 0;
@@ -134,12 +137,15 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
 
     // Small pop effect so projectiles don't just vanish
     if (this.scene && this.visible) {
-      const pop = this.scene.add.circle(this.x, this.y, 3, 0xffffff, 0.5).setDepth(5);
-      this.scene.tweens.add({
-        targets: pop, scaleX: 2.5, scaleY: 2.5, alpha: 0, duration: 120,
-        ease: 'Cubic.easeOut',
-        onComplete: () => pop.destroy(),
-      });
+      const pool = Projectile.fxPool;
+      if (pool) {
+        const pop = pool.acquireArc(this.x, this.y, 3, 0xffffff, 0.5);
+        this.scene.tweens.add({
+          targets: pop, scaleX: 2.5, scaleY: 2.5, alpha: 0, duration: 120,
+          ease: 'Cubic.easeOut',
+          onComplete: () => { pop.setVisible(false); },
+        });
+      }
     }
 
     this.setActive(false);

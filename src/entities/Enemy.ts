@@ -69,6 +69,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Temporary speed buff (e.g. Piper aura) composed into recomputeSpeed. Decays over time. */
   private buffSpeedMul: number = 1;
   private buffSpeedTimer: number = 0;
+  /** Deferred recomputeSpeed — set by status ticks, flushed once at end of tickStatusEffects. */
+  private speedDirty: boolean = false;
 
   /** Knockback impulse — overrides behavior-set velocity for a brief window so
    *  pushes actually push (behaviorChase overwrites velocity every frame
@@ -158,10 +160,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.scene.tweens.killTweensOf(this);
     this.setAlpha(0);
     this.scene.tweens.add({ targets: this, alpha: 1, duration: 150 });
-    const puff = this.scene.add.circle(x, y, 12, 0xaaaaaa, 0.3);
+    const puff = this.ctx.getStatusFxPool().acquireArc(x, y, 12, 0xaaaaaa, 0.3);
     this.scene.tweens.add({
       targets: puff, radius: 20, alpha: 0, duration: 200,
-      onComplete: () => puff.destroy(),
+      onComplete: () => puff.setVisible(false),
     });
 
     const body = this.body as Phaser.Physics.Arcade.Body;
@@ -209,6 +211,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.knockbackVy = 0;
     this.knockbackTimer = 0;
     this.knockbackTrailAccum = 0;
+    this.speedDirty = false;
     this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
@@ -393,14 +396,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const k = Math.max(0, this.knockbackTimer / 150);
       this.setVelocity(this.knockbackVx * k, this.knockbackVy * k);
 
-      // Faint trail during knockback — sells the push visually
+      // Faint trail during knockback — sells the push visually (pooled)
       this.knockbackTrailAccum += delta;
       if (this.knockbackTrailAccum >= 50 && this.scene && !getSettingsManager().load().reduceParticles) {
         this.knockbackTrailAccum = 0;
-        const dot = this.scene.add.circle(this.x, this.y, 3, this.baseTint || 0xcc4444, 0.15).setDepth(-1);
+        const dot = this.ctx.getStatusFxPool().acquireArc(this.x, this.y, 3, this.baseTint || 0xcc4444, 0.15);
+        dot.setDepth(-1);
         this.scene.tweens.add({
           targets: dot, alpha: 0, scale: 0.3, duration: 200,
-          onComplete: () => dot.destroy(),
+          onComplete: () => dot.setVisible(false),
         });
       }
 
@@ -637,23 +641,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  /** Subtle particle puff when ghost toggles phase state */
+  /** Subtle particle puff when ghost toggles phase state (pooled) */
   private spawnPhasePuff(): void {
     if (!this.scene || !this.active) return;
     const settings = getSettingsManager().load();
     if (settings.reduceParticles) return;
+    const pool = this.ctx.getStatusFxPool();
     const color = this.isPhased ? 0xaaddff : 0x8899cc;
     for (let i = 0; i < 3; i++) {
       const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
       const px = this.x + Math.cos(angle) * 6;
       const py = this.y + Math.sin(angle) * 6;
-      const dot = this.scene.add.circle(px, py, 2, color, 0.5).setDepth(5);
+      const dot = pool.acquireArc(px, py, 2, color, 0.5);
       this.scene.tweens.add({
         targets: dot,
         x: px + Math.cos(angle) * 14,
         y: py + Math.sin(angle) * 14,
         alpha: 0, scale: 0.3, duration: 200,
-        onComplete: () => dot.destroy(),
+        onComplete: () => dot.setVisible(false),
       });
     }
   }
@@ -776,6 +781,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Tick status effects — call each frame from chaseTarget */
   private tickStatusEffects(delta: number): void {
+    const reduceParticles = getSettingsManager().load().reduceParticles;
+    const pool = this.ctx.getStatusFxPool();
+
     // Burn: periodic damage + orange tint
     if (this.burnTimer > 0) {
       this.burnTimer -= delta;
@@ -783,16 +791,16 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.burnTickAccum >= 500) { // tick every 500ms
         this.burnTickAccum -= 500;
         const killed = this.takeDamageInternal(Math.ceil(this.burnDamage * 0.5));
-        // Fire particle
-        if (this.active) {
-          const spark = this.scene.add.circle(
+        // Fire particle (pooled)
+        if (this.active && !reduceParticles) {
+          const spark = pool.acquireArc(
             this.x + Phaser.Math.Between(-8, 8),
             this.y + Phaser.Math.Between(-8, 8),
             2, 0xff6600, 0.8
           );
           this.scene.tweens.add({
             targets: spark, y: spark.y - 10, alpha: 0, duration: 300,
-            onComplete: () => spark.destroy(),
+            onComplete: () => spark.setVisible(false),
           });
         }
         if (killed) return;
@@ -805,26 +813,24 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // active multipliers (baseSpeed × berserkerSpeedMul × freezeSpeedMul).
     if (this.freezeTimer > 0) {
       this.freezeTimer -= delta;
-      this.recomputeSpeed();
+      this.speedDirty = true;
       // baseTint is set for bosses/hazards/elites — don't clobber their persistent tints,
       // instead spawn a snowflake particle so the player still sees the freeze effect
       if (!this.baseTint) {
         this.setTint(0x6688ff);
-      } else if (this.active && Math.random() < 0.08) {
-        // Sprite-based snowflake — no emoji, no font-dependent glyph fallback.
-        // Texture generated in BootScene.createHudChromeTextures().
-        const flake = this.scene.add.image(
-          this.x + Phaser.Math.Between(-10, 10), this.y - 12,
-          'fx_snowflake'
-        ).setDepth(15).setOrigin(0.5).setScale(1.2).setAlpha(0.9);
+      } else if (this.active && !reduceParticles && Math.random() < 0.08) {
+        // Sprite-based snowflake (pooled)
+        const flake = pool.acquireImage(
+          this.x + Phaser.Math.Between(-10, 10), this.y - 12
+        );
         this.scene.tweens.add({
           targets: flake, y: flake.y - 12, alpha: 0, duration: 500,
-          onComplete: () => flake.destroy(),
+          onComplete: () => flake.setVisible(false),
         });
       }
       if (this.freezeTimer <= 0) {
         this.freezeSpeedMul = 1;
-        this.recomputeSpeed();
+        this.speedDirty = true;
         if (!this.baseTint) this.clearTint();
         if (this.baseTint) this.setTint(this.baseTint);
       }
@@ -837,15 +843,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.poisonTickAccum >= 400) { // tick every 400ms
         this.poisonTickAccum -= 400;
         const killed = this.takeDamageInternal(Math.ceil(this.poisonDamage * 0.4));
-        // Poison bubble
-        if (this.active) {
-          const bubble = this.scene.add.circle(
+        // Poison bubble (pooled)
+        if (this.active && !reduceParticles) {
+          const bubble = pool.acquireArc(
             this.x + Phaser.Math.Between(-6, 6), this.y - 5,
             Phaser.Math.Between(1, 3), 0x44cc44, 0.7
           );
           this.scene.tweens.add({
             targets: bubble, y: bubble.y - 8, alpha: 0, scale: 0, duration: 400,
-            onComplete: () => bubble.destroy(),
+            onComplete: () => bubble.setVisible(false),
           });
         }
         if (killed) return;
@@ -858,8 +864,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.buffSpeedTimer -= delta;
       if (this.buffSpeedTimer <= 0) {
         this.buffSpeedMul = 1;
-        this.recomputeSpeed();
+        this.speedDirty = true;
       }
+    }
+
+    // Flush deferred speed recomputation — at most once per frame per enemy
+    if (this.speedDirty) {
+      this.speedDirty = false;
+      this.recomputeSpeed();
     }
   }
 
@@ -973,13 +985,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setTint(0xff2200);
       tryCameraShake(this.scene.cameras.main, 400, 0.02, getSettingsManager());
 
-      // Dramatic enrage spectacle — expanding red ring + scale pulse + particles
+      // Dramatic enrage spectacle — expanding red ring + scale pulse + particles (pooled)
       if (this.scene) {
+        const enragePool = this.ctx.getStatusFxPool();
         // Expanding red ring
-        const ring = this.scene.add.circle(this.x, this.y, 10, 0xff2200, 0.7).setDepth(5);
+        const ring = enragePool.acquireArc(this.x, this.y, 10, 0xff2200, 0.7);
         this.scene.tweens.add({
           targets: ring, scaleX: 5, scaleY: 5, alpha: 0, duration: 350,
-          ease: 'Cubic.easeOut', onComplete: () => ring.destroy(),
+          ease: 'Cubic.easeOut', onComplete: () => ring.setVisible(false),
         });
 
         // Scale pulse — boss swells briefly then settles
@@ -996,13 +1009,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           const angle = (i / count) * Math.PI * 2;
           const px = this.x + Math.cos(angle) * 8;
           const py = this.y + Math.sin(angle) * 8;
-          const dot = this.scene.add.circle(px, py, 3, 0xff4444, 0.8).setDepth(5);
+          const dot = enragePool.acquireArc(px, py, 3, 0xff4444, 0.8);
           this.scene.tweens.add({
             targets: dot,
             x: px + Math.cos(angle) * 40,
             y: py + Math.sin(angle) * 40,
             alpha: 0, scale: 0, duration: 300 + Math.random() * 150,
-            onComplete: () => dot.destroy(),
+            onComplete: () => dot.setVisible(false),
           });
         }
       }

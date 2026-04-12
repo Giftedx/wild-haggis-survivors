@@ -30,6 +30,8 @@ export class SpawnSystem {
   private burstSize: number = 2;
   /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
   private directorEnemyKeys: string[] = [];
+  /** Cached segment reference — avoids re-spreading enemyKeys when segment hasn't changed. */
+  private lastWaveSeg: ReturnType<typeof getActiveWaveTimelineEntry> | null = null;
 
   /** Track which bosses have already spawned */
   private spawnedBossKeys: Set<string> = new Set();
@@ -66,6 +68,7 @@ export class SpawnSystem {
     this.spawnInterval = init.intervalSec;
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
+    this.lastWaveSeg = init;
   }
 
   private getUiViewport(): { x: number; y: number; width: number; height: number } {
@@ -81,6 +84,7 @@ export class SpawnSystem {
     this.spawnInterval = init.intervalSec;
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
+    this.lastWaveSeg = init;
     this.spawnedBossKeys.clear();
     this.bossSpawnScheduled.clear();
     this.bossActive = false;
@@ -290,6 +294,8 @@ export class SpawnSystem {
 
   private syncWaveDirectorFromTimeline(): void {
     const seg = getActiveWaveTimelineEntry(this.gameTimeSec);
+    if (seg === this.lastWaveSeg) return;
+    this.lastWaveSeg = seg;
     this.spawnInterval = seg.intervalSec;
     this.burstSize = seg.burstSize;
     this.directorEnemyKeys = [...seg.enemyKeys];
@@ -357,10 +363,10 @@ export class SpawnSystem {
             && Math.random() < BALANCE.enemy.ELITE_SPAWN_CHANCE) {
           enemy.markAsElite();
           // Golden flash at spawn position to warn player
-          const flash = this.scene.add.circle(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
+          const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
           this.scene.tweens.add({
             targets: flash, scale: 2, alpha: 0, duration: 400,
-            onComplete: () => flash.destroy(),
+            onComplete: () => { flash.setVisible(false); },
           });
         }
       }

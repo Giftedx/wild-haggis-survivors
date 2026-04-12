@@ -8,11 +8,34 @@ export type CameraViewport = {
   zoom: number;
 };
 
+/** Module-level cache — recomputed at most once per frame or on resize. */
+let cachedResult: CameraViewport | null = null;
+let cachedScene: Phaser.Scene | null = null;
+let cachedFrameTime: number = -1;
+
+/**
+ * Invalidate the viewport cache. Call on resize or explicit zoom changes.
+ * Also called automatically when the underlying scene changes or a new frame starts.
+ */
+export function resetCameraViewportCache(): void {
+  cachedResult = null;
+  cachedScene = null;
+  cachedFrameTime = -1;
+}
+
 /**
  * Visible camera viewport for fixed `setScrollFactor(0)` UI coordinates.
  * Values are returned in world units (camera pixels divided by zoom).
+ *
+ * Cached per-frame — multiple callers in the same frame share one DOM query.
  */
 export function getCameraViewport(scene: Phaser.Scene): CameraViewport {
+  // Cache hit: same scene, same frame
+  const now = scene.time?.now ?? -1;
+  if (cachedResult && cachedScene === scene && cachedFrameTime === now) {
+    return cachedResult;
+  }
+
   const cam = scene.cameras?.main;
   const zoom = Math.max(0.001, cam?.zoom || 1);
   const camWidth = cam?.width || scene.scale.width;
@@ -61,21 +84,27 @@ export function getCameraViewport(scene: Phaser.Scene): CameraViewport {
 
   // Guard against pathological inset math on embedded hosts or browser UI
   // transitions: if viewport collapses, fall back to uncropped camera space.
+  let result: CameraViewport;
   if (width < Math.min(64, baseWidth * 0.25) || height < Math.min(64, baseHeight * 0.25)) {
-    return {
+    result = {
       x: zoomOffsetX + baseX / zoom,
       y: zoomOffsetY + baseY / zoom,
       width: baseWidth / zoom,
       height: baseHeight / zoom,
       zoom,
     };
+  } else {
+    result = {
+      x: zoomOffsetX + (baseX + insetLeft) / zoom,
+      y: zoomOffsetY + (baseY + insetTop) / zoom,
+      width: width / zoom,
+      height: height / zoom,
+      zoom,
+    };
   }
 
-  return {
-    x: zoomOffsetX + (baseX + insetLeft) / zoom,
-    y: zoomOffsetY + (baseY + insetTop) / zoom,
-    width: width / zoom,
-    height: height / zoom,
-    zoom,
-  };
+  cachedResult = result;
+  cachedScene = scene;
+  cachedFrameTime = now;
+  return result;
 }

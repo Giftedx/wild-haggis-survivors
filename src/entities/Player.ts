@@ -481,7 +481,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   addMaxHp(amount: number): void {
     this.bonusMaxHp += amount;
     this.recalcStats();
-    this.hp += amount;
+    this.hp = Math.min(this.hp + amount, this.maxHp);
   }
 
   addPickupRadius(amount: number): void {
