@@ -4,13 +4,29 @@ import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
+ *
+ * Cozy redesign (Phase 6 Tier B):
+ *  - Parallax mountain silhouettes behind the title
+ *  - Scattered heather sprites on the ground level
+ *  - Slow ambient enemy drift (dim silhouettes) in the lower third
+ *  - Sleeping haggis mascot above the title with a gentle sway tween
+ *  - Title bob tween
+ *  - Small animated campfire detail below the buttons
+ *  - Compressed button cluster to close the dead vertical space
+ *  - Bottom credit strip: version + "built on the moor"
+ *
+ * All decoration respects `reduceParticles`, `uiScale`, and `highContrastUi`.
+ * Gamepad nav is unchanged (3 or 4 entries depending on suspended run).
  */
 export class MainMenuScene extends Phaser.Scene {
   private saveManager = new SaveManager();
   private gamepadNav: GamepadMenuNav | null = null;
+  /** All tweens attached to decoration — killed on scene shutdown. */
+  private cozyTweenTargets: Phaser.GameObjects.GameObject[] = [];
 
   constructor() {
     super({ key: 'MainMenu' });
@@ -19,24 +35,174 @@ export class MainMenuScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const meta = this.saveManager.load();
-    const { uiScale, highContrastUi } = getSettingsManager().load();
-
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    const settings = getSettingsManager().load();
+    const { uiScale, highContrastUi, reduceParticles } = settings;
+    this.cozyTweenTargets = [];
 
     const titleColor = highContrastUi ? '#ffe08a' : '#d4a017';
     const subduedColor = highContrastUi ? '#c8d2e0' : '#95a5c3';
     const hintColor = highContrastUi ? '#a8b3c8' : '#6a7390';
+    const mountainDark = highContrastUi ? 0x1a2a3a : 0x131c2a;
+    const mountainLight = highContrastUi ? 0x2a3a4a : 0x1b2638;
 
+    // === Background — depth -100 so negative-depth decoration layers are
+    // visible in front of it. The canvas also has a dark bg from main.ts,
+    // so this is belt-and-braces but ensures consistent color.
+    this.add
+      .rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK)
+      .setDepth(-100);
+
+    // === Layer -10: distant mountain ridge ===
+    // Two passes of triangles for depth — back ridge further, front ridge lower.
+    const mtGfx = this.add.graphics().setDepth(-10);
+    const horizonY = height * 0.62;
+    const rng = new Phaser.Math.RandomDataGenerator(['menu_mountains']);
+    // Back ridge (darker, smaller triangles)
+    mtGfx.fillStyle(mountainDark, 0.85);
+    for (let i = 0; i < 16; i++) {
+      const mx = (i / 15) * width + rng.between(-20, 20);
+      const mh = rng.between(60, 140);
+      const mw = rng.between(180, 320);
+      mtGfx.fillTriangle(mx - mw / 2, horizonY, mx, horizonY - mh, mx + mw / 2, horizonY);
+    }
+    // Front ridge (lighter, larger, lower)
+    mtGfx.fillStyle(mountainLight, 0.8);
+    for (let i = 0; i < 12; i++) {
+      const mx = (i / 11) * width + rng.between(-30, 30);
+      const mh = rng.between(40, 90);
+      const mw = rng.between(160, 300);
+      mtGfx.fillTriangle(mx - mw / 2, horizonY + 30, mx, horizonY + 30 - mh, mx + mw / 2, horizonY + 30);
+    }
+
+    // === Layer -8: heather scatter in the foreground ===
+    const heatherRng = new Phaser.Math.RandomDataGenerator(['menu_heather']);
+    for (let i = 0; i < 28; i++) {
+      const hx = heatherRng.between(10, width - 10);
+      const hy = heatherRng.between(Math.floor(horizonY + 40), height - 20);
+      const heather = this.add
+        .image(hx, hy, 'deco_heather')
+        .setDepth(-8)
+        .setAlpha(heatherRng.realInRange(0.28, 0.55))
+        .setScale(heatherRng.realInRange(0.6, 1.1))
+        .setFlipX(heatherRng.frac() > 0.5);
+      // Very subtle breeze sway, reduced-particles OFF only
+      if (!reduceParticles) {
+        this.tweens.add({
+          targets: heather,
+          angle: heatherRng.realInRange(-4, 4),
+          duration: heatherRng.between(3200, 5600),
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+        this.cozyTweenTargets.push(heather);
+      }
+    }
+
+    // === Layer -6: drifting mist bands ===
+    if (!reduceParticles) {
+      for (let i = 0; i < 8; i++) {
+        const mx = heatherRng.between(0, width);
+        const my = heatherRng.between(Math.floor(horizonY - 10), Math.floor(horizonY + 40));
+        const mist = this.add.ellipse(
+          mx, my,
+          heatherRng.between(120, 220),
+          heatherRng.between(18, 32),
+          0xccddee,
+          heatherRng.realInRange(0.04, 0.09)
+        ).setDepth(-6);
+        this.tweens.add({
+          targets: mist,
+          x: mx + heatherRng.between(80, 220) * (heatherRng.frac() > 0.5 ? 1 : -1),
+          alpha: mist.alpha * 0.4,
+          duration: heatherRng.between(9000, 15000),
+          yoyo: true,
+          repeat: -1,
+          ease: 'Sine.easeInOut',
+        });
+        this.cozyTweenTargets.push(mist);
+      }
+    }
+
+    // === Layer -5: ambient enemy silhouettes drifting across ===
+    // Lifted from MenuScene pattern. Respects reduceParticles.
+    if (!reduceParticles) {
+      const enemyTextures = ['tourist', 'chef', 'terrier', 'highland_cow', 'eagle', 'sheep'];
+      for (let i = 0; i < 6; i++) {
+        const tex = enemyTextures[i % enemyTextures.length];
+        const ey = Phaser.Math.Between(Math.floor(horizonY + 20), height - 30);
+        const sprite = this.add
+          .sprite(-30, ey, tex)
+          .setAlpha(0.07)
+          .setScale(1.2)
+          .setDepth(-5);
+        this.tweens.add({
+          targets: sprite,
+          x: width + 30,
+          duration: Phaser.Math.Between(9000, 14500),
+          delay: i * 1500,
+          repeat: -1,
+          onRepeat: () => {
+            sprite.setY(Phaser.Math.Between(Math.floor(horizonY + 20), height - 30));
+          },
+        });
+        this.cozyTweenTargets.push(sprite);
+      }
+    }
+
+    // === Layer -1: Sleeping haggis mascot above the title ===
+    // Faces the player with wide eyes — the game's emotional center, resting
+    // between runs. Gentle sway tween (skipped on reduceParticles).
+    const mascotTexture = getVariantByKey(DEFAULT_VARIANT_KEY).textureKey;
+    const mascot = this.add
+      .sprite(width / 2, 58, mascotTexture)
+      .setScale(2.4 * uiScale)
+      .setDepth(-1);
+    if (!reduceParticles) {
+      this.tweens.add({
+        targets: mascot,
+        y: mascot.y + 4,
+        duration: 1800,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+      this.tweens.add({
+        targets: mascot,
+        angle: { from: -3, to: 3 },
+        duration: 2600,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+      this.cozyTweenTargets.push(mascot);
+    }
+
+    // === Title (bigger, bobs) ===
+    const titleY = 116;
     const titleText = this.add
-      .text(width / 2, 96, t('ui.menu.title'), {
+      .text(width / 2, titleY, t('ui.menu.title'), {
         fontFamily: 'monospace',
-        fontSize: '36px',
+        fontSize: '48px',
         color: titleColor,
         fontStyle: 'bold',
         align: 'center',
+        stroke: '#000',
+        strokeThickness: 4,
       })
       .setOrigin(0.5);
     titleText.setScale(uiScale);
+    if (!reduceParticles) {
+      this.tweens.add({
+        targets: titleText,
+        y: titleY + 2,
+        duration: 2400,
+        ease: 'Sine.easeInOut',
+        yoyo: true,
+        repeat: -1,
+      });
+      this.cozyTweenTargets.push(titleText);
+    }
 
     // Warmer zero-state on a fresh save: "The glen stirs — yir first run awaits."
     // instead of "The glen remembers: 0 lifetime culls".
@@ -44,7 +210,7 @@ export class MainMenuScene extends Phaser.Scene {
       ? t('ui.menu.kill_credits', { count: meta.totalKills })
       : t('ui.menu.kill_credits_fresh');
     const killCreditText = this.add
-      .text(width / 2, 154, killCreditCopy, {
+      .text(width / 2, titleY + 88, killCreditCopy, {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: subduedColor,
@@ -57,7 +223,7 @@ export class MainMenuScene extends Phaser.Scene {
     const hintText = this.add
       .text(
         width / 2,
-        196,
+        titleY + 128,
         suspended ? t('ui.menu.hint_suspended') : t('ui.menu.hint_fresh'),
         {
           fontFamily: 'monospace',
@@ -70,10 +236,14 @@ export class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5);
     hintText.setScale(uiScale);
 
+    // === Button cluster — tightened and pulled up ===
+    // Previous layout had ~176px of dead space between the hint and the
+    // first button. We now anchor the cluster to sit just below the hint
+    // (with a ~60px cushion) and keep it compact.
     const btnW = 240;
     const btnH = 48;
     const bx = width / 2;
-    const startY = height / 2 + 12;
+    const startY = titleY + 128 + 60;
     let metaY = startY + btnH + 14;
     let abandonBtn: Phaser.GameObjects.Rectangle | null = null;
     let goLoadoutFresh: (() => void) | null = null;
@@ -181,6 +351,83 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('Settings');
     });
 
+    // === Campfire hearth anchor below the buttons ===
+    // A tiny "glow" of three concentric ellipses pulsing gently, with a soft
+    // orange cone above them. Visually anchors the button cluster as a
+    // "sitting around the fire" moment. Skipped in reduceParticles.
+    if (!reduceParticles) {
+      const fireX = width / 2;
+      const fireY = optY + 72;
+      const fireBase = this.add
+        .ellipse(fireX, fireY + 6, 40, 8, 0x3a2410, 0.85)
+        .setDepth(-1);
+      const fireGlowOuter = this.add
+        .ellipse(fireX, fireY, 38, 16, 0xff7a1a, 0.25)
+        .setDepth(-1);
+      const fireGlowInner = this.add
+        .ellipse(fireX, fireY - 2, 22, 12, 0xffc255, 0.55)
+        .setDepth(-1);
+      const fireCore = this.add
+        .ellipse(fireX, fireY - 4, 10, 8, 0xfff6a8, 0.9)
+        .setDepth(-1);
+      // Soft upward smoke wisp
+      const smoke = this.add
+        .ellipse(fireX, fireY - 16, 16, 6, 0xe0cbb0, 0.15)
+        .setDepth(-2);
+      // Pulsing flicker
+      this.tweens.add({
+        targets: [fireGlowOuter, fireGlowInner, fireCore],
+        alpha: { from: 0.55, to: 0.95 },
+        duration: 520,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+      this.tweens.add({
+        targets: [fireGlowOuter, fireGlowInner, fireCore],
+        scaleX: { from: 0.92, to: 1.08 },
+        scaleY: { from: 0.96, to: 1.04 },
+        duration: 720,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+      // Slow rising smoke
+      this.tweens.add({
+        targets: smoke,
+        y: fireY - 34,
+        alpha: 0,
+        duration: 2400,
+        repeat: -1,
+        onRepeat: () => {
+          smoke.setY(fireY - 16);
+          smoke.setAlpha(0.15);
+        },
+      });
+      this.cozyTweenTargets.push(fireBase, fireGlowOuter, fireGlowInner, fireCore, smoke);
+    }
+
+    // === Bottom credit strip ===
+    // Replaces the lone `v2.1` label MenuScene had. Two lines: a warm motto
+    // ("built on the moor") and the version string, both dim to avoid
+    // competing with the buttons.
+    this.add
+      .text(width - 14, height - 26, 'built on the moor', {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#3a4760',
+        fontStyle: 'italic',
+      })
+      .setOrigin(1, 1);
+    this.add
+      .text(width - 14, height - 12, `v${__APP_VERSION__}`, {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#3a4760',
+      })
+      .setOrigin(1, 1);
+
+    // === Gamepad navigation wiring (unchanged) ===
     const entries: GamepadMenuEntry[] = [{ rect: startBtn, activate: goPrimary }];
     if (abandonBtn && goLoadoutFresh) entries.push({ rect: abandonBtn, activate: goLoadoutFresh });
     entries.push(
@@ -189,6 +436,11 @@ export class MainMenuScene extends Phaser.Scene {
     );
     this.gamepadNav = new GamepadMenuNav(this, entries);
     this.events.once('shutdown', () => {
+      // Kill every decoration tween so they don't leak across scene restarts.
+      for (const target of this.cozyTweenTargets) {
+        try { this.tweens.killTweensOf(target); } catch { /* ignore */ }
+      }
+      this.cozyTweenTargets = [];
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });
