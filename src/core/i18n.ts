@@ -477,7 +477,7 @@ export const EN_STRINGS: LocaleTree = {
     // Weapon cards
     add_bagpipe_blast: {
       name: 'Bagpipe Blast',
-      description: 'A ring of rude sound. Foes blow back like dry bracken.',
+      description: 'A ring of rude sound. Foes scatter like pigeons on Buchanan Street.',
     },
     add_caber_toss: {
       name: 'Caber Toss',
@@ -514,7 +514,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     add_kilt: {
       name: 'Kilt',
-      description: 'Room for one more mistake (+15% max HP). Evolves Caber Toss.',
+      description: 'It\'s breezy but it works — room for one more daft mistake (+15% max HP). Evolves Caber Toss.',
     },
     add_tam_o_shanter: {
       name: "Tam o' Shanter",
@@ -530,11 +530,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     add_thistle_crown: {
       name: 'Thistle Crown',
-      description: 'Sharper glances, sharper thorns. +5% crit; attackers take 3 damage on contact.',
+      description: 'Prickly as a Glesga bus queue. +5% crit; attackers take 3 damage on contact.',
     },
     add_highland_shield: {
       name: 'Highland Shield',
-      description: 'A blessing for the worst of nights. Every 20s, shrug off a lethal hit.',
+      description: 'For when it aw goes sideways. Every 20s, shrug off a lethal hit.',
     },
     add_tartan_sash: {
       name: 'Tartan Sash',
@@ -567,11 +567,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     boost_crit: {
       name: 'Eagle Eye',
-      description: 'Ye see the weak points a shade better (+5% crit chance).',
+      description: 'Ye ken where it hurts (+5% crit chance).',
     },
     boost_regen: {
       name: 'Highland Spring',
-      description: 'A cold clear stream in yir chest (+0.5 HP/sec, slow and steady).',
+      description: 'Like a sip o\' Irn-Bru for the soul (+0.5 HP/sec, slow and steady).',
     },
     boost_armor: {
       name: 'Iron Hide',
@@ -583,19 +583,19 @@ export const EN_STRINGS: LocaleTree = {
     },
     banish: {
       name: 'Highland Purge',
-      description: 'Wipe the 5 weakest nearby off the moor. Breathing room now, earned later.',
+      description: 'Wipe the 5 weakest nearby off the moor. That\'s plenty — gie yerself some space.',
     },
     boost_lifesteal: {
       name: 'Vampiric Touch',
-      description: 'A sip o\' vitality from every kill (+1 HP each).',
+      description: 'A wee nip o\' life from every cull (+1 HP each).',
     },
     boost_projectile_speed: {
       name: 'Swift Thistles',
-      description: 'Projectiles arrive faster and stick sooner (+15% projectile speed).',
+      description: 'Thistles wi\' a bit more zip — they arrive before the scream (+15% projectile speed).',
     },
     boost_boss_heal: {
       name: 'Trophy Hunter',
-      description: 'When a boss folds, heal 20% max HP. A reward for the big fight.',
+      description: 'When a boss folds, heal 20% max HP. Ye earned that, big yin.',
     },
     boost_knockback: {
       name: 'Highland Force',
