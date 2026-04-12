@@ -20,8 +20,11 @@ export class EdgeIndicators {
   private indicators: Phaser.GameObjects.Triangle[] = [];
   private readonly MAX_INDICATORS = 12;
   private readonly MARGIN = 20;
-  private readonly INDICATOR_SIZE = 8;
+  private readonly INDICATOR_SIZE = 9;
   private readonly DETECT_RANGE = 500; // Only show indicators for enemies this close
+  /** Glow halos behind each indicator for visibility against busy backgrounds. */
+  private glows: Phaser.GameObjects.Arc[] = [];
+  private pulseTime = 0;
 
   /** Pre-allocated scratch buffer — avoids per-frame array allocation. */
   private offScreenBuf: OffScreenEntry[];
@@ -30,12 +33,18 @@ export class EdgeIndicators {
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
 
+    // Pre-create glow halos (behind the indicators for readability)
+    for (let i = 0; i < this.MAX_INDICATORS; i++) {
+      const glow = scene.add.circle(0, 0, this.INDICATOR_SIZE + 3, 0xff4444, 0.15)
+        .setScrollFactor(0).setDepth(39).setVisible(false);
+      this.glows.push(glow);
+    }
     // Pre-create indicator triangles
     for (let i = 0; i < this.MAX_INDICATORS; i++) {
       const tri = scene.add.triangle(0, 0, 0, -this.INDICATOR_SIZE,
         -this.INDICATOR_SIZE / 2, this.INDICATOR_SIZE / 2,
         this.INDICATOR_SIZE / 2, this.INDICATOR_SIZE / 2,
-        0xff4444, 0.7
+        0xff4444, 0.8
       ).setScrollFactor(0).setDepth(40).setVisible(false);
       this.indicators.push(tri);
     }
@@ -151,24 +160,48 @@ export class EdgeIndicators {
       indicator.setRotation(angle + Math.PI / 2);
       indicator.setVisible(true);
 
+      // Glow halo follows the indicator
+      const glow = this.glows[i];
+      glow.setPosition(sx, sy);
+      glow.setVisible(true);
+
+      // Subtle pulse on all indicators (breathes with urgency)
+      const pulse = 0.9 + Math.sin(this.pulseTime * 4 + i) * 0.15;
+
       // Color based on proximity + threat type: boss/elite = gold, regular = red
       const proximity = 1 - (e.dist / this.DETECT_RANGE);
-      const alpha = 0.3 + proximity * 0.5;
+      const alpha = 0.35 + proximity * 0.5;
       if (e.boss) {
         indicator.setFillStyle(0xd4a017, alpha);
-        indicator.setScale(1.5);
+        indicator.setScale(1.6 * pulse);
+        glow.setFillStyle(0xd4a017, 0.2 * proximity);
+        glow.setRadius(this.INDICATOR_SIZE + 5);
       } else if (e.elite) {
         indicator.setFillStyle(0xd4a017, alpha);
-        indicator.setScale(1);
+        indicator.setScale(1.1 * pulse);
+        glow.setFillStyle(0xd4a017, 0.12 * proximity);
+        glow.setRadius(this.INDICATOR_SIZE + 3);
       } else {
         indicator.setFillStyle(0xff4444, alpha);
-        indicator.setScale(1);
+        indicator.setScale(pulse);
+        glow.setFillStyle(0xff4444, 0.1 * proximity);
+        glow.setRadius(this.INDICATOR_SIZE + 3);
       }
     }
+
+    // Hide unused glows
+    for (let i = toShowCount; i < this.MAX_INDICATORS; i++) {
+      this.glows[i].setVisible(false);
+    }
+
+    // Advance pulse timer
+    this.pulseTime += 0.016; // ~1 frame at 60fps
   }
 
   destroy(): void {
     for (const ind of this.indicators) ind.destroy();
+    for (const glow of this.glows) glow.destroy();
     this.indicators = [];
+    this.glows = [];
   }
 }

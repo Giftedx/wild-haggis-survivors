@@ -768,6 +768,36 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
     this.player.onLevelUp(newLevel);
 
+    // ── Golden aura pulse around the player — makes the level-up FEEL earned ──
+    // Two layered circles expanding from the player: bright inner + soft outer.
+    const auraOuter = this.add.circle(this.player.x, this.player.y, 30, 0xffdd44, 0.4).setDepth(2);
+    const auraInner = this.add.circle(this.player.x, this.player.y, 20, 0xffee88, 0.6).setDepth(2);
+    this.tweens.add({
+      targets: auraOuter, scale: 3, alpha: 0, duration: 700, ease: 'Quad.easeOut',
+      onComplete: () => auraOuter.destroy(),
+    });
+    this.tweens.add({
+      targets: auraInner, scale: 2.2, alpha: 0, duration: 500, ease: 'Quad.easeOut',
+      onComplete: () => auraInner.destroy(),
+    });
+    // 8 radiating sparkles around the player (smaller than evolution beams)
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const sparkle = this.add.circle(
+        this.player.x, this.player.y,
+        2.5, 0xffee88, 0.9
+      ).setDepth(3);
+      this.tweens.add({
+        targets: sparkle,
+        x: this.player.x + Math.cos(angle) * 45,
+        y: this.player.y + Math.sin(angle) * 45,
+        alpha: 0, scale: 0.3,
+        duration: 500 + i * 20,
+        ease: 'Quad.easeOut',
+        onComplete: () => sparkle.destroy(),
+      });
+    }
+
     // Leveling up heals 10% max HP — a small reward that helps sustain longer runs
     this.player.heal(Math.ceil(this.player.getMaxHp() * 0.10));
 
@@ -903,7 +933,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         }
         this.announcedEvolutionReady.delete(effect.weaponKey);
         this.juice.showToast(t('ui.game.upgrade_evolve_weapon', { name: cardTitle }), '#ffaa00');
-        this.juice.flashWhite(300);
+        // THE legendary moment — radial beams, rings, particles, banner
+        this.juice.evolutionSpectacle(this.player.x, this.player.y, cardTitle);
         audio.playLevelUp();
         globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
           weaponKey: effect.weaponKey,
@@ -1464,6 +1495,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
 
+    // Golden fade into victory ceremony — not black, this is the good ending
+    const cam = this.cameras.main;
+    const victoryFade = this.add.rectangle(
+      cam.scrollX + cam.width / 2 / cam.zoom,
+      cam.scrollY + cam.height / 2 / cam.zoom,
+      cam.width / cam.zoom + 200,
+      cam.height / cam.zoom + 200,
+      0xd4a017, 0
+    ).setScrollFactor(0).setDepth(500).setInteractive();
+    this.tweens.add({
+      targets: victoryFade, alpha: 0.5,
+      duration: 1100,
+      ease: 'Sine.easeIn',
+    });
+
     // Raw-delta ticker — RUN_END set timeScale=0, so delayedCall would never fire.
     // Mirrors the death path's deathResultRemainingMs pattern.
     this.victoryResultRemainingMs = 1200;
@@ -1512,6 +1558,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const context = this.buildRunHistoryContext();
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
+
+    // ── Fade-to-black ceremony during the 1.2s death hold ──
+    // Screen-space black overlay that fades in as the run ends, so the scene
+    // transition lands on a dark screen rather than snapping from gameplay to UI.
+    const cam = this.cameras.main;
+    const deathFade = this.add.rectangle(
+      cam.scrollX + cam.width / 2 / cam.zoom,
+      cam.scrollY + cam.height / 2 / cam.zoom,
+      cam.width / cam.zoom + 200,
+      cam.height / cam.zoom + 200,
+      0x000000, 0
+    ).setScrollFactor(0).setDepth(500).setInteractive();
+    this.tweens.add({
+      targets: deathFade, alpha: 0.85,
+      duration: 1100,
+      ease: 'Sine.easeIn',
+    });
 
     this.deathResultRemainingMs = 1200;
     this.deathResultCallback = () => {
@@ -1882,14 +1945,82 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         );
       }
 
-      this.juice.flashWhite(100);
+      // ── Chest opening spectacle — satisfying lid-pop + particle spray ──
+      this.tweens.killTweensOf(chest);
+      this.tweens.killTweensOf(glow);
+      // 1. Chest jolts upward (lid popping open)
+      this.tweens.add({
+        targets: chest,
+        y: y - 8,
+        scale: 1.7,
+        duration: 120,
+        ease: 'Quad.easeOut',
+      });
+      // 2. Expanding bright ring (the moment of opening)
+      const openRing = this.add.circle(x, y, 18, 0xffee88, 0.8).setDepth(6);
+      this.tweens.add({
+        targets: openRing,
+        scale: 4.5,  // 18 * 4.5 = 81 (target radius ~80)
+        alpha: 0,
+        duration: 400,
+        ease: 'Quad.easeOut',
+        onComplete: () => openRing.destroy(),
+      });
+      // 3. Secondary gold ring (layered spectacle)
+      const openRing2 = this.add.circle(x, y, 10, 0xffcc44, 0.6).setDepth(6);
+      this.tweens.add({
+        targets: openRing2,
+        scale: 5,   // 10 * 5 = 50
+        alpha: 0,
+        duration: 500,
+        delay: 100,
+        ease: 'Quad.easeOut',
+        onComplete: () => openRing2.destroy(),
+      });
+      // 4. Gold particle spray (12 dots scattering up and outward with gravity)
+      for (let i = 0; i < 12; i++) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;  // Upward fan
+        const speed = Phaser.Math.Between(35, 70);
+        const dot = this.add.circle(x, y,
+          Phaser.Math.Between(2, 4),
+          i % 2 === 0 ? 0xffdd44 : 0xffcc22,
+          0.95
+        ).setDepth(7);
+        const endX = x + Math.cos(angle) * speed;
+        const peakY = y + Math.sin(angle) * speed - 10;
+        const finalY = y + Phaser.Math.Between(20, 50);
+        this.tweens.add({
+          targets: dot, x: endX, duration: 600 + i * 20,
+          onComplete: () => dot.destroy(),
+        });
+        this.tweens.add({
+          targets: dot,
+          y: { value: peakY, duration: 250, ease: 'Quad.easeOut' },
+        });
+        this.tweens.add({
+          targets: dot,
+          y: { value: finalY, duration: 400, ease: 'Quad.easeIn', delay: 250 },
+          alpha: { value: 0, duration: 300, delay: 300 },
+        });
+      }
+      // 5. Chest fades out after the pop (0.25s hold so the burst registers)
+      this.tweens.add({
+        targets: [chest, glow],
+        alpha: 0,
+        scale: 0.3,
+        duration: 200,
+        delay: 180,
+        onComplete: () => {
+          this.untrackChestSprite(chest);
+          chest.destroy();
+          glow.destroy();
+        },
+      });
+
+      this.juice.flashWhite(120);
       this.juice.showToast(t('ui.game.treasure_collected'), '#ffcc44');
       audio.playLevelUp();
 
-      this.tweens.killTweensOf(glow);
-      this.untrackChestSprite(chest);
-      chest.destroy();
-      glow.destroy();
       this.physics.world.removeCollider(overlapColl);
       this.offerTreasureEvolutionIfEligible();
     });
@@ -2184,68 +2315,145 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const W = GAME.WORLD_WIDTH;
     const H = GAME.WORLD_HEIGHT;
 
-    // Base grass with slight color variation
+    // ── Base grass — two-tone for subtle warmth variation across the moor ──
     gfx.fillStyle(COLORS.GRASS, 1);
     gfx.fillRect(0, 0, W, H);
 
     const rng = new Phaser.Math.RandomDataGenerator(['highlands']);
 
-    // Darker grass patches for depth
-    for (let i = 0; i < 40; i++) {
+    // Warm grass undertone patches (slightly yellow-green — sun hitting)
+    for (let i = 0; i < 25; i++) {
       const x = rng.between(0, W);
       const y = rng.between(0, H);
-      gfx.fillStyle(0x1d4a17, rng.realInRange(0.1, 0.25));
-      gfx.fillCircle(x, y, rng.between(40, 120));
+      gfx.fillStyle(0x3a6a2a, rng.realInRange(0.08, 0.18));
+      gfx.fillEllipse(x, y, rng.between(80, 200), rng.between(60, 140));
+    }
+    // Cool grass shadow patches (deeper green — hollows and shade)
+    for (let i = 0; i < 30; i++) {
+      const x = rng.between(0, W);
+      const y = rng.between(0, H);
+      gfx.fillStyle(0x1a4a17, rng.realInRange(0.1, 0.22));
+      gfx.fillEllipse(x, y, rng.between(50, 130), rng.between(40, 100));
+    }
+    // Boggy dark patches (peaty ground — wetter areas of the moor)
+    for (let i = 0; i < 15; i++) {
+      const x = rng.between(0, W);
+      const y = rng.between(0, H);
+      gfx.fillStyle(0x1a3a10, rng.realInRange(0.12, 0.25));
+      gfx.fillEllipse(x, y, rng.between(30, 80), rng.between(20, 60));
     }
 
-    // Heather patches (purple)
+    // ── Grass tuft stipple — tiny dots that give texture at close zoom ──
+    gfx.fillStyle(0x3a7a30, 0.2);
+    for (let i = 0; i < 300; i++) {
+      gfx.fillRect(rng.between(0, W), rng.between(0, H), 2, 2);
+    }
+    gfx.fillStyle(0x225518, 0.15);
     for (let i = 0; i < 200; i++) {
-      const x = rng.between(0, W);
-      const y = rng.between(0, H);
-      gfx.fillStyle(COLORS.HEATHER, rng.realInRange(0.15, 0.35));
-      gfx.fillCircle(x, y, rng.between(8, 25));
+      gfx.fillRect(rng.between(0, W), rng.between(0, H), 1, 3);
     }
 
-    // Stone patches
+    // ── Heather patches (purple — the moor's carpet) ──
+    // Large heather drifts (big washes of colour)
+    for (let i = 0; i < 30; i++) {
+      const x = rng.between(0, W);
+      const y = rng.between(0, H);
+      gfx.fillStyle(COLORS.HEATHER, rng.realInRange(0.08, 0.18));
+      gfx.fillEllipse(x, y, rng.between(40, 100), rng.between(30, 70));
+    }
+    // Individual heather clumps (smaller, brighter — sits on top of drifts)
+    for (let i = 0; i < 150; i++) {
+      const x = rng.between(0, W);
+      const y = rng.between(0, H);
+      gfx.fillStyle(0x7a4aaa, rng.realInRange(0.15, 0.35));
+      gfx.fillCircle(x, y, rng.between(5, 15));
+    }
+    // Heather bloom highlights (pink-purple, the flowers)
     for (let i = 0; i < 80; i++) {
       const x = rng.between(0, W);
       const y = rng.between(0, H);
-      gfx.fillStyle(COLORS.STONE, rng.realInRange(0.2, 0.4));
-      gfx.fillCircle(x, y, rng.between(4, 12));
+      gfx.fillStyle(0x9966bb, rng.realInRange(0.1, 0.25));
+      gfx.fillCircle(x, y, rng.between(3, 8));
     }
 
-    // Standing stones — tall narrow rectangles scattered across the map
+    // ── Stone scree patches (gravel, exposed rock) ──
+    for (let i = 0; i < 60; i++) {
+      const x = rng.between(0, W);
+      const y = rng.between(0, H);
+      gfx.fillStyle(COLORS.STONE, rng.realInRange(0.15, 0.3));
+      gfx.fillCircle(x, y, rng.between(3, 10));
+    }
+    // Tiny pebble dots (gravel texture)
+    gfx.fillStyle(0x8a7e6d, 0.12);
+    for (let i = 0; i < 100; i++) {
+      gfx.fillCircle(rng.between(0, W), rng.between(0, H), rng.between(1, 3));
+    }
+
+    // ── Standing stones — weathered, lichen-covered, ancient ──
     for (let i = 0; i < 15; i++) {
       const x = rng.between(100, W - 100);
       const y = rng.between(100, H - 100);
       const w = rng.between(6, 12);
       const h = rng.between(20, 40);
 
-      // Stone body
-      gfx.fillStyle(0x666666, 0.6);
+      // Ground shadow (cast by the stone)
+      gfx.fillStyle(0x000000, 0.12);
+      gfx.fillEllipse(x + 3, y + 2, w + 8, 6);
+      // Stone base (darker, anchored in ground)
+      gfx.fillStyle(0x444444, 0.7);
+      gfx.fillRect(x - w / 2 - 1, y - 3, w + 2, 4);
+      // Stone body — tapered, not a perfect rectangle
+      gfx.fillStyle(0x555555, 0.6);
       gfx.fillRect(x - w / 2, y - h, w, h);
-      // Shadow
-      gfx.fillStyle(0x000000, 0.1);
-      gfx.fillEllipse(x, y + 2, w + 6, 6);
+      // Lighter face (left side catches light)
+      gfx.fillStyle(0x777777, 0.4);
+      gfx.fillRect(x - w / 2, y - h, Math.floor(w / 2), h);
+      // Weathered top (rounded, not flat — erosion)
+      gfx.fillStyle(0x666666, 0.6);
+      gfx.fillEllipse(x, y - h, w + 2, 4);
+      // Lichen patches (yellow-green — same as rock deco sprites)
+      gfx.fillStyle(0x88a844, rng.realInRange(0.2, 0.4));
+      gfx.fillCircle(x - w / 4, y - h * 0.6, rng.between(2, 4));
+      gfx.fillCircle(x + w / 4, y - h * 0.3, rng.between(1, 3));
+      // Moss at base (dark green, where moisture collects)
+      gfx.fillStyle(0x2a5522, 0.3);
+      gfx.fillCircle(x, y - 2, w / 2 + 2);
     }
 
-    // Dirt paths — faint winding lines
-    for (let p = 0; p < 3; p++) {
+    // ── Dirt paths — worn sheep tracks, wider with soft edges ──
+    for (let p = 0; p < 4; p++) {
       let px = rng.between(0, W);
       let py = rng.between(0, H);
-      gfx.lineStyle(rng.between(8, 14), 0x5a4a30, 0.15);
+      // Outer worn edge (wider, fainter — the trodden-down grass beside the path)
+      gfx.lineStyle(rng.between(14, 22), 0x4a3a20, 0.08);
       gfx.beginPath();
       gfx.moveTo(px, py);
+      const points: number[][] = [];
       for (let s = 0; s < 20; s++) {
         px += rng.between(-80, 80);
         py += rng.between(50, 150);
+        points.push([px, py]);
         gfx.lineTo(px, py);
+      }
+      gfx.strokePath();
+      // Core path (narrower, darker — the actual worn mud)
+      gfx.lineStyle(rng.between(6, 10), 0x5a4a30, 0.18);
+      gfx.beginPath();
+      gfx.moveTo(points[0][0], points[0][1]);
+      for (let s = 1; s < points.length; s++) {
+        gfx.lineTo(points[s][0], points[s][1]);
       }
       gfx.strokePath();
     }
 
-    // World edge border
-    gfx.lineStyle(4, 0x442200, 0.6);
+    // ── World edge — soft peaty border, not a hard line ──
+    // Outer darkening (the moor fades to peat at the edges)
+    gfx.fillStyle(0x1a1a0a, 0.15);
+    gfx.fillRect(0, 0, W, 20);
+    gfx.fillRect(0, H - 20, W, 20);
+    gfx.fillRect(0, 0, 20, H);
+    gfx.fillRect(W - 20, 0, 20, H);
+    gfx.lineStyle(3, 0x3a2a10, 0.4);
     gfx.strokeRect(0, 0, W, H);
 
     // === Decorative terrain sprites scattered across the world ===
@@ -2322,16 +2530,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         .setAlpha(rngDeco.realInRange(0.3, 0.5));
     }
 
-    // === Water/loch patches with animated shimmer ===
+    // === Water/loch patches with animated shimmer and reedy edges ===
     for (let i = 0; i < 6; i++) {
       const wx = rng.between(200, W - 200);
       const wy = rng.between(200, H - 200);
       const wr = rng.between(30, 60);
 
-      // Dark water base
-      this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a3a5a, 0.5).setDepth(-1);
+      // Muddy bank edge (darker ground around the water — wet peat)
+      this.add.ellipse(wx, wy, wr * 2.6, wr * 1.6, 0x2a3a1a, 0.25).setDepth(-2);
+      // Reedy margin (green-brown ring — rushes and sedge around the loch)
+      this.add.ellipse(wx, wy, wr * 2.3, wr * 1.4, 0x3a5a2a, 0.2).setDepth(-2);
+      // Dark water base (deep peat-stained Highland loch water — not blue)
+      this.add.ellipse(wx, wy, wr * 2, wr * 1.2, 0x1a2a3a, 0.55).setDepth(-1);
       // Lighter shimmer overlay that pulses
-      const shimmer = this.add.ellipse(wx - 5, wy - 3, wr * 1.4, wr * 0.8, 0x3a6a9a, 0.15).setDepth(-1);
+      const shimmer = this.add.ellipse(wx - 5, wy - 3, wr * 1.4, wr * 0.8, 0x2a5a7a, 0.15).setDepth(-1);
       this.tweens.add({
         targets: shimmer,
         alpha: { from: 0.1, to: 0.25 },
