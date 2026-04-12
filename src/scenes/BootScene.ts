@@ -386,98 +386,143 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createStandaloneTrafficCone(): void {
-    // 24×24 — Duke of Wellington upright cone, bright orange, white band, dark base
-    const s = 24;
+    // 28×28 — THE Duke of Wellington cone. Upright, chunky, unmistakable.
+    const s = 28;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
-    // Shadow on ground
-    g.fillStyle(0x000000, 0.2);
-    g.fillEllipse(cx, cy + 8, 12, 4);
-    // Dark base/rim
-    g.fillStyle(0x222222, 1);
-    g.fillRect(cx - 6, cy + 6, 12, 3);
-    g.fillStyle(0x333333, 1);
-    g.fillRect(cx - 5, cy + 5, 10, 2);
-    // Main cone body — dark orange shadow side (right)
-    g.fillStyle(0xbb3300, 1);
-    g.fillTriangle(cx + 1, cy - 10, cx + 7, cy + 5, cx - 1, cy + 5);
-    // Main cone body — bright orange (left/lit side)
-    g.fillStyle(0xff5500, 1);
-    g.fillTriangle(cx, cy - 10, cx - 6, cy + 5, cx + 5, cy + 5);
-    // Slightly brighter highlight on upper-left face
-    g.fillStyle(0xff7722, 1);
-    g.fillTriangle(cx - 1, cy - 9, cx - 5, cy + 1, cx + 1, cy + 1);
-    // Left-edge highlight strip
-    g.fillStyle(0xff9944, 1);
-    g.fillTriangle(cx - 1, cy - 8, cx - 4, cy - 1, cx - 2, cy - 1);
-    // White reflective stripe band — lower third of cone
-    g.fillStyle(0xffffff, 0.92);
-    g.fillTriangle(cx - 3, cy + 1, cx + 3, cy + 1, cx - 4, cy + 4);
-    g.fillTriangle(cx + 3, cy + 1, cx + 4, cy + 4, cx - 4, cy + 4);
-    // Slight grey shading on right side of white band
-    g.fillStyle(0xcccccc, 0.5);
-    g.fillTriangle(cx + 1, cy + 1, cx + 4, cy + 4, cx + 2, cy + 4);
-    // Tiny tip highlight
-    g.fillStyle(0xffaa66, 1);
-    g.fillRect(cx - 1, cy - 10, 2, 2);
+    const cx = 14;
+    // Ground shadow
+    g.fillStyle(0x000000, 0.15);
+    g.fillEllipse(cx, 24, 16, 4);
+    // ── Black rubber base — wide, flat, square-ish ──
+    g.fillStyle(0x1a1a1a, 1);
+    g.fillRect(cx - 8, 20, 16, 4);
+    g.fillStyle(0x2a2a2a, 1);
+    g.fillRect(cx - 7, 21, 14, 2);
+    // ── Cone body — built row by row for clean taper ──
+    // Each row: y position, half-width at that row
+    const rows: [number, number][] = [
+      [19, 6], [18, 6], [17, 5], [16, 5], [15, 5],
+      [14, 4], [13, 4], [12, 4], [11, 3], [10, 3],
+      [9, 3], [8, 2], [7, 2], [6, 2], [5, 1], [4, 1],
+    ];
+    // Dark side (right half of each row)
+    for (const [y, hw] of rows) {
+      g.fillStyle(0xcc3300, 1);
+      g.fillRect(cx, y, hw, 1);
+    }
+    // Bright side (left half of each row)
+    for (const [y, hw] of rows) {
+      g.fillStyle(0xff5500, 1);
+      g.fillRect(cx - hw, y, hw, 1);
+    }
+    // Highlight strip (left edge, 1px wide, brighter orange)
+    for (const [y, hw] of rows) {
+      g.fillStyle(0xff8833, 1);
+      g.fillRect(cx - hw, y, 1, 1);
+    }
+    // ── White reflective bands — two bands like a real UK cone ──
+    // Upper band (narrower, higher on cone)
+    const upperBand: [number, number][] = [
+      [9, 3], [10, 3], [11, 3],
+    ];
+    for (const [y, hw] of upperBand) {
+      g.fillStyle(0xffffff, 0.9);
+      g.fillRect(cx - hw, y, hw * 2, 1);
+      // Grey shadow on right half
+      g.fillStyle(0xcccccc, 0.5);
+      g.fillRect(cx + 1, y, hw - 1, 1);
+    }
+    // Lower band (wider, lower on cone)
+    const lowerBand: [number, number][] = [
+      [15, 5], [16, 5], [17, 5],
+    ];
+    for (const [y, hw] of lowerBand) {
+      g.fillStyle(0xffffff, 0.9);
+      g.fillRect(cx - hw, y, hw * 2, 1);
+      g.fillStyle(0xcccccc, 0.5);
+      g.fillRect(cx + 1, y, hw - 1, 1);
+    }
+    // ── Pointed tip ──
+    g.fillStyle(0xff6622, 1);
+    g.fillRect(cx - 1, 3, 2, 2);
+    g.fillStyle(0xffaa55, 1);
+    g.fillRect(cx - 1, 3, 1, 1);
+    // ── Dark outline on right edge for depth ──
+    for (const [y, hw] of rows) {
+      g.fillStyle(0x881800, 0.6);
+      g.fillRect(cx + hw - 1, y, 1, 1);
+    }
     g.generateTexture('deco_cone', s, s);
     g.destroy();
   }
 
   private createTunnockWrapper(): void {
-    // 20×20 — Tunnock's Teacake crumpled foil wrapper, dome shape, red & silver stripes
-    const s = 20;
+    // 24×24 — Tunnock's Teacake in its iconic red & silver striped foil.
+    // Drawn pixel-row by pixel-row for a clean dome with proper stripes.
+    const s = 24;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 1;
-    // Flat base of the teacake wrapper
-    g.fillStyle(0x888888, 1);
-    g.fillEllipse(cx, cy + 4, 14, 4);
-    g.fillStyle(0x999999, 1);
-    g.fillEllipse(cx - 1, cy + 3, 12, 3);
-    // Dome body — alternating red and silver diagonal stripes
-    // Draw the dome base (silver) first
-    g.fillStyle(0xbbbbbb, 1);
-    g.fillCircle(cx, cy, 7);
-    // Red stripe 1
-    g.fillStyle(0xdd1122, 1);
-    g.fillTriangle(cx - 7, cy, cx - 3, cy - 7, cx + 1, cy - 7);
-    g.fillTriangle(cx - 7, cy, cx - 7, cy + 4, cx - 3, cy + 2);
-    // Clip back to dome shape (silver overlay on outer half to fake clipping)
-    g.fillStyle(0xbbbbbb, 1);
-    g.fillRect(0, 0, s, cy - 7);        // top crop
-    g.fillRect(0, cy + 7, s, s);        // bottom crop
-    // Re-draw dome cleanly as solid silver
-    g.fillStyle(0xcccccc, 1);
-    g.fillCircle(cx, cy, 7);
-    // Now paint the stripes as wedges across the dome (3 red, 3 silver alternating)
-    // Red stripe A — left side
-    g.fillStyle(0xdd1122, 1);
-    g.fillTriangle(cx, cy, cx - 7, cy - 2, cx - 4, cy - 7);
-    // Silver stripe A (overpaints right of red A)
-    g.fillStyle(0xcccccc, 1);
-    g.fillTriangle(cx, cy, cx - 4, cy - 7, cx + 1, cy - 7);
-    // Red stripe B — top right
-    g.fillStyle(0xdd1122, 1);
-    g.fillTriangle(cx, cy, cx + 1, cy - 7, cx + 7, cy - 3);
-    // Silver stripe B
-    g.fillStyle(0xcccccc, 1);
-    g.fillTriangle(cx, cy, cx + 7, cy - 3, cx + 7, cy + 2);
-    // Red stripe C — right lower
-    g.fillStyle(0xdd1122, 1);
-    g.fillTriangle(cx, cy, cx + 7, cy + 2, cx + 3, cy + 7);
-    // Re-clip circular dome — overdraw corners with bg colour (transparent trick)
-    // Use a dark ring mask to clean up jagged edges
-    g.lineStyle(2, 0x888888, 1);
-    g.strokeCircle(cx, cy, 7);
-    // Shiny foil highlight — bright streak upper-left
-    g.fillStyle(0xffffff, 0.7);
-    g.fillEllipse(cx - 3, cy - 4, 4, 2);
-    g.fillStyle(0xffffff, 0.4);
-    g.fillEllipse(cx - 2, cy - 3, 2, 1);
-    // Crumpled look — small dark wrinkle line
-    g.lineStyle(1, 0x777777, 0.6);
-    g.lineBetween(cx + 1, cy + 2, cx + 4, cy + 5);
-    g.lineBetween(cx - 2, cy + 3, cx - 4, cy + 5);
+    const cx = 12, cy = 13;
+    const R = 9; // dome radius
+
+    // Ground shadow
+    g.fillStyle(0x000000, 0.12);
+    g.fillEllipse(cx, cy + 8, 18, 4);
+
+    // ── Flat chocolate base visible beneath the dome ──
+    g.fillStyle(0x3a2210, 1);
+    g.fillEllipse(cx, cy + 4, 18, 5);
+    g.fillStyle(0x4a3220, 1);
+    g.fillEllipse(cx, cy + 3, 16, 4);
+
+    // ── Foil dome — draw row by row with angular stripe pattern ──
+    // For each pixel row of the dome, compute its width from circle math,
+    // then alternate red / silver based on angle from centre.
+    for (let dy = -R; dy <= 0; dy++) {
+      const halfW = Math.floor(Math.sqrt(R * R - dy * dy));
+      const y = cy + dy;
+      for (let dx = -halfW; dx <= halfW; dx++) {
+        const x = cx + dx;
+        // Compute angle from dome centre to decide stripe colour
+        const angle = Math.atan2(dy, dx);
+        // 5 stripes across the dome (alternating red/silver)
+        const stripeIndex = Math.floor(((angle + Math.PI) / (Math.PI * 2)) * 10);
+        const isRed = stripeIndex % 2 === 0;
+
+        if (isRed) {
+          // Red stripe — darker on right, brighter on left for 3D
+          const shade = dx < 0 ? 0xdd1122 : 0xbb0e1c;
+          g.fillStyle(shade, 1);
+        } else {
+          // Silver stripe — with shading
+          const shade = dx < -2 ? 0xdddddd : dx < 2 ? 0xcccccc : 0xaaaaaa;
+          g.fillStyle(shade, 1);
+        }
+        g.fillRect(x, y, 1, 1);
+      }
+    }
+
+    // ── Foil dome outline — dark ring for crisp edge ──
+    g.lineStyle(1, 0x555555, 0.8);
+    g.beginPath();
+    g.arc(cx, cy, R, Math.PI, 0, false);
+    g.strokePath();
+
+    // ── Shiny foil specular highlight — top-left of dome ──
+    g.fillStyle(0xffffff, 0.6);
+    g.fillEllipse(cx - 3, cy - 6, 5, 3);
+    g.fillStyle(0xffffff, 0.35);
+    g.fillEllipse(cx - 2, cy - 5, 3, 2);
+
+    // ── Secondary highlight — smaller, lower-right ──
+    g.fillStyle(0xffffff, 0.2);
+    g.fillEllipse(cx + 3, cy - 2, 3, 2);
+
+    // ── Foil crinkle lines — subtle dark marks for texture ──
+    g.fillStyle(0x000000, 0.15);
+    g.fillRect(cx + 2, cy - 3, 1, 2);
+    g.fillRect(cx - 4, cy - 2, 1, 2);
+    g.fillRect(cx + 5, cy - 1, 1, 1);
+
     g.generateTexture('deco_tunnock', s, s);
     g.destroy();
   }
@@ -2432,68 +2477,148 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Kelpie — Scottish water horse. Bold silhouette, glowing green eye. */
+  /** Ned — Glesga's finest. Shiny shell suit, Burberry cap tilted at 45°,
+   *  white socks pulled high, trainers, pure menace. Fast flanking enemy.
+   *  Texture key kept as 'kelpie' for data compatibility. */
   private createKelpie(): void {
     const s = 48;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Legs — thick, visible at small scale
-    g.fillStyle(0x0c2030, 1);
-    g.fillRect(cx - 10, cy + 6, 5, 10);
-    g.fillRect(cx - 2, cy + 7, 5, 9);
-    g.fillRect(cx + 6, cy + 6, 5, 10);
-    // Hooves
-    g.fillStyle(0x060d14, 1);
-    g.fillRect(cx - 10, cy + 15, 5, 2);
-    g.fillRect(cx - 2, cy + 15, 5, 2);
-    g.fillRect(cx + 6, cy + 15, 5, 2);
+    // ── White trainers ──
+    g.fillStyle(0xcccccc, 1);
+    g.fillRect(cx - 9, cy + 16, 7, 4);
+    g.fillRect(cx + 2, cy + 16, 7, 4);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 8, cy + 17, 5, 2);
+    g.fillRect(cx + 3, cy + 17, 5, 2);
+    // Trainer stripes
+    g.fillStyle(0x2244cc, 1);
+    g.fillRect(cx - 7, cy + 17, 1, 2);
+    g.fillRect(cx + 5, cy + 17, 1, 2);
 
-    // Body — chunky dark barrel
-    g.fillStyle(0x0c2030, 1);
-    g.fillEllipse(cx, cy + 4, 34, 18);
-    g.fillStyle(0x194050, 1);
-    g.fillEllipse(cx, cy + 3, 30, 14);
+    // ── White socks pulled HIGH (the classic ned look) ──
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 7, cy + 10, 5, 7);
+    g.fillRect(cx + 3, cy + 10, 5, 7);
+    g.fillStyle(0xdddddd, 1);
+    // Sock ribbing
+    g.fillRect(cx - 7, cy + 11, 5, 1);
+    g.fillRect(cx - 7, cy + 13, 5, 1);
+    g.fillRect(cx + 3, cy + 11, 5, 1);
+    g.fillRect(cx + 3, cy + 13, 5, 1);
 
-    // Neck — wide triangle rising left
-    g.fillStyle(0x0c2030, 1);
-    g.fillTriangle(cx - 8, cy + 4, cx - 10, cy - 10, cx - 2, cy + 2);
-    g.fillStyle(0x194050, 1);
-    g.fillTriangle(cx - 7, cy + 2, cx - 9, cy - 8, cx - 3, cy + 1);
+    // ── Shell suit trousers — shiny blue with white stripe ──
+    g.fillStyle(0x1133aa, 1);
+    g.fillRect(cx - 8, cy + 4, 6, 8);
+    g.fillRect(cx + 2, cy + 4, 6, 8);
+    g.fillStyle(0x2255cc, 1);
+    g.fillRect(cx - 7, cy + 5, 4, 6);
+    g.fillRect(cx + 3, cy + 5, 4, 6);
+    // White side stripe (the iconic tracksuit stripe)
+    g.fillStyle(0xeeeeee, 0.8);
+    g.fillRect(cx - 8, cy + 5, 1, 6);
+    g.fillRect(cx + 7, cy + 5, 1, 6);
+    // Sheen highlight (shiny synthetic material)
+    g.fillStyle(0x4477dd, 0.4);
+    g.fillRect(cx - 6, cy + 6, 2, 4);
+    g.fillRect(cx + 4, cy + 6, 2, 4);
 
-    // Head — blocky horse head
-    g.fillStyle(0x0c2030, 1);
-    g.fillEllipse(cx - 14, cy - 8, 12, 10);
-    g.fillStyle(0x194050, 1);
-    g.fillEllipse(cx - 14, cy - 8, 10, 8);
-    // Muzzle
-    g.fillStyle(0x0c2030, 1);
-    g.fillRect(cx - 21, cy - 8, 6, 5);
-    g.fillStyle(0x163848, 1);
-    g.fillRect(cx - 20, cy - 7, 5, 3);
+    // ── Shell suit jacket — same shiny blue, zip front ──
+    g.fillStyle(0x0e2888, 1);
+    g.fillRect(cx - 10, cy - 8, 20, 14);
+    g.fillStyle(0x1133aa, 1);
+    g.fillRect(cx - 9, cy - 7, 18, 12);
+    g.fillStyle(0x2255cc, 1);
+    g.fillRect(cx - 8, cy - 6, 16, 10);
+    // Jacket sheen
+    g.fillStyle(0x4477ee, 0.3);
+    g.fillRect(cx - 6, cy - 5, 6, 8);
+    // White side stripes on jacket
+    g.fillStyle(0xeeeeee, 0.8);
+    g.fillRect(cx - 10, cy - 7, 1, 12);
+    g.fillRect(cx + 9, cy - 7, 1, 12);
+    // Zip line (centre)
+    g.fillStyle(0xaaaaaa, 0.7);
+    g.fillRect(cx, cy - 6, 1, 10);
+    // Zip pull
+    g.fillStyle(0xcccccc, 1);
+    g.fillRect(cx - 1, cy - 2, 2, 2);
+    // Collar — popped up (of course)
+    g.fillStyle(0x0e2888, 1);
+    g.fillRect(cx - 8, cy - 10, 16, 3);
+    g.fillStyle(0x1133aa, 1);
+    g.fillRect(cx - 7, cy - 9, 14, 2);
 
-    // Ear — single pointed ear (reads better than two at this scale)
-    g.fillStyle(0x0c2030, 1);
-    g.fillTriangle(cx - 16, cy - 12, cx - 12, cy - 12, cx - 14, cy - 18);
+    // ── Arms (hands in pockets / one gesturing) ──
+    g.fillStyle(0x1133aa, 1);
+    g.fillRect(cx - 13, cy - 4, 4, 8);
+    g.fillRect(cx + 9, cy - 4, 4, 8);
+    // Skin-colour hands
+    g.fillStyle(0xddaa88, 1);
+    g.fillRect(cx - 13, cy + 3, 3, 3);
+    g.fillRect(cx + 10, cy + 3, 3, 3);
 
-    // Eye — BIG glowing green, the kelpie's signature tell
-    g.fillStyle(0x111818, 1);
-    g.fillCircle(cx - 12, cy - 10, 3);
-    g.fillStyle(0x33dd99, 1);
-    g.fillCircle(cx - 12, cy - 10, 2);
-    g.fillStyle(0xbbffdd, 1);
-    g.fillCircle(cx - 13, cy - 11, 0.8);
+    // ── Head ──
+    g.fillStyle(0xcc9966, 1);
+    g.fillCircle(cx, cy - 14, 8);
+    g.fillStyle(0xddaa77, 1);
+    g.fillCircle(cx, cy - 14, 7);
+    // Ruddy cheeks (been oot in the cauld)
+    g.fillStyle(0xddaa88, 0.5);
+    g.fillCircle(cx - 4, cy - 12, 2);
+    g.fillCircle(cx + 4, cy - 12, 2);
 
-    // Mane — 3 bold strands, not fiddly detail
-    g.fillStyle(0x0a4858, 0.9);
-    g.fillRect(cx - 9, cy - 11, 3, 8);
-    g.fillRect(cx - 6, cy - 9, 3, 7);
-    g.fillStyle(0x226878, 0.6);
-    g.fillRect(cx - 8, cy - 8, 2, 6);
+    // Narrowed suspicious eyes
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(cx - 4, cy - 16, 3, 2);
+    g.fillRect(cx + 1, cy - 16, 3, 2);
+    g.fillStyle(0x222222, 1);
+    g.fillRect(cx - 3, cy - 16, 2, 2);
+    g.fillRect(cx + 2, cy - 16, 2, 2);
 
-    // Tail — single bold sweep
-    g.fillStyle(0x0a4858, 0.8);
-    g.fillTriangle(cx + 15, cy + 2, cx + 20, cy - 4, cx + 22, cy + 6);
+    // Aggressive eyebrows (furrowed)
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 5, cy - 17, 4, 1);
+    g.fillRect(cx + 1, cy - 17, 4, 1);
+
+    // Mouth — sneering grin
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 3, cy - 11, 6, 1);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 1, cy - 11, 1, 1);
+    g.fillRect(cx + 1, cy - 11, 1, 1);
+
+    // ── Burberry check cap — tilted at 45° (THE ned signature) ──
+    // Cap body — beige check pattern
+    g.fillStyle(0xccaa77, 1);
+    g.fillEllipse(cx + 2, cy - 20, 18, 7);
+    g.fillStyle(0xddbb88, 1);
+    g.fillEllipse(cx + 2, cy - 21, 16, 5);
+    // Burberry check pattern (red/black lines on beige)
+    g.fillStyle(0xcc3322, 0.5);
+    g.fillRect(cx - 4, cy - 22, 12, 1);
+    g.fillRect(cx - 2, cy - 20, 8, 1);
+    g.fillStyle(0x222222, 0.3);
+    g.fillRect(cx - 1, cy - 23, 1, 4);
+    g.fillRect(cx + 4, cy - 23, 1, 4);
+    // Peak (brim) tilted up
+    g.fillStyle(0xaa8855, 1);
+    g.fillRect(cx - 6, cy - 19, 8, 2);
+    g.fillStyle(0xbbaa66, 1);
+    g.fillRect(cx - 5, cy - 19, 6, 1);
+
+    // ── Buckfast bottle in hand (optional but peak ned) ──
+    g.fillStyle(0x224422, 1);
+    g.fillRect(cx + 10, cy + 1, 3, 6);
+    g.fillStyle(0x336633, 1);
+    g.fillRect(cx + 10, cy + 2, 2, 4);
+    // Cream label
+    g.fillStyle(0xddcc88, 1);
+    g.fillRect(cx + 10, cy + 3, 2, 2);
+    // Gold cap
+    g.fillStyle(0xddaa00, 1);
+    g.fillRect(cx + 10, cy + 1, 2, 1);
 
     g.generateTexture('kelpie', s, s);
     g.destroy();
@@ -2600,98 +2725,200 @@ export class BootScene extends Phaser.Scene {
   // === Projectiles ===
 
   private createThistle(): void {
-    const s = 16;
+    // 20×20 — purple thistle projectile. Spiky flower head with green calyx,
+    // needs to read clearly while spinning across the moor at speed.
+    const s = 20;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
+    const cx = 10, cy = 9;
 
-    // Outline
-    g.fillStyle(0x442266, 1);
+    // Green calyx / stem stub at bottom (spiky leaf base of the flower)
+    g.fillStyle(0x224411, 1);
+    g.fillRect(cx - 1, cy + 5, 2, 4);
+    g.fillStyle(0x336622, 1);
+    g.fillRect(cx - 1, cy + 5, 1, 3);
+    // Calyx leaves flaring out
+    g.fillStyle(0x2a5518, 1);
+    g.fillTriangle(cx, cy + 3, cx - 4, cy + 6, cx, cy + 6);
+    g.fillTriangle(cx, cy + 3, cx + 4, cy + 6, cx, cy + 6);
+    g.fillStyle(0x3a7722, 1);
+    g.fillTriangle(cx, cy + 4, cx - 3, cy + 6, cx, cy + 5);
+    g.fillTriangle(cx, cy + 4, cx + 3, cy + 6, cx, cy + 5);
+
+    // Dark outline of flower head
+    g.fillStyle(0x331155, 1);
+    g.fillCircle(cx, cy, 7);
+
+    // Flower body — dark purple base
+    g.fillStyle(0x663399, 1);
     g.fillCircle(cx, cy, 6);
-    // Purple thistle head
-    g.fillStyle(0x9966cc, 1);
-    g.fillCircle(cx, cy, 5);
-    // Spiky points
-    g.fillStyle(0xbb88ee, 1);
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
+
+    // 10 sharp spikes radiating outward (the thistle's weapon)
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      const tipX = cx + Math.cos(a) * 9;
+      const tipY = cy + Math.sin(a) * 9;
+      const baseL = cx + Math.cos(a - 0.25) * 5;
+      const baseR = cx + Math.cos(a + 0.25) * 5;
+      const baseLY = cy + Math.sin(a - 0.25) * 5;
+      const baseRY = cy + Math.sin(a + 0.25) * 5;
+      // Dark spike outline
+      g.fillStyle(0x552288, 1);
+      g.fillTriangle(tipX, tipY, baseL, baseLY, baseR, baseRY);
+      // Brighter inner spike
+      g.fillStyle(0xaa77dd, 0.8);
+      const innerTip = 0.85;
       g.fillTriangle(
-        cx, cy,
-        cx + Math.cos(a) * 7, cy + Math.sin(a) * 7,
-        cx + Math.cos(a + 0.3) * 5, cy + Math.sin(a + 0.3) * 5
+        cx + Math.cos(a) * 9 * innerTip, cy + Math.sin(a) * 9 * innerTip,
+        cx + Math.cos(a - 0.15) * 5, cy + Math.sin(a - 0.15) * 5,
+        cx + Math.cos(a + 0.15) * 5, cy + Math.sin(a + 0.15) * 5
       );
     }
-    // Bright center
-    g.fillStyle(0xffffff, 0.8);
-    g.fillCircle(cx, cy, 1.5);
 
-    // Green stem stub (it's a flower head, not just a purple blob)
-    g.fillStyle(0x336622, 1);
-    g.fillRect(cx - 1, cy + 5, 2, 3);
-    g.fillStyle(0x448833, 1);
-    g.fillRect(cx - 1, cy + 5, 1, 2);
+    // Inner flower highlight (lighter purple bloom)
+    g.fillStyle(0x8855bb, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0xaa77dd, 0.7);
+    g.fillCircle(cx - 1, cy - 1, 2.5);
+
+    // Bright centre — the hot core
+    g.fillStyle(0xddaaff, 1);
+    g.fillCircle(cx, cy, 1.5);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(cx - 1, cy - 1, 0.8);
 
     g.generateTexture('thistle', s, s);
     g.destroy();
   }
 
   private createCaber(): void {
-    const s = 24;
+    // 28×28 — Highland Games caber (telephone-pole-sized log).
+    // Chunky, tapered, with visible wood grain, bark edges, and a
+    // cut end-grain circle. Flies horizontally through enemies.
+    const s = 28;
     const g = this.add.graphics();
-    g.fillStyle(0x2a1a04, 1);
-    g.fillRect(2, 5, 20, 12);
-    g.fillStyle(0x7a5510, 1);
-    g.fillRect(3, 6, 18, 10);
-    g.fillStyle(0x5a3e08, 0.8);
-    g.fillRect(3, 8, 18, 1);
-    g.fillRect(3, 12, 18, 1);
-    g.fillStyle(0x9a7522, 0.5);
-    g.fillRect(3, 7, 18, 1);
-    g.fillRect(3, 10, 18, 1);
-    g.fillStyle(0x4a3008, 1);
-    g.fillCircle(8, 10, 1.5);
-    g.fillCircle(16, 9, 1);
+    const cy = 14;
+
+    // ── Dark bark outline (entire log) ──
+    g.fillStyle(0x1a0e02, 1);
+    g.fillRect(2, cy - 6, 22, 13);
+    g.fillCircle(23, cy, 6);  // rounded right end
+
+    // ── Main wood body — warm brown ──
+    g.fillStyle(0x6a4a10, 1);
+    g.fillRect(3, cy - 5, 20, 11);
+
+    // ── Bark texture — dark top and bottom edges ──
+    g.fillStyle(0x3a2808, 1);
+    g.fillRect(3, cy - 5, 20, 2);
+    g.fillRect(3, cy + 4, 20, 2);
+
+    // ── Wood grain lines running horizontally ──
+    g.fillStyle(0x5a3a08, 0.7);
+    g.fillRect(3, cy - 2, 20, 1);
+    g.fillRect(3, cy + 1, 20, 1);
+    // Lighter grain highlights
+    g.fillStyle(0x8a6a20, 0.5);
+    g.fillRect(3, cy - 1, 20, 1);
+    g.fillRect(3, cy + 3, 20, 1);
+
+    // ── Top highlight (light hitting the rounded top of the log) ──
+    g.fillStyle(0x9a7a28, 0.6);
+    g.fillRect(5, cy - 4, 16, 1);
+
+    // ── Knot holes — darker circles with ring detail ──
     g.fillStyle(0x3a2206, 1);
-    g.fillCircle(8, 10, 0.8);
+    g.fillCircle(9, cy, 2);
+    g.fillStyle(0x4a3008, 1);
+    g.fillCircle(9, cy, 1.2);
+    g.fillStyle(0x3a2206, 0.6);
+    g.fillCircle(17, cy - 2, 1.2);
+
+    // ── Cut end-grain (right end of log) — concentric rings ──
     g.fillStyle(0x5a3e08, 1);
-    g.fillCircle(20, 11, 3);
-    g.fillStyle(0x7a5510, 1);
-    g.fillCircle(20, 11, 2);
+    g.fillCircle(23, cy, 5.5);
+    g.fillStyle(0x7a5a14, 1);
+    g.fillCircle(23, cy, 4.5);
+    // Ring detail
+    g.lineStyle(0.8, 0x5a4010, 0.6);
+    g.strokeCircle(23, cy, 3.5);
+    g.strokeCircle(23, cy, 2);
+    // Pith (centre dot)
+    g.fillStyle(0x4a3008, 1);
+    g.fillCircle(23, cy, 1);
+    // End-grain highlight
+    g.fillStyle(0x9a7a28, 0.4);
+    g.fillCircle(22, cy - 2, 2);
+
+    // ── Left end (broken/rough) — jagged edge ──
+    g.fillStyle(0x3a2206, 1);
+    g.fillRect(2, cy - 4, 2, 2);
+    g.fillRect(2, cy + 2, 2, 2);
     g.fillStyle(0x5a3e08, 1);
-    g.fillCircle(20, 11, 1);
-    g.fillStyle(0x4a3008, 0.6);
-    g.fillRect(3, 6, 18, 1);
-    g.fillRect(3, 15, 18, 1);
+    g.fillRect(3, cy - 3, 1, 7);
+
     g.generateTexture('caber', s, s);
     g.destroy();
   }
 
-  /** Haggis ball — the bouncing projectile for Jobby Hurler/Cannon.
-   *  Lumpy, organic, with a wet sheen and visible oat-fleck texture. */
+  /** Haggis ball — the bouncing "jobby" projectile for Jobby Hurler/Cannon.
+   *  Lumpy, organic, steaming, with oat-fleck texture and a wet sheen.
+   *  Must look disgusting AND hilarious — this is peak Glesga humour. */
   private createHaggisBall(): void {
-    const s = 18;
+    const s = 22;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
-    g.fillStyle(0x2a1a06, 1);
+    const cx = 11, cy = 11;
+
+    // Steam wisps rising from the top (it's warm and fresh...)
+    g.fillStyle(0xccbb88, 0.25);
+    g.fillCircle(cx - 2, cy - 9, 2);
+    g.fillCircle(cx + 2, cy - 8, 1.5);
+    g.fillCircle(cx, cy - 10, 1.2);
+
+    // ── Dark outline — lumpy, not perfectly round ──
+    g.fillStyle(0x1a0e04, 1);
+    g.fillCircle(cx, cy, 8);
+    g.fillCircle(cx + 1, cy - 1, 7);  // slight offset for lumpiness
+    g.fillCircle(cx - 2, cy + 1, 6);  // bottom-left bulge
+
+    // ── Main body — dark brown haggis meat ──
+    g.fillStyle(0x4a3008, 1);
     g.fillCircle(cx, cy, 7);
     g.fillCircle(cx + 1, cy - 1, 6);
-    g.fillStyle(0x5a3e0a, 1);
-    g.fillCircle(cx, cy, 6);
-    g.fillCircle(cx + 1, cy - 1, 5);
-    g.fillStyle(0x7a5a12, 1);
-    g.fillCircle(cx - 1, cy - 1, 5);
-    g.fillStyle(0x9a7822, 0.8);
-    g.fillCircle(cx - 2, cy - 2, 1.2);
-    g.fillCircle(cx + 2, cy + 1, 1);
-    g.fillCircle(cx - 1, cy + 2, 0.8);
-    g.fillCircle(cx + 3, cy - 1, 0.8);
-    g.fillCircle(cx - 3, cy + 1, 0.6);
-    g.fillStyle(0xbb9933, 0.7);
-    g.fillCircle(cx - 2, cy - 2, 1.5);
-    g.fillStyle(0xffffff, 0.4);
-    g.fillCircle(cx - 3, cy - 3, 0.7);
-    g.fillStyle(0xcccccc, 0.35);
-    g.fillCircle(cx - 1, cy - 6, 1.2);
-    g.fillCircle(cx + 2, cy - 7, 1);
+
+    // ── Lighter brown layer (upper half catches light) ──
+    g.fillStyle(0x6a4a10, 1);
+    g.fillCircle(cx - 1, cy - 1, 5.5);
+    g.fillStyle(0x7a5a18, 0.8);
+    g.fillCircle(cx - 2, cy - 2, 4);
+
+    // ── Oat fleck texture — visible pale speckles in the meat ──
+    g.fillStyle(0x9a8030, 0.8);
+    g.fillCircle(cx - 3, cy - 1, 1);
+    g.fillCircle(cx + 2, cy + 2, 1.2);
+    g.fillCircle(cx + 1, cy - 3, 0.8);
+    g.fillCircle(cx - 1, cy + 3, 1);
+    g.fillCircle(cx + 4, cy, 0.7);
+    g.fillCircle(cx - 4, cy + 2, 0.8);
+    // Darker flecks (pepper / liver bits)
+    g.fillStyle(0x2a1806, 0.6);
+    g.fillCircle(cx + 3, cy - 2, 0.7);
+    g.fillCircle(cx - 2, cy + 4, 0.6);
+    g.fillCircle(cx + 1, cy + 1, 0.5);
+
+    // ── Wet sheen — glistening surface highlight ──
+    g.fillStyle(0xbb9933, 0.5);
+    g.fillCircle(cx - 2, cy - 3, 2);
+    g.fillStyle(0xddbb55, 0.3);
+    g.fillCircle(cx - 3, cy - 4, 1.2);
+
+    // Specular dot
+    g.fillStyle(0xffffff, 0.35);
+    g.fillCircle(cx - 3, cy - 4, 0.8);
+
+    // ── Bottom shadow (sitting on ground or just launched) ──
+    g.fillStyle(0x1a0e04, 0.4);
+    g.fillEllipse(cx, cy + 5, 8, 2);
+
     g.generateTexture('haggis_ball', s, s);
     g.destroy();
   }
@@ -2699,35 +2926,59 @@ export class BootScene extends Phaser.Scene {
   /** XP gem — golden diamond with faceted light and a bright sparkle.
    *  The player's eye is trained to chase these, so they need to pop. */
   private createXPGem(): void {
-    const s = 16;
+    // 20×20 — golden XP gem, diamond shape with 4 distinct facets,
+    // bright centre fire, sparkle highlights. Players collect hundreds of
+    // these so it must read instantly and feel satisfying.
+    const s = 20;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
+    const cx = 10, cy = 10;
 
-    // Dark outline — gives the gem a solid border
-    g.fillStyle(0x6a4a00, 1);
-    g.fillTriangle(cx, cy - 7, cx - 6, cy, cx + 6, cy);
-    g.fillTriangle(cx, cy + 7, cx - 6, cy, cx + 6, cy);
-    // Main gem body — warm gold
+    // Outer glow (subtle, makes gems pop against the green moor)
+    g.fillStyle(0xd4a017, 0.15);
+    g.fillCircle(cx, cy, 9);
+
+    // Dark outline — solid 1px border for pixel crispness
+    g.fillStyle(0x4a3000, 1);
+    g.fillTriangle(cx, cy - 8, cx - 7, cy, cx + 7, cy);
+    g.fillTriangle(cx, cy + 8, cx - 7, cy, cx + 7, cy);
+
+    // ── Four facets with distinct shading ──
+    // Top-left facet (brightest — light hits here)
+    g.fillStyle(0xe8c030, 1);
+    g.fillTriangle(cx, cy - 7, cx - 6, cy, cx, cy);
+    // Top-right facet (medium bright)
     g.fillStyle(0xd4a017, 1);
-    g.fillTriangle(cx, cy - 6, cx - 5, cy, cx + 5, cy);
-    g.fillTriangle(cx, cy + 6, cx - 5, cy, cx + 5, cy);
-    // Left facet — slightly darker for depth
-    g.fillStyle(0xb08818, 1);
-    g.fillTriangle(cx, cy - 6, cx - 5, cy, cx, cy);
-    // Right facet — slightly lighter
-    g.fillStyle(0xe8b820, 1);
-    g.fillTriangle(cx, cy - 6, cx + 5, cy, cx, cy);
-    // Bottom facet — warm shadow
-    g.fillStyle(0xa07010, 1);
-    g.fillTriangle(cx, cy + 6, cx - 4, cy + 1, cx + 4, cy + 1);
-    // Bright center band — the "fire" in the gem
-    g.fillStyle(0xffdd66, 1);
-    g.fillRect(cx - 3, cy - 1, 6, 2);
-    // Hot sparkle — upper left
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx - 1, cy - 3, 1.2);
-    g.fillStyle(0xffffff, 0.6);
-    g.fillCircle(cx + 2, cy - 1, 0.6);
+    g.fillTriangle(cx, cy - 7, cx + 6, cy, cx, cy);
+    // Bottom-left facet (medium dark)
+    g.fillStyle(0xb88a12, 1);
+    g.fillTriangle(cx, cy + 7, cx - 6, cy, cx, cy);
+    // Bottom-right facet (darkest — shadow side)
+    g.fillStyle(0x8a6608, 1);
+    g.fillTriangle(cx, cy + 7, cx + 6, cy, cx, cy);
+
+    // Centre horizontal fire band
+    g.fillStyle(0xffee77, 1);
+    g.fillRect(cx - 4, cy - 1, 8, 2);
+    // Centre vertical cross (secondary fire)
+    g.fillStyle(0xffdd55, 0.7);
+    g.fillRect(cx - 1, cy - 4, 2, 8);
+
+    // Hot specular — upper left facet
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(cx - 2, cy - 3, 1.5);
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(cx - 3, cy - 2, 0.8);
+
+    // Secondary sparkle — lower right
+    g.fillStyle(0xffffff, 0.4);
+    g.fillCircle(cx + 3, cy + 2, 0.7);
+
+    // Tiny point sparkles at the 4 tips
+    g.fillStyle(0xffeedd, 0.8);
+    g.fillRect(cx - 1, cy - 8, 2, 1);  // top
+    g.fillRect(cx - 1, cy + 7, 2, 1);  // bottom
+    g.fillRect(cx - 7, cy - 1, 1, 2);  // left
+    g.fillRect(cx + 6, cy - 1, 1, 2);  // right
 
     g.generateTexture('xp_gem', s, s);
     g.destroy();
@@ -3823,29 +4074,60 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Health orb — Irn-Bru orange with a bold highlight. */
+  /** Health orb — glowing Irn-Bru orange sphere with a healing cross inside.
+   *  Bright enough to spot mid-combat, distinctive from XP gems (gold diamond vs orange sphere). */
   private createHealthOrb(): void {
-    const s = 18;
+    const s = 22;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
-    g.fillStyle(0x884400, 1);
-    g.fillCircle(cx, cy, 7);
+    const cx = 11, cy = 11;
+
+    // Outer glow — warm orange halo
+    g.fillStyle(0xff6600, 0.12);
+    g.fillCircle(cx, cy, 10);
+
+    // Dark outline ring
+    g.fillStyle(0x662200, 1);
+    g.fillCircle(cx, cy, 9);
+
+    // Main orb body — deep Irn-Bru orange
+    g.fillStyle(0xcc5500, 1);
+    g.fillCircle(cx, cy, 8);
     g.fillStyle(0xee7700, 1);
-    g.fillCircle(cx, cy, 6);
-    g.fillStyle(0xff9922, 0.8);
-    g.fillCircle(cx - 1, cy - 1, 4);
-    g.fillStyle(0xffbb44, 0.6);
-    g.fillCircle(cx - 2, cy - 2, 2);
-    g.fillStyle(0xffffff, 0.6);
-    g.fillRect(cx - 3, cy - 4, 1, 5);
-    g.fillStyle(0xffffff, 0.3);
-    g.fillRect(cx - 2, cy - 3, 1, 3);
-    g.fillStyle(0xffdd88, 0.8);
-    g.fillCircle(cx + 1, cy + 1, 0.6);
-    g.fillCircle(cx + 2, cy - 1, 0.5);
-    g.fillCircle(cx - 1, cy + 2, 0.4);
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx - 3, cy - 3, 0.8);
+    g.fillCircle(cx, cy, 7);
+
+    // Upper highlight hemisphere (brighter, light from above-left)
+    g.fillStyle(0xff9922, 1);
+    g.fillCircle(cx - 1, cy - 2, 5);
+    g.fillStyle(0xffaa44, 0.8);
+    g.fillCircle(cx - 2, cy - 3, 3);
+
+    // ── Healing cross — white/cream, the universal health symbol ──
+    // Horizontal bar
+    g.fillStyle(0xffeedd, 0.9);
+    g.fillRect(cx - 4, cy - 1, 8, 3);
+    // Vertical bar
+    g.fillRect(cx - 1, cy - 4, 3, 8);
+    // Brighter inner cross (smaller, overlaid)
+    g.fillStyle(0xffffff, 0.7);
+    g.fillRect(cx - 3, cy, 6, 1);
+    g.fillRect(cx, cy - 3, 1, 6);
+
+    // Glass-like specular highlight — upper left
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(cx - 3, cy - 4, 2);
+    g.fillStyle(0xffffff, 0.4);
+    g.fillCircle(cx - 4, cy - 5, 1);
+
+    // Secondary specular — lower right (subtle)
+    g.fillStyle(0xffffff, 0.15);
+    g.fillCircle(cx + 3, cy + 3, 1.5);
+
+    // Tiny fizz bubbles (it's Irn-Bru after all)
+    g.fillStyle(0xffdd88, 0.6);
+    g.fillCircle(cx + 4, cy - 2, 0.7);
+    g.fillCircle(cx + 2, cy + 4, 0.6);
+    g.fillCircle(cx - 4, cy + 1, 0.5);
+
     g.generateTexture('health_orb', s, s);
     g.destroy();
   }
