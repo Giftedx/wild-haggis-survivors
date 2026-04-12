@@ -46,7 +46,8 @@ describe('Phase 38 — run win finale / victory path', () => {
     const ss: any = Object.create(SpawnSystem.prototype);
 
     ss.scene = { getTimeManager: () => ({ isGameplayPaused: () => false }) };
-    ss.pool = { getChildren: () => [mob, bossMob] };
+    const poolChildren = [mob, bossMob];
+    ss.pool = { getChildren: () => poolChildren, children: { entries: poolChildren } };
     ss.runWinFinaleStarted = false;
     ss.regularSpawnsDisabled = false;
     ss.spawnedBossKeys = new Set();

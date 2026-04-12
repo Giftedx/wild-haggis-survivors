@@ -13,6 +13,7 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 180, add: 'terrier' },
     { t: 240, add: 'sheep' },
     { t: 300, add: 'kelpie' },
+    { t: 360, add: 'highland_cow' },
     { t: 420, add: 'eagle' },
     { t: 450, add: 'midgie_swarm' },
     { t: 480, add: 'piper' },
@@ -67,7 +68,7 @@ export const BALANCE = {
     collectDistancePx: 20,
   },
   weapons: {
-    projectilePoolMax: 200,
+    projectilePoolMax: 350,
     projectilePrewarm: 30,
     trailEveryNFrames: 3,
     minEffectiveCooldownMs: 50,

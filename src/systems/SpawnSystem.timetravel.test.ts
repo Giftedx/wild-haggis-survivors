@@ -10,13 +10,14 @@ vi.mock('phaser', () => {
     removeAllListeners() {}
   }
   class Group {
-    private children: any[] = [];
-    add(obj: any) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead(_?: boolean) { return this.children.find(c => !c.active) ?? null; }
+    private _children: any[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: any) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead(_?: boolean) { return this._children.find(c => !c.active) ?? null; }
     countActive(value?: boolean) {
       const v = value === undefined ? true : value;
-      return this.children.filter(c => c.active === v).length;
+      return this._children.filter(c => c.active === v).length;
     }
   }
   return {
@@ -42,13 +43,14 @@ import { SpawnSystem } from './SpawnSystem';
 
 function makeScene() {
   class SimpleGroup {
-    private children: any[] = [];
-    add(obj: any) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead(_?: boolean) { return this.children.find(c => !c.active) ?? null; }
+    private _children: any[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: any) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead(_?: boolean) { return this._children.find(c => !c.active) ?? null; }
     countActive(value?: boolean) {
       const v = value === undefined ? true : value;
-      return this.children.filter(c => c.active === v).length;
+      return this._children.filter(c => c.active === v).length;
     }
   }
   return {

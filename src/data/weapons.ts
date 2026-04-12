@@ -222,8 +222,12 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
     name: 'Highland Claymore',
     description: 'Brutal wide melee cleave — slow, heavy hits.',
     behavior: 'arc_sweep',
-    cooldownMs: 3400,
-    damage: 28,
+    // Rebalanced: was cooldown 3400 / damage 28 — effective DPS ~8.2 made it
+    // uncompetitive vs bagpipe blast (~50 eDPS). Now fires 24% faster with
+    // +21% base damage, bringing eDPS to ~13.1 baseline. Still the slowest
+    // weapon, but the hits justify the wait.
+    cooldownMs: 2600,
+    damage: 34,
     projectileSpeed: 0,
     projectileCount: 0,
     pierce: 0,
@@ -232,11 +236,11 @@ export const WEAPON_DEFS: Record<string, WeaponDef> = {
     arcDegrees: 168,
     knockback: 95,
     levelScaling: {
-      damage: 1.28,
-      cooldown: 0.88,
+      damage: 1.32,
+      cooldown: 0.86,
       countAt: [],
       pierce: 0,
-      radius: 1.12,
+      radius: 1.15,
     },
   },
 

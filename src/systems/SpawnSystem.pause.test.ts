@@ -28,7 +28,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     ss.syncWaveDirectorFromTimeline = vi.fn();
     ss.checkBossSpawns = vi.fn();
     ss.spawnBurst = vi.fn();
-    ss.pool = { getChildren: () => [] };
+    ss.pool = { getChildren: () => [], children: { entries: [] } };
     ss.gameTimeSec = 0;
     ss.spawnTimer = 0;
     ss.spawnInterval = 999999;
@@ -53,7 +53,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     ss.syncWaveDirectorFromTimeline = vi.fn();
     ss.checkBossSpawns = vi.fn();
     ss.spawnBurst = vi.fn();
-    ss.pool = { getChildren: () => [] };
+    ss.pool = { getChildren: () => [], children: { entries: [] } };
     ss.gameTimeSec = 0;
     ss.spawnTimer = 0;
     ss.spawnInterval = 999999;

@@ -61,7 +61,7 @@ export class WeaponSystem {
     this.trailCounter = 0;
     this.playerFacing = 0;
 
-    const projectiles = this.projectilePool.getChildren() as Projectile[];
+    const projectiles = this.projectilePool.children.entries as Projectile[];
     for (const p of projectiles) {
       if (p.active) {
         try { (p as any).destroy?.(); } catch { /* ignore */ }
@@ -184,7 +184,7 @@ export class WeaponSystem {
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
     const spawnTrail = this.trailCounter % BALANCE.weapons.trailEveryNFrames === 0;
-    const projectiles = this.projectilePool.getChildren() as Projectile[];
+    const projectiles = this.projectilePool.children.entries as Projectile[];
     for (const proj of projectiles) {
       if (proj.active) {
         proj.update(delta);
@@ -334,7 +334,7 @@ export class WeaponSystem {
     });
 
     // Damage + knockback all enemies in radius
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
@@ -374,7 +374,7 @@ export class WeaponSystem {
       400,
       () => {
         if (!this.scene.getTimeManager().isGameplayPaused()) {
-          const enemies = this.enemyGroup.getChildren() as Enemy[];
+          const enemies = this.enemyGroup.children.entries as Enemy[];
           for (const enemy of enemies) {
             if (!enemy.active) continue;
             const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
@@ -441,7 +441,7 @@ export class WeaponSystem {
     });
 
     // Damage enemies within the arc
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
@@ -505,7 +505,7 @@ export class WeaponSystem {
 
   /** Thistle Storm — 8 projectiles that each seek a different enemy */
   private fireHomingBurst(w: ActiveWeapon, px: number, py: number, dmg: number, count: number): void {
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     // Sort by distance so projectiles target the closest enemies, not pool order
     const targets = enemies
       .filter(e => e.active)
@@ -550,7 +550,7 @@ export class WeaponSystem {
       },
     });
 
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
@@ -588,7 +588,7 @@ export class WeaponSystem {
 
       // Damage enemies in the newly swept annular band (each enemy hit once)
       if (!this.scene.getTimeManager().isGameplayPaused()) {
-        const enemies = this.enemyGroup.getChildren() as Enemy[];
+        const enemies = this.enemyGroup.children.entries as Enemy[];
         for (const enemy of enemies) {
           if (!enemy.active || hitEnemies.has(enemy)) continue;
           const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
@@ -633,7 +633,7 @@ export class WeaponSystem {
         onComplete: () => blast.destroy(),
       });
 
-      const enemies = this.enemyGroup.getChildren() as Enemy[];
+      const enemies = this.enemyGroup.children.entries as Enemy[];
       for (const enemy of enemies) {
         if (!enemy.active) continue;
         if (Phaser.Math.Distance.Between(ex, ey, enemy.x, enemy.y) <= 80) {
@@ -651,7 +651,7 @@ export class WeaponSystem {
     const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
       if (this.scene.getTimeManager().isGameplayPaused()) return;
-      const enemies = this.enemyGroup.getChildren() as Enemy[];
+      const enemies = this.enemyGroup.children.entries as Enemy[];
       for (const enemy of enemies) {
         if (!enemy.active) continue;
         if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
@@ -696,7 +696,7 @@ export class WeaponSystem {
       onComplete: () => gfx.destroy(),
     });
 
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       if (Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y) <= radius) {
@@ -733,12 +733,38 @@ export class WeaponSystem {
 
   // ── Helpers ──
 
+  /** Throttle pool warnings to once per 5 seconds */
+  private lastPoolWarnTime: number = 0;
+
   private getProjectile(texture: string): Projectile | null {
     let proj = this.projectilePool.getFirstDead(false) as Projectile | null;
     if (!proj) {
-      if (this.projectilePool.getLength() >= BALANCE.weapons.projectilePoolMax) return null;
+      if (this.projectilePool.getLength() >= BALANCE.weapons.projectilePoolMax) {
+        // Pool exhausted — weapon fires but produces no projectile.
+        // Emit event so HUD/JuiceSystem can show feedback.
+        this.events.emit('projectileDropped');
+        if (import.meta.env.DEV) {
+          const now = performance.now();
+          if (now - this.lastPoolWarnTime > 5000) {
+            this.lastPoolWarnTime = now;
+            console.warn(`[WeaponSystem] projectile pool exhausted (${BALANCE.weapons.projectilePoolMax}/${BALANCE.weapons.projectilePoolMax})`);
+          }
+        }
+        return null;
+      }
       proj = new Projectile(this.scene);
       this.projectilePool.add(proj);
+    }
+    // Dev warning when pool is >80% utilized
+    if (import.meta.env.DEV) {
+      const usage = this.projectilePool.countActive(true);
+      if (usage > BALANCE.weapons.projectilePoolMax * 0.8) {
+        const now = performance.now();
+        if (now - this.lastPoolWarnTime > 5000) {
+          this.lastPoolWarnTime = now;
+          console.warn(`[WeaponSystem] projectile pool >80%: ${usage}/${BALANCE.weapons.projectilePoolMax}`);
+        }
+      }
     }
     proj.setTexture(texture);
     return proj;
@@ -748,7 +774,7 @@ export class WeaponSystem {
     let closest: Enemy | null = null;
     let closestDist = maxRange;
 
-    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dist = Phaser.Math.Distance.Between(fromX, fromY, enemy.x, enemy.y);

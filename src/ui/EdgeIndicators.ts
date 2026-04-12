@@ -40,7 +40,7 @@ export class EdgeIndicators {
 
     // Find off-screen enemies sorted by distance
     const offScreen: { x: number; y: number; dist: number; boss: boolean; elite: boolean }[] = [];
-    const enemies = enemyGroup.getChildren() as Enemy[];
+    const enemies = enemyGroup.children.entries as Enemy[];
 
     // Use actual camera viewport for off-screen check (handles camera clamping at world edges)
     const camLeft = cam.scrollX;

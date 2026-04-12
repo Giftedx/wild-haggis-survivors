@@ -286,7 +286,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // Death ripple — push nearby enemies away from the kill (max 6).
       // Uses applyKnockback so the push actually persists past the next
       // behavior-chase velocity reset.
-      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
       let pushed = 0;
       for (let i = 0; i < enemies.length && pushed < 6; i++) {
         const e = enemies[i];
@@ -710,7 +710,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if ([10, 20, 30].includes(newLevel)) {
       const dmg = newLevel * 3; // 30/60/90 damage
       const radius = 300 + newLevel * 10;
-      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
       for (const e of enemies) {
         if (!e.active || e.isBoss()) continue;
         const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
@@ -965,7 +965,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // Use forceKill() to bypass wool armor on sheep and any DR mechanics.
         const BANISH_RANGE = 300;
         const px = this.player.x, py = this.player.y;
-        const enemies = (this.spawnSystem.getEnemyGroup().getChildren() as Enemy[])
+        const enemies = (this.spawnSystem.getEnemyGroup().children.entries as Enemy[])
           .filter(e => e.active && !e.isBoss() && e.getBehavior() !== 'hazard'
             && Phaser.Math.Distance.Between(px, py, e.x, e.y) <= BANISH_RANGE)
           .sort((a, b) => a.getHp() - b.getHp())
@@ -1629,7 +1629,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // ── Boss HP Bar ──
 
   private updateBossHPBar(): void {
-    const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+    const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
     let activeBoss: Enemy | null = null;
 
     // Show the boss with the lowest HP fraction (highest priority target)

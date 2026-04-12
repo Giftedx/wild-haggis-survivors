@@ -594,16 +594,21 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(Math.cos(angle) * moveSpeed, Math.sin(angle) * moveSpeed);
 
     // Pipers buff nearby enemies — 30% faster for 500ms, composed through
-    // recomputeSpeed() via the buffSpeedMul field. Previously used a one-frame
-    // body.velocity multiplication that behaviorChase promptly overwrote, so
-    // the buff was visually absent most frames; now it's a real speed stat
-    // change that persists and re-applies naturally every frame from spawn
-    // behavior's setVelocity(... * this.speed).
-    const enemies = this.ctx.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
+    // recomputeSpeed() via the buffSpeedMul field.
+    // Early exit: enemies cluster near the player; if Piper is far from
+    // player (e.g. knocked back), skip the O(n) scan entirely.
+    const piperDx = this.x - tx;
+    const piperDy = this.y - ty;
+    if (piperDx * piperDx + piperDy * piperDy > 500 * 500) return;
+
+    // Distance-squared avoids sqrt per enemy (hot path with 300-400 entries)
+    const BUFF_RANGE_SQ = 120 * 120;
+    const enemies = this.ctx.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
     for (const e of enemies) {
       if (!e.active || e === this || e.isBoss()) continue;
-      const d = Phaser.Math.Distance.Between(this.x, this.y, e.x, e.y);
-      if (d < 120) {
+      const dx = this.x - e.x;
+      const dy = this.y - e.y;
+      if (dx * dx + dy * dy < BUFF_RANGE_SQ) {
         e.applySpeedBuff(1.3, 500);
       }
     }
@@ -753,7 +758,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // so wool armor still blocks the splash — sheep caught in a
         // chemical explosion shouldn't lose their one-hit shield.
         const pool = this.ctx.getSpawnSystem().getEnemyGroup();
-        const nearby = pool.getChildren() as Enemy[];
+        const nearby = pool.children.entries as Enemy[];
         for (const e of nearby) {
           if (!e.active || e === this) continue;
           const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
