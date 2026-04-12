@@ -372,11 +372,51 @@ export class MainMenuScene extends Phaser.Scene {
       const fireCore = this.add
         .ellipse(fireX, fireY - 4, 10, 8, 0xfff6a8, 0.9)
         .setDepth(-1);
-      // Soft upward smoke wisp
-      const smoke = this.add
-        .ellipse(fireX, fireY - 16, 16, 6, 0xe0cbb0, 0.15)
-        .setDepth(-2);
-      // Pulsing flicker
+      // ── Layered smoke wisps (multiple, staggered, drifting) ──
+      const smokeWisps: Phaser.GameObjects.Ellipse[] = [];
+      for (let si = 0; si < 3; si++) {
+        const wisp = this.add
+          .ellipse(fireX + (si - 1) * 4, fireY - 14, 12 + si * 4, 5 + si, 0xccbbaa, 0.12 - si * 0.02)
+          .setDepth(-2);
+        smokeWisps.push(wisp);
+        this.tweens.add({
+          targets: wisp,
+          y: fireY - 40 - si * 8,
+          x: fireX + Phaser.Math.Between(-8, 8),
+          alpha: 0,
+          scaleX: 1.3 + si * 0.2,
+          duration: 2200 + si * 600,
+          delay: si * 700,
+          repeat: -1,
+          onRepeat: () => {
+            wisp.setPosition(fireX + Phaser.Math.Between(-3, 3), fireY - 14);
+            wisp.setAlpha(0.12 - si * 0.02);
+            wisp.setScale(1);
+          },
+        });
+      }
+      // ── Rising ember particles (tiny orange dots drifting up) ──
+      const embers: Phaser.GameObjects.Arc[] = [];
+      for (let ei = 0; ei < 4; ei++) {
+        const ember = this.add
+          .circle(fireX, fireY - 6, 1.5, 0xff8833, 0.7)
+          .setDepth(-1);
+        embers.push(ember);
+        this.tweens.add({
+          targets: ember,
+          y: fireY - 28 - ei * 6,
+          x: fireX + Phaser.Math.Between(-12, 12),
+          alpha: 0,
+          duration: 1200 + ei * 300,
+          delay: ei * 400,
+          repeat: -1,
+          onRepeat: () => {
+            ember.setPosition(fireX + Phaser.Math.Between(-6, 6), fireY - 6);
+            ember.setAlpha(0.6 + Math.random() * 0.3);
+          },
+        });
+      }
+      // ── Pulsing flicker (fire breathes) ──
       this.tweens.add({
         targets: [fireGlowOuter, fireGlowInner, fireCore],
         alpha: { from: 0.55, to: 0.95 },
@@ -394,19 +434,20 @@ export class MainMenuScene extends Phaser.Scene {
         repeat: -1,
         ease: 'Sine.easeInOut',
       });
-      // Slow rising smoke
+      // ── Warm ground glow (fire lights the ground around it) ──
+      const groundGlow = this.add
+        .ellipse(fireX, fireY + 10, 60, 12, 0xff6a10, 0.08)
+        .setDepth(-2);
       this.tweens.add({
-        targets: smoke,
-        y: fireY - 34,
-        alpha: 0,
-        duration: 2400,
+        targets: groundGlow,
+        alpha: { from: 0.06, to: 0.12 },
+        scaleX: { from: 0.95, to: 1.05 },
+        duration: 600,
+        yoyo: true,
         repeat: -1,
-        onRepeat: () => {
-          smoke.setY(fireY - 16);
-          smoke.setAlpha(0.15);
-        },
+        ease: 'Sine.easeInOut',
       });
-      this.cozyTweenTargets.push(fireBase, fireGlowOuter, fireGlowInner, fireCore, smoke);
+      this.cozyTweenTargets.push(fireBase, fireGlowOuter, fireGlowInner, fireCore, groundGlow, ...smokeWisps, ...embers);
     }
 
     // === Stats summary for returning players ===

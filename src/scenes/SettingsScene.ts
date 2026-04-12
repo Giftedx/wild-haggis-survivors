@@ -476,26 +476,79 @@ export class SettingsScene extends Phaser.Scene {
       })
       .setScale(this.uiScale);
 
+    // Proper toggle switch: track + sliding thumb + side labels
     const onColor = 0x2d6a3e;
     const offColor = 0x3a3148;
+    const onBorder = 0x4a9a5e;
+    const offBorder = 0x4a3a5a;
+    const thumbOnColor = 0x99cc88;
+    const thumbOffColor = 0x8a7a9a;
+    const cx = width - 88;
+    const cy = y + 18;
+    const trackW = 58;
+    const trackH = 22;
+    const thumbR = 9;
+    // Track (rounded rect appearance via stroked rect)
     const btn = this.add
-      .rectangle(width - 88, y + 8, 78, 30, this.working[key] ? onColor : offColor, 1)
-      .setStrokeStyle(1, 0x4a3a5a, 0.6)
+      .rectangle(cx, cy, trackW, trackH, this.working[key] ? onColor : offColor, 1)
+      .setStrokeStyle(1.5, this.working[key] ? onBorder : offBorder, 0.9)
       .setInteractive({ useHandCursor: true });
     btn.setScale(this.uiScale);
+    // Track inner shadow (depth)
+    const shadow = this.add
+      .rectangle(cx, cy - (trackH / 2) + 2, trackW - 4, 2, 0x000000, 0.3)
+      .setScale(this.uiScale);
+    // Thumb (sliding circle)
+    const thumbLeftX = cx - trackW / 2 + thumbR + 3;
+    const thumbRightX = cx + trackW / 2 - thumbR - 3;
+    const thumb = this.add
+      .circle(
+        this.working[key] ? thumbRightX : thumbLeftX,
+        cy,
+        thumbR,
+        this.working[key] ? thumbOnColor : thumbOffColor,
+        1
+      )
+      .setStrokeStyle(1, 0x000000, 0.4)
+      .setScale(this.uiScale);
+    // Thumb highlight (glossy top)
+    const thumbGloss = this.add
+      .circle(
+        this.working[key] ? thumbRightX : thumbLeftX,
+        cy - 2,
+        thumbR * 0.5,
+        0xffffff,
+        0.35
+      )
+      .setScale(this.uiScale);
+    // Status text beside the toggle
     const txt = this.add
-      .text(width - 88, y + 8, this.working[key] ? t('ui.settings.on') : t('ui.settings.off'), {
+      .text(cx - trackW / 2 - 8, cy, this.working[key] ? t('ui.settings.on') : t('ui.settings.off'), {
         fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#ffffff',
+        fontSize: '11px',
+        color: this.working[key] ? '#99cc88' : '#8a7a8a',
         fontStyle: 'bold',
       })
-      .setOrigin(0.5)
+      .setOrigin(1, 0.5)
       .setScale(this.uiScale);
 
     const sync = () => {
-      btn.setFillStyle(this.working[key] ? onColor : offColor);
-      txt.setText(this.working[key] ? t('ui.settings.on') : t('ui.settings.off'));
+      const isOn = this.working[key];
+      btn.setFillStyle(isOn ? onColor : offColor);
+      btn.setStrokeStyle(1.5, isOn ? onBorder : offBorder, 0.9);
+      txt.setText(isOn ? t('ui.settings.on') : t('ui.settings.off'));
+      txt.setColor(isOn ? '#99cc88' : '#8a7a8a');
+      // Animate the thumb slide
+      this.tweens.killTweensOf(thumb);
+      this.tweens.killTweensOf(thumbGloss);
+      const targetX = isOn ? thumbRightX : thumbLeftX;
+      this.tweens.add({
+        targets: [thumb, thumbGloss],
+        x: targetX,
+        duration: 140,
+        ease: 'Quad.easeOut',
+      });
+      thumb.setFillStyle(isOn ? thumbOnColor : thumbOffColor);
     };
 
     const doToggle = () => {
@@ -508,6 +561,11 @@ export class SettingsScene extends Phaser.Scene {
     btn.on('pointerdown', doToggle);
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', doToggle);
+    // Shadow and thumb components also clickable for forgiving hitbox
+    thumb.setInteractive({ useHandCursor: true });
+    thumb.on('pointerdown', doToggle);
+    // Silence unused-variable warning for shadow (it's drawn, not interacted with)
+    void shadow;
 
     const mark = this.add
       .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
