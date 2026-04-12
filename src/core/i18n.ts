@@ -53,7 +53,7 @@ export const EN_STRINGS: LocaleTree = {
       requirement_progress: '{label}: {current} / {required}',
       requirement_locked: 'Unlock',
       status_current: 'Yir run archetype right now',
-      status_switch: 'Switch before the next outing',
+      status_switch: 'Switch before ye head oot',
       status_locked: 'Locked — earn it',
       selected: 'SELECTED',
       select: 'SELECT',
@@ -65,7 +65,7 @@ export const EN_STRINGS: LocaleTree = {
       title: 'GOLD SHOP',
       gold_bank: '{count} golden haggis tucked away',
       /** Shown instead of gold_bank when count === 0 — warmer first-run copy. */
-      gold_bank_fresh: 'An empty wallet, for now — the moor pays those who return.',
+      gold_bank_fresh: 'Skint, for now — the moor pays those who come back.',
       page: 'Page {current} / {total}',
       max: 'MAX',
       cost_gold: '{cost}g',
