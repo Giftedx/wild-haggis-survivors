@@ -68,9 +68,9 @@ export class SpawnSystem {
     this.directorEnemyKeys = [...init.enemyKeys];
   }
 
-  private getUiViewport(): { width: number; height: number } {
-    const { width, height } = getCameraViewport(this.scene);
-    return { width, height };
+  private getUiViewport(): { x: number; y: number; width: number; height: number } {
+    const { x, y, width, height } = getCameraViewport(this.scene);
+    return { x, y, width, height };
   }
 
   /** Reset run-scoped spawn state and deactivate pooled enemies. */
@@ -216,9 +216,10 @@ export class SpawnSystem {
         ease: 'Quad.easeOut',
       });
 
-      // Dark vignette flash
-      const { width, height } = this.getUiViewport();
-      const vig = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.3)
+      // Dark vignette flash — position in camera-viewport coordinates so
+      // it centers inside the visible area even when cameras.main.zoom > 1.
+      const { x: vx, y: vy, width: vw, height: vh } = this.getUiViewport();
+      const vig = this.scene.add.rectangle(vx + vw / 2, vy + vh / 2, vw, vh, 0x000000, 0.3)
         .setScrollFactor(0).setDepth(45);
       this.scene.tweens.add({
         targets: vig, alpha: 0, duration: 800,
@@ -241,7 +242,7 @@ export class SpawnSystem {
 
   private showBossWarning(text: string): void {
     audio.playBossWarning();
-    const { width, height } = this.getUiViewport();
+    const { x, y, width, height } = this.getUiViewport();
     const settings = getSettingsManager().load();
     // Accessibility: scale font by uiScale, swap palette when high-contrast.
     // Boss warning is a Soul-critical moment — kindness applies here too.
@@ -250,9 +251,14 @@ export class SpawnSystem {
     const labelColor = settings.highContrastUi ? '#ffd8d8' : '#ff4444';
     const strokeThickness = settings.highContrastUi ? 6 : 5;
 
-    const bg = this.scene.add.rectangle(width / 2, height / 2, width, 76, 0x000000, 0.75)
+    // Center the warning banner within the VISIBLE camera viewport. Using
+    // width/2, height/2 alone would render it offset from center when the
+    // camera zoom is not 1.0 — the screenshot bug this fix addresses.
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    const bg = this.scene.add.rectangle(cx, cy, width, 76, 0x000000, 0.75)
       .setScrollFactor(0).setDepth(150);
-    const label = this.scene.add.text(width / 2, height / 2, text, {
+    const label = this.scene.add.text(cx, cy, text, {
       fontFamily: 'monospace',
       fontSize: `${scaledFontPx}px`,
       color: labelColor,

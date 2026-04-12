@@ -23,11 +23,16 @@ export type TimeAdapter = {
 };
 
 export function createPhaserTimeAdapter(scene: Phaser.Scene): TimeAdapter {
+  // Null guards: `scene.physics.world` is briefly null between scene
+  // shutdown and re-create, and `scene.time` can be undefined if the
+  // scene is mid-tear-down. Without these guards, a request/release
+  // that races with a scene lifecycle transition crashes with
+  // "Cannot read properties of null (reading 'isPaused')".
   return {
-    setTimeScale: (v) => { scene.time.timeScale = v; },
-    pausePhysics: () => { scene.physics.world.pause(); },
-    resumePhysics: () => { scene.physics.world.resume(); },
-    getPhysicsPaused: () => scene.physics.world.isPaused,
+    setTimeScale: (v) => { if (scene.time) scene.time.timeScale = v; },
+    pausePhysics: () => { scene.physics?.world?.pause(); },
+    resumePhysics: () => { scene.physics?.world?.resume(); },
+    getPhysicsPaused: () => scene.physics?.world?.isPaused ?? false,
   };
 }
 

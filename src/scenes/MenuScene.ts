@@ -299,10 +299,14 @@ export class MenuScene extends Phaser.Scene {
       color: unlocked ? '#ffffff' : '#d1d6e0',
       fontStyle: 'bold',
     });
-    const flavorText = this.add.text(infoX, panelY - 18, this.truncateLine(t(variant.flavorKey), 42), {
+    // Wrap instead of truncating — all 5 flavors currently exceed 42 chars,
+    // and any locale whose strings are longer would be cropped mid-word.
+    // The ~300px wrap width gives room for 2 lines on the widest flavor.
+    const flavorText = this.add.text(infoX, panelY - 18, t(variant.flavorKey), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#95a8ca',
+      wordWrap: { width: 300 },
     });
     const modifierText = this.add.text(infoX, panelY + 18, formatVariantModifierSummary(variant), {
       fontFamily: 'monospace',

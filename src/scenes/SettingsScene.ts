@@ -18,6 +18,9 @@ export class SettingsScene extends Phaser.Scene {
   private settingsManager = getSettingsManager();
   private rowY = 0;
   private working: ISettingsData;
+  private uiScale = 1;
+  private highContrastUi = false;
+  private settingsLabelColor = '#c8d0e0';
   private gpRows: SettingsGpRow[] = [];
   private gpIdx = 0;
   private gpPrevU = false;
@@ -36,36 +39,51 @@ export class SettingsScene extends Phaser.Scene {
     this.working = { ...this.settingsManager.load() };
     this.gpRows = [];
     const { width, height } = this.scale;
+    // Respect the player's comfort settings even on the scene that configures
+    // them. Without this, SettingsScene was the ONE scene that ignored
+    // uiScale / highContrastUi — the Phase 3 accessibility work had a hole.
+    const { uiScale, highContrastUi } = this.settingsManager.load();
+    this.uiScale = uiScale;
+    this.highContrastUi = highContrastUi;
+
+    const titleColor = highContrastUi ? '#bfdfff' : '#9ec8ff';
+    const subtitleColor = highContrastUi ? '#a8b3c8' : '#6a7390';
+    const hintColor = highContrastUi ? '#8892aa' : '#5a6478';
+    const labelColor = highContrastUi ? '#e6efff' : '#c8d0e0';
+    this.settingsLabelColor = labelColor;
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
     this.add
       .text(width / 2, 36, t('ui.settings.title'), {
         fontFamily: 'monospace',
         fontSize: '28px',
-        color: '#9ec8ff',
+        color: titleColor,
         fontStyle: 'bold',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setScale(uiScale);
 
     this.add
       .text(width / 2, 64, t('ui.settings.subtitle'), {
         fontFamily: 'monospace',
-        fontSize: '11px',
-        color: '#6a7390',
+        fontSize: '13px',
+        color: subtitleColor,
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setScale(uiScale);
 
     this.add
-      .text(width / 2, 86, t('ui.settings.comfort_hint'), {
+      .text(width / 2, 90, t('ui.settings.comfort_hint'), {
         fontFamily: 'monospace',
-        fontSize: '10px',
-        color: '#5a6478',
+        fontSize: '12px',
+        color: hintColor,
         align: 'center',
         wordWrap: { width: width - 48 },
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setScale(uiScale);
 
-    this.rowY = 118;
+    this.rowY = 124;
     this.addVolumeRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1);
     this.addVolumeRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1);
     this.addVolumeRow(t('ui.settings.music_volume'), 'musicVolume', 0, 1);
@@ -75,17 +93,23 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
 
+    // Pull the BACK button up to close right below the last row —
+    // previously it pinned to height - 36 leaving ~380px of dead space on
+    // wider viewports.
+    const backY = Math.max(this.rowY + 48, height - 48);
     const back = this.add
-      .rectangle(width / 2, height - 36, 200, 40, 0x3a4357, 1)
+      .rectangle(width / 2, backY, 200, 40, 0x3a4357, 1)
       .setInteractive({ useHandCursor: true });
+    back.setScale(uiScale);
     this.add
-      .text(width / 2, height - 36, t('ui.settings.back'), {
+      .text(width / 2, backY, t('ui.settings.back'), {
         fontFamily: 'monospace',
         fontSize: '16px',
         color: '#ffffff',
         fontStyle: 'bold',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setScale(uiScale);
     back.on('pointerover', () => back.setFillStyle(0x4a5568));
     back.on('pointerout', () => back.setFillStyle(0x3a4357));
     const goBack = () => {
@@ -96,7 +120,7 @@ export class SettingsScene extends Phaser.Scene {
     back.on('pointerdown', goBack);
 
     const backMark = this.add
-      .rectangle(width / 2, height - 36, width - 48, 44, 0x000000, 0)
+      .rectangle(width / 2, backY, width - 48, 44, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({ kind: 'back', go: goBack, mark: backMark });
 
@@ -212,14 +236,14 @@ export class SettingsScene extends Phaser.Scene {
     this.add.text(40, y + 6, label, {
       fontFamily: 'monospace',
       fontSize: '14px',
-      color: '#c8d0e0',
-    });
+      color: this.settingsLabelColor,
+    }).setScale(this.uiScale);
 
     const valText = this.add.text(width / 2, y + 6, '', {
       fontFamily: 'monospace',
       fontSize: '14px',
-      color: '#88aacc',
-    }).setOrigin(0.5, 0);
+      color: this.highContrastUi ? '#a0c8f0' : '#88aacc',
+    }).setOrigin(0.5, 0).setScale(this.uiScale);
 
     const bump = (delta: number) => {
       this.working[key] = Phaser.Math.Clamp(this.working[key] + delta, min, max);
@@ -231,8 +255,12 @@ export class SettingsScene extends Phaser.Scene {
     valText.setText(key === 'uiScale' ? `${this.working[key].toFixed(2)}x` : `${Math.round(this.working[key] * 100)}%`);
 
     const mkBtn = (x: number, t: string, d: number) => {
-      const b = this.add.rectangle(x, y + 10, 36, 28, 0x3a4a62, 1).setInteractive({ useHandCursor: true });
-      this.add.text(x, y + 10, t, { fontFamily: 'monospace', fontSize: '16px', color: '#fff' }).setOrigin(0.5);
+      const b = this.add.rectangle(x, y + 10, 36, 28, 0x3a4a62, 1)
+        .setInteractive({ useHandCursor: true });
+      b.setScale(this.uiScale);
+      this.add.text(x, y + 10, t, { fontFamily: 'monospace', fontSize: '16px', color: '#fff' })
+        .setOrigin(0.5)
+        .setScale(this.uiScale);
       b.on('pointerover', () => b.setFillStyle(0x4a5a72));
       b.on('pointerout', () => b.setFillStyle(0x3a4a62));
       b.on('pointerdown', () => {
@@ -263,14 +291,15 @@ export class SettingsScene extends Phaser.Scene {
     this.add.text(40, y + 4, label, {
       fontFamily: 'monospace',
       fontSize: '14px',
-      color: '#c8d0e0',
-    });
+      color: this.settingsLabelColor,
+    }).setScale(this.uiScale);
 
     const onColor = 0x2d6a3e;
     const offColor = 0x3a3148;
     const btn = this.add
       .rectangle(width - 88, y + 8, 72, 28, this.working[key] ? onColor : offColor, 1)
       .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
     const txt = this.add
       .text(width - 88, y + 8, this.working[key] ? t('ui.settings.on') : t('ui.settings.off'), {
         fontFamily: 'monospace',
@@ -278,7 +307,8 @@ export class SettingsScene extends Phaser.Scene {
         color: '#ffffff',
         fontStyle: 'bold',
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
 
     const sync = () => {
       btn.setFillStyle(this.working[key] ? onColor : offColor);

@@ -45,13 +45,27 @@ export class GameOverScene extends Phaser.Scene {
       coinGold: summary.coinGold ?? 0,
     });
 
+    // Responsive panel layout. Content positions are relative to the panel
+    // top (not the screen top) so taller/narrower viewports don't leave the
+    // title + subtitle dangling above the outline as a hardcoded
+    // height/2 - 328 would do on screen sizes outside the original design
+    // target (720px tall).
+    const PANEL_W = 684;
+    const PANEL_H = 656;
+    // Clamp the panel so it stays fully visible even on viewports smaller
+    // than PANEL_H. On small screens the panel becomes the clamp region;
+    // on larger screens it centers naturally.
+    const panelCenterX = width / 2;
+    const panelCenterY = Math.max(PANEL_H / 2 + 8, Math.min(height - PANEL_H / 2 - 8, height / 2));
+    const panelTop = panelCenterY - PANEL_H / 2;
+
     const overlay = this.add
       .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
       .setScrollFactor(0)
       .setDepth(d)
       .setInteractive();
     const panel = this.add
-      .rectangle(width / 2, height / 2, 684, 656, highContrastUi ? 0x080d17 : 0x101729, 0)
+      .rectangle(panelCenterX, panelCenterY, PANEL_W, PANEL_H, highContrastUi ? 0x080d17 : 0x101729, 0)
       .setScrollFactor(0)
       .setDepth(d + 1)
       .setStrokeStyle(2, highContrastUi ? 0x8fb4ff : panelStroke, 1);
@@ -59,7 +73,7 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
     const title = this.add
-      .text(width / 2, 86, isVictory ? t('ui.gameOver.victory_title') : t('ui.gameOver.death_title'), {
+      .text(panelCenterX, panelTop + 54, isVictory ? t('ui.gameOver.victory_title') : t('ui.gameOver.death_title'), {
         fontFamily: 'monospace',
         fontSize: isVictory ? '56px' : '52px',
         color: titleColor,
@@ -74,10 +88,14 @@ export class GameOverScene extends Phaser.Scene {
       .setScale(isVictory ? 0.7 : 1.4);
     title.setScale((isVictory ? 0.7 : 1.4) * uiScale);
     const subtitle = this.add
-      .text(width / 2, 126, isVictory ? t('ui.gameOver.victory_sub') : t('ui.gameOver.death_sub'), {
+      .text(panelCenterX, panelTop + 94, isVictory ? t('ui.gameOver.victory_sub') : t('ui.gameOver.death_sub'), {
         fontFamily: 'monospace',
         fontSize: '17px',
         color: '#a8b0c0',
+        align: 'center',
+        // Wrap within the panel so the subtitle doesn't run past the yellow
+        // outline on narrow viewports.
+        wordWrap: { width: PANEL_W - 48 },
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -96,13 +114,13 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
 
     const variantChip = this.add
-      .rectangle(width / 2, 168, 596, 34, 0x16213a, 0.96)
+      .rectangle(panelCenterX, panelTop + 136, 596, 34, 0x16213a, 0.96)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x355079, 1)
       .setAlpha(0);
     const variantText = this.add
-      .text(width / 2, 168, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
+      .text(panelCenterX, panelTop + 136, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: '#d7e3ff',
@@ -117,44 +135,44 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
 
     const statsPanel = this.add
-      .rectangle(width / 2, 236, 596, 92, 0x131d32, 0.95)
+      .rectangle(panelCenterX, panelTop + 204, 596, 92, 0x131d32, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283a5f, 1)
       .setAlpha(0);
     const goldPanel = this.add
-      .rectangle(width / 2, 478, 596, 70, 0x141d2f, 0.95)
+      .rectangle(panelCenterX, panelTop + 446, 596, 70, 0x141d2f, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x2f435f, 1)
       .setAlpha(0);
     const weaponDamagePanel = this.add
-      .rectangle(width / 2, 362, 596, 158, 0x0f1828, 0.95)
+      .rectangle(panelCenterX, panelTop + 330, 596, 158, 0x0f1828, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x243552, 1)
       .setAlpha(0);
     const unlockPanel = this.add
-      .rectangle(width / 2, 560, 596, 94, 0x121a2a, 0.95)
+      .rectangle(panelCenterX, panelTop + 528, 596, 94, 0x121a2a, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283447, 1)
       .setAlpha(0);
     this.tweens.add({ targets: [statsPanel, weaponDamagePanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
 
-    const statBaseY = 210;
+    const statBaseY = panelTop + 178;
     const statGap = 142;
-    this.createResultStat(width / 2 - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600);
-    this.createResultStat(width / 2, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660);
-    this.createResultStat(width / 2 + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720);
-    this.createResultStat(width / 2 - statGap / 2, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
-    this.createResultStat(width / 2 + statGap / 2, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
+    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600);
+    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660);
+    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720);
+    this.createResultStat(panelCenterX - statGap / 2, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
+    this.createResultStat(panelCenterX + statGap / 2, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
 
     const loadoutSummaryText = this.buildBoundedLoadoutSummary(this.payload.buildSummary, 2);
     const loadoutSummary = this.add
       .text(
-        width / 2,
-        298,
+        panelCenterX,
+        panelTop + 266,
         `${t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount })}\n${loadoutSummaryText}`,
         {
           fontFamily: 'monospace',
@@ -175,7 +193,7 @@ export class GameOverScene extends Phaser.Scene {
     const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary, 3);
     const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
-      .text(width / 2, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
+      .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: '#7f8ca7',
@@ -188,7 +206,7 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     weaponHeading.setScale(uiScale);
     const weaponBody = this.add
-      .text(width / 2, weaponHeading.y + 16, weaponRows, {
+      .text(panelCenterX, weaponHeading.y + 16, weaponRows, {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: '#c4cdd8',
@@ -203,10 +221,10 @@ export class GameOverScene extends Phaser.Scene {
     weaponBody.setScale(uiScale);
     this.tweens.add({ targets: [weaponHeading, weaponBody], alpha: 1, duration: 260, delay: 940 });
     const weaponBodyBottom = weaponBody.y + weaponBody.height;
-    const goldTitleY = Math.max(452, weaponBodyBottom + 16);
+    const goldTitleY = Math.max(panelTop + 420, weaponBodyBottom + 16);
 
     const goldTitle = this.add
-      .text(width / 2, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
+      .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
         fontFamily: 'monospace',
         fontSize: '28px',
         color: '#d4a017',
@@ -220,7 +238,7 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     goldTitle.setScale(uiScale);
     const goldText = this.add
-      .text(width / 2, goldTitleY + 30, goldBreakdown, {
+      .text(panelCenterX, goldTitleY + 30, goldBreakdown, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#b69643',
@@ -241,19 +259,20 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: goldText, alpha: 1, duration: 240, delay: 1080 });
 
-    this.addRunResultUnlockContent(width / 2, 522, d + 3, runResult.newlyUnlockedVariants, 1140);
+    this.addRunResultUnlockContent(panelCenterX, panelTop + 490, d + 3, runResult.newlyUnlockedVariants, 1140);
 
-    this.createResultActionButton(width / 2 - 196, 644, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
+    const buttonsY = panelTop + 612;
+    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Game');
     });
-    this.createResultActionButton(width / 2, 644, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
+    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
     });
-    this.createResultActionButton(width / 2 + 196, 644, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
+    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');

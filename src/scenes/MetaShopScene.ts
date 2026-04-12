@@ -97,7 +97,10 @@ export class MetaShopScene extends Phaser.Scene {
 
     this.clearElements(this.rowElements);
     const save = this.saveManager.load();
-    this.killsText.setText(t('ui.metaShop.kill_credits', { count: save.totalKills }));
+    const killCreditsCopy = save.totalKills > 0
+      ? t('ui.metaShop.kill_credits', { count: save.totalKills })
+      : t('ui.metaShop.kill_credits_fresh');
+    this.killsText.setText(killCreditsCopy);
 
     const { width } = this.scale;
     const keys = listMetaShopItemKeys();
