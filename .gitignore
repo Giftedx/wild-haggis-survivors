@@ -21,9 +21,10 @@ Thumbs.db
 .vscode/
 .idea/
 
-# AI tool metadata (Cursor, Serena, etc.)
+# AI tool metadata (Cursor, Serena, Claude Code, etc.)
 .cursor/
 .serena/
+.claude/
 
 # Tooling caches
 .vite/
