@@ -256,7 +256,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     health_tier_2: {
       name: 'Thick Pelt II',
-      description: 'Tough as old leather (+15% base max HP).',
+      description: 'Built like a Maryhill tenement (+15% base max HP).',
     },
     pickup_tier_1: {
       name: 'Magnetic Whiskers',
@@ -272,11 +272,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     regen_tier_1: {
       name: "Moor's Grace",
-      description: 'The land heals those who belong to it (+0.2 HP/sec).',
+      description: 'The moor patches its ain — slow but sure (+0.2 HP/sec).',
     },
     crit_tier_1: {
       name: 'Sharper Eye',
-      description: 'Spot the weak points, strike them true (+3% crit chance).',
+      description: 'A keen eye for the soft bits (+3% crit chance).',
     },
     cooldown_tier_1: {
       name: 'Nimble Hooves',
@@ -340,11 +340,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     ach_survive_10m: {
       title: 'Heather Marathon',
-      description: 'Ten stubborn minutes in one run.',
+      description: 'Ten minutes and still standin\'. No\' bad, pal.',
     },
     ach_full_run: {
-      title: 'Endurance of Stone',
-      description: 'Fifteen minutes. The full moor cycle, endured.',
+      title: 'Still Here, Pal',
+      description: 'Fifteen minutes. The full cycle. That\'s plenty.',
     },
     ach_defeat_taxman: {
       title: 'Tax-Free Zone',
@@ -356,17 +356,17 @@ export const EN_STRINGS: LocaleTree = {
     },
     ach_first_evolution: {
       title: 'Legend Forged',
-      description: 'Evolved a weapon. The old ways awaken.',
+      description: 'Evolved a weapon. Somethin\' ancient stirred — and it\'s got teeth.',
     },
     ach_all_bosses: {
       title: 'Cleaned Hoose',
-      description: 'Every boss felled in a single run.',
+      description: 'Every last wan o\' them, floored in a single run.',
     },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
     gem: 'Gather gems to level. Max a weapon plus its paired curio, then pop a treasure chest for a legendary glow-up.',
-    drift: 'Your wee haggis drifts clockwise — crooked legs! Lean into it.',
+    drift: 'Yir wee haggis drifts clockwise — crooked legs! Lean into it.',
   },
   weapon: {
     thistle_shot: {
