@@ -207,26 +207,61 @@ export class BootScene extends Phaser.Scene {
   // === Terrain decorations ===
 
   private createThistlePatch(): void {
-    const s = 20;
+    const s = 24;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 2;
-    // Stem
-    g.fillStyle(0x2a4a1a, 1);
-    g.fillRect(cx - 1, cy, 2, 7);
-    // Leaves
-    g.fillStyle(0x3a6622, 1);
-    g.fillTriangle(cx - 4, cy + 3, cx - 1, cy + 1, cx - 1, cy + 5);
-    g.fillTriangle(cx + 4, cy + 3, cx + 1, cy + 1, cx + 1, cy + 5);
-    // Purple thistle head
-    g.fillStyle(0x442266, 1);
-    g.fillCircle(cx, cy - 3, 4);
-    g.fillStyle(0x9966cc, 1);
-    g.fillCircle(cx, cy - 3, 3);
-    // Spikes
-    g.fillStyle(0xbb88ee, 1);
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      g.fillRect(cx + Math.cos(a) * 3 - 0.5, cy - 3 + Math.sin(a) * 3 - 0.5, 1, 1);
+    const cx = s / 2, cy = s / 2 + 3;
+    // Shadow underneath
+    g.fillStyle(0x000000, 0.15);
+    g.fillEllipse(cx, cy + 8, 10, 4);
+    // Stem — taller
+    g.fillStyle(0x1e3a12, 1);
+    g.fillRect(cx - 1, cy - 2, 2, 10);
+    // Left leaf with serrated tip
+    g.fillStyle(0x2e5518, 1);
+    g.fillTriangle(cx - 6, cy + 3, cx - 1, cy + 1, cx - 1, cy + 6);
+    g.fillStyle(0x3a6822, 1);
+    g.fillTriangle(cx - 5, cy + 3, cx - 1, cy + 1, cx - 1, cy + 5);
+    // Tiny leaf spines (left)
+    g.fillStyle(0x1e3a12, 1);
+    g.fillRect(cx - 5, cy + 2, 1, 1);
+    g.fillRect(cx - 4, cy + 4, 1, 1);
+    // Right leaf
+    g.fillStyle(0x2e5518, 1);
+    g.fillTriangle(cx + 6, cy + 3, cx + 1, cy + 1, cx + 1, cy + 6);
+    g.fillStyle(0x3a6822, 1);
+    g.fillTriangle(cx + 5, cy + 3, cx + 1, cy + 1, cx + 1, cy + 5);
+    g.fillStyle(0x1e3a12, 1);
+    g.fillRect(cx + 4, cy + 2, 1, 1);
+    g.fillRect(cx + 3, cy + 4, 1, 1);
+    // Green calyx — spiky base of the flower head
+    g.fillStyle(0x3a6822, 1);
+    g.fillCircle(cx, cy - 4, 4);
+    g.fillStyle(0x2e5518, 1);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.fillTriangle(
+        cx + Math.cos(a) * 3.5, cy - 4 + Math.sin(a) * 3.5,
+        cx + Math.cos(a + 0.35) * 5.5, cy - 4 + Math.sin(a + 0.35) * 5.5,
+        cx + Math.cos(a - 0.35) * 5.5, cy - 4 + Math.sin(a - 0.35) * 5.5,
+      );
+    }
+    // Thistle head — dark core
+    g.fillStyle(0x331155, 1);
+    g.fillCircle(cx, cy - 4, 4);
+    // Mid purple
+    g.fillStyle(0x7744bb, 1);
+    g.fillCircle(cx, cy - 4, 3.2);
+    // Bright purple top
+    g.fillStyle(0xaa55dd, 1);
+    g.fillCircle(cx, cy - 5, 2.5);
+    // Light highlight on crown
+    g.fillStyle(0xcc88ff, 1);
+    g.fillCircle(cx - 0.5, cy - 5.5, 1.2);
+    // Radiating spike tips
+    g.fillStyle(0xdd99ff, 1);
+    for (let i = 0; i < 10; i++) {
+      const a = (i / 10) * Math.PI * 2;
+      g.fillRect(cx + Math.cos(a) * 4.2 - 0.5, cy - 4 + Math.sin(a) * 4.2 - 0.5, 1, 1);
     }
     g.generateTexture('deco_thistle', s, s);
     g.destroy();
@@ -320,76 +355,179 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createGlasgowKite(): void {
-    const s = 16;
+    // 22×22 — crumpled Asda-blue plastic bag blowing in the wind
+    const s = 22;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    g.fillStyle(0x99aacc, 0.35);
-    g.fillEllipse(cx, cy, 12, 8);
-    g.fillStyle(0xaabbdd, 0.3);
-    g.fillEllipse(cx - 1, cy - 1, 10, 6);
-    g.lineStyle(0.5, 0x8899bb, 0.3);
-    g.lineBetween(cx - 4, cy - 2, cx + 3, cy + 1);
-    g.lineBetween(cx - 2, cy + 1, cx + 4, cy - 1);
-    g.fillStyle(0x8899bb, 0.4);
-    g.fillCircle(cx - 2, cy - 4, 1.5);
-    g.fillCircle(cx + 2, cy - 4, 1.5);
-    g.fillStyle(0x99aacc, 0.25);
-    g.fillCircle(cx - 2, cy - 4, 0.8);
-    g.fillCircle(cx + 2, cy - 4, 0.8);
-    g.fillStyle(0x99aacc, 0.25);
-    g.fillTriangle(cx + 5, cy + 2, cx + 8, cy + 5, cx + 4, cy + 4);
+    // Main bag body — billowing, asymmetric
+    g.fillStyle(0xaac8e8, 0.55);
+    g.fillTriangle(cx - 7, cy + 6, cx + 7, cy + 7, cx + 9, cy - 2);
+    g.fillTriangle(cx - 7, cy + 6, cx - 5, cy - 4, cx + 9, cy - 2);
+    // Wind-stretched left side
+    g.fillStyle(0x99bde0, 0.5);
+    g.fillTriangle(cx - 9, cy + 3, cx - 5, cy - 3, cx - 4, cy + 5);
+    // Lighter crinkle patches (simulating crumpled plastic)
+    g.fillStyle(0xd4e8f8, 0.45);
+    g.fillTriangle(cx - 2, cy, cx + 4, cy - 1, cx + 3, cy + 4);
+    g.fillStyle(0xc0d8f0, 0.4);
+    g.fillTriangle(cx - 4, cy + 2, cx, cy + 1, cx - 1, cy + 6);
+    // Handle loops at top — two small arcs
+    g.lineStyle(1.5, 0x88b8d8, 0.6);
+    g.strokeCircle(cx - 3, cy - 5, 2);
+    g.strokeCircle(cx + 2, cy - 5, 2);
+    // Subtle highlight line (light catching plastic)
+    g.lineStyle(1, 0xeef6ff, 0.5);
+    g.lineBetween(cx - 5, cy - 1, cx + 2, cy - 3);
+    // Wind-tail flutter at bottom-right
+    g.fillStyle(0x99bde0, 0.35);
+    g.fillTriangle(cx + 7, cy + 5, cx + 11, cy + 8, cx + 8, cy + 9);
     g.generateTexture('deco_glasgow_kite', s, s);
     g.destroy();
   }
 
   private createStandaloneTrafficCone(): void {
-    const s = 16;
+    // 24×24 — Duke of Wellington upright cone, bright orange, white band, dark base
+    const s = 24;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 2;
-    g.fillStyle(0xcc4400, 1);
-    g.fillTriangle(cx - 6, cy, cx + 5, cy - 3, cx + 5, cy + 3);
-    g.fillStyle(0xee6611, 1);
-    g.fillTriangle(cx - 5, cy, cx + 4, cy - 2, cx + 4, cy + 2);
-    g.fillStyle(0xffffff, 0.9);
-    g.fillRect(cx, cy - 2, 3, 4);
+    const cx = s / 2, cy = s / 2;
+    // Shadow on ground
+    g.fillStyle(0x000000, 0.2);
+    g.fillEllipse(cx, cy + 8, 12, 4);
+    // Dark base/rim
     g.fillStyle(0x222222, 1);
-    g.fillRect(cx + 4, cy - 4, 3, 8);
+    g.fillRect(cx - 6, cy + 6, 12, 3);
+    g.fillStyle(0x333333, 1);
+    g.fillRect(cx - 5, cy + 5, 10, 2);
+    // Main cone body — dark orange shadow side (right)
+    g.fillStyle(0xbb3300, 1);
+    g.fillTriangle(cx + 1, cy - 10, cx + 7, cy + 5, cx - 1, cy + 5);
+    // Main cone body — bright orange (left/lit side)
+    g.fillStyle(0xff5500, 1);
+    g.fillTriangle(cx, cy - 10, cx - 6, cy + 5, cx + 5, cy + 5);
+    // Slightly brighter highlight on upper-left face
+    g.fillStyle(0xff7722, 1);
+    g.fillTriangle(cx - 1, cy - 9, cx - 5, cy + 1, cx + 1, cy + 1);
+    // Left-edge highlight strip
+    g.fillStyle(0xff9944, 1);
+    g.fillTriangle(cx - 1, cy - 8, cx - 4, cy - 1, cx - 2, cy - 1);
+    // White reflective stripe band — lower third of cone
+    g.fillStyle(0xffffff, 0.92);
+    g.fillTriangle(cx - 3, cy + 1, cx + 3, cy + 1, cx - 4, cy + 4);
+    g.fillTriangle(cx + 3, cy + 1, cx + 4, cy + 4, cx - 4, cy + 4);
+    // Slight grey shading on right side of white band
+    g.fillStyle(0xcccccc, 0.5);
+    g.fillTriangle(cx + 1, cy + 1, cx + 4, cy + 4, cx + 2, cy + 4);
+    // Tiny tip highlight
+    g.fillStyle(0xffaa66, 1);
+    g.fillRect(cx - 1, cy - 10, 2, 2);
     g.generateTexture('deco_cone', s, s);
     g.destroy();
   }
 
   private createTunnockWrapper(): void {
-    const s = 12;
+    // 20×20 — Tunnock's Teacake crumpled foil wrapper, dome shape, red & silver stripes
+    const s = 20;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 1;
-    g.fillStyle(0xcc1122, 1);
-    g.fillEllipse(cx, cy, 8, 5);
-    g.fillStyle(0xaaaaaa, 1);
-    g.fillEllipse(cx, cy - 1, 8, 3);
-    g.fillStyle(0xcc1122, 1);
-    g.fillRect(cx - 3, cy - 1, 6, 1);
-    g.fillStyle(0xdddddd, 0.6);
-    g.fillCircle(cx - 1, cy - 2, 0.7);
-    g.fillCircle(cx + 2, cy - 1, 0.5);
+    // Flat base of the teacake wrapper
+    g.fillStyle(0x888888, 1);
+    g.fillEllipse(cx, cy + 4, 14, 4);
+    g.fillStyle(0x999999, 1);
+    g.fillEllipse(cx - 1, cy + 3, 12, 3);
+    // Dome body — alternating red and silver diagonal stripes
+    // Draw the dome base (silver) first
+    g.fillStyle(0xbbbbbb, 1);
+    g.fillCircle(cx, cy, 7);
+    // Red stripe 1
+    g.fillStyle(0xdd1122, 1);
+    g.fillTriangle(cx - 7, cy, cx - 3, cy - 7, cx + 1, cy - 7);
+    g.fillTriangle(cx - 7, cy, cx - 7, cy + 4, cx - 3, cy + 2);
+    // Clip back to dome shape (silver overlay on outer half to fake clipping)
+    g.fillStyle(0xbbbbbb, 1);
+    g.fillRect(0, 0, s, cy - 7);        // top crop
+    g.fillRect(0, cy + 7, s, s);        // bottom crop
+    // Re-draw dome cleanly as solid silver
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(cx, cy, 7);
+    // Now paint the stripes as wedges across the dome (3 red, 3 silver alternating)
+    // Red stripe A — left side
+    g.fillStyle(0xdd1122, 1);
+    g.fillTriangle(cx, cy, cx - 7, cy - 2, cx - 4, cy - 7);
+    // Silver stripe A (overpaints right of red A)
+    g.fillStyle(0xcccccc, 1);
+    g.fillTriangle(cx, cy, cx - 4, cy - 7, cx + 1, cy - 7);
+    // Red stripe B — top right
+    g.fillStyle(0xdd1122, 1);
+    g.fillTriangle(cx, cy, cx + 1, cy - 7, cx + 7, cy - 3);
+    // Silver stripe B
+    g.fillStyle(0xcccccc, 1);
+    g.fillTriangle(cx, cy, cx + 7, cy - 3, cx + 7, cy + 2);
+    // Red stripe C — right lower
+    g.fillStyle(0xdd1122, 1);
+    g.fillTriangle(cx, cy, cx + 7, cy + 2, cx + 3, cy + 7);
+    // Re-clip circular dome — overdraw corners with bg colour (transparent trick)
+    // Use a dark ring mask to clean up jagged edges
+    g.lineStyle(2, 0x888888, 1);
+    g.strokeCircle(cx, cy, 7);
+    // Shiny foil highlight — bright streak upper-left
+    g.fillStyle(0xffffff, 0.7);
+    g.fillEllipse(cx - 3, cy - 4, 4, 2);
+    g.fillStyle(0xffffff, 0.4);
+    g.fillEllipse(cx - 2, cy - 3, 2, 1);
+    // Crumpled look — small dark wrinkle line
+    g.lineStyle(1, 0x777777, 0.6);
+    g.lineBetween(cx + 1, cy + 2, cx + 4, cy + 5);
+    g.lineBetween(cx - 2, cy + 3, cx - 4, cy + 5);
     g.generateTexture('deco_tunnock', s, s);
     g.destroy();
   }
 
   private createAbandonedPint(): void {
-    const s = 14;
+    // 22×22 — Tennent's pint glass, half-drunk, abandoned on the moor
+    const s = 22;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    g.fillStyle(0x888888, 0.5);
-    g.fillRect(cx - 3, cy - 5, 6, 10);
-    g.fillStyle(0xcc9922, 0.7);
-    g.fillRect(cx - 2, cy, 4, 4);
-    g.fillStyle(0xeeeeee, 0.6);
-    g.fillRect(cx - 2, cy - 1, 4, 1);
-    g.fillStyle(0xaabbcc, 0.2);
-    g.fillRect(cx - 2, cy - 4, 4, 3);
-    g.fillStyle(0xcc1111, 0.8);
-    g.fillRect(cx - 1, cy - 3, 2, 1);
-    g.fillRect(cx, cy - 3, 1, 3);
+    // Shadow on ground
+    g.fillStyle(0x000000, 0.18);
+    g.fillEllipse(cx, cy + 9, 10, 3);
+    // Glass outline — slightly wider at top (pint glass taper), with bulge
+    // Draw glass as a trapezoid — bottom narrower than top
+    const top = cy - 9, bot = cy + 8;
+    const tw = 6, bw = 4; // half-widths
+    // Glass body (grey/transparent look)
+    g.fillStyle(0x99aabb, 0.45);
+    g.fillTriangle(cx - tw, top, cx + tw, top, cx + bw, bot);
+    g.fillTriangle(cx - tw, top, cx - bw, bot, cx + bw, bot);
+    // Bulge on glass (classic pint shape) — slight bump at mid-height
+    g.fillStyle(0xaabbcc, 0.35);
+    g.fillEllipse(cx + tw, top + (bot - top) * 0.55, 4, 6);
+    g.fillEllipse(cx - tw, top + (bot - top) * 0.55, 4, 6);
+    // Golden amber lager — bottom ~40% of glass
+    const lagerTop = top + (bot - top) * 0.6;
+    const lagerBw = bw + (tw - bw) * 0.4;  // width at lager level
+    g.fillStyle(0xd4880a, 0.85);
+    g.fillTriangle(cx - lagerBw, lagerTop, cx + lagerBw, lagerTop, cx + bw, bot);
+    g.fillTriangle(cx - lagerBw, lagerTop, cx - bw, bot, cx + bw, bot);
+    // Foam head remnant — thin white layer just above lager
+    g.fillStyle(0xf5f0e8, 0.75);
+    g.fillRect(cx - lagerBw + 0.5, lagerTop - 2, lagerBw * 2 - 1, 2);
+    // Foam bubbles
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(cx - 2, lagerTop - 1, 1);
+    g.fillCircle(cx + 1, lagerTop - 1.5, 0.8);
+    g.fillCircle(cx + 3, lagerTop - 0.8, 0.7);
+    // Tennent's branding — big red "T" on the glass
+    g.fillStyle(0xdd1111, 0.9);
+    // Horizontal bar of T
+    g.fillRect(cx - 3, top + 3, 6, 2);
+    // Vertical stem of T
+    g.fillRect(cx - 1, top + 5, 2, 5);
+    // Glass reflection — vertical highlight strip on left edge
+    g.fillStyle(0xffffff, 0.3);
+    g.fillRect(cx - tw + 1, top + 1, 1, (bot - top) - 2);
+    // Thin glass rim at top
+    g.lineStyle(1, 0xbbccdd, 0.7);
+    g.lineBetween(cx - tw, top, cx + tw, top);
     g.generateTexture('deco_tennents', s, s);
     g.destroy();
   }

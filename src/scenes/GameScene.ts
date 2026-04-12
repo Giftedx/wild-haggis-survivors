@@ -13,7 +13,7 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { buildCardPool, drawCards, PASSIVE_KEYS, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
-import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
+import { recordRun, loadSave, RunResult, RunSummary, RunHistoryContext } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
@@ -1408,9 +1408,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     musicEngine.playResolution();
 
+    const previousBests = this.metaSaveManager.getPersonalBests();
     const summary = this.buildRunSummary(true);
-    const runResult = recordRun(summary);
-    this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult));
+    const context = this.buildRunHistoryContext();
+    const runResult = recordRun(summary, context);
+    this.recordToHistory(summary, runResult);
+    this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult, previousBests));
   }
 
   private handlePlayerDeath(): void {
@@ -1448,12 +1451,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     }
 
+    const previousBests = this.metaSaveManager.getPersonalBests();
     const summary = this.buildRunSummary(false);
-    const runResult = recordRun(summary);
+    const context = this.buildRunHistoryContext();
+    const runResult = recordRun(summary, context);
+    this.recordToHistory(summary, runResult);
 
     this.deathResultRemainingMs = 1200;
     this.deathResultCallback = () => {
-      this.transitionToGameOver(this.buildGameOverPayload('death', summary, runResult));
+      this.transitionToGameOver(this.buildGameOverPayload('death', summary, runResult, previousBests));
     };
   }
 
@@ -1629,10 +1635,35 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pageHideBound = undefined;
   }
 
+  private buildRunHistoryContext(): RunHistoryContext {
+    return {
+      level: this.xpSystem.getLevel(),
+      bossKills: this.bossKillCount,
+      variantKey: this.activeVariant.key,
+      weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
+    };
+  }
+
+  private recordToHistory(summary: RunSummary, runResult: RunResult): void {
+    this.metaSaveManager.recordRunToHistory({
+      timestamp: Date.now(),
+      timeSurvivedSec: summary.timeSurvivedSec,
+      enemiesKilled: summary.enemiesKilled,
+      level: this.xpSystem.getLevel(),
+      bossKills: this.bossKillCount,
+      goldEarned: runResult.goldEarned,
+      bestCombo: summary.bestCombo ?? 0,
+      variantKey: this.activeVariant.key,
+      isVictory: summary.victory ?? false,
+      weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
+    });
+  }
+
   private buildGameOverPayload(
     mode: 'victory' | 'death',
     summary: RunSummary,
-    runResult: RunResult
+    runResult: RunResult,
+    previousBests?: import('../core/SaveManager').PersonalBests
   ): GameOverPayload {
     return {
       mode,
@@ -1648,6 +1679,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       variantLabel: formatRunVariantLabel(this.activeVariant),
       variantKey: this.activeVariant.key,
       weaponDamage: this.runStatsTracker.snapshot(),
+      previousBests,
     };
   }
 
@@ -2192,6 +2224,46 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         .setDepth(-3)
         .setScale(rngDeco.realInRange(0.8, 1.3))
         .setAlpha(rngDeco.realInRange(0.75, 1.0));
+    }
+
+    // === Glaswegian cultural litter scattered across the moor ===
+    // Traffic cones — 15 scattered (Duke of Wellington would be proud)
+    for (let i = 0; i < 15; i++) {
+      const x = rngDeco.between(80, W - 80);
+      const y = rngDeco.between(80, H - 80);
+      this.add.image(x, y, 'deco_cone')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.8, 1.1))
+        .setAlpha(rngDeco.realInRange(0.8, 1.0));
+    }
+    // Tunnock's wrappers — 20 scattered
+    for (let i = 0; i < 20; i++) {
+      const x = rngDeco.between(60, W - 60);
+      const y = rngDeco.between(60, H - 60);
+      this.add.image(x, y, 'deco_tunnock')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.7, 1.0))
+        .setAngle(rngDeco.between(0, 360))
+        .setAlpha(rngDeco.realInRange(0.6, 0.9));
+    }
+    // Abandoned Tennent's pints — 12 scattered
+    for (let i = 0; i < 12; i++) {
+      const x = rngDeco.between(80, W - 80);
+      const y = rngDeco.between(80, H - 80);
+      this.add.image(x, y, 'deco_tennents')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.8, 1.1))
+        .setAlpha(rngDeco.realInRange(0.7, 0.95));
+    }
+    // Glasgow kites (plastic bags) — 10 scattered, semi-transparent
+    for (let i = 0; i < 10; i++) {
+      const x = rngDeco.between(60, W - 60);
+      const y = rngDeco.between(60, H - 60);
+      this.add.image(x, y, 'deco_glasgow_kite')
+        .setDepth(-3)
+        .setScale(rngDeco.realInRange(0.8, 1.2))
+        .setAngle(rngDeco.between(0, 360))
+        .setAlpha(rngDeco.realInRange(0.3, 0.5));
     }
 
     // === Water/loch patches with animated shimmer ===
