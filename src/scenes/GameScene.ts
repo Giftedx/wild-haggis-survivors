@@ -548,6 +548,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.spawnSystem?.destroy(); } catch { /* ignore */ }
       try { this.tutorialSystem?.dispose(); } catch { /* ignore */ }
       try { this.xpSystem?.destroy(); } catch { /* ignore */ }
+      // Close lifecycle gaps — these systems were silently orphaned before
+      try { this.juice?.destroy(); } catch { /* ignore */ }
+      try { this.hud?.destroy(); } catch { /* ignore */ }
+      try { this.minimap?.destroy(); } catch { /* ignore */ }
+      try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
+      try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
     });
   }
 

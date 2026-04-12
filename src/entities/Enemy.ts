@@ -208,6 +208,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.knockbackVx = 0;
     this.knockbackVy = 0;
     this.knockbackTimer = 0;
+    this.knockbackTrailAccum = 0;
     this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
@@ -415,7 +416,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (this.behavior === 'phase') {
         this.phaseTimer -= delta;
         if (this.phaseTimer <= 0) {
-          this.phaseTimer = 2000;
+          this.phaseTimer = BALANCE.enemy.phaseToggleMs;
           this.isPhased = !this.isPhased;
           this.spawnPhasePuff();
           this.scene?.tweens.add({ targets: this, alpha: this.isPhased ? 0.3 : 1, duration: 120 });

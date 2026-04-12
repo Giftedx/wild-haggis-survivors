@@ -40,6 +40,14 @@ export class WeaponSystem {
   /** Trail frame counter — spawn trail particles every N frames */
   private trailCounter: number = 0;
 
+  /** Pooled VFX circles for weapon visual effects (pulse rings, zones, blasts). */
+  private vfxCirclePool: Phaser.GameObjects.Arc[] = [];
+  private vfxCircleIdx: number = 0;
+
+  /** Pooled VFX graphics for arc sweep visuals. */
+  private vfxGfxPool: Phaser.GameObjects.Graphics[] = [];
+  private vfxGfxIdx: number = 0;
+
   /** Multipliers from player upgrades — set each frame by GameScene */
   private damageMultiplier: number = 1;
   private aoeMultiplier: number = 1;
@@ -70,6 +78,18 @@ export class WeaponSystem {
       }
     }
     try { (this.projectilePool as any).clear?.(true, true); } catch { /* ignore */ }
+
+    // Clean up VFX pools
+    for (const c of this.vfxCirclePool) {
+      this.scene.tweens.killTweensOf(c);
+      c.destroy();
+    }
+    for (const g of this.vfxGfxPool) {
+      this.scene.tweens.killTweensOf(g);
+      g.destroy();
+    }
+    this.vfxCirclePool = [];
+    this.vfxGfxPool = [];
   }
 
   constructor(scene: Phaser.Scene & ISceneContext, enemyGroup: Phaser.GameObjects.Group) {
@@ -86,6 +106,19 @@ export class WeaponSystem {
       this.projectilePool.add(new Projectile(scene));
     }
 
+    // Pre-allocate VFX circle pool — 30 covers all weapon visual effects
+    // (pulse rings, zones, blasts) with headroom above ~13 max simultaneous.
+    for (let i = 0; i < 30; i++) {
+      const c = scene.add.circle(0, 0, 10, 0xffffff, 0.5)
+        .setDepth(10).setVisible(false);
+      this.vfxCirclePool.push(c);
+    }
+    // Pre-allocate VFX graphics pool — 5 covers arc sweep visuals
+    for (let i = 0; i < 5; i++) {
+      const g = scene.add.graphics().setDepth(10).setVisible(false);
+      this.vfxGfxPool.push(g);
+    }
+
     // Start with Thistle Shot
     this.addWeapon('thistle_shot');
 
@@ -97,6 +130,31 @@ export class WeaponSystem {
       undefined,
       this
     );
+  }
+
+  /** Acquire a pooled VFX circle, resetting it for reuse. O(1) circular indexing. */
+  private acquireVfxCircle(x: number, y: number, radius: number, color: number, alpha: number): Phaser.GameObjects.Arc {
+    const c = this.vfxCirclePool[this.vfxCircleIdx];
+    this.vfxCircleIdx = (this.vfxCircleIdx + 1) % this.vfxCirclePool.length;
+    this.scene.tweens.killTweensOf(c);
+    c.setPosition(x, y);
+    c.setRadius(radius);
+    c.setFillStyle(color, alpha);
+    c.setAlpha(alpha);
+    c.setScale(1);
+    c.setVisible(true);
+    return c;
+  }
+
+  /** Acquire a pooled VFX graphics object, clearing it for reuse. */
+  private acquireVfxGraphics(): Phaser.GameObjects.Graphics {
+    const g = this.vfxGfxPool[this.vfxGfxIdx];
+    this.vfxGfxIdx = (this.vfxGfxIdx + 1) % this.vfxGfxPool.length;
+    this.scene.tweens.killTweensOf(g);
+    g.clear();
+    g.setAlpha(1);
+    g.setVisible(true);
+    return g;
   }
 
   addWeapon(key: string): boolean {
@@ -323,14 +381,14 @@ export class WeaponSystem {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
-    // Visual pulse ring
-    const ring = this.scene.add.circle(px, py, 10, 0x4488ff, 0.4);
+    // Visual pulse ring — pooled
+    const ring = this.acquireVfxCircle(px, py, 10, 0x4488ff, 0.4);
     this.scene.tweens.add({
       targets: ring,
       radius: radius,
       alpha: 0,
       duration: 300,
-      onComplete: () => ring.destroy(),
+      onComplete: () => ring.setVisible(false),
     });
 
     // Damage + knockback all enemies in radius
@@ -363,8 +421,8 @@ export class WeaponSystem {
     const { damage: dmg } = this.effectiveDamage(w);
     const weaponKey = w.config.key;
 
-    // Create a fading mist zone
-    const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.3);
+    // Create a fading mist zone — pooled
+    const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.3);
     const duration = 2000;
 
     // Damage enemies within the zone over its lifetime
@@ -396,7 +454,7 @@ export class WeaponSystem {
       duration: duration,
       onComplete: () => {
         damageHandle.cancel();
-        if (zone.active) zone.destroy();
+        zone.setVisible(false);
       },
     });
   }
@@ -415,8 +473,8 @@ export class WeaponSystem {
       facing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
     }
 
-    // Visual sweep arc — steel wedge for claymore, murky green for Nessie
-    const gfx = this.scene.add.graphics();
+    // Visual sweep arc — steel wedge for claymore, murky green for Nessie — pooled
+    const gfx = this.acquireVfxGraphics();
     const isClaymore = w.config.key === 'claymore';
     gfx.fillStyle(isClaymore ? 0xc8d8e8 : 0x226644, isClaymore ? 0.35 : 0.4);
     gfx.slice(
@@ -437,7 +495,7 @@ export class WeaponSystem {
       targets: gfx,
       alpha: 0,
       duration: 250,
-      onComplete: () => gfx.destroy(),
+      onComplete: () => { gfx.setVisible(false); gfx.clear(); },
     });
 
     // Damage enemies within the arc
@@ -539,15 +597,13 @@ export class WeaponSystem {
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
-    const ring = this.scene.add.circle(px, py, radius, 0x339955, 0.38);
+    const ring = this.acquireVfxCircle(px, py, radius, 0x339955, 0.38);
     this.scene.tweens.add({
       targets: ring,
       alpha: 0.1,
       duration: 280,
       yoyo: true,
-      onComplete: () => {
-        if (ring.active) ring.destroy();
-      },
+      onComplete: () => ring.setVisible(false),
     });
 
     const enemies = this.enemyGroup.children.entries as Enemy[];
@@ -576,7 +632,7 @@ export class WeaponSystem {
 
   /** Highland Fling — massive expanding damage ring */
   private fireExpandingRing(px: number, py: number, dmg: number, maxRadius: number, weaponKey: string): void {
-    const ring = this.scene.add.circle(px, py, 20, 0x4488ff, 0.5);
+    const ring = this.acquireVfxCircle(px, py, 20, 0x4488ff, 0.5);
     let currentRadius = 20;
     const hitEnemies = new Set<Enemy>();
 
@@ -602,7 +658,7 @@ export class WeaponSystem {
 
     this.scene.getUpdateTickers().addOnce('scaled', 850, () => {
       expandHandle.cancel();
-      if (ring.active) ring.destroy();
+      ring.setVisible(false);
     });
   }
 
@@ -627,10 +683,10 @@ export class WeaponSystem {
       // create new visuals/damage on the live scene).
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
 
-      const blast = this.scene.add.circle(ex, ey, 10, 0xff6600, 0.6);
+      const blast = this.acquireVfxCircle(ex, ey, 10, 0xff6600, 0.6);
       this.scene.tweens.add({
         targets: blast, radius: 80, alpha: 0, duration: 300,
-        onComplete: () => blast.destroy(),
+        onComplete: () => blast.setVisible(false),
       });
 
       const enemies = this.enemyGroup.children.entries as Enemy[];
@@ -645,7 +701,7 @@ export class WeaponSystem {
 
   /** The Haar — massive fog zone covering huge area */
   private fireMassiveFog(px: number, py: number, dmg: number, radius: number, weaponKey: string): void {
-    const zone = this.scene.add.circle(px, py, radius, 0x88aacc, 0.25);
+    const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.25);
     const duration = 2600;
 
     const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
@@ -666,7 +722,7 @@ export class WeaponSystem {
 
     this.scene.tweens.add({
       targets: zone, alpha: 0, duration,
-      onComplete: () => { tickHandle.cancel(); if (zone.active) zone.destroy(); },
+      onComplete: () => { tickHandle.cancel(); zone.setVisible(false); },
     });
   }
 
@@ -687,13 +743,13 @@ export class WeaponSystem {
 
   /** Nessie Unleashed — full 360-degree sweep */
   private fireFullSweep(px: number, py: number, dmg: number, radius: number, weaponKey: string): void {
-    const gfx = this.scene.add.graphics();
+    const gfx = this.acquireVfxGraphics();
     gfx.fillStyle(0x226644, 0.35);
     gfx.fillCircle(px, py, radius);
 
     this.scene.tweens.add({
       targets: gfx, alpha: 0, duration: 400,
-      onComplete: () => gfx.destroy(),
+      onComplete: () => { gfx.setVisible(false); gfx.clear(); },
     });
 
     const enemies = this.enemyGroup.children.entries as Enemy[];
