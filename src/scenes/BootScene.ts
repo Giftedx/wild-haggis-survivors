@@ -107,6 +107,11 @@ export class BootScene extends Phaser.Scene {
     this.createThistlePatch();
     this.createRock();
     this.createHeather();
+    this.createGlasgowKite();
+    this.createStandaloneTrafficCone();
+    this.createTunnockWrapper();
+    this.createAbandonedPint();
+    this.createBamSeagull();
     // Weapon HUD icons
     this.createWeaponIcons();
     this.createUpgradeCardIcons();
@@ -168,12 +173,11 @@ export class BootScene extends Phaser.Scene {
   private createEntityShadow(): void {
     const s = 40;
     const g = this.add.graphics();
-    // Layered ellipses for a soft-edged look
-    g.fillStyle(0x000000, 0.25);
+    g.fillStyle(0x0a1a0a, 0.25);
     g.fillEllipse(s / 2, s / 2, 36, 12);
-    g.fillStyle(0x000000, 0.4);
+    g.fillStyle(0x0a1a0a, 0.4);
     g.fillEllipse(s / 2, s / 2, 28, 9);
-    g.fillStyle(0x000000, 0.55);
+    g.fillStyle(0x0a1a0a, 0.55);
     g.fillEllipse(s / 2, s / 2, 20, 6);
     g.generateTexture('entity_shadow', s, s);
     g.destroy();
@@ -183,11 +187,11 @@ export class BootScene extends Phaser.Scene {
   private createBossShadow(): void {
     const s = 80;
     const g = this.add.graphics();
-    g.fillStyle(0x000000, 0.25);
+    g.fillStyle(0x0a1a0a, 0.25);
     g.fillEllipse(s / 2, s / 2, 74, 24);
-    g.fillStyle(0x000000, 0.4);
+    g.fillStyle(0x0a1a0a, 0.4);
     g.fillEllipse(s / 2, s / 2, 58, 18);
-    g.fillStyle(0x000000, 0.55);
+    g.fillStyle(0x0a1a0a, 0.55);
     g.fillEllipse(s / 2, s / 2, 42, 12);
     g.generateTexture('boss_shadow', s, s);
     g.destroy();
@@ -263,6 +267,13 @@ export class BootScene extends Phaser.Scene {
     g3.fillEllipse(cx + 4, cy, 6, 5);
     g3.fillStyle(0x7a7a88, 1);
     g3.fillEllipse(cx - 4, cy - 2, 4, 2);
+    // Wee traffic cone lying on its side (if you know, you know)
+    g3.fillStyle(0xff6600, 1);
+    g3.fillTriangle(cx + 7, cy - 2, cx + 9, cy + 2, cx + 5, cy + 2);
+    g3.fillStyle(0xff8833, 1);
+    g3.fillTriangle(cx + 7, cy - 1, cx + 8, cy + 1, cx + 6, cy + 1);
+    g3.fillStyle(0xffffff, 0.8);
+    g3.fillRect(cx + 6, cy, 2, 1);
     g3.generateTexture('deco_rock_3', s, s);
     g3.destroy();
   }
@@ -298,6 +309,130 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx + 1, cy - 5, 1, 1);
     g.fillRect(cx + 4, cy - 4, 1, 1);
     g.generateTexture('deco_heather', s, s);
+    g.destroy();
+  }
+
+  private createGlasgowKite(): void {
+    const s = 16;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    g.fillStyle(0x99aacc, 0.35);
+    g.fillEllipse(cx, cy, 12, 8);
+    g.fillStyle(0xaabbdd, 0.3);
+    g.fillEllipse(cx - 1, cy - 1, 10, 6);
+    g.lineStyle(0.5, 0x8899bb, 0.3);
+    g.lineBetween(cx - 4, cy - 2, cx + 3, cy + 1);
+    g.lineBetween(cx - 2, cy + 1, cx + 4, cy - 1);
+    g.fillStyle(0x8899bb, 0.4);
+    g.fillCircle(cx - 2, cy - 4, 1.5);
+    g.fillCircle(cx + 2, cy - 4, 1.5);
+    g.fillStyle(0x99aacc, 0.25);
+    g.fillCircle(cx - 2, cy - 4, 0.8);
+    g.fillCircle(cx + 2, cy - 4, 0.8);
+    g.fillStyle(0x99aacc, 0.25);
+    g.fillTriangle(cx + 5, cy + 2, cx + 8, cy + 5, cx + 4, cy + 4);
+    g.generateTexture('deco_glasgow_kite', s, s);
+    g.destroy();
+  }
+
+  private createStandaloneTrafficCone(): void {
+    const s = 16;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+    g.fillStyle(0xcc4400, 1);
+    g.fillTriangle(cx - 6, cy, cx + 5, cy - 3, cx + 5, cy + 3);
+    g.fillStyle(0xee6611, 1);
+    g.fillTriangle(cx - 5, cy, cx + 4, cy - 2, cx + 4, cy + 2);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillRect(cx, cy - 2, 3, 4);
+    g.fillStyle(0x222222, 1);
+    g.fillRect(cx + 4, cy - 4, 3, 8);
+    g.generateTexture('deco_cone', s, s);
+    g.destroy();
+  }
+
+  private createTunnockWrapper(): void {
+    const s = 12;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 1;
+    g.fillStyle(0xcc1122, 1);
+    g.fillEllipse(cx, cy, 8, 5);
+    g.fillStyle(0xaaaaaa, 1);
+    g.fillEllipse(cx, cy - 1, 8, 3);
+    g.fillStyle(0xcc1122, 1);
+    g.fillRect(cx - 3, cy - 1, 6, 1);
+    g.fillStyle(0xdddddd, 0.6);
+    g.fillCircle(cx - 1, cy - 2, 0.7);
+    g.fillCircle(cx + 2, cy - 1, 0.5);
+    g.generateTexture('deco_tunnock', s, s);
+    g.destroy();
+  }
+
+  private createAbandonedPint(): void {
+    const s = 14;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    g.fillStyle(0x888888, 0.5);
+    g.fillRect(cx - 3, cy - 5, 6, 10);
+    g.fillStyle(0xcc9922, 0.7);
+    g.fillRect(cx - 2, cy, 4, 4);
+    g.fillStyle(0xeeeeee, 0.6);
+    g.fillRect(cx - 2, cy - 1, 4, 1);
+    g.fillStyle(0xaabbcc, 0.2);
+    g.fillRect(cx - 2, cy - 4, 4, 3);
+    g.fillStyle(0xcc1111, 0.8);
+    g.fillRect(cx - 1, cy - 3, 2, 1);
+    g.fillRect(cx, cy - 3, 1, 3);
+    g.generateTexture('deco_tennents', s, s);
+    g.destroy();
+  }
+
+  private createBamSeagull(): void {
+    const s = 36;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+    g.fillStyle(0x667788, 1);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy - 8, cx + 2, cy - 6);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy + 8, cx + 2, cy + 6);
+    g.fillStyle(0x8899aa, 1);
+    g.fillTriangle(cx, cy, cx - 10, cy - 6, cx + 1, cy - 4);
+    g.fillTriangle(cx, cy, cx - 10, cy + 6, cx + 1, cy + 4);
+    g.fillStyle(0x334455, 1);
+    g.fillTriangle(cx - 14, cy - 8, cx - 10, cy - 5, cx - 16, cy - 6);
+    g.fillTriangle(cx - 14, cy + 8, cx - 10, cy + 5, cx - 16, cy + 6);
+    g.fillStyle(0xcccccc, 1);
+    g.fillEllipse(cx + 2, cy, 14, 10);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillEllipse(cx + 2, cy, 12, 8);
+    g.fillStyle(0xffffff, 1);
+    g.fillEllipse(cx + 1, cy - 1, 10, 6);
+    g.fillStyle(0x889999, 1);
+    g.fillTriangle(cx - 5, cy - 2, cx - 5, cy + 2, cx - 10, cy);
+    g.fillStyle(0xdddddd, 1);
+    g.fillCircle(cx + 10, cy, 5);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx + 10, cy, 4);
+    g.fillStyle(0xeedd44, 1);
+    g.fillCircle(cx + 11, cy - 1, 1.5);
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx + 11, cy - 1, 0.7);
+    g.fillStyle(0xdd9922, 1);
+    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 2, cx + 18, cy + 1);
+    g.fillStyle(0xeeaa33, 1);
+    g.fillTriangle(cx + 13, cy, cx + 13, cy + 1, cx + 17, cy + 1);
+    g.fillStyle(0xcc2222, 1);
+    g.fillCircle(cx + 15, cy + 1, 0.7);
+    g.fillStyle(0xddbb44, 1);
+    g.fillRect(cx + 16, cy - 1, 4, 2);
+    g.fillStyle(0xeedd66, 1);
+    g.fillRect(cx + 16, cy - 1, 3, 1);
+    g.fillStyle(0xdd9988, 1);
+    g.fillRect(cx, cy + 4, 1, 4);
+    g.fillRect(cx + 3, cy + 4, 1, 4);
+    g.fillStyle(0xcc8877, 1);
+    g.fillRect(cx - 1, cy + 7, 3, 1);
+    g.fillRect(cx + 2, cy + 7, 3, 1);
+    g.generateTexture('bam_seagull', s, s);
     g.destroy();
   }
 
@@ -1057,6 +1192,27 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx - 1, cy - 3, 0.8);
     g.fillCircle(cx + 2, cy - 3, 0.8);
 
+    // Nostril steam (it's cauld out)
+    g.fillStyle(0xcccccc, 0.4);
+    g.fillCircle(cx - 2, cy - 1, 1.5);
+    g.fillCircle(cx + 3, cy - 1, 1.5);
+    g.fillStyle(0xeeeeee, 0.25);
+    g.fillCircle(cx - 3, cy - 2, 1);
+    g.fillCircle(cx + 4, cy - 2, 1);
+
+    // Mud on hooves (been in the field)
+    g.fillStyle(0x3a2a0a, 0.7);
+    g.fillCircle(cx - 11, cy + 23, 2);
+    g.fillCircle(cx + 4, cy + 23, 2);
+
+    // Extra shaggy fringe strands (individual hairs)
+    g.fillStyle(0xbb9955, 0.7);
+    for (let i = 0; i < 8; i++) {
+      const fx = cx - 13 + i * 3.5;
+      const len = 3 + (i % 3);
+      g.fillRect(fx, cy - 9, 1, len);
+    }
+
     g.generateTexture('highland_cow', s, s);
     g.destroy();
   }
@@ -1558,6 +1714,12 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0xffffff, 0.8);
     g.fillCircle(cx, cy, 1.5);
 
+    // Green stem stub (it's a flower head, not just a purple blob)
+    g.fillStyle(0x336622, 1);
+    g.fillRect(cx - 1, cy + 5, 2, 3);
+    g.fillStyle(0x448833, 1);
+    g.fillRect(cx - 1, cy + 5, 1, 2);
+
     g.generateTexture('thistle', s, s);
     g.destroy();
   }
@@ -1565,21 +1727,30 @@ export class BootScene extends Phaser.Scene {
   private createCaber(): void {
     const s = 24;
     const g = this.add.graphics();
-
-    // Outline
-    g.fillStyle(0x3a2808, 1);
+    g.fillStyle(0x2a1a04, 1);
     g.fillRect(2, 5, 20, 12);
-    // Long brown rectangle
-    g.fillStyle(0x8b6914, 1);
+    g.fillStyle(0x7a5510, 1);
     g.fillRect(3, 6, 18, 10);
-    // Wood grain
-    g.fillStyle(0x6b4e0a, 1);
-    g.fillRect(3, 9, 18, 1);
-    g.fillRect(3, 13, 18, 1);
-    // Highlight
-    g.fillStyle(0xbb8822, 0.6);
+    g.fillStyle(0x5a3e08, 0.8);
+    g.fillRect(3, 8, 18, 1);
+    g.fillRect(3, 12, 18, 1);
+    g.fillStyle(0x9a7522, 0.5);
     g.fillRect(3, 7, 18, 1);
-
+    g.fillRect(3, 10, 18, 1);
+    g.fillStyle(0x4a3008, 1);
+    g.fillCircle(8, 10, 1.5);
+    g.fillCircle(16, 9, 1);
+    g.fillStyle(0x3a2206, 1);
+    g.fillCircle(8, 10, 0.8);
+    g.fillStyle(0x5a3e08, 1);
+    g.fillCircle(20, 11, 3);
+    g.fillStyle(0x7a5510, 1);
+    g.fillCircle(20, 11, 2);
+    g.fillStyle(0x5a3e08, 1);
+    g.fillCircle(20, 11, 1);
+    g.fillStyle(0x4a3008, 0.6);
+    g.fillRect(3, 6, 18, 1);
+    g.fillRect(3, 15, 18, 1);
     g.generateTexture('caber', s, s);
     g.destroy();
   }
@@ -1590,27 +1761,27 @@ export class BootScene extends Phaser.Scene {
     const s = 18;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-
-    // Dark outline
     g.fillStyle(0x2a1a06, 1);
     g.fillCircle(cx, cy, 7);
-    // Body — mottled brown (haggis-colored)
+    g.fillCircle(cx + 1, cy - 1, 6);
     g.fillStyle(0x5a3e0a, 1);
     g.fillCircle(cx, cy, 6);
+    g.fillCircle(cx + 1, cy - 1, 5);
     g.fillStyle(0x7a5a12, 1);
     g.fillCircle(cx - 1, cy - 1, 5);
-    // Oat fleck texture — tiny lighter dots
     g.fillStyle(0x9a7822, 0.8);
     g.fillCircle(cx - 2, cy - 2, 1.2);
     g.fillCircle(cx + 2, cy + 1, 1);
     g.fillCircle(cx - 1, cy + 2, 0.8);
     g.fillCircle(cx + 3, cy - 1, 0.8);
-    // Wet sheen highlight
+    g.fillCircle(cx - 3, cy + 1, 0.6);
     g.fillStyle(0xbb9933, 0.7);
-    g.fillCircle(cx - 2, cy - 3, 1.5);
+    g.fillCircle(cx - 2, cy - 2, 1.5);
     g.fillStyle(0xffffff, 0.4);
     g.fillCircle(cx - 3, cy - 3, 0.7);
-
+    g.fillStyle(0xcccccc, 0.35);
+    g.fillCircle(cx - 1, cy - 6, 1.2);
+    g.fillCircle(cx + 2, cy - 7, 1);
     g.generateTexture('haggis_ball', s, s);
     g.destroy();
   }
@@ -2667,6 +2838,14 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 1, cy - 5, 0.7);
     g.fillCircle(cx - 1, cy - 3, 0.7);
 
+    // Wee feather sticking out (brown, wispy)
+    g.fillStyle(0x886644, 0.8);
+    g.fillTriangle(cx + 12, cy - 4, cx + 16, cy - 8, cx + 13, cy - 2);
+    g.fillStyle(0xaa8866, 0.6);
+    g.fillTriangle(cx + 12, cy - 3, cx + 15, cy - 7, cx + 13, cy - 2);
+    g.lineStyle(0.5, 0x664422, 0.7);
+    g.lineBetween(cx + 12, cy - 2, cx + 15, cy - 7);
+
     g.generateTexture('nest', s, s);
     g.destroy();
   }
@@ -2701,6 +2880,11 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx - 14, cy - 1, 28, 2);
     g.fillStyle(0xccaa33, 1);
     g.fillRect(cx - 14, cy - 1, 28, 1);
+    // Tartan accent on bands (Scottish treasure!)
+    g.fillStyle(0xcc2222, 0.6);
+    g.fillRect(cx - 14, cy, 28, 1);
+    g.fillStyle(0x224488, 0.4);
+    g.fillRect(cx - 14, cy - 2, 28, 1);
     // Vertical metal band (center strap)
     g.fillStyle(0x6a5500, 1);
     g.fillRect(cx - 1, cy - 8, 2, 18);
@@ -2729,38 +2913,29 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Health orb — glowing green with a cross symbol, reads as "healing". */
+  /** Health orb — Irn-Bru orange with a bold highlight. */
   private createHealthOrb(): void {
     const s = 18;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-
-    // Outline
-    g.fillStyle(0x0a4a0a, 1);
+    g.fillStyle(0x884400, 1);
     g.fillCircle(cx, cy, 7);
-    // Orb body — rich emerald
-    g.fillStyle(0x22bb22, 1);
+    g.fillStyle(0xee7700, 1);
     g.fillCircle(cx, cy, 6);
-    // Inner glow — upper-left highlight
-    g.fillStyle(0x66ee66, 0.8);
+    g.fillStyle(0xff9922, 0.8);
     g.fillCircle(cx - 1, cy - 1, 4);
-    g.fillStyle(0xaaffaa, 0.6);
+    g.fillStyle(0xffbb44, 0.6);
     g.fillCircle(cx - 2, cy - 2, 2);
-    // Cross symbol — the universal healing sign
-    g.fillStyle(0xffffff, 0.9);
-    g.fillRect(cx - 1, cy - 3, 2, 6);
-    g.fillRect(cx - 3, cy - 1, 6, 2);
-    // Sparkle glint
+    g.fillStyle(0xffffff, 0.6);
+    g.fillRect(cx - 3, cy - 4, 1, 5);
+    g.fillStyle(0xffffff, 0.3);
+    g.fillRect(cx - 2, cy - 3, 1, 3);
+    g.fillStyle(0xffdd88, 0.8);
+    g.fillCircle(cx + 1, cy + 1, 0.6);
+    g.fillCircle(cx + 2, cy - 1, 0.5);
+    g.fillCircle(cx - 1, cy + 2, 0.4);
     g.fillStyle(0xffffff, 1);
     g.fillCircle(cx - 3, cy - 3, 0.8);
-    // Cross
-    g.fillStyle(0xffffff, 1);
-    g.fillRect(cx - 1, cy - 4, 2, 8);
-    g.fillRect(cx - 4, cy - 1, 8, 2);
-    // Shine
-    g.fillStyle(0xffffff, 0.9);
-    g.fillCircle(cx - 2, cy - 2, 1);
-
     g.generateTexture('health_orb', s, s);
     g.destroy();
   }
