@@ -16,8 +16,17 @@ import {
 const SAVE_KEY = 'whs_save';
 export const SAVE_SCHEMA_VERSION = 2;
 
+/**
+ * @deprecated Legacy audio on/off booleans — real audio state lives in
+ * `SettingsManager` (`sfxVolume` / `musicVolume`). These fields are kept
+ * in the schema so existing save files still load, but nothing reads them
+ * at runtime anymore. Do not add new consumers. New audio preferences go
+ * through SettingsManager; add them to that module, not here.
+ */
 export interface SaveSettings {
+  /** @deprecated read `SettingsManager.load().sfxVolume > 0` instead */
   soundOn: boolean;
+  /** @deprecated read `SettingsManager.load().musicVolume > 0` instead */
   musicOn: boolean;
 }
 

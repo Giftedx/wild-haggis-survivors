@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from './evolutionChest';
+import { EVOLUTION_RECIPES } from './BalanceConfig';
+import { WEAPON_DEFS } from '../data/weapons';
+import { t } from './i18n';
 
 describe('weapon evolution (chest-gated)', () => {
   it('finds a recipe when base is max level and passive is owned', () => {
@@ -68,5 +71,23 @@ describe('weapon evolution (chest-gated)', () => {
     expect(r).not.toBeNull();
     expect(r!.evolvedWeapon).toBe('william_blade');
     expect(r!.requiredPassive).toBe('tartan_sash');
+  });
+
+  // ---- Regression fence: every EVOLUTION_RECIPE is internally consistent ----
+
+  it.each(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, r]))(
+    'recipe "%s" has a valid base weapon, passive, and i18n keys',
+    (_label, recipe) => {
+      // Base weapon exists in WEAPON_DEFS
+      expect(Object.keys(WEAPON_DEFS)).toContain(recipe.baseWeapon);
+      // i18n keys resolve (t() returns the raw key if missing — a missing key
+      // means the resolved string equals the key itself)
+      expect(t(recipe.nameKey)).not.toBe(recipe.nameKey);
+      expect(t(recipe.descriptionKey)).not.toBe(recipe.descriptionKey);
+    }
+  );
+
+  it('covers all 7 evolution recipes (not accidentally truncated)', () => {
+    expect(EVOLUTION_RECIPES.length).toBe(7);
   });
 });

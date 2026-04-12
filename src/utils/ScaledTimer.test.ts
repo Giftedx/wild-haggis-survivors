@@ -19,5 +19,21 @@ describe('ScaledTimer', () => {
     expect(t.getRemainingMs()).toBe(0);
     expect(t.isActive()).toBe(false);
   });
+
+  it('ignores negative or non-finite deltas', () => {
+    // A corrupted frame must never make a countdown tick backward into
+    // an arbitrarily-large future — that would strand the player in a
+    // state that never expires (e.g. permanent slow motion).
+    const t = new ScaledTimer();
+    t.start(1000);
+    t.tick(-100, 1);
+    expect(t.getRemainingMs()).toBe(1000);
+    t.tick(NaN, 1);
+    expect(t.getRemainingMs()).toBe(1000);
+    t.tick(Infinity, 1);
+    expect(t.getRemainingMs()).toBe(1000);
+    t.tick(0, 1);
+    expect(t.getRemainingMs()).toBe(1000);
+  });
 });
 

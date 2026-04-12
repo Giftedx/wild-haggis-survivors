@@ -2,14 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { globalEventBus } from './GlobalEventBus';
 import { MetaProgressSystem } from './MetaProgressSystem';
-import { SaveManager, type StorageLike } from './SaveManager';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) { return this.m.get(key) ?? null; }
-  setItem(key: string, value: string) { this.m.set(key, value); }
-  removeItem(key: string) { this.m.delete(key); }
-}
+import { SaveManager } from './SaveManager';
+import { MemoryStorage } from '../test/MemoryStorage';
 
 describe('MetaProgressSystem', () => {
   it('increments persistent totalKills on GLOBAL_ENEMY_KILLED without gameplay importing SaveManager', async () => {

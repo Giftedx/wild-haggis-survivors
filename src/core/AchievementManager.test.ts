@@ -1,14 +1,8 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { AchievementManager } from './AchievementManager';
 import { globalEventBus } from './GlobalEventBus';
-import { SaveManager, type StorageLike } from './SaveManager';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) { return this.m.get(key) ?? null; }
-  setItem(key: string, value: string) { this.m.set(key, value); }
-  removeItem(key: string) { this.m.delete(key); }
-}
+import { SaveManager } from './SaveManager';
+import { MemoryStorage } from '../test/MemoryStorage';
 
 describe('AchievementManager', () => {
   let storage: MemoryStorage;

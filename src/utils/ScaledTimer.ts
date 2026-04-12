@@ -13,10 +13,13 @@ export class ScaledTimer {
     return this.remainingMs > 0;
   }
 
-  /** Advance the timer by deltaMs, scaled by timeScale (0 freezes). */
+  /** Advance the timer by deltaMs, scaled by timeScale (0 freezes).
+   *  Negative or non-finite deltas are ignored so a corrupted frame never
+   *  causes a countdown to tick backward into an arbitrarily-large future. */
   tick(deltaMs: number, timeScale: number): void {
     if (this.remainingMs <= 0) return;
     if (timeScale <= 0) return;
+    if (!Number.isFinite(deltaMs) || deltaMs <= 0) return;
     const scaled = deltaMs * timeScale;
     this.remainingMs = Math.max(0, this.remainingMs - scaled);
   }

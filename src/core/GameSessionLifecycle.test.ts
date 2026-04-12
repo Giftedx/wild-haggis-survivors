@@ -1,17 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SaveManager, type IRunState, type StorageLike } from './SaveManager';
+import { SaveManager, type IRunState } from './SaveManager';
 import {
   createGameplaySessionGuard,
   finalizeResumeStartup,
   readPendingResumeRun,
 } from './GameSessionLifecycle';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) { return this.m.get(key) ?? null; }
-  setItem(key: string, value: string) { this.m.set(key, value); }
-  removeItem(key: string) { this.m.delete(key); }
-}
+import { MemoryStorage } from '../test/MemoryStorage';
 
 const makeRun = (overrides?: Partial<IRunState>): IRunState => ({
   gameTimeSec: 120,

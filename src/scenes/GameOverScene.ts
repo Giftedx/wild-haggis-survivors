@@ -14,14 +14,18 @@ import { getSettingsManager } from '../core/SettingsManager';
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
  */
 export class GameOverScene extends Phaser.Scene {
-  private payload!: GameOverPayload;
+  // Payload is optional because Phaser can restart a scene with no data
+  // (e.g. during hot-reload in dev, or if a caller mis-uses scene.start).
+  // We fall back to MainMenu in create() when it's missing rather than
+  // asserting non-null here and crashing on the first field access.
+  private payload: GameOverPayload | null = null;
 
   constructor() {
     super({ key: 'GameOver' });
   }
 
   init(data?: GameOverPayload): void {
-    this.payload = data!;
+    this.payload = data ?? null;
   }
 
   create(): void {
@@ -190,7 +194,7 @@ export class GameOverScene extends Phaser.Scene {
     loadoutSummary.setScale(uiScale);
     this.tweens.add({ targets: loadoutSummary, alpha: 1, duration: 260, delay: 900 });
 
-    const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary, 3);
+    const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary, runResult.goldEarned, 3);
     const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
       .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
@@ -474,6 +478,7 @@ export class GameOverScene extends Phaser.Scene {
   private buildWeaponDamageRows(
     weaponDamage: Record<string, number>,
     summary: GameOverPayload['summary'],
+    goldEarned: number,
     maxRows: number
   ): string {
     const entries = sortedWeaponDamageEntries(weaponDamage);
@@ -482,7 +487,7 @@ export class GameOverScene extends Phaser.Scene {
       t('ui.gameOver.damage_summary', {
         kills: summary.enemiesKilled,
         time: this.formatClockTime(summary.timeSurvivedSec),
-        gold: this.payload.runResult.goldEarned,
+        gold: goldEarned,
       }),
     ];
     if (entries.length === 0) {

@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { t } from '../core/i18n';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
+import { getSettingsManager } from '../core/SettingsManager';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -10,6 +11,13 @@ import { getCameraViewport } from './cameraViewport';
  * in a Container — because Phaser's input system doesn't correctly
  * transform pointer coordinates for interactive objects inside
  * scrollFactor(0) containers when the camera has scrolled.
+ *
+ * Accessibility: reads uiScale + highContrastUi at show-time so each
+ * level-up picks up the current setting (players can open Settings
+ * mid-run and re-open the level-up overlay with the new scale). Font
+ * sizes scale by uiScale so players on a 1.4x comfort setting actually
+ * see bigger level-up text; card dimensions stay fixed so 3-4 cards
+ * still fit across the screen.
  */
 export class UpgradeCardsUI {
   private scene: Phaser.Scene;
@@ -19,11 +27,18 @@ export class UpgradeCardsUI {
   private onSelect: (card: UpgradeCard) => void;
   private onReroll: (() => void) | null = null;
   private rerollsLeft: number = 0;
+  private uiScale: number = 1;
+  private highContrastUi: boolean = false;
 
   constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
     this.onSelect = onSelect;
     this.tickers = tickers;
+  }
+
+  /** Resolve a font size in CSS px from a base px, rounded for crisp bitmap text. */
+  private fs(basePx: number): string {
+    return `${Math.max(1, Math.round(basePx * this.uiScale))}px`;
   }
 
   private getUiViewport(): { x: number; y: number; width: number; height: number } {
@@ -48,6 +63,16 @@ export class UpgradeCardsUI {
   ): void {
     this.hide();
 
+    // Refresh comfort settings at each open — players can toggle uiScale or
+    // high-contrast mid-run from the pause menu.
+    const settings = getSettingsManager().load();
+    this.uiScale = settings.uiScale;
+    this.highContrastUi = settings.highContrastUi;
+
+    const titleColor = this.highContrastUi ? '#ffe066' : '#d4a017';
+    const titleHover = this.highContrastUi ? '#fff1a6' : '#ffcc44';
+    const subtitleColor = this.highContrastUi ? '#d8dfe8' : '#aaaaaa';
+
     const { x: left, y: top, width, height } = this.getUiViewport();
     const depth = 200;
     const centerX = left + width / 2;
@@ -62,30 +87,34 @@ export class UpgradeCardsUI {
     const titleStr = opts?.bannerTitle ?? t('ui.upgradeCards.level_title', { level });
     const subtitleStr = opts?.bannerSubtitle ?? t('ui.upgradeCards.choose_upgrade');
 
-    // Title
-    const title = this.scene.add.text(centerX, top + 55, titleStr, {
-      fontFamily: 'monospace', fontSize: '40px', color: '#d4a017',
+    // Title — scaled font size and warmer HC palette. Y-offsets scale too
+    // so a 1.4x title still has breathing room below it.
+    const titleY = top + Math.round(55 * this.uiScale);
+    const title = this.scene.add.text(centerX, titleY, titleStr, {
+      fontFamily: 'monospace', fontSize: this.fs(40), color: titleColor,
       fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(title);
 
-    const subtitle = this.scene.add.text(centerX, top + 100, subtitleStr, {
-      fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa',
+    const subtitleY = top + Math.round(100 * this.uiScale);
+    const subtitle = this.scene.add.text(centerX, subtitleY, subtitleStr, {
+      fontFamily: 'monospace', fontSize: this.fs(18), color: subtitleColor,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(subtitle);
 
     // Reroll button
     if (this.rerollsLeft > 0 && this.onReroll && !opts?.hideReroll) {
-      const rerollBtn = this.scene.add.text(centerX, top + height - 48, t('ui.upgradeCards.reroll', { count: this.rerollsLeft }), {
-        fontFamily: 'monospace', fontSize: '18px', color: '#d4a017',
+      const rerollY = top + height - Math.round(48 * this.uiScale);
+      const rerollBtn = this.scene.add.text(centerX, rerollY, t('ui.upgradeCards.reroll', { count: this.rerollsLeft }), {
+        fontFamily: 'monospace', fontSize: this.fs(18), color: titleColor,
         fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
         backgroundColor: '#2a2a3a', padding: { x: 16, y: 8 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 3)
         .setInteractive({ useHandCursor: true });
       this.elements.push(rerollBtn);
 
-      rerollBtn.on('pointerover', () => rerollBtn.setColor('#ffcc44'));
-      rerollBtn.on('pointerout', () => rerollBtn.setColor('#d4a017'));
+      rerollBtn.on('pointerover', () => rerollBtn.setColor(titleHover));
+      rerollBtn.on('pointerout', () => rerollBtn.setColor(titleColor));
       rerollBtn.on('pointerdown', () => {
         if (this.rerollsLeft > 0) {
           this.rerollsLeft--;
@@ -203,16 +232,18 @@ export class UpgradeCardsUI {
       .setScale(2.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 
-    // Name
+    // Name — fontSize scales with uiScale so a 1.4x comfort setting
+    // actually enlarges card text instead of leaving it tiny.
+    const descColor = this.highContrastUi ? '#d8dfe8' : '#bbbbbb';
     const name = this.scene.add.text(x, y - 18, t(card.name), {
-      fontFamily: 'monospace', fontSize: '17px', color: '#ffffff',
+      fontFamily: 'monospace', fontSize: this.fs(17), color: '#ffffff',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(name);
 
     // Description
     const desc = this.scene.add.text(x, y + 30, t(card.description), {
-      fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
+      fontFamily: 'monospace', fontSize: this.fs(14), color: descColor,
       align: 'center', lineSpacing: 4,
       wordWrap: { width: w - 20 },
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
@@ -220,7 +251,7 @@ export class UpgradeCardsUI {
 
     // Rarity label (resolved via i18n so future locales can translate)
     const rarityLabel = this.scene.add.text(x, y + h / 2 - 18, t(`ui.common.rarity.${card.rarity}`), {
-      fontFamily: 'monospace', fontSize: '13px', fontStyle: 'bold',
+      fontFamily: 'monospace', fontSize: this.fs(13), fontStyle: 'bold',
       color: `#${borderColor.toString(16).padStart(6, '0')}`,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(rarityLabel);

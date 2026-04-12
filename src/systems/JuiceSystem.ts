@@ -157,9 +157,11 @@ export class JuiceSystem {
       }
     }
 
-    // Danger vignette — pulse when HP < 30%
+    // Danger vignette — pulse when HP < 30%. Use scaledDelta so the pulse
+    // freezes during hit-freeze and eases during slow-motion, matching the
+    // other time-authority effects in this update loop.
     if (hpFraction !== undefined && hpFraction < 0.3 && hpFraction > 0) {
-      this.vignetteAlpha += this.vignetteDirection * delta * 0.002;
+      this.vignetteAlpha += this.vignetteDirection * scaledDelta * 0.002;
       if (this.vignetteAlpha >= 0.5) { this.vignetteAlpha = 0.5; this.vignetteDirection = -1; }
       if (this.vignetteAlpha <= 0.1) { this.vignetteAlpha = 0.1; this.vignetteDirection = 1; }
       this.vignette.setAlpha(this.vignetteAlpha);

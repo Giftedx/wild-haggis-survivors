@@ -29,7 +29,7 @@ Vitest is configured (see `src/utils/save.test.ts`).
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages all 6 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form).
+- **WeaponSystem**: Manages all 8 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 7 of the 8 weapons; bagpipes is utility-only with no evolution).
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **GrowthSystem**: Player visual/hitbox scaling as they level up.
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
@@ -49,7 +49,7 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 
 ### Key Mechanics
 - **The Drift**: A constant clockwise rotational offset on input (configurable in `PLAYER.DRIFT_DEGREES`). Reduced by leveling and upgrades. Core identity of the game.
-- **Weapon Evolution**: Each of the 6 weapons has a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool.
+- **Weapon Evolution**: 7 of the 8 weapons have a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool. Bagpipes is utility-only with no evolution.
 - **Soft World Boundaries**: No hard walls — player slows near edges with a gentle push-back force.
 - **Persistence**: `localStorage` via `src/utils/save.ts` (key: `whs_save`). Stores gold, permanent upgrades, settings, and run stats.
 - **Elite Enemies**: 10% spawn chance after 2 minutes. Golden glow, 2× HP, 1.3× speed, 3× XP. Marked via `Enemy.markAsElite()`. Never applied to bosses or hazards.
