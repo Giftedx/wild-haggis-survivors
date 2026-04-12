@@ -56,6 +56,7 @@ describe('SpawnSystem boss warning layout', () => {
           return {
             setScrollFactor() { return this; },
             setDepth() { return this; },
+            setAlpha() { return this; },
             destroy() {},
           };
         },
@@ -65,9 +66,17 @@ describe('SpawnSystem boss warning layout', () => {
             setOrigin() { return this; },
             setScrollFactor() { return this; },
             setDepth() { return this; },
+            setAlpha() { return this; },
+            setScale() { return this; },
             destroy() {},
           };
         },
+        circle: () => ({
+          setScrollFactor() { return this; },
+          setDepth() { return this; },
+          setAlpha() { return this; },
+          destroy() {},
+        }),
       },
       tweens: { add: vi.fn() },
     };
@@ -83,11 +92,11 @@ describe('SpawnSystem boss warning layout', () => {
     //   zoomOffsetY = (720 - 720/1.25) / 2  = 72
     //   width (world units) = 1024
     //   height = 576
-    // The banner must center on the *screen*, which is viewport origin +
-    // (width/2, height/2) = (128 + 512, 72 + 288) = (640, 360). Previous
-    // regression asserted (512, 288) — that was codifying the bug where
-    // getUiViewport discarded x/y offsets. Fixed Phase 6.
-    expect(rectangles[0]).toEqual({ x: 640, y: 360, width: 1024, height: 76 });
+    // The boss warning now creates: vignette (full screen), banner (80px), two glow lines, and text.
+    // The vignette is first (full viewport), the banner is second (80px tall).
+    // All positioned at center: (640, 360).
+    expect(rectangles[0]).toEqual({ x: 640, y: 360, width: 1024, height: 576 }); // vignette
+    expect(rectangles[1]).toEqual({ x: 640, y: 360, width: 1024, height: 80 });  // banner
     expect(texts[0]).toEqual({ x: 640, y: 360, text: 'Incoming menace' });
   });
 
@@ -117,6 +126,7 @@ describe('SpawnSystem boss warning layout', () => {
         rectangle: () => ({
           setScrollFactor() { return this; },
           setDepth() { return this; },
+          setAlpha() { return this; },
           destroy() {},
         }),
         text: (_x: number, _y: number, _text: string, style: Record<string, unknown>) => {
@@ -125,9 +135,17 @@ describe('SpawnSystem boss warning layout', () => {
             setOrigin() { return this; },
             setScrollFactor() { return this; },
             setDepth() { return this; },
+            setAlpha() { return this; },
+            setScale() { return this; },
             destroy() {},
           };
         },
+        circle: () => ({
+          setScrollFactor() { return this; },
+          setDepth() { return this; },
+          setAlpha() { return this; },
+          destroy() {},
+        }),
       },
       tweens: { add: vi.fn() },
     };

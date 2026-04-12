@@ -316,25 +316,55 @@ export class WeaponSystem {
     switch (w.config.behavior) {
       case 'projectile':
         this.fireProjectile(w, px, py, 'thistle');
+        this.spawnMuzzleFlash(px, py, 0xcc88ff); // thistle purple
         break;
       case 'piercing':
         this.fireProjectile(w, px, py, 'caber');
+        this.spawnMuzzleFlash(px, py, 0xddbb66); // wood amber
         break;
       case 'bouncing':
         this.fireBouncing(w, px, py);
+        this.spawnMuzzleFlash(px, py, 0xaa7733); // haggis brown
         break;
       case 'aoe_pulse':
         this.fireAoePulse(w, px, py);
-        break;
+        break; // AoE has its own visual ring — no muzzle flash needed
       case 'trail':
         this.fireTrail(w, px, py);
-        break;
+        break; // trail weapon doesn't "fire" from origin
       case 'arc_sweep':
         this.fireArcSweep(w, px, py);
+        this.spawnMuzzleFlash(px, py, 0xccddff); // claymore steel blue
         break;
       case 'aura_pulse':
         this.fireAuraPulse(w, px, py);
-        break;
+        break; // aura has its own visual
+    }
+  }
+
+  /** Small muzzle flash at projectile fire point — weapon-coloured spark burst. */
+  private spawnMuzzleFlash(x: number, y: number, color: number): void {
+    const scene = this.scene;
+    // Central flash circle — bright, fades fast
+    const flash = scene.add.circle(x, y, 8, color, 0.8).setDepth(4);
+    scene.tweens.add({
+      targets: flash, scale: 2, alpha: 0,
+      duration: 180, ease: 'Quad.easeOut',
+      onComplete: () => flash.destroy(),
+    });
+    // 4 tiny sparks radiating out
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
+      const spark = scene.add.circle(x, y, 2, color, 0.9).setDepth(4);
+      scene.tweens.add({
+        targets: spark,
+        x: x + Math.cos(angle) * 12,
+        y: y + Math.sin(angle) * 12,
+        alpha: 0, scale: 0.3,
+        duration: 220,
+        ease: 'Quad.easeOut',
+        onComplete: () => spark.destroy(),
+      });
     }
   }
 

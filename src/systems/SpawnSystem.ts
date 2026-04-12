@@ -266,12 +266,21 @@ export class SpawnSystem {
     const labelColor = settings.highContrastUi ? '#ffd8d8' : '#ff6644';
     const strokeThickness = settings.highContrastUi ? 6 : 5;
 
-    // Center the warning banner within the VISIBLE camera viewport. Using
-    // width/2, height/2 alone would render it offset from center when the
-    // camera zoom is not 1.0 — the screenshot bug this fix addresses.
+    // Center the warning banner within the VISIBLE camera viewport.
     const cx = x + width / 2;
     const cy = y + height / 2;
-    const bg = this.scene.add.rectangle(cx, cy, width, 76, 0x000000, 0.75)
+
+    // ── Dramatic entrance worthy of a boss ──
+    // Screen-edge vignette darkening (danger is here)
+    const vignette = this.scene.add.rectangle(cx, cy, width, height, 0x000000, 0)
+      .setScrollFactor(0).setDepth(149);
+    // Dark banner background with red-tinted edges
+    const bg = this.scene.add.rectangle(cx, cy, width, 80, 0x0a0000, 0)
+      .setScrollFactor(0).setDepth(150);
+    // Pulsing red glow line above and below the banner
+    const glowTop = this.scene.add.rectangle(cx, cy - 40, width, 2, 0xff4422, 0)
+      .setScrollFactor(0).setDepth(150);
+    const glowBot = this.scene.add.rectangle(cx, cy + 40, width, 2, 0xff4422, 0)
       .setScrollFactor(0).setDepth(150);
     const label = this.scene.add.text(cx, cy, text, {
       fontFamily: 'monospace',
@@ -280,16 +289,43 @@ export class SpawnSystem {
       fontStyle: 'bold',
       stroke: '#000',
       strokeThickness,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(151);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(151).setAlpha(0);
 
-    // Flash and fade
+    const allTargets = [vignette, bg, glowTop, glowBot, label];
+
+    // Vignette darkens the edges
     this.scene.tweens.add({
-      targets: [bg, label],
-      alpha: { from: 0, to: 1 },
-      duration: 300,
+      targets: vignette, alpha: 0.3, duration: 200,
+    });
+    // Banner slams in (fast, hard)
+    this.scene.tweens.add({
+      targets: bg, alpha: 0.8, duration: 150,
+    });
+    // Text scales from large to normal (impact feel)
+    label.setScale(1.3);
+    this.scene.tweens.add({
+      targets: label, alpha: 1, scale: 1, duration: 250, ease: 'Back.easeOut',
+    });
+    // Red glow lines pulse
+    this.scene.tweens.add({
+      targets: [glowTop, glowBot], alpha: 0.8, duration: 200,
+    });
+    this.scene.tweens.add({
+      targets: [glowTop, glowBot],
+      alpha: { from: 0.8, to: 0.3 },
+      duration: 400,
+      delay: 200,
       yoyo: true,
-      hold: 900,
-      onComplete: () => { bg.destroy(); label.destroy(); },
+      repeat: 1,
+    });
+
+    // Hold, then fade everything out
+    this.scene.tweens.add({
+      targets: allTargets,
+      alpha: 0,
+      delay: 1200,
+      duration: 400,
+      onComplete: () => allTargets.forEach(t => t.destroy()),
     });
   }
 

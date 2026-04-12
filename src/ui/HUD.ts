@@ -20,6 +20,7 @@ export class HUD {
 
   private xpBarBg!: Phaser.GameObjects.Rectangle;
   private xpBarFill!: Phaser.GameObjects.Rectangle;
+  private xpBarHighlight!: Phaser.GameObjects.Rectangle;
 
   private levelText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
@@ -47,6 +48,11 @@ export class HUD {
   // Boss HP bar
   private bossBarBg!: Phaser.GameObjects.Rectangle;
   private bossBarFill!: Phaser.GameObjects.Rectangle;
+  private bossBarHighlight!: Phaser.GameObjects.Rectangle;
+  private bossBarShadow!: Phaser.GameObjects.Rectangle;
+  private bossBarGlow!: Phaser.GameObjects.Rectangle;
+  private bossBarWarningPulseTime = 0;
+  private weaponPulseTime = 0;
   private bossNameText!: Phaser.GameObjects.Text;
   private bossBarVisible: boolean = false;
   private bossHpFraction = 1;
@@ -163,12 +169,18 @@ export class HUD {
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
       .setOrigin(1, 0).setScrollFactor(0).setDepth(d));
 
-    // XP bar
+    // XP bar — layered for depth (bg → dark shadow → fill → top highlight)
     const xpY = height - this.XP_BAR_H - 4;
-    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x1a1420)
+    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x0a0810)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
+    // Inner shadow line at top of bg (depth)
+    this.addEl(this.scene.add.rectangle(0, xpY, width, 1, 0x000000, 0.6)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
     this.xpBarFill = this.addEl(this.scene.add.rectangle(0, xpY, 0, this.XP_BAR_H, COLORS.XP_BAR)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
+    // Top highlight on fill (gold shimmer line at top)
+    this.xpBarHighlight = this.addEl(this.scene.add.rectangle(0, xpY, 0, 2, 0xffe066, 0.7)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2));
 
     // Pause button (visible on touch devices, small on desktop)
     this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |', {
@@ -207,15 +219,25 @@ export class HUD {
       ...style, fontSize: '16px', color: '#8a7a6a',
     }).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
-    // Boss HP bar (hidden by default) — positioned below weapon slots
+    // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight
     const bossBarW = width * 0.55;
     const bossBarY = 98;
-    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x1a1420)
+    // Warning glow (sits behind everything, fades in when low HP)
+    this.bossBarGlow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW + 12, 30, 0xff2200, 0)
+      .setScrollFactor(0).setDepth(d - 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
+    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x0e0a12)
       .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, 0xff4444)
+    // Inner shadow line
+    this.bossBarShadow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY - 9, bossBarW, 2, 0x000000, 0.6)
+      .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
+    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, 0xcc2222)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
+    // Top highlight on fill (reads as 3D depth)
+    this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, 0xff6644, 0.6)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '', {
       fontFamily: 'monospace', fontSize: '17px', color: '#ff9999', fontStyle: 'bold',
+      stroke: '#000', strokeThickness: 3,
     }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
     if (this.uiScale !== 1) {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
@@ -300,6 +322,7 @@ export class HUD {
     this.xpBarBg.setPosition(x, xpY);
     this.xpBarBg.width = width;
     this.xpBarFill.setPosition(x, xpY);
+    this.xpBarHighlight.setPosition(x, xpY);
 
     const topY = y + this.topSafePad;
     this.timerText.setPosition(x + width / 2, topY);
@@ -310,10 +333,17 @@ export class HUD {
 
     const bossBarW = width * 0.55;
     const bossBarY = Math.max(y + 44, Math.min(y + this.topSafePad + 86, y + Math.max(44, height - 80)));
+    const bossBarLeft = x + width / 2 - bossBarW / 2;
     this.bossBarBg.setPosition(x + width / 2, bossBarY);
     this.bossBarBg.width = bossBarW;
-    this.bossBarFill.setPosition(x + width / 2 - bossBarW / 2, bossBarY);
+    this.bossBarGlow.setPosition(x + width / 2, bossBarY);
+    this.bossBarGlow.width = bossBarW + 12;
+    this.bossBarShadow.setPosition(x + width / 2, bossBarY - 9);
+    this.bossBarShadow.width = bossBarW;
+    this.bossBarFill.setPosition(bossBarLeft, bossBarY);
     this.bossBarFill.width = bossBarW * Math.max(0, this.bossHpFraction);
+    this.bossBarHighlight.setPosition(bossBarLeft, bossBarY - 8);
+    this.bossBarHighlight.width = bossBarW * Math.max(0, this.bossHpFraction);
     this.bossNameText.setPosition(x + width / 2, bossBarY - 14);
   }
 
@@ -501,17 +531,29 @@ export class HUD {
       for (const pip of this.dashPipImages) pip.setVisible(false);
     }
 
-    this.xpBarFill.width = this.layoutWidth * xpFraction;
+    const xpFillWidth = this.layoutWidth * xpFraction;
+    this.xpBarFill.width = xpFillWidth;
+    this.xpBarHighlight.width = xpFillWidth;
 
-    // XP bar level-up flash — fires when the bar resets (fraction drops after being high)
+    // XP bar level-up flash — brighter, wider pulse when the bar resets
     if (this.prevXpFraction > 0.8 && xpFraction < 0.2) {
+      // Primary bright flash across the bar
       const flash = this.scene.add.rectangle(
         this.xpBarBg.x, this.xpBarBg.y,
-        this.layoutWidth, this.XP_BAR_H, 0xffffff, 0.6
+        this.layoutWidth, this.XP_BAR_H, 0xffee88, 0.9
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 3);
+      this.scene.tweens.add({
+        targets: flash, alpha: 0, duration: 400,
+        onComplete: () => flash.destroy(),
+      });
+      // Expanding glow that bleeds above the bar (golden burst)
+      const glow = this.scene.add.rectangle(
+        this.xpBarBg.x, this.xpBarBg.y - 4,
+        this.layoutWidth, this.XP_BAR_H + 8, 0xffdd44, 0.4
       ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2);
       this.scene.tweens.add({
-        targets: flash, alpha: 0, duration: 250,
-        onComplete: () => flash.destroy(),
+        targets: glow, alpha: 0, scaleY: 1.5, duration: 500,
+        onComplete: () => glow.destroy(),
       });
     }
     this.prevXpFraction = xpFraction;
@@ -535,6 +577,9 @@ export class HUD {
       if (this.bossBarVisible) {
         this.bossBarBg.setVisible(false);
         this.bossBarFill.setVisible(false);
+        this.bossBarHighlight.setVisible(false);
+        this.bossBarShadow.setVisible(false);
+        this.bossBarGlow.setVisible(false);
         this.bossNameText.setVisible(false);
         this.bossBarVisible = false;
       }
@@ -544,14 +589,38 @@ export class HUD {
     if (!this.bossBarVisible) {
       this.bossBarBg.setVisible(true);
       this.bossBarFill.setVisible(true);
+      this.bossBarHighlight.setVisible(true);
+      this.bossBarShadow.setVisible(true);
+      this.bossBarGlow.setVisible(true);
       this.bossNameText.setVisible(true);
       this.bossBarVisible = true;
     }
 
     this.bossHpFraction = Math.max(0, boss.hpFraction);
     const barW = this.layoutWidth * 0.55;
-    this.bossBarFill.width = barW * this.bossHpFraction;
+    const fillW = barW * this.bossHpFraction;
+    this.bossBarFill.width = fillW;
+    this.bossBarHighlight.width = fillW;
     this.bossNameText.setText(boss.name);
+
+    // Colour shift based on HP: full red → orange as low → bright red flash at <25%
+    if (this.bossHpFraction < 0.25) {
+      // Warning state — pulse the glow behind the bar
+      this.bossBarWarningPulseTime += 0.08;
+      const pulse = 0.3 + Math.sin(this.bossBarWarningPulseTime) * 0.25;
+      this.bossBarGlow.setFillStyle(0xff2200, pulse);
+      // Brighter fill colour (angry red)
+      this.bossBarFill.setFillStyle(0xff2222);
+      this.bossBarHighlight.setFillStyle(0xffaa44);
+    } else if (this.bossHpFraction < 0.5) {
+      this.bossBarGlow.setFillStyle(0xff4400, 0.08);
+      this.bossBarFill.setFillStyle(0xdd3333);
+      this.bossBarHighlight.setFillStyle(0xff7755);
+    } else {
+      this.bossBarGlow.setFillStyle(0xff2200, 0);
+      this.bossBarFill.setFillStyle(0xcc2222);
+      this.bossBarHighlight.setFillStyle(0xff6644);
+    }
   }
 
   private updateWeaponSlots(
@@ -625,9 +694,24 @@ export class HUD {
         // Cooldown bar: fills left-to-right along the bottom edge.
         const cdFrac = w.cooldownFrac ?? 1;
         slot.cdFill.width = size * cdFrac;
-        slot.cdFill.setFillStyle(cdFrac >= 1 ? 0x44cc44 : 0x005eb8, 0.4);
+        const isReady = cdFrac >= 1;
+        slot.cdFill.setFillStyle(isReady ? 0x44cc44 : 0x005eb8, isReady ? 0.85 : 0.5);
+
+        // ── Ready-state pulse: icon breathes gently when weapon is ready to fire ──
+        // Non-destructive — just alpha/scale oscillation using time-based sine.
+        if (isReady) {
+          const pulse = 0.92 + Math.sin(this.weaponPulseTime + i * 0.5) * 0.08;
+          slot.icon.setScale(0.8 * pulse);
+          slot.icon.setAlpha(0.85 + Math.sin(this.weaponPulseTime + i * 0.5) * 0.15);
+        } else {
+          // Cooling: dimmed, muted — visually "spent"
+          slot.icon.setScale(0.8);
+          slot.icon.setAlpha(0.55);
+        }
       }
     }
+    // Advance pulse timer (called every frame from update)
+    this.weaponPulseTime += 0.08;
   }
 
   private updatePassiveSlots(passives: string[]): void {
