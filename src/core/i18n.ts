@@ -76,8 +76,16 @@ export const EN_STRINGS: LocaleTree = {
     gameOver: {
       victory_title: 'The moor is yours!',
       death_title: 'Hooves down — braw try',
+      /** Rotating death titles — picked randomly so each death feels different. */
+      death_title_2: 'Aw naw — doon ye go',
+      death_title_3: 'That\'s yir lot, pal',
+      death_title_4: 'Hooves up — no\' this time',
       victory_sub: 'The Highlands breathe easier. Bask a minute; the glen will still be here.',
       death_sub: 'Nae shame in it — every tumble teaches the hooves. Yir progress is saved. When ye\'re ready, we go again.',
+      /** Rotating death subtitles — each one a different tone of Glesga compassion. */
+      death_sub_2: 'Ach, ye were doin\' well there. The moor\'ll wait for ye — it always does.',
+      death_sub_3: 'If ye fall oot that tree and break yer legs, dinnae come runnin\' tae me. …Kiddin\'. Come back any time.',
+      death_sub_4: 'I don\'t mean to speak ill of the dead but — ye were brilliant, so ye were. Go again.',
       run_variant: 'This run: {label}',
       stat_time: 'Time',
       stat_kills: 'Culls',

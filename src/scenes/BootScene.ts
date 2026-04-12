@@ -51,28 +51,67 @@ export class BootScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
 
-    // Brief splash screen — textures are already generated, show a quick brand moment
+    // ── Boot splash — a wee highland moment before the menu. ──
+    // Not just a logo screen — a glimpse of the moor at dawn.
     this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
 
-    const title = this.add.text(width / 2, height * 0.4, t('ui.menu.title'), {
-      fontFamily: 'monospace', fontSize: '28px', color: '#d4a017',
-      fontStyle: 'bold',
+    // Distant mountain silhouette (subtle, sets the highland tone immediately)
+    const mtGfx = this.add.graphics().setAlpha(0);
+    mtGfx.fillStyle(0x0a0a1a, 1);
+    const baseY = height * 0.65;
+    mtGfx.fillTriangle(0, baseY, width * 0.25, baseY - 60, width * 0.5, baseY);
+    mtGfx.fillTriangle(width * 0.3, baseY, width * 0.6, baseY - 80, width * 0.9, baseY);
+    mtGfx.fillTriangle(width * 0.6, baseY, width * 0.85, baseY - 50, width, baseY);
+    mtGfx.fillRect(0, baseY, width, height - baseY);
+
+    // Ground heather wash (purple tint at the bottom)
+    const heatherWash = this.add.rectangle(width / 2, height * 0.85, width, height * 0.3, 0x2a1a30, 0).setAlpha(0);
+
+    // Faint mist wisps
+    const mist1 = this.add.ellipse(width * 0.3, height * 0.6, 200, 30, 0xccccbb, 0).setAlpha(0);
+    const mist2 = this.add.ellipse(width * 0.7, height * 0.55, 160, 20, 0xccddee, 0).setAlpha(0);
+
+    const title = this.add.text(width / 2, height * 0.35, t('ui.menu.title'), {
+      fontFamily: 'monospace', fontSize: '32px', color: '#d4a017',
+      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 4,
     }).setOrigin(0.5).setAlpha(0);
 
-    const mascot = this.add.sprite(width / 2, height * 0.55, getVariantByKey(DEFAULT_VARIANT_KEY).textureKey)
-      .setScale(2).setAlpha(0);
+    // Tagline — the soul charter in miniature
+    const tagline = this.add.text(width / 2, height * 0.48, t('ui.menu.built_on_moor'), {
+      fontFamily: 'monospace', fontSize: '12px', color: '#6a5a4a',
+      fontStyle: 'italic',
+    }).setOrigin(0.5).setAlpha(0);
 
-    // Fade in title and mascot, then transition
+    const mascot = this.add.sprite(width / 2, height * 0.62, getVariantByKey(DEFAULT_VARIANT_KEY).textureKey)
+      .setScale(2.5).setAlpha(0);
+
+    // ── Staggered fade-in: moor → mountains → mist → title → mascot ──
+    // The player watches the highland dawn unfold in 1.5 seconds.
+    this.tweens.add({ targets: heatherWash, alpha: 0.15, duration: 300 });
+    this.tweens.add({ targets: mtGfx, alpha: 0.6, duration: 400, delay: 100 });
+    this.tweens.add({ targets: [mist1, mist2], alpha: 0.06, duration: 500, delay: 200 });
+    this.tweens.add({ targets: title, alpha: 1, duration: 400, delay: 300 });
+    this.tweens.add({ targets: tagline, alpha: 1, duration: 400, delay: 500 });
     this.tweens.add({
-      targets: [title, mascot],
+      targets: mascot,
       alpha: 1,
       duration: 400,
+      delay: 400,
       onComplete: () => {
+        // Gentle mascot bob while the splash holds
         this.tweens.add({
-          targets: [title, mascot],
+          targets: mascot,
+          y: mascot.y - 4,
+          duration: 800,
+          yoyo: true,
+          ease: 'Sine.easeInOut',
+        });
+        // Hold, then fade everything and transition
+        this.tweens.add({
+          targets: [title, tagline, mascot, mtGfx, heatherWash, mist1, mist2],
           alpha: 0,
-          delay: 600,
-          duration: 300,
+          delay: 800,
+          duration: 400,
           onComplete: () => this.scene.start('MainMenu'),
         });
       },

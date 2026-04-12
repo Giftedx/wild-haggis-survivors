@@ -76,8 +76,14 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: overlay, alpha: 0.82, duration: 420 });
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
+    // Rotating death titles/subtitles — each death feels different
+    const deathTitleKey = isVictory ? 'ui.gameOver.victory_title'
+      : ['ui.gameOver.death_title', 'ui.gameOver.death_title_2', 'ui.gameOver.death_title_3', 'ui.gameOver.death_title_4'][Phaser.Math.Between(0, 3)];
+    const deathSubKey = isVictory ? 'ui.gameOver.victory_sub'
+      : ['ui.gameOver.death_sub', 'ui.gameOver.death_sub_2', 'ui.gameOver.death_sub_3', 'ui.gameOver.death_sub_4'][Phaser.Math.Between(0, 3)];
+
     const title = this.add
-      .text(panelCenterX, panelTop + 54, isVictory ? t('ui.gameOver.victory_title') : t('ui.gameOver.death_title'), {
+      .text(panelCenterX, panelTop + 54, t(deathTitleKey), {
         fontFamily: 'monospace',
         fontSize: isVictory ? '56px' : '52px',
         color: titleColor,
@@ -92,10 +98,10 @@ export class GameOverScene extends Phaser.Scene {
       .setScale(isVictory ? 0.7 : 1.4);
     title.setScale((isVictory ? 0.7 : 1.4) * uiScale);
     const subtitle = this.add
-      .text(panelCenterX, panelTop + 94, isVictory ? t('ui.gameOver.victory_sub') : t('ui.gameOver.death_sub'), {
+      .text(panelCenterX, panelTop + 94, t(deathSubKey), {
         fontFamily: 'monospace',
         fontSize: '17px',
-        color: '#a8b0c0',
+        color: '#b8a88a',
         align: 'center',
         // Wrap within the panel so the subtitle doesn't run past the yellow
         // outline on narrow viewports.
