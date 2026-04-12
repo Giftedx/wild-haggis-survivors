@@ -23,6 +23,7 @@ export class TutorialSystem {
   private highlight: Phaser.GameObjects.Arc | null = null;
   private gemHandler?: (gx: number, gy: number, value: number) => void;
   private keyDownHandler?: (e: KeyboardEvent) => void;
+  private finishHandler?: () => void;
 
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
     this.scene = scene;
@@ -37,6 +38,10 @@ export class TutorialSystem {
   dispose(): void {
     this.detachGemListener();
     this.detachKeyHandler();
+    if (this.finishHandler) {
+      this.scene.input.off('pointerdown', this.finishHandler);
+      this.finishHandler = undefined;
+    }
     this.clearVisuals();
     this.releaseTokens();
     this.phase = 'done';
@@ -181,6 +186,7 @@ export class TutorialSystem {
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', this.keyDownHandler);
     }
-    this.scene.input.once('pointerdown', finish);
+    this.finishHandler = finish;
+    this.scene.input.once('pointerdown', this.finishHandler);
   }
 }

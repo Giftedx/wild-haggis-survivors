@@ -159,6 +159,7 @@ export class UpgradeCardsUI {
         const first = cards[0];
         const maxStaggerMs = (cards.length - 1) * 120;
         const autoPickHandle = this.tickers.addOnce('raw', maxStaggerMs + 100, () => {
+          this.hide();
           this.onSelect(first);
         });
         this.pendingHandles.push(autoPickHandle);

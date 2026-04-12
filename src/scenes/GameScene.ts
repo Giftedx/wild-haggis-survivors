@@ -105,6 +105,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private subs = new SubscriptionBag();
   private debugOverlay: DebugOverlay | null = null;
   private announcedEvolutionReady = new Set<string>();
+  private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
+  private cachedBoss: Enemy | null = null;
+  private cachedBossConfig: (typeof BOSSES)[number] | null = null;
 
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
@@ -253,6 +256,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem = new SpawnSystem(this);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.xpSystem = new XPSystem(this);
+    Enemy.refreshSettings();
+    this.cachedBoss = null;
+    this.cachedBossConfig = null;
     this.ownedPassives = [];
     this.evolvedWeapons = [];
     this.killCount = 0;
@@ -396,7 +402,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     // Player ↔ Enemy collision
-    this.physics.add.overlap(
+    this.playerEnemyCollider = this.physics.add.overlap(
       this.player,
       this.spawnSystem.getEnemyGroup(),
       this.onPlayerHitEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
@@ -556,6 +562,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       } catch {
         /* ignore */
       }
+      if (this.playerEnemyCollider) {
+        try { this.physics.world.removeCollider(this.playerEnemyCollider); } catch { /* ignore */ }
+        this.playerEnemyCollider = null;
+      }
       sfxManager.clear();
       this.achievementUnsub?.();
       this.achievementUnsub = null;
@@ -566,6 +576,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.subs.dispose(); } catch { /* ignore */ }
       try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
       this.debugOverlay = null;
+      // Remove event listeners before destroying systems to prevent stacking on restart
+      try { this.weaponSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
+      try { this.xpSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
       // Flush run-scoped state on teardown to prevent "second run" bleed
       try { this.updateTickers.clear(); } catch { /* ignore */ }
       try { this.timeManager?.destroy(); } catch { /* ignore */ }
@@ -1659,23 +1672,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // ── Boss HP Bar ──
 
   private updateBossHPBar(): void {
-    const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
-    let activeBoss: Enemy | null = null;
-
-    // Show the boss with the lowest HP fraction (highest priority target)
-    for (const enemy of enemies) {
-      if (enemy.active && enemy.isBoss()) {
-        if (!activeBoss || enemy.getHpFraction() < activeBoss.getHpFraction()) {
-          activeBoss = enemy;
+    // Re-scan only when the cached boss is dead or inactive
+    if (!this.cachedBoss || !this.cachedBoss.active || !this.cachedBoss.isBoss()) {
+      this.cachedBoss = null;
+      this.cachedBossConfig = null;
+      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
+      for (const enemy of enemies) {
+        if (enemy.active && enemy.isBoss()) {
+          if (!this.cachedBoss || enemy.getHpFraction() < this.cachedBoss.getHpFraction()) {
+            this.cachedBoss = enemy;
+          }
         }
+      }
+      if (this.cachedBoss) {
+        this.cachedBossConfig = BOSSES.find(b => b.key === this.cachedBoss!.getEnemyKey()) ?? null;
       }
     }
 
-    if (activeBoss) {
-      const bossDef = BOSSES.find(b => b.key === activeBoss!.getEnemyKey());
+    if (this.cachedBoss) {
       this.hud.updateBossBar({
-        name: bossDef ? t(bossDef.nameKey) : activeBoss.getEnemyKey(),
-        hpFraction: activeBoss.getHpFraction(),
+        name: this.cachedBossConfig ? t(this.cachedBossConfig.nameKey) : this.cachedBoss.getEnemyKey(),
+        hpFraction: this.cachedBoss.getHpFraction(),
       });
     } else {
       this.hud.updateBossBar(null);
