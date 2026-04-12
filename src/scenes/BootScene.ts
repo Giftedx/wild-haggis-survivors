@@ -3237,14 +3237,15 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx - 13, cy - 28, 28, 6);
     g.fillStyle(0xeeeeee, 1);
     g.fillRect(cx - 12, cy - 27, 26, 5);
-    // Puffy top (tilted slightly — he's been screaming so hard his hat shifted)
+    // Puffy top (tilted slightly — he's been screaming so hard his hat shifted).
+    // Center puff y=-35 (was -36 — radius-9 circle there clipped at y=-1).
     g.fillStyle(0xbbbbbb, 1);
     g.fillCircle(cx - 9, cy - 33, 8);
-    g.fillCircle(cx + 1, cy - 36, 9);
+    g.fillCircle(cx + 1, cy - 35, 9);
     g.fillCircle(cx + 11, cy - 34, 8);
     g.fillStyle(0xeeeeee, 1);
     g.fillCircle(cx - 9, cy - 33, 7);
-    g.fillCircle(cx + 1, cy - 36, 8);
+    g.fillCircle(cx + 1, cy - 35, 8);
     g.fillCircle(cx + 11, cy - 34, 7);
 
     // === Cleaver in right hand ===

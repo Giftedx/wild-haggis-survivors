@@ -101,6 +101,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Death → run result overlay delay (raw delta — runs during RUN_END pause). */
   private deathResultRemainingMs: number | null = null;
   private deathResultCallback: (() => void) | null = null;
+  /** Victory → run result overlay delay (raw delta — RUN_END sets timeScale=0
+   *  so `time.delayedCall` would never fire; use the same raw ticker pattern
+   *  as death so the ceremony lands on the game-over screen). */
+  private victoryResultRemainingMs: number | null = null;
+  private victoryResultCallback: (() => void) | null = null;
   private hintHideHandle: TickerHandle | null = null;
   private subs = new SubscriptionBag();
   private debugOverlay: DebugOverlay | null = null;
@@ -190,6 +195,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.victoryDelayGen = 0;
     this.deathResultRemainingMs = null;
     this.deathResultCallback = null;
+    this.victoryResultRemainingMs = null;
+    this.victoryResultCallback = null;
     this.hintHideHandle = null;
     this.lavaZones = [];
     this.healZones = [];
@@ -633,6 +640,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tickIFrameWindow(scaledDelta);
     this.tickVictoryDefer(delta);
     this.tickDeathResultOverlay(delta);
+    this.tickVictoryResultOverlay(delta);
 
     if (isAutoBattleEnabled()) {
       this.player.setAutoBattleSteering(
@@ -1170,6 +1178,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
+  private tickVictoryResultOverlay(rawDelta: number): void {
+    if (this.victoryResultRemainingMs === null || this.victoryResultCallback === null) return;
+    this.victoryResultRemainingMs -= rawDelta;
+    if (this.victoryResultRemainingMs <= 0) {
+      const cb = this.victoryResultCallback;
+      this.victoryResultRemainingMs = null;
+      this.victoryResultCallback = null;
+      cb();
+    }
+  }
+
   private toggleUiPause(): void {
     // Don't open the pause menu while a modal owns pause (level-up, countdown, end screen).
     if (this.timeManager.has('LEVEL_UP') || this.timeManager.has('COUNTDOWN') || this.timeManager.has('RUN_END')) return;
@@ -1445,9 +1464,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
 
-    this.time.delayedCall(1200, () => {
+    // Raw-delta ticker — RUN_END set timeScale=0, so delayedCall would never fire.
+    // Mirrors the death path's deathResultRemainingMs pattern.
+    this.victoryResultRemainingMs = 1200;
+    this.victoryResultCallback = () => {
       this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult, previousBests));
-    });
+    };
   }
 
   private handlePlayerDeath(): void {

@@ -184,7 +184,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Size hitbox based on texture. Bigger sprites (BootScene v2) bumped most
     // canvases by ~1.5×, so radii here bump proportionally. Offset math uses
     // this.width/this.height so it tracks whichever texture is assigned.
-    const r = config.texture.startsWith('boss') ? 32
+    const r = config.key === 'tour_bus' ? 42
+      : config.texture.startsWith('boss') ? 32
       : config.key === 'highland_cow' ? 26
       : config.key === 'terrier' ? 12
       : config.key === 'midgie_swarm' ? 10
@@ -981,7 +982,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Use current game time so late-game phase-2 minions scale with the run
         const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
         minion.spawn(this.x + Math.cos(a) * 30, this.y + Math.sin(a) * 30, chef, gameTime);
-        minion.markAsElite();
+        // Phase-2 minions respect the same elite gate as wave spawns — the
+        // player has already learned what the gold glow means at minute 2,
+        // and auto-eliting every minion gifted unintended XP + speed mid-boss.
+        if (gameTime > BALANCE.enemy.ELITE_UNLOCK_SEC
+            && Math.random() < BALANCE.enemy.ELITE_SPAWN_CHANCE) {
+          minion.markAsElite();
+        }
       }
       // Visual indicator
       tryCameraShake(this.scene.cameras.main, 150, 0.008, getSettingsManager());
