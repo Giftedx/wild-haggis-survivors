@@ -9,6 +9,7 @@ import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
+import { SaveManager } from '../core/SaveManager';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -314,6 +315,10 @@ export class GameOverScene extends Phaser.Scene {
     this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
       musicEngine.stop();
+      // Match MenuScene: wipe any lingering suspended-run snapshot before
+      // starting a fresh run. GameScene's end-of-run cleanup already clears
+      // it, but swallowed storage errors could otherwise resurrect a ghost run.
+      try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
       this.scene.start('Game');
     });
     this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
