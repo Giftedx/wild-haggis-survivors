@@ -191,7 +191,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       : config.key === 'midgie_swarm' ? 10
       : config.key === 'kelpie' ? 14
       : config.key === 'sheep' ? 13
-      : config.key === 'eagle' ? 16
+      : config.key === 'eagle' ? 19
       : config.key === 'deep_fryer' ? 20
       : config.key === 'nest' ? 16
       : config.key === 'ghost' ? 16

@@ -51,53 +51,106 @@ export class BootScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
 
-    // ── Boot splash — a wee highland moment before the menu. ──
-    // Not just a logo screen — a glimpse of the moor at dawn.
-    this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
+    // ── Boot splash — a Highland dawn painting, not a logo screen ──
+    // Deep night sky base
+    this.add.rectangle(width / 2, height / 2, width, height, 0x0a0a1a);
 
-    // Distant mountain silhouette (subtle, sets the highland tone immediately)
+    // ── Sky gradient — dark indigo at top warming to pre-dawn amber at horizon ──
+    const skyGfx = this.add.graphics().setAlpha(0);
+    // Upper sky — deep blue-black
+    skyGfx.fillGradientStyle(0x0a0a1e, 0x0a0a1e, 0x1a2a4a, 0x1a2a4a, 1);
+    skyGfx.fillRect(0, 0, width, height * 0.5);
+    // Lower sky — pre-dawn glow (warm amber-orange band at horizon)
+    skyGfx.fillGradientStyle(0x1a2a4a, 0x1a2a4a, 0x3a2a1a, 0x3a2a1a, 1);
+    skyGfx.fillRect(0, height * 0.4, width, height * 0.25);
+
+    // ── Stars (a handful of pinpricks — it's still early) ──
+    const starsGfx = this.add.graphics().setAlpha(0);
+    starsGfx.fillStyle(0xffffff, 0.6);
+    starsGfx.fillCircle(width * 0.15, height * 0.12, 1);
+    starsGfx.fillCircle(width * 0.4, height * 0.08, 0.8);
+    starsGfx.fillCircle(width * 0.7, height * 0.15, 1);
+    starsGfx.fillCircle(width * 0.85, height * 0.1, 0.7);
+    starsGfx.fillCircle(width * 0.55, height * 0.2, 0.8);
+    starsGfx.fillStyle(0xffffff, 0.3);
+    starsGfx.fillCircle(width * 0.25, height * 0.25, 0.6);
+    starsGfx.fillCircle(width * 0.6, height * 0.05, 0.6);
+
+    // ── Layered mountain ridges — back to front, lighter to darker ──
     const mtGfx = this.add.graphics().setAlpha(0);
-    mtGfx.fillStyle(0x0a0a1a, 1);
     const baseY = height * 0.65;
-    mtGfx.fillTriangle(0, baseY, width * 0.25, baseY - 60, width * 0.5, baseY);
-    mtGfx.fillTriangle(width * 0.3, baseY, width * 0.6, baseY - 80, width * 0.9, baseY);
-    mtGfx.fillTriangle(width * 0.6, baseY, width * 0.85, baseY - 50, width, baseY);
+    // Far range (faintest, blue-grey — barely visible through haar)
+    mtGfx.fillStyle(0x1a2a3a, 0.4);
+    mtGfx.fillTriangle(0, baseY, width * 0.2, baseY - 40, width * 0.4, baseY);
+    mtGfx.fillTriangle(width * 0.25, baseY, width * 0.5, baseY - 55, width * 0.75, baseY);
+    mtGfx.fillTriangle(width * 0.6, baseY, width * 0.8, baseY - 35, width, baseY);
+    // Mid range (darker, more defined peaks)
+    mtGfx.fillStyle(0x0e1a2a, 0.6);
+    mtGfx.fillTriangle(0, baseY, width * 0.25, baseY - 70, width * 0.5, baseY);
+    mtGfx.fillTriangle(width * 0.3, baseY, width * 0.6, baseY - 90, width * 0.9, baseY);
+    mtGfx.fillTriangle(width * 0.65, baseY, width * 0.85, baseY - 60, width, baseY);
+    // Near range (darkest, sharpest — the foothills)
+    mtGfx.fillStyle(0x0a0e1a, 0.8);
+    mtGfx.fillTriangle(0, baseY, width * 0.15, baseY - 30, width * 0.35, baseY);
+    mtGfx.fillTriangle(width * 0.5, baseY, width * 0.7, baseY - 45, width * 0.9, baseY);
+    // Ground fill below mountains
+    mtGfx.fillStyle(0x0a0e1a, 0.8);
     mtGfx.fillRect(0, baseY, width, height - baseY);
 
-    // Ground heather wash (purple tint at the bottom)
-    const heatherWash = this.add.rectangle(width / 2, height * 0.85, width, height * 0.3, 0x2a1a30, 0).setAlpha(0);
+    // ── Dawn light on horizon (warm amber glow bleeding through mountain gaps) ──
+    const dawnGfx = this.add.graphics().setAlpha(0);
+    dawnGfx.fillStyle(0xdd8833, 0.15);
+    dawnGfx.fillEllipse(width * 0.5, baseY, width * 0.6, 30);
+    dawnGfx.fillStyle(0xeebb55, 0.08);
+    dawnGfx.fillEllipse(width * 0.5, baseY - 5, width * 0.4, 20);
 
-    // Faint mist wisps
-    const mist1 = this.add.ellipse(width * 0.3, height * 0.6, 200, 30, 0xccccbb, 0).setAlpha(0);
-    const mist2 = this.add.ellipse(width * 0.7, height * 0.55, 160, 20, 0xccddee, 0).setAlpha(0);
+    // ── Heather wash (purple moor carpet below the mountains) ──
+    const heatherWash = this.add.graphics().setAlpha(0);
+    heatherWash.fillStyle(0x2a1a30, 0.2);
+    heatherWash.fillRect(0, baseY, width, height - baseY);
+    heatherWash.fillStyle(0x3a2244, 0.1);
+    heatherWash.fillEllipse(width * 0.3, height * 0.78, width * 0.4, 30);
+    heatherWash.fillEllipse(width * 0.7, height * 0.82, width * 0.3, 25);
 
+    // ── Mist wisps (layered haar drifting across the moor) ──
+    const mist1 = this.add.ellipse(width * 0.25, height * 0.6, 220, 25, 0xccccbb, 0).setAlpha(0);
+    const mist2 = this.add.ellipse(width * 0.65, height * 0.57, 180, 18, 0xccddee, 0).setAlpha(0);
+    const mist3 = this.add.ellipse(width * 0.45, height * 0.63, 140, 15, 0xbbccbb, 0).setAlpha(0);
+
+    // ── Title — whisky gold with warm glow ──
     const title = this.add.text(width / 2, height * 0.35, t('ui.menu.title'), {
       fontFamily: 'monospace', fontSize: '32px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 4,
+      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 5,
     }).setOrigin(0.5).setAlpha(0);
 
-    // Tagline — the soul charter in miniature
+    // ── Tagline — the soul charter in miniature ──
     const tagline = this.add.text(width / 2, height * 0.48, t('ui.menu.built_on_moor'), {
-      fontFamily: 'monospace', fontSize: '12px', color: '#6a5a4a',
+      fontFamily: 'monospace', fontSize: '12px', color: '#8a7a5a',
       fontStyle: 'italic',
     }).setOrigin(0.5).setAlpha(0);
 
     const mascot = this.add.sprite(width / 2, height * 0.62, getVariantByKey(DEFAULT_VARIANT_KEY).textureKey)
       .setScale(2.5).setAlpha(0);
 
-    // ── Staggered fade-in: moor → mountains → mist → title → mascot ──
-    // The player watches the highland dawn unfold in 1.5 seconds.
-    this.tweens.add({ targets: heatherWash, alpha: 0.15, duration: 300 });
-    this.tweens.add({ targets: mtGfx, alpha: 0.6, duration: 400, delay: 100 });
-    this.tweens.add({ targets: [mist1, mist2], alpha: 0.06, duration: 500, delay: 200 });
-    this.tweens.add({ targets: title, alpha: 1, duration: 400, delay: 300 });
-    this.tweens.add({ targets: tagline, alpha: 1, duration: 400, delay: 500 });
+    // ── Staggered fade-in: sky → stars → mountains → dawn → mist → title → mascot ──
+    // The player watches the Highland dawn unfold in ~2 seconds.
+    const allFadeTargets = [skyGfx, starsGfx, mtGfx, dawnGfx, heatherWash, mist1, mist2, mist3, title, tagline, mascot];
+    this.tweens.add({ targets: skyGfx, alpha: 1, duration: 400 });
+    this.tweens.add({ targets: starsGfx, alpha: 1, duration: 300, delay: 100 });
+    this.tweens.add({ targets: mtGfx, alpha: 1, duration: 500, delay: 200 });
+    this.tweens.add({ targets: dawnGfx, alpha: 1, duration: 600, delay: 300 });
+    this.tweens.add({ targets: heatherWash, alpha: 1, duration: 400, delay: 300 });
+    this.tweens.add({ targets: [mist1, mist2, mist3], alpha: 0.06, duration: 500, delay: 400 });
+    this.tweens.add({ targets: title, alpha: 1, duration: 400, delay: 500 });
+    this.tweens.add({ targets: tagline, alpha: 1, duration: 400, delay: 700 });
     this.tweens.add({
       targets: mascot,
       alpha: 1,
       duration: 400,
-      delay: 400,
+      delay: 600,
       onComplete: () => {
+        // Stars slowly fade as dawn brightens
+        this.tweens.add({ targets: starsGfx, alpha: 0, duration: 1200 });
         // Gentle mascot bob while the splash holds
         this.tweens.add({
           targets: mascot,
@@ -108,7 +161,7 @@ export class BootScene extends Phaser.Scene {
         });
         // Hold, then fade everything and transition
         this.tweens.add({
-          targets: [title, tagline, mascot, mtGfx, heatherWash, mist1, mist2],
+          targets: allFadeTargets,
           alpha: 0,
           delay: 800,
           duration: 400,
@@ -164,81 +217,147 @@ export class BootScene extends Phaser.Scene {
     this.createHudChromeTextures();
   }
 
-  /** Small HUD sprites (shield, dash pips) — avoids emoji / font-dependent glyphs. */
+  /** Small HUD sprites (shield, dash pips) — avoids emoji / font-dependent glyphs.
+   *  These are on screen 100% of play time — every pixel counts. */
   private createHudChromeTextures(): void {
+    // ── Shield icon — Highland targe shape with riveted rim and celtic knot hint ──
     const s = 18;
     const g = this.add.graphics();
     const cx = s / 2;
     const cy = s / 2;
+    // Dark outline
+    g.fillStyle(0x1a3a4a, 1);
+    g.fillTriangle(cx, cy - 8, cx + 7, cy + 2, cx, cy + 8);
+    g.fillTriangle(cx, cy - 8, cx - 7, cy + 2, cx, cy + 8);
+    // Steel-blue body
     g.fillStyle(0x3a7ca5, 1);
     g.fillTriangle(cx, cy - 7, cx + 6, cy + 2, cx, cy + 7);
     g.fillTriangle(cx, cy - 7, cx - 6, cy + 2, cx, cy + 7);
-    g.fillStyle(0x8fd4ff, 0.55);
-    g.fillTriangle(cx, cy - 5, cx + 3, cy + 1, cx, cy + 4);
-    g.fillTriangle(cx, cy - 5, cx - 3, cy + 1, cx, cy + 4);
+    // Inner highlight (lighter face — light from upper left)
+    g.fillStyle(0x5a9cc5, 0.6);
+    g.fillTriangle(cx, cy - 5, cx - 4, cy + 1, cx, cy + 4);
+    // Subtle bright edge (top-left rim catches light)
+    g.fillStyle(0x8fd4ff, 0.45);
+    g.fillTriangle(cx, cy - 5, cx - 3, cy, cx, cy + 3);
+    // Centre boss rivet (small bright dot — targe detail)
+    g.fillStyle(0xaaddee, 0.8);
+    g.fillCircle(cx, cy, 1.2);
+    g.fillStyle(0xddeeff, 0.5);
+    g.fillCircle(cx - 0.3, cy - 0.3, 0.5);
+    // Rim highlight (right edge — subtle, adds depth)
+    g.fillStyle(0x2a6080, 0.6);
+    g.fillRect(cx + 4, cy - 2, 1, 4);
     g.generateTexture('hud_shield', s, s);
     g.destroy();
 
+    // ── Dash pip (full) — golden orb with depth, not a flat circle ──
     const ps = 10;
     const gf = this.add.graphics();
+    const pcx = ps / 2, pcy = ps / 2;
+    // Dark gold outline
+    gf.fillStyle(0x8a6608, 1);
+    gf.fillCircle(pcx, pcy, 4);
+    // Golden body
     gf.fillStyle(0xd4a017, 1);
-    gf.fillCircle(ps / 2, ps / 2, 3.8);
+    gf.fillCircle(pcx, pcy, 3.5);
+    // Bright highlight (upper-left — spherical light)
+    gf.fillStyle(0xffcc44, 0.8);
+    gf.fillCircle(pcx - 0.8, pcy - 0.8, 1.8);
+    // Hot specular
+    gf.fillStyle(0xffffff, 0.5);
+    gf.fillCircle(pcx - 1, pcy - 1.2, 0.7);
     gf.generateTexture('hud_dash_pip_full', ps, ps);
     gf.destroy();
 
+    // ── Dash pip (empty) — hollow ring with subtle inner shadow ──
     const ge = this.add.graphics();
-    ge.lineStyle(1.5, 0xd4a017, 0.9);
-    ge.strokeCircle(ps / 2, ps / 2, 3.5);
+    ge.lineStyle(1.5, 0xd4a017, 0.7);
+    ge.strokeCircle(ps / 2, ps / 2, 3.2);
+    // Inner shadow (spent energy feel)
+    ge.fillStyle(0x000000, 0.15);
+    ge.fillCircle(ps / 2, ps / 2, 2.5);
     ge.generateTexture('hud_dash_pip_empty', ps, ps);
     ge.destroy();
 
-    // Snowflake particle for Enemy freeze FX — replaces the raw ❄ emoji
-    // that used to be rendered as text. Keeps Enemy.ts consistent with the
-    // HUD's "no emoji / font glyphs" principle. Drawn as six radiating arms
-    // with a small bright centre dot so it reads as a snowflake even at 10px.
+    // ── Snowflake particle — crisp ice crystal with branching arms ──
     const snow = 10;
     const gs = this.add.graphics();
     const scx = snow / 2;
     const scy = snow / 2;
+    // Outer glow
+    gs.fillStyle(0xaaddff, 0.15);
+    gs.fillCircle(scx, scy, 4.5);
+    // Six main arms
     gs.lineStyle(1.5, 0xcce6ff, 1);
     for (let i = 0; i < 6; i++) {
       const a = (i / 6) * Math.PI * 2;
       gs.beginPath();
       gs.moveTo(scx, scy);
-      gs.lineTo(scx + Math.cos(a) * 4.5, scy + Math.sin(a) * 4.5);
+      gs.lineTo(scx + Math.cos(a) * 4.2, scy + Math.sin(a) * 4.2);
       gs.strokePath();
+      // Tiny branch on each arm (crystalline detail)
+      gs.lineStyle(0.8, 0xddeeff, 0.7);
+      const midX = scx + Math.cos(a) * 2.5;
+      const midY = scy + Math.sin(a) * 2.5;
+      const branchA1 = a + Math.PI * 0.3;
+      const branchA2 = a - Math.PI * 0.3;
+      gs.beginPath();
+      gs.moveTo(midX, midY);
+      gs.lineTo(midX + Math.cos(branchA1) * 1.5, midY + Math.sin(branchA1) * 1.5);
+      gs.strokePath();
+      gs.beginPath();
+      gs.moveTo(midX, midY);
+      gs.lineTo(midX + Math.cos(branchA2) * 1.5, midY + Math.sin(branchA2) * 1.5);
+      gs.strokePath();
+      gs.lineStyle(1.5, 0xcce6ff, 1);
     }
+    // Bright centre crystal
     gs.fillStyle(0xffffff, 1);
     gs.fillCircle(scx, scy, 1.3);
+    gs.fillStyle(0xeef8ff, 0.7);
+    gs.fillCircle(scx, scy, 0.7);
     gs.generateTexture('fx_snowflake', snow, snow);
     gs.destroy();
   }
 
   /** Soft elliptical shadow placed under each entity. Dark translucent.
+   *  Uses warm dark-green tint (not cold black) to feel grounded on the moor.
    *  Higher alpha values because the grass backdrop washes out subtle shadows. */
   private createEntityShadow(): void {
     const s = 40;
     const g = this.add.graphics();
-    g.fillStyle(0x0a1a0a, 0.25);
+    // Outermost penumbra — barely visible, warm-tinted
+    g.fillStyle(0x0a1a0a, 0.18);
     g.fillEllipse(s / 2, s / 2, 36, 12);
-    g.fillStyle(0x0a1a0a, 0.4);
+    // Mid shadow — green-tinted dark to blend with moor
+    g.fillStyle(0x081808, 0.35);
     g.fillEllipse(s / 2, s / 2, 28, 9);
-    g.fillStyle(0x0a1a0a, 0.55);
+    // Core contact shadow — darkest, directly under the entity
+    g.fillStyle(0x061206, 0.52);
     g.fillEllipse(s / 2, s / 2, 20, 6);
+    // Warm centre dot (contact point catches ambient bounce light)
+    g.fillStyle(0x0a1a0a, 0.6);
+    g.fillEllipse(s / 2, s / 2, 12, 4);
     g.generateTexture('entity_shadow', s, s);
     g.destroy();
   }
 
-  /** Bigger shadow for bosses (60x60 → uses its own texture). */
+  /** Bigger shadow for bosses — more dramatic, wider spread. */
   private createBossShadow(): void {
     const s = 80;
     const g = this.add.graphics();
-    g.fillStyle(0x0a1a0a, 0.25);
+    // Wide penumbra — boss casts a big presence
+    g.fillStyle(0x0a1a0a, 0.18);
     g.fillEllipse(s / 2, s / 2, 74, 24);
-    g.fillStyle(0x0a1a0a, 0.4);
+    // Mid shadow
+    g.fillStyle(0x081808, 0.33);
     g.fillEllipse(s / 2, s / 2, 58, 18);
-    g.fillStyle(0x0a1a0a, 0.55);
+    // Inner shadow
+    g.fillStyle(0x061206, 0.48);
     g.fillEllipse(s / 2, s / 2, 42, 12);
+    // Core contact — darkest point
+    g.fillStyle(0x040e04, 0.58);
+    g.fillEllipse(s / 2, s / 2, 26, 8);
     g.generateTexture('boss_shadow', s, s);
     g.destroy();
   }
@@ -249,146 +368,298 @@ export class BootScene extends Phaser.Scene {
     const s = 24;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 3;
-    // Shadow underneath
+
+    // Ground shadow
     g.fillStyle(0x000000, 0.15);
-    g.fillEllipse(cx, cy + 8, 10, 4);
-    // Stem — taller
+    g.fillEllipse(cx, cy + 8, 12, 4);
+
+    // ── Stem — thick, ribbed, slightly thorny ──
+    g.fillStyle(0x152e0c, 1);
+    g.fillRect(cx - 1, cy - 2, 3, 11);
     g.fillStyle(0x1e3a12, 1);
-    g.fillRect(cx - 1, cy - 2, 2, 10);
-    // Left leaf with serrated tip
-    g.fillStyle(0x2e5518, 1);
-    g.fillTriangle(cx - 6, cy + 3, cx - 1, cy + 1, cx - 1, cy + 6);
+    g.fillRect(cx, cy - 2, 1, 11);
+    // Stem thorns (tiny 1px spurs)
+    g.fillStyle(0x152e0c, 1);
+    g.fillRect(cx - 2, cy + 2, 1, 1);
+    g.fillRect(cx + 2, cy + 4, 1, 1);
+    g.fillRect(cx - 2, cy + 6, 1, 1);
+
+    // ── Left leaf — serrated, silver-veined ──
+    g.fillStyle(0x2a5518, 1);
+    g.fillTriangle(cx - 7, cy + 3, cx - 1, cy + 1, cx - 1, cy + 7);
     g.fillStyle(0x3a6822, 1);
-    g.fillTriangle(cx - 5, cy + 3, cx - 1, cy + 1, cx - 1, cy + 5);
-    // Tiny leaf spines (left)
+    g.fillTriangle(cx - 6, cy + 3, cx - 1, cy + 2, cx - 1, cy + 6);
+    // Leaf vein (lighter centre line)
+    g.fillStyle(0x4a8830, 0.6);
+    g.fillRect(cx - 4, cy + 3, 3, 1);
+    // Serrated spine tips along leaf edge
     g.fillStyle(0x1e3a12, 1);
-    g.fillRect(cx - 5, cy + 2, 1, 1);
-    g.fillRect(cx - 4, cy + 4, 1, 1);
-    // Right leaf
-    g.fillStyle(0x2e5518, 1);
-    g.fillTriangle(cx + 6, cy + 3, cx + 1, cy + 1, cx + 1, cy + 6);
+    g.fillRect(cx - 6, cy + 2, 1, 1);
+    g.fillRect(cx - 5, cy + 4, 1, 1);
+    g.fillRect(cx - 3, cy + 5, 1, 1);
+
+    // ── Right leaf — mirror, slight variation ──
+    g.fillStyle(0x2a5518, 1);
+    g.fillTriangle(cx + 7, cy + 4, cx + 1, cy + 1, cx + 1, cy + 7);
     g.fillStyle(0x3a6822, 1);
-    g.fillTriangle(cx + 5, cy + 3, cx + 1, cy + 1, cx + 1, cy + 5);
+    g.fillTriangle(cx + 6, cy + 4, cx + 1, cy + 2, cx + 1, cy + 6);
+    g.fillStyle(0x4a8830, 0.6);
+    g.fillRect(cx + 2, cy + 4, 3, 1);
     g.fillStyle(0x1e3a12, 1);
-    g.fillRect(cx + 4, cy + 2, 1, 1);
-    g.fillRect(cx + 3, cy + 4, 1, 1);
-    // Green calyx — spiky base of the flower head
-    g.fillStyle(0x3a6822, 1);
-    g.fillCircle(cx, cy - 4, 4);
-    g.fillStyle(0x2e5518, 1);
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      g.fillTriangle(
-        cx + Math.cos(a) * 3.5, cy - 4 + Math.sin(a) * 3.5,
-        cx + Math.cos(a + 0.35) * 5.5, cy - 4 + Math.sin(a + 0.35) * 5.5,
-        cx + Math.cos(a - 0.35) * 5.5, cy - 4 + Math.sin(a - 0.35) * 5.5,
-      );
-    }
-    // Thistle head — dark core
-    g.fillStyle(0x331155, 1);
-    g.fillCircle(cx, cy - 4, 4);
-    // Mid purple
-    g.fillStyle(0x7744bb, 1);
-    g.fillCircle(cx, cy - 4, 3.2);
-    // Bright purple top
-    g.fillStyle(0xaa55dd, 1);
-    g.fillCircle(cx, cy - 5, 2.5);
-    // Light highlight on crown
-    g.fillStyle(0xcc88ff, 1);
-    g.fillCircle(cx - 0.5, cy - 5.5, 1.2);
-    // Radiating spike tips
-    g.fillStyle(0xdd99ff, 1);
+    g.fillRect(cx + 5, cy + 3, 1, 1);
+    g.fillRect(cx + 4, cy + 5, 1, 1);
+    g.fillRect(cx + 6, cy + 4, 1, 1);
+
+    // ── Small secondary leaf (lower, adds fullness) ──
+    g.fillStyle(0x2a5518, 0.8);
+    g.fillTriangle(cx - 4, cy + 6, cx, cy + 5, cx, cy + 8);
+
+    // ── Green calyx — the spiky involucre at base of flower head ──
+    g.fillStyle(0x2a5518, 1);
+    g.fillCircle(cx, cy - 3, 4);
+    // Calyx bracts — 10 sharp overlapping scales
     for (let i = 0; i < 10; i++) {
       const a = (i / 10) * Math.PI * 2;
-      g.fillRect(cx + Math.cos(a) * 4.2 - 0.5, cy - 4 + Math.sin(a) * 4.2 - 0.5, 1, 1);
+      const dark = i % 2 === 0;
+      g.fillStyle(dark ? 0x1e3a12 : 0x2e5518, 1);
+      g.fillTriangle(
+        cx + Math.cos(a) * 3, cy - 3 + Math.sin(a) * 3,
+        cx + Math.cos(a + 0.3) * 5.5, cy - 3 + Math.sin(a + 0.3) * 5.5,
+        cx + Math.cos(a - 0.3) * 5.5, cy - 3 + Math.sin(a - 0.3) * 5.5,
+      );
     }
+    // Calyx spine tips (brighter, catching light)
+    g.fillStyle(0x5a8833, 0.7);
+    for (let i = 0; i < 10; i += 2) {
+      const a = (i / 10) * Math.PI * 2;
+      g.fillRect(cx + Math.cos(a) * 5.5 - 0.3, cy - 3 + Math.sin(a) * 5.5 - 0.3, 1, 1);
+    }
+
+    // ── Thistle head — layered purple, Scotland's crown ──
+    // Dark core
+    g.fillStyle(0x2a0e44, 1);
+    g.fillCircle(cx, cy - 4, 4);
+    // Rich purple body
+    g.fillStyle(0x6633aa, 1);
+    g.fillCircle(cx, cy - 4, 3.5);
+    // Mid purple — upper bloom
+    g.fillStyle(0x8844cc, 1);
+    g.fillCircle(cx, cy - 5, 2.8);
+    // Bright purple crown
+    g.fillStyle(0xaa55dd, 1);
+    g.fillCircle(cx - 0.5, cy - 5.5, 2);
+    // Light highlight shimmer
+    g.fillStyle(0xcc88ff, 0.8);
+    g.fillCircle(cx - 1, cy - 6, 1.2);
+    // Specular dot
+    g.fillStyle(0xeeccff, 0.6);
+    g.fillCircle(cx - 1, cy - 6.5, 0.5);
+
+    // ── Radiating floret tips — the feathery crown ──
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      const r = 4.5 + (i % 2) * 0.5;
+      // Each floret tip — bright pink-purple dot
+      g.fillStyle(i % 3 === 0 ? 0xdd99ff : 0xcc88ee, 1);
+      g.fillRect(cx + Math.cos(a) * r - 0.5, cy - 4 + Math.sin(a) * r - 0.5, 1, 1);
+    }
+
+    // ── Pollen dust (barely visible golden motes above flower) ──
+    g.fillStyle(0xffdd88, 0.3);
+    g.fillRect(cx + 2, cy - 8, 1, 1);
+    g.fillRect(cx - 2, cy - 9, 1, 1);
+
     g.generateTexture('deco_thistle', s, s);
     g.destroy();
   }
 
   private createRock(): void {
     const s = 24;
-
-    // Variant 1 — wide flat rock with horizontal crack
-    const g1 = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
-    g1.fillStyle(0x333344, 1);
-    g1.fillEllipse(cx, cy, 18, 10);
-    g1.fillStyle(0x555566, 1);
-    g1.fillEllipse(cx - 1, cy - 1, 16, 9);
-    g1.fillStyle(0x7a7a8a, 1);
-    g1.fillEllipse(cx - 2, cy - 2, 10, 4);
-    g1.fillStyle(0x333344, 1);
-    g1.fillRect(cx, cy - 1, 3, 1);
-    g1.fillRect(cx - 4, cy + 1, 2, 1);
+
+    // Variant 1 — wide flat rock with lichen and horizontal crack
+    const g1 = this.add.graphics();
+    // Ground shadow
+    g1.fillStyle(0x000000, 0.12);
+    g1.fillEllipse(cx, cy + 4, 18, 5);
+    // Dark stone outline
+    g1.fillStyle(0x282838, 1);
+    g1.fillEllipse(cx, cy, 18, 11);
+    // Main stone body — warm Highland grey (not cold)
+    g1.fillStyle(0x4a4a58, 1);
+    g1.fillEllipse(cx, cy, 17, 10);
+    // Lighter face — light catching the top
+    g1.fillStyle(0x6a6a78, 1);
+    g1.fillEllipse(cx - 1, cy - 1, 14, 7);
+    // Bright highlight on top-left
+    g1.fillStyle(0x8a8a96, 0.7);
+    g1.fillEllipse(cx - 3, cy - 2, 8, 4);
+    // Horizontal crack — the weathering
+    g1.fillStyle(0x282838, 1);
+    g1.fillRect(cx - 2, cy - 1, 5, 1);
+    g1.fillRect(cx + 2, cy, 2, 1);
+    // Secondary crack (branching)
+    g1.fillRect(cx - 5, cy + 1, 3, 1);
+    // ── Lichen patches — yellow-green, THE moor rock signature ──
+    g1.fillStyle(0x88a844, 0.7);
+    g1.fillCircle(cx + 4, cy - 2, 2);
+    g1.fillStyle(0x99bb55, 0.6);
+    g1.fillCircle(cx + 4, cy - 2, 1.2);
+    g1.fillStyle(0x77994a, 0.5);
+    g1.fillCircle(cx - 5, cy + 1, 1.5);
+    // Tiny quartz fleck (mineral sparkle)
+    g1.fillStyle(0xffffff, 0.5);
+    g1.fillRect(cx - 4, cy - 3, 1, 1);
     g1.generateTexture('deco_rock', s, s);
     g1.destroy();
 
-    // Variant 2 — taller, rounder rock with diagonal crack
+    // Variant 2 — taller, rounder boulder with moss on the north side
     const g2 = this.add.graphics();
-    g2.fillStyle(0x2e2e40, 1);
+    g2.fillStyle(0x000000, 0.12);
+    g2.fillEllipse(cx, cy + 5, 14, 4);
+    // Dark outline
+    g2.fillStyle(0x222234, 1);
     g2.fillEllipse(cx, cy, 14, 13);
-    g2.fillStyle(0x4a4a5c, 1);
-    g2.fillEllipse(cx - 1, cy - 1, 12, 11);
-    g2.fillStyle(0x6a6a7a, 1);
-    g2.fillEllipse(cx - 2, cy - 3, 7, 4);
-    g2.fillStyle(0x2e2e40, 1);
-    g2.fillRect(cx - 1, cy - 2, 1, 3);
-    g2.fillRect(cx, cy, 2, 1);
+    // Mid stone
+    g2.fillStyle(0x3e3e50, 1);
+    g2.fillEllipse(cx, cy, 13, 12);
+    // Lighter upper face
+    g2.fillStyle(0x5a5a6c, 1);
+    g2.fillEllipse(cx - 1, cy - 2, 10, 8);
+    // Highlight dome
+    g2.fillStyle(0x7a7a88, 0.6);
+    g2.fillEllipse(cx - 2, cy - 3, 6, 4);
+    // Diagonal crack
+    g2.fillStyle(0x222234, 1);
+    g2.fillRect(cx - 1, cy - 3, 1, 2);
+    g2.fillRect(cx, cy - 1, 1, 2);
+    g2.fillRect(cx + 1, cy + 1, 1, 1);
+    // ── Moss on shaded (right-lower) side — rich green ──
+    g2.fillStyle(0x2a5522, 0.6);
+    g2.fillCircle(cx + 3, cy + 3, 2.5);
+    g2.fillCircle(cx + 5, cy + 2, 1.8);
+    g2.fillStyle(0x3a7733, 0.5);
+    g2.fillCircle(cx + 3, cy + 3, 1.5);
+    // Quartz vein (thin diagonal line)
+    g2.fillStyle(0xcccccc, 0.3);
+    g2.fillRect(cx - 4, cy - 4, 1, 1);
+    g2.fillRect(cx - 3, cy - 3, 1, 1);
+    g2.fillRect(cx - 2, cy - 2, 1, 1);
     g2.generateTexture('deco_rock_2', s, s);
     g2.destroy();
 
-    // Variant 3 — small angular pebble cluster
+    // Variant 3 — pebble cluster with a wee fallen traffic cone
     const g3 = this.add.graphics();
-    g3.fillStyle(0x3a3a4a, 1);
+    g3.fillStyle(0x000000, 0.1);
+    g3.fillEllipse(cx, cy + 3, 16, 4);
+    // Left pebble — dark outline then layers
+    g3.fillStyle(0x2e2e3e, 1);
     g3.fillEllipse(cx - 3, cy, 10, 8);
+    g3.fillStyle(0x484858, 1);
+    g3.fillEllipse(cx - 3, cy - 1, 9, 7);
+    g3.fillStyle(0x6a6a78, 0.7);
+    g3.fillEllipse(cx - 4, cy - 2, 5, 3);
+    // Right pebble
+    g3.fillStyle(0x2e2e3e, 1);
     g3.fillEllipse(cx + 4, cy + 1, 8, 7);
-    g3.fillStyle(0x585868, 1);
-    g3.fillEllipse(cx - 3, cy - 1, 8, 6);
-    g3.fillEllipse(cx + 4, cy, 6, 5);
-    g3.fillStyle(0x7a7a88, 1);
-    g3.fillEllipse(cx - 4, cy - 2, 4, 2);
+    g3.fillStyle(0x484858, 1);
+    g3.fillEllipse(cx + 4, cy, 7, 6);
+    g3.fillStyle(0x6a6a78, 0.6);
+    g3.fillEllipse(cx + 3, cy - 1, 4, 2);
+    // Lichen on left pebble
+    g3.fillStyle(0x88a844, 0.5);
+    g3.fillCircle(cx - 5, cy + 1, 1.2);
     // Wee traffic cone lying on its side (if you know, you know)
+    g3.fillStyle(0x882200, 0.8);
+    g3.fillTriangle(cx + 7, cy - 2, cx + 10, cy + 2, cx + 5, cy + 2);
     g3.fillStyle(0xff6600, 1);
-    g3.fillTriangle(cx + 7, cy - 2, cx + 9, cy + 2, cx + 5, cy + 2);
+    g3.fillTriangle(cx + 7, cy - 1, cx + 9, cy + 1, cx + 5, cy + 1);
     g3.fillStyle(0xff8833, 1);
     g3.fillTriangle(cx + 7, cy - 1, cx + 8, cy + 1, cx + 6, cy + 1);
-    g3.fillStyle(0xffffff, 0.8);
+    // White band on fallen cone
+    g3.fillStyle(0xffffff, 0.85);
     g3.fillRect(cx + 6, cy, 2, 1);
+    // Mud on the cone (it's been here a while)
+    g3.fillStyle(0x554422, 0.5);
+    g3.fillRect(cx + 5, cy + 1, 2, 1);
     g3.generateTexture('deco_rock_3', s, s);
     g3.destroy();
   }
 
   private createHeather(): void {
-    const s = 20;
+    const s = 22;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 2;
-    // Base bush outline
+    const cx = s / 2, cy = s / 2 + 3;
+
+    // Ground shadow — soft, grounding the bush on the moor
+    g.fillStyle(0x000000, 0.12);
+    g.fillEllipse(cx, cy + 4, 14, 4);
+
+    // Woody base stems (heather is semi-shrubby, not just a blob)
+    g.fillStyle(0x3a1a10, 1);
+    g.fillRect(cx - 5, cy, 1, 4);
+    g.fillRect(cx - 2, cy - 1, 1, 5);
+    g.fillRect(cx + 1, cy, 1, 4);
+    g.fillRect(cx + 4, cy - 1, 1, 5);
+    g.fillRect(cx - 4, cy + 1, 1, 3);
+    g.fillRect(cx + 3, cy, 1, 4);
+
+    // Dark leaf mass at base — establishes volume
+    g.fillStyle(0x3a1828, 1);
+    g.fillEllipse(cx, cy + 1, 16, 8);
+    // Mid-tone leaf layer
     g.fillStyle(0x5a2244, 1);
     g.fillEllipse(cx, cy, 14, 7);
-    // Purple heather clumps
-    g.fillStyle(0x884466, 1);
+    // Lighter foliage clumps — irregular for natural feel
+    g.fillStyle(0x6b3355, 1);
     g.fillCircle(cx - 4, cy, 3);
     g.fillCircle(cx, cy - 1, 3.5);
     g.fillCircle(cx + 4, cy, 3);
-    // Highlights
-    g.fillStyle(0xcc77aa, 1);
-    g.fillCircle(cx - 4, cy - 1, 1.5);
-    g.fillCircle(cx, cy - 2, 1.8);
-    g.fillCircle(cx + 4, cy - 1, 1.5);
-    // Tiny upward flower spikes — turns "purple blob" into recognizable heather
-    g.fillStyle(0xdd88bb, 1);
-    g.fillRect(cx - 5, cy - 5, 1, 3);
-    g.fillRect(cx - 2, cy - 6, 1, 3);
-    g.fillRect(cx + 1, cy - 5, 1, 3);
-    g.fillRect(cx + 4, cy - 4, 1, 3);
-    g.fillRect(cx - 1, cy - 4, 1, 2);
-    // Pink tips
-    g.fillStyle(0xeeaacc, 1);
-    g.fillRect(cx - 5, cy - 5, 1, 1);
-    g.fillRect(cx - 2, cy - 6, 1, 1);
-    g.fillRect(cx + 1, cy - 5, 1, 1);
-    g.fillRect(cx + 4, cy - 4, 1, 1);
+    g.fillCircle(cx + 1, cy + 1, 2.5);
+    // Bright purple bloom highlights
+    g.fillStyle(0x884466, 1);
+    g.fillCircle(cx - 4, cy - 1, 2);
+    g.fillCircle(cx, cy - 2, 2.2);
+    g.fillCircle(cx + 4, cy - 1, 2);
+
+    // ── Flower spikes — the signature heather silhouette ──
+    // Each spike: stem + individual blossom bumps climbing up
+    const spikes: [number, number, number][] = [
+      // [xOffset, height, lean] — lean: slight curve direction
+      [-6, 7, -0.3], [-4, 5, 0.2], [-2, 8, -0.1],
+      [0, 6, 0.3], [2, 7, -0.2], [4, 5, 0.1], [5, 4, 0.4],
+    ];
+    for (const [xOff, h, _lean] of spikes) {
+      const sx = cx + xOff;
+      const baseY = cy - 2;
+      // Tiny green-brown stem
+      g.fillStyle(0x4a2a18, 0.8);
+      g.fillRect(sx, baseY - h, 1, h);
+      // Blossom bumps climbing up the spike (each ~1px dot)
+      for (let i = 0; i < h - 1; i++) {
+        const by = baseY - i - 1;
+        // Alternate between two purple tones for texture
+        g.fillStyle(i % 2 === 0 ? 0xbb6699 : 0xcc77aa, 1);
+        g.fillRect(sx - 1, by, 1, 1);
+        g.fillRect(sx + 1, by, 1, 1);
+      }
+      // Bright pink tip — the fresh bloom at top
+      g.fillStyle(0xeeaacc, 1);
+      g.fillRect(sx, baseY - h, 1, 1);
+      // Tiny highlight dot on tip
+      g.fillStyle(0xffccdd, 0.8);
+      g.fillRect(sx, baseY - h - 1, 1, 1);
+    }
+
+    // A wee bee or hoverfly visiting (tiny 2px detail — life in the moor)
+    g.fillStyle(0xddaa22, 1);
+    g.fillRect(cx + 6, cy - 6, 1, 1);
+    g.fillStyle(0x111111, 0.8);
+    g.fillRect(cx + 6, cy - 7, 1, 1);
+    // Translucent wing
+    g.fillStyle(0xffffff, 0.4);
+    g.fillRect(cx + 7, cy - 7, 1, 1);
+
     g.generateTexture('deco_heather', s, s);
     g.destroy();
   }
@@ -420,6 +691,12 @@ export class BootScene extends Phaser.Scene {
     // Wind-tail flutter at bottom-right
     g.fillStyle(0x99bde0, 0.35);
     g.fillTriangle(cx + 7, cy + 5, cx + 11, cy + 8, cx + 8, cy + 9);
+    // ASDA price sticker still attached — brighter green, slightly larger to pop
+    g.fillStyle(0x6ac52b, 0.55);
+    g.fillRect(cx + 1, cy + 2, 3, 3);
+    // Muddy scuff from being dragged across the moor
+    g.fillStyle(0x554422, 0.2);
+    g.fillCircle(cx + 3, cy + 4, 1);
     g.generateTexture('deco_glasgow_kite', s, s);
     g.destroy();
   }
@@ -609,6 +886,17 @@ export class BootScene extends Phaser.Scene {
     // Glass reflection — vertical highlight strip on left edge
     g.fillStyle(0xffffff, 0.3);
     g.fillRect(cx - tw + 1, top + 1, 1, (bot - top) - 2);
+    // Condensation droplets (it's been sitting out, getting warm)
+    g.fillStyle(0xaabbcc, 0.3);
+    g.fillCircle(cx + 3, top + 6, 0.6);
+    g.fillCircle(cx + 4, top + 9, 0.5);
+    g.fillCircle(cx - 2, bot - 3, 0.5);
+    // Condensation streak (one droplet ran down the glass)
+    g.fillStyle(0x99aabb, 0.2);
+    g.fillRect(cx + 3, top + 6, 1, 4);
+    // Lipstick mark on rim (someone left it here — a mystery)
+    g.fillStyle(0xcc4466, 0.3);
+    g.fillRect(cx + 2, top, 3, 1);
     // Thin glass rim at top
     g.lineStyle(1, 0xbbccdd, 0.7);
     g.lineBetween(cx - tw, top, cx + tw, top);
@@ -617,50 +905,111 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createBamSeagull(): void {
+    // 36×36 — Glasgow's apex predator. Will mug you for a chip.
+    // Menacing posture, beady eyes, stolen chip in beak. Pure bam energy.
     const s = 36;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    g.fillStyle(0x667788, 1);
-    g.fillTriangle(cx - 2, cy, cx - 14, cy - 8, cx + 2, cy - 6);
-    g.fillTriangle(cx - 2, cy, cx - 14, cy + 8, cx + 2, cy + 6);
-    g.fillStyle(0x8899aa, 1);
+
+    // ── Wings (swept back, aggressive posture — mid-swoop) ──
+    // Outer wing feathers — dark grey with distinct tips
+    g.fillStyle(0x556677, 1);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy - 9, cx + 2, cy - 6);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy + 9, cx + 2, cy + 6);
+    // Mid wing — lighter grey
+    g.fillStyle(0x778899, 1);
     g.fillTriangle(cx, cy, cx - 10, cy - 6, cx + 1, cy - 4);
     g.fillTriangle(cx, cy, cx - 10, cy + 6, cx + 1, cy + 4);
+    // Inner wing (near body) — lightest
+    g.fillStyle(0x99aabb, 0.7);
+    g.fillTriangle(cx, cy, cx - 6, cy - 3, cx + 1, cy - 2);
+    g.fillTriangle(cx, cy, cx - 6, cy + 3, cx + 1, cy + 2);
+    // Wingtip feather separation — dark fingers at end of each wing
     g.fillStyle(0x334455, 1);
-    g.fillTriangle(cx - 14, cy - 8, cx - 10, cy - 5, cx - 16, cy - 6);
-    g.fillTriangle(cx - 14, cy + 8, cx - 10, cy + 5, cx - 16, cy + 6);
-    g.fillStyle(0xcccccc, 1);
+    g.fillTriangle(cx - 14, cy - 9, cx - 10, cy - 6, cx - 16, cy - 7);
+    g.fillTriangle(cx - 12, cy - 8, cx - 9, cy - 5, cx - 14, cy - 5);
+    g.fillTriangle(cx - 14, cy + 9, cx - 10, cy + 6, cx - 16, cy + 7);
+    g.fillTriangle(cx - 12, cy + 8, cx - 9, cy + 5, cx - 14, cy + 5);
+
+    // ── Body (chunky, barrel-chested — this bird eats well) ──
+    g.fillStyle(0xbbbbbb, 1);
     g.fillEllipse(cx + 2, cy, 14, 10);
-    g.fillStyle(0xeeeeee, 1);
+    g.fillStyle(0xdddddd, 1);
     g.fillEllipse(cx + 2, cy, 12, 8);
-    g.fillStyle(0xffffff, 1);
+    // White breast
+    g.fillStyle(0xf5f5f5, 1);
     g.fillEllipse(cx + 1, cy - 1, 10, 6);
+    // Subtle belly shadow
+    g.fillStyle(0xaabbbb, 0.4);
+    g.fillEllipse(cx + 2, cy + 2, 8, 3);
+    // Tail feathers (stubby, fanning behind)
     g.fillStyle(0x889999, 1);
     g.fillTriangle(cx - 5, cy - 2, cx - 5, cy + 2, cx - 10, cy);
-    g.fillStyle(0xdddddd, 1);
+    g.fillStyle(0x778888, 1);
+    g.fillTriangle(cx - 5, cy - 1, cx - 5, cy + 3, cx - 9, cy + 1);
+
+    // ── Head (larger, rounder — the bam glare needs room) ──
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(cx + 10, cy, 5.5);
+    g.fillStyle(0xeeeeee, 1);
     g.fillCircle(cx + 10, cy, 5);
     g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx + 10, cy, 4);
+    g.fillCircle(cx + 10, cy - 0.5, 4.5);
+
+    // ── Eye (BEADY, CALCULATING — sizing up your chippy) ──
+    // Yellow iris ring
     g.fillStyle(0xeedd44, 1);
-    g.fillCircle(cx + 11, cy - 1, 1.5);
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx + 11, cy - 1, 0.7);
-    g.fillStyle(0xdd9922, 1);
-    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 2, cx + 18, cy + 1);
+    g.fillCircle(cx + 11, cy - 1, 2);
+    // Pupil — BLACK, soulless, aggressive
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx + 11.5, cy - 1, 1.2);
+    // Eye glint (tiny, makes the stare more unsettling)
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx + 11, cy - 2, 0.5);
+    // Furrowed brow line (angry — this seagull has INTENT)
+    g.fillStyle(0x999999, 0.8);
+    g.fillRect(cx + 9, cy - 3, 4, 1);
+
+    // ── Beak (open, aggressive — mid-SQUAWK) ──
+    // Upper beak — orange-yellow, hooked at tip
+    g.fillStyle(0xcc8811, 1);
+    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 1, cx + 18, cy);
     g.fillStyle(0xeeaa33, 1);
-    g.fillTriangle(cx + 13, cy, cx + 13, cy + 1, cx + 17, cy + 1);
+    g.fillTriangle(cx + 14, cy - 0.5, cx + 14, cy + 0.5, cx + 17, cy);
+    // Lower beak (slightly dropped — open mouth, screaming)
+    g.fillStyle(0xcc8811, 1);
+    g.fillTriangle(cx + 13, cy + 1, cx + 13, cy + 3, cx + 17, cy + 2);
+    g.fillStyle(0xddaa22, 1);
+    g.fillTriangle(cx + 14, cy + 1, cx + 14, cy + 2, cx + 16, cy + 2);
+    // Red spot on lower beak (herring gull signature)
     g.fillStyle(0xcc2222, 1);
-    g.fillCircle(cx + 15, cy + 1, 0.7);
-    g.fillStyle(0xddbb44, 1);
-    g.fillRect(cx + 16, cy - 1, 4, 2);
-    g.fillStyle(0xeedd66, 1);
-    g.fillRect(cx + 16, cy - 1, 3, 1);
-    g.fillStyle(0xdd9988, 1);
+    g.fillCircle(cx + 15, cy + 2, 0.7);
+    // Open mouth cavity (dark, screaming)
+    g.fillStyle(0x442222, 1);
+    g.fillRect(cx + 13, cy + 1, 3, 1);
+
+    // ── STOLEN CHIP in beak (the whole reason Glasgow fears these) ──
+    g.fillStyle(0xddaa33, 1);
+    g.fillRect(cx + 16, cy - 2, 5, 2);
+    g.fillStyle(0xeebb44, 1);
+    g.fillRect(cx + 16, cy - 2, 4, 1);
+    // Chip grease sheen
+    g.fillStyle(0xffdd66, 0.5);
+    g.fillRect(cx + 17, cy - 2, 2, 1);
+
+    // ── Legs (orange-pink, webbed feet gripping) ──
+    g.fillStyle(0xdd9977, 1);
     g.fillRect(cx, cy + 4, 1, 4);
     g.fillRect(cx + 3, cy + 4, 1, 4);
-    g.fillStyle(0xcc8877, 1);
+    // Webbed feet — splayed toes
+    g.fillStyle(0xcc8866, 1);
     g.fillRect(cx - 1, cy + 7, 3, 1);
     g.fillRect(cx + 2, cy + 7, 3, 1);
+    // Tiny toe detail
+    g.fillStyle(0xdd9977, 0.8);
+    g.fillRect(cx - 1, cy + 8, 1, 1);
+    g.fillRect(cx + 4, cy + 8, 1, 1);
+
     g.generateTexture('bam_seagull', s, s);
     g.destroy();
   }
@@ -1831,50 +2180,155 @@ export class BootScene extends Phaser.Scene {
   private createHaggisVariantTexture(variant: VariantDef): void {
     const s = 56;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 - 2;
+    const baseCx = s / 2, baseCy = s / 2 - 2;
     const { palette } = variant.appearance;
+    const accent = variant.appearance.accentStyle;
 
-    // Dark outline body (draw first, slightly larger)
-    g.fillStyle(palette.outline, 1);
-    g.fillEllipse(cx, cy + 2, 44, 34);
-    // Furry body — layered ellipses for a shaggy look
+    // ── Per-variant body shape modifiers ──
+    // tiltY: positive = right side drops (clockwise lean, sells the drift)
+    // bodyW/bodyH: override base ellipse proportions (iron_belly is wider+squatter)
+    // humpX/humpY/humpW/humpH: forager back-hump (0 = no hump)
+    let tiltY = 0;       // vertical offset applied to right side features
+    let bodyW = 44;       // outline ellipse width
+    let bodyH = 34;       // outline ellipse height
+    let humpX = 0, humpY = 0, humpW = 0, humpH = 0;
+
+    if (accent === 'none') {
+      // Classic: hard clockwise lean — right side 6px lower, unmissable at 1×
+      tiltY = 6;
+    } else if (accent === 'racing_band') {
+      // Moor runner: aggressive forward lean — nose-down, 10px delta
+      tiltY = 10;
+    } else if (accent === 'iron_belly') {
+      // Tank: dramatically wider and squatter — must read as different shape class
+      bodyW = 54;  // +10px width from base 44
+      bodyH = 28;  // -6px height from base 34
+    } else if (accent === 'forager') {
+      // Forager: big raised hump on upper-rear, clearly breaks upper outline
+      humpX = baseCx + 8; humpY = baseCy - 8; humpW = 16; humpH = 11;
+    }
+    // surefoot and pipe_breath: no body mods (silhouette already broken by horns/arcs)
+
+    const cx = baseCx, cy = baseCy;
+    // Derived positions: left side rises, right side drops
+    const leftDy = -Math.floor(tiltY / 2);
+    const rightDy = Math.ceil(tiltY / 2);
+
+    // ── Wee tail nub at the rear (stubby, fluffy) ──
     g.fillStyle(palette.bodyDark, 1);
-    g.fillEllipse(cx, cy + 2, 40, 30);
+    g.fillCircle(cx - 20, cy + 4 + leftDy, 4);
+    g.fillStyle(palette.fur, 0.7);
+    g.fillCircle(cx - 20, cy + 3 + leftDy, 2.5);
+
+    // ── Dark outline body (draw first, slightly larger — the silhouette) ──
+    g.fillStyle(palette.outline, 1);
+    g.fillEllipse(cx, cy + 2, bodyW, bodyH);
+
+    // ── Furry body — layered ellipses for depth ──
+    g.fillStyle(palette.bodyDark, 1);
+    g.fillEllipse(cx, cy + 2, bodyW - 4, bodyH - 4);
     g.fillStyle(palette.bodyLight, 1);
-    g.fillEllipse(cx, cy, 34, 26);
-    // Fur tuft highlights
+    g.fillEllipse(cx, cy, bodyW - 10, bodyH - 8);
+
+    // ── Forager hump (drawn before fur/moss so accents layer on top) ──
+    if (humpW > 0) {
+      g.fillStyle(palette.bodyDark, 1);
+      g.fillEllipse(humpX, humpY, humpW + 2, humpH + 2);
+      g.fillStyle(palette.bodyLight, 0.8);
+      g.fillEllipse(humpX, humpY, humpW, humpH);
+    }
+
+    // ── Fur texture — individual shaggy tufts ──
     g.fillStyle(palette.fur, 1);
     g.fillEllipse(cx - 5, cy - 4, 16, 11);
     g.fillEllipse(cx + 6, cy - 2, 10, 7);
+    g.fillStyle(palette.fur, 0.7);
+    g.fillCircle(cx - 12, cy + 2, 3);
+    g.fillCircle(cx + 12, cy + 1, 3);
+    g.fillCircle(cx - 8, cy + 6, 2.5);
+    g.fillCircle(cx + 8, cy + 5, 2.5);
+    // Darker belly shadow
+    g.fillStyle(palette.bodyDark, 0.4);
+    g.fillEllipse(cx, cy + 8, bodyW - 16, 8);
 
-    // Legs — left pair shorter than right (the drift gimmick!)
+    // ── Legs — left pair SHORTER than right (THE drift!) ──
+    // Left legs — short, stubby (the wee ones that cause the drift)
+    const legBase = accent === 'iron_belly' ? cy + 9 : cy + 11;
     g.fillStyle(palette.outline, 1);
-    g.fillRect(cx - 13, cy + 11, 5, 9);
-    g.fillRect(cx - 5,  cy + 11, 5, 9);
-    g.fillRect(cx + 4,  cy + 11, 5, 13); // longer
-    g.fillRect(cx + 12, cy + 11, 5, 13); // longer
+    g.fillRect(cx - 13, legBase + leftDy, 5, 9);
+    g.fillRect(cx - 5,  legBase + leftDy, 5, 9);
+    // Right legs — LONGER (the big ones — Hill-adapted!)
+    g.fillRect(cx + 4,  legBase + rightDy, 5, 13);
+    g.fillRect(cx + 12, legBase + rightDy, 5, 13);
+    // Furry leg tops
+    g.fillStyle(palette.bodyDark, 0.6);
+    g.fillCircle(cx - 11, legBase + 1 + leftDy, 3);
+    g.fillCircle(cx - 3,  legBase + 1 + leftDy, 3);
+    g.fillCircle(cx + 6,  legBase + 1 + rightDy, 3);
+    g.fillCircle(cx + 14, legBase + 1 + rightDy, 3);
+    // Hooves — dark, hard, cloven
+    g.fillStyle(0x1a1008, 1);
+    g.fillRect(cx - 14, legBase + 8 + leftDy, 6, 2);
+    g.fillRect(cx - 6,  legBase + 8 + leftDy, 6, 2);
+    g.fillRect(cx + 3,  legBase + 12 + rightDy, 6, 2);
+    g.fillRect(cx + 11, legBase + 12 + rightDy, 6, 2);
+    // Hoof split detail (cloven)
+    g.fillStyle(palette.outline, 0.5);
+    g.fillRect(cx - 11, legBase + 8 + leftDy, 1, 2);
+    g.fillRect(cx - 3,  legBase + 8 + leftDy, 1, 2);
+    g.fillRect(cx + 6,  legBase + 12 + rightDy, 1, 2);
+    g.fillRect(cx + 14, legBase + 12 + rightDy, 1, 2);
 
-    // Eye whites
+    // ── Eye whites ──
     g.fillStyle(0xffffff, 1);
     g.fillCircle(cx - 8, cy - 4, 6);
     g.fillCircle(cx + 8, cy - 4, 6);
+    g.lineStyle(0.8, palette.outline, 0.5);
+    g.strokeCircle(cx - 8, cy - 4, 6);
+    g.strokeCircle(cx + 8, cy - 4, 6);
     // Pupils
     g.fillStyle(0x111111, 1);
     g.fillCircle(cx - 6, cy - 3, 3);
     g.fillCircle(cx + 10, cy - 3, 3);
-    // Eye glint
+    g.fillStyle(0x332211, 1);
+    g.fillCircle(cx - 6, cy - 3, 2);
+    g.fillCircle(cx + 10, cy - 3, 2);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx - 6, cy - 3, 1.2);
+    g.fillCircle(cx + 10, cy - 3, 1.2);
+    // Eye glints
     g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx - 7, cy - 5, 1.2);
-    g.fillCircle(cx + 9, cy - 5, 1.2);
+    g.fillCircle(cx - 7, cy - 5, 1.5);
+    g.fillCircle(cx + 9, cy - 5, 1.5);
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(cx - 5, cy - 2, 0.7);
+    g.fillCircle(cx + 11, cy - 2, 0.7);
 
-    // Snout
+    // ── Brow tufts ──
+    g.fillStyle(palette.fur, 0.9);
+    g.fillEllipse(cx - 8, cy - 10, 8, 3);
+    g.fillEllipse(cx + 8, cy - 10, 8, 3);
+
+    // ── Snout ──
     g.fillStyle(palette.snout, 1);
-    g.fillCircle(cx + 1, cy + 4, 4);
-    // Nose
+    g.fillCircle(cx + 1, cy + 4, 4.5);
+    g.fillStyle(palette.snout, 0.7);
+    g.fillCircle(cx, cy + 3, 3);
     g.fillStyle(palette.outline, 1);
-    g.fillCircle(cx + 2, cy + 3, 1.5);
+    g.fillCircle(cx + 2, cy + 3, 2);
+    g.fillStyle(0x0a0a0a, 1);
+    g.fillCircle(cx + 2, cy + 3, 1.2);
+    g.fillStyle(0xffffff, 0.3);
+    g.fillCircle(cx + 1.5, cy + 2.5, 0.6);
+    g.fillStyle(palette.outline, 0.8);
+    g.fillCircle(cx + 1, cy + 3.5, 0.5);
+    g.fillCircle(cx + 3, cy + 3.5, 0.5);
 
-    this.drawHaggisVariantAccent(g, variant.appearance.accentStyle, cx, cy, palette);
+    // ── Tiny content smile ──
+    g.fillStyle(palette.outline, 0.5);
+    g.fillRect(cx - 1, cy + 7, 4, 1);
+
+    this.drawHaggisVariantAccent(g, accent, cx, cy, palette);
 
     g.generateTexture(variant.textureKey, s, s);
     g.destroy();
@@ -1889,46 +2343,104 @@ export class BootScene extends Phaser.Scene {
   ): void {
     switch (accentStyle) {
       case 'racing_band':
+        // Bold racing stripe across the body — speed demon
         g.fillStyle(palette.accent, 1);
         g.fillRect(cx - 17, cy - 9, 34, 3);
+        // Stripe highlight (sheen, like a painted racing car)
         g.fillStyle(0xffffff, 0.5);
         g.fillRect(cx - 14, cy - 8, 9, 1);
         g.fillRect(cx + 3, cy - 8, 9, 1);
+        // Secondary thin pinstripe (racing livery detail)
+        g.fillStyle(palette.accent, 0.6);
+        g.fillRect(cx - 17, cy - 5, 34, 1);
+        // Speed lines trailing from rear-upper edge (drag behind forward lean)
+        g.fillStyle(palette.accent, 0.3);
+        g.fillRect(cx - 22, cy - 10, 4, 1);
+        g.fillRect(cx - 21, cy - 8, 3, 1);
+        g.fillStyle(palette.accent, 0.2);
+        g.fillRect(cx - 20, cy - 12, 3, 1);
         break;
       case 'iron_belly':
-        g.fillStyle(0x2e333b, 1);
+        // Armoured underbelly — hammered metal plates
+        g.fillStyle(0x2a2e35, 1);
         g.fillEllipse(cx + 2, cy + 6, 18, 10);
+        g.fillStyle(0x3a3e45, 0.7);
+        g.fillEllipse(cx + 1, cy + 5, 14, 8);
+        // Rivets along the belly plates
         g.fillStyle(palette.accent, 1);
         g.fillRect(cx - 4, cy + 2, 2, 8);
         g.fillRect(cx + 2, cy + 2, 2, 8);
+        // Additional rivet dots
+        g.fillStyle(palette.accent, 0.8);
+        g.fillCircle(cx - 6, cy + 5, 0.8);
+        g.fillCircle(cx + 6, cy + 5, 0.8);
+        g.fillCircle(cx, cy + 8, 0.8);
+        // Metal sheen
+        g.fillStyle(0xffffff, 0.12);
+        g.fillEllipse(cx, cy + 4, 12, 5);
         break;
       case 'forager':
+        // Mushrooms and moss clinging to fur — forest dweller
         g.fillStyle(palette.accent, 1);
         g.fillCircle(cx - 10, cy + 2, 3);
         g.fillCircle(cx + 8, cy + 5, 2.5);
+        // Mushroom caps with spots
         g.fillStyle(0xb7f08f, 0.8);
-        g.fillCircle(cx - 9, cy + 1, 1.2);
+        g.fillCircle(cx - 9, cy + 1, 1.5);
         g.fillCircle(cx + 9, cy + 4, 1.2);
+        // White spots on mushroom caps
+        g.fillStyle(0xffffff, 0.5);
+        g.fillCircle(cx - 9, cy, 0.5);
+        g.fillCircle(cx + 9, cy + 3, 0.4);
+        // Tiny stem detail
+        g.fillStyle(0xddddbb, 0.7);
+        g.fillRect(cx - 10, cy + 3, 1, 2);
+        g.fillRect(cx + 8, cy + 6, 1, 2);
+        // Leaf stuck to fur (foraging evidence)
+        g.fillStyle(0x55aa33, 0.6);
+        g.fillTriangle(cx + 14, cy - 2, cx + 16, cy + 1, cx + 12, cy + 1);
         break;
       case 'surefoot':
+        // Mountain goat horns — steady, confident climber
         g.fillStyle(palette.accent, 1);
         g.fillRect(cx - 6, cy - 12, 12, 3);
-        g.fillStyle(0xffffff, 0.8);
+        // Horn stripe detail
+        g.fillStyle(0xffffff, 0.7);
         g.fillRect(cx - 1, cy - 13, 2, 5);
+        // Horn curve tips (more defined)
+        g.fillStyle(palette.accent, 0.8);
+        g.fillTriangle(cx - 7, cy - 12, cx - 6, cy - 12, cx - 8, cy - 10);
+        g.fillTriangle(cx + 7, cy - 12, cx + 6, cy - 12, cx + 8, cy - 10);
+        // Grip marks on hooves (chalk-like, climber detail)
+        g.fillStyle(0xffffff, 0.2);
+        g.fillCircle(cx + 6, cy + 23, 2);
+        g.fillCircle(cx + 14, cy + 23, 2);
         break;
       case 'pipe_breath':
-        // Subtle wind swirl lines around the body — musical/wind themed
-        g.lineStyle(1.5, palette.accent, 0.6);
+        // Wind swirl lines around the body — musical, ethereal
+        g.lineStyle(1.5, palette.accent, 0.5);
         g.beginPath();
         g.arc(cx - 8, cy - 2, 8, -Math.PI * 0.3, Math.PI * 0.5);
         g.strokePath();
         g.beginPath();
         g.arc(cx + 10, cy + 1, 6, Math.PI * 0.2, Math.PI * 0.9);
         g.strokePath();
-        // Small music note accent on head
+        // Second layer of wind (fainter, wider)
+        g.lineStyle(1, palette.accent, 0.25);
+        g.beginPath();
+        g.arc(cx - 12, cy - 4, 12, -Math.PI * 0.2, Math.PI * 0.4);
+        g.strokePath();
+        // Music note on head (quaver — eighth note)
         g.fillStyle(palette.accent, 0.9);
-        g.fillCircle(cx + 12, cy - 10, 2);
+        g.fillCircle(cx + 12, cy - 10, 2.2);
         g.fillRect(cx + 13, cy - 16, 1.5, 7);
+        // Flag on note stem
+        g.fillStyle(palette.accent, 0.7);
+        g.fillTriangle(cx + 14, cy - 16, cx + 17, cy - 14, cx + 14, cy - 13);
+        // Second note floating nearby (pair of notes)
+        g.fillStyle(palette.accent, 0.5);
+        g.fillCircle(cx - 14, cy - 8, 1.5);
+        g.fillRect(cx - 13, cy - 13, 1, 5);
         break;
       default:
         break;
@@ -1946,136 +2458,82 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // === Socks-and-sandals legs (the universal tourist crime) ===
-    // White socks pulled up high
-    g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx - 7, cy + 12, 5, 8);
-    g.fillRect(cx + 2, cy + 12, 5, 8);
-    // Sock ribbing
-    g.fillStyle(0xcccccc, 1);
-    g.fillRect(cx - 7, cy + 12, 5, 1);
-    g.fillRect(cx + 2, cy + 12, 5, 1);
-    // Sandal straps (brown)
-    g.fillStyle(0x664422, 1);
-    g.fillRect(cx - 8, cy + 18, 7, 2);
-    g.fillRect(cx + 1, cy + 18, 7, 2);
-    g.fillRect(cx - 6, cy + 17, 2, 4);
-    g.fillRect(cx + 4, cy + 17, 2, 4);
-    // Sunburned knees poking between shorts and socks
+    // === Legs (plain under cagoule — simplified for readability) ===
     g.fillStyle(0xee8877, 1);
-    g.fillRect(cx - 7, cy + 10, 5, 3);
-    g.fillRect(cx + 2, cy + 10, 5, 3);
+    g.fillRect(cx - 7, cy + 10, 5, 8);
+    g.fillRect(cx + 2, cy + 10, 5, 8);
+    g.fillStyle(0x664422, 1);
+    g.fillRect(cx - 8, cy + 17, 7, 2);
+    g.fillRect(cx + 1, cy + 17, 7, 2);
 
-    // === Cargo shorts (khaki, bulging pockets) ===
-    g.fillStyle(0x887755, 1);
-    g.fillRect(cx - 9, cy + 4, 18, 8);
-    g.fillStyle(0xaa9966, 1);
-    g.fillRect(cx - 8, cy + 5, 16, 6);
-    // Pocket flaps
-    g.fillStyle(0x887755, 1);
-    g.fillRect(cx - 8, cy + 6, 6, 3);
-    g.fillRect(cx + 3, cy + 6, 6, 3);
-    // Greggs bag poking out of pocket (white paper bag, blue oval logo)
-    g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx + 4, cy + 5, 4, 3);
-    g.fillStyle(0x2244aa, 1);
-    g.fillEllipse(cx + 6, cy + 6, 2, 1.5);
-
-    // === Bright blue cagoule (Regatta's finest — tourist armour against Glasgow weather) ===
-    g.fillStyle(0x113388, 1);
-    g.fillRect(cx - 12, cy - 6, 24, 12);
+    // === Bright blue cagoule (THE tourist silhouette — Regatta's finest) ===
+    g.fillStyle(0x0e2d77, 1);
+    g.fillRect(cx - 12, cy - 6, 24, 18);
     g.fillStyle(0x2255cc, 1);
-    g.fillRect(cx - 11, cy - 5, 22, 10);
-    // Nylon sheen highlight (crinkly cheap material)
+    g.fillRect(cx - 11, cy - 5, 22, 16);
+    // Nylon sheen highlight
     g.fillStyle(0x4477dd, 0.4);
-    g.fillRect(cx - 8, cy - 4, 10, 3);
+    g.fillRect(cx - 8, cy - 4, 10, 4);
     // Zip line down center
     g.fillStyle(0x1144aa, 1);
-    g.fillRect(cx, cy - 5, 1, 10);
-    // Rain droplets on jacket (it's always raining)
-    g.fillStyle(0xaaddff, 0.6);
-    g.fillCircle(cx - 6, cy - 2, 0.7);
-    g.fillCircle(cx + 4, cy + 1, 0.7);
-    g.fillCircle(cx - 3, cy + 3, 0.7);
-
-    // === Bumbag / fanny pack (the mark of the tourist) ===
-    g.fillStyle(0x222222, 1);
-    g.fillEllipse(cx, cy + 3, 14, 5);
-    g.fillStyle(0x444444, 1);
-    g.fillEllipse(cx, cy + 3, 12, 4);
-    // Zip
-    g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx - 1, cy + 2, 2, 1);
+    g.fillRect(cx, cy - 5, 1, 16);
 
     // === Head (SUNBURNED despite clearly overcast sky) ===
     g.fillStyle(0xcc6644, 1);
     g.fillCircle(cx, cy - 12, 9);
     g.fillStyle(0xee8866, 1);
     g.fillCircle(cx, cy - 12, 8);
-    // Peeling nose highlight
-    g.fillStyle(0xff9977, 1);
-    g.fillCircle(cx, cy - 10, 2);
+    // Sunburn flush on cheeks
+    g.fillStyle(0xff7755, 0.35);
+    g.fillCircle(cx - 4, cy - 10, 2);
+    g.fillCircle(cx + 4, cy - 10, 2);
     // Wide bewildered eyes
     g.fillStyle(0xffffff, 1);
     g.fillCircle(cx - 4, cy - 13, 3.5);
     g.fillCircle(cx + 4, cy - 13, 3.5);
-    g.fillStyle(0x334455, 1);
+    g.fillStyle(0x445566, 1);
     g.fillCircle(cx - 4, cy - 13, 2);
     g.fillCircle(cx + 4, cy - 13, 2);
-    // Tiny pupils (shrunken from existential panic)
     g.fillStyle(0x111111, 1);
     g.fillCircle(cx - 4, cy - 13, 0.8);
     g.fillCircle(cx + 4, cy - 13, 0.8);
-    // Worried eyebrows (raised, not angry — pure confusion)
+    // Worried eyebrows
     g.lineStyle(1.5, 0x884422, 1);
     g.lineBetween(cx - 7, cy - 16, cx - 3, cy - 17);
     g.lineBetween(cx + 7, cy - 16, cx + 3, cy - 17);
     // Open mouth
     g.fillStyle(0x993322, 1);
-    g.fillEllipse(cx, cy - 8, 3, 2.5);
+    g.fillEllipse(cx, cy - 8, 3, 2);
 
     // === Tartan bucket hat (the tat-shop special from Buchanan Street) ===
-    g.fillStyle(0x886644, 1);
+    g.fillStyle(0x776633, 1);
     g.fillEllipse(cx, cy - 19, 22, 5);
     g.fillStyle(0xbb8855, 1);
     g.fillEllipse(cx, cy - 19, 20, 4);
-    // Hat crown
     g.fillStyle(0x886644, 1);
     g.fillRect(cx - 8, cy - 24, 16, 6);
     g.fillStyle(0xbb8855, 1);
     g.fillRect(cx - 7, cy - 23, 14, 5);
-    // Tartan check pattern on hat (red crossing lines)
+    // Tartan check
     g.fillStyle(0xcc3322, 0.7);
     g.fillRect(cx - 7, cy - 21, 14, 1);
     g.fillRect(cx - 3, cy - 23, 1, 5);
     g.fillRect(cx + 3, cy - 23, 1, 5);
-    // Sunburned ear tips poking below hat brim
+    // Sunburned ears poking below brim
     g.fillStyle(0xff7755, 1);
     g.fillCircle(cx - 10, cy - 16, 2);
     g.fillCircle(cx + 10, cy - 16, 2);
 
-    // === "I ♥ SCOTLAND" shopping bag (hanging from arm) ===
-    g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx + 12, cy - 2, 8, 10);
-    g.fillStyle(0xffffff, 1);
-    g.fillRect(cx + 13, cy - 1, 6, 8);
-    // Heart (tiny red)
-    g.fillStyle(0xff2222, 1);
-    g.fillCircle(cx + 15, cy + 1, 1);
-    g.fillCircle(cx + 17, cy + 1, 1);
-    g.fillTriangle(cx + 14, cy + 2, cx + 18, cy + 2, cx + 16, cy + 4);
-    // Bag handles
-    g.lineStyle(1, 0xcccccc, 1);
-    g.lineBetween(cx + 14, cy - 2, cx + 12, cy - 4);
-    g.lineBetween(cx + 18, cy - 2, cx + 18, cy - 4);
-
-    // === Selfie stick + phone (held up, blocking the view) ===
-    g.fillStyle(0x666666, 1);
+    // === Selfie stick + phone (the identifying prop — sticks UP above the silhouette) ===
+    g.fillStyle(0x555555, 1);
     g.fillRect(cx - 14, cy - 6, 2, 18);
-    g.fillStyle(0x222222, 1);
-    g.fillRect(cx - 16, cy - 10, 5, 5);
+    g.fillStyle(0x111111, 1);
+    g.fillRect(cx - 17, cy - 11, 6, 7);
     g.fillStyle(0x4488cc, 0.8);
-    g.fillRect(cx - 15, cy - 9, 3, 3);
+    g.fillRect(cx - 16, cy - 10, 4, 4);
+    // Screen glow
+    g.fillStyle(0xffffcc, 0.25);
+    g.fillCircle(cx - 14, cy - 12, 3);
 
     g.generateTexture('tourist', s, s);
     g.destroy();
@@ -2086,49 +2544,97 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // === Legs (black work trousers, scuffed) ===
+    // === Legs (black work trousers, scuffed from the kitchen) ===
     g.fillStyle(0x1a1a1a, 1);
     g.fillRect(cx - 7, cy + 12, 5, 8);
     g.fillRect(cx + 2, cy + 12, 5, 8);
-    g.fillStyle(0x111111, 1);
+    // Trouser crease highlight
+    g.fillStyle(0x222222, 0.6);
+    g.fillRect(cx - 5, cy + 13, 1, 6);
+    g.fillRect(cx + 4, cy + 13, 1, 6);
+    // Non-slip kitchen shoes (chunky, black, oil-resistant)
+    g.fillStyle(0x0a0a0a, 1);
     g.fillRect(cx - 8, cy + 18, 6, 3);
     g.fillRect(cx + 2, cy + 18, 6, 3);
+    // Shoe sole edge (white rubber)
+    g.fillStyle(0x444444, 1);
+    g.fillRect(cx - 8, cy + 20, 6, 1);
+    g.fillRect(cx + 2, cy + 20, 6, 1);
 
     // === Grease-splattered apron over shirt ===
-    g.fillStyle(0x999988, 1);
+    g.fillStyle(0x888877, 1);
     g.fillRect(cx - 10, cy - 4, 20, 18);
     g.fillStyle(0xddddcc, 1);
     g.fillRect(cx - 9, cy - 3, 18, 16);
+    // Apron strings visible at sides (tied at back, ends peeking)
+    g.fillStyle(0xccccbb, 1);
+    g.fillRect(cx - 11, cy - 1, 2, 1);
+    g.fillRect(cx + 9, cy - 1, 2, 1);
+    // String dangling below knot at back
+    g.lineStyle(1, 0xbbbbaa, 0.7);
+    g.lineBetween(cx - 11, cy, cx - 12, cy + 4);
+    g.lineBetween(cx + 10, cy, cx + 11, cy + 4);
+    // Grease splatters (variety of sizes, ages — old and fresh)
     g.fillStyle(0xaa8833, 0.6);
     g.fillCircle(cx - 4, cy + 2, 2.5);
     g.fillCircle(cx + 5, cy + 6, 2);
     g.fillStyle(0x886622, 0.5);
     g.fillCircle(cx + 2, cy + 1, 1.5);
     g.fillCircle(cx - 6, cy + 8, 1.5);
+    // Fresh red sauce splash (just happened — tomato or brown)
+    g.fillStyle(0xcc4422, 0.35);
+    g.fillCircle(cx - 2, cy + 5, 1);
+    g.fillCircle(cx + 3, cy + 9, 0.8);
+    // Apron pocket with pen and notepad edge visible
+    g.fillStyle(0xbbbbaa, 1);
+    g.fillRect(cx - 4, cy + 8, 8, 4);
     g.fillStyle(0xccccbb, 1);
-    g.fillRect(cx - 11, cy - 1, 2, 1);
-    g.fillRect(cx + 9, cy - 1, 2, 1);
+    g.fillRect(cx - 3, cy + 8, 6, 3);
+    // Pen (blue bic sticking out)
+    g.fillStyle(0x2244aa, 1);
+    g.fillRect(cx + 1, cy + 6, 1, 4);
+    g.fillStyle(0x4466cc, 1);
+    g.fillRect(cx + 1, cy + 6, 1, 1);
 
-    // === Arms (sleeves rolled up, beefy forearms) ===
+    // === Arms (sleeves rolled up, beefy forearms — burns and all) ===
+    g.fillStyle(0xaa6644, 1);
+    g.fillRect(cx - 14, cy - 2, 4, 7);
+    g.fillRect(cx + 10, cy - 2, 4, 7);
     g.fillStyle(0xbb7755, 1);
-    g.fillRect(cx - 14, cy - 2, 4, 6);
-    g.fillRect(cx + 10, cy - 2, 4, 6);
+    g.fillRect(cx - 13, cy - 1, 2, 5);
+    g.fillRect(cx + 11, cy - 1, 2, 5);
+    // Burn mark on forearm (kitchen hazard — tiny red mark)
+    g.fillStyle(0xcc6644, 0.5);
+    g.fillCircle(cx - 12, cy + 2, 0.7);
+    // Ruddy knuckles (hands — been working hard)
+    g.fillStyle(0xcc8866, 1);
+    g.fillRect(cx - 14, cy + 4, 3, 2);
+    g.fillRect(cx + 11, cy + 4, 3, 2);
 
-    // === Head (ruddy, no-nonsense, been working since 6am) ===
+    // === Head (ruddy, no-nonsense, been on shift since 6am) ===
     g.fillStyle(0xaa5533, 1);
     g.fillCircle(cx, cy - 10, 8);
     g.fillStyle(0xddaa88, 1);
     g.fillCircle(cx, cy - 10, 7);
+    // Flushed cheeks (hot kitchen)
     g.fillStyle(0xee8866, 0.6);
     g.fillCircle(cx - 4, cy - 8, 2);
     g.fillCircle(cx + 4, cy - 8, 2);
+    // Sweat bead on temple
+    g.fillStyle(0xaaddff, 0.6);
+    g.fillCircle(cx + 6, cy - 12, 0.8);
+    // Dark eyes (tired but focused — seen a thousand orders today)
     g.fillStyle(0x111111, 1);
     g.fillRect(cx - 5, cy - 11, 4, 1.5);
     g.fillRect(cx + 1, cy - 11, 4, 1.5);
+    // Under-eye shadows (bags — long shift)
     g.fillStyle(0x996644, 0.4);
     g.fillEllipse(cx - 3, cy - 9, 4, 1.5);
     g.fillEllipse(cx + 3, cy - 9, 4, 1.5);
-    // "Gonnae no dae that" mouth
+    // Five o'clock shadow (hasn't shaved — been working)
+    g.fillStyle(0x997766, 0.25);
+    g.fillRect(cx - 4, cy - 7, 8, 3);
+    // "Gonnae no dae that" mouth — thin, exasperated line
     g.fillStyle(0x884433, 1);
     g.fillRect(cx - 3, cy - 6, 6, 1);
     g.fillCircle(cx - 3, cy - 5, 0.5);
@@ -2149,26 +2655,44 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 3, cy - 18, 1.5);
 
     // === Chip fork (pale cream wood, two flat broad tines) ===
-    g.fillStyle(0xddccaa, 1);
+    // Handle
+    g.fillStyle(0xccbb99, 1);
     g.fillRect(cx + 12, cy + 2, 2, 10);
-    g.fillStyle(0xeeddbb, 1);
+    g.fillStyle(0xddccaa, 1);
     g.fillRect(cx + 12, cy + 3, 2, 8);
+    // Tines (two prongs)
     g.fillStyle(0xddccaa, 1);
     g.fillRect(cx + 11, cy - 3, 2, 6);
     g.fillRect(cx + 14, cy - 3, 2, 6);
     g.fillStyle(0xeeddbb, 1);
     g.fillRect(cx + 11, cy - 2, 2, 4);
     g.fillRect(cx + 14, cy - 2, 2, 4);
+    // === CHIP on the fork (golden, glistening, this is what it's all about) ===
+    g.fillStyle(0xcc9922, 1);
+    g.fillRect(cx + 10, cy - 6, 7, 4);
     g.fillStyle(0xddaa33, 1);
-    g.fillRect(cx + 10, cy - 5, 7, 3);
+    g.fillRect(cx + 10, cy - 5, 7, 2);
+    // Chip golden highlight
     g.fillStyle(0xeebb44, 1);
-    g.fillRect(cx + 11, cy - 4, 5, 1);
+    g.fillRect(cx + 11, cy - 5, 5, 1);
+    // Grease sheen on chip
+    g.fillStyle(0xffdd66, 0.4);
+    g.fillRect(cx + 11, cy - 6, 3, 1);
+    // Chip batter crust edge (darker, crunchy)
+    g.fillStyle(0xaa7711, 1);
+    g.fillRect(cx + 10, cy - 3, 7, 1);
 
-    // === Steam wisps ===
-    g.fillStyle(0xdddddd, 0.5);
-    g.fillCircle(cx - 6, cy - 20, 2);
-    g.fillCircle(cx + 2, cy - 22, 2.5);
-    g.fillCircle(cx + 7, cy - 19, 2);
+    // === Steam wisps (thicker — it's fresh from the fryer) ===
+    g.fillStyle(0xcccccc, 0.4);
+    g.fillCircle(cx - 6, cy - 20, 2.5);
+    g.fillCircle(cx + 2, cy - 23, 3);
+    g.fillCircle(cx + 7, cy - 19, 2.5);
+    g.fillStyle(0xdddddd, 0.3);
+    g.fillCircle(cx - 4, cy - 22, 2);
+    g.fillCircle(cx + 4, cy - 21, 1.8);
+    // Rising heat haze (barely visible shimmer above steam)
+    g.fillStyle(0xeeeeee, 0.15);
+    g.fillCircle(cx, cy - 25, 3);
 
     g.generateTexture('chef', s, s);
     g.destroy();
@@ -2183,18 +2707,21 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 1;
 
-    // Fuzzy aura — slight motion blur halo around the midge
-    g.fillStyle(0x333344, 0.3);
+    // Reduced motion-blur halo (half alpha — reads as single insect, not swarm)
+    g.fillStyle(0x333344, 0.15);
     g.fillCircle(cx, cy, 10);
 
-    // Wing blur — translucent ovals behind the body, angled outward.
-    // Drawn first so the body sits on top.
-    g.fillStyle(0xccddee, 0.35);
-    g.fillEllipse(cx - 6, cy - 4, 9, 5);
-    g.fillEllipse(cx + 6, cy - 4, 9, 5);
-    g.fillStyle(0xeeffff, 0.5);
-    g.fillEllipse(cx - 5, cy - 4, 6, 3);
-    g.fillEllipse(cx + 5, cy - 4, 6, 3);
+    // ── Wings — two defined translucent ovals with visible leading edge ──
+    // Left wing
+    g.fillStyle(0xccddee, 0.4);
+    g.fillEllipse(cx - 6, cy - 4, 10, 5);
+    g.lineStyle(0.8, 0x8899aa, 0.6);
+    g.lineBetween(cx - 10, cy - 5, cx - 2, cy - 3);
+    // Right wing
+    g.fillStyle(0xccddee, 0.4);
+    g.fillEllipse(cx + 6, cy - 4, 10, 5);
+    g.lineStyle(0.8, 0x8899aa, 0.6);
+    g.lineBetween(cx + 2, cy - 3, cx + 10, cy - 5);
 
     // Body — chunky little oval, dark outline first
     g.fillStyle(0x1a1a22, 1);
@@ -2205,14 +2732,14 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0x1a1a22, 0.7);
     g.fillRect(cx - 4, cy, 8, 1);
     g.fillRect(cx - 4, cy + 2, 8, 1);
-    // Abdomen highlight (tiny warm tone to read as insect)
+    // Abdomen highlight
     g.fillStyle(0x5a4428, 1);
     g.fillCircle(cx - 1, cy - 1, 2);
 
     // Head — small dark bulb at the front
     g.fillStyle(0x0a0a11, 1);
     g.fillCircle(cx, cy - 4, 3);
-    // Giant buggy eyes (red, compound) — the iconic midge tell
+    // Giant buggy compound eyes (red) — the iconic midge tell
     g.fillStyle(0xcc2244, 1);
     g.fillCircle(cx - 2, cy - 5, 1.5);
     g.fillCircle(cx + 2, cy - 5, 1.5);
@@ -2220,18 +2747,20 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx - 2, cy - 5, 0.7);
     g.fillCircle(cx + 2, cy - 5, 0.7);
 
-    // Tiny proboscis poking forward
+    // Proboscis
     g.fillStyle(0x0a0a11, 1);
     g.fillRect(cx, cy - 7, 1, 2);
 
-    // Six spindly legs dangling below
+    // ── Six distinct legs — three per side, visibly separated ──
     g.lineStyle(1, 0x0a0a11, 1);
-    g.lineBetween(cx - 4, cy + 4, cx - 6, cy + 8);
-    g.lineBetween(cx - 1, cy + 4, cx - 2, cy + 9);
-    g.lineBetween(cx - 3, cy + 4, cx - 4, cy + 9);
-    g.lineBetween(cx + 4, cy + 4, cx + 6, cy + 8);
-    g.lineBetween(cx + 1, cy + 4, cx + 2, cy + 9);
-    g.lineBetween(cx + 3, cy + 4, cx + 4, cy + 9);
+    // Left side: front, mid, rear — each with clear separation
+    g.lineBetween(cx - 4, cy + 3, cx - 8, cy + 7);   // front left
+    g.lineBetween(cx - 3, cy + 4, cx - 6, cy + 10);  // mid left
+    g.lineBetween(cx - 2, cy + 5, cx - 4, cy + 11);  // rear left
+    // Right side: mirror
+    g.lineBetween(cx + 4, cy + 3, cx + 8, cy + 7);   // front right
+    g.lineBetween(cx + 3, cy + 4, cx + 6, cy + 10);  // mid right
+    g.lineBetween(cx + 2, cy + 5, cx + 4, cy + 11);  // rear right
 
     // Thorax highlight
     g.fillStyle(0x5a4428, 0.9);
@@ -2246,94 +2775,159 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Body outline
+    // ── Body outline ──
     g.fillStyle(0x3a1e08, 1);
     g.fillEllipse(cx, cy + 4, 46, 30);
-    // Big brown body
+    // Big shaggy brown body
     g.fillStyle(0x8b4513, 1);
     g.fillEllipse(cx, cy + 3, 42, 26);
-    // Shaggy fur overlay
+    // Lighter mid-layer (warm reddish-brown — Highland breed colour)
     g.fillStyle(0xa0522d, 0.7);
     g.fillEllipse(cx - 3, cy + 1, 34, 22);
-    // Shaggy tufts
+    // Belly sag (heavier at the bottom — these are stocky beasts)
+    g.fillStyle(0x6a3010, 0.4);
+    g.fillEllipse(cx, cy + 10, 30, 10);
+    // Shaggy fur tufts at body edges (not smooth — wild and wind-blown)
     g.fillStyle(0x8b4513, 1);
-    g.fillCircle(cx - 14, cy + 2, 4);
-    g.fillCircle(cx + 14, cy + 3, 4);
-    g.fillCircle(cx - 10, cy + 10, 3);
-    g.fillCircle(cx + 10, cy + 10, 3);
+    g.fillCircle(cx - 16, cy + 2, 4);
+    g.fillCircle(cx + 16, cy + 3, 4);
+    g.fillCircle(cx - 12, cy + 10, 3);
+    g.fillCircle(cx + 12, cy + 10, 3);
+    g.fillCircle(cx - 18, cy + 6, 3);
+    g.fillCircle(cx + 18, cy + 5, 3);
+    // Back ridge highlight (spine catches the light)
+    g.fillStyle(0xbb6a30, 0.4);
+    g.fillEllipse(cx, cy - 4, 28, 5);
 
-    // Legs (chunky)
+    // ── Legs (chunky, furry at the top) ──
     g.fillStyle(0x3a1e08, 1);
     g.fillRect(cx - 13, cy + 14, 5, 10);
     g.fillRect(cx - 5, cy + 14, 5, 10);
     g.fillRect(cx + 2, cy + 14, 5, 10);
     g.fillRect(cx + 10, cy + 14, 5, 10);
-    // Hooves
-    g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 13, cy + 22, 5, 2);
-    g.fillRect(cx - 5, cy + 22, 5, 2);
-    g.fillRect(cx + 2, cy + 22, 5, 2);
-    g.fillRect(cx + 10, cy + 22, 5, 2);
+    // Fur feathering at leg tops
+    g.fillStyle(0x7a3810, 0.6);
+    g.fillCircle(cx - 11, cy + 14, 3);
+    g.fillCircle(cx - 3, cy + 14, 3);
+    g.fillCircle(cx + 4, cy + 14, 3);
+    g.fillCircle(cx + 12, cy + 14, 3);
+    // Hooves — dark, cloven
+    g.fillStyle(0x0a0a0a, 1);
+    g.fillRect(cx - 13, cy + 22, 5, 3);
+    g.fillRect(cx - 5, cy + 22, 5, 3);
+    g.fillRect(cx + 2, cy + 22, 5, 3);
+    g.fillRect(cx + 10, cy + 22, 5, 3);
+    // Hoof split (cloven detail)
+    g.fillStyle(0x3a1e08, 0.5);
+    g.fillRect(cx - 11, cy + 22, 1, 3);
+    g.fillRect(cx - 3, cy + 22, 1, 3);
+    g.fillRect(cx + 4, cy + 22, 1, 3);
+    g.fillRect(cx + 12, cy + 22, 1, 3);
 
-    // Head
+    // ── Head ──
     g.fillStyle(0x3a1e08, 1);
     g.fillCircle(cx, cy - 10, 13);
     g.fillStyle(0x8b4513, 1);
     g.fillCircle(cx, cy - 10, 12);
 
-    // Iconic: massive shaggy fringe (covers eyes)
+    // ── Ears (visible beside horns — pink inner ear) ──
+    g.fillStyle(0x6a3010, 1);
+    g.fillTriangle(cx - 12, cy - 14, cx - 8, cy - 10, cx - 14, cy - 10);
+    g.fillTriangle(cx + 12, cy - 14, cx + 8, cy - 10, cx + 14, cy - 10);
+    // Pink inner ear (warm — healthy beast)
+    g.fillStyle(0xdd9988, 0.6);
+    g.fillTriangle(cx - 12, cy - 13, cx - 9, cy - 11, cx - 13, cy - 11);
+    g.fillTriangle(cx + 12, cy - 13, cx + 9, cy - 11, cx + 13, cy - 11);
+
+    // ── Iconic: massive shaggy fringe (covers eyes completely) ──
     g.fillStyle(0xccaa77, 1);
     g.fillRect(cx - 14, cy - 18, 28, 10);
-    // Stringy bits of fringe
+    // Darker fringe depth layer underneath
+    g.fillStyle(0x8b6633, 0.7);
+    g.fillRect(cx - 13, cy - 12, 26, 4);
+    // Stringy bits of fringe (varied thickness, natural)
     g.fillStyle(0xa0522d, 1);
     for (let i = 0; i < 7; i++) {
       const fx = cx - 12 + i * 4;
-      g.fillRect(fx, cy - 10, 2, 5);
+      const len = 4 + (i % 3);
+      g.fillRect(fx, cy - 10, 2, len);
     }
-    g.fillStyle(0xccaa77, 0.8);
-    for (let i = 0; i < 7; i++) {
-      const fx = cx - 12 + i * 4 + 1;
-      g.fillRect(fx, cy - 9, 1, 4);
-    }
-
-    // Iconic: huge curved horns
-    g.fillStyle(0x221100, 1);
-    g.fillTriangle(cx - 16, cy - 16, cx - 8, cy - 12, cx - 22, cy - 8);
-    g.fillTriangle(cx + 16, cy - 16, cx + 8, cy - 12, cx + 22, cy - 8);
-    g.fillStyle(0xccaa77, 1);
-    g.fillTriangle(cx - 15, cy - 15, cx - 9, cy - 12, cx - 20, cy - 9);
-    g.fillTriangle(cx + 15, cy - 15, cx + 9, cy - 12, cx + 20, cy - 9);
-
-    // Snout
-    g.fillStyle(0x3a1e08, 1);
-    g.fillCircle(cx, cy - 4, 5);
-    g.fillStyle(0xd4956b, 1);
-    g.fillCircle(cx, cy - 4, 4);
-    // Nostrils
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx - 1, cy - 3, 0.8);
-    g.fillCircle(cx + 2, cy - 3, 0.8);
-
-    // Nostril steam (it's cauld out)
-    g.fillStyle(0xcccccc, 0.4);
-    g.fillCircle(cx - 2, cy - 1, 1.5);
-    g.fillCircle(cx + 3, cy - 1, 1.5);
-    g.fillStyle(0xeeeeee, 0.25);
-    g.fillCircle(cx - 3, cy - 2, 1);
-    g.fillCircle(cx + 4, cy - 2, 1);
-
-    // Mud on hooves (been in the field)
-    g.fillStyle(0x3a2a0a, 0.7);
-    g.fillCircle(cx - 11, cy + 23, 2);
-    g.fillCircle(cx + 4, cy + 23, 2);
-
-    // Extra shaggy fringe strands (individual hairs)
-    g.fillStyle(0xbb9955, 0.7);
+    // Lighter individual hair strands over the top
+    g.fillStyle(0xddbb88, 0.8);
     for (let i = 0; i < 8; i++) {
       const fx = cx - 13 + i * 3.5;
-      const len = 3 + (i % 3);
+      const len = 3 + (i % 4);
       g.fillRect(fx, cy - 9, 1, len);
     }
+    // Windswept strand going sideways (it's always windy on the moor)
+    g.fillStyle(0xccaa77, 0.7);
+    g.fillRect(cx + 13, cy - 14, 3, 1);
+    g.fillRect(cx + 14, cy - 13, 2, 1);
+
+    // ── Iconic: huge curved horns (with growth rings) ──
+    g.fillStyle(0x1a0a00, 1);
+    g.fillTriangle(cx - 16, cy - 16, cx - 8, cy - 12, cx - 22, cy - 8);
+    g.fillTriangle(cx + 16, cy - 16, cx + 8, cy - 12, cx + 22, cy - 8);
+    g.fillStyle(0xbbaa66, 1);
+    g.fillTriangle(cx - 15, cy - 15, cx - 9, cy - 12, cx - 20, cy - 9);
+    g.fillTriangle(cx + 15, cy - 15, cx + 9, cy - 12, cx + 20, cy - 9);
+    // Horn tip highlight (lighter, polished)
+    g.fillStyle(0xddcc88, 0.7);
+    g.fillCircle(cx - 19, cy - 9, 1.5);
+    g.fillCircle(cx + 19, cy - 9, 1.5);
+    // Growth rings (subtle darker bands — shows age)
+    g.fillStyle(0x887744, 0.4);
+    g.fillRect(cx - 14, cy - 13, 3, 1);
+    g.fillRect(cx + 11, cy - 13, 3, 1);
+
+    // ── Snout (wet, pink, expressive) ──
+    g.fillStyle(0x3a1e08, 1);
+    g.fillCircle(cx, cy - 4, 5.5);
+    g.fillStyle(0xd4956b, 1);
+    g.fillCircle(cx, cy - 4, 4.5);
+    // Muzzle highlight (moist — healthy)
+    g.fillStyle(0xddaa88, 0.5);
+    g.fillCircle(cx - 1, cy - 5, 2);
+    // Nostrils (bigger, flared — heavy breathing)
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx - 2, cy - 3, 1);
+    g.fillCircle(cx + 2, cy - 3, 1);
+    // Dewdrop on nostril (THE Highland detail — it's always damp)
+    g.fillStyle(0xccddee, 0.6);
+    g.fillCircle(cx - 2, cy - 2, 0.7);
+
+    // ── Nostril steam (it's cauld out) ──
+    g.fillStyle(0xcccccc, 0.35);
+    g.fillCircle(cx - 3, cy - 1, 2);
+    g.fillCircle(cx + 3, cy - 1, 2);
+    g.fillStyle(0xdddddd, 0.2);
+    g.fillCircle(cx - 4, cy - 2, 1.5);
+    g.fillCircle(cx + 5, cy - 2, 1.5);
+    // Second breath plume (lingering in cold air)
+    g.fillStyle(0xeeeeee, 0.12);
+    g.fillCircle(cx - 5, cy - 3, 1.5);
+    g.fillCircle(cx + 6, cy - 3, 1.5);
+
+    // ── Mouth hint (chewing cud — it's what coos do) ──
+    g.fillStyle(0x3a1e08, 0.5);
+    g.fillRect(cx - 2, cy - 1, 4, 1);
+
+    // ── Mud on hooves and lower legs (been in the field all winter) ──
+    g.fillStyle(0x3a2a0a, 0.6);
+    g.fillCircle(cx - 11, cy + 23, 2.5);
+    g.fillCircle(cx + 4, cy + 23, 2.5);
+    g.fillCircle(cx - 3, cy + 22, 1.5);
+    g.fillCircle(cx + 12, cy + 22, 1.5);
+    // Mud splash up the leg
+    g.fillStyle(0x4a3a10, 0.3);
+    g.fillCircle(cx - 12, cy + 20, 1);
+    g.fillCircle(cx + 11, cy + 19, 1);
+
+    // ── Tail tuft (swishing — long-haired, catches the wind) ──
+    g.fillStyle(0x6a3010, 1);
+    g.fillTriangle(cx - 20, cy + 2, cx - 22, cy + 8, cx - 18, cy + 6);
+    g.fillStyle(0x8b4513, 0.8);
+    g.fillTriangle(cx - 20, cy + 3, cx - 21, cy + 7, cx - 18, cy + 5);
 
     g.generateTexture('highland_cow', s, s);
     g.destroy();
@@ -2347,76 +2941,108 @@ export class BootScene extends Phaser.Scene {
    */
   /** Golden eagle — broad wingspan, hooked beak, fierce eye, talons.
    *  Faces RIGHT (Phaser +X at rotation 0) so it flies forward. */
+  /** Golden eagle — Scotland's national bird. Broad wingspan, hooked beak,
+   *  fierce amber eye, layered flight feathers with individual primary tips.
+   *  Faces RIGHT (Phaser +X at rotation 0) so it flies forward. */
   private createEagle(): void {
-    const s = 48;
+    const s = 56;  // up from 48 — eagle should dominate the seagull
     const g = this.add.graphics();
     const cx = s / 2 - 2, cy = s / 2;
 
-    // Wings — broad sweep, layered feathers for depth
-    // Outer wing (darkest)
+    // ── Wings — broad sweep reaching near canvas edges (~2px margin) ──
+    // Outer wing (darkest — primary feathers)
     g.fillStyle(0x1a1208, 1);
-    g.fillTriangle(cx - 2, cy, cx - 8, cy - 20, cx + 6, cy - 14);
-    g.fillTriangle(cx - 2, cy, cx - 8, cy + 20, cx + 6, cy + 14);
-    // Mid wing (warm brown)
+    g.fillTriangle(cx - 2, cy, cx - 10, cy - 24, cx + 7, cy - 17);
+    g.fillTriangle(cx - 2, cy, cx - 10, cy + 24, cx + 7, cy + 17);
+    // Mid wing coverts (warm brown)
     g.fillStyle(0x3a2a14, 1);
-    g.fillTriangle(cx, cy, cx - 5, cy - 15, cx + 4, cy - 11);
-    g.fillTriangle(cx, cy, cx - 5, cy + 15, cx + 4, cy + 11);
-    // Inner wing highlight (golden brown)
+    g.fillTriangle(cx, cy, cx - 6, cy - 18, cx + 5, cy - 13);
+    g.fillTriangle(cx, cy, cx - 6, cy + 18, cx + 5, cy + 13);
+    // Inner wing highlight (golden-brown scapulars)
     g.fillStyle(0x5a4020, 1);
-    g.fillTriangle(cx + 1, cy, cx - 3, cy - 10, cx + 3, cy - 8);
-    g.fillTriangle(cx + 1, cy, cx - 3, cy + 10, cx + 3, cy + 8);
-    // Feather tips — jagged edge on outer wings
-    g.fillStyle(0x1a1208, 1);
-    g.fillTriangle(cx - 8, cy - 20, cx - 4, cy - 16, cx - 10, cy - 16);
-    g.fillTriangle(cx - 8, cy + 20, cx - 4, cy + 16, cx - 10, cy + 16);
+    g.fillTriangle(cx + 1, cy, cx - 3, cy - 12, cx + 4, cy - 10);
+    g.fillTriangle(cx + 1, cy, cx - 3, cy + 12, cx + 4, cy + 10);
+    // Individual primary feather tips — separated fingers at wingtips
+    g.fillStyle(0x0e0a04, 1);
+    g.fillTriangle(cx - 10, cy - 24, cx - 5, cy - 19, cx - 13, cy - 20);
+    g.fillTriangle(cx - 8, cy - 22, cx - 4, cy - 17, cx - 11, cy - 17);
+    g.fillTriangle(cx - 5, cy - 20, cx - 1, cy - 15, cx - 8, cy - 15);
+    g.fillTriangle(cx - 10, cy + 24, cx - 5, cy + 19, cx - 13, cy + 20);
+    g.fillTriangle(cx - 8, cy + 22, cx - 4, cy + 17, cx - 11, cy + 17);
+    g.fillTriangle(cx - 5, cy + 20, cx - 1, cy + 15, cx - 8, cy + 15);
+    // Feather barring detail
+    g.fillStyle(0x4a3818, 0.5);
+    g.fillRect(cx - 5, cy - 14, 7, 1);
+    g.fillRect(cx - 5, cy + 13, 7, 1);
+    g.fillRect(cx - 3, cy - 11, 5, 1);
+    g.fillRect(cx - 3, cy + 10, 5, 1);
 
-    // Body — barrel shape
+    // ── Body — barrel-shaped, thicker (+2px each side) ──
     g.fillStyle(0x1a1208, 1);
-    g.fillEllipse(cx, cy, 16, 11);
+    g.fillEllipse(cx, cy, 20, 13);
     g.fillStyle(0x3a2a14, 1);
-    g.fillEllipse(cx, cy, 14, 9);
-    // Breast — lighter underbelly
+    g.fillEllipse(cx, cy, 18, 11);
+    // Breast
     g.fillStyle(0x5a4828, 0.7);
-    g.fillEllipse(cx - 1, cy + 1, 10, 6);
+    g.fillEllipse(cx - 1, cy + 1, 12, 8);
+    // Back feather sheen
+    g.fillStyle(0x6a5030, 0.4);
+    g.fillEllipse(cx, cy - 2, 12, 5);
 
-    // Tail — forked, trailing left
+    // ── Tail — broad, fanned, banded ──
     g.fillStyle(0x1a1208, 1);
-    g.fillTriangle(cx - 6, cy - 3, cx - 6, cy + 3, cx - 13, cy - 1);
-    g.fillTriangle(cx - 6, cy - 1, cx - 6, cy + 4, cx - 12, cy + 2);
+    g.fillTriangle(cx - 8, cy - 5, cx - 8, cy + 5, cx - 17, cy);
+    g.fillStyle(0x2a1a0c, 1);
+    g.fillTriangle(cx - 8, cy - 4, cx - 8, cy + 4, cx - 16, cy);
+    g.fillStyle(0x4a3818, 0.6);
+    g.fillRect(cx - 14, cy - 1, 5, 2);
 
-    // Head — golden-brown, distinct from dark body
+    // ── Head — golden-brown nape ──
     g.fillStyle(0x1a1208, 1);
-    g.fillCircle(cx + 9, cy, 6);
-    g.fillStyle(0x6a5030, 1);
-    g.fillCircle(cx + 9, cy, 5);
-    // Crown feathers (lighter patch on top of head)
-    g.fillStyle(0x8a7040, 0.8);
-    g.fillCircle(cx + 8, cy - 2, 3);
+    g.fillCircle(cx + 11, cy, 7);
+    g.fillStyle(0x5a4020, 1);
+    g.fillCircle(cx + 11, cy, 6);
+    g.fillStyle(0x8a7040, 1);
+    g.fillCircle(cx + 10, cy - 2, 4);
+    g.fillStyle(0xaa8850, 0.7);
+    g.fillCircle(cx + 9, cy - 3, 2.5);
 
-    // Beak — strong hooked beak, yellow-black
-    g.fillStyle(0x222200, 1);
-    g.fillTriangle(cx + 13, cy - 2, cx + 13, cy + 2, cx + 18, cy + 1);
-    g.fillStyle(0xddaa22, 1);
-    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 1, cx + 17, cy + 1);
-    // Hook at tip
-    g.fillStyle(0x111100, 1);
-    g.fillCircle(cx + 17, cy + 1, 0.8);
-
-    // Eye — fierce, bright
-    g.fillStyle(0x000000, 1);
-    g.fillCircle(cx + 10, cy - 1, 2);
-    g.fillStyle(0xffcc00, 1);
-    g.fillCircle(cx + 10, cy - 1, 1.2);
-    g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx + 10, cy - 2, 0.5);
-
-    // Talons — visible below body (hanging in flight)
+    // ── Beak — massive, hooked ──
+    g.fillStyle(0xccaa22, 1);
+    g.fillCircle(cx + 16, cy, 2);
+    g.fillStyle(0x1a1800, 1);
+    g.fillTriangle(cx + 16, cy - 2, cx + 16, cy + 1, cx + 23, cy);
+    g.fillStyle(0x444422, 1);
+    g.fillTriangle(cx + 17, cy - 1, cx + 17, cy + 0.5, cx + 22, cy);
+    g.fillStyle(0x0a0800, 1);
+    g.fillCircle(cx + 22, cy + 0.5, 1.2);
     g.fillStyle(0x333322, 1);
-    g.fillRect(cx - 2, cy + 4, 2, 4);
-    g.fillRect(cx + 2, cy + 4, 2, 4);
-    g.fillStyle(0x111100, 1);
-    g.fillRect(cx - 3, cy + 7, 4, 1);
-    g.fillRect(cx + 1, cy + 7, 4, 1);
+    g.fillTriangle(cx + 16, cy + 1, cx + 16, cy + 3, cx + 20, cy + 2);
+
+    // ── Eye — fierce amber, with heavy brow ridge ──
+    g.fillStyle(0x2a1a0c, 1);
+    g.fillRect(cx + 9, cy - 4, 5, 1);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx + 12, cy - 1, 2.5);
+    g.fillStyle(0xddaa00, 1);
+    g.fillCircle(cx + 12, cy - 1, 1.8);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx + 12, cy - 1, 0.7);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx + 12, cy - 2, 0.7);
+
+    // ── Talons — powerful ──
+    g.fillStyle(0x333322, 1);
+    g.fillRect(cx - 2, cy + 5, 2, 5);
+    g.fillRect(cx + 3, cy + 5, 2, 5);
+    g.fillStyle(0x0a0800, 1);
+    g.fillRect(cx - 3, cy + 9, 1, 2);
+    g.fillRect(cx, cy + 9, 1, 2);
+    g.fillRect(cx + 2, cy + 9, 1, 2);
+    g.fillRect(cx + 5, cy + 9, 1, 2);
+    g.fillStyle(0x3a2a14, 0.6);
+    g.fillCircle(cx - 1, cy + 5, 2.5);
+    g.fillCircle(cx + 4, cy + 5, 2.5);
 
     g.generateTexture('eagle', s, s);
     g.destroy();
@@ -2439,64 +3065,118 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 5, cy + 17, 1);
     g.fillCircle(cx - 4, cy + 16, 0.8);
 
-    // === Wax Barbour jacket ===
+    // === Wax Barbour jacket (the £300 uniform of the rural obsessive) ===
     g.fillStyle(0x1a2a11, 1);
     g.fillRect(cx - 12, cy - 6, 24, 18);
     g.fillStyle(0x2d4a22, 1);
     g.fillRect(cx - 11, cy - 5, 22, 16);
-    g.fillStyle(0x3a5a2a, 0.6);
-    g.fillRect(cx - 10, cy - 4, 20, 3);
+    // Wax sheen (oiled cotton catches light — subtle left highlight)
+    g.fillStyle(0x3a5a2a, 0.5);
+    g.fillRect(cx - 10, cy - 4, 8, 4);
+    // Corduroy collar (brown, popped against the wind)
+    g.fillStyle(0x664422, 1);
+    g.fillRect(cx - 8, cy - 7, 16, 2);
+    g.fillStyle(0x775533, 1);
+    g.fillRect(cx - 7, cy - 7, 14, 1);
+    // Deep pockets (handwarmer and game pockets)
     g.fillStyle(0x1a3311, 1);
     g.fillRect(cx - 10, cy + 2, 8, 4);
     g.fillRect(cx + 2, cy + 2, 8, 4);
+    // Brass popper buttons
     g.fillStyle(0x886633, 1);
     g.fillCircle(cx - 6, cy + 3, 0.8);
     g.fillCircle(cx + 6, cy + 3, 0.8);
-    g.fillStyle(0x664422, 1);
-    g.fillRect(cx - 8, cy - 6, 16, 2);
+    g.fillStyle(0xaa8844, 0.6);
+    g.fillCircle(cx - 6, cy + 3, 0.4);
+    g.fillCircle(cx + 6, cy + 3, 0.4);
+    // Rain beading on wax jacket (the whole point of the wax!)
+    g.fillStyle(0xaaddee, 0.4);
+    g.fillCircle(cx - 8, cy - 2, 0.7);
+    g.fillCircle(cx + 5, cy + 1, 0.6);
+    g.fillCircle(cx - 3, cy + 5, 0.6);
+    g.fillCircle(cx + 8, cy - 3, 0.5);
+    // Thermos flask peeking from inside pocket (green, tartan)
+    g.fillStyle(0x225522, 1);
+    g.fillRect(cx - 10, cy - 1, 3, 4);
+    g.fillStyle(0x337733, 1);
+    g.fillRect(cx - 10, cy, 3, 2);
+    // Tartan band on thermos
+    g.fillStyle(0xcc3322, 0.6);
+    g.fillRect(cx - 10, cy + 1, 3, 1);
 
-    // === Binoculars around neck ===
-    g.fillStyle(0x111111, 1);
+    // === Binoculars around neck (Swarovski — he takes this seriously) ===
+    g.fillStyle(0x0a0a0a, 1);
     g.fillCircle(cx - 3, cy - 1, 2.5);
     g.fillCircle(cx + 3, cy - 1, 2.5);
-    g.fillStyle(0x333333, 1);
-    g.fillCircle(cx - 3, cy - 1, 1.8);
-    g.fillCircle(cx + 3, cy - 1, 1.8);
+    g.fillStyle(0x222222, 1);
+    g.fillCircle(cx - 3, cy - 1, 2);
+    g.fillCircle(cx + 3, cy - 1, 2);
+    // Bridge connecting barrels
+    g.fillStyle(0x111111, 1);
+    g.fillRect(cx - 1, cy - 2, 2, 1);
+    // Lens glass (blue-coated, glinting)
     g.fillStyle(0x88ccff, 0.7);
-    g.fillCircle(cx - 3, cy - 2, 0.6);
-    g.fillCircle(cx + 3, cy - 2, 0.6);
-    g.lineStyle(1, 0x333333, 0.8);
+    g.fillCircle(cx - 3, cy - 2, 0.8);
+    g.fillCircle(cx + 3, cy - 2, 0.8);
+    // Neckstrap
+    g.lineStyle(1, 0x333322, 0.8);
     g.lineBetween(cx - 3, cy - 3, cx - 4, cy - 6);
     g.lineBetween(cx + 3, cy - 3, cx + 4, cy - 6);
 
-    // === Head (weather-beaten, determined) ===
+    // === Head (weather-beaten, wind-burned, deeply determined) ===
     g.fillStyle(0x885533, 1);
     g.fillCircle(cx, cy - 12, 8);
     g.fillStyle(0xddaa77, 1);
     g.fillCircle(cx, cy - 12, 7);
+    // Wind-burned cheeks (raw red from years on the moor)
+    g.fillStyle(0xcc7755, 0.5);
+    g.fillCircle(cx - 4, cy - 10, 2.5);
+    g.fillCircle(cx + 4, cy - 10, 2.5);
+    // Crow's feet wrinkles (squinting into the wind for decades)
+    g.lineStyle(0.6, 0xaa7744, 0.5);
+    g.lineBetween(cx - 7, cy - 13, cx - 8, cy - 14);
+    g.lineBetween(cx - 7, cy - 12, cx - 8, cy - 12);
+    g.lineBetween(cx + 7, cy - 13, cx + 8, cy - 14);
+    g.lineBetween(cx + 7, cy - 12, cx + 8, cy - 12);
+    // Narrowed determined eyes (scanning for haggis)
     g.fillStyle(0x111111, 1);
     g.fillRect(cx - 5, cy - 13, 3, 1.5);
     g.fillRect(cx + 2, cy - 13, 3, 1.5);
+    // Furrowed brow (concentration)
     g.lineStyle(0.8, 0xaa7744, 0.6);
-    g.lineBetween(cx - 6, cy - 14, cx - 8, cy - 15);
-    g.lineBetween(cx + 6, cy - 14, cx + 8, cy - 15);
-    g.fillStyle(0xcc7755, 0.5);
-    g.fillCircle(cx - 4, cy - 10, 2);
-    g.fillCircle(cx + 4, cy - 10, 2);
+    g.lineBetween(cx - 6, cy - 14, cx - 3, cy - 15);
+    g.lineBetween(cx + 6, cy - 14, cx + 3, cy - 15);
+    // Ruddy nose (gin blossoms — cold weather + whisky)
+    g.fillStyle(0xdd8866, 0.4);
+    g.fillCircle(cx, cy - 10, 1.5);
+    // Stubbled jaw (hasn't been home in days — obsessive)
+    g.fillStyle(0x887766, 0.25);
+    g.fillRect(cx - 4, cy - 9, 8, 3);
+    // Set jaw (thin-lipped determination)
     g.fillStyle(0x554433, 0.7);
-    g.fillRect(cx - 5, cy - 9, 10, 3);
+    g.fillRect(cx - 3, cy - 8, 6, 1);
 
-    // === Flat cap (proper tweed) ===
+    // === Flat cap (proper Harris Tweed) ===
     g.fillStyle(0x3a3322, 1);
     g.fillRect(cx - 10, cy - 20, 20, 6);
     g.fillStyle(0x5a5533, 1);
     g.fillRect(cx - 9, cy - 19, 18, 4);
+    // Tweed fleck pattern (tiny dots of colour in the weave)
     g.fillStyle(0x4a4422, 0.7);
     g.fillCircle(cx - 5, cy - 18, 0.5);
     g.fillCircle(cx + 2, cy - 17, 0.5);
     g.fillCircle(cx + 6, cy - 18, 0.5);
+    g.fillStyle(0x665544, 0.4);
+    g.fillCircle(cx - 2, cy - 18, 0.5);
+    g.fillCircle(cx + 4, cy - 17, 0.5);
+    // Peak (stiff, forward-pointing)
     g.fillStyle(0x3a3322, 1);
     g.fillRect(cx - 12, cy - 15, 14, 2);
+    g.fillStyle(0x4a4433, 0.7);
+    g.fillRect(cx - 11, cy - 15, 12, 1);
+    // Rain bead on peak
+    g.fillStyle(0xaaddee, 0.35);
+    g.fillCircle(cx - 8, cy - 15, 0.5);
 
     // === Big haggis net on a pole ===
     g.fillStyle(0x664411, 1);
@@ -2531,86 +3211,147 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0xcccccc, 1);
     g.fillEllipse(cx - 5, cy + 21, 7, 3);
 
-    // === Royal Stewart tartan kilt ===
-    g.fillStyle(0x881111, 1);
+    // === Royal Stewart tartan kilt (THE kilt — bold, proud, swinging) ===
+    g.fillStyle(0x771111, 1);
     g.fillRect(cx - 13, cy + 1, 26, 14);
     g.fillStyle(0xcc2222, 1);
     g.fillRect(cx - 12, cy + 2, 24, 12);
+    // Green sett lines (horizontal + vertical)
     g.fillStyle(0x114411, 0.8);
     g.fillRect(cx - 12, cy + 4, 24, 2);
     g.fillRect(cx - 12, cy + 10, 24, 2);
     g.fillRect(cx - 8, cy + 2, 2, 12);
     g.fillRect(cx + 2, cy + 2, 2, 12);
+    // Blue overchecks
     g.fillStyle(0x2244aa, 0.7);
     g.fillRect(cx - 12, cy + 7, 24, 1);
     g.fillRect(cx - 3, cy + 2, 1, 12);
     g.fillRect(cx + 7, cy + 2, 1, 12);
+    // White guard lines
     g.fillStyle(0xffffff, 0.4);
     g.fillRect(cx - 12, cy + 3, 24, 1);
     g.fillRect(cx - 12, cy + 12, 24, 1);
-    g.fillStyle(0xcccccc, 1);
-    g.fillCircle(cx + 8, cy + 8, 1);
+    // Kilt pleats shadow (right side — back pleats visible at the side)
+    g.fillStyle(0x991111, 0.5);
+    g.fillRect(cx + 10, cy + 2, 1, 12);
+    g.fillRect(cx + 12, cy + 2, 1, 12);
+    // Kilt swinging motion shadow (bottom edge — it's swinging as he charges)
+    g.fillStyle(0x661111, 0.4);
+    g.fillRect(cx - 12, cy + 13, 24, 1);
+    // Kilt pin (safety pin with clan crest — ornate)
+    g.fillStyle(0xbbbbbb, 1);
+    g.fillCircle(cx + 9, cy + 8, 1.2);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillCircle(cx + 9, cy + 8, 0.6);
+    // Pin shaft
+    g.fillStyle(0xcccccc, 0.8);
+    g.fillRect(cx + 9, cy + 9, 1, 3);
 
-    // === Bare barrel chest (Groundskeeper Willie physique) ===
+    // === Bare barrel chest (Groundskeeper Willie physique — HENCH) ===
     g.fillStyle(0xaa5533, 1);
     g.fillRect(cx - 14, cy - 9, 28, 12);
     g.fillStyle(0xddbb99, 1);
     g.fillRect(cx - 13, cy - 8, 26, 10);
+    // Pec definition (this man does NOT skip chest day)
     g.fillStyle(0xccaa88, 0.4);
     g.fillEllipse(cx - 5, cy - 4, 8, 6);
     g.fillEllipse(cx + 5, cy - 4, 8, 6);
-    g.fillStyle(0xee6644, 0.6);
+    // Sunburn / flush V-shape on chest
+    g.fillStyle(0xee6644, 0.5);
     g.fillTriangle(cx - 8, cy - 8, cx + 8, cy - 8, cx, cy - 3);
+    // CHEST HAIR (ginger, dense — the Willie special)
     g.fillStyle(0x883311, 0.5);
     g.fillCircle(cx - 3, cy - 4, 2);
     g.fillCircle(cx + 3, cy - 3, 2);
     g.fillCircle(cx, cy - 5, 1.5);
     g.fillCircle(cx - 1, cy - 2, 1);
+    g.fillCircle(cx + 5, cy - 5, 1);
+    g.fillCircle(cx - 5, cy - 5, 1);
+    // Happy trail down to kilt
+    g.fillStyle(0x883311, 0.4);
+    g.fillRect(cx - 1, cy - 2, 2, 3);
+    // Visible veins on arms (RAGING — blood pressure through the roof)
+    g.fillStyle(0xcc8866, 0.4);
+    g.lineStyle(0.7, 0xcc7755, 0.5);
+    g.lineBetween(cx - 12, cy - 6, cx - 14, cy - 3);
+    g.lineBetween(cx + 12, cy - 6, cx + 14, cy - 3);
+    // Sweat beads on chest (he's working himself into a frenzy)
+    g.fillStyle(0xaaddee, 0.3);
+    g.fillCircle(cx + 6, cy - 6, 0.6);
+    g.fillCircle(cx - 8, cy - 3, 0.5);
 
-    // === Head (thick neck, pure fury) ===
+    // === Head (thick neck, pure FURY) ===
+    // Neck (thick — veins visible)
     g.fillStyle(0xcc6644, 1);
     g.fillRect(cx - 5, cy - 10, 10, 4);
     g.fillStyle(0xdd8866, 1);
     g.fillRect(cx - 4, cy - 9, 8, 3);
+    // Neck vein (pulsing with rage)
+    g.lineStyle(0.6, 0xcc5544, 0.5);
+    g.lineBetween(cx - 3, cy - 10, cx - 4, cy - 7);
+    g.lineBetween(cx + 3, cy - 10, cx + 4, cy - 7);
+    // Head (round, red, PURPLE with fury)
     g.fillStyle(0xaa5533, 1);
     g.fillCircle(cx, cy - 15, 10);
     g.fillStyle(0xdd8866, 1);
     g.fillCircle(cx, cy - 15, 9);
+    // Rage flush (face going beetroot)
+    g.fillStyle(0xee7755, 0.45);
+    g.fillCircle(cx, cy - 14, 7);
+    // Forehead veins (bursting with rage — like Gordon but rawer)
     g.lineStyle(0.8, 0xcc5533, 0.7);
     g.lineBetween(cx - 4, cy - 22, cx - 6, cy - 19);
     g.lineBetween(cx + 3, cy - 23, cx + 5, cy - 20);
-    g.fillStyle(0xee7755, 0.4);
-    g.fillCircle(cx, cy - 14, 7);
 
-    // === MASSIVE red beard ===
-    g.fillStyle(0x771100, 1);
+    // === MASSIVE red beard (magnificent, wild, untamed) ===
+    g.fillStyle(0x661100, 1);
     g.fillEllipse(cx, cy - 8, 20, 12);
-    g.fillStyle(0xbb3311, 1);
+    g.fillStyle(0xaa2a11, 1);
     g.fillEllipse(cx, cy - 8, 18, 10);
-    g.fillStyle(0xdd5522, 1);
+    g.fillStyle(0xcc4422, 1);
     g.fillEllipse(cx, cy - 9, 16, 8);
+    // Lighter beard highlight (catches the light)
+    g.fillStyle(0xdd5522, 0.6);
+    g.fillEllipse(cx - 2, cy - 10, 10, 5);
+    // Beard strands (wild, individual locks visible)
     g.fillStyle(0x881100, 1);
     g.fillRect(cx - 7, cy - 3, 2, 4);
     g.fillRect(cx - 3, cy - 2, 2, 5);
     g.fillRect(cx + 1, cy - 3, 2, 4);
     g.fillRect(cx + 5, cy - 2, 2, 5);
+    // Braided strand or bead in beard (Viking touch)
     g.fillStyle(0x992211, 1);
     g.fillRect(cx, cy - 1, 2, 3);
     g.fillStyle(0xddaa00, 1);
-    g.fillCircle(cx + 1, cy + 2, 0.8);
+    g.fillCircle(cx + 1, cy + 2, 1);
+    g.fillStyle(0xffcc33, 0.6);
+    g.fillCircle(cx + 1, cy + 2, 0.5);
 
-    // === Furious eyebrows ===
+    // === Furious eyebrows (MASSIVE, slammed down over the eyes) ===
     g.fillStyle(0x661100, 1);
     g.fillTriangle(cx - 9, cy - 19, cx - 2, cy - 17, cx - 2, cy - 19);
     g.fillTriangle(cx + 9, cy - 19, cx + 2, cy - 17, cx + 2, cy - 19);
+    // Brow ridge shadow (deep-set rage eyes)
+    g.fillStyle(0x993311, 0.4);
+    g.fillRect(cx - 7, cy - 17, 14, 1);
 
-    // === Eyes (tiny, narrowed, RAGING) ===
+    // === Eyes (tiny, narrowed, ABSOLUTELY RAGING) ===
     g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx - 4, cy - 16, 2);
+    g.fillCircle(cx + 4, cy - 16, 2);
+    // Bloodshot (red veins in eye whites)
+    g.fillStyle(0xff6644, 0.3);
     g.fillCircle(cx - 4, cy - 16, 2);
     g.fillCircle(cx + 4, cy - 16, 2);
     g.fillStyle(0x111111, 1);
     g.fillCircle(cx - 4, cy - 16, 1);
     g.fillCircle(cx + 4, cy - 16, 1);
+
+    // === SPITTLE (he's screaming — flecks of spit flying) ===
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(cx + 8, cy - 8, 0.6);
+    g.fillCircle(cx + 10, cy - 10, 0.5);
+    g.fillCircle(cx + 6, cy - 6, 0.4);
 
     // === Buckfast bottle (dark green glass, cream label, gold foil neck) ===
     g.fillStyle(0x0a2a0a, 1);
@@ -2717,7 +3458,19 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0x1133aa, 1);
     g.fillRect(cx - 7, cy - 9, 14, 2);
 
-    // ── Arms (hands in pockets / one gesturing) ──
+    // ── Gold chain (visible at neckline — THE ned accessory) ──
+    g.fillStyle(0xddaa00, 0.8);
+    g.lineStyle(1, 0xccaa00, 0.9);
+    g.lineBetween(cx - 5, cy - 8, cx - 2, cy - 6);
+    g.lineBetween(cx - 2, cy - 6, cx + 2, cy - 6);
+    g.lineBetween(cx + 2, cy - 6, cx + 5, cy - 8);
+    // Chain pendant (Sovereign coin or cross — tiny gold dot)
+    g.fillStyle(0xddaa00, 1);
+    g.fillCircle(cx, cy - 5, 1.2);
+    g.fillStyle(0xffcc33, 0.7);
+    g.fillCircle(cx, cy - 5, 0.6);
+
+    // ── Arms (one in pocket, one gesturing "come ahead") ──
     g.fillStyle(0x1133aa, 1);
     g.fillRect(cx - 13, cy - 4, 4, 8);
     g.fillRect(cx + 9, cy - 4, 4, 8);
@@ -2725,18 +3478,27 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0xddaa88, 1);
     g.fillRect(cx - 13, cy + 3, 3, 3);
     g.fillRect(cx + 10, cy + 3, 3, 3);
+    // SOVEREIGN RING on right hand (massive gold ring — the ned signet)
+    g.fillStyle(0xddaa00, 1);
+    g.fillCircle(cx + 12, cy + 4, 1.5);
+    g.fillStyle(0xffcc33, 1);
+    g.fillCircle(cx + 12, cy + 4, 0.8);
 
     // ── Head ──
     g.fillStyle(0xcc9966, 1);
     g.fillCircle(cx, cy - 14, 8);
     g.fillStyle(0xddaa77, 1);
     g.fillCircle(cx, cy - 14, 7);
-    // Ruddy cheeks (been oot in the cauld)
+    // Ruddy cheeks (been oot in the cauld, or just bravado)
     g.fillStyle(0xddaa88, 0.5);
     g.fillCircle(cx - 4, cy - 12, 2);
     g.fillCircle(cx + 4, cy - 12, 2);
+    // Thin buzz-cut hair (just visible under cap at the sides)
+    g.fillStyle(0x554433, 0.3);
+    g.fillRect(cx - 7, cy - 17, 2, 3);
+    g.fillRect(cx + 5, cy - 17, 2, 3);
 
-    // Narrowed suspicious eyes
+    // Narrowed suspicious eyes (sizing you up)
     g.fillStyle(0xffffff, 1);
     g.fillRect(cx - 4, cy - 16, 3, 2);
     g.fillRect(cx + 1, cy - 16, 3, 2);
@@ -2744,17 +3506,18 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx - 3, cy - 16, 2, 2);
     g.fillRect(cx + 2, cy - 16, 2, 2);
 
-    // Aggressive eyebrows (furrowed)
+    // Aggressive eyebrows (furrowed — "what are YOU lookin at")
     g.fillStyle(0x553322, 1);
     g.fillRect(cx - 5, cy - 17, 4, 1);
     g.fillRect(cx + 1, cy - 17, 4, 1);
 
-    // Mouth — sneering grin
+    // Mouth — sneering grin (missing tooth adds character)
     g.fillStyle(0x553322, 1);
     g.fillRect(cx - 3, cy - 11, 6, 1);
     g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx - 1, cy - 11, 1, 1);
-    g.fillRect(cx + 1, cy - 11, 1, 1);
+    g.fillRect(cx - 2, cy - 11, 1, 1);
+    // Gap tooth (one missing — been in a scrap)
+    g.fillRect(cx + 2, cy - 11, 1, 1);
 
     // ── Burberry check cap — tilted at 45° (THE ned signature) ──
     // Cap body — beige check pattern
@@ -2794,96 +3557,159 @@ export class BootScene extends Phaser.Scene {
   /** Midgie swarm — a roiling cloud of tiny biting midges. The individual
    *  bugs are too small to draw, so the sprite is a dark buzzing cloud
    *  with glowing red eyes scattered through it and tiny wing-flicker dots. */
+  /** Midgie swarm — a roiling hellcloud of biting Highland midges.
+   *  The sprite is a dark seething mass with scattered red eyes, wing flicker,
+   *  and tiny silhouettes of individual midges at the edges. Pure dread. */
   private createMidgieSwarm(): void {
     const s = 26;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Haze cloud — layered for depth
-    g.fillStyle(0x1a0a1a, 0.3);
-    g.fillCircle(cx, cy, 11);
-    g.fillStyle(0x2a1228, 0.5);
-    g.fillEllipse(cx - 1, cy + 1, 18, 12);
+    // ── Outermost haze — the swarm's "reach" ──
+    g.fillStyle(0x0a040a, 0.15);
+    g.fillCircle(cx, cy, 12);
+    // Irregular outer wisps (cloud isn't perfectly round — it churns)
+    g.fillStyle(0x1a0a1a, 0.25);
+    g.fillEllipse(cx - 2, cy - 1, 20, 14);
+    g.fillEllipse(cx + 1, cy + 2, 16, 16);
+    // Mid-density cloud
+    g.fillStyle(0x2a1228, 0.45);
+    g.fillEllipse(cx, cy, 16, 12);
+    // Dense inner cloud (where most midges are)
     g.fillStyle(0x3a1a30, 0.6);
-    g.fillEllipse(cx, cy, 14, 10);
+    g.fillEllipse(cx, cy, 12, 9);
+    // Darkest churning core
+    g.fillStyle(0x2a0e22, 0.7);
+    g.fillEllipse(cx - 1, cy, 8, 6);
 
-    // Individual midges — tiny dots scattered through the cloud
-    // Dark bodies
-    g.fillStyle(0x441133, 1);
-    g.fillCircle(cx - 4, cy - 2, 1.5);
-    g.fillCircle(cx + 3, cy - 1, 1.5);
-    g.fillCircle(cx - 1, cy + 3, 1.5);
-    g.fillCircle(cx + 5, cy + 2, 1.2);
-    g.fillCircle(cx - 5, cy + 3, 1.2);
-    g.fillCircle(cx + 1, cy - 4, 1.2);
+    // ── Individual midge silhouettes at cloud edges (tiny, distinct) ──
+    // Positioned at the edge so they read as separate creatures
+    const midges: [number, number, number][] = [
+      [-5, -3, 1.5], [4, -2, 1.5], [-2, 3, 1.5],
+      [6, 2, 1.2], [-6, 2, 1.2], [1, -5, 1.2],
+      [-3, 5, 1.0], [5, -4, 1.0], [3, 4, 1.0],
+    ];
+    for (const [dx, dy, r] of midges) {
+      // Tiny dark body
+      g.fillStyle(0x331122, 1);
+      g.fillCircle(cx + dx, cy + dy, r);
+      // Even tinier wings (bright flicker on each midge)
+      g.fillStyle(0xccbbdd, 0.4);
+      g.fillCircle(cx + dx - 0.5, cy + dy - r, 0.6);
+      g.fillCircle(cx + dx + 0.5, cy + dy - r, 0.6);
+    }
 
-    // Red eyes — angry little pinpricks scattered through
-    g.fillStyle(0xff3344, 1);
-    g.fillCircle(cx - 4, cy - 3, 0.7);
-    g.fillCircle(cx + 3, cy - 2, 0.7);
-    g.fillCircle(cx - 1, cy + 2, 0.7);
+    // ── Red eyes — angry pinpricks staring out from the cloud ──
+    g.fillStyle(0xff2233, 1);
+    g.fillCircle(cx - 4, cy - 3, 0.8);
+    g.fillCircle(cx + 3, cy - 2, 0.8);
+    g.fillCircle(cx - 1, cy + 2, 0.8);
     g.fillCircle(cx + 5, cy + 1, 0.7);
     g.fillCircle(cx - 5, cy + 2, 0.7);
     g.fillCircle(cx + 1, cy - 5, 0.7);
+    g.fillCircle(cx - 3, cy + 4, 0.6);
+    g.fillCircle(cx + 4, cy - 4, 0.6);
+    // Brighter pair in the centre (the biggest midge, staring right at you)
+    g.fillStyle(0xff4455, 1);
+    g.fillCircle(cx - 1, cy - 1, 0.9);
+    g.fillCircle(cx + 1, cy - 1, 0.9);
 
-    // Wing flicker — tiny bright dots (translucent)
-    g.fillStyle(0xccaacc, 0.5);
-    g.fillCircle(cx - 3, cy - 4, 0.5);
-    g.fillCircle(cx + 4, cy - 3, 0.5);
+    // ── Wing flicker — translucent bright dots (motion) ──
+    g.fillStyle(0xddccee, 0.45);
+    g.fillCircle(cx - 4, cy - 4, 0.6);
+    g.fillCircle(cx + 5, cy - 3, 0.6);
     g.fillCircle(cx, cy + 1, 0.5);
-    g.fillCircle(cx + 6, cy, 0.5);
+    g.fillCircle(cx + 7, cy, 0.5);
+    g.fillCircle(cx - 6, cy - 1, 0.5);
+    g.fillCircle(cx + 2, cy + 5, 0.5);
 
-    // Dangling legs — two pairs visible at bottom
-    g.lineStyle(1, 0x220a18, 0.8);
-    g.lineBetween(cx - 3, cy + 4, cx - 4, cy + 7);
-    g.lineBetween(cx + 2, cy + 4, cx + 3, cy + 7);
-    g.lineBetween(cx - 1, cy + 5, cx - 2, cy + 8);
-    g.lineBetween(cx + 4, cy + 3, cx + 5, cy + 6);
+    // ── Dangling legs at bottom edge (visible stragglers) ──
+    g.lineStyle(0.8, 0x220a18, 0.7);
+    g.lineBetween(cx - 3, cy + 5, cx - 4, cy + 8);
+    g.lineBetween(cx + 2, cy + 5, cx + 3, cy + 8);
+    g.lineBetween(cx - 1, cy + 5, cx - 2, cy + 9);
+    g.lineBetween(cx + 4, cy + 4, cx + 5, cy + 7);
+    g.lineBetween(cx, cy + 6, cx - 1, cy + 9);
 
     g.generateTexture('midgie_swarm', s, s);
     g.destroy();
   }
 
   private createBoss(): void {
-    // Kept for backwards compat — bosses now use dedicated per-boss textures,
-    // but 'boss' is still referenced as a generic fallback.
+    // Generic boss fallback — dark crowned beast with glowing eyes and aura.
+    // Bosses now use dedicated textures, but this remains for edge-case fallback.
     const s = 72;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Menacing dark body (deeper gradient)
-    g.fillStyle(0x330808, 1);
+    // ── Menacing aura glow ──
+    g.fillStyle(0x440000, 0.15);
+    g.fillCircle(cx, cy, 35);
+
+    // ── Dark layered body ──
+    g.fillStyle(0x220404, 1);
     g.fillCircle(cx, cy, 32);
-    g.fillStyle(0x661111, 1);
+    g.fillStyle(0x551010, 1);
     g.fillCircle(cx, cy, 28);
-    g.fillStyle(0x992222, 1);
+    g.fillStyle(0x881a1a, 1);
     g.fillCircle(cx, cy, 22);
-    g.fillStyle(0xaa2a2a, 0.6);
-    g.fillCircle(cx - 3, cy - 3, 16);
-    // Crown horns (sharper, more menacing)
-    g.fillStyle(0x664400, 1);
+    // Lighter face — upper left light
+    g.fillStyle(0xaa2a2a, 0.5);
+    g.fillCircle(cx - 4, cy - 4, 16);
+    // Inner depth shadow
+    g.fillStyle(0x330808, 0.4);
+    g.fillCircle(cx + 4, cy + 6, 14);
+
+    // ── Crown horns (sharper, more ornate) ──
+    g.fillStyle(0x553300, 1);
     g.fillTriangle(cx - 14, cy - 24, cx - 10, cy - 10, cx - 19, cy - 10);
     g.fillTriangle(cx, cy - 28, cx - 5, cy - 10, cx + 5, cy - 10);
     g.fillTriangle(cx + 14, cy - 24, cx + 10, cy - 10, cx + 19, cy - 10);
-    g.fillStyle(0xddaa00, 1);
+    g.fillStyle(0xcc9900, 1);
     g.fillTriangle(cx - 13, cy - 22, cx - 11, cy - 11, cx - 17, cy - 11);
     g.fillTriangle(cx, cy - 26, cx - 4, cy - 11, cx + 4, cy - 11);
     g.fillTriangle(cx + 13, cy - 22, cx + 11, cy - 11, cx + 17, cy - 11);
-    // Horn tips (bright gold)
+    // Horn highlights
+    g.fillStyle(0xffdd44, 0.7);
+    g.fillTriangle(cx - 12, cy - 20, cx - 12, cy - 12, cx - 15, cy - 12);
+    g.fillTriangle(cx, cy - 24, cx - 2, cy - 12, cx + 2, cy - 12);
+    g.fillTriangle(cx + 12, cy - 20, cx + 12, cy - 12, cx + 15, cy - 12);
+    // Horn tips (bright gold with specular)
     g.fillStyle(0xffcc33, 1);
-    g.fillCircle(cx - 14, cy - 23, 1.5);
-    g.fillCircle(cx, cy - 27, 1.5);
-    g.fillCircle(cx + 14, cy - 23, 1.5);
-    // Evil eyes (narrowed slits, not circles)
+    g.fillCircle(cx - 14, cy - 23, 2);
+    g.fillCircle(cx, cy - 27, 2);
+    g.fillCircle(cx + 14, cy - 23, 2);
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(cx - 14, cy - 24, 0.8);
+    g.fillCircle(cx, cy - 28, 0.8);
+    g.fillCircle(cx + 14, cy - 24, 0.8);
+
+    // ── Evil eyes (narrowed slits — malevolent intelligence) ──
+    g.fillStyle(0x000000, 1);
+    g.fillEllipse(cx - 9, cy - 4, 14, 7);
+    g.fillEllipse(cx + 9, cy - 4, 14, 7);
     g.fillStyle(0xffff00, 1);
     g.fillEllipse(cx - 9, cy - 4, 12, 6);
     g.fillEllipse(cx + 9, cy - 4, 12, 6);
-    g.fillStyle(0xff0000, 1);
+    g.fillStyle(0xff4400, 1);
     g.fillEllipse(cx - 9, cy - 4, 6, 4);
     g.fillEllipse(cx + 9, cy - 4, 6, 4);
     g.fillStyle(0x000000, 1);
     g.fillCircle(cx - 9, cy - 4, 1.5);
     g.fillCircle(cx + 9, cy - 4, 1.5);
+    // Eye glow bleed
+    g.fillStyle(0xffaa00, 0.2);
+    g.fillEllipse(cx - 9, cy - 4, 16, 8);
+    g.fillEllipse(cx + 9, cy - 4, 16, 8);
+
+    // ── Snarling mouth ──
+    g.fillStyle(0x220000, 1);
+    g.fillRect(cx - 8, cy + 6, 16, 4);
+    g.fillStyle(0xddddcc, 1);
+    g.fillRect(cx - 6, cy + 6, 2, 3);
+    g.fillRect(cx - 2, cy + 6, 2, 3);
+    g.fillRect(cx + 2, cy + 6, 2, 3);
+    g.fillRect(cx + 6, cy + 6, 2, 3);
 
     g.generateTexture('boss', s, s);
     g.destroy();
@@ -3273,129 +4099,124 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createBossTourBus(): void {
-    const s = 80;
+    const s = 96;  // up from 80 — a bus dwarfs a man
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
+    // All offsets scaled 1.2× from 80px originals to fill 96px canvas proportionally.
+
     // === Bus body (MAGENTA/HOT PINK — the unmistakable First Glasgow livery) ===
-    g.fillStyle(0x551133, 1); // dark outline
-    g.fillRect(cx - 34, cy - 16, 68, 32);
-    g.fillStyle(0xaa2266, 1); // First Glasgow magenta-pink
-    g.fillRect(cx - 33, cy - 15, 66, 30);
-    // Yellow swoosh stripe (the First Bus signature accent)
+    g.fillStyle(0x551133, 1);
+    g.fillRect(cx - 41, cy - 19, 82, 38);
+    g.fillStyle(0xaa2266, 1);
+    g.fillRect(cx - 40, cy - 18, 80, 36);
+    // Yellow swoosh stripe
     g.fillStyle(0xddcc22, 1);
-    g.fillRect(cx - 33, cy - 8, 66, 2);
+    g.fillRect(cx - 40, cy - 10, 80, 3);
     g.fillStyle(0xbbaa11, 1);
-    g.fillRect(cx - 33, cy - 6, 66, 1);
+    g.fillRect(cx - 40, cy - 7, 80, 1);
 
-    // === Open top deck rail (it's an open-top! in GLASGOW! in the RAIN!) ===
+    // === Open top deck rail ===
     g.fillStyle(0x333333, 1);
-    g.fillRect(cx - 30, cy - 18, 60, 2);
-    // Rail posts
-    g.fillRect(cx - 28, cy - 20, 1, 4);
-    g.fillRect(cx - 18, cy - 20, 1, 4);
-    g.fillRect(cx - 8, cy - 20, 1, 4);
-    g.fillRect(cx + 2, cy - 20, 1, 4);
-    g.fillRect(cx + 12, cy - 20, 1, 4);
-    g.fillRect(cx + 22, cy - 20, 1, 4);
+    g.fillRect(cx - 36, cy - 22, 72, 2);
+    g.fillRect(cx - 34, cy - 24, 1, 4);
+    g.fillRect(cx - 22, cy - 24, 1, 4);
+    g.fillRect(cx - 10, cy - 24, 1, 4);
+    g.fillRect(cx + 2, cy - 24, 1, 4);
+    g.fillRect(cx + 14, cy - 24, 1, 4);
+    g.fillRect(cx + 26, cy - 24, 1, 4);
 
-    // === HORIZONTAL rain hitting the open top (Glasgow rain goes SIDEWAYS) ===
-    g.lineStyle(0.8, 0xaaddff, 0.4);
-    g.lineBetween(cx - 25, cy - 22, cx - 20, cy - 21);
-    g.lineBetween(cx - 10, cy - 23, cx - 5, cy - 22);
-    g.lineBetween(cx + 5, cy - 21, cx + 10, cy - 20);
-    g.lineBetween(cx + 18, cy - 22, cx + 23, cy - 21);
-    g.lineBetween(cx - 15, cy - 20, cx - 10, cy - 19);
-    g.lineBetween(cx + 12, cy - 23, cx + 17, cy - 22);
+    // === HORIZONTAL rain (Glasgow rain goes SIDEWAYS) ===
+    g.lineStyle(1, 0xaaddff, 0.4);
+    g.lineBetween(cx - 30, cy - 26, cx - 24, cy - 25);
+    g.lineBetween(cx - 12, cy - 28, cx - 6, cy - 27);
+    g.lineBetween(cx + 6, cy - 25, cx + 12, cy - 24);
+    g.lineBetween(cx + 22, cy - 26, cx + 28, cy - 25);
+    g.lineBetween(cx - 18, cy - 24, cx - 12, cy - 23);
+    g.lineBetween(cx + 14, cy - 28, cx + 20, cy - 27);
 
-    // === Tourist faces in windows (wee pink dots with bewildered expressions) ===
+    // === Tourist faces in windows ===
     g.fillStyle(0x222244, 1);
-    g.fillRect(cx - 30, cy - 13, 60, 6);
-    // Window panes
+    g.fillRect(cx - 36, cy - 16, 72, 7);
     g.fillStyle(0x88ccff, 0.7);
     for (let i = 0; i < 6; i++) {
-      g.fillRect(cx - 29 + i * 10, cy - 12, 8, 5);
+      g.fillRect(cx - 35 + i * 12, cy - 15, 10, 6);
     }
-    // Tourist faces (sunburned pink, in each window)
     g.fillStyle(0xee8877, 1);
-    g.fillCircle(cx - 25, cy - 10, 1.5);
-    g.fillCircle(cx - 15, cy - 10, 1.5);
-    g.fillCircle(cx - 5, cy - 10, 1.5);
-    g.fillCircle(cx + 5, cy - 10, 1.5);
-    g.fillCircle(cx + 15, cy - 10, 1.5);
-    g.fillCircle(cx + 25, cy - 10, 1.5);
+    g.fillCircle(cx - 30, cy - 12, 2);
+    g.fillCircle(cx - 18, cy - 12, 2);
+    g.fillCircle(cx - 6, cy - 12, 2);
+    g.fillCircle(cx + 6, cy - 12, 2);
+    g.fillCircle(cx + 18, cy - 12, 2);
+    g.fillCircle(cx + 30, cy - 12, 2);
 
-    // === Destination sign — "YOKER" (Limmy deep cut: the mystical far-away realm) ===
-    // Anyone from Glasgow will clock this immediately. "I've no business in Yoker..."
+    // === Destination sign — "YOKER" ===
     g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 12, cy - 15, 24, 4);
-    g.fillStyle(0xff8800, 1); // amber LED dot-matrix
-    g.fillRect(cx - 10, cy - 14, 20, 2);
-    // Dot-matrix pixel letters suggesting "YOKER" (Y-O-K-E-R pattern)
-    // Y
+    g.fillRect(cx - 14, cy - 18, 28, 5);
+    g.fillStyle(0xff8800, 1);
+    g.fillRect(cx - 12, cy - 17, 24, 3);
     g.fillStyle(0xffaa00, 1);
-    g.fillRect(cx - 9, cy - 14, 1, 1);
-    g.fillRect(cx - 7, cy - 14, 1, 1);
-    g.fillRect(cx - 8, cy - 13, 1, 1);
+    // Y
+    g.fillRect(cx - 11, cy - 17, 1, 1);
+    g.fillRect(cx - 9, cy - 17, 1, 1);
+    g.fillRect(cx - 10, cy - 16, 1, 1);
     // O
-    g.fillRect(cx - 5, cy - 14, 2, 1);
-    g.fillRect(cx - 5, cy - 13, 2, 1);
+    g.fillRect(cx - 6, cy - 17, 2, 1);
+    g.fillRect(cx - 6, cy - 16, 2, 1);
     // K
-    g.fillRect(cx - 2, cy - 14, 1, 2);
-    g.fillRect(cx - 1, cy - 14, 1, 1);
+    g.fillRect(cx - 3, cy - 17, 1, 2);
+    g.fillRect(cx - 2, cy - 17, 1, 1);
     // E
-    g.fillRect(cx + 1, cy - 14, 2, 1);
-    g.fillRect(cx + 1, cy - 13, 1, 1);
+    g.fillRect(cx, cy - 17, 2, 1);
+    g.fillRect(cx, cy - 16, 1, 1);
     // R
-    g.fillRect(cx + 4, cy - 14, 2, 1);
-    g.fillRect(cx + 4, cy - 13, 1, 1);
-    g.fillRect(cx + 5, cy - 13, 1, 1);
+    g.fillRect(cx + 3, cy - 17, 2, 1);
+    g.fillRect(cx + 3, cy - 16, 1, 1);
+    g.fillRect(cx + 4, cy - 16, 1, 1);
 
-    // === Headlights (angry, bearing down on you) ===
+    // === Headlights (angry, bearing down) ===
     g.fillStyle(0xffff66, 1);
-    g.fillCircle(cx + 33, cy - 4, 4);
-    g.fillCircle(cx + 33, cy + 4, 4);
+    g.fillCircle(cx + 40, cy - 5, 5);
+    g.fillCircle(cx + 40, cy + 5, 5);
     g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx + 33, cy - 4, 2);
-    g.fillCircle(cx + 33, cy + 4, 2);
-    // Light beam glow
+    g.fillCircle(cx + 40, cy - 5, 2.5);
+    g.fillCircle(cx + 40, cy + 5, 2.5);
     g.fillStyle(0xffff88, 0.15);
-    g.fillTriangle(cx + 36, cy - 6, cx + 36, cy + 6, cx + 46, cy);
+    g.fillTriangle(cx + 43, cy - 7, cx + 43, cy + 7, cx + 55, cy);
 
     // === Traffic cone on bumper (Duke of Wellington nod!) ===
     g.fillStyle(0xff6600, 1);
-    g.fillTriangle(cx + 34, cy + 9, cx + 38, cy + 14, cx + 30, cy + 14);
+    g.fillTriangle(cx + 41, cy + 11, cx + 46, cy + 17, cx + 36, cy + 17);
     g.fillStyle(0xff8833, 1);
-    g.fillTriangle(cx + 34, cy + 10, cx + 37, cy + 14, cx + 31, cy + 14);
-    // White stripe on cone
+    g.fillTriangle(cx + 41, cy + 12, cx + 44, cy + 17, cx + 37, cy + 17);
     g.fillStyle(0xffffff, 0.9);
-    g.fillRect(cx + 31, cy + 12, 6, 1);
+    g.fillRect(cx + 37, cy + 15, 7, 1);
 
-    // === Bumper (heavy, industrial) ===
+    // === Bumper ===
     g.fillStyle(0x333333, 1);
-    g.fillRect(cx - 33, cy + 14, 66, 4);
+    g.fillRect(cx - 40, cy + 17, 80, 5);
     g.fillStyle(0x555555, 1);
-    g.fillRect(cx - 33, cy + 14, 66, 1);
+    g.fillRect(cx - 40, cy + 17, 80, 1);
 
-    // === Wheels (big, chunky) ===
+    // === Wheels ===
     g.fillStyle(0x111111, 1);
-    g.fillCircle(cx - 20, cy + 20, 7);
-    g.fillCircle(cx + 20, cy + 20, 7);
+    g.fillCircle(cx - 24, cy + 24, 8);
+    g.fillCircle(cx + 24, cy + 24, 8);
     g.fillStyle(0x333333, 1);
-    g.fillCircle(cx - 20, cy + 20, 5);
-    g.fillCircle(cx + 20, cy + 20, 5);
+    g.fillCircle(cx - 24, cy + 24, 6);
+    g.fillCircle(cx + 24, cy + 24, 6);
     g.fillStyle(0x888888, 1);
-    g.fillCircle(cx - 20, cy + 20, 2);
-    g.fillCircle(cx + 20, cy + 20, 2);
+    g.fillCircle(cx - 24, cy + 24, 2.5);
+    g.fillCircle(cx + 24, cy + 24, 2.5);
 
-    // === Exhaust fumes belching from rear ===
+    // === Exhaust fumes ===
     g.fillStyle(0x444444, 0.4);
-    g.fillCircle(cx - 36, cy + 8, 4);
-    g.fillCircle(cx - 40, cy + 5, 5);
-    g.fillCircle(cx - 44, cy + 2, 4);
+    g.fillCircle(cx - 43, cy + 10, 5);
+    g.fillCircle(cx - 48, cy + 6, 6);
+    g.fillCircle(cx - 53, cy + 2, 5);
     g.fillStyle(0x555555, 0.25);
-    g.fillCircle(cx - 38, cy + 4, 3);
-    g.fillCircle(cx - 42, cy + 1, 3.5);
+    g.fillCircle(cx - 46, cy + 5, 4);
+    g.fillCircle(cx - 50, cy + 1, 4);
 
     g.generateTexture('boss_tour_bus', s, s);
     g.destroy();
@@ -4024,33 +4845,38 @@ export class BootScene extends Phaser.Scene {
     g.fillTriangle(cx + 6, cy - 4, cx + 3, cy - 8, cx + 5, cy - 3);
     g.fillStyle(0x776644, 0.6);
     g.fillRect(cx + 4, cy - 6, 2, 1);
+    // Right horn — visibly bent wrong, ~30° off the symmetric curl
     g.fillStyle(0x887755, 1);
-    g.fillTriangle(cx + 16, cy - 4, cx + 20, cy - 9, cx + 18, cy - 2);
+    g.fillTriangle(cx + 16, cy - 3, cx + 22, cy - 5, cx + 19, cy - 1);
     g.fillStyle(0xaa9966, 1);
-    g.fillTriangle(cx + 16, cy - 4, cx + 19, cy - 8, cx + 17, cy - 3);
+    g.fillTriangle(cx + 16, cy - 3, cx + 21, cy - 4, cx + 18, cy - 1);
     g.fillStyle(0x776644, 0.6);
-    g.fillRect(cx + 17, cy - 6, 2, 1);
+    g.fillRect(cx + 19, cy - 3, 2, 1);
 
     // Ears (one up, one flopped)
     g.fillStyle(0x000000, 1);
     g.fillTriangle(cx + 8, cy - 7, cx + 10, cy - 4, cx + 6, cy - 4);
     g.fillTriangle(cx + 14, cy - 4, cx + 16, cy - 2, cx + 13, cy - 1);
 
-    // Creepy yellow eyes with horizontal SLIT PUPILS
-    g.fillStyle(0xffdd00, 1);
-    g.fillCircle(cx + 10, cy - 2, 1.8);
-    g.fillCircle(cx + 13, cy - 2, 1.8);
+    // Creepy green-yellow WRONG eyes — goat eyes should not glow like this
+    g.fillStyle(0xccff00, 1);
+    g.fillCircle(cx + 10, cy - 2, 2);
+    g.fillCircle(cx + 13, cy - 2, 2);
     g.fillStyle(0x000000, 1);
     g.fillRect(cx + 9, cy - 2, 2, 1);
     g.fillRect(cx + 12, cy - 2, 2, 1);
 
-    // Manic grin
+    // Asymmetric manic grin (left corner raised 3px — deeply wrong)
     g.fillStyle(0x444444, 1);
-    g.fillRect(cx + 12, cy + 2, 4, 2);
+    g.fillRect(cx + 11, cy - 1, 1, 2);   // left corner high up
+    g.fillRect(cx + 12, cy, 1, 2);
+    g.fillRect(cx + 13, cy + 1, 1, 2);
+    g.fillRect(cx + 14, cy + 2, 1, 2);   // right corner stays low
+    g.fillRect(cx + 15, cy + 2, 1, 2);
     g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx + 12, cy + 2, 1, 1);
-    g.fillRect(cx + 14, cy + 2, 1, 1);
-    g.fillRect(cx + 13, cy + 3, 1, 1);
+    g.fillRect(cx + 11, cy - 1, 1, 1);
+    g.fillRect(cx + 13, cy + 1, 1, 1);
+    g.fillRect(cx + 15, cy + 2, 1, 1);
 
     g.generateTexture('sheep', s, s);
     g.destroy();
@@ -4115,11 +4941,30 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx - 5, cy - 7, 0.8);
     g.fillCircle(cx + 5, cy - 7, 0.8);
 
-    // Wailing O-mouth
+    // Wailing O-mouth (eternal scream)
     g.fillStyle(0x000000, 0.9);
     g.fillEllipse(cx, cy + 2, 6, 6);
     g.fillStyle(0x1a3344, 1);
     g.fillEllipse(cx, cy + 2, 4, 4);
+
+    // ── Mary's crucifix (she wore one to the scaffold — ghostly gold) ──
+    g.fillStyle(0xccaa55, 0.4);
+    g.fillRect(cx - 1, cy - 3, 2, 5);
+    g.fillRect(cx - 2, cy - 2, 4, 1);
+    g.fillStyle(0xddbb66, 0.3);
+    g.fillCircle(cx, cy - 3, 0.6);
+
+    // ── Ectoplasmic drip (ghostly substance trailing down) ──
+    g.fillStyle(0x88aaaa, 0.25);
+    g.fillRect(cx - 8, cy + 12, 2, 4);
+    g.fillCircle(cx - 7, cy + 16, 1);
+    g.fillStyle(0xaacccc, 0.2);
+    g.fillRect(cx + 6, cy + 13, 1, 3);
+    g.fillCircle(cx + 6, cy + 16, 0.8);
+
+    // ── Faint execution mark (dark line across neck — she was beheaded) ──
+    g.fillStyle(0x884455, 0.2);
+    g.fillRect(cx - 4, cy - 3, 8, 1);
 
     g.generateTexture('ghost', s, s);
     g.destroy();
@@ -4179,11 +5024,16 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Treasure chest — arched lid, metal bands, rivets, golden lock. */
+  /** Treasure chest — arched lid, metal bands, rivets, golden lock.
+   *  Warm golden glow underneath so it pops off the moor. */
   private createChestTexture(): void {
     const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 1;
+
+    // Warm golden glow (treasure calling to you)
+    g.fillStyle(0xddaa00, 0.1);
+    g.fillCircle(cx, cy + 2, 16);
 
     // Dark outline
     g.fillStyle(0x2a1a06, 1);
@@ -4305,19 +5155,35 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
+    // ── Stainless steel body (industrial, battered from years of service) ──
     g.fillStyle(0x1a1a1a, 1);
     g.fillRect(cx - 18, cy - 6, 36, 22);
     g.fillStyle(0x555555, 1);
     g.fillRect(cx - 17, cy - 5, 34, 20);
+    // Top rim (polished steel — catches light)
     g.fillStyle(0x777777, 1);
     g.fillRect(cx - 16, cy - 4, 32, 4);
+    // Control panel strip (above the vat)
     g.fillStyle(0x444444, 1);
     g.fillRect(cx - 18, cy - 8, 36, 3);
     g.fillStyle(0x999999, 1);
     g.fillRect(cx - 18, cy - 7, 36, 1);
+    // Temperature dial (red dot — it's on MAX)
+    g.fillStyle(0xcc2222, 1);
+    g.fillCircle(cx - 14, cy - 7, 1);
+    g.fillStyle(0x666666, 1);
+    g.fillCircle(cx - 10, cy - 7, 1);
+    // Handles (heavy, welded)
     g.fillStyle(0x222222, 1);
     g.fillRect(cx - 22, cy - 5, 5, 3);
     g.fillRect(cx + 17, cy - 5, 5, 3);
+    // Wire chip basket handle (visible above the oil — the tool of the trade)
+    g.lineStyle(1.5, 0x888888, 0.8);
+    g.lineBetween(cx + 14, cy - 8, cx + 14, cy - 12);
+    g.lineBetween(cx + 12, cy - 12, cx + 16, cy - 12);
+    // Basket hook
+    g.fillStyle(0x999999, 1);
+    g.fillCircle(cx + 14, cy - 12, 1);
 
     // Bubbling oil (VOLCANIC)
     g.fillStyle(0x774400, 1);
@@ -4357,26 +5223,7 @@ export class BootScene extends Phaser.Scene {
     g.fillStyle(0xcc3322, 0.6);
     g.fillCircle(cx + 9, cy + 6, 0.8);
 
-    // Salt shaker (left)
-    g.fillStyle(0xeeeeee, 1);
-    g.fillRect(cx - 22, cy + 2, 4, 8);
-    g.fillStyle(0xffffff, 1);
-    g.fillRect(cx - 21, cy + 3, 2, 6);
-    g.fillStyle(0x888888, 1);
-    g.fillCircle(cx - 20, cy + 2, 0.5);
-    g.fillCircle(cx - 19, cy + 2, 0.5);
-    g.fillStyle(0xaaaaaa, 1);
-    g.fillCircle(cx - 20, cy + 6, 0.5);
-
-    // Vinegar bottle (right)
-    g.fillStyle(0x443311, 1);
-    g.fillRect(cx + 18, cy + 1, 4, 9);
-    g.fillStyle(0x664422, 1);
-    g.fillRect(cx + 19, cy + 2, 2, 7);
-    g.fillStyle(0x443311, 1);
-    g.fillRect(cx + 19, cy - 1, 2, 3);
-    g.fillStyle(0xddddaa, 1);
-    g.fillRect(cx + 19, cy + 4, 2, 3);
+    // (Salt shaker and vinegar bottle removed — declutter for readability)
 
     // Steam wisps (THICK)
     g.fillStyle(0xdddddd, 0.7);

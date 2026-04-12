@@ -15,10 +15,10 @@ interface SpriteEntry {
   category: string;
 }
 
-const SCALE = 4;
-const PADDING = 12;
-const LABEL_HEIGHT = 16;
-const SECTION_HEIGHT = 40;
+const SCALE = 6;
+const PADDING = 16;
+const LABEL_HEIGHT = 20;
+const SECTION_HEIGHT = 48;
 const COLS = 8;
 
 /** Categorize a texture key for grouping */
@@ -33,7 +33,8 @@ function categorize(key: string): string {
   if (['thistle', 'caber', 'haggis_ball'].includes(key)) return 'Projectiles';
   if (['xp_gem', 'health_orb', 'chest'].includes(key)) return 'Pickups';
   if (['entity_shadow', 'boss_shadow'].includes(key)) return 'Shadows';
-  if (['piper', 'sheep', 'ghost', 'nest', 'deep_fryer'].includes(key)) return 'Allies & Structures';
+  if (['piper', 'sheep', 'ghost', 'nest'].includes(key)) return 'Enemies';
+  if (key === 'deep_fryer') return 'Hazards';
   if (['tourist', 'chef', 'terrier', 'highland_cow', 'eagle', 'haggis_hunter',
        'angry_scotsman', 'kelpie', 'midgie_swarm', 'bam_seagull'].includes(key)) return 'Enemies';
   return 'Other';
@@ -43,7 +44,7 @@ const CATEGORY_ORDER = [
   'Player Variants',
   'Enemies',
   'Bosses',
-  'Allies & Structures',
+  'Hazards',
   'Projectiles',
   'Pickups',
   'Weapon Icons',
