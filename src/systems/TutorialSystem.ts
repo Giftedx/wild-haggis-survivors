@@ -29,7 +29,7 @@ export class TutorialSystem {
   // Drift tutorial state
   private driftBanner: Phaser.GameObjects.Text | null = null;
   private driftArrow: Phaser.GameObjects.Graphics | null = null;
-  private driftTimerEvent: Phaser.Time.TimerEvent | null = null;
+  private driftTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
   private driftScheduled: boolean = false;
 
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
@@ -53,9 +53,9 @@ export class TutorialSystem {
     this.releaseTokens();
     this.phase = 'done';
     this.dismissDriftHint();
-    if (this.driftTimerEvent) {
-      this.driftTimerEvent.destroy();
-      this.driftTimerEvent = null;
+    if (this.driftTimerHandle) {
+      this.driftTimerHandle.cancel();
+      this.driftTimerHandle = null;
     }
   }
 
@@ -98,9 +98,12 @@ export class TutorialSystem {
     if (this.driftScheduled) return;
     if (this.metaSave.load().hasSeenDriftTutorial) return;
     this.driftScheduled = true;
-    // Show 3 seconds after FTUE completes (or run start if FTUE already done)
-    this.driftTimerEvent = this.scene.time.delayedCall(3000, () => {
-      this.driftTimerEvent = null;
+    // Show 3 seconds after FTUE completes (or run start if FTUE already done).
+    // Use the RAW ticker (wall-clock) so the hint isn't frozen when the FTUE
+    // overlay sets `timeScale: 0`. `scene.time.delayedCall` respects
+    // timeScale — a 3s hint behind a 20s pause would fire 20s late.
+    this.driftTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 3000, () => {
+      this.driftTimerHandle = null;
       this.showDriftHint();
     });
   }
@@ -146,11 +149,13 @@ export class TutorialSystem {
       ease: 'Power2',
     });
 
-    // Auto-dismiss after 6 seconds — tracked so dispose() can cancel it
-    // if the scene tears down mid-hint (otherwise the callback fires on
-    // already-destroyed driftBanner / driftArrow fields).
-    this.driftTimerEvent = this.scene.time.delayedCall(6000, () => {
-      this.driftTimerEvent = null;
+    // Auto-dismiss after 6 wall-clock seconds — tracked so dispose() can
+    // cancel if the scene tears down mid-hint (otherwise the callback fires
+    // on already-destroyed driftBanner / driftArrow fields). Raw ticker so
+    // the auto-dismiss doesn't stall if the player hits a level-up overlay
+    // during those 6 seconds.
+    this.driftTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 6000, () => {
+      this.driftTimerHandle = null;
       this.dismissDriftHint();
     });
   }
@@ -284,6 +289,15 @@ export class TutorialSystem {
   private openPausedOverlay(message: string, token: string, afterDismiss: () => void): void {
     this.releaseTokens();
     this.clearModal();
+    // Detach any prior overlay's pointer-down `once` listener. clearModal()
+    // destroys the visual objects but leaves the scene input listener
+    // pending until it fires — opening a second overlay while the first is
+    // still armed would cause both `finish` closures to run on the next
+    // click, each calling its own afterDismiss and leaving dangling state.
+    if (this.finishHandler) {
+      this.scene.input.off('pointerdown', this.finishHandler);
+      this.finishHandler = undefined;
+    }
     this.scene.getTimeManager().request(token, { pausePhysics: true, timeScale: 0 });
 
     const { x, y, width, height } = this.getUiViewport();

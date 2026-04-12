@@ -66,5 +66,10 @@ export class StatusFxPool {
     for (const img of this.imgPool) img.destroy();
     this.arcPool = [];
     this.imgPool = [];
+    // Reset indices so any in-flight callback that acquires after destroy
+    // does `index % 0` (NaN) into an empty array — crash rather than silent
+    // undefined. This is defensive; destroy should be terminal.
+    this.arcIdx = 0;
+    this.imgIdx = 0;
   }
 }

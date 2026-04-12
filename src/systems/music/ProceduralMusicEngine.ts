@@ -45,6 +45,13 @@ class ProceduralMusicEngine {
   private cancelFrame: ((id: number | ReturnType<typeof setTimeout>) => void) | null = null;
   private fadeStopAtTimeSec: number | null = null;
   private resolutionPolling = false;
+  /**
+   * True between `fadeOut()` start and the scheduled stop. While set,
+   * `update()` must NOT ramp masterGain back up — its per-frame ramp to a
+   * positive volume would stomp the fade-to-zero curve on the automation
+   * timeline and the fade would stall before reaching silence.
+   */
+  private fadingOut = false;
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
@@ -98,14 +105,23 @@ class ProceduralMusicEngine {
 
   stop(): void {
     if (!this.playing) return;
+    this.teardownAudioGraph();
+    // Reset narrative/musical state — run ended, next `start()` should begin
+    // the melody fresh. This is the difference between stop() and the
+    // closed-ctx rebuild path in update(), which preserves Conductor mood.
+    this.conductor = new Conductor();
+    this.scheduler.reset();
+  }
+
+  /** Tears down audio graph + layers without wiping the Conductor/Scheduler. */
+  private teardownAudioGraph(): void {
     this.stopRafLoop();
     this.drone.stop();
     this.piano.stop();
     this.percussion.stop();
     this.disconnectGraph();
     this.playing = false;
-    this.conductor = new Conductor();
-    this.scheduler.reset();
+    this.fadingOut = false;
   }
 
   fadeOut(ms: number): void {
@@ -115,6 +131,8 @@ class ProceduralMusicEngine {
     this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
     const fadeEnd = t + ms / 1000;
     this.masterGain.gain.linearRampToValueAtTime(0, fadeEnd);
+    // Mark fading so update() won't counter-ramp on its per-frame pass.
+    this.fadingOut = true;
     // Use AudioContext time + a self-owned rAF loop so fade-stop persists
     // across Phaser scene transitions (audio domain sits above scene domain).
     this.fadeStopAtTimeSec = fadeEnd + 0.1;
@@ -133,9 +151,12 @@ class ProceduralMusicEngine {
 
     // Ctx was closed out from under us (browser aggressive audio lifecycle,
     // dev-tools close, etc.). Rebuild the graph against a fresh ctx — otherwise
-    // the engine silently stays wired to a dead context.
+    // the engine silently stays wired to a dead context. Tear down ONLY the
+    // audio graph (not the Conductor) so accumulated mood state survives the
+    // transparent reconnect — otherwise a mid-boss ctx reset would jarringly
+    // reset intensity/danger/triumph to zero.
     if (this.ctx.state === 'closed') {
-      this.stop();
+      this.teardownAudioGraph();
       this.start();
       if (!this.ctx) return;
     }
@@ -151,7 +172,7 @@ class ProceduralMusicEngine {
       this.masterFilter.frequency.linearRampToValueAtTime(freq, this.ctx.currentTime + 1);
     }
 
-    if (this.masterGain && this.enabled) {
+    if (this.masterGain && this.enabled && !this.fadingOut) {
       const vol = (0.20 + mood.intensity * 0.10) * this.userMusicVolume;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
@@ -183,9 +204,16 @@ class ProceduralMusicEngine {
   setEnabled(on: boolean): void {
     this.enabled = on;
     if (this.masterGain && this.ctx) {
+      // Cancel + re-anchor before the ramp, matching applyUserVolume. Without
+      // this, the very next update() tick issues its own ramp to a different
+      // target within the same automation quantum and the two ramps race —
+      // causing a click or the wrong unmute volume depending on frame timing.
+      const t = this.ctx.currentTime;
+      this.masterGain.gain.cancelScheduledValues(t);
+      this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
       this.masterGain.gain.linearRampToValueAtTime(
         on ? 0.25 * this.userMusicVolume : 0,
-        this.ctx.currentTime + 0.3
+        t + 0.3
       );
     }
   }

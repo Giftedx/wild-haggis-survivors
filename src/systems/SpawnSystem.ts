@@ -246,7 +246,13 @@ export class SpawnSystem {
     // stale coordinates from 1.5 seconds ago when the warning started.
     // Raw timer lives outside physics/timeScale; if the player is paused
     // mid-level-up, defer the spawn work to the next unpaused update() tick.
+    //
+    // Stale-run guard: if the run restarts between schedule and fire, the
+    // `spawnedBossKeys` Set reference changes. Compare before calling
+    // doSpawn so a cross-run callback can't double-spawn a boss.
+    const runRef = this.spawnedBossKeys;
     this.scene.getUpdateTickers().addOnce('raw', 1500, () => {
+      if (this.spawnedBossKeys !== runRef) return;
       if (this.scene.getTimeManager().isGameplayPaused()) {
         this.pendingBossSpawn = doSpawn;
       } else {

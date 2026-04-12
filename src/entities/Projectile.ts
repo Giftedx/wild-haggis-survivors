@@ -18,7 +18,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private isBouncing: boolean = false;
   /** Time-to-live in ms for bouncing projectiles (range check is unreliable with bounces) */
   private bouncingTTL: number = 0;
-  /** Tracks enemies already hit by this bouncing projectile (per-lifetime). */
+  /** Tracks enemies already hit by this projectile (prevents per-frame multi-hits on one enemy for both piercing and bouncing projectiles). */
   private hitTargets: Set<Phaser.GameObjects.GameObject> = new Set();
   /** Optional callback fired when this projectile deactivates (used by Highland Games explosion) */
   onDeactivateCallback: (() => void) | null = null;
@@ -94,13 +94,25 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   }
 
   /**
-   * For bouncing projectiles: checks if this enemy was already hit recently.
-   * Records the hit so the same target cannot be hit twice by the same projectile.
-   * Returns true if the hit should be skipped (already hit).
+   * Guard against per-frame repeat-hits on the same enemy. Phaser's overlap
+   * callback fires every physics frame while bodies intersect, so without
+   * this a single piercing caber "hits" the same enemy 3-10 times per pass
+   * and burns through its pierce count on one target. Also prevents bouncing
+   * projectiles from re-damaging enemies they already passed through.
+   *
+   * Pooled enemy note: if the enemy was killed and recycled by the pool into
+   * a fresh activation, the `active` flag flips back to true — treat it as a
+   * new enemy and allow the hit.
    */
   shouldSkipHit(enemy: Phaser.GameObjects.GameObject): boolean {
-    if (!this.isBouncing) return false;
-    if (this.hitTargets.has(enemy)) return true;
+    if (this.hitTargets.has(enemy)) {
+      if ((enemy as Phaser.GameObjects.GameObject & { active: boolean }).active) {
+        // Recycled pool slot — stale reference, clear and allow the hit.
+        this.hitTargets.delete(enemy);
+      } else {
+        return true;
+      }
+    }
     this.hitTargets.add(enemy);
     return false;
   }

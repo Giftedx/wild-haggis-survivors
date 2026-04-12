@@ -49,6 +49,8 @@ export class GamepadMenuNav {
   private applyHighlight(): void {
     for (let i = 0; i < this.entries.length; i++) {
       const e = this.entries[i];
+      // Guard both branches — a destroyed rect from a carousel rebuild throws
+      // on setStrokeStyle, not just on the focus path.
       if (!e.rect.active) continue;
       if (i === this.index) {
         e.rect.setStrokeStyle(2, 0xffe066, 1);

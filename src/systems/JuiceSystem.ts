@@ -571,8 +571,10 @@ export class JuiceSystem {
       onComplete: () => ring.setVisible(false),
     });
 
-    // Second delayed ring — pooled
-    this.tickers.addOnce('scaled', 150, () => {
+    // Second delayed ring — pooled. Use 'raw' so the 150ms delay is wall-clock:
+    // scaled mode freezes during HIT_FREEZE physics-pause and stretches to
+    // ~500ms during slow-motion, breaking the intended layered animation.
+    this.tickers.addOnce('raw', 150, () => {
       const ring2 = this.bossRingPool[this.bossRingIdx];
       this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
       this.scene.tweens.killTweensOf(ring2);

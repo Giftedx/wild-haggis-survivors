@@ -322,13 +322,20 @@ function buildProgressSnapshot(
 
 function normalizeRunSummary(summary: RunSummary): Required<RunSummary> {
   return {
-    timeSurvivedSec: coerceInteger(summary.timeSurvivedSec, 0),
+    // Round (not floor) so a 299.9s run — which in-game is visibly at 5:00 —
+    // doesn't get recorded as bestTime 4:59 and undercount gold reward.
+    timeSurvivedSec: coerceRoundedNonNegative(summary.timeSurvivedSec, 0),
     enemiesKilled: coerceInteger(summary.enemiesKilled, 0),
     bossGold: coerceInteger(summary.bossGold, 0),
     coinGold: coerceInteger(summary.coinGold, 0),
     bestCombo: coerceInteger(summary.bestCombo, 0),
     victory: Boolean(summary.victory),
   };
+}
+
+function coerceRoundedNonNegative(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return Math.max(0, Math.round(value));
 }
 
 function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {

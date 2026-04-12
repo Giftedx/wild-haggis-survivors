@@ -105,7 +105,13 @@ export class SettingsManager {
       ? Math.floor(o.settingsVersion)
       : CURRENT_SETTINGS_VERSION;
 
-    if (v !== CURRENT_SETTINGS_VERSION) {
+    // Unknown future version (saved by a newer client, then loaded by this
+    // one) — can't trust the shape, so wipe. For past versions, coerce
+    // field-by-field: every known field is clamped to its valid range
+    // (falling back to defaults only when the field is missing or malformed),
+    // so bumping CURRENT_SETTINGS_VERSION no longer nukes every player's
+    // volume / accessibility prefs on the next run.
+    if (v > CURRENT_SETTINGS_VERSION) {
       return { ...DEFAULT_SETTINGS };
     }
 

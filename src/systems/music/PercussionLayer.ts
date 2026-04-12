@@ -130,6 +130,10 @@ export class PercussionLayer {
     this.rhythmGain = null;
     this.ctx = null;
     this.patternIdx = 0;
+    // Clear any high-density pattern queued right before this run ended —
+    // otherwise it would leak across and override the calm 1/8 opening
+    // of the next run at the first phrase boundary.
+    this.pendingPattern = null;
   }
 }
 

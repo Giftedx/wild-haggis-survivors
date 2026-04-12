@@ -492,9 +492,11 @@ export class MenuScene extends Phaser.Scene {
       victories: this.saveData.victories,
       gold: this.saveData.gold,
     };
+    // Narrow viewports get the condensed variant; wide screens have room for
+    // the full detail line.
     return viewWidth < 1150
-      ? t('ui.menu.stats_long', vars)
-      : t('ui.menu.stats_short', vars);
+      ? t('ui.menu.stats_short', vars)
+      : t('ui.menu.stats_long', vars);
   }
 
   private getMenuLayout(height: number): { buttonY: number; panelY: number; panelHeight: number; ambientEnemyMinY: number } {
@@ -600,13 +602,15 @@ export class MenuScene extends Phaser.Scene {
     });
 
     bg.on('pointerover', () => {
-      bg.setScale(1.03);
-      text.setScale(1.03);
+      bg.setScale(this.uiScale * 1.03);
+      text.setScale(this.uiScale * 1.03);
       bg.setFillStyle(Phaser.Display.Color.ValueToColor(color).lighten(18).color);
     });
     bg.on('pointerout', () => {
-      bg.setScale(1);
-      text.setScale(1);
+      // Restore to the initial uiScale, not 1 — otherwise every hover-out
+      // permanently shrinks the button at uiScale != 1.
+      bg.setScale(this.uiScale);
+      text.setScale(this.uiScale);
       bg.setFillStyle(color);
     });
     bg.on('pointerdown', onClick);

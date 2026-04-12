@@ -61,8 +61,13 @@ export class EdgeIndicators {
     const cam = this.scene.cameras.main;
     const viewW = cam.width / cam.zoom;
     const viewH = cam.height / cam.zoom;
-    const screenW = cam.width;
-    const screenH = cam.height;
+    // `setScrollFactor(0)` objects use the zoom-corrected coordinate space.
+    // Using raw cam.width/cam.height for the projection math would push
+    // indicators off-screen at any camera zoom != 1 (e.g. slow-mo juice),
+    // since the "screen edge" the math anchors to would be wider than the
+    // actual visible viewport.
+    const screenW = viewW;
+    const screenH = viewH;
 
     // Find off-screen enemies — write into pre-allocated buffer
     this.offScreenCount = 0;

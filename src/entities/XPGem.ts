@@ -173,4 +173,26 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
   }
 
   getXpValue(): number { return this.xpValue; }
+
+  /**
+   * XPGem lazily creates two independent display-list objects (`valueLabel`
+   * Text, `aura` Arc). Without this override they orphan in the scene's
+   * display list when the gem is destroyed, holding refs and blocking GC
+   * until the scene fully stops.
+   */
+  destroy(fromScene?: boolean): void {
+    this.settleHandle?.cancel();
+    this.settleHandle = null;
+    if (this.valueLabel) {
+      this.scene?.tweens.killTweensOf(this.valueLabel);
+      this.valueLabel.destroy();
+      this.valueLabel = null;
+    }
+    if (this.aura) {
+      this.scene?.tweens.killTweensOf(this.aura);
+      this.aura.destroy();
+      this.aura = null;
+    }
+    super.destroy(fromScene);
+  }
 }

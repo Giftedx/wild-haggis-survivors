@@ -538,11 +538,17 @@ export class GameOverScene extends Phaser.Scene {
     delay: number,
     onClick: () => void
   ): void {
+    // setInteractive must be called at construction — deferring it to the
+    // tween onComplete means a tween interrupted by tab-backgrounding or
+    // scene-shutdown leaves the buttons permanently dead, softlocking
+    // Restart/Menu/Shop actions. The alpha-0 fade-in still provides the
+    // visual delay.
     const button = this.add
       .rectangle(x, y, width, height, fill, 1)
       .setScrollFactor(0)
       .setDepth(203)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
     const text = this.add
       .text(x, y, label, {
         fontFamily: 'monospace',
@@ -560,7 +566,6 @@ export class GameOverScene extends Phaser.Scene {
       alpha: 1,
       duration: 260,
       delay,
-      onComplete: () => button.setInteractive({ useHandCursor: true }),
     });
 
     button.on('pointerover', () => button.setFillStyle(Phaser.Display.Color.ValueToColor(fill).lighten(16).color));
