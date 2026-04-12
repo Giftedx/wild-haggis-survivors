@@ -206,8 +206,15 @@ export class JuiceSystem {
     if (this.comboCount > 0) {
       this.comboTimer -= scaledDelta;
       if (this.comboTimer <= 0) {
+        // Combo dropped — show a disappointed quip if it was a decent streak
+        const droppedCount = this.comboCount;
         this.comboCount = 0;
         this.syncComboText();
+        if (droppedCount >= 30) {
+          this.showToast(t('ui.game.combo_dropped_big', { count: droppedCount }), '#8a7a6a');
+        } else if (droppedCount >= 15) {
+          this.showToast(t('ui.game.combo_dropped', { count: droppedCount }), '#6a5a4a');
+        }
       }
     }
 
@@ -492,11 +499,11 @@ export class JuiceSystem {
     this.comboText.setVisible(true);
     this.comboText.setScale(1);
     if (this.comboCount >= 50) {
-      this.comboText.setColor('#ff0000');
+      this.comboText.setColor('#d4a017'); // whisky gold — you're on fire
     } else if (this.comboCount >= 20) {
-      this.comboText.setColor('#ff4400');
+      this.comboText.setColor('#e8a830'); // warm amber
     } else {
-      this.comboText.setColor('#ff8800');
+      this.comboText.setColor('#cc8822'); // warm orange-brown
     }
   }
 

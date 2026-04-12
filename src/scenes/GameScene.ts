@@ -1429,12 +1429,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
     musicEngine.playResolution();
 
+    // ── Victory celebration — the moor erupts ──
+    // Golden flash + screen shake (bigger than any boss kill)
+    this.juice.flashWhite(300);
+    tryCameraShake(this.cameras.main, 800, 0.015, this.settingsManager);
+    // Massive golden particle burst from the player
+    this.juice.bossDeathSpectacle(this.player.x, this.player.y);
+    // Victory toast — the big payoff
+    this.juice.showToast(t('ui.gameOver.victory_title'), '#d4a017');
+
+    // Brief hold so the player FEELS the victory, then transition
     const previousBests = this.metaSaveManager.getPersonalBests();
     const summary = this.buildRunSummary(true);
     const context = this.buildRunHistoryContext();
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
-    this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult, previousBests));
+
+    this.time.delayedCall(1200, () => {
+      this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult, previousBests));
+    });
   }
 
   private handlePlayerDeath(): void {
