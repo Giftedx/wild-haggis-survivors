@@ -223,23 +223,48 @@ export class BootScene extends Phaser.Scene {
 
   private createRock(): void {
     const s = 24;
-    const g = this.add.graphics();
+
+    // Variant 1 — wide flat rock with horizontal crack
+    const g1 = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
-    // Rock outline
-    g.fillStyle(0x333344, 1);
-    g.fillEllipse(cx, cy, 18, 10);
-    // Rock body
-    g.fillStyle(0x555566, 1);
-    g.fillEllipse(cx - 1, cy - 1, 16, 9);
-    // Highlight
-    g.fillStyle(0x7a7a8a, 1);
-    g.fillEllipse(cx - 2, cy - 2, 10, 4);
-    // Crack detail
-    g.fillStyle(0x333344, 1);
-    g.fillRect(cx, cy - 1, 3, 1);
-    g.fillRect(cx - 4, cy + 1, 2, 1);
-    g.generateTexture('deco_rock', s, s);
-    g.destroy();
+    g1.fillStyle(0x333344, 1);
+    g1.fillEllipse(cx, cy, 18, 10);
+    g1.fillStyle(0x555566, 1);
+    g1.fillEllipse(cx - 1, cy - 1, 16, 9);
+    g1.fillStyle(0x7a7a8a, 1);
+    g1.fillEllipse(cx - 2, cy - 2, 10, 4);
+    g1.fillStyle(0x333344, 1);
+    g1.fillRect(cx, cy - 1, 3, 1);
+    g1.fillRect(cx - 4, cy + 1, 2, 1);
+    g1.generateTexture('deco_rock', s, s);
+    g1.destroy();
+
+    // Variant 2 — taller, rounder rock with diagonal crack
+    const g2 = this.add.graphics();
+    g2.fillStyle(0x2e2e40, 1);
+    g2.fillEllipse(cx, cy, 14, 13);
+    g2.fillStyle(0x4a4a5c, 1);
+    g2.fillEllipse(cx - 1, cy - 1, 12, 11);
+    g2.fillStyle(0x6a6a7a, 1);
+    g2.fillEllipse(cx - 2, cy - 3, 7, 4);
+    g2.fillStyle(0x2e2e40, 1);
+    g2.fillRect(cx - 1, cy - 2, 1, 3);
+    g2.fillRect(cx, cy, 2, 1);
+    g2.generateTexture('deco_rock_2', s, s);
+    g2.destroy();
+
+    // Variant 3 — small angular pebble cluster
+    const g3 = this.add.graphics();
+    g3.fillStyle(0x3a3a4a, 1);
+    g3.fillEllipse(cx - 3, cy, 10, 8);
+    g3.fillEllipse(cx + 4, cy + 1, 8, 7);
+    g3.fillStyle(0x585868, 1);
+    g3.fillEllipse(cx - 3, cy - 1, 8, 6);
+    g3.fillEllipse(cx + 4, cy, 6, 5);
+    g3.fillStyle(0x7a7a88, 1);
+    g3.fillEllipse(cx - 4, cy - 2, 4, 2);
+    g3.generateTexture('deco_rock_3', s, s);
+    g3.destroy();
   }
 
   private createHeather(): void {
@@ -259,6 +284,19 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx - 4, cy - 1, 1.5);
     g.fillCircle(cx, cy - 2, 1.8);
     g.fillCircle(cx + 4, cy - 1, 1.5);
+    // Tiny upward flower spikes — turns "purple blob" into recognizable heather
+    g.fillStyle(0xdd88bb, 1);
+    g.fillRect(cx - 5, cy - 5, 1, 3);
+    g.fillRect(cx - 2, cy - 6, 1, 3);
+    g.fillRect(cx + 1, cy - 5, 1, 3);
+    g.fillRect(cx + 4, cy - 4, 1, 3);
+    g.fillRect(cx - 1, cy - 4, 1, 2);
+    // Pink tips
+    g.fillStyle(0xeeaacc, 1);
+    g.fillRect(cx - 5, cy - 5, 1, 1);
+    g.fillRect(cx - 2, cy - 6, 1, 1);
+    g.fillRect(cx + 1, cy - 5, 1, 1);
+    g.fillRect(cx + 4, cy - 4, 1, 1);
     g.generateTexture('deco_heather', s, s);
     g.destroy();
   }

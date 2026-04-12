@@ -132,6 +132,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
   private achievementUnsub: (() => void) | null = null;
+  private bossEnrageUnsub: (() => void) | null = null;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -345,10 +346,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
     });
 
-    // Projectile trails — color based on weapon type
-    this.weaponSystem.events.on('projectileTrail', (x: number, y: number) => {
-      // Vary trail color slightly each time for visual interest
-      const colors = [0x9966cc, 0xaa77dd, 0x8855bb];
+    // Projectile trails — weapon-specific colors; evolved weapons get gold overlay
+    const weaponTrailColors: Record<string, number[]> = {
+      thistle_shot: [0x9966cc, 0xaa77dd, 0x8855bb],  // purple — heather
+      caber_toss:   [0xcc7733, 0xdd8844, 0xbb6622],  // ember — burning wood
+      haggis_hurler:[0x8b6914, 0x9a7822, 0x7a5a0a],  // brown — haggis
+      scotch_mist:  [0x6699aa, 0x77aacc, 0x5588aa],  // cyan — misty water
+      nessie_tentacle:[0x226644, 0x338855, 0x1a5533], // murky green — loch
+      claymore:     [0x8899aa, 0x99aabb, 0x778899],   // steel — metal
+      bagpipe_blast:[0x4488ff, 0x5599ff, 0x3377ee],   // blue — sonic
+    };
+    const evolvedColors = [0xffcc44, 0xffdd66, 0xd4a017]; // gold — mastery
+    const defaultColors = [0x9966cc, 0xaa77dd, 0x8855bb];
+    this.weaponSystem.events.on('projectileTrail', (x: number, y: number, evolved: boolean, wKey: string) => {
+      const colors = evolved ? evolvedColors : (weaponTrailColors[wKey] ?? defaultColors);
       this.juice.spawnTrail(x, y, colors[Math.floor(Math.random() * colors.length)]);
     });
 
@@ -375,6 +386,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.achievementUnsub?.();
     this.achievementUnsub = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
       this.juice.showToast(t('ui.game.achievement_unlock', { title: p.title }), '#ffdd88');
+    });
+    this.bossEnrageUnsub?.();
+    this.bossEnrageUnsub = globalEventBus.on('bossEnraged', () => {
+      this.juice.showToast(t('ui.game.boss_enraged'), '#ff4444');
     });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
@@ -519,6 +534,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       sfxManager.clear();
       this.achievementUnsub?.();
       this.achievementUnsub = null;
+      this.bossEnrageUnsub?.();
+      this.bossEnrageUnsub = null;
       this.unregisterMidRunPersistenceHooks();
       this.unregisterDebugTimeTravelApi();
       try { this.subs.dispose(); } catch { /* ignore */ }
@@ -1271,8 +1288,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     this.player.setAlpha(0.5);
-    this.player.setTintFill(0xff3333); // Red flash on the sprite itself
-    this.hitTintClearRemainingMs = 80;
+    this.player.setTintFill(0xffffff); // White impact flash (matches enemy pattern)
+    this.hitTintClearRemainingMs = 60;
+
+    // Squash-stretch recoil — the haggis visibly flinches on hit
+    const baseScale = this.player.scaleX;
+    this.tweens.add({
+      targets: this.player, scaleX: baseScale * 0.85, scaleY: baseScale * 1.15,
+      duration: 50, yoyo: true, ease: 'Sine.easeOut',
+    });
     // Scale shake intensity with damage proportion
     const dmgFrac = incomingDmg / this.player.getMaxHp();
     const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
@@ -2086,7 +2110,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     for (let i = 0; i < 60; i++) {
       const x = rngDeco.between(60, W - 60);
       const y = rngDeco.between(60, H - 60);
-      this.add.image(x, y, 'deco_rock')
+      const rockKeys = ['deco_rock', 'deco_rock_2', 'deco_rock_3'];
+      this.add.image(x, y, rockKeys[rngDeco.between(0, 2)])
         .setDepth(-3)
         .setScale(rngDeco.realInRange(0.6, 1.4))
         .setFlipX(rngDeco.frac() > 0.5)

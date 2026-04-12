@@ -31,6 +31,7 @@ export type GlobalEvents = {
   ACHIEVEMENT_UNLOCKED: AchievementUnlockPayload;
   GLOBAL_RUN_ENDED: GlobalRunEndedPayload;
   TUTORIAL_COMPLETED: TutorialCompletedPayload;
+  bossEnraged: string;
 };
 
 type Handler<T> = (payload: T) => void;

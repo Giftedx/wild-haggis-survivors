@@ -200,6 +200,7 @@ export const EN_STRINGS: LocaleTree = {
       level_up_fallback: 'Level up!',
       kill_milestone: '{count} culls! +{gold}g',
       boss_kill_heal: 'Boss felled — +{hp} HP',
+      boss_enraged: 'The beast is RAGIN!',
       achievement_unlock: '★ {title}',
       upgrade_new_weapon: 'New kit: {name}',
       upgrade_weapon_level: '{name} — sharper',

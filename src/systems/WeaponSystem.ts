@@ -189,7 +189,9 @@ export class WeaponSystem {
       if (proj.active) {
         proj.update(delta);
         if (spawnTrail) {
-          this.events.emit('projectileTrail', proj.x, proj.y);
+          const wKey = proj.getWeaponKey();
+          const isEvolved = wKey ? this.weapons.some(w => w.config.key === wKey && w.evolved) : false;
+          this.events.emit('projectileTrail', proj.x, proj.y, isEvolved, wKey);
         }
       }
     }

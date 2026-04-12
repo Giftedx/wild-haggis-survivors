@@ -69,8 +69,17 @@ export class HUD {
   private damageLog: number[] = [];
   private damageWindow: number = 0;
 
+  // Smooth HP bar color lerping — avoids hard snaps between thresholds
+  private displayHpR: number = 0x44;
+  private displayHpG: number = 0xcc;
+  private displayHpB: number = 0x44;
+
   // Low-HP pulse state (for the fill's alpha/scale wobble)
   private lowHpPulse: number = 0;
+  // Kill count cap warning — track previous state to pulse on transition
+  private wasOverCap: boolean = false;
+  // XP bar level-up flash — track previous fraction to detect the reset
+  private prevXpFraction: number = 0;
   // Dash-ready pulse phase — drives a subtle scale/alpha wobble on the dash
   // pips when a charge is available, so the player can glance at the HUD
   // under combat pressure and see "yes, dash is ready" at a single tick.
@@ -318,9 +327,18 @@ export class HUD {
     this.hpBarFill.width = this.HP_BAR_W * hpFrac;
     this.hpText.setText(`${hpDisplay}/${maxDisplay}`);
 
-    // Dynamic HP bar color: green > yellow > orange > red
-    const hpColor = hpFrac > 0.6 ? 0x44cc44 : hpFrac > 0.35 ? 0xcccc44 : hpFrac > 0.15 ? 0xdd8844 : 0xcc3333;
-    this.hpBarFill.setFillStyle(hpColor);
+    // Dynamic HP bar color: green > yellow > orange > red — smooth lerp
+    const targetColor = hpFrac > 0.6 ? { r: 0x44, g: 0xcc, b: 0x44 }
+      : hpFrac > 0.35 ? { r: 0xcc, g: 0xcc, b: 0x44 }
+      : hpFrac > 0.15 ? { r: 0xdd, g: 0x88, b: 0x44 }
+      : { r: 0xcc, g: 0x33, b: 0x33 };
+    const lerpSpeed = 0.08; // ~300ms to resolve at 60fps
+    this.displayHpR += (targetColor.r - this.displayHpR) * lerpSpeed;
+    this.displayHpG += (targetColor.g - this.displayHpG) * lerpSpeed;
+    this.displayHpB += (targetColor.b - this.displayHpB) * lerpSpeed;
+    this.hpBarFill.setFillStyle(
+      (Math.round(this.displayHpR) << 16) | (Math.round(this.displayHpG) << 8) | Math.round(this.displayHpB)
+    );
 
     // Low-HP urgency pulse — below 30% the fill softly pulses alpha and the
     // HP text color shifts to match. High-contrast palette has its own
@@ -375,6 +393,15 @@ export class HUD {
       t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
     );
     this.killText.setColor(enemyColor);
+
+    // Pulse on cap transition — draws attention once, not every frame
+    if (overCap && !this.wasOverCap) {
+      this.scene.tweens.add({
+        targets: this.killText, scaleX: this.uiScale * 1.15, scaleY: this.uiScale * 1.15,
+        duration: 120, yoyo: true, ease: 'Sine.easeOut',
+      });
+    }
+    this.wasOverCap = overCap;
     if (
       dashCharges !== undefined
       && maxDashCharges !== undefined
@@ -450,6 +477,19 @@ export class HUD {
     }
 
     this.xpBarFill.width = this.layoutWidth * xpFraction;
+
+    // XP bar level-up flash — fires when the bar resets (fraction drops after being high)
+    if (this.prevXpFraction > 0.8 && xpFraction < 0.2) {
+      const flash = this.scene.add.rectangle(
+        this.xpBarBg.x, this.xpBarBg.y,
+        this.layoutWidth, this.XP_BAR_H, 0xffffff, 0.6
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2);
+      this.scene.tweens.add({
+        targets: flash, alpha: 0, duration: 250,
+        onComplete: () => flash.destroy(),
+      });
+    }
+    this.prevXpFraction = xpFraction;
 
     // Update weapon slots
     if (weapons) {

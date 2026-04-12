@@ -39,7 +39,7 @@ export class EdgeIndicators {
     const screenH = cam.height;
 
     // Find off-screen enemies sorted by distance
-    const offScreen: { x: number; y: number; dist: number }[] = [];
+    const offScreen: { x: number; y: number; dist: number; boss: boolean; elite: boolean }[] = [];
     const enemies = enemyGroup.getChildren() as Enemy[];
 
     // Use actual camera viewport for off-screen check (handles camera clamping at world edges)
@@ -59,7 +59,7 @@ export class EdgeIndicators {
       const dy = enemy.y - playerY;
       const dist = Math.sqrt(dx * dx + dy * dy);
       if (dist <= this.DETECT_RANGE) {
-        offScreen.push({ x: dx, y: dy, dist });
+        offScreen.push({ x: dx, y: dy, dist, boss: enemy.isBoss(), elite: enemy.isElite() });
       }
     }
 
@@ -109,10 +109,19 @@ export class EdgeIndicators {
       indicator.setRotation(angle + Math.PI / 2);
       indicator.setVisible(true);
 
-      // Color based on proximity — closer = more red
-      const t = 1 - (e.dist / this.DETECT_RANGE);
-      const alpha = 0.3 + t * 0.5;
-      indicator.setAlpha(alpha);
+      // Color based on proximity + threat type: boss/elite = gold, regular = red
+      const proximity = 1 - (e.dist / this.DETECT_RANGE);
+      const alpha = 0.3 + proximity * 0.5;
+      if (e.boss) {
+        indicator.setFillStyle(0xd4a017, alpha);
+        indicator.setScale(1.5);
+      } else if (e.elite) {
+        indicator.setFillStyle(0xd4a017, alpha);
+        indicator.setScale(1);
+      } else {
+        indicator.setFillStyle(0xff4444, alpha);
+        indicator.setScale(1);
+      }
     }
   }
 
