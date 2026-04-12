@@ -972,49 +972,78 @@ export class BootScene extends Phaser.Scene {
    *  sideways. Body is horizontal, wings sweep up and down, tail trails
    *  behind on the left, beak points out the right.
    */
+  /** Golden eagle — broad wingspan, hooked beak, fierce eye, talons.
+   *  Faces RIGHT (Phaser +X at rotation 0) so it flies forward. */
   private createEagle(): void {
     const s = 48;
     const g = this.add.graphics();
     const cx = s / 2 - 2, cy = s / 2;
 
-    // Wings — simple triangular sweep UP and DOWN from the body. All
-    // one dark color.
-    g.fillStyle(0x0a0a12, 1);
-    // Top wing (sweeps up + back)
-    g.fillTriangle(cx, cy, cx - 6, cy - 18, cx + 4, cy - 14);
-    // Bottom wing (sweeps down + back)
-    g.fillTriangle(cx, cy, cx - 6, cy + 18, cx + 4, cy + 14);
-    // Slightly lighter inner wing for depth
-    g.fillStyle(0x22222e, 1);
-    g.fillTriangle(cx + 1, cy, cx - 4, cy - 12, cx + 2, cy - 10);
-    g.fillTriangle(cx + 1, cy, cx - 4, cy + 12, cx + 2, cy + 10);
+    // Wings — broad sweep, layered feathers for depth
+    // Outer wing (darkest)
+    g.fillStyle(0x1a1208, 1);
+    g.fillTriangle(cx - 2, cy, cx - 8, cy - 20, cx + 6, cy - 14);
+    g.fillTriangle(cx - 2, cy, cx - 8, cy + 20, cx + 6, cy + 14);
+    // Mid wing (warm brown)
+    g.fillStyle(0x3a2a14, 1);
+    g.fillTriangle(cx, cy, cx - 5, cy - 15, cx + 4, cy - 11);
+    g.fillTriangle(cx, cy, cx - 5, cy + 15, cx + 4, cy + 11);
+    // Inner wing highlight (golden brown)
+    g.fillStyle(0x5a4020, 1);
+    g.fillTriangle(cx + 1, cy, cx - 3, cy - 10, cx + 3, cy - 8);
+    g.fillTriangle(cx + 1, cy, cx - 3, cy + 10, cx + 3, cy + 8);
+    // Feather tips — jagged edge on outer wings
+    g.fillStyle(0x1a1208, 1);
+    g.fillTriangle(cx - 8, cy - 20, cx - 4, cy - 16, cx - 10, cy - 16);
+    g.fillTriangle(cx - 8, cy + 20, cx - 4, cy + 16, cx - 10, cy + 16);
 
-    // Body — fat oval running LEFT-to-RIGHT (horizontal now)
-    g.fillStyle(0x0a0a12, 1);
-    g.fillEllipse(cx, cy, 14, 10);
-    g.fillStyle(0x22222e, 1);
-    g.fillEllipse(cx, cy, 12, 8);
+    // Body — barrel shape
+    g.fillStyle(0x1a1208, 1);
+    g.fillEllipse(cx, cy, 16, 11);
+    g.fillStyle(0x3a2a14, 1);
+    g.fillEllipse(cx, cy, 14, 9);
+    // Breast — lighter underbelly
+    g.fillStyle(0x5a4828, 0.7);
+    g.fillEllipse(cx - 1, cy + 1, 10, 6);
 
-    // Tail — short wedge trailing behind on the LEFT
-    g.fillStyle(0x0a0a12, 1);
-    g.fillTriangle(cx - 6, cy - 3, cx - 6, cy + 3, cx - 11, cy);
+    // Tail — forked, trailing left
+    g.fillStyle(0x1a1208, 1);
+    g.fillTriangle(cx - 6, cy - 3, cx - 6, cy + 3, cx - 13, cy - 1);
+    g.fillTriangle(cx - 6, cy - 1, cx - 6, cy + 4, cx - 12, cy + 2);
 
-    // Head — blends into the FRONT (right side) of the body, not a
-    // separate circle. Small bump forward so it reads as a head.
-    g.fillStyle(0x0a0a12, 1);
-    g.fillEllipse(cx + 8, cy, 7, 7);
-    g.fillStyle(0x22222e, 1);
-    g.fillEllipse(cx + 8, cy, 5, 5);
+    // Head — golden-brown, distinct from dark body
+    g.fillStyle(0x1a1208, 1);
+    g.fillCircle(cx + 9, cy, 6);
+    g.fillStyle(0x6a5030, 1);
+    g.fillCircle(cx + 9, cy, 5);
+    // Crown feathers (lighter patch on top of head)
+    g.fillStyle(0x8a7040, 0.8);
+    g.fillCircle(cx + 8, cy - 2, 3);
 
-    // Beak — yellow pointing RIGHT (forward), simple triangle
+    // Beak — strong hooked beak, yellow-black
+    g.fillStyle(0x222200, 1);
+    g.fillTriangle(cx + 13, cy - 2, cx + 13, cy + 2, cx + 18, cy + 1);
     g.fillStyle(0xddaa22, 1);
-    g.fillTriangle(cx + 11, cy - 1, cx + 11, cy + 1, cx + 14, cy);
+    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 1, cx + 17, cy + 1);
+    // Hook at tip
+    g.fillStyle(0x111100, 1);
+    g.fillCircle(cx + 17, cy + 1, 0.8);
 
-    // Two tiny yellow eyes on the head, top and bottom — the only
-    // bright spots on the whole sprite so they pop against the black body
-    g.fillStyle(0xffdd44, 1);
-    g.fillRect(cx + 9, cy - 2, 1, 1);
-    g.fillRect(cx + 9, cy + 1, 1, 1);
+    // Eye — fierce, bright
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(cx + 10, cy - 1, 2);
+    g.fillStyle(0xffcc00, 1);
+    g.fillCircle(cx + 10, cy - 1, 1.2);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx + 10, cy - 2, 0.5);
+
+    // Talons — visible below body (hanging in flight)
+    g.fillStyle(0x333322, 1);
+    g.fillRect(cx - 2, cy + 4, 2, 4);
+    g.fillRect(cx + 2, cy + 4, 2, 4);
+    g.fillStyle(0x111100, 1);
+    g.fillRect(cx - 3, cy + 7, 4, 1);
+    g.fillRect(cx + 1, cy + 7, 4, 1);
 
     g.generateTexture('eagle', s, s);
     g.destroy();
@@ -1157,9 +1186,7 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Kelpie — lean water-horse silhouette, reads fast at small size. */
-  /** Kelpie — Scottish water horse. Bold silhouette, fewer details,
-   *  reads clearly at 1x game scale. Dark horse shape with glowing eye. */
+  /** Kelpie — Scottish water horse. Bold silhouette, glowing green eye. */
   private createKelpie(): void {
     const s = 48;
     const g = this.add.graphics();
@@ -1226,23 +1253,55 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Midgie swarm unit — smaller, angrier cousin of the terrier midge. */
+  /** Midgie swarm — a roiling cloud of tiny biting midges. The individual
+   *  bugs are too small to draw, so the sprite is a dark buzzing cloud
+   *  with glowing red eyes scattered through it and tiny wing-flicker dots. */
   private createMidgieSwarm(): void {
-    const s = 22;
+    const s = 26;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 1;
-    g.fillStyle(0x221122, 0.35);
-    g.fillCircle(cx, cy, 9);
-    g.fillStyle(0x441a2a, 1);
-    g.fillEllipse(cx, cy + 1, 10, 7);
-    g.fillStyle(0x661144, 1);
-    g.fillCircle(cx, cy - 2, 3);
-    g.fillStyle(0xff2244, 1);
-    g.fillCircle(cx - 1, cy - 3, 1);
-    g.fillCircle(cx + 1, cy - 3, 1);
-    g.lineStyle(1, 0x110511, 0.9);
-    g.lineBetween(cx - 3, cy + 4, cx - 5, cy + 7);
-    g.lineBetween(cx + 3, cy + 4, cx + 5, cy + 7);
+    const cx = s / 2, cy = s / 2;
+
+    // Haze cloud — layered for depth
+    g.fillStyle(0x1a0a1a, 0.3);
+    g.fillCircle(cx, cy, 11);
+    g.fillStyle(0x2a1228, 0.5);
+    g.fillEllipse(cx - 1, cy + 1, 18, 12);
+    g.fillStyle(0x3a1a30, 0.6);
+    g.fillEllipse(cx, cy, 14, 10);
+
+    // Individual midges — tiny dots scattered through the cloud
+    // Dark bodies
+    g.fillStyle(0x441133, 1);
+    g.fillCircle(cx - 4, cy - 2, 1.5);
+    g.fillCircle(cx + 3, cy - 1, 1.5);
+    g.fillCircle(cx - 1, cy + 3, 1.5);
+    g.fillCircle(cx + 5, cy + 2, 1.2);
+    g.fillCircle(cx - 5, cy + 3, 1.2);
+    g.fillCircle(cx + 1, cy - 4, 1.2);
+
+    // Red eyes — angry little pinpricks scattered through
+    g.fillStyle(0xff3344, 1);
+    g.fillCircle(cx - 4, cy - 3, 0.7);
+    g.fillCircle(cx + 3, cy - 2, 0.7);
+    g.fillCircle(cx - 1, cy + 2, 0.7);
+    g.fillCircle(cx + 5, cy + 1, 0.7);
+    g.fillCircle(cx - 5, cy + 2, 0.7);
+    g.fillCircle(cx + 1, cy - 5, 0.7);
+
+    // Wing flicker — tiny bright dots (translucent)
+    g.fillStyle(0xccaacc, 0.5);
+    g.fillCircle(cx - 3, cy - 4, 0.5);
+    g.fillCircle(cx + 4, cy - 3, 0.5);
+    g.fillCircle(cx, cy + 1, 0.5);
+    g.fillCircle(cx + 6, cy, 0.5);
+
+    // Dangling legs — two pairs visible at bottom
+    g.lineStyle(1, 0x220a18, 0.8);
+    g.lineBetween(cx - 3, cy + 4, cx - 4, cy + 7);
+    g.lineBetween(cx + 2, cy + 4, cx + 3, cy + 7);
+    g.lineBetween(cx - 1, cy + 5, cx - 2, cy + 8);
+    g.lineBetween(cx + 4, cy + 3, cx + 5, cy + 6);
+
     g.generateTexture('midgie_swarm', s, s);
     g.destroy();
   }
@@ -1335,46 +1394,69 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
+  /** Haggis ball — the bouncing projectile for Jobby Hurler/Cannon.
+   *  Lumpy, organic, with a wet sheen and visible oat-fleck texture. */
   private createHaggisBall(): void {
     const s = 18;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Outline
-    g.fillStyle(0x3a2808, 1);
+    // Dark outline
+    g.fillStyle(0x2a1a06, 1);
     g.fillCircle(cx, cy, 7);
-    // Small round projectile (Jobby Hurler / Jobby Cannon)
-    g.fillStyle(0x6b4e0a, 1);
+    // Body — mottled brown (haggis-colored)
+    g.fillStyle(0x5a3e0a, 1);
     g.fillCircle(cx, cy, 6);
-    g.fillStyle(0x8b6914, 0.8);
-    g.fillCircle(cx - 1, cy - 1, 4);
-    // Highlight
-    g.fillStyle(0xa07818, 0.9);
-    g.fillCircle(cx - 2, cy - 2, 2);
+    g.fillStyle(0x7a5a12, 1);
+    g.fillCircle(cx - 1, cy - 1, 5);
+    // Oat fleck texture — tiny lighter dots
+    g.fillStyle(0x9a7822, 0.8);
+    g.fillCircle(cx - 2, cy - 2, 1.2);
+    g.fillCircle(cx + 2, cy + 1, 1);
+    g.fillCircle(cx - 1, cy + 2, 0.8);
+    g.fillCircle(cx + 3, cy - 1, 0.8);
+    // Wet sheen highlight
+    g.fillStyle(0xbb9933, 0.7);
+    g.fillCircle(cx - 2, cy - 3, 1.5);
+    g.fillStyle(0xffffff, 0.4);
+    g.fillCircle(cx - 3, cy - 3, 0.7);
 
     g.generateTexture('haggis_ball', s, s);
     g.destroy();
   }
 
+  /** XP gem — golden diamond with faceted light and a bright sparkle.
+   *  The player's eye is trained to chase these, so they need to pop. */
   private createXPGem(): void {
     const s = 16;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Outline
-    g.fillStyle(0x886600, 1);
+    // Dark outline — gives the gem a solid border
+    g.fillStyle(0x6a4a00, 1);
     g.fillTriangle(cx, cy - 7, cx - 6, cy, cx + 6, cy);
     g.fillTriangle(cx, cy + 7, cx - 6, cy, cx + 6, cy);
-    // Diamond shape (whisky drop)
+    // Main gem body — warm gold
     g.fillStyle(0xd4a017, 1);
     g.fillTriangle(cx, cy - 6, cx - 5, cy, cx + 5, cy);
     g.fillTriangle(cx, cy + 6, cx - 5, cy, cx + 5, cy);
-    // Bright center
+    // Left facet — slightly darker for depth
+    g.fillStyle(0xb08818, 1);
+    g.fillTriangle(cx, cy - 6, cx - 5, cy, cx, cy);
+    // Right facet — slightly lighter
+    g.fillStyle(0xe8b820, 1);
+    g.fillTriangle(cx, cy - 6, cx + 5, cy, cx, cy);
+    // Bottom facet — warm shadow
+    g.fillStyle(0xa07010, 1);
+    g.fillTriangle(cx, cy + 6, cx - 4, cy + 1, cx + 4, cy + 1);
+    // Bright center band — the "fire" in the gem
     g.fillStyle(0xffdd66, 1);
-    g.fillTriangle(cx, cy - 3, cx - 2, cy, cx + 2, cy);
-    // Sparkle
-    g.fillStyle(0xffffff, 0.9);
-    g.fillCircle(cx - 1, cy - 2, 1);
+    g.fillRect(cx - 3, cy - 1, 6, 2);
+    // Hot sparkle — upper left
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx - 1, cy - 3, 1.2);
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(cx + 2, cy - 1, 0.6);
 
     g.generateTexture('xp_gem', s, s);
     g.destroy();
@@ -1958,55 +2040,88 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
+  /** Treasure chest — arched lid, metal bands, rivets, golden lock. */
   private createChestTexture(): void {
     const s = 32;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
+    const cx = s / 2, cy = s / 2 + 1;
 
-    // Chest outline
-    g.fillStyle(0x3a2808, 1);
-    g.fillRect(cx - 14, cy - 7, 28, 18);
-    // Chest body (wooden)
-    g.fillStyle(0x8b6914, 1);
-    g.fillRect(cx - 13, cy - 6, 26, 16);
-    // Wood planks
-    g.fillStyle(0x6b4e0a, 1);
-    g.fillRect(cx - 13, cy, 26, 1);
-    g.fillRect(cx - 13, cy + 5, 26, 1);
-    // Chest lid highlight
-    g.fillStyle(0xa07818, 1);
-    g.fillRect(cx - 13, cy - 6, 26, 5);
-    // Metal bands
-    g.fillStyle(0x886600, 1);
-    g.fillRect(cx - 13, cy - 2, 26, 2);
-    g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx - 13, cy - 2, 26, 1);
-    // Lock
-    g.fillStyle(0x554400, 1);
+    // Dark outline
+    g.fillStyle(0x2a1a06, 1);
+    g.fillRect(cx - 14, cy - 4, 28, 16);
+    g.fillEllipse(cx, cy - 4, 28, 10); // arched lid outline
+
+    // Chest body (rich wood)
+    g.fillStyle(0x7a5a10, 1);
+    g.fillRect(cx - 13, cy - 3, 26, 14);
+    // Lid — lighter, arched
+    g.fillStyle(0x9a7418, 1);
+    g.fillEllipse(cx, cy - 4, 26, 8);
+    g.fillStyle(0xb08820, 0.8);
+    g.fillEllipse(cx, cy - 5, 22, 5);
+    // Wood grain lines
+    g.fillStyle(0x5a4008, 0.7);
+    g.fillRect(cx - 13, cy + 2, 26, 1);
+    g.fillRect(cx - 13, cy + 6, 26, 1);
+    g.fillRect(cx - 13, cy + 9, 26, 1);
+
+    // Metal bands — horizontal straps
+    g.fillStyle(0x6a5500, 1);
+    g.fillRect(cx - 14, cy - 1, 28, 2);
+    g.fillStyle(0xccaa33, 1);
+    g.fillRect(cx - 14, cy - 1, 28, 1);
+    // Vertical metal band (center strap)
+    g.fillStyle(0x6a5500, 1);
+    g.fillRect(cx - 1, cy - 8, 2, 18);
+    g.fillStyle(0xccaa33, 0.8);
+    g.fillRect(cx, cy - 7, 1, 16);
+
+    // Metal rivets — at intersections
+    g.fillStyle(0xddbb44, 1);
+    g.fillCircle(cx - 12, cy - 1, 1);
+    g.fillCircle(cx + 12, cy - 1, 1);
+    g.fillCircle(cx, cy - 1, 1.2);
+    g.fillCircle(cx - 12, cy + 9, 0.8);
+    g.fillCircle(cx + 12, cy + 9, 0.8);
+
+    // Lock — ornate golden clasp
+    g.fillStyle(0x443300, 1);
     g.fillRect(cx - 3, cy + 1, 6, 6);
     g.fillStyle(0xffcc44, 1);
     g.fillRect(cx - 2, cy + 2, 4, 4);
-    g.fillStyle(0x000000, 1);
-    g.fillRect(cx - 1, cy + 3, 2, 2);
+    g.fillStyle(0xffeebb, 1);
+    g.fillCircle(cx, cy + 3, 1.5);
+    g.fillStyle(0x221100, 1);
+    g.fillCircle(cx, cy + 4, 0.8);
 
     g.generateTexture('chest', s, s);
     g.destroy();
   }
 
+  /** Health orb — glowing green with a cross symbol, reads as "healing". */
   private createHealthOrb(): void {
     const s = 18;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
     // Outline
-    g.fillStyle(0x116611, 1);
+    g.fillStyle(0x0a4a0a, 1);
     g.fillCircle(cx, cy, 7);
-    // Orb body
-    g.fillStyle(0x44dd44, 1);
+    // Orb body — rich emerald
+    g.fillStyle(0x22bb22, 1);
     g.fillCircle(cx, cy, 6);
-    // Inner glow
-    g.fillStyle(0x88ff88, 0.8);
+    // Inner glow — upper-left highlight
+    g.fillStyle(0x66ee66, 0.8);
     g.fillCircle(cx - 1, cy - 1, 4);
+    g.fillStyle(0xaaffaa, 0.6);
+    g.fillCircle(cx - 2, cy - 2, 2);
+    // Cross symbol — the universal healing sign
+    g.fillStyle(0xffffff, 0.9);
+    g.fillRect(cx - 1, cy - 3, 2, 6);
+    g.fillRect(cx - 3, cy - 1, 6, 2);
+    // Sparkle glint
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx - 3, cy - 3, 0.8);
     // Cross
     g.fillStyle(0xffffff, 1);
     g.fillRect(cx - 1, cy - 4, 2, 8);
@@ -2274,19 +2389,50 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** William Blade — evolved claymore HUD icon (gold flash + blade). */
+  /** William Blade — evolved claymore. Legendary golden aura, ornate blade,
+   *  shockwave lines. Should feel unmistakably "evolved" next to base claymore. */
   private createWilliamBladeIcon(): void {
     const s = 22;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    g.fillStyle(0xffcc33, 0.5);
-    g.fillCircle(cx, cy, 9);
-    g.fillStyle(0xddaa11, 1);
-    g.fillRect(cx - 2, cy - 8, 4, 14);
-    g.fillStyle(0xeeeeff, 1);
-    g.fillRect(cx - 1, cy - 7, 2, 10);
-    g.fillStyle(0x886600, 1);
-    g.fillRect(cx - 4, cy + 4, 8, 2);
+
+    // Legendary golden aura — radiating outward
+    g.fillStyle(0xffcc33, 0.25);
+    g.fillCircle(cx, cy, 10);
+    g.fillStyle(0xffdd44, 0.15);
+    g.fillCircle(cx, cy, 8);
+
+    // Shockwave lines — the evolution's signature (expanding arcs)
+    g.lineStyle(1, 0xffcc44, 0.5);
+    g.strokeCircle(cx, cy, 9);
+
+    // Blade — broader, brighter than base claymore
+    g.fillStyle(0x8a7020, 1);
+    g.fillTriangle(cx, cy - 9, cx - 3, cy + 2, cx + 3, cy + 2);
+    g.fillStyle(0xc8d8e8, 1);
+    g.fillTriangle(cx, cy - 8, cx - 2, cy + 1, cx + 2, cy + 1);
+    // Blade edge gleam
+    g.fillStyle(0xeef4ff, 0.9);
+    g.fillTriangle(cx, cy - 7, cx - 1, cy, cx, cy);
+
+    // Wide crossguard — ornate
+    g.fillStyle(0x6a5020, 1);
+    g.fillRect(cx - 6, cy + 2, 12, 3);
+    g.fillStyle(0xddaa33, 1);
+    g.fillRect(cx - 5, cy + 2, 10, 2);
+    // Crossguard tips
+    g.fillStyle(0xffcc44, 1);
+    g.fillCircle(cx - 5, cy + 3, 1);
+    g.fillCircle(cx + 5, cy + 3, 1);
+
+    // Grip + pommel
+    g.fillStyle(0x4a3020, 1);
+    g.fillRect(cx - 1, cy + 5, 2, 4);
+    g.fillStyle(0xddaa33, 1);
+    g.fillCircle(cx, cy + 9, 1.5);
+    g.fillStyle(0xffeebb, 1);
+    g.fillCircle(cx, cy + 9, 0.7);
+
     g.generateTexture('wicon_william_blade', s, s);
     g.destroy();
   }
