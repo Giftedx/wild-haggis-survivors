@@ -423,6 +423,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Surefoot',
       flavor: 'The drift still whispers, but it no longer decides.',
     },
+    pipe_breath: {
+      name: 'Pipe Breath',
+      flavor: 'Wheesht — the moor exhales through this one.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
