@@ -11,7 +11,7 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
+import { buildCardPool, drawCards, PASSIVE_KEYS, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
 import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -419,6 +419,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.achievementUnsub?.();
     this.achievementUnsub = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
       this.juice.showToast(t('ui.game.achievement_unlock', { title: p.title }), '#ffdd88');
+      audio.playAchievement();
     });
     this.bossEnrageUnsub?.();
     this.bossEnrageUnsub = globalEventBus.on('bossEnraged', () => {
@@ -884,6 +885,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.juice.showToast(t('ui.game.upgrade_evolve_weapon', { name: cardTitle }), '#ffaa00');
         this.juice.flashWhite(300);
         audio.playLevelUp();
+        globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
+          weaponKey: effect.weaponKey,
+          evolvedKey: effect.evolutionKey,
+        });
         break;
     }
 
@@ -1076,10 +1081,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     const luckyStart = ups['lucky_start'] ?? 0;
     if (luckyStart > 0) {
-      const passiveKeys = ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water'];
-      const randomPassive = passiveKeys[Math.floor(Math.random() * passiveKeys.length)];
-      this.ownedPassives.push(randomPassive);
-      this.applyPassiveEffect(randomPassive);
+      const available = PASSIVE_KEYS.filter((k) => !this.ownedPassives.includes(k));
+      if (available.length > 0) {
+        const randomPassive = available[Math.floor(Math.random() * available.length)];
+        this.ownedPassives.push(randomPassive);
+        this.applyPassiveEffect(randomPassive);
+      }
     }
 
     const doubleDash = ups['double_dash'] ?? 0;
@@ -1639,6 +1646,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       evolvedCount: this.evolvedWeapons.length,
       buildSummary: this.getRunBuildSummary(),
       variantLabel: formatRunVariantLabel(this.activeVariant),
+      variantKey: this.activeVariant.key,
       weaponDamage: this.runStatsTracker.snapshot(),
     };
   }

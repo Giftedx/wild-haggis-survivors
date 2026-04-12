@@ -187,8 +187,14 @@ export const EVOLUTION_MIN_WEAPON_LEVEL = 5;
 /** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
 export type AchievementId =
   | 'ach_kills_1000'
+  | 'ach_kills_5000'
+  | 'ach_survive_5m'
   | 'ach_survive_10m'
-  | 'ach_defeat_taxman';
+  | 'ach_full_run'
+  | 'ach_defeat_taxman'
+  | 'ach_first_victory'
+  | 'ach_first_evolution'
+  | 'ach_all_bosses';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -201,13 +207,37 @@ export const ACHIEVEMENT_DEFS: Record<
     titleKey: 'achievement.ach_kills_1000.title',
     descriptionKey: 'achievement.ach_kills_1000.description',
   },
+  ach_kills_5000: {
+    titleKey: 'achievement.ach_kills_5000.title',
+    descriptionKey: 'achievement.ach_kills_5000.description',
+  },
+  ach_survive_5m: {
+    titleKey: 'achievement.ach_survive_5m.title',
+    descriptionKey: 'achievement.ach_survive_5m.description',
+  },
   ach_survive_10m: {
     titleKey: 'achievement.ach_survive_10m.title',
     descriptionKey: 'achievement.ach_survive_10m.description',
   },
+  ach_full_run: {
+    titleKey: 'achievement.ach_full_run.title',
+    descriptionKey: 'achievement.ach_full_run.description',
+  },
   ach_defeat_taxman: {
     titleKey: 'achievement.ach_defeat_taxman.title',
     descriptionKey: 'achievement.ach_defeat_taxman.description',
+  },
+  ach_first_victory: {
+    titleKey: 'achievement.ach_first_victory.title',
+    descriptionKey: 'achievement.ach_first_victory.description',
+  },
+  ach_first_evolution: {
+    titleKey: 'achievement.ach_first_evolution.title',
+    descriptionKey: 'achievement.ach_first_evolution.description',
+  },
+  ach_all_bosses: {
+    titleKey: 'achievement.ach_all_bosses.title',
+    descriptionKey: 'achievement.ach_all_bosses.description',
   },
 };
 

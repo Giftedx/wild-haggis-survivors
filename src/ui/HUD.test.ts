@@ -95,7 +95,7 @@ describe('HUD', () => {
   it('shows integer HP text (no float noise)', () => {
     const scene = createScene();
     const hud = new HUD(scene);
-    hud.update(10.000000000000001, 110.00000000000001, 1, 0, 0, 0, 0);
+    hud.update(10 + Number.EPSILON, 110 + Number.EPSILON, 1, 0, 0, 0, 0);
     expect((hud as any).hpText.text).toBe('10/110');
   });
 

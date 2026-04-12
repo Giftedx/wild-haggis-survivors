@@ -5,7 +5,8 @@ export type MetaPurchaseFailureReason =
   | 'UNKNOWN_ITEM'
   | 'INSUFFICIENT_FUNDS'
   | 'ALREADY_OWNED'
-  | 'LOCKED_ACHIEVEMENT';
+  | 'LOCKED_ACHIEVEMENT'
+  | 'REQUIRES_PREVIOUS';
 
 export type MetaPurchaseResult =
   | { ok: true; next: ISaveData }
@@ -26,6 +27,10 @@ export function tryPurchaseMetaUpgrade(save: ISaveData, upgradeKey: string): Met
   const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
   if (req && !save.unlockedAchievements.includes(req)) {
     return { ok: false, reason: 'LOCKED_ACHIEVEMENT' };
+  }
+  const prev = 'requiresPrevious' in item ? item.requiresPrevious : undefined;
+  if (prev && !save.unlockedUpgrades.includes(prev as string)) {
+    return { ok: false, reason: 'REQUIRES_PREVIOUS' };
   }
   if (save.unlockedUpgrades.includes(upgradeKey)) {
     return { ok: false, reason: 'ALREADY_OWNED' };

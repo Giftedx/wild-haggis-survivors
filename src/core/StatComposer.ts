@@ -13,20 +13,21 @@ export type ComposedPlayerStats = {
   pickupRadius: number;
   /** Additive meta damage multiplier (e.g. 0.05 = +5%). */
   damagePctBonus: number;
+  /** Meta HP regen per second (base 0). */
+  hpRegen: number;
+  /** Meta crit chance bonus (additive, e.g. 0.03 = +3%). */
+  critBonus: number;
+  /** Meta cooldown reduction multiplier (e.g. 0.08 = -8%). */
+  cooldownReduction: number;
+  /** Meta XP gain multiplier (e.g. 0.05 = +5%). */
+  xpGainBonus: number;
+  /** Meta flat armor bonus. */
+  armorBonus: number;
+  /** Meta dash cooldown reduction multiplier (e.g. 0.10 = -10%). */
+  dashCooldownReduction: number;
 } & typeof BALANCE.player;
 
-const UPGRADE_SPEED_TIER_1 = 'speed_tier_1';
-const UPGRADE_HEALTH_TIER_1 = 'health_tier_1';
-const UPGRADE_PICKUP_TIER_1 = 'pickup_tier_1';
-const UPGRADE_DAMAGE_TIER_1 = 'damage_tier_1';
-
 export const StatComposer = {
-  /** Keys that modify stats (exported for tests / tooling). */
-  UPGRADE_SPEED_TIER_1,
-  UPGRADE_HEALTH_TIER_1,
-  UPGRADE_PICKUP_TIER_1,
-  UPGRADE_DAMAGE_TIER_1,
-
   getPlayerStats(save: ISaveData): ComposedPlayerStats {
     const keys = new Set(save.unlockedUpgrades ?? []);
     let speed = PLAYER.SPEED;
@@ -34,11 +35,45 @@ export const StatComposer = {
     const driftDegrees = PLAYER.DRIFT_DEGREES;
     let pickupRadius = PLAYER.PICKUP_RADIUS;
     let damagePctBonus = 0;
+    let hpRegen = 0;
+    let critBonus = 0;
+    let cooldownReduction = 0;
+    let xpGainBonus = 0;
+    let armorBonus = 0;
+    let dashCooldownReduction = 0;
 
-    if (keys.has(UPGRADE_SPEED_TIER_1)) speed *= 1.1;
-    if (keys.has(UPGRADE_HEALTH_TIER_1)) maxHp *= 1.1;
-    if (keys.has(UPGRADE_PICKUP_TIER_1)) pickupRadius += 22;
-    if (keys.has(UPGRADE_DAMAGE_TIER_1)) damagePctBonus = 0.05;
+    // Speed tiers (multiplicative, stacks)
+    if (keys.has('speed_tier_1')) speed *= 1.1;
+    if (keys.has('speed_tier_2')) speed *= 1.15;
+
+    // Health tiers
+    if (keys.has('health_tier_1')) maxHp *= 1.1;
+    if (keys.has('health_tier_2')) maxHp *= 1.15;
+
+    // Pickup
+    if (keys.has('pickup_tier_1')) pickupRadius += 22;
+
+    // Damage tiers (additive)
+    if (keys.has('damage_tier_1')) damagePctBonus += 0.05;
+    if (keys.has('damage_tier_2')) damagePctBonus += 0.10;
+
+    // Regen
+    if (keys.has('regen_tier_1')) hpRegen += 0.2;
+
+    // Crit
+    if (keys.has('crit_tier_1')) critBonus += 0.03;
+
+    // Cooldown
+    if (keys.has('cooldown_tier_1')) cooldownReduction += 0.08;
+
+    // XP
+    if (keys.has('xp_tier_1')) xpGainBonus += 0.05;
+
+    // Armor
+    if (keys.has('armor_tier_1')) armorBonus += 2;
+
+    // Dash cooldown
+    if (keys.has('dash_tier_1')) dashCooldownReduction += 0.10;
 
     return {
       ...BALANCE.player,
@@ -47,6 +82,12 @@ export const StatComposer = {
       driftDegrees,
       pickupRadius,
       damagePctBonus,
+      hpRegen,
+      critBonus,
+      cooldownReduction,
+      xpGainBonus,
+      armorBonus,
+      dashCooldownReduction,
     };
   },
 };

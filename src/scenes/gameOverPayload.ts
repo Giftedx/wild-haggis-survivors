@@ -14,6 +14,8 @@ export interface GameOverPayload {
   evolvedCount: number;
   buildSummary: string;
   variantLabel: string;
+  /** Variant key for sprite/flavor lookup on the result screen. */
+  variantKey?: string;
   /** Total damage dealt per weapon id (`WeaponDef.key`), from RunStatsTracker. */
   weaponDamage: Record<string, number>;
 }

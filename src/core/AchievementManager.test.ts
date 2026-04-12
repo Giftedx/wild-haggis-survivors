@@ -20,6 +20,7 @@ describe('AchievementManager', () => {
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: true,
+      hasSeenDriftTutorial: false,
     });
     mgr = new AchievementManager(save);
     mgr.start();

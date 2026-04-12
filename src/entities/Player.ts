@@ -67,7 +67,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
   private dashCooldown: number = 0;
-  private readonly DASH_COOLDOWN_MS = BALANCE.player.dashCooldownMs;
+  private DASH_COOLDOWN_MS: number = BALANCE.player.dashCooldownMs;
   private readonly DASH_SPEED = BALANCE.player.dashSpeed;
   private readonly DASH_DURATION_MS = BALANCE.player.dashDurationMs;
   private isDashing: boolean = false;
@@ -101,7 +101,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     y: number,
     textureKey: string = 'haggis_classic',
     timeManager: TimeManager,
-    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus'>
+    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus' | 'hpRegen' | 'critBonus' | 'cooldownReduction' | 'xpGainBonus' | 'armorBonus' | 'dashCooldownReduction'>
   ) {
     if (!timeManager) {
       throw new Error('Player requires a TimeManager (strict DI).');
@@ -123,6 +123,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (composed?.damagePctBonus) {
       this.addDamageMultiplier(composed.damagePctBonus);
+    }
+    if (composed?.hpRegen) this.addHpRegen(composed.hpRegen);
+    if (composed?.critBonus) this.addCritChance(composed.critBonus);
+    if (composed?.cooldownReduction) this.addCooldownReduction(composed.cooldownReduction);
+    if (composed?.xpGainBonus) this.addXpMultiplier(composed.xpGainBonus);
+    if (composed?.armorBonus) this.addArmor(composed.armorBonus);
+    if (composed?.dashCooldownReduction) {
+      this.DASH_COOLDOWN_MS = Math.round(BALANCE.player.dashCooldownMs * (1 - composed.dashCooldownReduction));
     }
 
     scene.add.existing(this);

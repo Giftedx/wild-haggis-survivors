@@ -117,25 +117,58 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
 
+    // Variant chip — warm identity reminder with haggis sprite + flavor text
+    const variantChipY = panelTop + 140;
     const variantChip = this.add
-      .rectangle(panelCenterX, panelTop + 136, 596, 34, 0x16213a, 0.96)
+      .rectangle(panelCenterX, variantChipY, 596, 48, 0x16213a, 0.96)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x355079, 1)
       .setAlpha(0);
+    // Small haggis sprite — identity anchor even on the results screen
+    const variantDef = this.payload.variantKey ? getVariantByKey(this.payload.variantKey) : null;
+    if (variantDef && this.textures.exists(variantDef.textureKey)) {
+      const miniHaggis = this.add
+        .sprite(panelCenterX - 270, variantChipY, variantDef.textureKey)
+        .setScale(1.4 * uiScale)
+        .setScrollFactor(0)
+        .setDepth(d + 3)
+        .setAlpha(0);
+      this.tweens.add({ targets: miniHaggis, alpha: 1, duration: 260, delay: 430 });
+    }
     const variantText = this.add
-      .text(panelCenterX, panelTop + 136, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
+      .text(panelCenterX + 8, variantChipY - 8, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
         fontFamily: 'monospace',
-        fontSize: '13px',
+        fontSize: '15px',
         color: '#d7e3ff',
-        wordWrap: { width: 560 },
+        fontStyle: 'bold',
+        wordWrap: { width: 500 },
         align: 'center',
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5, 0.5)
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
     variantText.setScale(uiScale);
+    // Flavor text — the variant's personality line, warm and quiet
+    const flavorKey = variantDef?.flavorKey;
+    if (flavorKey) {
+      const variantFlavor = this.add
+        .text(panelCenterX + 8, variantChipY + 10, t(flavorKey), {
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          color: '#8a9ab8',
+          fontStyle: 'italic',
+          wordWrap: { width: 480 },
+          align: 'center',
+        })
+        .setOrigin(0.5, 0.5)
+        .setScrollFactor(0)
+        .setDepth(d + 3)
+        .setAlpha(0);
+      variantFlavor.setScale(uiScale);
+      this.tweens.add({ targets: variantFlavor, alpha: 1, duration: 260, delay: 430 });
+    }
     this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
 
     const statsPanel = this.add
