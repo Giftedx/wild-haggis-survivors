@@ -6,6 +6,7 @@ import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
+import { loadSave } from '../utils/save';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -408,10 +409,35 @@ export class MainMenuScene extends Phaser.Scene {
       this.cozyTweenTargets.push(fireBase, fireGlowOuter, fireGlowInner, fireCore, smoke);
     }
 
+    // === Stats summary for returning players ===
+    // Shown only when the player has completed at least one run. Warm,
+    // subdued presentation — the stats are a quiet reminder of progress,
+    // not a competitive scoreboard.
+    const gameplay = loadSave();
+    if (gameplay.totalRuns > 0) {
+      const bestMins = Math.floor(gameplay.bestTime / 60);
+      const bestSecs = Math.floor(gameplay.bestTime % 60).toString().padStart(2, '0');
+      const statsLine = t('ui.menu.stats_short', {
+        bestTime: `${bestMins}:${bestSecs}`,
+        bestKills: gameplay.bestKills,
+        bestCombo: gameplay.bestCombo,
+        totalRuns: gameplay.totalRuns,
+        victories: gameplay.victories,
+        gold: gameplay.gold,
+      });
+      const statsText = this.add
+        .text(width / 2, height - 44, statsLine, {
+          fontFamily: 'monospace',
+          fontSize: '10px',
+          color: '#4a5670',
+          align: 'center',
+          wordWrap: { width: width - 40 },
+        })
+        .setOrigin(0.5, 1);
+      statsText.setScale(uiScale);
+    }
+
     // === Bottom credit strip ===
-    // Replaces the lone `v2.1` label MenuScene had. Two lines: a warm motto
-    // ("built on the moor") and the version string, both dim to avoid
-    // competing with the buttons.
     this.add
       .text(width - 14, height - 26, t('ui.menu.built_on_moor'), {
         fontFamily: 'monospace',
