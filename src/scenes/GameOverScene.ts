@@ -529,7 +529,7 @@ export class GameOverScene extends Phaser.Scene {
     }
     const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
     for (const e of entries.slice(0, maxRows)) {
-      const def = WEAPON_DEFS[e.key];
+      const def = WEAPON_DEFS[e.key as import('../data/weapons').WeaponKey];
       const label = (def?.name ?? evoDisplay.get(e.key) ?? e.key).slice(0, 18);
       const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
       lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);

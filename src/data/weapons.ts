@@ -20,8 +20,19 @@ export type WeaponBehavior =
   | 'arc_sweep'
   | 'aura_pulse';
 
+/** All valid weapon keys — single source of truth. */
+export type WeaponKey =
+  | 'thistle_shot'
+  | 'bagpipe_blast'
+  | 'caber_toss'
+  | 'scotch_mist'
+  | 'haggis_hurler'
+  | 'nessie_tentacle'
+  | 'claymore'
+  | 'bagpipes';
+
 export interface WeaponDef {
-  key: string;
+  key: WeaponKey;
   /** i18n dot-path — resolved with `t(nameKey)` at render time. */
   nameKey: string;
   /** i18n dot-path — resolved with `t(descriptionKey)` at render time. */
@@ -59,7 +70,7 @@ export interface WeaponDef {
   };
 }
 
-export const WEAPON_DEFS: Record<string, WeaponDef> = {
+export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
   thistle_shot: {
     key: 'thistle_shot',
     nameKey: 'weapon.thistle_shot.name',

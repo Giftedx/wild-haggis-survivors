@@ -11,6 +11,18 @@ import { t } from '../core/i18n';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 
+/** All valid passive item keys — single source of truth. */
+export type PassiveKey =
+  | 'sporran'
+  | 'whisky_flask'
+  | 'kilt'
+  | 'tam_o_shanter'
+  | 'irn_bru'
+  | 'loch_water'
+  | 'thistle_crown'
+  | 'highland_shield'
+  | 'tartan_sash';
+
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
   | { type: 'level_weapon'; weaponKey: string }
@@ -395,7 +407,7 @@ export function buildCardPool(
 }
 
 function formatWeaponName(key: string): string {
-  const def = WEAPON_DEFS[key];
+  const def = WEAPON_DEFS[key as import('./weapons').WeaponKey];
   if (def) return t(def.nameKey);
   return key.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
