@@ -1119,6 +1119,16 @@ private createDeepFryer(): void {
     g.fillCircle(cx - 3, cy + 3, 0.8);
     g.fillCircle(cx + 2, cy + 4, 0.8);
 
+    // === Pizza crunch lurking in the oil (battered pizza slice — peak Glasgow) ===
+    // Triangular slice, fully battered golden
+    g.fillStyle(0xaa7711, 1);
+    g.fillTriangle(cx + 8, cy + 3, cx + 14, cy + 8, cx + 4, cy + 8);
+    g.fillStyle(0xcc9922, 1);
+    g.fillTriangle(cx + 8, cy + 4, cx + 13, cy + 7, cx + 5, cy + 7);
+    // Peek of tomato red through a crack in the batter
+    g.fillStyle(0xcc3322, 0.6);
+    g.fillCircle(cx + 9, cy + 6, 0.8);
+
     // === Salt shaker (left side) ===
     g.fillStyle(0xeeeeee, 1);
     g.fillRect(cx - 22, cy + 2, 4, 8);
@@ -1378,17 +1388,31 @@ private createBossTourBus(): void {
     g.fillCircle(cx + 15, cy - 10, 1.5);
     g.fillCircle(cx + 25, cy - 10, 1.5);
 
-    // === Destination sign ("YOKER" energy — pixel text suggestion) ===
+    // === Destination sign — "YOKER" (Limmy deep cut: the mystical far-away realm) ===
+    // Anyone from Glasgow will clock this immediately. "I've no business in Yoker..."
     g.fillStyle(0x111111, 1);
     g.fillRect(cx - 12, cy - 15, 24, 4);
-    g.fillStyle(0xffdd44, 1);
+    g.fillStyle(0xff8800, 1); // amber LED dot-matrix
     g.fillRect(cx - 10, cy - 14, 20, 2);
-    // Dot matrix text blocks (suggests "CITY TOUR" or similar)
-    g.fillStyle(0xff8800, 1);
-    g.fillRect(cx - 8, cy - 14, 2, 2);
-    g.fillRect(cx - 4, cy - 14, 2, 2);
-    g.fillRect(cx, cy - 14, 2, 2);
-    g.fillRect(cx + 4, cy - 14, 2, 2);
+    // Dot-matrix pixel letters suggesting "YOKER" (Y-O-K-E-R pattern)
+    // Y
+    g.fillStyle(0xffaa00, 1);
+    g.fillRect(cx - 9, cy - 14, 1, 1);
+    g.fillRect(cx - 7, cy - 14, 1, 1);
+    g.fillRect(cx - 8, cy - 13, 1, 1);
+    // O
+    g.fillRect(cx - 5, cy - 14, 2, 1);
+    g.fillRect(cx - 5, cy - 13, 2, 1);
+    // K
+    g.fillRect(cx - 2, cy - 14, 1, 2);
+    g.fillRect(cx - 1, cy - 14, 1, 1);
+    // E
+    g.fillRect(cx + 1, cy - 14, 2, 1);
+    g.fillRect(cx + 1, cy - 13, 1, 1);
+    // R
+    g.fillRect(cx + 4, cy - 14, 2, 1);
+    g.fillRect(cx + 4, cy - 13, 1, 1);
+    g.fillRect(cx + 5, cy - 13, 1, 1);
 
     // === Headlights (angry, bearing down on you) ===
     g.fillStyle(0xffff66, 1);
@@ -2221,16 +2245,195 @@ In `generateAllTextures` (around line 109, after `createHeather()`):
     this.createGlasgowKite();
 ```
 
-- [ ] **Step 4: Wire up Glasgow Kite in terrain decoration spawning**
+- [ ] **Step 4: Create `createStandaloneTrafficCone` method**
 
-Find where terrain decorations are spawned (likely in GameScene) and add `deco_glasgow_kite` to the decoration pool. Search for `deco_heather` or `deco_rock` references to find the spawn logic.
+The most photographed object in Glasgow deserves its own terrain decoration — not just hidden on a rock.
 
-- [ ] **Step 5: Visual verify**
-- [ ] **Step 6: Commit**
+```typescript
+  /** Standalone traffic cone — the Duke of Wellington's best accessory.
+   *  Lying on its side as if freshly liberated from a statue. */
+  private createStandaloneTrafficCone(): void {
+    const s = 16;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+
+    // Cone body (lying on its side — post-liberation)
+    // UK cones are taller/slimmer than US ones, bright orange-red
+    g.fillStyle(0xcc4400, 1);
+    g.fillTriangle(cx - 6, cy, cx + 5, cy - 3, cx + 5, cy + 3);
+    g.fillStyle(0xee6611, 1);
+    g.fillTriangle(cx - 5, cy, cx + 4, cy - 2, cx + 4, cy + 2);
+    // White reflective band (single band — standard 750mm UK cone)
+    g.fillStyle(0xffffff, 0.9);
+    g.fillRect(cx, cy - 2, 3, 4);
+    // Square black rubber base (wide, distinctive)
+    g.fillStyle(0x222222, 1);
+    g.fillRect(cx + 4, cy - 4, 3, 8);
+
+    g.generateTexture('deco_cone', s, s);
+    g.destroy();
+  }
+```
+
+- [ ] **Step 5: Create `createTunnockWrapper` method**
+
+```typescript
+  /** Tunnock's Teacake wrapper — red and silver foil dome discarded on the ground.
+   *  Scotland's most iconic confectionery, littered across the Highlands. */
+  private createTunnockWrapper(): void {
+    const s = 12;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 1;
+
+    // Crumpled dome shape (partially squashed foil)
+    g.fillStyle(0xcc1122, 1); // red band
+    g.fillEllipse(cx, cy, 8, 5);
+    g.fillStyle(0xaaaaaa, 1); // silver band
+    g.fillEllipse(cx, cy - 1, 8, 3);
+    g.fillStyle(0xcc1122, 1); // red stripe
+    g.fillRect(cx - 3, cy - 1, 6, 1);
+    // Foil crinkle highlights
+    g.fillStyle(0xdddddd, 0.6);
+    g.fillCircle(cx - 1, cy - 2, 0.7);
+    g.fillCircle(cx + 2, cy - 1, 0.5);
+
+    g.generateTexture('deco_tunnock', s, s);
+    g.destroy();
+  }
+```
+
+- [ ] **Step 6: Create `createAbandonedPint` method**
+
+```typescript
+  /** Abandoned pint of Tennent's — half-empty, the big red T still visible.
+   *  Found on every wall, windowsill, and bus stop in Glasgow. */
+  private createAbandonedPint(): void {
+    const s = 14;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+
+    // Glass outline (straight-sided sleeve, slight taper)
+    g.fillStyle(0x888888, 0.5);
+    g.fillRect(cx - 3, cy - 5, 6, 10);
+    // Lager (half-full — amber gold)
+    g.fillStyle(0xcc9922, 0.7);
+    g.fillRect(cx - 2, cy, 4, 4);
+    // Foam remnant at top of liquid
+    g.fillStyle(0xeeeeee, 0.6);
+    g.fillRect(cx - 2, cy - 1, 4, 1);
+    // Empty glass above (transparent)
+    g.fillStyle(0xaabbcc, 0.2);
+    g.fillRect(cx - 2, cy - 4, 4, 3);
+    // The big red T (you'd know it anywhere)
+    g.fillStyle(0xcc1111, 0.8);
+    g.fillRect(cx - 1, cy - 3, 2, 1); // T crossbar
+    g.fillRect(cx, cy - 3, 1, 3);     // T stem
+
+    g.generateTexture('deco_tennents', s, s);
+    g.destroy();
+  }
+```
+
+- [ ] **Step 7: Create `createBamSeagull` texture**
+
+Even if not wired as an enemy yet, this texture is too good not to have ready. The bam seagull — Glasgow's apex predator.
+
+```typescript
+  /** Bam Seagull — a massive herring gull with zero fear and a stolen chip.
+   *  Glasgow's true apex predator. Will steal your lunch and make eye contact
+   *  while doing it. Texture ready for future enemy wiring. */
+  private createBamSeagull(): void {
+    const s = 36;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2;
+
+    // Wings (spread, aggressive — this gull means business)
+    // Outer wing (pearl gray)
+    g.fillStyle(0x667788, 1);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy - 8, cx + 2, cy - 6);
+    g.fillTriangle(cx - 2, cy, cx - 14, cy + 8, cx + 2, cy + 6);
+    // Inner wing (lighter gray)
+    g.fillStyle(0x8899aa, 1);
+    g.fillTriangle(cx, cy, cx - 10, cy - 6, cx + 1, cy - 4);
+    g.fillTriangle(cx, cy, cx - 10, cy + 6, cx + 1, cy + 4);
+    // Wing tips (dark gray-black)
+    g.fillStyle(0x334455, 1);
+    g.fillTriangle(cx - 14, cy - 8, cx - 10, cy - 5, cx - 16, cy - 6);
+    g.fillTriangle(cx - 14, cy + 8, cx - 10, cy + 5, cx - 16, cy + 6);
+
+    // Body (chunky white barrel — these gulls are UNITS)
+    g.fillStyle(0xcccccc, 1);
+    g.fillEllipse(cx + 2, cy, 14, 10);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillEllipse(cx + 2, cy, 12, 8);
+    g.fillStyle(0xffffff, 1);
+    g.fillEllipse(cx + 1, cy - 1, 10, 6);
+
+    // Tail (short, white with gray edge)
+    g.fillStyle(0x889999, 1);
+    g.fillTriangle(cx - 5, cy - 2, cx - 5, cy + 2, cx - 10, cy);
+
+    // Head (white, fierce)
+    g.fillStyle(0xdddddd, 1);
+    g.fillCircle(cx + 10, cy, 5);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx + 10, cy, 4);
+
+    // Eye (pale yellow, fixed aggressive stare)
+    g.fillStyle(0xeedd44, 1);
+    g.fillCircle(cx + 11, cy - 1, 1.5);
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx + 11, cy - 1, 0.7);
+
+    // Beak (yellow-orange with red gonys spot — the herring gull signature)
+    g.fillStyle(0xdd9922, 1);
+    g.fillTriangle(cx + 13, cy - 1, cx + 13, cy + 2, cx + 18, cy + 1);
+    g.fillStyle(0xeeaa33, 1);
+    g.fillTriangle(cx + 13, cy, cx + 13, cy + 1, cx + 17, cy + 1);
+    // Red gonys spot on lower mandible
+    g.fillStyle(0xcc2222, 1);
+    g.fillCircle(cx + 15, cy + 1, 0.7);
+
+    // STOLEN CHIP in beak (the reason this gull exists)
+    g.fillStyle(0xddbb44, 1);
+    g.fillRect(cx + 16, cy - 1, 4, 2);
+    g.fillStyle(0xeedd66, 1);
+    g.fillRect(cx + 16, cy - 1, 3, 1);
+
+    // Pink-flesh legs (dangling in flight)
+    g.fillStyle(0xdd9988, 1);
+    g.fillRect(cx, cy + 4, 1, 4);
+    g.fillRect(cx + 3, cy + 4, 1, 4);
+    // Webbed feet
+    g.fillStyle(0xcc8877, 1);
+    g.fillRect(cx - 1, cy + 7, 3, 1);
+    g.fillRect(cx + 2, cy + 7, 3, 1);
+
+    g.generateTexture('bam_seagull', s, s);
+    g.destroy();
+  }
+```
+
+- [ ] **Step 8: Add all new decorations to `generateAllTextures`**
+
+```typescript
+    this.createGlasgowKite();
+    this.createStandaloneTrafficCone();
+    this.createTunnockWrapper();
+    this.createAbandonedPint();
+    this.createBamSeagull();
+```
+
+- [ ] **Step 9: Wire up new decorations in terrain spawning**
+
+Find where terrain decorations are spawned (likely in GameScene) and add `deco_cone`, `deco_tunnock`, `deco_tennents`, and `deco_glasgow_kite` to the decoration pool. Search for `deco_heather` or `deco_rock` references to find the spawn logic. The `bam_seagull` texture is created but NOT wired as an enemy — it's ready for a future enemy type.
+
+- [ ] **Step 10: Visual verify**
+- [ ] **Step 11: Commit**
 
 ```bash
 git add src/scenes/BootScene.ts src/scenes/GameScene.ts
-git commit -m "art: terrain — traffic cone on rocks, Glasgow Kite floating bag decoration"
+git commit -m "art: terrain — Glasgow Kite, standalone cone, Tunnock's wrapper, abandoned Tennent's, bam seagull texture, pizza crunch in fryer"
 ```
 
 ---
@@ -2418,7 +2621,13 @@ Play through a full game run checking:
 - Health orb (now Irn-Bru orange) is visible and readable
 - Chest sprite renders with tartan trim
 - Terrain decorations include traffic cone on rocks
-- Glasgow Kite decoration spawns (if wired up)
+- Glasgow Kite decoration spawns
+- Standalone traffic cones appear as decorations
+- Tunnock's Teacake wrappers litter the ground
+- Abandoned Tennent's pint glasses visible
+- Pizza crunch visible in fryer alongside mars bar
+- Tour bus destination sign suggests "YOKER"
+- Bam seagull texture exists (not wired as enemy — future use)
 - Shadows have subtle green tint on grass
 
 - [ ] **Step 4: Final commit if any fixes needed**
