@@ -72,13 +72,14 @@ export class Minimap {
     const scaleX = this.SIZE / GAME.WORLD_WIDTH;
     const scaleY = this.SIZE / GAME.WORLD_HEIGHT;
 
-    // Enemy dots (sample every 4th for performance) — sized up from the
-    // previous 1-1.5px to keep elite and boss markers readable at the
-    // larger minimap size.
+    // Enemy dots — render every 4th ACTIVE enemy so we don't waste
+    // iterations on inactive pool entries and get spatially unbiased sampling.
     const enemies = enemyGroup.children.entries as Enemy[];
-    for (let i = 0; i < enemies.length; i += 4) {
+    let activeIdx = 0;
+    for (let i = 0, len = enemies.length; i < len; i++) {
       const e = enemies[i];
       if (!e.active) continue;
+      if ((activeIdx++ & 3) !== 0) continue; // every 4th active enemy
       // Clamp to minimap bounds so dots don't bleed outside the background rect
       const dx = Phaser.Math.Clamp(mapX + e.x * scaleX, mapX, mapX + this.SIZE);
       const dy = Phaser.Math.Clamp(mapY + e.y * scaleY, mapY, mapY + this.SIZE);

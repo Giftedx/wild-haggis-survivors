@@ -5,7 +5,6 @@ import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import { XPSystem } from '../systems/XPSystem';
-import { GrowthSystem } from '../systems/GrowthSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
@@ -59,7 +58,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private weaponSystem!: WeaponSystem;
   private xpSystem!: XPSystem;
   private tutorialSystem!: TutorialSystem;
-  private growthSystem!: GrowthSystem;
   private upgradeUI!: UpgradeCardsUI;
   private hud!: HUD;
   private juice!: JuiceSystem;
@@ -77,9 +75,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossGoldEarned: number = 0;
   private coinGoldEarned: number = 0;
   private pauseElements: Phaser.GameObjects.GameObject[] = [];
-  private pendingChest: boolean = false;
-  /** When a chest was deferred during pause, remember whether it should spawn golden. */
-  private pendingChestIsGolden: boolean = false;
+  /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
+  private pendingChests: Array<{ golden: boolean }> = [];
   private victoryPending: boolean = false;
   private dashIndicator: Phaser.GameObjects.Graphics | null = null;
   private boundaryWarning: Phaser.GameObjects.Rectangle | null = null;
@@ -160,8 +157,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runId = {};
     this.iFrameGeneration = 0;
     this.chestDurationBonusMs = 0;
-    this.pendingChest = false;
-    this.pendingChestIsGolden = false;
+    this.pendingChests = [];
     this.pickupDespawnHandles = [];
     this.updateTickers.clear();
     this.iFrameRemainingMs = 0;
@@ -236,7 +232,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem = new SpawnSystem(this);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.xpSystem = new XPSystem(this);
-    this.growthSystem = new GrowthSystem(this, this.player);
     this.ownedPassives = [];
     this.evolvedWeapons = [];
     this.killCount = 0;
@@ -417,14 +412,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     // Treasure chest timer — spawns every 45 seconds (scaled; freezes on pause)
-    this.pendingChest = false;
-    this.pendingChestIsGolden = false;
+    this.pendingChests = [];
     this.updateTickers.addInterval('scaled', 45000, () => {
       // 20% chance of golden chest (gold reward instead of heal)
       const golden = Math.random() < 0.2;
       if (this.timeManager.isGameplayPaused()) {
-        this.pendingChest = true;
-        this.pendingChestIsGolden = golden;
+        this.pendingChests.push({ golden });
       } else if (golden) {
         this.spawnGoldenChest();
       } else {
@@ -611,11 +604,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     }
 
-    // Pass player facing and upgrade multipliers to weapon system
-    const body = this.player.body as Phaser.Physics.Arcade.Body;
-    if (body.velocity.x !== 0 || body.velocity.y !== 0) {
-      this.weaponSystem.setPlayerFacing(Math.atan2(body.velocity.y, body.velocity.x));
-    }
+    // Pass player facing and upgrade multipliers to weapon system.
+    // Always update from player.rotation (persists when stationary) so
+    // directional weapons like arc_sweep don't use a stale angle.
+    this.weaponSystem.setPlayerFacing(this.player.rotation - Math.PI / 2);
     this.weaponSystem.setMultipliers(
       this.player.getDamageMultiplier() * this.juice.getComboDamageMultiplier(),
       this.player.getAoeMultiplier(),
@@ -626,7 +618,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
     this.weaponSystem.update(delta, this.player.x, this.player.y);
     this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHp() / this.player.getMaxHp());
-    this.growthSystem.update();
     this.juice.update(delta, this.player.getHp() / this.player.getMaxHp());
 
     // Boss HP bar + edge indicators
@@ -666,7 +657,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       row.level = w.level;
       row.evolved = w.evolved;
       row.evolutionKey = w.evolutionKey;
-      row.cooldownFrac = Math.max(0, 1 - (w.cooldownRemaining / w.cooldownMs));
+      row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / w.cooldownMs), 0, 1);
     }
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
@@ -707,7 +698,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
     this.player.onLevelUp(newLevel);
-    this.growthSystem.onLevelUp(newLevel);
 
     // Leveling up heals 10% max HP — a small reward that helps sustain longer runs
     this.player.heal(Math.ceil(this.player.getMaxHp() * 0.10));
@@ -865,12 +855,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.juice.showToast(t('ui.game.max_level_toast'), '#ffdd00');
       }
 
-      // Spawn deferred treasure chest if one was due during pause
-      if (this.pendingChest) {
-        this.pendingChest = false;
-        if (this.pendingChestIsGolden) this.spawnGoldenChest();
-        else this.spawnTreasure();
-      }
+      // Spawn deferred treasure chests queued during pause
+      this.drainPendingChests();
     }
   }
 
@@ -1128,12 +1114,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.timeManager.release('UI_PAUSE');
       for (const el of this.pauseElements) el.destroy();
       this.pauseElements = [];
-      // Spawn deferred treasure chest if one was due during pause
-      if (this.pendingChest) {
-        this.pendingChest = false;
-        if (this.pendingChestIsGolden) this.spawnGoldenChest();
-        else this.spawnTreasure();
-      }
+      // Spawn deferred treasure chests queued during pause
+      this.drainPendingChests();
     } else {
       // Pause
       this.timeManager.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
@@ -1501,7 +1483,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.xpSystem.hydrateRunState(run.currentLevel, run.currentXp);
     for (let lv = 2; lv <= run.currentLevel; lv++) {
       this.player.onLevelUp(lv);
-      this.growthSystem.onLevelUp(lv);
     }
     this.ownedPassives = [...run.ownedPassives];
     this.evolvedWeapons = [...run.evolvedWeaponKeys];
@@ -1681,6 +1662,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       bannerSubtitle: t('ui.upgradeCards.chest_evolution_sub'),
       hideReroll: true,
     });
+  }
+
+  /** Drain all chests queued while the game was paused. */
+  private drainPendingChests(): void {
+    while (this.pendingChests.length > 0) {
+      const chest = this.pendingChests.shift()!;
+      if (chest.golden) this.spawnGoldenChest();
+      else this.spawnTreasure();
+    }
   }
 
   private spawnTreasure(): void {
