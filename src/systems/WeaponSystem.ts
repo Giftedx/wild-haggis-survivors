@@ -111,6 +111,8 @@ export class WeaponSystem {
     for (let i = 0; i < BALANCE.weapons.projectilePrewarm; i++) {
       this.projectilePool.add(new Projectile(scene));
     }
+    // Wire shared FX pool for projectile pop effects
+    Projectile.fxPool = scene.getStatusFxPool();
 
     // Pre-allocate VFX circle pool — 30 covers all weapon visual effects
     // (pulse rings, zones, blasts) with headroom above ~13 max simultaneous.

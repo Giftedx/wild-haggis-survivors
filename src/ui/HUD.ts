@@ -84,6 +84,12 @@ export class HUD {
   // pips when a charge is available, so the player can glance at the HUD
   // under combat pressure and see "yes, dash is ready" at a single tick.
   private dashReadyPulse: number = 0;
+  // Per-frame setText caching — only call setText when value changes
+  private prevMins = -1;
+  private prevSecs = -1;
+  private prevKills = -1;
+  private prevEnemyCount = -1;
+  private prevLevel = -1;
   private layoutWidth = 0;
   private layoutHeight = 0;
   private layoutX = 0;
@@ -263,6 +269,12 @@ export class HUD {
 
   private refreshResponsiveLayout(): void {
     const { x, y, width, height, zoom } = this.getUiViewport();
+    // Skip full layout recalc when viewport hasn't changed
+    if (x === this.layoutX && y === this.layoutY &&
+        width === this.layoutWidth && height === this.layoutHeight &&
+        zoom === this.layoutZoom) {
+      return;
+    }
     this.layoutX = x;
     this.layoutY = y;
     this.layoutWidth = width;
@@ -354,7 +366,10 @@ export class HUD {
       this.lowHpPulse = 0;
     }
 
-    this.levelText.setText(t('ui.hud.level_fmt', { level }));
+    if (level !== this.prevLevel) {
+      this.prevLevel = level;
+      this.levelText.setText(t('ui.hud.level_fmt', { level }));
+    }
 
     const mins = Math.floor(gameTimeSec / 60);
     const secs = Math.floor(gameTimeSec % 60);
@@ -368,15 +383,20 @@ export class HUD {
         waveColor = mark.color;
       }
     }
-    const remaining = Math.max(0, BALANCE.run.RUN_WIN_TIME_SEC - gameTimeSec);
-    const remMins = Math.floor(remaining / 60);
-    const remSecs = Math.floor(remaining % 60);
-    const goalText =
-      remaining > 0
-        ? t('ui.hud.goal_countdown', { m: remMins, s: remSecs.toString().padStart(2, '0') })
-        : t('ui.hud.goal_finale');
-    this.timerText.setText(`${mins}:${secs.toString().padStart(2, '0')}`);
-    this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
+    // Only update timer + objective text when the displayed second changes
+    if (mins !== this.prevMins || secs !== this.prevSecs) {
+      this.prevMins = mins;
+      this.prevSecs = secs;
+      const remaining = Math.max(0, BALANCE.run.RUN_WIN_TIME_SEC - gameTimeSec);
+      const remMins = Math.floor(remaining / 60);
+      const remSecs = Math.floor(remaining % 60);
+      const goalText =
+        remaining > 0
+          ? t('ui.hud.goal_countdown', { m: remMins, s: remSecs.toString().padStart(2, '0') })
+          : t('ui.hud.goal_finale');
+      this.timerText.setText(`${mins}:${secs.toString().padStart(2, '0')}`);
+      this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
+    }
     // In high-contrast mode the timer keeps its warm palette color so the
     // HUD stays readable; the wave difficulty is still conveyed through the
     // objective-line text (e.g. "Wave III — Goal 2:15"). Otherwise tint the
@@ -385,14 +405,19 @@ export class HUD {
     this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
 
     const overCap = enemyCount >= BALANCE.hud.ENEMY_WARN_THRESHOLD;
-    const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
-    const enemyColor = overCap
-      ? (this.hcPalette?.killWarn ?? '#ff4444')
-      : (this.hcPalette?.kill ?? '#ffffff');
-    this.killText.setText(
-      t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
-    );
-    this.killText.setColor(enemyColor);
+    // Only update kill/enemy text when values change
+    if (killCount !== this.prevKills || enemyCount !== this.prevEnemyCount) {
+      this.prevKills = killCount;
+      this.prevEnemyCount = enemyCount;
+      const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
+      const enemyColor = overCap
+        ? (this.hcPalette?.killWarn ?? '#ff4444')
+        : (this.hcPalette?.kill ?? '#ffffff');
+      this.killText.setText(
+        t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
+      );
+      this.killText.setColor(enemyColor);
+    }
 
     // Pulse on cap transition — draws attention once, not every frame
     if (overCap && !this.wasOverCap) {

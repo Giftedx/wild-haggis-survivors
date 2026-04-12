@@ -40,6 +40,7 @@ import {
 } from '../core/GameSessionLifecycle';
 import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
+import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import {
   computeAutoBattleSteering,
@@ -124,6 +125,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private readonly metaSaveManager = new SaveManager();
   private readonly settingsManager = getSettingsManager();
+  private statusFxPool!: StatusFxPool;
+  /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
+  private floatTextPool: Phaser.GameObjects.Text[] = [];
   private readonly runStatsTracker = new RunStatsTracker();
   private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
@@ -141,6 +145,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this);
     return { x, y, width, height, zoom };
+  }
+
+  /** Acquire a pooled floating text, or return null if pool is exhausted. */
+  private acquireFloatText(
+    x: number, y: number, str: string,
+    color: string, fontSize: string = '16px', depth: number = 85
+  ): Phaser.GameObjects.Text | null {
+    const txt = this.floatTextPool.find(t => !t.visible);
+    if (!txt) return null;
+    txt.setText(str);
+    txt.setPosition(x, y);
+    txt.setVisible(true).setAlpha(1).setScale(1);
+    txt.setColor(color);
+    txt.setFontSize(fontSize);
+    txt.setDepth(depth);
+    return txt;
   }
 
   create(): void {
@@ -229,6 +249,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnMapZones();
 
     // Systems
+    this.statusFxPool = new StatusFxPool(this);
     this.spawnSystem = new SpawnSystem(this);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.xpSystem = new XPSystem(this);
@@ -239,6 +260,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bossGoldEarned = 0;
     this.coinGoldEarned = 0;
     this.revivalAvailable = false;
+
+    // Pre-allocate floating text pool for armor/gold feedback
+    for (const t of this.floatTextPool) t.destroy();
+    this.floatTextPool = [];
+    for (let i = 0; i < 12; i++) {
+      const ft = this.add.text(0, 0, '', {
+        fontFamily: 'monospace', fontSize: '16px', color: '#ffffff',
+        fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
+      }).setDepth(85).setVisible(false);
+      this.floatTextPool.push(ft);
+    }
 
     // Variant modifiers establish the run archetype before permanent upgrades stack on top.
     this.applyVariantModifiers(selectedVariant);
@@ -541,6 +573,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.spawnSystem?.destroy(); } catch { /* ignore */ }
       try { this.tutorialSystem?.dispose(); } catch { /* ignore */ }
       try { this.xpSystem?.destroy(); } catch { /* ignore */ }
+      try { this.statusFxPool?.destroy(); } catch { /* ignore */ }
+      for (const ft of this.floatTextPool) { try { ft.destroy(); } catch { /* ignore */ } }
+      this.floatTextPool = [];
       // Close lifecycle gaps — these systems were silently orphaned before
       try { this.juice?.destroy(); } catch { /* ignore */ }
       try { this.hud?.destroy(); } catch { /* ignore */ }
@@ -714,8 +749,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }
       this.juice.flashWhite(400);
       this.juice.showToast(t('ui.game.level_power_surge', { level: newLevel }), '#ff8800');
-      const ring = this.add.circle(this.player.x, this.player.y, 20, 0xffaa44, 0.5);
-      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 600, onComplete: () => ring.destroy() });
+      const ring = this.statusFxPool.acquireArc(this.player.x, this.player.y, 20, 0xffaa44, 0.5);
+      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 600, onComplete: () => { ring.setVisible(false); } });
     }
 
     // Build the card pool based on current state
@@ -806,8 +841,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.juice.flashWhite(200);
         // Celebration ring
         {
-          const ring = this.add.circle(this.player.x, this.player.y, 10, 0x44dd44, 0.5);
-          this.tweens.add({ targets: ring, radius: 80, alpha: 0, duration: 400, onComplete: () => ring.destroy() });
+          const ring = this.statusFxPool.acquireArc(this.player.x, this.player.y, 10, 0x44dd44, 0.5);
+          this.tweens.add({ targets: ring, radius: 80, alpha: 0, duration: 400, onComplete: () => { ring.setVisible(false); } });
         }
         break;
 
@@ -1112,7 +1147,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (this.timeManager.has('UI_PAUSE')) {
       // Resume
       this.timeManager.release('UI_PAUSE');
-      for (const el of this.pauseElements) el.destroy();
+      for (const el of this.pauseElements) {
+        if ('removeAllListeners' in el) {
+          (el as Phaser.GameObjects.GameObject).removeAllListeners();
+        }
+        el.destroy();
+      }
       this.pauseElements = [];
       // Spawn deferred treasure chests queued during pause
       this.drainPendingChests();
@@ -1263,11 +1303,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Show armor absorption text if armor reduced damage
     if (armor > 0 && incomingDmg > 1) {
       const absorbed = Math.min(armor, incomingDmg - 1);
-      const shieldText = this.add.text(this.player.x, this.player.y - 30, t('ui.game.armor_blocked', { amount: absorbed }), {
-        fontFamily: 'monospace', fontSize: '14px', color: '#88aaff', fontStyle: 'bold',
-        stroke: '#000', strokeThickness: 3,
-      }).setDepth(85);
-      this.tweens.add({ targets: shieldText, y: shieldText.y - 15, alpha: 0, duration: 500, onComplete: () => shieldText.destroy() });
+      const shieldText = this.acquireFloatText(
+        this.player.x, this.player.y - 30,
+        t('ui.game.armor_blocked', { amount: absorbed }),
+        '#88aaff', '14px', 85,
+      );
+      if (shieldText) {
+        this.tweens.add({ targets: shieldText, y: shieldText.y - 15, alpha: 0, duration: 500, onComplete: () => { shieldText.setVisible(false); } });
+      }
     }
 
     // Thorns damage: hurt the enemy that touched us
@@ -1884,11 +1927,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.coinGoldEarned += goldAmount;
 
       // Show gold pickup text
-      const txt = this.add.text(coin.x, coin.y - 12, t('ui.game.gold_pickup_float', { gold: goldAmount }), {
-        fontFamily: 'monospace', fontSize: '16px', color: '#d4a017', fontStyle: 'bold',
-        stroke: '#000', strokeThickness: 3,
-      }).setDepth(80);
-      this.tweens.add({ targets: txt, y: txt.y - 20, alpha: 0, duration: 600, onComplete: () => txt.destroy() });
+      const txt = this.acquireFloatText(
+        coin.x, coin.y - 12,
+        t('ui.game.gold_pickup_float', { gold: goldAmount }),
+        '#d4a017', '16px', 80,
+      );
+      if (txt) {
+        this.tweens.add({ targets: txt, y: txt.y - 20, alpha: 0, duration: 600, onComplete: () => { txt.setVisible(false); } });
+      }
 
       this.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
       coin.destroy();
@@ -2235,6 +2281,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
   getSFXManager(): SFXManager {
     return sfxManager;
+  }
+  getStatusFxPool(): StatusFxPool {
+    return this.statusFxPool;
   }
 
   private trackChestSprite(sprite: Phaser.GameObjects.Sprite, golden: boolean): void {

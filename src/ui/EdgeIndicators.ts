@@ -1,6 +1,15 @@
 import Phaser from 'phaser';
 import { Enemy } from '../entities/Enemy';
 
+/** Scratch entry for off-screen enemy tracking (pre-allocated). */
+interface OffScreenEntry {
+  x: number;
+  y: number;
+  dist: number;
+  boss: boolean;
+  elite: boolean;
+}
+
 /**
  * EdgeIndicators — small arrows at screen edges showing direction
  * of off-screen enemies. Only shows indicators for enemies within
@@ -14,6 +23,10 @@ export class EdgeIndicators {
   private readonly INDICATOR_SIZE = 8;
   private readonly DETECT_RANGE = 500; // Only show indicators for enemies this close
 
+  /** Pre-allocated scratch buffer — avoids per-frame array allocation. */
+  private offScreenBuf: OffScreenEntry[];
+  private offScreenCount = 0;
+
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
 
@@ -26,6 +39,11 @@ export class EdgeIndicators {
       ).setScrollFactor(0).setDepth(40).setVisible(false);
       this.indicators.push(tri);
     }
+
+    // Pre-allocate scratch buffer
+    this.offScreenBuf = Array.from({ length: 50 }, () => ({
+      x: 0, y: 0, dist: 0, boss: false, elite: false,
+    }));
   }
 
   update(
@@ -38,9 +56,10 @@ export class EdgeIndicators {
     const screenW = cam.width;
     const screenH = cam.height;
 
-    // Find off-screen enemies sorted by distance
-    const offScreen: { x: number; y: number; dist: number; boss: boolean; elite: boolean }[] = [];
+    // Find off-screen enemies — write into pre-allocated buffer
+    this.offScreenCount = 0;
     const enemies = enemyGroup.children.entries as Enemy[];
+    const detectRangeSq = this.DETECT_RANGE * this.DETECT_RANGE;
 
     // Use actual camera viewport for off-screen check (handles camera clamping at world edges)
     const camLeft = cam.scrollX;
@@ -48,7 +67,8 @@ export class EdgeIndicators {
     const camTop = cam.scrollY;
     const camBottom = cam.scrollY + viewH;
 
-    for (const enemy of enemies) {
+    for (let ei = 0; ei < enemies.length; ei++) {
+      const enemy = enemies[ei];
       if (!enemy.active) continue;
 
       // Is it on-screen? Use camera viewport, not player-relative position
@@ -57,26 +77,48 @@ export class EdgeIndicators {
 
       const dx = enemy.x - playerX;
       const dy = enemy.y - playerY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist <= this.DETECT_RANGE) {
-        offScreen.push({ x: dx, y: dy, dist, boss: enemy.isBoss(), elite: enemy.isElite() });
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= detectRangeSq) {
+        // Grow buffer if needed (rare — only if >50 off-screen enemies in range)
+        if (this.offScreenCount >= this.offScreenBuf.length) {
+          this.offScreenBuf.push({ x: 0, y: 0, dist: 0, boss: false, elite: false });
+        }
+        const entry = this.offScreenBuf[this.offScreenCount++];
+        entry.x = dx;
+        entry.y = dy;
+        entry.dist = Math.sqrt(distSq);
+        entry.boss = enemy.isBoss();
+        entry.elite = enemy.isElite();
       }
     }
 
-    // Sort by distance and take closest
-    offScreen.sort((a, b) => a.dist - b.dist);
-    const toShow = offScreen.slice(0, this.MAX_INDICATORS);
+    // Sort only the populated portion by distance
+    const buf = this.offScreenBuf;
+    const count = this.offScreenCount;
+    // Insertion sort — fast for small N (typically < 20 entries)
+    for (let i = 1; i < count; i++) {
+      const key = buf[i];
+      const keyDist = key.dist;
+      let j = i - 1;
+      while (j >= 0 && buf[j].dist > keyDist) {
+        buf[j + 1] = buf[j];
+        j--;
+      }
+      buf[j + 1] = key;
+    }
+
+    const toShowCount = Math.min(count, this.MAX_INDICATORS);
 
     // Update indicator positions
     for (let i = 0; i < this.MAX_INDICATORS; i++) {
       const indicator = this.indicators[i];
 
-      if (i >= toShow.length) {
+      if (i >= toShowCount) {
         indicator.setVisible(false);
         continue;
       }
 
-      const e = toShow[i];
+      const e = buf[i];
       const angle = Math.atan2(e.y, e.x);
 
       // Project onto screen edge
