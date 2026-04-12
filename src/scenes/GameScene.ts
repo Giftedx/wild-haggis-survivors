@@ -354,6 +354,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
       if (wasBoss) {
         this.bossKillCount++;
+        // Per-boss kill celebration — unique Glesga patter for each boss
+        const bossKillKey = `ui.game.boss_killed_${enemyKey}`;
+        const bossKillText = t(bossKillKey);
+        const bossToast = bossKillText !== bossKillKey ? bossKillText : t('ui.game.boss_killed_generic');
+        this.juice.showToast(bossToast, '#ffdd44');
         // Boss kill heal (Trophy Hunter card)
         if (this.player.getBossHealFrac() > 0) {
           const healAmount = Math.ceil(this.player.getMaxHp() * this.player.getBossHealFrac());
@@ -1191,13 +1196,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const d = 250;
 
       this.pauseElements.push(
-        this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x000000, 0.8)
+        this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, 0.85)
           .setScrollFactor(0).setDepth(d).setInteractive()
       );
       this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.22, t('ui.pause.title'), {
-          fontFamily: 'monospace', fontSize: '46px', color: '#ffffff',
-          fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
+        this.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
+          fontFamily: 'monospace', fontSize: '46px', color: '#d4a017',
+          fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 5,
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      );
+      // Random Glesga quip — a wee breather moment
+      const quipIndex = Phaser.Math.Between(1, 6);
+      const quip = t(`ui.pause.quip_${quipIndex}`);
+      this.pauseElements.push(
+        this.add.text(x + width / 2, y + height * 0.26, quip, {
+          fontFamily: 'monospace', fontSize: '14px', color: '#8a7a6a',
+          fontStyle: 'italic',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
 
