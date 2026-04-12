@@ -114,7 +114,7 @@ export const EN_STRINGS: LocaleTree = {
     settings: {
       title: 'OPTIONS',
       subtitle: 'Comfort and sound — kept apart from yir meta save, so experiments stay safe.',
-      comfort_hint: 'If text feels wee or the moor washes things out, nudge UI scale or high-contrast mode here.',
+      comfort_hint: 'If text feels wee or the moor washes things oot, nudge UI scale or high-contrast mode here.',
       // Section headings group the 8 rows into three tidy bands so players can
       // scan straight to the setting they want instead of reading the whole list.
       section_sound: 'Hearth sound',
@@ -284,7 +284,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     xp_tier_1: {
       name: 'Quick Study',
-      description: 'Learn faster out on the moor (+5% XP gain).',
+      description: 'Learn faster oot on the moor (+5% XP gain).',
     },
     armor_tier_1: {
       name: 'Stone Skin',
