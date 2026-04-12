@@ -167,7 +167,7 @@ export class WeaponSystem {
 
   addWeapon(key: string): boolean {
     if (this.hasWeapon(key)) return false;
-    const def = WEAPON_DEFS[key];
+    const def = WEAPON_DEFS[key as import('../data/weapons').WeaponKey];
     if (!def) return false;
 
     this.weapons.push({
@@ -910,7 +910,7 @@ export class WeaponSystem {
   ): void {
     this.weapons = [];
     for (const s of slots) {
-      if (!WEAPON_DEFS[s.key]) continue;
+      if (!WEAPON_DEFS[s.key as import('../data/weapons').WeaponKey]) continue;
       if (!this.addWeapon(s.key)) continue;
       for (let lv = 2; lv <= Math.max(1, s.level); lv++) {
         this.levelUpWeapon(s.key);
