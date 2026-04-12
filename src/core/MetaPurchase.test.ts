@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SaveManager, type ISaveData } from './SaveManager';
 import { tryPurchaseMetaUpgrade } from './MetaPurchase';
-import { StatComposer } from './StatComposer';
 
 const baseSave = (): ISaveData => ({
   saveVersion: 5,
@@ -11,12 +10,13 @@ const baseSave = (): ISaveData => ({
   activeRun: null,
   unlockedAchievements: [],
   hasCompletedTutorial: true,
+  hasSeenDriftTutorial: false,
 });
 
 describe('tryPurchaseMetaUpgrade', () => {
   it('rejects purchase when funds are insufficient', () => {
     const save: ISaveData = { ...baseSave(), totalKills: 10 };
-    const r = tryPurchaseMetaUpgrade(save, StatComposer.UPGRADE_SPEED_TIER_1);
+    const r = tryPurchaseMetaUpgrade(save, 'speed_tier_1');
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('INSUFFICIENT_FUNDS');
     expect(save.totalKills).toBe(10);
@@ -34,14 +34,14 @@ describe('tryPurchaseMetaUpgrade', () => {
     mgr.save(baseSave());
 
     const cur = mgr.load();
-    const r = tryPurchaseMetaUpgrade(cur, StatComposer.UPGRADE_SPEED_TIER_1);
+    const r = tryPurchaseMetaUpgrade(cur, 'speed_tier_1');
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     mgr.save(r.next);
 
     const loaded = mgr.load();
     expect(loaded.totalKills).toBe(50);
-    expect(loaded.unlockedUpgrades).toEqual([StatComposer.UPGRADE_SPEED_TIER_1]);
+    expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
   });
 
   it('rejects unknown upgrade keys', () => {
@@ -53,9 +53,9 @@ describe('tryPurchaseMetaUpgrade', () => {
   it('rejects duplicate unlock', () => {
     const save: ISaveData = {
       ...baseSave(),
-      unlockedUpgrades: [StatComposer.UPGRADE_HEALTH_TIER_1],
+      unlockedUpgrades: ['health_tier_1'],
     };
-    const r = tryPurchaseMetaUpgrade(save, StatComposer.UPGRADE_HEALTH_TIER_1);
+    const r = tryPurchaseMetaUpgrade(save, 'health_tier_1');
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('ALREADY_OWNED');
   });
@@ -63,7 +63,7 @@ describe('tryPurchaseMetaUpgrade', () => {
   it('rejects gated item without achievement', () => {
     const r = tryPurchaseMetaUpgrade(
       { ...baseSave(), totalKills: 200 },
-      StatComposer.UPGRADE_PICKUP_TIER_1
+      'pickup_tier_1'
     );
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toBe('LOCKED_ACHIEVEMENT');
@@ -76,7 +76,29 @@ describe('tryPurchaseMetaUpgrade', () => {
         totalKills: 200,
         unlockedAchievements: ['ach_survive_10m'],
       },
-      StatComposer.UPGRADE_PICKUP_TIER_1
+      'pickup_tier_1'
+    );
+    expect(r.ok).toBe(true);
+  });
+
+  it('rejects tier-2 item without tier-1 purchased', () => {
+    const r = tryPurchaseMetaUpgrade(
+      { ...baseSave(), totalKills: 500, unlockedAchievements: ['ach_survive_10m'] },
+      'speed_tier_2'
+    );
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe('REQUIRES_PREVIOUS');
+  });
+
+  it('allows tier-2 item when tier-1 is owned and achievement met', () => {
+    const r = tryPurchaseMetaUpgrade(
+      {
+        ...baseSave(),
+        totalKills: 500,
+        unlockedUpgrades: ['speed_tier_1'],
+        unlockedAchievements: ['ach_survive_10m'],
+      },
+      'speed_tier_2'
     );
     expect(r.ok).toBe(true);
   });

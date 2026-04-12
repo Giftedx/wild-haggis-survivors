@@ -345,13 +345,6 @@ function createUnlockProgress(
   };
 }
 
-function formatSignedPercent(value: number): string {
-  return `${value > 0 ? '+' : ''}${Math.round(value * 100)}%`;
-}
-
-function formatSignedNumber(value: number): string {
-  return `${value > 0 ? '+' : ''}${value}`;
-}
 
 function formatTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));

@@ -12,6 +12,7 @@ const pristine: ISaveData = {
   activeRun: null,
   unlockedAchievements: [],
   hasCompletedTutorial: false,
+  hasSeenDriftTutorial: false,
 };
 
 describe('StatComposer', () => {
@@ -29,7 +30,7 @@ describe('StatComposer', () => {
   it('applies speed_tier_1 and health_tier_1 multipliers', () => {
     const s = StatComposer.getPlayerStats({
       ...pristine,
-      unlockedUpgrades: [StatComposer.UPGRADE_SPEED_TIER_1, StatComposer.UPGRADE_HEALTH_TIER_1],
+      unlockedUpgrades: ['speed_tier_1', 'health_tier_1'],
     });
     expect(s.speed).toBeCloseTo(PLAYER.SPEED * 1.1, 5);
     expect(s.maxHp).toBeCloseTo(PLAYER.MAX_HP * 1.1, 5);
@@ -38,9 +39,31 @@ describe('StatComposer', () => {
   it('applies pickup_tier_1 and damage_tier_1', () => {
     const s = StatComposer.getPlayerStats({
       ...pristine,
-      unlockedUpgrades: [StatComposer.UPGRADE_PICKUP_TIER_1, StatComposer.UPGRADE_DAMAGE_TIER_1],
+      unlockedUpgrades: ['pickup_tier_1', 'damage_tier_1'],
     });
     expect(s.pickupRadius).toBe(PLAYER.PICKUP_RADIUS + 22);
     expect(s.damagePctBonus).toBe(0.05);
+  });
+
+  it('stacks tier-2 upgrades on top of tier-1', () => {
+    const s = StatComposer.getPlayerStats({
+      ...pristine,
+      unlockedUpgrades: ['speed_tier_1', 'speed_tier_2', 'damage_tier_1', 'damage_tier_2'],
+    });
+    expect(s.speed).toBeCloseTo(PLAYER.SPEED * 1.1 * 1.15, 5);
+    expect(s.damagePctBonus).toBeCloseTo(0.15, 5);
+  });
+
+  it('applies new stat categories (regen, crit, armor, cooldown, xp, dash)', () => {
+    const s = StatComposer.getPlayerStats({
+      ...pristine,
+      unlockedUpgrades: ['regen_tier_1', 'crit_tier_1', 'armor_tier_1', 'cooldown_tier_1', 'xp_tier_1', 'dash_tier_1'],
+    });
+    expect(s.hpRegen).toBeCloseTo(0.2, 5);
+    expect(s.critBonus).toBeCloseTo(0.03, 5);
+    expect(s.armorBonus).toBe(2);
+    expect(s.cooldownReduction).toBeCloseTo(0.08, 5);
+    expect(s.xpGainBonus).toBeCloseTo(0.05, 5);
+    expect(s.dashCooldownReduction).toBeCloseTo(0.10, 5);
   });
 });

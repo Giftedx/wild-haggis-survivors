@@ -100,6 +100,8 @@ export const EN_STRINGS: LocaleTree = {
       /** Shown instead of kill_credits when count === 0. */
       kill_credits_fresh: 'The long road starts here — nae culls banked yet.',
       requires: 'Needs: {title}',
+      requires_achievement: 'Needs: {title} ({hint})',
+      requires_previous: 'Requires: {name} first',
       back: 'BACK',
     },
     settings: {
@@ -237,9 +239,17 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Sprint Boots',
       description: 'Quicker hooves from the first step (+10% base move speed).',
     },
+    speed_tier_2: {
+      name: 'Sprint Boots II',
+      description: 'Fleet as a highland hare (+15% base move speed).',
+    },
     health_tier_1: {
       name: 'Thick Pelt',
       description: 'Room for one more mistake (+10% base max HP).',
+    },
+    health_tier_2: {
+      name: 'Thick Pelt II',
+      description: 'Tough as old leather (+15% base max HP).',
     },
     pickup_tier_1: {
       name: 'Magnetic Whiskers',
@@ -248,6 +258,34 @@ export const EN_STRINGS: LocaleTree = {
     damage_tier_1: {
       name: 'Highland Temper',
       description: 'Hits land heavier (+5% damage).',
+    },
+    damage_tier_2: {
+      name: 'Highland Temper II',
+      description: 'Every wallop counts double (+10% damage).',
+    },
+    regen_tier_1: {
+      name: "Moor's Grace",
+      description: 'The land heals those who belong to it (+0.2 HP/sec).',
+    },
+    crit_tier_1: {
+      name: 'Sharper Eye',
+      description: 'Spot the weak points, strike them true (+3% crit chance).',
+    },
+    cooldown_tier_1: {
+      name: 'Nimble Hooves',
+      description: 'Weapons cycle faster from the start (-8% cooldown).',
+    },
+    xp_tier_1: {
+      name: 'Quick Study',
+      description: 'Learn faster out on the moor (+5% XP gain).',
+    },
+    armor_tier_1: {
+      name: 'Stone Skin',
+      description: 'Thicker hide, lighter bruises (+2 armor).',
+    },
+    dash_tier_1: {
+      name: 'Lighter Step',
+      description: 'Dash recharges sooner (-10% dash cooldown).',
     },
   },
   evolution: {
@@ -285,18 +323,43 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Cull of the Glen',
       description: 'A thousand culls — the moor knows yir name.',
     },
+    ach_kills_5000: {
+      title: 'Seasoned Culler',
+      description: 'Five thousand. The glen will tell stories about ye.',
+    },
+    ach_survive_5m: {
+      title: 'Finding Yir Feet',
+      description: 'Five minutes standing — the hooves hold.',
+    },
     ach_survive_10m: {
       title: 'Heather Marathon',
       description: 'Ten stubborn minutes in one run.',
+    },
+    ach_full_run: {
+      title: 'Endurance of Stone',
+      description: 'Fifteen minutes. The full moor cycle, endured.',
     },
     ach_defeat_taxman: {
       title: 'Tax-Free Zone',
       description: 'The Taxman picked the wrong glen.',
     },
+    ach_first_victory: {
+      title: 'The Moor Is Yours',
+      description: 'First victory — the Highlands breathe easier.',
+    },
+    ach_first_evolution: {
+      title: 'Legend Forged',
+      description: 'Evolved a weapon. The old ways awaken.',
+    },
+    ach_all_bosses: {
+      title: 'Boss Rush',
+      description: 'Every boss felled in a single run.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
     gem: 'Gather gems to level. Max a weapon plus its paired curio, then pop a treasure chest for a legendary glow-up.',
+    drift: 'Your wee haggis drifts clockwise — crooked legs! Lean into it.',
   },
   weapon: {
     thistle_shot: {

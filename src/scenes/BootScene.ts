@@ -2156,8 +2156,8 @@ export class BootScene extends Phaser.Scene {
   private createClaymoreWeaponIcon(): void {
     const s = 22;
     const g = this.add.graphics();
-    const cx = s / 2;
-    const cy = s / 2;
+    const _cx = s / 2;
+    const _cy = s / 2;
     // Broad blade, diagonal (upper-right → lower-left), chunky pixel read
     g.fillStyle(0x5a6a78, 1);
     g.fillTriangle(15, 4, 6, 17, 9, 17);

@@ -23,6 +23,11 @@ export type GlobalRunEndedPayload = {
   enemiesKilled: number;
 };
 
+export type GlobalWeaponEvolvedPayload = {
+  weaponKey: string;
+  evolvedKey: string;
+};
+
 export type TutorialCompletedPayload = Record<string, never>;
 
 export type GlobalEvents = {
@@ -30,6 +35,7 @@ export type GlobalEvents = {
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
   ACHIEVEMENT_UNLOCKED: AchievementUnlockPayload;
   GLOBAL_RUN_ENDED: GlobalRunEndedPayload;
+  GLOBAL_WEAPON_EVOLVED: GlobalWeaponEvolvedPayload;
   TUTORIAL_COMPLETED: TutorialCompletedPayload;
   bossEnraged: string;
 };

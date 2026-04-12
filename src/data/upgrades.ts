@@ -185,6 +185,12 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
   },
 ];
 
+/** Canonical list of passive item keys — derived from PASSIVE_CARDS. Single source of truth. */
+export const PASSIVE_KEYS: string[] = PASSIVE_CARDS
+  .filter((c): c is UpgradeCard & { effect: { type: 'add_passive'; passiveKey: string } } =>
+    c.effect.type === 'add_passive')
+  .map((c) => c.effect.passiveKey);
+
 // ── Stat boost cards (common filler) ──
 
 export const STAT_CARDS: UpgradeCard[] = [

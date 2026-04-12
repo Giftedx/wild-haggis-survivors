@@ -174,7 +174,7 @@ describe('i18n regression fences — no legacy literal access in scenes/UI', () 
       const full = join(dir, entry);
       const s = statSync(full);
       if (s.isDirectory()) walk(full, out);
-      else if (/\.ts$/.test(entry) && !/\.test\.ts$/.test(entry)) out.push(full);
+      else if (entry.endsWith('.ts') && !entry.endsWith('.test.ts')) out.push(full);
     }
     return out;
   }

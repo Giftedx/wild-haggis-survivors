@@ -17,6 +17,9 @@ export class MetaShopScene extends Phaser.Scene {
   private killsText!: Phaser.GameObjects.Text;
   private backButton!: Phaser.GameObjects.Rectangle;
   private gamepadNav: GamepadMenuNav | null = null;
+  private page = 0;
+  private readonly ROWS_PER_PAGE = 5;
+  private pageText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'MetaShop' });
@@ -92,6 +95,16 @@ export class MetaShopScene extends Phaser.Scene {
       this.scene.start('MainMenu');
     });
 
+    // Page indicator
+    this.pageText = this.add
+      .text(width / 2, height - 58, '', {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: '#8a93a8',
+      })
+      .setOrigin(0.5);
+
+    this.page = 0;
     this.renderRows();
 
     this.events.once('shutdown', () => {
@@ -111,18 +124,52 @@ export class MetaShopScene extends Phaser.Scene {
       : t('ui.metaShop.kill_credits_fresh');
     this.killsText.setText(killCreditsCopy);
 
-    const { width } = this.scale;
-    const keys = listMetaShopItemKeys();
+    const { width, height } = this.scale;
+    const allKeys = listMetaShopItemKeys();
+    const totalPages = Math.ceil(allKeys.length / this.ROWS_PER_PAGE);
+    this.page = Math.min(this.page, totalPages - 1);
+    const pageStart = this.page * this.ROWS_PER_PAGE;
+    const pageKeys = allKeys.slice(pageStart, pageStart + this.ROWS_PER_PAGE);
     const entries: GamepadMenuEntry[] = [];
 
-    keys.forEach((key, index) => {
+    // Page navigation (prev / next)
+    if (totalPages > 1) {
+      this.pageText.setText(t('ui.shop.page', { current: this.page + 1, total: totalPages }));
+
+      if (this.page > 0) {
+        const prevBtn = this.add
+          .text(width / 2 - 90, height - 58, t('ui.shop.prev'), {
+            fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
+          })
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+          .on('pointerdown', () => { this.page--; this.renderRows(); });
+        this.rowElements.push(prevBtn);
+      }
+      if (this.page < totalPages - 1) {
+        const nextBtn = this.add
+          .text(width / 2 + 90, height - 58, t('ui.shop.next'), {
+            fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
+          })
+          .setOrigin(0.5)
+          .setInteractive({ useHandCursor: true })
+          .on('pointerdown', () => { this.page++; this.renderRows(); });
+        this.rowElements.push(nextBtn);
+      }
+    } else {
+      this.pageText.setText('');
+    }
+
+    pageKeys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
       const y = 124 + index * 72;
       const owned = save.unlockedUpgrades.includes(key);
       const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
+      const prevReq = 'requiresPrevious' in item ? item.requiresPrevious : undefined;
       const achievementMet = !req || save.unlockedAchievements.includes(req);
-      const locked = !achievementMet && !owned;
-      const canAfford = !owned && achievementMet && save.totalKills >= item.cost;
+      const prevMet = !prevReq || save.unlockedUpgrades.includes(prevReq as string);
+      const locked = (!achievementMet || !prevMet) && !owned;
+      const canAfford = !owned && achievementMet && prevMet && save.totalKills >= item.cost;
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1b2337 : 0x172031, 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
@@ -131,13 +178,25 @@ export class MetaShopScene extends Phaser.Scene {
         color: owned ? '#73c37d' : locked ? '#8a7a98' : '#ffffff',
         fontStyle: 'bold',
       });
-      const descExtra = req && !achievementMet
-        ? `\n${t('ui.metaShop.requires', { title: t(ACHIEVEMENT_DEFS[req]!.titleKey) })}`
-        : '';
+
+      // Build lock description — show what's needed
+      let descExtra = '';
+      if (!owned && req && !achievementMet) {
+        const achDef = ACHIEVEMENT_DEFS[req];
+        descExtra += `\n${t('ui.metaShop.requires_achievement', {
+          title: t(achDef.titleKey),
+          hint: t(achDef.descriptionKey),
+        })}`;
+      }
+      if (!owned && prevReq && !prevMet) {
+        const prevItem = META_SHOP_ITEMS[prevReq as MetaShopItemKey];
+        if (prevItem) descExtra += `\n${t('ui.metaShop.requires_previous', { name: t(prevItem.nameKey) })}`;
+      }
+
       const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra, {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: '#9ea7b9',
+        color: locked ? '#7a7a8a' : '#9ea7b9',
         wordWrap: { width: 420 },
       });
       this.rowElements.push(rowBg, nameText, descText);

@@ -640,8 +640,10 @@ export class HUD {
     this.passiveSlots = [];
     this.lastPassiveCount = passives.length;
 
+    // Bottom-left placement — above DPS line and XP bar, so the top-left
+    // cluster (HP, level, weapons, shield, dash) has room to breathe.
     const startX = this.layoutX + 12;
-    const y = this.layoutY + this.topSafePad + 88;
+    const y = this.layoutY + this.layoutHeight - (54 * this.uiScale) - this.XP_BAR_H;
 
     passives.forEach((key, i) => {
       const x = startX + i * 42;
@@ -651,7 +653,7 @@ export class HUD {
       const abbrevKey = `ui.passive.hud_abbrev.${key}`;
       const resolved = t(abbrevKey);
       const abbrev = resolved === abbrevKey ? key.slice(0, 3).toUpperCase() : resolved;
-      const label = this.addEl(this.scene.add.text(x + 16, y + 10, abbrev, {
+      const label = this.addEl(this.scene.add.text(x + 16, y, abbrev, {
         fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00', fontStyle: 'bold',
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));

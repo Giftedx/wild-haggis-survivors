@@ -17,12 +17,18 @@ export class AchievementManager {
     this.save = saveManager ?? new SaveManager();
   }
 
+  /** Boss keys killed during the current run — reset on run start. */
+  private runBossKills = new Set<string>();
+
   start(): void {
     if (this.started) return;
     this.started = true;
+    this.runBossKills.clear();
     this.unsubs.push(
       globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => this.onEnemyKilled(p)),
-      globalEventBus.on('GLOBAL_RUN_TIME_SEC', (p) => this.onRunTime(p))
+      globalEventBus.on('GLOBAL_RUN_TIME_SEC', (p) => this.onRunTime(p)),
+      globalEventBus.on('GLOBAL_RUN_ENDED', (p) => this.onRunEnded(p)),
+      globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => this.tryUnlock('ach_first_evolution'))
     );
   }
 
@@ -35,18 +41,25 @@ export class AchievementManager {
 
   private onEnemyKilled(p: import('./GlobalEventBus').GlobalEnemyKilledPayload): void {
     const s = this.save.load();
-    if (s.totalKills >= 1000) {
-      this.tryUnlock('ach_kills_1000');
-    }
-    if (p.wasBoss && p.enemyKey === 'taxman') {
-      this.tryUnlock('ach_defeat_taxman');
+    if (s.totalKills >= 1000) this.tryUnlock('ach_kills_1000');
+    if (s.totalKills >= 5000) this.tryUnlock('ach_kills_5000');
+    if (p.wasBoss) {
+      this.runBossKills.add(p.enemyKey);
+      if (p.enemyKey === 'taxman') this.tryUnlock('ach_defeat_taxman');
+      // 5 boss types: gordon, tour_bus, the_laird, hunter_general, taxman
+      if (this.runBossKills.size >= 5) this.tryUnlock('ach_all_bosses');
     }
   }
 
   private onRunTime(p: import('./GlobalEventBus').GlobalRunTimePayload): void {
-    if (p.gameTimeSec >= 600) {
-      this.tryUnlock('ach_survive_10m');
-    }
+    if (p.gameTimeSec >= 300) this.tryUnlock('ach_survive_5m');
+    if (p.gameTimeSec >= 600) this.tryUnlock('ach_survive_10m');
+    if (p.gameTimeSec >= 900) this.tryUnlock('ach_full_run');
+  }
+
+  private onRunEnded(p: import('./GlobalEventBus').GlobalRunEndedPayload): void {
+    if (p.outcome === 'victory') this.tryUnlock('ach_first_victory');
+    this.runBossKills.clear();
   }
 
   private tryUnlock(id: AchievementId): void {
