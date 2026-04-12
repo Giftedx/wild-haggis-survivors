@@ -24,6 +24,10 @@ import { GameOverScene } from './scenes/GameOverScene';
 import { MetaShopScene } from './scenes/MetaShopScene';
 import { SettingsScene } from './scenes/SettingsScene';
 import { ShopScene } from './scenes/ShopScene';
+import { SpriteExportScene } from './tools/SpriteExportScene';
+
+/** Dev tool: visit ?export=sprites to download a full sprite sheet PNG */
+const isSpriteExport = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export');
 
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */
 const config: Phaser.Types.Core.GameConfig = {
@@ -45,7 +49,9 @@ const config: Phaser.Types.Core.GameConfig = {
       debug: GAME.PHYSICS_DEBUG,
     },
   },
-  scene: [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene, SettingsScene],
+  scene: isSpriteExport
+    ? [BootScene, SpriteExportScene]
+    : [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene, SettingsScene],
   render: {
     pixelArt: true,
     antialias: false,
