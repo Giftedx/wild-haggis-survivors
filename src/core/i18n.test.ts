@@ -7,6 +7,8 @@ import { BOSSES } from '../data/enemies';
 import { VARIANTS } from '../data/variants';
 import { PERMANENT_UPGRADES } from '../data/permanentUpgrades';
 import { WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS } from '../data/upgrades';
+import { META_SHOP_ITEMS, listMetaShopItemKeys } from '../data/metaShopItems';
+import { ACHIEVEMENT_DEFS } from './BalanceConfig';
 
 describe('i18n.t', () => {
   it('resolves nested dot paths', () => {
@@ -115,8 +117,8 @@ describe('i18n regression fences — data-file coverage', () => {
     }
   });
 
-  it('HUD passive abbreviation namespace is populated for all 6 passives', () => {
-    for (const k of ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water']) {
+  it('HUD passive abbreviation namespace is populated for all 9 passives', () => {
+    for (const k of ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water', 'thistle_crown', 'highland_shield', 'tartan_sash']) {
       assertResolves(`ui.passive.hud_abbrev.${k}`, `ui.passive.hud_abbrev.${k}`);
     }
   });
@@ -124,6 +126,21 @@ describe('i18n regression fences — data-file coverage', () => {
   it('menu stats line templates exist in short and long forms', () => {
     assertResolves('ui.menu.stats_short', 'ui.menu.stats_short');
     assertResolves('ui.menu.stats_long', 'ui.menu.stats_long');
+  });
+
+  it('every meta shop item has resolving name and description keys', () => {
+    for (const key of listMetaShopItemKeys()) {
+      const item = META_SHOP_ITEMS[key];
+      assertResolves(item.nameKey, `metaItem.${key}.name`);
+      assertResolves(item.descriptionKey, `metaItem.${key}.description`);
+    }
+  });
+
+  it('every achievement has resolving title and description keys', () => {
+    for (const [id, def] of Object.entries(ACHIEVEMENT_DEFS)) {
+      assertResolves(def.titleKey, `achievement.${id}.title`);
+      assertResolves(def.descriptionKey, `achievement.${id}.description`);
+    }
   });
 });
 
