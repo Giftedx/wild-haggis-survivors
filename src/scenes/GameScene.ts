@@ -609,7 +609,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.x,
       this.player.y,
       this.spawnSystem.getEnemyGroup(),
-      this.getActiveChestMarkers()
+      this.getActiveChestMarkers(),
+      this.player.rotation
     );
     const ms = this.musicStateScratch;
     ms.hp = this.player.getHp();

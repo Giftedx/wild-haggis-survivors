@@ -9,6 +9,24 @@ vi.mock('phaser', () => ({
   },
 }));
 
+// Minimap now reads uiScale + highContrastUi in the constructor — mock the
+// settings manager so the test runs under vitest (no localStorage).
+vi.mock('../core/SettingsManager', () => ({
+  getSettingsManager: () => ({
+    load: () => ({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+    }),
+  }),
+}));
+
 class MockRect {
   public x = 0;
   public y = 0;
@@ -51,7 +69,8 @@ describe('Minimap', () => {
     const minimap = new Minimap(scene);
     minimap.update(100, 100, enemyGroup);
 
-    const size = 110;
+    // Post-Phase-6-Tier-B size bump: 110 → 150 (baseline, before uiScale).
+    const size = 150;
     const margin = 12;
     const uiWidth = scene.cameras.main.width / scene.cameras.main.zoom;
     const uiHeight = scene.cameras.main.height / scene.cameras.main.zoom;
@@ -84,7 +103,8 @@ describe('Minimap', () => {
     const minimap = new Minimap(scene);
     minimap.update(100, 100, enemyGroup);
 
-    const size = 110;
+    // Post-Phase-6-Tier-B size bump: 110 → 150 (baseline, before uiScale).
+    const size = 150;
     const margin = 12;
     const uiWidth = scene.cameras.main.width / scene.cameras.main.zoom;
     const uiHeight = scene.cameras.main.height / scene.cameras.main.zoom;
