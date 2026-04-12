@@ -72,8 +72,10 @@ describe('SpawnSystem boss warning layout', () => {
       tweens: { add: vi.fn() },
     };
 
+    const { getSettingsManager } = await import('../core/SettingsManager');
     const ss: any = Object.create(SpawnSystem.prototype);
     ss.scene = scene;
+    ss.settings = getSettingsManager();
     ss.showBossWarning('Incoming menace');
 
     // At scale 1280x720 with camera zoom 1.25, the visible UI viewport has:
@@ -130,8 +132,10 @@ describe('SpawnSystem boss warning layout', () => {
       tweens: { add: vi.fn() },
     };
 
+    const { getSettingsManager: getSettings2 } = await import('../core/SettingsManager');
     const ss: any = Object.create(SS2.prototype);
     ss.scene = scene;
+    ss.settings = getSettings2();
     ss.showBossWarning('Incoming menace');
 
     // Font size scales with uiScale (36 * 1.3 → 46 or 47 px, rounded)

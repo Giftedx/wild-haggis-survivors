@@ -6,7 +6,7 @@ import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
-import { loadSave } from '../utils/save';
+import { loadSave, getWinRate, getAverageSurvivalTime, getTrend } from '../utils/save';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -410,9 +410,8 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     // === Stats summary for returning players ===
-    // Shown only when the player has completed at least one run. Warm,
-    // subdued presentation — the stats are a quiet reminder of progress,
-    // not a competitive scoreboard.
+    // Two lines: existing bests strip + richer history summary with win rate
+    // and trend. Warm, subdued — progress, not a scoreboard.
     const gameplay = loadSave();
     if (gameplay.totalRuns > 0) {
       const bestMins = Math.floor(gameplay.bestTime / 60);
@@ -425,16 +424,47 @@ export class MainMenuScene extends Phaser.Scene {
         victories: gameplay.victories,
         gold: gameplay.gold,
       });
-      const statsText = this.add
-        .text(width / 2, height - 44, statsLine, {
+      this.add
+        .text(width / 2, height - 54, statsLine, {
           fontFamily: 'monospace',
           fontSize: '10px',
           color: '#4a5670',
           align: 'center',
           wordWrap: { width: width - 40 },
         })
-        .setOrigin(0.5, 1);
-      statsText.setScale(uiScale);
+        .setOrigin(0.5, 1)
+        .setScale(uiScale);
+
+      const runHistory = gameplay.runHistory;
+      if (runHistory.length > 0) {
+        const winRate = Math.round(getWinRate(runHistory) * 100);
+        const avgSec = Math.floor(getAverageSurvivalTime(runHistory));
+        const avgMins = Math.floor(avgSec / 60);
+        const avgSecsStr = Math.floor(avgSec % 60).toString().padStart(2, '0');
+        const trendKey = getTrend(runHistory);
+        const trendLabel = trendKey === 'improving'
+          ? t('ui.menu.trend_improving')
+          : trendKey === 'declining'
+            ? t('ui.menu.trend_declining')
+            : t('ui.menu.trend_steady');
+        const historyLine = t('ui.menu.history_summary', {
+          totalRuns: gameplay.totalRuns,
+          winRate,
+          avgTime: `${avgMins}:${avgSecsStr}`,
+          trend: trendLabel,
+        });
+        this.add
+          .text(width / 2, height - 38, historyLine, {
+            fontFamily: 'monospace',
+            fontSize: '10px',
+            color: '#3d4e6a',
+            fontStyle: 'italic',
+            align: 'center',
+            wordWrap: { width: width - 40 },
+          })
+          .setOrigin(0.5, 1)
+          .setScale(uiScale);
+      }
     }
 
     // === Bottom credit strip ===

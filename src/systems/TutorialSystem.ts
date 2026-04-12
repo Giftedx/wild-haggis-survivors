@@ -11,7 +11,8 @@ const TOKEN_GEM = 'TUTORIAL_GEM';
 type Phase = 'done' | 'move' | 'await_gem' | 'await_level';
 
 /**
- * One-shot FTUE: movement tip → first gem tip → complete on first level-up (level 2).
+ * One-shot FTUE: movement tip -> first gem tip -> complete on first level-up (level 2).
+ * Also handles the drift-mechanic hint (non-pausing, shown once on first run).
  */
 export class TutorialSystem {
   private inputBlocker: Phaser.GameObjects.Rectangle | null = null;
@@ -24,6 +25,12 @@ export class TutorialSystem {
   private gemHandler?: (gx: number, gy: number, value: number) => void;
   private keyDownHandler?: (e: KeyboardEvent) => void;
   private finishHandler?: () => void;
+
+  // Drift tutorial state
+  private driftBanner: Phaser.GameObjects.Text | null = null;
+  private driftArrow: Phaser.GameObjects.Graphics | null = null;
+  private driftTimerEvent: Phaser.Time.TimerEvent | null = null;
+  private driftScheduled: boolean = false;
 
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
     this.scene = scene;
@@ -45,6 +52,11 @@ export class TutorialSystem {
     this.clearVisuals();
     this.releaseTokens();
     this.phase = 'done';
+    this.dismissDriftHint();
+    if (this.driftTimerEvent) {
+      this.driftTimerEvent.destroy();
+      this.driftTimerEvent = null;
+    }
   }
 
   startRunIfNeeded(opts?: { resumeRun?: boolean }): void {
@@ -54,6 +66,8 @@ export class TutorialSystem {
     }
     if (this.metaSave.load().hasCompletedTutorial) {
       this.phase = 'done';
+      // FTUE done — schedule drift hint if not yet seen
+      this.scheduleDriftHintIfNeeded();
       return;
     }
     this.phase = 'move';
@@ -74,7 +88,131 @@ export class TutorialSystem {
     this.metaSave.update((cur) => ({ ...cur, hasCompletedTutorial: true }));
     globalEventBus.emit('TUTORIAL_COMPLETED', {});
     this.phase = 'done';
+    // FTUE just completed — schedule drift hint
+    this.scheduleDriftHintIfNeeded();
   }
+
+  // ── Drift tutorial (non-pausing) ────────────────────��─────────────
+
+  private scheduleDriftHintIfNeeded(): void {
+    if (this.driftScheduled) return;
+    if (this.metaSave.load().hasSeenDriftTutorial) return;
+    this.driftScheduled = true;
+    // Show 3 seconds after FTUE completes (or run start if FTUE already done)
+    this.driftTimerEvent = this.scene.time.delayedCall(3000, () => {
+      this.driftTimerEvent = null;
+      this.showDriftHint();
+    });
+  }
+
+  private showDriftHint(): void {
+    if (this.metaSave.load().hasSeenDriftTutorial) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenDriftTutorial: true }));
+
+    const { x, y, width } = this.getUiViewport();
+    const bannerY = y + 80;
+    const wrapW = Math.max(160, Math.min(420, width - 48));
+
+    // Semi-transparent banner — no pause, no input blocking
+    this.driftBanner = this.scene.add.text(x + width / 2, bannerY, t('tutorial.drift'), {
+      fontFamily: 'monospace',
+      fontSize: '14px',
+      color: '#ffe8a0',
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 3,
+      backgroundColor: '#1a1020cc',
+      padding: { x: 12, y: 8 },
+      wordWrap: { width: wrapW },
+      align: 'center',
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(85).setAlpha(0);
+
+    // Fade in
+    this.scene.tweens.add({
+      targets: this.driftBanner,
+      alpha: 1,
+      duration: 400,
+      ease: 'Power2',
+    });
+
+    // Curved clockwise arrow near player
+    this.driftArrow = this.scene.add.graphics().setDepth(55).setAlpha(0);
+    this.drawCurvedArrow(this.driftArrow);
+
+    this.scene.tweens.add({
+      targets: this.driftArrow,
+      alpha: 0.7,
+      duration: 400,
+      ease: 'Power2',
+    });
+
+    // Auto-dismiss after 6 seconds
+    this.scene.time.delayedCall(6000, () => {
+      this.dismissDriftHint();
+    });
+  }
+
+  private drawCurvedArrow(gfx: Phaser.GameObjects.Graphics): void {
+    const player = this.scene.getPlayer();
+    const cx = player.x;
+    const cy = player.y;
+    const radius = 40;
+
+    // Draw a clockwise arc (~270 degrees)
+    gfx.lineStyle(2.5, 0xffe8a0, 0.8);
+    gfx.beginPath();
+    const startAngle = -Math.PI * 0.6;
+    const endAngle = Math.PI * 0.9;
+    const steps = 32;
+    for (let i = 0; i <= steps; i++) {
+      const angle = startAngle + (endAngle - startAngle) * (i / steps);
+      const px = cx + Math.cos(angle) * radius;
+      const py = cy + Math.sin(angle) * radius;
+      if (i === 0) gfx.moveTo(px, py);
+      else gfx.lineTo(px, py);
+    }
+    gfx.strokePath();
+
+    // Arrowhead at the end of the arc
+    const endX = cx + Math.cos(endAngle) * radius;
+    const endY = cy + Math.sin(endAngle) * radius;
+    const arrowAngle = endAngle + Math.PI / 2; // tangent direction (clockwise)
+    const headLen = 10;
+    gfx.fillStyle(0xffe8a0, 0.8);
+    gfx.fillTriangle(
+      endX + Math.cos(arrowAngle) * headLen,
+      endY + Math.sin(arrowAngle) * headLen,
+      endX + Math.cos(arrowAngle + 2.4) * headLen * 0.6,
+      endY + Math.sin(arrowAngle + 2.4) * headLen * 0.6,
+      endX + Math.cos(arrowAngle - 2.4) * headLen * 0.6,
+      endY + Math.sin(arrowAngle - 2.4) * headLen * 0.6,
+    );
+  }
+
+  private dismissDriftHint(): void {
+    if (this.driftBanner) {
+      const banner = this.driftBanner;
+      this.driftBanner = null;
+      this.scene.tweens.add({
+        targets: banner,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => banner.destroy(),
+      });
+    }
+    if (this.driftArrow) {
+      const arrow = this.driftArrow;
+      this.driftArrow = null;
+      this.scene.tweens.add({
+        targets: arrow,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => arrow.destroy(),
+      });
+    }
+  }
+
+  // ── FTUE internals (unchanged) ────────────────────────────────────
 
   private releaseTokens(): void {
     const tm = this.scene.getTimeManager();

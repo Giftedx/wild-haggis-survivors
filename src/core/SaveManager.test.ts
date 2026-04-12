@@ -9,8 +9,8 @@ class ThrowingStorage implements StorageLike {
   removeItem(key: string) { this.m.delete(key); }
 }
 
-const defaultV5 = {
-  saveVersion: 5 as const,
+const defaultV6 = {
+  saveVersion: 6 as const,
   totalKills: 0,
   unlockedWeapons: [] as string[],
   unlockedUpgrades: [] as string[],
@@ -18,6 +18,7 @@ const defaultV5 = {
   unlockedAchievements: [] as string[],
   hasCompletedTutorial: false,
   hasSeenDriftTutorial: false,
+  runHistory: [] as import('./SaveManager').RunHistoryEntry[],
 };
 
 const sampleRun = (): IRunState => ({
@@ -51,23 +52,21 @@ const sampleRun = (): IRunState => ({
 });
 
 describe('SaveManager', () => {
-  it('saves and loads persisted meta progression (v5)', () => {
+  it('saves and loads persisted meta progression (v6)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
 
     mgr.save({
-      saveVersion: 5,
+      ...defaultV6,
       totalKills: 42,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: ['speed_tier_1'],
-      activeRun: null,
       unlockedAchievements: ['ach_kills_1000'],
       hasCompletedTutorial: true,
-      hasSeenDriftTutorial: false,
     });
     const loaded = mgr.load();
 
-    expect(loaded.saveVersion).toBe(5);
+    expect(loaded.saveVersion).toBe(6);
     expect(loaded.totalKills).toBe(42);
     expect(loaded.unlockedWeapons).toEqual(['thistle_shot']);
     expect(loaded.unlockedUpgrades).toEqual(['speed_tier_1']);
@@ -82,26 +81,21 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(() => mgr.load()).not.toThrow();
-    expect(mgr.load()).toEqual(defaultV5);
+    expect(mgr.load()).toEqual(defaultV6);
   });
 
-  it('migrates v1 JSON to v5 with defaults', () => {
+  it('migrates v1 JSON to v6 with defaults', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 5, unlockedWeapons: ['thistle_shot'] }));
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 5,
+      ...defaultV6,
       totalKills: 5,
       unlockedWeapons: ['thistle_shot'],
-      unlockedUpgrades: [],
-      activeRun: null,
-      unlockedAchievements: [],
-      hasCompletedTutorial: false,
-      hasSeenDriftTutorial: false,
     });
   });
 
-  it('migrates v2 JSON to v5 preserving upgrades', () => {
+  it('migrates v2 JSON to v6 preserving upgrades', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -114,18 +108,13 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 5,
+      ...defaultV6,
       totalKills: 3,
-      unlockedWeapons: [],
       unlockedUpgrades: ['speed_tier_1'],
-      activeRun: null,
-      unlockedAchievements: [],
-      hasCompletedTutorial: false,
-      hasSeenDriftTutorial: false,
     });
   });
 
-  it('migrates v3 JSON to v5 preserving activeRun', () => {
+  it('migrates v3 JSON to v6 preserving activeRun', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -139,18 +128,12 @@ describe('SaveManager', () => {
     );
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 5,
+      ...defaultV6,
       totalKills: 2,
-      unlockedWeapons: [],
-      unlockedUpgrades: [],
-      activeRun: null,
-      unlockedAchievements: [],
-      hasCompletedTutorial: false,
-      hasSeenDriftTutorial: false,
     });
   });
 
-  it('migrates v4 JSON to v5 preserving hasCompletedTutorial when present', () => {
+  it('migrates v4 JSON to v6 preserving hasCompletedTutorial when present', () => {
     const storage = new MemoryStorage();
     storage.setItem(
       'k',
@@ -174,21 +157,15 @@ describe('SaveManager', () => {
 
     const mgr = new SaveManager({ storage, key: 'k' });
     expect(mgr.load()).toEqual({
-      saveVersion: 5,
-      totalKills: 0,
+      ...defaultV6,
       unlockedWeapons: ['ok'],
-      unlockedUpgrades: [],
-      activeRun: null,
-      unlockedAchievements: [],
-      hasCompletedTutorial: false,
-      hasSeenDriftTutorial: false,
     });
   });
 
   it('saveActiveRun persists coerced mid-run snapshot', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
-    mgr.save({ ...defaultV5, totalKills: 1 });
+    mgr.save({ ...defaultV6, totalKills: 1 });
     mgr.saveActiveRun(sampleRun());
     const loaded = mgr.load();
     expect(loaded.activeRun).not.toBeNull();
@@ -214,7 +191,7 @@ describe('SaveManager', () => {
     storage.setItem(
       'k',
       JSON.stringify({
-        ...defaultV5,
+        ...defaultV6,
         activeRun: {
           ...sampleRun(),
           spawnedBossKeys: null,
@@ -232,7 +209,7 @@ describe('SaveManager', () => {
     storage.setItem(
       'k',
       JSON.stringify({
-        ...defaultV5,
+        ...defaultV6,
         activeRun: {
           ...sampleRun(),
           revivalAvailable: 'yes please',
@@ -270,7 +247,7 @@ describe('SaveManager', () => {
   it('swallows storage write failures without throwing', () => {
     const storage = new ThrowingStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
-    expect(() => mgr.save({ ...defaultV5, totalKills: 10 })).not.toThrow();
+    expect(() => mgr.save({ ...defaultV6, totalKills: 10 })).not.toThrow();
     expect(() => mgr.saveActiveRun(sampleRun())).not.toThrow();
     expect(() => mgr.clearActiveRun()).not.toThrow();
   });
@@ -279,7 +256,7 @@ describe('SaveManager', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
     mgr.save({
-      ...defaultV5,
+      ...defaultV6,
       totalKills: 6000,
       unlockedAchievements: [
         'ach_kills_1000', 'ach_kills_5000', 'ach_survive_5m', 'ach_survive_10m',

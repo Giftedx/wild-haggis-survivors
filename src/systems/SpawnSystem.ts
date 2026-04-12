@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { SettingsManager } from '../core/SettingsManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import { Enemy } from '../entities/Enemy';
@@ -50,9 +51,11 @@ export class SpawnSystem {
 
   /** Emits 'bossWarning' and 'bossKilled' events */
   readonly events = new Phaser.Events.EventEmitter();
+  private readonly settings: SettingsManager;
 
   constructor(scene: Phaser.Scene & ISceneContext) {
     this.scene = scene;
+    this.settings = getSettingsManager();
 
     this.pool = scene.add.group({
       classType: Enemy,
@@ -216,7 +219,7 @@ export class SpawnSystem {
 
       // Dramatic entrance — camera zoom pulse + shake
       const cam = this.scene.cameras.main;
-      tryCameraShake(cam, 400, 0.015, getSettingsManager());
+      tryCameraShake(cam, 400, 0.015, this.settings);
 
       // Brief zoom-in then back out
       const originalZoom = cam.zoom;
@@ -255,7 +258,7 @@ export class SpawnSystem {
   private showBossWarning(text: string): void {
     audio.playBossWarning();
     const { x, y, width, height } = this.getUiViewport();
-    const settings = getSettingsManager().load();
+    const settings = this.settings.load();
     // Accessibility: scale font by uiScale, swap palette when high-contrast.
     // Boss warning is a Soul-critical moment — kindness applies here too.
     const baseFontPx = 36;

@@ -91,11 +91,41 @@ export interface ISaveDataV5 {
   unlockedAchievements: string[];
   /** FTUE / one-shot onboarding — persisted in meta save. */
   hasCompletedTutorial: boolean;
+  /** Drift mechanic hint — shown once on first run. */
+  hasSeenDriftTutorial: boolean;
 }
 
-export type ISaveData = ISaveDataV5;
+/** Per-run snapshot stored in history. */
+export interface RunHistoryEntry {
+  timestamp: number;
+  timeSurvivedSec: number;
+  enemiesKilled: number;
+  level: number;
+  bossKills: number;
+  goldEarned: number;
+  bestCombo: number;
+  variantKey: string;
+  isVictory: boolean;
+  weaponKeys: string[];
+}
 
-export const CURRENT_SAVE_VERSION = 5 as const;
+export interface ISaveDataV6 {
+  saveVersion: 6;
+  totalKills: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  hasCompletedTutorial: boolean;
+  hasSeenDriftTutorial: boolean;
+  runHistory: RunHistoryEntry[];
+}
+
+export type ISaveData = ISaveDataV6;
+
+export const CURRENT_SAVE_VERSION = 6 as const;
+
+export const MAX_RUN_HISTORY = 20;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
@@ -105,6 +135,8 @@ const DEFAULT_SAVE: ISaveData = {
   activeRun: null,
   unlockedAchievements: [],
   hasCompletedTutorial: false,
+  hasSeenDriftTutorial: false,
+  runHistory: [],
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -204,6 +236,43 @@ function coerceIRunState(raw: unknown): IRunState | null {
   };
 }
 
+function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const o = raw as Record<string, unknown>;
+  const variantKey = typeof o.variantKey === 'string' ? o.variantKey : '';
+  if (!variantKey) return null;
+  return {
+    timestamp: clampInt(o.timestamp, 0),
+    timeSurvivedSec: Math.max(0, clampNumber(o.timeSurvivedSec, 0)),
+    enemiesKilled: clampInt(o.enemiesKilled, 0),
+    level: Math.max(1, clampInt(o.level, 1)),
+    bossKills: clampInt(o.bossKills, 0),
+    goldEarned: clampInt(o.goldEarned, 0),
+    bestCombo: clampInt(o.bestCombo, 0),
+    variantKey,
+    isVictory: toBool(o.isVictory, false),
+    weaponKeys: toStringArray(o.weaponKeys),
+  };
+}
+
+function coerceRunHistory(raw: unknown): RunHistoryEntry[] {
+  if (!Array.isArray(raw)) return [];
+  const out: RunHistoryEntry[] = [];
+  for (const item of raw) {
+    const entry = coerceRunHistoryEntry(item);
+    if (entry) out.push(entry);
+  }
+  return out.slice(-MAX_RUN_HISTORY);
+}
+
+export interface PersonalBests {
+  bestTime: number;
+  bestKills: number;
+  bestCombo: number;
+  bestLevel: number;
+  bestGold: number;
+}
+
 export class SaveManager {
   private key: string;
   private storage: StorageLike;
@@ -256,6 +325,33 @@ export class SaveManager {
     this.update((cur) => ({ ...cur, activeRun: null }));
   }
 
+  recordRunToHistory(entry: RunHistoryEntry): void {
+    const coerced = coerceRunHistoryEntry(entry);
+    if (!coerced) return;
+    this.update((cur) => {
+      const history = [...cur.runHistory, coerced];
+      if (history.length > MAX_RUN_HISTORY) history.splice(0, history.length - MAX_RUN_HISTORY);
+      return { ...cur, runHistory: history };
+    });
+  }
+
+  getRunHistory(): RunHistoryEntry[] {
+    return this.load().runHistory;
+  }
+
+  getPersonalBests(): PersonalBests {
+    const history = this.load().runHistory;
+    const bests: PersonalBests = { bestTime: 0, bestKills: 0, bestCombo: 0, bestLevel: 0, bestGold: 0 };
+    for (const entry of history) {
+      if (entry.timeSurvivedSec > bests.bestTime) bests.bestTime = entry.timeSurvivedSec;
+      if (entry.enemiesKilled > bests.bestKills) bests.bestKills = entry.enemiesKilled;
+      if (entry.bestCombo > bests.bestCombo) bests.bestCombo = entry.bestCombo;
+      if (entry.level > bests.bestLevel) bests.bestLevel = entry.level;
+      if (entry.goldEarned > bests.bestGold) bests.bestGold = entry.goldEarned;
+    }
+    return bests;
+  }
+
   private migrateAndCoerce(input: unknown): ISaveData {
     const obj = (typeof input === 'object' && input !== null) ? (input as Record<string, unknown>) : {};
     const v = clampInt(obj.saveVersion, CURRENT_SAVE_VERSION);
@@ -270,52 +366,77 @@ export class SaveManager {
     const activeRun = coerceIRunState(obj.activeRun);
     const unlockedAchievements = toStringArray(obj.unlockedAchievements);
     const hasCompletedTutorial = toBool(obj.hasCompletedTutorial, false);
+    const hasSeenDriftTutorial = toBool(obj.hasSeenDriftTutorial, false);
+
+    const runHistory = coerceRunHistory(obj.runHistory);
 
     if (v === 1) {
       return {
-        saveVersion: 5,
+        saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades: [],
         activeRun: null,
         unlockedAchievements: [],
         hasCompletedTutorial: false,
+        hasSeenDriftTutorial: false,
+        runHistory: [],
       };
     }
 
     if (v === 2) {
       return {
-        saveVersion: 5,
+        saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun: null,
         unlockedAchievements: [],
         hasCompletedTutorial: false,
+        hasSeenDriftTutorial: false,
+        runHistory: [],
       };
     }
 
     if (v === 3) {
       return {
-        saveVersion: 5,
+        saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
         unlockedAchievements: [],
         hasCompletedTutorial: false,
+        hasSeenDriftTutorial: false,
+        runHistory: [],
       };
     }
 
     if (v === 4) {
       return {
-        saveVersion: 5,
+        saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
         unlockedAchievements,
         hasCompletedTutorial,
+        hasSeenDriftTutorial: false,
+        runHistory: [],
+      };
+    }
+
+    if (v === 5) {
+      return {
+        saveVersion: CURRENT_SAVE_VERSION,
+        totalKills,
+        unlockedWeapons,
+        unlockedUpgrades,
+        activeRun,
+        unlockedAchievements,
+        hasCompletedTutorial,
+        hasSeenDriftTutorial,
+        runHistory: [],
       };
     }
 
@@ -327,6 +448,8 @@ export class SaveManager {
       activeRun,
       unlockedAchievements,
       hasCompletedTutorial,
+      hasSeenDriftTutorial,
+      runHistory,
     };
   }
 }

@@ -25,7 +25,7 @@ describe('save migration', () => {
       unlockedVariants: ['classic'],
     });
 
-    expect(migrated.schemaVersion).toBe(2);
+    expect(migrated.schemaVersion).toBe(3);
     expect(migrated.gold).toBe(250);
     expect(migrated.upgrades).toEqual({ strong_legs: 2, thick_hide: 1 });
     expect(migrated.totalRuns).toBe(8);

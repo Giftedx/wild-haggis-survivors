@@ -108,13 +108,15 @@ describe('Run hydration (mid-run persistence)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 't' });
     mgr.save({
-      saveVersion: 5,
+      saveVersion: 6,
       totalKills: 10,
       unlockedWeapons: [],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: true,
+      hasSeenDriftTutorial: false,
+      runHistory: [],
     });
     mgr.saveActiveRun(tenMinuteRun());
 

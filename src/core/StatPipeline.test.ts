@@ -6,7 +6,7 @@ import { BALANCE } from './BalanceConfig';
 import type { ISaveData } from './SaveManager';
 
 const pristine: ISaveData = {
-  saveVersion: 5,
+  saveVersion: 6,
   totalKills: 0,
   unlockedWeapons: [],
   unlockedUpgrades: [],
@@ -14,6 +14,7 @@ const pristine: ISaveData = {
   unlockedAchievements: [],
   hasCompletedTutorial: false,
   hasSeenDriftTutorial: false,
+  runHistory: [],
 };
 
 describe('stat pipeline: meta upgrades → ComposedPlayerStats', () => {

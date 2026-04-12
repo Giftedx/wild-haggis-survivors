@@ -28,13 +28,15 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: SETTINGS_STORAGE_KEY });
 
     meta.save({
-      saveVersion: 5,
+      saveVersion: 6,
       totalKills: 99,
       unlockedWeapons: [],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
+      runHistory: [],
     });
     settings.save({
       settingsVersion: 1,
@@ -65,13 +67,15 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 5,
+      saveVersion: 6,
       totalKills: 10,
       unlockedWeapons: [],
       unlockedUpgrades: [],
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
+      runHistory: [],
     });
     settings.save({
       settingsVersion: 1,
@@ -97,13 +101,15 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 5,
+      saveVersion: 6,
       totalKills: 77,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: ['speed_tier_1'],
       activeRun: null,
       unlockedAchievements: ['ach_kills_1000'],
       hasCompletedTutorial: true,
+      hasSeenDriftTutorial: false,
+      runHistory: [],
     });
     settings.save({
       settingsVersion: 1,

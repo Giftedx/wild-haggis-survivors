@@ -1,18 +1,20 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { EventEmitter } from 'events';
 import { TutorialSystem } from './TutorialSystem';
-import { SaveManager } from '../core/SaveManager';
+import { SaveManager, type RunHistoryEntry } from '../core/SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 
-function makeV5Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
+function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {
-    saveVersion: 5 as const,
+    saveVersion: 6 as const,
     totalKills: 0,
     unlockedWeapons: [] as string[],
     unlockedUpgrades: [] as string[],
     activeRun: null,
     unlockedAchievements: [] as string[],
     hasCompletedTutorial: false,
+    hasSeenDriftTutorial: false,
+    runHistory: [] as RunHistoryEntry[],
     ...over,
   };
 }
@@ -31,7 +33,7 @@ describe('TutorialSystem', () => {
   });
 
   it('does not request pause when tutorial already completed', () => {
-    save.save(makeV5Save({ hasCompletedTutorial: true }));
+    save.save(makeV6Save({ hasCompletedTutorial: true }));
     const tm = {
       request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
         requests.push({ key, spec }),
@@ -77,6 +79,7 @@ describe('TutorialSystem', () => {
       },
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
+      time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -86,7 +89,7 @@ describe('TutorialSystem', () => {
   });
 
   it('requests a paused tutorial token for a fresh save', () => {
-    save.save(makeV5Save());
+    save.save(makeV6Save());
     const tm = {
       request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
         requests.push({ key, spec }),
@@ -132,6 +135,7 @@ describe('TutorialSystem', () => {
       },
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
+      time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -144,7 +148,7 @@ describe('TutorialSystem', () => {
   });
 
   it('does not start tutorial overlays on resumed runs', () => {
-    save.save(makeV5Save());
+    save.save(makeV6Save());
     const tm = {
       request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
         requests.push({ key, spec }),
@@ -190,6 +194,7 @@ describe('TutorialSystem', () => {
       },
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
+      time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -199,7 +204,7 @@ describe('TutorialSystem', () => {
   });
 
   it('persists hasCompletedTutorial when first level-up threshold is reached', () => {
-    save.save(makeV5Save());
+    save.save(makeV6Save());
     const tm = {
       request: vi.fn(),
       release: vi.fn(),
@@ -244,6 +249,7 @@ describe('TutorialSystem', () => {
       },
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
+      time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -255,7 +261,7 @@ describe('TutorialSystem', () => {
   });
 
   it('lays tutorial overlays out against the UI viewport', () => {
-    save.save(makeV5Save());
+    save.save(makeV6Save());
     const rectangles: Array<{ x: number; y: number; width: number; height: number }> = [];
     const tm = {
       request: (key: string, spec: { pausePhysics?: boolean; timeScale?: number }) =>
@@ -306,6 +312,7 @@ describe('TutorialSystem', () => {
       },
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
+      time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };

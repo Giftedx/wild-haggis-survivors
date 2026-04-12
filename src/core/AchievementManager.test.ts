@@ -13,7 +13,7 @@ describe('AchievementManager', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 5,
+      saveVersion: 6,
       totalKills: 0,
       unlockedWeapons: [],
       unlockedUpgrades: [],
@@ -21,6 +21,7 @@ describe('AchievementManager', () => {
       unlockedAchievements: [],
       hasCompletedTutorial: true,
       hasSeenDriftTutorial: false,
+      runHistory: [],
     });
     mgr = new AchievementManager(save);
     mgr.start();
