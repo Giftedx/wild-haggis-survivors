@@ -593,7 +593,7 @@ export class HUD {
           ? evoInitKey
           : (this.scene.textures.exists(baseInitKey) ? baseInitKey : 'wicon_thistle_shot');
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
-          .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(1.4)) as Phaser.GameObjects.Image;
+          .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
         const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '', {
           fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', fontStyle: 'bold',
