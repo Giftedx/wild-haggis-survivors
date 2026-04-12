@@ -79,6 +79,7 @@ export const EN_STRINGS: LocaleTree = {
       stat_level: 'Level',
       stat_bosses: 'Bosses',
       stat_passives: 'Passives',
+      stat_combo: 'Best Combo',
       weapons_line: 'Weapons {count} ({evolved} evolved)',
       damage_by_weapon: 'Who carried the fight',
       gold_title: '{amount} golden haggis earned',
