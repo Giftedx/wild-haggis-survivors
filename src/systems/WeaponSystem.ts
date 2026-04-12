@@ -40,6 +40,12 @@ export class WeaponSystem {
   /** Trail frame counter — spawn trail particles every N frames */
   private trailCounter: number = 0;
 
+  /** Per-frame cache: active enemies sorted by distance to player.
+   *  Built once at the start of update(), consumed by findClosestEnemy(). */
+  private cachedSortedEnemies: Enemy[] = [];
+  private cachedSortedDistSq: number[] = [];
+  private enemyCacheFrame: number = -1;
+
   /** Pooled VFX circles for weapon visual effects (pulse rings, zones, blasts). */
   private vfxCirclePool: Phaser.GameObjects.Arc[] = [];
   private vfxCircleIdx: number = 0;
@@ -238,6 +244,9 @@ export class WeaponSystem {
   }
 
   update(delta: number, playerX: number, playerY: number): void {
+    // Build per-frame sorted enemy cache (consumed by findClosestEnemy).
+    // One sort replaces 3× linear scans over 400 enemies.
+    this.buildEnemyCache(playerX, playerY);
 
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
@@ -563,15 +572,9 @@ export class WeaponSystem {
 
   /** Thistle Storm — 8 projectiles that each seek a different enemy */
   private fireHomingBurst(w: ActiveWeapon, px: number, py: number, dmg: number, count: number): void {
-    const enemies = this.enemyGroup.children.entries as Enemy[];
-    // Sort by distance so projectiles target the closest enemies, not pool order
-    const targets = enemies
-      .filter(e => e.active)
-      .sort((a, b) =>
-        Phaser.Math.Distance.Squared(px, py, a.x, a.y) -
-        Phaser.Math.Distance.Squared(px, py, b.x, b.y)
-      )
-      .slice(0, count);
+    // Reuse per-frame sorted enemy cache — already active-only, sorted by distance.
+    const targets = this.cachedSortedEnemies;
+    const targetCount = Math.min(targets.length, count);
 
     for (let i = 0; i < count; i++) {
       const proj = this.getProjectile('thistle');
@@ -579,7 +582,7 @@ export class WeaponSystem {
 
       // Aim at a specific enemy, or random direction if not enough targets
       let tx: number, ty: number;
-      if (i < targets.length) {
+      if (i < targetCount) {
         tx = targets[i].x;
         ty = targets[i].y;
       } else {
@@ -826,20 +829,51 @@ export class WeaponSystem {
     return proj;
   }
 
-  private findClosestEnemy(fromX: number, fromY: number, maxRange: number): Enemy | null {
-    let closest: Enemy | null = null;
-    let closestDist = maxRange;
-
+  /** Build sorted-by-distance cache of active enemies. Called once per update(). */
+  private buildEnemyCache(px: number, py: number): void {
     const enemies = this.enemyGroup.children.entries as Enemy[];
-    for (const enemy of enemies) {
-      if (!enemy.active) continue;
-      const dist = Phaser.Math.Distance.Between(fromX, fromY, enemy.x, enemy.y);
-      if (dist < closestDist) {
-        closestDist = dist;
-        closest = enemy;
-      }
+    const sorted = this.cachedSortedEnemies;
+    const distSq = this.cachedSortedDistSq;
+    let count = 0;
+
+    for (let i = 0, len = enemies.length; i < len; i++) {
+      const e = enemies[i];
+      if (!e.active) continue;
+      const dx = e.x - px, dy = e.y - py;
+      sorted[count] = e;
+      distSq[count] = dx * dx + dy * dy;
+      count++;
     }
-    return closest;
+    // Truncate stale tail entries
+    sorted.length = count;
+    distSq.length = count;
+
+    // Insertion sort — nearly sorted in practice (enemies don't teleport),
+    // so this beats Array.sort's overhead for typical counts.
+    for (let i = 1; i < count; i++) {
+      const dSq = distSq[i];
+      const enemy = sorted[i];
+      let j = i - 1;
+      while (j >= 0 && distSq[j] > dSq) {
+        distSq[j + 1] = distSq[j];
+        sorted[j + 1] = sorted[j];
+        j--;
+      }
+      distSq[j + 1] = dSq;
+      sorted[j + 1] = enemy;
+    }
+  }
+
+  private findClosestEnemy(_fromX: number, _fromY: number, maxRange: number): Enemy | null {
+    const maxRangeSq = maxRange * maxRange;
+    const sorted = this.cachedSortedEnemies;
+    const distSq = this.cachedSortedDistSq;
+    // Cache is sorted by distance — first entry within range is the closest.
+    for (let i = 0, len = sorted.length; i < len; i++) {
+      if (distSq[i] > maxRangeSq) break;
+      return sorted[i];
+    }
+    return null;
   }
 
   private onProjectileHitEnemy(
