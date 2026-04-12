@@ -235,6 +235,8 @@ export const EN_STRINGS: LocaleTree = {
       combo_50: 'THAT\'S PLENTY!',
       combo_100: 'YER DA SELLS AVON!',
       combo_200: 'PEOPLE MAKE GLASGOW!',
+      combo_dropped: 'Aw, {count} streak gone. Ye were doin\' well there.',
+      combo_dropped_big: '{count} streak doon the pan! Ye were pure flying and aw.',
       boss_kill_heal: 'Boss doon! That\'s yir heal — +{hp} HP',
       boss_enraged: 'The beast is RAGIN!',
       /** Per-boss kill celebrations — the big punchline after the big fight. */
