@@ -192,7 +192,7 @@ export const EN_STRINGS: LocaleTree = {
       treasure_collected: 'Chest cracked — hearty heal (+25% HP)',
       golden_nearby: 'Glimmer o\' gold nearby!',
       golden_collected: 'Golden chest — +{gold}g',
-      controls_hint: 'WASD to move  •  SPACE to dash  •  ESC to pause',
+      controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC to catch yir breath',
       armor_blocked: '-{amount} blocked',
       countdown_go: 'SURVIVE!',
       gold_pickup_float: '+{gold}g',
@@ -232,19 +232,19 @@ export const EN_STRINGS: LocaleTree = {
   evolution: {
     thistle_storm: {
       name: 'Thistle Storm',
-      description: '8 homing thistles seek enemies across the screen.',
+      description: 'Eight homing thistles seek their quarry across the moor. The storm has teeth.',
     },
     highland_fling: {
       name: 'The Highland Fling',
-      description: 'Massive pulsating sonic ring shatters all enemies.',
+      description: 'A great sonic ring blooms outward. The moor sings; yir enemies come apart.',
     },
     highland_games: {
       name: 'Highland Games',
-      description: 'Caber explodes on final pierce, leaving a burning zone.',
+      description: 'The caber detonates on its final pierce, leaving a burning patch o\' grass. Heave, ho.',
     },
     the_haar: {
       name: 'The Haar',
-      description: 'Dense fog covers 40% of the screen, melting enemies.',
+      description: 'The great Highland fog rolls in. Half the moor vanishes; anything caught in it dissolves.',
     },
     haggis_cannon: {
       name: 'Jobby Cannon',
@@ -252,11 +252,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     nessie_unleashed: {
       name: 'Nessie Unleashed',
-      description: 'Multiple massive tentacles sweep the entire screen.',
+      description: 'Every tentacle, every angle. The loch herself comes to yir aid.',
     },
     william_blade: {
       name: 'William Blade',
-      description: 'Legendary claymore shockwaves tear across the moor in rapid succession.',
+      description: 'Legendary claymore — shockwaves tear across the moor like a battle-cry.',
     },
   },
   achievement: {
@@ -288,11 +288,11 @@ export const EN_STRINGS: LocaleTree = {
     },
     caber_toss: {
       name: 'Caber Toss',
-      description: 'Hurl a heavy log clean through a crowd.',
+      description: 'A log the size of a door, thrown clean through a crowd.',
     },
     scotch_mist: {
       name: 'Scotch Mist',
-      description: 'Leave a choking fog trail that bites the chase.',
+      description: 'Trail a creeping fog. What wanders in doesnae wander oot.',
     },
     haggis_hurler: {
       name: 'Jobby Hurler',
@@ -300,15 +300,15 @@ export const EN_STRINGS: LocaleTree = {
     },
     nessie_tentacle: {
       name: "Nessie's Tentacle",
-      description: 'A sweeping arc — meaty reach, meatier knockback.',
+      description: 'A sweeping arm from the loch — wide reach, meatier knockback.',
     },
     claymore: {
       name: 'Highland Claymore',
-      description: 'Slow, enormous, absolutely cleaving.',
+      description: 'A sword the weight of a man. Slow to lift, enormous in the sweep.',
     },
     bagpipes: {
       name: 'Ceòl Mòr Bagpipes',
-      description: 'A standing drone — ringing harm to anything that creeps too close.',
+      description: 'A great drone that presses on yir enemies like weather.',
     },
   },
   boss: {
@@ -351,171 +351,173 @@ export const EN_STRINGS: LocaleTree = {
       baseline: 'Baseline stats',
     },
     unlock: {
+      // These are short labels interpolated into a "Label: current/required" strip.
+      // Kept terse so the line doesn't overflow the variant panel.
       survive: 'Survive',
       best_kills: 'Best kills',
-      total_gold: 'Total gold',
+      total_gold: 'Gold banked',
       victories: 'Victories',
       ready: 'Ye earned this one',
     },
   },
   permanentUpgrade: {
-    thick_hide: { name: 'Thick Hide', description: 'Start each run with a wee bit more bite to your HP (+5%).' },
-    strong_legs: { name: 'Strong Legs', description: 'Quicker hooves from the first step (+3% speed).' },
+    thick_hide: { name: 'Thick Hide', description: 'A hide thick enough to shrug off the first wee knocks (+5% starting HP).' },
+    strong_legs: { name: 'Strong Legs', description: 'Quicker hooves from the very first step (+3% speed).' },
     sharp_thistles: { name: 'Sharp Thistles', description: 'Every thistle hits a shade harder (+5% damage).' },
-    magnetic_personality: { name: 'Magnetic Personality', description: 'Gems lean toward ye (+10% pickup radius).' },
+    magnetic_personality: { name: 'Magnetic Personality', description: 'Gems lean toward ye of their own accord (+10% pickup radius).' },
     lucky_heather: { name: 'Lucky Heather', description: 'The glen rolls kinder picks (+10% card rarity).' },
     drift_control: { name: 'Drift Control', description: 'Tighter turns, fewer tumbles (-15% clockwise drift).' },
-    extra_choice: { name: 'Extra Choice', description: 'Four cards on level-up instead of three.' },
-    battle_hardened: { name: 'Battle Hardened', description: 'Start each run with +2 armor.' },
-    weapon_training: { name: 'Weapon Training', description: 'Thistle Shot starts a level stronger.' },
-    crit_power: { name: 'Deadly Precision', description: '+3% crit chance and +25% crit damage.' },
-    xp_boost: { name: 'Scholar\'s Mind', description: '+8% XP gain — level up sooner.' },
-    lucky_start: { name: 'Lucky Start', description: 'Start each run with a random curio in your pocket.' },
-    natural_recovery: { name: 'Natural Recovery', description: '+0.3 HP/sec passive regeneration.' },
-    revival: { name: 'Second Wind', description: 'Once per run, shrug off death with 50% HP.' },
-    double_dash: { name: 'Double Dash', description: 'Two dash charges instead of one.' },
-    treasure_magnet: { name: 'Treasure Magnet', description: 'Chests and coins linger 5 seconds longer.' },
+    extra_choice: { name: 'Extra Choice', description: 'One more pick at every level-up, for when ye cannae decide.' },
+    battle_hardened: { name: 'Battle Hardened', description: 'Scars harden into armor. Start each run with +2 of it.' },
+    weapon_training: { name: 'Weapon Training', description: 'Ye\'ve practiced — yir Thistle Shot starts a level stronger.' },
+    crit_power: { name: 'Deadly Precision', description: 'A steadier eye, a sharper hoof (+3% crit chance, +25% crit damage).' },
+    xp_boost: { name: 'Scholar\'s Mind', description: 'The glen teaches ye faster (+8% XP gain).' },
+    lucky_start: { name: 'Lucky Start', description: 'Start each run with a random curio already in yir pocket.' },
+    natural_recovery: { name: 'Natural Recovery', description: 'The moor patches ye up as ye run (+0.3 HP/sec).' },
+    revival: { name: 'Second Wind', description: 'Once per run, shrug off death wi\' 50% HP and keep going.' },
+    double_dash: { name: 'Double Dash', description: 'Two dashes in the hoof instead of one.' },
+    treasure_magnet: { name: 'Treasure Magnet', description: 'Chests and coins linger a few breaths longer (+5s).' },
   },
   upgradeCard: {
     // Weapon cards
     add_bagpipe_blast: {
       name: 'Bagpipe Blast',
-      description: 'Blasts of sound in a ring around ye — knocks foes outward.',
+      description: 'A ring of rude sound. Foes blow back like dry bracken.',
     },
     add_caber_toss: {
       name: 'Caber Toss',
-      description: 'Hurl a heavy caber through a line of enemies.',
+      description: 'Hurl a caber through a line of them — Highland Games in combat form.',
     },
     add_scotch_mist: {
       name: 'Scotch Mist',
-      description: 'A choking mist trail that poisons any that linger.',
+      description: 'Trail a choking fog. Anything that lingers in it learns.',
     },
     add_haggis_hurler: {
       name: 'Jobby Hurler',
-      description: 'Wee jobbies that ricochet off the arena until they hit.',
+      description: 'Wee jobbies that ricochet off the arena edges till something soft stops them.',
     },
     add_nessie_tentacle: {
       name: "Nessie's Tentacle",
-      description: 'A sweeping arc before ye — wide reach, meaty knockback.',
+      description: 'A sweeping arm from the loch — wide reach, meatier knockback.',
     },
     add_claymore: {
       name: 'Highland Claymore',
-      description: 'Slow, enormous frontal cleave. Pairs with Tartan Sash to evolve.',
+      description: 'A slow, enormous cleave. Pair with the Tartan Sash to forge a legend.',
     },
     add_bagpipes: {
       name: 'Ceòl Mòr Bagpipes',
-      description: 'A great drone — a pulsing ring harms and slows anything too close.',
+      description: 'A great drone that presses on the crowd till it folds.',
     },
     // Passive cards
     add_sporran: {
       name: 'Sporran',
-      description: '+15% Luck — rarer cards show up more often. Evolves Thistle Shot.',
+      description: 'A wee leather pouch. Somehow rarer cards turn up more often (+15% Luck). Evolves Thistle Shot.',
     },
     add_whisky_flask: {
       name: 'Whisky Flask',
-      description: '+20% radius on every AoE. Evolves Bagpipe Blast.',
+      description: 'A nip before the fight — every AoE blooms 20% wider. Evolves Bagpipe Blast.',
     },
     add_kilt: {
       name: 'Kilt',
-      description: '+15% max HP — room for one more mistake. Evolves Caber Toss.',
+      description: 'Room for one more mistake (+15% max HP). Evolves Caber Toss.',
     },
     add_tam_o_shanter: {
       name: "Tam o' Shanter",
-      description: '+10% move speed — easier kiting against the drift. Evolves Scotch Mist.',
+      description: 'A jaunty blue bonnet. The drift respects it, a little (+10% speed). Evolves Scotch Mist.',
     },
     add_irn_bru: {
       name: 'Irn Bru',
-      description: '+20% attack speed — weapons fire a shade faster. Evolves Jobby Hurler.',
+      description: "Scotland's other national drink — weapons fizz 20% faster. Evolves Jobby Hurler.",
     },
     add_loch_water: {
       name: 'Loch Water',
-      description: '+25% pickup radius — gems and drops come to ye. Evolves Nessie\'s Tentacle.',
+      description: 'Drawn from the depths. Gems hear it and come running (+25% pickup radius). Evolves Nessie\'s Tentacle.',
     },
     add_thistle_crown: {
       name: 'Thistle Crown',
-      description: '+5% crit chance. Thorns: enemies that bump into ye take 3 damage.',
+      description: 'Sharper glances, sharper thorns. +5% crit; attackers take 3 damage on contact.',
     },
     add_highland_shield: {
       name: 'Highland Shield',
-      description: 'Every 20s, ignore a lethal hit — survive at 1 HP instead of dying.',
+      description: 'A blessing for the worst of nights. Every 20s, shrug off a lethal hit.',
     },
     add_tartan_sash: {
       name: 'Tartan Sash',
-      description: '+8% damage on every source. Evolves Highland Claymore.',
+      description: 'Pattern o\' clan and courage. +8% damage on everything. Evolves Highland Claymore.',
     },
     // Stat boost cards
     boost_hp: {
       name: 'Thick Hide',
-      description: '+10 max HP — flat buffer. Stack as many as ye like.',
+      description: 'Room for a wee bit more punishment (+10 max HP). Stack as many as ye like.',
     },
     boost_speed: {
       name: 'Quick Feet',
-      description: '+8% move speed — reposition faster, drift still applies.',
+      description: 'Fresher legs, faster steps (+8% move speed). The drift still whispers, mind.',
     },
     boost_pickup: {
       name: 'Keen Nose',
-      description: '+15 pickup radius — XP gems and drops reach ye sooner.',
+      description: 'Gems on the wind — ye smell them sooner (+15 pickup radius).',
     },
     boost_damage: {
       name: 'Sharpened Thistles',
-      description: '+10% damage — every weapon and effect hits harder.',
+      description: 'Every thistle given a shade more edge (+10% damage, everything).',
     },
     boost_drift: {
       name: 'Balanced Legs',
-      description: '-15% clockwise drift — inputs feel closer to where ye aim.',
+      description: 'The drift eases a little (-15%). Inputs land closer to where ye aim.',
     },
     heal: {
       name: 'Haggis Supper',
-      description: 'Instantly heal 25% of yir current max HP.',
+      description: 'A full plate before the fight. Instantly heal 25% of yir max HP.',
     },
     boost_crit: {
       name: 'Eagle Eye',
-      description: '+5% crit chance — more lucky big hits.',
+      description: 'Ye see the weak points a shade better (+5% crit chance).',
     },
     boost_regen: {
       name: 'Highland Spring',
-      description: '+0.5 HP per second — slow but steady recovery.',
+      description: 'A cold clear stream in yir chest (+0.5 HP/sec, slow and steady).',
     },
     boost_armor: {
       name: 'Iron Hide',
-      description: '+3 armor — flat reduction on incoming damage.',
+      description: 'Harder skin, flatter damage (+3 armor on every hit).',
     },
     boost_cooldown: {
       name: 'Battle Frenzy',
-      description: '-10% weapon cooldowns — more swings, shots, and pulses.',
+      description: 'The blood kens the beat (-10% weapon cooldowns).',
     },
     banish: {
       name: 'Highland Purge',
-      description: 'Remove up to 5 of the weakest nearby enemies — breathing room now.',
+      description: 'Wipe the 5 weakest nearby off the moor. Breathing room now, earned later.',
     },
     boost_lifesteal: {
       name: 'Vampiric Touch',
-      description: '+1 HP on every kill.',
+      description: 'A sip o\' vitality from every kill (+1 HP each).',
     },
     boost_projectile_speed: {
       name: 'Swift Thistles',
-      description: '+15% projectile speed — arrives faster, sticks sooner.',
+      description: 'Projectiles arrive faster and stick sooner (+15% projectile speed).',
     },
     boost_boss_heal: {
       name: 'Trophy Hunter',
-      description: 'When a boss dies, heal 20% max HP — reward for the big fight.',
+      description: 'When a boss folds, heal 20% max HP. A reward for the big fight.',
     },
     boost_knockback: {
       name: 'Highland Force',
-      description: '+25% knockback — shove enemies harder on every hit.',
+      description: 'Every hit lands with a proper shove (+25% knockback).',
     },
     boost_xp: {
       name: 'Wisdom of the Highlands',
-      description: '+15% XP from enemies — level up sooner.',
+      description: 'The moor teaches, if ye\'ll listen (+15% XP from enemies).',
     },
     // Templates used by buildCardPool for level-up cards.
     // Space between "Lv" and the number to match ui.hud.level_fmt for visual
     // consistency across HUD + card + game-over weapon summaries.
     levelup: {
       name: '{weapon} Lv {level}',
-      description: 'Upgrade {weapon} to level {level}.',
+      description: 'Sharpen {weapon} up to level {level}.',
     },
-    evolution_hint: ' At Lv 5, open a treasure chest while carrying {passive} to evolve.',
+    evolution_hint: ' At Lv 5, pop a treasure chest while carrying {passive} to wake its legendary form.',
   },
 };
 

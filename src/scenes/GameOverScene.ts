@@ -318,7 +318,7 @@ export class GameOverScene extends Phaser.Scene {
     if (variantKeys.length === 1) {
       const variant = getVariantByKey(variantKeys[0]);
       const nameText = this.add
-        .text(centerX, y + 26, variant.name, {
+        .text(centerX, y + 26, t(variant.nameKey), {
           fontFamily: 'monospace',
           fontSize: '26px',
           color: '#ffffff',
@@ -330,7 +330,7 @@ export class GameOverScene extends Phaser.Scene {
         .setDepth(depth)
         .setAlpha(0);
       const flavorText = this.add
-        .text(centerX, y + 58, variant.flavorText, {
+        .text(centerX, y + 58, t(variant.flavorKey), {
           fontFamily: 'monospace',
           fontSize: '12px',
           color: '#9ea8bb',
@@ -346,8 +346,8 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     const bodyText = variantKeys.length === 2
-      ? variantKeys.map((key) => getVariantByKey(key).name).join('\n')
-      : variantKeys.map((key) => `- ${getVariantByKey(key).name}`).join('\n');
+      ? variantKeys.map((key) => t(getVariantByKey(key).nameKey)).join('\n')
+      : variantKeys.map((key) => `- ${t(getVariantByKey(key).nameKey)}`).join('\n');
     const unlockList = this.add
       .text(centerX, y + 30, bodyText, {
         fontFamily: 'monospace',

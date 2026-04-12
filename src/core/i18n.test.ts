@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { t } from './i18n';
 import { WEAPON_DEFS } from '../data/weapons';
 import { BOSSES } from '../data/enemies';
@@ -122,5 +124,82 @@ describe('i18n regression fences — data-file coverage', () => {
   it('menu stats line templates exist in short and long forms', () => {
     assertResolves('ui.menu.stats_short', 'ui.menu.stats_short');
     assertResolves('ui.menu.stats_long', 'ui.menu.stats_long');
+  });
+});
+
+/**
+ * Static-analysis fence: catches partial i18n migrations in scene / UI code
+ * by scanning the source tree for the deprecated literal-field access patterns
+ * that Phase 4 migrated AWAY FROM. The legacy `name` / `flavorText` fields
+ * still exist on data interfaces (auto-battler debug logs, analytics), but
+ * they MUST NOT be read by scenes or UI files — those must go through t().
+ *
+ * If this test fails, someone added new code (or reverted old code) that
+ * reads a player-facing data-literal field directly. Replace with t(def.<fieldKey>).
+ */
+describe('i18n regression fences — no legacy literal access in scenes/UI', () => {
+  const ROOT = join(__dirname, '..', '..', 'src');
+  const SCAN_DIRS = ['scenes', 'ui'];
+  // Patterns that indicate a partial migration. Each pattern is a real
+  // scenario observed in this project's history.
+  const FORBIDDEN_PATTERNS: Array<{ pattern: RegExp; reason: string }> = [
+    {
+      pattern: /\bvariant\.name\b/,
+      reason: 'variant.name — use t(variant.nameKey)',
+    },
+    {
+      pattern: /\bvariant\.flavorText\b/,
+      reason: 'variant.flavorText — use t(variant.flavorKey)',
+    },
+    {
+      pattern: /\bbossDef\.name\b/,
+      reason: 'bossDef.name — use t(bossDef.nameKey)',
+    },
+    {
+      pattern: /\bweapon\.config\.name\b/,
+      reason: 'weapon.config.name — use t(weapon.config.nameKey)',
+    },
+    {
+      pattern: /\bupgrade\.name\b/,
+      reason: 'upgrade.name — use t(upgrade.nameKey)',
+    },
+    {
+      pattern: /\bupgrade\.description\b/,
+      reason: 'upgrade.description — use t(upgrade.descriptionKey)',
+    },
+  ];
+
+  function walk(dir: string, out: string[] = []): string[] {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      const s = statSync(full);
+      if (s.isDirectory()) walk(full, out);
+      else if (/\.ts$/.test(entry) && !/\.test\.ts$/.test(entry)) out.push(full);
+    }
+    return out;
+  }
+
+  const filesToScan = SCAN_DIRS
+    .map((d) => join(ROOT, d))
+    .flatMap((d) => walk(d));
+
+  it('scenes/ and ui/ contain no forbidden legacy literal field accesses', () => {
+    const violations: string[] = [];
+    for (const file of filesToScan) {
+      const text = readFileSync(file, 'utf-8');
+      const lines = text.split(/\r?\n/);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        // Skip comments — we want to preserve the freedom to DOCUMENT these
+        // patterns without breaking the test.
+        if (/^\s*\/\//.test(line) || /^\s*\*/.test(line)) continue;
+        for (const { pattern, reason } of FORBIDDEN_PATTERNS) {
+          if (pattern.test(line)) {
+            violations.push(`${relative(ROOT, file)}:${i + 1}: ${reason}\n  ${line.trim()}`);
+          }
+        }
+      }
+    }
+    expect(violations, `legacy literal field access detected:\n${violations.join('\n')}`).toEqual([]);
   });
 });
