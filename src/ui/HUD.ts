@@ -51,8 +51,6 @@ export class HUD {
   private bossBarHighlight!: Phaser.GameObjects.Rectangle;
   private bossBarShadow!: Phaser.GameObjects.Rectangle;
   private bossBarGlow!: Phaser.GameObjects.Rectangle;
-  private bossBarWarningPulseTime = 0;
-  private weaponPulseTime = 0;
   private bossNameText!: Phaser.GameObjects.Text;
   private bossBarVisible: boolean = false;
   private bossHpFraction = 1;
@@ -605,9 +603,9 @@ export class HUD {
 
     // Colour shift based on HP: full red → orange as low → bright red flash at <25%
     if (this.bossHpFraction < 0.25) {
-      // Warning state — pulse the glow behind the bar
-      this.bossBarWarningPulseTime += 0.08;
-      const pulse = 0.3 + Math.sin(this.bossBarWarningPulseTime) * 0.25;
+      // Warning state — wall-clock phase so the pulse is frame-rate-independent
+      // and doesn't accumulate a stale offset if HP oscillates above/below 25%.
+      const pulse = 0.3 + Math.sin(this.scene.time.now * 0.006) * 0.25;
       this.bossBarGlow.setFillStyle(0xff2200, pulse);
       // Brighter fill colour (angry red)
       this.bossBarFill.setFillStyle(0xff2222);
@@ -698,11 +696,14 @@ export class HUD {
         slot.cdFill.setFillStyle(isReady ? 0x44cc44 : 0x005eb8, isReady ? 0.85 : 0.5);
 
         // ── Ready-state pulse: icon breathes gently when weapon is ready to fire ──
-        // Non-destructive — just alpha/scale oscillation using time-based sine.
+        // Wall-clock phase — frame-rate-independent (was `+= 0.08` per frame,
+        // which ran 2× faster on 60fps vs 30fps). 0.0048 rad/ms matches the
+        // previous 60fps cadence.
         if (isReady) {
-          const pulse = 0.92 + Math.sin(this.weaponPulseTime + i * 0.5) * 0.08;
+          const phase = this.scene.time.now * 0.0048 + i * 0.5;
+          const pulse = 0.92 + Math.sin(phase) * 0.08;
           slot.icon.setScale(0.8 * pulse);
-          slot.icon.setAlpha(0.85 + Math.sin(this.weaponPulseTime + i * 0.5) * 0.15);
+          slot.icon.setAlpha(0.85 + Math.sin(phase) * 0.15);
         } else {
           // Cooling: dimmed, muted — visually "spent"
           slot.icon.setScale(0.8);
@@ -710,8 +711,6 @@ export class HUD {
         }
       }
     }
-    // Advance pulse timer (called every frame from update)
-    this.weaponPulseTime += 0.08;
   }
 
   private updatePassiveSlots(passives: string[]): void {

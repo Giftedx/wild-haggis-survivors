@@ -342,20 +342,25 @@ export class WeaponSystem {
     }
   }
 
-  /** Small muzzle flash at projectile fire point — weapon-coloured spark burst. */
+  /** Small muzzle flash at projectile fire point — weapon-coloured spark burst.
+   *  Routed through `StatusFxPool` (acquireArc) instead of `scene.add.circle` so
+   *  a fast-firing player doesn't churn 30-50 GameObjects/sec through GC. */
   private spawnMuzzleFlash(x: number, y: number, color: number): void {
     const scene = this.scene;
+    const pool = scene.getStatusFxPool();
     // Central flash circle — bright, fades fast
-    const flash = scene.add.circle(x, y, 8, color, 0.8).setDepth(4);
+    const flash = pool.acquireArc(x, y, 8, color, 0.8);
+    flash.setDepth(4);
     scene.tweens.add({
       targets: flash, scale: 2, alpha: 0,
       duration: 180, ease: 'Quad.easeOut',
-      onComplete: () => flash.destroy(),
+      onComplete: () => flash.setVisible(false),
     });
     // 4 tiny sparks radiating out
     for (let i = 0; i < 4; i++) {
       const angle = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
-      const spark = scene.add.circle(x, y, 2, color, 0.9).setDepth(4);
+      const spark = pool.acquireArc(x, y, 2, color, 0.9);
+      spark.setDepth(4);
       scene.tweens.add({
         targets: spark,
         x: x + Math.cos(angle) * 12,
@@ -363,7 +368,7 @@ export class WeaponSystem {
         alpha: 0, scale: 0.3,
         duration: 220,
         ease: 'Quad.easeOut',
-        onComplete: () => spark.destroy(),
+        onComplete: () => spark.setVisible(false),
       });
     }
   }

@@ -24,7 +24,6 @@ export class EdgeIndicators {
   private readonly DETECT_RANGE = 500; // Only show indicators for enemies this close
   /** Glow halos behind each indicator for visibility against busy backgrounds. */
   private glows: Phaser.GameObjects.Arc[] = [];
-  private pulseTime = 0;
 
   /** Pre-allocated scratch buffer — avoids per-frame array allocation. */
   private offScreenBuf: OffScreenEntry[];
@@ -165,8 +164,10 @@ export class EdgeIndicators {
       glow.setPosition(sx, sy);
       glow.setVisible(true);
 
-      // Subtle pulse on all indicators (breathes with urgency)
-      const pulse = 0.9 + Math.sin(this.pulseTime * 4 + i) * 0.15;
+      // Subtle pulse on all indicators (breathes with urgency).
+      // Wall-clock phase — frame-rate-independent. The old `+= 0.016` per
+      // frame × 4 multiplier = 3.84 rad/sec at 60fps; 0.004 rad/ms matches.
+      const pulse = 0.9 + Math.sin(this.scene.time.now * 0.004 + i) * 0.15;
 
       // Color based on proximity + threat type: boss/elite = gold, regular = red
       const proximity = 1 - (e.dist / this.DETECT_RANGE);
@@ -193,9 +194,6 @@ export class EdgeIndicators {
     for (let i = toShowCount; i < this.MAX_INDICATORS; i++) {
       this.glows[i].setVisible(false);
     }
-
-    // Advance pulse timer
-    this.pulseTime += 0.016; // ~1 frame at 60fps
   }
 
   destroy(): void {

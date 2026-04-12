@@ -146,8 +146,11 @@ export class TutorialSystem {
       ease: 'Power2',
     });
 
-    // Auto-dismiss after 6 seconds
-    this.scene.time.delayedCall(6000, () => {
+    // Auto-dismiss after 6 seconds — tracked so dispose() can cancel it
+    // if the scene tears down mid-hint (otherwise the callback fires on
+    // already-destroyed driftBanner / driftArrow fields).
+    this.driftTimerEvent = this.scene.time.delayedCall(6000, () => {
+      this.driftTimerEvent = null;
       this.dismissDriftHint();
     });
   }
