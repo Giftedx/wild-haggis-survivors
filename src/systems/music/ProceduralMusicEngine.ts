@@ -131,6 +131,14 @@ class ProceduralMusicEngine {
   update(delta: number, state: GameMusicState): void {
     if (!this.playing || !this.ctx) return;
 
+    // Ctx was closed out from under us (browser aggressive audio lifecycle,
+    // dev-tools close, etc.). Rebuild the graph against a fresh ctx — otherwise
+    // the engine silently stays wired to a dead context.
+    if (this.ctx.state === 'closed') {
+      this.stop();
+      this.start();
+      if (!this.ctx) return;
+    }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
 
     this.conductor.updateMood(delta, state);
@@ -165,6 +173,10 @@ class ProceduralMusicEngine {
       : mood.intensity;
     this.percussion.updatePattern(rhythmDensity);
 
+    // Skip scheduling when muted — gain is 0, so note allocations are pure
+    // GC churn. Conductor mood keeps advancing so a later unmute picks up
+    // the current game state cleanly.
+    if (!this.enabled) return;
     this.scheduler.tick(this.ctx.currentTime);
   }
 
