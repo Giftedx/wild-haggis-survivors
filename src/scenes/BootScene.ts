@@ -631,6 +631,20 @@ export class BootScene extends Phaser.Scene {
         g.fillStyle(0xffffff, 0.8);
         g.fillRect(cx - 1, cy - 13, 2, 5);
         break;
+      case 'pipe_breath':
+        // Subtle wind swirl lines around the body — musical/wind themed
+        g.lineStyle(1.5, palette.accent, 0.6);
+        g.beginPath();
+        g.arc(cx - 8, cy - 2, 8, -Math.PI * 0.3, Math.PI * 0.5);
+        g.strokePath();
+        g.beginPath();
+        g.arc(cx + 10, cy + 1, 6, Math.PI * 0.2, Math.PI * 0.9);
+        g.strokePath();
+        // Small music note accent on head
+        g.fillStyle(palette.accent, 0.9);
+        g.fillCircle(cx + 12, cy - 10, 2);
+        g.fillRect(cx + 13, cy - 16, 1.5, 7);
+        break;
       default:
         break;
     }

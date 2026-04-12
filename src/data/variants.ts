@@ -1,6 +1,6 @@
 import { t } from '../core/i18n';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -29,7 +29,7 @@ export interface HaggisPalette {
   accent: number;
 }
 
-export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot';
+export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -174,6 +174,27 @@ export const VARIANTS: VariantDef[] = [
         fur: 0xc56a52,
         snout: 0xd9a17a,
         accent: 0x66d0ff,
+      },
+    },
+  },
+  {
+    key: 'pipe_breath',
+    nameKey: 'variant.pipe_breath.name',
+    flavorKey: 'variant.pipe_breath.flavor',
+    name: 'Pipe Breath',
+    textureKey: 'haggis_pipe_breath',
+    flavorText: 'Wheesht — the moor exhales through this one.',
+    modifiers: { cooldownReductionPct: 0.08, moveSpeedPct: 0.05, maxHpFlat: -15 },
+    unlock: { type: 'victories', required: 3 },
+    appearance: {
+      accentStyle: 'pipe_breath',
+      palette: {
+        outline: 0x1a1040,
+        bodyDark: 0x362870,
+        bodyLight: 0x5040a0,
+        fur: 0x7060c0,
+        snout: 0xc0907a,
+        accent: 0xaa88ff,
       },
     },
   },
