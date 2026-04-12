@@ -113,24 +113,25 @@ private createTourist(): void {
     // Peeling nose highlight
     g.fillStyle(0xff9977, 1);
     g.fillCircle(cx, cy - 10, 2);
-    // Wide bewildered eyes (this person is LOST)
+    // Wide bewildered eyes ("steel is heavier than feathers" Limmy energy —
+    // this brain CANNOT COMPUTE what is happening to it)
     g.fillStyle(0xffffff, 1);
     g.fillCircle(cx - 4, cy - 13, 3.5);
     g.fillCircle(cx + 4, cy - 13, 3.5);
     g.fillStyle(0x334455, 1);
     g.fillCircle(cx - 4, cy - 13, 2);
     g.fillCircle(cx + 4, cy - 13, 2);
-    // Tiny pupils — the "where am I" stare
+    // Tiny pupils (shrunken from existential panic)
     g.fillStyle(0x111111, 1);
-    g.fillCircle(cx - 4, cy - 13, 1);
-    g.fillCircle(cx + 4, cy - 13, 1);
-    // Worried eyebrows
+    g.fillCircle(cx - 4, cy - 13, 0.8);
+    g.fillCircle(cx + 4, cy - 13, 0.8);
+    // Worried eyebrows (raised, not angry — pure confusion)
     g.lineStyle(1.5, 0x884422, 1);
     g.lineBetween(cx - 7, cy - 16, cx - 3, cy - 17);
     g.lineBetween(cx + 7, cy - 16, cx + 3, cy - 17);
-    // Open mouth (mild distress)
+    // Open mouth (the "but... steel is heavier..." face)
     g.fillStyle(0x993322, 1);
-    g.fillEllipse(cx, cy - 8, 3, 2);
+    g.fillEllipse(cx, cy - 8, 3, 2.5);
 
     // === Tartan bucket hat (the tat-shop special from Buchanan Street) ===
     // Brim (tartan fabric — tan/red check pattern)
@@ -264,9 +265,12 @@ private createChef(): void {
     g.fillStyle(0x996644, 0.4);
     g.fillEllipse(cx - 3, cy - 9, 4, 1.5);
     g.fillEllipse(cx + 3, cy - 9, 4, 1.5);
-    // Thin-lipped mouth — patience has run out
+    // "Gonnae no dae that" mouth — thin-lipped, slightly downturned, patience GONE
     g.fillStyle(0x884433, 1);
     g.fillRect(cx - 3, cy - 6, 6, 1);
+    // Downturned corners (the "just gonnae no" expression)
+    g.fillCircle(cx - 3, cy - 5, 0.5);
+    g.fillCircle(cx + 3, cy - 5, 0.5);
 
     // === Paper chip-shop hat (soda-jerk fold — flat top, turned-up brim all round) ===
     // Flat top crown
@@ -468,7 +472,7 @@ git commit -m "art: haggis hunter — Barbour jacket, wellies, binoculars, prope
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1115-1187` (`createAngryScotsman`)
 
-Barrel-chested, thick-necked, MASSIVE red beard, Buckfast bottle in one hand (dark green glass, cream/off-white label with gold border — the real Bucky), proper Royal Stewart tartan kilt with more detail, one sock fallen down, visible forehead veins, V-neck sunburn (pale chest, lobster-red at collar line — "taps aff" consequence), sgian-dubh handle poking from right sock, kilt pin on front apron. This man is BEELIN'.
+Full Groundskeeper Willie energy — barrel-chested, thick-necked, wrestling-wolves muscular, primal force of nature. MASSIVE red beard, Buckfast bottle in one hand (dark green glass, cream/off-white label with gold border — the real Bucky), proper Royal Stewart tartan kilt with more detail, one sock fallen down, visible forehead veins, V-neck sunburn (pale chest, lobster-red at collar line — "taps aff" consequence), sgian-dubh handle poking from right sock, kilt pin on front apron. "Damn Scots! They ruined Scotland!" energy — this man is PURE AERATED.
 
 - [ ] **Step 1: Rewrite `createAngryScotsman` method**
 
@@ -516,19 +520,25 @@ private createAngryScotsman(): void {
     g.fillStyle(0xcccccc, 1);
     g.fillCircle(cx + 8, cy + 8, 1);
 
-    // === Bare barrel chest (sleeveless — "taps aff" energy) ===
+    // === Bare barrel chest (Groundskeeper Willie physique — absolute unit) ===
+    // Outline (wider, more imposing)
     g.fillStyle(0xaa5533, 1);
-    g.fillRect(cx - 12, cy - 8, 24, 10);
+    g.fillRect(cx - 14, cy - 9, 28, 12);
     g.fillStyle(0xddbb99, 1); // pale torso (Scottish pale)
-    g.fillRect(cx - 11, cy - 7, 22, 8);
+    g.fillRect(cx - 13, cy - 8, 26, 10);
+    // Muscle definition (this man wrestles wolves)
+    g.fillStyle(0xccaa88, 0.4);
+    g.fillEllipse(cx - 5, cy - 4, 8, 6);
+    g.fillEllipse(cx + 5, cy - 4, 8, 6);
     // V-neck sunburn line (lobster-red at collar, white below — the taps-aff tan)
     g.fillStyle(0xee6644, 0.6);
-    g.fillTriangle(cx - 6, cy - 7, cx + 6, cy - 7, cx, cy - 3);
-    // Chest hair (wee tufts)
+    g.fillTriangle(cx - 8, cy - 8, cx + 8, cy - 8, cx, cy - 3);
+    // Chest hair (thick tufts — untamed)
     g.fillStyle(0x883311, 0.5);
-    g.fillCircle(cx - 2, cy - 4, 1.5);
-    g.fillCircle(cx + 2, cy - 3, 1.5);
-    g.fillCircle(cx, cy - 5, 1);
+    g.fillCircle(cx - 3, cy - 4, 2);
+    g.fillCircle(cx + 3, cy - 3, 2);
+    g.fillCircle(cx, cy - 5, 1.5);
+    g.fillCircle(cx - 1, cy - 2, 1);
 
     // === Head (thick neck, pure fury) ===
     // Thick neck
