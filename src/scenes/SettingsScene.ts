@@ -89,6 +89,9 @@ export class SettingsScene extends Phaser.Scene {
     this.uiScale = uiScale;
     this.highContrastUi = highContrastUi;
 
+    // Ambient moor wind — matches MainMenu cozy feel
+    if (!this.working.reduceParticles) audio.startAmbientWind();
+
     const titleColor = highContrastUi ? '#ffe6a8' : '#ffd98a';
     const subtitleColor = highContrastUi ? '#b8c3d4' : '#8a93a8';
     const hintColor = highContrastUi ? '#9ba6bc' : '#6a7388';
@@ -230,6 +233,7 @@ export class SettingsScene extends Phaser.Scene {
     this.gpUpdate = (_t: number, delta: number) => this.tickGamepad(delta);
     this.events.on('update', this.gpUpdate);
     this.events.once('shutdown', () => {
+      audio.stopAmbientWind();
       if (this.gpUpdate) this.events.off('update', this.gpUpdate);
       this.gpUpdate = undefined;
       // Kill any tweens we started so they do not fire into a torn-down scene.
