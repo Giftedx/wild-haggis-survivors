@@ -235,7 +235,7 @@ export class UpgradeCardsUI {
 
     // Card icon
     const icon = this.scene.add.sprite(x, y - 65, card.icon)
-      .setScale(2.5).setScrollFactor(0).setDepth(depth + 1);
+      .setScale(1.4).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 
     // Name — fontSize scales with uiScale so a 1.4x comfort setting
@@ -280,10 +280,10 @@ export class UpgradeCardsUI {
 
     bg.on('pointerout', () => {
       bg.setFillStyle(0x1a1a2e);
-      // Reset scales — must match the values set at creation (icon is 2.5,
+      // Reset scales — must match the values set at creation (icon is 1.4,
       // everything else is 1). Using 2 here permanently shrinks the icon
       // every time the player hovers-then-unhovers a card.
-      icon.setScale(2.5);
+      icon.setScale(1.4);
       name.setScale(1);
       desc.setScale(1);
       rarityLabel.setScale(1);
