@@ -264,9 +264,10 @@ export interface BossConfig {
 // Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
 // melting bosses in <5 seconds because player DPS outpaced these numbers
 // badly. Target kill time is now 20-40 seconds — enough for the fight to
-// feel like a fight instead of a cutscene. NOTE: bosses spawn with
-// gameTimeSec=0 in SpawnSystem (line 109) so they do NOT get HP_SCALE_PER_MINUTE
-// applied on top — these raw numbers are the final HP.
+// feel like a fight instead of a cutscene. NOTE: bosses bypass the regular
+// HP_SCALE_PER_MINUTE formula; instead, SpawnSystem applies a separate
+// time-based scaler (+0.2% per second after minute 5) so these base
+// numbers are the minimum HP — actual HP grows with game time.
 export const BOSSES: BossConfig[] = [
   {
     key: 'gordon',

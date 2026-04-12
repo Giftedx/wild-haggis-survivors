@@ -90,7 +90,7 @@ export class SpawnSystem {
     this.regularSpawnsDisabled = false;
     this.events.removeAllListeners();
 
-    const enemies = this.pool.getChildren() as Enemy[];
+    const enemies = this.pool.children.entries as Enemy[];
     for (const e of enemies) {
       if (e.active) {
         try { (e as any).destroy?.(); } catch { /* ignore */ }
@@ -135,7 +135,7 @@ export class SpawnSystem {
       this.spawnBurst(playerX, playerY);
     }
 
-    const active = this.pool.getChildren() as Enemy[];
+    const active = this.pool.children.entries as Enemy[];
     for (let i = 0; i < active.length; i++) {
       if (active[i].active) active[i].chaseTarget(playerX, playerY, delta);
     }
@@ -191,8 +191,16 @@ export class SpawnSystem {
         packSize: 1,
       };
 
-      // Pass gameTimeSec=0 so boss HP isn't double-scaled — BOSSES data
-      // already defines HP balanced for each boss's spawn time.
+      // Scale boss HP with game time — keeps bosses challenging as player
+      // power grows. +0.2% per second after minute 5: a boss at minute 5
+      // has 1.0× HP, minute 10 → 1.6×, minute 15 → 2.2×.
+      const timeScale = 1 + Math.max(0, (this.gameTimeSec - 300) * 0.002);
+      if (timeScale > 1) {
+        bossAsConfig.hp = Math.ceil(boss.hp * timeScale);
+      }
+
+      // Pass gameTimeSec=0 so regular HP_SCALE_PER_MINUTE isn't applied
+      // on top — the time scaling above is the boss-specific formula.
       enemy.spawn(pos.x, pos.y, bossAsConfig, 0);
       // setBaseDisplayScale updates the anchor the idle bob wobbles around,
       // so bosses actually breathe now instead of being frozen at base scale.
@@ -314,7 +322,7 @@ export class SpawnSystem {
 
   /** Removes active non-boss enemies without kill XP (screen wipe for finale). */
   private clearNonBossEnemiesForFinale(): void {
-    const enemies = this.pool.getChildren() as Enemy[];
+    const enemies = this.pool.children.entries as Enemy[];
     for (const e of enemies) {
       if (!e.active) continue;
       if (e.isBoss()) continue;
@@ -436,7 +444,7 @@ export class SpawnSystem {
     if (frame === this.bossCheckFrame) return this.bossActive;
     this.bossCheckFrame = frame;
     if (!this.bossActive) return false;
-    const active = this.pool.getChildren() as Enemy[];
+    const active = this.pool.children.entries as Enemy[];
     let found = false;
     for (let i = 0; i < active.length; i++) {
       if (active[i].active && (active[i] as Enemy).isBoss()) { found = true; break; }

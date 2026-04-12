@@ -65,7 +65,7 @@ describe('Minimap', () => {
         graphics: () => gfx,
       },
     };
-    const enemyGroup: any = { getChildren: () => [] };
+    const enemyGroup: any = { getChildren: () => [], children: { entries: [] } };
     const minimap = new Minimap(scene);
     minimap.update(100, 100, enemyGroup);
 
@@ -99,7 +99,7 @@ describe('Minimap', () => {
         graphics: () => gfx,
       },
     };
-    const enemyGroup: any = { getChildren: () => [] };
+    const enemyGroup: any = { getChildren: () => [], children: { entries: [] } };
     const minimap = new Minimap(scene);
     minimap.update(100, 100, enemyGroup);
 

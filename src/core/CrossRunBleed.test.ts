@@ -23,13 +23,14 @@ vi.mock('phaser', () => {
   }
 
   class Group {
-    private children: any[] = [];
-    add(obj: any) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead() { return this.children.find(c => !c.active) ?? null; }
-    getLength() { return this.children.length; }
-    countActive() { return this.children.filter(c => c.active).length; }
-    clear() { this.children = []; }
+    private _children: any[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: any) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead() { return this._children.find((c: any) => !c.active) ?? null; }
+    getLength() { return this._children.length; }
+    countActive() { return this._children.filter((c: any) => c.active).length; }
+    clear() { this._children = []; }
   }
 
   return {
@@ -88,13 +89,14 @@ import { SpawnSystem } from '../systems/SpawnSystem';
 async function makeFakeScene(tm: TimeManager) {
   // Avoid relying on Phaser's Group constructor signature (typings expect args).
   class SimpleGroup {
-    private children: any[] = [];
-    add(obj: any) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead() { return this.children.find(c => !c.active) ?? null; }
-    getLength() { return this.children.length; }
-    countActive(_includeChildren?: boolean) { return this.children.filter(c => c.active).length; }
-    clear() { this.children = []; }
+    private _children: any[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: any) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead() { return this._children.find((c: any) => !c.active) ?? null; }
+    getLength() { return this._children.length; }
+    countActive(_includeChildren?: boolean) { return this._children.filter((c: any) => c.active).length; }
+    clear() { this._children = []; }
   }
   const scene: any = {
     add: {

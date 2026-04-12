@@ -24,14 +24,15 @@ vi.mock('phaser', () => {
     removeAllListeners() { this.handlers = {}; }
   }
   class Group {
-    private children: unknown[] = [];
-    add(obj: unknown) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead(_?: boolean) { return (this.children as { active?: boolean }[]).find(c => !c.active) ?? null; }
-    getLength() { return this.children.length; }
+    private _children: unknown[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: unknown) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead(_?: boolean) { return (this._children as { active?: boolean }[]).find(c => !c.active) ?? null; }
+    getLength() { return this._children.length; }
     countActive(value?: boolean) {
       const v = value === undefined ? true : value;
-      return (this.children as { active: boolean }[]).filter(c => c.active === v).length;
+      return (this._children as { active: boolean }[]).filter(c => c.active === v).length;
     }
   }
   return {
@@ -61,13 +62,14 @@ import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeSpawnScene() {
   class SimpleGroup {
-    private children: unknown[] = [];
-    add(obj: unknown) { this.children.push(obj); return obj; }
-    getChildren() { return this.children; }
-    getFirstDead(_?: boolean) { return (this.children as { active?: boolean }[]).find(c => !c.active) ?? null; }
+    private _children: unknown[] = [];
+    get children() { return { entries: this._children }; }
+    add(obj: unknown) { this._children.push(obj); return obj; }
+    getChildren() { return this._children; }
+    getFirstDead(_?: boolean) { return (this._children as { active?: boolean }[]).find(c => !c.active) ?? null; }
     countActive(value?: boolean) {
       const v = value === undefined ? true : value;
-      return (this.children as { active: boolean }[]).filter(c => c.active === v).length;
+      return (this._children as { active: boolean }[]).filter(c => c.active === v).length;
     }
   }
   return {

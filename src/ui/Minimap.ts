@@ -75,7 +75,7 @@ export class Minimap {
     // Enemy dots (sample every 4th for performance) — sized up from the
     // previous 1-1.5px to keep elite and boss markers readable at the
     // larger minimap size.
-    const enemies = enemyGroup.getChildren() as Enemy[];
+    const enemies = enemyGroup.children.entries as Enemy[];
     for (let i = 0; i < enemies.length; i += 4) {
       const e = enemies[i];
       if (!e.active) continue;

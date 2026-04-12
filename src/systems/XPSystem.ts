@@ -48,7 +48,7 @@ export class XPSystem {
     this.levelUpInProgress = false;
 
     // Deactivate all gems so no orphaned pickups bleed into the next run.
-    const gems = this.gemPool.getChildren() as XPGem[];
+    const gems = this.gemPool.children.entries as XPGem[];
     for (const g of gems) {
       if (g.active) g.collect();
     }
@@ -58,7 +58,7 @@ export class XPSystem {
 
   destroy(): void {
     this.resetRunState();
-    const gems = this.gemPool.getChildren() as XPGem[];
+    const gems = this.gemPool.children.entries as XPGem[];
     for (const g of gems) {
       try { (g as any).destroy?.(); } catch { /* ignore */ }
     }
@@ -67,7 +67,7 @@ export class XPSystem {
 
   /** Lightweight gem positions for dev auto-battler steering (no Phaser deps in consumer). */
   getGemPositionsForAutoBattle(): Array<{ x: number; y: number; active: boolean }> {
-    return (this.gemPool.getChildren() as XPGem[]).map((g) => ({
+    return (this.gemPool.children.entries as XPGem[]).map((g) => ({
       x: g.x,
       y: g.y,
       active: g.active,
@@ -98,7 +98,7 @@ export class XPSystem {
     if (hpFraction > 0 && hpFraction < BALANCE.xp.criticalHpMagnetThreshold) {
       pickupRadius *= BALANCE.xp.criticalHpMagnetMultiplier;
     }
-    const gems = this.gemPool.getChildren() as XPGem[];
+    const gems = this.gemPool.children.entries as XPGem[];
     for (const gem of gems) {
       if (!gem.active) continue;
 
@@ -158,7 +158,7 @@ export class XPSystem {
 
   /** Vacuum all gems toward the player instantly (called on level-up) */
   vacuumAllGems(): void {
-    const gems = this.gemPool.getChildren() as XPGem[];
+    const gems = this.gemPool.children.entries as XPGem[];
     for (const gem of gems) {
       if (gem.active) {
         gem.forceCollect();
