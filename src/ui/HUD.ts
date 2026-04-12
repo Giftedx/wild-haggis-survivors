@@ -71,6 +71,10 @@ export class HUD {
 
   // Low-HP pulse state (for the fill's alpha/scale wobble)
   private lowHpPulse: number = 0;
+  // Dash-ready pulse phase — drives a subtle scale/alpha wobble on the dash
+  // pips when a charge is available, so the player can glance at the HUD
+  // under combat pressure and see "yes, dash is ready" at a single tick.
+  private dashReadyPulse: number = 0;
   private layoutWidth = 0;
   private layoutHeight = 0;
   private layoutX = 0;
@@ -168,8 +172,10 @@ export class HUD {
 
     this.shieldIcon = this.addEl(this.scene.add.image(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2, 'hud_shield')
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
-    const dashStyle = { ...style, fontSize: '12px', color: '#d4a017' };
-    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 18, '', {
+    // Dash row — bumped 12px → 14px for readability under combat stress, and
+    // pip pool rebuilt slightly larger so they scale along with the text.
+    const dashStyle = { ...style, fontSize: '14px', color: '#d4a017', fontStyle: 'bold' };
+    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 20, '', {
       ...dashStyle,
     }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
     for (let i = 0; i < this.dashPipPool; i++) {
@@ -378,21 +384,51 @@ export class HUD {
       const cooldownPct = dashCooldownFrac !== undefined
         ? Math.round(Math.max(0, Math.min(1, dashCooldownFrac)) * 100)
         : 0;
-      const suffix = clampedCharges > 0 ? t('ui.hud.dash_ready') : t('ui.hud.dash_cooldown_pct', { pct: cooldownPct });
+      const dashReady = clampedCharges > 0;
+      const suffix = dashReady ? t('ui.hud.dash_ready') : t('ui.hud.dash_cooldown_pct', { pct: cooldownPct });
       const ay = this.dashHudAnchorY;
+
+      // Animated "ready" glow — scale and alpha wobble on the full pips when
+      // a charge is available. Drives on raw frame phase so the pulse runs
+      // even when the game is timeScaled down (hit freeze, slow-mo), giving
+      // the player a consistent "dash is there" signal.
+      if (dashReady) {
+        this.dashReadyPulse += 0.1;
+      } else {
+        this.dashReadyPulse = 0;
+      }
+      const readyPulseScale = dashReady
+        ? 1 + Math.sin(this.dashReadyPulse) * 0.12
+        : 1;
+      const readyPulseAlpha = dashReady
+        ? 0.75 + Math.sin(this.dashReadyPulse) * 0.25
+        : 1;
+
       this.dashPrefixText.setVisible(true);
       this.dashPrefixText.setText(t('ui.hud.dash_label'));
       this.dashPrefixText.setPosition(this.dashHudAnchorX, ay);
-      const pipStride = 12 * this.uiScale;
-      let x = this.dashPrefixText.x + this.dashPrefixText.width + 2 * this.uiScale;
+      // Prefix color follows the state: gold + bright when ready,
+      // dim-grey-gold when on cooldown.
+      this.dashPrefixText.setColor(
+        dashReady
+          ? (this.highContrastUi ? '#ffe68a' : '#ffcc44')
+          : (this.highContrastUi ? '#8a7a4a' : '#7a6a3a')
+      );
+      // Pips rendered at a slightly larger stride so they breathe under
+      // the bumped dash font.
+      const pipStride = 14 * this.uiScale;
+      let x = this.dashPrefixText.x + this.dashPrefixText.width + 4 * this.uiScale;
       const fullKey = 'hud_dash_pip_full';
       const emptyKey = 'hud_dash_pip_empty';
       for (let i = 0; i < this.dashPipPool; i++) {
         const pip = this.dashPipImages[i];
         if (i < maxDashCharges) {
           pip.setVisible(true);
-          pip.setTexture(i < clampedCharges ? fullKey : emptyKey);
-          pip.setScale(this.uiScale);
+          const isFull = i < clampedCharges;
+          pip.setTexture(isFull ? fullKey : emptyKey);
+          // Only the full pips pulse — empties stay static.
+          pip.setScale(this.uiScale * (isFull ? readyPulseScale : 1));
+          pip.setAlpha(isFull ? readyPulseAlpha : 0.65);
           pip.setPosition(x + pipStride / 2, ay);
           x += pipStride;
         } else {
@@ -402,6 +438,11 @@ export class HUD {
       this.dashSuffixText.setVisible(true);
       this.dashSuffixText.setText(` ${suffix}`);
       this.dashSuffixText.setPosition(x + 2 * this.uiScale, ay);
+      this.dashSuffixText.setColor(
+        dashReady
+          ? (this.highContrastUi ? '#ffe68a' : '#ffcc44')
+          : (this.highContrastUi ? '#8a7a4a' : '#7a6a3a')
+      );
     } else {
       this.dashPrefixText.setVisible(false);
       this.dashSuffixText.setVisible(false);
