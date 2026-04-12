@@ -26,7 +26,16 @@ export class MetaShopScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    // Warm amber wash at the top — cozy between storms
+    this.add.rectangle(width / 2, 30, width, 60, 0xd4a017, 0.03);
     this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);
+    // Heather strip at the bottom for highland warmth
+    if (this.textures.exists('deco_heather')) {
+      for (let i = 0; i < 5; i++) {
+        const hx = 60 + i * (width - 120) / 4;
+        this.add.image(hx, height - 12, 'deco_heather').setAlpha(0.35).setScale(1.2).setDepth(0);
+      }
+    }
 
     const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 1).setDepth(999);
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
@@ -197,6 +206,22 @@ export class MetaShopScene extends Phaser.Scene {
     audio.playClick();
     this.saveManager.save(r.next);
     audio.playPurchase();
+
+    // Gold particle burst — purchase feels celebratory
+    const gx = this.killsText.x;
+    const gy = this.killsText.y;
+    for (let i = 0; i < 3; i++) {
+      const dot = this.add.circle(
+        gx + Phaser.Math.Between(-20, 20), gy,
+        Phaser.Math.Between(2, 4), 0x77c977, 0.7
+      ).setDepth(10);
+      this.tweens.add({
+        targets: dot, y: gy - 20 - i * 8, alpha: 0, scale: 0,
+        duration: 300 + i * 80, ease: 'Power2',
+        onComplete: () => dot.destroy(),
+      });
+    }
+
     this.renderRows();
   }
 

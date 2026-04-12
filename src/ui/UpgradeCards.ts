@@ -220,6 +220,11 @@ export class UpgradeCardsUI {
       const glow = this.scene.add.rectangle(x, y, w + 4, h + 4, borderColor, 0.1)
         .setScrollFactor(0).setDepth(depth - 1);
       this.elements.push(glow);
+    } else {
+      // Common/uncommon cards get a subtle warm wash so they don't feel flat
+      const glow = this.scene.add.rectangle(x, y, w + 2, h + 2, 0xd4a017, 0.04)
+        .setScrollFactor(0).setDepth(depth - 1);
+      this.elements.push(glow);
     }
 
     const textureManager = (this.scene as unknown as { textures?: { exists: (key: string) => boolean } }).textures;

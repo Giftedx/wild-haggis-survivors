@@ -76,6 +76,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private knockbackVx: number = 0;
   private knockbackVy: number = 0;
   private knockbackTimer: number = 0;
+  private knockbackTrailAccum: number = 0;
 
   /** Display scale anchor — set whenever the enemy's "base" visual size
    *  should change (elite 1.3×, boss 2.0-3.0×, enraged hazard 1.5×). The
@@ -390,9 +391,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.knockbackTimer -= delta;
       const k = Math.max(0, this.knockbackTimer / 150);
       this.setVelocity(this.knockbackVx * k, this.knockbackVy * k);
+
+      // Faint trail during knockback — sells the push visually
+      this.knockbackTrailAccum += delta;
+      if (this.knockbackTrailAccum >= 50 && this.scene && !getSettingsManager().load().reduceParticles) {
+        this.knockbackTrailAccum = 0;
+        const dot = this.scene.add.circle(this.x, this.y, 3, this.baseTint || 0xcc4444, 0.15).setDepth(-1);
+        this.scene.tweens.add({
+          targets: dot, alpha: 0, scale: 0.3, duration: 200,
+          onComplete: () => dot.destroy(),
+        });
+      }
+
       if (this.knockbackTimer <= 0) {
         this.knockbackVx = 0;
         this.knockbackVy = 0;
+        this.knockbackTrailAccum = 0;
       }
       // Tick behavior-specific state-machine timers that would otherwise
       // freeze while behavior is skipped. Without this, a ghost hit by
@@ -403,7 +417,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (this.phaseTimer <= 0) {
           this.phaseTimer = 2000;
           this.isPhased = !this.isPhased;
-          this.setAlpha(this.isPhased ? 0.3 : 1);
+          this.spawnPhasePuff();
+          this.scene?.tweens.add({ targets: this, alpha: this.isPhased ? 0.3 : 1, duration: 120 });
           const body = this.body as Phaser.Physics.Arcade.Body;
           body.checkCollision.none = this.isPhased;
         }
@@ -604,7 +619,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.phaseTimer <= 0) {
       this.phaseTimer = BALANCE.enemy.phaseToggleMs;
       this.isPhased = !this.isPhased;
-      this.setAlpha(this.isPhased ? 0.3 : 1);
+      this.spawnPhasePuff();
+      this.scene?.tweens.add({ targets: this, alpha: this.isPhased ? 0.3 : 1, duration: 120 });
       // When phased, disable physics body so projectiles pass through
       const body = this.body as Phaser.Physics.Arcade.Body;
       if (this.isPhased) {
@@ -612,6 +628,27 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       } else {
         body.checkCollision.none = false;
       }
+    }
+  }
+
+  /** Subtle particle puff when ghost toggles phase state */
+  private spawnPhasePuff(): void {
+    if (!this.scene || !this.active) return;
+    const settings = getSettingsManager().load();
+    if (settings.reduceParticles) return;
+    const color = this.isPhased ? 0xaaddff : 0x8899cc;
+    for (let i = 0; i < 3; i++) {
+      const angle = (i / 3) * Math.PI * 2 + Math.random() * 0.5;
+      const px = this.x + Math.cos(angle) * 6;
+      const py = this.y + Math.sin(angle) * 6;
+      const dot = this.scene.add.circle(px, py, 2, color, 0.5).setDepth(5);
+      this.scene.tweens.add({
+        targets: dot,
+        x: px + Math.cos(angle) * 14,
+        y: py + Math.sin(angle) * 14,
+        alpha: 0, scale: 0.3, duration: 200,
+        onComplete: () => dot.destroy(),
+      });
     }
   }
 
@@ -928,7 +965,44 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.damage = Math.ceil(this.damage * 1.25);
       this.baseTint = 0xff2200;
       this.setTint(0xff2200);
-      tryCameraShake(this.scene.cameras.main, 200, 0.01, getSettingsManager());
+      tryCameraShake(this.scene.cameras.main, 400, 0.02, getSettingsManager());
+
+      // Dramatic enrage spectacle — expanding red ring + scale pulse + particles
+      if (this.scene) {
+        // Expanding red ring
+        const ring = this.scene.add.circle(this.x, this.y, 10, 0xff2200, 0.7).setDepth(5);
+        this.scene.tweens.add({
+          targets: ring, scaleX: 5, scaleY: 5, alpha: 0, duration: 350,
+          ease: 'Cubic.easeOut', onComplete: () => ring.destroy(),
+        });
+
+        // Scale pulse — boss swells briefly then settles
+        const origScale = this.baseDisplayScale;
+        this.scene.tweens.add({
+          targets: this, scaleX: origScale * 1.2, scaleY: origScale * 1.2,
+          duration: 150, yoyo: true, ease: 'Sine.easeOut',
+        });
+
+        // Red particles radiating outward
+        const settings = getSettingsManager().load();
+        const count = settings.reduceParticles ? 3 : 6;
+        for (let i = 0; i < count; i++) {
+          const angle = (i / count) * Math.PI * 2;
+          const px = this.x + Math.cos(angle) * 8;
+          const py = this.y + Math.sin(angle) * 8;
+          const dot = this.scene.add.circle(px, py, 3, 0xff4444, 0.8).setDepth(5);
+          this.scene.tweens.add({
+            targets: dot,
+            x: px + Math.cos(angle) * 40,
+            y: py + Math.sin(angle) * 40,
+            alpha: 0, scale: 0, duration: 300 + Math.random() * 150,
+            onComplete: () => dot.destroy(),
+          });
+        }
+      }
+
+      // Notify GameScene for toast
+      globalEventBus.emit('bossEnraged', this.enemyKey);
     }
 
     this.setTintFill(0xffffff);
