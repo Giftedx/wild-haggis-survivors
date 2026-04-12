@@ -1994,82 +1994,144 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Legs (black socks with diamond pattern)
-    g.fillStyle(0x222222, 1);
+    g.fillStyle(0x111111, 1);
     g.fillRect(cx - 7, cy + 12, 5, 8);
     g.fillRect(cx + 2, cy + 12, 5, 8);
-    g.fillStyle(0xdddddd, 0.6);
-    g.fillRect(cx - 6, cy + 14, 3, 1);
-    g.fillRect(cx + 3, cy + 14, 3, 1);
-
-    // Kilt
-    g.fillStyle(0x003366, 1);
-    g.fillRect(cx - 10, cy + 2, 20, 12);
-    g.fillStyle(0x336699, 1);
-    g.fillRect(cx - 9, cy + 3, 18, 10);
-    // Tartan
-    g.lineStyle(1, 0x004488, 1);
-    g.lineBetween(cx - 9, cy + 6, cx + 9, cy + 6);
-    g.lineBetween(cx - 9, cy + 10, cx + 9, cy + 10);
-
-    // Jacket
-    g.fillStyle(0x222233, 1);
-    g.fillRect(cx - 10, cy - 6, 20, 10);
-    g.fillStyle(0x446688, 1);
-    g.fillRect(cx - 9, cy - 5, 18, 8);
-
-    // Head
-    g.fillStyle(0xaa6644, 1);
-    g.fillCircle(cx, cy - 12, 8);
-    g.fillStyle(0xffccaa, 1);
-    g.fillCircle(cx, cy - 12, 7);
-    // Puffed cheeks (blowing pipes)
-    g.fillStyle(0xffaa88, 1);
-    g.fillCircle(cx - 6, cy - 10, 2);
-    g.fillCircle(cx + 6, cy - 10, 2);
-    // Eyes
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx - 3, cy - 13, 1);
-    g.fillCircle(cx + 3, cy - 13, 1);
-
-    // Tam o'shanter (tartan beret)
-    g.fillStyle(0x002244, 1);
-    g.fillEllipse(cx, cy - 19, 14, 5);
-    g.fillStyle(0x003366, 1);
-    g.fillEllipse(cx, cy - 20, 12, 4);
-    // Pom-pom
+    g.fillStyle(0xeeeeee, 0.5);
+    g.fillTriangle(cx - 5, cy + 14, cx - 4, cy + 16, cx - 6, cy + 16);
+    g.fillTriangle(cx + 4, cy + 14, cx + 5, cy + 16, cx + 3, cy + 16);
     g.fillStyle(0xcc0000, 1);
-    g.fillCircle(cx + 4, cy - 23, 2.5);
+    g.fillRect(cx - 7, cy + 12, 5, 1);
+    g.fillRect(cx + 2, cy + 12, 5, 1);
 
-    // Iconic: BAGPIPES — big checkered bag under the arm
-    g.fillStyle(0x442200, 1);
-    g.fillEllipse(cx - 14, cy + 2, 14, 12);
-    g.fillStyle(0x884422, 1);
-    g.fillEllipse(cx - 14, cy + 2, 12, 10);
-    // Bag pattern
-    g.fillStyle(0xaa6633, 1);
-    g.fillRect(cx - 18, cy - 1, 3, 3);
-    g.fillRect(cx - 13, cy + 3, 3, 3);
-    g.fillRect(cx - 18, cy + 4, 3, 3);
+    g.fillStyle(0x001a44, 1);
+    g.fillRect(cx - 10, cy + 2, 20, 12);
+    g.fillStyle(0x003366, 1);
+    g.fillRect(cx - 9, cy + 3, 18, 10);
+    g.fillStyle(0x004488, 0.8);
+    g.fillRect(cx - 9, cy + 6, 18, 1);
+    g.fillRect(cx - 9, cy + 10, 18, 1);
+    g.fillRect(cx - 4, cy + 3, 1, 10);
+    g.fillRect(cx + 4, cy + 3, 1, 10);
+    g.fillStyle(0x2266aa, 0.5);
+    g.fillRect(cx - 9, cy + 8, 18, 1);
 
-    // Drone pipes sticking up from bag (iconic!)
-    g.fillStyle(0x221100, 1);
-    g.fillRect(cx - 19, cy - 14, 2, 16);
-    g.fillRect(cx - 15, cy - 16, 2, 18);
-    g.fillRect(cx - 11, cy - 14, 2, 16);
-    g.fillStyle(0x664422, 1);
-    g.fillRect(cx - 19, cy - 13, 1, 15);
-    g.fillRect(cx - 15, cy - 15, 1, 17);
-    g.fillRect(cx - 11, cy - 13, 1, 15);
-    // Pipe caps
+    // Full dress sporran (white horsehair, silver cantle)
+    g.lineStyle(1, 0xcccccc, 0.9);
+    g.lineBetween(cx - 7, cy + 3, cx + 7, cy + 3);
+    g.fillStyle(0xdddddd, 1);
+    g.fillEllipse(cx, cy + 6, 8, 6);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillEllipse(cx, cy + 6, 6, 5);
+    g.fillStyle(0xcccccc, 0.6);
+    g.fillRect(cx - 2, cy + 4, 1, 4);
+    g.fillRect(cx + 1, cy + 5, 1, 3);
+    g.fillStyle(0x888899, 1);
+    g.fillEllipse(cx, cy + 3, 8, 3);
+    g.fillStyle(0xaaaabb, 1);
+    g.fillEllipse(cx, cy + 3, 6, 2);
+    g.fillStyle(0xccccdd, 0.8);
+    g.fillCircle(cx - 2, cy + 3, 0.5);
+    g.fillCircle(cx, cy + 3, 0.5);
+    g.fillCircle(cx + 2, cy + 3, 0.5);
+    g.fillStyle(0x111111, 1);
+    g.fillRect(cx - 2, cy + 8, 1, 4);
+    g.fillRect(cx, cy + 8, 1, 4);
+    g.fillRect(cx + 2, cy + 8, 1, 4);
+    g.fillCircle(cx - 2, cy + 12, 0.8);
+    g.fillCircle(cx, cy + 12, 0.8);
+    g.fillCircle(cx + 2, cy + 12, 0.8);
+
+    // Military doublet
+    g.fillStyle(0x0a0a1a, 1);
+    g.fillRect(cx - 10, cy - 6, 20, 10);
+    g.fillStyle(0x222244, 1);
+    g.fillRect(cx - 9, cy - 5, 18, 8);
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(cx - 2, cy - 3, 0.8);
+    g.fillCircle(cx - 2, cy, 0.8);
+    g.fillCircle(cx + 2, cy - 3, 0.8);
+    g.fillCircle(cx + 2, cy, 0.8);
+    g.fillStyle(0xdddd00, 0.8);
+    g.fillRect(cx - 10, cy - 6, 3, 2);
+    g.fillRect(cx + 7, cy - 6, 3, 2);
+
+    // Head (GOING RED from blowing)
+    g.fillStyle(0xcc5533, 1);
+    g.fillCircle(cx, cy - 12, 8);
+    g.fillStyle(0xee7755, 1);
+    g.fillCircle(cx, cy - 12, 7);
+    g.fillStyle(0xff8866, 1);
+    g.fillCircle(cx - 7, cy - 10, 3);
+    g.fillCircle(cx + 7, cy - 10, 3);
+    g.fillStyle(0xffaa88, 0.8);
+    g.fillCircle(cx - 7, cy - 11, 1.5);
+    g.fillCircle(cx + 7, cy - 11, 1.5);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx - 3, cy - 14, 1.8);
+    g.fillCircle(cx + 3, cy - 14, 1.8);
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx - 3, cy - 14, 0.8);
+    g.fillCircle(cx + 3, cy - 14, 0.8);
+    g.fillStyle(0xaaddff, 0.8);
+    g.fillCircle(cx + 6, cy - 15, 0.8);
+
+    // Tam o'shanter (diced border, badge, red toorie)
+    g.fillStyle(0x001133, 1);
+    g.fillEllipse(cx, cy - 19, 16, 5);
+    g.fillStyle(0x002255, 1);
+    g.fillEllipse(cx, cy - 20, 14, 4);
+    g.fillStyle(0xcc0000, 1);
+    g.fillRect(cx - 7, cy - 18, 2, 1);
+    g.fillRect(cx - 3, cy - 18, 2, 1);
+    g.fillRect(cx + 1, cy - 18, 2, 1);
+    g.fillRect(cx + 5, cy - 18, 2, 1);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 5, cy - 18, 2, 1);
+    g.fillRect(cx - 1, cy - 18, 2, 1);
+    g.fillRect(cx + 3, cy - 18, 2, 1);
     g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx - 20, cy - 15, 4, 2);
-    g.fillRect(cx - 16, cy - 17, 4, 2);
-    g.fillRect(cx - 12, cy - 15, 4, 2);
+    g.fillCircle(cx - 3, cy - 20, 1.5);
+    g.fillStyle(0xffcc22, 1);
+    g.fillCircle(cx - 3, cy - 20, 0.8);
+    g.fillStyle(0x990000, 1);
+    g.fillCircle(cx + 5, cy - 23, 3.5);
+    g.fillStyle(0xcc1111, 1);
+    g.fillCircle(cx + 5, cy - 23, 3);
+    g.fillStyle(0xee3333, 0.7);
+    g.fillCircle(cx + 4, cy - 24, 1.5);
 
-    // Chanter (blow pipe to mouth)
-    g.fillStyle(0x221100, 1);
-    g.fillRect(cx - 5, cy - 11, 3, 3);
+    // BAGPIPES (tartan bag under arm)
+    g.fillStyle(0x002244, 1);
+    g.fillEllipse(cx - 14, cy, 16, 14);
+    g.fillStyle(0x114466, 1);
+    g.fillEllipse(cx - 14, cy, 14, 12);
+    g.fillStyle(0x003366, 0.8);
+    g.fillRect(cx - 20, cy - 2, 12, 1);
+    g.fillRect(cx - 20, cy + 2, 12, 1);
+    g.fillRect(cx - 16, cy - 5, 1, 10);
+    g.fillRect(cx - 12, cy - 5, 1, 10);
+
+    // Drone pipes with gold ferrules
+    g.fillStyle(0x1a1100, 1);
+    g.fillRect(cx - 19, cy - 16, 2, 18);
+    g.fillRect(cx - 15, cy - 18, 2, 20);
+    g.fillRect(cx - 11, cy - 16, 2, 18);
+    g.fillStyle(0x443300, 1);
+    g.fillRect(cx - 19, cy - 15, 1, 17);
+    g.fillRect(cx - 15, cy - 17, 1, 19);
+    g.fillRect(cx - 11, cy - 15, 1, 17);
+    g.fillStyle(0xddaa00, 1);
+    g.fillRect(cx - 20, cy - 17, 4, 2);
+    g.fillRect(cx - 16, cy - 19, 4, 2);
+    g.fillRect(cx - 12, cy - 17, 4, 2);
+    g.fillStyle(0xccaa00, 0.8);
+    g.fillRect(cx - 20, cy - 8, 4, 1);
+    g.fillRect(cx - 16, cy - 8, 4, 1);
+    g.fillRect(cx - 12, cy - 8, 4, 1);
+
+    g.fillStyle(0x1a1100, 1);
+    g.fillRect(cx - 8, cy - 12, 6, 2);
 
     g.generateTexture('piper', s, s);
     g.destroy();
@@ -2080,49 +2142,85 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Wool body outline
-    g.fillStyle(0xbbbbbb, 1);
+    // Wool body (matted, dirty hill sheep)
+    g.fillStyle(0x999988, 1);
     g.fillEllipse(cx, cy, 28, 20);
-    // Cloud-shaped wool body (multiple overlapping circles)
-    g.fillStyle(0xf0f0f0, 1);
+    g.fillStyle(0xddddcc, 1);
     g.fillCircle(cx - 8, cy, 7);
     g.fillCircle(cx - 2, cy - 3, 8);
     g.fillCircle(cx + 4, cy - 2, 7);
     g.fillCircle(cx + 8, cy + 1, 6);
     g.fillCircle(cx - 6, cy + 3, 6);
     g.fillCircle(cx + 2, cy + 4, 6);
-    // Wool highlights
-    g.fillStyle(0xffffff, 1);
+    g.fillStyle(0xbbbb99, 0.6);
+    g.fillCircle(cx - 5, cy + 4, 3);
+    g.fillCircle(cx + 6, cy + 3, 2.5);
+    g.fillStyle(0xaaaa88, 0.4);
+    g.fillCircle(cx - 8, cy + 2, 2);
+    g.fillStyle(0xeeeedd, 1);
     g.fillCircle(cx - 4, cy - 4, 4);
     g.fillCircle(cx + 3, cy - 3, 4);
-    g.fillCircle(cx - 7, cy + 1, 3);
 
-    // Legs (small, poke out from under wool)
+    // Thistle stuck in wool
+    g.fillStyle(0x9966cc, 1);
+    g.fillCircle(cx - 10, cy - 3, 1.5);
+    g.fillStyle(0xbb88ee, 1);
+    g.fillCircle(cx - 10, cy - 3, 0.8);
+    g.fillStyle(0x336622, 1);
+    g.fillRect(cx - 10, cy - 2, 1, 3);
+
+    // Legs
     g.fillStyle(0x111111, 1);
     g.fillRect(cx - 8, cy + 8, 3, 5);
     g.fillRect(cx - 3, cy + 8, 3, 5);
     g.fillRect(cx + 2, cy + 8, 3, 5);
     g.fillRect(cx + 7, cy + 8, 3, 5);
+    g.fillStyle(0x332211, 0.7);
+    g.fillRect(cx - 8, cy + 12, 3, 1);
+    g.fillRect(cx + 7, cy + 12, 3, 1);
 
-    // Head (iconic black face poking out)
+    // Head (Scottish Blackface)
     g.fillStyle(0x000000, 1);
     g.fillCircle(cx + 11, cy - 1, 6);
-    g.fillStyle(0x222222, 1);
+    g.fillStyle(0x1a1a1a, 1);
     g.fillCircle(cx + 11, cy - 1, 5);
-    // Ears
+    g.fillStyle(0xddddcc, 0.7);
+    g.fillRect(cx + 10, cy - 2, 2, 4);
+
+    // DRAMATIC CURLING RAM'S HORNS
+    g.fillStyle(0x887755, 1);
+    g.fillTriangle(cx + 6, cy - 4, cx + 2, cy - 9, cx + 4, cy - 2);
+    g.fillStyle(0xaa9966, 1);
+    g.fillTriangle(cx + 6, cy - 4, cx + 3, cy - 8, cx + 5, cy - 3);
+    g.fillStyle(0x776644, 0.6);
+    g.fillRect(cx + 4, cy - 6, 2, 1);
+    g.fillStyle(0x887755, 1);
+    g.fillTriangle(cx + 16, cy - 4, cx + 20, cy - 9, cx + 18, cy - 2);
+    g.fillStyle(0xaa9966, 1);
+    g.fillTriangle(cx + 16, cy - 4, cx + 19, cy - 8, cx + 17, cy - 3);
+    g.fillStyle(0x776644, 0.6);
+    g.fillRect(cx + 17, cy - 6, 2, 1);
+
+    // Ears (one up, one flopped)
     g.fillStyle(0x000000, 1);
     g.fillTriangle(cx + 8, cy - 7, cx + 10, cy - 4, cx + 6, cy - 4);
-    g.fillTriangle(cx + 14, cy - 7, cx + 12, cy - 4, cx + 16, cy - 4);
-    // Glowing yellow eyes (creepy!)
+    g.fillTriangle(cx + 14, cy - 4, cx + 16, cy - 2, cx + 13, cy - 1);
+
+    // Creepy yellow eyes with horizontal SLIT PUPILS
     g.fillStyle(0xffdd00, 1);
-    g.fillCircle(cx + 10, cy - 2, 1.5);
-    g.fillCircle(cx + 13, cy - 2, 1.5);
+    g.fillCircle(cx + 10, cy - 2, 1.8);
+    g.fillCircle(cx + 13, cy - 2, 1.8);
     g.fillStyle(0x000000, 1);
-    g.fillCircle(cx + 10, cy - 2, 0.5);
-    g.fillCircle(cx + 13, cy - 2, 0.5);
-    // Snout
-    g.fillStyle(0x555555, 1);
-    g.fillRect(cx + 13, cy + 1, 3, 2);
+    g.fillRect(cx + 9, cy - 2, 2, 1);
+    g.fillRect(cx + 12, cy - 2, 2, 1);
+
+    // Manic grin
+    g.fillStyle(0x444444, 1);
+    g.fillRect(cx + 12, cy + 2, 4, 2);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx + 12, cy + 2, 1, 1);
+    g.fillRect(cx + 14, cy + 2, 1, 1);
+    g.fillRect(cx + 13, cy + 3, 1, 1);
 
     g.generateTexture('sheep', s, s);
     g.destroy();
@@ -2133,42 +2231,65 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Ghost body outline (ethereal, translucent)
-    g.fillStyle(0x88aabb, 0.5);
-    g.fillEllipse(cx, cy - 2, 28, 26);
-    // Main body
-    g.fillStyle(0xaabbcc, 0.7);
+    g.fillStyle(0x668888, 0.35);
+    g.fillEllipse(cx, cy - 2, 30, 28);
+    g.fillStyle(0x88aaaa, 0.5);
     g.fillEllipse(cx, cy - 2, 26, 24);
-    g.fillStyle(0xccddee, 0.6);
+    g.fillStyle(0xaacccc, 0.45);
     g.fillEllipse(cx - 2, cy - 4, 20, 18);
 
-    // Wavy ghost-tail bottom (iconic)
-    g.fillStyle(0xaabbcc, 0.7);
+    // Trailing tartan sash
+    g.fillStyle(0x334466, 0.4);
+    g.fillRect(cx - 4, cy - 8, 8, 20);
+    g.fillStyle(0x446688, 0.3);
+    g.fillRect(cx - 3, cy - 7, 6, 18);
+    g.fillStyle(0x556688, 0.3);
+    g.fillRect(cx - 3, cy - 3, 6, 1);
+    g.fillRect(cx - 3, cy + 3, 6, 1);
+    g.fillRect(cx - 1, cy - 7, 1, 18);
+
+    // Wavy ghost-tail
+    g.fillStyle(0x88aaaa, 0.5);
     for (let i = 0; i < 5; i++) {
       g.fillCircle(cx - 12 + i * 6, cy + 10, 5);
     }
-    g.fillStyle(0xccddee, 0.6);
+    g.fillStyle(0xaacccc, 0.4);
     for (let i = 0; i < 5; i++) {
       g.fillCircle(cx - 12 + i * 6, cy + 9, 4);
     }
 
-    // Hollow eye sockets
+    // Chain links (castle dungeon ghost)
+    g.lineStyle(1.5, 0x8899aa, 0.6);
+    g.strokeCircle(cx + 10, cy + 4, 2);
+    g.strokeCircle(cx + 12, cy + 7, 2);
+    g.strokeCircle(cx + 10, cy + 10, 2);
+
+    // French hood (Mary Queen of Scots)
+    g.fillStyle(0x222233, 0.6);
+    g.fillEllipse(cx, cy - 12, 18, 6);
+    g.fillStyle(0x1a1a2a, 0.7);
+    g.fillEllipse(cx, cy - 13, 16, 4);
+    g.fillStyle(0xbbccdd, 0.5);
+    g.fillRect(cx - 5, cy - 11, 10, 2);
+    g.fillStyle(0xccddee, 0.4);
+    g.fillRect(cx - 4, cy - 11, 8, 1);
+
+    // Hollow eye sockets (glowing blue-green)
     g.fillStyle(0x000000, 0.9);
     g.fillCircle(cx - 5, cy - 6, 4);
     g.fillCircle(cx + 5, cy - 6, 4);
-    // Glowing blue pupils
-    g.fillStyle(0x44aaff, 1);
-    g.fillCircle(cx - 5, cy - 6, 2);
-    g.fillCircle(cx + 5, cy - 6, 2);
-    g.fillStyle(0xaaddff, 1);
+    g.fillStyle(0x44ddaa, 1);
+    g.fillCircle(cx - 5, cy - 6, 2.2);
+    g.fillCircle(cx + 5, cy - 6, 2.2);
+    g.fillStyle(0xaaffdd, 1);
     g.fillCircle(cx - 5, cy - 7, 0.8);
     g.fillCircle(cx + 5, cy - 7, 0.8);
 
-    // Spooky open mouth
+    // Wailing O-mouth
     g.fillStyle(0x000000, 0.9);
-    g.fillEllipse(cx, cy + 2, 6, 5);
-    g.fillStyle(0x1a3355, 1);
-    g.fillEllipse(cx, cy + 2, 4, 3);
+    g.fillEllipse(cx, cy + 2, 6, 6);
+    g.fillStyle(0x1a3344, 1);
+    g.fillEllipse(cx, cy + 2, 4, 4);
 
     g.generateTexture('ghost', s, s);
     g.destroy();
@@ -2319,55 +2440,93 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Vat outline
-    g.fillStyle(0x222222, 1);
+    g.fillStyle(0x1a1a1a, 1);
     g.fillRect(cx - 18, cy - 6, 36, 22);
-    // Metal vat
-    g.fillStyle(0x666666, 1);
-    g.fillRect(cx - 17, cy - 5, 34, 20);
-    g.fillStyle(0x888888, 1);
-    g.fillRect(cx - 16, cy - 4, 32, 4);
-    // Rim
     g.fillStyle(0x555555, 1);
+    g.fillRect(cx - 17, cy - 5, 34, 20);
+    g.fillStyle(0x777777, 1);
+    g.fillRect(cx - 16, cy - 4, 32, 4);
+    g.fillStyle(0x444444, 1);
     g.fillRect(cx - 18, cy - 8, 36, 3);
-    g.fillStyle(0xaaaaaa, 1);
+    g.fillStyle(0x999999, 1);
     g.fillRect(cx - 18, cy - 7, 36, 1);
-    // Handles
     g.fillStyle(0x222222, 1);
     g.fillRect(cx - 22, cy - 5, 5, 3);
     g.fillRect(cx + 17, cy - 5, 5, 3);
 
-    // Bubbling oil (iconic)
-    g.fillStyle(0x884400, 1);
+    // Bubbling oil (VOLCANIC)
+    g.fillStyle(0x774400, 1);
     g.fillRect(cx - 15, cy - 3, 30, 16);
-    g.fillStyle(0xcc8800, 1);
+    g.fillStyle(0xbb7700, 1);
     g.fillRect(cx - 14, cy - 2, 28, 14);
-    g.fillStyle(0xddaa22, 1);
+    g.fillStyle(0xdd9922, 1);
     g.fillRect(cx - 13, cy - 1, 26, 2);
-
-    // Bubbles
     g.fillStyle(0xffdd44, 1);
-    g.fillCircle(cx - 8, cy + 2, 2.5);
-    g.fillCircle(cx + 4, cy + 4, 2);
-    g.fillCircle(cx + 10, cy, 1.5);
-    g.fillCircle(cx - 3, cy + 8, 2);
-    g.fillStyle(0xffffcc, 0.8);
-    g.fillCircle(cx - 8, cy + 1, 1.2);
-    g.fillCircle(cx + 4, cy + 3, 1);
-    g.fillCircle(cx - 3, cy + 7, 1);
+    g.fillCircle(cx - 9, cy + 1, 2.5);
+    g.fillCircle(cx + 5, cy + 3, 2.5);
+    g.fillCircle(cx + 11, cy, 2);
+    g.fillCircle(cx - 3, cy + 7, 2.5);
+    g.fillCircle(cx - 11, cy + 5, 1.8);
+    g.fillCircle(cx + 8, cy + 8, 1.5);
+    g.fillCircle(cx + 1, cy + 1, 1.8);
+    g.fillStyle(0xffffcc, 0.9);
+    g.fillCircle(cx - 9, cy, 1.2);
+    g.fillCircle(cx + 5, cy + 2, 1.2);
+    g.fillCircle(cx - 3, cy + 6, 1.2);
+    g.fillCircle(cx + 1, cy, 1);
 
-    // Steam wisps (iconic — tells you it's hot)
+    // Battered Mars bar
+    g.fillStyle(0xaa7711, 1);
+    g.fillRect(cx - 6, cy + 2, 12, 5);
+    g.fillStyle(0xcc9922, 1);
+    g.fillRect(cx - 5, cy + 3, 10, 3);
+    g.fillStyle(0xddaa33, 0.7);
+    g.fillCircle(cx - 3, cy + 3, 0.8);
+    g.fillCircle(cx + 2, cy + 4, 0.8);
+
+    // Pizza crunch (battered pizza slice — peak Glasgow)
+    g.fillStyle(0xaa7711, 1);
+    g.fillTriangle(cx + 8, cy + 3, cx + 14, cy + 8, cx + 4, cy + 8);
+    g.fillStyle(0xcc9922, 1);
+    g.fillTriangle(cx + 8, cy + 4, cx + 13, cy + 7, cx + 5, cy + 7);
+    g.fillStyle(0xcc3322, 0.6);
+    g.fillCircle(cx + 9, cy + 6, 0.8);
+
+    // Salt shaker (left)
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 22, cy + 2, 4, 8);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(cx - 21, cy + 3, 2, 6);
+    g.fillStyle(0x888888, 1);
+    g.fillCircle(cx - 20, cy + 2, 0.5);
+    g.fillCircle(cx - 19, cy + 2, 0.5);
+    g.fillStyle(0xaaaaaa, 1);
+    g.fillCircle(cx - 20, cy + 6, 0.5);
+
+    // Vinegar bottle (right)
+    g.fillStyle(0x443311, 1);
+    g.fillRect(cx + 18, cy + 1, 4, 9);
+    g.fillStyle(0x664422, 1);
+    g.fillRect(cx + 19, cy + 2, 2, 7);
+    g.fillStyle(0x443311, 1);
+    g.fillRect(cx + 19, cy - 1, 2, 3);
+    g.fillStyle(0xddddaa, 1);
+    g.fillRect(cx + 19, cy + 4, 2, 3);
+
+    // Steam wisps (THICK)
     g.fillStyle(0xdddddd, 0.7);
-    g.fillCircle(cx - 8, cy - 11, 3);
-    g.fillCircle(cx, cy - 14, 3.5);
-    g.fillCircle(cx + 8, cy - 11, 3);
+    g.fillCircle(cx - 8, cy - 11, 3.5);
+    g.fillCircle(cx, cy - 14, 4);
+    g.fillCircle(cx + 8, cy - 11, 3.5);
     g.fillStyle(0xffffff, 0.5);
-    g.fillCircle(cx - 8, cy - 12, 2);
-    g.fillCircle(cx, cy - 15, 2.5);
-    g.fillCircle(cx + 8, cy - 12, 2);
+    g.fillCircle(cx - 8, cy - 12, 2.5);
+    g.fillCircle(cx, cy - 15, 3);
+    g.fillCircle(cx + 8, cy - 12, 2.5);
+    g.fillStyle(0xeeeeee, 0.3);
+    g.fillCircle(cx + 3, cy - 18, 2);
 
-    // Warning glow around hazard
-    g.fillStyle(0xff4400, 0.3);
+    // Grease-spatter warning glow
+    g.fillStyle(0xff6600, 0.25);
     g.fillCircle(cx, cy + 3, 22);
 
     g.generateTexture('deep_fryer', s, s);
