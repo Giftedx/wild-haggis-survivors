@@ -36,6 +36,13 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     validateAndRepairBootTextures(this);
+
+    // Dev tool: skip splash and go straight to sprite export
+    if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
+      this.scene.start('SpriteExport');
+      return;
+    }
+
     getAnalyticsManager().ensureBusHandlersStarted();
 
     // Initialize global meta progression exactly once (above the Scene lifecycle).
@@ -464,128 +471,738 @@ export class BootScene extends Phaser.Scene {
 
   /** Upgrade-card icons (passives + stat families). */
   private createUpgradeCardIcons(): void {
-    // Passives
-    this.createCardIcon('ucard_sporran', 0x3d2a20, 0xd4a017, 'bag');
-    this.createCardIcon('ucard_whisky_flask', 0x332211, 0xcc7711, 'flask');
-    this.createCardIcon('ucard_kilt', 0x1d2d5a, 0x5aa0ff, 'stripe');
-    this.createCardIcon('ucard_tam_o_shanter', 0x2a2238, 0xdd3355, 'cap');
-    this.createCardIcon('ucard_irn_bru', 0x44220f, 0xff7a1a, 'burst');
-    this.createCardIcon('ucard_loch_water', 0x12334a, 0x66ccff, 'drop');
-    this.createCardIcon('ucard_thistle_crown', 0x3a214d, 0xcc88ff, 'crown');
-    this.createCardIcon('ucard_highland_shield', 0x1f2b44, 0x88ccff, 'shield');
-    this.createCardIcon('ucard_tartan_sash', 0x3b1f2d, 0xff6677, 'sash');
-    // Stats (reused by related cards)
-    this.createCardIcon('ucard_stat_health', 0x2c1f2a, 0xff7788, 'heart');
-    this.createCardIcon('ucard_stat_speed', 0x213047, 0x88c8ff, 'bolt');
-    this.createCardIcon('ucard_stat_pickup', 0x243a22, 0x99dd88, 'magnet');
-    this.createCardIcon('ucard_stat_damage', 0x3c2318, 0xffaa44, 'cross');
-    this.createCardIcon('ucard_stat_drift', 0x2a2744, 0xc1a4ff, 'swirl');
-    this.createCardIcon('ucard_stat_defense', 0x1f2e3a, 0x8fd8ff, 'shield');
-    this.createCardIcon('ucard_stat_utility', 0x2d2d22, 0xd8d86e, 'star');
-    this.createCardIcon('ucard_stat_cooldown', 0x2a2238, 0xffaa66, 'hourglass');
-    this.createCardIcon('ucard_stat_knockback', 0x3a2818, 0xffcc88, 'waves');
+    // ── Passive card icons (32×32, displayed at ~1.4× in upgrade overlay) ──
+    this.createCardIcon_Sporran();
+    this.createCardIcon_WhiskyFlask();
+    this.createCardIcon_Kilt();
+    this.createCardIcon_TamOShanter();
+    this.createCardIcon_IrnBru();
+    this.createCardIcon_LochWater();
+    this.createCardIcon_ThistleCrown();
+    this.createCardIcon_HighlandShield();
+    this.createCardIcon_TartanSash();
+    // ── Stat boost card icons ──
+    this.createCardIcon_StatHealth();
+    this.createCardIcon_StatSpeed();
+    this.createCardIcon_StatPickup();
+    this.createCardIcon_StatDamage();
+    this.createCardIcon_StatDrift();
+    this.createCardIcon_StatDefense();
+    this.createCardIcon_StatUtility();
+    this.createCardIcon_StatCooldown();
+    this.createCardIcon_StatKnockback();
   }
 
-  private createCardIcon(
-    key: string,
-    bgColor: number,
-    accentColor: number,
-    shape: 'bag' | 'flask' | 'stripe' | 'cap' | 'burst' | 'drop' | 'crown' | 'shield' | 'sash' | 'heart' | 'bolt' | 'magnet' | 'cross' | 'swirl' | 'star' | 'hourglass' | 'waves'
-  ): void {
-    const s = 18;
-    const g = this.add.graphics();
-    const cx = s / 2;
-    const cy = s / 2;
+  /** Shared card icon background — dark border, tinted interior, subtle corner roundness. */
+  private cardIconBg(g: Phaser.GameObjects.Graphics, s: number, bgColor: number): void {
     g.fillStyle(0x0b111c, 1);
-    g.fillRoundedRect(1, 1, s - 2, s - 2, 4);
+    g.fillRoundedRect(1, 1, s - 2, s - 2, 6);
     g.fillStyle(bgColor, 1);
-    g.fillRoundedRect(2, 2, s - 4, s - 4, 3);
-    g.fillStyle(accentColor, 1);
-    switch (shape) {
-      case 'bag':
-        g.fillEllipse(cx, cy + 1, 9, 7);
-        g.fillRect(cx - 2, cy - 4, 4, 2);
-        break;
-      case 'flask':
-        g.fillRect(cx - 2, cy - 5, 4, 3);
-        g.fillRoundedRect(cx - 4, cy - 2, 8, 8, 2);
-        break;
-      case 'stripe':
-        g.fillRect(4, 7, 10, 2);
-        g.fillRect(4, 10, 10, 2);
-        break;
-      case 'cap':
-        g.fillEllipse(cx, cy - 1, 10, 5);
-        g.fillRect(cx - 5, cy, 6, 2);
-        break;
-      case 'burst':
-        g.fillCircle(cx, cy, 3);
-        for (let i = 0; i < 6; i++) {
-          const a = (i / 6) * Math.PI * 2;
-          g.fillCircle(cx + Math.cos(a) * 5, cy + Math.sin(a) * 5, 1.2);
-        }
-        break;
-      case 'drop':
-        g.fillTriangle(cx, cy - 5, cx - 4, cy + 2, cx + 4, cy + 2);
-        g.fillCircle(cx, cy + 2, 3);
-        break;
-      case 'crown':
-        g.fillRect(cx - 5, cy + 1, 10, 3);
-        g.fillTriangle(cx - 5, cy + 1, cx - 3, cy - 4, cx - 1, cy + 1);
-        g.fillTriangle(cx - 1, cy + 1, cx, cy - 5, cx + 1, cy + 1);
-        g.fillTriangle(cx + 1, cy + 1, cx + 3, cy - 4, cx + 5, cy + 1);
-        break;
-      case 'shield':
-        g.fillRoundedRect(cx - 4, cy - 5, 8, 8, 2);
-        g.fillTriangle(cx - 4, cy + 2, cx, cy + 6, cx + 4, cy + 2);
-        break;
-      case 'sash':
-        g.fillRect(4, 11, 10, 2);
-        g.fillRect(6, 8, 10, 2);
-        break;
-      case 'heart':
-        g.fillCircle(cx - 2, cy - 1, 2.5);
-        g.fillCircle(cx + 2, cy - 1, 2.5);
-        g.fillTriangle(cx - 5, cy, cx + 5, cy, cx, cy + 6);
-        break;
-      case 'bolt':
-        g.fillTriangle(cx - 2, cy - 5, cx + 2, cy - 5, cx - 1, cy + 1);
-        g.fillTriangle(cx, cy + 1, cx + 4, cy + 1, cx - 2, cy + 6);
-        break;
-      case 'magnet':
-        g.fillRect(cx - 5, cy - 4, 3, 8);
-        g.fillRect(cx + 2, cy - 4, 3, 8);
-        g.fillRect(cx - 2, cy + 2, 4, 3);
-        break;
-      case 'cross':
-        g.fillRect(cx - 1, cy - 5, 2, 10);
-        g.fillRect(cx - 5, cy - 1, 10, 2);
-        break;
-      case 'swirl':
-        g.fillCircle(cx, cy, 4.5);
-        g.fillStyle(bgColor, 1);
-        g.fillCircle(cx + 2, cy, 3);
-        g.fillStyle(accentColor, 1);
-        g.fillCircle(cx - 3, cy, 1.4);
-        break;
-      case 'star':
-        g.fillTriangle(cx, cy - 5, cx + 2, cy, cx - 2, cy);
-        g.fillTriangle(cx - 4, cy - 1, cx, cy + 1, cx - 4, cy + 3);
-        g.fillTriangle(cx + 4, cy - 1, cx, cy + 1, cx + 4, cy + 3);
-        g.fillTriangle(cx - 2, cy + 2, cx + 2, cy + 2, cx, cy + 6);
-        break;
-      case 'hourglass':
-        g.fillTriangle(cx, cy - 5, cx - 4, cy - 1, cx + 4, cy - 1);
-        g.fillTriangle(cx, cy + 5, cx - 4, cy + 1, cx + 4, cy + 1);
-        g.fillRect(cx - 1, cy - 1, 2, 2);
-        break;
-      case 'waves':
-        g.fillRect(cx - 5, cy - 4, 10, 2);
-        g.fillRect(cx - 4, cy - 1, 8, 2);
-        g.fillRect(cx - 5, cy + 2, 10, 2);
-        break;
+    g.fillRoundedRect(3, 3, s - 6, s - 6, 4);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  PASSIVE CARD ICONS — these are the culturally important ones
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Sporran: leather pouch with fur trim, metal clasp, and three tassels. */
+  private createCardIcon_Sporran(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x3d2a20);
+    const cx = 16, cy = 16;
+    // Fur trim (top edge of pouch)
+    g.fillStyle(0x8a7a6a, 1);
+    g.fillRect(cx - 8, cy - 6, 16, 4);
+    g.fillStyle(0xa09080, 1);
+    for (let i = 0; i < 8; i++) g.fillRect(cx - 7 + i * 2, cy - 6, 1, 3);
+    // Leather body — main pouch shape
+    g.fillStyle(0x3a2210, 1);
+    g.fillEllipse(cx, cy + 2, 18, 14);
+    g.fillStyle(0x5a3a1a, 1);
+    g.fillEllipse(cx, cy + 2, 16, 12);
+    // Leather highlight (top-left sheen)
+    g.fillStyle(0x6a4a28, 1);
+    g.fillEllipse(cx - 2, cy, 10, 6);
+    // Metal clasp — circular cantle
+    g.fillStyle(0x888888, 1);
+    g.fillCircle(cx, cy - 1, 4);
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(cx, cy - 1, 3);
+    g.fillStyle(0xd4a017, 1);
+    g.fillCircle(cx, cy - 1, 2);
+    g.fillStyle(0xffcc44, 1);
+    g.fillCircle(cx - 1, cy - 2, 0.8);
+    // Three tassels hanging below
+    g.fillStyle(0x3a2210, 1);
+    g.fillRect(cx - 5, cy + 8, 2, 6);
+    g.fillRect(cx - 1, cy + 8, 2, 7);
+    g.fillRect(cx + 3, cy + 8, 2, 6);
+    // Tassel tips
+    g.fillStyle(0x5a3a1a, 1);
+    g.fillCircle(cx - 4, cy + 14, 1.5);
+    g.fillCircle(cx, cy + 15, 1.5);
+    g.fillCircle(cx + 4, cy + 14, 1.5);
+    g.generateTexture('ucard_sporran', s, s);
+    g.destroy();
+  }
+
+  /** Whisky Flask: hip flask with screw cap, embossed thistle, amber liquid visible. */
+  private createCardIcon_WhiskyFlask(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x332211);
+    const cx = 16, cy = 16;
+    // Flask body — rounded rectangle, slightly tapered
+    g.fillStyle(0x555555, 1);
+    g.fillRoundedRect(cx - 7, cy - 4, 14, 16, 3);
+    g.fillStyle(0x888888, 1);
+    g.fillRoundedRect(cx - 6, cy - 3, 12, 14, 2);
+    // Metallic sheen (left highlight)
+    g.fillStyle(0xaaaaaa, 1);
+    g.fillRect(cx - 5, cy - 2, 3, 12);
+    g.fillStyle(0xcccccc, 0.5);
+    g.fillRect(cx - 4, cy - 1, 1, 10);
+    // Screw cap (top)
+    g.fillStyle(0x666666, 1);
+    g.fillRect(cx - 3, cy - 8, 6, 5);
+    g.fillStyle(0x999999, 1);
+    g.fillRect(cx - 2, cy - 7, 4, 3);
+    // Cap ridges
+    g.fillStyle(0x777777, 1);
+    g.fillRect(cx - 3, cy - 7, 6, 1);
+    g.fillRect(cx - 3, cy - 5, 6, 1);
+    // Amber liquid window (oval inset)
+    g.fillStyle(0x442200, 1);
+    g.fillEllipse(cx + 1, cy + 3, 6, 8);
+    g.fillStyle(0xcc7711, 1);
+    g.fillEllipse(cx + 1, cy + 4, 4, 5);
+    g.fillStyle(0xee9922, 0.6);
+    g.fillEllipse(cx + 1, cy + 3, 2, 3);
+    g.generateTexture('ucard_whisky_flask', s, s);
+    g.destroy();
+  }
+
+  /** Kilt: draped tartan fabric with crossed pattern and belt buckle. */
+  private createCardIcon_Kilt(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x1d2d5a);
+    const cx = 16;
+    // Kilt body — draped shape, wider at bottom
+    g.fillStyle(0x1a3a6a, 1);
+    g.fillRect(cx - 10, 8, 20, 18);
+    g.fillStyle(0x2a4a8a, 1);
+    g.fillRect(cx - 9, 9, 18, 16);
+    // Tartan pattern — vertical lines
+    g.fillStyle(0x3a6aaa, 0.7);
+    g.fillRect(cx - 6, 9, 2, 16);
+    g.fillRect(cx + 1, 9, 2, 16);
+    g.fillRect(cx + 6, 9, 2, 16);
+    // Tartan pattern — horizontal lines
+    g.fillStyle(0x5a88cc, 0.5);
+    g.fillRect(cx - 9, 12, 18, 1);
+    g.fillRect(cx - 9, 17, 18, 1);
+    g.fillRect(cx - 9, 22, 18, 1);
+    // Accent stripe (red thread through tartan)
+    g.fillStyle(0xcc3344, 0.6);
+    g.fillRect(cx - 9, 14, 18, 1);
+    g.fillRect(cx - 9, 20, 18, 1);
+    g.fillRect(cx - 2, 9, 1, 16);
+    // Pleats — shadow lines for drape depth
+    g.fillStyle(0x0a1a3a, 0.4);
+    g.fillRect(cx - 4, 9, 1, 16);
+    g.fillRect(cx + 4, 9, 1, 16);
+    // Belt at top
+    g.fillStyle(0x2a1a0a, 1);
+    g.fillRect(cx - 10, 7, 20, 3);
+    g.fillStyle(0x3a2a1a, 1);
+    g.fillRect(cx - 9, 8, 18, 1);
+    // Belt buckle
+    g.fillStyle(0xccaa44, 1);
+    g.fillRect(cx - 2, 7, 4, 3);
+    g.fillStyle(0xffdd66, 1);
+    g.fillRect(cx - 1, 8, 2, 1);
+    g.generateTexture('ucard_kilt', s, s);
+    g.destroy();
+  }
+
+  /** Tam o' Shanter: blue bonnet with diced band and red pompom (toorie). */
+  private createCardIcon_TamOShanter(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x2a2238);
+    const cx = 16, cy = 15;
+    // Main bonnet body — soft round beret shape
+    g.fillStyle(0x1a2244, 1);
+    g.fillEllipse(cx, cy - 1, 22, 14);
+    g.fillStyle(0x2a3366, 1);
+    g.fillEllipse(cx, cy - 2, 20, 12);
+    // Fabric highlight (top-left)
+    g.fillStyle(0x3a4488, 1);
+    g.fillEllipse(cx - 3, cy - 4, 10, 6);
+    g.fillStyle(0x4a5599, 0.5);
+    g.fillEllipse(cx - 4, cy - 5, 6, 3);
+    // Diced band (chequered headband) — the distinctive check pattern
+    g.fillStyle(0x111122, 1);
+    g.fillRect(cx - 11, cy + 4, 22, 4);
+    // Red-white-red dicing
+    for (let i = 0; i < 11; i++) {
+      const col = i % 2 === 0 ? 0xcc2233 : 0xeeeeee;
+      g.fillStyle(col, 1);
+      g.fillRect(cx - 10 + i * 2, cy + 5, 2, 2);
     }
-    g.generateTexture(key, s, s);
+    // Toorie (pompom on top) — red fluffy ball
+    g.fillStyle(0x881122, 1);
+    g.fillCircle(cx, cy - 8, 4);
+    g.fillStyle(0xcc2244, 1);
+    g.fillCircle(cx, cy - 8, 3);
+    g.fillStyle(0xee4466, 1);
+    g.fillCircle(cx - 1, cy - 9, 1.5);
+    g.fillStyle(0xff6688, 0.7);
+    g.fillCircle(cx - 1, cy - 10, 0.8);
+    g.generateTexture('ucard_tam_o_shanter', s, s);
+    g.destroy();
+  }
+
+  /** Irn-Bru: iconic glass bottle with bright orange liquid, blue label band. */
+  private createCardIcon_IrnBru(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x44220f);
+    const cx = 16;
+    // Bottle neck
+    g.fillStyle(0x336633, 0.8);
+    g.fillRect(cx - 2, 5, 4, 5);
+    g.fillStyle(0x448844, 0.6);
+    g.fillRect(cx - 1, 6, 2, 3);
+    // Cap
+    g.fillStyle(0xddaa00, 1);
+    g.fillRect(cx - 3, 4, 6, 3);
+    g.fillStyle(0xffcc33, 1);
+    g.fillRect(cx - 2, 5, 4, 1);
+    // Bottle body — wider, rounded
+    g.fillStyle(0x224422, 1);
+    g.fillRoundedRect(cx - 7, 10, 14, 16, 3);
+    // Orange liquid visible through glass
+    g.fillStyle(0xdd6600, 1);
+    g.fillRoundedRect(cx - 6, 11, 12, 14, 2);
+    g.fillStyle(0xff8811, 1);
+    g.fillRoundedRect(cx - 5, 12, 10, 12, 2);
+    // Radioactive orange glow (inner highlight)
+    g.fillStyle(0xffaa33, 0.7);
+    g.fillRect(cx - 3, 14, 4, 8);
+    g.fillStyle(0xffcc66, 0.4);
+    g.fillRect(cx - 2, 15, 2, 6);
+    // Blue label band across middle
+    g.fillStyle(0x1144aa, 1);
+    g.fillRect(cx - 6, 17, 12, 4);
+    g.fillStyle(0x2266cc, 1);
+    g.fillRect(cx - 5, 18, 10, 2);
+    // Glass reflection (white streak, left side)
+    g.fillStyle(0xffffff, 0.2);
+    g.fillRect(cx - 5, 12, 2, 12);
+    g.generateTexture('ucard_irn_bru', s, s);
+    g.destroy();
+  }
+
+  /** Loch Water: corked glass vial with deep blue-green water, mysterious glow. */
+  private createCardIcon_LochWater(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x12334a);
+    const cx = 16;
+    // Cork stopper
+    g.fillStyle(0x8a6a3a, 1);
+    g.fillRect(cx - 3, 5, 6, 4);
+    g.fillStyle(0xaa8a5a, 1);
+    g.fillRect(cx - 2, 6, 4, 2);
+    // Vial neck
+    g.fillStyle(0x446688, 0.8);
+    g.fillRect(cx - 2, 9, 4, 3);
+    // Vial body — rounded flask shape
+    g.fillStyle(0x224466, 1);
+    g.fillRoundedRect(cx - 8, 12, 16, 14, 4);
+    // Deep loch water inside
+    g.fillStyle(0x114433, 1);
+    g.fillRoundedRect(cx - 7, 13, 14, 12, 3);
+    g.fillStyle(0x226655, 1);
+    g.fillRoundedRect(cx - 6, 14, 12, 10, 2);
+    // Mysterious underwater glow
+    g.fillStyle(0x44ccaa, 0.4);
+    g.fillCircle(cx, 20, 4);
+    g.fillStyle(0x66eedd, 0.3);
+    g.fillCircle(cx, 19, 2);
+    // Tiny bubbles
+    g.fillStyle(0x88ddcc, 0.7);
+    g.fillCircle(cx - 3, 17, 1);
+    g.fillCircle(cx + 2, 15, 0.8);
+    g.fillCircle(cx + 4, 19, 1);
+    // Glass reflection
+    g.fillStyle(0xffffff, 0.15);
+    g.fillRect(cx - 6, 14, 2, 10);
+    g.generateTexture('ucard_loch_water', s, s);
+    g.destroy();
+  }
+
+  /** Thistle Crown: golden crown with purple thistle flower centrepiece, thorny rim. */
+  private createCardIcon_ThistleCrown(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x3a214d);
+    const cx = 16, cy = 17;
+    // Crown base band — gold
+    g.fillStyle(0x8a6a10, 1);
+    g.fillRect(cx - 10, cy + 2, 20, 5);
+    g.fillStyle(0xcc9922, 1);
+    g.fillRect(cx - 9, cy + 3, 18, 3);
+    g.fillStyle(0xddaa33, 1);
+    g.fillRect(cx - 9, cy + 3, 18, 1);
+    // Crown points (5 tines with jewels)
+    const tines = [-8, -4, 0, 4, 8];
+    const heights = [8, 10, 12, 10, 8];
+    for (let i = 0; i < 5; i++) {
+      const tx = cx + tines[i];
+      const th = heights[i];
+      // Tine
+      g.fillStyle(0xcc9922, 1);
+      g.fillTriangle(tx - 2, cy + 2, tx, cy + 2 - th, tx + 2, cy + 2);
+      // Tine highlight
+      g.fillStyle(0xddbb44, 0.7);
+      g.fillTriangle(tx - 1, cy + 1, tx, cy + 3 - th, tx, cy + 1);
+    }
+    // Purple thistle flower (centre, atop the middle tine)
+    g.fillStyle(0x663388, 1);
+    g.fillCircle(cx, cy - 8, 4);
+    g.fillStyle(0x8844aa, 1);
+    g.fillCircle(cx, cy - 8, 3);
+    // Thistle spikes radiating
+    g.fillStyle(0xaa66cc, 1);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      g.fillCircle(cx + Math.cos(a) * 4, cy - 8 + Math.sin(a) * 4, 1);
+    }
+    // Bright centre
+    g.fillStyle(0xcc88ff, 1);
+    g.fillCircle(cx, cy - 8, 1.5);
+    // Jewels on crown band
+    g.fillStyle(0xff3366, 1);
+    g.fillCircle(cx - 5, cy + 4, 1.5);
+    g.fillCircle(cx + 5, cy + 4, 1.5);
+    g.fillStyle(0x44ccff, 1);
+    g.fillCircle(cx, cy + 4, 1.5);
+    g.generateTexture('ucard_thistle_crown', s, s);
+    g.destroy();
+  }
+
+  /** Highland Shield: round targe shield with boss centre, leather rim, Celtic knot. */
+  private createCardIcon_HighlandShield(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x1f2b44);
+    const cx = 16, cy = 16;
+    // Outer rim — dark leather
+    g.fillStyle(0x3a2a1a, 1);
+    g.fillCircle(cx, cy, 13);
+    // Shield face — wooden / leather
+    g.fillStyle(0x4a5a6a, 1);
+    g.fillCircle(cx, cy, 11);
+    g.fillStyle(0x5a6a7a, 1);
+    g.fillCircle(cx, cy, 10);
+    // Ring decoration (concentric)
+    g.lineStyle(1, 0x7a8a9a, 0.8);
+    g.strokeCircle(cx, cy, 8);
+    g.lineStyle(1, 0x6a7a8a, 0.6);
+    g.strokeCircle(cx, cy, 5);
+    // Central boss (metal spike/dome)
+    g.fillStyle(0x888888, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0xbbbbbb, 1);
+    g.fillCircle(cx, cy, 3);
+    g.fillStyle(0xdddddd, 1);
+    g.fillCircle(cx, cy, 1.5);
+    // Specular highlight
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(cx - 1, cy - 1, 1);
+    // Four studs on rim (compass points)
+    g.fillStyle(0xccaa44, 1);
+    g.fillCircle(cx, cy - 10, 1.5);
+    g.fillCircle(cx, cy + 10, 1.5);
+    g.fillCircle(cx - 10, cy, 1.5);
+    g.fillCircle(cx + 10, cy, 1.5);
+    // Rim sheen
+    g.fillStyle(0xffffff, 0.1);
+    g.fillCircle(cx - 4, cy - 6, 5);
+    g.generateTexture('ucard_highland_shield', s, s);
+    g.destroy();
+  }
+
+  /** Tartan Sash: diagonal cloth band with woven tartan pattern, clan pin. */
+  private createCardIcon_TartanSash(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x3b1f2d);
+    // Diagonal sash — upper-right to lower-left
+    g.fillStyle(0x661133, 1);
+    // Draw thick diagonal band
+    for (let i = 0; i < 20; i++) {
+      g.fillRect(4 + i, 4 + i, 8, 2);
+    }
+    g.fillStyle(0x992244, 1);
+    for (let i = 0; i < 20; i++) {
+      g.fillRect(5 + i, 5 + i, 6, 1);
+    }
+    // Tartan cross-threads on the sash
+    g.fillStyle(0xcc5566, 0.6);
+    for (let i = 0; i < 18; i += 4) {
+      g.fillRect(5 + i, 5 + i, 6, 1);
+    }
+    g.fillStyle(0xffcc44, 0.4);
+    for (let i = 2; i < 18; i += 6) {
+      g.fillRect(5 + i, 5 + i, 6, 1);
+    }
+    // Clan pin / brooch (circular, near top)
+    g.fillStyle(0x888888, 1);
+    g.fillCircle(11, 11, 4);
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(11, 11, 3);
+    // Pin centre — thistle motif
+    g.fillStyle(0x8844aa, 1);
+    g.fillCircle(11, 11, 1.5);
+    g.fillStyle(0xdddddd, 1);
+    g.fillCircle(10, 10, 0.7);
+    // Fringe at bottom end
+    g.fillStyle(0x661133, 1);
+    g.fillRect(22, 24, 2, 4);
+    g.fillRect(24, 25, 2, 3);
+    g.fillRect(26, 26, 2, 2);
+    g.generateTexture('ucard_tartan_sash', s, s);
+    g.destroy();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  STAT BOOST CARD ICONS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /** Health: chunky pixel heart with shading and specular highlight. */
+  private createCardIcon_StatHealth(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x2c1f2a);
+    const cx = 16, cy = 16;
+    // Heart outline
+    g.fillStyle(0x881122, 1);
+    g.fillCircle(cx - 4, cy - 2, 6);
+    g.fillCircle(cx + 4, cy - 2, 6);
+    g.fillTriangle(cx - 10, cy, cx + 10, cy, cx, cy + 11);
+    // Heart fill
+    g.fillStyle(0xcc2244, 1);
+    g.fillCircle(cx - 4, cy - 2, 5);
+    g.fillCircle(cx + 4, cy - 2, 5);
+    g.fillTriangle(cx - 9, cy - 1, cx + 9, cy - 1, cx, cy + 10);
+    // Highlight (top-left lobe)
+    g.fillStyle(0xee4466, 1);
+    g.fillCircle(cx - 4, cy - 3, 3);
+    g.fillStyle(0xff6688, 0.6);
+    g.fillCircle(cx - 5, cy - 4, 1.5);
+    // Specular
+    g.fillStyle(0xffffff, 0.4);
+    g.fillCircle(cx - 5, cy - 5, 1);
+    g.generateTexture('ucard_stat_health', s, s);
+    g.destroy();
+  }
+
+  /** Speed: lightning bolt with electric glow. */
+  private createCardIcon_StatSpeed(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x213047);
+    const cx = 16;
+    // Outer glow
+    g.fillStyle(0x4488ff, 0.2);
+    g.fillCircle(cx, 16, 10);
+    // Bolt outline
+    g.fillStyle(0x3366aa, 1);
+    g.fillTriangle(cx + 4, 5, cx - 2, 15, cx + 3, 15);
+    g.fillTriangle(cx - 1, 15, cx - 5, 27, cx + 4, 15);
+    // Bolt fill — bright
+    g.fillStyle(0x66aaff, 1);
+    g.fillTriangle(cx + 3, 7, cx - 1, 15, cx + 2, 15);
+    g.fillTriangle(cx, 15, cx - 3, 25, cx + 3, 15);
+    // Inner bright core
+    g.fillStyle(0xaaddff, 1);
+    g.fillTriangle(cx + 1, 9, cx, 15, cx + 1, 15);
+    g.fillTriangle(cx, 15, cx - 1, 23, cx + 2, 15);
+    // Electric sparks
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(cx - 3, 12, 1);
+    g.fillCircle(cx + 4, 18, 1);
+    g.fillCircle(cx - 1, 21, 0.8);
+    g.generateTexture('ucard_stat_speed', s, s);
+    g.destroy();
+  }
+
+  /** Pickup: horseshoe magnet with red/blue poles and attraction lines. */
+  private createCardIcon_StatPickup(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x243a22);
+    const cx = 16, cy = 14;
+    // Magnet body (U-shape, chunky)
+    // Left pole
+    g.fillStyle(0x882222, 1);
+    g.fillRect(cx - 10, cy - 6, 5, 14);
+    g.fillStyle(0xcc3333, 1);
+    g.fillRect(cx - 9, cy - 5, 3, 12);
+    // Right pole
+    g.fillStyle(0x222288, 1);
+    g.fillRect(cx + 5, cy - 6, 5, 14);
+    g.fillStyle(0x3344cc, 1);
+    g.fillRect(cx + 6, cy - 5, 3, 12);
+    // Bottom curve connecting poles
+    g.fillStyle(0x666666, 1);
+    g.fillRect(cx - 10, cy + 6, 20, 5);
+    g.fillRoundedRect(cx - 10, cy + 4, 20, 8, 4);
+    g.fillStyle(0x999999, 1);
+    g.fillRect(cx - 6, cy + 7, 12, 3);
+    // Pole tips (bright caps)
+    g.fillStyle(0xff4444, 1);
+    g.fillRect(cx - 10, cy - 7, 5, 3);
+    g.fillStyle(0x4466ff, 1);
+    g.fillRect(cx + 5, cy - 7, 5, 3);
+    // Attraction field lines
+    g.fillStyle(0x99dd88, 0.5);
+    g.fillCircle(cx, cy - 8, 1);
+    g.fillCircle(cx - 2, cy - 10, 0.8);
+    g.fillCircle(cx + 2, cy - 10, 0.8);
+    g.generateTexture('ucard_stat_pickup', s, s);
+    g.destroy();
+  }
+
+  /** Damage: crossed swords with blade gleam. */
+  private createCardIcon_StatDamage(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x3c2318);
+    const cx = 16, cy = 16;
+    // Sword 1 (upper-left to lower-right) — blade
+    g.fillStyle(0x667788, 1);
+    for (let i = 0; i < 18; i++) g.fillRect(5 + i, 5 + i, 3, 2);
+    g.fillStyle(0x99aabb, 1);
+    for (let i = 0; i < 16; i++) g.fillRect(6 + i, 6 + i, 2, 1);
+    // Sword 2 (upper-right to lower-left) — blade
+    g.fillStyle(0x667788, 1);
+    for (let i = 0; i < 18; i++) g.fillRect(24 - i, 5 + i, 3, 2);
+    g.fillStyle(0x99aabb, 1);
+    for (let i = 0; i < 16; i++) g.fillRect(24 - i, 6 + i, 2, 1);
+    // Cross guard 1
+    g.fillStyle(0xcc8833, 1);
+    g.fillRect(cx - 1, cy - 3, 6, 2);
+    // Cross guard 2
+    g.fillStyle(0xcc8833, 1);
+    g.fillRect(cx - 5, cy - 1, 6, 2);
+    // Centre impact spark
+    g.fillStyle(0xffaa44, 1);
+    g.fillCircle(cx, cy, 3);
+    g.fillStyle(0xffdd88, 1);
+    g.fillCircle(cx, cy, 1.5);
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(cx, cy, 0.8);
+    g.generateTexture('ucard_stat_damage', s, s);
+    g.destroy();
+  }
+
+  /** Drift: clockwise spiral arrow with motion blur. */
+  private createCardIcon_StatDrift(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x2a2744);
+    const cx = 16, cy = 16;
+    // Outer spiral arc
+    g.lineStyle(3, 0x7755aa, 1);
+    g.beginPath();
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 1.5 - Math.PI / 2;
+      const r = 5 + i * 0.4;
+      const px = cx + Math.cos(a) * r;
+      const py = cy + Math.sin(a) * r;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.strokePath();
+    // Inner spiral — brighter
+    g.lineStyle(2, 0xaa88dd, 1);
+    g.beginPath();
+    for (let i = 0; i < 15; i++) {
+      const a = (i / 15) * Math.PI * 1.3 - Math.PI / 2;
+      const r = 3 + i * 0.35;
+      const px = cx + Math.cos(a) * r;
+      const py = cy + Math.sin(a) * r;
+      if (i === 0) g.moveTo(px, py);
+      else g.lineTo(px, py);
+    }
+    g.strokePath();
+    // Centre dot
+    g.fillStyle(0xc1a4ff, 1);
+    g.fillCircle(cx, cy, 2.5);
+    g.fillStyle(0xe8d4ff, 1);
+    g.fillCircle(cx, cy, 1.2);
+    // Arrow head at spiral end
+    g.fillStyle(0xc1a4ff, 1);
+    const endA = (20 / 20) * Math.PI * 1.5 - Math.PI / 2;
+    const endR = 5 + 20 * 0.4;
+    const ex = cx + Math.cos(endA) * endR;
+    const ey = cy + Math.sin(endA) * endR;
+    g.fillTriangle(ex, ey, ex - 3, ey - 3, ex + 2, ey - 2);
+    g.generateTexture('ucard_stat_drift', s, s);
+    g.destroy();
+  }
+
+  /** Defense: plate armor chestpiece (distinct from Highland Shield targe). */
+  private createCardIcon_StatDefense(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x1f2e3a);
+    const cx = 16, cy = 16;
+    // Breastplate body
+    g.fillStyle(0x556677, 1);
+    g.fillRoundedRect(cx - 9, cy - 8, 18, 20, 4);
+    g.fillStyle(0x778899, 1);
+    g.fillRoundedRect(cx - 8, cy - 7, 16, 18, 3);
+    // Neck opening
+    g.fillStyle(0x1f2e3a, 1);
+    g.fillEllipse(cx, cy - 7, 8, 4);
+    // Centre ridge
+    g.fillStyle(0x99aabb, 1);
+    g.fillRect(cx - 1, cy - 5, 2, 14);
+    // Metallic highlights (left plate sheen)
+    g.fillStyle(0xaabbcc, 0.6);
+    g.fillRect(cx - 6, cy - 4, 3, 10);
+    g.fillStyle(0xccddee, 0.3);
+    g.fillRect(cx - 5, cy - 3, 1, 8);
+    // Rivet details
+    g.fillStyle(0xbbccdd, 1);
+    g.fillCircle(cx - 5, cy - 3, 1);
+    g.fillCircle(cx + 5, cy - 3, 1);
+    g.fillCircle(cx - 5, cy + 6, 1);
+    g.fillCircle(cx + 5, cy + 6, 1);
+    // Bottom edge shadow
+    g.fillStyle(0x334455, 1);
+    g.fillRect(cx - 8, cy + 10, 16, 2);
+    g.generateTexture('ucard_stat_defense', s, s);
+    g.destroy();
+  }
+
+  /** Utility: glowing star with sparkle rays. */
+  private createCardIcon_StatUtility(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x2d2d22);
+    const cx = 16, cy = 16;
+    // Outer glow
+    g.fillStyle(0xd8d86e, 0.15);
+    g.fillCircle(cx, cy, 12);
+    // Star rays (8 pointed)
+    g.fillStyle(0x99993a, 1);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const r = 10;
+      g.fillTriangle(
+        cx, cy,
+        cx + Math.cos(a - 0.15) * r, cy + Math.sin(a - 0.15) * r,
+        cx + Math.cos(a + 0.15) * r, cy + Math.sin(a + 0.15) * r
+      );
+    }
+    // Inner star body
+    g.fillStyle(0xcccc55, 1);
+    g.fillCircle(cx, cy, 5);
+    g.fillStyle(0xdddd77, 1);
+    g.fillCircle(cx, cy, 3.5);
+    // Bright centre
+    g.fillStyle(0xffffaa, 1);
+    g.fillCircle(cx, cy, 2);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(cx - 1, cy - 1, 1);
+    // Sparkle dots on ray tips
+    g.fillStyle(0xffffff, 0.5);
+    g.fillCircle(cx, cy - 10, 1);
+    g.fillCircle(cx, cy + 10, 1);
+    g.fillCircle(cx - 10, cy, 1);
+    g.fillCircle(cx + 10, cy, 1);
+    g.generateTexture('ucard_stat_utility', s, s);
+    g.destroy();
+  }
+
+  /** Cooldown: hourglass with sand flowing, wooden frame, brass fittings. */
+  private createCardIcon_StatCooldown(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x2a2238);
+    const cx = 16, cy = 16;
+    // Brass frame — top bar
+    g.fillStyle(0x886622, 1);
+    g.fillRect(cx - 8, 5, 16, 3);
+    g.fillStyle(0xbb9933, 1);
+    g.fillRect(cx - 7, 6, 14, 1);
+    // Brass frame — bottom bar
+    g.fillStyle(0x886622, 1);
+    g.fillRect(cx - 8, 24, 16, 3);
+    g.fillStyle(0xbb9933, 1);
+    g.fillRect(cx - 7, 25, 14, 1);
+    // Glass — upper bulb
+    g.fillStyle(0x445566, 0.6);
+    g.fillTriangle(cx - 6, 8, cx + 6, 8, cx, cy);
+    g.fillStyle(0x5a7a8a, 0.4);
+    g.fillTriangle(cx - 5, 9, cx + 5, 9, cx, cy - 1);
+    // Glass — lower bulb
+    g.fillStyle(0x445566, 0.6);
+    g.fillTriangle(cx, cy, cx - 6, 24, cx + 6, 24);
+    g.fillStyle(0x5a7a8a, 0.4);
+    g.fillTriangle(cx, cy + 1, cx - 5, 23, cx + 5, 23);
+    // Sand — pile in lower half
+    g.fillStyle(0xddaa44, 1);
+    g.fillTriangle(cx - 4, 24, cx + 4, 24, cx, 19);
+    g.fillStyle(0xffcc66, 1);
+    g.fillTriangle(cx - 3, 23, cx + 3, 23, cx, 20);
+    // Sand — remaining in upper half
+    g.fillStyle(0xddaa44, 0.7);
+    g.fillRect(cx - 3, 9, 6, 3);
+    g.fillStyle(0xffcc66, 0.5);
+    g.fillRect(cx - 2, 10, 4, 1);
+    // Falling sand stream (centre)
+    g.fillStyle(0xddaa44, 1);
+    g.fillRect(cx - 0.5, cy - 2, 1, 5);
+    // Side pillars
+    g.fillStyle(0x886622, 1);
+    g.fillRect(cx - 7, 8, 2, 16);
+    g.fillRect(cx + 5, 8, 2, 16);
+    g.generateTexture('ucard_stat_cooldown', s, s);
+    g.destroy();
+  }
+
+  /** Knockback: impact shockwave with force arrows pushing outward. */
+  private createCardIcon_StatKnockback(): void {
+    const s = 32, g = this.add.graphics();
+    this.cardIconBg(g, s, 0x3a2818);
+    const cx = 16, cy = 16;
+    // Impact centre — bright flash
+    g.fillStyle(0xffcc88, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0xffeecc, 1);
+    g.fillCircle(cx, cy, 2);
+    g.fillStyle(0xffffff, 0.8);
+    g.fillCircle(cx, cy, 1);
+    // Shockwave rings
+    g.lineStyle(2, 0xffaa55, 0.6);
+    g.strokeCircle(cx, cy, 7);
+    g.lineStyle(1.5, 0xffcc88, 0.3);
+    g.strokeCircle(cx, cy, 10);
+    // Force arrows (4 cardinal directions)
+    const arrows = [
+      { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+      { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+    ];
+    for (const { dx, dy } of arrows) {
+      const ax = cx + dx * 11;
+      const ay = cy + dy * 11;
+      g.fillStyle(0xffaa55, 0.8);
+      // Arrow head
+      g.fillTriangle(
+        ax + dx * 3, ay + dy * 3,
+        ax - dy * 2, ay + dx * 2,
+        ax + dy * 2, ay - dx * 2
+      );
+    }
+    // Diagonal force lines
+    g.fillStyle(0xffcc88, 0.3);
+    g.fillCircle(cx - 8, cy - 8, 1.5);
+    g.fillCircle(cx + 8, cy - 8, 1.5);
+    g.fillCircle(cx - 8, cy + 8, 1.5);
+    g.fillCircle(cx + 8, cy + 8, 1.5);
+    g.generateTexture('ucard_stat_knockback', s, s);
     g.destroy();
   }
 
@@ -600,24 +1217,70 @@ export class BootScene extends Phaser.Scene {
   }
 
   private createBagpipeBlastIcon(): void {
-    const s = 18;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Bagpipe bag
-    g.fillStyle(0x442200, 1);
-    g.fillEllipse(cx, cy + 2, 12, 10);
-    g.fillStyle(0x884422, 1);
-    g.fillEllipse(cx, cy + 2, 10, 8);
-    // Drone pipes
+    // Bag — dark outline
+    g.fillStyle(0x1a0d00, 1);
+    g.fillEllipse(cx + 1, cy + 6, 22, 17);
+    // Bag — dark leather base
+    g.fillStyle(0x4a2200, 1);
+    g.fillEllipse(cx + 1, cy + 6, 20, 15);
+    // Bag — mid-tone leather
+    g.fillStyle(0x7a3d10, 1);
+    g.fillEllipse(cx + 1, cy + 5, 16, 12);
+    // Bag — highlight sheen top-left
+    g.fillStyle(0xaa6030, 1);
+    g.fillEllipse(cx - 2, cy + 3, 10, 7);
+    g.fillStyle(0xcc8855, 0.6);
+    g.fillEllipse(cx - 3, cy + 2, 6, 4);
+    // Blowpipe going up-left
     g.fillStyle(0x221100, 1);
-    g.fillRect(cx - 4, cy - 6, 1.5, 7);
-    g.fillRect(cx - 1, cy - 7, 1.5, 8);
-    g.fillRect(cx + 2, cy - 6, 1.5, 7);
-    // Gold caps
+    g.fillRect(cx - 10, cy - 2, 2, 9);
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 9, cy - 2, 1, 8);
+    // Gold ferrule on blowpipe
     g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx - 4, cy - 7, 2, 1.5);
-    g.fillRect(cx - 1, cy - 8, 2, 1.5);
-    g.fillRect(cx + 2, cy - 7, 2, 1.5);
+    g.fillRect(cx - 11, cy - 3, 4, 2);
+    g.fillStyle(0xffdd44, 1);
+    g.fillRect(cx - 10, cy - 3, 2, 1);
+    // Drone pipes — 3 pipes rising from bag
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx - 4, cy - 12, 3, 14);
+    g.fillRect(cx + 1, cy - 14, 3, 16);
+    g.fillRect(cx + 6, cy - 12, 3, 14);
+    // Pipe shading
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 3, cy - 12, 1, 13);
+    g.fillRect(cx + 2, cy - 14, 1, 15);
+    g.fillRect(cx + 7, cy - 12, 1, 13);
+    // Gold ferrule caps on drone pipes
+    g.fillStyle(0xddaa00, 1);
+    g.fillRect(cx - 5, cy - 13, 5, 2);
+    g.fillRect(cx, cy - 15, 5, 2);
+    g.fillRect(cx + 5, cy - 13, 5, 2);
+    // Gold cap shine
+    g.fillStyle(0xffee66, 1);
+    g.fillRect(cx - 4, cy - 13, 2, 1);
+    g.fillRect(cx + 1, cy - 15, 2, 1);
+    g.fillRect(cx + 6, cy - 13, 2, 1);
+    // Chanter pipe — extends down-left
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx - 14, cy + 4, 14, 3);
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 14, cy + 4, 14, 1);
+    // Chanter bell end
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx - 16, cy + 3, 3, 5);
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 15, cy + 4, 1, 3);
+    // Sound wave arcs from chanter
+    g.lineStyle(1, 0xffaa33, 0.9);
+    g.strokeCircle(cx - 17, cy + 5, 3);
+    g.lineStyle(1, 0xffaa33, 0.6);
+    g.strokeCircle(cx - 17, cy + 5, 5);
+    g.lineStyle(1, 0xffaa33, 0.35);
+    g.strokeCircle(cx - 17, cy + 5, 7);
     g.generateTexture('wicon_bagpipe_blast', s, s);
     g.destroy();
   }
@@ -626,74 +1289,183 @@ export class BootScene extends Phaser.Scene {
    *  the full instrument played horizontally with a musical note accent,
    *  so the player can tell them apart at a glance. */
   private createBagpipesUtilityIcon(): void {
-    const s = 18;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Bag — shifted right, played-position
-    g.fillStyle(0x553311, 1);
-    g.fillEllipse(cx + 2, cy + 1, 8, 7);
-    g.fillStyle(0x996633, 1);
-    g.fillEllipse(cx + 2, cy + 1, 6, 5);
-    // Chanter (melody pipe) — long, angled down-left (the playing pipe)
-    g.fillStyle(0x332200, 1);
-    g.fillRect(cx - 6, cy + 2, 7, 2);
-    // Single drone pipe up
-    g.fillStyle(0x332200, 1);
-    g.fillRect(cx + 1, cy - 5, 2, 5);
+    // Subtle green/gold aura to distinguish from blast version
+    g.fillStyle(0x336622, 0.25);
+    g.fillCircle(cx, cy, 14);
+    g.fillStyle(0x44aa33, 0.15);
+    g.fillCircle(cx, cy, 10);
+    // Bag — dark outline, playing position (right-center)
+    g.fillStyle(0x1a0d00, 1);
+    g.fillEllipse(cx + 5, cy + 2, 18, 15);
+    // Bag — dark leather
+    g.fillStyle(0x4a2200, 1);
+    g.fillEllipse(cx + 5, cy + 2, 16, 13);
+    // Bag — mid leather
+    g.fillStyle(0x7a3d10, 1);
+    g.fillEllipse(cx + 5, cy + 1, 13, 10);
+    // Bag — highlight
+    g.fillStyle(0xaa6030, 1);
+    g.fillEllipse(cx + 3, cy - 1, 8, 6);
+    g.fillStyle(0xcc8855, 0.5);
+    g.fillEllipse(cx + 2, cy - 2, 5, 3);
+    // Chanter — long horizontal pipe going left (playing position)
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx - 13, cy + 2, 15, 3);
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx - 13, cy + 2, 15, 1);
+    // Chanter bell
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx - 15, cy + 1, 3, 5);
+    // Two drone pipes — sticking up from bag
+    g.fillStyle(0x221100, 1);
+    g.fillRect(cx + 2, cy - 12, 3, 13);
+    g.fillRect(cx + 7, cy - 10, 3, 11);
+    // Drone pipe shading
+    g.fillStyle(0x553322, 1);
+    g.fillRect(cx + 3, cy - 12, 1, 12);
+    g.fillRect(cx + 8, cy - 10, 1, 10);
+    // Gold ferrule caps
     g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx + 1, cy - 6, 2, 1.5);
-    // Musical note accent — top-right corner
-    g.fillStyle(0xffdd44, 1);
-    g.fillCircle(cx + 6, cy - 4, 1.5);
-    g.fillRect(cx + 7, cy - 7, 1, 4);
+    g.fillRect(cx + 1, cy - 13, 5, 2);
+    g.fillRect(cx + 6, cy - 11, 5, 2);
+    g.fillStyle(0xffee66, 1);
+    g.fillRect(cx + 2, cy - 13, 2, 1);
+    g.fillRect(cx + 7, cy - 11, 2, 1);
+    // Musical note — top-left corner, clearly visible
+    g.fillStyle(0xffee44, 1);
+    g.fillCircle(cx - 10, cy - 8, 2.5);
+    g.fillRect(cx - 8, cy - 14, 2, 7);
+    // Note flag
+    g.fillRect(cx - 8, cy - 14, 5, 2);
+    // Second smaller note
+    g.fillStyle(0xffdd22, 0.8);
+    g.fillCircle(cx - 4, cy - 12, 1.5);
+    g.fillRect(cx - 2, cy - 16, 1.5, 5);
     g.generateTexture('wicon_bagpipes', s, s);
     g.destroy();
   }
 
   private createScotchMistIcon(): void {
-    const s = 18;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Cloud shape
-    g.fillStyle(0x556677, 0.9);
-    g.fillCircle(cx - 4, cy + 1, 4);
-    g.fillCircle(cx, cy - 2, 5);
-    g.fillCircle(cx + 4, cy + 1, 4);
-    g.fillStyle(0x7788aa, 0.9);
-    g.fillCircle(cx - 3, cy, 3);
-    g.fillCircle(cx + 1, cy - 3, 3.5);
-    g.fillCircle(cx + 4, cy, 3);
-    // Sparkle
+    // Layer 1 — outermost wisps (very faint)
+    g.fillStyle(0x3a4d55, 0.35);
+    g.fillCircle(cx - 8, cy + 4, 7);
+    g.fillCircle(cx + 8, cy + 4, 7);
+    g.fillCircle(cx, cy - 4, 8);
+    g.fillCircle(cx - 5, cy + 6, 5);
+    g.fillCircle(cx + 5, cy + 6, 5);
+    // Layer 2 — mid fog
+    g.fillStyle(0x556677, 0.55);
+    g.fillCircle(cx - 6, cy + 3, 6);
+    g.fillCircle(cx + 6, cy + 3, 6);
+    g.fillCircle(cx, cy - 3, 7);
+    g.fillCircle(cx - 3, cy + 4, 5);
+    g.fillCircle(cx + 3, cy + 4, 5);
+    // Layer 3 — main cloud body
+    g.fillStyle(0x6a7d8e, 0.75);
+    g.fillCircle(cx - 4, cy + 1, 5);
+    g.fillCircle(cx + 4, cy + 1, 5);
+    g.fillCircle(cx, cy - 2, 6);
+    g.fillCircle(cx - 1, cy + 2, 5);
+    g.fillCircle(cx + 1, cy + 2, 5);
+    // Layer 4 — bright top highlights
+    g.fillStyle(0x8899aa, 0.9);
+    g.fillCircle(cx - 2, cy, 4);
+    g.fillCircle(cx + 2, cy, 4);
+    g.fillCircle(cx, cy - 2, 4.5);
+    // Swirling wisps at edges
+    g.fillStyle(0x99aabb, 0.5);
+    g.fillCircle(cx - 12, cy + 2, 2.5);
+    g.fillCircle(cx + 12, cy + 2, 2.5);
+    g.fillCircle(cx, cy + 10, 2.5);
+    g.fillStyle(0xaabbcc, 0.35);
+    g.fillCircle(cx - 13, cy, 1.5);
+    g.fillCircle(cx + 13, cy, 1.5);
+    // Tiny skull hint — barely visible in the fog (danger!)
+    g.fillStyle(0x223344, 0.7);
+    g.fillCircle(cx, cy + 1, 3);
+    g.fillStyle(0x334455, 0.5);
+    g.fillRect(cx - 1, cy + 3, 2, 2);
+    // Skull eye sockets
+    g.fillStyle(0x1a2a33, 0.8);
+    g.fillCircle(cx - 1, cy + 1, 0.8);
+    g.fillCircle(cx + 1, cy + 1, 0.8);
+    // Sparkle/particle dots
     g.fillStyle(0xccddee, 1);
-    g.fillCircle(cx, cy - 2, 1);
+    g.fillCircle(cx - 2, cy - 3, 1);
+    g.fillCircle(cx + 4, cy - 1, 0.8);
+    g.fillStyle(0xddeeff, 0.8);
+    g.fillCircle(cx - 6, cy + 1, 0.8);
+    g.fillCircle(cx + 7, cy, 0.7);
+    g.fillCircle(cx, cy + 6, 0.7);
     g.generateTexture('wicon_scotch_mist', s, s);
     g.destroy();
   }
 
   private createNessieTentacleIcon(): void {
-    const s = 18;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Tentacle outline
-    g.fillStyle(0x114422, 1);
-    g.fillCircle(cx - 4, cy + 4, 3.5);
-    g.fillCircle(cx, cy, 3.5);
-    g.fillCircle(cx + 4, cy - 4, 3.5);
-    // Tentacle body
-    g.fillStyle(0x336644, 1);
-    g.fillCircle(cx - 4, cy + 4, 3);
-    g.fillCircle(cx, cy, 3);
-    g.fillCircle(cx + 4, cy - 4, 3);
-    // Highlights
-    g.fillStyle(0x66aa77, 1);
-    g.fillCircle(cx - 4, cy + 3, 1.2);
-    g.fillCircle(cx, cy - 1, 1.2);
-    g.fillCircle(cx + 4, cy - 5, 1.2);
-    // Suckers
-    g.fillStyle(0xccaa88, 1);
-    g.fillCircle(cx - 2, cy + 5, 0.8);
-    g.fillCircle(cx + 2, cy + 1, 0.8);
-    g.fillCircle(cx + 6, cy - 3, 0.8);
+    // S-curve tentacle — 3 segments thick to thin (bottom-left to top-right)
+    // Segment 1 — thickest (base), outline
+    g.fillStyle(0x0d2e1a, 1);
+    g.fillCircle(cx - 7, cy + 8, 6);
+    g.fillCircle(cx - 3, cy + 5, 5.5);
+    // Segment 1 — body
+    g.fillStyle(0x1e5c36, 1);
+    g.fillCircle(cx - 7, cy + 8, 5);
+    g.fillCircle(cx - 3, cy + 5, 4.5);
+    // Segment 1 — highlight
+    g.fillStyle(0x3a8c56, 1);
+    g.fillCircle(cx - 8, cy + 7, 2.5);
+    g.fillCircle(cx - 4, cy + 4, 2.2);
+    // Slimy sheen on seg 1
+    g.fillStyle(0x55bb77, 0.6);
+    g.fillCircle(cx - 8, cy + 6, 1.2);
+    // Suckers on inner curve of seg 1
+    g.fillStyle(0xbbaa88, 1);
+    g.fillCircle(cx - 4, cy + 9, 1.2);
+    g.fillCircle(cx - 1, cy + 7, 1.0);
+    // Segment 2 — mid, outline
+    g.fillStyle(0x0d2e1a, 1);
+    g.fillCircle(cx + 1, cy + 1, 4.5);
+    g.fillCircle(cx + 4, cy - 2, 4);
+    // Segment 2 — body
+    g.fillStyle(0x226644, 1);
+    g.fillCircle(cx + 1, cy + 1, 3.5);
+    g.fillCircle(cx + 4, cy - 2, 3.2);
+    // Segment 2 — highlight
+    g.fillStyle(0x44996a, 1);
+    g.fillCircle(cx, cy, 1.8);
+    g.fillCircle(cx + 3, cy - 3, 1.5);
+    // Suckers on seg 2 inner curve
+    g.fillStyle(0xbbaa88, 1);
+    g.fillCircle(cx + 4, cy + 2, 1.0);
+    g.fillCircle(cx + 6, cy - 1, 0.9);
+    // Segment 3 — thinnest (tip), outline
+    g.fillStyle(0x0d2e1a, 1);
+    g.fillCircle(cx + 8, cy - 6, 3);
+    g.fillCircle(cx + 10, cy - 9, 2.2);
+    // Segment 3 — body
+    g.fillStyle(0x2a7752, 1);
+    g.fillCircle(cx + 8, cy - 6, 2.2);
+    g.fillCircle(cx + 10, cy - 9, 1.5);
+    // Segment 3 — highlight (bright tip)
+    g.fillStyle(0x55cc88, 1);
+    g.fillCircle(cx + 7, cy - 7, 1.0);
+    // Water droplets splashing off
+    g.fillStyle(0x88ccee, 0.9);
+    g.fillCircle(cx + 13, cy - 8, 1.2);
+    g.fillCircle(cx + 11, cy - 12, 1.0);
+    g.fillCircle(cx - 10, cy + 10, 1.0);
+    g.fillStyle(0x66bbdd, 0.7);
+    g.fillCircle(cx + 14, cy - 5, 0.8);
+    g.fillCircle(cx - 12, cy + 7, 0.8);
     g.generateTexture('wicon_nessie_tentacle', s, s);
     g.destroy();
   }
@@ -3042,193 +3814,437 @@ export class BootScene extends Phaser.Scene {
 
   /** Thistle Storm — multiple thistles in a radiating burst */
   private createThistleStormIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Central bright core
-    g.fillStyle(0xbb88ee, 1);
-    g.fillCircle(cx, cy, 3);
-    g.fillStyle(0xffffff, 0.9);
-    g.fillCircle(cx, cy, 1.5);
-    // 5 thistle heads radiating out
-    for (let i = 0; i < 5; i++) {
-      const a = (i / 5) * Math.PI * 2;
-      const tx = cx + Math.cos(a) * 7;
-      const ty = cy + Math.sin(a) * 7;
-      g.fillStyle(0x442266, 1);
-      g.fillCircle(tx, ty, 2.5);
-      g.fillStyle(0x9966cc, 1);
-      g.fillCircle(tx, ty, 2);
-      // Tiny spikes
-      g.fillStyle(0xbb88ee, 1);
-      g.fillCircle(tx + Math.cos(a) * 2, ty + Math.sin(a) * 2, 0.8);
+    // Purple homing energy aura — outer glow
+    g.fillStyle(0x440066, 0.3);
+    g.fillCircle(cx, cy, 15);
+    g.fillStyle(0x6622aa, 0.2);
+    g.fillCircle(cx, cy, 11);
+    // Energy trails from thistles to centre
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2;
+      const tx = cx + Math.cos(a) * 11;
+      const ty = cy + Math.sin(a) * 11;
+      g.lineStyle(1, 0x9944cc, 0.4);
+      g.lineBetween(cx, cy, tx, ty);
     }
+    // 7 thistle heads radiating in a spiral pattern
+    for (let i = 0; i < 7; i++) {
+      const a = (i / 7) * Math.PI * 2 + 0.3;
+      const r = 9 + (i % 2) * 1.5;
+      const tx = cx + Math.cos(a) * r;
+      const ty = cy + Math.sin(a) * r;
+      // Thistle head — dark outline
+      g.fillStyle(0x2a0044, 1);
+      g.fillCircle(tx, ty, 3);
+      // Thistle head — purple body
+      g.fillStyle(0x7722aa, 1);
+      g.fillCircle(tx, ty, 2.2);
+      // Thistle head — lighter centre
+      g.fillStyle(0xaa55dd, 1);
+      g.fillCircle(tx, ty, 1.2);
+      // Spike tip extending outward
+      g.fillStyle(0xcc88ff, 1);
+      g.fillCircle(tx + Math.cos(a) * 2.5, ty + Math.sin(a) * 2.5, 0.9);
+      // Side spikes
+      g.fillStyle(0xbb66ee, 0.8);
+      g.fillCircle(tx + Math.cos(a + 1.2) * 2, ty + Math.sin(a + 1.2) * 2, 0.7);
+      g.fillCircle(tx + Math.cos(a - 1.2) * 2, ty + Math.sin(a - 1.2) * 2, 0.7);
+    }
+    // Bright magical core — white/purple
+    g.fillStyle(0x9944dd, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0xdd88ff, 1);
+    g.fillCircle(cx, cy, 2.5);
+    g.fillStyle(0xffffff, 0.95);
+    g.fillCircle(cx, cy, 1.2);
     g.generateTexture('wicon_thistle_storm', s, s);
     g.destroy();
   }
 
   /** Highland Games — flaming caber */
   private createHighlandGamesIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
-    // Caber body (rotated diagonally)
-    g.fillStyle(0x3a2808, 1);
-    g.fillRect(cx - 8, cy - 2, 16, 5);
-    g.fillStyle(0x8b6914, 1);
-    g.fillRect(cx - 7, cy - 1, 14, 3);
-    g.fillStyle(0xa07818, 1);
-    g.fillRect(cx - 7, cy - 1, 14, 1);
-    // Flames at one end
-    g.fillStyle(0xff3300, 0.9);
-    g.fillCircle(cx + 9, cy, 3);
-    g.fillStyle(0xff8800, 1);
-    g.fillCircle(cx + 9, cy - 1, 2);
-    g.fillStyle(0xffdd00, 1);
-    g.fillCircle(cx + 9, cy - 2, 1);
-    // Flame tips
-    g.fillStyle(0xff6600, 0.7);
-    g.fillTriangle(cx + 9, cy - 4, cx + 11, cy, cx + 7, cy - 2);
+    // Caber diagonal: bottom-left to upper-right
+    // Dark outline shadow of caber
+    g.fillStyle(0x1a0e00, 1);
+    g.fillRect(3, 14, 22, 8);
+    // Caber body — dark wood tone
+    g.fillStyle(0x3a2208, 1);
+    g.fillRect(4, 15, 20, 6);
+    // Caber — mid wood grain band
+    g.fillStyle(0x6b4010, 1);
+    g.fillRect(4, 16, 20, 4);
+    // Caber — light grain highlight
+    g.fillStyle(0x8b5a18, 1);
+    g.fillRect(4, 16, 20, 1);
+    g.fillStyle(0x7a4e14, 0.6);
+    g.fillRect(6, 18, 14, 1);
+    // Wood grain detail lines
+    g.fillStyle(0x2e1c06, 0.7);
+    g.fillRect(8, 15, 1, 6);
+    g.fillRect(14, 15, 1, 6);
+    g.fillRect(20, 15, 1, 6);
+    // Ground crack lines beneath caber
+    g.fillStyle(0x1a0e00, 0.8);
+    g.fillRect(5, 21, 8, 1);
+    g.fillRect(3, 22, 5, 1);
+    g.fillRect(7, 22, 6, 1);
+    // Scorch marks on caber near impact end
+    g.fillStyle(0x0a0600, 0.7);
+    g.fillCircle(24, 18, 3);
+    g.fillCircle(21, 20, 2);
+    // Flame explosion at right (impact) end — outer red
+    g.fillStyle(0xcc2200, 0.85);
+    g.fillCircle(27, 12, 6);
+    g.fillCircle(26, 17, 5);
+    g.fillTriangle(25, 9, 32, 14, 28, 7);
+    g.fillTriangle(29, 16, 32, 10, 32, 19);
+    // Flame — orange mid layer
+    g.fillStyle(0xff6600, 1);
+    g.fillCircle(27, 13, 4.5);
+    g.fillCircle(26, 16, 3.5);
+    g.fillTriangle(26, 10, 31, 14, 28, 8);
+    // Flame — yellow hot core
+    g.fillStyle(0xffcc00, 1);
+    g.fillCircle(27, 14, 3);
+    g.fillCircle(26, 16, 2);
+    // Flame — white hottest point
+    g.fillStyle(0xffeeaa, 1);
+    g.fillCircle(27, 15, 1.5);
+    // Ember particles
+    g.fillStyle(0xff8800, 0.9);
+    g.fillCircle(30, 8, 1);
+    g.fillCircle(32, 12, 0.8);
+    g.fillStyle(0xffcc22, 0.8);
+    g.fillCircle(31, 6, 0.7);
+    g.fillCircle(29, 5, 0.8);
     g.generateTexture('wicon_highland_games', s, s);
     g.destroy();
   }
 
   /** Jobby Cannon — multiple wee jobbies radiating */
   private createHaggisCannonIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Central jobby
-    g.fillStyle(0x3a2808, 1);
-    g.fillCircle(cx, cy, 4);
-    g.fillStyle(0x6b4e0a, 1);
-    g.fillCircle(cx, cy, 3);
-    // Motion trails radiating out
-    g.fillStyle(0x8b6914, 1);
-    g.fillCircle(cx - 6, cy - 4, 2);
-    g.fillCircle(cx + 6, cy - 4, 2);
-    g.fillCircle(cx - 6, cy + 4, 2);
-    g.fillCircle(cx + 6, cy + 4, 2);
-    g.fillCircle(cx + 8, cy, 1.5);
-    g.fillCircle(cx - 8, cy, 1.5);
-    // Motion lines
-    g.lineStyle(1, 0xa07818, 0.7);
-    g.lineBetween(cx, cy, cx - 6, cy - 4);
-    g.lineBetween(cx, cy, cx + 6, cy - 4);
-    g.lineBetween(cx, cy, cx - 6, cy + 4);
-    g.lineBetween(cx, cy, cx + 6, cy + 4);
+    // Motion lines outward
+    g.lineStyle(1.5, 0x7a5010, 0.5);
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      g.lineBetween(cx, cy, cx + Math.cos(a) * 13, cy + Math.sin(a) * 13);
+    }
+    // 6 smaller jobbies radiating outward with motion trails
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const r = 10;
+      const jx = cx + Math.cos(a) * r;
+      const jy = cy + Math.sin(a) * r;
+      // Trail dots (2 dots behind each jobby)
+      g.fillStyle(0x5a3808, 0.5);
+      g.fillCircle(jx - Math.cos(a) * 3, jy - Math.sin(a) * 3, 1.2);
+      g.fillStyle(0x6b4a0a, 0.35);
+      g.fillCircle(jx - Math.cos(a) * 5, jy - Math.sin(a) * 5, 0.8);
+      // Small jobby — outline
+      g.fillStyle(0x1e1004, 1);
+      g.fillCircle(jx, jy, 2.8);
+      // Small jobby — dark brown
+      g.fillStyle(0x5a3808, 1);
+      g.fillCircle(jx, jy, 2.2);
+      // Small jobby — mid swirl
+      g.fillStyle(0x8a5a14, 1);
+      g.fillCircle(jx - 0.5, jy - 0.5, 1.2);
+      // Jobby tip
+      g.fillStyle(0xaa7020, 0.8);
+      g.fillCircle(jx - 0.8, jy - 0.8, 0.6);
+    }
+    // Impact splatter effects at edges
+    g.fillStyle(0x6b4a0a, 0.7);
+    g.fillCircle(cx - 12, cy - 12, 1.5);
+    g.fillCircle(cx + 12, cy - 10, 1.2);
+    g.fillCircle(cx - 10, cy + 12, 1.2);
+    g.fillStyle(0x8a5a14, 0.5);
+    g.fillCircle(cx + 13, cy + 8, 1.0);
+    g.fillCircle(cx - 8, cy - 13, 0.8);
+    // Central chunky jobby — outline
+    g.fillStyle(0x1e1004, 1);
+    g.fillCircle(cx, cy, 6.5);
+    // Central jobby — dark brown base
+    g.fillStyle(0x4a2c06, 1);
+    g.fillCircle(cx, cy, 5.5);
+    // Central jobby — mid coil
+    g.fillStyle(0x7a4e10, 1);
+    g.fillCircle(cx - 1, cy - 1, 4);
+    // Central jobby — highlight swirl
+    g.fillStyle(0xaa7020, 1);
+    g.fillCircle(cx - 1.5, cy - 1.5, 2.2);
+    // Central jobby — top sheen
+    g.fillStyle(0xcc9030, 0.7);
+    g.fillCircle(cx - 2, cy - 2, 1.2);
+    // Steam wisps
+    g.fillStyle(0xddccbb, 0.4);
+    g.fillCircle(cx - 1, cy - 7, 1.5);
+    g.fillCircle(cx + 1, cy - 9, 1.2);
+    g.fillStyle(0xccbbaa, 0.25);
+    g.fillCircle(cx, cy - 11, 1.0);
     g.generateTexture('wicon_haggis_cannon', s, s);
     g.destroy();
   }
 
   /** Highland Fling — massive expanding ring */
   private createHighlandFlingIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Concentric rings (the shockwave)
-    g.lineStyle(2, 0x4488ff, 1);
+    // Outer ring — blue, motion-blurred (wider stroke)
+    g.lineStyle(3, 0x2255cc, 0.6);
+    g.strokeCircle(cx, cy, 14);
+    // Outer ring motion blur extension dots
+    g.fillStyle(0x3366dd, 0.35);
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2;
+      g.fillCircle(cx + Math.cos(a) * 14.5, cy + Math.sin(a) * 14.5, 1.2);
+    }
+    // Ring 1 — outer solid blue
+    g.lineStyle(2, 0x3366ee, 1);
+    g.strokeCircle(cx, cy, 13);
+    // Ring 2 — mid cyan
+    g.lineStyle(2, 0x4499ff, 0.85);
     g.strokeCircle(cx, cy, 9);
-    g.lineStyle(2, 0x6699ff, 0.8);
-    g.strokeCircle(cx, cy, 6);
-    g.lineStyle(2, 0x88bbff, 0.6);
-    g.strokeCircle(cx, cy, 3);
-    // Bright center
+    // Ring 3 — inner white/bright
+    g.lineStyle(2, 0x88ccff, 0.7);
+    g.strokeCircle(cx, cy, 5);
+    // Musical notes scattered between rings
+    g.fillStyle(0xaaddff, 0.85);
+    // Note 1 — upper right area
+    g.fillCircle(cx + 10, cy - 6, 1.5);
+    g.fillRect(cx + 11, cy - 10, 1.5, 4.5);
+    g.fillRect(cx + 11, cy - 10, 4, 1.5);
+    // Note 2 — lower left area
+    g.fillCircle(cx - 8, cy + 9, 1.2);
+    g.fillRect(cx - 7, cy + 5, 1.2, 4);
+    // Energy scatter dots between rings
+    g.fillStyle(0x66aaff, 0.7);
+    g.fillCircle(cx + 7, cy + 7, 1.0);
+    g.fillCircle(cx - 7, cy - 7, 1.0);
+    g.fillCircle(cx - 10, cy + 4, 0.9);
+    g.fillCircle(cx + 4, cy - 10, 0.9);
+    g.fillStyle(0x99ccff, 0.5);
+    g.fillCircle(cx + 11, cy + 2, 0.8);
+    g.fillCircle(cx - 2, cy + 11, 0.8);
+    // Bright white centre flash
+    g.fillStyle(0x2244bb, 1);
+    g.fillCircle(cx, cy, 4);
+    g.fillStyle(0x66aaff, 1);
+    g.fillCircle(cx, cy, 3);
+    g.fillStyle(0xccddff, 1);
+    g.fillCircle(cx, cy, 1.8);
     g.fillStyle(0xffffff, 1);
-    g.fillCircle(cx, cy, 1.5);
-    // Motion hints
-    g.fillStyle(0xaaccff, 0.7);
-    g.fillCircle(cx - 10, cy, 1);
-    g.fillCircle(cx + 10, cy, 1);
-    g.fillCircle(cx, cy - 10, 1);
-    g.fillCircle(cx, cy + 10, 1);
+    g.fillCircle(cx, cy, 1);
     g.generateTexture('wicon_highland_fling', s, s);
     g.destroy();
   }
 
   /** The Haar — dense fog cloud */
   private createTheHaarIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Layered fog cloud
-    g.fillStyle(0x445566, 0.7);
-    g.fillCircle(cx - 4, cy + 2, 5);
-    g.fillCircle(cx + 4, cy + 2, 5);
-    g.fillCircle(cx, cy - 2, 6);
-    g.fillStyle(0x667788, 0.8);
-    g.fillCircle(cx - 3, cy + 1, 4);
-    g.fillCircle(cx + 3, cy + 1, 4);
-    g.fillCircle(cx, cy - 1, 5);
-    g.fillStyle(0x99aabb, 0.9);
-    g.fillCircle(cx - 2, cy, 3);
-    g.fillCircle(cx + 2, cy, 3);
-    // Bright wisps
-    g.fillStyle(0xccddee, 1);
-    g.fillCircle(cx, cy - 2, 1.5);
-    g.fillCircle(cx - 4, cy + 1, 1);
-    g.fillCircle(cx + 4, cy + 1, 1);
+    // Layer 1 — outermost dissolving wisps (very faint)
+    g.fillStyle(0x2a3a33, 0.3);
+    g.fillCircle(cx - 10, cy + 4, 7);
+    g.fillCircle(cx + 10, cy + 4, 7);
+    g.fillCircle(cx, cy - 6, 8);
+    g.fillCircle(cx - 7, cy + 7, 5);
+    g.fillCircle(cx + 7, cy + 7, 5);
+    g.fillCircle(cx - 12, cy + 1, 4);
+    g.fillCircle(cx + 12, cy + 1, 4);
+    // Layer 2 — edge fog, green-tinged (poisonous)
+    g.fillStyle(0x334433, 0.5);
+    g.fillCircle(cx - 8, cy + 3, 6);
+    g.fillCircle(cx + 8, cy + 3, 6);
+    g.fillCircle(cx, cy - 4, 7);
+    g.fillCircle(cx - 5, cy + 5, 5);
+    g.fillCircle(cx + 5, cy + 5, 5);
+    // Layer 3 — main fog bank
+    g.fillStyle(0x445544, 0.7);
+    g.fillCircle(cx - 6, cy + 2, 5.5);
+    g.fillCircle(cx + 6, cy + 2, 5.5);
+    g.fillCircle(cx, cy - 2, 6.5);
+    g.fillCircle(cx - 3, cy + 3, 5);
+    g.fillCircle(cx + 3, cy + 3, 5);
+    // Layer 4 — denser centre fog
+    g.fillStyle(0x556655, 0.82);
+    g.fillCircle(cx - 4, cy + 1, 4.5);
+    g.fillCircle(cx + 4, cy + 1, 4.5);
+    g.fillCircle(cx, cy - 1, 5.5);
+    // Layer 5 — ominous dark core
+    g.fillStyle(0x1e2d1e, 0.88);
+    g.fillCircle(cx, cy + 1, 5);
+    g.fillCircle(cx - 1, cy, 4);
+    g.fillCircle(cx + 1, cy, 4);
+    // Ghostly shapes barely visible — spectral figure outline
+    g.fillStyle(0x334433, 0.5);
+    g.fillCircle(cx, cy - 1, 3);
+    g.fillRect(cx - 2, cy + 2, 4, 4);
+    // Ghost "eye" glints
+    g.fillStyle(0x99cc88, 0.45);
+    g.fillCircle(cx - 1, cy - 1, 0.9);
+    g.fillCircle(cx + 1, cy - 1, 0.9);
+    // Green-tinged wisp highlights
+    g.fillStyle(0x88cc77, 0.5);
+    g.fillCircle(cx - 2, cy - 3, 1.5);
+    g.fillCircle(cx + 4, cy - 1, 1.2);
+    g.fillStyle(0xaaddaa, 0.4);
+    g.fillCircle(cx - 6, cy + 1, 1.0);
+    g.fillCircle(cx + 6, cy + 1, 1.0);
+    g.fillCircle(cx, cy + 8, 1.0);
     g.generateTexture('wicon_the_haar', s, s);
     g.destroy();
   }
 
   /** Nessie Unleashed — full tentacle swirl */
   private createNessieUnleashedIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
-    // Swirling tentacle — multiple arcs
-    g.fillStyle(0x114422, 1);
-    g.fillCircle(cx, cy, 9);
-    g.fillStyle(0x226644, 1);
-    g.fillCircle(cx, cy, 7);
-    // Tentacle segments swirling outward
-    g.fillStyle(0x66aa77, 1);
-    const segs = 8;
-    for (let i = 0; i < segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      const r = 3 + (i % 2) * 2;
-      const px = cx + Math.cos(a) * r;
-      const py = cy + Math.sin(a) * r;
-      g.fillCircle(px, py, 1.3);
+    // Water spray/splash background
+    g.fillStyle(0x336688, 0.3);
+    g.fillCircle(cx, cy, 15);
+    g.fillStyle(0x224466, 0.2);
+    g.fillCircle(cx, cy, 12);
+    // Splash droplets
+    g.fillStyle(0x66aacc, 0.7);
+    g.fillCircle(cx + 13, cy - 4, 1.5);
+    g.fillCircle(cx - 13, cy + 3, 1.2);
+    g.fillCircle(cx + 4, cy - 14, 1.3);
+    g.fillCircle(cx - 5, cy + 13, 1.2);
+    g.fillStyle(0x88ccee, 0.5);
+    g.fillCircle(cx + 14, cy + 2, 1.0);
+    g.fillCircle(cx - 2, cy - 14, 0.9);
+    // 4 tentacles spiralling outward from centre
+    const tentacleAngles = [0.4, 1.9, 3.4, 4.9];
+    for (let t = 0; t < 4; t++) {
+      const baseAngle = tentacleAngles[t];
+      // Draw 3 segments per tentacle, spiralling out
+      for (let seg = 0; seg < 3; seg++) {
+        const a = baseAngle + seg * 0.6;
+        const r = 4 + seg * 3.5;
+        const px = cx + Math.cos(a) * r;
+        const py = cy + Math.sin(a) * r;
+        const size = 3.8 - seg * 0.8;
+        // Outline
+        g.fillStyle(0x0d2e1a, 1);
+        g.fillCircle(px, py, size + 0.7);
+        // Dark green body
+        g.fillStyle(0x1a5c36, 1);
+        g.fillCircle(px, py, size);
+        // Mid green
+        g.fillStyle(0x2a8052, 1);
+        g.fillCircle(px - 0.5, py - 0.5, size * 0.65);
+        // Highlight
+        g.fillStyle(0x44aa6a, 1);
+        g.fillCircle(px - 0.8, py - 0.8, size * 0.35);
+        // Sucker on inner curve
+        if (seg > 0) {
+          const suckerA = a + 1.5;
+          const sx = px + Math.cos(suckerA) * (size - 0.5);
+          const sy = py + Math.sin(suckerA) * (size - 0.5);
+          g.fillStyle(0xbbaa88, 1);
+          g.fillCircle(sx, sy, 0.9);
+        }
+        // Bioluminescent accent dot
+        g.fillStyle(0x33ffaa, 0.4);
+        g.fillCircle(px + Math.cos(a + 0.8) * size * 0.8, py + Math.sin(a + 0.8) * size * 0.8, 0.6);
+      }
     }
-    // Bright eye center
+    // Central golden eye — dark outline
+    g.fillStyle(0x3a2a00, 1);
+    g.fillCircle(cx, cy, 5);
+    // Eye iris — golden
+    g.fillStyle(0xcc9900, 1);
+    g.fillCircle(cx, cy, 4);
+    // Eye lighter gold
     g.fillStyle(0xffcc22, 1);
-    g.fillCircle(cx, cy, 2);
+    g.fillCircle(cx, cy, 3);
+    // Eye bright highlight
+    g.fillStyle(0xffee88, 1);
+    g.fillCircle(cx - 0.5, cy - 0.5, 1.5);
+    // Slit pupil — vertical black line
     g.fillStyle(0x000000, 1);
-    g.fillCircle(cx, cy, 1);
+    g.fillRect(cx - 0.7, cy - 3, 1.4, 6);
+    // Bioluminescent rim around eye
+    g.lineStyle(1, 0x33ffaa, 0.5);
+    g.strokeCircle(cx, cy, 5.5);
     g.generateTexture('wicon_nessie_unleashed', s, s);
     g.destroy();
   }
 
   /** Highland Claymore — broad two-handed sword (distinct from caber log projectile). */
   private createClaymoreWeaponIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
-    const _cx = s / 2;
-    const _cy = s / 2;
-    // Broad blade, diagonal (upper-right → lower-left), chunky pixel read
-    g.fillStyle(0x5a6a78, 1);
-    g.fillTriangle(15, 4, 6, 17, 9, 17);
-    g.fillStyle(0xc8d8e8, 1);
-    g.fillTriangle(15, 4, 9, 17, 12, 15);
-    g.fillStyle(0xe8f4ff, 0.85);
-    g.fillTriangle(14, 6, 10, 14, 11, 13);
-    // Wide quillon crossguard
+    // Sword slightly diagonal: tip upper-right, pommel lower-left
+    // Blade — dark steel edge shadow (outline)
+    g.fillStyle(0x2a3038, 1);
+    g.fillTriangle(24, 3, 10, 19, 14, 22);
+    // Blade — dark steel face
+    g.fillStyle(0x4e6070, 1);
+    g.fillTriangle(24, 3, 11, 18, 15, 21);
+    // Blade — light steel face (the broad flat side)
+    g.fillStyle(0xa8c0d0, 1);
+    g.fillTriangle(23, 4, 13, 19, 16, 20);
+    // Blade — bright edge gleam line
+    g.fillStyle(0xddeeff, 0.9);
+    g.fillTriangle(22, 6, 14, 17, 15, 18);
+    // Blade — specular highlight near tip
+    g.fillStyle(0xeef8ff, 0.8);
+    g.fillTriangle(23, 5, 20, 8, 21, 7);
+    // Fuller groove (blood groove) — subtle darker line down the centre
+    g.fillStyle(0x3a5060, 0.7);
+    g.fillRect(16, 8, 1, 9);
+    // Wide crossguard — dark outline
+    g.fillStyle(0x2a1e14, 1);
+    g.fillRect(5, 18, 22, 5);
+    // Crossguard — base dark brown
     g.fillStyle(0x4a3828, 1);
-    g.fillRect(3, 15, 16, 3);
-    g.fillStyle(0x6a5848, 1);
-    g.fillRect(4, 16, 14, 1);
-    // Leather-wrapped grip
-    g.fillStyle(0x3a2418, 1);
-    g.fillRect(8, 17, 6, 4);
-    g.fillStyle(0x5a4030, 1);
-    g.fillRect(8, 18, 6, 1);
-    // Wheel pommel
-    g.fillStyle(0xb8942a, 1);
-    g.fillCircle(11, 19.5, 2.2);
-    g.fillStyle(0xe8c848, 0.9);
-    g.fillCircle(10.5, 19, 0.9);
+    g.fillRect(6, 19, 20, 3);
+    // Crossguard — mid highlight
+    g.fillStyle(0x6a5440, 1);
+    g.fillRect(6, 19, 20, 1);
+    // Crossguard ornate ends — rounded caps
+    g.fillStyle(0x3a2a1c, 1);
+    g.fillCircle(5, 20, 3);
+    g.fillCircle(27, 20, 3);
+    g.fillStyle(0x6a5440, 1);
+    g.fillCircle(5, 19.5, 1.8);
+    g.fillCircle(27, 19.5, 1.8);
+    // Leather-wrapped grip — dark base
+    g.fillStyle(0x2a1a10, 1);
+    g.fillRect(11, 22, 10, 6);
+    // Grip wrap — cross-hatch bands
+    g.fillStyle(0x4a3020, 1);
+    g.fillRect(11, 23, 10, 1);
+    g.fillRect(11, 25, 10, 1);
+    g.fillRect(11, 27, 10, 1);
+    // Grip highlight
+    g.fillStyle(0x5a3828, 0.6);
+    g.fillRect(12, 22, 2, 6);
+    // Heavy round pommel — dark outline
+    g.fillStyle(0x1a1006, 1);
+    g.fillCircle(16, 28, 4.5);
+    // Pommel — gold base
+    g.fillStyle(0x886a1c, 1);
+    g.fillCircle(16, 28, 3.8);
+    // Pommel — mid gold
+    g.fillStyle(0xb89030, 1);
+    g.fillCircle(16, 27.5, 2.8);
+    // Pommel — highlight
+    g.fillStyle(0xd8b848, 0.9);
+    g.fillCircle(15.2, 27, 1.5);
     g.generateTexture('wicon_claymore', s, s);
     g.destroy();
   }
@@ -3236,46 +4252,101 @@ export class BootScene extends Phaser.Scene {
   /** William Blade — evolved claymore. Legendary golden aura, ornate blade,
    *  shockwave lines. Should feel unmistakably "evolved" next to base claymore. */
   private createWilliamBladeIcon(): void {
-    const s = 22;
+    const s = 32;
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // Legendary golden aura — radiating outward
-    g.fillStyle(0xffcc33, 0.25);
-    g.fillCircle(cx, cy, 10);
-    g.fillStyle(0xffdd44, 0.15);
-    g.fillCircle(cx, cy, 8);
+    // Legendary golden aura — 3 layers radiating outward
+    g.fillStyle(0xffaa00, 0.18);
+    g.fillCircle(cx, cy, 15);
+    g.fillStyle(0xffcc22, 0.22);
+    g.fillCircle(cx, cy, 12);
+    g.fillStyle(0xffdd44, 0.28);
+    g.fillCircle(cx, cy, 9);
 
-    // Shockwave lines — the evolution's signature (expanding arcs)
-    g.lineStyle(1, 0xffcc44, 0.5);
-    g.strokeCircle(cx, cy, 9);
+    // Shockwave arc lines — the evolution's signature
+    g.lineStyle(1.5, 0xffcc44, 0.6);
+    g.strokeCircle(cx, cy, 14);
+    g.lineStyle(1, 0xffdd66, 0.4);
+    g.strokeCircle(cx, cy, 11);
 
-    // Blade — broader, brighter than base claymore
-    g.fillStyle(0x8a7020, 1);
-    g.fillTriangle(cx, cy - 9, cx - 3, cy + 2, cx + 3, cy + 2);
-    g.fillStyle(0xc8d8e8, 1);
-    g.fillTriangle(cx, cy - 8, cx - 2, cy + 1, cx + 2, cy + 1);
-    // Blade edge gleam
-    g.fillStyle(0xeef4ff, 0.9);
-    g.fillTriangle(cx, cy - 7, cx - 1, cy, cx, cy);
+    // Blade — gold/bright steel (evolved version is GOLD not plain steel)
+    // Blade dark gold outline/shadow
+    g.fillStyle(0x5a3a00, 1);
+    g.fillTriangle(cx + 1, cy - 12, cx - 4, cy + 4, cx + 6, cy + 4);
+    // Blade — gold base
+    g.fillStyle(0xaa7a10, 1);
+    g.fillTriangle(cx + 1, cy - 11, cx - 3, cy + 3, cx + 5, cy + 3);
+    // Blade — bright gold face
+    g.fillStyle(0xd4a830, 1);
+    g.fillTriangle(cx + 1, cy - 10, cx - 1, cy + 2, cx + 4, cy + 2);
+    // Blade — brilliant gold sheen
+    g.fillStyle(0xffe050, 1);
+    g.fillTriangle(cx + 1, cy - 9, cx, cy + 1, cx + 2.5, cy);
+    // Blade — specular gleam (bright white-gold streak)
+    g.fillStyle(0xfff5aa, 0.9);
+    g.fillTriangle(cx + 1, cy - 9, cx + 3, cy - 4, cx + 2, cy - 3);
+    // Gold edge glow
+    g.lineStyle(1, 0xffee66, 0.5);
+    g.lineBetween(cx + 1, cy - 11, cx - 3, cy + 3);
 
-    // Wide crossguard — ornate
-    g.fillStyle(0x6a5020, 1);
-    g.fillRect(cx - 6, cy + 2, 12, 3);
+    // Ornate golden crossguard — dark gold outline
+    g.fillStyle(0x3a2800, 1);
+    g.fillRect(cx - 9, cy + 3, 19, 5);
+    // Crossguard — dark gold base
+    g.fillStyle(0x7a5410, 1);
+    g.fillRect(cx - 8, cy + 4, 17, 3);
+    // Crossguard — bright gold mid
     g.fillStyle(0xddaa33, 1);
-    g.fillRect(cx - 5, cy + 2, 10, 2);
-    // Crossguard tips
-    g.fillStyle(0xffcc44, 1);
-    g.fillCircle(cx - 5, cy + 3, 1);
-    g.fillCircle(cx + 5, cy + 3, 1);
+    g.fillRect(cx - 7, cy + 4, 15, 2);
+    // Crossguard — shine line
+    g.fillStyle(0xffdd66, 1);
+    g.fillRect(cx - 7, cy + 4, 15, 1);
+    // Jewelled tips — left
+    g.fillStyle(0x3a2800, 1);
+    g.fillCircle(cx - 8, cy + 5, 3.5);
+    g.fillStyle(0xcc8822, 1);
+    g.fillCircle(cx - 8, cy + 5, 2.8);
+    g.fillStyle(0xff4444, 1);
+    g.fillCircle(cx - 8, cy + 5, 1.6);
+    g.fillStyle(0xff9999, 0.8);
+    g.fillCircle(cx - 8.4, cy + 4.6, 0.7);
+    // Jewelled tips — right
+    g.fillStyle(0x3a2800, 1);
+    g.fillCircle(cx + 9, cy + 5, 3.5);
+    g.fillStyle(0xcc8822, 1);
+    g.fillCircle(cx + 9, cy + 5, 2.8);
+    g.fillStyle(0x4488ff, 1);
+    g.fillCircle(cx + 9, cy + 5, 1.6);
+    g.fillStyle(0xaaccff, 0.8);
+    g.fillCircle(cx + 8.6, cy + 4.6, 0.7);
 
-    // Grip + pommel
-    g.fillStyle(0x4a3020, 1);
-    g.fillRect(cx - 1, cy + 5, 2, 4);
+    // Leather grip — ornate dark
+    g.fillStyle(0x2a1800, 1);
+    g.fillRect(cx - 2, cy + 7, 5, 7);
+    // Grip wrap bands — gold thread
+    g.fillStyle(0xcc9922, 1);
+    g.fillRect(cx - 2, cy + 8, 5, 1);
+    g.fillRect(cx - 2, cy + 10, 5, 1);
+    g.fillRect(cx - 2, cy + 12, 5, 1);
+    // Grip highlight
+    g.fillStyle(0x3a2808, 0.7);
+    g.fillRect(cx - 1, cy + 7, 1.5, 7);
+
+    // Large ornate pommel — dark gold outline
+    g.fillStyle(0x2a1800, 1);
+    g.fillCircle(cx + 1, cy + 14, 5);
+    // Pommel — gold base
+    g.fillStyle(0xaa7820, 1);
+    g.fillCircle(cx + 1, cy + 14, 4.2);
+    // Pommel — bright gold
     g.fillStyle(0xddaa33, 1);
-    g.fillCircle(cx, cy + 9, 1.5);
-    g.fillStyle(0xffeebb, 1);
-    g.fillCircle(cx, cy + 9, 0.7);
+    g.fillCircle(cx + 1, cy + 13.5, 3.2);
+    // Pommel — shine
+    g.fillStyle(0xffee66, 1);
+    g.fillCircle(cx + 0.2, cy + 13, 1.8);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(cx - 0.3, cy + 12.5, 0.8);
 
     g.generateTexture('wicon_william_blade', s, s);
     g.destroy();
