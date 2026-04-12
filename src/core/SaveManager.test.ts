@@ -17,6 +17,7 @@ const defaultV5 = {
   activeRun: null,
   unlockedAchievements: [] as string[],
   hasCompletedTutorial: false,
+  hasSeenDriftTutorial: false,
 };
 
 const sampleRun = (): IRunState => ({
@@ -62,6 +63,7 @@ describe('SaveManager', () => {
       activeRun: null,
       unlockedAchievements: ['ach_kills_1000'],
       hasCompletedTutorial: true,
+      hasSeenDriftTutorial: false,
     });
     const loaded = mgr.load();
 
@@ -95,6 +97,7 @@ describe('SaveManager', () => {
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
     });
   });
 
@@ -118,6 +121,7 @@ describe('SaveManager', () => {
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
     });
   });
 
@@ -142,6 +146,7 @@ describe('SaveManager', () => {
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
     });
   });
 
@@ -176,6 +181,7 @@ describe('SaveManager', () => {
       activeRun: null,
       unlockedAchievements: [],
       hasCompletedTutorial: false,
+      hasSeenDriftTutorial: false,
     });
   });
 
@@ -267,5 +273,33 @@ describe('SaveManager', () => {
     expect(() => mgr.save({ ...defaultV5, totalKills: 10 })).not.toThrow();
     expect(() => mgr.saveActiveRun(sampleRun())).not.toThrow();
     expect(() => mgr.clearActiveRun()).not.toThrow();
+  });
+
+  it('persists new achievement IDs and meta upgrade keys correctly', () => {
+    const storage = new MemoryStorage();
+    const mgr = new SaveManager({ storage, key: 'k' });
+    mgr.save({
+      ...defaultV5,
+      totalKills: 6000,
+      unlockedAchievements: [
+        'ach_kills_1000', 'ach_kills_5000', 'ach_survive_5m', 'ach_survive_10m',
+        'ach_full_run', 'ach_defeat_taxman', 'ach_first_victory', 'ach_first_evolution',
+        'ach_all_bosses',
+      ],
+      unlockedUpgrades: [
+        'speed_tier_1', 'speed_tier_2', 'health_tier_1', 'health_tier_2',
+        'damage_tier_1', 'damage_tier_2', 'pickup_tier_1', 'regen_tier_1',
+        'crit_tier_1', 'cooldown_tier_1', 'xp_tier_1', 'armor_tier_1', 'dash_tier_1',
+      ],
+    });
+
+    const loaded = mgr.load();
+    expect(loaded.unlockedAchievements).toHaveLength(9);
+    expect(loaded.unlockedAchievements).toContain('ach_first_evolution');
+    expect(loaded.unlockedAchievements).toContain('ach_all_bosses');
+    expect(loaded.unlockedUpgrades).toHaveLength(13);
+    expect(loaded.unlockedUpgrades).toContain('dash_tier_1');
+    expect(loaded.unlockedUpgrades).toContain('armor_tier_1');
+    expect(loaded.totalKills).toBe(6000);
   });
 });
