@@ -23,6 +23,27 @@ export class JuiceSystem {
    *  creation per hit was a real perf concern at 60fps × pierce weapons. */
   private impactRingPool: Phaser.GameObjects.Arc[] = [];
 
+  /** Pooled trail dots — replaces per-call scene.add.circle in spawnTrail.
+   *  60 slots covers ~200/sec spawn rate × 200ms lifetime = 40 in flight. */
+  private trailPool: Phaser.GameObjects.Arc[] = [];
+  private trailPoolIdx: number = 0;
+
+  /** Pooled kill burst dots — 6 per kill × ~8 in flight = 48 max. */
+  private burstDotPool: Phaser.GameObjects.Arc[] = [];
+  private burstDotIdx: number = 0;
+
+  /** Pooled kill burst expanding rings — 1 per kill × ~8 in flight. */
+  private burstRingPool: Phaser.GameObjects.Arc[] = [];
+  private burstRingIdx: number = 0;
+
+  /** Pooled boss death spectacle particles — 30 per boss kill. */
+  private bossParticlePool: Phaser.GameObjects.Arc[] = [];
+  private bossParticleIdx: number = 0;
+
+  /** Pooled boss death rings — 2 per boss kill (+ 1 delayed). */
+  private bossRingPool: Phaser.GameObjects.Arc[] = [];
+  private bossRingIdx: number = 0;
+
   // Kill combo tracking
   private comboCount: number = 0;
   private comboTimer: number = 0;
@@ -80,7 +101,7 @@ export class JuiceSystem {
     ).setScrollFactor(0).setDepth(95);
 
     // Pre-allocate damage text pool
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
       const t = scene.add.text(0, 0, '', {
         fontFamily: 'monospace',
         fontSize: '18px',
@@ -102,13 +123,44 @@ export class JuiceSystem {
       strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
 
-    // Pre-allocate impact ring pool — 40 slots is enough for heavy piercing
-    // weapons and max-combo scenarios without creating per-hit GameObjects.
-    for (let i = 0; i < 40; i++) {
+    // Pre-allocate impact ring pool — 80 slots covers AoE weapons hitting
+    // 30+ enemies per pulse without dropping hit feedback.
+    for (let i = 0; i < 80; i++) {
       const r = scene.add.circle(0, 0, 4, 0xffffff, 0.8)
         .setDepth(12)
         .setVisible(false);
       this.impactRingPool.push(r);
+    }
+
+    // Pre-allocate trail dot pool (spawnTrail — ~200/sec at peak, 200ms lifetime)
+    for (let i = 0; i < 60; i++) {
+      const dot = scene.add.circle(0, 0, 2, 0x9966cc, 0.5)
+        .setDepth(5).setVisible(false);
+      this.trailPool.push(dot);
+    }
+
+    // Pre-allocate kill burst pools
+    for (let i = 0; i < 50; i++) {
+      const dot = scene.add.circle(0, 0, 3, 0xcc4444, 0.8)
+        .setDepth(15).setVisible(false);
+      this.burstDotPool.push(dot);
+    }
+    for (let i = 0; i < 15; i++) {
+      const ring = scene.add.circle(0, 0, 5, 0xffffff, 0.6)
+        .setDepth(15).setVisible(false);
+      this.burstRingPool.push(ring);
+    }
+
+    // Pre-allocate boss death spectacle pools
+    for (let i = 0; i < 35; i++) {
+      const p = scene.add.circle(0, 0, 5, 0xd4a017, 0.9)
+        .setDepth(20).setVisible(false);
+      this.bossParticlePool.push(p);
+    }
+    for (let i = 0; i < 5; i++) {
+      const ring = scene.add.circle(0, 0, 10, 0xd4a017, 0.5)
+        .setDepth(20).setVisible(false);
+      this.bossRingPool.push(ring);
     }
   }
 
@@ -203,13 +255,21 @@ export class JuiceSystem {
 
   /** Spawn a fading trail particle at a position (call from update for projectiles) */
   spawnTrail(x: number, y: number, color: number = 0x9966cc): void {
-    const dot = this.scene.add.circle(x, y, 2, color, 0.5);
+    const dot = this.trailPool[this.trailPoolIdx];
+    this.trailPoolIdx = (this.trailPoolIdx + 1) % this.trailPool.length;
+    this.scene.tweens.killTweensOf(dot);
+    dot.setPosition(x, y);
+    dot.setFillStyle(color, 0.5);
+    dot.setRadius(2);
+    dot.setScale(1);
+    dot.setAlpha(0.5);
+    dot.setVisible(true);
     this.scene.tweens.add({
       targets: dot,
       alpha: 0,
       scale: 0.3,
       duration: 200,
-      onComplete: () => dot.destroy(),
+      onComplete: () => dot.setVisible(false),
     });
   }
 
@@ -217,10 +277,18 @@ export class JuiceSystem {
   showKillBurst(x: number, y: number, color: number = 0xcc4444): void {
     const lowFx = this.settings.load().reduceParticles;
     const dots = lowFx ? 3 : 6;
-    // Particle burst — small dots scatter outward
+    // Particle burst — pooled dots scatter outward
     for (let i = 0; i < dots; i++) {
       const angle = (i / dots) * Math.PI * 2;
-      const dot = this.scene.add.circle(x, y, Phaser.Math.Between(2, 4), color, 0.8);
+      const dot = this.burstDotPool[this.burstDotIdx];
+      this.burstDotIdx = (this.burstDotIdx + 1) % this.burstDotPool.length;
+      this.scene.tweens.killTweensOf(dot);
+      dot.setPosition(x, y);
+      dot.setRadius(Phaser.Math.Between(2, 4));
+      dot.setFillStyle(color, 0.8);
+      dot.setAlpha(0.8);
+      dot.setScale(1);
+      dot.setVisible(true);
       this.scene.tweens.add({
         targets: dot,
         x: x + Math.cos(angle) * Phaser.Math.Between(15, 30),
@@ -228,17 +296,25 @@ export class JuiceSystem {
         alpha: 0,
         scale: 0,
         duration: 250 + Math.random() * 150,
-        onComplete: () => dot.destroy(),
+        onComplete: () => dot.setVisible(false),
       });
     }
-    // Expanding ring
-    const ring = this.scene.add.circle(x, y, 5, 0xffffff, 0.6);
+    // Expanding ring — pooled
+    const ring = this.burstRingPool[this.burstRingIdx];
+    this.burstRingIdx = (this.burstRingIdx + 1) % this.burstRingPool.length;
+    this.scene.tweens.killTweensOf(ring);
+    ring.setPosition(x, y);
+    ring.setRadius(5);
+    ring.setFillStyle(0xffffff, 0.6);
+    ring.setAlpha(0.6);
+    ring.setScale(1);
+    ring.setVisible(true);
     this.scene.tweens.add({
       targets: ring,
       radius: 20,
       alpha: 0,
       duration: 200,
-      onComplete: () => ring.destroy(),
+      onComplete: () => ring.setVisible(false),
     });
 
     // Track combo
@@ -414,14 +490,22 @@ export class JuiceSystem {
     }
 
     const particleCount = lowFx ? 12 : 30;
-    // Gold particle shower
+    // Gold particle shower — pooled
     const goldColors = [0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00];
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
       const speed = 80 + Math.random() * 200;
       const size = Phaser.Math.Between(3, 8);
       const color = Phaser.Utils.Array.GetRandom(goldColors) as number;
-      const particle = this.scene.add.circle(x, y, size, color, 0.9);
+      const particle = this.bossParticlePool[this.bossParticleIdx];
+      this.bossParticleIdx = (this.bossParticleIdx + 1) % this.bossParticlePool.length;
+      this.scene.tweens.killTweensOf(particle);
+      particle.setPosition(x, y);
+      particle.setRadius(size);
+      particle.setFillStyle(color, 0.9);
+      particle.setAlpha(0.9);
+      particle.setScale(1);
+      particle.setVisible(true);
       this.scene.tweens.add({
         targets: particle,
         x: x + Math.cos(angle) * speed,
@@ -430,29 +514,45 @@ export class JuiceSystem {
         scale: 0,
         duration: 800 + Math.random() * 600,
         ease: 'Power2',
-        onComplete: () => particle.destroy(),
+        onComplete: () => particle.setVisible(false),
       });
     }
 
-    // Expanding ring
-    const ring = this.scene.add.circle(x, y, 10, 0xd4a017, 0.5);
+    // Expanding ring — pooled
+    const ring = this.bossRingPool[this.bossRingIdx];
+    this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
+    this.scene.tweens.killTweensOf(ring);
+    ring.setPosition(x, y);
+    ring.setRadius(10);
+    ring.setFillStyle(0xd4a017, 0.5);
+    ring.setAlpha(0.5);
+    ring.setScale(1);
+    ring.setVisible(true);
     this.scene.tweens.add({
       targets: ring,
       radius: 80,
       alpha: 0,
       duration: 500,
-      onComplete: () => ring.destroy(),
+      onComplete: () => ring.setVisible(false),
     });
 
-    // Second delayed ring
+    // Second delayed ring — pooled
     this.tickers.addOnce('scaled', 150, () => {
-      const ring2 = this.scene.add.circle(x, y, 10, 0xffcc44, 0.3);
+      const ring2 = this.bossRingPool[this.bossRingIdx];
+      this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
+      this.scene.tweens.killTweensOf(ring2);
+      ring2.setPosition(x, y);
+      ring2.setRadius(10);
+      ring2.setFillStyle(0xffcc44, 0.3);
+      ring2.setAlpha(0.3);
+      ring2.setScale(1);
+      ring2.setVisible(true);
       this.scene.tweens.add({
         targets: ring2,
         radius: 120,
         alpha: 0,
         duration: 600,
-        onComplete: () => ring2.destroy(),
+        onComplete: () => ring2.setVisible(false),
       });
     });
   }
@@ -475,6 +575,34 @@ export class JuiceSystem {
     this.slowMotionActive = true;
     this.slowMotionRemainingMs = durationMs;
     this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, durationMs);
+  }
+
+  /** Clean up all pooled objects and tweens — called by GameScene shutdown. */
+  destroy(): void {
+    const killAndDestroy = (pool: Phaser.GameObjects.GameObject[]) => {
+      for (const obj of pool) {
+        this.scene.tweens.killTweensOf(obj);
+        obj.destroy();
+      }
+    };
+    killAndDestroy(this.dmgTextPool);
+    killAndDestroy(this.impactRingPool);
+    killAndDestroy(this.trailPool);
+    killAndDestroy(this.burstDotPool);
+    killAndDestroy(this.burstRingPool);
+    killAndDestroy(this.bossParticlePool);
+    killAndDestroy(this.bossRingPool);
+    this.dmgTextPool = [];
+    this.impactRingPool = [];
+    this.trailPool = [];
+    this.burstDotPool = [];
+    this.burstRingPool = [];
+    this.bossParticlePool = [];
+    this.bossRingPool = [];
+    this.scene.tweens.killTweensOf(this.comboText);
+    this.comboText.destroy();
+    this.vignette.destroy();
+    this.flashRect.destroy();
   }
 
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
