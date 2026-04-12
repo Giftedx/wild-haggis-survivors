@@ -336,8 +336,21 @@ export class JuiceSystem {
         yoyo: true,
       });
 
-      // Screen flash at major combo milestones
-      if (this.comboCount === 50 || this.comboCount === 100 || this.comboCount === 200) {
+      // Combo milestone cultural Easter eggs — Glesga patter at key numbers
+      if (this.comboCount === 11) {
+        // "ELEVEN!" — Burnistoun voice recognition sketch
+        this.showToast(t('ui.game.combo_11'), '#ffdd44');
+      } else if (this.comboCount === 50) {
+        // "THAT'S PLENTY!" — Still Game
+        this.showToast(t('ui.game.combo_50'), '#ffdd44');
+        this.flashWhite(100);
+      } else if (this.comboCount === 100) {
+        // "YER DA SELLS AVON!" — the ultimate Glesga insult
+        this.showToast(t('ui.game.combo_100'), '#ff8844');
+        this.flashWhite(100);
+      } else if (this.comboCount === 200) {
+        // "PEOPLE MAKE GLASGOW!" — ironic city slogan at total chaos
+        this.showToast(t('ui.game.combo_200'), '#ff8844');
         this.flashWhite(100);
       }
     }
@@ -353,8 +366,8 @@ export class JuiceSystem {
     const wrapW = Math.max(160, Math.min(420, width - 24));
     const toast = this.scene.add.text(x + width + 10, yOffset, message, {
       fontFamily: 'monospace', fontSize: '16px', color,
-      fontStyle: 'bold', stroke: '#000000', strokeThickness: 3,
-      backgroundColor: '#00000088', padding: { x: 10, y: 5 },
+      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 3,
+      backgroundColor: '#1a1a2ecc', padding: { x: 10, y: 5 },
       wordWrap: { width: wrapW },
       align: 'right',
     }).setScrollFactor(0).setDepth(85).setOrigin(1, 0);
