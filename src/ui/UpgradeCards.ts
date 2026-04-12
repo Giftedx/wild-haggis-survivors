@@ -242,7 +242,7 @@ export class UpgradeCardsUI {
     // actually enlarges card text instead of leaving it tiny.
     const descColor = this.highContrastUi ? '#d8dfe8' : '#bbbbbb';
     const name = this.scene.add.text(x, y - 18, t(card.name), {
-      fontFamily: 'monospace', fontSize: this.fs(17), color: '#ffffff',
+      fontFamily: 'monospace', fontSize: this.fs(17), color: '#e8d4a0',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(name);
@@ -272,7 +272,7 @@ export class UpgradeCardsUI {
     // Hover — scale up card group
     const cardElements = [bg, icon, name, desc, rarityLabel, rarityPillBg];
     bg.on('pointerover', () => {
-      bg.setFillStyle(0x2a2a4e);
+      bg.setFillStyle(0x2a2244);
       for (const el of cardElements) {
         (el as any).setScale?.((el as any).scaleX * 1.05, (el as any).scaleY * 1.05);
       }

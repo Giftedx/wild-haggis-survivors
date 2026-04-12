@@ -263,7 +263,7 @@ export class SpawnSystem {
     // Boss warning is a Soul-critical moment — kindness applies here too.
     const baseFontPx = 36;
     const scaledFontPx = Math.round(baseFontPx * settings.uiScale);
-    const labelColor = settings.highContrastUi ? '#ffd8d8' : '#ff4444';
+    const labelColor = settings.highContrastUi ? '#ffd8d8' : '#ff6644';
     const strokeThickness = settings.highContrastUi ? 6 : 5;
 
     // Center the warning banner within the VISIBLE camera viewport. Using
