@@ -611,6 +611,7 @@ export class JuiceSystem {
 
   private refreshFixedLayout(): void {
     const { x, y, width, height, zoom } = this.getUiViewport();
+    const sizeChanged = width !== this.layoutWidth || height !== this.layoutHeight;
     this.layoutX = x;
     this.layoutY = y;
     this.layoutWidth = width;
@@ -622,6 +623,6 @@ export class JuiceSystem {
     this.flashRect.height = height;
     this.comboText.setPosition(x + width / 2, y + Math.max(height * 0.2, 128 / Math.max(0.001, zoom)));
     this.vignette.setPosition(x, y);
-    this.drawVignette();
+    if (sizeChanged) this.drawVignette();
   }
 }

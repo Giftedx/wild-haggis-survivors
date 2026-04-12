@@ -12,6 +12,14 @@ import { globalEventBus } from '../core/GlobalEventBus';
  * Enemy sprite — poolable, supports multiple behavior types.
  */
 export class Enemy extends Phaser.Physics.Arcade.Sprite {
+  /** Cached settings flag — set once at scene start via Enemy.refreshSettings(). */
+  static reduceParticles: boolean = false;
+
+  /** Refresh cached settings (call at scene start and on settings change). */
+  static refreshSettings(): void {
+    Enemy.reduceParticles = getSettingsManager().load().reduceParticles;
+  }
+
   private ctx: ISceneContext;
   private ctxScene: Phaser.Scene & ISceneContext;
   private hp: number = 0;
@@ -48,6 +56,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Spawner enemies summon minions periodically */
   private spawnerCooldown: number = 0;
+  /** Guard against same-frame double-fire of chemical explosion synergy */
+  private chemicalExplosionFired: boolean = false;
 
   /** Phase enemies toggle between solid and intangible */
   private phaseTimer: number = 0;
@@ -213,6 +223,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.knockbackTrailAccum = 0;
     this.speedDirty = false;
     this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
+    this.chemicalExplosionFired = false;
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first terrier quickly (500ms)
     // so they matter even if killed soon after spawn, then 4s cycles after
@@ -398,7 +409,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
       // Faint trail during knockback — sells the push visually (pooled)
       this.knockbackTrailAccum += delta;
-      if (this.knockbackTrailAccum >= 50 && this.scene && !getSettingsManager().load().reduceParticles) {
+      if (this.knockbackTrailAccum >= 50 && this.scene && !Enemy.reduceParticles) {
         this.knockbackTrailAccum = 0;
         const dot = this.ctx.getStatusFxPool().acquireArc(this.x, this.y, 3, this.baseTint || 0xcc4444, 0.15);
         dot.setDepth(-1);
@@ -584,8 +595,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       spawnedPlayer.applyNetSlow(2000);
     });
 
-    // Auto-cleanup after 2 seconds if it misses
-    this.ctx.getUpdateTickers().addOnce('scaled', 2000, cleanup);
+    // Auto-cleanup after 2 seconds if it misses (raw = wall-clock, survives pause)
+    this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
   }
 
   private behaviorOrbit(tx: number, ty: number, delta: number): void {
@@ -644,8 +655,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Subtle particle puff when ghost toggles phase state (pooled) */
   private spawnPhasePuff(): void {
     if (!this.scene || !this.active) return;
-    const settings = getSettingsManager().load();
-    if (settings.reduceParticles) return;
+    if (Enemy.reduceParticles) return;
     const pool = this.ctx.getStatusFxPool();
     const color = this.isPhased ? 0xaaddff : 0x8899cc;
     for (let i = 0; i < 3; i++) {
@@ -702,6 +712,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Apply burn: damage over time for duration */
   applyBurn(dps: number, durationMs: number): void {
     if (this.behavior === 'hazard') return;
+    if (this.burnTimer <= 0) this.chemicalExplosionFired = false;
     this.burnDamage = Math.max(this.burnDamage, dps); // Refresh, don't stack
     this.burnTimer = Math.max(this.burnTimer, durationMs);
   }
@@ -742,11 +753,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Apply poison: stacking damage over time */
   applyPoison(dps: number, durationMs: number): void {
     if (this.behavior === 'hazard') return;
+    if (this.poisonTimer <= 0) this.chemicalExplosionFired = false;
     this.poisonDamage += dps; // Stacks!
     this.poisonTimer = Math.max(this.poisonTimer, durationMs);
 
     // Synergy: Burn + Poison = Chemical Explosion (50 damage + 25 AoE)
-    if (this.burnTimer > 0 && this.poisonTimer > 0) {
+    if (this.burnTimer > 0 && this.poisonTimer > 0 && !this.chemicalExplosionFired) {
+      this.chemicalExplosionFired = true;
       this.burnTimer = 0; this.poisonTimer = 0;
       this.burnDamage = 0; this.poisonDamage = 0;
       // Capture scene ref before takeDamageInternal (which may call die() and clear state)
@@ -781,7 +794,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Tick status effects — call each frame from chaseTarget */
   private tickStatusEffects(delta: number): void {
-    const reduceParticles = getSettingsManager().load().reduceParticles;
+    const reduceParticles = Enemy.reduceParticles;
     const pool = this.ctx.getStatusFxPool();
 
     // Burn: periodic damage + orange tint
