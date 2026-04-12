@@ -518,7 +518,7 @@ export class MenuScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
     const fade = this.add
-      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
       .setDepth(999);
     this.tweens.add({
       targets: fade,

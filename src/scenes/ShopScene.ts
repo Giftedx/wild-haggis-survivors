@@ -45,7 +45,7 @@ export class ShopScene extends Phaser.Scene {
     // Ambient moor wind — cozy between storms
     audio.startAmbientWind();
 
-    const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 1).setDepth(999);
+    const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
     this.add
@@ -171,7 +171,7 @@ export class ShopScene extends Phaser.Scene {
     }
 
     const buttonFill = canAfford ? COLORS.SCOTTISH_BLUE : 0x1a1828;
-    const buttonTextColor = canAfford ? '#ffffff' : '#7c8698';
+    const buttonTextColor = canAfford ? '#ffffff' : '#6a5a4a';
     const buyButton = this.add
       .rectangle(width - 74, y + 16, 96, 36, buttonFill, 1)
       .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x3a2a3a, 1)
@@ -266,7 +266,7 @@ export class ShopScene extends Phaser.Scene {
     backButton.on('pointerdown', () => {
       audio.playClick();
       const fade = this.add
-        .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+        .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
         .setDepth(999);
       this.tweens.add({
         targets: fade,
