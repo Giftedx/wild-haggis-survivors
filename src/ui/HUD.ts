@@ -136,7 +136,7 @@ export class HUD {
   private build(): void {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
-    const style = { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' };
+    const style = { fontFamily: 'monospace', fontSize: '18px', color: '#e8d4a0' };
 
     // HP bar
     this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x1a1420)
@@ -179,7 +179,7 @@ export class HUD {
       if (this.onPause) this.onPause();
     });
     this.pauseText.on('pointerover', () => {
-      this.pauseText.setColor('#ffffff');
+      this.pauseText.setColor('#e8d4a0');
     });
     this.pauseText.on('pointerout', () => {
       this.pauseText.setColor('#666666');

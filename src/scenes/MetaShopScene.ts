@@ -43,7 +43,7 @@ export class MetaShopScene extends Phaser.Scene {
     // Ambient moor wind — cozy between storms
     audio.startAmbientWind();
 
-    const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 1).setDepth(999);
+    const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
     this.add
@@ -86,7 +86,7 @@ export class MetaShopScene extends Phaser.Scene {
       .text(width / 2, height - 28, t('ui.metaShop.back'), {
         fontFamily: 'monospace',
         fontSize: '15px',
-        color: '#ffffff',
+        color: '#e8d4a0',
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -228,7 +228,7 @@ export class MetaShopScene extends Phaser.Scene {
       }
 
       const buttonFill = canAfford ? 0x2d6a3e : 0x1a1828;
-      const buttonTextColor = canAfford ? '#ffffff' : '#7c8698';
+      const buttonTextColor = canAfford ? '#ffffff' : '#6a5a4a';
       const buyButton = this.add
         .rectangle(width - 80, y + 32, 108, 40, buttonFill, 1)
         .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x3a2a3a, 1)

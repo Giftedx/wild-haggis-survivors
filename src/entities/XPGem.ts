@@ -120,7 +120,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
       rotation: Math.PI * 2,
       duration: 2500 + Math.random() * 500,
       repeat: -1,
-      ease: 'Linear',
+      ease: 'Sine.easeInOut',
     });
   }
 

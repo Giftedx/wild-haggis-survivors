@@ -64,7 +64,7 @@ export class GameOverScene extends Phaser.Scene {
     const panelTop = panelCenterY - PANEL_H / 2;
 
     const overlay = this.add
-      .rectangle(width / 2, height / 2, width, height, 0x000000, 0)
+      .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
       .setScrollFactor(0)
       .setDepth(d)
       .setInteractive();
@@ -386,7 +386,7 @@ export class GameOverScene extends Phaser.Scene {
         .text(centerX, y + 26, t(variant.nameKey), {
           fontFamily: 'monospace',
           fontSize: '26px',
-          color: '#ffffff',
+          color: '#d4a017',
           fontStyle: 'bold',
           align: 'center',
         })
@@ -417,7 +417,7 @@ export class GameOverScene extends Phaser.Scene {
       .text(centerX, y + 30, bodyText, {
         fontFamily: 'monospace',
         fontSize: variantKeys.length === 2 ? '18px' : '14px',
-        color: '#ffffff',
+        color: '#d4a017',
         fontStyle: 'bold',
         align: 'center',
         lineSpacing: 6,
