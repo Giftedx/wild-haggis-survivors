@@ -214,7 +214,11 @@ export class MenuScene extends Phaser.Scene {
 
     this.renderVariantCarousel();
 
+    // Ambient moor wind — cozy between storms
+    audio.startAmbientWind();
+
     this.events.once('shutdown', () => {
+      audio.stopAmbientWind();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });

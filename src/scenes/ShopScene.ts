@@ -42,6 +42,9 @@ export class ShopScene extends Phaser.Scene {
       }
     }
 
+    // Ambient moor wind — cozy between storms
+    audio.startAmbientWind();
+
     const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 1).setDepth(999);
     this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
 
@@ -83,6 +86,10 @@ export class ShopScene extends Phaser.Scene {
     this.updateHeader();
     this.renderRows();
     this.renderFooter();
+
+    this.events.once('shutdown', () => {
+      audio.stopAmbientWind();
+    });
   }
 
   private getTotalPages(): number {
