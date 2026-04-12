@@ -155,6 +155,13 @@ export const EN_STRINGS: LocaleTree = {
     },
     pause: {
       title: 'PAUSED',
+      /** Rotating quips shown below the pause title — wee breather moments. */
+      quip_1: 'Away and put the kettle on.',
+      quip_2: 'Two pints, prick!',
+      quip_3: 'Gonnae no dae that? Just gonnae no.',
+      quip_4: 'Willie hears ya. Willie don\'t care.',
+      quip_5: 'Ahm no\' well.',
+      quip_6: 'Check the taps on that.',
       resume: 'RESUME',
       quit: 'END RUN',
       time_line: 'Time: {m}:{s}',
@@ -222,6 +229,13 @@ export const EN_STRINGS: LocaleTree = {
       combo_200: 'PEOPLE MAKE GLASGOW!',
       boss_kill_heal: 'Boss doon! That\'s yir heal — +{hp} HP',
       boss_enraged: 'The beast is RAGIN!',
+      /** Per-boss kill celebrations — the big punchline after the big fight. */
+      boss_killed_gordon: 'Gordon\'s DOON! Back tae the kitchen, big man!',
+      boss_killed_tour_bus: 'Bus terminated! Next stop: the scrapyard via Yoker.',
+      boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
+      boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
+      boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
+      boss_killed_generic: 'Boss doon! Get it right round ye!',
       achievement_unlock: '★ {title}',
       upgrade_new_weapon: 'New kit: {name} — get it right round them!',
       upgrade_weapon_level: '{name} — pure sharper noo',
