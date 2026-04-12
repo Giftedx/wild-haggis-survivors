@@ -123,7 +123,7 @@ describe('UpgradeCardsUI layout', () => {
     ui.show([card], 3);
 
     expect(rectangles[0]).toMatchObject({ x: 520, y: 390, width: 800, height: 600 });
-    expect(texts[0]).toMatchObject({ x: 520, y: 145, text: 'Level 3 — grow fiercer' });
+    expect(texts[0]).toMatchObject({ x: 520, y: 145, text: 'Level 3 — pick yir poison' });
     expect(rectangles[1]).toMatchObject({ x: 520, y: 410 });
     expect(sprites[0]).toMatchObject({ x: 520, y: 345 });
   });

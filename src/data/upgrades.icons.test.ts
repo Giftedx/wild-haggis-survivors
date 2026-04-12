@@ -40,7 +40,7 @@ describe('upgrade card icon contracts', () => {
     const pool = buildCardPool(['thistle_shot'], ['sporran'], { thistle_shot: 4 }, []);
     const levelCard = pool.find((c) => c.id === 'levelup_thistle_shot_5');
     expect(levelCard?.description).toContain('Sporran');
-    expect(levelCard?.description).toContain('treasure chest');
+    expect(levelCard?.description).toContain('crack a chest');
   });
 
   it('assigns dedicated icons for cooldown and knockback stat cards', () => {
