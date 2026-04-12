@@ -307,11 +307,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.player.heal(this.player.getLifesteal());
       }
 
-      // Kill milestones — celebrate and reward gold
+      // Kill milestones — celebrate and reward gold with unique Glesga patter per threshold
       if ([100, 250, 500, 1000, 2500, 5000].includes(this.killCount)) {
         const goldReward = Math.floor(this.killCount / 50);
         this.coinGoldEarned += goldReward;
-        this.juice.showToast(t('ui.game.kill_milestone', { count: this.killCount, gold: goldReward }), '#ffdd00');
+        // Each milestone has its own culturally-loaded one-liner
+        const milestoneKey = `ui.game.kill_${this.killCount}`;
+        const milestoneText = t(milestoneKey, { gold: goldReward });
+        // Fallback to generic if a specific key is missing
+        const toast = milestoneText !== milestoneKey
+          ? milestoneText
+          : t('ui.game.kill_milestone', { count: this.killCount, gold: goldReward });
+        this.juice.showToast(toast, '#ffdd00');
         this.juice.flashWhite(150);
         audio.playLevelUp();
       }
