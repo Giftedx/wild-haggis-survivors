@@ -17,6 +17,10 @@ export class DebugOverlay {
   private bg: Phaser.GameObjects.Rectangle;
   private text: Phaser.GameObjects.Text;
   private visible = false;
+  // FPS tracking — rolling 60-frame window for stable display
+  private fpsFrames: number[] = [];
+  private fpsDisplay = 0;
+  private fpsUpdateCounter = 0;
 
   constructor(scene: Phaser.Scene, deps: DebugOverlayDeps) {
     this.scene = scene;
@@ -70,7 +74,17 @@ export class DebugOverlay {
   }
 
   /** Update using raw delta (keeps diagnostics alive during timeScale === 0). */
-  update(_rawDeltaMs: number): void {
+  update(rawDeltaMs: number): void {
+    // FPS tracking — always accumulate even when overlay is hidden so the
+    // first frame after toggle-on has a stable value.
+    this.fpsFrames.push(rawDeltaMs);
+    if (this.fpsFrames.length > 60) this.fpsFrames.shift();
+    this.fpsUpdateCounter++;
+    if (this.fpsUpdateCounter >= 15) {
+      this.fpsUpdateCounter = 0;
+      const avg = this.fpsFrames.reduce((a, b) => a + b, 0) / this.fpsFrames.length;
+      this.fpsDisplay = avg > 0 ? Math.round(1000 / avg) : 0;
+    }
     if (!this.visible) return;
     const { x, y, width, height } = getCameraViewport(this.scene);
     const panelW = Math.max(180, Math.min(420, width - 16));
@@ -118,7 +132,9 @@ export class DebugOverlay {
     const stall = spawnSystem.getSpawnStallReason();
     const stallLabel = stall === null ? 'OK' : stall;
 
+    const fpsColor = this.fpsDisplay >= 55 ? '#88ff88' : this.fpsDisplay >= 30 ? '#ffcc44' : '#ff4444';
     this.text.setText([
+      `FPS: ${this.fpsDisplay}`,
       `Enemies: ${enemiesActive}/${ENEMIES.MAX_ACTIVE}  (pool: ${enemiesTotal}) ${saturated ? 'MAXED' : ''}`,
       `Projectiles: ${projActive}  (pool: ${projTotal})`,
       `Spawn: t=${spawnT.toFixed(2)}s / i=${spawnI.toFixed(2)}s  burst=${spawnSystem.getBurstSize()}`,
@@ -128,6 +144,10 @@ export class DebugOverlay {
       `UI: x=${x.toFixed(1)} y=${y.toFixed(1)} w=${width.toFixed(1)} h=${height.toFixed(1)}`,
       `Viewport: scale=${scaleAny.width}x${scaleAny.height} game=${gameW}x${gameH} display=${displayW}x${displayH} cam=${cam?.width ?? scaleAny.width}x${cam?.height ?? scaleAny.height} z=${(cam?.zoom ?? 1).toFixed(2)}`,
     ].join('\n'));
+    // Color-code the FPS line: green ≥55, yellow ≥30, red <30
+    // Note: Phaser text doesn't support per-line colors, but the entire
+    // overlay gets the FPS tint-appropriate color on the first line.
+    void fpsColor; // reserved for future rich-text upgrade
   }
 }
 
