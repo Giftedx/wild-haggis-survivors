@@ -13,8 +13,9 @@ describe('AchievementManager', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 6,
+      saveVersion: 7,
       totalKills: 0,
+      totalKillsSpent: 0,
       unlockedWeapons: [],
       unlockedUpgrades: [],
       activeRun: null,

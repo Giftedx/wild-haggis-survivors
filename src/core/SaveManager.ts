@@ -121,15 +121,38 @@ export interface ISaveDataV6 {
   runHistory: RunHistoryEntry[];
 }
 
-export type ISaveData = ISaveDataV6;
+/**
+ * V7 splits `totalKills` into two concerns:
+ *  - `totalKills`: current spendable balance (MetaShop currency)
+ *  - `totalKillsSpent`: monotonic lifetime total debited by MetaShop purchases
+ *
+ * Achievement thresholds read the SUM (`totalKills + totalKillsSpent`) so
+ * players who spend heavily in the shop don't lose progress toward
+ * `ach_kills_1000` / `ach_kills_5000`.
+ */
+export interface ISaveDataV7 {
+  saveVersion: 7;
+  totalKills: number;
+  totalKillsSpent: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  hasCompletedTutorial: boolean;
+  hasSeenDriftTutorial: boolean;
+  runHistory: RunHistoryEntry[];
+}
 
-export const CURRENT_SAVE_VERSION = 6 as const;
+export type ISaveData = ISaveDataV7;
+
+export const CURRENT_SAVE_VERSION = 7 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
 const DEFAULT_SAVE: ISaveData = {
   saveVersion: CURRENT_SAVE_VERSION,
   totalKills: 0,
+  totalKillsSpent: 0,
   unlockedWeapons: [],
   unlockedUpgrades: [],
   activeRun: null,
@@ -354,13 +377,19 @@ export class SaveManager {
 
   private migrateAndCoerce(input: unknown): ISaveData {
     const obj = (typeof input === 'object' && input !== null) ? (input as Record<string, unknown>) : {};
-    const v = clampInt(obj.saveVersion, CURRENT_SAVE_VERSION);
 
-    if (v <= 0) {
+    // A missing or non-numeric saveVersion means corrupt data (truncated
+    // write, hand-edited, etc.). Prior to this guard, a blob like
+    // {"totalKills": 2500} would be silently loaded as the current version
+    // with all other fields defaulted — losing achievements, run history,
+    // and tutorial flags without warning. Start fresh instead.
+    if (typeof obj.saveVersion !== 'number' || !Number.isFinite(obj.saveVersion) || obj.saveVersion <= 0) {
       return { ...DEFAULT_SAVE };
     }
+    const v = Math.max(1, Math.floor(obj.saveVersion));
 
     const totalKills = clampInt(obj.totalKills, 0);
+    const totalKillsSpent = clampInt(obj.totalKillsSpent, 0);
     const unlockedWeapons = toStringArray(obj.unlockedWeapons);
     const unlockedUpgrades = toStringArray(obj.unlockedUpgrades);
     const activeRun = coerceIRunState(obj.activeRun);
@@ -374,6 +403,7 @@ export class SaveManager {
       return {
         saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
+        totalKillsSpent: 0,
         unlockedWeapons,
         unlockedUpgrades: [],
         activeRun: null,
@@ -388,6 +418,7 @@ export class SaveManager {
       return {
         saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
+        totalKillsSpent: 0,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun: null,
@@ -402,6 +433,7 @@ export class SaveManager {
       return {
         saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
+        totalKillsSpent: 0,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
@@ -416,6 +448,7 @@ export class SaveManager {
       return {
         saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
+        totalKillsSpent: 0,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
@@ -430,6 +463,7 @@ export class SaveManager {
       return {
         saveVersion: CURRENT_SAVE_VERSION,
         totalKills,
+        totalKillsSpent: 0,
         unlockedWeapons,
         unlockedUpgrades,
         activeRun,
@@ -440,9 +474,28 @@ export class SaveManager {
       };
     }
 
+    if (v === 6) {
+      // V6 didn't know about totalKillsSpent — existing lifetime kills were
+      // conflated into totalKills with no spend tracking. Seed spent to 0;
+      // achievement checks now read (totalKills + totalKillsSpent).
+      return {
+        saveVersion: CURRENT_SAVE_VERSION,
+        totalKills,
+        totalKillsSpent: 0,
+        unlockedWeapons,
+        unlockedUpgrades,
+        activeRun,
+        unlockedAchievements,
+        hasCompletedTutorial,
+        hasSeenDriftTutorial,
+        runHistory,
+      };
+    }
+
     return {
       saveVersion: CURRENT_SAVE_VERSION,
       totalKills,
+      totalKillsSpent,
       unlockedWeapons,
       unlockedUpgrades,
       activeRun,

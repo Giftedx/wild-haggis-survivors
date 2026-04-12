@@ -6,8 +6,9 @@ import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {
-    saveVersion: 6 as const,
+    saveVersion: 7 as const,
     totalKills: 0,
+    totalKillsSpent: 0,
     unlockedWeapons: [] as string[],
     unlockedUpgrades: [] as string[],
     activeRun: null,
@@ -80,6 +81,7 @@ describe('TutorialSystem', () => {
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
       time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -136,6 +138,7 @@ describe('TutorialSystem', () => {
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
       time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -195,6 +198,7 @@ describe('TutorialSystem', () => {
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
       time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -250,6 +254,7 @@ describe('TutorialSystem', () => {
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
       time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };
@@ -313,6 +318,7 @@ describe('TutorialSystem', () => {
       tweens: { add: vi.fn() },
       input: { once: vi.fn() },
       time: { delayedCall: vi.fn(() => ({ destroy: vi.fn() })) },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
       getTimeManager: () => tm,
       getXPSystem: () => ({ events: xpEvents }),
     };

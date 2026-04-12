@@ -43,6 +43,10 @@ export function tryPurchaseMetaUpgrade(save: ISaveData, upgradeKey: string): Met
     next: {
       ...save,
       totalKills: save.totalKills - item.cost,
+      // totalKillsSpent is a monotonic lifetime total of kills debited by
+      // MetaShop purchases. Achievement thresholds read the SUM so spending
+      // doesn't erase progress toward `ach_kills_1000` / `ach_kills_5000`.
+      totalKillsSpent: save.totalKillsSpent + item.cost,
       unlockedUpgrades: [...save.unlockedUpgrades, upgradeKey],
     },
   };

@@ -35,10 +35,14 @@ export class NoteScheduler {
   }
 
   tick(now: number): void {
-    // Clamp to prevent burst-firing hundreds of missed notes after suspend/resume
-    this.nextMelodyTime = Math.max(this.nextMelodyTime, now - 0.1);
-    this.nextRhythmTime = Math.max(this.nextRhythmTime, now - 0.1);
-    this.nextHeartbeatTime = Math.max(this.nextHeartbeatTime, now - 0.1);
+    // Clamp to `now` (not `now - 0.1`) so notes missed during tab-background
+    // are skipped cleanly rather than scheduled into the past. Oscillators
+    // told to start() before ctx.currentTime fire immediately but any gain
+    // envelope setValueAtTime at past times is effectively lost — the note
+    // plays at zero amplitude. Skipping is the cleaner recovery.
+    this.nextMelodyTime = Math.max(this.nextMelodyTime, now);
+    this.nextRhythmTime = Math.max(this.nextRhythmTime, now);
+    this.nextHeartbeatTime = Math.max(this.nextHeartbeatTime, now);
 
     const horizon = now + this.SCHEDULE_AHEAD;
 

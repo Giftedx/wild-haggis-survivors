@@ -15,8 +15,11 @@ describe('MetaProgressSystem', () => {
     globalEventBus.emit('GLOBAL_ENEMY_KILLED', { enemyKey: 'tourist', xpValue: 1, wasBoss: false, wasElite: false });
     globalEventBus.emit('GLOBAL_ENEMY_KILLED', { enemyKey: 'chef', xpValue: 2, wasBoss: false, wasElite: false });
 
-    expect(save.load().totalKills).toBe(2);
+    // Kills are batched in-memory and flushed at most once per second under
+    // load (prevents localStorage write storms from AoE waves). Run-end
+    // emission or stop() force a flush — stop() here to assert the total.
     sys.stop();
+    expect(save.load().totalKills).toBe(2);
   });
 });
 

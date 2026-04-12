@@ -464,33 +464,37 @@ export class WeaponSystem {
 
   private fireTrail(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
-    const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const weaponKey = w.config.key;
 
     // Create a fading mist zone — pooled
     const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.3);
     const duration = 2000;
 
-    // Damage enemies within the zone over its lifetime
-    // Guard: skip damage tick if physics is paused (level-up screen)
+    // Damage enemies within the zone over its lifetime.
+    // Each tick rolls damage+crit independently — baking a single isCrit at
+    // spawn time would lock the entire zone into 2× damage when it rolled
+    // crit, producing 4× DPS spikes when two overlapping zones both critted.
+    // Cap repeats one short of `duration / interval` so the final tick lands
+    // safely before the tween's onComplete cancel races it.
+    const intervalMs = 400;
     const damageHandle = this.scene.getUpdateTickers().addInterval(
       'scaled',
-      400,
+      intervalMs,
       () => {
-        if (!this.scene.getTimeManager().isGameplayPaused()) {
-          const enemies = this.enemyGroup.children.entries as Enemy[];
-          for (const enemy of enemies) {
-            if (!enemy.active) continue;
-            const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
-            if (dist <= radius) {
-              this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
-              // Scotch Mist applies poison (stacking DoT)
-              enemy.applyPoison(2, 3000);
-            }
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const { damage: dmg, isCrit } = this.effectiveDamage(w);
+        const enemies = this.enemyGroup.children.entries as Enemy[];
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
+          if (dist <= radius) {
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+            // Scotch Mist applies poison (stacking DoT)
+            enemy.applyPoison(2, 3000);
           }
         }
       },
-      { repeats: Math.floor(duration / 400) }
+      { repeats: Math.max(1, Math.floor(duration / intervalMs) - 1) }
     );
 
     // Fade out and destroy
@@ -663,7 +667,11 @@ export class WeaponSystem {
     const waveDmg = Math.ceil(baseDmg * 0.45);
     const weaponKey = w.config.key;
     for (let wave = 0; wave < 3; wave++) {
-      this.scene.getUpdateTickers().addOnce('scaled', wave * 170, () => {
+      // Wave 0 at delay 0 fires inside the same `tickScaled` pass that
+      // created it, racing with pooled-VFX cleanup timers for adjacent
+      // rings. Shift by one interval so the 3 waves fire at 170/340/510 ms
+      // on clean frame boundaries.
+      this.scene.getUpdateTickers().addOnce('scaled', (wave + 1) * 170, () => {
         if (this.destroyed || !this.scene?.sys?.isActive()) return;
         this.fireExpandingRing(px, py, waveDmg, maxR, weaponKey, isCrit);
       });
@@ -682,11 +690,19 @@ export class WeaponSystem {
       ring.setRadius(currentRadius);
       ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
 
-      // Damage enemies in the newly swept annular band (each enemy hit once)
+      // Damage enemies in the newly swept annular band (each enemy hit once).
+      // Pool-recycle guard: an enemy killed mid-expansion stays in the Set by
+      // object identity, so a reactivated pool slot (fresh enemy, same JS
+      // object) would otherwise be silently immune for the ring's lifetime.
+      // Clear stale entries when the same object is now active with full HP.
       if (!this.scene.getTimeManager().isGameplayPaused()) {
         const enemies = this.enemyGroup.children.entries as Enemy[];
         for (const enemy of enemies) {
-          if (!enemy.active || hitEnemies.has(enemy)) continue;
+          if (!enemy.active) continue;
+          if (hitEnemies.has(enemy)) {
+            // Recycled pool slot — treat as a new enemy.
+            hitEnemies.delete(enemy);
+          }
           const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
           if (dist <= currentRadius) {
             hitEnemies.add(enemy);

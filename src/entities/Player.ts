@@ -314,14 +314,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const angle = Math.atan2(drifted.y, drifted.x);
     this.setRotation(angle + Math.PI / 2);
 
-    // Squash-stretch wobble while moving — gives the haggis a lively bounce
+    // Squash-stretch wobble while moving — gives the haggis a lively bounce.
+    // Uniform scale (not per-axis) so the physics circle body's auto-scaled
+    // radius doesn't oscillate frame-to-frame; non-uniform setScale made the
+    // hitbox jitter ±6% every frame and produced inconsistent damage zones.
+    // At ±6% the visual effect of uniform-vs-axis is barely distinguishable,
+    // so we trade one pixel of squash-stretch for a stable hitbox.
     this.wobblePhase += 0.15;
     const wobble = Math.sin(this.wobblePhase) * 0.06;
     const growthScale = Math.min(
       1 + PLAYER.GROWTH_PER_LEVEL * (this.currentLevel - 1),
       PLAYER.MAX_SCALE
     );
-    this.setScale(growthScale * (1 + wobble), growthScale * (1 - wobble));
+    this.setScale(growthScale * (1 + wobble));
   }
 
   /** Recalculate all stats from base + level scaling + upgrade bonuses */

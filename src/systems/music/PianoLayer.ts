@@ -119,7 +119,11 @@ export class PianoLayer {
     const v = this.voices[idx];
     if (!v) return;
     try {
-      // Ramp gain to zero before stopping to prevent audible click from waveform discontinuity
+      // Ramp gain to zero before stopping to prevent audible click from waveform discontinuity.
+      // Do NOT disconnect the gain nodes here — the stop() is scheduled 20ms out,
+      // so disconnecting immediately would sever the signal path mid-sustain and
+      // produce the click the gain ramp is trying to prevent. Let `carrier.onended`
+      // handle disconnection after the oscillator has actually stopped.
       if (this.ctx) {
         const now = this.ctx.currentTime;
         v.voiceGain.gain.cancelScheduledValues(now);
@@ -130,11 +134,12 @@ export class PianoLayer {
       } else {
         v.carrier.stop();
         v.modulator.stop();
+        // No ctx to schedule a ramp — disconnect now to release the graph.
+        v.carrier.disconnect();
+        v.modulator.disconnect();
+        v.modGain.disconnect();
+        v.voiceGain.disconnect();
       }
-      v.carrier.disconnect();
-      v.modulator.disconnect();
-      v.modGain.disconnect();
-      v.voiceGain.disconnect();
     } catch { /* already stopped */ }
     this.voices[idx] = null;
   }

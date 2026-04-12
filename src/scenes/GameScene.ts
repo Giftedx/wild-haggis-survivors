@@ -673,9 +673,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (this.timeManager.isGameplayPaused()) return;
 
     this.tickMapZones(scaledDelta);
+    // Player input/movement stays on raw delta so controls stay snappy during
+    // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
+    // responsiveness). Game-time systems below use scaledDelta so regen, AI,
+    // spawns, cooldowns, and projectile TTLs all slow in lockstep with the
+    // visible time-scale.
     this.player.update(delta);
-    this.player.tickRegen(delta);
-    this.spawnSystem.update(delta, this.player.x, this.player.y);
+    this.player.tickRegen(scaledDelta);
+    this.spawnSystem.update(scaledDelta, this.player.x, this.player.y);
 
     const runSec = Math.floor(this.spawnSystem.getGameTimeSec());
     if (runSec !== this.lastEmittedRunSecond) {
@@ -698,8 +703,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.getCooldownReduction(),
       this.player.getCritDamageMultiplier()
     );
-    this.weaponSystem.update(delta, this.player.x, this.player.y);
+    this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
     this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHp() / this.player.getMaxHp());
+    // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw
+    // delta so VFX don't stall during slow-mo and the combo meter still decays
+    // at wall-clock rate.
     this.juice.update(delta, this.player.getHp() / this.player.getMaxHp());
 
     // Boss HP bar + edge indicators

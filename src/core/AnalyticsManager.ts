@@ -44,7 +44,7 @@ export class AnalyticsManager {
     this.busUnsubs.push(
       globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => {
         if (!p.wasBoss) return;
-        this.provider.logEvent('boss_kill', {
+        this.safeLogEvent('boss_kill', {
           enemyKey: p.enemyKey,
           wasElite: p.wasElite,
           xpValue: p.xpValue,
@@ -54,7 +54,7 @@ export class AnalyticsManager {
 
     this.busUnsubs.push(
       globalEventBus.on('GLOBAL_RUN_ENDED', (p) => {
-        this.provider.logEvent('run_end', {
+        this.safeLogEvent('run_end', {
           outcome: p.outcome,
           gameTimeSec: p.gameTimeSec,
           enemiesKilled: p.enemiesKilled,
@@ -64,7 +64,7 @@ export class AnalyticsManager {
 
     this.busUnsubs.push(
       globalEventBus.on('TUTORIAL_COMPLETED', () => {
-        this.provider.logEvent('tutorial_completed', {});
+        this.safeLogEvent('tutorial_completed', {});
       })
     );
   }
@@ -75,16 +75,24 @@ export class AnalyticsManager {
     this.busStarted = false;
   }
 
+  // Analytics must never break the game. Every call into the portal SDK
+  // crosses an untrusted boundary — throws from here would abort bus emit
+  // loops (silencing MetaProgress + Achievement handlers) or bubble up
+  // through beginGameplaySession and crash scene init.
+  private safeLogEvent(name: string, data?: Record<string, unknown>): void {
+    try { this.provider.logEvent(name, data); } catch { /* swallow */ }
+  }
+
   logEvent(name: string, data?: Record<string, unknown>): void {
-    this.provider.logEvent(name, data);
+    this.safeLogEvent(name, data);
   }
 
   triggerGameplayStart(): void {
-    this.provider.triggerGameplayStart();
+    try { this.provider.triggerGameplayStart(); } catch { /* swallow */ }
   }
 
   triggerGameplayStop(): void {
-    this.provider.triggerGameplayStop();
+    try { this.provider.triggerGameplayStop(); } catch { /* swallow */ }
   }
 
   /**

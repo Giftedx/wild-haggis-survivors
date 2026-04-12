@@ -83,8 +83,14 @@ export class Conductor {
     if (state.comboCount > 8 && hpFrac > 0.5) {
       triumphTarget = Math.min(1, Math.max(0, (killRate - 3) / 10));
     }
+    // Danger suppresses the TARGET, not the accumulated value. The prior
+    // per-frame `this.triumph *= (1 - danger)` applied 60×/second, which
+    // exponentially annihilated triumph to ~0 within 0.1s at any non-trivial
+    // danger level — so the triumphant melody colour was unreachable during
+    // combat. Applying the suppression to the target instead lets the lerp
+    // find a stable equilibrium.
+    triumphTarget *= (1 - this.danger);
     this.triumph = lerp(this.triumph, triumphTarget, delta * 0.002);
-    this.triumph *= (1 - this.danger);
   }
 
   getMood(): MoodValues {
@@ -105,7 +111,11 @@ export class Conductor {
       }
     }
 
-    if (this.phraseNotesRemaining <= 0) {
+    // In resolution mode, `startNewPhrase()` would refill phraseNotesRemaining
+    // to 3-7, blocking `isResolutionComplete()` from ever firing and looping
+    // the resolution sequence indefinitely. Only rotate phrases during normal
+    // playback — resolution drains to zero exactly once.
+    if (this.phraseNotesRemaining <= 0 && !this.resolutionMode) {
       this.startNewPhrase();
     }
 
@@ -181,7 +191,13 @@ export class Conductor {
     dirBias += this.triumph * 0.15;
 
     const momentumBias = this.lastDirection * 0.1;
-    const direction = (Math.random() < 0.5 + dirBias + momentumBias) ? 1 : -1;
+    // Clamp so the combined bias can't saturate to 0 or 1 — at max bias the
+    // probability overflows `[0, 1]` and the momentum term effectively
+    // disappears (any `< 1.0` comparison vs. `Math.random()` always-true).
+    // The 0.05-0.95 window keeps at least a sliver of the opposite direction
+    // alive so melodies don't get stuck in one-direction ruts.
+    const pUp = Math.min(0.95, Math.max(0.05, 0.5 + dirBias + momentumBias));
+    const direction = (Math.random() < pUp) ? 1 : -1;
     this.lastDirection = direction;
 
     const landingBoost = this.danger * 0.1 + (this.phraseNotesRemaining <= 1 ? 0.3 : 0);

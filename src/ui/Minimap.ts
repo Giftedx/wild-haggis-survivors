@@ -107,8 +107,10 @@ export class Minimap {
     // means "facing right" in Phaser's convention, rotated to +PI/2 for
     // "facing down" etc. Drawing the triangle in local space first then
     // rotating around the player dot keeps it precise.
-    const px = mapX + playerX * scaleX;
-    const py = mapY + playerY * scaleY;
+    // Clamp inside the minimap so the triangle doesn't bleed outside the
+    // background rect when the player reaches the soft world boundary.
+    const px = Phaser.Math.Clamp(mapX + playerX * scaleX, mapX + 4, mapX + this.SIZE - 4);
+    const py = Phaser.Math.Clamp(mapY + playerY * scaleY, mapY + 4, mapY + this.SIZE - 4);
     const tri = this.triangleForRotation(px, py, 4.5, playerRotation);
     this.gfx.fillStyle(0x44dd44, 1);
     this.gfx.fillTriangle(tri.ax, tri.ay, tri.bx, tri.by, tri.cx, tri.cy);

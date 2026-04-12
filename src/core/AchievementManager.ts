@@ -3,6 +3,7 @@ import { ACHIEVEMENT_DEFS } from './BalanceConfig';
 import { t } from './i18n';
 import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
+import { BOSSES } from '../data/enemies';
 
 /**
  * Listens to global gameplay events and unlocks achievements into SaveManager.
@@ -41,13 +42,17 @@ export class AchievementManager {
 
   private onEnemyKilled(p: import('./GlobalEventBus').GlobalEnemyKilledPayload): void {
     const s = this.save.load();
-    if (s.totalKills >= 1000) this.tryUnlock('ach_kills_1000');
-    if (s.totalKills >= 5000) this.tryUnlock('ach_kills_5000');
+    // Kill-count achievements read the LIFETIME total (balance + spent) so
+    // heavy MetaShop spenders don't permanently fall off the unlock curve.
+    const lifetimeKills = s.totalKills + s.totalKillsSpent;
+    if (lifetimeKills >= 1000) this.tryUnlock('ach_kills_1000');
+    if (lifetimeKills >= 5000) this.tryUnlock('ach_kills_5000');
     if (p.wasBoss) {
       this.runBossKills.add(p.enemyKey);
       if (p.enemyKey === 'taxman') this.tryUnlock('ach_defeat_taxman');
-      // 5 boss types: gordon, tour_bus, the_laird, hunter_general, taxman
-      if (this.runBossKills.size >= 5) this.tryUnlock('ach_all_bosses');
+      // Derive from BOSSES data so adding/removing a boss type keeps the
+      // achievement threshold honest.
+      if (this.runBossKills.size >= BOSSES.length) this.tryUnlock('ach_all_bosses');
     }
   }
 

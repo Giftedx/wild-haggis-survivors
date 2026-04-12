@@ -39,12 +39,12 @@ const v5Save = {
 };
 
 describe('RunHistory', () => {
-  it('migrates v5 → v6 with empty runHistory', () => {
+  it('migrates v5 → current with empty runHistory', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify(v5Save));
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(6);
+    expect(loaded.saveVersion).toBe(7);
     expect(loaded.runHistory).toEqual([]);
     expect(loaded.totalKills).toBe(100);
     expect(loaded.hasCompletedTutorial).toBe(true);
@@ -82,7 +82,7 @@ describe('RunHistory', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({
       ...v5Save,
-      saveVersion: 6,
+      saveVersion: 7,
       runHistory: [
         { variantKey: 'classic', timeSurvivedSec: 'bad', enemiesKilled: -5 },
         null,
@@ -123,7 +123,7 @@ describe('RunHistory', () => {
     expect(bests.bestGold).toBe(0);
   });
 
-  it('preserves existing runHistory through v6 save/load cycle', () => {
+  it('preserves existing runHistory through current save/load cycle', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 'k' });
     mgr.recordRunToHistory(makeEntry({ enemiesKilled: 10 }));
@@ -134,12 +134,12 @@ describe('RunHistory', () => {
     expect(loaded.runHistory[1].enemiesKilled).toBe(20);
   });
 
-  it('migrates v1 all the way to v6 with empty history', () => {
+  it('migrates v1 all the way to current with empty history', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 3, unlockedWeapons: [] }));
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(6);
+    expect(loaded.saveVersion).toBe(7);
     expect(loaded.runHistory).toEqual([]);
     expect(loaded.totalKills).toBe(3);
   });

@@ -5,8 +5,9 @@ import { StatComposer } from './StatComposer';
 import type { ISaveData } from './SaveManager';
 
 const pristine: ISaveData = {
-  saveVersion: 6,
+  saveVersion: 7,
   totalKills: 0,
+  totalKillsSpent: 0,
   unlockedWeapons: [],
   unlockedUpgrades: [],
   activeRun: null,
