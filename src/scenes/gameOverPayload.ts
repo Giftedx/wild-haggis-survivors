@@ -1,4 +1,5 @@
 import type { RunResult, RunSummary } from '../utils/save';
+import type { PersonalBests } from '../core/SaveManager';
 
 /** Serializable run result passed from GameScene → GameOverScene (scene.start payload). */
 export interface GameOverPayload {
@@ -18,4 +19,6 @@ export interface GameOverPayload {
   variantKey?: string;
   /** Total damage dealt per weapon id (`WeaponDef.key`), from RunStatsTracker. */
   weaponDamage: Record<string, number>;
+  /** Historical bests captured BEFORE this run was recorded — used for "NEW BEST!" comparison. */
+  previousBests?: PersonalBests;
 }

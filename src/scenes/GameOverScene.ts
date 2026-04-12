@@ -199,12 +199,17 @@ export class GameOverScene extends Phaser.Scene {
 
     const statBaseY = panelTop + 178;
     const statGap = 142;
-    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600);
-    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660);
-    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720);
+    const pb = this.payload.previousBests;
+    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600,
+      pb && summary.timeSurvivedSec > pb.bestTime);
+    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660,
+      pb && summary.enemiesKilled > pb.bestKills);
+    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720,
+      pb && this.payload.xpLevel > pb.bestLevel);
     this.createResultStat(panelCenterX - statGap, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
     this.createResultStat(panelCenterX, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
-    this.createResultStat(panelCenterX + statGap, statBaseY + 42, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900);
+    this.createResultStat(panelCenterX + statGap, statBaseY + 42, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900,
+      pb && (summary.bestCombo ?? 0) > pb.bestCombo);
 
     const loadoutSummaryText = this.buildBoundedLoadoutSummary(this.payload.buildSummary, 2);
     const loadoutSummary = this.add
@@ -459,7 +464,8 @@ export class GameOverScene extends Phaser.Scene {
     label: string,
     value: string,
     depth: number,
-    delay: number
+    delay: number,
+    isNewBest?: boolean
   ): void {
     const labelText = this.add
       .text(x, y, label, {
@@ -476,7 +482,7 @@ export class GameOverScene extends Phaser.Scene {
       .text(x, y + 18, value, {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: '#ffffff',
+        color: isNewBest ? '#d4a017' : '#ffffff',
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
@@ -485,6 +491,29 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
 
     this.tweens.add({ targets: [labelText, valueText], alpha: 1, duration: 220, delay });
+
+    if (isNewBest) {
+      const badge = this.add
+        .text(x, y + 36, t('ui.gameOver.new_best'), {
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          color: '#d4a017',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(depth + 1)
+        .setAlpha(0)
+        .setScale(0.5);
+      this.tweens.add({
+        targets: badge,
+        alpha: 1,
+        scale: 1,
+        duration: 360,
+        delay: delay + 200,
+        ease: 'Back.easeOut',
+      });
+    }
   }
 
   private createResultActionButton(

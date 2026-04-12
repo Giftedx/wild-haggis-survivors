@@ -14,7 +14,10 @@ import {
 } from '../data/variants';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 2;
+export const SAVE_SCHEMA_VERSION = 3;
+
+/** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
+export const MAX_RUN_HISTORY = 20;
 
 /**
  * @deprecated Legacy audio on/off booleans — real audio state lives in
@@ -28,6 +31,19 @@ export interface SaveSettings {
   soundOn: boolean;
   /** @deprecated read `SettingsManager.load().musicVolume > 0` instead */
   musicOn: boolean;
+}
+
+export interface RunHistoryEntry {
+  timestamp: number;
+  timeSurvivedSec: number;
+  enemiesKilled: number;
+  level: number;
+  bossKills: number;
+  goldEarned: number;
+  bestCombo: number;
+  variantKey: string;
+  isVictory: boolean;
+  weaponKeys: string[];
 }
 
 export interface SaveData {
@@ -66,6 +82,9 @@ export interface SaveData {
   /** Total completed victories */
   victories: number;
 
+  /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
+  runHistory: RunHistoryEntry[];
+
   /** Settings */
   settings: SaveSettings;
 }
@@ -77,6 +96,14 @@ export interface RunSummary {
   coinGold?: number;
   bestCombo?: number;
   victory?: boolean;
+}
+
+/** Extra context for run history recording (not needed for gold/unlock calculation). */
+export interface RunHistoryContext {
+  level: number;
+  bossKills: number;
+  variantKey: string;
+  weaponKeys: string[];
 }
 
 export interface RunResult {
@@ -103,6 +130,7 @@ const DEFAULT_SAVE: SaveData = {
   totalGoldEarned: 0,
   bestCombo: 0,
   victories: 0,
+  runHistory: [],
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -113,6 +141,7 @@ export function createDefaultSave(): SaveData {
     ...DEFAULT_SAVE,
     upgrades: {},
     unlockedVariants: [DEFAULT_VARIANT_KEY],
+    runHistory: [],
     settings: { ...DEFAULT_SETTINGS },
   };
 }
@@ -139,9 +168,9 @@ export function writeSave(data: SaveData): SaveData {
   return normalized;
 }
 
-export function recordRun(summary: RunSummary): RunResult {
+export function recordRun(summary: RunSummary, context?: RunHistoryContext): RunResult {
   const currentSave = loadSave();
-  const runResult = applyRunSummary(currentSave, summary);
+  const runResult = applyRunSummary(currentSave, summary, context);
   const persistedSave = writeSave(runResult.save);
   return { ...runResult, save: persistedSave };
 }
@@ -154,6 +183,8 @@ export function migrateSave(raw: unknown): SaveData {
     case 0:
     case 1:
       return finalizeSaveCandidate(migrateLegacySave(raw));
+    case 2:
+      return finalizeSaveCandidate({ ...raw, schemaVersion: SAVE_SCHEMA_VERSION, runHistory: [] });
     default:
       return finalizeSaveCandidate(raw);
   }
@@ -196,10 +227,23 @@ export function coerceSelectedVariant(
   return unlockedVariants.includes(normalized) ? normalized : DEFAULT_VARIANT_KEY;
 }
 
-export function applyRunSummary(save: SaveData, summary: RunSummary): RunResult {
+export function applyRunSummary(save: SaveData, summary: RunSummary, context?: RunHistoryContext): RunResult {
   const baseSave = migrateSave(save);
   const normalizedSummary = normalizeRunSummary(summary);
   const goldEarned = computeGoldReward(normalizedSummary);
+
+  const historyEntry: RunHistoryEntry = {
+    timestamp: Date.now(),
+    timeSurvivedSec: normalizedSummary.timeSurvivedSec,
+    enemiesKilled: normalizedSummary.enemiesKilled,
+    level: context?.level ?? 1,
+    bossKills: context?.bossKills ?? 0,
+    goldEarned,
+    bestCombo: normalizedSummary.bestCombo,
+    variantKey: context?.variantKey ?? 'classic',
+    isVictory: normalizedSummary.victory,
+    weaponKeys: context?.weaponKeys ?? [],
+  };
 
   const nextSave: SaveData = {
     ...baseSave,
@@ -211,6 +255,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary): RunResult 
     totalGoldEarned: baseSave.totalGoldEarned + goldEarned,
     bestCombo: Math.max(baseSave.bestCombo, normalizedSummary.bestCombo),
     victories: baseSave.victories + (normalizedSummary.victory ? 1 : 0),
+    runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
   const unlockResult = evaluateVariantUnlocks(nextSave, baseSave.unlockedVariants);
@@ -257,6 +302,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     totalGoldEarned: coerceInteger(candidate.totalGoldEarned, DEFAULT_SAVE.totalGoldEarned),
     bestCombo: coerceInteger(candidate.bestCombo, DEFAULT_SAVE.bestCombo),
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
+    runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };
 }
@@ -283,6 +329,83 @@ function normalizeRunSummary(summary: RunSummary): Required<RunSummary> {
     bestCombo: coerceInteger(summary.bestCombo, 0),
     victory: Boolean(summary.victory),
   };
+}
+
+function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
+  if (!isRecord(raw)) return null;
+  const variantKey = typeof raw.variantKey === 'string' && raw.variantKey ? raw.variantKey : '';
+  if (!variantKey) return null;
+  return {
+    timestamp: coerceInteger(raw.timestamp, 0),
+    timeSurvivedSec: coerceInteger(raw.timeSurvivedSec, 0),
+    enemiesKilled: coerceInteger(raw.enemiesKilled, 0),
+    level: Math.max(1, coerceInteger(raw.level, 1)),
+    bossKills: coerceInteger(raw.bossKills, 0),
+    goldEarned: coerceInteger(raw.goldEarned, 0),
+    bestCombo: coerceInteger(raw.bestCombo, 0),
+    variantKey,
+    isVictory: typeof raw.isVictory === 'boolean' ? raw.isVictory : false,
+    weaponKeys: Array.isArray(raw.weaponKeys)
+      ? (raw.weaponKeys as unknown[]).filter((x): x is string => typeof x === 'string')
+      : [],
+  };
+}
+
+function coerceRunHistory(value: unknown): RunHistoryEntry[] {
+  if (!Array.isArray(value)) return [];
+  const entries: RunHistoryEntry[] = [];
+  for (const raw of value) {
+    const entry = coerceRunHistoryEntry(raw);
+    if (entry) entries.push(entry);
+  }
+  return entries.slice(-MAX_RUN_HISTORY);
+}
+
+export function appendRunHistory(history: RunHistoryEntry[], entry: RunHistoryEntry): RunHistoryEntry[] {
+  const next = [...history, entry];
+  if (next.length > MAX_RUN_HISTORY) next.shift();
+  return next;
+}
+
+export interface PersonalBests {
+  bestTime: number;
+  bestKills: number;
+  bestCombo: number;
+}
+
+export function getPersonalBests(history: RunHistoryEntry[]): PersonalBests {
+  let bestTime = 0;
+  let bestKills = 0;
+  let bestCombo = 0;
+  for (const entry of history) {
+    if (entry.timeSurvivedSec > bestTime) bestTime = entry.timeSurvivedSec;
+    if (entry.enemiesKilled > bestKills) bestKills = entry.enemiesKilled;
+    if (entry.bestCombo > bestCombo) bestCombo = entry.bestCombo;
+  }
+  return { bestTime, bestKills, bestCombo };
+}
+
+export function getWinRate(history: RunHistoryEntry[]): number {
+  if (history.length === 0) return 0;
+  const wins = history.filter((e) => e.isVictory).length;
+  return wins / history.length;
+}
+
+export function getAverageSurvivalTime(history: RunHistoryEntry[]): number {
+  if (history.length === 0) return 0;
+  const total = history.reduce((sum, e) => sum + e.timeSurvivedSec, 0);
+  return total / history.length;
+}
+
+export function getTrend(history: RunHistoryEntry[]): 'improving' | 'declining' | 'steady' {
+  if (history.length < 3) return 'steady';
+  const recent = history.slice(-5);
+  const overallAvg = getAverageSurvivalTime(history);
+  const recentAvg = recent.reduce((sum, e) => sum + e.timeSurvivedSec, 0) / recent.length;
+  const ratio = overallAvg > 0 ? recentAvg / overallAvg : 1;
+  if (ratio > 1.1) return 'improving';
+  if (ratio < 0.9) return 'declining';
+  return 'steady';
 }
 
 function coerceSettings(value: unknown): SaveSettings {

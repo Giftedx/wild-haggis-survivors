@@ -3,7 +3,7 @@ import { SaveManager, type ISaveData } from './SaveManager';
 import { tryPurchaseMetaUpgrade } from './MetaPurchase';
 
 const baseSave = (): ISaveData => ({
-  saveVersion: 5,
+  saveVersion: 6,
   totalKills: 100,
   unlockedWeapons: [],
   unlockedUpgrades: [],
@@ -11,6 +11,7 @@ const baseSave = (): ISaveData => ({
   unlockedAchievements: [],
   hasCompletedTutorial: true,
   hasSeenDriftTutorial: false,
+  runHistory: [],
 });
 
 describe('tryPurchaseMetaUpgrade', () => {
