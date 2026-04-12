@@ -8,13 +8,7 @@ import {
   SETTINGS_STORAGE_KEY,
   resetSettingsManagerSingletonForTests,
 } from './SettingsManager';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) { return this.m.get(key) ?? null; }
-  setItem(key: string, value: string) { this.m.set(key, value); }
-  removeItem(key: string) { this.m.delete(key); }
-}
+import { MemoryStorage } from '../test/MemoryStorage';
 
 class ThrowingStorage implements StorageLike {
   private m = new Map<string, string>();

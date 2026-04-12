@@ -54,16 +54,10 @@ vi.mock('../entities/Enemy', () => {
 });
 
 import { getActiveWaveTimelineEntry } from './BalanceConfig';
-import { SaveManager, type IRunState, type StorageLike } from './SaveManager';
+import { SaveManager, type IRunState } from './SaveManager';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { XPSystem } from '../systems/XPSystem';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) { return this.m.get(key) ?? null; }
-  setItem(key: string, value: string) { this.m.set(key, value); }
-  removeItem(key: string) { this.m.delete(key); }
-}
+import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeSpawnScene() {
   class SimpleGroup {

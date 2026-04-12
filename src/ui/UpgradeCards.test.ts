@@ -10,6 +10,22 @@ vi.mock('phaser', () => ({
   },
 }));
 
+vi.mock('../core/SettingsManager', () => ({
+  getSettingsManager: () => ({
+    load: () => ({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+    }),
+  }),
+}));
+
 class MockDisplayObject {
   public x: number;
   public y: number;

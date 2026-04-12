@@ -32,6 +32,8 @@ export const EN_STRINGS: LocaleTree = {
       new_run_loadout: 'NEW RUN (LOADOUT)',
       meta_upgrades: 'LASTING BOONS',
       options: 'OPTIONS',
+      /** Quiet motto on the bottom credit strip — same voice as Soul Charter. */
+      built_on_moor: 'built on the moor',
       stats_short: 'Best {bestTime}  |  Kills {bestKills}  |  Combo {bestCombo}x  |  Runs {totalRuns}  |  Wins {victories}  |  Gold {gold}',
       stats_long: 'Best {bestTime}  |  Kills {bestKills}  |  Combo {bestCombo}x\nRuns {totalRuns}  |  Wins {victories}  |  Gold {gold}',
     },

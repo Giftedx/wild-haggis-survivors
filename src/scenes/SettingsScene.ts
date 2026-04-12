@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
-import { loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 import {
@@ -342,14 +341,6 @@ export class SettingsScene extends Phaser.Scene {
   private persistAndApply(): void {
     this.settingsManager.save(this.working);
     applyAudioFromUserSettings(this.working);
-    try {
-      const runSave = loadSave();
-      runSave.settings.soundOn = this.working.sfxVolume > 0.001;
-      runSave.settings.musicOn = this.working.musicVolume > 0.001;
-      writeSave(runSave);
-    } catch {
-      /* ignore */
-    }
   }
 
   private addSliderRow(

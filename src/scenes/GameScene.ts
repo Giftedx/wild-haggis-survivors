@@ -14,7 +14,7 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { buildCardPool, drawCards, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
-import { recordRun, loadSave, writeSave, RunResult, RunSummary } from '../utils/save';
+import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
@@ -418,8 +418,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     if (this.input.keyboard) {
-      this.subs.listen(this.input.keyboard as any, 'keydown-ESC', () => this.toggleUiPause());
-      this.subs.listen(this.input.keyboard as any, 'keydown-F3', () => this.debugOverlay?.toggle());
+      // Phaser's KeyboardPlugin extends Events.EventEmitter, which satisfies
+      // SubscriptionBag's MinimalEmitter contract. The earlier `as any` cast
+      // bypassed TypeScript entirely; widen to the concrete base class instead.
+      const kb: Phaser.Events.EventEmitter = this.input.keyboard;
+      this.subs.listen(kb, 'keydown-ESC', () => this.toggleUiPause());
+      this.subs.listen(kb, 'keydown-F3', () => this.debugOverlay?.toggle());
     }
 
     // Fade in from black
@@ -1172,7 +1176,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         sfxText.setColor(sfxOn ? '#88cc88' : '#886666');
         this.settingsManager.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
         applyAudioFromUserSettings(this.settingsManager.load());
-        const s = loadSave(); s.settings.soundOn = sfxOn; writeSave(s);
       });
       this.pauseElements.push(sfxText);
 
@@ -1191,7 +1194,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.settingsManager.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
         applyAudioFromUserSettings(this.settingsManager.load());
         if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
-        const s = loadSave(); s.settings.musicOn = musicOn; writeSave(s);
       });
       this.pauseElements.push(musicText);
 

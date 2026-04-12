@@ -180,14 +180,8 @@ export class MenuScene extends Phaser.Scene {
     applyAudioFromUserSettings(prefs);
     const sfxOn = prefs.sfxVolume > 0.001;
     const musicOn = prefs.musicVolume > 0.001;
-    // Keep legacy save toggles in sync with the settings store so labels match
-    // the actual audio state applied above.
-    this.saveData.settings.soundOn = sfxOn;
-    this.saveData.settings.musicOn = musicOn;
 
     const sfxT = this.createToggle(104, height - 26, 'ui.loadout.sfx_toggle', sfxOn, (on) => {
-      this.saveData.settings.soundOn = on;
-      this.commitSave();
       getSettingsManager().update((st) => ({ ...st, sfxVolume: on ? 1 : 0 }));
       applyAudioFromUserSettings(getSettingsManager().load());
     }, 760);
@@ -195,8 +189,6 @@ export class MenuScene extends Phaser.Scene {
     this.sfxToggleFire = sfxT.fire;
 
     const musicT = this.createToggle(218, height - 26, 'ui.loadout.music_toggle', musicOn, (on) => {
-      this.saveData.settings.musicOn = on;
-      this.commitSave();
       getSettingsManager().update((st) => ({ ...st, musicVolume: on ? 1 : 0 }));
       applyAudioFromUserSettings(getSettingsManager().load());
     }, 820);

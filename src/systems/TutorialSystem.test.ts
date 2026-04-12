@@ -1,20 +1,8 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { EventEmitter } from 'events';
 import { TutorialSystem } from './TutorialSystem';
-import { SaveManager, type StorageLike } from '../core/SaveManager';
-
-class MemoryStorage implements StorageLike {
-  private m = new Map<string, string>();
-  getItem(key: string) {
-    return this.m.get(key) ?? null;
-  }
-  setItem(key: string, value: string) {
-    this.m.set(key, value);
-  }
-  removeItem(key: string) {
-    this.m.delete(key);
-  }
-}
+import { SaveManager } from '../core/SaveManager';
+import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeV5Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {

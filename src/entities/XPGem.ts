@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { getSettingsManager } from '../core/SettingsManager';
 
 /**
  * XP Gem ("Whisky Drop") — poolable pickup that grants XP.
@@ -54,11 +55,15 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
       if (this.active) this.setVelocity(0, 0);
     }) ?? null;
 
-    // Show value label for high-value gems (3+)
+    // Show value label for high-value gems (3+). Font size scales with
+    // uiScale so players on a 1.4x comfort setting can actually read the
+    // number instead of seeing a smudge next to the gem.
     if (value >= 3) {
       if (!this.valueLabel) {
+        const uiScale = getSettingsManager().load().uiScale;
+        const px = Math.max(8, Math.round(11 * uiScale));
         this.valueLabel = this.scene.add.text(0, 0, '', {
-          fontFamily: 'monospace', fontSize: '11px', color: '#ffffff',
+          fontFamily: 'monospace', fontSize: `${px}px`, color: '#ffffff',
           fontStyle: 'bold', stroke: '#000', strokeThickness: 2,
         }).setDepth(15).setOrigin(0.5);
       }

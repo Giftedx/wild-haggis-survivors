@@ -412,7 +412,7 @@ export class MainMenuScene extends Phaser.Scene {
     // ("built on the moor") and the version string, both dim to avoid
     // competing with the buttons.
     this.add
-      .text(width - 14, height - 26, 'built on the moor', {
+      .text(width - 14, height - 26, t('ui.menu.built_on_moor'), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#3a4760',
