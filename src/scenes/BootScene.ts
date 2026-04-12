@@ -689,70 +689,136 @@ export class BootScene extends Phaser.Scene {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2 + 2;
 
-    // Legs (shorts)
-    g.fillStyle(0x4466aa, 1);
+    // === Socks-and-sandals legs (the universal tourist crime) ===
+    // White socks pulled up high
+    g.fillStyle(0xeeeeee, 1);
     g.fillRect(cx - 7, cy + 12, 5, 8);
     g.fillRect(cx + 2, cy + 12, 5, 8);
+    // Sock ribbing
+    g.fillStyle(0xcccccc, 1);
+    g.fillRect(cx - 7, cy + 12, 5, 1);
+    g.fillRect(cx + 2, cy + 12, 5, 1);
+    // Sandal straps (brown)
+    g.fillStyle(0x664422, 1);
+    g.fillRect(cx - 8, cy + 18, 7, 2);
+    g.fillRect(cx + 1, cy + 18, 7, 2);
+    g.fillRect(cx - 6, cy + 17, 2, 4);
+    g.fillRect(cx + 4, cy + 17, 2, 4);
+    // Sunburned knees poking between shorts and socks
+    g.fillStyle(0xee8877, 1);
+    g.fillRect(cx - 7, cy + 10, 5, 3);
+    g.fillRect(cx + 2, cy + 10, 5, 3);
 
-    // Hawaiian shirt body (bright red with yellow pattern)
-    g.fillStyle(0x881111, 1); // dark outline
-    g.fillRect(cx - 12, cy - 4, 24, 18);
-    g.fillStyle(0xdd2222, 1);
-    g.fillRect(cx - 11, cy - 3, 22, 16);
-    // Floral pattern dots
-    g.fillStyle(0xffdd44, 1);
-    g.fillCircle(cx - 6, cy + 1, 2);
-    g.fillCircle(cx + 4, cy + 4, 2);
-    g.fillCircle(cx - 2, cy + 7, 2);
-    g.fillCircle(cx + 8, cy - 1, 1.5);
+    // === Cargo shorts (khaki, bulging pockets) ===
+    g.fillStyle(0x887755, 1);
+    g.fillRect(cx - 9, cy + 4, 18, 8);
+    g.fillStyle(0xaa9966, 1);
+    g.fillRect(cx - 8, cy + 5, 16, 6);
+    // Pocket flaps
+    g.fillStyle(0x887755, 1);
+    g.fillRect(cx - 8, cy + 6, 6, 3);
+    g.fillRect(cx + 3, cy + 6, 6, 3);
+    // Greggs bag poking out of pocket (white paper bag, blue oval logo)
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx + 4, cy + 5, 4, 3);
+    g.fillStyle(0x2244aa, 1);
+    g.fillEllipse(cx + 6, cy + 6, 2, 1.5);
 
-    // Head
-    g.fillStyle(0xaa6644, 1); // outline
-    g.fillCircle(cx, cy - 10, 9);
-    g.fillStyle(0xffccaa, 1);
-    g.fillCircle(cx, cy - 10, 8);
-    // Round sunglass lenses — two circles with a thin bridge.
-    // Dark outline rings first, then blue lens, then highlight glint.
-    g.fillStyle(0x111111, 1);
-    g.fillCircle(cx - 4, cy - 10, 3);
-    g.fillCircle(cx + 4, cy - 10, 3);
-    g.fillStyle(0x2a4466, 1);
-    g.fillCircle(cx - 4, cy - 10, 2.2);
-    g.fillCircle(cx + 4, cy - 10, 2.2);
-    // Bridge connecting the two lenses
-    g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 1, cy - 11, 2, 1);
-    // Lens glint (upper-left of each lens)
-    g.fillStyle(0xaaccee, 0.9);
-    g.fillCircle(cx - 5, cy - 11, 0.8);
-    g.fillCircle(cx + 3, cy - 11, 0.8);
-    // Smile beneath the shades so the face feels alive
-    g.fillStyle(0x884422, 1);
-    g.fillRect(cx - 2, cy - 5, 4, 1);
+    // === Bright blue cagoule (Regatta's finest — tourist armour against Glasgow weather) ===
+    g.fillStyle(0x113388, 1);
+    g.fillRect(cx - 12, cy - 6, 24, 12);
+    g.fillStyle(0x2255cc, 1);
+    g.fillRect(cx - 11, cy - 5, 22, 10);
+    // Nylon sheen highlight (crinkly cheap material)
+    g.fillStyle(0x4477dd, 0.4);
+    g.fillRect(cx - 8, cy - 4, 10, 3);
+    // Zip line down center
+    g.fillStyle(0x1144aa, 1);
+    g.fillRect(cx, cy - 5, 1, 10);
+    // Rain droplets on jacket (it's always raining)
+    g.fillStyle(0xaaddff, 0.6);
+    g.fillCircle(cx - 6, cy - 2, 0.7);
+    g.fillCircle(cx + 4, cy + 1, 0.7);
+    g.fillCircle(cx - 3, cy + 3, 0.7);
 
-    // Iconic: huge sun hat
-    g.fillStyle(0x886611, 1); // outline
-    g.fillRect(cx - 16, cy - 19, 32, 4);
-    g.fillStyle(0xddbb55, 1);
-    g.fillRect(cx - 15, cy - 18, 30, 2);
-    // Hat crown
-    g.fillStyle(0x886611, 1);
-    g.fillRect(cx - 9, cy - 24, 18, 6);
-    g.fillStyle(0xddbb55, 1);
-    g.fillRect(cx - 8, cy - 23, 16, 5);
-
-    // Iconic: camera hanging from neck
-    g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 5, cy + 1, 10, 6);
-    // Lens
+    // === Bumbag / fanny pack (the mark of the tourist) ===
+    g.fillStyle(0x222222, 1);
+    g.fillEllipse(cx, cy + 3, 14, 5);
     g.fillStyle(0x444444, 1);
-    g.fillCircle(cx, cy + 4, 2.5);
-    g.fillStyle(0x88ccff, 1);
-    g.fillCircle(cx, cy + 4, 1.5);
-    // Strap
-    g.lineStyle(1, 0x444444, 1);
-    g.lineBetween(cx - 5, cy + 1, cx - 6, cy - 3);
-    g.lineBetween(cx + 5, cy + 1, cx + 6, cy - 3);
+    g.fillEllipse(cx, cy + 3, 12, 4);
+    // Zip
+    g.fillStyle(0xddaa00, 1);
+    g.fillRect(cx - 1, cy + 2, 2, 1);
+
+    // === Head (SUNBURNED despite clearly overcast sky) ===
+    g.fillStyle(0xcc6644, 1);
+    g.fillCircle(cx, cy - 12, 9);
+    g.fillStyle(0xee8866, 1);
+    g.fillCircle(cx, cy - 12, 8);
+    // Peeling nose highlight
+    g.fillStyle(0xff9977, 1);
+    g.fillCircle(cx, cy - 10, 2);
+    // Wide bewildered eyes
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(cx - 4, cy - 13, 3.5);
+    g.fillCircle(cx + 4, cy - 13, 3.5);
+    g.fillStyle(0x334455, 1);
+    g.fillCircle(cx - 4, cy - 13, 2);
+    g.fillCircle(cx + 4, cy - 13, 2);
+    // Tiny pupils (shrunken from existential panic)
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx - 4, cy - 13, 0.8);
+    g.fillCircle(cx + 4, cy - 13, 0.8);
+    // Worried eyebrows (raised, not angry — pure confusion)
+    g.lineStyle(1.5, 0x884422, 1);
+    g.lineBetween(cx - 7, cy - 16, cx - 3, cy - 17);
+    g.lineBetween(cx + 7, cy - 16, cx + 3, cy - 17);
+    // Open mouth
+    g.fillStyle(0x993322, 1);
+    g.fillEllipse(cx, cy - 8, 3, 2.5);
+
+    // === Tartan bucket hat (the tat-shop special from Buchanan Street) ===
+    g.fillStyle(0x886644, 1);
+    g.fillEllipse(cx, cy - 19, 22, 5);
+    g.fillStyle(0xbb8855, 1);
+    g.fillEllipse(cx, cy - 19, 20, 4);
+    // Hat crown
+    g.fillStyle(0x886644, 1);
+    g.fillRect(cx - 8, cy - 24, 16, 6);
+    g.fillStyle(0xbb8855, 1);
+    g.fillRect(cx - 7, cy - 23, 14, 5);
+    // Tartan check pattern on hat (red crossing lines)
+    g.fillStyle(0xcc3322, 0.7);
+    g.fillRect(cx - 7, cy - 21, 14, 1);
+    g.fillRect(cx - 3, cy - 23, 1, 5);
+    g.fillRect(cx + 3, cy - 23, 1, 5);
+    // Sunburned ear tips poking below hat brim
+    g.fillStyle(0xff7755, 1);
+    g.fillCircle(cx - 10, cy - 16, 2);
+    g.fillCircle(cx + 10, cy - 16, 2);
+
+    // === "I ♥ SCOTLAND" shopping bag (hanging from arm) ===
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx + 12, cy - 2, 8, 10);
+    g.fillStyle(0xffffff, 1);
+    g.fillRect(cx + 13, cy - 1, 6, 8);
+    // Heart (tiny red)
+    g.fillStyle(0xff2222, 1);
+    g.fillCircle(cx + 15, cy + 1, 1);
+    g.fillCircle(cx + 17, cy + 1, 1);
+    g.fillTriangle(cx + 14, cy + 2, cx + 18, cy + 2, cx + 16, cy + 4);
+    // Bag handles
+    g.lineStyle(1, 0xcccccc, 1);
+    g.lineBetween(cx + 14, cy - 2, cx + 12, cy - 4);
+    g.lineBetween(cx + 18, cy - 2, cx + 18, cy - 4);
+
+    // === Selfie stick + phone (held up, blocking the view) ===
+    g.fillStyle(0x666666, 1);
+    g.fillRect(cx - 14, cy - 6, 2, 18);
+    g.fillStyle(0x222222, 1);
+    g.fillRect(cx - 16, cy - 10, 5, 5);
+    g.fillStyle(0x4488cc, 0.8);
+    g.fillRect(cx - 15, cy - 9, 3, 3);
 
     g.generateTexture('tourist', s, s);
     g.destroy();
