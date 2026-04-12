@@ -106,6 +106,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    *  as death so the ceremony lands on the game-over screen). */
   private victoryResultRemainingMs: number | null = null;
   private victoryResultCallback: (() => void) | null = null;
+  /** End-of-run screen-space fade overlays — tracked as fields so shutdown
+   *  can destroy them; anonymous locals would orphan on scene restart since
+   *  Phaser's scene.stop() doesn't clear the display list. */
+  private victoryFade: Phaser.GameObjects.Rectangle | null = null;
+  private deathFade: Phaser.GameObjects.Rectangle | null = null;
   private hintHideHandle: TickerHandle | null = null;
   private subs = new SubscriptionBag();
   private debugOverlay: DebugOverlay | null = null;
@@ -197,6 +202,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.deathResultCallback = null;
     this.victoryResultRemainingMs = null;
     this.victoryResultCallback = null;
+    this.victoryFade?.destroy();
+    this.victoryFade = null;
+    this.deathFade?.destroy();
+    this.deathFade = null;
     this.hintHideHandle = null;
     this.lavaZones = [];
     this.healZones = [];
@@ -615,6 +624,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.minimap?.destroy(); } catch { /* ignore */ }
       try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
+      try { this.victoryFade?.destroy(); } catch { /* ignore */ }
+      this.victoryFade = null;
+      try { this.deathFade?.destroy(); } catch { /* ignore */ }
+      this.deathFade = null;
     });
   }
 
@@ -1495,17 +1508,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
 
-    // Golden fade into victory ceremony — not black, this is the good ending
-    const cam = this.cameras.main;
-    const victoryFade = this.add.rectangle(
-      cam.scrollX + cam.width / 2 / cam.zoom,
-      cam.scrollY + cam.height / 2 / cam.zoom,
-      cam.width / cam.zoom + 200,
-      cam.height / cam.zoom + 200,
+    // Golden fade into victory ceremony — not black, this is the good ending.
+    // scrollFactor(0) means position is screen-space: use UI viewport coords,
+    // not world-space (the old `cam.scrollX + cam.width/2/cam.zoom` math
+    // produced world-center and rendered the overlay far off-screen).
+    const { x: uiX, y: uiY, width: uiW, height: uiH } = this.getUiViewport();
+    this.victoryFade?.destroy();
+    this.victoryFade = this.add.rectangle(
+      uiX + uiW / 2, uiY + uiH / 2,
+      uiW + 200, uiH + 200,
       0xd4a017, 0
     ).setScrollFactor(0).setDepth(500).setInteractive();
     this.tweens.add({
-      targets: victoryFade, alpha: 0.5,
+      targets: this.victoryFade, alpha: 0.5,
       duration: 1100,
       ease: 'Sine.easeIn',
     });
@@ -1562,16 +1577,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // ── Fade-to-black ceremony during the 1.2s death hold ──
     // Screen-space black overlay that fades in as the run ends, so the scene
     // transition lands on a dark screen rather than snapping from gameplay to UI.
-    const cam = this.cameras.main;
-    const deathFade = this.add.rectangle(
-      cam.scrollX + cam.width / 2 / cam.zoom,
-      cam.scrollY + cam.height / 2 / cam.zoom,
-      cam.width / cam.zoom + 200,
-      cam.height / cam.zoom + 200,
+    // Uses getUiViewport for screen-space coords (scrollFactor(0) interprets
+    // x/y as screen, not world).
+    const { x: duiX, y: duiY, width: duiW, height: duiH } = this.getUiViewport();
+    this.deathFade?.destroy();
+    this.deathFade = this.add.rectangle(
+      duiX + duiW / 2, duiY + duiH / 2,
+      duiW + 200, duiH + 200,
       0x000000, 0
     ).setScrollFactor(0).setDepth(500).setInteractive();
     this.tweens.add({
-      targets: deathFade, alpha: 0.85,
+      targets: this.deathFade, alpha: 0.85,
       duration: 1100,
       ease: 'Sine.easeIn',
     });

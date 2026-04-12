@@ -611,15 +611,26 @@ export class JuiceSystem {
       this.scene.cameras.main.shake(700, 0.02);
     }
 
-    // 4. Camera zoom punch — brief zoom in then settle
+    // 4. Camera zoom punch — brief zoom in then settle.
+    // Two sequential tweens (not yoyo) so the return target is re-read at the
+    // end of the punch. Without this, if GrowthSystem bumps zoom during the
+    // 200ms punch (e.g. a second near-simultaneous level-up), the yoyo settles
+    // on stale baseZoom and the camera is permanently wrong for the run.
     const cam = this.scene.cameras.main;
     const baseZoom = cam.zoom;
     this.scene.tweens.add({
       targets: cam,
       zoom: baseZoom * 1.08,
       duration: 200,
-      yoyo: true,
       ease: 'Quad.easeOut',
+      onComplete: () => {
+        this.scene.tweens.add({
+          targets: cam,
+          zoom: cam.zoom / 1.08,
+          duration: 200,
+          ease: 'Quad.easeIn',
+        });
+      },
     });
 
     // 5. Radial golden beams (8 rays shooting outward from player)
