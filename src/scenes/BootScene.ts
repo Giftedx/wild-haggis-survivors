@@ -632,9 +632,9 @@ export class BootScene extends Phaser.Scene {
 
   private createWeaponIcons(): void {
     // Base weapon icons
-    this.createWeaponIconFromTexture('wicon_thistle_shot', 'thistle');
-    this.createWeaponIconFromTexture('wicon_caber_toss', 'caber');
-    this.createWeaponIconFromTexture('wicon_haggis_hurler', 'haggis_ball');
+    this.createThistleShotIcon();
+    this.createCaberTossIcon();
+    this.createHaggisHurlerIcon();
     this.createBagpipeBlastIcon();
     this.createScotchMistIcon();
     this.createNessieTentacleIcon();
@@ -1389,14 +1389,142 @@ export class BootScene extends Phaser.Scene {
     g.destroy();
   }
 
-  /** Use an existing texture as a weapon icon (for projectile weapons). */
-  private createWeaponIconFromTexture(iconKey: string, sourceKey: string): void {
-    // Just alias — the HUD will use the existing projectile texture.
-    // We register a separate key so future changes don't couple hud to projectile look.
-    if (!this.textures.exists(sourceKey)) return;
-    const src = this.textures.get(sourceKey).getSourceImage() as HTMLImageElement | HTMLCanvasElement;
-    if (!src) return;
-    this.textures.addImage(iconKey, src as HTMLImageElement);
+  /** Thistle Shot icon — purple spiky thistle head, matches projectile but at 32×32 for HUD. */
+  private createThistleShotIcon(): void {
+    const s = 32;
+    const g = this.add.graphics();
+    const cx = 16, cy = 15;
+    // Green calyx at base
+    g.fillStyle(0x224411, 1);
+    g.fillTriangle(cx, cy + 5, cx - 6, cy + 10, cx + 6, cy + 10);
+    g.fillStyle(0x336622, 1);
+    g.fillTriangle(cx, cy + 6, cx - 4, cy + 9, cx + 4, cy + 9);
+    // Stem stub
+    g.fillStyle(0x2a4a1a, 1);
+    g.fillRect(cx - 1, cy + 9, 2, 5);
+    // Dark outline
+    g.fillStyle(0x331155, 1);
+    g.fillCircle(cx, cy, 10);
+    // Flower body
+    g.fillStyle(0x663399, 1);
+    g.fillCircle(cx, cy, 9);
+    // Spikes (8 radiating)
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      g.fillStyle(0x552288, 1);
+      g.fillTriangle(
+        cx + Math.cos(a) * 13, cy + Math.sin(a) * 13,
+        cx + Math.cos(a - 0.25) * 7, cy + Math.sin(a - 0.25) * 7,
+        cx + Math.cos(a + 0.25) * 7, cy + Math.sin(a + 0.25) * 7
+      );
+      g.fillStyle(0xaa77dd, 0.7);
+      g.fillTriangle(
+        cx + Math.cos(a) * 11, cy + Math.sin(a) * 11,
+        cx + Math.cos(a - 0.15) * 7, cy + Math.sin(a - 0.15) * 7,
+        cx + Math.cos(a + 0.15) * 7, cy + Math.sin(a + 0.15) * 7
+      );
+    }
+    // Inner bloom
+    g.fillStyle(0x8855bb, 1);
+    g.fillCircle(cx, cy, 6);
+    g.fillStyle(0xaa77dd, 0.7);
+    g.fillCircle(cx - 1, cy - 1, 4);
+    // Centre
+    g.fillStyle(0xddaaff, 1);
+    g.fillCircle(cx, cy, 2);
+    g.fillStyle(0xffffff, 0.6);
+    g.fillCircle(cx - 1, cy - 1, 1);
+    g.generateTexture('wicon_thistle_shot', s, s);
+    g.destroy();
+  }
+
+  /** Caber Toss icon — horizontal log with end-grain, matches projectile at 32×32. */
+  private createCaberTossIcon(): void {
+    const s = 32;
+    const g = this.add.graphics();
+    const cy = 16;
+    // Dark bark outline
+    g.fillStyle(0x1a0e02, 1);
+    g.fillRect(3, cy - 5, 22, 11);
+    g.fillCircle(24, cy, 5);
+    // Wood body
+    g.fillStyle(0x6a4a10, 1);
+    g.fillRect(4, cy - 4, 20, 9);
+    // Bark edges
+    g.fillStyle(0x3a2808, 1);
+    g.fillRect(4, cy - 4, 20, 2);
+    g.fillRect(4, cy + 3, 20, 2);
+    // Grain lines
+    g.fillStyle(0x5a3a08, 0.7);
+    g.fillRect(4, cy - 1, 20, 1);
+    g.fillRect(4, cy + 1, 20, 1);
+    g.fillStyle(0x8a6a20, 0.5);
+    g.fillRect(4, cy, 20, 1);
+    // Top highlight
+    g.fillStyle(0x9a7a28, 0.5);
+    g.fillRect(5, cy - 3, 18, 1);
+    // Knot
+    g.fillStyle(0x3a2206, 1);
+    g.fillCircle(12, cy, 1.5);
+    // End-grain
+    g.fillStyle(0x5a3e08, 1);
+    g.fillCircle(24, cy, 4.5);
+    g.fillStyle(0x7a5a14, 1);
+    g.fillCircle(24, cy, 3.5);
+    g.lineStyle(0.8, 0x5a4010, 0.6);
+    g.strokeCircle(24, cy, 2.5);
+    g.fillStyle(0x4a3008, 1);
+    g.fillCircle(24, cy, 0.8);
+    g.fillStyle(0x9a7a28, 0.3);
+    g.fillCircle(23, cy - 1, 1.5);
+    g.generateTexture('wicon_caber_toss', s, s);
+    g.destroy();
+  }
+
+  /** Haggis Hurler (Jobby) icon — steaming lumpy brown ball at 32×32. */
+  private createHaggisHurlerIcon(): void {
+    const s = 32;
+    const g = this.add.graphics();
+    const cx = 16, cy = 16;
+    // Steam wisps
+    g.fillStyle(0xccbb88, 0.2);
+    g.fillCircle(cx - 2, cy - 12, 2.5);
+    g.fillCircle(cx + 3, cy - 11, 2);
+    g.fillCircle(cx, cy - 14, 1.5);
+    // Dark outline (lumpy)
+    g.fillStyle(0x1a0e04, 1);
+    g.fillCircle(cx, cy, 11);
+    g.fillCircle(cx + 1, cy - 1, 10);
+    g.fillCircle(cx - 2, cy + 1, 9);
+    // Body
+    g.fillStyle(0x4a3008, 1);
+    g.fillCircle(cx, cy, 10);
+    g.fillCircle(cx + 1, cy - 1, 9);
+    // Light layer
+    g.fillStyle(0x6a4a10, 1);
+    g.fillCircle(cx - 1, cy - 1, 8);
+    g.fillStyle(0x7a5a18, 0.7);
+    g.fillCircle(cx - 2, cy - 2, 5);
+    // Oat flecks
+    g.fillStyle(0x9a8030, 0.8);
+    g.fillCircle(cx - 4, cy - 1, 1.2);
+    g.fillCircle(cx + 3, cy + 3, 1.5);
+    g.fillCircle(cx + 1, cy - 4, 1);
+    g.fillCircle(cx - 1, cy + 4, 1.2);
+    g.fillCircle(cx + 5, cy, 0.8);
+    // Dark flecks
+    g.fillStyle(0x2a1806, 0.6);
+    g.fillCircle(cx + 4, cy - 2, 0.8);
+    g.fillCircle(cx - 3, cy + 5, 0.7);
+    // Wet sheen
+    g.fillStyle(0xbb9933, 0.5);
+    g.fillCircle(cx - 3, cy - 4, 2.5);
+    g.fillStyle(0xddbb55, 0.3);
+    g.fillCircle(cx - 4, cy - 5, 1.5);
+    g.fillStyle(0xffffff, 0.3);
+    g.fillCircle(cx - 4, cy - 5, 0.8);
+    g.generateTexture('wicon_haggis_hurler', s, s);
+    g.destroy();
   }
 
   private createBagpipeBlastIcon(): void {
