@@ -1130,22 +1130,89 @@ export class BootScene extends Phaser.Scene {
   }
 
   /** Kelpie — lean water-horse silhouette, reads fast at small size. */
+  /** Kelpie — Scottish water horse. Dark, muscular, dripping with loch water.
+   *  Drawn as a proper horse silhouette: arched neck, angular head, four legs,
+   *  flowing mane, with a watery sheen and glowing eye. */
   private createKelpie(): void {
-    const s = 44;
+    const s = 52;
     const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2 + 2;
-    g.fillStyle(0x0a2233, 1);
-    g.fillEllipse(cx, cy + 2, 36, 14);
-    g.fillStyle(0x1a5577, 1);
-    g.fillEllipse(cx - 2, cy + 1, 30, 11);
-    g.fillStyle(0x113344, 1);
-    g.fillEllipse(cx + 10, cy - 4, 12, 10);
-    g.fillStyle(0x226688, 1);
-    g.fillCircle(cx + 14, cy - 6, 4);
-    g.fillStyle(0xffeedd, 1);
-    g.fillCircle(cx + 15, cy - 7, 1.2);
-    g.fillStyle(0x004466, 1);
-    g.fillTriangle(cx - 18, cy + 4, cx - 8, cy + 2, cx - 14, cy + 10);
+    const cx = s / 2, cy = s / 2;
+
+    // Legs (dark, powerful — drawn first so body overlaps)
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillRect(cx - 12, cy + 8, 4, 12);  // front left
+    g.fillRect(cx - 5, cy + 9, 4, 11);   // front right
+    g.fillRect(cx + 5, cy + 8, 4, 12);   // back left
+    g.fillRect(cx + 12, cy + 9, 4, 11);  // back right
+    // Hooves — dark with wet gleam
+    g.fillStyle(0x060e14, 1);
+    g.fillRect(cx - 12, cy + 19, 4, 2);
+    g.fillRect(cx - 5, cy + 19, 4, 2);
+    g.fillRect(cx + 5, cy + 19, 4, 2);
+    g.fillRect(cx + 12, cy + 19, 4, 2);
+
+    // Body — deep dark teal, muscular barrel shape
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillEllipse(cx + 2, cy + 4, 36, 20);
+    g.fillStyle(0x163040, 1);
+    g.fillEllipse(cx + 2, cy + 3, 32, 16);
+    // Wet sheen highlight on the barrel
+    g.fillStyle(0x2a5a70, 0.5);
+    g.fillEllipse(cx - 2, cy + 1, 18, 10);
+
+    // Neck — arching upward from the body
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillTriangle(cx - 10, cy + 2, cx - 6, cy - 14, cx - 2, cy + 2);
+    g.fillStyle(0x163040, 1);
+    g.fillTriangle(cx - 9, cy + 1, cx - 6, cy - 12, cx - 3, cy + 1);
+
+    // Head — angular horse head, facing left
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillEllipse(cx - 12, cy - 12, 14, 10);
+    g.fillStyle(0x163040, 1);
+    g.fillEllipse(cx - 12, cy - 12, 12, 8);
+    // Snout/muzzle — elongated
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillEllipse(cx - 18, cy - 10, 8, 5);
+    g.fillStyle(0x1a3848, 1);
+    g.fillEllipse(cx - 18, cy - 10, 6, 4);
+    // Nostril
+    g.fillStyle(0x050d12, 1);
+    g.fillCircle(cx - 20, cy - 10, 1);
+
+    // Eye — eerie glowing green (supernatural water spirit)
+    g.fillStyle(0x111111, 1);
+    g.fillCircle(cx - 11, cy - 13, 2.5);
+    g.fillStyle(0x44ddaa, 1);
+    g.fillCircle(cx - 11, cy - 13, 1.8);
+    g.fillStyle(0xaaffdd, 1);
+    g.fillCircle(cx - 12, cy - 14, 0.7);
+
+    // Pointed ears
+    g.fillStyle(0x0a1e2a, 1);
+    g.fillTriangle(cx - 14, cy - 16, cx - 10, cy - 16, cx - 12, cy - 22);
+    g.fillTriangle(cx - 8, cy - 16, cx - 4, cy - 16, cx - 6, cy - 21);
+
+    // Flowing mane — dripping seaweed-like strands down the neck
+    g.fillStyle(0x0a3a4a, 0.8);
+    g.fillRect(cx - 8, cy - 15, 2, 8);
+    g.fillRect(cx - 6, cy - 13, 2, 9);
+    g.fillRect(cx - 10, cy - 14, 2, 7);
+    g.fillStyle(0x1a5a6a, 0.6);
+    g.fillRect(cx - 7, cy - 12, 1, 7);
+    g.fillRect(cx - 9, cy - 11, 1, 6);
+
+    // Tail — wispy, like waterweeds
+    g.fillStyle(0x0a3a4a, 0.7);
+    g.fillTriangle(cx + 18, cy + 2, cx + 22, cy - 2, cx + 24, cy + 8);
+    g.fillStyle(0x1a5a6a, 0.5);
+    g.fillTriangle(cx + 20, cy + 4, cx + 25, cy, cx + 26, cy + 6);
+
+    // Water drip particles — two small droplets beneath the body
+    g.fillStyle(0x44aacc, 0.6);
+    g.fillCircle(cx - 3, cy + 14, 1.2);
+    g.fillCircle(cx + 8, cy + 15, 1);
+
     g.generateTexture('kelpie', s, s);
     g.destroy();
   }
