@@ -38,8 +38,13 @@ export class MainMenuScene extends Phaser.Scene {
       .setOrigin(0.5);
     titleText.setScale(uiScale);
 
+    // Warmer zero-state on a fresh save: "The glen stirs — yir first run awaits."
+    // instead of "The glen remembers: 0 lifetime culls".
+    const killCreditCopy = meta.totalKills > 0
+      ? t('ui.menu.kill_credits', { count: meta.totalKills })
+      : t('ui.menu.kill_credits_fresh');
     const killCreditText = this.add
-      .text(width / 2, 154, t('ui.menu.kill_credits', { count: meta.totalKills }), {
+      .text(width / 2, 154, killCreditCopy, {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: subduedColor,

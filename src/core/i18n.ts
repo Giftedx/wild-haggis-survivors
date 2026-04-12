@@ -23,6 +23,8 @@ export const EN_STRINGS: LocaleTree = {
     menu: {
       title: 'Wild Haggis\nSurvivors',
       kill_credits: 'The glen remembers: {count} lifetime culls',
+      /** Shown instead of kill_credits when totalKills === 0 — warmer first-run greeting. */
+      kill_credits_fresh: 'The glen stirs — yir first run awaits.',
       hint_suspended: 'Yir last run is still here — pick up the trail, or start fresh with a new loadout.',
       hint_fresh: 'Next: choose the wee beastie and kit for the moor.',
       start_run: 'START RUN',
@@ -45,7 +47,7 @@ export const EN_STRINGS: LocaleTree = {
       requirement_locked: 'Unlock',
       status_current: 'Yir run archetype right now',
       status_switch: 'Switch before the next outing',
-      status_locked: 'Waits on an achievement',
+      status_locked: 'Locked — earn it',
       selected: 'SELECTED',
       select: 'SELECT',
       locked: 'LOCKED',
@@ -55,6 +57,8 @@ export const EN_STRINGS: LocaleTree = {
     shop: {
       title: 'GOLD SHOP',
       gold_bank: '{count} golden haggis tucked away',
+      /** Shown instead of gold_bank when count === 0 — warmer first-run copy. */
+      gold_bank_fresh: 'An empty wallet, for now — the moor pays those who return.',
       page: 'Page {current} / {total}',
       max: 'MAX',
       cost_gold: '{cost}g',
@@ -91,6 +95,8 @@ export const EN_STRINGS: LocaleTree = {
       title: 'LASTING BOONS',
       subtitle: 'Lifetime culls become tricks that follow ye from run to run.',
       kill_credits: '{count} culls banked for the long road',
+      /** Shown instead of kill_credits when count === 0. */
+      kill_credits_fresh: 'The long road starts here — nae culls banked yet.',
       requires: 'Needs: {title}',
       back: 'BACK',
     },
@@ -121,7 +127,7 @@ export const EN_STRINGS: LocaleTree = {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
       level_fmt: 'Lv {level}',
-      wave_objective: 'W{wave}  •  {goal}',
+      wave_objective: 'Wave {wave}  •  {goal}',
       goal_countdown: 'Goal {m}:{s}',
       goal_finale: 'Finale',
       kills_enemies: 'Kills: {kills}  Enemies: {count}{suffix}',
@@ -164,6 +170,13 @@ export const EN_STRINGS: LocaleTree = {
         tam_o_shanter: 'TAM',
         irn_bru: 'IRN',
         loch_water: 'LOC',
+        // The 3 rare passives — disambiguating short forms so the fallback
+        // substring trick doesn't render ambiguous pills like "THI" (was
+        // thistle_shot or thistle_crown?) or "HIG" (shield or claymore?)
+        // or "TAR" (looks like black goo).
+        thistle_crown: 'CRN',    // crown
+        highland_shield: 'SHD',  // shield
+        tartan_sash: 'SAS',      // sash
       },
     },
     bossWarning: {
@@ -368,7 +381,7 @@ export const EN_STRINGS: LocaleTree = {
     lucky_heather: { name: 'Lucky Heather', description: 'The glen rolls kinder picks (+10% card rarity).' },
     drift_control: { name: 'Drift Control', description: 'Tighter turns, fewer tumbles (-15% clockwise drift).' },
     extra_choice: { name: 'Extra Choice', description: 'One more pick at every level-up, for when ye cannae decide.' },
-    battle_hardened: { name: 'Battle Hardened', description: 'Scars harden into armor. Start each run with +2 of it.' },
+    battle_hardened: { name: 'Battle Hardened', description: 'Old scars become plate — start each run with +2 armor.' },
     weapon_training: { name: 'Weapon Training', description: 'Ye\'ve practiced — yir Thistle Shot starts a level stronger.' },
     crit_power: { name: 'Deadly Precision', description: 'A steadier eye, a sharper hoof (+3% crit chance, +25% crit damage).' },
     xp_boost: { name: 'Scholar\'s Mind', description: 'The glen teaches ye faster (+8% XP gain).' },

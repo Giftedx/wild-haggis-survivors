@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { TimeManager, type TimeAdapter } from './TimeManager';
+import { TimeManager, createPhaserTimeAdapter, type TimeAdapter } from './TimeManager';
 
 function makeAdapter() {
   const state = {
@@ -67,6 +67,44 @@ describe('TimeManager token stack', () => {
     tm.release('LEVEL_UP');
     expect(state.physicsPaused).toBe(false);
     expect(state.timeScale).toBe(1);
+  });
+});
+
+describe('createPhaserTimeAdapter null guards', () => {
+  it('tolerates scene.physics.world being null without throwing', () => {
+    // This is the exact shape caught during the Phase 6 visual audit:
+    // scene is mid-lifecycle and physics.world is null. Previously every
+    // adapter method crashed here.
+    const scene = {
+      time: { timeScale: 1 },
+      physics: { world: null },
+    } as unknown as Phaser.Scene;
+    const adapter = createPhaserTimeAdapter(scene);
+
+    expect(() => adapter.setTimeScale(0)).not.toThrow();
+    expect(() => adapter.pausePhysics()).not.toThrow();
+    expect(() => adapter.resumePhysics()).not.toThrow();
+    expect(() => adapter.getPhysicsPaused()).not.toThrow();
+    // getPhysicsPaused must report a safe default.
+    expect(adapter.getPhysicsPaused()).toBe(false);
+  });
+
+  it('tolerates scene.time being absent without throwing', () => {
+    const scene = {
+      physics: { world: { isPaused: false, pause: () => {}, resume: () => {} } },
+    } as unknown as Phaser.Scene;
+    const adapter = createPhaserTimeAdapter(scene);
+    expect(() => adapter.setTimeScale(0.5)).not.toThrow();
+  });
+
+  it('drives TimeManager safely even when adapter is backed by a half-dead scene', () => {
+    const scene = {
+      time: { timeScale: 1 },
+      physics: { world: null },
+    } as unknown as Phaser.Scene;
+    const tm = new TimeManager(createPhaserTimeAdapter(scene));
+    expect(() => tm.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 })).not.toThrow();
+    expect(() => tm.release('LEVEL_UP')).not.toThrow();
   });
 });
 

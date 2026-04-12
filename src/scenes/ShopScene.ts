@@ -81,7 +81,10 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private updateHeader(): void {
-    this.goldText.setText(t('ui.shop.gold_bank', { count: this.saveData.gold }));
+    const goldCopy = this.saveData.gold > 0
+      ? t('ui.shop.gold_bank', { count: this.saveData.gold })
+      : t('ui.shop.gold_bank_fresh');
+    this.goldText.setText(goldCopy);
     this.pageText.setText(t('ui.shop.page', { current: this.currentPage + 1, total: this.getTotalPages() }));
   }
 

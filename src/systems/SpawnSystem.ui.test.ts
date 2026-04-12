@@ -76,8 +76,17 @@ describe('SpawnSystem boss warning layout', () => {
     ss.scene = scene;
     ss.showBossWarning('Incoming menace');
 
-    expect(rectangles[0]).toEqual({ x: 512, y: 288, width: 1024, height: 76 });
-    expect(texts[0]).toEqual({ x: 512, y: 288, text: 'Incoming menace' });
+    // At scale 1280x720 with camera zoom 1.25, the visible UI viewport has:
+    //   zoomOffsetX = (1280 - 1280/1.25) / 2 = 128
+    //   zoomOffsetY = (720 - 720/1.25) / 2  = 72
+    //   width (world units) = 1024
+    //   height = 576
+    // The banner must center on the *screen*, which is viewport origin +
+    // (width/2, height/2) = (128 + 512, 72 + 288) = (640, 360). Previous
+    // regression asserted (512, 288) — that was codifying the bug where
+    // getUiViewport discarded x/y offsets. Fixed Phase 6.
+    expect(rectangles[0]).toEqual({ x: 640, y: 360, width: 1024, height: 76 });
+    expect(texts[0]).toEqual({ x: 640, y: 360, text: 'Incoming menace' });
   });
 
   it('scales boss warning font by uiScale and swaps palette for high contrast', async () => {
