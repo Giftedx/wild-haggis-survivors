@@ -2297,22 +2297,41 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     }
 
-    // === Ambient mist particles drifting across the playfield ===
-    for (let i = 0; i < 20; i++) {
+    // === Ambient haar (highland mist) drifting across the moor ===
+    // Two layers: low-lying ground fog (wider, warmer) and high wisps (thinner, cooler).
+    // The haar is what makes a Scottish moor feel like a Scottish moor.
+    for (let i = 0; i < 15; i++) {
       const mx = rng.between(0, W);
       const my = rng.between(0, H);
-      const mist = this.add.ellipse(mx, my,
-        rng.between(40, 100), rng.between(20, 40),
-        0xccddee, rng.realInRange(0.03, 0.08)
+      // Ground-level haar — wide, flat, slightly warm-tinted (heather glow)
+      const haar = this.add.ellipse(mx, my,
+        rng.between(80, 200), rng.between(20, 40),
+        0xccccbb, rng.realInRange(0.04, 0.1)
       ).setDepth(-3);
-
-      // Slow drift
       this.tweens.add({
-        targets: mist,
-        x: mist.x + rng.between(-200, 200),
-        y: mist.y + rng.between(-80, 80),
-        alpha: { from: mist.alpha, to: mist.alpha * 0.3 },
-        duration: rng.between(8000, 15000),
+        targets: haar,
+        x: haar.x + rng.between(-300, 300),
+        y: haar.y + rng.between(-40, 40),
+        alpha: { from: haar.alpha, to: haar.alpha * 0.2 },
+        duration: rng.between(10000, 20000),
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+    }
+    // High wisps — thinner, cooler blue-white, drift faster
+    for (let i = 0; i < 10; i++) {
+      const mx = rng.between(0, W);
+      const my = rng.between(0, H);
+      const wisp = this.add.ellipse(mx, my,
+        rng.between(40, 80), rng.between(10, 20),
+        0xccddee, rng.realInRange(0.03, 0.07)
+      ).setDepth(-3);
+      this.tweens.add({
+        targets: wisp,
+        x: wisp.x + rng.between(-200, 200),
+        alpha: { from: wisp.alpha, to: wisp.alpha * 0.3 },
+        duration: rng.between(6000, 12000),
         yoyo: true,
         repeat: -1,
         ease: 'Sine.easeInOut',

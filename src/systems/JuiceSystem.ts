@@ -125,28 +125,30 @@ export class JuiceSystem {
 
     // Pre-allocate impact ring pool — 80 slots covers AoE weapons hitting
     // 30+ enemies per pulse without dropping hit feedback.
+    // Impact rings — whisky gold, not generic white. Every hit should feel Scottish.
     for (let i = 0; i < 80; i++) {
-      const r = scene.add.circle(0, 0, 4, 0xffffff, 0.8)
+      const r = scene.add.circle(0, 0, 4, 0xd4a017, 0.8)
         .setDepth(12)
         .setVisible(false);
       this.impactRingPool.push(r);
     }
 
-    // Pre-allocate trail dot pool (spawnTrail — ~200/sec at peak, 200ms lifetime)
+    // Trail dots — thistle purple from the highland palette
     for (let i = 0; i < 60; i++) {
-      const dot = scene.add.circle(0, 0, 2, 0x9966cc, 0.5)
+      const dot = scene.add.circle(0, 0, 2, 0x6b3fa0, 0.5)
         .setDepth(5).setVisible(false);
       this.trailPool.push(dot);
     }
 
-    // Pre-allocate kill burst pools
+    // Kill burst dots — whisky gold, not generic red. Kills should shimmer.
     for (let i = 0; i < 50; i++) {
-      const dot = scene.add.circle(0, 0, 3, 0xcc4444, 0.8)
+      const dot = scene.add.circle(0, 0, 3, 0xd4a017, 0.8)
         .setDepth(15).setVisible(false);
       this.burstDotPool.push(dot);
     }
+    // Kill burst rings — warm golden, not cold white
     for (let i = 0; i < 15; i++) {
-      const ring = scene.add.circle(0, 0, 5, 0xffffff, 0.6)
+      const ring = scene.add.circle(0, 0, 5, 0xffcc44, 0.6)
         .setDepth(15).setVisible(false);
       this.burstRingPool.push(ring);
     }
@@ -239,7 +241,8 @@ export class JuiceSystem {
     // Scale with damage — big hits look big
     const sizeScale = Math.min(2.0, 0.8 + damage * 0.04);
     text.setScale(isCrit ? sizeScale * 1.4 : sizeScale);
-    text.setColor(isCrit ? '#ffff00' : damage >= 20 ? '#ffcc44' : '#ffffff');
+    // Damage number colors: whisky gold palette, not cold white
+    text.setColor(isCrit ? '#ffdd44' : damage >= 20 ? '#d4a017' : '#e8c848');
     text.setRotation(Phaser.Math.FloatBetween(-0.25, 0.25));
 
     this.scene.tweens.add({
@@ -402,24 +405,36 @@ export class JuiceSystem {
     });
   }
 
-  /** Draw the vignette shape — radial gradient from transparent center to red edges */
+  /** Draw the vignette — warm ember danger glow, not cold alarm red.
+   *  Two layers: deep crimson base + amber outer edge for a hearthfire-dying feel. */
   private drawVignette(): void {
     const w = this.layoutWidth;
     const h = this.layoutHeight;
     const gfx = this.vignette;
     gfx.clear();
 
-    // Draw concentric rectangles getting more opaque at edges
+    // Deep crimson base layer — the danger signal
     const steps = 8;
     for (let i = 0; i < steps; i++) {
       const t = i / steps;
       const inset = (1 - t) * 80;
-      const alpha = t * t * 0.6; // Quadratic falloff — heavy at edges
-      gfx.fillStyle(0xcc0000, alpha);
-      gfx.fillRect(0, 0, w, inset);           // top
-      gfx.fillRect(0, h - inset, w, inset);   // bottom
-      gfx.fillRect(0, 0, inset, h);           // left
-      gfx.fillRect(w - inset, 0, inset, h);   // right
+      const alpha = t * t * 0.5;
+      gfx.fillStyle(0x881111, alpha);
+      gfx.fillRect(0, 0, w, inset);
+      gfx.fillRect(0, h - inset, w, inset);
+      gfx.fillRect(0, 0, inset, h);
+      gfx.fillRect(w - inset, 0, inset, h);
+    }
+    // Warm amber outer fringe — like embers at the edge of the hearth
+    for (let i = 0; i < 4; i++) {
+      const t = i / 4;
+      const inset = (1 - t) * 30;
+      const alpha = t * t * 0.25;
+      gfx.fillStyle(0xcc6622, alpha);
+      gfx.fillRect(0, 0, w, inset);
+      gfx.fillRect(0, h - inset, w, inset);
+      gfx.fillRect(0, 0, inset, h);
+      gfx.fillRect(w - inset, 0, inset, h);
     }
   }
 
