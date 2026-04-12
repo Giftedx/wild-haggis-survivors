@@ -36,6 +36,11 @@ export const EN_STRINGS: LocaleTree = {
       built_on_moor: 'built on the moor',
       stats_short: 'Best {bestTime}  |  Kills {bestKills}  |  Combo {bestCombo}x  |  Runs {totalRuns}  |  Wins {victories}  |  Gold {gold}',
       stats_long: 'Best {bestTime}  |  Kills {bestKills}  |  Combo {bestCombo}x\nRuns {totalRuns}  |  Wins {victories}  |  Gold {gold}',
+      history_summary: '{totalRuns} runs  |  {winRate}% won  |  Avg {avgTime}  |  {trend}',
+      trend_improving: 'pure flying',
+      trend_steady: 'haudin yir ain',
+      trend_declining: 'the moor\'s no\' impressed',
+      trend_new: 'first hoofprints on the moor',
     },
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back bolder. The herd believes in ye.',
@@ -93,6 +98,7 @@ export const EN_STRINGS: LocaleTree = {
       unlock_single: 'NEW VARIANT — WELCOME TAE THE HERD',
       unlock_multi: 'NEW VARIANTS — THE HERD GROWS',
       next_tip: 'FOR THE NEXT RUN',
+      new_best: 'YA DANCER!',
     },
     metaShop: {
       title: 'LASTING BOONS',
@@ -353,7 +359,7 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Evolved a weapon. The old ways awaken.',
     },
     ach_all_bosses: {
-      title: 'Boss Rush',
+      title: 'Cleaned Hoose',
       description: 'Every boss felled in a single run.',
     },
   },
