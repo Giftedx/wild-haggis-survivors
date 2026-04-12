@@ -32,7 +32,7 @@
 - Modify: `src/scenes/BootScene.ts:687-759` (`createTourist`)
 - Verify: `src/entities/Enemy.ts:197` (default radius 20, canvas 48 — no change needed)
 
-The tourist is currently a generic holidaymaker. Rework into a bewildered Glasgow tourist who clearly packed for Spain and ended up in Milngavie. Sunburned pink despite the rain, socks-and-sandals, bright yellow cagoule, bumbag, oversized "I ♥ SCOTLAND" shopping bag, wide bewildered eyes (NOT sunglasses — this person is lost). Camera with selfie stick. The hat becomes a bucket hat (the tourist-in-Glasgow staple). A Greggs bag poking out of a pocket.
+The tourist is currently a generic holidaymaker. Rework into a bewildered Glasgow tourist who clearly packed for Spain and ended up in Milngavie. Sunburned pink despite the rain, socks-and-sandals, bright BLUE cagoule (not yellow — yellow is hi-vis workwear; tourist cagoules are Regatta/Peter Storm blue or red), bumbag worn at the waist (classic tourist, not chest-worn streetwear style), oversized "I ♥ SCOTLAND" white plastic carrier bag, wide bewildered eyes (NOT sunglasses — this person is lost). Camera with selfie stick. The hat becomes a TARTAN bucket hat (the tat-shop kind tourists buy on Buchanan Street — tan/red tartan, not a plain outdoor hat). A Greggs bag poking out of a pocket (white paper bag with blue oval logo).
 
 - [ ] **Step 1: Rewrite `createTourist` method**
 
@@ -73,19 +73,22 @@ private createTourist(): void {
     g.fillStyle(0x887755, 1);
     g.fillRect(cx - 8, cy + 6, 6, 3);
     g.fillRect(cx + 3, cy + 6, 6, 3);
-    // Greggs bag poking out of pocket (wee brown rectangle, golden flake crumbs)
-    g.fillStyle(0xcc9944, 1);
+    // Greggs bag poking out of pocket (white paper bag, blue oval logo)
+    g.fillStyle(0xeeeeee, 1);
     g.fillRect(cx + 4, cy + 5, 4, 3);
-    g.fillStyle(0xddaa55, 1);
-    g.fillRect(cx + 5, cy + 5, 2, 2);
+    g.fillStyle(0x2244aa, 1); // blue Greggs logo oval
+    g.fillEllipse(cx + 6, cy + 6, 2, 1.5);
 
-    // === Bright yellow cagoule (they were WARNED about the weather) ===
-    g.fillStyle(0x998811, 1); // dark outline
+    // === Bright blue cagoule (Regatta's finest — tourist armour against Glasgow weather) ===
+    g.fillStyle(0x113388, 1); // dark outline
     g.fillRect(cx - 12, cy - 6, 24, 12);
-    g.fillStyle(0xddcc22, 1);
+    g.fillStyle(0x2255cc, 1); // bright royal blue — the Peter Storm special
     g.fillRect(cx - 11, cy - 5, 22, 10);
+    // Nylon sheen highlight (crinkly cheap material)
+    g.fillStyle(0x4477dd, 0.4);
+    g.fillRect(cx - 8, cy - 4, 10, 3);
     // Zip line down center
-    g.fillStyle(0xbbaa11, 1);
+    g.fillStyle(0x1144aa, 1);
     g.fillRect(cx, cy - 5, 1, 10);
     // Rain droplets on jacket (it's always raining)
     g.fillStyle(0xaaddff, 0.6);
@@ -129,16 +132,22 @@ private createTourist(): void {
     g.fillStyle(0x993322, 1);
     g.fillEllipse(cx, cy - 8, 3, 2);
 
-    // === Bucket hat (sunburned ears poking out) ===
-    g.fillStyle(0x336644, 1); // dark green bucket hat — optimistic outdoor gear
+    // === Tartan bucket hat (the tat-shop special from Buchanan Street) ===
+    // Brim (tartan fabric — tan/red check pattern)
+    g.fillStyle(0x886644, 1);
     g.fillEllipse(cx, cy - 19, 22, 5);
-    g.fillStyle(0x448855, 1);
+    g.fillStyle(0xbb8855, 1);
     g.fillEllipse(cx, cy - 19, 20, 4);
     // Hat crown
-    g.fillStyle(0x336644, 1);
+    g.fillStyle(0x886644, 1);
     g.fillRect(cx - 8, cy - 24, 16, 6);
-    g.fillStyle(0x448855, 1);
+    g.fillStyle(0xbb8855, 1);
     g.fillRect(cx - 7, cy - 23, 14, 5);
+    // Tartan check pattern on hat (red crossing lines)
+    g.fillStyle(0xcc3322, 0.7);
+    g.fillRect(cx - 7, cy - 21, 14, 1);
+    g.fillRect(cx - 3, cy - 23, 1, 5);
+    g.fillRect(cx + 3, cy - 23, 1, 5);
     // Sunburned ear tips poking below hat brim
     g.fillStyle(0xff7755, 1);
     g.fillCircle(cx - 10, cy - 16, 2);
@@ -259,27 +268,38 @@ private createChef(): void {
     g.fillStyle(0x884433, 1);
     g.fillRect(cx - 3, cy - 6, 6, 1);
 
-    // === Paper chip-shop hat (the classic, slightly crumpled) ===
+    // === Paper chip-shop hat (soda-jerk fold — flat top, turned-up brim all round) ===
+    // Flat top crown
     g.fillStyle(0xccccbb, 1);
-    g.fillRect(cx - 8, cy - 18, 16, 6);
+    g.fillRect(cx - 8, cy - 20, 16, 4);
     g.fillStyle(0xeeeedd, 1);
-    g.fillRect(cx - 7, cy - 17, 14, 5);
-    // Grease spot on hat
-    g.fillStyle(0xccbb99, 0.7);
-    g.fillCircle(cx + 3, cy - 15, 1.5);
-    // Hat fold crease
-    g.fillStyle(0xbbbbaa, 1);
-    g.fillRect(cx - 7, cy - 14, 14, 1);
+    g.fillRect(cx - 7, cy - 19, 14, 3);
+    // Turned-up brim all around (the distinctive fold)
+    g.fillStyle(0xddddcc, 1);
+    g.fillRect(cx - 9, cy - 16, 18, 3);
+    g.fillStyle(0xeeeedd, 1);
+    g.fillRect(cx - 8, cy - 16, 16, 2);
+    // Paper fold crease line
+    g.fillStyle(0xbbbbaa, 0.8);
+    g.fillRect(cx - 8, cy - 17, 16, 1);
+    // Grease spot on hat (of course)
+    g.fillStyle(0xccbb99, 0.6);
+    g.fillCircle(cx + 3, cy - 18, 1.5);
 
-    // === Iconic: chip fork in one hand (two-pronged wooden fork) ===
-    // Handle
-    g.fillStyle(0x886633, 1);
+    // === Iconic: chip fork in one hand (pale cream wood, two flat broad tines) ===
+    // Handle (pale unfinished wood — same width as the tines)
+    g.fillStyle(0xddccaa, 1);
     g.fillRect(cx + 12, cy + 2, 2, 10);
-    // Two prongs
-    g.fillStyle(0xaa8844, 1);
+    g.fillStyle(0xeeddbb, 1);
+    g.fillRect(cx + 12, cy + 3, 2, 8);
+    // Two flat broad tines (more like a tiny shovel split in two)
+    g.fillStyle(0xddccaa, 1);
     g.fillRect(cx + 11, cy - 3, 2, 6);
     g.fillRect(cx + 14, cy - 3, 2, 6);
-    // Chip impaled on fork (golden, battered)
+    g.fillStyle(0xeeddbb, 1);
+    g.fillRect(cx + 11, cy - 2, 2, 4);
+    g.fillRect(cx + 14, cy - 2, 2, 4);
+    // Chip impaled on fork (golden, battered, proper chippy chip)
     g.fillStyle(0xddaa33, 1);
     g.fillRect(cx + 10, cy - 5, 7, 3);
     g.fillStyle(0xeebb44, 1);
@@ -448,7 +468,7 @@ git commit -m "art: haggis hunter — Barbour jacket, wellies, binoculars, prope
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1115-1187` (`createAngryScotsman`)
 
-Barrel-chested, thick-necked, MASSIVE red beard, Buckfast bottle in one hand (dark green, yellow label), proper Royal Stewart tartan kilt with more detail, one sock fallen down, visible forehead veins. This man is BEELIN'.
+Barrel-chested, thick-necked, MASSIVE red beard, Buckfast bottle in one hand (dark green glass, cream/off-white label with gold border — the real Bucky), proper Royal Stewart tartan kilt with more detail, one sock fallen down, visible forehead veins, V-neck sunburn (pale chest, lobster-red at collar line — "taps aff" consequence), sgian-dubh handle poking from right sock, kilt pin on front apron. This man is BEELIN'.
 
 - [ ] **Step 1: Rewrite `createAngryScotsman` method**
 
@@ -499,8 +519,11 @@ private createAngryScotsman(): void {
     // === Bare barrel chest (sleeveless — "taps aff" energy) ===
     g.fillStyle(0xaa5533, 1);
     g.fillRect(cx - 12, cy - 8, 24, 10);
-    g.fillStyle(0xdd8866, 1);
+    g.fillStyle(0xddbb99, 1); // pale torso (Scottish pale)
     g.fillRect(cx - 11, cy - 7, 22, 8);
+    // V-neck sunburn line (lobster-red at collar, white below — the taps-aff tan)
+    g.fillStyle(0xee6644, 0.6);
+    g.fillTriangle(cx - 6, cy - 7, cx + 6, cy - 7, cx, cy - 3);
     // Chest hair (wee tufts)
     g.fillStyle(0x883311, 0.5);
     g.fillCircle(cx - 2, cy - 4, 1.5);
@@ -558,20 +581,39 @@ private createAngryScotsman(): void {
     g.fillCircle(cx - 4, cy - 16, 1);
     g.fillCircle(cx + 4, cy - 16, 1);
 
-    // === Iconic: Buckfast bottle in hand (dark green, yellow label) ===
-    g.fillStyle(0x1a3311, 1);
+    // === Iconic: Buckfast bottle in hand (dark green glass, cream label, gold foil neck) ===
+    // Dark green glass bottle (wine bottle silhouette — slender neck, rounded shoulders)
+    g.fillStyle(0x0a2a0a, 1);
     g.fillRect(cx + 13, cy - 4, 5, 12);
-    g.fillStyle(0x2a5522, 1);
+    g.fillStyle(0x1a4418, 1);
     g.fillRect(cx + 14, cy - 3, 3, 10);
-    // Yellow label
-    g.fillStyle(0xddaa22, 1);
+    // Cream/off-white label with gold border (the real Bucky label)
+    g.fillStyle(0xddaa44, 1); // gold border
+    g.fillRect(cx + 13, cy - 1, 5, 5);
+    g.fillStyle(0xeeddbb, 1); // cream label
     g.fillRect(cx + 14, cy, 3, 3);
-    // Bottle neck
-    g.fillStyle(0x1a3311, 1);
+    // Slender bottle neck
+    g.fillStyle(0x0a2a0a, 1);
     g.fillRect(cx + 15, cy - 7, 2, 4);
-    // Cap
-    g.fillStyle(0xddaa00, 1);
-    g.fillRect(cx + 15, cy - 8, 2, 1);
+    // Gold foil capsule on neck (authentic detail)
+    g.fillStyle(0xccaa22, 1);
+    g.fillRect(cx + 14, cy - 8, 4, 2);
+    // Screw cap
+    g.fillStyle(0xddbb33, 1);
+    g.fillRect(cx + 15, cy - 9, 2, 1);
+
+    // === Sgian-dubh handle poking from right sock (Highland dress knife) ===
+    g.fillStyle(0x111111, 1);
+    g.fillRect(cx + 4, cy + 19, 2, 3);
+    // Round pommel stone (amber/cairngorm)
+    g.fillStyle(0xcc8833, 1);
+    g.fillCircle(cx + 5, cy + 19, 1);
+
+    // === Kilt pin (lower right of front apron) ===
+    g.fillStyle(0xcccccc, 1);
+    g.fillCircle(cx + 9, cy + 9, 1);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillCircle(cx + 9, cy + 9, 0.5);
 
     g.generateTexture('angry_scotsman', s, s);
     g.destroy();
@@ -593,7 +635,7 @@ git commit -m "art: angry scotsman — barrel chest, Buckfast in hand, forehead 
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1812-1896` (`createPiper`)
 
-Military pipe-band jacket with silver buttons, sporran at front, tam o'shanter with bigger pom-pom, face going RED from blowing, cheeks massively puffed, tartan on the bagpipe bag. More presence on the pipes.
+Military pipe-band doublet (dark navy, gold lace braiding) with silver buttons, full dress sporran (white horsehair base, silver cantle arch, black tassels), tam o'shanter with diced red/white border band and bigger red toorie pom-pom, face going RED from blowing, cheeks massively puffed, tartan on the bagpipe bag, drone pipes with ivory ferrules. The hose (socks) get red flashes at the knee fold.
 
 - [ ] **Step 1: Rewrite `createPiper` method**
 
@@ -630,19 +672,38 @@ private createPiper(): void {
     g.fillStyle(0x2266aa, 0.5);
     g.fillRect(cx - 9, cy + 8, 18, 1);
 
-    // === Sporran (fur pouch — the piper's must-have) ===
-    g.fillStyle(0x111111, 1);
+    // === Full dress sporran (white horsehair, silver cantle, black tassels) ===
+    // Chrome chain across hips (catches the light)
+    g.lineStyle(1, 0xcccccc, 0.9);
+    g.lineBetween(cx - 7, cy + 3, cx + 7, cy + 3);
+    // White horsehair body
+    g.fillStyle(0xdddddd, 1);
     g.fillEllipse(cx, cy + 6, 8, 6);
-    g.fillStyle(0x333333, 1);
-    g.fillEllipse(cx, cy + 6, 6, 4);
-    // Sporran tassels
+    g.fillStyle(0xeeeeee, 1);
+    g.fillEllipse(cx, cy + 6, 6, 5);
+    // Hair texture lines
+    g.fillStyle(0xcccccc, 0.6);
+    g.fillRect(cx - 2, cy + 4, 1, 4);
+    g.fillRect(cx + 1, cy + 5, 1, 3);
+    // Silver cantle (the ornate metal arch at the top)
+    g.fillStyle(0x888899, 1);
+    g.fillEllipse(cx, cy + 3, 8, 3);
+    g.fillStyle(0xaaaabb, 1);
+    g.fillEllipse(cx, cy + 3, 6, 2);
+    // Celtic knotwork detail on cantle (tiny dots)
+    g.fillStyle(0xccccdd, 0.8);
+    g.fillCircle(cx - 2, cy + 3, 0.5);
+    g.fillCircle(cx, cy + 3, 0.5);
+    g.fillCircle(cx + 2, cy + 3, 0.5);
+    // Black tassels (3, hanging from bottom)
     g.fillStyle(0x111111, 1);
-    g.fillRect(cx - 2, cy + 8, 1, 3);
-    g.fillRect(cx, cy + 8, 1, 3);
-    g.fillRect(cx + 2, cy + 8, 1, 3);
-    // Chain
-    g.lineStyle(0.8, 0xcccccc, 0.8);
-    g.lineBetween(cx - 6, cy + 3, cx + 6, cy + 3);
+    g.fillRect(cx - 2, cy + 8, 1, 4);
+    g.fillRect(cx, cy + 8, 1, 4);
+    g.fillRect(cx + 2, cy + 8, 1, 4);
+    // Tassel tips
+    g.fillCircle(cx - 2, cy + 12, 0.8);
+    g.fillCircle(cx, cy + 12, 0.8);
+    g.fillCircle(cx + 2, cy + 12, 0.8);
 
     // === Military pipe-band doublet (dark with silver buttons) ===
     g.fillStyle(0x0a0a1a, 1);
@@ -683,21 +744,33 @@ private createPiper(): void {
     g.fillStyle(0xaaddff, 0.8);
     g.fillCircle(cx + 6, cy - 15, 0.8);
 
-    // === Tam o'shanter (bigger pom-pom, proper regimental) ===
+    // === Tam o'shanter (diced border, regimental badge, big red toorie) ===
     g.fillStyle(0x001133, 1);
     g.fillEllipse(cx, cy - 19, 16, 5);
     g.fillStyle(0x002255, 1);
     g.fillEllipse(cx, cy - 20, 14, 4);
-    // Regimental badge
+    // Diced border band (red/white checkerboard — the proper military detail)
+    g.fillStyle(0xcc0000, 1);
+    g.fillRect(cx - 7, cy - 18, 2, 1);
+    g.fillRect(cx - 3, cy - 18, 2, 1);
+    g.fillRect(cx + 1, cy - 18, 2, 1);
+    g.fillRect(cx + 5, cy - 18, 2, 1);
+    g.fillStyle(0xeeeeee, 1);
+    g.fillRect(cx - 5, cy - 18, 2, 1);
+    g.fillRect(cx - 1, cy - 18, 2, 1);
+    g.fillRect(cx + 3, cy - 18, 2, 1);
+    // Regimental badge (left front)
     g.fillStyle(0xddaa00, 1);
-    g.fillCircle(cx - 2, cy - 20, 1.2);
-    // Big fluffy pom-pom (RED — bouncing)
-    g.fillStyle(0xaa0000, 1);
-    g.fillCircle(cx + 5, cy - 23, 3);
+    g.fillCircle(cx - 3, cy - 20, 1.5);
+    g.fillStyle(0xffcc22, 1);
+    g.fillCircle(cx - 3, cy - 20, 0.8);
+    // Big red toorie pom-pom (the crowning glory)
+    g.fillStyle(0x990000, 1);
+    g.fillCircle(cx + 5, cy - 23, 3.5);
     g.fillStyle(0xcc1111, 1);
-    g.fillCircle(cx + 5, cy - 23, 2.5);
+    g.fillCircle(cx + 5, cy - 23, 3);
     g.fillStyle(0xee3333, 0.7);
-    g.fillCircle(cx + 4, cy - 24, 1.2);
+    g.fillCircle(cx + 4, cy - 24, 1.5);
 
     // === BAGPIPES (the main event — big tartan bag under arm) ===
     // Bag — tartan-covered, pressed under left arm
@@ -756,7 +829,7 @@ git commit -m "art: piper — military doublet, sporran, space-hopper cheeks, ta
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1898-1949` (`createSheep`)
 
-Keep the creepy yellow eyes — they're perfect. Add: dirtier matted wool (these are Scottish Blackface hill sheep), manic grin, one ear flopped, thistle stuck in wool, more muscular stance. These sheep have survived Highland winters and they're harder than you.
+Keep the creepy yellow eyes — they're perfect. Add: DRAMATIC CURLING RAM'S HORNS (Blackface rams have huge horns that curve outward and back — this is a massive visual miss in the current sprite), dirtier matted wool (these are Scottish Blackface hill sheep), manic grin with horizontal SLIT PUPILS (sheep have rectangular pupils — genuinely unsettling), one ear flopped, thistle stuck in wool. These sheep have survived Highland winters and they're harder than you.
 
 - [ ] **Step 1: Rewrite `createSheep` method**
 
@@ -818,7 +891,25 @@ private createSheep(): void {
     g.fillStyle(0xddddcc, 0.7);
     g.fillRect(cx + 10, cy - 2, 2, 4);
 
-    // === Ears (one up, one flopped — personality) ===
+    // === DRAMATIC CURLING RAM'S HORNS (the iconic Blackface feature!) ===
+    // Left horn — sweeps outward and back in a curl
+    g.fillStyle(0x887755, 1);
+    g.fillTriangle(cx + 6, cy - 4, cx + 2, cy - 9, cx + 4, cy - 2);
+    g.fillStyle(0xaa9966, 1);
+    g.fillTriangle(cx + 6, cy - 4, cx + 3, cy - 8, cx + 5, cy - 3);
+    // Horn ridges (growth rings)
+    g.fillStyle(0x776644, 0.6);
+    g.fillRect(cx + 4, cy - 6, 2, 1);
+    // Right horn — mirrored, sweeps the other way
+    g.fillStyle(0x887755, 1);
+    g.fillTriangle(cx + 16, cy - 4, cx + 20, cy - 9, cx + 18, cy - 2);
+    g.fillStyle(0xaa9966, 1);
+    g.fillTriangle(cx + 16, cy - 4, cx + 19, cy - 8, cx + 17, cy - 3);
+    // Horn ridges
+    g.fillStyle(0x776644, 0.6);
+    g.fillRect(cx + 17, cy - 6, 2, 1);
+
+    // === Ears (one up, one flopped — personality, between the horns) ===
     // Left ear — UP (alert)
     g.fillStyle(0x000000, 1);
     g.fillTriangle(cx + 8, cy - 7, cx + 10, cy - 4, cx + 6, cy - 4);
@@ -863,7 +954,7 @@ git commit -m "art: sheep — Blackface hill sheep, matted wool, horizontal slit
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1951-1995` (`createGhost`)
 
-Edinburgh vault / Glasgow cathedral ghost energy. Trailing tartan sash, ghostly blue-green palette, chain links on one wrist, period headpiece nod, the wailing O-mouth stays.
+Edinburgh vault / Glasgow cathedral ghost energy. Trailing tartan sash, ghostly blue-green palette, chain links on one wrist, French hood headpiece (Mary Queen of Scots nod — crescent-shaped black velvet sitting back on the head with white linen undercap visible at forehead), the wailing O-mouth stays.
 
 - [ ] **Step 1: Rewrite `createGhost` method**
 
@@ -908,14 +999,18 @@ private createGhost(): void {
     g.strokeCircle(cx + 12, cy + 7, 2);
     g.strokeCircle(cx + 10, cy + 10, 2);
 
-    // === Ghostly period headpiece (Mary Queen of Scots nod — wee ruff collar) ===
-    g.fillStyle(0xaabbcc, 0.5);
-    g.fillRect(cx - 8, cy - 10, 16, 2);
-    // Crown-like shape (faded, spectral)
-    g.fillStyle(0x99aabb, 0.4);
-    g.fillTriangle(cx - 6, cy - 12, cx - 4, cy - 16, cx - 2, cy - 12);
-    g.fillTriangle(cx - 1, cy - 12, cx + 1, cy - 17, cx + 3, cy - 12);
-    g.fillTriangle(cx + 3, cy - 12, cx + 5, cy - 16, cx + 7, cy - 12);
+    // === French hood (Mary Queen of Scots — crescent-shaped black velvet) ===
+    // The hood sits back on the head — a wide crescent/arc shape
+    g.fillStyle(0x222233, 0.6); // dark velvet (ghostly, faded)
+    g.fillEllipse(cx, cy - 12, 18, 6);
+    // The crescent curve (the distinctive French hood silhouette)
+    g.fillStyle(0x1a1a2a, 0.7);
+    g.fillEllipse(cx, cy - 13, 16, 4);
+    // White linen undercap (visible at forehead — the key detail)
+    g.fillStyle(0xbbccdd, 0.5);
+    g.fillRect(cx - 5, cy - 11, 10, 2);
+    g.fillStyle(0xccddee, 0.4);
+    g.fillRect(cx - 4, cy - 11, 8, 1);
 
     // === Hollow eye sockets (glowing ethereal blue-green) ===
     g.fillStyle(0x000000, 0.9);
@@ -1076,7 +1171,7 @@ git commit -m "art: chippy fryer — battered mars bar, volcanic oil, salt & vin
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1467-1537` (`createBossGordon`)
 
-Face PURPLE with rage, yelling mouth MASSIVE, splattered apron, battered fish in one hand and cleaver in the other, forehead veins, chef hat slightly askew from screaming. This man has been told the haggis is overcooked and he's lost the plot entirely.
+Face PURPLE with rage, yelling mouth MASSIVE, splattered apron, battered fish in one hand and cleaver in the other. FOREHEAD FURROWS are the signature — 3-4 horizontal parallel lines across the brow (this is what people actually recognize about Ramsay, not just "angry"). Chin jutted forward in the classic Ramsay lean. Chef hat slightly askew from screaming. This man has been told the haggis is overcooked and he's lost the plot entirely.
 
 - [ ] **Step 1: Rewrite `createBossGordon` method**
 
@@ -1113,12 +1208,17 @@ private createBossGordon(): void {
     // Flushed to absolute beetroot
     g.fillStyle(0xdd5566, 0.4);
     g.fillCircle(cx, cy - 5, 10);
-    // FOREHEAD VEINS (multiple, throbbing)
-    g.lineStyle(1, 0xaa3344, 0.8);
-    g.lineBetween(cx - 6, cy - 18, cx - 8, cy - 14);
-    g.lineBetween(cx - 4, cy - 19, cx - 3, cy - 15);
-    g.lineBetween(cx + 5, cy - 18, cx + 7, cy - 14);
-    g.lineBetween(cx + 3, cy - 19, cx + 2, cy - 15);
+    // FOREHEAD FURROWS — THE Ramsay signature (3-4 deep horizontal lines)
+    g.lineStyle(1.2, 0x994466, 0.8);
+    g.lineBetween(cx - 8, cy - 18, cx + 8, cy - 18);
+    g.lineBetween(cx - 9, cy - 16, cx + 9, cy - 16);
+    g.lineBetween(cx - 8, cy - 14, cx + 8, cy - 14);
+    g.lineStyle(0.8, 0x884455, 0.5);
+    g.lineBetween(cx - 7, cy - 17, cx + 7, cy - 17);
+    // Forehead veins too (visible through the furrows)
+    g.lineStyle(0.8, 0xaa3344, 0.5);
+    g.lineBetween(cx - 5, cy - 19, cx - 7, cy - 16);
+    g.lineBetween(cx + 4, cy - 19, cx + 6, cy - 16);
 
     // Furious eyebrows (THICKER, MORE ANGRY)
     g.fillStyle(0x331100, 1);
@@ -1210,7 +1310,7 @@ git commit -m "art: boss gordon — purple rage face, bloodshot eyes, forehead v
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1539-1596` (`createBossTourBus`)
 
-Glasgow open-top tour bus, not generic red. Tourist faces in windows, traffic cone wedged on front bumper (Duke of Wellington nod), exhaust fumes belching, destination sign. The energy of a First Bus that hasn't stopped for anyone in three stops.
+Glasgow open-top tour bus in MAGENTA/HOT PINK (First Glasgow livery — NOT London red! Glasgow buses are distinctively magenta/purple-pink with a yellow swoosh stripe). Tourist faces in windows, traffic cone wedged on front bumper (Duke of Wellington nod), exhaust fumes belching, destination sign, horizontal rain hitting the open top deck (it's Glasgow, of course it's raining on the open-top tourists). The energy of a First Bus that hasn't stopped for anyone in three stops.
 
 - [ ] **Step 1: Rewrite `createBossTourBus` method**
 
@@ -1220,15 +1320,15 @@ private createBossTourBus(): void {
     const g = this.add.graphics();
     const cx = s / 2, cy = s / 2;
 
-    // === Bus body (Glasgow maroon-red, not London red) ===
-    g.fillStyle(0x441111, 1);
+    // === Bus body (MAGENTA/HOT PINK — the unmistakable First Glasgow livery) ===
+    g.fillStyle(0x551133, 1); // dark outline
     g.fillRect(cx - 34, cy - 16, 68, 32);
-    g.fillStyle(0x992222, 1);
+    g.fillStyle(0xaa2266, 1); // First Glasgow magenta-pink
     g.fillRect(cx - 33, cy - 15, 66, 30);
-    // Gold stripe (Glasgow tour bus livery)
-    g.fillStyle(0xddaa22, 1);
+    // Yellow swoosh stripe (the First Bus signature accent)
+    g.fillStyle(0xddcc22, 1);
     g.fillRect(cx - 33, cy - 8, 66, 2);
-    g.fillStyle(0xbb8811, 1);
+    g.fillStyle(0xbbaa11, 1);
     g.fillRect(cx - 33, cy - 6, 66, 1);
 
     // === Open top deck rail (it's an open-top! in GLASGOW! in the RAIN!) ===
@@ -1242,12 +1342,14 @@ private createBossTourBus(): void {
     g.fillRect(cx + 12, cy - 20, 1, 4);
     g.fillRect(cx + 22, cy - 20, 1, 4);
 
-    // === Rain droplets hitting the open top (it's always raining) ===
-    g.fillStyle(0xaaddff, 0.5);
-    g.fillCircle(cx - 20, cy - 22, 0.7);
-    g.fillCircle(cx - 5, cy - 23, 0.7);
-    g.fillCircle(cx + 10, cy - 21, 0.7);
-    g.fillCircle(cx + 25, cy - 22, 0.7);
+    // === HORIZONTAL rain hitting the open top (Glasgow rain goes SIDEWAYS) ===
+    g.lineStyle(0.8, 0xaaddff, 0.4);
+    g.lineBetween(cx - 25, cy - 22, cx - 20, cy - 21);
+    g.lineBetween(cx - 10, cy - 23, cx - 5, cy - 22);
+    g.lineBetween(cx + 5, cy - 21, cx + 10, cy - 20);
+    g.lineBetween(cx + 18, cy - 22, cx + 23, cy - 21);
+    g.lineBetween(cx - 15, cy - 20, cx - 10, cy - 19);
+    g.lineBetween(cx + 12, cy - 23, cx + 17, cy - 22);
 
     // === Tourist faces in windows (wee pink dots with bewildered expressions) ===
     g.fillStyle(0x222244, 1);
@@ -1344,7 +1446,7 @@ git commit -m "art: boss tour bus — Glasgow livery, open top in rain, tourist 
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1598-1664` (`createBossLaird`)
 
-More pompous, more "landed gentry sneering at the plebs." Add monocle, visible sneer (curled lip, chin up), more ornate crown, signet ring dot. The ermine fur trim is already good — enhance it.
+More pompous, more "landed gentry sneering at the plebs." Add monocle, visible sneer (curled lip, chin up), WALRUS mustache (thick, drooping over the lip — reads "stuffy old aristocrat" vs handlebar which reads "military"), more ornate crown with rubies AND sapphires, signet ring dot. Ermine fur trim enhanced with proper black tail-tip spots in a grid pattern. This man owns half of Scotland and has never worked a day.
 
 - [ ] **Step 1: Rewrite `createBossLaird` method**
 
@@ -1421,15 +1523,18 @@ private createBossLaird(): void {
     g.fillRect(cx - 8, cy - 10, 6, 2);
     g.fillRect(cx + 2, cy - 10, 6, 2);
 
-    // Regal waxed mustache (curled at ends)
+    // Walrus mustache (thick, drooping over the lip — stuffy old aristocrat)
+    g.fillStyle(0xaaaaaa, 1);
+    g.fillRect(cx - 8, cy - 3, 16, 3);
     g.fillStyle(0xcccccc, 1);
     g.fillRect(cx - 7, cy - 3, 14, 2);
-    // Curled ends
-    g.fillCircle(cx - 8, cy - 2, 1.5);
-    g.fillCircle(cx + 8, cy - 2, 1.5);
-    g.fillStyle(0xeeeeee, 1);
-    g.fillCircle(cx - 8, cy - 3, 0.8);
-    g.fillCircle(cx + 8, cy - 3, 0.8);
+    // Drooping ends (hangs past the mouth — walrus style)
+    g.fillStyle(0xbbbbbb, 1);
+    g.fillRect(cx - 8, cy - 1, 3, 3);
+    g.fillRect(cx + 6, cy - 1, 3, 3);
+    // Mustache highlight
+    g.fillStyle(0xdddddd, 0.6);
+    g.fillRect(cx - 5, cy - 3, 10, 1);
 
     // Thin sneer (curled lip — pure contempt for the working class)
     g.fillStyle(0xcc8877, 1);
@@ -1600,24 +1705,35 @@ private createBossHunterGeneral(): void {
     g.fillRect(cx - 8, cy - 12, 6, 1.5);
     g.fillTriangle(cx + 2, cy - 13, cx + 8, cy - 12, cx + 2, cy - 11);
 
-    // === Pith helmet (classic safari — not military cap) ===
-    g.fillStyle(0x887755, 1);
-    g.fillEllipse(cx, cy - 18, 28, 8);
+    // === Pith helmet (HIGH DOME — classic safari, the colonial big-game look) ===
+    // Wide brim (flat, wider at rear)
+    g.fillStyle(0x776644, 1);
+    g.fillEllipse(cx, cy - 18, 30, 8);
     g.fillStyle(0xbbaa77, 1);
-    g.fillEllipse(cx, cy - 18, 26, 7);
-    // Helmet dome
-    g.fillStyle(0x887755, 1);
-    g.fillEllipse(cx, cy - 22, 18, 8);
-    g.fillStyle(0xbbaa77, 1);
-    g.fillEllipse(cx, cy - 22, 16, 7);
+    g.fillEllipse(cx, cy - 18, 28, 7);
+    // HIGH dome (taller than you'd think — rigid, not floppy)
+    g.fillStyle(0x776644, 1);
+    g.fillEllipse(cx, cy - 24, 18, 12);
+    g.fillStyle(0xaa9966, 1);
+    g.fillEllipse(cx, cy - 24, 16, 11);
+    // Dome highlight (catches the light at the peak)
     g.fillStyle(0xccbb88, 0.6);
-    g.fillEllipse(cx - 2, cy - 24, 10, 4);
-    // Helmet spike on top
-    g.fillStyle(0xddaa00, 1);
-    g.fillTriangle(cx - 2, cy - 26, cx + 2, cy - 26, cx, cy - 30);
-    // Puggaree band (cloth wrap around helmet)
+    g.fillEllipse(cx - 2, cy - 28, 10, 5);
+    // Ventilation knob on top (the little finial — real pith helmet detail)
+    g.fillStyle(0x887755, 1);
+    g.fillCircle(cx, cy - 30, 2);
+    g.fillStyle(0xaa9966, 1);
+    g.fillCircle(cx, cy - 30, 1.2);
+    // Puggaree band (cloth wrap — the distinctive belt of fabric around the base)
+    g.fillStyle(0x554422, 1);
+    g.fillRect(cx - 13, cy - 19, 26, 3);
     g.fillStyle(0x665533, 1);
     g.fillRect(cx - 12, cy - 19, 24, 2);
+    // Puggaree fold lines
+    g.fillStyle(0x443311, 0.5);
+    g.fillRect(cx - 8, cy - 19, 1, 2);
+    g.fillRect(cx - 2, cy - 19, 1, 2);
+    g.fillRect(cx + 4, cy - 19, 1, 2);
 
     // === Comically oversized blunderbuss ===
     // Stock (ornate wood)
@@ -1659,7 +1775,7 @@ git commit -m "art: boss hunter general — pith helmet, handlebar mustache, blu
 **Files:**
 - Modify: `src/scenes/BootScene.ts:1738-1810` (`createBossTaxman`)
 
-Keep the grim reaper skeleton — it's brilliant. Add spectacles perched on nasal cavity, pinstripe texture on the cloak (it's a business death), calculator hanging from the scythe handle, red eyes glow brighter. HMRC in skeletal form.
+Keep the grim reaper skeleton — it's brilliant. Add thin WIRE-RIMMED spectacles perched on the nasal cavity (not thick frames — the civil servant look), pinstripe texture on the cloak (it's a business death), calculator hanging from the scythe handle, red necktie (dressed for work), red eyes glow brighter behind the lenses. The spectacles + skull combo is a well-recognized gag. HMRC in skeletal form — nothing is certain but death and taxes, and this one is both.
 
 - [ ] **Step 1: Rewrite `createBossTaxman` method**
 
@@ -1716,16 +1832,20 @@ private createBossTaxman(): void {
     g.fillCircle(cx - 6, cy - 4, 3);
     g.fillCircle(cx + 6, cy - 4, 3);
 
-    // === Spectacles perched on nasal cavity (reading your tax return) ===
-    g.lineStyle(1.5, 0x444444, 1);
+    // === Thin wire-rimmed spectacles (the civil servant look — perched on bone) ===
+    g.lineStyle(0.8, 0x888888, 1); // thin wire — not thick frames
     g.strokeCircle(cx - 5, cy - 8, 3.5);
     g.strokeCircle(cx + 5, cy - 8, 3.5);
-    // Bridge
-    g.lineStyle(1, 0x444444, 1);
+    // Bridge (thin wire connecting the lenses)
+    g.lineStyle(0.6, 0x888888, 1);
     g.lineBetween(cx - 2, cy - 8, cx + 2, cy - 8);
-    // Temple arms
+    // Temple arms (thin, going behind where ears would be)
     g.lineBetween(cx - 8, cy - 8, cx - 12, cy - 6);
     g.lineBetween(cx + 8, cy - 8, cx + 12, cy - 6);
+    // Wire glint (catches the light — sinister)
+    g.fillStyle(0xcccccc, 0.4);
+    g.fillCircle(cx - 7, cy - 9, 0.5);
+    g.fillCircle(cx + 7, cy - 9, 0.5);
 
     // Glowing red eyes behind the spectacles (HMRC sees ALL)
     g.fillStyle(0x000000, 1);
