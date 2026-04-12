@@ -69,7 +69,7 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const lineGfx = this.add.graphics();
-    lineGfx.lineStyle(2, 0x444444, 1);
+    lineGfx.lineStyle(2, 0x3a2a3a, 1);
     lineGfx.lineBetween(24, 92, width - 24, 92);
     lineGfx.lineBetween(24, 510, width - 24, 510);
     lineGfx.lineBetween(24, 548, width - 24, 548);
@@ -78,7 +78,7 @@ export class ShopScene extends Phaser.Scene {
       .text(width / 2, 528, '', {
         fontFamily: 'monospace',
         fontSize: '14px',
-        color: '#aab4c7',
+        color: '#b8a88a',
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -130,7 +130,7 @@ export class ShopScene extends Phaser.Scene {
       y + 18,
       width - 30,
       44,
-      index % 2 === 0 ? 0x1b2337 : 0x172031,
+      index % 2 === 0 ? 0x1a1828 : 0x161422,
       0.82
     );
     const nameText = this.add.text(34, y + 3, t(upgrade.nameKey), {
@@ -170,11 +170,11 @@ export class ShopScene extends Phaser.Scene {
       return;
     }
 
-    const buttonFill = canAfford ? COLORS.SCOTTISH_BLUE : 0x293140;
+    const buttonFill = canAfford ? COLORS.SCOTTISH_BLUE : 0x1a1828;
     const buttonTextColor = canAfford ? '#ffffff' : '#7c8698';
     const buyButton = this.add
       .rectangle(width - 74, y + 16, 96, 36, buttonFill, 1)
-      .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x475163, 1)
+      .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x3a2a3a, 1)
       .setInteractive({ useHandCursor: canAfford });
     const buyText = this.add
       .text(width - 74, y + 16, t('ui.shop.cost_gold', { cost }), {
@@ -186,7 +186,7 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     if (canAfford) {
-      buyButton.on('pointerover', () => buyButton.setFillStyle(0x0b73d1));
+      buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a6a3a));
       buyButton.on('pointerout', () => buyButton.setFillStyle(COLORS.SCOTTISH_BLUE));
       buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade));
     }

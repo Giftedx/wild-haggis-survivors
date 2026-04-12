@@ -200,8 +200,8 @@ export class SettingsScene extends Phaser.Scene {
     // to the bottom of the viewport.
     const backY = Math.min(this.rowY + 32, height - 40);
     const back = this.add
-      .rectangle(width / 2, backY, 220, 42, 0x3a4357, 1)
-      .setStrokeStyle(2, 0x5a6478, 0.8)
+      .rectangle(width / 2, backY, 220, 42, 0x252540, 1)
+      .setStrokeStyle(2, 0x4a3a5a, 0.8)
       .setInteractive({ useHandCursor: true });
     back.setScale(uiScale);
     this.add
@@ -213,8 +213,8 @@ export class SettingsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    back.on('pointerover', () => back.setFillStyle(0x4a5568));
-    back.on('pointerout', () => back.setFillStyle(0x3a4357));
+    back.on('pointerover', () => back.setFillStyle(0x2a2244));
+    back.on('pointerout', () => back.setFillStyle(0x252540));
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
@@ -375,8 +375,8 @@ export class SettingsScene extends Phaser.Scene {
 
     // Dim background trough.
     const trough = this.add
-      .rectangle(trackX, trackY, trackW, trackH, 0x2c3240, 1)
-      .setStrokeStyle(1, 0x4a5568, 0.8)
+      .rectangle(trackX, trackY, trackW, trackH, 0x1a1420, 1)
+      .setStrokeStyle(1, 0x4a3a5a, 0.8)
       .setOrigin(0, 0.5);
     trough.setScale(this.uiScale, this.uiScale);
 
@@ -480,7 +480,7 @@ export class SettingsScene extends Phaser.Scene {
     const offColor = 0x3a3148;
     const btn = this.add
       .rectangle(width - 88, y + 8, 78, 30, this.working[key] ? onColor : offColor, 1)
-      .setStrokeStyle(1, 0x5a6478, 0.6)
+      .setStrokeStyle(1, 0x4a3a5a, 0.6)
       .setInteractive({ useHandCursor: true });
     btn.setScale(this.uiScale);
     const txt = this.add

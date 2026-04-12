@@ -139,7 +139,7 @@ export class HUD {
     const style = { fontFamily: 'monospace', fontSize: '18px', color: '#ffffff' };
 
     // HP bar
-    this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x333333)
+    this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x1a1420)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
     this.hpBarFill = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, COLORS.HP_RED)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
@@ -156,7 +156,7 @@ export class HUD {
       ...style, fontSize: '28px', fontStyle: 'bold',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
     this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '', {
-      ...style, fontSize: '14px', color: '#9fb0cf',
+      ...style, fontSize: '14px', color: '#b8a88a',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     // Kill count
@@ -165,14 +165,14 @@ export class HUD {
 
     // XP bar
     const xpY = height - this.XP_BAR_H - 4;
-    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x222222)
+    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x1a1420)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
     this.xpBarFill = this.addEl(this.scene.add.rectangle(0, xpY, 0, this.XP_BAR_H, COLORS.XP_BAR)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
 
     // Pause button (visible on touch devices, small on desktop)
     this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |', {
-      fontFamily: 'monospace', fontSize: '24px', color: '#888888', fontStyle: 'bold',
+      fontFamily: 'monospace', fontSize: '24px', color: '#b8a88a', fontStyle: 'bold',
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)
       .setInteractive({ useHandCursor: true })) as Phaser.GameObjects.Text;
     this.pauseText.on('pointerdown', () => {
@@ -204,13 +204,13 @@ export class HUD {
 
     // DPS counter
     this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '', {
-      ...style, fontSize: '16px', color: '#aaaaaa',
+      ...style, fontSize: '16px', color: '#8a7a6a',
     }).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     // Boss HP bar (hidden by default) — positioned below weapon slots
     const bossBarW = width * 0.55;
     const bossBarY = 98;
-    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x333333)
+    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x1a1420)
       .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, 0xff4444)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;

@@ -86,7 +86,7 @@ export class Minimap {
 
       if (e.isBoss()) {
         // Boss: larger red diamond — the player needs to find this fast.
-        this.gfx.fillStyle(0xff4444, 1);
+        this.gfx.fillStyle(0xdd4444, 1);
         this.gfx.fillTriangle(dx, dy - 5, dx + 4, dy, dx, dy + 5);
         this.gfx.fillTriangle(dx, dy - 5, dx - 4, dy, dx, dy + 5);
       } else if (e.isElite()) {
@@ -110,7 +110,7 @@ export class Minimap {
     const px = mapX + playerX * scaleX;
     const py = mapY + playerY * scaleY;
     const tri = this.triangleForRotation(px, py, 4.5, playerRotation);
-    this.gfx.fillStyle(0x44ff44, 1);
+    this.gfx.fillStyle(0x44dd44, 1);
     this.gfx.fillTriangle(tri.ax, tri.ay, tri.bx, tri.by, tri.cx, tri.cy);
 
     // Chest markers: subtle squares (gold for golden chests). Same as before.

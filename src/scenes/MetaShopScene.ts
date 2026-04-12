@@ -75,12 +75,12 @@ export class MetaShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const lineGfx = this.add.graphics();
-    lineGfx.lineStyle(2, 0x444444, 1);
+    lineGfx.lineStyle(2, 0x3a2a3a, 1);
     lineGfx.lineBetween(24, 108, width - 24, 108);
     lineGfx.lineBetween(24, 510, width - 24, 510);
 
     this.backButton = this.add
-      .rectangle(width / 2, height - 28, 200, 38, 0x3a4357, 1)
+      .rectangle(width / 2, height - 28, 200, 38, 0x252540, 1)
       .setInteractive({ useHandCursor: true });
     this.add
       .text(width / 2, height - 28, t('ui.metaShop.back'), {
@@ -91,8 +91,8 @@ export class MetaShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.backButton.on('pointerover', () => this.backButton.setFillStyle(0x4a566f));
-    this.backButton.on('pointerout', () => this.backButton.setFillStyle(0x3a4357));
+    this.backButton.on('pointerover', () => this.backButton.setFillStyle(0x2a2244));
+    this.backButton.on('pointerout', () => this.backButton.setFillStyle(0x252540));
     this.backButton.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('MainMenu');
@@ -175,7 +175,7 @@ export class MetaShopScene extends Phaser.Scene {
       const locked = (!achievementMet || !prevMet) && !owned;
       const canAfford = !owned && achievementMet && prevMet && save.totalKills >= item.cost;
 
-      const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1b2337 : 0x172031, 0.82);
+      const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1a1828 : 0x161422, 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
         fontFamily: 'monospace',
         fontSize: '16px',
@@ -227,11 +227,11 @@ export class MetaShopScene extends Phaser.Scene {
         return;
       }
 
-      const buttonFill = canAfford ? 0x2d6a3e : 0x293140;
+      const buttonFill = canAfford ? 0x2d6a3e : 0x1a1828;
       const buttonTextColor = canAfford ? '#ffffff' : '#7c8698';
       const buyButton = this.add
         .rectangle(width - 80, y + 32, 108, 40, buttonFill, 1)
-        .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x475163, 1)
+        .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x3a2a3a, 1)
         .setInteractive({ useHandCursor: canAfford });
       const buyText = this.add
         .text(width - 80, y + 32, t('ui.common.buy_kills', { cost: item.cost }), {
