@@ -5,14 +5,50 @@ import { getSettingsManager, type ISettingsData } from '../core/SettingsManager'
 import { loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
+import {
+  sliderRatioFromValue,
+  sliderValueFromRatio,
+  steppedSliderBump,
+} from './settingsSliderMath';
 
 type SettingsGpRow =
-  | { kind: 'volume'; minus: () => void; plus: () => void; mark: Phaser.GameObjects.Rectangle }
-  | { kind: 'toggle'; toggle: () => void; mark: Phaser.GameObjects.Rectangle }
-  | { kind: 'back'; go: () => void; mark: Phaser.GameObjects.Rectangle };
+  | {
+      kind: 'slider';
+      minus: () => void;
+      plus: () => void;
+      mark: Phaser.GameObjects.Rectangle;
+    }
+  | {
+      kind: 'toggle';
+      toggle: () => void;
+      mark: Phaser.GameObjects.Rectangle;
+    }
+  | {
+      kind: 'back';
+      go: () => void;
+      mark: Phaser.GameObjects.Rectangle;
+    };
+
+type VolumeKey = 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale';
+type ToggleKey = 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
+ *
+ * Phase 6 Tier B cozy redesign:
+ *  - Warm gradient backdrop with a soft ember glow behind the title,
+ *    matching the MainMenu hearth language so the screens feel like
+ *    the same place rather than two different apps.
+ *  - Rows grouped into three named sections ("Hearth sound", "Comfort
+ *    & motion", "Accessibility") with warm subheadings and quiet
+ *    divider lines. Scanning to a setting now takes a glance, not a
+ *    full read of eight labels.
+ *  - Draggable sliders replace the old −/+ buttons — players see the
+ *    full range at a glance, and dragging is much faster than clicking
+ *    a button 10 times for a full sweep. Clicking anywhere on the
+ *    track jumps to that value. Keyboard/gamepad still bump by step.
+ *  - All text scales with uiScale, row spacing scales too (previously
+ *    row spacing was fixed so uiScale 1.4 overlapped labels).
  */
 export class SettingsScene extends Phaser.Scene {
   private settingsManager = getSettingsManager();
@@ -21,6 +57,8 @@ export class SettingsScene extends Phaser.Scene {
   private uiScale = 1;
   private highContrastUi = false;
   private settingsLabelColor = '#c8d0e0';
+  private sectionColor = '#d8b877';
+  private valueColor = '#88aacc';
   private gpRows: SettingsGpRow[] = [];
   private gpIdx = 0;
   private gpPrevU = false;
@@ -29,6 +67,10 @@ export class SettingsScene extends Phaser.Scene {
   private gpPrevR = false;
   private gpPrevA = false;
   private gpUpdate?: (time: number, delta: number) => void;
+  private glowTweens: Phaser.Tweens.Tween[] = [];
+  /** Base row stride before uiScale — cozier than the previous 44px. */
+  private readonly BASE_ROW_STEP = 42;
+  private readonly BASE_SECTION_GAP = 18;
 
   constructor() {
     super({ key: 'Settings' });
@@ -38,7 +80,9 @@ export class SettingsScene extends Phaser.Scene {
   create(): void {
     this.working = { ...this.settingsManager.load() };
     this.gpRows = [];
+    this.glowTweens = [];
     const { width, height } = this.scale;
+
     // Respect the player's comfort settings even on the scene that configures
     // them. Without this, SettingsScene was the ONE scene that ignored
     // uiScale / highContrastUi — the Phase 3 accessibility work had a hole.
@@ -46,25 +90,75 @@ export class SettingsScene extends Phaser.Scene {
     this.uiScale = uiScale;
     this.highContrastUi = highContrastUi;
 
-    const titleColor = highContrastUi ? '#bfdfff' : '#9ec8ff';
-    const subtitleColor = highContrastUi ? '#a8b3c8' : '#6a7390';
-    const hintColor = highContrastUi ? '#8892aa' : '#5a6478';
+    const titleColor = highContrastUi ? '#ffe6a8' : '#ffd98a';
+    const subtitleColor = highContrastUi ? '#b8c3d4' : '#8a93a8';
+    const hintColor = highContrastUi ? '#9ba6bc' : '#6a7388';
     const labelColor = highContrastUi ? '#e6efff' : '#c8d0e0';
+    const sectionColor = highContrastUi ? '#ffe066' : '#d8b877';
+    const valueColor = highContrastUi ? '#a0c8f0' : '#88aacc';
     this.settingsLabelColor = labelColor;
+    this.sectionColor = sectionColor;
+    this.valueColor = valueColor;
 
+    // --- Cozy backdrop ---------------------------------------------------
+    // Dark base rect, then a soft radial ember glow behind the title in
+    // the same warm palette as the MainMenu campfire. Respects
+    // reduceParticles by drawing only the glow (no moving pieces).
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
-    this.add
-      .text(width / 2, 36, t('ui.settings.title'), {
+
+    const glow = this.add.graphics().setDepth(-10);
+    const emberColor = highContrastUi ? 0x4a2a12 : 0x2a1a0c;
+    for (let r = 260; r > 40; r -= 30) {
+      const alpha = (1 - r / 260) * 0.18;
+      glow.fillStyle(emberColor, alpha);
+      glow.fillCircle(width / 2, 88, r);
+    }
+
+    // Gentle heather strip along the bottom — quiet visual anchor,
+    // matches the MainMenu heather scatter. Skipped if the player has
+    // reduceParticles enabled; the dots are static either way.
+    if (!this.working.reduceParticles) {
+      const strip = this.add.graphics().setDepth(-5);
+      const stripSeed = 0xbadfeed; // stable layout across scene restarts
+      let seed = stripSeed;
+      const rand = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return (seed >>> 8) / 0xffffff;
+      };
+      for (let i = 0; i < 60; i++) {
+        const hx = rand() * width;
+        const hy = height - 6 - rand() * 24;
+        const hue = rand() < 0.5 ? 0x7a5cb8 : 0xa674d4;
+        strip.fillStyle(hue, 0.25 + rand() * 0.25);
+        strip.fillCircle(hx, hy, 1.5 + rand() * 1.5);
+      }
+    }
+
+    // --- Title + intro --------------------------------------------------
+    const title = this.add
+      .text(width / 2, 42, t('ui.settings.title'), {
         fontFamily: 'monospace',
-        fontSize: '28px',
+        fontSize: '30px',
         color: titleColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
       .setScale(uiScale);
 
+    // A gentle breath on the title — the same slow bob used on MainMenu,
+    // cut in half so it does not distract players reading the rows.
+    const titleTween = this.tweens.add({
+      targets: title,
+      scale: { from: uiScale, to: uiScale * 1.02 },
+      duration: 2400,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    this.glowTweens.push(titleTween);
+
     this.add
-      .text(width / 2, 64, t('ui.settings.subtitle'), {
+      .text(width / 2, 72, t('ui.settings.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: subtitleColor,
@@ -73,32 +167,39 @@ export class SettingsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     this.add
-      .text(width / 2, 90, t('ui.settings.comfort_hint'), {
+      .text(width / 2, 96, t('ui.settings.comfort_hint'), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: hintColor,
         align: 'center',
-        wordWrap: { width: width - 48 },
+        wordWrap: { width: width - 64 },
       })
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    this.rowY = 124;
-    this.addVolumeRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1);
-    this.addVolumeRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1);
-    this.addVolumeRow(t('ui.settings.music_volume'), 'musicVolume', 0, 1);
-    this.addVolumeRow(t('ui.settings.ui_scale'), 'uiScale', 0.8, 1.4, 0.05);
+    // --- Rows (grouped) -------------------------------------------------
+    this.rowY = 130;
+    this.addSectionHeader(t('ui.settings.section_sound'));
+    this.addSliderRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1, 0.1);
+    this.addSliderRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1, 0.1);
+    this.addSliderRow(t('ui.settings.music_volume'), 'musicVolume', 0, 1, 0.1);
+
+    this.addSectionHeader(t('ui.settings.section_comfort'));
+    this.addSliderRow(t('ui.settings.ui_scale'), 'uiScale', 0.8, 1.4, 0.05);
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
-    this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
-    this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
 
-    // Pull the BACK button up to close right below the last row —
-    // previously it pinned to height - 36 leaving ~380px of dead space on
-    // wider viewports.
-    const backY = Math.max(this.rowY + 48, height - 48);
+    this.addSectionHeader(t('ui.settings.section_access'));
+    this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
+    this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
+
+    // --- BACK button ----------------------------------------------------
+    // Sit just below the last row with a breathing gap rather than pinned
+    // to the bottom of the viewport.
+    const backY = Math.min(this.rowY + 32, height - 40);
     const back = this.add
-      .rectangle(width / 2, backY, 200, 40, 0x3a4357, 1)
+      .rectangle(width / 2, backY, 220, 42, 0x3a4357, 1)
+      .setStrokeStyle(2, 0x5a6478, 0.8)
       .setInteractive({ useHandCursor: true });
     back.setScale(uiScale);
     this.add
@@ -132,7 +233,37 @@ export class SettingsScene extends Phaser.Scene {
     this.events.once('shutdown', () => {
       if (this.gpUpdate) this.events.off('update', this.gpUpdate);
       this.gpUpdate = undefined;
+      // Kill any tweens we started so they do not fire into a torn-down scene.
+      for (const tw of this.glowTweens) tw.stop();
+      this.glowTweens = [];
     });
+  }
+
+  private addSectionHeader(label: string): void {
+    const { width } = this.scale;
+    // Small gap above each header so sections feel grouped.
+    this.rowY += this.BASE_SECTION_GAP;
+    const y = this.rowY;
+
+    const text = this.add
+      .text(40, y, label, {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: this.sectionColor,
+        fontStyle: 'bold',
+      })
+      .setScale(this.uiScale);
+
+    // Quiet divider line reaching to the right edge, starting just
+    // after the heading text.
+    const textEnd = 40 + text.width * this.uiScale + 12;
+    const lineY = y + 8 * this.uiScale;
+    const divider = this.add
+      .rectangle(textEnd, lineY, Math.max(0, width - textEnd - 40), 1, 0x5a6478, 0.35)
+      .setOrigin(0, 0.5);
+    void divider;
+
+    this.rowY += 22 + Math.round((this.uiScale - 1) * 8);
   }
 
   private applyGpHighlight(): void {
@@ -176,7 +307,7 @@ export class SettingsScene extends Phaser.Scene {
     this.gpPrevL = left;
     this.gpPrevR = right;
 
-    if (row.kind === 'volume') {
+    if (row.kind === 'slider') {
       if (lE) {
         audio.playClick();
         row.minus();
@@ -193,7 +324,7 @@ export class SettingsScene extends Phaser.Scene {
     const aE = confirm && !this.gpPrevA;
     this.gpPrevA = confirm;
     if (aE) {
-      if (row.kind === 'volume') {
+      if (row.kind === 'slider') {
         audio.playClick();
         row.plus();
       } else if (row.kind === 'toggle') {
@@ -203,10 +334,9 @@ export class SettingsScene extends Phaser.Scene {
       }
     }
 
-    // Slow repeat for held directions (volume rows)
-    if (row.kind === 'volume' && (left || right) && delta > 0) {
-      /* optional: could add accumulator — keep edge-only for clarity */
-    }
+    // delta is wired for a future held-direction accumulator; edge-only
+    // for now so the gamepad behaviour matches keyboard.
+    void delta;
   }
 
   private persistAndApply(): void {
@@ -222,82 +352,140 @@ export class SettingsScene extends Phaser.Scene {
     }
   }
 
-  private addVolumeRow(
+  private addSliderRow(
     label: string,
-    key: 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale',
+    key: VolumeKey,
     min: number,
     max: number,
-    step: number = 0.1
+    step: number
   ): void {
     const { width } = this.scale;
     const y = this.rowY;
-    this.rowY += 44;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    this.rowY += rowStep;
 
-    this.add.text(40, y + 6, label, {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: this.settingsLabelColor,
-    }).setScale(this.uiScale);
+    this.add
+      .text(40, y + 6, label, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
 
-    const valText = this.add.text(width / 2, y + 6, '', {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: this.highContrastUi ? '#a0c8f0' : '#88aacc',
-    }).setOrigin(0.5, 0).setScale(this.uiScale);
+    // Slider track geometry — keep the right margin clear for the value text.
+    const trackX = Math.round(width * 0.46);
+    const trackY = y + 14;
+    const trackW = 240;
+    const trackH = 8;
 
-    const bump = (delta: number) => {
-      this.working[key] = Phaser.Math.Clamp(this.working[key] + delta, min, max);
-      const next = this.working[key];
-      valText.setText(key === 'uiScale' ? `${next.toFixed(2)}x` : `${Math.round(next * 100)}%`);
+    // Dim background trough.
+    const trough = this.add
+      .rectangle(trackX, trackY, trackW, trackH, 0x2c3240, 1)
+      .setStrokeStyle(1, 0x4a5568, 0.8)
+      .setOrigin(0, 0.5);
+    trough.setScale(this.uiScale, this.uiScale);
+
+    // Warm fill showing the current value.
+    const fillColor = this.highContrastUi ? 0xffe066 : 0xd8b877;
+    const fill = this.add.rectangle(trackX, trackY, 1, trackH - 2, fillColor, 1).setOrigin(0, 0.5);
+    fill.setScale(1, this.uiScale);
+
+    // Round thumb sits centered on the fill end.
+    const thumb = this.add
+      .circle(trackX, trackY, 7, fillColor, 1)
+      .setStrokeStyle(2, 0x1a1e2a, 1)
+      .setInteractive({ useHandCursor: true, draggable: true });
+    thumb.setScale(this.uiScale);
+
+    // Readable value on the right of the track.
+    const valText = this.add
+      .text(trackX + (trackW + 18) * this.uiScale, y + 6, '', {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.valueColor,
+      })
+      .setOrigin(0, 0)
+      .setScale(this.uiScale);
+
+    const scaledTrackW = trackW * this.uiScale;
+    const trackLeftScaled = trackX;
+
+    const syncVisual = () => {
+      const current = this.working[key];
+      const ratio = sliderRatioFromValue(current, min, max);
+      // Fill width lives in track-local units so it respects the scaleX.
+      fill.width = Math.max(1, ratio * trackW);
+      thumb.x = trackLeftScaled + ratio * scaledTrackW;
+      valText.setText(
+        key === 'uiScale' ? `${current.toFixed(2)}x` : `${Math.round(current * 100)}%`
+      );
+    };
+
+    const setFromRatio = (ratio: number) => {
+      this.working[key] = sliderValueFromRatio(ratio, min, max, step);
+      syncVisual();
       this.persistAndApply();
     };
 
-    valText.setText(key === 'uiScale' ? `${this.working[key].toFixed(2)}x` : `${Math.round(this.working[key] * 100)}%`);
-
-    const mkBtn = (x: number, t: string, d: number) => {
-      const b = this.add.rectangle(x, y + 10, 36, 28, 0x3a4a62, 1)
-        .setInteractive({ useHandCursor: true });
-      b.setScale(this.uiScale);
-      this.add.text(x, y + 10, t, { fontFamily: 'monospace', fontSize: '16px', color: '#fff' })
-        .setOrigin(0.5)
-        .setScale(this.uiScale);
-      b.on('pointerover', () => b.setFillStyle(0x4a5a72));
-      b.on('pointerout', () => b.setFillStyle(0x3a4a62));
-      b.on('pointerdown', () => {
-        audio.playClick();
-        bump(d);
-      });
+    const bump = (direction: number) => {
+      this.working[key] = steppedSliderBump(this.working[key], direction, min, max, step);
+      syncVisual();
+      this.persistAndApply();
     };
 
-    mkBtn(width - 120, '−', -step);
-    mkBtn(width - 72, '+', step);
+    syncVisual();
+
+    // Click-anywhere-on-track-to-jump. Uses a transparent hit area
+    // the full width of the visible track (scaled).
+    const hit = this.add
+      .rectangle(trackLeftScaled, trackY, scaledTrackW, 30 * this.uiScale, 0x000000, 0)
+      .setOrigin(0, 0.5)
+      .setInteractive({ useHandCursor: true });
+    hit.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
+      const ratio = (pointer.x - trackLeftScaled) / scaledTrackW;
+      audio.playClick();
+      setFromRatio(ratio);
+    });
+
+    // Draggable thumb — Phaser handles the drag loop for us.
+    thumb.on('drag', (_pointer: Phaser.Input.Pointer, dragX: number) => {
+      const ratio = (dragX - trackLeftScaled) / scaledTrackW;
+      setFromRatio(ratio);
+    });
+    thumb.on('dragend', () => {
+      audio.playClick();
+    });
 
     const mark = this.add
-      .rectangle(width / 2, y + 12, width - 56, 36, 0x000000, 0)
+      .rectangle(width / 2, y + 14, width - 56, 36, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
-      kind: 'volume',
-      minus: () => bump(-step),
-      plus: () => bump(step),
+      kind: 'slider',
+      minus: () => bump(-1),
+      plus: () => bump(+1),
       mark,
     });
   }
 
-  private addToggleRow(label: string, key: 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi'): void {
+  private addToggleRow(label: string, key: ToggleKey): void {
     const { width } = this.scale;
     const y = this.rowY;
-    this.rowY += 40;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    this.rowY += rowStep;
 
-    this.add.text(40, y + 4, label, {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: this.settingsLabelColor,
-    }).setScale(this.uiScale);
+    this.add
+      .text(40, y + 4, label, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
 
     const onColor = 0x2d6a3e;
     const offColor = 0x3a3148;
     const btn = this.add
-      .rectangle(width - 88, y + 8, 72, 28, this.working[key] ? onColor : offColor, 1)
+      .rectangle(width - 88, y + 8, 78, 30, this.working[key] ? onColor : offColor, 1)
+      .setStrokeStyle(1, 0x5a6478, 0.6)
       .setInteractive({ useHandCursor: true });
     btn.setScale(this.uiScale);
     const txt = this.add
