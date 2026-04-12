@@ -371,6 +371,9 @@ export class GameOverScene extends Phaser.Scene {
       return;
     }
 
+    // Sparkle burst around the unlock heading — celebratory soul moment
+    this.addUnlockSparkles(centerX, y + 20, depth + 1, delay + 60);
+
     if (variantKeys.length === 1) {
       const variant = getVariantByKey(variantKeys[0]);
       const nameText = this.add
@@ -419,6 +422,34 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(depth)
       .setAlpha(0);
     this.tweens.add({ targets: unlockList, alpha: 1, duration: 300, delay: delay + 90 });
+  }
+
+  /** Celebratory sparkle burst — 8 golden particles radiating outward from center. */
+  private addUnlockSparkles(cx: number, cy: number, depth: number, delay: number): void {
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const sparkle = this.add.circle(cx, cy, 3, 0xffdd44, 0)
+        .setScrollFactor(0).setDepth(depth);
+      this.tweens.add({
+        targets: sparkle,
+        x: cx + Math.cos(angle) * 60,
+        y: cy + Math.sin(angle) * 40,
+        alpha: { from: 0, to: 0.9 },
+        scale: { from: 0.3, to: 1.5 },
+        duration: 600,
+        delay: delay + i * 50,
+        ease: 'Power2',
+        onComplete: () => {
+          this.tweens.add({
+            targets: sparkle,
+            alpha: 0,
+            scale: 0,
+            duration: 400,
+            onComplete: () => sparkle.destroy(),
+          });
+        },
+      });
+    }
   }
 
   private createResultStat(

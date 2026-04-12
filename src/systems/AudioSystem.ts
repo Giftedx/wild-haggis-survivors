@@ -177,6 +177,38 @@ export class AudioSystem {
     });
   }
 
+  /** Achievement unlocked — bright two-note perfect fifth with shimmer. */
+  playAchievement(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    const t0 = ctx.currentTime;
+    // Two notes: C5 then G5, each with a pair of slightly detuned oscillators
+    const notes = [
+      { freq: 523, start: 0 },
+      { freq: 784, start: 0.12 },
+    ];
+
+    for (const note of notes) {
+      for (let d = 0; d < 2; d++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = note.freq;
+        osc.detune.value = d === 0 ? -8 : 8; // shimmer
+        const start = t0 + note.start;
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(0.14, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+        osc.connect(gain);
+        gain.connect(this.masterGain!);
+        osc.start(start);
+        osc.stop(start + 0.35);
+      }
+    }
+  }
+
   /** Shop / meta purchase — short bright ding (distinct from level-up arpeggio). */
   playPurchaseImmediate(): void {
     if (!this.enabled) return;
@@ -329,6 +361,77 @@ export class AudioSystem {
       osc.start(t);
       osc.stop(t + 0.05);
     });
+  }
+  // ── Ambient wind (menu/shop scenes) ──────────────────────────────
+
+  private ambientSource: AudioBufferSourceNode | null = null;
+  private ambientGain: GainNode | null = null;
+
+  /**
+   * Start a gentle moor-wind ambient loop. Very quiet, filtered brown
+   * noise that makes non-combat scenes feel alive without competing with
+   * the procedural music engine (which runs during GameScene only).
+   *
+   * Safe to call multiple times — starts only once.
+   */
+  startAmbientWind(): void {
+    if (this.ambientSource) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    // Generate a brown noise buffer (2 seconds, loopable)
+    const sampleRate = ctx.sampleRate;
+    const length = sampleRate * 2;
+    const buffer = ctx.createBuffer(1, length, sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < length; i++) {
+      const white = Math.random() * 2 - 1;
+      last = (last + 0.02 * white) / 1.02;
+      data[i] = last * 3.5; // scale for audibility
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    // Low-pass filter — only the deep rumble, no hiss
+    const lpf = ctx.createBiquadFilter();
+    lpf.type = 'lowpass';
+    lpf.frequency.value = 180;
+    lpf.Q.value = 0.7;
+
+    // Very quiet — ambient should be felt, not heard
+    const gain = ctx.createGain();
+    gain.gain.value = 0;
+    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.5);
+
+    source.connect(lpf);
+    lpf.connect(gain);
+    gain.connect(this.masterGain);
+    source.start();
+
+    this.ambientSource = source;
+    this.ambientGain = gain;
+  }
+
+  /** Fade out and stop ambient wind. */
+  stopAmbientWind(): void {
+    if (!this.ambientSource || !this.ambientGain) return;
+    const ctx = this.ctx;
+    if (!ctx) return;
+
+    const gain = this.ambientGain;
+    const source = this.ambientSource;
+    this.ambientSource = null;
+    this.ambientGain = null;
+
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+    setTimeout(() => {
+      try { source.stop(); } catch { /* already stopped */ }
+      source.disconnect();
+      gain.disconnect();
+    }, 1000);
   }
 }
 

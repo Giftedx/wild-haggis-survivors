@@ -5,6 +5,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
+import { audio } from '../systems/AudioSystem';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -427,6 +428,9 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(1, 1);
 
+    // Ambient moor wind — cozy between storms
+    if (!reduceParticles) audio.startAmbientWind();
+
     // === Gamepad navigation wiring (unchanged) ===
     const entries: GamepadMenuEntry[] = [{ rect: startBtn, activate: goPrimary }];
     if (abandonBtn && goLoadoutFresh) entries.push({ rect: abandonBtn, activate: goLoadoutFresh });
@@ -436,6 +440,7 @@ export class MainMenuScene extends Phaser.Scene {
     );
     this.gamepadNav = new GamepadMenuNav(this, entries);
     this.events.once('shutdown', () => {
+      audio.stopAmbientWind();
       // Kill every decoration tween so they don't leak across scene restarts.
       for (const target of this.cozyTweenTargets) {
         try { this.tweens.killTweensOf(target); } catch { /* ignore */ }
