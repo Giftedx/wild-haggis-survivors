@@ -91,3 +91,32 @@ describe('weapon evolution (chest-gated)', () => {
     expect(EVOLUTION_RECIPES.length).toBe(7);
   });
 });
+
+describe('weapon icon texture consistency (BootScene static check)', () => {
+  const { readFileSync } = require('node:fs');
+  const { join } = require('node:path');
+  const bootSource = readFileSync(
+    join(__dirname, '..', 'scenes', 'BootScene.ts'),
+    'utf-8'
+  );
+
+  it('every base weapon has an icon texture in BootScene', () => {
+    for (const key of Object.keys(WEAPON_DEFS)) {
+      const iconKey = `wicon_${key}`;
+      expect(
+        bootSource.includes(`'${iconKey}'`),
+        `Missing weapon icon texture: ${iconKey}`
+      ).toBe(true);
+    }
+  });
+
+  it('every evolved weapon has an icon texture in BootScene', () => {
+    for (const r of EVOLUTION_RECIPES) {
+      const iconKey = `wicon_${r.evolvedWeapon}`;
+      expect(
+        bootSource.includes(`'${iconKey}'`),
+        `Missing evolved weapon icon: ${iconKey}`
+      ).toBe(true);
+    }
+  });
+});
