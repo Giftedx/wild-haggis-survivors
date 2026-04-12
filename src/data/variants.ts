@@ -307,8 +307,22 @@ export function formatVariantUnlockText(
 }
 
 export function formatRunVariantLabel(variant: VariantDef): string {
-  const summary = formatVariantModifierSummary(variant);
-  return summary === 'Baseline stats' ? variant.name : `${variant.name}  |  ${summary}`;
+  // Check if the variant has ANY modifiers before calling the summary helper.
+  // Comparing against a literal string would break the moment summary copy
+  // changes or a locale translates "Baseline stats" to something else.
+  const { modifiers } = variant;
+  const hasModifiers =
+    !!modifiers.moveSpeedPct
+    || !!modifiers.maxHpFlat
+    || !!modifiers.armorFlat
+    || !!modifiers.pickupRadiusFlat
+    || !!modifiers.xpMultiplierPct
+    || !!modifiers.damagePct
+    || !!modifiers.driftReductionPct
+    || !!modifiers.cooldownReductionPct;
+  const name = t(variant.nameKey);
+  if (!hasModifiers) return name;
+  return `${name}  |  ${formatVariantModifierSummary(variant)}`;
 }
 
 function createUnlockProgress(

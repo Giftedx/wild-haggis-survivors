@@ -293,13 +293,13 @@ export class MenuScene extends Phaser.Scene {
       .setAlpha(unlocked ? 1 : 0.42);
     this.variantPanelElements.push(previewFrame, preview);
 
-    const nameText = this.add.text(infoX, panelY - 42, variant.name, {
+    const nameText = this.add.text(infoX, panelY - 42, t(variant.nameKey), {
       fontFamily: 'monospace',
       fontSize: '24px',
       color: unlocked ? '#ffffff' : '#d1d6e0',
       fontStyle: 'bold',
     });
-    const flavorText = this.add.text(infoX, panelY - 18, this.truncateLine(variant.flavorText, 42), {
+    const flavorText = this.add.text(infoX, panelY - 18, this.truncateLine(t(variant.flavorKey), 42), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#95a8ca',
@@ -473,7 +473,7 @@ export class MenuScene extends Phaser.Scene {
   private updateLoadoutBanner(): void {
     if (!this.loadoutBanner) return;
     const variant = getVariantByKey(this.selectedVariantKey);
-    this.loadoutBanner.setText(t('ui.loadout.current_loadout', { name: variant.name.toUpperCase() }));
+    this.loadoutBanner.setText(t('ui.loadout.current_loadout', { name: t(variant.nameKey).toUpperCase() }));
   }
 
   private truncateLine(text: string, maxLength: number): string {

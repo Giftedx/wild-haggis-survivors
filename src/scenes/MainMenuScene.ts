@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { SaveManager } from '../core/SaveManager';
+import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
@@ -18,29 +19,37 @@ export class MainMenuScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const meta = this.saveManager.load();
+    const { uiScale, highContrastUi } = getSettingsManager().load();
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
 
-    this.add
+    const titleColor = highContrastUi ? '#ffe08a' : '#d4a017';
+    const subduedColor = highContrastUi ? '#c8d2e0' : '#95a5c3';
+    const hintColor = highContrastUi ? '#a8b3c8' : '#6a7390';
+
+    const titleText = this.add
       .text(width / 2, 96, t('ui.menu.title'), {
         fontFamily: 'monospace',
         fontSize: '36px',
-        color: '#d4a017',
+        color: titleColor,
         fontStyle: 'bold',
+        align: 'center',
       })
       .setOrigin(0.5);
+    titleText.setScale(uiScale);
 
-    this.add
+    const killCreditText = this.add
       .text(width / 2, 154, t('ui.menu.kill_credits', { count: meta.totalKills }), {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: '#95a5c3',
+        color: subduedColor,
       })
       .setOrigin(0.5);
+    killCreditText.setScale(uiScale);
 
     const suspended = meta.activeRun != null;
 
-    this.add
+    const hintText = this.add
       .text(
         width / 2,
         196,
@@ -48,12 +57,13 @@ export class MainMenuScene extends Phaser.Scene {
         {
           fontFamily: 'monospace',
           fontSize: '14px',
-          color: '#6a7390',
+          color: hintColor,
           align: 'center',
           wordWrap: { width: width - 80 },
         }
       )
       .setOrigin(0.5);
+    hintText.setScale(uiScale);
 
     const btnW = 240;
     const btnH = 48;
@@ -66,6 +76,7 @@ export class MainMenuScene extends Phaser.Scene {
     const startBtn = this.add
       .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
       .setInteractive({ useHandCursor: true });
+    startBtn.setScale(uiScale);
     const startTxt = this.add
       .text(bx, startY, suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run'), {
         fontFamily: 'monospace',
@@ -74,6 +85,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
+    startTxt.setScale(uiScale);
 
     const goPrimary = () => {
       if (suspended) {
@@ -100,6 +112,7 @@ export class MainMenuScene extends Phaser.Scene {
       abandonBtn = this.add
         .rectangle(bx, newY, btnW, 42, 0x3a4357, 1)
         .setInteractive({ useHandCursor: true });
+      abandonBtn.setScale(uiScale);
       const abandonTxt = this.add
         .text(bx, newY, t('ui.menu.new_run_loadout'), {
           fontFamily: 'monospace',
@@ -108,6 +121,7 @@ export class MainMenuScene extends Phaser.Scene {
           fontStyle: 'bold',
         })
         .setOrigin(0.5);
+      abandonTxt.setScale(uiScale);
       abandonBtn.on('pointerover', () => abandonBtn!.setFillStyle(0x4a5568));
       abandonBtn.on('pointerout', () => abandonBtn!.setFillStyle(0x3a4357));
       abandonBtn.on('pointerdown', goLoadoutFresh);
@@ -118,6 +132,7 @@ export class MainMenuScene extends Phaser.Scene {
     const metaBtn = this.add
       .rectangle(bx, metaY, btnW, btnH, 0x2d6a3e, 1)
       .setInteractive({ useHandCursor: true });
+    metaBtn.setScale(uiScale);
     const metaTxt = this.add
       .text(bx, metaY, t('ui.menu.meta_upgrades'), {
         fontFamily: 'monospace',
@@ -126,6 +141,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
+    metaTxt.setScale(uiScale);
     metaBtn.on('pointerover', () => metaBtn.setFillStyle(0x3a8f4f));
     metaBtn.on('pointerout', () => metaBtn.setFillStyle(0x2d6a3e));
     metaBtn.on('pointerdown', () => {
@@ -140,6 +156,7 @@ export class MainMenuScene extends Phaser.Scene {
     const optBtn = this.add
       .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
       .setInteractive({ useHandCursor: true });
+    optBtn.setScale(uiScale);
     const optTxt = this.add
       .text(bx, optY, t('ui.menu.options'), {
         fontFamily: 'monospace',
@@ -148,6 +165,7 @@ export class MainMenuScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
+    optTxt.setScale(uiScale);
     optBtn.on('pointerover', () => optBtn.setFillStyle(0x3d4e72));
     optBtn.on('pointerout', () => optBtn.setFillStyle(0x2d3e62));
     optBtn.on('pointerdown', () => {
