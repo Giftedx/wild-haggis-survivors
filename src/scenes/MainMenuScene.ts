@@ -230,11 +230,22 @@ export class MainMenuScene extends Phaser.Scene {
 
     const suspended = meta.activeRun != null;
 
+    // First-ever visit (no kills yet and no suspended run) — surface the
+    // Comfort panel so players discover motion / caption / readability
+    // controls before they need them. After the first run the glen
+    // remembers, so we stop nagging.
+    const isFirstEverVisit = meta.totalKills === 0 && !suspended;
+    const hintCopy = suspended
+      ? t('ui.menu.hint_suspended')
+      : isFirstEverVisit
+        ? t('ui.menu.hint_fresh_with_comfort')
+        : t('ui.menu.hint_fresh');
+
     const hintText = this.add
       .text(
         width / 2,
         titleY + 128,
-        suspended ? t('ui.menu.hint_suspended') : t('ui.menu.hint_fresh'),
+        hintCopy,
         {
           fontFamily: 'monospace',
           fontSize: '14px',
