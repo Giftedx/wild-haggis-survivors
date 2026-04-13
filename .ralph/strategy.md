@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 74 BUILD)
+**Last updated:** 2026-04-13 (loop 75 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 785 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 786 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
@@ -34,11 +34,12 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Risks accepted:** Duck strengths are hand-tuned tables — no automated loudness measurement; phrase-boundary pulse snapshot is subtle but covered by integration behavior + percussion tests.
 - **Process:** Loop 61 reminder: never commit test-only without running tests on clean tree. **Loop 70:** dropped `ralph-loop62-wip` + `autonomous-loop-wip` — both conflicted on current `master` (music duck + telemetry already landed); no unique clean hunks worth salvaging without manual merge.
 - **Windows:** If `git status` shows hundreds of files “modified” with `old mode 100755 / new mode 100644` only, run `git config core.filemode false` in this repo (executable-bit noise). **Loop 71:** same note added to `CLAUDE.md` + `AGENTS.md` for discoverability.
+- **Loop 75:** `ProceduralMusicEngine.test` stubs a minimal `update()` path and asserts `musicSfxDuck` after one tick matches `expApproach` (pairs with loop 74 pure formula regression in `musicMath.test.ts`).
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 74)
+## Metrics Snapshot (2026-04-13, loop 75)
 - Source files: 105+, Test files: 101+
-- Tests: 785 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+- Tests: 786 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

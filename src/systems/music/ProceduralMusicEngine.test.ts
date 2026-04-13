@@ -1,5 +1,20 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { MOTION_TIMING } from '../../core/motionTiming';
+import type { GameMusicState } from './Conductor';
+import { expApproach } from './musicMath';
 import { musicEngine } from './ProceduralMusicEngine';
+
+function baseGameState(): GameMusicState {
+  return {
+    hp: 100,
+    maxHp: 100,
+    gameTimeSec: 0,
+    enemyCount: 0,
+    comboCount: 0,
+    killCount: 0,
+    bossActive: false,
+  };
+}
 
 /** Narrow probe for SFX-duck state (private fields — keep in test file only). */
 type DuckProbe = {
@@ -58,6 +73,80 @@ describe('ProceduralMusicEngine SFX duck', () => {
     e.musicSfxDuck = 0.5;
     e.notifyGameplaySfxImpulse(-1);
     expect(e.musicSfxDuck).toBe(0.5);
+  });
+});
+
+describe('ProceduralMusicEngine.update SFX duck decay', () => {
+  type EngineSnapshot = {
+    drone: unknown;
+    percussion: unknown;
+    scheduler: unknown;
+    masterFilter: unknown;
+    masterGain: unknown;
+    ctx: unknown;
+  };
+
+  let saved: EngineSnapshot;
+
+  beforeEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    saved = {
+      drone: eng.drone,
+      percussion: eng.percussion,
+      scheduler: eng.scheduler,
+      masterFilter: eng.masterFilter,
+      masterGain: eng.masterGain,
+      ctx: eng.ctx,
+    };
+  });
+
+  afterEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    eng.drone = saved.drone;
+    eng.percussion = saved.percussion;
+    eng.scheduler = saved.scheduler;
+    eng.masterFilter = saved.masterFilter;
+    eng.masterGain = saved.masterGain;
+    eng.ctx = saved.ctx;
+    const probe = duckProbe();
+    probe.musicSfxDuck = 0;
+    probe.playing = false;
+    probe.fadingOut = false;
+  });
+
+  it('decays musicSfxDuck with the same expApproach step as musicMath', () => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    eng.drone = { applyMood: vi.fn() };
+    eng.percussion = { updatePattern: vi.fn() };
+    eng.scheduler = { tick: vi.fn() };
+    eng.masterFilter = {
+      frequency: { linearRampToValueAtTime: vi.fn() },
+    };
+    eng.masterGain = {
+      gain: {
+        value: 0.25,
+        linearRampToValueAtTime: vi.fn(),
+        cancelScheduledValues: vi.fn(),
+        setValueAtTime: vi.fn(),
+      },
+    };
+    eng.ctx = {
+      state: 'running',
+      currentTime: 0,
+      resume: vi.fn(),
+    };
+    eng.playing = true;
+    eng.fadingOut = false;
+    eng.enabled = true;
+    eng.userMusicVolume = 1;
+    eng.musicSfxDuck = 0.75;
+
+    const deltaMs = 16.67;
+    const expected = expApproach(0.75, 0, deltaMs, MOTION_TIMING.musicSfxDuckRecoverMs);
+
+    musicEngine.update(deltaMs, baseGameState());
+
+    expect(duckProbe().musicSfxDuck).toBeCloseTo(expected, 12);
   });
 });
 
