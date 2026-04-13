@@ -88,6 +88,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private buffSpeedTimer: number = 0;
   /** Deferred recomputeSpeed — set by status ticks, flushed once at end of tickStatusEffects. */
   private speedDirty: boolean = false;
+  private piperBuffCooldown: number = 0;
 
   /** Knockback impulse — overrides behavior-set velocity for a brief window so
    *  pushes actually push (behaviorChase overwrites velocity every frame
@@ -230,6 +231,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.enraged = false;
     this.phase2Done = false;
     this.orbitAngle = Math.random() * Math.PI * 2;
+    this.piperBuffCooldown = 0;
     this.burnDamage = 0; this.burnTimer = 0; this.burnTickAccum = 0;
     this.freezeTimer = 0; this.freezeSpeedMul = 1;
     this.berserkerSpeedMul = 1;
@@ -678,15 +680,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(dx * inv, dy * inv);
     }
 
-    // Pipers buff nearby enemies — 30% faster for 500ms, composed through
-    // recomputeSpeed() via the buffSpeedMul field.
-    // Early exit: enemies cluster near the player; if Piper is far from
-    // player (e.g. knocked back), skip the O(n) scan entirely.
+    this.piperBuffCooldown -= delta;
+    if (this.piperBuffCooldown > 0) return;
+    this.piperBuffCooldown = 250;
+
     const piperDx = this.x - tx;
     const piperDy = this.y - ty;
     if (piperDx * piperDx + piperDy * piperDy > 500 * 500) return;
 
-    // Distance-squared avoids sqrt per enemy (hot path with 300-400 entries)
     const BUFF_RANGE_SQ = 120 * 120;
     const enemies = this.ctx.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
     for (const e of enemies) {
