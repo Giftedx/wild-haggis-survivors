@@ -56,6 +56,7 @@ import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
+import { applyPermanentUpgrades, applyVariantModifiers } from './game/runStartModifiers';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -435,10 +436,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     // Variant modifiers establish the run archetype before permanent upgrades stack on top.
-    this.applyVariantModifiers(selectedVariant);
+    applyVariantModifiers(this.player, selectedVariant);
 
-    // Apply permanent upgrades from save data
-    this.applyPermanentUpgrades();
+    // Apply permanent upgrades from save data. The two flag outputs
+    // don't live on Player so come back as a result object.
+    const permResult = applyPermanentUpgrades({
+      player: this.player,
+      weaponSystem: this.weaponSystem,
+      levelUpFlow: this.levelUpFlow,
+      ownedPassives: this.ownedPassives,
+      runRng: this.runRng,
+    });
+    this.revivalAvailable = permResult.revivalAvailable;
+    this.chestDurationBonusMs = permResult.chestDurationBonusMs;
 
     if (resumeRun) {
       this.applyResumeHydration(resumeRun);
@@ -999,84 +1009,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.ownedPassives,
       wn
     );
-  }
-
-  /** Apply permanent upgrades purchased in the shop to this run */
-  private applyPermanentUpgrades(): void {
-    const save = loadSave();
-    const ups = save.upgrades;
-
-    const thickHide = ups['thick_hide'] ?? 0;
-    if (thickHide > 0) this.player.addMaxHp(Math.ceil(this.player.getRunBaseMaxHp() * 0.05 * thickHide));
-
-    const strongLegs = ups['strong_legs'] ?? 0;
-    if (strongLegs > 0) this.player.addSpeed(this.player.getRunBaseSpeed() * 0.03 * strongLegs);
-
-    const sharpThistles = ups['sharp_thistles'] ?? 0;
-    if (sharpThistles > 0) this.player.addDamageMultiplier(0.05 * sharpThistles);
-
-    const magneticPersonality = ups['magnetic_personality'] ?? 0;
-    if (magneticPersonality > 0) this.player.addPickupRadius(this.player.getRunBasePickupRadius() * 0.10 * magneticPersonality);
-
-    const driftControl = ups['drift_control'] ?? 0;
-    for (let i = 0; i < driftControl; i++) this.player.reduceDrift(0.15);
-
-    const battleHardened = ups['battle_hardened'] ?? 0;
-    if (battleHardened > 0) this.player.addArmor(2 * battleHardened);
-
-    const weaponTraining = ups['weapon_training'] ?? 0;
-    for (let i = 0; i < weaponTraining; i++) this.weaponSystem.levelUpWeapon('thistle_shot');
-
-    const critPower = ups['crit_power'] ?? 0;
-    if (critPower > 0) {
-      // v2: bumps crit chance (small flat) AND crit damage (big multiplicative),
-      // so the stat matters even on a fresh run where crit rate is just 10%.
-      this.player.addCritChance(0.03 * critPower);
-      this.player.addCritDamageMultiplier(0.25 * critPower);
-    }
-
-    const xpBoost = ups['xp_boost'] ?? 0;
-    if (xpBoost > 0) this.player.addXpMultiplier(0.08 * xpBoost);
-
-    const naturalRecovery = ups['natural_recovery'] ?? 0;
-    if (naturalRecovery > 0) this.player.addHpRegen(0.3 * naturalRecovery);
-
-    const revival = ups['revival'] ?? 0;
-    if (revival > 0) this.revivalAvailable = true;
-
-    const luckyStart = ups['lucky_start'] ?? 0;
-    if (luckyStart > 0) {
-      const available = PASSIVE_KEYS.filter((k) => !this.ownedPassives.includes(k));
-      if (available.length > 0) {
-        // Seeded pick — the "lucky" starter passive is the same for a given
-        // seed across attempts, so daily challenges are fair.
-        const randomPassive = this.runRng.pick(available);
-        this.ownedPassives.push(randomPassive);
-        this.levelUpFlow.applyPassiveEffect(randomPassive);
-      }
-    }
-
-    const doubleDash = ups['double_dash'] ?? 0;
-    if (doubleDash > 0) this.player.addDashCharge();
-
-    const treasureMagnet = ups['treasure_magnet'] ?? 0;
-    if (treasureMagnet > 0) this.chestDurationBonusMs = 5000 * treasureMagnet;
-
-    // extra_choice and lucky_heather affect the card system, not stats
-  }
-
-  /** Variant modifiers are applied before permanent upgrades so both layers stack cleanly. */
-  private applyVariantModifiers(variant: VariantDef): void {
-    const { modifiers } = variant;
-
-    if (modifiers.moveSpeedPct) this.player.addSpeed(this.player.getRunBaseSpeed() * modifiers.moveSpeedPct);
-    if (modifiers.maxHpFlat) this.player.addMaxHp(modifiers.maxHpFlat);
-    if (modifiers.armorFlat) this.player.addArmor(modifiers.armorFlat);
-    if (modifiers.pickupRadiusFlat) this.player.addPickupRadius(modifiers.pickupRadiusFlat);
-    if (modifiers.xpMultiplierPct) this.player.addXpMultiplier(modifiers.xpMultiplierPct);
-    if (modifiers.damagePct) this.player.addDamageMultiplier(modifiers.damagePct);
-    if (modifiers.driftReductionPct) this.player.reduceDrift(modifiers.driftReductionPct);
-    if (modifiers.cooldownReductionPct) this.player.addCooldownReduction(modifiers.cooldownReductionPct);
   }
 
   armIFrames(durationMs: number): void {
