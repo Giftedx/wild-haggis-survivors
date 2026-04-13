@@ -19,7 +19,7 @@ describe('Projectile bouncing hit history', () => {
     // Avoid running the real constructor (which touches scene/physics).
     const p: any = Object.create(Projectile.prototype);
     p.isBouncing = true;
-    p.hitTargets = new Set();
+    p.hitTargets = new WeakSet();
 
     // Real enemies always carry `active: true` while alive — without setting
     // it explicitly the test would coerce the missing prop to falsy and mask
@@ -38,7 +38,7 @@ describe('Projectile bouncing hit history', () => {
 
     const p: any = Object.create(Projectile.prototype);
     p.isBouncing = false;
-    p.hitTargets = new Set();
+    p.hitTargets = new WeakSet();
 
     const target = { active: true };
 

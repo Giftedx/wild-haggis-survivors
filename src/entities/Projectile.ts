@@ -19,7 +19,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   /** Time-to-live in ms for bouncing projectiles (range check is unreliable with bounces) */
   private bouncingTTL: number = 0;
   /** Tracks enemies already hit by this projectile (prevents per-frame multi-hits on one enemy for both piercing and bouncing projectiles). */
-  private hitTargets: Set<Phaser.GameObjects.GameObject> = new Set();
+  private hitTargets = new WeakSet<Phaser.GameObjects.GameObject>();
   /** Optional callback fired when this projectile deactivates (used by Highland Games explosion) */
   onDeactivateCallback: (() => void) | null = null;
 
@@ -54,7 +54,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.pierceCount = pierce;
     this.maxRange = maxRange;
     this.isBouncing = false;
-    this.hitTargets.clear();
+    this.hitTargets = new WeakSet();
     this.onDeactivateCallback = null; // Clear any prior override
     // Clear weapon key — non-projectile fire paths (bouncing, homing,
     // exploding, rapid bounce) don't set it, so a stale 'caber_toss' key
@@ -161,7 +161,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setVelocity(0, 0);
-    this.hitTargets.clear(); // Prevent stale refs leaking into next pool cycle
+    this.hitTargets = new WeakSet(); // Prevent stale refs leaking into next pool cycle
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = false;
   }
