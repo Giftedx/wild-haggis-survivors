@@ -1,14 +1,14 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 37 REFLECT)
+**Last updated:** 2026-04-13 (loop 37b REFLECT)
 
 ## Project Phase
-Post-hardening polish. v2.1.0. Core gameplay complete. Type safety done (0 `as any`). Test coverage strong (81/105 files, 631 tests). First full review rotation complete (9/9 areas). Entering diminishing-returns phase on testing — shift toward remaining P2 test gaps + feature completions.
+Test coverage plateau. v2.1.0. 684 tests (+40% from baseline 488). All P1s complete. Only P2 polish + L features remain. Shift to feature work for player-visible value.
 
 ## Top 3 Priorities
-1. **Remaining P2 test gaps** — cameraViewport.ts + EdgeIndicators.ts (moderate value, pure-ish math). After those: only Phaser-dependent or low-ROI items remain.
-2. **Feature completions** — banter weapon evolution moments, DebugOverlay pool/tween/timer surface. These add player-visible value vs more test scaffolding.
-3. **SCOUT when P2 drains** — backlog nearing depletion. When open P2 items are done, SCOUT for fresh high-value work (gameplay bugs, perf opportunities, new content).
+1. **Feature completions** — banter weapon evolution moments, DebugOverlay. Player-visible value over more test scaffolding.
+2. **Remaining P2 polish** — 8 items (doc fixes, code smells, low-ROI tests). Pick only when no feature work available.
+3. **Second review rotation** — if features complete + P2 drains, start fresh cycle at scenes(1) to find new bugs/gaps after all the changes.
 
 ## Done Enough (don't revisit unless bugs surface)
 - Type safety: 0 production `as any` (was 17)
@@ -28,9 +28,9 @@ Post-hardening polish. v2.1.0. Core gameplay complete. Type safety done (0 `as a
 Areas done: scenes(1), entities(2), systems(3), core(4), data(5), ui(6), utils(7), music(8), a11y(9).
 Next cycle starts at scenes(1) if/when needed.
 
-## Metrics Snapshot (2026-04-13, loop 37)
-- Source files: 105, Test files: 81
-- Tests: 631 passing (was 488 at loop 1, +29%)
+## Metrics Snapshot (2026-04-13, loop 37b)
+- Source files: 105, Test files: 86
+- Tests: 684 passing (was 488 at loop 1, +40%)
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
