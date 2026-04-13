@@ -12,3 +12,4 @@
 | 2026-04-13 | 8 | BUILD | Add 16 Player stat tests + verify fireNet not-a-bug | Done — takeDamage/armor/shield, bonus stacking, regen, onLevelUp recalc. 526→542 tests |
 | 2026-04-13 | 9 | BUILD | Add 7 Projectile pierce/range/TTL/callback tests | Done — pierce exhaustion, bouncing immunity, range deactivation, TTL countdown, callback fire-once. 542→549 tests |
 | 2026-04-13 | 10 | REFLECT | Assess 9 loops, update strategy priorities | Done — type safety complete, tests 488→549, bundle budget untouched (forcing next). New priorities: bundle, review rotation, remaining test gaps. |
+| 2026-04-13 | 11 | RESEARCH | Bundle budget: Phaser vendor chunk analysis | Done — Phaser 1197KiB min, not tree-shakeable. Arcade-only saves ~10% but CJS. Best action: manualChunks vendor split for caching. |

@@ -19,9 +19,10 @@
 - [x] Audit `as any` in GameScene.ts — false positive, only in comment
 - [x] Audit `as any` in LevelUpFlow.ts — false positive, only in comment
 - [x] Audit `as any` in PickupSpawner.ts — false positive, only in comment
-- [ ] Investigate Phaser vendor chunk 1.48MB — tree-shaking or dynamic import options (fix_plan, perf)
+- [ ] **Implement vendor chunk split** — add `manualChunks` to vite.config.ts splitting Phaser into separate cacheable chunk. Phaser is 1197 KiB minified, not tree-shakeable. Arcade-only build saves ~10% but is CJS-only, not worth the risk. Vendor split improves cache hit rate for repeat visitors. (researched loop 11)
 - [ ] Confirm PWA precache 1944 KiB acceptable (fix_plan, perf)
 - [x] REVIEW: src/systems/ — done 2026-04-13, 8 tasks generated
+- [x] REVIEW: src/core/ — done 2026-04-13, 0 bugs found. 24 test files / 20 source. SaveManager V6 migration correct. Area is healthy.
 
 ## Low Priority
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)
