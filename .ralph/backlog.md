@@ -72,6 +72,7 @@
 - [x] `musicMath` edge-case tests — loop 77: `smoothstep` vs `smoothstep01`, degenerate edges, `expApproach` τ≤0 snap, `logLerp` non-positive linear fallback (`musicMath.test.ts`).
 - [x] `musicMath` remaining branches — loop 78: `logLerp` t clamp in geometric mode; `softKnee` `span ≤ 0` step (`musicMath.test.ts`).
 - [x] `sortedWeaponDamageEntries` filters non-positive — loop 79 (`RunStatsTracker.test.ts`, Game Over breakdown contract).
+- [x] Tests for `applyAudioFromUserSettings` — loop 80 (autonomous discovery: untested settings→audio bridge; `applyAudioFromSettings.test.ts`, mocked `audio` + `musicEngine`, dead-zone + asymmetric enable).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

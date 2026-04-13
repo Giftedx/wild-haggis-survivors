@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 79 BUILD)
+**Last updated:** 2026-04-13 (loop 80 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 797 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 800 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
@@ -39,11 +39,12 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Loop 77:** `musicMath.test.ts` covers `smoothstep` (incl. degenerate edges), `expApproach` τ≤0 snap-to-target, and `logLerp` linear fallback when an endpoint ≤0.
 - **Loop 78:** `musicMath.test.ts` — `logLerp` clamps `t` in geometric mode; `softKnee` hard step when `span ≤ 0`.
 - **Loop 79:** `RunStatsTracker.test.ts` — `sortedWeaponDamageEntries` omits `damage ≤ 0` (Game Over weapon rows).
+- **Loop 80 (autonomous discovery):** Scanned for untested wiring — `applyAudioFromUserSettings` had 0 tests while used from GameScene / menus / settings; added `applyAudioFromSettings.test.ts` (volume routing + `> 0.001` dead-zone + asymmetric SFX off / music on).
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 79)
-- Source files: 105+, Test files: 102+
-- Tests: 797 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+## Metrics Snapshot (2026-04-13, loop 80)
+- Source files: 105+, Test files: 103+
+- Tests: 800 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
