@@ -26,6 +26,7 @@ import { SettingsScene } from './scenes/SettingsScene';
 import { ShopScene } from './scenes/ShopScene';
 import { ChronicleScene } from './scenes/ChronicleScene';
 import { DeedsScene } from './scenes/DeedsScene';
+import { CurseScene } from './scenes/CurseScene';
 import { SpriteExportScene } from './tools/SpriteExportScene';
 
 /** Dev tool: visit ?export=sprites to download a full sprite sheet PNG */
@@ -53,7 +54,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   scene: isSpriteExport
     ? [BootScene, SpriteExportScene]
-    : [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, SettingsScene],
+    : [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, CurseScene, SettingsScene],
   render: {
     pixelArt: true,
     antialias: false,

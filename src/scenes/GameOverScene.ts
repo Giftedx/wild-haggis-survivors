@@ -12,6 +12,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
+import { getCurseByKey } from '../data/curses';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -187,6 +188,36 @@ export class GameOverScene extends Phaser.Scene {
       this.tweens.add({ targets: variantFlavor, alpha: 1, duration: 260, delay: 430 });
     }
     this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
+
+    // Curse chip — small one-liner acknowledging the curse the player bore.
+    // Sits below the variant chip (one row), above the stats panel. Only
+    // rendered if the run had a curse active.
+    const curseDef = getCurseByKey(this.payload.curseKey ?? null);
+    if (curseDef) {
+      const curseChipY = variantChipY + 38;
+      const curseChip = this.add
+        .rectangle(panelCenterX, curseChipY, 560, 22, 0x2a1830, 0.96)
+        .setScrollFactor(0)
+        .setDepth(d + 2)
+        .setStrokeStyle(1, 0xb35287, 0.9)
+        .setAlpha(0);
+      const curseText = this.add
+        .text(panelCenterX, curseChipY, t('ui.gameOver.curse_chip', {
+          curse: t(curseDef.nameKey),
+          pct: curseDef.goldBonusPct,
+        }), {
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          color: '#e8a0c6',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(d + 3)
+        .setAlpha(0);
+      curseText.setScale(uiScale);
+      this.tweens.add({ targets: [curseChip, curseText], alpha: 1, duration: 260, delay: 500 });
+    }
 
     const statsPanel = this.add
       .rectangle(panelCenterX, panelTop + 204, 596, 92, 0x131d32, 0.95)

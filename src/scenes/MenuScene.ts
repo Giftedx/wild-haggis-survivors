@@ -169,7 +169,7 @@ export class MenuScene extends Phaser.Scene {
     this.playHit = this.createButton(width / 2 - 128, layout.buttonY, 220, 54, t('ui.loadout.play'), COLORS.SCOTTISH_BLUE, () => {
       audio.playClick();
       new SaveManager().clearActiveRun();
-      this.fadeToScene('Game');
+      this.fadeToScene('Curse');
     }, 560);
 
     this.upgradesHit = this.createButton(width / 2 + 128, layout.buttonY, 220, 54, t('ui.loadout.upgrades'), 0x3a4357, () => {
@@ -426,7 +426,7 @@ export class MenuScene extends Phaser.Scene {
     push(this.playHit, () => {
       audio.playClick();
       new SaveManager().clearActiveRun();
-      this.fadeToScene('Game');
+      this.fadeToScene('Curse');
     });
     push(this.upgradesHit, () => {
       audio.playClick();

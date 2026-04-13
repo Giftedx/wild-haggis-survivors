@@ -44,6 +44,8 @@ export interface RunHistoryEntry {
   variantKey: string;
   isVictory: boolean;
   weaponKeys: string[];
+  /** Curse key if the player took one for this run — powers the Chronicle badge. */
+  curseKey?: string;
 }
 
 export interface SaveData {
@@ -96,6 +98,11 @@ export interface RunSummary {
   coinGold?: number;
   bestCombo?: number;
   victory?: boolean;
+  /**
+   * Optional end-of-run gold multiplier, applied inside `computeGoldReward`.
+   * Used by curse-of-the-moor picks. Defaults to 1.0 (no change).
+   */
+  goldMult?: number;
 }
 
 /** Extra context for run history recording (not needed for gold/unlock calculation). */
@@ -104,6 +111,8 @@ export interface RunHistoryContext {
   bossKills: number;
   variantKey: string;
   weaponKeys: string[];
+  /** Curse key active for this run (if any). Passed through to history. */
+  curseKey?: string;
 }
 
 export interface RunResult {
@@ -192,12 +201,12 @@ export function migrateSave(raw: unknown): SaveData {
 
 export function computeGoldReward(summary: RunSummary): number {
   const normalized = normalizeRunSummary(summary);
-  return Math.floor(
+  const base =
     normalized.timeSurvivedSec * 0.4 +
     normalized.enemiesKilled * 0.4 +
     normalized.bossGold +
-    normalized.coinGold
-  );
+    normalized.coinGold;
+  return Math.floor(base * normalized.goldMult);
 }
 
 export function evaluateVariantUnlocks(
@@ -243,6 +252,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     variantKey: context?.variantKey ?? 'classic',
     isVictory: normalizedSummary.victory,
     weaponKeys: context?.weaponKeys ?? [],
+    ...(context?.curseKey ? { curseKey: context.curseKey } : {}),
   };
 
   const nextSave: SaveData = {
@@ -330,7 +340,13 @@ function normalizeRunSummary(summary: RunSummary): Required<RunSummary> {
     coinGold: coerceInteger(summary.coinGold, 0),
     bestCombo: coerceInteger(summary.bestCombo, 0),
     victory: Boolean(summary.victory),
+    goldMult: coerceFinitePositive(summary.goldMult, 1),
   };
+}
+
+function coerceFinitePositive(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return fallback;
+  return value;
 }
 
 function coerceRoundedNonNegative(value: unknown, fallback: number): number {
@@ -355,6 +371,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     weaponKeys: Array.isArray(raw.weaponKeys)
       ? (raw.weaponKeys as unknown[]).filter((x): x is string => typeof x === 'string')
       : [],
+    ...(typeof raw.curseKey === 'string' && raw.curseKey ? { curseKey: raw.curseKey } : {}),
   };
 }
 
