@@ -9,7 +9,7 @@
 - [x] Add tests for SpawnSystem — 11 tests: applyResumeTime (director sync, boss keys, finale state), getSpawnStallReason (4 priorities)
 
 ## Medium Priority
-- [ ] Add tests for XPGem — drop/collect/magnetize/destroy are untested (coverage gap, entities review)
+- [x] Add tests for XPGem — 8 tests: drop (activation, value, scaling), collect (return + deactivate), updateMagnet (radius gate, distance check, skip inactive), forceCollect, destroy cleanup
 - [x] Add tests for Projectile — 7 tests: pierce exhaustion, bouncing immunity, zero-pierce death, range deactivation, TTL countdown, callback fire-once
 - [x] Add Player tests — 16 tests: takeDamage (armor, shield, death), heal, bonus stacking (damage, drift, regen, cooldown, maxHp), tickRegen, onLevelUp stat recalc (speed, drift, pickup)
 - [x] Enemy.fireNet stale-scene risk — NOT A BUG: try/catch in cleanup, activeNetCleanup called on spawn/die/destroy, hit flag prevents double-fire

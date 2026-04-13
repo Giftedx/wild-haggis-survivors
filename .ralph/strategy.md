@@ -24,10 +24,11 @@ Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as 
 Last reviewed: `src/data/` (2026-04-13, 1 finding — banter.ts missing tag validation test. 9/9 test coverage.)
 Next up: `src/ui/` (area 6 in rotation)
 
-## Metrics Snapshot (2026-04-13, loop 10)
-- Source files: 105, Test files: 73
-- Tests: 549 passing (was 488 at loop 1)
+## Metrics Snapshot (2026-04-13, loop 15)
+- Source files: 105, Test files: 75
+- Tests: 563 passing (was 488 at loop 1)
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
 - Build: ~5s clean, lint 0 errors
+- Vendor chunk: 1482 KiB / 340gz, App: 507 KiB / 136gz
