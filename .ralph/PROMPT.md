@@ -51,6 +51,7 @@ Pick the least-recently-reviewed area each cycle.
 - Never modify `.ralph/` or `.ralphrc`.
 - Don't delete `fix_plan.md` — update it in place.
 - If you genuinely believe the project is feature-complete and polished, say so explicitly with STATUS: COMPLETE and reasoning.
+- After completing a task, commit with a descriptive message: `git add -A && git commit -m "<type>: <summary>"`
 
 ## Status Block
 
