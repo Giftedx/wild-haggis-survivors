@@ -10,6 +10,8 @@ import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
+import { getEnemyDisplayName } from '../data/enemies';
+import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -123,6 +125,14 @@ export class GameOverScene extends Phaser.Scene {
       ease: 'Back.easeOut',
     });
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
+
+    // "Whit got ye" insight — death only. Single compact line combining the
+    // classified headline + takeaway tip, fit into the gap between subtitle
+    // (+94) and variant chip (+140). Soul Charter: failure must be
+    // *informative and compassionate, never shaming*.
+    if (!isVictory && this.payload.deathCause) {
+      this.renderDeathInsight(panelCenterX, panelTop + 118, d + 3, this.payload.deathCause, uiScale, PANEL_W);
+    }
 
     // Variant chip — warm identity reminder with haggis sprite + flavor text
     const variantChipY = panelTop + 140;
@@ -338,6 +348,40 @@ export class GameOverScene extends Phaser.Scene {
       musicEngine.stop();
       this.scene.start('MainMenu');
     });
+  }
+
+  /**
+   * Renders a single italic line blending the classified headline + takeaway
+   * tip for the death insight. `{source}` is interpolated with a
+   * display-name-resolved enemy label when the classifier identified a
+   * dominant source; otherwise "something" as a voice-appropriate fallback.
+   */
+  private renderDeathInsight(
+    centerX: number,
+    y: number,
+    depth: number,
+    cause: DeathCause,
+    uiScale: number,
+    panelWidth: number,
+  ): void {
+    const sourceLabel = cause.sourceKey ? getEnemyDisplayName(cause.sourceKey) : 'something';
+    const headline = t(headlineKeyFor(cause), { source: sourceLabel });
+    const tip = t(tipKeyFor(cause));
+    const text = this.add
+      .text(centerX, y, `${headline} — ${tip}`, {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#dcc38a',
+        fontStyle: 'italic',
+        align: 'center',
+        wordWrap: { width: panelWidth - 48 },
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0);
+    text.setScale(uiScale);
+    this.tweens.add({ targets: text, alpha: 1, duration: 320, delay: 380 });
   }
 
   private addRunResultUnlockContent(

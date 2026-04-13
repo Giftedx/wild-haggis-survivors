@@ -1,5 +1,6 @@
 import type { RunResult, RunSummary } from '../utils/save';
 import type { PersonalBests } from '../core/SaveManager';
+import type { DeathCause } from '../core/deathCauseClassifier';
 
 /** Serializable run result passed from GameScene → GameOverScene (scene.start payload). */
 export interface GameOverPayload {
@@ -25,4 +26,6 @@ export interface GameOverPayload {
   seedCode?: string;
   /** True when this run was a Daily Challenge attempt. */
   isDaily?: boolean;
+  /** Classified reason for death — only set when `mode === 'death'`. */
+  deathCause?: DeathCause;
 }

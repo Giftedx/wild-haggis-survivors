@@ -52,6 +52,80 @@ export const EN_STRINGS: LocaleTree = {
       enter_seed: 'Enter custom seed...',
       seed_prompt: 'Enter a 7-character seed code (or a number):',
       seed_invalid: 'That seed didn\'t take — check it and try again.',
+      chronicle: 'THE HERD CHRONICLE',
+      deeds: 'YIR DEEDS',
+    },
+    chronicle: {
+      // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──
+      title: 'THE HERD CHRONICLE',
+      /** Subtitle when there's nothing to show — a fresh save. Hearth. */
+      sub_empty: 'The page is blank. The moor is waitin — make a mark.',
+      /** Exactly one entry. Hearth. */
+      sub_first_run: 'First run logged. The ink\'s still wet.',
+      /** 2+ trailing victories — Edge voice, deadpan pride. */
+      sub_victory_streak: 'On a roll. Every last wan o\' them.',
+      /** Last run was a win (no streak yet) — Edge. */
+      sub_fresh_victory: 'That\'s yir lot, eh? Braw.',
+      /** 3+ losses in a row — Hearth compassion, no shaming. */
+      sub_loss_streak: 'Rough stretch. The herd still believes in ye.',
+      /** Recent avg trending up. Hearth. */
+      sub_improving: 'Pure flying lately. Keep the heid.',
+      /** Recent avg trending down. Hearth, gentle. */
+      sub_declining: 'Wee dip — the moor\'s no\' impressed, but it\'s no\' done wi\' ye.',
+      /** Default. Hearth. */
+      sub_steady: 'Haudin yir ain. The glen remembers every hoofprint.',
+
+      // ── Lifetime panel ──
+      lifetime_heading: 'LIFETIME ON THE MOOR',
+      stat_runs: 'Runs',
+      stat_victories: 'Wins',
+      stat_win_rate: 'Win Rate',
+      stat_total_culls: 'Total culls',
+      stat_total_gold: 'Gold banked',
+      stat_time_on_moor: 'Time on the moor',
+      stat_best_time: 'Longest run',
+      stat_best_kills: 'Most culls',
+      stat_best_combo: 'Best combo',
+
+      // ── Milestones panel ──
+      milestones_heading: 'MILESTONES',
+      milestone_first_victory: 'First win: {time} survived, {kills} culls',
+      milestone_first_victory_none: 'First win — still oot there, waitin on ye.',
+      milestone_longest: 'Longest run — {time} ({variant})',
+      milestone_most_kills: 'Most culls in a run — {kills} ({variant})',
+      milestone_highest_combo: 'Best combo — {combo}x',
+      milestone_favorite_variant: 'Favourite wee beastie — {variant} ({count} runs)',
+      milestone_favorite_weapon: 'Weapon of choice — {weapon} ({count} runs)',
+      milestone_win_streak: 'On a {count}-run winning streak ✓',
+
+      // ── Run list ──
+      runs_heading: 'RECENT RUNS',
+      runs_empty: 'Nothin logged yet. Go bag the first tale.',
+      runs_cap_note: 'The last {max} runs are kept. Older tales fade intae the mist.',
+      run_row_victory: '✦ {time} · {kills} culls · L{level} · {variant}',
+      run_row_defeat: '{time} · {kills} culls · L{level} · {variant}',
+      run_daily_tag: '[DAILY]',
+
+      // ── Actions ──
+      back: 'BACK',
+    },
+    deeds: {
+      title: 'YIR DEEDS',
+      /** Subtitle shown when 0 deeds earned — Hearth warmth, no pressure. */
+      sub_empty: 'Nae deeds stamped yet. That\'s fine — the moor keeps count.',
+      /** Subtitle shown when some but not all earned — Hearth. */
+      sub_partial: '{earned} of {total} pinned tae the board. Go bag the rest.',
+      /** All 9 earned — Edge voice, dry pride. */
+      sub_complete: 'Every last wan o\' them. The full board. Pure legend.',
+      /** Header chip showing tally. */
+      counter: '{earned} / {total} done',
+      /** Label under a locked/binary deed whose trigger we won\'t spoil. */
+      locked_mystery: 'A rumour on the moor. Find it yirself.',
+      /** Status tags. */
+      status_locked: 'NOT YET',
+      status_in_progress: 'ON THE WAY',
+      status_unlocked: 'DONE',
+      back: 'BACK',
     },
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back bolder. The herd believes in ye.',
@@ -123,6 +197,33 @@ export const EN_STRINGS: LocaleTree = {
       seed_daily: 'Daily seed: {code}',
       seed_copy_hint: 'tap to copy',
       seed_copied: 'Copied: {code}',
+
+      // ── "Whit got ye" death reflection panel ──
+      // Voice-driven, compassionate. Headlines describe WHAT happened; tips
+      // give ONE concrete takeaway. Hearth register by default; Edge voice
+      // only where it earns it (boss respect, deadpan acknowledgment).
+      whit_heading: 'WHIT GOT YE',
+
+      // Headlines — present tense, warm. `{source}` interpolated with the
+      // resolved enemy name where available.
+      whit_headline_hazard: 'The moor itself burned ye — watch the ground, pal.',
+      whit_headline_boss_crushed: 'The {source} caught ye squarely. That\'s yir lot.',
+      whit_headline_elite_kill: 'A golden {source} — hit harder than it looked.',
+      whit_headline_one_shot: 'A {source} hit that should not\'ve landed. Heavy swing, nae warning.',
+      whit_headline_same_killer: 'A {source} stuck tae ye — kept chippin away.',
+      whit_headline_swarmed: 'Swarmed — three kinds at once and nae room tae breathe.',
+      whit_headline_low_hp_neglect: 'Ye were hurt for a while, pal. The moor noticed.',
+      whit_headline_unlucky: 'Just one o\' they runs. The moor\'s fickle.',
+
+      // Tips — one actionable line each. Same voice register.
+      whit_tip_hazard: 'Next time, dash clear o\' the glowin ground. It disnae forgive.',
+      whit_tip_boss_crushed: 'Kite the big yins. Save yir dash for their wind-ups.',
+      whit_tip_elite_kill: 'Gold glow means trouble — burn it down first, the rest can wait.',
+      whit_tip_one_shot: 'Big hits want space. Keep yir distance when ye see a heavy frame.',
+      whit_tip_same_killer: 'When somethin sticks, break the rhythm — dash sideways, no\' back.',
+      whit_tip_swarmed: 'Keep movin. Corners kill ye faster than any single beastie.',
+      whit_tip_low_hp_neglect: 'Find a quiet corner when yir low. A healin chest can turn a run.',
+      whit_tip_unlucky: 'Shake it aff. The next run\'s already waitin.',
     },
     metaShop: {
       title: 'LASTING BOONS',
