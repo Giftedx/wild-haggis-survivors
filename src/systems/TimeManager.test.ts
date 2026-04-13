@@ -115,6 +115,35 @@ describe('TimeManager token stack', () => {
     expect(tm.getTokenCount()).toBe(0);
     expect(state.timeScale).toBe(1);
   });
+
+  it('update ignores non-positive deltaMs (duration tokens do not expire)', () => {
+    const { adapter } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.requestForDuration('X', {}, 10);
+    expect(tm.has('X')).toBe(true);
+    tm.update(-5);
+    tm.update(0);
+    expect(tm.has('X')).toBe(true);
+    tm.update(10);
+    expect(tm.has('X')).toBe(false);
+  });
+
+  it('update is a no-op when there are no tokens', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.update(9999);
+    expect(tm.getTokenCount()).toBe(0);
+    expect(state.timeScale).toBe(1);
+    expect(state.physicsPaused).toBe(false);
+  });
+
+  it('getActiveTokenKeys returns keys in sorted order', () => {
+    const { adapter } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.request('zebra', { timeScale: 0.5 });
+    tm.request('apple', { timeScale: 0.3 });
+    expect(tm.getActiveTokenKeys()).toEqual(['apple', 'zebra']);
+  });
 });
 
 describe('createPhaserTimeAdapter null guards', () => {

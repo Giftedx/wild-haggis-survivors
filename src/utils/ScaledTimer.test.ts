@@ -10,6 +10,20 @@ describe('ScaledTimer', () => {
     expect(t.isActive()).toBe(true);
   });
 
+  it('does not advance when timeScale is negative', () => {
+    const t = new ScaledTimer();
+    t.start(1000);
+    t.tick(500, -0.5);
+    expect(t.getRemainingMs()).toBe(1000);
+  });
+
+  it('tick is a no-op when timer is inactive', () => {
+    const t = new ScaledTimer();
+    t.tick(10_000, 1);
+    expect(t.getRemainingMs()).toBe(0);
+    expect(t.isActive()).toBe(false);
+  });
+
   it('advances by delta * timeScale', () => {
     const t = new ScaledTimer();
     t.start(1000);

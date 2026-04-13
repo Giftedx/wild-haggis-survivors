@@ -51,3 +51,4 @@
 | 2026-04-13 | 49 | REFLECT | Final assessment — project at steady state | Done — 696 tests (+43%), 87/105 files. All P1s done, 2 review rotations complete. 11 open items all P2/Low diminishing returns. Strategy updated to reflect completion. |
 | 2026-04-13 | 50 | SCOUT→BUILD | Backlog only deferred euclidean; add biome i18n smoke | Done — `src/data/biomeI18n.smoke.test.ts` resolves all `BIOMES` nameKey + entryToastKey. 747 tests, build clean. |
 | 2026-04-13 | 51 | BUILD | TimeManager release idempotency + ScaledTimer stop/start clamp tests | Done — `TimeManager.test.ts` + `ScaledTimer.test.ts`; 758 tests, `npm run build` clean. |
+| 2026-04-13 | 52 | SCOUT→BUILD | Backlog thin; extend time + timer unit tests | Done — `TimeManager.update` guards, `getActiveTokenKeys`, `ScaledTimer` inactive/negative scale ticks. 763 tests, build clean. |
