@@ -45,7 +45,9 @@
 - [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
 - [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
 - [ ] CaptionOverlay 0 tests — Phaser scene-dependent, needs full mock (P2, a11y review, low ROI)
-- [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 1 finding (CaptionOverlay no tests). 5 files, 23 tests, area healthy.
+- [ ] a11yText.contrastColor uses falsy check (`!hcOverride`) — empty string "" treated as no-override; use explicit `=== undefined` (P2, a11y review)
+- [ ] CaptionManager.enqueue accepts durationMs ≤ 0 — silently evicted on next update, add guard (P2, a11y review)
+- [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

@@ -32,4 +32,4 @@
 | 2026-04-13 | 34 | BUILD | Add 9 NoteScheduler tests | Done — start delay, lookahead scheduling, min-interval floors (3), tab-recovery, reset. 597→616 tests. |
 | 2026-04-13 | 32b | BUILD | Add 10 euclidean() tests + export fn | Done — edge cases, known patterns, invariants. Found impl ≠ Bjorklund (front-weighted). 607→616 tests. |
 | 2026-04-13 | 35 | BUILD | Add 15 Conductor mood/resolution/melody tests | Done — mood axes, kill rate, resolution descent, nextNote shape/freq/interval, getMood. 616→631 tests. |
-| 2026-04-13 | 36 | REVIEW | Review src/systems/a11y/ (rotation area 9, FINAL) | Done — 1 finding (CaptionOverlay 0 tests, P2). 5 files, 23 existing tests, area healthy. **Review rotation complete — all 9 areas done.** |
+| 2026-04-13 | 36 | REVIEW | Review src/systems/a11y/ (rotation area 9, FINAL) | Done — 3 findings (CaptionOverlay 0 tests, contrastColor falsy, durationMs guard). 5 files, 23 tests. **All 9 review areas complete.** |
