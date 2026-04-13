@@ -117,7 +117,12 @@ export class XPSystem {
   private levelUpInProgress: boolean = false;
 
   private collectGem(gem: XPGem): void {
-    const value = gem.collect();
+    const rawValue = gem.collect();
+    // Heather Bloom biome bumps gem value slightly (1.1×). Integer XP values
+    // feel more authored than fractions — round up so players never feel
+    // cheated by a truncation.
+    const biomeMul = this.scene.getPlayer()?.getBiomeXpMultiplier?.() ?? 1;
+    const value = biomeMul === 1 ? rawValue : Math.ceil(rawValue * biomeMul);
     this.currentXP += value;
     this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
 

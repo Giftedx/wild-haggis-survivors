@@ -416,6 +416,24 @@ export const EN_STRINGS: LocaleTree = {
       kite: 'The drift pulls clockwise — like the Clockwork Orange. Lean intae it.',
     },
   },
+  biomes: {
+    bog: {
+      name: 'The Bog',
+      entry: 'Intae the bog, wee man — watch yir hooves.',
+    },
+    loch: {
+      name: 'Loch Edge',
+      entry: 'Loch\'s watchin\'. Somethin\' under there.',
+    },
+    pine: {
+      name: 'Pine Thicket',
+      entry: 'Dark amang the pines. Stay sharp.',
+    },
+    heather: {
+      name: 'Heather Bloom',
+      entry: 'The heather\'s singin\' — this is haggis country.',
+    },
+  },
   metaItem: {
     speed_tier_1: {
       name: 'Sprint Boots',

@@ -47,6 +47,9 @@ import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
+import { BiomeManager, createBiomeLayout } from '../systems/BiomeManager';
+import { BiomeRenderer } from '../systems/BiomeRenderer';
+import { BIOMES, type BiomeId } from '../data/biomes';
 import {
   computeAutoBattleSteering,
   installAutoBattleTimeScale,
@@ -183,6 +186,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastEmittedRunSecond = -1;
   private achievementUnsub: (() => void) | null = null;
   private bossEnrageUnsub: (() => void) | null = null;
+  private biomeManager: BiomeManager | null = null;
+  private biomeRenderer: BiomeRenderer | null = null;
+  /** Which biome the player was in last frame — used to detect entry for toasts. */
+  private lastPlayerBiome: BiomeId | null = null;
+  /** Biomes already toasted this run — each biome announces itself once. */
+  private toastedBiomes = new Set<BiomeId>();
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -289,6 +298,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Draw the Highland ground
     this.createHighlandTerrain();
+
+    // Biome partition — voronoi regions seeded from the run RNG.
+    // Rendered as a soft tinted overlay on top of the terrain.
+    const biomeLayout = createBiomeLayout(
+      this.runRng.branch(),
+      GAME.WORLD_WIDTH,
+      GAME.WORLD_HEIGHT,
+    );
+    this.biomeManager = new BiomeManager(biomeLayout);
+    this.biomeRenderer = new BiomeRenderer(this, this.biomeManager);
+    this.lastPlayerBiome = null;
+    this.toastedBiomes.clear();
 
     // Create the player (resume position) or world center.
     // Seeded / daily runs can override the saved variant so all players
@@ -767,6 +788,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
 
     this.tickMapZones(scaledDelta);
+    this.tickBiome();
     // Player input/movement stays on raw delta so controls stay snappy during
     // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
     // responsiveness). Game-time systems below use scaledDelta so regen, AI,
@@ -2841,6 +2863,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
     }
   }
+
+  /**
+   * Update player's current biome; fire an entry toast the first time the
+   * player walks into each biome this run. Cheap: a single grid lookup.
+   */
+  private tickBiome(): void {
+    if (!this.biomeManager) return;
+    const current = this.biomeManager.biomeAt(this.player.x, this.player.y);
+    if (current === this.lastPlayerBiome) return;
+    this.lastPlayerBiome = current;
+    if (!this.toastedBiomes.has(current)) {
+      this.toastedBiomes.add(current);
+      const def = BIOMES[current];
+      this.juice.showToast(t(def.entryToastKey), def.toastColor);
+    }
+    this.player.setBiomeModifier(BIOMES[current].modifier);
+  }
+
+  getCurrentBiomeId(): BiomeId | null {
+    if (!this.biomeManager || !this.player) return null;
+    return this.biomeManager.biomeAt(this.player.x, this.player.y);
+  }
+
+  getBiomeManager(): BiomeManager | null { return this.biomeManager; }
 
   getPlayer(): Player { return this.player; }
   getTimeManager(): TimeManager { return this.timeManager; }

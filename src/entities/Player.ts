@@ -63,6 +63,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   // Final computed stats
   private moveSpeed: number = PLAYER.SPEED;
+  /** Biome-driven speed multiplier — e.g. 0.85 in the bog. 1 = no effect. */
+  private biomeSpeedMul: number = 1;
+  /** Biome-driven knockback bonus applied on incoming damage. 1 = no effect. */
+  private biomeKnockbackBonus: number = 1;
+  /** Biome-driven XP gem value multiplier — read by XPSystem at collect time. */
+  private biomeXpMul: number = 1;
   private driftDegrees: number = PLAYER.DRIFT_DEGREES;
 
   // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
@@ -306,8 +312,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.y > GAME.WORLD_HEIGHT - 20) pushY = -pushStrength;
 
     this.setVelocity(
-      drifted.x * this.moveSpeed * edgeMul + pushX,
-      drifted.y * this.moveSpeed * edgeMul + pushY
+      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul + pushX,
+      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul + pushY
     );
 
     // Rotate sprite to face movement direction
@@ -471,6 +477,38 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   setThorns(damage: number): void { this.thornsDamage = damage; }
+
+  /**
+   * Apply the biome's mechanical modifier. Called once per biome entry from
+   * GameScene.tickBiome — inexpensive enough to re-apply each frame if
+   * callers prefer, since it's just field assignment.
+   */
+  setBiomeModifier(kind: 'bogSlow' | 'lochKnockback' | 'pineConcealment' | 'heatherBloom'): void {
+    // Default (neutral) state.
+    this.biomeSpeedMul = 1;
+    this.biomeKnockbackBonus = 1;
+    this.biomeXpMul = 1;
+    switch (kind) {
+      case 'bogSlow':
+        this.biomeSpeedMul = 0.85;
+        break;
+      case 'lochKnockback':
+        this.biomeKnockbackBonus = 1.5;
+        break;
+      case 'pineConcealment':
+        // Concealment is enforced by enemy AI reading getCurrentBiomeId — no
+        // player-side state needed. Left explicit so the switch is exhaustive.
+        break;
+      case 'heatherBloom':
+        this.biomeXpMul = 1.1;
+        break;
+    }
+  }
+
+  /** Read by XPSystem to bump gem value when collected in heather bloom. */
+  getBiomeXpMultiplier(): number { return this.biomeXpMul; }
+  /** Read by damage handlers to amplify knockback at the loch edge. */
+  getBiomeKnockbackBonus(): number { return this.biomeKnockbackBonus; }
   getThornsDamage(): number { return this.thornsDamage; }
   getProjectileSpeedMul(): number { return this.bonusProjectileSpeedMul; }
   getKnockbackMul(): number { return this.bonusKnockbackMul; }
