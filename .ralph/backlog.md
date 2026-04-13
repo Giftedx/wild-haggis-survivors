@@ -46,7 +46,7 @@
 - [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
 - [ ] CaptionOverlay 0 tests — Phaser scene-dependent, needs full mock (P2, a11y review, low ROI)
 - [ ] a11yText.contrastColor uses falsy check (`!hcOverride`) — empty string "" treated as no-override; use explicit `=== undefined` (P2, a11y review)
-- [ ] CaptionManager.enqueue accepts durationMs ≤ 0 — silently evicted on next update, add guard (P2, a11y review)
+- [x] CaptionManager.enqueue accepts durationMs ≤ 0 — fixed: early return guard + test. 647→648 tests.
 - [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
 - [ ] Add tests for spatialCull.ts — pure rect-bound checks, hot path (per-frame culling), 0 deps (P1, scout)
