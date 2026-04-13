@@ -28,7 +28,7 @@
 - [x] **HUD.ts: pause button listeners** — NOT A BUG: Phaser's GameObject.destroy() calls removeInteractive() + removeAllListeners() internally. HUD.destroy() destroys all elements → listeners cleaned.
 - [x] **HUD.ts: tween leak** — NOT A BUG: flash/glow tweens are one-shot (400-500ms) with onComplete→destroy(). Scene shutdown() → TweenManager.shutdown() kills all remaining tweens. No orphans.
 - [x] **Minimap.ts: triangle rotation sign** — NOT A BUG: `- ca * -size * 0.7` = `+ ca * size * 0.7` is correct mirror of b-point across heading axis. Standard 2D rotation matrix, symmetric base vertices verified.
-- [ ] Add tests for cameraViewport.ts — zoom-corrected viewport math, inset fallback, cache staleness (P2, ui review)
+- [x] Add tests for cameraViewport.ts — 9 tests: zoom=1, zoom=2 offset+scale, zoom=0 falsy fallback, zoom=0.0001 clamp, cache hit (same frame), cache miss (new frame), cache miss (different scene), resetCache, camera-null fallback. 631→640 tests.
 - [ ] Add tests for EdgeIndicators.ts — screen-edge geometry, off-screen detection, empty enemy list (P2, ui review)
 
 - [x] Add tests for inputMath.ts — 18 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel, custom maxLen), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz, magnitude sweep). 563→581 tests.
