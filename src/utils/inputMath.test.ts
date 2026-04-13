@@ -60,6 +60,12 @@ describe('mergeMoveVectors', () => {
     const v = mergeMoveVectors({ x: 1, y: 0 }, { x: -1, y: 0 });
     expectVec(v, 0, 0);
   });
+
+  it('respects custom maxLen', () => {
+    const v = mergeMoveVectors({ x: 3, y: 0 }, { x: 3, y: 0 }, 2);
+    expect(vecLen(v)).toBeCloseTo(2, 5);
+    expectVec(v, 2, 0);
+  });
 });
 
 describe('gamepadStickToMove', () => {
@@ -101,5 +107,13 @@ describe('gamepadStickToMove', () => {
     expectVec(gamepadStickToMove(0.4, 0, 0.5), 0, 0);
     const v = gamepadStickToMove(0.6, 0, 0.5);
     expect(v.x).toBeGreaterThan(0);
+  });
+
+  it('magnitude ≤ 1 for all stick positions', () => {
+    for (const lx of [-1, -0.5, 0, 0.5, 1]) {
+      for (const ly of [-1, -0.5, 0, 0.5, 1]) {
+        expect(vecLen(gamepadStickToMove(lx, ly))).toBeLessThanOrEqual(1 + EPSILON);
+      }
+    }
   });
 });
