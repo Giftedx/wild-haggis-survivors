@@ -6,9 +6,10 @@ import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {
-    saveVersion: 7 as const,
+    saveVersion: 8 as const,
     totalKills: 0,
     totalKillsSpent: 0,
+    dailyChallenge: null,
     unlockedWeapons: [] as string[],
     unlockedUpgrades: [] as string[],
     activeRun: null,

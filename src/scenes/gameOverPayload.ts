@@ -21,4 +21,8 @@ export interface GameOverPayload {
   weaponDamage: Record<string, number>;
   /** Historical bests captured BEFORE this run was recorded — used for "NEW BEST!" comparison. */
   previousBests?: PersonalBests;
+  /** User-facing share code for this run's RNG seed — shown on the result screen. */
+  seedCode?: string;
+  /** True when this run was a Daily Challenge attempt. */
+  isDaily?: boolean;
 }

@@ -297,7 +297,9 @@ export class WeaponSystem {
   /** Compute effective damage with global multiplier + crit roll */
   private effectiveDamage(w: ActiveWeapon): { damage: number; isCrit: boolean } {
     const baseDmg = Math.ceil(w.damage * this.damageMultiplier);
-    const isCrit = Math.random() < this.critChance;
+    // Crit via seeded RNG — replaying a run with the same seed produces the
+    // same crits on the same enemies, which is what makes shared seeds fair.
+    const isCrit = this.scene.getRunRng().bool(this.critChance);
     return { damage: isCrit ? Math.ceil(baseDmg * this.critDamageMultiplier) : baseDmg, isCrit };
   }
 

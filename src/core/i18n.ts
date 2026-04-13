@@ -41,6 +41,17 @@ export const EN_STRINGS: LocaleTree = {
       trend_steady: 'haudin yir ain',
       trend_declining: 'the moor\'s no\' impressed',
       trend_new: 'first hoofprints on the moor',
+      // ── Daily Challenge + seeded runs ──
+      daily_challenge: 'DAILY CHALLENGE',
+      /** Subtitle when the player hasn't attempted today's daily. */
+      daily_fresh: 'Today: {code}  ·  No attempt yet',
+      /** Subtitle after a victory on today's daily. */
+      daily_cleared: 'Today: {code}  ·  Cleared ✓',
+      /** Subtitle mid-run-cycle — tried but not yet completed. */
+      daily_attempts: 'Today: {code}  ·  {attempts} attempt(s)',
+      enter_seed: 'Enter custom seed...',
+      seed_prompt: 'Enter a 7-character seed code (or a number):',
+      seed_invalid: 'That seed didn\'t take — check it and try again.',
     },
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back bolder. The herd believes in ye.',
@@ -107,6 +118,11 @@ export const EN_STRINGS: LocaleTree = {
       unlock_multi: 'NEW VARIANTS — THE HERD GROWS',
       next_tip: 'FOR THE NEXT RUN',
       new_best: 'YA DANCER!',
+      // ── Seed share / daily readout ──
+      seed_normal: 'Seed: {code}',
+      seed_daily: 'Daily seed: {code}',
+      seed_copy_hint: 'tap to copy',
+      seed_copied: 'Copied: {code}',
     },
     metaShop: {
       title: 'LASTING BOONS',

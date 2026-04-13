@@ -21,6 +21,7 @@ import { formatRunVariantLabel, getVariantByKey, VariantDef } from '../data/vari
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
+import { createRNG, randomSeed, encodeSeed, currentDailyDateKey, type RNG } from '../utils/rng';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager, type IRunState } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
@@ -53,6 +54,19 @@ import {
 /**
  * GameScene — the core gameplay loop.
  */
+/** Payload for `scene.start('Game', data)` — enables seeded / daily runs. */
+export interface GameSceneInitData {
+  seed?: number | null;
+  isDaily?: boolean;
+  /**
+   * Force a specific variant without touching the user's saved loadout
+   * choice. Used for daily challenges (everyone plays the same variant)
+   * and shared seed codes (fair comparison requires identical starting
+   * conditions).
+   */
+  forceVariantKey?: string;
+}
+
 export class GameScene extends Phaser.Scene implements ISceneContext {
   private player!: Player;
   private spawnSystem!: SpawnSystem;
@@ -87,6 +101,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private activeVariant!: VariantDef;
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
   private chestDurationBonusMs: number = 0;
+
+  /**
+   * Run-scoped seeded PRNG for gameplay decisions (card draws, elite rolls,
+   * loot rarity, weighted spawns, crit). Set in `create()` from the seed
+   * passed via `init(data)` — daily challenge / shared seed codes / replay.
+   */
+  private runRng!: RNG;
+  /** Pending seed passed via init() data. Consumed in create(). */
+  private pendingRunSeed: number | null = null;
+  /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */
+  private runIsDaily: boolean = false;
+  /** Optional variant override from init data (seeded / daily runs). Cleared in create(). */
+  private pendingForceVariantKey: string | null = null;
 
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
   private pickupDespawnHandles: TickerHandle[] = [];
@@ -176,6 +203,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return txt;
   }
 
+  init(data?: GameSceneInitData): void {
+    // Accept the optional seed + daily flag from `scene.start('Game', data)`.
+    // Phaser re-runs init on every scene.start, so this is the right hook
+    // for per-run entry parameters. create() promotes these into the run-
+    // scoped RNG and daily-tracking fields.
+    this.pendingRunSeed = typeof data?.seed === 'number' ? data.seed : null;
+    this.runIsDaily = Boolean(data?.isDaily);
+    this.pendingForceVariantKey = typeof data?.forceVariantKey === 'string' ? data.forceVariantKey : null;
+  }
+
   create(): void {
     const save = loadSave();
 
@@ -190,6 +227,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runId = {};
     this.iFrameGeneration = 0;
     this.chestDurationBonusMs = 0;
+    // Initialize the run-scoped RNG from the seed passed via init().
+    // Default: a fresh random seed so normal runs still vary. The seed is
+    // recorded in the run summary on game-over so players can share it.
+    const runSeed = this.pendingRunSeed ?? randomSeed();
+    this.runRng = createRNG(runSeed);
+    this.pendingRunSeed = null;
     this.pendingChests = [];
     this.pickupDespawnHandles = [];
     this.updateTickers.clear();
@@ -237,10 +280,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Draw the Highland ground
     this.createHighlandTerrain();
 
-    // Create the player (resume position) or world center
+    // Create the player (resume position) or world center.
+    // Seeded / daily runs can override the saved variant so all players
+    // face the same starting conditions — required for fair leaderboards
+    // and shareable seeds. Override is ignored when resuming a run.
     const selectedVariant = resumeRun
       ? getVariantByKey(resumeRun.selectedVariantKey)
-      : getVariantByKey(save.selectedVariant);
+      : getVariantByKey(this.pendingForceVariantKey ?? save.selectedVariant);
+    this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
     const metaSave = this.metaSaveManager.load();
     const composedStats = StatComposer.getPlayerStats(metaSave);
@@ -357,15 +404,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         }
       }
 
-      // 5% chance to drop a health orb on kill (bosses always drop)
-      if (wasBoss || Math.random() < 0.05) {
+      // 5% chance to drop a health orb on kill (bosses always drop).
+      // Gameplay RNG — seeded so daily/shared runs drop at the same moments.
+      if (wasBoss || this.runRng.bool(0.05)) {
         this.spawnHealthOrb(x, y, wasBoss ? 25 : 5);
       }
 
-      // 2% chance to drop gold coins (elites 10%, bosses always)
+      // 2% chance to drop gold coins (elites 10%, bosses always).
       const goldChance = wasBoss ? 1 : (wasElite ? 0.10 : 0.02);
-      if (Math.random() < goldChance) {
-        this.spawnGoldCoin(x, y, wasBoss ? Phaser.Math.Between(5, 15) : Phaser.Math.Between(1, 3));
+      if (this.runRng.bool(goldChance)) {
+        this.spawnGoldCoin(x, y, wasBoss ? this.runRng.int(5, 15) : this.runRng.int(1, 3));
       }
 
       if (wasBoss) {
@@ -481,8 +529,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Treasure chest timer — spawns every 45 seconds (scaled; freezes on pause)
     this.pendingChests = [];
     this.updateTickers.addInterval('scaled', 45000, () => {
-      // 20% chance of golden chest (gold reward instead of heal)
-      const golden = Math.random() < 0.2;
+      // 20% chance of golden chest (gold reward instead of heal) — seeded
+      // so the same run always gets the same chest type at each spawn.
+      const golden = this.runRng.bool(0.2);
       if (this.timeManager.isGameplayPaused()) {
         this.pendingChests.push({ golden });
       } else if (golden) {
@@ -860,7 +909,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
-    const cards = drawCards(pool, cardCount, luckBonus);
+    const cards = drawCards(pool, cardCount, luckBonus, () => this.runRng.next());
 
     const evoRecipe = findEligibleChestEvolution(
       ownedWeapons,
@@ -909,7 +958,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
-    const cards = drawCards(pool, cardCount, luckBonus);
+    const cards = drawCards(pool, cardCount, luckBonus, () => this.runRng.next());
 
     this.upgradeUI.show(cards, level);
     audio.playClick();
@@ -1155,7 +1204,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (luckyStart > 0) {
       const available = PASSIVE_KEYS.filter((k) => !this.ownedPassives.includes(k));
       if (available.length > 0) {
-        const randomPassive = available[Math.floor(Math.random() * available.length)];
+        // Seeded pick — the "lucky" starter passive is the same for a given
+        // seed across attempts, so daily challenges are fair.
+        const randomPassive = this.runRng.pick(available);
         this.ownedPassives.push(randomPassive);
         this.applyPassiveEffect(randomPassive);
       }
@@ -1799,6 +1850,36 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       variantKey: this.activeVariant.key,
       isVictory: summary.victory ?? false,
       weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
+      runSeed: this.runRng.seed,
+      isDaily: this.runIsDaily,
+    });
+    if (this.runIsDaily) {
+      this.recordDailyChallengeResult(summary);
+    }
+  }
+
+  /**
+   * Update the per-day Daily Challenge record. Called only for daily runs.
+   * Bumps attempts, updates best-time/kill records, and marks completion on
+   * the first victory today. If the record is for a past date (e.g. player
+   * left the run open overnight), we start a fresh record for today.
+   */
+  private recordDailyChallengeResult(summary: RunSummary): void {
+    const todayKey = currentDailyDateKey();
+    this.metaSaveManager.update((cur) => {
+      const prior = cur.dailyChallenge && cur.dailyChallenge.dateKey === todayKey
+        ? cur.dailyChallenge
+        : { dateKey: todayKey, bestTimeSec: 0, bestEnemiesKilled: 0, attempts: 0, completedVictory: false };
+      return {
+        ...cur,
+        dailyChallenge: {
+          dateKey: todayKey,
+          bestTimeSec: Math.max(prior.bestTimeSec, summary.timeSurvivedSec),
+          bestEnemiesKilled: Math.max(prior.bestEnemiesKilled, summary.enemiesKilled),
+          attempts: prior.attempts + 1,
+          completedVictory: prior.completedVictory || Boolean(summary.victory),
+        },
+      };
     });
   }
 
@@ -1823,6 +1904,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       variantKey: this.activeVariant.key,
       weaponDamage: this.runStatsTracker.snapshot(),
       previousBests,
+      seedCode: encodeSeed(this.runRng.seed),
+      isDaily: this.runIsDaily,
     };
   }
 
@@ -2692,6 +2775,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
   getStatusFxPool(): StatusFxPool {
     return this.statusFxPool;
+  }
+  getRunRng(): RNG {
+    return this.runRng;
+  }
+
+  /** The numeric seed for this run. Consumed by run-summary + game-over UI. */
+  getRunSeed(): number {
+    return this.runRng.seed;
+  }
+
+  /** The user-facing shareable code for this run's seed. */
+  getRunSeedCode(): string {
+    return encodeSeed(this.runRng.seed);
+  }
+
+  /** True when this run was launched as a Daily Challenge attempt. */
+  isDailyRun(): boolean {
+    return this.runIsDaily;
   }
 
   private trackChestSprite(sprite: Phaser.GameObjects.Sprite, golden: boolean): void {
