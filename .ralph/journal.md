@@ -26,3 +26,4 @@
 | 2026-04-13 | 53 | REVIEW | Review src/utils/ (rotation area 7) | Done — 6 findings: 2×P1 missing tests (inputMath, SubscriptionBag), 4×P2 (math/cameraShake/GamepadMenuNav tests + redundant clamp). Area healthy, well-tested core (save/rng/UpdateTickers). |
 | 2026-04-13 | 31 | BUILD | Add 16 inputMath.ts unit tests | Done — clampVectorLength (6), mergeMoveVectors (3), gamepadStickToMove (7). 563→579 tests. |
 | 2026-04-13 | 30b | BUILD | Add 2 more inputMath edge cases (merge maxLen, magnitude sweep) | Done — 18 total tests, 563→581 tests. |
+| 2026-04-13 | 32 | BUILD | Add 8 SubscriptionBag.ts tests | Done — add/dispose, LIFO order, error safety, listen/dispose, add-after-dispose, double-dispose. 581→589 tests. |
