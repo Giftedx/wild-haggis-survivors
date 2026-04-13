@@ -1,14 +1,11 @@
 import Phaser from 'phaser';
 import { Enemy } from '../entities/Enemy';
-
-/** Scratch entry for off-screen enemy tracking (pre-allocated). */
-interface OffScreenEntry {
-  x: number;
-  y: number;
-  dist: number;
-  boss: boolean;
-  elite: boolean;
-}
+import {
+  insertionSortOffScreenByDist,
+  isOnCameraViewport,
+  projectThreatAngleToScreenEdge,
+  type OffScreenScratch,
+} from './edgeIndicatorMath';
 
 /**
  * EdgeIndicators — small arrows at screen edges showing direction
@@ -26,7 +23,7 @@ export class EdgeIndicators {
   private glows: Phaser.GameObjects.Arc[] = [];
 
   /** Pre-allocated scratch buffer — avoids per-frame array allocation. */
-  private offScreenBuf: OffScreenEntry[];
+  private offScreenBuf: OffScreenScratch[];
   private offScreenCount = 0;
 
   constructor(scene: Phaser.Scene) {
@@ -85,8 +82,7 @@ export class EdgeIndicators {
       if (!enemy.active) continue;
 
       // Is it on-screen? Use camera viewport, not player-relative position
-      if (enemy.x >= camLeft && enemy.x <= camRight &&
-          enemy.y >= camTop && enemy.y <= camBottom) continue;
+      if (isOnCameraViewport(enemy.x, enemy.y, camLeft, camRight, camTop, camBottom)) continue;
 
       const dx = enemy.x - playerX;
       const dy = enemy.y - playerY;
@@ -105,20 +101,9 @@ export class EdgeIndicators {
       }
     }
 
-    // Sort only the populated portion by distance
     const buf = this.offScreenBuf;
     const count = this.offScreenCount;
-    // Insertion sort — fast for small N (typically < 20 entries)
-    for (let i = 1; i < count; i++) {
-      const key = buf[i];
-      const keyDist = key.dist;
-      let j = i - 1;
-      while (j >= 0 && buf[j].dist > keyDist) {
-        buf[j + 1] = buf[j];
-        j--;
-      }
-      buf[j + 1] = key;
-    }
+    insertionSortOffScreenByDist(buf, count);
 
     const toShowCount = Math.min(count, this.MAX_INDICATORS);
 
@@ -133,32 +118,7 @@ export class EdgeIndicators {
 
       const e = buf[i];
       const angle = Math.atan2(e.y, e.x);
-
-      // Project onto screen edge
-      const margin = this.MARGIN;
-      let sx: number, sy: number;
-
-      // Find intersection with screen rectangle
-      const halfSW = screenW / 2 - margin;
-      const halfSH = screenH / 2 - margin;
-
-      // Check right/left edge
-      if (Math.abs(Math.cos(angle)) > 0.001) {
-        const edgeX = Math.sign(Math.cos(angle)) * halfSW;
-        const edgeY = edgeX * Math.tan(angle);
-        if (Math.abs(edgeY) <= halfSH) {
-          sx = screenW / 2 + edgeX;
-          sy = screenH / 2 + edgeY;
-        } else {
-          // Top/bottom edge
-          const edgeY2 = Math.sign(Math.sin(angle)) * halfSH;
-          sx = screenW / 2 + edgeY2 / Math.tan(angle);
-          sy = screenH / 2 + edgeY2;
-        }
-      } else {
-        sx = screenW / 2;
-        sy = Math.sin(angle) > 0 ? screenH - margin : margin;
-      }
+      const { sx, sy } = projectThreatAngleToScreenEdge(angle, screenW, screenH, this.MARGIN);
 
       indicator.setPosition(sx, sy);
       indicator.setRotation(angle + Math.PI / 2);

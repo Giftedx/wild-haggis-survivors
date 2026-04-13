@@ -11,6 +11,11 @@ import Phaser from 'phaser';
 import { CaptionManager } from './CaptionManager';
 import { getSettingsManager } from '../../core/SettingsManager';
 import { getCameraViewport } from '../../ui/cameraViewport';
+import {
+  CAPTION_FADE_OUT_MS,
+  captionFadeAlpha,
+  captionStackYOffset,
+} from './captionOverlayLayout';
 
 const BACKDROP_COLOR = 0x0a0a12;
 const BACKDROP_ALPHA = 0.72;
@@ -60,11 +65,7 @@ export class CaptionOverlay {
         continue;
       }
 
-      // Fade-out over the last 400ms.
-      const fadeMs = 400;
-      const alpha = cap.remainingMs <= fadeMs
-        ? Math.max(0, cap.remainingMs / fadeMs)
-        : 1;
+      const alpha = captionFadeAlpha(cap.remainingMs, CAPTION_FADE_OUT_MS);
 
       line.text.setText(cap.message);
       line.text.setColor(cap.tint ?? DEFAULT_TINT);
@@ -72,9 +73,7 @@ export class CaptionOverlay {
       const paddedWidth = line.text.width + 24;
       const paddedHeight = line.text.height + 10;
 
-      // Oldest caption draws at the top of the stack so fresh ones appear
-      // below without displacing an in-progress read.
-      const yOffset = -(captions.length - 1 - i) * LINE_SPACING;
+      const yOffset = captionStackYOffset(i, captions.length, LINE_SPACING);
       const ly = baseY + yOffset;
 
       line.backdrop.setPosition(centerX, ly);
