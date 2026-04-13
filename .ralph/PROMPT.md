@@ -41,6 +41,8 @@ Cycle through in order. Track position in journal.
 5. `src/data/` — weapons, enemies, upgrades, balance tables, variants
 6. `src/ui/` — HUD, Minimap, UpgradeCards, overlays
 7. `src/utils/` — save, rng, input, timers
+8. `src/systems/music/` — ProceduralMusicEngine, Conductor, layers, NoteScheduler
+9. `src/systems/a11y/` + `src/core/a11yMotion.ts` — accessibility subsystem
 
 ## Value Hierarchy
 
@@ -59,6 +61,7 @@ Busywork task: "Rename variable for clarity" or "Add JSDoc to obvious getter" or
 - Am I nibbling the same area repeatedly instead of rotating?
 - Did I verify with `npm run build && npm test`, or am I assuming it works?
 - Is this the hardest useful task on the backlog, or did I pick the easiest one?
+- Could this break scene restart? (Phaser reuses scene instances — `create()` must reset ALL state.)
 
 ## Hard Rules
 
