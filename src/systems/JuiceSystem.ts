@@ -7,6 +7,7 @@ import { getCameraViewport } from '../ui/cameraViewport';
 import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '../core/a11yMotion';
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
+import { BALANCE } from '../core/BalanceConfig';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -126,10 +127,10 @@ export class JuiceSystem {
       strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
 
-    // Pre-allocate impact ring pool — 80 slots covers AoE weapons hitting
+    // Pre-allocate impact ring pool — covers AoE weapons hitting
     // 30+ enemies per pulse without dropping hit feedback.
     // Impact rings — whisky gold, not generic white. Every hit should feel Scottish.
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < BALANCE.juice.impactRingPoolSize; i++) {
       const r = scene.add.circle(0, 0, 4, 0xd4a017, 0.8)
         .setDepth(12)
         .setVisible(false);
@@ -137,32 +138,32 @@ export class JuiceSystem {
     }
 
     // Trail dots — thistle purple from the highland palette
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < BALANCE.juice.trailDotPoolSize; i++) {
       const dot = scene.add.circle(0, 0, 2, 0x6b3fa0, 0.5)
         .setDepth(5).setVisible(false);
       this.trailPool.push(dot);
     }
 
     // Kill burst dots — whisky gold, not generic red. Kills should shimmer.
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < BALANCE.juice.burstDotPoolSize; i++) {
       const dot = scene.add.circle(0, 0, 3, 0xd4a017, 0.8)
         .setDepth(15).setVisible(false);
       this.burstDotPool.push(dot);
     }
     // Kill burst rings — warm golden, not cold white
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < BALANCE.juice.burstRingPoolSize; i++) {
       const ring = scene.add.circle(0, 0, 5, 0xffcc44, 0.6)
         .setDepth(15).setVisible(false);
       this.burstRingPool.push(ring);
     }
 
     // Pre-allocate boss death spectacle pools
-    for (let i = 0; i < 35; i++) {
+    for (let i = 0; i < BALANCE.juice.bossParticlePoolSize; i++) {
       const p = scene.add.circle(0, 0, 5, 0xd4a017, 0.9)
         .setDepth(20).setVisible(false);
       this.bossParticlePool.push(p);
     }
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < BALANCE.juice.bossRingPoolSize; i++) {
       const ring = scene.add.circle(0, 0, 10, 0xd4a017, 0.5)
         .setDepth(20).setVisible(false);
       this.bossRingPool.push(ring);

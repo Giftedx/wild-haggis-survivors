@@ -97,6 +97,19 @@ export const BALANCE = {
     /** Per-spawn chance that a non-hazard, non-swarm enemy upgrades to elite. */
     ELITE_SPAWN_CHANCE: 0.10,
   },
+  juice: {
+    impactRingPoolSize: 80,
+    trailDotPoolSize: 60,
+    burstDotPoolSize: 50,
+    burstRingPoolSize: 15,
+    bossParticlePoolSize: 35,
+    bossRingPoolSize: 5,
+  },
+  bossWarning: {
+    spawnDelayMs: 1500,
+    fadeOutDelayMs: 1200,
+    fadeOutDurationMs: 400,
+  },
   hud: {
     /**
      * Wave difficulty ladder displayed under the timer. Single source of
