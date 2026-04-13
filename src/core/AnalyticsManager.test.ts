@@ -99,4 +99,28 @@ describe('AnalyticsManager', () => {
     });
     expect(provider.logEvent).not.toHaveBeenCalled();
   });
+
+  it('still logs boss_kill when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'taxman',
+      xpValue: 200,
+      wasBoss: true,
+      wasElite: false,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'boss_kill',
+      expect.objectContaining({
+        enemyKey: 'taxman',
+        wasElite: false,
+        xpValue: 200,
+      }),
+    );
+  });
+
+  it('still logs tutorial_completed when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('TUTORIAL_COMPLETED', {});
+    expect(provider.logEvent).toHaveBeenCalledWith('tutorial_completed', {});
+  });
 });
