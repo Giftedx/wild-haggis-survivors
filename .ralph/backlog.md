@@ -49,7 +49,7 @@
 - [x] CaptionManager.enqueue accepts durationMs ≤ 0 — fixed: early return guard + test. 647→648 tests.
 - [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
-- [ ] Add tests for spatialCull.ts — pure rect-bound checks, hot path (per-frame culling), 0 deps (P1, scout)
+- [x] Add tests for spatialCull.ts — 14 tests: zone inclusion (inside/edge/outside), margin expansion (all sides, corners), culling (inside/outside, boss/hazard/immune immunity, edge boundary). 648→661 tests.
 - [ ] Add tests for upgrades.ts buildCardPool/drawCards — rarity weighting, evolution recipe validation, card pool completeness (P1, scout, gameplay-critical)
 - [ ] Add tests for GlobalEventBus.ts — emit/on/off, multi-listener, off-unregistered safety (P2, scout)
 

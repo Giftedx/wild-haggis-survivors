@@ -38,3 +38,4 @@
 | 2026-04-13 | 34b | BUILD | Add 7 cameraShake.ts tests | Done — screenShake toggle, motionScale, null cam, duration unscaled. 640→647 tests. |
 | 2026-04-13 | 35 | SCOUT | Replenish backlog — 47 untested files scanned | Done — 3 new items: spatialCull (P1, pure), upgrades drawCards (P1, gameplay), GlobalEventBus (P2). Build clean, 647 tests, 0 `as any`, 0 TODOs. |
 | 2026-04-13 | 39 | BUILD | Fix CaptionManager.enqueue durationMs ≤ 0 guard + test | Done — early return guard prevents silent eviction. 647→648 tests. |
+| 2026-04-13 | 40 | BUILD | Add 14 spatialCull.ts tests | Done — zone inclusion, margin expansion, boss/hazard/immune immunity, boundary edges. 648→661 tests. |
