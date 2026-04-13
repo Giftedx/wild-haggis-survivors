@@ -19,12 +19,12 @@
 
 ## P1 — Correctness (state leaks between runs)
 
-### 4. [ ] BanterSystem: no reset on scene restart
+### 4. [x] BanterSystem: no reset on scene restart (already implemented)
 - **Files:** `src/systems/BanterSystem.ts`, `src/scenes/GameScene.ts`
 - **Rationale:** `lastFireMs`, `lastContext`, `recent` ring buffer carry over between runs. Second run's first banter rate-limited by first run's cooldown.
 - **Acceptance:** BanterSystem has `reset()` method clearing transient state. GameScene calls it during scene reset.
 
-### 5. [ ] SpawnSystem: enemy chase loop runs during pause
+### 5. [x] SpawnSystem: enemy chase loop runs during pause
 - **Files:** `src/systems/SpawnSystem.ts`
 - **Rationale:** `update()` calls `chaseTarget()` on all enemies unconditionally. With 400 enemies during level-up overlay (physics paused), 24k pathfinding calls/sec wasted.
 - **Acceptance:** Chase loop guarded by gameplay pause check. No enemy chase calls when game paused.

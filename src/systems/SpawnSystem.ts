@@ -176,9 +176,11 @@ export class SpawnSystem {
       this.spawnBurst(playerX, playerY);
     }
 
-    const active = this.pool.children.entries as Enemy[];
-    for (let i = 0; i < active.length; i++) {
-      if (active[i].active) active[i].chaseTarget(playerX, playerY, delta);
+    if (!this.scene.getTimeManager().isGameplayPaused()) {
+      const active = this.pool.children.entries as Enemy[];
+      for (let i = 0; i < active.length; i++) {
+        if (active[i].active) active[i].chaseTarget(playerX, playerY, delta);
+      }
     }
   }
 
