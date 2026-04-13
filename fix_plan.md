@@ -1,47 +1,35 @@
 # Fix Plan
 
-## P0 — Critical (cross-run state bleed / crashes)
+## P1 — Correctness
 
-### 1. [x] SpawnSystem: tween cleanup missing on destroy
-- **Files:** `src/systems/SpawnSystem.ts`
-- **Rationale:** `destroy()` does not kill tweens from `spawnBoss()` / `showBossWarning()`. If scene restarts mid-tween, stale `onComplete` callbacks fire on new scene instance → visual artifacts or errors.
-- **Acceptance:** `destroy()` kills all active tweens on boss warning objects (vignette, bg, glowTop, glowBot, label) before nulling refs.
+### 1. [ ] GameScene: pauseMenu not closed in shutdown handler
+- **Files:** `src/scenes/GameScene.ts`
+- **Rationale:** `registerShutdownCleanup()` destroys hud, minimap, upgradeUI, etc. but doesn't close/destroy `pauseMenu`. It's only handled in `resetTransientRunState()` (called from create()). If scene.stop() fires without subsequent create() (e.g. `scene.stop('Game'); scene.start('GameOver')`), PauseMenu's interactive elements and overlays orphan.
+- **Acceptance:** Shutdown handler adds `try { this.pauseMenu?.close(); } catch { /* ignore */ }` alongside the other system teardowns.
 
-### 2. [x] WeaponSystem: VFX pool tweens not killed on destroy (already implemented)
-- **Files:** `src/systems/WeaponSystem.ts`
-- **Rationale:** `destroy()` doesn't kill tweens on `vfxCirclePool` / `vfxGfxPool` objects. Pool reuse + orphaned tweens → VFX corruption or crashes when same slot reused while old tween animating.
-- **Acceptance:** `destroy()` iterates both VFX pools and calls `scene.tweens.killTweensOf()` on each object.
+### 2. [ ] GameScene: activeChestSprites graphics not destroyed on shutdown
+- **Files:** `src/scenes/GameScene.ts`
+- **Rationale:** `activeChestSprites` array is cleared to `[]` in `resetTransientRunState()` but the sprites inside aren't explicitly destroyed. Scene teardown handles this for normal flow, but the chest glow tweens running on those sprites aren't killed — potential stale tween callbacks on scene restart.
+- **Acceptance:** Shutdown handler iterates `activeChestSprites`, kills tweens, destroys sprites.
 
-### 3. [x] StatusFxPool: tween cleanup on destroy
-- **Files:** `src/systems/StatusFxPool.ts`
-- **Rationale:** Pool objects get tweens from callers (enemy status FX). No tween cleanup on destroy → status FX leak across runs.
-- **Acceptance:** `destroy()` kills tweens on all pooled circles and sprites before destroying them.
+### 3. [ ] GameScene: musicStateScratch object allocated once — stale bossActive flag if boss dies then scene restarts
+- **Files:** `src/scenes/GameScene.ts`
+- **Rationale:** `musicStateScratch` is a readonly field initialized once at construction (line 164). Its fields are written every frame in update(), but if the scene restarts, old values persist until the first update() runs. The music engine reads stale `bossActive: true` for one frame → brief boss music spike on new run.
+- **Acceptance:** `resetTransientRunState()` zeroes out musicStateScratch fields (hp, maxHp, gameTimeSec, enemyCount, comboCount, killCount, bossActive).
 
-## P1 — Correctness (state leaks between runs)
+## P2 — Architecture / Polish
 
-### 4. [x] BanterSystem: no reset on scene restart (already implemented — reset() exists + called in GameScene.create)
-- **Files:** `src/systems/BanterSystem.ts`, `src/scenes/GameScene.ts`
-- **Rationale:** `lastFireMs`, `lastContext`, `recent` ring buffer carry over between runs. Second run's first banter rate-limited by first run's cooldown.
-- **Acceptance:** BanterSystem has `reset()` method clearing transient state. GameScene calls it during scene reset.
+### 4. [ ] GameScene: extract tick helpers (tickBanter, tickBiome, tickLowHpCaption, updateBoundaryWarning, updateDashIndicator) to reduce 1758-line god object
+- **Files:** `src/scenes/GameScene.ts`, new `src/scenes/game/GameTickers.ts`
+- **Rationale:** GameScene has 117 members and 1758 lines. 5+ self-contained tick methods (~200 lines total) could move to a helper following the established LevelUpFlow/RunLifecycle/PickupSpawner extraction pattern.
+- **Acceptance:** Extract 3+ tick methods to GameTickers helper. GameScene drops below 1600 lines. Build + tests green.
 
-### 5. [x] SpawnSystem: enemy chase loop runs during pause (already guarded — GameScene.update returns early at line 963 when paused)
-- **Files:** `src/systems/SpawnSystem.ts`
-- **Rationale:** `update()` calls `chaseTarget()` on all enemies unconditionally. With 400 enemies during level-up overlay (physics paused), 24k pathfinding calls/sec wasted.
-- **Acceptance:** Chase loop guarded by gameplay pause check. No enemy chase calls when game paused.
+### 5. [ ] MainMenuScene: cozyTweenTargets cleanup could miss dynamically-added targets
+- **Files:** `src/scenes/MainMenuScene.ts`
+- **Rationale:** `cozyTweenTargets` is populated during create() and cleaned in shutdown. But if any decoration tween creates sub-objects (e.g. campfire flame particles), those won't be tracked. Currently safe because all decoration is static, but fragile for future additions.
+- **Acceptance:** Add defensive `this.tweens.killAll()` in shutdown handler after the per-target cleanup loop.
 
-### 6. [x] TutorialSystem: fragile tween cleanup on dispose
-- **Files:** `src/systems/TutorialSystem.ts`
-- **Rationale:** `dispose()` nulls drift banner/arrow without killing active tweens. Mid-animation dispose → tween callbacks on destroyed objects.
-- **Acceptance:** `dispose()` kills tweens on driftBanner/driftArrow before nulling.
-
-## P2 — Architecture / Config
-
-### 7. [x] WeaponSystem: enemy cache rebuilt every frame unconditionally (already lazy — ensureEnemyCache guards with frameCounter, only builds on findClosestEnemy call)
-- **Files:** `src/systems/WeaponSystem.ts`
-- **Rationale:** `buildEnemyCache()` sorts all active enemies every frame. With 400 enemies at 60fps = 24k sorts/sec. Cache only needed when weapons query it.
-- **Acceptance:** Cache only rebuilt when at least one weapon fires this frame, or on demand when `findClosestEnemy()` called with stale cache.
-
-### 8. [x] Move hard-coded VFX pool sizes + boss warning timing to config
-- **Files:** `src/systems/JuiceSystem.ts`, `src/systems/SpawnSystem.ts`, `src/config.ts`
-- **Rationale:** Pool sizes (80/60/50) and boss warning duration (1500ms/1200ms) scattered as magic numbers. Hard to tune balance.
-- **Acceptance:** Constants moved to `BALANCE` config object. Systems reference config instead of inline numbers.
+### 6. [ ] Scene test coverage: zero tests for GameOverScene stat formatting
+- **Files:** `src/scenes/GameOverScene.ts`, new test file
+- **Rationale:** GameOverScene has complex time formatting (`formatClockTime`), gold breakdown calculation, and stat display logic. All untested. The formatting helpers are pure functions extractable for unit testing.
+- **Acceptance:** Extract `formatClockTime` + gold breakdown calc to testable pure functions. Add 5+ unit tests covering edge cases (0 seconds, 60+ minutes, fractional gold).
