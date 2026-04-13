@@ -20,6 +20,19 @@ export interface ISettingsData {
   uiScale: number;
   /** Boost contrast for key HUD/overlay text + panel strokes. */
   highContrastUi: boolean;
+  /**
+   * Graduated motion intensity in [0, 1]. Multiplies shake amplitude,
+   * flash alpha, slow-motion duration, and particle counts. The binary
+   * `screenShake` toggle stays as a master off switch; `motionScale`
+   * lets players dial comfort without killing feedback entirely.
+   */
+  motionScale: number;
+  /**
+   * Show on-screen captions for critical audio cues (boss intros,
+   * low HP, evolution ready, death, victory). Off by default; opt-in
+   * from the Comfort panel.
+   */
+  captionsEnabled: boolean;
 }
 
 const DEFAULT_SETTINGS: ISettingsData = {
@@ -32,6 +45,8 @@ const DEFAULT_SETTINGS: ISettingsData = {
   reduceParticles: false,
   uiScale: 1,
   highContrastUi: false,
+  motionScale: 1,
+  captionsEnabled: false,
 };
 
 function clamp01(n: unknown, fallback: number): number {
@@ -125,6 +140,8 @@ export class SettingsManager {
       reduceParticles: toBool(o.reduceParticles, DEFAULT_SETTINGS.reduceParticles),
       uiScale: clampRange(o.uiScale, 0.8, 1.4, DEFAULT_SETTINGS.uiScale),
       highContrastUi: toBool(o.highContrastUi, DEFAULT_SETTINGS.highContrastUi),
+      motionScale: clamp01(o.motionScale, DEFAULT_SETTINGS.motionScale),
+      captionsEnabled: toBool(o.captionsEnabled, DEFAULT_SETTINGS.captionsEnabled),
     };
   }
 }
