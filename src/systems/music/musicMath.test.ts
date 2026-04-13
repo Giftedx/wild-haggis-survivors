@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { clamp01, smoothstep01, expApproach, logLerp, softKnee, MOTION_TIMING } from './musicMath';
+import {
+  clamp01,
+  smoothstep,
+  smoothstep01,
+  expApproach,
+  logLerp,
+  softKnee,
+  MOTION_TIMING,
+} from './musicMath';
 
 describe('musicMath', () => {
   it('clamp01 saturates', () => {
@@ -11,6 +19,28 @@ describe('musicMath', () => {
   it('smoothstep01 is flat at ends', () => {
     expect(smoothstep01(0)).toBe(0);
     expect(smoothstep01(1)).toBe(1);
+  });
+
+  it('smoothstep matches smoothstep01 for a 0..1 window', () => {
+    expect(smoothstep(0, 1, 0.25)).toBe(smoothstep01(0.25));
+    expect(smoothstep(0, 1, -1)).toBe(0);
+    expect(smoothstep(0, 1, 2)).toBe(1);
+  });
+
+  it('smoothstep is 1 when both edges coincide', () => {
+    expect(smoothstep(3, 3, 0)).toBe(1);
+    expect(smoothstep(3, 3, 99)).toBe(1);
+  });
+
+  it('expApproach snaps to target when tauMs is non-positive', () => {
+    expect(expApproach(0.5, 1, 16, 0)).toBe(1);
+    expect(expApproach(0.5, 1, 16, -40)).toBe(1);
+    expect(expApproach(0.8, 0, 10, 0)).toBe(0);
+  });
+
+  it('logLerp uses linear blend when an endpoint is non-positive', () => {
+    expect(logLerp(0, 100, 0.25)).toBe(25);
+    expect(logLerp(100, 0, 0.5)).toBe(50);
   });
 
   it('expApproach moves toward target monotonically', () => {
