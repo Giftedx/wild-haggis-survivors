@@ -56,6 +56,8 @@ export class PercussionLayer {
     if (!this.ctx || !this.rhythmGain) return;
     const currentIdx = this.patternIdx;
     const isHit = this.pattern[currentIdx];
+    /** Snapshot before phrase swap — `pattern` can replace at idx wrap. */
+    const pulses = this.pattern.filter(Boolean).length;
     const swingDelay = currentIdx % 2 === 0 ? 0 : swing;
     const hitTime = time + swingDelay;
     this.patternIdx = (this.patternIdx + 1) % this.pattern.length;
@@ -65,11 +67,12 @@ export class PercussionLayer {
       this.pendingPattern = null;
     }
     if (!isHit) return;
+    const { kick: kickScale, hat: hatScale } = percussionKickHatGainScales(pulses);
     // Kick on even slots (downbeats), hat on odd slots
     if (currentIdx % 2 === 0) {
-      this.playKick(hitTime, 0.08 + intensity * 0.06);
+      this.playKick(hitTime, (0.08 + intensity * 0.06) * kickScale);
     } else {
-      this.playHat(hitTime, 0.02 + intensity * 0.02);
+      this.playHat(hitTime, (0.02 + intensity * 0.02) * hatScale);
     }
   }
 
