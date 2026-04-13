@@ -716,6 +716,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.burnTimer <= 0) this.chemicalExplosionFired = false;
     this.burnDamage = Math.max(this.burnDamage, dps); // Refresh, don't stack
     this.burnTimer = Math.max(this.burnTimer, durationMs);
+    this.maybeFireChemicalExplosion();
   }
 
   /** Apply freeze: slow movement for duration */
@@ -757,33 +758,37 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.poisonTimer <= 0) this.chemicalExplosionFired = false;
     this.poisonDamage += dps; // Stacks!
     this.poisonTimer = Math.max(this.poisonTimer, durationMs);
+    this.maybeFireChemicalExplosion();
+  }
 
-    // Synergy: Burn + Poison = Chemical Explosion (50 damage + 25 AoE)
-    if (this.burnTimer > 0 && this.poisonTimer > 0 && !this.chemicalExplosionFired) {
-      this.chemicalExplosionFired = true;
-      this.burnTimer = 0; this.poisonTimer = 0;
-      this.burnDamage = 0; this.poisonDamage = 0;
-      // Capture scene ref before takeDamageInternal (which may call die() and clear state)
-      const scene = this.scene;
-      const ex = this.x, ey = this.y;
-      this.takeDamageInternal(50);
-      // Visual explosion
-      if (scene && scene.sys.isActive()) {
-        const blast = scene.add.circle(ex, ey, 10, 0xff8800, 0.6);
-        scene.tweens.add({
-          targets: blast, radius: 60, alpha: 0, duration: 300,
-          onComplete: () => blast.destroy(),
-        });
-        // Damage nearby enemies. Use takeDamage() (not the internal path)
-        // so wool armor still blocks the splash — sheep caught in a
-        // chemical explosion shouldn't lose their one-hit shield.
-        const pool = this.ctx.getSpawnSystem().getEnemyGroup();
-        const nearby = pool.children.entries as Enemy[];
-        for (const e of nearby) {
-          if (!e.active || e === this) continue;
-          const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
-          if (d <= 60) e.takeDamageWithKillEvents(25);
-        }
+  /** Synergy: Burn + Poison = Chemical Explosion (50 damage + 25 AoE).
+   *  Called from both applyBurn and applyPoison so order of application
+   *  doesn't change whether the synergy lands. */
+  private maybeFireChemicalExplosion(): void {
+    if (!(this.burnTimer > 0 && this.poisonTimer > 0 && !this.chemicalExplosionFired)) return;
+    this.chemicalExplosionFired = true;
+    this.burnTimer = 0; this.poisonTimer = 0;
+    this.burnDamage = 0; this.poisonDamage = 0;
+    // Capture scene ref before takeDamageInternal (which may call die() and clear state)
+    const scene = this.scene;
+    const ex = this.x, ey = this.y;
+    this.takeDamageInternal(50);
+    // Visual explosion
+    if (scene && scene.sys.isActive()) {
+      const blast = scene.add.circle(ex, ey, 10, 0xff8800, 0.6);
+      scene.tweens.add({
+        targets: blast, radius: 60, alpha: 0, duration: 300,
+        onComplete: () => blast.destroy(),
+      });
+      // Damage nearby enemies. Use takeDamage() (not the internal path)
+      // so wool armor still blocks the splash — sheep caught in a
+      // chemical explosion shouldn't lose their one-hit shield.
+      const pool = this.ctx.getSpawnSystem().getEnemyGroup();
+      const nearby = pool.children.entries as Enemy[];
+      for (const e of nearby) {
+        if (!e.active || e === this) continue;
+        const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
+        if (d <= 60) e.takeDamageWithKillEvents(25);
       }
     }
   }
