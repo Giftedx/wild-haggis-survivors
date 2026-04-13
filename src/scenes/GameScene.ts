@@ -55,6 +55,7 @@ import { PickupSpawner } from './game/PickupSpawner';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { createHighlandTerrain } from './game/highlandTerrain';
+import { HazardZones } from './game/HazardZones';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -174,8 +175,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     key: '', level: 0, evolved: false, evolutionKey: '', cooldownFrac: 0,
   }));
 
-  private lavaZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
-  private healZones: { x: number; y: number; r: number; tickAccMs: number }[] = [];
   private readonly metaSaveManager = new SaveManager();
   private readonly settingsManager = getSettingsManager();
   private statusFxPool!: StatusFxPool;
@@ -197,6 +196,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private pickupSpawner!: PickupSpawner;
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
+  private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
   /** Gates the low-HP caption — fires once per dip below the threshold. */
@@ -248,8 +248,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.deathFade?.destroy();
     this.deathFade = null;
     this.hintHideHandle = null;
-    this.lavaZones = [];
-    this.healZones = [];
+    this.hazardZones?.reset();
     this.lastEmittedRunSecond = -1;
     this.activeChestSprites = [];
     this.announcedEvolutionReady.clear();
@@ -390,8 +389,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.cameras.main.setZoom(1.3);
     this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
 
-    // Spawn map hazard and healing zones
-    this.spawnMapZones();
+    // Spawn map hazard and healing zones (lava + healing circles).
+    // HazardZones needs runLifecycle.onPlayerHitZero for lava deaths, but
+    // runLifecycle isn't built yet at this point. The closure over
+    // `this.runLifecycle` resolves lazily — first lava tick happens much
+    // later, by which time it's wired.
+    this.hazardZones = new HazardZones(this, {
+      getPlayer: () => this.player,
+      getJuice: () => this.juice,
+      getDeathCauseTracker: () => this.deathCauseTracker,
+      getSpawnSystem: () => this.spawnSystem,
+      isIFrames: () => this.iFrames,
+      isVictoryPending: () => this.victoryPending,
+      getDamageTakenMult: () => this.runModifiers.damageTakenMult,
+      onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
+    });
+    this.hazardZones.spawn();
 
     // Systems
     this.statusFxPool = new StatusFxPool(this);
@@ -893,7 +906,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.getMaxHp(),
     );
 
-    this.tickMapZones(scaledDelta);
+    this.hazardZones.tick(scaledDelta);
     this.tickBiome();
     this.tickLowHpCaption();
     // Player input/movement stays on raw delta so controls stay snappy during
@@ -1613,92 +1626,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.dashIndicator.strokePath();
   }
 
-  private tickMapZones(scaledDelta: number): void {
-    if (scaledDelta <= 0) return;
-
-    // Lava damage tick every 500ms
-    for (const z of this.lavaZones) {
-      z.tickAccMs += scaledDelta;
-      while (z.tickAccMs >= 500) {
-        z.tickAccMs -= 500;
-        if (!this.player.active || this.victoryPending) continue;
-        if (this.iFrames || this.player.isDashInvincible()) continue;
-        const d = Phaser.Math.Distance.Between(z.x, z.y, this.player.x, this.player.y);
-        if (d < z.r) {
-          const hazardDmg = Math.max(1, Math.round(3 * this.runModifiers.damageTakenMult));
-          const dead = this.player.takeDamage(hazardDmg);
-          this.deathCauseTracker.recordDamage({
-            gameTimeSec: this.spawnSystem.getGameTimeSec(),
-            sourceKey: HAZARD_SOURCE_KEY,
-            amount: hazardDmg,
-            sourceIsBoss: false,
-            sourceIsElite: false,
-            sourceIsHazard: true,
-            hpAfter: this.player.getHp(),
-            maxHpAfter: this.player.getMaxHp(),
-          });
-          this.juice.flashRed(80);
-          if (dead) this.runLifecycle.onPlayerHitZero();
-        }
-      }
-    }
-
-    // Healing tick every 1000ms
-    for (const z of this.healZones) {
-      z.tickAccMs += scaledDelta;
-      while (z.tickAccMs >= 1000) {
-        z.tickAccMs -= 1000;
-        if (!this.player.active) continue;
-        const d = Phaser.Math.Distance.Between(z.x, z.y, this.player.x, this.player.y);
-        if (d < z.r) this.player.heal(2);
-      }
-    }
-  }
-
-
-  /** Spawn map hazard and healing zones */
-  private spawnMapZones(): void {
-    const W = GAME.WORLD_WIDTH;
-    const H = GAME.WORLD_HEIGHT;
-    const rng = new Phaser.Math.RandomDataGenerator(['zones']);
-
-    // 4 lava patches — deal damage to player standing in them
-    for (let i = 0; i < 4; i++) {
-      const lx = rng.between(200, W - 200);
-      const ly = rng.between(200, H - 200);
-      const lr = rng.between(35, 55);
-
-      this.add.ellipse(lx, ly, lr * 2, lr * 1.5, 0xcc3300, 0.4).setDepth(-1);
-      const lavaGlow = this.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, 0xff6600, 0.2).setDepth(-1);
-      this.tweens.add({
-        targets: lavaGlow,
-        alpha: { from: 0.15, to: 0.35 },
-        scale: { from: 1, to: 1.1 },
-        duration: 1500 + rng.between(0, 800),
-        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-      });
-
-      this.lavaZones.push({ x: lx, y: ly, r: lr, tickAccMs: 0 });
-    }
-
-    // 3 healing circles — slowly heal the player while standing in them
-    for (let i = 0; i < 3; i++) {
-      const hx = rng.between(200, W - 200);
-      const hy = rng.between(200, H - 200);
-      const hr = rng.between(30, 45);
-
-      this.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
-      const healGlow = this.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
-      this.tweens.add({
-        targets: healGlow,
-        alpha: { from: 0.08, to: 0.2 },
-        duration: 2000 + rng.between(0, 1000),
-        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-      });
-
-      this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
-    }
-  }
 
   private tickBiome(): void {
     if (!this.biomeController) return;
