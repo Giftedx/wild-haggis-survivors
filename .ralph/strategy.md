@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 61 BUILD)
+**Last updated:** 2026-04-13 (loop 62 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 779 tests (Vitest). All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 769 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
@@ -29,9 +29,9 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 61)
+## Metrics Snapshot (2026-04-13, loop 62)
 - Source files: 105+, Test files: 90+
-- Tests: 779 passing (was 488 at loop 1)
+- Tests: 769 passing on clean tree (was 488 at loop 1). **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

@@ -52,6 +52,10 @@ class ProceduralMusicEngine {
    * timeline and the fade would stall before reaching silence.
    */
   private fadingOut = false;
+  /** Transient dip when heavy gameplay SFX fire (0 = no duck). */
+  private musicSfxDuck = 0;
+  /** Same order as Conductor mood smoothing — ms time constant for duck recovery. */
+  private static readonly MUSIC_SFX_DUCK_RECOVER_MS = 260;
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
@@ -101,6 +105,17 @@ class ProceduralMusicEngine {
 
     this.scheduler.start(ctx.currentTime);
     this.playing = true;
+    this.musicSfxDuck = 0;
+  }
+
+  /**
+   * Briefly duck music when loud gameplay SFX play (`AudioSystem` calls this).
+   * Recovers via exponential decay in `update()`.
+   */
+  notifyGameplaySfxImpulse(strength: number): void {
+    if (!this.playing || this.fadingOut) return;
+    const s = Math.max(0, Math.min(1, strength));
+    this.musicSfxDuck = Math.min(1, this.musicSfxDuck + s);
   }
 
   stop(): void {
@@ -111,6 +126,7 @@ class ProceduralMusicEngine {
     // closed-ctx rebuild path in update(), which preserves Conductor mood.
     this.conductor = new Conductor();
     this.scheduler.reset();
+    this.musicSfxDuck = 0;
   }
 
   /** Tears down audio graph + layers without wiping the Conductor/Scheduler. */
@@ -165,6 +181,12 @@ class ProceduralMusicEngine {
     this.conductor.updateMood(delta, state);
     const mood = this.conductor.getMood();
 
+    {
+      const tau = ProceduralMusicEngine.MUSIC_SFX_DUCK_RECOVER_MS;
+      const a = 1 - Math.exp(-delta / tau);
+      this.musicSfxDuck += (0 - this.musicSfxDuck) * Math.min(1, a);
+    }
+
     this.drone.applyMood(this.ctx, mood.intensity, mood.danger, mood.triumph);
 
     if (this.masterFilter) {
@@ -173,7 +195,8 @@ class ProceduralMusicEngine {
     }
 
     if (this.masterGain && this.enabled && !this.fadingOut) {
-      const vol = (0.20 + mood.intensity * 0.10) * this.userMusicVolume;
+      const duckMul = 1 - this.musicSfxDuck;
+      const vol = (0.20 + mood.intensity * 0.10) * this.userMusicVolume * duckMul;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
 

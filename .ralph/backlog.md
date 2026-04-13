@@ -55,6 +55,9 @@
 
 - [x] Add tests for runStartModifiers.ts — 12 tests: variant speed/multi-mod/skip-zero, permanent thick_hide/weapon_training/revival/treasure_magnet/lucky_start/lucky_start_full/drift_control/double_dash/defaults. 684→696 tests.
 
+## Medium Priority (new)
+- [ ] Wire `AudioSystem` heavy SFX → `musicEngine.notifyGameplaySfxImpulse(...)` (death, boss, player hit, etc.) — API exists post–loop 62; optional mix polish.
+
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [x] Extend banter to weapon evolution moments — done: BanterContext 'weapon_evolve' + pool (pri 65, 3 keys) + LevelUpFlow trigger + GameScene.requestBanter hook. 5 files modified.
