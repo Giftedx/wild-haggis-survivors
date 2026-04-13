@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
+import type { ISceneContext } from '../core/ISceneContext';
 
 /**
  * XP Gem ("Whisky Drop") — poolable pickup that grants XP.
@@ -50,7 +51,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     );
 
     // Slow down scatter
-    const tickers = (this.scene as unknown as { getUpdateTickers?: () => import('../utils/UpdateTickers').UpdateTickers }).getUpdateTickers?.();
+    const tickers = (this.scene as Phaser.Scene & ISceneContext).getUpdateTickers?.();
     this.settleHandle = tickers?.addOnce('scaled', 200, () => {
       if (this.active) this.setVelocity(0, 0);
     }) ?? null;

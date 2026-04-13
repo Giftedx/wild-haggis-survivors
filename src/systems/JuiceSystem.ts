@@ -6,6 +6,7 @@ import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '../core/a11yMotion';
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
+import type { ISceneContext } from '../core/ISceneContext';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -16,7 +17,7 @@ import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
  * - Slow-motion
  */
 export class JuiceSystem {
-  private scene: Phaser.Scene;
+  private scene: Phaser.Scene & ISceneContext;
   private time: TimeManager;
   private tickers: import('../utils/UpdateTickers').UpdateTickers;
   private readonly settings: SettingsManager;
@@ -74,7 +75,7 @@ export class JuiceSystem {
   private slowMotionRemainingMs: number = 0;
 
   constructor(
-    scene: Phaser.Scene,
+    scene: Phaser.Scene & ISceneContext,
     time: TimeManager,
     tickers: import('../utils/UpdateTickers').UpdateTickers,
     settings?: SettingsManager
@@ -351,27 +352,24 @@ export class JuiceSystem {
       // Combo milestone cultural Easter eggs — Glesga patter at key numbers.
       // Captions piggyback on the toast copy — if a player is reading toasts,
       // the caption strip echoes them consistently.
-      const sceneWithCaption = this.scene as unknown as {
-        caption?: (id: string, message: string, tint?: string) => void;
-      };
       if (this.comboCount === 11) {
         const msg = t('ui.game.combo_11');
         this.showToast(msg, '#ffdd44');
-        sceneWithCaption.caption?.(`combo_11`, msg, '#ffdd44');
+        this.scene.caption?.(`combo_11`, msg, '#ffdd44');
       } else if (this.comboCount === 50) {
         const msg = t('ui.game.combo_50');
         this.showToast(msg, '#ffdd44');
-        sceneWithCaption.caption?.(`combo_50`, msg, '#ffdd44');
+        this.scene.caption?.(`combo_50`, msg, '#ffdd44');
         this.flashWhite(100);
       } else if (this.comboCount === 100) {
         const msg = t('ui.game.combo_100');
         this.showToast(msg, '#ff8844');
-        sceneWithCaption.caption?.(`combo_100`, msg, '#ff8844');
+        this.scene.caption?.(`combo_100`, msg, '#ff8844');
         this.flashWhite(100);
       } else if (this.comboCount === 200) {
         const msg = t('ui.game.combo_200');
         this.showToast(msg, '#ff8844');
-        sceneWithCaption.caption?.(`combo_200`, msg, '#ff8844');
+        this.scene.caption?.(`combo_200`, msg, '#ff8844');
         this.flashWhite(100);
       }
     }

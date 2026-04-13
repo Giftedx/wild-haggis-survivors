@@ -3,10 +3,11 @@ import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVectorInto } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
-import type { TickerHandle, UpdateTickers } from '../utils/UpdateTickers';
+import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { BALANCE } from '../core/BalanceConfig';
 import type { ComposedPlayerStats } from '../core/StatComposer';
+import type { ISceneContext } from '../core/ISceneContext';
 
 /**
  * Player — the wild haggis.
@@ -200,7 +201,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const trailCount = BALANCE.player.dashAfterImageCount;
     for (const h of this.dashTrailHandles) h.cancel();
     this.dashTrailHandles = [];
-    const tickers = (this.scene as unknown as { getUpdateTickers?: () => UpdateTickers }).getUpdateTickers?.();
+    const tickers = (this.scene as Phaser.Scene & ISceneContext).getUpdateTickers?.();
     for (let i = 0; i < trailCount; i++) {
       const delay = i * (this.DASH_DURATION_MS / trailCount);
       const handle = tickers?.addOnce('scaled', delay, () => {

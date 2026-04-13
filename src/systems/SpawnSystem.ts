@@ -10,7 +10,7 @@ import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
-import { BIOMES, type BiomeId } from '../data/biomes';
+import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
@@ -185,15 +185,11 @@ export class SpawnSystem {
     // Show warning banner
     const warning = t(boss.warningKey);
     this.showBossWarning(warning);
-    const sceneWithCaption = this.scene as unknown as {
-      caption?: (id: string, message: string, tint?: string, durationMs?: number) => void;
-      requestBanter?: (context: 'boss_warn', tag?: string) => void;
-    };
-    sceneWithCaption.caption?.(`boss_${boss.key}`, warning, '#ff6644');
+    this.scene.caption?.(`boss_${boss.key}`, warning, '#ff6644');
     // A beat of Glesga nerves right as the screen shakes. Pass the boss
     // key so the engine picks from the authored per-boss pool when one
     // exists — Gordon, Taxman etc. each get their own warning voice.
-    sceneWithCaption.requestBanter?.('boss_warn', boss.key);
+    this.scene.requestBanter?.('boss_warn', boss.key);
 
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
@@ -532,10 +528,7 @@ export class SpawnSystem {
   /** Biome-driven spawn weight multipliers for the player's current biome.
    *  Returns an empty object when no biome is active (e.g., during tests). */
   private getBiomeWeightMods(): Readonly<Record<string, number>> {
-    const sceneWithBiome = this.scene as unknown as {
-      getCurrentBiomeId?: () => BiomeId | null;
-    };
-    const id = sceneWithBiome.getCurrentBiomeId?.();
+    const id = this.scene.getCurrentBiomeId?.();
     if (!id) return {};
     return BIOMES[id].spawnWeightMods;
   }
@@ -543,10 +536,7 @@ export class SpawnSystem {
   /** Post-Bell escalation multipliers, or neutral when the run hasn't crossed
    *  the Bell yet / the scene doesn't expose the hook (e.g., unit tests). */
   private getPostBellMultipliers(): PostBellMultipliers {
-    const sceneWithPostBell = this.scene as unknown as {
-      getSecondsPastBell?: () => number;
-    };
-    const sec = sceneWithPostBell.getSecondsPastBell?.();
+    const sec = this.scene.getSecondsPastBell?.();
     if (sec === undefined || sec <= 0) return NEUTRAL_POST_BELL;
     return computePostBellMultipliers(sec);
   }

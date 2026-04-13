@@ -12,13 +12,16 @@ core gameplay feel. Ralph-mode managed.
   (`SAVE_SCHEMA_VERSION = 8`) + `SettingsManager` with independent
   version gate
 - **Tests:** 68 files, 466 tests, full green
-- **Build:** `npm run build` clean (~4.5s); vendor-phaser chunk
+- **Build:** `npm run build` clean (~4.9s); vendor-phaser chunk
   ~1.48MB (gzip ~340KB), app chunk ~500KB (gzip ~133KB)
 - **Lint:** `npm run lint` clean (zero errors)
 - **CI:** `.github/workflows/ci.yml` + `deploy.yml` present
 - **TODO/FIXME markers:** zero
-- **Scene reach-through (`this.scene as unknown`)**: 7 call sites in
-  5 files — remaining scaffold for typed interfaces
+- **Scene reach-through (`this.scene as unknown`)**: **0** — fully
+  retired. ISceneContext extended with optional `caption`,
+  `requestBanter`, `getCurrentBiomeId`, `getSecondsPastBell` surfaces;
+  Player/XPGem now narrow `this.scene` to `Phaser.Scene & ISceneContext`;
+  JuiceSystem promotes scene field to the intersection type.
 - **Production `as any` count:** 17 in 8 files (down from heavy use
   pre-StatComposer/ISceneContext; test doubles exempt)
 - **Real timers (setTimeout/setInterval) outside tests:** 2 (audio
@@ -38,15 +41,18 @@ core gameplay feel. Ralph-mode managed.
 ## Priority Queue
 
 ### P1 — Lifecycle & Typing Finish-Work
-- [ ] **Kill the last 7 scene reach-throughs** (`this.scene as unknown`)
-  in XPGem, Player, UpgradeCards, JuiceSystem, SpawnSystem. Finish
-  the `ISceneContext` pattern by adding typed surfaces (e.g.
-  `requestBanter`, `caption`) and converting the reach-through call
-  sites in those files.
+- [x] **Kill the last 7 scene reach-throughs** (`this.scene as unknown`)
+  in XPGem, Player, UpgradeCards, JuiceSystem, SpawnSystem. Done
+  2026-04-13 — extended `ISceneContext` with optional `caption`,
+  `requestBanter`, `getCurrentBiomeId`, `getSecondsPastBell`; converted
+  all 7 sites; lint/tests/build green.
 - [ ] **Audit the 17 production `as any`** escape hatches
   (GameScene, LevelUpFlow, PickupSpawner, input, XPSystem,
   WeaponSystem, UpgradeCards, SpawnSystem) and replace with typed
-  narrowing where the intent is clear.
+  narrowing where the intent is clear. Pool teardown sites in
+  SpawnSystem/WeaponSystem/XPSystem (`(p as any).destroy?.()`,
+  `.active = false`, `.visible = false`) are the largest cluster —
+  a single typed `disposePoolMember(obj)` helper would replace 9.
 
 ### P2 — Bundle & Asset Budget
 - [ ] Phaser vendor chunk is 1.48MB ungz. Investigate whether

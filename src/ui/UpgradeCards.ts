@@ -228,8 +228,7 @@ export class UpgradeCardsUI {
       this.elements.push(glow);
     }
 
-    const textureManager = (this.scene as unknown as { textures?: { exists: (key: string) => boolean } }).textures;
-    if (textureManager && !textureManager.exists(card.icon)) {
+    if (this.scene.textures && !this.scene.textures.exists(card.icon)) {
       throw new Error(`Missing upgrade card icon texture: ${card.icon} (${card.id})`);
     }
 

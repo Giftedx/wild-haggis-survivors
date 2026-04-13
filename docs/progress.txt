@@ -96,3 +96,45 @@ Next (Phase 3 ignition):
   so we don't add reinforcement to the old pattern.
 - Continue on the autonomous loop: pick next PRD queue item,
   verify gate, commit, log.
+
+[2026-04-13] Phase 3 — P1 reach-through retirement (DONE)
+
+Atomic completed: kill the last 7 `this.scene as unknown` sites.
+
+Surface changes:
+- src/core/ISceneContext.ts: added optional `caption`,
+  `requestBanter`, `getCurrentBiomeId`, `getSecondsPastBell`
+  (typed via BanterContext + BiomeId imports). Optional so unit
+  tests can keep partial scene stubs without a stub blizzard;
+  call sites still use `?.()` for runtime safety.
+- src/systems/JuiceSystem.ts: scene field promoted to
+  `Phaser.Scene & ISceneContext`; constructor signature too.
+  4 caption call sites simplified.
+- src/systems/SpawnSystem.ts: 3 reach-through hops collapsed
+  to direct `this.scene.caption?.()`, `.requestBanter?.()`,
+  `.getCurrentBiomeId?.()`, `.getSecondsPastBell?.()`. Killed
+  unused `BiomeId` import as a result.
+- src/entities/Player.ts: cast to `Phaser.Scene & ISceneContext`
+  at the dash trail tickers grab. Killed unused `UpdateTickers`
+  import (only `TickerHandle` still used).
+- src/entities/XPGem.ts: same pattern at the settle handle grab.
+- src/ui/UpgradeCards.ts: the textures cast was gratuitous —
+  `Phaser.Scene` already exposes `textures`. Removed the
+  `as unknown` indirection.
+
+Verification gates:
+- `npm run lint` clean (after dropping the 2 dead imports).
+- `npm test` 466/466 PASS, 68 files, 2.92s.
+- `npm run build` PASS, 4.88s. Bundle sizes unchanged.
+- `grep "this.scene as unknown" src/`: zero matches.
+- Production `as any` count: still 17 in 8 files (next P1 atomic).
+
+Commit: forthcoming — single coherent narrative
+(refactor: retire scene reach-throughs via ISceneContext).
+
+Next loop iteration:
+- P1 second atomic: audit + reduce the 17 production `as any`.
+  Largest cluster (9 of 17) is pool-teardown idiom across
+  SpawnSystem/WeaponSystem/XPSystem (`(p as any).destroy?.()`
+  + `.active`/`.visible` writes). Single typed
+  `disposePoolMember(obj)` helper would collapse them.
