@@ -25,3 +25,4 @@
 | 2026-04-13 | 30 | REFLECT | Verify build/tests green, update strategy for loop 30, diagnose 12-loop gap | Done — 563 tests pass, build clean. Strategy updated: bundle done, backlog thin. Next: REVIEW src/utils/ (area 7). |
 | 2026-04-13 | 53 | REVIEW | Review src/utils/ (rotation area 7) | Done — 6 findings: 2×P1 missing tests (inputMath, SubscriptionBag), 4×P2 (math/cameraShake/GamepadMenuNav tests + redundant clamp). Area healthy, well-tested core (save/rng/UpdateTickers). |
 | 2026-04-13 | 31 | BUILD | Add 16 inputMath.ts unit tests | Done — clampVectorLength (6), mergeMoveVectors (3), gamepadStickToMove (7). 563→579 tests. |
+| 2026-04-13 | 30b | BUILD | Add 2 more inputMath edge cases (merge maxLen, magnitude sweep) | Done — 18 total tests, 563→581 tests. |

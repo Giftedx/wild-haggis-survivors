@@ -31,7 +31,7 @@
 - [ ] Add tests for cameraViewport.ts — zoom-corrected viewport math, inset fallback, cache staleness (P2, ui review)
 - [ ] Add tests for EdgeIndicators.ts — screen-edge geometry, off-screen detection, empty enemy list (P2, ui review)
 
-- [x] Add tests for inputMath.ts — 16 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz). 563→579 tests.
+- [x] Add tests for inputMath.ts — 18 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel, custom maxLen), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz, magnitude sweep). 563→581 tests.
 - [ ] Add tests for SubscriptionBag.ts — add+dispose, listen+dispose, add-after-dispose safety, double-dispose idempotent, LIFO teardown order (P1, utils review)
 - [ ] Add tests for math.ts rotateVectorIntoPrecomputed — identity rotation, 90deg, negative angle (P2, utils review)
 - [ ] Add tests for cameraShake.ts tryCameraShake — screenShake off skips, motionScale=0 skips, normal path (P2, utils review)
