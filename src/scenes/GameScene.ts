@@ -50,6 +50,7 @@ import { TutorialSystem } from '../systems/TutorialSystem';
 import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
+import { PauseMenu } from './game/PauseMenu';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -98,7 +99,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossKillCount: number = 0;
   private bossGoldEarned: number = 0;
   private coinGoldEarned: number = 0;
-  private pauseElements: Phaser.GameObjects.GameObject[] = [];
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   private pendingChests: Array<{ golden: boolean }> = [];
   private victoryPending: boolean = false;
@@ -189,6 +189,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private achievementUnsub: (() => void) | null = null;
   private bossEnrageUnsub: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
+  private pauseMenu: PauseMenu | null = null;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
   /** Gates the low-HP caption — fires once per dip below the threshold. */
@@ -224,7 +225,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private resetTransientRunState(): void {
     this.iFrames = false;
-    this.pauseElements = [];
+    this.pauseMenu?.close();
+    this.pauseMenu = null;
     this.victoryPending = false;
     this.runId = {};
     this.iFrameGeneration = 0;
@@ -1406,159 +1408,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (this.timeManager.has('TUTORIAL_MOVE') || this.timeManager.has('TUTORIAL_GEM')) return;
 
     if (this.timeManager.has('UI_PAUSE')) {
-      // Resume
       this.timeManager.release('UI_PAUSE');
-      for (const el of this.pauseElements) {
-        if ('removeAllListeners' in el) {
-          (el as Phaser.GameObjects.GameObject).removeAllListeners();
-        }
-        el.destroy();
-      }
-      this.pauseElements = [];
+      this.pauseMenu?.close();
       // Spawn deferred treasure chests queued during pause
       this.drainPendingChests();
     } else {
-      // Pause
       this.timeManager.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
-
-      const { x, y, width, height } = this.getUiViewport();
-      const d = 250;
-
-      const hc = this.settingsManager.load().highContrastUi;
-      // High-contrast mode pushes the pause backdrop closer to opaque so
-      // title/copy read cleanly; default stays at 0.85 to preserve the
-      // hearthfire moodiness of the design charter.
-      const backdropAlpha = hc ? 0.95 : 0.85;
-      this.pauseElements.push(
-        this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, backdropAlpha)
-          .setScrollFactor(0).setDepth(d).setInteractive()
-      );
-      this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
-          fontFamily: 'monospace', fontSize: '46px', color: hc ? '#ffe08a' : '#d4a017',
-          fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: hc ? 8 : 5,
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
-      );
-      // Random Glesga quip — a wee breather moment
-      const quipIndex = Phaser.Math.Between(1, 6);
-      const quip = t(`ui.pause.quip_${quipIndex}`);
-      this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.26, quip, {
-          fontFamily: 'monospace', fontSize: '14px', color: '#8a7a6a',
-          fontStyle: 'italic',
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
-      );
-
-      // Run stats during pause
-      const timeSec = this.spawnSystem.getGameTimeSec();
-      const pMins = Math.floor(timeSec / 60);
-      const pSecs = Math.floor(timeSec % 60);
-      this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.37, [
-          t('ui.pause.time_line', { m: pMins, s: pSecs.toString().padStart(2, '0') }),
-          t('ui.pause.stats_mid', { kills: this.killCount, level: this.xpSystem.getLevel() }),
-          t('ui.pause.stats_loadout', {
-            w: this.weaponSystem.getWeapons().length,
-            c: this.ownedPassives.length,
-          }),
-        ].join('\n'), {
-          fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
-          align: 'center', lineSpacing: 6,
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
-      );
-
-      // Resume button
-      const resumeBtn = this.add.rectangle(x + width / 2, y + height * 0.5, 220, 50, 0x005eb8)
-        .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-      resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
-      resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
-      resumeBtn.on('pointerdown', () => this.toggleUiPause());
-      this.pauseElements.push(resumeBtn);
-      this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.5, t('ui.pause.resume'), {
-          fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-      );
-
-      // Sound toggles — side by side
-      const prefs = this.settingsManager.load();
-      let sfxOn = prefs.sfxVolume > 0.001;
-      const sfxLabel = (on: boolean) =>
-        t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-      const sfxText = this.add.text(x + width / 2 - 70, y + height * 0.59, sfxLabel(sfxOn), {
-        fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-        color: sfxOn ? '#88cc88' : '#886666',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-        .setInteractive({ useHandCursor: true });
-      sfxText.on('pointerdown', () => {
-        sfxOn = !sfxOn;
-        sfxText.setText(sfxLabel(sfxOn));
-        sfxText.setColor(sfxOn ? '#88cc88' : '#886666');
-        this.settingsManager.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
-        applyAudioFromUserSettings(this.settingsManager.load());
-      });
-      this.pauseElements.push(sfxText);
-
-      let musicOn = prefs.musicVolume > 0.001;
-      const musicLabel = (on: boolean) =>
-        t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-      const musicText = this.add.text(x + width / 2 + 80, y + height * 0.59, musicLabel(musicOn), {
-        fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-        color: musicOn ? '#88cc88' : '#886666',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-        .setInteractive({ useHandCursor: true });
-      musicText.on('pointerdown', () => {
-        musicOn = !musicOn;
-        musicText.setText(musicLabel(musicOn));
-        musicText.setColor(musicOn ? '#88cc88' : '#886666');
-        this.settingsManager.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
-        applyAudioFromUserSettings(this.settingsManager.load());
-        if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
-      });
-      this.pauseElements.push(musicText);
-
-      // Passive items with descriptions — positioned so it always sits above
-      // the Quit button (0.72). Uses a 2-column layout for >4 passives to
-      // avoid vertical overflow on short screens.
-      if (this.ownedPassives.length > 0) {
-        const passivePauseLine = (k: string) => {
-          const path = `ui.passive.pause_short.${k}`;
-          const s = t(path);
-          return s === path ? k : s;
-        };
-        const names = this.ownedPassives.map(passivePauseLine);
-        let passiveList: string;
-        if (names.length <= 4) {
-          passiveList = names.join('\n');
-        } else {
-          // 2-column layout: pair each row
-          const rows: string[] = [];
-          for (let i = 0; i < names.length; i += 2) {
-            rows.push(names[i] + (names[i + 1] ? '   •   ' + names[i + 1] : ''));
-          }
-          passiveList = rows.join('\n');
-        }
-        // Anchor above the Quit button (0.72) with some padding
-        this.pauseElements.push(
-          this.add.text(x + width / 2, y + height * 0.67, `${t('ui.pause.passives_heading')}\n${passiveList}`, {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00',
-            align: 'center', lineSpacing: 3,
-          }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1)
-        );
+      if (!this.pauseMenu) {
+        this.pauseMenu = new PauseMenu(this, {
+          getUiViewport: () => this.getUiViewport(),
+          getGameTimeSec: () => this.spawnSystem.getGameTimeSec(),
+          getKillCount: () => this.killCount,
+          getLevel: () => this.xpSystem.getLevel(),
+          getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
+          getOwnedPassives: () => this.ownedPassives,
+          onResumeRequested: () => this.toggleUiPause(),
+          onQuitRequested: () => this.abandonRunToMainMenu(),
+        });
       }
-
-      // Quit button
-      const quitBtn = this.add.rectangle(x + width / 2, y + height * 0.77, 220, 50, 0x444444)
-        .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-      quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
-      quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
-      quitBtn.on('pointerdown', () => this.abandonRunToMainMenu());
-      this.pauseElements.push(quitBtn);
-      this.pauseElements.push(
-        this.add.text(x + width / 2, y + height * 0.77, t('ui.pause.quit'), {
-          fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-      );
+      this.pauseMenu.open();
     }
   }
 

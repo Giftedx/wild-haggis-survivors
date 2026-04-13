@@ -29,11 +29,12 @@ All under `src/scenes/game/`. Each takes a constructor handle to `GameScene` (or
 **Surface:** `private resetTransientRunState(pendingSeed: number | null): void`
 **Risk:** Lowest. Pure move inside the same class.
 
-### 2. `OverlayStack.ts`
-Tracks pause elements, victory fade, death fade with consistent z-depths. Provides `push` / `clearGroup` semantics so overlay teardown on run restart or pause-dismiss stops leaking Graphics objects. Does **not** own modal timeScale locks — `timeManager` remains the pause authority. OverlayStack just manages display objects.
+### 2. `PauseMenu.ts` *(was OverlayStack — revised during execution)*
 
-**Surface:** `pushPauseElement`, `clearPauseElements`, `setVictoryFade`, `setDeathFade`, `destroyAll`
-**Risk:** Low. Mechanical. Backed by existing field lifecycle.
+The 140-line `toggleUiPause` body is the real monolith here, not a generic overlay-stack abstraction. `timeManager` already handles modal mutual exclusion via lock keys; the `pauseElements` array already has a clean teardown pattern. Wrapping that with a "stack" layer is ceremony. Instead, extract the full pause UI construction — backdrop, quip, stats block, resume/quit buttons, sfx/music toggles, passive summary — into `PauseMenu`. Tracks its own display objects and tears them down in `close()`.
+
+**Surface:** `open(): void`, `close(): void`, `isOpen(): boolean`
+**Risk:** Low-medium. The pointer handlers for sfx/music toggles and quit-to-menu keep the same scene callbacks; PauseMenu just owns the construction.
 
 ### 3. `CollisionRouter.ts`
 Houses all `physics.add.overlap` / `physics.add.collider` setup and the bodies of their callbacks (chest, golden chest, coin, health orb, player-enemy collider, map-zone ticking). Tracks colliders it creates and removes them on scene shutdown to kill the known leak path.
