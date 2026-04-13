@@ -68,6 +68,39 @@ describe('TimeManager token stack', () => {
     expect(state.physicsPaused).toBe(false);
     expect(state.timeScale).toBe(1);
   });
+
+  it('uses the minimum timeScale when multiple tokens specify one', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+
+    tm.request('SLOW_A', { timeScale: 0.5 });
+    expect(state.timeScale).toBe(0.5);
+
+    tm.request('SLOW_B', { timeScale: 0.2 });
+    expect(state.timeScale).toBe(0.2);
+
+    tm.release('SLOW_B');
+    expect(state.timeScale).toBe(0.5);
+
+    tm.release('SLOW_A');
+    expect(state.timeScale).toBe(1);
+  });
+
+  it('reset() drops every token and restores timeScale + physics defaults', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+
+    tm.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
+    tm.requestForDuration('HIT_FREEZE', { pausePhysics: true }, 1000);
+    expect(tm.getTokenCount()).toBe(2);
+    expect(state.physicsPaused).toBe(true);
+    expect(state.timeScale).toBe(0);
+
+    tm.reset();
+    expect(tm.getTokenCount()).toBe(0);
+    expect(state.physicsPaused).toBe(false);
+    expect(state.timeScale).toBe(1);
+  });
 });
 
 describe('createPhaserTimeAdapter null guards', () => {

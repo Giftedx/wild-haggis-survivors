@@ -69,3 +69,4 @@
 - [x] Caption i18n path fix + auxiliary run UI smoke — `RunLifecycle`/`GameTickers` used non-existent `ui.captions.*`; now `captions.*` (matches `EN_STRINGS`). `auxiliaryRunUi.i18n.smoke.test.ts`: `captions.*`, `ui.pause.quip_1–6`, `ui.upgradeCards.*`. 743→746 tests.
 - [x] Biome name + entry toast i18n smoke — `biomeI18n.smoke.test.ts` walks `BIOMES` `nameKey` / `entryToastKey` (SCOUT: backlog thin; gameplay toast path). 746→747 tests.
 - [x] i18n regression: `ui.passive.pause_short.*` + `tutorial.move|gem|drift` — `i18n.test.ts` (PauseMenu + TutorialSystem paths; DRY `PASSIVE_UI_KEYS`). 747→748 tests.
+- [x] TimeManager tests — min `timeScale` when stacked; `reset()` clears tokens + restores adapter defaults (`TimeManager.test.ts`). 748→750 tests.
