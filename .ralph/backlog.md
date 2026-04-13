@@ -25,6 +25,7 @@
 - [x] REVIEW: src/core/ — done 2026-04-13, 0 bugs found. 24 test files / 20 source. SaveManager V6 migration correct. Area is healthy.
 
 ## Low Priority
+- [ ] Add banter.ts structure validation test — verify keysByTag boss keys match BOSSES array, tag consistency, i18n key format (data review, P2)
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)
 - [ ] DebugOverlay: surface pool sizes, tween count, active timers (fix_plan, feature)
 - [ ] Ship telemetry toggle opt-in for run-completion distribution (fix_plan, feature)
