@@ -516,6 +516,11 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Owes us nothin\'. We owe him nothin\'. Sorted.',
         },
       },
+      weapon_evolve: {
+        a: 'Now THAT\'S a proper weapon.',
+        b: 'Legendary. As it should be.',
+        c: 'The moor trembles. Good.',
+      },
       level_up: {
         a: 'Look at ye go.',
         b: 'Anither notch. Nae messin\'.',

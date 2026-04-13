@@ -683,6 +683,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       armIFrames: (ms) => this.armIFrames(ms),
       drainPendingChests: () => this.drainPendingChests(),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+      requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,

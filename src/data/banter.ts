@@ -26,6 +26,7 @@ export type BanterContext =
   | 'boss_warn'
   | 'boss_down'
   | 'biome_change'
+  | 'weapon_evolve'
   | 'idle';
 
 export interface BanterPool {
@@ -135,6 +136,16 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.taxman.c',
       ],
     },
+  },
+  {
+    context: 'weapon_evolve',
+    tone: 'hearth',
+    priority: 65,
+    keys: [
+      'ui.banter.weapon_evolve.a',
+      'ui.banter.weapon_evolve.b',
+      'ui.banter.weapon_evolve.c',
+    ],
   },
   {
     context: 'level_up',

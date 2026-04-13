@@ -61,6 +61,7 @@ export interface LevelUpFlowHooks {
   armIFrames(durationMs: number): void;
   drainPendingChests(): void;
   caption(id: string, message: string, tint?: string, durationMs?: number): void;
+  requestBanter?(context: import('../../data/banter').BanterContext, tag?: string): void;
 }
 
 export class LevelUpFlow {
@@ -234,6 +235,7 @@ export class LevelUpFlow {
         juice.showToast(t('ui.game.upgrade_evolve_weapon', { name: cardTitle }), '#ffaa00');
         juice.evolutionSpectacle(player.x, player.y, cardTitle);
         audio.playLevelUp();
+        this.hooks.requestBanter?.('weapon_evolve', effect.weaponKey);
         globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
           weaponKey: effect.weaponKey,
           evolvedKey: effect.evolutionKey,

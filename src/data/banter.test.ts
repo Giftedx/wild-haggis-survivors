@@ -6,7 +6,8 @@ import { t } from '../core/i18n';
 describe('BANTER_POOLS structure', () => {
   const allContexts: BanterContext[] = [
     'first_blood', 'kill_streak', 'level_up', 'low_hp',
-    'recover', 'boss_warn', 'boss_down', 'biome_change', 'idle',
+    'recover', 'boss_warn', 'boss_down', 'biome_change',
+    'weapon_evolve', 'idle',
   ];
 
   it('covers every BanterContext exactly once', () => {
