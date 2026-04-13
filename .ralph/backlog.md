@@ -73,6 +73,7 @@
 - [x] `musicMath` remaining branches — loop 78: `logLerp` t clamp in geometric mode; `softKnee` `span ≤ 0` step (`musicMath.test.ts`).
 - [x] `sortedWeaponDamageEntries` filters non-positive — loop 79 (`RunStatsTracker.test.ts`, Game Over breakdown contract).
 - [x] Tests for `applyAudioFromUserSettings` — loop 80 (autonomous discovery: untested settings→audio bridge; `applyAudioFromSettings.test.ts`, mocked `audio` + `musicEngine`, dead-zone + asymmetric enable).
+- [x] Tests for `applyPassiveEffect` — loop 81 (`passiveEffects.test.ts`, mock `Player` hooks: unknown key no-op + all 9 passive keys magnitudes).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

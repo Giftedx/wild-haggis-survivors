@@ -80,3 +80,4 @@
 | 2026-04-13 | 78 | BUILD | `musicMath` branch completion | Done — `logLerp` t clamp (geometric mode); `softKnee` `span ≤ 0` step. 794→796 tests, build clean. |
 | 2026-04-13 | 79 | BUILD | Run stats breakdown filter | Done — `sortedWeaponDamageEntries` drops zero/negative damage; descending order preserved. 796→797 tests, build clean. |
 | 2026-04-13 | 80 | SCOUT→BUILD | Autonomous task discovery | Done — grep for TODOs (none); scanned untested `core/` modules; `applyAudioFromUserSettings` had no tests → `applyAudioFromSettings.test.ts` (mock `audio` + `musicEngine`, dead-zone + routing). 797→800 tests, 103 test files, build clean. |
+| 2026-04-13 | 81 | BUILD | `applyPassiveEffect` contract tests | Done — `passiveEffects.test.ts`: mock `Player` stat hooks; unknown key silent; all 9 passive keys assert magnitudes vs `PLAYER` constants. 800→802 tests, 104 test files, build clean. |
