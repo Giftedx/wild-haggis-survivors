@@ -25,8 +25,8 @@
 - [x] REVIEW: src/core/ — done 2026-04-13, 0 bugs found. 24 test files / 20 source. SaveManager V6 migration correct. Area is healthy.
 - [x] REVIEW: src/data/ — done 2026-04-13. 9/9 test coverage (except banter.ts). 3 findings: banter no test (P1), 4 enemies no biome weight mods (P1 — likely intentional), thistle_shot no WEAPON_CARD (P1 — intentional, starting weapon). No bugs. Healthy area.
 
-- [ ] **HUD.ts: pause button listeners leak on scene restart** — pointerdown/pointerover/pointerout on pauseText never removed in destroy(). Add removeAllListeners() (P0, ui review)
-- [ ] **HUD.ts: untracked tweens leak on scene restart** — flash/glow tweens in update() and cap-warning tween not killed in destroy(). Add killTweensOf for all tween targets (P0, ui review)
+- [x] **HUD.ts: pause button listeners** — NOT A BUG: Phaser's GameObject.destroy() calls removeInteractive() + removeAllListeners() internally. HUD.destroy() destroys all elements → listeners cleaned.
+- [x] **HUD.ts: tween leak** — NOT A BUG: flash/glow tweens are one-shot (400-500ms) with onComplete→destroy(). Scene shutdown() → TweenManager.shutdown() kills all remaining tweens. No orphans.
 - [ ] **Minimap.ts: triangle rotation sign error** — line 173 double-negates cy2 base vertex, possibly flipping player arrow at certain angles. Verify rotation matrix math (P1, ui review)
 - [ ] Add tests for cameraViewport.ts — zoom-corrected viewport math, inset fallback, cache staleness (P2, ui review)
 - [ ] Add tests for EdgeIndicators.ts — screen-edge geometry, off-screen detection, empty enemy list (P2, ui review)

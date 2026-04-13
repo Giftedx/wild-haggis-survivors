@@ -137,6 +137,11 @@ export class HUD {
     return el;
   }
 
+  private removeEl(el: Phaser.GameObjects.GameObject): void {
+    const idx = this.elements.indexOf(el);
+    if (idx !== -1) this.elements.splice(idx, 1);
+  }
+
   private build(): void {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
@@ -536,22 +541,21 @@ export class HUD {
     // XP bar level-up flash — brighter, wider pulse when the bar resets
     if (this.prevXpFraction > 0.8 && xpFraction < 0.2) {
       // Primary bright flash across the bar
-      const flash = this.scene.add.rectangle(
+      const flash = this.addEl(this.scene.add.rectangle(
         this.xpBarBg.x, this.xpBarBg.y,
         this.layoutWidth, this.XP_BAR_H, 0xffee88, 0.9
-      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 3);
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
       this.scene.tweens.add({
         targets: flash, alpha: 0, duration: 400,
-        onComplete: () => flash.destroy(),
+        onComplete: () => { this.removeEl(flash); flash.destroy(); },
       });
-      // Expanding glow that bleeds above the bar (golden burst)
-      const glow = this.scene.add.rectangle(
+      const glow = this.addEl(this.scene.add.rectangle(
         this.xpBarBg.x, this.xpBarBg.y - 4,
         this.layoutWidth, this.XP_BAR_H + 8, 0xffdd44, 0.4
-      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2);
+      ).setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2));
       this.scene.tweens.add({
         targets: glow, alpha: 0, scaleY: 1.5, duration: 500,
-        onComplete: () => glow.destroy(),
+        onComplete: () => { this.removeEl(glow); glow.destroy(); },
       });
     }
     this.prevXpFraction = xpFraction;
@@ -772,7 +776,10 @@ export class HUD {
   }
 
   destroy(): void {
-    for (const el of this.elements) el.destroy();
+    for (const el of this.elements) {
+      this.scene.tweens.killTweensOf(el);
+      el.destroy();
+    }
     this.elements = [];
   }
 }
