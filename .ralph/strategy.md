@@ -1,34 +1,33 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13
+**Last updated:** 2026-04-13 (loop 10 REFLECT)
 
 ## Project Phase
-Post-feature hardening. v2.1.0. Core gameplay loop complete. All major systems shipped (biomes, curses, meta shop, achievements, banter, a11y, tutorials). GameScene dropped 3088→1656 LOC (-46%). Now: type safety, test coverage, bundle budget, content tooling.
+Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as any`). Test coverage strong (73/105 files). Now: bundle optimization, code review rotation, remaining test gaps, content tooling.
 
 ## Top 3 Priorities
-1. **Type safety** — 17 production `as any` in 8 files. Biggest cluster: pool teardown in SpawnSystem/WeaponSystem/XPSystem (9 sites). Typed `disposePoolMember()` helper would collapse them.
-2. **Test coverage on critical paths** — 70 test files / 105 source. Scenes (GameScene, ShopScene, MetaShopScene) and WeaponSystem have zero/minimal tests despite high complexity.
-3. **Bundle budget** — Phaser vendor chunk 1.48MB ungz. Investigate `phaser-core.js` subset (no tilemaps, no matter physics used). PWA precache 1945 KiB.
+1. **Bundle budget** — Phaser vendor chunk 1.48MB ungz. Investigate `phaser-core.js` subset (no tilemaps, no matter physics). PWA precache 1945 KiB. **Untouched in 10 loops — forcing next.**
+2. **Code review rotation** — 3 areas reviewed (scenes, entities, systems). Next: `src/core/`, then `src/data/`. Each review generates 3-8 backlog items.
+3. **Remaining test gaps** — XPGem (0 tests), scene-level integration (GameScene untested). Enemy.applyPostBellScaling API smell.
 
 ## Done Enough (don't revisit unless bugs surface)
-- Scene reach-throughs: 0 remaining (ISceneContext fully covers all 7 former sites)
-- Scene lifecycle reset correctness (reviewed + fixed in recent loops)
-- Entity basics: Player, Enemy, Projectile core behavior
+- Type safety: 0 production `as any` (was 17)
+- Scene reach-throughs: 0 remaining (ISceneContext)
+- Scene lifecycle reset correctness
+- Entity core: Player (16 tests), Enemy (status/elite tests), Projectile (9 tests)
+- Weapon stat scaling (10 tests), SpawnSystem resume/stall (11 tests)
 - Save/load system (well-tested)
 - Procedural music engine (functional, tested)
-- Boot texture generation
-- BanterSystem (recently shipped, working)
-- i18n (functional with t() helper)
+- BanterSystem, i18n, Boot textures
 
 ## Review Rotation Position
-Last reviewed: `src/entities/` (2026-04-13, 5 tasks generated)
+Last reviewed: `src/entities/` (2026-04-13, 5 tasks)
 Next up: `src/core/` (area 4 in rotation)
 
-## Metrics Snapshot (2026-04-13)
-- Source files: 105, Test files: 72
-- Tests: 526 passing
-- `as any`: 0 production casts (was 17) — all eliminated across 6 loops
-- `as unknown`: 12 files
+## Metrics Snapshot (2026-04-13, loop 10)
+- Source files: 105, Test files: 73
+- Tests: 549 passing (was 488 at loop 1)
+- `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
-- Build: ~4.9s clean, lint 0 errors
+- Build: ~5s clean, lint 0 errors
