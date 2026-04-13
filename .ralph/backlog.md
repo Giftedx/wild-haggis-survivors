@@ -77,3 +77,4 @@
 - [x] Extract `edgeIndicatorMath` + `captionOverlayLayout` — pure helpers + 9 + 7 tests; `EdgeIndicators` / `CaptionOverlay` import them (behavior unchanged). Closes deferred split from loop 53.
 - [x] Comfort smoke alignment — `ISettingsData.telemetryOptIn` (default false, coerced on load) + `ui.settings.telemetry_opt_in` i18n; export `stepGamepadMenuIndex` from `GamepadMenuNav` (class uses same helper). Fixes test/prod drift after smoke commits.
 - [x] TimeManager edge tests — `destroy()` clears like `reset()`, `request` overwrites same key, negative `durationMs` clamped to 0 then expires on first `update`.
+- [x] Telemetry UX + analytics gate — `SettingsScene` accessibility row toggles `telemetryOptIn`; `AnalyticsManager` emits `run_start` / `run_end` only when opt-in (portal `triggerGameplayStart`/`Stop` unchanged). 759→760 tests.

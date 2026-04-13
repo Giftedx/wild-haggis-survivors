@@ -1,4 +1,13 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+
+const { settingsLoadMock } = vi.hoisted(() => ({
+  settingsLoadMock: vi.fn(() => ({ telemetryOptIn: true })),
+}));
+
+vi.mock('./SettingsManager', () => ({
+  getSettingsManager: () => ({ load: settingsLoadMock }),
+}));
+
 import { AnalyticsManager, type IAnalyticsProvider, resetAnalyticsManagerForTests } from './AnalyticsManager';
 import { globalEventBus } from './GlobalEventBus';
 
@@ -8,6 +17,7 @@ describe('AnalyticsManager', () => {
 
   beforeEach(() => {
     resetAnalyticsManagerForTests();
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: true });
     provider = {
       logEvent: vi.fn(),
       triggerGameplayStart: vi.fn(),
@@ -48,7 +58,7 @@ describe('AnalyticsManager', () => {
     expect(provider.logEvent).not.toHaveBeenCalled();
   });
 
-  it('logs run_end when GLOBAL_RUN_ENDED fires', () => {
+  it('logs run_end when GLOBAL_RUN_ENDED fires and telemetry opt-in is on', () => {
     globalEventBus.emit('GLOBAL_RUN_ENDED', {
       outcome: 'death',
       gameTimeSec: 120,
@@ -75,5 +85,18 @@ describe('AnalyticsManager', () => {
     expect(provider.logEvent).toHaveBeenCalledWith('run_start', { variantKey: 'classic' });
     mgr.endGameplaySession();
     expect(provider.triggerGameplayStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('skips run_start and run_end when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    mgr.beginGameplaySession({ variantKey: 'classic' });
+    expect(provider.triggerGameplayStart).toHaveBeenCalledTimes(1);
+
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory',
+      gameTimeSec: 60,
+      enemiesKilled: 10,
+    });
+    expect(provider.logEvent).not.toHaveBeenCalled();
   });
 });

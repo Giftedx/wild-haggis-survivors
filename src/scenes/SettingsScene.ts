@@ -29,7 +29,13 @@ type SettingsGpRow =
     };
 
 type VolumeKey = 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale' | 'motionScale';
-type ToggleKey = 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi' | 'captionsEnabled';
+type ToggleKey =
+  | 'screenShake'
+  | 'damageNumbers'
+  | 'reduceParticles'
+  | 'highContrastUi'
+  | 'captionsEnabled'
+  | 'telemetryOptIn';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -197,6 +203,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
+    this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned

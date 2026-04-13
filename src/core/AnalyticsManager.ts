@@ -1,4 +1,5 @@
 import { globalEventBus } from './GlobalEventBus';
+import { getSettingsManager } from './SettingsManager';
 
 /** Swappable backend (CrazyGames, Poki, custom) — gameplay code never imports portal SDKs directly. */
 export interface IAnalyticsProvider {
@@ -54,6 +55,7 @@ export class AnalyticsManager {
 
     this.busUnsubs.push(
       globalEventBus.on('GLOBAL_RUN_ENDED', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
         this.safeLogEvent('run_end', {
           outcome: p.outcome,
           gameTimeSec: p.gameTimeSec,
@@ -73,6 +75,15 @@ export class AnalyticsManager {
     for (const u of this.busUnsubs) u();
     this.busUnsubs = [];
     this.busStarted = false;
+  }
+
+  /** Opt-in only: anonymous run_start / run_end distribution stats. */
+  private runDistributionTelemetryEnabled(): boolean {
+    try {
+      return getSettingsManager().load().telemetryOptIn === true;
+    } catch {
+      return false;
+    }
   }
 
   // Analytics must never break the game. Every call into the portal SDK
@@ -102,7 +113,9 @@ export class AnalyticsManager {
   beginGameplaySession(meta: { variantKey: string }): void {
     if (this.sessionDepth === 0) {
       this.triggerGameplayStart();
-      this.logEvent('run_start', { variantKey: meta.variantKey });
+      if (this.runDistributionTelemetryEnabled()) {
+        this.logEvent('run_start', { variantKey: meta.variantKey });
+      }
     }
     this.sessionDepth++;
   }
