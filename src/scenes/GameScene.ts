@@ -52,6 +52,7 @@ import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
+import { LevelUpFlow } from './game/LevelUpFlow';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -192,6 +193,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private biomeController: BiomeController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
+  private levelUpFlow!: LevelUpFlow;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
   /** Gates the low-HP caption — fires once per dip below the threshold. */
@@ -214,7 +216,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     super({ key: 'Game' });
   }
 
-  private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
+  getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this);
     return { x, y, width, height, zoom };
   }
@@ -440,8 +442,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     // Upgrade card UI
-    this.upgradeUI = new UpgradeCardsUI(this, (card) => this.applyUpgrade(card), this.updateTickers);
-    this.upgradeUI.setRerollCallback(() => this.rerollUpgradeCards());
+    this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
+    this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
 
     // When an enemy is killed
     this.weaponSystem.events.on('enemyKilled', (x: number, y: number, xpValue: number, enemyKey: string, wasBoss: boolean, wasElite: boolean = false) => {
@@ -562,7 +564,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // When player levels up, pause and show upgrade choices
     this.xpSystem.events.on('levelup', (newLevel: number) => {
-      this.onLevelUp(newLevel);
+      this.levelUpFlow.handleLevelUp(newLevel);
     });
 
     // Player ↔ Enemy collision
@@ -588,8 +590,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       trackChest: (s, g) => this.trackChestSprite(s, g),
       untrackChest: (s) => this.untrackChestSprite(s),
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
-      offerTreasureEvolutionIfEligible: () => this.offerTreasureEvolutionIfEligible(),
+      offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
       acquireFloatText: (x, y, str, color, fs, d) => this.acquireFloatText(x, y, str, color, fs, d),
+    });
+    this.levelUpFlow = new LevelUpFlow(this, {
+      getPlayer: () => this.player,
+      getWeaponSystem: () => this.weaponSystem,
+      getXPSystem: () => this.xpSystem,
+      getSpawnSystem: () => this.spawnSystem,
+      getJuice: () => this.juice,
+      getStatusFxPool: () => this.statusFxPool,
+      getTutorialSystem: () => this.tutorialSystem,
+      getTimeManager: () => this.timeManager,
+      getUpgradeUI: () => this.upgradeUI,
+      getRunRng: () => this.runRng,
+      getOwnedPassives: () => this.ownedPassives,
+      pushOwnedPassive: (key) => { this.ownedPassives.push(key); },
+      getEvolvedWeapons: () => this.evolvedWeapons,
+      pushEvolvedWeapon: (key) => { this.evolvedWeapons.push(key); },
+      getAnnouncedEvolutionReady: () => this.announcedEvolutionReady,
+      addKill: (n = 1) => { this.killCount += n; },
+      getUiViewport: () => this.getUiViewport(),
+      armIFrames: (ms) => this.armIFrames(ms),
+      drainPendingChests: () => this.drainPendingChests(),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
@@ -937,351 +961,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
   }
 
-  private onLevelUp(newLevel: number): void {
-    this.tutorialSystem.notifyFirstLevelReached(newLevel);
-    // Vacuum all XP gems + audio fanfare
-    this.xpSystem.vacuumAllGems();
-    audio.playLevelUp();
-    this.juice.flashWhite();
-    this.juice.hideCombo();
-
-    // Brief level-up banner
-    const { x, y, width } = this.getUiViewport();
-    const banner = this.add.text(x + width / 2, y + 140, t('ui.game.level_banner', { level: newLevel }), {
-      fontFamily: 'monospace', fontSize: '36px', color: '#d4a017',
-      fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(199).setAlpha(0).setScale(0.5);
-    this.tweens.add({
-      targets: banner, alpha: 1, scale: 1.1, duration: 300, ease: 'Back.easeOut',
-      onComplete: () => {
-        this.tweens.add({ targets: banner, alpha: 0, scale: 1.3, duration: 400, delay: 200, onComplete: () => banner.destroy() });
-      },
-    });
-
-    this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
-    this.player.onLevelUp(newLevel);
-
-    // ── Golden aura pulse around the player — makes the level-up FEEL earned ──
-    // Two layered circles expanding from the player: bright inner + soft outer.
-    const auraOuter = this.add.circle(this.player.x, this.player.y, 30, 0xffdd44, 0.4).setDepth(2);
-    const auraInner = this.add.circle(this.player.x, this.player.y, 20, 0xffee88, 0.6).setDepth(2);
-    this.tweens.add({
-      targets: auraOuter, scale: 3, alpha: 0, duration: 700, ease: 'Quad.easeOut',
-      onComplete: () => auraOuter.destroy(),
-    });
-    this.tweens.add({
-      targets: auraInner, scale: 2.2, alpha: 0, duration: 500, ease: 'Quad.easeOut',
-      onComplete: () => auraInner.destroy(),
-    });
-    // 8 radiating sparkles around the player (smaller than evolution beams)
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      const sparkle = this.add.circle(
-        this.player.x, this.player.y,
-        2.5, 0xffee88, 0.9
-      ).setDepth(3);
-      this.tweens.add({
-        targets: sparkle,
-        x: this.player.x + Math.cos(angle) * 45,
-        y: this.player.y + Math.sin(angle) * 45,
-        alpha: 0, scale: 0.3,
-        duration: 500 + i * 20,
-        ease: 'Quad.easeOut',
-        onComplete: () => sparkle.destroy(),
-      });
-    }
-
-    // Leveling up heals 10% max HP — a small reward that helps sustain longer runs
-    this.player.heal(Math.ceil(this.player.getMaxHp() * 0.10));
-
-    // Milestone damage pulse at levels 10, 20, 30 — screen-clearing celebration
-    if ([10, 20, 30].includes(newLevel)) {
-      const dmg = newLevel * 3; // 30/60/90 damage
-      const radius = 300 + newLevel * 10;
-      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
-      for (const e of enemies) {
-        if (!e.active || e.isBoss()) continue;
-        const d = Phaser.Math.Distance.Between(this.player.x, this.player.y, e.x, e.y);
-        if (d <= radius) e.takeDamageWithKillEvents(dmg);
-      }
-      this.juice.flashWhite(400);
-      this.juice.showToast(t('ui.game.level_power_surge', { level: newLevel }), '#ff8800');
-      const ring = this.statusFxPool.acquireArc(this.player.x, this.player.y, 20, 0xffaa44, 0.5);
-      this.tweens.add({ targets: ring, radius, alpha: 0, duration: 600, onComplete: () => { ring.setVisible(false); } });
-    }
-
-    // Build the card pool based on current state
-    const ownedWeapons = this.weaponSystem.getWeapons().map(w => w.config.key);
-    const weaponLevels: Record<string, number> = {};
-    for (const w of this.weaponSystem.getWeapons()) {
-      weaponLevels[w.config.key] = w.level;
-    }
-
-    let pool = buildCardPool(ownedWeapons, this.ownedPassives, weaponLevels, this.evolvedWeapons);
-
-    // Filter out heal card when at full HP — don't waste a card slot
-    if (this.player.getHp() >= this.player.getMaxHp()) {
-      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && (c.effect.stat === 'heal' || c.effect.stat === 'healPercent')));
-    }
-
-    // Luck bonus from Sporran passive + Lucky Heather permanent upgrade
-    const save = loadSave();
-    let luckBonus = 0;
-    if (this.ownedPassives.includes('sporran')) luckBonus += 15;
-    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
-
-    const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
-    const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
-    const cards = drawCards(pool, cardCount, luckBonus, () => this.runRng.next());
-
-    const evoRecipe = findEligibleChestEvolution(
-      ownedWeapons,
-      this.ownedPassives,
-      weaponLevels,
-      this.evolvedWeapons
-    );
-    if (evoRecipe && !this.announcedEvolutionReady.has(evoRecipe.baseWeapon)) {
-      this.announcedEvolutionReady.add(evoRecipe.baseWeapon);
-      const evoCard = evolutionRecipeToUpgradeCard(evoRecipe);
-      const msg = t('ui.game.evolution_primed', { name: t(evoCard.name) });
-      this.juice.showToast(msg, '#ffcc44');
-      this.caption(`evo_${evoRecipe.baseWeapon}`, msg, '#ffcc44');
-    }
-
-    // Safety valve: if the pool somehow resolves to zero cards (all weapons
-    // maxed + all passives owned + all evolved + heal filter hit), don't
-    // freeze the game on an empty card screen. Auto-resume and show a toast.
-    if (cards.length === 0) {
-      this.juice.showToast(t('ui.game.level_up_fallback'), '#ffdd00');
-      this.timeManager.release('LEVEL_UP');
-      this.xpSystem.processNextLevelUp();
-      return;
-    }
-
-    this.upgradeUI.grantReroll();
-    this.upgradeUI.show(cards, newLevel);
-  }
-
-  /** Reroll the upgrade cards — draws fresh cards from the same pool */
-  private rerollUpgradeCards(): void {
-    const level = this.xpSystem.getLevel();
-    const ownedWeapons = this.weaponSystem.getWeapons().map(w => w.config.key);
-    const weaponLevels: Record<string, number> = {};
-    for (const w of this.weaponSystem.getWeapons()) {
-      weaponLevels[w.config.key] = w.level;
-    }
-
-    let pool = buildCardPool(ownedWeapons, this.ownedPassives, weaponLevels, this.evolvedWeapons);
-    if (this.player.getHp() >= this.player.getMaxHp()) {
-      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && (c.effect.stat === 'heal' || c.effect.stat === 'healPercent')));
-    }
-
-    const save = loadSave();
-    let luckBonus = 0;
-    if (this.ownedPassives.includes('sporran')) luckBonus += 15;
-    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
-
-    const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
-    const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
-    const cards = drawCards(pool, cardCount, luckBonus, () => this.runRng.next());
-
-    this.upgradeUI.show(cards, level);
-    audio.playClick();
-  }
-
-  private applyUpgrade(card: UpgradeCard): void {
-    const effect = card.effect;
-    const cardTitle = t(card.name);
-
-    switch (effect.type) {
-      case 'add_weapon':
-        this.weaponSystem.addWeapon(effect.weaponKey);
-        this.juice.showToast(t('ui.game.upgrade_new_weapon', { name: cardTitle }), '#44dd44');
-        this.juice.flashWhite(200);
-        // Celebration ring
-        {
-          const ring = this.statusFxPool.acquireArc(this.player.x, this.player.y, 10, 0x44dd44, 0.5);
-          this.tweens.add({ targets: ring, radius: 80, alpha: 0, duration: 400, onComplete: () => { ring.setVisible(false); } });
-        }
-        break;
-
-      case 'level_weapon':
-        this.weaponSystem.levelUpWeapon(effect.weaponKey);
-        this.juice.showToast(t('ui.game.upgrade_weapon_level', { name: cardTitle }), '#4488dd');
-        break;
-
-      case 'add_passive':
-        this.ownedPassives.push(effect.passiveKey);
-        this.applyPassiveEffect(effect.passiveKey);
-        this.juice.showToast(t('ui.game.upgrade_add_passive', { name: cardTitle }), '#ddaa00');
-        break;
-
-      case 'stat_boost':
-        this.applyStatBoost(effect.stat, effect.amount);
-        this.juice.showToast(t('ui.game.upgrade_stat_boost', { name: cardTitle }), '#88ccff');
-        break;
-
-      case 'evolve_weapon':
-        this.weaponSystem.evolveWeapon(effect.weaponKey, effect.evolutionKey);
-        if (!this.evolvedWeapons.includes(effect.weaponKey)) {
-          this.evolvedWeapons.push(effect.weaponKey);
-        }
-        this.announcedEvolutionReady.delete(effect.weaponKey);
-        this.juice.showToast(t('ui.game.upgrade_evolve_weapon', { name: cardTitle }), '#ffaa00');
-        // THE legendary moment — radial beams, rings, particles, banner
-        this.juice.evolutionSpectacle(this.player.x, this.player.y, cardTitle);
-        audio.playLevelUp();
-        globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
-          weaponKey: effect.weaponKey,
-          evolvedKey: effect.evolutionKey,
-        });
-        break;
-    }
-
-    // Check for queued level-ups before resuming
-    if (this.xpSystem.hasPendingLevelUps()) {
-      this.xpSystem.processNextLevelUp();
-    } else {
-      this.xpSystem.processNextLevelUp(); // Clears levelUpInProgress flag
-      this.timeManager.release('LEVEL_UP');
-
-      // Brief invincibility after level-up (1s grace period)
-      this.player.setAlpha(0.7);
-      this.armIFrames(1000);
-
-      // Celebrate reaching max level
-      if (this.xpSystem.getLevel() >= XP.MAX_LEVEL) {
-        this.juice.showToast(t('ui.game.max_level_toast'), '#ffdd00');
-      }
-
-      // Spawn deferred treasure chests queued during pause
-      this.drainPendingChests();
-    }
-  }
-
-  private applyPassiveEffect(key: string): void {
-    switch (key) {
-      case 'tam_o_shanter':
-        this.player.addSpeed(PLAYER.SPEED * 0.10);
-        break;
-      case 'kilt':
-        this.player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.15));
-        break;
-      case 'loch_water':
-        // Rebalanced 25% → 40% pickup + small speed bonus so the passive
-        // isn't strictly QoL with no combat value.
-        this.player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.40);
-        this.player.addSpeed(PLAYER.SPEED * 0.05);
-        break;
-      case 'sporran':
-        // Luck card-rarity boost is handled by card pool weighting. Added
-        // a +10% XP bonus so sporran has real power alongside its rare-card
-        // nudging (was strictly a buff-your-draws stat, which is hard to
-        // feel directly).
-        this.player.addXpMultiplier(0.10);
-        break;
-      case 'whisky_flask':
-        this.player.addAoeMultiplier(0.20);
-        break;
-      case 'irn_bru':
-        // Rebalanced 20% → 15% attack speed. Was the dominant pick because
-        // attack speed is a global DPS multiplier affecting every weapon.
-        this.player.addAttackSpeedMultiplier(0.15);
-        break;
-      case 'thistle_crown':
-        this.player.addCritChance(0.05);
-        this.player.setThorns(3);
-        break;
-      case 'highland_shield':
-        this.player.enableShield();
-        break;
-      case 'tartan_sash':
-        this.player.addDamageMultiplier(0.08);
-        break;
-    }
-  }
-
-  private applyStatBoost(stat: string, amount: number): void {
-    switch (stat) {
-      case 'maxHp':
-        this.player.addMaxHp(amount);
-        break;
-      case 'speed':
-        this.player.addSpeed(PLAYER.SPEED * amount);
-        break;
-      case 'pickup':
-        this.player.addPickupRadius(amount);
-        break;
-      case 'drift':
-        this.player.reduceDrift(amount);
-        break;
-      case 'heal':
-        this.player.heal(amount);
-        break;
-      case 'healPercent':
-        this.player.heal(Math.ceil(this.player.getMaxHp() * amount));
-        break;
-      case 'damage':
-        this.player.addDamageMultiplier(amount);
-        break;
-      case 'crit':
-        this.player.addCritChance(amount);
-        break;
-      case 'regen':
-        this.player.addHpRegen(amount);
-        break;
-      case 'armor':
-        this.player.addArmor(amount);
-        break;
-      case 'cooldown':
-        this.player.addCooldownReduction(amount);
-        break;
-      case 'xpMultiplier':
-        this.player.addXpMultiplier(amount);
-        break;
-      case 'lifesteal':
-        this.player.addLifesteal(amount);
-        break;
-      case 'projectileSpeed':
-        this.player.addProjectileSpeedMul(amount);
-        break;
-      case 'knockback':
-        this.player.addKnockbackMul(amount);
-        break;
-      case 'bossHeal':
-        this.player.addBossHealFrac(amount);
-        break;
-      case 'banish': {
-        // Instantly kill the N weakest enemies within 300px.
-        // Use forceKill() to bypass wool armor on sheep and any DR mechanics.
-        const BANISH_RANGE = 300;
-        const px = this.player.x, py = this.player.y;
-        const enemies = (this.spawnSystem.getEnemyGroup().children.entries as Enemy[])
-          .filter(e => e.active && !e.isBoss() && e.getBehavior() !== 'hazard'
-            && Phaser.Math.Distance.Between(px, py, e.x, e.y) <= BANISH_RANGE)
-          .sort((a, b) => a.getHp() - b.getHp())
-          .slice(0, amount);
-        for (const e of enemies) {
-          const enemyKey = e.getEnemyKey();
-          const xpValue = e.getXpValue();
-          const wasElite = e.isElite();
-          this.juice.showKillBurst(e.x, e.y, 0xffffff);
-          this.xpSystem.spawnGem(e.x, e.y, xpValue);
-          this.killCount++;
-          e.forceKill();
-          globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
-            enemyKey,
-            xpValue,
-            wasBoss: false,
-            wasElite,
-          });
-        }
-        this.juice.flashWhite(200);
-        break;
-      }
-    }
-  }
-
   /** Apply permanent upgrades purchased in the shop to this run */
   private applyPermanentUpgrades(): void {
     const save = loadSave();
@@ -1333,7 +1012,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // seed across attempts, so daily challenges are fair.
         const randomPassive = this.runRng.pick(available);
         this.ownedPassives.push(randomPassive);
-        this.applyPassiveEffect(randomPassive);
+        this.levelUpFlow.applyPassiveEffect(randomPassive);
       }
     }
 
@@ -1360,7 +1039,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (modifiers.cooldownReductionPct) this.player.addCooldownReduction(modifiers.cooldownReductionPct);
   }
 
-  private armIFrames(durationMs: number): void {
+  armIFrames(durationMs: number): void {
     this.iFrameGeneration++;
     this.iFrameTimerGen = this.iFrameGeneration;
     this.iFrameRemainingMs = durationMs;
@@ -1856,7 +1535,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.ownedPassives = [...run.ownedPassives];
     this.evolvedWeapons = [...run.evolvedWeaponKeys];
     for (const p of this.ownedPassives) {
-      this.applyPassiveEffect(p);
+      this.levelUpFlow.applyPassiveEffect(p);
     }
     this.player.setResumeHealth(run.playerHealth);
     this.player.setResumeShieldCooldown(run.shieldCooldownMs);
@@ -2076,33 +1755,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  // ── Treasure Chests ──
-
-  /** If a weapon is maxed with its synergy passive, next chest opens a forced evolution pick. */
-  private offerTreasureEvolutionIfEligible(): void {
-    const ownedWeapons = this.weaponSystem.getWeapons().map((w) => w.config.key);
-    const weaponLevels: Record<string, number> = {};
-    for (const w of this.weaponSystem.getWeapons()) {
-      weaponLevels[w.config.key] = w.level;
-    }
-    const recipe = findEligibleChestEvolution(
-      ownedWeapons,
-      this.ownedPassives,
-      weaponLevels,
-      this.evolvedWeapons
-    );
-    if (!recipe) return;
-    this.timeManager.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
-    const card = evolutionRecipeToUpgradeCard(recipe);
-    this.upgradeUI.show([card], this.xpSystem.getLevel(), {
-      bannerTitle: t('ui.upgradeCards.chest_evolution_title'),
-      bannerSubtitle: t('ui.upgradeCards.chest_evolution_sub'),
-      hideReroll: true,
-    });
-  }
-
   /** Drain all chests queued while the game was paused. */
-  private drainPendingChests(): void {
+  drainPendingChests(): void {
     while (this.pendingChests.length > 0) {
       const chest = this.pendingChests.shift()!;
       if (chest.golden) this.pickupSpawner.spawnGoldenChest();
