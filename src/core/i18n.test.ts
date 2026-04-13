@@ -14,6 +14,7 @@ describe('i18n.t', () => {
   it('resolves nested dot paths', () => {
     expect(t('ui.menu.start_run')).toBe('START RUN');
     expect(t('ui.gameOver.victory_title')).toBe('The moor is yours!');
+    expect(t('ui.settings.telemetry_opt_in')).toContain('anonymous');
   });
 
   it('interpolates {placeholders}', () => {
@@ -54,6 +55,19 @@ describe('i18n.t', () => {
  * a resolvable i18n key. If a new weapon / boss / variant / upgrade is added
  * without wiring the corresponding dictionary entry, these tests fail loudly.
  */
+/** Keys with both `ui.passive.hud_abbrev.*` and `ui.passive.pause_short.*` entries. */
+const PASSIVE_UI_KEYS = [
+  'sporran',
+  'whisky_flask',
+  'kilt',
+  'tam_o_shanter',
+  'irn_bru',
+  'loch_water',
+  'thistle_crown',
+  'highland_shield',
+  'tartan_sash',
+] as const;
+
 describe('i18n regression fences — data-file coverage', () => {
   function assertResolves(key: string, label: string): void {
     const resolved = t(key);
@@ -118,9 +132,18 @@ describe('i18n regression fences — data-file coverage', () => {
   });
 
   it('HUD passive abbreviation namespace is populated for all 9 passives', () => {
-    for (const k of ['sporran', 'whisky_flask', 'kilt', 'tam_o_shanter', 'irn_bru', 'loch_water', 'thistle_crown', 'highland_shield', 'tartan_sash']) {
+    for (const k of PASSIVE_UI_KEYS) {
       assertResolves(`ui.passive.hud_abbrev.${k}`, `ui.passive.hud_abbrev.${k}`);
     }
+  });
+
+  it('pause menu passive short lines and tutorial overlay copy resolve', () => {
+    for (const k of PASSIVE_UI_KEYS) {
+      assertResolves(`ui.passive.pause_short.${k}`, `ui.passive.pause_short.${k}`);
+    }
+    assertResolves('tutorial.move', 'tutorial.move');
+    assertResolves('tutorial.gem', 'tutorial.gem');
+    assertResolves('tutorial.drift', 'tutorial.drift');
   });
 
   it('menu stats line templates exist in short and long forms', () => {
