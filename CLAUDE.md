@@ -19,6 +19,13 @@ Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Pha
 
 Vitest is configured (see `src/utils/save.test.ts`).
 
+### Windows: Git “everything modified” (file mode only)
+If `git status` lists a huge set of files with **no line changes**—often `old mode 100755` / `new mode 100644` in `git diff`—that is **executable-bit noise** on Windows. In this repo run once:
+
+`git config core.filemode false`
+
+(Local config only; stops Git from treating mode flips as edits.)
+
 ## Architecture
 
 ### Scene Flow

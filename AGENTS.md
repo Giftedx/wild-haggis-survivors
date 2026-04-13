@@ -10,6 +10,8 @@ This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bun
 
 Before claiming anything is “fixed” or “done”, run at least `npm test` and (for shipped changes) `npm run build`.
 
+**Windows / Git:** If almost every file shows as modified but diffs are only `100755` ↔ `100644`, run `git config core.filemode false` in the repo root (local setting).
+
 ## Player experience & tone
 - **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; use it when changing menus, HUD, toasts, game-over, or copy.
 
