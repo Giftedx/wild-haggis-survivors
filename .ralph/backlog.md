@@ -40,7 +40,8 @@
 
 - [x] Add tests for NoteScheduler — 9 tests: start delay, melody 0.3s offset, multi-note scheduling, no-callback safety, 3 min-interval floors (melody/rhythm/heartbeat), tab-recovery skip, reset. 589→616 tests (includes prior rotateVector tests).
 - [ ] Add tests for Conductor — updateMood lerp (intensity/danger/chaos/triumph targets), resolution mode (enterResolution, isResolutionComplete, descent walk), kill rate calc, phrase contours (P1, music review)
-- [ ] Add tests for euclidean() — known outputs E(3,8)=[10010010], E(5,8), edge cases E(0,8), E(8,8) (P1, music review)
+- [x] Add tests for euclidean() — 10 tests: edge cases E(0/8,8), known patterns E(1-5,8), length invariant, hit count, non-8 slots. Note: impl ≠ classic Bjorklund. 607→616 tests.
+- [ ] euclidean() produces front-weighted patterns, not classic Bjorklund even spacing — E(3,8)=10101000 vs expected 10010010 (P2, potential music bug, investigate)
 - [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
 - [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
 
