@@ -78,3 +78,4 @@
 | 2026-04-13 | 76 | BUILD | `audioContext` unit tests | Done — `audioContext.test.ts`: stub global `AudioContext` + `vi.resetModules()` per case; ctor failure → null; singleton until closed; rebuild disconnects stale compressor; `getOutputNode` connects compressor to destination. 786→790 tests, build clean. |
 | 2026-04-13 | 77 | BUILD | `musicMath` edge coverage | Done — `smoothstep` vs `smoothstep01` + coincident edges; `expApproach` τ≤0; `logLerp` non-positive linear path. 790→794 tests, build clean. |
 | 2026-04-13 | 78 | BUILD | `musicMath` branch completion | Done — `logLerp` t clamp (geometric mode); `softKnee` `span ≤ 0` step. 794→796 tests, build clean. |
+| 2026-04-13 | 79 | BUILD | Run stats breakdown filter | Done — `sortedWeaponDamageEntries` drops zero/negative damage; descending order preserved. 796→797 tests, build clean. |

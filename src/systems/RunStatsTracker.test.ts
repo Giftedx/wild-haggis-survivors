@@ -20,6 +20,19 @@ describe('RunStatsTracker', () => {
     expect(rows[0].damage).toBe(15400);
   });
 
+  it('sortedWeaponDamageEntries drops zero and negative damage', () => {
+    const rows = sortedWeaponDamageEntries({
+      axe: 12,
+      quiet: 0,
+      broken: -99,
+      knife: 4,
+    });
+    expect(rows).toEqual([
+      { key: 'axe', damage: 12 },
+      { key: 'knife', damage: 4 },
+    ]);
+  });
+
   it('ignores non-positive amounts and empty keys map to unknown', () => {
     const t = new RunStatsTracker();
     t.addWeaponDamage('', 50);
