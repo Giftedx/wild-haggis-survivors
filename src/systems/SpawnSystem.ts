@@ -11,6 +11,7 @@ import { ISceneContext } from '../core/ISceneContext';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
 import { BIOMES, type BiomeId } from '../data/biomes';
+import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -422,6 +423,13 @@ export class SpawnSystem {
         const scatter = j > 0 ? rng.int(-30, 30) : 0;
         enemy.spawn(pos.x + scatter, pos.y + scatter, config, this.gameTimeSec);
 
+        // Post-Bell escalation — applied after spawn so it stacks on top of
+        // the standard time-based HP scale instead of replacing it.
+        const pb = this.getPostBellMultipliers();
+        if (pb.enemyHpMul !== 1 || pb.enemySpeedMul !== 1) {
+          enemy.applyPostBellScaling(pb.enemyHpMul, pb.enemySpeedMul);
+        }
+
         // Elite chance: BALANCE.enemy.ELITE_SPAWN_CHANCE after ELITE_UNLOCK_SEC,
         // never on hazards or swarm packs. Tuning lives in BalanceConfig so
         // the gameplay feel matches what the HUD advertises.
@@ -520,6 +528,17 @@ export class SpawnSystem {
     const id = sceneWithBiome.getCurrentBiomeId?.();
     if (!id) return {};
     return BIOMES[id].spawnWeightMods;
+  }
+
+  /** Post-Bell escalation multipliers, or neutral when the run hasn't crossed
+   *  the Bell yet / the scene doesn't expose the hook (e.g., unit tests). */
+  private getPostBellMultipliers(): PostBellMultipliers {
+    const sceneWithPostBell = this.scene as unknown as {
+      getSecondsPastBell?: () => number;
+    };
+    const sec = sceneWithPostBell.getSecondsPastBell?.();
+    if (sec === undefined || sec <= 0) return NEUTRAL_POST_BELL;
+    return computePostBellMultipliers(sec);
   }
 
   getEnemyGroup(): Phaser.GameObjects.Group { return this.pool; }

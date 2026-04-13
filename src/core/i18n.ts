@@ -178,6 +178,12 @@ export const EN_STRINGS: LocaleTree = {
     },
     gameOver: {
       victory_title: 'The moor is yours!',
+      /** Post-Bell opt-in prompt, flashed during the victory ceremony. */
+      keep_going_offer: 'Keep goin\'? Hit ENTER afore the bell rings.',
+      /** Confirmation toast once the player has committed to Post-Bell. */
+      post_bell_start: 'Post-Bell — the moor\'s no\' done with ye yet.',
+      /** Send-off toast when the player finally falls in Post-Bell. */
+      post_bell_sendoff: 'Ye went further than any haggis before ye.',
       death_title: 'Hooves down — braw try',
       /** Rotating death titles — picked randomly so each death feels different. */
       death_title_2: 'Aw naw — doon ye go',

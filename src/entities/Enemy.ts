@@ -1120,6 +1120,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setTint(color);
   }
 
+  /**
+   * Scale HP and speed by post-bell multipliers. Applied AFTER `spawn` (and
+   * after any elite upgrade) so the escalation stacks on top of the normal
+   * difficulty curve instead of replacing it. Speed is baked into
+   * `baseSpeed` so freeze/buff effects compose via `recomputeSpeed()`.
+   */
+  applyPostBellScaling(hpMul: number, speedMul: number): void {
+    if (hpMul !== 1) {
+      this.maxHp = Math.ceil(this.maxHp * hpMul);
+      this.hp = this.maxHp;
+    }
+    if (speedMul !== 1) {
+      this.baseSpeed = Math.ceil(this.baseSpeed * speedMul);
+      this.recomputeSpeed();
+    }
+  }
+
   markAsBoss(): void {
     this.bossFlag = true;
     // Bosses use the HUD's centered boss bar — hide the mini HP bar
