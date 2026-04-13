@@ -288,6 +288,8 @@ export const EN_STRINGS: LocaleTree = {
       screen_shake: 'Screen shake',
       damage_numbers: 'Damage numbers',
       reduce_particles: 'Reduce particles (perf)',
+      /** Run telemetry — end-of-run only, no PII; copy must stay anonymous-forward. */
+      telemetry_opt_in: 'Share anonymous run-end stats (opt in)',
       high_contrast_ui: 'High-contrast UI',
       /** On-screen captions for critical audio cues (boss warnings,
        *  low HP, evolution ready, combo milestones, death, victory). */

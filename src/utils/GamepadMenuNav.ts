@@ -1,5 +1,13 @@
 import Phaser from 'phaser';
 
+/** Pure step helper for D-pad menus — wraps at bounds; `length === 0` yields 0. */
+export function stepGamepadMenuIndex(index: number, length: number, direction: number): number {
+  if (length <= 0) return 0;
+  if (direction > 0) return (index + 1) % length;
+  if (direction < 0) return (index - 1 + length) % length;
+  return index;
+}
+
 export type GamepadMenuEntry = {
   /** Used for focus highlight */
   rect: Phaser.GameObjects.Rectangle;
@@ -83,15 +91,17 @@ export class GamepadMenuNav {
 
     if (upEdge || downEdge) {
       this.repeatAcc = 0;
-      if (upEdge) this.index = (this.index - 1 + this.entries.length) % this.entries.length;
-      if (downEdge) this.index = (this.index + 1) % this.entries.length;
+      const len = this.entries.length;
+      if (upEdge) this.index = stepGamepadMenuIndex(this.index, len, -1);
+      if (downEdge) this.index = stepGamepadMenuIndex(this.index, len, 1);
       this.applyHighlight();
     } else if (up || down) {
       this.repeatAcc += delta;
       if (this.repeatAcc >= this.repeatMs) {
         this.repeatAcc = 0;
-        if (up) this.index = (this.index - 1 + this.entries.length) % this.entries.length;
-        if (down) this.index = (this.index + 1) % this.entries.length;
+        const len = this.entries.length;
+        if (up) this.index = stepGamepadMenuIndex(this.index, len, -1);
+        if (down) this.index = stepGamepadMenuIndex(this.index, len, 1);
         this.applyHighlight();
       }
     } else {

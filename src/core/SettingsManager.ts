@@ -39,6 +39,11 @@ export interface ISettingsData {
    * 'off' silences BanterSystem outright (milestone easter eggs keep firing).
    */
   banterFrequency: BanterFrequency;
+  /**
+   * Opt-in anonymous run-end distribution stats (`run_start` / `run_end` only).
+   * Off by default.
+   */
+  telemetryOptIn: boolean;
 }
 
 export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
@@ -57,6 +62,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   motionScale: 1,
   captionsEnabled: false,
   banterFrequency: 'normal',
+  telemetryOptIn: false,
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -159,6 +165,7 @@ export class SettingsManager {
       motionScale: clamp01(o.motionScale, DEFAULT_SETTINGS.motionScale),
       captionsEnabled: toBool(o.captionsEnabled, DEFAULT_SETTINGS.captionsEnabled),
       banterFrequency: toBanterFrequency(o.banterFrequency, DEFAULT_SETTINGS.banterFrequency),
+      telemetryOptIn: toBool(o.telemetryOptIn, DEFAULT_SETTINGS.telemetryOptIn),
     };
   }
 }

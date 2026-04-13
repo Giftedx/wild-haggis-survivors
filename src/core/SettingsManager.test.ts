@@ -53,6 +53,7 @@ describe('SettingsManager air-gap', () => {
       motionScale: 0.5,
       captionsEnabled: true,
       banterFrequency: 'normal',
+      telemetryOptIn: false,
     });
 
     meta.reset();
@@ -97,6 +98,7 @@ describe('SettingsManager air-gap', () => {
       motionScale: 1,
       captionsEnabled: false,
       banterFrequency: 'normal',
+      telemetryOptIn: false,
     });
 
     meta.reset();
@@ -136,6 +138,7 @@ describe('SettingsManager air-gap', () => {
       motionScale: 1,
       captionsEnabled: false,
       banterFrequency: 'normal',
+      telemetryOptIn: false,
     });
 
     settings.reset();
@@ -161,6 +164,7 @@ describe('SettingsManager air-gap', () => {
       motionScale: 1,
       captionsEnabled: false,
       banterFrequency: 'normal',
+      telemetryOptIn: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });

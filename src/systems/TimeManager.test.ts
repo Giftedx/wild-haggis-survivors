@@ -144,6 +144,37 @@ describe('TimeManager token stack', () => {
     tm.request('apple', { timeScale: 0.3 });
     expect(tm.getActiveTokenKeys()).toEqual(['apple', 'zebra']);
   });
+
+  it('destroy() clears tokens like reset()', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
+    tm.destroy();
+    expect(tm.getTokenCount()).toBe(0);
+    expect(state.physicsPaused).toBe(false);
+    expect(state.timeScale).toBe(1);
+  });
+
+  it('request replaces an existing token with the same key', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.request('FX', { timeScale: 0.5 });
+    expect(state.timeScale).toBe(0.5);
+    tm.request('FX', { timeScale: 0.8 });
+    expect(tm.getTokenCount()).toBe(1);
+    expect(state.timeScale).toBe(0.8);
+    tm.release('FX');
+    expect(state.timeScale).toBe(1);
+  });
+
+  it('clamps negative durationMs to 0 so the token expires on first positive update', () => {
+    const { adapter } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.request('BAD', { durationMs: -100 });
+    expect(tm.has('BAD')).toBe(true);
+    tm.update(1);
+    expect(tm.has('BAD')).toBe(false);
+  });
 });
 
 describe('createPhaserTimeAdapter null guards', () => {

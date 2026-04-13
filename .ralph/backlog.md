@@ -75,3 +75,5 @@
 - [x] TimeManager.update + ScaledTimer.tick guards — `update` skips `deltaMs ≤ 0` and empty token map; `getActiveTokenKeys` sorted; `ScaledTimer.tick` no-op when inactive, frozen when `timeScale < 0`. 758→763 tests.
 - [x] Git: track scene i18n smoke tests + `GamepadMenuNav.test.ts` — were on disk but untracked (`settingsComfort`, `hearthUi`, `economyRunUi`, `chronicleDeeds`, `gameHudJuice`, `auxiliaryRunUi`, `GamepadMenuNav`). CI / fresh clone parity.
 - [x] Extract `edgeIndicatorMath` + `captionOverlayLayout` — pure helpers + 9 + 7 tests; `EdgeIndicators` / `CaptionOverlay` import them (behavior unchanged). Closes deferred split from loop 53.
+- [x] Comfort smoke alignment — `ISettingsData.telemetryOptIn` (default false, coerced on load) + `ui.settings.telemetry_opt_in` i18n; export `stepGamepadMenuIndex` from `GamepadMenuNav` (class uses same helper). Fixes test/prod drift after smoke commits.
+- [x] TimeManager edge tests — `destroy()` clears like `reset()`, `request` overwrites same key, negative `durationMs` clamped to 0 then expires on first `update`.
