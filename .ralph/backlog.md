@@ -53,7 +53,7 @@
 - [x] Add tests for upgrades.ts buildCardPool/drawCards — 16 new tests (upgrades.test.ts) + 13 existing (cardpool.test.ts). New: luck bonus probability, deterministic RNG, common weight floor, legendary rarity lv4→5. 661→684 tests.
 - [x] Add tests for GlobalEventBus.ts — 7 tests: emit payload, multi-listener, unsub fn, off specific, off-unregistered safety, emit-no-listeners, event isolation. 661→684 tests (includes inter-session additions).
 
-- [ ] Add tests for runStartModifiers.ts — applyVariantModifiers (speed/hp/armor/pickup/xp/dmg/drift/cooldown), applyPermanentUpgrades (13 upgrade types, revival flag, chest bonus, lucky_start passive pick). Needs Player/WeaponSystem mocks. (P2, scenes review r2)
+- [x] Add tests for runStartModifiers.ts — 12 tests: variant speed/multi-mod/skip-zero, permanent thick_hide/weapon_training/revival/treasure_magnet/lucky_start/lucky_start_full/drift_control/double_dash/defaults. 684→696 tests.
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
