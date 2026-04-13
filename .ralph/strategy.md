@@ -1,6 +1,6 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 62 BUILD)
+**Last updated:** 2026-04-13 (loop 63 BUILD)
 
 ## Project Phase
 **Steady state.** v2.1.0. Hardening campaign complete. 769 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
@@ -19,7 +19,7 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - Entity core: Player (16 tests), Enemy (status/elite), Projectile (9 tests)
 - Weapon stat scaling (10 tests), SpawnSystem resume/stall (11 tests)
 - Save/load system (well-tested)
-- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10+), musicMath, SFX duck + smoothed master gains
+- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10+), musicMath, SFX duck + smoothed master gains + AudioSystem impulses on heavy SFX
 - BanterSystem + weapon_evolve context, i18n, Boot textures
 - Bundle: vendor chunk split (1482/340gz + 507/136gz)
 - inputMath (18), SubscriptionBag (8), rotateVector (8), cameraShake (7), cameraViewport (9)
@@ -29,9 +29,9 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 62)
+## Metrics Snapshot (2026-04-13, loop 63)
 - Source files: 105+, Test files: 90+
-- Tests: 769 passing on clean tree (was 488 at loop 1). **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+- Tests: 779 passing (includes `percussionGainScales` once tracked); loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

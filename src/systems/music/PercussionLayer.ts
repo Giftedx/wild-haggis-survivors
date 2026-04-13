@@ -177,3 +177,11 @@ export function euclidean(hits: number, slots: number): boolean[] {
 
   return pattern.flat().map(v => v === 1);
 }
+
+/** Per-phrase kick/hat gain scales from Euclidean pulse count (1–8 in 8 slots). */
+export function percussionKickHatGainScales(pulseCount: number): { kick: number; hat: number } {
+  const n = Math.max(1, Math.min(8, Math.round(pulseCount)));
+  const KICK = [1.0, 0.9, 0.88, 0.72, 0.68, 0.7, 0.72, 0.74];
+  const HAT = [1.0, 0.95, 0.9, 0.82, 0.7, 0.55, 0.45, 0.42];
+  return { kick: KICK[n - 1], hat: HAT[n - 1] };
+}

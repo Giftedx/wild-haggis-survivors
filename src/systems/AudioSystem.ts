@@ -8,6 +8,7 @@
  */
 import { getAudioContext, getOutputNode } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
+import { musicEngine } from './music/ProceduralMusicEngine';
 
 const BASE_SFX_GAIN = 0.3;
 
@@ -65,6 +66,11 @@ export class AudioSystem {
     sfxManager.tryPlay(key, play);
   }
 
+  /** Brief music duck during loud run SFX; `musicEngine` no-ops when not playing. */
+  private duckMusicForGameplaySfx(strength: number): void {
+    musicEngine.notifyGameplaySfxImpulse(strength);
+  }
+
   /** Enemy hit — use inside `getSFXManager().tryPlay('hit', …)` from gameplay. */
   playHitImmediate(): void {
     if (!this.enabled) return;
@@ -98,6 +104,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(0.24);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -240,6 +247,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(0.38);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -264,6 +272,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(0.52);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -289,6 +298,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(0.78);
 
     const t = ctx.currentTime;
     const notes = [400, 350, 280, 200];
