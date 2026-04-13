@@ -70,6 +70,7 @@
 - [x] Test: `ProceduralMusicEngine.update` applies same duck decay as `expApproach` — loop 75 (`ProceduralMusicEngine.test.ts`, stubbed ctx/layers).
 - [x] Tests for `audioContext.ts` — loop 76: ctor failure → null; singleton until `state === 'closed'`; stale compressor `disconnect` on rebuild; `getOutputNode` wires compressor (`audioContext.test.ts`, `resetModules` + stub `AudioContext`).
 - [x] `musicMath` edge-case tests — loop 77: `smoothstep` vs `smoothstep01`, degenerate edges, `expApproach` τ≤0 snap, `logLerp` non-positive linear fallback (`musicMath.test.ts`).
+- [x] `musicMath` remaining branches — loop 78: `logLerp` t clamp in geometric mode; `softKnee` `span ≤ 0` step (`musicMath.test.ts`).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

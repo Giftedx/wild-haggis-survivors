@@ -65,9 +65,21 @@ describe('musicMath', () => {
     expect(logLerp(100, 400, 0.5)).toBeCloseTo(200, 5);
   });
 
+  it('logLerp clamps t to 0..1 in geometric mode', () => {
+    expect(logLerp(100, 400, -1)).toBeCloseTo(100, 5);
+    expect(logLerp(100, 400, 2)).toBeCloseTo(400, 5);
+  });
+
   it('softKnee is bounded', () => {
     expect(softKnee(0, 5, 2)).toBeLessThan(0.5);
     expect(softKnee(20, 5, 2)).toBeGreaterThan(0.99);
+  });
+
+  it('softKnee is a hard step when span is non-positive', () => {
+    expect(softKnee(4, 5, 0)).toBe(0);
+    expect(softKnee(5, 5, 0)).toBe(1);
+    expect(softKnee(6, 5, 0)).toBe(1);
+    expect(softKnee(4, 5, -1)).toBe(0);
   });
 
   it('MOTION_TIMING exposes shared audio + UI constants', () => {

@@ -77,3 +77,4 @@
 | 2026-04-13 | 75 | BUILD | Engine-level duck decay contract | Done — `ProceduralMusicEngine.test.ts` stubs ctx + layers, calls `update()`, expects `musicSfxDuck` ≡ `expApproach` with `MOTION_TIMING` τ (complements loop 74 pure-math lock). 785→786 tests, build clean. |
 | 2026-04-13 | 76 | BUILD | `audioContext` unit tests | Done — `audioContext.test.ts`: stub global `AudioContext` + `vi.resetModules()` per case; ctor failure → null; singleton until closed; rebuild disconnects stale compressor; `getOutputNode` connects compressor to destination. 786→790 tests, build clean. |
 | 2026-04-13 | 77 | BUILD | `musicMath` edge coverage | Done — `smoothstep` vs `smoothstep01` + coincident edges; `expApproach` τ≤0; `logLerp` non-positive linear path. 790→794 tests, build clean. |
+| 2026-04-13 | 78 | BUILD | `musicMath` branch completion | Done — `logLerp` t clamp (geometric mode); `softKnee` `span ≤ 0` step. 794→796 tests, build clean. |
