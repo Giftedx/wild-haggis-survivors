@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { StatComposer, type ComposedPlayerStats } from './StatComposer';
-import { listMetaShopItemKeys, META_SHOP_ITEMS } from '../data/metaShopItems';
+import { StatComposer } from './StatComposer';
+import { listMetaShopItemKeys } from '../data/metaShopItems';
 import { PLAYER } from '../config';
 import { BALANCE } from './BalanceConfig';
 import type { ISaveData } from './SaveManager';

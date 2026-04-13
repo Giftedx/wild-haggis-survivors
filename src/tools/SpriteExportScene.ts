@@ -180,7 +180,6 @@ export class SpriteExportScene extends Phaser.Scene {
 
           // Get the source canvas/image from Phaser texture
           const tex = this.textures.get(entry.key);
-          const source = tex.source[0].image || tex.source[0].glTexture;
 
           // Try to get the canvas source
           let srcCanvas: HTMLCanvasElement | HTMLImageElement | null = null;
