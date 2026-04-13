@@ -687,6 +687,7 @@ export class MainMenuScene extends Phaser.Scene {
         try { this.tweens.killTweensOf(target); } catch { /* ignore */ }
       }
       this.cozyTweenTargets = [];
+      try { this.tweens.killAll(); } catch { /* ignore */ }
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });
