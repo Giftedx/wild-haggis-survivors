@@ -20,3 +20,5 @@
 | 2026-04-13 | 16 | REVIEW | Review src/ui/ (rotation area 6) | Done — 5 findings: HUD pause listener leak (P0), HUD untracked tween leak (P0), Minimap triangle sign error (P1), cameraViewport no tests (P2), EdgeIndicators no tests (P2). |
 | 2026-04-13 | 17 | BUILD | Harden HUD.ts tween cleanup on scene restart | Done — tracked ephemeral flash/glow rects via addEl+removeEl so destroy() catches mid-flight tweens. Added killTweensOf per element in destroy(). Listener leak was false positive (Phaser handles it). |
 | 2026-04-13 | 18 | BUILD | Investigate Minimap triangle sign error | Done — NOT A BUG. Double negative `-ca * -size * 0.7` = `+ca * size * 0.7` correctly mirrors base vertex. Standard 2D rotation matrix verified. |
+| 2026-04-13 | 19-28 | — | Sessions ran but produced no commits or journal entries | Stuck — backlog depleted, loops spun without substantive work |
+| 2026-04-13 | 29 | REFLECT | Assess 11 empty loops, diagnose backlog depletion | Done — backlog thin, review rotation stalled. Need src/utils/ review to replenish. |

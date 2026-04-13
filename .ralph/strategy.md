@@ -1,14 +1,14 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 10 REFLECT)
+**Last updated:** 2026-04-13 (loop 29 REFLECT)
 
 ## Project Phase
 Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as any`). Test coverage strong (73/105 files). Now: bundle optimization, code review rotation, remaining test gaps, content tooling.
 
 ## Top 3 Priorities
-1. **Bundle budget** — Phaser vendor chunk 1.48MB ungz. Investigate `phaser-core.js` subset (no tilemaps, no matter physics). PWA precache 1945 KiB. **Untouched in 10 loops — forcing next.**
-2. **Code review rotation** — 3 areas reviewed (scenes, entities, systems). Next: `src/core/`, then `src/data/`. Each review generates 3-8 backlog items.
-3. **Remaining test gaps** — XPGem (0 tests), scene-level integration (GameScene untested). Enemy.applyPostBellScaling API smell.
+1. **Code review rotation** — 6/9 areas reviewed. Next: `src/utils/` (area 7), then `src/systems/music/` (area 8), then `src/systems/a11y/` (area 9). Each review generates 3-8 backlog items. **Primary source of fresh work.**
+2. **Remaining test gaps** — cameraViewport.ts (0 tests), EdgeIndicators.ts (0 tests), GameScene integration. Enemy.applyPostBellScaling API smell.
+3. **Feature completions** — banter weapon evolution moments, DebugOverlay pool/tween/timer surface, a11y matrix docs.
 
 ## Done Enough (don't revisit unless bugs surface)
 - Type safety: 0 production `as any` (was 17)
@@ -21,8 +21,9 @@ Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as 
 - BanterSystem, i18n, Boot textures
 
 ## Review Rotation Position
-Last reviewed: `src/ui/` (2026-04-13, 5 tasks — 2×P0 HUD leaks, 1×P1 Minimap sign, 2×P2 missing tests)
+Last reviewed: `src/ui/` (2026-04-13, loop 16, 5 tasks — 2×P0 HUD false-pos, 1×P1 Minimap false-pos, 2×P2 tests)
 Next up: `src/utils/` (area 7 in rotation)
+Areas done: scenes(1), entities(2), systems(3), core(4), data(5), ui(6). Remaining: utils(7), music(8), a11y(9).
 
 ## Metrics Snapshot (2026-04-13, loop 15)
 - Source files: 105, Test files: 75
