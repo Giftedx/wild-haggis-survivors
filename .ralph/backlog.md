@@ -71,3 +71,4 @@
 - [x] i18n regression: `ui.passive.pause_short.*` + `tutorial.move|gem|drift` — `i18n.test.ts` (PauseMenu + TutorialSystem paths; DRY `PASSIVE_UI_KEYS`). 747→748 tests.
 - [x] TimeManager tests — min `timeScale` when stacked; `reset()` clears tokens + restores adapter defaults (`TimeManager.test.ts`). 748→750 tests.
 - [x] UpdateTickers tests — `addInterval` + `repeats`, cancel once/interval, `clear()`, non-positive delta guard (`UpdateTickers.test.ts`). 750→755 tests.
+- [x] TimeManager release + ScaledTimer edges — `release` idempotent (unknown key, double-release, empty stack → timeScale 1); `ScaledTimer.stop` clears countdown; `start` clamps non-positive duration inactive. 755→758 tests.

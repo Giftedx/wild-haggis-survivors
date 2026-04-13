@@ -35,5 +35,21 @@ describe('ScaledTimer', () => {
     t.tick(0, 1);
     expect(t.getRemainingMs()).toBe(1000);
   });
+
+  it('stop() clears an active countdown', () => {
+    const t = new ScaledTimer();
+    t.start(800);
+    t.stop();
+    expect(t.isActive()).toBe(false);
+    expect(t.getRemainingMs()).toBe(0);
+  });
+
+  it('start clamps non-positive duration to inactive', () => {
+    const t = new ScaledTimer();
+    t.start(0);
+    expect(t.isActive()).toBe(false);
+    t.start(-50);
+    expect(t.isActive()).toBe(false);
+  });
 });
 

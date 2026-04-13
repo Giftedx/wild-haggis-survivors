@@ -101,6 +101,20 @@ describe('TimeManager token stack', () => {
     expect(state.physicsPaused).toBe(false);
     expect(state.timeScale).toBe(1);
   });
+
+  it('release is safe for unknown keys and double-release (idempotent)', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+
+    expect(() => tm.release('nope')).not.toThrow();
+    expect(tm.getTokenCount()).toBe(0);
+
+    tm.request('TMP', { timeScale: 0.4 });
+    tm.release('TMP');
+    expect(() => tm.release('TMP')).not.toThrow();
+    expect(tm.getTokenCount()).toBe(0);
+    expect(state.timeScale).toBe(1);
+  });
 });
 
 describe('createPhaserTimeAdapter null guards', () => {
