@@ -41,10 +41,13 @@ export class WeaponSystem {
   private trailCounter: number = 0;
 
   /** Per-frame cache: active enemies sorted by distance to player.
-   *  Built once at the start of update(), consumed by findClosestEnemy(). */
+   *  Built lazily on first findClosestEnemy() call per frame. */
   private cachedSortedEnemies: Enemy[] = [];
   private cachedSortedDistSq: number[] = [];
   private enemyCacheFrame: number = -1;
+  private cachePlayerX: number = 0;
+  private cachePlayerY: number = 0;
+  private frameCounter: number = 0;
 
   /** Pooled VFX circles for weapon visual effects (pulse rings, zones, blasts). */
   private vfxCirclePool: Phaser.GameObjects.Arc[] = [];
@@ -246,9 +249,9 @@ export class WeaponSystem {
   }
 
   update(delta: number, playerX: number, playerY: number): void {
-    // Build per-frame sorted enemy cache (consumed by findClosestEnemy).
-    // One sort replaces 3× linear scans over 400 enemies.
-    this.buildEnemyCache(playerX, playerY);
+    this.frameCounter++;
+    this.cachePlayerX = playerX;
+    this.cachePlayerY = playerY;
 
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
@@ -636,7 +639,7 @@ export class WeaponSystem {
 
   /** Thistle Storm — 8 projectiles that each seek a different enemy */
   private fireHomingBurst(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
-    // Reuse per-frame sorted enemy cache — already active-only, sorted by distance.
+    this.ensureEnemyCache();
     const targets = this.cachedSortedEnemies;
     const targetCount = Math.min(targets.length, count);
 
@@ -955,11 +958,17 @@ export class WeaponSystem {
     }
   }
 
+  private ensureEnemyCache(): void {
+    if (this.enemyCacheFrame === this.frameCounter) return;
+    this.enemyCacheFrame = this.frameCounter;
+    this.buildEnemyCache(this.cachePlayerX, this.cachePlayerY);
+  }
+
   private findClosestEnemy(_fromX: number, _fromY: number, maxRange: number): Enemy | null {
+    this.ensureEnemyCache();
     const maxRangeSq = maxRange * maxRange;
     const sorted = this.cachedSortedEnemies;
     const distSq = this.cachedSortedDistSq;
-    // Cache is sorted by distance — first entry within range is the closest.
     for (let i = 0, len = sorted.length; i < len; i++) {
       if (distSq[i] > maxRangeSq) break;
       return sorted[i];

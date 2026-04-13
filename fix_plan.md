@@ -36,7 +36,7 @@
 
 ## P2 — Architecture / Config
 
-### 7. [ ] WeaponSystem: enemy cache rebuilt every frame unconditionally
+### 7. [x] WeaponSystem: enemy cache rebuilt every frame unconditionally (already lazy — ensureEnemyCache guards with frameCounter, only builds on findClosestEnemy call)
 - **Files:** `src/systems/WeaponSystem.ts`
 - **Rationale:** `buildEnemyCache()` sorts all active enemies every frame. With 400 enemies at 60fps = 24k sorts/sec. Cache only needed when weapons query it.
 - **Acceptance:** Cache only rebuilt when at least one weapon fires this frame, or on demand when `findClosestEnemy()` called with stale cache.
