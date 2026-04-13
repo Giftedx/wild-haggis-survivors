@@ -216,6 +216,53 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return { x, y, width, height, zoom };
   }
 
+  /**
+   * Blank every transient per-run field so a recycled scene instance starts
+   * clean. Must include anything mutated during gameplay — see the field
+   * declarations above for the inventory. Called once from create() before
+   * any systems are constructed.
+   */
+  private resetTransientRunState(): void {
+    this.iFrames = false;
+    this.pauseElements = [];
+    this.victoryPending = false;
+    this.runId = {};
+    this.iFrameGeneration = 0;
+    this.chestDurationBonusMs = 0;
+    const runSeed = this.pendingRunSeed ?? randomSeed();
+    this.runRng = createRNG(runSeed);
+    this.pendingRunSeed = null;
+    this.pendingChests = [];
+    this.pickupDespawnHandles = [];
+    this.updateTickers.clear();
+    this.iFrameRemainingMs = 0;
+    this.iFrameTimerGen = 0;
+    this.hitTintClearRemainingMs = 0;
+    this.victoryDeferMs = 0;
+    this.victoryDelayGen = 0;
+    this.deathResultRemainingMs = null;
+    this.deathResultCallback = null;
+    this.victoryResultRemainingMs = null;
+    this.victoryResultCallback = null;
+    this.victoryFade?.destroy();
+    this.victoryFade = null;
+    this.deathFade?.destroy();
+    this.deathFade = null;
+    this.hintHideHandle = null;
+    this.lavaZones = [];
+    this.healZones = [];
+    this.lastEmittedRunSecond = -1;
+    this.activeChestSprites = [];
+    this.announcedEvolutionReady.clear();
+    this.runStatsTracker.reset();
+    this.deathCauseTracker.reset(0);
+    this.dashIndicator?.destroy();
+    this.dashIndicator = null;
+    this.boundaryWarning?.destroy();
+    this.boundaryWarning = null;
+    this.subs = new SubscriptionBag();
+  }
+
   /** Acquire a pooled floating text, or return null if pool is exhausted. */
   private acquireFloatText(
     x: number, y: number, str: string,
@@ -248,52 +295,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const metaLoaded = this.metaSaveManager.load();
     const resumeRun = readPendingResumeRun(metaLoaded.activeRun);
 
-    // Reset all state — Phaser reuses the scene instance on restart,
-    // so field initializers only run once at construction
-    this.iFrames = false;
-    this.pauseElements = [];
-    this.victoryPending = false;
-    this.runId = {};
-    this.iFrameGeneration = 0;
-    this.chestDurationBonusMs = 0;
-    // Initialize the run-scoped RNG from the seed passed via init().
-    // Default: a fresh random seed so normal runs still vary. The seed is
-    // recorded in the run summary on game-over so players can share it.
-    const runSeed = this.pendingRunSeed ?? randomSeed();
-    this.runRng = createRNG(runSeed);
-    this.pendingRunSeed = null;
-    this.pendingChests = [];
-    this.pickupDespawnHandles = [];
-    this.updateTickers.clear();
-    this.iFrameRemainingMs = 0;
-    this.iFrameTimerGen = 0;
-    this.hitTintClearRemainingMs = 0;
-    this.victoryDeferMs = 0;
-    this.victoryDelayGen = 0;
-    this.deathResultRemainingMs = null;
-    this.deathResultCallback = null;
-    this.victoryResultRemainingMs = null;
-    this.victoryResultCallback = null;
-    this.victoryFade?.destroy();
-    this.victoryFade = null;
-    this.deathFade?.destroy();
-    this.deathFade = null;
-    this.hintHideHandle = null;
-    this.lavaZones = [];
-    this.healZones = [];
-    this.lastEmittedRunSecond = -1;
-    this.activeChestSprites = [];
-    this.announcedEvolutionReady.clear();
-    this.runStatsTracker.reset();
-    this.deathCauseTracker.reset(0);
-
-    // Destroy lazy-init visual overlays from prior run (they're stored in fields
-    // that only init once at construction)
-    this.dashIndicator?.destroy();
-    this.dashIndicator = null;
-    this.boundaryWarning?.destroy();
-    this.boundaryWarning = null;
-    this.subs = new SubscriptionBag();
+    // Wipe transient per-run state — Phaser reuses the scene instance on
+    // scene.start, so field initializers only fire at construction and
+    // anything mutated during gameplay would leak into the next run.
+    this.resetTransientRunState();
 
     // Single authority over timeScale + physics pause state
     this.timeManager = new TimeManager(createPhaserTimeAdapter(this));
