@@ -38,6 +38,7 @@ import { t } from '../../core/i18n';
 import { loadSave } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
+import { applyPassiveEffect as applyPassiveEffectPure } from './passiveEffects';
 
 export interface LevelUpFlowHooks {
   getPlayer(): Player;
@@ -302,38 +303,7 @@ export class LevelUpFlow {
   }
 
   applyPassiveEffect(key: string): void {
-    const player = this.hooks.getPlayer();
-    switch (key) {
-      case 'tam_o_shanter':
-        player.addSpeed(PLAYER.SPEED * 0.10);
-        break;
-      case 'kilt':
-        player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.15));
-        break;
-      case 'loch_water':
-        player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.40);
-        player.addSpeed(PLAYER.SPEED * 0.05);
-        break;
-      case 'sporran':
-        player.addXpMultiplier(0.10);
-        break;
-      case 'whisky_flask':
-        player.addAoeMultiplier(0.20);
-        break;
-      case 'irn_bru':
-        player.addAttackSpeedMultiplier(0.15);
-        break;
-      case 'thistle_crown':
-        player.addCritChance(0.05);
-        player.setThorns(3);
-        break;
-      case 'highland_shield':
-        player.enableShield();
-        break;
-      case 'tartan_sash':
-        player.addDamageMultiplier(0.08);
-        break;
-    }
+    applyPassiveEffectPure(this.hooks.getPlayer(), key);
   }
 
   private applyStatBoost(stat: string, amount: number): void {

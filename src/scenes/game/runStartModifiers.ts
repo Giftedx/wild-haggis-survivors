@@ -18,9 +18,9 @@ import type { Player } from '../../entities/Player';
 import type { WeaponSystem } from '../../systems/WeaponSystem';
 import type { VariantDef } from '../../data/variants';
 import type { RNG } from '../../utils/rng';
-import type { LevelUpFlow } from './LevelUpFlow';
 import { loadSave } from '../../utils/save';
 import { PASSIVE_KEYS } from '../../data/upgrades';
+import { applyPassiveEffect } from './passiveEffects';
 
 export function applyVariantModifiers(player: Player, variant: VariantDef): void {
   const { modifiers } = variant;
@@ -42,13 +42,12 @@ export interface PermanentUpgradeResult {
 export interface PermanentUpgradeDeps {
   player: Player;
   weaponSystem: WeaponSystem;
-  levelUpFlow: LevelUpFlow;
   ownedPassives: string[];      // mutated if lucky_start hits
   runRng: RNG;
 }
 
 export function applyPermanentUpgrades(deps: PermanentUpgradeDeps): PermanentUpgradeResult {
-  const { player, weaponSystem, levelUpFlow, ownedPassives, runRng } = deps;
+  const { player, weaponSystem, ownedPassives, runRng } = deps;
   const save = loadSave();
   const ups = save.upgrades;
   let revivalAvailable = false;
@@ -96,7 +95,7 @@ export function applyPermanentUpgrades(deps: PermanentUpgradeDeps): PermanentUpg
     if (available.length > 0) {
       const randomPassive = runRng.pick(available);
       ownedPassives.push(randomPassive);
-      levelUpFlow.applyPassiveEffect(randomPassive);
+      applyPassiveEffect(player, randomPassive);
     }
   }
 

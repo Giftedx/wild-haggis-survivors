@@ -454,7 +454,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const permResult = applyPermanentUpgrades({
       player: this.player,
       weaponSystem: this.weaponSystem,
-      levelUpFlow: this.levelUpFlow,
       ownedPassives: this.ownedPassives,
       runRng: this.runRng,
     });
