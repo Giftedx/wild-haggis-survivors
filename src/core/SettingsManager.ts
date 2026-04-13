@@ -148,7 +148,17 @@ export class SettingsManager {
 
 function defaultStorage(): StorageLike {
   const ls = (globalThis as unknown as { localStorage?: StorageLike }).localStorage;
-  if (ls) return ls;
+  // Duck-type: some environments (e.g. bare Node running unit tests) expose
+  // a truthy `localStorage` stub without actual methods. Fall back to the
+  // in-memory map when the required methods aren't functions.
+  if (
+    ls
+    && typeof ls.getItem === 'function'
+    && typeof ls.setItem === 'function'
+    && typeof ls.removeItem === 'function'
+  ) {
+    return ls;
+  }
   const mem = new Map<string, string>();
   return {
     getItem: (k) => mem.get(k) ?? null,
