@@ -64,6 +64,7 @@
 - [x] Route `AudioSystem` duck timings through `core/motionTiming` — loop 69 (music engine keeps `musicMath`).
 - [x] Review/drop obsolete stashes + fix Windows filemode noise — loop 70: removed `ralph-loop62-wip` + `autonomous-loop-wip` (superseded); ignore `.ralph/.last_output_length`.
 - [x] Surface Windows `git config core.filemode false` in `CLAUDE.md` / `AGENTS.md` — loop 71.
+- [x] `ProceduralMusicEngine` import `MOTION_TIMING` via `core/motionTiming` — loop 72 (align with AudioSystem).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

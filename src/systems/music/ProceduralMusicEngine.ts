@@ -5,8 +5,8 @@
  * Wires the Conductor, Scheduler, and all layers into one audio graph.
  */
 
+import { MOTION_TIMING } from '../../core/motionTiming';
 import { getAudioContext, getOutputNode } from '../audioContext';
-import { MOTION_TIMING } from './musicMath';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
