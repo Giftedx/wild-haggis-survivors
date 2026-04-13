@@ -50,6 +50,8 @@ import { TutorialSystem } from '../systems/TutorialSystem';
 import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
+import { CaptionManager } from '../systems/a11y/CaptionManager';
+import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
   computeAutoBattleSteering,
   installAutoBattleTimeScale,
@@ -187,6 +189,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private achievementUnsub: (() => void) | null = null;
   private bossEnrageUnsub: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
+  private captionManager: CaptionManager | null = null;
+  private captionOverlay: CaptionOverlay | null = null;
+  /** Gates the low-HP caption — fires once per dip below the threshold. */
+  private lowHpCaptionArmed = true;
   /** After the Bell: Taxman has fallen, the player chose to keep going. Spawn
    *  escalation multipliers come online and death writes `bestEndlessSeconds`. */
   private postBell = false;
@@ -319,6 +325,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bellTimeSec = 0;
     this.postBellOfferActive = false;
     this.uninstallPostBellKeyHandler();
+
+    // Captions — render regardless of whether the setting is enabled so
+    // runtime toggling works; CaptionOverlay checks the flag per frame.
+    this.captionOverlay?.destroy();
+    this.captionManager = new CaptionManager();
+    this.captionOverlay = new CaptionOverlay(this, this.captionManager);
+    this.lowHpCaptionArmed = true;
 
     // Create the player (resume position) or world center.
     // Seeded / daily runs can override the saved variant so all players
@@ -724,6 +737,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.uninstallPostBellKeyHandler();
       try { this.biomeController?.destroy(); } catch { /* ignore */ }
       this.biomeController = null;
+      try { this.captionOverlay?.destroy(); } catch { /* ignore */ }
+      this.captionOverlay = null;
+      this.captionManager?.clear();
+      this.captionManager = null;
       // Remove event listeners before destroying systems to prevent stacking on restart
       try { this.weaponSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
       try { this.xpSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
@@ -760,6 +777,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Raw tickers always advance (UI/run-end domain)
     this.updateTickers.tickRaw(delta);
     this.debugOverlay?.update(delta);
+    // Captions tick on raw delta so they keep fading during pause / run-end.
+    this.captionOverlay?.update(delta);
 
     // Scaled tickers freeze whenever gameplay is paused (including HIT_FREEZE which pauses physics
     // without mutating timeScale).
@@ -802,6 +821,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.tickMapZones(scaledDelta);
     this.tickBiome();
+    this.tickLowHpCaption();
     // Player input/movement stays on raw delta so controls stay snappy during
     // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
     // responsiveness). Game-time systems below use scaledDelta so regen, AI,
@@ -1000,7 +1020,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (evoRecipe && !this.announcedEvolutionReady.has(evoRecipe.baseWeapon)) {
       this.announcedEvolutionReady.add(evoRecipe.baseWeapon);
       const evoCard = evolutionRecipeToUpgradeCard(evoRecipe);
-      this.juice.showToast(t('ui.game.evolution_primed', { name: t(evoCard.name) }), '#ffcc44');
+      const msg = t('ui.game.evolution_primed', { name: t(evoCard.name) });
+      this.juice.showToast(msg, '#ffcc44');
+      this.caption(`evo_${evoRecipe.baseWeapon}`, msg, '#ffcc44');
     }
 
     // Safety valve: if the pool somehow resolves to zero cards (all weapons
@@ -1652,6 +1674,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.bossDeathSpectacle(this.player.x, this.player.y);
     // Victory toast — the big payoff
     this.juice.showToast(t('ui.gameOver.victory_title'), '#d4a017');
+    this.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
     // "Keep goin'?" — the door stays open for ~1100ms before transition.
     this.juice.showToast(t('ui.gameOver.keep_going_offer'), '#ffdd88');
     this.postBellOfferActive = true;
@@ -1758,6 +1781,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     musicEngine.fadeOut(2000);
     this.juice.flashRed(400);
     tryCameraShake(this.cameras.main, 500, 0.02, this.settingsManager);
+    this.caption('death', t('ui.captions.death_fall'), '#cc8866');
 
     // Death particle burst — the haggis explodes
     const px = this.player.x;
@@ -2965,6 +2989,33 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private tickBiome(): void {
     if (!this.biomeController) return;
     this.biomeController.tick(this.player, this.juice);
+  }
+
+  /**
+   * Fire a single caption when the player first drops below 20% HP, then
+   * re-arm once they recover above 40%. Avoids spamming the caption
+   * strip while the player takes rapid-fire damage at low HP.
+   */
+  private tickLowHpCaption(): void {
+    if (!this.player) return;
+    const frac = this.player.getHp() / Math.max(1, this.player.getMaxHp());
+    if (this.lowHpCaptionArmed && frac > 0 && frac < 0.2) {
+      this.caption('low_hp', t('ui.captions.low_hp'), '#ee5566');
+      this.lowHpCaptionArmed = false;
+    } else if (!this.lowHpCaptionArmed && frac > 0.4) {
+      this.lowHpCaptionArmed = true;
+    }
+  }
+
+  /**
+   * Enqueue an a11y caption. Cheap no-op when captions are disabled: the
+   * overlay still holds the manager's state but won't render. Centralising
+   * here keeps callers from having to know about the manager at all.
+   */
+  caption(id: string, message: string, tint?: string, durationMs?: number): void {
+    if (!this.captionManager) return;
+    const d = durationMs ?? CaptionManager.suggestedDurationMs(message);
+    this.captionManager.enqueue(id, message, d, tint);
   }
 
   getCurrentBiomeId(): BiomeId | null {
