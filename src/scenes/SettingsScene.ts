@@ -28,8 +28,8 @@ type SettingsGpRow =
       mark: Phaser.GameObjects.Rectangle;
     };
 
-type VolumeKey = 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale';
-type ToggleKey = 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi';
+type VolumeKey = 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale' | 'motionScale';
+type ToggleKey = 'screenShake' | 'damageNumbers' | 'reduceParticles' | 'highContrastUi' | 'captionsEnabled';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -188,10 +188,12 @@ export class SettingsScene extends Phaser.Scene {
 
     this.addSectionHeader(t('ui.settings.section_comfort'));
     this.addSliderRow(t('ui.settings.ui_scale'), 'uiScale', 0.8, 1.4, 0.05);
+    this.addSliderRow(t('ui.settings.motion_scale'), 'motionScale', 0, 1, 0.1);
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
 
     this.addSectionHeader(t('ui.settings.section_access'));
+    this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
 

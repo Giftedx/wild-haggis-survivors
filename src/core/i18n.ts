@@ -27,6 +27,10 @@ export const EN_STRINGS: LocaleTree = {
       kill_credits_fresh: 'The glen stirs — yir first run awaits.',
       hint_suspended: 'Yir last run is still here — pick up the trail, or start fresh with a new loadout.',
       hint_fresh: 'Next: choose the wee beastie and kit for the moor.',
+      /** Shown only on the very first visit — surfaces the Comfort panel
+       *  so players discover motion / caption / text-scale controls up
+       *  front, not after they've been flashed at for half a run. */
+      hint_fresh_with_comfort: 'Next: pick a wee beastie and kit.  (Need calmer motion or bigger text? Options → Comfort.)',
       start_run: 'START RUN',
       resume_run: 'RESUME RUN',
       new_run_loadout: 'NEW RUN (LOADOUT)',
@@ -277,10 +281,17 @@ export const EN_STRINGS: LocaleTree = {
       sfx_volume: 'SFX volume',
       music_volume: 'Music volume',
       ui_scale: 'UI scale',
+      /** Graduated motion intensity — on top of the binary screen-shake
+       *  toggle, this scales flash alpha, slow-mo duration, and particle
+       *  counts. At 0 the beat still lands but the intensity is tamed. */
+      motion_scale: 'Motion intensity',
       screen_shake: 'Screen shake',
       damage_numbers: 'Damage numbers',
       reduce_particles: 'Reduce particles (perf)',
       high_contrast_ui: 'High-contrast UI',
+      /** On-screen captions for critical audio cues (boss warnings,
+       *  low HP, evolution ready, combo milestones, death, victory). */
+      captions: 'Captions',
       on: 'ON',
       off: 'OFF',
       back: 'BACK',
