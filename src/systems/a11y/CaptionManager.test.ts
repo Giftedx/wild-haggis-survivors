@@ -69,6 +69,13 @@ describe('CaptionManager', () => {
     expect(m.getActive()).toEqual([]);
   });
 
+  it('rejects durationMs <= 0 (no-op)', () => {
+    const m = new CaptionManager();
+    m.enqueue('a', 'msg', 0);
+    m.enqueue('b', 'msg', -100);
+    expect(m.getActive()).toEqual([]);
+  });
+
   it('suggestedDurationMs scales with length and caps at 6s', () => {
     expect(CaptionManager.suggestedDurationMs('short')).toBe(2500 + 5 * 40);
     const huge = 'x'.repeat(500);

@@ -50,6 +50,7 @@ export class CaptionManager {
    * evicting the oldest if we'd exceed maxActive.
    */
   enqueue(id: string, message: string, durationMs: number, tint?: string): void {
+    if (durationMs <= 0) return;
     const existingIdx = this.active.findIndex((c) => c.id === id);
     if (existingIdx >= 0) {
       const existing = this.active[existingIdx];
