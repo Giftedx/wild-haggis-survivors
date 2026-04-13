@@ -31,3 +31,4 @@
 | 2026-04-13 | 33 | REVIEW | Review src/systems/music/ (rotation area 8) | Done — 5 findings: 3×P1 (NoteScheduler/Conductor/euclidean 0 tests), 2×P2 (PianoLayer doc mismatch, fragile test). 7 files, 1 existing test. |
 | 2026-04-13 | 34 | BUILD | Add 9 NoteScheduler tests | Done — start delay, lookahead scheduling, min-interval floors (3), tab-recovery, reset. 597→616 tests. |
 | 2026-04-13 | 32b | BUILD | Add 10 euclidean() tests + export fn | Done — edge cases, known patterns, invariants. Found impl ≠ Bjorklund (front-weighted). 607→616 tests. |
+| 2026-04-13 | 35 | BUILD | Add 15 Conductor mood/resolution/melody tests | Done — mood axes, kill rate, resolution descent, nextNote shape/freq/interval, getMood. 616→631 tests. |
