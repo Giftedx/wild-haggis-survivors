@@ -175,6 +175,18 @@ describe('TimeManager token stack', () => {
     tm.update(1);
     expect(tm.has('BAD')).toBe(false);
   });
+
+  it('expires several duration tokens in one update and restores defaults', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    tm.requestForDuration('A', { timeScale: 0.25 }, 5);
+    tm.requestForDuration('B', { timeScale: 0.5 }, 5);
+    expect(tm.getTokenCount()).toBe(2);
+    expect(state.timeScale).toBe(0.25);
+    tm.update(10);
+    expect(tm.getTokenCount()).toBe(0);
+    expect(state.timeScale).toBe(1);
+  });
 });
 
 describe('createPhaserTimeAdapter null guards', () => {
