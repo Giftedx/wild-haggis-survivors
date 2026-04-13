@@ -26,9 +26,9 @@
 - [x] REVIEW: src/data/ — done 2026-04-13. 9/9 test coverage (except banter.ts). 3 findings: banter no test (P1), 4 enemies no biome weight mods (P1 — likely intentional), thistle_shot no WEAPON_CARD (P1 — intentional, starting weapon). No bugs. Healthy area.
 
 ## Low Priority
-- [ ] Add banter.ts structure validation test — verify keysByTag boss keys match BOSSES array, tag consistency, i18n key format (data review, P2)
+- [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)
 - [ ] DebugOverlay: surface pool sizes, tween count, active timers (fix_plan, feature)
 - [ ] Ship telemetry toggle opt-in for run-completion distribution (fix_plan, feature)
 - [ ] Document a11y matrix in DESIGN_SOUL.md (fix_plan, docs)
-- [ ] Banter sub-pool schema validation test (fix_plan, test)
+- [x] Banter sub-pool schema validation test — consolidated with banter.ts test above (6 tests cover structure + i18n)

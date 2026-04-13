@@ -15,3 +15,4 @@
 | 2026-04-13 | 11 | RESEARCH | Bundle budget: Phaser vendor chunk analysis | Done — Phaser 1197KiB min, not tree-shakeable. Arcade-only saves ~10% but CJS. Best action: manualChunks vendor split for caching. |
 | 2026-04-13 | 12 | BUILD | Verify vendor chunk split + confirm PWA precache budget | Done — split already impl'd by prior session. Verified: vendor-phaser 1482/340gz, app 507/136gz. PWA precache 1943KiB acceptable (no external assets, vendor hash stable). Both backlog items closed. |
 | 2026-04-13 | 13 | REVIEW | Review src/data/ (rotation area 5) | Done — 1 finding: banter.ts missing structure validation test (keysByTag vs BOSSES). Bagpipes no-evolution confirmed by-design per CLAUDE.md. 9/9 test coverage, data files healthy. |
+| 2026-04-13 | 14 | BUILD | Add banter.ts structure + i18n validation tests | Done — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution. 549→555 tests. |
