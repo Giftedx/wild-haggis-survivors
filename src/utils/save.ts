@@ -84,6 +84,13 @@ export interface SaveData {
   /** Total completed victories */
   victories: number;
 
+  /**
+   * Longest Post-Bell survival time in seconds (measured from the Taxman
+   * kill onward, so it's always additive on top of the normal 20-minute
+   * run). Optional + defaulted for back-compat; no schema bump needed.
+   */
+  bestEndlessSeconds?: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -139,6 +146,7 @@ const DEFAULT_SAVE: SaveData = {
   totalGoldEarned: 0,
   bestCombo: 0,
   victories: 0,
+  bestEndlessSeconds: 0,
   runHistory: [],
   settings: { ...DEFAULT_SETTINGS },
 };
@@ -312,6 +320,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     totalGoldEarned: coerceInteger(candidate.totalGoldEarned, DEFAULT_SAVE.totalGoldEarned),
     bestCombo: coerceInteger(candidate.bestCombo, DEFAULT_SAVE.bestCombo),
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
+    bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
     runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };

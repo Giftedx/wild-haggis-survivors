@@ -13,7 +13,7 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { buildCardPool, drawCards, PASSIVE_KEYS, UpgradeCard } from '../data/upgrades';
 import { XP, PLAYER } from '../config';
-import { recordRun, loadSave, RunResult, RunSummary, RunHistoryContext } from '../utils/save';
+import { recordRun, loadSave, writeSave, RunResult, RunSummary, RunHistoryContext } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES } from '../data/enemies';
@@ -192,6 +192,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastPlayerBiome: BiomeId | null = null;
   /** Biomes already toasted this run — each biome announces itself once. */
   private toastedBiomes = new Set<BiomeId>();
+  /** After the Bell: Taxman has fallen, the player chose to keep going. Spawn
+   *  escalation multipliers come online and death writes `bestEndlessSeconds`. */
+  private postBell = false;
+  /** gameTimeSec at the moment the Bell rang — anchor for escalation curves. */
+  private bellTimeSec = 0;
+  /** Set during the victory ceremony window; if the player presses ENTER
+   *  before the transition fires, we flip postBell on instead of transitioning. */
+  private postBellOfferActive = false;
+  /** Keyboard binding for post-bell opt-in. Cleared on shutdown. */
+  private postBellKeyHandler?: (e: KeyboardEvent) => void;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -310,6 +320,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.biomeRenderer = new BiomeRenderer(this, this.biomeManager);
     this.lastPlayerBiome = null;
     this.toastedBiomes.clear();
+    // Post-Bell: reset on every scene create — Phaser reuses scene instances
+    // so field initializers don't fire on restart.
+    this.postBell = false;
+    this.bellTimeSec = 0;
+    this.postBellOfferActive = false;
+    this.uninstallPostBellKeyHandler();
 
     // Create the player (resume position) or world center.
     // Seeded / daily runs can override the saved variant so all players
@@ -711,6 +727,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.subs.dispose(); } catch { /* ignore */ }
       try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
       this.debugOverlay = null;
+      // Post-bell listener — outlives the scene if we don't remove it.
+      this.uninstallPostBellKeyHandler();
+      try { this.biomeRenderer?.destroy(); } catch { /* ignore */ }
+      this.biomeRenderer = null;
+      this.biomeManager = null;
       // Remove event listeners before destroying systems to prevent stacking on restart
       try { this.weaponSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
       try { this.xpSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
@@ -1639,6 +1660,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.bossDeathSpectacle(this.player.x, this.player.y);
     // Victory toast — the big payoff
     this.juice.showToast(t('ui.gameOver.victory_title'), '#d4a017');
+    // "Keep goin'?" — the door stays open for ~1100ms before transition.
+    this.juice.showToast(t('ui.gameOver.keep_going_offer'), '#ffdd88');
+    this.postBellOfferActive = true;
+    this.installPostBellKeyHandler();
 
     // Brief hold so the player FEELS the victory, then transition
     const previousBests = this.metaSaveManager.getPersonalBests();
@@ -1668,9 +1693,72 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Mirrors the death path's deathResultRemainingMs pattern.
     this.victoryResultRemainingMs = 1200;
     this.victoryResultCallback = () => {
+      // Post-bell opt-in: if the player pressed ENTER during the offer window,
+      // skip the transition and let the run continue with escalation.
+      if (this.postBell) {
+        this.finalizePostBellEntry();
+        return;
+      }
+      this.postBellOfferActive = false;
+      this.uninstallPostBellKeyHandler();
       this.transitionToGameOver(this.buildGameOverPayload('victory', summary, runResult, previousBests));
     };
   }
+
+  /** Install a one-shot ENTER listener while the post-bell offer is active. */
+  private installPostBellKeyHandler(): void {
+    if (this.postBellKeyHandler) return;
+    this.postBellKeyHandler = (e: KeyboardEvent) => {
+      if (!this.postBellOfferActive) return;
+      if (e.key === 'Enter' || e.code === 'Enter') {
+        e.preventDefault();
+        this.postBell = true;
+        this.bellTimeSec = this.spawnSystem.getGameTimeSec();
+        this.postBellOfferActive = false;
+        this.uninstallPostBellKeyHandler();
+      }
+    };
+    window.addEventListener('keydown', this.postBellKeyHandler);
+  }
+
+  private uninstallPostBellKeyHandler(): void {
+    if (!this.postBellKeyHandler) return;
+    window.removeEventListener('keydown', this.postBellKeyHandler);
+    this.postBellKeyHandler = undefined;
+  }
+
+  /** Resume gameplay after the player opted in during the victory ceremony. */
+  private finalizePostBellEntry(): void {
+    this.uninstallPostBellKeyHandler();
+    // Drop the RUN_END state and the golden fade; life goes on.
+    this.timeManager.release('RUN_END');
+    if (this.victoryFade) {
+      this.tweens.add({
+        targets: this.victoryFade,
+        alpha: 0,
+        duration: 600,
+        onComplete: () => {
+          this.victoryFade?.destroy();
+          this.victoryFade = null;
+        },
+      });
+    }
+    this.victoryPending = false;
+    this.victoryResultRemainingMs = null;
+    this.victoryResultCallback = null;
+    // Signal the player they're now in the deeper game.
+    this.juice.showToast(t('ui.gameOver.post_bell_start'), '#ffaa44');
+    musicEngine.playResolution(); // Intensity re-engages via Conductor on next tick.
+  }
+
+  /** Seconds past the Bell (Taxman kill) — 0 or negative before activation.
+   *  Read by SpawnSystem to drive post-bell escalation. */
+  getSecondsPastBell(): number {
+    if (!this.postBell) return 0;
+    return Math.max(0, this.spawnSystem.getGameTimeSec() - this.bellTimeSec);
+  }
+
+  isPostBell(): boolean { return this.postBell; }
 
   private handlePlayerDeath(): void {
     this.timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
@@ -1712,6 +1800,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const context = this.buildRunHistoryContext();
     const runResult = recordRun(summary, context);
     this.recordToHistory(summary, runResult);
+
+    // Post-Bell: update the endless-best save field and give the player a
+    // Glesga send-off toast for going further than the normal 20 minutes.
+    if (this.postBell) {
+      const secPast = Math.floor(this.getSecondsPastBell());
+      try {
+        const cur = loadSave();
+        const best = cur.bestEndlessSeconds ?? 0;
+        if (secPast > best) {
+          const updated = { ...cur, bestEndlessSeconds: secPast };
+          // Dynamic import-less write: writeSave is already in scope via save.ts imports.
+          writeSave(updated);
+        }
+      } catch {
+        // Best-effort persistence — save failures never block the death flow.
+      }
+      this.juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
+    }
 
     // ── Fade-to-black ceremony during the 1.2s death hold ──
     // Screen-space black overlay that fades in as the run ends, so the scene
