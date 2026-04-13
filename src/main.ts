@@ -73,6 +73,8 @@ const game = new Phaser.Game(config);
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   // Dev-only global for quick runtime inspection from browser console.
   (window as Window & { game?: Phaser.Game }).game = game;
+  // Stress-test console hooks: startStressTest() / stopStressTest().
+  void import('./dev/StressTest').then((m) => m.installStressTestConsoleHooks());
 }
 
 // Accessibility: label the canvas for screen readers.

@@ -64,6 +64,7 @@ import {
   reportAutoBattleRunEnd,
   uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
+import { tickStressTest } from '../dev/StressTest';
 
 /**
  * GameScene — the core gameplay loop.
@@ -956,6 +957,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     } else {
       this.player.setAutoBattleSteering(null);
     }
+
+    // Dev-only: top-up entity pools + sample FPS when stress test is active.
+    tickStressTest(this);
 
     if (this.timeManager.isGameplayPaused()) return;
 
