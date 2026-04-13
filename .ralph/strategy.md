@@ -21,9 +21,9 @@ Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as 
 - BanterSystem, i18n, Boot textures
 
 ## Review Rotation Position
-Last reviewed: `src/systems/music/` (2026-04-13, loop 33, 5 findings — 3×P1 missing tests, 2×P2)
-Next up: `src/systems/a11y/` + `src/core/a11yMotion.ts` (area 9 in rotation)
-Areas done: scenes(1), entities(2), systems(3), core(4), data(5), ui(6), utils(7), music(8). Remaining: a11y(9).
+Last reviewed: `src/systems/a11y/` (2026-04-13, loop 36, 1 finding — CaptionOverlay no tests P2)
+**Review rotation COMPLETE.** All 9 areas reviewed. Next cycle starts at scenes(1).
+Areas done: scenes(1), entities(2), systems(3), core(4), data(5), ui(6), utils(7), music(8), a11y(9).
 
 ## Metrics Snapshot (2026-04-13, loop 15)
 - Source files: 105, Test files: 75

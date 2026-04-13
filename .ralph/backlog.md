@@ -44,6 +44,8 @@
 - [ ] euclidean() produces front-weighted patterns, not classic Bjorklund even spacing — E(3,8)=10101000 vs expected 10010010 (P2, potential music bug, investigate)
 - [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
 - [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
+- [ ] CaptionOverlay 0 tests — Phaser scene-dependent, needs full mock (P2, a11y review, low ROI)
+- [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 1 finding (CaptionOverlay no tests). 5 files, 23 tests, area healthy.
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
