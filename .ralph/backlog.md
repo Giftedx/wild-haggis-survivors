@@ -31,6 +31,13 @@
 - [ ] Add tests for cameraViewport.ts — zoom-corrected viewport math, inset fallback, cache staleness (P2, ui review)
 - [ ] Add tests for EdgeIndicators.ts — screen-edge geometry, off-screen detection, empty enemy list (P2, ui review)
 
+- [x] Add tests for inputMath.ts — 16 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz). 563→579 tests.
+- [ ] Add tests for SubscriptionBag.ts — add+dispose, listen+dispose, add-after-dispose safety, double-dispose idempotent, LIFO teardown order (P1, utils review)
+- [ ] Add tests for math.ts rotateVectorIntoPrecomputed — identity rotation, 90deg, negative angle (P2, utils review)
+- [ ] Add tests for cameraShake.ts tryCameraShake — screenShake off skips, motionScale=0 skips, normal path (P2, utils review)
+- [ ] GamepadMenuNav.ts has 0 tests — Phaser scene-dependent, would need mocking (P2, utils review, low ROI)
+- [ ] inputMath.gamepadStickToMove: redundant clampVectorLength — mag already ≤1, clamp is no-op (P2, code smell, utils review)
+
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)
