@@ -49,6 +49,10 @@
 - [ ] CaptionManager.enqueue accepts durationMs ≤ 0 — silently evicted on next update, add guard (P2, a11y review)
 - [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
+- [ ] Add tests for spatialCull.ts — pure rect-bound checks, hot path (per-frame culling), 0 deps (P1, scout)
+- [ ] Add tests for upgrades.ts buildCardPool/drawCards — rarity weighting, evolution recipe validation, card pool completeness (P1, scout, gameplay-critical)
+- [ ] Add tests for GlobalEventBus.ts — emit/on/off, multi-listener, off-unregistered safety (P2, scout)
+
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)

@@ -36,3 +36,4 @@
 | 2026-04-13 | 37 | REFLECT | Post-rotation assessment, update strategy + metrics | Done — 631 tests (+29%), 81/105 files tested. Review rotation 9/9 complete. Strategy updated: shift to P2 test gaps → features → SCOUT. |
 | 2026-04-13 | 38 | BUILD | Add 9 cameraViewport.ts tests | Done — zoom math, caching (hit/miss/reset), fallbacks (null cam, zero zoom). 631→640 tests. |
 | 2026-04-13 | 34b | BUILD | Add 7 cameraShake.ts tests | Done — screenShake toggle, motionScale, null cam, duration unscaled. 640→647 tests. |
+| 2026-04-13 | 35 | SCOUT | Replenish backlog — 47 untested files scanned | Done — 3 new items: spatialCull (P1, pure), upgrades drawCards (P1, gameplay), GlobalEventBus (P2). Build clean, 647 tests, 0 `as any`, 0 TODOs. |
