@@ -187,8 +187,13 @@ export class SpawnSystem {
     this.showBossWarning(warning);
     const sceneWithCaption = this.scene as unknown as {
       caption?: (id: string, message: string, tint?: string, durationMs?: number) => void;
+      requestBanter?: (context: 'boss_warn', tag?: string) => void;
     };
     sceneWithCaption.caption?.(`boss_${boss.key}`, warning, '#ff6644');
+    // A beat of Glesga nerves right as the screen shakes. Pass the boss
+    // key so the engine picks from the authored per-boss pool when one
+    // exists — Gordon, Taxman etc. each get their own warning voice.
+    sceneWithCaption.requestBanter?.('boss_warn', boss.key);
 
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.

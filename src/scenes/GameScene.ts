@@ -27,6 +27,8 @@ import { SaveManager, type IRunState } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
+import { BanterSystem } from '../systems/BanterSystem';
+import type { BanterContext } from '../data/banter';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
@@ -202,6 +204,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private captionOverlay: CaptionOverlay | null = null;
   /** Gates the low-HP caption — fires once per dip below the threshold. */
   private lowHpCaptionArmed = true;
+  private banter: BanterSystem | null = null;
+  private firstKillSeen = false;
+  private lastBiomeForBanter: BiomeId | null = null;
+  /** Last time banter fired (ms, scene.time.now). Drives the idle prompt. */
+  private lastBanterFireMs = 0;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -333,6 +340,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.captionManager = new CaptionManager();
     this.captionOverlay = new CaptionOverlay(this, this.captionManager);
     this.lowHpCaptionArmed = true;
+    this.firstKillSeen = false;
+    this.lastBiomeForBanter = null;
+    this.lastBanterFireMs = 0;
+
+    // Banter — initialised lazily so juice/caption are wired up first. The
+    // wiring happens after JuiceSystem is constructed (search for "this.juice = new").
+    this.banter?.reset();
 
     // Create the player (resume position) or world center.
     // Seeded / daily runs can override the saved variant so all players
@@ -468,6 +482,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice.hitFreeze();
       this.getSFXManager().tryPlay('kill', () => audio.playKillImmediate());
 
+      // Banter hooks — first kill of the run, mid-tier kill streaks that
+      // sit *between* the loud milestone easter eggs (11 / 50 / 100 /
+      // 200) so banter feels like ambient soul, not stepped-on celebration.
+      if (!this.firstKillSeen) {
+        this.firstKillSeen = true;
+        this.banter?.request('first_blood');
+      }
+      if (wasBoss) {
+        // enemyKey for a boss is the boss's own key (see BOSSES defs) —
+        // drives the per-boss celebration pool (taxman/gordon/etc).
+        this.banter?.request('boss_down', { tag: enemyKey });
+      } else {
+        const combo = this.juice.getComboCount();
+        if (combo === 20 || combo === 75 || combo === 150) {
+          this.banter?.request('kill_streak');
+        }
+      }
+
       // Lifesteal — heal on kill
       if (this.player.getLifesteal() > 0) {
         this.player.heal(this.player.getLifesteal());
@@ -578,6 +610,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // When player levels up, pause and show upgrade choices
     this.xpSystem.events.on('levelup', (newLevel: number) => {
       this.levelUpFlow.handleLevelUp(newLevel);
+      // Tag with the active variant so iron_belly/moor_runner flavor
+      // their celebration; other variants fall through to the generic
+      // pool silently (missing sub-pool == no special handling).
+      this.banter?.request('level_up', { tag: this.activeVariant?.key });
     });
 
     // Player ↔ Enemy collision
@@ -592,6 +628,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // HUD + Juice
     this.hud = new HUD(this);
     this.juice = new JuiceSystem(this, this.timeManager, this.updateTickers, this.settingsManager);
+    // Banter sits downstream of juice (toast surface) + captions. It reads
+    // banterFrequency live on every request so the Comfort panel toggle
+    // takes effect without a scene restart. Reset history now so the
+    // prior run's no-repeat buffer doesn't leak into this one.
+    if (!this.banter) {
+      this.banter = new BanterSystem({
+        sink: {
+          toast: (m, c) => this.juice.showToast(m, c),
+          caption: (id, m, tint) => this.caption(id, m, tint),
+        },
+        translate: t,
+        now: () => this.time.now,
+        getFrequency: () => getSettingsManager().load().banterFrequency,
+      });
+    }
+    this.banter.reset();
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,
@@ -919,6 +971,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hazardZones.tick(scaledDelta);
     this.tickBiome();
     this.tickLowHpCaption();
+    this.tickBanter();
     // Player input/movement stays on raw delta so controls stay snappy during
     // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
     // responsiveness). Game-time systems below use scaledDelta so regen, AI,
@@ -1569,13 +1622,49 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * re-arm once they recover above 40%. Avoids spamming the caption
    * strip while the player takes rapid-fire damage at low HP.
    */
+  /**
+   * Drive the ambient banter channel: biome changes + idle prompts + flush.
+   *
+   *  - biome_change fires the first time the player crosses into a new
+   *    Voronoi region. Engine's rate-limit prevents chatter during rapid
+   *    boundary-walking.
+   *  - idle fires if nothing's spoken for ~90s; the priority-10 pool means
+   *    any real event this frame (level, hp, boss) naturally outranks it.
+   *  - flush() commits at most one line per frame.
+   */
+  private tickBanter(): void {
+    if (!this.banter || !this.player) return;
+
+    const biomeId = this.getCurrentBiomeId();
+    if (biomeId && biomeId !== this.lastBiomeForBanter) {
+      if (this.lastBiomeForBanter !== null) {
+        this.banter.request('biome_change');
+      }
+      this.lastBiomeForBanter = biomeId;
+    }
+
+    // Idle prompt: throttled at the scene layer (not engine) so we don't
+    // request it every frame. 90s between attempts means in active combat
+    // it almost never wins the priority race — it's a lulls-only voice.
+    const nowMs = this.time.now;
+    if (nowMs - this.lastBanterFireMs > 90_000) {
+      this.banter.request('idle');
+      this.lastBanterFireMs = nowMs;
+    }
+
+    this.banter.flush();
+  }
+
   private tickLowHpCaption(): void {
     if (!this.player) return;
     const frac = this.player.getHp() / Math.max(1, this.player.getMaxHp());
     if (this.lowHpCaptionArmed && frac > 0 && frac < 0.2) {
       this.caption('low_hp', t('ui.captions.low_hp'), '#ee5566');
+      this.banter?.request('low_hp');
       this.lowHpCaptionArmed = false;
     } else if (!this.lowHpCaptionArmed && frac > 0.4) {
+      // Player climbed back out of the danger band — hearth warmth.
+      this.banter?.request('recover');
       this.lowHpCaptionArmed = true;
     }
   }
@@ -1589,6 +1678,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (!this.captionManager) return;
     const d = durationMs ?? CaptionManager.suggestedDurationMs(message);
     this.captionManager.enqueue(id, message, d, tint);
+  }
+
+  /**
+   * Request a banter line for `context`. Multiple requests in one frame
+   * are collapsed by priority — the engine emits at most one per flush.
+   * Public surface mirrors `caption()` so subsystems (SpawnSystem, etc.)
+   * can reach through via `scene as unknown as { requestBanter?: ... }`.
+   */
+  requestBanter(context: BanterContext, tag?: string): void {
+    this.banter?.request(context, tag ? { tag } : undefined);
   }
 
   getCurrentBiomeId(): BiomeId | null {

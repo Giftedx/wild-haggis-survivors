@@ -292,6 +292,12 @@ export const EN_STRINGS: LocaleTree = {
       /** On-screen captions for critical audio cues (boss warnings,
        *  low HP, evolution ready, combo milestones, death, victory). */
       captions: 'Captions',
+      /** Banter frequency row — ambient Glesga commentary volume. */
+      banter_frequency: 'Banter',
+      banter_off: 'Wheesht',
+      banter_sparing: 'Sparing',
+      banter_normal: 'Natural',
+      banter_chatty: 'Gabby',
       on: 'ON',
       off: 'OFF',
       back: 'BACK',
@@ -431,6 +437,131 @@ export const EN_STRINGS: LocaleTree = {
       evolve: 'Max a weapon plus its paired curio, then crack a chest — somethin\' legendary wakes up.',
       piper: 'Pipers cheer for the wrong team — silence them early.',
       kite: 'The drift pulls clockwise — like the Clockwork Orange. Lean intae it.',
+    },
+    /**
+     * Banter — ambient Glesga commentary surfaced by BanterSystem.
+     * Tone register (per Soul Charter + voice memory):
+     *   - Hearth (Still Game warmth): ambient, celebratory, cozy.
+     *   - Edge   (Limmy bite):        failure, low-HP, boss warnings.
+     * Keep lines SHORT — these ride the toast strip and the captions bar.
+     */
+    banter: {
+      boss_warn: {
+        a: 'Somethin\' big\'s comin\'. Square up.',
+        b: 'Heavy footsteps. That\'s no\' a rambler.',
+        c: 'The moor\'s gone quiet. Bad sign, that.',
+        d: 'Aw naw. Here we go.',
+        // ── Per-boss character warnings (Limmy bite). Each boss gets
+        //    three distinct lines anchored to their fantasy. ──
+        gordon: {
+          a: 'Heid chef\'s oot fae the kitchen. Brace yersel.',
+          b: 'Smell that burnin\'? That\'s Gordon.',
+          c: 'Big man wi\' a cleaver. Nae jokin\'.',
+        },
+        tour_bus: {
+          a: 'A hale busload. Aw naw.',
+          b: 'Forty tourists wi\' cameras. Run.',
+          c: 'That coach isnae stoppin\' fer a tea-break.',
+        },
+        the_laird: {
+          a: 'The Laird\'s come tae collect.',
+          b: 'Posh git on horseback. Snobby dunter.',
+          c: 'Tweeds and teeth. Watch yer flanks.',
+        },
+        hunter_general: {
+          a: 'The General\'s got yer scent.',
+          b: 'Proper soldier noo. Nae mair eejits.',
+          c: 'Musket an\' medals. Mind they\'re loaded.',
+        },
+        taxman: {
+          a: 'The Taxman\'s here. An\' he\'s no\' takin\' council tax.',
+          b: 'Bureaucrat wi\' a scythe. Pure nightmare fuel.',
+          c: 'Final demand. Brown envelope, black cloak.',
+        },
+      },
+      low_hp: {
+        a: 'Yer on the last shred, wee yin.',
+        b: 'One mair dunt an\' it\'s lights oot.',
+        c: 'Gie it laldy — nothin\' tae lose noo.',
+        d: 'Hangin\' by a thistle.',
+      },
+      boss_down: {
+        a: 'Away in a box. Pure textbook.',
+        b: 'That\'s him telt.',
+        c: 'Lang may yir wee lum reek, ya beauty.',
+        // ── Per-boss celebration (hearth warmth). Victory voice. ──
+        gordon: {
+          a: 'Telt Gordon where tae stick the cleaver.',
+          b: 'Chef\'s oot. Last orders.',
+          c: 'Kitchen\'s closed. Yer welcome.',
+        },
+        tour_bus: {
+          a: 'Bus is oot o\' service.',
+          b: 'Tourist trap, that. Snap shut.',
+          c: 'End o\' the line fer them.',
+        },
+        the_laird: {
+          a: 'Laird\'s nae laird nae mair.',
+          b: 'Land\'s back wi\' the moor.',
+          c: 'Posher than a polished thistle, an\' just as flat noo.',
+        },
+        hunter_general: {
+          a: 'General\'s off-duty. Permanently.',
+          b: 'Outranked the big yin.',
+          c: 'That\'s him decommissioned.',
+        },
+        taxman: {
+          a: 'Taxman took a loss fer once.',
+          b: 'Death\'s back oan the books.',
+          c: 'Owes us nothin\'. We owe him nothin\'. Sorted.',
+        },
+      },
+      level_up: {
+        a: 'Look at ye go.',
+        b: 'Anither notch. Nae messin\'.',
+        c: 'The moor\'s takin\' notes.',
+        d: 'Yer gettin\' the hang o\' this.',
+        // ── Variant voice tilt — only for variants with character
+        //    strong enough to justify authored lines. Others use the
+        //    generic pool above. ──
+        iron_belly: {
+          a: 'Another layer tae the wall.',
+          b: 'Bigger, stronger, steadier.',
+          c: 'The belly remembers every dunt.',
+        },
+        moor_runner: {
+          a: 'Feet gettin\' faster by the minute.',
+          b: 'Pure flyin\'. Nae stop sign in sight.',
+          c: 'Moor\'s a blur. Lovely.',
+        },
+      },
+      first_blood: {
+        a: 'First yin doon. Off ye trot.',
+        b: 'Hoof prints in the heather. Game on.',
+        c: 'That\'s the ice broken.',
+      },
+      kill_streak: {
+        a: 'Pure mental, this.',
+        b: 'Ye\'re on fire, wee man.',
+        c: 'Cannae stop, will nae stop.',
+        d: 'The glen\'s tremblin\'.',
+      },
+      recover: {
+        a: 'Back fae the brink. Deep breath.',
+        b: 'Still here. Still kickin\'.',
+        c: 'Steady the heid. Yer awright.',
+      },
+      biome_change: {
+        a: 'Different smell tae the air here.',
+        b: 'New bit o\' moor. Watch yer step.',
+        c: 'The terrain\'s shiftin\'.',
+      },
+      idle: {
+        a: 'Quiet, this. Too quiet, mibbe.',
+        b: 'Listen tae the wind.',
+        c: 'A wee breather.',
+        d: 'Somethin\'s brewin\'. Always is.',
+      },
     },
   },
   captions: {
