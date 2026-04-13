@@ -34,3 +34,65 @@ Next:
 - Added remote origin = git@github.com:AutomatedOps/core-engine.git
 - Push failed (SSH auth): Permission denied (publickey).
 - Failsafe engaged: continuing with stabilization work without remote push.
+
+───────────────────────────────────────────────────────────────────
+
+[2026-04-13] Phase 1 Restoration + Phase 2 Reconciliation
+
+State resumed mid-session. Baseline verification:
+- `npm test` → 68 files, 466 tests, all PASS (2.7s)
+- `npm run build` → green (~4.5s). Chunks: phaser vendor 1.48MB
+  ungz / 340KB gz; app 500KB ungz / 133KB gz. App chunk shrank
+  vs 2026-04-10 snapshot because GameScene dropped 46%.
+- `npm run lint` → 18 errors, all mechanical (dead imports from
+  the GameScene refactor + a couple of require()-style + a
+  prefer-startsWith). Not caused by uncommitted work.
+- `git status` → clean on hygiene (dist/ and node_modules/ no
+  longer tracked, .gitignore proper). Prior P0 resolved since
+  last log.
+- TODO/FIXME markers: still zero.
+- Context7 MCP: now callable (schemas loaded via ToolSearch).
+  Resolved /phaserjs/phaser for 3.90; docs reachable.
+
+Uncommitted work discovered in tree:
+- BanterSystem feature (substantially complete):
+  - src/systems/BanterSystem.ts + BanterSystem.test.ts (new)
+  - src/data/banter.ts (new, 229 LOC data + typed sub-pools)
+  - src/core/i18n.ts (+131 LOC copy; per-boss + per-variant
+    authored voices, hearth/edge tone split)
+  - src/scenes/GameScene.ts wiring (first_blood / kill_streak
+    at 20/75/150 / level_up w/ variant tag / low_hp + recover
+    / biome_change / idle@90s / flush-per-tick)
+  - src/systems/SpawnSystem.ts wiring (boss_warn w/ boss.key tag)
+  - src/scenes/SettingsScene.ts (Wheesht/Sparing/Natural/Gabby
+    cycle row, gamepad-routable)
+  - src/core/SettingsManager.ts + SettingsManager.test.ts
+    (versioned persistence + validation)
+- All tests covering the new work PASS. Build green. Feature was
+  ready for landing; committed as one coherent narrative unit.
+
+Actions this session:
+1. Committed BanterSystem feature (9 files, +1019 LOC).
+   → 2e00a1b feat(banter): ambient Glesga commentary system
+2. Fixed 18 lint errors (5 files), verified lint/tests/build.
+   → d81ee0a chore(lint): drop dead imports + modernize require-style
+3. Rewrote docs/PRD.md to reconcile roadmap with shipped reality.
+   Old PRD still listed P0 hygiene (resolved) and P0a Context7
+   tooling (resolved), and was silent on a11y, biomes, post-bell,
+   curses, meta shop, run history, achievements, tutorial, banter.
+   New queue is P1 lifecycle/typing finish-work, P2 bundle budget,
+   P3 a11y finish, P4 content velocity, P5 observability.
+
+Code health metrics (post-this-session):
+- Production `as any`: 17 occurrences in 8 files.
+- Scene reach-through (`this.scene as unknown`): 7 in 5 files.
+- Real timers outside tests: 2 (AudioSystem + music engine).
+- Lint clean, tests 466/466, build green.
+
+Next (Phase 3 ignition):
+- P1 top item: finish ISceneContext so the last 7 reach-throughs
+  go away. The BanterSystem hookup already uses the reach-through
+  pattern in SpawnSystem — convert that to a typed surface first
+  so we don't add reinforcement to the old pattern.
+- Continue on the autonomous loop: pick next PRD queue item,
+  verify gate, commit, log.
