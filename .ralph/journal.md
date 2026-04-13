@@ -49,3 +49,4 @@
 | 2026-04-13 | 45 | REVIEW | Review src/scenes/ round 2 (GameScene + game/) | Done — 1 finding: runStartModifiers.ts 0 tests (P2, pure upgrade math). GameScene lifecycle, shutdown, SubscriptionBag flow, BanterSystem singleton all correct. Very healthy. |
 | 2026-04-13 | 47 | BUILD | Add 12 runStartModifiers.ts tests | Done — variant modifiers (speed/multi/skip), permanent upgrades (thick_hide/weapon_training/revival/treasure/lucky_start/drift/dash/defaults). vi.mock for loadSave. 684→696 tests. |
 | 2026-04-13 | 49 | REFLECT | Final assessment — project at steady state | Done — 696 tests (+43%), 87/105 files. All P1s done, 2 review rotations complete. 11 open items all P2/Low diminishing returns. Strategy updated to reflect completion. |
+| 2026-04-13 | 50 | SCOUT→BUILD | Backlog only deferred euclidean; add biome i18n smoke | Done — `src/data/biomeI18n.smoke.test.ts` resolves all `BIOMES` nameKey + entryToastKey. 747 tests, build clean. |

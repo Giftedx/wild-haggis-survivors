@@ -13,7 +13,7 @@
 - [x] Add tests for Projectile — 7 tests: pierce exhaustion, bouncing immunity, zero-pierce death, range deactivation, TTL countdown, callback fire-once
 - [x] Add Player tests — 16 tests: takeDamage (armor, shield, death), heal, bonus stacking (damage, drift, regen, cooldown, maxHp), tickRegen, onLevelUp stat recalc (speed, drift, pickup)
 - [x] Enemy.fireNet stale-scene risk — NOT A BUG: try/catch in cleanup, activeNetCleanup called on spawn/die/destroy, hit flag prevents double-fire
-- [ ] Enemy.applyPostBellScaling resets hp=maxHp — safe now (called at spawn only) but API permits misuse post-damage (code smell, entities review)
+- [x] Enemy.applyPostBellScaling resets hp=maxHp — fixed: scales maxHp but preserves HP fraction (spawn still full); tests in Enemy.test.ts (entities review)
 - [x] Audit `as any` in input.ts — 3 casts removed, InputPlugin satisfies MinimalEmitter natively
 - [x] Audit `as any` in UpgradeCards.ts — 3 casts removed, typed array via structural interface
 - [x] Audit `as any` in GameScene.ts — false positive, only in comment
@@ -29,23 +29,23 @@
 - [x] **HUD.ts: tween leak** — NOT A BUG: flash/glow tweens are one-shot (400-500ms) with onComplete→destroy(). Scene shutdown() → TweenManager.shutdown() kills all remaining tweens. No orphans.
 - [x] **Minimap.ts: triangle rotation sign** — NOT A BUG: `- ca * -size * 0.7` = `+ ca * size * 0.7` is correct mirror of b-point across heading axis. Standard 2D rotation matrix, symmetric base vertices verified.
 - [x] Add tests for cameraViewport.ts — 9 tests: zoom=1, zoom=2 offset+scale, zoom=0 falsy fallback, zoom=0.0001 clamp, cache hit (same frame), cache miss (new frame), cache miss (different scene), resetCache, camera-null fallback. 631→640 tests.
-- [ ] Add tests for EdgeIndicators.ts — screen-edge geometry, off-screen detection, empty enemy list (P2, ui review)
+- [x] Add tests for EdgeIndicators.ts — pure helpers in `edgeIndicatorMath.ts`: viewport inclusive bounds, screen-edge projection, insertion sort by dist (+ `EdgeIndicators` wired to helpers) (P2, ui review)
 
 - [x] Add tests for inputMath.ts — 18 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel, custom maxLen), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz, magnitude sweep). 563→581 tests.
 - [x] Add tests for SubscriptionBag.ts — 8 tests: add+dispose, LIFO order, error swallow, listen+dispose, bad emitter.off, add-after-dispose, post-dispose error, double-dispose idempotent. 579→589 tests.
 - [x] Add tests for math.ts rotateVectorIntoPrecomputed — 8 tests: identity, 90/180/neg angles, length preservation, zero vec, out-param contract. 589→597 tests.
 - [x] Add tests for cameraShake.ts tryCameraShake — 7 tests: scaled intensity, motionScale multiply, screenShake off, motionScale 0, null/undef cam, duration unscaled. 631→647 tests.
-- [ ] GamepadMenuNav.ts has 0 tests — Phaser scene-dependent, would need mocking (P2, utils review, low ROI)
-- [ ] inputMath.gamepadStickToMove: redundant clampVectorLength — mag already ≤1, clamp is no-op (P2, code smell, utils review)
+- [x] GamepadMenuNav.ts — `stepGamepadMenuIndex` extracted + unit tests; class still scene-bound (P2, utils review)
+- [x] inputMath.gamepadStickToMove: redundant clampVectorLength — removed; direction is unit × `min(1,len)` so length ≤ 1 (P2, utils review)
 
 - [x] Add tests for NoteScheduler — 9 tests: start delay, melody 0.3s offset, multi-note scheduling, no-callback safety, 3 min-interval floors (melody/rhythm/heartbeat), tab-recovery skip, reset. 589→616 tests (includes prior rotateVector tests).
 - [x] Add tests for Conductor — 15 tests: updateMood (intensity rise, danger rise/decay, chaos, resolution skip, zero-maxHp), kill rate (sliding window, low-combo guard), resolution (state set, descent complete, pre-enter false), nextNote (shape, Dorian freqs, intensity-interval, deterministic w/ mock), getMood. 616→631 tests.
 - [x] Add tests for euclidean() — 10 tests: edge cases E(0/8,8), known patterns E(1-5,8), length invariant, hit count, non-8 slots. Note: impl ≠ classic Bjorklund. 607→616 tests.
 - [ ] euclidean() produces front-weighted patterns, not classic Bjorklund — RESEARCHED: algorithm merges wrong (zerosStart check on last-element-of-group breaks after 1 iteration). Fix is standard Bjorklund. BUT: changes shipped audio feel → design decision, not pure code fix. Defer to player testing. (P2, music, investigate → defer)
 - [x] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime — fixed: "oldest voice replaced"
-- [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
-- [ ] CaptionOverlay 0 tests — Phaser scene-dependent, needs full mock (P2, a11y review, low ROI)
-- [ ] a11yText.contrastColor uses falsy check (`!hcOverride`) — empty string "" treated as no-override; use explicit `=== undefined` (P2, a11y review)
+- [x] ProceduralMusicEngine.test.ts uses `as any` for private field access — replaced with `EngineTestHooks` / `FadeOutCapable` casts (P2, music review)
+- [x] CaptionOverlay tests — pure layout in `captionOverlayLayout.ts` (fade alpha + stack Y); Phaser class unchanged behaviour (P2, a11y review)
+- [x] a11yText.contrastColor uses falsy check (`!hcOverride`) — fixed: `hcOverride === undefined` only; empty-string override honored when HC on + test (P2, a11y review)
 - [x] CaptionManager.enqueue accepts durationMs ≤ 0 — fixed: early return guard + test. 647→648 tests.
 - [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
@@ -58,7 +58,13 @@
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [x] Extend banter to weapon evolution moments — done: BanterContext 'weapon_evolve' + pool (pri 65, 3 keys) + LevelUpFlow trigger + GameScene.requestBanter hook. 5 files modified.
-- [ ] DebugOverlay: surface pool sizes, tween count, active timers (fix_plan, feature)
-- [ ] Ship telemetry toggle opt-in for run-completion distribution (fix_plan, feature)
-- [ ] Document a11y matrix in DESIGN_SOUL.md (fix_plan, docs)
+- [x] DebugOverlay: surface pool sizes, tween count, active timers — gems line + `tweens`/`timers` counts (Phaser Clock `_active`/`_pendingInsertion`) (fix_plan, feature)
+- [x] Ship telemetry toggle opt-in for run-completion distribution — `telemetryOptIn` + Settings row; gates `run_start`/`run_end` only (fix_plan, feature)
+- [x] Document a11y matrix in DESIGN_SOUL.md — "Comfort & accessibility matrix" section (fix_plan, docs)
 - [x] Banter sub-pool schema validation test — consolidated with banter.ts test above (6 tests cover structure + i18n)
+- [x] Main menu + pause menu i18n smoke — `hearthUi.i18n.smoke.test.ts` mirrors `settingsComfort.smoke.test.ts` for `MainMenuScene` + `PauseMenu` keys. 726→728 tests.
+- [x] Shop, meta shop, curse, loadout, game-over + run toasts i18n smoke — `economyRunUi.i18n.smoke.test.ts` (Shop/MetaShop/Curse/Menu loadout strings, `RunLifecycle` toasts, full `GameOver` + whit_* lines). 728→735 tests.
+- [x] Chronicle + Deeds i18n smoke — `chronicleDeeds.i18n.smoke.test.ts` (mood subtitles, milestones, run rows, `ACHIEVEMENT_DEFS` title/description keys). 735→739 tests.
+- [x] In-run HUD / game / juice i18n smoke — `gameHudJuice.i18n.smoke.test.ts` (`ui.hud.*`, `ui.game.*` incl. kill thresholds + level-up toasts, `ui.run.*`, `boss_killed_*` + `warningKey` from `BOSSES`). 739→743 tests.
+- [x] Caption i18n path fix + auxiliary run UI smoke — `RunLifecycle`/`GameTickers` used non-existent `ui.captions.*`; now `captions.*` (matches `EN_STRINGS`). `auxiliaryRunUi.i18n.smoke.test.ts`: `captions.*`, `ui.pause.quip_1–6`, `ui.upgradeCards.*`. 743→746 tests.
+- [x] Biome name + entry toast i18n smoke — `biomeI18n.smoke.test.ts` walks `BIOMES` `nameKey` / `entryToastKey` (SCOUT: backlog thin; gameplay toast path). 746→747 tests.

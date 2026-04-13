@@ -1,6 +1,6 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 49 REFLECT)
+**Last updated:** 2026-04-13 (loop 50 SCOUT→BUILD)
 
 ## Project Phase
 **Steady state.** v2.1.0. Hardening campaign complete. 696 tests (+43% from baseline 488). All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + Low features — all diminishing returns. Project is healthy and well-tested.
@@ -29,9 +29,9 @@
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 49)
-- Source files: 105, Test files: 87
-- Tests: 696 passing (was 488 at loop 1, +43%)
+## Metrics Snapshot (2026-04-13, loop 50)
+- Source files: 105, Test files: 88+
+- Tests: 747 passing (was 488 at loop 1, +53%)
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
