@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 29 REFLECT)
+**Last updated:** 2026-04-13 (loop 30 REFLECT)
 
 ## Project Phase
-Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as any`). Test coverage strong (73/105 files). Now: bundle optimization, code review rotation, remaining test gaps, content tooling.
+Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as any`). Test coverage strong (75/105 files). Now: code review rotation, remaining test gaps, backlog replenishment.
 
 ## Top 3 Priorities
 1. **Code review rotation** — 6/9 areas reviewed. Next: `src/utils/` (area 7), then `src/systems/music/` (area 8), then `src/systems/a11y/` (area 9). Each review generates 3-8 backlog items. **Primary source of fresh work.**
