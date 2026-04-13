@@ -344,21 +344,30 @@ export class JuiceSystem {
         yoyo: true,
       });
 
-      // Combo milestone cultural Easter eggs — Glesga patter at key numbers
+      // Combo milestone cultural Easter eggs — Glesga patter at key numbers.
+      // Captions piggyback on the toast copy — if a player is reading toasts,
+      // the caption strip echoes them consistently.
+      const sceneWithCaption = this.scene as unknown as {
+        caption?: (id: string, message: string, tint?: string) => void;
+      };
       if (this.comboCount === 11) {
-        // "ELEVEN!" — Burnistoun voice recognition sketch
-        this.showToast(t('ui.game.combo_11'), '#ffdd44');
+        const msg = t('ui.game.combo_11');
+        this.showToast(msg, '#ffdd44');
+        sceneWithCaption.caption?.(`combo_11`, msg, '#ffdd44');
       } else if (this.comboCount === 50) {
-        // "THAT'S PLENTY!" — Still Game
-        this.showToast(t('ui.game.combo_50'), '#ffdd44');
+        const msg = t('ui.game.combo_50');
+        this.showToast(msg, '#ffdd44');
+        sceneWithCaption.caption?.(`combo_50`, msg, '#ffdd44');
         this.flashWhite(100);
       } else if (this.comboCount === 100) {
-        // "YER DA SELLS AVON!" — the ultimate Glesga insult
-        this.showToast(t('ui.game.combo_100'), '#ff8844');
+        const msg = t('ui.game.combo_100');
+        this.showToast(msg, '#ff8844');
+        sceneWithCaption.caption?.(`combo_100`, msg, '#ff8844');
         this.flashWhite(100);
       } else if (this.comboCount === 200) {
-        // "PEOPLE MAKE GLASGOW!" — ironic city slogan at total chaos
-        this.showToast(t('ui.game.combo_200'), '#ff8844');
+        const msg = t('ui.game.combo_200');
+        this.showToast(msg, '#ff8844');
+        sceneWithCaption.caption?.(`combo_200`, msg, '#ff8844');
         this.flashWhite(100);
       }
     }

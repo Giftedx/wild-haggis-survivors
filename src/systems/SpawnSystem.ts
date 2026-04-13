@@ -183,7 +183,12 @@ export class SpawnSystem {
 
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {
     // Show warning banner
-    this.showBossWarning(t(boss.warningKey));
+    const warning = t(boss.warningKey);
+    this.showBossWarning(warning);
+    const sceneWithCaption = this.scene as unknown as {
+      caption?: (id: string, message: string, tint?: string, durationMs?: number) => void;
+    };
+    sceneWithCaption.caption?.(`boss_${boss.key}`, warning, '#ff6644');
 
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.

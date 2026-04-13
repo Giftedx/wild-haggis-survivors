@@ -422,6 +422,13 @@ export const EN_STRINGS: LocaleTree = {
       kite: 'The drift pulls clockwise — like the Clockwork Orange. Lean intae it.',
     },
   },
+  captions: {
+    /** Per-event accessibility captions — short, descriptive. Semantic
+     *  parity with the audio/toast cue they accompany, not flavor copy. */
+    victory_chorus: 'The moor resounds — victory chord swells.',
+    death_fall: 'Hooves down — the moor quiets.',
+    low_hp: 'HP dangerously low — heartbeat thunders.',
+  },
   biomes: {
     bog: {
       name: 'The Bog',
