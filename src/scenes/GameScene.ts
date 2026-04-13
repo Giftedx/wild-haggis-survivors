@@ -911,6 +911,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
       try { this.pauseMenu?.close(); } catch { /* ignore */ }
       this.pauseMenu = null;
+      for (const entry of this.activeChestSprites) {
+        try { this.tweens.killTweensOf(entry.sprite); } catch { /* ignore */ }
+        try { entry.sprite.destroy(); } catch { /* ignore */ }
+      }
+      this.activeChestSprites = [];
       try { this.victoryFade?.destroy(); } catch { /* ignore */ }
       this.victoryFade = null;
       try { this.deathFade?.destroy(); } catch { /* ignore */ }
