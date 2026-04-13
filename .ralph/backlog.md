@@ -50,8 +50,8 @@
 - [x] REVIEW: src/systems/a11y/ — done 2026-04-13. 3 findings (CaptionOverlay no tests, contrastColor falsy, durationMs guard). 5 files, 23 tests, area healthy.
 
 - [x] Add tests for spatialCull.ts — 14 tests: zone inclusion (inside/edge/outside), margin expansion (all sides, corners), culling (inside/outside, boss/hazard/immune immunity, edge boundary). 648→661 tests.
-- [ ] Add tests for upgrades.ts buildCardPool/drawCards — rarity weighting, evolution recipe validation, card pool completeness (P1, scout, gameplay-critical)
-- [ ] Add tests for GlobalEventBus.ts — emit/on/off, multi-listener, off-unregistered safety (P2, scout)
+- [x] Add tests for upgrades.ts buildCardPool/drawCards — ALREADY EXISTED: 13 tests in upgrades.cardpool.test.ts (stat cards, weapon add/exclude/levelup, evolved exclusion, passives, legendary evolution, drawCards count/dedup/luck, PASSIVE_KEYS). Pre-baseline.
+- [x] Add tests for GlobalEventBus.ts — 7 tests: emit payload, multi-listener, unsub fn, off specific, off-unregistered safety, emit-no-listeners, event isolation. 661→684 tests (includes inter-session additions).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
