@@ -28,6 +28,11 @@ describe('captionFadeAlpha', () => {
     expect(captionFadeAlpha(10, 0)).toBe(1);
     expect(captionFadeAlpha(0, 0)).toBe(0);
   });
+
+  it('treats negative fade window like zero-width (binary)', () => {
+    expect(captionFadeAlpha(50, -10)).toBe(1);
+    expect(captionFadeAlpha(0, -10)).toBe(0);
+  });
 });
 
 describe('captionStackYOffset', () => {
