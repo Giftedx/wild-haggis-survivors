@@ -21,13 +21,13 @@ Post-feature hardening. v2.1.0. Core gameplay loop complete. All major systems s
 - i18n (functional with t() helper)
 
 ## Review Rotation Position
-Last reviewed: `src/systems/` (2026-04-13, 8 tasks generated)
-Next up: `src/entities/` (area 2 in rotation)
+Last reviewed: `src/entities/` (2026-04-13, 5 tasks generated)
+Next up: `src/core/` (area 4 in rotation)
 
 ## Metrics Snapshot (2026-04-13)
-- Source files: 105, Test files: 70
-- Tests: 466+ passing
-- `as any`: 6 actual casts in 2 prod files (input.ts:3, UpgradeCards.ts:3) — was 17, pool teardown cluster + WeaponSystem eliminated
+- Source files: 105, Test files: 72
+- Tests: 526 passing
+- `as any`: 0 production casts (was 17) — all eliminated across 6 loops
 - `as unknown`: 12 files
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

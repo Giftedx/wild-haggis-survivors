@@ -234,9 +234,9 @@ export class InputManager {
       if (this.joystickThumb) this.joystickThumb.setVisible(false);
     };
 
-    this.subs.listen(scene.input as any, 'pointerdown', onPointerDown);
-    this.subs.listen(scene.input as any, 'pointermove', onPointerMove);
-    this.subs.listen(scene.input as any, 'pointerup', onPointerUp);
+    this.subs.listen(scene.input, 'pointerdown', onPointerDown);
+    this.subs.listen(scene.input, 'pointermove', onPointerMove);
+    this.subs.listen(scene.input, 'pointerup', onPointerUp);
   }
 
   destroy(): void {

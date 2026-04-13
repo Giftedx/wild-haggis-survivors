@@ -269,11 +269,12 @@ export class UpgradeCardsUI {
     this.elements.push(rarityLabel);
 
     // Hover — scale up card group
-    const cardElements = [bg, icon, name, desc, rarityLabel, rarityPillBg];
+    const cardElements: { setScale(x: number, y: number): void; scaleX: number; scaleY: number }[] =
+      [bg, icon, name, desc, rarityLabel, rarityPillBg];
     bg.on('pointerover', () => {
       bg.setFillStyle(0x2a2244);
       for (const el of cardElements) {
-        (el as any).setScale?.((el as any).scaleX * 1.05, (el as any).scaleY * 1.05);
+        el.setScale(el.scaleX * 1.05, el.scaleY * 1.05);
       }
     });
 
