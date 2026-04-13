@@ -33,7 +33,7 @@
 
 - [x] Add tests for inputMath.ts — 18 tests: clampVectorLength (zero, sub-eps, passthrough, diagonal, custom max, direction), mergeMoveVectors (clamp, sum, cancel, custom maxLen), gamepadStickToMove (deadzone, boundary, past-dz, corner, full-tilt, negative, custom-dz, magnitude sweep). 563→581 tests.
 - [x] Add tests for SubscriptionBag.ts — 8 tests: add+dispose, LIFO order, error swallow, listen+dispose, bad emitter.off, add-after-dispose, post-dispose error, double-dispose idempotent. 579→589 tests.
-- [ ] Add tests for math.ts rotateVectorIntoPrecomputed — identity rotation, 90deg, negative angle (P2, utils review)
+- [x] Add tests for math.ts rotateVectorIntoPrecomputed — 8 tests: identity, 90/180/neg angles, length preservation, zero vec, out-param contract. 589→597 tests.
 - [ ] Add tests for cameraShake.ts tryCameraShake — screenShake off skips, motionScale=0 skips, normal path (P2, utils review)
 - [ ] GamepadMenuNav.ts has 0 tests — Phaser scene-dependent, would need mocking (P2, utils review, low ROI)
 - [ ] inputMath.gamepadStickToMove: redundant clampVectorLength — mag already ≤1, clamp is no-op (P2, code smell, utils review)
