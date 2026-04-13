@@ -10,6 +10,7 @@ import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
+import { BIOMES, type BiomeId } from '../data/biomes';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -492,20 +493,33 @@ export class SpawnSystem {
     return { x, y };
   }
 
-  /** Pick an enemy type weighted by game time — newer enemies spawn more often */
+  /** Pick an enemy type weighted by game time — newer enemies spawn more often.
+   *  Biome modifiers (from the player's current region) multiply the base weights. */
   private pickWeightedEnemy(types: EnemyConfig[]): EnemyConfig {
+    const biomeMods = this.getBiomeWeightMods();
     let totalWeight = 0;
     for (const t of types) {
-      totalWeight += getSpawnWeight(t, this.gameTimeSec);
+      totalWeight += getSpawnWeight(t, this.gameTimeSec) * (biomeMods[t.key] ?? 1);
     }
 
     // Seeded so the same wave composition appears for a given seed.
     let roll = this.scene.getRunRng().next() * totalWeight;
     for (const t of types) {
-      roll -= getSpawnWeight(t, this.gameTimeSec);
+      roll -= getSpawnWeight(t, this.gameTimeSec) * (biomeMods[t.key] ?? 1);
       if (roll <= 0) return t;
     }
     return types[types.length - 1];
+  }
+
+  /** Biome-driven spawn weight multipliers for the player's current biome.
+   *  Returns an empty object when no biome is active (e.g., during tests). */
+  private getBiomeWeightMods(): Readonly<Record<string, number>> {
+    const sceneWithBiome = this.scene as unknown as {
+      getCurrentBiomeId?: () => BiomeId | null;
+    };
+    const id = sceneWithBiome.getCurrentBiomeId?.();
+    if (!id) return {};
+    return BIOMES[id].spawnWeightMods;
   }
 
   getEnemyGroup(): Phaser.GameObjects.Group { return this.pool; }
