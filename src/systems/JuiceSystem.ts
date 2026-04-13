@@ -5,6 +5,7 @@ import { TimeManager } from './TimeManager';
 import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '../core/a11yMotion';
+import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -246,9 +247,12 @@ export class JuiceSystem {
     text.setVisible(true);
     text.setAlpha(1);
 
-    // Scale with damage — big hits look big
+    // Scale with damage — big hits look big. Compound with uiScale so text
+    // scale is legible for low-vision players without fighting the font size.
     const sizeScale = Math.min(2.0, 0.8 + damage * 0.04);
-    text.setScale(isCrit ? sizeScale * 1.4 : sizeScale);
+    const uiScale = this.settings.load().uiScale;
+    const base = isCrit ? sizeScale * 1.4 : sizeScale;
+    text.setScale(base * uiScale);
     // Damage number colors: whisky gold palette, not cold white
     text.setColor(isCrit ? '#ffdd44' : damage >= 20 ? '#d4a017' : '#e8c848');
     text.setRotation(Phaser.Math.FloatBetween(-0.25, 0.25));
@@ -382,8 +386,8 @@ export class JuiceSystem {
 
     const wrapW = Math.max(160, Math.min(420, width - 24));
     const toast = this.scene.add.text(x + width + 10, yOffset, message, {
-      fontFamily: 'monospace', fontSize: '16px', color,
-      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 3,
+      fontFamily: 'monospace', fontSize: scaledFontSize(16), color,
+      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: scaledStrokeThickness(3),
       backgroundColor: '#1a1a2ecc', padding: { x: 10, y: 5 },
       wordWrap: { width: wrapW },
       align: 'right',

@@ -1419,14 +1419,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const { x, y, width, height } = this.getUiViewport();
       const d = 250;
 
+      const hc = this.settingsManager.load().highContrastUi;
+      // High-contrast mode pushes the pause backdrop closer to opaque so
+      // title/copy read cleanly; default stays at 0.85 to preserve the
+      // hearthfire moodiness of the design charter.
+      const backdropAlpha = hc ? 0.95 : 0.85;
       this.pauseElements.push(
-        this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, 0.85)
+        this.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, backdropAlpha)
           .setScrollFactor(0).setDepth(d).setInteractive()
       );
       this.pauseElements.push(
         this.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
-          fontFamily: 'monospace', fontSize: '46px', color: '#d4a017',
-          fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 5,
+          fontFamily: 'monospace', fontSize: '46px', color: hc ? '#ffe08a' : '#d4a017',
+          fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: hc ? 8 : 5,
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
       // Random Glesga quip — a wee breather moment
