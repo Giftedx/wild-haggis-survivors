@@ -12,7 +12,7 @@
 - **Rationale:** `activeChestSprites` array is cleared to `[]` in `resetTransientRunState()` but the sprites inside aren't explicitly destroyed. Scene teardown handles this for normal flow, but the chest glow tweens running on those sprites aren't killed — potential stale tween callbacks on scene restart.
 - **Acceptance:** Shutdown handler iterates `activeChestSprites`, kills tweens, destroys sprites.
 
-### 3. [ ] GameScene: musicStateScratch object allocated once — stale bossActive flag if boss dies then scene restarts
+### 3. [x] GameScene: musicStateScratch object allocated once — stale bossActive flag if boss dies then scene restarts
 - **Files:** `src/scenes/GameScene.ts`
 - **Rationale:** `musicStateScratch` is a readonly field initialized once at construction (line 164). Its fields are written every frame in update(), but if the scene restarts, old values persist until the first update() runs. The music engine reads stale `bossActive: true` for one frame → brief boss music spike on new run.
 - **Acceptance:** `resetTransientRunState()` zeroes out musicStateScratch fields (hp, maxHp, gameTimeSec, enemyCount, comboCount, killCount, bossActive).

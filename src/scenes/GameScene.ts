@@ -54,6 +54,7 @@ import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
+import { GameTickers } from './game/GameTickers';
 import { applyPermanentUpgrades, applyVariantModifiers } from './game/runStartModifiers';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
@@ -107,8 +108,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   private pendingChests: Array<{ golden: boolean }> = [];
   private victoryPending: boolean = false;
-  private dashIndicator: Phaser.GameObjects.Graphics | null = null;
-  private boundaryWarning: Phaser.GameObjects.Rectangle | null = null;
+  private gameTickers!: GameTickers;
   private runId: object = {};
   private revivalAvailable: boolean = false;
   private iFrameGeneration: number = 0;
@@ -199,13 +199,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
-  /** Gates the low-HP caption — fires once per dip below the threshold. */
-  private lowHpCaptionArmed = true;
   private banter: BanterSystem | null = null;
   private firstKillSeen = false;
-  private lastBiomeForBanter: BiomeId | null = null;
-  /** Last time banter fired (ms, scene.time.now). Drives the idle prompt. */
-  private lastBanterFireMs = 0;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -259,10 +254,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.announcedEvolutionReady.clear();
     this.runStatsTracker.reset();
     this.deathCauseTracker.reset(0);
-    this.dashIndicator?.destroy();
-    this.dashIndicator = null;
-    this.boundaryWarning?.destroy();
-    this.boundaryWarning = null;
+    this.gameTickers?.reset();
     this.subs = new SubscriptionBag();
     this.musicStateScratch.hp = 0;
     this.musicStateScratch.maxHp = 0;
@@ -343,10 +335,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.captionOverlay?.destroy();
     this.captionManager = new CaptionManager();
     this.captionOverlay = new CaptionOverlay(this, this.captionManager);
-    this.lowHpCaptionArmed = true;
     this.firstKillSeen = false;
-    this.lastBiomeForBanter = null;
-    this.lastBanterFireMs = 0;
 
     // Banter — initialised lazily so juice/caption are wired up first. The
     // wiring happens after JuiceSystem is constructed (search for "this.juice = new").
@@ -651,6 +640,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     }
     this.banter.reset();
+    this.gameTickers = new GameTickers({
+      getPlayer: () => this.player,
+      getScene: () => this,
+      getUiViewport: () => this.getUiViewport(),
+      getBanter: () => this.banter,
+      getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    });
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,
@@ -916,6 +913,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.minimap?.destroy(); } catch { /* ignore */ }
       try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
+      try { this.gameTickers?.destroy(); } catch { /* ignore */ }
       try { this.pauseMenu?.close(); } catch { /* ignore */ }
       this.pauseMenu = null;
       for (const entry of this.activeChestSprites) {
@@ -986,9 +984,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
 
     this.hazardZones.tick(scaledDelta);
-    this.tickBiome();
-    this.tickLowHpCaption();
-    this.tickBanter();
+    if (this.biomeController) this.biomeController.tick(this.player, this.juice);
+    this.gameTickers.tickLowHpCaption();
+    this.gameTickers.tickBanter();
     // Player input/movement stays on raw delta so controls stay snappy during
     // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
     // responsiveness). Game-time systems below use scaledDelta so regen, AI,
@@ -1047,10 +1045,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     musicEngine.update(delta, ms);
 
     // Dash cooldown indicator (small arc under player)
-    this.updateDashIndicator();
+    this.gameTickers.updateDashIndicator();
 
     // World boundary warning — red tint when near edges
-    this.updateBoundaryWarning();
+    this.gameTickers.updateBoundaryWarning();
 
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
@@ -1577,112 +1575,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const chest = this.pendingChests.shift()!;
       if (chest.golden) this.pickupSpawner.spawnGoldenChest();
       else this.pickupSpawner.spawnTreasure();
-    }
-  }
-
-  // ── Boundary Warning ──
-
-  private updateBoundaryWarning(): void {
-    const { x, y, width, height } = this.getUiViewport();
-    if (
-      !this.boundaryWarning
-      || this.boundaryWarning.width !== width
-      || this.boundaryWarning.height !== height
-      || this.boundaryWarning.x !== x + width / 2
-      || this.boundaryWarning.y !== y + height / 2
-    ) {
-      this.boundaryWarning?.destroy();
-      this.boundaryWarning = this.add.rectangle(x + width / 2, y + height / 2, width, height, 0xff0000, 0)
-        .setScrollFactor(0).setDepth(44);
-    }
-    const margin = 200;
-    const distToEdge = Math.min(
-      this.player.x, this.player.y,
-      GAME.WORLD_WIDTH - this.player.x,
-      GAME.WORLD_HEIGHT - this.player.y
-    );
-    if (distToEdge < margin) {
-      this.boundaryWarning.setAlpha(0.15 * (1 - distToEdge / margin));
-    } else {
-      this.boundaryWarning.setAlpha(0);
-    }
-  }
-
-  // ── Dash Indicator ──
-
-  private updateDashIndicator(): void {
-    if (!this.dashIndicator) {
-      this.dashIndicator = this.add.graphics().setDepth(10);
-    }
-    this.dashIndicator.clear();
-
-    const frac = this.player.getDashCooldownFraction();
-    if (frac <= 0) return; // Dash ready — no indicator
-
-    // Draw a small arc under the player showing cooldown
-    this.dashIndicator.lineStyle(2, 0xd4a017, 0.6);
-    const startAngle = -Math.PI / 2;
-    const endAngle = startAngle + (1 - frac) * Math.PI * 2;
-    this.dashIndicator.beginPath();
-    this.dashIndicator.arc(this.player.x, this.player.y + 20, 8, startAngle, endAngle, false);
-    this.dashIndicator.strokePath();
-  }
-
-
-  private tickBiome(): void {
-    if (!this.biomeController) return;
-    this.biomeController.tick(this.player, this.juice);
-  }
-
-  /**
-   * Fire a single caption when the player first drops below 20% HP, then
-   * re-arm once they recover above 40%. Avoids spamming the caption
-   * strip while the player takes rapid-fire damage at low HP.
-   */
-  /**
-   * Drive the ambient banter channel: biome changes + idle prompts + flush.
-   *
-   *  - biome_change fires the first time the player crosses into a new
-   *    Voronoi region. Engine's rate-limit prevents chatter during rapid
-   *    boundary-walking.
-   *  - idle fires if nothing's spoken for ~90s; the priority-10 pool means
-   *    any real event this frame (level, hp, boss) naturally outranks it.
-   *  - flush() commits at most one line per frame.
-   */
-  private tickBanter(): void {
-    if (!this.banter || !this.player) return;
-
-    const biomeId = this.getCurrentBiomeId();
-    if (biomeId && biomeId !== this.lastBiomeForBanter) {
-      if (this.lastBiomeForBanter !== null) {
-        this.banter.request('biome_change');
-      }
-      this.lastBiomeForBanter = biomeId;
-    }
-
-    // Idle prompt: throttled at the scene layer (not engine) so we don't
-    // request it every frame. 90s between attempts means in active combat
-    // it almost never wins the priority race — it's a lulls-only voice.
-    const nowMs = this.time.now;
-    if (nowMs - this.lastBanterFireMs > 90_000) {
-      this.banter.request('idle');
-      this.lastBanterFireMs = nowMs;
-    }
-
-    this.banter.flush();
-  }
-
-  private tickLowHpCaption(): void {
-    if (!this.player) return;
-    const frac = this.player.getHp() / Math.max(1, this.player.getMaxHp());
-    if (this.lowHpCaptionArmed && frac > 0 && frac < 0.2) {
-      this.caption('low_hp', t('ui.captions.low_hp'), '#ee5566');
-      this.banter?.request('low_hp');
-      this.lowHpCaptionArmed = false;
-    } else if (!this.lowHpCaptionArmed && frac > 0.4) {
-      // Player climbed back out of the danger band — hearth warmth.
-      this.banter?.request('recover');
-      this.lowHpCaptionArmed = true;
     }
   }
 
