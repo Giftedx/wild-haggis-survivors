@@ -141,8 +141,8 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     // Fire optional callback (e.g., Highland Games explosion)
     if (this.onDeactivateCallback) {
       const cb = this.onDeactivateCallback;
-      this.onDeactivateCallback = null; // Clear to prevent re-firing
-      cb();
+      this.onDeactivateCallback = null;
+      try { cb(); } catch { /* ensure deactivate completes */ }
     }
 
     // Small pop effect so projectiles don't just vanish
