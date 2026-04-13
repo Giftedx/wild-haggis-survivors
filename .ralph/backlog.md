@@ -73,3 +73,4 @@
 - [x] UpdateTickers tests — `addInterval` + `repeats`, cancel once/interval, `clear()`, non-positive delta guard (`UpdateTickers.test.ts`). 750→755 tests.
 - [x] TimeManager release + ScaledTimer edges — `release` idempotent (unknown key, double-release, empty stack → timeScale 1); `ScaledTimer.stop` clears countdown; `start` clamps non-positive duration inactive. 755→758 tests.
 - [x] TimeManager.update + ScaledTimer.tick guards — `update` skips `deltaMs ≤ 0` and empty token map; `getActiveTokenKeys` sorted; `ScaledTimer.tick` no-op when inactive, frozen when `timeScale < 0`. 758→763 tests.
+- [x] Git: track scene i18n smoke tests + `GamepadMenuNav.test.ts` — were on disk but untracked (`settingsComfort`, `hearthUi`, `economyRunUi`, `chronicleDeeds`, `gameHudJuice`, `auxiliaryRunUi`, `GamepadMenuNav`). CI / fresh clone parity.

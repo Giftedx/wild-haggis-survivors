@@ -1,0 +1,89 @@
+import { describe, expect, it } from 'vitest';
+import { t } from '../core/i18n';
+
+/**
+ * Regression fence for hearth-facing UI: every `t('ui.*')` used in
+ * `MainMenuScene` and `PauseMenu` must resolve. Catches missing keys when
+ * copy ships without i18n entries.
+ */
+const MAIN_MENU_AND_PAUSE_STATIC_KEYS = [
+  'ui.menu.title',
+  'ui.menu.kill_credits_fresh',
+  'ui.menu.hint_suspended',
+  'ui.menu.hint_fresh',
+  'ui.menu.hint_fresh_with_comfort',
+  'ui.menu.start_run',
+  'ui.menu.resume_run',
+  'ui.menu.new_run_loadout',
+  'ui.menu.daily_challenge',
+  'ui.menu.meta_upgrades',
+  'ui.menu.chronicle',
+  'ui.menu.deeds',
+  'ui.menu.options',
+  'ui.menu.enter_seed',
+  'ui.menu.trend_improving',
+  'ui.menu.trend_declining',
+  'ui.menu.trend_steady',
+  'ui.menu.built_on_moor',
+  'ui.menu.seed_prompt',
+  'ui.menu.seed_invalid',
+  'ui.pause.title',
+  'ui.pause.resume',
+  'ui.pause.passives_heading',
+  'ui.pause.quit',
+  'ui.common.on',
+  'ui.common.off',
+] as const;
+
+const MAIN_MENU_AND_PAUSE_DYNAMIC: ReadonlyArray<
+  readonly [string, Record<string, string | number>]
+> = [
+  ['ui.menu.kill_credits', { count: 0 }],
+  [
+    'ui.menu.stats_short',
+    {
+      bestTime: '0:00',
+      bestKills: 0,
+      bestCombo: 0,
+      totalRuns: 0,
+      victories: 0,
+      gold: 0,
+    },
+  ],
+  [
+    'ui.menu.history_summary',
+    { totalRuns: 1, winRate: 0, avgTime: '0:00', trend: 'x' },
+  ],
+  ['ui.menu.daily_fresh', { code: 'AAAAAAA' }],
+  ['ui.menu.daily_cleared', { code: 'AAAAAAA' }],
+  ['ui.menu.daily_attempts', { code: 'AAAAAAA', attempts: 1 }],
+  ['ui.pause.time_line', { m: 0, s: '00' }],
+  ['ui.pause.stats_mid', { kills: 0, level: 1 }],
+  ['ui.pause.stats_loadout', { w: 0, c: 0 }],
+  [
+    'ui.loadout.sfx_toggle',
+    { state: t('ui.common.on') },
+  ],
+  [
+    'ui.loadout.music_toggle',
+    { state: t('ui.common.off') },
+  ],
+];
+
+describe('Main menu / pause menu i18n smoke', () => {
+  it('resolves every static key (no missing copy)', () => {
+    for (const key of MAIN_MENU_AND_PAUSE_STATIC_KEYS) {
+      const resolved = t(key);
+      expect(resolved, key).not.toBe(key);
+      expect(resolved.length, key).toBeGreaterThan(0);
+    }
+  });
+
+  it('resolves every interpolated key with minimal args', () => {
+    for (const [key, vars] of MAIN_MENU_AND_PAUSE_DYNAMIC) {
+      const resolved = t(key, vars);
+      expect(resolved, key).not.toBe(key);
+      expect(resolved.length, key).toBeGreaterThan(0);
+    }
+  });
+});

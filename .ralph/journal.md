@@ -52,3 +52,4 @@
 | 2026-04-13 | 50 | SCOUT→BUILD | Backlog only deferred euclidean; add biome i18n smoke | Done — `src/data/biomeI18n.smoke.test.ts` resolves all `BIOMES` nameKey + entryToastKey. 747 tests, build clean. |
 | 2026-04-13 | 51 | BUILD | TimeManager release idempotency + ScaledTimer stop/start clamp tests | Done — `TimeManager.test.ts` + `ScaledTimer.test.ts`; 758 tests, `npm run build` clean. |
 | 2026-04-13 | 52 | SCOUT→BUILD | Backlog thin; extend time + timer unit tests | Done — `TimeManager.update` guards, `getActiveTokenKeys`, `ScaledTimer` inactive/negative scale ticks. 763 tests, build clean. |
+| 2026-04-13 | 53 | SCOUT→BUILD | Untracked tests vs git | Done — committed 6 scene i18n smokes + `GamepadMenuNav.test.ts` (were passing locally but absent from repo). Left `edgeIndicatorMath`/`captionOverlayLayout` + consumer diffs for next commit. |
