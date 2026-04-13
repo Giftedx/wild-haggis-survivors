@@ -68,6 +68,7 @@
 - [x] `musicSfxDuck` recovery via `expApproach` — loop 73 (same math, shared helper).
 - [x] Test: `expApproach` ≡ legacy duck decay step — loop 74 (`musicMath.test.ts`).
 - [x] Test: `ProceduralMusicEngine.update` applies same duck decay as `expApproach` — loop 75 (`ProceduralMusicEngine.test.ts`, stubbed ctx/layers).
+- [x] Tests for `audioContext.ts` — loop 76: ctor failure → null; singleton until `state === 'closed'`; stale compressor `disconnect` on rebuild; `getOutputNode` wires compressor (`audioContext.test.ts`, `resetModules` + stub `AudioContext`).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
