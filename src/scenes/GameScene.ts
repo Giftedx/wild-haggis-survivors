@@ -51,6 +51,7 @@ import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { PauseMenu } from './game/PauseMenu';
+import { PickupSpawner } from './game/PickupSpawner';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -190,6 +191,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossEnrageUnsub: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
   private pauseMenu: PauseMenu | null = null;
+  private pickupSpawner!: PickupSpawner;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
   /** Gates the low-HP caption — fires once per dip below the threshold. */
@@ -493,13 +495,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // 5% chance to drop a health orb on kill (bosses always drop).
       // Gameplay RNG — seeded so daily/shared runs drop at the same moments.
       if (wasBoss || this.runRng.bool(0.05)) {
-        this.spawnHealthOrb(x, y, wasBoss ? 25 : 5);
+        this.pickupSpawner.spawnHealthOrb(x, y, wasBoss ? 25 : 5);
       }
 
       // 2% chance to drop gold coins (elites 10%, bosses always).
       const goldChance = wasBoss ? 1 : (wasElite ? 0.10 : 0.02);
       if (this.runRng.bool(goldChance)) {
-        this.spawnGoldCoin(x, y, wasBoss ? this.runRng.int(5, 15) : this.runRng.int(1, 3));
+        this.pickupSpawner.spawnGoldCoin(x, y, wasBoss ? this.runRng.int(5, 15) : this.runRng.int(1, 3));
       }
 
       if (wasBoss) {
@@ -575,6 +577,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // HUD + Juice
     this.hud = new HUD(this);
     this.juice = new JuiceSystem(this, this.timeManager, this.updateTickers, this.settingsManager);
+    this.pickupSpawner = new PickupSpawner(this, {
+      getPlayer: () => this.player,
+      getJuice: () => this.juice,
+      getXPSystem: () => this.xpSystem,
+      getUpdateTickers: () => this.updateTickers,
+      getSFXManager: () => this.getSFXManager(),
+      getChestDurationBonusMs: () => this.chestDurationBonusMs,
+      onCoinCollected: (amount) => { this.coinGoldEarned += amount; },
+      trackChest: (s, g) => this.trackChestSprite(s, g),
+      untrackChest: (s) => this.untrackChestSprite(s),
+      pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
+      offerTreasureEvolutionIfEligible: () => this.offerTreasureEvolutionIfEligible(),
+      acquireFloatText: (x, y, str, color, fs, d) => this.acquireFloatText(x, y, str, color, fs, d),
+    });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
@@ -621,9 +637,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (this.timeManager.isGameplayPaused()) {
         this.pendingChests.push({ golden });
       } else if (golden) {
-        this.spawnGoldenChest();
+        this.pickupSpawner.spawnGoldenChest();
       } else {
-        this.spawnTreasure();
+        this.pickupSpawner.spawnTreasure();
       }
     });
 
@@ -2089,161 +2105,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private drainPendingChests(): void {
     while (this.pendingChests.length > 0) {
       const chest = this.pendingChests.shift()!;
-      if (chest.golden) this.spawnGoldenChest();
-      else this.spawnTreasure();
+      if (chest.golden) this.pickupSpawner.spawnGoldenChest();
+      else this.pickupSpawner.spawnTreasure();
     }
-  }
-
-  private spawnTreasure(): void {
-    // Spawn near the player but not on top of them
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 150 + Math.random() * 200;
-    const x = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
-    const y = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
-
-    this.juice.showToast(t('ui.game.treasure_nearby'), '#ffcc44');
-
-    // Create a glowing chest with sprite
-    const chest = this.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5);
-    this.trackChestSprite(chest, false);
-    const glow = this.add.circle(x, y, 18, COLORS.WHISKY_GOLD, 0.2).setDepth(4);
-
-    // Pulsing glow animation
-    this.tweens.add({
-      targets: glow,
-      scale: { from: 1, to: 1.5 },
-      alpha: { from: 0.3, to: 0 },
-      duration: 800,
-      repeat: -1,
-    });
-
-    // Floating bob animation
-    this.tweens.add({
-      targets: chest,
-      y: y - 4,
-      duration: 600,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
-    });
-
-    // Enable physics for overlap detection
-    this.physics.add.existing(chest, true);
-    let collected = false;
-    let despawnHandle: TickerHandle | null = null;
-
-    // Collect on overlap with player
-    const overlapColl = this.physics.add.overlap(this.player, chest, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-
-      this.player.heal(Math.ceil(this.player.getMaxHp() * 0.25));
-      for (let i = 0; i < 8; i++) {
-        this.xpSystem.spawnGem(
-          x + Phaser.Math.Between(-20, 20),
-          y + Phaser.Math.Between(-20, 20),
-          3
-        );
-      }
-
-      // ── Chest opening spectacle — satisfying lid-pop + particle spray ──
-      this.tweens.killTweensOf(chest);
-      this.tweens.killTweensOf(glow);
-      // 1. Chest jolts upward (lid popping open)
-      this.tweens.add({
-        targets: chest,
-        y: y - 8,
-        scale: 1.7,
-        duration: 120,
-        ease: 'Quad.easeOut',
-      });
-      // 2. Expanding bright ring (the moment of opening)
-      const openRing = this.add.circle(x, y, 18, 0xffee88, 0.8).setDepth(6);
-      this.tweens.add({
-        targets: openRing,
-        scale: 4.5,  // 18 * 4.5 = 81 (target radius ~80)
-        alpha: 0,
-        duration: 400,
-        ease: 'Quad.easeOut',
-        onComplete: () => openRing.destroy(),
-      });
-      // 3. Secondary gold ring (layered spectacle)
-      const openRing2 = this.add.circle(x, y, 10, 0xffcc44, 0.6).setDepth(6);
-      this.tweens.add({
-        targets: openRing2,
-        scale: 5,   // 10 * 5 = 50
-        alpha: 0,
-        duration: 500,
-        delay: 100,
-        ease: 'Quad.easeOut',
-        onComplete: () => openRing2.destroy(),
-      });
-      // 4. Gold particle spray (12 dots scattering up and outward with gravity)
-      for (let i = 0; i < 12; i++) {
-        const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;  // Upward fan
-        const speed = Phaser.Math.Between(35, 70);
-        const dot = this.add.circle(x, y,
-          Phaser.Math.Between(2, 4),
-          i % 2 === 0 ? 0xffdd44 : 0xffcc22,
-          0.95
-        ).setDepth(7);
-        const endX = x + Math.cos(angle) * speed;
-        const peakY = y + Math.sin(angle) * speed - 10;
-        const finalY = y + Phaser.Math.Between(20, 50);
-        this.tweens.add({
-          targets: dot, x: endX, duration: 600 + i * 20,
-          onComplete: () => dot.destroy(),
-        });
-        this.tweens.add({
-          targets: dot,
-          y: { value: peakY, duration: 250, ease: 'Quad.easeOut' },
-        });
-        this.tweens.add({
-          targets: dot,
-          y: { value: finalY, duration: 400, ease: 'Quad.easeIn', delay: 250 },
-          alpha: { value: 0, duration: 300, delay: 300 },
-        });
-      }
-      // 5. Chest fades out after the pop (0.25s hold so the burst registers)
-      this.tweens.add({
-        targets: [chest, glow],
-        alpha: 0,
-        scale: 0.3,
-        duration: 200,
-        delay: 180,
-        onComplete: () => {
-          this.untrackChestSprite(chest);
-          chest.destroy();
-          glow.destroy();
-        },
-      });
-
-      this.juice.flashWhite(120);
-      this.juice.showToast(t('ui.game.treasure_collected'), '#ffcc44');
-      audio.playLevelUp();
-
-      this.physics.world.removeCollider(overlapColl);
-      this.offerTreasureEvolutionIfEligible();
-    });
-
-    despawnHandle = this.updateTickers.addOnce('scaled', 15000 + this.chestDurationBonusMs, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.add({
-        targets: [chest, glow],
-        alpha: 0,
-        duration: 500,
-        onComplete: () => {
-          this.untrackChestSprite(chest);
-          chest.destroy();
-          glow.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-    this.pickupDespawnHandles.push(despawnHandle);
   }
 
   // ── Boundary Warning ──
@@ -2274,60 +2138,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  // ── Golden Chest ──
-
-  private spawnGoldenChest(): void {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 150 + Math.random() * 200;
-    const x = Phaser.Math.Clamp(this.player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
-    const y = Phaser.Math.Clamp(this.player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
-
-    this.juice.showToast(t('ui.game.golden_nearby'), '#ffaa00');
-
-    const chest = this.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5).setTint(0xffdd44);
-    this.trackChestSprite(chest, true);
-    const glow = this.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
-
-    this.tweens.add({ targets: glow, scale: { from: 1, to: 1.6 }, alpha: { from: 0.3, to: 0 }, duration: 700, repeat: -1 });
-    this.tweens.add({ targets: chest, y: y - 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-
-    this.physics.add.existing(chest, true);
-    let collected = false;
-    let despawnHandle: TickerHandle | null = null;
-
-    const overlapColl = this.physics.add.overlap(this.player, chest, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-      const goldReward = Phaser.Math.Between(5, 15);
-      this.coinGoldEarned += goldReward;
-      this.juice.showToast(t('ui.game.golden_collected', { gold: goldReward }), '#ffaa00');
-      this.juice.flashWhite(150);
-      audio.playLevelUp();
-      this.tweens.killTweensOf(glow); this.tweens.killTweensOf(chest);
-      this.untrackChestSprite(chest);
-      chest.destroy(); glow.destroy();
-      this.physics.world.removeCollider(overlapColl);
-      this.offerTreasureEvolutionIfEligible();
-    });
-
-    despawnHandle = this.updateTickers.addOnce('scaled', 12000 + this.chestDurationBonusMs, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.killTweensOf(chest);
-      this.tweens.add({
-        targets: [chest, glow], alpha: 0, duration: 400, onComplete: () => {
-          this.untrackChestSprite(chest);
-          chest.destroy();
-          glow.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-    this.pickupDespawnHandles.push(despawnHandle);
-  }
-
   // ── Dash Indicator ──
 
   private updateDashIndicator(): void {
@@ -2346,104 +2156,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.dashIndicator.beginPath();
     this.dashIndicator.arc(this.player.x, this.player.y + 20, 8, startAngle, endAngle, false);
     this.dashIndicator.strokePath();
-  }
-
-  // ── Gold Coins ──
-
-  private spawnGoldCoin(x: number, y: number, goldAmount: number): void {
-    const coin = this.add.circle(x, y, 5, COLORS.WHISKY_GOLD, 1).setDepth(5);
-
-    // Spinning effect
-    this.tweens.add({
-      targets: coin,
-      scaleX: { from: 1, to: 0.3 },
-      duration: 300,
-      yoyo: true,
-      repeat: -1,
-    });
-
-    this.physics.add.existing(coin, true);
-    let collected = false;
-    let despawnHandle: TickerHandle | null = null;
-
-    const overlapColl = this.physics.add.overlap(this.player, coin, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-      this.coinGoldEarned += goldAmount;
-
-      // Show gold pickup text
-      const txt = this.acquireFloatText(
-        coin.x, coin.y - 12,
-        t('ui.game.gold_pickup_float', { gold: goldAmount }),
-        '#d4a017', '16px', 80,
-      );
-      if (txt) {
-        this.tweens.add({ targets: txt, y: txt.y - 20, alpha: 0, duration: 600, onComplete: () => { txt.setVisible(false); } });
-      }
-
-      this.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
-      coin.destroy();
-      this.physics.world.removeCollider(overlapColl);
-    });
-
-    despawnHandle = this.updateTickers.addOnce('scaled', 12000, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.add({
-        targets: coin, alpha: 0, duration: 400, onComplete: () => {
-          coin.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-    this.pickupDespawnHandles.push(despawnHandle);
-  }
-
-  // ── Health Orbs ──
-
-  private spawnHealthOrb(x: number, y: number, healAmount: number): void {
-    const orb = this.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
-    const glow = this.add.circle(x, y, 10, 0x44dd44, 0.3).setDepth(4);
-
-    // Pulsing glow
-    this.tweens.add({
-      targets: glow,
-      scale: { from: 1, to: 1.4 },
-      alpha: { from: 0.3, to: 0 },
-      duration: 600,
-      repeat: -1,
-    });
-
-    this.physics.add.existing(orb, true);
-    let collected = false;
-    let despawnHandle: TickerHandle | null = null;
-
-    const overlapColl = this.physics.add.overlap(this.player, orb, () => {
-      if (collected) return;
-      collected = true;
-      despawnHandle?.cancel();
-      this.player.heal(healAmount);
-      this.juice.showDamageNumber(this.player.x, this.player.y - 20, healAmount, false);
-      this.tweens.killTweensOf(glow);
-      orb.destroy();
-      glow.destroy();
-      this.physics.world.removeCollider(overlapColl);
-    });
-
-    despawnHandle = this.updateTickers.addOnce('scaled', 10000, () => {
-      if (collected) return;
-      collected = true;
-      this.tweens.killTweensOf(glow);
-      this.tweens.add({
-        targets: [orb, glow], alpha: 0, duration: 400,
-        onComplete: () => {
-          orb.destroy(); glow.destroy();
-          this.physics.world.removeCollider(overlapColl);
-        },
-      });
-    });
-    this.pickupDespawnHandles.push(despawnHandle);
   }
 
   private tickMapZones(scaledDelta: number): void {

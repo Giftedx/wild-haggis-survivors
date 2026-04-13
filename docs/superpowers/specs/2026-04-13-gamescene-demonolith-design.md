@@ -36,11 +36,12 @@ The 140-line `toggleUiPause` body is the real monolith here, not a generic overl
 **Surface:** `open(): void`, `close(): void`, `isOpen(): boolean`
 **Risk:** Low-medium. The pointer handlers for sfx/music toggles and quit-to-menu keep the same scene callbacks; PauseMenu just owns the construction.
 
-### 3. `CollisionRouter.ts`
-Houses all `physics.add.overlap` / `physics.add.collider` setup and the bodies of their callbacks (chest, golden chest, coin, health orb, player-enemy collider, map-zone ticking). Tracks colliders it creates and removes them on scene shutdown to kill the known leak path.
+### 3. `PickupSpawner.ts` *(was CollisionRouter — revised during execution)*
 
-**Surface:** `wire(): void`, `tickMapZones(dtMs: number): void`, `shutdown(): void`
-**Risk:** Medium. Callbacks read/write many GameScene fields (`pendingChests`, `activeChestSprites`, `chestDurationBonusMs`, `iFrames`). Keep those fields on GameScene; router mutates them through it.
+The player-enemy collider is a 1-liner; extracting it as a "CollisionRouter" would be ceremony. The real mass is in the four pickup factory methods (`spawnTreasureChest`, `spawnGoldenChest`, `spawnGoldCoin`, `spawnHealthOrb`) — ~300 lines of interleaved sprite construction, tween choreography, physics overlap wiring, despawn scheduling, and chest-sprite tracking. PickupSpawner owns all four. The player-enemy collider stays in `create()` where it reads cleanly.
+
+**Surface:** `spawnTreasureChest(x,y)`, `spawnGoldenChest()`, `spawnGoldCoin(x,y,amt)`, `spawnHealthOrb(x,y,amt)`
+**Risk:** Medium. Factories touch many scene fields (juice, xpSystem, coinGoldEarned, chestDurationBonusMs, pickupDespawnHandles) plus callbacks into GameScene (`offerTreasureEvolutionIfEligible`, chest sprite tracking). Pass GameScene directly rather than a narrow hooks interface — matches BiomeController's pattern and keeps the diff honest.
 
 ### 4. `LevelUpFlow.ts`
 `onXpLevelUp`, level-milestone screen clear, `rerollUpgradeCards`, `applyUpgrade`, evolution eligibility (`findEligibleChestEvolution`), `announcedEvolutionReady` set.
