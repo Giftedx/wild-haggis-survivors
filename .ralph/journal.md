@@ -27,3 +27,4 @@
 | 2026-04-13 | 31 | BUILD | Add 16 inputMath.ts unit tests | Done — clampVectorLength (6), mergeMoveVectors (3), gamepadStickToMove (7). 563→579 tests. |
 | 2026-04-13 | 30b | BUILD | Add 2 more inputMath edge cases (merge maxLen, magnitude sweep) | Done — 18 total tests, 563→581 tests. |
 | 2026-04-13 | 32 | BUILD | Add 8 SubscriptionBag.ts tests | Done — add/dispose, LIFO order, error safety, listen/dispose, add-after-dispose, double-dispose. 581→589 tests. |
+| 2026-04-13 | 33 | REVIEW | Review src/systems/music/ (rotation area 8) | Done — 5 findings: 3×P1 (NoteScheduler/Conductor/euclidean 0 tests), 2×P2 (PianoLayer doc mismatch, fragile test). 7 files, 1 existing test. |

@@ -38,6 +38,12 @@
 - [ ] GamepadMenuNav.ts has 0 tests — Phaser scene-dependent, would need mocking (P2, utils review, low ROI)
 - [ ] inputMath.gamepadStickToMove: redundant clampVectorLength — mag already ≤1, clamp is no-op (P2, code smell, utils review)
 
+- [ ] Add tests for NoteScheduler — tick lookahead scheduling, tab-recovery clamping (nextTime = max(nextTime, now)), min-interval floors (0.1/0.05/0.1), reset clears state (P1, music review)
+- [ ] Add tests for Conductor — updateMood lerp (intensity/danger/chaos/triumph targets), resolution mode (enterResolution, isResolutionComplete, descent walk), kill rate calc, phrase contours (P1, music review)
+- [ ] Add tests for euclidean() — known outputs E(3,8)=[10010010], E(5,8), edge cases E(0,8), E(8,8) (P1, music review)
+- [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
+- [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
+
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)
