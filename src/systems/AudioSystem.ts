@@ -6,9 +6,9 @@
  * so concurrency is visible on ISceneContext. Menu code may call `playClick()` / gated helpers directly.
  * Oscillator detune spreads identical clips slightly to reduce phasing.
  */
+import { MOTION_TIMING } from '../core/motionTiming';
 import { getAudioContext, getOutputNode } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
-import { MOTION_TIMING } from './music/musicMath';
 import { musicEngine } from './music/ProceduralMusicEngine';
 
 const BASE_SFX_GAIN = 0.3;

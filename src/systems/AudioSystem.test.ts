@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MOTION_TIMING } from './music/musicMath';
+import { MOTION_TIMING } from '../core/motionTiming';
 
 const notifySpy = vi.hoisted(() => vi.fn((_: number) => {}));
 

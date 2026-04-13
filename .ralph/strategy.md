@@ -1,6 +1,6 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 68 REFLECT+BUILD)
+**Last updated:** 2026-04-13 (loop 69 BUILD)
 
 ## Project Phase
 **Steady state.** v2.1.0. Hardening campaign complete. 784 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
@@ -9,7 +9,7 @@
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **P2 code smells:** Enemy.applyPostBellScaling API (if any remain), minor cleanups from review notes
 - **P2 low-ROI tests:** Extra Phaser-bound UI coverage only where regressions appear
-- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` (duck τ + gameplay impulses) / music–SFX ducking landed; `core/motionTiming.ts` re-export for shallow imports
+- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` (duck τ + gameplay impulses) / music–SFX ducking landed; `AudioSystem` imports timings via `core/motionTiming` (music engine still uses `musicMath` directly)
 - **Low features:** DebugOverlay extras, docs-only polish
 
 ## Done Enough (don't revisit unless bugs surface)
@@ -19,7 +19,7 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - Entity core: Player (16 tests), Enemy (status/elite), Projectile (9 tests)
 - Weapon stat scaling (10 tests), SpawnSystem resume/stall (11 tests)
 - Save/load system (well-tested)
-- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10+), musicMath, SFX duck + smoothed master gains + AudioSystem impulses (combat + level-up / achievement / purchase); Euclidean phrase pulse count drives kick/hat gain via `percussionKickHatGainScales`
+- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10+), musicMath, SFX duck + smoothed master gains + AudioSystem impulses via `core/motionTiming` (combat + level-up / achievement / purchase); Euclidean phrase pulse count drives kick/hat gain via `percussionKickHatGainScales`
 - BanterSystem + weapon_evolve context, i18n, Boot textures
 - Bundle: vendor chunk split (1482/340gz + 507/136gz)
 - inputMath (18), SubscriptionBag (8), rotateVector (8), cameraShake (7), cameraViewport (9)
@@ -35,7 +35,7 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Process:** Loop 61 reminder: never commit test-only without running tests on clean tree; stashes (`ralph-loop62-wip`, `autonomous-loop-wip`) may still hold user WIP — reconcile when tree is calm.
 - **Next if bored:** Optional in-game listen pass; merge or drop old stashes; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 68)
+## Metrics Snapshot (2026-04-13, loop 69)
 - Source files: 105+, Test files: 101+
 - Tests: 784 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
