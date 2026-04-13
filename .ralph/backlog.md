@@ -10,7 +10,7 @@
 
 ## Medium Priority
 - [ ] Add tests for XPGem — drop/collect/magnetize/destroy are untested (coverage gap, entities review)
-- [ ] Add tests for Projectile — fire(), pierce logic, range deactivation, bounce TTL, deactivate callback (coverage gap, entities review)
+- [x] Add tests for Projectile — 7 tests: pierce exhaustion, bouncing immunity, zero-pierce death, range deactivation, TTL countdown, callback fire-once
 - [x] Add Player tests — 16 tests: takeDamage (armor, shield, death), heal, bonus stacking (damage, drift, regen, cooldown, maxHp), tickRegen, onLevelUp stat recalc (speed, drift, pickup)
 - [x] Enemy.fireNet stale-scene risk — NOT A BUG: try/catch in cleanup, activeNetCleanup called on spawn/die/destroy, hit flag prevents double-fire
 - [ ] Enemy.applyPostBellScaling resets hp=maxHp — safe now (called at spawn only) but API permits misuse post-damage (code smell, entities review)
