@@ -600,6 +600,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   /** Apply net slow — only takes effect on first stack, subsequent nets just increment counter */
   applyNetSlow(durationMs: number = 2000): void {
+    if (this.netSlowTimersMs.length >= 5) return;
     this.netSlowTimersMs.push(durationMs);
     this.netSlowStacks++;
     if (this.netSlowStacks === 1) {
