@@ -61,10 +61,20 @@ export class TutorialSystem {
       this.driftBanner.destroy();
       this.driftBanner = null;
     }
+    if (this.dismissDriftBannerRef) {
+      this.scene.tweens.killTweensOf(this.dismissDriftBannerRef);
+      this.dismissDriftBannerRef.destroy();
+      this.dismissDriftBannerRef = null;
+    }
     if (this.driftArrow) {
       this.scene.tweens.killTweensOf(this.driftArrow);
       this.driftArrow.destroy();
       this.driftArrow = null;
+    }
+    if (this.dismissDriftArrowRef) {
+      this.scene.tweens.killTweensOf(this.dismissDriftArrowRef);
+      this.dismissDriftArrowRef.destroy();
+      this.dismissDriftArrowRef = null;
     }
   }
 
