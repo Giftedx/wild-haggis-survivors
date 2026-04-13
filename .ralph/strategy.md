@@ -1,6 +1,6 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 72 BUILD)
+**Last updated:** 2026-04-13 (loop 73 BUILD)
 
 ## Project Phase
 **Steady state.** v2.1.0. Hardening campaign complete. 784 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
@@ -36,7 +36,7 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Windows:** If `git status` shows hundreds of files “modified” with `old mode 100755 / new mode 100644` only, run `git config core.filemode false` in this repo (executable-bit noise). **Loop 71:** same note added to `CLAUDE.md` + `AGENTS.md` for discoverability.
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 72)
+## Metrics Snapshot (2026-04-13, loop 73)
 - Source files: 105+, Test files: 101+
 - Tests: 784 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)

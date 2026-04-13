@@ -7,6 +7,7 @@
 
 import { MOTION_TIMING } from '../../core/motionTiming';
 import { getAudioContext, getOutputNode } from '../audioContext';
+import { expApproach } from './musicMath';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
@@ -179,11 +180,12 @@ class ProceduralMusicEngine {
     this.conductor.updateMood(delta, state);
     const mood = this.conductor.getMood();
 
-    {
-      const tau = MOTION_TIMING.musicSfxDuckRecoverMs;
-      const a = 1 - Math.exp(-delta / tau);
-      this.musicSfxDuck += (0 - this.musicSfxDuck) * Math.min(1, a);
-    }
+    this.musicSfxDuck = expApproach(
+      this.musicSfxDuck,
+      0,
+      delta,
+      MOTION_TIMING.musicSfxDuckRecoverMs,
+    );
 
     this.drone.applyMood(this.ctx, mood.intensity, mood.danger, mood.triumph);
 
