@@ -1,36 +1,37 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 37b REFLECT)
+**Last updated:** 2026-04-13 (loop 49 REFLECT)
 
 ## Project Phase
-Test coverage plateau. v2.1.0. 684 tests (+40% from baseline 488). All P1s complete. Only P2 polish + L features remain. Shift to feature work for player-visible value.
+**Steady state.** v2.1.0. Hardening campaign complete. 696 tests (+43% from baseline 488). All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + Low features — all diminishing returns. Project is healthy and well-tested.
 
-## Top 3 Priorities
-1. **Feature completions** — banter weapon evolution moments, DebugOverlay. Player-visible value over more test scaffolding.
-2. **Remaining P2 polish** — 8 items (doc fixes, code smells, low-ROI tests). Pick only when no feature work available.
-3. **Second review rotation** — if features complete + P2 drains, start fresh cycle at scenes(1) to find new bugs/gaps after all the changes.
+## Remaining Work (all optional)
+11 open items. None are crash/gameplay bugs. Pick only if motivated:
+- **P2 code smells:** Enemy.applyPostBellScaling API, inputMath redundant clamp, contrastColor falsy (dead code)
+- **P2 low-ROI tests:** EdgeIndicators, GamepadMenuNav, CaptionOverlay (all Phaser-dependent)
+- **P2 tech debt:** ProceduralMusicEngine fragile test, euclidean Bjorklund divergence (design decision)
+- **Low features:** DebugOverlay pool surfacing, telemetry toggle, a11y docs
 
 ## Done Enough (don't revisit unless bugs surface)
 - Type safety: 0 production `as any` (was 17)
 - Scene reach-throughs: 0 remaining (ISceneContext)
-- Scene lifecycle reset correctness
-- Entity core: Player (16 tests), Enemy (status/elite tests), Projectile (9 tests)
+- Scene lifecycle reset correctness (verified in 2nd review rotation)
+- Entity core: Player (16 tests), Enemy (status/elite), Projectile (9 tests)
 - Weapon stat scaling (10 tests), SpawnSystem resume/stall (11 tests)
 - Save/load system (well-tested)
-- Procedural music engine: Conductor (15 tests), NoteScheduler (9 tests), euclidean (10 tests)
-- BanterSystem, i18n, Boot textures
-- Bundle: vendor chunk split done (1482/340gz + 507/136gz). Phaser not tree-shakeable.
-- inputMath (18 tests), SubscriptionBag (8 tests), rotateVector (8 tests)
-- a11y subsystem: CaptionManager (7 tests), a11yMotion (6 tests), a11yText (5 tests)
+- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10)
+- BanterSystem + weapon_evolve context, i18n, Boot textures
+- Bundle: vendor chunk split (1482/340gz + 507/136gz)
+- inputMath (18), SubscriptionBag (8), rotateVector (8), cameraShake (7), cameraViewport (9)
+- a11y: CaptionManager (8 incl guard), a11yMotion (6), a11yText (5)
+- spatialCull (14), GlobalEventBus (7), upgrades cardpool (29), runStartModifiers (12)
 
 ## Review Rotation Position
-**Review rotation COMPLETE.** All 9 areas reviewed (loop 36).
-Areas done: scenes(1), entities(2), systems(3), core(4), data(5), ui(6), utils(7), music(8), a11y(9).
-Next cycle starts at scenes(1) if/when needed.
+**Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 37b)
-- Source files: 105, Test files: 86
-- Tests: 684 passing (was 488 at loop 1, +40%)
+## Metrics Snapshot (2026-04-13, loop 49)
+- Source files: 105, Test files: 87
+- Tests: 696 passing (was 488 at loop 1, +43%)
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
