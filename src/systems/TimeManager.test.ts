@@ -86,6 +86,25 @@ describe('TimeManager token stack', () => {
     expect(state.timeScale).toBe(1);
   });
 
+  it('getEffectiveTimeScale and pause getters mirror applied state', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+    expect(tm.getEffectiveTimeScale()).toBe(1);
+    expect(tm.isPhysicsPaused()).toBe(false);
+    expect(tm.isGameplayPaused()).toBe(false);
+
+    tm.request('P', { pausePhysics: true, timeScale: 0.25 });
+    expect(tm.getEffectiveTimeScale()).toBe(0.25);
+    expect(state.timeScale).toBe(0.25);
+    expect(tm.isPhysicsPaused()).toBe(true);
+    expect(tm.isGameplayPaused()).toBe(true);
+
+    tm.release('P');
+    expect(tm.getEffectiveTimeScale()).toBe(1);
+    expect(tm.isPhysicsPaused()).toBe(false);
+    expect(tm.isGameplayPaused()).toBe(false);
+  });
+
   it('reset() drops every token and restores timeScale + physics defaults', () => {
     const { adapter, state } = makeAdapter();
     const tm = new TimeManager(adapter);

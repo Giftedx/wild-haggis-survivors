@@ -59,3 +59,4 @@
 | 2026-04-13 | 57 | SCOUT→BUILD | Backlog thin post-telemetry | Done — regression tests: boss/tutorial analytics unaffected by opt-out; doc comment on `AnalyticsManager`. 762 tests, build clean. |
 | 2026-04-13 | 58 | SCOUT→BUILD | Backlog saturated (euclidean deferred) | Done — `captionOverlayLayout.test` negative fade window; 763 tests, build clean. Note: `stash@{0}` autonomous-loop-wip still present if user wants to inspect/drop. |
 | 2026-04-13 | 59 | BUILD | TimeManager batch duration expiry | Done — single `update` clears two timed tokens + restores `timeScale`. 764 tests, build clean. |
+| 2026-04-13 | 60 | BUILD | TimeManager public getters tests | Done — `getEffectiveTimeScale` / `isPhysicsPaused` / `isGameplayPaused`. 765 tests, build clean. |

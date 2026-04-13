@@ -81,3 +81,4 @@
 - [x] AnalyticsManager regression tests — `boss_kill` + `tutorial_completed` still log when `telemetryOptIn` false (documents gate scope). Class doc notes same. 760→762 tests.
 - [x] `captionFadeAlpha` negative `fadeWindowMs` — test covers `fadeWindowMs <= 0` branch with negative window (binary on/off). 762→763 tests.
 - [x] TimeManager.update multi-expiry — two duration tokens removed in one tick; `timeScale` recomputes to default when stack empties. 763→764 tests.
+- [x] TimeManager getters — `getEffectiveTimeScale`, `isPhysicsPaused`, `isGameplayPaused` match adapter after request/release. 764→765 tests.
