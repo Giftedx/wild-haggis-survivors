@@ -1,16 +1,16 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 50 SCOUT→BUILD)
+**Last updated:** 2026-04-13 (loop 61 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 696 tests (+43% from baseline 488). All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + Low features — all diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 779 tests (Vitest). All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
-11 open items. None are crash/gameplay bugs. Pick only if motivated:
-- **P2 code smells:** Enemy.applyPostBellScaling API, inputMath redundant clamp, contrastColor falsy (dead code)
-- **P2 low-ROI tests:** EdgeIndicators, GamepadMenuNav, CaptionOverlay (all Phaser-dependent)
-- **P2 tech debt:** ProceduralMusicEngine fragile test, euclidean Bjorklund divergence (design decision)
-- **Low features:** DebugOverlay pool surfacing, telemetry toggle, a11y docs
+Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
+- **P2 code smells:** Enemy.applyPostBellScaling API (if any remain), minor cleanups from review notes
+- **P2 low-ROI tests:** Extra Phaser-bound UI coverage only where regressions appear
+- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` / music–SFX ducking landed
+- **Low features:** DebugOverlay extras, docs-only polish
 
 ## Done Enough (don't revisit unless bugs surface)
 - Type safety: 0 production `as any` (was 17)
@@ -19,7 +19,7 @@
 - Entity core: Player (16 tests), Enemy (status/elite), Projectile (9 tests)
 - Weapon stat scaling (10 tests), SpawnSystem resume/stall (11 tests)
 - Save/load system (well-tested)
-- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10)
+- Procedural music: Conductor (15), NoteScheduler (9), euclidean (10+), musicMath, SFX duck + smoothed master gains
 - BanterSystem + weapon_evolve context, i18n, Boot textures
 - Bundle: vendor chunk split (1482/340gz + 507/136gz)
 - inputMath (18), SubscriptionBag (8), rotateVector (8), cameraShake (7), cameraViewport (9)
@@ -29,9 +29,9 @@
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 50)
-- Source files: 105, Test files: 88+
-- Tests: 747 passing (was 488 at loop 1, +53%)
+## Metrics Snapshot (2026-04-13, loop 61)
+- Source files: 105+, Test files: 90+
+- Tests: 779 passing (was 488 at loop 1)
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

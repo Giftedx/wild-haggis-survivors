@@ -40,8 +40,8 @@
 
 - [x] Add tests for NoteScheduler — 9 tests: start delay, melody 0.3s offset, multi-note scheduling, no-callback safety, 3 min-interval floors (melody/rhythm/heartbeat), tab-recovery skip, reset. 589→616 tests (includes prior rotateVector tests).
 - [x] Add tests for Conductor — 15 tests: updateMood (intensity rise, danger rise/decay, chaos, resolution skip, zero-maxHp), kill rate (sliding window, low-combo guard), resolution (state set, descent complete, pre-enter false), nextNote (shape, Dorian freqs, intensity-interval, deterministic w/ mock), getMood. 616→631 tests.
-- [x] Add tests for euclidean() — 10 tests: edge cases E(0/8,8), known patterns E(1-5,8), length invariant, hit count, non-8 slots. Note: impl ≠ classic Bjorklund. 607→616 tests.
-- [ ] euclidean() produces front-weighted patterns, not classic Bjorklund — RESEARCHED: algorithm merges wrong (zerosStart check on last-element-of-group breaks after 1 iteration). Fix is standard Bjorklund. BUT: changes shipped audio feel → design decision, not pure code fix. Defer to player testing. (P2, music, investigate → defer)
+- [x] Add tests for euclidean() — Bjorklund bit patterns, invariants, E(3,16); `percussionGainScales` for density gains.
+- [x] euclidean() true Bjorklund — standard block-merge + EUCLIDEAN_8 cache; tests updated for canonical patterns. (P2 music — former defer closed.)
 - [x] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime — fixed: "oldest voice replaced"
 - [x] ProceduralMusicEngine.test.ts uses `as any` for private field access — replaced with `EngineTestHooks` / `FadeOutCapable` casts (P2, music review)
 - [x] CaptionOverlay tests — pure layout in `captionOverlayLayout.ts` (fade alpha + stack Y); Phaser class unchanged behaviour (P2, a11y review)

@@ -1,6 +1,66 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { musicEngine } from './ProceduralMusicEngine';
 
+/** Narrow probe for SFX-duck state (private fields — keep in test file only). */
+type DuckProbe = {
+  musicSfxDuck: number;
+  playing: boolean;
+  fadingOut: boolean;
+  notifyGameplaySfxImpulse: (strength: number) => void;
+};
+
+function duckProbe(): DuckProbe {
+  return musicEngine as unknown as DuckProbe;
+}
+
+describe('ProceduralMusicEngine SFX duck', () => {
+  afterEach(() => {
+    const e = duckProbe();
+    e.musicSfxDuck = 0;
+    e.playing = false;
+    e.fadingOut = false;
+  });
+
+  it('stacks impulses and clamps musicSfxDuck to 1', () => {
+    const e = duckProbe();
+    e.playing = true;
+    e.fadingOut = false;
+    e.musicSfxDuck = 0;
+    e.notifyGameplaySfxImpulse(0.5);
+    e.notifyGameplaySfxImpulse(0.6);
+    expect(e.musicSfxDuck).toBe(1);
+  });
+
+  it('ignores impulse when not playing', () => {
+    const e = duckProbe();
+    e.playing = false;
+    e.musicSfxDuck = 0.2;
+    e.notifyGameplaySfxImpulse(0.9);
+    expect(e.musicSfxDuck).toBe(0.2);
+  });
+
+  it('ignores impulse while fadingOut', () => {
+    const e = duckProbe();
+    e.playing = true;
+    e.fadingOut = true;
+    e.musicSfxDuck = 0;
+    e.notifyGameplaySfxImpulse(0.5);
+    expect(e.musicSfxDuck).toBe(0);
+  });
+
+  it('clamps per-impulse strength to 0..1', () => {
+    const e = duckProbe();
+    e.playing = true;
+    e.fadingOut = false;
+    e.musicSfxDuck = 0;
+    e.notifyGameplaySfxImpulse(2);
+    expect(e.musicSfxDuck).toBe(1);
+    e.musicSfxDuck = 0.5;
+    e.notifyGameplaySfxImpulse(-1);
+    expect(e.musicSfxDuck).toBe(0.5);
+  });
+});
+
 describe('ProceduralMusicEngine lifecycle', () => {
   beforeEach(() => {
     vi.useFakeTimers();
