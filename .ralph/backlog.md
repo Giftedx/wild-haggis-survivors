@@ -66,6 +66,7 @@
 - [x] Surface Windows `git config core.filemode false` in `CLAUDE.md` / `AGENTS.md` — loop 71.
 - [x] `ProceduralMusicEngine` import `MOTION_TIMING` via `core/motionTiming` — loop 72 (align with AudioSystem).
 - [x] `musicSfxDuck` recovery via `expApproach` — loop 73 (same math, shared helper).
+- [x] Test: `expApproach` ≡ legacy duck decay step — loop 74 (`musicMath.test.ts`).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

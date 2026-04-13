@@ -22,6 +22,15 @@ describe('musicMath', () => {
     expect(v).toBeLessThanOrEqual(1);
   });
 
+  it('expApproach toward zero matches legacy musicSfxDuck decay step', () => {
+    const duck = 0.73;
+    const deltaMs = 16;
+    const tau = MOTION_TIMING.musicSfxDuckRecoverMs;
+    const a = 1 - Math.exp(-deltaMs / tau);
+    const legacy = duck + (0 - duck) * Math.min(1, a);
+    expect(expApproach(duck, 0, deltaMs, tau)).toBeCloseTo(legacy, 12);
+  });
+
   it('logLerp interpolates geometrically', () => {
     expect(logLerp(100, 400, 0.5)).toBeCloseTo(200, 5);
   });

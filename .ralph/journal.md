@@ -73,3 +73,4 @@
 | 2026-04-13 | 71 | BUILD | Document Windows `core.filemode` in agent docs | Done — `CLAUDE.md` + `AGENTS.md` explain executable-bit false positives; strategy P2 line updated (`applyPostBellScaling` settled). No code change. |
 | 2026-04-13 | 72 | BUILD | `ProceduralMusicEngine` → `core/motionTiming` | Done — duck τ import matches `AudioSystem`; canonical barrel for runtime `MOTION_TIMING`; `musicMath` still defines constants + hosts pure math tests. 784 tests, build clean. |
 | 2026-04-13 | 73 | BUILD | SFX duck decay uses `expApproach` | Done — `ProceduralMusicEngine.update` replaces hand-rolled exp step with `musicMath.expApproach` toward 0 (same τ); DRY with shared time-constant helper. 784 tests, build clean. |
+| 2026-04-13 | 74 | BUILD | Regression test for duck decay refactor | Done — `musicMath.test.ts` asserts `expApproach(duck,0,δ,τ)` matches pre–loop-73 inline formula (`MOTION_TIMING.musicSfxDuckRecoverMs`). 785 tests, build clean. |
