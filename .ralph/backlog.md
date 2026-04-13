@@ -60,6 +60,7 @@
 - [x] Centralize duck τ + gameplay impulse strengths in `MOTION_TIMING` — loop 65; `AudioSystem` + `ProceduralMusicEngine` read same `musicMath` values; ordering test in `musicMath.test.ts`.
 - [x] Wire remaining `MOTION_TIMING` duck keys — loop 66: `playLevelUp`, `playAchievement`, `playPurchaseImmediate` (shop/meta still no-ops unless run music playing).
 - [x] Tests for `AudioSystem` → `notifyGameplaySfxImpulse` wiring — loop 67: `AudioSystem.test.ts` with mocked WebAudio + `musicEngine`.
+- [x] Track `src/core/motionTiming.ts` re-export + parity test — loop 68; optional import path for gameplay/UI without `systems/music` depth.
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution

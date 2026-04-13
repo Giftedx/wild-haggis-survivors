@@ -1,15 +1,15 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 67 BUILD)
+**Last updated:** 2026-04-13 (loop 68 REFLECT+BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 783 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 784 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **P2 code smells:** Enemy.applyPostBellScaling API (if any remain), minor cleanups from review notes
 - **P2 low-ROI tests:** Extra Phaser-bound UI coverage only where regressions appear
-- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` (duck τ + gameplay impulses) / music–SFX ducking landed
+- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` (duck τ + gameplay impulses) / music–SFX ducking landed; `core/motionTiming.ts` re-export for shallow imports
 - **Low features:** DebugOverlay extras, docs-only polish
 
 ## Done Enough (don't revisit unless bugs surface)
@@ -29,9 +29,15 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 67)
-- Source files: 105+, Test files: 100+
-- Tests: 783 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+## REFLECT — music / SFX duck arc (loops 62–68, 2026-04-13)
+- **What shipped:** `notifyGameplaySfxImpulse` + exponential duck recovery; `AudioSystem` routes all salient SFX through `MOTION_TIMING`; Euclidean phrase density scales rhythm kick/hat; `percussionKickHatGainScales` tested; `AudioSystem.test.ts` locks duck wiring; `core/motionTiming` re-exports timings for non-music layers.
+- **Risks accepted:** Duck strengths are hand-tuned tables — no automated loudness measurement; phrase-boundary pulse snapshot is subtle but covered by integration behavior + percussion tests.
+- **Process:** Loop 61 reminder: never commit test-only without running tests on clean tree; stashes (`ralph-loop62-wip`, `autonomous-loop-wip`) may still hold user WIP — reconcile when tree is calm.
+- **Next if bored:** Optional in-game listen pass; merge or drop old stashes; P2 scene/UI tests only on regression.
+
+## Metrics Snapshot (2026-04-13, loop 68)
+- Source files: 105+, Test files: 101+
+- Tests: 784 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
