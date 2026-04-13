@@ -53,6 +53,8 @@
 - [x] Add tests for upgrades.ts buildCardPool/drawCards — 16 new tests (upgrades.test.ts) + 13 existing (cardpool.test.ts). New: luck bonus probability, deterministic RNG, common weight floor, legendary rarity lv4→5. 661→684 tests.
 - [x] Add tests for GlobalEventBus.ts — 7 tests: emit payload, multi-listener, unsub fn, off specific, off-unregistered safety, emit-no-listeners, event isolation. 661→684 tests (includes inter-session additions).
 
+- [ ] Add tests for runStartModifiers.ts — applyVariantModifiers (speed/hp/armor/pickup/xp/dmg/drift/cooldown), applyPermanentUpgrades (13 upgrade types, revival flag, chest bonus, lucky_start passive pick). Needs Player/WeaponSystem mocks. (P2, scenes review r2)
+
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
 - [x] Extend banter to weapon evolution moments — done: BanterContext 'weapon_evolve' + pool (pri 65, 3 keys) + LevelUpFlow trigger + GameScene.requestBanter hook. 5 files modified.
