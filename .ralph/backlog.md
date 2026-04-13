@@ -5,7 +5,7 @@
 - [x] Audit + eliminate production `as any` in WeaponSystem.ts — had 0 `as any` (backlog was wrong)
 - [x] Audit + eliminate production `as any` in SpawnSystem.ts — 4 casts removed (pool teardown), types already correct via Enemy[]
 - [x] Audit + eliminate production `as any` in XPSystem.ts — 2 casts removed (pool teardown), types already correct via XPGem[]
-- [ ] Add tests for WeaponSystem — weapon behavior, evolution, projectile pool (coverage gap)
+- [x] Add tests for WeaponSystem — 10 tests: stat scaling per level, evolution boosts, cooldown floors, pierce/count accumulation
 - [ ] Add tests for SpawnSystem director logic beyond existing stall/pause/timetravel tests (coverage gap)
 
 ## Medium Priority
