@@ -1,8 +1,13 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from './evolutionChest';
 import { EVOLUTION_RECIPES } from './BalanceConfig';
 import { WEAPON_DEFS } from '../data/weapons';
 import { t } from './i18n';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 describe('weapon evolution (chest-gated)', () => {
   it('finds a recipe when base is max level and passive is owned', () => {
@@ -93,8 +98,6 @@ describe('weapon evolution (chest-gated)', () => {
 });
 
 describe('weapon icon texture consistency (BootScene static check)', () => {
-  const { readFileSync } = require('node:fs');
-  const { join } = require('node:path');
   const bootSource = readFileSync(
     join(__dirname, '..', 'scenes', 'BootScene.ts'),
     'utf-8'

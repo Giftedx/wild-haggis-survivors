@@ -185,7 +185,7 @@ describe('seed codec', () => {
   it('catches single-character typos via checksum', () => {
     const code = encodeSeed(54321);
     // Flip the first character to a different base36 digit.
-    const flipped = (code[0] === 'A' ? 'B' : 'A') + code.slice(1);
+    const flipped = (code.startsWith('A') ? 'B' : 'A') + code.slice(1);
     expect(decodeSeed(flipped)).toBeNull();
   });
 
