@@ -38,7 +38,7 @@
 - [ ] GamepadMenuNav.ts has 0 tests — Phaser scene-dependent, would need mocking (P2, utils review, low ROI)
 - [ ] inputMath.gamepadStickToMove: redundant clampVectorLength — mag already ≤1, clamp is no-op (P2, code smell, utils review)
 
-- [ ] Add tests for NoteScheduler — tick lookahead scheduling, tab-recovery clamping (nextTime = max(nextTime, now)), min-interval floors (0.1/0.05/0.1), reset clears state (P1, music review)
+- [x] Add tests for NoteScheduler — 9 tests: start delay, melody 0.3s offset, multi-note scheduling, no-callback safety, 3 min-interval floors (melody/rhythm/heartbeat), tab-recovery skip, reset. 589→616 tests (includes prior rotateVector tests).
 - [ ] Add tests for Conductor — updateMood lerp (intensity/danger/chaos/triumph targets), resolution mode (enterResolution, isResolutionComplete, descent walk), kill rate calc, phrase contours (P1, music review)
 - [ ] Add tests for euclidean() — known outputs E(3,8)=[10010010], E(5,8), edge cases E(0,8), E(8,8) (P1, music review)
 - [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
