@@ -50,6 +50,8 @@ describe('SettingsManager air-gap', () => {
       reduceParticles: true,
       uiScale: 1.1,
       highContrastUi: true,
+      motionScale: 0.5,
+      captionsEnabled: true,
     });
 
     meta.reset();
@@ -91,6 +93,8 @@ describe('SettingsManager air-gap', () => {
       reduceParticles: false,
       uiScale: 1,
       highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
     });
 
     meta.reset();
@@ -127,6 +131,8 @@ describe('SettingsManager air-gap', () => {
       reduceParticles: false,
       uiScale: 1,
       highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
     });
 
     settings.reset();
@@ -149,6 +155,8 @@ describe('SettingsManager air-gap', () => {
       reduceParticles: false,
       uiScale: 1,
       highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });
