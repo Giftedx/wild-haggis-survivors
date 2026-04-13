@@ -4,6 +4,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
 import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
+import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '../core/a11yMotion';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -401,11 +402,13 @@ export class JuiceSystem {
     });
   }
 
-  /** White screen flash (level-up, big event) */
+  /** White screen flash (level-up, big event). Alpha scales with motionScale. */
   flashWhite(duration = 200): void {
+    const alpha = scaledFlashAlpha(0.4);
+    if (alpha <= 0) return;
     this.scene.tweens.killTweensOf(this.flashRect);
     this.flashRect.setFillStyle(0xffffff);
-    this.flashRect.setAlpha(0.4);
+    this.flashRect.setAlpha(alpha);
     this.scene.tweens.add({
       targets: this.flashRect,
       alpha: 0,
@@ -413,11 +416,13 @@ export class JuiceSystem {
     });
   }
 
-  /** Red screen flash (damage taken) */
+  /** Red screen flash (damage taken). Alpha scales with motionScale. */
   flashRed(duration = 150): void {
+    const alpha = scaledFlashAlpha(0.25);
+    if (alpha <= 0) return;
     this.scene.tweens.killTweensOf(this.flashRect);
     this.flashRect.setFillStyle(0xff0000);
-    this.flashRect.setAlpha(0.25);
+    this.flashRect.setAlpha(alpha);
     this.scene.tweens.add({
       targets: this.flashRect,
       alpha: 0,
@@ -507,13 +512,17 @@ export class JuiceSystem {
     }
   }
 
-  /** Heavy screen shake for boss events */
+  /** Heavy screen shake for boss events. Amplitude scales with motionScale. */
   bossShake(): void {
-    if (!this.settings.load().screenShake) return;
-    this.scene.cameras.main.shake(400, 0.015);
+    const s = this.settings.load();
+    if (!s.screenShake) return;
+    const amp = 0.015 * s.motionScale;
+    if (amp <= 0) return;
+    this.scene.cameras.main.shake(400, amp);
   }
 
-  /** Boss kill celebration — gold particle shower + expanded kill burst */
+  /** Boss kill celebration — gold particle shower + expanded kill burst.
+   *  Count + shake both scale with motionScale. */
   bossDeathSpectacle(x: number, y: number): void {
     const lowFx = this.settings.load().reduceParticles;
     const shakeOn = this.settings.load().screenShake;
@@ -521,10 +530,12 @@ export class JuiceSystem {
     this.flashWhite(400);
 
     if (shakeOn) {
-      this.scene.cameras.main.shake(600, 0.025);
+      const amp = 0.025 * this.settings.load().motionScale;
+      if (amp > 0) this.scene.cameras.main.shake(600, amp);
     }
 
-    const particleCount = lowFx ? 12 : 30;
+    const baseCount = lowFx ? 12 : 30;
+    const particleCount = scaledParticleCount(baseCount, 6);
     // Gold particle shower — pooled
     const goldColors = [0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00];
     for (let i = 0; i < particleCount; i++) {
@@ -610,7 +621,8 @@ export class JuiceSystem {
 
     // 3. Screen shake — proportional to the moment (bigger than boss death)
     if (shakeOn) {
-      this.scene.cameras.main.shake(700, 0.02);
+      const amp = 0.02 * this.settings.load().motionScale;
+      if (amp > 0) this.scene.cameras.main.shake(700, amp);
     }
 
     // 4. Camera zoom punch — brief zoom in then settle.
@@ -749,13 +761,15 @@ export class JuiceSystem {
     this.time.requestForDuration('HIT_FREEZE', { pausePhysics: true }, 20);
   }
 
-  /** Brief slow-motion effect — guarded against overlapping calls */
+  /** Brief slow-motion effect — guarded against overlapping calls.
+   *  Duration scales with motionScale (floor 60ms so the beat still lands). */
   private slowMotionActive = false;
   slowMotion(durationMs = 300): void {
     if (this.slowMotionActive) return; // Prevent overlapping slow-mo
+    const scaled = scaledSlowMoDurationMs(durationMs);
     this.slowMotionActive = true;
-    this.slowMotionRemainingMs = durationMs;
-    this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, durationMs);
+    this.slowMotionRemainingMs = scaled;
+    this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, scaled);
   }
 
   /** Clean up all pooled objects and tweens — called by GameScene shutdown. */
