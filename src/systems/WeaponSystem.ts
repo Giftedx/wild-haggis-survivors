@@ -81,12 +81,12 @@ export class WeaponSystem {
     const projectiles = this.projectilePool.children.entries as Projectile[];
     for (const p of projectiles) {
       if (p.active) {
-        try { (p as any).destroy?.(); } catch { /* ignore */ }
-        (p as any).active = false;
-        (p as any).visible = false;
+        try { p.destroy(); } catch { /* ignore */ }
+        p.active = false;
+        p.visible = false;
       }
     }
-    try { (this.projectilePool as any).clear?.(true, true); } catch { /* ignore */ }
+    try { this.projectilePool.clear(true, true); } catch { /* ignore */ }
 
     // Clean up VFX pools
     for (const c of this.vfxCirclePool) {
