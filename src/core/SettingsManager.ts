@@ -33,7 +33,16 @@ export interface ISettingsData {
    * from the Comfort panel.
    */
   captionsEnabled: boolean;
+  /**
+   * Ambient Glesga commentary frequency. 'normal' by default; 'sparing'
+   * honours players who prefer silence without losing soul entirely.
+   * 'off' silences BanterSystem outright (milestone easter eggs keep firing).
+   */
+  banterFrequency: BanterFrequency;
 }
+
+export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
+const BANTER_FREQUENCIES: readonly BanterFrequency[] = ['off', 'sparing', 'normal', 'chatty'];
 
 const DEFAULT_SETTINGS: ISettingsData = {
   settingsVersion: CURRENT_SETTINGS_VERSION,
@@ -47,7 +56,14 @@ const DEFAULT_SETTINGS: ISettingsData = {
   highContrastUi: false,
   motionScale: 1,
   captionsEnabled: false,
+  banterFrequency: 'normal',
 };
+
+function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
+  return typeof v === 'string' && (BANTER_FREQUENCIES as readonly string[]).includes(v)
+    ? (v as BanterFrequency)
+    : fallback;
+}
 
 function clamp01(n: unknown, fallback: number): number {
   if (typeof n !== 'number' || !Number.isFinite(n)) return fallback;
@@ -142,6 +158,7 @@ export class SettingsManager {
       highContrastUi: toBool(o.highContrastUi, DEFAULT_SETTINGS.highContrastUi),
       motionScale: clamp01(o.motionScale, DEFAULT_SETTINGS.motionScale),
       captionsEnabled: toBool(o.captionsEnabled, DEFAULT_SETTINGS.captionsEnabled),
+      banterFrequency: toBanterFrequency(o.banterFrequency, DEFAULT_SETTINGS.banterFrequency),
     };
   }
 }

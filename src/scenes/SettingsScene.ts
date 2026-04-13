@@ -191,6 +191,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addSliderRow(t('ui.settings.motion_scale'), 'motionScale', 0, 1, 0.1);
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
+    this.addBanterFrequencyRow();
 
     this.addSectionHeader(t('ui.settings.section_access'));
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
@@ -575,6 +576,88 @@ export class SettingsScene extends Phaser.Scene {
     this.gpRows.push({
       kind: 'toggle',
       toggle: doToggle,
+      mark,
+    });
+  }
+
+  /**
+   * Banter frequency — cycling row (Wheesht / Sparing / Natural / Gabby).
+   * Styled like a toggle but clicking cycles forward through the 4 values.
+   * Keeps the setting adjustable from gamepad via the same 'toggle' gp kind.
+   */
+  private addBanterFrequencyRow(): void {
+    const { width } = this.scale;
+    const y = this.rowY;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    this.rowY += rowStep;
+
+    const ORDER: ReadonlyArray<ISettingsData['banterFrequency']> = ['off', 'sparing', 'normal', 'chatty'];
+    const labelFor = (v: ISettingsData['banterFrequency']): string => {
+      switch (v) {
+        case 'off': return t('ui.settings.banter_off');
+        case 'sparing': return t('ui.settings.banter_sparing');
+        case 'normal': return t('ui.settings.banter_normal');
+        case 'chatty': return t('ui.settings.banter_chatty');
+      }
+    };
+
+    this.add
+      .text(40, y + 4, t('ui.settings.banter_frequency'), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+
+    const chipW = 110;
+    const chipH = 26;
+    const cx = width - 88;
+    const cy = y + 18;
+    const btn = this.add
+      .rectangle(cx, cy, chipW, chipH, 0x2a2244, 1)
+      .setStrokeStyle(1.5, 0x4a3a5a, 0.9)
+      .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
+
+    const txt = this.add
+      .text(cx, cy, labelFor(this.working.banterFrequency), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: this.working.banterFrequency === 'off' ? '#8a7a8a' : '#d4c2e8',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
+
+    const sync = () => {
+      const v = this.working.banterFrequency;
+      txt.setText(labelFor(v));
+      txt.setColor(v === 'off' ? '#8a7a8a' : '#d4c2e8');
+      btn.setFillStyle(v === 'off' ? 0x2a2244 : 0x2d6a3e);
+      btn.setStrokeStyle(1.5, v === 'off' ? 0x4a3a5a : 0x4a9a5e, 0.9);
+    };
+
+    const cycle = () => {
+      audio.playClick();
+      const idx = ORDER.indexOf(this.working.banterFrequency);
+      this.working = {
+        ...this.working,
+        banterFrequency: ORDER[(idx + 1) % ORDER.length],
+      };
+      sync();
+      this.persistAndApply();
+    };
+
+    btn.on('pointerdown', cycle);
+    txt.setInteractive({ useHandCursor: true });
+    txt.on('pointerdown', cycle);
+
+    const mark = this.add
+      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .setStrokeStyle(0);
+    this.gpRows.push({
+      kind: 'toggle',
+      toggle: cycle,
       mark,
     });
   }
