@@ -20,7 +20,7 @@
 - [x] Audit `as any` in LevelUpFlow.ts — false positive, only in comment
 - [x] Audit `as any` in PickupSpawner.ts — false positive, only in comment
 - [x] **Implement vendor chunk split** — Phaser + eventemitter3 → `vendor-phaser` chunk (1482 KiB / 340 KiB gz). App chunk now 507 KiB / 136 KiB gz. Deploy cache hit: 340 KiB stays cached, only 136 KiB invalidated per release.
-- [ ] Confirm PWA precache 1944 KiB acceptable (fix_plan, perf)
+- [x] Confirm PWA precache 1943 KiB acceptable — vendor-phaser 1482 + app 507 + html/icons 4. No external assets. Vendor chunk hash stable across app deploys → SW updates only download ~507 KiB delta.
 - [x] REVIEW: src/systems/ — done 2026-04-13, 8 tasks generated
 - [x] REVIEW: src/core/ — done 2026-04-13, 0 bugs found. 24 test files / 20 source. SaveManager V6 migration correct. Area is healthy.
 

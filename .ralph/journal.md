@@ -13,4 +13,4 @@
 | 2026-04-13 | 9 | BUILD | Add 7 Projectile pierce/range/TTL/callback tests | Done — pierce exhaustion, bouncing immunity, range deactivation, TTL countdown, callback fire-once. 542→549 tests |
 | 2026-04-13 | 10 | REFLECT | Assess 9 loops, update strategy priorities | Done — type safety complete, tests 488→549, bundle budget untouched (forcing next). New priorities: bundle, review rotation, remaining test gaps. |
 | 2026-04-13 | 11 | RESEARCH | Bundle budget: Phaser vendor chunk analysis | Done — Phaser 1197KiB min, not tree-shakeable. Arcade-only saves ~10% but CJS. Best action: manualChunks vendor split for caching. |
-| 2026-04-13 | 12 | BUILD | Implement vendor chunk split in vite.config.ts | Done — Phaser+eventemitter3 → vendor-phaser (1482/340gz). App chunk 507/136gz. Deploy invalidates 136KiB not 476KiB. |
+| 2026-04-13 | 12 | BUILD | Verify vendor chunk split + confirm PWA precache budget | Done — split already impl'd by prior session. Verified: vendor-phaser 1482/340gz, app 507/136gz. PWA precache 1943KiB acceptable (no external assets, vendor hash stable). Both backlog items closed. |
