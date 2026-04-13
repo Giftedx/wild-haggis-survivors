@@ -21,8 +21,8 @@ Post-feature hardening. v2.1.0. Core gameplay complete. Type safety done (0 `as 
 - BanterSystem, i18n, Boot textures
 
 ## Review Rotation Position
-Last reviewed: `src/data/` (2026-04-13, 1 finding — banter.ts missing tag validation test. 9/9 test coverage.)
-Next up: `src/ui/` (area 6 in rotation)
+Last reviewed: `src/ui/` (2026-04-13, 5 tasks — 2×P0 HUD leaks, 1×P1 Minimap sign, 2×P2 missing tests)
+Next up: `src/utils/` (area 7 in rotation)
 
 ## Metrics Snapshot (2026-04-13, loop 15)
 - Source files: 105, Test files: 75

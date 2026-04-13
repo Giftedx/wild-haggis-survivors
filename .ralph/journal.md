@@ -17,3 +17,4 @@
 | 2026-04-13 | 13 | REVIEW | Review src/data/ (rotation area 5) | Done — 1 finding: banter.ts missing structure validation test (keysByTag vs BOSSES). Bagpipes no-evolution confirmed by-design per CLAUDE.md. 9/9 test coverage, data files healthy. |
 | 2026-04-13 | 14 | BUILD | Add banter.ts structure + i18n validation tests | Done — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution. 549→555 tests. |
 | 2026-04-13 | 15 | BUILD | Verify XPGem tests + update strategy metrics | Done — 8 XPGem tests already exist (drop/collect/magnet/forceCollect/destroy). Marked backlog done. Updated metrics: 75 test files, 563 tests. All medium backlog items complete. |
+| 2026-04-13 | 16 | REVIEW | Review src/ui/ (rotation area 6) | Done — 5 findings: HUD pause listener leak (P0), HUD untracked tween leak (P0), Minimap triangle sign error (P1), cameraViewport no tests (P2), EdgeIndicators no tests (P2). |
