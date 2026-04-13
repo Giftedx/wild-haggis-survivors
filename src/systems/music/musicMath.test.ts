@@ -38,6 +38,9 @@ describe('musicMath', () => {
   });
 
   it('MOTION_TIMING gameplay duck impulses increase with SFX salience', () => {
+    expect(MOTION_TIMING.musicDuckAchievement).toBeLessThan(MOTION_TIMING.musicDuckPurchase);
+    expect(MOTION_TIMING.musicDuckPurchase).toBeLessThan(MOTION_TIMING.musicDuckLevelUp);
+    expect(MOTION_TIMING.musicDuckLevelUp).toBeLessThan(MOTION_TIMING.musicDuckKill);
     expect(MOTION_TIMING.musicDuckKill).toBeLessThan(MOTION_TIMING.musicDuckPlayerHit);
     expect(MOTION_TIMING.musicDuckPlayerHit).toBeLessThan(MOTION_TIMING.musicDuckBoss);
     expect(MOTION_TIMING.musicDuckBoss).toBeLessThan(MOTION_TIMING.musicDuckDeath);

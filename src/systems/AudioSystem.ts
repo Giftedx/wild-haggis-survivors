@@ -161,6 +161,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckLevelUp);
 
     const notes = [523, 659, 784]; // C5, E5, G5
     const t = ctx.currentTime;
@@ -190,6 +191,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
 
     const t0 = ctx.currentTime;
     // Two notes: C5 then G5, each with a pair of slightly detuned oscillators
@@ -222,6 +224,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckPurchase);
 
     const t0 = ctx.currentTime;
     const osc = ctx.createOscillator();

@@ -58,6 +58,7 @@
 ## Medium Priority (new)
 - [x] Wire `AudioSystem` heavy SFX → `musicEngine.notifyGameplaySfxImpulse(...)` (death, boss, player hit, kill) — loop 63; strengths tuned for frequency (kill < hit < boss < death).
 - [x] Centralize duck τ + gameplay impulse strengths in `MOTION_TIMING` — loop 65; `AudioSystem` + `ProceduralMusicEngine` read same `musicMath` values; ordering test in `musicMath.test.ts`.
+- [x] Wire remaining `MOTION_TIMING` duck keys — loop 66: `playLevelUp`, `playAchievement`, `playPurchaseImmediate` (shop/meta still no-ops unless run music playing).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
