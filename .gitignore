@@ -34,6 +34,7 @@ Thumbs.db
 .ralph/.ralph_session_history
 .ralph/.claude_session_id
 .ralph/.response_analysis
+.ralph/.last_output_length
 .ralph/.circuit_breaker_state
 .ralph/.circuit_breaker_history
 .ralph/logs/*
