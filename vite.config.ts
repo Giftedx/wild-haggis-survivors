@@ -15,6 +15,13 @@ export default defineConfig({
   },
   build: {
     target: 'ES2020',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-phaser': ['phaser', 'eventemitter3'],
+        },
+      },
+    },
   },
   plugins: [
     VitePWA({
