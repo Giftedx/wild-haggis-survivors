@@ -6,6 +6,7 @@
  */
 
 import { getAudioContext, getOutputNode } from '../audioContext';
+import { MOTION_TIMING } from './musicMath';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
@@ -54,9 +55,6 @@ class ProceduralMusicEngine {
   private fadingOut = false;
   /** Transient dip when heavy gameplay SFX fire (0 = no duck). */
   private musicSfxDuck = 0;
-  /** Same order as Conductor mood smoothing — ms time constant for duck recovery. */
-  private static readonly MUSIC_SFX_DUCK_RECOVER_MS = 260;
-
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
     const ctx = getAudioContext();
@@ -182,7 +180,7 @@ class ProceduralMusicEngine {
     const mood = this.conductor.getMood();
 
     {
-      const tau = ProceduralMusicEngine.MUSIC_SFX_DUCK_RECOVER_MS;
+      const tau = MOTION_TIMING.musicSfxDuckRecoverMs;
       const a = 1 - Math.exp(-delta / tau);
       this.musicSfxDuck += (0 - this.musicSfxDuck) * Math.min(1, a);
     }

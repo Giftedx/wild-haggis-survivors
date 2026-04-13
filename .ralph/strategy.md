@@ -1,15 +1,15 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 64 BUILD)
+**Last updated:** 2026-04-13 (loop 65 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 779 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 780 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **P2 code smells:** Enemy.applyPostBellScaling API (if any remain), minor cleanups from review notes
 - **P2 low-ROI tests:** Extra Phaser-bound UI coverage only where regressions appear
-- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` / music–SFX ducking landed
+- **P2 tech debt:** None blocking — Björklund + `musicMath` / `MOTION_TIMING` (duck τ + gameplay impulses) / music–SFX ducking landed
 - **Low features:** DebugOverlay extras, docs-only polish
 
 ## Done Enough (don't revisit unless bugs surface)
@@ -29,9 +29,9 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 ## Review Rotation Position
 **Both rotations COMPLETE.** Cycle 1: all 9 areas. Cycle 2: scenes re-reviewed (loop 45). No new bugs found.
 
-## Metrics Snapshot (2026-04-13, loop 64)
+## Metrics Snapshot (2026-04-13, loop 65)
 - Source files: 105+, Test files: 90+
-- Tests: 779 passing (includes `percussionGainScales` once tracked); loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+- Tests: 780 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

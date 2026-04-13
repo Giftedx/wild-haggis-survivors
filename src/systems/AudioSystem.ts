@@ -8,6 +8,7 @@
  */
 import { getAudioContext, getOutputNode } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
+import { MOTION_TIMING } from './music/musicMath';
 import { musicEngine } from './music/ProceduralMusicEngine';
 
 const BASE_SFX_GAIN = 0.3;
@@ -104,7 +105,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
-    this.duckMusicForGameplaySfx(0.24);
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckKill);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -247,7 +248,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
-    this.duckMusicForGameplaySfx(0.38);
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckPlayerHit);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -272,7 +273,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
-    this.duckMusicForGameplaySfx(0.52);
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckBoss);
 
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
@@ -298,7 +299,7 @@ export class AudioSystem {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) return;
-    this.duckMusicForGameplaySfx(0.78);
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckDeath);
 
     const t = ctx.currentTime;
     const notes = [400, 350, 280, 200];
