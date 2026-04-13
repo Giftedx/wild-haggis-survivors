@@ -297,7 +297,7 @@ export class SpawnSystem {
     // `spawnedBossKeys` Set reference changes. Compare before calling
     // doSpawn so a cross-run callback can't double-spawn a boss.
     const runRef = this.spawnedBossKeys;
-    this.scene.getUpdateTickers().addOnce('raw', 1500, () => {
+    this.scene.getUpdateTickers().addOnce('raw', BALANCE.bossWarning.spawnDelayMs, () => {
       if (this.spawnedBossKeys !== runRef) return;
       if (this.scene.getTimeManager().isGameplayPaused()) {
         this.pendingBossSpawn = doSpawn;
@@ -376,8 +376,8 @@ export class SpawnSystem {
     this.scene.tweens.add({
       targets: allTargets,
       alpha: 0,
-      delay: 1200,
-      duration: 400,
+      delay: BALANCE.bossWarning.fadeOutDelayMs,
+      duration: BALANCE.bossWarning.fadeOutDurationMs,
       onComplete: () => {
         allTargets.forEach(t => t.destroy());
         if (this.activeBossVfx) this.activeBossVfx = this.activeBossVfx.filter(o => !(allTargets as Phaser.GameObjects.GameObject[]).includes(o));

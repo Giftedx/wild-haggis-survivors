@@ -41,7 +41,7 @@
 - **Rationale:** `buildEnemyCache()` sorts all active enemies every frame. With 400 enemies at 60fps = 24k sorts/sec. Cache only needed when weapons query it.
 - **Acceptance:** Cache only rebuilt when at least one weapon fires this frame, or on demand when `findClosestEnemy()` called with stale cache.
 
-### 8. [ ] Move hard-coded VFX pool sizes + boss warning timing to config
+### 8. [x] Move hard-coded VFX pool sizes + boss warning timing to config
 - **Files:** `src/systems/JuiceSystem.ts`, `src/systems/SpawnSystem.ts`, `src/config.ts`
 - **Rationale:** Pool sizes (80/60/50) and boss warning duration (1500ms/1200ms) scattered as magic numbers. Hard to tune balance.
 - **Acceptance:** Constants moved to `BALANCE` config object. Systems reference config instead of inline numbers.
