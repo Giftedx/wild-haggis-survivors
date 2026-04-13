@@ -35,3 +35,4 @@
 | 2026-04-13 | 36 | REVIEW | Review src/systems/a11y/ (rotation area 9, FINAL) | Done — 3 findings (CaptionOverlay 0 tests, contrastColor falsy, durationMs guard). 5 files, 23 tests. **All 9 review areas complete.** |
 | 2026-04-13 | 37 | REFLECT | Post-rotation assessment, update strategy + metrics | Done — 631 tests (+29%), 81/105 files tested. Review rotation 9/9 complete. Strategy updated: shift to P2 test gaps → features → SCOUT. |
 | 2026-04-13 | 38 | BUILD | Add 9 cameraViewport.ts tests | Done — zoom math, caching (hit/miss/reset), fallbacks (null cam, zero zoom). 631→640 tests. |
+| 2026-04-13 | 34b | BUILD | Add 7 cameraShake.ts tests | Done — screenShake toggle, motionScale, null cam, duration unscaled. 640→647 tests. |
