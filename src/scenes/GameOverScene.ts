@@ -13,6 +13,7 @@ import { SaveManager } from '../core/SaveManager';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey } from '../data/curses';
+import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -45,13 +46,14 @@ export class GameOverScene extends Phaser.Scene {
     const weaponDamage = this.payload.weaponDamage ?? {};
     const titleColor = isVictory ? '#d4a017' : '#cc3333';
     const panelStroke = isVictory ? COLORS.WHISKY_GOLD : 0xaa4444;
-    const summaryTime = this.formatClockTime(summary.timeSurvivedSec);
-    const goldBreakdown = t('ui.gameOver.gold_breakdown', {
-      timeGold: Math.floor(summary.timeSurvivedSec * 0.4),
-      killGold: Math.floor(summary.enemiesKilled * 0.4),
+    const summaryTime = formatClockTime(summary.timeSurvivedSec);
+    const gb = computeGoldBreakdown({
+      timeSurvivedSec: summary.timeSurvivedSec,
+      enemiesKilled: summary.enemiesKilled,
       bossGold: summary.bossGold,
       coinGold: summary.coinGold ?? 0,
     });
+    const goldBreakdown = t('ui.gameOver.gold_breakdown', gb);
 
     // Responsive panel layout. Content positions are relative to the panel
     // top (not the screen top) so taller/narrower viewports don't leave the
@@ -750,7 +752,7 @@ export class GameOverScene extends Phaser.Scene {
     const lines: string[] = [
       t('ui.gameOver.damage_summary', {
         kills: summary.enemiesKilled,
-        time: this.formatClockTime(summary.timeSurvivedSec),
+        time: formatClockTime(summary.timeSurvivedSec),
         gold: goldEarned,
       }),
     ];
@@ -771,10 +773,4 @@ export class GameOverScene extends Phaser.Scene {
     return lines.join('\n');
   }
 
-  private formatClockTime(totalSeconds: number): string {
-    const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-    const mins = Math.floor(safeSeconds / 60);
-    const secs = Math.floor(safeSeconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  }
 }
