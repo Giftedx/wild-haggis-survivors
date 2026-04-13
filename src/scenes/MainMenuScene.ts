@@ -44,6 +44,7 @@ export class MainMenuScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const meta = this.saveManager.load();
+    const gameplay = loadSave();
     const settings = getSettingsManager().load();
     const { uiScale, highContrastUi, reduceParticles } = settings;
     this.cozyTweenTargets = [];
@@ -375,7 +376,68 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('MetaShop');
     });
 
-    const optY = metaY2 + btnH + 14;
+    // === Reflection row: Chronicle + Deeds (side-by-side) ===
+    // Two meta-reflection surfaces laid out horizontally to keep the menu
+    // compact. Chronicle = runs journal; Deeds = achievements. Both hidden
+    // on fresh saves so the first-run player sees only the core ladder.
+    const hasAnyRun = gameplay.totalRuns > 0;
+    const reflectionY = metaY2 + btnH + 14;
+    const halfBtnW = (btnW - 12) / 2;
+    let chronicleBtn: Phaser.GameObjects.Rectangle | null = null;
+    let deedsBtn: Phaser.GameObjects.Rectangle | null = null;
+    const goChronicle = () => {
+      audio.playClick();
+      this.scene.start('Chronicle');
+    };
+    const goDeeds = () => {
+      audio.playClick();
+      this.scene.start('Deeds');
+    };
+    if (hasAnyRun) {
+      // Chronicle (left)
+      const chronicleX = bx - (halfBtnW + 6) / 2;
+      chronicleBtn = this.add
+        .rectangle(chronicleX, reflectionY, halfBtnW, 42, 0x3a2c52, 1)
+        .setInteractive({ useHandCursor: true });
+      chronicleBtn.setScale(uiScale);
+      const chronicleTxt = this.add
+        .text(chronicleX, reflectionY, t('ui.menu.chronicle'), {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: '#e8d4a0',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      chronicleTxt.setScale(uiScale);
+      chronicleBtn.on('pointerover', () => chronicleBtn!.setFillStyle(0x4a3865));
+      chronicleBtn.on('pointerout', () => chronicleBtn!.setFillStyle(0x3a2c52));
+      chronicleBtn.on('pointerdown', goChronicle);
+      chronicleTxt.setInteractive({ useHandCursor: true });
+      chronicleTxt.on('pointerdown', goChronicle);
+
+      // Deeds (right)
+      const deedsX = bx + (halfBtnW + 6) / 2;
+      deedsBtn = this.add
+        .rectangle(deedsX, reflectionY, halfBtnW, 42, 0x523a2c, 1)
+        .setInteractive({ useHandCursor: true });
+      deedsBtn.setScale(uiScale);
+      const deedsTxt = this.add
+        .text(deedsX, reflectionY, t('ui.menu.deeds'), {
+          fontFamily: 'monospace',
+          fontSize: '13px',
+          color: '#f5e1a6',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5);
+      deedsTxt.setScale(uiScale);
+      deedsBtn.on('pointerover', () => deedsBtn!.setFillStyle(0x6a4a38));
+      deedsBtn.on('pointerout', () => deedsBtn!.setFillStyle(0x523a2c));
+      deedsBtn.on('pointerdown', goDeeds);
+      deedsTxt.setInteractive({ useHandCursor: true });
+      deedsTxt.on('pointerdown', goDeeds);
+    }
+
+    const optY = (hasAnyRun ? reflectionY + 42 : metaY2 + btnH) + 14;
     const optBtn = this.add
       .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
       .setInteractive({ useHandCursor: true });
@@ -519,7 +581,6 @@ export class MainMenuScene extends Phaser.Scene {
     // === Stats summary for returning players ===
     // Two lines: existing bests strip + richer history summary with win rate
     // and trend. Warm, subdued — progress, not a scoreboard.
-    const gameplay = loadSave();
     if (gameplay.totalRuns > 0) {
       const bestMins = Math.floor(gameplay.bestTime / 60);
       const bestSecs = Math.floor(gameplay.bestTime % 60).toString().padStart(2, '0');
@@ -603,8 +664,10 @@ export class MainMenuScene extends Phaser.Scene {
     entries.push(
       { rect: dailyBtn, activate: startDaily },
       { rect: metaBtn, activate: () => this.scene.start('MetaShop') },
-      { rect: optBtn, activate: () => this.scene.start('Settings') }
     );
+    if (chronicleBtn) entries.push({ rect: chronicleBtn, activate: goChronicle });
+    if (deedsBtn) entries.push({ rect: deedsBtn, activate: goDeeds });
+    entries.push({ rect: optBtn, activate: () => this.scene.start('Settings') });
     this.gamepadNav = new GamepadMenuNav(this, entries);
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();

@@ -41,6 +41,8 @@ import {
 } from '../core/GameSessionLifecycle';
 import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
+import { DeathCauseTracker, HAZARD_SOURCE_KEY } from '../systems/DeathCauseTracker';
+import { classifyDeath } from '../core/deathCauseClassifier';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import {
@@ -169,6 +171,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
   private floatTextPool: Phaser.GameObjects.Text[] = [];
   private readonly runStatsTracker = new RunStatsTracker();
+  private readonly deathCauseTracker = new DeathCauseTracker();
   private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
@@ -256,6 +259,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeChestSprites = [];
     this.announcedEvolutionReady.clear();
     this.runStatsTracker.reset();
+    this.deathCauseTracker.reset(0);
 
     // Destroy lazy-init visual overlays from prior run (they're stored in fields
     // that only init once at construction)
@@ -720,6 +724,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     if (this.timeManager.isGameplayPaused()) return;
+
+    // Advance the "last time player was healthy" pointer — feeds the
+    // low_hp_neglect classifier. Only tracks game-time, not wall-clock, so
+    // a long pause doesn't incorrectly age the player's health state.
+    this.deathCauseTracker.tickHealthyPointer(
+      this.spawnSystem.getGameTimeSec(),
+      this.player.getHp(),
+      this.player.getMaxHp(),
+    );
 
     this.tickMapZones(scaledDelta);
     // Player input/movement stays on raw delta so controls stay snappy during
@@ -1462,6 +1475,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const incomingDmg = enemy.getDamage();
     const armor = this.player.getArmor();
     const dead = this.player.takeDamage(incomingDmg);
+    this.deathCauseTracker.recordDamage({
+      gameTimeSec: this.spawnSystem.getGameTimeSec(),
+      sourceKey: enemy.getEnemyKey(),
+      amount: Math.max(1, incomingDmg - armor),
+      sourceIsBoss: enemy.isBoss(),
+      sourceIsElite: enemy.isElite(),
+      sourceIsHazard: false,
+      hpAfter: this.player.getHp(),
+      maxHpAfter: this.player.getMaxHp(),
+    });
 
     // Show armor absorption text if armor reduced damage
     if (armor > 0 && incomingDmg > 1) {
@@ -1652,8 +1675,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     this.deathResultRemainingMs = 1200;
+    // Classify the death once, now — the tracker's buffer is authoritative
+    // at this exact moment. Passing it through as a payload field avoids
+    // any race where the result screen runs classifier on a stale buffer.
+    const trackerSnap = this.deathCauseTracker.snapshot();
+    const deathCause = classifyDeath({
+      events: trackerSnap.events,
+      lastHealthyAtSec: trackerSnap.lastHealthyAtSec,
+      deathGameTimeSec: this.spawnSystem.getGameTimeSec(),
+    });
+
     this.deathResultCallback = () => {
-      this.transitionToGameOver(this.buildGameOverPayload('death', summary, runResult, previousBests));
+      this.transitionToGameOver(this.buildGameOverPayload('death', summary, runResult, previousBests, deathCause));
     };
   }
 
@@ -1887,7 +1920,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     mode: 'victory' | 'death',
     summary: RunSummary,
     runResult: RunResult,
-    previousBests?: import('../core/SaveManager').PersonalBests
+    previousBests?: import('../core/SaveManager').PersonalBests,
+    deathCause?: import('../core/deathCauseClassifier').DeathCause,
   ): GameOverPayload {
     return {
       mode,
@@ -1906,6 +1940,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       previousBests,
       seedCode: encodeSeed(this.runRng.seed),
       isDaily: this.runIsDaily,
+      deathCause,
     };
   }
 
@@ -2364,6 +2399,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         const d = Phaser.Math.Distance.Between(z.x, z.y, this.player.x, this.player.y);
         if (d < z.r) {
           const dead = this.player.takeDamage(3);
+          this.deathCauseTracker.recordDamage({
+            gameTimeSec: this.spawnSystem.getGameTimeSec(),
+            sourceKey: HAZARD_SOURCE_KEY,
+            amount: 3,
+            sourceIsBoss: false,
+            sourceIsElite: false,
+            sourceIsHazard: true,
+            hpAfter: this.player.getHp(),
+            maxHpAfter: this.player.getMaxHp(),
+          });
           this.juice.flashRed(80);
           if (dead) this.handlePlayerDeathOrRevive();
         }

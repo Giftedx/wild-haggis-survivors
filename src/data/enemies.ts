@@ -208,6 +208,47 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
   },
 };
 
+/**
+ * Display-name map for enemy keys — used by the death-reflection panel and
+ * any UI surface that needs to render an enemy key as a warm, readable name.
+ * Keep voice-appropriate (Voice Card) — e.g. "Tour Bus" rather than "tour_bus",
+ * "Haggis Hunter" rather than "haggis_hunter". Unknown keys fall back to
+ * title-casing the key with underscores → spaces.
+ */
+const ENEMY_DISPLAY_NAMES: Record<string, string> = {
+  tourist: 'Tourist',
+  chef: 'Chef',
+  terrier: 'Terrier',
+  highland_cow: 'Highland Cow',
+  eagle: 'Eagle',
+  haggis_hunter: 'Haggis Hunter',
+  angry_scotsman: 'Angry Scotsman',
+  deep_fryer: 'Deep Fryer',
+  piper: 'Piper',
+  berserker: 'Berserker',
+  ghost: 'Ghost',
+  nest: 'Nest',
+  sheep: 'Sheep',
+  kelpie: 'Kelpie',
+  midgie_swarm: 'Midgie Swarm',
+  // Bosses
+  gordon: 'Gordon the Chef',
+  tour_bus: 'Tour Bus',
+  the_laird: 'The Laird',
+  hunter_general: 'Haggis Hunter General',
+  taxman: 'Taxman',
+};
+
+export function getEnemyDisplayName(key: string): string {
+  const known = ENEMY_DISPLAY_NAMES[key];
+  if (known) return known;
+  // Fallback: replace underscores and title-case each word.
+  return key
+    .split('_')
+    .map((w) => (w.length === 0 ? w : w[0].toUpperCase() + w.slice(1)))
+    .join(' ');
+}
+
 export function getAvailableEnemyTypes(gameTimeSec: number): EnemyConfig[] {
   return Object.values(ENEMY_TYPES).filter(e => gameTimeSec >= e.appearsAt);
 }
