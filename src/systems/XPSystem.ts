@@ -60,9 +60,9 @@ export class XPSystem {
     this.resetRunState();
     const gems = this.gemPool.children.entries as XPGem[];
     for (const g of gems) {
-      try { (g as any).destroy?.(); } catch { /* ignore */ }
+      try { g.destroy(); } catch { /* ignore */ }
     }
-    try { (this.gemPool as any).clear?.(true, true); } catch { /* ignore */ }
+    try { this.gemPool.clear(true, true); } catch { /* ignore */ }
   }
 
   /** Lightweight gem positions for dev auto-battler steering (no Phaser deps in consumer). */

@@ -134,17 +134,16 @@ export class SpawnSystem {
     const enemies = this.pool.children.entries as Enemy[];
     for (const e of enemies) {
       if (e.active) {
-        try { (e as any).destroy?.(); } catch { /* ignore */ }
-        // Best-effort deactivate for pool implementations
-        (e as any).active = false;
-        (e as any).visible = false;
+        try { e.destroy(); } catch { /* ignore */ }
+        e.active = false;
+        e.visible = false;
       }
     }
   }
 
   destroy(): void {
     this.resetRunState();
-    try { (this.pool as any).clear?.(true, true); } catch { /* ignore */ }
+    try { this.pool.clear(true, true); } catch { /* ignore */ }
   }
 
   update(delta: number, playerX: number, playerY: number): void {

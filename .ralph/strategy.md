@@ -27,7 +27,7 @@ Next up: `src/entities/` (area 2 in rotation)
 ## Metrics Snapshot (2026-04-13)
 - Source files: 105, Test files: 70
 - Tests: 466+ passing
-- `as any`: 17 production (8 files)
+- `as any`: 6 actual casts in 2 prod files (input.ts:3, UpgradeCards.ts:3) — was 17, pool teardown cluster + WeaponSystem eliminated
 - `as unknown`: 12 files
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
