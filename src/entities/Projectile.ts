@@ -100,19 +100,14 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
    * and burns through its pierce count on one target. Also prevents bouncing
    * projectiles from re-damaging enemies they already passed through.
    *
-   * Pooled enemy note: if the enemy was killed and recycled by the pool into
-   * a fresh activation, the `active` flag flips back to true — treat it as a
-   * new enemy and allow the hit.
+   * Pooled enemy note: if the same pool slot is recycled into a fresh enemy
+   * mid-projectile-flight, that new enemy gets a free pass-through. Acceptable
+   * because (a) projectile lifetimes are short (≤5s for bouncing, ≤1s for
+   * piercing) and (b) WeaponSystem already early-outs on dead enemies before
+   * calling here, so the recycled-stale-ref window is tiny.
    */
   shouldSkipHit(enemy: Phaser.GameObjects.GameObject): boolean {
-    if (this.hitTargets.has(enemy)) {
-      if ((enemy as Phaser.GameObjects.GameObject & { active: boolean }).active) {
-        // Recycled pool slot — stale reference, clear and allow the hit.
-        this.hitTargets.delete(enemy);
-      } else {
-        return true;
-      }
-    }
+    if (this.hitTargets.has(enemy)) return true;
     this.hitTargets.add(enemy);
     return false;
   }
