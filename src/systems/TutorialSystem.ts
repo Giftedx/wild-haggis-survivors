@@ -52,10 +52,19 @@ export class TutorialSystem {
     this.clearVisuals();
     this.releaseTokens();
     this.phase = 'done';
-    this.dismissDriftHint();
     if (this.driftTimerHandle) {
       this.driftTimerHandle.cancel();
       this.driftTimerHandle = null;
+    }
+    if (this.driftBanner) {
+      this.scene.tweens.killTweensOf(this.driftBanner);
+      this.driftBanner.destroy();
+      this.driftBanner = null;
+    }
+    if (this.driftArrow) {
+      this.scene.tweens.killTweensOf(this.driftArrow);
+      this.driftArrow.destroy();
+      this.driftArrow = null;
     }
   }
 
@@ -197,25 +206,36 @@ export class TutorialSystem {
     );
   }
 
+  private dismissDriftBannerRef: Phaser.GameObjects.Text | null = null;
+  private dismissDriftArrowRef: Phaser.GameObjects.Graphics | null = null;
+
   private dismissDriftHint(): void {
     if (this.driftBanner) {
       const banner = this.driftBanner;
       this.driftBanner = null;
+      this.dismissDriftBannerRef = banner;
       this.scene.tweens.add({
         targets: banner,
         alpha: 0,
         duration: 400,
-        onComplete: () => banner.destroy(),
+        onComplete: () => {
+          if (this.dismissDriftBannerRef === banner) this.dismissDriftBannerRef = null;
+          banner.destroy();
+        },
       });
     }
     if (this.driftArrow) {
       const arrow = this.driftArrow;
       this.driftArrow = null;
+      this.dismissDriftArrowRef = arrow;
       this.scene.tweens.add({
         targets: arrow,
         alpha: 0,
         duration: 400,
-        onComplete: () => arrow.destroy(),
+        onComplete: () => {
+          if (this.dismissDriftArrowRef === arrow) this.dismissDriftArrowRef = null;
+          arrow.destroy();
+        },
       });
     }
   }

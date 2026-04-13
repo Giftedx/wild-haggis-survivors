@@ -19,17 +19,17 @@
 
 ## P1 — Correctness (state leaks between runs)
 
-### 4. [x] BanterSystem: no reset on scene restart (already implemented)
+### 4. [x] BanterSystem: no reset on scene restart (already implemented — reset() exists + called in GameScene.create)
 - **Files:** `src/systems/BanterSystem.ts`, `src/scenes/GameScene.ts`
 - **Rationale:** `lastFireMs`, `lastContext`, `recent` ring buffer carry over between runs. Second run's first banter rate-limited by first run's cooldown.
 - **Acceptance:** BanterSystem has `reset()` method clearing transient state. GameScene calls it during scene reset.
 
-### 5. [x] SpawnSystem: enemy chase loop runs during pause
+### 5. [x] SpawnSystem: enemy chase loop runs during pause (already guarded — GameScene.update returns early at line 963 when paused)
 - **Files:** `src/systems/SpawnSystem.ts`
 - **Rationale:** `update()` calls `chaseTarget()` on all enemies unconditionally. With 400 enemies during level-up overlay (physics paused), 24k pathfinding calls/sec wasted.
 - **Acceptance:** Chase loop guarded by gameplay pause check. No enemy chase calls when game paused.
 
-### 6. [ ] TutorialSystem: fragile tween cleanup on dispose
+### 6. [x] TutorialSystem: fragile tween cleanup on dispose
 - **Files:** `src/systems/TutorialSystem.ts`
 - **Rationale:** `dispose()` nulls drift banner/arrow without killing active tweens. Mid-animation dispose → tween callbacks on destroyed objects.
 - **Acceptance:** `dispose()` kills tweens on driftBanner/driftArrow before nulling.
