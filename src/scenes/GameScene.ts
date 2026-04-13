@@ -47,9 +47,9 @@ import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
-import { BiomeManager, createBiomeLayout } from '../systems/BiomeManager';
-import { BiomeRenderer } from '../systems/BiomeRenderer';
-import { BIOMES, type BiomeId } from '../data/biomes';
+import type { BiomeId } from '../data/biomes';
+import type { BiomeManager } from '../systems/BiomeManager';
+import { BiomeController } from './game/BiomeController';
 import {
   computeAutoBattleSteering,
   installAutoBattleTimeScale,
@@ -186,12 +186,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastEmittedRunSecond = -1;
   private achievementUnsub: (() => void) | null = null;
   private bossEnrageUnsub: (() => void) | null = null;
-  private biomeManager: BiomeManager | null = null;
-  private biomeRenderer: BiomeRenderer | null = null;
-  /** Which biome the player was in last frame — used to detect entry for toasts. */
-  private lastPlayerBiome: BiomeId | null = null;
-  /** Biomes already toasted this run — each biome announces itself once. */
-  private toastedBiomes = new Set<BiomeId>();
+  private biomeController: BiomeController | null = null;
   /** After the Bell: Taxman has fallen, the player chose to keep going. Spawn
    *  escalation multipliers come online and death writes `bestEndlessSeconds`. */
   private postBell = false;
@@ -310,16 +305,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.createHighlandTerrain();
 
     // Biome partition — voronoi regions seeded from the run RNG.
-    // Rendered as a soft tinted overlay on top of the terrain.
-    const biomeLayout = createBiomeLayout(
+    // Owns manager, renderer, entry-toast state, and player-modifier push.
+    this.biomeController?.destroy();
+    this.biomeController = new BiomeController(
+      this,
       this.runRng.branch(),
       GAME.WORLD_WIDTH,
       GAME.WORLD_HEIGHT,
     );
-    this.biomeManager = new BiomeManager(biomeLayout);
-    this.biomeRenderer = new BiomeRenderer(this, this.biomeManager);
-    this.lastPlayerBiome = null;
-    this.toastedBiomes.clear();
     // Post-Bell: reset on every scene create — Phaser reuses scene instances
     // so field initializers don't fire on restart.
     this.postBell = false;
@@ -729,9 +722,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.debugOverlay = null;
       // Post-bell listener — outlives the scene if we don't remove it.
       this.uninstallPostBellKeyHandler();
-      try { this.biomeRenderer?.destroy(); } catch { /* ignore */ }
-      this.biomeRenderer = null;
-      this.biomeManager = null;
+      try { this.biomeController?.destroy(); } catch { /* ignore */ }
+      this.biomeController = null;
       // Remove event listeners before destroying systems to prevent stacking on restart
       try { this.weaponSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
       try { this.xpSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
@@ -2970,29 +2962,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  /**
-   * Update player's current biome; fire an entry toast the first time the
-   * player walks into each biome this run. Cheap: a single grid lookup.
-   */
   private tickBiome(): void {
-    if (!this.biomeManager) return;
-    const current = this.biomeManager.biomeAt(this.player.x, this.player.y);
-    if (current === this.lastPlayerBiome) return;
-    this.lastPlayerBiome = current;
-    if (!this.toastedBiomes.has(current)) {
-      this.toastedBiomes.add(current);
-      const def = BIOMES[current];
-      this.juice.showToast(t(def.entryToastKey), def.toastColor);
-    }
-    this.player.setBiomeModifier(BIOMES[current].modifier);
+    if (!this.biomeController) return;
+    this.biomeController.tick(this.player, this.juice);
   }
 
   getCurrentBiomeId(): BiomeId | null {
-    if (!this.biomeManager || !this.player) return null;
-    return this.biomeManager.biomeAt(this.player.x, this.player.y);
+    if (!this.biomeController || !this.player) return null;
+    return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
   }
 
-  getBiomeManager(): BiomeManager | null { return this.biomeManager; }
+  getBiomeManager(): BiomeManager | null {
+    return this.biomeController?.getManager() ?? null;
+  }
 
   getPlayer(): Player { return this.player; }
   getTimeManager(): TimeManager { return this.timeManager; }
