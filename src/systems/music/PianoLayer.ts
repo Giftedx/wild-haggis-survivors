@@ -3,7 +3,7 @@
  *
  * Each voice: sine carrier modulated by sine at 2:1 ratio.
  * Modulation index envelope: high attack (bright plunk) → low sustain (warm).
- * 4-voice max with voice stealing (quietest voice replaced).
+ * 4-voice max with voice stealing (oldest voice replaced).
  */
 
 interface Voice {
