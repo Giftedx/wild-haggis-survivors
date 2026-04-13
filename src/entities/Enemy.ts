@@ -20,6 +20,13 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     Enemy.reduceParticles = getSettingsManager().load().reduceParticles;
   }
 
+  /** Pre-baked rotation matrix for `behaviorFlank`. The blend `b = 0.42`
+   *  produces a fixed strafe angle `θ = atan2(b, 1−b)`; `(c, s)` are the
+   *  normalized rotation components. Computed once at module load so the
+   *  hot path does no per-frame trig. */
+  private static readonly FLANK_ROT_C = (1 - 0.42) / Math.hypot(1 - 0.42, 0.42);
+  private static readonly FLANK_ROT_S = 0.42 / Math.hypot(1 - 0.42, 0.42);
+
   private ctx: ISceneContext;
   private ctxScene: Phaser.Scene & ISceneContext;
   private hp: number = 0;
@@ -330,11 +337,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-    this.setPosition(
-      this.x + Math.cos(angle) * this.speed * step,
-      this.y + Math.sin(angle) * this.speed * step
-    );
+    // Geometric drift — `dx/dist`, `dy/dist` give the same unit step as
+    // `cos(atan2(dy,dx))`, `sin(atan2(dy,dx))` without any trig calls.
+    const dx = targetX - this.x;
+    const dy = targetY - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1e-6) return;
+    const stepLen = (this.speed * step) / dist;
+    this.setPosition(this.x + dx * stepLen, this.y + dy * stepLen);
   }
 
   /** Update movement toward the player. Called by SpawnSystem each frame. */
@@ -482,28 +492,55 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
-  private behaviorChase(tx: number, ty: number): void {
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
-    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+  /**
+   * Steer toward (tx, ty) at `speed`. Geometric substitution: instead of
+   * `atan2 → cos → sin → multiply by speed` (3 transcendentals per call),
+   * we normalize the displacement vector directly — `dx/dist`, `dy/dist`
+   * are *exactly* `cos(angle)`, `sin(angle)` of the same angle, so the
+   * trig round-trip is mathematically redundant. One sqrt replaces three
+   * transcendentals at ~5–10× the speed; called per-enemy per-frame on
+   * 300+ enemies, this is the single biggest win in the chase loop.
+   *
+   * Negative `speed` flees: it inverts both components so the velocity
+   * points away from the target. `dist < 1e-6` is the degenerate
+   * "standing on the player" case — fall back to zero rather than emit
+   * NaN from a divide-by-zero.
+   */
+  private setVelocityToward(tx: number, ty: number, speed: number): void {
+    const dx = tx - this.x;
+    const dy = ty - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1e-6) { this.setVelocity(0, 0); return; }
+    const inv = speed / dist;
+    this.setVelocity(dx * inv, dy * inv);
   }
 
-  /** Blend chase with perpendicular strafe so the enemy tries to circle the player. */
+  private behaviorChase(tx: number, ty: number): void {
+    this.setVelocityToward(tx, ty, this.speed);
+  }
+
+  /** Blend chase with perpendicular strafe so the enemy tries to circle the
+   *  player. The blend `b = 0.42` produces a fixed rotation of the
+   *  toward-player unit vector by `θ = atan2(b, 1−b)` ≈ 35.9°. We pre-bake
+   *  the rotation matrix entries so the per-frame call is a normalize
+   *  plus a 2×2 matrix multiply — no trig at all. */
   private behaviorFlank(tx: number, ty: number): void {
-    const toP = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
-    const perp = toP + Math.PI / 2;
-    const blend = 0.42;
-    let vx = Math.cos(toP) * (1 - blend) + Math.cos(perp) * blend;
-    let vy = Math.sin(toP) * (1 - blend) + Math.sin(perp) * blend;
-    const len = Math.hypot(vx, vy) || 1;
-    vx /= len;
-    vy /= len;
-    this.setVelocity(vx * this.speed, vy * this.speed);
+    const dx = tx - this.x;
+    const dy = ty - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1e-6) { this.setVelocity(0, 0); return; }
+    const inv = this.speed / dist;
+    const ux = dx * inv;
+    const uy = dy * inv;
+    this.setVelocity(
+      Enemy.FLANK_ROT_C * ux - Enemy.FLANK_ROT_S * uy,
+      Enemy.FLANK_ROT_S * ux + Enemy.FLANK_ROT_C * uy,
+    );
   }
 
   private behaviorTank(tx: number, ty: number): void {
-    // Same as chase but the high HP and low speed define the tank feel
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
-    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+    // Same as chase — high HP and low speed define the tank feel.
+    this.setVelocityToward(tx, ty, this.speed);
   }
 
   private behaviorDive(tx: number, ty: number): void {
@@ -540,23 +577,32 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private behaviorRanged(tx: number, ty: number, delta: number): void {
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, tx, ty);
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    // Single sqrt feeds three decisions: standoff bands + cooldown gate.
+    // The unit components `(dx/dist, dy/dist)` are exactly `cos(angle), sin(angle)`
+    // — no atan2 round-trip needed for the velocity write.
+    const dx = tx - this.x;
+    const dy = ty - this.y;
+    const dist = Math.hypot(dx, dy);
+    const standoff = this.RANGED_STANDOFF;
 
-    if (dist > this.RANGED_STANDOFF) {
-      this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
-    } else if (dist < this.RANGED_STANDOFF * 0.7) {
-      this.setVelocity(-Math.cos(angle) * this.speed, -Math.sin(angle) * this.speed);
+    if (dist < 1e-6) {
+      this.setVelocity(0, 0);
+    } else if (dist > standoff) {
+      const inv = this.speed / dist;
+      this.setVelocity(dx * inv, dy * inv);
+    } else if (dist < standoff * 0.7) {
+      const inv = -this.speed / dist;
+      this.setVelocity(dx * inv, dy * inv);
     } else {
-      this.setVelocity(
-        Math.cos(angle + Math.PI / 2) * this.speed * 0.5,
-        Math.sin(angle + Math.PI / 2) * this.speed * 0.5
-      );
+      // Strafe perpendicular at half speed: rotating (dx,dy) by +π/2 sends
+      // (cos, sin) → (-sin, cos), which is just (-dy, dx) on the geometric vector.
+      const inv = (this.speed * 0.5) / dist;
+      this.setVelocity(-dy * inv, dx * inv);
     }
 
     // Fire a "net" (slowing projectile) at the player on cooldown
     this.rangedCooldown -= delta;
-    if (this.rangedCooldown <= 0 && dist <= this.RANGED_STANDOFF * 1.5) {
+    if (this.rangedCooldown <= 0 && dist <= standoff * 1.5) {
       this.rangedCooldown = BALANCE.enemy.rangedCooldownMs;
       this.fireNet(tx, ty);
     }
@@ -601,14 +647,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private behaviorOrbit(tx: number, ty: number, delta: number): void {
-    // Circle the player at ORBIT_RADIUS distance
+    // Circle the player at ORBIT_RADIUS distance. The orbit-angle cos/sin
+    // is unavoidable (we're plotting a point on the orbit circle), but the
+    // chase-to-orbit-target step uses the geometric form — one sqrt for
+    // both the speed-clamp and the velocity write.
     this.orbitAngle += (this.speed / this.ORBIT_RADIUS) * (delta / 1000);
     const targetX = tx + Math.cos(this.orbitAngle) * this.ORBIT_RADIUS;
     const targetY = ty + Math.sin(this.orbitAngle) * this.ORBIT_RADIUS;
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, targetX, targetY);
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, targetX, targetY);
-    const moveSpeed = Math.min(this.speed, dist * 2); // slow as approach target
-    this.setVelocity(Math.cos(angle) * moveSpeed, Math.sin(angle) * moveSpeed);
+    const dx = targetX - this.x;
+    const dy = targetY - this.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist < 1e-6) {
+      this.setVelocity(0, 0);
+    } else {
+      const moveSpeed = Math.min(this.speed, dist * 2); // slow as approach target
+      const inv = moveSpeed / dist;
+      this.setVelocity(dx * inv, dy * inv);
+    }
 
     // Pipers buff nearby enemies — 30% faster for 500ms, composed through
     // recomputeSpeed() via the buffSpeedMul field.
@@ -633,8 +688,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   private behaviorPhase(tx: number, ty: number, delta: number): void {
     // Chase the player
-    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
-    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+    this.setVelocityToward(tx, ty, this.speed);
 
     // Toggle phased state every 2 seconds
     this.phaseTimer -= delta;
@@ -694,9 +748,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private behaviorFlee(tx: number, ty: number): void {
-    // Run away from the player
-    const angle = Phaser.Math.Angle.Between(tx, ty, this.x, this.y);
-    this.setVelocity(Math.cos(angle) * this.speed, Math.sin(angle) * this.speed);
+    // Run away from the player — negative speed inverts the toward-vector.
+    this.setVelocityToward(tx, ty, -this.speed);
   }
 
   /** Recompute this.speed from baseSpeed × all active multipliers.
@@ -785,10 +838,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // chemical explosion shouldn't lose their one-hit shield.
       const pool = this.ctx.getSpawnSystem().getEnemyGroup();
       const nearby = pool.children.entries as Enemy[];
+      const splashRadiusSq = 60 * 60;
       for (const e of nearby) {
         if (!e.active || e === this) continue;
-        const d = Phaser.Math.Distance.Between(ex, ey, e.x, e.y);
-        if (d <= 60) e.takeDamageWithKillEvents(25);
+        const dx = e.x - ex;
+        const dy = e.y - ey;
+        if (dx * dx + dy * dy <= splashRadiusSq) e.takeDamageWithKillEvents(25);
       }
     }
   }

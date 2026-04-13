@@ -99,14 +99,17 @@ export class XPSystem {
       pickupRadius *= BALANCE.xp.criticalHpMagnetMultiplier;
     }
     const gems = this.gemPool.children.entries as XPGem[];
+    // Squared-distance gate for the collect ring — sqrt would fire per gem
+    // per frame for ~200 gems just to compare against a constant radius.
+    const collectDistSq = BALANCE.xp.collectDistancePx * BALANCE.xp.collectDistancePx;
     for (const gem of gems) {
       if (!gem.active) continue;
 
       gem.updateMagnet(playerX, playerY, pickupRadius);
 
-      // Check if close enough to collect
-      const dist = Phaser.Math.Distance.Between(gem.x, gem.y, playerX, playerY);
-      if (dist < BALANCE.xp.collectDistancePx) {
+      const dx = playerX - gem.x;
+      const dy = playerY - gem.y;
+      if (dx * dx + dy * dy < collectDistSq) {
         this.collectGem(gem);
       }
     }

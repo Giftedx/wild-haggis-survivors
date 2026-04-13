@@ -130,11 +130,13 @@ export class LevelUpFlow {
     if ([10, 20, 30].includes(newLevel)) {
       const dmg = newLevel * 3;
       const radius = 300 + newLevel * 10;
+      const radiusSq = radius * radius;
       const enemies = this.hooks.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
       for (const e of enemies) {
         if (!e.active || e.isBoss()) continue;
-        const d = Phaser.Math.Distance.Between(player.x, player.y, e.x, e.y);
-        if (d <= radius) e.takeDamageWithKillEvents(dmg);
+        const dx = e.x - player.x;
+        const dy = e.y - player.y;
+        if (dx * dx + dy * dy <= radiusSq) e.takeDamageWithKillEvents(dmg);
       }
       juice.flashWhite(400);
       juice.showToast(t('ui.game.level_power_surge', { level: newLevel }), '#ff8800');
@@ -387,13 +389,18 @@ export class LevelUpFlow {
         break;
       case 'banish': {
         const BANISH_RANGE = 300;
+        const BANISH_RANGE_SQ = BANISH_RANGE * BANISH_RANGE;
         const px = player.x, py = player.y;
         const spawnSystem = this.hooks.getSpawnSystem();
         const juice = this.hooks.getJuice();
         const xpSystem = this.hooks.getXPSystem();
         const enemies = (spawnSystem.getEnemyGroup().children.entries as Enemy[])
-          .filter(e => e.active && !e.isBoss() && e.getBehavior() !== 'hazard'
-            && Phaser.Math.Distance.Between(px, py, e.x, e.y) <= BANISH_RANGE)
+          .filter(e => {
+            if (!e.active || e.isBoss() || e.getBehavior() === 'hazard') return false;
+            const dx = e.x - px;
+            const dy = e.y - py;
+            return dx * dx + dy * dy <= BANISH_RANGE_SQ;
+          })
           .sort((a, b) => a.getHp() - b.getHp())
           .slice(0, amount);
         for (const e of enemies) {

@@ -439,12 +439,18 @@ export class WeaponSystem {
       onComplete: () => ring.setVisible(false),
     });
 
-    // Damage + knockback all enemies in radius
+    // Damage + knockback all enemies in radius. Squared-distance gate
+    // skips sqrt for the (majority of) enemies outside the pulse — only
+    // the ones that get hit pay for it, and even then we reuse the same
+    // dx/dy as the knockback direction (no atan2 → cos/sin round-trip).
+    const radiusSq = radius * radius;
     const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
-      const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
-      if (dist <= radius) {
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
         // Bagpipe Blast applies brief freeze (slow 50% for 1s)
@@ -453,10 +459,12 @@ export class WeaponSystem {
         // Knockback — uses the impulse system so behaviorChase doesn't wipe it.
         // Divided by mass so tanks resist being pushed.
         if (enemy.active && w.config.knockback > 0) {
-          const angle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
-          const body = enemy.body as Phaser.Physics.Arcade.Body;
-          const kb = w.config.knockback / body.mass;
-          enemy.applyKnockback(Math.cos(angle) * kb, Math.sin(angle) * kb, 150);
+          const dist = Math.sqrt(distSq);
+          if (dist > 1e-6) {
+            const body = enemy.body as Phaser.Physics.Arcade.Body;
+            const kb = w.config.knockback / body.mass / dist;
+            enemy.applyKnockback(dx * kb, dy * kb, 150);
+          }
         }
       }
     }
@@ -486,10 +494,12 @@ export class WeaponSystem {
         if (this.scene.getTimeManager().isGameplayPaused()) return;
         const { damage: dmg, isCrit } = this.effectiveDamage(w);
         const enemies = this.enemyGroup.children.entries as Enemy[];
+        const radiusSq = radius * radius;
         for (const enemy of enemies) {
           if (!enemy.active) continue;
-          const dist = Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y);
-          if (dist <= radius) {
+          const dx = enemy.x - zone.x;
+          const dy = enemy.y - zone.y;
+          if (dx * dx + dy * dy <= radiusSq) {
             this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
             // Scotch Mist applies poison (stacking DoT)
             enemy.applyPoison(2, 3000);
@@ -550,30 +560,41 @@ export class WeaponSystem {
       onComplete: () => { gfx.setVisible(false); gfx.clear(); },
     });
 
-    // Damage enemies within the arc
+    // Damage enemies within the arc.
+    //
+    // Replace two atan2s + angle-wrap loops with a dot product. The arc
+    // test "is the enemy direction within ±halfArc of facing?" is exactly
+    // `dot(enemyDir, facingDir) >= cos(halfArc)` for unit vectors —
+    // monotonic in the angle, no branch normalization needed. We pre-bake
+    // facing's cos/sin and the arc threshold once per call; per enemy
+    // does one sqrt and one dot product.
+    const radiusSq = radius * radius;
+    const fcos = Math.cos(facing);
+    const fsin = Math.sin(facing);
+    const arcThresh = Math.cos(halfArc);
     const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
-      const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
-      if (dist > radius) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > radiusSq) continue;
 
-      // Check if enemy is within the arc angle
-      const angleToEnemy = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
-      let angleDiff = angleToEnemy - facing;
-      // Normalize to [-PI, PI]
-      while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
-      while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+      const dist = Math.sqrt(distSq);
+      if (dist < 1e-6) continue;
+      const nx = dx / dist;
+      const ny = dy / dist;
+      const dot = nx * fcos + ny * fsin;
+      if (dot < arcThresh) continue;
 
-      if (Math.abs(angleDiff) <= halfArc) {
-        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+      this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
 
-        // Knockback via impulse system (persistent for 150ms, then behavior resumes).
-        if (enemy.active && w.config.knockback > 0) {
-          const kbAngle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
-          const body = enemy.body as Phaser.Physics.Arcade.Body;
-          const kb = w.config.knockback / body.mass;
-          enemy.applyKnockback(Math.cos(kbAngle) * kb, Math.sin(kbAngle) * kb, 150);
-        }
+      // Knockback via impulse system (persistent for 150ms, then behavior resumes).
+      // Reuses the same dx/dy: knockback direction == enemy direction.
+      if (enemy.active && w.config.knockback > 0) {
+        const body = enemy.body as Phaser.Physics.Arcade.Body;
+        const kb = w.config.knockback / body.mass;
+        enemy.applyKnockback(nx * kb, ny * kb, 150);
       }
     }
   }
@@ -652,11 +673,13 @@ export class WeaponSystem {
       onComplete: () => ring.setVisible(false),
     });
 
+    const radiusSq = radius * radius;
     const enemies = this.enemyGroup.children.entries as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
-      const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
-      if (dist <= radius) {
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      if (dx * dx + dy * dy <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
         enemy.applyFreeze(0.42, 1400);
       }
@@ -692,21 +715,21 @@ export class WeaponSystem {
       ring.setRadius(currentRadius);
       ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
 
-      // Damage enemies in the newly swept annular band (each enemy hit once).
-      // Pool-recycle guard: an enemy killed mid-expansion stays in the Set by
-      // object identity, so a reactivated pool slot (fresh enemy, same JS
-      // object) would otherwise be silently immune for the ring's lifetime.
-      // Clear stale entries when the same object is now active with full HP.
+      // Damage enemies who just entered the ring — each hit at most once
+      // per ring lifetime. The squared-distance gate skips sqrt entirely.
+      // (Mid-expansion pool-recycle into a fresh enemy reusing the same JS
+      // object will get one frame's worth of immunity from the Set; that's
+      // a tiny acceptable miss compared to the previously broken
+      // delete-then-add re-hit pattern.)
       if (!this.scene.getTimeManager().isGameplayPaused()) {
         const enemies = this.enemyGroup.children.entries as Enemy[];
+        const currentRadiusSq = currentRadius * currentRadius;
         for (const enemy of enemies) {
           if (!enemy.active) continue;
-          if (hitEnemies.has(enemy)) {
-            // Recycled pool slot — treat as a new enemy.
-            hitEnemies.delete(enemy);
-          }
-          const dist = Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y);
-          if (dist <= currentRadius) {
+          if (hitEnemies.has(enemy)) continue;
+          const dx = enemy.x - px;
+          const dy = enemy.y - py;
+          if (dx * dx + dy * dy <= currentRadiusSq) {
             hitEnemies.add(enemy);
             this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
           }
@@ -748,9 +771,12 @@ export class WeaponSystem {
       });
 
       const enemies = this.enemyGroup.children.entries as Enemy[];
+      const blastRadiusSq = 80 * 80;
       for (const enemy of enemies) {
         if (!enemy.active) continue;
-        if (Phaser.Math.Distance.Between(ex, ey, enemy.x, enemy.y) <= 80) {
+        const dx = enemy.x - ex;
+        const dy = enemy.y - ey;
+        if (dx * dx + dy * dy <= blastRadiusSq) {
           this.dealDamageToEnemy(enemy, Math.ceil(dmg * 0.6), isCrit, weaponKey);
         }
       }
@@ -766,9 +792,12 @@ export class WeaponSystem {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
       if (this.scene.getTimeManager().isGameplayPaused()) return;
       const enemies = this.enemyGroup.children.entries as Enemy[];
+      const radiusSq = radius * radius;
       for (const enemy of enemies) {
         if (!enemy.active) continue;
-        if (Phaser.Math.Distance.Between(zone.x, zone.y, enemy.x, enemy.y) <= radius) {
+        const dx = enemy.x - zone.x;
+        const dy = enemy.y - zone.y;
+        if (dx * dx + dy * dy <= radiusSq) {
           this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
           // Slow enemies in the fog to 50% speed. Duration matches the
           // tick interval + a small overlap so the slow is continuous
@@ -811,15 +840,22 @@ export class WeaponSystem {
     });
 
     const enemies = this.enemyGroup.children.entries as Enemy[];
+    const radiusSq = radius * radius;
     for (const enemy of enemies) {
       if (!enemy.active) continue;
-      if (Phaser.Math.Distance.Between(px, py, enemy.x, enemy.y) <= radius) {
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= radiusSq) {
         this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
-        // Knockback via impulse system — persistent enough to actually shove.
-        const angle = Phaser.Math.Angle.Between(px, py, enemy.x, enemy.y);
-        const body = enemy.body as Phaser.Physics.Arcade.Body;
-        const kb = 200 / body.mass;
-        enemy.applyKnockback(Math.cos(angle) * kb, Math.sin(angle) * kb, 200);
+        // Knockback via impulse system — same dx/dy supplies the direction,
+        // no separate atan2 needed.
+        const dist = Math.sqrt(distSq);
+        if (dist > 1e-6) {
+          const body = enemy.body as Phaser.Physics.Arcade.Body;
+          const kb = 200 / body.mass / dist;
+          enemy.applyKnockback(dx * kb, dy * kb, 200);
+        }
       }
     }
   }

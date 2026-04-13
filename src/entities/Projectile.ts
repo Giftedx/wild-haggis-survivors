@@ -84,11 +84,12 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    // Deactivate if beyond max range
-    const dist = Phaser.Math.Distance.Between(
-      this.spawnX, this.spawnY, this.x, this.y
-    );
-    if (dist > this.maxRange) {
+    // Deactivate if beyond max range. Squared compare lets every active
+    // projectile skip the per-frame sqrt — at 200 in-flight projectiles
+    // running at 60fps, that's 12,000 sqrts/sec the runtime never has to do.
+    const dx = this.x - this.spawnX;
+    const dy = this.y - this.spawnY;
+    if (dx * dx + dy * dy > this.maxRange * this.maxRange) {
       this.deactivate();
     }
   }

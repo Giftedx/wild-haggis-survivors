@@ -96,15 +96,17 @@ export class HazardZones {
 
     const player = this.hooks.getPlayer();
 
-    // Lava damage tick every 500ms
+    // Lava damage tick every 500ms — squared compare avoids sqrt per zone × tick.
     for (const z of this.lavaZones) {
       z.tickAccMs += scaledDelta;
+      const rSq = z.r * z.r;
       while (z.tickAccMs >= 500) {
         z.tickAccMs -= 500;
         if (!player.active || this.hooks.isVictoryPending()) continue;
         if (this.hooks.isIFrames() || player.isDashInvincible()) continue;
-        const d = Phaser.Math.Distance.Between(z.x, z.y, player.x, player.y);
-        if (d < z.r) {
+        const dx = player.x - z.x;
+        const dy = player.y - z.y;
+        if (dx * dx + dy * dy < rSq) {
           const hazardDmg = Math.max(1, Math.round(3 * this.hooks.getDamageTakenMult()));
           const dead = player.takeDamage(hazardDmg);
           this.hooks.getDeathCauseTracker().recordDamage({
@@ -123,14 +125,16 @@ export class HazardZones {
       }
     }
 
-    // Healing tick every 1000ms
+    // Healing tick every 1000ms — same squared-compare elegance.
     for (const z of this.healZones) {
       z.tickAccMs += scaledDelta;
+      const rSq = z.r * z.r;
       while (z.tickAccMs >= 1000) {
         z.tickAccMs -= 1000;
         if (!player.active) continue;
-        const d = Phaser.Math.Distance.Between(z.x, z.y, player.x, player.y);
-        if (d < z.r) player.heal(2);
+        const dx = player.x - z.x;
+        const dy = player.y - z.y;
+        if (dx * dx + dy * dy < rSq) player.heal(2);
       }
     }
   }

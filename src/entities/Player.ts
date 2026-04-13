@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
-import { rotateVectorInto } from '../utils/math';
+import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -71,6 +71,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Biome-driven XP gem value multiplier — read by XPSystem at collect time. */
   private biomeXpMul: number = 1;
   private driftDegrees: number = PLAYER.DRIFT_DEGREES;
+  /** Pre-baked rotation matrix entries for `driftDegrees`. Refreshed in
+   *  `recalcStats()` so the per-frame drift apply collapses to four
+   *  multiplies — `Math.cos`/`Math.sin` only fire when stats actually change. */
+  private driftCos: number = 1;
+  private driftSin: number = 0;
 
   // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
   private dashCooldown: number = 0;
@@ -292,8 +297,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       return;
     }
 
-    // Apply a fixed clockwise rotation bias to the input vector.
-    const drifted = rotateVectorInto(this.driftScratch, dir.x, dir.y, this.driftDegrees);
+    // Apply a fixed clockwise rotation bias to the input vector. Uses the
+    // pre-baked drift matrix from `recalcStats()` so this hot path costs
+    // four multiplies instead of two transcendentals.
+    const drifted = rotateVectorIntoPrecomputed(this.driftScratch, dir.x, dir.y, this.driftCos, this.driftSin);
 
     // Soft boundary — slow down near world edges
     const edgeMargin = 150;
@@ -372,6 +379,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const levelDriftMul = Math.max(0.3, 1 - PLAYER.DRIFT_REDUCTION_PER_LEVEL * (level - 1));
     this.baseDriftDegrees = this.runBaseDrift * levelDriftMul;
     this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction);
+    // Pre-bake the drift rotation matrix so per-frame movement skips the trig.
+    const driftRad = this.driftDegrees * (Math.PI / 180);
+    this.driftCos = Math.cos(driftRad);
+    this.driftSin = Math.sin(driftRad);
 
     // Max HP: base + upgrade bonus (level doesn't reduce HP)
     this.maxHp = this.runBaseMaxHp + this.bonusMaxHp;

@@ -519,18 +519,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
       // Death ripple — push nearby enemies away from the kill (max 6).
       // Uses applyKnockback so the push actually persists past the next
-      // behavior-chase velocity reset.
+      // behavior-chase velocity reset. Squared-compare gates the loop;
+      // the same dx/dy doubles as the knockback direction.
       const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
+      const RIPPLE_RADIUS_SQ = 50 * 50;
       let pushed = 0;
       for (let i = 0; i < enemies.length && pushed < 6; i++) {
         const e = enemies[i];
         if (!e.active) continue;
-        const d = Phaser.Math.Distance.Between(x, y, e.x, e.y);
-        if (d < 50 && d > 0) {
-          const angle = Phaser.Math.Angle.Between(x, y, e.x, e.y);
+        const dx = e.x - x;
+        const dy = e.y - y;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < RIPPLE_RADIUS_SQ && distSq > 0) {
+          const dist = Math.sqrt(distSq);
           const body = e.body as Phaser.Physics.Arcade.Body;
-          const force = 120 / body.mass;
-          e.applyKnockback(Math.cos(angle) * force, Math.sin(angle) * force, 120);
+          const force = 120 / body.mass / dist;
+          e.applyKnockback(dx * force, dy * force, 120);
           pushed++;
         }
       }

@@ -125,21 +125,32 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     });
   }
 
-  /** Check if within pickup radius and magnetize toward player */
+  /** Check if within pickup radius and magnetize toward player.
+   *  Squared-distance compare gates the magnet toggle without ever calling
+   *  sqrt — ~200 gems per frame, most of them outside the radius, no
+   *  longer pay for a sqrt that's only needed when the gem actually moves.
+   *  When magnetized we still need the real distance for the speed ramp,
+   *  but the geometric form (dx/dist, dy/dist) replaces the atan2→cos→sin
+   *  round-trip with a single division. */
   updateMagnet(playerX: number, playerY: number, pickupRadius: number): void {
     if (!this.active) return;
 
-    const dist = Phaser.Math.Distance.Between(this.x, this.y, playerX, playerY);
+    const dx = playerX - this.x;
+    const dy = playerY - this.y;
+    const distSq = dx * dx + dy * dy;
 
-    if (dist < pickupRadius) {
+    if (distSq < pickupRadius * pickupRadius) {
       this.magnetized = true;
     }
 
     if (this.magnetized) {
-      // Accelerate toward player — gets faster as it gets closer
-      const speed = Math.max(400, 800 - dist * 2);
-      const angle = Phaser.Math.Angle.Between(this.x, this.y, playerX, playerY);
-      this.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+      const dist = Math.sqrt(distSq);
+      if (dist > 1e-6) {
+        // Accelerate toward player — gets faster as it gets closer.
+        const speed = Math.max(400, 800 - dist * 2);
+        const inv = speed / dist;
+        this.setVelocity(dx * inv, dy * inv);
+      }
     }
 
     // Update value label + aura position

@@ -1,31 +1,16 @@
 /**
- * Rotate a 2D vector by an angle in degrees.
- * Used for the "uneven legs" drift mechanic.
+ * Hot-path 2D rotation with pre-baked cos/sin. Used when the rotation angle
+ * is constant across many calls (e.g., the player's drift, which only
+ * changes on recalcStats). Per-frame work collapses to four multiplies and
+ * two adds — `Math.cos`/`Math.sin` only fire when the angle actually changes.
  */
-export function rotateVector(
-  x: number,
-  y: number,
-  angleDeg: number
-): { x: number; y: number } {
-  const rad = angleDeg * (Math.PI / 180);
-  const cos = Math.cos(rad);
-  const sin = Math.sin(rad);
-  return {
-    x: x * cos - y * sin,
-    y: x * sin + y * cos,
-  };
-}
-
-/** Hot-path: writes into `out` to avoid per-frame object allocation. */
-export function rotateVectorInto(
+export function rotateVectorIntoPrecomputed(
   out: { x: number; y: number },
   x: number,
   y: number,
-  angleDeg: number
+  cos: number,
+  sin: number
 ): { x: number; y: number } {
-  const rad = angleDeg * (Math.PI / 180);
-  const cos = Math.cos(rad);
-  const sin = Math.sin(rad);
   out.x = x * cos - y * sin;
   out.y = x * sin + y * cos;
   return out;
