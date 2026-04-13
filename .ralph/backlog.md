@@ -23,6 +23,7 @@
 - [x] Confirm PWA precache 1943 KiB acceptable — vendor-phaser 1482 + app 507 + html/icons 4. No external assets. Vendor chunk hash stable across app deploys → SW updates only download ~507 KiB delta.
 - [x] REVIEW: src/systems/ — done 2026-04-13, 8 tasks generated
 - [x] REVIEW: src/core/ — done 2026-04-13, 0 bugs found. 24 test files / 20 source. SaveManager V6 migration correct. Area is healthy.
+- [x] REVIEW: src/data/ — done 2026-04-13. 9/9 test coverage (except banter.ts). 3 findings: banter no test (P1), 4 enemies no biome weight mods (P1 — likely intentional), thistle_shot no WEAPON_CARD (P1 — intentional, starting weapon). No bugs. Healthy area.
 
 ## Low Priority
 - [ ] Add banter.ts structure validation test — verify keysByTag boss keys match BOSSES array, tag consistency, i18n key format (data review, P2)
