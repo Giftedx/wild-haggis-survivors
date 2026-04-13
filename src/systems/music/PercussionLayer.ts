@@ -137,7 +137,7 @@ export class PercussionLayer {
   }
 }
 
-function euclidean(hits: number, slots: number): boolean[] {
+export function euclidean(hits: number, slots: number): boolean[] {
   if (hits >= slots) return new Array(slots).fill(true);
   if (hits <= 0) return new Array(slots).fill(false);
 
