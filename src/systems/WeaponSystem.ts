@@ -1,0 +1,1023 @@
+import Phaser from 'phaser';
+import { Projectile } from '../entities/Projectile';
+import { Enemy } from '../entities/Enemy';
+import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
+import { audio } from './AudioSystem';
+import { ISceneContext } from '../core/ISceneContext';
+import { BALANCE } from '../core/BalanceConfig';
+import { globalEventBus } from '../core/GlobalEventBus';
+
+/** Runtime state for an equipped weapon */
+export interface ActiveWeapon {
+  config: WeaponDef;
+  level: number;
+  cooldownRemaining: number;
+  damage: number;
+  cooldownMs: number;
+  projectileCount: number;
+  pierce: number;
+  aoeRadius: number;
+  /** Set when weapon is evolved — changes behavior in fireWeapon */
+  evolved: boolean;
+  evolutionKey: string;
+}
+
+/**
+ * WeaponSystem — manages all 6 weapon types with different behaviors.
+ *
+ * Projectile weapons (thistle_shot, caber_toss, haggis_hurler) use pooled sprites.
+ * Area weapons (bagpipe_blast, scotch_mist, nessie_tentacle) directly query enemies.
+ */
+export class WeaponSystem {
+  private scene: Phaser.Scene & ISceneContext;
+  private weapons: ActiveWeapon[] = [];
+  private projectilePool: Phaser.GameObjects.Group;
+  private enemyGroup: Phaser.GameObjects.Group;
+
+  /** Last known player facing angle (radians) — used for directional weapons */
+  private playerFacing: number = 0;
+
+  /** Trail frame counter — spawn trail particles every N frames */
+  private trailCounter: number = 0;
+
+  /** Per-frame cache: active enemies sorted by distance to player.
+   *  Built once at the start of update(), consumed by findClosestEnemy(). */
+  private cachedSortedEnemies: Enemy[] = [];
+  private cachedSortedDistSq: number[] = [];
+  private enemyCacheFrame: number = -1;
+
+  /** Pooled VFX circles for weapon visual effects (pulse rings, zones, blasts). */
+  private vfxCirclePool: Phaser.GameObjects.Arc[] = [];
+  private vfxCircleIdx: number = 0;
+
+  /** Pooled VFX graphics for arc sweep visuals. */
+  private vfxGfxPool: Phaser.GameObjects.Graphics[] = [];
+  private vfxGfxIdx: number = 0;
+
+  /** Multipliers from player upgrades — set each frame by GameScene */
+  private damageMultiplier: number = 1;
+  private aoeMultiplier: number = 1;
+  private attackSpeedMultiplier: number = 1;
+  private critChance: number = 0.10;
+  private critDamageMultiplier: number = 2.0;
+  private cooldownReduction: number = 0;
+
+  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
+  readonly events = new Phaser.Events.EventEmitter();
+
+  /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
+  private destroyed: boolean = false;
+  destroy(): void {
+    this.destroyed = true;
+    // Clear run-scoped state so pooled objects can't bleed into a new run
+    this.events.removeAllListeners();
+    this.weapons = [];
+    this.trailCounter = 0;
+    this.playerFacing = 0;
+
+    const projectiles = this.projectilePool.children.entries as Projectile[];
+    for (const p of projectiles) {
+      if (p.active) {
+        try { (p as any).destroy?.(); } catch { /* ignore */ }
+        (p as any).active = false;
+        (p as any).visible = false;
+      }
+    }
+    try { (this.projectilePool as any).clear?.(true, true); } catch { /* ignore */ }
+
+    // Clean up VFX pools
+    for (const c of this.vfxCirclePool) {
+      this.scene.tweens.killTweensOf(c);
+      c.destroy();
+    }
+    for (const g of this.vfxGfxPool) {
+      this.scene.tweens.killTweensOf(g);
+      g.destroy();
+    }
+    this.vfxCirclePool = [];
+    this.vfxGfxPool = [];
+  }
+
+  constructor(scene: Phaser.Scene & ISceneContext, enemyGroup: Phaser.GameObjects.Group) {
+    this.scene = scene;
+    this.enemyGroup = enemyGroup;
+
+    // Projectile pool (shared across all projectile-based weapons)
+    this.projectilePool = scene.add.group({
+      classType: Projectile,
+      maxSize: BALANCE.weapons.projectilePoolMax,
+      runChildUpdate: false,
+    });
+    for (let i = 0; i < BALANCE.weapons.projectilePrewarm; i++) {
+      this.projectilePool.add(new Projectile(scene));
+    }
+    // Wire shared FX pool for projectile pop effects
+    Projectile.fxPool = scene.getStatusFxPool();
+
+    // Pre-allocate VFX circle pool — 30 covers all weapon visual effects
+    // (pulse rings, zones, blasts) with headroom above ~13 max simultaneous.
+    for (let i = 0; i < 30; i++) {
+      const c = scene.add.circle(0, 0, 10, 0xffffff, 0.5)
+        .setDepth(10).setVisible(false);
+      this.vfxCirclePool.push(c);
+    }
+    // Pre-allocate VFX graphics pool — 5 covers arc sweep visuals
+    for (let i = 0; i < 5; i++) {
+      const g = scene.add.graphics().setDepth(10).setVisible(false);
+      this.vfxGfxPool.push(g);
+    }
+
+    // Start with Thistle Shot
+    this.addWeapon('thistle_shot');
+
+    // Projectile ↔ enemy collision
+    scene.physics.add.overlap(
+      this.projectilePool,
+      enemyGroup,
+      this.onProjectileHitEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      undefined,
+      this
+    );
+  }
+
+  /** Acquire a pooled VFX circle, resetting it for reuse. O(1) circular indexing. */
+  private acquireVfxCircle(x: number, y: number, radius: number, color: number, alpha: number): Phaser.GameObjects.Arc {
+    const c = this.vfxCirclePool[this.vfxCircleIdx];
+    this.vfxCircleIdx = (this.vfxCircleIdx + 1) % this.vfxCirclePool.length;
+    this.scene.tweens.killTweensOf(c);
+    c.setPosition(x, y);
+    c.setRadius(radius);
+    c.setFillStyle(color, alpha);
+    c.setAlpha(alpha);
+    c.setScale(1);
+    c.setVisible(true);
+    return c;
+  }
+
+  /** Acquire a pooled VFX graphics object, clearing it for reuse. */
+  private acquireVfxGraphics(): Phaser.GameObjects.Graphics {
+    const g = this.vfxGfxPool[this.vfxGfxIdx];
+    this.vfxGfxIdx = (this.vfxGfxIdx + 1) % this.vfxGfxPool.length;
+    this.scene.tweens.killTweensOf(g);
+    g.clear();
+    g.setAlpha(1);
+    g.setVisible(true);
+    return g;
+  }
+
+  addWeapon(key: string): boolean {
+    if (this.hasWeapon(key)) return false;
+    const def = WEAPON_DEFS[key as import('../data/weapons').WeaponKey];
+    if (!def) return false;
+
+    this.weapons.push({
+      config: def,
+      level: 1,
+      cooldownRemaining: 0,
+      damage: def.damage,
+      cooldownMs: def.cooldownMs,
+      projectileCount: def.projectileCount,
+      pierce: def.pierce,
+      aoeRadius: def.aoeRadius,
+      evolved: false,
+      evolutionKey: '',
+    });
+    return true;
+  }
+
+  levelUpWeapon(key: string): boolean {
+    const w = this.weapons.find(w => w.config.key === key);
+    if (!w || w.level >= 5) return false;
+
+    w.level++;
+    const s = w.config.levelScaling;
+
+    w.damage = Math.ceil(w.config.damage * Math.pow(s.damage, w.level - 1));
+    w.cooldownMs = Math.max(200, w.config.cooldownMs * Math.pow(s.cooldown, w.level - 1));
+    w.pierce = w.config.pierce + s.pierce * (w.level - 1);
+    w.aoeRadius = w.config.aoeRadius * Math.pow(s.radius, w.level - 1);
+
+    if (s.countAt.includes(w.level)) {
+      w.projectileCount++;
+    }
+
+    return true;
+  }
+
+  /**
+   * Evolve a weapon in-place: the base slot stays the source weapon key for saves,
+   * but combat switches to `evolutionKey` (see fireEvolved). Idempotent — returns
+   * false if already evolved or missing.
+   */
+  evolveWeapon(weaponKey: string, evolutionKey: string): boolean {
+    const w = this.weapons.find(w => w.config.key === weaponKey);
+    if (!w || w.evolved) return false;
+
+    w.evolved = true;
+    w.evolutionKey = evolutionKey;
+
+    // Evolved weapons get significant but not game-breaking stat boosts.
+    // Previously 1.8× damage × 2× count × 2× fire rate = ~7.2× DPS multiplier
+    // which let a single evolved weapon solve the game. Dialed down to ~3.5×
+    // effective DPS — still a big spike, still the target of builds, but no
+    // longer single-slot win condition.
+    w.damage = Math.ceil(w.damage * 1.35);
+    w.cooldownMs = Math.max(220, w.cooldownMs * 0.72);
+    w.projectileCount = Math.max(w.projectileCount, 2);
+    w.aoeRadius = w.aoeRadius * 1.35;
+    w.pierce = Math.max(w.pierce, 3);
+
+    return true;
+  }
+
+  /** Update player facing from external source (called by GameScene) */
+  setPlayerFacing(angle: number): void {
+    this.playerFacing = angle;
+  }
+
+  /** Update multipliers from player stats (called by GameScene each frame) */
+  setMultipliers(damage: number, aoe: number, attackSpeed: number, critChance: number = 0.10, cooldownReduction: number = 0, critDmgMul: number = 2.0): void {
+    this.damageMultiplier = damage;
+    this.aoeMultiplier = aoe;
+    this.attackSpeedMultiplier = attackSpeed;
+    this.critChance = critChance;
+    this.cooldownReduction = cooldownReduction;
+    this.critDamageMultiplier = critDmgMul;
+  }
+
+  update(delta: number, playerX: number, playerY: number): void {
+    // Build per-frame sorted enemy cache (consumed by findClosestEnemy).
+    // One sort replaces 3× linear scans over 400 enemies.
+    this.buildEnemyCache(playerX, playerY);
+
+    // Update active projectiles + spawn trail particles
+    this.trailCounter++;
+    const spawnTrail = this.trailCounter % BALANCE.weapons.trailEveryNFrames === 0;
+    const projectiles = this.projectilePool.children.entries as Projectile[];
+    for (const proj of projectiles) {
+      if (proj.active) {
+        proj.update(delta);
+        if (spawnTrail) {
+          const wKey = proj.getWeaponKey();
+          const isEvolved = wKey ? this.weapons.some(w => w.config.key === wKey && w.evolved) : false;
+          this.events.emit('projectileTrail', proj.x, proj.y, isEvolved, wKey);
+        }
+      }
+    }
+
+    // Tick each weapon. The reset formula below already bakes in
+    // attackSpeedMultiplier and cooldownReduction, so the decrement itself
+    // is plain delta — multiplying it by attackSpeedMultiplier would
+    // compound and make fire rate quadratic in the stat (20% attack speed
+    // was actually giving ~44% faster fire).
+    for (const weapon of this.weapons) {
+      weapon.cooldownRemaining -= delta;
+      if (weapon.cooldownRemaining <= 0) {
+        // Scale the cooldown reset by attackSpeedMultiplier and cooldownReduction.
+        // Enforce an absolute 50ms minimum so extreme stacking can't produce
+        // a per-frame fire rate that crashes the projectile pool.
+        const effectiveCooldown = Math.max(
+          BALANCE.weapons.minEffectiveCooldownMs,
+          (weapon.cooldownMs * (1 - this.cooldownReduction)) / this.attackSpeedMultiplier
+        );
+        weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
+          + effectiveCooldown;
+        this.fireWeapon(weapon, playerX, playerY);
+        // Only play shoot sound for projectile-type weapons — AoE/trail/sweep have wrong sound
+        const b = weapon.config.behavior;
+        if (b === 'projectile' || b === 'piercing' || b === 'bouncing') {
+          this.scene.getSFXManager().tryPlay('shoot', () => audio.playShootImmediate());
+        }
+      }
+    }
+  }
+
+  // ── Fire dispatch ──
+
+  /** Compute effective damage with global multiplier + crit roll */
+  private effectiveDamage(w: ActiveWeapon): { damage: number; isCrit: boolean } {
+    const baseDmg = Math.ceil(w.damage * this.damageMultiplier);
+    // Crit via seeded RNG — replaying a run with the same seed produces the
+    // same crits on the same enemies, which is what makes shared seeds fair.
+    const isCrit = this.scene.getRunRng().bool(this.critChance);
+    return { damage: isCrit ? Math.ceil(baseDmg * this.critDamageMultiplier) : baseDmg, isCrit };
+  }
+
+  /** Compute effective AoE radius with global multiplier */
+  private effectiveAoe(w: ActiveWeapon): number {
+    return w.aoeRadius * this.aoeMultiplier;
+  }
+
+  private fireWeapon(w: ActiveWeapon, px: number, py: number): void {
+    // Evolved weapons use dramatically different behavior
+    if (w.evolved) {
+      this.fireEvolved(w, px, py);
+      return;
+    }
+
+    switch (w.config.behavior) {
+      case 'projectile':
+        this.fireProjectile(w, px, py, 'thistle');
+        this.spawnMuzzleFlash(px, py, 0xcc88ff); // thistle purple
+        break;
+      case 'piercing':
+        this.fireProjectile(w, px, py, 'caber');
+        this.spawnMuzzleFlash(px, py, 0xddbb66); // wood amber
+        break;
+      case 'bouncing':
+        this.fireBouncing(w, px, py);
+        this.spawnMuzzleFlash(px, py, 0xaa7733); // haggis brown
+        break;
+      case 'aoe_pulse':
+        this.fireAoePulse(w, px, py);
+        break; // AoE has its own visual ring — no muzzle flash needed
+      case 'trail':
+        this.fireTrail(w, px, py);
+        break; // trail weapon doesn't "fire" from origin
+      case 'arc_sweep':
+        this.fireArcSweep(w, px, py);
+        this.spawnMuzzleFlash(px, py, 0xccddff); // claymore steel blue
+        break;
+      case 'aura_pulse':
+        this.fireAuraPulse(w, px, py);
+        break; // aura has its own visual
+    }
+  }
+
+  /** Small muzzle flash at projectile fire point — weapon-coloured spark burst.
+   *  Routed through `StatusFxPool` (acquireArc) instead of `scene.add.circle` so
+   *  a fast-firing player doesn't churn 30-50 GameObjects/sec through GC. */
+  private spawnMuzzleFlash(x: number, y: number, color: number): void {
+    const scene = this.scene;
+    const pool = scene.getStatusFxPool();
+    // Central flash circle — bright, fades fast
+    const flash = pool.acquireArc(x, y, 8, color, 0.8);
+    flash.setDepth(4);
+    scene.tweens.add({
+      targets: flash, scale: 2, alpha: 0,
+      duration: 180, ease: 'Quad.easeOut',
+      onComplete: () => flash.setVisible(false),
+    });
+    // 4 tiny sparks radiating out
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2 + Math.random() * 0.5;
+      const spark = pool.acquireArc(x, y, 2, color, 0.9);
+      spark.setDepth(4);
+      scene.tweens.add({
+        targets: spark,
+        x: x + Math.cos(angle) * 12,
+        y: y + Math.sin(angle) * 12,
+        alpha: 0, scale: 0.3,
+        duration: 220,
+        ease: 'Quad.easeOut',
+        onComplete: () => spark.setVisible(false),
+      });
+    }
+  }
+
+  // ── Projectile-based weapons (Thistle Shot, Caber Toss) ──
+
+  private fireProjectile(w: ActiveWeapon, px: number, py: number, texture: string): void {
+    const target = this.findClosestEnemy(px, py, w.config.range);
+    if (!target) return;
+
+    const count = w.projectileCount;
+    const spread = count > 1 ? 15 : 0;
+
+    for (let i = 0; i < count; i++) {
+      const proj = this.getProjectile(texture);
+      if (!proj) continue;
+
+      let tx = target.x, ty = target.y;
+      if (count > 1) {
+        const base = Phaser.Math.Angle.Between(px, py, target.x, target.y);
+        const offset = Phaser.Math.DegToRad((i - (count - 1) / 2) * spread);
+        tx = px + Math.cos(base + offset) * 500;
+        ty = py + Math.sin(base + offset) * 500;
+      }
+
+      const { damage, isCrit } = this.effectiveDamage(w);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
+      proj.setWeaponKey(w.config.key);
+    }
+  }
+
+  // ── Bouncing weapon (Jobby Hurler) ──
+
+  private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
+    const count = w.projectileCount;
+
+    for (let i = 0; i < count; i++) {
+      const proj = this.getProjectile('haggis_ball');
+      if (!proj) continue;
+
+      // Fire in a random direction
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const tx = px + Math.cos(angle) * 500;
+      const ty = py + Math.sin(angle) * 500;
+
+      const { damage, isCrit } = this.effectiveDamage(w);
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, 0, w.config.range, isCrit);
+      proj.setBouncing();
+      proj.setWeaponKey(w.config.key);
+    }
+  }
+
+  // ── AoE Pulse (Bagpipe Blast) — damages all enemies in radius ──
+
+  private fireAoePulse(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+
+    // Visual pulse ring — pooled
+    const ring = this.acquireVfxCircle(px, py, 10, 0x4488ff, 0.4);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: radius,
+      alpha: 0,
+      duration: 300,
+      onComplete: () => ring.setVisible(false),
+    });
+
+    // Damage + knockback all enemies in radius. Squared-distance gate
+    // skips sqrt for the (majority of) enemies outside the pulse — only
+    // the ones that get hit pay for it, and even then we reuse the same
+    // dx/dy as the knockback direction (no atan2 → cos/sin round-trip).
+    const radiusSq = radius * radius;
+    const enemies = this.enemyGroup.children.entries as Enemy[];
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= radiusSq) {
+        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+
+        // Bagpipe Blast applies brief freeze (slow 50% for 1s)
+        enemy.applyFreeze(0.5, 1000);
+
+        // Knockback — uses the impulse system so behaviorChase doesn't wipe it.
+        // Divided by mass so tanks resist being pushed.
+        if (enemy.active && w.config.knockback > 0) {
+          const dist = Math.sqrt(distSq);
+          if (dist > 1e-6) {
+            const body = enemy.body as Phaser.Physics.Arcade.Body;
+            const kb = w.config.knockback / body.mass / dist;
+            enemy.applyKnockback(dx * kb, dy * kb, 150);
+          }
+        }
+      }
+    }
+  }
+
+  // ── Trail (Scotch Mist) — drops a damage zone at the player's position ──
+
+  private fireTrail(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    const weaponKey = w.config.key;
+
+    // Create a fading mist zone — pooled
+    const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.3);
+    const duration = 2000;
+
+    // Damage enemies within the zone over its lifetime.
+    // Each tick rolls damage+crit independently — baking a single isCrit at
+    // spawn time would lock the entire zone into 2× damage when it rolled
+    // crit, producing 4× DPS spikes when two overlapping zones both critted.
+    // Cap repeats one short of `duration / interval` so the final tick lands
+    // safely before the tween's onComplete cancel races it.
+    const intervalMs = 400;
+    const damageHandle = this.scene.getUpdateTickers().addInterval(
+      'scaled',
+      intervalMs,
+      () => {
+        if (this.scene.getTimeManager().isGameplayPaused()) return;
+        const { damage: dmg, isCrit } = this.effectiveDamage(w);
+        const enemies = this.enemyGroup.children.entries as Enemy[];
+        const radiusSq = radius * radius;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          const dx = enemy.x - zone.x;
+          const dy = enemy.y - zone.y;
+          if (dx * dx + dy * dy <= radiusSq) {
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+            // Scotch Mist applies poison (stacking DoT)
+            enemy.applyPoison(2, 3000);
+          }
+        }
+      },
+      { repeats: Math.max(1, Math.floor(duration / intervalMs) - 1) }
+    );
+
+    // Fade out and destroy
+    this.scene.tweens.add({
+      targets: zone,
+      alpha: 0,
+      duration: duration,
+      onComplete: () => {
+        damageHandle.cancel();
+        zone.setVisible(false);
+      },
+    });
+  }
+
+  // ── Arc Sweep (Nessie's Tentacle) — damages enemies in a frontal arc ──
+
+  private fireArcSweep(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+    const halfArc = Phaser.Math.DegToRad(w.config.arcDegrees / 2);
+
+    // If stationary, aim at nearest enemy instead of stale facing angle
+    let facing = this.playerFacing;
+    const nearest = this.findClosestEnemy(px, py, radius * 1.5);
+    if (nearest) {
+      facing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
+    }
+
+    // Visual sweep arc — steel wedge for claymore, murky green for Nessie — pooled
+    const gfx = this.acquireVfxGraphics();
+    const isClaymore = w.config.key === 'claymore';
+    gfx.fillStyle(isClaymore ? 0xc8d8e8 : 0x226644, isClaymore ? 0.35 : 0.4);
+    gfx.slice(
+      px, py, radius,
+      facing - halfArc,
+      facing + halfArc,
+      false
+    );
+    gfx.fillPath();
+    if (isClaymore) {
+      gfx.lineStyle(2, 0x8899aa, 0.55);
+      gfx.beginPath();
+      gfx.arc(px, py, radius * 0.92, facing - halfArc, facing + halfArc, false);
+      gfx.strokePath();
+    }
+
+    this.scene.tweens.add({
+      targets: gfx,
+      alpha: 0,
+      duration: 250,
+      onComplete: () => { gfx.setVisible(false); gfx.clear(); },
+    });
+
+    // Damage enemies within the arc.
+    //
+    // Replace two atan2s + angle-wrap loops with a dot product. The arc
+    // test "is the enemy direction within ±halfArc of facing?" is exactly
+    // `dot(enemyDir, facingDir) >= cos(halfArc)` for unit vectors —
+    // monotonic in the angle, no branch normalization needed. We pre-bake
+    // facing's cos/sin and the arc threshold once per call; per enemy
+    // does one sqrt and one dot product.
+    const radiusSq = radius * radius;
+    const fcos = Math.cos(facing);
+    const fsin = Math.sin(facing);
+    const arcThresh = Math.cos(halfArc);
+    const enemies = this.enemyGroup.children.entries as Enemy[];
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > radiusSq) continue;
+
+      const dist = Math.sqrt(distSq);
+      if (dist < 1e-6) continue;
+      const nx = dx / dist;
+      const ny = dy / dist;
+      const dot = nx * fcos + ny * fsin;
+      if (dot < arcThresh) continue;
+
+      this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+
+      // Knockback via impulse system (persistent for 150ms, then behavior resumes).
+      // Reuses the same dx/dy: knockback direction == enemy direction.
+      if (enemy.active && w.config.knockback > 0) {
+        const body = enemy.body as Phaser.Physics.Arcade.Body;
+        const kb = w.config.knockback / body.mass;
+        enemy.applyKnockback(nx * kb, ny * kb, 150);
+      }
+    }
+  }
+
+  /** Central damage handler — applies damage, emits events */
+  // ── Evolved weapon behaviors ──
+
+  private fireEvolved(w: ActiveWeapon, px: number, py: number): void {
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+    const radius = this.effectiveAoe(w);
+
+    switch (w.evolutionKey) {
+      case 'thistle_storm':
+        this.fireHomingBurst(w, px, py, dmg, 6, isCrit);
+        break;
+      case 'highland_fling':
+        this.fireExpandingRing(px, py, dmg, radius * 2.2, w.config.key, isCrit);
+        break;
+      case 'highland_games':
+        this.fireExplodingProjectile(w, px, py, dmg, isCrit);
+        break;
+      case 'the_haar':
+        this.fireMassiveFog(px, py, dmg, radius * 2, w.config.key, isCrit);
+        break;
+      case 'haggis_cannon':
+        this.fireRapidBounce(w, px, py, dmg, 4, isCrit);
+        break;
+      case 'nessie_unleashed':
+        this.fireFullSweep(px, py, dmg, radius * 1.6, w.config.key, isCrit);
+        break;
+      case 'william_blade':
+        this.fireWilliamBladeWaves(w, px, py, dmg, isCrit);
+        break;
+      default:
+        this.fireProjectile(w, px, py, 'thistle');
+        break;
+    }
+  }
+
+  /** Thistle Storm — 8 projectiles that each seek a different enemy */
+  private fireHomingBurst(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
+    // Reuse per-frame sorted enemy cache — already active-only, sorted by distance.
+    const targets = this.cachedSortedEnemies;
+    const targetCount = Math.min(targets.length, count);
+
+    for (let i = 0; i < count; i++) {
+      const proj = this.getProjectile('thistle');
+      if (!proj) continue;
+
+      // Aim at a specific enemy, or random direction if not enough targets
+      let tx: number, ty: number;
+      if (i < targetCount) {
+        tx = targets[i].x;
+        ty = targets[i].y;
+      } else {
+        const angle = (i / count) * Math.PI * 2;
+        tx = px + Math.cos(angle) * 400;
+        ty = py + Math.sin(angle) * 400;
+      }
+
+      proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800, isCrit);
+      proj.setWeaponKey(w.config.key);
+    }
+  }
+
+  /** Ceòl Mòr bagpipes — pulse damage + slow in a standing ring. */
+  private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
+    const radius = this.effectiveAoe(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+    const ring = this.acquireVfxCircle(px, py, radius, 0x339955, 0.38);
+    this.scene.tweens.add({
+      targets: ring,
+      alpha: 0.1,
+      duration: 280,
+      yoyo: true,
+      onComplete: () => ring.setVisible(false),
+    });
+
+    const radiusSq = radius * radius;
+    const enemies = this.enemyGroup.children.entries as Enemy[];
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      if (dx * dx + dy * dy <= radiusSq) {
+        this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+        enemy.applyFreeze(0.42, 1400);
+      }
+    }
+  }
+
+  /** William Blade — chained sonic shockwaves from the claymore stance. */
+  private fireWilliamBladeWaves(w: ActiveWeapon, px: number, py: number, baseDmg: number, isCrit: boolean = false): void {
+    const maxR = this.effectiveAoe(w) * 2.9;
+    const waveDmg = Math.ceil(baseDmg * 0.45);
+    const weaponKey = w.config.key;
+    for (let wave = 0; wave < 3; wave++) {
+      // Wave 0 at delay 0 fires inside the same `tickScaled` pass that
+      // created it, racing with pooled-VFX cleanup timers for adjacent
+      // rings. Shift by one interval so the 3 waves fire at 170/340/510 ms
+      // on clean frame boundaries.
+      this.scene.getUpdateTickers().addOnce('scaled', (wave + 1) * 170, () => {
+        if (this.destroyed || !this.scene?.sys?.isActive()) return;
+        this.fireExpandingRing(px, py, waveDmg, maxR, weaponKey, isCrit);
+      });
+    }
+  }
+
+  /** Highland Fling — massive expanding damage ring */
+  private fireExpandingRing(px: number, py: number, dmg: number, maxRadius: number, weaponKey: string, isCrit: boolean = false): void {
+    const ring = this.acquireVfxCircle(px, py, 20, 0x4488ff, 0.5);
+    let currentRadius = 20;
+    const hitEnemies = new Set<Enemy>();
+
+    const expandHandle = this.scene.getUpdateTickers().addInterval('scaled', 50, () => {
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
+      currentRadius += (maxRadius - 20) / 16;
+      ring.setRadius(currentRadius);
+      ring.setAlpha(Math.max(0, ring.alpha - 0.5 / 16));
+
+      // Damage enemies who just entered the ring — each hit at most once
+      // per ring lifetime. The squared-distance gate skips sqrt entirely.
+      // (Mid-expansion pool-recycle into a fresh enemy reusing the same JS
+      // object will get one frame's worth of immunity from the Set; that's
+      // a tiny acceptable miss compared to the previously broken
+      // delete-then-add re-hit pattern.)
+      if (!this.scene.getTimeManager().isGameplayPaused()) {
+        const enemies = this.enemyGroup.children.entries as Enemy[];
+        const currentRadiusSq = currentRadius * currentRadius;
+        for (const enemy of enemies) {
+          if (!enemy.active) continue;
+          if (hitEnemies.has(enemy)) continue;
+          const dx = enemy.x - px;
+          const dy = enemy.y - py;
+          if (dx * dx + dy * dy <= currentRadiusSq) {
+            hitEnemies.add(enemy);
+            this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+          }
+        }
+      }
+    }, { repeats: 16 });
+
+    this.scene.getUpdateTickers().addOnce('scaled', 850, () => {
+      expandHandle.cancel();
+      ring.setVisible(false);
+    });
+  }
+
+  /** Highland Games — piercing caber that explodes on final hit */
+  private fireExplodingProjectile(w: ActiveWeapon, px: number, py: number, dmg: number, isCrit: boolean = false): void {
+    const target = this.findClosestEnemy(px, py, w.config.range);
+    if (!target) return;
+
+    const proj = this.getProjectile('caber');
+    if (!proj) return;
+    const weaponKey = w.config.key;
+    proj.fire(px, py, target.x, target.y, w.config.projectileSpeed, dmg, w.pierce, w.config.range, isCrit);
+    proj.setWeaponKey(weaponKey);
+
+    // Use the safe callback field instead of monkey-patching deactivate
+    proj.onDeactivateCallback = () => {
+      const ex = proj.x, ey = proj.y;
+
+      // Guard against both scene shutdown AND this WeaponSystem being replaced
+      // by a fresh instance after Play Again (scene stays active on restart,
+      // but `this` is the old instance — destroyed = true means we shouldn't
+      // create new visuals/damage on the live scene).
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
+
+      const blast = this.acquireVfxCircle(ex, ey, 10, 0xff6600, 0.6);
+      this.scene.tweens.add({
+        targets: blast, radius: 80, alpha: 0, duration: 300,
+        onComplete: () => blast.setVisible(false),
+      });
+
+      const enemies = this.enemyGroup.children.entries as Enemy[];
+      const blastRadiusSq = 80 * 80;
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        const dx = enemy.x - ex;
+        const dy = enemy.y - ey;
+        if (dx * dx + dy * dy <= blastRadiusSq) {
+          this.dealDamageToEnemy(enemy, Math.ceil(dmg * 0.6), isCrit, weaponKey);
+        }
+      }
+    };
+  }
+
+  /** The Haar — massive fog zone covering huge area */
+  private fireMassiveFog(px: number, py: number, dmg: number, radius: number, weaponKey: string, isCrit: boolean = false): void {
+    const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.25);
+    const duration = 2600;
+
+    const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
+      if (this.destroyed || !this.scene?.sys?.isActive()) return;
+      if (this.scene.getTimeManager().isGameplayPaused()) return;
+      const enemies = this.enemyGroup.children.entries as Enemy[];
+      const radiusSq = radius * radius;
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        const dx = enemy.x - zone.x;
+        const dy = enemy.y - zone.y;
+        if (dx * dx + dy * dy <= radiusSq) {
+          this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+          // Slow enemies in the fog to 50% speed. Duration matches the
+          // tick interval + a small overlap so the slow is continuous
+          // rather than flickering on and off between ticks.
+          enemy.applyFreeze(0.5, 500);
+        }
+      }
+    }, { repeats: Math.floor(duration / 350) });
+
+    this.scene.tweens.add({
+      targets: zone, alpha: 0, duration,
+      onComplete: () => { tickHandle.cancel(); zone.setVisible(false); },
+    });
+  }
+
+  /** Jobby Cannon — rapid burst of wee jobbies in all directions */
+  private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
+    for (let i = 0; i < count; i++) {
+      const proj = this.getProjectile('haggis_ball');
+      if (!proj) continue;
+      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+      proj.fire(px, py,
+        px + Math.cos(angle) * 500, py + Math.sin(angle) * 500,
+        w.config.projectileSpeed * 1.5, dmg, 0, 2000, isCrit
+      );
+      proj.setBouncing();
+      proj.setWeaponKey(w.config.key);
+    }
+  }
+
+  /** Nessie Unleashed — full 360-degree sweep */
+  private fireFullSweep(px: number, py: number, dmg: number, radius: number, weaponKey: string, isCrit: boolean = false): void {
+    const gfx = this.acquireVfxGraphics();
+    gfx.fillStyle(0x226644, 0.35);
+    gfx.fillCircle(px, py, radius);
+
+    this.scene.tweens.add({
+      targets: gfx, alpha: 0, duration: 400,
+      onComplete: () => { gfx.setVisible(false); gfx.clear(); },
+    });
+
+    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const radiusSq = radius * radius;
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= radiusSq) {
+        this.dealDamageToEnemy(enemy, dmg, isCrit, weaponKey);
+        // Knockback via impulse system — same dx/dy supplies the direction,
+        // no separate atan2 needed.
+        const dist = Math.sqrt(distSq);
+        if (dist > 1e-6) {
+          const body = enemy.body as Phaser.Physics.Arcade.Body;
+          const kb = 200 / body.mass / dist;
+          enemy.applyKnockback(dx * kb, dy * kb, 200);
+        }
+      }
+    }
+  }
+
+  private dealDamageToEnemy(
+    enemy: Enemy,
+    damage: number,
+    isCrit: boolean = false,
+    weaponKey: string = 'unknown'
+  ): void {
+    this.events.emit('damageDealt', enemy.x, enemy.y, damage, isCrit, weaponKey);
+    const wasBoss = enemy.isBoss();
+    const wasElite = enemy.isElite();
+    const killed = enemy.takeDamage(damage);
+    if (killed) {
+      this.events.emit('enemyKilled', enemy.x, enemy.y, enemy.getXpValue(), enemy.getEnemyKey(), wasBoss, wasElite);
+      globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+        enemyKey: enemy.getEnemyKey(),
+        xpValue: enemy.getXpValue(),
+        wasBoss,
+        wasElite,
+      });
+    }
+  }
+
+  // ── Helpers ──
+
+  /** Throttle pool warnings to once per 5 seconds */
+  private lastPoolWarnTime: number = 0;
+
+  private getProjectile(texture: string): Projectile | null {
+    let proj = this.projectilePool.getFirstDead(false) as Projectile | null;
+    if (!proj) {
+      if (this.projectilePool.getLength() >= BALANCE.weapons.projectilePoolMax) {
+        // Pool exhausted — weapon fires but produces no projectile.
+        // Emit event so HUD/JuiceSystem can show feedback.
+        this.events.emit('projectileDropped');
+        if (import.meta.env.DEV) {
+          const now = performance.now();
+          if (now - this.lastPoolWarnTime > 5000) {
+            this.lastPoolWarnTime = now;
+            console.warn(`[WeaponSystem] projectile pool exhausted (${BALANCE.weapons.projectilePoolMax}/${BALANCE.weapons.projectilePoolMax})`);
+          }
+        }
+        return null;
+      }
+      proj = new Projectile(this.scene);
+      this.projectilePool.add(proj);
+    }
+    // Dev warning when pool is >80% utilized
+    if (import.meta.env.DEV) {
+      const usage = this.projectilePool.countActive(true);
+      if (usage > BALANCE.weapons.projectilePoolMax * 0.8) {
+        const now = performance.now();
+        if (now - this.lastPoolWarnTime > 5000) {
+          this.lastPoolWarnTime = now;
+          console.warn(`[WeaponSystem] projectile pool >80%: ${usage}/${BALANCE.weapons.projectilePoolMax}`);
+        }
+      }
+    }
+    proj.setTexture(texture);
+    return proj;
+  }
+
+  /** Build sorted-by-distance cache of active enemies. Called once per update(). */
+  private buildEnemyCache(px: number, py: number): void {
+    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const sorted = this.cachedSortedEnemies;
+    const distSq = this.cachedSortedDistSq;
+    let count = 0;
+
+    for (let i = 0, len = enemies.length; i < len; i++) {
+      const e = enemies[i];
+      if (!e.active) continue;
+      const dx = e.x - px, dy = e.y - py;
+      sorted[count] = e;
+      distSq[count] = dx * dx + dy * dy;
+      count++;
+    }
+    // Truncate stale tail entries
+    sorted.length = count;
+    distSq.length = count;
+
+    // Insertion sort — nearly sorted in practice (enemies don't teleport),
+    // so this beats Array.sort's overhead for typical counts.
+    for (let i = 1; i < count; i++) {
+      const dSq = distSq[i];
+      const enemy = sorted[i];
+      let j = i - 1;
+      while (j >= 0 && distSq[j] > dSq) {
+        distSq[j + 1] = distSq[j];
+        sorted[j + 1] = sorted[j];
+        j--;
+      }
+      distSq[j + 1] = dSq;
+      sorted[j + 1] = enemy;
+    }
+  }
+
+  private findClosestEnemy(_fromX: number, _fromY: number, maxRange: number): Enemy | null {
+    const maxRangeSq = maxRange * maxRange;
+    const sorted = this.cachedSortedEnemies;
+    const distSq = this.cachedSortedDistSq;
+    // Cache is sorted by distance — first entry within range is the closest.
+    for (let i = 0, len = sorted.length; i < len; i++) {
+      if (distSq[i] > maxRangeSq) break;
+      return sorted[i];
+    }
+    return null;
+  }
+
+  private onProjectileHitEnemy(
+    projObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+    enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
+  ): void {
+    if (this.destroyed || !this.scene?.sys?.isActive()) return;
+    const proj = projObj as Projectile;
+    const enemy = enemyObj as Enemy;
+    if (!proj.active || !enemy.active) return;
+
+    // Check if this hit should be processed (bouncing projectiles track per-enemy hits)
+    if (proj.shouldSkipHit(enemy)) return;
+
+    this.dealDamageToEnemy(enemy, proj.getDamage(), proj.isCrit(), proj.getWeaponKey() || 'unknown');
+
+    // Caber Toss applies burn (3 dps for 3s)
+    if (proj.getWeaponKey() === 'caber_toss') {
+      enemy.applyBurn(3, 3000);
+    }
+
+    proj.onHitEnemy();
+  }
+
+  hasWeapon(key: string): boolean {
+    return this.weapons.some(w => w.config.key === key);
+  }
+
+  /** Replace loadout from a saved run (default starter is restored if list is empty). */
+  replaceWeaponsFromRun(
+    slots: { key: string; level: number; evolved: boolean; evolutionKey: string }[]
+  ): void {
+    this.weapons = [];
+    for (const s of slots) {
+      if (!WEAPON_DEFS[s.key as import('../data/weapons').WeaponKey]) continue;
+      if (!this.addWeapon(s.key)) continue;
+      for (let lv = 2; lv <= Math.max(1, s.level); lv++) {
+        this.levelUpWeapon(s.key);
+      }
+      if (s.evolved && s.evolutionKey) {
+        this.evolveWeapon(s.key, s.evolutionKey);
+      }
+    }
+    if (this.weapons.length === 0) {
+      this.addWeapon('thistle_shot');
+    }
+  }
+
+  getWeapons(): ActiveWeapon[] {
+    return this.weapons;
+  }
+
+  getProjectileGroup(): Phaser.GameObjects.Group {
+    return this.projectilePool;
+  }
+}

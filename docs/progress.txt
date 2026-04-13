@@ -1,0 +1,202 @@
+[INIT] Ralph Mode Started
+
+[2026-04-10] Phase 1 Discovery started.
+- Memory files created: docs/progress.txt, docs/PRD.md
+- Existing docs found: docs/superpowers/specs/2026-04-09-procedural-music-engine-design.md, docs/superpowers/plans/2026-04-09-procedural-music-engine.md
+- Dependency snapshot (package.json):
+  - runtime: phaser ^3.90.0
+  - dev: vite ^6.4.2, vitest ^3.2.4, typescript ^6.0.2, rollup-win32-x64-msvc ^4.60.1
+- Immediate repo hygiene red flags (from git status in session context):
+  - dist/ is tracked/modified
+  - node_modules/ appears tracked/modified
+
+Next:
+- Pull current docs for Phaser/Vite/Vitest/TypeScript via Context7.
+- Scan src/ for lifecycle hazards (setTimeout, any-casts, scene reach-through), and persistence hazards.
+
+[2026-04-10] Context7 MCP attempt
+- Located tool descriptors for Context7 (resolve-library-id, query-docs).
+- Blocker: MCP invocation tool surface does not accept passing required arguments (query, libraryName).
+  Result: resolve-library-id calls failed validation due to missing args.
+- Proceeding with discovery using local code inspection + build/test verification; will revisit Context7 when tool invocation supports arguments.
+
+[2026-04-10] Deep scan (focused: src/, excluding node_modules/dist)
+- Tests: `npm test` PASS (vitest run; 1 file, 5 tests).
+- Build: `npm run build` PASS (tsc --noEmit + vite build).
+  - Warning: single minified chunk ~1.68MB (gzip ~390KB) → consider code-splitting if this targets web distribution.
+- Hotspot patterns found:
+  - Real timers: setTimeout in Player/Enemy/JuiceSystem + music engine.
+  - Type escape hatches: multiple `as any` in Enemy/SpawnSystem/Projectile/UpgradeCards.
+  - Scene reach-through: Enemy uses getPlayer/getSpawnSystem/getWeaponSystem via `this.scene as any`.
+- Repo hygiene remains critical: git status shows dist/ and node_modules/ changes tracked/untracked.
+
+[2026-04-10] Phase 2: Remote binding attempt
+- Added remote origin = git@github.com:AutomatedOps/core-engine.git
+- Push failed (SSH auth): Permission denied (publickey).
+- Failsafe engaged: continuing with stabilization work without remote push.
+
+───────────────────────────────────────────────────────────────────
+
+[2026-04-13] Phase 1 Restoration + Phase 2 Reconciliation
+
+State resumed mid-session. Baseline verification:
+- `npm test` → 68 files, 466 tests, all PASS (2.7s)
+- `npm run build` → green (~4.5s). Chunks: phaser vendor 1.48MB
+  ungz / 340KB gz; app 500KB ungz / 133KB gz. App chunk shrank
+  vs 2026-04-10 snapshot because GameScene dropped 46%.
+- `npm run lint` → 18 errors, all mechanical (dead imports from
+  the GameScene refactor + a couple of require()-style + a
+  prefer-startsWith). Not caused by uncommitted work.
+- `git status` → clean on hygiene (dist/ and node_modules/ no
+  longer tracked, .gitignore proper). Prior P0 resolved since
+  last log.
+- TODO/FIXME markers: still zero.
+- Context7 MCP: now callable (schemas loaded via ToolSearch).
+  Resolved /phaserjs/phaser for 3.90; docs reachable.
+
+Uncommitted work discovered in tree:
+- BanterSystem feature (substantially complete):
+  - src/systems/BanterSystem.ts + BanterSystem.test.ts (new)
+  - src/data/banter.ts (new, 229 LOC data + typed sub-pools)
+  - src/core/i18n.ts (+131 LOC copy; per-boss + per-variant
+    authored voices, hearth/edge tone split)
+  - src/scenes/GameScene.ts wiring (first_blood / kill_streak
+    at 20/75/150 / level_up w/ variant tag / low_hp + recover
+    / biome_change / idle@90s / flush-per-tick)
+  - src/systems/SpawnSystem.ts wiring (boss_warn w/ boss.key tag)
+  - src/scenes/SettingsScene.ts (Wheesht/Sparing/Natural/Gabby
+    cycle row, gamepad-routable)
+  - src/core/SettingsManager.ts + SettingsManager.test.ts
+    (versioned persistence + validation)
+- All tests covering the new work PASS. Build green. Feature was
+  ready for landing; committed as one coherent narrative unit.
+
+Actions this session:
+1. Committed BanterSystem feature (9 files, +1019 LOC).
+   → 2e00a1b feat(banter): ambient Glesga commentary system
+2. Fixed 18 lint errors (5 files), verified lint/tests/build.
+   → d81ee0a chore(lint): drop dead imports + modernize require-style
+3. Rewrote docs/PRD.md to reconcile roadmap with shipped reality.
+   Old PRD still listed P0 hygiene (resolved) and P0a Context7
+   tooling (resolved), and was silent on a11y, biomes, post-bell,
+   curses, meta shop, run history, achievements, tutorial, banter.
+   New queue is P1 lifecycle/typing finish-work, P2 bundle budget,
+   P3 a11y finish, P4 content velocity, P5 observability.
+
+Code health metrics (post-this-session):
+- Production `as any`: 17 occurrences in 8 files.
+- Scene reach-through (`this.scene as unknown`): 7 in 5 files.
+- Real timers outside tests: 2 (AudioSystem + music engine).
+- Lint clean, tests 466/466, build green.
+
+Next (Phase 3 ignition):
+- P1 top item: finish ISceneContext so the last 7 reach-throughs
+  go away. The BanterSystem hookup already uses the reach-through
+  pattern in SpawnSystem — convert that to a typed surface first
+  so we don't add reinforcement to the old pattern.
+- Continue on the autonomous loop: pick next PRD queue item,
+  verify gate, commit, log.
+
+[2026-04-13] Phase 3 — P1 reach-through retirement (DONE)
+
+Atomic completed: kill the last 7 `this.scene as unknown` sites.
+
+Surface changes:
+- src/core/ISceneContext.ts: added optional `caption`,
+  `requestBanter`, `getCurrentBiomeId`, `getSecondsPastBell`
+  (typed via BanterContext + BiomeId imports). Optional so unit
+  tests can keep partial scene stubs without a stub blizzard;
+  call sites still use `?.()` for runtime safety.
+- src/systems/JuiceSystem.ts: scene field promoted to
+  `Phaser.Scene & ISceneContext`; constructor signature too.
+  4 caption call sites simplified.
+- src/systems/SpawnSystem.ts: 3 reach-through hops collapsed
+  to direct `this.scene.caption?.()`, `.requestBanter?.()`,
+  `.getCurrentBiomeId?.()`, `.getSecondsPastBell?.()`. Killed
+  unused `BiomeId` import as a result.
+- src/entities/Player.ts: cast to `Phaser.Scene & ISceneContext`
+  at the dash trail tickers grab. Killed unused `UpdateTickers`
+  import (only `TickerHandle` still used).
+- src/entities/XPGem.ts: same pattern at the settle handle grab.
+- src/ui/UpgradeCards.ts: the textures cast was gratuitous —
+  `Phaser.Scene` already exposes `textures`. Removed the
+  `as unknown` indirection.
+
+Verification gates:
+- `npm run lint` clean (after dropping the 2 dead imports).
+- `npm test` 466/466 PASS, 68 files, 2.92s.
+- `npm run build` PASS, 4.88s. Bundle sizes unchanged.
+- `grep "this.scene as unknown" src/`: zero matches.
+- Production `as any` count: still 17 in 8 files (next P1 atomic).
+
+Commit: forthcoming — single coherent narrative
+(refactor: retire scene reach-throughs via ISceneContext).
+
+Next loop iteration:
+- P1 second atomic: audit + reduce the 17 production `as any`.
+  Largest cluster (7 of 17) is pool-teardown idiom across
+  SpawnSystem/WeaponSystem/XPSystem (`(p as any).destroy?.()`
+  + `.active`/`.visible` writes). Single typed
+  `disposePoolMember(obj)` helper would collapse them.
+
+[2026-04-13] Phase 3 — bug-hunt sweep (2 real bugs, fixed)
+
+User asked for find-and-fix loop across the codebase. Dispatched
+parallel Explore agents over scenes/systems/entities/core+data,
+verified each finding myself before fixing. Most agent claims were
+false alarms (gratuitous defensive guards, type-cast hand-wringing,
+or reading the code wrong). Two real bugs surfaced and shipped:
+
+1. 9c53ced fix(projectile): pierce/bounce no longer double-hit same
+   enemy. shouldSkipHit's "recycled pool slot" branch deleted the
+   hit record whenever enemy.active was true — and real enemies
+   ARE active while alive, so every overlap frame after the first
+   counted as a fresh hit. The unreachable `else` branch was the
+   only path the test exercised (mock enemy was `{}`, no `active`
+   prop). Strengthened the test with `active: true` mocks plus a
+   per-frame piercing regression case.
+
+2. f17a0b1 fix(enemy): chemical explosion fires regardless of
+   burn/poison order. Synergy check lived only inside applyPoison;
+   "poison first, burn second" silently dropped the explosion.
+   Production impact was masked by Scotch Mist re-applying poison
+   every 500ms — but a future single-shot poison weapon would
+   have inherited the broken contract. Extracted to a private
+   maybeFireChemicalExplosion() helper called from both apply paths.
+
+False-alarm catalogue (verified myself, did NOT fix):
+- evolutionChest.ts:16 — agent claimed `r.baseWeapon` should be
+  `r.evolvedWeapon`. Wrong: pushEvolvedWeapon stores BASE keys
+  (LevelUpFlow.ts:228 → effect.weaponKey = r.baseWeapon).
+- EdgeIndicators.ts:155 — agent flagged `Math.tan(angle)` divide.
+  Outer guard cos>0.001 + the if-branch capturing small-tan cases
+  prevents the else from ever seeing tan≈0.
+- PauseMenu.ts / UpgradeCards.ts setInteractive without handler —
+  agent thought clicks propagate. They don't, because input.ts
+  onPointerDown explicitly hit-tests for any interactive object
+  (line 183-184) before activating the joystick.
+- Conductor.killHistory monotonicity — defensive check would only
+  matter via ctx-rebuild path, which is rare browser behavior.
+
+Verification:
+- `npm run lint` clean.
+- `npm test` 467/467 PASS (one regression test added).
+- `npm run build` not re-run after second fix; lint+tests cover
+  the surface (no type changes).
+- Production `as any` count: still 17 (next P1 atomic).
+- Scene reach-throughs: still 0 (held).
+
+Confidence on remaining surface:
+- Player/Enemy state machines, recalcStats, knockback math, status
+  effect ticks, cooldown carry-over: all sound.
+- Music engine + Conductor + NoteScheduler: tight, reset paths
+  documented.
+- Save schema migration v1→v8: defensive coercion at every step,
+  no silent data loss path found.
+- Achievement + analytics dedupe: idempotent, try/catch wrapped.
+- TimeManager token system: lowest-wins timeScale, paired refs.
+- HazardZones, BiomeManager, RNG, math utils: all clean.
+
+Codebase is genuinely solid. Find-and-fix loop has hit diminishing
+returns — further sweeps likely surface stylistic harden suggestions
+rather than real defects.

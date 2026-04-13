@@ -1,0 +1,36 @@
+# Fix Plan — Wild Haggis Survivors
+
+## Status Legend
+- [ ] Not started
+- [~] In progress
+- [x] Done
+
+---
+
+## P0 — Project won't build/run (critical missing files)
+
+- [x] **Restore `package.json`** — Reconstructed from `.package-lock.json` metadata. Added `@types/node` (missing from original). Clean `npm install` needed (original node_modules had CRLF bin scripts + missing platform binaries).
+- [x] **Restore `vite.config.ts`** — Uses `fileURLToPath` (no `@types/node` `__dirname` needed), PWA plugin, vitest config via `/// <reference types="vitest/config" />`.
+- [x] **Restore `index.html`** — Full-bleed game canvas, PWA meta tags, viewport lock.
+- [x] **Fix `.gitignore`** — Added `dist/`, cleaned up Ralph generic entries.
+- [ ] **Initialize git repo** — Needs user approval for `git init`.
+
+## P1 — Build verification
+
+- [x] **`npm run build`** — TypeScript type-check + Vite build passes. 109 modules, 1.9MB bundle (Phaser is big). PWA service worker generated.
+- [x] **`npm test`** — 68 test files, 467 tests, all passing in 2.59s.
+- [ ] **`npm run dev`** — Not tested (headless environment).
+
+## P2 — Issues from REVISION_NOTES.md (flagged for review)
+
+- [x] Boss collision radii are generic — tour bus at 96×96 may need dedicated radius. Corrected per-boss radii to match sprite body geometry: gordon=30, the_laird=28, hunter_general=28, taxman=30. Tour_bus already had 42. Generic `boss*` fallback (32) kept for future bosses.
+- [x] Haggis body tilt simulated, not true rotation — cosmetic issue at larger scales. **Won't fix**: reads well at 56×56 game scale. True rotation requires RenderTexture pipeline — disproportionate effort for cosmetic-only benefit. Revisit only if character select screen ships with large sprites.
+- [x] `terrier` texture key still says "terrier" despite drawing a midge — confusing for contributors. Renamed `terrier` → `midge` across all source files (enemies.ts, BootScene.ts, Enemy.ts, biomes.ts, BalanceConfig.ts, MenuScene.ts, MainMenuScene.ts, SpriteExportScene.ts, test). Display name now "Highland Midge".
+- [x] Generic `boss` fallback (72×72) never tested — add console warning when used. Added `console.warn` in `Enemy.spawn()` when `config.texture === 'boss'`.
+
+## Learnings
+
+- Project has no `@/` path alias usage in source despite tsconfig defining it.
+- `virtual:pwa-register` import in `main.ts` requires `vite-plugin-pwa`.
+- `src/tools/SpriteExportScene.ts` exists for dev sprite export tool.
+- All sprites are procedurally generated in `BootScene` — no external image assets.

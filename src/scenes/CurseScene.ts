@@ -1,0 +1,216 @@
+import Phaser from 'phaser';
+import { COLORS } from '../config';
+import { t } from '../core/i18n';
+import { audio } from '../systems/AudioSystem';
+import { getSettingsManager } from '../core/SettingsManager';
+import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
+
+/**
+ * Curse picker — interstitial between loadout and run. The player may pick
+ * one curse (trading difficulty for gold) or skip with "A CLEAN RUN".
+ * State is passed downstream via the module-level pendingCurseKey singleton
+ * in data/curses.ts (GameScene.create() consumes it exactly once).
+ *
+ * Layout: 5 tiles in a single row along the bottom half (4 curses + the
+ * "clean run" escape tile at the end). At 800×600 that gives each tile
+ * ~148px wide — enough room for title, description, and the "+X% gold" chip.
+ *
+ * Non-goals: curse stacking, random curse rolls, per-curse unlocks.
+ * Everything is visible from the first run — discoverability over gating.
+ */
+export class CurseScene extends Phaser.Scene {
+  constructor() {
+    super({ key: 'Curse' });
+  }
+
+  create(): void {
+    const { width, height } = this.scale;
+    const { uiScale, highContrastUi } = getSettingsManager().load();
+
+    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    // Purple-wine wash at the top — curses have a darker tone than the amber Chronicle.
+    this.add.rectangle(width / 2, 30, width, 60, 0x5a2a4a, 0.08);
+
+    audio.startAmbientWind();
+    const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
+    this.tweens.add({ targets: fade, alpha: 0, duration: 360, onComplete: () => fade.destroy() });
+
+    // ── Header ──
+    this.add
+      .text(width / 2, 40, t('ui.curseScene.title'), {
+        fontFamily: 'monospace',
+        fontSize: '28px',
+        color: highContrastUi ? '#ffbadc' : '#e8a0c6',
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 4,
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale);
+
+    this.add
+      .text(width / 2, 76, t('ui.curseScene.subtitle'), {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: '#c0a8b6',
+        fontStyle: 'italic',
+        align: 'center',
+        wordWrap: { width: width - 60 },
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale);
+
+    // ── Tile grid: 5 tiles (4 curses + clean run) in one row ──
+    const tilesInRow = CURSES.length + 1;
+    const gridMargin = 20;
+    const gutter = 10;
+    const tileW = (width - gridMargin * 2 - gutter * (tilesInRow - 1)) / tilesInRow;
+    const tileH = 340;
+    const tileY = 260;
+
+    CURSES.forEach((curse, i) => {
+      const cx = gridMargin + tileW / 2 + i * (tileW + gutter);
+      this.drawCurseTile(cx, tileY, tileW, tileH, uiScale, {
+        titleKey: curse.nameKey,
+        descKey: curse.descKey,
+        goldPct: curse.goldBonusPct,
+        pickLabelKey: 'ui.curseScene.pick',
+        accentColor: 0xb35287,
+        onPick: () => this.commitCurse(curse.key),
+      });
+    });
+
+    // Clean-run tile — last in the row, distinct tint so it reads as the
+    // opt-out rather than one-of-the-curses.
+    const cleanX = gridMargin + tileW / 2 + CURSES.length * (tileW + gutter);
+    this.drawCurseTile(cleanX, tileY, tileW, tileH, uiScale, {
+      titleKey: 'ui.curseScene.none_title',
+      descKey: 'ui.curseScene.none_desc',
+      goldPct: null,
+      pickLabelKey: 'ui.curseScene.pick_none',
+      accentColor: 0x4a6a9e,
+      onPick: () => this.commitCurse(null),
+    });
+
+    // ── Back ──
+    const backY = height - 22;
+    const backBtn = this.add
+      .rectangle(width / 2, backY, 180, 30, 0x252540, 1)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(width / 2, backY, t('ui.curseScene.back'), {
+        fontFamily: 'monospace', fontSize: '14px', color: '#e8d4a0', fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale);
+    backBtn.on('pointerover', () => backBtn.setFillStyle(0x2a2244));
+    backBtn.on('pointerout', () => backBtn.setFillStyle(0x252540));
+    backBtn.on('pointerdown', () => {
+      audio.playClick();
+      this.scene.start('Menu');
+    });
+
+    this.input.keyboard?.on('keydown-ESC', () => {
+      audio.playClick();
+      this.scene.start('Menu');
+    });
+
+    this.events.once('shutdown', () => {
+      audio.stopAmbientWind();
+    });
+  }
+
+  /**
+   * Pending curse is set on the module singleton and the Game scene is
+   * started immediately — GameScene.create() consumes + clears the key.
+   */
+  private commitCurse(key: CurseKey | null): void {
+    audio.playClick();
+    setPendingCurse(key);
+    this.scene.start('Game');
+  }
+
+  private drawCurseTile(
+    cx: number,
+    cy: number,
+    w: number,
+    h: number,
+    uiScale: number,
+    opts: {
+      titleKey: string;
+      descKey: string;
+      /** null means "no gold chip" — used by the clean-run tile. */
+      goldPct: number | null;
+      pickLabelKey: string;
+      accentColor: number;
+      onPick: () => void;
+    },
+  ): void {
+    // Tile background
+    this.add
+      .rectangle(cx, cy, w, h, 0x10172a, 0.92)
+      .setStrokeStyle(2, opts.accentColor, 0.85);
+
+    // Title
+    this.add
+      .text(cx, cy - h / 2 + 26, t(opts.titleKey), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#f5e1a6',
+        fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: w - 16 },
+      })
+      .setOrigin(0.5, 0)
+      .setScale(uiScale);
+
+    // Gold chip (curse tiles only)
+    if (opts.goldPct !== null) {
+      const chipY = cy - h / 2 + 76;
+      this.add
+        .rectangle(cx, chipY, w - 24, 22, 0x3a2c14, 1)
+        .setStrokeStyle(1, 0xd4a017, 0.9);
+      this.add
+        .text(cx, chipY, t('ui.curseScene.gold_chip', { pct: opts.goldPct }), {
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          color: '#f7d27a',
+          fontStyle: 'bold',
+        })
+        .setOrigin(0.5)
+        .setScale(uiScale);
+    }
+
+    // Description — wraps within the tile; positioned in the middle so it
+    // reads under the title/chip without crowding the pick button.
+    const descY = cy - 12;
+    this.add
+      .text(cx, descY, t(opts.descKey), {
+        fontFamily: 'monospace',
+        fontSize: '10px',
+        color: '#bcc3d4',
+        align: 'center',
+        wordWrap: { width: w - 18 },
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale);
+
+    // Pick button (bottom of tile)
+    const btnY = cy + h / 2 - 26;
+    const btn = this.add
+      .rectangle(cx, btnY, w - 24, 32, opts.accentColor, 1)
+      .setInteractive({ useHandCursor: true });
+    this.add
+      .text(cx, btnY, t(opts.pickLabelKey), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#ffffff',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(uiScale);
+    btn.on('pointerover', () => btn.setFillStyle(Phaser.Display.Color.ValueToColor(opts.accentColor).lighten(15).color));
+    btn.on('pointerout', () => btn.setFillStyle(opts.accentColor));
+    btn.on('pointerdown', opts.onPick);
+  }
+}
