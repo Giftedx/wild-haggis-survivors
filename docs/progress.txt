@@ -134,7 +134,69 @@ Commit: forthcoming — single coherent narrative
 
 Next loop iteration:
 - P1 second atomic: audit + reduce the 17 production `as any`.
-  Largest cluster (9 of 17) is pool-teardown idiom across
+  Largest cluster (7 of 17) is pool-teardown idiom across
   SpawnSystem/WeaponSystem/XPSystem (`(p as any).destroy?.()`
   + `.active`/`.visible` writes). Single typed
   `disposePoolMember(obj)` helper would collapse them.
+
+[2026-04-13] Phase 3 — bug-hunt sweep (2 real bugs, fixed)
+
+User asked for find-and-fix loop across the codebase. Dispatched
+parallel Explore agents over scenes/systems/entities/core+data,
+verified each finding myself before fixing. Most agent claims were
+false alarms (gratuitous defensive guards, type-cast hand-wringing,
+or reading the code wrong). Two real bugs surfaced and shipped:
+
+1. 9c53ced fix(projectile): pierce/bounce no longer double-hit same
+   enemy. shouldSkipHit's "recycled pool slot" branch deleted the
+   hit record whenever enemy.active was true — and real enemies
+   ARE active while alive, so every overlap frame after the first
+   counted as a fresh hit. The unreachable `else` branch was the
+   only path the test exercised (mock enemy was `{}`, no `active`
+   prop). Strengthened the test with `active: true` mocks plus a
+   per-frame piercing regression case.
+
+2. f17a0b1 fix(enemy): chemical explosion fires regardless of
+   burn/poison order. Synergy check lived only inside applyPoison;
+   "poison first, burn second" silently dropped the explosion.
+   Production impact was masked by Scotch Mist re-applying poison
+   every 500ms — but a future single-shot poison weapon would
+   have inherited the broken contract. Extracted to a private
+   maybeFireChemicalExplosion() helper called from both apply paths.
+
+False-alarm catalogue (verified myself, did NOT fix):
+- evolutionChest.ts:16 — agent claimed `r.baseWeapon` should be
+  `r.evolvedWeapon`. Wrong: pushEvolvedWeapon stores BASE keys
+  (LevelUpFlow.ts:228 → effect.weaponKey = r.baseWeapon).
+- EdgeIndicators.ts:155 — agent flagged `Math.tan(angle)` divide.
+  Outer guard cos>0.001 + the if-branch capturing small-tan cases
+  prevents the else from ever seeing tan≈0.
+- PauseMenu.ts / UpgradeCards.ts setInteractive without handler —
+  agent thought clicks propagate. They don't, because input.ts
+  onPointerDown explicitly hit-tests for any interactive object
+  (line 183-184) before activating the joystick.
+- Conductor.killHistory monotonicity — defensive check would only
+  matter via ctx-rebuild path, which is rare browser behavior.
+
+Verification:
+- `npm run lint` clean.
+- `npm test` 467/467 PASS (one regression test added).
+- `npm run build` not re-run after second fix; lint+tests cover
+  the surface (no type changes).
+- Production `as any` count: still 17 (next P1 atomic).
+- Scene reach-throughs: still 0 (held).
+
+Confidence on remaining surface:
+- Player/Enemy state machines, recalcStats, knockback math, status
+  effect ticks, cooldown carry-over: all sound.
+- Music engine + Conductor + NoteScheduler: tight, reset paths
+  documented.
+- Save schema migration v1→v8: defensive coercion at every step,
+  no silent data loss path found.
+- Achievement + analytics dedupe: idempotent, try/catch wrapped.
+- TimeManager token system: lowest-wins timeScale, paired refs.
+- HazardZones, BiomeManager, RNG, math utils: all clean.
+
+Codebase is genuinely solid. Find-and-fix loop has hit diminishing
+returns — further sweeps likely surface stylistic harden suggestions
+rather than real defects.
