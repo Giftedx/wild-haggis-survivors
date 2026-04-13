@@ -11,8 +11,8 @@
 ## Medium Priority
 - [ ] Add tests for XPGem — drop/collect/magnetize/destroy are untested (coverage gap, entities review)
 - [ ] Add tests for Projectile — fire(), pierce logic, range deactivation, bounce TTL, deactivate callback (coverage gap, entities review)
-- [ ] Add Player tests beyond DI — recalcStats, bonus stacking, takeDamage, shield, net slow, dash (coverage gap, entities review)
-- [ ] Enemy.fireNet stale-scene risk — callback chain creates physics objects; if enemy dies mid-fire, scene refs may be stale (potential bug, entities review)
+- [x] Add Player tests — 16 tests: takeDamage (armor, shield, death), heal, bonus stacking (damage, drift, regen, cooldown, maxHp), tickRegen, onLevelUp stat recalc (speed, drift, pickup)
+- [x] Enemy.fireNet stale-scene risk — NOT A BUG: try/catch in cleanup, activeNetCleanup called on spawn/die/destroy, hit flag prevents double-fire
 - [ ] Enemy.applyPostBellScaling resets hp=maxHp — safe now (called at spawn only) but API permits misuse post-damage (code smell, entities review)
 - [x] Audit `as any` in input.ts — 3 casts removed, InputPlugin satisfies MinimalEmitter natively
 - [x] Audit `as any` in UpgradeCards.ts — 3 casts removed, typed array via structural interface
