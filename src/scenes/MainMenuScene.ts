@@ -7,6 +7,13 @@ import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
 import { loadSave, getWinRate, getAverageSurvivalTime, getTrend } from '../utils/save';
+import {
+  currentDailyDateKey,
+  dailyChallengeSeed,
+  encodeSeed,
+  parseSeedInput,
+} from '../utils/rng';
+import type { GameSceneInitData } from './GameScene';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -306,12 +313,51 @@ export class MainMenuScene extends Phaser.Scene {
       abandonTxt.on('pointerdown', goLoadoutFresh);
     }
 
+    // === Daily Challenge ===
+    // Slotted between the primary start action and the meta shop. Shows a
+    // one-line state readout (seed code + today's attempt/clear status) so
+    // players can tell at a glance whether they've engaged with today's
+    // challenge. Launches a seeded run that skips the loadout picker —
+    // daily rules mean everyone gets the same variant.
+    const dailyBtnY = metaY;
+    const dailyBtn = this.add
+      .rectangle(bx, dailyBtnY, btnW, btnH, 0x8b6914, 1)
+      .setInteractive({ useHandCursor: true });
+    dailyBtn.setScale(uiScale);
+    const daily = this.resolveDailyState(meta.dailyChallenge);
+    const dailyTitle = this.add
+      .text(bx, dailyBtnY - 8, t('ui.menu.daily_challenge'), {
+        fontFamily: 'monospace',
+        fontSize: '17px',
+        color: '#fff3d1',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5);
+    dailyTitle.setScale(uiScale);
+    const dailySubtitle = this.add
+      .text(bx, dailyBtnY + 10, daily.subtitle, {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: daily.completed ? '#9de6a8' : '#e2c97a',
+      })
+      .setOrigin(0.5);
+    dailySubtitle.setScale(uiScale);
+    dailyBtn.on('pointerover', () => dailyBtn.setFillStyle(0xa87e1a));
+    dailyBtn.on('pointerout', () => dailyBtn.setFillStyle(0x8b6914));
+    const startDaily = () => this.startSeededRun(daily.seed, { isDaily: true });
+    dailyBtn.on('pointerdown', startDaily);
+    dailyTitle.setInteractive({ useHandCursor: true });
+    dailyTitle.on('pointerdown', startDaily);
+    dailySubtitle.setInteractive({ useHandCursor: true });
+    dailySubtitle.on('pointerdown', startDaily);
+
+    const metaY2 = dailyBtnY + btnH + 14;
     const metaBtn = this.add
-      .rectangle(bx, metaY, btnW, btnH, 0x2d6a3e, 1)
+      .rectangle(bx, metaY2, btnW, btnH, 0x2d6a3e, 1)
       .setInteractive({ useHandCursor: true });
     metaBtn.setScale(uiScale);
     const metaTxt = this.add
-      .text(bx, metaY, t('ui.menu.meta_upgrades'), {
+      .text(bx, metaY2, t('ui.menu.meta_upgrades'), {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: '#ffffff',
@@ -329,7 +375,7 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('MetaShop');
     });
 
-    const optY = metaY + btnH + 14;
+    const optY = metaY2 + btnH + 14;
     const optBtn = this.add
       .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
       .setInteractive({ useHandCursor: true });
@@ -352,6 +398,26 @@ export class MainMenuScene extends Phaser.Scene {
     optTxt.on('pointerdown', () => {
       this.scene.start('Settings');
     });
+
+    // === Custom seed link ===
+    // Secondary text-only affordance. Prompts the user for a 7-char share
+    // code (or raw integer) and launches a seeded run. Uses window.prompt
+    // for cross-platform simplicity — a full in-game keyboard overlay is
+    // future work if mobile UX feedback demands it.
+    const customSeedY = optY + 42 + 16;
+    const customSeedTxt = this.add
+      .text(bx, customSeedY, t('ui.menu.enter_seed'), {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: subduedColor,
+        fontStyle: 'italic',
+      })
+      .setOrigin(0.5)
+      .setInteractive({ useHandCursor: true });
+    customSeedTxt.setScale(uiScale);
+    customSeedTxt.on('pointerover', () => customSeedTxt.setColor(titleColor));
+    customSeedTxt.on('pointerout', () => customSeedTxt.setColor(subduedColor));
+    customSeedTxt.on('pointerdown', () => this.promptCustomSeed());
 
     // === Campfire hearth anchor below the buttons ===
     // A tiny "glow" of three concentric ellipses pulsing gently, with a soft
@@ -528,10 +594,14 @@ export class MainMenuScene extends Phaser.Scene {
     // Ambient moor wind — cozy between storms
     if (!reduceParticles) audio.startAmbientWind();
 
-    // === Gamepad navigation wiring (unchanged) ===
+    // === Gamepad navigation wiring ===
+    // Daily Challenge sits between Start and Meta Upgrades in focus order so
+    // a player with a controller can land on it without cycling through the
+    // whole menu.
     const entries: GamepadMenuEntry[] = [{ rect: startBtn, activate: goPrimary }];
     if (abandonBtn && goLoadoutFresh) entries.push({ rect: abandonBtn, activate: goLoadoutFresh });
     entries.push(
+      { rect: dailyBtn, activate: startDaily },
       { rect: metaBtn, activate: () => this.scene.start('MetaShop') },
       { rect: optBtn, activate: () => this.scene.start('Settings') }
     );
@@ -546,5 +616,72 @@ export class MainMenuScene extends Phaser.Scene {
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });
+  }
+
+  /**
+   * Resolve the display state for the daily challenge button: today's seed,
+   * whether the player has already attempted or cleared it. If the save's
+   * daily record is from a previous day, treat as unattempted.
+   */
+  private resolveDailyState(
+    recorded: import('../core/SaveManager').DailyChallengeState | null,
+  ): { seed: number; subtitle: string; completed: boolean } {
+    const todayKey = currentDailyDateKey();
+    const seed = dailyChallengeSeed();
+    const code = encodeSeed(seed);
+    const isTodayRecord = recorded && recorded.dateKey === todayKey;
+    if (!isTodayRecord) {
+      return {
+        seed,
+        subtitle: t('ui.menu.daily_fresh', { code }),
+        completed: false,
+      };
+    }
+    if (recorded.completedVictory) {
+      return {
+        seed,
+        subtitle: t('ui.menu.daily_cleared', { code }),
+        completed: true,
+      };
+    }
+    return {
+      seed,
+      subtitle: t('ui.menu.daily_attempts', { code, attempts: recorded.attempts }),
+      completed: false,
+    };
+  }
+
+  /**
+   * Prompt for a seed share code (or raw integer) and launch a run with it.
+   * Invalid input shows a best-effort message and no-ops. Uses the native
+   * browser prompt so we don't need a full in-game keyboard overlay — seed
+   * entry is an advanced feature; the Daily button is the main path.
+   */
+  private promptCustomSeed(): void {
+    if (typeof window === 'undefined') return;
+    const raw = window.prompt(t('ui.menu.seed_prompt'));
+    if (raw == null) return; // user cancelled
+    const seed = parseSeedInput(raw);
+    if (seed == null) {
+      if (typeof window.alert === 'function') {
+        window.alert(t('ui.menu.seed_invalid'));
+      }
+      return;
+    }
+    this.startSeededRun(seed, { isDaily: false });
+  }
+
+  /** Launch GameScene with a specific seed, bypassing the loadout picker. */
+  private startSeededRun(seed: number, opts: { isDaily: boolean }): void {
+    // Clear any suspended run — a seeded start shouldn't collide with an
+    // in-flight normal run's resume payload, and the player's persisted
+    // variant choice is preserved (overridden per-run via init data).
+    this.saveManager.clearActiveRun();
+    const data: GameSceneInitData = {
+      seed,
+      isDaily: opts.isDaily,
+      forceVariantKey: DEFAULT_VARIANT_KEY,
+    };
+    this.scene.start('Game', data);
   }
 }

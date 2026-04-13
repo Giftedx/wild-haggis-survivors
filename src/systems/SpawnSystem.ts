@@ -393,10 +393,13 @@ export class SpawnSystem {
       const pos = this.getSpawnPosition(camera, playerX, playerY);
 
       const count = config.packSize || 1;
+      const rng = this.scene.getRunRng();
       for (let j = 0; j < count; j++) {
         const enemy = Enemy.acquireFromPool(this.pool, this.scene);
         if (!enemy) continue;
-        const scatter = j > 0 ? Phaser.Math.Between(-30, 30) : 0;
+        // Pack scatter is a visual feel detail, but it's tied to enemy spawn
+        // position which affects gameplay (aggro distances). Seed it.
+        const scatter = j > 0 ? rng.int(-30, 30) : 0;
         enemy.spawn(pos.x + scatter, pos.y + scatter, config, this.gameTimeSec);
 
         // Elite chance: BALANCE.enemy.ELITE_SPAWN_CHANCE after ELITE_UNLOCK_SEC,
@@ -405,7 +408,7 @@ export class SpawnSystem {
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
             && config.packSize <= 1
-            && Math.random() < BALANCE.enemy.ELITE_SPAWN_CHANCE) {
+            && rng.bool(BALANCE.enemy.ELITE_SPAWN_CHANCE)) {
           enemy.markAsElite();
           // Golden flash at spawn position to warn player
           const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
@@ -433,14 +436,18 @@ export class SpawnSystem {
     const top = playerY - halfH - buffer;
     const bottom = playerY + halfH + buffer;
 
-    const edge = Phaser.Math.Between(0, 3);
+    // Spawn edge + position via seeded RNG — enemies appear from the same
+    // compass directions at the same moments for a given seed, which is the
+    // bulk of what makes a run "replayable" in the Balatro sense.
+    const rng = this.scene.getRunRng();
+    const edge = rng.int(0, 3);
     let x: number, y: number;
 
     switch (edge) {
-      case 0: x = Phaser.Math.FloatBetween(left, right); y = top; break;
-      case 1: x = Phaser.Math.FloatBetween(left, right); y = bottom; break;
-      case 2: x = left; y = Phaser.Math.FloatBetween(top, bottom); break;
-      default: x = right; y = Phaser.Math.FloatBetween(top, bottom); break;
+      case 0: x = rng.float(left, right); y = top; break;
+      case 1: x = rng.float(left, right); y = bottom; break;
+      case 2: x = left; y = rng.float(top, bottom); break;
+      default: x = right; y = rng.float(top, bottom); break;
     }
 
     x = Phaser.Math.Clamp(x, 0, GAME.WORLD_WIDTH);
@@ -473,7 +480,8 @@ export class SpawnSystem {
       totalWeight += getSpawnWeight(t, this.gameTimeSec);
     }
 
-    let roll = Math.random() * totalWeight;
+    // Seeded so the same wave composition appears for a given seed.
+    let roll = this.scene.getRunRng().next() * totalWeight;
     for (const t of types) {
       roll -= getSpawnWeight(t, this.gameTimeSec);
       if (roll <= 0) return t;

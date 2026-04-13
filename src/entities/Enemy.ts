@@ -985,8 +985,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         // Phase-2 minions respect the same elite gate as wave spawns — the
         // player has already learned what the gold glow means at minute 2,
         // and auto-eliting every minion gifted unintended XP + speed mid-boss.
+        // Seeded so daily runs have consistent phase-2 composition.
         if (gameTime > BALANCE.enemy.ELITE_UNLOCK_SEC
-            && Math.random() < BALANCE.enemy.ELITE_SPAWN_CHANCE) {
+            && this.ctx.getRunRng().bool(BALANCE.enemy.ELITE_SPAWN_CHANCE)) {
           minion.markAsElite();
         }
       }

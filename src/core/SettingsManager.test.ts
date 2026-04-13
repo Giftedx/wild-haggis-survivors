@@ -28,8 +28,9 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: SETTINGS_STORAGE_KEY });
 
     meta.save({
-      saveVersion: 7,
+      saveVersion: 8,
       totalKillsSpent: 0,
+      dailyChallenge: null,
       totalKills: 99,
       unlockedWeapons: [],
       unlockedUpgrades: [],
@@ -68,8 +69,9 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 7,
+      saveVersion: 8,
       totalKillsSpent: 0,
+      dailyChallenge: null,
       totalKills: 10,
       unlockedWeapons: [],
       unlockedUpgrades: [],
@@ -103,8 +105,9 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 7,
+      saveVersion: 8,
       totalKillsSpent: 0,
+      dailyChallenge: null,
       totalKills: 77,
       unlockedWeapons: ['thistle_shot'],
       unlockedUpgrades: ['speed_tier_1'],

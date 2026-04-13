@@ -44,7 +44,7 @@ describe('RunHistory', () => {
     storage.setItem('k', JSON.stringify(v5Save));
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(7);
+    expect(loaded.saveVersion).toBe(8);
     expect(loaded.runHistory).toEqual([]);
     expect(loaded.totalKills).toBe(100);
     expect(loaded.hasCompletedTutorial).toBe(true);
@@ -82,7 +82,7 @@ describe('RunHistory', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({
       ...v5Save,
-      saveVersion: 7,
+      saveVersion: 8,
       runHistory: [
         { variantKey: 'classic', timeSurvivedSec: 'bad', enemiesKilled: -5 },
         null,
@@ -139,7 +139,7 @@ describe('RunHistory', () => {
     storage.setItem('k', JSON.stringify({ saveVersion: 1, totalKills: 3, unlockedWeapons: [] }));
     const mgr = new SaveManager({ storage, key: 'k' });
     const loaded = mgr.load();
-    expect(loaded.saveVersion).toBe(7);
+    expect(loaded.saveVersion).toBe(8);
     expect(loaded.runHistory).toEqual([]);
     expect(loaded.totalKills).toBe(3);
   });

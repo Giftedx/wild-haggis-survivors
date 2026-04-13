@@ -311,6 +311,13 @@ export class GameOverScene extends Phaser.Scene {
 
     this.addRunResultUnlockContent(panelCenterX, panelTop + 490, d + 3, runResult.newlyUnlockedVariants, 1140);
 
+    // Seed readout — sits just above the action buttons. For daily runs it
+    // prefixes "DAILY" and shows the date; for seeded runs just the code.
+    // Tapping copies the code to the clipboard so players can share.
+    if (this.payload.seedCode) {
+      this.renderSeedReadout(panelCenterX, panelTop + 568, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
+    }
+
     const buttonsY = panelTop + 612;
     this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
@@ -571,6 +578,78 @@ export class GameOverScene extends Phaser.Scene {
     button.on('pointerover', () => button.setFillStyle(Phaser.Display.Color.ValueToColor(fill).lighten(16).color));
     button.on('pointerout', () => button.setFillStyle(fill));
     button.on('pointerdown', onClick);
+  }
+
+  /**
+   * Renders the seed code with a clickable "copy" affordance. Clipboard
+   * support varies (desktop: navigator.clipboard; older Safari: textarea +
+   * execCommand); we fall back through them and update the label to
+   * confirm when the copy worked.
+   */
+  private renderSeedReadout(
+    centerX: number,
+    y: number,
+    depth: number,
+    code: string,
+    isDaily: boolean,
+    delay: number,
+  ): void {
+    const label = isDaily ? t('ui.gameOver.seed_daily', { code }) : t('ui.gameOver.seed_normal', { code });
+    const tail = t('ui.gameOver.seed_copy_hint');
+    const text = this.add
+      .text(centerX, y, `${label}  ·  ${tail}`, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: isDaily ? '#e2c97a' : '#a8b0c0',
+        fontStyle: 'italic',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    let copied = false;
+    const doCopy = () => {
+      const ok = this.copyToClipboard(code);
+      if (ok && !copied) {
+        copied = true;
+        text.setText(t('ui.gameOver.seed_copied', { code }));
+        text.setColor('#9de6a8');
+      }
+    };
+    text.on('pointerover', () => { if (!copied) text.setColor('#ffe2a0'); });
+    text.on('pointerout', () => { if (!copied) text.setColor(isDaily ? '#e2c97a' : '#a8b0c0'); });
+    text.on('pointerdown', doCopy);
+  }
+
+  /** Best-effort clipboard write; returns true on success. */
+  private copyToClipboard(text: string): boolean {
+    const nav = (globalThis as unknown as { navigator?: { clipboard?: { writeText: (s: string) => Promise<void> } } }).navigator;
+    if (nav?.clipboard?.writeText) {
+      // Fire-and-forget — permission dialogs resolve async; even if the user
+      // denies we still show the copied-state since pasting will fail
+      // naturally and the code is visible in the label anyway.
+      void nav.clipboard.writeText(text).catch(() => { /* ignore */ });
+      return true;
+    }
+    try {
+      const doc = (globalThis as unknown as { document?: Document }).document;
+      if (!doc) return false;
+      const ta = doc.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      doc.body.appendChild(ta);
+      ta.select();
+      const ok = doc.execCommand('copy');
+      doc.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
   }
 
   private buildBoundedLoadoutSummary(rawSummary: string, maxDetailLines: number): string {

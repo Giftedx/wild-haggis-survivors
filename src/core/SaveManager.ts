@@ -107,6 +107,27 @@ export interface RunHistoryEntry {
   variantKey: string;
   isVictory: boolean;
   weaponKeys: string[];
+  /** 32-bit RNG seed this run used (V8+). Absent for legacy entries. */
+  runSeed?: number;
+  /** True when the run was launched from the Daily Challenge (V8+). */
+  isDaily?: boolean;
+}
+
+/**
+ * Daily Challenge progress for the current calendar day. Cleared whenever
+ * `dateKey` mismatches today — one completable challenge per local date.
+ */
+export interface DailyChallengeState {
+  /** "YYYY-MM-DD" local; the date this state refers to. */
+  dateKey: string;
+  /** Best time survived on this daily (seconds). */
+  bestTimeSec: number;
+  /** Highest enemy kill count on this daily. */
+  bestEnemiesKilled: number;
+  /** Attempts made today; increments on every run ended during the daily. */
+  attempts: number;
+  /** True once the player has cleared the daily victory condition today. */
+  completedVictory: boolean;
 }
 
 export interface ISaveDataV6 {
@@ -143,9 +164,29 @@ export interface ISaveDataV7 {
   runHistory: RunHistoryEntry[];
 }
 
-export type ISaveData = ISaveDataV7;
+/**
+ * V8 adds Daily Challenge tracking. Run history entries additionally carry
+ * `runSeed` + `isDaily` fields (both optional for legacy entries); migration
+ * preserves history and seeds daily state to null.
+ */
+export interface ISaveDataV8 {
+  saveVersion: 8;
+  totalKills: number;
+  totalKillsSpent: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  hasCompletedTutorial: boolean;
+  hasSeenDriftTutorial: boolean;
+  runHistory: RunHistoryEntry[];
+  /** null when the player has never attempted a daily, or when state is for a past date (will reset). */
+  dailyChallenge: DailyChallengeState | null;
+}
 
-export const CURRENT_SAVE_VERSION = 7 as const;
+export type ISaveData = ISaveDataV8;
+
+export const CURRENT_SAVE_VERSION = 8 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -160,6 +201,7 @@ const DEFAULT_SAVE: ISaveData = {
   hasCompletedTutorial: false,
   hasSeenDriftTutorial: false,
   runHistory: [],
+  dailyChallenge: null,
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -264,7 +306,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
   const o = raw as Record<string, unknown>;
   const variantKey = typeof o.variantKey === 'string' ? o.variantKey : '';
   if (!variantKey) return null;
-  return {
+  const entry: RunHistoryEntry = {
     timestamp: clampInt(o.timestamp, 0),
     timeSurvivedSec: Math.max(0, clampNumber(o.timeSurvivedSec, 0)),
     enemiesKilled: clampInt(o.enemiesKilled, 0),
@@ -275,6 +317,31 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     variantKey,
     isVictory: toBool(o.isVictory, false),
     weaponKeys: toStringArray(o.weaponKeys),
+  };
+  // Optional V8+ fields — absent from legacy entries; we don't fabricate values
+  // for them since UI distinguishes "no seed recorded" from "seed 0".
+  if (typeof o.runSeed === 'number' && Number.isFinite(o.runSeed)) {
+    entry.runSeed = Math.floor(Math.abs(o.runSeed));
+  }
+  if (typeof o.isDaily === 'boolean') {
+    entry.isDaily = o.isDaily;
+  }
+  return entry;
+}
+
+function coerceDailyChallenge(raw: unknown): DailyChallengeState | null {
+  if (typeof raw !== 'object' || raw === null) return null;
+  const o = raw as Record<string, unknown>;
+  const dateKey = typeof o.dateKey === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.dateKey)
+    ? o.dateKey
+    : '';
+  if (!dateKey) return null;
+  return {
+    dateKey,
+    bestTimeSec: Math.max(0, clampNumber(o.bestTimeSec, 0)),
+    bestEnemiesKilled: clampInt(o.bestEnemiesKilled, 0),
+    attempts: clampInt(o.attempts, 0),
+    completedVictory: toBool(o.completedVictory, false),
   };
 }
 
@@ -411,6 +478,7 @@ export class SaveManager {
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
         runHistory: [],
+        dailyChallenge: null,
       };
     }
 
@@ -426,6 +494,7 @@ export class SaveManager {
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
         runHistory: [],
+        dailyChallenge: null,
       };
     }
 
@@ -441,6 +510,7 @@ export class SaveManager {
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
         runHistory: [],
+        dailyChallenge: null,
       };
     }
 
@@ -456,6 +526,7 @@ export class SaveManager {
         hasCompletedTutorial,
         hasSeenDriftTutorial: false,
         runHistory: [],
+        dailyChallenge: null,
       };
     }
 
@@ -471,6 +542,7 @@ export class SaveManager {
         hasCompletedTutorial,
         hasSeenDriftTutorial,
         runHistory: [],
+        dailyChallenge: null,
       };
     }
 
@@ -489,6 +561,25 @@ export class SaveManager {
         hasCompletedTutorial,
         hasSeenDriftTutorial,
         runHistory,
+        dailyChallenge: null,
+      };
+    }
+
+    if (v === 7) {
+      // V7 didn't know about daily challenge — start with no daily state;
+      // it will populate on the next daily attempt.
+      return {
+        saveVersion: CURRENT_SAVE_VERSION,
+        totalKills,
+        totalKillsSpent,
+        unlockedWeapons,
+        unlockedUpgrades,
+        activeRun,
+        unlockedAchievements,
+        hasCompletedTutorial,
+        hasSeenDriftTutorial,
+        runHistory,
+        dailyChallenge: null,
       };
     }
 
@@ -503,6 +594,7 @@ export class SaveManager {
       hasCompletedTutorial,
       hasSeenDriftTutorial,
       runHistory,
+      dailyChallenge: coerceDailyChallenge(obj.dailyChallenge),
     };
   }
 }

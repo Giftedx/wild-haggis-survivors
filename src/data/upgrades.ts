@@ -425,7 +425,20 @@ function formatPassiveItemName(passiveKey: string): string {
  * Draw N cards from the pool, weighted by rarity.
  * @param luckBonus — percentage bonus to rare/legendary weights (from Sporran + Lucky Heather)
  */
-export function drawCards(pool: UpgradeCard[], count: number, luckBonus: number = 0): UpgradeCard[] {
+/**
+ * Draw `count` cards from `pool` with rarity-weighted probability.
+ *
+ * `rng` is an optional function returning [0, 1). Defaults to `Math.random` so
+ * legacy callers (tests) keep working; gameplay callers pass the run-scoped
+ * seeded RNG so card draws are deterministic for a given seed (daily challenge,
+ * shareable runs).
+ */
+export function drawCards(
+  pool: UpgradeCard[],
+  count: number,
+  luckBonus: number = 0,
+  rng: () => number = Math.random,
+): UpgradeCard[] {
   if (pool.length <= count) return [...pool];
 
   // Adjusted weights — luck boosts rare and legendary chances. Luck
@@ -448,7 +461,7 @@ export function drawCards(pool: UpgradeCard[], count: number, luckBonus: number 
       totalWeight += weights[card.rarity];
     }
 
-    let roll = Math.random() * totalWeight;
+    let roll = rng() * totalWeight;
     let picked = remaining[remaining.length - 1];
     for (const card of remaining) {
       roll -= weights[card.rarity];
