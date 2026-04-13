@@ -114,6 +114,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   private hazardTtlHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
   private damageTintHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
+  private activeNetCleanup: (() => void) | null = null;
 
   constructor(scene: Phaser.Scene & ISceneContext, x: number, y: number) {
     super(scene, x, y, 'tourist');
@@ -151,6 +152,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hazardTtlHandle = null;
     this.damageTintHandle?.cancel();
     this.damageTintHandle = null;
+    this.activeNetCleanup?.();
+    this.activeNetCleanup = null;
     this.setPosition(x, y);
     this.setTexture(config.texture);
     if (config.texture === 'boss') {
@@ -631,11 +634,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const cleanup = () => {
       if (hit) return;
       hit = true;
+      if (this.activeNetCleanup === cleanup) this.activeNetCleanup = null;
       try {
         this.scene.physics.world.removeCollider(overlapRef);
         if (net.active) net.destroy();
       } catch { /* scene may have restarted */ }
     };
+    this.activeNetCleanup?.();
+    this.activeNetCleanup = cleanup;
 
     const overlapRef = this.scene.physics.add.overlap(net, spawnedPlayer, () => {
       if (hit) return;
@@ -1148,6 +1154,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.hazardTtlHandle = null;
     this.damageTintHandle?.cancel();
     this.damageTintHandle = null;
+    this.activeNetCleanup?.();
+    this.activeNetCleanup = null;
+    this.scene.tweens.killTweensOf(this);
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = false;
     this.setVelocity(0, 0);
@@ -1157,6 +1166,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   destroy(fromScene?: boolean): void {
+    this.activeNetCleanup?.();
+    this.activeNetCleanup = null;
+    this.scene?.tweens.killTweensOf(this);
     this.hpBarBg?.destroy();
     this.hpBarFill?.destroy();
     this.shadow?.destroy();
