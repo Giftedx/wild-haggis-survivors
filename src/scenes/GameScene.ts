@@ -43,6 +43,8 @@ import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker, HAZARD_SOURCE_KEY } from '../systems/DeathCauseTracker';
 import { classifyDeath } from '../core/deathCauseClassifier';
+import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
+import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import {
@@ -172,6 +174,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private floatTextPool: Phaser.GameObjects.Text[] = [];
   private readonly runStatsTracker = new RunStatsTracker();
   private readonly deathCauseTracker = new DeathCauseTracker();
+  /** Per-run modifier bag (from curse pick). Defaults to identity — an un-cursed run behaves identically to the pre-curse codebase. */
+  private runModifiers: RunModifiers = defaultModifiers();
+  /** Curse key chosen for this run, if any — persisted into run history. */
+  private activeCurseKey: CurseKey | null = null;
   private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
@@ -294,7 +300,32 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
     const metaSave = this.metaSaveManager.load();
-    const composedStats = StatComposer.getPlayerStats(metaSave);
+    const baseStats = StatComposer.getPlayerStats(metaSave);
+
+    // Consume pending curse exactly once. Curses don't apply to resumed
+    // runs (they were already baked into the in-progress run) or daily
+    // attempts (fixed rules — seed equivalence).
+    this.runModifiers = defaultModifiers();
+    this.activeCurseKey = null;
+    if (!resumeRun && !this.runIsDaily) {
+      const key = consumePendingCurse();
+      const curse = getCurseByKey(key);
+      if (curse) {
+        curse.apply(this.runModifiers);
+        this.activeCurseKey = curse.key;
+      }
+    } else {
+      // Clear any stale pending key so it doesn't bleed into the next run.
+      consumePendingCurse();
+    }
+
+    // Compose with per-run modifiers layered on meta bonuses. Player reads
+    // these at construction — no post-hoc stat rewrites needed.
+    const composedStats = {
+      ...baseStats,
+      speed: baseStats.speed * this.runModifiers.moveSpeedMult,
+      maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
+    };
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
       : GAME.WORLD_WIDTH / 2;
@@ -321,6 +352,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Systems
     this.statusFxPool = new StatusFxPool(this);
     this.spawnSystem = new SpawnSystem(this);
+    this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
@@ -1472,7 +1504,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const enemy = enemyObj as Enemy;
     if (!enemy.active) return;
 
-    const incomingDmg = enemy.getDamage();
+    // Curse-scaled damage before armor mitigation. Thin Hide inflates
+    // incoming blows by 25%; an identity mult is a no-op.
+    const rawDmg = enemy.getDamage();
+    const incomingDmg = Math.max(1, Math.round(rawDmg * this.runModifiers.damageTakenMult));
     const armor = this.player.getArmor();
     const dead = this.player.takeDamage(incomingDmg);
     this.deathCauseTracker.recordDamage({
@@ -1868,6 +1903,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       bossKills: this.bossKillCount,
       variantKey: this.activeVariant.key,
       weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
+      ...(this.activeCurseKey ? { curseKey: this.activeCurseKey } : {}),
     };
   }
 
@@ -1940,6 +1976,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       previousBests,
       seedCode: encodeSeed(this.runRng.seed),
       isDaily: this.runIsDaily,
+      curseKey: this.activeCurseKey ?? undefined,
       deathCause,
     };
   }
@@ -1952,6 +1989,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       coinGold: this.coinGoldEarned,
       bestCombo: this.juice.getBestCombo(),
       victory,
+      goldMult: this.runModifiers.goldMult,
     };
   }
 
@@ -2398,11 +2436,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         if (this.iFrames || this.player.isDashInvincible()) continue;
         const d = Phaser.Math.Distance.Between(z.x, z.y, this.player.x, this.player.y);
         if (d < z.r) {
-          const dead = this.player.takeDamage(3);
+          const hazardDmg = Math.max(1, Math.round(3 * this.runModifiers.damageTakenMult));
+          const dead = this.player.takeDamage(hazardDmg);
           this.deathCauseTracker.recordDamage({
             gameTimeSec: this.spawnSystem.getGameTimeSec(),
             sourceKey: HAZARD_SOURCE_KEY,
-            amount: 3,
+            amount: hazardDmg,
             sourceIsBoss: false,
             sourceIsElite: false,
             sourceIsHazard: true,

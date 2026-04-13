@@ -140,3 +140,28 @@ describe('run application', () => {
     expect(coerceSelectedVariant('made_up_variant', ['classic', 'moor_runner'])).toBe('classic');
   });
 });
+
+describe('gold reward — curse multiplier', () => {
+  const base = {
+    timeSurvivedSec: 610,
+    enemiesKilled: 800,
+    bossGold: 12,
+    coinGold: 8,
+    bestCombo: 27,
+    victory: true,
+  };
+
+  it('defaults to 1× when no goldMult is provided', () => {
+    expect(computeGoldReward(base)).toBe(584);
+  });
+
+  it('scales the reward by goldMult (Thin Hide = 1.40×)', () => {
+    expect(computeGoldReward({ ...base, goldMult: 1.40 })).toBe(Math.floor(584 * 1.40 / 1));
+  });
+
+  it('ignores non-positive or non-finite goldMult (falls back to 1×)', () => {
+    expect(computeGoldReward({ ...base, goldMult: 0 })).toBe(584);
+    expect(computeGoldReward({ ...base, goldMult: -2 })).toBe(584);
+    expect(computeGoldReward({ ...base, goldMult: Number.NaN })).toBe(584);
+  });
+});

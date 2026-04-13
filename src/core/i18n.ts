@@ -54,6 +54,22 @@ export const EN_STRINGS: LocaleTree = {
       seed_invalid: 'That seed didn\'t take — check it and try again.',
       chronicle: 'THE HERD CHRONICLE',
       deeds: 'YIR DEEDS',
+      curse: 'CURSE O\' THE MOOR',
+    },
+    curseScene: {
+      title: 'CURSE O\' THE MOOR',
+      /** Subtitle — sets the tone: this is a trade, deliberately taken. Hearth. */
+      subtitle: 'The moor\'ll dig in its teeth for a heavier purse. Pick yir poison — or none at all.',
+      /** Default "no curse" tile — always an option. Hearth. */
+      none_title: 'A CLEAN RUN',
+      none_desc: 'Nae curse. Just you an\' the moor. Usual gold.',
+      /** Chip on each curse tile showing the gold reward. */
+      gold_chip: '+{pct}% gold',
+      /** Button on each tile. */
+      pick: 'TAKE IT ON',
+      /** Button on the "no curse" tile. */
+      pick_none: 'START CLEAN',
+      back: 'BACK',
     },
     chronicle: {
       // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──
@@ -105,6 +121,8 @@ export const EN_STRINGS: LocaleTree = {
       run_row_victory: '✦ {time} · {kills} culls · L{level} · {variant}',
       run_row_defeat: '{time} · {kills} culls · L{level} · {variant}',
       run_daily_tag: '[DAILY]',
+      /** Badge rendered on a run row where the player bore a curse. */
+      run_curse_chip: '⚖ {curse}',
 
       // ── Actions ──
       back: 'BACK',
@@ -224,6 +242,10 @@ export const EN_STRINGS: LocaleTree = {
       whit_tip_swarmed: 'Keep movin. Corners kill ye faster than any single beastie.',
       whit_tip_low_hp_neglect: 'Find a quiet corner when yir low. A healin chest can turn a run.',
       whit_tip_unlucky: 'Shake it aff. The next run\'s already waitin.',
+
+      // ── Curse chip (end-of-run) — shown regardless of win/lose ──
+      /** Small chip showing the curse the player bore this run + its gold bonus. */
+      curse_chip: 'Bore the {curse} — +{pct}% gold',
     },
     metaShop: {
       title: 'LASTING BOONS',
@@ -446,6 +468,25 @@ export const EN_STRINGS: LocaleTree = {
     dash_tier_1: {
       name: 'Lighter Step',
       description: 'Dash comes back like a bad penny (-10% dash cooldown).',
+    },
+  },
+  curse: {
+    // Curse names + flavour descriptions — voice-driven, a trade knowingly taken.
+    heavy_legs: {
+      name: 'Heavy Legs',
+      desc: 'The moor drags at yir hooves — every step a wee bit heavier.',
+    },
+    thin_hide: {
+      name: 'Thin Hide',
+      desc: 'Yir coat\'s threadbare the day — every blow lands harder.',
+    },
+    restless_spirits: {
+      name: 'Restless Spirits',
+      desc: 'The glen stirs. They\'re comin quicker, pal — stay sharp.',
+    },
+    empty_larder: {
+      name: 'Empty Larder',
+      desc: 'Startin hungry. Less in ye tae lose, but less tae spare.',
     },
   },
   evolution: {

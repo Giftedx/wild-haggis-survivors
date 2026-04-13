@@ -29,6 +29,13 @@ export class SpawnSystem {
   private gameTimeSec: number = 0;
   private spawnInterval: number = 1.5;
   private burstSize: number = 2;
+  /**
+   * Per-run spawn cadence multiplier. 1.0 = default cadence (wave timeline
+   * values untouched). <1.0 = faster spawns (used by the "Restless Spirits"
+   * curse). Applied at every point where `spawnInterval` is refreshed from
+   * the wave timeline — GameScene writes this once at run start.
+   */
+  private spawnIntervalMult: number = 1.0;
   /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
   private directorEnemyKeys: string[] = [];
   /** Cached segment reference — avoids re-spreading enemyKeys when segment hasn't changed. */
@@ -68,10 +75,22 @@ export class SpawnSystem {
     }
 
     const init = getActiveWaveTimelineEntry(this.gameTimeSec);
-    this.spawnInterval = init.intervalSec;
+    this.spawnInterval = init.intervalSec * this.spawnIntervalMult;
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
     this.lastWaveSeg = init;
+  }
+
+  /**
+   * Install a run-scoped spawn cadence multiplier. Call once after
+   * construction, before the first update tick — the stored value is read
+   * every time `spawnInterval` is refreshed from the wave timeline.
+   */
+  setSpawnIntervalMult(mult: number): void {
+    this.spawnIntervalMult = Math.max(0.1, mult);
+    // Re-apply immediately so the very first segment uses the multiplier.
+    const seg = this.lastWaveSeg ?? getActiveWaveTimelineEntry(this.gameTimeSec);
+    this.spawnInterval = seg.intervalSec * this.spawnIntervalMult;
   }
 
   private getUiViewport(): { x: number; y: number; width: number; height: number } {
@@ -84,7 +103,7 @@ export class SpawnSystem {
     this.spawnTimer = 0;
     this.gameTimeSec = 0;
     const init = getActiveWaveTimelineEntry(0);
-    this.spawnInterval = init.intervalSec;
+    this.spawnInterval = init.intervalSec * this.spawnIntervalMult;
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
     this.lastWaveSeg = init;
@@ -341,7 +360,7 @@ export class SpawnSystem {
     const seg = getActiveWaveTimelineEntry(this.gameTimeSec);
     if (seg === this.lastWaveSeg) return;
     this.lastWaveSeg = seg;
-    this.spawnInterval = seg.intervalSec;
+    this.spawnInterval = seg.intervalSec * this.spawnIntervalMult;
     this.burstSize = seg.burstSize;
     this.directorEnemyKeys = [...seg.enemyKeys];
   }

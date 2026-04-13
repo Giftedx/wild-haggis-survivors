@@ -6,6 +6,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
 import { getVariantByKey } from '../data/variants';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
+import { getCurseByKey } from '../data/curses';
 import {
   computeMilestones,
   detectMood,
@@ -343,6 +344,20 @@ export class ChronicleScene extends Phaser.Scene {
         .setOrigin(1, 0.5)
         .setScale(uiScale);
       this.runRowObjects.push(rel);
+
+      // Curse badge — sits just left of the timestamp for rows that bore a
+      // curse. Stays compact (~70px) so it never crowds the variant/weapon
+      // line. Rose-pink tint matches the CurseScene accent.
+      const curseDef = getCurseByKey(entry.curseKey);
+      if (curseDef) {
+        const badge = this.add
+          .text(width - 92, y, t('ui.chronicle.run_curse_chip', { curse: t(curseDef.nameKey) }), {
+            fontFamily: 'monospace', fontSize: '10px', color: '#e8a0c6', fontStyle: 'bold',
+          })
+          .setOrigin(1, 0.5)
+          .setScale(uiScale);
+        this.runRowObjects.push(badge);
+      }
     });
 
     if (pageCount > 1) {

@@ -28,4 +28,6 @@ export interface GameOverPayload {
   isDaily?: boolean;
   /** Classified reason for death — only set when `mode === 'death'`. */
   deathCause?: DeathCause;
+  /** Curse key active for the run — drives the Game Over curse chip. */
+  curseKey?: string;
 }
