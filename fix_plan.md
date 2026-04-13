@@ -2,12 +2,12 @@
 
 ## P1 — Correctness
 
-### 1. [ ] GameScene: pauseMenu not closed in shutdown handler
+### 1. [x] GameScene: pauseMenu not closed in shutdown handler
 - **Files:** `src/scenes/GameScene.ts`
 - **Rationale:** `registerShutdownCleanup()` destroys hud, minimap, upgradeUI, etc. but doesn't close/destroy `pauseMenu`. It's only handled in `resetTransientRunState()` (called from create()). If scene.stop() fires without subsequent create() (e.g. `scene.stop('Game'); scene.start('GameOver')`), PauseMenu's interactive elements and overlays orphan.
 - **Acceptance:** Shutdown handler adds `try { this.pauseMenu?.close(); } catch { /* ignore */ }` alongside the other system teardowns.
 
-### 2. [ ] GameScene: activeChestSprites graphics not destroyed on shutdown
+### 2. [x] GameScene: activeChestSprites graphics not destroyed on shutdown
 - **Files:** `src/scenes/GameScene.ts`
 - **Rationale:** `activeChestSprites` array is cleared to `[]` in `resetTransientRunState()` but the sprites inside aren't explicitly destroyed. Scene teardown handles this for normal flow, but the chest glow tweens running on those sprites aren't killed — potential stale tween callbacks on scene restart.
 - **Acceptance:** Shutdown handler iterates `activeChestSprites`, kills tweens, destroys sprites.

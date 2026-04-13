@@ -264,6 +264,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.boundaryWarning?.destroy();
     this.boundaryWarning = null;
     this.subs = new SubscriptionBag();
+    this.musicStateScratch.hp = 0;
+    this.musicStateScratch.maxHp = 0;
+    this.musicStateScratch.gameTimeSec = 0;
+    this.musicStateScratch.enemyCount = 0;
+    this.musicStateScratch.comboCount = 0;
+    this.musicStateScratch.killCount = 0;
+    this.musicStateScratch.bossActive = false;
   }
 
   /** Acquire a pooled floating text, or return null if pool is exhausted. */
