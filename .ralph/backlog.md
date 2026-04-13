@@ -42,7 +42,7 @@
 - [x] Add tests for Conductor — 15 tests: updateMood (intensity rise, danger rise/decay, chaos, resolution skip, zero-maxHp), kill rate (sliding window, low-combo guard), resolution (state set, descent complete, pre-enter false), nextNote (shape, Dorian freqs, intensity-interval, deterministic w/ mock), getMood. 616→631 tests.
 - [x] Add tests for euclidean() — 10 tests: edge cases E(0/8,8), known patterns E(1-5,8), length invariant, hit count, non-8 slots. Note: impl ≠ classic Bjorklund. 607→616 tests.
 - [ ] euclidean() produces front-weighted patterns, not classic Bjorklund even spacing — E(3,8)=10101000 vs expected 10010010 (P2, potential music bug, investigate)
-- [ ] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime (P2, doc mismatch, music review)
+- [x] PianoLayer.findVoiceSlot comment says "quietest voice replaced" but impl steals oldest by startTime — fixed: "oldest voice replaced"
 - [ ] ProceduralMusicEngine.test.ts uses `as any` for private field access — fragile test (P2, music review)
 - [ ] CaptionOverlay 0 tests — Phaser scene-dependent, needs full mock (P2, a11y review, low ROI)
 - [ ] a11yText.contrastColor uses falsy check (`!hcOverride`) — empty string "" treated as no-override; use explicit `=== undefined` (P2, a11y review)

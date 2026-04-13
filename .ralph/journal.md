@@ -41,4 +41,5 @@
 | 2026-04-13 | 40 | BUILD | Add 14 spatialCull.ts tests | Done — zone inclusion, margin expansion, boss/hazard/immune immunity, boundary edges. 648→661 tests. |
 | 2026-04-13 | 41 | BUILD | Add 7 GlobalEventBus tests + mark upgrades.cardpool pre-existing | Done — emit/on/off/multi/safety. upgrades.cardpool.test.ts had 13 tests from baseline. 661→684 tests. |
 | 2026-04-13 | 36b | BUILD | Add 16 upgrades.test.ts tests (buildCardPool + drawCards) | Done — luck bonus, deterministic RNG, common floor, legendary lv4→5. Complements 13 existing. 668→684 tests. |
+| 2026-04-13 | 42 | BUILD | Fix PianoLayer doc mismatch + note contrastColor has 0 call sites | Done — "quietest"→"oldest" in header comment. contrastColor falsy check is dead code (unused). |
 | 2026-04-13 | 37b | REFLECT | 7 BUILD loops of test additions, assess diminishing returns | Done — 684 tests (+40%), all P1s done. Strategy shifted: features > P2 tests. Next: banter weapon evolution or DebugOverlay. |
