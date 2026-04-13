@@ -1,7 +1,7 @@
 # Backlog
 
 ## High Priority
-- [ ] Kill scene reach-throughs (`this.scene as unknown`) — 7 remaining (fix_plan, type-safety)
+- [x] Kill scene reach-throughs (`this.scene as unknown`) — done 2026-04-13, ISceneContext covers all sites
 - [ ] Audit + eliminate production `as any` in WeaponSystem.ts (4 occurrences) (fix_plan, type-safety)
 - [ ] Audit + eliminate production `as any` in SpawnSystem.ts (4 occurrences) (fix_plan, type-safety)
 - [ ] Audit + eliminate production `as any` in XPSystem.ts (2 occurrences) (type-safety)
@@ -16,7 +16,7 @@
 - [ ] Audit `as any` in PickupSpawner.ts (1 occurrence) (type-safety)
 - [ ] Investigate Phaser vendor chunk 1.48MB — tree-shaking or dynamic import options (fix_plan, perf)
 - [ ] Confirm PWA precache 1944 KiB acceptable (fix_plan, perf)
-- [ ] REVIEW: src/systems/ — full review rotation pass (rotation)
+- [x] REVIEW: src/systems/ — done 2026-04-13, 8 tasks generated
 
 ## Low Priority
 - [ ] Extend banter to weapon evolution moments (fix_plan, feature)

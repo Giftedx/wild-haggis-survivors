@@ -1,7 +1,7 @@
 # Ralph Fix Plan
 
 ## High Priority
-- [ ] **Kill the last 7 scene reach-throughs** (`this.scene as unknown`)
+- [x] **Kill the last 7 scene reach-throughs** (`this.scene as unknown`) — done 2026-04-13, ISceneContext covers all sites
 - [ ] **Audit the 17 production `as any`** escape hatches
 - [ ] Phaser vendor chunk is 1.48MB ungz. Investigate whether
 - [ ] PWA precache reports 1945 KiB — confirm that's acceptable

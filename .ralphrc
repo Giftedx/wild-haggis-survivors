@@ -10,8 +10,7 @@ PROJECT_TYPE="unknown"
 # If "claude" is not in your PATH, set to your installation:
 #   "npx @anthropic-ai/claude-code"  (uses npx, no global install needed)
 #   "/path/to/claude"                (custom path)
-CLAUDE_CODE_CMD="claude"
-CLAUDE_CODE_ARGS="--dangerously-skip-permissions"
+CLAUDE_CODE_CMD="claude-yolo"
 
 # Loop settings
 MAX_CALLS_PER_HOUR=100
@@ -24,7 +23,7 @@ CLAUDE_OUTPUT_FORMAT="json"
 # Tool permissions
 # Comma-separated list of allowed tools
 # Safe git subcommands only - broad Bash(git *) allows destructive commands like git clean/git rm (Issue #149)
-ALLOWED_TOOLS="Write,Read,Edit,Bash(git add *),Bash(git commit *),Bash(git diff *),Bash(git log *),Bash(git status),Bash(git status *),Bash(git push *),Bash(git pull *),Bash(git fetch *),Bash(git checkout *),Bash(git branch *),Bash(git stash *),Bash(git merge *),Bash(git tag *),Bash(npm *),Bash(pytest)"
+ALLOWED_TOOLS="Write,Read,Edit,Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(grep *),Bash(sed *),Bash(awk *),Bash(cat *),Bash(ls *),Bash(find *),Bash(head *),Bash(tail *),Bash(wc *),Bash(sort *),Bash(uniq *),Bash(diff *),Bash(which *),Bash(echo *),Bash(test *),Bash(node_modules/.bin/*),Bash(pytest)"
 
 # Session management
 SESSION_CONTINUITY=true

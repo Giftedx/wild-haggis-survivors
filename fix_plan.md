@@ -2,34 +2,38 @@
 
 ## P1 — Correctness
 
-### 1. [x] GameScene: pauseMenu not closed in shutdown handler
-- **Files:** `src/scenes/GameScene.ts`
-- **Rationale:** `registerShutdownCleanup()` destroys hud, minimap, upgradeUI, etc. but doesn't close/destroy `pauseMenu`. It's only handled in `resetTransientRunState()` (called from create()). If scene.stop() fires without subsequent create() (e.g. `scene.stop('Game'); scene.start('GameOver')`), PauseMenu's interactive elements and overlays orphan.
-- **Acceptance:** Shutdown handler adds `try { this.pauseMenu?.close(); } catch { /* ignore */ }` alongside the other system teardowns.
+### 1. [x] Enemy.fireNet(): physics collider leaks on scene restart
+- **Files:** `src/entities/Enemy.ts` (lines 619-654)
+- **Rationale:** `fireNet()` creates a circle game object + overlap collider. Cleanup only fires on hit or after 2s raw ticker. If scene restarts while net is in flight, overlap collider persists in `physics.world.colliders` — leaked memory + potential stale callback. The `try/catch` at line 634 swallows errors but doesn't prevent the collider from lingering if `cleanup()` never fires.
+- **Acceptance:** Register net cleanup in scene's shutdown event listener, or use a scene-scoped collider tracking mechanism. Net circle + collider must be cleaned on scene shutdown.
 
-### 2. [x] GameScene: activeChestSprites graphics not destroyed on shutdown
-- **Files:** `src/scenes/GameScene.ts`
-- **Rationale:** `activeChestSprites` array is cleared to `[]` in `resetTransientRunState()` but the sprites inside aren't explicitly destroyed. Scene teardown handles this for normal flow, but the chest glow tweens running on those sprites aren't killed — potential stale tween callbacks on scene restart.
-- **Acceptance:** Shutdown handler iterates `activeChestSprites`, kills tweens, destroys sprites.
+### 2. [x] Projectile.deactivate(): onDeactivateCallback exception leaves stale state
+- **Files:** `src/entities/Projectile.ts` (lines 138-146)
+- **Rationale:** If `onDeactivateCallback` throws, execution skips the rest of `deactivate()` — sprite remains active+visible, body stays enabled, hitTargets not cleared. Next pool cycle gets a zombie projectile. The null-before-call pattern (line 144) is correct for re-fire prevention, but the whole deactivate body needs to complete regardless.
+- **Acceptance:** Wrap callback invocation in try/catch. Rest of deactivate() always executes.
 
-### 3. [x] GameScene: musicStateScratch object allocated once — stale bossActive flag if boss dies then scene restarts
-- **Files:** `src/scenes/GameScene.ts`
-- **Rationale:** `musicStateScratch` is a readonly field initialized once at construction (line 164). Its fields are written every frame in update(), but if the scene restarts, old values persist until the first update() runs. The music engine reads stale `bossActive: true` for one frame → brief boss music spike on new run.
-- **Acceptance:** `resetTransientRunState()` zeroes out musicStateScratch fields (hp, maxHp, gameTimeSec, enemyCount, comboCount, killCount, bossActive).
+## P1 — Test Coverage
 
-## P2 — Architecture / Polish
+### 3. [x] Enemy entity: zero unit tests for combat behaviors
+- **Files:** `src/entities/Enemy.ts`, new `src/entities/Enemy.test.ts`
+- **Rationale:** Enemy has 700+ lines of behavior logic (orbit, phase, ranged, charge, dive, flee, buff) with no tests. Key testable pure-ish logic: `recomputeSpeed()` with buff multipliers, `applySpeedBuff()` expiry, elite stat scaling, `die()` state transitions.
+- **Acceptance:** Extract `recomputeSpeed` logic or test via mock. Add 5+ tests for speed buff stacking/expiry, elite multipliers, die() state.
 
-### 4. [ ] GameScene: extract tick helpers (tickBanter, tickBiome, tickLowHpCaption, updateBoundaryWarning, updateDashIndicator) to reduce 1758-line god object
-- **Files:** `src/scenes/GameScene.ts`, new `src/scenes/game/GameTickers.ts`
-- **Rationale:** GameScene has 117 members and 1758 lines. 5+ self-contained tick methods (~200 lines total) could move to a helper following the established LevelUpFlow/RunLifecycle/PickupSpawner extraction pattern.
-- **Acceptance:** Extract 3+ tick methods to GameTickers helper. GameScene drops below 1600 lines. Build + tests green.
+## P2 — Performance
 
-### 5. [ ] MainMenuScene: cozyTweenTargets cleanup could miss dynamically-added targets
-- **Files:** `src/scenes/MainMenuScene.ts`
-- **Rationale:** `cozyTweenTargets` is populated during create() and cleaned in shutdown. But if any decoration tween creates sub-objects (e.g. campfire flame particles), those won't be tracked. Currently safe because all decoration is static, but fragile for future additions.
-- **Acceptance:** Add defensive `this.tweens.killAll()` in shutdown handler after the per-target cleanup loop.
+### 4. [x] Piper behaviorOrbit: O(n) enemy scan every frame per active Piper
+- **Files:** `src/entities/Enemy.ts` (lines 675-693)
+- **Rationale:** Each active Piper iterates ALL enemies every frame to apply speed buff. With 3 Pipers + 300 enemies = 900 iterations/frame. Early exit helps when Piper far from player, but `applySpeedBuff()` is called repeatedly on already-buffed enemies (redundant).
+- **Acceptance:** Add frame-throttle (every 250ms instead of every frame) or skip if enemy already has active buff. Buff lasts 500ms so 250ms check interval is sufficient.
 
-### 6. [ ] Scene test coverage: zero tests for GameOverScene stat formatting
-- **Files:** `src/scenes/GameOverScene.ts`, new test file
-- **Rationale:** GameOverScene has complex time formatting (`formatClockTime`), gold breakdown calculation, and stat display logic. All untested. The formatting helpers are pure functions extractable for unit testing.
-- **Acceptance:** Extract `formatClockTime` + gold breakdown calc to testable pure functions. Add 5+ unit tests covering edge cases (0 seconds, 60+ minutes, fractional gold).
+## P2 — Architecture
+
+### 5. [x] Player.ts: netSlowTimersMs array grows unbounded under rapid net hits
+- **Files:** `src/entities/Player.ts` (lines 255-275)
+- **Rationale:** Each `applyNetSlow()` pushes to `netSlowTimersMs`. If many nets hit before timers expire, array grows. `tickNetSlow()` splices expired entries but during a swarm of net-throwing enemies, could accumulate 20+ entries with per-frame iteration + splice overhead.
+- **Acceptance:** Cap `netSlowTimersMs` at reasonable max (e.g. 5) — reject new slows while at cap, or replace shortest-remaining entry.
+
+### 6. [x] Projectile.ts: hitTargets WeakSet prevents GC of dead enemies
+- **Files:** `src/entities/Projectile.ts`
+- **Rationale:** `hitTargets` is a `Set` (not WeakSet). Piercing projectiles accumulate enemy refs in `hitTargets` over their lifetime. Dead enemies in the set prevent GC until the projectile deactivates and `hitTargets.clear()` fires. For long-lived piercing/bouncing projectiles, this holds refs to dozens of dead enemies.
+- **Acceptance:** Change `hitTargets` from `Set` to `WeakSet`. Replace `.clear()` calls with `this.hitTargets = new WeakSet()`. WeakSet lacks `.clear()` but assignment achieves same effect.
