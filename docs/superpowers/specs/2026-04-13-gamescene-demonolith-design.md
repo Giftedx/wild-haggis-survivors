@@ -68,7 +68,20 @@ Shipped. Owns `handlePlayerDeathOrRevive` (one-shot revival), `handleVictory` (c
 
 Target: **≤1,200 lines** (not 400; the earlier estimate didn't account for system construction, mid-run persistence hooks, biome wiring, or caption plumbing that have all been added since the spec was written).
 
-**Actual outcome:** 3,088 → 2,127 lines (−961, −31%) across all five extractions. The ≤1,200 target isn't reached — the scene still owns system construction, ISceneContext getters, mid-run persistence hooks, biome/terrain wiring, permanent-upgrade application, and caption plumbing. Going lower requires structural changes beyond pure relocation.
+**Actual outcome:** 3,088 → 1,656 lines (−1,432, −46%) across eight extractions (original five modules + three follow-ups):
+
+| Module | Kind | Lines (file) |
+|---|---|---|
+| `resetTransientRunState` | in-class method | — |
+| `PauseMenu` | class + hooks | 184 |
+| `PickupSpawner` | class + hooks | 364 |
+| `LevelUpFlow` | class + fat hooks | 419 |
+| `RunLifecycle` | class + fat hooks | 301 |
+| `highlandTerrain` | free function | 314 |
+| `HazardZones` | class + hooks | 137 |
+| `runStartModifiers` | free functions | 112 |
+
+The ≤1,200 target isn't reached but is no longer the interesting number. What remains in `GameScene.ts` is what a scene is *for*: init/create/update/shutdown orchestration, ISceneContext implementation, system construction + wiring, event subscriptions, and data-assembly helpers for run end. Pushing further would mean restructuring (an event bus for mid-run persistence, a saved-state hydrator module) — a different project.
 
 ## Execution order (one commit per module)
 
