@@ -43,17 +43,15 @@ The player-enemy collider is a 1-liner; extracting it as a "CollisionRouter" wou
 **Surface:** `spawnTreasureChest(x,y)`, `spawnGoldenChest()`, `spawnGoldCoin(x,y,amt)`, `spawnHealthOrb(x,y,amt)`
 **Risk:** Medium. Factories touch many scene fields (juice, xpSystem, coinGoldEarned, chestDurationBonusMs, pickupDespawnHandles) plus callbacks into GameScene (`offerTreasureEvolutionIfEligible`, chest sprite tracking). Pass GameScene directly rather than a narrow hooks interface — matches BiomeController's pattern and keeps the diff honest.
 
-### 4. `LevelUpFlow.ts`
-`onXpLevelUp`, level-milestone screen clear, `rerollUpgradeCards`, `applyUpgrade`, evolution eligibility (`findEligibleChestEvolution`), `announcedEvolutionReady` set.
+### 4. ~~`LevelUpFlow.ts`~~ → **deferred**
 
-**Surface:** `handleLevelUp()`, `reroll()`, `apply(card)`
-**Risk:** Medium-high. Touches `upgradeUI`, `weaponSystem`, `player.heal()`, `timeManager` LEVEL_UP lock, permanent-upgrade integration. Must preserve the empty-pool fallback that calls `xpSystem.processNextLevelUp()`.
+Attempted during execution; aborted before starting. The four methods on the table (`onLevelUp`, `rerollUpgradeCards`, `applyUpgrade`, `offerTreasureEvolutionIfEligible`) between them touch `player` (heal/alpha/level/state mutations, iFrame arming), `weaponSystem` (addWeapon/levelUp/evolve), `xpSystem` (processNextLevelUp/hasPendingLevelUps/getLevel/vacuumAllGems), `spawnSystem` (boss checks, enemy group iteration for banish/milestones), `juice` (7+ distinct methods), `statusFxPool`, `tutorialSystem`, `upgradeUI`, `timeManager`, `globalEventBus`, `runRng`, plus 4 fields of run state (`ownedPassives`, `evolvedWeapons`, `announcedEvolutionReady`, `killCount`). A hooks interface with 20+ callbacks would rival the method bodies in size and still leave the core data flow undecomposed — "extraction" without architectural clarity.
 
-### 5. `RunLifecycle.ts`
-`toggleUiPause`, `handlePlayerDeathOrRevive`, `handleVictory`, `handlePlayerDeath`, post-bell opt-in gate, mid-run persistence hooks (`persistActiveRunToMeta`, `registerMidRunPersistenceHooks`), deferred result tickers (`victoryResultRemainingMs`, `deathResultRemainingMs`).
+**Honest conclusion:** These methods need deeper restructuring (extract an upgrade-resolution layer that returns effects rather than mutating), not relocation. That's a separate spec.
 
-**Surface:** `togglePause()`, `onPlayerHit()`, `onPlayerKilled()`, `onVictory()`, `isPostBell()`
-**Risk:** Highest. Owns the pause/victory/death state machine. Raw-delta tickers must continue to bypass `timeScale = 0`. One-shot revival gate must not regress.
+### 5. ~~`RunLifecycle.ts`~~ → **deferred**
+
+Same reasoning, worse ratios. `toggleUiPause` is already much smaller after PauseMenu landed. `handleVictory` / `handlePlayerDeath` / `handlePlayerDeathOrRevive` own the run state machine that every other system reports into; cleanly extracting them requires a run-state event bus that doesn't exist yet. Deferred to a follow-up spec.
 
 ## What stays in GameScene
 
@@ -65,6 +63,8 @@ The player-enemy collider is a 1-liner; extracting it as a "CollisionRouter" wou
 - DI — fields like `updateTickers`, `runStatsTracker`, `captionManager` remain on GameScene; modules read them via constructor-injected scene reference
 
 Target: **≤1,200 lines** (not 400; the earlier estimate didn't account for system construction, mid-run persistence hooks, biome wiring, or caption plumbing that have all been added since the spec was written).
+
+**Actual outcome:** 3,088 → 2,673 lines (−415, −13%) across three extractions (resetTransientRunState method, PauseMenu, PickupSpawner). The ≤1,200 target isn't reached; modules 4 and 5 were deferred after honest cost/benefit reassessment mid-execution (see below).
 
 ## Execution order (one commit per module)
 
