@@ -459,6 +459,12 @@ export const EN_STRINGS: LocaleTree = {
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
+      /** Second gold elite within the chain window — see `BALANCE.enemy.eliteChain*`. */
+      elite_chain_double: 'Back-to-back gold elites! +{gold}g',
+      elite_chain_triple: 'Elite hat-trick — the moor pays! +{gold}g',
+      /** One-time luck bonus when HP first drops into the mercy band. */
+      moor_mercy_luck: 'The moor remembers the desperate — yer draws lean finer!',
+      moor_mercy_luck_caption: 'Mercy luck — next level-up cards favour rare finds.',
     },
     /**
      * Moor moments — timed hearth beats mid-run (caption + toast + small gift).

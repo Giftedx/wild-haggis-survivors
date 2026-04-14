@@ -71,6 +71,10 @@ describe('in-run HUD / game / juice i18n smoke', () => {
     assertResolves('ui.game.golden_nearby');
     assertResolves('ui.game.golden_collected', { gold: 5 });
     assertResolves('ui.game.gold_pickup_float', { gold: 2 });
+    assertResolves('ui.game.elite_chain_double', { gold: 12 });
+    assertResolves('ui.game.elite_chain_triple', { gold: 28 });
+    assertResolves('ui.game.moor_mercy_luck');
+    assertResolves('ui.game.moor_mercy_luck_caption');
     assertResolves('ui.game.level_banner', { level: 2 });
     assertResolves('ui.game.level_power_surge', { level: 3 });
     assertResolves('ui.game.evolution_primed', { name: 'Legend' });

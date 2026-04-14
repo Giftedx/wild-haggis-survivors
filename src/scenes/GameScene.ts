@@ -77,6 +77,7 @@ import {
   uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
 import { tickStressTest } from '../dev/StressTest';
+import { BALANCE } from '../core/BalanceConfig';
 
 /**
  * GameScene — the core gameplay loop.
@@ -116,6 +117,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossKillCount: number = 0;
   private bossGoldEarned: number = 0;
   private coinGoldEarned: number = 0;
+  /** Gold elite back-to-back chain — last qualifying kill time (game clock). */
+  private eliteChainLastGameSec: number | null = null;
+  private eliteChainCount = 0;
+  /** One-time +luck draw weight when HP first crosses into the mercy band. */
+  private moorMercyLuckGranted = false;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
   private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
@@ -302,6 +308,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.enemyCount = 0;
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
+    this.eliteChainLastGameSec = null;
+    this.eliteChainCount = 0;
+    this.moorMercyLuckGranted = false;
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -453,6 +462,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isVictoryPending: () => this.victoryPending,
       getDamageTakenMult: () => this.runModifiers.damageTakenMult,
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
+      onAfterPlayerDamaged: (hpBefore) => {
+        if (this.player.getHp() > 0) this.tryMoorMercyLuck(hpBefore);
+      },
     });
     this.hazardZones.spawn();
 
@@ -523,6 +535,28 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const comboXpBonus = Math.min(0.5, this.juice.getComboCount() * 0.01);
       this.xpSystem.spawnGem(x, y, Math.ceil(xpValue * this.player.getXpMultiplier() * (1 + comboXpBonus)));
       this.killCount++;
+      if (wasElite && !wasBoss) {
+        const now = this.spawnSystem.getGameTimeSec();
+        const win = BALANCE.enemy.eliteChainWindowSec;
+        if (this.eliteChainLastGameSec !== null && now - this.eliteChainLastGameSec <= win) {
+          this.eliteChainCount++;
+        } else {
+          this.eliteChainCount = 1;
+        }
+        this.eliteChainLastGameSec = now;
+        if (this.eliteChainCount === 2) {
+          const g = BALANCE.enemy.eliteChainGoldSecond;
+          this.coinGoldEarned += g;
+          this.juice.showToast(t('ui.game.elite_chain_double', { gold: g }), '#e8c060');
+        } else if (this.eliteChainCount >= 3) {
+          const g = BALANCE.enemy.eliteChainGoldTriple;
+          this.coinGoldEarned += g;
+          this.juice.showToast(t('ui.game.elite_chain_triple', { gold: g }), '#ffdd44');
+          this.juice.flashWhite(100);
+          this.eliteChainCount = 0;
+          this.eliteChainLastGameSec = null;
+        }
+      }
       this.spawnSystem.noteKillPressure();
       this.juice.showKillBurst(x, y);
       this.juice.hitFreeze();
@@ -1368,6 +1402,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
+  /**
+   * First time each run the player crosses from above → at/below the mercy HP
+   * fraction, grant one-time luck weight to level-up draws (see `BALANCE.player`).
+   */
+  private tryMoorMercyLuck(hpBefore: number): void {
+    if (this.moorMercyLuckGranted) return;
+    const maxHp = this.player.getMaxHp();
+    if (maxHp <= 0) return;
+    const hpAfter = this.player.getHp();
+    if (hpAfter <= 0) return;
+    const th = BALANCE.player.moorMercyHpFrac;
+    if (hpBefore / maxHp > th && hpAfter / maxHp <= th) {
+      this.moorMercyLuckGranted = true;
+      this.player.addLuckDrawBonus(BALANCE.player.moorMercyLuckBonus);
+      this.juice.showToast(t('ui.game.moor_mercy_luck'), '#c8a8e8');
+      this.caption('moor_mercy', t('ui.game.moor_mercy_luck_caption'), '#c8a8e8', 4200);
+    }
+  }
+
   private onPlayerHitEnemy(
     _playerObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
     enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
@@ -1382,7 +1435,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const rawDmg = enemy.getDamage();
     const incomingDmg = Math.max(1, Math.round(rawDmg * this.runModifiers.damageTakenMult));
     const armor = this.player.getArmor();
+    const hpBefore = this.player.getHp();
     const dead = this.player.takeDamage(incomingDmg);
+    if (!dead) {
+      this.tryMoorMercyLuck(hpBefore);
+    }
     this.deathCauseTracker.recordDamage({
       gameTimeSec: this.spawnSystem.getGameTimeSec(),
       sourceKey: enemy.getEnemyKey(),

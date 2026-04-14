@@ -95,6 +95,12 @@ export const BALANCE = {
     netSlowAmount: 80,
     shieldCooldownMs: 20000,
     baseHitboxRadius: 20,
+    /**
+     * One-time per run: crossing from above → at/below this HP fraction grants
+     * `moorMercyLuckBonus` to level-up card weights (stacking with sporran / meta).
+     */
+    moorMercyHpFrac: 0.28,
+    moorMercyLuckBonus: 12,
   },
   enemy: {
     rangedStandoffPx: 200,
@@ -109,6 +115,14 @@ export const BALANCE = {
     ELITE_UNLOCK_SEC: 120,
     /** Per-spawn chance that a non-hazard, non-swarm enemy upgrades to elite. */
     ELITE_SPAWN_CHANCE: 0.10,
+    /**
+     * Gold elite kill chain — second gold elite within this many *game* seconds
+     * of the previous gold elite pays `eliteChainGoldSecond`; third pays
+     * `eliteChainGoldTriple` and resets the chain.
+     */
+    eliteChainWindowSec: 45,
+    eliteChainGoldSecond: 12,
+    eliteChainGoldTriple: 28,
   },
   juice: {
     impactRingPoolSize: 80,

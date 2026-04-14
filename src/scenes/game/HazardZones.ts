@@ -26,6 +26,8 @@ export interface HazardZonesHooks {
   isVictoryPending(): boolean;
   getDamageTakenMult(): number;
   onPlayerKilled(): void;
+  /** Lava damage only — for run-wide mechanics that care about HP thresholds. */
+  onAfterPlayerDamaged?(hpBefore: number): void;
 }
 
 interface Zone {
@@ -108,7 +110,11 @@ export class HazardZones {
         const dy = player.y - z.y;
         if (dx * dx + dy * dy < rSq) {
           const hazardDmg = Math.max(1, Math.round(3 * this.hooks.getDamageTakenMult()));
+          const hpBefore = player.getHp();
           const dead = player.takeDamage(hazardDmg);
+          if (!dead) {
+            this.hooks.onAfterPlayerDamaged?.(hpBefore);
+          }
           this.hooks.getDeathCauseTracker().recordDamage({
             gameTimeSec: this.hooks.getSpawnSystem().getGameTimeSec(),
             sourceKey: HAZARD_SOURCE_KEY,
