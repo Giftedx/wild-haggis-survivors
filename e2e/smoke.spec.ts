@@ -16,7 +16,8 @@ test.describe('production build smoke', () => {
 
     await page.goto('/');
     await expect(page).toHaveTitle(/Wild Haggis Survivors/i);
-    const canvas = page.locator('canvas').first();
+    // main.ts sets role + aria-label on `game` ready — stricter than any stray canvas.
+    const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     // User gesture: exercises audio unlock + input paths without relying on gamepad.
     await canvas.click({ position: { x: 8, y: 8 } });
