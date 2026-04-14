@@ -112,3 +112,4 @@
 - [x] Save: `migrateSave` `runHistory` coercion — FIFO tail (`MAX_RUN_HISTORY`), `weaponKeys`/`curseKey`/`level`/`isVictory` normalization, non-array → `[]` (`save.test.ts`). 822→825 tests.
 - [x] Save: `computeGoldReward` time normalization + `applyRunSummary` history context — rounded/clamped `timeSurvivedSec`; `RunHistoryContext` → entry fields; falsy `curseKey` omitted. 825→828 tests.
 - [x] **Tooling:** ESLint 10 flat config (`eslint.config.mjs`) + fix first-party violations; **GitHub Actions CI** (`lint`, `test`, `build`, Node 20); `npm run ci` for local parity.
+- [x] **E2E:** Playwright smoke (document title + Phaser `canvas` on production preview); CI installs Chromium + runs after `build`; Vitest `include` limited to `src/**` so `e2e/` is Playwright-only.

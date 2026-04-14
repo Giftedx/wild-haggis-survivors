@@ -1,6 +1,6 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 91 SCOUT→BUILD)
+**Last updated:** 2026-04-14 (loop 92 BUILD)
 
 ## Project Phase
 **Steady state.** v2.1.0. Hardening campaign complete. 828 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
@@ -51,13 +51,14 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Loop 89 (autonomous):** `save.test.ts` — `runHistory` tail cap (`slice(-MAX_RUN_HISTORY)`), row coercion (`weaponKeys` filter, `curseKey` omit when empty, `level` ≥1, strict `isVictory` boolean), non-array `runHistory` → `[]`.
 - **Loop 90:** `save.test.ts` — `normalizeRunSummary` time path via `computeGoldReward` (fractional round-up, negative clamp); `applyRunSummary` history entry mirrors `RunHistoryContext`, empty `curseKey` not stored.
 - **Loop 91 (autonomous):** ESLint flat config (`eslint.config.mjs`) — `npm run lint` was a no-op failure before; CI parity script `npm run ci`; GitHub Actions `ci.yml` runs `lint` + `test` + `build` on push/PR to `main`/`master`.
+- **Loop 92:** Playwright smoke (`e2e/smoke.spec.ts`) against `vite preview` on port **4180**; GHA runs Chromium E2E after build. Vitest scoped to `src/**` so Playwright specs are not double-executed.
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 91)
+## Metrics Snapshot (2026-04-14, loop 92)
 - Source files: 105+, Test files: 104+
 - Tests: 828 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032
-- Build: ~5s clean; **lint:** ESLint flat config (`eslint.config.mjs`), `npm run lint` required; **CI:** GitHub Actions `ci.yml` + local `npm run ci`
+- Build: ~5s clean; **lint:** ESLint flat config (`eslint.config.mjs`), `npm run lint` required; **CI:** GitHub Actions `ci.yml` + local `npm run ci`; **E2E:** `npm run test:e2e` (Playwright / Chromium), full gate `npm run ci:all`
 - Vendor chunk: 1482 KiB / 340gz, App: 507 KiB / 136gz
