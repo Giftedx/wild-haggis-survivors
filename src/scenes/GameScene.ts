@@ -43,6 +43,7 @@ import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
+import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import type { BiomeId } from '../data/biomes';
@@ -1170,12 +1171,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           getLevel: () => this.xpSystem.getLevel(),
           getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
           getOwnedPassives: () => this.ownedPassives,
-          getActiveCurseLine: () => {
-            const c = this.activeCurseKey ? getCurseByKey(this.activeCurseKey) : null;
-            return c
-              ? t('ui.hud.curse_chip', { name: t(c.nameKey), pct: c.goldBonusPct })
-              : null;
-          },
+          getActiveCurseLine: () => formatHudCurseChipLine(this.activeCurseKey),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.abandonRunToMainMenu(),
         });
