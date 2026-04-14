@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { VARIANT_KEYS } from '../data/variants';
 import {
   applyRunSummary,
   coerceSelectedVariant,
@@ -138,6 +139,26 @@ describe('run application', () => {
     expect(coerceSelectedVariant('surefoot', ['classic'])).toBe('classic');
     expect(coerceSelectedVariant('moor_runner', ['classic', 'moor_runner'])).toBe('moor_runner');
     expect(coerceSelectedVariant('made_up_variant', ['classic', 'moor_runner'])).toBe('classic');
+  });
+
+  it('coerceSelectedVariant treats non-string values like unknown keys (classic)', () => {
+    const unlocked = ['classic', 'moor_runner'] as const;
+    expect(coerceSelectedVariant(null, unlocked)).toBe('classic');
+    expect(coerceSelectedVariant(undefined, unlocked)).toBe('classic');
+    expect(coerceSelectedVariant(123, unlocked)).toBe('classic');
+    expect(coerceSelectedVariant({}, unlocked)).toBe('classic');
+  });
+
+  it('evaluateVariantUnlocks reports no newlyUnlocked when save already lists every variant', () => {
+    const maxProgress = {
+      bestTime: 99999,
+      bestKills: 99999,
+      totalGoldEarned: 9_999_999,
+      victories: 99,
+    };
+    const result = evaluateVariantUnlocks(maxProgress, [...VARIANT_KEYS]);
+    expect(result.newlyUnlockedVariants).toEqual([]);
+    expect(result.unlockedVariants).toEqual([...VARIANT_KEYS]);
   });
 });
 
