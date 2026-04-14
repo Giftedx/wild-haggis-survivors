@@ -30,6 +30,16 @@ describe('StatComposer', () => {
     expect(s.baseHitboxRadius).toBe(BALANCE.player.baseHitboxRadius);
   });
 
+  it('treats undefined unlockedUpgrades like an empty list', () => {
+    const s = StatComposer.getPlayerStats({
+      ...pristine,
+      unlockedUpgrades: undefined,
+    } as unknown as ISaveData);
+    expect(s.speed).toBe(PLAYER.SPEED);
+    expect(s.maxHp).toBe(PLAYER.MAX_HP);
+    expect(s.damagePctBonus).toBe(0);
+  });
+
   it('applies speed_tier_1 and health_tier_1 multipliers', () => {
     const s = StatComposer.getPlayerStats({
       ...pristine,

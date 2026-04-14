@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 81 BUILD)
+**Last updated:** 2026-04-13 (loop 82 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 802 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 803 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
@@ -41,11 +41,12 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Loop 79:** `RunStatsTracker.test.ts` — `sortedWeaponDamageEntries` omits `damage ≤ 0` (Game Over weapon rows).
 - **Loop 80 (autonomous discovery):** Scanned for untested wiring — `applyAudioFromUserSettings` had 0 tests while used from GameScene / menus / settings; added `applyAudioFromSettings.test.ts` (volume routing + `> 0.001` dead-zone + asymmetric SFX off / music on).
 - **Loop 81:** `passiveEffects.test.ts` — `applyPassiveEffect` was only indirectly covered (mocked in `runStartModifiers.test`); direct contract tests for all 9 passive keys + unknown-key no-op.
+- **Loop 82:** `StatComposer.test.ts` — `getPlayerStats` with `unlockedUpgrades: undefined` (simulated legacy/malformed JSON) matches pristine baseline via `?? []`.
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 81)
+## Metrics Snapshot (2026-04-13, loop 82)
 - Source files: 105+, Test files: 104+
-- Tests: 802 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+- Tests: 803 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

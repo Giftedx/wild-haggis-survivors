@@ -74,6 +74,7 @@
 - [x] `sortedWeaponDamageEntries` filters non-positive — loop 79 (`RunStatsTracker.test.ts`, Game Over breakdown contract).
 - [x] Tests for `applyAudioFromUserSettings` — loop 80 (autonomous discovery: untested settings→audio bridge; `applyAudioFromSettings.test.ts`, mocked `audio` + `musicEngine`, dead-zone + asymmetric enable).
 - [x] Tests for `applyPassiveEffect` — loop 81 (`passiveEffects.test.ts`, mock `Player` hooks: unknown key no-op + all 9 passive keys magnitudes).
+- [x] `StatComposer` undefined `unlockedUpgrades` — loop 82 (`StatComposer.test.ts`, `?? []` migration guard via `as unknown as ISaveData`).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
