@@ -27,7 +27,8 @@ export class HUD {
   private objectiveText!: Phaser.GameObjects.Text;
   /** Shown when the run has an active curse (trade reminder). */
   private curseChipText!: Phaser.GameObjects.Text;
-  private prevCurseNameKey: string | null = null;
+  /** Cache signature `nameKey|goldPct` so chip text updates if either changes. */
+  private prevCurseChipSig: string = '';
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
@@ -378,6 +379,8 @@ export class HUD {
     weaponSlotCount?: number,
     /** i18n key for curse short name (`curse.*.name`), or null if no curse. */
     curseNameKey?: string | null,
+    /** Gold bonus % from the curse def; omit with no curse. */
+    curseGoldPct?: number | null,
   ): void {
     this.refreshResponsiveLayout();
     const hpDisplay = Math.max(0, Math.round(hp));
@@ -452,10 +455,14 @@ export class HUD {
     this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
 
     const ck = curseNameKey ?? null;
-    if (ck !== this.prevCurseNameKey) {
-      this.prevCurseNameKey = ck;
+    const pct = curseGoldPct ?? null;
+    const sig = ck ? `${ck}|${pct ?? ''}` : '';
+    if (sig !== this.prevCurseChipSig) {
+      this.prevCurseChipSig = sig;
       if (ck) {
-        this.curseChipText.setText(t('ui.hud.curse_chip', { name: t(ck) }));
+        this.curseChipText.setText(
+          t('ui.hud.curse_chip', { name: t(ck), pct: pct ?? 0 }),
+        );
         this.curseChipText.setVisible(true);
       } else {
         this.curseChipText.setVisible(false);

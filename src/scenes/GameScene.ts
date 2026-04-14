@@ -1071,9 +1071,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       row.evolutionKey = w.evolutionKey;
       row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / w.cooldownMs), 0, 1);
     }
-    const curseNameKey = this.activeCurseKey
-      ? getCurseByKey(this.activeCurseKey)?.nameKey ?? null
-      : null;
+    const curseDef = this.activeCurseKey ? getCurseByKey(this.activeCurseKey) : null;
+    const curseNameKey = curseDef?.nameKey ?? null;
+    const curseGoldPct = curseDef ? curseDef.goldBonusPct : null;
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
       this.xpSystem.getLevel(),
@@ -1088,6 +1088,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.ownedPassives,
       wn,
       curseNameKey,
+      curseGoldPct,
     );
   }
 
