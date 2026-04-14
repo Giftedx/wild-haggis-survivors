@@ -232,9 +232,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.level_up.c',
       'ui.banter.level_up.d',
     ],
-    // Variant voice tilt — only authored for variants with strong
-    // on-brand character. Others fall back to the generic pool, which is
-    // intentional: not every variant needs a distinct voice to feel right.
+    // Variant voice — `classic` intentionally uses the generic pool only.
     keysByTag: {
       iron_belly: [
         'ui.banter.level_up.iron_belly.a',
@@ -245,6 +243,21 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.moor_runner.a',
         'ui.banter.level_up.moor_runner.b',
         'ui.banter.level_up.moor_runner.c',
+      ],
+      glen_forager: [
+        'ui.banter.level_up.glen_forager.a',
+        'ui.banter.level_up.glen_forager.b',
+        'ui.banter.level_up.glen_forager.c',
+      ],
+      surefoot: [
+        'ui.banter.level_up.surefoot.a',
+        'ui.banter.level_up.surefoot.b',
+        'ui.banter.level_up.surefoot.c',
+      ],
+      pipe_breath: [
+        'ui.banter.level_up.pipe_breath.a',
+        'ui.banter.level_up.pipe_breath.b',
+        'ui.banter.level_up.pipe_breath.c',
       ],
     },
   },

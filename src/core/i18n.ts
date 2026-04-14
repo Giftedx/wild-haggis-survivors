@@ -597,9 +597,7 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Anither notch. Nae messin\'.',
         c: 'The moor\'s takin\' notes.',
         d: 'Yer gettin\' the hang o\' this.',
-        // ── Variant voice tilt — only for variants with character
-        //    strong enough to justify authored lines. Others use the
-        //    generic pool above. ──
+        // ── Variant voice — classic uses the generic a–d lines only. ──
         iron_belly: {
           a: 'Another layer tae the wall.',
           b: 'Bigger, stronger, steadier.',
@@ -609,6 +607,21 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Feet gettin\' faster by the minute.',
           b: 'Pure flyin\'. Nae stop sign in sight.',
           c: 'Moor\'s a blur. Lovely.',
+        },
+        glen_forager: {
+          a: 'Level up — pockets get deeper, appetite stays.',
+          b: 'Mair room in the satchel. Guid haul ahead.',
+          c: 'Ye grow like a bramble — sharp an\' useful.',
+        },
+        surefoot: {
+          a: 'Level up — feet remember every stone.',
+          b: 'Steadier gait — the moor\'s nae movin\' ye easy.',
+          c: 'Surefoot, surer heid. On ye go.',
+        },
+        pipe_breath: {
+          a: 'Level up — lungs like bellows noo.',
+          b: 'Breath holds the tune; the tune holds the fight.',
+          c: 'Wind in the chest, fire in the hooves.',
         },
       },
       first_blood: {

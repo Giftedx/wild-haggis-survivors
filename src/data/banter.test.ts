@@ -4,6 +4,7 @@ import { BOSSES } from './enemies';
 import { CURSES } from './curses';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
 import { BIOMES, type BiomeId } from './biomes';
+import { VARIANTS } from './variants';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
@@ -47,6 +48,16 @@ describe('BANTER_POOLS structure', () => {
     const tags = Object.keys(pool!.keysByTag ?? {});
     for (const wk of weaponKeys) {
       expect(tags, `weapon_evolve missing tag '${wk}'`).toContain(wk);
+    }
+  });
+
+  it('level_up has keysByTag for every non-classic variant', () => {
+    const nonClassic = VARIANTS.filter((v) => v.key !== 'classic');
+    const pool = getBanterPool('level_up');
+    expect(pool, 'level_up pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const v of nonClassic) {
+      expect(tags, `level_up missing tag '${v.key}'`).toContain(v.key);
     }
   });
 
