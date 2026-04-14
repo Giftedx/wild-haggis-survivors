@@ -489,7 +489,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       } else {
         const combo = this.juice.getComboCount();
         if (combo === 20 || combo === 75 || combo === 150) {
-          this.banter?.request('kill_streak');
+          this.banter?.request('kill_streak', { tag: this.activeVariant?.key });
         }
       }
 

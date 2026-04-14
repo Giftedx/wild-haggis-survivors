@@ -659,6 +659,31 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Ye\'re on fire, wee man.',
         c: 'Cannae stop, will nae stop.',
         d: 'The glen\'s tremblin\'.',
+        iron_belly: {
+          a: 'Chain keeps goin\' — the wall\'s nae tired.',
+          b: 'Momentum like a ceilidh table — nae stoppin\'.',
+          c: 'Streak\'s a habit noo. Belly approves.',
+        },
+        moor_runner: {
+          a: 'Ye\'re stringin\' them like fence posts.',
+          b: 'Hot streak — cold feet nae invited.',
+          c: 'Runnin\' tally — and ye\'re still runnin\'.',
+        },
+        glen_forager: {
+          a: 'Harvest mode: nae a berry left standin\'.',
+          b: 'Combo\'s a full basket — keep pickin\'.',
+          c: 'Streak\'s ripe — dinnae let it rot.',
+        },
+        surefoot: {
+          a: 'Rhythm locked — nae wobble in the chain.',
+          b: 'One after another — feet knew the route.',
+          c: 'Steady slaughter. Elegant, almost.',
+        },
+        pipe_breath: {
+          a: 'Streak\'s a tune — ye\'re on the chorus.',
+          b: 'Breath holds; the beat keeps killin\'.',
+          c: 'Rollin\' riff o\' ruin. Lovely.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
