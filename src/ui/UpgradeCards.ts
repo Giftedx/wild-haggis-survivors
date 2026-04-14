@@ -62,6 +62,7 @@ export class UpgradeCardsUI {
     opts?: { bannerTitle?: string; bannerSubtitle?: string; hideReroll?: boolean }
   ): void {
     this.hide();
+    if (cards.length === 0) return;
 
     // Refresh comfort settings at each open — players can toggle uiScale or
     // high-contrast mid-run from the pause menu.

@@ -175,6 +175,13 @@ export class LevelUpFlow {
   reroll(): void {
     const level = this.hooks.getXPSystem().getLevel();
     const cards = this.buildCardDraw(level);
+    if (cards.length === 0) {
+      this.hooks.getUpgradeUI().hide();
+      this.hooks.getJuice().showToast(t('ui.game.level_up_fallback'), '#ffdd00');
+      this.hooks.getTimeManager().release('LEVEL_UP');
+      this.hooks.getXPSystem().processNextLevelUp();
+      return;
+    }
     this.hooks.getUpgradeUI().show(cards, level);
     audio.playClick();
   }

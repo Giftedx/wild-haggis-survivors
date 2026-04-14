@@ -1248,7 +1248,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       row.level = w.level;
       row.evolved = w.evolved;
       row.evolutionKey = w.evolutionKey;
-      row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / w.cooldownMs), 0, 1);
+      const cd = Math.max(1, w.cooldownMs);
+      row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / cd), 0, 1);
     }
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),

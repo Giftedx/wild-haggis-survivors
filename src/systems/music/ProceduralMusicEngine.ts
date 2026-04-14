@@ -242,7 +242,7 @@ class ProceduralMusicEngine {
     this.scheduler.setRhythmCallback((time) => {
       const mood = this.conductor.getMood();
       this.percussion.scheduleRhythmHit(time, mood.intensity, mood.triumph * 0.15);
-      return (60 / this.rhythmBPM) / 2;
+      return (60 / Math.max(30, this.rhythmBPM)) / 2;
     });
 
     this.scheduler.setHeartbeatCallback((time) => {
@@ -385,7 +385,7 @@ class ProceduralMusicEngine {
       this.fogDelay.delayTime.linearRampToValueAtTime(delayTime, this.ctx.currentTime + 1);
     }
 
-    this.rhythmBPM = 90 + mood.intensity * 50;
+    this.rhythmBPM = Math.min(220, Math.max(30, 90 + mood.intensity * 50));
     const rhythmDensity = mood.danger > 0.5
       ? 0.1 + (1 - mood.danger) * 0.3
       : mood.intensity;
