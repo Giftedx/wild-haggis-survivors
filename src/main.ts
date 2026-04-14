@@ -67,6 +67,20 @@ const config: Phaser.Types.Core.GameConfig = {
     touch: true,
     gamepad: true,
   },
+  // Canvas a11y must run via postBoot: if the document is already interactive,
+  // Phaser can emit `ready` during `new Phaser.Game()` before any code after
+  // the constructor runs — so `game.events.once('ready', …)` may never fire.
+  callbacks: {
+    postBoot: (game: Phaser.Game) => {
+      const canvas = game.canvas ?? document.querySelector('canvas');
+      if (!canvas) return;
+      canvas.setAttribute('role', 'application');
+      canvas.setAttribute(
+        'aria-label',
+        'Wild Haggis Survivors game. Use WASD or arrow keys to move. Press ESC to pause.',
+      );
+    },
+  },
 };
 
 if (typeof window !== 'undefined') {
@@ -82,14 +96,4 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   void import('./dev/StressTest').then((m) => m.installStressTestConsoleHooks());
 }
 
-// Accessibility: label the canvas for screen readers.
-// The aria-label is intentionally hardcoded in English to match document lang="en".
-// When localized builds ship, derive this from t('ui.menu.title') + a per-locale
-// screen-reader instruction key (e.g. `ui.a11y.canvas_instructions`).
-game.events.once('ready', () => {
-  const canvas = document.querySelector('canvas');
-  if (canvas) {
-    canvas.setAttribute('role', 'application');
-    canvas.setAttribute('aria-label', 'Wild Haggis Survivors game. Use WASD or arrow keys to move. Press ESC to pause.');
-  }
-});
+// Canvas role + aria-label are applied in `config.callbacks.postBoot` (see above).

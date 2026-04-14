@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('production build smoke', () => {
   test('serves the app title and mounts a Phaser canvas', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('production build smoke', () => {
 
     await page.goto('/');
     await expect(page).toHaveTitle(/Wild Haggis Survivors/i);
-    // main.ts sets role + aria-label on `game` ready — stricter than any stray canvas.
+    // main.ts sets role + aria-label in `callbacks.postBoot` — stricter than any stray canvas.
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
     // User gesture: exercises audio unlock + input paths without relying on gamepad.
