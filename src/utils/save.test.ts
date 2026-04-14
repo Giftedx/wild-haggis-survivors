@@ -10,6 +10,14 @@ import {
 } from './save';
 
 describe('save migration', () => {
+  it('returns a fresh default save when the payload is not a plain object', () => {
+    const expected = createDefaultSave();
+    expect(migrateSave(null)).toEqual(expected);
+    expect(migrateSave(undefined)).toEqual(expected);
+    expect(migrateSave([])).toEqual(expected);
+    expect(migrateSave('oops')).toEqual(expected);
+  });
+
   it('migrates legacy saves without resetting progression', () => {
     const migrated = migrateSave({
       gold: 250,

@@ -87,3 +87,4 @@
 | 2026-04-13 | 85 | BUILD | Variant unlock + coercion | Done — `variants.test.ts`: `coerceVariantKeys`, `meetsVariantUnlockCondition`, `isVariantUnlocked` w/ `unlockedVariants`. 810→814 tests, build clean. |
 | 2026-04-13 | 86 | BUILD | Variant UI string formatters | Done — `formatRunVariantLabel`, `formatVariantUnlockText` (ready vs progress). 814→817 tests, build clean. |
 | 2026-04-13 | 87 | BUILD | Save variant coercion + unlock delta | Done — `save.test.ts`: `coerceSelectedVariant` non-string → classic; `evaluateVariantUnlocks` with full `VARIANT_KEYS` → `newlyUnlockedVariants` empty. 817→819 tests, build clean. |
+| 2026-04-13 | 88 | BUILD | Save migration guards + endless coercion | Done — `save.test.ts`: non-object `migrateSave` → `createDefaultSave()`; `save.endless.test.ts`: floor/clamp `bestEndlessSeconds`, `NaN`/`Infinity` → 0. 819→822 tests, build clean. |

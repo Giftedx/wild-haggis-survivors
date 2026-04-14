@@ -43,4 +43,16 @@ describe('bestEndlessSeconds save field', () => {
     const migrated = migrateSave(input);
     expect(migrated.bestEndlessSeconds).toBe(0);
   });
+
+  it('floors fractional endless seconds and clamps negatives to 0', () => {
+    expect(migrateSave({ ...createDefaultSave(), bestEndlessSeconds: 12.9 }).bestEndlessSeconds).toBe(12);
+    expect(migrateSave({ ...createDefaultSave(), bestEndlessSeconds: -3 }).bestEndlessSeconds).toBe(0);
+  });
+
+  it('treats non-finite endless values as 0', () => {
+    expect(migrateSave({ ...createDefaultSave(), bestEndlessSeconds: Number.POSITIVE_INFINITY }).bestEndlessSeconds).toBe(
+      0
+    );
+    expect(migrateSave({ ...createDefaultSave(), bestEndlessSeconds: Number.NaN }).bestEndlessSeconds).toBe(0);
+  });
 });
