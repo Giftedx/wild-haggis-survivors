@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { VARIANTS, VARIANT_KEYS, getVariantByKey, isVariantKey, type VariantKey } from './variants';
+import {
+  VARIANTS,
+  VARIANT_KEYS,
+  getVariantByKey,
+  isVariantKey,
+  formatVariantModifierSummary,
+  type VariantKey,
+} from './variants';
 import { t } from '../core/i18n';
 
 describe('variants', () => {
@@ -63,5 +70,16 @@ describe('variants', () => {
         expect(req, `${variant.key} has non-positive unlock requirement`).toBeGreaterThan(0);
       }
     }
+  });
+
+  it('formatVariantModifierSummary returns baseline copy when modifiers are empty', () => {
+    expect(formatVariantModifierSummary(getVariantByKey('classic'))).toBe(t('variant.summary.baseline'));
+  });
+
+  it('formatVariantModifierSummary joins modifier lines when present', () => {
+    const summary = formatVariantModifierSummary(getVariantByKey('moor_runner'));
+    expect(summary).not.toBe(t('variant.summary.baseline'));
+    expect(summary.length).toBeGreaterThan(0);
+    expect(summary).toContain('  |  ');
   });
 });

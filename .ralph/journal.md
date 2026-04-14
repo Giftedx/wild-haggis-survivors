@@ -83,3 +83,4 @@
 | 2026-04-13 | 81 | BUILD | `applyPassiveEffect` contract tests | Done — `passiveEffects.test.ts`: mock `Player` stat hooks; unknown key silent; all 9 passive keys assert magnitudes vs `PLAYER` constants. 800→802 tests, 104 test files, build clean. |
 | 2026-04-13 | 82 | BUILD | `StatComposer` missing upgrades guard | Done — `StatComposer.test.ts`: `unlockedUpgrades: undefined` (cast) → same baseline as empty array (`?? []`). 802→803 tests, build clean. |
 | 2026-04-13 | 83 | BUILD | Enemy display + config resolution | Done — `enemies.test.ts`: `getEnemyDisplayName` known/fallback/empty; `getEnemyConfigsByKeys` filters + order. 803→807 tests, build clean. |
+| 2026-04-13 | 84 | BUILD | Variant summary + spawn-time filter | Done — `variants.test.ts`: `formatVariantModifierSummary` baseline vs multi-mod; `enemies.test.ts`: `getAvailableEnemyTypes` `appearsAt` gate. 807→810 tests, build clean. |

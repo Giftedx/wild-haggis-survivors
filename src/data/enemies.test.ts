@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ENEMY_TYPES, BOSSES, getEnemyDisplayName, getEnemyConfigsByKeys } from './enemies';
+import {
+  ENEMY_TYPES,
+  BOSSES,
+  getEnemyDisplayName,
+  getEnemyConfigsByKeys,
+  getAvailableEnemyTypes,
+} from './enemies';
 import { WAVE_TIMELINE } from '../core/BalanceConfig';
 
 describe('ENEMY_TYPES', () => {
@@ -82,5 +88,16 @@ describe('getEnemyConfigsByKeys', () => {
   it('returns only configs that exist, preserving input order', () => {
     const cfgs = getEnemyConfigsByKeys(['tourist', 'not_real', 'chef']);
     expect(cfgs.map((c) => c.key)).toEqual(['tourist', 'chef']);
+  });
+});
+
+describe('getAvailableEnemyTypes', () => {
+  it('includes enemies whose appearsAt is <= game time', () => {
+    const t0 = getAvailableEnemyTypes(0);
+    expect(t0.some((e) => e.key === 'tourist')).toBe(true);
+    expect(t0.some((e) => e.key === 'chef')).toBe(false);
+    const late = getAvailableEnemyTypes(120);
+    expect(late.length).toBeGreaterThanOrEqual(t0.length);
+    expect(late.some((e) => e.key === 'chef')).toBe(true);
   });
 });

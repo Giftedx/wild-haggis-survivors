@@ -76,6 +76,7 @@
 - [x] Tests for `applyPassiveEffect` — loop 81 (`passiveEffects.test.ts`, mock `Player` hooks: unknown key no-op + all 9 passive keys magnitudes).
 - [x] `StatComposer` undefined `unlockedUpgrades` — loop 82 (`StatComposer.test.ts`, `?? []` migration guard via `as unknown as ISaveData`).
 - [x] `getEnemyDisplayName` + `getEnemyConfigsByKeys` — loop 83 (`enemies.test.ts`: curated labels, underscore fallback, empty key, ordered config filter).
+- [x] `formatVariantModifierSummary` + `getAvailableEnemyTypes` — loop 84 (`variants.test.ts` baseline vs moor_runner join; `enemies.test.ts` appearsAt gate).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
