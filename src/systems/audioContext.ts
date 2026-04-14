@@ -5,9 +5,9 @@
  * chaotic boss fights when SFX + music + heartbeat fire simultaneously.
  *
  * Browser autoplay policy: we do **not** construct AudioContext until the
- * player has produced a user gesture (pointer / key / touch). That avoids
- * a suspended context + console noise on first paint, and matches how
- * players expect sound to unlock with their first input.
+ * player has produced a user gesture (pointer / key / touch / gamepad).
+ * That avoids a suspended context + console noise on first paint, and
+ * matches how players expect sound to unlock with their first input.
  */
 
 let sharedCtx: AudioContext | null = null;
@@ -74,6 +74,7 @@ export function runWhenAudioActivated(fn: () => void): void {
 function activateAudioOutput(): void {
   if (audioOutputActivated) return;
   audioOutputActivated = true;
+  stopGamepadPoll();
   uninstallUserGestureListeners();
 
   const ctx = createSharedContext();
@@ -86,17 +87,103 @@ let targetWindow: Window | null = null;
 
 const GESTURE_EVENTS = ['pointerdown', 'keydown', 'touchstart'] as const;
 
+/** Poll interval when a pad is already connected at load (TV / handheld). */
+const GAMEPAD_POLL_MS = 50;
+const GAMEPAD_POLL_MAX_MS = 5 * 60 * 1000;
+
+/** DOM `setInterval` handle (number); avoid NodeJS.Timeout from ambient typings. */
+let gamepadPollTimer: number | null = null;
+let gamepadPollStartedAt = 0;
+
 function onUserGestureForAudio(): void {
   activateAudioOutput();
+}
+
+function hasAnyConnectedGamepad(): boolean {
+  try {
+    if (typeof navigator === 'undefined' || typeof navigator.getGamepads !== 'function') return false;
+    const pads = navigator.getGamepads();
+    for (let i = 0; i < pads.length; i++) {
+      if (pads[i]) return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
+}
+
+function gamepadShowsPlayerInput(gp: Gamepad): boolean {
+  for (let i = 0; i < gp.buttons.length; i++) {
+    if (gp.buttons[i]?.pressed) return true;
+  }
+  for (let i = 0; i < gp.axes.length; i++) {
+    if (Math.abs(gp.axes[i] ?? 0) > 0.2) return true;
+  }
+  return false;
+}
+
+function pollGamepadsOnce(): void {
+  if (audioOutputActivated) return;
+  try {
+    if (typeof navigator === 'undefined' || typeof navigator.getGamepads !== 'function') return;
+    const pads = navigator.getGamepads();
+    for (let i = 0; i < pads.length; i++) {
+      const gp = pads[i];
+      if (gp && gamepadShowsPlayerInput(gp)) {
+        activateAudioOutput();
+        return;
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function stopGamepadPoll(): void {
+  if (gamepadPollTimer != null) {
+    clearInterval(gamepadPollTimer);
+    gamepadPollTimer = null;
+  }
+  gamepadPollStartedAt = 0;
+}
+
+function startGamepadPoll(win: Window, opts?: { skipPadCheck?: boolean }): void {
+  if (gamepadPollTimer != null || audioOutputActivated || isVitest()) return;
+  if (typeof win.setInterval !== 'function') return;
+  if (!opts?.skipPadCheck && !hasAnyConnectedGamepad()) return;
+  gamepadPollStartedAt = Date.now();
+  gamepadPollTimer = win.setInterval(() => {
+    if (audioOutputActivated) {
+      stopGamepadPoll();
+      return;
+    }
+    if (Date.now() - gamepadPollStartedAt > GAMEPAD_POLL_MAX_MS) {
+      stopGamepadPoll();
+      return;
+    }
+    pollGamepadsOnce();
+  }, GAMEPAD_POLL_MS);
 }
 
 function uninstallUserGestureListeners(): void {
   if (!gestureListenersInstalled || !targetWindow) return;
   gestureListenersInstalled = false;
+  const win = targetWindow;
   for (const ev of GESTURE_EVENTS) {
-    targetWindow.removeEventListener(ev, onUserGestureForAudio, true);
+    win.removeEventListener(ev, onUserGestureForAudio, true);
   }
+  win.removeEventListener('gamepadconnected', onGamepadConnectedForAudio, true);
   targetWindow = null;
+}
+
+function onGamepadConnectedForAudio(ev: Event): void {
+  if (!targetWindow || audioOutputActivated) return;
+  const gp = typeof GamepadEvent !== 'undefined' && ev instanceof GamepadEvent ? ev.gamepad : null;
+  if (gp && gamepadShowsPlayerInput(gp)) {
+    activateAudioOutput();
+    return;
+  }
+  startGamepadPoll(targetWindow, { skipPadCheck: true });
 }
 
 /**
@@ -112,6 +199,9 @@ export function installAudioActivationOnUserGesture(win: Window & typeof globalT
   for (const ev of GESTURE_EVENTS) {
     win.addEventListener(ev, onUserGestureForAudio, opts);
   }
+  win.addEventListener('gamepadconnected', onGamepadConnectedForAudio, opts);
+
+  if (hasAnyConnectedGamepad()) startGamepadPoll(win);
 
   win.addEventListener(
     'pagehide',
