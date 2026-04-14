@@ -5,6 +5,8 @@ import {
   getVariantByKey,
   isVariantKey,
   formatVariantModifierSummary,
+  formatVariantUnlockText,
+  formatRunVariantLabel,
   coerceVariantKeys,
   meetsVariantUnlockCondition,
   isVariantUnlocked,
@@ -110,5 +112,27 @@ describe('variants', () => {
     const low = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
     expect(isVariantUnlocked(moor, low)).toBe(false);
     expect(isVariantUnlocked(moor, { ...low, unlockedVariants: ['moor_runner'] })).toBe(true);
+  });
+
+  it('formatRunVariantLabel appends modifier summary only when modifiers exist', () => {
+    expect(formatRunVariantLabel(getVariantByKey('classic'))).toBe(t('variant.classic.name'));
+    const moor = getVariantByKey('moor_runner');
+    const label = formatRunVariantLabel(moor);
+    expect(label.startsWith(t('variant.moor_runner.name'))).toBe(true);
+    expect(label).toContain('  |  ');
+  });
+
+  it('formatVariantUnlockText returns ready copy when already unlocked', () => {
+    const ready = t('variant.unlock.ready');
+    const z = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(formatVariantUnlockText(getVariantByKey('classic'), z)).toBe(ready);
+    expect(formatVariantUnlockText(getVariantByKey('moor_runner'), { ...z, bestTime: 600 })).toBe(ready);
+  });
+
+  it('formatVariantUnlockText shows progress label when still locked', () => {
+    const moor = getVariantByKey('moor_runner');
+    const s = formatVariantUnlockText(moor, { bestTime: 120, bestKills: 0, totalGoldEarned: 0, victories: 0 });
+    expect(s).not.toBe(t('variant.unlock.ready'));
+    expect(s).toMatch(/:\s*.+\s*\/\s*.+/);
   });
 });

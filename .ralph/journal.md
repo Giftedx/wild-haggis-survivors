@@ -85,3 +85,4 @@
 | 2026-04-13 | 83 | BUILD | Enemy display + config resolution | Done — `enemies.test.ts`: `getEnemyDisplayName` known/fallback/empty; `getEnemyConfigsByKeys` filters + order. 803→807 tests, build clean. |
 | 2026-04-13 | 84 | BUILD | Variant summary + spawn-time filter | Done — `variants.test.ts`: `formatVariantModifierSummary` baseline vs multi-mod; `enemies.test.ts`: `getAvailableEnemyTypes` `appearsAt` gate. 807→810 tests, build clean. |
 | 2026-04-13 | 85 | BUILD | Variant unlock + coercion | Done — `variants.test.ts`: `coerceVariantKeys`, `meetsVariantUnlockCondition`, `isVariantUnlocked` w/ `unlockedVariants`. 810→814 tests, build clean. |
+| 2026-04-13 | 86 | BUILD | Variant UI string formatters | Done — `formatRunVariantLabel`, `formatVariantUnlockText` (ready vs progress). 814→817 tests, build clean. |

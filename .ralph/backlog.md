@@ -78,6 +78,7 @@
 - [x] `getEnemyDisplayName` + `getEnemyConfigsByKeys` — loop 83 (`enemies.test.ts`: curated labels, underscore fallback, empty key, ordered config filter).
 - [x] `formatVariantModifierSummary` + `getAvailableEnemyTypes` — loop 84 (`variants.test.ts` baseline vs moor_runner join; `enemies.test.ts` appearsAt gate).
 - [x] Variant unlock coercion — loop 85 (`variants.test.ts`: `coerceVariantKeys`, `meetsVariantUnlockCondition`, `isVariantUnlocked` override).
+- [x] Variant UI formatters — loop 86 (`variants.test.ts`: `formatRunVariantLabel`, `formatVariantUnlockText` locked vs ready).
 
 ## Low Priority
 - [x] Add banter.ts structure validation test — 6 tests: context coverage, key count, priority uniqueness, boss tag completeness, sub-pool depth, i18n resolution
