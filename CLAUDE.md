@@ -14,8 +14,12 @@ Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Pha
 
 - `npm run dev` — Start Vite dev server on port 3000 (auto-opens browser)
 - `npm test` — Run unit tests (Vitest)
+- `npm run lint` — ESLint on `src/`, `e2e/`, and config entrypoints
 - `npm run build` — Type-check with `tsc --noEmit` then build with Vite to `dist/`
-- `npm run preview` — Serve the production build locally
+- `npm run preview` — Serve the production build locally (Playwright E2E uses `vite preview` on port 4180 via `playwright.config.ts`)
+- `npm run test:e2e` — Playwright smoke against the production build (run `npm run build` first, or rely on an existing `dist/`)
+- `npm run ci` — Lint + Vitest + build (no E2E)
+- `npm run ci:all` — Full gate: `ci` then E2E (matches `.github/workflows/ci.yml` after `playwright install`)
 
 Vitest is configured (see `src/utils/save.test.ts`).
 
