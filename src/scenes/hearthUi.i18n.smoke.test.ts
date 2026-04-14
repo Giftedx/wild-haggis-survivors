@@ -36,6 +36,7 @@ const MAIN_MENU_AND_PAUSE_STATIC_KEYS = [
   'ui.pause.quip_5',
   'ui.pause.quip_6',
   'ui.pause.resume',
+  'ui.pause.keys_resume',
   'ui.pause.passives_heading',
   'ui.pause.elite_affix_heading',
   'ui.pause.quit',
@@ -68,6 +69,8 @@ const MAIN_MENU_AND_PAUSE_DYNAMIC: ReadonlyArray<
   ['ui.pause.time_line', { m: 0, s: '00' }],
   ['ui.pause.stats_mid', { kills: 0, level: 1 }],
   ['ui.pause.stats_loadout', { w: 0, c: 0 }],
+  ['ui.pause.stats_gold', { gold: 0 }],
+  ['ui.pause.stats_streak', { current: 5, best: 12 }],
   [
     'ui.loadout.sfx_toggle',
     { state: t('ui.common.on') },

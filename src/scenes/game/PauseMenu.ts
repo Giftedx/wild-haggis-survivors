@@ -27,6 +27,10 @@ export interface PauseMenuHooks {
   getOwnedPassives(): readonly string[];
   /** Same copy as the in-run curse chip (`ui.hud.curse_chip`); null if no curse. */
   getActiveCurseLine?: () => string | null;
+  /** Coin pickups + kill milestones + overflow gold this run (GameScene). */
+  getRunGoldEarned?: () => number;
+  /** Kill-combo chain vs best — from JuiceSystem. */
+  getKillStreakStats?: () => { current: number; best: number };
   onResumeRequested(): void;
   onQuitRequested(): void;
 }
@@ -72,15 +76,24 @@ export class PauseMenu {
     const timeSec = this.hooks.getGameTimeSec();
     const pMins = Math.floor(timeSec / 60);
     const pSecs = Math.floor(timeSec % 60);
+    const statLines = [
+      t('ui.pause.time_line', { m: pMins, s: pSecs.toString().padStart(2, '0') }),
+      t('ui.pause.stats_mid', { kills: this.hooks.getKillCount(), level: this.hooks.getLevel() }),
+      t('ui.pause.stats_loadout', {
+        w: this.hooks.getEquippedWeaponCount(),
+        c: this.hooks.getOwnedPassives().length,
+      }),
+    ];
+    const runGold = this.hooks.getRunGoldEarned?.() ?? 0;
+    if (runGold > 0) {
+      statLines.push(t('ui.pause.stats_gold', { gold: runGold }));
+    }
+    const streak = this.hooks.getKillStreakStats?.();
+    if (streak && (streak.best >= 2 || streak.current >= 2)) {
+      statLines.push(t('ui.pause.stats_streak', { current: streak.current, best: streak.best }));
+    }
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.34, [
-        t('ui.pause.time_line', { m: pMins, s: pSecs.toString().padStart(2, '0') }),
-        t('ui.pause.stats_mid', { kills: this.hooks.getKillCount(), level: this.hooks.getLevel() }),
-        t('ui.pause.stats_loadout', {
-          w: this.hooks.getEquippedWeaponCount(),
-          c: this.hooks.getOwnedPassives().length,
-        }),
-      ].join('\n'), {
+      scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {
         fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
         align: 'center', lineSpacing: 6,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
@@ -109,6 +122,11 @@ export class PauseMenu {
         fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
+    this.elements.push(
+      scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'), {
+        fontFamily: 'monospace', fontSize: '11px', color: '#7a8a98',
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+    );
 
     const passives = this.hooks.getOwnedPassives();
     // Bottom-anchored controls so END RUN / audio never clip off short viewports (mobile landscape, etc.).
@@ -116,7 +134,8 @@ export class PauseMenu {
     const audioY = quitY - 42;
     const passiveBottomY = passives.length > 0 ? audioY - 14 : null;
     const eliteRegionBottom = passiveBottomY !== null ? passiveBottomY : audioY - 10;
-    const eliteMinY = resumeY + 28;
+    // Below RESUME label + ESC/P hint — keeps elite reference block from crowding keys.
+    const eliteMinY = resumeY + 52;
     const eliteMaxY = Math.max(eliteRegionBottom - 24, eliteMinY);
     let eliteAffixTop = Math.min(y + height * 0.56, eliteRegionBottom - 100);
     eliteAffixTop = Phaser.Math.Clamp(eliteAffixTop, eliteMinY, eliteMaxY);

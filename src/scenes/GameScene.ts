@@ -851,6 +851,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // bypassed TypeScript entirely; widen to the concrete base class instead.
       const kb: Phaser.Events.EventEmitter = this.input.keyboard;
       this.subs.listen(kb, 'keydown-ESC', () => this.toggleUiPause());
+      this.subs.listen(kb, 'keydown-P', () => this.toggleUiPause());
       this.subs.listen(kb, 'keydown-F3', () => this.debugOverlay?.toggle());
     }
 
@@ -1347,6 +1348,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
           getOwnedPassives: () => this.ownedPassives,
           getActiveCurseLine: () => formatHudCurseChipLine(this.activeCurseKey),
+          getRunGoldEarned: () => this.coinGoldEarned,
+          getKillStreakStats: () => ({
+            current: this.juice.getComboCount(),
+            best: this.juice.getBestCombo(),
+          }),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.abandonRunToMainMenu(),
         });
