@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ENEMY_TYPES, BOSSES } from './enemies';
+import { ENEMY_TYPES, BOSSES, getEnemyDisplayName, getEnemyConfigsByKeys } from './enemies';
 import { WAVE_TIMELINE } from '../core/BalanceConfig';
 
 describe('ENEMY_TYPES', () => {
@@ -59,5 +59,28 @@ describe('BOSSES', () => {
       expect(boss.hp, `${boss.key} has non-positive HP`).toBeGreaterThan(0);
       expect(boss.spawnTimeSec, `${boss.key} has non-positive spawnTimeSec`).toBeGreaterThanOrEqual(0);
     }
+  });
+});
+
+describe('getEnemyDisplayName', () => {
+  it('returns the curated label when the key is known', () => {
+    expect(getEnemyDisplayName('tourist')).toBe('Tourist');
+    expect(getEnemyDisplayName('midgie_swarm')).toBe('Midgie Swarm');
+    expect(getEnemyDisplayName('tour_bus')).toBe('Tour Bus');
+  });
+
+  it('title-cases unknown keys with underscores as word breaks', () => {
+    expect(getEnemyDisplayName('wee_mod_enemy')).toBe('Wee Mod Enemy');
+  });
+
+  it('handles empty string without throwing', () => {
+    expect(getEnemyDisplayName('')).toBe('');
+  });
+});
+
+describe('getEnemyConfigsByKeys', () => {
+  it('returns only configs that exist, preserving input order', () => {
+    const cfgs = getEnemyConfigsByKeys(['tourist', 'not_real', 'chef']);
+    expect(cfgs.map((c) => c.key)).toEqual(['tourist', 'chef']);
   });
 });
