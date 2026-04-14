@@ -27,6 +27,7 @@ export type BanterContext =
   | 'boss_down'
   | 'biome_change'
   | 'weapon_evolve'
+  | 'curse_start'
   | 'idle';
 
 export interface BanterPool {
@@ -146,6 +147,38 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.weapon_evolve.b',
       'ui.banter.weapon_evolve.c',
     ],
+  },
+  {
+    context: 'curse_start',
+    tone: 'hearth',
+    priority: 59,
+    keys: [
+      'ui.banter.curse_start.generic.a',
+      'ui.banter.curse_start.generic.b',
+      'ui.banter.curse_start.generic.c',
+    ],
+    keysByTag: {
+      heavy_legs: [
+        'ui.banter.curse_start.heavy_legs.a',
+        'ui.banter.curse_start.heavy_legs.b',
+        'ui.banter.curse_start.heavy_legs.c',
+      ],
+      thin_hide: [
+        'ui.banter.curse_start.thin_hide.a',
+        'ui.banter.curse_start.thin_hide.b',
+        'ui.banter.curse_start.thin_hide.c',
+      ],
+      restless_spirits: [
+        'ui.banter.curse_start.restless_spirits.a',
+        'ui.banter.curse_start.restless_spirits.b',
+        'ui.banter.curse_start.restless_spirits.c',
+      ],
+      empty_larder: [
+        'ui.banter.curse_start.empty_larder.a',
+        'ui.banter.curse_start.empty_larder.b',
+        'ui.banter.curse_start.empty_larder.c',
+      ],
+    },
   },
   {
     context: 'level_up',

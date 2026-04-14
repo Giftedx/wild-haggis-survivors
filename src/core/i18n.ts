@@ -523,6 +523,33 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Legendary. As it should be.',
         c: 'The moor trembles. Good.',
       },
+      curse_start: {
+        generic: {
+          a: 'The moor remembers yir bargain.',
+          b: 'Curse taken — nae takin\' it back noo.',
+          c: 'Paid in teeth fer gold. Let\'s see it.',
+        },
+        heavy_legs: {
+          a: 'Heavy legs, heavier purse. Ye asked fer it.',
+          b: 'The moor\'s pullin\' at yer boots noo. Worth the gold?',
+          c: 'Slower trot — shinier haul. That\'s the deal.',
+        },
+        thin_hide: {
+          a: 'Thin hide, thick trouble. Mind the dunts.',
+          b: 'Every nip stings louder. Ye wanted the bonus.',
+          c: 'Paper skin, metal nerve. Off ye go.',
+        },
+        restless_spirits: {
+          a: 'Restless spirits — they\'re aw comin\' fer a blether.',
+          b: 'Mair boots on the heather. Ye paid fer the crowd.',
+          c: 'The glen\'s busier than a ceilidh. Enjoy.',
+        },
+        empty_larder: {
+          a: 'Empty larder start — belly rumblin\', pockets jinglin\'.',
+          b: 'Less in the tank, mair in the purse. Fair swap?',
+          c: 'Ye skipped breakfast fer gold. Classic.',
+        },
+      },
       level_up: {
         a: 'Look at ye go.',
         b: 'Anither notch. Nae messin\'.',

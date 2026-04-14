@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { BANTER_POOLS, BANTER_KEYS, getBanterPool, type BanterContext } from './banter';
 import { BOSSES } from './enemies';
+import { CURSES } from './curses';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
   const allContexts: BanterContext[] = [
     'first_blood', 'kill_streak', 'level_up', 'low_hp',
     'recover', 'boss_warn', 'boss_down', 'biome_change',
-    'weapon_evolve', 'idle',
+    'weapon_evolve', 'curse_start', 'idle',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -25,6 +26,16 @@ describe('BANTER_POOLS structure', () => {
   it('priorities are unique (no ties in same-tick arbitration)', () => {
     const priorities = BANTER_POOLS.map(p => p.priority);
     expect(new Set(priorities).size).toBe(priorities.length);
+  });
+
+  it('curse_start has keysByTag for every curse', () => {
+    const curseKeys = CURSES.map((c) => c.key);
+    const pool = getBanterPool('curse_start');
+    expect(pool, 'curse_start pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const ck of curseKeys) {
+      expect(tags, `curse_start missing tag '${ck}'`).toContain(ck);
+    }
   });
 
   it('boss_warn and boss_down have keysByTag for every boss', () => {

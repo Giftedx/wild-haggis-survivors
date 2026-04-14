@@ -640,6 +640,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       });
     }
     this.banter.reset();
+    // Curse pact — one hearth line after the HUD settles (soul weave: run start).
+    if (this.activeCurseKey) {
+      const curseTag = this.activeCurseKey;
+      this.time.delayedCall(1200, () => {
+        this.banter?.request('curse_start', { tag: curseTag });
+      });
+    }
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
       getScene: () => this,
