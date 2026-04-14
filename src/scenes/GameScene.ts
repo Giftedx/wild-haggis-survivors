@@ -586,7 +586,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         if (distSq < RIPPLE_RADIUS_SQ && distSq > 0) {
           const dist = Math.sqrt(distSq);
           const body = e.body as Phaser.Physics.Arcade.Body;
-          const force = 120 / body.mass / dist;
+          const mass = Math.max(0.05, body.mass);
+          const force = 120 / mass / dist;
           e.applyKnockback(dx * force, dy * force, 120);
           pushed++;
         }
@@ -1407,8 +1408,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       targets: this.player, scaleX: baseScale * 0.85, scaleY: baseScale * 1.15,
       duration: 50, yoyo: true, ease: 'Sine.easeOut',
     });
-    // Scale shake intensity with damage proportion
-    const dmgFrac = incomingDmg / this.player.getMaxHp();
+    // Scale shake intensity with damage proportion (guard maxHp — matches GameTickers)
+    const dmgFrac = incomingDmg / Math.max(1, this.player.getMaxHp());
     const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
     tryCameraShake(this.cameras.main, 100 + dmgFrac * 200, shakeIntensity, this.settingsManager);
     audio.playPlayerHit();

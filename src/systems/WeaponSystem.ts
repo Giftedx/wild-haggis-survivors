@@ -467,7 +467,8 @@ export class WeaponSystem {
           const dist = Math.sqrt(distSq);
           if (dist > 1e-6) {
             const body = enemy.body as Phaser.Physics.Arcade.Body;
-            const kb = w.config.knockback / body.mass / dist;
+            const mass = Math.max(0.05, body.mass);
+            const kb = w.config.knockback / mass / dist;
             enemy.applyKnockback(dx * kb, dy * kb, 150);
           }
         }
@@ -598,7 +599,8 @@ export class WeaponSystem {
       // Reuses the same dx/dy: knockback direction == enemy direction.
       if (enemy.active && w.config.knockback > 0) {
         const body = enemy.body as Phaser.Physics.Arcade.Body;
-        const kb = w.config.knockback / body.mass;
+        const mass = Math.max(0.05, body.mass);
+        const kb = w.config.knockback / mass;
         enemy.applyKnockback(nx * kb, ny * kb, 150);
       }
     }
@@ -823,10 +825,12 @@ export class WeaponSystem {
   /** Jobby Cannon — rapid burst of wee jobbies in all directions */
   private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
+    const sectors = Math.max(1, maxShot);
     for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('haggis_ball');
       if (!proj) continue;
-      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+      // Space by actual shots fired — `count` can exceed `maxShot` when the pool caps fire rate.
+      const angle = (i / sectors) * Math.PI * 2 + Math.random() * 0.3;
       proj.fire(px, py,
         px + Math.cos(angle) * 500, py + Math.sin(angle) * 500,
         w.config.projectileSpeed * 1.5, dmg, 0, 2000, isCrit
@@ -861,7 +865,8 @@ export class WeaponSystem {
         const dist = Math.sqrt(distSq);
         if (dist > 1e-6) {
           const body = enemy.body as Phaser.Physics.Arcade.Body;
-          const kb = 200 / body.mass / dist;
+          const mass = Math.max(0.05, body.mass);
+          const kb = 200 / mass / dist;
           enemy.applyKnockback(dx * kb, dy * kb, 200);
         }
       }

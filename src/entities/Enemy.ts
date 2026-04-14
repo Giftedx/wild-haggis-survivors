@@ -1076,7 +1076,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Berserker: speed increases as HP drops (up to 2x at 1 HP).
     // Writes to the multiplier (not this.speed) so it composes with freeze.
     if (this.enemyKey === 'berserker') {
-      const hpFrac = this.hp / this.maxHp;
+      const hpFrac = this.getHpFraction();
       this.berserkerSpeedMul = 1 + (1 - hpFrac);
       this.recomputeSpeed();
     }
