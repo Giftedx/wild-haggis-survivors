@@ -1,6 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { PLAYER } from '../config';
-import { BALANCE } from '../core/BalanceConfig';
+import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('phaser', () => {
   class Body {

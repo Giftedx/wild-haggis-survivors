@@ -4,8 +4,6 @@ import {
   drawCards,
   WEAPON_CARDS,
   PASSIVE_CARDS,
-  STAT_CARDS,
-  RARITY_WEIGHTS,
   UpgradeCard,
 } from './upgrades';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';

@@ -3,15 +3,15 @@ import { describe, expect, it, vi } from 'vitest';
 // Lightweight Phaser mock: enough for TimeManager/XPSystem/SpawnSystem constructors.
 vi.mock('phaser', () => {
   class EE {
-    private listenersMap = new Map<string, Set<Function>>();
-    on(event: string, fn: Function) {
+    private listenersMap = new Map<string, Set<(...args: unknown[]) => void>>();
+    on(event: string, fn: (...args: unknown[]) => void) {
       if (!this.listenersMap.has(event)) this.listenersMap.set(event, new Set());
       this.listenersMap.get(event)!.add(fn);
     }
-    off(event: string, fn: Function) {
+    off(event: string, fn: (...args: unknown[]) => void) {
       this.listenersMap.get(event)?.delete(fn);
     }
-    emit(event: string, ...args: any[]) {
+    emit(event: string, ...args: unknown[]) {
       for (const fn of this.listenersMap.get(event) ?? []) fn(...args);
     }
     removeAllListeners() {

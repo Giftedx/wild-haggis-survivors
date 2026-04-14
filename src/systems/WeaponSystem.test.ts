@@ -43,7 +43,7 @@ vi.mock('../core/GlobalEventBus', () => ({
   globalEventBus: { emit: vi.fn(), on: vi.fn(), off: vi.fn() },
 }));
 
-import { WeaponSystem, ActiveWeapon } from './WeaponSystem';
+import { WeaponSystem } from './WeaponSystem';
 import { WEAPON_DEFS } from '../data/weapons';
 
 function makeScene(): any {
