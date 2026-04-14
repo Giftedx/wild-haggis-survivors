@@ -179,14 +179,42 @@ export interface ISaveDataV8 {
   unlockedAchievements: string[];
   hasCompletedTutorial: boolean;
   hasSeenDriftTutorial: boolean;
+  /** One-shot: first time an affixed gold elite appears — tutorial banner. */
+  hasSeenEliteAffixTip: boolean;
+  /** One-shot: first moor moment in a run explains the hearth beat. */
+  hasSeenMoorMomentTip: boolean;
+  /** Lifetime moor moment gifts received (achievement + flavour). */
+  moorMomentsLifetime: number;
   runHistory: RunHistoryEntry[];
   /** null when the player has never attempted a daily, or when state is for a past date (will reset). */
   dailyChallenge: DailyChallengeState | null;
 }
 
-export type ISaveData = ISaveDataV8;
+/**
+ * V9 — lifetime enemy codex: sorted unique enemy keys the player has culled at least once.
+ * Used for first-cull discovery toast + future UI; no gameplay gates.
+ */
+export interface ISaveDataV9 {
+  saveVersion: 9;
+  totalKills: number;
+  totalKillsSpent: number;
+  unlockedWeapons: string[];
+  unlockedUpgrades: string[];
+  activeRun: IRunState | null;
+  unlockedAchievements: string[];
+  hasCompletedTutorial: boolean;
+  hasSeenDriftTutorial: boolean;
+  hasSeenEliteAffixTip: boolean;
+  hasSeenMoorMomentTip: boolean;
+  moorMomentsLifetime: number;
+  runHistory: RunHistoryEntry[];
+  dailyChallenge: DailyChallengeState | null;
+  codexCulledKeys: string[];
+}
 
-export const CURRENT_SAVE_VERSION = 8 as const;
+export type ISaveData = ISaveDataV9;
+
+export const CURRENT_SAVE_VERSION = 9 as const;
 
 export const MAX_RUN_HISTORY = 20;
 
@@ -200,8 +228,12 @@ const DEFAULT_SAVE: ISaveData = {
   unlockedAchievements: [],
   hasCompletedTutorial: false,
   hasSeenDriftTutorial: false,
+  hasSeenEliteAffixTip: false,
+  hasSeenMoorMomentTip: false,
+  moorMomentsLifetime: 0,
   runHistory: [],
   dailyChallenge: null,
+  codexCulledKeys: [],
 };
 
 function clampInt(n: unknown, fallback: number): number {
@@ -217,6 +249,13 @@ function clampNumber(n: unknown, fallback: number): number {
 function toStringArray(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   return v.filter((x): x is string => typeof x === 'string');
+}
+
+/** Sorted unique strings — stable JSON for codex keys. */
+function coerceCodexCulledKeys(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const raw = v.filter((x): x is string => typeof x === 'string' && x.length > 0);
+  return [...new Set(raw)].sort();
 }
 
 function toBool(v: unknown, fallback: boolean): boolean {
@@ -463,6 +502,10 @@ export class SaveManager {
     const unlockedAchievements = toStringArray(obj.unlockedAchievements);
     const hasCompletedTutorial = toBool(obj.hasCompletedTutorial, false);
     const hasSeenDriftTutorial = toBool(obj.hasSeenDriftTutorial, false);
+    const hasSeenEliteAffixTip = toBool(obj.hasSeenEliteAffixTip, false);
+    const hasSeenMoorMomentTip = toBool(obj.hasSeenMoorMomentTip, false);
+    const moorMomentsLifetime = clampInt(obj.moorMomentsLifetime, 0);
+    const codexCulledKeys = coerceCodexCulledKeys(obj.codexCulledKeys);
 
     const runHistory = coerceRunHistory(obj.runHistory);
 
@@ -477,8 +520,12 @@ export class SaveManager {
         unlockedAchievements: [],
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -493,8 +540,12 @@ export class SaveManager {
         unlockedAchievements: [],
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -509,8 +560,12 @@ export class SaveManager {
         unlockedAchievements: [],
         hasCompletedTutorial: false,
         hasSeenDriftTutorial: false,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -525,8 +580,12 @@ export class SaveManager {
         unlockedAchievements,
         hasCompletedTutorial,
         hasSeenDriftTutorial: false,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -541,8 +600,12 @@ export class SaveManager {
         unlockedAchievements,
         hasCompletedTutorial,
         hasSeenDriftTutorial,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -560,8 +623,12 @@ export class SaveManager {
         unlockedAchievements,
         hasCompletedTutorial,
         hasSeenDriftTutorial,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory,
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -578,8 +645,12 @@ export class SaveManager {
         unlockedAchievements,
         hasCompletedTutorial,
         hasSeenDriftTutorial,
+        hasSeenEliteAffixTip: false,
+        hasSeenMoorMomentTip: false,
+        moorMomentsLifetime: 0,
         runHistory,
         dailyChallenge: null,
+        codexCulledKeys: [],
       };
     }
 
@@ -593,8 +664,12 @@ export class SaveManager {
       unlockedAchievements,
       hasCompletedTutorial,
       hasSeenDriftTutorial,
+      hasSeenEliteAffixTip,
+      hasSeenMoorMomentTip,
+      moorMomentsLifetime,
       runHistory,
       dailyChallenge: coerceDailyChallenge(obj.dailyChallenge),
+      codexCulledKeys,
     };
   }
 }

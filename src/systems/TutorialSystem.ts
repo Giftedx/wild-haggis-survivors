@@ -4,6 +4,7 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { SaveManager } from '../core/SaveManager';
 import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
+import type { EliteAffixId } from '../data/eliteAffixes';
 
 const TOKEN_MOVE = 'TUTORIAL_MOVE';
 const TOKEN_GEM = 'TUTORIAL_GEM';
@@ -31,6 +32,16 @@ export class TutorialSystem {
   private driftArrow: Phaser.GameObjects.Graphics | null = null;
   private driftTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
   private driftScheduled: boolean = false;
+
+  /** First affixed elite — non-blocking banner (same family as drift hint). */
+  private eliteAffixBanner: Phaser.GameObjects.Text | null = null;
+  private eliteAffixDismissRef: Phaser.GameObjects.Text | null = null;
+  private eliteAffixTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
+
+  /** First moor moment — explains hearth beats (non-blocking banner). */
+  private moorMomentBanner: Phaser.GameObjects.Text | null = null;
+  private moorMomentDismissRef: Phaser.GameObjects.Text | null = null;
+  private moorMomentTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
 
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
     this.scene = scene;
@@ -76,6 +87,34 @@ export class TutorialSystem {
       this.dismissDriftArrowRef.destroy();
       this.dismissDriftArrowRef = null;
     }
+    if (this.eliteAffixTimerHandle) {
+      this.eliteAffixTimerHandle.cancel();
+      this.eliteAffixTimerHandle = null;
+    }
+    if (this.eliteAffixBanner) {
+      this.scene.tweens.killTweensOf(this.eliteAffixBanner);
+      this.eliteAffixBanner.destroy();
+      this.eliteAffixBanner = null;
+    }
+    if (this.eliteAffixDismissRef) {
+      this.scene.tweens.killTweensOf(this.eliteAffixDismissRef);
+      this.eliteAffixDismissRef.destroy();
+      this.eliteAffixDismissRef = null;
+    }
+    if (this.moorMomentTimerHandle) {
+      this.moorMomentTimerHandle.cancel();
+      this.moorMomentTimerHandle = null;
+    }
+    if (this.moorMomentBanner) {
+      this.scene.tweens.killTweensOf(this.moorMomentBanner);
+      this.moorMomentBanner.destroy();
+      this.moorMomentBanner = null;
+    }
+    if (this.moorMomentDismissRef) {
+      this.scene.tweens.killTweensOf(this.moorMomentDismissRef);
+      this.moorMomentDismissRef.destroy();
+      this.moorMomentDismissRef = null;
+    }
   }
 
   startRunIfNeeded(opts?: { resumeRun?: boolean }): void {
@@ -111,7 +150,128 @@ export class TutorialSystem {
     this.scheduleDriftHintIfNeeded();
   }
 
-  // ── Drift tutorial (non-pausing) ────────────────────��─────────────
+  /**
+   * Call when an elite receives its affix — shows a one-time banner with the
+   * trait name (lifetime flag in meta save).
+   */
+  notifyEliteAffixIfFirst(affixId: EliteAffixId): void {
+    if (this.metaSave.load().hasSeenEliteAffixTip) return;
+    if (this.eliteAffixBanner) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenEliteAffixTip: true }));
+
+    const traitName = t(`ui.elite_affix.${affixId}.name`);
+    const msg = t('tutorial.elite_affix_first', { name: traitName });
+
+    const { x, y, width } = this.getUiViewport();
+    const bannerY = y + 110;
+    const wrapW = Math.max(160, Math.min(420, width - 48));
+
+    this.eliteAffixBanner = this.scene.add
+      .text(x + width / 2, bannerY, msg, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#e8d4ff',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+        backgroundColor: '#1a1020cc',
+        padding: { x: 12, y: 8 },
+        wordWrap: { width: wrapW },
+        align: 'center',
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(86)
+      .setAlpha(0);
+
+    this.scene.tweens.add({
+      targets: this.eliteAffixBanner,
+      alpha: 1,
+      duration: 400,
+      ease: 'Power2',
+    });
+
+    this.eliteAffixTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 7000, () => {
+      this.eliteAffixTimerHandle = null;
+      this.dismissEliteAffixBanner();
+    });
+  }
+
+  private dismissEliteAffixBanner(): void {
+    if (!this.eliteAffixBanner) return;
+    const banner = this.eliteAffixBanner;
+    this.eliteAffixBanner = null;
+    this.eliteAffixDismissRef = banner;
+    this.scene.tweens.add({
+      targets: banner,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => {
+        if (this.eliteAffixDismissRef === banner) this.eliteAffixDismissRef = null;
+        banner.destroy();
+      },
+    });
+  }
+
+  /** First scheduled moor moment — one-shot explainer (amber banner, matches hearth tone). */
+  notifyMoorMomentIfFirst(): void {
+    if (this.metaSave.load().hasSeenMoorMomentTip) return;
+    if (this.moorMomentBanner) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenMoorMomentTip: true }));
+
+    const msg = t('tutorial.moor_moment_first');
+    const { x, y, width } = this.getUiViewport();
+    const bannerY = y + 142;
+    const wrapW = Math.max(160, Math.min(420, width - 48));
+
+    this.moorMomentBanner = this.scene.add
+      .text(x + width / 2, bannerY, msg, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#f0d4a8',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+        backgroundColor: '#2a1a08cc',
+        padding: { x: 12, y: 8 },
+        wordWrap: { width: wrapW },
+        align: 'center',
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(86)
+      .setAlpha(0);
+
+    this.scene.tweens.add({
+      targets: this.moorMomentBanner,
+      alpha: 1,
+      duration: 400,
+      ease: 'Power2',
+    });
+
+    this.moorMomentTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 7200, () => {
+      this.moorMomentTimerHandle = null;
+      this.dismissMoorMomentBanner();
+    });
+  }
+
+  private dismissMoorMomentBanner(): void {
+    if (!this.moorMomentBanner) return;
+    const banner = this.moorMomentBanner;
+    this.moorMomentBanner = null;
+    this.moorMomentDismissRef = banner;
+    this.scene.tweens.add({
+      targets: banner,
+      alpha: 0,
+      duration: 400,
+      onComplete: () => {
+        if (this.moorMomentDismissRef === banner) this.moorMomentDismissRef = null;
+        banner.destroy();
+      },
+    });
+  }
+
+  // ── Drift tutorial (non-pausing) ───────────────────────────────────
 
   private scheduleDriftHintIfNeeded(): void {
     if (this.driftScheduled) return;

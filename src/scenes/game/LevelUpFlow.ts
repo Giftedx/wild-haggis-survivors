@@ -282,11 +282,15 @@ export class LevelUpFlow {
     let luckBonus = 0;
     if (ownedPassives.includes('sporran')) luckBonus += 15;
     luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
+    luckBonus += player.getLuckDrawBonus();
 
     const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
     const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
     const rng = this.hooks.getRunRng();
-    return drawCards(pool, cardCount, luckBonus, () => rng.next());
+    return drawCards(pool, cardCount, luckBonus, () => rng.next(), {
+      duplicateWeightMultiplier: 0.22,
+      synergyContext: { ownedWeaponKeys: ownedWeapons },
+    });
   }
 
   private findEvolution(): ReturnType<typeof findEligibleChestEvolution> {
@@ -347,6 +351,9 @@ export class LevelUpFlow {
       case 'xpMultiplier':
         player.addXpMultiplier(amount);
         break;
+      case 'luck':
+        player.addLuckDrawBonus(amount);
+        break;
       case 'lifesteal':
         player.addLifesteal(amount);
         break;
@@ -379,6 +386,7 @@ export class LevelUpFlow {
           const enemyKey = e.getEnemyKey();
           const xpValue = e.getXpValue();
           const wasElite = e.isElite();
+          const eliteAffixId = e.getEliteAffixId();
           juice.showKillBurst(e.x, e.y, 0xffffff);
           xpSystem.spawnGem(e.x, e.y, xpValue);
           this.hooks.addKill(1);
@@ -388,6 +396,7 @@ export class LevelUpFlow {
             xpValue,
             wasBoss: false,
             wasElite,
+            eliteAffixId: wasElite ? eliteAffixId : undefined,
           });
         }
         juice.flashWhite(200);

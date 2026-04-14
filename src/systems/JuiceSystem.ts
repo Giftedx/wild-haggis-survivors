@@ -376,6 +376,90 @@ export class JuiceSystem {
     }
   }
 
+  /**
+   * Soft amber world burst on the player — moor moment hearth beat (no combo).
+   * Optional `tint` (0xRRGGBB) biases particles toward the current biome.
+   */
+  showMoorMomentBurst(x: number, y: number, tint?: number): void {
+    const s = this.settings.load();
+    const lowFx = s.reduceParticles;
+    const dots = lowFx ? 5 : 11;
+    const color = tint ?? 0xe8c896;
+    const wobble = Phaser.Math.FloatBetween(0, Math.PI * 2);
+    for (let i = 0; i < dots; i++) {
+      const angle = (i / dots) * Math.PI * 2 + wobble;
+      const dot = this.burstDotPool[this.burstDotIdx];
+      this.burstDotIdx = (this.burstDotIdx + 1) % this.burstDotPool.length;
+      this.scene.tweens.killTweensOf(dot);
+      dot.setPosition(x, y);
+      dot.setRadius(Phaser.Math.Between(2, 5));
+      dot.setFillStyle(color, 0.88);
+      dot.setAlpha(0.88);
+      dot.setScale(1);
+      dot.setVisible(true);
+      const dist = Phaser.Math.Between(22, 46);
+      this.scene.tweens.add({
+        targets: dot,
+        x: x + Math.cos(angle) * dist,
+        y: y + Math.sin(angle) * dist,
+        alpha: 0,
+        scale: 0,
+        duration: 340 + Math.random() * 140,
+        ease: 'Sine.easeOut',
+        onComplete: () => dot.setVisible(false),
+      });
+    }
+    const ring = this.burstRingPool[this.burstRingIdx];
+    this.burstRingIdx = (this.burstRingIdx + 1) % this.burstRingPool.length;
+    this.scene.tweens.killTweensOf(ring);
+    ring.setPosition(x, y);
+    ring.setRadius(5);
+    ring.setFillStyle(color, 0.5);
+    ring.setAlpha(0.58);
+    ring.setScale(1);
+    ring.setVisible(true);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: 52,
+      alpha: 0,
+      duration: 400,
+      ease: 'Sine.easeOut',
+      onComplete: () => ring.setVisible(false),
+    });
+    // Echo ring — layered “hearth” read without boss-scale spectacle.
+    this.tickers.addOnce('raw', 105, () => {
+      const ring2 = this.burstRingPool[this.burstRingIdx];
+      this.burstRingIdx = (this.burstRingIdx + 1) % this.burstRingPool.length;
+      this.scene.tweens.killTweensOf(ring2);
+      ring2.setPosition(x, y);
+      ring2.setRadius(8);
+      const r = (color >> 16) & 0xff;
+      const g = (color >> 8) & 0xff;
+      const b = color & 0xff;
+      const soft = Phaser.Display.Color.GetColor(
+        Math.min(255, r + 18),
+        Math.min(255, g + 14),
+        Math.min(255, b + 8),
+      );
+      ring2.setFillStyle(soft, 0.28);
+      ring2.setAlpha(0.42);
+      ring2.setScale(1);
+      ring2.setVisible(true);
+      this.scene.tweens.add({
+        targets: ring2,
+        radius: 68,
+        alpha: 0,
+        duration: 480,
+        ease: 'Cubic.easeOut',
+        onComplete: () => ring2.setVisible(false),
+      });
+    });
+    if (s.screenShake) {
+      const amp = 0.0038 * s.motionScale;
+      if (amp > 0) this.scene.cameras.main.shake(260, amp);
+    }
+  }
+
   /** Toast notification — slides in from the right and fades out, stacks vertically */
   showToast(message: string, color: string = '#ffffff'): void {
     const { x, y, width } = this.getUiViewport();

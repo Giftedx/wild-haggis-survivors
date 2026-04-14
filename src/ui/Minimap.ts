@@ -90,10 +90,12 @@ export class Minimap {
         this.gfx.fillTriangle(dx, dy - 5, dx + 4, dy, dx, dy + 5);
         this.gfx.fillTriangle(dx, dy - 5, dx - 4, dy, dx, dy + 5);
       } else if (e.isElite()) {
-        // Elite: bolder gold dot with a subtle outline ring for threat emphasis.
+        // Elite: inner fill uses affix hue when present, else classic gold.
+        const affixTint = e.getEliteAffixIndicatorTint();
+        const inner = affixTint ?? 0xffdd44;
         this.gfx.fillStyle(0x332200, 0.6);
         this.gfx.fillCircle(dx, dy, 3);
-        this.gfx.fillStyle(0xffdd44, 1);
+        this.gfx.fillStyle(inner, 1);
         this.gfx.fillCircle(dx, dy, 2.2);
       } else {
         // Regular: dim red dot, slightly bigger.

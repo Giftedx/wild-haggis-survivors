@@ -6,6 +6,7 @@
  */
 
 import { MOTION_TIMING } from '../../core/motionTiming';
+import { globalEventBus } from '../../core/GlobalEventBus';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from '../audioContext';
 import { expApproach } from './musicMath';
 import { DroneLayer } from './DroneLayer';
@@ -58,6 +59,140 @@ class ProceduralMusicEngine {
   private musicSfxDuck = 0;
   /** Avoid stacking `runWhenAudioActivated` retries for `start()`. */
   private startRetryScheduled = false;
+
+  /** Decaying bus-driven accents — merged into `GameMusicState` each frame. */
+  private moorBloomAcc = 0;
+  private evolutionGlowAcc = 0;
+  private enragePressureAcc = 0;
+  private busStarted = false;
+  private busUnsubs: Array<() => void> = [];
+  /** Throttle kill micro-accents — bosses are rare; elites can cluster. */
+  private lastEliteAccentAtMs = 0;
+  private lastBossDownAccentAtMs = 0;
+  private lastMoorPianoFlourishAtMs = 0;
+  private static readonly ELITE_KILL_ACCENT_COOLDOWN_MS = 3000;
+  private static readonly BOSS_DOWN_ACCENT_COOLDOWN_MS = 12000;
+  /** Pentatonic moor flourish — spaced so it never fights the SFX earcon. */
+  private static readonly MOOR_PIANO_FLOURISH_COOLDOWN_MS = 8200;
+
+  /**
+   * Cross-attenuate so moor / evolution / enrage don’t mask each other in one breath.
+   * Higher-impact gestures (enrage) pull harder against the others.
+   */
+  private attenuateOthersForMoor(): void {
+    this.evolutionGlowAcc *= 0.78;
+    this.enragePressureAcc *= 0.72;
+  }
+
+  private addMoorBloom(delta: number): void {
+    this.attenuateOthersForMoor();
+    this.moorBloomAcc = Math.min(1, this.moorBloomAcc + delta);
+  }
+
+  private addEvolutionGlow(delta: number): void {
+    this.moorBloomAcc *= 0.72;
+    this.enragePressureAcc *= 0.82;
+    this.evolutionGlowAcc = Math.min(1, this.evolutionGlowAcc + delta);
+  }
+
+  private addEnragePressure(delta: number): void {
+    this.moorBloomAcc *= 0.62;
+    this.evolutionGlowAcc *= 0.74;
+    this.enragePressureAcc = Math.min(1, this.enragePressureAcc + delta);
+  }
+
+  /**
+   * Subscribe to `globalEventBus` once (call from `BootScene` with analytics).
+   * Moor moments, evolutions, and enrage add musical colour without coupling scenes.
+   */
+  ensureBusHandlersStarted(): void {
+    if (this.busStarted) return;
+    this.busStarted = true;
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_MOOR_MOMENT', (p) => {
+        if (!this.playing) return;
+        const home = p.atHomeBiome ? 0.26 : 0;
+        this.addMoorBloom(0.4 + home);
+        const now = performance.now();
+        const sinceLast =
+          this.lastMoorPianoFlourishAtMs === 0
+            ? Infinity
+            : now - this.lastMoorPianoFlourishAtMs;
+        if (
+          this.ctx &&
+          sinceLast >= ProceduralMusicEngine.MOOR_PIANO_FLOURISH_COOLDOWN_MS
+        ) {
+          this.lastMoorPianoFlourishAtMs = now;
+          this.piano.playMoorFlourish(this.ctx.currentTime, Boolean(p.atHomeBiome));
+        }
+      }),
+      globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => {
+        if (!this.playing) return;
+        this.addEvolutionGlow(0.55);
+      }),
+      globalEventBus.on('bossEnraged', () => {
+        if (!this.playing) return;
+        this.addEnragePressure(0.65);
+        this.percussion.requestPhaseLockedNudge(3);
+      }),
+      globalEventBus.on('ACHIEVEMENT_UNLOCKED', () => {
+        if (!this.playing) return;
+        this.addEvolutionGlow(0.07);
+      }),
+      globalEventBus.on('TUTORIAL_COMPLETED', () => {
+        if (!this.playing) return;
+        this.addMoorBloom(0.045);
+      }),
+      globalEventBus.on('GLOBAL_RUN_ENDED', () => {
+        if (!this.playing) return;
+        this.percussion.clearPendingPhaseNudge();
+      }),
+      globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => {
+        if (!this.playing) return;
+        const now = performance.now();
+        if (p.wasBoss) {
+          if (now - this.lastBossDownAccentAtMs < ProceduralMusicEngine.BOSS_DOWN_ACCENT_COOLDOWN_MS) {
+            return;
+          }
+          this.lastBossDownAccentAtMs = now;
+          this.addEvolutionGlow(0.09);
+          return;
+        }
+        if (!p.wasElite) return;
+        if (now - this.lastEliteAccentAtMs < ProceduralMusicEngine.ELITE_KILL_ACCENT_COOLDOWN_MS) {
+          return;
+        }
+        this.lastEliteAccentAtMs = now;
+        this.addEnragePressure(0.052);
+      }),
+    );
+  }
+
+  /**
+   * Strip bus accents before a closure gesture — victory cadence or death fade —
+   * so the score doesn’t argue with the ending.
+   */
+  private squashAccentsForCadence(kind: 'victory' | 'death'): void {
+    if (kind === 'victory') {
+      this.moorBloomAcc *= 0.1;
+      this.evolutionGlowAcc *= 0.1;
+      this.enragePressureAcc *= 0.06;
+    } else {
+      this.moorBloomAcc *= 0.05;
+      this.evolutionGlowAcc *= 0.05;
+      this.enragePressureAcc *= 0.05;
+    }
+  }
+
+  private resetBusAccents(): void {
+    this.moorBloomAcc = 0;
+    this.evolutionGlowAcc = 0;
+    this.enragePressureAcc = 0;
+    this.lastEliteAccentAtMs = 0;
+    this.lastBossDownAccentAtMs = 0;
+    this.lastMoorPianoFlourishAtMs = 0;
+  }
+
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
     const ctx = getAudioContext();
@@ -74,6 +209,9 @@ class ProceduralMusicEngine {
     this.ctx = ctx;
 
     if (ctx.state === 'suspended') void ctx.resume();
+
+    // Dev `?quickplay` skips BootScene — still wire bus accents before the graph.
+    this.ensureBusHandlersStarted();
 
     this.masterFilter = ctx.createBiquadFilter();
     this.masterFilter.type = 'lowpass';
@@ -96,7 +234,7 @@ class ProceduralMusicEngine {
     this.scheduler.setMelodyCallback((time) => {
       const note = this.conductor.nextNote();
       if (note) {
-        this.piano.playNote(note.freq, time, note.velocity);
+        this.piano.playNote(note.freq, time, note.velocity, note.releaseSec);
       }
       return note?.intervalSec ?? 2.0;
     });
@@ -116,6 +254,7 @@ class ProceduralMusicEngine {
     this.scheduler.start(ctx.currentTime);
     this.playing = true;
     this.musicSfxDuck = 0;
+    this.resetBusAccents();
   }
 
   /**
@@ -137,6 +276,7 @@ class ProceduralMusicEngine {
     this.conductor = new Conductor();
     this.scheduler.reset();
     this.musicSfxDuck = 0;
+    this.resetBusAccents();
   }
 
   /** Tears down audio graph + layers without wiping the Conductor/Scheduler. */
@@ -152,6 +292,8 @@ class ProceduralMusicEngine {
 
   fadeOut(ms: number): void {
     if (!this.playing || !this.ctx || !this.masterGain) return;
+    this.squashAccentsForCadence('death');
+    this.percussion.clearPendingPhaseNudge();
     const t = this.ctx.currentTime;
     this.masterGain.gain.cancelScheduledValues(t);
     this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
@@ -167,6 +309,7 @@ class ProceduralMusicEngine {
 
   playResolution(): void {
     if (!this.playing) return;
+    this.squashAccentsForCadence('victory');
     this.conductor.enterResolution();
     this.resolutionPolling = true;
     this.startRafLoop();
@@ -188,8 +331,20 @@ class ProceduralMusicEngine {
     }
     if (this.ctx.state === 'suspended') void this.ctx.resume();
 
-    this.conductor.updateMood(delta, state);
+    const accDecayMul = this.fadingOut ? 2.6 : 1;
+    this.moorBloomAcc = expApproach(this.moorBloomAcc, 0, delta * accDecayMul, 840);
+    this.evolutionGlowAcc = expApproach(this.evolutionGlowAcc, 0, delta * accDecayMul, 1180);
+    this.enragePressureAcc = expApproach(this.enragePressureAcc, 0, delta * accDecayMul, 700);
+
+    const merged: GameMusicState = {
+      ...state,
+      moorBloom: this.moorBloomAcc,
+      evolutionGlow: this.evolutionGlowAcc,
+      enragePressure: this.enragePressureAcc,
+    };
+    this.conductor.updateMood(delta, merged);
     const mood = this.conductor.getMood();
+    const moor = this.conductor.getSmoothedBiomeTimbre();
 
     this.musicSfxDuck = expApproach(
       this.musicSfxDuck,
@@ -198,10 +353,12 @@ class ProceduralMusicEngine {
       MOTION_TIMING.musicSfxDuckRecoverMs,
     );
 
-    this.drone.applyMood(this.ctx, mood.intensity, mood.danger, mood.triumph);
+    const droneDanger = Math.min(1, mood.danger + this.enragePressureAcc * 0.36);
+    this.drone.applyMood(this.ctx, mood.intensity, droneDanger, mood.triumph, 2.0, moor);
 
     if (this.masterFilter) {
-      const freq = 3500 + mood.intensity * 2000;
+      const freq = 3500 + mood.intensity * 2000 + (moor - 0.5) * 950
+        - this.musicSfxDuck * 260;
       this.masterFilter.frequency.linearRampToValueAtTime(freq, this.ctx.currentTime + 1);
     }
 
@@ -215,10 +372,14 @@ class ProceduralMusicEngine {
       let feedback = 0.35;
       if (mood.danger > 0.2) feedback += mood.danger * 0.2;
       if (mood.chaos > 0.3) feedback -= mood.chaos * 0.1;
+      feedback -= this.moorBloomAcc * 0.11;
       feedback = Math.min(0.65, Math.max(0.1, feedback));
       this.fogFeedback.gain.linearRampToValueAtTime(feedback, this.ctx.currentTime + 1);
 
-      const delayTime = 2.0 - mood.intensity * 1.0;
+      // Deeper bog (low moor): slightly longer delay tail; bright heather: tighter.
+      // Moor bloom opens acoustic space — longer fog tail, slightly clearer loop.
+      const delayTime = 2.0 - mood.intensity * 1.0 + (0.45 - moor) * 0.35
+        + this.moorBloomAcc * 0.44;
       this.fogDelay.delayTime.linearRampToValueAtTime(delayTime, this.ctx.currentTime + 1);
     }
 

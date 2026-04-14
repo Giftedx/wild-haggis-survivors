@@ -12,7 +12,13 @@ export const SFX_LIMITS: Record<string, SfxLimit> = {
   kill: { maxConcurrent: 6, windowMs: 50 },
   xp_pickup: { maxConcurrent: 3, windowMs: 50 },
   shoot: { maxConcurrent: 4, windowMs: 50 },
+  /** Short procedural chirp when a gold elite rolls a trait — bursty spawns only. */
+  elite_affix_spawn: { maxConcurrent: 3, windowMs: 120 },
+  /** Volatile elite death splash — replaces generic kill sting in GameScene. */
+  elite_volatile_death: { maxConcurrent: 2, windowMs: 100 },
   click: { maxConcurrent: 10, windowMs: 100 },
+  /** Timed moor hearth beat — rare; allow two if schedules overlap oddly. */
+  moor_moment: { maxConcurrent: 2, windowMs: 400 },
 };
 
 const DEFAULT_LIMIT: SfxLimit = { maxConcurrent: 24, windowMs: 50 };

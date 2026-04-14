@@ -40,7 +40,9 @@ export class DeedsScene extends Phaser.Scene {
       lifetimeKills: meta.totalKills + meta.totalKillsSpent,
       bestTimeSec: gameplay.bestTime,
       victories: gameplay.victories,
+      moorMomentsLifetime: meta.moorMomentsLifetime,
       unlockedIds: meta.unlockedAchievements,
+      codexDiscoveredCount: meta.codexCulledKeys.length,
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);

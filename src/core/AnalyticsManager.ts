@@ -46,12 +46,23 @@ export class AnalyticsManager {
 
     this.busUnsubs.push(
       globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => {
-        if (!p.wasBoss) return;
-        this.safeLogEvent('boss_kill', {
-          enemyKey: p.enemyKey,
-          wasElite: p.wasElite,
-          xpValue: p.xpValue,
-        });
+        if (p.wasBoss) {
+          this.safeLogEvent('boss_kill', {
+            enemyKey: p.enemyKey,
+            wasElite: p.wasElite,
+            xpValue: p.xpValue,
+          });
+        }
+        if (
+          p.wasElite
+          && p.eliteAffixId
+          && this.runDistributionTelemetryEnabled()
+        ) {
+          this.safeLogEvent('elite_affix_kill', {
+            eliteAffixId: p.eliteAffixId,
+            enemyKey: p.enemyKey,
+          });
+        }
       })
     );
 
@@ -69,6 +80,17 @@ export class AnalyticsManager {
     this.busUnsubs.push(
       globalEventBus.on('TUTORIAL_COMPLETED', () => {
         this.safeLogEvent('tutorial_completed', {});
+      })
+    );
+
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_MOOR_MOMENT', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('moor_moment', {
+          momentId: p.momentId,
+          atHomeBiome: p.atHomeBiome,
+          biomeId: p.biomeId,
+        });
       })
     );
   }

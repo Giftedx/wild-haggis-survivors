@@ -16,6 +16,7 @@ import { t } from '../../core/i18n';
 import { applyAudioFromUserSettings } from '../../core/applyAudioFromSettings';
 import { getSettingsManager } from '../../core/SettingsManager';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
+import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -93,14 +94,35 @@ export class PauseMenu {
       );
     }
 
-    const resumeBtn = scene.add.rectangle(x + width / 2, y + height * 0.5, 220, 50, 0x005eb8)
+    const eliteAffixLines = ELITE_AFFIX_DISPLAY_ORDER.map((id) => {
+      const name = t(`ui.elite_affix.${id}.name`);
+      const blurb = t(`ui.elite_affix.${id}.blurb`);
+      return `${name} — ${blurb}`;
+    });
+    this.elements.push(
+      scene.add.text(
+        x + width / 2,
+        y + height * 0.465,
+        `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
+        {
+          fontFamily: 'monospace',
+          fontSize: '11px',
+          color: hc ? '#a8b8c8' : '#6a7a88',
+          align: 'center',
+          lineSpacing: 2,
+          wordWrap: { width: Math.max(200, width - 56) },
+        },
+      ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1)
+    );
+
+    const resumeBtn = scene.add.rectangle(x + width / 2, y + height * 0.58, 220, 50, 0x005eb8)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
     resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
     resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
     this.elements.push(resumeBtn);
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.5, t('ui.pause.resume'), {
+      scene.add.text(x + width / 2, y + height * 0.58, t('ui.pause.resume'), {
         fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
@@ -109,7 +131,7 @@ export class PauseMenu {
     let sfxOn = prefs.sfxVolume > 0.001;
     const sfxLabel = (on: boolean) =>
       t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const sfxText = scene.add.text(x + width / 2 - 70, y + height * 0.59, sfxLabel(sfxOn), {
+    const sfxText = scene.add.text(x + width / 2 - 70, y + height * 0.66, sfxLabel(sfxOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
       color: sfxOn ? '#88cc88' : '#886666',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
@@ -126,7 +148,7 @@ export class PauseMenu {
     let musicOn = prefs.musicVolume > 0.001;
     const musicLabel = (on: boolean) =>
       t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const musicText = scene.add.text(x + width / 2 + 80, y + height * 0.59, musicLabel(musicOn), {
+    const musicText = scene.add.text(x + width / 2 + 80, y + height * 0.66, musicLabel(musicOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
       color: musicOn ? '#88cc88' : '#886666',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
@@ -161,7 +183,7 @@ export class PauseMenu {
       }
       this.elements.push(
         scene.add.text(
-          x + width / 2, y + height * 0.67,
+          x + width / 2, y + height * 0.74,
           `${t('ui.pause.passives_heading')}\n${passiveList}`,
           {
             fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00',
@@ -171,14 +193,14 @@ export class PauseMenu {
       );
     }
 
-    const quitBtn = scene.add.rectangle(x + width / 2, y + height * 0.77, 220, 50, 0x444444)
+    const quitBtn = scene.add.rectangle(x + width / 2, y + height * 0.84, 220, 50, 0x444444)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
     quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
     quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
     this.elements.push(quitBtn);
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.77, t('ui.pause.quit'), {
+      scene.add.text(x + width / 2, y + height * 0.84, t('ui.pause.quit'), {
         fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );

@@ -47,7 +47,7 @@ export class EdgeIndicators {
 
     // Pre-allocate scratch buffer
     this.offScreenBuf = Array.from({ length: 50 }, () => ({
-      x: 0, y: 0, dist: 0, boss: false, elite: false,
+      x: 0, y: 0, dist: 0, boss: false, elite: false, eliteDisplayTint: 0xd4a017,
     }));
   }
 
@@ -90,7 +90,7 @@ export class EdgeIndicators {
       if (distSq <= detectRangeSq) {
         // Grow buffer if needed (rare — only if >50 off-screen enemies in range)
         if (this.offScreenCount >= this.offScreenBuf.length) {
-          this.offScreenBuf.push({ x: 0, y: 0, dist: 0, boss: false, elite: false });
+          this.offScreenBuf.push({ x: 0, y: 0, dist: 0, boss: false, elite: false, eliteDisplayTint: 0xd4a017 });
         }
         const entry = this.offScreenBuf[this.offScreenCount++];
         entry.x = dx;
@@ -98,6 +98,9 @@ export class EdgeIndicators {
         entry.dist = Math.sqrt(distSq);
         entry.boss = enemy.isBoss();
         entry.elite = enemy.isElite();
+        entry.eliteDisplayTint = enemy.isElite()
+          ? (enemy.getEliteAffixIndicatorTint() ?? 0xd4a017)
+          : 0xd4a017;
       }
     }
 
@@ -143,9 +146,10 @@ export class EdgeIndicators {
         glow.setFillStyle(0xd4a017, 0.2 * proximity);
         glow.setRadius(this.INDICATOR_SIZE + 5);
       } else if (e.elite) {
-        indicator.setFillStyle(0xd4a017, alpha);
+        const et = e.eliteDisplayTint;
+        indicator.setFillStyle(et, alpha);
         indicator.setScale(1.1 * pulse);
-        glow.setFillStyle(0xd4a017, 0.12 * proximity);
+        glow.setFillStyle(et, 0.12 * proximity);
         glow.setRadius(this.INDICATOR_SIZE + 3);
       } else {
         indicator.setFillStyle(0xff4444, alpha);

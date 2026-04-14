@@ -4,6 +4,7 @@ import { t } from './i18n';
 import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { BOSSES } from '../data/enemies';
+import { getCodexRosterTotal } from '../ui/chronicleAggregates';
 
 /**
  * Listens to global gameplay events and unlocks achievements into SaveManager.
@@ -29,7 +30,8 @@ export class AchievementManager {
       globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => this.onEnemyKilled(p)),
       globalEventBus.on('GLOBAL_RUN_TIME_SEC', (p) => this.onRunTime(p)),
       globalEventBus.on('GLOBAL_RUN_ENDED', (p) => this.onRunEnded(p)),
-      globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => this.tryUnlock('ach_first_evolution'))
+      globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => this.tryUnlock('ach_first_evolution')),
+      globalEventBus.on('GLOBAL_MOOR_MOMENT', () => this.onMoorMoment())
     );
   }
 
@@ -42,6 +44,25 @@ export class AchievementManager {
 
   private onEnemyKilled(p: import('./GlobalEventBus').GlobalEnemyKilledPayload): void {
     const s = this.save.load();
+    if (p.enemyKey) {
+      let codexNew = false;
+      this.save.update((cur) => {
+        if (cur.codexCulledKeys.includes(p.enemyKey)) return cur;
+        codexNew = true;
+        return {
+          ...cur,
+          codexCulledKeys: [...cur.codexCulledKeys, p.enemyKey].sort(),
+        };
+      });
+      if (codexNew) {
+        globalEventBus.emit('CODEX_FIRST_CULL', { enemyKey: p.enemyKey });
+        const n = this.save.load().codexCulledKeys.length;
+        const total = getCodexRosterTotal();
+        const halfTarget = Math.max(1, Math.ceil(total * 0.5));
+        if (n >= halfTarget) this.tryUnlock('ach_codex_half');
+        if (n >= total) this.tryUnlock('ach_codex_loremaster');
+      }
+    }
     // Kill-count achievements read the LIFETIME total (balance + spent) so
     // heavy MetaShop spenders don't permanently fall off the unlock curve.
     const lifetimeKills = s.totalKills + s.totalKillsSpent;
@@ -65,6 +86,15 @@ export class AchievementManager {
   private onRunEnded(p: import('./GlobalEventBus').GlobalRunEndedPayload): void {
     if (p.outcome === 'victory') this.tryUnlock('ach_first_victory');
     this.runBossKills.clear();
+  }
+
+  private onMoorMoment(): void {
+    let next = 0;
+    this.save.update((cur) => {
+      next = cur.moorMomentsLifetime + 1;
+      return { ...cur, moorMomentsLifetime: next };
+    });
+    if (next >= 30) this.tryUnlock('ach_moor_hearth_30');
   }
 
   private tryUnlock(id: AchievementId): void {

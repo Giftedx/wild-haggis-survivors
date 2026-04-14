@@ -3,11 +3,13 @@ import { t } from '../core/i18n';
 
 /**
  * Regression fence for hearth-facing UI: every `t('ui.*')` used in
- * `MainMenuScene` and `PauseMenu` must resolve. Catches missing keys when
- * copy ships without i18n entries.
+ * `BootScene`, `MainMenuScene`, and `PauseMenu` must resolve. Catches missing
+ * keys when copy ships without i18n entries.
  */
 const MAIN_MENU_AND_PAUSE_STATIC_KEYS = [
   'ui.menu.title',
+  /** BootScene tagline — same key tree as main menu identity. */
+  'ui.menu.built_on_moor',
   'ui.menu.kill_credits_fresh',
   'ui.menu.hint_suspended',
   'ui.menu.hint_fresh',
@@ -24,12 +26,18 @@ const MAIN_MENU_AND_PAUSE_STATIC_KEYS = [
   'ui.menu.trend_improving',
   'ui.menu.trend_declining',
   'ui.menu.trend_steady',
-  'ui.menu.built_on_moor',
   'ui.menu.seed_prompt',
   'ui.menu.seed_invalid',
   'ui.pause.title',
+  'ui.pause.quip_1',
+  'ui.pause.quip_2',
+  'ui.pause.quip_3',
+  'ui.pause.quip_4',
+  'ui.pause.quip_5',
+  'ui.pause.quip_6',
   'ui.pause.resume',
   'ui.pause.passives_heading',
+  'ui.pause.elite_affix_heading',
   'ui.pause.quit',
   'ui.common.on',
   'ui.common.off',

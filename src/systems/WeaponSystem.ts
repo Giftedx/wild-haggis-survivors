@@ -65,7 +65,7 @@ export class WeaponSystem {
   private critDamageMultiplier: number = 2.0;
   private cooldownReduction: number = 0;
 
-  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
+  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
   readonly events = new Phaser.Events.EventEmitter();
 
   /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
@@ -385,16 +385,17 @@ export class WeaponSystem {
     if (!target) return;
 
     const count = w.projectileCount;
-    const spread = count > 1 ? 15 : 0;
+    const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
+    const spread = maxShot > 1 ? 15 : 0;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile(texture);
       if (!proj) continue;
 
       let tx = target.x, ty = target.y;
-      if (count > 1) {
+      if (maxShot > 1) {
         const base = Phaser.Math.Angle.Between(px, py, target.x, target.y);
-        const offset = Phaser.Math.DegToRad((i - (count - 1) / 2) * spread);
+        const offset = Phaser.Math.DegToRad((i - (maxShot - 1) / 2) * spread);
         tx = px + Math.cos(base + offset) * 500;
         ty = py + Math.sin(base + offset) * 500;
       }
@@ -408,7 +409,7 @@ export class WeaponSystem {
   // ── Bouncing weapon (Jobby Hurler) ──
 
   private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
-    const count = w.projectileCount;
+    const count = this.maxExtraProjectilesThisFrame(w.config.key, w.projectileCount);
 
     for (let i = 0; i < count; i++) {
       const proj = this.getProjectile('haggis_ball');
@@ -641,9 +642,10 @@ export class WeaponSystem {
   private fireHomingBurst(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
     this.ensureEnemyCache();
     const targets = this.cachedSortedEnemies;
-    const targetCount = Math.min(targets.length, count);
+    const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
+    const targetCount = Math.min(targets.length, maxShot);
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('thistle');
       if (!proj) continue;
 
@@ -653,7 +655,7 @@ export class WeaponSystem {
         tx = targets[i].x;
         ty = targets[i].y;
       } else {
-        const angle = (i / count) * Math.PI * 2;
+        const angle = (i / Math.max(1, maxShot)) * Math.PI * 2;
         tx = px + Math.cos(angle) * 400;
         ty = py + Math.sin(angle) * 400;
       }
@@ -750,6 +752,7 @@ export class WeaponSystem {
   private fireExplodingProjectile(w: ActiveWeapon, px: number, py: number, dmg: number, isCrit: boolean = false): void {
     const target = this.findClosestEnemy(px, py, w.config.range);
     if (!target) return;
+    if (this.maxExtraProjectilesThisFrame(w.config.key, 1) < 1) return;
 
     const proj = this.getProjectile('caber');
     if (!proj) return;
@@ -818,7 +821,8 @@ export class WeaponSystem {
 
   /** Jobby Cannon — rapid burst of wee jobbies in all directions */
   private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
-    for (let i = 0; i < count; i++) {
+    const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
+    for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('haggis_ball');
       if (!proj) continue;
       const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
@@ -874,12 +878,22 @@ export class WeaponSystem {
     const wasElite = enemy.isElite();
     const killed = enemy.takeDamage(damage);
     if (killed) {
-      this.events.emit('enemyKilled', enemy.x, enemy.y, enemy.getXpValue(), enemy.getEnemyKey(), wasBoss, wasElite);
+      this.events.emit(
+        'enemyKilled',
+        enemy.x,
+        enemy.y,
+        enemy.getXpValue(),
+        enemy.getEnemyKey(),
+        wasBoss,
+        wasElite,
+        wasElite ? enemy.getEliteAffixId() : undefined,
+      );
       globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
         enemyKey: enemy.getEnemyKey(),
         xpValue: enemy.getXpValue(),
         wasBoss,
         wasElite,
+        eliteAffixId: wasElite ? enemy.getEliteAffixId() : undefined,
       });
     }
   }
@@ -888,6 +902,23 @@ export class WeaponSystem {
 
   /** Throttle pool warnings to once per 5 seconds */
   private lastPoolWarnTime: number = 0;
+
+  private countActiveProjectilesForWeapon(weaponKey: string): number {
+    const entries = this.projectilePool.children.entries as Projectile[];
+    let n = 0;
+    for (let i = 0; i < entries.length; i++) {
+      const p = entries[i];
+      if (p.active && p.getWeaponKey() === weaponKey) n++;
+    }
+    return n;
+  }
+
+  /** How many more projectiles this weapon may spawn this frame (readability cap). */
+  private maxExtraProjectilesThisFrame(weaponKey: string, desired: number): number {
+    const cap = BALANCE.weapons.maxSimultaneousProjectilesPerWeapon;
+    const cur = this.countActiveProjectilesForWeapon(weaponKey);
+    return Math.max(0, Math.min(desired, cap - cur));
+  }
 
   private getProjectile(texture: string): Projectile | null {
     let proj = this.projectilePool.getFirstDead(false) as Projectile | null;

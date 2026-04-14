@@ -6,6 +6,7 @@
  * Chronicle scene is thin and the tone logic below is unit-testable.
  */
 import type { RunHistoryEntry, SaveData } from '../utils/save';
+import { BOSSES, ENEMY_TYPES, getEnemyDisplayName } from '../data/enemies';
 
 /** Lifetime totals — drawn from SaveData counters (authoritative, never capped). */
 export interface LifetimeTotals {
@@ -207,4 +208,43 @@ export function formatRelativeTime(timestamp: number, now: number = Date.now()):
   if (day < 30) return `${day}d ago`;
   const mo = Math.floor(day / 30);
   return `${mo}mo ago`;
+}
+
+/** Unique enemy keys that can appear in the codex (regular types + bosses). */
+export function getCodexRosterTotal(): number {
+  const keys = new Set<string>();
+  for (const k of Object.keys(ENEMY_TYPES)) keys.add(k);
+  for (const b of BOSSES) keys.add(b.key);
+  return keys.size;
+}
+
+export interface ChronicleCodexModel {
+  discoveredCount: number;
+  rosterTotal: number;
+  /** Sorted display names for keys the player has culled at least once. */
+  discoveredNames: string[];
+}
+
+export function buildChronicleCodex(
+  codexCulledKeys: readonly string[] | undefined | null,
+): ChronicleCodexModel {
+  const uniq = [...new Set(codexCulledKeys ?? [])]
+    .filter((k) => typeof k === 'string' && k.length > 0)
+    .sort();
+  return {
+    discoveredCount: uniq.length,
+    rosterTotal: getCodexRosterTotal(),
+    discoveredNames: uniq.map(getEnemyDisplayName),
+  };
+}
+
+/**
+ * Single-line list of names for the Chronicle — truncated so the layout
+ * stays within ~2 lines at the game's default width.
+ */
+export function formatCodexNamesLine(names: readonly string[], maxChars: number = 200): string {
+  if (names.length === 0) return '';
+  const joined = names.join(', ');
+  if (joined.length <= maxChars) return joined;
+  return `${joined.slice(0, Math.max(0, maxChars - 1))}…`;
 }

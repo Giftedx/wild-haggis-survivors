@@ -13,6 +13,7 @@
  * the surprise of the first unlock.
  */
 import { ACHIEVEMENT_DEFS, type AchievementId } from '../core/BalanceConfig';
+import { getCodexRosterTotal } from './chronicleAggregates';
 
 export type DeedStatus = 'locked' | 'in_progress' | 'unlocked';
 
@@ -37,14 +38,20 @@ export interface DeedStatsSnapshot {
   bestTimeSec: number;
   /** Gameplay save: total run victories. */
   victories: number;
+  /** Meta save: lifetime moor-moment beats (hearth gifts). */
+  moorMomentsLifetime: number;
   /** Meta save: array of unlocked achievement IDs. */
   unlockedIds: readonly string[];
+  /** Meta save: unique enemy keys recorded in the cull codex (length === discovered count). */
+  codexDiscoveredCount: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
 export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_first_victory',
   'ach_first_evolution',
+  'ach_codex_half',
+  'ach_codex_loremaster',
   'ach_survive_5m',
   'ach_kills_1000',
   'ach_survive_10m',
@@ -52,6 +59,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_full_run',
   'ach_all_bosses',
   'ach_kills_5000',
+  'ach_moor_hearth_30',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -62,6 +70,7 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_survive_10m: { target: 600, readCurrent: (s) => s.bestTimeSec },
   ach_full_run: { target: 900, readCurrent: (s) => s.bestTimeSec },
   ach_first_victory: { target: 1, readCurrent: (s) => Math.min(1, s.victories) },
+  ach_moor_hearth_30: { target: 30, readCurrent: (s) => s.moorMomentsLifetime },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */
@@ -73,6 +82,9 @@ const BINARY_DEEDS: ReadonlySet<AchievementId> = new Set<AchievementId>([
 
 export function computeDeedProgress(id: AchievementId, stats: DeedStatsSnapshot): DeedProgress {
   const isUnlocked = stats.unlockedIds.includes(id);
+
+  const codexProgress = computeCodexDeedProgress(id, stats, isUnlocked);
+  if (codexProgress) return codexProgress;
 
   if (BINARY_DEEDS.has(id)) {
     return {
@@ -123,7 +135,7 @@ export function computeAllDeeds(stats: DeedStatsSnapshot): DeedProgress[] {
     .map((id) => computeDeedProgress(id, stats));
 }
 
-/** "7 / 9 deeds" summary used in the scene header. */
+/** "7 / N deeds" summary used in the scene header (N = `DEED_DISPLAY_ORDER.length`). */
 export function deedSummary(stats: DeedStatsSnapshot): { earned: number; total: number } {
   const total = DEED_DISPLAY_ORDER.length;
   const earned = DEED_DISPLAY_ORDER.filter((id) => stats.unlockedIds.includes(id)).length;
@@ -146,4 +158,50 @@ function formatSeconds(total: number): string {
   const m = Math.floor(s / 60);
   const sec = s % 60;
   return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function computeCodexDeedProgress(
+  id: AchievementId,
+  stats: DeedStatsSnapshot,
+  isUnlocked: boolean,
+): DeedProgress | null {
+  if (id !== 'ach_codex_half' && id !== 'ach_codex_loremaster') return null;
+
+  const roster = getCodexRosterTotal();
+  const discovered = Math.max(0, Math.floor(stats.codexDiscoveredCount));
+
+  if (id === 'ach_codex_half') {
+    const target = Math.max(1, Math.ceil(roster * 0.5));
+    const clamped = Math.min(discovered, target);
+    const ratio = target > 0 ? clamped / target : 0;
+    let status: DeedStatus;
+    if (isUnlocked) status = 'unlocked';
+    else if (clamped <= 0) status = 'locked';
+    else status = 'in_progress';
+    return {
+      id,
+      status,
+      isBinary: false,
+      current: isUnlocked ? target : clamped,
+      target,
+      ratio: isUnlocked ? 1 : ratio,
+    };
+  }
+
+  const target = Math.max(1, roster);
+  const clamped = Math.min(discovered, target);
+  const ratio = target > 0 ? clamped / target : 0;
+  let status: DeedStatus;
+  if (isUnlocked) status = 'unlocked';
+  else if (clamped <= 0) status = 'locked';
+  else status = 'in_progress';
+
+  return {
+    id,
+    status,
+    isBinary: false,
+    current: isUnlocked ? target : clamped,
+    target,
+    ratio: isUnlocked ? 1 : ratio,
+  };
 }

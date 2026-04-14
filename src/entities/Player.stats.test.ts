@@ -115,6 +115,15 @@ describe('Player.heal', () => {
 });
 
 describe('Player bonus stacking', () => {
+  it('addLuckDrawBonus stacks for level-up card weights', () => {
+    const p = makePlayer();
+    expect(p.getLuckDrawBonus()).toBe(0);
+    p.addLuckDrawBonus(8);
+    expect(p.getLuckDrawBonus()).toBe(8);
+    p.addLuckDrawBonus(3);
+    expect(p.getLuckDrawBonus()).toBe(11);
+  });
+
   it('addDamageMultiplier stacks additively', () => {
     const p = makePlayer();
     p.addDamageMultiplier(0.2);

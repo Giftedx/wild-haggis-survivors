@@ -54,6 +54,13 @@ export const XP = {
 
   /** Number of upgrade cards shown on level-up */
   CARDS_PER_LEVEL: 3,
+
+  /**
+   * At max level, XP from gems and scripted grants converts to run gold
+   * instead of vanishing — keeps the bar meaningful through the finale.
+   * Applied as floor(xpValue * ratio); minimum 1 gold when xpValue >= 1.
+   */
+  OVERFLOW_XP_TO_GOLD_RATIO: 0.32,
 } as const;
 
 export const ENEMIES = {

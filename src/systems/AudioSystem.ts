@@ -7,6 +7,7 @@
  * Oscillator detune spreads identical clips slightly to reduce phasing.
  */
 import { MOTION_TIMING } from '../core/motionTiming';
+import type { EliteAffixId } from '../data/eliteAffixes';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
 import { musicEngine } from './music/ProceduralMusicEngine';
@@ -141,6 +142,79 @@ export class AudioSystem {
     this.gatedSfx('kill', () => this.playKillImmediate());
   }
 
+  /** Short trait-specific chirp when a gold elite receives an affix. */
+  playEliteAffixSpawnImmediate(affixId: EliteAffixId): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckLevelUp);
+
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    const presets: Record<EliteAffixId, { f0: number; f1: number; type: OscillatorType; dur: number }> = {
+      swift: { f0: 520, f1: 1240, type: 'sine', dur: 0.1 },
+      bulwark: { f0: 110, f1: 95, type: 'sine', dur: 0.14 },
+      relentless: { f0: 180, f1: 140, type: 'square', dur: 0.1 },
+      wealthy: { f0: 740, f1: 990, type: 'triangle', dur: 0.1 },
+      volatile: { f0: 420, f1: 70, type: 'sawtooth', dur: 0.12 },
+    };
+    const p = presets[affixId];
+    osc.type = p.type;
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(p.f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(40, p.f1), t0 + p.dur);
+
+    gain.gain.setValueAtTime(0.12, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + p.dur);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + p.dur + 0.02);
+  }
+
+  playEliteAffixSpawn(affixId: EliteAffixId): void {
+    this.gatedSfx('elite_affix_spawn', () => this.playEliteAffixSpawnImmediate(affixId));
+  }
+
+  /** Volatile affix death — low boom + crack; GameScene skips generic kill SFX for this affix. */
+  playEliteVolatileDeathImmediate(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckKill * 0.42);
+
+    const t0 = ctx.currentTime;
+    const dur = 0.22;
+
+    const body = ctx.createOscillator();
+    const bodyGain = ctx.createGain();
+    body.type = 'sawtooth';
+    applySfxDetune(body);
+    body.frequency.setValueAtTime(140, t0);
+    body.frequency.exponentialRampToValueAtTime(45, t0 + dur);
+    bodyGain.gain.setValueAtTime(0.14, t0);
+    bodyGain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    body.connect(bodyGain);
+    bodyGain.connect(this.masterGain);
+    body.start(t0);
+    body.stop(t0 + dur + 0.02);
+
+    const crack = ctx.createOscillator();
+    const crackGain = ctx.createGain();
+    crack.type = 'square';
+    crack.frequency.setValueAtTime(2200, t0);
+    crack.frequency.exponentialRampToValueAtTime(400, t0 + 0.05);
+    crackGain.gain.setValueAtTime(0.06, t0);
+    crackGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
+    crack.connect(crackGain);
+    crackGain.connect(this.masterGain);
+    crack.start(t0);
+    crack.stop(t0 + 0.09);
+  }
+
   playXPCollectImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
@@ -166,6 +240,42 @@ export class AudioSystem {
 
   playXPCollect(): void {
     this.gatedSfx('xp_pickup', () => this.playXPCollectImmediate());
+  }
+
+  /**
+   * Moor moment hearth beat — warm fifth (D4→A4) with soft bloom; distinct from
+   * level-up arpeggio and shop ding.
+   */
+  playMoorMomentImmediate(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckMoorMoment);
+
+    const t0 = ctx.currentTime;
+    const notes = [
+      { freq: 293.66, start: 0 },
+      { freq: 440, start: 0.09 },
+    ];
+    for (const note of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      applySfxDetune(osc);
+      osc.frequency.value = note.freq;
+      const start = t0 + note.start;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.11, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.32);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(start);
+      osc.stop(start + 0.34);
+    }
+  }
+
+  playMoorMoment(): void {
+    this.gatedSfx('moor_moment', () => this.playMoorMomentImmediate());
   }
 
   /** Level up — ascending three-note arpeggio */

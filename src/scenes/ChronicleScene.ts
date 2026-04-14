@@ -4,13 +4,16 @@ import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
 import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
+import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { getCurseByKey } from '../data/curses';
 import {
+  buildChronicleCodex,
   computeMilestones,
   detectMood,
   formatClock,
+  formatCodexNamesLine,
   formatDurationLong,
   formatRelativeTime,
   lifetimeTotals,
@@ -28,13 +31,17 @@ import {
  * Non-goals: no run deletion, no time-range filters, no CSV export. The
  * chronicle is a cozy artifact, not a spreadsheet. Older entries fade per
  * MAX_RUN_HISTORY (FIFO) — the scene surfaces that transparently.
+ *
+ * Cull codex reads `codexCulledKeys` from the meta save (SaveManager), not
+ * the gameplay gold/unlock save — same source as AchievementManager.
  */
 export class ChronicleScene extends Phaser.Scene {
   // Layout constants — tuned so the full scene fits inside the 600px game
   // height without the runs panel or pagination escaping off-screen.
   private readonly ROWS_PER_PAGE = 5;
   private readonly ROW_STRIDE = 30;
-  private readonly RUNS_HEADER_Y = 350;
+  /** Below milestones + codex block — keep clearance above pagination + BACK. */
+  private readonly RUNS_HEADER_Y = 368;
   private readonly ROWS_START_Y = this.RUNS_HEADER_Y + 20; // row y = start + 16 + i*stride
   private readonly ROWS_PANEL_HEIGHT = this.ROWS_PER_PAGE * this.ROW_STRIDE + 18;
   private readonly ROWS_PANEL_CENTER_Y = this.ROWS_START_Y + this.ROWS_PANEL_HEIGHT / 2 - 6;
@@ -54,6 +61,7 @@ export class ChronicleScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
     const save = loadSave();
+    const metaSave = new SaveManager().load();
     // Newest-first for display; source list is newest-last.
     this.history = [...save.runHistory].reverse();
     const totals = lifetimeTotals(save);
@@ -145,7 +153,7 @@ export class ChronicleScene extends Phaser.Scene {
     // ── Milestones panel ──
     const milestonesPanelY = 232;
     this.add
-      .rectangle(width / 2, milestonesPanelY + 50, width - 40, 110, 0x12192b, 0.7)
+      .rectangle(width / 2, milestonesPanelY + 50, width - 40, 148, 0x12192b, 0.7)
       .setStrokeStyle(1, 0x283a5f, 0.8);
     this.add
       .text(width / 2, milestonesPanelY, t('ui.chronicle.milestones_heading'), {
@@ -153,7 +161,20 @@ export class ChronicleScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    const milestoneLines = this.buildMilestoneLines(milestones);
+    const codex = buildChronicleCodex(metaSave.codexCulledKeys);
+    const codexSection =
+      '\n\n' +
+      t('ui.chronicle.codex_heading') +
+      '\n' +
+      t('ui.chronicle.codex_progress', {
+        discovered: codex.discoveredCount,
+        total: codex.rosterTotal,
+      }) +
+      '\n' +
+      (codex.discoveredCount > 0
+        ? formatCodexNamesLine(codex.discoveredNames)
+        : t('ui.chronicle.codex_empty'));
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,

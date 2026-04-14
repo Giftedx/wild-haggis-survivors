@@ -43,5 +43,10 @@ export interface ISceneContext {
   requestBanter?(context: BanterContext, tag?: string): void;
   getCurrentBiomeId?(): BiomeId | null;
   getSecondsPastBell?(): number;
+  /**
+   * At max player level, XP that would otherwise be lost is converted to
+   * run gold (coin pickup meta). Optional so lightweight test scenes omit it.
+   */
+  grantXpOverflowGold?(amount: number): void;
 }
 

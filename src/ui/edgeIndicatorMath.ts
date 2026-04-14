@@ -8,6 +8,8 @@ export interface OffScreenScratch {
   dist: number;
   boss: boolean;
   elite: boolean;
+  /** Used when `elite` — affix hue or default elite gold (`0xd4a017`). */
+  eliteDisplayTint: number;
 }
 
 /** Inclusive camera bounds (Phaser world space). */

@@ -3,6 +3,14 @@ import { AchievementManager } from './AchievementManager';
 import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
+import { BOSSES, ENEMY_TYPES } from '../data/enemies';
+
+function allCodexKeysSorted(): string[] {
+  const s = new Set<string>();
+  for (const k of Object.keys(ENEMY_TYPES)) s.add(k);
+  for (const b of BOSSES) s.add(b.key);
+  return [...s].sort();
+}
 
 describe('AchievementManager', () => {
   let storage: MemoryStorage;
@@ -13,7 +21,7 @@ describe('AchievementManager', () => {
     storage = new MemoryStorage();
     save = new SaveManager({ storage, key: 'ach_test' });
     save.save({
-      saveVersion: 8,
+      saveVersion: 9,
       totalKills: 0,
       totalKillsSpent: 0,
       dailyChallenge: null,
@@ -23,7 +31,11 @@ describe('AchievementManager', () => {
       unlockedAchievements: [],
       hasCompletedTutorial: true,
       hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      moorMomentsLifetime: 0,
       runHistory: [],
+      codexCulledKeys: [],
     });
     mgr = new AchievementManager(save);
     mgr.start();
@@ -115,6 +127,18 @@ describe('AchievementManager', () => {
     expect(save.load().unlockedAchievements).toContain('ach_first_evolution');
   });
 
+  it('unlocks ach_moor_hearth_30 after 30 moor moments (lifetime)', () => {
+    for (let i = 0; i < 30; i++) {
+      globalEventBus.emit('GLOBAL_MOOR_MOMENT', {
+        momentId: 'peat_glint',
+        atHomeBiome: false,
+        biomeId: 'bog',
+      });
+    }
+    expect(save.load().moorMomentsLifetime).toBe(30);
+    expect(save.load().unlockedAchievements).toContain('ach_moor_hearth_30');
+  });
+
   it('unlocks ach_all_bosses when 5 distinct bosses killed in one run', () => {
     const bossKeys = ['gordon', 'tour_bus', 'the_laird', 'hunter_general', 'taxman'];
     for (const key of bossKeys) {
@@ -126,6 +150,63 @@ describe('AchievementManager', () => {
       });
     }
     expect(save.load().unlockedAchievements).toContain('ach_all_bosses');
+  });
+
+  it('unlocks ach_codex_half when crossing half the bestiary', () => {
+    const keys = allCodexKeysSorted();
+    const total = keys.length;
+    const half = Math.max(1, Math.ceil(total * 0.5));
+    save.save({ ...save.load(), codexCulledKeys: keys.slice(0, half - 1) });
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: keys[half - 1],
+      xpValue: 1,
+      wasBoss: false,
+      wasElite: false,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_codex_half');
+    expect(save.load().unlockedAchievements).not.toContain('ach_codex_loremaster');
+  });
+
+  it('unlocks ach_codex_loremaster when the codex is complete', () => {
+    const keys = allCodexKeysSorted();
+    const total = keys.length;
+    save.save({ ...save.load(), codexCulledKeys: keys.slice(0, total - 1) });
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: keys[total - 1],
+      xpValue: 1,
+      wasBoss: false,
+      wasElite: false,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_codex_loremaster');
+  });
+
+  it('records codex first cull once per enemy key and emits CODEX_FIRST_CULL', () => {
+    const firstCulls: string[] = [];
+    const u = globalEventBus.on('CODEX_FIRST_CULL', (p) => firstCulls.push(p.enemyKey));
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'tourist',
+      xpValue: 1,
+      wasBoss: false,
+      wasElite: false,
+    });
+    expect(save.load().codexCulledKeys).toContain('tourist');
+    expect(firstCulls).toEqual(['tourist']);
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'tourist',
+      xpValue: 1,
+      wasBoss: false,
+      wasElite: false,
+    });
+    expect(firstCulls).toEqual(['tourist']);
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'chef',
+      xpValue: 2,
+      wasBoss: false,
+      wasElite: false,
+    });
+    expect(save.load().codexCulledKeys.sort()).toEqual(['chef', 'tourist']);
+    expect(firstCulls).toEqual(['tourist', 'chef']);
+    u();
   });
 
   it('clears run boss kills between runs', () => {

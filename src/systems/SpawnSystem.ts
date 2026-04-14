@@ -12,6 +12,7 @@ import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
 import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
+import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -51,6 +52,8 @@ export class SpawnSystem {
   private bossActive: boolean = false;
   /** One-shot: run reached `RUN_WIN_TIME_SEC` — timeline bursts off, finale boss queued. */
   private runWinFinaleStarted: boolean = false;
+  /** 0–1 — rises on kills, decays over time; nudges elite spawn chance. */
+  private killPressure: number = 0;
   /** When true, `spawnBurst` is a no-op (final boss phase). */
   private regularSpawnsDisabled: boolean = false;
   /** Set when a boss is ready to spawn but physics is paused (level-up / manual pause).
@@ -119,6 +122,7 @@ export class SpawnSystem {
     this.bossCheckFrame = -1;
     this.runWinFinaleStarted = false;
     this.regularSpawnsDisabled = false;
+    this.killPressure = 0;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -149,6 +153,8 @@ export class SpawnSystem {
   update(delta: number, playerX: number, playerY: number): void {
     this.gameTimeSec += delta / 1000;
     this.spawnTimer += delta / 1000;
+    const ds = delta / 1000;
+    this.killPressure *= Math.exp(-ds * BALANCE.director.killPressureDecayPerSec);
 
     // Flush a deferred boss spawn once physics is running again.
     // scene.time.delayedCall still fires during the level-up modal (physics
@@ -458,16 +464,21 @@ export class SpawnSystem {
           enemy.applyPostBellScaling(pb.enemyHpMul, pb.enemySpeedMul);
         }
 
-        // Elite chance: BALANCE.enemy.ELITE_SPAWN_CHANCE after ELITE_UNLOCK_SEC,
-        // never on hazards or swarm packs. Tuning lives in BalanceConfig so
-        // the gameplay feel matches what the HUD advertises.
+        // Elite chance — base from BalanceConfig + kill-pressure nudge (decays).
+        const eliteChance = Math.min(
+          0.24,
+          BALANCE.enemy.ELITE_SPAWN_CHANCE +
+            this.killPressure * BALANCE.director.killPressureEliteBonusMax,
+        );
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
             && config.packSize <= 1
-            && rng.bool(BALANCE.enemy.ELITE_SPAWN_CHANCE)) {
+            && rng.bool(eliteChance)) {
           enemy.markAsElite();
-          // Golden flash at spawn position to warn player
-          const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, 0xffdd44, 0.5);
+          const affix = pickEliteAffixId(config.behavior, rng);
+          if (affix) enemy.applyEliteAffix(affix);
+          const flashTint = affix ? ELITE_AFFIXES[affix].indicatorTint : 0xffdd44;
+          const flash = this.scene.getStatusFxPool().acquireArc(pos.x + scatter, pos.y + scatter, 15, flashTint, 0.55);
           this.scene.tweens.add({
             targets: flash, scale: 2, alpha: 0, duration: 400,
             onComplete: () => { flash.setVisible(false); },
@@ -644,5 +655,10 @@ export class SpawnSystem {
 
   getSpawnedBossKeys(): string[] {
     return [...this.spawnedBossKeys];
+  }
+
+  /** Called when the player scores a kill — feeds short-lived elite pressure. */
+  noteKillPressure(): void {
+    this.killPressure = Math.min(1, this.killPressure + BALANCE.director.killPressurePerKill);
   }
 }

@@ -61,6 +61,8 @@ export const MOTION_TIMING = {
   musicDuckLevelUp: 0.08,
   musicDuckAchievement: 0.055,
   musicDuckPurchase: 0.06,
+  /** Moor moment sting — soft; stacks with procedural bloom from the same beat. */
+  musicDuckMoorMoment: 0.07,
   ambientFadeInSec: 1.5,
   ambientFadeOutSec: 0.8,
   /** Common Phaser alpha / spawn tweens (ms). */

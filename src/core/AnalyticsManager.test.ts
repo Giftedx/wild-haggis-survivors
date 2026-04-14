@@ -58,6 +58,32 @@ describe('AnalyticsManager', () => {
     expect(provider.logEvent).not.toHaveBeenCalled();
   });
 
+  it('logs elite_affix_kill when an affixed elite dies and telemetry opt-in is on', () => {
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'tourist',
+      xpValue: 30,
+      wasBoss: false,
+      wasElite: true,
+      eliteAffixId: 'volatile',
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'elite_affix_kill',
+      { eliteAffixId: 'volatile', enemyKey: 'tourist' },
+    );
+  });
+
+  it('skips elite_affix_kill when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
+      enemyKey: 'chef',
+      xpValue: 20,
+      wasBoss: false,
+      wasElite: true,
+      eliteAffixId: 'swift',
+    });
+    expect(provider.logEvent).not.toHaveBeenCalled();
+  });
+
   it('logs run_end when GLOBAL_RUN_ENDED fires and telemetry opt-in is on', () => {
     globalEventBus.emit('GLOBAL_RUN_ENDED', {
       outcome: 'death',

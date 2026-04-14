@@ -5,8 +5,21 @@ import { EnemyConfig, EnemyBehavior } from '../data/enemies';
 import { ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import {
+  AFFIX_VOLATILE_RADIUS,
+  AFFIX_VOLATILE_SPLASH_DAMAGE,
+  AFFIX_BULWARK_HP_MULT,
+  AFFIX_RELENTLESS_KNOCKBACK_MUL,
+  AFFIX_SWIFT_SPEED_MULT,
+  AFFIX_WEALTHY_XP_MULT,
+  ELITE_AFFIXES,
+  pickEliteAffixId,
+  type EliteAffixId,
+} from '../data/eliteAffixes';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { globalEventBus } from '../core/GlobalEventBus';
+import { t } from '../core/i18n';
+import { audio } from '../systems/AudioSystem';
 
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
@@ -40,6 +53,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private spatialCullImmune: boolean = false;
   private bossFlag: boolean = false;
   private eliteFlag: boolean = false;
+  /** After markAsElite — at most one affix per elite. */
+  private eliteAffixId: EliteAffixId | null = null;
+  /** Multiplier on incoming knockback impulses (Relentless < 1). */
+  private knockbackTakenMul: number = 1;
 
   /** Dive enemies lock their angle on spawn and don't re-aim */
   private diveAngle: number = 0;
@@ -108,6 +125,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private hpBarBg: Phaser.GameObjects.Rectangle | null = null;
   private hpBarFill: Phaser.GameObjects.Rectangle | null = null;
   private showHpBar: boolean = false;
+  /** Affix name above the bar — created when `applyEliteAffix` runs. */
+  private eliteAffixNameText: Phaser.GameObjects.Text | null = null;
   /** Soft ground shadow that follows the sprite */
   private shadow: Phaser.GameObjects.Image | null = null;
   /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
@@ -225,6 +244,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.behavior = config.behavior;
     this.bossFlag = false;
     this.eliteFlag = false;
+    this.eliteAffixId = null;
+    this.eliteAffixNameText?.setVisible(false);
+    this.knockbackTakenMul = 1;
     this.baseTint = 0;
     this.diveStarted = false;
     this.rangedCooldown = 0;
@@ -384,6 +406,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.hpBarBg.setPosition(this.x, this.y - 20);
       this.hpBarFill.setPosition(this.x - 12, this.y - 20);
       this.hpBarFill.width = 24 * (this.hp / this.maxHp);
+    }
+    if (this.eliteAffixId && this.eliteAffixNameText) {
+      this.eliteAffixNameText.setPosition(this.x, this.y - 22);
     }
 
     // Ground shadow follows the sprite (shadow stays flat — doesn't bob).
@@ -809,8 +834,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    *  actually visible. */
   applyKnockback(vx: number, vy: number, durationMs: number = 150): void {
     if (this.behavior === 'hazard') return;
-    this.knockbackVx = vx;
-    this.knockbackVy = vy;
+    const m = this.knockbackTakenMul;
+    this.knockbackVx = vx * m;
+    this.knockbackVy = vy * m;
     this.knockbackTimer = durationMs;
     // Dive enemies lock their angle on the first behaviorDive tick; if one
     // is mid-flight when knockback hits, the lock is now stale because the
@@ -999,12 +1025,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     wasElite: boolean
   ): void {
     const ws = this.ctx.getWeaponSystem();
-    ws.events.emit('enemyKilled', killX, killY, xp, key, wasBoss, wasElite);
+    ws.events.emit(
+      'enemyKilled',
+      killX,
+      killY,
+      xp,
+      key,
+      wasBoss,
+      wasElite,
+      wasElite ? this.eliteAffixId : undefined,
+    );
     globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
       enemyKey: key,
       xpValue: xp,
       wasBoss,
       wasElite,
+      eliteAffixId: wasElite ? this.eliteAffixId : undefined,
     });
   }
 
@@ -1063,6 +1099,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         if (gameTime > BALANCE.enemy.ELITE_UNLOCK_SEC
             && this.ctx.getRunRng().bool(BALANCE.enemy.ELITE_SPAWN_CHANCE)) {
           minion.markAsElite();
+          const ax = pickEliteAffixId(minion.getBehavior(), this.ctx.getRunRng());
+          if (ax) minion.applyEliteAffix(ax);
         }
       }
       // Visual indicator
@@ -1149,6 +1187,28 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private die(): void {
+    if (this.eliteAffixId === 'volatile' && this.scene?.sys.isActive()) {
+      this.ctx.getSFXManager().tryPlay('elite_volatile_death', () => audio.playEliteVolatileDeathImmediate());
+      const pool = this.ctx.getSpawnSystem().getEnemyGroup();
+      const nearby = pool.children.entries as Enemy[];
+      const r2 = AFFIX_VOLATILE_RADIUS * AFFIX_VOLATILE_RADIUS;
+      for (const e of nearby) {
+        if (!e.active || e === this) continue;
+        const dx = e.x - this.x;
+        const dy = e.y - this.y;
+        if (dx * dx + dy * dy <= r2) {
+          e.takeDamageWithKillEvents(AFFIX_VOLATILE_SPLASH_DAMAGE);
+        }
+      }
+      const fx = this.ctx.getStatusFxPool();
+      const ring = fx.acquireArc(this.x, this.y, 12, ELITE_AFFIXES.volatile.indicatorTint, 0.55);
+      this.scene.tweens.add({
+        targets: ring, scaleX: 5.5, scaleY: 5.5, alpha: 0, duration: 300,
+        ease: 'Cubic.easeOut',
+        onComplete: () => ring.setVisible(false),
+      });
+    }
+
     this.setActive(false);
     this.setVisible(false);
     this.hazardTtlHandle?.cancel();
@@ -1163,6 +1223,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0, 0);
     this.hpBarBg?.setVisible(false);
     this.hpBarFill?.setVisible(false);
+    this.eliteAffixNameText?.setVisible(false);
     this.shadow?.setVisible(false);
   }
 
@@ -1172,9 +1233,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.scene?.tweens.killTweensOf(this);
     this.hpBarBg?.destroy();
     this.hpBarFill?.destroy();
+    this.eliteAffixNameText?.destroy();
     this.shadow?.destroy();
     this.hpBarBg = null;
     this.hpBarFill = null;
+    this.eliteAffixNameText = null;
     this.shadow = null;
     super.destroy(fromScene);
   }
@@ -1223,12 +1286,75 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.showHpBar = false;
     this.hpBarBg?.setVisible(false);
     this.hpBarFill?.setVisible(false);
+    this.eliteAffixNameText?.setVisible(false);
   }
 
   /** Make this enemy an elite variant — bigger, tougher, more rewarding.
    *  Idempotent: subsequent calls on an already-elite enemy are no-ops,
    *  preventing HP/scale from compounding if the same enemy is elite-marked
    *  twice through different code paths. */
+  /**
+   * Apply a single elite affix after `markAsElite()` — extra speed, HP,
+   * knockback resist, XP, or death splash. Idempotent if already affixed.
+   */
+  applyEliteAffix(id: EliteAffixId): void {
+    if (!this.eliteFlag || this.eliteAffixId !== null) return;
+    this.eliteAffixId = id;
+    switch (id) {
+      case 'swift':
+        this.baseSpeed = Math.ceil(this.baseSpeed * AFFIX_SWIFT_SPEED_MULT);
+        this.recomputeSpeed();
+        break;
+      case 'bulwark':
+        this.maxHp = Math.ceil(this.maxHp * AFFIX_BULWARK_HP_MULT);
+        this.hp = this.maxHp;
+        break;
+      case 'relentless':
+        this.knockbackTakenMul = AFFIX_RELENTLESS_KNOCKBACK_MUL;
+        break;
+      case 'wealthy':
+        this.xpValue = Math.ceil(this.xpValue * AFFIX_WEALTHY_XP_MULT);
+        break;
+      case 'volatile':
+        break;
+      default:
+        break;
+    }
+    this.ensureEliteAffixNameLabel();
+    const tint = ELITE_AFFIXES[id].indicatorTint;
+    const css = `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
+    this.eliteAffixNameText!
+      .setText(t(`ui.elite_affix.${id}.name`))
+      .setColor(css)
+      .setPosition(this.x, this.y - 22)
+      .setVisible(true);
+    this.ctx.getTutorialSystem().notifyEliteAffixIfFirst(id);
+    this.ctx.getSFXManager().tryPlay('elite_affix_spawn', () => audio.playEliteAffixSpawnImmediate(id));
+  }
+
+  /** World-space name tag — matches edge/minimap affix hue. */
+  private ensureEliteAffixNameLabel(): void {
+    if (this.eliteAffixNameText) return;
+    const uiScale = getSettingsManager().load().uiScale;
+    const px = Math.max(7, Math.round(10 * uiScale));
+    this.eliteAffixNameText = this.scene.add.text(0, 0, '', {
+      fontFamily: 'monospace',
+      fontSize: `${px}px`,
+      fontStyle: 'bold',
+      stroke: '#000000',
+      strokeThickness: 2,
+    }).setDepth(32).setOrigin(0.5, 1);
+  }
+
+  getEliteAffixId(): EliteAffixId | null {
+    return this.eliteAffixId;
+  }
+
+  /** Minimap / edge arrow tint; null = default elite gold only. */
+  getEliteAffixIndicatorTint(): number | null {
+    return this.eliteAffixId ? ELITE_AFFIXES[this.eliteAffixId].indicatorTint : null;
+  }
+
   markAsElite(): void {
     if (this.eliteFlag) return;
     this.eliteFlag = true;

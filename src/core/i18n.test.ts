@@ -144,6 +144,8 @@ describe('i18n regression fences — data-file coverage', () => {
     assertResolves('tutorial.move', 'tutorial.move');
     assertResolves('tutorial.gem', 'tutorial.gem');
     assertResolves('tutorial.drift', 'tutorial.drift');
+    expect(t('tutorial.elite_affix_first', { name: 'Swift' })).toContain('Swift');
+    expect(t('tutorial.moor_moment_first').length).toBeGreaterThan(12);
   });
 
   it('menu stats line templates exist in short and long forms', () => {

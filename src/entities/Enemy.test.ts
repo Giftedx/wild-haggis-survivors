@@ -1,4 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
+import {
+  AFFIX_BULWARK_HP_MULT,
+  AFFIX_RELENTLESS_KNOCKBACK_MUL,
+  AFFIX_SWIFT_SPEED_MULT,
+  AFFIX_WEALTHY_XP_MULT,
+} from '../data/eliteAffixes';
 
 vi.mock('phaser', () => {
   class Sprite {
@@ -29,7 +35,13 @@ vi.mock('phaser', () => {
   };
 });
 
-vi.mock('../systems/AudioSystem', () => ({ audio: { play: vi.fn() } }));
+vi.mock('../systems/AudioSystem', () => ({
+  audio: {
+    play: vi.fn(),
+    playEliteAffixSpawnImmediate: vi.fn(),
+    playEliteVolatileDeathImmediate: vi.fn(),
+  },
+}));
 vi.mock('../core/i18n', () => ({ t: (k: string) => k }));
 
 async function createBareEnemy() {
@@ -57,6 +69,8 @@ async function createBareEnemy() {
   e.xpValue = 10;
   e.damage = 5;
   e.eliteFlag = false;
+  e.eliteAffixId = null;
+  e.knockbackTakenMul = 1;
   e.bossFlag = false;
   e.baseDisplayScale = 1;
   e.showHpBar = false;
@@ -70,7 +84,22 @@ async function createBareEnemy() {
     r.setFillStyle = () => r;
     return r;
   };
-  e.scene = { add: { rectangle: mockRect } };
+  const mockText = () => {
+    const o: any = {};
+    o.setDepth = () => o;
+    o.setOrigin = () => o;
+    o.setText = () => o;
+    o.setPosition = () => o;
+    o.setVisible = () => o;
+    o.setColor = () => o;
+    o.destroy = vi.fn();
+    return o;
+  };
+  e.scene = { add: { rectangle: mockRect, text: mockText } };
+  e.ctx = {
+    getTutorialSystem: () => ({ notifyEliteAffixIfFirst: vi.fn() }),
+    getSFXManager: () => ({ tryPlay: (_k: string, fn: () => void) => { fn(); } }),
+  };
   return e;
 }
 
@@ -157,5 +186,55 @@ describe('Enemy markAsElite', () => {
     e.applyFreeze(0.5, 1000);
     // baseSpeed=130, freeze=0.5 → 65
     expect(e.speed).toBe(65);
+  });
+});
+
+describe('Enemy applyEliteAffix', () => {
+  it('does nothing when not elite', async () => {
+    const e = await createBareEnemy();
+    e.applyEliteAffix('swift');
+    expect(e.eliteAffixId).toBeNull();
+    expect(e.baseSpeed).toBe(100);
+  });
+
+  it('swift stacks speed on top of elite bake', async () => {
+    const e = await createBareEnemy();
+    e.markAsElite();
+    e.applyEliteAffix('swift');
+    expect(e.eliteAffixId).toBe('swift');
+    expect(e.baseSpeed).toBe(Math.ceil(130 * AFFIX_SWIFT_SPEED_MULT));
+    expect(e.speed).toBe(e.baseSpeed);
+  });
+
+  it('bulwark increases HP after elite double', async () => {
+    const e = await createBareEnemy();
+    e.markAsElite();
+    e.applyEliteAffix('bulwark');
+    expect(e.maxHp).toBe(Math.ceil(200 * AFFIX_BULWARK_HP_MULT));
+    expect(e.hp).toBe(e.maxHp);
+  });
+
+  it('relentless sets knockback multiplier', async () => {
+    const e = await createBareEnemy();
+    e.markAsElite();
+    e.applyEliteAffix('relentless');
+    expect(e.knockbackTakenMul).toBe(AFFIX_RELENTLESS_KNOCKBACK_MUL);
+  });
+
+  it('wealthy increases XP after elite ×3', async () => {
+    const e = await createBareEnemy();
+    e.markAsElite();
+    e.applyEliteAffix('wealthy');
+    expect(e.xpValue).toBe(Math.ceil(30 * AFFIX_WEALTHY_XP_MULT));
+  });
+
+  it('second applyEliteAffix is ignored', async () => {
+    const e = await createBareEnemy();
+    e.markAsElite();
+    e.applyEliteAffix('swift');
+    const firstBase = e.baseSpeed;
+    e.applyEliteAffix('bulwark');
+    expect(e.eliteAffixId).toBe('swift');
+    expect(e.baseSpeed).toBe(firstBase);
   });
 });

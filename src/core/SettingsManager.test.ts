@@ -28,7 +28,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: SETTINGS_STORAGE_KEY });
 
     meta.save({
-      saveVersion: 8,
+      saveVersion: 9,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 99,
@@ -38,7 +38,11 @@ describe('SettingsManager air-gap', () => {
       unlockedAchievements: [],
       hasCompletedTutorial: false,
       hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      moorMomentsLifetime: 0,
       runHistory: [],
+      codexCulledKeys: [],
     });
     settings.save({
       settingsVersion: 1,
@@ -73,7 +77,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 8,
+      saveVersion: 9,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 10,
@@ -83,7 +87,11 @@ describe('SettingsManager air-gap', () => {
       unlockedAchievements: [],
       hasCompletedTutorial: false,
       hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      moorMomentsLifetime: 0,
       runHistory: [],
+      codexCulledKeys: [],
     });
     settings.save({
       settingsVersion: 1,
@@ -113,7 +121,7 @@ describe('SettingsManager air-gap', () => {
     const settings = new SettingsManager({ storage: mem, key: 's' });
 
     meta.save({
-      saveVersion: 8,
+      saveVersion: 9,
       totalKillsSpent: 0,
       dailyChallenge: null,
       totalKills: 77,
@@ -123,7 +131,11 @@ describe('SettingsManager air-gap', () => {
       unlockedAchievements: ['ach_kills_1000'],
       hasCompletedTutorial: true,
       hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      moorMomentsLifetime: 0,
       runHistory: [],
+      codexCulledKeys: [],
     });
     settings.save({
       settingsVersion: 1,

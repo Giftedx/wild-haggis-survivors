@@ -1,8 +1,13 @@
+import type { EliteAffixId } from '../data/eliteAffixes';
+import type { BiomeId } from '../data/biomes';
+
 export type GlobalEnemyKilledPayload = {
   enemyKey: string;
   xpValue: number;
   wasBoss: boolean;
   wasElite: boolean;
+  /** Present when this was a gold elite that rolled an affix. */
+  eliteAffixId?: EliteAffixId | null;
 };
 
 export type GlobalRunTimePayload = {
@@ -30,6 +35,18 @@ export type GlobalWeaponEvolvedPayload = {
 
 export type TutorialCompletedPayload = Record<string, never>;
 
+/** Moor moment hearth beat — rewards already applied; listeners update meta/stats. */
+export type GlobalMoorMomentPayload = {
+  momentId: string;
+  atHomeBiome: boolean;
+  biomeId: BiomeId | null;
+};
+
+/** First time this account culled an enemy key — meta codex entry added. */
+export type CodexFirstCullPayload = {
+  enemyKey: string;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -37,6 +54,8 @@ export type GlobalEvents = {
   GLOBAL_RUN_ENDED: GlobalRunEndedPayload;
   GLOBAL_WEAPON_EVOLVED: GlobalWeaponEvolvedPayload;
   TUTORIAL_COMPLETED: TutorialCompletedPayload;
+  GLOBAL_MOOR_MOMENT: GlobalMoorMomentPayload;
+  CODEX_FIRST_CULL: CodexFirstCullPayload;
   bossEnraged: string;
 };
 

@@ -13,6 +13,19 @@ export interface GameMusicState {
   comboCount: number;
   killCount: number;
   bossActive: boolean;
+  /**
+   * 0 = peat-grounded moor, 1 = bright open heath — from `BIOMES[id].moodTimbre`.
+   * Smoothed inside the conductor so crossing biome borders does not click the mix.
+   */
+  biomeTimbre: number;
+  /**
+   * 0–1 transient — moor hearth moment (from `ProceduralMusicEngine` bus accents).
+   */
+  moorBloom?: number;
+  /** 0–1 — weapon evolution lift. */
+  evolutionGlow?: number;
+  /** 0–1 — boss enrage pressure. */
+  enragePressure?: number;
 }
 
 export interface MoodValues {
@@ -53,7 +66,25 @@ export class Conductor {
 
   private resolutionMode = false;
 
+  /** Lerp target from `GameMusicState.biomeTimbre` — exposed for the audio graph. */
+  private smoothedBiomeTimbre = 0.45;
+
+  /** Snapshot each `updateMood` — used by phrase walk + `getFrequency` + releases. */
+  private accentMoorBloom = 0;
+  private accentEvolutionGlow = 0;
+  private accentEnrage = 0;
+
   updateMood(delta: number, state: GameMusicState): void {
+    const mb = state.moorBloom ?? 0;
+    const eg = state.evolutionGlow ?? 0;
+    const ep = state.enragePressure ?? 0;
+    this.accentMoorBloom = mb;
+    this.accentEvolutionGlow = eg;
+    this.accentEnrage = ep;
+
+    const targetBt = Math.max(0, Math.min(1, state.biomeTimbre));
+    this.smoothedBiomeTimbre = lerp(this.smoothedBiomeTimbre, targetBt, delta * 0.0011);
+
     if (this.resolutionMode) return;
 
     const hpFrac = state.maxHp > 0 ? state.hp / state.maxHp : 1;
@@ -71,10 +102,13 @@ export class Conductor {
       this.danger = lerp(this.danger, 0, delta * 0.0008);
     }
 
-    const chaosTarget = Math.min(1,
+    let chaosTarget = Math.min(1,
       Math.min(1, state.enemyCount / 300) * 0.6 +
       Math.min(1, state.comboCount / 20) * 0.4
     );
+    // Heather / open ground reads as slightly busier; bog stays tighter.
+    chaosTarget *= 0.88 + this.smoothedBiomeTimbre * 0.22;
+    chaosTarget = Math.min(1, chaosTarget * (1 + ep * 0.34));
     this.chaos = lerp(this.chaos, chaosTarget, delta * 0.002);
 
     this.updateKillHistory(state.gameTimeSec, state.killCount);
@@ -83,6 +117,8 @@ export class Conductor {
     if (state.comboCount > 8 && hpFrac > 0.5) {
       triumphTarget = Math.min(1, Math.max(0, (killRate - 3) / 10));
     }
+    triumphTarget = Math.min(1, triumphTarget + mb * 0.16 * (1 - this.danger * 0.55));
+    triumphTarget = Math.min(1, triumphTarget * (1 + eg * 0.14));
     // Danger suppresses the TARGET, not the accumulated value. The prior
     // per-frame `this.triumph *= (1 - danger)` applied 60×/second, which
     // exponentially annihilated triumph to ~0 within 0.1s at any non-trivial
@@ -102,7 +138,12 @@ export class Conductor {
     };
   }
 
-  nextNote(): { freq: number; velocity: number; intervalSec: number } | null {
+  /** Smoothed 0–1 moor colour for filters, pad, and delay — not a "mood axis". */
+  getSmoothedBiomeTimbre(): number {
+    return this.smoothedBiomeTimbre;
+  }
+
+  nextNote(): { freq: number; velocity: number; intervalSec: number; releaseSec: number } | null {
     if (this.inRest) {
       this.inRest = false;
       this.startNewPhrase();
@@ -144,7 +185,11 @@ export class Conductor {
       interval += interval * 1.8;
     }
 
-    return { freq, velocity, intervalSec: interval };
+    const releaseSec = Math.min(
+      2.8,
+      1.42 + this.accentMoorBloom * 1.05 + this.accentEvolutionGlow * 0.62,
+    );
+    return { freq, velocity, intervalSec: interval, releaseSec };
   }
 
   enterResolution(): void {
@@ -165,7 +210,10 @@ export class Conductor {
 
   private startNewPhrase(): void {
     const r = Math.random();
-    if (r < 0.30) this.phraseContour = 'ascending';
+    const archGift = this.accentMoorBloom > 0.12 && Math.random() < 0.28 + this.accentMoorBloom * 0.42;
+    if (archGift) {
+      this.phraseContour = 'arch';
+    } else if (r < 0.30) this.phraseContour = 'ascending';
     else if (r < 0.55) this.phraseContour = 'descending';
     else if (r < 0.80) this.phraseContour = 'arch';
     else this.phraseContour = 'valley';
@@ -200,7 +248,8 @@ export class Conductor {
     const direction = (Math.random() < pUp) ? 1 : -1;
     this.lastDirection = direction;
 
-    const landingBoost = this.danger * 0.1 + (this.phraseNotesRemaining <= 1 ? 0.3 : 0);
+    const landingBoost = this.danger * 0.1 + (this.phraseNotesRemaining <= 1 ? 0.3 : 0)
+      + this.accentEnrage * 0.14;
     const r = Math.random();
     let step: number;
     if (r < 0.1 + landingBoost) {
@@ -241,7 +290,8 @@ export class Conductor {
       }
     }
     if (degree === 2) {
-      if (Math.random() < this.triumph) {
+      const mixoChance = Math.min(1, this.triumph + this.accentEvolutionGlow * 0.42);
+      if (Math.random() < mixoChance) {
         return octave === 0 ? MIXO_3RD : MIXO_3RD_HI;
       }
     }

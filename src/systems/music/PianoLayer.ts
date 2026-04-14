@@ -149,6 +149,40 @@ export class PianoLayer {
     this.mixGain.gain.linearRampToValueAtTime(vol, ctx.currentTime + transitionSec);
   }
 
+  /**
+   * Hearth flourish when a timed moor moment fires — pentatonic sparkle under
+   * the drone, distinct from the main melody line (scheduler). Cooldown lives
+   * in `ProceduralMusicEngine` so this stays rare.
+   */
+  playMoorFlourish(time: number, atHomeBiome: boolean): void {
+    if (!this.ctx || !this.filter) return;
+    this.breatheFilterForMoorFlourish(time, atHomeBiome);
+    // D major pentatonic — rising fourths then a whispered high fifth so it
+    // feels like a phrase, not a scale run. Slightly brighter + longer at home.
+    const baseVel = atHomeBiome ? 0.2 : 0.15;
+    const freqs = [293.66, 369.99, 440.0, 587.33, 659.25];
+    const offsets = [0, 0.072, 0.148, 0.238, 0.36];
+    const releases = atHomeBiome
+      ? [0.95, 0.95, 0.95, 1.05, 0.72]
+      : [0.78, 0.78, 0.78, 0.88, 0.58];
+    for (let i = 0; i < freqs.length; i++) {
+      const v = baseVel * (0.86 + i * 0.035) * (i === 4 ? 0.55 : 1);
+      this.playNote(freqs[i]!, time + offsets[i]!, v, releases[i]!);
+    }
+  }
+
+  /** Short airy opening of the felt lowpass so the flourish reads in the mix. */
+  private breatheFilterForMoorFlourish(time: number, atHomeBiome: boolean): void {
+    if (!this.filter) return;
+    const f = this.filter.frequency;
+    const base = 3000;
+    const peak = atHomeBiome ? 5200 : 4600;
+    f.cancelScheduledValues(time);
+    f.setValueAtTime(base, time);
+    f.linearRampToValueAtTime(peak, time + 0.09);
+    f.linearRampToValueAtTime(base, time + 0.62);
+  }
+
   stop(): void {
     for (let i = 0; i < this.voices.length; i++) {
       this.releaseVoice(i);

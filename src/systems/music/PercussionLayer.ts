@@ -11,6 +11,8 @@ export class PercussionLayer {
 
   private pattern: boolean[] = [true, false, true, false, false, false, false, false];
   private patternIdx: number = 0;
+  /** Applied when `patternIdx` wraps to 0 — locks groove shift to bar boundary. */
+  private pendingEnrageSteps: number | null = null;
 
   start(ctx: AudioContext, output: AudioNode): void {
     this.ctx = ctx;
@@ -66,6 +68,12 @@ export class PercussionLayer {
       this.pattern = this.pendingPattern;
       this.pendingPattern = null;
     }
+    // Boss enrage: shift Euclidean phase only at cycle start (idx wrapped to 0).
+    if (this.patternIdx === 0 && this.pendingEnrageSteps !== null) {
+      const st = this.pendingEnrageSteps;
+      this.pendingEnrageSteps = null;
+      this.nudgePatternPhase(st);
+    }
     if (!isHit) return;
     const { kick: kickScale, hat: hatScale } = percussionKickHatGainScales(pulses);
     // Kick on even slots (downbeats), hat on odd slots
@@ -111,6 +119,34 @@ export class PercussionLayer {
     osc.onended = () => { try { osc.disconnect(); hpf.disconnect(); gain.disconnect(); } catch { /* ignore */ } };
   }
 
+  /**
+   * Queue a phase nudge to run on the next Euclidean **cycle** boundary
+   * (when the read index wraps to 0). Re-queues replace the pending amount.
+   */
+  requestPhaseLockedNudge(steps: number): void {
+    const n = this.pattern.length;
+    if (n <= 0) return;
+    const s = ((steps % n) + n) % n;
+    if (s === 0) return;
+    this.pendingEnrageSteps = s;
+  }
+
+  /** Death / teardown — don’t apply a deferred groove shift after the run ends. */
+  clearPendingPhaseNudge(): void {
+    this.pendingEnrageSteps = null;
+  }
+
+  /**
+   * Shift the Euclidean read position — "wrong-foot" the groove once
+   * (e.g. boss enrage) without allocating a new pattern.
+   */
+  nudgePatternPhase(steps: number): void {
+    const n = this.pattern.length;
+    if (n <= 0) return;
+    const s = ((steps % n) + n) % n;
+    this.patternIdx = (this.patternIdx + s) % n;
+  }
+
   updatePattern(density: number): void {
     const n = Math.round(Math.max(1, Math.min(7, density * 7 + 1)));
     const newPattern = euclidean(n, 8);
@@ -137,6 +173,7 @@ export class PercussionLayer {
     // otherwise it would leak across and override the calm 1/8 opening
     // of the next run at the first phrase boundary.
     this.pendingPattern = null;
+    this.pendingEnrageSteps = null;
   }
 }
 

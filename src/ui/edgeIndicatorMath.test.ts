@@ -72,6 +72,7 @@ describe('insertionSortOffScreenByDist', () => {
     dist,
     boss: false,
     elite: false,
+    eliteDisplayTint: 0xd4a017,
   });
 
   it('is a no-op for count 0 or 1', () => {

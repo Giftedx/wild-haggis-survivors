@@ -126,6 +126,14 @@ export class XPSystem {
     // cheated by a truncation.
     const biomeMul = this.scene.getPlayer()?.getBiomeXpMultiplier?.() ?? 1;
     const value = biomeMul === 1 ? rawValue : Math.ceil(rawValue * biomeMul);
+
+    if (this.currentLevel >= XP.MAX_LEVEL) {
+      const gold = Math.max(1, Math.floor(value * XP.OVERFLOW_XP_TO_GOLD_RATIO));
+      this.scene.grantXpOverflowGold?.(gold);
+      this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      return;
+    }
+
     this.currentXP += value;
     this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
 
@@ -192,4 +200,35 @@ export class XPSystem {
     return Math.min(1, this.currentXP / this.xpToNextLevel);
   }
   getGemGroup(): Phaser.GameObjects.Group { return this.gemPool; }
+
+  /**
+   * Scripted XP (moor moments, etc.) — no gem spawn; respects XP multiplier
+   * and the level-up queue the same way gem collection does.
+   */
+  grantBonusXp(amount: number): void {
+    if (amount <= 0) return;
+    const mul = this.scene.getPlayer()?.getXpMultiplier() ?? 1;
+    const value = Math.ceil(amount * mul);
+    if (this.currentLevel >= XP.MAX_LEVEL) {
+      const gold = Math.max(1, Math.floor(value * XP.OVERFLOW_XP_TO_GOLD_RATIO));
+      this.scene.grantXpOverflowGold?.(gold);
+      this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      return;
+    }
+    this.currentXP += value;
+    this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+
+    while (this.currentXP >= this.xpToNextLevel && this.currentLevel < XP.MAX_LEVEL) {
+      this.currentXP -= this.xpToNextLevel;
+      this.currentLevel++;
+      this.xpToNextLevel = this.calcXpRequired(this.currentLevel + 1);
+      this.pendingLevelUps.push(this.currentLevel);
+    }
+
+    if (!this.levelUpInProgress && this.pendingLevelUps.length > 0) {
+      this.levelUpInProgress = true;
+      const next = this.pendingLevelUps.shift()!;
+      this.events.emit('levelup', next);
+    }
+  }
 }

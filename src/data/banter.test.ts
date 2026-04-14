@@ -11,7 +11,7 @@ describe('BANTER_POOLS structure', () => {
   const allContexts: BanterContext[] = [
     'first_blood', 'kill_streak', 'level_up', 'low_hp',
     'recover', 'boss_warn', 'boss_down', 'biome_change',
-    'weapon_evolve', 'curse_start', 'idle',
+    'weapon_evolve', 'curse_start', 'moor_moment', 'idle',
   ];
 
   it('covers every BanterContext exactly once', () => {

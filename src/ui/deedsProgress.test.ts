@@ -8,13 +8,16 @@ import {
   type DeedStatsSnapshot,
 } from './deedsProgress';
 import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
+import { getCodexRosterTotal } from './chronicleAggregates';
 
 function snap(overrides: Partial<DeedStatsSnapshot> = {}): DeedStatsSnapshot {
   return {
     lifetimeKills: 0,
     bestTimeSec: 0,
     victories: 0,
+    moorMomentsLifetime: 0,
     unlockedIds: [],
+    codexDiscoveredCount: 0,
     ...overrides,
   };
 }
@@ -24,6 +27,23 @@ describe('DEED_DISPLAY_ORDER', () => {
     const defined = Object.keys(ACHIEVEMENT_DEFS).sort();
     const ordered = [...DEED_DISPLAY_ORDER].sort();
     expect(ordered).toEqual(defined);
+  });
+});
+
+describe('computeDeedProgress — codex', () => {
+  it('ach_codex_half shows progress toward half the roster', () => {
+    const roster = getCodexRosterTotal();
+    const target = Math.max(1, Math.ceil(roster * 0.5));
+    const p = computeDeedProgress('ach_codex_half', snap({ codexDiscoveredCount: Math.max(1, target - 2) }));
+    expect(p.target).toBe(target);
+    expect(p.status).toBe('in_progress');
+  });
+
+  it('ach_codex_loremaster targets full roster size', () => {
+    const roster = getCodexRosterTotal();
+    const p = computeDeedProgress('ach_codex_loremaster', snap({ codexDiscoveredCount: 1 }));
+    expect(p.target).toBe(roster);
+    expect(p.status).toBe('in_progress');
   });
 });
 

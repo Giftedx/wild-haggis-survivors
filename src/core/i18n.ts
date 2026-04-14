@@ -118,6 +118,11 @@ export const EN_STRINGS: LocaleTree = {
       milestone_favorite_weapon: 'Weapon of choice — {weapon} ({count} runs)',
       milestone_win_streak: 'On a {count}-run winning streak ✓',
 
+      // ── Cull codex (meta SaveManager — first kill per enemy key) ──
+      codex_heading: 'CULL CODEX',
+      codex_progress: '{discovered} / {total} beasties logged',
+      codex_empty: 'Nae names in the book yet — the moor\'s still holdin secrets.',
+
       // ── Run list ──
       runs_heading: 'RECENT RUNS',
       runs_empty: 'Nothin logged yet. Go bag the first tale.',
@@ -327,6 +332,14 @@ export const EN_STRINGS: LocaleTree = {
       /** Shown under the wave objective when the run started with a curse. */
       curse_chip: 'Curse: {name} (+{pct}% gold)',
     },
+    /** Gold elite modifiers — names for future tooltips / codex. */
+    elite_affix: {
+      swift: { name: 'Swift', blurb: 'Faster feet — harder to shake.' },
+      bulwark: { name: 'Bulwark', blurb: 'Extra meat on the bone.' },
+      relentless: { name: 'Relentless', blurb: 'Barely budges when ye hit it.' },
+      wealthy: { name: 'Wealthy', blurb: 'Fatter gem — worth the scrap.' },
+      volatile: { name: 'Volatile', blurb: 'Pops on death — mind the crowd.' },
+    },
     pause: {
       title: 'PAUSED',
       /** Rotating quips shown below the pause title — wee breather moments. */
@@ -342,6 +355,8 @@ export const EN_STRINGS: LocaleTree = {
       stats_mid: 'Kills: {kills}  |  Level: {level}',
       stats_loadout: 'Weapons: {w}  |  Curios: {c}',
       passives_heading: 'Curios:',
+      /** Pause overlay — reference for gold elite trait names (lines use ui.elite_affix.*). */
+      elite_affix_heading: 'Gold elites — traits:',
     },
     passive: {
       pause_short: {
@@ -419,6 +434,10 @@ export const EN_STRINGS: LocaleTree = {
       upgrade_stat_boost: '{name}',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       max_level_toast: 'Max level — yir a walking storm! That\'s plenty.',
+      /** Shown when XP converts to gold at max level (batched). */
+      xp_overflow_gold: 'Max level — the moor pays in gold: +{gold}g (overflow XP).',
+      /** Shown once per account the first time an enemy key is culled — meta codex. */
+      codex_first_cull: 'First cull logged: {name} — the herd\'s takin notes.',
       second_wind: 'Second wind — yir no done yet, pal!',
       treasure_nearby: 'Somethin\' glintin\' oot there…',
       treasure_collected: 'Chest cracked — that\'s a feed and a half (+25% HP)',
@@ -428,6 +447,67 @@ export const EN_STRINGS: LocaleTree = {
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
+    },
+    /**
+     * Moor moments — timed hearth beats mid-run (caption + toast + small gift).
+     * Voice: warm Still Game register; no punch-down, just moor texture.
+     */
+    moor_moment: {
+      peat_glint: {
+        caption: 'Somethin\' winks up from the peat — no\' the taxman, for once.',
+        toast: 'Peat glint — +{gold}g tucked in yir sporran.',
+        caption_home: 'The bog hoards coins like stories — yir boots earned this one.',
+        toast_home: 'Deep peat — +{gold}g from the squelch, ya dancer.',
+      },
+      loch_breath: {
+        caption: 'The loch exhales; the air tastes like tomorrow\'s rain.',
+        toast: 'Loch breath — +{xp} XP, neat.',
+        caption_home: 'Water-sky mirrors yer feet; the loch slips ye a wee lesson.',
+        toast_home: 'Loch-side — +{xp} XP, borrowed from the deep.',
+      },
+      heather_rest: {
+        caption: 'Sit a minute. The heather disnae judge.',
+        toast: 'Heather rest — +{hp} HP, ya dancer.',
+        caption_home: 'Purple hush — the heather holds ye like a cousin.',
+        toast_home: 'Bloom kin — +{hp} HP, soft as a blanket.',
+      },
+      pine_pull: {
+        caption: 'The pines lean in, tryin\' tae tell ye a secret.',
+        toast: 'Pine pull — pickups lean yer way for a bit.',
+        caption_home: 'Resin and shadow — the wood tugs the world toward yer pouch.',
+        toast_home: 'Under the needles — pickups drift yer way a while.',
+      },
+      crow_bargain: {
+        caption: 'A crow negotiates overhead. Ye win this round.',
+        toast: 'Crow bargain — +{gold}g, receipt optional.',
+        caption_home: 'Open sky, purple ground — the crow likes the odds on heather.',
+        toast_home: 'Heather crow — +{gold}g, witnessed by the wind alone.',
+      },
+      distant_tune: {
+        caption: 'Somewhere a practice chanter\'s warblin\'. Free concert.',
+        toast: 'Distant tune — +{xp} XP for listenin\'.',
+        caption_home: 'The chanter hides in the pine; the tune still finds yer ear.',
+        toast_home: 'Forest tune — +{xp} XP, smuggled through the branches.',
+      },
+      warm_stone: {
+        caption: 'Ye find a dry stone still holdin\' yesterday\'s sun.',
+        toast: 'Warm stone — +{hp} HP, like a mug o\' tea.',
+        caption_home: 'Squat on the bog-stone — damp air, dry heart, warm blood.',
+        toast_home: 'Bog stone — +{hp} HP, like heat from nowhere.',
+      },
+      wind_shift: {
+        caption: 'The wind turns; the moor rearranges its furniture.',
+        toast: 'Wind shift — the glen brings bits and bobs closer.',
+        caption_home: 'The loch wind rearranges the shore — and yer reach.',
+        toast_home: 'Shore gust — the waterline brings the shinies nearer.',
+      },
+      amber_glow: {
+        caption: 'The peat holds a slow ember — patience pays in coin.',
+        toast: 'Amber glow — +{gold}g from the patient bog.',
+        caption_home: 'Deep bog amber — the squelch saved this wan just for ye.',
+        toast_home: 'Home peat — +{gold}g, warm as a range.',
+      },
+      boon_at_ceiling: 'XP bar\'s chokker — have +{gold}g instead, ya legend.',
     },
     /** Run-start identity handoff (variant + intent); shown as an early toast in GameScene. */
     run: {
@@ -455,6 +535,7 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Heavy footsteps. That\'s no\' a rambler.',
         c: 'The moor\'s gone quiet. Bad sign, that.',
         d: 'Aw naw. Here we go.',
+        e: 'Big silhouette on the horizon — nae a sheep.',
         // ── Per-boss character warnings (Limmy bite). Each boss gets
         //    three distinct lines anchored to their fantasy. ──
         gordon: {
@@ -488,36 +569,43 @@ export const EN_STRINGS: LocaleTree = {
         b: 'One mair dunt an\' it\'s lights oot.',
         c: 'Gie it laldy — nothin\' tae lose noo.',
         d: 'Hangin\' by a thistle.',
+        e: 'Last-chance weather — make it count.',
         iron_belly: {
           a: 'The wall\'s shakin\' — mind the cracks.',
           b: 'Even iron rings when it\'s nearly through.',
           c: 'Belly\'s loud — nae in a guid way.',
+          d: 'One mair chip an\' the myth cracks.',
         },
         moor_runner: {
           a: 'Legs owe a debt — pay in blood or bail.',
           b: 'Ye\'re slower than yer shadow noo.',
           c: 'Run\'s ower if ye don\'t move smarter.',
+          d: 'Sprint or story — pick one.',
         },
         glen_forager: {
           a: 'Satchel\'s light — so are ye, almost.',
           b: 'Wrong pick, wrang moment. Survive it.',
           c: 'Forager\'s gambit — dice are up.',
+          d: 'Empty pockets, emptier veins — move.',
         },
         surefoot: {
           a: 'Footing slipped — find it or fold.',
           b: 'Stones turned traitor underhoof.',
           c: 'Balance is a luxury ye dinnae have.',
+          d: 'Wobble once mair an\' it\'s ower.',
         },
         pipe_breath: {
           a: 'Wind knocked oot — pipe\'s whistlin\' empty.',
           b: 'One bad note from silence. Breathe.',
           c: 'Lungs say stop; pride says nae.',
+          d: 'Reed\'s cracked — blow careful noo.',
         },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
         b: 'That\'s him telt.',
         c: 'Lang may yir wee lum reek, ya beauty.',
+        d: 'Boss doon — the glen exhales.',
         // ── Per-boss celebration (hearth warmth). Victory voice. ──
         gordon: {
           a: 'Telt Gordon where tae stick the cleaver.',
@@ -549,45 +637,54 @@ export const EN_STRINGS: LocaleTree = {
         a: 'Now THAT\'S a proper weapon.',
         b: 'Legendary. As it should be.',
         c: 'The moor trembles. Good.',
+        d: 'That\'s the glow-up the legends promised.',
         thistle_shot: {
           a: 'Thistle barbs — sharpened tae spite.',
           b: 'Nae a soft prick noo. That\'s the spirit.',
           c: 'Every needle earned its legend.',
+          d: 'Thistle crown — naebody kneels.',
         },
         bagpipe_blast: {
           a: 'Drone turned weapon — the glen\'s deafened.',
           b: 'Blow till the windows rattle. Guid.',
           c: 'That\'s nae a tune — that\'s a declaration.',
+          d: 'Drone\'s no\' background — it\'s verdict.',
         },
         caber_toss: {
           a: 'Tree\'s away — pure lumber justice.',
           b: 'Heave ho — the moor clears a path.',
           c: 'Spinning timber — naebody stands twice.',
+          d: 'Timber\'s airborne — physics is on yer side.',
         },
         scotch_mist: {
           a: 'Mist wi\' teeth. Lovely.',
           b: 'Ye cannae see it — but it sees them.',
           c: 'Weather turned nasty. Their problem.',
+          d: 'Haar wi\' teeth — bonnie an\' cruel.',
         },
         haggis_hurler: {
           a: 'Haggis evolved — chaos o\' the finest kind.',
           b: 'Naebody survives a well-aimed supper.',
           c: 'The platter\'s lethal noo. Fair.',
+          d: 'Supper\'s evolved — they\'re the side dish.',
         },
         nessie_tentacle: {
           a: 'Loch\'s lendin\' a hand. Tentacle tax paid.',
           b: 'Somethin\' grabbed the deep end — an\' it\'s yers.',
           c: 'Splash o\' legend. Splash o\' pain.',
+          d: 'Deep water diplomacy — firm handshake.',
         },
         claymore: {
           a: 'Big sword energy. The moor approves.',
           b: 'Two-handed trouble — swing once, end it.',
           c: 'Steel wi\' stories. Mair stories comin\'.',
+          d: 'Claymore sings — choir o\' one.',
         },
         bagpipes: {
           a: 'The pipes woke up proper. Run.',
           b: 'Skirl turned slaughter — beautiful.',
           c: 'Every note a cut. Pure ceilidh violence.',
+          d: 'Ceilidh\'s cancelled — fer them.',
         },
       },
       curse_start: {
@@ -595,26 +692,31 @@ export const EN_STRINGS: LocaleTree = {
           a: 'The moor remembers yir bargain.',
           b: 'Curse taken — nae takin\' it back noo.',
           c: 'Paid in teeth fer gold. Let\'s see it.',
+          d: 'Deal\'s sealed — the glen\'s collectin\' interest.',
         },
         heavy_legs: {
           a: 'Heavy legs, heavier purse. Ye asked fer it.',
           b: 'The moor\'s pullin\' at yer boots noo. Worth the gold?',
           c: 'Slower trot — shinier haul. That\'s the deal.',
+          d: 'Boots feel like treacle — gold\'s heavy that way.',
         },
         thin_hide: {
           a: 'Thin hide, thick trouble. Mind the dunts.',
           b: 'Every nip stings louder. Ye wanted the bonus.',
           c: 'Paper skin, metal nerve. Off ye go.',
+          d: 'Skin\'s paper — nerves are steel. Supposedly.',
         },
         restless_spirits: {
           a: 'Restless spirits — they\'re aw comin\' fer a blether.',
           b: 'Mair boots on the heather. Ye paid fer the crowd.',
           c: 'The glen\'s busier than a ceilidh. Enjoy.',
+          d: 'Extra company — paid admission, nae refunds.',
         },
         empty_larder: {
           a: 'Empty larder start — belly rumblin\', pockets jinglin\'.',
           b: 'Less in the tank, mair in the purse. Fair swap?',
           c: 'Ye skipped breakfast fer gold. Classic.',
+          d: 'Hunger\'s loud — purse is louder. Ye chose.',
         },
       },
       level_up: {
@@ -622,61 +724,74 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Anither notch. Nae messin\'.',
         c: 'The moor\'s takin\' notes.',
         d: 'Yer gettin\' the hang o\' this.',
-        // ── Variant voice — classic uses the generic a–d lines only. ──
+        e: 'Levelled up — the glen noticed.',
+        f: 'Mair in the tank — spend it wisely.',
+        // ── Variant voice — classic uses the generic a–f lines only. ──
         iron_belly: {
           a: 'Another layer tae the wall.',
           b: 'Bigger, stronger, steadier.',
           c: 'The belly remembers every dunt.',
+          d: 'Iron thickens — so does the legend.',
         },
         moor_runner: {
           a: 'Feet gettin\' faster by the minute.',
           b: 'Pure flyin\'. Nae stop sign in sight.',
           c: 'Moor\'s a blur. Lovely.',
+          d: 'Cadence up — the heather blurs.',
         },
         glen_forager: {
           a: 'Level up — pockets get deeper, appetite stays.',
           b: 'Mair room in the satchel. Guid haul ahead.',
           c: 'Ye grow like a bramble — sharp an\' useful.',
+          d: 'Satchel straps stretch — greed approved.',
         },
         surefoot: {
           a: 'Level up — feet remember every stone.',
           b: 'Steadier gait — the moor\'s nae movin\' ye easy.',
           c: 'Surefoot, surer heid. On ye go.',
+          d: 'Footprint widens — confidence, nae swagger.',
         },
         pipe_breath: {
           a: 'Level up — lungs like bellows noo.',
           b: 'Breath holds the tune; the tune holds the fight.',
           c: 'Wind in the chest, fire in the hooves.',
+          d: 'Reed holds mair — so dae ye.',
         },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
         b: 'Hoof prints in the heather. Game on.',
         c: 'That\'s the ice broken.',
+        d: 'First notch on the moor — ink\'s still wet.',
         iron_belly: {
           a: 'First dunt bounced — the belly never flinched.',
           b: 'Wall\'s up; one enemy doon. Business.',
           c: 'Iron held. They didnae.',
+          d: 'First dent — the myth holds.',
         },
         moor_runner: {
           a: 'First kill at a canter — habits already.',
           b: 'Ye didn\'t stop tae chat. Respect.',
           c: 'Speed merchant: first sale complete.',
+          d: 'Opening sprint — nae warm-up.',
         },
         glen_forager: {
           a: 'First harvest — satchel\'s nae empty noo.',
           b: 'Picked clean. One less pest.',
           c: 'Taste o\' the glen — bitter fer them.',
+          d: 'First berry — sharp, as intended.',
         },
         surefoot: {
           a: 'First strike — planted, nae slidin\'.',
           b: 'Footing held. They didnae.',
           c: 'Clean step, clean finish.',
+          d: 'First root — nae wobble.',
         },
         pipe_breath: {
           a: 'First note cut deep — nae encore.',
           b: 'Breath out, problem doon.',
           c: 'Drone o\' doom. First verse.',
+          d: 'Opening skirl — crowd o\' one.',
         },
       },
       kill_streak: {
@@ -684,85 +799,154 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Ye\'re on fire, wee man.',
         c: 'Cannae stop, will nae stop.',
         d: 'The glen\'s tremblin\'.',
+        e: 'Combo\'s a ceilidh — naebody leaves early.',
         iron_belly: {
           a: 'Chain keeps goin\' — the wall\'s nae tired.',
           b: 'Momentum like a ceilidh table — nae stoppin\'.',
           c: 'Streak\'s a habit noo. Belly approves.',
+          d: 'Wall\'s a drum — ye\'re the solo.',
         },
         moor_runner: {
           a: 'Ye\'re stringin\' them like fence posts.',
           b: 'Hot streak — cold feet nae invited.',
           c: 'Runnin\' tally — and ye\'re still runnin\'.',
+          d: 'Lap record — blood edition.',
         },
         glen_forager: {
           a: 'Harvest mode: nae a berry left standin\'.',
           b: 'Combo\'s a full basket — keep pickin\'.',
           c: 'Streak\'s ripe — dinnae let it rot.',
+          d: 'Basket overflow — guid problem.',
         },
         surefoot: {
           a: 'Rhythm locked — nae wobble in the chain.',
           b: 'One after another — feet knew the route.',
           c: 'Steady slaughter. Elegant, almost.',
+          d: 'Metronome o\' mayhem — tick tick.',
         },
         pipe_breath: {
           a: 'Streak\'s a tune — ye\'re on the chorus.',
           b: 'Breath holds; the beat keeps killin\'.',
           c: 'Rollin\' riff o\' ruin. Lovely.',
+          d: 'Crescendo — nae conductor needed.',
         },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
         b: 'Still here. Still kickin\'.',
         c: 'Steady the heid. Yer awright.',
+        d: 'Colour back — the moor relents.',
         iron_belly: {
           a: 'Wall\'s back — paint it thicker next time.',
           b: 'Iron remembers how tae hold.',
           c: 'Shrugged it off. Mostly.',
+          d: 'Dents polish oot — eventually.',
         },
         moor_runner: {
           a: 'Feet found the beat again.',
           b: 'Back in stride — nae funeral yet.',
           c: 'Second wind — third if ye need it.',
+          d: 'Cadence returns — mercy granted.',
         },
         glen_forager: {
           a: 'Satchel still shut — that\'s a win.',
           b: 'Ye lived tae forage anither day.',
           c: 'Bit o\' colour back in the cheeks.',
+          d: 'Larder waits — ye earned the walk.',
         },
         surefoot: {
           a: 'Planted again — guid.',
           b: 'Footing honest. Heid follows.',
           c: 'Steady as ye meant tae be.',
+          d: 'Roots find stone — ye\'re upright.',
         },
         pipe_breath: {
           a: 'Breath back in the tune.',
           b: 'Pipes warm — play on.',
           c: 'Air\'s yours again. Use it.',
+          d: 'Reed dries — next note\'s yours.',
         },
       },
       biome_change: {
         a: 'Different smell tae the air here.',
         b: 'New bit o\' moor. Watch yer step.',
         c: 'The terrain\'s shiftin\'.',
+        d: 'Postcode changed — same attitude.',
         bog: {
           a: 'Squelch. The bog\'s got opinions aboot yer boots.',
           b: 'Peat underfoot — dinnae rush it.',
           c: 'Wet air, thick thoughts. Classic bog.',
+          d: 'Mud tax — pay in dignity.',
         },
         loch: {
           a: 'Loch breath — cauld enough tae sharpen ye.',
           b: 'Water\'s watchin\' from the edge. Always.',
           c: 'Ripple weather. Mind the pull.',
+          d: 'Shoreline politics — ye\'re a tourist.',
         },
         pine: {
           a: 'Needles underhoof — the forest\'s carpet.',
           b: 'Tall shadows. Short temper if ye rush.',
           c: 'Sap an\' silence. Nae a bad combo.',
+          d: 'Canopy closes — mind yer heid.',
         },
         heather: {
           a: 'Heather\'s up — purple haze, open sky.',
           b: 'Wind off the tops — ye cannae hide here.',
           c: 'Open moor, honest fight. Lovely.',
+          d: 'Tops are honest — nae cover, nae lies.',
+        },
+      },
+      moor_moment: {
+        a: 'The moor noticed ye. That\'s rare.',
+        b: 'Gift frae the glen — dinnae spend it a\' at once.',
+        c: 'Hearth beat — the land\'s still payin\' attention.',
+        d: 'Somethin\' kind tumbled oot the weather.',
+        e: 'The glen tipped its hat — briefly, but sincerely.',
+        f: 'Luck\'s a loan — spend it before it notices.',
+        home_bog: {
+          a: 'Standin\' in the squelch — the peat pays interest.',
+          b: 'Bog kin — the mud remembers yer name.',
+          c: 'Deep peat blessing. Yer boots earned it.',
+          d: 'Kin rates — squelch discount applied.',
+        },
+        home_loch: {
+          a: 'Loch glass — the water tipped ye a favour.',
+          b: 'Shore gift: the deep disnae charge interest.',
+          c: 'Yir reflection smiled back. Briefly.',
+          d: 'Home water — nae strangers at this shore.',
+        },
+        home_pine: {
+          a: 'Needle kin — the wood leans yer way.',
+          b: 'Sap on the wind — that\'s a pine handshake.',
+          c: 'Forest tithe: paid in kindness.',
+          d: 'Needle kin — bark remembers the old songs.',
+        },
+        home_heather: {
+          a: 'Bloom kin — the purple hush held ye tight.',
+          b: 'Heather tithe: soft ground, sharp fortune.',
+          c: 'Open sky tithe — nae roof but plenty heart.',
+          d: 'Purple kin — wind off the tops knows yer name.',
+        },
+        bog: {
+          a: 'Squelch brought luck — bog\'s generous the day.',
+          b: 'Peat air, lucky air.',
+          c: 'Mud kissed yer boots — say thank ye.',
+        },
+        loch: {
+          a: 'Water luck — even dry boots get a splash.',
+          b: 'Ripple paid ye — nae receipt.',
+          c: 'Loch winked — naebody else saw it.',
+        },
+        pine: {
+          a: 'Shadow luck — the trees shared a crumb.',
+          b: 'Sap-stained fortune. Guid.',
+          c: 'Bough nodded — contract sealed.',
+        },
+        heather: {
+          a: 'Wind off the tops — carried a coin o\' cheer.',
+          b: 'Purple hour — the moor tipped its hat.',
+          c: 'Tops gave a whisper — listen close.',
         },
       },
       idle: {
@@ -770,30 +954,37 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Listen tae the wind.',
         c: 'A wee breather.',
         d: 'Somethin\'s brewin\'. Always is.',
+        e: 'Calm afore the ceilidh — savour it.',
+        f: 'The moor hums low — dinnae interrupt.',
         iron_belly: {
           a: 'Even the wall needs a sit-down.',
           b: 'Belly\'s quiet — dinnae trust it fully.',
           c: 'Rest is tactical. So\'s pie.',
+          d: 'Iron naps — nightmares don\'t.',
         },
         moor_runner: {
           a: 'Stillness itch — feet want the next lap.',
           b: 'Quiet\'s just the startin\' gun loadin\'.',
           c: 'Breathin\' room — then back tae blur.',
+          d: 'Idle hooves — guilty hooves.',
         },
         glen_forager: {
           a: 'Eyes still roamin\' — habit, that.',
           b: 'Nae pickin\' just noo. Patience, thief.',
           c: 'Satchel\'s patient. The moor isnae.',
+          d: 'Hands empty — eyes full. Fer noo.',
         },
         surefoot: {
           a: 'Standin\' still — but the map keeps turnin\'.',
           b: 'Silence is just slow footwork.',
           c: 'Calm feet, sharp ears.',
+          d: 'Pause is posture — nae weakness.',
         },
         pipe_breath: {
           a: 'Rest between phrases — still music.',
           b: 'Hums in the chest — nae audience needed.',
           c: 'Quiet stage — pipes tune themselves.',
+          d: 'Silence is the rest — nae the song.',
         },
       },
     },
@@ -959,6 +1150,18 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Legend Forged',
       description: 'Evolved a weapon. Somethin\' ancient stirred — and it\'s got teeth.',
     },
+    ach_codex_half: {
+      title: 'Naturalist',
+      description: 'Logged at least half the moor\'s beasties in the cull codex.',
+    },
+    ach_codex_loremaster: {
+      title: 'Loremaster o\' the Moor',
+      description: 'Every last creature type — first blood recorded. The book is complete.',
+    },
+    ach_moor_hearth_30: {
+      title: 'Hearth-Kept',
+      description: 'Thirty moor gifts accepted — the glen counts ye as kin.',
+    },
     ach_all_bosses: {
       title: 'Cleaned Hoose',
       description: 'Every last wan o\' them, floored in a single run.',
@@ -968,6 +1171,9 @@ export const EN_STRINGS: LocaleTree = {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
     gem: 'Gather gems to level. Max a weapon plus its paired curio, then pop a treasure chest for a legendary glow-up.',
     drift: 'Yir wee haggis drifts clockwise — crooked legs! Lean into it.',
+    /** One-shot when the first affixed gold elite spawns — `{name}` is the trait title. */
+    elite_affix_first: '{name} — gold elites carry a trait. The tag by the bar tells ye which.',
+    moor_moment_first: 'The moor gives wee gifts noo and then — a line, a boon, a breath. Bide wi it.',
   },
   weapon: {
     thistle_shot: {
@@ -1205,6 +1411,10 @@ export const EN_STRINGS: LocaleTree = {
     boost_xp: {
       name: 'Wisdom of the Highlands',
       description: 'The moor teaches, if ye\'ll listen (+15% XP from enemies).',
+    },
+    boost_luck: {
+      name: 'Heather Fortune',
+      description: 'The glen rolls a shade kinder — +8 luck on level-up draws (rarer picks, stacks wi\' curios).',
     },
     // Templates used by buildCardPool for level-up cards.
     // Space between "Lv" and the number to match ui.hud.level_fmt for visual

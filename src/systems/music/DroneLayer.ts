@@ -75,10 +75,13 @@ export class DroneLayer {
     intensity: number,
     danger: number,
     triumph: number,
-    transitionSec: number = 2.0
+    transitionSec: number = 2.0,
+    /** 0 = bog peat, 1 = heather brightness — widens pad breath. */
+    biomeTimbre: number = 0.5
   ): void {
     if (!this.osc1 || !this.osc2 || !this.padGain || !this.filter || !this.subGain) return;
     const t = ctx.currentTime + transitionSec;
+    const moor = Math.max(0, Math.min(1, biomeTimbre));
 
     // Volume: silent at start, fades in as intensity grows
     // Only becomes noticeable after intensity > 0.15 (~3 minutes in)
@@ -89,8 +92,8 @@ export class DroneLayer {
     const subVol = Math.max(0, (intensity - 0.3) * 0.12);
     this.subGain.gain.linearRampToValueAtTime(subVol, t);
 
-    // Filter opens slowly with intensity
-    const freq = 400 + intensity * 600 + triumph * 400;
+    // Filter opens slowly with intensity; open biomes get a little more air
+    const freq = 400 + intensity * 600 + triumph * 400 + (moor - 0.5) * 220;
     this.filter.frequency.linearRampToValueAtTime(freq, t);
 
     // Danger: detune widens (dissonant), pitch drops
@@ -99,6 +102,15 @@ export class DroneLayer {
 
     const pitchDrop = danger * 8;
     this.osc1.frequency.linearRampToValueAtTime(this.BASE_FREQ - pitchDrop, t);
+
+    // Pad “breathing” deepens with triumph and open biomes — still subliminal.
+    if (this.lfoGain) {
+      const lfoDepth = 0.022 + triumph * 0.028 + moor * 0.02 + intensity * 0.012;
+      this.lfoGain.gain.linearRampToValueAtTime(
+        Math.min(0.065, lfoDepth),
+        t,
+      );
+    }
   }
 
   stop(): void {

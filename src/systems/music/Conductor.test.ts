@@ -5,7 +5,7 @@ function baseState(overrides: Partial<GameMusicState> = {}): GameMusicState {
   return {
     hp: 100, maxHp: 100, gameTimeSec: 0,
     enemyCount: 0, comboCount: 0, killCount: 0,
-    bossActive: false, ...overrides,
+    bossActive: false, biomeTimbre: 0.5, ...overrides,
   };
 }
 
@@ -50,6 +50,20 @@ describe('Conductor', () => {
       const before = c.intensity;
       pumpMood(c, 16, baseState({ gameTimeSec: 1200, enemyCount: 250 }), 100);
       expect(c.intensity).toBe(before);
+    });
+
+    it('smooths biome timbre toward target', () => {
+      const c = new Conductor();
+      expect(c.getSmoothedBiomeTimbre()).toBeCloseTo(0.45, 2);
+      pumpMood(c, 16, baseState({ biomeTimbre: 1.0 }), 1200);
+      expect(c.getSmoothedBiomeTimbre()).toBeGreaterThan(0.85);
+    });
+
+    it('still lerps biome timbre while in resolution mode', () => {
+      const c = new Conductor();
+      c.enterResolution();
+      pumpMood(c, 16, baseState({ biomeTimbre: 0.95 }), 900);
+      expect(c.getSmoothedBiomeTimbre()).toBeGreaterThan(0.65);
     });
 
     it('hpFrac defaults to 1 when maxHp is 0', () => {
@@ -116,7 +130,7 @@ describe('Conductor', () => {
       mathRandomSpy.mockRestore();
     });
 
-    it('returns freq, velocity, intervalSec', () => {
+    it('returns freq, velocity, intervalSec, releaseSec', () => {
       const c = new Conductor();
       const note = c.nextNote();
       expect(note).not.toBeNull();
@@ -124,6 +138,15 @@ describe('Conductor', () => {
       expect(note!.velocity).toBeGreaterThanOrEqual(0.1);
       expect(note!.velocity).toBeLessThanOrEqual(0.8);
       expect(note!.intervalSec).toBeGreaterThan(0);
+      expect(note!.releaseSec).toBeGreaterThan(1);
+      expect(note!.releaseSec).toBeLessThanOrEqual(2.8);
+    });
+
+    it('longer releases when moor/evolution accents present in state', () => {
+      const c = new Conductor();
+      c.updateMood(16, baseState({ moorBloom: 0.95, evolutionGlow: 0.9 }));
+      const note = c.nextNote()!;
+      expect(note.releaseSec).toBeGreaterThan(2.1);
     });
 
     it('freq is from Dorian scale', () => {

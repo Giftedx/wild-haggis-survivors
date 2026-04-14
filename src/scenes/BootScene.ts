@@ -9,6 +9,7 @@ import {
 } from '../data/variants';
 import { achievementManager } from '../core/AchievementManager';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
+import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { validateAndRepairBootTextures } from '../core/AssetValidator';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
 import { SaveManager } from '../core/SaveManager';
@@ -46,6 +47,7 @@ export class BootScene extends Phaser.Scene {
     }
 
     getAnalyticsManager().ensureBusHandlersStarted();
+    musicEngine.ensureBusHandlersStarted();
 
     // Initialize global meta progression exactly once (above the Scene lifecycle).
     metaProgressSystem.start();
@@ -236,6 +238,53 @@ export class BootScene extends Phaser.Scene {
     this.createWeaponIcons();
     this.createUpgradeCardIcons();
     this.createHudChromeTextures();
+    this.createFilmGrainTexture();
+  }
+
+  /**
+   * Seamless film-grain tile for gameplay — warm specks + rare dark pits.
+   * Rendered once; GameScene stretches it across the UI viewport (scroll 0).
+   */
+  private createFilmGrainTexture(): void {
+    if (this.textures.exists('film_grain')) return;
+    const size = 128;
+    const tex = this.textures.createCanvas('film_grain', size, size);
+    if (!tex) return;
+    const ctx = tex.getContext();
+    if (!ctx) return;
+    ctx.clearRect(0, 0, size, size);
+    for (let i = 0; i < 10000; i++) {
+      const x = Math.floor(Math.random() * size);
+      const y = Math.floor(Math.random() * size);
+      const hi = Math.random() * 0.13;
+      ctx.fillStyle = `rgba(255,245,220,${hi})`;
+      ctx.fillRect(x, y, 1, 1);
+      if (Math.random() > 0.52) {
+        const lo = Math.random() * 0.11;
+        ctx.fillStyle = `rgba(6,10,22,${lo})`;
+        ctx.fillRect(x, y, 1, 1);
+      }
+    }
+    // Larger, rarer specks — photographic clumping when stretched full-screen.
+    for (let i = 0; i < 900; i++) {
+      const x = Math.floor(Math.random() * (size - 2));
+      const y = Math.floor(Math.random() * (size - 2));
+      const a = Math.random() * 0.045;
+      ctx.fillStyle = `rgba(255,238,210,${a})`;
+      ctx.fillRect(x, y, 2, 2);
+      if (Math.random() > 0.45) {
+        ctx.fillStyle = `rgba(12,18,40,${a * 0.85})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+    }
+    // Subtle violet fringe (very low) — stops the grain feeling purely monochrome.
+    for (let i = 0; i < 3200; i++) {
+      const x = Math.floor(Math.random() * size);
+      const y = Math.floor(Math.random() * size);
+      ctx.fillStyle = `rgba(180,160,220,${Math.random() * 0.028})`;
+      ctx.fillRect(x, y, 1, 1);
+    }
+    tex.refresh();
   }
 
   /** Small HUD sprites (shield, dash pips) — avoids emoji / font-dependent glyphs.

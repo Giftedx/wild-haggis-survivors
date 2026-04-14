@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildChronicleCodex,
   computeMilestones,
   detectMood,
   formatClock,
+  formatCodexNamesLine,
   formatDurationLong,
   formatRelativeTime,
+  getCodexRosterTotal,
   lifetimeTotals,
 } from './chronicleAggregates';
 import type { RunHistoryEntry, SaveData } from '../utils/save';
@@ -189,6 +192,27 @@ describe('detectMood', () => {
     ];
     // 2 trailing losses — under loss_streak's 3-threshold, so trend wins.
     expect(detectMood(h)).toBe('declining');
+  });
+});
+
+describe('codex chronicle', () => {
+  it('roster total matches enemy types plus bosses (unique keys)', () => {
+    const n = getCodexRosterTotal();
+    expect(n).toBeGreaterThan(10);
+    expect(getCodexRosterTotal()).toBe(n);
+  });
+
+  it('buildChronicleCodex sorts names and counts discovered', () => {
+    const c = buildChronicleCodex(['chef', 'tourist']);
+    expect(c.discoveredCount).toBe(2);
+    expect(c.rosterTotal).toBe(getCodexRosterTotal());
+    expect(c.discoveredNames[0] < c.discoveredNames[1]).toBe(true);
+  });
+
+  it('formatCodexNamesLine truncates long lists', () => {
+    const long = formatCodexNamesLine(['Alpha', 'Beta', 'Gamma'], 12);
+    expect(long.endsWith('…')).toBe(true);
+    expect(long.length).toBeLessThanOrEqual(12);
   });
 });
 

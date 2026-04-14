@@ -43,6 +43,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private bonusDriftReduction: number = 0;  // Fraction reduced (0-1)
   private bonusMaxHp: number = 0;
   private bonusPickupRadius: number = 0;
+  /** Moor moment — temporary vacuum wider than level scaling; ticks down in update(). */
+  private moorMomentPickupFlat: number = 0;
+  private moorMomentPickupRemainingMs: number = 0;
   private bonusDamageMultiplier: number = 1.0;  // Global damage multiplier
   private bonusAoeMultiplier: number = 1.0;     // AoE radius multiplier
   private bonusAttackSpeedMultiplier: number = 1.0; // Cooldown multiplier
@@ -58,6 +61,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private bonusProjectileSpeedMul: number = 1.0;   // Projectile speed multiplier
   private bonusKnockbackMul: number = 1.0;         // Knockback multiplier
   private bonusBossHealFrac: number = 0;           // HP% healed on boss kill
+  /** Additive luck bonus passed to level-up card draw weights (same scale as sporran +15). */
+  private bonusLuckDraw: number = 0;
   private shieldActive: boolean = false;           // One-time death prevention
   private shieldCooldown: number = 0;              // Shield recharge timer
   private readonly SHIELD_COOLDOWN_MS = BALANCE.player.shieldCooldownMs;
@@ -270,6 +275,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
+    if (this.moorMomentPickupRemainingMs > 0) {
+      this.moorMomentPickupRemainingMs -= scaledDelta;
+      if (this.moorMomentPickupRemainingMs <= 0) {
+        this.moorMomentPickupRemainingMs = 0;
+        this.moorMomentPickupFlat = 0;
+        this.recalcStats();
+      }
+    }
+
     // Skip normal movement during dash — velocity is set by tryDash
     if (this.isDashing) {
       this.clampInsideWorld();
@@ -387,8 +401,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Max HP: base + upgrade bonus (level doesn't reduce HP)
     this.maxHp = this.runBaseMaxHp + this.bonusMaxHp;
 
-    // Pickup radius: base + upgrade bonus + 3% per level (satisfying vacuum growth)
-    this.pickupRadius = (this.runBasePickup + this.bonusPickupRadius) * (1 + 0.03 * (level - 1));
+    // Pickup radius: base + upgrade bonus + moor pulse + 3% per level (satisfying vacuum growth)
+    this.pickupRadius = (this.runBasePickup + this.bonusPickupRadius + this.moorMomentPickupFlat)
+      * (1 + 0.03 * (level - 1));
   }
 
   takeDamage(amount: number): boolean {
@@ -475,6 +490,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.bonusXpMultiplier += fraction;
   }
 
+  getLuckDrawBonus(): number {
+    return this.bonusLuckDraw;
+  }
+
+  addLuckDrawBonus(amount: number): void {
+    this.bonusLuckDraw += amount;
+  }
+
   addLifesteal(amount: number): void {
     // Cap at 3 HP/kill — at ~10 kills/sec late-game, 3 lifesteal = 30 HP/sec
     // which combined with regen cap (5) keeps max sustain around 35 HP/sec
@@ -549,6 +572,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   addPickupRadius(amount: number): void {
     this.bonusPickupRadius += amount;
+    this.recalcStats();
+  }
+
+  /** Short-lived pickup ring from moor moments — refreshes if called again while active. */
+  grantMoorMomentMagnet(flatPx: number, durationMs: number): void {
+    this.moorMomentPickupFlat = Math.max(this.moorMomentPickupFlat, flatPx);
+    this.moorMomentPickupRemainingMs = Math.max(this.moorMomentPickupRemainingMs, durationMs);
     this.recalcStats();
   }
 

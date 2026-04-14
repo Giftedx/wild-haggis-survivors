@@ -108,7 +108,7 @@ describe('Run hydration (mid-run persistence)', () => {
     const storage = new MemoryStorage();
     const mgr = new SaveManager({ storage, key: 't' });
     mgr.save({
-      saveVersion: 8,
+      saveVersion: 9,
       totalKills: 10,
       totalKillsSpent: 0,
       dailyChallenge: null,
@@ -118,7 +118,11 @@ describe('Run hydration (mid-run persistence)', () => {
       unlockedAchievements: [],
       hasCompletedTutorial: true,
       hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      moorMomentsLifetime: 0,
       runHistory: [],
+      codexCulledKeys: [],
     });
     mgr.saveActiveRun(tenMinuteRun());
 

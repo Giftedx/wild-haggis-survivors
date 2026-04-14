@@ -72,6 +72,19 @@ export const BALANCE = {
     projectilePrewarm: 30,
     trailEveryNFrames: 3,
     minEffectiveCooldownMs: 50,
+    /**
+     * Max flying projectiles per weapon key (readability + pool pressure).
+     * Evolved bursts respect the same cap — extra shots are skipped quietly.
+     */
+    maxSimultaneousProjectilesPerWeapon: 26,
+  },
+  director: {
+    /** Kill-pressure adds this much to elite spawn chance (clamped in SpawnSystem). */
+    killPressureEliteBonusMax: 0.065,
+    /** Added to pressure accumulator per non-boss kill (decays every frame). */
+    killPressurePerKill: 0.038,
+    /** Exponential decay per second — ~10s half-life at 60fps-scale deltas. */
+    killPressureDecayPerSec: 0.11,
   },
   player: {
     dashCooldownMs: 1600,
@@ -207,6 +220,9 @@ export type AchievementId =
   | 'ach_defeat_taxman'
   | 'ach_first_victory'
   | 'ach_first_evolution'
+  | 'ach_codex_half'
+  | 'ach_codex_loremaster'
+  | 'ach_moor_hearth_30'
   | 'ach_all_bosses';
 
 export const ACHIEVEMENT_DEFS: Record<
@@ -247,6 +263,18 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_first_evolution: {
     titleKey: 'achievement.ach_first_evolution.title',
     descriptionKey: 'achievement.ach_first_evolution.description',
+  },
+  ach_codex_half: {
+    titleKey: 'achievement.ach_codex_half.title',
+    descriptionKey: 'achievement.ach_codex_half.description',
+  },
+  ach_codex_loremaster: {
+    titleKey: 'achievement.ach_codex_loremaster.title',
+    descriptionKey: 'achievement.ach_codex_loremaster.description',
+  },
+  ach_moor_hearth_30: {
+    titleKey: 'achievement.ach_moor_hearth_30.title',
+    descriptionKey: 'achievement.ach_moor_hearth_30.description',
   },
   ach_all_bosses: {
     titleKey: 'achievement.ach_all_bosses.title',

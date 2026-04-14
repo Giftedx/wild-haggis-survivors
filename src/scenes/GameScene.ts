@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME } from '../config';
+import { GAME, XP } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
@@ -14,7 +14,7 @@ import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { recordRun, loadSave, RunResult, RunSummary, RunHistoryContext } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
-import { BOSSES } from '../data/enemies';
+import { BOSSES, getEnemyDisplayName } from '../data/enemies';
 import { formatRunVariantLabel, getVariantByKey, VariantDef } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
@@ -46,7 +46,17 @@ import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curse
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TutorialSystem } from '../systems/TutorialSystem';
-import type { BiomeId } from '../data/biomes';
+import type { EliteAffixId } from '../data/eliteAffixes';
+import { BIOMES, type BiomeId } from '../data/biomes';
+import {
+  MOOR_HOME_REWARD,
+  MOOR_MOMENT_BURST_TINT,
+  MOOR_MOMENT_FIRST_SEC,
+  MOOR_MOMENT_GAP_BASE_SEC,
+  MOOR_MOMENT_GAP_JITTER_SEC,
+  shuffleMoorMoments,
+  type MoorMomentDef,
+} from '../data/moorMoments';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { PauseMenu } from './game/PauseMenu';
@@ -106,6 +116,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bossKillCount: number = 0;
   private bossGoldEarned: number = 0;
   private coinGoldEarned: number = 0;
+  /** Batched toast for max-level XP → gold conversion (avoids spam). */
+  private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   private pendingChests: Array<{ golden: boolean }> = [];
   private victoryPending: boolean = false;
@@ -164,6 +176,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
     hp: 0, maxHp: 0, gameTimeSec: 0, enemyCount: 0, comboCount: 0, killCount: 0, bossActive: false,
+    biomeTimbre: 0.45,
   };
   /** Reused HUD weapon rows — mutated in place; length capped at max equippable weapons. */
   private readonly hudWeaponScratch: Array<{
@@ -192,6 +205,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastEmittedRunSecond = -1;
   private achievementUnsub: (() => void) | null = null;
   private bossEnrageUnsub: (() => void) | null = null;
+  private codexFirstCullUnsub: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
@@ -200,11 +214,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
+  /** Subtle scroll-locked grain — `film_grain` from BootScene; omitted in high-contrast. */
+  private filmGrainImage: Phaser.GameObjects.Image | null = null;
+  /** `scale.resize` — relayout grain when the canvas viewport changes (window drag, DPI, rotate). */
+  private filmGrainResizeHandler?: () => void;
+  /** Wall-clock debounce — must not use `scene.time.delayedCall` (respects gameplay pause / timeScale 0). */
+  private filmGrainResizeDebounceId: ReturnType<typeof setTimeout> | null = null;
   private banter: BanterSystem | null = null;
   private firstKillSeen = false;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
+
+  private moorMomentSchedule: MoorMomentDef[] = [];
+  private moorMomentIndex = 0;
+  private nextMoorMomentAtSec = MOOR_MOMENT_FIRST_SEC;
 
   constructor() {
     super({ key: 'Game' });
@@ -213,6 +237,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this);
     return { x, y, width, height, zoom };
+  }
+
+  /** Max-level XP (gems + scripted grants) becomes run gold — batched toasts. */
+  grantXpOverflowGold(amount: number): void {
+    if (amount <= 0) return;
+    this.coinGoldEarned += amount;
+    this.xpOverflowGoldBatch += amount;
+    if (this.xpOverflowGoldBatch >= 14) {
+      const batch = this.xpOverflowGoldBatch;
+      this.xpOverflowGoldBatch = 0;
+      this.juice.showToast(t('ui.game.xp_overflow_gold', { gold: batch }), '#e8c060');
+    }
   }
 
   /**
@@ -231,6 +267,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
     this.runRng = createRNG(runSeed);
+    this.moorMomentSchedule = shuffleMoorMoments(this.runRng);
+    this.moorMomentIndex = 0;
+    this.nextMoorMomentAtSec = MOOR_MOMENT_FIRST_SEC;
     this.pendingRunSeed = null;
     this.pendingChests = [];
     this.pickupDespawnHandles = [];
@@ -264,6 +303,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
     this.musicStateScratch.bossActive = false;
+    this.musicStateScratch.biomeTimbre = 0.45;
+    this.xpOverflowGoldBatch = 0;
   }
 
   /** Acquire a pooled floating text, or return null if pool is exhausted. */
@@ -430,6 +471,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bossKillCount = 0;
     this.bossGoldEarned = 0;
     this.coinGoldEarned = 0;
+    this.xpOverflowGoldBatch = 0;
     this.revivalAvailable = false;
 
     // Pre-allocate floating text pool for armor/gold feedback
@@ -466,14 +508,28 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
 
     // When an enemy is killed
-    this.weaponSystem.events.on('enemyKilled', (x: number, y: number, xpValue: number, enemyKey: string, wasBoss: boolean, wasElite: boolean = false) => {
+    this.weaponSystem.events.on(
+      'enemyKilled',
+      (
+        x: number,
+        y: number,
+        xpValue: number,
+        enemyKey: string,
+        wasBoss: boolean,
+        wasElite: boolean = false,
+        eliteAffixId?: EliteAffixId | null,
+      ) => {
       // Kill streak XP bonus: +1% XP per combo count (capped at +50%)
       const comboXpBonus = Math.min(0.5, this.juice.getComboCount() * 0.01);
       this.xpSystem.spawnGem(x, y, Math.ceil(xpValue * this.player.getXpMultiplier() * (1 + comboXpBonus)));
       this.killCount++;
+      this.spawnSystem.noteKillPressure();
       this.juice.showKillBurst(x, y);
       this.juice.hitFreeze();
-      this.getSFXManager().tryPlay('kill', () => audio.playKillImmediate());
+      // Volatile plays a dedicated boom in Enemy.die — skip the generic kill sting.
+      if (eliteAffixId !== 'volatile') {
+        this.getSFXManager().tryPlay('kill', () => audio.playKillImmediate());
+      }
 
       // Banter hooks — first kill of the run, mid-tier kill streaks that
       // sit *between* the loud milestone easter eggs (11 / 50 / 100 /
@@ -743,6 +799,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bossEnrageUnsub = globalEventBus.on('bossEnraged', () => {
       this.juice.showToast(t('ui.game.boss_enraged'), '#ff4444');
     });
+    this.codexFirstCullUnsub?.();
+    this.codexFirstCullUnsub = globalEventBus.on('CODEX_FIRST_CULL', (p) => {
+      const name = getEnemyDisplayName(p.enemyKey);
+      this.juice.showToast(t('ui.game.codex_first_cull', { name }), '#aaddff');
+    });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.toggleUiPause());
@@ -810,12 +871,105 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.tweens.add({ targets: hint, alpha: 0, duration: 1000, onComplete: () => hint.destroy() });
     });
 
+    this.installAtmosphericGrain();
+    this.bindFilmGrainToViewportResize();
+
     // Start countdown — game is paused until it finishes
     this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
     this.showCountdown();
 
     // Resume is now "committed": replace old suspended snapshot with a fresh one.
     finalizeResumeStartup(resumeRun, () => this.persistActiveRunToMeta());
+  }
+
+  private destroyFilmGrainOverlay(): void {
+    if (!this.filmGrainImage) return;
+    try {
+      this.tweens.killTweensOf(this.filmGrainImage);
+    } catch {
+      /* ignore */
+    }
+    try {
+      this.filmGrainImage.destroy();
+    } catch {
+      /* ignore */
+    }
+    this.filmGrainImage = null;
+  }
+
+  /**
+   * Very light film grain over the playfield (UI space). Disabled for high-contrast
+   * and toned down when “reduce particles” is on — readability first.
+   */
+  private installAtmosphericGrain(): void {
+    this.destroyFilmGrainOverlay();
+    const prefs = this.settingsManager.load();
+    if (prefs.highContrastUi) return;
+    if (!this.textures.exists('film_grain')) return;
+    const v = this.getUiViewport();
+    const baseAlpha = (prefs.reduceParticles ? 0.026 : 0.036) * (0.75 + prefs.motionScale * 0.25);
+    const img = this.add
+      .image(v.x + v.width / 2, v.y + v.height / 2, 'film_grain')
+      .setScrollFactor(0)
+      .setDepth(22)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    img.setDisplaySize(v.width + 6, v.height + 6);
+    img.setAlpha(baseAlpha * 0.82);
+    this.tweens.add({
+      targets: img,
+      alpha: baseAlpha * 1.1,
+      duration: 3800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    // Sub-pixel drift — emulsion breathing; amplitude scales down with reduced motion.
+    const driftPx = 1.1 * (0.55 + prefs.motionScale * 0.45) * (prefs.reduceParticles ? 0.65 : 1);
+    this.tweens.add({
+      targets: img,
+      x: img.x + driftPx,
+      duration: 9200 + Math.random() * 1800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut',
+    });
+    this.filmGrainImage = img;
+  }
+
+  /** Keeps grain aligned to `getUiViewport()` when the canvas resizes — debounced, wall-clock. */
+  private bindFilmGrainToViewportResize(): void {
+    this.unbindFilmGrainViewportResize();
+    this.filmGrainResizeHandler = () => {
+      this.scheduleFilmGrainRelayout();
+    };
+    this.scale.on('resize', this.filmGrainResizeHandler);
+  }
+
+  private unbindFilmGrainViewportResize(): void {
+    if (this.filmGrainResizeDebounceId !== null) {
+      clearTimeout(this.filmGrainResizeDebounceId);
+      this.filmGrainResizeDebounceId = null;
+    }
+    if (this.filmGrainResizeHandler) {
+      try {
+        this.scale.off('resize', this.filmGrainResizeHandler);
+      } catch {
+        /* ignore */
+      }
+      this.filmGrainResizeHandler = undefined;
+    }
+  }
+
+  private scheduleFilmGrainRelayout(): void {
+    if (this.filmGrainResizeDebounceId !== null) {
+      clearTimeout(this.filmGrainResizeDebounceId);
+      this.filmGrainResizeDebounceId = null;
+    }
+    this.filmGrainResizeDebounceId = setTimeout(() => {
+      this.filmGrainResizeDebounceId = null;
+      if (!this.sys?.isActive()) return;
+      this.installAtmosphericGrain();
+    }, 72);
   }
 
   private showCountdown(): void {
@@ -891,6 +1045,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.achievementUnsub = null;
       this.bossEnrageUnsub?.();
       this.bossEnrageUnsub = null;
+      this.codexFirstCullUnsub?.();
+      this.codexFirstCullUnsub = null;
       this.unregisterMidRunPersistenceHooks();
       this.unregisterDebugTimeTravelApi();
       try { this.subs.dispose(); } catch { /* ignore */ }
@@ -935,6 +1091,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.victoryFade = null;
       try { this.deathFade?.destroy(); } catch { /* ignore */ }
       this.deathFade = null;
+      try {
+        this.unbindFilmGrainViewportResize();
+      } catch {
+        /* ignore */
+      }
+      try {
+        this.destroyFilmGrainOverlay();
+      } catch {
+        /* ignore */
+      }
     });
   }
 
@@ -1013,6 +1179,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         gameTimeSec: this.spawnSystem.getGameTimeSec(),
         wholeSecond: runSec,
       });
+      this.maybeTriggerMoorMoment(runSec);
     }
 
     // Pass player facing and upgrade multipliers to weapon system.
@@ -1052,6 +1219,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     ms.comboCount = this.juice.getComboCount();
     ms.killCount = this.killCount;
     ms.bossActive = this.spawnSystem.isBossActive();
+    const biomeId = this.getCurrentBiomeId();
+    ms.biomeTimbre = biomeId ? BIOMES[biomeId].moodTimbre : 0.45;
     musicEngine.update(delta, ms);
 
     // Dash cooldown indicator (small arc under player)
@@ -1380,6 +1549,98 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.revivalAvailable = run.revivalAvailable;
     }
     this.runStatsTracker.restore(run.weaponDamage);
+    this.nextMoorMomentAtSec = Math.max(
+      this.nextMoorMomentAtSec,
+      Math.floor(run.gameTimeSec) + 65,
+    );
+  }
+
+  private maybeTriggerMoorMoment(runSec: number): void {
+    if (this.victoryPending) return;
+    if (runSec < this.nextMoorMomentAtSec) return;
+    if (!this.player?.active) return;
+    if (this.moorMomentSchedule.length === 0) {
+      this.moorMomentSchedule = shuffleMoorMoments(this.runRng);
+    }
+    const def = this.moorMomentSchedule[this.moorMomentIndex % this.moorMomentSchedule.length];
+    this.moorMomentIndex++;
+    if (this.moorMomentIndex % this.moorMomentSchedule.length === 0) {
+      this.moorMomentSchedule = shuffleMoorMoments(this.runRng);
+    }
+    const gap = MOOR_MOMENT_GAP_BASE_SEC + this.runRng.int(0, MOOR_MOMENT_GAP_JITTER_SEC);
+    this.nextMoorMomentAtSec = runSec + gap;
+    this.fireMoorMoment(def);
+  }
+
+  private fireMoorMoment(def: MoorMomentDef): void {
+    this.tutorialSystem.notifyMoorMomentIfFirst();
+
+    const here = this.getCurrentBiomeId();
+    const atHome = Boolean(
+      def.homeBiome &&
+      def.captionKeyHome &&
+      def.toastKeyHome &&
+      here === def.homeBiome
+    );
+    const captionResolveKey = atHome ? def.captionKeyHome! : def.captionKey;
+    const toastResolveKey = atHome ? def.toastKeyHome! : def.toastKey;
+
+    const cap = t(captionResolveKey);
+    const captionText = cap !== captionResolveKey ? cap : '';
+    if (captionText) {
+      this.caption(`moor_${def.id}`, captionText, '#c9a86c', 5200);
+    }
+    const r = def.reward;
+    let toastStr: string;
+    if (r.kind === 'gold') {
+      const baseGold = atHome ? r.amount * MOOR_HOME_REWARD.goldMult : r.amount;
+      const g = Math.max(1, Math.floor(baseGold * this.runModifiers.goldMult));
+      this.coinGoldEarned += g;
+      toastStr = t(toastResolveKey, { gold: g });
+    } else if (r.kind === 'xp') {
+      if (this.xpSystem.getLevel() >= XP.MAX_LEVEL) {
+        let g = Math.max(5, Math.floor(r.amount / 2));
+        if (atHome) g = Math.max(5, Math.floor(g * MOOR_HOME_REWARD.goldMult));
+        this.coinGoldEarned += g;
+        toastStr = t('ui.moor_moment.boon_at_ceiling', { gold: g });
+      } else {
+        const xpBase = atHome ? r.amount * MOOR_HOME_REWARD.xpMult : r.amount;
+        const xpShow = Math.ceil(xpBase * this.player.getXpMultiplier());
+        this.xpSystem.grantBonusXp(xpBase);
+        toastStr = t(toastResolveKey, { xp: xpShow });
+      }
+    } else if (r.kind === 'heal') {
+      const hp = atHome ? Math.ceil(r.amount * MOOR_HOME_REWARD.healMult) : r.amount;
+      this.player.heal(hp);
+      toastStr = t(toastResolveKey, { hp });
+    } else {
+      const flat = atHome ? r.flatPx + MOOR_HOME_REWARD.magnetFlatBonus : r.flatPx;
+      const dur = atHome ? r.durationMs + MOOR_HOME_REWARD.magnetDurationMsBonus : r.durationMs;
+      this.player.grantMoorMomentMagnet(flat, dur);
+      toastStr = t(toastResolveKey);
+    }
+
+    const burstTint =
+      atHome && def.homeBiome
+        ? MOOR_MOMENT_BURST_TINT[def.homeBiome]
+        : here
+          ? MOOR_MOMENT_BURST_TINT[here]
+          : undefined;
+    this.juice.showMoorMomentBurst(this.player.x, this.player.y, burstTint);
+    this.juice.showToast(toastStr, '#e8c896');
+    this.juice.flashWhite(72);
+    this.getSFXManager().tryPlay('moor_moment', () => audio.playMoorMomentImmediate());
+
+    globalEventBus.emit('GLOBAL_MOOR_MOMENT', {
+      momentId: def.id,
+      atHomeBiome: atHome,
+      biomeId: here,
+    });
+
+    let banterTag: string | undefined;
+    if (atHome && def.homeBiome) banterTag = `home_${def.homeBiome}`;
+    else if (here) banterTag = here;
+    this.banter?.request('moor_moment', banterTag ? { tag: banterTag } : undefined);
   }
 
   private registerDebugTimeTravelApi(): void {

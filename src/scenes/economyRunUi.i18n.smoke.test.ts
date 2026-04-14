@@ -57,8 +57,15 @@ describe('economy / run UI i18n smoke', () => {
     assertResolves('ui.metaShop.back');
     assertResolves('ui.metaShop.kill_credits_fresh');
     assertResolves('ui.metaShop.kill_credits', { count: 0 });
+    assertResolves('ui.metaShop.requires', { title: 'x' });
     assertResolves('ui.metaShop.requires_achievement', { title: 'x', hint: 'y' });
     assertResolves('ui.metaShop.requires_previous', { name: 'z' });
+  });
+
+  it('resolves MetaShopScene row labels (owned / locked / buy)', () => {
+    assertResolves('ui.common.owned');
+    assertResolves('ui.common.locked');
+    assertResolves('ui.common.buy_kills', { cost: 50 });
   });
 
   it('resolves every meta shop item name + description key', () => {
@@ -83,6 +90,14 @@ describe('economy / run UI i18n smoke', () => {
     for (const c of CURSES) {
       assertResolves(c.nameKey);
       assertResolves(c.descKey);
+    }
+  });
+
+  it('resolves elite affix codex strings', () => {
+    const ids = ['swift', 'bulwark', 'relentless', 'wealthy', 'volatile'] as const;
+    for (const id of ids) {
+      assertResolves(`ui.elite_affix.${id}.name`);
+      assertResolves(`ui.elite_affix.${id}.blurb`);
     }
   });
 

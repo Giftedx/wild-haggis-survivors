@@ -1,0 +1,149 @@
+/**
+ * Moor moments — occasional mid-run beats: a line of hearth voice, a little
+ * mechanical gift, and a whisper of music/SFX glue. Order is shuffled per run
+ * from the seeded RNG so daily runs stay deterministic.
+ *
+ * Each moment has an optional **home biome**: when the player is standing
+ * there, the caption/toast swap to place-grounded lines (same reward).
+ */
+import type { BiomeId } from './biomes';
+import type { RNG } from '../utils/rng';
+
+export type MoorMomentReward =
+  | { kind: 'gold'; amount: number }
+  | { kind: 'xp'; amount: number }
+  | { kind: 'heal'; amount: number }
+  | { kind: 'magnet'; flatPx: number; durationMs: number };
+
+export interface MoorMomentDef {
+  readonly id: string;
+  /** i18n key for full caption (a11y + bottom line). */
+  readonly captionKey: string;
+  /** i18n key for short toast — usually includes reward numbers. */
+  readonly toastKey: string;
+  readonly reward: MoorMomentReward;
+  /** When set, captionKeyHome / toastKeyHome replace base copy in this biome. */
+  readonly homeBiome?: BiomeId;
+  readonly captionKeyHome?: string;
+  readonly toastKeyHome?: string;
+}
+
+/** First cadence (~seconds into the run) before the repeating gap kicks in. */
+export const MOOR_MOMENT_FIRST_SEC = 92;
+
+/** Base gap between moments; `+ rng(0, MOOR_MOMENT_GAP_JITTER_SEC)` each time. */
+export const MOOR_MOMENT_GAP_BASE_SEC = 96;
+export const MOOR_MOMENT_GAP_JITTER_SEC = 52;
+
+/**
+ * When the moment fires in its **home** biome, nudge rewards up — noticeable,
+ * not economy-breaking.
+ */
+export const MOOR_HOME_REWARD = {
+  goldMult: 1.28,
+  xpMult: 1.22,
+  healMult: 1.35,
+  magnetFlatBonus: 14,
+  magnetDurationMsBonus: 2000,
+} as const;
+
+/** VFX tint for moor burst — keyed by biome for a subtle read. */
+export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
+  bog: 0x7a9e6b,
+  loch: 0x6ba8c4,
+  pine: 0x5d8a52,
+  heather: 0xc49bd4,
+};
+
+export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
+  {
+    id: 'peat_glint',
+    captionKey: 'ui.moor_moment.peat_glint.caption',
+    toastKey: 'ui.moor_moment.peat_glint.toast',
+    reward: { kind: 'gold', amount: 12 },
+    homeBiome: 'bog',
+    captionKeyHome: 'ui.moor_moment.peat_glint.caption_home',
+    toastKeyHome: 'ui.moor_moment.peat_glint.toast_home',
+  },
+  {
+    id: 'loch_breath',
+    captionKey: 'ui.moor_moment.loch_breath.caption',
+    toastKey: 'ui.moor_moment.loch_breath.toast',
+    reward: { kind: 'xp', amount: 28 },
+    homeBiome: 'loch',
+    captionKeyHome: 'ui.moor_moment.loch_breath.caption_home',
+    toastKeyHome: 'ui.moor_moment.loch_breath.toast_home',
+  },
+  {
+    id: 'heather_rest',
+    captionKey: 'ui.moor_moment.heather_rest.caption',
+    toastKey: 'ui.moor_moment.heather_rest.toast',
+    reward: { kind: 'heal', amount: 7 },
+    homeBiome: 'heather',
+    captionKeyHome: 'ui.moor_moment.heather_rest.caption_home',
+    toastKeyHome: 'ui.moor_moment.heather_rest.toast_home',
+  },
+  {
+    id: 'pine_pull',
+    captionKey: 'ui.moor_moment.pine_pull.caption',
+    toastKey: 'ui.moor_moment.pine_pull.toast',
+    reward: { kind: 'magnet', flatPx: 55, durationMs: 8200 },
+    homeBiome: 'pine',
+    captionKeyHome: 'ui.moor_moment.pine_pull.caption_home',
+    toastKeyHome: 'ui.moor_moment.pine_pull.toast_home',
+  },
+  {
+    id: 'crow_bargain',
+    captionKey: 'ui.moor_moment.crow_bargain.caption',
+    toastKey: 'ui.moor_moment.crow_bargain.toast',
+    reward: { kind: 'gold', amount: 18 },
+    homeBiome: 'heather',
+    captionKeyHome: 'ui.moor_moment.crow_bargain.caption_home',
+    toastKeyHome: 'ui.moor_moment.crow_bargain.toast_home',
+  },
+  {
+    id: 'distant_tune',
+    captionKey: 'ui.moor_moment.distant_tune.caption',
+    toastKey: 'ui.moor_moment.distant_tune.toast',
+    reward: { kind: 'xp', amount: 36 },
+    homeBiome: 'pine',
+    captionKeyHome: 'ui.moor_moment.distant_tune.caption_home',
+    toastKeyHome: 'ui.moor_moment.distant_tune.toast_home',
+  },
+  {
+    id: 'warm_stone',
+    captionKey: 'ui.moor_moment.warm_stone.caption',
+    toastKey: 'ui.moor_moment.warm_stone.toast',
+    reward: { kind: 'heal', amount: 10 },
+    homeBiome: 'bog',
+    captionKeyHome: 'ui.moor_moment.warm_stone.caption_home',
+    toastKeyHome: 'ui.moor_moment.warm_stone.toast_home',
+  },
+  {
+    id: 'wind_shift',
+    captionKey: 'ui.moor_moment.wind_shift.caption',
+    toastKey: 'ui.moor_moment.wind_shift.toast',
+    reward: { kind: 'magnet', flatPx: 70, durationMs: 9000 },
+    homeBiome: 'loch',
+    captionKeyHome: 'ui.moor_moment.wind_shift.caption_home',
+    toastKeyHome: 'ui.moor_moment.wind_shift.toast_home',
+  },
+  {
+    id: 'amber_glow',
+    captionKey: 'ui.moor_moment.amber_glow.caption',
+    toastKey: 'ui.moor_moment.amber_glow.toast',
+    reward: { kind: 'gold', amount: 16 },
+    homeBiome: 'bog',
+    captionKeyHome: 'ui.moor_moment.amber_glow.caption_home',
+    toastKeyHome: 'ui.moor_moment.amber_glow.toast_home',
+  },
+];
+
+export function shuffleMoorMoments(rng: RNG): MoorMomentDef[] {
+  const a: MoorMomentDef[] = MOOR_MOMENTS.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = rng.int(0, i);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}

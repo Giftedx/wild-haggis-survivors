@@ -15,6 +15,20 @@ const KILL_MILESTONE_THRESHOLDS = [100, 250, 500, 1000, 2500, 5000] as const;
  * toasts, pickups, level-up flow, run identity, boss warnings.
  */
 describe('in-run HUD / game / juice i18n smoke', () => {
+  it('resolves TutorialSystem overlay + drift banner copy', () => {
+    assertResolves('tutorial.move');
+    assertResolves('tutorial.gem');
+    assertResolves('tutorial.drift');
+    assertResolves('tutorial.elite_affix_first', { name: 'Swift' });
+    assertResolves('tutorial.moor_moment_first');
+  });
+
+  it('resolves ui.common.rarity.* (UpgradeCards pills)', () => {
+    for (const r of ['common', 'uncommon', 'rare', 'legendary'] as const) {
+      assertResolves(`ui.common.rarity.${r}`);
+    }
+  });
+
   it('resolves ui.hud.* (HUD + JuiceSystem combo line)', () => {
     assertResolves('ui.hud.level_fmt', { level: 1 });
     assertResolves('ui.hud.goal_countdown', { m: 0, s: '00' });
@@ -67,11 +81,39 @@ describe('in-run HUD / game / juice i18n smoke', () => {
     assertResolves('ui.game.upgrade_stat_boost', { name: 'x' });
     assertResolves('ui.game.upgrade_evolve_weapon', { name: 'x' });
     assertResolves('ui.game.max_level_toast');
+    assertResolves('ui.game.xp_overflow_gold', { gold: 14 });
+    assertResolves('ui.game.codex_first_cull', { name: 'Tourist' });
   });
 
   it('resolves ui.run.* identity handoff', () => {
     assertResolves('ui.run.start_identity', { name: 'A', flavor: 'B' });
     assertResolves('ui.run.resume_identity', { name: 'A', flavor: 'B' });
+  });
+
+  it('resolves ui.moor_moment.* (timed hearth beats)', () => {
+    assertResolves('ui.moor_moment.boon_at_ceiling', { gold: 12 });
+    const ids = [
+      'peat_glint', 'loch_breath', 'heather_rest', 'pine_pull',
+      'crow_bargain', 'distant_tune', 'warm_stone', 'wind_shift',
+      'amber_glow',
+    ] as const;
+    for (const id of ids) {
+      assertResolves(`ui.moor_moment.${id}.caption`);
+      assertResolves(`ui.moor_moment.${id}.caption_home`);
+      if (id === 'pine_pull' || id === 'wind_shift') {
+        assertResolves(`ui.moor_moment.${id}.toast`);
+        assertResolves(`ui.moor_moment.${id}.toast_home`);
+      } else if (id === 'loch_breath' || id === 'distant_tune') {
+        assertResolves(`ui.moor_moment.${id}.toast`, { xp: 10 });
+        assertResolves(`ui.moor_moment.${id}.toast_home`, { xp: 10 });
+      } else if (id === 'heather_rest' || id === 'warm_stone') {
+        assertResolves(`ui.moor_moment.${id}.toast`, { hp: 5 });
+        assertResolves(`ui.moor_moment.${id}.toast_home`, { hp: 5 });
+      } else {
+        assertResolves(`ui.moor_moment.${id}.toast`, { gold: 8 });
+        assertResolves(`ui.moor_moment.${id}.toast_home`, { gold: 8 });
+      }
+    }
   });
 
   it('resolves per-boss celebration + spawn warning copy from BOSSES table', () => {

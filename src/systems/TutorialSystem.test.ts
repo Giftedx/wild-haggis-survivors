@@ -6,7 +6,7 @@ import { MemoryStorage } from '../test/MemoryStorage';
 
 function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
   return {
-    saveVersion: 8 as const,
+    saveVersion: 9 as const,
     totalKills: 0,
     totalKillsSpent: 0,
     dailyChallenge: null,
@@ -16,7 +16,11 @@ function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
     unlockedAchievements: [] as string[],
     hasCompletedTutorial: false,
     hasSeenDriftTutorial: false,
+    hasSeenEliteAffixTip: false,
+    hasSeenMoorMomentTip: false,
+    moorMomentsLifetime: 0,
     runHistory: [] as RunHistoryEntry[],
+    codexCulledKeys: [] as string[],
     ...over,
   };
 }
@@ -264,6 +268,40 @@ describe('TutorialSystem', () => {
     expect(save.load().hasCompletedTutorial).toBe(false);
     tut.notifyFirstLevelReached(2);
     expect(save.load().hasCompletedTutorial).toBe(true);
+  });
+
+  it('persists hasSeenEliteAffixTip and only tweens the banner once', () => {
+    save.save(makeV6Save());
+    const tm = { request: vi.fn(), release: vi.fn() };
+    const xpEvents = new EventEmitter();
+    const textMock = () => ({
+      setOrigin() {
+        return this;
+      },
+      setScrollFactor() {
+        return this;
+      },
+      setDepth() {
+        return this;
+      },
+      setAlpha() {
+        return this;
+      },
+      destroy() {},
+    });
+    const scene: any = {
+      scale: { width: 800, height: 600 },
+      add: { text: textMock },
+      tweens: { add: vi.fn() },
+      getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
+      getTimeManager: () => tm,
+      getXPSystem: () => ({ events: xpEvents }),
+    };
+    const tut = new TutorialSystem(scene, save);
+    tut.notifyEliteAffixIfFirst('swift');
+    expect(save.load().hasSeenEliteAffixTip).toBe(true);
+    tut.notifyEliteAffixIfFirst('bulwark');
+    expect(scene.tweens.add).toHaveBeenCalledTimes(1);
   });
 
   it('lays tutorial overlays out against the UI viewport', () => {

@@ -43,6 +43,8 @@ describe('Chronicle / Deeds i18n smoke', () => {
       'ui.chronicle.back',
       'ui.chronicle.runs_empty',
       'ui.chronicle.milestone_first_victory_none',
+      'ui.chronicle.codex_heading',
+      'ui.chronicle.codex_empty',
     ] as const;
     for (const key of staticKeys) assertResolves(key);
     for (const key of CHRONICLE_MOOD_SUB_KEYS) assertResolves(key);
@@ -71,15 +73,16 @@ describe('Chronicle / Deeds i18n smoke', () => {
     assertResolves('ui.chronicle.milestone_favorite_variant', { variant: sampleVariant, count: 3 });
     assertResolves('ui.chronicle.milestone_favorite_weapon', { weapon: 'Claymore', count: 2 });
     assertResolves('ui.chronicle.milestone_win_streak', { count: 2 });
+    assertResolves('ui.chronicle.codex_progress', { discovered: 3, total: 20 });
   });
 
   it('resolves DeedsScene shell strings', () => {
     assertResolves('ui.deeds.title');
     assertResolves('ui.deeds.back');
     assertResolves('ui.deeds.sub_empty');
-    assertResolves('ui.deeds.sub_partial', { earned: 1, total: 9 });
-    assertResolves('ui.deeds.sub_complete', { earned: 9, total: 9 });
-    assertResolves('ui.deeds.counter', { earned: 0, total: 9 });
+    assertResolves('ui.deeds.sub_partial', { earned: 1, total: 11 });
+    assertResolves('ui.deeds.sub_complete', { earned: 11, total: 11 });
+    assertResolves('ui.deeds.counter', { earned: 0, total: 11 });
     assertResolves('ui.deeds.status_unlocked');
     assertResolves('ui.deeds.status_in_progress');
     assertResolves('ui.deeds.status_locked');

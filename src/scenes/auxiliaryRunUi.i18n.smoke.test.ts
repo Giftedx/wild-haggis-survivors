@@ -24,6 +24,10 @@ describe('auxiliary run UI i18n smoke', () => {
     for (const key of PAUSE_QUIP_KEYS) assertResolves(key);
   });
 
+  it('resolves pause-menu elite-affix reference heading', () => {
+    assertResolves('ui.pause.elite_affix_heading');
+  });
+
   it('resolves UpgradeCards + evolution chest banner copy', () => {
     assertResolves('ui.upgradeCards.level_title', { level: 5 });
     assertResolves('ui.upgradeCards.choose_upgrade');

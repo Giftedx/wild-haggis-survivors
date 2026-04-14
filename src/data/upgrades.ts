@@ -334,6 +334,14 @@ export const STAT_CARDS: UpgradeCard[] = [
     icon: 'ucard_stat_utility',
     effect: { type: 'stat_boost', stat: 'xpMultiplier', amount: 0.15 },
   },
+  {
+    id: 'boost_luck',
+    name: 'upgradeCard.boost_luck.name',
+    description: 'upgradeCard.boost_luck.description',
+    rarity: 'uncommon',
+    icon: 'ucard_stat_utility',
+    effect: { type: 'stat_boost', stat: 'luck', amount: 8 },
+  },
 ];
 
 const LEVELUP_DRIFT_CARD_ENABLED = true;
@@ -421,25 +429,49 @@ function formatPassiveItemName(passiveKey: string): string {
     : passiveKey.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-/**
- * Draw N cards from the pool, weighted by rarity.
- * @param luckBonus — percentage bonus to rare/legendary weights (from Sporran + Lucky Heather)
- */
+/** Weapon-aware nudge for level-up offers — flat weight bonus, deterministic. */
+export interface CardSynergyContext {
+  readonly ownedWeaponKeys: readonly string[];
+}
+
+/** Extra draw weight from build synergy (weapon keys already owned). */
+export function synergyWeightBonus(card: UpgradeCard, ctx: CardSynergyContext | undefined): number {
+  if (!ctx) return 0;
+  const w = ctx.ownedWeaponKeys;
+  const has = (k: string) => w.includes(k);
+  if (card.effect.type !== 'stat_boost') return 0;
+  const s = card.effect.stat;
+  if (s === 'projectileSpeed' && (has('haggis_hurler') || has('thistle_shot') || has('caber_toss'))) return 10;
+  if (s === 'knockback' && (has('caber_toss') || has('bagpipe_blast'))) return 8;
+  if (s === 'cooldown' && (has('bagpipe_blast') || has('nessie_tentacle'))) return 8;
+  if (s === 'regen' && has('scotch_mist')) return 7;
+  if (s === 'damage' && w.length > 0) return 5;
+  if (s === 'xpMultiplier' && w.length >= 2) return 4;
+  return 0;
+}
+
+export type DrawCardsOptions = {
+  /** Weight multiplier when this card id is already in the current hand (0–1). */
+  duplicateWeightMultiplier?: number;
+  synergyContext?: CardSynergyContext;
+};
+
 /**
  * Draw `count` cards from `pool` with rarity-weighted probability.
  *
- * `rng` is an optional function returning [0, 1). Defaults to `Math.random` so
- * legacy callers (tests) keep working; gameplay callers pass the run-scoped
- * seeded RNG so card draws are deterministic for a given seed (daily challenge,
- * shareable runs).
+ * `rng` returns [0, 1). Defaults to `Math.random` for tests; gameplay passes
+ * run-scoped RNG for deterministic dailies / seed codes.
  */
 export function drawCards(
   pool: UpgradeCard[],
   count: number,
   luckBonus: number = 0,
   rng: () => number = Math.random,
+  opts?: DrawCardsOptions,
 ): UpgradeCard[] {
   if (pool.length <= count) return [...pool];
+
+  const dupMul = opts?.duplicateWeightMultiplier ?? 0.22;
 
   // Adjusted weights — luck boosts rare and legendary chances. Luck
   // multipliers doubled so the stat is actually felt: at max luck
@@ -457,14 +489,22 @@ export function drawCards(
 
   for (let i = 0; i < count && remaining.length > 0; i++) {
     let totalWeight = 0;
+    const drawnIds = new Set(drawn.map((c) => c.id));
     for (const card of remaining) {
-      totalWeight += weights[card.rarity];
+      const rarityW = weights[card.rarity];
+      const syn = synergyWeightBonus(card, opts?.synergyContext);
+      const dup = drawnIds.has(card.id) ? dupMul : 1;
+      totalWeight += Math.max(0.001, rarityW * dup + syn);
     }
 
     let roll = rng() * totalWeight;
-    let picked = remaining[remaining.length - 1];
+    let picked = remaining[remaining.length - 1]!;
     for (const card of remaining) {
-      roll -= weights[card.rarity];
+      const rarityW = weights[card.rarity];
+      const syn = synergyWeightBonus(card, opts?.synergyContext);
+      const dup = drawnIds.has(card.id) ? dupMul : 1;
+      const w = Math.max(0.001, rarityW * dup + syn);
+      roll -= w;
       if (roll < 0) {
         picked = card;
         break;

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { globalEventBus } from '../../core/GlobalEventBus';
 import { MOTION_TIMING } from '../../core/motionTiming';
 import type { GameMusicState } from './Conductor';
 import { expApproach } from './musicMath';
@@ -13,6 +14,7 @@ function baseGameState(): GameMusicState {
     comboCount: 0,
     killCount: 0,
     bossActive: false,
+    biomeTimbre: 0.5,
   };
 }
 
@@ -165,7 +167,10 @@ describe('ProceduralMusicEngine lifecycle', () => {
     // Stub out heavy dependencies so stop() is safe in unit tests.
     engine.drone = { stop: vi.fn(), start: vi.fn(), applyMood: vi.fn() };
     engine.piano = { stop: vi.fn(), start: vi.fn(), playNote: vi.fn() };
-    engine.percussion = { stop: vi.fn(), start: vi.fn(), scheduleRhythmHit: vi.fn(), scheduleHeartbeat: vi.fn(), updatePattern: vi.fn() };
+    engine.percussion = {
+      stop: vi.fn(), start: vi.fn(), scheduleRhythmHit: vi.fn(), scheduleHeartbeat: vi.fn(), updatePattern: vi.fn(),
+      clearPendingPhaseNudge: vi.fn(),
+    };
     engine.disconnectGraph = vi.fn();
     engine.scheduler = { reset: vi.fn() };
 
@@ -177,12 +182,139 @@ describe('ProceduralMusicEngine lifecycle', () => {
 
     const fadeSpy = vi.spyOn(musicEngine as any, 'fadeOut');
 
+    engine.moorBloomAcc = 0.95;
+    engine.evolutionGlowAcc = 0.9;
+    engine.enragePressureAcc = 0.85;
+
     musicEngine.playResolution();
+    expect(engine.moorBloomAcc).toBeLessThan(0.2);
+    expect(engine.evolutionGlowAcc).toBeLessThan(0.2);
+    expect(engine.enragePressureAcc).toBeLessThan(0.15);
+    expect(engine.conductor.enterResolution).toHaveBeenCalledTimes(1);
     musicEngine.stop();
 
     vi.advanceTimersByTime(10_000);
 
     expect(fadeSpy).not.toHaveBeenCalled();
+  });
+
+  it('fadeOut squashes accents for death closure and clears deferred groove nudge', () => {
+    const engine: any = musicEngine as any;
+    const clearNudge = vi.fn();
+    engine.percussion = { clearPendingPhaseNudge: clearNudge };
+    engine.playing = true;
+    engine.ctx = { currentTime: 0, state: 'running', resume: vi.fn() };
+    engine.masterGain = {
+      gain: {
+        cancelScheduledValues: vi.fn(),
+        setValueAtTime: vi.fn(),
+        value: 0.2,
+        linearRampToValueAtTime: vi.fn(),
+      },
+    };
+    engine.moorBloomAcc = 0.8;
+    engine.evolutionGlowAcc = 0.7;
+    engine.enragePressureAcc = 0.6;
+    engine.fadingOut = false;
+    vi.spyOn(musicEngine as any, 'startRafLoop').mockImplementation(() => {});
+
+    musicEngine.fadeOut(2000);
+
+    expect(engine.moorBloomAcc).toBeLessThan(0.06);
+    expect(clearNudge).toHaveBeenCalledTimes(1);
+    expect(engine.fadingOut).toBe(true);
+
+    engine.fadingOut = false;
+    engine.playing = false;
+  });
+});
+
+describe('ProceduralMusicEngine moor piano flourish (bus)', () => {
+  type EngineProbe = {
+    piano: { playMoorFlourish: (t: number, atHome: boolean) => void };
+    ctx: AudioContext | null;
+    playing: boolean;
+    busStarted: boolean;
+    busUnsubs: Array<() => void>;
+    lastMoorPianoFlourishAtMs: number;
+  };
+
+  let saved: EngineProbe;
+
+  beforeEach(() => {
+    const eng = musicEngine as unknown as EngineProbe;
+    for (const u of eng.busUnsubs ?? []) {
+      try {
+        u();
+      } catch {
+        /* ignore */
+      }
+    }
+    eng.busUnsubs = [];
+    eng.busStarted = false;
+    saved = {
+      piano: eng.piano,
+      ctx: eng.ctx as AudioContext | null,
+      playing: eng.playing,
+      busStarted: false,
+      busUnsubs: [],
+      lastMoorPianoFlourishAtMs: eng.lastMoorPianoFlourishAtMs,
+    };
+  });
+
+  afterEach(() => {
+    const eng = musicEngine as unknown as EngineProbe;
+    for (const u of eng.busUnsubs ?? []) {
+      try {
+        u();
+      } catch {
+        /* ignore */
+      }
+    }
+    eng.busUnsubs = [];
+    eng.busStarted = false;
+    eng.piano = saved.piano;
+    eng.ctx = saved.ctx;
+    eng.playing = saved.playing;
+    eng.lastMoorPianoFlourishAtMs = saved.lastMoorPianoFlourishAtMs;
+    vi.restoreAllMocks();
+  });
+
+  it('calls playMoorFlourish on moor moment, then respects cooldown', () => {
+    const flourish = vi.fn();
+    const eng = musicEngine as unknown as EngineProbe;
+    eng.piano = { playMoorFlourish: flourish };
+    eng.playing = true;
+    eng.ctx = { currentTime: 0 } as unknown as AudioContext;
+    eng.lastMoorPianoFlourishAtMs = 0;
+
+    musicEngine.ensureBusHandlersStarted();
+
+    let nowMs = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => nowMs);
+    globalEventBus.emit('GLOBAL_MOOR_MOMENT', {
+      momentId: 't1',
+      atHomeBiome: false,
+      biomeId: 'bog',
+    });
+    expect(flourish).toHaveBeenCalledTimes(1);
+
+    nowMs = 3000;
+    globalEventBus.emit('GLOBAL_MOOR_MOMENT', {
+      momentId: 't2',
+      atHomeBiome: false,
+      biomeId: 'bog',
+    });
+    expect(flourish).toHaveBeenCalledTimes(1);
+
+    nowMs = 10_000;
+    globalEventBus.emit('GLOBAL_MOOR_MOMENT', {
+      momentId: 't3',
+      atHomeBiome: true,
+      biomeId: 'heather',
+    });
+    expect(flourish).toHaveBeenCalledTimes(2);
+    expect(flourish).toHaveBeenLastCalledWith(0, true);
   });
 });
 

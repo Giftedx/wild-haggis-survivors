@@ -82,6 +82,8 @@ describe('AudioSystem music duck impulses', () => {
     expect(notifySpy).toHaveBeenCalledWith(MOTION_TIMING.musicDuckAchievement);
     sys.playPurchaseImmediate();
     expect(notifySpy).toHaveBeenCalledWith(MOTION_TIMING.musicDuckPurchase);
+    sys.playMoorMomentImmediate();
+    expect(notifySpy).toHaveBeenCalledWith(MOTION_TIMING.musicDuckMoorMoment);
   });
 
   it('does not notify when SFX disabled', () => {
