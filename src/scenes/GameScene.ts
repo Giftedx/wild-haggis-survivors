@@ -1170,6 +1170,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           getLevel: () => this.xpSystem.getLevel(),
           getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
           getOwnedPassives: () => this.ownedPassives,
+          getActiveCurseLine: () => {
+            const c = this.activeCurseKey ? getCurseByKey(this.activeCurseKey) : null;
+            return c
+              ? t('ui.hud.curse_chip', { name: t(c.nameKey), pct: c.goldBonusPct })
+              : null;
+          },
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.abandonRunToMainMenu(),
         });

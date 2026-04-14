@@ -24,6 +24,8 @@ export interface PauseMenuHooks {
   getLevel(): number;
   getEquippedWeaponCount(): number;
   getOwnedPassives(): readonly string[];
+  /** Same copy as the in-run curse chip (`ui.hud.curse_chip`); null if no curse. */
+  getActiveCurseLine?: () => string | null;
   onResumeRequested(): void;
   onQuitRequested(): void;
 }
@@ -80,6 +82,16 @@ export class PauseMenu {
         align: 'center', lineSpacing: 6,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
+
+    const curseLine = this.hooks.getActiveCurseLine?.() ?? null;
+    if (curseLine) {
+      this.elements.push(
+        scene.add.text(x + width / 2, y + height * 0.43, curseLine, {
+          fontFamily: 'monospace', fontSize: '13px', color: hc ? '#f5d0e8' : '#c49bbf',
+          align: 'center',
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      );
+    }
 
     const resumeBtn = scene.add.rectangle(x + width / 2, y + height * 0.5, 220, 50, 0x005eb8)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
