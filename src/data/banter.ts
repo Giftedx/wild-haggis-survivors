@@ -100,6 +100,33 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.low_hp.c',
       'ui.banter.low_hp.d',
     ],
+    keysByTag: {
+      iron_belly: [
+        'ui.banter.low_hp.iron_belly.a',
+        'ui.banter.low_hp.iron_belly.b',
+        'ui.banter.low_hp.iron_belly.c',
+      ],
+      moor_runner: [
+        'ui.banter.low_hp.moor_runner.a',
+        'ui.banter.low_hp.moor_runner.b',
+        'ui.banter.low_hp.moor_runner.c',
+      ],
+      glen_forager: [
+        'ui.banter.low_hp.glen_forager.a',
+        'ui.banter.low_hp.glen_forager.b',
+        'ui.banter.low_hp.glen_forager.c',
+      ],
+      surefoot: [
+        'ui.banter.low_hp.surefoot.a',
+        'ui.banter.low_hp.surefoot.b',
+        'ui.banter.low_hp.surefoot.c',
+      ],
+      pipe_breath: [
+        'ui.banter.low_hp.pipe_breath.a',
+        'ui.banter.low_hp.pipe_breath.b',
+        'ui.banter.low_hp.pipe_breath.c',
+      ],
+    },
   },
   {
     context: 'boss_down',
@@ -345,6 +372,33 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.recover.b',
       'ui.banter.recover.c',
     ],
+    keysByTag: {
+      iron_belly: [
+        'ui.banter.recover.iron_belly.a',
+        'ui.banter.recover.iron_belly.b',
+        'ui.banter.recover.iron_belly.c',
+      ],
+      moor_runner: [
+        'ui.banter.recover.moor_runner.a',
+        'ui.banter.recover.moor_runner.b',
+        'ui.banter.recover.moor_runner.c',
+      ],
+      glen_forager: [
+        'ui.banter.recover.glen_forager.a',
+        'ui.banter.recover.glen_forager.b',
+        'ui.banter.recover.glen_forager.c',
+      ],
+      surefoot: [
+        'ui.banter.recover.surefoot.a',
+        'ui.banter.recover.surefoot.b',
+        'ui.banter.recover.surefoot.c',
+      ],
+      pipe_breath: [
+        'ui.banter.recover.pipe_breath.a',
+        'ui.banter.recover.pipe_breath.b',
+        'ui.banter.recover.pipe_breath.c',
+      ],
+    },
   },
   {
     context: 'biome_change',

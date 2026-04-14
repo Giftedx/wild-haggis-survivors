@@ -11,6 +11,8 @@ export interface GameTickerHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number };
   getBanter(): BanterSystem | null;
   getCurrentBiomeId(): BiomeId | null;
+  /** Selected haggis variant — tags low_hp / recover banter like other variant hooks. */
+  getActiveVariantKey(): string;
   caption(id: string, message: string, tint?: string, durationMs?: number): void;
 }
 
@@ -113,10 +115,10 @@ export class GameTickers {
     const frac = player.getHp() / Math.max(1, player.getMaxHp());
     if (this.lowHpCaptionArmed && frac > 0 && frac < 0.2) {
       this.hooks.caption('low_hp', t('ui.captions.low_hp'), '#ee5566');
-      this.hooks.getBanter()?.request('low_hp');
+      this.hooks.getBanter()?.request('low_hp', { tag: this.hooks.getActiveVariantKey() });
       this.lowHpCaptionArmed = false;
     } else if (!this.lowHpCaptionArmed && frac > 0.4) {
-      this.hooks.getBanter()?.request('recover');
+      this.hooks.getBanter()?.request('recover', { tag: this.hooks.getActiveVariantKey() });
       this.lowHpCaptionArmed = true;
     }
   }

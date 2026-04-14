@@ -654,6 +654,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getUiViewport: () => this.getUiViewport(),
       getBanter: () => this.banter,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      getActiveVariantKey: () => this.activeVariant.key,
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
     this.pickupSpawner = new PickupSpawner(this, {

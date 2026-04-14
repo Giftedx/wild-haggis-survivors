@@ -81,6 +81,26 @@ describe('BANTER_POOLS structure', () => {
     }
   });
 
+  it('low_hp has keysByTag for every non-classic variant', () => {
+    const nonClassic = VARIANTS.filter((v) => v.key !== 'classic');
+    const pool = getBanterPool('low_hp');
+    expect(pool, 'low_hp pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const v of nonClassic) {
+      expect(tags, `low_hp missing tag '${v.key}'`).toContain(v.key);
+    }
+  });
+
+  it('recover has keysByTag for every non-classic variant', () => {
+    const nonClassic = VARIANTS.filter((v) => v.key !== 'classic');
+    const pool = getBanterPool('recover');
+    expect(pool, 'recover pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const v of nonClassic) {
+      expect(tags, `recover missing tag '${v.key}'`).toContain(v.key);
+    }
+  });
+
   it('biome_change has keysByTag for every biome', () => {
     const biomeIds = Object.keys(BIOMES) as BiomeId[];
     const pool = getBanterPool('biome_change');

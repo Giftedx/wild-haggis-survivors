@@ -488,6 +488,31 @@ export const EN_STRINGS: LocaleTree = {
         b: 'One mair dunt an\' it\'s lights oot.',
         c: 'Gie it laldy — nothin\' tae lose noo.',
         d: 'Hangin\' by a thistle.',
+        iron_belly: {
+          a: 'The wall\'s shakin\' — mind the cracks.',
+          b: 'Even iron rings when it\'s nearly through.',
+          c: 'Belly\'s loud — nae in a guid way.',
+        },
+        moor_runner: {
+          a: 'Legs owe a debt — pay in blood or bail.',
+          b: 'Ye\'re slower than yer shadow noo.',
+          c: 'Run\'s ower if ye don\'t move smarter.',
+        },
+        glen_forager: {
+          a: 'Satchel\'s light — so are ye, almost.',
+          b: 'Wrong pick, wrang moment. Survive it.',
+          c: 'Forager\'s gambit — dice are up.',
+        },
+        surefoot: {
+          a: 'Footing slipped — find it or fold.',
+          b: 'Stones turned traitor underhoof.',
+          c: 'Balance is a luxury ye dinnae have.',
+        },
+        pipe_breath: {
+          a: 'Wind knocked oot — pipe\'s whistlin\' empty.',
+          b: 'One bad note from silence. Breathe.',
+          c: 'Lungs say stop; pride says nae.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -689,6 +714,31 @@ export const EN_STRINGS: LocaleTree = {
         a: 'Back fae the brink. Deep breath.',
         b: 'Still here. Still kickin\'.',
         c: 'Steady the heid. Yer awright.',
+        iron_belly: {
+          a: 'Wall\'s back — paint it thicker next time.',
+          b: 'Iron remembers how tae hold.',
+          c: 'Shrugged it off. Mostly.',
+        },
+        moor_runner: {
+          a: 'Feet found the beat again.',
+          b: 'Back in stride — nae funeral yet.',
+          c: 'Second wind — third if ye need it.',
+        },
+        glen_forager: {
+          a: 'Satchel still shut — that\'s a win.',
+          b: 'Ye lived tae forage anither day.',
+          c: 'Bit o\' colour back in the cheeks.',
+        },
+        surefoot: {
+          a: 'Planted again — guid.',
+          b: 'Footing honest. Heid follows.',
+          c: 'Steady as ye meant tae be.',
+        },
+        pipe_breath: {
+          a: 'Breath back in the tune.',
+          b: 'Pipes warm — play on.',
+          c: 'Air\'s yours again. Use it.',
+        },
       },
       biome_change: {
         a: 'Different smell tae the air here.',
