@@ -27,6 +27,7 @@ describe('in-run HUD / game / juice i18n smoke', () => {
     assertResolves('ui.hud.dash_cooldown_pct', { pct: 50 });
     assertResolves('ui.hud.dash_label');
     assertResolves('ui.hud.dps_line', { dps: 123 });
+    assertResolves('ui.hud.curse_chip', { name: 'Heavy Legs' });
     assertResolves('ui.hud.combo_bonus', { pct: 10 });
     assertResolves('ui.hud.combo', { count: 5, bonus: t('ui.hud.combo_bonus', { pct: 5 }) });
     assertResolves('ui.hud.combo', { count: 0, bonus: '' });

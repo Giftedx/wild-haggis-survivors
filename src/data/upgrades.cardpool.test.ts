@@ -6,8 +6,6 @@ describe('buildCardPool', () => {
     const pool = buildCardPool([], [], {});
     const statIds = STAT_CARDS.map((c) => c.id);
     for (const id of statIds) {
-      // boost_drift is intentionally disabled via LEVELUP_DRIFT_CARD_ENABLED flag
-      if (id === 'boost_drift') continue;
       expect(pool.some((c) => c.id === id), `Missing stat card: ${id}`).toBe(true);
     }
   });

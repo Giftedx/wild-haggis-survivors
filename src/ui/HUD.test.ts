@@ -99,6 +99,14 @@ describe('HUD', () => {
     expect((hud as any).hpText.text).toBe('10/110');
   });
 
+  it('shows curse chip when curseNameKey is provided', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    hud.update(100, 100, 2, 0.4, 10, 1, 2, undefined, undefined, undefined, undefined, undefined, undefined, 'curse.heavy_legs.name');
+    expect((hud as any).curseChipText.visible).toBe(true);
+    expect((hud as any).curseChipText.text as string).toContain('Heavy Legs');
+  });
+
   it('shows dash readiness row with suffix when on cooldown', () => {
     const scene = createScene();
     const hud = new HUD(scene);
@@ -140,7 +148,7 @@ describe('HUD', () => {
       boss: '#ff9595',
     };
     const coloredTargets = [
-      'hpText', 'levelText', 'timerText', 'killText', 'pauseText', 'bossNameText',
+      'hpText', 'levelText', 'timerText', 'killText', 'pauseText', 'bossNameText', 'curseChipText',
     ];
     for (const key of coloredTargets) {
       const obj = (hud as any)[key];

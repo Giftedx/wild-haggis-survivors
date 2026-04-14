@@ -336,7 +336,7 @@ export const STAT_CARDS: UpgradeCard[] = [
   },
 ];
 
-const LEVELUP_DRIFT_CARD_ENABLED = false;
+const LEVELUP_DRIFT_CARD_ENABLED = true;
 
 /**
  * Build the available card pool based on current player state.

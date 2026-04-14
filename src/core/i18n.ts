@@ -324,6 +324,8 @@ export const EN_STRINGS: LocaleTree = {
       dash_ready: 'ready',
       dash_cooldown_pct: '{pct}%',
       dps_line: 'DPS: {dps}',
+      /** Shown under the wave objective when the run started with a curse. */
+      curse_chip: 'Curse: {name}',
     },
     pause: {
       title: 'PAUSED',

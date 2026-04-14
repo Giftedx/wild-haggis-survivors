@@ -1071,6 +1071,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       row.evolutionKey = w.evolutionKey;
       row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / w.cooldownMs), 0, 1);
     }
+    const curseNameKey = this.activeCurseKey
+      ? getCurseByKey(this.activeCurseKey)?.nameKey ?? null
+      : null;
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
       this.xpSystem.getLevel(),
@@ -1083,7 +1086,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.getDashCooldownFraction(),
       this.hudWeaponScratch,
       this.ownedPassives,
-      wn
+      wn,
+      curseNameKey,
     );
   }
 

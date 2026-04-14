@@ -25,6 +25,9 @@ export class HUD {
   private levelText!: Phaser.GameObjects.Text;
   private timerText!: Phaser.GameObjects.Text;
   private objectiveText!: Phaser.GameObjects.Text;
+  /** Shown when the run has an active curse (trade reminder). */
+  private curseChipText!: Phaser.GameObjects.Text;
+  private prevCurseNameKey: string | null = null;
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
@@ -118,6 +121,7 @@ export class HUD {
     boss: string;
     objective: string;
     dps: string;
+    curse: string;
   } | null = null;
 
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
@@ -167,6 +171,10 @@ export class HUD {
     this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '', {
       ...style, fontSize: '14px', color: '#b8a88a',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
+
+    this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '', {
+      fontFamily: 'monospace', fontSize: '12px', color: '#c49bbf',
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
 
     // Kill count
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
@@ -248,6 +256,7 @@ export class HUD {
         this.levelText,
         this.timerText,
         this.objectiveText,
+        this.curseChipText,
         this.killText,
         this.pauseText,
         this.shieldIcon,
@@ -275,10 +284,12 @@ export class HUD {
         boss: '#ff9595',     // boss name — lifted from the default dim red
         objective: '#e6efff',
         dps: '#d9e4ff',
+        curse: '#f5e0f8',
       };
       this.hpBarBg.setFillStyle(0x080b12, 0.95);
       this.xpBarBg.setFillStyle(0x080b12, 0.95);
       this.objectiveText.setColor(this.hcPalette.objective);
+      this.curseChipText.setColor(this.hcPalette.curse);
       this.dpsText.setColor(this.hcPalette.dps);
       this.hpText.setColor(this.hcPalette.text);
       this.levelText.setColor(this.hcPalette.text);
@@ -330,6 +341,7 @@ export class HUD {
     const topY = y + this.topSafePad;
     this.timerText.setPosition(x + width / 2, topY);
     this.objectiveText.setPosition(x + width / 2, topY + 30 * this.uiScale);
+    this.curseChipText.setPosition(x + width / 2, topY + 50 * this.uiScale);
     this.killText.setPosition(x + width - 12, topY);
     this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
     this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
@@ -363,7 +375,9 @@ export class HUD {
     weapons?: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
     passives?: string[],
     /** When reusing a pre-sized weapons buffer, only the first N entries are read. */
-    weaponSlotCount?: number
+    weaponSlotCount?: number,
+    /** i18n key for curse short name (`curse.*.name`), or null if no curse. */
+    curseNameKey?: string | null,
   ): void {
     this.refreshResponsiveLayout();
     const hpDisplay = Math.max(0, Math.round(hp));
@@ -436,6 +450,17 @@ export class HUD {
     // timer with the ladder color for visual feedback on difficulty ramps.
     this.timerText.setColor(this.hcPalette?.timer ?? waveColor);
     this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
+
+    const ck = curseNameKey ?? null;
+    if (ck !== this.prevCurseNameKey) {
+      this.prevCurseNameKey = ck;
+      if (ck) {
+        this.curseChipText.setText(t('ui.hud.curse_chip', { name: t(ck) }));
+        this.curseChipText.setVisible(true);
+      } else {
+        this.curseChipText.setVisible(false);
+      }
+    }
 
     const overCap = enemyCount >= BALANCE.hud.ENEMY_WARN_THRESHOLD;
     // Only update kill/enemy text when values change
