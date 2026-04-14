@@ -110,3 +110,4 @@
 - [x] Save: `coerceSelectedVariant` non-string + `evaluateVariantUnlocks` no-delta — `save.test.ts` (malformed `selectedVariant` → classic; max progress + full `VARIANT_KEYS` → empty `newlyUnlockedVariants`). 817→819 tests.
 - [x] Save: `migrateSave` non-object + `bestEndlessSeconds` coercion — `save.test.ts` / `save.endless.test.ts` (`null`/`undefined`/`[]`/string → default save; floor/clamp/`NaN`/`Infinity` for endless). 819→822 tests.
 - [x] Save: `migrateSave` `runHistory` coercion — FIFO tail (`MAX_RUN_HISTORY`), `weaponKeys`/`curseKey`/`level`/`isVictory` normalization, non-array → `[]` (`save.test.ts`). 822→825 tests.
+- [x] Save: `computeGoldReward` time normalization + `applyRunSummary` history context — rounded/clamped `timeSurvivedSec`; `RunHistoryContext` → entry fields; falsy `curseKey` omitted. 825→828 tests.

@@ -264,3 +264,82 @@ describe('gold reward — curse multiplier', () => {
     expect(computeGoldReward({ ...base, goldMult: Number.NaN })).toBe(584);
   });
 });
+
+describe('computeGoldReward time normalization', () => {
+  const zeros = {
+    enemiesKilled: 0,
+    bossGold: 0,
+    coinGold: 0,
+    bestCombo: 0,
+    victory: false,
+  } as const;
+
+  it('rounds fractional survival seconds into the reward base', () => {
+    expect(
+      computeGoldReward({
+        ...zeros,
+        timeSurvivedSec: 299.9,
+      })
+    ).toBe(120);
+  });
+
+  it('treats negative survival time as 0 in the reward base', () => {
+    expect(
+      computeGoldReward({
+        ...zeros,
+        timeSurvivedSec: -40,
+        enemiesKilled: 100,
+      })
+    ).toBe(Math.floor(100 * 0.4));
+  });
+});
+
+describe('applyRunSummary run history context', () => {
+  it('writes context fields on the appended entry and skips curseKey when empty', () => {
+    const afterFirst = applyRunSummary(
+      createDefaultSave(),
+      {
+        timeSurvivedSec: 72,
+        enemiesKilled: 15,
+        bossGold: 0,
+        coinGold: 0,
+        bestCombo: 4,
+        victory: true,
+      },
+      {
+        level: 9,
+        bossKills: 3,
+        variantKey: 'moor_runner',
+        weaponKeys: ['thistle_shot', 'bagpipes'],
+        curseKey: 'gold_rush',
+      }
+    );
+    const firstEntry = afterFirst.save.runHistory[afterFirst.save.runHistory.length - 1];
+    expect(firstEntry.level).toBe(9);
+    expect(firstEntry.bossKills).toBe(3);
+    expect(firstEntry.variantKey).toBe('moor_runner');
+    expect(firstEntry.weaponKeys).toEqual(['thistle_shot', 'bagpipes']);
+    expect(firstEntry.curseKey).toBe('gold_rush');
+
+    const afterSecond = applyRunSummary(
+      afterFirst.save,
+      {
+        timeSurvivedSec: 10,
+        enemiesKilled: 1,
+        bossGold: 0,
+        coinGold: 0,
+        bestCombo: 0,
+        victory: false,
+      },
+      {
+        level: 1,
+        bossKills: 0,
+        curseKey: '',
+        variantKey: 'classic',
+        weaponKeys: [],
+      }
+    );
+    const secondEntry = afterSecond.save.runHistory[afterSecond.save.runHistory.length - 1];
+    expect(secondEntry.curseKey).toBeUndefined();
+  });
+});
