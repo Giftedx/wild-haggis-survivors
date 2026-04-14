@@ -4,6 +4,8 @@ import { BALANCE } from '../core/BalanceConfig';
 import { getSettingsManager } from '../core/SettingsManager';
 import { getCameraViewport } from './cameraViewport';
 import { t } from '../core/i18n';
+import type { CurseKey } from '../data/curses';
+import { formatHudCurseChipLine } from './formatHudCurseChip';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -27,7 +29,7 @@ export class HUD {
   private objectiveText!: Phaser.GameObjects.Text;
   /** Shown when the run has an active curse (trade reminder). */
   private curseChipText!: Phaser.GameObjects.Text;
-  /** Cache signature `nameKey|goldPct` so chip text updates if either changes. */
+  /** Cache active curse key so chip text updates only when the run curse changes. */
   private prevCurseChipSig: string = '';
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
@@ -377,10 +379,8 @@ export class HUD {
     passives?: string[],
     /** When reusing a pre-sized weapons buffer, only the first N entries are read. */
     weaponSlotCount?: number,
-    /** i18n key for curse short name (`curse.*.name`), or null if no curse. */
-    curseNameKey?: string | null,
-    /** Gold bonus % from the curse def; omit with no curse. */
-    curseGoldPct?: number | null,
+    /** Active run curse, or null/omit if none — same source as pause overlay (`formatHudCurseChipLine`). */
+    activeCurseKey?: CurseKey | null,
   ): void {
     this.refreshResponsiveLayout();
     const hpDisplay = Math.max(0, Math.round(hp));
@@ -454,15 +454,12 @@ export class HUD {
     this.timerText.setColor(this.hcPalette?.timer ?? waveColor);
     this.objectiveText.setColor(this.hcPalette?.objective ?? '#9fb0cf');
 
-    const ck = curseNameKey ?? null;
-    const pct = curseGoldPct ?? null;
-    const sig = ck ? `${ck}|${pct ?? ''}` : '';
+    const sig = activeCurseKey ?? '';
     if (sig !== this.prevCurseChipSig) {
       this.prevCurseChipSig = sig;
-      if (ck) {
-        this.curseChipText.setText(
-          t('ui.hud.curse_chip', { name: t(ck), pct: pct ?? 0 }),
-        );
+      const line = formatHudCurseChipLine(activeCurseKey ?? null);
+      if (line) {
+        this.curseChipText.setText(line);
         this.curseChipText.setVisible(true);
       } else {
         this.curseChipText.setVisible(false);

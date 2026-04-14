@@ -102,7 +102,7 @@ describe('HUD', () => {
   it('shows curse chip when curseNameKey is provided', () => {
     const scene = createScene();
     const hud = new HUD(scene);
-    hud.update(100, 100, 2, 0.4, 10, 1, 2, undefined, undefined, undefined, undefined, undefined, undefined, 'curse.heavy_legs.name', 30);
+    hud.update(100, 100, 2, 0.4, 10, 1, 2, undefined, undefined, undefined, undefined, undefined, undefined, 'heavy_legs');
     expect((hud as any).curseChipText.visible).toBe(true);
     expect((hud as any).curseChipText.text as string).toContain('Heavy Legs');
     expect((hud as any).curseChipText.text as string).toContain('30');
