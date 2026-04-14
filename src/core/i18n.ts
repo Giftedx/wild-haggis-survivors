@@ -524,6 +524,46 @@ export const EN_STRINGS: LocaleTree = {
         a: 'Now THAT\'S a proper weapon.',
         b: 'Legendary. As it should be.',
         c: 'The moor trembles. Good.',
+        thistle_shot: {
+          a: 'Thistle barbs — sharpened tae spite.',
+          b: 'Nae a soft prick noo. That\'s the spirit.',
+          c: 'Every needle earned its legend.',
+        },
+        bagpipe_blast: {
+          a: 'Drone turned weapon — the glen\'s deafened.',
+          b: 'Blow till the windows rattle. Guid.',
+          c: 'That\'s nae a tune — that\'s a declaration.',
+        },
+        caber_toss: {
+          a: 'Tree\'s away — pure lumber justice.',
+          b: 'Heave ho — the moor clears a path.',
+          c: 'Spinning timber — naebody stands twice.',
+        },
+        scotch_mist: {
+          a: 'Mist wi\' teeth. Lovely.',
+          b: 'Ye cannae see it — but it sees them.',
+          c: 'Weather turned nasty. Their problem.',
+        },
+        haggis_hurler: {
+          a: 'Haggis evolved — chaos o\' the finest kind.',
+          b: 'Naebody survives a well-aimed supper.',
+          c: 'The platter\'s lethal noo. Fair.',
+        },
+        nessie_tentacle: {
+          a: 'Loch\'s lendin\' a hand. Tentacle tax paid.',
+          b: 'Somethin\' grabbed the deep end — an\' it\'s yers.',
+          c: 'Splash o\' legend. Splash o\' pain.',
+        },
+        claymore: {
+          a: 'Big sword energy. The moor approves.',
+          b: 'Two-handed trouble — swing once, end it.',
+          c: 'Steel wi\' stories. Mair stories comin\'.',
+        },
+        bagpipes: {
+          a: 'The pipes woke up proper. Run.',
+          b: 'Skirl turned slaughter — beautiful.',
+          c: 'Every note a cut. Pure ceilidh violence.',
+        },
       },
       curse_start: {
         generic: {

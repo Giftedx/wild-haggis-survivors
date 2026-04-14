@@ -147,6 +147,48 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.weapon_evolve.b',
       'ui.banter.weapon_evolve.c',
     ],
+    keysByTag: {
+      thistle_shot: [
+        'ui.banter.weapon_evolve.thistle_shot.a',
+        'ui.banter.weapon_evolve.thistle_shot.b',
+        'ui.banter.weapon_evolve.thistle_shot.c',
+      ],
+      bagpipe_blast: [
+        'ui.banter.weapon_evolve.bagpipe_blast.a',
+        'ui.banter.weapon_evolve.bagpipe_blast.b',
+        'ui.banter.weapon_evolve.bagpipe_blast.c',
+      ],
+      caber_toss: [
+        'ui.banter.weapon_evolve.caber_toss.a',
+        'ui.banter.weapon_evolve.caber_toss.b',
+        'ui.banter.weapon_evolve.caber_toss.c',
+      ],
+      scotch_mist: [
+        'ui.banter.weapon_evolve.scotch_mist.a',
+        'ui.banter.weapon_evolve.scotch_mist.b',
+        'ui.banter.weapon_evolve.scotch_mist.c',
+      ],
+      haggis_hurler: [
+        'ui.banter.weapon_evolve.haggis_hurler.a',
+        'ui.banter.weapon_evolve.haggis_hurler.b',
+        'ui.banter.weapon_evolve.haggis_hurler.c',
+      ],
+      nessie_tentacle: [
+        'ui.banter.weapon_evolve.nessie_tentacle.a',
+        'ui.banter.weapon_evolve.nessie_tentacle.b',
+        'ui.banter.weapon_evolve.nessie_tentacle.c',
+      ],
+      claymore: [
+        'ui.banter.weapon_evolve.claymore.a',
+        'ui.banter.weapon_evolve.claymore.b',
+        'ui.banter.weapon_evolve.claymore.c',
+      ],
+      bagpipes: [
+        'ui.banter.weapon_evolve.bagpipes.a',
+        'ui.banter.weapon_evolve.bagpipes.b',
+        'ui.banter.weapon_evolve.bagpipes.c',
+      ],
+    },
   },
   {
     context: 'curse_start',

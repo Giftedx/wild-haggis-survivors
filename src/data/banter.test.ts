@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BANTER_POOLS, BANTER_KEYS, getBanterPool, type BanterContext } from './banter';
 import { BOSSES } from './enemies';
 import { CURSES } from './curses';
+import { WEAPON_DEFS, type WeaponKey } from './weapons';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
@@ -35,6 +36,16 @@ describe('BANTER_POOLS structure', () => {
     const tags = Object.keys(pool!.keysByTag ?? {});
     for (const ck of curseKeys) {
       expect(tags, `curse_start missing tag '${ck}'`).toContain(ck);
+    }
+  });
+
+  it('weapon_evolve has keysByTag for every weapon', () => {
+    const weaponKeys = Object.keys(WEAPON_DEFS) as WeaponKey[];
+    const pool = getBanterPool('weapon_evolve');
+    expect(pool, 'weapon_evolve pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const wk of weaponKeys) {
+      expect(tags, `weapon_evolve missing tag '${wk}'`).toContain(wk);
     }
   });
 
