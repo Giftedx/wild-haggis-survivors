@@ -28,7 +28,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['e2e/**/*.ts', 'playwright.config.ts'],
+    files: ['e2e/**/*.ts', 'playwright.config.ts', 'vite.config.ts'],
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',
