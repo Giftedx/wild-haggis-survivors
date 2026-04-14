@@ -480,7 +480,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // 200) so banter feels like ambient soul, not stepped-on celebration.
       if (!this.firstKillSeen) {
         this.firstKillSeen = true;
-        this.banter?.request('first_blood');
+        this.banter?.request('first_blood', { tag: this.activeVariant?.key });
       }
       if (wasBoss) {
         // enemyKey for a boss is the boss's own key (see BOSSES defs) —

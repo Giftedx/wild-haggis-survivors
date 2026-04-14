@@ -270,6 +270,33 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.first_blood.b',
       'ui.banter.first_blood.c',
     ],
+    keysByTag: {
+      iron_belly: [
+        'ui.banter.first_blood.iron_belly.a',
+        'ui.banter.first_blood.iron_belly.b',
+        'ui.banter.first_blood.iron_belly.c',
+      ],
+      moor_runner: [
+        'ui.banter.first_blood.moor_runner.a',
+        'ui.banter.first_blood.moor_runner.b',
+        'ui.banter.first_blood.moor_runner.c',
+      ],
+      glen_forager: [
+        'ui.banter.first_blood.glen_forager.a',
+        'ui.banter.first_blood.glen_forager.b',
+        'ui.banter.first_blood.glen_forager.c',
+      ],
+      surefoot: [
+        'ui.banter.first_blood.surefoot.a',
+        'ui.banter.first_blood.surefoot.b',
+        'ui.banter.first_blood.surefoot.c',
+      ],
+      pipe_breath: [
+        'ui.banter.first_blood.pipe_breath.a',
+        'ui.banter.first_blood.pipe_breath.b',
+        'ui.banter.first_blood.pipe_breath.c',
+      ],
+    },
   },
   {
     context: 'kill_streak',

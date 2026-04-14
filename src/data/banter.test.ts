@@ -61,6 +61,16 @@ describe('BANTER_POOLS structure', () => {
     }
   });
 
+  it('first_blood has keysByTag for every non-classic variant', () => {
+    const nonClassic = VARIANTS.filter((v) => v.key !== 'classic');
+    const pool = getBanterPool('first_blood');
+    expect(pool, 'first_blood pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const v of nonClassic) {
+      expect(tags, `first_blood missing tag '${v.key}'`).toContain(v.key);
+    }
+  });
+
   it('biome_change has keysByTag for every biome', () => {
     const biomeIds = Object.keys(BIOMES) as BiomeId[];
     const pool = getBanterPool('biome_change');

@@ -628,6 +628,31 @@ export const EN_STRINGS: LocaleTree = {
         a: 'First yin doon. Off ye trot.',
         b: 'Hoof prints in the heather. Game on.',
         c: 'That\'s the ice broken.',
+        iron_belly: {
+          a: 'First dunt bounced — the belly never flinched.',
+          b: 'Wall\'s up; one enemy doon. Business.',
+          c: 'Iron held. They didnae.',
+        },
+        moor_runner: {
+          a: 'First kill at a canter — habits already.',
+          b: 'Ye didn\'t stop tae chat. Respect.',
+          c: 'Speed merchant: first sale complete.',
+        },
+        glen_forager: {
+          a: 'First harvest — satchel\'s nae empty noo.',
+          b: 'Picked clean. One less pest.',
+          c: 'Taste o\' the glen — bitter fer them.',
+        },
+        surefoot: {
+          a: 'First strike — planted, nae slidin\'.',
+          b: 'Footing held. They didnae.',
+          c: 'Clean step, clean finish.',
+        },
+        pipe_breath: {
+          a: 'First note cut deep — nae encore.',
+          b: 'Breath out, problem doon.',
+          c: 'Drone o\' doom. First verse.',
+        },
       },
       kill_streak: {
         a: 'Pure mental, this.',
