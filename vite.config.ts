@@ -36,6 +36,8 @@ export default defineConfig({
   },
   build: {
     target: 'ES2020',
+    // Default 500kb warns on main (~508kb) and vendor-phaser (~1.4mb); latter is expected with manualChunks.
+    chunkSizeWarningLimit: 1600,
     rollupOptions: {
       output: {
         manualChunks: {
