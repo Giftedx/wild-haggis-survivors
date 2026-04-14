@@ -1,3 +1,4 @@
+import { GAME_CANVAS_ARIA_LABEL } from '../src/constants/gameCanvasA11y';
 import { expect, test } from './fixtures';
 
 test.describe('production build smoke', () => {
@@ -19,10 +20,7 @@ test.describe('production build smoke', () => {
     // main.ts sets role + aria-label in `callbacks.postBoot` — stricter than any stray canvas.
     const canvas = page.locator('canvas[role="application"]');
     await expect(canvas).toBeVisible({ timeout: 60_000 });
-    await expect(canvas).toHaveAttribute(
-      'aria-label',
-      'Wild Haggis Survivors game. Use WASD or arrow keys to move. Press ESC to pause.',
-    );
+    await expect(canvas).toHaveAttribute('aria-label', GAME_CANVAS_ARIA_LABEL);
     // User gesture: exercises audio unlock + input paths without relying on gamepad.
     await canvas.click({ position: { x: 8, y: 8 } });
 

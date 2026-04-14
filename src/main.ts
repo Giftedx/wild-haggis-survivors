@@ -16,6 +16,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined' && 'serviceWorker' in n
   }
 }
 import { installAudioActivationOnUserGesture } from './systems/audioContext';
+import { GAME_CANVAS_ARIA_LABEL } from './constants/gameCanvasA11y';
 import { GAME } from './config';
 import { BootScene } from './scenes/BootScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
@@ -75,10 +76,7 @@ const config: Phaser.Types.Core.GameConfig = {
       const canvas = game.canvas ?? document.querySelector('canvas');
       if (!canvas) return;
       canvas.setAttribute('role', 'application');
-      canvas.setAttribute(
-        'aria-label',
-        'Wild Haggis Survivors game. Use WASD or arrow keys to move. Press ESC to pause.',
-      );
+      canvas.setAttribute('aria-label', GAME_CANVAS_ARIA_LABEL);
     },
   },
 };
