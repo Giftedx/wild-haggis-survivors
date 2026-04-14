@@ -1,9 +1,9 @@
 # Strategy — Wild Haggis Survivors
 
-**Last updated:** 2026-04-13 (loop 84 BUILD)
+**Last updated:** 2026-04-13 (loop 85 BUILD)
 
 ## Project Phase
-**Steady state.** v2.1.0. Hardening campaign complete. 810 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
+**Steady state.** v2.1.0. Hardening campaign complete. 814 tests (Vitest) on clean `master`. All P1s resolved. Full review rotation done (9/9) + 2nd pass on scenes. Remaining backlog = P2 polish + optional features — diminishing returns. Project is healthy and well-tested.
 
 ## Remaining Work (all optional)
 Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
@@ -44,11 +44,12 @@ Open items are thin — none are crash/gameplay bugs. Pick only if motivated:
 - **Loop 82:** `StatComposer.test.ts` — `getPlayerStats` with `unlockedUpgrades: undefined` (simulated legacy/malformed JSON) matches pristine baseline via `?? []`.
 - **Loop 83:** `enemies.test.ts` — `getEnemyDisplayName` (map + title-case fallback + `''`); `getEnemyConfigsByKeys` skips unknown keys, keeps order.
 - **Loop 84:** `formatVariantModifierSummary` (classic baseline vs `moor_runner` multi-line); `getAvailableEnemyTypes` respects `appearsAt` (tourist @0, chef after 90s).
+- **Loop 85:** `coerceVariantKeys` (non-array → `[]`, stable `VARIANT_KEYS` order); `meetsVariantUnlockCondition` (`classic` default, `moor_runner` best-time threshold); `isVariantUnlocked` + `unlockedVariants` override.
 - **Next if bored:** Optional in-game listen pass; P2 scene/UI tests only on regression.
 
-## Metrics Snapshot (2026-04-13, loop 84)
+## Metrics Snapshot (2026-04-13, loop 85)
 - Source files: 105+, Test files: 104+
-- Tests: 810 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
+- Tests: 814 passing; loop 62 baseline 769 on clean tree. **CI rule:** run `npm test` on a clean checkout after test-only commits — loop 61 shipped duck tests without `notifyGameplaySfxImpulse` impl (fixed loop 62).
 - `as any`: 0 production (was 17)
 - TODO/FIXME: 0
 - Biggest files: GameScene 1664, Enemy 1257, WeaponSystem 1032

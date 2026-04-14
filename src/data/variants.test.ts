@@ -5,6 +5,9 @@ import {
   getVariantByKey,
   isVariantKey,
   formatVariantModifierSummary,
+  coerceVariantKeys,
+  meetsVariantUnlockCondition,
+  isVariantUnlocked,
   type VariantKey,
 } from './variants';
 import { t } from '../core/i18n';
@@ -81,5 +84,31 @@ describe('variants', () => {
     expect(summary).not.toBe(t('variant.summary.baseline'));
     expect(summary.length).toBeGreaterThan(0);
     expect(summary).toContain('  |  ');
+  });
+
+  it('coerceVariantKeys returns empty for non-arrays', () => {
+    expect(coerceVariantKeys(null)).toEqual([]);
+    expect(coerceVariantKeys('classic')).toEqual([]);
+    expect(coerceVariantKeys({})).toEqual([]);
+  });
+
+  it('coerceVariantKeys keeps known keys in VARIANT_KEYS order', () => {
+    expect(coerceVariantKeys(['pipe_breath', 'bogus', 'classic', 12])).toEqual(['classic', 'pipe_breath']);
+  });
+
+  it('meetsVariantUnlockCondition follows each unlock type', () => {
+    const classic = getVariantByKey('classic');
+    const moor = getVariantByKey('moor_runner');
+    const zero = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(meetsVariantUnlockCondition(classic, zero)).toBe(true);
+    expect(meetsVariantUnlockCondition(moor, { ...zero, bestTime: 599 })).toBe(false);
+    expect(meetsVariantUnlockCondition(moor, { ...zero, bestTime: 600 })).toBe(true);
+  });
+
+  it('isVariantUnlocked short-circuits when key is listed in unlockedVariants', () => {
+    const moor = getVariantByKey('moor_runner');
+    const low = { bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 0 };
+    expect(isVariantUnlocked(moor, low)).toBe(false);
+    expect(isVariantUnlocked(moor, { ...low, unlockedVariants: ['moor_runner'] })).toBe(true);
   });
 });
