@@ -45,8 +45,10 @@ export class PauseMenu {
     const { x, y, width, height } = this.hooks.getUiViewport();
     const d = 250;
     const scene = this.scene;
-
     const hc = this.settings.load().highContrastUi;
+    const shortViewport = height < 420;
+    const titlePx = shortViewport ? '34px' : '46px';
+    const titleStroke = shortViewport ? (hc ? 6 : 4) : (hc ? 8 : 5);
     const backdropAlpha = hc ? 0.95 : 0.85;
     this.elements.push(
       scene.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, backdropAlpha)
@@ -54,8 +56,8 @@ export class PauseMenu {
     );
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
-        fontFamily: 'monospace', fontSize: '46px', color: hc ? '#ffe08a' : '#d4a017',
-        fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: hc ? 8 : 5,
+        fontFamily: 'monospace', fontSize: titlePx, color: hc ? '#ffe08a' : '#d4a017',
+        fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: titleStroke,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
     const quipIndex = Phaser.Math.Between(1, 6);
@@ -71,7 +73,7 @@ export class PauseMenu {
     const pMins = Math.floor(timeSec / 60);
     const pSecs = Math.floor(timeSec % 60);
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.37, [
+      scene.add.text(x + width / 2, y + height * 0.34, [
         t('ui.pause.time_line', { m: pMins, s: pSecs.toString().padStart(2, '0') }),
         t('ui.pause.stats_mid', { kills: this.hooks.getKillCount(), level: this.hooks.getLevel() }),
         t('ui.pause.stats_loadout', {
@@ -87,12 +89,37 @@ export class PauseMenu {
     const curseLine = this.hooks.getActiveCurseLine?.() ?? null;
     if (curseLine) {
       this.elements.push(
-        scene.add.text(x + width / 2, y + height * 0.43, curseLine, {
+        scene.add.text(x + width / 2, y + height * 0.415, curseLine, {
           fontFamily: 'monospace', fontSize: '13px', color: hc ? '#f5d0e8' : '#c49bbf',
           align: 'center',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
     }
+
+    // RESUME before the long elite-affix reference list so the button never covers traits text.
+    const resumeY = y + height * 0.48;
+    const resumeBtn = scene.add.rectangle(x + width / 2, resumeY, 220, 50, 0x005eb8)
+      .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
+    resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
+    resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
+    resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
+    this.elements.push(resumeBtn);
+    this.elements.push(
+      scene.add.text(x + width / 2, resumeY, t('ui.pause.resume'), {
+        fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+    );
+
+    const passives = this.hooks.getOwnedPassives();
+    // Bottom-anchored controls so END RUN / audio never clip off short viewports (mobile landscape, etc.).
+    const quitY = y + height - 33;
+    const audioY = quitY - 42;
+    const passiveBottomY = passives.length > 0 ? audioY - 14 : null;
+    const eliteRegionBottom = passiveBottomY !== null ? passiveBottomY : audioY - 10;
+    const eliteMinY = resumeY + 28;
+    const eliteMaxY = Math.max(eliteRegionBottom - 24, eliteMinY);
+    let eliteAffixTop = Math.min(y + height * 0.56, eliteRegionBottom - 100);
+    eliteAffixTop = Phaser.Math.Clamp(eliteAffixTop, eliteMinY, eliteMaxY);
 
     const eliteAffixLines = ELITE_AFFIX_DISPLAY_ORDER.map((id) => {
       const name = t(`ui.elite_affix.${id}.name`);
@@ -102,11 +129,11 @@ export class PauseMenu {
     this.elements.push(
       scene.add.text(
         x + width / 2,
-        y + height * 0.465,
+        eliteAffixTop,
         `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
         {
           fontFamily: 'monospace',
-          fontSize: '11px',
+          fontSize: shortViewport ? '9px' : '10px',
           color: hc ? '#a8b8c8' : '#6a7a88',
           align: 'center',
           lineSpacing: 2,
@@ -115,23 +142,11 @@ export class PauseMenu {
       ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1)
     );
 
-    const resumeBtn = scene.add.rectangle(x + width / 2, y + height * 0.58, 220, 50, 0x005eb8)
-      .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
-    resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
-    resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
-    this.elements.push(resumeBtn);
-    this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.58, t('ui.pause.resume'), {
-        fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-    );
-
     const prefs = this.settings.load();
     let sfxOn = prefs.sfxVolume > 0.001;
     const sfxLabel = (on: boolean) =>
       t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const sfxText = scene.add.text(x + width / 2 - 70, y + height * 0.66, sfxLabel(sfxOn), {
+    const sfxText = scene.add.text(x + width / 2 - 70, audioY, sfxLabel(sfxOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
       color: sfxOn ? '#88cc88' : '#886666',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
@@ -148,7 +163,7 @@ export class PauseMenu {
     let musicOn = prefs.musicVolume > 0.001;
     const musicLabel = (on: boolean) =>
       t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const musicText = scene.add.text(x + width / 2 + 80, y + height * 0.66, musicLabel(musicOn), {
+    const musicText = scene.add.text(x + width / 2 + 80, audioY, musicLabel(musicOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
       color: musicOn ? '#88cc88' : '#886666',
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
@@ -163,8 +178,7 @@ export class PauseMenu {
     });
     this.elements.push(musicText);
 
-    const passives = this.hooks.getOwnedPassives();
-    if (passives.length > 0) {
+    if (passives.length > 0 && passiveBottomY !== null) {
       const passivePauseLine = (k: string) => {
         const path = `ui.passive.pause_short.${k}`;
         const s = t(path);
@@ -183,7 +197,7 @@ export class PauseMenu {
       }
       this.elements.push(
         scene.add.text(
-          x + width / 2, y + height * 0.74,
+          x + width / 2, passiveBottomY,
           `${t('ui.pause.passives_heading')}\n${passiveList}`,
           {
             fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00',
@@ -193,14 +207,14 @@ export class PauseMenu {
       );
     }
 
-    const quitBtn = scene.add.rectangle(x + width / 2, y + height * 0.84, 220, 50, 0x444444)
+    const quitBtn = scene.add.rectangle(x + width / 2, quitY, 220, 50, 0x444444)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
     quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
     quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
     this.elements.push(quitBtn);
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.84, t('ui.pause.quit'), {
+      scene.add.text(x + width / 2, quitY, t('ui.pause.quit'), {
         fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );

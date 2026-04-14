@@ -74,6 +74,8 @@ export class JuiceSystem {
   private freezeCooldownMs: number = 0;
 
   private slowMotionRemainingMs: number = 0;
+  /** Tracks pause transitions so we can restore combo text without per-frame `setVisible(true)`. */
+  private uiPauseWasActive = false;
 
   constructor(
     scene: Phaser.Scene & ISceneContext,
@@ -191,6 +193,13 @@ export class JuiceSystem {
   /** Call each frame */
   update(delta: number, hpFraction?: number): void {
     this.refreshFixedLayout();
+    const uiPause = this.time.has('UI_PAUSE');
+    if (uiPause) {
+      this.comboText.setVisible(false);
+    } else if (this.uiPauseWasActive && this.comboCount > 0) {
+      this.syncComboText();
+    }
+    this.uiPauseWasActive = uiPause;
     const timeScale = this.time.getEffectiveTimeScale();
     const scaledDelta = delta * timeScale;
 
@@ -462,6 +471,7 @@ export class JuiceSystem {
 
   /** Toast notification — slides in from the right and fades out, stacks vertically */
   showToast(message: string, color: string = '#ffffff'): void {
+    if (this.time.has('UI_PAUSE')) return;
     const { x, y, width } = this.getUiViewport();
     const stackIndex = Math.min(this.activeToasts, 2);
     const yOffset = y + 130 + stackIndex * 36;

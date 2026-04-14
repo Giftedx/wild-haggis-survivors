@@ -52,6 +52,7 @@ export class GameOverScene extends Phaser.Scene {
       enemiesKilled: summary.enemiesKilled,
       bossGold: summary.bossGold,
       coinGold: summary.coinGold ?? 0,
+      goldMult: summary.goldMult ?? 1,
     });
     const goldBreakdown = t('ui.gameOver.gold_breakdown', gb);
 
@@ -134,11 +135,11 @@ export class GameOverScene extends Phaser.Scene {
     // (+94) and variant chip (+140). Soul Charter: failure must be
     // *informative and compassionate, never shaming*.
     if (!isVictory && this.payload.deathCause) {
-      this.renderDeathInsight(panelCenterX, panelTop + 118, d + 3, this.payload.deathCause, uiScale, PANEL_W);
+      this.renderDeathInsight(panelCenterX, panelTop + 116, d + 3, this.payload.deathCause, uiScale, PANEL_W);
     }
 
     // Variant chip — warm identity reminder with haggis sprite + flavor text
-    const variantChipY = panelTop + 140;
+    const variantChipY = panelTop + 162;
     const variantChip = this.add
       .rectangle(panelCenterX, variantChipY, 596, 48, 0x16213a, 0.96)
       .setScrollFactor(0)
@@ -222,32 +223,32 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     const statsPanel = this.add
-      .rectangle(panelCenterX, panelTop + 204, 596, 92, 0x131d32, 0.95)
+      .rectangle(panelCenterX, panelTop + 226, 596, 92, 0x131d32, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283a5f, 1)
       .setAlpha(0);
     const goldPanel = this.add
-      .rectangle(panelCenterX, panelTop + 446, 596, 70, 0x141d2f, 0.95)
+      .rectangle(panelCenterX, panelTop + 468, 596, 70, 0x141d2f, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x2f435f, 1)
       .setAlpha(0);
     const weaponDamagePanel = this.add
-      .rectangle(panelCenterX, panelTop + 330, 596, 158, 0x0f1828, 0.95)
+      .rectangle(panelCenterX, panelTop + 352, 596, 158, 0x0f1828, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x243552, 1)
       .setAlpha(0);
     const unlockPanel = this.add
-      .rectangle(panelCenterX, panelTop + 528, 596, 94, 0x121a2a, 0.95)
+      .rectangle(panelCenterX, panelTop + 550, 596, 94, 0x121a2a, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283447, 1)
       .setAlpha(0);
     this.tweens.add({ targets: [statsPanel, weaponDamagePanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
 
-    const statBaseY = panelTop + 178;
+    const statBaseY = panelTop + 200;
     const statGap = 142;
     const pb = this.payload.previousBests;
     this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600,
@@ -262,11 +263,15 @@ export class GameOverScene extends Phaser.Scene {
       pb && (summary.bestCombo ?? 0) > pb.bestCombo);
 
     const loadoutSummaryText = this.buildBoundedLoadoutSummary(this.payload.buildSummary, 2);
+    const weaponsHead =
+      this.payload.weaponCount === 1
+        ? t('ui.gameOver.weapons_line_one', { evolved: this.payload.evolvedCount })
+        : t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount });
     const loadoutSummary = this.add
       .text(
         panelCenterX,
-        panelTop + 266,
-        `${t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount })}\n${loadoutSummaryText}`,
+        panelTop + 288,
+        `${weaponsHead}\n${loadoutSummaryText}`,
         {
           fontFamily: 'monospace',
           fontSize: '13px',
@@ -352,16 +357,16 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: goldText, alpha: 1, duration: 240, delay: 1080 });
 
-    this.addRunResultUnlockContent(panelCenterX, panelTop + 490, d + 3, runResult.newlyUnlockedVariants, 1140);
+    this.addRunResultUnlockContent(panelCenterX, panelTop + 512, d + 3, runResult.newlyUnlockedVariants, 1140);
 
     // Seed readout — sits just above the action buttons. For daily runs it
     // prefixes "DAILY" and shows the date; for seeded runs just the code.
     // Tapping copies the code to the clipboard so players can share.
     if (this.payload.seedCode) {
-      this.renderSeedReadout(panelCenterX, panelTop + 568, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
+      this.renderSeedReadout(panelCenterX, panelTop + 590, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
     }
 
-    const buttonsY = panelTop + 612;
+    const buttonsY = panelTop + 634;
     this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
       musicEngine.stop();
@@ -409,7 +414,7 @@ export class GameOverScene extends Phaser.Scene {
         align: 'center',
         wordWrap: { width: panelWidth - 48 },
       })
-      .setOrigin(0.5)
+      .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(depth)
       .setAlpha(0);
@@ -589,13 +594,13 @@ export class GameOverScene extends Phaser.Scene {
 
     if (isNewBest) {
       const badge = this.add
-        .text(x, y + 36, t('ui.gameOver.new_best'), {
+        .text(x + 46, y + 10, t('ui.gameOver.new_best'), {
           fontFamily: 'monospace',
-          fontSize: '9px',
+          fontSize: '8px',
           color: '#d4a017',
           fontStyle: 'bold',
         })
-        .setOrigin(0.5)
+        .setOrigin(0, 0.5)
         .setScrollFactor(0)
         .setDepth(depth + 1)
         .setAlpha(0)

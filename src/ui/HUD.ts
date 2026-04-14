@@ -21,6 +21,8 @@ export class HUD {
   private hpText!: Phaser.GameObjects.Text;
 
   private xpBarBg!: Phaser.GameObjects.Rectangle;
+  /** Top edge shadow on the XP bar — must move with `refreshResponsiveLayout` (was stuck at initial Y). */
+  private xpBarTopLine!: Phaser.GameObjects.Rectangle;
   private xpBarFill!: Phaser.GameObjects.Rectangle;
   private xpBarHighlight!: Phaser.GameObjects.Rectangle;
 
@@ -185,11 +187,12 @@ export class HUD {
 
     // XP bar — layered for depth (bg → dark shadow → fill → top highlight)
     const xpY = height - this.XP_BAR_H - 4;
-    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x0a0810)
+    // Dark slate — not near-black — so an empty XP track reads as UI chrome, not a dead band.
+    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x161a22)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
     // Inner shadow line at top of bg (depth)
-    this.addEl(this.scene.add.rectangle(0, xpY, width, 1, 0x000000, 0.6)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
+    this.xpBarTopLine = this.addEl(this.scene.add.rectangle(0, xpY, width, 1, 0x000000, 0.38)
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Rectangle;
     this.xpBarFill = this.addEl(this.scene.add.rectangle(0, xpY, 0, this.XP_BAR_H, COLORS.XP_BAR)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
     // Top highlight on fill (gold shimmer line at top)
@@ -290,7 +293,7 @@ export class HUD {
         curse: '#f5e0f8',
       };
       this.hpBarBg.setFillStyle(0x080b12, 0.95);
-      this.xpBarBg.setFillStyle(0x080b12, 0.95);
+      this.xpBarBg.setFillStyle(0x121820, 0.94);
       this.objectiveText.setColor(this.hcPalette.objective);
       this.curseChipText.setColor(this.hcPalette.curse);
       this.dpsText.setColor(this.hcPalette.dps);
@@ -338,6 +341,8 @@ export class HUD {
 
     this.xpBarBg.setPosition(x, xpY);
     this.xpBarBg.width = width;
+    this.xpBarTopLine.setPosition(x, xpY);
+    this.xpBarTopLine.width = width;
     this.xpBarFill.setPosition(x, xpY);
     this.xpBarHighlight.setPosition(x, xpY);
 

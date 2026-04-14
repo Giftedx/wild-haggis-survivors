@@ -2,7 +2,21 @@ import { registerSW } from 'virtual:pwa-register';
 import Phaser from 'phaser';
 
 if (import.meta.env.PROD) {
-  registerSW({ immediate: true });
+  registerSW({
+    immediate: true,
+    onRegistered(registration) {
+      if (!registration) return;
+      const ping = () => {
+        void registration.update();
+      };
+      // Tab focus: pick up new deploys without asking playtesters to hard-refresh.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') ping();
+      });
+      // Periodic check while the game tab stays open (autoUpdate applies when SW changes).
+      window.setInterval(ping, 5 * 60 * 1000);
+    },
+  });
 }
 if (import.meta.env.DEV && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   // Defensive dev cleanup: prevent stale PWA code from masking layout fixes.

@@ -14,6 +14,7 @@ import {
   parseSeedInput,
 } from '../utils/rng';
 import type { GameSceneInitData } from './GameScene';
+import { getCameraViewport } from '../ui/cameraViewport';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -43,6 +44,10 @@ export class MainMenuScene extends Phaser.Scene {
 
   create(): void {
     const { width, height } = this.scale;
+    const vp = getCameraViewport(this);
+    const cx = vp.x + vp.width / 2;
+    const uiTop = vp.y;
+    const uiBottom = vp.y + vp.height;
     const meta = this.saveManager.load();
     const gameplay = loadSave();
     const settings = getSettingsManager().load();
@@ -65,7 +70,7 @@ export class MainMenuScene extends Phaser.Scene {
     // === Layer -10: distant mountain ridge ===
     // Two passes of triangles for depth — back ridge further, front ridge lower.
     const mtGfx = this.add.graphics().setDepth(-10);
-    const horizonY = height * 0.62;
+    const horizonY = height * 0.62; // full-canvas art — keeps moor edge-to-edge
     const rng = new Phaser.Math.RandomDataGenerator(['menu_mountains']);
     // Back ridge (darker, smaller triangles)
     mtGfx.fillStyle(mountainDark, 0.85);
@@ -165,7 +170,7 @@ export class MainMenuScene extends Phaser.Scene {
     // between runs. Gentle sway tween (skipped on reduceParticles).
     const mascotTexture = getVariantByKey(DEFAULT_VARIANT_KEY).textureKey;
     const mascot = this.add
-      .sprite(width / 2, 58, mascotTexture)
+      .sprite(cx, uiTop + 58, mascotTexture)
       .setScale(2.4 * uiScale)
       .setDepth(-1);
     if (!reduceParticles) {
@@ -189,9 +194,9 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     // === Title (bigger, bobs) ===
-    const titleY = 116;
+    const titleY = uiTop + 116;
     const titleText = this.add
-      .text(width / 2, titleY, t('ui.menu.title'), {
+      .text(cx, titleY, t('ui.menu.title'), {
         fontFamily: 'monospace',
         fontSize: '48px',
         color: titleColor,
@@ -220,7 +225,7 @@ export class MainMenuScene extends Phaser.Scene {
       ? t('ui.menu.kill_credits', { count: meta.totalKills })
       : t('ui.menu.kill_credits_fresh');
     const killCreditText = this.add
-      .text(width / 2, titleY + 88, killCreditCopy, {
+      .text(cx, titleY + 88, killCreditCopy, {
         fontFamily: 'monospace',
         fontSize: '20px',
         color: subduedColor,
@@ -243,7 +248,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     const hintText = this.add
       .text(
-        width / 2,
+        cx,
         titleY + 128,
         hintCopy,
         {
@@ -251,7 +256,7 @@ export class MainMenuScene extends Phaser.Scene {
           fontSize: '14px',
           color: hintColor,
           align: 'center',
-          wordWrap: { width: width - 80 },
+          wordWrap: { width: Math.max(120, vp.width - 80) },
         }
       )
       .setOrigin(0.5);
@@ -263,7 +268,7 @@ export class MainMenuScene extends Phaser.Scene {
     // (with a ~60px cushion) and keep it compact.
     const btnW = 240;
     const btnH = 48;
-    const bx = width / 2;
+    const bx = cx;
     const startY = titleY + 128 + 60;
     let metaY = startY + btnH + 14;
     let abandonBtn: Phaser.GameObjects.Rectangle | null = null;
@@ -393,7 +398,8 @@ export class MainMenuScene extends Phaser.Scene {
     // on fresh saves so the first-run player sees only the core ladder.
     const hasAnyRun = gameplay.totalRuns > 0;
     const reflectionY = metaY2 + btnH + 14;
-    const halfBtnW = (btnW - 12) / 2;
+    const reflectionGap = 12;
+    const halfBtnW = (btnW - reflectionGap) / 2;
     let chronicleBtn: Phaser.GameObjects.Rectangle | null = null;
     let deedsBtn: Phaser.GameObjects.Rectangle | null = null;
     const goChronicle = () => {
@@ -405,8 +411,8 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('Deeds');
     };
     if (hasAnyRun) {
-      // Chronicle (left)
-      const chronicleX = bx - (halfBtnW + 6) / 2;
+      // Chronicle (left) — centers align to full btnW with an exact 12px gap (was off by 3px).
+      const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
       chronicleBtn = this.add
         .rectangle(chronicleX, reflectionY, halfBtnW, 42, 0x3a2c52, 1)
         .setInteractive({ useHandCursor: true });
@@ -417,8 +423,10 @@ export class MainMenuScene extends Phaser.Scene {
           fontSize: '13px',
           color: '#e8d4a0',
           fontStyle: 'bold',
+          align: 'center',
+          wordWrap: { width: Math.max(72, halfBtnW - 16) },
         })
-        .setOrigin(0.5);
+        .setOrigin(0.5, 0.5);
       chronicleTxt.setScale(uiScale);
       chronicleBtn.on('pointerover', () => chronicleBtn!.setFillStyle(0x4a3865));
       chronicleBtn.on('pointerout', () => chronicleBtn!.setFillStyle(0x3a2c52));
@@ -427,7 +435,7 @@ export class MainMenuScene extends Phaser.Scene {
       chronicleTxt.on('pointerdown', goChronicle);
 
       // Deeds (right)
-      const deedsX = bx + (halfBtnW + 6) / 2;
+      const deedsX = bx + reflectionGap / 2 + halfBtnW / 2;
       deedsBtn = this.add
         .rectangle(deedsX, reflectionY, halfBtnW, 42, 0x523a2c, 1)
         .setInteractive({ useHandCursor: true });
@@ -438,8 +446,10 @@ export class MainMenuScene extends Phaser.Scene {
           fontSize: '13px',
           color: '#f5e1a6',
           fontStyle: 'bold',
+          align: 'center',
+          wordWrap: { width: Math.max(72, halfBtnW - 16) },
         })
-        .setOrigin(0.5);
+        .setOrigin(0.5, 0.5);
       deedsTxt.setScale(uiScale);
       deedsBtn.on('pointerover', () => deedsBtn!.setFillStyle(0x6a4a38));
       deedsBtn.on('pointerout', () => deedsBtn!.setFillStyle(0x523a2c));
@@ -478,18 +488,27 @@ export class MainMenuScene extends Phaser.Scene {
     // for cross-platform simplicity — a full in-game keyboard overlay is
     // future work if mobile UX feedback demands it.
     const customSeedY = optY + 42 + 16;
+    const seedLinkIdle = highContrastUi ? '#b8c6dc' : '#8e9bb8';
     const customSeedTxt = this.add
       .text(bx, customSeedY, t('ui.menu.enter_seed'), {
         fontFamily: 'monospace',
-        fontSize: '13px',
-        color: subduedColor,
+        fontSize: '14px',
+        color: seedLinkIdle,
         fontStyle: 'italic',
+        stroke: '#06080c',
+        strokeThickness: highContrastUi ? 3 : 2,
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     customSeedTxt.setScale(uiScale);
-    customSeedTxt.on('pointerover', () => customSeedTxt.setColor(titleColor));
-    customSeedTxt.on('pointerout', () => customSeedTxt.setColor(subduedColor));
+    customSeedTxt.on('pointerover', () => {
+      customSeedTxt.setColor(titleColor);
+      customSeedTxt.setStroke('#000000', highContrastUi ? 4 : 3);
+    });
+    customSeedTxt.on('pointerout', () => {
+      customSeedTxt.setColor(seedLinkIdle);
+      customSeedTxt.setStroke('#06080c', highContrastUi ? 3 : 2);
+    });
     customSeedTxt.on('pointerdown', () => this.promptCustomSeed());
 
     // === Campfire hearth anchor below the buttons ===
@@ -497,8 +516,9 @@ export class MainMenuScene extends Phaser.Scene {
     // orange cone above them. Visually anchors the button cluster as a
     // "sitting around the fire" moment. Skipped in reduceParticles.
     if (!reduceParticles) {
-      const fireX = width / 2;
-      const fireY = optY + 72;
+      const fireX = cx;
+      // Slightly higher + warmer core so it reads as hearth embers, not an XP orb pickup.
+      const fireY = optY + 52;
       const fireBase = this.add
         .ellipse(fireX, fireY + 6, 40, 8, 0x3a2410, 0.85)
         .setDepth(-1);
@@ -509,7 +529,7 @@ export class MainMenuScene extends Phaser.Scene {
         .ellipse(fireX, fireY - 2, 22, 12, 0xffc255, 0.55)
         .setDepth(-1);
       const fireCore = this.add
-        .ellipse(fireX, fireY - 4, 10, 8, 0xfff6a8, 0.9)
+        .ellipse(fireX, fireY - 4, 8, 6, 0xff8833, 0.88)
         .setDepth(-1);
       // ── Layered smoke wisps (multiple, staggered, drifting) ──
       const smokeWisps: Phaser.GameObjects.Ellipse[] = [];
@@ -604,12 +624,12 @@ export class MainMenuScene extends Phaser.Scene {
         gold: gameplay.gold,
       });
       this.add
-        .text(width / 2, height - 54, statsLine, {
+        .text(cx, uiBottom - 58, statsLine, {
           fontFamily: 'monospace',
-          fontSize: '10px',
-          color: '#4a5670',
+          fontSize: '11px',
+          color: highContrastUi ? '#6a7894' : '#556280',
           align: 'center',
-          wordWrap: { width: width - 40 },
+          wordWrap: { width: Math.max(160, vp.width - 48) },
         })
         .setOrigin(0.5, 1)
         .setScale(uiScale);
@@ -633,35 +653,42 @@ export class MainMenuScene extends Phaser.Scene {
           trend: trendLabel,
         });
         this.add
-          .text(width / 2, height - 38, historyLine, {
+          .text(cx, uiBottom - 40, historyLine, {
             fontFamily: 'monospace',
-            fontSize: '10px',
-            color: '#3d4e6a',
+            fontSize: '11px',
+            color: highContrastUi ? '#5a6888' : '#4a5c78',
             fontStyle: 'italic',
             align: 'center',
-            wordWrap: { width: width - 40 },
+            wordWrap: { width: Math.max(160, vp.width - 48) },
           })
           .setOrigin(0.5, 1)
           .setScale(uiScale);
       }
     }
 
-    // === Bottom credit strip ===
-    this.add
-      .text(width - 14, height - 26, t('ui.menu.built_on_moor'), {
+    // === Bottom credit strip (inside visible viewport / safe area) ===
+    const creditX = vp.x + vp.width - Math.max(10, 14 * uiScale);
+    const creditBuilt = this.add
+      .text(creditX, uiBottom - 28, t('ui.menu.built_on_moor'), {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: '#3a4760',
+        color: highContrastUi ? '#5a6888' : '#445572',
         fontStyle: 'italic',
       })
-      .setOrigin(1, 1);
-    this.add
-      .text(width - 14, height - 12, `v${__APP_VERSION__}`, {
+      .setOrigin(1, 1)
+      .setScale(uiScale);
+    const creditVer = this.add
+      .text(creditX, uiBottom - 12, `v${__APP_VERSION__}`, {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: '#3a4760',
+        color: highContrastUi ? '#5a6888' : '#445572',
       })
-      .setOrigin(1, 1);
+      .setOrigin(1, 1)
+      .setScale(uiScale);
+    if (highContrastUi) {
+      creditBuilt.setStroke('#0a0c10', 3);
+      creditVer.setStroke('#0a0c10', 3);
+    }
 
     // Ambient moor wind — cozy between storms
     if (!reduceParticles) audio.startAmbientWind();

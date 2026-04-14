@@ -232,45 +232,73 @@ export class UpgradeCardsUI {
       throw new Error(`Missing upgrade card icon texture: ${card.icon} (${card.id})`);
     }
 
-    // Card icon
-    const icon = this.scene.add.sprite(x, y - 65, card.icon)
+    // Card icon — leave headroom for title + body + footer (rarity strip).
+    const icon = this.scene.add.sprite(x, y - 72, card.icon)
       .setScale(1.4).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 
     // Name — fontSize scales with uiScale so a 1.4x comfort setting
     // actually enlarges card text instead of leaving it tiny.
     const descColor = this.highContrastUi ? '#d8dfe8' : '#bbbbbb';
-    const name = this.scene.add.text(x, y - 18, t(card.name), {
+    const name = this.scene.add.text(x, y - 28, t(card.name), {
       fontFamily: 'monospace', fontSize: this.fs(17), color: '#e8d4a0',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(name);
 
-    // Description
-    const desc = this.scene.add.text(x, y + 30, t(card.description), {
-      fontFamily: 'monospace', fontSize: this.fs(14), color: descColor,
-      align: 'center', lineSpacing: 4,
-      wordWrap: { width: w - 20 },
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
+    // Description — shrink font if needed so body text never sits on the rarity pill.
+    const rarityPillY = y + h / 2 - 14;
+    const descTop = y + 4;
+    const maxDescH = Math.max(36, rarityPillY - 14 - descTop);
+    const descStr = t(card.description);
+    let descFontPx = 14;
+    let desc: Phaser.GameObjects.Text | undefined;
+    while (descFontPx >= 11) {
+      const candidate = this.scene.add.text(x, descTop, descStr, {
+        fontFamily: 'monospace',
+        fontSize: this.fs(descFontPx),
+        color: descColor,
+        align: 'center',
+        lineSpacing: 3,
+        wordWrap: { width: w - 22 },
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
+      if (candidate.height <= maxDescH) {
+        desc = candidate;
+        break;
+      }
+      candidate.destroy();
+      descFontPx -= 1;
+    }
+    if (!desc) {
+      desc = this.scene.add.text(x, descTop, descStr, {
+        fontFamily: 'monospace',
+        fontSize: this.fs(11),
+        color: descColor,
+        align: 'center',
+        lineSpacing: 2,
+        wordWrap: { width: w - 22 },
+      }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
+    }
     this.elements.push(desc);
 
-    // Rarity pill — colored background tag instead of plain text, so the
-    // rarity reads at a glance even during frantic level-up decisions.
-    const rarityPillY = y + h / 2 - 18;
+    // Rarity pill — width from measured text (i18n-safe), not char count × fixed pitch.
     const rarityText = t(`ui.common.rarity.${card.rarity}`);
-    const rarityPillBg = this.scene.add.rectangle(x, rarityPillY, rarityText.length * 9 + 16, 20, borderColor, 0.25)
-      .setScrollFactor(0).setDepth(depth + 1)
-      .setStrokeStyle(1, borderColor, 0.6);
-    this.elements.push(rarityPillBg);
     const rarityLabel = this.scene.add.text(x, rarityPillY, rarityText, {
       fontFamily: 'monospace', fontSize: this.fs(11), fontStyle: 'bold',
       color: `#${borderColor.toString(16).padStart(6, '0')}`,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2);
+    const pillW = Math.max(rarityLabel.width + 20, 72);
+    const pillH = 22;
+    const rarityPillBg = this.scene.add.rectangle(x, rarityPillY, pillW, pillH, borderColor, 0.25)
+      .setScrollFactor(0).setDepth(depth + 1)
+      .setStrokeStyle(1, borderColor, 0.6);
+    this.elements.push(rarityPillBg);
     this.elements.push(rarityLabel);
 
-    // Hover — scale up card group
+    // Hover — scale up card chrome; description stays unscaled so fitted body text
+    // does not re-overlap the footer after hover.
     const cardElements: { setScale(x: number, y: number): void; scaleX: number; scaleY: number }[] =
-      [bg, icon, name, desc, rarityLabel, rarityPillBg];
+      [bg, icon, name, rarityLabel, rarityPillBg];
     bg.on('pointerover', () => {
       bg.setFillStyle(0x2a2244);
       for (const el of cardElements) {
@@ -285,7 +313,6 @@ export class UpgradeCardsUI {
       // every time the player hovers-then-unhovers a card.
       icon.setScale(1.4);
       name.setScale(1);
-      desc.setScale(1);
       rarityLabel.setScale(1);
       rarityPillBg.setScale(1);
       bg.setScale(1);

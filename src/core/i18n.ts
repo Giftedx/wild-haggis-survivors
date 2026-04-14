@@ -212,6 +212,7 @@ export const EN_STRINGS: LocaleTree = {
       stat_passives: 'Curios',
       stat_combo: 'Best Streak',
       weapons_line: '{count} weapons ({evolved} went legendary)',
+      weapons_line_one: '1 weapon ({evolved} went legendary)',
       damage_by_weapon: 'Who put the boot in',
       gold_title: '{amount} golden haggis earned',
       gold_breakdown: 'Time {timeGold}  |  Kills {killGold}  |  Boss {bossGold}  |  Coins {coinGold}',
@@ -328,7 +329,8 @@ export const EN_STRINGS: LocaleTree = {
       dash_label: 'Dash ',
       dash_ready: 'ready',
       dash_cooldown_pct: '{pct}%',
-      dps_line: 'DPS: {dps}',
+      /** Rolling 1s window — same meter as HUD damage log, not kill streak. */
+      dps_line: 'DPS (1s): {dps}',
       /** Shown under the wave objective when the run started with a curse. */
       curse_chip: 'Curse: {name} (+{pct}% gold)',
     },

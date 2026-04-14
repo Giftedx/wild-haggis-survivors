@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { computeGoldReward } from '../utils/save';
 import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
 
 describe('formatClockTime', () => {
@@ -89,5 +90,26 @@ describe('computeGoldBreakdown', () => {
     expect(result.timeGold).toBe(120);
     expect(result.killGold).toBe(80);
     expect(result.total).toBe(120 + 80 + 50 + 30);
+    expect(result.timeGold + result.killGold + result.bossGold + result.coinGold).toBe(result.total);
+  });
+
+  it('matches computeGoldReward when goldMult is not 1 (display lines sum to earned total)', () => {
+    const summary = {
+      timeSurvivedSec: 48,
+      enemiesKilled: 44,
+      bossGold: 0,
+      coinGold: 1,
+      goldMult: 1.18,
+      victory: false,
+    };
+    const result = computeGoldBreakdown({
+      timeSurvivedSec: summary.timeSurvivedSec,
+      enemiesKilled: summary.enemiesKilled,
+      bossGold: summary.bossGold,
+      coinGold: summary.coinGold ?? 0,
+      goldMult: summary.goldMult,
+    });
+    expect(result.total).toBe(computeGoldReward(summary));
+    expect(result.timeGold + result.killGold + result.bossGold + result.coinGold).toBe(result.total);
   });
 });

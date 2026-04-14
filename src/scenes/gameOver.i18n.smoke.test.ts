@@ -70,6 +70,7 @@ describe('game over / run result i18n smoke', () => {
     assertResolves('ui.gameOver.stat_passives');
     assertResolves('ui.gameOver.stat_combo');
     assertResolves('ui.gameOver.weapons_line', { count: 2, evolved: 1 });
+    assertResolves('ui.gameOver.weapons_line_one', { evolved: 0 });
     assertResolves('ui.gameOver.damage_by_weapon');
     assertResolves('ui.gameOver.gold_title', { amount: 42 });
     assertResolves('ui.gameOver.gold_breakdown', {

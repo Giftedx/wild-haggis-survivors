@@ -32,7 +32,7 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { tryCameraShake } from '../utils/cameraShake';
-import { getCameraViewport } from '../ui/cameraViewport';
+import { getCameraViewport, resetCameraViewportCache } from '../ui/cameraViewport';
 import {
   createGameplaySessionGuard,
   finalizeResumeStartup,
@@ -864,7 +864,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Controls hint — show for first 30 seconds then fade out
     const { x: hintX, y: hintY, width: hintW, height: hintH } = this.getUiViewport();
     const hint = this.add.text(hintX + hintW / 2, hintY + hintH - 36, t('ui.game.controls_hint'), {
-      fontFamily: 'monospace', fontSize: '13px', color: '#888888',
+      fontFamily: 'monospace',
+      fontSize: '13px',
+      color: '#a09890',
+      stroke: '#0a0a0c',
+      strokeThickness: 3,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
     this.tweens.add({ targets: hint, alpha: 0.8, duration: 500, delay: 4000 });
     this.hintHideHandle = this.updateTickers.addOnce('raw', 30000, () => {
@@ -940,6 +944,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private bindFilmGrainToViewportResize(): void {
     this.unbindFilmGrainViewportResize();
     this.filmGrainResizeHandler = () => {
+      // Resize can occur without advancing `time.now`; clear per-frame viewport cache so
+      // HUD / minimap / juice relayout read fresh dimensions immediately.
+      resetCameraViewportCache();
       this.scheduleFilmGrainRelayout();
     };
     this.scale.on('resize', this.filmGrainResizeHandler);
