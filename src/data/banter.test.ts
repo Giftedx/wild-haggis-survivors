@@ -101,6 +101,16 @@ describe('BANTER_POOLS structure', () => {
     }
   });
 
+  it('idle has keysByTag for every non-classic variant', () => {
+    const nonClassic = VARIANTS.filter((v) => v.key !== 'classic');
+    const pool = getBanterPool('idle');
+    expect(pool, 'idle pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const v of nonClassic) {
+      expect(tags, `idle missing tag '${v.key}'`).toContain(v.key);
+    }
+  });
+
   it('biome_change has keysByTag for every biome', () => {
     const biomeIds = Object.keys(BIOMES) as BiomeId[];
     const pool = getBanterPool('biome_change');

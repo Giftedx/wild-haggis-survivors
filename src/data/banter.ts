@@ -442,6 +442,33 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.idle.c',
       'ui.banter.idle.d',
     ],
+    keysByTag: {
+      iron_belly: [
+        'ui.banter.idle.iron_belly.a',
+        'ui.banter.idle.iron_belly.b',
+        'ui.banter.idle.iron_belly.c',
+      ],
+      moor_runner: [
+        'ui.banter.idle.moor_runner.a',
+        'ui.banter.idle.moor_runner.b',
+        'ui.banter.idle.moor_runner.c',
+      ],
+      glen_forager: [
+        'ui.banter.idle.glen_forager.a',
+        'ui.banter.idle.glen_forager.b',
+        'ui.banter.idle.glen_forager.c',
+      ],
+      surefoot: [
+        'ui.banter.idle.surefoot.a',
+        'ui.banter.idle.surefoot.b',
+        'ui.banter.idle.surefoot.c',
+      ],
+      pipe_breath: [
+        'ui.banter.idle.pipe_breath.a',
+        'ui.banter.idle.pipe_breath.b',
+        'ui.banter.idle.pipe_breath.c',
+      ],
+    },
   },
 ];
 

@@ -770,6 +770,31 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Listen tae the wind.',
         c: 'A wee breather.',
         d: 'Somethin\'s brewin\'. Always is.',
+        iron_belly: {
+          a: 'Even the wall needs a sit-down.',
+          b: 'Belly\'s quiet — dinnae trust it fully.',
+          c: 'Rest is tactical. So\'s pie.',
+        },
+        moor_runner: {
+          a: 'Stillness itch — feet want the next lap.',
+          b: 'Quiet\'s just the startin\' gun loadin\'.',
+          c: 'Breathin\' room — then back tae blur.',
+        },
+        glen_forager: {
+          a: 'Eyes still roamin\' — habit, that.',
+          b: 'Nae pickin\' just noo. Patience, thief.',
+          c: 'Satchel\'s patient. The moor isnae.',
+        },
+        surefoot: {
+          a: 'Standin\' still — but the map keeps turnin\'.',
+          b: 'Silence is just slow footwork.',
+          c: 'Calm feet, sharp ears.',
+        },
+        pipe_breath: {
+          a: 'Rest between phrases — still music.',
+          b: 'Hums in the chest — nae audience needed.',
+          c: 'Quiet stage — pipes tune themselves.',
+        },
       },
     },
   },

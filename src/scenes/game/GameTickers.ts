@@ -103,7 +103,7 @@ export class GameTickers {
 
     const nowMs = this.hooks.getScene().time.now;
     if (nowMs - this.lastBanterFireMs > 90_000) {
-      banter.request('idle');
+      banter.request('idle', { tag: this.hooks.getActiveVariantKey() });
       this.lastBanterFireMs = nowMs;
     }
 
