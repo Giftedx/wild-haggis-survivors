@@ -197,7 +197,9 @@ export class XPSystem {
   getLevel(): number { return this.currentLevel; }
   getXPFraction(): number {
     if (this.currentLevel >= XP.MAX_LEVEL) return 1; // Full bar at max level
-    return Math.min(1, this.currentXP / this.xpToNextLevel);
+    const need = this.xpToNextLevel;
+    if (need <= 0) return 1;
+    return Math.min(1, this.currentXP / need);
   }
   getGemGroup(): Phaser.GameObjects.Group { return this.gemPool; }
 

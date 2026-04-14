@@ -1202,11 +1202,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.getCritDamageMultiplier()
     );
     this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
-    this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHp() / this.player.getMaxHp());
+    this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHpFraction());
     // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw
     // delta so VFX don't stall during slow-mo and the combo meter still decays
     // at wall-clock rate.
-    this.juice.update(delta, this.player.getHp() / this.player.getMaxHp());
+    this.juice.update(delta, this.player.getHpFraction());
 
     // Boss HP bar + edge indicators
     this.updateBossHPBar();

@@ -405,7 +405,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.showHpBar && this.hpBarBg && this.hpBarFill) {
       this.hpBarBg.setPosition(this.x, this.y - 20);
       this.hpBarFill.setPosition(this.x - 12, this.y - 20);
-      this.hpBarFill.width = 24 * (this.hp / this.maxHp);
+      this.hpBarFill.width = 24 * (this.maxHp > 0 ? this.hp / this.maxHp : 0);
     }
     if (this.eliteAffixId && this.eliteAffixNameText) {
       this.eliteAffixNameText.setPosition(this.x, this.y - 22);

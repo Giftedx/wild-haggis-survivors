@@ -279,9 +279,10 @@ export class WeaponSystem {
         // Scale the cooldown reset by attackSpeedMultiplier and cooldownReduction.
         // Enforce an absolute 50ms minimum so extreme stacking can't produce
         // a per-frame fire rate that crashes the projectile pool.
+        const asp = Math.max(0.05, this.attackSpeedMultiplier);
         const effectiveCooldown = Math.max(
           BALANCE.weapons.minEffectiveCooldownMs,
-          (weapon.cooldownMs * (1 - this.cooldownReduction)) / this.attackSpeedMultiplier
+          (weapon.cooldownMs * (1 - this.cooldownReduction)) / asp
         );
         weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
           + effectiveCooldown;

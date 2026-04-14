@@ -76,7 +76,14 @@ class GlobalEventBus {
 
   emit<K extends keyof GlobalEvents>(event: K, payload: GlobalEvents[K]): void {
     for (const h of this.listeners.get(event) ?? []) {
-      h(payload);
+      try {
+        h(payload);
+      } catch (err) {
+        // One bad listener must not break unrelated systems (achievements, analytics, etc.).
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn('[GlobalEventBus] listener threw', event, err);
+        }
+      }
     }
   }
 }

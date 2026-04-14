@@ -52,6 +52,20 @@ describe('GlobalEventBus', () => {
     expect(() => globalEventBus.emit('TUTORIAL_COMPLETED', {})).not.toThrow();
   });
 
+  it('emit continues after a throwing listener', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const good = vi.fn();
+    const u1 = globalEventBus.on('bossEnraged', () => {
+      throw new Error('boom');
+    });
+    const u2 = globalEventBus.on('bossEnraged', good);
+    expect(() => globalEventBus.emit('bossEnraged', 'x')).not.toThrow();
+    expect(good).toHaveBeenCalledWith('x');
+    u1();
+    u2();
+    warn.mockRestore();
+  });
+
   it('does not leak between event types', () => {
     const handler = vi.fn();
     const unsub = globalEventBus.on('bossEnraged', handler);
