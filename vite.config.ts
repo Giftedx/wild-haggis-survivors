@@ -8,6 +8,19 @@ const pkg = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
 ) as { version: string };
 
+/** Node 25+ enables Web Storage in workers with a broken default; Vitest forks then warn and tests can see a useless `localStorage` proxy. */
+const nodeMajor = Number.parseInt(process.versions.node.split('.')[0] ?? '0', 10);
+const vitestNoWebStorage =
+  nodeMajor >= 25
+    ? {
+        poolOptions: {
+          forks: {
+            execArgv: ['--no-webstorage'],
+          },
+        },
+      }
+    : {};
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
@@ -60,5 +73,6 @@ export default defineConfig({
     globals: false,
     environment: 'node',
     include: ['src/**/*.{test,spec}.ts'],
+    ...vitestNoWebStorage,
   },
 });
