@@ -360,8 +360,12 @@ export const EN_STRINGS: LocaleTree = {
       stats_gold: 'Gold this run: {gold}g',
       /** Kill combo — current chain vs best this run (pause is a good place to brag). */
       stats_streak: 'Streak: {current} (best {best})',
-      /** Subtle affordance under RESUME — mirrors ESC / P bindings. */
-      keys_resume: 'ESC / P — resume',
+      /** Matches HUD bottom-left rolling DPS window. */
+      stats_dps: 'DPS (1s): {dps}',
+      /** Total weapon damage recorded this run (RunStatsTracker). */
+      stats_damage: 'Damage dealt: {dmg}',
+      /** Subtle affordance under RESUME — keyboard + gamepad Start. */
+      keys_resume: 'ESC / P / Start — resume',
       passives_heading: 'Curios:',
       /** Pause overlay — reference for gold elite trait names (lines use ui.elite_affix.*). */
       elite_affix_heading: 'Gold elites — traits:',
@@ -451,7 +455,7 @@ export const EN_STRINGS: LocaleTree = {
       treasure_collected: 'Chest cracked — that\'s a feed and a half (+25% HP)',
       golden_nearby: 'Glimmer o\' gold nearby!',
       golden_collected: 'Golden chest — nice wee earner! +{gold}g',
-      controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC or P to catch yir breath',
+      controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC, P, or Start to catch yir breath',
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',

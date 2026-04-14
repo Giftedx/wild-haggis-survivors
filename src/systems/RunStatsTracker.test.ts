@@ -8,6 +8,7 @@ describe('RunStatsTracker', () => {
     t.addWeaponDamage('magic_wand', 100);
     t.addWeaponDamage('garlic', 5);
     expect(t.snapshot()).toEqual({ garlic: 15, magic_wand: 100 });
+    expect(t.getTotalDamage()).toBe(115);
   });
 
   it('sortedWeaponDamageEntries orders by damage descending', () => {

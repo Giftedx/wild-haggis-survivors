@@ -483,6 +483,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return Math.max(0, this.dashCooldown / this.DASH_COOLDOWN_MS);
   }
   getDashCharges(): number { return this.dashCharges; }
+
+  /** Gamepad Start/Options (edge) — `GameScene` uses this for pause alongside ESC/P. */
+  consumePauseMenuEdge(): boolean {
+    return this.inputManager.consumeMenuPausePressed();
+  }
   getMaxDashCharges(): number { return this.maxDashCharges; }
   /** Double Dash perk: grant an extra max charge (also tops up current charges). */
   addDashCharge(): void {

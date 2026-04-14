@@ -1118,6 +1118,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // requestAnimationFrame to ~1fps when backgrounded, producing huge deltas on return)
     delta = Math.min(delta, 100);
 
+    // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
+    if (this.player.consumePauseMenuEdge()) {
+      this.toggleUiPause();
+    }
+
     this.timeManager.update(delta);
 
     // Raw tickers always advance (UI/run-end domain)
@@ -1353,6 +1358,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
             current: this.juice.getComboCount(),
             best: this.juice.getBestCombo(),
           }),
+          getLastHudDps: () => this.hud.getLastDisplayedDps(),
+          getRunDamageDealt: () => this.runStatsTracker.getTotalDamage(),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.abandonRunToMainMenu(),
         });

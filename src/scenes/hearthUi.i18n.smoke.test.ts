@@ -71,6 +71,8 @@ const MAIN_MENU_AND_PAUSE_DYNAMIC: ReadonlyArray<
   ['ui.pause.stats_loadout', { w: 0, c: 0 }],
   ['ui.pause.stats_gold', { gold: 0 }],
   ['ui.pause.stats_streak', { current: 5, best: 12 }],
+  ['ui.pause.stats_dps', { dps: 420 }],
+  ['ui.pause.stats_damage', { dmg: 99999 }],
   [
     'ui.loadout.sfx_toggle',
     { state: t('ui.common.on') },

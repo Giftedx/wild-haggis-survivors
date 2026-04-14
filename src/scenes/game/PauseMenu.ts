@@ -1,8 +1,9 @@
 /**
  * PauseMenu — builds and tears down the in-run pause overlay.
  *
- * Owns the backdrop, Scots quip, stats block, resume button, sfx/music
- * toggles, passive summary, and quit button. Exactly the UI that used to
+ * Owns the backdrop, Scots quip, stats block (time, kills, loadout, optional
+ * gold + streak), resume + key hint, sfx/music toggles, passive summary,
+ * and quit button. Exactly the UI that used to
  * live in GameScene.toggleUiPause — extracted so GameScene stops carrying
  * ~140 lines of widget construction.
  *
@@ -31,6 +32,10 @@ export interface PauseMenuHooks {
   getRunGoldEarned?: () => number;
   /** Kill-combo chain vs best — from JuiceSystem. */
   getKillStreakStats?: () => { current: number; best: number };
+  /** Rolling HUD DPS (1s window, same as bottom-left). */
+  getLastHudDps?: () => number;
+  /** Sum of weapon damage tracked this run (RunStatsTracker). */
+  getRunDamageDealt?: () => number;
   onResumeRequested(): void;
   onQuitRequested(): void;
 }
@@ -87,6 +92,14 @@ export class PauseMenu {
     const runGold = this.hooks.getRunGoldEarned?.() ?? 0;
     if (runGold > 0) {
       statLines.push(t('ui.pause.stats_gold', { gold: runGold }));
+    }
+    const dps = this.hooks.getLastHudDps?.() ?? 0;
+    if (dps > 0) {
+      statLines.push(t('ui.pause.stats_dps', { dps }));
+    }
+    const dmgDealt = this.hooks.getRunDamageDealt?.() ?? 0;
+    if (dmgDealt > 0) {
+      statLines.push(t('ui.pause.stats_damage', { dmg: dmgDealt }));
     }
     const streak = this.hooks.getKillStreakStats?.();
     if (streak && (streak.best >= 2 || streak.current >= 2)) {

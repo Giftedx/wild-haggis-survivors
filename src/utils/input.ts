@@ -7,6 +7,7 @@ const GAMEPAD_MOVE_DEADZONE = 0.22;
 /**
  * Unified input: virtual joystick (touch), gamepad (sticks + D-pad), and WASD / arrows.
  * Movement is merged with max length 1. Dash: Space, gamepad South / RT, right-half tap (touch).
+ * Pause: ESC/P handled in GameScene; gamepad Start/Options (`consumeMenuPausePressed`) polled there too.
  */
 export class InputManager {
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
@@ -29,6 +30,7 @@ export class InputManager {
 
   private pendingTouchDash = false;
   private prevGamepadDash = false;
+  private prevGamepadMenu = false;
 
   constructor(private scene: Phaser.Scene) {
     this.isTouchDevice = scene.sys.game.device.input.touch;
@@ -63,6 +65,22 @@ export class InputManager {
     }
     if (this.pollGamepadDashEdge()) return true;
     return false;
+  }
+
+  /**
+   * Edge-detected Start / Options (button 9) — pause menu toggle on consoles / handhelds.
+   * Matches common HTML5 gamepad layouts (Xbox Start, PlayStation Options).
+   */
+  consumeMenuPausePressed(): boolean {
+    const pad = this.scene.input.gamepad?.pad1;
+    if (!pad?.connected) {
+      this.prevGamepadMenu = false;
+      return false;
+    }
+    const menu = pad.buttons[9]?.pressed ?? false;
+    const edge = menu && !this.prevGamepadMenu;
+    this.prevGamepadMenu = menu;
+    return edge;
   }
 
   private pollGamepadDashEdge(): boolean {
@@ -250,5 +268,6 @@ export class InputManager {
     this.joystickPointerId = -1;
     this.pendingTouchDash = false;
     this.prevGamepadDash = false;
+    this.prevGamepadMenu = false;
   }
 }

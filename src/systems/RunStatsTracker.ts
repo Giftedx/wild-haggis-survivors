@@ -15,6 +15,13 @@ export class RunStatsTracker {
     return Object.fromEntries(this.weaponDamage);
   }
 
+  /** Sum of per-weapon damage — pause / game-over breakdowns. */
+  getTotalDamage(): number {
+    let s = 0;
+    for (const v of this.weaponDamage.values()) s += v;
+    return s;
+  }
+
   restore(snapshot: Record<string, number> | undefined): void {
     this.weaponDamage.clear();
     if (!snapshot) return;

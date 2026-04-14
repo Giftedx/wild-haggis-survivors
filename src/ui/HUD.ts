@@ -80,6 +80,8 @@ export class HUD {
   private dpsText!: Phaser.GameObjects.Text;
   private damageLog: number[] = [];
   private damageWindow: number = 0;
+  /** Last value written to the DPS line — for pause-menu stats. */
+  private lastDisplayedDps: number = 0;
 
   // Smooth HP bar color lerping — avoids hard snaps between thresholds
   private displayHpR: number = 0x44;
@@ -799,10 +801,16 @@ export class HUD {
     if (this.damageWindow >= 1000) {
       const totalDmg = this.damageLog.reduce((a, b) => a + b, 0);
       const dps = Math.round(totalDmg / (this.damageWindow / 1000));
+      this.lastDisplayedDps = dps;
       this.dpsText.setText(t('ui.hud.dps_line', { dps }));
       this.damageLog = [];
       this.damageWindow = 0;
     }
+  }
+
+  /** Rolling 1s DPS shown bottom-left — 0 until the first full window elapses. */
+  getLastDisplayedDps(): number {
+    return this.lastDisplayedDps;
   }
 
   setOnPause(callback: () => void): void {
