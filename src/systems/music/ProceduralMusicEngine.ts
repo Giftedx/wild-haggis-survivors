@@ -6,7 +6,7 @@
  */
 
 import { MOTION_TIMING } from '../../core/motionTiming';
-import { getAudioContext, getOutputNode } from '../audioContext';
+import { getAudioContext, getOutputNode, runWhenAudioActivated } from '../audioContext';
 import { expApproach } from './musicMath';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
@@ -56,10 +56,21 @@ class ProceduralMusicEngine {
   private fadingOut = false;
   /** Transient dip when heavy gameplay SFX fire (0 = no duck). */
   private musicSfxDuck = 0;
+  /** Avoid stacking `runWhenAudioActivated` retries for `start()`. */
+  private startRetryScheduled = false;
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
     const ctx = getAudioContext();
-    if (!ctx) return;
+    if (!ctx) {
+      if (!this.startRetryScheduled) {
+        this.startRetryScheduled = true;
+        runWhenAudioActivated(() => {
+          this.startRetryScheduled = false;
+          this.start();
+        });
+      }
+      return;
+    }
     this.ctx = ctx;
 
     if (ctx.state === 'suspended') void ctx.resume();

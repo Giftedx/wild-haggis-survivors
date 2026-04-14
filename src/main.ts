@@ -15,6 +15,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined' && 'serviceWorker' in n
       .catch(() => undefined);
   }
 }
+import { installAudioActivationOnUserGesture } from './systems/audioContext';
 import { GAME } from './config';
 import { BootScene } from './scenes/BootScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
@@ -67,6 +68,10 @@ const config: Phaser.Types.Core.GameConfig = {
     gamepad: true,
   },
 };
+
+if (typeof window !== 'undefined') {
+  installAudioActivationOnUserGesture(window);
+}
 
 const game = new Phaser.Game(config);
 

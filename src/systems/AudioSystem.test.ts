@@ -13,6 +13,8 @@ const fakeBus = { connect: vi.fn(), disconnect: vi.fn() };
 vi.mock('./audioContext', () => ({
   getAudioContext: () => mockCtx,
   getOutputNode: () => fakeBus,
+  /** Production queues retries until user gesture; tests with null ctx never flush. */
+  runWhenAudioActivated: vi.fn(),
 }));
 
 function makeFakeAudioContext(): AudioContext {

@@ -7,7 +7,7 @@
  * Oscillator detune spreads identical clips slightly to reduce phasing.
  */
 import { MOTION_TIMING } from '../core/motionTiming';
-import { getAudioContext, getOutputNode } from './audioContext';
+import { getAudioContext, getOutputNode, runWhenAudioActivated } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
 import { musicEngine } from './music/ProceduralMusicEngine';
 
@@ -24,16 +24,27 @@ export class AudioSystem {
   private enabled: boolean = true;
   /** masterVolume × sfxVolume from SettingsManager */
   private sfxGainMultiplier: number = 1;
+  /** Web Audio is gated on first user gesture — retry wiring once it unlocks. */
+  private awaitingAudioActivation = false;
+  private ambientRetryScheduled = false;
 
   constructor() {
-    // AudioContext requires user interaction to start on most browsers
-    // We'll create it lazily on first sound
+    // AudioContext is created after the first user gesture (see audioContext.ts).
   }
 
   private ensureContext(): AudioContext | null {
     if (this.ctx) return this.ctx;
     const ctx = getAudioContext();
-    if (!ctx) return null;
+    if (!ctx) {
+      if (!this.awaitingAudioActivation) {
+        this.awaitingAudioActivation = true;
+        runWhenAudioActivated(() => {
+          this.awaitingAudioActivation = false;
+          void this.ensureContext();
+        });
+      }
+      return null;
+    }
     this.ctx = ctx;
     this.masterGain = ctx.createGain();
     this.masterGain.gain.value = BASE_SFX_GAIN * this.sfxGainMultiplier * (this.enabled ? 1 : 0);
@@ -43,6 +54,7 @@ export class AudioSystem {
     } else {
       this.masterGain.connect(ctx.destination);
     }
+    this.awaitingAudioActivation = false;
     return ctx;
   }
 
@@ -391,7 +403,16 @@ export class AudioSystem {
   startAmbientWind(): void {
     if (this.ambientSource) return;
     const ctx = this.ensureContext();
-    if (!ctx || !this.masterGain) return;
+    if (!ctx || !this.masterGain) {
+      if (!this.ambientRetryScheduled) {
+        this.ambientRetryScheduled = true;
+        runWhenAudioActivated(() => {
+          this.ambientRetryScheduled = false;
+          this.startAmbientWind();
+        });
+      }
+      return;
+    }
 
     // Generate a brown noise buffer (2 seconds, loopable)
     const sampleRate = ctx.sampleRate;
