@@ -72,6 +72,43 @@ describe('audioContext', () => {
     expect((out as unknown as { disconnect: ReturnType<typeof vi.fn> }).disconnect).toHaveBeenCalled();
   });
 
+  it('installAudioActivationOnUserGesture registers pointer, touch, keyboard, and gamepad listeners', async () => {
+    vi.stubGlobal(
+      'AudioContext',
+      class Fake {
+        state = 'running';
+        destination = {} as AudioDestinationNode;
+        createDynamicsCompressor() {
+          return {
+            threshold: { value: 0 },
+            knee: { value: 0 },
+            ratio: { value: 0 },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+          };
+        }
+      },
+    );
+    vi.stubGlobal('navigator', { getGamepads: () => [] });
+
+    const types: string[] = [];
+    const win = {
+      addEventListener(type: string) {
+        types.push(type);
+      },
+      removeEventListener: vi.fn(),
+    } as unknown as Window & typeof globalThis;
+
+    const { installAudioActivationOnUserGesture } = await import('./audioContext');
+    installAudioActivationOnUserGesture(win);
+
+    expect(types).toContain('pointerdown');
+    expect(types).toContain('keydown');
+    expect(types).toContain('touchstart');
+    expect(types).toContain('gamepadconnected');
+    expect(types).toContain('pagehide');
+  });
+
   it('getOutputNode refreshes via getAudioContext and returns the compressor', async () => {
     vi.stubGlobal(
       'AudioContext',
