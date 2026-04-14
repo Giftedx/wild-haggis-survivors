@@ -30,7 +30,7 @@ import { DeedsScene } from './scenes/DeedsScene';
 import { CurseScene } from './scenes/CurseScene';
 import { SpriteExportScene } from './tools/SpriteExportScene';
 
-/** Dev tool: visit ?export=sprites to download a full sprite sheet PNG */
+/** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
 const isSpriteExport = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export');
 
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */

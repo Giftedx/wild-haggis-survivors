@@ -11,7 +11,9 @@ import { achievementManager } from '../core/AchievementManager';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { validateAndRepairBootTextures } from '../core/AssetValidator';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
+import { SaveManager } from '../core/SaveManager';
 import { t } from '../core/i18n';
+import { setPendingCurse } from '../data/curses';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -48,6 +50,25 @@ export class BootScene extends Phaser.Scene {
     // Initialize global meta progression exactly once (above the Scene lifecycle).
     metaProgressSystem.start();
     achievementManager.start();
+
+    // Dev-only: skip splash + menus and start a fresh run (clean curse, no resume).
+    // Optional fixed seed: ?quickplay&seed=12345
+    if (import.meta.env.DEV && typeof window !== 'undefined') {
+      const bootParams = new URLSearchParams(window.location.search);
+      if (bootParams.has('quickplay')) {
+        try {
+          new SaveManager().clearActiveRun();
+        } catch {
+          /* ignore */
+        }
+        setPendingCurse(null);
+        const raw = bootParams.get('seed');
+        const n = raw != null && raw !== '' ? Number(raw) : NaN;
+        const seed = Number.isFinite(n) ? n : undefined;
+        this.scene.start('Game', seed !== undefined ? { seed } : {});
+        return;
+      }
+    }
 
     const { width, height } = this.scale;
 
