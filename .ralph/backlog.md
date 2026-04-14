@@ -109,3 +109,4 @@
 - [x] TimeManager getters — `getEffectiveTimeScale`, `isPhysicsPaused`, `isGameplayPaused` match adapter after request/release. 764→765 tests.
 - [x] Save: `coerceSelectedVariant` non-string + `evaluateVariantUnlocks` no-delta — `save.test.ts` (malformed `selectedVariant` → classic; max progress + full `VARIANT_KEYS` → empty `newlyUnlockedVariants`). 817→819 tests.
 - [x] Save: `migrateSave` non-object + `bestEndlessSeconds` coercion — `save.test.ts` / `save.endless.test.ts` (`null`/`undefined`/`[]`/string → default save; floor/clamp/`NaN`/`Infinity` for endless). 819→822 tests.
+- [x] Save: `migrateSave` `runHistory` coercion — FIFO tail (`MAX_RUN_HISTORY`), `weaponKeys`/`curseKey`/`level`/`isVictory` normalization, non-array → `[]` (`save.test.ts`). 822→825 tests.

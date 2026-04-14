@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { VARIANT_KEYS } from '../data/variants';
 import {
+  MAX_RUN_HISTORY,
   applyRunSummary,
   coerceSelectedVariant,
   computeGoldReward,
@@ -70,6 +71,75 @@ describe('save migration', () => {
     expect(migrated.unlockedVariants).toEqual(['classic']);
     expect(migrated.selectedVariant).toBe('classic');
     expect(migrated.settings).toEqual({ soundOn: true, musicOn: false });
+  });
+
+  it('keeps only the last MAX_RUN_HISTORY runHistory rows after migration', () => {
+    const base = createDefaultSave();
+    const runHistory = Array.from({ length: MAX_RUN_HISTORY + 3 }, (_, i) => ({
+      timestamp: i,
+      timeSurvivedSec: i * 10,
+      enemiesKilled: i,
+      level: 1,
+      bossKills: 0,
+      goldEarned: 0,
+      bestCombo: 0,
+      variantKey: 'classic',
+      isVictory: false,
+      weaponKeys: [] as string[],
+    }));
+    const migrated = migrateSave({ ...base, runHistory });
+    expect(migrated.runHistory).toHaveLength(MAX_RUN_HISTORY);
+    expect(migrated.runHistory[0].timeSurvivedSec).toBe(30);
+    expect(migrated.runHistory[MAX_RUN_HISTORY - 1].timeSurvivedSec).toBe(220);
+  });
+
+  it('coerces runHistory rows: string weaponKeys, curseKey, level floor, boolean victory', () => {
+    const migrated = migrateSave({
+      ...createDefaultSave(),
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 60,
+          enemiesKilled: 12,
+          level: 0,
+          bossKills: 0,
+          goldEarned: 5,
+          bestCombo: 3,
+          variantKey: 'moor_runner',
+          isVictory: 'maybe' as unknown as boolean,
+          weaponKeys: ['thistle_shot', 42, null, 'bagpipes'] as unknown as string[],
+          curseKey: '',
+        },
+        {
+          timestamp: 2,
+          timeSurvivedSec: 90,
+          enemiesKilled: 20,
+          level: 2,
+          bossKills: 1,
+          goldEarned: 10,
+          bestCombo: 5,
+          variantKey: 'classic',
+          isVictory: true,
+          weaponKeys: [],
+          curseKey: 'gold_rush',
+        },
+      ],
+    });
+    expect(migrated.runHistory).toHaveLength(2);
+    const [first, second] = migrated.runHistory;
+    expect(first.level).toBe(1);
+    expect(first.isVictory).toBe(false);
+    expect(first.weaponKeys).toEqual(['thistle_shot', 'bagpipes']);
+    expect(first.curseKey).toBeUndefined();
+    expect(second.curseKey).toBe('gold_rush');
+  });
+
+  it('drops runHistory when the field is not an array', () => {
+    const migrated = migrateSave({
+      ...createDefaultSave(),
+      runHistory: { not: 'an array' } as unknown as [],
+    });
+    expect(migrated.runHistory).toEqual([]);
   });
 });
 

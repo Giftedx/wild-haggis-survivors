@@ -88,3 +88,4 @@
 | 2026-04-13 | 86 | BUILD | Variant UI string formatters | Done — `formatRunVariantLabel`, `formatVariantUnlockText` (ready vs progress). 814→817 tests, build clean. |
 | 2026-04-13 | 87 | BUILD | Save variant coercion + unlock delta | Done — `save.test.ts`: `coerceSelectedVariant` non-string → classic; `evaluateVariantUnlocks` with full `VARIANT_KEYS` → `newlyUnlockedVariants` empty. 817→819 tests, build clean. |
 | 2026-04-13 | 88 | BUILD | Save migration guards + endless coercion | Done — `save.test.ts`: non-object `migrateSave` → `createDefaultSave()`; `save.endless.test.ts`: floor/clamp `bestEndlessSeconds`, `NaN`/`Infinity` → 0. 819→822 tests, build clean. |
+| 2026-04-13 | 89 | SCOUT→BUILD | Autonomous task discovery | Done — scanned `src` for TODO/FIXME (none); compared test coverage vs pure modules. Gap: `migrateSave`/`coerceRunHistory` FIFO tail + per-row coercion not asserted at `save.ts` layer → `save.test.ts` (+3). 822→825 tests, build clean. |
