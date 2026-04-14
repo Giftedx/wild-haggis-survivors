@@ -5,10 +5,13 @@ This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bun
 ## How to run / verify
 - **Dev**: `npm run dev`
 - **Test**: `npm test` (Vitest)
+- **Lint**: `npm run lint`
 - **Build**: `npm run build` (TypeScript typecheck + Vite build)
 - **Preview build**: `npm run preview`
+- **E2E (Playwright, production preview)**: `npm run test:e2e` (requires a prior `npm run build` unless the preview server already serves `dist/`)
+- **Full local gate (matches GitHub Actions)**: `npm run ci:all` — lint, Vitest, build, then E2E
 
-Before claiming anything is “fixed” or “done”, run at least `npm test` and (for shipped changes) `npm run build`.
+Before claiming anything is “fixed” or “done”, run at least `npm test` and `npm run build`. For changes that touch UI, boot, or CI, prefer **`npm run ci:all`** once dependencies are installed (and Playwright browsers are available: `npx playwright install chromium`).
 
 **Windows / Git:** If almost every file shows as modified but diffs are only `100755` ↔ `100644`, run `git config core.filemode false` in the repo root (local setting).
 
