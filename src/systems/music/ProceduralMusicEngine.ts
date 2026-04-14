@@ -378,8 +378,10 @@ class ProceduralMusicEngine {
 
       // Deeper bog (low moor): slightly longer delay tail; bright heather: tighter.
       // Moor bloom opens acoustic space — longer fog tail, slightly clearer loop.
-      const delayTime = 2.0 - mood.intensity * 1.0 + (0.45 - moor) * 0.35
+      // `createDelay(2)` caps delayTime at 2s — values above clamp in browsers and spam the console.
+      const rawDelay = 2.0 - mood.intensity * 1.0 + (0.45 - moor) * 0.35
         + this.moorBloomAcc * 0.44;
+      const delayTime = Math.min(1.999, Math.max(0.01, rawDelay));
       this.fogDelay.delayTime.linearRampToValueAtTime(delayTime, this.ctx.currentTime + 1);
     }
 

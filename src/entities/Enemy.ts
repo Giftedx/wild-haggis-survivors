@@ -1003,6 +1003,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
    *  (ensures DoT kills give XP and count toward kill totals) */
   private takeDamageInternal(amount: number): boolean {
     if (this.behavior === 'hazard') return false;
+    if (!this.active) return false;
     this.hp -= amount;
     if (this.hp <= 0) {
       const wasBoss = this.bossFlag;
@@ -1046,6 +1047,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   takeDamage(amount: number): boolean {
     if (this.behavior === 'hazard') return false; // invincible
+    if (!this.active) return false; // already dead — volatile splash chains must not re-enter
 
     // Ghost: 50% damage resistance while phased (in addition to projectile pass-through)
     if (this.behavior === 'phase' && this.isPhased) {
@@ -1175,6 +1177,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** External damage path that preserves kill-side effects when lethal. */
   takeDamageWithKillEvents(amount: number): boolean {
+    if (!this.active) return false;
     const wasBoss = this.bossFlag;
     const wasElite = this.eliteFlag;
     const killX = this.x;
@@ -1187,8 +1190,19 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private die(): void {
-    if (this.eliteAffixId === 'volatile' && this.scene?.sys.isActive()) {
+    if (!this.active) return;
+
+    const volatileSplash = this.eliteAffixId === 'volatile' && this.scene?.sys.isActive();
+    if (volatileSplash) {
       this.ctx.getSFXManager().tryPlay('elite_volatile_death', () => audio.playEliteVolatileDeathImmediate());
+    }
+
+    // Mark dead before volatile splash: nested volatile deaths must not apply damage to
+    // this instance again (would recurse: die → splash → neighbor.die → splash → this.die).
+    this.setActive(false);
+    this.setVisible(false);
+
+    if (volatileSplash) {
       const pool = this.ctx.getSpawnSystem().getEnemyGroup();
       const nearby = pool.children.entries as Enemy[];
       const r2 = AFFIX_VOLATILE_RADIUS * AFFIX_VOLATILE_RADIUS;
@@ -1208,9 +1222,6 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         onComplete: () => ring.setVisible(false),
       });
     }
-
-    this.setActive(false);
-    this.setVisible(false);
     this.hazardTtlHandle?.cancel();
     this.hazardTtlHandle = null;
     this.damageTintHandle?.cancel();
