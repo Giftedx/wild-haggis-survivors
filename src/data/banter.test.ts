@@ -3,6 +3,7 @@ import { BANTER_POOLS, BANTER_KEYS, getBanterPool, type BanterContext } from './
 import { BOSSES } from './enemies';
 import { CURSES } from './curses';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
+import { BIOMES, type BiomeId } from './biomes';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
@@ -46,6 +47,16 @@ describe('BANTER_POOLS structure', () => {
     const tags = Object.keys(pool!.keysByTag ?? {});
     for (const wk of weaponKeys) {
       expect(tags, `weapon_evolve missing tag '${wk}'`).toContain(wk);
+    }
+  });
+
+  it('biome_change has keysByTag for every biome', () => {
+    const biomeIds = Object.keys(BIOMES) as BiomeId[];
+    const pool = getBanterPool('biome_change');
+    expect(pool, 'biome_change pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const id of biomeIds) {
+      expect(tags, `biome_change missing tag '${id}'`).toContain(id);
     }
   });
 

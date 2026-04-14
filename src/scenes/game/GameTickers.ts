@@ -94,7 +94,7 @@ export class GameTickers {
     const biomeId = this.hooks.getCurrentBiomeId();
     if (biomeId && biomeId !== this.lastBiomeForBanter) {
       if (this.lastBiomeForBanter !== null) {
-        banter.request('biome_change');
+        banter.request('biome_change', { tag: biomeId });
       }
       this.lastBiomeForBanter = biomeId;
     }

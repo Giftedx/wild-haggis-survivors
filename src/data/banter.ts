@@ -288,6 +288,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.biome_change.b',
       'ui.banter.biome_change.c',
     ],
+    keysByTag: {
+      bog: [
+        'ui.banter.biome_change.bog.a',
+        'ui.banter.biome_change.bog.b',
+        'ui.banter.biome_change.bog.c',
+      ],
+      loch: [
+        'ui.banter.biome_change.loch.a',
+        'ui.banter.biome_change.loch.b',
+        'ui.banter.biome_change.loch.c',
+      ],
+      pine: [
+        'ui.banter.biome_change.pine.a',
+        'ui.banter.biome_change.pine.b',
+        'ui.banter.biome_change.pine.c',
+      ],
+      heather: [
+        'ui.banter.biome_change.heather.a',
+        'ui.banter.biome_change.heather.b',
+        'ui.banter.biome_change.heather.c',
+      ],
+    },
   },
   {
     context: 'idle',

@@ -631,6 +631,26 @@ export const EN_STRINGS: LocaleTree = {
         a: 'Different smell tae the air here.',
         b: 'New bit o\' moor. Watch yer step.',
         c: 'The terrain\'s shiftin\'.',
+        bog: {
+          a: 'Squelch. The bog\'s got opinions aboot yer boots.',
+          b: 'Peat underfoot — dinnae rush it.',
+          c: 'Wet air, thick thoughts. Classic bog.',
+        },
+        loch: {
+          a: 'Loch breath — cauld enough tae sharpen ye.',
+          b: 'Water\'s watchin\' from the edge. Always.',
+          c: 'Ripple weather. Mind the pull.',
+        },
+        pine: {
+          a: 'Needles underhoof — the forest\'s carpet.',
+          b: 'Tall shadows. Short temper if ye rush.',
+          c: 'Sap an\' silence. Nae a bad combo.',
+        },
+        heather: {
+          a: 'Heather\'s up — purple haze, open sky.',
+          b: 'Wind off the tops — ye cannae hide here.',
+          c: 'Open moor, honest fight. Lovely.',
+        },
       },
       idle: {
         a: 'Quiet, this. Too quiet, mibbe.',
