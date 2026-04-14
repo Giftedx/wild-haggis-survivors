@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint src e2e playwright.config.ts vite.config.ts",
+    "lint": "eslint src e2e playwright.config.ts vite.config.ts eslint.config.mjs",
     "ci": "npm run lint && npm test && npm run build",
     "test:e2e": "playwright test",
     "ci:all": "npm run ci && npm run test:e2e"
