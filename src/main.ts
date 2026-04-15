@@ -101,9 +101,12 @@ if (typeof window !== 'undefined') {
 
 const game = new Phaser.Game(config);
 
-if (import.meta.env.DEV && typeof window !== 'undefined') {
-  // Dev-only global for quick runtime inspection from browser console.
+if (typeof window !== 'undefined') {
+  // Exposed unconditionally so Playwright E2E can drive scene transitions
+  // (see e2e/resume.spec.ts). Dev convenience still works identically.
   (window as Window & { game?: Phaser.Game }).game = game;
+}
+if (import.meta.env.DEV && typeof window !== 'undefined') {
   // Stress-test console hooks: startStressTest() / stopStressTest().
   void import('./dev/StressTest').then((m) => m.installStressTestConsoleHooks());
 }
