@@ -474,6 +474,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.revivalAvailable = permResult.revivalAvailable;
     this.chestDurationBonusMs = permResult.chestDurationBonusMs;
 
+    // Moor-moment scheduler must exist before applyResumeHydration — hydration
+    // calls pushAfterResume on it. Getters below are lazy; player/juice/xp/etc
+    // are still under construction here but only accessed during tick()/fire().
+    this.moorMoments = new MoorMomentScheduler({
+      getRunRng: () => this.runRng,
+      getPlayer: () => this.player,
+      getVictoryPending: () => this.victoryPending,
+      getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      getTutorialSystem: () => this.tutorialSystem,
+      getRunModifiers: () => this.runModifiers,
+      getXPSystem: () => this.xpSystem,
+      getJuice: () => this.juice,
+      getBanter: () => this.banter,
+      getSFXManager: () => this.getSFXManager(),
+      addCoinGold: (amount) => { this.coinGoldEarned += amount; },
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    });
+    this.moorMoments.reset();
+
     if (resumeRun) {
       this.applyResumeHydration(resumeRun);
     }
@@ -711,21 +730,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getActiveVariantKey: () => this.activeVariant.key,
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
-    this.moorMoments = new MoorMomentScheduler({
-      getRunRng: () => this.runRng,
-      getPlayer: () => this.player,
-      getVictoryPending: () => this.victoryPending,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      getTutorialSystem: () => this.tutorialSystem,
-      getRunModifiers: () => this.runModifiers,
-      getXPSystem: () => this.xpSystem,
-      getJuice: () => this.juice,
-      getBanter: () => this.banter,
-      getSFXManager: () => this.getSFXManager(),
-      addCoinGold: (amount) => { this.coinGoldEarned += amount; },
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-    });
-    this.moorMoments.reset();
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,
