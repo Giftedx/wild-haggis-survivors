@@ -565,6 +565,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getActiveVariantKey: () => this.activeVariant?.key,
       getRunScore: () => this.runScore,
       triggerVictory: () => this.runLifecycle.handleVictory(),
+      onActComplete: () => { /* wired in Task 10 */ },
     });
     this.weaponSystem.events.on(
       'enemyKilled',

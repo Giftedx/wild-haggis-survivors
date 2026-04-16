@@ -43,6 +43,7 @@ type HookMocks = {
   sfx: { tryPlay: ReturnType<typeof vi.fn> };
   rng: { bool: ReturnType<typeof vi.fn>; int: ReturnType<typeof vi.fn> };
   triggerVictory: ReturnType<typeof vi.fn>;
+  onActComplete: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -90,6 +91,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     int: vi.fn((lo: number, _hi: number) => lo),
   };
   const triggerVictory = vi.fn();
+  const onActComplete = vi.fn<(act: 1 | 2) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -104,6 +106,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     getActiveVariantKey: () => 'classic',
     getRunScore: () => score,
     triggerVictory,
+    onActComplete,
   };
 
   return {
@@ -119,6 +122,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     sfx,
     rng,
     triggerVictory,
+    onActComplete,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -415,6 +419,32 @@ describe('EnemyKillHandler', () => {
       handler.handle(0, 0, 100, 'gordon', true);
       expect(m.score.victoryPending).toBe(false);
       expect(m.tickers.addOnce).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('W2 act dispatch', () => {
+    beforeEach(() => {
+      m.score.firstKillSeen = true;
+    });
+
+    it('calls onActComplete(1) after killing gordon', () => {
+      handler.handle(0, 0, 75, 'gordon', true);
+      expect(m.onActComplete).toHaveBeenCalledExactlyOnceWith(1);
+    });
+
+    it('calls onActComplete(2) after killing tour_bus', () => {
+      handler.handle(0, 0, 100, 'tour_bus', true);
+      expect(m.onActComplete).toHaveBeenCalledExactlyOnceWith(2);
+    });
+
+    it('does NOT call onActComplete after killing taxman (victory path)', () => {
+      handler.handle(0, 0, 200, 'taxman', true);
+      expect(m.onActComplete).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call onActComplete for non-boss kills', () => {
+      handler.handle(0, 0, 5, 'tourist', false);
+      expect(m.onActComplete).not.toHaveBeenCalled();
     });
   });
 });

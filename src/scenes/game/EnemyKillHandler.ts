@@ -26,6 +26,7 @@ import type { RunScoreState } from './RunScoreState';
 import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
+import { dispatchActComplete } from './dispatchActComplete';
 
 export interface EnemyKillHandlerHooks {
   // Systems
@@ -45,6 +46,9 @@ export interface EnemyKillHandlerHooks {
 
   /** Run-end trigger (taxman victory). */
   triggerVictory(): void;
+
+  /** W2 Moor Road: called after boss-kill counters are bumped when the killed boss gates an act. */
+  onActComplete(actN: 1 | 2): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -196,6 +200,10 @@ export class EnemyKillHandler {
 
     if (wasBoss) {
       score.incrementBossKillCount();
+      const { actToComplete } = dispatchActComplete(enemyKey);
+      if (actToComplete !== null) {
+        h.onActComplete(actToComplete);
+      }
       const bossKillKey = `ui.game.boss_killed_${enemyKey}`;
       const bossKillText = t(bossKillKey);
       const bossToast =
