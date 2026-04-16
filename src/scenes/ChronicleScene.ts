@@ -16,6 +16,7 @@ import {
   formatCodexNamesLine,
   formatDurationLong,
   formatRelativeTime,
+  formatRouteBreadcrumb,
   lifetimeTotals,
   type ChronicleMood,
 } from '../ui/chronicleAggregates';
@@ -346,7 +347,11 @@ export class ChronicleScene extends Phaser.Scene {
         const def = WEAPON_DEFS[k as WeaponKey];
         return def?.name ?? k;
       }).join(', ');
-      const subLine = `${weapons || '—'}  ·  ${entry.bossKills} boss${entry.bossKills === 1 ? '' : 'es'}  ·  combo ${entry.bestCombo}x`;
+      // W2 Moor Road: append route breadcrumb when the run hit a picker.
+      const routeTrail = entry.routes && entry.routes.length > 0
+        ? `  ·  ${formatRouteBreadcrumb(entry.routes)}`
+        : '';
+      const subLine = `${weapons || '—'}  ·  ${entry.bossKills} boss${entry.bossKills === 1 ? '' : 'es'}  ·  combo ${entry.bestCombo}x${routeTrail}`;
       const sub = this.add
         .text(150, y + 8, subLine, {
           fontFamily: 'monospace', fontSize: '10px',

@@ -133,6 +133,12 @@ export const EN_STRINGS: LocaleTree = {
       /** Badge rendered on a run row where the player bore a curse. */
       run_curse_chip: '⚖ {curse}',
 
+      // W2 Moor Road log — appended to run rows that hit a picker.
+      moorRoad: {
+        title: 'Moor Road log',
+        empty: 'Ye\'ve no picked a road yet. Head out, choose wisely.',
+      },
+
       // ── Actions ──
       back: 'BACK',
     },
