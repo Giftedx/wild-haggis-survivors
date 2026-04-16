@@ -44,6 +44,8 @@ export interface ISettingsData {
    * Off by default.
    */
   telemetryOptIn: boolean;
+  /** W2 Moor Road: skip between-act picker scenes; applies the default route automatically. */
+  skipActIntermissions: boolean;
 }
 
 export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
@@ -63,6 +65,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   captionsEnabled: false,
   banterFrequency: 'normal',
   telemetryOptIn: false,
+  skipActIntermissions: false,
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -166,6 +169,7 @@ export class SettingsManager {
       captionsEnabled: toBool(o.captionsEnabled, DEFAULT_SETTINGS.captionsEnabled),
       banterFrequency: toBanterFrequency(o.banterFrequency, DEFAULT_SETTINGS.banterFrequency),
       telemetryOptIn: toBool(o.telemetryOptIn, DEFAULT_SETTINGS.telemetryOptIn),
+      skipActIntermissions: toBool(o.skipActIntermissions, DEFAULT_SETTINGS.skipActIntermissions),
     };
   }
 }

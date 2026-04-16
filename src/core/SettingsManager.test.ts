@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import {
   SaveManager,
   type StorageLike,
@@ -7,6 +7,7 @@ import {
   SettingsManager,
   SETTINGS_STORAGE_KEY,
   resetSettingsManagerSingletonForTests,
+  getSettingsManager,
 } from './SettingsManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 
@@ -58,6 +59,7 @@ describe('SettingsManager air-gap', () => {
       captionsEnabled: true,
       banterFrequency: 'normal',
       telemetryOptIn: false,
+      skipActIntermissions: false,
     });
 
     meta.reset();
@@ -107,6 +109,7 @@ describe('SettingsManager air-gap', () => {
       captionsEnabled: false,
       banterFrequency: 'normal',
       telemetryOptIn: false,
+      skipActIntermissions: false,
     });
 
     meta.reset();
@@ -151,6 +154,7 @@ describe('SettingsManager air-gap', () => {
       captionsEnabled: false,
       banterFrequency: 'normal',
       telemetryOptIn: false,
+      skipActIntermissions: false,
     });
 
     settings.reset();
@@ -177,7 +181,58 @@ describe('SettingsManager air-gap', () => {
       captionsEnabled: false,
       banterFrequency: 'normal',
       telemetryOptIn: false,
+      skipActIntermissions: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
+  });
+});
+
+describe('SettingsManager: W2 skipActIntermissions', () => {
+  beforeEach(() => {
+    resetSettingsManagerSingletonForTests();
+  });
+  afterEach(() => {
+    resetSettingsManagerSingletonForTests();
+  });
+
+  it('defaults skipActIntermissions to false', () => {
+    const mgr = getSettingsManager();
+    mgr.reset();
+    expect(mgr.load().skipActIntermissions).toBe(false);
+  });
+
+  it('persists skipActIntermissions through save/load', () => {
+    const mem = new MemoryStorage();
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    settings.update((cur) => ({ ...cur, skipActIntermissions: true }));
+    expect(settings.load().skipActIntermissions).toBe(true);
+    settings.update((cur) => ({ ...cur, skipActIntermissions: false }));
+    expect(settings.load().skipActIntermissions).toBe(false);
+  });
+
+  it('defaults skipActIntermissions to false on pre-W2 saves missing the field', () => {
+    const mem = new MemoryStorage();
+    // Simulate a pre-W2 save that has no skipActIntermissions field
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 0.8,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
+      banterFrequency: 'normal',
+      telemetryOptIn: false,
+      // skipActIntermissions absent — pre-W2 save
+    }));
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    const loaded = settings.load();
+    expect(loaded.skipActIntermissions).toBe(false);
+    // Other fields survive migration intact
+    expect(loaded.masterVolume).toBe(0.8);
   });
 });
