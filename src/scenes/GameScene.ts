@@ -14,7 +14,6 @@ import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { recordRun, loadSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
-import { getEnemyDisplayName } from '../data/enemies';
 import { getVariantByKey, VariantDef } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
@@ -64,6 +63,10 @@ import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
 import { RunExitComposer } from './game/RunExitComposer';
+import { wireSceneEventBus } from './game/wireSceneEventBus';
+import { installRunIntroFx } from './game/installRunIntroFx';
+import { installTreasureChestTimer } from './game/installTreasureChestTimer';
+import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -197,9 +200,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private activeCurseKey: CurseKey | null = null;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
-  private achievementUnsub: (() => void) | null = null;
-  private bossEnrageUnsub: (() => void) | null = null;
-  private codexFirstCullUnsub: (() => void) | null = null;
+  private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
@@ -775,20 +776,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
-    this.achievementUnsub?.();
-    this.achievementUnsub = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
-      this.juice.showToast(t('ui.game.achievement_unlock', { title: p.title }), '#ffdd88');
-      audio.playAchievement();
-    });
-    this.bossEnrageUnsub?.();
-    this.bossEnrageUnsub = globalEventBus.on('bossEnraged', () => {
-      this.juice.showToast(t('ui.game.boss_enraged'), '#ff4444');
-    });
-    this.codexFirstCullUnsub?.();
-    this.codexFirstCullUnsub = globalEventBus.on('CODEX_FIRST_CULL', (p) => {
-      const name = getEnemyDisplayName(p.enemyKey);
-      this.juice.showToast(t('ui.game.codex_first_cull', { name }), '#aaddff');
-    });
+    this.eventBusDispose?.();
+    this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.hud.setOnPause(() => this.toggleUiPause());
@@ -814,52 +803,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       musicEngine.start();
     }
 
-    // Treasure chest timer — spawns every 45 seconds (scaled; freezes on pause)
+    // Treasure chest timer — 45s interval; 20% golden; queued while paused.
     this.pendingChests = [];
-    this.updateTickers.addInterval('scaled', 45000, () => {
-      // 20% chance of golden chest (gold reward instead of heal) — seeded
-      // so the same run always gets the same chest type at each spawn.
-      const golden = this.runRng.bool(0.2);
-      if (this.timeManager.isGameplayPaused()) {
-        this.pendingChests.push({ golden });
-      } else if (golden) {
-        this.pickupSpawner.spawnGoldenChest();
-      } else {
-        this.pickupSpawner.spawnTreasure();
-      }
+    installTreasureChestTimer(this.updateTickers, {
+      getRunRng: () => this.runRng,
+      getTimeManager: () => this.timeManager,
+      getPickupSpawner: () => this.pickupSpawner,
+      enqueuePendingChest: (chest) => { this.pendingChests.push(chest); },
     });
 
-    if (this.input.keyboard) {
-      // Phaser's KeyboardPlugin extends Events.EventEmitter, which satisfies
-      // SubscriptionBag's MinimalEmitter contract. The earlier `as any` cast
-      // bypassed TypeScript entirely; widen to the concrete base class instead.
-      const kb: Phaser.Events.EventEmitter = this.input.keyboard;
-      this.subs.listen(kb, 'keydown-ESC', () => this.toggleUiPause());
-      this.subs.listen(kb, 'keydown-P', () => this.toggleUiPause());
-      this.subs.listen(kb, 'keydown-F3', () => this.debugOverlay?.toggle());
-    }
-
-    // Fade in from black
-    const { x: uiX, y: uiY, width: uiWidth, height: uiHeight } = this.getUiViewport();
-    const fadeIn = this.add.rectangle(
-      uiX + uiWidth / 2, uiY + uiHeight / 2,
-      uiWidth, uiHeight, 0x000000, 1
-    ).setScrollFactor(0).setDepth(999);
-    this.tweens.add({ targets: fadeIn, alpha: 0, duration: 500, onComplete: () => fadeIn.destroy() });
-
-    // Controls hint — show for first 30 seconds then fade out
-    const { x: hintX, y: hintY, width: hintW, height: hintH } = this.getUiViewport();
-    const hint = this.add.text(hintX + hintW / 2, hintY + hintH - 36, t('ui.game.controls_hint'), {
-      fontFamily: 'monospace',
-      fontSize: '13px',
-      color: '#a09890',
-      stroke: '#0a0a0c',
-      strokeThickness: 3,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(60).setAlpha(0);
-    this.tweens.add({ targets: hint, alpha: 0.8, duration: 500, delay: 4000 });
-    this.hintHideHandle = this.updateTickers.addOnce('raw', 30000, () => {
-      this.tweens.add({ targets: hint, alpha: 0, duration: 1000, onComplete: () => hint.destroy() });
+    wireSceneKeybindings(this.input.keyboard, this.subs, {
+      togglePause: () => this.toggleUiPause(),
+      getDebugOverlay: () => this.debugOverlay,
     });
+
+    // Run-intro ceremony — fade in from black + controls hint auto-hide.
+    this.hintHideHandle = installRunIntroFx(this, this.updateTickers, () => this.getUiViewport());
 
     this.filmGrain?.destroy();
     this.filmGrain = new FilmGrainOverlay(this, this.settingsManager, () => this.getUiViewport());
@@ -892,12 +851,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.playerEnemyCollider = null;
       }
       sfxManager.clear();
-      this.achievementUnsub?.();
-      this.achievementUnsub = null;
-      this.bossEnrageUnsub?.();
-      this.bossEnrageUnsub = null;
-      this.codexFirstCullUnsub?.();
-      this.codexFirstCullUnsub = null;
+      this.eventBusDispose?.();
+      this.eventBusDispose = null;
       this.runPersistence?.unregisterMidRunHooks();
       this.debugTimeTravelApi?.uninstall();
       try { this.subs.dispose(); } catch { /* ignore */ }
