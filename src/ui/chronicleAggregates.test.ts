@@ -7,10 +7,13 @@ import {
   formatCodexNamesLine,
   formatDurationLong,
   formatRelativeTime,
+  formatRouteBreadcrumb,
   getCodexRosterTotal,
   lifetimeTotals,
+  selectRunsWithRoutes,
 } from './chronicleAggregates';
 import type { RunHistoryEntry, SaveData } from '../utils/save';
+import type { RoutePick } from '../data/routes';
 
 function entry(overrides: Partial<RunHistoryEntry> = {}): RunHistoryEntry {
   return {
@@ -235,5 +238,69 @@ describe('formatters', () => {
     expect(formatRelativeTime(now - 5 * 60 * 1000, now)).toBe('5m ago');
     expect(formatRelativeTime(now - 3 * 60 * 60 * 1000, now)).toBe('3h ago');
     expect(formatRelativeTime(now - 2 * 24 * 60 * 60 * 1000, now)).toBe('2d ago');
+  });
+});
+
+describe('W2 Moor Road chronicle helpers', () => {
+  describe('formatRouteBreadcrumb', () => {
+    it('returns empty string for no picks', () => {
+      expect(formatRouteBreadcrumb([])).toBe('');
+    });
+
+    it('formats single pick as the short label', () => {
+      const pick: RoutePick = {
+        slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false,
+      };
+      expect(formatRouteBreadcrumb([pick])).toBe('Up the brae');
+    });
+
+    it('joins multiple picks with arrow separator', () => {
+      const picks: RoutePick[] = [
+        { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'buckie_pitstop', atGameTimeSec: 610, defaultedBySetting: false },
+      ];
+      expect(formatRouteBreadcrumb(picks)).toBe('Up the brae → Buckie pit-stop');
+    });
+
+    it('marks defaulted-by-setting picks with a trailing asterisk', () => {
+      const picks: RoutePick[] = [
+        { slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305, defaultedBySetting: true },
+      ];
+      expect(formatRouteBreadcrumb(picks)).toBe('Round the loch*');
+    });
+  });
+
+  describe('selectRunsWithRoutes', () => {
+    const withRoute = entry({
+      timestamp: 2,
+      routes: [{
+        slot: 'A', routeKey: 'up_the_brae',
+        atGameTimeSec: 305, defaultedBySetting: false,
+      }],
+    });
+    const withoutRoute = entry({ timestamp: 1 });
+
+    it('drops runs that have no routes', () => {
+      const out = selectRunsWithRoutes([withoutRoute, withRoute]);
+      expect(out).toHaveLength(1);
+      expect(out[0].timestamp).toBe(2);
+    });
+
+    it('returns newest-first, capped at limit', () => {
+      const many = Array.from({ length: 15 }, (_, i) => entry({
+        timestamp: i,
+        routes: [{
+          slot: 'A', routeKey: 'up_the_brae',
+          atGameTimeSec: 305, defaultedBySetting: false,
+        }],
+      }));
+      const out = selectRunsWithRoutes(many, 5);
+      expect(out).toHaveLength(5);
+      expect(out.map((e) => e.timestamp)).toEqual([14, 13, 12, 11, 10]);
+    });
+
+    it('returns empty when no runs have routes', () => {
+      expect(selectRunsWithRoutes([withoutRoute])).toEqual([]);
+    });
   });
 });

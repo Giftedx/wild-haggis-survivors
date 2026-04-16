@@ -7,6 +7,8 @@
  */
 import type { RunHistoryEntry, SaveData } from '../utils/save';
 import { BOSSES, ENEMY_TYPES, getEnemyDisplayName } from '../data/enemies';
+import { getRoute, type RoutePick } from '../data/routes';
+import { t } from '../core/i18n';
 
 /** Lifetime totals — drawn from SaveData counters (authoritative, never capped). */
 export interface LifetimeTotals {
@@ -247,4 +249,31 @@ export function formatCodexNamesLine(names: readonly string[], maxChars: number 
   const joined = names.join(', ');
   if (joined.length <= maxChars) return joined;
   return `${joined.slice(0, Math.max(0, maxChars - 1))}…`;
+}
+
+/**
+ * W2 Moor Road: render a pick history as a single-line breadcrumb
+ * string for the Chronicle Moor Road log. Defaulted-by-setting picks
+ * get a trailing "*" so the log can distinguish chosen from skipped.
+ */
+export function formatRouteBreadcrumb(picks: readonly RoutePick[]): string {
+  if (picks.length === 0) return '';
+  return picks
+    .map((p) => {
+      const label = t(getRoute(p.routeKey).labelKey);
+      return p.defaultedBySetting ? `${label}*` : label;
+    })
+    .join(' → ');
+}
+
+/**
+ * W2 Moor Road: select history entries that contain at least one
+ * route pick, newest-first. Used by the Chronicle Moor Road log panel.
+ */
+export function selectRunsWithRoutes(
+  history: readonly RunHistoryEntry[],
+  limit: number = 10,
+): RunHistoryEntry[] {
+  const withRoutes = history.filter((e) => (e.routes?.length ?? 0) > 0);
+  return withRoutes.slice(-limit).reverse();
 }
