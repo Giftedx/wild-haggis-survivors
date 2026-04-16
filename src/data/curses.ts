@@ -15,7 +15,8 @@ export type CurseKey =
   | 'heavy_legs'
   | 'thin_hide'
   | 'restless_spirits'
-  | 'empty_larder';
+  | 'empty_larder'
+  | 'windless_pipes';
 
 export interface CurseDef {
   key: CurseKey;
@@ -74,6 +75,17 @@ export const CURSES: readonly CurseDef[] = [
     apply: (m) => {
       m.startHpRatio *= 0.80;
       m.goldMult *= 1.25;
+    },
+  },
+  {
+    key: 'windless_pipes',
+    nameKey: 'curse.windless_pipes.name',
+    descKey: 'curse.windless_pipes.desc',
+    goldBonusPct: 35,
+    apply: (m) => {
+      // +18% slower weapon fire rate — taxes tempo, rewards kiting.
+      m.weaponCooldownMult *= 1.18;
+      m.goldMult *= 1.35;
     },
   },
 ];

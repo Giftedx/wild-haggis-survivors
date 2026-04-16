@@ -286,6 +286,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.curse_start.empty_larder.c',
         'ui.banter.curse_start.empty_larder.d',
       ],
+      windless_pipes: [
+        'ui.banter.curse_start.windless_pipes.a',
+        'ui.banter.curse_start.windless_pipes.b',
+        'ui.banter.curse_start.windless_pipes.c',
+        'ui.banter.curse_start.windless_pipes.d',
+      ],
     },
   },
   {

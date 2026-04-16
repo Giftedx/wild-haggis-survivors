@@ -443,6 +443,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem = new SpawnSystem(this);
     this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
+    this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
     this.bossHpTracker?.reset();

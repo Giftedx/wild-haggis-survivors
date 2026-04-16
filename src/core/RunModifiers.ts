@@ -23,6 +23,12 @@ export interface RunModifiers {
   damageTakenMult: number;
   /** Multiplied into the end-of-run gold reward. */
   goldMult: number;
+  /**
+   * Multiplied into every weapon's effective cooldown before firing.
+   * 1.0 = identity, >1 = slower fire (used by "Windless Pipes" curse),
+   * <1 = faster fire (unused today; reserved for future boon support).
+   */
+  weaponCooldownMult: number;
   /** Append-only record of this run's between-act picker choices (W2). */
   routePicks: RoutePick[];
 }
@@ -34,6 +40,7 @@ export function defaultModifiers(): RunModifiers {
     spawnIntervalMult: 1,
     damageTakenMult: 1,
     goldMult: 1,
+    weaponCooldownMult: 1,
     routePicks: [],
   };
 }

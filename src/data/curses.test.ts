@@ -56,6 +56,18 @@ describe('curse.apply — modifies only its own lever + goldMult', () => {
     expect(m.goldMult).toBeCloseTo(1.25);
   });
 
+  it('windless_pipes slows weapon cooldowns and boosts gold', () => {
+    const m = defaultModifiers();
+    getCurseByKey('windless_pipes')!.apply(m);
+    expect(m.weaponCooldownMult).toBeCloseTo(1.18);
+    expect(m.goldMult).toBeCloseTo(1.35);
+    // Other levers untouched.
+    expect(m.moveSpeedMult).toBe(1);
+    expect(m.startHpRatio).toBe(1);
+    expect(m.damageTakenMult).toBe(1);
+    expect(m.spawnIntervalMult).toBe(1);
+  });
+
   it('unknown curse key returns null', () => {
     expect(getCurseByKey('not_a_curse')).toBeNull();
     expect(getCurseByKey(null)).toBeNull();

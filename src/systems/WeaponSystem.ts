@@ -64,6 +64,8 @@ export class WeaponSystem {
   private critChance: number = 0.10;
   private critDamageMultiplier: number = 2.0;
   private cooldownReduction: number = 0;
+  /** Run-scoped curse multiplier. 1.0 identity; >1 slower fire. */
+  private curseCooldownMul: number = 1;
 
   /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
   readonly events = new Phaser.Events.EventEmitter();
@@ -248,6 +250,15 @@ export class WeaponSystem {
     this.critDamageMultiplier = critDmgMul;
   }
 
+  /** Run-scoped curse modifier — clamps >=0.05 so a bug can't freeze fire. */
+  setCurseCooldownMul(mul: number): void {
+    this.curseCooldownMul = Math.max(0.05, Number.isFinite(mul) ? mul : 1);
+  }
+
+  getCurseCooldownMul(): number {
+    return this.curseCooldownMul;
+  }
+
   update(delta: number, playerX: number, playerY: number): void {
     this.frameCounter++;
     this.cachePlayerX = playerX;
@@ -282,7 +293,7 @@ export class WeaponSystem {
         const asp = Math.max(0.05, this.attackSpeedMultiplier);
         const effectiveCooldown = Math.max(
           BALANCE.weapons.minEffectiveCooldownMs,
-          (weapon.cooldownMs * (1 - this.cooldownReduction)) / asp
+          (weapon.cooldownMs * (1 - this.cooldownReduction) * this.curseCooldownMul) / asp
         );
         weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
           + effectiveCooldown;

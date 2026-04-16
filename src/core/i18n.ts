@@ -816,6 +816,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Ye skipped breakfast fer gold. Classic.',
           d: 'Hunger\'s loud — purse is louder. Ye chose.',
         },
+        windless_pipes: {
+          a: 'Pipes are quiet — weapons drag their heels.',
+          b: 'Nae wind in the reeds. Time yer shots.',
+          c: 'Slow an\' steady, bonus an\' braw.',
+          d: 'The drone\'s sleepin\' — you\'re awake.',
+        },
       },
       level_up: {
         a: 'Look at ye go.',
@@ -1285,6 +1291,10 @@ export const EN_STRINGS: LocaleTree = {
     empty_larder: {
       name: 'Empty Larder',
       desc: 'Startin hungry. Less in ye tae lose, but less tae spare.',
+    },
+    windless_pipes: {
+      name: 'Windless Pipes',
+      desc: 'Reeds hang quiet. Weapons fire a shade slower — patience pays.',
     },
   },
   evolution: {
