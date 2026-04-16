@@ -240,6 +240,8 @@ export const EN_STRINGS: LocaleTree = {
       // W27 Capture & Share — small link beside the seed readout.
       postcard_hint: 'save postcard',
       postcard_saved: 'postcard saved',
+      /** Restart the current run with its exact seed — one-more-try retry. */
+      rerun_same_seed: '↻ same seed',
 
       // ── "Whit got ye" death reflection panel ──
       // Voice-driven, compassionate. Headlines describe WHAT happened; tips

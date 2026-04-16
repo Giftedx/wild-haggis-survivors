@@ -24,6 +24,8 @@ export interface GameOverPayload {
   previousBests?: PersonalBests;
   /** User-facing share code for this run's RNG seed — shown on the result screen. */
   seedCode?: string;
+  /** Raw numeric seed — enables the "↻ Same Seed" rerun on GameOverScene. */
+  runSeed?: number;
   /** True when this run was a Daily Challenge attempt. */
   isDaily?: boolean;
   /** Classified reason for death — only set when `mode === 'death'`. */

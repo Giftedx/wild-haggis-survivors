@@ -120,6 +120,7 @@ export class RunExitComposer {
       weaponDamage: h.getRunStatsTracker().snapshot(),
       previousBests,
       seedCode: encodeSeed(h.getRunRng().seed),
+      runSeed: h.getRunRng().seed,
       isDaily: h.isDailyRun(),
       curseKey: h.getActiveCurseKey() ?? undefined,
       deathCause,

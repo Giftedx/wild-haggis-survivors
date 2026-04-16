@@ -95,6 +95,7 @@ describe('game over / run result i18n smoke', () => {
     assertResolves('ui.gameOver.seed_copied', { code: 'ZZZ' });
     assertResolves('ui.gameOver.postcard_hint');
     assertResolves('ui.gameOver.postcard_saved');
+    assertResolves('ui.gameOver.rerun_same_seed');
   });
 
   it('resolves post-bell and run-end ceremony strings', () => {

@@ -367,7 +367,17 @@ export class GameOverScene extends Phaser.Scene {
       this.renderSeedReadout(panelCenterX, panelTop + 590, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
     }
 
-    this.renderPostcardLink(panelCenterX, panelTop + 612, d + 3, 1180);
+    // Two small text links side-by-side under the seed readout. Postcard
+    // saves the frame; rerun starts the exact seed again. Only render
+    // rerun when the payload actually carries a numeric seed.
+    const hasRerun = typeof this.payload.runSeed === 'number';
+    const linkY = panelTop + 612;
+    if (hasRerun) {
+      this.renderPostcardLink(panelCenterX - 100, linkY, d + 3, 1180);
+      this.renderRerunSeedLink(panelCenterX + 100, linkY, d + 3, 1200);
+    } else {
+      this.renderPostcardLink(panelCenterX, linkY, d + 3, 1180);
+    }
 
     const buttonsY = panelTop + 634;
     this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
@@ -760,6 +770,45 @@ export class GameOverScene extends Phaser.Scene {
     text.on('pointerover', () => { if (!saved) text.setColor('#ffe2a0'); });
     text.on('pointerout', () => { if (!saved) text.setColor('#a8b0c0'); });
     text.on('pointerdown', doSave);
+  }
+
+  /**
+   * "↻ same seed" text link that restarts the run with its exact seed
+   * and variant. Mirrors the Chronicle rerun pattern. Only called when
+   * the payload carries a numeric runSeed (see hasRerun gate above).
+   */
+  private renderRerunSeedLink(
+    centerX: number,
+    y: number,
+    depth: number,
+    delay: number,
+  ): void {
+    const label = t('ui.gameOver.rerun_same_seed');
+    const text = this.add
+      .text(centerX, y, label, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#b8d0a8',
+        fontStyle: 'italic',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    text.on('pointerover', () => text.setColor('#e8fbd0'));
+    text.on('pointerout', () => text.setColor('#b8d0a8'));
+    text.on('pointerdown', () => {
+      audio.playClick();
+      musicEngine.stop();
+      const p = this.payload;
+      if (!p || typeof p.runSeed !== 'number') return;
+      try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+      this.scene.start('Game', { seed: p.runSeed, forceVariantKey: p.variantKey });
+    });
   }
 
   /** Best-effort clipboard write; returns true on success. */
