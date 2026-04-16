@@ -56,6 +56,7 @@ import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
+import { StandingStones, STONE_SPAWN_SEC, type StoneBoon } from './game/standingStones';
 import { ActIntermissionScene } from './ActIntermissionScene';
 import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
@@ -131,6 +132,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private readonly runActState = new RunActState();
   /** One-time +luck draw weight when HP first crosses into the mercy band. */
   private moorMercyLuckGranted = false;
+  /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
+  private standingStones: StandingStones | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
   private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
@@ -284,6 +287,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
     this.moorMercyLuckGranted = false;
+    this.standingStones?.destroy();
+    this.standingStones = null;
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -952,7 +957,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         wholeSecond: runSec,
       });
       this.moorMoments.tick(runSec);
+      if (runSec === STONE_SPAWN_SEC && !this.standingStones) {
+        this.spawnStandingStones();
+      }
     }
+
+    this.standingStones?.tick();
 
     // Pass player facing and upgrade multipliers to weapon system.
     // Always update from player.rotation (persists when stationary) so
@@ -1092,6 +1102,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /**
    * Soul weave — run start: hand off variant identity + intent in the first moments of play.
    */
+  /**
+   * Standing Stones — spawn the 5:00 trinity. First approach within
+   * STONE_PICK_RADIUS_PX wins its boon, the other two crumble.
+   */
+  private spawnStandingStones(): void {
+    if (this.standingStones) return;
+    this.standingStones = new StandingStones({
+      scene: this,
+      player: this.player,
+      rng: this.runRng,
+      onPick: (boon: StoneBoon) => {
+        const title = t(boon.titleKey);
+        this.juice.showToast(t('ui.standingStones.grant_toast', { title }), '#ffe080');
+        this.caption('standing_stones_pick', t(boon.descKey), '#ffe080', 3500);
+      },
+    });
+    this.standingStones.spawn();
+    this.juice.showToast(t('ui.standingStones.announce_toast'), '#ffe080');
+    this.caption('standing_stones_announce', t('ui.standingStones.announce_caption'), '#ffe080', 3000);
+  }
+
   private showRunIdentityToast(isResume: boolean): void {
     const v = this.activeVariant;
     const maxFlavor = 52;

@@ -347,6 +347,24 @@ export const EN_STRINGS: LocaleTree = {
       title_act_2: 'Last stretch — pick yer poison.',
       pick_hint: 'Click or press 1/2/3 tae commit, big yin.',
     },
+    /** Standing Stones — mid-run trinity at the 5:00 mark. */
+    standingStones: {
+      announce_toast: 'Three stones stir — pick yer blessing.',
+      announce_caption: 'Three standing stones have risen — walk tae one tae claim it.',
+      grant_toast: '{title} — the stone\'s blessing holds.',
+      mending: {
+        title: 'Stone o\' Mending',
+        desc: 'The stone breathes warmth — HP mends itsel\' slow and sure.',
+      },
+      fire: {
+        title: 'Stone o\' Fire',
+        desc: 'A rune flares — strikes find the soft spots mair often.',
+      },
+      haste: {
+        title: 'Stone o\' Haste',
+        desc: 'The air quickens — weapons fire a shade faster.',
+      },
+    },
     upgradeCards: {
       level_title: 'Level {level} — pick yir poison',
       choose_upgrade: 'What calls to ye?',
