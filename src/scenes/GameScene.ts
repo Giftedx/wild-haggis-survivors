@@ -55,6 +55,7 @@ import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
+import { RunActState } from './game/RunActState';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
@@ -124,6 +125,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private evolvedWeapons: string[] = [];
   /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
   private readonly runScore = new RunScoreState();
+  /** W2 Moor Road: act number + picker history across the run. */
+  private readonly runActState = new RunActState();
   /** One-time +luck draw weight when HP first crosses into the mercy band. */
   private moorMercyLuckGranted = false;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
@@ -249,6 +252,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pauseMenu?.close();
     this.pauseMenu = null;
     this.runScore.reset();
+    this.runActState.reset();
     this.runId = {};
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
@@ -565,7 +569,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getActiveVariantKey: () => this.activeVariant?.key,
       getRunScore: () => this.runScore,
       triggerVictory: () => this.runLifecycle.handleVictory(),
-      onActComplete: () => { /* wired in Task 10 */ },
+      onActComplete: (actN) => this.launchActIntermission(actN),
     });
     this.weaponSystem.events.on(
       'enemyKilled',
@@ -737,7 +741,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
       recordRun: (s, ctx) => recordRun(s, ctx),
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
-      onActComplete: () => { /* wired in Task 10 */ },
+      onActComplete: (actN) => this.launchActIntermission(actN),
     });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
@@ -1084,6 +1088,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       ? t('ui.run.resume_identity', { name: v.name, flavor })
       : t('ui.run.start_identity', { name: v.name, flavor });
     this.juice.showToast(body, '#c8dcff');
+  }
+
+  /**
+   * W2 Moor Road: called when a boss kill completes an act (gordon → 1,
+   * tour_bus → 2). Launches ActIntermissionScene unless Skip Intermissions
+   * is enabled in settings — in that case the default route for the slot
+   * is applied immediately.
+   *
+   * Note: scene launch is deferred a tick via scene.time.delayedCall(0, ...)
+   * so the kill-handling pipeline can finish cleanly (camera shake, XP gem
+   * spawn, banter) before the modal opens.
+   */
+  private launchActIntermission(actN: 1 | 2): void {
+    this.time.delayedCall(0, () => {
+      // Task 11 fills the real launch/skip-path logic. For now just record
+      // that the act boundary was hit so tests in Task 10 can assert.
+      this.runActState.advanceToAct(
+        (actN + 1) as 1 | 2 | 3,
+        this.spawnSystem.getGameTimeSec(),
+      );
+    });
   }
 
   /** Seconds past the Bell (Taxman kill). Read by SpawnSystem for escalation. */
