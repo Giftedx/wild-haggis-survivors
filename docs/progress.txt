@@ -241,3 +241,30 @@ Playtest:
 Remaining on Moor Road:
 - M2: picker B onResume bodies + Chronicle Moor Road log panel.
 - M3: Glesga voice pass (Scots + en), E2E smoke, settings UX polish.
+
+[2026-04-16] W2 Moor Road — Milestone 2 SHIPPED.
+
+Delivered:
+- Picker B onResume bodies:
+    - stand_yer_ground: XP gems x2 for 30s.
+    - run_for_the_hills: heal 50% + dash recharge.
+    - buckie_pitstop: 15s spawn pause + reroll + +10% enemy HP.
+- Supporting APIs: Player.refreshDashCharges,
+  XPSystem.setDropValueMultiplier, SpawnSystem.pauseSpawnsFor,
+  SpawnSystem.setEnemyHpMultiplier.
+- RouteResumeContext extended with xpSystem + grantReroll.
+- Picker B banter (keysByTag for all three routes).
+- Chronicle: formatRouteBreadcrumb + selectRunsWithRoutes pure
+  helpers. Run rows now show the breadcrumb when routes present.
+
+Verification:
+- `npm run ci` clean: lint + 1088 tests + build.
+
+Kill-criterion check deferred with M2 ship — requires 3x5-session
+multi-player playtest data. Logged here for M3 intake:
+  1. Route monotony (>=80% same pick): PENDING.
+  2. Completion regression (>15% drop): PENDING.
+  3. Skip-rate (>60% enable skip): PENDING.
+
+Remaining: M3 voice pass (Scots + Glesga), E2E smoke, settings
+UX polish.
