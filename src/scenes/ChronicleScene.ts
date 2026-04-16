@@ -8,6 +8,7 @@ import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { getCurseByKey } from '../data/curses';
+import { encodeSeed } from '../utils/rng';
 import {
   buildChronicleCodex,
   computeMilestones,
@@ -407,9 +408,11 @@ export class ChronicleScene extends Phaser.Scene {
       }
 
       // Rerun-this-seed button — only shows on rows with a persisted
-      // runSeed (V8+). Left-of-timestamp, hover-brightens, click starts
-      // a fresh Game scene seeded identically.
+      // runSeed (V8+). Left-of-timestamp, hover-brightens + shows a
+      // small tooltip with the seed code so players know what they're
+      // rerunning before they click.
       if (typeof entry.runSeed === 'number') {
+        const seedCode = encodeSeed(entry.runSeed);
         const rerun = this.add
           .text(width - 160, y, '↻', {
             fontFamily: 'monospace', fontSize: '18px', color: '#b8d0a8', fontStyle: 'bold',
@@ -417,9 +420,28 @@ export class ChronicleScene extends Phaser.Scene {
           .setOrigin(1, 0.5)
           .setScale(uiScale)
           .setInteractive({ useHandCursor: true });
-        rerun.on('pointerover', () => rerun.setColor('#e8fbd0'));
-        rerun.on('pointerout', () => rerun.setColor('#b8d0a8'));
-        rerun.on('pointerdown', () => this.rerunSeed(entry.runSeed!, entry.variantKey));
+        let tooltip: Phaser.GameObjects.Text | null = null;
+        const showTooltip = () => {
+          rerun.setColor('#e8fbd0');
+          if (tooltip) return;
+          tooltip = this.add.text(width - 170, y, `rerun ${seedCode}`, {
+            fontFamily: 'monospace', fontSize: '10px', color: '#b8d0a8', fontStyle: 'italic',
+          }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10);
+          this.runRowObjects.push(tooltip);
+        };
+        const hideTooltip = () => {
+          rerun.setColor('#b8d0a8');
+          if (tooltip) {
+            tooltip.destroy();
+            tooltip = null;
+          }
+        };
+        rerun.on('pointerover', showTooltip);
+        rerun.on('pointerout', hideTooltip);
+        rerun.on('pointerdown', () => {
+          hideTooltip();
+          this.rerunSeed(entry.runSeed!, entry.variantKey);
+        });
         this.runRowObjects.push(rerun);
       }
     });
