@@ -270,6 +270,18 @@ export class ChronicleScene extends Phaser.Scene {
     });
   }
 
+  /**
+   * Clicking a Chronicle row's ↻ glyph starts a fresh Game scene
+   * seeded with that entry's runSeed and its original variant. Any
+   * suspended active run is cleared first (matches the "Play Again"
+   * path on GameOverScene) so the new run isn't treated as a resume.
+   */
+  private rerunSeed(seed: number, variantKey: string): void {
+    audio.playClick();
+    try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+    this.scene.start('Game', { seed, forceVariantKey: variantKey });
+  }
+
   private turnPage(delta: number): void {
     const pageCount = Math.max(1, Math.ceil(this.history.length / this.ROWS_PER_PAGE));
     const next = Phaser.Math.Clamp(this.page + delta, 0, pageCount - 1);
@@ -392,6 +404,23 @@ export class ChronicleScene extends Phaser.Scene {
           .setOrigin(1, 0.5)
           .setScale(uiScale);
         this.runRowObjects.push(badge);
+      }
+
+      // Rerun-this-seed button — only shows on rows with a persisted
+      // runSeed (V8+). Left-of-timestamp, hover-brightens, click starts
+      // a fresh Game scene seeded identically.
+      if (typeof entry.runSeed === 'number') {
+        const rerun = this.add
+          .text(width - 160, y, '↻', {
+            fontFamily: 'monospace', fontSize: '18px', color: '#b8d0a8', fontStyle: 'bold',
+          })
+          .setOrigin(1, 0.5)
+          .setScale(uiScale)
+          .setInteractive({ useHandCursor: true });
+        rerun.on('pointerover', () => rerun.setColor('#e8fbd0'));
+        rerun.on('pointerout', () => rerun.setColor('#b8d0a8'));
+        rerun.on('pointerdown', () => this.rerunSeed(entry.runSeed!, entry.variantKey));
+        this.runRowObjects.push(rerun);
       }
     });
 

@@ -45,10 +45,11 @@ function buildMocks(overrides: {
 
 describe('RunHistoryRecorder', () => {
   describe('buildContext', () => {
-    it('includes level, boss kills, variant, and weapon keys', () => {
+    it('includes level, boss kills, variant, weapon keys, and runSeed', () => {
       const { hooks } = buildMocks();
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect(ctx).toEqual({
+        runSeed: 42,
         level: 7,
         bossKills: 3,
         variantKey: 'classic',

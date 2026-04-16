@@ -49,6 +49,8 @@ export interface RunHistoryEntry {
   curseKey?: string;
   /** W2 Moor Road picker history. Absent on pre-v4 entries; default []. */
   routes?: RoutePick[];
+  /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
+  runSeed?: number;
 }
 
 export interface SaveData {
@@ -125,6 +127,8 @@ export interface RunHistoryContext {
   curseKey?: string;
   /** Between-act picker resolutions (W2). Passed through to history. */
   routes?: RoutePick[];
+  /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
+  runSeed?: number;
 }
 
 export interface RunResult {
@@ -269,6 +273,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     weaponKeys: context?.weaponKeys ?? [],
     ...(context?.curseKey ? { curseKey: context.curseKey } : {}),
     ...(context?.routes && context.routes.length > 0 ? { routes: [...context.routes] } : { routes: [] }),
+    ...(typeof context?.runSeed === 'number' ? { runSeed: context.runSeed } : {}),
   };
 
   const nextSave: SaveData = {
@@ -400,6 +405,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
       : [],
     ...(typeof raw.curseKey === 'string' && raw.curseKey ? { curseKey: raw.curseKey } : {}),
     routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
+    ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
   };
 }
 

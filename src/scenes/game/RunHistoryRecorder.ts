@@ -45,6 +45,7 @@ export class RunHistoryRecorder {
       bossKills: h.getBossKillCount(),
       variantKey: h.getActiveVariant().key,
       weaponKeys: h.getWeaponSystem().getWeapons().map((w) => w.config.key),
+      runSeed: h.getRunRng().seed,
       ...(curse ? { curseKey: curse } : {}),
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
     };
