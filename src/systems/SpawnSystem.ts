@@ -4,7 +4,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import { Enemy } from '../entities/Enemy';
 import { ENEMIES, GAME } from '../config';
-import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, BOSSES, BossConfig } from '../data/enemies';
+import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, ENEMY_TYPES, BOSSES, BossConfig } from '../data/enemies';
 import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
@@ -39,6 +39,12 @@ export class SpawnSystem {
    * the wave timeline — GameScene writes this once at run start.
    */
   private spawnIntervalMult: number = 1.0;
+  /**
+   * Per-run elite roll multiplier (W2 Moor Road). 1.0 = untouched.
+   * Applied on top of base ELITE_SPAWN_CHANCE + killPressure nudge.
+   * `up_the_brae` route sets this to 1.5 for act 2.
+   */
+  private eliteWeightMultiplier: number = 1.0;
   /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
   private directorEnemyKeys: string[] = [];
   /** Cached segment reference — avoids re-spreading enemyKeys when segment hasn't changed. */
@@ -101,6 +107,39 @@ export class SpawnSystem {
     this.spawnInterval = seg.intervalSec * this.spawnIntervalMult;
   }
 
+  /**
+   * W2 Moor Road: multiply base elite roll chance. `up_the_brae` route
+   * sets 1.5 for act 2; reset to 1 on new run via resetRunState().
+   * Clamped to [0.1, 5] so a bad delta can't totally mute or saturate.
+   */
+  setEliteWeightMultiplier(mult: number): void {
+    this.eliteWeightMultiplier = Phaser.Math.Clamp(mult, 0.1, 5);
+  }
+
+  /**
+   * W2 Moor Road: bypass the director and spawn a single enemy by key
+   * at the usual off-screen spawn position. Used by route onResume
+   * bodies (e.g. `through_the_kirkyard` drops an elite haggis_hunter
+   * the moment the run resumes from the picker).
+   *
+   * No-ops if the enemy key is unknown or the pool is saturated.
+   */
+  forceSpawn(enemyKey: string, opts?: { elite?: boolean }): void {
+    const config = ENEMY_TYPES[enemyKey];
+    if (!config) return;
+    const enemy = Enemy.acquireFromPool(this.pool, this.scene);
+    if (!enemy) return;
+    const player = this.scene.getPlayer();
+    const pos = this.getSpawnPosition(this.scene.cameras.main, player.x, player.y);
+    enemy.spawn(pos.x, pos.y, config, this.gameTimeSec);
+    if (opts?.elite) {
+      enemy.markAsElite();
+      const rng = this.scene.getRunRng();
+      const affix = pickEliteAffixId(config.behavior, rng);
+      if (affix) enemy.applyEliteAffix(affix);
+    }
+  }
+
   private getUiViewport(): { x: number; y: number; width: number; height: number } {
     const { x, y, width, height } = getCameraViewport(this.scene);
     return { x, y, width, height };
@@ -123,6 +162,7 @@ export class SpawnSystem {
     this.runWinFinaleStarted = false;
     this.regularSpawnsDisabled = false;
     this.killPressure = 0;
+    this.eliteWeightMultiplier = 1.0;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -465,10 +505,13 @@ export class SpawnSystem {
         }
 
         // Elite chance — base from BalanceConfig + kill-pressure nudge (decays).
+        // eliteWeightMultiplier is applied last so W2 route picks can tilt
+        // without losing the kill-pressure feel.
         const eliteChance = Math.min(
           0.24,
-          BALANCE.enemy.ELITE_SPAWN_CHANCE +
-            this.killPressure * BALANCE.director.killPressureEliteBonusMax,
+          (BALANCE.enemy.ELITE_SPAWN_CHANCE +
+            this.killPressure * BALANCE.director.killPressureEliteBonusMax) *
+            this.eliteWeightMultiplier,
         );
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
