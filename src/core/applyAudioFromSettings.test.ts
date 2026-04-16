@@ -36,6 +36,7 @@ const base: ISettingsData = {
   captionsEnabled: false,
   banterFrequency: 'normal',
   telemetryOptIn: false,
+  skipActIntermissions: false,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

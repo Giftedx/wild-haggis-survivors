@@ -79,6 +79,7 @@ describe('Settings / Comfort panel smoke', () => {
       captionsEnabled: true,
       banterFrequency: 'sparing',
       telemetryOptIn: true,
+      skipActIntermissions: true,
     };
     sm.save(payload);
     const loaded = sm.load();
