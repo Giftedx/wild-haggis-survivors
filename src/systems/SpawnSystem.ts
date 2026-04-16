@@ -146,6 +146,20 @@ export class SpawnSystem {
   }
 
   /**
+   * Debug/test hook: find the first active boss in the pool, or null.
+   * Used by DebugTimeTravelApi.killCurrentBoss to drive the W2 E2E
+   * boss-sequence playthrough without exposing the pool directly.
+   */
+  findActiveBoss(): Enemy | null {
+    const active = this.pool.children.entries as Enemy[];
+    for (let i = 0; i < active.length; i++) {
+      const e = active[i];
+      if (e.active && e.isBoss()) return e;
+    }
+    return null;
+  }
+
+  /**
    * W2 Moor Road: bypass the director and spawn a single enemy by key
    * at the usual off-screen spawn position. Used by route onResume
    * bodies (e.g. `through_the_kirkyard` drops an elite haggis_hunter

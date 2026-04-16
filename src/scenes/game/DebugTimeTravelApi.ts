@@ -35,6 +35,7 @@ export class DebugTimeTravelApi {
       DEBUG?: {
         skipToMinute: (m: number) => void;
         skipToGameSecond: (s: number) => void;
+        killCurrentBoss: () => boolean;
       };
     };
     g.DEBUG = {
@@ -43,6 +44,14 @@ export class DebugTimeTravelApi {
       },
       skipToGameSecond: (s: number) => {
         this.hooks.getSpawnSystem().timeTravelToSeconds(Math.max(0, Number(s) || 0));
+      },
+      killCurrentBoss: () => {
+        const boss = this.hooks.getSpawnSystem().findActiveBoss();
+        if (!boss) return false;
+        // Use takeDamage (not forceKill) so the full kill cascade fires —
+        // W2 onActComplete hook rides the standard enemyKilled event path.
+        boss.takeDamage(999_999);
+        return true;
       },
     };
 
