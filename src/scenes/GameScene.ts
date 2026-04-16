@@ -11,11 +11,11 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
+import { recordRun, loadSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { getEnemyDisplayName } from '../data/enemies';
-import { formatRunVariantLabel, getVariantByKey, VariantDef } from '../data/variants';
+import { getVariantByKey, VariantDef } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -37,7 +37,6 @@ import {
   finalizeResumeStartup,
   readPendingResumeRun,
 } from '../core/GameSessionLifecycle';
-import type { GameOverPayload } from './gameOverPayload';
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
@@ -64,6 +63,7 @@ import { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
+import { RunExitComposer } from './game/RunExitComposer';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -77,7 +77,6 @@ import {
   computeAutoBattleSteering,
   installAutoBattleTimeScale,
   isAutoBattleEnabled,
-  reportAutoBattleRunEnd,
   uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
 import { tickStressTest } from '../dev/StressTest';
@@ -167,6 +166,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
   private bossHpTracker!: BossHpTracker;
   private debugTimeTravelApi!: DebugTimeTravelApi;
+  private runExit!: RunExitComposer;
 
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
@@ -525,6 +525,31 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isSceneActive: () => this.scene.isActive(),
     });
 
+    // Run-end composer — builds RunSummary / GameOverPayload and
+    // orchestrates the Game → GameOver / Game → MainMenu transitions.
+    this.runExit = new RunExitComposer({
+      getWeaponSystem: () => this.weaponSystem,
+      getSpawnSystem: () => this.spawnSystem,
+      getJuice: () => this.juice,
+      getXPSystem: () => this.xpSystem,
+      getRunStatsTracker: () => this.runStatsTracker,
+      getSaveManager: () => this.metaSaveManager,
+      getActiveVariant: () => this.activeVariant,
+      getActiveCurseKey: () => this.activeCurseKey,
+      getRunRng: () => this.runRng,
+      getRunModifiers: () => this.runModifiers,
+      isDailyRun: () => this.runIsDaily,
+      getKillCount: () => this.killCount,
+      getBossKillCount: () => this.bossKillCount,
+      getBossGoldEarned: () => this.bossGoldEarned,
+      getCoinGoldEarned: () => this.coinGoldEarned,
+      getOwnedPassivesLength: () => this.ownedPassives.length,
+      getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
+      stopGameScene: () => this.scene.stop('Game'),
+      startGameOverScene: (payload) => this.scene.start('GameOver', payload),
+      startMainMenuScene: () => this.scene.start('MainMenu'),
+    });
+
     // Run history recorder — writes to meta save on run end, updates
     // the per-day daily challenge record when applicable.
     this.runHistoryRecorder = new RunHistoryRecorder({
@@ -740,12 +765,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setVictoryDeferMs: (ms) => this.runEndTickers.armVictoryDefer(ms, () => this.runLifecycle.handleVictory()),
       armIFrames: (ms) => this.armIFrames(ms),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-      buildRunSummary: (victory) => this.buildRunSummary(victory),
+      buildRunSummary: (victory) => this.runExit.buildSummary(victory),
       buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
-      buildGameOverPayload: (mode, s, r, pb, dc) => this.buildGameOverPayload(mode, s, r, pb, dc),
+      buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
       recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
       recordRun: (s, ctx) => recordRun(s, ctx),
-      transitionToGameOver: (payload) => this.transitionToGameOver(payload),
+      transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
     });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
@@ -1117,7 +1142,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           getLastHudDps: () => this.hud.getLastDisplayedDps(),
           getRunDamageDealt: () => this.runStatsTracker.getTotalDamage(),
           onResumeRequested: () => this.toggleUiPause(),
-          onQuitRequested: () => this.abandonRunToMainMenu(),
+          onQuitRequested: () => this.runExit.abandonToMainMenu(),
         });
       }
       this.pauseMenu.open();
@@ -1170,46 +1195,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   isPostBell(): boolean { return this.runLifecycle.isPostBell(); }
 
-  /**
-   * Stops GameScene (Phase 13 shutdown cascade) then hands UI to GameOverScene.
-   */
-  private transitionToGameOver(payload: GameOverPayload): void {
-    try {
-      reportAutoBattleRunEnd({
-        outcome: payload.mode === 'victory' ? 'victory' : 'death',
-        gameTimeSec: payload.summary.timeSurvivedSec,
-        weaponDamage: payload.weaponDamage,
-      });
-    } catch {
-      /* ignore */
-    }
-    try {
-      globalEventBus.emit('GLOBAL_RUN_ENDED', {
-        outcome: payload.mode,
-        gameTimeSec: payload.summary.timeSurvivedSec,
-        enemiesKilled: payload.summary.enemiesKilled,
-      });
-    } catch {
-      /* ignore */
-    }
-    try {
-      this.metaSaveManager.clearActiveRun();
-    } catch {
-      /* ignore */
-    }
-    this.scene.stop('Game');
-    this.scene.start('GameOver', payload);
-  }
-
-  private abandonRunToMainMenu(): void {
-    try {
-      this.metaSaveManager.clearActiveRun();
-    } catch {
-      /* ignore */
-    }
-    musicEngine.stop();
-    this.scene.start('MainMenu');
-  }
+  // transitionToGameOver / abandonRunToMainMenu extracted to RunExitComposer.
 
   // collectRunStateForMeta / persistActiveRunToMeta / applyResumeHydration
   // extracted to src/scenes/game/RunPersistenceBridge.ts
@@ -1221,61 +1207,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // buildRunHistoryContext / recordToHistory / recordDailyChallengeResult
   // extracted to RunHistoryRecorder.
 
-  private buildGameOverPayload(
-    mode: 'victory' | 'death',
-    summary: RunSummary,
-    runResult: RunResult,
-    previousBests?: import('../core/SaveManager').PersonalBests,
-    deathCause?: import('../core/deathCauseClassifier').DeathCause,
-  ): GameOverPayload {
-    return {
-      mode,
-      isVictory: mode === 'victory',
-      summary,
-      runResult,
-      xpLevel: this.xpSystem.getLevel(),
-      bossKillCount: this.bossKillCount,
-      ownedPassiveCount: this.ownedPassives.length,
-      weaponCount: this.weaponSystem.getWeapons().length,
-      evolvedCount: this.evolvedWeapons.length,
-      buildSummary: this.getRunBuildSummary(),
-      variantLabel: formatRunVariantLabel(this.activeVariant),
-      variantKey: this.activeVariant.key,
-      weaponDamage: this.runStatsTracker.snapshot(),
-      previousBests,
-      seedCode: encodeSeed(this.runRng.seed),
-      isDaily: this.runIsDaily,
-      curseKey: this.activeCurseKey ?? undefined,
-      deathCause,
-    };
-  }
-
-  private buildRunSummary(victory: boolean): RunSummary {
-    return {
-      timeSurvivedSec: this.spawnSystem.getGameTimeSec(),
-      enemiesKilled: this.killCount,
-      bossGold: this.bossGoldEarned,
-      coinGold: this.coinGoldEarned,
-      bestCombo: this.juice.getBestCombo(),
-      victory,
-      goldMult: this.runModifiers.goldMult,
-    };
-  }
-
-  private getRunBuildSummary(): string {
-    const parts = this.weaponSystem
-      .getWeapons()
-      .map((weapon) => {
-        const name = t(weapon.config.nameKey);
-        const lv = t('ui.hud.level_fmt', { level: weapon.level });
-        return `${name} ${lv}${weapon.evolved ? '★' : ''}`;
-      });
-    const lines: string[] = [];
-    for (let i = 0; i < parts.length; i += 3) {
-      lines.push(parts.slice(i, i + 3).join('  |  '));
-    }
-    return lines.join('\n');
-  }
+  // buildGameOverPayload / buildRunSummary / getRunBuildSummary extracted
+  // to RunExitComposer.
 
   // Boss HP bar logic extracted to BossHpTracker.
 
