@@ -43,6 +43,7 @@ import { ShopScene } from './scenes/ShopScene';
 import { ChronicleScene } from './scenes/ChronicleScene';
 import { DeedsScene } from './scenes/DeedsScene';
 import { CurseScene } from './scenes/CurseScene';
+import { ActIntermissionScene } from './scenes/ActIntermissionScene';
 import { SpriteExportScene } from './tools/SpriteExportScene';
 
 /** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
@@ -70,7 +71,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   scene: isSpriteExport
     ? [BootScene, SpriteExportScene]
-    : [BootScene, MainMenuScene, MenuScene, GameScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, CurseScene, SettingsScene],
+    : [BootScene, MainMenuScene, MenuScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, CurseScene, SettingsScene],
   render: {
     pixelArt: true,
     antialias: false,
