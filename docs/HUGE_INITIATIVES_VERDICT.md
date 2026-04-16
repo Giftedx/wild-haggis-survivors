@@ -111,7 +111,7 @@
 |----|------|---------|------|
 | W1 | Soul Weave certification | 🔵 RETHINK | `DESIGN_SOUL.md` exists. "Certification in CI" is a linter, not a program. Collapse to an ADR + a CI check. |
 | W2 | Moor Road multi-act campaign | ✅ SHIPPED | 2026-04-16. 3 acts + 2 pickers + 6 routes + Chronicle breadcrumb + Skip toggle. See `HUGE_INITIATIVES_MASTER_PLAN.md` "Completed this quarter" for details. |
-| W66 | Ironmoor permadeath alt mode | 🟡 IN PROGRESS | MVP seeded 2026-04-16: `ironmoorMode` setting + HUD chip + run-history flag + `ach_ironmoor_victor` deed + Chronicle ⚔ badge. Full flagship still open (separate leaderboard, chronicle-wipe-on-death, opt-in ceremony). |
+| W66 | Ironmoor permadeath alt mode | ✅ SHIPPED | 2026-04-16. Full flagship across MVP + 3 follow-up commits: opt-in ceremony modal (`09715df`), separate leaderboard `bestIronmoorSeconds` (`9ff2725`), chronicle-wipe-on-death (`783aeef`). See `HUGE_INITIATIVES_MASTER_PLAN.md` for details. |
 | W3 | Weather & Atmosphere Director | 🟡 MEDIUM | Biome system exists; weather director is layered state machine. Bounded. |
 | W4 | Voice Bible + banter pipeline | 🟢 EASY–MEDIUM | `banter.ts` already 603 lines with schema. "Pipeline" is glossary + dup-check, small. |
 | W5 | Living Bestiary Codex | 🟡 MEDIUM | No codex scene yet. `AchievementManager` + deeds give data source. Honest scope. |

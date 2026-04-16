@@ -309,3 +309,51 @@ route bodies).
 
 Next flagship: W18 (bilingual) or W66 (Ironmoor) — both inherit
 the act-intermission pattern + Chronicle route log.
+
+[2026-04-16] W66 Ironmoor — FULL FLAGSHIP SHIPPED.
+
+Three follow-ups on top of the MVP close the flagship scope:
+
+1. Opt-in ceremony (09715df)
+   - addToggleRow gains optional `confirmOnEnable` hook —
+     generalised for future one-way toggles (blood-moon,
+     hard-mode locks) so scenes don't fork per mode.
+   - Flipping Ironmoor OFF→ON raises a modal: title
+     "Ye sure, big yin?", body enumerates the ONE LIFE
+     rules, Naw/Aye buttons. Enter/Y confirms, Esc/N cancels.
+   - 4 new i18n keys. Smoke fence extended.
+
+2. Separate leaderboard (9ff2725)
+   - bestIronmoorSeconds added to SaveData. Back-compat
+     default 0, coerced via migrateSave (ints only, floor,
+     clamp >=0, non-finite -> 0). No schema bump.
+   - RunLifecycle.handleVictory: if ironmoorMode on and the
+     run beats the record (or is first), persist. Best-effort
+     save beside the endless-best write.
+   - formatIronmoorLine(stats, bestVictorySec=0): appends
+     "· fastest win mm:ss" when > 0. Silent on 0 so pre-
+     update callers render unchanged.
+   - ChronicleScene passes save.bestIronmoorSeconds ?? 0.
+
+3. Chronicle-wipe-on-death (783aeef)
+   - Pure helper wipeIronmoorHistory(save) — returns same
+     reference when no ironmoor rows, new object otherwise.
+     Preserves bestIronmoorSeconds (the single permadeath
+     trophy), gold, upgrades, unlockedVariants.
+   - RunLifecycle.handleDeath: if ironmoorMode on, wipe +
+     toast "ui.gameOver.ironmoor_wipe_toast" (⚔ Chronicle
+     wiped — one life, nae pity).
+
+Verification:
+- npm run ci clean: lint + 1130 tests + build
+  (1092 -> 1130, +38 across the three milestones).
+- Live preview: Settings toggle raises the modal; cancel
+  keeps OFF, confirm flips ON + persists. Chronicle renders
+  the new "fastest win mm:ss" suffix. Wipe path verified
+  via localStorage round-trip (2 ironmoor rows cleared,
+  bestIronmoorSeconds 723 preserved).
+- No new production `as any`. Zero TODO / FIXME added.
+
+The MVP-to-flagship arc took W66 from IN PROGRESS to SHIPPED.
+Downstream W18 (bilingual) still inherits the same Chronicle
++ save + settings scaffolding.
