@@ -11,7 +11,7 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { recordRun, loadSave, RunResult, RunSummary, RunHistoryContext } from '../utils/save';
+import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { BOSSES, getEnemyDisplayName } from '../data/enemies';
@@ -19,9 +19,9 @@ import { formatRunVariantLabel, getVariantByKey, VariantDef } from '../data/vari
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
-import { createRNG, randomSeed, encodeSeed, currentDailyDateKey, type RNG } from '../utils/rng';
+import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
 import { DebugOverlay } from '../ui/DebugOverlay';
-import { SaveManager, type IRunState } from '../core/SaveManager';
+import { SaveManager } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -59,6 +59,8 @@ import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
+import { RunPersistenceBridge } from './game/RunPersistenceBridge';
+import { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -190,7 +192,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runModifiers: RunModifiers = defaultModifiers();
   /** Curse key chosen for this run, if any — persisted into run history. */
   private activeCurseKey: CurseKey | null = null;
-  private pageHideBound?: () => void;
   private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
   private achievementUnsub: (() => void) | null = null;
@@ -203,6 +204,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runLifecycle!: RunLifecycle;
   private enemyKillHandler!: EnemyKillHandler;
   private playerHitResolver!: PlayerHitResolver;
+  private runPersistence!: RunPersistenceBridge;
+  private runHistoryRecorder!: RunHistoryRecorder;
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
@@ -474,8 +477,53 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.moorMoments.reset();
 
+    // Run persistence bridge — snapshot / save / hydrate / pagehide hooks.
+    // Constructed before resume hydration; lazy getters let it reach
+    // levelUpFlow (built later in create()) at hydrate time.
+    this.runPersistence = new RunPersistenceBridge({
+      getPlayer: () => this.player,
+      getXPSystem: () => this.xpSystem,
+      getWeaponSystem: () => this.weaponSystem,
+      getSpawnSystem: () => this.spawnSystem,
+      getJuice: () => this.juice,
+      getTimeManager: () => this.timeManager,
+      getRunStatsTracker: () => this.runStatsTracker,
+      getMoorMoments: () => this.moorMoments,
+      getLevelUpFlow: () => this.levelUpFlow,
+      getSaveManager: () => this.metaSaveManager,
+      getActiveVariant: () => this.activeVariant,
+      getKillCount: () => this.killCount,
+      getBossKillCount: () => this.bossKillCount,
+      getBossGoldEarned: () => this.bossGoldEarned,
+      getCoinGoldEarned: () => this.coinGoldEarned,
+      getRevivalAvailable: () => this.revivalAvailable,
+      getOwnedPassives: () => this.ownedPassives,
+      getEvolvedWeapons: () => this.evolvedWeapons,
+      setKillCount: (n) => { this.killCount = n; },
+      setBossKillCount: (n) => { this.bossKillCount = n; },
+      setBossGoldEarned: (n) => { this.bossGoldEarned = n; },
+      setCoinGoldEarned: (n) => { this.coinGoldEarned = n; },
+      setRevivalAvailable: (v) => { this.revivalAvailable = v; },
+      setOwnedPassives: (p) => { this.ownedPassives = p; },
+      setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
+      isSceneActive: () => this.scene.isActive(),
+    });
+
+    // Run history recorder — writes to meta save on run end, updates
+    // the per-day daily challenge record when applicable.
+    this.runHistoryRecorder = new RunHistoryRecorder({
+      getSaveManager: () => this.metaSaveManager,
+      getXPSystem: () => this.xpSystem,
+      getWeaponSystem: () => this.weaponSystem,
+      getActiveVariant: () => this.activeVariant,
+      getActiveCurseKey: () => this.activeCurseKey,
+      getBossKillCount: () => this.bossKillCount,
+      getRunRng: () => this.runRng,
+      isDailyRun: () => this.runIsDaily,
+    });
+
     if (resumeRun) {
-      this.applyResumeHydration(resumeRun);
+      this.runPersistence.applyResume(resumeRun);
     }
 
     // Upgrade card UI
@@ -677,9 +725,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       armIFrames: (ms) => this.armIFrames(ms),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       buildRunSummary: (victory) => this.buildRunSummary(victory),
-      buildRunHistoryContext: () => this.buildRunHistoryContext(),
+      buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
       buildGameOverPayload: (mode, s, r, pb, dc) => this.buildGameOverPayload(mode, s, r, pb, dc),
-      recordToHistory: (s, r) => this.recordToHistory(s, r),
+      recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
       recordRun: (s, ctx) => recordRun(s, ctx),
       transitionToGameOver: (payload) => this.transitionToGameOver(payload),
     });
@@ -714,7 +762,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tutorialSystem.startRunIfNeeded({ resumeRun: Boolean(resumeRun) });
 
     this.registerDebugTimeTravelApi();
-    this.registerMidRunPersistenceHooks();
+    this.runPersistence.registerMidRunHooks();
 
     getAnalyticsManager().beginGameplaySession({ variantKey: this.activeVariant.key });
     this.gameplaySessionGuard.markStarted();
@@ -782,7 +830,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     showCountdown(this, this.timeManager, this.updateTickers, () => this.getUiViewport());
 
     // Resume is now "committed": replace old suspended snapshot with a fresh one.
-    finalizeResumeStartup(resumeRun, () => this.persistActiveRunToMeta());
+    finalizeResumeStartup(resumeRun, () => this.runPersistence.persist());
   }
 
   private registerShutdownCleanup(): void {
@@ -809,7 +857,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.bossEnrageUnsub = null;
       this.codexFirstCullUnsub?.();
       this.codexFirstCullUnsub = null;
-      this.unregisterMidRunPersistenceHooks();
+      this.runPersistence?.unregisterMidRunHooks();
       this.unregisterDebugTimeTravelApi();
       try { this.subs.dispose(); } catch { /* ignore */ }
       try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
@@ -1147,79 +1195,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.scene.start('MainMenu');
   }
 
-  private collectRunStateForMeta(): IRunState {
-    return {
-      gameTimeSec: this.spawnSystem.getGameTimeSec(),
-      playerX: this.player.x,
-      playerY: this.player.y,
-      playerHealth: this.player.getHp(),
-      playerMaxHp: this.player.getMaxHp(),
-      currentXp: this.xpSystem.getCurrentXP(),
-      currentLevel: this.xpSystem.getLevel(),
-      acquiredWeapons: this.weaponSystem.getWeapons().map((w) => ({
-        key: w.config.key,
-        level: w.level,
-        evolved: w.evolved,
-        evolutionKey: w.evolutionKey ?? '',
-      })),
-      selectedVariantKey: this.activeVariant.key,
-      killCount: this.killCount,
-      ownedPassives: [...this.ownedPassives],
-      evolvedWeaponKeys: [...this.evolvedWeapons],
-      bossKillCount: this.bossKillCount,
-      bossGoldEarned: this.bossGoldEarned,
-      coinGoldEarned: this.coinGoldEarned,
-      revivalAvailable: this.revivalAvailable,
-      bestCombo: this.juice.getBestCombo(),
-      comboCount: this.juice.getComboCount(),
-      comboTimerMs: this.juice.getComboTimerRemainingMs(),
-      dashCharges: this.player.getDashCharges(),
-      dashCooldownMs: this.player.getDashCooldownMs(),
-      weaponDamage: this.runStatsTracker.snapshot(),
-      spawnedBossKeys: this.spawnSystem.getSpawnedBossKeys(),
-      shieldCooldownMs: this.player.getShieldCooldownMs(),
-    };
-  }
-
-  private persistActiveRunToMeta(): void {
-    if (!this.timeManager) return;
-    if (this.timeManager.has('RUN_END')) return;
-    try {
-      this.metaSaveManager.saveActiveRun(this.collectRunStateForMeta());
-    } catch {
-      /* ignore */
-    }
-  }
-
-  private applyResumeHydration(run: IRunState): void {
-    this.xpSystem.hydrateRunState(run.currentLevel, run.currentXp);
-    for (let lv = 2; lv <= run.currentLevel; lv++) {
-      this.player.onLevelUp(lv);
-    }
-    this.ownedPassives = [...run.ownedPassives];
-    this.evolvedWeapons = [...run.evolvedWeaponKeys];
-    for (const p of this.ownedPassives) {
-      this.levelUpFlow.applyPassiveEffect(p);
-    }
-    this.player.setResumeHealth(run.playerHealth);
-    this.player.setResumeShieldCooldown(run.shieldCooldownMs);
-    this.player.setResumeDashState(run.dashCharges, run.dashCooldownMs);
-    this.weaponSystem.replaceWeaponsFromRun(run.acquiredWeapons);
-    this.evolvedWeapons = this.weaponSystem
-      .getWeapons()
-      .filter((w) => w.evolved)
-      .map((w) => w.config.key);
-    this.spawnSystem.applyResumeTime(run.gameTimeSec, run.spawnedBossKeys);
-    this.killCount = run.killCount;
-    this.bossKillCount = Math.max(0, run.bossKillCount ?? 0);
-    this.bossGoldEarned = Math.max(0, run.bossGoldEarned ?? 0);
-    this.coinGoldEarned = Math.max(0, run.coinGoldEarned ?? 0);
-    if (run.revivalAvailable !== undefined) {
-      this.revivalAvailable = run.revivalAvailable;
-    }
-    this.runStatsTracker.restore(run.weaponDamage);
-    this.moorMoments.pushAfterResume(run.gameTimeSec);
-  }
+  // collectRunStateForMeta / persistActiveRunToMeta / applyResumeHydration
+  // extracted to src/scenes/game/RunPersistenceBridge.ts
 
   private registerDebugTimeTravelApi(): void {
     const g = globalThis as unknown as {
@@ -1258,81 +1235,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  private registerMidRunPersistenceHooks(): void {
-    if (typeof window === 'undefined') return;
-    this.pageHideBound = () => {
-      try {
-        if (!this.scene.isActive()) return;
-        this.persistActiveRunToMeta();
-      } catch {
-        /* ignore */
-      }
-    };
-    window.addEventListener('pagehide', this.pageHideBound);
-    window.addEventListener('beforeunload', this.pageHideBound);
-  }
-
-  private unregisterMidRunPersistenceHooks(): void {
-    if (typeof window === 'undefined' || !this.pageHideBound) return;
-    window.removeEventListener('pagehide', this.pageHideBound);
-    window.removeEventListener('beforeunload', this.pageHideBound);
-    this.pageHideBound = undefined;
-  }
-
-  private buildRunHistoryContext(): RunHistoryContext {
-    return {
-      level: this.xpSystem.getLevel(),
-      bossKills: this.bossKillCount,
-      variantKey: this.activeVariant.key,
-      weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
-      ...(this.activeCurseKey ? { curseKey: this.activeCurseKey } : {}),
-    };
-  }
-
-  private recordToHistory(summary: RunSummary, runResult: RunResult): void {
-    this.metaSaveManager.recordRunToHistory({
-      timestamp: Date.now(),
-      timeSurvivedSec: summary.timeSurvivedSec,
-      enemiesKilled: summary.enemiesKilled,
-      level: this.xpSystem.getLevel(),
-      bossKills: this.bossKillCount,
-      goldEarned: runResult.goldEarned,
-      bestCombo: summary.bestCombo ?? 0,
-      variantKey: this.activeVariant.key,
-      isVictory: summary.victory ?? false,
-      weaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
-      runSeed: this.runRng.seed,
-      isDaily: this.runIsDaily,
-    });
-    if (this.runIsDaily) {
-      this.recordDailyChallengeResult(summary);
-    }
-  }
-
-  /**
-   * Update the per-day Daily Challenge record. Called only for daily runs.
-   * Bumps attempts, updates best-time/kill records, and marks completion on
-   * the first victory today. If the record is for a past date (e.g. player
-   * left the run open overnight), we start a fresh record for today.
-   */
-  private recordDailyChallengeResult(summary: RunSummary): void {
-    const todayKey = currentDailyDateKey();
-    this.metaSaveManager.update((cur) => {
-      const prior = cur.dailyChallenge && cur.dailyChallenge.dateKey === todayKey
-        ? cur.dailyChallenge
-        : { dateKey: todayKey, bestTimeSec: 0, bestEnemiesKilled: 0, attempts: 0, completedVictory: false };
-      return {
-        ...cur,
-        dailyChallenge: {
-          dateKey: todayKey,
-          bestTimeSec: Math.max(prior.bestTimeSec, summary.timeSurvivedSec),
-          bestEnemiesKilled: Math.max(prior.bestEnemiesKilled, summary.enemiesKilled),
-          attempts: prior.attempts + 1,
-          completedVictory: prior.completedVictory || Boolean(summary.victory),
-        },
-      };
-    });
-  }
+  // registerMidRunPersistenceHooks / unregisterMidRunPersistenceHooks
+  // extracted to RunPersistenceBridge.
+  // buildRunHistoryContext / recordToHistory / recordDailyChallengeResult
+  // extracted to RunHistoryRecorder.
 
   private buildGameOverPayload(
     mode: 'victory' | 'death',

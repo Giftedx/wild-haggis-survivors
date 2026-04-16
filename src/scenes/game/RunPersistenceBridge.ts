@@ -1,0 +1,196 @@
+/**
+ * RunPersistenceBridge — owns the active-run save/resume surface that
+ * used to live on GameScene:
+ *   - snapshot scene state into IRunState (collect)
+ *   - write it through SaveManager (persist) — no-op during RUN_END
+ *   - hydrate scene state back out of IRunState (applyResume)
+ *   - install/remove the pagehide/beforeunload auto-save listeners
+ *
+ * Scene state mutation is routed through the hooks surface. All reads
+ * use lazy getters so the bridge can be constructed before all systems
+ * exist (matches the RunLifecycle / EnemyKillHandler / PlayerHitResolver
+ * pattern in this package).
+ */
+import type { SaveManager, IRunState } from '../../core/SaveManager';
+import type { Player } from '../../entities/Player';
+import type { XPSystem } from '../../systems/XPSystem';
+import type { WeaponSystem } from '../../systems/WeaponSystem';
+import type { SpawnSystem } from '../../systems/SpawnSystem';
+import type { JuiceSystem } from '../../systems/JuiceSystem';
+import type { TimeManager } from '../../systems/TimeManager';
+import type { RunStatsTracker } from '../../systems/RunStatsTracker';
+import type { MoorMomentScheduler } from './MoorMomentScheduler';
+import type { LevelUpFlow } from './LevelUpFlow';
+import type { VariantDef } from '../../data/variants';
+
+export interface RunPersistenceHooks {
+  // Systems (reads)
+  getPlayer(): Player;
+  getXPSystem(): XPSystem;
+  getWeaponSystem(): WeaponSystem;
+  getSpawnSystem(): SpawnSystem;
+  getJuice(): JuiceSystem;
+  getTimeManager(): TimeManager;
+  getRunStatsTracker(): RunStatsTracker;
+  getMoorMoments(): MoorMomentScheduler;
+  getLevelUpFlow(): LevelUpFlow;
+  getSaveManager(): SaveManager;
+  getActiveVariant(): VariantDef;
+
+  // Counter / flag read-back (for snapshot)
+  getKillCount(): number;
+  getBossKillCount(): number;
+  getBossGoldEarned(): number;
+  getCoinGoldEarned(): number;
+  getRevivalAvailable(): boolean;
+  getOwnedPassives(): readonly string[];
+  getEvolvedWeapons(): readonly string[];
+
+  // Counter / flag mutation (for hydrate)
+  setKillCount(n: number): void;
+  setBossKillCount(n: number): void;
+  setBossGoldEarned(n: number): void;
+  setCoinGoldEarned(n: number): void;
+  setRevivalAvailable(v: boolean): void;
+  setOwnedPassives(p: string[]): void;
+  setEvolvedWeapons(e: string[]): void;
+
+  // Auto-save gate (skip when scene is already torn down)
+  isSceneActive(): boolean;
+}
+
+export class RunPersistenceBridge {
+  private pageHideBound?: () => void;
+
+  constructor(private readonly hooks: RunPersistenceHooks) {}
+
+  /** Snapshot the current run into an IRunState. Read-only on scene. */
+  collect(): IRunState {
+    const h = this.hooks;
+    const player = h.getPlayer();
+    const xp = h.getXPSystem();
+    const weapons = h.getWeaponSystem();
+    const juice = h.getJuice();
+    return {
+      gameTimeSec: h.getSpawnSystem().getGameTimeSec(),
+      playerX: player.x,
+      playerY: player.y,
+      playerHealth: player.getHp(),
+      playerMaxHp: player.getMaxHp(),
+      currentXp: xp.getCurrentXP(),
+      currentLevel: xp.getLevel(),
+      acquiredWeapons: weapons.getWeapons().map((w) => ({
+        key: w.config.key,
+        level: w.level,
+        evolved: w.evolved,
+        evolutionKey: w.evolutionKey ?? '',
+      })),
+      selectedVariantKey: h.getActiveVariant().key,
+      killCount: h.getKillCount(),
+      ownedPassives: [...h.getOwnedPassives()],
+      evolvedWeaponKeys: [...h.getEvolvedWeapons()],
+      bossKillCount: h.getBossKillCount(),
+      bossGoldEarned: h.getBossGoldEarned(),
+      coinGoldEarned: h.getCoinGoldEarned(),
+      revivalAvailable: h.getRevivalAvailable(),
+      bestCombo: juice.getBestCombo(),
+      comboCount: juice.getComboCount(),
+      comboTimerMs: juice.getComboTimerRemainingMs(),
+      dashCharges: player.getDashCharges(),
+      dashCooldownMs: player.getDashCooldownMs(),
+      weaponDamage: h.getRunStatsTracker().snapshot(),
+      spawnedBossKeys: h.getSpawnSystem().getSpawnedBossKeys(),
+      shieldCooldownMs: player.getShieldCooldownMs(),
+    };
+  }
+
+  /**
+   * Persist the active run. Skipped when TimeManager is absent or a
+   * RUN_END timer is live (the scene is tearing down the run and a
+   * stale snapshot would reappear on next launch).
+   */
+  persist(): void {
+    const h = this.hooks;
+    const timeManager = h.getTimeManager();
+    if (!timeManager) return;
+    if (timeManager.has('RUN_END')) return;
+    try {
+      h.getSaveManager().saveActiveRun(this.collect());
+    } catch {
+      /* ignore — best-effort save path */
+    }
+  }
+
+  /**
+   * Hydrate a previously-saved IRunState back onto the scene. Replays
+   * level-ups for stat growth, restores passives, and rebuilds the
+   * weapon roster. Counter state is pushed back through setter hooks.
+   */
+  applyResume(run: IRunState): void {
+    const h = this.hooks;
+    const xp = h.getXPSystem();
+    const player = h.getPlayer();
+    const weapons = h.getWeaponSystem();
+    const levelUpFlow = h.getLevelUpFlow();
+
+    xp.hydrateRunState(run.currentLevel, run.currentXp);
+    for (let lv = 2; lv <= run.currentLevel; lv++) {
+      player.onLevelUp(lv);
+    }
+    const passives = [...run.ownedPassives];
+    h.setOwnedPassives(passives);
+    h.setEvolvedWeapons([...run.evolvedWeaponKeys]);
+    for (const p of passives) {
+      levelUpFlow.applyPassiveEffect(p);
+    }
+    player.setResumeHealth(run.playerHealth);
+    player.setResumeShieldCooldown(run.shieldCooldownMs);
+    player.setResumeDashState(run.dashCharges, run.dashCooldownMs);
+    weapons.replaceWeaponsFromRun(run.acquiredWeapons);
+    // WeaponSystem can re-derive evolved state from the imported roster —
+    // overwrite our transient copy so it matches what's actually equipped.
+    h.setEvolvedWeapons(
+      weapons
+        .getWeapons()
+        .filter((w) => w.evolved)
+        .map((w) => w.config.key),
+    );
+    h.getSpawnSystem().applyResumeTime(run.gameTimeSec, run.spawnedBossKeys);
+    h.setKillCount(run.killCount);
+    h.setBossKillCount(Math.max(0, run.bossKillCount ?? 0));
+    h.setBossGoldEarned(Math.max(0, run.bossGoldEarned ?? 0));
+    h.setCoinGoldEarned(Math.max(0, run.coinGoldEarned ?? 0));
+    if (run.revivalAvailable !== undefined) {
+      h.setRevivalAvailable(run.revivalAvailable);
+    }
+    h.getRunStatsTracker().restore(run.weaponDamage);
+    h.getMoorMoments().pushAfterResume(run.gameTimeSec);
+  }
+
+  /**
+   * Install window-level auto-save hooks so an unexpected page close
+   * still lands a last snapshot. No-op on non-browser hosts (Vitest /
+   * headless tests).
+   */
+  registerMidRunHooks(): void {
+    if (typeof window === 'undefined') return;
+    this.pageHideBound = () => {
+      try {
+        if (!this.hooks.isSceneActive()) return;
+        this.persist();
+      } catch {
+        /* ignore */
+      }
+    };
+    window.addEventListener('pagehide', this.pageHideBound);
+    window.addEventListener('beforeunload', this.pageHideBound);
+  }
+
+  /** Remove the listeners registered by registerMidRunHooks (idempotent). */
+  unregisterMidRunHooks(): void {
+    if (typeof window === 'undefined' || !this.pageHideBound) return;
+    window.removeEventListener('pagehide', this.pageHideBound);
+    window.removeEventListener('beforeunload', this.pageHideBound);
+    this.pageHideBound = undefined;
+  }
+}
