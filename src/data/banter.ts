@@ -29,7 +29,11 @@ export type BanterContext =
   | 'weapon_evolve'
   | 'curse_start'
   | 'moor_moment'
-  | 'idle';
+  | 'idle'
+  // W2 Moor Road
+  | 'act_intermission_enter'
+  | 'act_complete'
+  | 'route_picked';
 
 export interface BanterPool {
   context: BanterContext;
@@ -587,6 +591,50 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.pipe_breath.c',
         'ui.banter.idle.pipe_breath.d',
       ],
+    },
+  },
+  // W2 Moor Road — placeholder copy; full Glesga voice pass in M3.
+  {
+    context: 'act_intermission_enter',
+    tone: 'hearth',
+    priority: 52,
+    keys: [
+      'ui.banter.act_intermission_enter.a',
+      'ui.banter.act_intermission_enter.b',
+      'ui.banter.act_intermission_enter.c',
+    ],
+  },
+  {
+    context: 'act_complete',
+    tone: 'hearth',
+    priority: 57,
+    keys: [
+      'ui.banter.act_complete.a',
+      'ui.banter.act_complete.b',
+    ],
+  },
+  {
+    context: 'route_picked',
+    tone: 'hearth',
+    priority: 48,
+    keys: [
+      'ui.banter.route_picked.generic.a',
+      'ui.banter.route_picked.generic.b',
+    ],
+    keysByTag: {
+      up_the_brae: [
+        'ui.banter.route_picked.up_the_brae.a',
+        'ui.banter.route_picked.up_the_brae.b',
+      ],
+      round_the_loch: [
+        'ui.banter.route_picked.round_the_loch.a',
+        'ui.banter.route_picked.round_the_loch.b',
+      ],
+      through_the_kirkyard: [
+        'ui.banter.route_picked.through_the_kirkyard.a',
+        'ui.banter.route_picked.through_the_kirkyard.b',
+      ],
+      // Picker B entries added in M2 Task 20.
     },
   },
 ];

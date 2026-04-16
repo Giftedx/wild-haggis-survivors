@@ -1107,10 +1107,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const atGameTimeSec = Math.floor(this.spawnSystem.getGameTimeSec());
     const settings = this.settingsManager.load();
 
+    this.banter?.request('act_complete');
+
     // Common resolver — runs whether picker was shown or auto-defaulted.
     const onResolve = (pick: RoutePick, route: RouteDef) => {
       this.runActState.recordPick(pick);
       this.runModifiers.routePicks.push(pick);
+      this.banter?.request('route_picked', { tag: pick.routeKey });
       // Apply modifierDeltas. Numeric fields currently replace (the only
       // route-affected modifier today is spawnIntervalMult, a multiplier
       // that the route definition sets as the absolute value for its
@@ -1137,6 +1140,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     this.timeManager.request('ACT_INTERMISSION', { pausePhysics: true, timeScale: 0 });
+    this.banter?.request('act_intermission_enter');
     this.scene.launch(ActIntermissionScene.KEY, {
       slot,
       atGameTimeSec,

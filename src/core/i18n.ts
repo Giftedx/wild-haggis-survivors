@@ -1013,6 +1013,34 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Silence is the rest — nae the song.',
         },
       },
+      // W2 Moor Road — placeholder copy; full Glesga voice pass in M3.
+      act_intermission_enter: {
+        a: 'Which way, ya scunner?',
+        b: 'Choose wisely or don\'t.',
+        c: 'Road splits. Decide.',
+      },
+      act_complete: {
+        a: 'That\'s one doon.',
+        b: 'On tae the next, aye.',
+      },
+      route_picked: {
+        generic: {
+          a: 'Picked yer line. Walk it.',
+          b: 'Decision made. On we go.',
+        },
+        up_the_brae: {
+          a: 'Up we go then.',
+          b: 'Keep climbin\'.',
+        },
+        round_the_loch: {
+          a: 'Water\'s cauld, mind.',
+          b: 'Longer way, safer way.',
+        },
+        through_the_kirkyard: {
+          a: 'Hope yer no feart.',
+          b: 'Shortcut through the deid.',
+        },
+      },
     },
   },
   captions: {

@@ -12,6 +12,8 @@ describe('BANTER_POOLS structure', () => {
     'first_blood', 'kill_streak', 'level_up', 'low_hp',
     'recover', 'boss_warn', 'boss_down', 'biome_change',
     'weapon_evolve', 'curse_start', 'moor_moment', 'idle',
+    // W2 Moor Road
+    'act_intermission_enter', 'act_complete', 'route_picked',
   ];
 
   it('covers every BanterContext exactly once', () => {
