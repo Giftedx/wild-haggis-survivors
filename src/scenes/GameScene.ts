@@ -67,6 +67,9 @@ import { wireSceneEventBus } from './game/wireSceneEventBus';
 import { installRunIntroFx } from './game/installRunIntroFx';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
+import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
+import { updateMusicStateScratch } from './game/updateMusicStateScratch';
+import { updateHudWeaponRows } from './game/updateHudWeaponRows';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -77,7 +80,6 @@ import { applyPermanentUpgrades, applyVariantModifiers } from './game/runStartMo
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
-  computeAutoBattleSteering,
   installAutoBattleTimeScale,
   isAutoBattleEnabled,
   uninstallAutoBattleTimeScale,
@@ -933,20 +935,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.iFrameController.tick(scaledDelta);
     this.runEndTickers.tick(delta);
 
-    if (isAutoBattleEnabled()) {
-      this.player.setAutoBattleSteering(
-        computeAutoBattleSteering({
-          playerX: this.player.x,
-          playerY: this.player.y,
-          gems: this.xpSystem.getGemPositionsForAutoBattle(),
-          worldWidth: GAME.WORLD_WIDTH,
-          worldHeight: GAME.WORLD_HEIGHT,
-          timeSec: this.spawnSystem.getGameTimeSec(),
-        })
-      );
-    } else {
-      this.player.setAutoBattleSteering(null);
-    }
+    tickAutoBattleSteering(this.player, this.xpSystem, this.spawnSystem);
 
     // Dev-only: top-up entity pools + sample FPS when stress test is active.
     tickStressTest(this);
@@ -1014,17 +1003,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.chestRegistry.getMarkers(),
       this.player.rotation
     );
-    const ms = this.musicStateScratch;
-    ms.hp = this.player.getHp();
-    ms.maxHp = this.player.getMaxHp();
-    ms.gameTimeSec = this.spawnSystem.getGameTimeSec();
-    ms.enemyCount = this.spawnSystem.getActiveCount();
-    ms.comboCount = this.juice.getComboCount();
-    ms.killCount = this.killCount;
-    ms.bossActive = this.spawnSystem.isBossActive();
     const biomeId = this.getCurrentBiomeId();
-    ms.biomeTimbre = biomeId ? BIOMES[biomeId].moodTimbre : 0.45;
-    musicEngine.update(delta, ms);
+    updateMusicStateScratch(
+      this.musicStateScratch,
+      this.player,
+      this.spawnSystem,
+      this.juice,
+      this.killCount,
+      biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
+    );
+    musicEngine.update(delta, this.musicStateScratch);
 
     // Dash cooldown indicator (small arc under player)
     this.gameTickers.updateDashIndicator();
@@ -1034,18 +1022,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
-    const weapons = this.weaponSystem.getWeapons();
-    const wn = weapons.length;
-    for (let i = 0; i < wn; i++) {
-      const w = weapons[i];
-      const row = this.hudWeaponScratch[i];
-      row.key = w.config.key;
-      row.level = w.level;
-      row.evolved = w.evolved;
-      row.evolutionKey = w.evolutionKey;
-      const cd = Math.max(1, w.cooldownMs);
-      row.cooldownFrac = Phaser.Math.Clamp(1 - (w.cooldownRemaining / cd), 0, 1);
-    }
+    const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
       this.xpSystem.getLevel(),
