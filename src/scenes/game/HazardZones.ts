@@ -76,21 +76,39 @@ export class HazardZones {
     }
 
     for (let i = 0; i < 3; i++) {
-      const hx = rng.between(200, W - 200);
-      const hy = rng.between(200, H - 200);
-      const hr = rng.between(30, 45);
-
-      scene.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
-      const healGlow = scene.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
-      scene.tweens.add({
-        targets: healGlow,
-        alpha: { from: 0.08, to: 0.2 },
-        duration: 2000 + rng.between(0, 1000),
-        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
-      });
-
-      this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
+      this.addHealingCircle(
+        rng.between(200, W - 200),
+        rng.between(200, H - 200),
+        rng.between(30, 45),
+        rng.between(0, 1000),
+      );
     }
+  }
+
+  /**
+   * Drops an additional healing circle at random world coords. Used by
+   * W2 route onResume (round_the_loch spawns two extra for act 2).
+   */
+  spawnHealingCircle(): void {
+    const W = GAME.WORLD_WIDTH;
+    const H = GAME.WORLD_HEIGHT;
+    const x = Phaser.Math.Between(200, W - 200);
+    const y = Phaser.Math.Between(200, H - 200);
+    const r = Phaser.Math.Between(30, 45);
+    this.addHealingCircle(x, y, r, Phaser.Math.Between(0, 1000));
+  }
+
+  private addHealingCircle(hx: number, hy: number, hr: number, jitterMs: number): void {
+    const scene = this.scene;
+    scene.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
+    const healGlow = scene.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
+    scene.tweens.add({
+      targets: healGlow,
+      alpha: { from: 0.08, to: 0.2 },
+      duration: 2000 + jitterMs,
+      yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+    });
+    this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
   }
 
   tick(scaledDelta: number): void {
