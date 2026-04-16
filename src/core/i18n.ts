@@ -464,6 +464,8 @@ export const EN_STRINGS: LocaleTree = {
       kill_1000: 'A THOUSAND. The glen will tell stories about ye. +{gold}g',
       kill_2500: 'Two and a half grand! That\'s no\' normal, pal. +{gold}g',
       kill_5000: 'FIVE THOUSAND. Yer da sells Avon but you sell pain. +{gold}g',
+      /** Ceilidh Chain pulse — every 8th kill, magnet widens 2s. */
+      ceilidh_pulse: '♪ Ceilidh! — moor picks up the beat.',
       /** Combo milestone shouts — Glesga cultural Easter eggs */
       combo_11: 'ELEVEN!',
       combo_50: 'THAT\'S PLENTY!',

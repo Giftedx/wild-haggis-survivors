@@ -8,6 +8,11 @@ import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '.
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import {
+  CEILIDH_MAGNET_DURATION_MS,
+  CEILIDH_MAGNET_FLAT_PX,
+  isCeilidhPulseMoment,
+} from './ceilidhChain';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -362,6 +367,20 @@ export class JuiceSystem {
       // Combo milestone cultural Easter eggs — Glesga patter at key numbers.
       // Captions piggyback on the toast copy — if a player is reading toasts,
       // the caption strip echoes them consistently.
+      // Ceilidh Chain — every 8th kill in the streak, the moor picks
+      // up the beat and the magnet pulses wider for 2s. A cheap joy
+      // moment between the rare Glesga-patter milestones below. Uses
+      // the same scene duck-call as captions (see combo_11 branch).
+      if (isCeilidhPulseMoment(this.comboCount)) {
+        const player = (this.scene as unknown as {
+          getPlayer?: () => { grantCeilidhChainMagnet: (f: number, d: number) => void };
+        }).getPlayer?.();
+        player?.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
+        const msg = t('ui.game.ceilidh_pulse');
+        this.showToast(msg, '#a0d8a0');
+        this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
+      }
+
       if (this.comboCount === 11) {
         const msg = t('ui.game.combo_11');
         this.showToast(msg, '#ffdd44');

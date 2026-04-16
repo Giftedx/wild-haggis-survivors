@@ -46,6 +46,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Moor moment — temporary vacuum wider than level scaling; ticks down in update(). */
   private moorMomentPickupFlat: number = 0;
   private moorMomentPickupRemainingMs: number = 0;
+  /** Ceilidh Chain — stacks additively with moorMomentPickupFlat. */
+  private ceilidhPickupFlat: number = 0;
+  private ceilidhPickupRemainingMs: number = 0;
   private bonusDamageMultiplier: number = 1.0;  // Global damage multiplier
   private bonusAoeMultiplier: number = 1.0;     // AoE radius multiplier
   private bonusAttackSpeedMultiplier: number = 1.0; // Cooldown multiplier
@@ -284,6 +287,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
+    if (this.ceilidhPickupRemainingMs > 0) {
+      this.ceilidhPickupRemainingMs -= scaledDelta;
+      if (this.ceilidhPickupRemainingMs <= 0) {
+        this.ceilidhPickupRemainingMs = 0;
+        this.ceilidhPickupFlat = 0;
+        this.recalcStats();
+      }
+    }
+
     // Skip normal movement during dash — velocity is set by tryDash
     if (this.isDashing) {
       this.clampInsideWorld();
@@ -402,7 +414,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.maxHp = this.runBaseMaxHp + this.bonusMaxHp;
 
     // Pickup radius: base + upgrade bonus + moor pulse + 3% per level (satisfying vacuum growth)
-    this.pickupRadius = (this.runBasePickup + this.bonusPickupRadius + this.moorMomentPickupFlat)
+    this.pickupRadius = (this.runBasePickup + this.bonusPickupRadius
+      + this.moorMomentPickupFlat + this.ceilidhPickupFlat)
       * (1 + 0.03 * (level - 1));
   }
 
@@ -597,6 +610,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   grantMoorMomentMagnet(flatPx: number, durationMs: number): void {
     this.moorMomentPickupFlat = Math.max(this.moorMomentPickupFlat, flatPx);
     this.moorMomentPickupRemainingMs = Math.max(this.moorMomentPickupRemainingMs, durationMs);
+    this.recalcStats();
+  }
+
+  /**
+   * Ceilidh Chain pulse — stacks additively on top of any moor-moment
+   * magnet already active, so the "every 8th kill" beat feels like a
+   * widening ring *on top of* the ambient rhythm rather than being
+   * masked by a larger moor-moment value.
+   */
+  grantCeilidhChainMagnet(flatPx: number, durationMs: number): void {
+    this.ceilidhPickupFlat = Math.max(this.ceilidhPickupFlat, flatPx);
+    this.ceilidhPickupRemainingMs = Math.max(this.ceilidhPickupRemainingMs, durationMs);
     this.recalcStats();
   }
 

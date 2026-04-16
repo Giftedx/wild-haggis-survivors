@@ -206,3 +206,44 @@ describe('Player.onLevelUp stat recalc', () => {
     expect(radius).toBeCloseTo(100 * (1 + 0.03 * 10));
   });
 });
+
+describe('Player Ceilidh Chain magnet', () => {
+  it('grantCeilidhChainMagnet bumps pickup radius by flatPx', () => {
+    const p = makePlayer({ pickupRadius: 100 });
+    const before = p.getPickupRadius();
+    p.grantCeilidhChainMagnet(40, 2000);
+    expect(p.getPickupRadius()).toBeCloseTo(before + 40);
+  });
+
+  it('stacks additively with moor-moment magnet (both grants contribute)', () => {
+    const p = makePlayer({ pickupRadius: 100 });
+    p.grantMoorMomentMagnet(55, 8000);
+    p.grantCeilidhChainMagnet(40, 2000);
+    // Base 100 + moor 55 + ceilidh 40 = 195
+    expect(p.getPickupRadius()).toBeCloseTo(195);
+  });
+
+  it('refreshes (not duplicates) when called again with same value', () => {
+    const p = makePlayer({ pickupRadius: 100 });
+    p.grantCeilidhChainMagnet(40, 2000);
+    p.grantCeilidhChainMagnet(40, 2000);
+    // Not 100 + 40 + 40; just 100 + 40
+    expect(p.getPickupRadius()).toBeCloseTo(140);
+  });
+
+  it('upgrades to larger flat when a bigger grant lands first', () => {
+    const p = makePlayer({ pickupRadius: 100 });
+    p.grantCeilidhChainMagnet(40, 2000);
+    p.grantCeilidhChainMagnet(60, 1000);
+    // Math.max(40, 60) = 60
+    expect(p.getPickupRadius()).toBeCloseTo(160);
+  });
+
+  it('keeps prior larger grant when a smaller grant follows', () => {
+    const p = makePlayer({ pickupRadius: 100 });
+    p.grantCeilidhChainMagnet(60, 2000);
+    p.grantCeilidhChainMagnet(40, 1000);
+    // Math.max(60, 40) = 60
+    expect(p.getPickupRadius()).toBeCloseTo(160);
+  });
+});
