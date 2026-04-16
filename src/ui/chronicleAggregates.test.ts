@@ -453,5 +453,29 @@ describe('W2 Moor Road chronicle helpers', () => {
       expect(line).toContain('1/1 wins');
       expect(line).toContain('15:05');
     });
+
+    it('omits "fastest win" when bestVictorySec is 0', () => {
+      const hist = [
+        entry({ isVictory: true, timeSurvivedSec: 905, ironmoor: true }),
+      ];
+      const line = formatIronmoorLine(computeIronmoorStats(hist), 0);
+      expect(line).not.toContain('fastest win');
+    });
+
+    it('appends "fastest win mm:ss" when bestVictorySec > 0', () => {
+      const hist = [
+        entry({ isVictory: true, timeSurvivedSec: 905, ironmoor: true }),
+      ];
+      const line = formatIronmoorLine(computeIronmoorStats(hist), 723);
+      expect(line).toContain('fastest win 12:03');
+    });
+
+    it('formats 0 seconds padded correctly', () => {
+      const hist = [entry({ isVictory: true, timeSurvivedSec: 600, ironmoor: true })];
+      const line = formatIronmoorLine(computeIronmoorStats(hist), 600);
+      // 600s == 10:00, longest and fastest same
+      expect(line).toContain('longest 10:00');
+      expect(line).toContain('fastest win 10:00');
+    });
   });
 });

@@ -189,7 +189,10 @@ export class ChronicleScene extends Phaser.Scene {
 
     // W66 Ironmoor lifetime stats — silent when the player has never
     // taken an Ironmoor run, so there's no empty chrome on fresh saves.
-    const ironmoor = formatIronmoorLine(computeIronmoorStats(save.runHistory));
+    const ironmoor = formatIronmoorLine(
+      computeIronmoorStats(save.runHistory),
+      save.bestIronmoorSeconds ?? 0,
+    );
     const ironmoorSection = ironmoor ? `\n${ironmoor}` : '';
 
     const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection;

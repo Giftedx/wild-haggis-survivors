@@ -152,6 +152,22 @@ export class RunLifecycle {
     const runResult = this.hooks.recordRun(summary, context);
     this.hooks.recordToHistory(summary, runResult);
 
+    // W66 Ironmoor separate leaderboard: fastest Ironmoor-mode victory time.
+    // Keeps single-life pride distinct from regular best-time. Best-effort
+    // save — the run result is already persisted; we only supplement it.
+    if (this.hooks.getSettingsManager().load().ironmoorMode) {
+      try {
+        const cur = loadSave();
+        const best = cur.bestIronmoorSeconds ?? 0;
+        const time = Math.floor(summary.timeSurvivedSec);
+        if (time > 0 && (best === 0 || time < best)) {
+          writeSave({ ...cur, bestIronmoorSeconds: time });
+        }
+      } catch {
+        /* best-effort */
+      }
+    }
+
     const { x: uiX, y: uiY, width: uiW, height: uiH } = this.hooks.getUiViewport();
     this.hooks.getVictoryFade()?.destroy();
     const fade = this.scene.add.rectangle(

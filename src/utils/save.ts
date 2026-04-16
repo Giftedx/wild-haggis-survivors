@@ -98,6 +98,14 @@ export interface SaveData {
    */
   bestEndlessSeconds?: number;
 
+  /**
+   * W66 Ironmoor: fastest Ironmoor-mode victory time in seconds, or 0 if
+   * no Ironmoor victory yet. Separate leaderboard — does not mix with
+   * `bestTime` (regular runs). Optional + defaulted for back-compat; no
+   * schema bump needed.
+   */
+  bestIronmoorSeconds?: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -160,6 +168,7 @@ const DEFAULT_SAVE: SaveData = {
   bestCombo: 0,
   victories: 0,
   bestEndlessSeconds: 0,
+  bestIronmoorSeconds: 0,
   runHistory: [],
   settings: { ...DEFAULT_SETTINGS },
 };
@@ -349,6 +358,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     bestCombo: coerceInteger(candidate.bestCombo, DEFAULT_SAVE.bestCombo),
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
     bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
+    bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
     runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };

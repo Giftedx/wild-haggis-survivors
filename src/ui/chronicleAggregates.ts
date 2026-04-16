@@ -324,13 +324,23 @@ export function computeIronmoorStats(
 /**
  * Single-line Chronicle readout for the Ironmoor posture. Blank when
  * the player has never taken an Ironmoor run — silent on fresh saves.
+ * When `bestVictorySec > 0`, appends the separate-leaderboard fastest
+ * Ironmoor-victory time — the single-life pride record.
  */
-export function formatIronmoorLine(s: IronmoorStats): string {
+export function formatIronmoorLine(
+  s: IronmoorStats,
+  bestVictorySec: number = 0,
+): string {
   if (s.attempts === 0) return '';
   const pct = Math.round(s.winRate * 100);
-  const mins = Math.floor(s.longestSec / 60);
-  const secs = Math.floor(s.longestSec % 60).toString().padStart(2, '0');
-  return `⚔ Ironmoor — ${s.victories}/${s.attempts} wins (${pct}%) · longest ${mins}:${secs}`;
+  const fmt = (sec: number): string => {
+    const mins = Math.floor(sec / 60);
+    const secs = Math.floor(sec % 60).toString().padStart(2, '0');
+    return `${mins}:${secs}`;
+  };
+  const base = `⚔ Ironmoor — ${s.victories}/${s.attempts} wins (${pct}%) · longest ${fmt(s.longestSec)}`;
+  if (bestVictorySec > 0) return `${base} · fastest win ${fmt(bestVictorySec)}`;
+  return base;
 }
 
 /**
