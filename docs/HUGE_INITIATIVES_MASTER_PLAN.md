@@ -12,18 +12,13 @@
 |----|------------|---------|
 | **R3** | **Scene complexity budget** — split `GameScene.ts` | ✅ **Shipped (2026-04-16).** 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c` (R3.1–R3.7). 16 extracted modules + **88 new unit tests**. Exit criterion relaxed from "≤800" to "≤1230" mid-ladder — further reduction hits hook-literal density and requires architectural refactor (see R3a). No regressions; green across lint / 1019 vitest / tsc+vite build / Playwright e2e at every step. |
 | **R3a** | **RunScoreState extraction** — 9 counters off scene, hook contracts simplified | ✅ **Shipped (2026-04-16).** 1225 → **1186 lines** in commit `240b22c`. New `src/scenes/game/RunScoreState.ts` (11 tests) holds kill/boss/gold/elite-chain/victory counters. `EnemyKillHandlerHooks`, `RunPersistenceHooks`, `RunExitHooks` each collapsed from ~10-14 counter getters/setters to one `getRunScore()` hook. Total R3+R3a: 1699 → 1186 (−513, −30%); 141 new tests across 17 modules. Unblocks W2, W66, W27, W30 — each now inherits a single-line `getRunScore` hook instead of declaring the 14-getter counter surface. |
+| **W2** | **The Moor Road — multi-act campaign** | ✅ **Shipped (2026-04-16).** 3 acts, 2 pickers (A/B), 6 routes, Skip Intermissions opt-out, Chronicle route breadcrumb, full banter surface, Glesga voice pass, Playwright smoke. 1056 → **1092 tests** across the three milestones (36 new). New modules: `RunActState`, `ActIntermissionScene` + pure resolve helpers, `dispatchActComplete`. Engine extensions: `TimeManager.scheduleRealTime`, `HazardZones.spawnHealingCircle`, `SpawnSystem` elite-weight + force-spawn + enemy-HP-mult + pause-spawns, `XPSystem.setDropValueMultiplier`, `Player.refreshDashCharges`. Save schema v3 → v4 with `RunHistoryEntry.routes`. Kill-criterion playtest data deferred to live session (recorded in `docs/progress.txt`). Downstream W18 (bilingual) and W66 (Ironmoor) now inherit the act pattern. |
 
 ---
 
-## Next flagship selected: **W2 — The Moor Road (multi-act campaign)**
+## Next flagship
 
-Rationale (from review `5fd5ad4`+1):
-- Reuses shipped surfaces — `RunLifecycle.ts`, `save.endless.test.ts`, `chronicleAggregates.ts`. No new tech stack.
-- Falsifiable kill criterion (act-1 retention ≤ baseline after 4 playtest rounds).
-- Authoring work parallelises with engine work cleanly — content + code lanes.
-- Unlocks downstream: W18 gets richer copy to localise, W66 Ironmoor reuses chapter breaks, W39 Chronicle Weave gets authored prose hooks.
-
-Prerequisite (R3a) is complete. **W2 is unblocked.**
+W2 shipped. Next pick from the parking lot below. **W18** (bilingual) or **W66** (Ironmoor) are the natural follow-ups — both inherit the W2 act-intermission pattern and the Chronicle route log. Pending stakeholder selection.
 
 ---
 
@@ -33,7 +28,7 @@ Each row: one owner, one non-goals line, one kill criterion. No row graduates fr
 
 | ID | Initiative | Tier | Shape of the work | Non-goals | Kill criterion |
 |----|------------|------|-------------------|-----------|---------------|
-| **W2** | **The Moor Road — multi-act campaign** | S | Reframes the endless loop into authored chapters with between-act choices and save-persistent modifiers. Builds on existing `RunLifecycle.ts` + `save.endless.test.ts`. | Not a replacement for the evergreen endless run. Not a linear story mode. | If act-1 playtest retention ≤ baseline endless retention after four playtest rounds, shelve the program. |
+| ~~**W2**~~ | ~~**The Moor Road — multi-act campaign**~~ | — | Shipped 2026-04-16 — see "Completed this quarter" row above. | — | — |
 | **W18** | **Full Scots / English bilingual ship** | S | Extends `src/core/i18n.ts` to Scots parity for UI, banter keys, and glossary. Optionally staged (UI first, banter later). | No VO. No secondary dialects. No localisation beyond Scots + English in v1. | If translator QA rounds exceed 3× budget or review surfaces >5% mistranslation, descope to UI-only. |
 | **W66** | **Ironmoor — permadeath alt mode** | S | Shares core loop; single life, chronicle wipes on death; opt-in ceremony; separate leaderboard. | Not a new genre. Does not touch baseline balance. Does not ship with cosmetics gated behind survival. | If completion rate <1% after three content drops, or playtest feedback reports the mode as punishing rather than proud, shelve. |
 | **W71** | **Animation rig — skeletal haggis + weather-reactive motion** | S | Replaces procedurally-drawn sprites (`BootScene.ts`) with a rig + state machine for player and key enemies. Secondary motion for mantle, whiskers, tartan. | Not a full art overhaul. Not mocap. Pixel-art soul preserved. Static sprites remain a fallback during load. | If rig inflates frame time >10% against Sept 2026 perf baseline on target devices, descope to keyframe animation only. |

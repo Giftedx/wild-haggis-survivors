@@ -110,7 +110,7 @@
 | ID | Name | Verdict | Evidence / Note |
 |----|------|---------|------|
 | W1 | Soul Weave certification | 🔵 RETHINK | `DESIGN_SOUL.md` exists. "Certification in CI" is a linter, not a program. Collapse to an ADR + a CI check. |
-| W2 | Moor Road multi-act campaign | 🟠 HARD | `RunLifecycle.ts` + endless support exist; acts are new authoring. Real flagship. |
+| W2 | Moor Road multi-act campaign | ✅ SHIPPED | 2026-04-16. 3 acts + 2 pickers + 6 routes + Chronicle breadcrumb + Skip toggle. See `HUGE_INITIATIVES_MASTER_PLAN.md` "Completed this quarter" for details. |
 | W3 | Weather & Atmosphere Director | 🟡 MEDIUM | Biome system exists; weather director is layered state machine. Bounded. |
 | W4 | Voice Bible + banter pipeline | 🟢 EASY–MEDIUM | `banter.ts` already 603 lines with schema. "Pipeline" is glossary + dup-check, small. |
 | W5 | Living Bestiary Codex | 🟡 MEDIUM | No codex scene yet. `AchievementManager` + deeds give data source. Honest scope. |
