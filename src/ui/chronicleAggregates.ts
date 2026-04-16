@@ -286,6 +286,54 @@ export function selectRunsWithRoutes(
 }
 
 /**
+ * W66 Ironmoor lifetime snapshot — how the single-life posture is
+ * treating the player across their whole runHistory. Three numbers
+ * + a "longest victory" record keep the story compact.
+ */
+export interface IronmoorStats {
+  /** Total Ironmoor attempts across history. */
+  attempts: number;
+  /** Ironmoor runs that ended in victory. */
+  victories: number;
+  /** Longest Ironmoor run by timeSurvivedSec (0 if none). */
+  longestSec: number;
+  /** victories / attempts, 0 when attempts === 0. */
+  winRate: number;
+}
+
+export function computeIronmoorStats(
+  history: readonly RunHistoryEntry[],
+): IronmoorStats {
+  let attempts = 0;
+  let victories = 0;
+  let longestSec = 0;
+  for (const e of history) {
+    if (!e.ironmoor) continue;
+    attempts++;
+    if (e.isVictory) victories++;
+    if (e.timeSurvivedSec > longestSec) longestSec = e.timeSurvivedSec;
+  }
+  return {
+    attempts,
+    victories,
+    longestSec,
+    winRate: attempts > 0 ? victories / attempts : 0,
+  };
+}
+
+/**
+ * Single-line Chronicle readout for the Ironmoor posture. Blank when
+ * the player has never taken an Ironmoor run — silent on fresh saves.
+ */
+export function formatIronmoorLine(s: IronmoorStats): string {
+  if (s.attempts === 0) return '';
+  const pct = Math.round(s.winRate * 100);
+  const mins = Math.floor(s.longestSec / 60);
+  const secs = Math.floor(s.longestSec % 60).toString().padStart(2, '0');
+  return `⚔ Ironmoor — ${s.victories}/${s.attempts} wins (${pct}%) · longest ${mins}:${secs}`;
+}
+
+/**
  * W2 Moor Road: kill-criterion report.
  *
  * The W2 ship gate defined three measurements to decide whether the

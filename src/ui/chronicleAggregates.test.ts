@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildChronicleCodex,
+  computeIronmoorStats,
   computeMilestones,
   computeMoorRoadKillCriteria,
   detectMood,
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
+  formatIronmoorLine,
   formatMoorRoadStatus,
   formatRelativeTime,
   formatRouteBreadcrumb,
@@ -408,6 +410,48 @@ describe('W2 Moor Road chronicle helpers', () => {
       const hist = Array.from({ length: 5 }, () => entry({ routes: [pickA] }));
       const r = formatMoorRoadStatus(computeMoorRoadKillCriteria(hist));
       expect(r.anyFailed).toBe(true);
+    });
+  });
+
+  describe('computeIronmoorStats / formatIronmoorLine', () => {
+    it('returns zeros + blank line on empty history', () => {
+      const s = computeIronmoorStats([]);
+      expect(s).toEqual({ attempts: 0, victories: 0, longestSec: 0, winRate: 0 });
+      expect(formatIronmoorLine(s)).toBe('');
+    });
+
+    it('ignores non-ironmoor runs', () => {
+      const hist = [
+        entry({ isVictory: true, timeSurvivedSec: 900 }),
+        entry({ isVictory: false, timeSurvivedSec: 200 }),
+      ];
+      const s = computeIronmoorStats(hist);
+      expect(s.attempts).toBe(0);
+    });
+
+    it('aggregates victories, longest, winRate over ironmoor-only runs', () => {
+      const hist = [
+        entry({ isVictory: false, timeSurvivedSec: 200, ironmoor: true }),
+        entry({ isVictory: true, timeSurvivedSec: 905, ironmoor: true }),
+        entry({ isVictory: false, timeSurvivedSec: 500, ironmoor: true }),
+        // Non-ironmoor: dropped from denominator.
+        entry({ isVictory: true, timeSurvivedSec: 1200, ironmoor: false }),
+      ];
+      const s = computeIronmoorStats(hist);
+      expect(s.attempts).toBe(3);
+      expect(s.victories).toBe(1);
+      expect(s.longestSec).toBe(905);
+      expect(s.winRate).toBeCloseTo(1 / 3);
+    });
+
+    it('formats the ironmoor line with mm:ss longest', () => {
+      const hist = [
+        entry({ isVictory: true, timeSurvivedSec: 905, ironmoor: true }),
+      ];
+      const line = formatIronmoorLine(computeIronmoorStats(hist));
+      expect(line).toContain('⚔ Ironmoor');
+      expect(line).toContain('1/1 wins');
+      expect(line).toContain('15:05');
     });
   });
 });

@@ -11,12 +11,14 @@ import { getCurseByKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
 import {
   buildChronicleCodex,
+  computeIronmoorStats,
   computeMilestones,
   computeMoorRoadKillCriteria,
   detectMood,
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
+  formatIronmoorLine,
   formatMoorRoadStatus,
   formatRelativeTime,
   formatRouteBreadcrumb,
@@ -185,7 +187,12 @@ export class ChronicleScene extends Phaser.Scene {
     const moorRoad = formatMoorRoadStatus(computeMoorRoadKillCriteria(save.runHistory));
     const moorRoadSection = moorRoad.line ? `\n\n${moorRoad.line}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection;
+    // W66 Ironmoor lifetime stats — silent when the player has never
+    // taken an Ironmoor run, so there's no empty chrome on fresh saves.
+    const ironmoor = formatIronmoorLine(computeIronmoorStats(save.runHistory));
+    const ironmoorSection = ironmoor ? `\n${ironmoor}` : '';
+
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,
