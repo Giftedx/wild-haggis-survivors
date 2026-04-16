@@ -83,6 +83,37 @@ describe('DebugTimeTravelApi', () => {
     });
   });
 
+  describe('killCurrentBoss', () => {
+    it('returns false when no boss is active', () => {
+      const findActiveBoss = vi.fn(() => null);
+      const custom = new DebugTimeTravelApi({
+        getSpawnSystem: () => ({ timeTravelToSeconds, getGameTimeSec, findActiveBoss }) as never,
+        isSceneActive: () => true,
+      });
+      custom.install();
+      const result = (globalThis as unknown as { DEBUG: { killCurrentBoss: () => boolean } }).DEBUG.killCurrentBoss();
+      expect(result).toBe(false);
+      expect(findActiveBoss).toHaveBeenCalled();
+      custom.uninstall();
+    });
+
+    it('calls takeDamageWithKillEvents (not takeDamage) so enemyKilled fires', () => {
+      const takeDamageWithKillEvents = vi.fn(() => true);
+      const takeDamage = vi.fn();
+      const findActiveBoss = vi.fn(() => ({ takeDamageWithKillEvents, takeDamage }));
+      const custom = new DebugTimeTravelApi({
+        getSpawnSystem: () => ({ timeTravelToSeconds, getGameTimeSec, findActiveBoss }) as never,
+        isSceneActive: () => true,
+      });
+      custom.install();
+      const result = (globalThis as unknown as { DEBUG: { killCurrentBoss: () => boolean } }).DEBUG.killCurrentBoss();
+      expect(result).toBe(true);
+      expect(takeDamageWithKillEvents).toHaveBeenCalledWith(expect.any(Number));
+      expect(takeDamage).not.toHaveBeenCalled();
+      custom.uninstall();
+    });
+  });
+
   describe('uninstall', () => {
     it('removes the DEBUG global', () => {
       api.install();

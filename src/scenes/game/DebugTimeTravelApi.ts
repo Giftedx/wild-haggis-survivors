@@ -48,9 +48,12 @@ export class DebugTimeTravelApi {
       killCurrentBoss: () => {
         const boss = this.hooks.getSpawnSystem().findActiveBoss();
         if (!boss) return false;
-        // Use takeDamage (not forceKill) so the full kill cascade fires —
-        // W2 onActComplete hook rides the standard enemyKilled event path.
-        boss.takeDamage(999_999);
+        // takeDamageWithKillEvents (not takeDamage) — the public
+        // takeDamage path calls die() without emitting enemyKilled,
+        // which means the W2 onActComplete hook never fires. The
+        // with-kill-events variant is what DoT ticks use and rides
+        // the standard emit flow.
+        boss.takeDamageWithKillEvents(999_999);
         return true;
       },
     };
