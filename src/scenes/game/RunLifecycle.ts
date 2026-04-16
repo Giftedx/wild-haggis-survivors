@@ -68,6 +68,15 @@ export interface RunLifecycleHooks {
   recordToHistory(summary: RunSummary, runResult: RunResult): void;
   recordRun(summary: RunSummary, context: RunHistoryContext): RunResult;
   transitionToGameOver(payload: GameOverPayload): void;
+
+  /**
+   * W2 Moor Road: fired after a boss kill that completes an act (act 1
+   * after gordon, act 2 after tour_bus). Implementation lives on
+   * GameScene — launches ActIntermissionScene unless skipped via
+   * settings. Act 3 completion flows through the existing victory path
+   * and does NOT route through this hook.
+   */
+  onActComplete(actN: 1 | 2): void;
 }
 
 export class RunLifecycle {

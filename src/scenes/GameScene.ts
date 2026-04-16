@@ -736,6 +736,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
       recordRun: (s, ctx) => recordRun(s, ctx),
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
+      onActComplete: () => { /* wired in Task 10 */ },
     });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
