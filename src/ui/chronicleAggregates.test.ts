@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildChronicleCodex,
   computeMilestones,
+  computeMoorRoadKillCriteria,
   detectMood,
   formatClock,
   formatCodexNamesLine,
@@ -311,6 +312,70 @@ describe('W2 Moor Road chronicle helpers', () => {
 
     it('returns empty when no runs have routes', () => {
       expect(selectRunsWithRoutes([withoutRoute])).toEqual([]);
+    });
+  });
+
+  describe('computeMoorRoadKillCriteria', () => {
+    const pickA = (routeKey: string, defaulted = false): RoutePick => ({
+      slot: 'A', routeKey: routeKey as RoutePick['routeKey'],
+      atGameTimeSec: 305, defaultedBySetting: defaulted,
+    });
+    const pickB = (routeKey: string, defaulted = false): RoutePick => ({
+      slot: 'B', routeKey: routeKey as RoutePick['routeKey'],
+      atGameTimeSec: 610, defaultedBySetting: defaulted,
+    });
+
+    it('returns zero-shaped report on empty history', () => {
+      const r = computeMoorRoadKillCriteria([]);
+      expect(r.w2Runs).toBe(0);
+      expect(r.preW2Runs).toBe(0);
+      expect(r.monotonyA).toBe(0);
+      expect(r.completionDelta).toBe(0);
+      expect(r.skipRate).toBe(0);
+    });
+
+    it('partitions runs into pre-W2 (no routes) and W2 buckets', () => {
+      const hist = [
+        entry({ isVictory: false }),
+        entry({ isVictory: true, routes: [pickA('up_the_brae')] }),
+        entry({ isVictory: true, routes: [pickA('up_the_brae'), pickB('buckie_pitstop')] }),
+      ];
+      const r = computeMoorRoadKillCriteria(hist);
+      expect(r.preW2Runs).toBe(1);
+      expect(r.w2Runs).toBe(2);
+    });
+
+    it('monotonyA reports the dominant slot-A route + its share', () => {
+      const hist = [
+        entry({ routes: [pickA('up_the_brae')] }),
+        entry({ routes: [pickA('up_the_brae')] }),
+        entry({ routes: [pickA('up_the_brae')] }),
+        entry({ routes: [pickA('round_the_loch')] }),
+      ];
+      const r = computeMoorRoadKillCriteria(hist);
+      expect(r.monotonyARouteKey).toBe('up_the_brae');
+      expect(r.monotonyA).toBeCloseTo(0.75);
+    });
+
+    it('completionDelta compares post-W2 victory rate to pre-W2', () => {
+      // Pre-W2: 1 of 2 won = 50%. W2: 1 of 1 won = 100%. Delta = +0.5.
+      const hist = [
+        entry({ isVictory: false }),
+        entry({ isVictory: true }),
+        entry({ isVictory: true, routes: [pickA('up_the_brae')] }),
+      ];
+      const r = computeMoorRoadKillCriteria(hist);
+      expect(r.completionDelta).toBeCloseTo(0.5);
+    });
+
+    it('skipRate is defaulted picks / all picks across W2 runs', () => {
+      // 2 runs, 3 picks total, 1 defaulted → 1/3.
+      const hist = [
+        entry({ routes: [pickA('up_the_brae'), pickB('buckie_pitstop')] }),
+        entry({ routes: [pickA('round_the_loch', true)] }),
+      ];
+      const r = computeMoorRoadKillCriteria(hist);
+      expect(r.skipRate).toBeCloseTo(1 / 3);
     });
   });
 });

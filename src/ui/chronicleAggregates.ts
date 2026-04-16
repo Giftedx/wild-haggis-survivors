@@ -284,3 +284,96 @@ export function selectRunsWithRoutes(
   const withRoutes = history.filter((e) => (e.routes?.length ?? 0) > 0);
   return withRoutes.slice(-limit).reverse();
 }
+
+/**
+ * W2 Moor Road: kill-criterion report.
+ *
+ * The W2 ship gate defined three measurements to decide whether the
+ * flagship design is working, paused, or needs redesign:
+ *   - **monotony:** fraction of runs where slot A was the same route
+ *   - **completionDelta:** post-W2 victory rate vs pre-W2 baseline
+ *   - **skipRate:** fraction of route picks that were auto-defaulted
+ *
+ * This helper computes all three over the full runHistory window. The
+ * Chronicle and progress.txt both consume it. Pure — no i18n, no
+ * formatting. The caller turns the numbers into a readable line.
+ */
+export interface MoorRoadKillCriteria {
+  /** Runs that hit at least one picker. Basis of all ratios below. */
+  w2Runs: number;
+  /** Runs before W2 shipped — no routes field, used as completion baseline. */
+  preW2Runs: number;
+  /** 0..1 — share of w2Runs whose act-1 pick was the most common route. */
+  monotonyA: number;
+  /** Route key that dominated act 1 (undefined if w2Runs === 0). */
+  monotonyARouteKey?: string;
+  /** Same as monotonyA but for act 2. */
+  monotonyB: number;
+  monotonyBRouteKey?: string;
+  /** post-W2 victory rate − pre-W2 victory rate. Positive = improved. */
+  completionDelta: number;
+  /** 0..1 — fraction of picks across all W2 runs that were defaultedBySetting. */
+  skipRate: number;
+}
+
+export function computeMoorRoadKillCriteria(
+  history: readonly RunHistoryEntry[],
+): MoorRoadKillCriteria {
+  const w2 = history.filter((e) => (e.routes?.length ?? 0) > 0);
+  const preW2 = history.filter((e) => !e.routes || e.routes.length === 0);
+
+  const countsFor = (slot: 'A' | 'B'): Map<string, number> => {
+    const m = new Map<string, number>();
+    for (const e of w2) {
+      const pick = (e.routes ?? []).find((p) => p.slot === slot);
+      if (!pick) continue;
+      m.set(pick.routeKey, (m.get(pick.routeKey) ?? 0) + 1);
+    }
+    return m;
+  };
+
+  const dominant = (m: Map<string, number>): { key?: string; share: number } => {
+    if (m.size === 0) return { share: 0 };
+    let bestKey: string | undefined;
+    let bestCount = 0;
+    let total = 0;
+    for (const [k, c] of m) {
+      total += c;
+      if (c > bestCount) { bestCount = c; bestKey = k; }
+    }
+    return { key: bestKey, share: total > 0 ? bestCount / total : 0 };
+  };
+
+  const aCounts = countsFor('A');
+  const bCounts = countsFor('B');
+  const aDom = dominant(aCounts);
+  const bDom = dominant(bCounts);
+
+  const postVictoryRate = w2.length > 0
+    ? w2.filter((e) => e.isVictory).length / w2.length
+    : 0;
+  const preVictoryRate = preW2.length > 0
+    ? preW2.filter((e) => e.isVictory).length / preW2.length
+    : 0;
+
+  // skip rate = defaultedBySetting picks / total picks across all W2 runs
+  let totalPicks = 0;
+  let skippedPicks = 0;
+  for (const e of w2) {
+    for (const p of e.routes ?? []) {
+      totalPicks++;
+      if (p.defaultedBySetting) skippedPicks++;
+    }
+  }
+
+  return {
+    w2Runs: w2.length,
+    preW2Runs: preW2.length,
+    monotonyA: aDom.share,
+    monotonyARouteKey: aDom.key,
+    monotonyB: bDom.share,
+    monotonyBRouteKey: bDom.key,
+    completionDelta: postVictoryRate - preVictoryRate,
+    skipRate: totalPicks > 0 ? skippedPicks / totalPicks : 0,
+  };
+}
