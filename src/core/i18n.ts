@@ -341,6 +341,8 @@ export const EN_STRINGS: LocaleTree = {
       wave_objective: 'Wave {wave}  •  {goal}',
       goal_countdown: 'Goal {m}:{s}',
       goal_finale: 'Finale',
+      /** W2 Moor Road chip — shown under the curse chip once the player has cleared an act. */
+      act_chip: '— Act {act} —',
       kills_enemies: 'Kills: {kills}  Enemies: {count}{suffix}',
       enemies_capped_suffix: ' MAX!',
       dash_label: 'Dash ',

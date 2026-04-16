@@ -993,6 +993,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
+    this.hud.setAct(this.runActState.currentAct);
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),

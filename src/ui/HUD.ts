@@ -33,6 +33,9 @@ export class HUD {
   private curseChipText!: Phaser.GameObjects.Text;
   /** Cache active curse key so chip text updates only when the run curse changes. */
   private prevCurseChipSig: string = '';
+  /** W2 Moor Road — small "Act 2/3" chip shown once the player has cleared an act. */
+  private actChipText!: Phaser.GameObjects.Text;
+  private prevAct: 1 | 2 | 3 = 1;
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
@@ -182,6 +185,12 @@ export class HUD {
     this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '', {
       fontFamily: 'monospace', fontSize: '12px', color: '#c49bbf',
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
+
+    // W2 Moor Road act chip — hidden until the first picker resolves.
+    this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '', {
+      fontFamily: 'monospace', fontSize: '15px', color: '#e8d4a0', fontStyle: 'bold',
+      stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // Kill count
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
@@ -352,6 +361,7 @@ export class HUD {
     this.timerText.setPosition(x + width / 2, topY);
     this.objectiveText.setPosition(x + width / 2, topY + 30 * this.uiScale);
     this.curseChipText.setPosition(x + width / 2, topY + 50 * this.uiScale);
+    this.actChipText.setPosition(x + width / 2, topY + 66 * this.uiScale);
     this.killText.setPosition(x + width - 12, topY);
     this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
     this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
@@ -787,6 +797,23 @@ export class HUD {
   /** Update shield indicator */
   updateShield(hasShield: boolean): void {
     this.shieldIcon.setVisible(hasShield);
+  }
+
+  /**
+   * W2 Moor Road: update the act chip. Hidden for act 1 (run start —
+   * before any picker has resolved) and shown as "Act 2" / "Act 3"
+   * once the player has cleared the gordon / tour_bus gate.
+   * No-op when the act hasn't changed.
+   */
+  setAct(currentAct: 1 | 2 | 3): void {
+    if (currentAct === this.prevAct) return;
+    this.prevAct = currentAct;
+    if (currentAct === 1) {
+      this.actChipText.setVisible(false);
+      return;
+    }
+    this.actChipText.setText(t('ui.hud.act_chip', { act: currentAct }));
+    this.actChipText.setVisible(true);
   }
 
   /** Log damage dealt for DPS tracking */
