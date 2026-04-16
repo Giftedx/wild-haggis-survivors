@@ -14,6 +14,7 @@ import type { VariantDef } from '../../data/variants';
 import type { CurseKey } from '../../data/curses';
 import type { RNG } from '../../utils/rng';
 import type { RunSummary, RunResult, RunHistoryContext } from '../../utils/save';
+import type { RoutePick } from '../../data/routes';
 import { currentDailyDateKey } from '../../utils/rng';
 
 export interface RunHistoryHooks {
@@ -25,6 +26,8 @@ export interface RunHistoryHooks {
   getBossKillCount(): number;
   getRunRng(): RNG;
   isDailyRun(): boolean;
+  /** W2 Moor Road: snapshot of picker resolutions for this run. */
+  getRoutePicks(): readonly RoutePick[];
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -36,12 +39,14 @@ export class RunHistoryRecorder {
   buildContext(): RunHistoryContext {
     const h = this.hooks;
     const curse = h.getActiveCurseKey();
+    const routes = h.getRoutePicks();
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
       variantKey: h.getActiveVariant().key,
       weaponKeys: h.getWeaponSystem().getWeapons().map((w) => w.config.key),
       ...(curse ? { curseKey: curse } : {}),
+      ...(routes.length > 0 ? { routes: routes.slice() } : {}),
     };
   }
 
@@ -52,6 +57,7 @@ export class RunHistoryRecorder {
   record(summary: RunSummary, runResult: RunResult): void {
     const h = this.hooks;
     const timestamp = (h.now ?? Date.now)();
+    const routes = h.getRoutePicks();
     h.getSaveManager().recordRunToHistory({
       timestamp,
       timeSurvivedSec: summary.timeSurvivedSec,
@@ -65,6 +71,7 @@ export class RunHistoryRecorder {
       weaponKeys: h.getWeaponSystem().getWeapons().map((w) => w.config.key),
       runSeed: h.getRunRng().seed,
       isDaily: h.isDailyRun(),
+      ...(routes.length > 0 ? { routes: routes.slice() } : {}),
     });
     if (h.isDailyRun()) {
       this.recordDailyChallengeResult(summary);

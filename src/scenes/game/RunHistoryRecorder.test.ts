@@ -11,6 +11,7 @@ function buildMocks(overrides: {
   isDaily?: boolean;
   runSeed?: number;
   dailyChallenge?: unknown;
+  routes?: import('../../data/routes').RoutePick[];
 } = {}) {
   const saveManager = {
     recordRunToHistory: vi.fn(),
@@ -35,6 +36,7 @@ function buildMocks(overrides: {
     getBossKillCount: () => overrides.bossKills ?? 3,
     getRunRng: () => ({ seed: overrides.runSeed ?? 42 }) as never,
     isDailyRun: () => overrides.isDaily ?? false,
+    getRoutePicks: () => overrides.routes ?? [],
     now: () => 1700000000000,
   };
 
@@ -64,6 +66,24 @@ describe('RunHistoryRecorder', () => {
       const { hooks } = buildMocks();
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect('curseKey' in ctx).toBe(false);
+    });
+
+    it('includes routes when pickerHistory has entries', () => {
+      const routes: import('../../data/routes').RoutePick[] = [
+        { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'buckie_pitstop', atGameTimeSec: 610, defaultedBySetting: false },
+      ];
+      const { hooks } = buildMocks({ routes });
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx.routes).toEqual(routes);
+      // Snapshot — mutating the source must not poison the context.
+      expect(ctx.routes).not.toBe(routes);
+    });
+
+    it('omits routes when pickerHistory is empty', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect('routes' in ctx).toBe(false);
     });
   });
 

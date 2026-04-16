@@ -545,6 +545,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getBossKillCount: () => this.runScore.bossKillCount,
       getRunRng: () => this.runRng,
       isDailyRun: () => this.runIsDaily,
+      getRoutePicks: () => this.runActState.pickerHistory,
     });
 
     if (resumeRun) {
