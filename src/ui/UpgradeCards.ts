@@ -29,6 +29,8 @@ export class UpgradeCardsUI {
   private rerollsLeft: number = 0;
   private uiScale: number = 1;
   private highContrastUi: boolean = false;
+  /** 1/2/3 keyboard shortcut handler — installed in show(), removed in hide(). */
+  private keyHandler?: (e: KeyboardEvent) => void;
 
   constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
@@ -153,6 +155,8 @@ export class UpgradeCardsUI {
       });
       this.pendingHandles.push(handle);
     });
+
+    this.installKeyboardShortcuts(cards);
 
     if (typeof globalThis !== 'undefined') {
       const win = globalThis as unknown as { AUTO_BATTLE?: boolean };
@@ -329,6 +333,7 @@ export class UpgradeCardsUI {
   hide(): void {
     for (const h of this.pendingHandles) h.cancel();
     this.pendingHandles = [];
+    this.uninstallKeyboardShortcuts();
 
     for (const el of this.elements) {
       this.scene.tweens.killTweensOf(el);
@@ -338,5 +343,34 @@ export class UpgradeCardsUI {
       el.destroy();
     }
     this.elements = [];
+  }
+
+  /**
+   * 1/2/3 keyboard shortcuts for the level-up card picker — mirrors the
+   * ActIntermission picker pattern so keyboard players have one
+   * consistent muscle memory. Handler no-ops for pressing a digit beyond
+   * the card count (2-card choice can't resolve a "3" press).
+   */
+  private installKeyboardShortcuts(cards: UpgradeCard[]): void {
+    if (typeof window === 'undefined') return;
+    this.uninstallKeyboardShortcuts();
+    this.keyHandler = (e: KeyboardEvent) => {
+      const idx = ({ '1': 0, '2': 1, '3': 2 } as Record<string, number | undefined>)[e.key];
+      if (idx === undefined) return;
+      const card = cards[idx];
+      if (!card) return;
+      e.preventDefault();
+      this.hide();
+      this.onSelect(card);
+    };
+    window.addEventListener('keydown', this.keyHandler);
+  }
+
+  private uninstallKeyboardShortcuts(): void {
+    if (!this.keyHandler) return;
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('keydown', this.keyHandler);
+    }
+    this.keyHandler = undefined;
   }
 }
