@@ -7,6 +7,7 @@ import {
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
+  formatMoorRoadStatus,
   formatRelativeTime,
   formatRouteBreadcrumb,
   getCodexRosterTotal,
@@ -376,6 +377,37 @@ describe('W2 Moor Road chronicle helpers', () => {
       ];
       const r = computeMoorRoadKillCriteria(hist);
       expect(r.skipRate).toBeCloseTo(1 / 3);
+    });
+  });
+
+  describe('formatMoorRoadStatus', () => {
+    it('returns empty state when no W2 runs have been logged', () => {
+      const r = formatMoorRoadStatus(computeMoorRoadKillCriteria([]));
+      expect(r.line).toBe('');
+      expect(r.anyFailed).toBe(false);
+    });
+
+    it('renders a concise single-line summary when W2 runs exist', () => {
+      const pickA = {
+        slot: 'A' as const, routeKey: 'up_the_brae' as const,
+        atGameTimeSec: 305, defaultedBySetting: false,
+      };
+      const hist = [entry({ isVictory: true, routes: [pickA] })];
+      const r = formatMoorRoadStatus(computeMoorRoadKillCriteria(hist));
+      expect(r.line).toContain('Moor Road');
+      expect(r.line).toContain('up_the_brae');
+      expect(r.anyFailed).toBe(false);
+    });
+
+    it('flags anyFailed when monotony crosses the threshold', () => {
+      const pickA = {
+        slot: 'A' as const, routeKey: 'up_the_brae' as const,
+        atGameTimeSec: 305, defaultedBySetting: false,
+      };
+      // 5 runs, all the same slot-A pick → monotonyA = 1.0 → fail.
+      const hist = Array.from({ length: 5 }, () => entry({ routes: [pickA] }));
+      const r = formatMoorRoadStatus(computeMoorRoadKillCriteria(hist));
+      expect(r.anyFailed).toBe(true);
     });
   });
 });

@@ -11,10 +11,12 @@ import { getCurseByKey } from '../data/curses';
 import {
   buildChronicleCodex,
   computeMilestones,
+  computeMoorRoadKillCriteria,
   detectMood,
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
+  formatMoorRoadStatus,
   formatRelativeTime,
   formatRouteBreadcrumb,
   lifetimeTotals,
@@ -175,7 +177,14 @@ export class ChronicleScene extends Phaser.Scene {
       (codex.discoveredCount > 0
         ? formatCodexNamesLine(codex.discoveredNames)
         : t('ui.chronicle.codex_empty'));
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection;
+
+    // W2 Moor Road status — appended only when at least one W2 run exists.
+    // formatMoorRoadStatus returns blank when w2Runs === 0, so pre-W2 saves
+    // see nothing extra.
+    const moorRoad = formatMoorRoadStatus(computeMoorRoadKillCriteria(save.runHistory));
+    const moorRoadSection = moorRoad.line ? `\n\n${moorRoad.line}` : '';
+
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,

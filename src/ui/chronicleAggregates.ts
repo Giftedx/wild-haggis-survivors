@@ -316,6 +316,59 @@ export interface MoorRoadKillCriteria {
   skipRate: number;
 }
 
+/**
+ * Kill-criterion thresholds. If any of these trip, the Moor Road design
+ * has a structural problem and M2 findings should be reviewed.
+ * Sourced from the W2 ship-gate spec (Task 23 + Task 31).
+ */
+const KILL_CRITERIA_THRESHOLDS = {
+  /** Fraction of picks on one route that signals monotony. */
+  monotonyFail: 0.80,
+  /** Post-W2 victory rate drop (fractional) that signals regression. */
+  completionFail: -0.15,
+  /** Fraction of picks skipped via setting that signals a bad UX. */
+  skipRateFail: 0.60,
+} as const;
+
+/**
+ * Summary string for the Chronicle Moor Road readout. Blank if no W2
+ * runs are logged yet; otherwise a two-line label describing the most
+ * popular act-1 route + a status flag for each of the three kill
+ * criteria. Meant to be concise — renders under Milestones.
+ */
+export function formatMoorRoadStatus(
+  criteria: MoorRoadKillCriteria,
+): { line: string; anyFailed: boolean } {
+  if (criteria.w2Runs === 0) {
+    return { line: '', anyFailed: false };
+  }
+  // Monotony + skip only gate the design once there are enough runs for
+  // the ratio to be meaningful (<5 runs → a single outlier reads as 100%).
+  const hasSample = criteria.w2Runs >= 5;
+  const monoAFailed = hasSample && criteria.monotonyA >= KILL_CRITERIA_THRESHOLDS.monotonyFail;
+  const monoBFailed = hasSample && criteria.monotonyB >= KILL_CRITERIA_THRESHOLDS.monotonyFail;
+  const skipFailed = hasSample && criteria.skipRate >= KILL_CRITERIA_THRESHOLDS.skipRateFail;
+  // Completion delta gates only when both pre + post buckets have runs.
+  const compFailed = criteria.preW2Runs > 0
+    && criteria.w2Runs > 0
+    && criteria.completionDelta <= KILL_CRITERIA_THRESHOLDS.completionFail;
+  const anyFailed = monoAFailed || monoBFailed || compFailed || skipFailed;
+
+  const pct = (n: number) => `${Math.round(n * 100)}%`;
+  const monoA = criteria.monotonyARouteKey
+    ? `A: ${pct(criteria.monotonyA)} ${criteria.monotonyARouteKey}`
+    : 'A: —';
+  const monoB = criteria.monotonyBRouteKey
+    ? `B: ${pct(criteria.monotonyB)} ${criteria.monotonyBRouteKey}`
+    : 'B: —';
+  const delta = criteria.completionDelta >= 0
+    ? `+${pct(criteria.completionDelta)}`
+    : pct(criteria.completionDelta);
+  const line = `Moor Road — ${monoA} · ${monoB} · Δwin ${delta} · skip ${pct(criteria.skipRate)}`;
+
+  return { line, anyFailed };
+}
+
 export function computeMoorRoadKillCriteria(
   history: readonly RunHistoryEntry[],
 ): MoorRoadKillCriteria {
