@@ -200,3 +200,44 @@ Confidence on remaining surface:
 Codebase is genuinely solid. Find-and-fix loop has hit diminishing
 returns — further sweeps likely surface stylistic harden suggestions
 rather than real defects.
+
+[2026-04-16] W2 Moor Road — Milestone 1 SHIPPED.
+
+Delivered:
+- RunActState (act counter + picker history) + RoutePick type.
+- ROUTES table with 6 routes across 2 picker slots + getRoute.
+- RunModifiers.routePicks field (default []).
+- Save schema v3->v4 migration: RunHistoryEntry.routes.
+- SettingsManager.skipActIntermissions (default false).
+- dispatchActComplete(bossKey) -> 1|2|null pure mapping.
+- RunLifecycleHooks.onActComplete + EnemyKillHandler dispatch.
+- ActIntermissionScene paired-modal skeleton + full i18n card
+  render (routes.*, ui.actIntermission.*, ui.settings.*).
+- Route onResume bodies for picker A:
+    - up_the_brae: elite weight x1.5 + forced golden chest.
+    - round_the_loch: heal 25% max HP + 2 healing circles.
+    - through_the_kirkyard: spawnIntervalMult=0.70 + elite
+      haggis_hunter force-spawn + 90s wall-clock release.
+- Supporting system APIs (each <=20 LOC):
+    - TimeManager.scheduleRealTime (setTimeout w/ reset cancel).
+    - HazardZones.spawnHealingCircle.
+    - SpawnSystem.setEliteWeightMultiplier + forceSpawn.
+- GameScene full launchActIntermission with Skip path.
+- Banter triggers: act_intermission_enter, act_complete,
+  route_picked (keysByTag per picker-A route + generic fallback).
+- RunHistoryRecorder carries pickerHistory into RunHistoryEntry.
+- Headless integration test via extracted buildRoutePick helper.
+
+Verification:
+- `npm run ci` clean: lint + 1078 tests + build. (Start: 1056.)
+- `npx tsc --noEmit` clean.
+- No new production `as any` added.
+
+Playtest:
+- Subjective 3-session checklist deferred to live dev-server
+  session. Kill-criterion pre-check (picker intrusiveness, card
+  readability, effect noticeability) to be logged before M2 start.
+
+Remaining on Moor Road:
+- M2: picker B onResume bodies + Chronicle Moor Road log panel.
+- M3: Glesga voice pass (Scots + en), E2E smoke, settings UX polish.
