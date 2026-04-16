@@ -237,7 +237,8 @@ export type AchievementId =
   | 'ach_codex_half'
   | 'ach_codex_loremaster'
   | 'ach_moor_hearth_30'
-  | 'ach_all_bosses';
+  | 'ach_all_bosses'
+  | 'ach_walk_every_road';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -293,6 +294,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_all_bosses: {
     titleKey: 'achievement.ach_all_bosses.title',
     descriptionKey: 'achievement.ach_all_bosses.description',
+  },
+  ach_walk_every_road: {
+    titleKey: 'achievement.ach_walk_every_road.title',
+    descriptionKey: 'achievement.ach_walk_every_road.description',
   },
 };
 

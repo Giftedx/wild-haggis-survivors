@@ -44,6 +44,8 @@ export interface DeedStatsSnapshot {
   unlockedIds: readonly string[];
   /** Meta save: unique enemy keys recorded in the cull codex (length === discovered count). */
   codexDiscoveredCount: number;
+  /** W2 Moor Road: count of distinct route keys picked across all logged runs. */
+  uniqueRoutesWalked: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -60,6 +62,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_all_bosses',
   'ach_kills_5000',
   'ach_moor_hearth_30',
+  'ach_walk_every_road',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -71,6 +74,7 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_full_run: { target: 900, readCurrent: (s) => s.bestTimeSec },
   ach_first_victory: { target: 1, readCurrent: (s) => Math.min(1, s.victories) },
   ach_moor_hearth_30: { target: 30, readCurrent: (s) => s.moorMomentsLifetime },
+  ach_walk_every_road: { target: 6, readCurrent: (s) => Math.min(6, s.uniqueRoutesWalked) },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

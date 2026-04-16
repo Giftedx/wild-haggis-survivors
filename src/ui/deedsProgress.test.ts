@@ -18,6 +18,7 @@ function snap(overrides: Partial<DeedStatsSnapshot> = {}): DeedStatsSnapshot {
     moorMomentsLifetime: 0,
     unlockedIds: [],
     codexDiscoveredCount: 0,
+    uniqueRoutesWalked: 0,
     ...overrides,
   };
 }
@@ -157,5 +158,29 @@ describe('formatDeedProgressLabel', () => {
   it('returns empty string for binary deeds', () => {
     const p = computeDeedProgress('ach_defeat_taxman', snap());
     expect(formatDeedProgressLabel(p)).toBe('');
+  });
+});
+
+describe('ach_walk_every_road progress', () => {
+  it('tracks uniqueRoutesWalked toward a target of 6', () => {
+    const p = computeDeedProgress('ach_walk_every_road', snap({ uniqueRoutesWalked: 4 }));
+    expect(p.current).toBe(4);
+    expect(p.target).toBe(6);
+    expect(p.isBinary).toBe(false);
+    expect(p.status).toBe('in_progress');
+  });
+
+  it('clamps current to 6 when uniqueRoutesWalked exceeds the target', () => {
+    const p = computeDeedProgress('ach_walk_every_road', snap({ uniqueRoutesWalked: 12 }));
+    expect(p.current).toBe(6);
+  });
+
+  it('reports unlocked when the id is in unlockedIds', () => {
+    const p = computeDeedProgress(
+      'ach_walk_every_road',
+      snap({ uniqueRoutesWalked: 6, unlockedIds: ['ach_walk_every_road'] }),
+    );
+    expect(p.status).toBe('unlocked');
+    expect(p.ratio).toBe(1);
   });
 });

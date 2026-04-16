@@ -4,7 +4,9 @@ import { t } from './i18n';
 import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { BOSSES } from '../data/enemies';
+import { ROUTES } from '../data/routes';
 import { getCodexRosterTotal } from '../ui/chronicleAggregates';
+import { loadSave } from '../utils/save';
 
 /**
  * Listens to global gameplay events and unlocks achievements into SaveManager.
@@ -86,6 +88,20 @@ export class AchievementManager {
   private onRunEnded(p: import('./GlobalEventBus').GlobalRunEndedPayload): void {
     if (p.outcome === 'victory') this.tryUnlock('ach_first_victory');
     this.runBossKills.clear();
+    // W2 Moor Road: "Kent the Moor" — walked every route at least once.
+    // Run-history is updated before this event fires (RunHistoryRecorder
+    // runs in the run-end chain ahead of the bus emit), so loadSave here
+    // already includes the final run.
+    try {
+      const gameplay = loadSave();
+      const seen = new Set<string>();
+      for (const entry of gameplay.runHistory ?? []) {
+        for (const pick of entry.routes ?? []) seen.add(pick.routeKey);
+      }
+      if (seen.size >= ROUTES.length) this.tryUnlock('ach_walk_every_road');
+    } catch {
+      // best-effort — don't let a corrupt save block run-end flow.
+    }
   }
 
   private onMoorMoment(): void {

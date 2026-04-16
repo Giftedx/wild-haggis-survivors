@@ -36,6 +36,13 @@ export class DeedsScene extends Phaser.Scene {
     const meta = this.saveManager.load();
     const gameplay = loadSave();
 
+    // W2 Moor Road: how many distinct route keys have been picked across
+    // the gameplay save's runHistory. Feeds the "Kent the Moor" deed.
+    const uniqueRouteKeys = new Set<string>();
+    for (const entry of gameplay.runHistory ?? []) {
+      for (const p of entry.routes ?? []) uniqueRouteKeys.add(p.routeKey);
+    }
+
     const snapshot: DeedStatsSnapshot = {
       lifetimeKills: meta.totalKills + meta.totalKillsSpent,
       bestTimeSec: gameplay.bestTime,
@@ -43,6 +50,7 @@ export class DeedsScene extends Phaser.Scene {
       moorMomentsLifetime: meta.moorMomentsLifetime,
       unlockedIds: meta.unlockedAchievements,
       codexDiscoveredCount: meta.codexCulledKeys.length,
+      uniqueRoutesWalked: uniqueRouteKeys.size,
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);
