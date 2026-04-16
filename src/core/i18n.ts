@@ -309,6 +309,14 @@ export const EN_STRINGS: LocaleTree = {
       on: 'ON',
       off: 'OFF',
       back: 'BACK',
+      /** W2 Moor Road: auto-pick the safest route at act breaks instead of showing the picker. */
+      skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
+    },
+    /** W2 Moor Road — the between-act modal. Full Glesga voice pass in M3. */
+    actIntermission: {
+      title_act_1: 'Which way d\'ye fancy?',
+      title_act_2: 'Last stretch. Pick yer poison.',
+      pick_hint: 'Click a card to commit.',
     },
     upgradeCards: {
       level_title: 'Level {level} — pick yir poison',
@@ -1442,6 +1450,33 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Hone {weapon} up tae level {level}. Every notch counts.',
     },
     evolution_hint: ' At Lv 5, crack a chest while carrying {passive} — somethin\' legendary stirs.',
+  },
+  // W2 Moor Road — route labels + descriptions. Full Glesga voice pass in M3.
+  routes: {
+    up_the_brae: {
+      label: 'Up the brae',
+      desc: 'Elites get brave. Next treasure\'s guaranteed gold.',
+    },
+    round_the_loch: {
+      label: 'Round the loch',
+      desc: 'Catch yer breath (+25% HP). Mair healing wells in act 2.',
+    },
+    through_the_kirkyard: {
+      label: 'Through the kirkyard',
+      desc: 'Shortcut. Spawns thicken for 90 seconds. A hunter\'s waitin\'.',
+    },
+    stand_yer_ground: {
+      label: 'Stand yer ground',
+      desc: 'XP gems double for 30 seconds. No new trouble.',
+    },
+    run_for_the_hills: {
+      label: 'Run for the hills',
+      desc: 'Full heal, dashes back. But they\'re comin\' faster noo.',
+    },
+    buckie_pitstop: {
+      label: 'Buckie pit-stop',
+      desc: '15 seconds\' peace. Free reroll. Enemies hit a bit harder efter.',
+    },
   },
 };
 

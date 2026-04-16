@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import type { PickerSlot, RouteDef, RoutePick } from '../data/routes';
 import { ROUTES_BY_SLOT } from '../data/routes';
 import { resolveDefaultRoute } from './actIntermissionResolve';
+import { t } from '../core/i18n';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -46,26 +47,58 @@ export class ActIntermissionScene extends Phaser.Scene {
   }
 
   private renderRouteCards(routes: readonly RouteDef[]): void {
-    // Full rendering in Task 12. For the skeleton commit we draw minimal
-    // placeholder rectangles so the scene is observably alive.
     const { width, height } = this.cameras.main;
-    const cardW = 220;
-    const cardH = 280;
-    const gap = 40;
+
+    // Darkened backdrop — blocks input to the paired GameScene.
+    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.65)
+      .setInteractive();
+
+    // Title — act 1 vs act 2.
+    const titleKey = this.launchData.slot === 'A'
+      ? 'ui.actIntermission.title_act_1'
+      : 'ui.actIntermission.title_act_2';
+    this.add.text(width / 2, height / 2 - 200, t(titleKey), {
+      fontFamily: 'monospace', fontSize: '28px', color: '#ffdd88',
+      stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5);
+
+    // Subtitle / hint.
+    this.add.text(width / 2, height / 2 - 160, t('ui.actIntermission.pick_hint'), {
+      fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
+    }).setOrigin(0.5);
+
+    // Cards.
+    const cardW = 240;
+    const cardH = 300;
+    const gap = 32;
     const totalW = cardW * routes.length + gap * (routes.length - 1);
     const startX = (width - totalW) / 2 + cardW / 2;
-    const y = height / 2;
+    const y = height / 2 + 40;
 
     routes.forEach((route, i) => {
       const x = startX + i * (cardW + gap);
-      const bg = this.add.rectangle(x, y, cardW, cardH, 0x222233, 0.95)
-        .setStrokeStyle(2, 0xd4a017)
-        .setInteractive({ useHandCursor: true });
-      this.add.text(x, y - cardH / 2 + 20, route.key, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#ffdd88',
-      }).setOrigin(0.5);
-      bg.on(Phaser.Input.Events.POINTER_DOWN, () => this.resolve(route));
+      this.buildCard(x, y, cardW, cardH, route);
     });
+  }
+
+  private buildCard(x: number, y: number, w: number, h: number, route: RouteDef): void {
+    const bg = this.add.rectangle(x, y, w, h, 0x1a1a28, 0.98)
+      .setStrokeStyle(2, 0xd4a017)
+      .setInteractive({ useHandCursor: true });
+
+    this.add.text(x, y - h / 2 + 24, t(route.labelKey), {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffdd88',
+      wordWrap: { width: w - 24 }, align: 'center',
+    }).setOrigin(0.5, 0);
+
+    this.add.text(x, y, t(route.descKey), {
+      fontFamily: 'monospace', fontSize: '14px', color: '#ccccdd',
+      wordWrap: { width: w - 24 }, align: 'center',
+    }).setOrigin(0.5);
+
+    bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(3, 0xffe08a));
+    bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(2, 0xd4a017));
+    bg.on(Phaser.Input.Events.POINTER_DOWN, () => this.resolve(route));
   }
 
   /**
