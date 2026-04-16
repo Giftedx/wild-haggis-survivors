@@ -144,6 +144,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.laird.c',
         'ui.banter.low_hp.laird.d',
       ],
+      wee_ghostie: [
+        'ui.banter.low_hp.wee_ghostie.a',
+        'ui.banter.low_hp.wee_ghostie.b',
+        'ui.banter.low_hp.wee_ghostie.c',
+        'ui.banter.low_hp.wee_ghostie.d',
+      ],
     },
   },
   {
@@ -332,6 +338,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.laird.c',
         'ui.banter.level_up.laird.d',
       ],
+      wee_ghostie: [
+        'ui.banter.level_up.wee_ghostie.a',
+        'ui.banter.level_up.wee_ghostie.b',
+        'ui.banter.level_up.wee_ghostie.c',
+        'ui.banter.level_up.wee_ghostie.d',
+      ],
     },
   },
   {
@@ -380,6 +392,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.laird.b',
         'ui.banter.first_blood.laird.c',
         'ui.banter.first_blood.laird.d',
+      ],
+      wee_ghostie: [
+        'ui.banter.first_blood.wee_ghostie.a',
+        'ui.banter.first_blood.wee_ghostie.b',
+        'ui.banter.first_blood.wee_ghostie.c',
+        'ui.banter.first_blood.wee_ghostie.d',
       ],
     },
   },
@@ -431,6 +449,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.laird.c',
         'ui.banter.kill_streak.laird.d',
       ],
+      wee_ghostie: [
+        'ui.banter.kill_streak.wee_ghostie.a',
+        'ui.banter.kill_streak.wee_ghostie.b',
+        'ui.banter.kill_streak.wee_ghostie.c',
+        'ui.banter.kill_streak.wee_ghostie.d',
+      ],
     },
   },
   {
@@ -479,6 +503,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.laird.b',
         'ui.banter.recover.laird.c',
         'ui.banter.recover.laird.d',
+      ],
+      wee_ghostie: [
+        'ui.banter.recover.wee_ghostie.a',
+        'ui.banter.recover.wee_ghostie.b',
+        'ui.banter.recover.wee_ghostie.c',
+        'ui.banter.recover.wee_ghostie.d',
       ],
     },
   },
@@ -626,6 +656,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.laird.b',
         'ui.banter.idle.laird.c',
         'ui.banter.idle.laird.d',
+      ],
+      wee_ghostie: [
+        'ui.banter.idle.wee_ghostie.a',
+        'ui.banter.idle.wee_ghostie.b',
+        'ui.banter.idle.wee_ghostie.c',
+        'ui.banter.idle.wee_ghostie.d',
       ],
     },
   },

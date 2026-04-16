@@ -1,6 +1,6 @@
 import { t } from '../core/i18n';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -29,7 +29,7 @@ export interface HaggisPalette {
   accent: number;
 }
 
-export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird';
+export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -195,6 +195,27 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x7060c0,
         snout: 0xc0907a,
         accent: 0xaa88ff,
+      },
+    },
+  },
+  {
+    key: 'wee_ghostie',
+    nameKey: 'variant.wee_ghostie.name',
+    flavorKey: 'variant.wee_ghostie.flavor',
+    name: 'Wee Ghostie',
+    textureKey: 'haggis_wee_ghostie',
+    flavorText: 'Pale an\' thin — here an\' no\' here. Hits hard, breaks easy.',
+    modifiers: { damagePct: 0.18, moveSpeedPct: 0.08, maxHpFlat: -25 },
+    unlock: { type: 'best_kills', required: 1500 },
+    appearance: {
+      accentStyle: 'wee_ghostie',
+      palette: {
+        outline: 0x2a2840,
+        bodyDark: 0x5060a0,
+        bodyLight: 0x8094c4,
+        fur: 0xc4c8e0,
+        snout: 0xe0b0c0,
+        accent: 0x80e0ff,
       },
     },
   },

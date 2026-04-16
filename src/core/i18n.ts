@@ -667,6 +667,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Crown\'s wobblin\' — haud yer heid up.',
           d: 'A Laird standin\' bleedin\' is still a Laird standin\'.',
         },
+        wee_ghostie: {
+          a: 'Fadin\' at the edges... haud oan.',
+          b: 'Near the veil — step back fae it.',
+          c: 'A whisper\'s aw that\'s left. Breathe it in.',
+          d: 'Half here. Stay the other half.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -830,6 +836,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Stature earned, no\' given. Braw.',
           d: 'The glen notes the rise, aye.',
         },
+        wee_ghostie: {
+          a: 'A wee bit brighter. A wee bit nearer.',
+          b: 'Shape finds form. Hush.',
+          c: 'Thicker at the edges noo.',
+          d: 'Faint, but fierce.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -871,6 +883,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Trespasser doon — estate defends itsel\'.',
           c: 'Opening blow, clean. The tartan holds.',
           d: 'First droplet on the heather. Proper.',
+        },
+        wee_ghostie: {
+          a: 'First ane slips through the veil.',
+          b: 'Touch o\' cold — and they\'re doon.',
+          c: 'Quiet strike. They never saw ye.',
+          d: 'A breath. A blow. A body.',
         },
       },
       kill_streak: {
@@ -915,6 +933,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'The tartan cuts them doon like grain.',
           d: 'A Laird hits heavy — an\' often.',
         },
+        wee_ghostie: {
+          a: 'They drop like they never were.',
+          b: 'Chain o\' whispers — each ane final.',
+          c: 'Weightless, but the strikes land.',
+          d: 'A hush that leaves naebody standin\'.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -956,6 +980,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Back oan hoof. Estate stands.',
           c: 'The land heals faster than the pride.',
           d: 'Minor stumble. The tartan forgives.',
+        },
+        wee_ghostie: {
+          a: 'Pulled back fae the veil. Thin work.',
+          b: 'Flicker held. Form returns.',
+          c: 'Still here — faintly, but here.',
+          d: 'Ghost knits itsel\' back tae shape.',
         },
       },
       biome_change: {
@@ -1082,6 +1112,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'A breath on the heather — aye, earned.',
           c: 'Tartan smoothed. Heid clear.',
           d: 'Even a Laird needs a wee pause.',
+        },
+        wee_ghostie: {
+          a: 'Hover. Drift. Listen.',
+          b: 'The moor feels ye fainter here.',
+          c: 'Breath thin as gossamer.',
+          d: 'Still. Like a held note.',
         },
       },
       // W2 Moor Road.
@@ -1382,7 +1418,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     iron_belly: {
       name: 'Iron Belly',
-      flavor: 'Heavy, stubborn, and hard to stop once it starts rolling.',
+      flavor: 'Heavy, stubborn — an\' hard tae stop once it starts rollin\'.',
     },
     glen_forager: {
       name: 'Glen Forager',
@@ -1390,7 +1426,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     surefoot: {
       name: 'Surefoot',
-      flavor: 'The drift still whispers, but it no longer decides.',
+      flavor: 'The drift still whispers, aye, but it no longer decides.',
     },
     pipe_breath: {
       name: 'Pipe Breath',
@@ -1399,6 +1435,10 @@ export const EN_STRINGS: LocaleTree = {
     laird: {
       name: 'The Laird',
       flavor: 'Wears the tartan proper. Lordly swagger, heavier swing.',
+    },
+    wee_ghostie: {
+      name: 'Wee Ghostie',
+      flavor: 'Pale an\' thin — here an\' no\' here. Hits hard, breaks easy.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

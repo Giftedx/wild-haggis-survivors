@@ -2493,6 +2493,38 @@ export class BootScene extends Phaser.Scene {
         g.fillCircle(cx + 6, cy + 23, 2);
         g.fillCircle(cx + 14, cy + 23, 2);
         break;
+      case 'wee_ghostie':
+        // Spectral halo + drifting wisps. Translucent so the body
+        // reads as "half here". No hard outline additions; just
+        // ghost-light accents around the silhouette.
+        // Outer halo — faint glow ring
+        g.lineStyle(2, palette.accent, 0.35);
+        g.beginPath();
+        g.arc(cx, cy, 17, 0, Math.PI * 2);
+        g.strokePath();
+        // Inner halo — brighter, smaller
+        g.lineStyle(1.5, 0xffffff, 0.5);
+        g.beginPath();
+        g.arc(cx, cy - 2, 14, 0, Math.PI * 2);
+        g.strokePath();
+        // Three drifting wisps rising around the body
+        g.fillStyle(palette.accent, 0.45);
+        g.fillCircle(cx - 14, cy - 6, 1.8);
+        g.fillCircle(cx + 13, cy - 8, 1.6);
+        g.fillCircle(cx + 6, cy - 14, 1.4);
+        // Wisp trails (fainter, small streaks upward)
+        g.fillStyle(palette.accent, 0.25);
+        g.fillRect(cx - 14, cy - 10, 1, 3);
+        g.fillRect(cx + 13, cy - 12, 1, 3);
+        g.fillRect(cx + 6, cy - 18, 1, 3);
+        // Hollow eye glow — pale cyan pinpricks where eyes would be
+        g.fillStyle(0xe0fcff, 0.8);
+        g.fillCircle(cx - 5, cy - 3, 1.2);
+        g.fillCircle(cx + 5, cy - 3, 1.2);
+        // Soft underfade — bottom-of-body translucent hint
+        g.fillStyle(0xffffff, 0.08);
+        g.fillEllipse(cx, cy + 12, 22, 4);
+        break;
       case 'laird':
         // Tartan sash + small crown — lordly swagger.
         // Diagonal sash across the body, woven pattern hinted at with
