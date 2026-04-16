@@ -1,27 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { EnemyKillHandler, type EnemyKillHandlerHooks } from './EnemyKillHandler';
+import { RunScoreState } from './RunScoreState';
 import { BALANCE } from '../../core/BalanceConfig';
 
 /**
- * Minimal scene-free harness. We mock every hook and every collaborator
- * at the edges of the handler. Assertions target the observable effects:
- * counter mutations, juice/SFX calls, pickup spawns, banter requests,
- * ripple knockbacks, victory trigger.
+ * R3a: counters live on RunScoreState, passed through a single
+ * `getRunScore` hook. Each test creates a fresh score object so
+ * mutations stay isolated.
  */
 
 type HookMocks = {
   hooks: EnemyKillHandlerHooks;
-  state: {
-    killCount: number;
-    bossKillCount: number;
-    coinGold: number;
-    bossGold: number;
-    firstKill: boolean;
-    eliteChain: number;
-    eliteChainLastSec: number | null;
-    victoryPending: boolean;
-    victoryGen: number;
-  };
+  score: RunScoreState;
   juice: {
     showToast: ReturnType<typeof vi.fn>;
     flashWhite: ReturnType<typeof vi.fn>;
@@ -57,18 +47,7 @@ type HookMocks = {
 };
 
 function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
-  const state = {
-    killCount: 0,
-    bossKillCount: 0,
-    coinGold: 0,
-    bossGold: 0,
-    firstKill: false,
-    eliteChain: 0,
-    eliteChainLastSec: null as number | null,
-    victoryPending: false,
-    victoryGen: 0,
-  };
-
+  const score = new RunScoreState();
   let enemies: unknown[] = [];
 
   const juice = {
@@ -123,45 +102,13 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     getSFXManager: () => sfx as never,
     getRunRng: () => rng as never,
     getActiveVariantKey: () => 'classic',
+    getRunScore: () => score,
     triggerVictory,
-    getKillCount: () => state.killCount,
-    incrementKillCount: () => {
-      state.killCount += 1;
-    },
-    incrementBossKillCount: () => {
-      state.bossKillCount += 1;
-    },
-    addCoinGold: (n) => {
-      state.coinGold += n;
-    },
-    addBossGold: (n) => {
-      state.bossGold += n;
-    },
-    isFirstKillSeen: () => state.firstKill,
-    markFirstKillSeen: () => {
-      state.firstKill = true;
-    },
-    getEliteChainCount: () => state.eliteChain,
-    setEliteChainCount: (n) => {
-      state.eliteChain = n;
-    },
-    getEliteChainLastGameSec: () => state.eliteChainLastSec,
-    setEliteChainLastGameSec: (s) => {
-      state.eliteChainLastSec = s;
-    },
-    setVictoryPending: (v) => {
-      state.victoryPending = v;
-    },
-    nextVictoryDelayGen: () => {
-      state.victoryGen += 1;
-      return state.victoryGen;
-    },
-    getVictoryDelayGen: () => state.victoryGen,
   };
 
   return {
     hooks,
-    state,
+    score,
     juice,
     xp,
     spawn,
@@ -191,7 +138,7 @@ describe('EnemyKillHandler', () => {
     it('spawns XP gem, increments kill count, fires kill burst + hit freeze', () => {
       handler.handle(100, 200, 5, 'tourist', false, false);
 
-      expect(m.state.killCount).toBe(1);
+      expect(m.score.killCount).toBe(1);
       expect(m.xp.spawnGem).toHaveBeenCalledWith(100, 200, 5);
       expect(m.juice.showKillBurst).toHaveBeenCalledWith(100, 200);
       expect(m.juice.hitFreeze).toHaveBeenCalledOnce();
@@ -240,7 +187,7 @@ describe('EnemyKillHandler', () => {
       const bare = buildHooks({ withBanter: false });
       const h = new EnemyKillHandler(bare.hooks);
       expect(() => h.handle(0, 0, 5, 'tourist', false)).not.toThrow();
-      expect(bare.state.firstKill).toBe(true);
+      expect(bare.score.firstKillSeen).toBe(true);
     });
   });
 
@@ -253,7 +200,7 @@ describe('EnemyKillHandler', () => {
       [21, false],
       [100, false],
     ])('at combo %i fires kill_streak: %s', (combo, shouldFire) => {
-      m.state.firstKill = true; // isolate from first_blood
+      m.score.firstKillSeen = true; // isolate from first_blood
       m.juice.getComboCount.mockReturnValue(combo);
       handler.handle(0, 0, 5, 'tourist', false);
       if (shouldFire) {
@@ -267,12 +214,12 @@ describe('EnemyKillHandler', () => {
   describe('elite chain', () => {
     it('second elite within window grants eliteChainGoldSecond', () => {
       handler.handle(0, 0, 5, 'ghost', false, true); // #1
-      expect(m.state.eliteChain).toBe(1);
-      expect(m.state.coinGold).toBe(0);
+      expect(m.score.eliteChainCount).toBe(1);
+      expect(m.score.coinGoldEarned).toBe(0);
 
       handler.handle(0, 0, 5, 'ghost', false, true); // #2
-      expect(m.state.eliteChain).toBe(2);
-      expect(m.state.coinGold).toBe(BALANCE.enemy.eliteChainGoldSecond);
+      expect(m.score.eliteChainCount).toBe(2);
+      expect(m.score.coinGoldEarned).toBe(BALANCE.enemy.eliteChainGoldSecond);
     });
 
     it('third elite grants eliteChainGoldTriple, flashes, and resets chain', () => {
@@ -280,12 +227,12 @@ describe('EnemyKillHandler', () => {
       handler.handle(0, 0, 5, 'ghost', false, true);
       m.juice.flashWhite.mockClear();
       handler.handle(0, 0, 5, 'ghost', false, true); // #3
-      expect(m.state.coinGold).toBe(
+      expect(m.score.coinGoldEarned).toBe(
         BALANCE.enemy.eliteChainGoldSecond + BALANCE.enemy.eliteChainGoldTriple,
       );
       expect(m.juice.flashWhite).toHaveBeenCalledWith(100);
-      expect(m.state.eliteChain).toBe(0);
-      expect(m.state.eliteChainLastSec).toBeNull();
+      expect(m.score.eliteChainCount).toBe(0);
+      expect(m.score.eliteChainLastGameSec).toBeNull();
     });
 
     it('resets to 1 when elapsed exceeds chain window', () => {
@@ -293,39 +240,39 @@ describe('EnemyKillHandler', () => {
       handler.handle(0, 0, 5, 'ghost', false, true);
       m.spawn.getGameTimeSec.mockReturnValueOnce(BALANCE.enemy.eliteChainWindowSec + 10);
       handler.handle(0, 0, 5, 'ghost', false, true);
-      expect(m.state.eliteChain).toBe(1);
-      expect(m.state.coinGold).toBe(0); // no bonus at count=1
+      expect(m.score.eliteChainCount).toBe(1);
+      expect(m.score.coinGoldEarned).toBe(0); // no bonus at count=1
     });
 
     it('does not engage elite chain for bosses', () => {
       handler.handle(0, 0, 100, 'taxman', true, true);
-      expect(m.state.eliteChain).toBe(0);
+      expect(m.score.eliteChainCount).toBe(0);
     });
   });
 
   describe('kill milestones', () => {
     it('awards gold reward + flashWhite + playLevelUp at kill 100', () => {
-      m.state.killCount = 99;
-      m.state.firstKill = true;
+      m.score.killCount = 99;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 5, 'tourist', false);
       // goldReward = floor(100/50) = 2
-      expect(m.state.coinGold).toBe(2);
+      expect(m.score.coinGoldEarned).toBe(2);
       expect(m.juice.flashWhite).toHaveBeenCalledWith(150);
     });
 
     it('does nothing special at kill 101', () => {
-      m.state.killCount = 100;
-      m.state.firstKill = true;
+      m.score.killCount = 100;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 5, 'tourist', false);
-      expect(m.state.coinGold).toBe(0);
+      expect(m.score.coinGoldEarned).toBe(0);
       expect(m.juice.flashWhite).not.toHaveBeenCalled();
     });
 
     it.each([250, 500, 1000, 2500, 5000])('fires at kill %i', (threshold) => {
-      m.state.killCount = threshold - 1;
-      m.state.firstKill = true;
+      m.score.killCount = threshold - 1;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 5, 'tourist', false);
-      expect(m.state.coinGold).toBe(Math.floor(threshold / 50));
+      expect(m.score.coinGoldEarned).toBe(Math.floor(threshold / 50));
     });
   });
 
@@ -387,7 +334,7 @@ describe('EnemyKillHandler', () => {
     });
 
     it('boss kill always drops 25 HP orb and coins', () => {
-      m.state.firstKill = true;
+      m.score.firstKillSeen = true;
       // Boss gold chance is 1.0, but the handler still routes through rng.bool
       // for uniform RNG accounting — must return true for coin to drop.
       m.rng.bool.mockReturnValue(true);
@@ -408,19 +355,19 @@ describe('EnemyKillHandler', () => {
 
   describe('boss kill cascade', () => {
     beforeEach(() => {
-      m.state.firstKill = true;
+      m.score.firstKillSeen = true;
     });
 
     it('increments boss kill count, plays spectacle, slow-motion', () => {
       handler.handle(0, 0, 100, 'gordon', true);
-      expect(m.state.bossKillCount).toBe(1);
+      expect(m.score.bossKillCount).toBe(1);
       expect(m.juice.bossDeathSpectacle).toHaveBeenCalledWith(0, 0);
       expect(m.juice.slowMotion).toHaveBeenCalledOnce();
     });
 
     it('adds bossGold = ceil(xpValue * 2)', () => {
       handler.handle(0, 0, 75, 'gordon', true);
-      expect(m.state.bossGold).toBe(150);
+      expect(m.score.bossGoldEarned).toBe(150);
     });
 
     it('fires boss_down banter with bossKey as tag', () => {
@@ -443,9 +390,9 @@ describe('EnemyKillHandler', () => {
 
   describe('taxman victory', () => {
     it('sets victory pending, arms delayed trigger, and fires it', () => {
-      m.state.firstKill = true;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 200, 'taxman', true);
-      expect(m.state.victoryPending).toBe(true);
+      expect(m.score.victoryPending).toBe(true);
       expect(m.tickers.addOnce).toHaveBeenCalledWith('raw', 1500, expect.any(Function));
 
       // Invoke the deferred callback — should trigger victory.
@@ -455,18 +402,18 @@ describe('EnemyKillHandler', () => {
     });
 
     it('deferred callback no-ops when generation has advanced', () => {
-      m.state.firstKill = true;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 200, 'taxman', true);
       const [, , cb] = m.tickers.addOnce.mock.calls[0];
-      m.state.victoryGen += 1; // simulate scene restart bumping the generation
+      m.score.victoryDelayGen += 1; // simulate scene restart bumping the generation
       cb();
       expect(m.triggerVictory).not.toHaveBeenCalled();
     });
 
     it('non-taxman boss does not trigger victory', () => {
-      m.state.firstKill = true;
+      m.score.firstKillSeen = true;
       handler.handle(0, 0, 100, 'gordon', true);
-      expect(m.state.victoryPending).toBe(false);
+      expect(m.score.victoryPending).toBe(false);
       expect(m.tickers.addOnce).not.toHaveBeenCalled();
     });
   });

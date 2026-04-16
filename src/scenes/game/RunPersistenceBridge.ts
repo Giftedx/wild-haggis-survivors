@@ -22,6 +22,7 @@ import type { RunStatsTracker } from '../../systems/RunStatsTracker';
 import type { MoorMomentScheduler } from './MoorMomentScheduler';
 import type { LevelUpFlow } from './LevelUpFlow';
 import type { VariantDef } from '../../data/variants';
+import type { RunScoreState } from './RunScoreState';
 
 export interface RunPersistenceHooks {
   // Systems (reads)
@@ -37,20 +38,13 @@ export interface RunPersistenceHooks {
   getSaveManager(): SaveManager;
   getActiveVariant(): VariantDef;
 
-  // Counter / flag read-back (for snapshot)
-  getKillCount(): number;
-  getBossKillCount(): number;
-  getBossGoldEarned(): number;
-  getCoinGoldEarned(): number;
+  /** Shared per-run score (kill/boss/gold counters). Read + mutated in place. */
+  getRunScore(): RunScoreState;
+
+  // Non-score run flags (still scene-owned for now).
   getRevivalAvailable(): boolean;
   getOwnedPassives(): readonly string[];
   getEvolvedWeapons(): readonly string[];
-
-  // Counter / flag mutation (for hydrate)
-  setKillCount(n: number): void;
-  setBossKillCount(n: number): void;
-  setBossGoldEarned(n: number): void;
-  setCoinGoldEarned(n: number): void;
   setRevivalAvailable(v: boolean): void;
   setOwnedPassives(p: string[]): void;
   setEvolvedWeapons(e: string[]): void;
@@ -71,6 +65,7 @@ export class RunPersistenceBridge {
     const xp = h.getXPSystem();
     const weapons = h.getWeaponSystem();
     const juice = h.getJuice();
+    const score = h.getRunScore();
     return {
       gameTimeSec: h.getSpawnSystem().getGameTimeSec(),
       playerX: player.x,
@@ -86,12 +81,12 @@ export class RunPersistenceBridge {
         evolutionKey: w.evolutionKey ?? '',
       })),
       selectedVariantKey: h.getActiveVariant().key,
-      killCount: h.getKillCount(),
+      killCount: score.killCount,
       ownedPassives: [...h.getOwnedPassives()],
       evolvedWeaponKeys: [...h.getEvolvedWeapons()],
-      bossKillCount: h.getBossKillCount(),
-      bossGoldEarned: h.getBossGoldEarned(),
-      coinGoldEarned: h.getCoinGoldEarned(),
+      bossKillCount: score.bossKillCount,
+      bossGoldEarned: score.bossGoldEarned,
+      coinGoldEarned: score.coinGoldEarned,
       revivalAvailable: h.getRevivalAvailable(),
       bestCombo: juice.getBestCombo(),
       comboCount: juice.getComboCount(),
@@ -132,6 +127,7 @@ export class RunPersistenceBridge {
     const player = h.getPlayer();
     const weapons = h.getWeaponSystem();
     const levelUpFlow = h.getLevelUpFlow();
+    const score = h.getRunScore();
 
     xp.hydrateRunState(run.currentLevel, run.currentXp);
     for (let lv = 2; lv <= run.currentLevel; lv++) {
@@ -156,10 +152,10 @@ export class RunPersistenceBridge {
         .map((w) => w.config.key),
     );
     h.getSpawnSystem().applyResumeTime(run.gameTimeSec, run.spawnedBossKeys);
-    h.setKillCount(run.killCount);
-    h.setBossKillCount(Math.max(0, run.bossKillCount ?? 0));
-    h.setBossGoldEarned(Math.max(0, run.bossGoldEarned ?? 0));
-    h.setCoinGoldEarned(Math.max(0, run.coinGoldEarned ?? 0));
+    score.killCount = run.killCount;
+    score.bossKillCount = Math.max(0, run.bossKillCount ?? 0);
+    score.bossGoldEarned = Math.max(0, run.bossGoldEarned ?? 0);
+    score.coinGoldEarned = Math.max(0, run.coinGoldEarned ?? 0);
     if (run.revivalAvailable !== undefined) {
       h.setRevivalAvailable(run.revivalAvailable);
     }

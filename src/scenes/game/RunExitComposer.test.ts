@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RunExitComposer, type RunExitHooks } from './RunExitComposer';
+import { RunScoreState } from './RunScoreState';
 
 /**
  * Hooks mock surface is wide but shallow — composer is mostly pure
@@ -33,6 +34,12 @@ function buildMocks(
   const startGameOverScene = vi.fn();
   const startMainMenuScene = vi.fn();
 
+  const score = new RunScoreState();
+  score.killCount = overrides.kills ?? 250;
+  score.bossKillCount = overrides.bossKills ?? 2;
+  score.bossGoldEarned = overrides.bossGold ?? 400;
+  score.coinGoldEarned = overrides.coinGold ?? 125;
+
   const hooks: RunExitHooks = {
     getWeaponSystem: () =>
       ({
@@ -60,10 +67,7 @@ function buildMocks(
     getRunRng: () => ({ seed: overrides.runSeed ?? 12345 }) as never,
     getRunModifiers: () => ({ goldMult: overrides.goldMult ?? 1 }) as never,
     isDailyRun: () => overrides.isDaily ?? false,
-    getKillCount: () => overrides.kills ?? 250,
-    getBossKillCount: () => overrides.bossKills ?? 2,
-    getBossGoldEarned: () => overrides.bossGold ?? 400,
-    getCoinGoldEarned: () => overrides.coinGold ?? 125,
+    getRunScore: () => score,
     getOwnedPassivesLength: () => 3,
     getEvolvedWeaponsLength: () => 1,
     stopGameScene,

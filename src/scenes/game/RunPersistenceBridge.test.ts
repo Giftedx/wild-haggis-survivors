@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RunPersistenceBridge, type RunPersistenceHooks } from './RunPersistenceBridge';
+import { RunScoreState } from './RunScoreState';
 
 /**
  * Harness covers the snapshot shape (schema drift is a known risk class
@@ -19,22 +20,24 @@ function buildState(
     evolved?: string[];
   } = {},
 ) {
-  const state = {
-    kills: counters.kills ?? 0,
-    bossKills: counters.bossKills ?? 0,
-    bossGold: counters.bossGold ?? 0,
-    coinGold: counters.coinGold ?? 0,
+  const score = new RunScoreState();
+  score.killCount = counters.kills ?? 0;
+  score.bossKillCount = counters.bossKills ?? 0;
+  score.bossGoldEarned = counters.bossGold ?? 0;
+  score.coinGoldEarned = counters.coinGold ?? 0;
+  const flags = {
     revival: counters.revival ?? false,
     owned: counters.owned ?? [],
     evolved: counters.evolved ?? [],
   };
-  return state;
+  return { score, flags };
 }
 
 function buildHooks(
-  state: ReturnType<typeof buildState>,
+  stateBundle: ReturnType<typeof buildState>,
   overrides: { runEnd?: boolean; sceneActive?: boolean } = {},
 ) {
+  const { score, flags } = stateBundle;
   const saveManager = {
     saveActiveRun: vi.fn(),
   };
@@ -90,37 +93,22 @@ function buildHooks(
     getLevelUpFlow: () => ({ applyPassiveEffect: vi.fn() }) as never,
     getSaveManager: () => saveManager as never,
     getActiveVariant: () => ({ key: 'moor_runner' }) as never,
-    getKillCount: () => state.kills,
-    getBossKillCount: () => state.bossKills,
-    getBossGoldEarned: () => state.bossGold,
-    getCoinGoldEarned: () => state.coinGold,
-    getRevivalAvailable: () => state.revival,
-    getOwnedPassives: () => state.owned,
-    getEvolvedWeapons: () => state.evolved,
-    setKillCount: (n) => {
-      state.kills = n;
-    },
-    setBossKillCount: (n) => {
-      state.bossKills = n;
-    },
-    setBossGoldEarned: (n) => {
-      state.bossGold = n;
-    },
-    setCoinGoldEarned: (n) => {
-      state.coinGold = n;
-    },
+    getRunScore: () => score,
+    getRevivalAvailable: () => flags.revival,
+    getOwnedPassives: () => flags.owned,
+    getEvolvedWeapons: () => flags.evolved,
     setRevivalAvailable: (v) => {
-      state.revival = v;
+      flags.revival = v;
     },
     setOwnedPassives: (p) => {
-      state.owned = p;
+      flags.owned = p;
     },
     setEvolvedWeapons: (e) => {
-      state.evolved = e;
+      flags.evolved = e;
     },
     isSceneActive: () => overrides.sceneActive ?? true,
   };
-  return { hooks, saveManager, timeManager, weapons };
+  return { hooks, saveManager, timeManager, weapons, score, flags };
 }
 
 describe('RunPersistenceBridge', () => {
@@ -201,9 +189,9 @@ describe('RunPersistenceBridge', () => {
   });
 
   describe('applyResume', () => {
-    it('pushes counter state back through setter hooks', () => {
+    it('pushes counter state back into RunScoreState', () => {
       const state = buildState();
-      const { hooks } = buildHooks(state);
+      const { hooks, score, flags } = buildHooks(state);
       new RunPersistenceBridge(hooks).applyResume({
         gameTimeSec: 0,
         playerX: 0,
@@ -230,17 +218,17 @@ describe('RunPersistenceBridge', () => {
         spawnedBossKeys: [],
         shieldCooldownMs: 0,
       } as never);
-      expect(state.kills).toBe(77);
-      expect(state.bossKills).toBe(1);
-      expect(state.bossGold).toBe(50);
-      expect(state.coinGold).toBe(30);
-      expect(state.revival).toBe(true);
-      expect(state.owned).toEqual(['greaves']);
+      expect(score.killCount).toBe(77);
+      expect(score.bossKillCount).toBe(1);
+      expect(score.bossGoldEarned).toBe(50);
+      expect(score.coinGoldEarned).toBe(30);
+      expect(flags.revival).toBe(true);
+      expect(flags.owned).toEqual(['greaves']);
     });
 
     it('clamps negative counters to 0 (defensive against malformed saves)', () => {
       const state = buildState();
-      const { hooks } = buildHooks(state);
+      const { hooks, score } = buildHooks(state);
       new RunPersistenceBridge(hooks).applyResume({
         killCount: 0,
         bossKillCount: -5,
@@ -266,9 +254,9 @@ describe('RunPersistenceBridge', () => {
         spawnedBossKeys: [],
         shieldCooldownMs: 0,
       } as never);
-      expect(state.bossKills).toBe(0);
-      expect(state.bossGold).toBe(0);
-      expect(state.coinGold).toBe(0);
+      expect(score.bossKillCount).toBe(0);
+      expect(score.bossGoldEarned).toBe(0);
+      expect(score.coinGoldEarned).toBe(0);
     });
   });
 });

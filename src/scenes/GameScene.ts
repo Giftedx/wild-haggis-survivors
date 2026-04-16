@@ -63,6 +63,7 @@ import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
 import { RunExitComposer } from './game/RunExitComposer';
+import { RunScoreState } from './game/RunScoreState';
 import { wireSceneEventBus } from './game/wireSceneEventBus';
 import { installRunIntroFx } from './game/installRunIntroFx';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
@@ -121,20 +122,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private ownedPassives: string[] = [];
   private evolvedWeapons: string[] = [];
-  private killCount: number = 0;
-  private bossKillCount: number = 0;
-  private bossGoldEarned: number = 0;
-  private coinGoldEarned: number = 0;
-  /** Gold elite back-to-back chain — last qualifying kill time (game clock). */
-  private eliteChainLastGameSec: number | null = null;
-  private eliteChainCount = 0;
+  /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
+  private readonly runScore = new RunScoreState();
   /** One-time +luck draw weight when HP first crosses into the mercy band. */
   private moorMercyLuckGranted = false;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
   private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   private pendingChests: Array<{ golden: boolean }> = [];
-  private victoryPending: boolean = false;
   private gameTickers!: GameTickers;
   private runId: object = {};
   private revivalAvailable: boolean = false;
@@ -158,7 +153,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
   private pickupDespawnHandles: TickerHandle[] = [];
   private readonly runEndTickers = new RunEndTickers();
-  private victoryDelayGen = 0;
   /** End-of-run screen-space fade overlays — tracked as fields so shutdown
    *  can destroy them; anonymous locals would orphan on scene restart since
    *  Phaser's scene.stop() doesn't clear the display list. */
@@ -217,7 +211,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private captionOverlay: CaptionOverlay | null = null;
   private filmGrain: FilmGrainOverlay | null = null;
   private banter: BanterSystem | null = null;
-  private firstKillSeen = false;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -236,7 +229,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Max-level XP (gems + scripted grants) becomes run gold — batched toasts. */
   grantXpOverflowGold(amount: number): void {
     if (amount <= 0) return;
-    this.coinGoldEarned += amount;
+    this.runScore.addCoinGold(amount);
     this.xpOverflowGoldBatch += amount;
     if (this.xpOverflowGoldBatch >= 14) {
       const batch = this.xpOverflowGoldBatch;
@@ -255,7 +248,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.iFrameController.reset();
     this.pauseMenu?.close();
     this.pauseMenu = null;
-    this.victoryPending = false;
+    this.runScore.reset();
     this.runId = {};
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
@@ -265,7 +258,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pickupDespawnHandles = [];
     this.updateTickers.clear();
     this.runEndTickers.reset();
-    this.victoryDelayGen = 0;
     this.victoryFade?.destroy();
     this.victoryFade = null;
     this.deathFade?.destroy();
@@ -285,8 +277,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.enemyCount = 0;
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
-    this.eliteChainLastGameSec = null;
-    this.eliteChainCount = 0;
     this.moorMercyLuckGranted = false;
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
@@ -347,7 +337,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.captionOverlay?.destroy();
     this.captionManager = new CaptionManager();
     this.captionOverlay = new CaptionOverlay(this, this.captionManager);
-    this.firstKillSeen = false;
 
     // Banter — initialised lazily so juice/caption are wired up first. The
     // wiring happens after JuiceSystem is constructed (search for "this.juice = new").
@@ -420,7 +409,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getDeathCauseTracker: () => this.deathCauseTracker,
       getSpawnSystem: () => this.spawnSystem,
       isIFrames: () => this.iFrameController.isActive(),
-      isVictoryPending: () => this.victoryPending,
+      isVictoryPending: () => this.runScore.victoryPending,
       getDamageTakenMult: () => this.runModifiers.damageTakenMult,
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
       onAfterPlayerDamaged: (hpBefore) => {
@@ -439,10 +428,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bossHpTracker?.reset();
     this.ownedPassives = [];
     this.evolvedWeapons = [];
-    this.killCount = 0;
-    this.bossKillCount = 0;
-    this.bossGoldEarned = 0;
-    this.coinGoldEarned = 0;
     this.xpOverflowGoldBatch = 0;
     this.revivalAvailable = false;
 
@@ -469,7 +454,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.moorMoments = new MoorMomentScheduler({
       getRunRng: () => this.runRng,
       getPlayer: () => this.player,
-      getVictoryPending: () => this.victoryPending,
+      getVictoryPending: () => this.runScore.victoryPending,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
       getTutorialSystem: () => this.tutorialSystem,
       getRunModifiers: () => this.runModifiers,
@@ -477,7 +462,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getJuice: () => this.juice,
       getBanter: () => this.banter,
       getSFXManager: () => this.getSFXManager(),
-      addCoinGold: (amount) => { this.coinGoldEarned += amount; },
+      addCoinGold: (amount) => { this.runScore.addCoinGold(amount); },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
     this.moorMoments.reset();
@@ -497,17 +482,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getLevelUpFlow: () => this.levelUpFlow,
       getSaveManager: () => this.metaSaveManager,
       getActiveVariant: () => this.activeVariant,
-      getKillCount: () => this.killCount,
-      getBossKillCount: () => this.bossKillCount,
-      getBossGoldEarned: () => this.bossGoldEarned,
-      getCoinGoldEarned: () => this.coinGoldEarned,
+      getRunScore: () => this.runScore,
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,
-      setKillCount: (n) => { this.killCount = n; },
-      setBossKillCount: (n) => { this.bossKillCount = n; },
-      setBossGoldEarned: (n) => { this.bossGoldEarned = n; },
-      setCoinGoldEarned: (n) => { this.coinGoldEarned = n; },
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       setOwnedPassives: (p) => { this.ownedPassives = p; },
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
@@ -542,10 +520,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunRng: () => this.runRng,
       getRunModifiers: () => this.runModifiers,
       isDailyRun: () => this.runIsDaily,
-      getKillCount: () => this.killCount,
-      getBossKillCount: () => this.bossKillCount,
-      getBossGoldEarned: () => this.bossGoldEarned,
-      getCoinGoldEarned: () => this.coinGoldEarned,
+      getRunScore: () => this.runScore,
       getOwnedPassivesLength: () => this.ownedPassives.length,
       getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
       stopGameScene: () => this.scene.stop('Game'),
@@ -561,7 +536,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getWeaponSystem: () => this.weaponSystem,
       getActiveVariant: () => this.activeVariant,
       getActiveCurseKey: () => this.activeCurseKey,
-      getBossKillCount: () => this.bossKillCount,
+      getBossKillCount: () => this.runScore.bossKillCount,
       getRunRng: () => this.runRng,
       isDailyRun: () => this.runIsDaily,
     });
@@ -588,21 +563,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSFXManager: () => this.getSFXManager(),
       getRunRng: () => this.runRng,
       getActiveVariantKey: () => this.activeVariant?.key,
+      getRunScore: () => this.runScore,
       triggerVictory: () => this.runLifecycle.handleVictory(),
-      getKillCount: () => this.killCount,
-      incrementKillCount: () => { this.killCount++; },
-      incrementBossKillCount: () => { this.bossKillCount++; },
-      addCoinGold: (n) => { this.coinGoldEarned += n; },
-      addBossGold: (n) => { this.bossGoldEarned += n; },
-      isFirstKillSeen: () => this.firstKillSeen,
-      markFirstKillSeen: () => { this.firstKillSeen = true; },
-      getEliteChainCount: () => this.eliteChainCount,
-      setEliteChainCount: (n) => { this.eliteChainCount = n; },
-      getEliteChainLastGameSec: () => this.eliteChainLastGameSec,
-      setEliteChainLastGameSec: (s) => { this.eliteChainLastGameSec = s; },
-      setVictoryPending: (v) => { this.victoryPending = v; },
-      nextVictoryDelayGen: () => ++this.victoryDelayGen,
-      getVictoryDelayGen: () => this.victoryDelayGen,
     });
     this.weaponSystem.events.on(
       'enemyKilled',
@@ -657,7 +619,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getCamera: () => this.cameras.main,
       getTweens: () => this.tweens,
       getSettingsManager: () => this.settingsManager,
-      isVictoryPending: () => this.victoryPending,
+      isVictoryPending: () => this.runScore.victoryPending,
       onAfterNonFatalHit: (hpBefore) => this.tryMoorMercyLuck(hpBefore),
       armIFrames: (ms) => this.armIFrames(ms),
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
@@ -714,7 +676,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getUpdateTickers: () => this.updateTickers,
       getSFXManager: () => this.getSFXManager(),
       getChestDurationBonusMs: () => this.chestDurationBonusMs,
-      onCoinCollected: (amount) => { this.coinGoldEarned += amount; },
+      onCoinCollected: (amount) => { this.runScore.addCoinGold(amount); },
       trackChest: (s, g) => this.chestRegistry.track(s, g),
       untrackChest: (s) => this.chestRegistry.untrack(s),
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
@@ -737,7 +699,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getEvolvedWeapons: () => this.evolvedWeapons,
       pushEvolvedWeapon: (key) => { this.evolvedWeapons.push(key); },
       getAnnouncedEvolutionReady: () => this.announcedEvolutionReady,
-      addKill: (n = 1) => { this.killCount += n; },
+      addKill: (n = 1) => { this.runScore.killCount += n; },
       getUiViewport: () => this.getUiViewport(),
       armIFrames: (ms) => this.armIFrames(ms),
       drainPendingChests: () => this.drainPendingChests(),
@@ -755,8 +717,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSettingsManager: () => this.settingsManager,
       getCamera: () => this.cameras.main,
       getUiViewport: () => this.getUiViewport(),
-      getVictoryPending: () => this.victoryPending,
-      setVictoryPending: (v) => { this.victoryPending = v; },
+      getVictoryPending: () => this.runScore.victoryPending,
+      setVictoryPending: (v) => { this.runScore.victoryPending = v; },
       getRevivalAvailable: () => this.revivalAvailable,
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       getVictoryFade: () => this.victoryFade,
@@ -1009,7 +971,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player,
       this.spawnSystem,
       this.juice,
-      this.killCount,
+      this.runScore.killCount,
       biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
     );
     musicEngine.update(delta, this.musicStateScratch);
@@ -1028,7 +990,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.xpSystem.getLevel(),
       this.xpSystem.getXPFraction(),
       this.spawnSystem.getGameTimeSec(),
-      this.killCount,
+      this.runScore.killCount,
       this.spawnSystem.getActiveCount(),
       this.player.getDashCharges(),
       this.player.getMaxDashCharges(),
@@ -1061,12 +1023,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.pauseMenu = new PauseMenu(this, {
           getUiViewport: () => this.getUiViewport(),
           getGameTimeSec: () => this.spawnSystem.getGameTimeSec(),
-          getKillCount: () => this.killCount,
+          getKillCount: () => this.runScore.killCount,
           getLevel: () => this.xpSystem.getLevel(),
           getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
           getOwnedPassives: () => this.ownedPassives,
           getActiveCurseLine: () => formatHudCurseChipLine(this.activeCurseKey),
-          getRunGoldEarned: () => this.coinGoldEarned,
+          getRunGoldEarned: () => this.runScore.coinGoldEarned,
           getKillStreakStats: () => ({
             current: this.juice.getComboCount(),
             best: this.juice.getBestCombo(),

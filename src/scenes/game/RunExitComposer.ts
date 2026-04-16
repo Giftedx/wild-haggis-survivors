@@ -25,6 +25,7 @@ import type { RunSummary, RunResult } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
 import type { PersonalBests } from '../../core/SaveManager';
 import type { DeathCause } from '../../core/deathCauseClassifier';
+import type { RunScoreState } from './RunScoreState';
 import { formatRunVariantLabel } from '../../data/variants';
 import { encodeSeed } from '../../utils/rng';
 import { t } from '../../core/i18n';
@@ -45,10 +46,9 @@ export interface RunExitHooks {
   getRunModifiers(): RunModifiers;
   isDailyRun(): boolean;
 
-  getKillCount(): number;
-  getBossKillCount(): number;
-  getBossGoldEarned(): number;
-  getCoinGoldEarned(): number;
+  /** Shared per-run score (kill/boss/gold counters). */
+  getRunScore(): RunScoreState;
+
   getOwnedPassivesLength(): number;
   getEvolvedWeaponsLength(): number;
 
@@ -69,11 +69,12 @@ export class RunExitComposer {
   /** Snapshot the per-run totals needed for result screens + history. */
   buildSummary(victory: boolean): RunSummary {
     const h = this.hooks;
+    const score = h.getRunScore();
     return {
       timeSurvivedSec: h.getSpawnSystem().getGameTimeSec(),
-      enemiesKilled: h.getKillCount(),
-      bossGold: h.getBossGoldEarned(),
-      coinGold: h.getCoinGoldEarned(),
+      enemiesKilled: score.killCount,
+      bossGold: score.bossGoldEarned,
+      coinGold: score.coinGoldEarned,
       bestCombo: h.getJuice().getBestCombo(),
       victory,
       goldMult: h.getRunModifiers().goldMult,
@@ -109,7 +110,7 @@ export class RunExitComposer {
       summary,
       runResult,
       xpLevel: h.getXPSystem().getLevel(),
-      bossKillCount: h.getBossKillCount(),
+      bossKillCount: h.getRunScore().bossKillCount,
       ownedPassiveCount: h.getOwnedPassivesLength(),
       weaponCount: h.getWeaponSystem().getWeapons().length,
       evolvedCount: h.getEvolvedWeaponsLength(),

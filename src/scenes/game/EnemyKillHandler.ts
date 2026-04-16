@@ -22,6 +22,7 @@ import type { UpdateTickers } from '../../utils/UpdateTickers';
 import type { SFXManager } from '../../systems/audio/SFXManager';
 import type { RNG } from '../../utils/rng';
 import type { EliteAffixId } from '../../data/eliteAffixes';
+import type { RunScoreState } from './RunScoreState';
 import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
@@ -39,24 +40,11 @@ export interface EnemyKillHandlerHooks {
   getRunRng(): RNG;
   getActiveVariantKey(): string | undefined;
 
-  // Run-end trigger (taxman victory)
-  triggerVictory(): void;
+  /** Shared per-run score object — reads + mutations routed through this. */
+  getRunScore(): RunScoreState;
 
-  // Scene-owned counters
-  getKillCount(): number;
-  incrementKillCount(): void;
-  incrementBossKillCount(): void;
-  addCoinGold(amount: number): void;
-  addBossGold(amount: number): void;
-  isFirstKillSeen(): boolean;
-  markFirstKillSeen(): void;
-  getEliteChainCount(): number;
-  setEliteChainCount(n: number): void;
-  getEliteChainLastGameSec(): number | null;
-  setEliteChainLastGameSec(s: number | null): void;
-  setVictoryPending(v: boolean): void;
-  nextVictoryDelayGen(): number;
-  getVictoryDelayGen(): number;
+  /** Run-end trigger (taxman victory). */
+  triggerVictory(): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -91,6 +79,7 @@ export class EnemyKillHandler {
     const player = h.getPlayer();
     const spawn = h.getSpawnSystem();
     const banter = h.getBanter();
+    const score = h.getRunScore();
 
     // Kill-streak XP bonus: +1% per combo count (capped at +50%).
     const comboXpBonus = Math.min(0.5, juice.getComboCount() * 0.01);
@@ -99,28 +88,28 @@ export class EnemyKillHandler {
       y,
       Math.ceil(xpValue * player.getXpMultiplier() * (1 + comboXpBonus)),
     );
-    h.incrementKillCount();
+    score.incrementKillCount();
 
     // Elite back-to-back chain — gold bonus only, resets after triple.
     if (wasElite && !wasBoss) {
       const now = spawn.getGameTimeSec();
       const win = BALANCE.enemy.eliteChainWindowSec;
-      const lastSec = h.getEliteChainLastGameSec();
+      const lastSec = score.eliteChainLastGameSec;
       const chaining = lastSec !== null && now - lastSec <= win;
-      const nextCount = chaining ? h.getEliteChainCount() + 1 : 1;
-      h.setEliteChainCount(nextCount);
-      h.setEliteChainLastGameSec(now);
+      const nextCount = chaining ? score.eliteChainCount + 1 : 1;
+      score.eliteChainCount = nextCount;
+      score.eliteChainLastGameSec = now;
       if (nextCount === 2) {
         const g = BALANCE.enemy.eliteChainGoldSecond;
-        h.addCoinGold(g);
+        score.addCoinGold(g);
         juice.showToast(t('ui.game.elite_chain_double', { gold: g }), '#e8c060');
       } else if (nextCount >= 3) {
         const g = BALANCE.enemy.eliteChainGoldTriple;
-        h.addCoinGold(g);
+        score.addCoinGold(g);
         juice.showToast(t('ui.game.elite_chain_triple', { gold: g }), '#ffdd44');
         juice.flashWhite(100);
-        h.setEliteChainCount(0);
-        h.setEliteChainLastGameSec(null);
+        score.eliteChainCount = 0;
+        score.eliteChainLastGameSec = null;
       }
     }
 
@@ -134,8 +123,8 @@ export class EnemyKillHandler {
     }
 
     // Banter hooks — ambient lines that sit between louder milestone toasts.
-    if (!h.isFirstKillSeen()) {
-      h.markFirstKillSeen();
+    if (!score.firstKillSeen) {
+      score.markFirstKillSeen();
       banter?.request('first_blood', { tag: h.getActiveVariantKey() });
     }
     if (wasBoss) {
@@ -152,10 +141,10 @@ export class EnemyKillHandler {
     if (lifesteal > 0) player.heal(lifesteal);
 
     // Kill milestones — per-threshold Glesga one-liner + gold reward.
-    const killCount = h.getKillCount();
+    const killCount = score.killCount;
     if (KILL_MILESTONES.includes(killCount)) {
       const goldReward = Math.floor(killCount / 50);
-      h.addCoinGold(goldReward);
+      score.addCoinGold(goldReward);
       const milestoneKey = `ui.game.kill_${killCount}`;
       const milestoneText = t(milestoneKey, { gold: goldReward });
       // Fallback to generic if a specific key is missing.
@@ -206,7 +195,7 @@ export class EnemyKillHandler {
     }
 
     if (wasBoss) {
-      h.incrementBossKillCount();
+      score.incrementBossKillCount();
       const bossKillKey = `ui.game.boss_killed_${enemyKey}`;
       const bossKillText = t(bossKillKey);
       const bossToast =
@@ -222,7 +211,7 @@ export class EnemyKillHandler {
       }
 
       // Boss gold scales with difficulty (xpValue is 25/50/75/100/200 per boss).
-      h.addBossGold(Math.ceil(xpValue * 2));
+      score.addBossGold(Math.ceil(xpValue * 2));
       juice.bossDeathSpectacle(x, y);
       juice.slowMotion();
 
@@ -230,10 +219,10 @@ export class EnemyKillHandler {
       // guarded by a generation counter so a restart during the delay
       // doesn't resurrect the call.
       if (enemyKey === 'taxman') {
-        h.setVictoryPending(true);
-        const gen = h.nextVictoryDelayGen();
+        score.victoryPending = true;
+        const gen = score.nextVictoryDelayGen();
         h.getUpdateTickers().addOnce('raw', 1500, () => {
-          if (gen !== h.getVictoryDelayGen()) return;
+          if (gen !== score.victoryDelayGen) return;
           h.triggerVictory();
         });
       }
