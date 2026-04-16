@@ -115,13 +115,12 @@ test.describe('save and resume', () => {
       const gameScene = g.scene.scenes.find((s) => s.scene.key === 'Game');
       if (!gameScene) return false;
       const sceneAny = gameScene as unknown as {
-        metaSaveManager?: { saveActiveRun?: (s: unknown) => void };
-        collectRunStateForMeta?: () => unknown;
+        runPersistence?: { persist?: () => void };
       };
       try {
-        const state = sceneAny.collectRunStateForMeta?.();
-        if (!state) return false;
-        sceneAny.metaSaveManager?.saveActiveRun?.(state);
+        // R3.3+ — persistence lives on RunPersistenceBridge. The bridge
+        // already hits metaSaveManager.saveActiveRun internally.
+        sceneAny.runPersistence?.persist?.();
       } catch {
         return false;
       }

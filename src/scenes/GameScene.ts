@@ -14,7 +14,7 @@ import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { recordRun, loadSave, RunResult, RunSummary } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
-import { BOSSES, getEnemyDisplayName } from '../data/enemies';
+import { getEnemyDisplayName } from '../data/enemies';
 import { formatRunVariantLabel, getVariantByKey, VariantDef } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
@@ -61,6 +61,9 @@ import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
+import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
+import { BossHpTracker } from './game/BossHpTracker';
+import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -109,7 +112,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private updateTickers = new UpdateTickers();
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
-  private activeChestSprites: Array<{ sprite: Phaser.GameObjects.Sprite; golden: boolean }> = [];
+  private readonly chestRegistry = new ChestSpriteRegistry();
   private readonly iFrameController = new IFrameController(() => this.player);
 
   private ownedPassives: string[] = [];
@@ -162,8 +165,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private debugOverlay: DebugOverlay | null = null;
   private announcedEvolutionReady = new Set<string>();
   private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
-  private cachedBoss: Enemy | null = null;
-  private cachedBossConfig: (typeof BOSSES)[number] | null = null;
+  private bossHpTracker!: BossHpTracker;
+  private debugTimeTravelApi!: DebugTimeTravelApi;
 
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
@@ -267,7 +270,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hintHideHandle = null;
     this.hazardZones?.reset();
     this.lastEmittedRunSecond = -1;
-    this.activeChestSprites = [];
+    this.chestRegistry.reset();
     this.announcedEvolutionReady.clear();
     this.runStatsTracker.reset();
     this.deathCauseTracker.reset(0);
@@ -430,8 +433,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
-    this.cachedBoss = null;
-    this.cachedBossConfig = null;
+    this.bossHpTracker?.reset();
     this.ownedPassives = [];
     this.evolvedWeapons = [];
     this.killCount = 0;
@@ -506,6 +508,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       setOwnedPassives: (p) => { this.ownedPassives = p; },
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
+      isSceneActive: () => this.scene.isActive(),
+    });
+
+    // Boss HP bar tracker — caches current spotlight boss and pushes
+    // fraction to HUD each frame. Lazy getters so HUD (built later in
+    // create()) resolves at tick time.
+    this.bossHpTracker = new BossHpTracker({
+      getSpawnSystem: () => this.spawnSystem,
+      updateBossBar: (data) => this.hud.updateBossBar(data),
+    });
+
+    // Dev time-travel controls — globalThis.DEBUG + Shift+] keybind.
+    this.debugTimeTravelApi = new DebugTimeTravelApi({
+      getSpawnSystem: () => this.spawnSystem,
       isSceneActive: () => this.scene.isActive(),
     });
 
@@ -671,8 +687,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSFXManager: () => this.getSFXManager(),
       getChestDurationBonusMs: () => this.chestDurationBonusMs,
       onCoinCollected: (amount) => { this.coinGoldEarned += amount; },
-      trackChest: (s, g) => this.trackChestSprite(s, g),
-      untrackChest: (s) => this.untrackChestSprite(s),
+      trackChest: (s, g) => this.chestRegistry.track(s, g),
+      untrackChest: (s) => this.chestRegistry.untrack(s),
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
       offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
       acquireFloatText: (x, y, str, color, fs, d) => this.floatTextPool.acquire(x, y, str, color, fs, d),
@@ -761,7 +777,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tutorialSystem = new TutorialSystem(this, this.metaSaveManager);
     this.tutorialSystem.startRunIfNeeded({ resumeRun: Boolean(resumeRun) });
 
-    this.registerDebugTimeTravelApi();
+    this.debugTimeTravelApi.install();
     this.runPersistence.registerMidRunHooks();
 
     getAnalyticsManager().beginGameplaySession({ variantKey: this.activeVariant.key });
@@ -858,7 +874,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.codexFirstCullUnsub?.();
       this.codexFirstCullUnsub = null;
       this.runPersistence?.unregisterMidRunHooks();
-      this.unregisterDebugTimeTravelApi();
+      this.debugTimeTravelApi?.uninstall();
       try { this.subs.dispose(); } catch { /* ignore */ }
       try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
       this.debugOverlay = null;
@@ -891,11 +907,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.gameTickers?.destroy(); } catch { /* ignore */ }
       try { this.pauseMenu?.close(); } catch { /* ignore */ }
       this.pauseMenu = null;
-      for (const entry of this.activeChestSprites) {
-        try { this.tweens.killTweensOf(entry.sprite); } catch { /* ignore */ }
-        try { entry.sprite.destroy(); } catch { /* ignore */ }
-      }
-      this.activeChestSprites = [];
+      this.chestRegistry.forEachSprite((sprite) => {
+        try { this.tweens.killTweensOf(sprite); } catch { /* ignore */ }
+        try { sprite.destroy(); } catch { /* ignore */ }
+      });
+      this.chestRegistry.reset();
       try { this.victoryFade?.destroy(); } catch { /* ignore */ }
       this.victoryFade = null;
       try { this.deathFade?.destroy(); } catch { /* ignore */ }
@@ -1009,13 +1025,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.update(delta, this.player.getHpFraction());
 
     // Boss HP bar + edge indicators
-    this.updateBossHPBar();
+    this.bossHpTracker.tick();
     this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
     this.minimap.update(
       this.player.x,
       this.player.y,
       this.spawnSystem.getEnemyGroup(),
-      this.getActiveChestMarkers(),
+      this.chestRegistry.getMarkers(),
       this.player.rotation
     );
     const ms = this.musicStateScratch;
@@ -1198,42 +1214,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // collectRunStateForMeta / persistActiveRunToMeta / applyResumeHydration
   // extracted to src/scenes/game/RunPersistenceBridge.ts
 
-  private registerDebugTimeTravelApi(): void {
-    const g = globalThis as unknown as {
-      DEBUG?: {
-        skipToMinute: (m: number) => void;
-        skipToGameSecond: (s: number) => void;
-      };
-    };
-    g.DEBUG = {
-      skipToMinute: (m: number) => {
-        this.spawnSystem.timeTravelToSeconds(Math.max(0, Number(m) || 0) * 60);
-      },
-      skipToGameSecond: (s: number) => {
-        this.spawnSystem.timeTravelToSeconds(Math.max(0, Number(s) || 0));
-      },
-    };
-
-    if (typeof window === 'undefined') return;
-    this.devKeydownHandler = (e: KeyboardEvent) => {
-      if (!e.shiftKey || e.code !== 'BracketRight') return;
-      if (!this.scene.isActive()) return;
-      e.preventDefault();
-      this.spawnSystem.timeTravelToSeconds(this.spawnSystem.getGameTimeSec() + 60);
-    };
-    window.addEventListener('keydown', this.devKeydownHandler);
-  }
-
-  private unregisterDebugTimeTravelApi(): void {
-    const g = globalThis as unknown as { DEBUG?: unknown };
-    if (g.DEBUG) {
-      delete g.DEBUG;
-    }
-    if (this.devKeydownHandler && typeof window !== 'undefined') {
-      window.removeEventListener('keydown', this.devKeydownHandler);
-      this.devKeydownHandler = undefined;
-    }
-  }
+  // register/unregisterDebugTimeTravelApi extracted to DebugTimeTravelApi.
 
   // registerMidRunPersistenceHooks / unregisterMidRunPersistenceHooks
   // extracted to RunPersistenceBridge.
@@ -1296,35 +1277,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return lines.join('\n');
   }
 
-  // ── Boss HP Bar ──
-
-  private updateBossHPBar(): void {
-    // Re-scan only when the cached boss is dead or inactive
-    if (!this.cachedBoss || !this.cachedBoss.active || !this.cachedBoss.isBoss()) {
-      this.cachedBoss = null;
-      this.cachedBossConfig = null;
-      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
-      for (const enemy of enemies) {
-        if (enemy.active && enemy.isBoss()) {
-          if (!this.cachedBoss || enemy.getHpFraction() < this.cachedBoss.getHpFraction()) {
-            this.cachedBoss = enemy;
-          }
-        }
-      }
-      if (this.cachedBoss) {
-        this.cachedBossConfig = BOSSES.find(b => b.key === this.cachedBoss!.getEnemyKey()) ?? null;
-      }
-    }
-
-    if (this.cachedBoss) {
-      this.hud.updateBossBar({
-        name: this.cachedBossConfig ? t(this.cachedBossConfig.nameKey) : this.cachedBoss.getEnemyKey(),
-        hpFraction: this.cachedBoss.getHpFraction(),
-      });
-    } else {
-      this.hud.updateBossBar(null);
-    }
-  }
+  // Boss HP bar logic extracted to BossHpTracker.
 
   /** Drain all chests queued while the game was paused. */
   drainPendingChests(): void {
@@ -1402,20 +1355,5 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.runIsDaily;
   }
 
-  private trackChestSprite(sprite: Phaser.GameObjects.Sprite, golden: boolean): void {
-    this.activeChestSprites.push({ sprite, golden });
-  }
-
-  private untrackChestSprite(sprite: Phaser.GameObjects.Sprite): void {
-    this.activeChestSprites = this.activeChestSprites.filter((entry) => entry.sprite !== sprite);
-  }
-
-  private getActiveChestMarkers(): Array<{ x: number; y: number; golden?: boolean }> {
-    this.activeChestSprites = this.activeChestSprites.filter((entry) => entry.sprite.active);
-    return this.activeChestSprites.map((entry) => ({
-      x: entry.sprite.x,
-      y: entry.sprite.y,
-      golden: entry.golden,
-    }));
-  }
+  // Chest sprite track/untrack/markers extracted to ChestSpriteRegistry.
 }
