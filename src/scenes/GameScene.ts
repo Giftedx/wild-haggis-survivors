@@ -31,7 +31,6 @@ import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
-import { tryCameraShake } from '../utils/cameraShake';
 import { getCameraViewport } from '../ui/cameraViewport';
 import {
   createGameplaySessionGuard,
@@ -58,6 +57,9 @@ import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
+import { FloatTextPool } from './game/FloatTextPool';
+import { PlayerHitResolver } from './game/PlayerHitResolver';
+import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { createHighlandTerrain } from './game/highlandTerrain';
@@ -181,7 +183,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private readonly settingsManager = getSettingsManager();
   private statusFxPool!: StatusFxPool;
   /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
-  private floatTextPool: Phaser.GameObjects.Text[] = [];
+  private readonly floatTextPool = new FloatTextPool();
   private readonly runStatsTracker = new RunStatsTracker();
   private readonly deathCauseTracker = new DeathCauseTracker();
   /** Per-run modifier bag (from curse pick). Defaults to identity — an un-cursed run behaves identically to the pre-curse codebase. */
@@ -200,6 +202,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
   private enemyKillHandler!: EnemyKillHandler;
+  private playerHitResolver!: PlayerHitResolver;
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
@@ -279,22 +282,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
-  }
-
-  /** Acquire a pooled floating text, or return null if pool is exhausted. */
-  private acquireFloatText(
-    x: number, y: number, str: string,
-    color: string, fontSize: string = '16px', depth: number = 85
-  ): Phaser.GameObjects.Text | null {
-    const txt = this.floatTextPool.find(t => !t.visible);
-    if (!txt) return null;
-    txt.setText(str);
-    txt.setPosition(x, y);
-    txt.setVisible(true).setAlpha(1).setScale(1);
-    txt.setColor(color);
-    txt.setFontSize(fontSize);
-    txt.setDepth(depth);
-    return txt;
   }
 
   init(data?: GameSceneInitData): void {
@@ -451,16 +438,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.xpOverflowGoldBatch = 0;
     this.revivalAvailable = false;
 
-    // Pre-allocate floating text pool for armor/gold feedback
-    for (const t of this.floatTextPool) t.destroy();
-    this.floatTextPool = [];
-    for (let i = 0; i < 12; i++) {
-      const ft = this.add.text(0, 0, '', {
-        fontFamily: 'monospace', fontSize: '16px', color: '#ffffff',
-        fontStyle: 'bold', stroke: '#000', strokeThickness: 3,
-      }).setDepth(85).setVisible(false);
-      this.floatTextPool.push(ft);
-    }
+    // Pre-allocate floating text pool for armor/gold feedback.
+    this.floatTextPool.init(this);
 
     // Variant modifiers establish the run archetype before permanent upgrades stack on top.
     applyVariantModifiers(this.player, selectedVariant);
@@ -555,21 +534,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
     });
 
-    // Projectile trails — weapon-specific colors; evolved weapons get gold overlay
-    const weaponTrailColors: Record<string, number[]> = {
-      thistle_shot: [0x9966cc, 0xaa77dd, 0x8855bb],  // purple — heather
-      caber_toss:   [0xcc7733, 0xdd8844, 0xbb6622],  // ember — burning wood
-      haggis_hurler:[0x8b6914, 0x9a7822, 0x7a5a0a],  // brown — haggis
-      scotch_mist:  [0x6699aa, 0x77aacc, 0x5588aa],  // cyan — misty water
-      nessie_tentacle:[0x226644, 0x338855, 0x1a5533], // murky green — loch
-      claymore:     [0x8899aa, 0x99aabb, 0x778899],   // steel — metal
-      bagpipe_blast:[0x4488ff, 0x5599ff, 0x3377ee],   // blue — sonic
-    };
-    const evolvedColors = [0xffcc44, 0xffdd66, 0xd4a017]; // gold — mastery
-    const defaultColors = [0x9966cc, 0xaa77dd, 0x8855bb];
+    // Projectile trails — palette lookup lives in src/data/weaponTrailColors.
+    // Math.random here is cosmetic (not gameplay RNG) so unseeded is fine.
     this.weaponSystem.events.on('projectileTrail', (x: number, y: number, evolved: boolean, wKey: string) => {
-      const colors = evolved ? evolvedColors : (weaponTrailColors[wKey] ?? defaultColors);
-      this.juice.spawnTrail(x, y, colors[Math.floor(Math.random() * colors.length)]);
+      this.juice.spawnTrail(x, y, pickTrailColor(wKey, evolved, Math.random()));
     });
 
     // When player levels up, pause and show upgrade choices
@@ -582,12 +550,34 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     // Player ↔ Enemy collision
+    // Player ↔ Enemy overlap → PlayerHitResolver.handle (full cascade).
+    // Hooks use lazy getters so this resolver safely references systems
+    // (juice, runLifecycle) that may still be constructing below.
+    this.playerHitResolver = new PlayerHitResolver({
+      getPlayer: () => this.player,
+      getJuice: () => this.juice,
+      getSpawnSystem: () => this.spawnSystem,
+      getTimeManager: () => this.timeManager,
+      getDeathCauseTracker: () => this.deathCauseTracker,
+      getIFrameController: () => this.iFrameController,
+      getFloatTextPool: () => this.floatTextPool,
+      getRunModifiers: () => this.runModifiers,
+      getCamera: () => this.cameras.main,
+      getTweens: () => this.tweens,
+      getSettingsManager: () => this.settingsManager,
+      isVictoryPending: () => this.victoryPending,
+      onAfterNonFatalHit: (hpBefore) => this.tryMoorMercyLuck(hpBefore),
+      armIFrames: (ms) => this.armIFrames(ms),
+      onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
+    });
     this.playerEnemyCollider = this.physics.add.overlap(
       this.player,
       this.spawnSystem.getEnemyGroup(),
-      this.onPlayerHitEnemy as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback,
+      (_playerObj, enemyObj) => this.playerHitResolver.handle(
+        enemyObj as Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
+      ),
       undefined,
-      this
+      this,
     );
 
     // HUD + Juice
@@ -637,7 +627,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       untrackChest: (s) => this.untrackChestSprite(s),
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
       offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
-      acquireFloatText: (x, y, str, color, fs, d) => this.acquireFloatText(x, y, str, color, fs, d),
+      acquireFloatText: (x, y, str, color, fs, d) => this.floatTextPool.acquire(x, y, str, color, fs, d),
     });
     this.levelUpFlow = new LevelUpFlow(this, {
       getPlayer: () => this.player,
@@ -843,8 +833,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.tutorialSystem?.dispose(); } catch { /* ignore */ }
       try { this.xpSystem?.destroy(); } catch { /* ignore */ }
       try { this.statusFxPool?.destroy(); } catch { /* ignore */ }
-      for (const ft of this.floatTextPool) { try { ft.destroy(); } catch { /* ignore */ } }
-      this.floatTextPool = [];
+      this.floatTextPool.destroyAll();
       // Close lifecycle gaps — these systems were silently orphaned before
       try { this.juice?.destroy(); } catch { /* ignore */ }
       try { this.hud?.destroy(); } catch { /* ignore */ }
@@ -1090,75 +1079,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  private onPlayerHitEnemy(
-    _playerObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-    enemyObj: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile
-  ): void {
-    if (this.iFrameController.isActive() || this.timeManager.isGameplayPaused() || this.victoryPending || this.player.isDashInvincible()) return;
-
-    const enemy = enemyObj as Enemy;
-    if (!enemy.active) return;
-
-    // Curse-scaled damage before armor mitigation. Thin Hide inflates
-    // incoming blows by 25%; an identity mult is a no-op.
-    const rawDmg = enemy.getDamage();
-    const incomingDmg = Math.max(1, Math.round(rawDmg * this.runModifiers.damageTakenMult));
-    const armor = this.player.getArmor();
-    const hpBefore = this.player.getHp();
-    const dead = this.player.takeDamage(incomingDmg);
-    if (!dead) {
-      this.tryMoorMercyLuck(hpBefore);
-    }
-    this.deathCauseTracker.recordDamage({
-      gameTimeSec: this.spawnSystem.getGameTimeSec(),
-      sourceKey: enemy.getEnemyKey(),
-      amount: Math.max(1, incomingDmg - armor),
-      sourceIsBoss: enemy.isBoss(),
-      sourceIsElite: enemy.isElite(),
-      sourceIsHazard: false,
-      hpAfter: this.player.getHp(),
-      maxHpAfter: this.player.getMaxHp(),
-    });
-
-    // Show armor absorption text if armor reduced damage
-    if (armor > 0 && incomingDmg > 1) {
-      const absorbed = Math.min(armor, incomingDmg - 1);
-      const shieldText = this.acquireFloatText(
-        this.player.x, this.player.y - 30,
-        t('ui.game.armor_blocked', { amount: absorbed }),
-        '#88aaff', '14px', 85,
-      );
-      if (shieldText) {
-        this.tweens.add({ targets: shieldText, y: shieldText.y - 15, alpha: 0, duration: 500, onComplete: () => { shieldText.setVisible(false); } });
-      }
-    }
-
-    // Thorns damage: hurt the enemy that touched us
-    if (this.player.getThornsDamage() > 0 && enemy.active) {
-      enemy.takeDamageWithKillEvents(this.player.getThornsDamage());
-    }
-
-    this.player.setAlpha(0.5);
-    this.player.setTintFill(0xffffff); // White impact flash (matches enemy pattern)
-    this.iFrameController.armHitTint(60);
-
-    // Squash-stretch recoil — the haggis visibly flinches on hit
-    const baseScale = this.player.scaleX;
-    this.tweens.add({
-      targets: this.player, scaleX: baseScale * 0.85, scaleY: baseScale * 1.15,
-      duration: 50, yoyo: true, ease: 'Sine.easeOut',
-    });
-    // Scale shake intensity with damage proportion (guard maxHp — matches GameTickers)
-    const dmgFrac = incomingDmg / Math.max(1, this.player.getMaxHp());
-    const shakeIntensity = Math.min(0.02, 0.003 + dmgFrac * 0.03);
-    tryCameraShake(this.cameras.main, 100 + dmgFrac * 200, shakeIntensity, this.settingsManager);
-    audio.playPlayerHit();
-    this.juice.flashRed();
-
-    this.armIFrames(500);
-
-    if (dead) this.runLifecycle.onPlayerHitZero();
-  }
+  // onPlayerHitEnemy extracted to src/scenes/game/PlayerHitResolver.ts
 
   /**
    * Unified death/revival handler. Called from any damage source that can
