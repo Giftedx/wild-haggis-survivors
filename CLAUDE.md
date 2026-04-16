@@ -38,6 +38,7 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 - **BootScene** (`src/scenes/BootScene.ts`): Generates ALL sprite textures programmatically using Phaser Graphics — there are no external image assets. Every entity, projectile, and effect is drawn in code here.
 - **MenuScene**: Title screen and run start.
 - **GameScene**: Core gameplay loop — orchestrates all systems, handles collisions, level-ups, pause, and game-over.
+- **ActIntermissionScene** (`src/scenes/ActIntermissionScene.ts`): W2 Moor Road paired modal. `GameScene.launchActIntermission(actN)` fires on gordon/tour_bus kill — acquires a `TimeManager.ACT_INTERMISSION` token (pause + timeScale 0), renders 3 route cards from `ROUTES_BY_SLOT[slot]`, resolves via `onResolve(pick, route)` callback that advances `RunActState`, writes `RunModifiers.routePicks`, applies `modifierDeltas`, then runs `route.onResume(ctx)`. Skip Intermissions setting bypasses the scene and applies `DEFAULT_ROUTE_ON_SKIP` inline.
 - **ShopScene**: Between-run shop for spending Golden Haggis on permanent upgrades.
 
 ### System Architecture (all instantiated by GameScene)
@@ -56,6 +57,7 @@ Game balance is defined in data files, not scattered through logic:
 - `src/data/enemies.ts` — Enemy types with `EnemyConfig` (behavior, spawn timing) and `BossConfig` (boss `warningKey` is an i18n path, resolved with `t()` in `SpawnSystem`)
 - `src/data/upgrades.ts` — Level-up card pool with rarity-weighted draws and evolution recipes (`EVOLUTION_RECIPES`)
 - `src/data/permanentUpgrades.ts` — Between-run upgrades bought with Golden Haggis currency
+- `src/data/routes.ts` — W2 Moor Road routes. `RouteDef` = `modifierDeltas` (applied at pick-resolve time) + optional `onResume(ctx: RouteResumeContext)` for side-effect callbacks (heal bursts, forced chests, timed spawn releases). `ROUTES_BY_SLOT` splits into picker A (act 1) and B (act 2). `DEFAULT_ROUTE_ON_SKIP` is the Skip-Intermissions fallback per slot.
 
 ### Player Stats Model
 Player stats use a layered calculation: **base value × level scaling + upgrade bonuses**. Bonuses accumulate and are never wiped. The `recalcStats()` method in `Player.ts` is the single source of truth for final stat computation.
@@ -69,6 +71,7 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 - **Card Reroll**: 1 free reroll per level-up. Managed by `UpgradeCardsUI.grantReroll()` / `rerollsLeft` counter.
 - **Minimap** (`src/ui/Minimap.ts`): Corner radar showing enemy dots, elite (gold), boss (diamond), player (green), camera viewport.
 - **Hit Freeze**: 20ms `timeScale = 0` on kills via `JuiceSystem.hitFreeze()`. Uses real `setTimeout` (not delayedCall). Skipped during slow-motion.
+- **Moor Road acts (W2)**: Boss kills on `gordon` and `tour_bus` complete acts 1 and 2 respectively (see `dispatchActComplete.ts` pure mapping). `taxman` triggers the existing victory path and is NOT routed through `onActComplete`. `RunActState` tracks act counter + `pickerHistory`; the array is snapshot into `RunHistoryEntry.routes` by `RunHistoryRecorder`.
 
 ### Path Alias
 `@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`).
@@ -84,7 +87,9 @@ Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing).
 - **`body.velocity +=` bypasses mass**: Phaser's mass only affects collision resolution. For knockback, divide force by `body.mass` manually.
 - **`clearTint()` removes ALL tints**: Including persistent ones (boss red, hazard orange). Use a `baseTint` field and restore it after damage flashes.
 - **Circle body radius and sprite scale**: Phaser auto-scales circular hitboxes via `updateBounds()`. Pass unscaled radius to `setCircle()` — see comment in `Player.onLevelUp`.
-- **`scene.time.delayedCall` respects `timeScale`**: At `timeScale = 0` (hit freeze), delayed calls never fire. Use real `setTimeout` for wall-clock-timed operations that must execute regardless of timeScale.
+- **`scene.time.delayedCall` respects `timeScale`**: At `timeScale = 0` (hit freeze), delayed calls never fire. Use real `setTimeout` for wall-clock-timed operations that must execute regardless of timeScale. `TimeManager.scheduleRealTime(ms, cb)` wraps this with reset-cancellation — route `onResume` callbacks use it for timed-release effects (e.g. kirkyard's 90s spawn-density window).
+- **Phaser ScenePlugin vs SceneManager**: `this.scene` inside a Scene is the `ScenePlugin` (has `launch`, `pause`, `stop` operating on the owning scene). `game.scene` is the `SceneManager` (has `start`, `run` operating on any scene by key). Tests or external code wanting `launch(key, data)` must go through `game.scene.getScene('Game').scene.launch(...)` — see `e2e/w2-moor-road.spec.ts`.
+- **Phaser imports break in node-env vitest**: `Phaser` module touches `window` at eval time. Scene files that import Phaser cannot be imported into vitest tests under the default node env. Extract testable logic into pure helper modules alongside the scene (e.g. `actIntermissionResolve.ts` exports `resolveDefaultRoute` + `buildRoutePick`; the scene class delegates to them). Tests import the helpers directly.
 
 ## Common Patterns
 
