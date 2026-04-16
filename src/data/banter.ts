@@ -634,7 +634,18 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.route_picked.through_the_kirkyard.a',
         'ui.banter.route_picked.through_the_kirkyard.b',
       ],
-      // Picker B entries added in M2 Task 20.
+      stand_yer_ground: [
+        'ui.banter.route_picked.stand_yer_ground.a',
+        'ui.banter.route_picked.stand_yer_ground.b',
+      ],
+      run_for_the_hills: [
+        'ui.banter.route_picked.run_for_the_hills.a',
+        'ui.banter.route_picked.run_for_the_hills.b',
+      ],
+      buckie_pitstop: [
+        'ui.banter.route_picked.buckie_pitstop.a',
+        'ui.banter.route_picked.buckie_pitstop.b',
+      ],
     },
   },
 ];

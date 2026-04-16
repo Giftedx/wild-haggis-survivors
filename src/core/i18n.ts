@@ -1040,6 +1040,18 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Hope yer no feart.',
           b: 'Shortcut through the deid.',
         },
+        stand_yer_ground: {
+          a: 'Nae running now.',
+          b: 'Aye, dig in.',
+        },
+        run_for_the_hills: {
+          a: 'Leg it!',
+          b: 'Smart choice, that.',
+        },
+        buckie_pitstop: {
+          a: 'Needed a break anyway.',
+          b: 'Tonic o\' the moor.',
+        },
       },
     },
   },
