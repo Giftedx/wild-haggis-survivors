@@ -237,6 +237,9 @@ export const EN_STRINGS: LocaleTree = {
       seed_daily: 'Daily seed: {code}',
       seed_copy_hint: 'tap to copy',
       seed_copied: 'Copied: {code}',
+      // W27 Capture & Share — small link beside the seed readout.
+      postcard_hint: 'save postcard',
+      postcard_saved: 'postcard saved',
 
       // ── "Whit got ye" death reflection panel ──
       // Voice-driven, compassionate. Headlines describe WHAT happened; tips

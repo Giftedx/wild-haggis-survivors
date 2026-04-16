@@ -14,6 +14,7 @@ import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey } from '../data/curses';
 import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
+import { downloadPostcard } from '../utils/postcard';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -366,6 +367,8 @@ export class GameOverScene extends Phaser.Scene {
       this.renderSeedReadout(panelCenterX, panelTop + 590, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
     }
 
+    this.renderPostcardLink(panelCenterX, panelTop + 612, d + 3, 1180);
+
     const buttonsY = panelTop + 634;
     this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
       audio.playClick();
@@ -705,6 +708,58 @@ export class GameOverScene extends Phaser.Scene {
     text.on('pointerover', () => { if (!copied) text.setColor('#ffe2a0'); });
     text.on('pointerout', () => { if (!copied) text.setColor(isDaily ? '#e2c97a' : '#a8b0c0'); });
     text.on('pointerdown', doCopy);
+  }
+
+  /**
+   * W27 Capture & Share: small "save postcard" text link that downloads
+   * the current canvas as a PNG. Sits below the seed readout so it
+   * doesn't crowd the main action buttons.
+   */
+  private renderPostcardLink(
+    centerX: number,
+    y: number,
+    depth: number,
+    delay: number,
+  ): void {
+    const hint = t('ui.gameOver.postcard_hint');
+    const text = this.add
+      .text(centerX, y, `📮 ${hint}`, {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#a8b0c0',
+        fontStyle: 'italic',
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    let saved = false;
+    const doSave = () => {
+      if (saved) return;
+      const p = this.payload;
+      if (!p) return;
+      const canvas = this.game.canvas as HTMLCanvasElement | undefined;
+      const summary = p.summary;
+      const ok = downloadPostcard(canvas, {
+        mode: p.mode === 'victory' ? 'victory' : 'death',
+        enemiesKilled: summary?.enemiesKilled ?? 0,
+        timeSurvivedSec: summary?.timeSurvivedSec ?? 0,
+        seedCode: p.seedCode,
+      });
+      if (ok) {
+        saved = true;
+        text.setText(`📮 ${t('ui.gameOver.postcard_saved')}`);
+        text.setColor('#9de6a8');
+        audio.playClick();
+      }
+    };
+    text.on('pointerover', () => { if (!saved) text.setColor('#ffe2a0'); });
+    text.on('pointerout', () => { if (!saved) text.setColor('#a8b0c0'); });
+    text.on('pointerdown', doSave);
   }
 
   /** Best-effort clipboard write; returns true on success. */
