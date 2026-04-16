@@ -35,7 +35,8 @@ type ToggleKey =
   | 'reduceParticles'
   | 'highContrastUi'
   | 'captionsEnabled'
-  | 'telemetryOptIn';
+  | 'telemetryOptIn'
+  | 'skipActIntermissions';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -197,6 +198,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addSliderRow(t('ui.settings.motion_scale'), 'motionScale', 0, 1, 0.1);
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
+    this.addToggleRow(t('ui.settings.skipActIntermissions'), 'skipActIntermissions');
     this.addBanterFrequencyRow();
 
     this.addSectionHeader(t('ui.settings.section_access'));

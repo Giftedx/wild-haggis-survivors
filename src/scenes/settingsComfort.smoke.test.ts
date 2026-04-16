@@ -26,6 +26,7 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.high_contrast_ui',
   'ui.settings.reduce_particles',
   'ui.settings.telemetry_opt_in',
+  'ui.settings.skipActIntermissions',
   'ui.settings.back',
   'ui.settings.on',
   'ui.settings.off',
@@ -50,6 +51,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'captionsEnabled',
   'banterFrequency',
   'telemetryOptIn',
+  'skipActIntermissions',
 ];
 
 describe('Settings / Comfort panel smoke', () => {
