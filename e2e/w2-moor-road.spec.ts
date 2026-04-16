@@ -119,15 +119,13 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     expect(pageErrors, 'No page errors during picker flow').toEqual([]);
   });
 
-  // The full boss-sequence test is flaky under headless Chromium rAF
-  // throttling — boss-spawn warnings use scene.time.delayedCall, which
-  // stalls when the scene is briefly paused (level-up card modal,
-  // TimeManager.ACT_INTERMISSION). Reliably driving it would require
-  // more invasive dev hooks (kill pending level-ups, skip warning
-  // delays). The launch/resolve smoke above already covers the new
-  // picker plumbing; we leave this for when a test-mode auto-levelup
-  // resolver lands.
-  test.fixme('full boss sequence: gordon → picker A → tour_bus → picker B → taxman', async ({ page }) => {
+  // Sets window.AUTO_BATTLE = true so UpgradeCardsUI auto-picks the
+  // first card on every level-up (Phaser scene.time.delayedCall stalls
+  // while the card modal is open, which previously blocked boss-spawn
+  // warnings from progressing). AUTO_BATTLE is an existing dev hook
+  // used by src/dev/AutoBattler.ts — we reuse it here instead of
+  // inventing a test-only API.
+  test('full boss sequence: gordon → picker A → tour_bus → picker B → taxman', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
@@ -142,6 +140,9 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
           saveVersion: ver,
           hasCompletedTutorial: true,
         }));
+        // AUTO_BATTLE short-circuits the level-up card modal so the
+        // boss-spawn timers don't stall mid-run.
+        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
       } catch {
         /* ignore */
       }
