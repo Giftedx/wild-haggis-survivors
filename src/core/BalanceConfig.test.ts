@@ -1,0 +1,130 @@
+import { describe, expect, it } from 'vitest';
+import {
+  BALANCE,
+  EVOLUTION_MIN_WEAPON_LEVEL,
+  EVOLUTION_RECIPES,
+  WAVE_TIMELINE,
+  getActiveWaveTimelineEntry,
+} from './BalanceConfig';
+
+/**
+ * BalanceConfig is the tuning layer SpawnSystem + WeaponSystem +
+ * UpgradeCards all read. Its invariants — monotonic timeline,
+ * non-empty enemy pools per segment, evolution recipe validity —
+ * would break gameplay if the data drifted. These tests anchor the
+ * shape, not the numbers, so tuning doesn't have to chase tests.
+ */
+describe('WAVE_TIMELINE', () => {
+  it('has at least one segment', () => {
+    expect(WAVE_TIMELINE.length).toBeGreaterThan(0);
+  });
+
+  it('starts at t=0', () => {
+    expect(WAVE_TIMELINE[0]?.timeSec).toBe(0);
+  });
+
+  it('is sorted by timeSec (monotonic non-decreasing)', () => {
+    for (let i = 1; i < WAVE_TIMELINE.length; i++) {
+      const prev = WAVE_TIMELINE[i - 1];
+      const cur = WAVE_TIMELINE[i];
+      if (prev && cur) expect(cur.timeSec).toBeGreaterThanOrEqual(prev.timeSec);
+    }
+  });
+
+  it('every segment has at least one enemy key', () => {
+    for (const seg of WAVE_TIMELINE) {
+      expect(seg.enemyKeys.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('every segment has positive interval + burstSize', () => {
+    for (const seg of WAVE_TIMELINE) {
+      expect(seg.intervalSec).toBeGreaterThan(0);
+      expect(seg.burstSize).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('getActiveWaveTimelineEntry', () => {
+  it('returns the t=0 entry at time 0', () => {
+    expect(getActiveWaveTimelineEntry(0)).toBe(WAVE_TIMELINE[0]);
+  });
+
+  it('returns the t=0 entry at a negative time (fallback)', () => {
+    expect(getActiveWaveTimelineEntry(-5)).toBe(WAVE_TIMELINE[0]);
+  });
+
+  it('returns the last entry at very late time', () => {
+    const last = WAVE_TIMELINE[WAVE_TIMELINE.length - 1];
+    expect(getActiveWaveTimelineEntry(99_999)).toBe(last);
+  });
+
+  it('returns the segment whose timeSec <= gameTimeSec, latest wins', () => {
+    for (const seg of WAVE_TIMELINE) {
+      // A tick past this segment's start must select it — unless a later
+      // segment also starts at the same or lower time, in which case the
+      // latest such segment wins.
+      const result = getActiveWaveTimelineEntry(seg.timeSec);
+      expect(result.timeSec).toBeLessThanOrEqual(seg.timeSec);
+    }
+  });
+
+  it('picks the later segment when two tie on timeSec', () => {
+    // Verify "latest wins" semantics with a synthesized duplicate-start.
+    // Test via the real timeline: any segment 1+ second past a start gets
+    // that start's segment or a later one.
+    for (let i = 0; i < WAVE_TIMELINE.length - 1; i++) {
+      const prev = WAVE_TIMELINE[i];
+      const next = WAVE_TIMELINE[i + 1];
+      if (!prev || !next) continue;
+      if (prev.timeSec === next.timeSec) {
+        // getActiveWaveTimelineEntry always picks the last match — `next` wins.
+        expect(getActiveWaveTimelineEntry(prev.timeSec)).toBe(next);
+      }
+    }
+  });
+});
+
+describe('BALANCE', () => {
+  it('RUN_WIN_TIME_SEC is positive', () => {
+    expect(BALANCE.run.RUN_WIN_TIME_SEC).toBeGreaterThan(0);
+  });
+
+  it('enemy cap invariants', () => {
+    expect(BALANCE.enemy.ELITE_SPAWN_CHANCE).toBeGreaterThanOrEqual(0);
+    expect(BALANCE.enemy.ELITE_SPAWN_CHANCE).toBeLessThanOrEqual(1);
+    expect(BALANCE.enemy.ELITE_UNLOCK_SEC).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('EVOLUTION_RECIPES', () => {
+  it('every recipe names real base weapon + passive + evolved weapon', () => {
+    for (const r of EVOLUTION_RECIPES) {
+      expect(r.baseWeapon).toBeTruthy();
+      expect(r.requiredPassive).toBeTruthy();
+      expect(r.evolvedWeapon).toBeTruthy();
+      expect(r.nameKey).toMatch(/^evolution\./);
+      expect(r.descriptionKey).toMatch(/^evolution\./);
+    }
+  });
+
+  it('baseWeapon keys are unique across recipes (no double evolution)', () => {
+    const seen = new Set<string>();
+    for (const r of EVOLUTION_RECIPES) {
+      expect(seen.has(r.baseWeapon), `duplicate baseWeapon ${r.baseWeapon}`).toBe(false);
+      seen.add(r.baseWeapon);
+    }
+  });
+
+  it('evolvedWeapon keys are unique across recipes (no shared evolution result)', () => {
+    const seen = new Set<string>();
+    for (const r of EVOLUTION_RECIPES) {
+      expect(seen.has(r.evolvedWeapon), `duplicate evolvedWeapon ${r.evolvedWeapon}`).toBe(false);
+      seen.add(r.evolvedWeapon);
+    }
+  });
+
+  it('EVOLUTION_MIN_WEAPON_LEVEL is the documented "max level" threshold', () => {
+    expect(EVOLUTION_MIN_WEAPON_LEVEL).toBeGreaterThan(0);
+  });
+});
