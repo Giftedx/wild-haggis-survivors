@@ -73,7 +73,10 @@ export const ROUTES: readonly RouteDef[] = [
     labelKey: 'routes.up_the_brae.label',
     descKey: 'routes.up_the_brae.desc',
     modifierDeltas: {},
-    // Effects: elite weight boost + forced golden chest. Body in Task 13.
+    onResume: (ctx) => {
+      ctx.spawnSystem.setEliteWeightMultiplier(1.5);
+      ctx.pickupSpawner.spawnGoldenChest();
+    },
   },
   {
     key: 'round_the_loch',
@@ -81,7 +84,12 @@ export const ROUTES: readonly RouteDef[] = [
     labelKey: 'routes.round_the_loch.label',
     descKey: 'routes.round_the_loch.desc',
     modifierDeltas: {},
-    // Effects: heal 25% + two extra healing circles in act 2. Body in Task 13.
+    onResume: (ctx) => {
+      const heal = Math.ceil(ctx.player.getMaxHp() * 0.25);
+      ctx.player.heal(heal);
+      ctx.hazardZones.spawnHealingCircle();
+      ctx.hazardZones.spawnHealingCircle();
+    },
   },
   {
     key: 'through_the_kirkyard',
@@ -89,7 +97,14 @@ export const ROUTES: readonly RouteDef[] = [
     labelKey: 'routes.through_the_kirkyard.label',
     descKey: 'routes.through_the_kirkyard.desc',
     modifierDeltas: { spawnIntervalMult: 0.70 },
-    // Effects: timed release of spawnIntervalMult + elite haggis_hunter add. Body in Task 13.
+    onResume: (ctx) => {
+      ctx.spawnSystem.forceSpawn('haggis_hunter', { elite: true });
+      // Wall-clock release: restoring the modifier here lets the rest of
+      // the system pick up the change on its next segment refresh.
+      ctx.timeManager.scheduleRealTime(90_000, () => {
+        ctx.modifiers.spawnIntervalMult = 1;
+      });
+    },
   },
 
   // Picker B — fires on tour_bus kill (~10:00). Bodies filled in M2.
