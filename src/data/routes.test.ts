@@ -50,6 +50,7 @@ function makeCtx(overrides: Partial<RouteResumeContext> = {}): RouteResumeContex
     player: {
       heal: vi.fn(),
       getMaxHp: vi.fn(() => 100),
+      refreshDashCharges: vi.fn(),
     } as unknown as RouteResumeContext['player'],
     hazardZones: {
       spawnHealingCircle: vi.fn(),
@@ -60,15 +61,21 @@ function makeCtx(overrides: Partial<RouteResumeContext> = {}): RouteResumeContex
     spawnSystem: {
       setEliteWeightMultiplier: vi.fn(),
       forceSpawn: vi.fn(),
+      pauseSpawnsFor: vi.fn(),
+      setEnemyHpMultiplier: vi.fn(),
     } as unknown as RouteResumeContext['spawnSystem'],
     timeManager: {
       scheduleRealTime: vi.fn((_ms: number, cb: () => void) => cb()),
     } as unknown as RouteResumeContext['timeManager'],
+    xpSystem: {
+      setDropValueMultiplier: vi.fn(),
+    } as unknown as RouteResumeContext['xpSystem'],
     runRng: {
       float: vi.fn(() => 0.5),
       int: vi.fn((min: number) => min),
     } as unknown as RouteResumeContext['runRng'],
     modifiers,
+    grantReroll: vi.fn(),
     ...overrides,
   };
 }
@@ -100,5 +107,35 @@ describe('routes.onResume — picker A', () => {
     );
     // makeCtx's scheduleRealTime fires immediately — so modifier should be reset to 1.
     expect(ctx.modifiers.spawnIntervalMult).toBe(1);
+  });
+});
+
+describe('routes.onResume — picker B', () => {
+  it('stand_yer_ground: doubles XP gem drops for 30s then restores', () => {
+    const ctx = makeCtx();
+    getRoute('stand_yer_ground').onResume!(ctx);
+    // Scheduled callback fires immediately in the test → final state is 1.
+    expect(ctx.xpSystem.setDropValueMultiplier).toHaveBeenNthCalledWith(1, 2);
+    expect(ctx.xpSystem.setDropValueMultiplier).toHaveBeenNthCalledWith(2, 1);
+    expect(ctx.timeManager.scheduleRealTime).toHaveBeenCalledWith(
+      30_000,
+      expect.any(Function),
+    );
+  });
+
+  it('run_for_the_hills: heals 50% + refreshes dash; spawnIntervalMult declared on delta', () => {
+    const ctx = makeCtx();
+    getRoute('run_for_the_hills').onResume!(ctx);
+    expect(ctx.player.heal).toHaveBeenCalledExactlyOnceWith(50); // ceil(100 * 0.5)
+    expect(ctx.player.refreshDashCharges).toHaveBeenCalledOnce();
+    expect(getRoute('run_for_the_hills').modifierDeltas.spawnIntervalMult).toBe(0.75);
+  });
+
+  it('buckie_pitstop: pauses spawns 15s, grants reroll, sets enemy HP +10%', () => {
+    const ctx = makeCtx();
+    getRoute('buckie_pitstop').onResume!(ctx);
+    expect(ctx.spawnSystem.pauseSpawnsFor).toHaveBeenCalledExactlyOnceWith(15_000);
+    expect(ctx.grantReroll).toHaveBeenCalledOnce();
+    expect(ctx.spawnSystem.setEnemyHpMultiplier).toHaveBeenCalledExactlyOnceWith(1.10);
   });
 });

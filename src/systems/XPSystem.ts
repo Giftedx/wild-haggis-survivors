@@ -18,6 +18,11 @@ export class XPSystem {
   private currentXP: number = 0;
   private currentLevel: number = 1;
   private xpToNextLevel: number;
+  /**
+   * W2 Moor Road: multiplier applied to gem `value` at spawn time.
+   * `stand_yer_ground` route sets 2 for 30s; reset to 1 on run reset.
+   */
+  private dropValueMultiplier: number = 1;
 
   /** Event emitter for level-up */
   readonly events = new Phaser.Events.EventEmitter();
@@ -46,6 +51,7 @@ export class XPSystem {
     this.xpToNextLevel = this.calcXpRequired(2);
     this.pendingLevelUps = [];
     this.levelUpInProgress = false;
+    this.dropValueMultiplier = 1;
 
     // Deactivate all gems so no orphaned pickups bleed into the next run.
     const gems = this.gemPool.children.entries as XPGem[];
@@ -87,8 +93,17 @@ export class XPSystem {
       this.gemPool.add(gem);
     }
 
-    gem.drop(x, y, value);
-    this.events.emit('gemSpawned', x, y, value);
+    const scaled = Math.max(1, Math.round(value * this.dropValueMultiplier));
+    gem.drop(x, y, scaled);
+    this.events.emit('gemSpawned', x, y, scaled);
+  }
+
+  /**
+   * W2 Moor Road: set the gem drop-value multiplier. Clamped to
+   * [0.25, 5]. Caller is responsible for scheduling the reset.
+   */
+  setDropValueMultiplier(mult: number): void {
+    this.dropValueMultiplier = Math.min(5, Math.max(0.25, mult));
   }
 
   /** Update magnet behavior and check collection.

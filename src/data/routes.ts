@@ -14,6 +14,7 @@ import type { HazardZones } from '../scenes/game/HazardZones';
 import type { PickupSpawner } from '../scenes/game/PickupSpawner';
 import type { SpawnSystem } from '../systems/SpawnSystem';
 import type { TimeManager } from '../systems/TimeManager';
+import type { XPSystem } from '../systems/XPSystem';
 import type { RNG } from '../utils/rng';
 import type { RunModifiers } from '../core/RunModifiers';
 
@@ -45,9 +46,12 @@ export interface RouteResumeContext {
   readonly pickupSpawner: PickupSpawner;
   readonly spawnSystem: SpawnSystem;
   readonly timeManager: TimeManager;
+  readonly xpSystem: XPSystem;
   readonly runRng: RNG;
   /** Mutable reference to the run-scoped modifiers bag. */
   readonly modifiers: RunModifiers;
+  /** W2 picker B: grants a one-shot level-up reroll token. */
+  readonly grantReroll: () => void;
 }
 
 export interface RouteDef {
@@ -107,13 +111,19 @@ export const ROUTES: readonly RouteDef[] = [
     },
   },
 
-  // Picker B — fires on tour_bus kill (~10:00). Bodies filled in M2.
+  // Picker B — fires on tour_bus kill (~10:00).
   {
     key: 'stand_yer_ground',
     slot: 'B',
     labelKey: 'routes.stand_yer_ground.label',
     descKey: 'routes.stand_yer_ground.desc',
     modifierDeltas: {},
+    onResume: (ctx) => {
+      ctx.xpSystem.setDropValueMultiplier(2);
+      ctx.timeManager.scheduleRealTime(30_000, () => {
+        ctx.xpSystem.setDropValueMultiplier(1);
+      });
+    },
   },
   {
     key: 'run_for_the_hills',
@@ -121,6 +131,11 @@ export const ROUTES: readonly RouteDef[] = [
     labelKey: 'routes.run_for_the_hills.label',
     descKey: 'routes.run_for_the_hills.desc',
     modifierDeltas: { spawnIntervalMult: 0.75 },
+    onResume: (ctx) => {
+      const heal = Math.ceil(ctx.player.getMaxHp() * 0.50);
+      ctx.player.heal(heal);
+      ctx.player.refreshDashCharges();
+    },
   },
   {
     key: 'buckie_pitstop',
@@ -128,6 +143,11 @@ export const ROUTES: readonly RouteDef[] = [
     labelKey: 'routes.buckie_pitstop.label',
     descKey: 'routes.buckie_pitstop.desc',
     modifierDeltas: {},
+    onResume: (ctx) => {
+      ctx.spawnSystem.pauseSpawnsFor(15_000);
+      ctx.grantReroll();
+      ctx.spawnSystem.setEnemyHpMultiplier(1.10);
+    },
   },
 ];
 

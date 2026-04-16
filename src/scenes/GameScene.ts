@@ -1156,8 +1156,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       pickupSpawner: this.pickupSpawner,
       spawnSystem: this.spawnSystem,
       timeManager: this.timeManager,
+      xpSystem: this.xpSystem,
       runRng: this.runRng,
       modifiers: this.runModifiers,
+      grantReroll: () => this.upgradeUI?.grantReroll(),
     };
   }
 

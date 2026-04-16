@@ -45,6 +45,17 @@ export class SpawnSystem {
    * `up_the_brae` route sets this to 1.5 for act 2.
    */
   private eliteWeightMultiplier: number = 1.0;
+  /**
+   * Per-run enemy HP multiplier (W2 Moor Road). 1.0 = untouched.
+   * `buckie_pitstop` sets 1.10 after the 15s pause.
+   */
+  private enemyHpMultiplier: number = 1.0;
+  /**
+   * Wall-clock ms epoch at which the `pauseSpawnsFor` hold ends.
+   * 0 = not paused. Used by `spawnBurst` to no-op regular spawns
+   * for the duration without touching token infrastructure.
+   */
+  private spawnsPausedUntilRealMs: number = 0;
   /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
   private directorEnemyKeys: string[] = [];
   /** Cached segment reference — avoids re-spreading enemyKeys when segment hasn't changed. */
@@ -117,6 +128,24 @@ export class SpawnSystem {
   }
 
   /**
+   * W2 Moor Road: scale enemy HP at spawn time (stacks on top of the
+   * standard post-Bell multiplier). `buckie_pitstop` sets 1.10.
+   * Clamped to [0.25, 3].
+   */
+  setEnemyHpMultiplier(mult: number): void {
+    this.enemyHpMultiplier = Phaser.Math.Clamp(mult, 0.25, 3);
+  }
+
+  /**
+   * W2 Moor Road: suppress regular spawn bursts for `ms` wall-clock
+   * milliseconds. Used by `buckie_pitstop` to give the player 15s of
+   * peace before resuming. Boss timeline is untouched.
+   */
+  pauseSpawnsFor(ms: number): void {
+    this.spawnsPausedUntilRealMs = Date.now() + Math.max(0, ms);
+  }
+
+  /**
    * W2 Moor Road: bypass the director and spawn a single enemy by key
    * at the usual off-screen spawn position. Used by route onResume
    * bodies (e.g. `through_the_kirkyard` drops an elite haggis_hunter
@@ -163,6 +192,8 @@ export class SpawnSystem {
     this.regularSpawnsDisabled = false;
     this.killPressure = 0;
     this.eliteWeightMultiplier = 1.0;
+    this.enemyHpMultiplier = 1.0;
+    this.spawnsPausedUntilRealMs = 0;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -478,6 +509,7 @@ export class SpawnSystem {
 
   private spawnBurst(playerX: number, playerY: number): void {
     if (this.regularSpawnsDisabled) return;
+    if (this.spawnsPausedUntilRealMs > Date.now()) return;
     const availableTypes = this.getDirectorEnemyConfigs();
     if (availableTypes.length === 0) return;
 
@@ -502,6 +534,10 @@ export class SpawnSystem {
         const pb = this.getPostBellMultipliers();
         if (pb.enemyHpMul !== 1 || pb.enemySpeedMul !== 1) {
           enemy.applyPostBellScaling(pb.enemyHpMul, pb.enemySpeedMul);
+        }
+        // W2 Moor Road: run-scoped HP multiplier (buckie_pitstop +10%).
+        if (this.enemyHpMultiplier !== 1) {
+          enemy.applyPostBellScaling(this.enemyHpMultiplier, 1);
         }
 
         // Elite chance — base from BalanceConfig + kill-pressure nudge (decays).

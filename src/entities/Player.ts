@@ -494,6 +494,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.maxDashCharges++;
     this.dashCharges = this.maxDashCharges;
   }
+  /**
+   * W2 Moor Road: refill current dash charges to max and clear the
+   * cooldown. Used by run_for_the_hills route onResume.
+   */
+  refreshDashCharges(): void {
+    this.dashCharges = this.maxDashCharges;
+    this.dashCooldown = 0;
+  }
   getXpMultiplier(): number { return this.bonusXpMultiplier; }
 
   addXpMultiplier(fraction: number): void {
