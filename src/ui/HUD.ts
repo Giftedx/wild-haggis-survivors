@@ -36,6 +36,8 @@ export class HUD {
   /** W2 Moor Road — small "Act 2/3" chip shown once the player has cleared an act. */
   private actChipText!: Phaser.GameObjects.Text;
   private prevAct: 1 | 2 | 3 = 1;
+  /** W66 Ironmoor — small "IRONMOOR" chip shown when single-life mode is active. */
+  private ironmoorChipText!: Phaser.GameObjects.Text;
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
@@ -190,6 +192,12 @@ export class HUD {
     this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '', {
       fontFamily: 'monospace', fontSize: '15px', color: '#e8d4a0', fontStyle: 'bold',
       stroke: '#000', strokeThickness: 3,
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+
+    // W66 Ironmoor chip — only shown when single-life mode is active.
+    this.ironmoorChipText = this.addEl(this.scene.add.text(width / 2, 94, '', {
+      fontFamily: 'monospace', fontSize: '12px', color: '#c8a0a0', fontStyle: 'bold',
+      stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // Kill count
@@ -362,6 +370,7 @@ export class HUD {
     this.objectiveText.setPosition(x + width / 2, topY + 30 * this.uiScale);
     this.curseChipText.setPosition(x + width / 2, topY + 50 * this.uiScale);
     this.actChipText.setPosition(x + width / 2, topY + 66 * this.uiScale);
+    this.ironmoorChipText.setPosition(x + width / 2, topY + 82 * this.uiScale);
     this.killText.setPosition(x + width - 12, topY);
     this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
     this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
@@ -805,6 +814,19 @@ export class HUD {
    * once the player has cleared the gordon / tour_bus gate.
    * No-op when the act hasn't changed.
    */
+  /**
+   * W66 Ironmoor: show/hide the single-life chip. Called once at run
+   * start from GameScene after settings are read.
+   */
+  setIronmoor(active: boolean): void {
+    if (!active) {
+      this.ironmoorChipText.setVisible(false);
+      return;
+    }
+    this.ironmoorChipText.setText(t('ui.hud.ironmoor_chip'));
+    this.ironmoorChipText.setVisible(true);
+  }
+
   setAct(currentAct: 1 | 2 | 3): void {
     if (currentAct === this.prevAct) return;
     this.prevAct = currentAct;

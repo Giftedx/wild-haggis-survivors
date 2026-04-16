@@ -46,6 +46,12 @@ export interface ISettingsData {
   telemetryOptIn: boolean;
   /** W2 Moor Road: skip between-act picker scenes; applies the default route automatically. */
   skipActIntermissions: boolean;
+  /**
+   * W66 Ironmoor: opt-in single-life mode. When true, the Second-Wind
+   * revival granted by permanent upgrades is suppressed — any fatal hit
+   * ends the run. No balance changes; pure opt-in difficulty posture.
+   */
+  ironmoorMode: boolean;
 }
 
 export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
@@ -66,6 +72,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   banterFrequency: 'normal',
   telemetryOptIn: false,
   skipActIntermissions: false,
+  ironmoorMode: false,
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -170,6 +177,7 @@ export class SettingsManager {
       banterFrequency: toBanterFrequency(o.banterFrequency, DEFAULT_SETTINGS.banterFrequency),
       telemetryOptIn: toBool(o.telemetryOptIn, DEFAULT_SETTINGS.telemetryOptIn),
       skipActIntermissions: toBool(o.skipActIntermissions, DEFAULT_SETTINGS.skipActIntermissions),
+      ironmoorMode: toBool(o.ironmoorMode, DEFAULT_SETTINGS.ironmoorMode),
     };
   }
 }

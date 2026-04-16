@@ -27,6 +27,7 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.reduce_particles',
   'ui.settings.telemetry_opt_in',
   'ui.settings.skipActIntermissions',
+  'ui.settings.ironmoorMode',
   'ui.settings.back',
   'ui.settings.on',
   'ui.settings.off',
@@ -52,6 +53,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'banterFrequency',
   'telemetryOptIn',
   'skipActIntermissions',
+  'ironmoorMode',
 ];
 
 describe('Settings / Comfort panel smoke', () => {
@@ -82,6 +84,7 @@ describe('Settings / Comfort panel smoke', () => {
       banterFrequency: 'sparing',
       telemetryOptIn: true,
       skipActIntermissions: true,
+      ironmoorMode: true,
     };
     sm.save(payload);
     const loaded = sm.load();

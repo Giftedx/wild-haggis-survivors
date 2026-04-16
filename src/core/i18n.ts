@@ -322,6 +322,8 @@ export const EN_STRINGS: LocaleTree = {
       back: 'BACK',
       /** W2 Moor Road: auto-pick the safest route at act breaks instead of showing the picker. */
       skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
+      /** W66 Ironmoor: single-life mode — no Second-Wind revive. Pride posture, opt-in. */
+      ironmoorMode: 'Ironmoor (single life — nae second wind)',
     },
     /** W2 Moor Road — the between-act modal. */
     actIntermission: {
@@ -345,6 +347,8 @@ export const EN_STRINGS: LocaleTree = {
       goal_finale: 'Finale',
       /** W2 Moor Road chip — shown under the curse chip once the player has cleared an act. */
       act_chip: '— Act {act} —',
+      /** W66 Ironmoor chip — shown when single-life mode is on. */
+      ironmoor_chip: '⚔ IRONMOOR',
       kills_enemies: 'Kills: {kills}  Enemies: {count}{suffix}',
       enemies_capped_suffix: ' MAX!',
       dash_label: 'Dash ',

@@ -37,6 +37,7 @@ const base: ISettingsData = {
   banterFrequency: 'normal',
   telemetryOptIn: false,
   skipActIntermissions: false,
+  ironmoorMode: false,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

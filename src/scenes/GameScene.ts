@@ -452,6 +452,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       runRng: this.runRng,
     });
     this.revivalAvailable = permResult.revivalAvailable;
+    // W66 Ironmoor: opt-in single-life mode suppresses the Second-Wind
+    // grant regardless of permanent-upgrade purchases. Cheaper than
+    // refunding the upgrade — player keeps their haggis, just waives
+    // the safety net for this run.
+    if (this.settingsManager.load().ironmoorMode) {
+      this.revivalAvailable = false;
+    }
     this.chestDurationBonusMs = permResult.chestDurationBonusMs;
 
     // Moor-moment scheduler must exist before applyResumeHydration — hydration
@@ -994,6 +1001,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
     this.hud.setAct(this.runActState.currentAct);
+    this.hud.setIronmoor(this.settingsManager.load().ironmoorMode);
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
