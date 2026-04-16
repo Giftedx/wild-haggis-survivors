@@ -296,6 +296,22 @@ export class RunLifecycle {
       juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
     }
 
+    // Ancestral Echo — persist death position so next run can spawn a
+    // spectral haggis at the spot. Best-effort; a failed save here
+    // doesn't block run-end flow. Skipped for ironmoor runs (that mode
+    // already has its own ceremony + chronicle-wipe on death).
+    if (!this.hooks.getSettingsManager().load().ironmoorMode) {
+      try {
+        const cur = loadSave();
+        writeSave({
+          ...cur,
+          lastDeath: { x: Math.round(px), y: Math.round(py), ts: Date.now() },
+        });
+      } catch {
+        /* best-effort */
+      }
+    }
+
     // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with
     // `ironmoorMode` on, every Ironmoor row in runHistory is cleared — the
     // new attempt starts from a blank chronicle. `bestIronmoorSeconds` is

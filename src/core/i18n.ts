@@ -347,6 +347,13 @@ export const EN_STRINGS: LocaleTree = {
       title_act_2: 'Last stretch — pick yer poison.',
       pick_hint: 'Click or press 1/2/3 tae commit, big yin.',
     },
+    /** Ancestral Echo — spectral haggis at last-death spot, touch for reward. */
+    ancestralEcho: {
+      announce_toast: '⟡ An echo lingers where ye fell.',
+      announce_caption: 'A pale haggis walks where ye last fell — walk tae it for a wee blessing.',
+      touch_toast: '⟡ The moor remembers — a wee blessing.',
+      touch_caption: 'Spectral blessing received — gold banked and wounds eased.',
+    },
     /** Standing Stones — mid-run trinity at the 5:00 mark. */
     standingStones: {
       announce_toast: 'Three stones stir — pick yer blessing.',

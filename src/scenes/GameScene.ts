@@ -11,7 +11,7 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { recordRun, loadSave } from '../utils/save';
+import { recordRun, loadSave, isLastDeathFresh, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantDef } from '../data/variants';
@@ -57,6 +57,11 @@ import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
 import { StandingStones, STONE_SPAWN_SEC, type StoneBoon } from './game/standingStones';
+import {
+  AncestralEcho,
+  ECHO_GOLD_REWARD,
+  ECHO_HEAL_REWARD,
+} from './game/ancestralEcho';
 import { ActIntermissionScene } from './ActIntermissionScene';
 import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
@@ -134,6 +139,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private moorMercyLuckGranted = false;
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
   private standingStones: StandingStones | null = null;
+  /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
+  private ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
   private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
@@ -289,6 +296,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.moorMercyLuckGranted = false;
     this.standingStones?.destroy();
     this.standingStones = null;
+    this.ancestralEcho?.destroy();
+    this.ancestralEcho = null;
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -807,6 +816,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Run-intro ceremony — fade in from black + controls hint auto-hide.
     this.hintHideHandle = installRunIntroFx(this, this.updateTickers, () => this.getUiViewport());
 
+    // Ancestral Echo — if last run died recently, spawn a spectral
+    // haggis at the death spot. Skipped on resume so the echo only
+    // marks the NEXT fresh run after a death.
+    if (!resumeRun) {
+      this.trySpawnAncestralEcho();
+    }
+
     this.filmGrain?.destroy();
     this.filmGrain = new FilmGrainOverlay(this, this.settingsManager, () => this.getUiViewport());
     this.filmGrain.install();
@@ -964,6 +980,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.standingStones?.tick();
 
+    if (this.ancestralEcho) {
+      const resolved = this.ancestralEcho.tick(scaledDelta);
+      if (resolved) this.ancestralEcho = null;
+    }
+
     // Pass player facing and upgrade multipliers to weapon system.
     // Always update from player.rotation (persists when stationary) so
     // directional weapons like arc_sweep don't use a stale angle.
@@ -1102,6 +1123,46 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /**
    * Soul weave — run start: hand off variant identity + intent in the first moments of play.
    */
+  /**
+   * Ancestral Echo — if the player died recently (within TTL), spawn
+   * a spectral haggis at the death spot that fades after 30s or on
+   * touch. Touching grants a small pity reward. Best-effort: a save
+   * read that throws is swallowed, no echo shows.
+   */
+  private trySpawnAncestralEcho(): void {
+    if (this.ancestralEcho) return;
+    try {
+      const save = loadSave();
+      if (!save.lastDeath || !isLastDeathFresh(save.lastDeath)) return;
+      const deathX = save.lastDeath.x;
+      const deathY = save.lastDeath.y;
+      this.ancestralEcho = new AncestralEcho({
+        scene: this,
+        player: this.player,
+        textureKey: this.activeVariant.textureKey,
+        echoX: deathX,
+        echoY: deathY,
+        onTouch: () => {
+          // Reward: gold + small heal. XP overflow batching handles
+          // max-level gracefully via existing coins path; we just add
+          // gold directly and heal the player.
+          this.runScore.addBossGold(ECHO_GOLD_REWARD);
+          this.player.heal(ECHO_HEAL_REWARD);
+          this.juice.showToast(t('ui.ancestralEcho.touch_toast'), '#b0d4ff');
+          this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
+        },
+      });
+      this.ancestralEcho.spawn();
+      this.juice.showToast(t('ui.ancestralEcho.announce_toast'), '#b0d4ff');
+      this.caption('ancestral_echo_announce', t('ui.ancestralEcho.announce_caption'), '#b0d4ff', 3500);
+      // Consume the echo so it doesn't re-spawn every run. Fresh death
+      // on this run will write a new one via RunLifecycle.
+      writeSave({ ...save, lastDeath: undefined });
+    } catch {
+      /* best-effort */
+    }
+  }
+
   /**
    * Standing Stones — spawn the 5:00 trinity. First approach within
    * STONE_PICK_RADIUS_PX wins its boon, the other two crumble.

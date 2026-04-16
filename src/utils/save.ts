@@ -106,6 +106,14 @@ export interface SaveData {
    */
   bestIronmoorSeconds?: number;
 
+  /**
+   * Ancestral Echoes — last-death position persisted across runs so the
+   * next run can spawn a spectral haggis at the spot. `ts` is a unix
+   * milliseconds stamp used to expire stale echoes (24h TTL). Absent on
+   * fresh saves and when the last run ended in victory.
+   */
+  lastDeath?: { x: number; y: number; ts: number };
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -343,6 +351,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
   const unlockResult = evaluateVariantUnlocks(progress, unlockedVariants);
+  const lastDeath = coerceLastDeath(candidate.lastDeath);
 
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
@@ -359,6 +368,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
     bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
+    ...(lastDeath ? { lastDeath } : {}),
     runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };
@@ -399,6 +409,27 @@ function coerceFinitePositive(value: unknown, fallback: number): number {
 function coerceRoundedNonNegative(value: unknown, fallback: number): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
   return Math.max(0, Math.round(value));
+}
+
+/** Ancestral Echo TTL — echoes older than this are silently dropped. */
+export const LAST_DEATH_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+function coerceLastDeath(raw: unknown): { x: number; y: number; ts: number } | undefined {
+  if (!isRecord(raw)) return undefined;
+  const x = typeof raw.x === 'number' && Number.isFinite(raw.x) ? raw.x : undefined;
+  const y = typeof raw.y === 'number' && Number.isFinite(raw.y) ? raw.y : undefined;
+  const ts = typeof raw.ts === 'number' && Number.isFinite(raw.ts) && raw.ts > 0 ? Math.floor(raw.ts) : undefined;
+  if (x === undefined || y === undefined || ts === undefined) return undefined;
+  return { x, y, ts };
+}
+
+/** Shared by GameScene + tests — echoes are "fresh" within the TTL window. */
+export function isLastDeathFresh(
+  entry: { ts: number } | undefined | null,
+  now: number = Date.now(),
+): boolean {
+  if (!entry) return false;
+  return now - entry.ts < LAST_DEATH_TTL_MS;
 }
 
 function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
