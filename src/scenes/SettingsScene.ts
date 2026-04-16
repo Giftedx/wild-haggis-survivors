@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
+import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
+import type { LocaleKey } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 import {
@@ -75,8 +77,9 @@ export class SettingsScene extends Phaser.Scene {
   private gpPrevA = false;
   private gpUpdate?: (time: number, delta: number) => void;
   private glowTweens: Phaser.Tweens.Tween[] = [];
-  /** Base row stride before uiScale — cozier than the previous 44px. */
-  private readonly BASE_ROW_STEP = 42;
+  /** Base row stride before uiScale — shrunk from 42 to fit the 15-row
+   *  panel once W18 language + W66 ironmoor + W2 skip rows landed. */
+  private readonly BASE_ROW_STEP = 38;
   private readonly BASE_SECTION_GAP = 18;
 
   constructor() {
@@ -210,6 +213,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
+    this.addLocaleRow();
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned
@@ -361,6 +365,7 @@ export class SettingsScene extends Phaser.Scene {
   private persistAndApply(): void {
     this.settingsManager.save(this.working);
     applyAudioFromUserSettings(this.working);
+    applyLocaleFromUserSettings(this.working);
   }
 
   private addSliderRow(
@@ -672,6 +677,81 @@ export class SettingsScene extends Phaser.Scene {
         ...this.working,
         banterFrequency: ORDER[(idx + 1) % ORDER.length],
       };
+      sync();
+      this.persistAndApply();
+    };
+
+    btn.on('pointerdown', cycle);
+    txt.setInteractive({ useHandCursor: true });
+    txt.on('pointerdown', cycle);
+
+    const mark = this.add
+      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .setStrokeStyle(0);
+    this.gpRows.push({
+      kind: 'toggle',
+      toggle: cycle,
+      mark,
+    });
+  }
+
+  /**
+   * W18 language cycle row. Same chip UI as the banter row — a cycle
+   * button with a label. English is the reference; Scots is an overlay
+   * that falls back to English for unresolved keys. More locales slot
+   * into `LOCALE_ORDER` without scene-level forks.
+   */
+  private addLocaleRow(): void {
+    const { width } = this.scale;
+    const y = this.rowY;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    this.rowY += rowStep;
+
+    const ORDER: readonly LocaleKey[] = ['en', 'scs'];
+    const labelFor = (v: LocaleKey): string => {
+      switch (v) {
+        case 'en': return t('ui.settings.locale_en');
+        case 'scs': return t('ui.settings.locale_scs');
+      }
+    };
+
+    this.add
+      .text(40, y + 4, t('ui.settings.language'), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+
+    const chipW = 130;
+    const chipH = 26;
+    const cx = width - 88;
+    const cy = y + 18;
+    const btn = this.add
+      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
+      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
+      .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
+
+    const current = (): LocaleKey => this.working.localeKey ?? 'en';
+    const txt = this.add
+      .text(cx, cy, labelFor(current()), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#d4c2e8',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
+
+    const sync = () => {
+      txt.setText(labelFor(current()));
+    };
+
+    const cycle = () => {
+      audio.playClick();
+      const idx = ORDER.indexOf(current());
+      this.working = { ...this.working, localeKey: ORDER[(idx + 1) % ORDER.length] };
       sync();
       this.persistAndApply();
     };

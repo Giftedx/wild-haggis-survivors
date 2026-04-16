@@ -32,6 +32,9 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.ironmoor_confirm_body',
   'ui.settings.ironmoor_confirm_yes',
   'ui.settings.ironmoor_confirm_no',
+  'ui.settings.language',
+  'ui.settings.locale_en',
+  'ui.settings.locale_scs',
   'ui.settings.back',
   'ui.settings.on',
   'ui.settings.off',
@@ -58,6 +61,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'telemetryOptIn',
   'skipActIntermissions',
   'ironmoorMode',
+  'localeKey',
 ];
 
 describe('Settings / Comfort panel smoke', () => {
@@ -89,6 +93,7 @@ describe('Settings / Comfort panel smoke', () => {
       telemetryOptIn: true,
       skipActIntermissions: true,
       ironmoorMode: true,
+      localeKey: 'scs',
     };
     sm.save(payload);
     const loaded = sm.load();

@@ -13,6 +13,8 @@ import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { validateAndRepairBootTextures } from '../core/AssetValidator';
 import { metaProgressSystem } from '../core/MetaProgressSystem';
 import { SaveManager } from '../core/SaveManager';
+import { getSettingsManager } from '../core/SettingsManager';
+import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
 import { setPendingCurse } from '../data/curses';
 
@@ -39,6 +41,11 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     validateAndRepairBootTextures(this);
+
+    // W18 locale scaffolding — apply persisted language before any other
+    // scene pulls strings. `t(...)` called before this point resolves
+    // through the default (en) locale, which is the intended fallback.
+    applyLocaleFromUserSettings(getSettingsManager().load());
 
     // Dev tool: skip splash and go straight to sprite export
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {

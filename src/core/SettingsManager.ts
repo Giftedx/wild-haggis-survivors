@@ -1,4 +1,5 @@
 import type { StorageLike } from './SaveManager';
+import type { LocaleKey } from './i18n';
 
 export const SETTINGS_STORAGE_KEY = 'whs_game_settings';
 export const CURRENT_SETTINGS_VERSION = 1 as const;
@@ -52,6 +53,22 @@ export interface ISettingsData {
    * ends the run. No balance changes; pure opt-in difficulty posture.
    */
   ironmoorMode: boolean;
+  /**
+   * W18 locale key. 'en' is the reference language (Glesga-register
+   * English); 'scs' overlays Scots where translations exist, falling
+   * back to English silently for unresolved keys. Optional for back-
+   * compat with saves/test fixtures written before W18 scaffolding —
+   * absent or malformed values coerce to 'en'.
+   */
+  localeKey?: LocaleKey;
+}
+
+const LOCALE_KEYS: readonly LocaleKey[] = ['en', 'scs'];
+
+function toLocaleKey(v: unknown, fallback: LocaleKey): LocaleKey {
+  return typeof v === 'string' && (LOCALE_KEYS as readonly string[]).includes(v)
+    ? (v as LocaleKey)
+    : fallback;
 }
 
 export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
@@ -73,6 +90,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   telemetryOptIn: false,
   skipActIntermissions: false,
   ironmoorMode: false,
+  localeKey: 'en',
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -178,6 +196,7 @@ export class SettingsManager {
       telemetryOptIn: toBool(o.telemetryOptIn, DEFAULT_SETTINGS.telemetryOptIn),
       skipActIntermissions: toBool(o.skipActIntermissions, DEFAULT_SETTINGS.skipActIntermissions),
       ironmoorMode: toBool(o.ironmoorMode, DEFAULT_SETTINGS.ironmoorMode),
+      localeKey: toLocaleKey(o.localeKey, DEFAULT_SETTINGS.localeKey ?? 'en'),
     };
   }
 }

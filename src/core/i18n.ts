@@ -331,6 +331,10 @@ export const EN_STRINGS: LocaleTree = {
       skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
       /** W66 Ironmoor: single-life mode — no Second-Wind revive. Pride posture, opt-in. */
       ironmoorMode: 'Ironmoor (single life — nae second wind)',
+      /** W18 language cycle row. Scots overlay falls back to en silently. */
+      language: 'Language',
+      locale_en: 'English (Glesga)',
+      locale_scs: 'Scots',
       /** W66 Ironmoor opt-in ceremony — shown when player flips the toggle OFF→ON. */
       ironmoor_confirm_title: 'Ye sure, big yin?',
       ironmoor_confirm_body: 'Ironmoor is ONE LIFE. Nae Second Wind, nae revives. Die once — ye walk tae the menu. The wee ⚔ badge marks yer Chronicle row for ever. Switch it aff any time before ye start.',
@@ -1585,11 +1589,49 @@ function interpolate(template: string, vars?: Record<string, string | number>): 
 }
 
 /**
- * Resolve a dot-path key against the active dictionary. Missing paths return `key` unchanged.
- * Interpolation: `t('ui.gameOver.gold_title', { amount: 12 })` with string containing `{amount}`.
+ * W18 locale scaffolding. English is the reference; Scots is a partial
+ * overlay that falls back to English for unknown keys. Future locales
+ * plug in the same way — `LOCALES[key] = TREE`. The game is already
+ * voiced in Glesga-register English, so `scs` is *further* into Scots
+ * (regional/dialect words), not a plain-English variant.
+ *
+ * `SCS_STRINGS` ships empty so the scaffolding is safe to land without
+ * translation work. Every key resolves to English today; Scots
+ * overlays can land incrementally without a big-bang migration.
+ */
+export const SCS_STRINGS: LocaleTree = {};
+
+export type LocaleKey = 'en' | 'scs';
+export const LOCALES: Readonly<Record<LocaleKey, LocaleTree>> = {
+  en: EN_STRINGS,
+  scs: SCS_STRINGS,
+};
+export const DEFAULT_LOCALE: LocaleKey = 'en';
+
+let activeLocale: LocaleKey = DEFAULT_LOCALE;
+
+/** Switch the active locale. Unknown keys fall back to English silently. */
+export function setLocale(key: LocaleKey): void {
+  activeLocale = key;
+}
+
+/** Read the active locale. */
+export function getLocale(): LocaleKey {
+  return activeLocale;
+}
+
+/**
+ * Resolve a dot-path key against the active dictionary. Missing paths
+ * fall back to the English tree, then to the key string itself. Keeps
+ * partial-locale rollout safe: a Scots overlay only needs to define the
+ * keys it's ready to ship.
  */
 export function t(key: string, vars?: Record<string, string | number>): string {
-  const raw = getLeaf(EN_STRINGS as unknown as LocaleTree, key);
+  if (activeLocale !== DEFAULT_LOCALE) {
+    const overlay = getLeaf(LOCALES[activeLocale], key);
+    if (overlay !== undefined) return interpolate(overlay, vars);
+  }
+  const raw = getLeaf(EN_STRINGS, key);
   if (raw === undefined) return key;
   return interpolate(raw, vars);
 }
