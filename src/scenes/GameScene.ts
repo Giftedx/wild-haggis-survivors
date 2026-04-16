@@ -553,6 +553,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunRng: () => this.runRng,
       isDailyRun: () => this.runIsDaily,
       getRoutePicks: () => this.runActState.pickerHistory,
+      isIronmoor: () => this.settingsManager.load().ironmoorMode,
     });
 
     if (resumeRun) {

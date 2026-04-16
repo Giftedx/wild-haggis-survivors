@@ -12,6 +12,7 @@ function buildMocks(overrides: {
   runSeed?: number;
   dailyChallenge?: unknown;
   routes?: import('../../data/routes').RoutePick[];
+  ironmoor?: boolean;
 } = {}) {
   const saveManager = {
     recordRunToHistory: vi.fn(),
@@ -37,6 +38,7 @@ function buildMocks(overrides: {
     getRunRng: () => ({ seed: overrides.runSeed ?? 42 }) as never,
     isDailyRun: () => overrides.isDaily ?? false,
     getRoutePicks: () => overrides.routes ?? [],
+    isIronmoor: () => overrides.ironmoor ?? false,
     now: () => 1700000000000,
   };
 

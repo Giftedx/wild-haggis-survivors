@@ -28,6 +28,8 @@ export interface RunHistoryHooks {
   isDailyRun(): boolean;
   /** W2 Moor Road: snapshot of picker resolutions for this run. */
   getRoutePicks(): readonly RoutePick[];
+  /** W66 Ironmoor: true when this run had single-life mode on. */
+  isIronmoor(): boolean;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -48,6 +50,7 @@ export class RunHistoryRecorder {
       runSeed: h.getRunRng().seed,
       ...(curse ? { curseKey: curse } : {}),
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
+      ...(h.isIronmoor() ? { ironmoor: true } : {}),
     };
   }
 

@@ -88,10 +88,8 @@ export class AchievementManager {
   private onRunEnded(p: import('./GlobalEventBus').GlobalRunEndedPayload): void {
     if (p.outcome === 'victory') this.tryUnlock('ach_first_victory');
     this.runBossKills.clear();
-    // W2 Moor Road: "Kent the Moor" — walked every route at least once.
-    // Run-history is updated before this event fires (RunHistoryRecorder
-    // runs in the run-end chain ahead of the bus emit), so loadSave here
-    // already includes the final run.
+    // W2 + W66 deeds read the gameplay save's freshly-written final
+    // entry — RunHistoryRecorder runs ahead of this bus emit.
     try {
       const gameplay = loadSave();
       const seen = new Set<string>();
@@ -99,6 +97,11 @@ export class AchievementManager {
         for (const pick of entry.routes ?? []) seen.add(pick.routeKey);
       }
       if (seen.size >= ROUTES.length) this.tryUnlock('ach_walk_every_road');
+
+      if (p.outcome === 'victory') {
+        const lastEntry = gameplay.runHistory?.[gameplay.runHistory.length - 1];
+        if (lastEntry?.ironmoor === true) this.tryUnlock('ach_ironmoor_victor');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

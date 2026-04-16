@@ -51,6 +51,8 @@ export interface RunHistoryEntry {
   routes?: RoutePick[];
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
+  /** W66 Ironmoor — true when the run was taken with ironmoorMode on. */
+  ironmoor?: boolean;
 }
 
 export interface SaveData {
@@ -129,6 +131,8 @@ export interface RunHistoryContext {
   routes?: RoutePick[];
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
+  /** W66 Ironmoor flag passed through to RunHistoryEntry. */
+  ironmoor?: boolean;
 }
 
 export interface RunResult {
@@ -274,6 +278,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(context?.curseKey ? { curseKey: context.curseKey } : {}),
     ...(context?.routes && context.routes.length > 0 ? { routes: [...context.routes] } : { routes: [] }),
     ...(typeof context?.runSeed === 'number' ? { runSeed: context.runSeed } : {}),
+    ...(context?.ironmoor ? { ironmoor: true } : {}),
   };
 
   const nextSave: SaveData = {
@@ -406,6 +411,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     ...(typeof raw.curseKey === 'string' && raw.curseKey ? { curseKey: raw.curseKey } : {}),
     routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
+    ...(raw.ironmoor === true ? { ironmoor: true } : {}),
   };
 }
 

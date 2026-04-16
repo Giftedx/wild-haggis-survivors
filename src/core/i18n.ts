@@ -1255,6 +1255,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Kent the Moor',
       description: 'Walked all six Moor Road routes — nae stone unturned.',
     },
+    ach_ironmoor_victor: {
+      title: 'Hard as Granite',
+      description: 'Won a run wi\' Ironmoor on — single life, nae wobble.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

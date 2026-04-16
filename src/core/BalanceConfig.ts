@@ -238,7 +238,8 @@ export type AchievementId =
   | 'ach_codex_loremaster'
   | 'ach_moor_hearth_30'
   | 'ach_all_bosses'
-  | 'ach_walk_every_road';
+  | 'ach_walk_every_road'
+  | 'ach_ironmoor_victor';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -298,6 +299,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_walk_every_road: {
     titleKey: 'achievement.ach_walk_every_road.title',
     descriptionKey: 'achievement.ach_walk_every_road.description',
+  },
+  ach_ironmoor_victor: {
+    titleKey: 'achievement.ach_ironmoor_victor.title',
+    descriptionKey: 'achievement.ach_ironmoor_victor.description',
   },
 };
 

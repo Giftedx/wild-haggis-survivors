@@ -63,6 +63,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_kills_5000',
   'ach_moor_hearth_30',
   'ach_walk_every_road',
+  'ach_ironmoor_victor',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -82,6 +83,7 @@ const BINARY_DEEDS: ReadonlySet<AchievementId> = new Set<AchievementId>([
   'ach_first_evolution',
   'ach_defeat_taxman',
   'ach_all_bosses',
+  'ach_ironmoor_victor',
 ]);
 
 export function computeDeedProgress(id: AchievementId, stats: DeedStatsSnapshot): DeedProgress {
