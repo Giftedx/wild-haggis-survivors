@@ -56,6 +56,8 @@ import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
+import { ActIntermissionScene } from './ActIntermissionScene';
+import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
@@ -1101,14 +1103,57 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * spawn, banter) before the modal opens.
    */
   private launchActIntermission(actN: 1 | 2): void {
-    this.time.delayedCall(0, () => {
-      // Task 11 fills the real launch/skip-path logic. For now just record
-      // that the act boundary was hit so tests in Task 10 can assert.
+    const slot: PickerSlot = actN === 1 ? 'A' : 'B';
+    const atGameTimeSec = Math.floor(this.spawnSystem.getGameTimeSec());
+    const settings = this.settingsManager.load();
+
+    // Common resolver — runs whether picker was shown or auto-defaulted.
+    const onResolve = (pick: RoutePick, route: RouteDef) => {
+      this.runActState.recordPick(pick);
+      this.runModifiers.routePicks.push(pick);
+      // Apply modifierDeltas. Numeric fields currently replace (the only
+      // route-affected modifier today is spawnIntervalMult, a multiplier
+      // that the route definition sets as the absolute value for its
+      // duration — the onResume schedules the restoration).
+      for (const [k, v] of Object.entries(route.modifierDeltas)) {
+        if (typeof v === 'number') {
+          (this.runModifiers as unknown as Record<string, unknown>)[k] = v;
+        }
+      }
       this.runActState.advanceToAct(
         (actN + 1) as 1 | 2 | 3,
         this.spawnSystem.getGameTimeSec(),
       );
+      route.onResume?.(this.buildRouteResumeContext());
+      this.timeManager.release('ACT_INTERMISSION');
+    };
+
+    if (settings.skipActIntermissions) {
+      const { pick, route } = ActIntermissionScene.resolveDefault(slot, atGameTimeSec);
+      // No pause, no scene launch — apply inline on a delayedCall(0) so
+      // current frame (camera shake, XP gem spawn, banter) finishes.
+      this.time.delayedCall(0, () => onResolve(pick, route));
+      return;
+    }
+
+    this.timeManager.request('ACT_INTERMISSION', { pausePhysics: true, timeScale: 0 });
+    this.scene.launch(ActIntermissionScene.KEY, {
+      slot,
+      atGameTimeSec,
+      onResolve,
     });
+  }
+
+  private buildRouteResumeContext(): RouteResumeContext {
+    return {
+      player: this.player,
+      hazardZones: this.hazardZones,
+      pickupSpawner: this.pickupSpawner,
+      spawnSystem: this.spawnSystem,
+      timeManager: this.timeManager,
+      runRng: this.runRng,
+      modifiers: this.runModifiers,
+    };
   }
 
   /** Seconds past the Bell (Taxman kill). Read by SpawnSystem for escalation. */
