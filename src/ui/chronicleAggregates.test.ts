@@ -268,6 +268,16 @@ describe('W2 Moor Road chronicle helpers', () => {
       ];
       expect(formatRouteBreadcrumb(picks)).toBe('Round the loch*');
     });
+
+    it('truncates long trails with trailing ellipsis', () => {
+      const picks: RoutePick[] = [
+        { slot: 'A', routeKey: 'through_the_kirkyard', atGameTimeSec: 305, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'buckie_pitstop', atGameTimeSec: 610, defaultedBySetting: false },
+      ];
+      const truncated = formatRouteBreadcrumb(picks, 20);
+      expect(truncated.length).toBe(20);
+      expect(truncated.endsWith('…')).toBe(true);
+    });
   });
 
   describe('selectRunsWithRoutes', () => {

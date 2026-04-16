@@ -255,15 +255,22 @@ export function formatCodexNamesLine(names: readonly string[], maxChars: number 
  * W2 Moor Road: render a pick history as a single-line breadcrumb
  * string for the Chronicle Moor Road log. Defaulted-by-setting picks
  * get a trailing "*" so the log can distinguish chosen from skipped.
+ * Long trails are truncated at `maxChars` with a trailing ellipsis so
+ * the Chronicle row stays within its width budget.
  */
-export function formatRouteBreadcrumb(picks: readonly RoutePick[]): string {
+export function formatRouteBreadcrumb(
+  picks: readonly RoutePick[],
+  maxChars: number = 60,
+): string {
   if (picks.length === 0) return '';
-  return picks
+  const joined = picks
     .map((p) => {
       const label = t(getRoute(p.routeKey).labelKey);
       return p.defaultedBySetting ? `${label}*` : label;
     })
     .join(' → ');
+  if (joined.length <= maxChars) return joined;
+  return `${joined.slice(0, Math.max(0, maxChars - 1))}…`;
 }
 
 /**
