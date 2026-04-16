@@ -200,7 +200,9 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
     this.addToggleRow(t('ui.settings.skipActIntermissions'), 'skipActIntermissions');
-    this.addToggleRow(t('ui.settings.ironmoorMode'), 'ironmoorMode');
+    this.addToggleRow(t('ui.settings.ironmoorMode'), 'ironmoorMode', (proceed) =>
+      this.promptIronmoorConfirm(proceed)
+    );
     this.addBanterFrequencyRow();
 
     this.addSectionHeader(t('ui.settings.section_access'));
@@ -476,7 +478,11 @@ export class SettingsScene extends Phaser.Scene {
     });
   }
 
-  private addToggleRow(label: string, key: ToggleKey): void {
+  private addToggleRow(
+    label: string,
+    key: ToggleKey,
+    confirmOnEnable?: (proceed: () => void) => void
+  ): void {
     const { width } = this.scale;
     const y = this.rowY;
     const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
@@ -567,7 +573,18 @@ export class SettingsScene extends Phaser.Scene {
 
     const doToggle = () => {
       audio.playClick();
-      this.working[key] = !this.working[key];
+      const nextValue = !this.working[key];
+      if (nextValue && confirmOnEnable) {
+        // Opt-in ceremony: defer the flip until the player commits through
+        // the confirmation modal. Cancel leaves the toggle in its prior state.
+        confirmOnEnable(() => {
+          this.working[key] = true;
+          sync();
+          this.persistAndApply();
+        });
+        return;
+      }
+      this.working[key] = nextValue;
       sync();
       this.persistAndApply();
     };
@@ -671,5 +688,131 @@ export class SettingsScene extends Phaser.Scene {
       toggle: cycle,
       mark,
     });
+  }
+
+  /**
+   * W66 Ironmoor opt-in ceremony. Modal blocks input until the player picks
+   * Yes/No. Yes calls `proceed` (which flips the setting); No tears down and
+   * leaves the toggle at its prior value. Keyboard Enter/Y confirms, Esc/N
+   * cancels. Gamepad A confirms, B cancels.
+   */
+  private promptIronmoorConfirm(proceed: () => void): void {
+    const { width, height } = this.scale;
+    const DEPTH_BASE = 100;
+    const { highContrastUi } = this;
+
+    const scrim = this.add
+      .rectangle(width / 2, height / 2, width, height, 0x000000, 0.72)
+      .setDepth(DEPTH_BASE)
+      .setInteractive();
+
+    const panelW = Math.min(width - 80, 520);
+    const panelH = 280;
+    const panel = this.add
+      .rectangle(width / 2, height / 2, panelW, panelH, 0x1a1420, 1)
+      .setStrokeStyle(2, highContrastUi ? 0xffe066 : 0xd8b877, 1)
+      .setDepth(DEPTH_BASE + 1);
+
+    const title = this.add
+      .text(width / 2, height / 2 - panelH / 2 + 36, t('ui.settings.ironmoor_confirm_title'), {
+        fontFamily: 'monospace',
+        fontSize: '20px',
+        color: highContrastUi ? '#ffe066' : '#d8b877',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale)
+      .setDepth(DEPTH_BASE + 2);
+
+    const body = this.add
+      .text(width / 2, height / 2 - 10, t('ui.settings.ironmoor_confirm_body'), {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: highContrastUi ? '#e6efff' : '#c8d0e0',
+        align: 'center',
+        wordWrap: { width: panelW - 48 },
+        lineSpacing: 2,
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale)
+      .setDepth(DEPTH_BASE + 2);
+
+    const btnY = height / 2 + panelH / 2 - 44;
+    const noBtn = this.add
+      .rectangle(width / 2 - 110, btnY, 180, 40, 0x252540, 1)
+      .setStrokeStyle(2, 0x4a3a5a, 0.9)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(DEPTH_BASE + 2);
+    const noLabel = this.add
+      .text(width / 2 - 110, btnY, t('ui.settings.ironmoor_confirm_no'), {
+        fontFamily: 'monospace',
+        fontSize: '15px',
+        color: '#c8d0e0',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale)
+      .setDepth(DEPTH_BASE + 3);
+
+    const yesBtn = this.add
+      .rectangle(width / 2 + 110, btnY, 180, 40, 0x3a2218, 1)
+      .setStrokeStyle(2, highContrastUi ? 0xff6a4a : 0xb84a2a, 0.9)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(DEPTH_BASE + 2);
+    const yesLabel = this.add
+      .text(width / 2 + 110, btnY, t('ui.settings.ironmoor_confirm_yes'), {
+        fontFamily: 'monospace',
+        fontSize: '15px',
+        color: highContrastUi ? '#ffe066' : '#ffd98a',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale)
+      .setDepth(DEPTH_BASE + 3);
+
+    const cleanup: Phaser.GameObjects.GameObject[] = [
+      scrim, panel, title, body, noBtn, noLabel, yesBtn, yesLabel,
+    ];
+    let closed = false;
+
+    const close = () => {
+      if (closed) return;
+      closed = true;
+      this.input.keyboard?.off('keydown', onKey);
+      for (const go of cleanup) go.destroy();
+    };
+
+    const onYes = () => {
+      if (closed) return;
+      audio.playClick();
+      close();
+      proceed();
+    };
+    const onNo = () => {
+      if (closed) return;
+      audio.playClick();
+      close();
+    };
+
+    noBtn.on('pointerover', () => noBtn.setFillStyle(0x2a2244));
+    noBtn.on('pointerout', () => noBtn.setFillStyle(0x252540));
+    noBtn.on('pointerdown', onNo);
+    noLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onNo);
+
+    yesBtn.on('pointerover', () => yesBtn.setFillStyle(0x4a2a20));
+    yesBtn.on('pointerout', () => yesBtn.setFillStyle(0x3a2218));
+    yesBtn.on('pointerdown', onYes);
+    yesLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onYes);
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        onNo();
+      } else if (e.key === 'Enter' || e.key === 'y' || e.key === 'Y') {
+        e.preventDefault();
+        onYes();
+      }
+    };
+    this.input.keyboard?.on('keydown', onKey);
   }
 }

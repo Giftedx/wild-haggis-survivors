@@ -329,6 +329,11 @@ export const EN_STRINGS: LocaleTree = {
       skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
       /** W66 Ironmoor: single-life mode — no Second-Wind revive. Pride posture, opt-in. */
       ironmoorMode: 'Ironmoor (single life — nae second wind)',
+      /** W66 Ironmoor opt-in ceremony — shown when player flips the toggle OFF→ON. */
+      ironmoor_confirm_title: 'Ye sure, big yin?',
+      ironmoor_confirm_body: 'Ironmoor is ONE LIFE. Nae Second Wind, nae revives. Die once — ye walk tae the menu. The wee ⚔ badge marks yer Chronicle row for ever. Switch it aff any time before ye start.',
+      ironmoor_confirm_yes: 'Aye, I\'m ready',
+      ironmoor_confirm_no: 'Naw, cancel',
     },
     /** W2 Moor Road — the between-act modal. */
     actIntermission: {
