@@ -32,6 +32,8 @@ export class ActIntermissionScene extends Phaser.Scene {
   static readonly KEY = 'ActIntermission';
 
   private launchData!: ActIntermissionLaunchData;
+  /** Shortcut map — 1/2/3 keys resolve the matching card. Cleared on stop. */
+  private keyHandler?: (e: KeyboardEvent) => void;
 
   constructor() {
     super({ key: ActIntermissionScene.KEY });
@@ -44,6 +46,10 @@ export class ActIntermissionScene extends Phaser.Scene {
   create(): void {
     const routes = ROUTES_BY_SLOT[this.launchData.slot];
     this.renderRouteCards(routes);
+    this.installKeyboardShortcuts(routes);
+    // Uninstall when the scene tears down so the handler doesn't leak
+    // into the paired GameScene after resolve.
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.uninstallKeyboardShortcuts());
   }
 
   private renderRouteCards(routes: readonly RouteDef[]): void {
@@ -77,11 +83,11 @@ export class ActIntermissionScene extends Phaser.Scene {
 
     routes.forEach((route, i) => {
       const x = startX + i * (cardW + gap);
-      this.buildCard(x, y, cardW, cardH, route);
+      this.buildCard(x, y, cardW, cardH, route, i + 1);
     });
   }
 
-  private buildCard(x: number, y: number, w: number, h: number, route: RouteDef): void {
+  private buildCard(x: number, y: number, w: number, h: number, route: RouteDef, shortcut: number): void {
     const bg = this.add.rectangle(x, y, w, h, 0x1a1a28, 0.98)
       .setStrokeStyle(2, 0xd4a017)
       .setInteractive({ useHandCursor: true });
@@ -96,9 +102,41 @@ export class ActIntermissionScene extends Phaser.Scene {
       wordWrap: { width: w - 24 }, align: 'center',
     }).setOrigin(0.5);
 
+    // Shortcut digit corner badge — pairs with the 1/2/3 keyboard handler.
+    this.add.text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`, {
+      fontFamily: 'monospace', fontSize: '14px', color: '#7f8ca7',
+      fontStyle: 'bold',
+    }).setOrigin(0, 0);
+
     bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(3, 0xffe08a));
     bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(2, 0xd4a017));
     bg.on(Phaser.Input.Events.POINTER_DOWN, () => this.resolve(route));
+  }
+
+  /**
+   * 1/2/3 keys resolve the matching card. Installed once per scene launch;
+   * SHUTDOWN event (Phaser emits on scene.stop) uninstalls so no stray
+   * handler bleeds into GameScene after the picker closes.
+   */
+  private installKeyboardShortcuts(routes: readonly RouteDef[]): void {
+    if (typeof window === 'undefined') return;
+    this.keyHandler = (e: KeyboardEvent) => {
+      const idx = ({ '1': 0, '2': 1, '3': 2 } as Record<string, number | undefined>)[e.key];
+      if (idx === undefined) return;
+      const route = routes[idx];
+      if (!route) return;
+      e.preventDefault();
+      this.resolve(route);
+    };
+    window.addEventListener('keydown', this.keyHandler);
+  }
+
+  private uninstallKeyboardShortcuts(): void {
+    if (!this.keyHandler) return;
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('keydown', this.keyHandler);
+    }
+    this.keyHandler = undefined;
   }
 
   /**
@@ -106,6 +144,7 @@ export class ActIntermissionScene extends Phaser.Scene {
    * slot's default route.
    */
   resolve(route: RouteDef, opts?: { defaultedBySetting?: boolean }): void {
+    this.uninstallKeyboardShortcuts();
     const pick = buildRoutePick(route, this.launchData.atGameTimeSec, opts);
     this.launchData.onResolve(pick, route);
     this.scene.stop();

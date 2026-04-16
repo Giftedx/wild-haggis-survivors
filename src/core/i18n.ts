@@ -325,7 +325,7 @@ export const EN_STRINGS: LocaleTree = {
     actIntermission: {
       title_act_1: 'Awright, which way then?',
       title_act_2: 'Last stretch — pick yer poison.',
-      pick_hint: 'Click a card to commit, big yin.',
+      pick_hint: 'Click or press 1/2/3 tae commit, big yin.',
     },
     upgradeCards: {
       level_title: 'Level {level} — pick yir poison',
