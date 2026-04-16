@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { VARIANT_KEYS } from '../data/variants';
 import {
   MAX_RUN_HISTORY,
+  SAVE_SCHEMA_VERSION,
   applyRunSummary,
   coerceSelectedVariant,
   computeGoldReward,
@@ -9,6 +10,7 @@ import {
   evaluateVariantUnlocks,
   migrateSave,
 } from './save';
+import type { RoutePick } from '../data/routes';
 
 describe('save migration', () => {
   it('returns a fresh default save when the payload is not a plain object', () => {
@@ -35,7 +37,7 @@ describe('save migration', () => {
       unlockedVariants: ['classic'],
     });
 
-    expect(migrated.schemaVersion).toBe(3);
+    expect(migrated.schemaVersion).toBe(4);
     expect(migrated.gold).toBe(250);
     expect(migrated.upgrades).toEqual({ strong_legs: 2, thick_hide: 1 });
     expect(migrated.totalRuns).toBe(8);
@@ -341,5 +343,89 @@ describe('applyRunSummary run history context', () => {
     );
     const secondEntry = afterSecond.save.runHistory[afterSecond.save.runHistory.length - 1];
     expect(secondEntry.curseKey).toBeUndefined();
+  });
+});
+
+describe('save schema v3 → v4 (W2 routes)', () => {
+  it('SAVE_SCHEMA_VERSION is 4', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(4);
+  });
+
+  it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
+    const v3: unknown = {
+      schemaVersion: 3,
+      gold: 123,
+      upgrades: { thick_hide: 2 },
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 5,
+      bestTime: 300,
+      bestKills: 120,
+      totalKills: 600,
+      totalGoldEarned: 450,
+      bestCombo: 42,
+      victories: 1,
+      bestEndlessSeconds: 0,
+      runHistory: [{
+        timestamp: 1700000000000,
+        timeSurvivedSec: 300,
+        enemiesKilled: 120,
+        level: 7,
+        bossKills: 2,
+        goldEarned: 50,
+        bestCombo: 42,
+        variantKey: 'classic',
+        isVictory: true,
+        weaponKeys: ['thistle_shot'],
+      }],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v3);
+    expect(migrated.schemaVersion).toBe(4);
+    expect(migrated.gold).toBe(123);
+    expect(migrated.runHistory).toHaveLength(1);
+    expect(migrated.runHistory[0].routes).toEqual([]);
+    expect(migrated.runHistory[0].timeSurvivedSec).toBe(300);
+  });
+
+  it('preserves routes on a v4 save round-trip', () => {
+    const save = createDefaultSave();
+    const route: RoutePick = {
+      slot: 'A',
+      routeKey: 'up_the_brae',
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    };
+    save.runHistory = [{
+      timestamp: 1700000000000,
+      timeSurvivedSec: 300,
+      enemiesKilled: 120,
+      level: 7,
+      bossKills: 2,
+      goldEarned: 50,
+      bestCombo: 42,
+      variantKey: 'classic',
+      isVictory: true,
+      weaponKeys: ['thistle_shot'],
+      routes: [route],
+    }];
+    const migrated = migrateSave(save);
+    expect(migrated.runHistory[0].routes).toEqual([route]);
+  });
+
+  it('applyRunSummary writes routes from RunHistoryContext', () => {
+    const save = createDefaultSave();
+    const picks: RoutePick[] = [{
+      slot: 'A',
+      routeKey: 'round_the_loch',
+      atGameTimeSec: 305,
+      defaultedBySetting: false,
+    }];
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 300, bossGold: 100, victory: true },
+      { level: 10, bossKills: 3, variantKey: 'classic', weaponKeys: ['thistle_shot'], routes: picks },
+    );
+    expect(result.save.runHistory[0].routes).toEqual(picks);
   });
 });

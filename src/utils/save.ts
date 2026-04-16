@@ -3,6 +3,7 @@
  * Stores permanent upgrades, unlocks, and settings between sessions.
  */
 
+import type { RoutePick } from '../data/routes';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
@@ -14,7 +15,7 @@ import {
 } from '../data/variants';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 3;
+export const SAVE_SCHEMA_VERSION = 4;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -46,6 +47,8 @@ export interface RunHistoryEntry {
   weaponKeys: string[];
   /** Curse key if the player took one for this run — powers the Chronicle badge. */
   curseKey?: string;
+  /** W2 Moor Road picker history. Absent on pre-v4 entries; default []. */
+  routes?: RoutePick[];
 }
 
 export interface SaveData {
@@ -120,6 +123,8 @@ export interface RunHistoryContext {
   weaponKeys: string[];
   /** Curse key active for this run (if any). Passed through to history. */
   curseKey?: string;
+  /** Between-act picker resolutions (W2). Passed through to history. */
+  routes?: RoutePick[];
 }
 
 export interface RunResult {
@@ -202,6 +207,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateLegacySave(raw));
     case 2:
       return finalizeSaveCandidate({ ...raw, schemaVersion: SAVE_SCHEMA_VERSION, runHistory: [] });
+    case 3:
+      return finalizeSaveCandidate(migrateV3ToV4(raw));
     default:
       return finalizeSaveCandidate(raw);
   }
@@ -261,6 +268,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     isVictory: normalizedSummary.victory,
     weaponKeys: context?.weaponKeys ?? [],
     ...(context?.curseKey ? { curseKey: context.curseKey } : {}),
+    ...(context?.routes && context.routes.length > 0 ? { routes: [...context.routes] } : { routes: [] }),
   };
 
   const nextSave: SaveData = {
@@ -300,6 +308,16 @@ function migrateLegacySave(raw: SaveRecord): SaveRecord {
       musicOn: coerceBoolean(legacySettings.musicOn, DEFAULT_SETTINGS.musicOn),
     },
   };
+}
+
+function migrateV3ToV4(raw: SaveRecord): SaveRecord {
+  const history = Array.isArray(raw.runHistory) ? raw.runHistory : [];
+  const normalized = history.map((entry) => {
+    if (!isRecord(entry)) return entry;
+    const existing = Array.isArray(entry.routes) ? entry.routes : [];
+    return { ...entry, routes: existing };
+  });
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION, runHistory: normalized };
 }
 
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
@@ -381,6 +399,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
       ? (raw.weaponKeys as unknown[]).filter((x): x is string => typeof x === 'string')
       : [],
     ...(typeof raw.curseKey === 'string' && raw.curseKey ? { curseKey: raw.curseKey } : {}),
+    routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
   };
 }
 
