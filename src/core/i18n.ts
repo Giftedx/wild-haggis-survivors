@@ -318,11 +318,11 @@ export const EN_STRINGS: LocaleTree = {
       /** W2 Moor Road: auto-pick the safest route at act breaks instead of showing the picker. */
       skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
     },
-    /** W2 Moor Road — the between-act modal. Full Glesga voice pass in M3. */
+    /** W2 Moor Road — the between-act modal. */
     actIntermission: {
-      title_act_1: 'Which way d\'ye fancy?',
-      title_act_2: 'Last stretch. Pick yer poison.',
-      pick_hint: 'Click a card to commit.',
+      title_act_1: 'Awright, which way then?',
+      title_act_2: 'Last stretch — pick yer poison.',
+      pick_hint: 'Click a card to commit, big yin.',
     },
     upgradeCards: {
       level_title: 'Level {level} — pick yir poison',
@@ -1019,44 +1019,44 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Silence is the rest — nae the song.',
         },
       },
-      // W2 Moor Road — placeholder copy; full Glesga voice pass in M3.
+      // W2 Moor Road.
       act_intermission_enter: {
-        a: 'Which way, ya scunner?',
-        b: 'Choose wisely or don\'t.',
-        c: 'Road splits. Decide.',
+        a: 'Awright, which way, big yin?',
+        b: 'Road forks. Choose, or don\'t.',
+        c: 'Split in the path. Mind yer feet.',
       },
       act_complete: {
-        a: 'That\'s one doon.',
-        b: 'On tae the next, aye.',
+        a: 'That\'s one doon. Braw.',
+        b: 'On tae the next bit.',
       },
       route_picked: {
         generic: {
-          a: 'Picked yer line. Walk it.',
-          b: 'Decision made. On we go.',
+          a: 'Line picked. Walk it, aye.',
+          b: 'Decision made. Nae takin\' it back.',
         },
         up_the_brae: {
           a: 'Up we go then.',
-          b: 'Keep climbin\'.',
+          b: 'Keep climbin\', bold lad.',
         },
         round_the_loch: {
           a: 'Water\'s cauld, mind.',
           b: 'Longer way, safer way.',
         },
         through_the_kirkyard: {
-          a: 'Hope yer no feart.',
+          a: 'Hope yer no\' feart.',
           b: 'Shortcut through the deid.',
         },
         stand_yer_ground: {
-          a: 'Nae running now.',
-          b: 'Aye, dig in.',
+          a: 'Nae runnin\' noo.',
+          b: 'Aye, dig in, ya daftie.',
         },
         run_for_the_hills: {
-          a: 'Leg it!',
-          b: 'Smart choice, that.',
+          a: 'Leg it — smart lad.',
+          b: 'Nae shame in a retreat.',
         },
         buckie_pitstop: {
           a: 'Needed a break anyway.',
-          b: 'Tonic o\' the moor.',
+          b: 'Tonic o\' the moor, that.',
         },
       },
     },
@@ -1497,23 +1497,27 @@ export const EN_STRINGS: LocaleTree = {
     },
     evolution_hint: ' At Lv 5, crack a chest while carrying {passive} — somethin\' legendary stirs.',
   },
-  // W2 Moor Road — route labels + descriptions. Full Glesga voice pass in M3.
+  // W2 Moor Road — route labels + descriptions.
+  // Voice-card rules (M3 pass):
+  //   - Labels ≤ 5 words, Glesga rhythm.
+  //   - Descs ≤ 15 words, benefit first, cost second.
+  //   - Kirkyard + buckie carry the Limmy bite; others warm.
   routes: {
     up_the_brae: {
       label: 'Up the brae',
-      desc: 'Elites get brave. Next treasure\'s guaranteed gold.',
+      desc: 'Elites get brave. Yer next treasure\'s got a golden coat.',
     },
     round_the_loch: {
       label: 'Round the loch',
-      desc: 'Catch yer breath (+25% HP). Mair healing wells in act 2.',
+      desc: 'Catch yer breath (+25% HP). Two mair wells waitin\'.',
     },
     through_the_kirkyard: {
       label: 'Through the kirkyard',
-      desc: 'Shortcut. Spawns thicken for 90 seconds. A hunter\'s waitin\'.',
+      desc: 'Shortcut through the deid. Thicker crowd, ninety seconds. Hunter\'s watchin\'.',
     },
     stand_yer_ground: {
       label: 'Stand yer ground',
-      desc: 'XP gems double for 30 seconds. No new trouble.',
+      desc: 'XP doubles fer thirty seconds. Nae new trouble.',
     },
     run_for_the_hills: {
       label: 'Run for the hills',
@@ -1521,7 +1525,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     buckie_pitstop: {
       label: 'Buckie pit-stop',
-      desc: '15 seconds\' peace. Free reroll. Enemies hit a bit harder efter.',
+      desc: 'Fifteen seconds\' peace, free reroll. Enemies hit a bit harder after.',
     },
   },
 };

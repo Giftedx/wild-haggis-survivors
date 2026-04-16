@@ -50,3 +50,35 @@ describe('ActIntermissionScene: i18n keys present', () => {
     expect(t('ui.settings.skipActIntermissions')).not.toBe('ui.settings.skipActIntermissions');
   });
 });
+
+const ROUTE_KEYS = [
+  'up_the_brae', 'round_the_loch', 'through_the_kirkyard',
+  'stand_yer_ground', 'run_for_the_hills', 'buckie_pitstop',
+] as const;
+
+describe('W2 M3 voice pass: copy quality guardrails', () => {
+  it('route labels are <= 5 words', () => {
+    for (const k of ROUTE_KEYS) {
+      const label = t(`routes.${k}.label`);
+      const words = label.split(/\s+/).filter(Boolean);
+      expect(words.length, `label "${label}" exceeds 5 words`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('route descriptions are <= 15 words', () => {
+    for (const k of ROUTE_KEYS) {
+      const desc = t(`routes.${k}.desc`);
+      const words = desc.split(/\s+/).filter(Boolean);
+      expect(words.length, `desc "${desc}" exceeds 15 words`).toBeLessThanOrEqual(15);
+    }
+  });
+
+  it('no route string is a bare placeholder (TODO / TBD / XXX / PLACEHOLDER)', () => {
+    for (const k of ROUTE_KEYS) {
+      for (const suffix of ['label', 'desc'] as const) {
+        const s = t(`routes.${k}.${suffix}`).toUpperCase();
+        expect(s).not.toMatch(/\b(TODO|TBD|XXX|FIXME|PLACEHOLDER)\b/);
+      }
+    }
+  });
+});
