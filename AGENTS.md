@@ -19,16 +19,19 @@ Before claiming anything is “fixed” or “done”, run at least `npm test` a
 - **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; use it when changing menus, HUD, toasts, game-over, or copy.
 
 ## Architecture quick map
-- **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`
-- **Core systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`
-- **Persistence**: `src/utils/save.ts` uses `localStorage` (key `whs_save`) with schema migration.
-- **Data files**: `src/config.ts`, `src/data/{weapons,enemies,upgrades,permanentUpgrades,variants}.ts`
+- **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`. `ActIntermissionScene.ts` is a paired modal for W2 Moor Road between-act route picks.
+- **Core systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`. Per-run state holders live under `src/scenes/game/`: `RunScoreState`, `RunActState`, `RunLifecycle`, etc.
+- **Persistence**: `src/utils/save.ts` uses `localStorage` (key `whs_save`) with schema migration. Current schema is v4 — `RunHistoryEntry.routes` carries W2 picker history.
+- **Data files**: `src/config.ts`, `src/data/{weapons,enemies,upgrades,permanentUpgrades,variants,routes,banter,curses,biomes,eliteAffixes}.ts`
+- **W2 Moor Road**: act gating via `dispatchActComplete.ts` (gordon → act 1, tour_bus → act 2; taxman rides the victory path). Routes are data-driven with `modifierDeltas` applied at pick-resolve time + optional `onResume(ctx)` for side-effect callbacks (heals, spawn tilts, timed releases). `DEFAULT_ROUTE_ON_SKIP` backs the Skip Intermissions setting.
 
 ## High-risk Phaser correctness gotchas (treat as rules)
 - **Scene instances are reused**: `scene.start('Game')` reuses the same `GameScene` instance; `create()` must reset all transient state.
 - **`scene.time` keeps running during `physics.pause()`**: guard timer callbacks or defer work via flags.
 - **`delta` is wall-clock**: cap large deltas to avoid “tab background” time-warps.
-- **`delayedCall` respects `timeScale`**: at `timeScale = 0` it will not advance; use real timers only when you explicitly need wall-clock behavior.
+- **`delayedCall` respects `timeScale`**: at `timeScale = 0` it will not advance; use real timers only when you explicitly need wall-clock behavior. `TimeManager.scheduleRealTime(ms, cb)` is the prescribed wall-clock scheduler — W2 route `onResume` callbacks use it for timed-release effects so they don't stall during hit-freeze.
+- **Phaser `ScenePlugin` vs `SceneManager`**: `this.scene` inside a Scene is the per-scene `ScenePlugin` (has `launch`, `pause`, `stop` operating on the owning scene). `game.scene` is the global `SceneManager` (has `start`, `run`, `getScene` by key — but no `launch`). Tests or external code that need `launch(key, data)` must go via `game.scene.getScene('Game').scene.launch(...)`.
+- **Phaser imports break node-env vitest**: `phaser` touches `window` at module eval. Scene `.ts` files that import Phaser cannot be imported into vitest tests under the default node env. Extract testable logic into pure helper modules (e.g. `ActIntermissionScene.ts` delegates to `actIntermissionResolve.ts`; tests hit the helper directly).
 
 ## Repo hygiene (CRITICAL)
 **This is a Source Repo.** Build artifacts are produced, not committed.
