@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MoorMomentScheduler, type MoorMomentSchedulerHooks } from './MoorMomentScheduler';
 import { MOOR_MOMENT_FIRST_SEC, MOOR_MOMENT_GAP_BASE_SEC } from '../../data/moorMoments';
 import { createRNG } from '../../utils/rng';
+import { defaultModifiers } from '../../core/RunModifiers';
 
 type PlayerStub = { active: boolean; x: number; y: number; heal: ReturnType<typeof vi.fn>; getXpMultiplier: () => number; grantMoorMomentMagnet: ReturnType<typeof vi.fn> };
 
@@ -29,7 +30,7 @@ function makeHooks(overrides: Partial<MoorMomentSchedulerHooks> = {}): {
     getVictoryPending: () => false,
     getCurrentBiomeId: () => null,
     getTutorialSystem: () => undefined,
-    getRunModifiers: () => ({ goldMult: 1, moveSpeedMult: 1, startHpRatio: 1, spawnIntervalMult: 1, damageTakenMult: 1 }),
+    getRunModifiers: () => defaultModifiers(),
     getXPSystem: () => xpSystem as unknown as ReturnType<MoorMomentSchedulerHooks['getXPSystem']>,
     getJuice: () => juice as unknown as ReturnType<MoorMomentSchedulerHooks['getJuice']>,
     getBanter: () => null,
