@@ -14,6 +14,20 @@ export class RunActState {
   /** Ordered picker history this run — one entry per picker resolved. */
   pickerHistory: RoutePick[] = [];
 
+  /** Transition to a new act. Caller supplies the game-time at which the act started. */
+  advanceToAct(act: 1 | 2 | 3, gameTimeSec: number): void {
+    if (act !== 1 && act !== 2 && act !== 3) {
+      throw new Error(`RunActState.advanceToAct: act must be 1, 2, or 3 (got ${act})`);
+    }
+    this.currentAct = act;
+    this.actStartTimeSec = gameTimeSec;
+  }
+
+  /** Append a resolved picker result to the history. */
+  recordPick(pick: RoutePick): void {
+    this.pickerHistory.push(pick);
+  }
+
   /** Zero every field back to a fresh-run state. */
   reset(): void {
     this.currentAct = 1;
