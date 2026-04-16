@@ -1313,6 +1313,14 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Hard as Granite',
       description: 'Won a run wi\' Ironmoor on — single life, nae wobble.',
     },
+    ach_full_herd: {
+      title: 'The Full Herd',
+      description: 'Unlocked every wee haggis — the glen runs thick.',
+    },
+    ach_laird_victor: {
+      title: 'Lord o\' the Moor',
+      description: 'Won a run as The Laird — tartan still straight.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

@@ -5,6 +5,7 @@ import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { BOSSES } from '../data/enemies';
 import { ROUTES } from '../data/routes';
+import { VARIANT_KEYS } from '../data/variants';
 import { getCodexRosterTotal } from '../ui/chronicleAggregates';
 import { loadSave } from '../utils/save';
 
@@ -101,7 +102,14 @@ export class AchievementManager {
       if (p.outcome === 'victory') {
         const lastEntry = gameplay.runHistory?.[gameplay.runHistory.length - 1];
         if (lastEntry?.ironmoor === true) this.tryUnlock('ach_ironmoor_victor');
+        if (lastEntry?.variantKey === 'laird') this.tryUnlock('ach_laird_victor');
       }
+
+      // ach_full_herd: unlocked every playable variant. Read after the
+      // save migrator's `evaluateVariantUnlocks` pass has run on this
+      // run's stats, so freshly-won unlocks are reflected immediately.
+      const unlocked = gameplay.unlockedVariants ?? [];
+      if (unlocked.length >= VARIANT_KEYS.length) this.tryUnlock('ach_full_herd');
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

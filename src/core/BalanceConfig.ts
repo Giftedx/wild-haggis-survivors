@@ -239,7 +239,9 @@ export type AchievementId =
   | 'ach_moor_hearth_30'
   | 'ach_all_bosses'
   | 'ach_walk_every_road'
-  | 'ach_ironmoor_victor';
+  | 'ach_ironmoor_victor'
+  | 'ach_full_herd'
+  | 'ach_laird_victor';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -303,6 +305,14 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_ironmoor_victor: {
     titleKey: 'achievement.ach_ironmoor_victor.title',
     descriptionKey: 'achievement.ach_ironmoor_victor.description',
+  },
+  ach_full_herd: {
+    titleKey: 'achievement.ach_full_herd.title',
+    descriptionKey: 'achievement.ach_full_herd.description',
+  },
+  ach_laird_victor: {
+    titleKey: 'achievement.ach_laird_victor.title',
+    descriptionKey: 'achievement.ach_laird_victor.description',
   },
 };
 
