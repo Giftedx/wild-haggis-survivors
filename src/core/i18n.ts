@@ -1070,6 +1070,8 @@ export const EN_STRINGS: LocaleTree = {
     victory_chorus: 'The moor resounds — victory chord swells.',
     death_fall: 'Hooves down — the moor quiets.',
     low_hp: 'HP dangerously low — heartbeat thunders.',
+    /** W2 Moor Road — fired when ActIntermissionScene launches. */
+    act_intermission_open: 'Road splits — pick a route with 1, 2, or 3.',
   },
   biomes: {
     bog: {

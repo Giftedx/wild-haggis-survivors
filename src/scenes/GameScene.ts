@@ -1142,6 +1142,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.timeManager.request('ACT_INTERMISSION', { pausePhysics: true, timeScale: 0 });
     this.banter?.request('act_intermission_enter');
+    // A11y caption — surfaces the fork moment for audio-off / deaf play.
+    this.caption(
+      'act_intermission_open',
+      t('ui.captions.act_intermission_open'),
+      '#ffdd88',
+      3000,
+    );
     this.scene.launch(ActIntermissionScene.KEY, {
       slot,
       atGameTimeSec,
