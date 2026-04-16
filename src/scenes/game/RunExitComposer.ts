@@ -45,6 +45,8 @@ export interface RunExitHooks {
   getRunRng(): RNG;
   getRunModifiers(): RunModifiers;
   isDailyRun(): boolean;
+  /** W66 Ironmoor: flags the run as single-life mode for the GameOver payload. */
+  isIronmoorRun(): boolean;
 
   /** Shared per-run score (kill/boss/gold counters). */
   getRunScore(): RunScoreState;
@@ -122,6 +124,7 @@ export class RunExitComposer {
       seedCode: encodeSeed(h.getRunRng().seed),
       runSeed: h.getRunRng().seed,
       isDaily: h.isDailyRun(),
+      ...(h.isIronmoorRun() ? { ironmoor: true } : {}),
       curseKey: h.getActiveCurseKey() ?? undefined,
       deathCause,
     };

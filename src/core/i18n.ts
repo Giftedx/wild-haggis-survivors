@@ -54,6 +54,7 @@ export const EN_STRINGS: LocaleTree = {
       /** Subtitle mid-run-cycle — tried but not yet completed. */
       daily_attempts: 'Today: {code}  ·  {attempts} attempt(s)',
       enter_seed: 'Enter custom seed...',
+      rerun_last: '⟲ Rerun last run',
       seed_prompt: 'Enter a 7-character seed code (or a number):',
       seed_invalid: 'That seed didn\'t take — check it and try again.',
       chronicle: 'THE HERD CHRONICLE',
@@ -242,6 +243,10 @@ export const EN_STRINGS: LocaleTree = {
       postcard_saved: 'postcard saved',
       /** Restart the current run with its exact seed — one-more-try retry. */
       rerun_same_seed: '↻ same seed',
+      /** W66 Ironmoor victory banner — pride posture. */
+      ironmoor_victory_banner: '⚔ IRONMOOR VICTORY — ONE LIFE, AYE',
+      /** W66 Ironmoor death banner — compassionate register. */
+      ironmoor_death_banner: '⚔ Ironmoor run — walked it proud.',
 
       // ── "Whit got ye" death reflection panel ──
       // Voice-driven, compassionate. Headlines describe WHAT happened; tips

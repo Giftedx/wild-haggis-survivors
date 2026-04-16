@@ -96,6 +96,8 @@ describe('game over / run result i18n smoke', () => {
     assertResolves('ui.gameOver.postcard_hint');
     assertResolves('ui.gameOver.postcard_saved');
     assertResolves('ui.gameOver.rerun_same_seed');
+    assertResolves('ui.gameOver.ironmoor_victory_banner');
+    assertResolves('ui.gameOver.ironmoor_death_banner');
   });
 
   it('resolves post-bell and run-end ceremony strings', () => {

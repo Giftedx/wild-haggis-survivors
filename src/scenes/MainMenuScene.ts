@@ -511,6 +511,44 @@ export class MainMenuScene extends Phaser.Scene {
     });
     customSeedTxt.on('pointerdown', () => this.promptCustomSeed());
 
+    // === Rerun last seed link ===
+    // One-tap shortcut to rerun the most recent history entry's seed +
+    // variant. Hidden when history has no seeded entries (legacy saves
+    // or fresh installs).
+    const lastRunEntry = [...gameplay.runHistory].reverse().find(
+      (e) => typeof e.runSeed === 'number',
+    );
+    if (lastRunEntry) {
+      const rerunLastY = customSeedY + 22;
+      const rerunTxt = this.add
+        .text(bx, rerunLastY, t('ui.menu.rerun_last'), {
+          fontFamily: 'monospace',
+          fontSize: '14px',
+          color: seedLinkIdle,
+          fontStyle: 'italic',
+          stroke: '#06080c',
+          strokeThickness: highContrastUi ? 3 : 2,
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      rerunTxt.setScale(uiScale);
+      rerunTxt.on('pointerover', () => {
+        rerunTxt.setColor(titleColor);
+        rerunTxt.setStroke('#000000', highContrastUi ? 4 : 3);
+      });
+      rerunTxt.on('pointerout', () => {
+        rerunTxt.setColor(seedLinkIdle);
+        rerunTxt.setStroke('#06080c', highContrastUi ? 3 : 2);
+      });
+      rerunTxt.on('pointerdown', () => {
+        this.saveManager.clearActiveRun();
+        this.scene.start('Game', {
+          seed: lastRunEntry.runSeed,
+          forceVariantKey: lastRunEntry.variantKey,
+        });
+      });
+    }
+
     // === Campfire hearth anchor below the buttons ===
     // A tiny "glow" of three concentric ellipses pulsing gently, with a soft
     // orange cone above them. Visually anchors the button cluster as a

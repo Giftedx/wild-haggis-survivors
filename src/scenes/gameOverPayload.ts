@@ -26,6 +26,8 @@ export interface GameOverPayload {
   seedCode?: string;
   /** Raw numeric seed — enables the "↻ Same Seed" rerun on GameOverScene. */
   runSeed?: number;
+  /** W66 Ironmoor — true when the run was taken with single-life mode on. */
+  ironmoor?: boolean;
   /** True when this run was a Daily Challenge attempt. */
   isDaily?: boolean;
   /** Classified reason for death — only set when `mode === 'death'`. */

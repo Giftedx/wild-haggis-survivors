@@ -47,8 +47,9 @@ describe('downloadPostcard', () => {
     expect(downloadPostcard(null, { mode: 'death', enemiesKilled: 0, timeSurvivedSec: 0 })).toBe(false);
   });
 
-  it('returns false when canvas.toDataURL throws (tainted canvas)', () => {
+  it('returns false when composite rendering throws (tainted canvas)', () => {
     const fakeCanvas = {
+      width: 100, height: 100,
       toDataURL: vi.fn(() => { throw new Error('tainted'); }),
     } as unknown as HTMLCanvasElement;
     // document isn't defined in node env, so short-circuits to false anyway —

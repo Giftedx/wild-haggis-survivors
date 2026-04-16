@@ -19,6 +19,7 @@ function buildMocks(
     bestCombo?: number;
     goldMult?: number;
     isDaily?: boolean;
+    ironmoor?: boolean;
     curseKey?: string | null;
     variantKey?: string;
     runSeed?: number;
@@ -67,6 +68,7 @@ function buildMocks(
     getRunRng: () => ({ seed: overrides.runSeed ?? 12345 }) as never,
     getRunModifiers: () => ({ goldMult: overrides.goldMult ?? 1 }) as never,
     isDailyRun: () => overrides.isDaily ?? false,
+    isIronmoorRun: () => overrides.ironmoor ?? false,
     getRunScore: () => score,
     getOwnedPassivesLength: () => 3,
     getEvolvedWeaponsLength: () => 1,

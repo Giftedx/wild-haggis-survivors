@@ -131,6 +131,33 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
 
+    // W66 Ironmoor amplification: an extra rose-pink banner on any
+    // Ironmoor run (victory or death) so the posture is acknowledged
+    // in the ceremony. Victory copy leans into the pride moment;
+    // death copy keeps the Soul Charter compassionate register.
+    if (this.payload.ironmoor) {
+      const bannerKey = isVictory
+        ? 'ui.gameOver.ironmoor_victory_banner'
+        : 'ui.gameOver.ironmoor_death_banner';
+      const banner = this.add
+        .text(panelCenterX, panelTop + 118, t(bannerKey), {
+          fontFamily: 'monospace',
+          fontSize: '16px',
+          color: isVictory ? '#f7c270' : '#c8a0a0',
+          fontStyle: 'bold',
+          stroke: '#000',
+          strokeThickness: 3,
+          align: 'center',
+          wordWrap: { width: PANEL_W - 48 },
+        })
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(d + 2)
+        .setAlpha(0)
+        .setScale(uiScale);
+      this.tweens.add({ targets: banner, alpha: 1, duration: 320, delay: 520 });
+    }
+
     // "Whit got ye" insight — death only. Single compact line combining the
     // classified headline + takeaway tip, fit into the gap between subtitle
     // (+94) and variant chip (+140). Soul Charter: failure must be
@@ -759,6 +786,8 @@ export class GameOverScene extends Phaser.Scene {
         enemiesKilled: summary?.enemiesKilled ?? 0,
         timeSurvivedSec: summary?.timeSurvivedSec ?? 0,
         seedCode: p.seedCode,
+        variantLabel: p.variantLabel,
+        ironmoor: p.ironmoor,
       });
       if (ok) {
         saved = true;
