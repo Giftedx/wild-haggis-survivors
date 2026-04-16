@@ -57,6 +57,7 @@ import { showCountdown } from './game/CountdownOverlay';
 import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
+import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { createHighlandTerrain } from './game/highlandTerrain';
@@ -198,6 +199,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private pickupSpawner!: PickupSpawner;
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
+  private enemyKillHandler!: EnemyKillHandler;
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
@@ -501,7 +503,36 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
     this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
 
-    // When an enemy is killed
+    // Enemy kill cascade: XP gem, elite chain, juice, drops, boss celebration,
+    // victory trigger. Hooks use lazy getters so pickupSpawner / runLifecycle
+    // (constructed below) resolve at handle-time, not now.
+    this.enemyKillHandler = new EnemyKillHandler({
+      getPlayer: () => this.player,
+      getJuice: () => this.juice,
+      getXPSystem: () => this.xpSystem,
+      getSpawnSystem: () => this.spawnSystem,
+      getBanter: () => this.banter,
+      getPickupSpawner: () => this.pickupSpawner,
+      getUpdateTickers: () => this.updateTickers,
+      getSFXManager: () => this.getSFXManager(),
+      getRunRng: () => this.runRng,
+      getActiveVariantKey: () => this.activeVariant?.key,
+      triggerVictory: () => this.runLifecycle.handleVictory(),
+      getKillCount: () => this.killCount,
+      incrementKillCount: () => { this.killCount++; },
+      incrementBossKillCount: () => { this.bossKillCount++; },
+      addCoinGold: (n) => { this.coinGoldEarned += n; },
+      addBossGold: (n) => { this.bossGoldEarned += n; },
+      isFirstKillSeen: () => this.firstKillSeen,
+      markFirstKillSeen: () => { this.firstKillSeen = true; },
+      getEliteChainCount: () => this.eliteChainCount,
+      setEliteChainCount: (n) => { this.eliteChainCount = n; },
+      getEliteChainLastGameSec: () => this.eliteChainLastGameSec,
+      setEliteChainLastGameSec: (s) => { this.eliteChainLastGameSec = s; },
+      setVictoryPending: (v) => { this.victoryPending = v; },
+      nextVictoryDelayGen: () => ++this.victoryDelayGen,
+      getVictoryDelayGen: () => this.victoryDelayGen,
+    });
     this.weaponSystem.events.on(
       'enemyKilled',
       (
@@ -512,144 +543,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         wasBoss: boolean,
         wasElite: boolean = false,
         eliteAffixId?: EliteAffixId | null,
-      ) => {
-      // Kill streak XP bonus: +1% XP per combo count (capped at +50%)
-      const comboXpBonus = Math.min(0.5, this.juice.getComboCount() * 0.01);
-      this.xpSystem.spawnGem(x, y, Math.ceil(xpValue * this.player.getXpMultiplier() * (1 + comboXpBonus)));
-      this.killCount++;
-      if (wasElite && !wasBoss) {
-        const now = this.spawnSystem.getGameTimeSec();
-        const win = BALANCE.enemy.eliteChainWindowSec;
-        if (this.eliteChainLastGameSec !== null && now - this.eliteChainLastGameSec <= win) {
-          this.eliteChainCount++;
-        } else {
-          this.eliteChainCount = 1;
-        }
-        this.eliteChainLastGameSec = now;
-        if (this.eliteChainCount === 2) {
-          const g = BALANCE.enemy.eliteChainGoldSecond;
-          this.coinGoldEarned += g;
-          this.juice.showToast(t('ui.game.elite_chain_double', { gold: g }), '#e8c060');
-        } else if (this.eliteChainCount >= 3) {
-          const g = BALANCE.enemy.eliteChainGoldTriple;
-          this.coinGoldEarned += g;
-          this.juice.showToast(t('ui.game.elite_chain_triple', { gold: g }), '#ffdd44');
-          this.juice.flashWhite(100);
-          this.eliteChainCount = 0;
-          this.eliteChainLastGameSec = null;
-        }
-      }
-      this.spawnSystem.noteKillPressure();
-      this.juice.showKillBurst(x, y);
-      this.juice.hitFreeze();
-      // Volatile plays a dedicated boom in Enemy.die — skip the generic kill sting.
-      if (eliteAffixId !== 'volatile') {
-        this.getSFXManager().tryPlay('kill', () => audio.playKillImmediate());
-      }
-
-      // Banter hooks — first kill of the run, mid-tier kill streaks that
-      // sit *between* the loud milestone easter eggs (11 / 50 / 100 /
-      // 200) so banter feels like ambient soul, not stepped-on celebration.
-      if (!this.firstKillSeen) {
-        this.firstKillSeen = true;
-        this.banter?.request('first_blood', { tag: this.activeVariant?.key });
-      }
-      if (wasBoss) {
-        // enemyKey for a boss is the boss's own key (see BOSSES defs) —
-        // drives the per-boss celebration pool (taxman/gordon/etc).
-        this.banter?.request('boss_down', { tag: enemyKey });
-      } else {
-        const combo = this.juice.getComboCount();
-        if (combo === 20 || combo === 75 || combo === 150) {
-          this.banter?.request('kill_streak', { tag: this.activeVariant?.key });
-        }
-      }
-
-      // Lifesteal — heal on kill
-      if (this.player.getLifesteal() > 0) {
-        this.player.heal(this.player.getLifesteal());
-      }
-
-      // Kill milestones — celebrate and reward gold with unique Glesga patter per threshold
-      if ([100, 250, 500, 1000, 2500, 5000].includes(this.killCount)) {
-        const goldReward = Math.floor(this.killCount / 50);
-        this.coinGoldEarned += goldReward;
-        // Each milestone has its own culturally-loaded one-liner
-        const milestoneKey = `ui.game.kill_${this.killCount}`;
-        const milestoneText = t(milestoneKey, { gold: goldReward });
-        // Fallback to generic if a specific key is missing
-        const toast = milestoneText !== milestoneKey
-          ? milestoneText
-          : t('ui.game.kill_milestone', { count: this.killCount, gold: goldReward });
-        this.juice.showToast(toast, '#ffdd00');
-        this.juice.flashWhite(150);
-        audio.playLevelUp();
-      }
-
-      // Death ripple — push nearby enemies away from the kill (max 6).
-      // Uses applyKnockback so the push actually persists past the next
-      // behavior-chase velocity reset. Squared-compare gates the loop;
-      // the same dx/dy doubles as the knockback direction.
-      const enemies = this.spawnSystem.getEnemyGroup().children.entries as Enemy[];
-      const RIPPLE_RADIUS_SQ = 50 * 50;
-      let pushed = 0;
-      for (let i = 0; i < enemies.length && pushed < 6; i++) {
-        const e = enemies[i];
-        if (!e.active) continue;
-        const dx = e.x - x;
-        const dy = e.y - y;
-        const distSq = dx * dx + dy * dy;
-        if (distSq < RIPPLE_RADIUS_SQ && distSq > 0) {
-          const dist = Math.sqrt(distSq);
-          const body = e.body as Phaser.Physics.Arcade.Body;
-          const mass = Math.max(0.05, body.mass);
-          const force = 120 / mass / dist;
-          e.applyKnockback(dx * force, dy * force, 120);
-          pushed++;
-        }
-      }
-
-      // 5% chance to drop a health orb on kill (bosses always drop).
-      // Gameplay RNG — seeded so daily/shared runs drop at the same moments.
-      if (wasBoss || this.runRng.bool(0.05)) {
-        this.pickupSpawner.spawnHealthOrb(x, y, wasBoss ? 25 : 5);
-      }
-
-      // 2% chance to drop gold coins (elites 10%, bosses always).
-      const goldChance = wasBoss ? 1 : (wasElite ? 0.10 : 0.02);
-      if (this.runRng.bool(goldChance)) {
-        this.pickupSpawner.spawnGoldCoin(x, y, wasBoss ? this.runRng.int(5, 15) : this.runRng.int(1, 3));
-      }
-
-      if (wasBoss) {
-        this.bossKillCount++;
-        // Per-boss kill celebration — unique Glesga patter for each boss
-        const bossKillKey = `ui.game.boss_killed_${enemyKey}`;
-        const bossKillText = t(bossKillKey);
-        const bossToast = bossKillText !== bossKillKey ? bossKillText : t('ui.game.boss_killed_generic');
-        this.juice.showToast(bossToast, '#ffdd44');
-        // Boss kill heal (Trophy Hunter card)
-        if (this.player.getBossHealFrac() > 0) {
-          const healAmount = Math.ceil(this.player.getMaxHp() * this.player.getBossHealFrac());
-          this.player.heal(healAmount);
-          this.juice.showToast(t('ui.game.boss_kill_heal', { hp: healAmount }), '#44ff44');
-        }
-        // Scale boss gold with difficulty — xpValue is 25/50/75/100/200 for each boss
-        this.bossGoldEarned += Math.ceil(xpValue * 2);
-        this.juice.bossDeathSpectacle(x, y);
-        this.juice.slowMotion();
-
-        // Check for victory — Taxman killed
-        if (enemyKey === 'taxman') {
-          this.victoryPending = true;
-          const gen = ++this.victoryDelayGen;
-          this.updateTickers.addOnce('raw', 1500, () => {
-            if (gen !== this.victoryDelayGen) return;
-            this.runLifecycle.handleVictory();
-          });
-        }
-      }
-    });
+      ) => this.enemyKillHandler.handle(x, y, xpValue, enemyKey, wasBoss, wasElite, eliteAffixId),
+    );
 
     // Floating damage numbers + hit sound + DPS tracking + impact ring burst
     this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean, weaponKey?: string) => {
