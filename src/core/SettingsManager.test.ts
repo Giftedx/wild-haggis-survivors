@@ -239,4 +239,92 @@ describe('SettingsManager: W2 skipActIntermissions', () => {
     // Other fields survive migration intact
     expect(loaded.masterVolume).toBe(0.8);
   });
+
+  // ── W18 localeKey ──────────────────────────────────────────────
+  it('defaults localeKey to en', () => {
+    const mgr = getSettingsManager();
+    mgr.reset();
+    expect(mgr.load().localeKey ?? 'en').toBe('en');
+  });
+
+  it('persists localeKey through save/load', () => {
+    const mem = new MemoryStorage();
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    settings.update((cur) => ({ ...cur, localeKey: 'scs' }));
+    expect(settings.load().localeKey).toBe('scs');
+    settings.update((cur) => ({ ...cur, localeKey: 'en' }));
+    expect(settings.load().localeKey).toBe('en');
+  });
+
+  it('coerces unknown localeKey strings to en', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
+      banterFrequency: 'normal',
+      telemetryOptIn: false,
+      skipActIntermissions: false,
+      ironmoorMode: false,
+      localeKey: 'martian',
+    }));
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    expect(settings.load().localeKey).toBe('en');
+  });
+
+  it('coerces non-string localeKey values to en', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
+      banterFrequency: 'normal',
+      telemetryOptIn: false,
+      skipActIntermissions: false,
+      ironmoorMode: false,
+      localeKey: 42,
+    }));
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    expect(settings.load().localeKey).toBe('en');
+  });
+
+  it('defaults localeKey to en when absent on a legacy save', () => {
+    const mem = new MemoryStorage();
+    // Pre-W18 save: no localeKey field at all
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
+      banterFrequency: 'normal',
+      telemetryOptIn: false,
+      skipActIntermissions: false,
+      ironmoorMode: false,
+    }));
+    const settings = new SettingsManager({ storage: mem, key: 's' });
+    expect(settings.load().localeKey).toBe('en');
+  });
 });
