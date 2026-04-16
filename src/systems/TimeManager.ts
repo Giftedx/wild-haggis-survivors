@@ -43,6 +43,8 @@ export function createPhaserTimeAdapter(scene: Phaser.Scene): TimeAdapter {
 export class TimeManager {
   private adapter: TimeAdapter;
   private tokens = new Map<string, ActiveToken>();
+  /** Wall-clock timeouts (W2 onResume). Tracked so reset() cancels them. */
+  private realTimeHandles = new Set<ReturnType<typeof setTimeout>>();
 
   private appliedTimeScale = 1;
   private appliedPhysicsPaused = false;
@@ -53,7 +55,25 @@ export class TimeManager {
 
   reset(): void {
     this.tokens.clear();
+    for (const h of this.realTimeHandles) clearTimeout(h);
+    this.realTimeHandles.clear();
     this.recomputeAndApply();
+  }
+
+  /**
+   * Wall-clock scheduler — fires after `ms` real milliseconds regardless
+   * of timeScale or physics pause. Used by W2 route onResume bodies
+   * (e.g. 90s "kirkyard shortcut" release) where `scene.time.delayedCall`
+   * would stall at timeScale=0 during hit-freeze.
+   *
+   * Handles are tracked so `reset()` clears them on scene restart.
+   */
+  scheduleRealTime(ms: number, cb: () => void): void {
+    const h = setTimeout(() => {
+      this.realTimeHandles.delete(h);
+      cb();
+    }, ms);
+    this.realTimeHandles.add(h);
   }
 
   /** Teardown hook (run-scoped). Flushes all tokens and restores defaults. */
