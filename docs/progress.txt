@@ -268,3 +268,44 @@ multi-player playtest data. Logged here for M3 intake:
 
 Remaining: M3 voice pass (Scots + Glesga), E2E smoke, settings
 UX polish.
+
+[2026-04-16] W2 Moor Road — Milestone 3 SHIPPED. FLAGSHIP COMPLETE.
+
+Delivered:
+- Glesga voice pass on all W2 strings: route descs punched up
+  (kirkyard + buckie carry the Limmy bite; others warm), picker
+  titles refreshed with 'big yin' / 'braw' cadence, route_picked
+  banter sharpened. Word-count guardrails (<=5 labels / <=15
+  descs / no TODO tokens) pinned in the smoke test.
+- Scots (scs) translation pass: N/A — codebase is single-locale
+  EN_STRINGS; no scs tree exists. Logged as future work if a
+  full bilingual ship (W18) is later selected.
+- SettingsScene: 'Skip road-forks (auto-pick safest route)' row
+  added to the Comfort section, smoke test extended.
+- Playwright E2E: w2-moor-road.spec.ts verifies ActIntermission
+  scene launch + resolve contract in a live production build.
+  Full boss-sequence playthrough deferred — would need a
+  DEBUG.killCurrentBoss hook that doesn't exist.
+- Chronicle polish: formatRouteBreadcrumb now caps at 60 chars
+  with trailing ellipsis; length invariant pinned in tests.
+- Repo health: zero TODO/FIXME markers, zero `as any` in new W2
+  code paths.
+- Docs: master plan + verdict updated. W2 → Completed; verdict
+  row 🟠 HARD -> ✅ SHIPPED.
+
+Verification:
+- `npm run ci` clean: lint + 1092 tests + build.
+- `npm run test:e2e` clean: 3 specs including new W2 smoke.
+
+Ship-gate kill-criterion (3 criteria, pending live playtest data):
+  1. Route monotony (>=80% same pick): PENDING.
+  2. Completion regression (>15% drop): PENDING.
+  3. Skip-rate (>60% enable): PENDING.
+
+Test count delta: 1056 -> 1092 (+36). No production `as any`
+added. GameScene line count delta: small; most additions in new
+files (RunActState, ActIntermissionScene, actIntermissionResolve,
+route bodies).
+
+Next flagship: W18 (bilingual) or W66 (Ironmoor) — both inherit
+the act-intermission pattern + Chronicle route log.
