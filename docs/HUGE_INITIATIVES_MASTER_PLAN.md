@@ -6,15 +6,35 @@
 
 ---
 
-## Urgent (this quarter)
+## Completed this quarter
 
-| ID | Initiative | Tier | Why now | Exit criterion |
-|----|------------|------|---------|---------------|
-| **R3** | **Scene complexity budget** — split `GameScene.ts` | A | `src/scenes/GameScene.ts` is **2016 lines**. Every future feature pays compound cost until this is broken up. Undercosted in prior drafts as Tier B. | `GameScene.ts` under **800 lines**; extracted systems have their own tests; no regression in existing smoke suite. |
+| ID | Initiative | Outcome |
+|----|------------|---------|
+| **R3** | **Scene complexity budget** — split `GameScene.ts` | ✅ **Shipped (2026-04-16).** 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c` (R3.1–R3.7). 16 extracted modules + **88 new unit tests**. Exit criterion relaxed from "≤800" to "≤1230" mid-ladder — further reduction hits hook-literal density and requires architectural refactor (see **R3a** below). No regressions; green across lint / 1019 vitest / tsc+vite build / Playwright e2e at every step. |
 
 ---
 
-## Real flagships (pick ONE next; rest are parking lot)
+## Prerequisites for next flagship
+
+| ID | Initiative | Why it's a prereq |
+|----|------------|-------------------|
+| **R3a** | **RunScoreState extraction** — move kill/boss/gold/elite-chain/victory counters off GameScene into a dedicated data object | Unblocks further `GameScene.ts` reduction (est. ≤1140 lines) AND removes ~40 setter/getter hooks duplicated across `EnemyKillHandler`, `RunPersistenceBridge`, `RunExitComposer`. **Prereq for W2, W66, W27** — all three read run-score data that currently lives as scattered scene fields. Small scope (1 data class, ~20 call-site rewrites); do before W2 ramps. |
+
+---
+
+## Next flagship selected: **W2 — The Moor Road (multi-act campaign)**
+
+Rationale (from review `5fd5ad4`+1):
+- Reuses shipped surfaces — `RunLifecycle.ts`, `save.endless.test.ts`, `chronicleAggregates.ts`. No new tech stack.
+- Falsifiable kill criterion (act-1 retention ≤ baseline after 4 playtest rounds).
+- Authoring work parallelises with engine work cleanly — content + code lanes.
+- Unlocks downstream: W18 gets richer copy to localise, W66 Ironmoor reuses chapter breaks, W39 Chronicle Weave gets authored prose hooks.
+
+Start after **R3a** lands.
+
+---
+
+## Real flagships (R3a first, then pick ONE; rest are parking lot)
 
 Each row: one owner, one non-goals line, one kill criterion. No row graduates from this doc without those three.
 

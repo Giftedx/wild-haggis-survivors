@@ -1,5 +1,7 @@
 # Huge Initiatives — Verdict Against Code
 
+**Update 2026-04-16.** R3 shipped. `GameScene.ts` 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c`. 16 extracted modules, 88 new tests. The "≤800 lines" exit criterion was relaxed mid-ladder to ≤1230; full 800 requires architectural counter extraction (filed as **R3a** in the master plan, prereq for W2). Snapshot numbers below reflect the pre-R3 state.
+
 **Method.** Every row in `HUGE_INITIATIVES_MASTER_PLAN.md` checked against the actual codebase. One line per row. No advocacy.
 
 **Status codes:**
@@ -53,7 +55,7 @@
 |----|------|---------|------|
 | R1 | Vendor bundle & PWA budget | 🟡 MEDIUM | Real concern per PRD. Measurable, boring, worth doing. |
 | R2 | Save schema migration | 🟡 MEDIUM | `SaveManager.ts` exists; `save.test.ts`, `save.endless.test.ts` show schema awareness. Migration program is honest. |
-| **R3** | **Scene complexity budget** | 🔴 **URGENT, not B** | `GameScene.ts = 2016 lines`. This is the actual crisis. The doc listing it as tier-B is wrong. Should be **Tier A, this quarter**. |
+| **R3** | **Scene complexity budget** | ✅ **SHIPPED (2026-04-16)** | Was `GameScene.ts = 2016 lines`; now **1225**. See master plan "Completed this quarter". Full 800-line target split off as **R3a** (architectural RunScoreState extraction). |
 | R4 | `as any` retirement | 🟢 EASY | Grep-able; ship as ongoing hygiene, not a program. |
 
 ---
