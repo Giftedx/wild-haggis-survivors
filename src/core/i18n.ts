@@ -660,10 +660,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Reed\'s cracked — blow careful noo.',
         },
         laird: {
-          a: 'Blood\'s on the tartan — unconscionable.',
-          b: 'The estate takes a blow. Stiffen up.',
-          c: 'One\'s title won\'t save one fae a dirk.',
-          d: 'Dignity bruised, thistle intact. Press on.',
+          a: 'Tartan\'s tae the ankles — steady, Laird.',
+          b: 'Blood oan the estate — no\' the end o\' it.',
+          c: 'Crown\'s wobblin\' — haud yer heid up.',
+          d: 'A Laird standin\' bleedin\' is still a Laird standin\'.',
         },
       },
       boss_down: {
@@ -823,10 +823,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Reed holds mair — so dae ye.',
         },
         laird: {
-          a: 'One has ascended. Tartan sits straighter.',
-          b: 'Estate expands — another generation o\' hoof.',
-          c: 'Breeding tells. The Laird climbs.',
-          d: 'Proper growth, done wi\' dignity.',
+          a: 'The Laird grows intae his tartan.',
+          b: 'Another generation o\' hoof — the croft thrives.',
+          c: 'Stature earned, no\' given. Braw.',
+          d: 'The glen notes the rise, aye.',
         },
       },
       first_blood: {
@@ -865,10 +865,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Opening skirl — crowd o\' one.',
         },
         laird: {
-          a: 'One\'s first trespasser — dispatched wi\' breeding.',
-          b: 'Poachers dealt with. Estate secure.',
-          c: 'That\'ll teach them tae step oan the lawn.',
-          d: 'First blow struck. Most civilised.',
+          a: 'First poacher telt. The land speaks for itsel\'.',
+          b: 'Trespasser doon — estate defends itsel\'.',
+          c: 'Opening blow, clean. The tartan holds.',
+          d: 'First droplet on the heather. Proper.',
         },
       },
       kill_streak: {
@@ -908,10 +908,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Crescendo — nae conductor needed.',
         },
         laird: {
-          a: 'One declares open season. Rather effective.',
-          b: 'Estate cleared, row by row. Quite.',
-          c: 'The tartan parts them like a hot knife.',
-          d: 'Gentry hit different — and keep hittin\'.',
+          a: 'The Laird declares open season — an\' the moor listens.',
+          b: 'Estate cleared, row efter row. Braw work.',
+          c: 'The tartan cuts them doon like grain.',
+          d: 'A Laird hits heavy — an\' often.',
         },
       },
       recover: {
@@ -950,10 +950,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Reed dries — next note\'s yours.',
         },
         laird: {
-          a: 'Resilience — a Laird\'s finest quality.',
-          b: 'Back tae standin\'. Title intact.',
-          c: 'The estate mends. Carry on.',
-          d: 'Minor setback. Rather expected.',
+          a: 'Resilience — a Laird\'s trade, that.',
+          b: 'Back oan hoof. Estate stands.',
+          c: 'The land heals faster than the pride.',
+          d: 'Minor stumble. The tartan forgives.',
         },
       },
       biome_change: {
@@ -1076,10 +1076,10 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Silence is the rest — nae the song.',
         },
         laird: {
-          a: 'One surveys the estate.',
-          b: 'A moment\'s dignity on the heather.',
-          c: 'The Laird reflects. Tartan straightens.',
-          d: 'Gentry must pause — such is the way.',
+          a: 'The Laird surveys his land.',
+          b: 'A breath on the heather — aye, earned.',
+          c: 'Tartan smoothed. Heid clear.',
+          d: 'Even a Laird needs a wee pause.',
         },
       },
       // W2 Moor Road.
