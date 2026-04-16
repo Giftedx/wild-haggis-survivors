@@ -21,7 +21,7 @@ import type { SaveManager } from '../../core/SaveManager';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
-import { loadSave, writeSave } from '../../utils/save';
+import { loadSave, writeSave, wipeIronmoorHistory } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { tryCameraShake } from '../../utils/cameraShake';
@@ -294,6 +294,25 @@ export class RunLifecycle {
         /* best-effort */
       }
       juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
+    }
+
+    // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with
+    // `ironmoorMode` on, every Ironmoor row in runHistory is cleared — the
+    // new attempt starts from a blank chronicle. `bestIronmoorSeconds` is
+    // the separate leaderboard and survives (it's the only artefact the
+    // permadeath spares). Silent wipe with a toast so the player knows
+    // what happened; showToast is a no-op if nothing changed.
+    if (this.hooks.getSettingsManager().load().ironmoorMode) {
+      try {
+        const cur = loadSave();
+        const next = wipeIronmoorHistory(cur);
+        if (next !== cur) {
+          writeSave(next);
+          juice.showToast(t('ui.gameOver.ironmoor_wipe_toast'), '#b84a2a');
+        }
+      } catch {
+        /* best-effort */
+      }
     }
 
     const { x: duiX, y: duiY, width: duiW, height: duiH } = this.hooks.getUiViewport();

@@ -247,6 +247,8 @@ export const EN_STRINGS: LocaleTree = {
       ironmoor_victory_banner: '⚔ IRONMOOR VICTORY — ONE LIFE, AYE',
       /** W66 Ironmoor death banner — compassionate register. */
       ironmoor_death_banner: '⚔ Ironmoor run — walked it proud.',
+      /** W66 Ironmoor chronicle wipe — shown once on ironmoor death when prior ironmoor rows get cleared. Best-times survive elsewhere. */
+      ironmoor_wipe_toast: '⚔ Chronicle wiped — one life, nae pity',
 
       // ── "Whit got ye" death reflection panel ──
       // Voice-driven, compassionate. Headlines describe WHAT happened; tips

@@ -459,6 +459,20 @@ export function getPersonalBests(history: RunHistoryEntry[]): PersonalBests {
   return { bestTime, bestKills, bestCombo };
 }
 
+/**
+ * W66 Ironmoor chronicle wipe. Returns a new SaveData with every
+ * `runHistory` entry flagged `ironmoor: true` removed. Pure — does not
+ * touch `bestIronmoorSeconds` (the separate leaderboard survives the
+ * permadeath wipe) or any non-Ironmoor row. If there were no Ironmoor
+ * entries, returns the same object reference so callers can cheaply
+ * detect "nothing to wipe".
+ */
+export function wipeIronmoorHistory(save: SaveData): SaveData {
+  const filtered = save.runHistory.filter((e) => !e.ironmoor);
+  if (filtered.length === save.runHistory.length) return save;
+  return { ...save, runHistory: filtered };
+}
+
 export function getWinRate(history: RunHistoryEntry[]): number {
   if (history.length === 0) return 0;
   const wins = history.filter((e) => e.isVictory).length;
