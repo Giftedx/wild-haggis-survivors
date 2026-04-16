@@ -9,6 +9,24 @@ import type { PickerSlot, RouteDef, RouteKey, RoutePick } from '../data/routes';
 import { DEFAULT_ROUTE_ON_SKIP, getRoute } from '../data/routes';
 
 /**
+ * Pure factory for the RoutePick emitted when the player picks a card
+ * (or when the Skip path resolves a default). Extracted so integration
+ * tests can call it without instantiating a Phaser Scene.
+ */
+export function buildRoutePick(
+  route: RouteDef,
+  atGameTimeSec: number,
+  opts?: { defaultedBySetting?: boolean },
+): RoutePick {
+  return {
+    slot: route.slot,
+    routeKey: route.key,
+    atGameTimeSec,
+    defaultedBySetting: opts?.defaultedBySetting ?? false,
+  };
+}
+
+/**
  * Produce the slot's DEFAULT_ROUTE_ON_SKIP pick + route without
  * rendering. Used by GameScene when skipActIntermissions=true.
  */

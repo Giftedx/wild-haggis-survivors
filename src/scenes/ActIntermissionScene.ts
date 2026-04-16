@@ -17,7 +17,7 @@
 import Phaser from 'phaser';
 import type { PickerSlot, RouteDef, RoutePick } from '../data/routes';
 import { ROUTES_BY_SLOT } from '../data/routes';
-import { resolveDefaultRoute } from './actIntermissionResolve';
+import { resolveDefaultRoute, buildRoutePick } from './actIntermissionResolve';
 import { t } from '../core/i18n';
 
 export interface ActIntermissionLaunchData {
@@ -106,12 +106,7 @@ export class ActIntermissionScene extends Phaser.Scene {
    * slot's default route.
    */
   resolve(route: RouteDef, opts?: { defaultedBySetting?: boolean }): void {
-    const pick: RoutePick = {
-      slot: route.slot,
-      routeKey: route.key,
-      atGameTimeSec: this.launchData.atGameTimeSec,
-      defaultedBySetting: opts?.defaultedBySetting ?? false,
-    };
+    const pick = buildRoutePick(route, this.launchData.atGameTimeSec, opts);
     this.launchData.onResolve(pick, route);
     this.scene.stop();
   }
