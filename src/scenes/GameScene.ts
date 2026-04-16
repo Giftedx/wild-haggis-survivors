@@ -1150,6 +1150,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.player.heal(ECHO_HEAL_REWARD);
           this.juice.showToast(t('ui.ancestralEcho.touch_toast'), '#b0d4ff');
           this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
+          // Lifetime Chronicle counter — best-effort persistence.
+          try {
+            const cur = loadSave();
+            writeSave({ ...cur, ancestralEchoesTouched: (cur.ancestralEchoesTouched ?? 0) + 1 });
+          } catch {
+            /* best-effort */
+          }
         },
       });
       this.ancestralEcho.spawn();
@@ -1177,6 +1184,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         const title = t(boon.titleKey);
         this.juice.showToast(t('ui.standingStones.grant_toast', { title }), '#ffe080');
         this.caption('standing_stones_pick', t(boon.descKey), '#ffe080', 3500);
+        // Lifetime Chronicle counter — best-effort persistence.
+        try {
+          const cur = loadSave();
+          const picked = { ...(cur.standingStonesPicked ?? {}) };
+          picked[boon.id] = (picked[boon.id] ?? 0) + 1;
+          writeSave({ ...cur, standingStonesPicked: picked });
+        } catch {
+          /* best-effort */
+        }
       },
     });
     this.standingStones.spawn();

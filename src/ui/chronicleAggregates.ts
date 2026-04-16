@@ -488,3 +488,54 @@ export function computeMoorRoadKillCriteria(
     skipRate: totalPicks > 0 ? skippedPicks / totalPicks : 0,
   };
 }
+
+// ── Standing Stones + Ancestral Echoes ─────────────────────────────
+
+export interface StandingStonesStats {
+  /** Total lifetime stones walked. */
+  total: number;
+  /** Per-boon tally (mending / fire / haste). */
+  byBoon: Record<string, number>;
+  /** Most-picked boon id, or null when no picks yet. */
+  favouriteBoon: string | null;
+}
+
+export function computeStandingStonesStats(save: SaveData): StandingStonesStats {
+  const picked = save.standingStonesPicked ?? {};
+  let total = 0;
+  let favourite: string | null = null;
+  let favouriteCount = 0;
+  for (const [key, count] of Object.entries(picked)) {
+    total += count;
+    if (count > favouriteCount) {
+      favouriteCount = count;
+      favourite = key;
+    }
+  }
+  return { total, byBoon: { ...picked }, favouriteBoon: favourite };
+}
+
+/**
+ * Single-line Chronicle readout. Blank when the player has never
+ * walked a stone. Surfaces favourite boon when at least one pick
+ * exists.
+ */
+export function formatStandingStonesLine(stats: StandingStonesStats): string {
+  if (stats.total === 0) return '';
+  const parts: string[] = [`⟁ Stones walked: ${stats.total}`];
+  const m = stats.byBoon.mending ?? 0;
+  const f = stats.byBoon.fire ?? 0;
+  const h = stats.byBoon.haste ?? 0;
+  parts.push(`(mending ${m} · fire ${f} · haste ${h})`);
+  return parts.join(' ');
+}
+
+/**
+ * Single-line Chronicle readout for Ancestral Echo touches. Blank
+ * before the first touch.
+ */
+export function formatAncestralEchoesLine(save: SaveData): string {
+  const n = save.ancestralEchoesTouched ?? 0;
+  if (n === 0) return '';
+  return `⟡ Echoes touched: ${n}`;
+}

@@ -20,6 +20,9 @@ import {
   formatDurationLong,
   formatIronmoorLine,
   formatMoorRoadStatus,
+  formatStandingStonesLine,
+  formatAncestralEchoesLine,
+  computeStandingStonesStats,
   formatRelativeTime,
   formatRouteBreadcrumb,
   lifetimeTotals,
@@ -195,7 +198,15 @@ export class ChronicleScene extends Phaser.Scene {
     );
     const ironmoorSection = ironmoor ? `\n${ironmoor}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection;
+    // Standing Stones + Ancestral Echoes — silent when the player
+    // has never interacted with either mechanic, so fresh saves see
+    // no empty chrome.
+    const stonesLine = formatStandingStonesLine(computeStandingStonesStats(save));
+    const stonesSection = stonesLine ? `\n${stonesLine}` : '';
+    const echoesLine = formatAncestralEchoesLine(save);
+    const echoesSection = echoesLine ? `\n${echoesLine}` : '';
+
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,

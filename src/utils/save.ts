@@ -114,6 +114,20 @@ export interface SaveData {
    */
   lastDeath?: { x: number; y: number; ts: number };
 
+  /**
+   * Lifetime count of Standing Stones picked, keyed by boon id
+   * ('mending' / 'fire' / 'haste'). Chronicle aggregates surface which
+   * boon the player favours. Optional + defaulted; back-compat with
+   * pre-stones saves.
+   */
+  standingStonesPicked?: Record<string, number>;
+
+  /**
+   * Lifetime count of Ancestral Echoes the player has touched. Surfaced
+   * on the Chronicle once non-zero. Optional + defaulted.
+   */
+  ancestralEchoesTouched?: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -352,6 +366,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
   const unlockResult = evaluateVariantUnlocks(progress, unlockedVariants);
   const lastDeath = coerceLastDeath(candidate.lastDeath);
+  const stonesPicked = coerceStonesPicked(candidate.standingStonesPicked);
 
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
@@ -369,6 +384,8 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
     ...(lastDeath ? { lastDeath } : {}),
+    ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
+    ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };
@@ -421,6 +438,23 @@ function coerceLastDeath(raw: unknown): { x: number; y: number; ts: number } | u
   const ts = typeof raw.ts === 'number' && Number.isFinite(raw.ts) && raw.ts > 0 ? Math.floor(raw.ts) : undefined;
   if (x === undefined || y === undefined || ts === undefined) return undefined;
   return { x, y, ts };
+}
+
+/**
+ * Accepts a record of boonId → lifetime count. Drops non-numeric /
+ * non-finite / negative values. Returns undefined for empty / invalid
+ * inputs so `finalizeSaveCandidate` can omit the field entirely (keeps
+ * the save lean on fresh accounts).
+ */
+function coerceStonesPicked(raw: unknown): Record<string, number> | undefined {
+  if (!isRecord(raw)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof k !== 'string' || k.length === 0) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) continue;
+    out[k] = Math.floor(v);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
 }
 
 /** Shared by GameScene + tests — echoes are "fresh" within the TTL window. */
