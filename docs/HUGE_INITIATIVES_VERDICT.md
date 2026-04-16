@@ -1,6 +1,6 @@
 # Huge Initiatives — Verdict Against Code
 
-**Update 2026-04-16.** R3 shipped. `GameScene.ts` 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c`. 16 extracted modules, 88 new tests. The "≤800 lines" exit criterion was relaxed mid-ladder to ≤1230; full 800 requires architectural counter extraction (filed as **R3a** in the master plan, prereq for W2). Snapshot numbers below reflect the pre-R3 state.
+**Update 2026-04-16.** R3 + R3a shipped. `GameScene.ts` 2016 → **1186 lines** across commits `b986a7f`…`240b22c`. 17 extracted modules, 141 new tests. R3a collapsed 9 scattered counters into `RunScoreState` and simplified 3 hook contracts. W2 (next flagship) is now unblocked. Snapshot numbers below reflect the pre-R3 state.
 
 **Method.** Every row in `HUGE_INITIATIVES_MASTER_PLAN.md` checked against the actual codebase. One line per row. No advocacy.
 

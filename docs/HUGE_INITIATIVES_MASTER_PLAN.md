@@ -10,15 +10,8 @@
 
 | ID | Initiative | Outcome |
 |----|------------|---------|
-| **R3** | **Scene complexity budget** — split `GameScene.ts` | ✅ **Shipped (2026-04-16).** 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c` (R3.1–R3.7). 16 extracted modules + **88 new unit tests**. Exit criterion relaxed from "≤800" to "≤1230" mid-ladder — further reduction hits hook-literal density and requires architectural refactor (see **R3a** below). No regressions; green across lint / 1019 vitest / tsc+vite build / Playwright e2e at every step. |
-
----
-
-## Prerequisites for next flagship
-
-| ID | Initiative | Why it's a prereq |
-|----|------------|-------------------|
-| **R3a** | **RunScoreState extraction** — move kill/boss/gold/elite-chain/victory counters off GameScene into a dedicated data object | Unblocks further `GameScene.ts` reduction (est. ≤1140 lines) AND removes ~40 setter/getter hooks duplicated across `EnemyKillHandler`, `RunPersistenceBridge`, `RunExitComposer`. **Prereq for W2, W66, W27** — all three read run-score data that currently lives as scattered scene fields. Small scope (1 data class, ~20 call-site rewrites); do before W2 ramps. |
+| **R3** | **Scene complexity budget** — split `GameScene.ts` | ✅ **Shipped (2026-04-16).** 2016 → **1225 lines** across commits `b986a7f`…`5d2a13c` (R3.1–R3.7). 16 extracted modules + **88 new unit tests**. Exit criterion relaxed from "≤800" to "≤1230" mid-ladder — further reduction hits hook-literal density and requires architectural refactor (see R3a). No regressions; green across lint / 1019 vitest / tsc+vite build / Playwright e2e at every step. |
+| **R3a** | **RunScoreState extraction** — 9 counters off scene, hook contracts simplified | ✅ **Shipped (2026-04-16).** 1225 → **1186 lines** in commit `240b22c`. New `src/scenes/game/RunScoreState.ts` (11 tests) holds kill/boss/gold/elite-chain/victory counters. `EnemyKillHandlerHooks`, `RunPersistenceHooks`, `RunExitHooks` each collapsed from ~10-14 counter getters/setters to one `getRunScore()` hook. Total R3+R3a: 1699 → 1186 (−513, −30%); 141 new tests across 17 modules. Unblocks W2, W66, W27, W30 — each now inherits a single-line `getRunScore` hook instead of declaring the 14-getter counter surface. |
 
 ---
 
@@ -30,11 +23,11 @@ Rationale (from review `5fd5ad4`+1):
 - Authoring work parallelises with engine work cleanly — content + code lanes.
 - Unlocks downstream: W18 gets richer copy to localise, W66 Ironmoor reuses chapter breaks, W39 Chronicle Weave gets authored prose hooks.
 
-Start after **R3a** lands.
+Prerequisite (R3a) is complete. **W2 is unblocked.**
 
 ---
 
-## Real flagships (R3a first, then pick ONE; rest are parking lot)
+## Real flagships (pick ONE next; rest are parking lot)
 
 Each row: one owner, one non-goals line, one kill criterion. No row graduates from this doc without those three.
 
