@@ -138,6 +138,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.pipe_breath.c',
         'ui.banter.low_hp.pipe_breath.d',
       ],
+      laird: [
+        'ui.banter.low_hp.laird.a',
+        'ui.banter.low_hp.laird.b',
+        'ui.banter.low_hp.laird.c',
+        'ui.banter.low_hp.laird.d',
+      ],
     },
   },
   {
@@ -320,6 +326,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.pipe_breath.c',
         'ui.banter.level_up.pipe_breath.d',
       ],
+      laird: [
+        'ui.banter.level_up.laird.a',
+        'ui.banter.level_up.laird.b',
+        'ui.banter.level_up.laird.c',
+        'ui.banter.level_up.laird.d',
+      ],
     },
   },
   {
@@ -362,6 +374,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.pipe_breath.b',
         'ui.banter.first_blood.pipe_breath.c',
         'ui.banter.first_blood.pipe_breath.d',
+      ],
+      laird: [
+        'ui.banter.first_blood.laird.a',
+        'ui.banter.first_blood.laird.b',
+        'ui.banter.first_blood.laird.c',
+        'ui.banter.first_blood.laird.d',
       ],
     },
   },
@@ -407,6 +425,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.pipe_breath.c',
         'ui.banter.kill_streak.pipe_breath.d',
       ],
+      laird: [
+        'ui.banter.kill_streak.laird.a',
+        'ui.banter.kill_streak.laird.b',
+        'ui.banter.kill_streak.laird.c',
+        'ui.banter.kill_streak.laird.d',
+      ],
     },
   },
   {
@@ -449,6 +473,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.pipe_breath.b',
         'ui.banter.recover.pipe_breath.c',
         'ui.banter.recover.pipe_breath.d',
+      ],
+      laird: [
+        'ui.banter.recover.laird.a',
+        'ui.banter.recover.laird.b',
+        'ui.banter.recover.laird.c',
+        'ui.banter.recover.laird.d',
       ],
     },
   },
@@ -590,6 +620,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.pipe_breath.b',
         'ui.banter.idle.pipe_breath.c',
         'ui.banter.idle.pipe_breath.d',
+      ],
+      laird: [
+        'ui.banter.idle.laird.a',
+        'ui.banter.idle.laird.b',
+        'ui.banter.idle.laird.c',
+        'ui.banter.idle.laird.d',
       ],
     },
   },

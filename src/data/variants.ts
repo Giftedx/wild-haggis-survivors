@@ -1,6 +1,6 @@
 import { t } from '../core/i18n';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -29,7 +29,7 @@ export interface HaggisPalette {
   accent: number;
 }
 
-export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath';
+export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -195,6 +195,27 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x7060c0,
         snout: 0xc0907a,
         accent: 0xaa88ff,
+      },
+    },
+  },
+  {
+    key: 'laird',
+    nameKey: 'variant.laird.name',
+    flavorKey: 'variant.laird.flavor',
+    name: 'The Laird',
+    textureKey: 'haggis_laird',
+    flavorText: 'Wears the tartan proper. Lordly swagger, heavier swing.',
+    modifiers: { maxHpFlat: 30, moveSpeedPct: -0.12, damagePct: 0.10 },
+    unlock: { type: 'total_gold_earned', required: 2500 },
+    appearance: {
+      accentStyle: 'laird',
+      palette: {
+        outline: 0x1a140a,
+        bodyDark: 0x5a1a1a,
+        bodyLight: 0x8a2a2a,
+        fur: 0xa07060,
+        snout: 0xd8b088,
+        accent: 0x3a8830,
       },
     },
   },

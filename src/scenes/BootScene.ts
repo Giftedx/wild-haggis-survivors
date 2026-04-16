@@ -2493,6 +2493,41 @@ export class BootScene extends Phaser.Scene {
         g.fillCircle(cx + 6, cy + 23, 2);
         g.fillCircle(cx + 14, cy + 23, 2);
         break;
+      case 'laird':
+        // Tartan sash + small crown — lordly swagger.
+        // Diagonal sash across the body, woven pattern hinted at with
+        // 2 colour bands + crossweave lines.
+        g.fillStyle(palette.accent, 0.95);
+        g.fillTriangle(cx - 14, cy - 2, cx + 10, cy + 12, cx - 12, cy + 12);
+        g.fillStyle(0xc03030, 0.9);
+        g.fillTriangle(cx - 13, cy, cx + 9, cy + 11, cx - 11, cy + 11);
+        // Woven cross-strips on sash (thin white + dark stripes)
+        g.fillStyle(0xffffff, 0.35);
+        g.fillRect(cx - 12, cy + 3, 18, 1);
+        g.fillRect(cx - 10, cy + 7, 16, 1);
+        g.fillStyle(0x1a0a0a, 0.4);
+        g.fillRect(cx - 12, cy + 5, 18, 1);
+        // Pin brooch on sash shoulder — gold disc with crest dot
+        g.fillStyle(0xd4a017, 1);
+        g.fillCircle(cx - 12, cy, 2);
+        g.fillStyle(0xffe8a0, 0.8);
+        g.fillCircle(cx - 12, cy - 0.5, 1);
+        // Small crown on head — three points, jeweled
+        g.fillStyle(0xd4a017, 1);
+        g.fillRect(cx - 6, cy - 14, 12, 3);
+        g.fillTriangle(cx - 6, cy - 14, cx - 4, cy - 17, cx - 2, cy - 14);
+        g.fillTriangle(cx - 2, cy - 14, cx, cy - 18, cx + 2, cy - 14);
+        g.fillTriangle(cx + 2, cy - 14, cx + 4, cy - 17, cx + 6, cy - 14);
+        // Jewels on crown — centre ruby, side emeralds
+        g.fillStyle(0xcc2222, 1);
+        g.fillCircle(cx, cy - 13, 0.8);
+        g.fillStyle(palette.accent, 1);
+        g.fillCircle(cx - 4, cy - 13, 0.6);
+        g.fillCircle(cx + 4, cy - 13, 0.6);
+        // Crown rim sheen
+        g.fillStyle(0xffffff, 0.4);
+        g.fillRect(cx - 5, cy - 13, 10, 0.5);
+        break;
       case 'pipe_breath':
         // Wind swirl lines around the body — musical, ethereal
         g.lineStyle(1.5, palette.accent, 0.5);

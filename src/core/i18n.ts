@@ -659,6 +659,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Lungs say stop; pride says nae.',
           d: 'Reed\'s cracked — blow careful noo.',
         },
+        laird: {
+          a: 'Blood\'s on the tartan — unconscionable.',
+          b: 'The estate takes a blow. Stiffen up.',
+          c: 'One\'s title won\'t save one fae a dirk.',
+          d: 'Dignity bruised, thistle intact. Press on.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -816,6 +822,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Wind in the chest, fire in the hooves.',
           d: 'Reed holds mair — so dae ye.',
         },
+        laird: {
+          a: 'One has ascended. Tartan sits straighter.',
+          b: 'Estate expands — another generation o\' hoof.',
+          c: 'Breeding tells. The Laird climbs.',
+          d: 'Proper growth, done wi\' dignity.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -851,6 +863,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Breath out, problem doon.',
           c: 'Drone o\' doom. First verse.',
           d: 'Opening skirl — crowd o\' one.',
+        },
+        laird: {
+          a: 'One\'s first trespasser — dispatched wi\' breeding.',
+          b: 'Poachers dealt with. Estate secure.',
+          c: 'That\'ll teach them tae step oan the lawn.',
+          d: 'First blow struck. Most civilised.',
         },
       },
       kill_streak: {
@@ -889,6 +907,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Rollin\' riff o\' ruin. Lovely.',
           d: 'Crescendo — nae conductor needed.',
         },
+        laird: {
+          a: 'One declares open season. Rather effective.',
+          b: 'Estate cleared, row by row. Quite.',
+          c: 'The tartan parts them like a hot knife.',
+          d: 'Gentry hit different — and keep hittin\'.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -924,6 +948,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Pipes warm — play on.',
           c: 'Air\'s yours again. Use it.',
           d: 'Reed dries — next note\'s yours.',
+        },
+        laird: {
+          a: 'Resilience — a Laird\'s finest quality.',
+          b: 'Back tae standin\'. Title intact.',
+          c: 'The estate mends. Carry on.',
+          d: 'Minor setback. Rather expected.',
         },
       },
       biome_change: {
@@ -1044,6 +1074,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Hums in the chest — nae audience needed.',
           c: 'Quiet stage — pipes tune themselves.',
           d: 'Silence is the rest — nae the song.',
+        },
+        laird: {
+          a: 'One surveys the estate.',
+          b: 'A moment\'s dignity on the heather.',
+          c: 'The Laird reflects. Tartan straightens.',
+          d: 'Gentry must pause — such is the way.',
         },
       },
       // W2 Moor Road.
@@ -1349,6 +1385,10 @@ export const EN_STRINGS: LocaleTree = {
     pipe_breath: {
       name: 'Pipe Breath',
       flavor: 'Wheesht — the moor exhales through this one.',
+    },
+    laird: {
+      name: 'The Laird',
+      flavor: 'Wears the tartan proper. Lordly swagger, heavier swing.',
     },
     summary: {
       speed: '{sign}{pct}% speed',
