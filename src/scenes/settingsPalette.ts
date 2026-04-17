@@ -56,3 +56,16 @@ export function resolveSettingsPalette(highContrastUi: boolean): SettingsPalette
     dangerAccent: 0xb84a2a,
   };
 }
+
+// ── Slider track ─────────────────────────────────────────────────────
+//
+// The draggable volume / UI-scale sliders share one track recipe: a
+// dim plum trough with a quiet lilac border, a warm fill (from the
+// comfort palette's sectionAccent), and a near-black thumb stroke so
+// the thumb pops against any fill colour. Independent of HC since the
+// track geometry doesn't need accessibility overrides beyond what the
+// sectionAccent already provides.
+
+export const SETTINGS_TROUGH_FILL = 0x1a1420;
+export const SETTINGS_TROUGH_STROKE = 0x4a3a5a;
+export const SETTINGS_THUMB_STROKE = 0x1a1e2a;

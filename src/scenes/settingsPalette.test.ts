@@ -50,3 +50,15 @@ describe('resolveSettingsPalette — 2-state comfort palette', () => {
     expect(hc.dangerAccent).not.toBe(hc.sectionAccent);
   });
 });
+
+describe('settings slider track constants', () => {
+  it('trough fill / stroke / thumb stroke are three distinct tones', async () => {
+    const m = await import('./settingsPalette');
+    const palette = new Set([
+      m.SETTINGS_TROUGH_FILL,
+      m.SETTINGS_TROUGH_STROKE,
+      m.SETTINGS_THUMB_STROKE,
+    ]);
+    expect(palette.size).toBe(3);
+  });
+});

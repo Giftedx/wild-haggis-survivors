@@ -19,7 +19,12 @@ import {
   cycleBanterFrequency,
   labelForBanterFrequency,
 } from './settingsBanterFrequency';
-import { resolveSettingsPalette } from './settingsPalette';
+import {
+  resolveSettingsPalette,
+  SETTINGS_TROUGH_FILL,
+  SETTINGS_TROUGH_STROKE,
+  SETTINGS_THUMB_STROKE,
+} from './settingsPalette';
 import { resolveBackButtonPalette } from './backButtonPalette';
 
 type SettingsGpRow =
@@ -403,8 +408,8 @@ export class SettingsScene extends Phaser.Scene {
 
     // Dim background trough.
     const trough = this.add
-      .rectangle(trackX, trackY, trackW, trackH, 0x1a1420, 1)
-      .setStrokeStyle(1, 0x4a3a5a, 0.8)
+      .rectangle(trackX, trackY, trackW, trackH, SETTINGS_TROUGH_FILL, 1)
+      .setStrokeStyle(1, SETTINGS_TROUGH_STROKE, 0.8)
       .setOrigin(0, 0.5);
     trough.setScale(this.uiScale, this.uiScale);
 
@@ -416,7 +421,7 @@ export class SettingsScene extends Phaser.Scene {
     // Round thumb sits centered on the fill end.
     const thumb = this.add
       .circle(trackX, trackY, 7, fillColor, 1)
-      .setStrokeStyle(2, 0x1a1e2a, 1)
+      .setStrokeStyle(2, SETTINGS_THUMB_STROKE, 1)
       .setInteractive({ useHandCursor: true, draggable: true });
     thumb.setScale(this.uiScale);
 
