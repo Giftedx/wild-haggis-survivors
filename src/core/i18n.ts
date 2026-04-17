@@ -2150,6 +2150,162 @@ export const SCS_STRINGS: LocaleTree = {
     low_hp: 'HP dangerously low — hertbeat dunders.',
     act_intermission_open: 'Road splits — pick a route wi 1, 2, or 3.',
   },
+  curse: {
+    heavy_legs: {
+      name: 'Heavy Legs',
+      desc: 'Tha moor drags at yer hooves — every step a wee bit heavier.',
+    },
+    thin_hide: {
+      name: 'Thin Hide',
+      desc: 'Yer coat\'s threidbare tha day — every blow lands herder.',
+    },
+    restless_spirits: {
+      name: 'Restless Spirits',
+      desc: 'Tha glen stirs. They\'re comin quicker, pal — stay sharp.',
+    },
+    empty_larder: {
+      name: 'Empty Larder',
+      desc: 'Stairtin hungert. Less in ye tae lose, but less tae spare.',
+    },
+    windless_pipes: {
+      name: 'Windless Pipes',
+      desc: 'Reeds hing quait. Wapens fire a shade slower — patience pays.',
+    },
+  },
+  evolution: {
+    thistle_storm: {
+      name: 'Thistle Storm',
+      description: 'Echt homin thistles seek their quarry across tha moor. Tha storm has teeth.',
+    },
+    highland_fling: {
+      name: 'Tha Heiland Fling',
+      description: 'A great sonic ring blooms ootward. Tha moor sings; yer beasties come apairt.',
+    },
+    highland_games: {
+      name: 'Heiland Games',
+      description: 'Tha caber detonates on its final pierce, leavin a burnin patch o gress. Heave, ho.',
+    },
+    the_haar: {
+      name: 'Tha Haar',
+      description: 'Tha great Heiland fog rowes in. Hauf tha moor vanishes; ocht caught in it dissolves.',
+    },
+    haggis_cannon: {
+      name: 'Jobby Cannon',
+      description: 'Rapid-fire wee jobbies — every bounce ends in a messy pop.',
+    },
+    nessie_unleashed: {
+      name: 'Nessie Unleashed',
+      description: 'Every tentacle, every angle. Tha loch hersel comes tae yer aid.',
+    },
+    william_blade: {
+      name: 'William Blade',
+      description: 'Legendary claymore — shockwaves rive across tha moor like a battle-cry.',
+    },
+  },
+  achievement: {
+    ach_kills_1000: {
+      title: 'Cull o tha Glen',
+      description: 'A thoosand culls — tha moor kens yer name.',
+    },
+    ach_kills_5000: {
+      title: 'Seasoned Culler',
+      description: 'Five thoosand. Tha glen will tell stories aboot ye.',
+    },
+    ach_survive_5m: {
+      title: 'Findin Yer Feet',
+      description: 'Five meenits standin — tha hooves haud.',
+    },
+    ach_survive_10m: {
+      title: 'Heather Marathon',
+      description: 'Ten meenits an still standin. No bad, pal.',
+    },
+    ach_full_run: {
+      title: 'Still Here, Pal',
+      description: 'Fifteen meenits. Tha hale cycle. That\'s plenty.',
+    },
+    ach_defeat_taxman: {
+      title: 'Tax-Free Zone',
+      description: 'Tha Taxman picked tha wrang glen.',
+    },
+    ach_first_victory: {
+      title: 'Tha Moor Is Yours',
+      description: 'First win — tha Heilands breathe easier.',
+    },
+    ach_first_evolution: {
+      title: 'Legend Forged',
+      description: 'Evolved a wapen. Somethin auncient stirred — an it\'s got teeth.',
+    },
+    ach_codex_half: {
+      title: 'Naturalist',
+      description: 'Logged at least hauf tha moor\'s beasties in tha cull codex.',
+    },
+    ach_codex_loremaster: {
+      title: 'Loremaister o tha Moor',
+      description: 'Every last creature kind — first bluid recorded. Tha book is haill.',
+    },
+    ach_moor_hearth_30: {
+      title: 'Hearth-Kept',
+      description: 'Thirty moor gifts taen — tha glen coonts ye as kin.',
+    },
+    ach_all_bosses: {
+      title: 'Cleaned Hoose',
+      description: 'Every last wan o them, floored in a single run.',
+    },
+    ach_walk_every_road: {
+      title: 'Kent tha Moor',
+      description: 'Walked aw sax Moor Road routes — nae stane unturned.',
+    },
+    ach_ironmoor_victor: {
+      title: 'Hard as Granite',
+      description: 'Won a run wi Ironmoor on — single life, nae wobble.',
+    },
+    ach_full_herd: {
+      title: 'Tha Hale Herd',
+      description: 'Unlocked every wee haggis — tha glen rins thick.',
+    },
+    ach_laird_victor: {
+      title: 'Lord o tha Moor',
+      description: 'Won a run as Tha Laird — tartan still straicht.',
+    },
+    ach_stone_circle: {
+      title: 'Stane Circle',
+      description: 'Walked every standin stane — mendin, fire, haste, aw three.',
+    },
+    ach_echo_touched: {
+      title: 'Tha Moor Minds',
+      description: 'Touched an Ancestral Echo — nae grief wasted.',
+    },
+    ach_ceilidh_commander: {
+      title: 'Ceilidh Commander',
+      description: 'Pulled fifteen ceilidh chains — tha moor\'s dancin tae yer beat.',
+    },
+  },
+  routes: {
+    up_the_brae: {
+      label: 'Up tha brae',
+      desc: 'Elites get bauld. Yer next kist\'s got a gowden coat.',
+    },
+    round_the_loch: {
+      label: 'Roond tha loch',
+      desc: 'Catch yer breath (+25% HP). Twa mair wells waitin.',
+    },
+    through_the_kirkyard: {
+      label: 'Through tha kirkyaird',
+      desc: 'Shortcut through tha deid. Thicker crood, ninety seconds. Hunter\'s watchin.',
+    },
+    stand_yer_ground: {
+      label: 'Staund yer grund',
+      desc: 'XP doubles fer thirty seconds. Nae new trouble.',
+    },
+    run_for_the_hills: {
+      label: 'Rin fer tha hills',
+      desc: 'Full heal, dashes back. But they\'re comin faster noo.',
+    },
+    buckie_pitstop: {
+      label: 'Buckie pit-stap',
+      desc: 'Fifteen seconds\' peace, free reroll. Beasties hit a bit herder efter.',
+    },
+  },
   biomes: {
     bog: {
       name: 'Tha Bog',
