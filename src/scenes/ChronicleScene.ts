@@ -36,6 +36,7 @@ import {
   resolveChronicleMilestonesDensityStyle,
 } from '../ui/chronicleAggregates';
 import { paginationState } from '../ui/pagination';
+import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -474,24 +475,25 @@ export class ChronicleScene extends Phaser.Scene {
         const seedCode = encodeSeed(entry.runSeed);
         const tooltipCurseLabel = curseDef ? t(curseDef.nameKey) : null;
         const tooltipText = formatRerunTooltip(seedCode, tooltipCurseLabel);
+        const rerunPalette = resolveRerunLinkPalette();
         const rerun = this.add
           .text(width - 160, y, '↻', {
-            fontFamily: 'monospace', fontSize: '18px', color: '#b8d0a8', fontStyle: 'bold',
+            fontFamily: 'monospace', fontSize: '18px', color: rerunPalette.idle, fontStyle: 'bold',
           })
           .setOrigin(1, 0.5)
           .setScale(uiScale)
           .setInteractive({ useHandCursor: true });
         let tooltip: Phaser.GameObjects.Text | null = null;
         const showTooltip = () => {
-          rerun.setColor('#e8fbd0');
+          rerun.setColor(rerunPalette.hover);
           if (tooltip) return;
           tooltip = this.add.text(width - 170, y, tooltipText, {
-            fontFamily: 'monospace', fontSize: '10px', color: '#b8d0a8', fontStyle: 'italic',
+            fontFamily: 'monospace', fontSize: '10px', color: rerunPalette.idle, fontStyle: 'italic',
           }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10);
           this.runRowObjects.push(tooltip);
         };
         const hideTooltip = () => {
-          rerun.setColor('#b8d0a8');
+          rerun.setColor(rerunPalette.idle);
           if (tooltip) {
             tooltip.destroy();
             tooltip = null;
