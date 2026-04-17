@@ -23,6 +23,12 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 
+// Mini HP bar above enemies: dark backing + red/gold fill. Colours used
+// in both the standard setup path and the elite upgrade path, so pinning
+// them here stops the two call sites from drifting apart.
+const ENEMY_HP_BAR_BG = 0x333333;
+const ELITE_GOLD_TINT = 0xffdd44;
+
 /**
  * Enemy sprite — poolable, supports multiple behavior types.
  */
@@ -325,7 +331,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.showHpBar = config.hp >= 15 && config.behavior !== 'hazard';
     if (this.showHpBar) {
       if (!this.hpBarBg) {
-        this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, 0x333333).setDepth(30);
+        this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, ENEMY_HP_BAR_BG).setDepth(30);
         this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, COLORS.HP_RED).setOrigin(0, 0.5).setDepth(31);
       }
       this.hpBarBg.setVisible(true).setPosition(this.x, this.y - 20);
@@ -1375,14 +1381,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Bump the anchor scale so the idle bob wobbles around 1.3× instead of 1×
     this.baseDisplayScale = this.baseDisplayScale * 1.3;
     this.setScale(this.baseDisplayScale);
-    this.setBaseTint(0xffdd44); // golden glow
+    this.setBaseTint(ELITE_GOLD_TINT); // golden glow
     this.showHpBar = true;
     if (!this.hpBarBg) {
-      this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, 0x333333).setDepth(30);
-      this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, 0xffdd44).setOrigin(0, 0.5).setDepth(31);
+      this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, ENEMY_HP_BAR_BG).setDepth(30);
+      this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, ELITE_GOLD_TINT).setOrigin(0, 0.5).setDepth(31);
     }
     this.hpBarBg!.setVisible(true);
-    this.hpBarFill!.setVisible(true).setFillStyle(0xffdd44);
+    this.hpBarFill!.setVisible(true).setFillStyle(ELITE_GOLD_TINT);
   }
 
   isElite(): boolean { return this.eliteFlag; }
