@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { SaveData, loadSave, writeSave } from '../utils/save';
-import { PERMANENT_UPGRADES, PermanentUpgrade, getUpgradeCost } from '../data/permanentUpgrades';
+import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
+import { resolveShopUpgradeRowState } from './shopUpgradeRowState';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -120,10 +121,11 @@ export class ShopScene extends Phaser.Scene {
 
   private renderUpgradeRow(upgrade: PermanentUpgrade, index: number, width: number): void {
     const y = 114 + index * 49;
-    const currentLevel = this.saveData.upgrades[upgrade.key] ?? 0;
-    const isMaxed = currentLevel >= upgrade.maxLevel;
-    const cost = isMaxed ? 0 : getUpgradeCost(upgrade, currentLevel);
-    const canAfford = !isMaxed && this.saveData.gold >= cost;
+    const { currentLevel, isMaxed, cost, canAfford } = resolveShopUpgradeRowState(
+      upgrade,
+      this.saveData.upgrades[upgrade.key],
+      this.saveData.gold,
+    );
 
     const rowBg = this.add.rectangle(
       width / 2,
@@ -195,11 +197,12 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private purchaseUpgrade(upgrade: PermanentUpgrade): void {
-    const currentLevel = this.saveData.upgrades[upgrade.key] ?? 0;
-    if (currentLevel >= upgrade.maxLevel) return;
-
-    const cost = getUpgradeCost(upgrade, currentLevel);
-    if (this.saveData.gold < cost) return;
+    const { currentLevel, isMaxed, cost, canAfford } = resolveShopUpgradeRowState(
+      upgrade,
+      this.saveData.upgrades[upgrade.key],
+      this.saveData.gold,
+    );
+    if (isMaxed || !canAfford) return;
 
     audio.playClick();
     this.saveData.gold -= cost;
