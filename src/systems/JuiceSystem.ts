@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import type { SettingsManager } from '../core/SettingsManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
@@ -162,16 +162,16 @@ export class JuiceSystem {
     // Pre-allocate VFX pools — same shape across 6 pools, only the
     // (radius, colour, alpha, depth) differ per pool's visual role.
     // Impact rings: whisky gold, every AoE hit should feel Scottish.
-    fillCirclePool(scene, this.impactRingPool, BALANCE.juice.impactRingPoolSize, 4, 0xd4a017, 0.8, 12);
+    fillCirclePool(scene, this.impactRingPool, BALANCE.juice.impactRingPoolSize, 4, COLORS.WHISKY_GOLD, 0.8, 12);
     // Trail dots: thistle purple from the highland palette.
-    fillCirclePool(scene, this.trailPool, BALANCE.juice.trailDotPoolSize, 2, 0x6b3fa0, 0.5, 5);
+    fillCirclePool(scene, this.trailPool, BALANCE.juice.trailDotPoolSize, 2, COLORS.HEATHER, 0.5, 5);
     // Kill burst dots: warm gold, kills should shimmer (not generic red).
-    fillCirclePool(scene, this.burstDotPool, BALANCE.juice.burstDotPoolSize, 3, 0xd4a017, 0.8, 15);
+    fillCirclePool(scene, this.burstDotPool, BALANCE.juice.burstDotPoolSize, 3, COLORS.WHISKY_GOLD, 0.8, 15);
     // Kill burst rings: warm golden, not cold white.
     fillCirclePool(scene, this.burstRingPool, BALANCE.juice.burstRingPoolSize, 5, 0xffcc44, 0.6, 15);
     // Boss death spectacle: gold particles + larger gold rings.
-    fillCirclePool(scene, this.bossParticlePool, BALANCE.juice.bossParticlePoolSize, 5, 0xd4a017, 0.9, 20);
-    fillCirclePool(scene, this.bossRingPool, BALANCE.juice.bossRingPoolSize, 10, 0xd4a017, 0.5, 20);
+    fillCirclePool(scene, this.bossParticlePool, BALANCE.juice.bossParticlePoolSize, 5, COLORS.WHISKY_GOLD, 0.9, 20);
+    fillCirclePool(scene, this.bossRingPool, BALANCE.juice.bossRingPoolSize, 10, COLORS.WHISKY_GOLD, 0.5, 20);
   }
 
   /** Spawn a small white burst at a hit location — pooled, overflow is dropped. */
