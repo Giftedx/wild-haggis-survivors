@@ -357,3 +357,67 @@ Verification:
 The MVP-to-flagship arc took W66 from IN PROGRESS to SHIPPED.
 Downstream W18 (bilingual) still inherits the same Chronicle
 + save + settings scaffolding.
+
+[2026-04-17] Analytics + palette consolidation pass.
+
+Palette (2 commits):
+- RARITY_COLORS in upgrades.ts now routes through COLORS card-
+  rarity entries (4 duplicate hex literals removed).
+- COLORS_CSS.BLACK added as a second near-black anchor (distinct
+  from the warm INK); 10 inline '#000000' text strokes across
+  Enemy, GameOverScene, seedLinkStyle, CaptionOverlay, JuiceSystem
+  (damage + combo text), and TutorialSystem (4 tip banners) all
+  route through it.
+
+Analytics — closes every unattended GlobalEventBus fan-out and
+tags the existing run_start / run_end with the full dimensional
+surface (6 commits):
+1. GLOBAL_ROUTE_PICKED wiring — W2 Moor Road route pick fires
+   through the bus from GameScene.launchActIntermission onResolve
+   (both picker path + Skip-Intermissions auto-default path).
+   AnalyticsManager forwards as `route_picked` with slot / routeKey
+   / atGameTimeSec / defaultedBySetting. Unblocks the route-
+   monotony and skip-rate ship-gate kill-criteria.
+2. Ironmoor flag on run_start / run_end — GlobalRunEndedPayload
+   gains `ironmoor?: boolean`; RunExitComposer forwards from
+   GameOverPayload; beginGameplaySession meta grows an ironmoor
+   field. Portal can now split Ironmoor completion rates from the
+   baseline run pool for the W66 kill-criteria.
+3. variantKey + curseKey + isDaily + deathCause on run_end (and
+   curseKey + isDaily on run_start). DeathCause is flattened to
+   its stable `.tag` string before emit — portal values a flat
+   enum over a nested object. Enables per-variant and per-curse
+   completion analysis, Daily Challenge cohort splits, and a
+   death-cause heatmap.
+4. GLOBAL_WEAPON_EVOLVED + ACHIEVEMENT_UNLOCKED subscriptions —
+   evolution events gated on telemetryOptIn (run-distribution
+   signal); achievement unlocks intentionally ungated since they
+   are already player-visible via Chronicle tiles + toasts (mirrors
+   tutorial_completed precedent).
+5. CODEX_FIRST_CULL subscription — last bus event lacking an
+   analytics subscription; logs `codex_first_cull { enemyKey }` on
+   the once-per-account bestiary unlock.
+6. GLOBAL_SHOP_PURCHASE — new event emitted from both ShopScene
+   (gold shop, leveled) and MetaShopScene (meta shop, binary
+   unlocks). Payload scopes the economy (`gold_shop` |
+   `meta_shop`), carries cost, and conditionally includes
+   `newLevel` on the leveled path. Analytics subscriber spreads
+   `newLevel` only when defined so meta-shop events stay clean.
+
+Verification:
+- `npm run ci` clean at every commit: lint + 2318 tests + build.
+- AnalyticsManager.test.ts grew 10 → 28 tests over the 6 analytics
+  commits (18 new assertions pin every positive + opt-out path).
+- No new production `as any`. Zero TODO / FIXME added.
+
+Portal readiness after this pass:
+- run_start / run_end now tag variant, curse, daily, ironmoor, and
+  (on death) deathCause — every W-tier cohort pivot is computable.
+- Route distribution + skip rate computable from `route_picked`.
+- Evolution, achievement, codex, shop purchase all flow through
+  one provider surface with opt-in semantics matched to sensitivity.
+
+Next candidates (not committed to): settings-change telemetry
+(ironmoor toggle flip, comfort options), standing-stone pick
+analytics, level-up card pick analytics. Each is additive over
+the same subscriber pattern.
