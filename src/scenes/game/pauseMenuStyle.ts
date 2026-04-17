@@ -17,7 +17,7 @@ export const PAUSE_TITLE_SIZE_SHORT = '34px';
 /** Title font size — wide viewport variant. */
 export const PAUSE_TITLE_SIZE_WIDE = '46px';
 
-import { COLORS_CSS } from '../../config';
+import { COLORS, COLORS_CSS } from '../../config';
 
 export const PAUSE_TITLE_COLOR = COLORS_CSS.WHISKY_GOLD;
 export const PAUSE_TITLE_COLOR_HC = '#ffe08a';
@@ -53,7 +53,7 @@ export interface PauseButtonPalette {
 }
 
 export const PAUSE_RESUME_BUTTON_PALETTE: PauseButtonPalette = {
-  idle: 0x005eb8,
+  idle: COLORS.SCOTTISH_BLUE,
   hover: 0x0077dd,
 };
 

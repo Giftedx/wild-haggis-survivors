@@ -1,3 +1,5 @@
+import { COLORS } from '../config';
+
 /**
  * Pure 2-state fill style for the tiny cooldown bar under each HUD
  * weapon tile.
@@ -22,7 +24,7 @@ export const HUD_COOLDOWN_READY: HudCooldownBarStyle = {
 };
 
 export const HUD_COOLDOWN_CHARGING: HudCooldownBarStyle = {
-  fillColor: 0x005eb8,
+  fillColor: COLORS.SCOTTISH_BLUE,
   alpha: 0.5,
 };
 
