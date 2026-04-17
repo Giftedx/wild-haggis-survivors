@@ -14,7 +14,7 @@
  * remain interactable even on a phone.
  */
 
-export const UPGRADE_CARD_MAX_W = 210;
+export const UPGRADE_CARD_MAX_W = 220;
 export const UPGRADE_CARD_ASPECT = 260 / 210;
 const UPGRADE_CARD_HOVER_SCALE = 1.05;
 const UPGRADE_CARD_MIN_W = 90;

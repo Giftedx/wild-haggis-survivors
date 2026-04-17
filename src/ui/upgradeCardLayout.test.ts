@@ -59,12 +59,12 @@ describe('computeUpgradeCardLayout', () => {
   it('left offset passes through to startX', () => {
     const a = computeUpgradeCardLayout({ left: 0, top: 0, width: 800, height: 600, cardCount: 3 });
     const b = computeUpgradeCardLayout({ left: 200, top: 0, width: 800, height: 600, cardCount: 3 });
-    expect(b.startX - a.startX).toBe(200);
+    expect(b.startX - a.startX).toBeCloseTo(200, 6);
   });
 
   it('top offset passes through to cardY', () => {
     const a = computeUpgradeCardLayout({ left: 0, top: 0, width: 800, height: 600, cardCount: 3 });
     const b = computeUpgradeCardLayout({ left: 0, top: 50, width: 800, height: 600, cardCount: 3 });
-    expect(b.cardY - a.cardY).toBe(50);
+    expect(b.cardY - a.cardY).toBeCloseTo(50, 6);
   });
 });
