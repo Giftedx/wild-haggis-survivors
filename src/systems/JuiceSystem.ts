@@ -496,7 +496,7 @@ export class JuiceSystem {
   }
 
   /** Toast notification — slides in from the right and fades out, stacks vertically */
-  showToast(message: string, color: string = '#ffffff'): void {
+  showToast(message: string, color: string = COLORS_CSS.WHITE): void {
     if (this.time.has('UI_PAUSE')) return;
     const { x, y, width } = this.getUiViewport();
     const yOffset = toastStackY(y, this.activeToasts);

@@ -436,7 +436,7 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     const buttonsY = panelTop + 634;
-    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, '#ffffff', 1240, () => {
+    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, COLORS_CSS.WHITE, 1240, () => {
       audio.playClick();
       musicEngine.stop();
       // Match MenuScene: wipe any lingering suspended-run snapshot before
@@ -450,7 +450,7 @@ export class GameOverScene extends Phaser.Scene {
       musicEngine.stop();
       this.scene.start('Shop');
     });
-    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 0x444444, '#ffffff', 1360, () => {
+    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 0x444444, COLORS_CSS.WHITE, 1360, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');
