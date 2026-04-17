@@ -112,6 +112,29 @@ export class AnalyticsManager {
         });
       })
     );
+
+    // Weapon evolution telemetry — which base/evolved pairs actually
+    // happen in the wild, for balance + card-pool tuning.
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_WEAPON_EVOLVED', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('weapon_evolved', {
+          weaponKey: p.weaponKey,
+          evolvedKey: p.evolvedKey,
+        });
+      })
+    );
+
+    // Achievement unlock telemetry — deed-funnel conversion tracking.
+    // Not gated by opt-in: unlocks are already visible to the player as
+    // a Chronicle tile + toast, so logging the id is no new disclosure.
+    this.busUnsubs.push(
+      globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
+        this.safeLogEvent('achievement_unlocked', {
+          id: p.id,
+        });
+      })
+    );
   }
 
   stopBusHandlers(): void {

@@ -287,4 +287,35 @@ describe('AnalyticsManager', () => {
     });
     expect(provider.logEvent).not.toHaveBeenCalled();
   });
+
+  it('logs weapon_evolved when GLOBAL_WEAPON_EVOLVED fires and telemetry opt-in is on', () => {
+    globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
+      weaponKey: 'claymore',
+      evolvedKey: 'wallaces_claymore',
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith('weapon_evolved', {
+      weaponKey: 'claymore',
+      evolvedKey: 'wallaces_claymore',
+    });
+  });
+
+  it('skips weapon_evolved when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
+      weaponKey: 'claymore',
+      evolvedKey: 'wallaces_claymore',
+    });
+    expect(provider.logEvent).not.toHaveBeenCalled();
+  });
+
+  it('logs achievement_unlocked regardless of telemetry opt-in (already visible to player)', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('ACHIEVEMENT_UNLOCKED', {
+      id: 'ach_ironmoor_victor',
+      title: 'Ironmoor Victor',
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith('achievement_unlocked', {
+      id: 'ach_ironmoor_victor',
+    });
+  });
 });
