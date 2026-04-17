@@ -238,3 +238,50 @@ describe('Enemy applyEliteAffix', () => {
     expect(e.baseSpeed).toBe(firstBase);
   });
 });
+
+describe('Enemy applyPostBellScaling', () => {
+  it('multiplies maxHp + heals to full when hpMul > 1', async () => {
+    const e = await createBareEnemy();
+    e.applyPostBellScaling(2.0, 1);
+    // Math.ceil(100 * 2) = 200; hp restored to fresh max so the post-bell
+    // ramp doesn't trickle down a half-dead enemy that survived the spawn frame.
+    expect(e.maxHp).toBe(200);
+    expect(e.hp).toBe(200);
+  });
+
+  it('multiplies baseSpeed + recomputes effective speed when speedMul > 1', async () => {
+    const e = await createBareEnemy();
+    e.applyPostBellScaling(1, 1.4);
+    expect(e.baseSpeed).toBe(Math.ceil(100 * 1.4));
+    expect(e.speed).toBe(e.baseSpeed);
+  });
+
+  it('hpMul=1 + speedMul=1 is a no-op', async () => {
+    const e = await createBareEnemy();
+    e.hp = 50; // wounded
+    e.applyPostBellScaling(1, 1);
+    expect(e.maxHp).toBe(100);
+    // Crucially: hp NOT reset to full when there's no scaling change. The
+    // post-bell ramp shouldn't accidentally heal an unaffected enemy.
+    expect(e.hp).toBe(50);
+    expect(e.baseSpeed).toBe(100);
+  });
+
+  it('Math.ceil rounds up — fractional mults never drop the enemy below baseline', async () => {
+    const e = await createBareEnemy();
+    e.applyPostBellScaling(1.011, 1.011);
+    // 100 * 1.011 = 101.1 → ceil → 102
+    expect(e.maxHp).toBe(102);
+    expect(e.baseSpeed).toBe(102);
+  });
+
+  it('composes with freeze — frozen enemy still gets its baseSpeed bumped', async () => {
+    const e = await createBareEnemy();
+    e.applyFreeze(0.5, 1000);
+    expect(e.speed).toBe(50);
+    e.applyPostBellScaling(1, 2);
+    // Base now 200; freeze still multiplies → 100.
+    expect(e.baseSpeed).toBe(200);
+    expect(e.speed).toBe(100);
+  });
+});
