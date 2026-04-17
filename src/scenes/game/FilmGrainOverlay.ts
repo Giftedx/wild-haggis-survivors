@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { SettingsManager } from '../../core/SettingsManager';
 import { resetCameraViewportCache } from '../../ui/cameraViewport';
+import { resolveFilmGrainBaseAlpha, resolveFilmGrainDriftPx } from './filmGrainTuning';
 
 interface Viewport {
   x: number;
@@ -32,7 +33,7 @@ export class FilmGrainOverlay {
     if (prefs.highContrastUi) return;
     if (!this.scene.textures.exists('film_grain')) return;
     const v = this.getUiViewport();
-    const baseAlpha = (prefs.reduceParticles ? 0.026 : 0.036) * (0.75 + prefs.motionScale * 0.25);
+    const baseAlpha = resolveFilmGrainBaseAlpha(prefs.reduceParticles, prefs.motionScale);
     const img = this.scene.add
       .image(v.x + v.width / 2, v.y + v.height / 2, 'film_grain')
       .setScrollFactor(0)
@@ -48,7 +49,7 @@ export class FilmGrainOverlay {
       repeat: -1,
       ease: 'Sine.easeInOut',
     });
-    const driftPx = 1.1 * (0.55 + prefs.motionScale * 0.45) * (prefs.reduceParticles ? 0.65 : 1);
+    const driftPx = resolveFilmGrainDriftPx(prefs.reduceParticles, prefs.motionScale);
     this.scene.tweens.add({
       targets: img,
       x: img.x + driftPx,
