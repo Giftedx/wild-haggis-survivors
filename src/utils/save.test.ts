@@ -47,7 +47,7 @@ describe('save migration', () => {
       unlockedVariants: ['classic'],
     });
 
-    expect(migrated.schemaVersion).toBe(4);
+    expect(migrated.schemaVersion).toBe(5);
     expect(migrated.gold).toBe(250);
     expect(migrated.upgrades).toEqual({ strong_legs: 2, thick_hide: 1 });
     expect(migrated.totalRuns).toBe(8);
@@ -357,8 +357,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 4', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(4);
+  it('SAVE_SCHEMA_VERSION is 5', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(5);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -391,11 +391,13 @@ describe('save schema v3 → v4 (W2 routes)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v3);
-    expect(migrated.schemaVersion).toBe(4);
+    expect(migrated.schemaVersion).toBe(5);
     expect(migrated.gold).toBe(123);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].routes).toEqual([]);
     expect(migrated.runHistory[0].timeSurvivedSec).toBe(300);
+    // v5 added `replay?` — v3 entries never carried one, stays absent.
+    expect(migrated.runHistory[0].replay).toBeUndefined();
   });
 
   it('preserves routes on a v4 save round-trip', () => {
@@ -437,6 +439,124 @@ describe('save schema v3 → v4 (W2 routes)', () => {
       { level: 10, bossKills: 3, variantKey: 'classic', weaponKeys: ['thistle_shot'], routes: picks },
     );
     expect(result.save.runHistory[0].routes).toEqual(picks);
+  });
+});
+
+describe('save schema v4 → v5 (T1 replay blob)', () => {
+  const replayBlob = {
+    version: 1 as const,
+    build: 'test-build',
+    seed: 0xDEADBEEF,
+    variantKey: 'classic',
+    frameCount: 2,
+    frames: [
+      { dtMs: 16, dx: 0, dy: 0, dash: false, menu: false },
+      { dtMs: 16, dx: 1, dy: 0, dash: true, menu: false },
+    ],
+  };
+
+  it('migrates v4 save to v5 without touching run history', () => {
+    const v4: unknown = {
+      schemaVersion: 4,
+      gold: 99,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 3,
+      bestTime: 400,
+      bestKills: 80,
+      totalKills: 200,
+      totalGoldEarned: 150,
+      bestCombo: 12,
+      victories: 1,
+      runHistory: [{
+        timestamp: 1700000000000,
+        timeSurvivedSec: 400,
+        enemiesKilled: 80,
+        level: 5,
+        bossKills: 1,
+        goldEarned: 25,
+        bestCombo: 12,
+        variantKey: 'classic',
+        isVictory: true,
+        weaponKeys: ['thistle_shot'],
+        routes: [],
+      }],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v4);
+    expect(migrated.schemaVersion).toBe(5);
+    expect(migrated.runHistory).toHaveLength(1);
+    expect(migrated.runHistory[0].replay).toBeUndefined();
+    expect(migrated.runHistory[0].timeSurvivedSec).toBe(400);
+  });
+
+  it('preserves a well-formed replay blob on v5 round-trip', () => {
+    const save = createDefaultSave();
+    save.runHistory = [{
+      timestamp: 1700000000000,
+      timeSurvivedSec: 120,
+      enemiesKilled: 40,
+      level: 3,
+      bossKills: 0,
+      goldEarned: 20,
+      bestCombo: 8,
+      variantKey: 'classic',
+      isVictory: false,
+      weaponKeys: ['thistle_shot'],
+      routes: [],
+      replay: replayBlob,
+    }];
+    const migrated = migrateSave(save);
+    expect(migrated.runHistory[0].replay).toEqual(replayBlob);
+  });
+
+  it('drops a malformed replay blob without killing the entry', () => {
+    const save = createDefaultSave();
+    save.runHistory = [{
+      timestamp: 1700000000000,
+      timeSurvivedSec: 120,
+      enemiesKilled: 40,
+      level: 3,
+      bossKills: 0,
+      goldEarned: 20,
+      bestCombo: 8,
+      variantKey: 'classic',
+      isVictory: false,
+      weaponKeys: ['thistle_shot'],
+      routes: [],
+      // @ts-expect-error — deliberately malformed
+      replay: { version: 99, build: 'x' },
+    }];
+    const migrated = migrateSave(save);
+    expect(migrated.runHistory[0].replay).toBeUndefined();
+    expect(migrated.runHistory[0].timeSurvivedSec).toBe(120);
+  });
+
+  it('applyRunSummary writes replay from RunHistoryContext', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 5, victory: false },
+      {
+        level: 3,
+        bossKills: 0,
+        variantKey: 'classic',
+        weaponKeys: ['thistle_shot'],
+        replay: replayBlob,
+      },
+    );
+    expect(result.save.runHistory[0].replay).toEqual(replayBlob);
+  });
+
+  it('applyRunSummary omits replay when the context does not pass one', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 30, enemiesKilled: 10, bossGold: 0, victory: false },
+      { level: 2, bossKills: 0, variantKey: 'classic', weaponKeys: [] },
+    );
+    expect(result.save.runHistory[0].replay).toBeUndefined();
   });
 });
 

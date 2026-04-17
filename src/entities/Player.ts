@@ -482,6 +482,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   consumePauseMenuEdge(): boolean {
     return this.inputManager.consumeMenuPausePressed();
   }
+
+  /**
+   * T1 replay — one-call snapshot of this tick's input for the recorder.
+   * Clears edge flags (dash, menu) on read. Delegated to the InputManager
+   * so the whole replay capture surface lives in one place.
+   */
+  peekReplayInputFrame(): { dx: number; dy: number; dash: boolean; menu: boolean } {
+    return this.inputManager.peekReplayFrame();
+  }
   getMaxDashCharges(): number { return this.maxDashCharges; }
   /** Double Dash perk: grant an extra max charge (also tops up current charges). */
   addDashCharge(): void {

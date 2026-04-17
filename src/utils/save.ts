@@ -4,6 +4,7 @@
  */
 
 import type { RoutePick } from '../data/routes';
+import { isReplayBlob, type ReplayBlob } from '../replay/replayBlob';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
@@ -15,7 +16,7 @@ import {
 } from '../data/variants';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 4;
+export const SAVE_SCHEMA_VERSION = 5;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -53,6 +54,13 @@ export interface RunHistoryEntry {
   runSeed?: number;
   /** W66 Ironmoor — true when the run was taken with ironmoorMode on. */
   ironmoor?: boolean;
+  /**
+   * T1 deterministic replay — per-frame input + delta capture attached
+   * to the run when record mode was active at start. Absent on runs
+   * recorded before replay v1 shipped, and on runs where replay mode
+   * was off. Schema v5 added this field.
+   */
+  replay?: ReplayBlob;
 }
 
 export interface SaveData {
@@ -170,6 +178,8 @@ export interface RunHistoryContext {
   runSeed?: number;
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
   ironmoor?: boolean;
+  /** T1 replay blob (optional) attached to this run's history entry. */
+  replay?: ReplayBlob;
 }
 
 export interface RunResult {
@@ -255,6 +265,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate({ ...raw, schemaVersion: SAVE_SCHEMA_VERSION, runHistory: [] });
     case 3:
       return finalizeSaveCandidate(migrateV3ToV4(raw));
+    case 4:
+      return finalizeSaveCandidate(migrateV4ToV5(raw));
     default:
       return finalizeSaveCandidate(raw);
   }
@@ -317,6 +329,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(context?.routes && context.routes.length > 0 ? { routes: [...context.routes] } : { routes: [] }),
     ...(typeof context?.runSeed === 'number' ? { runSeed: context.runSeed } : {}),
     ...(context?.ironmoor ? { ironmoor: true } : {}),
+    ...(context?.replay ? { replay: context.replay } : {}),
   };
 
   const nextSave: SaveData = {
@@ -365,7 +378,18 @@ function migrateV3ToV4(raw: SaveRecord): SaveRecord {
     const existing = Array.isArray(entry.routes) ? entry.routes : [];
     return { ...entry, routes: existing };
   });
+  // Carry forward into v5 in one step — v4 → v5 adds an optional `replay`
+  // field only, so nothing to backfill per-entry.
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION, runHistory: normalized };
+}
+
+/**
+ * v4 → v5 adds `RunHistoryEntry.replay?: ReplayBlob` for T1 deterministic
+ * replay. The field is optional, so migration is a pure version bump —
+ * pre-v5 history entries remain valid with `replay` absent.
+ */
+function migrateV4ToV5(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
@@ -495,6 +519,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
+    ...(isReplayBlob(raw.replay) ? { replay: raw.replay } : {}),
   };
 }
 

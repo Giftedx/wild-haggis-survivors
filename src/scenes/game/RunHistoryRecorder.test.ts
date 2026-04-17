@@ -88,6 +88,33 @@ describe('RunHistoryRecorder', () => {
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect('routes' in ctx).toBe(false);
     });
+
+    it('includes replay blob when getReplayBlob hook returns one', () => {
+      const { hooks } = buildMocks();
+      const replay = {
+        version: 1 as const,
+        build: 'test',
+        seed: 42,
+        variantKey: 'classic',
+        frameCount: 0,
+        frames: [],
+      };
+      const withReplay = { ...hooks, getReplayBlob: () => replay };
+      const ctx = new RunHistoryRecorder(withReplay).buildContext();
+      expect(ctx.replay).toBe(replay);
+    });
+
+    it('omits replay when getReplayBlob hook absent or returns null', () => {
+      const { hooks } = buildMocks();
+      const noHook = new RunHistoryRecorder(hooks).buildContext();
+      expect('replay' in noHook).toBe(false);
+
+      const withNullHook = new RunHistoryRecorder({
+        ...hooks,
+        getReplayBlob: () => null,
+      }).buildContext();
+      expect('replay' in withNullHook).toBe(false);
+    });
   });
 
   describe('record', () => {

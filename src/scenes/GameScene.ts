@@ -23,6 +23,8 @@ import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
+import { ReplayRecorder } from '../replay/ReplayRecorder';
+import { resolveReplayMode } from '../replay/replayConfig';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
@@ -167,6 +169,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * passed via `init(data)` — daily challenge / shared seed codes / replay.
    */
   private runRng!: RNG;
+  /**
+   * T1 deterministic replay — recorder for the current run. Constructed
+   * in create() once the run's seed + variant are resolved, and only when
+   * `resolveReplayMode() === 'record'`. `null` means recording is off;
+   * finalize/pushFrame calls are guarded by a null-check.
+   */
+  private replayRecorder: ReplayRecorder | null = null;
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
   /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */
@@ -386,6 +395,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       : getVariantByKey(this.pendingForceVariantKey ?? save.selectedVariant);
     this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
+
+    // T1 replay — construct the recorder exactly once per run, after seed
+    // + variant are resolved. `null` when record mode is off so the update
+    // tap is a single cheap null-check per frame.
+    this.replayRecorder =
+      resolveReplayMode() === 'record'
+        ? new ReplayRecorder({
+            seed: this.runRng.seed,
+            variantKey: selectedVariant.key,
+            build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
+          })
+        : null;
+
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
 
@@ -595,6 +617,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isDailyRun: () => this.runIsDaily,
       getRoutePicks: () => this.runActState.pickerHistory,
       isIronmoor: () => this.activeIronmoorRun,
+      getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
     });
 
     if (resumeRun) {
@@ -948,6 +971,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // requestAnimationFrame to ~1fps when backgrounded, producing huge deltas on return)
     delta = Math.min(delta, 100);
 
+    try {
+      this.updateInner(delta);
+    } finally {
+      // T1 replay — capture one frame per tick regardless of pause state, so
+      // menu edges that toggle pause are recorded at the game-time they fired.
+      // Direction + dash reflect the values `Player.update` actually saw (or
+      // stale snapshot when paused — no gameplay effect there).
+      if (this.replayRecorder && this.player) {
+        const snap = this.player.peekReplayInputFrame();
+        this.replayRecorder.pushFrame({
+          dtMs: delta,
+          dx: snap.dx,
+          dy: snap.dy,
+          dash: snap.dash,
+          menu: snap.menu,
+        });
+      }
+    }
+  }
+
+  private updateInner(delta: number): void {
     // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
     if (this.player.consumePauseMenuEdge()) {
       this.toggleUiPause();

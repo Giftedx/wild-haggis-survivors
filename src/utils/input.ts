@@ -32,6 +32,15 @@ export class InputManager {
   private prevGamepadDash = false;
   private prevGamepadMenu = false;
 
+  // T1 deterministic replay: per-frame snapshot of the most recent direction +
+  // whether dash / menu edges fired this tick. Values are cached here (not
+  // re-queried) so the GameScene recorder tap doesn't mutate Phaser state a
+  // second time. `dashEdgeThisFrame` / `menuEdgeThisFrame` are cleared by
+  // `peekReplayFrame()` after each read.
+  private lastDir: { x: number; y: number } = { x: 0, y: 0 };
+  private dashEdgeThisFrame = false;
+  private menuEdgeThisFrame = false;
+
   constructor(private scene: Phaser.Scene) {
     this.isTouchDevice = scene.sys.game.device.input.touch;
 
@@ -56,15 +65,17 @@ export class InputManager {
    * Call at most once per frame (e.g. start of Player.update).
    */
   consumeDashPressed(): boolean {
+    let edge = false;
     if (this.pendingTouchDash) {
       this.pendingTouchDash = false;
-      return true;
+      edge = true;
+    } else if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+      edge = true;
+    } else if (this.pollGamepadDashEdge()) {
+      edge = true;
     }
-    if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
-      return true;
-    }
-    if (this.pollGamepadDashEdge()) return true;
-    return false;
+    if (edge) this.dashEdgeThisFrame = true;
+    return edge;
   }
 
   /**
@@ -80,6 +91,7 @@ export class InputManager {
     const menu = pad.buttons[9]?.pressed ?? false;
     const edge = menu && !this.prevGamepadMenu;
     this.prevGamepadMenu = menu;
+    if (edge) this.menuEdgeThisFrame = true;
     return edge;
   }
 
@@ -99,6 +111,12 @@ export class InputManager {
 
   /** Returns a normalized {x, y} direction vector. Zero vector = no input. Length ≤ 1. */
   getDirection(): { x: number; y: number } {
+    const out = this.resolveDirection();
+    this.lastDir = out;
+    return out;
+  }
+
+  private resolveDirection(): { x: number; y: number } {
     if (this.joystickActive) {
       return this.getJoystickDirection();
     }
@@ -109,6 +127,26 @@ export class InputManager {
     if (kb.x === 0 && kb.y === 0) return gp;
     if (gp.x === 0 && gp.y === 0) return kb;
     return mergeMoveVectors(kb, gp, 1);
+  }
+
+  /**
+   * T1 replay — snapshot the values the player actually saw this tick.
+   * Clears the dash / menu edge flags so a second peek in the same frame
+   * returns `false` for both. Direction persists; zero-input frames still
+   * report the last non-zero direction until the player releases, which
+   * matches how `Player.lastMoveDir` is already used for the dash
+   * fall-back.
+   */
+  peekReplayFrame(): { dx: number; dy: number; dash: boolean; menu: boolean } {
+    const snap = {
+      dx: this.lastDir.x,
+      dy: this.lastDir.y,
+      dash: this.dashEdgeThisFrame,
+      menu: this.menuEdgeThisFrame,
+    };
+    this.dashEdgeThisFrame = false;
+    this.menuEdgeThisFrame = false;
+    return snap;
   }
 
   private getKeyboardDirection(): { x: number; y: number } {
