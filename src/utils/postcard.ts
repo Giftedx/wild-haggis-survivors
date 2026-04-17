@@ -1,3 +1,5 @@
+import { formatClockTime } from './formatClockTime';
+
 /**
  * W27 Capture & Share — postcard export with composited run-summary footer.
  *
@@ -139,10 +141,7 @@ export function renderPostcardDataUrl(
  * normalisation but we never want a malformed input to print "kills -3".
  */
 export function buildPostcardFooterParts(payload: PostcardPayload): string[] {
-  const totalSec = Math.max(0, Math.floor(payload.timeSurvivedSec));
-  const mins = Math.floor(totalSec / 60);
-  const secs = totalSec % 60;
-  const clock = `${mins}:${String(secs).padStart(2, '0')}`;
+  const clock = formatClockTime(payload.timeSurvivedSec);
   const parts: string[] = [
     `time ${clock}`,
     `kills ${Math.max(0, Math.floor(payload.enemiesKilled))}`,
