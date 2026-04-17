@@ -67,6 +67,12 @@ const config: Phaser.Types.Core.GameConfig = {
     arcade: {
       gravity: { x: 0, y: 0 },
       debug: GAME.PHYSICS_DEBUG,
+      // T1 Phase 3 — fixed-step integration decouples physics from RAF
+      // jitter. With `fixedStep: true`, Arcade advances in constant
+      // 1/fps increments regardless of the raw delta scenes receive.
+      // Necessary for byte-accurate replay playback (ADR-0002 Phase 3).
+      fps: 60,
+      fixedStep: true,
     },
   },
   scene: isSpriteExport
