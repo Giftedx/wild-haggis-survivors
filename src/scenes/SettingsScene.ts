@@ -227,7 +227,6 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();
-    this.addResetRow();
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned
@@ -260,6 +259,11 @@ export class SettingsScene extends Phaser.Scene {
       .rectangle(width / 2, backY, width - 48, 44, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({ kind: 'back', go: goBack, mark: backMark });
+
+    // Reset-to-defaults chip — sits on the BACK row rather than adding
+    // another row. Visual reset of every slider/toggle is its own
+    // confirmation, so no modal.
+    this.addResetChip(backY);
 
     this.gpIdx = 0;
     this.applyGpHighlight();
@@ -773,41 +777,29 @@ export class SettingsScene extends Phaser.Scene {
   }
 
   /**
-   * Reset-to-defaults row — quiet, dim chip to the right so it can't be
-   * mistaken for a primary action. Click wipes persisted settings via
-   * `SettingsManager.reset()` and restarts the scene so every slider
-   * and toggle snaps back to its default in one visible motion.
+   * Reset-to-defaults chip — dim, quiet button on the BACK row (right
+   * side) so it can't be mistaken for a primary action and doesn't add
+   * another row to an already-tight panel. Click wipes persisted
+   * settings via `SettingsManager.reset()` and restarts the scene so
+   * every slider/toggle snaps back to default in one visible motion.
    */
-  private addResetRow(): void {
+  private addResetChip(y: number): void {
     const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
-    this.rowY += rowStep;
-
-    this.add
-      .text(40, y + 4, t('ui.settings.reset_defaults'), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
-
-    const chipW = 130;
-    const chipH = 26;
-    const cx = width - 88;
-    const cy = y + 18;
+    const chipW = 110;
+    const chipH = 32;
+    const cx = width - 90;
     const chipIdle = 0x2a2430;
     const chipHover = 0x3a3040;
     const btn = this.add
-      .rectangle(cx, cy, chipW, chipH, chipIdle, 1)
+      .rectangle(cx, y, chipW, chipH, chipIdle, 1)
       .setStrokeStyle(1.5, 0x5a4e64, 0.9)
       .setInteractive({ useHandCursor: true });
     btn.setScale(this.uiScale);
 
     const txt = this.add
-      .text(cx, cy, t('ui.settings.reset_action'), {
+      .text(cx, y, t('ui.settings.reset_action'), {
         fontFamily: 'monospace',
-        fontSize: '12px',
+        fontSize: '13px',
         color: '#c8b8d4',
         fontStyle: 'bold',
       })
@@ -832,7 +824,7 @@ export class SettingsScene extends Phaser.Scene {
     txt.on('pointerdown', doReset);
 
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(cx, y, chipW + 10, chipH + 6, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
