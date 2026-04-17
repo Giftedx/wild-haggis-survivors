@@ -3,6 +3,23 @@ import { GAME } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
 import { Enemy } from '../entities/Enemy';
 import { getCameraViewport } from './cameraViewport';
+import {
+  resolveMinimapPalette,
+  resolveMinimapEdgeWarn,
+  MINIMAP_BOSS_FILL,
+  MINIMAP_ELITE_RING_FILL,
+  MINIMAP_ELITE_INNER_FALLBACK,
+  MINIMAP_ENEMY_FILL,
+  MINIMAP_ENEMY_ALPHA,
+  MINIMAP_PLAYER_FILL,
+  MINIMAP_CHEST_OUTLINE,
+  MINIMAP_CHEST_OUTLINE_ALPHA,
+  MINIMAP_CHEST_GOLDEN,
+  MINIMAP_CHEST_NORMAL,
+  MINIMAP_VIEWPORT_STROKE,
+  MINIMAP_VIEWPORT_ALPHA,
+  MINIMAP_WARN_STROKE,
+} from './minimapPalette';
 
 /**
  * Minimap — small corner radar showing player position, enemy clusters,
@@ -43,10 +60,9 @@ export class Minimap {
 
     // Darker background + stronger border so the minimap stays readable
     // over bright terrain (grass, heather, lava).
-    const bgAlpha = highContrastUi ? 0.7 : 0.55;
-    const borderColor = highContrastUi ? 0x8fb4ff : 0x6a7390;
-    this.bg = scene.add.rectangle(x, y, this.SIZE, this.SIZE, 0x000000, bgAlpha)
-      .setStrokeStyle(2, borderColor, 1)
+    const palette = resolveMinimapPalette(highContrastUi);
+    this.bg = scene.add.rectangle(x, y, this.SIZE, this.SIZE, 0x000000, palette.bgAlpha)
+      .setStrokeStyle(2, palette.borderColor, 1)
       .setScrollFactor(0)
       .setDepth(this.DEPTH);
 
@@ -86,20 +102,20 @@ export class Minimap {
 
       if (e.isBoss()) {
         // Boss: larger red diamond — the player needs to find this fast.
-        this.gfx.fillStyle(0xdd4444, 1);
+        this.gfx.fillStyle(MINIMAP_BOSS_FILL, 1);
         this.gfx.fillTriangle(dx, dy - 5, dx + 4, dy, dx, dy + 5);
         this.gfx.fillTriangle(dx, dy - 5, dx - 4, dy, dx, dy + 5);
       } else if (e.isElite()) {
         // Elite: inner fill uses affix hue when present, else classic gold.
         const affixTint = e.getEliteAffixIndicatorTint();
-        const inner = affixTint ?? 0xffdd44;
-        this.gfx.fillStyle(0x332200, 0.6);
+        const inner = affixTint ?? MINIMAP_ELITE_INNER_FALLBACK;
+        this.gfx.fillStyle(MINIMAP_ELITE_RING_FILL, 0.6);
         this.gfx.fillCircle(dx, dy, 3);
         this.gfx.fillStyle(inner, 1);
         this.gfx.fillCircle(dx, dy, 2.2);
       } else {
         // Regular: dim red dot, slightly bigger.
-        this.gfx.fillStyle(0xcc4444, 0.55);
+        this.gfx.fillStyle(MINIMAP_ENEMY_FILL, MINIMAP_ENEMY_ALPHA);
         this.gfx.fillCircle(dx, dy, 1.4);
       }
     }
@@ -114,16 +130,16 @@ export class Minimap {
     const px = Phaser.Math.Clamp(mapX + playerX * scaleX, mapX + 4, mapX + this.SIZE - 4);
     const py = Phaser.Math.Clamp(mapY + playerY * scaleY, mapY + 4, mapY + this.SIZE - 4);
     const tri = this.triangleForRotation(px, py, 4.5, playerRotation);
-    this.gfx.fillStyle(0x44dd44, 1);
+    this.gfx.fillStyle(MINIMAP_PLAYER_FILL, 1);
     this.gfx.fillTriangle(tri.ax, tri.ay, tri.bx, tri.by, tri.cx, tri.cy);
 
     // Chest markers: subtle squares (gold for golden chests). Same as before.
     for (const chest of chestMarkers) {
       const cx = Phaser.Math.Clamp(mapX + chest.x * scaleX, mapX, mapX + this.SIZE);
       const cy = Phaser.Math.Clamp(mapY + chest.y * scaleY, mapY, mapY + this.SIZE);
-      this.gfx.fillStyle(0x000000, 0.9);
+      this.gfx.fillStyle(MINIMAP_CHEST_OUTLINE, MINIMAP_CHEST_OUTLINE_ALPHA);
       this.gfx.fillRect(cx - 3, cy - 3, 6, 6);
-      this.gfx.fillStyle(chest.golden ? 0xffcc44 : 0x66ccff, 1);
+      this.gfx.fillStyle(chest.golden ? MINIMAP_CHEST_GOLDEN : MINIMAP_CHEST_NORMAL, 1);
       this.gfx.fillRect(cx - 2, cy - 2, 4, 4);
     }
 
@@ -133,21 +149,15 @@ export class Minimap {
     const viewH = (cam.height / cam.zoom) * scaleY;
     const camLeft = mapX + cam.scrollX * scaleX;
     const camTop = mapY + cam.scrollY * scaleY;
-    this.gfx.lineStyle(1, 0xffffff, 0.3);
+    this.gfx.lineStyle(1, MINIMAP_VIEWPORT_STROKE, MINIMAP_VIEWPORT_ALPHA);
     this.gfx.strokeRect(camLeft, camTop, viewW, viewH);
 
     // Warning edge — the player is near a world boundary. Draws a thin
     // red inset rectangle on the minimap telling the player "you're up
     // against the soft wall".
-    const boundaryMargin = 200;
-    const distToEdge = Math.min(
-      playerX, playerY,
-      GAME.WORLD_WIDTH - playerX,
-      GAME.WORLD_HEIGHT - playerY
-    );
-    if (distToEdge < boundaryMargin) {
-      const warnAlpha = 0.25 + 0.5 * (1 - distToEdge / boundaryMargin);
-      this.gfx.lineStyle(2, 0xff4444, warnAlpha);
+    const warn = resolveMinimapEdgeWarn(playerX, playerY, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+    if (warn.active) {
+      this.gfx.lineStyle(2, MINIMAP_WARN_STROKE, warn.alpha);
       this.gfx.strokeRect(mapX + 1, mapY + 1, this.SIZE - 2, this.SIZE - 2);
     }
   }
