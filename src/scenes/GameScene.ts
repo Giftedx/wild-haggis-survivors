@@ -553,6 +553,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunModifiers: () => this.runModifiers,
       isDailyRun: () => this.runIsDaily,
       isIronmoorRun: () => this.settingsManager.load().ironmoorMode,
+      getSecondsPastBell: () => this.runLifecycle?.getSecondsPastBell() ?? 0,
       getRunScore: () => this.runScore,
       getOwnedPassivesLength: () => this.ownedPassives.length,
       getEvolvedWeaponsLength: () => this.evolvedWeapons.length,

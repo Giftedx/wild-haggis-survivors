@@ -28,6 +28,9 @@ export interface GameOverPayload {
   runSeed?: number;
   /** W66 Ironmoor — true when the run was taken with single-life mode on. */
   ironmoor?: boolean;
+  /** Seconds the player survived past the Bell. Drives the postcard
+   *  "🔔 +M:SS past the bell" tag. Absent (or 0) for normal runs. */
+  postBellSec?: number;
   /** True when this run was a Daily Challenge attempt. */
   isDaily?: boolean;
   /** Classified reason for death — only set when `mode === 'death'`. */

@@ -20,6 +20,7 @@ function buildMocks(
     goldMult?: number;
     isDaily?: boolean;
     ironmoor?: boolean;
+    secondsPastBell?: number;
     curseKey?: string | null;
     variantKey?: string;
     runSeed?: number;
@@ -69,6 +70,7 @@ function buildMocks(
     getRunModifiers: () => ({ goldMult: overrides.goldMult ?? 1 }) as never,
     isDailyRun: () => overrides.isDaily ?? false,
     isIronmoorRun: () => overrides.ironmoor ?? false,
+    getSecondsPastBell: () => overrides.secondsPastBell ?? 0,
     getRunScore: () => score,
     getOwnedPassivesLength: () => 3,
     getEvolvedWeaponsLength: () => 1,
@@ -190,6 +192,26 @@ describe('RunExitComposer', () => {
         { goldEarned: 0 } as never,
       );
       expect(p.curseKey).toBe('thin_hide');
+    });
+
+    it('postBellSec is absent for normal runs', () => {
+      const { hooks } = buildMocks({ secondsPastBell: 0 });
+      const p = new RunExitComposer(hooks).buildGameOverPayload(
+        'death',
+        { timeSurvivedSec: 900, enemiesKilled: 200, victory: false } as never,
+        { goldEarned: 0 } as never,
+      );
+      expect(p.postBellSec).toBeUndefined();
+    });
+
+    it('postBellSec floors and surfaces when player went past the bell', () => {
+      const { hooks } = buildMocks({ secondsPastBell: 65.7 });
+      const p = new RunExitComposer(hooks).buildGameOverPayload(
+        'death',
+        { timeSurvivedSec: 1000, enemiesKilled: 220, victory: false } as never,
+        { goldEarned: 0 } as never,
+      );
+      expect(p.postBellSec).toBe(65);
     });
   });
 

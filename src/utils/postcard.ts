@@ -26,6 +26,9 @@ export interface PostcardPayload {
   variantLabel?: string;
   /** True when this run was Ironmoor — footer gets a "⚔ Ironmoor" tag. */
   ironmoor?: boolean;
+  /** Seconds the player survived past the Bell (Taxman kill). When > 0,
+   *  the footer adds a "🔔 +M:SS past the bell" tag — pride for endless runs. */
+  postBellSec?: number;
 }
 
 /** Footer band height in CSS pixels. */
@@ -117,6 +120,11 @@ export function renderPostcardDataUrl(
   ];
   if (payload.variantLabel) parts.push(payload.variantLabel);
   if (payload.ironmoor) parts.push('⚔ Ironmoor');
+  if (payload.postBellSec && payload.postBellSec > 0) {
+    const pbMin = Math.floor(payload.postBellSec / 60);
+    const pbSec = Math.floor(payload.postBellSec % 60);
+    parts.push(`🔔 +${pbMin}:${String(pbSec).padStart(2, '0')} past the bell`);
+  }
   ctx.fillText(parts.join('  ·  '), FOOTER_PAD_X, h + FOOTER_PAD_TOP + 22);
 
   // Bottom line: brand footer.

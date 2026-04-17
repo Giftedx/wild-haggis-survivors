@@ -788,6 +788,7 @@ export class GameOverScene extends Phaser.Scene {
         seedCode: p.seedCode,
         variantLabel: p.variantLabel,
         ironmoor: p.ironmoor,
+        postBellSec: p.postBellSec,
       });
       if (ok) {
         saved = true;
