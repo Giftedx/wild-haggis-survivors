@@ -70,6 +70,34 @@ describe('formatStandingStonesLine', () => {
     expect(line).toContain('haste 0');
     expect(line).not.toContain('undefined');
   });
+
+  it('appends favourite stone title when sample is large enough', () => {
+    const line = formatStandingStonesLine({
+      total: 10,
+      byBoon: { mending: 3, fire: 2, haste: 5 },
+      favouriteBoon: 'haste',
+    });
+    expect(line.toLowerCase()).toContain('favourite');
+    expect(line.toLowerCase()).toContain('haste');
+  });
+
+  it('omits favourite suffix below sample threshold', () => {
+    const line = formatStandingStonesLine({
+      total: 2,
+      byBoon: { mending: 1, fire: 1 },
+      favouriteBoon: 'mending',
+    });
+    expect(line.toLowerCase()).not.toContain('favourite');
+  });
+
+  it('omits favourite suffix when favouriteBoon is null', () => {
+    const line = formatStandingStonesLine({
+      total: 9,
+      byBoon: { mending: 3, fire: 3, haste: 3 },
+      favouriteBoon: null,
+    });
+    expect(line.toLowerCase()).not.toContain('favourite');
+  });
 });
 
 describe('formatAncestralEchoesLine', () => {

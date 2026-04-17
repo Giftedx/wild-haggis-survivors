@@ -517,9 +517,12 @@ export function computeStandingStonesStats(save: SaveData): StandingStonesStats 
 
 /**
  * Single-line Chronicle readout. Blank when the player has never
- * walked a stone. Surfaces favourite boon when at least one pick
- * exists.
+ * walked a stone. Once the sample is large enough to mean something,
+ * appends the player's favourite stone — surfaces existing
+ * StandingStonesStats.favouriteBoon as a localised stone title.
  */
+export const STANDING_STONES_FAVOURITE_THRESHOLD = 3;
+
 export function formatStandingStonesLine(stats: StandingStonesStats): string {
   if (stats.total === 0) return '';
   const parts: string[] = [`⟁ Stones walked: ${stats.total}`];
@@ -527,6 +530,11 @@ export function formatStandingStonesLine(stats: StandingStonesStats): string {
   const f = stats.byBoon.fire ?? 0;
   const h = stats.byBoon.haste ?? 0;
   parts.push(`(mending ${m} · fire ${f} · haste ${h})`);
+  if (stats.favouriteBoon && stats.total >= STANDING_STONES_FAVOURITE_THRESHOLD) {
+    const titleKey = `ui.standingStones.${stats.favouriteBoon}.title`;
+    const title = t(titleKey);
+    if (title && title !== titleKey) parts.push(`· favourite ${title}`);
+  }
   return parts.join(' ');
 }
 
