@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import type { ISceneContext } from '../core/ISceneContext';
+import { resolveXpGemTier } from './xpGemTier';
 
 /**
  * XP Gem ("Whisky Drop") — poolable pickup that grants XP.
@@ -36,10 +37,10 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     this.setVelocity(0, 0);
 
     // Scale and tint by value — high-value gems are bigger and brighter
-    this.setScale(Math.min(2, 0.8 + value * 0.15));
+    const tier = resolveXpGemTier(value);
+    this.setScale(tier.scale);
     this.clearTint();
-    if (value >= 5) this.setTint(0xffffff);       // boss gems: bright white
-    else if (value >= 3) this.setTint(0xffee66);   // elite gems: pale gold
+    if (tier.tint !== null) this.setTint(tier.tint);
 
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.enable = true;
@@ -59,7 +60,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     // Show value label for high-value gems (3+). Font size scales with
     // uiScale so players on a 1.4x comfort setting can actually read the
     // number instead of seeing a smudge next to the gem.
-    if (value >= 3) {
+    if (tier.showLabel) {
       if (!this.valueLabel) {
         const uiScale = getSettingsManager().load().uiScale;
         const px = Math.max(8, Math.round(11 * uiScale));
@@ -75,9 +76,8 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
 
     // Glow aura for high-value gems — a soft circle behind the gem visible
     // from farther away, so rare drops are easy to spot.
-    if (value >= 3) {
-      const auraColor = value >= 5 ? 0xffffff : 0xffee66;
-      const auraRadius = value >= 5 ? 14 : 10;
+    if (tier.aura) {
+      const { color: auraColor, radius: auraRadius } = tier.aura;
       if (!this.aura) {
         this.aura = this.scene.add.circle(x, y, auraRadius, auraColor, 0.25).setDepth(4);
       } else {
