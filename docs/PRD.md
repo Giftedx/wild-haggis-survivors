@@ -107,9 +107,13 @@ core gameplay feel. Ralph-mode managed.
   one-page "how to add a new boss / variant voice" note so future
   content drops don't require engine diffs. Done 2026-04-17 —
   `docs/BANTER_AUTHORING.md` (commit c621b09).
-- [ ] Consider extending banter to **weapon evolution moments** and
+- [x] Consider extending banter to **weapon evolution moments** and
   **curse acceptance** — both have narrative weight and the
   priority slots are open (30-50 range).
+  **Shipped pre-PRD-snapshot — `weapon_evolve` pool at priority
+  65 with 8 weapon sub-tags, `curse_start` pool at priority 59
+  with 5 curse sub-tags; triggers wired in `LevelUpFlow.ts:250`
+  and `GameScene.ts:716`.** Verified 2026-04-17.
 - [ ] Finish **W18 Phase B — banter Scots overlay**. UI parity is
   green; banter pool deferred pending voice-register review.
 
