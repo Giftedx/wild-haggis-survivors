@@ -54,11 +54,15 @@ export class SpawnSystem {
    */
   private enemyHpMultiplier: number = 1.0;
   /**
-   * Wall-clock ms epoch at which the `pauseSpawnsFor` hold ends.
-   * 0 = not paused. Used by `spawnBurst` to no-op regular spawns
-   * for the duration without touching token infrastructure.
+   * Game-time (seconds) at which the `pauseSpawnsFor` hold ends. 0 = not
+   * paused. Used by `spawnBurst` to no-op regular spawns for the duration
+   * without touching token infrastructure. Game-time (not wall-clock) is
+   * load-bearing for T1 deterministic replay — hit-freeze, pause, and
+   * tab-backgrounding all freeze `gameTimeSec` but leave `Date.now()`
+   * ticking, which previously caused the pause window to drift relative
+   * to gameplay.
    */
-  private spawnsPausedUntilRealMs: number = 0;
+  private spawnsPausedUntilGameSec: number = 0;
   /** Current segment from `WAVE_TIMELINE` — refreshed each update from `gameTimeSec`. */
   private directorEnemyKeys: string[] = [];
   /** Cached segment reference — avoids re-spreading enemyKeys when segment hasn't changed. */
@@ -140,12 +144,14 @@ export class SpawnSystem {
   }
 
   /**
-   * W2 Moor Road: suppress regular spawn bursts for `ms` wall-clock
-   * milliseconds. Used by `buckie_pitstop` to give the player 15s of
-   * peace before resuming. Boss timeline is untouched.
+   * W2 Moor Road: suppress regular spawn bursts for `ms` of game-time.
+   * Used by `buckie_pitstop` to give the player 15s of peace before
+   * resuming. Boss timeline is untouched. Game-time (not wall-clock) so
+   * the pause window is consistent under hit-freeze / tab-backgrounding,
+   * which makes the behaviour seed-deterministic for T1 replay.
    */
   pauseSpawnsFor(ms: number): void {
-    this.spawnsPausedUntilRealMs = Date.now() + Math.max(0, ms);
+    this.spawnsPausedUntilGameSec = this.gameTimeSec + Math.max(0, ms) / 1000;
   }
 
   /**
@@ -210,7 +216,7 @@ export class SpawnSystem {
     this.killPressure = 0;
     this.eliteWeightMultiplier = 1.0;
     this.enemyHpMultiplier = 1.0;
-    this.spawnsPausedUntilRealMs = 0;
+    this.spawnsPausedUntilGameSec = 0;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -525,7 +531,7 @@ export class SpawnSystem {
 
   private spawnBurst(playerX: number, playerY: number): void {
     if (this.regularSpawnsDisabled) return;
-    if (this.spawnsPausedUntilRealMs > Date.now()) return;
+    if (this.gameTimeSec < this.spawnsPausedUntilGameSec) return;
     const availableTypes = this.getDirectorEnemyConfigs();
     if (availableTypes.length === 0) return;
 

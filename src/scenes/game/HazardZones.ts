@@ -19,12 +19,20 @@ import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
 import { computeHazardDamage, HEAL_ZONE_HEAL_AMOUNT, LAVA_BASE_DAMAGE } from './hazardDamage';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
+import { computeExtraHealingPlacement, computeHazardPlacements } from './hazardPlacement';
+import type { RNG } from '../../utils/rng';
 
 export interface HazardZonesHooks {
   getPlayer(): Player;
   getJuice(): JuiceSystem;
   getDeathCauseTracker(): DeathCauseTracker;
   getSpawnSystem(): SpawnSystem;
+  /**
+   * Run-scoped seeded RNG. Zone positions are drawn from it so the same
+   * seed produces the same hazard layout across runs (foundation for T1
+   * deterministic replay + for daily-challenge fairness).
+   */
+  getRunRng(): RNG;
   isIFrames(): boolean;
   isVictoryPending(): boolean;
   getDamageTakenMult(): number;
@@ -57,48 +65,38 @@ export class HazardZones {
   spawn(): void {
     const W = GAME.WORLD_WIDTH;
     const H = GAME.WORLD_HEIGHT;
-    const rng = new Phaser.Math.RandomDataGenerator(['zones']);
     const scene = this.scene;
+    const placements = computeHazardPlacements(this.hooks.getRunRng(), W, H);
 
-    for (let i = 0; i < 4; i++) {
-      const lx = rng.between(200, W - 200);
-      const ly = rng.between(200, H - 200);
-      const lr = rng.between(35, 55);
-
-      scene.add.ellipse(lx, ly, lr * 2, lr * 1.5, HAZARD_ZONE_LAVA.baseColor, HAZARD_ZONE_LAVA.baseAlpha).setDepth(-1);
-      const lavaGlow = scene.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, HAZARD_ZONE_LAVA.glowColor, HAZARD_ZONE_LAVA.glowAlpha).setDepth(-1);
+    for (const z of placements.lava) {
+      scene.add.ellipse(z.x, z.y, z.r * 2, z.r * 1.5, HAZARD_ZONE_LAVA.baseColor, HAZARD_ZONE_LAVA.baseAlpha).setDepth(-1);
+      const lavaGlow = scene.add.ellipse(z.x, z.y, z.r * 1.6, z.r * 1.2, HAZARD_ZONE_LAVA.glowColor, HAZARD_ZONE_LAVA.glowAlpha).setDepth(-1);
       scene.tweens.add({
         targets: lavaGlow,
         alpha: { from: 0.15, to: 0.35 },
         scale: { from: 1, to: 1.1 },
-        duration: 1500 + rng.between(0, 800),
+        duration: 1500 + z.tweenJitterMs,
         ...TWEEN_INFINITE_BREATHE,
       });
-
-      this.lavaZones.push({ x: lx, y: ly, r: lr, tickAccMs: 0 });
+      this.lavaZones.push({ x: z.x, y: z.y, r: z.r, tickAccMs: 0 });
     }
 
-    for (let i = 0; i < 3; i++) {
-      this.addHealingCircle(
-        rng.between(200, W - 200),
-        rng.between(200, H - 200),
-        rng.between(30, 45),
-        rng.between(0, 1000),
-      );
+    for (const z of placements.heal) {
+      this.addHealingCircle(z.x, z.y, z.r, z.tweenJitterMs);
     }
   }
 
   /**
    * Drops an additional healing circle at random world coords. Used by
    * W2 route onResume (round_the_loch spawns two extra for act 2).
+   * Routed through the run RNG so the route's side-effect reproduces
+   * under the same seed.
    */
   spawnHealingCircle(): void {
     const W = GAME.WORLD_WIDTH;
     const H = GAME.WORLD_HEIGHT;
-    const x = Phaser.Math.Between(200, W - 200);
-    const y = Phaser.Math.Between(200, H - 200);
-    const r = Phaser.Math.Between(30, 45);
-    this.addHealingCircle(x, y, r, Phaser.Math.Between(0, 1000));
+    const p = computeExtraHealingPlacement(this.hooks.getRunRng(), W, H);
+    this.addHealingCircle(p.x, p.y, p.r, p.tweenJitterMs);
   }
 
   private addHealingCircle(hx: number, hy: number, hr: number, jitterMs: number): void {

@@ -443,6 +443,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getJuice: () => this.juice,
       getDeathCauseTracker: () => this.deathCauseTracker,
       getSpawnSystem: () => this.spawnSystem,
+      getRunRng: () => this.runRng,
       isIFrames: () => this.iFrameController.isActive(),
       isVictoryPending: () => this.runScore.victoryPending,
       getDamageTakenMult: () => this.runModifiers.damageTakenMult,
