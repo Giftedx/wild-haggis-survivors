@@ -91,6 +91,16 @@ export type GlobalRoutePickedPayload = {
   defaultedBySetting: boolean;
 };
 
+/**
+ * Kill combo crossed a notable threshold (e.g. 100 for the Storm Chaser
+ * achievement). Emitted exactly once per threshold per run — JuiceSystem
+ * fires on `comboCount === N`, so a dropped combo that rebuilds past N
+ * re-triggers. Listeners that must dedupe should idempotent-check.
+ */
+export type GlobalComboMilestonePayload = {
+  count: number;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -102,6 +112,7 @@ export type GlobalEvents = {
   GLOBAL_ROUTE_PICKED: GlobalRoutePickedPayload;
   CODEX_FIRST_CULL: CodexFirstCullPayload;
   GLOBAL_SHOP_PURCHASE: GlobalShopPurchasePayload;
+  GLOBAL_COMBO_MILESTONE: GlobalComboMilestonePayload;
   bossEnraged: string;
 };
 

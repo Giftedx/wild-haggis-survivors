@@ -34,8 +34,13 @@ export class AchievementManager {
       globalEventBus.on('GLOBAL_RUN_TIME_SEC', (p) => this.onRunTime(p)),
       globalEventBus.on('GLOBAL_RUN_ENDED', (p) => this.onRunEnded(p)),
       globalEventBus.on('GLOBAL_WEAPON_EVOLVED', () => this.tryUnlock('ach_first_evolution')),
-      globalEventBus.on('GLOBAL_MOOR_MOMENT', () => this.onMoorMoment())
+      globalEventBus.on('GLOBAL_MOOR_MOMENT', () => this.onMoorMoment()),
+      globalEventBus.on('GLOBAL_COMBO_MILESTONE', (p) => this.onComboMilestone(p))
     );
+  }
+
+  private onComboMilestone(p: import('./GlobalEventBus').GlobalComboMilestonePayload): void {
+    if (p.count >= 100) this.tryUnlock('ach_combo_100');
   }
 
   stop(): void {

@@ -832,6 +832,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Cursed Victor',
       description: 'Won a run wi a curse on yir back — peyed in teeth, walked oot anyway.',
     },
+    ach_combo_100: {
+      title: 'Storm Chaser',
+      description: 'Strung a hunner culls intae wan streak — tha moor\'s roarin\' wi ye.',
+    },
   },
   weapon: {
     thistle_shot: {

@@ -1445,6 +1445,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Cursed Victor',
       description: 'Won a run wi a curse on yir back — paid in teeth, walked oot anyway.',
     },
+    ach_combo_100: {
+      title: 'Storm Chaser',
+      description: 'Strung a hundred culls intae a single streak — the moor\'s roarin\' wi ye.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

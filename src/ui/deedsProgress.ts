@@ -206,6 +206,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_echo_touched',
   'ach_stone_circle',
   'ach_ceilidh_commander',
+  'ach_combo_100',
   'ach_past_the_bell',
   'ach_endless_endurance',
   'ach_cursed_victor',

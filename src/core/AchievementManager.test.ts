@@ -133,6 +133,16 @@ describe('AchievementManager', () => {
     expect(save.load().unlockedAchievements).toContain('ach_first_evolution');
   });
 
+  it('unlocks ach_combo_100 when combo milestone fires at 100', () => {
+    globalEventBus.emit('GLOBAL_COMBO_MILESTONE', { count: 100 });
+    expect(save.load().unlockedAchievements).toContain('ach_combo_100');
+  });
+
+  it('does not unlock ach_combo_100 below the 100 threshold', () => {
+    globalEventBus.emit('GLOBAL_COMBO_MILESTONE', { count: 99 });
+    expect(save.load().unlockedAchievements).not.toContain('ach_combo_100');
+  });
+
   it('unlocks ach_moor_hearth_30 after 30 moor moments (lifetime)', () => {
     for (let i = 0; i < 30; i++) {
       globalEventBus.emit('GLOBAL_MOOR_MOMENT', {

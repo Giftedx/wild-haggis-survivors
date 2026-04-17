@@ -28,6 +28,7 @@ import {
 import { audio } from './AudioSystem';
 import { bumpCeilidhPulsesLifetime } from '../utils/save';
 import { comboDamageMultiplier } from './comboDamage';
+import { globalEventBus } from '../core/GlobalEventBus';
 import {
   JUICE_BOSS_DEATH_GOLDS,
   JUICE_BOSS_DEATH_RING_PRIMARY,
@@ -342,6 +343,14 @@ export class JuiceSystem {
     this.comboCount++;
     this.comboTimer = this.COMBO_TIMEOUT_MS;
     if (this.comboCount > this.bestCombo) this.bestCombo = this.comboCount;
+
+    // Storm Chaser milestone — emit exactly when the streak first reaches
+    // 100 kills. AchievementManager tryUnlock is idempotent so a player
+    // who drops combo and rebuilds past 100 still unlocks (and the
+    // duplicate emit is harmless).
+    if (this.comboCount === 100) {
+      globalEventBus.emit('GLOBAL_COMBO_MILESTONE', { count: 100 });
+    }
 
     if (this.comboCount >= 5) {
       this.syncComboText();
