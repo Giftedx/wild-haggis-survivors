@@ -110,4 +110,8 @@ export const COLORS = {
 export const COLORS_CSS = {
   WHISKY_GOLD: '#d4a017',
   WHITE: '#ffffff',
+  /** Near-black ink — used by every bold title stroke (BootScene, PauseMenu,
+   *  JuiceSystem). Kept as a separate value (not `#000`) because the subtle
+   *  warm shift reads better over the moor-blue backdrop. */
+  INK: '#0a0a14',
 } as const;

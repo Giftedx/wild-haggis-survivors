@@ -519,7 +519,7 @@ export class JuiceSystem {
     const wrapW = toastWrapWidth(width);
     const toast = this.scene.add.text(x + width + 10, yOffset, message, {
       fontFamily: 'monospace', fontSize: scaledFontSize(16), color,
-      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: scaledStrokeThickness(3),
+      fontStyle: 'bold', stroke: COLORS_CSS.INK, strokeThickness: scaledStrokeThickness(3),
       backgroundColor: '#1a1a2ecc', padding: { x: 10, y: 5 },
       wordWrap: { width: wrapW },
       align: 'right',

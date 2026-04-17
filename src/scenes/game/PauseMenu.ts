@@ -80,7 +80,7 @@ export class PauseMenu {
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
         fontFamily: 'monospace', fontSize: style.titlePx, color: style.titleColor,
-        fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: style.titleStroke,
+        fontStyle: 'bold', stroke: COLORS_CSS.INK, strokeThickness: style.titleStroke,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
     const quipIndex = Phaser.Math.Between(1, 8);

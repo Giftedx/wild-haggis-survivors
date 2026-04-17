@@ -151,7 +151,7 @@ export class BootScene extends Phaser.Scene {
     // ── Title — whisky gold with warm glow ──
     const title = this.add.text(width / 2, height * 0.35, t('ui.menu.title'), {
       fontFamily: 'monospace', fontSize: '32px', color: COLORS_CSS.WHISKY_GOLD,
-      fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 5,
+      fontStyle: 'bold', stroke: COLORS_CSS.INK, strokeThickness: 5,
     }).setOrigin(0.5).setAlpha(0);
 
     // ── Tagline — the soul charter in miniature ──
