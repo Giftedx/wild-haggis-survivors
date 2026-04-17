@@ -55,8 +55,6 @@ describe('MetaProgressSystem', () => {
       outcome: 'death',
       gameTimeSec: 10,
       enemiesKilled: 2,
-      level: 1,
-      bossKills: 0,
     });
     // No stop() — pending kills should already be flushed by the run-end hook.
     expect(save.load().totalKills).toBe(2);
