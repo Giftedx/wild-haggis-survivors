@@ -3,6 +3,7 @@ import { t } from '../core/i18n';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
+import { resolveCardRarityGlowStyle } from './cardRarityGlowStyle';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -186,12 +187,16 @@ export class UpgradeCardsUI {
       .setInteractive({ useHandCursor: true });
     this.elements.push(bg);
 
-    // Rarity glow — animated for legendary, static for rare
-    if (card.rarity === 'legendary') {
-      const glow = this.scene.add.rectangle(x, y, w + 8, h + 8, borderColor, 0.15)
-        .setScrollFactor(0).setDepth(depth - 1);
-      this.elements.push(glow);
+    // Rarity glow — animated for legendary, static for rare + low-rarity
+    const glowStyle = resolveCardRarityGlowStyle(card.rarity, borderColor);
+    const glow = this.scene.add.rectangle(
+      x, y, w + glowStyle.padExpand, h + glowStyle.padExpand,
+      glowStyle.color, glowStyle.alpha,
+    )
+      .setScrollFactor(0).setDepth(depth - 1);
+    this.elements.push(glow);
 
+    if (card.rarity === 'legendary') {
       // Pulsing golden glow
       this.scene.tweens.add({
         targets: glow,
@@ -222,15 +227,6 @@ export class UpgradeCardsUI {
           repeat: -1,
         });
       }
-    } else if (card.rarity === 'rare') {
-      const glow = this.scene.add.rectangle(x, y, w + 4, h + 4, borderColor, 0.1)
-        .setScrollFactor(0).setDepth(depth - 1);
-      this.elements.push(glow);
-    } else {
-      // Common/uncommon cards get a subtle warm wash so they don't feel flat
-      const glow = this.scene.add.rectangle(x, y, w + 2, h + 2, 0xd4a017, 0.04)
-        .setScrollFactor(0).setDepth(depth - 1);
-      this.elements.push(glow);
     }
 
     if (this.scene.textures && !this.scene.textures.exists(card.icon)) {
