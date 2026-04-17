@@ -4,6 +4,7 @@ import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 import { BOSSES, ENEMY_TYPES } from '../data/enemies';
+import { createDefaultSave, writeSave } from '../utils/save';
 
 function allCodexKeysSorted(): string[] {
   const s = new Set<string>();
@@ -230,5 +231,122 @@ describe('AchievementManager', () => {
       });
     }
     expect(save.load().unlockedAchievements).not.toContain('ach_all_bosses');
+  });
+});
+
+/**
+ * Achievements whose unlock predicate reads the gameplay save via
+ * `loadSave()` directly (not the injected SaveManager) — Standing
+ * Stones, Ancestral Echoes, Ceilidh Chain. These need a real
+ * `localStorage` shim because `loadSave` hits the `whs_save` key on
+ * `globalThis.localStorage`, not the per-test SaveManager storage.
+ */
+describe('AchievementManager — gameplay-save-driven unlocks', () => {
+  let storage: MemoryStorage;
+  let save: SaveManager;
+  let mgr: AchievementManager;
+  let originalLocalStorage: Storage | undefined;
+
+  beforeEach(async () => {
+    storage = new MemoryStorage();
+    save = new SaveManager({ storage, key: 'ach_test' });
+    save.save({
+      saveVersion: 9,
+      totalKills: 0,
+      totalKillsSpent: 0,
+      dailyChallenge: null,
+      unlockedWeapons: [],
+      unlockedUpgrades: [],
+      activeRun: null,
+      unlockedAchievements: [],
+      hasCompletedTutorial: true,
+      hasSeenDriftTutorial: false,
+      hasSeenEliteAffixTip: false,
+      hasSeenMoorMomentTip: false,
+      hasSeenCeilidhChainTip: false,
+      hasSeenStandingStonesTip: false,
+      hasSeenAncestralEchoTip: false,
+      moorMomentsLifetime: 0,
+      runHistory: [],
+      codexCulledKeys: [],
+    });
+
+    // Install an in-memory localStorage so loadSave/writeSave hit a
+    // sandbox we control — node env has no real localStorage.
+    originalLocalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+    const memMap = new Map<string, string>();
+    (globalThis as { localStorage: Storage }).localStorage = {
+      getItem: (k: string) => memMap.get(k) ?? null,
+      setItem: (k: string, v: string) => { memMap.set(k, v); },
+      removeItem: (k: string) => { memMap.delete(k); },
+      clear: () => { memMap.clear(); },
+      key: () => null,
+      get length() { return memMap.size; },
+    } as Storage;
+
+    mgr = new AchievementManager(save);
+    mgr.start();
+  });
+
+  afterEach(() => {
+    mgr.stop();
+    if (originalLocalStorage === undefined) {
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    } else {
+      (globalThis as { localStorage: Storage }).localStorage = originalLocalStorage;
+    }
+  });
+
+  function seedGameplaySave(extras: Record<string, unknown>): void {
+    const base = createDefaultSave();
+    writeSave({ ...base, ...extras } as ReturnType<typeof createDefaultSave>);
+  }
+
+  it('unlocks ach_stone_circle when all three boons have been picked', () => {
+    seedGameplaySave({ standingStonesPicked: { mending: 1, fire: 1, haste: 1 } });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 400, enemiesKilled: 100,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_stone_circle');
+  });
+
+  it('does NOT unlock ach_stone_circle when one boon is missing', () => {
+    seedGameplaySave({ standingStonesPicked: { mending: 5, fire: 5 } });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 400, enemiesKilled: 100,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_stone_circle');
+  });
+
+  it('unlocks ach_echo_touched on first Ancestral Echo touch', () => {
+    seedGameplaySave({ ancestralEchoesTouched: 1 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 60, enemiesKilled: 10,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_echo_touched');
+  });
+
+  it('does NOT unlock ach_echo_touched when count is 0', () => {
+    seedGameplaySave({ ancestralEchoesTouched: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 60, enemiesKilled: 10,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_echo_touched');
+  });
+
+  it('unlocks ach_ceilidh_commander at 15 lifetime pulses', () => {
+    seedGameplaySave({ ceilidhPulsesLifetime: 15 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 300, enemiesKilled: 120,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_ceilidh_commander');
+  });
+
+  it('does NOT unlock ach_ceilidh_commander at 14 pulses', () => {
+    seedGameplaySave({ ceilidhPulsesLifetime: 14 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 300, enemiesKilled: 120,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_ceilidh_commander');
   });
 });
