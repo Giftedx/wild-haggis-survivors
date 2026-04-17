@@ -9,6 +9,7 @@ import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
 import { formatClockTime } from '../utils/formatClockTime';
+import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import {
   targetHpBarColor,
@@ -527,7 +528,7 @@ export class HUD {
     if (overCap && !this.wasOverCap) {
       this.scene.tweens.add({
         targets: this.killText, scaleX: this.uiScale * 1.15, scaleY: this.uiScale * 1.15,
-        duration: 120, yoyo: true, ease: 'Sine.easeOut',
+        duration: 120, ...TWEEN_ONE_SHOT_PULSE,
       });
     }
     this.wasOverCap = overCap;

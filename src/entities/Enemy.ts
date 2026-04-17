@@ -19,6 +19,7 @@ import {
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
 import { numberToCssColor } from '../utils/colorFormat';
+import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
@@ -1135,7 +1136,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         const origScale = this.baseDisplayScale;
         this.scene.tweens.add({
           targets: this, scaleX: origScale * 1.2, scaleY: origScale * 1.2,
-          duration: 150, yoyo: true, ease: 'Sine.easeOut',
+          duration: 150, ...TWEEN_ONE_SHOT_PULSE,
         });
 
         // Red particles radiating outward

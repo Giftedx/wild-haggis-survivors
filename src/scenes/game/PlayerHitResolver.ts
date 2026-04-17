@@ -9,6 +9,7 @@
  * from the overlap callback.
  */
 import Phaser from 'phaser';
+import { TWEEN_ONE_SHOT_PULSE } from '../../utils/tweenPresets';
 import type { Player } from '../../entities/Player';
 import type { Enemy } from '../../entities/Enemy';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
@@ -150,8 +151,7 @@ export class PlayerHitResolver {
       scaleX: baseScale * RECOIL_SCALE_X,
       scaleY: baseScale * RECOIL_SCALE_Y,
       duration: RECOIL_MS,
-      yoyo: true,
-      ease: 'Sine.easeOut',
+      ...TWEEN_ONE_SHOT_PULSE,
     });
 
     // Camera shake scales with damage-as-fraction-of-maxHp.

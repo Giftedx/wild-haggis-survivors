@@ -14,3 +14,14 @@ export const TWEEN_INFINITE_BREATHE = {
   repeat: -1,
   ease: 'Sine.easeInOut',
 } as const;
+
+/**
+ * One-shot scale / recoil pulse — `yoyo: true` + `ease: 'Sine.easeOut'`
+ * with no repeat. Pairs a single prop animation (scaleX/Y, alpha…)
+ * with its bounce-back so the caller just writes the target value and
+ * duration. Used for kill-cap pulse, boss enrage swell, player hit recoil.
+ */
+export const TWEEN_ONE_SHOT_PULSE = {
+  yoyo: true,
+  ease: 'Sine.easeOut',
+} as const;
