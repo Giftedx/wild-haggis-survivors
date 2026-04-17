@@ -18,6 +18,7 @@ import {
 import type { GameSceneInitData } from './GameScene';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { resolveDailyStateDisplay } from './dailyMenuState';
+import { findLastSeededRun } from '../ui/chronicleAggregates';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -525,9 +526,7 @@ export class MainMenuScene extends Phaser.Scene {
     // One-tap shortcut to rerun the most recent history entry's seed +
     // variant. Hidden when history has no seeded entries (legacy saves
     // or fresh installs).
-    const lastRunEntry = [...gameplay.runHistory].reverse().find(
-      (e) => typeof e.runSeed === 'number',
-    );
+    const lastRunEntry = findLastSeededRun(gameplay.runHistory);
     if (lastRunEntry) {
       const rerunLastY = customSeedY + 22;
       const rerunTxt = this.add

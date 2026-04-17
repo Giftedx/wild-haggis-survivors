@@ -362,6 +362,21 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
 }
 
 /**
+ * Find the most recent history entry that carries a numeric runSeed.
+ * Legacy saves (pre-V8) lack runSeed on older entries; fresh installs
+ * have no history at all. Returns null when no seeded entry exists
+ * so the "rerun last seed" MainMenu shortcut stays hidden.
+ *
+ * Expects newest-last input (same as `SaveData.runHistory` order).
+ */
+export function findLastSeededRun(history: readonly RunHistoryEntry[]): RunHistoryEntry | null {
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (typeof history[i].runSeed === 'number') return history[i];
+  }
+  return null;
+}
+
+/**
  * Count distinct route keys the player has picked across their whole
  * runHistory. Fed to the "Kent the Moor" deed so the achievement
  * surfaces how much of the W2 route fork has been explored.

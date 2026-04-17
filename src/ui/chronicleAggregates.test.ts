@@ -5,6 +5,7 @@ import {
   computeMilestones,
   computeMoorRoadKillCriteria,
   countUniqueRouteKeys,
+  findLastSeededRun,
   detectMood,
   formatChronicleMilestoneLines,
   formatChronicleRunSubLine,
@@ -737,6 +738,32 @@ describe('countUniqueRouteKeys', () => {
     ];
     const history = [entry({ routes: picks }), entry()];
     expect(countUniqueRouteKeys(history)).toBe(1);
+  });
+});
+
+describe('findLastSeededRun', () => {
+  it('returns null for empty history', () => {
+    expect(findLastSeededRun([])).toBeNull();
+  });
+
+  it('returns null when no entry carries a runSeed', () => {
+    expect(findLastSeededRun([entry(), entry()])).toBeNull();
+  });
+
+  it('returns the newest entry (last in array) that has a runSeed', () => {
+    // Input order is newest-last. We want the last entry that has a seed.
+    const history = [entry({ runSeed: 100 }), entry(), entry({ runSeed: 200 })];
+    expect(findLastSeededRun(history)?.runSeed).toBe(200);
+  });
+
+  it('skips past unseeded entries at the tail', () => {
+    const history = [entry({ runSeed: 100 }), entry(), entry()];
+    expect(findLastSeededRun(history)?.runSeed).toBe(100);
+  });
+
+  it('returns null when every entry lacks a seed, even with many entries', () => {
+    const history = [entry(), entry(), entry()];
+    expect(findLastSeededRun(history)).toBeNull();
   });
 });
 
