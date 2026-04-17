@@ -18,6 +18,9 @@ function makeV6Save(over: Partial<{ hasCompletedTutorial: boolean }> = {}) {
     hasSeenDriftTutorial: false,
     hasSeenEliteAffixTip: false,
     hasSeenMoorMomentTip: false,
+    hasSeenCeilidhChainTip: false,
+    hasSeenStandingStonesTip: false,
+    hasSeenAncestralEchoTip: false,
     moorMomentsLifetime: 0,
     runHistory: [] as RunHistoryEntry[],
     codexCulledKeys: [] as string[],
@@ -269,6 +272,39 @@ describe('TutorialSystem', () => {
     tut.notifyFirstLevelReached(2);
     expect(save.load().hasCompletedTutorial).toBe(true);
   });
+
+  it.each([
+    ['ceilidh', 'notifyCeilidhChainIfFirst', 'hasSeenCeilidhChainTip'],
+    ['standingStones', 'notifyStandingStonesIfFirst', 'hasSeenStandingStonesTip'],
+    ['ancestralEcho', 'notifyAncestralEchoIfFirst', 'hasSeenAncestralEchoTip'],
+  ] as const)(
+    'persists %s tip flag and only renders banner once',
+    (_label, method, flag) => {
+      save.save(makeV6Save());
+      const tm = { request: vi.fn(), release: vi.fn() };
+      const xpEvents = new EventEmitter();
+      const textMock = () => ({
+        setOrigin() { return this; },
+        setScrollFactor() { return this; },
+        setDepth() { return this; },
+        setAlpha() { return this; },
+        destroy() {},
+      });
+      const scene: any = {
+        scale: { width: 800, height: 600 },
+        add: { text: textMock },
+        tweens: { add: vi.fn() },
+        getUpdateTickers: () => ({ addOnce: vi.fn(() => ({ cancel: vi.fn() })) }),
+        getTimeManager: () => tm,
+        getXPSystem: () => ({ events: xpEvents }),
+      };
+      const tut = new TutorialSystem(scene, save) as unknown as Record<string, () => void>;
+      tut[method]();
+      expect(save.load()[flag]).toBe(true);
+      tut[method]();
+      expect(scene.tweens.add).toHaveBeenCalledTimes(1);
+    },
+  );
 
   it('persists hasSeenEliteAffixTip and only tweens the banner once', () => {
     save.save(makeV6Save());

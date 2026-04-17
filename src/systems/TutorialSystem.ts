@@ -43,6 +43,10 @@ export class TutorialSystem {
   private moorMomentDismissRef: Phaser.GameObjects.Text | null = null;
   private moorMomentTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
 
+  /** Generic one-shot tip banners (ceilidh chain, standing stones, echoes). */
+  private oneShotBanners: Phaser.GameObjects.Text[] = [];
+  private oneShotTimerHandles: import('../utils/UpdateTickers').TickerHandle[] = [];
+
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
     this.scene = scene;
     this.metaSave = metaSave;
@@ -115,6 +119,13 @@ export class TutorialSystem {
       this.moorMomentDismissRef.destroy();
       this.moorMomentDismissRef = null;
     }
+    for (const h of this.oneShotTimerHandles) h.cancel();
+    this.oneShotTimerHandles = [];
+    for (const b of this.oneShotBanners) {
+      this.scene.tweens.killTweensOf(b);
+      b.destroy();
+    }
+    this.oneShotBanners = [];
   }
 
   startRunIfNeeded(opts?: { resumeRun?: boolean }): void {
@@ -269,6 +280,85 @@ export class TutorialSystem {
         banner.destroy();
       },
     });
+  }
+
+  // ── Generic one-shot banners for late-game mechanics ──────────────
+
+  /**
+   * First Ceilidh Chain pulse — players see the magnet snap and a tag
+   * without context; this banner names the combo mechanic.
+   */
+  notifyCeilidhChainIfFirst(): void {
+    if (this.metaSave.load().hasSeenCeilidhChainTip) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenCeilidhChainTip: true }));
+    this.showOneShotTip(t('tutorial.ceilidh_chain_first'), {
+      textColor: '#b8e8a8',
+      bgColor: '#0a2010cc',
+      topOffset: 174,
+    });
+  }
+
+  /** First Standing Stones trinity — 5:00 boon pick. */
+  notifyStandingStonesIfFirst(): void {
+    if (this.metaSave.load().hasSeenStandingStonesTip) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenStandingStonesTip: true }));
+    this.showOneShotTip(t('tutorial.standing_stones_first'), {
+      textColor: '#d0c0ff',
+      bgColor: '#10082acc',
+      topOffset: 174,
+    });
+  }
+
+  /** First Ancestral Echo — spectral haggis at last-death spot. */
+  notifyAncestralEchoIfFirst(): void {
+    if (this.metaSave.load().hasSeenAncestralEchoTip) return;
+    this.metaSave.update((cur) => ({ ...cur, hasSeenAncestralEchoTip: true }));
+    this.showOneShotTip(t('tutorial.ancestral_echo_first'), {
+      textColor: '#b0d4ff',
+      bgColor: '#081828cc',
+      topOffset: 174,
+    });
+  }
+
+  private showOneShotTip(
+    msg: string,
+    opts: { textColor: string; bgColor: string; topOffset: number },
+  ): void {
+    const { x, y, width } = this.getUiViewport();
+    const wrapW = Math.max(160, Math.min(420, width - 48));
+    const banner = this.scene.add
+      .text(x + width / 2, y + opts.topOffset, msg, {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: opts.textColor,
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 3,
+        backgroundColor: opts.bgColor,
+        padding: { x: 12, y: 8 },
+        wordWrap: { width: wrapW },
+        align: 'center',
+      })
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(86)
+      .setAlpha(0);
+    this.oneShotBanners.push(banner);
+    this.scene.tweens.add({ targets: banner, alpha: 1, duration: 400, ease: 'Power2' });
+
+    const handle = this.scene.getUpdateTickers().addOnce('raw', 7000, () => {
+      this.oneShotTimerHandles = this.oneShotTimerHandles.filter((h) => h !== handle);
+      const idx = this.oneShotBanners.indexOf(banner);
+      if (idx < 0) return;
+      this.oneShotBanners.splice(idx, 1);
+      this.scene.tweens.add({
+        targets: banner,
+        alpha: 0,
+        duration: 400,
+        onComplete: () => banner.destroy(),
+      });
+    });
+    this.oneShotTimerHandles.push(handle);
   }
 
   // ── Drift tutorial (non-pausing) ───────────────────────────────────

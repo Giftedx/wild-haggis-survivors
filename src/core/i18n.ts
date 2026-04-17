@@ -1414,6 +1414,9 @@ export const EN_STRINGS: LocaleTree = {
     /** One-shot when the first affixed gold elite spawns — `{name}` is the trait title. */
     elite_affix_first: '{name} — gold elites carry a trait. The tag by the bar tells ye which.',
     moor_moment_first: 'The moor gives wee gifts noo and then — a line, a boon, a breath. Bide wi it.',
+    ceilidh_chain_first: 'Ceilidh Chain — every 8th kill in a streak pulls coins an\' gems in close. Keep the jig gaun.',
+    standing_stones_first: 'Standing Stones — three boons on the moor. Walk up tae the one ye want; the other two crumble.',
+    ancestral_echo_first: 'Yer ghost frae last run is oot on the moor. Touch it fur gold an\' a wee heal — it only lingers 30s.',
   },
   weapon: {
     thistle_shot: {

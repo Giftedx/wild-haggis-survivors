@@ -206,6 +206,12 @@ export interface ISaveDataV9 {
   hasSeenDriftTutorial: boolean;
   hasSeenEliteAffixTip: boolean;
   hasSeenMoorMomentTip: boolean;
+  /** One-shot: first time Ceilidh Chain (every-8th-kill magnet pulse) fires. */
+  hasSeenCeilidhChainTip: boolean;
+  /** One-shot: first run the 5:00 standing-stones trinity spawns. */
+  hasSeenStandingStonesTip: boolean;
+  /** One-shot: first run a spectral Ancestral Echo appears at last-death spot. */
+  hasSeenAncestralEchoTip: boolean;
   moorMomentsLifetime: number;
   runHistory: RunHistoryEntry[];
   dailyChallenge: DailyChallengeState | null;
@@ -230,6 +236,9 @@ const DEFAULT_SAVE: ISaveData = {
   hasSeenDriftTutorial: false,
   hasSeenEliteAffixTip: false,
   hasSeenMoorMomentTip: false,
+  hasSeenCeilidhChainTip: false,
+  hasSeenStandingStonesTip: false,
+  hasSeenAncestralEchoTip: false,
   moorMomentsLifetime: 0,
   runHistory: [],
   dailyChallenge: null,
@@ -504,6 +513,9 @@ export class SaveManager {
     const hasSeenDriftTutorial = toBool(obj.hasSeenDriftTutorial, false);
     const hasSeenEliteAffixTip = toBool(obj.hasSeenEliteAffixTip, false);
     const hasSeenMoorMomentTip = toBool(obj.hasSeenMoorMomentTip, false);
+    const hasSeenCeilidhChainTip = toBool(obj.hasSeenCeilidhChainTip, false);
+    const hasSeenStandingStonesTip = toBool(obj.hasSeenStandingStonesTip, false);
+    const hasSeenAncestralEchoTip = toBool(obj.hasSeenAncestralEchoTip, false);
     const moorMomentsLifetime = clampInt(obj.moorMomentsLifetime, 0);
     const codexCulledKeys = coerceCodexCulledKeys(obj.codexCulledKeys);
 
@@ -522,6 +534,9 @@ export class SaveManager {
         hasSeenDriftTutorial: false,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
@@ -542,6 +557,9 @@ export class SaveManager {
         hasSeenDriftTutorial: false,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
@@ -562,6 +580,9 @@ export class SaveManager {
         hasSeenDriftTutorial: false,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
@@ -582,6 +603,9 @@ export class SaveManager {
         hasSeenDriftTutorial: false,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
@@ -602,6 +626,9 @@ export class SaveManager {
         hasSeenDriftTutorial,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory: [],
         dailyChallenge: null,
@@ -625,6 +652,9 @@ export class SaveManager {
         hasSeenDriftTutorial,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory,
         dailyChallenge: null,
@@ -647,6 +677,9 @@ export class SaveManager {
         hasSeenDriftTutorial,
         hasSeenEliteAffixTip: false,
         hasSeenMoorMomentTip: false,
+        hasSeenCeilidhChainTip: false,
+        hasSeenStandingStonesTip: false,
+        hasSeenAncestralEchoTip: false,
         moorMomentsLifetime: 0,
         runHistory,
         dailyChallenge: null,
@@ -666,6 +699,9 @@ export class SaveManager {
       hasSeenDriftTutorial,
       hasSeenEliteAffixTip,
       hasSeenMoorMomentTip,
+      hasSeenCeilidhChainTip,
+      hasSeenStandingStonesTip,
+      hasSeenAncestralEchoTip,
       moorMomentsLifetime,
       runHistory,
       dailyChallenge: coerceDailyChallenge(obj.dailyChallenge),

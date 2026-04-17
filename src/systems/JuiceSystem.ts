@@ -372,13 +372,15 @@ export class JuiceSystem {
       // moment between the rare Glesga-patter milestones below. Uses
       // the same scene duck-call as captions (see combo_11 branch).
       if (isCeilidhPulseMoment(this.comboCount)) {
-        const player = (this.scene as unknown as {
+        const sceneHooks = this.scene as unknown as {
           getPlayer?: () => { grantCeilidhChainMagnet: (f: number, d: number) => void };
-        }).getPlayer?.();
-        player?.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
+          getTutorialSystem?: () => { notifyCeilidhChainIfFirst: () => void };
+        };
+        sceneHooks.getPlayer?.().grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');
         this.showToast(msg, '#a0d8a0');
         this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
+        sceneHooks.getTutorialSystem?.().notifyCeilidhChainIfFirst();
       }
 
       if (this.comboCount === 11) {

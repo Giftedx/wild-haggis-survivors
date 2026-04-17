@@ -1163,6 +1163,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.ancestralEcho.spawn();
       this.juice.showToast(t('ui.ancestralEcho.announce_toast'), '#b0d4ff');
       this.caption('ancestral_echo_announce', t('ui.ancestralEcho.announce_caption'), '#b0d4ff', 3500);
+      this.tutorialSystem?.notifyAncestralEchoIfFirst();
       // Consume the echo so it doesn't re-spawn every run. Fresh death
       // on this run will write a new one via RunLifecycle.
       writeSave({ ...save, lastDeath: undefined });
@@ -1199,6 +1200,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.standingStones.spawn();
     this.juice.showToast(t('ui.standingStones.announce_toast'), '#ffe080');
     this.caption('standing_stones_announce', t('ui.standingStones.announce_caption'), '#ffe080', 3000);
+    this.tutorialSystem?.notifyStandingStonesIfFirst();
   }
 
   private showRunIdentityToast(isResume: boolean): void {
