@@ -11,6 +11,8 @@ import {
   deedSummary,
   formatDeedProgressLabel,
   resolveDeedCardPalette,
+  resolveDeedDescription,
+  resolveDeedProgressBarStyle,
   resolveDeedsSubtitleStyle,
   type DeedProgress,
   type DeedStatsSnapshot,
@@ -217,16 +219,19 @@ export class DeedsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     // Description OR mystery hint for binary locked deeds
-    const descriptionText = (!isUnlocked && deed.isBinary)
-      ? t('ui.deeds.locked_mystery')
-      : t(def.descriptionKey);
+    const desc = resolveDeedDescription({
+      status: deed.status,
+      isBinary: deed.isBinary,
+      fullDescription: t(def.descriptionKey),
+      mysteryHint: t('ui.deeds.locked_mystery'),
+    });
     const descColor = palette.descColor;
     this.add
-      .text(cx - w / 2 + 14, cy - 4, descriptionText, {
+      .text(cx - w / 2 + 14, cy - 4, desc.text, {
         fontFamily: 'monospace',
         fontSize: '10px',
         color: descColor,
-        fontStyle: (!isUnlocked && deed.isBinary) ? 'italic' : 'normal',
+        fontStyle: desc.italic ? 'italic' : 'normal',
         wordWrap: { width: w - 28 },
       })
       .setOrigin(0, 0.5)
@@ -243,16 +248,16 @@ export class DeedsScene extends Phaser.Scene {
         .rectangle(cx, barY, barWidth, 6, 0x0a1020, 1)
         .setStrokeStyle(1, 0x243552, 1);
       // Fill
-      const fillColor = isUnlocked ? 0xd4a017 : 0x4a6090;
+      const barStyle = resolveDeedProgressBarStyle(isUnlocked);
       const fillWidth = Math.max(2, barWidth * deed.ratio);
       this.add
-        .rectangle(barX + fillWidth / 2, barY, fillWidth, 4, fillColor, 1);
+        .rectangle(barX + fillWidth / 2, barY, fillWidth, 4, barStyle.fillColor, 1);
       // Numeric label
       this.add
         .text(cx, barY + 12, formatDeedProgressLabel(deed), {
           fontFamily: 'monospace',
           fontSize: '10px',
-          color: isUnlocked ? '#d4a017' : '#8a93a8',
+          color: barStyle.labelColor,
           fontStyle: 'bold',
         })
         .setOrigin(0.5)

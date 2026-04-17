@@ -41,6 +41,57 @@ export function resolveDeedsSubtitleStyle(earned: number, total: number): DeedsS
 export type DeedStatus = 'locked' | 'in_progress' | 'unlocked';
 
 /**
+ * Description text shown on the Deeds card. Binary-locked deeds
+ * (taxman kill, first evolution, all-bosses-in-one-run) hide their
+ * real trigger condition behind a "mystery" hint so the first unlock
+ * is still a surprise. Everything else reads straight from the def.
+ */
+export interface DeedDescription {
+  text: string;
+  /** True for the italic mystery hint; scene uses this for fontStyle. */
+  italic: boolean;
+}
+
+export interface DeedDescriptionInput {
+  status: DeedStatus;
+  isBinary: boolean;
+  /** i18n key already resolved by the caller (`t(def.descriptionKey)`). */
+  fullDescription: string;
+  /** i18n string for the "???" mystery hint (`t('ui.deeds.locked_mystery')`). */
+  mysteryHint: string;
+}
+
+/**
+ * Progress bar colours for the Deeds card (threshold deeds only —
+ * binary deeds don't render a bar). Two states:
+ *
+ *   unlocked: gold fill, gold numeric label (celebrate achievement)
+ *   in_progress / locked: cool slate fill, muted numeric label
+ */
+export interface DeedProgressBarStyle {
+  fillColor: number;
+  labelColor: string;
+}
+
+export const DEED_PROGRESS_BAR_UNLOCKED: DeedProgressBarStyle = {
+  fillColor: 0xd4a017, labelColor: '#d4a017',
+};
+export const DEED_PROGRESS_BAR_LOCKED: DeedProgressBarStyle = {
+  fillColor: 0x4a6090, labelColor: '#8a93a8',
+};
+
+export function resolveDeedProgressBarStyle(unlocked: boolean): DeedProgressBarStyle {
+  return unlocked ? DEED_PROGRESS_BAR_UNLOCKED : DEED_PROGRESS_BAR_LOCKED;
+}
+
+export function resolveDeedDescription(input: DeedDescriptionInput): DeedDescription {
+  const isLockedBinary = input.status !== 'unlocked' && input.isBinary;
+  return isLockedBinary
+    ? { text: input.mysteryHint, italic: true }
+    : { text: input.fullDescription, italic: false };
+}
+
+/**
  * Every colour the Deeds card renderer needs, keyed on status.
  * Pure selector — returning all six fields at once keeps the three
  * state rows (bg, icon, title, status, desc, stroke) in lockstep.

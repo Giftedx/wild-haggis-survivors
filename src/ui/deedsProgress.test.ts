@@ -6,7 +6,11 @@ import {
   deedSummary,
   formatDeedProgressLabel,
   resolveDeedCardPalette,
+  resolveDeedDescription,
+  resolveDeedProgressBarStyle,
   resolveDeedsSubtitleStyle,
+  DEED_PROGRESS_BAR_UNLOCKED,
+  DEED_PROGRESS_BAR_LOCKED,
   type DeedStatsSnapshot,
   type DeedStatus,
 } from './deedsProgress';
@@ -323,5 +327,70 @@ describe('resolveDeedCardPalette', () => {
       const values = new Set(STATUSES.map((s) => resolveDeedCardPalette(s)[field]));
       expect(values.size).toBe(STATUSES.length);
     }
+  });
+});
+
+describe('resolveDeedDescription', () => {
+  it('locked binary deed shows the mystery hint in italics', () => {
+    const out = resolveDeedDescription({
+      status: 'locked',
+      isBinary: true,
+      fullDescription: 'Kill 1000 enemies',
+      mysteryHint: '???',
+    });
+    expect(out.text).toBe('???');
+    expect(out.italic).toBe(true);
+  });
+
+  it('in-progress binary deed ALSO shows the mystery hint', () => {
+    // Binary deeds have no per-step progress — "not unlocked" is always
+    // hidden regardless of the specific pre-unlock status.
+    const out = resolveDeedDescription({
+      status: 'in_progress',
+      isBinary: true,
+      fullDescription: 'Kill 1000 enemies',
+      mysteryHint: '???',
+    });
+    expect(out.text).toBe('???');
+    expect(out.italic).toBe(true);
+  });
+
+  it('unlocked binary deed reveals the real description (not italic)', () => {
+    const out = resolveDeedDescription({
+      status: 'unlocked',
+      isBinary: true,
+      fullDescription: 'Kill 1000 enemies',
+      mysteryHint: '???',
+    });
+    expect(out.text).toBe('Kill 1000 enemies');
+    expect(out.italic).toBe(false);
+  });
+
+  it('threshold (non-binary) deed always shows the real description', () => {
+    for (const status of ['locked', 'in_progress', 'unlocked'] as const) {
+      const out = resolveDeedDescription({
+        status,
+        isBinary: false,
+        fullDescription: 'Kill 1000 enemies',
+        mysteryHint: '???',
+      });
+      expect(out.text).toBe('Kill 1000 enemies');
+      expect(out.italic).toBe(false);
+    }
+  });
+});
+
+describe('resolveDeedProgressBarStyle', () => {
+  it('unlocked uses gold fill + label', () => {
+    expect(resolveDeedProgressBarStyle(true)).toBe(DEED_PROGRESS_BAR_UNLOCKED);
+  });
+
+  it('locked/in-progress uses slate fill + muted label', () => {
+    expect(resolveDeedProgressBarStyle(false)).toBe(DEED_PROGRESS_BAR_LOCKED);
+  });
+
+  it('unlocked and locked bar styles never share a field', () => {
+    expect(DEED_PROGRESS_BAR_UNLOCKED.fillColor).not.toBe(DEED_PROGRESS_BAR_LOCKED.fillColor);
+    expect(DEED_PROGRESS_BAR_UNLOCKED.labelColor).not.toBe(DEED_PROGRESS_BAR_LOCKED.labelColor);
   });
 });
