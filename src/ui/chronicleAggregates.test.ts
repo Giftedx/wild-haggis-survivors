@@ -5,6 +5,7 @@ import {
   computeMilestones,
   computeMoorRoadKillCriteria,
   detectMood,
+  formatChronicleMilestoneLines,
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
@@ -15,6 +16,7 @@ import {
   getCodexRosterTotal,
   lifetimeTotals,
   selectRunsWithRoutes,
+  type Milestones,
 } from './chronicleAggregates';
 import type { RunHistoryEntry, SaveData } from '../utils/save';
 import type { RoutePick } from '../data/routes';
@@ -477,5 +479,109 @@ describe('W2 Moor Road chronicle helpers', () => {
       expect(line).toContain('longest 10:00');
       expect(line).toContain('fastest win 10:00');
     });
+  });
+});
+
+describe('formatChronicleMilestoneLines', () => {
+  function emptyMilestones(): Milestones {
+    return {
+      firstVictory: null,
+      longestRun: null,
+      mostKills: null,
+      highestCombo: null,
+      favoriteVariantKey: null,
+      favoriteVariantCount: 0,
+      favoriteWeaponKey: null,
+      favoriteWeaponCount: 0,
+      currentWinStreak: 0,
+      currentLossStreak: 0,
+    };
+  }
+
+  it('returns the "first victory _none" placeholder when history is empty', () => {
+    const lines = formatChronicleMilestoneLines(emptyMilestones());
+    expect(lines).toHaveLength(1);
+    // The placeholder must not be the raw key (would mean missing i18n).
+    expect(lines[0]).not.toBe('ui.chronicle.milestone_first_victory_none');
+  });
+
+  it('emits the firstVictory line when the player has won', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      firstVictory: entry({ isVictory: true, timeSurvivedSec: 600, enemiesKilled: 100 }),
+    });
+    // Exactly one line; refs the time + kills.
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('10:00');
+    expect(lines[0]).toContain('100');
+  });
+
+  it('skips highestCombo when bestCombo is 0', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      highestCombo: entry({ bestCombo: 0 }),
+    });
+    // Only the firstVictory placeholder — highestCombo line gated on > 0.
+    expect(lines).toHaveLength(1);
+  });
+
+  it('emits highestCombo when bestCombo > 0', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      highestCombo: entry({ bestCombo: 42 }),
+    });
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain('42');
+  });
+
+  it('win streak (>=2) wins the streak slot — loss streak ignored', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      currentWinStreak: 3,
+      currentLossStreak: 5, // would normally trigger compassion line
+    });
+    // Placeholder + win-streak line, no loss line.
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain('3');
+    expect(lines.every((l) => !l.toLowerCase().includes('back-to-back'))).toBe(true);
+  });
+
+  it('loss streak (>=3) prints when there is no winning streak', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      currentWinStreak: 1, // below the >=2 threshold
+      currentLossStreak: 4,
+    });
+    // Placeholder + loss line.
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toContain('4');
+  });
+
+  it('neither streak qualifies → no streak line', () => {
+    const lines = formatChronicleMilestoneLines({
+      ...emptyMilestones(),
+      currentWinStreak: 1,
+      currentLossStreak: 2,
+    });
+    expect(lines).toHaveLength(1);
+  });
+
+  it('full milestone set produces lines in stable order', () => {
+    const m: Milestones = {
+      firstVictory: entry({ isVictory: true, timeSurvivedSec: 720, enemiesKilled: 200 }),
+      longestRun: entry({ timeSurvivedSec: 900, variantKey: 'classic' }),
+      mostKills: entry({ enemiesKilled: 300, variantKey: 'classic' }),
+      highestCombo: entry({ bestCombo: 50 }),
+      favoriteVariantKey: 'classic',
+      favoriteVariantCount: 7,
+      favoriteWeaponKey: 'thistle_shot',
+      favoriteWeaponCount: 4,
+      currentWinStreak: 3,
+      currentLossStreak: 0,
+    };
+    const lines = formatChronicleMilestoneLines(m);
+    // 1 firstVictory + 1 longest + 1 mostKills + 1 highestCombo + 1 favoriteVariant
+    // + 1 favoriteWeapon + 1 winStreak = 7
+    expect(lines).toHaveLength(7);
   });
 });

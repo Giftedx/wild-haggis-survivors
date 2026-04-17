@@ -8,6 +8,8 @@
 import type { RunHistoryEntry, SaveData } from '../utils/save';
 import { BOSSES, ENEMY_TYPES, getEnemyDisplayName } from '../data/enemies';
 import { getRoute, type RoutePick } from '../data/routes';
+import { getVariantByKey } from '../data/variants';
+import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { t } from '../core/i18n';
 
 /** Lifetime totals — drawn from SaveData counters (authoritative, never capped). */
@@ -708,4 +710,75 @@ export function formatRerunTooltip(seedCode: string, curseLabel?: string | null)
     return t('ui.chronicle.rerun_tooltip_with_curse', { seed: seedCode, curse: curseLabel });
   }
   return t('ui.chronicle.rerun_tooltip', { seed: seedCode });
+}
+
+// ── Milestone lines ──────────────────────────────────────────────────
+
+/**
+ * Build the Chronicle's milestone-panel lines from a computed
+ * Milestones snapshot. Returns the raw array (not joined) so the
+ * scene can choose its own separator and tests can inspect each line
+ * independently. Order matters — visual scan from "your first win"
+ * down to streak-of-the-moment is the design.
+ *
+ * Empty save (no firstVictory) still produces the "_none" placeholder
+ * so the panel never collapses to zero height.
+ */
+export function formatChronicleMilestoneLines(m: Milestones): string[] {
+  const lines: string[] = [];
+
+  if (m.firstVictory) {
+    lines.push(t('ui.chronicle.milestone_first_victory', {
+      time: formatClock(m.firstVictory.timeSurvivedSec),
+      kills: m.firstVictory.enemiesKilled,
+    }));
+  } else {
+    lines.push(t('ui.chronicle.milestone_first_victory_none'));
+  }
+
+  if (m.longestRun) {
+    lines.push(t('ui.chronicle.milestone_longest', {
+      time: formatClock(m.longestRun.timeSurvivedSec),
+      variant: t(getVariantByKey(m.longestRun.variantKey).nameKey),
+    }));
+  }
+
+  if (m.mostKills) {
+    lines.push(t('ui.chronicle.milestone_most_kills', {
+      kills: m.mostKills.enemiesKilled,
+      variant: t(getVariantByKey(m.mostKills.variantKey).nameKey),
+    }));
+  }
+
+  if (m.highestCombo && m.highestCombo.bestCombo > 0) {
+    lines.push(t('ui.chronicle.milestone_highest_combo', {
+      combo: m.highestCombo.bestCombo,
+    }));
+  }
+
+  if (m.favoriteVariantKey) {
+    lines.push(t('ui.chronicle.milestone_favorite_variant', {
+      variant: t(getVariantByKey(m.favoriteVariantKey).nameKey),
+      count: m.favoriteVariantCount,
+    }));
+  }
+
+  if (m.favoriteWeaponKey) {
+    const def = WEAPON_DEFS[m.favoriteWeaponKey as WeaponKey];
+    lines.push(t('ui.chronicle.milestone_favorite_weapon', {
+      weapon: def?.name ?? m.favoriteWeaponKey,
+      count: m.favoriteWeaponCount,
+    }));
+  }
+
+  // Win streak ≥ 2 wins the slot; loss streak ≥ 3 picks up the
+  // compassion line. Mutually exclusive (a winning streak isn't also a
+  // losing streak), so the elseif is correct.
+  if (m.currentWinStreak >= 2) {
+    lines.push(t('ui.chronicle.milestone_win_streak', { count: m.currentWinStreak }));
+  } else if (m.currentLossStreak >= 3) {
+    lines.push(t('ui.chronicle.milestone_loss_streak', { count: m.currentLossStreak }));
+  }
+
+  return lines;
 }

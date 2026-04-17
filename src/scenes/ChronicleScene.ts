@@ -27,6 +27,7 @@ import {
   computeCurseStats,
   formatCurseStatsLine,
   computeStandingStonesStats,
+  formatChronicleMilestoneLines,
   formatRelativeTime,
   formatRerunTooltip,
   formatRouteBreadcrumb,
@@ -529,59 +530,7 @@ export class ChronicleScene extends Phaser.Scene {
   }
 
   private buildMilestoneLines(m: ReturnType<typeof computeMilestones>): string {
-    const lines: string[] = [];
-
-    if (m.firstVictory) {
-      lines.push(t('ui.chronicle.milestone_first_victory', {
-        time: formatClock(m.firstVictory.timeSurvivedSec),
-        kills: m.firstVictory.enemiesKilled,
-      }));
-    } else {
-      lines.push(t('ui.chronicle.milestone_first_victory_none'));
-    }
-
-    if (m.longestRun) {
-      lines.push(t('ui.chronicle.milestone_longest', {
-        time: formatClock(m.longestRun.timeSurvivedSec),
-        variant: t(getVariantByKey(m.longestRun.variantKey).nameKey),
-      }));
-    }
-
-    if (m.mostKills) {
-      lines.push(t('ui.chronicle.milestone_most_kills', {
-        kills: m.mostKills.enemiesKilled,
-        variant: t(getVariantByKey(m.mostKills.variantKey).nameKey),
-      }));
-    }
-
-    if (m.highestCombo && m.highestCombo.bestCombo > 0) {
-      lines.push(t('ui.chronicle.milestone_highest_combo', {
-        combo: m.highestCombo.bestCombo,
-      }));
-    }
-
-    if (m.favoriteVariantKey) {
-      lines.push(t('ui.chronicle.milestone_favorite_variant', {
-        variant: t(getVariantByKey(m.favoriteVariantKey).nameKey),
-        count: m.favoriteVariantCount,
-      }));
-    }
-
-    if (m.favoriteWeaponKey) {
-      const def = WEAPON_DEFS[m.favoriteWeaponKey as WeaponKey];
-      lines.push(t('ui.chronicle.milestone_favorite_weapon', {
-        weapon: def?.name ?? m.favoriteWeaponKey,
-        count: m.favoriteWeaponCount,
-      }));
-    }
-
-    if (m.currentWinStreak >= 2) {
-      lines.push(t('ui.chronicle.milestone_win_streak', { count: m.currentWinStreak }));
-    } else if (m.currentLossStreak >= 3) {
-      lines.push(t('ui.chronicle.milestone_loss_streak', { count: m.currentLossStreak }));
-    }
-
-    return lines.join('\n');
+    return formatChronicleMilestoneLines(m).join('\n');
   }
 }
 
