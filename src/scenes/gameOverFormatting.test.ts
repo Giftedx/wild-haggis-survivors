@@ -10,7 +10,9 @@ import {
   formatUnlockBodyText,
   formatRerunSeedLinkLabel,
   formatSeedReadoutLabel,
+  buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
+import type { GameOverPayload } from './gameOverPayload';
 import type { DeathCause, DeathCauseTag } from '../core/deathCauseClassifier';
 import type { VariantKey } from '../data/variants';
 
@@ -425,5 +427,80 @@ describe('formatSeedReadoutLabel', () => {
     const daily = formatSeedReadoutLabel('SAME', true);
     const normal = formatSeedReadoutLabel('SAME', false);
     expect(daily).not.toBe(normal);
+  });
+});
+
+describe('buildPostcardPayloadFromGameOver', () => {
+  function payload(overrides: Partial<GameOverPayload> = {}): GameOverPayload {
+    return {
+      mode: 'death',
+      isVictory: false,
+      summary: {
+        timeSurvivedSec: 120,
+        enemiesKilled: 50,
+        bossGold: 0,
+        coinGold: 0,
+      } as GameOverPayload['summary'],
+      runResult: {} as GameOverPayload['runResult'],
+      xpLevel: 1,
+      bossKillCount: 0,
+      ownedPassiveCount: 0,
+      weaponCount: 1,
+      evolvedCount: 0,
+      buildSummary: '',
+      variantLabel: 'Classic Haggis',
+      weaponDamage: {},
+      ...overrides,
+    };
+  }
+
+  it('maps mode verbatim for both victory and death', () => {
+    expect(buildPostcardPayloadFromGameOver(payload({ mode: 'victory' })).mode).toBe('victory');
+    expect(buildPostcardPayloadFromGameOver(payload({ mode: 'death' })).mode).toBe('death');
+  });
+
+  it('copies summary counters onto the postcard', () => {
+    const out = buildPostcardPayloadFromGameOver(payload({
+      summary: { timeSurvivedSec: 200, enemiesKilled: 99 } as GameOverPayload['summary'],
+    }));
+    expect(out.timeSurvivedSec).toBe(200);
+    expect(out.enemiesKilled).toBe(99);
+  });
+
+  it('defaults counters to 0 when summary fields are missing (defensive)', () => {
+    // Force an incomplete summary to simulate a corrupt payload.
+    const out = buildPostcardPayloadFromGameOver(payload({
+      summary: {} as GameOverPayload['summary'],
+    }));
+    expect(out.enemiesKilled).toBe(0);
+    expect(out.timeSurvivedSec).toBe(0);
+  });
+
+  it('passes through seedCode / variantLabel / ironmoor / postBellSec', () => {
+    const out = buildPostcardPayloadFromGameOver(payload({
+      seedCode: 'ABC-123',
+      variantLabel: 'Moor Runner',
+      ironmoor: true,
+      postBellSec: 42,
+    }));
+    expect(out.seedCode).toBe('ABC-123');
+    expect(out.variantLabel).toBe('Moor Runner');
+    expect(out.ironmoor).toBe(true);
+    expect(out.postBellSec).toBe(42);
+  });
+
+  it('uses the caller-supplied curseLabel when present', () => {
+    const out = buildPostcardPayloadFromGameOver(payload(), 'The Grasping');
+    expect(out.curseLabel).toBe('The Grasping');
+  });
+
+  it('curseLabel is undefined when caller passes null', () => {
+    const out = buildPostcardPayloadFromGameOver(payload(), null);
+    expect(out.curseLabel).toBeUndefined();
+  });
+
+  it('curseLabel is undefined when caller passes nothing', () => {
+    const out = buildPostcardPayloadFromGameOver(payload());
+    expect(out.curseLabel).toBeUndefined();
   });
 });

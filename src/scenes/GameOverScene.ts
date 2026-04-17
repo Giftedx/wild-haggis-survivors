@@ -19,6 +19,7 @@ import {
   formatUnlockBodyText,
   formatRerunSeedLinkLabel,
   formatSeedReadoutLabel,
+  buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
@@ -784,18 +785,11 @@ export class GameOverScene extends Phaser.Scene {
       const p = this.payload;
       if (!p) return;
       const canvas = this.game.canvas as HTMLCanvasElement | undefined;
-      const summary = p.summary;
       const curseDef = getCurseByKey(p.curseKey ?? null);
-      const ok = downloadPostcard(canvas, {
-        mode: p.mode === 'victory' ? 'victory' : 'death',
-        enemiesKilled: summary?.enemiesKilled ?? 0,
-        timeSurvivedSec: summary?.timeSurvivedSec ?? 0,
-        seedCode: p.seedCode,
-        variantLabel: p.variantLabel,
-        ironmoor: p.ironmoor,
-        postBellSec: p.postBellSec,
-        curseLabel: curseDef ? t(curseDef.nameKey) : undefined,
-      });
+      const ok = downloadPostcard(
+        canvas,
+        buildPostcardPayloadFromGameOver(p, curseDef ? t(curseDef.nameKey) : null),
+      );
       if (ok) {
         saved = true;
         text.setText(`📮 ${t('ui.gameOver.postcard_saved')}`);

@@ -5,6 +5,8 @@ import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getVariantByKey, type VariantKey } from '../data/variants';
+import type { PostcardPayload } from '../utils/postcard';
+import type { GameOverPayload } from './gameOverPayload';
 
 export function formatClockTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
@@ -63,6 +65,29 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
     lines.push(t('ui.gameOver.more_weapons', { count: entries.length - cap }));
   }
   return lines.join('\n');
+}
+
+/**
+ * Map a GameOverPayload → the PostcardPayload consumed by
+ * downloadPostcard. Pure — curseLabel is resolved by the caller
+ * (so the helper doesn't depend on curse defs + i18n). Summary
+ * is optional-guarded so a corrupted payload doesn't crash the
+ * postcard writer (enemiesKilled / timeSurvivedSec → 0).
+ */
+export function buildPostcardPayloadFromGameOver(
+  payload: GameOverPayload,
+  curseLabel?: string | null,
+): PostcardPayload {
+  return {
+    mode: payload.mode === 'victory' ? 'victory' : 'death',
+    enemiesKilled: payload.summary?.enemiesKilled ?? 0,
+    timeSurvivedSec: payload.summary?.timeSurvivedSec ?? 0,
+    seedCode: payload.seedCode,
+    variantLabel: payload.variantLabel,
+    ironmoor: payload.ironmoor,
+    postBellSec: payload.postBellSec,
+    curseLabel: curseLabel ?? undefined,
+  };
 }
 
 /**
