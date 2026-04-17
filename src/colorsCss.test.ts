@@ -25,6 +25,11 @@ describe('COLORS_CSS mirrors COLORS', () => {
     expect(COLORS_CSS.INK).toBe('#0a0a14');
   });
 
+  it('BLACK is the conventional CSS pure black (distinct from INK)', () => {
+    expect(COLORS_CSS.BLACK).toBe('#000000');
+    expect(COLORS_CSS.BLACK).not.toBe(COLORS_CSS.INK);
+  });
+
   it('HP_RED matches the numeric palette', () => {
     expect(COLORS_CSS.HP_RED).toBe(numberToCssColor(COLORS.HP_RED));
   });

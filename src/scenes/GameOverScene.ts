@@ -445,7 +445,7 @@ export class GameOverScene extends Phaser.Scene {
       try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
       this.scene.start('Game');
     });
-    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, '#000000', 1300, () => {
+    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, COLORS_CSS.BLACK, 1300, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');

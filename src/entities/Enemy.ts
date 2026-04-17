@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
-import { COLORS, ENEMIES, GAME } from '../config';
+import { COLORS, COLORS_CSS, ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import {
@@ -1354,7 +1354,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       fontFamily: 'monospace',
       fontSize: `${px}px`,
       fontStyle: 'bold',
-      stroke: '#000000',
+      stroke: COLORS_CSS.BLACK,
       strokeThickness: 2,
     }).setDepth(32).setOrigin(0.5, 1);
   }

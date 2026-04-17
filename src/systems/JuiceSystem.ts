@@ -137,7 +137,7 @@ export class JuiceSystem {
         fontSize: '18px',
         color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
-        stroke: '#000000',
+        stroke: COLORS_CSS.BLACK,
         strokeThickness: 3,
       }).setDepth(80).setVisible(false);
       this.dmgTextPool.push(t);
@@ -149,7 +149,7 @@ export class JuiceSystem {
       fontSize: '30px',
       color: '#ff8800',
       fontStyle: 'bold',
-      stroke: '#000000',
+      stroke: COLORS_CSS.BLACK,
       strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
 

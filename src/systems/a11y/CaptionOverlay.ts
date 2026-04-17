@@ -8,6 +8,7 @@
  * player's current read off screen mid-sentence.
  */
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../../config';
 import { CaptionManager } from './CaptionManager';
 import { getSettingsManager } from '../../core/SettingsManager';
 import { getCameraViewport } from '../../ui/cameraViewport';
@@ -107,7 +108,7 @@ export class CaptionOverlay {
         fontSize: `${BASE_FONT_PX}px`,
         color: DEFAULT_TINT,
         fontFamily: 'monospace',
-        stroke: '#000000',
+        stroke: COLORS_CSS.BLACK,
         strokeThickness: 3,
       })
       .setOrigin(0.5, 0.5)

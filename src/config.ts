@@ -110,6 +110,10 @@ export const COLORS = {
 export const COLORS_CSS = {
   WHISKY_GOLD: '#d4a017',
   WHITE: '#ffffff',
+  /** Pure black. Used by the small-text strokes that don't want the
+   *  warm INK shift — damage numbers, combo text, tutorial tips,
+   *  caption overlay, etc. Deliberately distinct from `INK`. */
+  BLACK: '#000000',
   /** Near-black ink — used by every bold title stroke (BootScene, PauseMenu,
    *  JuiceSystem). Kept as a separate value (not `#000`) because the subtle
    *  warm shift reads better over the moor-blue backdrop. */

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import type { ISceneContext } from '../core/ISceneContext';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { SaveManager } from '../core/SaveManager';
@@ -188,7 +189,7 @@ export class TutorialSystem {
         fontSize: '14px',
         color: '#e8d4ff',
         fontStyle: 'bold',
-        stroke: '#000000',
+        stroke: COLORS_CSS.BLACK,
         strokeThickness: 3,
         backgroundColor: '#1a1020cc',
         padding: { x: 12, y: 8 },
@@ -246,7 +247,7 @@ export class TutorialSystem {
         fontSize: '14px',
         color: '#f0d4a8',
         fontStyle: 'bold',
-        stroke: '#000000',
+        stroke: COLORS_CSS.BLACK,
         strokeThickness: 3,
         backgroundColor: '#2a1a08cc',
         padding: { x: 12, y: 8 },
@@ -334,7 +335,7 @@ export class TutorialSystem {
         fontSize: '14px',
         color: opts.textColor,
         fontStyle: 'bold',
-        stroke: '#000000',
+        stroke: COLORS_CSS.BLACK,
         strokeThickness: 3,
         backgroundColor: opts.bgColor,
         padding: { x: 12, y: 8 },
@@ -393,7 +394,7 @@ export class TutorialSystem {
       fontSize: '14px',
       color: '#ffe8a0',
       fontStyle: 'bold',
-      stroke: '#000000',
+      stroke: COLORS_CSS.BLACK,
       strokeThickness: 3,
       backgroundColor: '#1a1020cc',
       padding: { x: 12, y: 8 },

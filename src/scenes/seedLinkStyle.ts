@@ -11,6 +11,8 @@
  * pointerover/pointerout ternaries into a single data object.
  */
 
+import { COLORS_CSS } from '../config';
+
 export interface SeedLinkStateStyle {
   color: string;
   stroke: string;
@@ -25,7 +27,7 @@ export interface SeedLinkStyleSet {
 const IDLE_COLOR_NORMAL = '#8e9bb8';
 const IDLE_COLOR_HC = '#b8c6dc';
 const IDLE_STROKE = '#06080c';
-const HOVER_STROKE = '#000000';
+const HOVER_STROKE = COLORS_CSS.BLACK;
 
 export function resolveSeedLinkStyle(
   highContrastUi: boolean,
