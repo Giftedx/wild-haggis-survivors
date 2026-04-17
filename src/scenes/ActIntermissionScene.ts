@@ -23,6 +23,7 @@ import {
   actIntermissionCardStartX,
   actIntermissionShortcutIndex,
 } from './actIntermissionResolve';
+import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
 
 export interface ActIntermissionLaunchData {
@@ -92,8 +93,9 @@ export class ActIntermissionScene extends Phaser.Scene {
   }
 
   private buildCard(x: number, y: number, w: number, h: number, route: RouteDef, shortcut: number): void {
+    const cardStyle = resolveActIntermissionCardStyle();
     const bg = this.add.rectangle(x, y, w, h, 0x1a1a28, 0.98)
-      .setStrokeStyle(2, 0xd4a017)
+      .setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color)
       .setInteractive({ useHandCursor: true });
 
     this.add.text(x, y - h / 2 + 24, t(route.labelKey), {
@@ -112,8 +114,8 @@ export class ActIntermissionScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0, 0);
 
-    bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(3, 0xffe08a));
-    bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(2, 0xd4a017));
+    bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(cardStyle.hover.thickness, cardStyle.hover.color));
+    bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color));
     bg.on(Phaser.Input.Events.POINTER_DOWN, () => this.resolve(route));
   }
 
