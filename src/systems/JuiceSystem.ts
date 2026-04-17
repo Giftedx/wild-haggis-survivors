@@ -15,6 +15,7 @@ import {
 } from './ceilidhChain';
 import { audio } from './AudioSystem';
 import { bumpCeilidhPulsesLifetime } from '../utils/save';
+import { comboDamageBonusPct, comboDamageMultiplier } from './comboDamage';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -640,8 +641,7 @@ export class JuiceSystem {
 
   /** Combo damage multiplier — +5% per 10 combo, max +50% */
   getComboDamageMultiplier(): number {
-    const bonus = Math.min(0.5, Math.floor(this.comboCount / 10) * 0.05);
-    return 1 + bonus;
+    return comboDamageMultiplier(this.comboCount);
   }
 
   private syncComboText(): void {
@@ -650,7 +650,7 @@ export class JuiceSystem {
       this.comboText.setColor('#ff8800');
       return;
     }
-    const dmgBonus = Math.min(50, Math.floor(this.comboCount / 10) * 5);
+    const dmgBonus = comboDamageBonusPct(this.comboCount);
     const bonusText = dmgBonus > 0 ? t('ui.hud.combo_bonus', { pct: dmgBonus }) : '';
     this.comboText.setText(t('ui.hud.combo', { count: this.comboCount, bonus: bonusText }));
     this.comboText.setVisible(true);
