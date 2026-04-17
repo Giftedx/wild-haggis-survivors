@@ -558,7 +558,7 @@ export function formatPostBellLine(save: SaveData): string {
   if (sec <= 0) return '';
   const mins = Math.floor(sec / 60);
   const secs = Math.floor(sec % 60).toString().padStart(2, '0');
-  return `🔔 Past the bell — best ${mins}:${secs}`;
+  return t('ui.chronicle.past_the_bell_line', { time: `${mins}:${secs}` });
 }
 
 /**
@@ -570,5 +570,5 @@ export function formatPostBellLine(save: SaveData): string {
 export function formatHearthBeatsLine(moorMomentsLifetime: number): string {
   const n = Math.max(0, Math.floor(moorMomentsLifetime));
   if (n === 0) return '';
-  return `🌾 Hearth beats: ${n}`;
+  return t('ui.chronicle.hearth_beats_line', { count: n });
 }
