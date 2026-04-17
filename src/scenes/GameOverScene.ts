@@ -3,9 +3,6 @@ import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantKey } from '../data/variants';
-import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
-import { WEAPON_DEFS } from '../data/weapons';
-import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -13,7 +10,12 @@ import { SaveManager } from '../core/SaveManager';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey, setPendingCurse } from '../data/curses';
-import { formatClockTime, computeGoldBreakdown, boundedLoadoutSummary } from './gameOverFormatting';
+import {
+  formatClockTime,
+  computeGoldBreakdown,
+  boundedLoadoutSummary,
+  buildWeaponDamageRows,
+} from './gameOverFormatting';
 import { downloadPostcard } from '../utils/postcard';
 
 /**
@@ -316,7 +318,13 @@ export class GameOverScene extends Phaser.Scene {
     loadoutSummary.setScale(uiScale);
     this.tweens.add({ targets: loadoutSummary, alpha: 1, duration: 260, delay: 900 });
 
-    const weaponRows = this.buildWeaponDamageRows(weaponDamage, summary, runResult.goldEarned, 3);
+    const weaponRows = buildWeaponDamageRows({
+      weaponDamage,
+      enemiesKilled: summary.enemiesKilled,
+      timeSurvivedSec: summary.timeSurvivedSec,
+      goldEarned: runResult.goldEarned,
+      maxRows: 3,
+    });
     const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
       .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
@@ -878,38 +886,6 @@ export class GameOverScene extends Phaser.Scene {
     } catch {
       return false;
     }
-  }
-
-  private buildWeaponDamageRows(
-    weaponDamage: Record<string, number>,
-    summary: GameOverPayload['summary'],
-    goldEarned: number,
-    maxRows: number
-  ): string {
-    const entries = sortedWeaponDamageEntries(weaponDamage);
-    const totalDamage = entries.reduce((sum, e) => sum + e.damage, 0);
-    const lines: string[] = [
-      t('ui.gameOver.damage_summary', {
-        kills: summary.enemiesKilled,
-        time: formatClockTime(summary.timeSurvivedSec),
-        gold: goldEarned,
-      }),
-    ];
-    if (entries.length === 0) {
-      lines.push(t('ui.gameOver.no_weapon_damage'));
-      return lines.join('\n');
-    }
-    const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
-    for (const e of entries.slice(0, maxRows)) {
-      const def = WEAPON_DEFS[e.key as import('../data/weapons').WeaponKey];
-      const label = (def?.name ?? evoDisplay.get(e.key) ?? e.key).slice(0, 18);
-      const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
-      lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);
-    }
-    if (entries.length > maxRows) {
-      lines.push(t('ui.gameOver.more_weapons', { count: entries.length - maxRows }));
-    }
-    return lines.join('\n');
   }
 
 }

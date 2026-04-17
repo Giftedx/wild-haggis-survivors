@@ -1,10 +1,65 @@
 import { t } from '../core/i18n';
+import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
+import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 
 export function formatClockTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
   const mins = Math.floor(safeSeconds / 60);
   const secs = Math.floor(safeSeconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Inputs for the Game Over "damage by weapon" table — the summary
+ * fields it needs are a narrow slice of `GameOverPayload['summary']`.
+ * Declared locally so the helper doesn't pull in the full payload
+ * type (keeps unit tests independent of scene wiring).
+ */
+export interface WeaponDamageRowsInput {
+  weaponDamage: Record<string, number>;
+  enemiesKilled: number;
+  timeSurvivedSec: number;
+  goldEarned: number;
+  maxRows: number;
+}
+
+/**
+ * Build the multiline "damage by weapon" panel shown on Game Over:
+ * header line (kills / time / gold), then up to `maxRows` weapon
+ * entries with label / damage / %, with a "+N more" tail if the
+ * sorted list overflows. If no weapons dealt damage, a single
+ * placeholder line replaces the table body.
+ *
+ * Pure: all dependencies are module-level imports (i18n, weapon defs,
+ * evolution recipes, the sort helper) — no scene/Phaser state.
+ */
+export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
+  const entries = sortedWeaponDamageEntries(input.weaponDamage);
+  const totalDamage = entries.reduce((sum, e) => sum + e.damage, 0);
+  const lines: string[] = [
+    t('ui.gameOver.damage_summary', {
+      kills: input.enemiesKilled,
+      time: formatClockTime(input.timeSurvivedSec),
+      gold: input.goldEarned,
+    }),
+  ];
+  if (entries.length === 0) {
+    lines.push(t('ui.gameOver.no_weapon_damage'));
+    return lines.join('\n');
+  }
+  const cap = Math.max(0, Math.floor(input.maxRows));
+  const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
+  for (const e of entries.slice(0, cap)) {
+    const def = WEAPON_DEFS[e.key as WeaponKey];
+    const label = (def?.name ?? evoDisplay.get(e.key) ?? e.key).slice(0, 18);
+    const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
+    lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);
+  }
+  if (entries.length > cap) {
+    lines.push(t('ui.gameOver.more_weapons', { count: entries.length - cap }));
+  }
+  return lines.join('\n');
 }
 
 /**
