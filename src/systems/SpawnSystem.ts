@@ -15,6 +15,7 @@ import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
+import { snapToNearestWorldEdge } from './snapToWorldEdge';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -609,20 +610,13 @@ export class SpawnSystem {
     y = Phaser.Math.Clamp(y, 0, GAME.WORLD_HEIGHT);
 
     // If clamping pushed the position inside the visible area (player near world edge),
-    // push it to the nearest world edge so enemies don't pop in on-screen
+    // push it to the nearest world edge so enemies don't pop in on-screen.
     const inViewX = Math.abs(x - playerX) < halfW;
     const inViewY = Math.abs(y - playerY) < halfH;
     if (inViewX && inViewY) {
-      // Snap to the nearest world edge
-      const distToLeft = x;
-      const distToRight = GAME.WORLD_WIDTH - x;
-      const distToTop = y;
-      const distToBottom = GAME.WORLD_HEIGHT - y;
-      const minDist = Math.min(distToLeft, distToRight, distToTop, distToBottom);
-      if (minDist === distToLeft) x = 0;
-      else if (minDist === distToRight) x = GAME.WORLD_WIDTH;
-      else if (minDist === distToTop) y = 0;
-      else y = GAME.WORLD_HEIGHT;
+      const snapped = snapToNearestWorldEdge(x, y, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+      x = snapped.x;
+      y = snapped.y;
     }
 
     return { x, y };
