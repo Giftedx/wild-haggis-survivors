@@ -22,6 +22,7 @@ import {
   buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
+import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
 
@@ -724,11 +725,12 @@ export class GameOverScene extends Phaser.Scene {
   ): void {
     const label = formatSeedReadoutLabel(code, isDaily);
     const tail = t('ui.gameOver.seed_copy_hint');
+    const palette = resolveCopyActionLinkPalette(isDaily);
     const text = this.add
       .text(centerX, y, `${label}  ·  ${tail}`, {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: isDaily ? '#e2c97a' : '#a8b0c0',
+        color: palette.idle,
         fontStyle: 'italic',
         align: 'center',
       })
@@ -745,11 +747,11 @@ export class GameOverScene extends Phaser.Scene {
       if (ok && !copied) {
         copied = true;
         text.setText(t('ui.gameOver.seed_copied', { code }));
-        text.setColor('#9de6a8');
+        text.setColor(palette.success);
       }
     };
-    text.on('pointerover', () => { if (!copied) text.setColor('#ffe2a0'); });
-    text.on('pointerout', () => { if (!copied) text.setColor(isDaily ? '#e2c97a' : '#a8b0c0'); });
+    text.on('pointerover', () => { if (!copied) text.setColor(palette.hover); });
+    text.on('pointerout', () => { if (!copied) text.setColor(palette.idle); });
     text.on('pointerdown', doCopy);
   }
 
@@ -765,11 +767,12 @@ export class GameOverScene extends Phaser.Scene {
     delay: number,
   ): void {
     const hint = t('ui.gameOver.postcard_hint');
+    const palette = resolveCopyActionLinkPalette(false);
     const text = this.add
       .text(centerX, y, `📮 ${hint}`, {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: '#a8b0c0',
+        color: palette.idle,
         fontStyle: 'italic',
         align: 'center',
       })
@@ -794,12 +797,12 @@ export class GameOverScene extends Phaser.Scene {
       if (ok) {
         saved = true;
         text.setText(`📮 ${t('ui.gameOver.postcard_saved')}`);
-        text.setColor('#9de6a8');
+        text.setColor(palette.success);
         audio.playClick();
       }
     };
-    text.on('pointerover', () => { if (!saved) text.setColor('#ffe2a0'); });
-    text.on('pointerout', () => { if (!saved) text.setColor('#a8b0c0'); });
+    text.on('pointerover', () => { if (!saved) text.setColor(palette.hover); });
+    text.on('pointerout', () => { if (!saved) text.setColor(palette.idle); });
     text.on('pointerdown', doSave);
   }
 
@@ -818,11 +821,12 @@ export class GameOverScene extends Phaser.Scene {
     // rerun re-applies it (parallels the chronicle ↻ tooltip).
     const linkCurseDef = getCurseByKey(this.payload?.curseKey ?? null);
     const label = formatRerunSeedLinkLabel(linkCurseDef ? t(linkCurseDef.nameKey) : null);
+    const palette = resolveRerunLinkPalette();
     const text = this.add
       .text(centerX, y, label, {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: '#b8d0a8',
+        color: palette.idle,
         fontStyle: 'italic',
         align: 'center',
       })
@@ -833,8 +837,8 @@ export class GameOverScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
     this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
 
-    text.on('pointerover', () => text.setColor('#e8fbd0'));
-    text.on('pointerout', () => text.setColor('#b8d0a8'));
+    text.on('pointerover', () => text.setColor(palette.hover));
+    text.on('pointerout', () => text.setColor(palette.idle));
     text.on('pointerdown', () => {
       audio.playClick();
       musicEngine.stop();
