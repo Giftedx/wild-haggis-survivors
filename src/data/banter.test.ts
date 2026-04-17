@@ -5,6 +5,7 @@ import { CURSES } from './curses';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
 import { BIOMES, type BiomeId } from './biomes';
 import { VARIANTS } from './variants';
+import { ROUTES } from './routes';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
@@ -120,6 +121,16 @@ describe('BANTER_POOLS structure', () => {
     const tags = Object.keys(pool!.keysByTag ?? {});
     for (const id of biomeIds) {
       expect(tags, `biome_change missing tag '${id}'`).toContain(id);
+    }
+  });
+
+  it('route_picked has keysByTag for every W2 route', () => {
+    const routeKeys = ROUTES.map((r) => r.key);
+    const pool = getBanterPool('route_picked');
+    expect(pool, 'route_picked pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const rk of routeKeys) {
+      expect(tags, `route_picked missing tag '${rk}'`).toContain(rk);
     }
   });
 
