@@ -233,7 +233,7 @@ export class SettingsScene extends Phaser.Scene {
     const backPalette = resolveBackButtonPalette();
     const back = this.add
       .rectangle(width / 2, backY, 220, 42, backPalette.idle, 1)
-      .setStrokeStyle(2, 0x4a3a5a, 0.8)
+      .setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.8)
       .setInteractive({ useHandCursor: true });
     back.setScale(uiScale);
     this.add
@@ -817,7 +817,7 @@ export class SettingsScene extends Phaser.Scene {
     const ironmoorBackPalette = resolveBackButtonPalette();
     const noBtn = this.add
       .rectangle(width / 2 - 110, btnY, 180, 40, ironmoorBackPalette.idle, 1)
-      .setStrokeStyle(2, 0x4a3a5a, 0.9)
+      .setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.9)
       .setInteractive({ useHandCursor: true })
       .setDepth(DEPTH_BASE + 2);
     const noLabel = this.add

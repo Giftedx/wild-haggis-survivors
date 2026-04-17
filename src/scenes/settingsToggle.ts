@@ -1,4 +1,5 @@
 import { t } from '../core/i18n';
+import { SETTINGS_TROUGH_STROKE } from './settingsPalette';
 
 /**
  * Pure helpers for SettingsScene toggle rows — the side-label copy
@@ -44,7 +45,7 @@ export const TOGGLE_TRACK_ON: ToggleTrackStyle = {
 
 export const TOGGLE_TRACK_OFF: ToggleTrackStyle = {
   trackFill: 0x3a3148,
-  trackBorder: 0x4a3a5a,
+  trackBorder: SETTINGS_TROUGH_STROKE,
   thumbFill: 0x8a7a9a,
 };
 

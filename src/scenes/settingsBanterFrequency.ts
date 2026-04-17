@@ -1,5 +1,6 @@
 import { t } from '../core/i18n';
 import type { ISettingsData } from '../core/SettingsManager';
+import { SETTINGS_TROUGH_STROKE } from './settingsPalette';
 
 export type BanterFrequency = ISettingsData['banterFrequency'];
 
@@ -44,7 +45,7 @@ export interface BanterChipStyle {
 
 export const BANTER_CHIP_OFF: BanterChipStyle = {
   fillColor: 0x2a2244,
-  strokeColor: 0x4a3a5a,
+  strokeColor: SETTINGS_TROUGH_STROKE,
   textColor: '#8a7a8a',
 };
 
