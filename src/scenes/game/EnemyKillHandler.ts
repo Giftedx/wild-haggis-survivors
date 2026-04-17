@@ -27,6 +27,12 @@ import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
 import { dispatchActComplete } from './dispatchActComplete';
+import {
+  healthOrbDropRate,
+  healthOrbAmount,
+  goldCoinDropRate,
+  goldCoinAmountRange,
+} from './killDrops';
 
 export interface EnemyKillHandlerHooks {
   // Systems
@@ -184,18 +190,14 @@ export class EnemyKillHandler {
 
     // Health orb drop — 5% base, bosses always.
     const rng = h.getRunRng();
-    if (wasBoss || rng.bool(0.05)) {
-      h.getPickupSpawner().spawnHealthOrb(x, y, wasBoss ? 25 : 5);
+    if (rng.bool(healthOrbDropRate(wasBoss))) {
+      h.getPickupSpawner().spawnHealthOrb(x, y, healthOrbAmount(wasBoss));
     }
 
     // Gold coin drop — 2% base, 10% elite, bosses always.
-    const goldChance = wasBoss ? 1 : wasElite ? 0.1 : 0.02;
-    if (rng.bool(goldChance)) {
-      h.getPickupSpawner().spawnGoldCoin(
-        x,
-        y,
-        wasBoss ? rng.int(5, 15) : rng.int(1, 3),
-      );
+    if (rng.bool(goldCoinDropRate(wasBoss, wasElite))) {
+      const [lo, hi] = goldCoinAmountRange(wasBoss);
+      h.getPickupSpawner().spawnGoldCoin(x, y, rng.int(lo, hi));
     }
 
     if (wasBoss) {
