@@ -9,7 +9,13 @@ import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
-import { targetHpBarColor, packRgbColor } from './hudHpBarColor';
+import {
+  targetHpBarColor,
+  packRgbColor,
+  isLowHpPulseActive,
+  hpLowPulseAlpha,
+  HP_LOW_PULSE_PHASE_STEP,
+} from './hudHpBarColor';
 import { resolveWaveLabel } from './hudWaveLabel';
 import { shouldTriggerXpLevelUpFlash } from './hudXpFlashGate';
 import {
@@ -440,10 +446,9 @@ export class HUD {
     // Low-HP urgency pulse — below 30% the fill softly pulses alpha and the
     // HP text color shifts to match. High-contrast palette has its own
     // low/normal text colors so the HP readout stays readable at all times.
-    if (hpFrac < 0.3 && hpFrac > 0) {
-      this.lowHpPulse += 0.12;
-      const pulseAlpha = 0.7 + Math.sin(this.lowHpPulse) * 0.3;
-      this.hpBarFill.setAlpha(pulseAlpha);
+    if (isLowHpPulseActive(hpFrac)) {
+      this.lowHpPulse += HP_LOW_PULSE_PHASE_STEP;
+      this.hpBarFill.setAlpha(hpLowPulseAlpha(this.lowHpPulse));
       this.hpText.setColor(this.hcPalette?.textLowHp ?? '#ffcccc');
     } else {
       this.hpBarFill.setAlpha(1);

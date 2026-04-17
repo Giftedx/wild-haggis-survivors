@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   targetHpBarColor,
   packRgbColor,
+  isLowHpPulseActive,
+  hpLowPulseAlpha,
   HP_BAR_GREEN,
   HP_BAR_YELLOW,
   HP_BAR_ORANGE,
@@ -9,6 +11,9 @@ import {
   HP_BAR_GREEN_THRESHOLD,
   HP_BAR_YELLOW_THRESHOLD,
   HP_BAR_ORANGE_THRESHOLD,
+  HP_LOW_PULSE_THRESHOLD,
+  HP_LOW_PULSE_ALPHA_CENTER,
+  HP_LOW_PULSE_ALPHA_AMPLITUDE,
 } from './hudHpBarColor';
 
 describe('targetHpBarColor', () => {
@@ -70,5 +75,50 @@ describe('packRgbColor', () => {
     expect(packRgbColor({ r: 0xff, g: 0, b: 0 })).toBe(0xff0000);
     expect(packRgbColor({ r: 0xff, g: 0x10, b: 0 })).toBe(0xff1000);
     expect(packRgbColor({ r: 0xff, g: 0x10, b: 0x01 })).toBe(0xff1001);
+  });
+});
+
+describe('isLowHpPulseActive', () => {
+  it('true for hpFrac strictly inside (0, threshold)', () => {
+    expect(isLowHpPulseActive(0.1)).toBe(true);
+    expect(isLowHpPulseActive(0.29)).toBe(true);
+    expect(isLowHpPulseActive(HP_LOW_PULSE_THRESHOLD - 0.001)).toBe(true);
+  });
+
+  it('false at the threshold itself (strict <)', () => {
+    expect(isLowHpPulseActive(HP_LOW_PULSE_THRESHOLD)).toBe(false);
+  });
+
+  it('false at 0 HP — dead state takes over', () => {
+    expect(isLowHpPulseActive(0)).toBe(false);
+  });
+
+  it('false for HP above the threshold', () => {
+    expect(isLowHpPulseActive(0.5)).toBe(false);
+    expect(isLowHpPulseActive(1)).toBe(false);
+  });
+
+  it('false for negative HP (defensive)', () => {
+    expect(isLowHpPulseActive(-0.1)).toBe(false);
+  });
+});
+
+describe('hpLowPulseAlpha', () => {
+  it('returns CENTER at phase = 0 (sin(0) = 0)', () => {
+    expect(hpLowPulseAlpha(0)).toBeCloseTo(HP_LOW_PULSE_ALPHA_CENTER, 9);
+  });
+
+  it('stays inside [CENTER - AMP, CENTER + AMP] across phases', () => {
+    const min = HP_LOW_PULSE_ALPHA_CENTER - HP_LOW_PULSE_ALPHA_AMPLITUDE;
+    const max = HP_LOW_PULSE_ALPHA_CENTER + HP_LOW_PULSE_ALPHA_AMPLITUDE;
+    for (let phase = 0; phase < 20; phase += 0.17) {
+      const a = hpLowPulseAlpha(phase);
+      expect(a).toBeGreaterThanOrEqual(min - 1e-9);
+      expect(a).toBeLessThanOrEqual(max + 1e-9);
+    }
+  });
+
+  it('amplitude is non-zero — the bar must actually pulse', () => {
+    expect(HP_LOW_PULSE_ALPHA_AMPLITUDE).toBeGreaterThan(0);
   });
 });

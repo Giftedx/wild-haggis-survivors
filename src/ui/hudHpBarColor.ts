@@ -61,3 +61,28 @@ function clampByte(n: number): number {
 export function packRgbColor(c: RgbColor): number {
   return (clampByte(c.r) << 16) | (clampByte(c.g) << 8) | clampByte(c.b);
 }
+
+/** Fraction below which the HP bar enters low-HP urgency pulse mode. */
+export const HP_LOW_PULSE_THRESHOLD = 0.3;
+/** Phase advance per HUD tick while low HP. */
+export const HP_LOW_PULSE_PHASE_STEP = 0.12;
+/** Alpha oscillates inside [CENTER - AMP, CENTER + AMP]. */
+export const HP_LOW_PULSE_ALPHA_CENTER = 0.7;
+export const HP_LOW_PULSE_ALPHA_AMPLITUDE = 0.3;
+
+/**
+ * True when the HP bar should pulse. Strictly `> 0` — at 0 HP the
+ * death flow takes over and the pulse stops.
+ */
+export function isLowHpPulseActive(hpFrac: number): boolean {
+  return hpFrac > 0 && hpFrac < HP_LOW_PULSE_THRESHOLD;
+}
+
+/**
+ * Alpha for the HP bar fill while pulsing. Caller passes the
+ * current phase (running accumulator). When the bar is NOT pulsing,
+ * callers use alpha = 1 directly.
+ */
+export function hpLowPulseAlpha(phase: number): number {
+  return HP_LOW_PULSE_ALPHA_CENTER + Math.sin(phase) * HP_LOW_PULSE_ALPHA_AMPLITUDE;
+}
