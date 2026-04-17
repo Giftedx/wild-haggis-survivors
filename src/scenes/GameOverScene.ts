@@ -18,6 +18,7 @@ import {
   resolveUnlockHeading,
   formatUnlockBodyText,
 } from './gameOverFormatting';
+import { resolveGameOverPanelTheme } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
 
 /**
@@ -49,8 +50,9 @@ export class GameOverScene extends Phaser.Scene {
     const { mode, summary, runResult } = this.payload;
     const isVictory = this.payload.isVictory ?? (mode === 'victory');
     const weaponDamage = this.payload.weaponDamage ?? {};
-    const titleColor = isVictory ? '#d4a017' : '#cc3333';
-    const panelStroke = isVictory ? COLORS.WHISKY_GOLD : 0xaa4444;
+    const theme = resolveGameOverPanelTheme(isVictory);
+    const titleColor = theme.titleColor;
+    const panelStroke = theme.panelStroke;
     const summaryTime = formatClockTime(summary.timeSurvivedSec);
     const gb = computeGoldBreakdown({
       timeSurvivedSec: summary.timeSurvivedSec,
@@ -97,7 +99,7 @@ export class GameOverScene extends Phaser.Scene {
     const title = this.add
       .text(panelCenterX, panelTop + 54, t(deathTitleKey), {
         fontFamily: 'monospace',
-        fontSize: isVictory ? '56px' : '52px',
+        fontSize: theme.titleFontSize,
         color: titleColor,
         fontStyle: 'bold',
         stroke: '#000',
@@ -107,8 +109,8 @@ export class GameOverScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setAlpha(0)
-      .setScale(isVictory ? 0.7 : 1.4);
-    title.setScale((isVictory ? 0.7 : 1.4) * uiScale);
+      .setScale(theme.titleStartScale);
+    title.setScale(theme.titleStartScale * uiScale);
     const subtitle = this.add
       .text(panelCenterX, panelTop + 94, t(deathSubKey), {
         fontFamily: 'monospace',
