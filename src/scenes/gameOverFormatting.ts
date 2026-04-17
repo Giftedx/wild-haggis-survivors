@@ -4,6 +4,7 @@ import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
+import { getVariantByKey, type VariantKey } from '../data/variants';
 
 export function formatClockTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
@@ -62,6 +63,44 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
     lines.push(t('ui.gameOver.more_weapons', { count: entries.length - cap }));
   }
   return lines.join('\n');
+}
+
+/**
+ * Heading text + colour for the Game Over "new variant unlocked" /
+ * "next-run tip" panel. Three states:
+ *   - no unlocks          → blue "next tip" heading
+ *   - exactly one unlock  → green "unlock_single" heading
+ *   - 2+ unlocks          → green "unlock_multi" heading
+ */
+export interface UnlockHeading {
+  text: string;
+  color: string;
+}
+
+export function resolveUnlockHeading(variantKeys: readonly VariantKey[]): UnlockHeading {
+  const hasUnlocks = variantKeys.length > 0;
+  if (!hasUnlocks) {
+    return { text: t('ui.gameOver.next_tip'), color: '#8aa4d7' };
+  }
+  const text = variantKeys.length === 1
+    ? t('ui.gameOver.unlock_single')
+    : t('ui.gameOver.unlock_multi');
+  return { text, color: '#77c977' };
+}
+
+/**
+ * Body text for the unlock list panel. Returns null when there is a
+ * single unlock (the scene renders the variant name + flavour
+ * separately in that case) or when there are zero unlocks.
+ * 2 variants render on separate lines; 3+ render as a bulleted list.
+ */
+export function formatUnlockBodyText(variantKeys: readonly VariantKey[]): string | null {
+  if (variantKeys.length < 2) return null;
+  const names = variantKeys.map((k) => t(getVariantByKey(k).nameKey));
+  if (variantKeys.length === 2) {
+    return names.join('\n');
+  }
+  return names.map((n) => `- ${n}`).join('\n');
 }
 
 /**

@@ -6,8 +6,11 @@ import {
   boundedLoadoutSummary,
   buildWeaponDamageRows,
   formatDeathInsightLine,
+  resolveUnlockHeading,
+  formatUnlockBodyText,
 } from './gameOverFormatting';
 import type { DeathCause, DeathCauseTag } from '../core/deathCauseClassifier';
+import type { VariantKey } from '../data/variants';
 
 describe('formatClockTime', () => {
   it('formats 0 seconds', () => {
@@ -321,5 +324,60 @@ describe('formatDeathInsightLine', () => {
     const lines = new Set(tags.map((tag) => formatDeathInsightLine(cause({ tag, sourceKey: 'tourist' }))));
     // Every tag should map to a distinct line.
     expect(lines.size).toBe(tags.length);
+  });
+});
+
+describe('resolveUnlockHeading', () => {
+  it('returns the blue "next tip" heading when there are no unlocks', () => {
+    const h = resolveUnlockHeading([]);
+    expect(h.color).toBe('#8aa4d7');
+    expect(h.text.length).toBeGreaterThan(0);
+    expect(h.text).not.toBe('ui.gameOver.next_tip');
+  });
+
+  it('returns the green single-unlock heading for exactly one variant', () => {
+    const h = resolveUnlockHeading(['classic'] as VariantKey[]);
+    expect(h.color).toBe('#77c977');
+    expect(h.text).not.toBe('ui.gameOver.unlock_single');
+  });
+
+  it('returns the green multi-unlock heading for two or more variants', () => {
+    const two = resolveUnlockHeading(['classic', 'moor_runner'] as VariantKey[]);
+    const three = resolveUnlockHeading(['classic', 'moor_runner', 'iron_belly'] as VariantKey[]);
+    expect(two.color).toBe('#77c977');
+    expect(three.color).toBe('#77c977');
+    // Single-vs-multi copy should differ.
+    expect(two.text).not.toBe(resolveUnlockHeading(['classic'] as VariantKey[]).text);
+  });
+});
+
+describe('formatUnlockBodyText', () => {
+  it('returns null for 0 or 1 unlocks (scene handles those separately)', () => {
+    expect(formatUnlockBodyText([])).toBeNull();
+    expect(formatUnlockBodyText(['classic'] as VariantKey[])).toBeNull();
+  });
+
+  it('joins two variant names with a single newline (no bullets)', () => {
+    const out = formatUnlockBodyText(['classic', 'moor_runner'] as VariantKey[]);
+    expect(out).not.toBeNull();
+    const lines = (out as string).split('\n');
+    expect(lines).toHaveLength(2);
+    // Two-variant layout has no bullet prefix.
+    expect(lines.every((l) => !l.startsWith('-'))).toBe(true);
+  });
+
+  it('prefixes each line with "- " for 3+ variants', () => {
+    const out = formatUnlockBodyText(['classic', 'moor_runner', 'iron_belly'] as VariantKey[]);
+    const lines = (out as string).split('\n');
+    expect(lines).toHaveLength(3);
+    expect(lines.every((l) => l.startsWith('- '))).toBe(true);
+  });
+
+  it('maps each key to a non-empty resolved variant name', () => {
+    const out = formatUnlockBodyText(['classic', 'moor_runner'] as VariantKey[]);
+    const lines = (out as string).split('\n');
+    for (const l of lines) {
+      expect(l.length).toBeGreaterThan(0);
+    }
   });
 });

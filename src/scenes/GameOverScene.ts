@@ -15,6 +15,8 @@ import {
   boundedLoadoutSummary,
   buildWeaponDamageRows,
   formatDeathInsightLine,
+  resolveUnlockHeading,
+  formatUnlockBodyText,
 } from './gameOverFormatting';
 import { downloadPostcard } from '../utils/postcard';
 
@@ -483,12 +485,7 @@ export class GameOverScene extends Phaser.Scene {
       t('ui.tips.kite'),
     ];
     const hasUnlocks = variantKeys.length > 0;
-    const headingText = hasUnlocks
-      ? variantKeys.length === 1
-        ? t('ui.gameOver.unlock_single')
-        : t('ui.gameOver.unlock_multi')
-      : t('ui.gameOver.next_tip');
-    const headingColor = hasUnlocks ? '#77c977' : '#8aa4d7';
+    const { text: headingText, color: headingColor } = resolveUnlockHeading(variantKeys);
 
     const heading = this.add
       .text(centerX, y, headingText, {
@@ -555,9 +552,8 @@ export class GameOverScene extends Phaser.Scene {
       return;
     }
 
-    const bodyText = variantKeys.length === 2
-      ? variantKeys.map((key) => t(getVariantByKey(key).nameKey)).join('\n')
-      : variantKeys.map((key) => `- ${t(getVariantByKey(key).nameKey)}`).join('\n');
+    // Invariant: variantKeys.length >= 2 here (length === 1 branch returned above).
+    const bodyText = formatUnlockBodyText(variantKeys) ?? '';
     const unlockList = this.add
       .text(centerX, y + 30, bodyText, {
         fontFamily: 'monospace',
