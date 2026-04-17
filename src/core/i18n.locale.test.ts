@@ -34,7 +34,7 @@ describe('W18 locale scaffolding', () => {
     setLocale('scs');
     expect(t('ui.menu.start_run')).toBe('GAUN');
     expect(t('ui.curseScene.title')).toBe('CURSE O\' THA MOOR');
-    expect(t('bossWarning.gordon')).toContain('mairchin');
+    expect(t('ui.bossWarning.gordon')).toContain('mairchin');
   });
 
   it('scs overlay still falls back to English for keys it does not define', () => {
