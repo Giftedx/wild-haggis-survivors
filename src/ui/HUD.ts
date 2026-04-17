@@ -9,6 +9,7 @@ import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
+import { targetHpBarColor, packRgbColor } from './hudHpBarColor';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -419,17 +420,14 @@ export class HUD {
     this.hpText.setText(`${hpDisplay}/${maxDisplay}`);
 
     // Dynamic HP bar color: green > yellow > orange > red — smooth lerp
-    const targetColor = hpFrac > 0.6 ? { r: 0x44, g: 0xcc, b: 0x44 }
-      : hpFrac > 0.35 ? { r: 0xcc, g: 0xcc, b: 0x44 }
-      : hpFrac > 0.15 ? { r: 0xdd, g: 0x88, b: 0x44 }
-      : { r: 0xcc, g: 0x33, b: 0x33 };
+    const targetColor = targetHpBarColor(hpFrac);
     const lerpSpeed = 0.08; // ~300ms to resolve at 60fps
     this.displayHpR += (targetColor.r - this.displayHpR) * lerpSpeed;
     this.displayHpG += (targetColor.g - this.displayHpG) * lerpSpeed;
     this.displayHpB += (targetColor.b - this.displayHpB) * lerpSpeed;
-    this.hpBarFill.setFillStyle(
-      (Math.round(this.displayHpR) << 16) | (Math.round(this.displayHpG) << 8) | Math.round(this.displayHpB)
-    );
+    this.hpBarFill.setFillStyle(packRgbColor({
+      r: this.displayHpR, g: this.displayHpG, b: this.displayHpB,
+    }));
 
     // Low-HP urgency pulse — below 30% the fill softly pulses alpha and the
     // HP text color shifts to match. High-contrast palette has its own
