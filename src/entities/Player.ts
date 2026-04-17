@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
+import { softBoundarySteer } from './softBoundarySteer';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -328,22 +329,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // four multiplies instead of two transcendentals.
     const drifted = rotateVectorIntoPrecomputed(this.driftScratch, dir.x, dir.y, this.driftCos, this.driftSin);
 
-    // Soft boundary — slow down near world edges
-    const edgeMargin = 150;
-    let edgeMul = 1;
-    if (this.x < edgeMargin) edgeMul = Math.min(edgeMul, this.x / edgeMargin);
-    if (this.y < edgeMargin) edgeMul = Math.min(edgeMul, this.y / edgeMargin);
-    if (this.x > GAME.WORLD_WIDTH - edgeMargin) edgeMul = Math.min(edgeMul, (GAME.WORLD_WIDTH - this.x) / edgeMargin);
-    if (this.y > GAME.WORLD_HEIGHT - edgeMargin) edgeMul = Math.min(edgeMul, (GAME.WORLD_HEIGHT - this.y) / edgeMargin);
-    edgeMul = Math.max(0.15, edgeMul); // Never fully stop — 15% minimum
-
-    // Push back toward center when very near edge (gentle force, not a hard wall)
-    let pushX = 0, pushY = 0;
-    const pushStrength = 50;
-    if (this.x < 20) pushX = pushStrength;
-    if (this.x > GAME.WORLD_WIDTH - 20) pushX = -pushStrength;
-    if (this.y < 20) pushY = pushStrength;
-    if (this.y > GAME.WORLD_HEIGHT - 20) pushY = -pushStrength;
+    // Soft boundary — slow down near edges + gentle push-back near the wall.
+    const { edgeMul, pushX, pushY } = softBoundarySteer(
+      this.x, this.y, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
+    );
 
     this.setVelocity(
       drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul + pushX,
