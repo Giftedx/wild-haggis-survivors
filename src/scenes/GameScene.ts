@@ -12,8 +12,9 @@ import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import {
-  recordRun, loadSave, isLastDeathFresh, writeSave,
+  recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched,
+  consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -1176,7 +1177,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.tutorialSystem?.notifyAncestralEchoIfFirst();
       // Consume the echo so it doesn't re-spawn every run. Fresh death
       // on this run will write a new one via RunLifecycle.
-      writeSave({ ...save, lastDeath: undefined });
+      consumeLastDeath();
     } catch {
       /* best-effort */
     }

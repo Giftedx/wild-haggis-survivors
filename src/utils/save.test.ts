@@ -7,6 +7,7 @@ import {
   bumpAncestralEchoesTouched,
   bumpCeilidhPulsesLifetime,
   bumpStandingStonePick,
+  consumeLastDeath,
   recordIronmoorBest,
   recordLastDeath,
   recordPostBellBest,
@@ -587,6 +588,21 @@ describe('lifetime-counter bumps', () => {
     expect(wipeIronmoorHistoryInPlace()).toBe(true);
     expect(loadSave().runHistory).toHaveLength(1);
     expect(loadSave().runHistory[0]?.ironmoor).toBeUndefined();
+  });
+
+  it('consumeLastDeath clears the persisted death record', () => {
+    writeSave({
+      ...createDefaultSave(),
+      lastDeath: { x: 100, y: 200, ts: 1_000_000 },
+    });
+    consumeLastDeath();
+    expect(loadSave().lastDeath).toBeUndefined();
+  });
+
+  it('consumeLastDeath is a no-op when no record exists', () => {
+    writeSave(createDefaultSave());
+    expect(() => consumeLastDeath()).not.toThrow();
+    expect(loadSave().lastDeath).toBeUndefined();
   });
 
   it('wipeIronmoorHistoryInPlace preserves bestIronmoorSeconds (separate leaderboard)', () => {

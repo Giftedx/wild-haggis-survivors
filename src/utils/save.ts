@@ -638,6 +638,21 @@ export function recordIronmoorBest(time: number): void {
 }
 
 /**
+ * Best-effort: clear the persisted last-death position. Called after
+ * the Ancestral Echo for that death has been spawned, so it doesn't
+ * re-trigger every run until the next death writes a new record.
+ */
+export function consumeLastDeath(): void {
+  try {
+    const cur = loadSave();
+    if (cur.lastDeath === undefined) return;
+    writeSave({ ...cur, lastDeath: undefined });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
  * Best-effort: load → wipe → write the Ironmoor chronicle wipe.
  * Returns true when at least one row was cleared (caller can then
  * show the wipe toast); returns false when nothing changed or the
