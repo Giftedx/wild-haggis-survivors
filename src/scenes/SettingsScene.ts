@@ -245,8 +245,7 @@ export class SettingsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    back.on('pointerover', () => back.setFillStyle(backPalette.hover));
-    back.on('pointerout', () => back.setFillStyle(backPalette.idle));
+    attachButtonHoverFill(back, backPalette.idle, backPalette.hover);
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
