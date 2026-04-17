@@ -25,6 +25,7 @@ import {
   DASH_PULSE_PHASE_STEP,
 } from './hudDashStyle';
 import { bossHpBarStyle } from './hudBossBar';
+import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -720,8 +721,9 @@ export class HUD {
           slot.icon.setTexture(desiredKey);
         }
         slot.label.setText(w.evolved ? '★' : `${w.level}`);
-        slot.label.setColor(w.evolved ? '#ffdd44' : '#ffffff');
-        slot.bg.setStrokeStyle(2, w.evolved ? 0xddaa00 : (this.hcSlotStroke ?? 0x666666));
+        const slotStyle = resolveHudWeaponSlotStyle(w.evolved, this.hcSlotStroke);
+        slot.label.setColor(slotStyle.labelColor);
+        slot.bg.setStrokeStyle(2, slotStyle.strokeColor);
 
         // Cooldown bar: fills left-to-right along the bottom edge.
         const cdFrac = w.cooldownFrac ?? 1;
