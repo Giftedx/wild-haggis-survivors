@@ -17,6 +17,7 @@ import { paginationState } from '../ui/pagination';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { resolveShopRowBgColor } from './shopRowBg';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -181,7 +182,7 @@ export class MetaShopScene extends Phaser.Scene {
       const { owned, locked, canAfford } = state;
       const rowPalette = resolveMetaShopRowPalette(state);
 
-      const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1a1828 : 0x161422, 0.82);
+      const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, resolveShopRowBgColor(index), 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
         fontFamily: 'monospace',
         fontSize: '16px',

@@ -9,6 +9,7 @@ import {
   SHOP_PAGE_BUTTON_HOVER_FILL,
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
+import { resolveShopRowBgColor } from './shopRowBg';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -142,7 +143,7 @@ export class ShopScene extends Phaser.Scene {
       y + 18,
       width - 30,
       44,
-      index % 2 === 0 ? 0x1a1828 : 0x161422,
+      resolveShopRowBgColor(index),
       0.82
     );
     const nameText = this.add.text(34, y + 3, t(upgrade.nameKey), {
