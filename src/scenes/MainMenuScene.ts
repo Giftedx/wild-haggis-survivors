@@ -34,6 +34,7 @@ import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { brightenColor } from '../utils/brightenColor';
+import { clickToScene } from './clickToScene';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -412,14 +413,8 @@ export class MainMenuScene extends Phaser.Scene {
     const halfBtnW = (btnW - reflectionGap) / 2;
     let chronicleBtn: Phaser.GameObjects.Rectangle | null = null;
     let deedsBtn: Phaser.GameObjects.Rectangle | null = null;
-    const goChronicle = () => {
-      audio.playClick();
-      this.scene.start('Chronicle');
-    };
-    const goDeeds = () => {
-      audio.playClick();
-      this.scene.start('Deeds');
-    };
+    const goChronicle = clickToScene(this, 'Chronicle');
+    const goDeeds = clickToScene(this, 'Deeds');
     if (hasAnyRun) {
       // Chronicle (left) — centers align to full btnW with an exact 12px gap (was off by 3px).
       const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
