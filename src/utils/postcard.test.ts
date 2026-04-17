@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildPostcardFilename, downloadPostcard } from './postcard';
+import { buildPostcardFilename, buildPostcardFooterParts, downloadPostcard } from './postcard';
 
 describe('buildPostcardFilename', () => {
   it('renders mode + kills + mmss + seed slot', () => {
@@ -80,5 +80,76 @@ describe('downloadPostcard', () => {
     expect(downloadPostcard(null, payload)).toBe(false); // null canvas branch
     delete (payload as { curseLabel?: string }).curseLabel;
     expect(downloadPostcard(null, payload)).toBe(false);
+  });
+});
+
+describe('buildPostcardFooterParts', () => {
+  it('renders only the load-bearing time + kills when no optional fields', () => {
+    expect(buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: 12, timeSurvivedSec: 65,
+    })).toEqual(['time 1:05', 'kills 12']);
+  });
+
+  it('appends variantLabel after kills', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'victory', enemiesKilled: 100, timeSurvivedSec: 600, variantLabel: 'Classic Haggis',
+    });
+    expect(parts).toEqual(['time 10:00', 'kills 100', 'Classic Haggis']);
+  });
+
+  it('appends ironmoor / curse / post-bell tags in fixed order', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'victory',
+      enemiesKilled: 50,
+      timeSurvivedSec: 300,
+      variantLabel: 'Iron Belly',
+      ironmoor: true,
+      curseLabel: 'Heavy Legs',
+      postBellSec: 65,
+    });
+    // Order: time, kills, variant, ironmoor, curse, post-bell.
+    expect(parts).toEqual([
+      'time 5:00',
+      'kills 50',
+      'Iron Belly',
+      '⚔ Ironmoor',
+      '☠ Heavy Legs',
+      '🔔 +1:05 past the bell',
+    ]);
+  });
+
+  it('postBellSec === 0 does not produce a tag', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: 0, timeSurvivedSec: 0, postBellSec: 0,
+    });
+    expect(parts).toEqual(['time 0:00', 'kills 0']);
+  });
+
+  it('negative postBellSec is ignored (defensive against malformed payloads)', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: 1, timeSurvivedSec: 1, postBellSec: -5,
+    });
+    expect(parts.some((p) => p.includes('past the bell'))).toBe(false);
+  });
+
+  it('floors negative kills to 0 and clamps negative time to 0:00', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: -7, timeSurvivedSec: -90,
+    });
+    expect(parts).toEqual(['time 0:00', 'kills 0']);
+  });
+
+  it('zero-pads sub-minute clocks correctly', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: 0, timeSurvivedSec: 7,
+    });
+    expect(parts[0]).toBe('time 0:07');
+  });
+
+  it('empty curseLabel string does not add a tag (truthy guard)', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death', enemiesKilled: 1, timeSurvivedSec: 1, curseLabel: '',
+    });
+    expect(parts.some((p) => p.startsWith('☠'))).toBe(false);
   });
 });

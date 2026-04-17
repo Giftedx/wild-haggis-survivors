@@ -114,10 +114,36 @@ export function renderPostcardDataUrl(
   ctx.font = '13px monospace';
   ctx.fillStyle = '#cdd4e0';
   ctx.textAlign = 'left';
-  const mins = Math.floor(Math.max(0, payload.timeSurvivedSec) / 60);
-  const secs = Math.floor(Math.max(0, payload.timeSurvivedSec) % 60);
+  ctx.fillText(buildPostcardFooterParts(payload).join('  ·  '), FOOTER_PAD_X, h + FOOTER_PAD_TOP + 22);
+
+  // Bottom line: brand footer.
+  ctx.font = 'italic 11px monospace';
+  ctx.fillStyle = '#596780';
+  ctx.textAlign = 'right';
+  ctx.fillText('wild haggis survivors', w - FOOTER_PAD_X, h + FOOTER_PAD_TOP + 44);
+
+  return out.toDataURL('image/png');
+}
+
+/**
+ * Compose the dot-separated badge row that lives in the postcard footer.
+ *
+ * Order matters — players read left-to-right; "time / kills" anchor as
+ * the load-bearing summary, then variant, then mode tags (ironmoor /
+ * curse / post-bell). Returned as the raw string array (not joined) so
+ * the renderer can pick its own separator and tests can inspect each
+ * tag in isolation.
+ *
+ * Postcard payload defensively floors negatives + non-finite numbers,
+ * since the payload is built from RunSummary which has its own
+ * normalisation but we never want a malformed input to print "kills -3".
+ */
+export function buildPostcardFooterParts(payload: PostcardPayload): string[] {
+  const totalSec = Math.max(0, Math.floor(payload.timeSurvivedSec));
+  const mins = Math.floor(totalSec / 60);
+  const secs = totalSec % 60;
   const clock = `${mins}:${String(secs).padStart(2, '0')}`;
-  const parts = [
+  const parts: string[] = [
     `time ${clock}`,
     `kills ${Math.max(0, Math.floor(payload.enemiesKilled))}`,
   ];
@@ -129,15 +155,7 @@ export function renderPostcardDataUrl(
     const pbSec = Math.floor(payload.postBellSec % 60);
     parts.push(`🔔 +${pbMin}:${String(pbSec).padStart(2, '0')} past the bell`);
   }
-  ctx.fillText(parts.join('  ·  '), FOOTER_PAD_X, h + FOOTER_PAD_TOP + 22);
-
-  // Bottom line: brand footer.
-  ctx.font = 'italic 11px monospace';
-  ctx.fillStyle = '#596780';
-  ctx.textAlign = 'right';
-  ctx.fillText('wild haggis survivors', w - FOOTER_PAD_X, h + FOOTER_PAD_TOP + 44);
-
-  return out.toDataURL('image/png');
+  return parts;
 }
 
 /**
