@@ -8,17 +8,23 @@
  * evolution leans brighter yellow-gold so it reads as "YOUR
  * legendary". Sharing the constants here makes the two moments
  * tunable side-by-side and prevents accidental cross-contamination.
+ *
+ * The anchor tone (COLORS.WHISKY_GOLD) appears inside each palette so
+ * the juice and HUD gold read as the same family — recolouring the
+ * UI gold carries through to the biggest moments automatically.
  */
+
+import { COLORS } from '../config';
 
 // ── Boss death spectacle ────────────────────────────────────────────
 
 /** Four-colour gold palette sampled randomly for each boss-death particle. */
 export const JUICE_BOSS_DEATH_GOLDS: readonly number[] = [
-  0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00,
+  COLORS.WHISKY_GOLD, 0xffcc44, 0xffdd66, 0xeebb00,
 ] as const;
 
 /** Primary ring gold for the boss-death expanding ring (first wave). */
-export const JUICE_BOSS_DEATH_RING_PRIMARY = 0xd4a017;
+export const JUICE_BOSS_DEATH_RING_PRIMARY = COLORS.WHISKY_GOLD;
 /** Lighter secondary ring gold (second wave, 150ms delayed). */
 export const JUICE_BOSS_DEATH_RING_SECONDARY = 0xffcc44;
 
@@ -31,7 +37,7 @@ export const JUICE_EVOLUTION_GOLDS: readonly number[] = [
 
 /** Three-colour palette for the layered expanding rings (light → dark). */
 export const JUICE_EVOLUTION_RING_GOLDS: readonly number[] = [
-  0xffee88, 0xffcc44, 0xd4a017,
+  0xffee88, 0xffcc44, COLORS.WHISKY_GOLD,
 ] as const;
 
 /** Radial beam colour shooting outward from the player. */
