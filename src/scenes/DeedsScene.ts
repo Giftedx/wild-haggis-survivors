@@ -21,6 +21,7 @@ import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
+import { clickToScene } from './clickToScene';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -133,15 +134,10 @@ export class DeedsScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
     attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
-    backBtn.on('pointerdown', () => {
-      audio.playClick();
-      this.scene.start('MainMenu');
-    });
+    const goBack = clickToScene(this, 'MainMenu');
+    backBtn.on('pointerdown', goBack);
 
-    this.input.keyboard?.on('keydown-ESC', () => {
-      audio.playClick();
-      this.scene.start('MainMenu');
-    });
+    this.input.keyboard?.on('keydown-ESC', goBack);
 
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();

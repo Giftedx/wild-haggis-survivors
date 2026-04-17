@@ -9,6 +9,7 @@ import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from '
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { brightenColor } from '../utils/brightenColor';
+import { clickToScene } from './clickToScene';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle } from './sceneHeaderStyle';
 
@@ -107,15 +108,10 @@ export class CurseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
     attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
-    backBtn.on('pointerdown', () => {
-      audio.playClick();
-      this.scene.start('Menu');
-    });
+    const goBack = clickToScene(this, 'Menu');
+    backBtn.on('pointerdown', goBack);
 
-    this.input.keyboard?.on('keydown-ESC', () => {
-      audio.playClick();
-      this.scene.start('Menu');
-    });
+    this.input.keyboard?.on('keydown-ESC', goBack);
 
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();

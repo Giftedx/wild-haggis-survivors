@@ -41,6 +41,7 @@ import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
+import { clickToScene } from './clickToScene';
 
 // Repeated text styles inside this scene — pinned so the row + pagination
 // look stays in sync. Both small monospace bold strings used for header
@@ -301,15 +302,10 @@ export class ChronicleScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
     attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
-    backBtn.on('pointerdown', () => {
-      audio.playClick();
-      this.scene.start('MainMenu');
-    });
+    const goBack = clickToScene(this, 'MainMenu');
+    backBtn.on('pointerdown', goBack);
 
-    this.input.keyboard?.on('keydown-ESC', () => {
-      audio.playClick();
-      this.scene.start('MainMenu');
-    });
+    this.input.keyboard?.on('keydown-ESC', goBack);
 
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
