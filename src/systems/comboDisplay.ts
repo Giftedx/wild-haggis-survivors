@@ -1,4 +1,5 @@
 import { t } from '../core/i18n';
+import { COLORS_CSS } from '../config';
 import { comboDamageBonusPct } from './comboDamage';
 
 /**
@@ -7,7 +8,7 @@ import { comboDamageBonusPct } from './comboDamage';
  * Visibility: combo hides below 5 or when the combo timer has
  * expired. When visible, a 3-tier palette reflects intensity:
  *
- *   count >= 50  → whisky gold (#d4a017) — "you're on fire"
+ *   count >= 50  → whisky gold (COLORS_CSS.WHISKY_GOLD) — "you're on fire"
  *   count >= 20  → warm amber  (#e8a830)
  *   else         → orange-brown (#cc8822)
  *
@@ -18,7 +19,7 @@ export const COMBO_VISIBLE_THRESHOLD = 5;
 export const COMBO_FIRE_TIER = 50;
 export const COMBO_AMBER_TIER = 20;
 
-export const COMBO_COLOR_FIRE = '#d4a017';
+export const COMBO_COLOR_FIRE = COLORS_CSS.WHISKY_GOLD;
 export const COMBO_COLOR_AMBER = '#e8a830';
 export const COMBO_COLOR_ORANGE = '#cc8822';
 /** Colour held while the combo chip is hidden (resets between visible bursts). */

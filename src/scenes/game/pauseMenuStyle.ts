@@ -17,7 +17,9 @@ export const PAUSE_TITLE_SIZE_SHORT = '34px';
 /** Title font size — wide viewport variant. */
 export const PAUSE_TITLE_SIZE_WIDE = '46px';
 
-export const PAUSE_TITLE_COLOR = '#d4a017';
+import { COLORS_CSS } from '../../config';
+
+export const PAUSE_TITLE_COLOR = COLORS_CSS.WHISKY_GOLD;
 export const PAUSE_TITLE_COLOR_HC = '#ffe08a';
 
 export interface PauseMenuStyle {

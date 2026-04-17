@@ -1,4 +1,4 @@
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 
 /**
  * Panel-level theme values for GameOverScene. Victory renders in
@@ -97,7 +97,7 @@ export function pickGameOverTitleKeys(
 export function resolveGameOverPanelTheme(isVictory: boolean): GameOverPanelTheme {
   if (isVictory) {
     return {
-      titleColor: '#d4a017',
+      titleColor: COLORS_CSS.WHISKY_GOLD,
       panelStroke: COLORS.WHISKY_GOLD,
       titleFontSize: '56px',
       titleStartScale: 0.7,

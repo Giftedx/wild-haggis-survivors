@@ -1,10 +1,14 @@
+import { COLORS } from '../config';
+
 /**
  * Weapon-specific projectile trail palettes. Each entry is a 3-color
  * gradient sampled randomly per particle — shades read as "heather" /
  * "ember" / "loch" etc rather than a flat hue.
  *
  * Evolved weapons override with a gold overlay regardless of family —
- * mastery visually outranks weapon identity.
+ * mastery visually outranks weapon identity. The darkest evolved tone
+ * matches COLORS.WHISKY_GOLD so the evolved-projectile trail reads
+ * as the same gold family as the rest of the HUD.
  */
 export const WEAPON_TRAIL_COLORS: Readonly<Record<string, readonly number[]>> = {
   thistle_shot: [0x9966cc, 0xaa77dd, 0x8855bb], // purple — heather
@@ -17,7 +21,7 @@ export const WEAPON_TRAIL_COLORS: Readonly<Record<string, readonly number[]>> = 
 };
 
 /** Shared palette for evolved-weapon trails (overrides family). */
-export const EVOLVED_TRAIL_COLORS: readonly number[] = [0xffcc44, 0xffdd66, 0xd4a017];
+export const EVOLVED_TRAIL_COLORS: readonly number[] = [0xffcc44, 0xffdd66, COLORS.WHISKY_GOLD];
 
 /** Fallback palette when weaponKey is unknown. Matches thistle_shot (heather). */
 export const DEFAULT_TRAIL_COLORS: readonly number[] = [0x9966cc, 0xaa77dd, 0x8855bb];

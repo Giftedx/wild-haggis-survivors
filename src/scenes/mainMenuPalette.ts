@@ -1,8 +1,10 @@
+import { COLORS_CSS } from '../config';
+
 /**
  * MainMenu cozy-redesign palette — pinned per high-contrast state.
  *
  * Five coordinated colours define the mood:
- *   title        — warm gold, the landing page's anchor
+ *   title        — warm gold (anchored on COLORS_CSS.WHISKY_GOLD)
  *   subdued      — secondary text (taglines)
  *   hint         — tertiary text (seed hints, credit strip)
  *   mountainDark — parallax silhouette base
@@ -21,7 +23,7 @@ export interface MainMenuPalette {
 }
 
 export const MAIN_MENU_PALETTE_NORMAL: MainMenuPalette = {
-  title: '#d4a017',
+  title: COLORS_CSS.WHISKY_GOLD,
   subdued: '#95a5c3',
   hint: '#6a7390',
   mountainDark: 0x131c2a,
