@@ -18,6 +18,7 @@ import { applyAudioFromUserSettings } from '../../core/applyAudioFromSettings';
 import { getSettingsManager } from '../../core/SettingsManager';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
+import { buildPauseStatsLines } from './pauseStats';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -78,33 +79,17 @@ export class PauseMenu {
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
 
-    const timeSec = this.hooks.getGameTimeSec();
-    const pMins = Math.floor(timeSec / 60);
-    const pSecs = Math.floor(timeSec % 60);
-    const statLines = [
-      t('ui.pause.time_line', { m: pMins, s: pSecs.toString().padStart(2, '0') }),
-      t('ui.pause.stats_mid', { kills: this.hooks.getKillCount(), level: this.hooks.getLevel() }),
-      t('ui.pause.stats_loadout', {
-        w: this.hooks.getEquippedWeaponCount(),
-        c: this.hooks.getOwnedPassives().length,
-      }),
-    ];
-    const runGold = this.hooks.getRunGoldEarned?.() ?? 0;
-    if (runGold > 0) {
-      statLines.push(t('ui.pause.stats_gold', { gold: runGold }));
-    }
-    const dps = this.hooks.getLastHudDps?.() ?? 0;
-    if (dps > 0) {
-      statLines.push(t('ui.pause.stats_dps', { dps }));
-    }
-    const dmgDealt = this.hooks.getRunDamageDealt?.() ?? 0;
-    if (dmgDealt > 0) {
-      statLines.push(t('ui.pause.stats_damage', { dmg: dmgDealt }));
-    }
-    const streak = this.hooks.getKillStreakStats?.();
-    if (streak && (streak.best >= 2 || streak.current >= 2)) {
-      statLines.push(t('ui.pause.stats_streak', { current: streak.current, best: streak.best }));
-    }
+    const statLines = buildPauseStatsLines({
+      timeSec: this.hooks.getGameTimeSec(),
+      killCount: this.hooks.getKillCount(),
+      level: this.hooks.getLevel(),
+      weaponCount: this.hooks.getEquippedWeaponCount(),
+      passiveCount: this.hooks.getOwnedPassives().length,
+      runGold: this.hooks.getRunGoldEarned?.(),
+      dps: this.hooks.getLastHudDps?.(),
+      dmgDealt: this.hooks.getRunDamageDealt?.(),
+      streak: this.hooks.getKillStreakStats?.(),
+    });
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {
         fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',

@@ -1,0 +1,98 @@
+import { describe, it, expect } from 'vitest';
+import { buildPauseStatsLines, type PauseStatsInput } from './pauseStats';
+
+function base(overrides: Partial<PauseStatsInput> = {}): PauseStatsInput {
+  return {
+    timeSec: 0,
+    killCount: 0,
+    level: 1,
+    weaponCount: 1,
+    passiveCount: 0,
+    ...overrides,
+  };
+}
+
+describe('buildPauseStatsLines — required lines', () => {
+  it('always emits the first 3 lines (time, kills+level, loadout)', () => {
+    const lines = buildPauseStatsLines(base());
+    expect(lines).toHaveLength(3);
+  });
+
+  it('formats time as M:SS (zero-padded seconds)', () => {
+    expect(buildPauseStatsLines(base({ timeSec: 65 }))[0]).toContain('1:05');
+    expect(buildPauseStatsLines(base({ timeSec: 9 }))[0]).toContain('0:09');
+  });
+
+  it('clamps negative timeSec to 0', () => {
+    expect(buildPauseStatsLines(base({ timeSec: -10 }))[0]).toContain('0:00');
+  });
+
+  it('floors fractional timeSec', () => {
+    expect(buildPauseStatsLines(base({ timeSec: 59.9 }))[0]).toContain('0:59');
+  });
+});
+
+describe('buildPauseStatsLines — optional lines', () => {
+  it('includes the gold line only when runGold > 0', () => {
+    expect(buildPauseStatsLines(base()).length).toBe(3);
+    expect(buildPauseStatsLines(base({ runGold: 0 })).length).toBe(3);
+    expect(buildPauseStatsLines(base({ runGold: 10 })).length).toBe(4);
+  });
+
+  it('includes the dps line only when dps > 0', () => {
+    expect(buildPauseStatsLines(base({ dps: 0 })).length).toBe(3);
+    expect(buildPauseStatsLines(base({ dps: 25 })).length).toBe(4);
+  });
+
+  it('includes the damage line only when dmgDealt > 0', () => {
+    expect(buildPauseStatsLines(base({ dmgDealt: 0 })).length).toBe(3);
+    expect(buildPauseStatsLines(base({ dmgDealt: 500 })).length).toBe(4);
+  });
+
+  it('includes the streak line when best >= 2 OR current >= 2', () => {
+    // Below threshold — no streak line.
+    expect(buildPauseStatsLines(base({ streak: { current: 1, best: 1 } })).length).toBe(3);
+    // Best at threshold — show.
+    expect(buildPauseStatsLines(base({ streak: { current: 1, best: 2 } })).length).toBe(4);
+    // Current at threshold — show.
+    expect(buildPauseStatsLines(base({ streak: { current: 2, best: 1 } })).length).toBe(4);
+  });
+
+  it('omits streak when undefined', () => {
+    expect(buildPauseStatsLines(base()).length).toBe(3);
+  });
+
+  it('emits all four optional lines when every threshold is met', () => {
+    const lines = buildPauseStatsLines(base({
+      runGold: 100,
+      dps: 42,
+      dmgDealt: 5_000,
+      streak: { current: 5, best: 10 },
+    }));
+    // 3 required + 4 optional = 7
+    expect(lines).toHaveLength(7);
+  });
+
+  it('produces lines in a stable order (time, mid, loadout, gold, dps, dmg, streak)', () => {
+    const lines = buildPauseStatsLines(base({
+      timeSec: 120,
+      killCount: 50,
+      level: 3,
+      weaponCount: 2,
+      passiveCount: 1,
+      runGold: 42,
+      dps: 30,
+      dmgDealt: 1000,
+      streak: { current: 5, best: 8 },
+    }));
+    // Rough order check via numeric needles.
+    expect(lines[0]).toContain('2:00');  // time
+    expect(lines[1]).toContain('50');    // kills
+    expect(lines[1]).toContain('3');     // level
+    expect(lines[2]).toContain('2');     // weapons
+    expect(lines[3]).toContain('42');    // gold
+    expect(lines[4]).toContain('30');    // dps
+    expect(lines[5]).toContain('1000');  // dmg
+    expect(lines[6]).toContain('5');     // streak current
+  });
+});
