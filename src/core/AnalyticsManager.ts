@@ -147,6 +147,20 @@ export class AnalyticsManager {
         });
       })
     );
+
+    // Shop / meta-shop purchase telemetry — upgrade popularity + economy
+    // pacing. Opt-in gated since it encodes spend patterns.
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_SHOP_PURCHASE', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('shop_purchase', {
+          itemKey: p.itemKey,
+          scope: p.scope,
+          cost: p.cost,
+          ...(p.newLevel !== undefined ? { newLevel: p.newLevel } : {}),
+        });
+      })
+    );
   }
 
   stopBusHandlers(): void {

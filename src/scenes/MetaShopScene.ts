@@ -19,6 +19,7 @@ import { clearGameObjects } from '../utils/clearGameObjects';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { clickToScene } from './clickToScene';
 import { audio } from '../systems/AudioSystem';
+import { globalEventBus } from '../core/GlobalEventBus';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { createBackButton } from './createBackButton';
 import { resolveShopRowBgColor } from './shopRowBg';
@@ -235,6 +236,12 @@ export class MetaShopScene extends Phaser.Scene {
     audio.playClick();
     this.saveManager.save(r.next);
     audio.playPurchase();
+    // Cross-scene fan-out — AnalyticsManager listens for upgrade popularity.
+    globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
+      itemKey: key,
+      scope: 'meta_shop',
+      cost: META_SHOP_ITEMS[key].cost,
+    });
 
     // Green crystal burst — weighty feel
     playPurchaseBurst(this, this.killsText.x, this.killsText.y, 0x77c977, 0.25);

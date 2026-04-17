@@ -65,6 +65,20 @@ export type CodexFirstCullPayload = {
 };
 
 /**
+ * A permanent upgrade was purchased (gold shop or meta shop). Feeds
+ * portal analytics so upgrade popularity + economy pacing are visible.
+ */
+export type GlobalShopPurchasePayload = {
+  itemKey: string;
+  /** Which economy paid: `gold_shop` spends run gold, `meta_shop` spends kill crystals. */
+  scope: 'gold_shop' | 'meta_shop';
+  /** Currency amount debited. */
+  cost: number;
+  /** Level after the buy (gold shop only — meta shop items are binary unlocks). */
+  newLevel?: number;
+};
+
+/**
  * W2 Moor Road — a between-act route was finalised (either player pick or
  * Skip-Intermissions auto-default). Feeds analytics so the route-monotony
  * and skip-rate kill-criteria can be verified against live session data.
@@ -87,6 +101,7 @@ export type GlobalEvents = {
   GLOBAL_MOOR_MOMENT: GlobalMoorMomentPayload;
   GLOBAL_ROUTE_PICKED: GlobalRoutePickedPayload;
   CODEX_FIRST_CULL: CodexFirstCullPayload;
+  GLOBAL_SHOP_PURCHASE: GlobalShopPurchasePayload;
   bossEnraged: string;
 };
 

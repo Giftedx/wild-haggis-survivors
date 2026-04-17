@@ -18,6 +18,7 @@ import { clearGameObjects } from '../utils/clearGameObjects';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { audio } from '../systems/AudioSystem';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
+import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 
 /**
@@ -203,9 +204,17 @@ export class ShopScene extends Phaser.Scene {
 
     audio.playClick();
     this.saveData.gold -= cost;
-    this.saveData.upgrades[upgrade.key] = currentLevel + 1;
+    const newLevel = currentLevel + 1;
+    this.saveData.upgrades[upgrade.key] = newLevel;
     this.saveData = writeSave(this.saveData);
     audio.playPurchase();
+    // Cross-scene fan-out — AnalyticsManager listens for upgrade popularity.
+    globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
+      itemKey: upgrade.key,
+      scope: 'gold_shop',
+      cost,
+      newLevel,
+    });
 
     // Gold particle burst — "cha-ching" feel
     playPurchaseBurst(this, this.goldText.x, this.goldText.y, COLORS.WHISKY_GOLD, 0.3);

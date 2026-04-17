@@ -331,4 +331,43 @@ describe('AnalyticsManager', () => {
     globalEventBus.emit('CODEX_FIRST_CULL', { enemyKey: 'chef' });
     expect(provider.logEvent).not.toHaveBeenCalled();
   });
+
+  it('logs shop_purchase with newLevel when the gold shop emits', () => {
+    globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
+      itemKey: 'more_hp',
+      scope: 'gold_shop',
+      cost: 50,
+      newLevel: 3,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith('shop_purchase', {
+      itemKey: 'more_hp',
+      scope: 'gold_shop',
+      cost: 50,
+      newLevel: 3,
+    });
+  });
+
+  it('logs shop_purchase without newLevel when the meta shop emits (binary unlock)', () => {
+    globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
+      itemKey: 'unlock_dash',
+      scope: 'meta_shop',
+      cost: 1000,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith('shop_purchase', {
+      itemKey: 'unlock_dash',
+      scope: 'meta_shop',
+      cost: 1000,
+    });
+  });
+
+  it('skips shop_purchase when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
+      itemKey: 'more_hp',
+      scope: 'gold_shop',
+      cost: 50,
+      newLevel: 3,
+    });
+    expect(provider.logEvent).not.toHaveBeenCalled();
+  });
 });
