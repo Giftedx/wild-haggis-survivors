@@ -17,6 +17,7 @@ import {
   type EliteAffixId,
 } from '../data/eliteAffixes';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
+import { isDiveOffscreen } from './isDiveOffscreen';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
@@ -596,19 +597,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // look sideways when diving vertically.
     this.setRotation(this.diveAngle);
 
-    // Self-destruct if way off screen (account for camera zoom)
-    const cam = this.scene.cameras.main;
-    const z = Math.max(0.001, cam.zoom);
-    const viewW = cam.width / z;
-    const viewH = cam.height / z;
-    const margin = BALANCE.enemy.diveDespawnMarginPx;
-    const farFromView =
-      this.x < cam.scrollX - margin || this.x > cam.scrollX + viewW + margin ||
-      this.y < cam.scrollY - margin || this.y > cam.scrollY + viewH + margin;
-    const farFromWorld =
-      this.x < -margin || this.x > GAME.WORLD_WIDTH + margin ||
-      this.y < -margin || this.y > GAME.WORLD_HEIGHT + margin;
-    if (farFromView || farFromWorld) {
+    // Self-destruct if way off screen (account for camera zoom + world rect).
+    if (isDiveOffscreen(
+      this.x, this.y, this.scene.cameras.main,
+      GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
+      BALANCE.enemy.diveDespawnMarginPx,
+    )) {
       this.die();
     }
   }
