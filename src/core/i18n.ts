@@ -417,6 +417,8 @@ export const EN_STRINGS: LocaleTree = {
       quip_4: 'Willie hears ya. Willie don\'t care.',
       quip_5: 'Ahm no\' well.',
       quip_6: 'Steel is heavier than feathers… but they\'re both a kilogramme.',
+      quip_7: 'Is this a coup?',
+      quip_8: 'Yer ma sells Avon.',
       resume: 'RESUME',
       quit: 'END RUN',
       time_line: 'Time: {m}:{s}',

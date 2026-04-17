@@ -7,7 +7,7 @@ function assertResolves(key: string, vars?: Record<string, string | number>): vo
   expect(resolved.length, key).toBeGreaterThan(0);
 }
 
-const PAUSE_QUIP_KEYS = [1, 2, 3, 4, 5, 6].map((n) => `ui.pause.quip_${n}`);
+const PAUSE_QUIP_KEYS = [1, 2, 3, 4, 5, 6, 7, 8].map((n) => `ui.pause.quip_${n}`);
 
 /**
  * Misc in-run chrome: pause quips, level-up banner, a11y captions (root

@@ -69,7 +69,7 @@ export class PauseMenu {
         fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: titleStroke,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
-    const quipIndex = Phaser.Math.Between(1, 6);
+    const quipIndex = Phaser.Math.Between(1, 8);
     const quip = t(`ui.pause.quip_${quipIndex}`);
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.26, quip, {
