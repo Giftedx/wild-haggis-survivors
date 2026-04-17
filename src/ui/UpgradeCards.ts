@@ -8,6 +8,7 @@ import { resolveCardRarityGlowStyle } from './cardRarityGlowStyle';
 import { computeUpgradeCardLayout } from './upgradeCardLayout';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
+import { legendaryTrailSpec, resolveRarityPillPulseSpec } from './upgradeCardCelebration';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -284,6 +285,19 @@ export class UpgradeCardsUI {
     this.elements.push(rarityPillBg);
     this.elements.push(rarityLabel);
 
+    // Slow breathing pulse on the rarity pill for top-tier cards.
+    // resolveRarityPillPulseSpec returns null for non-legendary — no pulse
+    // means no tween, no teardown work.
+    const pulseSpec = resolveRarityPillPulseSpec(card.rarity);
+    if (pulseSpec) {
+      this.scene.tweens.add({
+        targets: rarityPillBg,
+        alpha: { from: pulseSpec.alphaFrom, to: pulseSpec.alphaTo },
+        duration: pulseSpec.duration,
+        ...TWEEN_INFINITE_BREATHE,
+      });
+    }
+
     // Hover — scale up card chrome; description stays unscaled so fitted body text
     // does not re-overlap the footer after hover.
     const cardElements: { setScale(x: number, y: number): void; scaleX: number; scaleY: number }[] =
@@ -307,11 +321,45 @@ export class UpgradeCardsUI {
       bg.setScale(1);
     });
 
-    // Click to select
+    // Click to select — legendary picks fire a quick spark trail toward
+    // the HUD XP bar before teardown, so the level-up moment doesn't
+    // just vanish. Spawn the trail directly on the scene (not into
+    // `this.elements`) so hide() doesn't kill mid-flight particles.
     bg.on('pointerdown', () => {
+      if (card.rarity === 'legendary') {
+        this.spawnLegendaryTrail(x, y);
+      }
       this.hide();
       this.onSelect(card);
     });
+  }
+
+  /** Fires a short spark trail from the picked card toward the HUD XP bar. */
+  private spawnLegendaryTrail(cardX: number, cardY: number): void {
+    const { x: vx, y: vy, width: vw, height: vh } = this.getUiViewport();
+    const target = { x: vx + vw / 2, y: vy + vh - 11 };
+    const specs = legendaryTrailSpec(
+      { x: cardX, y: cardY },
+      target,
+      8,
+      getSettingsManager().load().reduceParticles === true,
+    );
+    for (const s of specs) {
+      const spark = this.scene.add.circle(s.startX, s.startY, s.radius, 0xffdd44, 0)
+        .setScrollFactor(0)
+        .setDepth(220);
+      this.scene.tweens.add({
+        targets: spark,
+        x: s.endX,
+        y: s.endY,
+        alpha: { from: 1, to: 0 },
+        scale: { from: 1, to: 0.4 },
+        duration: s.duration,
+        delay: s.delay,
+        ease: 'Sine.easeIn',
+        onComplete: () => spark.destroy(),
+      });
+    }
   }
 
   hide(): void {
