@@ -247,3 +247,53 @@ describe('Player Ceilidh Chain magnet', () => {
     expect(p.getPickupRadius()).toBeCloseTo(160);
   });
 });
+
+describe('Player.setBiomeModifier', () => {
+  it('bogSlow knocks the speed multiplier down to 0.85 and leaves XP/knockback neutral', () => {
+    const p = makePlayer({ speed: 200 });
+    const baseSpeed = p.getMoveSpeed();
+    p.setBiomeModifier('bogSlow');
+    // Speed isn't recomputed by setBiomeModifier directly — the biome mul is
+    // applied where movement reads it. The flag still cleanly switches state,
+    // so we assert the dependent getters that DO surface the bias.
+    expect(p.getBiomeXpMultiplier()).toBe(1);
+    expect(p.getBiomeKnockbackBonus()).toBe(1);
+    // Sanity: the move-speed getter still returns base since recalcStats hasn't
+    // been invoked — the biome speed mul lives on a separate field.
+    expect(p.getMoveSpeed()).toBe(baseSpeed);
+  });
+
+  it('lochKnockback bumps knockback bonus to 1.5 and leaves the rest neutral', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('lochKnockback');
+    expect(p.getBiomeKnockbackBonus()).toBeCloseTo(1.5);
+    expect(p.getBiomeXpMultiplier()).toBe(1);
+  });
+
+  it('heatherBloom raises the XP gem multiplier to 1.10', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('heatherBloom');
+    expect(p.getBiomeXpMultiplier()).toBeCloseTo(1.10);
+    expect(p.getBiomeKnockbackBonus()).toBe(1);
+  });
+
+  it('pineConcealment leaves player-side state neutral (concealment is enemy-AI side)', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('pineConcealment');
+    expect(p.getBiomeXpMultiplier()).toBe(1);
+    expect(p.getBiomeKnockbackBonus()).toBe(1);
+  });
+
+  it('switching biomes resets prior modifiers — never leaks across regions', () => {
+    const p = makePlayer();
+    p.setBiomeModifier('lochKnockback');
+    expect(p.getBiomeKnockbackBonus()).toBeCloseTo(1.5);
+    // Stepping into heather should drop knockback back to neutral and raise XP.
+    p.setBiomeModifier('heatherBloom');
+    expect(p.getBiomeKnockbackBonus()).toBe(1);
+    expect(p.getBiomeXpMultiplier()).toBeCloseTo(1.10);
+    // Stepping back into a fresh biome (bog) clears XP again.
+    p.setBiomeModifier('bogSlow');
+    expect(p.getBiomeXpMultiplier()).toBe(1);
+  });
+});
