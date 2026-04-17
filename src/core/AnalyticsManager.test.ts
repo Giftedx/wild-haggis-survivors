@@ -318,4 +318,17 @@ describe('AnalyticsManager', () => {
       id: 'ach_ironmoor_victor',
     });
   });
+
+  it('logs codex_first_cull when CODEX_FIRST_CULL fires and telemetry opt-in is on', () => {
+    globalEventBus.emit('CODEX_FIRST_CULL', { enemyKey: 'tourist' });
+    expect(provider.logEvent).toHaveBeenCalledWith('codex_first_cull', {
+      enemyKey: 'tourist',
+    });
+  });
+
+  it('skips codex_first_cull when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('CODEX_FIRST_CULL', { enemyKey: 'chef' });
+    expect(provider.logEvent).not.toHaveBeenCalled();
+  });
 });

@@ -135,6 +135,18 @@ export class AnalyticsManager {
         });
       })
     );
+
+    // Bestiary codex telemetry — fires once per account per enemy key.
+    // Measures how far into the bestiary players actually reach. Opt-in
+    // gated since it encodes playtime progression.
+    this.busUnsubs.push(
+      globalEventBus.on('CODEX_FIRST_CULL', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('codex_first_cull', {
+          enemyKey: p.enemyKey,
+        });
+      })
+    );
   }
 
   stopBusHandlers(): void {
