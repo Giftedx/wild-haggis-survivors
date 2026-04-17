@@ -66,6 +66,8 @@ describe('Chronicle / Deeds i18n smoke', () => {
       variant: sampleVariant,
     });
     assertResolves('ui.chronicle.run_curse_chip', { curse: 'x' });
+    assertResolves('ui.chronicle.rerun_tooltip', { seed: 'ABC-123' });
+    assertResolves('ui.chronicle.rerun_tooltip_with_curse', { seed: 'ABC-123', curse: 'Heavy Legs' });
     assertResolves('ui.chronicle.milestone_first_victory', { time: '0:10', kills: 5 });
     assertResolves('ui.chronicle.milestone_longest', { time: '2:00', variant: sampleVariant });
     assertResolves('ui.chronicle.milestone_most_kills', { kills: 99, variant: sampleVariant });
