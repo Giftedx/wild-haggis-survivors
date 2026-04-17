@@ -13,7 +13,7 @@ import { SaveManager } from '../core/SaveManager';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey, setPendingCurse } from '../data/curses';
-import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
+import { formatClockTime, computeGoldBreakdown, boundedLoadoutSummary } from './gameOverFormatting';
 import { downloadPostcard } from '../utils/postcard';
 
 /**
@@ -290,7 +290,7 @@ export class GameOverScene extends Phaser.Scene {
     this.createResultStat(panelCenterX + statGap, statBaseY + 42, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900,
       pb && (summary.bestCombo ?? 0) > pb.bestCombo);
 
-    const loadoutSummaryText = this.buildBoundedLoadoutSummary(this.payload.buildSummary, 2);
+    const loadoutSummaryText = boundedLoadoutSummary(this.payload.buildSummary, 2);
     const weaponsHead =
       this.payload.weaponCount === 1
         ? t('ui.gameOver.weapons_line_one', { evolved: this.payload.evolvedCount })
@@ -878,18 +878,6 @@ export class GameOverScene extends Phaser.Scene {
     } catch {
       return false;
     }
-  }
-
-  private buildBoundedLoadoutSummary(rawSummary: string, maxDetailLines: number): string {
-    const detailLines = rawSummary
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line.length > 0);
-    const visible = detailLines.slice(0, maxDetailLines);
-    if (detailLines.length > maxDetailLines) {
-      visible.push(t('ui.gameOver.more_weapons', { count: detailLines.length - maxDetailLines }));
-    }
-    return visible.join('\n');
   }
 
   private buildWeaponDamageRows(

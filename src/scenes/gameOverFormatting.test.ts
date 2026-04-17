@@ -1,6 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { computeGoldReward } from '../utils/save';
-import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
+import {
+  formatClockTime,
+  computeGoldBreakdown,
+  boundedLoadoutSummary,
+} from './gameOverFormatting';
 
 describe('formatClockTime', () => {
   it('formats 0 seconds', () => {
@@ -111,5 +115,57 @@ describe('computeGoldBreakdown', () => {
     });
     expect(result.total).toBe(computeGoldReward(summary));
     expect(result.timeGold + result.killGold + result.bossGold + result.coinGold).toBe(result.total);
+  });
+});
+
+describe('boundedLoadoutSummary', () => {
+  it('returns every line untouched when the count is at or below the cap', () => {
+    const input = 'Thistle Shot\nCaber Toss\nHaggis Hurler';
+    expect(boundedLoadoutSummary(input, 3)).toBe(input);
+    expect(boundedLoadoutSummary(input, 10)).toBe(input);
+  });
+
+  it('truncates to cap and appends a "+N more" line when over', () => {
+    const input = 'A\nB\nC\nD\nE';
+    const out = boundedLoadoutSummary(input, 2).split('\n');
+    // 2 visible + 1 overflow = 3 lines.
+    expect(out).toHaveLength(3);
+    expect(out[0]).toBe('A');
+    expect(out[1]).toBe('B');
+    expect(out[2]).toContain('3'); // 5 - 2 dropped → 3
+  });
+
+  it('trims leading/trailing whitespace on each line before counting', () => {
+    const input = '  A  \n\tB\t\n  C  ';
+    const out = boundedLoadoutSummary(input, 5);
+    expect(out).toBe('A\nB\nC');
+  });
+
+  it('drops blank lines entirely (they do not count toward the cap)', () => {
+    const input = 'A\n\n\nB\n   \nC';
+    // 3 real lines, cap 3 — no overflow suffix.
+    expect(boundedLoadoutSummary(input, 3)).toBe('A\nB\nC');
+  });
+
+  it('returns empty string when input has no content', () => {
+    expect(boundedLoadoutSummary('', 5)).toBe('');
+    expect(boundedLoadoutSummary('\n\n  \n', 5)).toBe('');
+  });
+
+  it('clamps negative/fractional caps to 0 — everything becomes overflow', () => {
+    const out = boundedLoadoutSummary('A\nB', -1).split('\n');
+    // 0 visible + 1 overflow line.
+    expect(out).toHaveLength(1);
+    expect(out[0]).toContain('2');
+  });
+
+  it('cap of 0 with non-empty input emits only the overflow line', () => {
+    const out = boundedLoadoutSummary('A\nB\nC', 0).split('\n');
+    expect(out).toHaveLength(1);
+    expect(out[0]).toContain('3');
+  });
+
+  it('cap of 0 with empty input emits nothing', () => {
+    expect(boundedLoadoutSummary('', 0)).toBe('');
   });
 });

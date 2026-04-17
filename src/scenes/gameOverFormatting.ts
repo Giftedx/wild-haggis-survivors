@@ -1,8 +1,32 @@
+import { t } from '../core/i18n';
+
 export function formatClockTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
   const mins = Math.floor(safeSeconds / 60);
   const secs = Math.floor(safeSeconds % 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Trim a loadout summary string to at most `maxDetailLines` non-empty
+ * lines and, if anything was dropped, append a "+N more" i18n line.
+ * Pure: only reads `t('ui.gameOver.more_weapons', …)` via the module
+ * i18n singleton.
+ *
+ * Used by the Game Over panel to keep the loadout block from pushing
+ * action buttons off-screen on dense runs.
+ */
+export function boundedLoadoutSummary(rawSummary: string, maxDetailLines: number): string {
+  const detailLines = rawSummary
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const capped = Math.max(0, Math.floor(maxDetailLines));
+  const visible = detailLines.slice(0, capped);
+  if (detailLines.length > capped) {
+    visible.push(t('ui.gameOver.more_weapons', { count: detailLines.length - capped }));
+  }
+  return visible.join('\n');
 }
 
 export interface GoldBreakdownInput {
