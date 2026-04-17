@@ -489,3 +489,41 @@ resync sites (`spawnIntervalMult` / `weaponCooldownMult` through
 setters; `damageTakenMult` / `goldMult` through live-read). Any
 new field added requires threading both the type union AND the
 onResolve propagation — compile-time-enforced.
+
+Third resume-surface bug shipped (18744dd) — W66 Ironmoor flag
+was read live from `settingsManager.load().ironmoorMode` across
+five sites in GameScene + three in RunLifecycle. Player could:
+start Ironmoor run → quit → toggle Ironmoor OFF in Settings →
+resume → enjoy Second Wind revival and non-Ironmoor chronicle
+rules on a run that began as permadeath. Fix locks the flag at
+run start in a scene-owned `activeIronmoorRun` field (from the
+snapshot on resume, falling back to live setting on a fresh run)
+and routes every sensitivity site through it — either directly
+on the scene or via a new `RunLifecycleHooks.isIronmoorRun()`
+hook. Snapshot persists through `IRunState.ironmoor?: boolean`
+with graceful fallback on pre-W66 saves.
+
+Fourth resume-surface bug shipped (f09bf72) — the
+window-level `pagehide` / `beforeunload` auto-save listener
+registered by `RunPersistenceBridge.registerMidRunHooks` stayed
+bound across the `RunExitComposer.abandonToMainMenu` path. A
+browser event firing in the race window between
+`clearActiveRun()` and scene unload would call `persist()` and
+write a new snapshot for the just-abandoned run — the next
+MainMenu → Resume button would offer to continue it. Fix adds
+`unregisterRunAutoSave` hook on `RunExitHooks`; abandon now tears
+down the listener BEFORE the clear, invocation-order pinned in
+a new test.
+
+Net session shape:
+  - 21 commits across palette consolidation, analytics wiring,
+    dead-export cleanup, CLAUDE.md gotcha, and four W2/W66
+    resume-correctness bug fixes.
+  - Test suite 2299 → 2325 (+26). Every new subsystem (analytics
+    subscribers, routeDelta propagation, actState replay on
+    resume, Ironmoor lock, abandon auto-save teardown) gained
+    regression coverage on the same commit.
+  - Docs: CLAUDE.md `bag-vs-cached-field` gotcha added;
+    progress.txt tracks every fix with reproduction scenario.
+  - No new production `as any`. Lint + typecheck + build green
+    at every commit. `npm run ci` clean on the final tip.
