@@ -1,4 +1,5 @@
 import { getUpgradeCost, type PermanentUpgrade } from '../data/permanentUpgrades';
+import { COLORS } from '../config';
 
 /**
  * Pure view-state resolver for one ShopScene upgrade row. Given the
@@ -34,4 +35,31 @@ export function resolveShopUpgradeRowState(
   const cost = isMaxed ? 0 : getUpgradeCost(upgrade, currentLevel);
   const canAfford = !isMaxed && gold >= cost;
   return { currentLevel, isMaxed, cost, canAfford };
+}
+
+/** Upgrade pip colours — filled (owned level) vs empty (future level). */
+export interface ShopPipStyle {
+  fillColor: number;
+  strokeColor: number;
+}
+export const SHOP_PIP_FILLED: ShopPipStyle = { fillColor: COLORS.WHISKY_GOLD, strokeColor: 0xffcc44 };
+export const SHOP_PIP_EMPTY: ShopPipStyle = { fillColor: 0x273043, strokeColor: 0x4a5569 };
+export function resolveShopPipStyle(filled: boolean): ShopPipStyle {
+  return filled ? SHOP_PIP_FILLED : SHOP_PIP_EMPTY;
+}
+
+/** Buy-button palette — 2-state, keyed on affordance. */
+export interface ShopBuyButtonPalette {
+  fillColor: number;
+  strokeColor: number;
+  textColor: string;
+}
+export const SHOP_BUY_AFFORDABLE: ShopBuyButtonPalette = {
+  fillColor: COLORS.SCOTTISH_BLUE, strokeColor: 0x8bb4ff, textColor: '#ffffff',
+};
+export const SHOP_BUY_UNAFFORDABLE: ShopBuyButtonPalette = {
+  fillColor: 0x1a1828, strokeColor: 0x3a2a3a, textColor: '#6a5a4a',
+};
+export function resolveShopBuyButtonPalette(canAfford: boolean): ShopBuyButtonPalette {
+  return canAfford ? SHOP_BUY_AFFORDABLE : SHOP_BUY_UNAFFORDABLE;
 }

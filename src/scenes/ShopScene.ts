@@ -1,7 +1,11 @@
 import Phaser from 'phaser';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
-import { resolveShopUpgradeRowState } from './shopUpgradeRowState';
+import {
+  resolveShopUpgradeRowState,
+  resolveShopPipStyle,
+  resolveShopBuyButtonPalette,
+} from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
@@ -156,10 +160,10 @@ export class ShopScene extends Phaser.Scene {
 
     for (let level = 0; level < upgrade.maxLevel; level++) {
       const pipX = width - 228 + level * 18;
-      const filled = level < currentLevel;
+      const pipStyle = resolveShopPipStyle(level < currentLevel);
       const pip = this.add
-        .rectangle(pipX, y + 16, 12, 12, filled ? COLORS.WHISKY_GOLD : 0x273043, 1)
-        .setStrokeStyle(1, filled ? 0xffcc44 : 0x4a5569, 1);
+        .rectangle(pipX, y + 16, 12, 12, pipStyle.fillColor, 1)
+        .setStrokeStyle(1, pipStyle.strokeColor, 1);
       this.rowElements.push(pip);
     }
 
@@ -176,24 +180,23 @@ export class ShopScene extends Phaser.Scene {
       return;
     }
 
-    const buttonFill = canAfford ? COLORS.SCOTTISH_BLUE : 0x1a1828;
-    const buttonTextColor = canAfford ? '#ffffff' : '#6a5a4a';
+    const buyPalette = resolveShopBuyButtonPalette(canAfford);
     const buyButton = this.add
-      .rectangle(width - 74, y + 16, 96, 36, buttonFill, 1)
-      .setStrokeStyle(1, canAfford ? 0x8bb4ff : 0x3a2a3a, 1)
+      .rectangle(width - 74, y + 16, 96, 36, buyPalette.fillColor, 1)
+      .setStrokeStyle(1, buyPalette.strokeColor, 1)
       .setInteractive({ useHandCursor: canAfford });
     const buyText = this.add
       .text(width - 74, y + 16, t('ui.shop.cost_gold', { cost }), {
         fontFamily: 'monospace',
         fontSize: '13px',
-        color: buttonTextColor,
+        color: buyPalette.textColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
 
     if (canAfford) {
       buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a6a3a));
-      buyButton.on('pointerout', () => buyButton.setFillStyle(COLORS.SCOTTISH_BLUE));
+      buyButton.on('pointerout', () => buyButton.setFillStyle(buyPalette.fillColor));
       buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade));
     }
 

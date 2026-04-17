@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { resolveShopUpgradeRowState } from './shopUpgradeRowState';
+import {
+  resolveShopUpgradeRowState,
+  resolveShopPipStyle,
+  resolveShopBuyButtonPalette,
+  SHOP_PIP_FILLED,
+  SHOP_PIP_EMPTY,
+  SHOP_BUY_AFFORDABLE,
+  SHOP_BUY_UNAFFORDABLE,
+} from './shopUpgradeRowState';
 import type { PermanentUpgrade } from '../data/permanentUpgrades';
 
 function upgrade(overrides: Partial<PermanentUpgrade> = {}): PermanentUpgrade {
@@ -64,5 +72,32 @@ describe('resolveShopUpgradeRowState', () => {
   it('floors fractional savedLevel', () => {
     const s = resolveShopUpgradeRowState(upgrade({ maxLevel: 5 }), 1.9, 1000);
     expect(s.currentLevel).toBe(1);
+  });
+});
+
+describe('resolveShopPipStyle', () => {
+  it('filled → gold palette', () => {
+    expect(resolveShopPipStyle(true)).toBe(SHOP_PIP_FILLED);
+  });
+  it('empty → slate palette', () => {
+    expect(resolveShopPipStyle(false)).toBe(SHOP_PIP_EMPTY);
+  });
+  it('filled and empty palettes never share a field', () => {
+    expect(SHOP_PIP_FILLED.fillColor).not.toBe(SHOP_PIP_EMPTY.fillColor);
+    expect(SHOP_PIP_FILLED.strokeColor).not.toBe(SHOP_PIP_EMPTY.strokeColor);
+  });
+});
+
+describe('resolveShopBuyButtonPalette', () => {
+  it('affordable → blue palette', () => {
+    expect(resolveShopBuyButtonPalette(true)).toBe(SHOP_BUY_AFFORDABLE);
+  });
+  it('not affordable → dim palette', () => {
+    expect(resolveShopBuyButtonPalette(false)).toBe(SHOP_BUY_UNAFFORDABLE);
+  });
+  it('two palettes differ on every field', () => {
+    expect(SHOP_BUY_AFFORDABLE.fillColor).not.toBe(SHOP_BUY_UNAFFORDABLE.fillColor);
+    expect(SHOP_BUY_AFFORDABLE.strokeColor).not.toBe(SHOP_BUY_UNAFFORDABLE.strokeColor);
+    expect(SHOP_BUY_AFFORDABLE.textColor).not.toBe(SHOP_BUY_UNAFFORDABLE.textColor);
   });
 });
