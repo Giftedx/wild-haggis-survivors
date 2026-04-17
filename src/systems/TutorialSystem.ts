@@ -5,6 +5,11 @@ import { SaveManager } from '../core/SaveManager';
 import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
 import type { EliteAffixId } from '../data/eliteAffixes';
+import {
+  TUTORIAL_TIP_CEILIDH_CHAIN,
+  TUTORIAL_TIP_STANDING_STONES,
+  TUTORIAL_TIP_ANCESTRAL_ECHO,
+} from './tutorialTipPalettes';
 
 const TOKEN_MOVE = 'TUTORIAL_MOVE';
 const TOKEN_GEM = 'TUTORIAL_GEM';
@@ -292,8 +297,7 @@ export class TutorialSystem {
     if (this.metaSave.load().hasSeenCeilidhChainTip) return;
     this.metaSave.update((cur) => ({ ...cur, hasSeenCeilidhChainTip: true }));
     this.showOneShotTip(t('tutorial.ceilidh_chain_first'), {
-      textColor: '#b8e8a8',
-      bgColor: '#0a2010cc',
+      ...TUTORIAL_TIP_CEILIDH_CHAIN,
       topOffset: 174,
     });
   }
@@ -303,8 +307,7 @@ export class TutorialSystem {
     if (this.metaSave.load().hasSeenStandingStonesTip) return;
     this.metaSave.update((cur) => ({ ...cur, hasSeenStandingStonesTip: true }));
     this.showOneShotTip(t('tutorial.standing_stones_first'), {
-      textColor: '#d0c0ff',
-      bgColor: '#10082acc',
+      ...TUTORIAL_TIP_STANDING_STONES,
       topOffset: 174,
     });
   }
@@ -314,8 +317,7 @@ export class TutorialSystem {
     if (this.metaSave.load().hasSeenAncestralEchoTip) return;
     this.metaSave.update((cur) => ({ ...cur, hasSeenAncestralEchoTip: true }));
     this.showOneShotTip(t('tutorial.ancestral_echo_first'), {
-      textColor: '#b0d4ff',
-      bgColor: '#081828cc',
+      ...TUTORIAL_TIP_ANCESTRAL_ECHO,
       topOffset: 174,
     });
   }
