@@ -69,6 +69,8 @@ export class HUD {
   private prevAct: 1 | 2 | 3 = 1;
   /** W66 Ironmoor — small "IRONMOOR" chip shown when single-life mode is active. */
   private ironmoorChipText!: Phaser.GameObjects.Text;
+  /** T1 replay — persistent "REPLAY" chip shown during best-effort playback. */
+  private replayChipText!: Phaser.GameObjects.Text;
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
@@ -232,6 +234,16 @@ export class HUD {
       fontFamily: 'monospace', fontSize: '12px', color: '#c8a0a0', fontStyle: 'bold',
       stroke: '#000', strokeThickness: 2,
     }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+
+    // T1 replay chip — persistent indicator during best-effort playback.
+    // Bottom-right, above the XP bar, right-origin so it doesn't clash
+    // with the minimap at the bottom-right corner (minimap anchors from
+    // the scene edge). Light-blue tint matches the watching-toast so the
+    // two cues read as one language.
+    this.replayChipText = this.addEl(this.scene.add.text(width - 12, height - this.XP_BAR_H - 24, '', {
+      fontFamily: 'monospace', fontSize: '13px', color: '#88ccff', fontStyle: 'bold',
+      stroke: '#000', strokeThickness: 3,
+    }).setOrigin(1, 1).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // Kill count
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
@@ -810,6 +822,20 @@ export class HUD {
     }
     this.ironmoorChipText.setText(t('ui.hud.ironmoor_chip'));
     this.ironmoorChipText.setVisible(true);
+  }
+
+  /**
+   * T1 replay — toggles the persistent REPLAY chip in the HUD's top-left.
+   * Shown for the whole playback run so the player doesn't forget which
+   * mode they're in (the watching-toast is transient).
+   */
+  setReplayMode(active: boolean): void {
+    if (!active) {
+      this.replayChipText.setVisible(false);
+      return;
+    }
+    this.replayChipText.setText(t('ui.replay.hud_chip'));
+    this.replayChipText.setVisible(true);
   }
 
   setAct(currentAct: 1 | 2 | 3): void {

@@ -281,6 +281,7 @@ export const SCS_STRINGS: LocaleTree = {
       watching_toast: 'Watchin replay · recorded run',
       chronicle_watch_tooltip: 'Watch this run',
       chronicle_watch_glyph: '▶',
+      hud_chip: '▶ REPLAY',
     },
     pause: {
       title: 'STAPPED',

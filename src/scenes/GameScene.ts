@@ -869,10 +869,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
-    // T1 replay — fire the watching-toast once JuiceSystem exists. Queued
-    // above at init-time, emitted here so the toast actually renders.
+    // T1 replay — fire the watching-toast once JuiceSystem exists, and
+    // flip the persistent HUD chip on. The chip stays visible for the
+    // whole playback because the toast is transient.
     if (this.replayInput) {
       this.juice.showToast(t('ui.replay.watching_toast'), '#88ccff');
+      this.hud.setReplayMode(true);
     }
     this.eventBusDispose?.();
     this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });

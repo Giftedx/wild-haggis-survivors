@@ -442,6 +442,8 @@ export const EN_STRINGS: LocaleTree = {
       chronicle_watch_tooltip: 'Watch this run',
       /** Glyph for the Chronicle watch button. Kept separate so localisations can swap it. */
       chronicle_watch_glyph: '▶',
+      /** Persistent HUD chip shown throughout playback. Top-left corner. */
+      hud_chip: '▶ REPLAY',
     },
     /** Gold elite modifiers — names for future tooltips / codex. */
     elite_affix: {
