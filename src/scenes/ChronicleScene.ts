@@ -446,10 +446,10 @@ export class ChronicleScene extends Phaser.Scene {
         .setScale(uiScale);
       this.runRowObjects.push(rel);
 
-      // W66 Ironmoor badge — short "⚔" chip flush with the variant line
-      // when the row was a single-life run. Same visual slot as the curse
-      // chip (mutually exclusive in practice — Ironmoor runs usually
-      // don't pair with a curse, and if they did the curse wins the slot).
+      // W66 Ironmoor badge — short "⚔" chip on the right side of the
+      // row. Coexists with the curse chip (different x-slots: ironmoor
+      // sits further left at width-180, curse at width-92), so a cursed
+      // ironmoor row shows both badges side-by-side.
       if (entry.ironmoor) {
         const imBadge = this.add
           .text(width - 180, y, '⚔', {
