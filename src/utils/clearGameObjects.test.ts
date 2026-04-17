@@ -12,8 +12,7 @@ describe('clearGameObjects', () => {
     const b = { destroy: vi.fn() };
     const c = { destroy: vi.fn() };
     const arr = [a, b, c];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clearGameObjects(arr as any);
+    clearGameObjects(arr as never);
     expect(a.destroy).toHaveBeenCalledOnce();
     expect(b.destroy).toHaveBeenCalledOnce();
     expect(c.destroy).toHaveBeenCalledOnce();
@@ -21,15 +20,13 @@ describe('clearGameObjects', () => {
 
   it('resets the array length to zero so the buffer can be reused', () => {
     const arr = [{ destroy: vi.fn() }, { destroy: vi.fn() }];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clearGameObjects(arr as any);
+    clearGameObjects(arr as never);
     expect(arr.length).toBe(0);
   });
 
   it('no-ops on an empty array', () => {
     const arr: { destroy: () => void }[] = [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(() => clearGameObjects(arr as any)).not.toThrow();
+    expect(() => clearGameObjects(arr as never)).not.toThrow();
     expect(arr.length).toBe(0);
   });
 });
