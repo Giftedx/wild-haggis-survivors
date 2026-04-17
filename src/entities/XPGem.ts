@@ -3,6 +3,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import type { ISceneContext } from '../core/ISceneContext';
 import { resolveXpGemTier } from './xpGemTier';
 import { xpGemMagnetSpeed } from './xpGemMagnet';
+import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 
 /**
  * XP Gem ("Whisky Drop") — poolable pickup that grants XP.
@@ -91,9 +92,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
         scale: { from: 0.8, to: 1.3 },
         alpha: { from: 0.2, to: 0.5 },
         duration: 600,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
     } else if (this.aura) {
       // Kill the infinite tween before hiding — otherwise a previous high-value
@@ -112,9 +111,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
       alpha: { from: 0.7, to: 1 },
       scale: { from: baseScale * 0.9, to: baseScale * 1.15 },
       duration: 400 + Math.random() * 300,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     // Slow continuous rotation — feels alive
     this.scene.tweens.add({

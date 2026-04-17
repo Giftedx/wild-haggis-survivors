@@ -23,6 +23,7 @@ import type { SFXManager } from '../../systems/audio/SFXManager';
 import { t } from '../../core/i18n';
 import { audio } from '../../systems/AudioSystem';
 import { pickNearbyPosition } from './nearbySpawn';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -81,9 +82,7 @@ export class PickupSpawner {
       targets: chest,
       y: y - 4,
       duration: 600,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
 
     // Enable physics for overlap detection
@@ -227,7 +226,7 @@ export class PickupSpawner {
     const glow = scene.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
 
     scene.tweens.add({ targets: glow, scale: { from: 1, to: 1.6 }, alpha: { from: 0.3, to: 0 }, duration: 700, repeat: -1 });
-    scene.tweens.add({ targets: chest, y: y - 4, duration: 500, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    scene.tweens.add({ targets: chest, y: y - 4, duration: 500, ...TWEEN_INFINITE_BREATHE });
 
     scene.physics.add.existing(chest, true);
     let collected = false;

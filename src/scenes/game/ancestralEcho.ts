@@ -14,6 +14,7 @@
  */
 import type Phaser from 'phaser';
 import type { Player } from '../../entities/Player';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 /** Radius in pixels the player has to walk within to claim the echo. */
 export const ECHO_TOUCH_RADIUS_PX = 42;
@@ -77,9 +78,7 @@ export class AncestralEcho {
       targets: this.sprite,
       y: this.hooks.echoY - 4,
       duration: 1400,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
   }
 

@@ -26,6 +26,7 @@ import {
 } from './settingsPalette';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneBackdrop } from './sceneFade';
+import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 
 type SettingsGpRow =
   | {
@@ -175,9 +176,7 @@ export class SettingsScene extends Phaser.Scene {
       targets: title,
       scale: { from: uiScale, to: uiScale * 1.02 },
       duration: 2400,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     this.glowTweens.push(titleTween);
 

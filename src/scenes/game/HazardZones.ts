@@ -18,6 +18,7 @@ import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
 import { computeHazardDamage, HEAL_ZONE_HEAL_AMOUNT, LAVA_BASE_DAMAGE } from './hazardDamage';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 export interface HazardZonesHooks {
   getPlayer(): Player;
@@ -71,7 +72,7 @@ export class HazardZones {
         alpha: { from: 0.15, to: 0.35 },
         scale: { from: 1, to: 1.1 },
         duration: 1500 + rng.between(0, 800),
-        yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
 
       this.lavaZones.push({ x: lx, y: ly, r: lr, tickAccMs: 0 });
@@ -108,7 +109,7 @@ export class HazardZones {
       targets: healGlow,
       alpha: { from: 0.08, to: 0.2 },
       duration: 2000 + jitterMs,
-      yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
   }

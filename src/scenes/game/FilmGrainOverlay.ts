@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import type { SettingsManager } from '../../core/SettingsManager';
 import { resetCameraViewportCache } from '../../ui/cameraViewport';
 import { resolveFilmGrainBaseAlpha, resolveFilmGrainDriftPx } from './filmGrainTuning';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 interface Viewport {
   x: number;
@@ -45,18 +46,14 @@ export class FilmGrainOverlay {
       targets: img,
       alpha: baseAlpha * 1.1,
       duration: 3800,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     const driftPx = resolveFilmGrainDriftPx(prefs.reduceParticles, prefs.motionScale);
     this.scene.tweens.add({
       targets: img,
       x: img.x + driftPx,
       duration: 9200 + Math.random() * 1800,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     this.image = img;
   }

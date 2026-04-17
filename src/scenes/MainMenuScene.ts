@@ -31,6 +31,7 @@ import type { GameSceneInitData } from './GameScene';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { resolveDailyStateDisplay } from './dailyMenuState';
 import { findLastSeededRun } from '../ui/chronicleAggregates';
+import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -121,9 +122,7 @@ export class MainMenuScene extends Phaser.Scene {
           targets: heather,
           angle: heatherRng.realInRange(-4, 4),
           duration: heatherRng.between(3200, 5600),
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
+          ...TWEEN_INFINITE_BREATHE,
         });
         this.cozyTweenTargets.push(heather);
       }
@@ -146,9 +145,7 @@ export class MainMenuScene extends Phaser.Scene {
           x: mx + heatherRng.between(80, 220) * (heatherRng.frac() > 0.5 ? 1 : -1),
           alpha: mist.alpha * 0.4,
           duration: heatherRng.between(9000, 15000),
-          yoyo: true,
-          repeat: -1,
-          ease: 'Sine.easeInOut',
+          ...TWEEN_INFINITE_BREATHE,
         });
         this.cozyTweenTargets.push(mist);
       }
@@ -637,18 +634,14 @@ export class MainMenuScene extends Phaser.Scene {
         targets: [fireGlowOuter, fireGlowInner, fireCore],
         alpha: { from: 0.55, to: 0.95 },
         duration: 520,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.tweens.add({
         targets: [fireGlowOuter, fireGlowInner, fireCore],
         scaleX: { from: 0.92, to: 1.08 },
         scaleY: { from: 0.96, to: 1.04 },
         duration: 720,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
       // ── Warm ground glow (fire lights the ground around it) ──
       const groundGlow = this.add
@@ -659,9 +652,7 @@ export class MainMenuScene extends Phaser.Scene {
         alpha: { from: 0.06, to: 0.12 },
         scaleX: { from: 0.95, to: 1.05 },
         duration: 600,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.cozyTweenTargets.push(fireBase, fireGlowOuter, fireGlowInner, fireCore, groundGlow, ...smokeWisps, ...embers);
     }

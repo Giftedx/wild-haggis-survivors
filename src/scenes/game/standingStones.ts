@@ -14,6 +14,7 @@
 import Phaser from 'phaser';
 import type { Player } from '../../entities/Player';
 import type { RNG } from '../../utils/rng';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 export type StoneBoonId = 'mending' | 'fire' | 'haste';
 
@@ -165,9 +166,7 @@ export class StandingStones {
         targets: [glow],
         alpha: 0.08,
         duration: 1200,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.stones.push({ x: pos.x, y: pos.y, boon, graphic: g, glow, alive: true });
     }

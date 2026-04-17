@@ -6,6 +6,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { resolveCardRarityGlowStyle } from './cardRarityGlowStyle';
 import { computeUpgradeCardLayout } from './upgradeCardLayout';
 import { numberToCssColor } from '../utils/colorFormat';
+import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -191,9 +192,7 @@ export class UpgradeCardsUI {
         alpha: { from: 0.1, to: 0.35 },
         scale: { from: 1, to: 1.03 },
         duration: 600,
-        yoyo: true,
-        repeat: -1,
-        ease: 'Sine.easeInOut',
+        ...TWEEN_INFINITE_BREATHE,
       });
 
       // Sparkle particles around the card

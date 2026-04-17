@@ -10,6 +10,7 @@
  */
 import Phaser from 'phaser';
 import { GAME, COLORS } from '../../config';
+import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 
 export function createHighlandTerrain(scene: Phaser.Scene): void {
   // Parallax sky layer — scrolls at 10% of camera speed
@@ -260,9 +261,7 @@ export function createHighlandTerrain(scene: Phaser.Scene): void {
       alpha: { from: 0.1, to: 0.25 },
       x: wx + 5,
       duration: 3000 + rng.between(0, 2000),
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
     const glint = scene.add.circle(wx + rng.between(-10, 10), wy - wr * 0.3, 2, 0x88bbdd, 0.3).setDepth(-1);
     scene.tweens.add({
@@ -289,9 +288,7 @@ export function createHighlandTerrain(scene: Phaser.Scene): void {
       y: haar.y + rng.between(-40, 40),
       alpha: { from: haar.alpha, to: haar.alpha * 0.2 },
       duration: rng.between(10000, 20000),
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
   }
   for (let i = 0; i < 10; i++) {
@@ -306,9 +303,7 @@ export function createHighlandTerrain(scene: Phaser.Scene): void {
       x: wisp.x + rng.between(-200, 200),
       alpha: { from: wisp.alpha, to: wisp.alpha * 0.3 },
       duration: rng.between(6000, 12000),
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut',
+      ...TWEEN_INFINITE_BREATHE,
     });
   }
 }
