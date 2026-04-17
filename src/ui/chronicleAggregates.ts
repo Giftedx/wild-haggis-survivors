@@ -253,13 +253,9 @@ export function formatDurationLong(totalSec: number): string {
   return `${m}m ${sec}s`;
 }
 
-/** Format "M:SS" — mirrors GameOverScene.formatClockTime. */
-export function formatClock(totalSec: number): string {
-  const s = Math.max(0, Math.floor(totalSec));
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
-}
+/** Format "M:SS". Legacy alias for the canonical formatClockTime. */
+import { formatClockTime as _formatClockTime } from '../utils/formatClockTime';
+export const formatClock = _formatClockTime;
 
 /** Relative-time label for a past timestamp ("2h ago", "3d ago", "just now"). */
 export function formatRelativeTime(timestamp: number, now: number = Date.now()): string {

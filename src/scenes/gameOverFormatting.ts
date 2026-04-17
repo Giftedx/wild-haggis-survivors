@@ -8,12 +8,8 @@ import { getVariantByKey, type VariantKey } from '../data/variants';
 import type { PostcardPayload } from '../utils/postcard';
 import type { GameOverPayload } from './gameOverPayload';
 
-export function formatClockTime(totalSeconds: number): string {
-  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = Math.floor(safeSeconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
+import { formatClockTime } from '../utils/formatClockTime';
+export { formatClockTime };
 
 /**
  * Inputs for the Game Over "damage by weapon" table — the summary
