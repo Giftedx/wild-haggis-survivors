@@ -30,9 +30,6 @@ export type UpgradeEffect =
   | { type: 'stat_boost'; stat: string; amount: number }
   | { type: 'evolve_weapon'; weaponKey: string; evolutionKey: string };
 
-/** @deprecated Use EvolutionRecipeDef from BalanceConfig */
-export type EvolutionRecipe = import('../core/BalanceConfig').EvolutionRecipeDef;
-
 export interface UpgradeCard {
   id: string;
   name: string;
