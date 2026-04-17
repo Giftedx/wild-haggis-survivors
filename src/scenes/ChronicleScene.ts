@@ -40,6 +40,7 @@ import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { sceneHeaderTextStyle } from './sceneHeaderStyle';
 
 // Repeated text styles inside this scene — pinned so the row + pagination
 // look stays in sync. Both small monospace bold strings used for header
@@ -113,14 +114,8 @@ export class ChronicleScene extends Phaser.Scene {
 
     // ── Header ──
     this.add
-      .text(width / 2, 36, t('ui.chronicle.title'), {
-        fontFamily: 'monospace',
-        fontSize: '30px',
-        color: highContrastUi ? '#ffe08a' : '#d4a017',
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 4,
-      })
+      .text(width / 2, 36, t('ui.chronicle.title'),
+        sceneHeaderTextStyle('30px', highContrastUi ? '#ffe08a' : '#d4a017'))
       .setOrigin(0.5)
       .setScale(uiScale);
 

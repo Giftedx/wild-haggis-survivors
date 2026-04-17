@@ -20,6 +20,7 @@ import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
+import { sceneHeaderTextStyle } from './sceneHeaderStyle';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -69,14 +70,8 @@ export class DeedsScene extends Phaser.Scene {
 
     // ── Header ──
     this.add
-      .text(width / 2, 36, t('ui.deeds.title'), {
-        fontFamily: 'monospace',
-        fontSize: '30px',
-        color: highContrastUi ? '#ffe08a' : '#d4a017',
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 4,
-      })
+      .text(width / 2, 36, t('ui.deeds.title'),
+        sceneHeaderTextStyle('30px', highContrastUi ? '#ffe08a' : '#d4a017'))
       .setOrigin(0.5)
       .setScale(uiScale);
 

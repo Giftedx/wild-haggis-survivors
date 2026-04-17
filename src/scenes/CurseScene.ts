@@ -10,6 +10,7 @@ import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { brightenColor } from '../utils/brightenColor';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
+import { sceneHeaderTextStyle } from './sceneHeaderStyle';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -42,14 +43,8 @@ export class CurseScene extends Phaser.Scene {
 
     // ── Header ──
     this.add
-      .text(width / 2, 40, t('ui.curseScene.title'), {
-        fontFamily: 'monospace',
-        fontSize: '28px',
-        color: highContrastUi ? '#ffbadc' : '#e8a0c6',
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 4,
-      })
+      .text(width / 2, 40, t('ui.curseScene.title'),
+        sceneHeaderTextStyle('28px', highContrastUi ? '#ffbadc' : '#e8a0c6'))
       .setOrigin(0.5)
       .setScale(uiScale);
 
