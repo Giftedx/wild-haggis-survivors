@@ -6,6 +6,7 @@ import { audio } from './AudioSystem';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { globalEventBus } from '../core/GlobalEventBus';
+import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -195,14 +196,13 @@ export class WeaponSystem {
     if (!w || w.level >= 5) return false;
 
     w.level++;
-    const s = w.config.levelScaling;
+    const scaled = computeLevelScaledWeaponStats(w.config, w.level);
+    w.damage = scaled.damage;
+    w.cooldownMs = scaled.cooldownMs;
+    w.pierce = scaled.pierce;
+    w.aoeRadius = scaled.aoeRadius;
 
-    w.damage = Math.ceil(w.config.damage * Math.pow(s.damage, w.level - 1));
-    w.cooldownMs = Math.max(200, w.config.cooldownMs * Math.pow(s.cooldown, w.level - 1));
-    w.pierce = w.config.pierce + s.pierce * (w.level - 1);
-    w.aoeRadius = w.config.aoeRadius * Math.pow(s.radius, w.level - 1);
-
-    if (s.countAt.includes(w.level)) {
+    if (w.config.levelScaling.countAt.includes(w.level)) {
       w.projectileCount++;
     }
 
