@@ -43,11 +43,7 @@ export interface VariantDef {
   nameKey: string;
   /** i18n dot-path — resolved with `t(flavorKey)` at render time. */
   flavorKey: string;
-  /** @deprecated Use t(nameKey). Kept during migration for auto-battler logs. */
-  name: string;
   textureKey: string;
-  /** @deprecated Use t(flavorKey). */
-  flavorText: string;
   modifiers: VariantModifier;
   unlock: VariantUnlockCondition;
   appearance: VariantAppearance;
@@ -77,9 +73,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'classic',
     nameKey: 'variant.classic.name',
     flavorKey: 'variant.classic.flavor',
-    name: 'Classic Haggis',
     textureKey: 'haggis_classic',
-    flavorText: 'The baseline beast. Crooked legs, straight ambition.',
     modifiers: {},
     unlock: { type: 'default' },
     appearance: {
@@ -98,9 +92,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'moor_runner',
     nameKey: 'variant.moor_runner.name',
     flavorKey: 'variant.moor_runner.flavor',
-    name: 'Moor Runner',
     textureKey: 'haggis_moor_runner',
-    flavorText: 'Lean and wind-cut, built to skim the heather.',
     modifiers: { moveSpeedPct: 0.12, maxHpFlat: -10 },
     unlock: { type: 'best_time', required: 600 },
     appearance: {
@@ -119,9 +111,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'iron_belly',
     nameKey: 'variant.iron_belly.name',
     flavorKey: 'variant.iron_belly.flavor',
-    name: 'Iron Belly',
     textureKey: 'haggis_iron_belly',
-    flavorText: 'Heavy, stubborn, and hard to stop once it starts rolling.',
     modifiers: { maxHpFlat: 15, armorFlat: 1, moveSpeedPct: -0.08 },
     unlock: { type: 'best_kills', required: 750 },
     appearance: {
@@ -140,9 +130,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'glen_forager',
     nameKey: 'variant.glen_forager.name',
     flavorKey: 'variant.glen_forager.flavor',
-    name: 'Glen Forager',
     textureKey: 'haggis_glen_forager',
-    flavorText: 'A scavenger of glens and glittering spoils.',
     modifiers: { pickupRadiusFlat: 20, xpMultiplierPct: 0.1, damagePct: -0.1 },
     unlock: { type: 'total_gold_earned', required: 1500 },
     appearance: {
@@ -161,9 +149,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'surefoot',
     nameKey: 'variant.surefoot.name',
     flavorKey: 'variant.surefoot.flavor',
-    name: 'Surefoot',
     textureKey: 'haggis_surefoot',
-    flavorText: 'The drift still whispers, but it no longer decides.',
     modifiers: { driftReductionPct: 0.25, cooldownReductionPct: 0.05, maxHpFlat: -10 },
     unlock: { type: 'victories', required: 1 },
     appearance: {
@@ -182,9 +168,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'pipe_breath',
     nameKey: 'variant.pipe_breath.name',
     flavorKey: 'variant.pipe_breath.flavor',
-    name: 'Pipe Breath',
     textureKey: 'haggis_pipe_breath',
-    flavorText: 'Wheesht — the moor exhales through this one.',
     modifiers: { cooldownReductionPct: 0.08, moveSpeedPct: 0.05, maxHpFlat: -15 },
     unlock: { type: 'victories', required: 3 },
     appearance: {
@@ -203,9 +187,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'wee_ghostie',
     nameKey: 'variant.wee_ghostie.name',
     flavorKey: 'variant.wee_ghostie.flavor',
-    name: 'Wee Ghostie',
     textureKey: 'haggis_wee_ghostie',
-    flavorText: 'Pale an\' thin — here an\' no\' here. Hits hard, breaks easy.',
     modifiers: { damagePct: 0.18, moveSpeedPct: 0.08, maxHpFlat: -25 },
     unlock: { type: 'best_kills', required: 1500 },
     appearance: {
@@ -224,9 +206,7 @@ export const VARIANTS: VariantDef[] = [
     key: 'laird',
     nameKey: 'variant.laird.name',
     flavorKey: 'variant.laird.flavor',
-    name: 'The Laird',
     textureKey: 'haggis_laird',
-    flavorText: 'Wears the tartan proper. Lordly swagger, heavier swing.',
     modifiers: { maxHpFlat: 30, moveSpeedPct: -0.12, damagePct: 0.10 },
     unlock: { type: 'total_gold_earned', required: 2500 },
     appearance: {

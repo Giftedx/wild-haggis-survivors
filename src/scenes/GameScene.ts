@@ -1207,7 +1207,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private showRunIdentityToast(isResume: boolean): void {
     const v = this.activeVariant;
-    this.juice.showToast(formatRunIdentityToast(isResume, v.name, v.flavorText), '#c8dcff');
+    this.juice.showToast(
+      formatRunIdentityToast(isResume, t(v.nameKey), t(v.flavorKey)),
+      '#c8dcff',
+    );
   }
 
   /**
