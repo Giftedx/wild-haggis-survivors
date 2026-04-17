@@ -356,6 +356,8 @@ export const EN_STRINGS: LocaleTree = {
       skipActIntermissions: 'Skip road-forks (auto-pick safest route)',
       /** W66 Ironmoor: single-life mode — no Second-Wind revive. Pride posture, opt-in. */
       ironmoorMode: 'Ironmoor (single life — nae second wind)',
+      /** H1 speedrun timer: centisecond HUD precision (M:SS.cc) instead of the calm M:SS. */
+      speedrun_timer: 'Speedrun timer (centiseconds)',
       /** W18 language cycle row. Scots overlay falls back to en silently. */
       language: 'Language',
       locale_en: 'English (Glesga)',

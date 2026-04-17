@@ -64,6 +64,7 @@ describe('SettingsManager air-gap', () => {
       telemetryOptIn: false,
       skipActIntermissions: false,
       ironmoorMode: false,
+      speedrunTimerVisible: false,
     });
 
     meta.reset();
@@ -118,6 +119,7 @@ describe('SettingsManager air-gap', () => {
       telemetryOptIn: false,
       skipActIntermissions: false,
       ironmoorMode: false,
+      speedrunTimerVisible: false,
     });
 
     meta.reset();
@@ -167,6 +169,7 @@ describe('SettingsManager air-gap', () => {
       telemetryOptIn: false,
       skipActIntermissions: false,
       ironmoorMode: false,
+      speedrunTimerVisible: false,
     });
 
     settings.reset();
@@ -195,6 +198,7 @@ describe('SettingsManager air-gap', () => {
       telemetryOptIn: false,
       skipActIntermissions: false,
       ironmoorMode: false,
+      speedrunTimerVisible: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });
@@ -332,6 +336,7 @@ describe('SettingsManager: W2 skipActIntermissions', () => {
       telemetryOptIn: false,
       skipActIntermissions: false,
       ironmoorMode: false,
+      speedrunTimerVisible: false,
     }));
     const settings = new SettingsManager({ storage: mem, key: 's' });
     expect(settings.load().localeKey).toBe('en');

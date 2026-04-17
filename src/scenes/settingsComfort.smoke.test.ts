@@ -93,6 +93,7 @@ describe('Settings / Comfort panel smoke', () => {
       telemetryOptIn: true,
       skipActIntermissions: true,
       ironmoorMode: true,
+      speedrunTimerVisible: true,
       localeKey: 'scs',
     };
     sm.save(payload);

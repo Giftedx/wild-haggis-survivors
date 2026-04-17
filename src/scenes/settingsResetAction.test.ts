@@ -18,6 +18,7 @@ const makeDefaults = (): ISettingsData => ({
   telemetryOptIn: false,
   skipActIntermissions: false,
   ironmoorMode: false,
+  speedrunTimerVisible: false,
   localeKey: 'en',
 });
 

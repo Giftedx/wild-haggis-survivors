@@ -19,6 +19,7 @@ const baseSettings: ISettingsData = {
   telemetryOptIn: false,
   skipActIntermissions: false,
   ironmoorMode: false,
+  speedrunTimerVisible: false,
 };
 
 describe('applyLocaleFromUserSettings', () => {

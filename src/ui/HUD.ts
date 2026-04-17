@@ -9,6 +9,7 @@ import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
 import { formatClockTime } from '../utils/formatClockTime';
+import { formatSpeedrunTime } from '../utils/formatSpeedrunTime';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import {
@@ -147,6 +148,7 @@ export class HUD {
   private topSafePad = 12;
   private readonly uiScale: number;
   private readonly highContrastUi: boolean;
+  private readonly speedrunTimerVisible: boolean;
   /** Cached stroke for weapon slot bgs when high-contrast mode is active. */
   private hcSlotStroke: number | null = null;
   /**
@@ -175,6 +177,7 @@ export class HUD {
     const settings = getSettingsManager().load();
     this.uiScale = settings.uiScale;
     this.highContrastUi = settings.highContrastUi;
+    this.speedrunTimerVisible = settings.speedrunTimerVisible === true;
     this.build();
   }
 
@@ -478,7 +481,13 @@ export class HUD {
     // Wave difficulty indicator — resolved from BALANCE.hud so tuning stays
     // single-sourced with the wave timeline, not drifting inside UI code.
     const { label: wave, color: waveColor } = resolveWaveLabel(gameTimeSec);
-    // Only update timer + objective text when the displayed second changes
+    // Speedrun timer mode renders every frame (centisecond precision);
+    // default timer renders once per second like before. Setting is read
+    // fresh at HUD construction in create(); toggling mid-run takes effect
+    // on next scene start.
+    if (this.speedrunTimerVisible) {
+      this.timerText.setText(formatSpeedrunTime(gameTimeSec));
+    }
     if (mins !== this.prevMins || secs !== this.prevSecs) {
       this.prevMins = mins;
       this.prevSecs = secs;
@@ -487,7 +496,9 @@ export class HUD {
         remaining > 0
           ? t('ui.hud.goal_countdown', { time: formatClockTime(remaining) })
           : t('ui.hud.goal_finale');
-      this.timerText.setText(formatClockTime(gameTimeSec));
+      if (!this.speedrunTimerVisible) {
+        this.timerText.setText(formatClockTime(gameTimeSec));
+      }
       this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
     }
     // In high-contrast mode the timer keeps its warm palette color so the

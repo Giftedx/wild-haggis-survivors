@@ -54,6 +54,12 @@ export interface ISettingsData {
    */
   ironmoorMode: boolean;
   /**
+   * H1 speedrun timer. When true, the HUD timer renders centisecond
+   * precision (M:SS.cc) instead of the calm M:SS. Off by default so
+   * the moor keeps its unhurried pace for players not chasing splits.
+   */
+  speedrunTimerVisible: boolean;
+  /**
    * W18 locale key. 'en' is the reference language (Glesga-register
    * English); 'scs' overlays Scots where translations exist, falling
    * back to English silently for unresolved keys. Optional for back-
@@ -90,6 +96,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   telemetryOptIn: false,
   skipActIntermissions: false,
   ironmoorMode: false,
+  speedrunTimerVisible: false,
   localeKey: 'en',
 };
 
@@ -196,6 +203,7 @@ export class SettingsManager {
       telemetryOptIn: toBool(o.telemetryOptIn, DEFAULT_SETTINGS.telemetryOptIn),
       skipActIntermissions: toBool(o.skipActIntermissions, DEFAULT_SETTINGS.skipActIntermissions),
       ironmoorMode: toBool(o.ironmoorMode, DEFAULT_SETTINGS.ironmoorMode),
+      speedrunTimerVisible: toBool(o.speedrunTimerVisible, DEFAULT_SETTINGS.speedrunTimerVisible),
       localeKey: toLocaleKey(o.localeKey, DEFAULT_SETTINGS.localeKey ?? 'en'),
     };
   }

@@ -59,7 +59,8 @@ type ToggleKey =
   | 'captionsEnabled'
   | 'telemetryOptIn'
   | 'skipActIntermissions'
-  | 'ironmoorMode';
+  | 'ironmoorMode'
+  | 'speedrunTimerVisible';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -236,6 +237,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.screen_shake'), 'screenShake');
     this.addToggleRow(t('ui.settings.damage_numbers'), 'damageNumbers');
     this.addToggleRow(t('ui.settings.skipActIntermissions'), 'skipActIntermissions');
+    this.addToggleRow(t('ui.settings.speedrun_timer'), 'speedrunTimerVisible');
     this.addToggleRow(t('ui.settings.ironmoorMode'), 'ironmoorMode', (proceed) =>
       this.promptIronmoorConfirm(proceed)
     );
