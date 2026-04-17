@@ -13,7 +13,7 @@
  * the surprise of the first unlock.
  */
 import { ACHIEVEMENT_DEFS, type AchievementId } from '../core/BalanceConfig';
-import { getCodexRosterTotal } from './chronicleAggregates';
+import { formatClock, getCodexRosterTotal } from './chronicleAggregates';
 
 export type DeedStatus = 'locked' | 'in_progress' | 'unlocked';
 
@@ -175,16 +175,9 @@ export function formatDeedProgressLabel(d: DeedProgress): string {
   const isTime = d.id === 'ach_survive_5m' || d.id === 'ach_survive_10m' || d.id === 'ach_full_run'
     || d.id === 'ach_endless_endurance';
   if (isTime) {
-    return `${formatSeconds(d.current)} / ${formatSeconds(d.target)}`;
+    return `${formatClock(d.current)} / ${formatClock(d.target)}`;
   }
   return `${d.current} / ${d.target}`;
-}
-
-function formatSeconds(total: number): string {
-  const s = Math.max(0, Math.floor(total));
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}:${sec.toString().padStart(2, '0')}`;
 }
 
 function computeCodexDeedProgress(
