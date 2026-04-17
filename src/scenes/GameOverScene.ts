@@ -7,14 +7,14 @@ import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
-import { getEnemyDisplayName } from '../data/enemies';
-import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
+import type { DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey, setPendingCurse } from '../data/curses';
 import {
   formatClockTime,
   computeGoldBreakdown,
   boundedLoadoutSummary,
   buildWeaponDamageRows,
+  formatDeathInsightLine,
 } from './gameOverFormatting';
 import { downloadPostcard } from '../utils/postcard';
 
@@ -450,11 +450,8 @@ export class GameOverScene extends Phaser.Scene {
     uiScale: number,
     panelWidth: number,
   ): void {
-    const sourceLabel = cause.sourceKey ? getEnemyDisplayName(cause.sourceKey) : 'something';
-    const headline = t(headlineKeyFor(cause), { source: sourceLabel });
-    const tip = t(tipKeyFor(cause));
     const text = this.add
-      .text(centerX, y, `${headline} — ${tip}`, {
+      .text(centerX, y, formatDeathInsightLine(cause), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#dcc38a',

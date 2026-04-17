@@ -2,6 +2,8 @@ import { t } from '../core/i18n';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
+import { getEnemyDisplayName } from '../data/enemies';
+import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 
 export function formatClockTime(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.floor(totalSeconds));
@@ -60,6 +62,21 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
     lines.push(t('ui.gameOver.more_weapons', { count: entries.length - cap }));
   }
   return lines.join('\n');
+}
+
+/**
+ * Build the italic death-insight line — "{headline} — {tip}" — shown
+ * under the Game Over title. The classifier picks the tag; the scene
+ * then asks this helper to render the blend. `{source}` in the
+ * headline is interpolated with a display-name-resolved enemy label
+ * when the classifier identified one, else the voice-appropriate
+ * fallback "something".
+ */
+export function formatDeathInsightLine(cause: DeathCause): string {
+  const sourceLabel = cause.sourceKey ? getEnemyDisplayName(cause.sourceKey) : 'something';
+  const headline = t(headlineKeyFor(cause), { source: sourceLabel });
+  const tip = t(tipKeyFor(cause));
+  return `${headline} — ${tip}`;
 }
 
 /**

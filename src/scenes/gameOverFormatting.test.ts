@@ -5,7 +5,9 @@ import {
   computeGoldBreakdown,
   boundedLoadoutSummary,
   buildWeaponDamageRows,
+  formatDeathInsightLine,
 } from './gameOverFormatting';
+import type { DeathCause, DeathCauseTag } from '../core/deathCauseClassifier';
 
 describe('formatClockTime', () => {
   it('formats 0 seconds', () => {
@@ -280,5 +282,44 @@ describe('buildWeaponDamageRows', () => {
     expect(out).toHaveLength(2);
     expect(out[1]).toContain('not_a_real_weapon'.slice(0, 18));
     expect(out[1]).toContain('10');
+  });
+});
+
+describe('formatDeathInsightLine', () => {
+  function cause(overrides: Partial<DeathCause> = {}): DeathCause {
+    return { tag: 'unlucky' as DeathCauseTag, sourceKey: null, ...overrides };
+  }
+
+  it('returns a "{headline} — {tip}" blend', () => {
+    const out = formatDeathInsightLine(cause({ tag: 'unlucky' }));
+    // Must contain the separator dash, and both sides must resolve to
+    // non-key strings (i18n bootstrapped).
+    expect(out).toContain(' — ');
+    const [headline, tip] = out.split(' — ');
+    expect(headline.length).toBeGreaterThan(0);
+    expect(tip.length).toBeGreaterThan(0);
+    expect(headline).not.toBe('ui.gameOver.death_unlucky_headline');
+  });
+
+  it('interpolates "something" when sourceKey is null', () => {
+    const noSource = formatDeathInsightLine(cause({ tag: 'swarmed', sourceKey: null }));
+    // At minimum, the literal fallback should not leak as unresolved.
+    expect(noSource).not.toContain('{source}');
+  });
+
+  it('resolves enemy display name when sourceKey is provided', () => {
+    const out = formatDeathInsightLine(cause({ tag: 'one_shot', sourceKey: 'tourist' }));
+    // The source should have been substituted — no raw {source} placeholder.
+    expect(out).not.toContain('{source}');
+  });
+
+  it('produces a different line per cause tag', () => {
+    const tags: DeathCauseTag[] = [
+      'hazard', 'boss_crushed', 'elite_kill', 'one_shot',
+      'same_killer', 'swarmed', 'low_hp_neglect', 'unlucky',
+    ];
+    const lines = new Set(tags.map((tag) => formatDeathInsightLine(cause({ tag, sourceKey: 'tourist' }))));
+    // Every tag should map to a distinct line.
+    expect(lines.size).toBe(tags.length);
   });
 });
