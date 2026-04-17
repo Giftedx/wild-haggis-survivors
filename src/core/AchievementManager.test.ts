@@ -478,4 +478,46 @@ seedGameplaySave({ unlockedVariants: [...VARIANT_KEYS] });
     });
     expect(save.load().unlockedAchievements).not.toContain('ach_endless_endurance');
   });
+
+  it('unlocks ach_cursed_victor when a victorious run carries a curseKey', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA', curseKey: 'thin_hide',
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_cursed_victor');
+  });
+
+  it('does NOT unlock ach_cursed_victor when the cursed run was a loss', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: false, timeSurvivedSec: 400, enemiesKilled: 80,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA', curseKey: 'thin_hide',
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 400, enemiesKilled: 80,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_cursed_victor');
+  });
+
+  it('does NOT unlock ach_cursed_victor when the victory had no curse', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA',
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_cursed_victor');
+  });
 });

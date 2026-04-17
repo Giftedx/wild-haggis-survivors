@@ -1423,6 +1423,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Endless Endurance',
       description: 'A full minute past the bell — daft thing, but ye made it look easy.',
     },
+    ach_cursed_victor: {
+      title: 'Cursed Victor',
+      description: 'Won a run wi a curse on yir back — paid in teeth, walked oot anyway.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
@@ -2534,6 +2538,10 @@ export const SCS_STRINGS: LocaleTree = {
     ach_endless_endurance: {
       title: 'Endless Endurance',
       description: 'A hale minute past tha bell — daft thing, but ye made it luik easy.',
+    },
+    ach_cursed_victor: {
+      title: 'Cursed Victor',
+      description: 'Won a run wi a curse on yir back — peyed in teeth, walked oot anyway.',
     },
   },
   weapon: {

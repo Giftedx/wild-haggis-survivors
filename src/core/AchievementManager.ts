@@ -140,6 +140,16 @@ export class AchievementManager {
       if (endlessSec >= 60) {
         this.tryUnlock('ach_endless_endurance');
       }
+
+      // ach_cursed_victor — won a run with any curse active. Reads
+      // runHistory rather than the live runModifiers so the unlock
+      // also fires when the just-finished run is the cursed victory.
+      const wonAnyCursedRun = (gameplay.runHistory ?? []).some(
+        (e) => e.isVictory && typeof e.curseKey === 'string' && e.curseKey.length > 0,
+      );
+      if (wonAnyCursedRun) {
+        this.tryUnlock('ach_cursed_victor');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

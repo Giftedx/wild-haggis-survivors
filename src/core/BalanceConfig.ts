@@ -246,7 +246,8 @@ export type AchievementId =
   | 'ach_echo_touched'
   | 'ach_ceilidh_commander'
   | 'ach_past_the_bell'
-  | 'ach_endless_endurance';
+  | 'ach_endless_endurance'
+  | 'ach_cursed_victor';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -338,6 +339,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_endless_endurance: {
     titleKey: 'achievement.ach_endless_endurance.title',
     descriptionKey: 'achievement.ach_endless_endurance.description',
+  },
+  ach_cursed_victor: {
+    titleKey: 'achievement.ach_cursed_victor.title',
+    descriptionKey: 'achievement.ach_cursed_victor.description',
   },
 };
 
