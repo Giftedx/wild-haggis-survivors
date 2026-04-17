@@ -18,6 +18,7 @@ import {
 } from '../data/variants';
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
+import { resolveLoadoutBadgeStyle } from './loadoutBadge';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -382,35 +383,28 @@ export class MenuScene extends Phaser.Scene {
     this.variantPanelElements.push(progressBg, progressFill, progressBorder);
 
     this.variantSelectHit = null;
-    const badgeColor = selected ? 0x2c7d45 : unlocked ? COLORS.SCOTTISH_BLUE : 0x3a3f4d;
-    const badgeText = selected ? t('ui.loadout.selected') : unlocked ? t('ui.loadout.select') : t('ui.loadout.locked');
-    const badgeLabelColor = unlocked || selected ? '#ffffff' : '#a4a9b4';
+    const badgeStyle = resolveLoadoutBadgeStyle(selected, unlocked);
     const badge = this.add
-      .rectangle(panelX + 235, panelY - 6, 126, 38, badgeColor, 1)
-      .setStrokeStyle(1, unlocked ? 0x8bb4ff : 0x5a6070, 1);
+      .rectangle(panelX + 235, panelY - 6, 126, 38, badgeStyle.fillColor, 1)
+      .setStrokeStyle(1, badgeStyle.strokeColor, 1);
     const badgeLabel = this.add
-      .text(badge.x, badge.y, badgeText, {
+      .text(badge.x, badge.y, badgeStyle.labelText, {
         fontFamily: 'monospace',
         fontSize: '15px',
-        color: badgeLabelColor,
+        color: badgeStyle.labelColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
     this.variantPanelElements.push(badge, badgeLabel);
 
     const statusNote = this.add
-      .text(
-        badge.x,
-        panelY + 30,
-        selected ? t('ui.loadout.status_current') : unlocked ? t('ui.loadout.status_switch') : t('ui.loadout.status_locked'),
-        {
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          color: '#aab4c7',
-          align: 'center',
-          wordWrap: { width: 170 },
-        }
-      )
+      .text(badge.x, panelY + 30, badgeStyle.statusText, {
+        fontFamily: 'monospace',
+        fontSize: '11px',
+        color: '#aab4c7',
+        align: 'center',
+        wordWrap: { width: 170 },
+      })
       .setOrigin(0.5);
     this.variantPanelElements.push(statusNote);
 
