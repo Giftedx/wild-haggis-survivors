@@ -40,6 +40,64 @@ export function resolveDeedsSubtitleStyle(earned: number, total: number): DeedsS
 
 export type DeedStatus = 'locked' | 'in_progress' | 'unlocked';
 
+/**
+ * Every colour the Deeds card renderer needs, keyed on status.
+ * Pure selector — returning all six fields at once keeps the three
+ * state rows (bg, icon, title, status, desc, stroke) in lockstep.
+ */
+export interface DeedCardPalette {
+  bgColor: number;
+  strokeColor: number;
+  strokeWidth: number;
+  strokeAlpha: number;
+  iconChar: string;
+  iconColor: string;
+  titleColor: string;
+  statusColor: string;
+  descColor: string;
+}
+
+export function resolveDeedCardPalette(status: DeedStatus): DeedCardPalette {
+  if (status === 'unlocked') {
+    return {
+      bgColor: 0x2a2015,
+      strokeColor: 0xd4a017,
+      strokeWidth: 2,
+      strokeAlpha: 1,
+      iconChar: '\u2726', // ✦
+      iconColor: '#f7d27a',
+      titleColor: '#f5e1a6',
+      statusColor: '#9de6a8',
+      descColor: '#cabfa0',
+    };
+  }
+  if (status === 'in_progress') {
+    return {
+      bgColor: 0x10172a,
+      strokeColor: 0x3a5078,
+      strokeWidth: 1,
+      strokeAlpha: 0.8,
+      iconChar: '\u25cb', // ○
+      iconColor: '#6a7ba8',
+      titleColor: '#c7d1e4',
+      statusColor: '#a8b3c8',
+      descColor: '#95a0ba',
+    };
+  }
+  // locked
+  return {
+    bgColor: 0x10172a,
+    strokeColor: 0x283a5f,
+    strokeWidth: 1,
+    strokeAlpha: 0.8,
+    iconChar: '\u25cb', // ○
+    iconColor: '#3d4660',
+    titleColor: '#6f7a94',
+    statusColor: '#596780',
+    descColor: '#5a6478',
+  };
+}
+
 export interface DeedProgress {
   id: AchievementId;
   status: DeedStatus;

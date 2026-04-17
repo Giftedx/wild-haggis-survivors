@@ -5,8 +5,10 @@ import {
   computeDeedProgress,
   deedSummary,
   formatDeedProgressLabel,
+  resolveDeedCardPalette,
   resolveDeedsSubtitleStyle,
   type DeedStatsSnapshot,
+  type DeedStatus,
 } from './deedsProgress';
 import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
 import { getCodexRosterTotal } from './chronicleAggregates';
@@ -267,5 +269,59 @@ describe('resolveDeedsSubtitleStyle', () => {
   it('earned > total (shouldn\'t happen, but defensive) reads as complete', () => {
     const s = resolveDeedsSubtitleStyle(25, 20);
     expect(s.key).toBe('ui.deeds.sub_complete');
+  });
+});
+
+describe('resolveDeedCardPalette', () => {
+  const STATUSES: DeedStatus[] = ['locked', 'in_progress', 'unlocked'];
+
+  it('every status returns a complete palette (9 non-null fields)', () => {
+    for (const s of STATUSES) {
+      const p = resolveDeedCardPalette(s);
+      expect(p.bgColor).toBeTypeOf('number');
+      expect(p.strokeColor).toBeTypeOf('number');
+      expect(p.strokeWidth).toBeTypeOf('number');
+      expect(p.strokeAlpha).toBeTypeOf('number');
+      expect(p.iconChar.length).toBeGreaterThan(0);
+      expect(p.iconColor).toMatch(/^#/);
+      expect(p.titleColor).toMatch(/^#/);
+      expect(p.statusColor).toMatch(/^#/);
+      expect(p.descColor).toMatch(/^#/);
+    }
+  });
+
+  it('unlocked uses the celebratory gold icon ✦; others use the empty ○', () => {
+    expect(resolveDeedCardPalette('unlocked').iconChar).toBe('\u2726');
+    expect(resolveDeedCardPalette('in_progress').iconChar).toBe('\u25cb');
+    expect(resolveDeedCardPalette('locked').iconChar).toBe('\u25cb');
+  });
+
+  it('unlocked has a warmer/wider stroke than in-progress or locked', () => {
+    const u = resolveDeedCardPalette('unlocked');
+    const p = resolveDeedCardPalette('in_progress');
+    const l = resolveDeedCardPalette('locked');
+    expect(u.strokeWidth).toBeGreaterThan(p.strokeWidth);
+    expect(u.strokeWidth).toBeGreaterThan(l.strokeWidth);
+    expect(u.strokeAlpha).toBeGreaterThan(p.strokeAlpha);
+  });
+
+  it('unlocked vs locked/in-progress use different bg tints (gold vs slate)', () => {
+    const u = resolveDeedCardPalette('unlocked');
+    const p = resolveDeedCardPalette('in_progress');
+    const l = resolveDeedCardPalette('locked');
+    expect(u.bgColor).not.toBe(p.bgColor);
+    // locked and in-progress share a bg (cool slate) — differ on stroke.
+    expect(p.bgColor).toBe(l.bgColor);
+    expect(p.strokeColor).not.toBe(l.strokeColor);
+  });
+
+  it('every text colour is distinct across the 3 statuses per field', () => {
+    const fields: Array<keyof ReturnType<typeof resolveDeedCardPalette>> = [
+      'iconColor', 'titleColor', 'statusColor', 'descColor',
+    ];
+    for (const field of fields) {
+      const values = new Set(STATUSES.map((s) => resolveDeedCardPalette(s)[field]));
+      expect(values.size).toBe(STATUSES.length);
+    }
   });
 });

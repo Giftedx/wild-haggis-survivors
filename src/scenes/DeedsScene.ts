@@ -10,6 +10,7 @@ import {
   computeAllDeeds,
   deedSummary,
   formatDeedProgressLabel,
+  resolveDeedCardPalette,
   resolveDeedsSubtitleStyle,
   type DeedProgress,
   type DeedStatsSnapshot,
@@ -165,31 +166,27 @@ export class DeedsScene extends Phaser.Scene {
   ): void {
     const def = ACHIEVEMENT_DEFS[deed.id];
     const isUnlocked = deed.status === 'unlocked';
-    const isInProgress = deed.status === 'in_progress';
+    const palette = resolveDeedCardPalette(deed.status);
 
     // Card background — gold-tinted for unlocked, cool slate for locked.
-    const bgColor = isUnlocked ? 0x2a2015 : 0x10172a;
-    const strokeColor = isUnlocked ? 0xd4a017 : isInProgress ? 0x3a5078 : 0x283a5f;
     this.add
-      .rectangle(cx, cy, w, h, bgColor, 0.92)
-      .setStrokeStyle(isUnlocked ? 2 : 1, strokeColor, isUnlocked ? 1 : 0.8);
+      .rectangle(cx, cy, w, h, palette.bgColor, 0.92)
+      .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha);
 
     // Top row: icon + title
     const iconX = cx - w / 2 + 28;
     const iconY = cy - h / 2 + 28;
-    const iconChar = isUnlocked ? '✦' : '○';
-    const iconColor = isUnlocked ? '#f7d27a' : isInProgress ? '#6a7ba8' : '#3d4660';
     this.add
-      .text(iconX, iconY, iconChar, {
+      .text(iconX, iconY, palette.iconChar, {
         fontFamily: 'monospace',
         fontSize: '22px',
-        color: iconColor,
+        color: palette.iconColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    const titleColor = isUnlocked ? '#f5e1a6' : isInProgress ? '#c7d1e4' : '#6f7a94';
+    const titleColor = palette.titleColor;
     this.add
       .text(iconX + 22, iconY - 10, t(def.titleKey), {
         fontFamily: 'monospace',
@@ -202,12 +199,12 @@ export class DeedsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     // Status tag (top-right)
-    const statusLabel = isUnlocked
+    const statusLabel = deed.status === 'unlocked'
       ? t('ui.deeds.status_unlocked')
-      : isInProgress
+      : deed.status === 'in_progress'
         ? t('ui.deeds.status_in_progress')
         : t('ui.deeds.status_locked');
-    const statusColor = isUnlocked ? '#9de6a8' : isInProgress ? '#a8b3c8' : '#596780';
+    const statusColor = palette.statusColor;
     this.add
       .text(cx + w / 2 - 14, cy - h / 2 + 16, statusLabel, {
         fontFamily: 'monospace',
@@ -223,7 +220,7 @@ export class DeedsScene extends Phaser.Scene {
     const descriptionText = (!isUnlocked && deed.isBinary)
       ? t('ui.deeds.locked_mystery')
       : t(def.descriptionKey);
-    const descColor = isUnlocked ? '#cabfa0' : isInProgress ? '#95a0ba' : '#5a6478';
+    const descColor = palette.descColor;
     this.add
       .text(cx - w / 2 + 14, cy - 4, descriptionText, {
         fontFamily: 'monospace',
