@@ -9,6 +9,7 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
 import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
 import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
+import { resolveMuzzleFlashColor } from './muzzleFlashColors';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -340,15 +341,12 @@ export class WeaponSystem {
     switch (w.config.behavior) {
       case 'projectile':
         this.fireProjectile(w, px, py, 'thistle');
-        this.spawnMuzzleFlash(px, py, 0xcc88ff); // thistle purple
         break;
       case 'piercing':
         this.fireProjectile(w, px, py, 'caber');
-        this.spawnMuzzleFlash(px, py, 0xddbb66); // wood amber
         break;
       case 'bouncing':
         this.fireBouncing(w, px, py);
-        this.spawnMuzzleFlash(px, py, 0xaa7733); // haggis brown
         break;
       case 'aoe_pulse':
         this.fireAoePulse(w, px, py);
@@ -358,12 +356,13 @@ export class WeaponSystem {
         break; // trail weapon doesn't "fire" from origin
       case 'arc_sweep':
         this.fireArcSweep(w, px, py);
-        this.spawnMuzzleFlash(px, py, 0xccddff); // claymore steel blue
         break;
       case 'aura_pulse':
         this.fireAuraPulse(w, px, py);
         break; // aura has its own visual
     }
+    const flashColor = resolveMuzzleFlashColor(w.config.behavior);
+    if (flashColor !== null) this.spawnMuzzleFlash(px, py, flashColor);
   }
 
   /** Small muzzle flash at projectile fire point — weapon-coloured spark burst.
