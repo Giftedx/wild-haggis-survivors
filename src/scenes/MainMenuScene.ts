@@ -9,6 +9,7 @@ import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
 import { formatMenuHistorySummary, formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveMainMenuPalette } from './mainMenuPalette';
+import { resolveSeedLinkStyle } from './seedLinkStyle';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -499,26 +500,26 @@ export class MainMenuScene extends Phaser.Scene {
     // for cross-platform simplicity — a full in-game keyboard overlay is
     // future work if mobile UX feedback demands it.
     const customSeedY = optY + 42 + 16;
-    const seedLinkIdle = highContrastUi ? '#b8c6dc' : '#8e9bb8';
+    const seedLinkStyle = resolveSeedLinkStyle(highContrastUi, titleColor);
     const customSeedTxt = this.add
       .text(bx, customSeedY, t('ui.menu.enter_seed'), {
         fontFamily: 'monospace',
         fontSize: '14px',
-        color: seedLinkIdle,
+        color: seedLinkStyle.idle.color,
         fontStyle: 'italic',
-        stroke: '#06080c',
-        strokeThickness: highContrastUi ? 3 : 2,
+        stroke: seedLinkStyle.idle.stroke,
+        strokeThickness: seedLinkStyle.idle.strokeThickness,
       })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true });
     customSeedTxt.setScale(uiScale);
     customSeedTxt.on('pointerover', () => {
-      customSeedTxt.setColor(titleColor);
-      customSeedTxt.setStroke('#000000', highContrastUi ? 4 : 3);
+      customSeedTxt.setColor(seedLinkStyle.hover.color);
+      customSeedTxt.setStroke(seedLinkStyle.hover.stroke, seedLinkStyle.hover.strokeThickness);
     });
     customSeedTxt.on('pointerout', () => {
-      customSeedTxt.setColor(seedLinkIdle);
-      customSeedTxt.setStroke('#06080c', highContrastUi ? 3 : 2);
+      customSeedTxt.setColor(seedLinkStyle.idle.color);
+      customSeedTxt.setStroke(seedLinkStyle.idle.stroke, seedLinkStyle.idle.strokeThickness);
     });
     customSeedTxt.on('pointerdown', () => this.promptCustomSeed());
 
@@ -533,21 +534,21 @@ export class MainMenuScene extends Phaser.Scene {
         .text(bx, rerunLastY, t('ui.menu.rerun_last'), {
           fontFamily: 'monospace',
           fontSize: '14px',
-          color: seedLinkIdle,
+          color: seedLinkStyle.idle.color,
           fontStyle: 'italic',
-          stroke: '#06080c',
-          strokeThickness: highContrastUi ? 3 : 2,
+          stroke: seedLinkStyle.idle.stroke,
+          strokeThickness: seedLinkStyle.idle.strokeThickness,
         })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
       rerunTxt.setScale(uiScale);
       rerunTxt.on('pointerover', () => {
-        rerunTxt.setColor(titleColor);
-        rerunTxt.setStroke('#000000', highContrastUi ? 4 : 3);
+        rerunTxt.setColor(seedLinkStyle.hover.color);
+        rerunTxt.setStroke(seedLinkStyle.hover.stroke, seedLinkStyle.hover.strokeThickness);
       });
       rerunTxt.on('pointerout', () => {
-        rerunTxt.setColor(seedLinkIdle);
-        rerunTxt.setStroke('#06080c', highContrastUi ? 3 : 2);
+        rerunTxt.setColor(seedLinkStyle.idle.color);
+        rerunTxt.setStroke(seedLinkStyle.idle.stroke, seedLinkStyle.idle.strokeThickness);
       });
       rerunTxt.on('pointerdown', () => {
         this.saveManager.clearActiveRun();
