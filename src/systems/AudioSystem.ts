@@ -475,6 +475,97 @@ export class AudioSystem {
     this.gatedSfx('shoot', () => this.playShootImmediate());
   }
 
+  /**
+   * Ceilidh Chain pulse — bright two-note lift (G4 → D5) that lands
+   * with the every-8th-kill magnet flare. Short and peppy to not
+   * compete with the combo toast that fires on the same frame.
+   */
+  playCeilidhPulse(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const notes = [
+      { freq: 392, start: 0 },    // G4
+      { freq: 587, start: 0.07 }, // D5
+    ];
+    for (const note of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      applySfxDetune(osc);
+      osc.frequency.value = note.freq;
+      const start = t0 + note.start;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.14, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.22);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(start);
+      osc.stop(start + 0.24);
+    }
+  }
+
+  /**
+   * Standing Stones boon grant — three-note rising bell triad
+   * (A3, E4, A4) with long release. Fires on pick so it doesn't
+   * stack with the 5:00 announce toast.
+   */
+  playStoneGrant(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
+    const t0 = ctx.currentTime;
+    const notes = [
+      { freq: 220, start: 0 },    // A3
+      { freq: 329.63, start: 0.1 }, // E4
+      { freq: 440, start: 0.2 }, // A4
+    ];
+    for (const note of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      applySfxDetune(osc);
+      osc.frequency.value = note.freq;
+      const start = t0 + note.start;
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(0.18, start + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, start + 0.7);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(start);
+      osc.stop(start + 0.72);
+    }
+  }
+
+  /**
+   * Ancestral Echo touch — ghostly detuned pair with a falling pitch
+   * sweep. Soft and airy; the ghost dissipates as the note decays.
+   */
+  playEchoTouch(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    // Two detuned sines, each sweeping from ~A4 down to ~E4 over 500ms
+    for (let d = 0; d < 2; d++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.detune.value = d === 0 ? -12 : 12;
+      osc.frequency.setValueAtTime(440, t0);
+      osc.frequency.exponentialRampToValueAtTime(329.63, t0 + 0.5);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.09, t0 + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t0);
+      osc.stop(t0 + 0.56);
+    }
+  }
+
   /** Menu button click */
   playClick(): void {
     this.gatedSfx('click', () => {

@@ -13,6 +13,7 @@ import {
   CEILIDH_MAGNET_FLAT_PX,
   isCeilidhPulseMoment,
 } from './ceilidhChain';
+import { audio } from './AudioSystem';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -385,6 +386,7 @@ export class JuiceSystem {
         const msg = t('ui.game.ceilidh_pulse');
         this.showToast(msg, '#a0d8a0');
         this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
+        audio.playCeilidhPulse();
         sceneHooks.getTutorialSystem?.().notifyCeilidhChainIfFirst();
         // Expanding green ring sells the magnet pulse — the stat boost was
         // otherwise invisible, just a silent 2s widening of pickup range.

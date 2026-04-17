@@ -1151,6 +1151,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.player.heal(ECHO_HEAL_REWARD);
           this.juice.showToast(t('ui.ancestralEcho.touch_toast'), '#b0d4ff');
           this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
+          audio.playEchoTouch();
           // Lifetime Chronicle counter — best-effort persistence.
           try {
             const cur = loadSave();
@@ -1186,6 +1187,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         const title = t(boon.titleKey);
         this.juice.showToast(t('ui.standingStones.grant_toast', { title }), '#ffe080');
         this.caption('standing_stones_pick', t(boon.descKey), '#ffe080', 3500);
+        audio.playStoneGrant();
         // Lifetime Chronicle counter — best-effort persistence.
         try {
           const cur = loadSave();
