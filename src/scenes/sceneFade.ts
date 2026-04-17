@@ -55,3 +55,35 @@ export function startSceneFadeOut(
     onComplete,
   });
 }
+
+// ── Warm amber header wash ──────────────────────────────────────────
+//
+// Chronicle / Deeds / Shop / MetaShop all paint a very subtle
+// warm-gold wash across the top 60px of the scene — a common cozy
+// header treatment that unifies the "non-gameplay screens" look.
+
+/** Default alpha of the amber header wash. 0.04 is the Chronicle /
+ *  Deeds setting; 0.03 is the slightly quieter Shop / MetaShop
+ *  setting. */
+export const AMBER_HEADER_WASH_COLOR = 0xd4a017;
+export const AMBER_HEADER_WASH_ALPHA_DEFAULT = 0.04;
+export const AMBER_HEADER_WASH_ALPHA_QUIET = 0.03;
+
+/** Height of the wash strip in pixels (top-of-scene). */
+const AMBER_HEADER_WASH_HEIGHT = 60;
+const AMBER_HEADER_WASH_Y = 30;
+
+export function addAmberHeaderWash(
+  scene: Phaser.Scene,
+  alpha: number = AMBER_HEADER_WASH_ALPHA_DEFAULT,
+): void {
+  const { width } = scene.scale;
+  scene.add.rectangle(
+    width / 2,
+    AMBER_HEADER_WASH_Y,
+    width,
+    AMBER_HEADER_WASH_HEIGHT,
+    AMBER_HEADER_WASH_COLOR,
+    alpha,
+  );
+}

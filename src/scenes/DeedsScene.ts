@@ -19,7 +19,7 @@ import {
 } from '../ui/deedsProgress';
 import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { resolveBackButtonPalette } from './backButtonPalette';
-import { addSceneFadeIn } from './sceneFade';
+import { addSceneFadeIn, addAmberHeaderWash } from './sceneFade';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -63,7 +63,7 @@ export class DeedsScene extends Phaser.Scene {
 
     // ── Background + ambient wash ──
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
-    this.add.rectangle(width / 2, 30, width, 60, 0xd4a017, 0.04);
+    addAmberHeaderWash(this);
     audio.startAmbientWind();
     addSceneFadeIn(this);
 

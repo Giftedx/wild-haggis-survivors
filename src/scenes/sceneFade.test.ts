@@ -10,3 +10,18 @@ describe('sceneFade constants', () => {
     expect(SCENE_FADE_DEPTH).toBe(999);
   });
 });
+
+describe('amber header wash constants', () => {
+  it('colour is the warm whisky gold', async () => {
+    const { AMBER_HEADER_WASH_COLOR } = await import('./sceneFade');
+    expect(AMBER_HEADER_WASH_COLOR).toBe(0xd4a017);
+  });
+
+  it('default alpha is louder than quiet alpha (Chronicle / Deeds vs Shop)', async () => {
+    const {
+      AMBER_HEADER_WASH_ALPHA_DEFAULT,
+      AMBER_HEADER_WASH_ALPHA_QUIET,
+    } = await import('./sceneFade');
+    expect(AMBER_HEADER_WASH_ALPHA_DEFAULT).toBeGreaterThan(AMBER_HEADER_WASH_ALPHA_QUIET);
+  });
+});

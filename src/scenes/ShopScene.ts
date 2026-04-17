@@ -10,7 +10,7 @@ import {
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { resolveShopRowBgColor } from './shopRowBg';
-import { startSceneFadeOut } from './sceneFade';
+import { startSceneFadeOut, addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET } from './sceneFade';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -42,7 +42,7 @@ export class ShopScene extends Phaser.Scene {
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
     // Warm amber wash at the top — cozy between storms
-    this.add.rectangle(width / 2, 30, width, 60, 0xd4a017, 0.03);
+    addAmberHeaderWash(this, AMBER_HEADER_WASH_ALPHA_QUIET);
     this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);
     // Heather strip at the bottom for highland warmth
     if (this.textures.exists('deco_heather')) {

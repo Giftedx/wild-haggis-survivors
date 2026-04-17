@@ -39,6 +39,7 @@ import { paginationState } from '../ui/pagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { addSceneFadeIn, addAmberHeaderWash } from './sceneFade';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -94,11 +95,10 @@ export class ChronicleScene extends Phaser.Scene {
 
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
     // Warm amber wash at the top — matches MetaShop's cozy framing
-    this.add.rectangle(width / 2, 30, width, 60, 0xd4a017, 0.04);
+    addAmberHeaderWash(this);
 
     audio.startAmbientWind();
-    const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
-    this.tweens.add({ targets: fade, alpha: 0, duration: 360, onComplete: () => fade.destroy() });
+    addSceneFadeIn(this);
 
     // ── Header ──
     this.add
