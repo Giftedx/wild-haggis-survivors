@@ -18,7 +18,7 @@ import {
   resolveUnlockHeading,
   formatUnlockBodyText,
 } from './gameOverFormatting';
-import { resolveGameOverPanelTheme } from './gameOverPanelTheme';
+import { resolveGameOverPanelTheme, pickGameOverTitleKeys } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
 
 /**
@@ -91,10 +91,11 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
     // Rotating death titles/subtitles — each death feels different
-    const deathTitleKey = isVictory ? 'ui.gameOver.victory_title'
-      : ['ui.gameOver.death_title', 'ui.gameOver.death_title_2', 'ui.gameOver.death_title_3', 'ui.gameOver.death_title_4'][Phaser.Math.Between(0, 3)];
-    const deathSubKey = isVictory ? 'ui.gameOver.victory_sub'
-      : ['ui.gameOver.death_sub', 'ui.gameOver.death_sub_2', 'ui.gameOver.death_sub_3', 'ui.gameOver.death_sub_4'][Phaser.Math.Between(0, 3)];
+    const { titleKey: deathTitleKey, subKey: deathSubKey } = pickGameOverTitleKeys(
+      isVictory,
+      Phaser.Math.Between(0, 3),
+      Phaser.Math.Between(0, 3),
+    );
 
     const title = this.add
       .text(panelCenterX, panelTop + 54, t(deathTitleKey), {
