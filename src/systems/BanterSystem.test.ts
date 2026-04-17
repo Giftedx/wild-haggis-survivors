@@ -17,7 +17,7 @@ function makeSystem(freqRef: { value: BanterFrequency }, clock: { now: number },
   const sys = new BanterSystem({
     sink: {
       toast: (message, color) => lines.push({ message, color }),
-      caption: (id, message, tint) => {
+      caption: (id, _message, tint) => {
         const last = lines[lines.length - 1];
         if (last) last.captionId = id;
         void tint;
