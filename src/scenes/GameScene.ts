@@ -798,7 +798,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.debugTimeTravelApi.install();
     this.runPersistence.registerMidRunHooks();
 
-    getAnalyticsManager().beginGameplaySession({ variantKey: this.activeVariant.key });
+    getAnalyticsManager().beginGameplaySession({
+      variantKey: this.activeVariant.key,
+      ironmoor: this.settingsManager.load().ironmoorMode,
+    });
     this.gameplaySessionGuard.markStarted();
 
     const prefs = this.settingsManager.load();

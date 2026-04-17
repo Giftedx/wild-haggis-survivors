@@ -153,6 +153,7 @@ export class RunExitComposer {
         outcome: payload.mode,
         gameTimeSec: payload.summary.timeSurvivedSec,
         enemiesKilled: payload.summary.enemiesKilled,
+        ironmoor: payload.ironmoor,
       });
     } catch {
       /* ignore */

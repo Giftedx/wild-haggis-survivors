@@ -73,6 +73,7 @@ export class AnalyticsManager {
           outcome: p.outcome,
           gameTimeSec: p.gameTimeSec,
           enemiesKilled: p.enemiesKilled,
+          ironmoor: p.ironmoor === true,
         });
       })
     );
@@ -148,11 +149,14 @@ export class AnalyticsManager {
    * Call when the player enters an active run (`GameScene` ready to play).
    * Nests safely if ever re-entered without teardown (should not happen).
    */
-  beginGameplaySession(meta: { variantKey: string }): void {
+  beginGameplaySession(meta: { variantKey: string; ironmoor?: boolean }): void {
     if (this.sessionDepth === 0) {
       this.triggerGameplayStart();
       if (this.runDistributionTelemetryEnabled()) {
-        this.logEvent('run_start', { variantKey: meta.variantKey });
+        this.logEvent('run_start', {
+          variantKey: meta.variantKey,
+          ironmoor: meta.ironmoor === true,
+        });
       }
     }
     this.sessionDepth++;

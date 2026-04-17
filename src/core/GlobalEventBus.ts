@@ -27,6 +27,10 @@ export type GlobalRunEndedPayload = {
   outcome: 'death' | 'victory';
   gameTimeSec: number;
   enemiesKilled: number;
+  /** W66 Ironmoor — true when the run was taken with single-life mode
+   *  on. Feeds portal telemetry so Ironmoor completion rates can be
+   *  split from the baseline run pool. Absent on pre-W66 call sites. */
+  ironmoor?: boolean;
 };
 
 export type GlobalWeaponEvolvedPayload = {

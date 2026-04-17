@@ -108,9 +108,48 @@ describe('AnalyticsManager', () => {
   it('pairs gameplayStart and gameplayStop across a session', () => {
     mgr.beginGameplaySession({ variantKey: 'classic' });
     expect(provider.triggerGameplayStart).toHaveBeenCalledTimes(1);
-    expect(provider.logEvent).toHaveBeenCalledWith('run_start', { variantKey: 'classic' });
+    expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
+      variantKey: 'classic',
+      ironmoor: false,
+    });
     mgr.endGameplaySession();
     expect(provider.triggerGameplayStop).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards the ironmoor flag on run_start when the session opts into single-life', () => {
+    mgr.beginGameplaySession({ variantKey: 'moor_runner', ironmoor: true });
+    expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
+      variantKey: 'moor_runner',
+      ironmoor: true,
+    });
+  });
+
+  it('forwards the ironmoor flag on run_end so portal can split completion rates', () => {
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory',
+      gameTimeSec: 723,
+      enemiesKilled: 1024,
+      ironmoor: true,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'run_end',
+      expect.objectContaining({
+        outcome: 'victory',
+        ironmoor: true,
+      }),
+    );
+  });
+
+  it('defaults ironmoor to false on run_end when the payload omits the flag', () => {
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death',
+      gameTimeSec: 90,
+      enemiesKilled: 120,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'run_end',
+      expect.objectContaining({ ironmoor: false }),
+    );
   });
 
   it('skips run_start and run_end when telemetry opt-in is off', () => {
