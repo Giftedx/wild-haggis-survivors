@@ -8,6 +8,7 @@ import { BALANCE } from '../core/BalanceConfig';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
 import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
+import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -292,13 +293,14 @@ export class WeaponSystem {
     for (const weapon of this.weapons) {
       weapon.cooldownRemaining -= delta;
       if (weapon.cooldownRemaining <= 0) {
-        // Scale the cooldown reset by attackSpeedMultiplier and cooldownReduction.
-        // Enforce an absolute 50ms minimum so extreme stacking can't produce
-        // a per-frame fire rate that crashes the projectile pool.
-        const asp = Math.max(0.05, this.attackSpeedMultiplier);
-        const effectiveCooldown = Math.max(
-          BALANCE.weapons.minEffectiveCooldownMs,
-          (weapon.cooldownMs * (1 - this.cooldownReduction) * this.curseCooldownMul) / asp
+        // Scale the cooldown reset by all run-scoped multipliers (attack
+        // speed, cooldown reduction, curse). resolveEffectiveCooldownMs
+        // enforces the absolute floor + the asp-clamp.
+        const effectiveCooldown = resolveEffectiveCooldownMs(
+          weapon.cooldownMs,
+          this.attackSpeedMultiplier,
+          this.cooldownReduction,
+          this.curseCooldownMul,
         );
         weapon.cooldownRemaining = Math.max(weapon.cooldownRemaining, -effectiveCooldown)
           + effectiveCooldown;
