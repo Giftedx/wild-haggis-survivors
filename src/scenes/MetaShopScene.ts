@@ -5,6 +5,7 @@ import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
+import { resolveMetaShopRowState } from './metaShopRowState';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
@@ -167,13 +168,10 @@ export class MetaShopScene extends Phaser.Scene {
     pageKeys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
       const y = 124 + index * 72;
-      const owned = save.unlockedUpgrades.includes(key);
+      const { owned, achievementMet, prevMet, locked, canAfford } =
+        resolveMetaShopRowState(item, key, save);
       const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
       const prevReq = 'requiresPrevious' in item ? item.requiresPrevious : undefined;
-      const achievementMet = !req || save.unlockedAchievements.includes(req);
-      const prevMet = !prevReq || save.unlockedUpgrades.includes(prevReq as string);
-      const locked = (!achievementMet || !prevMet) && !owned;
-      const canAfford = !owned && achievementMet && prevMet && save.totalKills >= item.cost;
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1a1828 : 0x161422, 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
