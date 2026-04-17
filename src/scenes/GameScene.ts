@@ -56,6 +56,7 @@ import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import { showCountdown } from './game/CountdownOverlay';
 import { MoorMomentScheduler } from './game/MoorMomentScheduler';
+import { crossesMoorMercyHpFrac } from './game/moorMercyTrigger';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
@@ -1117,17 +1118,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private tryMoorMercyLuck(hpBefore: number): void {
     if (this.moorMercyLuckGranted) return;
-    const maxHp = this.player.getMaxHp();
-    if (maxHp <= 0) return;
     const hpAfter = this.player.getHp();
-    if (hpAfter <= 0) return;
+    const maxHp = this.player.getMaxHp();
     const th = BALANCE.player.moorMercyHpFrac;
-    if (hpBefore / maxHp > th && hpAfter / maxHp <= th) {
-      this.moorMercyLuckGranted = true;
-      this.player.addLuckDrawBonus(BALANCE.player.moorMercyLuckBonus);
-      this.juice.showToast(t('ui.game.moor_mercy_luck'), '#c8a8e8');
-      this.caption('moor_mercy', t('ui.game.moor_mercy_luck_caption'), '#c8a8e8', 4200);
-    }
+    if (!crossesMoorMercyHpFrac(hpBefore, hpAfter, maxHp, th)) return;
+    this.moorMercyLuckGranted = true;
+    this.player.addLuckDrawBonus(BALANCE.player.moorMercyLuckBonus);
+    this.juice.showToast(t('ui.game.moor_mercy_luck'), '#c8a8e8');
+    this.caption('moor_mercy', t('ui.game.moor_mercy_luck_caption'), '#c8a8e8', 4200);
   }
 
   // onPlayerHitEnemy extracted to src/scenes/game/PlayerHitResolver.ts
