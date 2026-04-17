@@ -4,6 +4,7 @@ import { XP } from '../config';
 import { audio } from './AudioSystem';
 import { BALANCE } from '../core/BalanceConfig';
 import { ISceneContext } from '../core/ISceneContext';
+import { xpRequiredForLevel } from './xpCurve';
 
 /**
  * XPSystem — manages XP gem pool, collection, and level-up triggers.
@@ -184,7 +185,7 @@ export class XPSystem {
 
   /** Exponential XP curve */
   private calcXpRequired(level: number): number {
-    return Math.ceil(XP.BASE_REQUIREMENT * Math.pow(XP.SCALING_FACTOR, level - 2));
+    return xpRequiredForLevel(level);
   }
 
   /** Vacuum all gems toward the player instantly (called on level-up) */
