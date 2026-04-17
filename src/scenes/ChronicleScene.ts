@@ -51,10 +51,14 @@ import {
 export class ChronicleScene extends Phaser.Scene {
   // Layout constants — tuned so the full scene fits inside the 600px game
   // height without the runs panel or pagination escaping off-screen.
-  private readonly ROWS_PER_PAGE = 5;
+  // ROWS_PER_PAGE dropped 5→4 to make room for the larger milestones
+  // panel (which now hosts 7+ optional sections: codex, moor road,
+  // ironmoor, stones, echoes, post-bell, hearth beats, curses).
+  private readonly ROWS_PER_PAGE = 4;
   private readonly ROW_STRIDE = 30;
+  private readonly MILESTONES_PANEL_HEIGHT = 178;
   /** Below milestones + codex block — keep clearance above pagination + BACK. */
-  private readonly RUNS_HEADER_Y = 368;
+  private readonly RUNS_HEADER_Y = 398;
   private readonly ROWS_START_Y = this.RUNS_HEADER_Y + 20; // row y = start + 16 + i*stride
   private readonly ROWS_PANEL_HEIGHT = this.ROWS_PER_PAGE * this.ROW_STRIDE + 18;
   private readonly ROWS_PANEL_CENTER_Y = this.ROWS_START_Y + this.ROWS_PANEL_HEIGHT / 2 - 6;
@@ -166,7 +170,7 @@ export class ChronicleScene extends Phaser.Scene {
     // ── Milestones panel ──
     const milestonesPanelY = 232;
     this.add
-      .rectangle(width / 2, milestonesPanelY + 50, width - 40, 148, 0x12192b, 0.7)
+      .rectangle(width / 2, milestonesPanelY + 65, width - 40, this.MILESTONES_PANEL_HEIGHT, 0x12192b, 0.7)
       .setStrokeStyle(1, 0x283a5f, 0.8);
     this.add
       .text(width / 2, milestonesPanelY, t('ui.chronicle.milestones_heading'), {
@@ -217,9 +221,19 @@ export class ChronicleScene extends Phaser.Scene {
     const curseSection = curseLine ? `\n${curseLine}` : '';
 
     const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection + curseSection;
+    // Optional sections grow over a player's lifetime — tighten font +
+    // line spacing once content gets dense so the panel still fits.
+    // The threshold is generous (~12 lines) so casual saves keep the
+    // larger, friendlier 12px size.
+    const lineCount = milestoneLines.split('\n').length;
+    const dense = lineCount >= 12;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
-        fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,
+        fontFamily: 'monospace',
+        fontSize: dense ? '11px' : '12px',
+        color: '#c4cdd8',
+        align: 'center',
+        lineSpacing: dense ? 2 : 4,
         wordWrap: { width: width - 80 },
       })
       .setOrigin(0.5, 0)
