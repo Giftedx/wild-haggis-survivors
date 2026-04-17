@@ -33,6 +33,7 @@ import {
   lifetimeTotals,
   moodColor,
   moodSubtitleKey,
+  resolveChronicleMilestonesDensityStyle,
 } from '../ui/chronicleAggregates';
 import { paginationState } from '../ui/pagination';
 
@@ -228,15 +229,14 @@ export class ChronicleScene extends Phaser.Scene {
     // line spacing once content gets dense so the panel still fits.
     // The threshold is generous (~12 lines) so casual saves keep the
     // larger, friendlier 12px size.
-    const lineCount = milestoneLines.split('\n').length;
-    const dense = lineCount >= 12;
+    const density = resolveChronicleMilestonesDensityStyle(milestoneLines.split('\n').length);
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace',
-        fontSize: dense ? '11px' : '12px',
+        fontSize: density.fontSize,
         color: '#c4cdd8',
         align: 'center',
-        lineSpacing: dense ? 2 : 4,
+        lineSpacing: density.lineSpacing,
         wordWrap: { width: width - 80 },
       })
       .setOrigin(0.5, 0)

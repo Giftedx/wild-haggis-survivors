@@ -56,6 +56,32 @@ export type ChronicleMood =
   | 'declining'     // avg trending down
   | 'steady';       // default
 
+/** Line count at/above which the milestones panel switches to the dense layout. */
+export const CHRONICLE_MILESTONES_DENSE_THRESHOLD = 12;
+
+/**
+ * Density style for the Chronicle milestones panel. Once the
+ * concatenated milestone text grows past the threshold (set to 12
+ * today), font size drops 1px and line spacing halves so the panel
+ * still fits without widening.
+ */
+export interface ChronicleMilestonesDensityStyle {
+  dense: boolean;
+  fontSize: string;
+  lineSpacing: number;
+}
+
+export function resolveChronicleMilestonesDensityStyle(
+  lineCount: number,
+): ChronicleMilestonesDensityStyle {
+  const dense = lineCount >= CHRONICLE_MILESTONES_DENSE_THRESHOLD;
+  return {
+    dense,
+    fontSize: dense ? '11px' : '12px',
+    lineSpacing: dense ? 2 : 4,
+  };
+}
+
 /** i18n key for the Chronicle header subtitle, chosen by mood. */
 export function moodSubtitleKey(mood: ChronicleMood): string {
   switch (mood) {

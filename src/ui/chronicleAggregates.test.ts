@@ -19,7 +19,9 @@ import {
   lifetimeTotals,
   moodColor,
   moodSubtitleKey,
+  resolveChronicleMilestonesDensityStyle,
   selectRunsWithRoutes,
+  CHRONICLE_MILESTONES_DENSE_THRESHOLD,
   type ChronicleMood,
   type Milestones,
 } from './chronicleAggregates';
@@ -735,5 +737,35 @@ describe('countUniqueRouteKeys', () => {
     ];
     const history = [entry({ routes: picks }), entry()];
     expect(countUniqueRouteKeys(history)).toBe(1);
+  });
+});
+
+describe('resolveChronicleMilestonesDensityStyle', () => {
+  it('below threshold → roomy style (12px, 4 line spacing)', () => {
+    const s = resolveChronicleMilestonesDensityStyle(CHRONICLE_MILESTONES_DENSE_THRESHOLD - 1);
+    expect(s.dense).toBe(false);
+    expect(s.fontSize).toBe('12px');
+    expect(s.lineSpacing).toBe(4);
+  });
+
+  it('at threshold → dense style kicks in (>=)', () => {
+    const s = resolveChronicleMilestonesDensityStyle(CHRONICLE_MILESTONES_DENSE_THRESHOLD);
+    expect(s.dense).toBe(true);
+    expect(s.fontSize).toBe('11px');
+    expect(s.lineSpacing).toBe(2);
+  });
+
+  it('well above threshold stays in dense style', () => {
+    expect(resolveChronicleMilestonesDensityStyle(100).dense).toBe(true);
+  });
+
+  it('zero lines (empty save) stays roomy', () => {
+    expect(resolveChronicleMilestonesDensityStyle(0).dense).toBe(false);
+  });
+
+  it('dense font is smaller than roomy font (proxy for legibility)', () => {
+    const roomy = parseInt(resolveChronicleMilestonesDensityStyle(0).fontSize, 10);
+    const dense = parseInt(resolveChronicleMilestonesDensityStyle(50).fontSize, 10);
+    expect(dense).toBeLessThan(roomy);
   });
 });
