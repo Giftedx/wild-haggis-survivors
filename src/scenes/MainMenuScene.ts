@@ -15,6 +15,7 @@ import {
 } from '../utils/rng';
 import type { GameSceneInitData } from './GameScene';
 import { getCameraViewport } from '../ui/cameraViewport';
+import { resolveDailyStateDisplay } from './dailyMenuState';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -341,7 +342,13 @@ export class MainMenuScene extends Phaser.Scene {
       .rectangle(bx, dailyBtnY, btnW, btnH, 0x8b6914, 1)
       .setInteractive({ useHandCursor: true });
     dailyBtn.setScale(uiScale);
-    const daily = this.resolveDailyState(meta.dailyChallenge);
+    const dailySeed = dailyChallengeSeed();
+    const daily = resolveDailyStateDisplay({
+      todayKey: currentDailyDateKey(),
+      seed: dailySeed,
+      seedCode: encodeSeed(dailySeed),
+      recorded: meta.dailyChallenge,
+    });
     const dailyTitle = this.add
       .text(bx, dailyBtnY - 8, t('ui.menu.daily_challenge'), {
         fontFamily: 'monospace',
@@ -756,39 +763,6 @@ export class MainMenuScene extends Phaser.Scene {
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
     });
-  }
-
-  /**
-   * Resolve the display state for the daily challenge button: today's seed,
-   * whether the player has already attempted or cleared it. If the save's
-   * daily record is from a previous day, treat as unattempted.
-   */
-  private resolveDailyState(
-    recorded: import('../core/SaveManager').DailyChallengeState | null,
-  ): { seed: number; subtitle: string; completed: boolean } {
-    const todayKey = currentDailyDateKey();
-    const seed = dailyChallengeSeed();
-    const code = encodeSeed(seed);
-    const isTodayRecord = recorded && recorded.dateKey === todayKey;
-    if (!isTodayRecord) {
-      return {
-        seed,
-        subtitle: t('ui.menu.daily_fresh', { code }),
-        completed: false,
-      };
-    }
-    if (recorded.completedVictory) {
-      return {
-        seed,
-        subtitle: t('ui.menu.daily_cleared', { code }),
-        completed: true,
-      };
-    }
-    return {
-      seed,
-      subtitle: t('ui.menu.daily_attempts', { code, attempts: recorded.attempts }),
-      completed: false,
-    };
   }
 
   /**
