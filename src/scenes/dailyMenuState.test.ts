@@ -91,3 +91,31 @@ describe('resolveDailyStateDisplay', () => {
     expect(stale.completed).toBe(false);
   });
 });
+
+describe('resolveDailySubtitleColor', () => {
+  it('completed returns the mint green', async () => {
+    const {
+      resolveDailySubtitleColor,
+      DAILY_SUBTITLE_COLOR_COMPLETED,
+    } = await import('./dailyMenuState');
+    expect(resolveDailySubtitleColor(true)).toBe(DAILY_SUBTITLE_COLOR_COMPLETED);
+    expect(DAILY_SUBTITLE_COLOR_COMPLETED).toBe('#9de6a8');
+  });
+
+  it('pending returns the warm gold', async () => {
+    const {
+      resolveDailySubtitleColor,
+      DAILY_SUBTITLE_COLOR_PENDING,
+    } = await import('./dailyMenuState');
+    expect(resolveDailySubtitleColor(false)).toBe(DAILY_SUBTITLE_COLOR_PENDING);
+    expect(DAILY_SUBTITLE_COLOR_PENDING).toBe('#e2c97a');
+  });
+
+  it('completed and pending colours differ (reads the outcome)', async () => {
+    const {
+      DAILY_SUBTITLE_COLOR_COMPLETED,
+      DAILY_SUBTITLE_COLOR_PENDING,
+    } = await import('./dailyMenuState');
+    expect(DAILY_SUBTITLE_COLOR_COMPLETED).not.toBe(DAILY_SUBTITLE_COLOR_PENDING);
+  });
+});

@@ -25,6 +25,19 @@ export interface DailyStateDisplay {
 }
 
 /**
+ * Subtitle colour — green when today's daily has been cleared,
+ * warm gold when still pending. The two colours live next to the
+ * state resolver so a future visual pass for the daily button can
+ * read the identity from one place.
+ */
+export const DAILY_SUBTITLE_COLOR_COMPLETED = '#9de6a8';
+export const DAILY_SUBTITLE_COLOR_PENDING = '#e2c97a';
+
+export function resolveDailySubtitleColor(completed: boolean): string {
+  return completed ? DAILY_SUBTITLE_COLOR_COMPLETED : DAILY_SUBTITLE_COLOR_PENDING;
+}
+
+/**
  * Resolve the display state for the Main Menu's daily button. Three
  * visual states, chosen by whether the save's daily record is from
  * today and whether the player has cleared it:
