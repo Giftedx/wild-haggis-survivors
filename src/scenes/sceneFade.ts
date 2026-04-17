@@ -13,7 +13,7 @@ import { COLORS } from '../config';
  */
 
 /** Full-screen fade rectangle colour — dark navy matching the menu backdrop. */
-export const SCENE_FADE_COLOR = 0x1a1a2e;
+export const SCENE_FADE_COLOR = COLORS.BG_DARK;
 /** Depth of the fade rectangle — sits above any scene-content depth. */
 export const SCENE_FADE_DEPTH = 999;
 
@@ -66,7 +66,7 @@ export function startSceneFadeOut(
 /** Default alpha of the amber header wash. 0.04 is the Chronicle /
  *  Deeds setting; 0.03 is the slightly quieter Shop / MetaShop
  *  setting. */
-export const AMBER_HEADER_WASH_COLOR = 0xd4a017;
+export const AMBER_HEADER_WASH_COLOR = COLORS.WHISKY_GOLD;
 export const AMBER_HEADER_WASH_ALPHA_DEFAULT = 0.04;
 export const AMBER_HEADER_WASH_ALPHA_QUIET = 0.03;
 
