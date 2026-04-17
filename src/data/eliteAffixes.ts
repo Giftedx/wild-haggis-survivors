@@ -83,7 +83,3 @@ export function pickEliteAffixId(behavior: EnemyBehavior, rng: RNG): EliteAffixI
   if (allowed.length === 0) return null;
   return rng.weighted(allowed, (id) => ELITE_AFFIXES[id].weight);
 }
-
-export function getEliteAffixDef(id: EliteAffixId): EliteAffixDef {
-  return ELITE_AFFIXES[id];
-}

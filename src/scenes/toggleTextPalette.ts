@@ -11,11 +11,6 @@
  * into a single palette so the two scenes can't drift apart.
  */
 
-export interface ToggleTextPalette {
-  on: string;
-  off: string;
-}
-
 export const TOGGLE_TEXT_ON_COLOR = '#88cc88';
 export const TOGGLE_TEXT_OFF_COLOR = '#886666';
 

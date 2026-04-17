@@ -2918,5 +2918,3 @@ export function t(key: string, vars?: Record<string, string | number>): string {
   if (raw === undefined) return key;
   return interpolate(raw, vars);
 }
-
-export const i18n = { t };
