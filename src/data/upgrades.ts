@@ -6,6 +6,7 @@
  */
 
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+import { COLORS } from '../config';
 import { WEAPON_DEFS } from './weapons';
 import { t } from '../core/i18n';
 
@@ -48,12 +49,14 @@ export const RARITY_WEIGHTS: Record<Rarity, number> = {
   legendary: 4,
 };
 
-/** Rarity colors for card borders */
+/** Rarity colors for card borders — mirrors the `COLORS` card-rarity
+ *  palette so a retint in `config.ts` carries through to upgrade cards
+ *  without hand-syncing parallel literals. */
 export const RARITY_COLORS: Record<Rarity, number> = {
-  common: 0x888888,
-  uncommon: 0x44aa44,
-  rare: 0x4488dd,
-  legendary: 0xddaa00,
+  common: COLORS.COMMON,
+  uncommon: COLORS.UNCOMMON,
+  rare: COLORS.RARE,
+  legendary: COLORS.LEGENDARY,
 };
 
 // ── Weapon cards ──
