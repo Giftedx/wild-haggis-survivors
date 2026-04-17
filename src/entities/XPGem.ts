@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import type { ISceneContext } from '../core/ISceneContext';
 import { resolveXpGemTier } from './xpGemTier';
+import { xpGemMagnetSpeed } from './xpGemMagnet';
 
 /**
  * XP Gem ("Whisky Drop") — poolable pickup that grants XP.
@@ -147,7 +148,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
       const dist = Math.sqrt(distSq);
       if (dist > 1e-6) {
         // Accelerate toward player — gets faster as it gets closer.
-        const speed = Math.max(400, 800 - dist * 2);
+        const speed = xpGemMagnetSpeed(dist);
         const inv = speed / dist;
         this.setVelocity(dx * inv, dy * inv);
       }
