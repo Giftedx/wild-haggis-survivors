@@ -54,17 +54,39 @@ export interface RouteResumeContext {
   readonly grantReroll: () => void;
 }
 
+/**
+ * Keys on `RunModifiers` that a route may safely mutate mid-run.
+ *
+ * The rest (`moveSpeedMult`, `startHpRatio`) fold into the Player's
+ * composed base stats at construction and have no mid-run setter, so a
+ * route that wrote them would silently no-op. `routePicks` is an
+ * append-only log owned by RunActState, not a tunable knob.
+ *
+ * Each key listed here is paired with a resync call in
+ * `GameScene.launchActIntermission.onResolve` so the bag mutation
+ * propagates to whichever system caches the value.
+ */
+export type RouteModifierDeltaKey =
+  | 'spawnIntervalMult'
+  | 'damageTakenMult'
+  | 'goldMult'
+  | 'weaponCooldownMult';
+
 export interface RouteDef {
   readonly key: RouteKey;
   readonly slot: PickerSlot;
   readonly labelKey: string;
   readonly descKey: string;
   /**
-   * Additive deltas on `RunModifiers`. Multipliers compose multiplicatively
-   * with whatever's already in the bag; ratios replace the current value.
-   * See resolveRoutePick() in ActIntermissionScene for the exact rule.
+   * Partial rewrites of `RunModifiers` applied at pick-resolve time.
+   * Only the subset of fields in `RouteModifierDeltaKey` is allowed —
+   * the rest either read only at run start (readonly base stats) or
+   * aren't tunable (routePicks log).
+   *
+   * Numeric values REPLACE the current bag value (consistent with the
+   * routes authored today — see `actIntermissionResolve.applyRouteModifierDeltas`).
    */
-  readonly modifierDeltas: Partial<RunModifiers>;
+  readonly modifierDeltas: Partial<Pick<RunModifiers, RouteModifierDeltaKey>>;
   /** Side-effect callback — heal bursts, chest forcing, timed releases. */
   readonly onResume?: (ctx: RouteResumeContext) => void;
 }

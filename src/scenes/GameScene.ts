@@ -1236,13 +1236,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runModifiers.routePicks.push(pick);
       this.banter?.request('route_picked', { tag: pick.routeKey });
       applyRouteModifierDeltas(this.runModifiers, route);
-      // SpawnSystem caches `spawnIntervalMult` as a private field read off
-      // the bag only at run start — mid-run routes that rewrite the bag
-      // entry (`through_the_kirkyard` 0.70, `run_for_the_hills` 0.75)
-      // won't actually throttle cadence unless we resync the system
-      // field. Cheap call; a no-op for routes whose modifierDeltas skip
-      // the field.
+      // Mid-run bag writes don't propagate through the cached private
+      // fields that their consumers hold. No current route uses these
+      // besides `spawnIntervalMult`, but the generic bag applicator
+      // would silently no-op a future route writing to either field
+      // — preempt the footgun by resyncing every run-distribution
+      // multiplier that has a cached reader:
+      //   - `SpawnSystem.spawnIntervalMult` → cached at run start
+      //   - `WeaponSystem.curseCooldownMul` → cached at run start
+      // `moveSpeedMult` / `startHpRatio` fold into the Player's
+      // composed base stats at construction; routes MUST NOT touch
+      // them (Player.runBase* are `readonly`, no setter exists).
       this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
+      this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
       this.runActState.advanceToAct(
         (actN + 1) as 1 | 2 | 3,
         this.spawnSystem.getGameTimeSec(),

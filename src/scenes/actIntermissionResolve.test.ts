@@ -6,7 +6,7 @@ import {
   buildRoutePick,
   resolveDefaultRoute,
 } from './actIntermissionResolve';
-import { DEFAULT_ROUTE_ON_SKIP, ROUTES_BY_SLOT, getRoute } from '../data/routes';
+import { DEFAULT_ROUTE_ON_SKIP, ROUTES_BY_SLOT, getRoute, type RouteDef } from '../data/routes';
 import { defaultModifiers } from '../core/RunModifiers';
 
 /**
@@ -101,9 +101,11 @@ describe('applyRouteModifierDeltas', () => {
     const m = defaultModifiers();
     const beforePicks = m.routePicks;
     // Synthesize a route-like with a stray array delta — should NOT overwrite picks.
+    // Cast bypasses the narrowed `RouteModifierDeltaKey` contract to
+    // prove the applicator stays defensive even against malformed data.
     const fakeRoute = {
       ...getRoute('up_the_brae'),
-      modifierDeltas: { routePicks: [{}] as never },
+      modifierDeltas: { routePicks: [{}] } as unknown as RouteDef['modifierDeltas'],
     };
     applyRouteModifierDeltas(m, fakeRoute);
     expect(m.routePicks).toBe(beforePicks);
