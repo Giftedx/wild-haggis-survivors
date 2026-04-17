@@ -37,6 +37,7 @@ import {
 } from '../ui/chronicleAggregates';
 import { paginationState } from '../ui/pagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
+import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -389,11 +390,12 @@ export class ChronicleScene extends Phaser.Scene {
         this.runRowObjects.push(sprite);
       }
 
-      // Outcome badge
+      // Outcome badge + row colour bundle.
+      const rowStyle = resolveChronicleRowVictoryStyle(isVictory);
       const badge = this.add
-        .text(88, y, isVictory ? '✦ WIN' : 'FELL', {
+        .text(88, y, rowStyle.badgeLabel, {
           fontFamily: 'monospace', fontSize: '11px',
-          color: isVictory ? '#f7d27a' : '#9aa4bb',
+          color: rowStyle.badgeColor,
           fontStyle: 'bold',
         })
         .setOrigin(0, 0.5)
@@ -411,8 +413,8 @@ export class ChronicleScene extends Phaser.Scene {
       const main = this.add
         .text(150, y - 8, mainLine, {
           fontFamily: 'monospace', fontSize: '13px',
-          color: isVictory ? '#f5e1a6' : '#d6dde7',
-          fontStyle: isVictory ? 'bold' : 'normal',
+          color: rowStyle.mainColor,
+          fontStyle: rowStyle.mainFontStyle,
         })
         .setOrigin(0, 0.5)
         .setScale(uiScale);
