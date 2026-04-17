@@ -1527,6 +1527,7 @@ export const EN_STRINGS: LocaleTree = {
     revival: { name: 'Second Wind', description: 'Once per run, shrug off death wi\' 50% HP and keep going.' },
     double_dash: { name: 'Double Dash', description: 'Two dashes in the hoof instead of one.' },
     treasure_magnet: { name: 'Treasure Magnet', description: 'Chests and coins linger a few breaths longer (+5s).' },
+    dirk_hand: { name: 'Dirk Hand', description: 'A quicker draw on every weapon (+3% attack speed).' },
   },
   upgradeCard: {
     // Weapon cards

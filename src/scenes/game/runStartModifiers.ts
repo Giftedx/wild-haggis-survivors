@@ -105,6 +105,9 @@ export function applyPermanentUpgrades(deps: PermanentUpgradeDeps): PermanentUpg
   const treasureMagnet = ups['treasure_magnet'] ?? 0;
   if (treasureMagnet > 0) chestDurationBonusMs = 5000 * treasureMagnet;
 
+  const dirkHand = ups['dirk_hand'] ?? 0;
+  if (dirkHand > 0) player.addAttackSpeedMultiplier(0.03 * dirkHand);
+
   // extra_choice and lucky_heather affect the card system, not stats.
 
   return { revivalAvailable, chestDurationBonusMs };

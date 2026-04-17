@@ -216,6 +216,19 @@ export const PERMANENT_UPGRADES: PermanentUpgrade[] = [
     costMultiplier: 1.5,
     effectPerLevel: 'chest_5s',
   },
+  {
+    key: 'dirk_hand',
+    nameKey: 'permanentUpgrade.dirk_hand.name',
+    descriptionKey: 'permanentUpgrade.dirk_hand.description',
+    name: 'Dirk Hand',
+    description: '+3% attack speed per level',
+    maxLevel: 3,
+    // Priced beside Deadly Precision (120) — attack speed affects every
+    // weapon, so same tier. 3 levels max keeps tempo creep bounded.
+    baseCost: 120,
+    costMultiplier: 1.5,
+    effectPerLevel: 'atk_speed_3pct',
+  },
 ];
 
 /** Get the cost for the next level of an upgrade */

@@ -30,6 +30,7 @@ function mockPlayer(overrides: Partial<Record<string, any>> = {}) {
     addCritDamageMultiplier: vi.fn(),
     addHpRegen: vi.fn(),
     addDashCharge: vi.fn(),
+    addAttackSpeedMultiplier: vi.fn(),
   } as any;
 }
 
@@ -108,6 +109,20 @@ describe('applyPermanentUpgrades', () => {
     vi.mocked(loadSave).mockReturnValue({ upgrades: { treasure_magnet: 2 } } as any);
     const result = applyPermanentUpgrades({ player: mockPlayer(), weaponSystem: mockWeaponSystem(), ownedPassives: [], runRng: mockRng() });
     expect(result.chestDurationBonusMs).toBe(10000);
+  });
+
+  it('dirk_hand applies +3% attack speed per level', () => {
+    vi.mocked(loadSave).mockReturnValue({ upgrades: { dirk_hand: 3 } } as any);
+    const player = mockPlayer();
+    applyPermanentUpgrades({ player, weaponSystem: mockWeaponSystem(), ownedPassives: [], runRng: mockRng() });
+    expect(player.addAttackSpeedMultiplier).toHaveBeenCalledWith(0.09);
+  });
+
+  it('dirk_hand is a no-op at level 0', () => {
+    vi.mocked(loadSave).mockReturnValue({ upgrades: {} } as any);
+    const player = mockPlayer();
+    applyPermanentUpgrades({ player, weaponSystem: mockWeaponSystem(), ownedPassives: [], runRng: mockRng() });
+    expect(player.addAttackSpeedMultiplier).not.toHaveBeenCalled();
   });
 
   it('lucky_start adds random passive to ownedPassives', () => {
