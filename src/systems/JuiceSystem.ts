@@ -10,6 +10,7 @@ import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { damageNumberStyle } from './damageNumberStyle';
 import { toastStackY, toastWrapWidth } from './toastLayout';
+import { resolveComboDisplay } from './comboDisplay';
 import {
   CEILIDH_MAGNET_DURATION_MS,
   CEILIDH_MAGNET_FLAT_PX,
@@ -17,7 +18,7 @@ import {
 } from './ceilidhChain';
 import { audio } from './AudioSystem';
 import { bumpCeilidhPulsesLifetime } from '../utils/save';
-import { comboDamageBonusPct, comboDamageMultiplier } from './comboDamage';
+import { comboDamageMultiplier } from './comboDamage';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -645,23 +646,16 @@ export class JuiceSystem {
   }
 
   private syncComboText(): void {
-    if (this.comboCount < 5 || this.comboTimer <= 0) {
+    const state = resolveComboDisplay(this.comboCount, this.comboTimer);
+    if (!state.visible) {
       this.comboText.setVisible(false);
-      this.comboText.setColor('#ff8800');
+      this.comboText.setColor(state.color);
       return;
     }
-    const dmgBonus = comboDamageBonusPct(this.comboCount);
-    const bonusText = dmgBonus > 0 ? t('ui.hud.combo_bonus', { pct: dmgBonus }) : '';
-    this.comboText.setText(t('ui.hud.combo', { count: this.comboCount, bonus: bonusText }));
+    this.comboText.setText(state.text);
     this.comboText.setVisible(true);
     this.comboText.setScale(1);
-    if (this.comboCount >= 50) {
-      this.comboText.setColor('#d4a017'); // whisky gold — you're on fire
-    } else if (this.comboCount >= 20) {
-      this.comboText.setColor('#e8a830'); // warm amber
-    } else {
-      this.comboText.setColor('#cc8822'); // warm orange-brown
-    }
+    this.comboText.setColor(state.color);
   }
 
   /** Heavy screen shake for boss events. Amplitude scales with motionScale. */
