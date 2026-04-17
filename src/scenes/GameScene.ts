@@ -217,6 +217,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runModifiers: RunModifiers = defaultModifiers();
   /** Curse key chosen for this run, if any — persisted into run history. */
   private activeCurseKey: CurseKey | null = null;
+  /**
+   * W66 Ironmoor — locked in at run start (from Settings on a fresh run,
+   * from the snapshot on resume). Every ironmoor-sensitive decision
+   * (revival suppression, HUD badge, wipe-on-death, leaderboard write)
+   * reads this field rather than `settingsManager.load().ironmoorMode`
+   * so a mid-run settings toggle can't retroactively grant Second Wind
+   * to a permadeath run or silently drop a row from the leaderboard.
+   */
+  private activeIronmoorRun = false;
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
@@ -473,11 +482,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       runRng: this.runRng,
     });
     this.revivalAvailable = permResult.revivalAvailable;
-    // W66 Ironmoor: opt-in single-life mode suppresses the Second-Wind
-    // grant regardless of permanent-upgrade purchases. Cheaper than
-    // refunding the upgrade — player keeps their haggis, just waives
-    // the safety net for this run.
-    if (this.settingsManager.load().ironmoorMode) {
+    // W66 Ironmoor: lock the ironmoor flag in at run start. On a fresh
+    // run we read the live setting; on resume we prefer the snapshot
+    // value so a player who toggled Ironmoor OFF between quit + resume
+    // doesn't retroactively get Second Wind back on a permadeath run.
+    this.activeIronmoorRun = resumeRun?.ironmoor
+      ?? this.settingsManager.load().ironmoorMode;
+    if (this.activeIronmoorRun) {
+      // Opt-in single-life mode suppresses the Second-Wind grant
+      // regardless of permanent-upgrade purchases.
       this.revivalAvailable = false;
     }
     this.chestDurationBonusMs = permResult.chestDurationBonusMs;
@@ -519,6 +532,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunScore: () => this.runScore,
       getRunActState: () => this.runActState,
       getRunModifiers: () => this.runModifiers,
+      isIronmoorRun: () => this.activeIronmoorRun,
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,
@@ -556,7 +570,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunRng: () => this.runRng,
       getRunModifiers: () => this.runModifiers,
       isDailyRun: () => this.runIsDaily,
-      isIronmoorRun: () => this.settingsManager.load().ironmoorMode,
+      isIronmoorRun: () => this.activeIronmoorRun,
       getSecondsPastBell: () => this.runLifecycle?.getSecondsPastBell() ?? 0,
       getRunScore: () => this.runScore,
       getOwnedPassivesLength: () => this.ownedPassives.length,
@@ -578,7 +592,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunRng: () => this.runRng,
       isDailyRun: () => this.runIsDaily,
       getRoutePicks: () => this.runActState.pickerHistory,
-      isIronmoor: () => this.settingsManager.load().ironmoorMode,
+      isIronmoor: () => this.activeIronmoorRun,
     });
 
     if (resumeRun) {
@@ -778,6 +792,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       recordRun: (s, ctx) => recordRun(s, ctx),
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
       onActComplete: (actN) => this.launchActIntermission(actN),
+      isIronmoorRun: () => this.activeIronmoorRun,
     });
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
@@ -802,7 +817,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     getAnalyticsManager().beginGameplaySession({
       variantKey: this.activeVariant.key,
-      ironmoor: this.settingsManager.load().ironmoorMode,
+      ironmoor: this.activeIronmoorRun,
       curseKey: this.activeCurseKey,
       isDaily: this.runIsDaily,
     });
@@ -1056,7 +1071,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hud.updateDPS(delta);
     this.hud.updateShield(this.player.hasShield());
     this.hud.setAct(this.runActState.currentAct);
-    this.hud.setIronmoor(this.settingsManager.load().ironmoorMode);
+    this.hud.setIronmoor(this.activeIronmoorRun);
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),

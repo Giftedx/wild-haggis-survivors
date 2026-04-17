@@ -20,6 +20,7 @@ function buildState(
     revival?: boolean;
     owned?: string[];
     evolved?: string[];
+    ironmoor?: boolean;
   } = {},
 ) {
   const score = new RunScoreState();
@@ -34,7 +35,8 @@ function buildState(
   };
   const actState = new RunActState();
   const modifiers = defaultModifiers();
-  return { score, flags, actState, modifiers };
+  const ironmoor = counters.ironmoor ?? false;
+  return { score, flags, actState, modifiers, ironmoor };
 }
 
 function buildHooks(
@@ -102,6 +104,7 @@ function buildHooks(
     getRunScore: () => score,
     getRunActState: () => stateBundle.actState,
     getRunModifiers: () => stateBundle.modifiers,
+    isIronmoorRun: () => stateBundle.ironmoor,
     getRevivalAvailable: () => flags.revival,
     getOwnedPassives: () => flags.owned,
     getEvolvedWeapons: () => flags.evolved,
@@ -166,6 +169,7 @@ describe('RunPersistenceBridge', () => {
           actStartTimeSec: 0,
           pickerHistory: [],
         },
+        ironmoor: false,
       });
     });
 
@@ -237,6 +241,13 @@ describe('RunPersistenceBridge', () => {
       expect(score.coinGoldEarned).toBe(30);
       expect(flags.revival).toBe(true);
       expect(flags.owned).toEqual(['greaves']);
+    });
+
+    it('snapshots the run-scoped ironmoor flag (locked-in, not live setting)', () => {
+      const state = buildState({ ironmoor: true });
+      const { hooks } = buildHooks(state);
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.ironmoor).toBe(true);
     });
 
     it('restores RunActState + re-applies route modifierDeltas from pickerHistory', () => {

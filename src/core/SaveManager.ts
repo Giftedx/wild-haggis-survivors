@@ -88,6 +88,14 @@ export interface IRunState {
    * the route `modifierDeltas` so post-pick multipliers are preserved.
    */
   actState?: IRunActStateSnapshot;
+  /**
+   * W66 Ironmoor — true when the run was started in single-life mode.
+   * Resumed runs HONOUR this field over the live `ironmoorMode` setting
+   * so a mid-run toggle-off can't retroactively grant Second Wind
+   * (which would break the permadeath contract). Absent on pre-W66
+   * payloads; coerced to `false` in that case.
+   */
+  ironmoor?: boolean;
 }
 
 export interface ISaveDataV3 {
@@ -372,6 +380,7 @@ function coerceIRunState(raw: unknown): IRunState | null {
       : undefined,
     shieldCooldownMs: toOptionalNonNegativeInt(o.shieldCooldownMs),
     actState: coerceRunActStateSnapshot(o.actState),
+    ironmoor: toOptionalBool(o.ironmoor),
   };
 }
 

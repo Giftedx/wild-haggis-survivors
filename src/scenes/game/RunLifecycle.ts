@@ -81,6 +81,14 @@ export interface RunLifecycleHooks {
    * and does NOT route through this hook.
    */
   onActComplete(actN: 1 | 2): void;
+
+  /**
+   * W66 Ironmoor: true when the run was started (or resumed) in
+   * single-life mode. Locked in at run start so a mid-run Settings
+   * toggle can't retroactively enable Second Wind on a permadeath run
+   * or silently drop it from the leaderboard.
+   */
+  isIronmoorRun(): boolean;
 }
 
 export class RunLifecycle {
@@ -159,7 +167,7 @@ export class RunLifecycle {
     // W66 Ironmoor separate leaderboard: fastest Ironmoor-mode victory time.
     // Keeps single-life pride distinct from regular best-time. Best-effort
     // save — the run result is already persisted; we only supplement it.
-    if (this.hooks.getSettingsManager().load().ironmoorMode) {
+    if (this.hooks.isIronmoorRun()) {
       recordIronmoorBest(Math.floor(summary.timeSurvivedSec));
     }
 
@@ -284,7 +292,7 @@ export class RunLifecycle {
     // Ancestral Echo — persist death position so next run can spawn a
     // spectral haggis at the spot. Skipped for ironmoor runs (that mode
     // already has its own ceremony + chronicle-wipe on death).
-    if (!this.hooks.getSettingsManager().load().ironmoorMode) {
+    if (!this.hooks.isIronmoorRun()) {
       recordLastDeath(px, py);
     }
 
@@ -294,7 +302,7 @@ export class RunLifecycle {
     // the separate leaderboard and survives (it's the only artefact the
     // permadeath spares). Silent wipe with a toast so the player knows
     // what happened; showToast is a no-op if nothing changed.
-    if (this.hooks.getSettingsManager().load().ironmoorMode) {
+    if (this.hooks.isIronmoorRun()) {
       if (wipeIronmoorHistoryInPlace()) {
         juice.showToast(t('ui.gameOver.ironmoor_wipe_toast'), '#b84a2a');
       }

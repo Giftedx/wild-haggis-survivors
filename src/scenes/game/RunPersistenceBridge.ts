@@ -52,6 +52,9 @@ export interface RunPersistenceHooks {
   /** Run-scoped modifier bag — read + mutated on resume to re-apply route deltas. */
   getRunModifiers(): RunModifiers;
 
+  /** W66 Ironmoor — run-scoped flag (locked in at run start, NOT live setting). */
+  isIronmoorRun(): boolean;
+
   // Non-score run flags (still scene-owned for now).
   getRevivalAvailable(): boolean;
   getOwnedPassives(): readonly string[];
@@ -108,6 +111,7 @@ export class RunPersistenceBridge {
       spawnedBossKeys: h.getSpawnSystem().getSpawnedBossKeys(),
       shieldCooldownMs: player.getShieldCooldownMs(),
       actState: snapshotRunActState(h.getRunActState()),
+      ironmoor: h.isIronmoorRun(),
     };
   }
 
