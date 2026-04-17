@@ -8,6 +8,7 @@ import type { CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
+import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -774,12 +775,9 @@ export class HUD {
 
     passives.forEach((key, i) => {
       const x = startX + i * 42;
-      // HUD pill labels live in ui.passive.hud_abbrev.<key>. When no entry
-      // exists (e.g. new passive added without an abbrev yet), fall back to
-      // the first three characters of the internal key.
-      const abbrevKey = `ui.passive.hud_abbrev.${key}`;
-      const resolved = t(abbrevKey);
-      const abbrev = resolved === abbrevKey ? key.slice(0, 3).toUpperCase() : resolved;
+      // HUD pill labels — preferred abbrev lives in i18n, else
+      // substring fallback. See `resolvePassiveAbbrev`.
+      const abbrev = resolvePassiveAbbrev(key);
       const label = this.addEl(this.scene.add.text(x + 16, y, abbrev, {
         fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00', fontStyle: 'bold',
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
