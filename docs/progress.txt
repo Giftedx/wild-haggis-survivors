@@ -597,3 +597,68 @@ Deferred to next session (documented in ADR-0002 + plan doc):
     in practice (expected ~50-150KB per 20min run × 20-entry FIFO cap
     ≈ well under 5MB).
 
+
+
+[2026-04-18] T1 Phase 2 — best-effort playback shipped.
+
+Closed the "record without replay" gap from Phase 1. Chronicle entries
+that carry a valid replay blob now render a ▶ glyph; clicking launches
+GameScene in playback mode.
+
+Feature commit 8c987f1:
+  - src/utils/iInput.ts — five-method IInput contract. `InputManager`
+    and `ReplayInput` both `implements IInput`. Mirrors the DI pattern
+    already in AnalyticsManager / ISceneContext.
+  - src/entities/Player.ts — constructor gains optional trailing
+    `inputSource?: IInput`, field type widened from InputManager to
+    IInput. Default still calls `new InputManager(scene)` so no live
+    callers changed behaviour.
+  - src/replay/ReplayInput.ts — adds `peekReplayFrame()` +
+    `destroy()` so it can stand in for InputManager.
+  - src/scenes/gameSceneInitData.ts — pure `parseGameSceneInitData`
+    helper (extracted so init payload parsing is testable under
+    node-env vitest). `GameScene.init` delegates.
+  - src/scenes/GameScene.ts — `pendingReplay` field, mutually-
+    exclusive record-vs-playback branch in create(), ReplayInput
+    injected into Player, per-tick frame advance in updateInner()
+    with `scene.start('Chronicle')` on blob exhaustion, `recordRun`
+    hook short-circuits during playback so run-history isn't
+    double-counted.
+  - src/scenes/ChronicleScene.ts — ▶ glyph per entry at
+    x=width-195, hover tooltip, click launches
+    `scene.start('Game', { replay })`.
+  - src/core/i18n.{ts,scs.ts} — `ui.replay.*` keys (toast, tooltip,
+    glyph). Scots parity guard passes.
+
+Tests: 2460 → 2472 (+12).
+  - iInput contract shape (2)
+  - Player IInput injection: default + custom + pass-through (3)
+  - gameSceneInitData parse helper: 9 cases covering empty payload,
+    each field path, blob precedence, malformed-blob drop, and
+    seed mismatch resolution.
+
+Browser-verified end-to-end in dev preview:
+  1. localStorage `whs_replay_mode=record` → page reload.
+  2. `scene.start('Game', { seed: 12345 })` → run plays. Recorder
+     captures 1118 frames, schema v5 save persists blob with
+     `seed: 12345, variantKey: 'classic'`.
+  3. `scene.start('Chronicle')` → ▶ glyph renders on the entry row.
+  4. Click ▶ → Game scene re-enters with `replayInput` non-null,
+     recorder null, player HP = 100 (fresh run driven by recorded
+     input). Frame cursor advances on every tick.
+  5. Blob exhausts → scene automatically returns to Chronicle.
+  6. Zero console errors at any step.
+  7. Regression: a normal `scene.start('Game', { seed: 77777 })`
+     with `whs_replay_mode` removed constructs InputManager (live),
+     no recorder, no ReplayInput.
+
+Known v1 limitations (in ADR-0002 addendum, not bugs):
+  - Drift is expected. Phaser Arcade is variable-delta; playback
+    diverges after ~seconds.
+  - Curse / routes / meta-stat state not bundled into the blob yet.
+    A curse run played back plays curse-free.
+  - Phase 3 requirements to close the gap: Phaser fixed-step
+    migration + blob v2 schema + GameScene replay branch that
+    applies blob metadata instead of consuming live
+    curse / settings / meta-upgrades.
+
