@@ -150,9 +150,7 @@ export function buildPostcardFooterParts(payload: PostcardPayload): string[] {
   if (payload.ironmoor) parts.push('⚔ Ironmoor');
   if (payload.curseLabel) parts.push(`☠ ${payload.curseLabel}`);
   if (payload.postBellSec && payload.postBellSec > 0) {
-    const pbMin = Math.floor(payload.postBellSec / 60);
-    const pbSec = Math.floor(payload.postBellSec % 60);
-    parts.push(`🔔 +${pbMin}:${String(pbSec).padStart(2, '0')} past the bell`);
+    parts.push(`🔔 +${formatClockTime(payload.postBellSec)} past the bell`);
   }
   return parts;
 }
