@@ -63,6 +63,7 @@ import {
   ECHO_HEAL_REWARD,
 } from './game/ancestralEcho';
 import { ActIntermissionScene } from './ActIntermissionScene';
+import { applyRouteModifierDeltas } from './actIntermissionResolve';
 import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
@@ -1249,15 +1250,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runActState.recordPick(pick);
       this.runModifiers.routePicks.push(pick);
       this.banter?.request('route_picked', { tag: pick.routeKey });
-      // Apply modifierDeltas. Numeric fields currently replace (the only
-      // route-affected modifier today is spawnIntervalMult, a multiplier
-      // that the route definition sets as the absolute value for its
-      // duration — the onResume schedules the restoration).
-      for (const [k, v] of Object.entries(route.modifierDeltas)) {
-        if (typeof v === 'number') {
-          (this.runModifiers as unknown as Record<string, unknown>)[k] = v;
-        }
-      }
+      applyRouteModifierDeltas(this.runModifiers, route);
       this.runActState.advanceToAct(
         (actN + 1) as 1 | 2 | 3,
         this.spawnSystem.getGameTimeSec(),

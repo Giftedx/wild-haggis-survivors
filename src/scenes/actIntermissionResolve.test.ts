@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildRoutePick, resolveDefaultRoute } from './actIntermissionResolve';
-import { DEFAULT_ROUTE_ON_SKIP, ROUTES_BY_SLOT } from '../data/routes';
+import { applyRouteModifierDeltas, buildRoutePick, resolveDefaultRoute } from './actIntermissionResolve';
+import { DEFAULT_ROUTE_ON_SKIP, ROUTES_BY_SLOT, getRoute } from '../data/routes';
+import { defaultModifiers } from '../core/RunModifiers';
 
 /**
  * W2 Moor Road: pure helpers that GameScene calls when
@@ -64,5 +65,51 @@ describe('resolveDefaultRoute', () => {
   it('records the passed game time', () => {
     expect(resolveDefaultRoute('A', 123).pick.atGameTimeSec).toBe(123);
     expect(resolveDefaultRoute('B', 456).pick.atGameTimeSec).toBe(456);
+  });
+});
+
+describe('applyRouteModifierDeltas', () => {
+  it('replaces numeric fields on the modifiers bag', () => {
+    const m = defaultModifiers();
+    // through_the_kirkyard sets spawnIntervalMult: 0.7
+    const route = getRoute('through_the_kirkyard');
+    expect(route.modifierDeltas.spawnIntervalMult).toBeDefined();
+    applyRouteModifierDeltas(m, route);
+    expect(m.spawnIntervalMult).toBe(route.modifierDeltas.spawnIntervalMult);
+  });
+
+  it('returns the same modifier reference for chaining', () => {
+    const m = defaultModifiers();
+    const ret = applyRouteModifierDeltas(m, getRoute('through_the_kirkyard'));
+    expect(ret).toBe(m);
+  });
+
+  it('leaves untouched fields at their existing values', () => {
+    const m = defaultModifiers();
+    m.goldMult = 1.5; // pre-existing curse-applied bonus
+    applyRouteModifierDeltas(m, getRoute('through_the_kirkyard'));
+    expect(m.goldMult).toBe(1.5);
+  });
+
+  it('skips non-numeric keys (routePicks array is owned by RunActState)', () => {
+    const m = defaultModifiers();
+    const beforePicks = m.routePicks;
+    // Synthesize a route-like with a stray array delta — should NOT overwrite picks.
+    const fakeRoute = {
+      ...getRoute('up_the_brae'),
+      modifierDeltas: { routePicks: [{}] as never },
+    };
+    applyRouteModifierDeltas(m, fakeRoute);
+    expect(m.routePicks).toBe(beforePicks);
+  });
+
+  it('routes with empty modifierDeltas leave the bag unchanged', () => {
+    const m = defaultModifiers();
+    const original = { ...m };
+    applyRouteModifierDeltas(m, {
+      ...getRoute('up_the_brae'),
+      modifierDeltas: {},
+    });
+    expect(m).toEqual(original);
   });
 });
