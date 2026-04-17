@@ -7,8 +7,10 @@ import {
   bumpAncestralEchoesTouched,
   bumpCeilidhPulsesLifetime,
   bumpStandingStonePick,
+  recordIronmoorBest,
   recordLastDeath,
   recordPostBellBest,
+  wipeIronmoorHistoryInPlace,
   coerceSelectedVariant,
   computeGoldReward,
   createDefaultSave,
@@ -542,5 +544,62 @@ describe('lifetime-counter bumps', () => {
     recordLastDeath(10, 20, 100);
     recordLastDeath(30, 40, 200);
     expect(loadSave().lastDeath).toEqual({ x: 30, y: 40, ts: 200 });
+  });
+
+  it('recordIronmoorBest writes the first record from a fresh save', () => {
+    recordIronmoorBest(900);
+    expect(loadSave().bestIronmoorSeconds).toBe(900);
+  });
+
+  it('recordIronmoorBest only writes a faster time (lower is better)', () => {
+    writeSave({ ...createDefaultSave(), bestIronmoorSeconds: 800 });
+    recordIronmoorBest(900);
+    expect(loadSave().bestIronmoorSeconds).toBe(800);
+    recordIronmoorBest(700);
+    expect(loadSave().bestIronmoorSeconds).toBe(700);
+  });
+
+  it('recordIronmoorBest no-ops for non-positive time', () => {
+    writeSave({ ...createDefaultSave(), bestIronmoorSeconds: 800 });
+    recordIronmoorBest(0);
+    recordIronmoorBest(-5);
+    expect(loadSave().bestIronmoorSeconds).toBe(800);
+  });
+
+  it('wipeIronmoorHistoryInPlace returns false when nothing is wiped', () => {
+    writeSave(createDefaultSave());
+    expect(wipeIronmoorHistoryInPlace()).toBe(false);
+  });
+
+  it('wipeIronmoorHistoryInPlace removes ironmoor rows and returns true', () => {
+    const seedSave = createDefaultSave();
+    writeSave({
+      ...seedSave,
+      runHistory: [
+        { timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+          weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+          ironmoor: true } as never,
+        { timestamp: 2, isVictory: false, timeSurvivedSec: 60, enemiesKilled: 10,
+          weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 1, goldEarned: 5,
+          } as never,
+      ],
+    });
+    expect(wipeIronmoorHistoryInPlace()).toBe(true);
+    expect(loadSave().runHistory).toHaveLength(1);
+    expect(loadSave().runHistory[0]?.ironmoor).toBeUndefined();
+  });
+
+  it('wipeIronmoorHistoryInPlace preserves bestIronmoorSeconds (separate leaderboard)', () => {
+    writeSave({
+      ...createDefaultSave(),
+      bestIronmoorSeconds: 700,
+      runHistory: [
+        { timestamp: 1, isVictory: true, timeSurvivedSec: 700, enemiesKilled: 200,
+          weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+          ironmoor: true } as never,
+      ],
+    });
+    wipeIronmoorHistoryInPlace();
+    expect(loadSave().bestIronmoorSeconds).toBe(700);
   });
 });

@@ -618,6 +618,43 @@ export function recordLastDeath(x: number, y: number, now: number = Date.now()):
   }
 }
 
+/**
+ * Best-effort: write `time` to `bestIronmoorSeconds` if it beats the
+ * current record (or if no record exists yet — bestIronmoorSeconds=0
+ * is "no Ironmoor victory yet"). Lower-is-better since this is a
+ * fastest-victory record. No-op for non-positive `time`.
+ */
+export function recordIronmoorBest(time: number): void {
+  if (time <= 0) return;
+  try {
+    const cur = loadSave();
+    const best = cur.bestIronmoorSeconds ?? 0;
+    if (best === 0 || time < best) {
+      writeSave({ ...cur, bestIronmoorSeconds: time });
+    }
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Best-effort: load → wipe → write the Ironmoor chronicle wipe.
+ * Returns true when at least one row was cleared (caller can then
+ * show the wipe toast); returns false when nothing changed or the
+ * load/write failed.
+ */
+export function wipeIronmoorHistoryInPlace(): boolean {
+  try {
+    const cur = loadSave();
+    const next = wipeIronmoorHistory(cur);
+    if (next === cur) return false;
+    writeSave(next);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function getWinRate(history: RunHistoryEntry[]): number {
   if (history.length === 0) return 0;
   const wins = history.filter((e) => e.isVictory).length;
