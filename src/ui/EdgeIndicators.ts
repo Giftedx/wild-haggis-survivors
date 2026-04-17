@@ -6,6 +6,7 @@ import {
   projectThreatAngleToScreenEdge,
   type OffScreenScratch,
 } from './edgeIndicatorMath';
+import { resolveEdgeIndicatorStyle } from './edgeIndicatorStyle';
 
 /**
  * EdgeIndicators — small arrows at screen edges showing direction
@@ -140,23 +141,12 @@ export class EdgeIndicators {
       // Color based on proximity + threat type: boss/elite = gold, regular = red
       const proximity = 1 - (e.dist / this.DETECT_RANGE);
       const alpha = 0.35 + proximity * 0.5;
-      if (e.boss) {
-        indicator.setFillStyle(0xd4a017, alpha);
-        indicator.setScale(1.6 * pulse);
-        glow.setFillStyle(0xd4a017, 0.2 * proximity);
-        glow.setRadius(this.INDICATOR_SIZE + 5);
-      } else if (e.elite) {
-        const et = e.eliteDisplayTint;
-        indicator.setFillStyle(et, alpha);
-        indicator.setScale(1.1 * pulse);
-        glow.setFillStyle(et, 0.12 * proximity);
-        glow.setRadius(this.INDICATOR_SIZE + 3);
-      } else {
-        indicator.setFillStyle(0xff4444, alpha);
-        indicator.setScale(pulse);
-        glow.setFillStyle(0xff4444, 0.1 * proximity);
-        glow.setRadius(this.INDICATOR_SIZE + 3);
-      }
+      const kind = e.boss ? 'boss' : e.elite ? 'elite' : 'regular';
+      const style = resolveEdgeIndicatorStyle(kind, e.eliteDisplayTint);
+      indicator.setFillStyle(style.color, alpha);
+      indicator.setScale(style.scaleMul * pulse);
+      glow.setFillStyle(style.color, style.glowAlpha * proximity);
+      glow.setRadius(this.INDICATOR_SIZE + style.glowRadiusOffset);
     }
 
     // Hide unused glows
