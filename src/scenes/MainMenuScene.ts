@@ -12,6 +12,14 @@ import { resolveMainMenuPalette } from './mainMenuPalette';
 import { resolveSeedLinkStyle } from './seedLinkStyle';
 import { resolveMenuFooterPalette } from './menuFooterPalette';
 import {
+  MAIN_MENU_ABANDON_PALETTE,
+  MAIN_MENU_DAILY_PALETTE,
+  MAIN_MENU_META_PALETTE,
+  MAIN_MENU_CHRONICLE_PALETTE,
+  MAIN_MENU_DEEDS_PALETTE,
+  MAIN_MENU_OPTIONS_PALETTE,
+} from './mainMenuButtonPalettes';
+import {
   currentDailyDateKey,
   dailyChallengeSeed,
   encodeSeed,
@@ -318,7 +326,7 @@ export class MainMenuScene extends Phaser.Scene {
         this.scene.start('Menu');
       };
       abandonBtn = this.add
-        .rectangle(bx, newY, btnW, 42, 0x3a4357, 1)
+        .rectangle(bx, newY, btnW, 42, MAIN_MENU_ABANDON_PALETTE.idle, 1)
         .setInteractive({ useHandCursor: true });
       abandonBtn.setScale(uiScale);
       const abandonTxt = this.add
@@ -330,8 +338,8 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       abandonTxt.setScale(uiScale);
-      abandonBtn.on('pointerover', () => abandonBtn!.setFillStyle(0x4a5568));
-      abandonBtn.on('pointerout', () => abandonBtn!.setFillStyle(0x3a4357));
+      abandonBtn.on('pointerover', () => abandonBtn!.setFillStyle(MAIN_MENU_ABANDON_PALETTE.hover));
+      abandonBtn.on('pointerout', () => abandonBtn!.setFillStyle(MAIN_MENU_ABANDON_PALETTE.idle));
       abandonBtn.on('pointerdown', goLoadoutFresh);
       abandonTxt.setInteractive({ useHandCursor: true });
       abandonTxt.on('pointerdown', goLoadoutFresh);
@@ -345,7 +353,7 @@ export class MainMenuScene extends Phaser.Scene {
     // daily rules mean everyone gets the same variant.
     const dailyBtnY = metaY;
     const dailyBtn = this.add
-      .rectangle(bx, dailyBtnY, btnW, btnH, 0x8b6914, 1)
+      .rectangle(bx, dailyBtnY, btnW, btnH, MAIN_MENU_DAILY_PALETTE.idle, 1)
       .setInteractive({ useHandCursor: true });
     dailyBtn.setScale(uiScale);
     const dailySeed = dailyChallengeSeed();
@@ -372,8 +380,8 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     dailySubtitle.setScale(uiScale);
-    dailyBtn.on('pointerover', () => dailyBtn.setFillStyle(0xa87e1a));
-    dailyBtn.on('pointerout', () => dailyBtn.setFillStyle(0x8b6914));
+    dailyBtn.on('pointerover', () => dailyBtn.setFillStyle(MAIN_MENU_DAILY_PALETTE.hover));
+    dailyBtn.on('pointerout', () => dailyBtn.setFillStyle(MAIN_MENU_DAILY_PALETTE.idle));
     const startDaily = () => this.startSeededRun(daily.seed, { isDaily: true });
     dailyBtn.on('pointerdown', startDaily);
     dailyTitle.setInteractive({ useHandCursor: true });
@@ -383,7 +391,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     const metaY2 = dailyBtnY + btnH + 14;
     const metaBtn = this.add
-      .rectangle(bx, metaY2, btnW, btnH, 0x2d6a3e, 1)
+      .rectangle(bx, metaY2, btnW, btnH, MAIN_MENU_META_PALETTE.idle, 1)
       .setInteractive({ useHandCursor: true });
     metaBtn.setScale(uiScale);
     const metaTxt = this.add
@@ -395,8 +403,8 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     metaTxt.setScale(uiScale);
-    metaBtn.on('pointerover', () => metaBtn.setFillStyle(0x3a8f4f));
-    metaBtn.on('pointerout', () => metaBtn.setFillStyle(0x2d6a3e));
+    metaBtn.on('pointerover', () => metaBtn.setFillStyle(MAIN_MENU_META_PALETTE.hover));
+    metaBtn.on('pointerout', () => metaBtn.setFillStyle(MAIN_MENU_META_PALETTE.idle));
     metaBtn.on('pointerdown', () => {
       this.scene.start('MetaShop');
     });
@@ -427,7 +435,7 @@ export class MainMenuScene extends Phaser.Scene {
       // Chronicle (left) — centers align to full btnW with an exact 12px gap (was off by 3px).
       const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
       chronicleBtn = this.add
-        .rectangle(chronicleX, reflectionY, halfBtnW, 42, 0x3a2c52, 1)
+        .rectangle(chronicleX, reflectionY, halfBtnW, 42, MAIN_MENU_CHRONICLE_PALETTE.idle, 1)
         .setInteractive({ useHandCursor: true });
       chronicleBtn.setScale(uiScale);
       const chronicleTxt = this.add
@@ -441,8 +449,8 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0.5);
       chronicleTxt.setScale(uiScale);
-      chronicleBtn.on('pointerover', () => chronicleBtn!.setFillStyle(0x4a3865));
-      chronicleBtn.on('pointerout', () => chronicleBtn!.setFillStyle(0x3a2c52));
+      chronicleBtn.on('pointerover', () => chronicleBtn!.setFillStyle(MAIN_MENU_CHRONICLE_PALETTE.hover));
+      chronicleBtn.on('pointerout', () => chronicleBtn!.setFillStyle(MAIN_MENU_CHRONICLE_PALETTE.idle));
       chronicleBtn.on('pointerdown', goChronicle);
       chronicleTxt.setInteractive({ useHandCursor: true });
       chronicleTxt.on('pointerdown', goChronicle);
@@ -450,7 +458,7 @@ export class MainMenuScene extends Phaser.Scene {
       // Deeds (right)
       const deedsX = bx + reflectionGap / 2 + halfBtnW / 2;
       deedsBtn = this.add
-        .rectangle(deedsX, reflectionY, halfBtnW, 42, 0x523a2c, 1)
+        .rectangle(deedsX, reflectionY, halfBtnW, 42, MAIN_MENU_DEEDS_PALETTE.idle, 1)
         .setInteractive({ useHandCursor: true });
       deedsBtn.setScale(uiScale);
       const deedsTxt = this.add
@@ -464,8 +472,8 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0.5);
       deedsTxt.setScale(uiScale);
-      deedsBtn.on('pointerover', () => deedsBtn!.setFillStyle(0x6a4a38));
-      deedsBtn.on('pointerout', () => deedsBtn!.setFillStyle(0x523a2c));
+      deedsBtn.on('pointerover', () => deedsBtn!.setFillStyle(MAIN_MENU_DEEDS_PALETTE.hover));
+      deedsBtn.on('pointerout', () => deedsBtn!.setFillStyle(MAIN_MENU_DEEDS_PALETTE.idle));
       deedsBtn.on('pointerdown', goDeeds);
       deedsTxt.setInteractive({ useHandCursor: true });
       deedsTxt.on('pointerdown', goDeeds);
@@ -473,7 +481,7 @@ export class MainMenuScene extends Phaser.Scene {
 
     const optY = (hasAnyRun ? reflectionY + 42 : metaY2 + btnH) + 14;
     const optBtn = this.add
-      .rectangle(bx, optY, btnW, 42, 0x2d3e62, 1)
+      .rectangle(bx, optY, btnW, 42, MAIN_MENU_OPTIONS_PALETTE.idle, 1)
       .setInteractive({ useHandCursor: true });
     optBtn.setScale(uiScale);
     const optTxt = this.add
@@ -485,8 +493,8 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     optTxt.setScale(uiScale);
-    optBtn.on('pointerover', () => optBtn.setFillStyle(0x3d4e72));
-    optBtn.on('pointerout', () => optBtn.setFillStyle(0x2d3e62));
+    optBtn.on('pointerover', () => optBtn.setFillStyle(MAIN_MENU_OPTIONS_PALETTE.hover));
+    optBtn.on('pointerout', () => optBtn.setFillStyle(MAIN_MENU_OPTIONS_PALETTE.idle));
     optBtn.on('pointerdown', () => {
       this.scene.start('Settings');
     });
