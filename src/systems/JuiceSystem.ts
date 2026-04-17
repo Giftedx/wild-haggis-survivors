@@ -26,6 +26,16 @@ import {
 import { audio } from './AudioSystem';
 import { bumpCeilidhPulsesLifetime } from '../utils/save';
 import { comboDamageMultiplier } from './comboDamage';
+import {
+  JUICE_BOSS_DEATH_GOLDS,
+  JUICE_BOSS_DEATH_RING_PRIMARY,
+  JUICE_BOSS_DEATH_RING_SECONDARY,
+  JUICE_EVOLUTION_GOLDS,
+  JUICE_EVOLUTION_RING_GOLDS,
+  JUICE_EVOLUTION_BEAM_COLOR,
+  JUICE_EVOLUTION_BANNER_LINE_COLOR,
+  JUICE_EVOLUTION_BANNER_BG_COLOR,
+} from './juiceGoldPalette';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -699,12 +709,11 @@ export class JuiceSystem {
     const baseCount = lowFx ? 12 : 30;
     const particleCount = scaledParticleCount(baseCount, 6);
     // Gold particle shower — pooled
-    const goldColors = [0xd4a017, 0xffcc44, 0xffdd66, 0xeebb00];
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
       const speed = 80 + Math.random() * 200;
       const size = Phaser.Math.Between(3, 8);
-      const color = Phaser.Utils.Array.GetRandom(goldColors) as number;
+      const color = Phaser.Utils.Array.GetRandom(JUICE_BOSS_DEATH_GOLDS as number[]) as number;
       const particle = this.bossParticlePool[this.bossParticleIdx];
       this.bossParticleIdx = (this.bossParticleIdx + 1) % this.bossParticlePool.length;
       this.scene.tweens.killTweensOf(particle);
@@ -732,7 +741,7 @@ export class JuiceSystem {
     this.scene.tweens.killTweensOf(ring);
     ring.setPosition(x, y);
     ring.setRadius(10);
-    ring.setFillStyle(0xd4a017, 0.5);
+    ring.setFillStyle(JUICE_BOSS_DEATH_RING_PRIMARY, 0.5);
     ring.setAlpha(0.5);
     ring.setScale(1);
     ring.setVisible(true);
@@ -753,7 +762,7 @@ export class JuiceSystem {
       this.scene.tweens.killTweensOf(ring2);
       ring2.setPosition(x, y);
       ring2.setRadius(10);
-      ring2.setFillStyle(0xffcc44, 0.3);
+      ring2.setFillStyle(JUICE_BOSS_DEATH_RING_SECONDARY, 0.3);
       ring2.setAlpha(0.3);
       ring2.setScale(1);
       ring2.setVisible(true);
@@ -816,7 +825,7 @@ export class JuiceSystem {
       const angle = (i / beamCount) * Math.PI * 2;
       const beamLen = 220;
       // Draw beam as a long thin rectangle, rotated
-      const beam = scene.add.rectangle(x, y, beamLen, 4, 0xffdd44, 0.8)
+      const beam = scene.add.rectangle(x, y, beamLen, 4, JUICE_EVOLUTION_BEAM_COLOR, 0.8)
         .setOrigin(0, 0.5).setDepth(100);
       beam.setRotation(angle);
       beam.setScale(0, 1);
@@ -831,9 +840,8 @@ export class JuiceSystem {
     }
 
     // 6. Three expanding gold rings (layered spectacle)
-    const ringColors = [0xffee88, 0xffcc44, 0xd4a017];
     for (let r = 0; r < 3; r++) {
-      const ring = scene.add.circle(x, y, 15, ringColors[r], 0.7 - r * 0.15)
+      const ring = scene.add.circle(x, y, 15, JUICE_EVOLUTION_RING_GOLDS[r], 0.7 - r * 0.15)
         .setDepth(99);
       scene.tweens.add({
         targets: ring,
@@ -848,11 +856,10 @@ export class JuiceSystem {
 
     // 7. Golden particle explosion (24 particles, bigger than boss death)
     const particleCount = lowFx ? 12 : 24;
-    const goldColors = [0xffdd44, 0xffcc22, 0xeebb00, 0xffee88];
     for (let i = 0; i < particleCount; i++) {
       const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.3;
       const speed = 100 + Math.random() * 200;
-      const color = goldColors[i % goldColors.length];
+      const color = JUICE_EVOLUTION_GOLDS[i % JUICE_EVOLUTION_GOLDS.length];
       const size = Phaser.Math.Between(3, 7);
       const particle = scene.add.circle(x, y, size, color, 0.95).setDepth(101);
       scene.tweens.add({
@@ -870,14 +877,14 @@ export class JuiceSystem {
     // 8. Legendary banner slams in from above (screen-centred)
     const cx = cam.scrollX + cam.width / (2 * cam.zoom);
     const cy = cam.scrollY + cam.height / (2 * cam.zoom) - 40;
-    const bannerBg = scene.add.rectangle(cx, cy, cam.width / cam.zoom, 52, 0x2a1a00, 0.85)
+    const bannerBg = scene.add.rectangle(cx, cy, cam.width / cam.zoom, 52, JUICE_EVOLUTION_BANNER_BG_COLOR, 0.85)
       .setScrollFactor(0).setDepth(200).setAlpha(0);
     // For screen-space banner, we need scroll factor 0 so use actual screen coords
     bannerBg.setPosition(cam.width / 2, cam.height / 2 - 40);
     bannerBg.setScrollFactor(0);
-    const bannerTop = scene.add.rectangle(cam.width / 2, cam.height / 2 - 65, cam.width, 2, 0xffdd44, 0)
+    const bannerTop = scene.add.rectangle(cam.width / 2, cam.height / 2 - 65, cam.width, 2, JUICE_EVOLUTION_BANNER_LINE_COLOR, 0)
       .setScrollFactor(0).setDepth(200);
-    const bannerBot = scene.add.rectangle(cam.width / 2, cam.height / 2 - 15, cam.width, 2, 0xffdd44, 0)
+    const bannerBot = scene.add.rectangle(cam.width / 2, cam.height / 2 - 15, cam.width, 2, JUICE_EVOLUTION_BANNER_LINE_COLOR, 0)
       .setScrollFactor(0).setDepth(200);
     const text = scene.add.text(cam.width / 2, cam.height / 2 - 40,
       `✦ LEGENDARY: ${legendaryName.toUpperCase()} ✦`,
