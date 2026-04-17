@@ -154,6 +154,12 @@ export class RunExitComposer {
         gameTimeSec: payload.summary.timeSurvivedSec,
         enemiesKilled: payload.summary.enemiesKilled,
         ironmoor: payload.ironmoor,
+        variantKey: payload.variantKey,
+        curseKey: payload.curseKey,
+        isDaily: payload.isDaily,
+        // Flatten DeathCause to its tag for portal analytics — a stable
+        // string enum beats a nested object through the bus.
+        deathCause: payload.deathCause?.tag,
       });
     } catch {
       /* ignore */

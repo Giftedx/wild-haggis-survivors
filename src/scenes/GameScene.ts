@@ -801,6 +801,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     getAnalyticsManager().beginGameplaySession({
       variantKey: this.activeVariant.key,
       ironmoor: this.settingsManager.load().ironmoorMode,
+      curseKey: this.activeCurseKey,
+      isDaily: this.runIsDaily,
     });
     this.gameplaySessionGuard.markStarted();
 

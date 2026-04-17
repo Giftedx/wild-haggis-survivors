@@ -111,6 +111,7 @@ describe('AnalyticsManager', () => {
     expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
       variantKey: 'classic',
       ironmoor: false,
+      isDaily: false,
     });
     mgr.endGameplaySession();
     expect(provider.triggerGameplayStop).toHaveBeenCalledTimes(1);
@@ -121,6 +122,30 @@ describe('AnalyticsManager', () => {
     expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
       variantKey: 'moor_runner',
       ironmoor: true,
+      isDaily: false,
+    });
+  });
+
+  it('forwards curseKey + isDaily on run_start when set', () => {
+    mgr.beginGameplaySession({
+      variantKey: 'classic',
+      curseKey: 'nae_sporran',
+      isDaily: true,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
+      variantKey: 'classic',
+      ironmoor: false,
+      isDaily: true,
+      curseKey: 'nae_sporran',
+    });
+  });
+
+  it('omits curseKey from run_start when null', () => {
+    mgr.beginGameplaySession({ variantKey: 'classic', curseKey: null });
+    expect(provider.logEvent).toHaveBeenCalledWith('run_start', {
+      variantKey: 'classic',
+      ironmoor: false,
+      isDaily: false,
     });
   });
 
@@ -150,6 +175,38 @@ describe('AnalyticsManager', () => {
       'run_end',
       expect.objectContaining({ ironmoor: false }),
     );
+  });
+
+  it('forwards variantKey + curseKey + deathCause on run_end when present', () => {
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death',
+      gameTimeSec: 240,
+      enemiesKilled: 300,
+      variantKey: 'iron_belly',
+      curseKey: 'soggy_sandwich',
+      deathCause: 'boss_slam',
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'run_end',
+      expect.objectContaining({
+        variantKey: 'iron_belly',
+        curseKey: 'soggy_sandwich',
+        deathCause: 'boss_slam',
+      }),
+    );
+  });
+
+  it('omits variantKey / curseKey / deathCause from run_end when undefined', () => {
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory',
+      gameTimeSec: 300,
+      enemiesKilled: 400,
+    });
+    const call = (provider.logEvent as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(call[0]).toBe('run_end');
+    expect(call[1]).not.toHaveProperty('variantKey');
+    expect(call[1]).not.toHaveProperty('curseKey');
+    expect(call[1]).not.toHaveProperty('deathCause');
   });
 
   it('skips run_start and run_end when telemetry opt-in is off', () => {

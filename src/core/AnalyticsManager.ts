@@ -74,6 +74,10 @@ export class AnalyticsManager {
           gameTimeSec: p.gameTimeSec,
           enemiesKilled: p.enemiesKilled,
           ironmoor: p.ironmoor === true,
+          isDaily: p.isDaily === true,
+          ...(p.variantKey ? { variantKey: p.variantKey } : {}),
+          ...(p.curseKey ? { curseKey: p.curseKey } : {}),
+          ...(p.deathCause ? { deathCause: p.deathCause } : {}),
         });
       })
     );
@@ -149,13 +153,20 @@ export class AnalyticsManager {
    * Call when the player enters an active run (`GameScene` ready to play).
    * Nests safely if ever re-entered without teardown (should not happen).
    */
-  beginGameplaySession(meta: { variantKey: string; ironmoor?: boolean }): void {
+  beginGameplaySession(meta: {
+    variantKey: string;
+    ironmoor?: boolean;
+    curseKey?: string | null;
+    isDaily?: boolean;
+  }): void {
     if (this.sessionDepth === 0) {
       this.triggerGameplayStart();
       if (this.runDistributionTelemetryEnabled()) {
         this.logEvent('run_start', {
           variantKey: meta.variantKey,
           ironmoor: meta.ironmoor === true,
+          isDaily: meta.isDaily === true,
+          ...(meta.curseKey ? { curseKey: meta.curseKey } : {}),
         });
       }
     }

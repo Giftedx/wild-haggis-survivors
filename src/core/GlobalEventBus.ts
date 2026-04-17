@@ -31,6 +31,18 @@ export type GlobalRunEndedPayload = {
    *  on. Feeds portal telemetry so Ironmoor completion rates can be
    *  split from the baseline run pool. Absent on pre-W66 call sites. */
   ironmoor?: boolean;
+  /** Variant key the run was taken with (`classic`, `moor_runner`, ...).
+   *  Pairs with the matching `run_start` for funnel / completion math. */
+  variantKey?: string;
+  /** Curse key active for the run, if the player opted into one on the
+   *  pre-run Curse screen. Lets the portal rank curse popularity and
+   *  completion rates per curse. Absent for curse-less runs. */
+  curseKey?: string;
+  /** True when the run was taken as a Daily Challenge. Splits the daily
+   *  cohort from regular runs in distribution stats. */
+  isDaily?: boolean;
+  /** Classifier for how the run ended (when `outcome === 'death'`). */
+  deathCause?: string;
 };
 
 export type GlobalWeaponEvolvedPayload = {
