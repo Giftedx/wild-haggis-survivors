@@ -2032,12 +2032,102 @@ export const SCS_STRINGS: LocaleTree = {
       prev: '< PREV',
       next: 'NEXT >',
     },
+    elite_affix: {
+      swift: { name: 'Swift', blurb: 'Quicker feet — herder tae shak.' },
+      bulwark: { name: 'Bulwark', blurb: 'Mair meat on tha bane.' },
+      relentless: { name: 'Relentless', blurb: 'Barely budges whan ye hit it.' },
+      wealthy: { name: 'Wealthy', blurb: 'Fatter gem — worth tha scrap.' },
+      volatile: { name: 'Volatile', blurb: 'Pops on daith — mind tha crood.' },
+    },
+    moor_moment: {
+      peat_glint: {
+        caption: 'Somethin winks up fae tha peat — no tha taxman, fer wance.',
+        toast: 'Peat glint — +{gold}g tucked in yer sporran.',
+        caption_home: 'Tha bog hoards coins like stories — yer boots earned this wan.',
+        toast_home: 'Deep peat — +{gold}g fae tha squelch, ya dancer.',
+      },
+      loch_breath: {
+        caption: 'Tha loch exhales; tha air tastes like tha morn\'s rain.',
+        toast: 'Loch breath — +{xp} XP, neat.',
+        caption_home: 'Watter-sky mirrors yer feet; tha loch slips ye a wee lesson.',
+        toast_home: 'Lochside — +{xp} XP, borrowed fae tha deep.',
+      },
+      heather_rest: {
+        caption: 'Sit a meenit. Tha heather disnae judge.',
+        toast: 'Heather rest — +{hp} HP, ya dancer.',
+        caption_home: 'Purple hush — tha heather hauds ye like a cousin.',
+        toast_home: 'Bloom kin — +{hp} HP, saft as a blanket.',
+      },
+      pine_pull: {
+        caption: 'Tha pines lean in, tryin tae tell ye a secret.',
+        toast: 'Pine pull — pickups lean yer way fer a bit.',
+        caption_home: 'Resin an shadda — tha wid tugs tha warld toward yer pooch.',
+        toast_home: 'Unner tha needles — pickups drift yer way a while.',
+      },
+      crow_bargain: {
+        caption: 'A craw negotiates owerheid. Ye win this round.',
+        toast: 'Craw bargain — +{gold}g, receipt optional.',
+        caption_home: 'Open sky, purple grund — tha craw likes tha odds on heather.',
+        toast_home: 'Heather craw — +{gold}g, witnessed by tha wind alane.',
+      },
+      distant_tune: {
+        caption: 'Somewhaur a practice chanter\'s warblin. Free concert.',
+        toast: 'Distant tune — +{xp} XP fer listenin.',
+        caption_home: 'Tha chanter hides in tha pine; tha tune still finds yer lug.',
+        toast_home: 'Forest tune — +{xp} XP, smuggled through tha branches.',
+      },
+      warm_stone: {
+        caption: 'Ye find a dry stane still hauldin yesterday\'s sun.',
+        toast: 'Warm stane — +{hp} HP, like a mug o tea.',
+        caption_home: 'Squat on tha bog-stane — damp air, dry heart, warm bluid.',
+        toast_home: 'Bog stane — +{hp} HP, like heat fae naewhaur.',
+      },
+      wind_shift: {
+        caption: 'Tha wind turns; tha moor rearranges its furniture.',
+        toast: 'Wind shift — tha glen brings bits an bobs closer.',
+        caption_home: 'Tha loch wind rearranges tha shore — an yer reach.',
+        toast_home: 'Shore gust — tha watterline brings tha shinies nearer.',
+      },
+      amber_glow: {
+        caption: 'Tha peat hauds a slow ember — patience pays in coin.',
+        toast: 'Amber glow — +{gold}g fae tha patient bog.',
+        caption_home: 'Deep bog amber — tha squelch saved this wan just fer ye.',
+        toast_home: 'Hame peat — +{gold}g, warm as a range.',
+      },
+      whisky_nip: {
+        caption: 'A wee flask left on tha moor — somebody else\'s morn is yer day.',
+        toast: 'Wee nip o whisky — +{gold}g warmth fer tha hooves.',
+      },
+      boon_at_ceiling: 'XP bar\'s chokker — hae +{gold}g insteid, ya legend.',
+    },
+    run: {
+      start_identity: '{name}\n{flavor}',
+      resume_identity: 'Trail picked back up — {name}\n{flavor}',
+    },
+    tips: {
+      dash: 'SPACE dashes through bodies an bad luck alike.',
+      combo: 'Keep tha streak alive — combos pit tha boot in herder.',
+      armor: 'Armor taks tha edge aff every dunt. Stack it an lauch.',
+      evolve: 'Max a wapen plus its paired curio, then crack a kist — somethin legendary wakes up.',
+      piper: 'Pipers cheer fer tha wrang team — wheesht them early.',
+      kite: 'Tha drift pulls clockwise — like tha Clockwork Orange. Lean intae it.',
+    },
     bossWarning: {
       gordon: 'Tha kitchen\'s mairchin — Gordon\'s comin an he\'s RAGIN!',
       tour_bus: 'Tour bus on tha horizon — it\'s no stappin at Yoker tha day.',
       the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
       hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
       taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
+    },
+    tutorial: {
+      move: 'WASD or stick tae roam — wapens fire theirsels. SPACE: a cheeky dash through trouble (an through beasties).',
+      gem: 'Gather gems tae level. Max a wapen plus its paired curio, then pop a kist fer a legendary glow-up.',
+      drift: 'Yer wee haggis drifts clockwise — crooked legs! Lean intae it.',
+      elite_affix_first: '{name} — gowd elites cairry a trait. Tha tag by tha bar tells ye whilk.',
+      moor_moment_first: 'Tha moor gies wee gifts noo an then — a line, a boon, a breath. Bide wi it.',
+      ceilidh_chain_first: 'Ceilidh Chain — every 8th cull in a streak pulls coins an gems in close. Keep tha jig gaun.',
+      standing_stones_first: 'Standin Stanes — three boons on tha moor. Walk up tae tha wan ye want; tha ither twa crummle.',
+      ancestral_echo_first: 'Yer ghaist fae last run\'s oot on tha moor. Touch it fer gold an a wee heal — it only lingers 30s.',
     },
     game: {
       evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
@@ -2052,6 +2142,30 @@ export const SCS_STRINGS: LocaleTree = {
       kill_2500: 'Twa an a hauf grand! That\'s no normal, pal. +{gold}g',
       kill_5000: 'FIVE THOOSAND. Yer da sells Avon but ye sell pain. +{gold}g',
       ceilidh_pulse: '♪ Ceilidh! — moor picks up tha beat.',
+    },
+  },
+  captions: {
+    victory_chorus: 'Tha moor resounds — victory chord swells.',
+    death_fall: 'Hooves doon — tha moor quaitens.',
+    low_hp: 'HP dangerously low — hertbeat dunders.',
+    act_intermission_open: 'Road splits — pick a route wi 1, 2, or 3.',
+  },
+  biomes: {
+    bog: {
+      name: 'Tha Bog',
+      entry: 'Intae tha bog, wee man — watch yer hooves.',
+    },
+    loch: {
+      name: 'Loch Edge',
+      entry: 'Tha loch\'s watchin. Somethin unner there.',
+    },
+    pine: {
+      name: 'Pine Thicket',
+      entry: 'Mirk amang tha pines. Stay sharp.',
+    },
+    heather: {
+      name: 'Heather Bloom',
+      entry: 'Tha heather\'s singin — this is haggis kintra.',
     },
   },
 };
