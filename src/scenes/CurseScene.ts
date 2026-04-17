@@ -8,6 +8,7 @@ import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { brightenColor } from '../utils/brightenColor';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 
 /**
@@ -237,7 +238,7 @@ export class CurseScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    btn.on('pointerover', () => btn.setFillStyle(Phaser.Display.Color.ValueToColor(opts.accentColor).lighten(15).color));
+    btn.on('pointerover', () => btn.setFillStyle(brightenColor(opts.accentColor, 15)));
     btn.on('pointerout', () => btn.setFillStyle(opts.accentColor));
     btn.on('pointerdown', opts.onPick);
   }

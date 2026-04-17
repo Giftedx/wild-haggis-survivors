@@ -33,6 +33,7 @@ import { resolveDailyStateDisplay } from './dailyMenuState';
 import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { brightenColor } from '../utils/brightenColor';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -303,7 +304,7 @@ export class MainMenuScene extends Phaser.Scene {
       }
     };
 
-    startBtn.on('pointerover', () => startBtn.setFillStyle(Phaser.Display.Color.ValueToColor(COLORS.SCOTTISH_BLUE).lighten(18).color));
+    startBtn.on('pointerover', () => startBtn.setFillStyle(brightenColor(COLORS.SCOTTISH_BLUE, 18)));
     startBtn.on('pointerout', () => startBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
     startBtn.on('pointerdown', goPrimary);
 

@@ -25,6 +25,7 @@ import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle }
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
+import { brightenColor } from '../utils/brightenColor';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -715,7 +716,7 @@ export class GameOverScene extends Phaser.Scene {
       delay,
     });
 
-    button.on('pointerover', () => button.setFillStyle(Phaser.Display.Color.ValueToColor(fill).lighten(16).color));
+    button.on('pointerover', () => button.setFillStyle(brightenColor(fill, 16)));
     button.on('pointerout', () => button.setFillStyle(fill));
     button.on('pointerdown', onClick);
   }

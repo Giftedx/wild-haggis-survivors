@@ -29,6 +29,7 @@ import { computeMenuLayout } from './menuLayout';
 import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { brightenColor } from '../utils/brightenColor';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -595,7 +596,7 @@ export class MenuScene extends Phaser.Scene {
     bg.on('pointerover', () => {
       bg.setScale(this.uiScale * 1.03);
       text.setScale(this.uiScale * 1.03);
-      bg.setFillStyle(Phaser.Display.Color.ValueToColor(color).lighten(18).color);
+      bg.setFillStyle(brightenColor(color, 18));
     });
     bg.on('pointerout', () => {
       // Restore to the initial uiScale, not 1 — otherwise every hover-out
