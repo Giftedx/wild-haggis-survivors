@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { audio } from '../systems/AudioSystem';
+import { COLORS } from '../config';
 import {
   addAmberHeaderWash,
   AMBER_HEADER_WASH_ALPHA_QUIET,
@@ -35,7 +36,7 @@ export function installShopBackdrop(scene: Phaser.Scene): void {
   // Ambient moor wind — cozy between storms
   audio.startAmbientWind();
 
-  const fadeIn = scene.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1)
+  const fadeIn = scene.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK, 1)
     .setDepth(999);
   scene.tweens.add({
     targets: fadeIn, alpha: 0, duration: 360,

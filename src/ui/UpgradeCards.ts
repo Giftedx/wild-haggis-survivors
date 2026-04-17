@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
+import { COLORS } from '../config';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -169,7 +170,7 @@ export class UpgradeCardsUI {
     const borderColor = RARITY_COLORS[card.rarity];
 
     // Card background — the interactive hit area
-    const bg = this.scene.add.rectangle(x, y, w, h, 0x1a1a2e)
+    const bg = this.scene.add.rectangle(x, y, w, h, COLORS.BG_DARK)
       .setStrokeStyle(3, borderColor)
       .setScrollFactor(0)
       .setDepth(depth)
@@ -295,7 +296,7 @@ export class UpgradeCardsUI {
     });
 
     bg.on('pointerout', () => {
-      bg.setFillStyle(0x1a1a2e);
+      bg.setFillStyle(COLORS.BG_DARK);
       // Reset scales — must match the values set at creation (icon is 1.4,
       // everything else is 1). Using 2 here permanently shrinks the icon
       // every time the player hovers-then-unhovers a card.

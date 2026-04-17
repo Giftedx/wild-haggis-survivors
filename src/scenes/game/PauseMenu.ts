@@ -12,6 +12,7 @@
  * This module is strictly display-object construction + teardown.
  */
 import Phaser from 'phaser';
+import { COLORS } from '../../config';
 import type { GameScene } from '../GameScene';
 import { t } from '../../core/i18n';
 import { applyAudioFromUserSettings } from '../../core/applyAudioFromSettings';
@@ -73,7 +74,7 @@ export class PauseMenu {
     const hc = this.settings.load().highContrastUi;
     const style = resolvePauseMenuStyle(height, hc);
     this.elements.push(
-      scene.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, style.backdropAlpha)
+      scene.add.rectangle(x + width / 2, y + height / 2, width, height, COLORS.BG_DARK, style.backdropAlpha)
         .setScrollFactor(0).setDepth(d).setInteractive()
     );
     this.elements.push(
