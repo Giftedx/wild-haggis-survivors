@@ -1,4 +1,5 @@
 import { formatClockTime } from './formatClockTime';
+import { formatLocalYmd } from './formatDate';
 
 /**
  * W27 Capture & Share — postcard export with composited run-summary footer.
@@ -160,11 +161,7 @@ export function buildPostcardFooterParts(payload: PostcardPayload): string[] {
  * Format: `haggis-YYYY-MM-DD-{victory|death}-{kills}k-{mmss}[-seed].png`
  */
 export function buildPostcardFilename(p: PostcardPayload): string {
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  const date = `${yyyy}-${mm}-${dd}`;
+  const date = formatLocalYmd(new Date());
 
   const totalSec = Math.max(0, Math.floor(p.timeSurvivedSec));
   const mins = Math.floor(totalSec / 60);

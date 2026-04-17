@@ -16,6 +16,7 @@
  * and a checksum character so "copy seed from game-over and paste into
  * friend's client" is robust to typos.
  */
+import { formatLocalYmd } from './formatDate';
 
 /**
  * Immutable-seeded number generator. Calling `next()` mutates internal
@@ -216,10 +217,7 @@ function checksumChar(body: string): string {
  * single cohort gets strictly earlier access.
  */
 export function currentDailyDateKey(now: Date = new Date()): string {
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  return formatLocalYmd(now);
 }
 
 /**
