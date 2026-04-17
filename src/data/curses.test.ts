@@ -7,6 +7,7 @@ import {
   setPendingCurse,
 } from './curses';
 import { defaultModifiers } from '../core/RunModifiers';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
 describe('CURSES data', () => {
   it('every curse has stable i18n keys + a non-trivial gold bonus', () => {
@@ -20,6 +21,23 @@ describe('CURSES data', () => {
   it('keys are unique', () => {
     const keys = CURSES.map((c) => c.key);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  /**
+   * Catches the typo-id bug class — a misspelled name/desc key resolves
+   * to the literal key string at runtime, leaving the curse tile blank.
+   * Every i18n path on a curse def must exist in EN.
+   */
+  it('every curse name + desc key resolves in EN', () => {
+    setLocale(DEFAULT_LOCALE);
+    try {
+      for (const c of CURSES) {
+        expect(t(c.nameKey), `nameKey for ${c.key}`).not.toBe(c.nameKey);
+        expect(t(c.descKey), `descKey for ${c.key}`).not.toBe(c.descKey);
+      }
+    } finally {
+      setLocale(DEFAULT_LOCALE);
+    }
   });
 });
 
