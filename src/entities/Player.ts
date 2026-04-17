@@ -3,6 +3,7 @@ import { PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { softBoundarySteer } from './softBoundarySteer';
+import { playerGrowthScale } from './playerGrowthScale';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -351,11 +352,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // so we trade one pixel of squash-stretch for a stable hitbox.
     this.wobblePhase += 0.15;
     const wobble = Math.sin(this.wobblePhase) * 0.06;
-    const growthScale = Math.min(
-      1 + PLAYER.GROWTH_PER_LEVEL * (this.currentLevel - 1),
-      PLAYER.MAX_SCALE
-    );
-    this.setScale(growthScale * (1 + wobble));
+    this.setScale(playerGrowthScale(this.currentLevel) * (1 + wobble));
   }
 
   /** Recalculate all stats from base + level scaling + upgrade bonuses */
@@ -364,11 +361,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.recalcStats();
 
     // Visual growth + hitbox scaling
-    const growthScale = Math.min(
-      1 + PLAYER.GROWTH_PER_LEVEL * (newLevel - 1),
-      PLAYER.MAX_SCALE
-    );
-    this.setScale(growthScale);
+    this.setScale(playerGrowthScale(newLevel));
 
     // Reset hitbox with UNSCALED radius — Phaser's updateBounds automatically
     // scales sourceWidth/sourceHeight by the sprite's scale each frame.
