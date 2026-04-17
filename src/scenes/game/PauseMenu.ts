@@ -20,6 +20,7 @@ import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
 import { buildPauseStatsLines } from './pauseStats';
 import { resolvePauseMenuStyle } from './pauseMenuStyle';
+import { resolveToggleTextColor } from '../toggleTextPalette';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -163,13 +164,13 @@ export class PauseMenu {
       t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
     const sfxText = scene.add.text(x + width / 2 - 70, audioY, sfxLabel(sfxOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-      color: sfxOn ? '#88cc88' : '#886666',
+      color: resolveToggleTextColor(sfxOn),
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     sfxText.on('pointerdown', () => {
       sfxOn = !sfxOn;
       sfxText.setText(sfxLabel(sfxOn));
-      sfxText.setColor(sfxOn ? '#88cc88' : '#886666');
+      sfxText.setColor(resolveToggleTextColor(sfxOn));
       this.settings.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
       applyAudioFromUserSettings(this.settings.load());
     });
@@ -180,13 +181,13 @@ export class PauseMenu {
       t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
     const musicText = scene.add.text(x + width / 2 + 80, audioY, musicLabel(musicOn), {
       fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-      color: musicOn ? '#88cc88' : '#886666',
+      color: resolveToggleTextColor(musicOn),
     }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     musicText.on('pointerdown', () => {
       musicOn = !musicOn;
       musicText.setText(musicLabel(musicOn));
-      musicText.setColor(musicOn ? '#88cc88' : '#886666');
+      musicText.setColor(resolveToggleTextColor(musicOn));
       this.settings.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
       applyAudioFromUserSettings(this.settings.load());
       if (musicOn && !musicEngine.isPlaying()) musicEngine.start();

@@ -19,6 +19,7 @@ import {
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveLoadoutBadgeStyle, formatVariantRequirementLine } from './loadoutBadge';
+import { resolveToggleTextColor } from './toggleTextPalette';
 import { computeMenuLayout } from './menuLayout';
 
 /**
@@ -542,7 +543,7 @@ export class MenuScene extends Phaser.Scene {
         fontFamily: 'monospace',
         fontSize: '15px',
         fontStyle: 'bold',
-        color: on ? '#88cc88' : '#886666',
+        color: resolveToggleTextColor(on),
       })
       .setOrigin(0.5)
       .setAlpha(0)
@@ -554,7 +555,7 @@ export class MenuScene extends Phaser.Scene {
     const fire = () => {
       on = !on;
       text.setText(t(labelKey, { state: on ? t('ui.common.on') : t('ui.common.off') }));
-      text.setColor(on ? '#88cc88' : '#886666');
+      text.setColor(resolveToggleTextColor(on));
       onChange(on);
     };
     text.on('pointerdown', fire);
