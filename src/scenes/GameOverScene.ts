@@ -26,6 +26,17 @@ import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOve
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
 
+// Shared text style for the small italic action links under the
+// big result panel (seed copy, postcard download, rerun ↻). Each
+// site varies the colour from its own palette.idle on hover/press,
+// so the colour stays a per-call argument; everything else is fixed.
+const COPY_ACTION_LINK_TEXT_BASE = {
+  fontFamily: 'monospace',
+  fontSize: '12px',
+  fontStyle: 'italic',
+  align: 'center',
+} as const;
+
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
  */
@@ -728,11 +739,8 @@ export class GameOverScene extends Phaser.Scene {
     const palette = resolveCopyActionLinkPalette(isDaily);
     const text = this.add
       .text(centerX, y, `${label}  ·  ${tail}`, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        ...COPY_ACTION_LINK_TEXT_BASE,
         color: palette.idle,
-        fontStyle: 'italic',
-        align: 'center',
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -770,11 +778,8 @@ export class GameOverScene extends Phaser.Scene {
     const palette = resolveCopyActionLinkPalette(false);
     const text = this.add
       .text(centerX, y, `📮 ${hint}`, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        ...COPY_ACTION_LINK_TEXT_BASE,
         color: palette.idle,
-        fontStyle: 'italic',
-        align: 'center',
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -824,11 +829,8 @@ export class GameOverScene extends Phaser.Scene {
     const palette = resolveRerunLinkPalette();
     const text = this.add
       .text(centerX, y, label, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
+        ...COPY_ACTION_LINK_TEXT_BASE,
         color: palette.idle,
-        fontStyle: 'italic',
-        align: 'center',
       })
       .setOrigin(0.5)
       .setScrollFactor(0)
