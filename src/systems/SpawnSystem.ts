@@ -13,6 +13,7 @@ import { t } from '../core/i18n';
 import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
+import { resolveEliteChance } from './eliteChance';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -554,15 +555,9 @@ export class SpawnSystem {
           enemy.applyPostBellScaling(this.enemyHpMultiplier, 1);
         }
 
-        // Elite chance — base from BalanceConfig + kill-pressure nudge (decays).
-        // eliteWeightMultiplier is applied last so W2 route picks can tilt
-        // without losing the kill-pressure feel.
-        const eliteChance = Math.min(
-          0.24,
-          (BALANCE.enemy.ELITE_SPAWN_CHANCE +
-            this.killPressure * BALANCE.director.killPressureEliteBonusMax) *
-            this.eliteWeightMultiplier,
-        );
+        // Elite chance — base from BalanceConfig + kill-pressure nudge (decays),
+        // then tilted by the run-scoped W2 route weight and capped at 24%.
+        const eliteChance = resolveEliteChance(this.killPressure, this.eliteWeightMultiplier);
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
             && config.packSize <= 1
