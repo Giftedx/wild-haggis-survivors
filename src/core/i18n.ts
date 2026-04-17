@@ -2280,6 +2280,250 @@ export const SCS_STRINGS: LocaleTree = {
       description: 'Pulled fifteen ceilidh chains — tha moor\'s dancin tae yer beat.',
     },
   },
+  weapon: {
+    thistle_shot: {
+      name: 'Thistle Shot',
+      description: 'Sharp thistles flee at tha nearest bother.',
+    },
+    bagpipe_blast: {
+      name: 'Bagpipe Blast',
+      description: 'A wee shockwave tae knock tha braith oot o foes.',
+    },
+    caber_toss: {
+      name: 'Caber Toss',
+      description: 'A log tha size o a door, throwed clean through a crood.',
+    },
+    scotch_mist: {
+      name: 'Scotch Mist',
+      description: 'Trail a creepin haar. Whit wanders in disnae wander oot.',
+    },
+    haggis_hurler: {
+      name: 'Jobby Hurler',
+      description: 'Bouncin wee jobbies that ricochet til they stick.',
+    },
+    nessie_tentacle: {
+      name: 'Nessie\'s Tentacle',
+      description: 'A sweepin airm fae tha loch — wide reach, meatier knockback.',
+    },
+    claymore: {
+      name: 'Heiland Claymore',
+      description: 'A swurd tha wecht o a man. Slow tae lift, enormous in tha sweep.',
+    },
+    bagpipes: {
+      name: 'Ceòl Mòr Bagpipes',
+      description: 'A great drone that presses on yer beasties like wather.',
+    },
+  },
+  variant: {
+    classic: {
+      name: 'Classic Haggis',
+      flavor: 'Tha baseline beast. Crooked legs, straicht ambition.',
+    },
+    moor_runner: {
+      name: 'Moor Runner',
+      flavor: 'Lean an wind-cut, biggit tae skim tha heather.',
+    },
+    iron_belly: {
+      name: 'Iron Belly',
+      flavor: 'Heavy, thrawn — an haird tae stap wance it stairts rowin.',
+    },
+    glen_forager: {
+      name: 'Glen Forager',
+      flavor: 'A scavenger o glens an glitterin spoils.',
+    },
+    surefoot: {
+      name: 'Surefit',
+      flavor: 'Tha drift still whispers, aye, but it nae langer decides.',
+    },
+    pipe_breath: {
+      name: 'Pipe Braith',
+      flavor: 'Wheesht — tha moor exhales through this wan.',
+    },
+    laird: {
+      name: 'Tha Laird',
+      flavor: 'Wears tha tartan proper. Lordly swagger, heavier swing.',
+    },
+    wee_ghostie: {
+      name: 'Wee Ghostie',
+      flavor: 'Pale an thin — here an no here. Hits haird, breks easy.',
+    },
+    summary: {
+      speed: '{sign}{pct}% speed',
+      hp: '{sign}{val} HP',
+      armor: '{sign}{val} armor',
+      pickup: '{sign}{val} pickup',
+      xp: '{sign}{pct}% XP',
+      dmg: '{sign}{pct}% dmg',
+      drift: '{sign}{pct}% drift',
+      cdr: '{sign}{pct}% CDR',
+      baseline: 'Baseline stats',
+    },
+    unlock: {
+      survive: 'Survive',
+      best_kills: 'Best culls',
+      total_gold: 'Gold banked',
+      victories: 'Wins',
+      ready: 'Ye earned this wan',
+    },
+  },
+  permanentUpgrade: {
+    thick_hide: { name: 'Thick Hide', description: 'A hide thick enough tae shrug aff tha first wee dunts (+5% stairtin HP).' },
+    strong_legs: { name: 'Gallus Legs', description: 'Quicker hooves fae tha very first step — pure gallus (+3% speed).' },
+    sharp_thistles: { name: 'Sharp Thistles', description: 'Every thistle hits a shade herder (+5% damage).' },
+    magnetic_personality: { name: 'Magnetic Personality', description: 'Gems lean toward ye o their ain accord (+10% pickup radius).' },
+    lucky_heather: { name: 'Lucky Heather', description: 'Tha glen rowes kinder picks (+10% caird rarity).' },
+    drift_control: { name: 'Drift Control', description: 'Tichter turns, fewer tummles (-15% clockwise drift).' },
+    extra_choice: { name: 'Extra Choice', description: 'Wan mair pick at every level-up, fer whan ye cannae decide.' },
+    battle_hardened: { name: 'Battle Hardened', description: 'Auld scars become plate — stairt each run wi +2 armor.' },
+    weapon_training: { name: 'Battle-Tested', description: 'Ye\'ve been oot afore — yer Thistle Shot stairts a level stronger.' },
+    crit_power: { name: 'Heid-the-Baw', description: 'Ye ken exactly whaur tae wallop them (+3% crit chance, +25% crit damage).' },
+    xp_boost: { name: 'Scholar\'s Mind', description: 'Tha glen teaches ye faster (+8% XP gain).' },
+    lucky_start: { name: 'Lucky Stairt', description: 'Stairt each run wi a random curio already in yer pooch.' },
+    natural_recovery: { name: 'Moor\'s Mend', description: 'Tha moor patches ye up as ye rin — slow an steady (+0.3 HP/sec).' },
+    revival: { name: 'Second Wind', description: 'Wance per run, shrug aff daith wi 50% HP an keep gaun.' },
+    double_dash: { name: 'Double Dash', description: 'Twa dashes in tha hoof insteid o wan.' },
+    treasure_magnet: { name: 'Treasure Magnet', description: 'Kists an coins linger a few braiths langer (+5s).' },
+    dirk_hand: { name: 'Dirk Haund', description: 'A quicker draw on every wapen (+3% attack speed).' },
+  },
+  upgradeCard: {
+    add_bagpipe_blast: {
+      name: 'Bagpipe Blast',
+      description: 'A ring o rude soond. Foes scatter like doos on Buchanan Street.',
+    },
+    add_caber_toss: {
+      name: 'Caber Toss',
+      description: 'Hurl a caber through a line o them — Heiland Games in combat form.',
+    },
+    add_scotch_mist: {
+      name: 'Scotch Mist',
+      description: 'Trail a chokin haar. Ocht that lingers in it learns.',
+    },
+    add_haggis_hurler: {
+      name: 'Jobby Hurler',
+      description: 'Wee jobbies that ricochet aff tha airena edges til somethin saft staps them.',
+    },
+    add_nessie_tentacle: {
+      name: 'Nessie\'s Tentacle',
+      description: 'A sweepin airm fae tha loch — wide reach, meatier knockback.',
+    },
+    add_claymore: {
+      name: 'Heiland Claymore',
+      description: 'A slow, enormous cleave. Pair wi tha Tartan Sash tae forge a legend.',
+    },
+    add_bagpipes: {
+      name: 'Ceòl Mòr Bagpipes',
+      description: 'A great drone that presses on tha crood til it folds.',
+    },
+    add_sporran: {
+      name: 'Sporran',
+      description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
+    },
+    add_whisky_flask: {
+      name: 'Whisky Flask',
+      description: 'A nip afore tha fecht — every AoE blooms 20% wider. Evolves Bagpipe Blast.',
+    },
+    add_kilt: {
+      name: 'Kilt',
+      description: 'It\'s breezy but it works — room fer wan mair daft mistake (+15% max HP). Evolves Caber Toss.',
+    },
+    add_tam_o_shanter: {
+      name: 'Tam o\' Shanter',
+      description: 'A jaunty blue bunnet. Tha drift respects it, a wee bit (+10% speed). Evolves Scotch Mist.',
+    },
+    add_irn_bru: {
+      name: 'Irn Bru',
+      description: 'Scotland\'s ither national drink — wapens fizz 20% faster. Evolves Jobby Hurler.',
+    },
+    add_loch_water: {
+      name: 'Loch Watter',
+      description: 'Drawn fae tha deeps. Gems hear it an come rinnin (+25% pickup radius). Evolves Nessie\'s Tentacle.',
+    },
+    add_thistle_crown: {
+      name: 'Thistle Croun',
+      description: 'Prickly as a Glesga bus queue. +5% crit; attackers tak 3 damage on contact.',
+    },
+    add_highland_shield: {
+      name: 'Heiland Shield',
+      description: 'Fer whan it aw gaes sideways. Every 20s, shrug aff a lethal hit.',
+    },
+    add_tartan_sash: {
+      name: 'Tartan Sash',
+      description: 'Pattern o clan an courage. +8% damage on a\'thing. Evolves Heiland Claymore.',
+    },
+    boost_hp: {
+      name: 'Thick Hide',
+      description: 'Room fer a wee bit mair punishment (+10 max HP). Stack as mony as ye like.',
+    },
+    boost_speed: {
+      name: 'Quick Feet',
+      description: 'Fresher legs, faster steps (+8% move speed). Tha drift still whispers, mind.',
+    },
+    boost_pickup: {
+      name: 'Keen Neb',
+      description: 'Gems on tha wind — ye smell them suiner (+15 pickup radius).',
+    },
+    boost_damage: {
+      name: 'Sharpened Thistles',
+      description: 'Every thistle gien a shade mair edge (+10% damage, a\'thing).',
+    },
+    boost_drift: {
+      name: 'Balanced Legs',
+      description: 'Tha drift eases a wee bit (-15%). Inputs land closer tae whaur ye aim.',
+    },
+    heal: {
+      name: 'Haggis Supper',
+      description: 'A full plate afore tha fecht. Instantly heal 25% o yer max HP.',
+    },
+    boost_crit: {
+      name: 'Eagle E\'e',
+      description: 'Ye ken whaur it hurts (+5% crit chance).',
+    },
+    boost_regen: {
+      name: 'Heiland Spring',
+      description: 'Like a sip o Irn-Bru fer tha soul (+0.5 HP/sec, slow an steady).',
+    },
+    boost_armor: {
+      name: 'Iron Hide',
+      description: 'Herder skin, flatter damage (+3 armor on every hit).',
+    },
+    boost_cooldown: {
+      name: 'Battle Frenzy',
+      description: 'Tha bluid kens tha beat (-10% wapen cooldoons).',
+    },
+    banish: {
+      name: 'Heiland Purge',
+      description: 'Wipe tha 5 weakest nearby aff tha moor. That\'s plenty — gie yersel some space.',
+    },
+    boost_lifesteal: {
+      name: 'Vampiric Touch',
+      description: 'A wee nip o life fae every cull (+1 HP each).',
+    },
+    boost_projectile_speed: {
+      name: 'Swift Thistles',
+      description: 'Thistles wi a bit mair zip — they arrive afore tha scream (+15% projectile speed).',
+    },
+    boost_boss_heal: {
+      name: 'Trophy Hunter',
+      description: 'Whan a boss folds, heal 20% max HP. Ye earned that, big yin.',
+    },
+    boost_knockback: {
+      name: 'Heiland Force',
+      description: 'Every hit lands wi a proper shove (+25% knockback).',
+    },
+    boost_xp: {
+      name: 'Wisdom o tha Heilands',
+      description: 'Tha moor teaches, if ye\'ll listen (+15% XP fae beasties).',
+    },
+    boost_luck: {
+      name: 'Heather Fortune',
+      description: 'Tha glen rowes a shade kinder — +8 luck on level-up draws (rarer picks, stacks wi curios).',
+    },
+    levelup: {
+      name: '{weapon} Lv {level}',
+      description: 'Hone {weapon} up tae level {level}. Every notch coonts.',
+    },
+    evolution_hint: ' At Lv 5, crack a kist while cairryin {passive} — somethin legendary stirs.',
+  },
   routes: {
     up_the_brae: {
       label: 'Up tha brae',
