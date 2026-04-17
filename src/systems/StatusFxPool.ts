@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { fillCirclePool } from './fillCirclePool';
 
 /**
  * StatusFxPool — reusable particle pool for Enemy status-effect visuals.
@@ -21,11 +22,7 @@ export class StatusFxPool {
   constructor(scene: Phaser.Scene, arcCount = 100, imgCount = 24) {
     this.scene = scene;
 
-    for (let i = 0; i < arcCount; i++) {
-      const dot = scene.add.circle(0, 0, 3, 0xffffff, 0)
-        .setDepth(5).setVisible(false);
-      this.arcPool.push(dot);
-    }
+    fillCirclePool(scene, this.arcPool, arcCount, 3, 0xffffff, 0, 5);
 
     for (let i = 0; i < imgCount; i++) {
       const img = scene.add.image(0, 0, 'fx_snowflake')
