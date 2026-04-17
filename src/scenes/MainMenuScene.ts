@@ -190,17 +190,13 @@ export class MainMenuScene extends Phaser.Scene {
         targets: mascot,
         y: mascot.y + 4,
         duration: 1800,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
-        repeat: -1,
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.tweens.add({
         targets: mascot,
         angle: { from: -3, to: 3 },
         duration: 2600,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
-        repeat: -1,
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.cozyTweenTargets.push(mascot);
     }
@@ -224,9 +220,7 @@ export class MainMenuScene extends Phaser.Scene {
         targets: titleText,
         y: titleY + 2,
         duration: 2400,
-        ease: 'Sine.easeInOut',
-        yoyo: true,
-        repeat: -1,
+        ...TWEEN_INFINITE_BREATHE,
       });
       this.cozyTweenTargets.push(titleText);
     }

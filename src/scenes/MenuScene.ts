@@ -27,6 +27,7 @@ import {
 } from './variantPanelStyle';
 import { computeMenuLayout } from './menuLayout';
 import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
+import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -102,17 +103,13 @@ export class MenuScene extends Phaser.Scene {
       targets: this.mascot,
       y: this.mascot.y + 8,
       duration: 1200,
-      ease: 'Sine.easeInOut',
-      yoyo: true,
-      repeat: -1,
+      ...TWEEN_INFINITE_BREATHE,
     });
     this.tweens.add({
       targets: this.mascot,
       angle: { from: -5, to: 5 },
       duration: 1900,
-      ease: 'Sine.easeInOut',
-      yoyo: true,
-      repeat: -1,
+      ...TWEEN_INFINITE_BREATHE,
     });
 
     const title = this.add
