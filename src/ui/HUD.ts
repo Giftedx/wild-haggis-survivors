@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { BALANCE } from '../core/BalanceConfig';
 import { getSettingsManager } from '../core/SettingsManager';
 import { getCameraViewport } from './cameraViewport';
@@ -266,7 +266,7 @@ export class HUD {
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
     // Dash row — bumped 12px → 14px for readability under combat stress, and
     // pip pool rebuilt slightly larger so they scale along with the text.
-    const dashStyle = { ...style, fontSize: '14px', color: '#d4a017', fontStyle: 'bold' };
+    const dashStyle = { ...style, fontSize: '14px', color: COLORS_CSS.WHISKY_GOLD, fontStyle: 'bold' };
     this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 20, '', {
       ...dashStyle,
     }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
@@ -709,7 +709,7 @@ export class HUD {
           .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
         const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '', {
-          fontFamily: 'monospace', fontSize: '11px', color: '#ffffff', fontStyle: 'bold',
+          fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.WHITE, fontStyle: 'bold',
           stroke: '#000', strokeThickness: 2,
         }).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
         this.weaponSlots.push({ bg, icon, label, cdFill });

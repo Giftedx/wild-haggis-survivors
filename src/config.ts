@@ -100,3 +100,14 @@ export const COLORS = {
   /** Background */
   BG_DARK: 0x1a1a2e,
 } as const;
+
+/**
+ * CSS-string forms of the palette for Phaser text `color:` fields, which
+ * want `#RRGGBB` not `0xRRGGBB`. Mirrors the hex palette above so a tweak
+ * to `COLORS.WHISKY_GOLD` carries through to every gold text label on
+ * the next reload — no hand-sync of parallel string literals.
+ */
+export const COLORS_CSS = {
+  WHISKY_GOLD: '#d4a017',
+  WHITE: '#ffffff',
+} as const;

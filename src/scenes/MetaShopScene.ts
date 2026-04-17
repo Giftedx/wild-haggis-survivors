@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
@@ -60,7 +61,7 @@ export class MetaShopScene extends Phaser.Scene {
       .text(width / 2, 70, '', {
         fontFamily: 'monospace',
         fontSize: '18px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);

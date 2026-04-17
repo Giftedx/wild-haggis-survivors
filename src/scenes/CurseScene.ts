@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -216,7 +217,7 @@ export class CurseScene extends Phaser.Scene {
       .text(cx, btnY, t(opts.pickLabelKey), {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)

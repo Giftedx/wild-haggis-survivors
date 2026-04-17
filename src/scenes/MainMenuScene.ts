@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
@@ -291,7 +291,7 @@ export class MainMenuScene extends Phaser.Scene {
       .text(bx, startY, suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run'), {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -389,7 +389,7 @@ export class MainMenuScene extends Phaser.Scene {
       .text(bx, metaY2, t('ui.menu.meta_upgrades'), {
         fontFamily: 'monospace',
         fontSize: '18px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -470,7 +470,7 @@ export class MainMenuScene extends Phaser.Scene {
       .text(bx, optY, t('ui.menu.options'), {
         fontFamily: 'monospace',
         fontSize: '17px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);

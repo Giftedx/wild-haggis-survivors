@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantKey } from '../data/variants';
@@ -382,7 +382,7 @@ export class GameOverScene extends Phaser.Scene {
       .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
         fontFamily: 'monospace',
         fontSize: '28px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
         stroke: '#000',
         strokeThickness: 4,
@@ -547,7 +547,7 @@ export class GameOverScene extends Phaser.Scene {
         .text(centerX, y + 26, t(variant.nameKey), {
           fontFamily: 'monospace',
           fontSize: '26px',
-          color: '#d4a017',
+          color: COLORS_CSS.WHISKY_GOLD,
           fontStyle: 'bold',
           align: 'center',
         })
@@ -577,7 +577,7 @@ export class GameOverScene extends Phaser.Scene {
       .text(centerX, y + 30, bodyText, {
         fontFamily: 'monospace',
         fontSize: variantKeys.length === 2 ? '18px' : '14px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
         align: 'center',
         lineSpacing: 6,
@@ -642,7 +642,7 @@ export class GameOverScene extends Phaser.Scene {
       .text(x, y + 18, value, {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: isNewBest ? '#d4a017' : '#ffffff',
+        color: isNewBest ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
@@ -657,7 +657,7 @@ export class GameOverScene extends Phaser.Scene {
         .text(x + 46, y + 10, t('ui.gameOver.new_best'), {
           fontFamily: 'monospace',
           fontSize: '8px',
-          color: '#d4a017',
+          color: COLORS_CSS.WHISKY_GOLD,
           fontStyle: 'bold',
         })
         .setOrigin(0, 0.5)

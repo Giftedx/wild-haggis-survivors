@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
 import type { ISceneContext } from '../core/ISceneContext';
 import { resolveXpGemTier } from './xpGemTier';
@@ -67,7 +68,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
         const uiScale = getSettingsManager().load().uiScale;
         const px = Math.max(8, Math.round(11 * uiScale));
         this.valueLabel = this.scene.add.text(0, 0, '', {
-          fontFamily: 'monospace', fontSize: `${px}px`, color: '#ffffff',
+          fontFamily: 'monospace', fontSize: `${px}px`, color: COLORS_CSS.WHITE,
           fontStyle: 'bold', stroke: '#000', strokeThickness: 2,
         }).setDepth(15).setOrigin(0.5);
       }

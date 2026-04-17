@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
@@ -118,7 +118,7 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, 150, t('ui.menu.title'), {
         fontFamily: 'monospace',
         fontSize: '56px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         align: 'center',
         fontStyle: 'bold',
         stroke: '#000',
@@ -431,7 +431,7 @@ export class MenuScene extends Phaser.Scene {
       .text(x, y - 1, label, {
         fontFamily: 'monospace',
         fontSize: '22px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -576,7 +576,7 @@ export class MenuScene extends Phaser.Scene {
       .text(x, y + 24, label, {
         fontFamily: 'monospace',
         fontSize: '26px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)

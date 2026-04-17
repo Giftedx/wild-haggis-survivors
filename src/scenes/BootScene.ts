@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import {
   DEFAULT_VARIANT_KEY,
   HaggisAccentStyle,
@@ -149,7 +150,7 @@ export class BootScene extends Phaser.Scene {
 
     // ── Title — whisky gold with warm glow ──
     const title = this.add.text(width / 2, height * 0.35, t('ui.menu.title'), {
-      fontFamily: 'monospace', fontSize: '32px', color: '#d4a017',
+      fontFamily: 'monospace', fontSize: '32px', color: COLORS_CSS.WHISKY_GOLD,
       fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: 5,
     }).setOrigin(0.5).setAlpha(0);
 

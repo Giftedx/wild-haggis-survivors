@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
 import {
@@ -49,7 +50,7 @@ export class ShopScene extends Phaser.Scene {
       .text(width / 2, 32, t('ui.shop.title'), {
         fontFamily: 'monospace',
         fontSize: '36px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
         stroke: '#000',
         strokeThickness: 5,
@@ -60,7 +61,7 @@ export class ShopScene extends Phaser.Scene {
       .text(width / 2, 70, '', {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
@@ -137,7 +138,7 @@ export class ShopScene extends Phaser.Scene {
     const nameText = this.add.text(34, y + 3, t(upgrade.nameKey), {
       fontFamily: 'monospace',
       fontSize: '15px',
-      color: isMaxed ? '#73c37d' : '#ffffff',
+      color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE,
       fontStyle: 'bold',
     });
     const descText = this.add.text(34, y + 21, t(upgrade.descriptionKey), {
@@ -244,7 +245,7 @@ export class ShopScene extends Phaser.Scene {
       .text(width / 2, height - 26, t('ui.shop.back_to_menu'), {
         fontFamily: 'monospace',
         fontSize: '15px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);

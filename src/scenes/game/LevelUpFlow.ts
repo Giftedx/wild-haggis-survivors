@@ -24,7 +24,7 @@ import type { TutorialSystem } from '../../systems/TutorialSystem';
 import type { TimeManager } from '../../systems/TimeManager';
 import type { UpgradeCardsUI } from '../../ui/UpgradeCards';
 import type { RNG } from '../../utils/rng';
-import { XP, PLAYER } from '../../config';
+import { XP, PLAYER, COLORS_CSS } from '../../config';
 import {
   buildCardPool,
   drawCards,
@@ -90,7 +90,7 @@ export class LevelUpFlow {
 
     const { x, y, width } = this.hooks.getUiViewport();
     const banner = scene.add.text(x + width / 2, y + 140, t('ui.game.level_banner', { level: newLevel }), {
-      fontFamily: 'monospace', fontSize: '36px', color: '#d4a017',
+      fontFamily: 'monospace', fontSize: '36px', color: COLORS_CSS.WHISKY_GOLD,
       fontStyle: 'bold', stroke: '#000', strokeThickness: 5,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(199).setAlpha(0).setScale(0.5);
     scene.tweens.add({

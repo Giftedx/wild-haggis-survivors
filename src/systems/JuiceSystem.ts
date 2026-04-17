@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import type { SettingsManager } from '../core/SettingsManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
@@ -140,7 +141,7 @@ export class JuiceSystem {
       const t = scene.add.text(0, 0, '', {
         fontFamily: 'monospace',
         fontSize: '18px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
         stroke: '#000000',
         strokeThickness: 3,

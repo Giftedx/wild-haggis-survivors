@@ -12,7 +12,7 @@
  * This module is strictly display-object construction + teardown.
  */
 import Phaser from 'phaser';
-import { COLORS } from '../../config';
+import { COLORS, COLORS_CSS } from '../../config';
 import type { GameScene } from '../GameScene';
 import { t } from '../../core/i18n';
 import { applyAudioFromUserSettings } from '../../core/applyAudioFromSettings';
@@ -33,7 +33,7 @@ import { attachButtonHoverFill } from '../../ui/buttonHover';
 // Both the RESUME and QUIT primary-action labels wear the same 22px
 // white bold monospace coat — extract so tweaks stay in lockstep.
 const PAUSE_BUTTON_LABEL_TEXT = {
-  fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
+  fontFamily: 'monospace', fontSize: '22px', color: COLORS_CSS.WHITE, fontStyle: 'bold',
 } as const;
 
 export interface PauseMenuHooks {

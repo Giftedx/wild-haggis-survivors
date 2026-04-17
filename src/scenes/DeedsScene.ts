@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -91,7 +92,7 @@ export class DeedsScene extends Phaser.Scene {
       .text(width - 70, 36, t('ui.deeds.counter', { earned: summary.earned, total: summary.total }), {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: '#d4a017',
+        color: COLORS_CSS.WHISKY_GOLD,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)

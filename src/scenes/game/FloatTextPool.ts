@@ -8,6 +8,7 @@
  * callers tween then hide, which frees the slot for the next acquire.
  */
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../../config';
 
 const POOL_SIZE = 12;
 
@@ -27,7 +28,7 @@ export class FloatTextPool {
         .text(0, 0, '', {
           fontFamily: 'monospace',
           fontSize: '16px',
-          color: '#ffffff',
+          color: COLORS_CSS.WHITE,
           fontStyle: 'bold',
           stroke: '#000',
           strokeThickness: 3,

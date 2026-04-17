@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
@@ -240,7 +241,7 @@ export class SettingsScene extends Phaser.Scene {
       .text(width / 2, backY, t('ui.settings.back'), {
         fontFamily: 'monospace',
         fontSize: '16px',
-        color: '#ffffff',
+        color: COLORS_CSS.WHITE,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
