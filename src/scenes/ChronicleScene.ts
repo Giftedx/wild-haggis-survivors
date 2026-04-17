@@ -543,6 +543,8 @@ export class ChronicleScene extends Phaser.Scene {
 
     if (m.currentWinStreak >= 2) {
       lines.push(t('ui.chronicle.milestone_win_streak', { count: m.currentWinStreak }));
+    } else if (m.currentLossStreak >= 3) {
+      lines.push(t('ui.chronicle.milestone_loss_streak', { count: m.currentLossStreak }));
     }
 
     return lines.join('\n');

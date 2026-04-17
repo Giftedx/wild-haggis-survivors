@@ -118,6 +118,7 @@ export const EN_STRINGS: LocaleTree = {
       milestone_favorite_variant: 'Favourite wee beastie — {variant} ({count} runs)',
       milestone_favorite_weapon: 'Weapon of choice — {weapon} ({count} runs)',
       milestone_win_streak: 'On a {count}-run winning streak ✓',
+      milestone_loss_streak: '{count} tough runs back-to-back — moor\'s nae kindness today, but ye\'re still here.',
 
       // ── Cull codex (meta SaveManager — first kill per enemy key) ──
       codex_heading: 'CULL CODEX',
@@ -1831,6 +1832,7 @@ export const SCS_STRINGS: LocaleTree = {
       milestone_favorite_variant: 'Favourite wee beastie — {variant} ({count} runs)',
       milestone_favorite_weapon: 'Wapen o\' choice — {weapon} ({count} runs)',
       milestone_win_streak: 'On a {count}-run winnin streak ✓',
+      milestone_loss_streak: '{count} sair runs back-tae-back — tha moor\'s nae kindness the day, but yir still here.',
       codex_heading: 'CULL CODEX',
       codex_progress: '{discovered} / {total} beasties logged',
       codex_empty: 'Nae names in tha book yet — tha moor\'s still hauldin secrets.',
