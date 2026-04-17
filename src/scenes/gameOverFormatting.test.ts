@@ -8,6 +8,8 @@ import {
   formatDeathInsightLine,
   resolveUnlockHeading,
   formatUnlockBodyText,
+  formatRerunSeedLinkLabel,
+  formatSeedReadoutLabel,
 } from './gameOverFormatting';
 import type { DeathCause, DeathCauseTag } from '../core/deathCauseClassifier';
 import type { VariantKey } from '../data/variants';
@@ -379,5 +381,49 @@ describe('formatUnlockBodyText', () => {
     for (const l of lines) {
       expect(l.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('formatRerunSeedLinkLabel', () => {
+  it('returns the plain-rerun label when no curse', () => {
+    expect(formatRerunSeedLinkLabel(null)).not.toBe('ui.gameOver.rerun_same_seed');
+    expect(formatRerunSeedLinkLabel(undefined)).not.toBe('ui.gameOver.rerun_same_seed');
+  });
+
+  it('treats empty curse label as "no curse"', () => {
+    expect(formatRerunSeedLinkLabel('')).toBe(formatRerunSeedLinkLabel(null));
+  });
+
+  it('surfaces the curse label in the output when provided', () => {
+    const out = formatRerunSeedLinkLabel('The Grasping');
+    expect(out).toContain('The Grasping');
+    // Must not be the raw i18n key (proves i18n is resolving).
+    expect(out).not.toBe('ui.gameOver.rerun_same_seed_with_curse');
+  });
+
+  it('curse and no-curse produce different copy', () => {
+    const withCurse = formatRerunSeedLinkLabel('A Curse');
+    const noCurse = formatRerunSeedLinkLabel(null);
+    expect(withCurse).not.toBe(noCurse);
+  });
+});
+
+describe('formatSeedReadoutLabel', () => {
+  it('daily copy surfaces the code', () => {
+    const out = formatSeedReadoutLabel('ABC-123', true);
+    expect(out).toContain('ABC-123');
+    expect(out).not.toBe('ui.gameOver.seed_daily');
+  });
+
+  it('normal copy surfaces the code', () => {
+    const out = formatSeedReadoutLabel('XYZ-777', false);
+    expect(out).toContain('XYZ-777');
+    expect(out).not.toBe('ui.gameOver.seed_normal');
+  });
+
+  it('daily and normal use distinct i18n strings', () => {
+    const daily = formatSeedReadoutLabel('SAME', true);
+    const normal = formatSeedReadoutLabel('SAME', false);
+    expect(daily).not.toBe(normal);
   });
 });

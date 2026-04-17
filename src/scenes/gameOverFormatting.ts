@@ -66,6 +66,29 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
 }
 
 /**
+ * Label for the "↻ same seed" link on Game Over. Matches the
+ * chronicle rerun tooltip: when a curse was active, the label calls
+ * it out so players know the rerun will re-apply the curse. `curseLabel`
+ * is the already-i18n-resolved display name (scene reads `t(curseDef.nameKey)`).
+ */
+export function formatRerunSeedLinkLabel(curseLabel?: string | null): string {
+  if (curseLabel && curseLabel.length > 0) {
+    return t('ui.gameOver.rerun_same_seed_with_curse', { curse: curseLabel });
+  }
+  return t('ui.gameOver.rerun_same_seed');
+}
+
+/**
+ * Leading label for the Game Over seed readout — picks the daily /
+ * normal copy variant. Scene appends the copy-hint tail separately.
+ */
+export function formatSeedReadoutLabel(code: string, isDaily: boolean): string {
+  return isDaily
+    ? t('ui.gameOver.seed_daily', { code })
+    : t('ui.gameOver.seed_normal', { code });
+}
+
+/**
  * Heading text + colour for the Game Over "new variant unlocked" /
  * "next-run tip" panel. Three states:
  *   - no unlocks          → blue "next tip" heading

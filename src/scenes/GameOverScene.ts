@@ -17,6 +17,8 @@ import {
   formatDeathInsightLine,
   resolveUnlockHeading,
   formatUnlockBodyText,
+  formatRerunSeedLinkLabel,
+  formatSeedReadoutLabel,
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
@@ -718,7 +720,7 @@ export class GameOverScene extends Phaser.Scene {
     isDaily: boolean,
     delay: number,
   ): void {
-    const label = isDaily ? t('ui.gameOver.seed_daily', { code }) : t('ui.gameOver.seed_normal', { code });
+    const label = formatSeedReadoutLabel(code, isDaily);
     const tail = t('ui.gameOver.seed_copy_hint');
     const text = this.add
       .text(centerX, y, `${label}  ·  ${tail}`, {
@@ -820,9 +822,7 @@ export class GameOverScene extends Phaser.Scene {
     // Surface the curse on the link itself so the player knows the
     // rerun re-applies it (parallels the chronicle ↻ tooltip).
     const linkCurseDef = getCurseByKey(this.payload?.curseKey ?? null);
-    const label = linkCurseDef
-      ? t('ui.gameOver.rerun_same_seed_with_curse', { curse: t(linkCurseDef.nameKey) })
-      : t('ui.gameOver.rerun_same_seed');
+    const label = formatRerunSeedLinkLabel(linkCurseDef ? t(linkCurseDef.nameKey) : null);
     const text = this.add
       .text(centerX, y, label, {
         fontFamily: 'monospace',
