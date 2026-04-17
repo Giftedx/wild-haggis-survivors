@@ -18,7 +18,7 @@ import {
   resolveUnlockHeading,
   formatUnlockBodyText,
 } from './gameOverFormatting';
-import { resolveGameOverPanelTheme, pickGameOverTitleKeys } from './gameOverPanelTheme';
+import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
 
 /**
@@ -143,14 +143,12 @@ export class GameOverScene extends Phaser.Scene {
     // in the ceremony. Victory copy leans into the pride moment;
     // death copy keeps the Soul Charter compassionate register.
     if (this.payload.ironmoor) {
-      const bannerKey = isVictory
-        ? 'ui.gameOver.ironmoor_victory_banner'
-        : 'ui.gameOver.ironmoor_death_banner';
+      const banner_ = ironmoorBannerStyle(isVictory);
       const banner = this.add
-        .text(panelCenterX, panelTop + 118, t(bannerKey), {
+        .text(panelCenterX, panelTop + 118, t(banner_.key), {
           fontFamily: 'monospace',
           fontSize: '16px',
-          color: isVictory ? '#f7c270' : '#c8a0a0',
+          color: banner_.color,
           fontStyle: 'bold',
           stroke: '#000',
           strokeThickness: 3,

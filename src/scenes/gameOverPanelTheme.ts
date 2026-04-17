@@ -49,6 +49,24 @@ export const GAME_OVER_VICTORY_TITLE_KEY = 'ui.gameOver.victory_title';
 export const GAME_OVER_VICTORY_SUB_KEY = 'ui.gameOver.victory_sub';
 
 /**
+ * Ironmoor banner shown on any Ironmoor run (victory or death). Copy
+ * leans into the pride moment on victory and into a compassionate
+ * register on death (per the Soul Charter); the tint follows suit.
+ */
+export interface IronmoorBannerStyle {
+  /** i18n key for the banner copy. */
+  key: string;
+  /** Hex colour string for the banner text. */
+  color: string;
+}
+
+export function ironmoorBannerStyle(isVictory: boolean): IronmoorBannerStyle {
+  return isVictory
+    ? { key: 'ui.gameOver.ironmoor_victory_banner', color: '#f7c270' }
+    : { key: 'ui.gameOver.ironmoor_death_banner', color: '#c8a0a0' };
+}
+
+/**
  * Pick title + subtitle i18n keys for the Game Over screen. Victory
  * always uses the single victory pair; death rotates through four
  * pairs based on the two caller-supplied indices (so the caller owns

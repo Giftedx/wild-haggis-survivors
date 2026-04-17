@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveGameOverPanelTheme,
   pickGameOverTitleKeys,
+  ironmoorBannerStyle,
   GAME_OVER_DEATH_TITLE_KEYS,
   GAME_OVER_DEATH_SUB_KEYS,
   GAME_OVER_VICTORY_TITLE_KEY,
@@ -100,5 +101,26 @@ describe('pickGameOverTitleKeys', () => {
       .toBe(GAME_OVER_DEATH_TITLE_KEYS[1]);
     expect(pickGameOverTitleKeys(false, 1.9, 2.1).subKey)
       .toBe(GAME_OVER_DEATH_SUB_KEYS[2]);
+  });
+});
+
+describe('ironmoorBannerStyle', () => {
+  it('victory banner is warm/gold copy + tint', () => {
+    const v = ironmoorBannerStyle(true);
+    expect(v.key).toBe('ui.gameOver.ironmoor_victory_banner');
+    expect(v.color).toBe('#f7c270');
+  });
+
+  it('death banner is rose-pink + compassionate copy', () => {
+    const d = ironmoorBannerStyle(false);
+    expect(d.key).toBe('ui.gameOver.ironmoor_death_banner');
+    expect(d.color).toBe('#c8a0a0');
+  });
+
+  it('victory and death never share a field (key nor colour)', () => {
+    const v = ironmoorBannerStyle(true);
+    const d = ironmoorBannerStyle(false);
+    expect(v.key).not.toBe(d.key);
+    expect(v.color).not.toBe(d.color);
   });
 });
