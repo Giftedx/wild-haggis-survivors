@@ -12,6 +12,13 @@ import { damageNumberStyle } from './damageNumberStyle';
 import { toastStackY, toastWrapWidth } from './toastLayout';
 import { resolveComboDisplay } from './comboDisplay';
 import {
+  resolveScreenShakeParams,
+  BOSS_SHAKE_BASE_AMP,
+  BOSS_SHAKE_DURATION_MS,
+  BOSS_DEATH_SHAKE_BASE_AMP,
+  BOSS_DEATH_SHAKE_DURATION_MS,
+} from './screenShakeParams';
+import {
   CEILIDH_MAGNET_DURATION_MS,
   CEILIDH_MAGNET_FLAT_PX,
   isCeilidhPulseMoment,
@@ -661,10 +668,14 @@ export class JuiceSystem {
   /** Heavy screen shake for boss events. Amplitude scales with motionScale. */
   bossShake(): void {
     const s = this.settings.load();
-    if (!s.screenShake) return;
-    const amp = 0.015 * s.motionScale;
-    if (amp <= 0) return;
-    this.scene.cameras.main.shake(400, amp);
+    const shake = resolveScreenShakeParams(
+      BOSS_SHAKE_BASE_AMP,
+      BOSS_SHAKE_DURATION_MS,
+      s.screenShake,
+      s.motionScale,
+    );
+    if (!shake) return;
+    this.scene.cameras.main.shake(shake.durationMs, shake.amplitude);
   }
 
   /** Boss kill celebration — gold particle shower + expanded kill burst.
@@ -675,9 +686,14 @@ export class JuiceSystem {
     // Big white flash
     this.flashWhite(400);
 
-    if (shakeOn) {
-      const amp = 0.025 * this.settings.load().motionScale;
-      if (amp > 0) this.scene.cameras.main.shake(600, amp);
+    const bossDeathShake = resolveScreenShakeParams(
+      BOSS_DEATH_SHAKE_BASE_AMP,
+      BOSS_DEATH_SHAKE_DURATION_MS,
+      shakeOn,
+      this.settings.load().motionScale,
+    );
+    if (bossDeathShake) {
+      this.scene.cameras.main.shake(bossDeathShake.durationMs, bossDeathShake.amplitude);
     }
 
     const baseCount = lowFx ? 12 : 30;
