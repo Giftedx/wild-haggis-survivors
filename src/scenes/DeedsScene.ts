@@ -109,8 +109,9 @@ export class DeedsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     // ── Deed grid ──
-    // 3 columns × 3 rows layout. Each card = ~280px wide, 130px tall.
-    // Panel grid spans y=104 to y=height-68 so back button fits below.
+    // 3-column layout; row count grows with the deed list. Cards shrink
+    // vertically as more deeds ship — gridHeight is fixed (y=104 →
+    // y=height-68 so the back button fits below).
     const cols = 3;
     const rows = Math.ceil(deeds.length / cols);
     const gridTop = 104;
