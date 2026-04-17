@@ -289,8 +289,6 @@ export interface BossConfig {
   key: string;
   /** i18n dot-path — resolved with `t(nameKey)` at render time. */
   nameKey: string;
-  /** @deprecated Use t(nameKey). Kept for auto-battler debug logging. */
-  name: string;
   /** i18n dot-path — resolved with `t(warningKey)` at show time */
   warningKey: string;
   spawnTimeSec: number;
@@ -313,7 +311,6 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'gordon',
     nameKey: 'boss.gordon.name',
-    name: 'Gordon the Chef',
     warningKey: 'ui.bossWarning.gordon',
     spawnTimeSec: 300,     // 5:00
     texture: 'boss_gordon',
@@ -326,7 +323,6 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'tour_bus',
     nameKey: 'boss.tour_bus.name',
-    name: 'The Tour Bus',
     warningKey: 'ui.bossWarning.tour_bus',
     spawnTimeSec: 600,     // 10:00
     texture: 'boss_tour_bus',
@@ -339,7 +335,6 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'the_laird',
     nameKey: 'boss.the_laird.name',
-    name: 'The Laird',
     warningKey: 'ui.bossWarning.the_laird',
     spawnTimeSec: 900,     // 15:00
     texture: 'boss_laird',
@@ -352,7 +347,6 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'hunter_general',
     nameKey: 'boss.hunter_general.name',
-    name: 'The Haggis Hunter General',
     warningKey: 'ui.bossWarning.hunter_general',
     spawnTimeSec: 1200,    // 20:00
     texture: 'boss_hunter_general',
@@ -365,7 +359,6 @@ export const BOSSES: BossConfig[] = [
   {
     key: 'taxman',
     nameKey: 'boss.taxman.name',
-    name: 'Death (The Taxman)',
     warningKey: 'ui.bossWarning.taxman',
     spawnTimeSec: 1500,    // 25:00
     texture: 'boss_taxman',
