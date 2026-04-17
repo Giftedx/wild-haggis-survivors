@@ -11,7 +11,10 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { recordRun, loadSave, isLastDeathFresh, writeSave } from '../utils/save';
+import {
+  recordRun, loadSave, isLastDeathFresh, writeSave,
+  bumpStandingStonePick, bumpAncestralEchoesTouched,
+} from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantDef } from '../data/variants';
@@ -1164,13 +1167,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.juice.showToast(t('ui.ancestralEcho.touch_toast'), '#b0d4ff');
           this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
           audio.playEchoTouch();
-          // Lifetime Chronicle counter — best-effort persistence.
-          try {
-            const cur = loadSave();
-            writeSave({ ...cur, ancestralEchoesTouched: (cur.ancestralEchoesTouched ?? 0) + 1 });
-          } catch {
-            /* best-effort */
-          }
+          bumpAncestralEchoesTouched();
         },
       });
       this.ancestralEcho.spawn();
@@ -1200,15 +1197,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.juice.showToast(t('ui.standingStones.grant_toast', { title }), '#ffe080');
         this.caption('standing_stones_pick', t(boon.descKey), '#ffe080', 3500);
         audio.playStoneGrant();
-        // Lifetime Chronicle counter — best-effort persistence.
-        try {
-          const cur = loadSave();
-          const picked = { ...(cur.standingStonesPicked ?? {}) };
-          picked[boon.id] = (picked[boon.id] ?? 0) + 1;
-          writeSave({ ...cur, standingStonesPicked: picked });
-        } catch {
-          /* best-effort */
-        }
+        bumpStandingStonePick(boon.id);
       },
     });
     this.standingStones.spawn();

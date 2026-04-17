@@ -1,14 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { VARIANT_KEYS } from '../data/variants';
 import {
   MAX_RUN_HISTORY,
   SAVE_SCHEMA_VERSION,
   applyRunSummary,
+  bumpAncestralEchoesTouched,
+  bumpCeilidhPulsesLifetime,
+  bumpStandingStonePick,
   coerceSelectedVariant,
   computeGoldReward,
   createDefaultSave,
   evaluateVariantUnlocks,
+  loadSave,
   migrateSave,
+  writeSave,
 } from './save';
 import type { RoutePick } from '../data/routes';
 
@@ -427,5 +432,71 @@ describe('save schema v3 → v4 (W2 routes)', () => {
       { level: 10, bossKills: 3, variantKey: 'classic', weaponKeys: ['thistle_shot'], routes: picks },
     );
     expect(result.save.runHistory[0].routes).toEqual(picks);
+  });
+});
+
+describe('lifetime-counter bumps', () => {
+  let originalLocalStorage: Storage | undefined;
+
+  beforeEach(() => {
+    originalLocalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+    const mem = new Map<string, string>();
+    (globalThis as { localStorage: Storage }).localStorage = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => { mem.set(k, v); },
+      removeItem: (k: string) => { mem.delete(k); },
+      clear: () => { mem.clear(); },
+      key: () => null,
+      get length() { return mem.size; },
+    } as Storage;
+  });
+
+  afterEach(() => {
+    if (originalLocalStorage === undefined) {
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    } else {
+      (globalThis as { localStorage: Storage }).localStorage = originalLocalStorage;
+    }
+  });
+
+  it('bumpStandingStonePick starts a new counter from 0', () => {
+    bumpStandingStonePick('mending');
+    expect(loadSave().standingStonesPicked).toEqual({ mending: 1 });
+  });
+
+  it('bumpStandingStonePick increments existing counters', () => {
+    writeSave({ ...createDefaultSave(), standingStonesPicked: { fire: 4 } });
+    bumpStandingStonePick('fire');
+    bumpStandingStonePick('fire');
+    expect(loadSave().standingStonesPicked).toEqual({ fire: 6 });
+  });
+
+  it('bumpStandingStonePick keeps unrelated boons untouched', () => {
+    writeSave({ ...createDefaultSave(), standingStonesPicked: { mending: 2, haste: 1 } });
+    bumpStandingStonePick('fire');
+    expect(loadSave().standingStonesPicked).toEqual({ mending: 2, haste: 1, fire: 1 });
+  });
+
+  it('bumpAncestralEchoesTouched starts a new counter from 0', () => {
+    bumpAncestralEchoesTouched();
+    expect(loadSave().ancestralEchoesTouched).toBe(1);
+  });
+
+  it('bumpAncestralEchoesTouched increments existing counters', () => {
+    writeSave({ ...createDefaultSave(), ancestralEchoesTouched: 5 });
+    bumpAncestralEchoesTouched();
+    bumpAncestralEchoesTouched();
+    expect(loadSave().ancestralEchoesTouched).toBe(7);
+  });
+
+  it('bumpCeilidhPulsesLifetime starts a new counter from 0', () => {
+    bumpCeilidhPulsesLifetime();
+    expect(loadSave().ceilidhPulsesLifetime).toBe(1);
+  });
+
+  it('bumpCeilidhPulsesLifetime increments existing counters', () => {
+    writeSave({ ...createDefaultSave(), ceilidhPulsesLifetime: 14 });
+    bumpCeilidhPulsesLifetime();
+    expect(loadSave().ceilidhPulsesLifetime).toBe(15);
   });
 });

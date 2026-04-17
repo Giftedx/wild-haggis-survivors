@@ -546,6 +546,44 @@ export function wipeIronmoorHistory(save: SaveData): SaveData {
   return { ...save, runHistory: filtered };
 }
 
+/**
+ * Lifetime counter bumps — best-effort persistence used by Standing
+ * Stones, Ancestral Echoes, and Ceilidh Chain on each in-run trigger.
+ *
+ * Each helper does the load → mutate → write pattern that was
+ * inlined at three call sites with identical try/catch wrapping.
+ * Centralising lets the storage failure mode evolve in one place
+ * (silent now; could become a debug warning later).
+ */
+export function bumpStandingStonePick(boonId: string): void {
+  try {
+    const cur = loadSave();
+    const picked = { ...(cur.standingStonesPicked ?? {}) };
+    picked[boonId] = (picked[boonId] ?? 0) + 1;
+    writeSave({ ...cur, standingStonesPicked: picked });
+  } catch {
+    /* best-effort */
+  }
+}
+
+export function bumpAncestralEchoesTouched(): void {
+  try {
+    const cur = loadSave();
+    writeSave({ ...cur, ancestralEchoesTouched: (cur.ancestralEchoesTouched ?? 0) + 1 });
+  } catch {
+    /* best-effort */
+  }
+}
+
+export function bumpCeilidhPulsesLifetime(): void {
+  try {
+    const cur = loadSave();
+    writeSave({ ...cur, ceilidhPulsesLifetime: (cur.ceilidhPulsesLifetime ?? 0) + 1 });
+  } catch {
+    /* best-effort */
+  }
+}
+
 export function getWinRate(history: RunHistoryEntry[]): number {
   if (history.length === 0) return 0;
   const wins = history.filter((e) => e.isVictory).length;
