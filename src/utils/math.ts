@@ -28,3 +28,15 @@ export function clamp01(x: number): number {
   if (x > 1) return 1;
   return x;
 }
+
+/**
+ * Clamp a value to the closed [lo, hi] range. The two-argument
+ * ceiling + floor variants were private helpers in menuLayout and
+ * nearbySpawn — sharing here lets any pure layout / pickup module
+ * reach for the same one.
+ */
+export function clamp(v: number, lo: number, hi: number): number {
+  if (v < lo) return lo;
+  if (v > hi) return hi;
+  return v;
+}

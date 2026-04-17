@@ -27,11 +27,7 @@ export const MENU_PANEL_HEIGHT = 144;
 /** Extra padding below the panel bottom where ambient enemies stay out. */
 export const MENU_AMBIENT_ENEMY_PANEL_PAD = 26;
 
-function clamp(v: number, lo: number, hi: number): number {
-  if (v < lo) return lo;
-  if (v > hi) return hi;
-  return v;
-}
+import { clamp } from '../utils/math';
 
 export interface MenuLayout {
   buttonY: number;

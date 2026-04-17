@@ -23,12 +23,7 @@ export interface NearbyPosInput {
   rand: () => number;
 }
 
-/** Clamp `v` into `[lo, hi]`. */
-function clamp(v: number, lo: number, hi: number): number {
-  if (v < lo) return lo;
-  if (v > hi) return hi;
-  return v;
-}
+import { clamp } from '../../utils/math';
 
 /**
  * Pick a world-space position a random distance from the player in a

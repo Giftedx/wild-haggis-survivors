@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotateVectorIntoPrecomputed, clamp01 } from './math';
+import { rotateVectorIntoPrecomputed, clamp01, clamp } from './math';
 
 function expectVec(v: { x: number; y: number }, ex: number, ey: number) {
   expect(v.x).toBeCloseTo(ex, 8);
@@ -93,5 +93,33 @@ describe('clamp01', () => {
 
   it('NaN stays NaN (matches the old pattern)', () => {
     expect(Number.isNaN(clamp01(NaN))).toBe(true);
+  });
+});
+
+describe('clamp', () => {
+  it('values in [lo, hi] pass through', () => {
+    expect(clamp(5, 0, 10)).toBe(5);
+    expect(clamp(0, 0, 10)).toBe(0);
+    expect(clamp(10, 0, 10)).toBe(10);
+  });
+
+  it('below-lo clamps to lo', () => {
+    expect(clamp(-5, 0, 10)).toBe(0);
+  });
+
+  it('above-hi clamps to hi', () => {
+    expect(clamp(999, 0, 10)).toBe(10);
+  });
+
+  it('supports negative ranges', () => {
+    expect(clamp(-5, -10, -1)).toBe(-5);
+    expect(clamp(-100, -10, -1)).toBe(-10);
+    expect(clamp(50, -10, -1)).toBe(-1);
+  });
+
+  it('clamp(x, 0, 1) matches clamp01(x)', () => {
+    for (const x of [-1, 0, 0.25, 0.75, 1, 2]) {
+      expect(clamp(x, 0, 1)).toBe(clamp01(x));
+    }
   });
 });
