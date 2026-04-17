@@ -412,8 +412,7 @@ export class MenuScene extends Phaser.Scene {
     if (unlocked && !selected) {
       this.variantSelectHit = badge;
       badge.setInteractive({ useHandCursor: true });
-      badge.on('pointerover', () => badge.setFillStyle(0x0b73d1));
-      badge.on('pointerout', () => badge.setFillStyle(COLORS.SCOTTISH_BLUE));
+      attachButtonHoverFill(badge, COLORS.SCOTTISH_BLUE, 0x0b73d1);
       badge.on('pointerdown', () => {
         audio.playClick();
         this.selectVariant(variant.key);
