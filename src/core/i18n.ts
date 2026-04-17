@@ -2119,16 +2119,6 @@ export const SCS_STRINGS: LocaleTree = {
       hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
       taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
     },
-    tutorial: {
-      move: 'WASD or stick tae roam — wapens fire theirsels. SPACE: a cheeky dash through trouble (an through beasties).',
-      gem: 'Gather gems tae level. Max a wapen plus its paired curio, then pop a kist fer a legendary glow-up.',
-      drift: 'Yer wee haggis drifts clockwise — crooked legs! Lean intae it.',
-      elite_affix_first: '{name} — gowd elites cairry a trait. Tha tag by tha bar tells ye whilk.',
-      moor_moment_first: 'Tha moor gies wee gifts noo an then — a line, a boon, a breath. Bide wi it.',
-      ceilidh_chain_first: 'Ceilidh Chain — every 8th cull in a streak pulls coins an gems in close. Keep tha jig gaun.',
-      standing_stones_first: 'Standin Stanes — three boons on tha moor. Walk up tae tha wan ye want; tha ither twa crummle.',
-      ancestral_echo_first: 'Yer ghaist fae last run\'s oot on tha moor. Touch it fer gold an a wee heal — it only lingers 30s.',
-    },
     game: {
       evolution_primed: 'Legend ready: {name} — crack a kist an let it loose!',
       level_banner: 'Level {level} — get in!',
@@ -2259,6 +2249,16 @@ export const SCS_STRINGS: LocaleTree = {
     death_fall: 'Hooves doon — tha moor quaitens.',
     low_hp: 'HP dangerously low — hertbeat dunders.',
     act_intermission_open: 'Road splits — pick a route wi 1, 2, or 3.',
+  },
+  tutorial: {
+    move: 'WASD or stick tae roam — wapens fire theirsels. SPACE: a cheeky dash through trouble (an through beasties).',
+    gem: 'Gather gems tae level. Max a wapen plus its paired curio, then pop a kist fer a legendary glow-up.',
+    drift: 'Yer wee haggis drifts clockwise — crooked legs! Lean intae it.',
+    elite_affix_first: '{name} — gowd elites cairry a trait. Tha tag by tha bar tells ye whilk.',
+    moor_moment_first: 'Tha moor gies wee gifts noo an then — a line, a boon, a braith. Bide wi it.',
+    ceilidh_chain_first: 'Ceilidh Chain — every 8th cull in a streak pulls coins an gems in close. Keep tha jig gaun.',
+    standing_stones_first: 'Standin Stanes — three boons on tha moor. Walk up tae tha wan ye want; tha ither twa crummle.',
+    ancestral_echo_first: 'Yer ghaist fae last run\'s oot on tha moor. Touch it fer gold an a wee heal — it only lingers 30s.',
   },
   curse: {
     heavy_legs: {
