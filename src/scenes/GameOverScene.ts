@@ -26,6 +26,7 @@ import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOve
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
 import { brightenColor } from '../utils/brightenColor';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -716,8 +717,7 @@ export class GameOverScene extends Phaser.Scene {
       delay,
     });
 
-    button.on('pointerover', () => button.setFillStyle(brightenColor(fill, 16)));
-    button.on('pointerout', () => button.setFillStyle(fill));
+    attachButtonHoverFill(button, fill, brightenColor(fill, 16));
     button.on('pointerdown', onClick);
   }
 

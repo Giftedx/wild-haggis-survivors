@@ -238,8 +238,7 @@ export class CurseScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    btn.on('pointerover', () => btn.setFillStyle(brightenColor(opts.accentColor, 15)));
-    btn.on('pointerout', () => btn.setFillStyle(opts.accentColor));
+    attachButtonHoverFill(btn, opts.accentColor, brightenColor(opts.accentColor, 15));
     btn.on('pointerdown', opts.onPick);
   }
 }

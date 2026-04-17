@@ -304,8 +304,7 @@ export class MainMenuScene extends Phaser.Scene {
       }
     };
 
-    startBtn.on('pointerover', () => startBtn.setFillStyle(brightenColor(COLORS.SCOTTISH_BLUE, 18)));
-    startBtn.on('pointerout', () => startBtn.setFillStyle(COLORS.SCOTTISH_BLUE));
+    attachButtonHoverFill(startBtn, COLORS.SCOTTISH_BLUE, brightenColor(COLORS.SCOTTISH_BLUE, 18));
     startBtn.on('pointerdown', goPrimary);
 
     startTxt.setInteractive({ useHandCursor: true });
