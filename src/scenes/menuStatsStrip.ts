@@ -1,6 +1,7 @@
 import { t } from '../core/i18n';
 import type { RunHistoryEntry } from '../utils/save';
 import { getAverageSurvivalTime, getTrend, getWinRate } from '../utils/save';
+import { formatClockTime } from '../utils/formatClockTime';
 
 /**
  * Inputs for the Menu-scene stats strip: the aggregate save counters
@@ -47,8 +48,6 @@ export function formatMenuHistorySummary(
   if (runHistory.length === 0) return null;
   const winRate = Math.round(getWinRate(runHistory as RunHistoryEntry[]) * 100);
   const avgSec = Math.floor(getAverageSurvivalTime(runHistory as RunHistoryEntry[]));
-  const avgMins = Math.floor(avgSec / 60);
-  const avgSecsStr = Math.floor(avgSec % 60).toString().padStart(2, '0');
   const trendKey = getTrend(runHistory as RunHistoryEntry[]);
   const trendLabel = trendKey === 'improving'
     ? t('ui.menu.trend_improving')
@@ -58,18 +57,14 @@ export function formatMenuHistorySummary(
   return t('ui.menu.history_summary', {
     totalRuns,
     winRate,
-    avgTime: `${avgMins}:${avgSecsStr}`,
+    avgTime: formatClockTime(avgSec),
     trend: trendLabel,
   });
 }
 
 export function formatMenuStatsStrip(input: MenuStatsInput): string {
-  const safeSeconds = Math.max(0, Math.floor(input.bestTime));
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = Math.floor(safeSeconds % 60);
-  const bestTime = `${mins}:${secs.toString().padStart(2, '0')}`;
   const vars = {
-    bestTime,
+    bestTime: formatClockTime(input.bestTime),
     bestKills: input.bestKills,
     bestCombo: input.bestCombo,
     totalRuns: input.totalRuns,
