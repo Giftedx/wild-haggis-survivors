@@ -19,7 +19,7 @@ import { attachButtonHoverFill } from '../ui/buttonHover';
 import { clickToScene } from './clickToScene';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
-import { resolveBackButtonPalette } from './backButtonPalette';
+import { createBackButton } from './createBackButton';
 import { resolveShopRowBgColor } from './shopRowBg';
 import { installShopBackdrop } from './installShopBackdrop';
 
@@ -78,20 +78,10 @@ export class MetaShopScene extends Phaser.Scene {
     lineGfx.lineBetween(24, 108, width - 24, 108);
     lineGfx.lineBetween(24, 510, width - 24, 510);
 
-    const backPalette = resolveBackButtonPalette();
-    this.backButton = this.add
-      .rectangle(width / 2, height - 28, 200, 38, backPalette.idle, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add
-      .text(width / 2, height - 28, t('ui.metaShop.back'), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: '#e8d4a0',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-
-    attachButtonHoverFill(this.backButton, backPalette.idle, backPalette.hover);
+    this.backButton = createBackButton(this, {
+      x: width / 2, y: height - 28, width: 200, height: 38,
+      label: t('ui.metaShop.back'), fontSize: '15px',
+    });
     this.backButton.on('pointerdown', clickToScene(this, 'MainMenu'));
 
     // Page indicator
