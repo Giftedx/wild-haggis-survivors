@@ -103,10 +103,14 @@ export const ROUTES: readonly RouteDef[] = [
     modifierDeltas: { spawnIntervalMult: 0.70 },
     onResume: (ctx) => {
       ctx.spawnSystem.forceSpawn('haggis_hunter', { elite: true });
-      // Wall-clock release: restoring the modifier here lets the rest of
-      // the system pick up the change on its next segment refresh.
+      // Wall-clock release: restore both the modifier bag (source of
+      // truth for new SpawnSystem reads) AND the SpawnSystem's cached
+      // private field — the cache is only refreshed when
+      // `setSpawnIntervalMult` is called explicitly, so a bag-only
+      // write would leave the 0.70 throttle in place forever.
       ctx.timeManager.scheduleRealTime(90_000, () => {
         ctx.modifiers.spawnIntervalMult = 1;
+        ctx.spawnSystem.setSpawnIntervalMult(1);
       });
     },
   },

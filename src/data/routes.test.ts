@@ -81,6 +81,7 @@ function makeCtx(overrides: Partial<RouteResumeContext> = {}): RouteResumeContex
       forceSpawn: vi.fn(),
       pauseSpawnsFor: vi.fn(),
       setEnemyHpMultiplier: vi.fn(),
+      setSpawnIntervalMult: vi.fn(),
     } as unknown as RouteResumeContext['spawnSystem'],
     timeManager: {
       scheduleRealTime: vi.fn((_ms: number, cb: () => void) => cb()),
@@ -125,6 +126,9 @@ describe('routes.onResume — picker A', () => {
     );
     // makeCtx's scheduleRealTime fires immediately — so modifier should be reset to 1.
     expect(ctx.modifiers.spawnIntervalMult).toBe(1);
+    // Regression guard: the release must also propagate to SpawnSystem's
+    // cached private field, otherwise the 0.70 throttle sticks forever.
+    expect(ctx.spawnSystem.setSpawnIntervalMult).toHaveBeenCalledWith(1);
   });
 });
 

@@ -1236,6 +1236,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runModifiers.routePicks.push(pick);
       this.banter?.request('route_picked', { tag: pick.routeKey });
       applyRouteModifierDeltas(this.runModifiers, route);
+      // SpawnSystem caches `spawnIntervalMult` as a private field read off
+      // the bag only at run start — mid-run routes that rewrite the bag
+      // entry (`through_the_kirkyard` 0.70, `run_for_the_hills` 0.75)
+      // won't actually throttle cadence unless we resync the system
+      // field. Cheap call; a no-op for routes whose modifierDeltas skip
+      // the field.
+      this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
       this.runActState.advanceToAct(
         (actN + 1) as 1 | 2 | 3,
         this.spawnSystem.getGameTimeSec(),
