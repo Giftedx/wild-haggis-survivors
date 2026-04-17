@@ -10,6 +10,7 @@
 import Phaser from 'phaser';
 import { BIOMES } from '../data/biomes';
 import type { BiomeManager } from './BiomeManager';
+import { computeBiomeOverlayRadii } from './biomeOverlayRadius';
 
 const OVERLAY_DEPTH = -3.5; // between terrain (-4) and deco sprites (-3)
 /**
@@ -18,10 +19,6 @@ const OVERLAY_DEPTH = -3.5; // between terrain (-4) and deco sprites (-3)
  * circles over the whole map.
  */
 const SEED_OVERLAY_ALPHA = 0.092;
-/** Min radius so sparse seeds still cover corners; scales with neighbour distance. */
-const MIN_RADIUS_FRAC = 0.21;
-/** Radius vs half the distance to the nearest other seed (overlap ≈ smooth blend). */
-const NEIGHBOUR_RADIUS_MUL = 0.94;
 
 export class BiomeRenderer {
   private gfx: Phaser.GameObjects.Graphics;
@@ -37,25 +34,12 @@ export class BiomeRenderer {
     this.gfx.clear();
 
     const { seeds, worldWidth, worldHeight } = manager.getLayout();
-    const minDim = Math.min(worldWidth, worldHeight);
-    const minCoverR = minDim * MIN_RADIUS_FRAC;
+    const radii = computeBiomeOverlayRadii(seeds, worldWidth, worldHeight);
 
     for (let i = 0; i < seeds.length; i++) {
-      let minDist = Infinity;
-      for (let j = 0; j < seeds.length; j++) {
-        if (i === j) continue;
-        const dx = seeds[i].x - seeds[j].x;
-        const dy = seeds[i].y - seeds[j].y;
-        const d = Math.sqrt(dx * dx + dy * dy);
-        if (d < minDist) minDist = d;
-      }
-      if (!Number.isFinite(minDist) || minDist <= 0) {
-        minDist = minDim;
-      }
-      const radius = Math.max(minDist * NEIGHBOUR_RADIUS_MUL * 0.5, minCoverR);
       const tint = BIOMES[seeds[i].biome].tint;
       this.gfx.fillStyle(tint, SEED_OVERLAY_ALPHA);
-      this.gfx.fillEllipse(seeds[i].x, seeds[i].y, radius * 2, radius * 2);
+      this.gfx.fillEllipse(seeds[i].x, seeds[i].y, radii[i] * 2, radii[i] * 2);
     }
   }
 
