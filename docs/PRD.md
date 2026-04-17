@@ -87,17 +87,18 @@ core gameplay feel. Ralph-mode managed.
   imports).
 
 ### P3 — Accessibility Finish-Work
-- [ ] Exercise the Comfort panel end-to-end in CI via a smoke test:
+- [x] Exercise the Comfort panel end-to-end in CI via a smoke test:
   motionScale=0 + highContrastUi + captions + banter=off through
-  one full boss encounter. (`e2e/comfort-smoke.spec.ts`)
-- [ ] Document the a11y matrix in `docs/DESIGN_SOUL.md` so designers
-  can see every knob at a glance.
+  one full boss encounter. Done 2026-04-17 —
+  `e2e/comfort-smoke.spec.ts` (commit 5696ddb).
+- [x] Document the a11y matrix in `docs/DESIGN_SOUL.md` so designers
+  can see every knob at a glance. Done 2026-04-17.
 
 ### P4 — Content Authoring Velocity
-- [ ] The `banter.ts` sub-pool schema is tag-driven — land a
+- [x] The `banter.ts` sub-pool schema is tag-driven — land a
   one-page "how to add a new boss / variant voice" note so future
-  content drops don't require engine diffs.
-  (`docs/BANTER_AUTHORING.md`)
+  content drops don't require engine diffs. Done 2026-04-17 —
+  `docs/BANTER_AUTHORING.md` (commit c621b09).
 - [ ] Consider extending banter to **weapon evolution moments** and
   **curse acceptance** — both have narrative weight and the
   priority slots are open (30-50 range).
@@ -108,8 +109,9 @@ core gameplay feel. Ralph-mode managed.
 - [x] Ship a telemetry toggle (opt-in) for run-completion distribution
   + death-cause histogram. Done 2026-04-17 — see "Analytics /
   portal telemetry" under shipped systems.
-- [ ] DebugOverlay exists — surface active pool sizes, tween count,
-  scheduled-music-events lookahead depth behind a keybind.
+- [x] DebugOverlay exists — surface active pool sizes, tween count,
+  scheduled-music-events lookahead depth behind a keybind. Done
+  2026-04-17 (commit 199083f).
 
 ## Acceptance Criteria (each queue item)
 

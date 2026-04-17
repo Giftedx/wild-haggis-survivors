@@ -37,6 +37,38 @@ This document anchors **player-facing tone**, **UX priorities**, and **where “
 
 ---
 
+## Accessibility & comfort matrix
+
+Every knob shipped under the Comfort banner, in one glance. All are persisted by `SettingsManager` (`whs_game_settings`) with an independent `settingsVersion` gate; the Comfort smoke test (`e2e/comfort-smoke.spec.ts`) exercises the strictest combo (motionScale 0 + highContrastUi + captions + reduceParticles + banter off) through a full boss encounter in CI.
+
+| Control | Type | Default | What it changes | Primary readers |
+|---|---|---|---|---|
+| `masterVolume` | slider 0 – 1 | 1.0 | Global SFX + music bus | `AudioSystem`, `ProceduralMusicEngine` |
+| `sfxVolume` | slider 0 – 1 | 1.0 | SFX-only bus | `AudioSystem` |
+| `musicVolume` | slider 0 – 1 | 1.0 | Music-only bus | `ProceduralMusicEngine` |
+| `uiScale` | slider 0.8 – 1.4 | 1.0 | Scene text, buttons, HUD, minimap size | every scene (`.setScale(uiScale)`) |
+| `motionScale` | slider 0 – 1 | 1.0 | Tween amplitude multiplier (0 = reduce motion) | `JuiceSystem`, boss intros, settings title breath |
+| `screenShake` | toggle | on | Camera shake on kills and hits | `JuiceSystem.shake()` |
+| `damageNumbers` | toggle | on | Floating damage text | `JuiceSystem.damageNumber()` |
+| `reduceParticles` | toggle | off | Skips ambient decoration particles | MainMenu hearth, Settings heather strip, MenuScene |
+| `highContrastUi` | toggle | off | Swaps scene palettes to high-contrast variants | every scene's palette resolver |
+| `captionsEnabled` | toggle | off | On-screen captions for audio events | caption system |
+| `telemetryOptIn` | toggle | off | Emits `run_start` / `run_end` / subscriber events | `AnalyticsManager` |
+| `skipActIntermissions` | toggle | off | Applies `DEFAULT_ROUTE_ON_SKIP` instead of showing the W2 picker | `GameScene.launchActIntermission` |
+| `ironmoorMode` | toggle | off | W66 opt-in permadeath mode with wipe-on-death | `GameScene`, `SaveManager` |
+| `banterFrequency` | cycle | Natural | Wheesht / Sparing / Natural / Gabby throttle | `BanterSystem` |
+| `localeKey` | cycle | en | English baseline / Scots overlay (falls back to en for unresolved keys) | `setLocale` → every `t()` call |
+
+**Comfort invariants** (enforced by tests where practical):
+
+- Settings persist across scene restart and browser reload. The Comfort smoke asserts `motionScale`, `highContrastUi`, `captionsEnabled`, `banterFrequency`, `reduceParticles` all survive a boss encounter.
+- `SettingsScene` itself respects `uiScale` and `highContrastUi` — no scene is exempt (the Phase 3 hole where Settings ignored its own knobs was closed in the Soul Charter pass).
+- `motionScale = 0` disables tween amplitude, not tween duration, so layout timing stays consistent for players who reduce motion.
+- `reduceParticles` gates ambient decoration only; gameplay-critical feedback (hit flashes, damage numbers if enabled) is never culled by this flag.
+- The extremes combo (all-strict Comfort profile) must never produce a page error — guarded by `e2e/comfort-smoke.spec.ts`.
+
+---
+
 ## Objectives (execution order)
 
 1. **Stabilize high-impact UX first** — Truthful HUD, non-overlapping results, clear progression language.
