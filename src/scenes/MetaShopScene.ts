@@ -232,10 +232,7 @@ export class MetaShopScene extends Phaser.Scene {
 
     entries.push({
       rect: this.backButton,
-      activate: () => {
-        audio.playClick();
-        this.scene.start('MainMenu');
-      },
+      activate: clickToScene(this, 'MainMenu'),
     });
     this.gamepadNav = new GamepadMenuNav(this, entries);
   }
