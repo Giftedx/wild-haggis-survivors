@@ -270,14 +270,14 @@ export class ChronicleScene extends Phaser.Scene {
     this.prevBtn = this.add
       .rectangle(width / 2 - 120, paginationY, 72, 24, 0x252540, 1)
       .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 - 120, paginationY, '< PREV', CHRONICLE_PAGER_BTN_TEXT)
+    this.add.text(width / 2 - 120, paginationY, t('ui.chronicle.prev'), CHRONICLE_PAGER_BTN_TEXT)
       .setOrigin(0.5).setScale(uiScale);
     this.prevBtn.on('pointerdown', () => this.turnPage(-1));
 
     this.nextBtn = this.add
       .rectangle(width / 2 + 120, paginationY, 72, 24, 0x252540, 1)
       .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 + 120, paginationY, 'NEXT >', CHRONICLE_PAGER_BTN_TEXT)
+    this.add.text(width / 2 + 120, paginationY, t('ui.chronicle.next'), CHRONICLE_PAGER_BTN_TEXT)
       .setOrigin(0.5).setScale(uiScale);
     this.nextBtn.on('pointerdown', () => this.turnPage(1));
 

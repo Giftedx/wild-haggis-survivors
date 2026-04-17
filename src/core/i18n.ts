@@ -157,6 +157,8 @@ export const EN_STRINGS: LocaleTree = {
 
       // ── Actions ──
       back: 'BACK',
+      prev: '< PREV',
+      next: 'NEXT >',
     },
     deeds: {
       title: 'YIR DEEDS',
@@ -1889,6 +1891,8 @@ export const SCS_STRINGS: LocaleTree = {
         empty: 'Ye\'ve no picked a road yet. Heid oot, choose canny.',
       },
       back: 'BACK',
+      prev: '< PREV',
+      next: 'NEXT >',
     },
     deeds: {
       title: 'YER DEEDS',
