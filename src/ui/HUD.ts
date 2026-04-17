@@ -11,6 +11,7 @@ import { weaponPulseState } from './hudWeaponPulse';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import { targetHpBarColor, packRgbColor } from './hudHpBarColor';
 import { resolveWaveLabel } from './hudWaveLabel';
+import { shouldTriggerXpLevelUpFlash } from './hudXpFlashGate';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -589,7 +590,7 @@ export class HUD {
     this.xpBarHighlight.width = xpFillWidth;
 
     // XP bar level-up flash — brighter, wider pulse when the bar resets
-    if (this.prevXpFraction > 0.8 && xpFraction < 0.2) {
+    if (shouldTriggerXpLevelUpFlash(this.prevXpFraction, xpFraction)) {
       // Primary bright flash across the bar
       const flash = this.addEl(this.scene.add.rectangle(
         this.xpBarBg.x, this.xpBarBg.y,
