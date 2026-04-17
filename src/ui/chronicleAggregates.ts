@@ -573,6 +573,39 @@ export function formatHearthBeatsLine(moorMomentsLifetime: number): string {
   return t('ui.chronicle.hearth_beats_line', { count: n });
 }
 
+// ── Per-variant run stats ────────────────────────────────────────────
+
+export interface VariantRunStats {
+  /** Total runs (won or lost) on this variant in the history window. */
+  runs: number;
+  /** Total victories on this variant in the history window. */
+  wins: number;
+}
+
+/**
+ * Per-variant win/run tally drawn from runHistory. Used by the menu
+ * variant carousel to show unlocked variants' lifetime conquests so
+ * the player can track which variants they've cleared without
+ * leaving the loadout panel.
+ *
+ * Bounded by MAX_RUN_HISTORY (FIFO) — a long-tenured player won't
+ * see the full lifetime, but the recent-window read is what the rest
+ * of the chronicle uses too.
+ */
+export function computeVariantRunStats(
+  history: readonly RunHistoryEntry[],
+  variantKey: string,
+): VariantRunStats {
+  let runs = 0;
+  let wins = 0;
+  for (const e of history) {
+    if (e.variantKey !== variantKey) continue;
+    runs++;
+    if (e.isVictory) wins++;
+  }
+  return { runs, wins };
+}
+
 // ── Curse stats ──────────────────────────────────────────────────────
 
 export interface CurseLifetimeStats {

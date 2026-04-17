@@ -177,6 +177,8 @@ export const EN_STRINGS: LocaleTree = {
       requirement_ready: 'Ye earned this one. Ready when ye are.',
       requirement_progress: '{label}: {current} / {required}',
       requirement_locked: 'Unlock',
+      /** Lifetime tally chip on unlocked variant cards — silent at 0 runs. */
+      variant_tally: '✦ {wins} won · {runs} runs',
       status_current: 'Yir run archetype right now',
       status_switch: 'Switch before ye head oot',
       status_locked: 'Locked — earn it',
@@ -2054,6 +2056,7 @@ export const SCS_STRINGS: LocaleTree = {
       requirement_ready: 'Ye earned this wan. Ready whan ye are.',
       requirement_progress: '{label}: {current} / {required}',
       requirement_locked: 'Unlock',
+      variant_tally: '✦ {wins} wan · {runs} runs',
       status_current: 'Yer run archetype richt noo',
       status_switch: 'Switch afore ye heid oot',
       status_locked: 'Locked — earn it',

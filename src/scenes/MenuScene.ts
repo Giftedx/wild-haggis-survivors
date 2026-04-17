@@ -16,6 +16,7 @@ import {
   getVariantUnlockProgress,
   isVariantUnlocked,
 } from '../data/variants';
+import { computeVariantRunStats } from '../ui/chronicleAggregates';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -328,6 +329,31 @@ export class MenuScene extends Phaser.Scene {
       }
     );
     this.variantPanelElements.push(nameText, flavorText, modifierText, progressLine);
+
+    // Lifetime tally for unlocked variants — drawn from the recent
+    // runHistory window. Silent on locked tiles (the unlock progress
+    // bar already owns the right-of-modifier slot for them) and on
+    // unlocked tiles with zero recorded runs (fresh unlocks).
+    if (unlocked) {
+      const variantStats = computeVariantRunStats(this.saveData.runHistory ?? [], variant.key);
+      if (variantStats.runs > 0) {
+        const tallyText = this.add.text(
+          infoX,
+          panelY + 76,
+          t('ui.loadout.variant_tally', {
+            wins: variantStats.wins,
+            runs: variantStats.runs,
+          }),
+          {
+            fontFamily: 'monospace',
+            fontSize: '11px',
+            color: variantStats.wins > 0 ? '#9de6a8' : '#a4a9b4',
+            fontStyle: 'italic',
+          },
+        );
+        this.variantPanelElements.push(tallyText);
+      }
+    }
 
     const barX = infoX;
     const barY = panelY + 66;

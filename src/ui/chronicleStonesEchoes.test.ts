@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeCurseStats,
   computeStandingStonesStats,
+  computeVariantRunStats,
   formatAncestralEchoesLine,
   formatCurseStatsLine,
   formatHearthBeatsLine,
@@ -327,5 +328,29 @@ describe('listCursesBested', () => {
 
   it('skips empty curseKey strings', () => {
     expect(listCursesBested([makeEntry({ curseKey: '', isVictory: true })])).toEqual(new Set());
+  });
+});
+
+describe('computeVariantRunStats', () => {
+  it('returns zeros for an unknown variant', () => {
+    expect(computeVariantRunStats([makeEntry({ variantKey: 'classic' })], 'iron_belly'))
+      .toEqual({ runs: 0, wins: 0 });
+  });
+
+  it('counts runs and wins matching the variant key', () => {
+    const stats = computeVariantRunStats(
+      [
+        makeEntry({ variantKey: 'classic', isVictory: false }),
+        makeEntry({ variantKey: 'classic', isVictory: true }),
+        makeEntry({ variantKey: 'classic', isVictory: true }),
+        makeEntry({ variantKey: 'iron_belly', isVictory: true }),
+      ],
+      'classic',
+    );
+    expect(stats).toEqual({ runs: 3, wins: 2 });
+  });
+
+  it('handles an empty history without throwing', () => {
+    expect(computeVariantRunStats([], 'classic')).toEqual({ runs: 0, wins: 0 });
   });
 });
