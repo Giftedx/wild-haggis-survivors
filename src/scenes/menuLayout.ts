@@ -25,7 +25,7 @@ export const MENU_PANEL_Y_MIN = 412;
 /** Fixed panel height — design target. */
 export const MENU_PANEL_HEIGHT = 144;
 /** Extra padding below the panel bottom where ambient enemies stay out. */
-export const MENU_AMBIENT_ENEMY_PANEL_PAD = 26;
+const MENU_AMBIENT_ENEMY_PANEL_PAD = 26;
 
 import { clamp } from '../utils/math';
 

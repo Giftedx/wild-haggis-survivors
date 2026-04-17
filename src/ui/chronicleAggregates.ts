@@ -643,7 +643,7 @@ export function computeStandingStonesStats(save: SaveData): StandingStonesStats 
  * appends the player's favourite stone — surfaces existing
  * StandingStonesStats.favouriteBoon as a localised stone title.
  */
-export const STANDING_STONES_FAVOURITE_THRESHOLD = 3;
+const STANDING_STONES_FAVOURITE_THRESHOLD = 3;
 
 export function formatStandingStonesLine(stats: StandingStonesStats): string {
   if (stats.total === 0) return '';

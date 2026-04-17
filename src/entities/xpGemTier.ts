@@ -27,8 +27,8 @@ export const XP_GEM_ELITE_COLOR = 0xffee66;
 
 /** Continuous scale cap for very high-value gems. */
 export const XP_GEM_MAX_SCALE = 2;
-export const XP_GEM_SCALE_BASE = 0.8;
-export const XP_GEM_SCALE_PER_VALUE = 0.15;
+const XP_GEM_SCALE_BASE = 0.8;
+const XP_GEM_SCALE_PER_VALUE = 0.15;
 
 export interface XpGemAura {
   color: number;

@@ -9,7 +9,7 @@ export interface IAnalyticsProvider {
 }
 
 /** Default provider: visible in devtools; safe no-op for sensitive data (never log PII). */
-export class ConsoleAnalyticsProvider implements IAnalyticsProvider {
+class ConsoleAnalyticsProvider implements IAnalyticsProvider {
   logEvent(name: string, data?: Record<string, unknown>): void {
     console.info('[analytics:logEvent]', name, data ?? {});
   }

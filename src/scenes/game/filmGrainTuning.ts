@@ -17,15 +17,15 @@
 export const FILM_GRAIN_BASE_ALPHA_DEFAULT = 0.036;
 export const FILM_GRAIN_BASE_ALPHA_REDUCED = 0.026;
 /** Motion-scale dampening — alpha = base * (FLOOR + motionScale * SLOPE). */
-export const FILM_GRAIN_MOTION_FLOOR = 0.75;
-export const FILM_GRAIN_MOTION_SLOPE = 0.25;
+const FILM_GRAIN_MOTION_FLOOR = 0.75;
+const FILM_GRAIN_MOTION_SLOPE = 0.25;
 
 export const FILM_GRAIN_DRIFT_BASE_PX = 1.1;
 /** Motion scale ramps the drift — 0 gives 55%, 1 gives 100%. */
-export const FILM_GRAIN_DRIFT_MOTION_FLOOR = 0.55;
-export const FILM_GRAIN_DRIFT_MOTION_SLOPE = 0.45;
+const FILM_GRAIN_DRIFT_MOTION_FLOOR = 0.55;
+const FILM_GRAIN_DRIFT_MOTION_SLOPE = 0.45;
 /** Reduce-particles shrinks drift by this factor. */
-export const FILM_GRAIN_DRIFT_REDUCE_PARTICLES_MUL = 0.65;
+const FILM_GRAIN_DRIFT_REDUCE_PARTICLES_MUL = 0.65;
 
 /**
  * Base alpha for the film-grain sprite. Tween animates between

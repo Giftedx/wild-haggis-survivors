@@ -69,10 +69,10 @@ export const PAUSE_QUIT_BUTTON_PALETTE: PauseButtonPalette = {
 // elite-affix reference list (cool slate). Each pair follows the
 // HC-ON / HC-OFF convention already established by the title.
 
-export const PAUSE_CURSE_LINE_COLOR = '#c49bbf';
-export const PAUSE_CURSE_LINE_COLOR_HC = '#f5d0e8';
-export const PAUSE_ELITE_REF_COLOR = '#6a7a88';
-export const PAUSE_ELITE_REF_COLOR_HC = '#a8b8c8';
+const PAUSE_CURSE_LINE_COLOR = '#c49bbf';
+const PAUSE_CURSE_LINE_COLOR_HC = '#f5d0e8';
+const PAUSE_ELITE_REF_COLOR = '#6a7a88';
+const PAUSE_ELITE_REF_COLOR_HC = '#a8b8c8';
 
 export function resolvePauseCurseLineColor(highContrast: boolean): string {
   return highContrast ? PAUSE_CURSE_LINE_COLOR_HC : PAUSE_CURSE_LINE_COLOR;

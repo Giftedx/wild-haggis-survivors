@@ -16,8 +16,8 @@
 
 export const UPGRADE_CARD_MAX_W = 210;
 export const UPGRADE_CARD_ASPECT = 260 / 210;
-export const UPGRADE_CARD_HOVER_SCALE = 1.05;
-export const UPGRADE_CARD_MIN_W = 90;
+const UPGRADE_CARD_HOVER_SCALE = 1.05;
+const UPGRADE_CARD_MIN_W = 90;
 /** Hard floor — the UI remains usable even when the player is on a 320px wide viewport. */
 export const UPGRADE_CARD_HARD_MIN_W = 72;
 
