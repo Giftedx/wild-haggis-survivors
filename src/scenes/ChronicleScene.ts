@@ -40,6 +40,17 @@ import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 
+// Repeated text styles inside this scene — pinned so the row + pagination
+// look stays in sync. Both small monospace bold strings used for header
+// chips and pagination buttons / list section titles.
+const CHRONICLE_PAGER_BTN_TEXT = {
+  fontFamily: 'monospace', fontSize: '11px', color: '#cdd4e0', fontStyle: 'bold',
+} as const;
+const CHRONICLE_SECTION_HEADER_TEXT = {
+  fontFamily: 'monospace', fontSize: '12px', color: '#7f8ca7',
+  fontStyle: 'bold', letterSpacing: 1,
+} as const;
+
 /**
  * The Herd Chronicle — a run journal surface.
  *
@@ -179,9 +190,7 @@ export class ChronicleScene extends Phaser.Scene {
       .rectangle(width / 2, milestonesPanelY + 65, width - 40, this.MILESTONES_PANEL_HEIGHT, 0x12192b, 0.7)
       .setStrokeStyle(1, 0x283a5f, 0.8);
     this.add
-      .text(width / 2, milestonesPanelY, t('ui.chronicle.milestones_heading'), {
-        fontFamily: 'monospace', fontSize: '12px', color: '#7f8ca7', fontStyle: 'bold', letterSpacing: 1,
-      })
+      .text(width / 2, milestonesPanelY, t('ui.chronicle.milestones_heading'), CHRONICLE_SECTION_HEADER_TEXT)
       .setOrigin(0.5)
       .setScale(uiScale);
     const codex = buildChronicleCodex(metaSave.codexCulledKeys);
@@ -247,9 +256,7 @@ export class ChronicleScene extends Phaser.Scene {
     // ── Run list header ──
     const runsHeaderY = this.RUNS_HEADER_Y;
     this.add
-      .text(40, runsHeaderY, t('ui.chronicle.runs_heading'), {
-        fontFamily: 'monospace', fontSize: '12px', color: '#7f8ca7', fontStyle: 'bold', letterSpacing: 1,
-      })
+      .text(40, runsHeaderY, t('ui.chronicle.runs_heading'), CHRONICLE_SECTION_HEADER_TEXT)
       .setOrigin(0, 0.5)
       .setScale(uiScale);
     if (this.history.length >= MAX_RUN_HISTORY) {
@@ -271,17 +278,15 @@ export class ChronicleScene extends Phaser.Scene {
     this.prevBtn = this.add
       .rectangle(width / 2 - 120, paginationY, 72, 24, 0x252540, 1)
       .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 - 120, paginationY, '< PREV', {
-      fontFamily: 'monospace', fontSize: '11px', color: '#cdd4e0', fontStyle: 'bold',
-    }).setOrigin(0.5).setScale(uiScale);
+    this.add.text(width / 2 - 120, paginationY, '< PREV', CHRONICLE_PAGER_BTN_TEXT)
+      .setOrigin(0.5).setScale(uiScale);
     this.prevBtn.on('pointerdown', () => this.turnPage(-1));
 
     this.nextBtn = this.add
       .rectangle(width / 2 + 120, paginationY, 72, 24, 0x252540, 1)
       .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 + 120, paginationY, 'NEXT >', {
-      fontFamily: 'monospace', fontSize: '11px', color: '#cdd4e0', fontStyle: 'bold',
-    }).setOrigin(0.5).setScale(uiScale);
+    this.add.text(width / 2 + 120, paginationY, 'NEXT >', CHRONICLE_PAGER_BTN_TEXT)
+      .setOrigin(0.5).setScale(uiScale);
     this.nextBtn.on('pointerdown', () => this.turnPage(1));
 
     this.pageLabel = this.add
