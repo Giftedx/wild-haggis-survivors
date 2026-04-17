@@ -268,21 +268,31 @@ describe('BanterSystem', () => {
   });
 
   describe('W2 route_picked sub-pool', () => {
-    it('has a keysByTag entry for each picker-A route key', () => {
+    it('has a keysByTag entry for every route key (both pickers)', () => {
       const pool = BANTER_POOLS.find((p) => p.context === 'route_picked');
       expect(pool).toBeDefined();
+      // Picker A.
       expect(pool!.keysByTag?.up_the_brae).toBeTruthy();
       expect(pool!.keysByTag?.round_the_loch).toBeTruthy();
       expect(pool!.keysByTag?.through_the_kirkyard).toBeTruthy();
+      // Picker B.
+      expect(pool!.keysByTag?.stand_yer_ground).toBeTruthy();
+      expect(pool!.keysByTag?.run_for_the_hills).toBeTruthy();
+      expect(pool!.keysByTag?.buckie_pitstop).toBeTruthy();
     });
 
-    it('all W2 banter i18n keys resolve to real strings', () => {
+    it('all W2 banter i18n keys resolve to real strings (both pickers)', () => {
       const keys = [
         'ui.banter.act_intermission_enter.a',
         'ui.banter.act_complete.a',
+        // Picker A.
         'ui.banter.route_picked.up_the_brae.a',
         'ui.banter.route_picked.round_the_loch.a',
         'ui.banter.route_picked.through_the_kirkyard.a',
+        // Picker B.
+        'ui.banter.route_picked.stand_yer_ground.a',
+        'ui.banter.route_picked.run_for_the_hills.a',
+        'ui.banter.route_picked.buckie_pitstop.a',
       ];
       for (const k of keys) {
         expect(t(k), k).not.toBe(k);
