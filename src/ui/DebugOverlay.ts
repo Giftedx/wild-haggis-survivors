@@ -4,6 +4,7 @@ import { SpawnSystem } from '../systems/SpawnSystem';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import { TimeManager } from '../systems/TimeManager';
 import { getCameraViewport } from './cameraViewport';
+import { resolveFpsColor } from './fpsColor';
 
 type DebugOverlayDeps = {
   spawnSystem: SpawnSystem;
@@ -132,7 +133,7 @@ export class DebugOverlay {
     const stall = spawnSystem.getSpawnStallReason();
     const stallLabel = stall === null ? 'OK' : stall;
 
-    const fpsColor = this.fpsDisplay >= 55 ? '#88ff88' : this.fpsDisplay >= 30 ? '#ffcc44' : '#ff4444';
+    const fpsColor = resolveFpsColor(this.fpsDisplay);
     this.text.setText([
       `FPS: ${this.fpsDisplay}`,
       `Enemies: ${enemiesActive}/${ENEMIES.MAX_ACTIVE}  (pool: ${enemiesTotal}) ${saturated ? 'MAXED' : ''}`,
