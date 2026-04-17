@@ -7,6 +7,7 @@ import {
   getAvailableEnemyTypes,
 } from './enemies';
 import { WAVE_TIMELINE } from '../core/BalanceConfig';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
 describe('ENEMY_TYPES', () => {
   const keys = Object.keys(ENEMY_TYPES);
@@ -64,6 +65,23 @@ describe('BOSSES', () => {
     for (const boss of BOSSES) {
       expect(boss.hp, `${boss.key} has non-positive HP`).toBeGreaterThan(0);
       expect(boss.spawnTimeSec, `${boss.key} has non-positive spawnTimeSec`).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  /**
+   * Catches the typo-id bug class — a missing nameKey or warningKey
+   * surfaces the literal key string at runtime (boss banner reads as
+   * raw dot-path). Every boss def's i18n keys must resolve in EN.
+   */
+  it('every boss nameKey + warningKey resolves in EN', () => {
+    setLocale(DEFAULT_LOCALE);
+    try {
+      for (const boss of BOSSES) {
+        expect(t(boss.nameKey), `nameKey for ${boss.key}`).not.toBe(boss.nameKey);
+        expect(t(boss.warningKey), `warningKey for ${boss.key}`).not.toBe(boss.warningKey);
+      }
+    } finally {
+      setLocale(DEFAULT_LOCALE);
     }
   });
 });

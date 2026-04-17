@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { ROUTES, ROUTES_BY_SLOT, getRoute, type RouteKey, type RouteResumeContext } from './routes';
 import { defaultModifiers } from '../core/RunModifiers';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
 describe('ROUTES table', () => {
   it('contains exactly 6 routes', () => {
@@ -31,6 +32,23 @@ describe('ROUTES table', () => {
     for (const r of ROUTES) {
       expect(r.labelKey).toMatch(/^routes\.[a-z_]+\.label$/);
       expect(r.descKey).toMatch(/^routes\.[a-z_]+\.desc$/);
+    }
+  });
+
+  /**
+   * Catches the typo-id bug class — a misspelled key would silently
+   * surface the literal string in the ActIntermission picker tile.
+   * Every i18n path on a route def must exist in EN.
+   */
+  it('every route labelKey + descKey resolves in EN', () => {
+    setLocale(DEFAULT_LOCALE);
+    try {
+      for (const r of ROUTES) {
+        expect(t(r.labelKey), `labelKey for ${r.key}`).not.toBe(r.labelKey);
+        expect(t(r.descKey), `descKey for ${r.key}`).not.toBe(r.descKey);
+      }
+    } finally {
+      setLocale(DEFAULT_LOCALE);
     }
   });
 

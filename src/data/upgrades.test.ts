@@ -7,6 +7,7 @@ import {
   UpgradeCard,
 } from './upgrades';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
 describe('buildCardPool', () => {
   it('includes stat cards when no weapons/passives owned', () => {
@@ -140,5 +141,37 @@ describe('drawCards', () => {
   it('common weight floors at 5', () => {
     const result = drawCards(mockPool, 3, 9999, () => 0.01);
     expect(result.length).toBe(3);
+  });
+});
+
+/**
+ * Catches the typo-id bug class — a misspelled `name` or `description`
+ * key resolves to the literal dot-path at runtime, leaving the
+ * level-up card with a broken label or copy. Every WEAPON_CARDS +
+ * PASSIVE_CARDS i18n key must exist in EN (the reference locale).
+ */
+describe('upgrade cards i18n parity', () => {
+  it('every weapon card name + description resolves in EN', () => {
+    setLocale(DEFAULT_LOCALE);
+    try {
+      for (const card of WEAPON_CARDS) {
+        expect(t(card.name), `name for ${card.id}`).not.toBe(card.name);
+        expect(t(card.description), `description for ${card.id}`).not.toBe(card.description);
+      }
+    } finally {
+      setLocale(DEFAULT_LOCALE);
+    }
+  });
+
+  it('every passive card name + description resolves in EN', () => {
+    setLocale(DEFAULT_LOCALE);
+    try {
+      for (const card of PASSIVE_CARDS) {
+        expect(t(card.name), `name for ${card.id}`).not.toBe(card.name);
+        expect(t(card.description), `description for ${card.id}`).not.toBe(card.description);
+      }
+    } finally {
+      setLocale(DEFAULT_LOCALE);
+    }
   });
 });
