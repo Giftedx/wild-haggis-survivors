@@ -324,6 +324,8 @@ export const EN_STRINGS: LocaleTree = {
       section_sound: 'Hearth sound',
       section_comfort: 'Comfort & motion',
       section_access: 'Accessibility',
+      /** Tiny heading on the live-preview card above slider changes. */
+      preview_heading: 'PREVIEW',
       master_volume: 'Master volume',
       sfx_volume: 'SFX volume',
       music_volume: 'Music volume',

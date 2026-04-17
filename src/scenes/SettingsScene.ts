@@ -30,6 +30,7 @@ import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { performSettingsReset } from './settingsResetAction';
+import { renderSettingsPreview, type SettingsPreviewHandle } from './settingsPreviewCard';
 
 type SettingsGpRow =
   | {
@@ -96,6 +97,7 @@ export class SettingsScene extends Phaser.Scene {
   private gpPrevA = false;
   private gpUpdate?: (time: number, delta: number) => void;
   private glowTweens: Phaser.Tweens.Tween[] = [];
+  private previewHandle?: SettingsPreviewHandle;
   /** Base row stride before uiScale — shrunk from 42 to fit the 15-row
    *  panel once W18 language + W66 ironmoor + W2 skip rows landed. */
   private readonly BASE_ROW_STEP = 38;
@@ -203,6 +205,24 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
+    // --- Live preview card ---------------------------------------------
+    // Small chip in the top-right corner that shows a sample HUD label and
+    // a faux damage number, both re-rendering as the player tweaks uiScale,
+    // damageNumbers, highContrastUi, and screenShake. Gives the "what does
+    // this setting do" answer without requiring a trip to a live run.
+    this.previewHandle = renderSettingsPreview(this, {
+      centerX: width - 128,
+      centerY: 72,
+      width: 220,
+      height: 76,
+      depth: 4,
+    }, {
+      uiScale: this.working.uiScale,
+      damageNumbers: this.working.damageNumbers,
+      highContrastUi: this.working.highContrastUi,
+      screenShake: this.working.screenShake,
+    });
+
     // --- Rows (grouped) -------------------------------------------------
     this.rowY = 130;
     this.addSectionHeader(t('ui.settings.section_sound'));
@@ -277,6 +297,8 @@ export class SettingsScene extends Phaser.Scene {
       // Kill any tweens we started so they do not fire into a torn-down scene.
       for (const tw of this.glowTweens) tw.stop();
       this.glowTweens = [];
+      this.previewHandle?.destroy();
+      this.previewHandle = undefined;
     });
   }
 
@@ -388,6 +410,13 @@ export class SettingsScene extends Phaser.Scene {
     // force a rebuild, which gives the dynamic import time to settle
     // before any strings are re-resolved — fire-and-forget is safe.
     void applyLocaleFromUserSettings(this.working);
+    // Live preview tracks the working values so tweaks show up immediately.
+    this.previewHandle?.refresh({
+      uiScale: this.working.uiScale,
+      damageNumbers: this.working.damageNumbers,
+      highContrastUi: this.working.highContrastUi,
+      screenShake: this.working.screenShake,
+    });
   }
 
   private addSliderRow(
