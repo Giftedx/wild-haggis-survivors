@@ -9,6 +9,7 @@ import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
 import { formatMenuHistorySummary, formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveMainMenuPalette } from './mainMenuPalette';
+import { addSceneBackdrop } from './sceneFade';
 import { resolveSeedLinkStyle } from './seedLinkStyle';
 import { resolveMenuFooterPalette } from './menuFooterPalette';
 import {
@@ -79,9 +80,7 @@ export class MainMenuScene extends Phaser.Scene {
     // === Background — depth -100 so negative-depth decoration layers are
     // visible in front of it. The canvas also has a dark bg from main.ts,
     // so this is belt-and-braces but ensures consistent color.
-    this.add
-      .rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK)
-      .setDepth(-100);
+    addSceneBackdrop(this, -100);
 
     // === Layer -10: distant mountain ridge ===
     // Two passes of triangles for depth — back ridge further, front ridge lower.

@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -19,7 +18,7 @@ import {
 } from '../ui/deedsProgress';
 import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { resolveBackButtonPalette } from './backButtonPalette';
-import { addSceneFadeIn, addAmberHeaderWash } from './sceneFade';
+import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -62,7 +61,7 @@ export class DeedsScene extends Phaser.Scene {
     const summary = deedSummary(snapshot);
 
     // ── Background + ambient wash ──
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     addAmberHeaderWash(this);
     audio.startAmbientWind();
     addSceneFadeIn(this);

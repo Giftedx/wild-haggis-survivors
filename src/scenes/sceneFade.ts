@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS } from '../config';
 
 /**
  * Shared scene fade-in / fade-out helpers. Several non-gameplay
@@ -72,6 +73,20 @@ export const AMBER_HEADER_WASH_ALPHA_QUIET = 0.03;
 /** Height of the wash strip in pixels (top-of-scene). */
 const AMBER_HEADER_WASH_HEIGHT = 60;
 const AMBER_HEADER_WASH_Y = 30;
+
+/**
+ * Paint a full-screen COLORS.BG_DARK rectangle as the scene's
+ * bottom-most backdrop. Used by every non-gameplay scene.
+ *
+ * `depth` can be supplied (MainMenu uses -100 so its parallax
+ * mountain layers render in front of the backdrop); default is
+ * auto-depth which Phaser places behind most scene content.
+ */
+export function addSceneBackdrop(scene: Phaser.Scene, depth?: number): void {
+  const { width, height } = scene.scale;
+  const rect = scene.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+  if (depth !== undefined) rect.setDepth(depth);
+}
 
 export function addAmberHeaderWash(
   scene: Phaser.Scene,

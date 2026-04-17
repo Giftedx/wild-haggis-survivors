@@ -26,7 +26,7 @@ import {
   resolveVariantTallyColor,
 } from './variantPanelStyle';
 import { computeMenuLayout } from './menuLayout';
-import { startSceneFadeOut } from './sceneFade';
+import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -69,7 +69,7 @@ export class MenuScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const layout = this.getMenuLayout(height);
 
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     this.add
       .rectangle(width / 2, 106, width - 64, 184, this.highContrastUi ? 0x0a0f1b : 0x11172b, this.highContrastUi ? 0.78 : 0.58)
       .setStrokeStyle(2, this.highContrastUi ? 0x4e6ea2 : 0x263655, 0.9);

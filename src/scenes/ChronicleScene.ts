@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -39,7 +38,7 @@ import { paginationState } from '../ui/pagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { resolveBackButtonPalette } from './backButtonPalette';
-import { addSceneFadeIn, addAmberHeaderWash } from './sceneFade';
+import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -93,7 +92,7 @@ export class ChronicleScene extends Phaser.Scene {
     const milestones = computeMilestones(save.runHistory);
     const mood = detectMood(save.runHistory);
 
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     // Warm amber wash at the top — matches MetaShop's cozy framing
     addAmberHeaderWash(this);
 

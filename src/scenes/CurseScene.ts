@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -8,7 +7,7 @@ import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
 import { resolveBackButtonPalette } from './backButtonPalette';
-import { addSceneFadeIn } from './sceneFade';
+import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -32,7 +31,7 @@ export class CurseScene extends Phaser.Scene {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
 
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     // Purple-wine wash at the top — curses have a darker tone than the amber Chronicle.
     this.add.rectangle(width / 2, 30, width, 60, 0x5a2a4a, 0.08);
 

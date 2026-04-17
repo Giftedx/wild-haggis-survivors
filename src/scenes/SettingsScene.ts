@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
@@ -26,6 +25,7 @@ import {
   SETTINGS_THUMB_STROKE,
 } from './settingsPalette';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { addSceneBackdrop } from './sceneFade';
 
 type SettingsGpRow =
   | {
@@ -128,7 +128,7 @@ export class SettingsScene extends Phaser.Scene {
     // Dark base rect, then a soft radial ember glow behind the title in
     // the same warm palette as the MainMenu campfire. Respects
     // reduceParticles by drawing only the glow (no moving pieces).
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
 
     const glow = this.add.graphics().setDepth(-10);
     const emberColor = palette.emberGlow;

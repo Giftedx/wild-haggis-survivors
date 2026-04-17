@@ -10,8 +10,7 @@ import {
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { resolveShopRowBgColor } from './shopRowBg';
-import { startSceneFadeOut, addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET } from './sceneFade';
-import { COLORS } from '../config';
+import { startSceneFadeOut, addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET, addSceneBackdrop } from './sceneFade';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 
@@ -40,7 +39,7 @@ export class ShopScene extends Phaser.Scene {
     this.saveData = loadSave();
     this.currentPage = Phaser.Math.Clamp(this.currentPage, 0, this.getTotalPages() - 1);
 
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     // Warm amber wash at the top — cozy between storms
     addAmberHeaderWash(this, AMBER_HEADER_WASH_ALPHA_QUIET);
     this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);

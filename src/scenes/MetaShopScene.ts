@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
 import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
@@ -18,7 +17,7 @@ import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { resolveShopRowBgColor } from './shopRowBg';
-import { addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET } from './sceneFade';
+import { addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET, addSceneBackdrop } from './sceneFade';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -40,7 +39,7 @@ export class MetaShopScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
 
-    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
+    addSceneBackdrop(this);
     // Warm amber wash at the top — cozy between storms
     addAmberHeaderWash(this, AMBER_HEADER_WASH_ALPHA_QUIET);
     this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);
