@@ -3,6 +3,7 @@ import {
   sliderValueFromRatio,
   sliderRatioFromValue,
   steppedSliderBump,
+  formatSliderValue,
 } from './settingsSliderMath';
 
 describe('settingsSliderMath', () => {
@@ -83,6 +84,43 @@ describe('settingsSliderMath', () => {
       expect(v).toBeCloseTo(1, 6);
       // After a full sweep, the internal representation should still be a clean step.
       expect(Math.round(v * 100) / 100).toBe(1);
+    });
+  });
+
+  describe('formatSliderValue', () => {
+    it('formats uiScale as fixed-2 decimal with "x" suffix', () => {
+      expect(formatSliderValue('uiScale', 1)).toBe('1.00x');
+      expect(formatSliderValue('uiScale', 0.8)).toBe('0.80x');
+      expect(formatSliderValue('uiScale', 1.4)).toBe('1.40x');
+    });
+
+    it('pads uiScale decimals (0.8 → 0.80, not 0.8)', () => {
+      expect(formatSliderValue('uiScale', 0.8)).toBe('0.80x');
+    });
+
+    it('formats volume sliders as rounded integer percent', () => {
+      expect(formatSliderValue('masterVolume', 0)).toBe('0%');
+      expect(formatSliderValue('masterVolume', 0.5)).toBe('50%');
+      expect(formatSliderValue('masterVolume', 1)).toBe('100%');
+    });
+
+    it('rounds percent values to the nearest integer', () => {
+      expect(formatSliderValue('sfxVolume', 0.234)).toBe('23%');
+      expect(formatSliderValue('sfxVolume', 0.235)).toBe('24%'); // .5 rounds up (or banker's)
+    });
+
+    it('treats any non-uiScale key as percent', () => {
+      expect(formatSliderValue('musicVolume', 0.3)).toBe('30%');
+      expect(formatSliderValue('motionScale', 0.7)).toBe('70%');
+      expect(formatSliderValue('not_a_real_key', 0.5)).toBe('50%');
+    });
+
+    it('handles out-of-range percent values without clamping (contract: formatter only)', () => {
+      // The formatter is not responsible for clamping — callers feed in
+      // valid values. But if a negative ever arrives, it should still
+      // produce a sensible string rather than NaN%.
+      expect(formatSliderValue('masterVolume', -0.25)).toBe('-25%');
+      expect(formatSliderValue('uiScale', -0.5)).toBe('-0.50x');
     });
   });
 });

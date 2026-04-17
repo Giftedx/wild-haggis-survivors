@@ -54,6 +54,20 @@ export function sliderValueFromRatio(
   return snapped;
 }
 
+/**
+ * Right-side value display for a slider row. Two formats:
+ *
+ *   'uiScale'     → "1.00x" (fixed-2 decimal, suffix "x")
+ *   everything    → "100%" (rounded int percent)
+ *
+ * Split out from SettingsScene so the fixed-precision intent is pinned:
+ * volume sliders never show decimals and uiScale never shows a percent.
+ */
+export function formatSliderValue(key: string, current: number): string {
+  if (key === 'uiScale') return `${current.toFixed(2)}x`;
+  return `${Math.round(current * 100)}%`;
+}
+
 export function steppedSliderBump(
   current: number,
   direction: number,

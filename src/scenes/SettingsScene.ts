@@ -10,6 +10,7 @@ import {
   sliderRatioFromValue,
   sliderValueFromRatio,
   steppedSliderBump,
+  formatSliderValue,
 } from './settingsSliderMath';
 
 type SettingsGpRow =
@@ -432,9 +433,7 @@ export class SettingsScene extends Phaser.Scene {
       // Fill width lives in track-local units so it respects the scaleX.
       fill.width = Math.max(1, ratio * trackW);
       thumb.x = trackLeftScaled + ratio * scaledTrackW;
-      valText.setText(
-        key === 'uiScale' ? `${current.toFixed(2)}x` : `${Math.round(current * 100)}%`
-      );
+      valText.setText(formatSliderValue(key, current));
     };
 
     const setFromRatio = (ratio: number) => {
