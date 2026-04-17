@@ -26,6 +26,7 @@ import {
 } from './hudDashStyle';
 import { bossHpBarStyle } from './hudBossBar';
 import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
+import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -729,7 +730,8 @@ export class HUD {
         const cdFrac = w.cooldownFrac ?? 1;
         slot.cdFill.width = size * cdFrac;
         const isReady = cdFrac >= 1;
-        slot.cdFill.setFillStyle(isReady ? 0x44cc44 : 0x005eb8, isReady ? 0.85 : 0.5);
+        const cdStyle = resolveHudCooldownBarStyle(isReady);
+        slot.cdFill.setFillStyle(cdStyle.fillColor, cdStyle.alpha);
 
         // Ready-state pulse: icon breathes gently when ready, dims when cooling.
         // Phase advance is ms-based — animation speed is frame-rate-independent.
