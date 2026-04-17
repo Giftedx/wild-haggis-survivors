@@ -28,6 +28,12 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // Phaser subset — arcade-physics variant drops Matter physics + Box2D
+      // which we never touch (CLAUDE.md: "zero gravity top-down, Arcade
+      // Physics only"). Saves ~111 KB uncompressed off the vendor chunk.
+      // The prebuilt UMD attaches `Phaser` as the module's default export
+      // under esbuild/rollup's cjs interop.
+      phaser: 'phaser/dist/phaser-arcade-physics.js',
     },
   },
   server: {

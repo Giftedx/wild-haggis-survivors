@@ -75,20 +75,25 @@ core gameplay feel. Ralph-mode managed.
   `PickupSpawner.ts`) explaining the retirement.
 
 ### P2 — Bundle & Asset Budget
-- [ ] Phaser vendor chunk is 1.48MB ungz. Investigate whether
+- [x] Phaser vendor chunk is 1.48MB ungz. Investigate whether
   `phaser/src/phaser-core.js` (or build-time subset imports) can
   drop unused subsystems (we use Arcade physics, zero Tilemaps,
-  zero Matter).
+  zero Matter). **Done 2026-04-17.** Vite `resolve.alias`
+  swaps `phaser` for the prebuilt `phaser/dist/phaser-arcade-physics.js`
+  (Matter + Box2D dropped). Vendor chunk 1481.77 KB → 1362.90 KB
+  (-118.87 KB uncompressed, -34.83 KB gzip). Combined with the
+  Scots lazy-load, PWA precache dropped 2117 → 1965 KiB (-152 KiB).
+  Runtime verified: MainMenu renders clean, no console errors,
+  all 2336 tests pass.
 - [x] PWA precache reports 2116 KiB — confirm that's acceptable
   for install-on-visit, or move large assets out of precache.
-  **Resolved 2026-04-17: acceptable.** Breakdown is vendor-phaser
-  ~1482 KB + app ~680 KB + workbox ~6 KB + 2 PWA icons + shell.
-  Every byte is required on the first frame to render the game,
-  so runtime-caching any of them would break the offline-from-
-  first-visit guarantee the PWA is built to provide. The only
-  reductions with real impact are further Phaser subsetting (own
-  P2 item) and app-chunk lazy-load (ditto) — both change the
-  precache as a side effect, not by moving assets out of it.
+  **Resolved 2026-04-17: acceptable — and subsequently reduced.**
+  Every byte is required on the first frame so runtime-caching
+  would break offline-from-first-visit. The other two P2 items
+  did most of the work: Scots lazy-load (-37 KiB from precache)
+  plus Phaser arcade-physics subset (-115 KiB from precache) —
+  total precache is now 1965 KiB, a 152 KiB drop from the
+  original 2117 KiB without sacrificing the offline guarantee.
 - [x] App chunk climbed 500 KB → 679 KB over the W2 / W66 / W18 pass.
   Investigate whether the Scots overlay + route data can be
   lazy-loaded (currently eager via `EN_STRINGS` / `SCS_STRINGS`
