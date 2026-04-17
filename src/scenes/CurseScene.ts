@@ -7,6 +7,7 @@ import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
+import { resolveBackButtonPalette } from './backButtonPalette';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -99,8 +100,9 @@ export class CurseScene extends Phaser.Scene {
 
     // ── Back ──
     const backY = height - 22;
+    const backPalette = resolveBackButtonPalette();
     const backBtn = this.add
-      .rectangle(width / 2, backY, 180, 30, 0x252540, 1)
+      .rectangle(width / 2, backY, 180, 30, backPalette.idle, 1)
       .setInteractive({ useHandCursor: true });
     this.add
       .text(width / 2, backY, t('ui.curseScene.back'), {
@@ -108,8 +110,8 @@ export class CurseScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    backBtn.on('pointerover', () => backBtn.setFillStyle(0x2a2244));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(0x252540));
+    backBtn.on('pointerover', () => backBtn.setFillStyle(backPalette.hover));
+    backBtn.on('pointerout', () => backBtn.setFillStyle(backPalette.idle));
     backBtn.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('Menu');

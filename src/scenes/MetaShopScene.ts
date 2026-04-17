@@ -16,6 +16,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
+import { resolveBackButtonPalette } from './backButtonPalette';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -88,8 +89,9 @@ export class MetaShopScene extends Phaser.Scene {
     lineGfx.lineBetween(24, 108, width - 24, 108);
     lineGfx.lineBetween(24, 510, width - 24, 510);
 
+    const backPalette = resolveBackButtonPalette();
     this.backButton = this.add
-      .rectangle(width / 2, height - 28, 200, 38, 0x252540, 1)
+      .rectangle(width / 2, height - 28, 200, 38, backPalette.idle, 1)
       .setInteractive({ useHandCursor: true });
     this.add
       .text(width / 2, height - 28, t('ui.metaShop.back'), {
@@ -100,8 +102,8 @@ export class MetaShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.backButton.on('pointerover', () => this.backButton.setFillStyle(0x2a2244));
-    this.backButton.on('pointerout', () => this.backButton.setFillStyle(0x252540));
+    this.backButton.on('pointerover', () => this.backButton.setFillStyle(backPalette.hover));
+    this.backButton.on('pointerout', () => this.backButton.setFillStyle(backPalette.idle));
     this.backButton.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('MainMenu');

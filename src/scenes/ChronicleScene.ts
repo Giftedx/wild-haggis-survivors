@@ -38,6 +38,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
+import { resolveBackButtonPalette } from './backButtonPalette';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -295,8 +296,9 @@ export class ChronicleScene extends Phaser.Scene {
 
     // ── Back button ──
     const backY = height - 18;
+    const backPalette = resolveBackButtonPalette();
     const backBtn = this.add
-      .rectangle(width / 2, backY, 180, 30, 0x252540, 1)
+      .rectangle(width / 2, backY, 180, 30, backPalette.idle, 1)
       .setInteractive({ useHandCursor: true });
     this.add
       .text(width / 2, backY, t('ui.chronicle.back'), {
@@ -304,8 +306,8 @@ export class ChronicleScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    backBtn.on('pointerover', () => backBtn.setFillStyle(0x2a2244));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(0x252540));
+    backBtn.on('pointerover', () => backBtn.setFillStyle(backPalette.hover));
+    backBtn.on('pointerout', () => backBtn.setFillStyle(backPalette.idle));
     backBtn.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('MainMenu');

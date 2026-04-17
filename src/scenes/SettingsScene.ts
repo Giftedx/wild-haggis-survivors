@@ -20,6 +20,7 @@ import {
   labelForBanterFrequency,
 } from './settingsBanterFrequency';
 import { resolveSettingsPalette } from './settingsPalette';
+import { resolveBackButtonPalette } from './backButtonPalette';
 
 type SettingsGpRow =
   | {
@@ -224,8 +225,9 @@ export class SettingsScene extends Phaser.Scene {
     // Sit just below the last row with a breathing gap rather than pinned
     // to the bottom of the viewport.
     const backY = Math.min(this.rowY + 32, height - 40);
+    const backPalette = resolveBackButtonPalette();
     const back = this.add
-      .rectangle(width / 2, backY, 220, 42, 0x252540, 1)
+      .rectangle(width / 2, backY, 220, 42, backPalette.idle, 1)
       .setStrokeStyle(2, 0x4a3a5a, 0.8)
       .setInteractive({ useHandCursor: true });
     back.setScale(uiScale);
@@ -238,8 +240,8 @@ export class SettingsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    back.on('pointerover', () => back.setFillStyle(0x2a2244));
-    back.on('pointerout', () => back.setFillStyle(0x252540));
+    back.on('pointerover', () => back.setFillStyle(backPalette.hover));
+    back.on('pointerout', () => back.setFillStyle(backPalette.idle));
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
@@ -811,8 +813,9 @@ export class SettingsScene extends Phaser.Scene {
       .setDepth(DEPTH_BASE + 2);
 
     const btnY = height / 2 + panelH / 2 - 44;
+    const ironmoorBackPalette = resolveBackButtonPalette();
     const noBtn = this.add
-      .rectangle(width / 2 - 110, btnY, 180, 40, 0x252540, 1)
+      .rectangle(width / 2 - 110, btnY, 180, 40, ironmoorBackPalette.idle, 1)
       .setStrokeStyle(2, 0x4a3a5a, 0.9)
       .setInteractive({ useHandCursor: true })
       .setDepth(DEPTH_BASE + 2);
@@ -867,8 +870,8 @@ export class SettingsScene extends Phaser.Scene {
       close();
     };
 
-    noBtn.on('pointerover', () => noBtn.setFillStyle(0x2a2244));
-    noBtn.on('pointerout', () => noBtn.setFillStyle(0x252540));
+    noBtn.on('pointerover', () => noBtn.setFillStyle(ironmoorBackPalette.hover));
+    noBtn.on('pointerout', () => noBtn.setFillStyle(ironmoorBackPalette.idle));
     noBtn.on('pointerdown', onNo);
     noLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onNo);
 

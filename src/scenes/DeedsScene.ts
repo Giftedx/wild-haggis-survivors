@@ -18,6 +18,7 @@ import {
   type DeedStatsSnapshot,
 } from '../ui/deedsProgress';
 import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
+import { resolveBackButtonPalette } from './backButtonPalette';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -129,8 +130,9 @@ export class DeedsScene extends Phaser.Scene {
     });
 
     // ── Back button ──
+    const backPalette = resolveBackButtonPalette();
     const backBtn = this.add
-      .rectangle(width / 2, height - 32, 200, 38, 0x252540, 1)
+      .rectangle(width / 2, height - 32, 200, 38, backPalette.idle, 1)
       .setInteractive({ useHandCursor: true });
     this.add
       .text(width / 2, height - 32, t('ui.deeds.back'), {
@@ -141,8 +143,8 @@ export class DeedsScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    backBtn.on('pointerover', () => backBtn.setFillStyle(0x2a2244));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(0x252540));
+    backBtn.on('pointerover', () => backBtn.setFillStyle(backPalette.hover));
+    backBtn.on('pointerout', () => backBtn.setFillStyle(backPalette.idle));
     backBtn.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('MainMenu');
