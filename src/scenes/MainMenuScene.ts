@@ -10,6 +10,7 @@ import { loadSave } from '../utils/save';
 import { formatMenuHistorySummary, formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveMainMenuPalette } from './mainMenuPalette';
 import { resolveSeedLinkStyle } from './seedLinkStyle';
+import { resolveMenuFooterPalette } from './menuFooterPalette';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -672,11 +673,12 @@ export class MainMenuScene extends Phaser.Scene {
         gold: gameplay.gold,
         viewWidth: 0, // < 1150 threshold → always picks the short variant
       });
+      const footerPalette = resolveMenuFooterPalette(highContrastUi);
       this.add
         .text(cx, uiBottom - 58, statsLine, {
           fontFamily: 'monospace',
           fontSize: '11px',
-          color: highContrastUi ? '#6a7894' : '#556280',
+          color: footerPalette.statsStrip,
           align: 'center',
           wordWrap: { width: Math.max(160, vp.width - 48) },
         })
@@ -690,7 +692,7 @@ export class MainMenuScene extends Phaser.Scene {
           .text(cx, uiBottom - 40, historyLine, {
             fontFamily: 'monospace',
             fontSize: '11px',
-            color: highContrastUi ? '#5a6888' : '#4a5c78',
+            color: footerPalette.historyStrip,
             fontStyle: 'italic',
             align: 'center',
             wordWrap: { width: Math.max(160, vp.width - 48) },
@@ -701,12 +703,13 @@ export class MainMenuScene extends Phaser.Scene {
     }
 
     // === Bottom credit strip (inside visible viewport / safe area) ===
+    const footerPalette = resolveMenuFooterPalette(highContrastUi);
     const creditX = vp.x + vp.width - Math.max(10, 14 * uiScale);
     const creditBuilt = this.add
       .text(creditX, uiBottom - 28, t('ui.menu.built_on_moor'), {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: highContrastUi ? '#5a6888' : '#445572',
+        color: footerPalette.creditText,
         fontStyle: 'italic',
       })
       .setOrigin(1, 1)
@@ -715,13 +718,13 @@ export class MainMenuScene extends Phaser.Scene {
       .text(creditX, uiBottom - 12, `v${__APP_VERSION__}`, {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: highContrastUi ? '#5a6888' : '#445572',
+        color: footerPalette.creditText,
       })
       .setOrigin(1, 1)
       .setScale(uiScale);
-    if (highContrastUi) {
-      creditBuilt.setStroke('#0a0c10', 3);
-      creditVer.setStroke('#0a0c10', 3);
+    if (footerPalette.creditStroke) {
+      creditBuilt.setStroke(footerPalette.creditStroke.color, footerPalette.creditStroke.thickness);
+      creditVer.setStroke(footerPalette.creditStroke.color, footerPalette.creditStroke.thickness);
     }
 
     // Ambient moor wind — cozy between storms
