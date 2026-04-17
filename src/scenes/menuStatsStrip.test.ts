@@ -1,5 +1,22 @@
 import { describe, it, expect } from 'vitest';
-import { formatMenuStatsStrip, type MenuStatsInput } from './menuStatsStrip';
+import { formatMenuStatsStrip, formatMenuHistorySummary, type MenuStatsInput } from './menuStatsStrip';
+import type { RunHistoryEntry } from '../utils/save';
+
+function histEntry(overrides: Partial<RunHistoryEntry> = {}): RunHistoryEntry {
+  return {
+    timestamp: 1_000_000,
+    timeSurvivedSec: 120,
+    enemiesKilled: 50,
+    level: 5,
+    bossKills: 0,
+    goldEarned: 10,
+    bestCombo: 3,
+    variantKey: 'classic',
+    isVictory: false,
+    weaponKeys: ['thistle_shot'],
+    ...overrides,
+  };
+}
 
 function base(overrides: Partial<MenuStatsInput> = {}): MenuStatsInput {
   return {
@@ -48,6 +65,30 @@ describe('formatMenuStatsStrip', () => {
   it('floors fractional bestTime', () => {
     const out = formatMenuStatsStrip(base({ bestTime: 59.9, viewWidth: 1600 }));
     expect(out).toContain('0:59');
+  });
+
+  it('history summary helpers — null when empty', () => {
+    expect(formatMenuHistorySummary([], 0)).toBeNull();
+  });
+
+  it('history summary — includes total runs count', () => {
+    const h = [histEntry({ isVictory: true })];
+    const out = formatMenuHistorySummary(h, 1);
+    expect(out).not.toBeNull();
+    expect(out).toContain('1'); // total runs
+  });
+
+  it('history summary — includes a M:SS avg time', () => {
+    const h = [histEntry({ timeSurvivedSec: 125 })]; // avg = 125 → 2:05
+    const out = formatMenuHistorySummary(h, 1);
+    expect(out).toContain('2:05');
+  });
+
+  it('history summary — surfaces the trend copy (not the raw key)', () => {
+    const h = [histEntry()];
+    const out = formatMenuHistorySummary(h, 1);
+    // The i18n resolver should emit real copy — assert the key itself is not a leak.
+    expect(out).not.toContain('ui.menu.trend_');
   });
 
   it('surfaces headline counters in the output line', () => {

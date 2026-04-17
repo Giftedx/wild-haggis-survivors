@@ -6,7 +6,8 @@ import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
-import { loadSave, getWinRate, getAverageSurvivalTime, getTrend } from '../utils/save';
+import { loadSave } from '../utils/save';
+import { formatMenuHistorySummary } from './menuStatsStrip';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -680,23 +681,8 @@ export class MainMenuScene extends Phaser.Scene {
         .setScale(uiScale);
 
       const runHistory = gameplay.runHistory;
-      if (runHistory.length > 0) {
-        const winRate = Math.round(getWinRate(runHistory) * 100);
-        const avgSec = Math.floor(getAverageSurvivalTime(runHistory));
-        const avgMins = Math.floor(avgSec / 60);
-        const avgSecsStr = Math.floor(avgSec % 60).toString().padStart(2, '0');
-        const trendKey = getTrend(runHistory);
-        const trendLabel = trendKey === 'improving'
-          ? t('ui.menu.trend_improving')
-          : trendKey === 'declining'
-            ? t('ui.menu.trend_declining')
-            : t('ui.menu.trend_steady');
-        const historyLine = t('ui.menu.history_summary', {
-          totalRuns: gameplay.totalRuns,
-          winRate,
-          avgTime: `${avgMins}:${avgSecsStr}`,
-          trend: trendLabel,
-        });
+      const historyLine = formatMenuHistorySummary(runHistory, gameplay.totalRuns);
+      if (historyLine) {
         this.add
           .text(cx, uiBottom - 40, historyLine, {
             fontFamily: 'monospace',
