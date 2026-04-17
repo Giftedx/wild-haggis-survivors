@@ -421,3 +421,33 @@ Next candidates (not committed to): settings-change telemetry
 (ironmoor toggle flip, comfort options), standing-stone pick
 analytics, level-up card pick analytics. Each is additive over
 the same subscriber pattern.
+
+Bug hunt this session — real fix shipped (feecd14):
+
+  W2 routes with `modifierDeltas.spawnIntervalMult` —
+  `through_the_kirkyard` (0.70 for 90s) and `run_for_the_hills`
+  (0.75 permanent) — declared the delta but it NEVER actually
+  throttled spawn cadence in-run. `applyRouteModifierDeltas`
+  wrote the new value into the `RunModifiers` bag, but
+  `SpawnSystem` caches `spawnIntervalMult` as a private field
+  that's only read off the bag at run start (GameScene.create
+  line 450). Mid-run bag rewrites bypassed the cache, so every
+  wave-timeline refresh re-applied the stale 1.0 cached value.
+
+  Fix:
+  - GameScene.launchActIntermission.onResolve now resync's
+    the SpawnSystem field after applyRouteModifierDeltas.
+  - through_the_kirkyard.onResume's 90s release now calls both
+    the bag reset AND setSpawnIntervalMult(1).
+  - routes.test.ts regression guard added: kirkyard release
+    must call setSpawnIntervalMult(1), not just reset the bag.
+
+  The test count bumped 2318 → 2319. This bug had been latent
+  since W2 shipped; no banter or playtest signal surfaced it
+  because tests verified the bag mutation, not the downstream
+  cadence change.
+
+Additional bug-hunt sweeps across HazardZones, TimeManager,
+WeaponSystem, Enemy, Player, JuiceSystem came back clean at
+the >=80 confidence threshold — no other "cached value reads
+from a now-stale source" patterns surface in those systems.
