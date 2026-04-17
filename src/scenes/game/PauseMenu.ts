@@ -29,6 +29,12 @@ import {
 import { resolveToggleTextColor } from '../toggleTextPalette';
 import { attachButtonHoverFill } from '../../ui/buttonHover';
 
+// Both the RESUME and QUIT primary-action labels wear the same 22px
+// white bold monospace coat — extract so tweaks stay in lockstep.
+const PAUSE_BUTTON_LABEL_TEXT = {
+  fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
+} as const;
+
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
   getGameTimeSec(): number;
@@ -121,9 +127,8 @@ export class PauseMenu {
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
     this.elements.push(resumeBtn);
     this.elements.push(
-      scene.add.text(x + width / 2, resumeY, t('ui.pause.resume'), {
-        fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      scene.add.text(x + width / 2, resumeY, t('ui.pause.resume'), PAUSE_BUTTON_LABEL_TEXT)
+        .setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
     this.elements.push(
       scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'), {
@@ -235,9 +240,8 @@ export class PauseMenu {
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
     this.elements.push(quitBtn);
     this.elements.push(
-      scene.add.text(x + width / 2, quitY, t('ui.pause.quit'), {
-        fontFamily: 'monospace', fontSize: '22px', color: '#ffffff', fontStyle: 'bold',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      scene.add.text(x + width / 2, quitY, t('ui.pause.quit'), PAUSE_BUTTON_LABEL_TEXT)
+        .setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
   }
 
