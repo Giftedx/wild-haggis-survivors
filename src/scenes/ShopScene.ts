@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
 import {
@@ -208,7 +208,7 @@ export class ShopScene extends Phaser.Scene {
     audio.playPurchase();
 
     // Gold particle burst — "cha-ching" feel
-    playPurchaseBurst(this, this.goldText.x, this.goldText.y, 0xd4a017, 0.3);
+    playPurchaseBurst(this, this.goldText.x, this.goldText.y, COLORS.WHISKY_GOLD, 0.3);
 
     this.updateHeader();
     this.renderRows();

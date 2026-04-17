@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -182,7 +182,7 @@ export class CurseScene extends Phaser.Scene {
       const chipY = cy - h / 2 + 76;
       this.add
         .rectangle(cx, chipY, w - 24, 22, 0x3a2c14, 1)
-        .setStrokeStyle(1, 0xd4a017, 0.9);
+        .setStrokeStyle(1, COLORS.WHISKY_GOLD, 0.9);
       this.add
         .text(cx, chipY, t('ui.curseScene.gold_chip', { pct: opts.goldPct }), {
           fontFamily: 'monospace',

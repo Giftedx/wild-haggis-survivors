@@ -12,7 +12,7 @@
  * they touch many scene fields and live near the scene's own lifecycle.
  */
 import Phaser from 'phaser';
-import { COLORS_CSS } from '../../config';
+import { COLORS, COLORS_CSS } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import type { XPSystem } from '../../systems/XPSystem';
@@ -168,7 +168,7 @@ export class RunLifecycle {
     const fade = this.scene.add.rectangle(
       uiX + uiW / 2, uiY + uiH / 2,
       uiW + 200, uiH + 200,
-      0xd4a017, 0,
+      COLORS.WHISKY_GOLD, 0,
     ).setScrollFactor(0).setDepth(500).setInteractive();
     this.hooks.setVictoryFade(fade);
     this.scene.tweens.add({
@@ -248,7 +248,7 @@ export class RunLifecycle {
     player.setActive(false);
     player.setVisible(false);
 
-    const colors = [0x8b6914, 0x6b4e0a, 0xd4a017, 0xcc3333];
+    const colors = [0x8b6914, 0x6b4e0a, COLORS.WHISKY_GOLD, COLORS.HP_RED];
     for (let i = 0; i < 20; i++) {
       const particle = this.scene.add.circle(
         px, py,

@@ -7,6 +7,7 @@
  * Background is transparent for easy review.
  */
 import Phaser from 'phaser';
+import { COLORS, COLORS_CSS } from '../config';
 
 interface SpriteEntry {
   key: string;
@@ -161,12 +162,12 @@ export class SpriteExportScene extends Phaser.Scene {
     // Draw each layout row
     for (const row of layoutRows) {
       if (row.type === 'header') {
-        ctx.fillStyle = '#d4a017';
+        ctx.fillStyle = COLORS_CSS.WHISKY_GOLD;
         ctx.font = 'bold 18px monospace';
         ctx.fillText(row.text.toUpperCase(), LEFT_MARGIN, row.y + 24);
         // Underline
         const textWidth = ctx.measureText(row.text.toUpperCase()).width;
-        ctx.strokeStyle = '#d4a017';
+        ctx.strokeStyle = COLORS_CSS.WHISKY_GOLD;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(LEFT_MARGIN, row.y + 30);
@@ -231,12 +232,12 @@ export class SpriteExportScene extends Phaser.Scene {
 
     // Also display in the game window for immediate viewing
     const { width, height } = this.scale;
-    this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e);
+    this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
 
     this.add.text(width / 2, height / 2 - 30, 'SPRITE SHEET EXPORTED', {
       fontFamily: 'monospace',
       fontSize: '24px',
-      color: '#d4a017',
+      color: COLORS_CSS.WHISKY_GOLD,
       fontStyle: 'bold',
     }).setOrigin(0.5);
 

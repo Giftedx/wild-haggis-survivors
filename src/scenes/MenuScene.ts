@@ -377,7 +377,7 @@ export class MenuScene extends Phaser.Scene {
         barY,
         Math.max(0, (barWidth - 2) * (unlocked ? 1 : unlockProgress?.ratio ?? 0)),
         6,
-        unlocked ? 0x51b36d : 0xd4a017,
+        unlocked ? 0x51b36d : COLORS.WHISKY_GOLD,
         1
       )
       .setOrigin(0, 0.5);
