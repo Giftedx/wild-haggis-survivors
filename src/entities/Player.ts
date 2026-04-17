@@ -4,6 +4,7 @@ import { InputManager } from '../utils/input';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { softBoundarySteer } from './softBoundarySteer';
 import { playerGrowthScale } from './playerGrowthScale';
+import { playerLevelSpeedMul, playerLevelDriftMul } from './playerLevelScaling';
 import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -379,13 +380,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const level = this.currentLevel;
 
     // Speed: base * level reduction + flat bonus from upgrades
-    const levelSpeedMul = Math.max(0.7, 1 - PLAYER.SPEED_REDUCTION_PER_LEVEL * (level - 1));
-    this.baseMoveSpeed = this.runBaseSpeed * levelSpeedMul;
+    this.baseMoveSpeed = this.runBaseSpeed * playerLevelSpeedMul(level);
     this.moveSpeed = Math.max(20, this.baseMoveSpeed + this.bonusSpeed);
 
     // Drift: base * level reduction * upgrade reduction
-    const levelDriftMul = Math.max(0.3, 1 - PLAYER.DRIFT_REDUCTION_PER_LEVEL * (level - 1));
-    this.baseDriftDegrees = this.runBaseDrift * levelDriftMul;
+    this.baseDriftDegrees = this.runBaseDrift * playerLevelDriftMul(level);
     this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction);
     // Pre-bake the drift rotation matrix so per-frame movement skips the trig.
     const driftRad = this.driftDegrees * (Math.PI / 180);
