@@ -73,4 +73,18 @@ export class NoteScheduler {
     this.nextRhythmTime = 0;
     this.nextHeartbeatTime = 0;
   }
+
+  /**
+   * Diagnostic — how far (seconds) the next scheduled event on each layer
+   * sits ahead of `now`. Negative values mean the horizon has drifted into
+   * the past (happens briefly on tab-background before the tick clamp).
+   * Used by DebugOverlay to surface scheduler health.
+   */
+  getHorizons(now: number): { melody: number; rhythm: number; heartbeat: number } {
+    return {
+      melody: this.nextMelodyTime - now,
+      rhythm: this.nextRhythmTime - now,
+      heartbeat: this.nextHeartbeatTime - now,
+    };
+  }
 }

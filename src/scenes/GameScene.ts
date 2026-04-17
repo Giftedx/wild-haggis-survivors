@@ -808,6 +808,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       spawnSystem: this.spawnSystem,
       weaponSystem: this.weaponSystem,
       timeManager: this.timeManager,
+      xpSystem: this.xpSystem,
+      statusFxPool: this.statusFxPool,
+      musicEngine,
     });
 
     this.tutorialSystem = new TutorialSystem(this, this.metaSaveManager);

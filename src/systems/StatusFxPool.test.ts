@@ -174,6 +174,21 @@ describe('StatusFxPool.acquireImage', () => {
   });
 });
 
+describe('StatusFxPool.getCapacity', () => {
+  it('reports the requested counts', () => {
+    const { scene } = makeScene();
+    const pool = new StatusFxPool(scene, 7, 3);
+    expect(pool.getCapacity()).toEqual({ arcs: 7, images: 3 });
+  });
+
+  it('reports zeroes after destroy', () => {
+    const { scene } = makeScene();
+    const pool = new StatusFxPool(scene, 4, 2);
+    pool.destroy();
+    expect(pool.getCapacity()).toEqual({ arcs: 0, images: 0 });
+  });
+});
+
 describe('StatusFxPool.destroy', () => {
   it('destroys every arc + image and empties the pool', () => {
     const { scene, arcs, imgs } = makeScene();

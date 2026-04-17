@@ -318,3 +318,53 @@ describe('ProceduralMusicEngine moor piano flourish (bus)', () => {
   });
 });
 
+describe('ProceduralMusicEngine.getSchedulerHorizonsMs', () => {
+  type HorizonProbe = {
+    playing: boolean;
+    ctx: { currentTime: number } | null;
+    scheduler: { getHorizons: (now: number) => { melody: number; rhythm: number; heartbeat: number } };
+  };
+
+  let saved: { playing: boolean; ctx: unknown; scheduler: unknown };
+
+  beforeEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    saved = { playing: eng.playing as boolean, ctx: eng.ctx, scheduler: eng.scheduler };
+  });
+
+  afterEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    eng.playing = saved.playing;
+    eng.ctx = saved.ctx;
+    eng.scheduler = saved.scheduler;
+  });
+
+  it('returns null when not playing', () => {
+    const probe = musicEngine as unknown as HorizonProbe;
+    probe.playing = false;
+    probe.ctx = { currentTime: 1 };
+    expect(musicEngine.getSchedulerHorizonsMs()).toBeNull();
+  });
+
+  it('returns null when ctx is missing', () => {
+    const probe = musicEngine as unknown as HorizonProbe;
+    probe.playing = true;
+    probe.ctx = null;
+    expect(musicEngine.getSchedulerHorizonsMs()).toBeNull();
+  });
+
+  it('converts scheduler horizons from seconds to ms when playing', () => {
+    const probe = musicEngine as unknown as HorizonProbe;
+    probe.playing = true;
+    probe.ctx = { currentTime: 0 };
+    probe.scheduler = {
+      getHorizons: () => ({ melody: 0.3, rhythm: 0.05, heartbeat: 0.2 }),
+    };
+    expect(musicEngine.getSchedulerHorizonsMs()).toEqual({
+      melody: 300,
+      rhythm: 50,
+      heartbeat: 200,
+    });
+  });
+});
+

@@ -3,6 +3,9 @@ import { ENEMIES } from '../config';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import { TimeManager } from '../systems/TimeManager';
+import { XPSystem } from '../systems/XPSystem';
+import { StatusFxPool } from '../systems/StatusFxPool';
+import type { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { getCameraViewport } from './cameraViewport';
 import { resolveFpsColor } from './fpsColor';
 
@@ -10,6 +13,12 @@ type DebugOverlayDeps = {
   spawnSystem: SpawnSystem;
   weaponSystem: WeaponSystem;
   timeManager: TimeManager;
+  /** Optional — surfaces XP-gem pool size when provided. */
+  xpSystem?: Pick<XPSystem, 'getGemGroup'>;
+  /** Optional — surfaces status-FX pool capacity when provided. */
+  statusFxPool?: Pick<StatusFxPool, 'getCapacity'>;
+  /** Optional — surfaces procedural-music scheduler horizons when provided. */
+  musicEngine?: Pick<typeof musicEngine, 'getSchedulerHorizonsMs' | 'isPlaying'>;
 };
 
 export class DebugOverlay {
@@ -29,8 +38,8 @@ export class DebugOverlay {
 
     const { x, y, width, height } = getCameraViewport(scene);
     const d = 220;
-    const panelW = Math.max(180, Math.min(420, width - 16));
-    const panelH = Math.max(120, Math.min(158, height - 16));
+    const panelW = Math.max(180, Math.min(440, width - 16));
+    const panelH = Math.max(140, Math.min(210, height - 16));
     const panelX = Math.max(x + 8, Math.min(x + width - panelW - 8, x + 8));
     const panelY = Math.max(y + 8, Math.min(y + height - panelH - 8, y + 8));
 
@@ -88,12 +97,13 @@ export class DebugOverlay {
     }
     if (!this.visible) return;
     const { x, y, width, height } = getCameraViewport(this.scene);
-    const panelW = Math.max(180, Math.min(420, width - 16));
-    const panelH = Math.max(120, Math.min(158, height - 16));
+    const panelW = Math.max(180, Math.min(440, width - 16));
+    const panelH = Math.max(140, Math.min(210, height - 16));
     const panelX = Math.max(x + 8, Math.min(x + width - panelW - 8, x + 8));
     const panelY = Math.max(y + 8, Math.min(y + height - panelH - 8, y + 8));
     this.bg.setPosition(panelX, panelY);
     this.bg.width = panelW;
+    this.bg.height = panelH;
     this.text.setPosition(panelX + 6, panelY + 4);
 
     const { spawnSystem, weaponSystem, timeManager } = this.deps;
@@ -133,18 +143,36 @@ export class DebugOverlay {
     const stall = spawnSystem.getSpawnStallReason();
     const stallLabel = stall === null ? 'OK' : stall;
 
+    const { xpSystem, statusFxPool, musicEngine } = this.deps;
+    const gemGroup = xpSystem?.getGemGroup?.();
+    const gemsActive = gemGroup?.countActive?.(true) ?? null;
+    const gemsTotal = gemGroup?.getLength?.() ?? null;
+    const fxCap = statusFxPool?.getCapacity?.();
+    const tweenCount = this.scene.tweens?.getTweens?.().length ?? null;
+    const musicHorizons = musicEngine?.getSchedulerHorizonsMs?.();
+
+    const poolsLine = gemsActive !== null
+      ? `XP gems: ${gemsActive}  (pool: ${gemsTotal})${fxCap ? `   StatusFx: arcs=${fxCap.arcs} imgs=${fxCap.images}` : ''}`
+      : fxCap ? `StatusFx: arcs=${fxCap.arcs} imgs=${fxCap.images}` : null;
+    const engineLine = tweenCount !== null || musicHorizons
+      ? `Tweens: ${tweenCount ?? '?'}${musicHorizons ? `   Music ahead(ms): mel=${musicHorizons.melody.toFixed(0)} rhy=${musicHorizons.rhythm.toFixed(0)} hb=${musicHorizons.heartbeat.toFixed(0)}` : '   Music: off'}`
+      : null;
+
     const fpsColor = resolveFpsColor(this.fpsDisplay);
-    this.text.setText([
+    const lines = [
       `FPS: ${this.fpsDisplay}`,
       `Enemies: ${enemiesActive}/${ENEMIES.MAX_ACTIVE}  (pool: ${enemiesTotal}) ${saturated ? 'MAXED' : ''}`,
       `Projectiles: ${projActive}  (pool: ${projTotal})`,
+      ...(poolsLine ? [poolsLine] : []),
+      ...(engineLine ? [engineLine] : []),
       `Spawn: t=${spawnT.toFixed(2)}s / i=${spawnI.toFixed(2)}s  burst=${spawnSystem.getBurstSize()}`,
       `Status: [${stallLabel}]`,
       `Boss: active=${bossActive}  spawned=${bossSpawned}  scheduled=${bossScheduled}`,
       `Time: paused=${paused}  scale=${timeScale.toFixed(2)}  tokens=[${tokens.join(', ')}]`,
       `UI: x=${x.toFixed(1)} y=${y.toFixed(1)} w=${width.toFixed(1)} h=${height.toFixed(1)}`,
       `Viewport: scale=${scaleAny.width}x${scaleAny.height} game=${gameW}x${gameH} display=${displayW}x${displayH} cam=${cam?.width ?? scaleAny.width}x${cam?.height ?? scaleAny.height} z=${(cam?.zoom ?? 1).toFixed(2)}`,
-    ].join('\n'));
+    ];
+    this.text.setText(lines.join('\n'));
     // Color-code the FPS line: green ≥55, yellow ≥30, red <30
     // Note: Phaser text doesn't support per-line colors, but the entire
     // overlay gets the FPS tint-appropriate color on the first line.

@@ -136,4 +136,32 @@ describe('NoteScheduler', () => {
       expect(callTimes(melody)[0]).toBeCloseTo(0.3, 5);
     });
   });
+
+  describe('getHorizons', () => {
+    it('reports melody 0.3s ahead at start-time', () => {
+      const s = new NoteScheduler();
+      s.start(10);
+      const h = s.getHorizons(10);
+      expect(h.melody).toBeCloseTo(0.3, 5);
+      expect(h.rhythm).toBeCloseTo(0, 5);
+      expect(h.heartbeat).toBeCloseTo(0, 5);
+    });
+
+    it('reports zeroes pre-start', () => {
+      const s = new NoteScheduler();
+      const h = s.getHorizons(0);
+      expect(h.melody).toBe(0);
+      expect(h.rhythm).toBe(0);
+      expect(h.heartbeat).toBe(0);
+    });
+
+    it('horizon drifts negative when now advances past the next scheduled note', () => {
+      const s = new NoteScheduler();
+      s.start(10);
+      const h = s.getHorizons(11);
+      expect(h.melody).toBeCloseTo(-0.7, 5); // 0.3 - 1.0
+      expect(h.rhythm).toBeCloseTo(-1, 5);
+      expect(h.heartbeat).toBeCloseTo(-1, 5);
+    });
+  });
 });

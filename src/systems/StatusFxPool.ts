@@ -58,6 +58,11 @@ export class StatusFxPool {
     return img;
   }
 
+  /** Diagnostic — pool capacities (fixed at construction). */
+  getCapacity(): { arcs: number; images: number } {
+    return { arcs: this.arcPool.length, images: this.imgPool.length };
+  }
+
   destroy(): void {
     for (const dot of this.arcPool) {
       this.scene.tweens.killTweensOf(dot);

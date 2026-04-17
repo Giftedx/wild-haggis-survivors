@@ -430,6 +430,21 @@ class ProceduralMusicEngine {
 
   isPlaying(): boolean { return this.playing; }
 
+  /**
+   * Diagnostic — lookahead horizons (ms) for each scheduler layer relative to
+   * the audio-context current time. Returns null when the engine is not
+   * playing or the audio context isn't available. Consumed by DebugOverlay.
+   */
+  getSchedulerHorizonsMs(): { melody: number; rhythm: number; heartbeat: number } | null {
+    if (!this.playing || !this.ctx) return null;
+    const h = this.scheduler.getHorizons(this.ctx.currentTime);
+    return {
+      melody: h.melody * 1000,
+      rhythm: h.rhythm * 1000,
+      heartbeat: h.heartbeat * 1000,
+    };
+  }
+
   private startRafLoop(): void {
     if (this.rafId !== null) return;
     const requestFrame: (cb: FrameRequestCallback) => number | ReturnType<typeof setTimeout> =
