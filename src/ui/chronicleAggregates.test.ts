@@ -6,6 +6,7 @@ import {
   computeMoorRoadKillCriteria,
   detectMood,
   formatChronicleMilestoneLines,
+  formatChronicleRunSubLine,
   formatClock,
   formatCodexNamesLine,
   formatDurationLong,
@@ -583,5 +584,65 @@ describe('formatChronicleMilestoneLines', () => {
     // 1 firstVictory + 1 longest + 1 mostKills + 1 highestCombo + 1 favoriteVariant
     // + 1 favoriteWeapon + 1 winStreak = 7
     expect(lines).toHaveLength(7);
+  });
+});
+
+describe('formatChronicleRunSubLine', () => {
+  it('uses "boss" (singular) when bossKills === 1', () => {
+    const out = formatChronicleRunSubLine(entry({ bossKills: 1 }));
+    expect(out).toContain('1 boss ');
+    expect(out).not.toContain('bosses');
+  });
+
+  it('uses "bosses" for 0 and >1', () => {
+    expect(formatChronicleRunSubLine(entry({ bossKills: 0 }))).toContain('0 bosses');
+    expect(formatChronicleRunSubLine(entry({ bossKills: 3 }))).toContain('3 bosses');
+  });
+
+  it('falls back to em-dash when the weapons list is empty', () => {
+    const out = formatChronicleRunSubLine(entry({ weaponKeys: [] }));
+    // "—  ·  …" prefix — no leading comma/label collapse.
+    expect(out.startsWith('—')).toBe(true);
+  });
+
+  it('caps weapons at the first 4 and joins with ", "', () => {
+    const out = formatChronicleRunSubLine(entry({
+      weaponKeys: ['thistle_shot', 'caber_toss', 'haggis_hurler', 'bagpipe_blast', 'scotch_mist'],
+      bossKills: 0,
+    }));
+    // scotch_mist is the 5th — must not appear.
+    expect(out).not.toContain('Scotch Mist');
+    // thistle_shot display name should be present.
+    const firstWeaponsSegment = out.split('  ·  ')[0];
+    expect(firstWeaponsSegment.split(', ')).toHaveLength(4);
+  });
+
+  it('passes unknown weapon keys through as raw keys', () => {
+    const out = formatChronicleRunSubLine(entry({ weaponKeys: ['not_a_real_weapon'] }));
+    expect(out).toContain('not_a_real_weapon');
+  });
+
+  it('surfaces the combo count verbatim with an "x" suffix', () => {
+    expect(formatChronicleRunSubLine(entry({ bestCombo: 27 }))).toContain('combo 27x');
+    expect(formatChronicleRunSubLine(entry({ bestCombo: 0 }))).toContain('combo 0x');
+  });
+
+  it('omits the route trail when there are no picks', () => {
+    const out = formatChronicleRunSubLine(entry({ routes: [] }));
+    // Without routes, the string ends at the combo segment — no trailing bullet.
+    expect(out.endsWith('x')).toBe(true);
+  });
+
+  it('appends a route breadcrumb after combo when routes exist', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 180, defaultedBySetting: false },
+    ];
+    const out = formatChronicleRunSubLine(entry({ routes: picks }));
+    // Breadcrumb is delimited by "  ·  " from the combo segment.
+    const segments = out.split('  ·  ');
+    expect(segments).toHaveLength(4); // weapons | bosses | combo | trail
+    // Trail should be the formatted breadcrumb, not raw route keys.
+    expect(segments[3]).toBe(formatRouteBreadcrumb(picks));
   });
 });

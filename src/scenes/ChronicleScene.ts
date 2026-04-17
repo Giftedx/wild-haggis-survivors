@@ -6,7 +6,6 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
 import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
-import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
 import { CURSES, getCurseByKey, setPendingCurse, type CurseKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
 import {
@@ -28,9 +27,9 @@ import {
   formatCurseStatsLine,
   computeStandingStonesStats,
   formatChronicleMilestoneLines,
+  formatChronicleRunSubLine,
   formatRelativeTime,
   formatRerunTooltip,
-  formatRouteBreadcrumb,
   lifetimeTotals,
   type ChronicleMood,
 } from '../ui/chronicleAggregates';
@@ -418,16 +417,8 @@ export class ChronicleScene extends Phaser.Scene {
         .setScale(uiScale);
       this.runRowObjects.push(main);
 
-      // Weapon chips (first 4 keys) + bosses + combo
-      const weapons = entry.weaponKeys.slice(0, 4).map((k) => {
-        const def = WEAPON_DEFS[k as WeaponKey];
-        return def?.name ?? k;
-      }).join(', ');
-      // W2 Moor Road: append route breadcrumb when the run hit a picker.
-      const routeTrail = entry.routes && entry.routes.length > 0
-        ? `  ·  ${formatRouteBreadcrumb(entry.routes)}`
-        : '';
-      const subLine = `${weapons || '—'}  ·  ${entry.bossKills} boss${entry.bossKills === 1 ? '' : 'es'}  ·  combo ${entry.bestCombo}x${routeTrail}`;
+      // Weapon chips (first 4 keys) + bosses + combo [+ route trail].
+      const subLine = formatChronicleRunSubLine(entry);
       const sub = this.add
         .text(150, y + 8, subLine, {
           fontFamily: 'monospace', fontSize: '10px',

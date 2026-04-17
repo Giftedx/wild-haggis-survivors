@@ -276,6 +276,30 @@ export function formatRouteBreadcrumb(
 }
 
 /**
+ * Chronicle runs-page: format a single row's sub-line —
+ *   "{weapons}  ·  {N} boss(es)  ·  combo {X}x[  ·  {routeTrail}]"
+ *
+ * The scene takes this string verbatim and drops it into its second
+ * text line per row. Pure on the entry fields it reads
+ * (weaponKeys, bossKills, bestCombo, routes). The first four weapon
+ * keys are resolved via WEAPON_DEFS; unknown keys pass through as-is.
+ *
+ * NOTE: boss "es" pluralisation is currently English-only; kept here
+ * as a single source of truth for when the row is i18n'd later.
+ */
+export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
+  const weapons = entry.weaponKeys
+    .slice(0, 4)
+    .map((k) => WEAPON_DEFS[k as WeaponKey]?.name ?? k)
+    .join(', ');
+  const bossWord = entry.bossKills === 1 ? 'boss' : 'bosses';
+  const routeTrail = entry.routes && entry.routes.length > 0
+    ? `  ·  ${formatRouteBreadcrumb(entry.routes)}`
+    : '';
+  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}`;
+}
+
+/**
  * W2 Moor Road: select history entries that contain at least one
  * route pick, newest-first. Used by the Chronicle Moor Road log panel.
  */
