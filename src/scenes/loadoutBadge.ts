@@ -1,5 +1,5 @@
 import { t } from '../core/i18n';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import type { VariantUnlockProgress } from '../data/variants';
 
 /**
@@ -65,7 +65,7 @@ export function resolveLoadoutBadgeStyle(
       fillColor: 0x2c7d45,
       strokeColor: unlocked ? 0x8bb4ff : 0x5a6070,
       labelText: t('ui.loadout.selected'),
-      labelColor: '#ffffff',
+      labelColor: COLORS_CSS.WHITE,
       statusText: t('ui.loadout.status_current'),
     };
   }
@@ -74,7 +74,7 @@ export function resolveLoadoutBadgeStyle(
       fillColor: COLORS.SCOTTISH_BLUE,
       strokeColor: 0x8bb4ff,
       labelText: t('ui.loadout.select'),
-      labelColor: '#ffffff',
+      labelColor: COLORS_CSS.WHITE,
       statusText: t('ui.loadout.status_switch'),
     };
   }

@@ -1,3 +1,5 @@
+import { COLORS_CSS } from '../config';
+
 /**
  * Pure style helpers for the MenuScene variant carousel panel.
  *
@@ -17,7 +19,7 @@
 export const VARIANT_PANEL_STROKE_UNLOCKED = 0x4f77b7;
 export const VARIANT_PANEL_STROKE_LOCKED = 0x3f4657;
 
-export const VARIANT_NAME_COLOR_UNLOCKED = '#ffffff';
+export const VARIANT_NAME_COLOR_UNLOCKED = COLORS_CSS.WHITE;
 export const VARIANT_NAME_COLOR_LOCKED = '#d1d6e0';
 
 export const VARIANT_TALLY_COLOR_HAS_WINS = '#9de6a8';
