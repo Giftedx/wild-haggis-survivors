@@ -11,6 +11,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { resolveShopRowBgColor } from './shopRowBg';
 import { startSceneFadeOut, addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET, addSceneBackdrop } from './sceneFade';
+import { playPurchaseBurst } from './purchaseBurst';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 
@@ -220,40 +221,8 @@ export class ShopScene extends Phaser.Scene {
     this.saveData = writeSave(this.saveData);
     audio.playPurchase();
 
-    // Gold particle burst — scatter with gravity for a weighty "cha-ching" feel
-    const gx = this.goldText.x;
-    const gy = this.goldText.y;
-    // Brief golden flash behind the text
-    const flash = this.add.circle(gx, gy, 20, 0xd4a017, 0.3).setDepth(9);
-    this.tweens.add({
-      targets: flash, scale: 2, alpha: 0, duration: 300,
-      onComplete: () => flash.destroy(),
-    });
-    // 6 gold coins scatter outward then arc down (gravity)
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
-      const speed = Phaser.Math.Between(20, 40);
-      const dot = this.add.circle(gx, gy,
-        Phaser.Math.Between(2, 4), 0xd4a017, 0.9
-      ).setDepth(10);
-      const endX = gx + Math.cos(angle) * speed;
-      const peakY = gy - Phaser.Math.Between(15, 30);
-      const endY = gy + Phaser.Math.Between(5, 15); // falls below origin (gravity)
-      // Arc up then down
-      this.tweens.add({
-        targets: dot, x: endX, duration: 400 + i * 30,
-        onComplete: () => dot.destroy(),
-      });
-      this.tweens.add({
-        targets: dot,
-        y: { value: peakY, duration: 180, ease: 'Quad.easeOut' },
-      });
-      this.tweens.add({
-        targets: dot,
-        y: { value: endY, duration: 220, ease: 'Quad.easeIn', delay: 180 },
-        alpha: { value: 0, duration: 200, delay: 200 },
-      });
-    }
+    // Gold particle burst — "cha-ching" feel
+    playPurchaseBurst(this, this.goldText.x, this.goldText.y, 0xd4a017, 0.3);
 
     this.updateHeader();
     this.renderRows();

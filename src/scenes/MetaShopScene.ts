@@ -13,6 +13,7 @@ import {
   META_SHOP_PAGE_BUTTON_STYLE,
 } from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
+import { playPurchaseBurst } from './purchaseBurst';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
@@ -265,37 +266,8 @@ export class MetaShopScene extends Phaser.Scene {
     this.saveManager.save(r.next);
     audio.playPurchase();
 
-    // Green crystal burst — scatter with gravity for a weighty feel
-    const gx = this.killsText.x;
-    const gy = this.killsText.y;
-    const flash = this.add.circle(gx, gy, 20, 0x77c977, 0.25).setDepth(9);
-    this.tweens.add({
-      targets: flash, scale: 2, alpha: 0, duration: 300,
-      onComplete: () => flash.destroy(),
-    });
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
-      const speed = Phaser.Math.Between(20, 40);
-      const dot = this.add.circle(gx, gy,
-        Phaser.Math.Between(2, 4), 0x77c977, 0.9
-      ).setDepth(10);
-      const endX = gx + Math.cos(angle) * speed;
-      const peakY = gy - Phaser.Math.Between(15, 30);
-      const endY = gy + Phaser.Math.Between(5, 15);
-      this.tweens.add({
-        targets: dot, x: endX, duration: 400 + i * 30,
-        onComplete: () => dot.destroy(),
-      });
-      this.tweens.add({
-        targets: dot,
-        y: { value: peakY, duration: 180, ease: 'Quad.easeOut' },
-      });
-      this.tweens.add({
-        targets: dot,
-        y: { value: endY, duration: 220, ease: 'Quad.easeIn', delay: 180 },
-        alpha: { value: 0, duration: 200, delay: 200 },
-      });
-    }
+    // Green crystal burst — weighty feel
+    playPurchaseBurst(this, this.killsText.x, this.killsText.y, 0x77c977, 0.25);
 
     this.renderRows();
   }
