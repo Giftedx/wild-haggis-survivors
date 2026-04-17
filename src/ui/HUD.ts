@@ -24,6 +24,7 @@ import {
   dashPulseAlpha,
   DASH_PULSE_PHASE_STEP,
 } from './hudDashStyle';
+import { bossHpBarStyle } from './hudBossBar';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -655,24 +656,11 @@ export class HUD {
     this.bossBarHighlight.width = fillW;
     this.bossNameText.setText(boss.name);
 
-    // Colour shift based on HP: full red → orange as low → bright red flash at <25%
-    if (this.bossHpFraction < 0.25) {
-      // Warning state — wall-clock phase so the pulse is frame-rate-independent
-      // and doesn't accumulate a stale offset if HP oscillates above/below 25%.
-      const pulse = 0.3 + Math.sin(this.scene.time.now * 0.006) * 0.25;
-      this.bossBarGlow.setFillStyle(0xff2200, pulse);
-      // Brighter fill colour (angry red)
-      this.bossBarFill.setFillStyle(0xff2222);
-      this.bossBarHighlight.setFillStyle(0xffaa44);
-    } else if (this.bossHpFraction < 0.5) {
-      this.bossBarGlow.setFillStyle(0xff4400, 0.08);
-      this.bossBarFill.setFillStyle(0xdd3333);
-      this.bossBarHighlight.setFillStyle(0xff7755);
-    } else {
-      this.bossBarGlow.setFillStyle(0xff2200, 0);
-      this.bossBarFill.setFillStyle(0xcc2222);
-      this.bossBarHighlight.setFillStyle(0xff6644);
-    }
+    // Colour shift based on HP — see hudBossBar for the three tiers.
+    const bossStyle = bossHpBarStyle(this.bossHpFraction, this.scene.time.now);
+    this.bossBarGlow.setFillStyle(bossStyle.glowColor, bossStyle.glowAlpha);
+    this.bossBarFill.setFillStyle(bossStyle.fillColor);
+    this.bossBarHighlight.setFillStyle(bossStyle.highlightColor);
   }
 
   private updateWeaponSlots(
