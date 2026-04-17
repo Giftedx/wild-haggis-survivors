@@ -79,8 +79,16 @@ core gameplay feel. Ralph-mode managed.
   `phaser/src/phaser-core.js` (or build-time subset imports) can
   drop unused subsystems (we use Arcade physics, zero Tilemaps,
   zero Matter).
-- [ ] PWA precache reports 2116 KiB — confirm that's acceptable
+- [x] PWA precache reports 2116 KiB — confirm that's acceptable
   for install-on-visit, or move large assets out of precache.
+  **Resolved 2026-04-17: acceptable.** Breakdown is vendor-phaser
+  ~1482 KB + app ~680 KB + workbox ~6 KB + 2 PWA icons + shell.
+  Every byte is required on the first frame to render the game,
+  so runtime-caching any of them would break the offline-from-
+  first-visit guarantee the PWA is built to provide. The only
+  reductions with real impact are further Phaser subsetting (own
+  P2 item) and app-chunk lazy-load (ditto) — both change the
+  precache as a side effect, not by moving assets out of it.
 - [ ] App chunk climbed 500 KB → 679 KB over the W2 / W66 / W18 pass.
   Investigate whether the Scots overlay + route data can be
   lazy-loaded (currently eager via `EN_STRINGS` / `SCS_STRINGS`
