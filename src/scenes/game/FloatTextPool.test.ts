@@ -93,7 +93,7 @@ describe('FloatTextPool.acquire', () => {
     const pool = new FloatTextPool();
     const { scene, created } = makeScene();
     pool.init(scene);
-    const t = pool.acquire(50, 75, '+10', '#ff0');
+    const t = pool.acquire(50, 75, '+10', '#ff0') as unknown as MockText | null;
     expect(t).not.toBeNull();
     expect(t!.x).toBe(50);
     expect(t!.y).toBe(75);
@@ -107,7 +107,7 @@ describe('FloatTextPool.acquire', () => {
     const pool = new FloatTextPool();
     const { scene } = makeScene();
     pool.init(scene);
-    const t = pool.acquire(0, 0, 'hi', '#fff');
+    const t = pool.acquire(0, 0, 'hi', '#fff') as unknown as MockText | null;
     expect(t!.fontSize).toBe('16px');
     expect(t!.depth).toBe(85);
   });
@@ -116,7 +116,7 @@ describe('FloatTextPool.acquire', () => {
     const pool = new FloatTextPool();
     const { scene } = makeScene();
     pool.init(scene);
-    const t = pool.acquire(0, 0, 'big', '#fff', '24px', 99);
+    const t = pool.acquire(0, 0, 'big', '#fff', '24px', 99) as unknown as MockText | null;
     expect(t!.fontSize).toBe('24px');
     expect(t!.depth).toBe(99);
   });
@@ -147,10 +147,10 @@ describe('FloatTextPool.acquire', () => {
     const pool = new FloatTextPool();
     const { scene, created } = makeScene();
     pool.init(scene);
-    const t1 = pool.acquire(0, 0, 'a', '#fff')!;
+    const t1 = pool.acquire(0, 0, 'a', '#fff') as unknown as MockText;
     t1.setAlpha(0.2).setScale(0.4); // simulate tween mid-fade
     t1.setVisible(false);
-    const t2 = pool.acquire(0, 0, 'b', '#fff')!;
+    const t2 = pool.acquire(0, 0, 'b', '#fff') as unknown as MockText;
     expect(t2).toBe(created[0]);
     expect(t2.alpha).toBe(1);
     expect(t2.scale).toBe(1);
