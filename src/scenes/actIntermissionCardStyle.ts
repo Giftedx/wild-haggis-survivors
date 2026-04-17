@@ -9,6 +9,7 @@
  * prevents drift between POINTER_OVER / POINTER_OUT handlers and
  * the card's initial render.
  */
+import { COLORS } from '../config';
 
 export interface ActIntermissionCardBorderState {
   color: number;
@@ -20,7 +21,7 @@ export interface ActIntermissionCardStyle {
   hover: ActIntermissionCardBorderState;
 }
 
-export const ACT_INTERMISSION_CARD_IDLE_COLOR = 0xd4a017;
+export const ACT_INTERMISSION_CARD_IDLE_COLOR = COLORS.WHISKY_GOLD;
 export const ACT_INTERMISSION_CARD_HOVER_COLOR = 0xffe08a;
 
 export function resolveActIntermissionCardStyle(): ActIntermissionCardStyle {
