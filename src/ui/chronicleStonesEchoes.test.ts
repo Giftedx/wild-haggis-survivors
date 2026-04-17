@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeStandingStonesStats,
   formatAncestralEchoesLine,
+  formatHearthBeatsLine,
   formatPostBellLine,
   formatStandingStonesLine,
 } from './chronicleAggregates';
@@ -98,6 +99,24 @@ describe('formatStandingStonesLine', () => {
       favouriteBoon: null,
     });
     expect(line.toLowerCase()).not.toContain('favourite');
+  });
+});
+
+describe('formatHearthBeatsLine', () => {
+  it('returns empty string when count is 0', () => {
+    expect(formatHearthBeatsLine(0)).toBe('');
+  });
+
+  it('returns empty string for negative input (defensive)', () => {
+    expect(formatHearthBeatsLine(-3)).toBe('');
+  });
+
+  it('floors fractional input', () => {
+    expect(formatHearthBeatsLine(7.9)).toBe('🌾 Hearth beats: 7');
+  });
+
+  it('formats positive counts', () => {
+    expect(formatHearthBeatsLine(42)).toBe('🌾 Hearth beats: 42');
   });
 });
 

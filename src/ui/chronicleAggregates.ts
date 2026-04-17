@@ -560,3 +560,15 @@ export function formatPostBellLine(save: SaveData): string {
   const secs = Math.floor(sec % 60).toString().padStart(2, '0');
   return `🔔 Past the bell — best ${mins}:${secs}`;
 }
+
+/**
+ * Single-line Chronicle readout for lifetime hearth beats — the
+ * count of moor moments fired across all runs. Surfaces a `meta`
+ * counter that previously only fed `ach_moor_hearth_30`. Blank
+ * before the first moor moment fires.
+ */
+export function formatHearthBeatsLine(moorMomentsLifetime: number): string {
+  const n = Math.max(0, Math.floor(moorMomentsLifetime));
+  if (n === 0) return '';
+  return `🌾 Hearth beats: ${n}`;
+}

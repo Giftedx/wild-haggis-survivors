@@ -23,6 +23,7 @@ import {
   formatStandingStonesLine,
   formatAncestralEchoesLine,
   formatPostBellLine,
+  formatHearthBeatsLine,
   computeStandingStonesStats,
   formatRelativeTime,
   formatRouteBreadcrumb,
@@ -208,8 +209,10 @@ export class ChronicleScene extends Phaser.Scene {
     const echoesSection = echoesLine ? `\n${echoesLine}` : '';
     const postBellLine = formatPostBellLine(save);
     const postBellSection = postBellLine ? `\n${postBellLine}` : '';
+    const hearthLine = formatHearthBeatsLine(metaSave.moorMomentsLifetime ?? 0);
+    const hearthSection = hearthLine ? `\n${hearthLine}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection;
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,
