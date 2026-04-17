@@ -2,6 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   curseTileRowLayout,
   tileXForIndex,
+  resolveCurseTileBestedStyle,
+  CURSE_TILE_BESTED,
+  CURSE_TILE_FRESH,
   CURSE_TILE_GRID_MARGIN,
   CURSE_TILE_GUTTER,
   CURSE_TILE_HEIGHT,
@@ -72,5 +75,22 @@ describe('tileXForIndex', () => {
 
   it('default gutter matches CURSE_TILE_GUTTER', () => {
     expect(tileXForIndex(0, 1, 50)).toBe(50 + CURSE_TILE_GUTTER);
+  });
+});
+
+describe('resolveCurseTileBestedStyle', () => {
+  it('bested tiles get the warmer plum fill + full opacity border', () => {
+    expect(resolveCurseTileBestedStyle(true)).toBe(CURSE_TILE_BESTED);
+    expect(CURSE_TILE_BESTED.borderAlpha).toBe(1);
+  });
+
+  it('fresh tiles get the cool fill + slightly dimmed border', () => {
+    expect(resolveCurseTileBestedStyle(false)).toBe(CURSE_TILE_FRESH);
+    expect(CURSE_TILE_FRESH.borderAlpha).toBeLessThan(1);
+  });
+
+  it('bested and fresh palettes differ on every field', () => {
+    expect(CURSE_TILE_BESTED.fillColor).not.toBe(CURSE_TILE_FRESH.fillColor);
+    expect(CURSE_TILE_BESTED.borderAlpha).not.toBe(CURSE_TILE_FRESH.borderAlpha);
   });
 });

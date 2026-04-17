@@ -56,6 +56,28 @@ export function curseTileRowLayout(
   };
 }
 
+/**
+ * Bested-vs-fresh palette for the tile background + border alpha.
+ * Bested tiles (ones the player has already beaten with a victory)
+ * render in a warmer plum fill and a fully-opaque border so they
+ * read as "trophy state", distinct from unclaimed tiles.
+ */
+export interface CurseTileBestedStyle {
+  fillColor: number;
+  borderAlpha: number;
+}
+
+export const CURSE_TILE_BESTED: CurseTileBestedStyle = {
+  fillColor: 0x1a1326, borderAlpha: 1,
+};
+export const CURSE_TILE_FRESH: CurseTileBestedStyle = {
+  fillColor: 0x10172a, borderAlpha: 0.85,
+};
+
+export function resolveCurseTileBestedStyle(bested: boolean): CurseTileBestedStyle {
+  return bested ? CURSE_TILE_BESTED : CURSE_TILE_FRESH;
+}
+
 /** X-centre of tile `i` (zero-based). */
 export function tileXForIndex(
   startX: number,

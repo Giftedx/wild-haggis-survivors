@@ -6,7 +6,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
-import { curseTileRowLayout, tileXForIndex } from './curseTileLayout';
+import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -155,11 +155,10 @@ export class CurseScene extends Phaser.Scene {
   ): void {
     // Tile background — bested tiles get a slightly warmer fill + brighter
     // border so the conquered ones read as a settled "trophy" state.
-    const fillColor = opts.bested ? 0x1a1326 : 0x10172a;
-    const borderAlpha = opts.bested ? 1 : 0.85;
+    const bestedStyle = resolveCurseTileBestedStyle(opts.bested);
     this.add
-      .rectangle(cx, cy, w, h, fillColor, 0.92)
-      .setStrokeStyle(2, opts.accentColor, borderAlpha);
+      .rectangle(cx, cy, w, h, bestedStyle.fillColor, 0.92)
+      .setStrokeStyle(2, opts.accentColor, bestedStyle.borderAlpha);
 
     // BESTED ribbon — top-right corner, only on tiles the player has won.
     if (opts.bested) {
