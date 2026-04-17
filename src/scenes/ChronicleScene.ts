@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -116,7 +117,7 @@ export class ChronicleScene extends Phaser.Scene {
     // ── Header ──
     this.add
       .text(width / 2, 36, t('ui.chronicle.title'),
-        sceneHeaderTextStyle('30px', highContrastUi ? '#ffe08a' : '#d4a017'))
+        sceneHeaderTextStyle('30px', highContrastUi ? '#ffe08a' : COLORS_CSS.WHISKY_GOLD))
       .setOrigin(0.5)
       .setScale(uiScale);
 

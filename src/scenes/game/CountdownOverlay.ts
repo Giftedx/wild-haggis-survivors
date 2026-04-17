@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../../config';
 import { audio } from '../../systems/AudioSystem';
 import type { TimeManager } from '../../systems/TimeManager';
 import type { UpdateTickers } from '../../utils/UpdateTickers';
@@ -38,7 +39,7 @@ export function showCountdown(
     const text = scene.add.text(x + width / 2, y + height / 2, label, {
       fontFamily: 'monospace',
       fontSize: isFinal ? '40px' : '64px',
-      color: isFinal ? '#d4a017' : '#ffffff',
+      color: isFinal ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE,
       fontStyle: 'bold',
       stroke: '#000',
       strokeThickness: 6,

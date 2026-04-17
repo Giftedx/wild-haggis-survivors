@@ -14,7 +14,7 @@
  * never reaches through `scene as any`.
  */
 import Phaser from 'phaser';
-import { GAME, COLORS } from '../../config';
+import { GAME, COLORS, COLORS_CSS } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { XPSystem } from '../../systems/XPSystem';
@@ -291,7 +291,7 @@ export class PickupSpawner {
       const txt = this.hooks.acquireFloatText(
         coin.x, coin.y - 12,
         t('ui.game.gold_pickup_float', { gold: goldAmount }),
-        '#d4a017', '16px', 80,
+        COLORS_CSS.WHISKY_GOLD, '16px', 80,
       );
       if (txt) {
         scene.tweens.add({

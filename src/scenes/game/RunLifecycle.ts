@@ -12,6 +12,7 @@
  * they touch many scene fields and live near the scene's own lifecycle.
  */
 import Phaser from 'phaser';
+import { COLORS_CSS } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import type { XPSystem } from '../../systems/XPSystem';
@@ -143,7 +144,7 @@ export class RunLifecycle {
     juice.flashWhite(300);
     tryCameraShake(this.hooks.getCamera(), 800, 0.015, this.hooks.getSettingsManager());
     juice.bossDeathSpectacle(player.x, player.y);
-    juice.showToast(t('ui.gameOver.victory_title'), '#d4a017');
+    juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
     this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
     juice.showToast(t('ui.gameOver.keep_going_offer'), '#ffdd88');
     this.postBellOfferActive = true;
