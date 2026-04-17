@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { PLAYER, GAME } from '../config';
+import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { softBoundarySteer } from './softBoundarySteer';
@@ -222,7 +222,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       const delay = i * (this.DASH_DURATION_MS / trailCount);
       const handle = tickers?.addOnce('scaled', delay, () => {
         if (!this.active) return;
-        const afterImage = this.scene.add.circle(this.x, this.y, 12, 0xd4a017, 0.4).setDepth(3);
+        const afterImage = this.scene.add.circle(this.x, this.y, 12, COLORS.WHISKY_GOLD, 0.4).setDepth(3);
         this.scene.tweens.add({
           targets: afterImage, alpha: 0, scale: 0.3, duration: 200,
           onComplete: () => afterImage.destroy(),

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME } from '../../config';
+import { COLORS, GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { BiomeId } from '../../data/biomes';
@@ -53,7 +53,7 @@ export class GameTickers {
     const frac = player.getDashCooldownFraction();
     if (frac <= 0) return;
 
-    this.dashIndicator.lineStyle(2, 0xd4a017, 0.6);
+    this.dashIndicator.lineStyle(2, COLORS.WHISKY_GOLD, 0.6);
     const startAngle = -Math.PI / 2;
     const endAngle = startAngle + (1 - frac) * Math.PI * 2;
     this.dashIndicator.beginPath();
