@@ -12,7 +12,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
-import { getCurseByKey } from '../data/curses';
+import { getCurseByKey, setPendingCurse } from '../data/curses';
 import { formatClockTime, computeGoldBreakdown } from './gameOverFormatting';
 import { downloadPostcard } from '../utils/postcard';
 
@@ -837,6 +837,11 @@ export class GameOverScene extends Phaser.Scene {
       const p = this.payload;
       if (!p || typeof p.runSeed !== 'number') return;
       try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+      // Rerun must carry the curse — otherwise the "same seed" replay
+      // is silently easier than the original (and the boss/spawn cadence
+      // diverges since several modifiers gate their flow on a curse).
+      const def = getCurseByKey(p.curseKey ?? null);
+      setPendingCurse(def ? def.key : null);
       this.scene.start('Game', { seed: p.runSeed, forceVariantKey: p.variantKey });
     });
   }

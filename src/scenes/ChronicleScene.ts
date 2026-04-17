@@ -7,7 +7,7 @@ import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
 import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
-import { CURSES, getCurseByKey } from '../data/curses';
+import { CURSES, getCurseByKey, setPendingCurse, type CurseKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
 import {
   buildChronicleCodex,
@@ -321,10 +321,17 @@ export class ChronicleScene extends Phaser.Scene {
    * seeded with that entry's runSeed and its original variant. Any
    * suspended active run is cleared first (matches the "Play Again"
    * path on GameOverScene) so the new run isn't treated as a resume.
+   *
+   * If the original run bore a curse, the rerun re-applies it via
+   * the pending-curse singleton — otherwise a "rerun cursed seed"
+   * silently dropped the curse and gave the player an easier rerun
+   * than the original (and a visibly different boss/spawn cadence).
    */
-  private rerunSeed(seed: number, variantKey: string): void {
+  private rerunSeed(seed: number, variantKey: string, curseKey?: string): void {
     audio.playClick();
     try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+    const def = getCurseByKey(curseKey ?? null);
+    setPendingCurse(def ? (def.key as CurseKey) : null);
     this.scene.start('Game', { seed, forceVariantKey: variantKey });
   }
 
@@ -499,7 +506,7 @@ export class ChronicleScene extends Phaser.Scene {
         rerun.on('pointerout', hideTooltip);
         rerun.on('pointerdown', () => {
           hideTooltip();
-          this.rerunSeed(entry.runSeed!, entry.variantKey);
+          this.rerunSeed(entry.runSeed!, entry.variantKey, entry.curseKey);
         });
         this.runRowObjects.push(rerun);
       }
