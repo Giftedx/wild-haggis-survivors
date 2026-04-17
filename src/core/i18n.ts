@@ -2201,6 +2201,111 @@ export const SCS_STRINGS: LocaleTree = {
         tartan_sash: 'Tartan Sash (+8% Dmg, Claymore Evo)',
       },
     },
+    /**
+     * Banter — generic-line overlay only. Per-variant, per-boss,
+     * per-biome and per-route lines stay in English (Glesga register
+     * already authored, voice-tuned). Falls back automatically.
+     */
+    banter: {
+      boss_warn: {
+        a: 'Somethin big\'s comin. Square up.',
+        b: 'Heavy fitsteps. That\'s no a rambler.',
+        c: 'Tha moor\'s gane quait. Bad sign, that.',
+        d: 'Aw naw. Here we go.',
+        e: 'Big silhouette on tha horizon — nae a sheep.',
+      },
+      low_hp: {
+        a: 'Yer on tha last shred, wee yin.',
+        b: 'Wan mair dunt an it\'s lichts oot.',
+        c: 'Gie it laldy — naethin tae lose noo.',
+        d: 'Hingin by a thistle.',
+        e: 'Last-chance wather — mak it coont.',
+      },
+      boss_down: {
+        a: 'Awa in a box. Pure textbook.',
+        b: 'That\'s him telt.',
+        c: 'Lang may yer wee lum reek, ya beauty.',
+        d: 'Boss doon — tha glen exhales.',
+      },
+      weapon_evolve: {
+        a: 'Noo THAT\'S a proper wapen.',
+        b: 'Legendary. As it should be.',
+        c: 'Tha moor trembles. Guid.',
+        d: 'That\'s tha glow-up tha legends promised.',
+      },
+      curse_start: {
+        generic: {
+          a: 'Tha moor minds yer bargain.',
+          b: 'Curse taen — nae takin it back noo.',
+          c: 'Paid in teeth fer gold. Let\'s see it.',
+          d: 'Deal\'s sealed — tha glen\'s collectin interest.',
+        },
+      },
+      level_up: {
+        a: 'Look at ye gaun.',
+        b: 'Anither notch. Nae messin.',
+        c: 'Tha moor\'s takin notes.',
+        d: 'Yer gettin tha hang o this.',
+        e: 'Levelt up — tha glen noticed.',
+        f: 'Mair in tha tank — spend it canny.',
+      },
+      first_blood: {
+        a: 'First yin doon. Aff ye trot.',
+        b: 'Hoofprints in tha heather. Game on.',
+        c: 'That\'s tha ice broken.',
+        d: 'First notch on tha moor — ink\'s still weet.',
+      },
+      kill_streak: {
+        a: 'Pure mental, this.',
+        b: 'Yer on fire, wee man.',
+        c: 'Cannae stap, will nae stap.',
+        d: 'Tha glen\'s tremblin.',
+        e: 'Combo\'s a ceilidh — naebody leaves early.',
+      },
+      recover: {
+        a: 'Back fae tha brink. Deep braith.',
+        b: 'Still here. Still kickin.',
+        c: 'Steady tha heid. Yer awricht.',
+        d: 'Colour back — tha moor relents.',
+      },
+      biome_change: {
+        a: 'Different smell tae tha air here.',
+        b: 'New bit o moor. Watch yer step.',
+        c: 'Tha terrain\'s shiftin.',
+        d: 'Postcode changed — same attitude.',
+      },
+      moor_moment: {
+        a: 'Tha moor noticed ye. That\'s rare.',
+        b: 'Gift fae tha glen — dinnae spend it aw at wance.',
+        c: 'Hearth beat — tha land\'s still payin attention.',
+        d: 'Somethin kind tummled oot tha wather.',
+        e: 'Tha glen tipped its hat — briefly, but sincerely.',
+        f: 'Luck\'s a loan — spend it afore it notices.',
+      },
+      idle: {
+        a: 'Quait, this. Ower quait, mibbe.',
+        b: 'Listen tae tha wind.',
+        c: 'A wee braither.',
+        d: 'Somethin\'s brewin. Aye is.',
+        e: 'Calm afore tha ceilidh — savour it.',
+        f: 'Tha moor hums law — dinnae interrupt.',
+      },
+      act_intermission_enter: {
+        a: 'Awricht, whit way, big yin?',
+        b: 'Road forks. Choose, or dinnae.',
+        c: 'Split in tha path. Mind yer feet.',
+      },
+      act_complete: {
+        a: 'That\'s wan doon. Braw.',
+        b: 'On tae tha next bit.',
+      },
+      route_picked: {
+        generic: {
+          a: 'Line picked. Walk it, aye.',
+          b: 'Decision made. Nae takin it back.',
+        },
+      },
+    },
   },
   boss: {
     gordon: { name: 'Gordon tha Chef' },
