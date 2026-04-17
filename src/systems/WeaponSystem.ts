@@ -7,6 +7,7 @@ import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
+import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -221,16 +222,20 @@ export class WeaponSystem {
     w.evolved = true;
     w.evolutionKey = evolutionKey;
 
-    // Evolved weapons get significant but not game-breaking stat boosts.
-    // Previously 1.8× damage × 2× count × 2× fire rate = ~7.2× DPS multiplier
-    // which let a single evolved weapon solve the game. Dialed down to ~3.5×
-    // effective DPS — still a big spike, still the target of builds, but no
-    // longer single-slot win condition.
-    w.damage = Math.ceil(w.damage * 1.35);
-    w.cooldownMs = Math.max(220, w.cooldownMs * 0.72);
-    w.projectileCount = Math.max(w.projectileCount, 2);
-    w.aoeRadius = w.aoeRadius * 1.35;
-    w.pierce = Math.max(w.pierce, 3);
+    // Evolved weapons get a ~3.5× effective-DPS spike — big but not
+    // single-slot-wins. Tuning lives in weaponEvolutionStats.ts.
+    const boosted = applyWeaponEvolutionStats({
+      damage: w.damage,
+      cooldownMs: w.cooldownMs,
+      projectileCount: w.projectileCount,
+      aoeRadius: w.aoeRadius,
+      pierce: w.pierce,
+    });
+    w.damage = boosted.damage;
+    w.cooldownMs = boosted.cooldownMs;
+    w.projectileCount = boosted.projectileCount;
+    w.aoeRadius = boosted.aoeRadius;
+    w.pierce = boosted.pierce;
 
     return true;
   }
