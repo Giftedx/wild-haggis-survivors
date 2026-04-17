@@ -451,3 +451,41 @@ Additional bug-hunt sweeps across HazardZones, TimeManager,
 WeaponSystem, Enemy, Player, JuiceSystem came back clean at
 the >=80 confidence threshold — no other "cached value reads
 from a now-stale source" patterns surface in those systems.
+
+Second W2 bug fix shipped (90b1419) after a resume-correctness
+sweep turned up a deeper form of the same pattern:
+
+  A player who picked a route in act 1 and quit mid-run would,
+  on resume, reset `runActState.currentAct = 1` AND lose every
+  route modifierDelta that had been applied. Two concrete player
+  impacts: (a) the next gordon kill would fire the act-1 picker a
+  SECOND time and force a re-pick; (b) any route-granted permanent
+  multiplier (e.g. run_for_the_hills 0.75 spawn throttle) or
+  latent `weaponCooldownMult` delta would silently revert to 1.0
+  for the rest of the session.
+
+  Fix: IRunState gains an optional `actState` snapshot
+  (currentAct + actStartTimeSec + pickerHistory). `collect()`
+  serialises via a new `getRunActState` hook; `applyResume()`
+  rehydrates the RunActState and REPLAYS
+  `applyRouteModifierDeltas` for each stored pick before
+  resyncing the cached multipliers on SpawnSystem + WeaponSystem.
+  The Chronicle route breadcrumb still prints correctly because
+  runModifiers.routePicks is rebuilt in the same pass.
+
+  Design note: serializing the live multipliers directly would
+  have worked too, but replaying from pickerHistory keeps the
+  resume path aligned with the live-pick path (same applicator,
+  same cache-resync pair) — one truth instead of two.
+
+  RunPersistenceBridge.test.ts gained a round-trip test
+  (actState → RunActState → modifiers bag → SpawnSystem +
+  WeaponSystem caches). Test count: 2318 → 2323.
+
+Narrowed `RouteDef.modifierDeltas` type (d9be4e6) so future
+authored routes can't declare modifierDelta keys that lack a
+propagation path. The four permitted keys pair 1:1 with the
+resync sites (`spawnIntervalMult` / `weaponCooldownMult` through
+setters; `damageTakenMult` / `goldMult` through live-read). Any
+new field added requires threading both the type union AND the
+onResolve propagation — compile-time-enforced.
