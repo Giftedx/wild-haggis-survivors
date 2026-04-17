@@ -23,3 +23,31 @@ export function toggleStateDisplay(isOn: boolean): ToggleStateDisplay {
     ? { text: t('ui.settings.on'), color: TOGGLE_ON_LABEL_COLOR }
     : { text: t('ui.settings.off'), color: TOGGLE_OFF_LABEL_COLOR };
 }
+
+// ── Track + thumb palette ────────────────────────────────────────────
+//
+// The track-and-sliding-thumb toggle switch has three colour pairs
+// keyed on on/off state: track fill, track border, thumb fill. The
+// label colours above already cover the text next to the track.
+
+export interface ToggleTrackStyle {
+  trackFill: number;
+  trackBorder: number;
+  thumbFill: number;
+}
+
+export const TOGGLE_TRACK_ON: ToggleTrackStyle = {
+  trackFill: 0x2d6a3e,
+  trackBorder: 0x4a9a5e,
+  thumbFill: 0x99cc88,
+};
+
+export const TOGGLE_TRACK_OFF: ToggleTrackStyle = {
+  trackFill: 0x3a3148,
+  trackBorder: 0x4a3a5a,
+  thumbFill: 0x8a7a9a,
+};
+
+export function resolveToggleTrackStyle(isOn: boolean): ToggleTrackStyle {
+  return isOn ? TOGGLE_TRACK_ON : TOGGLE_TRACK_OFF;
+}

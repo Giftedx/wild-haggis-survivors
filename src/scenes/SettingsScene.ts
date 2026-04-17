@@ -12,7 +12,7 @@ import {
   steppedSliderBump,
   formatSliderValue,
 } from './settingsSliderMath';
-import { toggleStateDisplay } from './settingsToggle';
+import { toggleStateDisplay, resolveToggleTrackStyle } from './settingsToggle';
 import { cycleLocaleKey, labelForLocale } from './settingsLocale';
 import {
   banterChipStyle,
@@ -512,12 +512,7 @@ export class SettingsScene extends Phaser.Scene {
       .setScale(this.uiScale);
 
     // Proper toggle switch: track + sliding thumb + side labels
-    const onColor = 0x2d6a3e;
-    const offColor = 0x3a3148;
-    const onBorder = 0x4a9a5e;
-    const offBorder = 0x4a3a5a;
-    const thumbOnColor = 0x99cc88;
-    const thumbOffColor = 0x8a7a9a;
+    const trackStyle = resolveToggleTrackStyle(this.working[key]);
     const cx = width - 88;
     const cy = y + 18;
     const trackW = 58;
@@ -525,8 +520,8 @@ export class SettingsScene extends Phaser.Scene {
     const thumbR = 9;
     // Track (rounded rect appearance via stroked rect)
     const btn = this.add
-      .rectangle(cx, cy, trackW, trackH, this.working[key] ? onColor : offColor, 1)
-      .setStrokeStyle(1.5, this.working[key] ? onBorder : offBorder, 0.9)
+      .rectangle(cx, cy, trackW, trackH, trackStyle.trackFill, 1)
+      .setStrokeStyle(1.5, trackStyle.trackBorder, 0.9)
       .setInteractive({ useHandCursor: true });
     btn.setScale(this.uiScale);
     // Track inner shadow (depth)
@@ -541,7 +536,7 @@ export class SettingsScene extends Phaser.Scene {
         this.working[key] ? thumbRightX : thumbLeftX,
         cy,
         thumbR,
-        this.working[key] ? thumbOnColor : thumbOffColor,
+        trackStyle.thumbFill,
         1
       )
       .setStrokeStyle(1, 0x000000, 0.4)
@@ -570,8 +565,9 @@ export class SettingsScene extends Phaser.Scene {
 
     const sync = () => {
       const isOn = this.working[key];
-      btn.setFillStyle(isOn ? onColor : offColor);
-      btn.setStrokeStyle(1.5, isOn ? onBorder : offBorder, 0.9);
+      const s = resolveToggleTrackStyle(isOn);
+      btn.setFillStyle(s.trackFill);
+      btn.setStrokeStyle(1.5, s.trackBorder, 0.9);
       const state = toggleStateDisplay(isOn);
       txt.setText(state.text);
       txt.setColor(state.color);
@@ -585,7 +581,7 @@ export class SettingsScene extends Phaser.Scene {
         duration: 140,
         ease: 'Quad.easeOut',
       });
-      thumb.setFillStyle(isOn ? thumbOnColor : thumbOffColor);
+      thumb.setFillStyle(s.thumbFill);
     };
 
     const doToggle = () => {

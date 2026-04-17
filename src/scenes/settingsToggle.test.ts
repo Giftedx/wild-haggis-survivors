@@ -33,3 +33,22 @@ describe('toggleStateDisplay', () => {
     expect(toggleStateDisplay(false)).toEqual(toggleStateDisplay(false));
   });
 });
+
+describe('resolveToggleTrackStyle', () => {
+  it('on returns the green track palette', async () => {
+    const { resolveToggleTrackStyle, TOGGLE_TRACK_ON } = await import('./settingsToggle');
+    expect(resolveToggleTrackStyle(true)).toBe(TOGGLE_TRACK_ON);
+  });
+
+  it('off returns the lilac track palette', async () => {
+    const { resolveToggleTrackStyle, TOGGLE_TRACK_OFF } = await import('./settingsToggle');
+    expect(resolveToggleTrackStyle(false)).toBe(TOGGLE_TRACK_OFF);
+  });
+
+  it('every field differs between on and off', async () => {
+    const { TOGGLE_TRACK_ON, TOGGLE_TRACK_OFF } = await import('./settingsToggle');
+    expect(TOGGLE_TRACK_ON.trackFill).not.toBe(TOGGLE_TRACK_OFF.trackFill);
+    expect(TOGGLE_TRACK_ON.trackBorder).not.toBe(TOGGLE_TRACK_OFF.trackBorder);
+    expect(TOGGLE_TRACK_ON.thumbFill).not.toBe(TOGGLE_TRACK_OFF.thumbFill);
+  });
+});
