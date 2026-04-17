@@ -16,6 +16,7 @@ import { paginationState } from '../ui/pagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { clickToScene } from './clickToScene';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
@@ -90,12 +91,8 @@ export class MetaShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    this.backButton.on('pointerover', () => this.backButton.setFillStyle(backPalette.hover));
-    this.backButton.on('pointerout', () => this.backButton.setFillStyle(backPalette.idle));
-    this.backButton.on('pointerdown', () => {
-      audio.playClick();
-      this.scene.start('MainMenu');
-    });
+    attachButtonHoverFill(this.backButton, backPalette.idle, backPalette.hover);
+    this.backButton.on('pointerdown', clickToScene(this, 'MainMenu'));
 
     // Page indicator
     this.pageText = this.add
