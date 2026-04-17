@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { applyRunSummary, createDefaultSave, migrateSave } from '../utils/save';
+import { ReplayInput } from './ReplayInput';
 import { ReplayRecorder } from './ReplayRecorder';
 import { deserializeReplay, serializeReplay } from './replayBlob';
 
@@ -92,5 +93,36 @@ describe('replay recorder ↔ save v5 integration', () => {
     expect(blob.frames).toEqual([]);
     expect(blob.frameCount).toBe(0);
     expect(blob.seed).toBe(META.seed);
+  });
+
+  it('recorder → ReplayInput round-trip preserves direction + edge sequence', () => {
+    // Scripted recording: 5 frames with varied direction, dash at 2, menu at 4.
+    const script = [
+      { dtMs: 16, dx: 1, dy: 0, dash: false, menu: false },
+      { dtMs: 16, dx: 0, dy: 1, dash: false, menu: false },
+      { dtMs: 16, dx: 0, dy: 1, dash: true, menu: false },
+      { dtMs: 16, dx: -1, dy: 0, dash: false, menu: false },
+      { dtMs: 16, dx: 0, dy: 0, dash: false, menu: true },
+    ];
+    for (const frame of script) recorder.pushFrame(frame);
+    const blob = recorder.finalize();
+
+    const player = new ReplayInput(blob);
+    const observed: Array<{ dir: { x: number; y: number }; dash: boolean; menu: boolean }> = [];
+    while (!player.isExhausted()) {
+      if (player.advanceFrame() === null) break;
+      observed.push({
+        dir: player.getDirection(),
+        dash: player.consumeDashPressed(),
+        menu: player.consumeMenuPausePressed(),
+      });
+    }
+    expect(observed).toHaveLength(5);
+    expect(observed[0].dir).toEqual({ x: 1, y: 0 });
+    expect(observed[2].dash).toBe(true);
+    expect(observed[4].menu).toBe(true);
+    // No phantom edges on non-edge frames.
+    expect(observed[1].dash).toBe(false);
+    expect(observed[3].dash).toBe(false);
   });
 });
