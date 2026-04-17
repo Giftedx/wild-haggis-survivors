@@ -37,15 +37,6 @@ export interface WeaponDef {
   nameKey: string;
   /** i18n dot-path — resolved with `t(descriptionKey)` at render time. */
   descriptionKey: string;
-  /**
-   * @deprecated Use t(nameKey) for player-facing text. Kept during the
-   * migration window so auto-battler debug logs still work.
-   */
-  name: string;
-  /**
-   * @deprecated Use t(descriptionKey) for player-facing text.
-   */
-  description: string;
   behavior: WeaponBehavior;
   cooldownMs: number;
   damage: number;
@@ -75,8 +66,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'thistle_shot',
     nameKey: 'weapon.thistle_shot.name',
     descriptionKey: 'weapon.thistle_shot.description',
-    name: 'Thistle Shot',
-    description: 'Fires sharp thistles at the nearest enemy.',
     behavior: 'projectile',
     cooldownMs: 1200,
     damage: 5,
@@ -100,8 +89,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'bagpipe_blast',
     nameKey: 'weapon.bagpipe_blast.name',
     descriptionKey: 'weapon.bagpipe_blast.description',
-    name: 'Bagpipe Blast',
-    description: 'Periodic shockwave pushes enemies back.',
     behavior: 'aoe_pulse',
     // Rebalanced: was cooldown 3000 / damage 8 — too weak early because the
     // 3s gap left gaps in dense swarms. Now fires 20% faster with +25% base damage.
@@ -127,8 +114,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'caber_toss',
     nameKey: 'weapon.caber_toss.name',
     descriptionKey: 'weapon.caber_toss.description',
-    name: 'Caber Toss',
-    description: 'Heavy caber pierces through enemies.',
     behavior: 'piercing',
     cooldownMs: 2500,
     damage: 15,
@@ -152,8 +137,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'scotch_mist',
     nameKey: 'weapon.scotch_mist.name',
     descriptionKey: 'weapon.scotch_mist.description',
-    name: 'Scotch Mist',
-    description: 'Leave a damaging fog trail behind you.',
     behavior: 'trail',
     // Rebalanced: was damage 3 / cooldown 800 / radius scaling 1.2. Trail DPS
     // was ~2.5× peer weapons at L5 because zones overlap at high fire rates.
@@ -180,8 +163,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'haggis_hurler',
     nameKey: 'weapon.haggis_hurler.name',
     descriptionKey: 'weapon.haggis_hurler.description',
-    name: 'Jobby Hurler',
-    description: 'Wee jobby balls ricochet off the edges.',
     behavior: 'bouncing',
     cooldownMs: 2000,
     damage: 10,
@@ -205,8 +186,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'nessie_tentacle',
     nameKey: 'weapon.nessie_tentacle.name',
     descriptionKey: 'weapon.nessie_tentacle.description',
-    name: "Nessie's Tentacle",
-    description: 'Sweeping tentacle in a frontal arc.',
     behavior: 'arc_sweep',
     cooldownMs: 2200,
     damage: 12,
@@ -230,8 +209,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'claymore',
     nameKey: 'weapon.claymore.name',
     descriptionKey: 'weapon.claymore.description',
-    name: 'Highland Claymore',
-    description: 'Brutal wide melee cleave — slow, heavy hits.',
     behavior: 'arc_sweep',
     // Rebalanced: was cooldown 3400 / damage 28 — effective DPS ~8.2 made it
     // uncompetitive vs bagpipe blast (~50 eDPS). Now fires 24% faster with
@@ -259,8 +236,6 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     key: 'bagpipes',
     nameKey: 'weapon.bagpipes.name',
     descriptionKey: 'weapon.bagpipes.description',
-    name: 'Ceòl Mòr Bagpipes',
-    description: 'Standing drone — pulsing ring harms and slows nearby foes.',
     behavior: 'aura_pulse',
     cooldownMs: 1900,
     damage: 7,

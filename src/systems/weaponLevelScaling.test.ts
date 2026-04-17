@@ -10,8 +10,6 @@ function makeDef(overrides: Partial<WeaponDef> = {}): WeaponDef {
     key: 'thistle_shot',
     nameKey: 'weapon.thistle_shot.name',
     descriptionKey: 'weapon.thistle_shot.description',
-    name: 'Test',
-    description: 'Test',
     behavior: 'projectile',
     cooldownMs: 1000,
     damage: 10,

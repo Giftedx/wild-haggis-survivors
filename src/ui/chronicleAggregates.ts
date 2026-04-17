@@ -348,7 +348,10 @@ export function formatRouteBreadcrumb(
 export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
   const weapons = entry.weaponKeys
     .slice(0, 4)
-    .map((k) => WEAPON_DEFS[k as WeaponKey]?.name ?? k)
+    .map((k) => {
+      const def = WEAPON_DEFS[k as WeaponKey];
+      return def ? t(def.nameKey) : k;
+    })
     .join(', ');
   const bossWord = entry.bossKills === 1 ? 'boss' : 'bosses';
   const routeTrail = entry.routes && entry.routes.length > 0
@@ -871,7 +874,7 @@ export function formatChronicleMilestoneLines(m: Milestones): string[] {
   if (m.favoriteWeaponKey) {
     const def = WEAPON_DEFS[m.favoriteWeaponKey as WeaponKey];
     lines.push(t('ui.chronicle.milestone_favorite_weapon', {
-      weapon: def?.name ?? m.favoriteWeaponKey,
+      weapon: def ? t(def.nameKey) : m.favoriteWeaponKey,
       count: m.favoriteWeaponCount,
     }));
   }
