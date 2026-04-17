@@ -104,7 +104,7 @@ export function resolveGameOverPanelTheme(isVictory: boolean): GameOverPanelThem
     };
   }
   return {
-    titleColor: '#cc3333',
+    titleColor: COLORS_CSS.HP_RED,
     panelStroke: 0xaa4444,
     titleFontSize: '52px',
     titleStartScale: 1.4,

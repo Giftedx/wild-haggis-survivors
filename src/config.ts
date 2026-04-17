@@ -118,4 +118,7 @@ export const COLORS_CSS = {
    *  config (which wants a CSS string). Change the number in COLORS to
    *  recolour, and update this twin — `colorsCss.test.ts` enforces sync. */
   BG_DARK: '#1a1a2e',
+  /** CSS mirror of COLORS.HP_RED — used by the death-panel title so a
+   *  recolour of the HP red carries through to the game-over gravitas hue. */
+  HP_RED: '#cc3333',
 } as const;

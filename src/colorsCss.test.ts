@@ -24,4 +24,8 @@ describe('COLORS_CSS mirrors COLORS', () => {
     // Kept separate from #000 deliberately — warm shift over moor-blue.
     expect(COLORS_CSS.INK).toBe('#0a0a14');
   });
+
+  it('HP_RED matches the numeric palette', () => {
+    expect(COLORS_CSS.HP_RED).toBe(numberToCssColor(COLORS.HP_RED));
+  });
 });
