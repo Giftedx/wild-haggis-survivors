@@ -13,6 +13,7 @@ import {
   formatSliderValue,
 } from './settingsSliderMath';
 import { toggleStateDisplay } from './settingsToggle';
+import { cycleLocaleKey, labelForLocale } from './settingsLocale';
 
 type SettingsGpRow =
   | {
@@ -709,14 +710,6 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
     this.rowY += rowStep;
 
-    const ORDER: readonly LocaleKey[] = ['en', 'scs'];
-    const labelFor = (v: LocaleKey): string => {
-      switch (v) {
-        case 'en': return t('ui.settings.locale_en');
-        case 'scs': return t('ui.settings.locale_scs');
-      }
-    };
-
     this.add
       .text(40, y + 4, t('ui.settings.language'), {
         fontFamily: 'monospace',
@@ -737,7 +730,7 @@ export class SettingsScene extends Phaser.Scene {
 
     const current = (): LocaleKey => this.working.localeKey ?? 'en';
     const txt = this.add
-      .text(cx, cy, labelFor(current()), {
+      .text(cx, cy, labelForLocale(current()), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#d4c2e8',
@@ -747,13 +740,12 @@ export class SettingsScene extends Phaser.Scene {
       .setScale(this.uiScale);
 
     const sync = () => {
-      txt.setText(labelFor(current()));
+      txt.setText(labelForLocale(current()));
     };
 
     const cycle = () => {
       audio.playClick();
-      const idx = ORDER.indexOf(current());
-      this.working = { ...this.working, localeKey: ORDER[(idx + 1) % ORDER.length] };
+      this.working = { ...this.working, localeKey: cycleLocaleKey(current()) };
       sync();
       this.persistAndApply();
       // Existing labels were rendered against the previous locale.
