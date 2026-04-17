@@ -14,6 +14,7 @@ import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
+import { bossHpTimeScale } from './bossHpTimeScale';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -332,9 +333,8 @@ export class SpawnSystem {
       };
 
       // Scale boss HP with game time — keeps bosses challenging as player
-      // power grows. +0.2% per second after minute 5: a boss at minute 5
-      // has 1.0× HP, minute 10 → 1.6×, minute 15 → 2.2×.
-      const timeScale = 1 + Math.max(0, (this.gameTimeSec - 300) * 0.002);
+      // power grows. bossHpTimeScale() encodes the grace period + ramp.
+      const timeScale = bossHpTimeScale(this.gameTimeSec);
       if (timeScale > 1) {
         bossAsConfig.hp = Math.ceil(boss.hp * timeScale);
       }
