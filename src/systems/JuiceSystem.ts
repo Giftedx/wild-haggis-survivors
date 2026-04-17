@@ -94,11 +94,8 @@ export class JuiceSystem {
 
   // Screen flash overlay
   private flashRect: Phaser.GameObjects.Rectangle;
-  private layoutX = 0;
-  private layoutY = 0;
   private layoutWidth = 0;
   private layoutHeight = 0;
-  private layoutZoom = 1;
 
   // Hit-freeze throttling (engine mutations handled by TimeManager)
   private freezeCooldownMs: number = 0;
@@ -118,12 +115,9 @@ export class JuiceSystem {
     this.tickers = tickers;
     this.settings = settings ?? getSettingsManager();
 
-    const { x, y, width, height, zoom } = this.getUiViewport();
-    this.layoutX = x;
-    this.layoutY = y;
+    const { width, height } = this.getUiViewport();
     this.layoutWidth = width;
     this.layoutHeight = height;
-    this.layoutZoom = zoom;
 
     // Danger vignette — red border glow, hidden by default
     this.vignette = scene.add.graphics().setScrollFactor(0).setDepth(45).setAlpha(0);
@@ -942,11 +936,8 @@ export class JuiceSystem {
   private refreshFixedLayout(): void {
     const { x, y, width, height, zoom } = this.getUiViewport();
     const sizeChanged = width !== this.layoutWidth || height !== this.layoutHeight;
-    this.layoutX = x;
-    this.layoutY = y;
     this.layoutWidth = width;
     this.layoutHeight = height;
-    this.layoutZoom = zoom;
 
     this.flashRect.setPosition(x + width / 2, y + height / 2);
     this.flashRect.width = width;

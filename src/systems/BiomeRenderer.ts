@@ -22,10 +22,8 @@ const SEED_OVERLAY_ALPHA = 0.092;
 
 export class BiomeRenderer {
   private gfx: Phaser.GameObjects.Graphics;
-  private scene: Phaser.Scene;
 
   constructor(scene: Phaser.Scene, manager: BiomeManager) {
-    this.scene = scene;
     this.gfx = scene.add.graphics().setDepth(OVERLAY_DEPTH);
     this.render(manager);
   }

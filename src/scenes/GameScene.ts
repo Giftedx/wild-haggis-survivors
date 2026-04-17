@@ -156,7 +156,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   private pendingChests: Array<{ golden: boolean }> = [];
   private gameTickers!: GameTickers;
-  private runId: object = {};
   private revivalAvailable: boolean = false;
   private activeVariant!: VariantDef;
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
@@ -183,7 +182,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    *  Phaser's scene.stop() doesn't clear the display list. */
   private victoryFade: Phaser.GameObjects.Rectangle | null = null;
   private deathFade: Phaser.GameObjects.Rectangle | null = null;
-  private hintHideHandle: TickerHandle | null = null;
   private subs = new SubscriptionBag();
   private debugOverlay: DebugOverlay | null = null;
   private announcedEvolutionReady = new Set<string>();
@@ -219,7 +217,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runModifiers: RunModifiers = defaultModifiers();
   /** Curse key chosen for this run, if any — persisted into run history. */
   private activeCurseKey: CurseKey | null = null;
-  private devKeydownHandler?: (e: KeyboardEvent) => void;
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
@@ -275,7 +272,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pauseMenu = null;
     this.runScore.reset();
     this.runActState.reset();
-    this.runId = {};
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
     this.runRng = createRNG(runSeed);
@@ -288,7 +284,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.victoryFade = null;
     this.deathFade?.destroy();
     this.deathFade = null;
-    this.hintHideHandle = null;
     this.hazardZones?.reset();
     this.lastEmittedRunSecond = -1;
     this.chestRegistry.reset();
@@ -827,7 +822,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     // Run-intro ceremony — fade in from black + controls hint auto-hide.
-    this.hintHideHandle = installRunIntroFx(this, this.updateTickers, () => this.getUiViewport());
+    installRunIntroFx(this, this.updateTickers, () => this.getUiViewport());
 
     // Ancestral Echo — if last run died recently, spawn a spectral
     // haggis at the death spot. Skipped on resume so the echo only
