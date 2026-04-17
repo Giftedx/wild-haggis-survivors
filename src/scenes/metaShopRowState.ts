@@ -1,5 +1,6 @@
 import { META_SHOP_ITEMS, type MetaShopItemKey } from '../data/metaShopItems';
 import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 
 /**
@@ -84,7 +85,7 @@ export const META_SHOP_PALETTE_LOCKED: MetaShopRowPalette = {
   nameColor: '#8a7a98', descColor: '#7a7a8a',
 };
 export const META_SHOP_PALETTE_BUYABLE: MetaShopRowPalette = {
-  nameColor: '#ffffff', descColor: '#9ea7b9',
+  nameColor: COLORS_CSS.WHITE, descColor: '#9ea7b9',
 };
 
 export function resolveMetaShopRowPalette(state: MetaShopRowState): MetaShopRowPalette {
@@ -106,7 +107,7 @@ export interface MetaShopBuyButtonPalette {
 }
 
 export const META_SHOP_BUY_AFFORDABLE: MetaShopBuyButtonPalette = {
-  fillColor: 0x2d6a3e, strokeColor: 0x5acf72, textColor: '#ffffff',
+  fillColor: 0x2d6a3e, strokeColor: 0x5acf72, textColor: COLORS_CSS.WHITE,
 };
 export const META_SHOP_BUY_UNAFFORDABLE: MetaShopBuyButtonPalette = {
   fillColor: 0x1a1828, strokeColor: 0x3a2a3a, textColor: '#6a5a4a',

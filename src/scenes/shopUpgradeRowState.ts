@@ -1,5 +1,5 @@
 import { getUpgradeCost, type PermanentUpgrade } from '../data/permanentUpgrades';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 
 /**
  * Pure view-state resolver for one ShopScene upgrade row. Given the
@@ -55,7 +55,7 @@ export interface ShopBuyButtonPalette {
   textColor: string;
 }
 export const SHOP_BUY_AFFORDABLE: ShopBuyButtonPalette = {
-  fillColor: COLORS.SCOTTISH_BLUE, strokeColor: 0x8bb4ff, textColor: '#ffffff',
+  fillColor: COLORS.SCOTTISH_BLUE, strokeColor: 0x8bb4ff, textColor: COLORS_CSS.WHITE,
 };
 export const SHOP_BUY_UNAFFORDABLE: ShopBuyButtonPalette = {
   fillColor: 0x1a1828, strokeColor: 0x3a2a3a, textColor: '#6a5a4a',
