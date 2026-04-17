@@ -24,6 +24,7 @@ import { t } from '../../core/i18n';
 import { audio } from '../../systems/AudioSystem';
 import { pickNearbyPosition } from './nearbySpawn';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
+import { pulsePickupGlow } from './pickupGlowPulse';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -69,13 +70,7 @@ export class PickupSpawner {
     const glow = scene.add.circle(x, y, 18, COLORS.WHISKY_GOLD, 0.2).setDepth(4);
 
     // Pulsing glow animation
-    scene.tweens.add({
-      targets: glow,
-      scale: { from: 1, to: 1.5 },
-      alpha: { from: 0.3, to: 0 },
-      duration: 800,
-      repeat: -1,
-    });
+    pulsePickupGlow(scene, glow, 1.5, 800);
 
     // Floating bob animation
     scene.tweens.add({
@@ -225,7 +220,7 @@ export class PickupSpawner {
     this.hooks.trackChest(chest, true);
     const glow = scene.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
 
-    scene.tweens.add({ targets: glow, scale: { from: 1, to: 1.6 }, alpha: { from: 0.3, to: 0 }, duration: 700, repeat: -1 });
+    pulsePickupGlow(scene, glow, 1.6, 700);
     scene.tweens.add({ targets: chest, y: y - 4, duration: 500, ...TWEEN_INFINITE_BREATHE });
 
     scene.physics.add.existing(chest, true);
@@ -329,13 +324,7 @@ export class PickupSpawner {
     const orb = scene.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
     const glow = scene.add.circle(x, y, 10, 0x44dd44, 0.3).setDepth(4);
 
-    scene.tweens.add({
-      targets: glow,
-      scale: { from: 1, to: 1.4 },
-      alpha: { from: 0.3, to: 0 },
-      duration: 600,
-      repeat: -1,
-    });
+    pulsePickupGlow(scene, glow, 1.4, 600);
 
     scene.physics.add.existing(orb, true);
     let collected = false;
