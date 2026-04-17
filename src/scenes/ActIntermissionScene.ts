@@ -17,7 +17,12 @@
 import Phaser from 'phaser';
 import type { PickerSlot, RouteDef, RoutePick } from '../data/routes';
 import { ROUTES_BY_SLOT } from '../data/routes';
-import { resolveDefaultRoute, buildRoutePick } from './actIntermissionResolve';
+import {
+  resolveDefaultRoute,
+  buildRoutePick,
+  actIntermissionCardStartX,
+  actIntermissionShortcutIndex,
+} from './actIntermissionResolve';
 import { t } from '../core/i18n';
 
 export interface ActIntermissionLaunchData {
@@ -77,8 +82,7 @@ export class ActIntermissionScene extends Phaser.Scene {
     const cardW = 240;
     const cardH = 300;
     const gap = 32;
-    const totalW = cardW * routes.length + gap * (routes.length - 1);
-    const startX = (width - totalW) / 2 + cardW / 2;
+    const startX = actIntermissionCardStartX(width, routes.length, cardW, gap);
     const y = height / 2 + 40;
 
     routes.forEach((route, i) => {
@@ -121,8 +125,8 @@ export class ActIntermissionScene extends Phaser.Scene {
   private installKeyboardShortcuts(routes: readonly RouteDef[]): void {
     if (typeof window === 'undefined') return;
     this.keyHandler = (e: KeyboardEvent) => {
-      const idx = ({ '1': 0, '2': 1, '3': 2 } as Record<string, number | undefined>)[e.key];
-      if (idx === undefined) return;
+      const idx = actIntermissionShortcutIndex(e.key);
+      if (idx === null) return;
       const route = routes[idx];
       if (!route) return;
       e.preventDefault();

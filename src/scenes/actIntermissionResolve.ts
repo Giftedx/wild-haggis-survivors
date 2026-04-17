@@ -47,6 +47,39 @@ export function resolveDefaultRoute(
 }
 
 /**
+ * Pure layout maths for the ActIntermission card row. Given the
+ * viewport width, the count of cards, each card's width, and the
+ * gap between them, returns the centred `startX` (the x-centre of
+ * card 0) so the row is horizontally centred within the viewport.
+ *
+ * Each subsequent card sits at `startX + i * (cardW + gap)`.
+ */
+export function actIntermissionCardStartX(
+  viewportWidth: number,
+  cardCount: number,
+  cardW: number,
+  gap: number,
+): number {
+  if (cardCount <= 0) return viewportWidth / 2;
+  const totalW = cardW * cardCount + gap * (cardCount - 1);
+  return (viewportWidth - totalW) / 2 + cardW / 2;
+}
+
+/**
+ * Map a keyboard keydown `e.key` value to the route index the
+ * ActIntermissionScene should select. Supports `1`, `2`, `3` shortcut
+ * digits; anything else returns null (scene ignores the press).
+ *
+ * Indices beyond the route count are the scene's responsibility to
+ * reject — this helper is only the key→digit mapping.
+ */
+export function actIntermissionShortcutIndex(key: string): number | null {
+  const map: Record<string, number | undefined> = { '1': 0, '2': 1, '3': 2 };
+  const idx = map[key];
+  return idx === undefined ? null : idx;
+}
+
+/**
  * Apply a route's `modifierDeltas` to the run-scoped `RunModifiers` bag.
  * Numeric fields REPLACE the current value (consistent with the routes
  * authored today — `spawnIntervalMult` sets the absolute multiplier for

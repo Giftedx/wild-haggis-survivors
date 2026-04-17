@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyRouteModifierDeltas, buildRoutePick, resolveDefaultRoute } from './actIntermissionResolve';
+import {
+  actIntermissionCardStartX,
+  actIntermissionShortcutIndex,
+  applyRouteModifierDeltas,
+  buildRoutePick,
+  resolveDefaultRoute,
+} from './actIntermissionResolve';
 import { DEFAULT_ROUTE_ON_SKIP, ROUTES_BY_SLOT, getRoute } from '../data/routes';
 import { defaultModifiers } from '../core/RunModifiers';
 
@@ -111,5 +117,62 @@ describe('applyRouteModifierDeltas', () => {
       modifierDeltas: {},
     });
     expect(m).toEqual(original);
+  });
+});
+
+describe('actIntermissionCardStartX', () => {
+  it('centres a single card at viewport middle', () => {
+    // One card, width 240 → startX is its centre = viewport / 2.
+    expect(actIntermissionCardStartX(1000, 1, 240, 32)).toBe(500);
+  });
+
+  it('centres a three-card row symmetrically', () => {
+    // 3 cards * 240 + 2 gaps * 32 = 784 total; (1000-784)/2 + 120 = 108 + 120 = 228.
+    const startX = actIntermissionCardStartX(1000, 3, 240, 32);
+    expect(startX).toBe(228);
+    // Card 2 centre = startX + 2 * (240 + 32) = 228 + 544 = 772.
+    // The row spans from (startX - cardW/2) = 108 to (card2Centre + cardW/2) = 892.
+    // Total span = 892 - 108 = 784 — matches the totalW computation.
+    expect(772 + 120 - (228 - 120)).toBe(784);
+  });
+
+  it('returns viewport centre for a 0-card row (defensive)', () => {
+    expect(actIntermissionCardStartX(1000, 0, 240, 32)).toBe(500);
+  });
+
+  it('gap of 0 collapses row width to cardCount * cardW', () => {
+    // 3 cards at 100 with 0 gap → totalW = 300; startX = (1000-300)/2 + 50 = 400.
+    expect(actIntermissionCardStartX(1000, 3, 100, 0)).toBe(400);
+  });
+
+  it('narrow viewport pushes the row off-centre consistently', () => {
+    // 3 cards at 240 + 2 * 32 gap = 784 total; viewport 500 < total.
+    // startX = (500 - 784)/2 + 120 = -142 + 120 = -22 (negative, cards draw partly off-screen).
+    expect(actIntermissionCardStartX(500, 3, 240, 32)).toBe(-22);
+  });
+});
+
+describe('actIntermissionShortcutIndex', () => {
+  it('maps "1", "2", "3" to zero-based indices', () => {
+    expect(actIntermissionShortcutIndex('1')).toBe(0);
+    expect(actIntermissionShortcutIndex('2')).toBe(1);
+    expect(actIntermissionShortcutIndex('3')).toBe(2);
+  });
+
+  it('returns null for keys outside the 1..3 range', () => {
+    expect(actIntermissionShortcutIndex('0')).toBeNull();
+    expect(actIntermissionShortcutIndex('4')).toBeNull();
+    expect(actIntermissionShortcutIndex('9')).toBeNull();
+  });
+
+  it('returns null for non-digit keys', () => {
+    expect(actIntermissionShortcutIndex('a')).toBeNull();
+    expect(actIntermissionShortcutIndex('Enter')).toBeNull();
+    expect(actIntermissionShortcutIndex(' ')).toBeNull();
+    expect(actIntermissionShortcutIndex('')).toBeNull();
+  });
+
+  it('is case sensitive — "A" (not a digit) returns null', () => {
+    expect(actIntermissionShortcutIndex('A')).toBeNull();
   });
 });
