@@ -1,4 +1,5 @@
 import type { Rarity } from '../data/upgrades';
+import { COLORS } from '../config';
 
 /**
  * Pure style resolver for the glow rectangle drawn behind an upgrade
@@ -15,7 +16,7 @@ import type { Rarity } from '../data/upgrades';
  */
 
 /** Warm-gold wash used on the low-rarity "still hand-made" glow. */
-export const LOW_RARITY_GLOW_COLOR = 0xd4a017;
+export const LOW_RARITY_GLOW_COLOR = COLORS.WHISKY_GOLD;
 
 export interface CardRarityGlowStyle {
   /** Pixels of padding around the card the glow rectangle extends. */

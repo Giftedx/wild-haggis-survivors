@@ -13,6 +13,7 @@
  * the surprise of the first unlock.
  */
 import { ACHIEVEMENT_DEFS, type AchievementId } from '../core/BalanceConfig';
+import { COLORS, COLORS_CSS } from '../config';
 import { formatClock, getCodexRosterTotal } from './chronicleAggregates';
 
 /**
@@ -74,7 +75,7 @@ export interface DeedProgressBarStyle {
 }
 
 export const DEED_PROGRESS_BAR_UNLOCKED: DeedProgressBarStyle = {
-  fillColor: 0xd4a017, labelColor: '#d4a017',
+  fillColor: COLORS.WHISKY_GOLD, labelColor: COLORS_CSS.WHISKY_GOLD,
 };
 export const DEED_PROGRESS_BAR_LOCKED: DeedProgressBarStyle = {
   fillColor: 0x4a6090, labelColor: '#8a93a8',
@@ -112,7 +113,7 @@ export function resolveDeedCardPalette(status: DeedStatus): DeedCardPalette {
   if (status === 'unlocked') {
     return {
       bgColor: 0x2a2015,
-      strokeColor: 0xd4a017,
+      strokeColor: COLORS.WHISKY_GOLD,
       strokeWidth: 2,
       strokeAlpha: 1,
       iconChar: '\u2726', // ✦

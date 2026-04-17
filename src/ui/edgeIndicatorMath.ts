@@ -8,7 +8,7 @@ export interface OffScreenScratch {
   dist: number;
   boss: boolean;
   elite: boolean;
-  /** Used when `elite` — affix hue or default elite gold (`0xd4a017`). */
+  /** Used when `elite` — affix hue or default elite gold (EDGE_INDICATOR_BOSS_COLOR). */
   eliteDisplayTint: number;
 }
 

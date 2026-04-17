@@ -1,3 +1,5 @@
+import { COLORS } from '../config';
+
 /**
  * Pure 3-state style resolver for off-screen enemy edge indicators.
  *
@@ -14,7 +16,7 @@
  */
 
 /** Gold used for boss indicators (and the fallback elite tint). */
-export const EDGE_INDICATOR_BOSS_COLOR = 0xd4a017;
+export const EDGE_INDICATOR_BOSS_COLOR = COLORS.WHISKY_GOLD;
 /** Red used for regular enemy indicators. */
 export const EDGE_INDICATOR_REGULAR_COLOR = 0xff4444;
 
