@@ -7,6 +7,7 @@ import { t } from '../core/i18n';
 import type { CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
+import { weaponPulseState } from './hudWeaponPulse';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -747,20 +748,11 @@ export class HUD {
         const isReady = cdFrac >= 1;
         slot.cdFill.setFillStyle(isReady ? 0x44cc44 : 0x005eb8, isReady ? 0.85 : 0.5);
 
-        // ── Ready-state pulse: icon breathes gently when weapon is ready to fire ──
-        // Wall-clock phase — frame-rate-independent (was `+= 0.08` per frame,
-        // which ran 2× faster on 60fps vs 30fps). 0.0048 rad/ms matches the
-        // previous 60fps cadence.
-        if (isReady) {
-          const phase = this.scene.time.now * 0.0048 + i * 0.5;
-          const pulse = 0.92 + Math.sin(phase) * 0.08;
-          slot.icon.setScale(0.8 * pulse);
-          slot.icon.setAlpha(0.85 + Math.sin(phase) * 0.15);
-        } else {
-          // Cooling: dimmed, muted — visually "spent"
-          slot.icon.setScale(0.8);
-          slot.icon.setAlpha(0.55);
-        }
+        // Ready-state pulse: icon breathes gently when ready, dims when cooling.
+        // Phase advance is ms-based — animation speed is frame-rate-independent.
+        const pulse = weaponPulseState(this.scene.time.now, i, isReady);
+        slot.icon.setScale(pulse.scale);
+        slot.icon.setAlpha(pulse.alpha);
       }
     }
   }
