@@ -1413,6 +1413,14 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Ceilidh Commander',
       description: 'Pulled fifteen ceilidh chains — the moor\'s dancin\' tae yer beat.',
     },
+    ach_past_the_bell: {
+      title: 'Past the Bell',
+      description: 'Stayed when the Taxman fell — the moor wasnae done with ye.',
+    },
+    ach_endless_endurance: {
+      title: 'Endless Endurance',
+      description: 'A full minute past the bell — daft thing, but ye made it look easy.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
@@ -2514,6 +2522,14 @@ export const SCS_STRINGS: LocaleTree = {
     ach_ceilidh_commander: {
       title: 'Ceilidh Commander',
       description: 'Pulled fifteen ceilidh chains — tha moor\'s dancin tae yer beat.',
+    },
+    ach_past_the_bell: {
+      title: 'Past tha Bell',
+      description: 'Stayed when tha Taxman fell — tha moor wisnae duin wi ye.',
+    },
+    ach_endless_endurance: {
+      title: 'Endless Endurance',
+      description: 'A hale minute past tha bell — daft thing, but ye made it luik easy.',
     },
   },
   weapon: {

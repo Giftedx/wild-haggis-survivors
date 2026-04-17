@@ -244,7 +244,9 @@ export type AchievementId =
   | 'ach_laird_victor'
   | 'ach_stone_circle'
   | 'ach_echo_touched'
-  | 'ach_ceilidh_commander';
+  | 'ach_ceilidh_commander'
+  | 'ach_past_the_bell'
+  | 'ach_endless_endurance';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -328,6 +330,14 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_ceilidh_commander: {
     titleKey: 'achievement.ach_ceilidh_commander.title',
     descriptionKey: 'achievement.ach_ceilidh_commander.description',
+  },
+  ach_past_the_bell: {
+    titleKey: 'achievement.ach_past_the_bell.title',
+    descriptionKey: 'achievement.ach_past_the_bell.description',
+  },
+  ach_endless_endurance: {
+    titleKey: 'achievement.ach_endless_endurance.title',
+    descriptionKey: 'achievement.ach_endless_endurance.description',
   },
 };
 

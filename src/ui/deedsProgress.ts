@@ -48,6 +48,8 @@ export interface DeedStatsSnapshot {
   uniqueRoutesWalked: number;
   /** Lifetime Ceilidh Chain pulses fired — feeds ach_ceilidh_commander. */
   ceilidhPulsesLifetime: number;
+  /** Longest Post-Bell survival in seconds — feeds ach_endless_endurance. */
+  bestEndlessSeconds: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -71,6 +73,8 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_echo_touched',
   'ach_stone_circle',
   'ach_ceilidh_commander',
+  'ach_past_the_bell',
+  'ach_endless_endurance',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -84,6 +88,7 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_moor_hearth_30: { target: 30, readCurrent: (s) => s.moorMomentsLifetime },
   ach_walk_every_road: { target: 6, readCurrent: (s) => Math.min(6, s.uniqueRoutesWalked) },
   ach_ceilidh_commander: { target: 15, readCurrent: (s) => s.ceilidhPulsesLifetime },
+  ach_endless_endurance: { target: 60, readCurrent: (s) => s.bestEndlessSeconds },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */
@@ -96,6 +101,7 @@ const BINARY_DEEDS: ReadonlySet<AchievementId> = new Set<AchievementId>([
   'ach_full_herd',
   'ach_echo_touched',
   'ach_stone_circle',
+  'ach_past_the_bell',
 ]);
 
 export function computeDeedProgress(id: AchievementId, stats: DeedStatsSnapshot): DeedProgress {
@@ -164,7 +170,8 @@ export function deedSummary(stats: DeedStatsSnapshot): { earned: number; total: 
 export function formatDeedProgressLabel(d: DeedProgress): string {
   if (d.isBinary) return '';
   // For time-threshold deeds the target is in seconds — format as M:SS.
-  const isTime = d.id === 'ach_survive_5m' || d.id === 'ach_survive_10m' || d.id === 'ach_full_run';
+  const isTime = d.id === 'ach_survive_5m' || d.id === 'ach_survive_10m' || d.id === 'ach_full_run'
+    || d.id === 'ach_endless_endurance';
   if (isTime) {
     return `${formatSeconds(d.current)} / ${formatSeconds(d.target)}`;
   }

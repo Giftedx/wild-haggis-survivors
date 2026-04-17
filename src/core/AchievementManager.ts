@@ -128,6 +128,18 @@ export class AchievementManager {
       if ((gameplay.ceilidhPulsesLifetime ?? 0) >= 15) {
         this.tryUnlock('ach_ceilidh_commander');
       }
+
+      // ach_past_the_bell — entered Post-Bell at all (any positive endless
+      // record). The "longest" line in the Chronicle now has a deed to pair
+      // with it.
+      const endlessSec = gameplay.bestEndlessSeconds ?? 0;
+      if (endlessSec > 0) {
+        this.tryUnlock('ach_past_the_bell');
+      }
+      // ach_endless_endurance — survived a full minute past the bell.
+      if (endlessSec >= 60) {
+        this.tryUnlock('ach_endless_endurance');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

@@ -440,10 +440,42 @@ seedGameplaySave({ unlockedVariants: [...VARIANT_KEYS] });
   });
 
   it('does NOT unlock ach_full_herd when one variant is missing', () => {
-seedGameplaySave({ unlockedVariants: VARIANT_KEYS.slice(0, -1) });
+    seedGameplaySave({ unlockedVariants: VARIANT_KEYS.slice(0, -1) });
     globalEventBus.emit('GLOBAL_RUN_ENDED', {
       outcome: 'death', gameTimeSec: 60, enemiesKilled: 10,
     });
     expect(save.load().unlockedAchievements).not.toContain('ach_full_herd');
+  });
+
+  it('unlocks ach_past_the_bell when bestEndlessSeconds is positive', () => {
+    seedGameplaySave({ bestEndlessSeconds: 5 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 920, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_past_the_bell');
+  });
+
+  it('does NOT unlock ach_past_the_bell when bestEndlessSeconds is 0', () => {
+    seedGameplaySave({ bestEndlessSeconds: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_past_the_bell');
+  });
+
+  it('unlocks ach_endless_endurance at 60s past the bell', () => {
+    seedGameplaySave({ bestEndlessSeconds: 60 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 1000, enemiesKilled: 300,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_endless_endurance');
+  });
+
+  it('does NOT unlock ach_endless_endurance at 59s', () => {
+    seedGameplaySave({ bestEndlessSeconds: 59 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 1000, enemiesKilled: 300,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_endless_endurance');
   });
 });
