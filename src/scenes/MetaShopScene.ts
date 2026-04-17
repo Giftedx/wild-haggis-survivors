@@ -14,6 +14,7 @@ import {
 } from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
 import { playPurchaseBurst } from './purchaseBurst';
+import { clearGameObjects } from '../utils/clearGameObjects';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
@@ -118,7 +119,7 @@ export class MetaShopScene extends Phaser.Scene {
     this.gamepadNav?.destroy();
     this.gamepadNav = null;
 
-    this.clearElements(this.rowElements);
+    clearGameObjects(this.rowElements);
     const save = this.saveManager.load();
     const killCreditsCopy = save.totalKills > 0
       ? t('ui.metaShop.kill_credits', { count: save.totalKills })
@@ -256,8 +257,4 @@ export class MetaShopScene extends Phaser.Scene {
     this.renderRows();
   }
 
-  private clearElements(elements: Phaser.GameObjects.GameObject[]): void {
-    for (const el of elements) el.destroy();
-    elements.length = 0;
-  }
 }

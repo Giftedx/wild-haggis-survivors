@@ -13,6 +13,7 @@ import { resolveShopRowBgColor } from './shopRowBg';
 import { startSceneFadeOut } from './sceneFade';
 import { playPurchaseBurst } from './purchaseBurst';
 import { installShopBackdrop } from './installShopBackdrop';
+import { clearGameObjects } from '../utils/clearGameObjects';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 
@@ -105,7 +106,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private renderRows(): void {
-    this.clearElements(this.rowElements);
+    clearGameObjects(this.rowElements);
 
     const { width } = this.scale;
     const pagination = this.getPagination();
@@ -215,7 +216,7 @@ export class ShopScene extends Phaser.Scene {
   }
 
   private renderFooter(): void {
-    this.clearElements(this.footerElements);
+    clearGameObjects(this.footerElements);
 
     const { width, height } = this.scale;
     const totalPages = this.getTotalPages();
@@ -288,10 +289,4 @@ export class ShopScene extends Phaser.Scene {
     this.footerElements.push(button, text);
   }
 
-  private clearElements(elements: Phaser.GameObjects.GameObject[]): void {
-    for (const element of elements) {
-      element.destroy();
-    }
-    elements.length = 0;
-  }
 }
