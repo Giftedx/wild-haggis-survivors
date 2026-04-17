@@ -19,6 +19,7 @@ import {
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveLoadoutBadgeStyle } from './loadoutBadge';
+import { computeMenuLayout } from './menuLayout';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -505,12 +506,8 @@ export class MenuScene extends Phaser.Scene {
     this.loadoutBanner.setText(t('ui.loadout.current_loadout', { name: t(variant.nameKey).toUpperCase() }));
   }
 
-  private getMenuLayout(height: number): { buttonY: number; panelY: number; panelHeight: number; ambientEnemyMinY: number } {
-    const buttonY = Phaser.Math.Clamp(height * 0.49, 304, 342);
-    const panelY = Phaser.Math.Clamp(buttonY + 122, 412, height - 122);
-    const panelHeight = 144;
-    const ambientEnemyMinY = Math.floor(panelY + panelHeight / 2 + 26);
-    return { buttonY, panelY, panelHeight, ambientEnemyMinY };
+  private getMenuLayout(height: number) {
+    return computeMenuLayout(height);
   }
 
   private clearVariantPanel(): void {
