@@ -339,10 +339,9 @@ export class ChronicleScene extends Phaser.Scene {
   }
 
   private turnPage(delta: number): void {
-    const pageCount = Math.max(1, Math.ceil(this.history.length / this.ROWS_PER_PAGE));
-    const next = Phaser.Math.Clamp(this.page + delta, 0, pageCount - 1);
-    if (next === this.page) return;
-    this.page = next;
+    const pagination = paginationState(this.history.length, this.ROWS_PER_PAGE, this.page + delta);
+    if (pagination.clampedPage === this.page) return;
+    this.page = pagination.clampedPage;
     audio.playClick();
     const { width } = this.scale;
     const { uiScale } = getSettingsManager().load();
