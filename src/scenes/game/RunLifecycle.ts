@@ -21,7 +21,7 @@ import type { SaveManager } from '../../core/SaveManager';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
-import { loadSave, writeSave, wipeIronmoorHistory } from '../../utils/save';
+import { loadSave, writeSave, wipeIronmoorHistory, recordPostBellBest, recordLastDeath } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { tryCameraShake } from '../../utils/cameraShake';
@@ -282,34 +282,15 @@ export class RunLifecycle {
     this.hooks.recordToHistory(summary, runResult);
 
     if (this.postBell) {
-      const secPast = Math.floor(this.getSecondsPastBell());
-      try {
-        const cur = loadSave();
-        const best = cur.bestEndlessSeconds ?? 0;
-        if (secPast > best) {
-          const updated = { ...cur, bestEndlessSeconds: secPast };
-          writeSave(updated);
-        }
-      } catch {
-        /* best-effort */
-      }
+      recordPostBellBest(Math.floor(this.getSecondsPastBell()));
       juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
     }
 
     // Ancestral Echo — persist death position so next run can spawn a
-    // spectral haggis at the spot. Best-effort; a failed save here
-    // doesn't block run-end flow. Skipped for ironmoor runs (that mode
+    // spectral haggis at the spot. Skipped for ironmoor runs (that mode
     // already has its own ceremony + chronicle-wipe on death).
     if (!this.hooks.getSettingsManager().load().ironmoorMode) {
-      try {
-        const cur = loadSave();
-        writeSave({
-          ...cur,
-          lastDeath: { x: Math.round(px), y: Math.round(py), ts: Date.now() },
-        });
-      } catch {
-        /* best-effort */
-      }
+      recordLastDeath(px, py);
     }
 
     // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with

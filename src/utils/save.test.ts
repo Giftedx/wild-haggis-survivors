@@ -7,6 +7,8 @@ import {
   bumpAncestralEchoesTouched,
   bumpCeilidhPulsesLifetime,
   bumpStandingStonePick,
+  recordLastDeath,
+  recordPostBellBest,
   coerceSelectedVariant,
   computeGoldReward,
   createDefaultSave,
@@ -498,5 +500,47 @@ describe('lifetime-counter bumps', () => {
     writeSave({ ...createDefaultSave(), ceilidhPulsesLifetime: 14 });
     bumpCeilidhPulsesLifetime();
     expect(loadSave().ceilidhPulsesLifetime).toBe(15);
+  });
+
+  it('recordPostBellBest writes a new record when secPast > current', () => {
+    writeSave({ ...createDefaultSave(), bestEndlessSeconds: 30 });
+    recordPostBellBest(45);
+    expect(loadSave().bestEndlessSeconds).toBe(45);
+  });
+
+  it('recordPostBellBest is a no-op when secPast <= current', () => {
+    writeSave({ ...createDefaultSave(), bestEndlessSeconds: 60 });
+    recordPostBellBest(45);
+    expect(loadSave().bestEndlessSeconds).toBe(60);
+    recordPostBellBest(60);
+    expect(loadSave().bestEndlessSeconds).toBe(60);
+  });
+
+  it('recordPostBellBest is a no-op for secPast <= 0', () => {
+    writeSave({ ...createDefaultSave(), bestEndlessSeconds: 30 });
+    recordPostBellBest(0);
+    recordPostBellBest(-5);
+    expect(loadSave().bestEndlessSeconds).toBe(30);
+  });
+
+  it('recordPostBellBest writes 1 from a fresh save', () => {
+    recordPostBellBest(1);
+    expect(loadSave().bestEndlessSeconds).toBe(1);
+  });
+
+  it('recordLastDeath persists rounded coordinates + timestamp', () => {
+    recordLastDeath(123.4, 456.9, 1_000_000);
+    expect(loadSave().lastDeath).toEqual({ x: 123, y: 457, ts: 1_000_000 });
+  });
+
+  it('recordLastDeath floors fractional now()', () => {
+    recordLastDeath(0, 0, 7.99);
+    expect(loadSave().lastDeath?.ts).toBe(7);
+  });
+
+  it('recordLastDeath overwrites a prior record', () => {
+    recordLastDeath(10, 20, 100);
+    recordLastDeath(30, 40, 200);
+    expect(loadSave().lastDeath).toEqual({ x: 30, y: 40, ts: 200 });
   });
 });

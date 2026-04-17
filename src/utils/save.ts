@@ -584,6 +584,40 @@ export function bumpCeilidhPulsesLifetime(): void {
   }
 }
 
+/**
+ * Best-effort: write `secPast` to `bestEndlessSeconds` if it beats the
+ * current record. No-op (and silent) when secPast <= the record. Used
+ * by RunLifecycle on death after a Post-Bell run.
+ */
+export function recordPostBellBest(secPast: number): void {
+  if (secPast <= 0) return;
+  try {
+    const cur = loadSave();
+    const best = cur.bestEndlessSeconds ?? 0;
+    if (secPast > best) {
+      writeSave({ ...cur, bestEndlessSeconds: secPast });
+    }
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Best-effort: persist the player's last death position so the next
+ * run can spawn an Ancestral Echo at the spot.
+ */
+export function recordLastDeath(x: number, y: number, now: number = Date.now()): void {
+  try {
+    const cur = loadSave();
+    writeSave({
+      ...cur,
+      lastDeath: { x: Math.round(x), y: Math.round(y), ts: Math.floor(now) },
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
 export function getWinRate(history: RunHistoryEntry[]): number {
   if (history.length === 0) return 0;
   const wins = history.filter((e) => e.isVictory).length;
