@@ -17,8 +17,7 @@ import {
   type DeedStatsSnapshot,
 } from '../ui/deedsProgress';
 import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
-import { resolveBackButtonPalette } from './backButtonPalette';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { clickToScene } from './clickToScene';
@@ -120,20 +119,10 @@ export class DeedsScene extends Phaser.Scene {
     });
 
     // ── Back button ──
-    const backPalette = resolveBackButtonPalette();
-    const backBtn = this.add
-      .rectangle(width / 2, height - 32, 200, 38, backPalette.idle, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add
-      .text(width / 2, height - 32, t('ui.deeds.back'), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: '#e8d4a0',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
+    const backBtn = createBackButton(this, {
+      x: width / 2, y: height - 32, width: 200, height: 38,
+      label: t('ui.deeds.back'), fontSize: '15px', uiScale,
+    });
     const goBack = clickToScene(this, 'MainMenu');
     backBtn.on('pointerdown', goBack);
 

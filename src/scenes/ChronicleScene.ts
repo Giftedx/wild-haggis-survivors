@@ -37,9 +37,8 @@ import {
 import { paginationState } from '../ui/pagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
-import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { clickToScene } from './clickToScene';
 
@@ -291,17 +290,10 @@ export class ChronicleScene extends Phaser.Scene {
 
     // ── Back button ──
     const backY = height - 18;
-    const backPalette = resolveBackButtonPalette();
-    const backBtn = this.add
-      .rectangle(width / 2, backY, 180, 30, backPalette.idle, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add
-      .text(width / 2, backY, t('ui.chronicle.back'), {
-        fontFamily: 'monospace', fontSize: '14px', color: '#e8d4a0', fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
+    const backBtn = createBackButton(this, {
+      x: width / 2, y: backY, width: 180, height: 30,
+      label: t('ui.chronicle.back'), fontSize: '14px', uiScale,
+    });
     const goBack = clickToScene(this, 'MainMenu');
     backBtn.on('pointerdown', goBack);
 

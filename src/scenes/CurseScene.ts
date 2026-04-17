@@ -6,10 +6,10 @@ import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
-import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { brightenColor } from '../utils/brightenColor';
 import { clickToScene } from './clickToScene';
+import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle } from './sceneHeaderStyle';
 
@@ -97,17 +97,10 @@ export class CurseScene extends Phaser.Scene {
 
     // ── Back ──
     const backY = height - 22;
-    const backPalette = resolveBackButtonPalette();
-    const backBtn = this.add
-      .rectangle(width / 2, backY, 180, 30, backPalette.idle, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add
-      .text(width / 2, backY, t('ui.curseScene.back'), {
-        fontFamily: 'monospace', fontSize: '14px', color: '#e8d4a0', fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
+    const backBtn = createBackButton(this, {
+      x: width / 2, y: backY, width: 180, height: 30,
+      label: t('ui.curseScene.back'), fontSize: '14px', uiScale,
+    });
     const goBack = clickToScene(this, 'Menu');
     backBtn.on('pointerdown', goBack);
 
