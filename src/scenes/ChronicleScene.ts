@@ -7,7 +7,7 @@ import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
 import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { WEAPON_DEFS, type WeaponKey } from '../data/weapons';
-import { getCurseByKey } from '../data/curses';
+import { CURSES, getCurseByKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
 import {
   buildChronicleCodex,
@@ -24,6 +24,8 @@ import {
   formatAncestralEchoesLine,
   formatPostBellLine,
   formatHearthBeatsLine,
+  computeCurseStats,
+  formatCurseStatsLine,
   computeStandingStonesStats,
   formatRelativeTime,
   formatRouteBreadcrumb,
@@ -211,8 +213,10 @@ export class ChronicleScene extends Phaser.Scene {
     const postBellSection = postBellLine ? `\n${postBellLine}` : '';
     const hearthLine = formatHearthBeatsLine(metaSave.moorMomentsLifetime ?? 0);
     const hearthSection = hearthLine ? `\n${hearthLine}` : '';
+    const curseLine = formatCurseStatsLine(computeCurseStats(save.runHistory), CURSES.length);
+    const curseSection = curseLine ? `\n${curseLine}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection;
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection + curseSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,

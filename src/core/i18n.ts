@@ -121,6 +121,7 @@ export const EN_STRINGS: LocaleTree = {
       milestone_loss_streak: '{count} tough runs back-to-back — moor\'s nae kindness today, but ye\'re still here.',
       past_the_bell_line: '🔔 Past the bell — best {time}',
       hearth_beats_line: '🌾 Hearth beats: {count}',
+      curses_line: '☠ Curses bested: {bested} / {total} ({victories} wins, {runs} attempts)',
 
       // ── Cull codex (meta SaveManager — first kill per enemy key) ──
       codex_heading: 'CULL CODEX',
@@ -1849,6 +1850,7 @@ export const SCS_STRINGS: LocaleTree = {
       milestone_loss_streak: '{count} sair runs back-tae-back — tha moor\'s nae kindness the day, but yir still here.',
       past_the_bell_line: '🔔 Past tha bell — best {time}',
       hearth_beats_line: '🌾 Hearth beats: {count}',
+      curses_line: '☠ Curses bested: {bested} / {total} ({victories} wins, {runs} tries)',
       codex_heading: 'CULL CODEX',
       codex_progress: '{discovered} / {total} beasties logged',
       codex_empty: 'Nae names in tha book yet — tha moor\'s still hauldin secrets.',

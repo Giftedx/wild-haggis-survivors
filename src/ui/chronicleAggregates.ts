@@ -572,3 +572,58 @@ export function formatHearthBeatsLine(moorMomentsLifetime: number): string {
   if (n === 0) return '';
   return t('ui.chronicle.hearth_beats_line', { count: n });
 }
+
+// ── Curse stats ──────────────────────────────────────────────────────
+
+export interface CurseLifetimeStats {
+  /** Total runs that bore any curse, in the visible history window. */
+  curseRunsTotal: number;
+  /** Total cursed runs that ended in victory. */
+  curseVictories: number;
+  /** Distinct curseKeys with at least one victory. */
+  distinctCursesBested: number;
+  /** Distinct curseKeys attempted (won or lost). */
+  distinctCursesAttempted: number;
+}
+
+export function computeCurseStats(history: readonly RunHistoryEntry[]): CurseLifetimeStats {
+  const bested = new Set<string>();
+  const attempted = new Set<string>();
+  let curseRunsTotal = 0;
+  let curseVictories = 0;
+  for (const e of history) {
+    if (typeof e.curseKey !== 'string' || e.curseKey.length === 0) continue;
+    curseRunsTotal++;
+    attempted.add(e.curseKey);
+    if (e.isVictory) {
+      curseVictories++;
+      bested.add(e.curseKey);
+    }
+  }
+  return {
+    curseRunsTotal,
+    curseVictories,
+    distinctCursesBested: bested.size,
+    distinctCursesAttempted: attempted.size,
+  };
+}
+
+/**
+ * Single-line Chronicle readout. Blank before the first cursed run.
+ * Surfaces the player's progress against the curse roster — pairs
+ * with `ach_cursed_victor` (binary unlock at first cursed win) by
+ * showing the long-tail "X of N curses bested" arc that the deed
+ * panel can't.
+ */
+export function formatCurseStatsLine(
+  stats: CurseLifetimeStats,
+  totalCurses: number,
+): string {
+  if (stats.curseRunsTotal === 0) return '';
+  return t('ui.chronicle.curses_line', {
+    bested: stats.distinctCursesBested,
+    total: Math.max(1, totalCurses),
+    runs: stats.curseRunsTotal,
+    victories: stats.curseVictories,
+  });
+}

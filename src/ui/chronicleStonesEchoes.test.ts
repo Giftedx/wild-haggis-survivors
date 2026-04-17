@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  computeCurseStats,
   computeStandingStonesStats,
   formatAncestralEchoesLine,
+  formatCurseStatsLine,
   formatHearthBeatsLine,
   formatPostBellLine,
   formatStandingStonesLine,
 } from './chronicleAggregates';
-import { createDefaultSave, migrateSave, type SaveData } from '../utils/save';
+import { createDefaultSave, migrateSave, type RunHistoryEntry, type SaveData } from '../utils/save';
 
 function makeSave(overrides: Partial<SaveData> = {}): SaveData {
   return { ...createDefaultSave(), ...overrides };
@@ -209,5 +211,94 @@ describe('save migration — stonesPicked + echoesTouched', () => {
       ancestralEchoesTouched: 'nope' as unknown as number,
     });
     expect(migrated.ancestralEchoesTouched).toBe(0);
+  });
+});
+
+function makeEntry(over: Partial<RunHistoryEntry> = {}): RunHistoryEntry {
+  return {
+    timestamp: 1,
+    timeSurvivedSec: 120,
+    enemiesKilled: 50,
+    level: 5,
+    bossKills: 0,
+    goldEarned: 10,
+    bestCombo: 3,
+    variantKey: 'classic',
+    isVictory: false,
+    weaponKeys: [],
+    ...over,
+  };
+}
+
+describe('computeCurseStats', () => {
+  it('returns zeros when no runs bore a curse', () => {
+    const stats = computeCurseStats([makeEntry(), makeEntry({ isVictory: true })]);
+    expect(stats).toEqual({
+      curseRunsTotal: 0,
+      curseVictories: 0,
+      distinctCursesBested: 0,
+      distinctCursesAttempted: 0,
+    });
+  });
+
+  it('counts attempts and victories per distinct curse', () => {
+    const stats = computeCurseStats([
+      makeEntry({ curseKey: 'heavy_legs', isVictory: false }),
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+      makeEntry({ curseKey: 'thin_hide', isVictory: true }),
+      makeEntry({ curseKey: 'restless_spirits', isVictory: false }),
+    ]);
+    expect(stats.curseRunsTotal).toBe(4);
+    expect(stats.curseVictories).toBe(2);
+    expect(stats.distinctCursesBested).toBe(2);
+    expect(stats.distinctCursesAttempted).toBe(3);
+  });
+
+  it('ignores empty / missing curseKey strings', () => {
+    const stats = computeCurseStats([
+      makeEntry({ curseKey: '', isVictory: true }),
+      makeEntry({ curseKey: undefined, isVictory: true }),
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+    ]);
+    expect(stats.curseRunsTotal).toBe(1);
+    expect(stats.distinctCursesBested).toBe(1);
+  });
+
+  it('does not double-count same-curse multi-wins in distinctCursesBested', () => {
+    const stats = computeCurseStats([
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+    ]);
+    expect(stats.curseVictories).toBe(3);
+    expect(stats.distinctCursesBested).toBe(1);
+  });
+});
+
+describe('formatCurseStatsLine', () => {
+  it('is blank when no cursed runs have occurred', () => {
+    const line = formatCurseStatsLine(
+      { curseRunsTotal: 0, curseVictories: 0, distinctCursesBested: 0, distinctCursesAttempted: 0 },
+      5,
+    );
+    expect(line).toBe('');
+  });
+
+  it('renders counts once the player has tried at least one curse', () => {
+    const line = formatCurseStatsLine(
+      { curseRunsTotal: 4, curseVictories: 2, distinctCursesBested: 2, distinctCursesAttempted: 3 },
+      5,
+    );
+    expect(line).toContain('2 / 5');
+    expect(line).toContain('2');
+    expect(line).toContain('4');
+  });
+
+  it('clamps total to at least 1 defensively', () => {
+    const line = formatCurseStatsLine(
+      { curseRunsTotal: 1, curseVictories: 0, distinctCursesBested: 0, distinctCursesAttempted: 1 },
+      0,
+    );
+    expect(line).toContain('0 / 1');
   });
 });
