@@ -17,6 +17,7 @@ import {
   isVariantUnlocked,
 } from '../data/variants';
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
+import { formatMenuStatsStrip } from './menuStatsStrip';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -152,7 +153,15 @@ export class MenuScene extends Phaser.Scene {
     this.updateLoadoutBanner();
 
     const statsLabel = this.saveData.totalRuns > 0
-      ? this.formatStatsStrip(width)
+      ? formatMenuStatsStrip({
+          bestTime: this.saveData.bestTime,
+          bestKills: this.saveData.bestKills,
+          bestCombo: this.saveData.bestCombo,
+          totalRuns: this.saveData.totalRuns,
+          victories: this.saveData.victories,
+          gold: this.saveData.gold,
+          viewWidth: width,
+        })
       : t('ui.loadout.stats_hint');
     const statsText = this.add
       .text(width / 2, 274, statsLabel, {
@@ -500,29 +509,6 @@ export class MenuScene extends Phaser.Scene {
     if (!this.loadoutBanner) return;
     const variant = getVariantByKey(this.selectedVariantKey);
     this.loadoutBanner.setText(t('ui.loadout.current_loadout', { name: t(variant.nameKey).toUpperCase() }));
-  }
-
-  private truncateLine(text: string, maxLength: number): string {
-    return text.length <= maxLength ? text : `${text.slice(0, maxLength - 3)}...`;
-  }
-
-  private formatStatsStrip(viewWidth: number): string {
-    const bestMins = Math.floor(this.saveData.bestTime / 60);
-    const bestSecs = Math.floor(this.saveData.bestTime % 60);
-    const bestTime = `${bestMins}:${bestSecs.toString().padStart(2, '0')}`;
-    const vars = {
-      bestTime,
-      bestKills: this.saveData.bestKills,
-      bestCombo: this.saveData.bestCombo,
-      totalRuns: this.saveData.totalRuns,
-      victories: this.saveData.victories,
-      gold: this.saveData.gold,
-    };
-    // Narrow viewports get the condensed variant; wide screens have room for
-    // the full detail line.
-    return viewWidth < 1150
-      ? t('ui.menu.stats_short', vars)
-      : t('ui.menu.stats_long', vars);
   }
 
   private getMenuLayout(height: number): { buttonY: number; panelY: number; panelHeight: number; ambientEnemyMinY: number } {
