@@ -55,9 +55,18 @@ export function bossHpBarStyle(hpFrac: number, nowMs: number): BossBarStyle {
     };
   }
   return {
-    fillColor: 0xcc2222,
-    highlightColor: 0xff6644,
-    glowColor: 0xff2200,
+    fillColor: BOSS_BAR_BASELINE_FILL,
+    highlightColor: BOSS_BAR_BASELINE_HIGHLIGHT,
+    glowColor: BOSS_BAR_WARN_GLOW_COLOR,
     glowAlpha: 0,
   };
 }
+
+/** Baseline (tier-3) fill — the "not worried yet" red. */
+export const BOSS_BAR_BASELINE_FILL = 0xcc2222;
+/** Baseline (tier-3) top-highlight stripe. */
+export const BOSS_BAR_BASELINE_HIGHLIGHT = 0xff6644;
+/** Shared warn glow colour — used at baseline (alpha 0) and pulsed in warn tier. */
+export const BOSS_BAR_WARN_GLOW_COLOR = 0xff2200;
+/** Boss bar bg (dark plum). */
+export const BOSS_BAR_BG = 0x0e0a12;

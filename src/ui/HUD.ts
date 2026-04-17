@@ -24,7 +24,13 @@ import {
   dashPulseAlpha,
   DASH_PULSE_PHASE_STEP,
 } from './hudDashStyle';
-import { bossHpBarStyle } from './hudBossBar';
+import {
+  bossHpBarStyle,
+  BOSS_BAR_BG,
+  BOSS_BAR_BASELINE_FILL,
+  BOSS_BAR_BASELINE_HIGHLIGHT,
+  BOSS_BAR_WARN_GLOW_COLOR,
+} from './hudBossBar';
 import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
@@ -281,17 +287,17 @@ export class HUD {
     const bossBarW = width * 0.55;
     const bossBarY = 98;
     // Warning glow (sits behind everything, fades in when low HP)
-    this.bossBarGlow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW + 12, 30, 0xff2200, 0)
+    this.bossBarGlow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW + 12, 30, BOSS_BAR_WARN_GLOW_COLOR, 0)
       .setScrollFactor(0).setDepth(d - 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, 0x0e0a12)
+    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, BOSS_BAR_BG)
       .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
     // Inner shadow line
     this.bossBarShadow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY - 9, bossBarW, 2, 0x000000, 0.6)
       .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, 0xcc2222)
+    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, BOSS_BAR_BASELINE_FILL)
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
     // Top highlight on fill (reads as 3D depth)
-    this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, 0xff6644, 0.6)
+    this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, BOSS_BAR_BASELINE_HIGHLIGHT, 0.6)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '', {
       fontFamily: 'monospace', fontSize: '17px', color: '#ff9999', fontStyle: 'bold',
