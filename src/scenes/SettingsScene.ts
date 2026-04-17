@@ -754,6 +754,12 @@ export class SettingsScene extends Phaser.Scene {
       this.working = { ...this.working, localeKey: ORDER[(idx + 1) % ORDER.length] };
       sync();
       this.persistAndApply();
+      // Existing labels were rendered against the previous locale.
+      // scene.restart() doesn't reliably tear down the rendered display
+      // list before create() re-runs; stop + start forces a clean rebuild
+      // so every row picks up the new overlay.
+      this.scene.stop();
+      this.scene.start('Settings');
     };
 
     btn.on('pointerdown', cycle);
