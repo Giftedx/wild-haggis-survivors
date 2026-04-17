@@ -26,6 +26,7 @@ import {
   resolveVariantTallyColor,
 } from './variantPanelStyle';
 import { computeMenuLayout } from './menuLayout';
+import { startSceneFadeOut } from './sceneFade';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -521,17 +522,7 @@ export class MenuScene extends Phaser.Scene {
   private fadeToScene(key: string): void {
     if (this.transitioning) return;
     this.transitioning = true;
-
-    const { width, height } = this.scale;
-    const fade = this.add
-      .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
-      .setDepth(999);
-    this.tweens.add({
-      targets: fade,
-      alpha: 1,
-      duration: 320,
-      onComplete: () => this.scene.start(key),
-    });
+    startSceneFadeOut(this, 320, () => this.scene.start(key));
   }
 
   private createToggle(

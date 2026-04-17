@@ -19,6 +19,7 @@ import {
 } from '../ui/deedsProgress';
 import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { addSceneFadeIn } from './sceneFade';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -64,8 +65,7 @@ export class DeedsScene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
     this.add.rectangle(width / 2, 30, width, 60, 0xd4a017, 0.04);
     audio.startAmbientWind();
-    const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
-    this.tweens.add({ targets: fade, alpha: 0, duration: 360, onComplete: () => fade.destroy() });
+    addSceneFadeIn(this);
 
     // ── Header ──
     this.add

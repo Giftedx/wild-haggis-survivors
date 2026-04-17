@@ -8,6 +8,7 @@ import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { addSceneFadeIn } from './sceneFade';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -36,8 +37,7 @@ export class CurseScene extends Phaser.Scene {
     this.add.rectangle(width / 2, 30, width, 60, 0x5a2a4a, 0.08);
 
     audio.startAmbientWind();
-    const fade = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
-    this.tweens.add({ targets: fade, alpha: 0, duration: 360, onComplete: () => fade.destroy() });
+    addSceneFadeIn(this);
 
     // ── Header ──
     this.add

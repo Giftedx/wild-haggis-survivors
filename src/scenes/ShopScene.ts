@@ -10,6 +10,7 @@ import {
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { resolveShopRowBgColor } from './shopRowBg';
+import { startSceneFadeOut } from './sceneFade';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -298,15 +299,7 @@ export class ShopScene extends Phaser.Scene {
     backButton.on('pointerout', () => backButton.setFillStyle(0x3a4357));
     backButton.on('pointerdown', () => {
       audio.playClick();
-      const fade = this.add
-        .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
-        .setDepth(999);
-      this.tweens.add({
-        targets: fade,
-        alpha: 1,
-        duration: 260,
-        onComplete: () => this.scene.start('MainMenu'),
-      });
+      startSceneFadeOut(this, 260, () => this.scene.start('MainMenu'));
     });
 
     this.footerElements.push(backButton, backText);
