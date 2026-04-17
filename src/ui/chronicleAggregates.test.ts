@@ -16,7 +16,10 @@ import {
   formatRouteBreadcrumb,
   getCodexRosterTotal,
   lifetimeTotals,
+  moodColor,
+  moodSubtitleKey,
   selectRunsWithRoutes,
+  type ChronicleMood,
   type Milestones,
 } from './chronicleAggregates';
 import type { RunHistoryEntry, SaveData } from '../utils/save';
@@ -644,5 +647,61 @@ describe('formatChronicleRunSubLine', () => {
     expect(segments).toHaveLength(4); // weapons | bosses | combo | trail
     // Trail should be the formatted breadcrumb, not raw route keys.
     expect(segments[3]).toBe(formatRouteBreadcrumb(picks));
+  });
+});
+
+describe('moodSubtitleKey', () => {
+  const moods: ChronicleMood[] = [
+    'empty', 'first_run', 'victory_streak', 'fresh_victory',
+    'loss_streak', 'improving', 'declining', 'steady',
+  ];
+
+  it('returns a distinct i18n key for every mood tag', () => {
+    const keys = new Set(moods.map(moodSubtitleKey));
+    expect(keys.size).toBe(moods.length);
+  });
+
+  it('every key points under the ui.chronicle.sub_* namespace', () => {
+    for (const mood of moods) {
+      expect(moodSubtitleKey(mood)).toMatch(/^ui\.chronicle\.sub_/);
+    }
+  });
+
+  it('steady is the default — unknown tags fall back to its key', () => {
+    // @ts-expect-error — intentional: test default-branch behaviour.
+    expect(moodSubtitleKey('not_a_mood')).toBe(moodSubtitleKey('steady'));
+  });
+});
+
+describe('moodColor', () => {
+  it('victory moods (streak + fresh) use the same warm gold', () => {
+    expect(moodColor('victory_streak')).toBe(moodColor('fresh_victory'));
+    expect(moodColor('victory_streak')).toMatch(/^#/);
+  });
+
+  it('loss_streak renders in a soft grey — NOT a shameful red', () => {
+    const color = moodColor('loss_streak');
+    expect(color).toBe('#b8a8a8');
+    // Explicit: the tint must not be a saturated red.
+    expect(color).not.toMatch(/^#(?:[Cc][0-Ff]|[EFef][0-Ff])[0-3][0-3]/);
+  });
+
+  it('improving trends in green; declining in cool blue-grey', () => {
+    expect(moodColor('improving')).toBe('#9de6a8');
+    expect(moodColor('declining')).toBe('#a8b3c8');
+  });
+
+  it('empty and first_run share the warm introductory tint', () => {
+    expect(moodColor('empty')).toBe(moodColor('first_run'));
+  });
+
+  it('every mood returns a valid 7-char hex string', () => {
+    const moods: ChronicleMood[] = [
+      'empty', 'first_run', 'victory_streak', 'fresh_victory',
+      'loss_streak', 'improving', 'declining', 'steady',
+    ];
+    for (const m of moods) {
+      expect(moodColor(m)).toMatch(/^#[0-9a-fA-F]{6}$/);
+    }
   });
 });

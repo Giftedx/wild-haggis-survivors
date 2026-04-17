@@ -31,7 +31,8 @@ import {
   formatRelativeTime,
   formatRerunTooltip,
   lifetimeTotals,
-  type ChronicleMood,
+  moodColor,
+  moodSubtitleKey,
 } from '../ui/chronicleAggregates';
 
 /**
@@ -525,37 +526,3 @@ export class ChronicleScene extends Phaser.Scene {
   }
 }
 
-function moodSubtitleKey(mood: ChronicleMood): string {
-  switch (mood) {
-    case 'empty': return 'ui.chronicle.sub_empty';
-    case 'first_run': return 'ui.chronicle.sub_first_run';
-    case 'victory_streak': return 'ui.chronicle.sub_victory_streak';
-    case 'fresh_victory': return 'ui.chronicle.sub_fresh_victory';
-    case 'loss_streak': return 'ui.chronicle.sub_loss_streak';
-    case 'improving': return 'ui.chronicle.sub_improving';
-    case 'declining': return 'ui.chronicle.sub_declining';
-    case 'steady':
-    default: return 'ui.chronicle.sub_steady';
-  }
-}
-
-/** Header subtitle tint — warm for wins, cool for rough patches. */
-function moodColor(mood: ChronicleMood): string {
-  switch (mood) {
-    case 'victory_streak':
-    case 'fresh_victory':
-      return '#f7d27a';
-    case 'loss_streak':
-      return '#b8a8a8'; // soft, not a red-for-shame
-    case 'improving':
-      return '#9de6a8';
-    case 'declining':
-      return '#a8b3c8';
-    case 'empty':
-    case 'first_run':
-      return '#b8a88a';
-    case 'steady':
-    default:
-      return '#9ea8bb';
-  }
-}
