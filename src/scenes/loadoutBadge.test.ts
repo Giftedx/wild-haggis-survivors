@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { resolveLoadoutBadgeStyle } from './loadoutBadge';
+import {
+  resolveLoadoutBadgeStyle,
+  formatVariantRequirementLine,
+  VARIANT_REQUIREMENT_COLOR_READY,
+  VARIANT_REQUIREMENT_COLOR_LOCKED,
+} from './loadoutBadge';
 import { COLORS } from '../config';
+import type { VariantUnlockProgress } from '../data/variants';
 
 describe('resolveLoadoutBadgeStyle — 3 mutually-exclusive states', () => {
   it('selected (any unlocked flag) renders in green with "current" status', () => {
@@ -55,5 +61,41 @@ describe('resolveLoadoutBadgeStyle — 3 mutually-exclusive states', () => {
       resolveLoadoutBadgeStyle(false, false).fillColor,
     ]);
     expect(s.size).toBe(3);
+  });
+});
+
+describe('formatVariantRequirementLine', () => {
+  const progress: VariantUnlockProgress = {
+    label: 'Survive 5 minutes',
+    current: 2,
+    required: 5,
+    currentText: '2',
+    requiredText: '5',
+    ratio: 0.4,
+  };
+
+  it('unlocked returns the green "ready" line', () => {
+    const out = formatVariantRequirementLine(true, progress);
+    expect(out.color).toBe(VARIANT_REQUIREMENT_COLOR_READY);
+    expect(out.text).not.toBe('ui.loadout.requirement_ready');
+  });
+
+  it('locked with progress returns the amber "X/Y" line', () => {
+    const out = formatVariantRequirementLine(false, progress);
+    expect(out.color).toBe(VARIANT_REQUIREMENT_COLOR_LOCKED);
+    expect(out.text).toContain('2');
+    expect(out.text).toContain('5');
+    expect(out.text).toContain('Survive 5 minutes');
+  });
+
+  it('locked with null progress falls back to the "requirement_locked" label', () => {
+    const out = formatVariantRequirementLine(false, null);
+    expect(out.color).toBe(VARIANT_REQUIREMENT_COLOR_LOCKED);
+    // Scene feeds i18n-resolved strings; here we assert defaults ("0" / "0") are used.
+    expect(out.text).toContain('0');
+  });
+
+  it('ready + locked colours differ', () => {
+    expect(VARIANT_REQUIREMENT_COLOR_READY).not.toBe(VARIANT_REQUIREMENT_COLOR_LOCKED);
   });
 });

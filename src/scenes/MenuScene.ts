@@ -18,7 +18,7 @@ import {
 } from '../data/variants';
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
-import { resolveLoadoutBadgeStyle } from './loadoutBadge';
+import { resolveLoadoutBadgeStyle, formatVariantRequirementLine } from './loadoutBadge';
 import { computeMenuLayout } from './menuLayout';
 
 /**
@@ -323,20 +323,15 @@ export class MenuScene extends Phaser.Scene {
       wordWrap: { width: 300 },
       lineSpacing: 3,
     });
+    const requirementLine = formatVariantRequirementLine(unlocked, unlockProgress);
     const progressLine = this.add.text(
       infoX,
       panelY + 46,
-      unlocked
-        ? t('ui.loadout.requirement_ready')
-        : t('ui.loadout.requirement_progress', {
-          label: unlockProgress?.label ?? t('ui.loadout.requirement_locked'),
-          current: unlockProgress?.currentText ?? '0',
-          required: unlockProgress?.requiredText ?? '0',
-        }),
+      requirementLine.text,
       {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: unlocked ? '#77c977' : '#d6aa55',
+        color: requirementLine.color,
       }
     );
     this.variantPanelElements.push(nameText, flavorText, modifierText, progressLine);

@@ -1,5 +1,6 @@
 import { t } from '../core/i18n';
 import { COLORS } from '../config';
+import type { VariantUnlockProgress } from '../data/variants';
 
 /**
  * Pure 3-state resolver for the MenuScene loadout badge (the pill
@@ -20,6 +21,39 @@ export interface LoadoutBadgeStyle {
   labelText: string;
   labelColor: string;
   statusText: string;
+}
+
+/**
+ * Requirement line shown under the variant carousel — tells the
+ * player either "ready to play" (unlocked, green) or "X / Y on the
+ * progress bar" (locked, warm amber).
+ */
+export interface VariantRequirementLine {
+  text: string;
+  color: string;
+}
+
+export const VARIANT_REQUIREMENT_COLOR_READY = '#77c977';
+export const VARIANT_REQUIREMENT_COLOR_LOCKED = '#d6aa55';
+
+export function formatVariantRequirementLine(
+  unlocked: boolean,
+  progress: VariantUnlockProgress | null | undefined,
+): VariantRequirementLine {
+  if (unlocked) {
+    return {
+      text: t('ui.loadout.requirement_ready'),
+      color: VARIANT_REQUIREMENT_COLOR_READY,
+    };
+  }
+  return {
+    text: t('ui.loadout.requirement_progress', {
+      label: progress?.label ?? t('ui.loadout.requirement_locked'),
+      current: progress?.currentText ?? '0',
+      required: progress?.requiredText ?? '0',
+    }),
+    color: VARIANT_REQUIREMENT_COLOR_LOCKED,
+  };
 }
 
 export function resolveLoadoutBadgeStyle(
