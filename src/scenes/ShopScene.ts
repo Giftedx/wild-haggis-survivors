@@ -4,6 +4,7 @@ import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
 import {
   resolveShopUpgradeRowState,
+  type ShopUpgradeRowState,
   resolveShopPipStyle,
   resolveShopBuyButtonPalette,
   resolveShopPageButtonPalette,
@@ -121,11 +122,12 @@ export class ShopScene extends Phaser.Scene {
 
   private renderUpgradeRow(upgrade: PermanentUpgrade, index: number, width: number): void {
     const y = 114 + index * 49;
-    const { currentLevel, isMaxed, cost, canAfford } = resolveShopUpgradeRowState(
+    const rowState = resolveShopUpgradeRowState(
       upgrade,
       this.saveData.upgrades[upgrade.key],
       this.saveData.gold,
     );
+    const { currentLevel, isMaxed, cost, canAfford } = rowState;
 
     const rowBg = this.add.rectangle(
       width / 2,
@@ -188,18 +190,14 @@ export class ShopScene extends Phaser.Scene {
 
     if (canAfford) {
       attachButtonHoverFill(buyButton, buyPalette.fillColor, 0x3a6a3a);
-      buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade));
+      buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade, rowState));
     }
 
     this.rowElements.push(buyButton, buyText);
   }
 
-  private purchaseUpgrade(upgrade: PermanentUpgrade): void {
-    const { currentLevel, isMaxed, cost, canAfford } = resolveShopUpgradeRowState(
-      upgrade,
-      this.saveData.upgrades[upgrade.key],
-      this.saveData.gold,
-    );
+  private purchaseUpgrade(upgrade: PermanentUpgrade, rowState: ShopUpgradeRowState): void {
+    const { currentLevel, isMaxed, cost, canAfford } = rowState;
     if (isMaxed || !canAfford) return;
 
     audio.playClick();
