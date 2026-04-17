@@ -6,6 +6,7 @@ import { getCameraViewport } from './cameraViewport';
 import { t } from '../core/i18n';
 import type { CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from './formatHudCurseChip';
+import { resolveWeaponIconKey } from './hudWeaponIcon';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -713,11 +714,7 @@ export class HUD {
         // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
         // texture from BootScene. Pick the evolved one if it exists, else the
         // base, else the thistle_shot fallback.
-        const evoInitKey = w.evolved && w.evolutionKey ? `wicon_${w.evolutionKey}` : '';
-        const baseInitKey = `wicon_${w.key}`;
-        const initialKey = (evoInitKey && this.scene.textures.exists(evoInitKey))
-          ? evoInitKey
-          : (this.scene.textures.exists(baseInitKey) ? baseInitKey : 'wicon_thistle_shot');
+        const initialKey = resolveWeaponIconKey(w, (k) => this.scene.textures.exists(k));
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
           .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
@@ -736,11 +733,7 @@ export class HUD {
         const slot = this.weaponSlots[i];
         // Evolved weapons use their evolution icon (wicon_{evolutionKey});
         // fall back to base icon if the evolution texture doesn't exist.
-        const evoKey = w.evolved ? `wicon_${w.evolutionKey}` : '';
-        const baseKey = `wicon_${w.key}`;
-        const desiredKey = (evoKey && this.scene.textures.exists(evoKey))
-          ? evoKey
-          : (this.scene.textures.exists(baseKey) ? baseKey : 'wicon_thistle_shot');
+        const desiredKey = resolveWeaponIconKey(w, (k) => this.scene.textures.exists(k));
         if (slot.icon.texture.key !== desiredKey) {
           slot.icon.setTexture(desiredKey);
         }
