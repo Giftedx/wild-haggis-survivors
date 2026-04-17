@@ -8,6 +8,7 @@ import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '.
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import { damageNumberStyle } from './damageNumberStyle';
 import {
   CEILIDH_MAGNET_DURATION_MS,
   CEILIDH_MAGNET_FLAT_PX,
@@ -268,12 +269,11 @@ export class JuiceSystem {
 
     // Scale with damage — big hits look big. Compound with uiScale so text
     // scale is legible for low-vision players without fighting the font size.
-    const sizeScale = Math.min(2.0, 0.8 + damage * 0.04);
+    const style = damageNumberStyle(damage, isCrit);
     const uiScale = this.settings.load().uiScale;
-    const base = isCrit ? sizeScale * 1.4 : sizeScale;
-    text.setScale(base * uiScale);
+    text.setScale(style.scale * uiScale);
     // Damage number colors: whisky gold palette, not cold white
-    text.setColor(isCrit ? '#ffdd44' : damage >= 20 ? '#d4a017' : '#e8c848');
+    text.setColor(style.color);
     text.setRotation(Phaser.Math.FloatBetween(-0.25, 0.25));
 
     this.scene.tweens.add({
