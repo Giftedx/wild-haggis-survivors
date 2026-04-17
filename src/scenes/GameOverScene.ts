@@ -815,7 +815,12 @@ export class GameOverScene extends Phaser.Scene {
     depth: number,
     delay: number,
   ): void {
-    const label = t('ui.gameOver.rerun_same_seed');
+    // Surface the curse on the link itself so the player knows the
+    // rerun re-applies it (parallels the chronicle ↻ tooltip).
+    const linkCurseDef = getCurseByKey(this.payload?.curseKey ?? null);
+    const label = linkCurseDef
+      ? t('ui.gameOver.rerun_same_seed_with_curse', { curse: t(linkCurseDef.nameKey) })
+      : t('ui.gameOver.rerun_same_seed');
     const text = this.add
       .text(centerX, y, label, {
         fontFamily: 'monospace',

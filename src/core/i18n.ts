@@ -260,6 +260,8 @@ export const EN_STRINGS: LocaleTree = {
       postcard_saved: 'postcard saved',
       /** Restart the current run with its exact seed — one-more-try retry. */
       rerun_same_seed: '↻ same seed',
+      /** Same link when a curse is active — flag that the rerun re-applies it. */
+      rerun_same_seed_with_curse: '↻ same seed ☠ {curse}',
       /** W66 Ironmoor victory banner — pride posture. */
       ironmoor_victory_banner: '⚔ IRONMOOR VICTORY — ONE LIFE, AYE',
       /** W66 Ironmoor death banner — compassionate register. */
