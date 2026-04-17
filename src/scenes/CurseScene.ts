@@ -6,6 +6,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
+import { curseTileRowLayout, tileXForIndex } from './curseTileLayout';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -62,13 +63,8 @@ export class CurseScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    // ── Tile grid: 5 tiles (4 curses + clean run) in one row ──
-    const tilesInRow = CURSES.length + 1;
-    const gridMargin = 20;
-    const gutter = 10;
-    const tileW = (width - gridMargin * 2 - gutter * (tilesInRow - 1)) / tilesInRow;
-    const tileH = 340;
-    const tileY = 260;
+    // ── Tile grid: N curses + 1 "clean run" tile in one row ──
+    const { tileW, tileH, tileY, startX } = curseTileRowLayout(width, CURSES.length);
 
     // BESTED markers — surface curse-roster progress at the point of
     // choice so players can see at-a-glance which curses they've yet
@@ -76,7 +72,7 @@ export class CurseScene extends Phaser.Scene {
     const besteredKeys = listCursesBested(loadSave().runHistory);
 
     CURSES.forEach((curse, i) => {
-      const cx = gridMargin + tileW / 2 + i * (tileW + gutter);
+      const cx = tileXForIndex(startX, i, tileW);
       this.drawCurseTile(cx, tileY, tileW, tileH, uiScale, {
         titleKey: curse.nameKey,
         descKey: curse.descKey,
@@ -90,7 +86,7 @@ export class CurseScene extends Phaser.Scene {
 
     // Clean-run tile — last in the row, distinct tint so it reads as the
     // opt-out rather than one-of-the-curses.
-    const cleanX = gridMargin + tileW / 2 + CURSES.length * (tileW + gutter);
+    const cleanX = tileXForIndex(startX, CURSES.length, tileW);
     this.drawCurseTile(cleanX, tileY, tileW, tileH, uiScale, {
       titleKey: 'ui.curseScene.none_title',
       descKey: 'ui.curseScene.none_desc',
