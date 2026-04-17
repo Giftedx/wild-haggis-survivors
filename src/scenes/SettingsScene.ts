@@ -12,6 +12,7 @@ import {
   steppedSliderBump,
   formatSliderValue,
 } from './settingsSliderMath';
+import { toggleStateDisplay } from './settingsToggle';
 
 type SettingsGpRow =
   | {
@@ -546,11 +547,12 @@ export class SettingsScene extends Phaser.Scene {
       )
       .setScale(this.uiScale);
     // Status text beside the toggle
+    const initialState = toggleStateDisplay(this.working[key]);
     const txt = this.add
-      .text(cx - trackW / 2 - 8, cy, this.working[key] ? t('ui.settings.on') : t('ui.settings.off'), {
+      .text(cx - trackW / 2 - 8, cy, initialState.text, {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: this.working[key] ? '#99cc88' : '#8a7a8a',
+        color: initialState.color,
         fontStyle: 'bold',
       })
       .setOrigin(1, 0.5)
@@ -560,8 +562,9 @@ export class SettingsScene extends Phaser.Scene {
       const isOn = this.working[key];
       btn.setFillStyle(isOn ? onColor : offColor);
       btn.setStrokeStyle(1.5, isOn ? onBorder : offBorder, 0.9);
-      txt.setText(isOn ? t('ui.settings.on') : t('ui.settings.off'));
-      txt.setColor(isOn ? '#99cc88' : '#8a7a8a');
+      const state = toggleStateDisplay(isOn);
+      txt.setText(state.text);
+      txt.setColor(state.color);
       // Animate the thumb slide
       this.tweens.killTweensOf(thumb);
       this.tweens.killTweensOf(thumbGloss);
