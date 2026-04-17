@@ -7,7 +7,7 @@ import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
-import { formatMenuHistorySummary } from './menuStatsStrip';
+import { formatMenuHistorySummary, formatMenuStatsStrip } from './menuStatsStrip';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -659,15 +659,16 @@ export class MainMenuScene extends Phaser.Scene {
     // Two lines: existing bests strip + richer history summary with win rate
     // and trend. Warm, subdued — progress, not a scoreboard.
     if (gameplay.totalRuns > 0) {
-      const bestMins = Math.floor(gameplay.bestTime / 60);
-      const bestSecs = Math.floor(gameplay.bestTime % 60).toString().padStart(2, '0');
-      const statsLine = t('ui.menu.stats_short', {
-        bestTime: `${bestMins}:${bestSecs}`,
+      // MainMenu always shows the short strip (the full home page never has
+      // room for the long variant regardless of viewport).
+      const statsLine = formatMenuStatsStrip({
+        bestTime: gameplay.bestTime,
         bestKills: gameplay.bestKills,
         bestCombo: gameplay.bestCombo,
         totalRuns: gameplay.totalRuns,
         victories: gameplay.victories,
         gold: gameplay.gold,
+        viewWidth: 0, // < 1150 threshold → always picks the short variant
       });
       this.add
         .text(cx, uiBottom - 58, statsLine, {
