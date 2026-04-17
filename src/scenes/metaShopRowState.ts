@@ -116,6 +116,31 @@ export function resolveMetaShopBuyButtonPalette(canAfford: boolean): MetaShopBuy
   return canAfford ? META_SHOP_BUY_AFFORDABLE : META_SHOP_BUY_UNAFFORDABLE;
 }
 
+/**
+ * Pill-label colours for the "OWNED" / "LOCKED" tags that replace
+ * the buy button in those two states. Kept separate from the row
+ * palette because the pills read as UI chips (capitalised, bolder)
+ * rather than body text, so their hue can skew a touch warmer or
+ * cooler than the row name colour it sits beside.
+ */
+export const META_SHOP_OWNED_PILL_COLOR = '#73c37d';
+export const META_SHOP_LOCKED_PILL_COLOR = '#7a6a88';
+
+/**
+ * Page navigation button (prev / next) style. Both arrows share one
+ * blue-bold look — pulled to a constant so if one drifts the other
+ * drifts too.
+ */
+export interface MetaShopPageButtonStyle {
+  color: string;
+  fontStyle: 'bold';
+}
+
+export const META_SHOP_PAGE_BUTTON_STYLE: MetaShopPageButtonStyle = {
+  color: '#8ab8ff',
+  fontStyle: 'bold',
+};
+
 export function buildMetaShopLockReasonSuffix(
   item: MetaShopItem,
   state: MetaShopRowState,

@@ -9,6 +9,9 @@ import {
   resolveMetaShopRowPalette,
   resolveMetaShopBuyButtonPalette,
   buildMetaShopLockReasonSuffix,
+  META_SHOP_OWNED_PILL_COLOR,
+  META_SHOP_LOCKED_PILL_COLOR,
+  META_SHOP_PAGE_BUTTON_STYLE,
 } from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
 import { audio } from '../systems/AudioSystem';
@@ -148,7 +151,7 @@ export class MetaShopScene extends Phaser.Scene {
       if (pagination.prevEnabled) {
         const prevBtn = this.add
           .text(width / 2 - 90, height - 58, t('ui.shop.prev'), {
-            fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
+            fontFamily: 'monospace', fontSize: '13px', ...META_SHOP_PAGE_BUTTON_STYLE,
           })
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
@@ -158,7 +161,7 @@ export class MetaShopScene extends Phaser.Scene {
       if (pagination.nextEnabled) {
         const nextBtn = this.add
           .text(width / 2 + 90, height - 58, t('ui.shop.next'), {
-            fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
+            fontFamily: 'monospace', fontSize: '13px', ...META_SHOP_PAGE_BUTTON_STYLE,
           })
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
@@ -199,7 +202,7 @@ export class MetaShopScene extends Phaser.Scene {
         const maxLabel = this.add.text(width - 80, y + 28, t('ui.common.owned'), {
           fontFamily: 'monospace',
           fontSize: '14px',
-          color: '#73c37d',
+          color: META_SHOP_OWNED_PILL_COLOR,
           fontStyle: 'bold',
         }).setOrigin(0.5);
         this.rowElements.push(maxLabel);
@@ -210,7 +213,7 @@ export class MetaShopScene extends Phaser.Scene {
         const lockLabel = this.add.text(width - 80, y + 28, t('ui.common.locked'), {
           fontFamily: 'monospace',
           fontSize: '13px',
-          color: '#7a6a88',
+          color: META_SHOP_LOCKED_PILL_COLOR,
           fontStyle: 'bold',
         }).setOrigin(0.5);
         this.rowElements.push(lockLabel);

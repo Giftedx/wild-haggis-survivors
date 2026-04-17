@@ -240,3 +240,21 @@ describe('resolveMetaShopBuyButtonPalette', () => {
     expect(META_SHOP_BUY_AFFORDABLE.textColor).not.toBe(META_SHOP_BUY_UNAFFORDABLE.textColor);
   });
 });
+
+describe('meta-shop pill + page button constants', () => {
+  it('owned pill colour matches the owned row name colour (single green identity)', async () => {
+    const { META_SHOP_OWNED_PILL_COLOR } = await import('./metaShopRowState');
+    expect(META_SHOP_OWNED_PILL_COLOR).toBe(META_SHOP_PALETTE_OWNED.nameColor);
+  });
+
+  it('locked pill is a distinct dim lilac (reads as chip, not body)', async () => {
+    const { META_SHOP_LOCKED_PILL_COLOR } = await import('./metaShopRowState');
+    expect(META_SHOP_LOCKED_PILL_COLOR).not.toBe(META_SHOP_PALETTE_LOCKED.nameColor);
+  });
+
+  it('page button style uses the shared blue-bold look', async () => {
+    const { META_SHOP_PAGE_BUTTON_STYLE } = await import('./metaShopRowState');
+    expect(META_SHOP_PAGE_BUTTON_STYLE.color).toBe('#8ab8ff');
+    expect(META_SHOP_PAGE_BUTTON_STYLE.fontStyle).toBe('bold');
+  });
+});
