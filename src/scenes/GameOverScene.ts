@@ -22,6 +22,7 @@ import {
   buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
+import { renderVariantChip } from './gameOverVariantChip';
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
@@ -191,57 +192,14 @@ export class GameOverScene extends Phaser.Scene {
 
     // Variant chip — warm identity reminder with haggis sprite + flavor text
     const variantChipY = panelTop + 162;
-    const variantChip = this.add
-      .rectangle(panelCenterX, variantChipY, 596, 48, 0x16213a, 0.96)
-      .setScrollFactor(0)
-      .setDepth(d + 2)
-      .setStrokeStyle(1, 0x355079, 1)
-      .setAlpha(0);
-    // Small haggis sprite — identity anchor even on the results screen
-    const variantDef = this.payload.variantKey ? getVariantByKey(this.payload.variantKey) : null;
-    if (variantDef && this.textures.exists(variantDef.textureKey)) {
-      const miniHaggis = this.add
-        .sprite(panelCenterX - 270, variantChipY, variantDef.textureKey)
-        .setScale(1.4 * uiScale)
-        .setScrollFactor(0)
-        .setDepth(d + 3)
-        .setAlpha(0);
-      this.tweens.add({ targets: miniHaggis, alpha: 1, duration: 260, delay: 430 });
-    }
-    const variantText = this.add
-      .text(panelCenterX + 8, variantChipY - 8, t('ui.gameOver.run_variant', { label: this.payload.variantLabel }), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: '#d7e3ff',
-        fontStyle: 'bold',
-        wordWrap: { width: 500 },
-        align: 'center',
-      })
-      .setOrigin(0.5, 0.5)
-      .setScrollFactor(0)
-      .setDepth(d + 3)
-      .setAlpha(0);
-    variantText.setScale(uiScale);
-    // Flavor text — the variant's personality line, warm and quiet
-    const flavorKey = variantDef?.flavorKey;
-    if (flavorKey) {
-      const variantFlavor = this.add
-        .text(panelCenterX + 8, variantChipY + 10, t(flavorKey), {
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          color: '#8a9ab8',
-          fontStyle: 'italic',
-          wordWrap: { width: 480 },
-          align: 'center',
-        })
-        .setOrigin(0.5, 0.5)
-        .setScrollFactor(0)
-        .setDepth(d + 3)
-        .setAlpha(0);
-      variantFlavor.setScale(uiScale);
-      this.tweens.add({ targets: variantFlavor, alpha: 1, duration: 260, delay: 430 });
-    }
-    this.tweens.add({ targets: [variantChip, variantText], alpha: 1, duration: 260, delay: 430 });
+    renderVariantChip(this, {
+      centerX: panelCenterX,
+      top: variantChipY,
+      payload: this.payload,
+      uiScale,
+      reduceParticles: getSettingsManager().load().reduceParticles === true,
+      depth: d,
+    });
 
     // Curse chip — small one-liner acknowledging the curse the player bore.
     // Sits below the variant chip (one row), above the stats panel. Only

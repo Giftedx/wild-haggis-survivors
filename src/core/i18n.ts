@@ -231,6 +231,8 @@ export const EN_STRINGS: LocaleTree = {
       death_sub_3: 'If ye fall oot that tree and break yer legs, dinnae come runnin\' tae me. …Kiddin\'. Come back any time.',
       death_sub_4: 'I don\'t mean to speak ill of the dead but — ye were brilliant, so ye were. Go again.',
       run_variant: 'This run: {label}',
+      /** Small amber eyebrow above the variant chip on the result screen — identity celebration. */
+      this_run_eyebrow: 'THIS RUN',
       stat_time: 'Time',
       stat_kills: 'Culls',
       stat_level: 'Level',
