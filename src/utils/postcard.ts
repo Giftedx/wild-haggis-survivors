@@ -29,6 +29,9 @@ export interface PostcardPayload {
   /** Seconds the player survived past the Bell (Taxman kill). When > 0,
    *  the footer adds a "🔔 +M:SS past the bell" tag — pride for endless runs. */
   postBellSec?: number;
+  /** Resolved curse display name (e.g. "Heavy Legs"). When set, footer
+   *  adds a "☠ {name}" tag — pride for cursed wins, honesty for cursed deaths. */
+  curseLabel?: string;
 }
 
 /** Footer band height in CSS pixels. */
@@ -120,6 +123,7 @@ export function renderPostcardDataUrl(
   ];
   if (payload.variantLabel) parts.push(payload.variantLabel);
   if (payload.ironmoor) parts.push('⚔ Ironmoor');
+  if (payload.curseLabel) parts.push(`☠ ${payload.curseLabel}`);
   if (payload.postBellSec && payload.postBellSec > 0) {
     const pbMin = Math.floor(payload.postBellSec / 60);
     const pbSec = Math.floor(payload.postBellSec % 60);

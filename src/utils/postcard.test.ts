@@ -69,4 +69,16 @@ describe('downloadPostcard', () => {
     payload.postBellSec = 65;
     expect(downloadPostcard(null, payload)).toBe(false);
   });
+
+  it('curseLabel accepts an absent / present value (type contract)', () => {
+    const payload = {
+      mode: 'victory' as const,
+      enemiesKilled: 1,
+      timeSurvivedSec: 920,
+      curseLabel: 'Heavy Legs',
+    };
+    expect(downloadPostcard(null, payload)).toBe(false); // null canvas branch
+    delete (payload as { curseLabel?: string }).curseLabel;
+    expect(downloadPostcard(null, payload)).toBe(false);
+  });
 });
