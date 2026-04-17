@@ -4,7 +4,12 @@ import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
-import { resolveMetaShopRowState, buildMetaShopLockReasonSuffix } from './metaShopRowState';
+import {
+  resolveMetaShopRowState,
+  resolveMetaShopRowPalette,
+  resolveMetaShopBuyButtonPalette,
+  buildMetaShopLockReasonSuffix,
+} from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
@@ -169,12 +174,13 @@ export class MetaShopScene extends Phaser.Scene {
       const y = 124 + index * 72;
       const state = resolveMetaShopRowState(item, key, save);
       const { owned, locked, canAfford } = state;
+      const rowPalette = resolveMetaShopRowPalette(state);
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1a1828 : 0x161422, 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
         fontFamily: 'monospace',
         fontSize: '16px',
-        color: owned ? '#73c37d' : locked ? '#8a7a98' : '#ffffff',
+        color: rowPalette.nameColor,
         fontStyle: 'bold',
       });
 
@@ -184,7 +190,7 @@ export class MetaShopScene extends Phaser.Scene {
       const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra, {
         fontFamily: 'monospace',
         fontSize: '11px',
-        color: locked ? '#7a7a8a' : '#9ea7b9',
+        color: rowPalette.descColor,
         wordWrap: { width: 420 },
       });
       this.rowElements.push(rowBg, nameText, descText);
@@ -211,24 +217,23 @@ export class MetaShopScene extends Phaser.Scene {
         return;
       }
 
-      const buttonFill = canAfford ? 0x2d6a3e : 0x1a1828;
-      const buttonTextColor = canAfford ? '#ffffff' : '#6a5a4a';
+      const buyPalette = resolveMetaShopBuyButtonPalette(canAfford);
       const buyButton = this.add
-        .rectangle(width - 80, y + 32, 108, 40, buttonFill, 1)
-        .setStrokeStyle(1, canAfford ? 0x5acf72 : 0x3a2a3a, 1)
+        .rectangle(width - 80, y + 32, 108, 40, buyPalette.fillColor, 1)
+        .setStrokeStyle(1, buyPalette.strokeColor, 1)
         .setInteractive({ useHandCursor: canAfford });
       const buyText = this.add
         .text(width - 80, y + 32, t('ui.common.buy_kills', { cost: item.cost }), {
           fontFamily: 'monospace',
           fontSize: '12px',
-          color: buttonTextColor,
+          color: buyPalette.textColor,
           fontStyle: 'bold',
         })
         .setOrigin(0.5);
 
       if (canAfford) {
         buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a8f4f));
-        buyButton.on('pointerout', () => buyButton.setFillStyle(0x2d6a3e));
+        buyButton.on('pointerout', () => buyButton.setFillStyle(buyPalette.fillColor));
         buyButton.on('pointerdown', () => this.tryBuy(key));
         entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       }

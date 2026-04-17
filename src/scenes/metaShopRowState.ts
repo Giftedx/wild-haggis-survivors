@@ -64,6 +64,58 @@ export function resolveMetaShopRowState(
  *
  * Two reason lines can stack (missing achievement AND missing prereq).
  */
+/**
+ * Colour palette for a MetaShopScene row, keyed on its resolved state.
+ * Three mutually-exclusive display paths:
+ *
+ *   owned   → green name, muted description
+ *   locked  → lilac-grey name, dimmer description
+ *   buyable → white name, standard description
+ */
+export interface MetaShopRowPalette {
+  nameColor: string;
+  descColor: string;
+}
+
+export const META_SHOP_PALETTE_OWNED: MetaShopRowPalette = {
+  nameColor: '#73c37d', descColor: '#9ea7b9',
+};
+export const META_SHOP_PALETTE_LOCKED: MetaShopRowPalette = {
+  nameColor: '#8a7a98', descColor: '#7a7a8a',
+};
+export const META_SHOP_PALETTE_BUYABLE: MetaShopRowPalette = {
+  nameColor: '#ffffff', descColor: '#9ea7b9',
+};
+
+export function resolveMetaShopRowPalette(state: MetaShopRowState): MetaShopRowPalette {
+  if (state.owned) return META_SHOP_PALETTE_OWNED;
+  if (state.locked) return META_SHOP_PALETTE_LOCKED;
+  return META_SHOP_PALETTE_BUYABLE;
+}
+
+/**
+ * Buy-button colour palette — 2-state, keyed on affordance.
+ * Only consulted when a row is in the buyable path (not owned,
+ * not locked). canAfford=false leaves the button visible but
+ * dimmed so the cost still reads.
+ */
+export interface MetaShopBuyButtonPalette {
+  fillColor: number;
+  strokeColor: number;
+  textColor: string;
+}
+
+export const META_SHOP_BUY_AFFORDABLE: MetaShopBuyButtonPalette = {
+  fillColor: 0x2d6a3e, strokeColor: 0x5acf72, textColor: '#ffffff',
+};
+export const META_SHOP_BUY_UNAFFORDABLE: MetaShopBuyButtonPalette = {
+  fillColor: 0x1a1828, strokeColor: 0x3a2a3a, textColor: '#6a5a4a',
+};
+
+export function resolveMetaShopBuyButtonPalette(canAfford: boolean): MetaShopBuyButtonPalette {
+  return canAfford ? META_SHOP_BUY_AFFORDABLE : META_SHOP_BUY_UNAFFORDABLE;
+}
+
 export function buildMetaShopLockReasonSuffix(
   item: MetaShopItem,
   state: MetaShopRowState,

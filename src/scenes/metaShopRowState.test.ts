@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import {
   resolveMetaShopRowState,
+  resolveMetaShopRowPalette,
+  resolveMetaShopBuyButtonPalette,
+  META_SHOP_PALETTE_OWNED,
+  META_SHOP_PALETTE_LOCKED,
+  META_SHOP_PALETTE_BUYABLE,
+  META_SHOP_BUY_AFFORDABLE,
+  META_SHOP_BUY_UNAFFORDABLE,
   buildMetaShopLockReasonSuffix,
   type MetaShopRowSave,
+  type MetaShopRowState,
 } from './metaShopRowState';
 import { META_SHOP_ITEMS, type MetaShopItemKey } from '../data/metaShopItems';
 
@@ -179,5 +187,56 @@ describe('buildMetaShopLockReasonSuffix', () => {
     expect(out.startsWith('\n')).toBe(true);
     const lines = out.split('\n').filter((l) => l.length > 0);
     expect(lines).toHaveLength(2);
+  });
+});
+
+describe('resolveMetaShopRowPalette', () => {
+  function state(overrides: Partial<MetaShopRowState> = {}): MetaShopRowState {
+    return {
+      owned: false, locked: false, canAfford: true, cost: 10,
+      achievementMet: true, prevMet: true, ...overrides,
+    };
+  }
+
+  it('owned → green name palette', () => {
+    expect(resolveMetaShopRowPalette(state({ owned: true }))).toBe(META_SHOP_PALETTE_OWNED);
+  });
+
+  it('locked (not owned) → lilac-grey palette', () => {
+    expect(resolveMetaShopRowPalette(state({ locked: true }))).toBe(META_SHOP_PALETTE_LOCKED);
+  });
+
+  it('buyable (neither) → white name palette', () => {
+    expect(resolveMetaShopRowPalette(state())).toBe(META_SHOP_PALETTE_BUYABLE);
+  });
+
+  it('owned wins over locked (owned=true, locked=true — corrupted state)', () => {
+    expect(resolveMetaShopRowPalette(state({ owned: true, locked: true })))
+      .toBe(META_SHOP_PALETTE_OWNED);
+  });
+
+  it('all three palettes differ on nameColor', () => {
+    const names = new Set([
+      META_SHOP_PALETTE_OWNED.nameColor,
+      META_SHOP_PALETTE_LOCKED.nameColor,
+      META_SHOP_PALETTE_BUYABLE.nameColor,
+    ]);
+    expect(names.size).toBe(3);
+  });
+});
+
+describe('resolveMetaShopBuyButtonPalette', () => {
+  it('affordable returns the green "buy" palette', () => {
+    expect(resolveMetaShopBuyButtonPalette(true)).toBe(META_SHOP_BUY_AFFORDABLE);
+  });
+
+  it('not affordable returns the dim "too expensive" palette', () => {
+    expect(resolveMetaShopBuyButtonPalette(false)).toBe(META_SHOP_BUY_UNAFFORDABLE);
+  });
+
+  it('two palettes differ on every field', () => {
+    expect(META_SHOP_BUY_AFFORDABLE.fillColor).not.toBe(META_SHOP_BUY_UNAFFORDABLE.fillColor);
+    expect(META_SHOP_BUY_AFFORDABLE.strokeColor).not.toBe(META_SHOP_BUY_UNAFFORDABLE.strokeColor);
+    expect(META_SHOP_BUY_AFFORDABLE.textColor).not.toBe(META_SHOP_BUY_UNAFFORDABLE.textColor);
   });
 });
