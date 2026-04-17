@@ -120,6 +120,39 @@ describe('applyRouteModifierDeltas', () => {
     });
     expect(m).toEqual(original);
   });
+
+  it('propagates a weaponCooldownMult delta onto the bag (so onResolve can resync the cache)', () => {
+    // No authored route currently writes this field, but the narrowed
+    // RouteModifierDeltaKey contract allows it — exercise the path so
+    // a future route doesn't ship with the field silently rounded off.
+    const m = defaultModifiers();
+    const route: RouteDef = {
+      ...getRoute('up_the_brae'),
+      modifierDeltas: { weaponCooldownMult: 1.2 },
+    };
+    applyRouteModifierDeltas(m, route);
+    expect(m.weaponCooldownMult).toBe(1.2);
+  });
+
+  it('propagates a damageTakenMult delta onto the bag (live-read by hazard + player hit paths)', () => {
+    const m = defaultModifiers();
+    const route: RouteDef = {
+      ...getRoute('up_the_brae'),
+      modifierDeltas: { damageTakenMult: 0.85 },
+    };
+    applyRouteModifierDeltas(m, route);
+    expect(m.damageTakenMult).toBe(0.85);
+  });
+
+  it('propagates a goldMult delta onto the bag (live-read at run end)', () => {
+    const m = defaultModifiers();
+    const route: RouteDef = {
+      ...getRoute('up_the_brae'),
+      modifierDeltas: { goldMult: 1.25 },
+    };
+    applyRouteModifierDeltas(m, route);
+    expect(m.goldMult).toBe(1.25);
+  });
 });
 
 describe('actIntermissionCardStartX', () => {
