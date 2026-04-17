@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -77,7 +77,7 @@ export class UpgradeCardsUI {
     this.uiScale = settings.uiScale;
     this.highContrastUi = settings.highContrastUi;
 
-    const titleColor = this.highContrastUi ? '#ffe066' : '#d4a017';
+    const titleColor = this.highContrastUi ? '#ffe066' : COLORS_CSS.WHISKY_GOLD;
     const titleHover = this.highContrastUi ? '#fff1a6' : '#ffcc44';
     const subtitleColor = this.highContrastUi ? '#d8dfe8' : '#aaaaaa';
 

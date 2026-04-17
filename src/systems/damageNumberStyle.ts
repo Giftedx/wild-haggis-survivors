@@ -1,3 +1,5 @@
+import { COLORS_CSS } from '../config';
+
 /**
  * Pure styling helper for floating damage numbers. Given a raw damage
  * value + whether the hit was a crit, returns the scale factor and
@@ -14,7 +16,7 @@
  *
  * Colours (whisky-gold palette):
  *   crit        → #ffdd44 (bright gold)
- *   damage ≥ 20 → #d4a017 (deep gold for big non-crit hits)
+ *   damage ≥ 20 → COLORS_CSS.WHISKY_GOLD (deep gold for big non-crit hits)
  *   else        → #e8c848 (warm default)
  */
 export interface DamageNumberStyle {
@@ -45,7 +47,7 @@ export function damageNumberStyle(damage: number, isCrit: boolean): DamageNumber
   const color = isCrit
     ? '#ffdd44'
     : safe >= DAMAGE_NUMBER_BIG_THRESHOLD
-      ? '#d4a017'
+      ? COLORS_CSS.WHISKY_GOLD
       : '#e8c848';
   return { scale, color };
 }
