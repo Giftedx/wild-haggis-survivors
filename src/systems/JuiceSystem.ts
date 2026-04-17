@@ -8,6 +8,7 @@ import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '.
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
+import { fillCirclePool } from './fillCirclePool';
 import { damageNumberStyle } from './damageNumberStyle';
 import { toastStackY, toastWrapWidth } from './toastLayout';
 import { resolveComboDisplay } from './comboDisplay';
@@ -157,47 +158,19 @@ export class JuiceSystem {
       strokeThickness: 4,
     }).setOrigin(0.5).setScrollFactor(0).setDepth(90).setVisible(false);
 
-    // Pre-allocate impact ring pool — covers AoE weapons hitting
-    // 30+ enemies per pulse without dropping hit feedback.
-    // Impact rings — whisky gold, not generic white. Every hit should feel Scottish.
-    for (let i = 0; i < BALANCE.juice.impactRingPoolSize; i++) {
-      const r = scene.add.circle(0, 0, 4, 0xd4a017, 0.8)
-        .setDepth(12)
-        .setVisible(false);
-      this.impactRingPool.push(r);
-    }
-
-    // Trail dots — thistle purple from the highland palette
-    for (let i = 0; i < BALANCE.juice.trailDotPoolSize; i++) {
-      const dot = scene.add.circle(0, 0, 2, 0x6b3fa0, 0.5)
-        .setDepth(5).setVisible(false);
-      this.trailPool.push(dot);
-    }
-
-    // Kill burst dots — whisky gold, not generic red. Kills should shimmer.
-    for (let i = 0; i < BALANCE.juice.burstDotPoolSize; i++) {
-      const dot = scene.add.circle(0, 0, 3, 0xd4a017, 0.8)
-        .setDepth(15).setVisible(false);
-      this.burstDotPool.push(dot);
-    }
-    // Kill burst rings — warm golden, not cold white
-    for (let i = 0; i < BALANCE.juice.burstRingPoolSize; i++) {
-      const ring = scene.add.circle(0, 0, 5, 0xffcc44, 0.6)
-        .setDepth(15).setVisible(false);
-      this.burstRingPool.push(ring);
-    }
-
-    // Pre-allocate boss death spectacle pools
-    for (let i = 0; i < BALANCE.juice.bossParticlePoolSize; i++) {
-      const p = scene.add.circle(0, 0, 5, 0xd4a017, 0.9)
-        .setDepth(20).setVisible(false);
-      this.bossParticlePool.push(p);
-    }
-    for (let i = 0; i < BALANCE.juice.bossRingPoolSize; i++) {
-      const ring = scene.add.circle(0, 0, 10, 0xd4a017, 0.5)
-        .setDepth(20).setVisible(false);
-      this.bossRingPool.push(ring);
-    }
+    // Pre-allocate VFX pools — same shape across 6 pools, only the
+    // (radius, colour, alpha, depth) differ per pool's visual role.
+    // Impact rings: whisky gold, every AoE hit should feel Scottish.
+    fillCirclePool(scene, this.impactRingPool, BALANCE.juice.impactRingPoolSize, 4, 0xd4a017, 0.8, 12);
+    // Trail dots: thistle purple from the highland palette.
+    fillCirclePool(scene, this.trailPool, BALANCE.juice.trailDotPoolSize, 2, 0x6b3fa0, 0.5, 5);
+    // Kill burst dots: warm gold, kills should shimmer (not generic red).
+    fillCirclePool(scene, this.burstDotPool, BALANCE.juice.burstDotPoolSize, 3, 0xd4a017, 0.8, 15);
+    // Kill burst rings: warm golden, not cold white.
+    fillCirclePool(scene, this.burstRingPool, BALANCE.juice.burstRingPoolSize, 5, 0xffcc44, 0.6, 15);
+    // Boss death spectacle: gold particles + larger gold rings.
+    fillCirclePool(scene, this.bossParticlePool, BALANCE.juice.bossParticlePoolSize, 5, 0xd4a017, 0.9, 20);
+    fillCirclePool(scene, this.bossRingPool, BALANCE.juice.bossRingPoolSize, 10, 0xd4a017, 0.5, 20);
   }
 
   /** Spawn a small white burst at a hit location — pooled, overflow is dropped. */
