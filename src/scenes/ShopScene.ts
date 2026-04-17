@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
 import { resolveShopUpgradeRowState } from './shopUpgradeRowState';
+import { paginationState } from '../ui/pagination';
 import { COLORS } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -93,8 +94,12 @@ export class ShopScene extends Phaser.Scene {
     });
   }
 
+  private getPagination() {
+    return paginationState(PERMANENT_UPGRADES.length, this.upgradesPerPage, this.currentPage);
+  }
+
   private getTotalPages(): number {
-    return Math.max(1, Math.ceil(PERMANENT_UPGRADES.length / this.upgradesPerPage));
+    return this.getPagination().pageCount;
   }
 
   private updateHeader(): void {
@@ -102,17 +107,16 @@ export class ShopScene extends Phaser.Scene {
       ? t('ui.shop.gold_bank', { count: this.saveData.gold })
       : t('ui.shop.gold_bank_fresh');
     this.goldText.setText(goldCopy);
-    this.pageText.setText(t('ui.shop.page', { current: this.currentPage + 1, total: this.getTotalPages() }));
+    const pagination = this.getPagination();
+    this.pageText.setText(t('ui.shop.page', { current: pagination.clampedPage + 1, total: pagination.pageCount }));
   }
 
   private renderRows(): void {
     this.clearElements(this.rowElements);
 
     const { width } = this.scale;
-    const visibleUpgrades = PERMANENT_UPGRADES.slice(
-      this.currentPage * this.upgradesPerPage,
-      (this.currentPage + 1) * this.upgradesPerPage
-    );
+    const pagination = this.getPagination();
+    const visibleUpgrades = PERMANENT_UPGRADES.slice(pagination.startIndex, pagination.endIndex);
 
     visibleUpgrades.forEach((upgrade, index) => {
       this.renderUpgradeRow(upgrade, index, width);

@@ -5,6 +5,7 @@ import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
 import { resolveMetaShopRowState, buildMetaShopLockReasonSuffix } from './metaShopRowState';
+import { paginationState } from '../ui/pagination';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
@@ -130,17 +131,16 @@ export class MetaShopScene extends Phaser.Scene {
 
     const { width, height } = this.scale;
     const allKeys = listMetaShopItemKeys();
-    const totalPages = Math.ceil(allKeys.length / this.ROWS_PER_PAGE);
-    this.page = Math.min(this.page, totalPages - 1);
-    const pageStart = this.page * this.ROWS_PER_PAGE;
-    const pageKeys = allKeys.slice(pageStart, pageStart + this.ROWS_PER_PAGE);
+    const pagination = paginationState(allKeys.length, this.ROWS_PER_PAGE, this.page);
+    this.page = pagination.clampedPage;
+    const pageKeys = allKeys.slice(pagination.startIndex, pagination.endIndex);
     const entries: GamepadMenuEntry[] = [];
 
     // Page navigation (prev / next)
-    if (totalPages > 1) {
-      this.pageText.setText(t('ui.shop.page', { current: this.page + 1, total: totalPages }));
+    if (pagination.pageVisible) {
+      this.pageText.setText(t('ui.shop.page', { current: pagination.clampedPage + 1, total: pagination.pageCount }));
 
-      if (this.page > 0) {
+      if (pagination.prevEnabled) {
         const prevBtn = this.add
           .text(width / 2 - 90, height - 58, t('ui.shop.prev'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
@@ -150,7 +150,7 @@ export class MetaShopScene extends Phaser.Scene {
           .on('pointerdown', () => { this.page--; this.renderRows(); });
         this.rowElements.push(prevBtn);
       }
-      if (this.page < totalPages - 1) {
+      if (pagination.nextEnabled) {
         const nextBtn = this.add
           .text(width / 2 + 90, height - 58, t('ui.shop.next'), {
             fontFamily: 'monospace', fontSize: '13px', color: '#8ab8ff', fontStyle: 'bold',
