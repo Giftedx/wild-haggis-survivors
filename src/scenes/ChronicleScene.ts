@@ -34,6 +34,7 @@ import {
   moodColor,
   moodSubtitleKey,
 } from '../ui/chronicleAggregates';
+import { paginationState } from '../ui/pagination';
 
 /**
  * The Herd Chronicle — a run journal surface.
@@ -367,9 +368,8 @@ export class ChronicleScene extends Phaser.Scene {
       return;
     }
 
-    const pageCount = Math.max(1, Math.ceil(this.history.length / this.ROWS_PER_PAGE));
-    const startIdx = this.page * this.ROWS_PER_PAGE;
-    const slice = this.history.slice(startIdx, startIdx + this.ROWS_PER_PAGE);
+    const pagination = paginationState(this.history.length, this.ROWS_PER_PAGE, this.page);
+    const slice = this.history.slice(pagination.startIndex, pagination.endIndex);
 
     slice.forEach((entry, i) => {
       const y = startY + 16 + i * this.ROW_STRIDE;
@@ -508,12 +508,12 @@ export class ChronicleScene extends Phaser.Scene {
       }
     });
 
-    if (pageCount > 1) {
-      this.pageLabel.setText(`${this.page + 1} / ${pageCount}`);
+    if (pagination.pageVisible) {
+      this.pageLabel.setText(pagination.pageLabel);
       this.prevBtn.setVisible(true);
       this.nextBtn.setVisible(true);
-      this.prevBtn.setAlpha(this.page > 0 ? 1 : 0.4);
-      this.nextBtn.setAlpha(this.page < pageCount - 1 ? 1 : 0.4);
+      this.prevBtn.setAlpha(pagination.prevEnabled ? 1 : 0.4);
+      this.nextBtn.setAlpha(pagination.nextEnabled ? 1 : 0.4);
     } else {
       this.pageLabel.setText('');
       this.prevBtn.setVisible(false);
