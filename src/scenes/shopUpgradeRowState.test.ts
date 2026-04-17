@@ -18,8 +18,6 @@ function upgrade(overrides: Partial<PermanentUpgrade> = {}): PermanentUpgrade {
     key: 'test_upg',
     nameKey: 'test.upg.name',
     descriptionKey: 'test.upg.desc',
-    name: 'Test',
-    description: '+1',
     maxLevel: 3,
     baseCost: 100,
     costMultiplier: 2,
