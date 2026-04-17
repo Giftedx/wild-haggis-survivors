@@ -59,3 +59,23 @@ export const PAUSE_QUIT_BUTTON_PALETTE: PauseButtonPalette = {
   idle: 0x444444,
   hover: 0x555555,
 };
+
+// ── Secondary text colours (HC-aware) ───────────────────────────────
+//
+// Two smaller text blocks on the pause overlay lift / dim with the
+// accessibility toggle: the active-curse line (warm pink) and the
+// elite-affix reference list (cool slate). Each pair follows the
+// HC-ON / HC-OFF convention already established by the title.
+
+export const PAUSE_CURSE_LINE_COLOR = '#c49bbf';
+export const PAUSE_CURSE_LINE_COLOR_HC = '#f5d0e8';
+export const PAUSE_ELITE_REF_COLOR = '#6a7a88';
+export const PAUSE_ELITE_REF_COLOR_HC = '#a8b8c8';
+
+export function resolvePauseCurseLineColor(highContrast: boolean): string {
+  return highContrast ? PAUSE_CURSE_LINE_COLOR_HC : PAUSE_CURSE_LINE_COLOR;
+}
+
+export function resolvePauseEliteRefColor(highContrast: boolean): string {
+  return highContrast ? PAUSE_ELITE_REF_COLOR_HC : PAUSE_ELITE_REF_COLOR;
+}

@@ -23,6 +23,8 @@ import {
   resolvePauseMenuStyle,
   PAUSE_RESUME_BUTTON_PALETTE,
   PAUSE_QUIT_BUTTON_PALETTE,
+  resolvePauseCurseLineColor,
+  resolvePauseEliteRefColor,
 } from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
 
@@ -104,7 +106,7 @@ export class PauseMenu {
     if (curseLine) {
       this.elements.push(
         scene.add.text(x + width / 2, y + height * 0.415, curseLine, {
-          fontFamily: 'monospace', fontSize: '13px', color: hc ? '#f5d0e8' : '#c49bbf',
+          fontFamily: 'monospace', fontSize: '13px', color: resolvePauseCurseLineColor(hc),
           align: 'center',
         }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
@@ -154,7 +156,7 @@ export class PauseMenu {
         {
           fontFamily: 'monospace',
           fontSize: style.shortViewport ? '9px' : '10px',
-          color: hc ? '#a8b8c8' : '#6a7a88',
+          color: resolvePauseEliteRefColor(hc),
           align: 'center',
           lineSpacing: 2,
           wordWrap: { width: Math.max(200, width - 56) },
