@@ -19,6 +19,7 @@ import { getSettingsManager } from '../../core/SettingsManager';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
 import { buildPauseStatsLines } from './pauseStats';
+import { resolvePauseMenuStyle } from './pauseMenuStyle';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -56,18 +57,15 @@ export class PauseMenu {
     const d = 250;
     const scene = this.scene;
     const hc = this.settings.load().highContrastUi;
-    const shortViewport = height < 420;
-    const titlePx = shortViewport ? '34px' : '46px';
-    const titleStroke = shortViewport ? (hc ? 6 : 4) : (hc ? 8 : 5);
-    const backdropAlpha = hc ? 0.95 : 0.85;
+    const style = resolvePauseMenuStyle(height, hc);
     this.elements.push(
-      scene.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, backdropAlpha)
+      scene.add.rectangle(x + width / 2, y + height / 2, width, height, 0x1a1a2e, style.backdropAlpha)
         .setScrollFactor(0).setDepth(d).setInteractive()
     );
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
-        fontFamily: 'monospace', fontSize: titlePx, color: hc ? '#ffe08a' : '#d4a017',
-        fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: titleStroke,
+        fontFamily: 'monospace', fontSize: style.titlePx, color: style.titleColor,
+        fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: style.titleStroke,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
     const quipIndex = Phaser.Math.Between(1, 8);
@@ -150,7 +148,7 @@ export class PauseMenu {
         `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
         {
           fontFamily: 'monospace',
-          fontSize: shortViewport ? '9px' : '10px',
+          fontSize: style.shortViewport ? '9px' : '10px',
           color: hc ? '#a8b8c8' : '#6a7a88',
           align: 'center',
           lineSpacing: 2,

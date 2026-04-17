@@ -1,0 +1,40 @@
+/**
+ * Pure style resolver for PauseMenu.open — four decisions:
+ *
+ *   title size       — "34px" on short viewports, "46px" otherwise
+ *   title stroke     — thicker in high-contrast; slightly thinner on short viewports
+ *   title colour     — gold (normal) or amber-gold (HC)
+ *   backdrop alpha   — darker in HC to keep foreground legible
+ *
+ * Viewport height < 420 qualifies as "short" — below that the default
+ * 46px title would crowd the stats block.
+ */
+
+/** Height below which the pause title shrinks. */
+export const PAUSE_SHORT_VIEWPORT_HEIGHT = 420;
+/** Title font size — short variant. */
+export const PAUSE_TITLE_SIZE_SHORT = '34px';
+/** Title font size — wide viewport variant. */
+export const PAUSE_TITLE_SIZE_WIDE = '46px';
+
+export const PAUSE_TITLE_COLOR = '#d4a017';
+export const PAUSE_TITLE_COLOR_HC = '#ffe08a';
+
+export interface PauseMenuStyle {
+  titlePx: string;
+  titleStroke: number;
+  titleColor: string;
+  backdropAlpha: number;
+  shortViewport: boolean;
+}
+
+export function resolvePauseMenuStyle(viewportHeight: number, highContrast: boolean): PauseMenuStyle {
+  const shortViewport = viewportHeight < PAUSE_SHORT_VIEWPORT_HEIGHT;
+  const titlePx = shortViewport ? PAUSE_TITLE_SIZE_SHORT : PAUSE_TITLE_SIZE_WIDE;
+  const titleStroke = shortViewport
+    ? (highContrast ? 6 : 4)
+    : (highContrast ? 8 : 5);
+  const titleColor = highContrast ? PAUSE_TITLE_COLOR_HC : PAUSE_TITLE_COLOR;
+  const backdropAlpha = highContrast ? 0.95 : 0.85;
+  return { titlePx, titleStroke, titleColor, backdropAlpha, shortViewport };
+}
