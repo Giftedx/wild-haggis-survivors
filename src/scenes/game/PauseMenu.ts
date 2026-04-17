@@ -19,7 +19,11 @@ import { getSettingsManager } from '../../core/SettingsManager';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
 import { buildPauseStatsLines } from './pauseStats';
-import { resolvePauseMenuStyle } from './pauseMenuStyle';
+import {
+  resolvePauseMenuStyle,
+  PAUSE_RESUME_BUTTON_PALETTE,
+  PAUSE_QUIT_BUTTON_PALETTE,
+} from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
 
 export interface PauseMenuHooks {
@@ -108,10 +112,10 @@ export class PauseMenu {
 
     // RESUME before the long elite-affix reference list so the button never covers traits text.
     const resumeY = y + height * 0.48;
-    const resumeBtn = scene.add.rectangle(x + width / 2, resumeY, 220, 50, 0x005eb8)
+    const resumeBtn = scene.add.rectangle(x + width / 2, resumeY, 220, 50, PAUSE_RESUME_BUTTON_PALETTE.idle)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(0x0077dd));
-    resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(0x005eb8));
+    resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(PAUSE_RESUME_BUTTON_PALETTE.hover));
+    resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(PAUSE_RESUME_BUTTON_PALETTE.idle));
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
     this.elements.push(resumeBtn);
     this.elements.push(
@@ -223,10 +227,10 @@ export class PauseMenu {
       );
     }
 
-    const quitBtn = scene.add.rectangle(x + width / 2, quitY, 220, 50, 0x444444)
+    const quitBtn = scene.add.rectangle(x + width / 2, quitY, 220, 50, PAUSE_QUIT_BUTTON_PALETTE.idle)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    quitBtn.on('pointerover', () => quitBtn.setFillStyle(0x555555));
-    quitBtn.on('pointerout', () => quitBtn.setFillStyle(0x444444));
+    quitBtn.on('pointerover', () => quitBtn.setFillStyle(PAUSE_QUIT_BUTTON_PALETTE.hover));
+    quitBtn.on('pointerout', () => quitBtn.setFillStyle(PAUSE_QUIT_BUTTON_PALETTE.idle));
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
     this.elements.push(quitBtn);
     this.elements.push(

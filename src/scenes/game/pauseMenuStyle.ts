@@ -38,3 +38,24 @@ export function resolvePauseMenuStyle(viewportHeight: number, highContrast: bool
   const backdropAlpha = highContrast ? 0.95 : 0.85;
   return { titlePx, titleStroke, titleColor, backdropAlpha, shortViewport };
 }
+
+// ── Pause menu action buttons ────────────────────────────────────────
+//
+// Two buttons sit at the bottom of the pause overlay: a primary
+// Resume (Scottish blue CTA) and a secondary Quit (neutral grey).
+// Each has a fill + hover fill.
+
+export interface PauseButtonPalette {
+  idle: number;
+  hover: number;
+}
+
+export const PAUSE_RESUME_BUTTON_PALETTE: PauseButtonPalette = {
+  idle: 0x005eb8,
+  hover: 0x0077dd,
+};
+
+export const PAUSE_QUIT_BUTTON_PALETTE: PauseButtonPalette = {
+  idle: 0x444444,
+  hover: 0x555555,
+};

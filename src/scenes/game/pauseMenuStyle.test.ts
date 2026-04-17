@@ -67,3 +67,22 @@ describe('resolvePauseMenuStyle — backdrop alpha', () => {
     expect(resolvePauseMenuStyle(600, true).backdropAlpha).toBe(0.95);
   });
 });
+
+describe('pause menu button palettes', () => {
+  it('resume button uses Scottish blue + brighter hover', async () => {
+    const { PAUSE_RESUME_BUTTON_PALETTE } = await import('./pauseMenuStyle');
+    expect(PAUSE_RESUME_BUTTON_PALETTE.idle).toBe(0x005eb8);
+    expect(PAUSE_RESUME_BUTTON_PALETTE.hover).toBe(0x0077dd);
+  });
+
+  it('quit button uses neutral grey + lifted hover', async () => {
+    const { PAUSE_QUIT_BUTTON_PALETTE } = await import('./pauseMenuStyle');
+    expect(PAUSE_QUIT_BUTTON_PALETTE.idle).toBe(0x444444);
+    expect(PAUSE_QUIT_BUTTON_PALETTE.hover).toBe(0x555555);
+  });
+
+  it('resume + quit are visually distinct (different blues vs greys)', async () => {
+    const { PAUSE_RESUME_BUTTON_PALETTE, PAUSE_QUIT_BUTTON_PALETTE } = await import('./pauseMenuStyle');
+    expect(PAUSE_RESUME_BUTTON_PALETTE.idle).not.toBe(PAUSE_QUIT_BUTTON_PALETTE.idle);
+  });
+});
