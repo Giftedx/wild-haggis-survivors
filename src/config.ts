@@ -114,4 +114,8 @@ export const COLORS_CSS = {
    *  JuiceSystem). Kept as a separate value (not `#000`) because the subtle
    *  warm shift reads better over the moor-blue backdrop. */
   INK: '#0a0a14',
+  /** CSS mirror of COLORS.BG_DARK, for Phaser's top-level `backgroundColor`
+   *  config (which wants a CSS string). Change the number in COLORS to
+   *  recolour, and update this twin — `colorsCss.test.ts` enforces sync. */
+  BG_DARK: '#1a1a2e',
 } as const;

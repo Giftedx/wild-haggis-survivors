@@ -31,7 +31,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined' && 'serviceWorker' in n
 }
 import { installAudioActivationOnUserGesture } from './systems/audioContext';
 import { GAME_CANVAS_ARIA_LABEL } from './constants/gameCanvasA11y';
-import { GAME } from './config';
+import { GAME, COLORS_CSS } from './config';
 import { BootScene } from './scenes/BootScene';
 import { MainMenuScene } from './scenes/MainMenuScene';
 import { MenuScene } from './scenes/MenuScene';
@@ -55,7 +55,7 @@ const config: Phaser.Types.Core.GameConfig = {
   parent: document.body,
   width: GAME.WIDTH,
   height: GAME.HEIGHT,
-  backgroundColor: '#1a1a2e',
+  backgroundColor: COLORS_CSS.BG_DARK,
   scale: {
     mode: Phaser.Scale.RESIZE,
     // RESIZE already tracks window size; centering can introduce offsets
