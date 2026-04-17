@@ -1,4 +1,5 @@
 import { t } from '../core/i18n';
+import { formatClockTime } from '../utils/formatClockTime';
 
 export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie';
 
@@ -303,8 +304,8 @@ export function getVariantUnlockProgress(
         t('variant.unlock.survive'),
         progress.bestTime,
         variant.unlock.required,
-        formatTime(progress.bestTime),
-        formatTime(variant.unlock.required)
+        formatClockTime(progress.bestTime),
+        formatClockTime(variant.unlock.required)
       );
     case 'best_kills':
       return createUnlockProgress(
@@ -409,9 +410,3 @@ function createUnlockProgress(
 }
 
 
-function formatTime(totalSeconds: number): string {
-  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
-  const mins = Math.floor(safeSeconds / 60);
-  const secs = Math.floor(safeSeconds % 60);
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-}
