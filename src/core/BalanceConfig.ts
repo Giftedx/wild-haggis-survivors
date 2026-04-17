@@ -241,7 +241,9 @@ export type AchievementId =
   | 'ach_walk_every_road'
   | 'ach_ironmoor_victor'
   | 'ach_full_herd'
-  | 'ach_laird_victor';
+  | 'ach_laird_victor'
+  | 'ach_stone_circle'
+  | 'ach_echo_touched';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -313,6 +315,14 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_laird_victor: {
     titleKey: 'achievement.ach_laird_victor.title',
     descriptionKey: 'achievement.ach_laird_victor.description',
+  },
+  ach_stone_circle: {
+    titleKey: 'achievement.ach_stone_circle.title',
+    descriptionKey: 'achievement.ach_stone_circle.description',
+  },
+  ach_echo_touched: {
+    titleKey: 'achievement.ach_echo_touched.title',
+    descriptionKey: 'achievement.ach_echo_touched.description',
   },
 };
 

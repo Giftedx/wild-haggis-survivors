@@ -1392,6 +1392,14 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Lord o\' the Moor',
       description: 'Won a run as The Laird — tartan still straight.',
     },
+    ach_stone_circle: {
+      title: 'Stone Circle',
+      description: 'Walked every standing stone — mending, fire, haste, all three.',
+    },
+    ach_echo_touched: {
+      title: 'The Moor Remembers',
+      description: 'Touched an Ancestral Echo — nae grief wasted.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

@@ -110,6 +110,17 @@ export class AchievementManager {
       // run's stats, so freshly-won unlocks are reflected immediately.
       const unlocked = gameplay.unlockedVariants ?? [];
       if (unlocked.length >= VARIANT_KEYS.length) this.tryUnlock('ach_full_herd');
+
+      // ach_stone_circle — picked each Standing Stone boon at least once.
+      const stones = gameplay.standingStonesPicked ?? {};
+      if ((stones.mending ?? 0) > 0 && (stones.fire ?? 0) > 0 && (stones.haste ?? 0) > 0) {
+        this.tryUnlock('ach_stone_circle');
+      }
+
+      // ach_echo_touched — touched at least one Ancestral Echo.
+      if ((gameplay.ancestralEchoesTouched ?? 0) > 0) {
+        this.tryUnlock('ach_echo_touched');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }
