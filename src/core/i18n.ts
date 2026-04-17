@@ -358,6 +358,9 @@ export const EN_STRINGS: LocaleTree = {
       language: 'Language',
       locale_en: 'English (Glesga)',
       locale_scs: 'Scots',
+      /** Reset-to-defaults row label + action chip text. Restores every comfort setting in one click. */
+      reset_defaults: 'Reset to defaults',
+      reset_action: 'RESET',
       /** W66 Ironmoor opt-in ceremony — shown when player flips the toggle OFF→ON. */
       ironmoor_confirm_title: 'Ye sure, big yin?',
       ironmoor_confirm_body: 'Ironmoor is ONE LIFE. Nae Second Wind, nae revives. Die once — ye walk tae the menu. The wee ⚔ badge marks yer Chronicle row for ever. Switch it aff any time before ye start.',

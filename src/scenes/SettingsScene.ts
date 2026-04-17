@@ -29,6 +29,7 @@ import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
+import { performSettingsReset } from './settingsResetAction';
 
 type SettingsGpRow =
   | {
@@ -226,6 +227,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();
+    this.addResetRow();
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned
@@ -766,6 +768,75 @@ export class SettingsScene extends Phaser.Scene {
     this.gpRows.push({
       kind: 'toggle',
       toggle: cycle,
+      mark,
+    });
+  }
+
+  /**
+   * Reset-to-defaults row — quiet, dim chip to the right so it can't be
+   * mistaken for a primary action. Click wipes persisted settings via
+   * `SettingsManager.reset()` and restarts the scene so every slider
+   * and toggle snaps back to its default in one visible motion.
+   */
+  private addResetRow(): void {
+    const { width } = this.scale;
+    const y = this.rowY;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    this.rowY += rowStep;
+
+    this.add
+      .text(40, y + 4, t('ui.settings.reset_defaults'), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+
+    const chipW = 130;
+    const chipH = 26;
+    const cx = width - 88;
+    const cy = y + 18;
+    const chipIdle = 0x2a2430;
+    const chipHover = 0x3a3040;
+    const btn = this.add
+      .rectangle(cx, cy, chipW, chipH, chipIdle, 1)
+      .setStrokeStyle(1.5, 0x5a4e64, 0.9)
+      .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
+
+    const txt = this.add
+      .text(cx, cy, t('ui.settings.reset_action'), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#c8b8d4',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
+
+    attachButtonHoverFill(btn, chipIdle, chipHover);
+
+    const doReset = () => {
+      audio.playClick();
+      performSettingsReset({
+        settingsManager: this.settingsManager,
+        restartScene: () => {
+          this.scene.stop();
+          this.scene.start('Settings');
+        },
+      });
+    };
+
+    btn.on('pointerdown', doReset);
+    txt.setInteractive({ useHandCursor: true });
+    txt.on('pointerdown', doReset);
+
+    const mark = this.add
+      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .setStrokeStyle(0);
+    this.gpRows.push({
+      kind: 'toggle',
+      toggle: doReset,
       mark,
     });
   }
