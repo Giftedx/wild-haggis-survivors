@@ -186,3 +186,51 @@ describe('ach_walk_every_road progress', () => {
     expect(p.ratio).toBe(1);
   });
 });
+
+describe('ach_past_the_bell — binary', () => {
+  it('is binary (no progress bar)', () => {
+    const p = computeDeedProgress('ach_past_the_bell', snap());
+    expect(p.isBinary).toBe(true);
+  });
+
+  it('locked when not in unlockedIds even with bestEndlessSeconds populated', () => {
+    const p = computeDeedProgress('ach_past_the_bell', snap({ bestEndlessSeconds: 90 }));
+    expect(p.status).toBe('locked');
+  });
+
+  it('unlocked when present in unlockedIds', () => {
+    const p = computeDeedProgress(
+      'ach_past_the_bell',
+      snap({ unlockedIds: ['ach_past_the_bell'], bestEndlessSeconds: 5 }),
+    );
+    expect(p.status).toBe('unlocked');
+    expect(p.ratio).toBe(1);
+  });
+});
+
+describe('ach_endless_endurance — threshold', () => {
+  it('targets 60 seconds past the bell', () => {
+    const p = computeDeedProgress('ach_endless_endurance', snap({ bestEndlessSeconds: 30 }));
+    expect(p.target).toBe(60);
+    expect(p.current).toBe(30);
+    expect(p.status).toBe('in_progress');
+  });
+
+  it('clamps current to 60 once the threshold is met', () => {
+    const p = computeDeedProgress('ach_endless_endurance', snap({ bestEndlessSeconds: 600 }));
+    expect(p.current).toBe(60);
+  });
+
+  it('reports unlocked when in unlockedIds', () => {
+    const p = computeDeedProgress(
+      'ach_endless_endurance',
+      snap({ bestEndlessSeconds: 60, unlockedIds: ['ach_endless_endurance'] }),
+    );
+    expect(p.status).toBe('unlocked');
+  });
+
+  it('formats progress label as M:SS (time-threshold deed)', () => {
+    const p = computeDeedProgress('ach_endless_endurance', snap({ bestEndlessSeconds: 30 }));
+    expect(formatDeedProgressLabel(p)).toBe('0:30 / 1:00');
+  });
+});
