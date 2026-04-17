@@ -19,6 +19,7 @@ import {
   cycleBanterFrequency,
   labelForBanterFrequency,
 } from './settingsBanterFrequency';
+import { resolveSettingsPalette } from './settingsPalette';
 
 type SettingsGpRow =
   | {
@@ -111,12 +112,8 @@ export class SettingsScene extends Phaser.Scene {
     // Ambient moor wind — matches MainMenu cozy feel
     if (!this.working.reduceParticles) audio.startAmbientWind();
 
-    const titleColor = highContrastUi ? '#ffe6a8' : '#ffd98a';
-    const subtitleColor = highContrastUi ? '#b8c3d4' : '#8a93a8';
-    const hintColor = highContrastUi ? '#9ba6bc' : '#6a7388';
-    const labelColor = highContrastUi ? '#e6efff' : '#c8d0e0';
-    const sectionColor = highContrastUi ? '#ffe066' : '#d8b877';
-    const valueColor = highContrastUi ? '#a0c8f0' : '#88aacc';
+    const palette = resolveSettingsPalette(highContrastUi);
+    const { titleColor, subtitleColor, hintColor, labelColor, sectionColor, valueColor } = palette;
     this.settingsLabelColor = labelColor;
     this.sectionColor = sectionColor;
     this.valueColor = valueColor;
@@ -128,7 +125,7 @@ export class SettingsScene extends Phaser.Scene {
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK);
 
     const glow = this.add.graphics().setDepth(-10);
-    const emberColor = highContrastUi ? 0x4a2a12 : 0x2a1a0c;
+    const emberColor = palette.emberGlow;
     for (let r = 260; r > 40; r -= 30) {
       const alpha = (1 - r / 260) * 0.18;
       glow.fillStyle(emberColor, alpha);
@@ -410,7 +407,7 @@ export class SettingsScene extends Phaser.Scene {
     trough.setScale(this.uiScale, this.uiScale);
 
     // Warm fill showing the current value.
-    const fillColor = this.highContrastUi ? 0xffe066 : 0xd8b877;
+    const fillColor = resolveSettingsPalette(this.highContrastUi).sectionAccent;
     const fill = this.add.rectangle(trackX, trackY, 1, trackH - 2, fillColor, 1).setOrigin(0, 0.5);
     fill.setScale(1, this.uiScale);
 
@@ -775,7 +772,7 @@ export class SettingsScene extends Phaser.Scene {
   private promptIronmoorConfirm(proceed: () => void): void {
     const { width, height } = this.scale;
     const DEPTH_BASE = 100;
-    const { highContrastUi } = this;
+    const palette = resolveSettingsPalette(this.highContrastUi);
 
     const scrim = this.add
       .rectangle(width / 2, height / 2, width, height, 0x000000, 0.72)
@@ -786,14 +783,14 @@ export class SettingsScene extends Phaser.Scene {
     const panelH = 280;
     const panel = this.add
       .rectangle(width / 2, height / 2, panelW, panelH, 0x1a1420, 1)
-      .setStrokeStyle(2, highContrastUi ? 0xffe066 : 0xd8b877, 1)
+      .setStrokeStyle(2, palette.sectionAccent, 1)
       .setDepth(DEPTH_BASE + 1);
 
     const title = this.add
       .text(width / 2, height / 2 - panelH / 2 + 36, t('ui.settings.ironmoor_confirm_title'), {
         fontFamily: 'monospace',
         fontSize: '20px',
-        color: highContrastUi ? '#ffe066' : '#d8b877',
+        color: palette.sectionColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
@@ -804,7 +801,7 @@ export class SettingsScene extends Phaser.Scene {
       .text(width / 2, height / 2 - 10, t('ui.settings.ironmoor_confirm_body'), {
         fontFamily: 'monospace',
         fontSize: '13px',
-        color: highContrastUi ? '#e6efff' : '#c8d0e0',
+        color: palette.labelColor,
         align: 'center',
         wordWrap: { width: panelW - 48 },
         lineSpacing: 2,
@@ -832,14 +829,14 @@ export class SettingsScene extends Phaser.Scene {
 
     const yesBtn = this.add
       .rectangle(width / 2 + 110, btnY, 180, 40, 0x3a2218, 1)
-      .setStrokeStyle(2, highContrastUi ? 0xff6a4a : 0xb84a2a, 0.9)
+      .setStrokeStyle(2, palette.dangerAccent, 0.9)
       .setInteractive({ useHandCursor: true })
       .setDepth(DEPTH_BASE + 2);
     const yesLabel = this.add
       .text(width / 2 + 110, btnY, t('ui.settings.ironmoor_confirm_yes'), {
         fontFamily: 'monospace',
         fontSize: '15px',
-        color: highContrastUi ? '#ffe066' : '#ffd98a',
+        color: this.highContrastUi ? palette.sectionColor : palette.titleColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
