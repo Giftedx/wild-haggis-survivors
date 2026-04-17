@@ -336,6 +336,21 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
 }
 
 /**
+ * Count distinct route keys the player has picked across their whole
+ * runHistory. Fed to the "Kent the Moor" deed so the achievement
+ * surfaces how much of the W2 route fork has been explored.
+ */
+export function countUniqueRouteKeys(history: readonly RunHistoryEntry[]): number {
+  const seen = new Set<string>();
+  for (const entry of history) {
+    for (const p of entry.routes ?? []) {
+      seen.add(p.routeKey);
+    }
+  }
+  return seen.size;
+}
+
+/**
  * W2 Moor Road: select history entries that contain at least one
  * route pick, newest-first. Used by the Chronicle Moor Road log panel.
  */

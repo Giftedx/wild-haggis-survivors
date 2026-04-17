@@ -4,6 +4,7 @@ import {
   computeIronmoorStats,
   computeMilestones,
   computeMoorRoadKillCriteria,
+  countUniqueRouteKeys,
   detectMood,
   formatChronicleMilestoneLines,
   formatChronicleRunSubLine,
@@ -703,5 +704,36 @@ describe('moodColor', () => {
     for (const m of moods) {
       expect(moodColor(m)).toMatch(/^#[0-9a-fA-F]{6}$/);
     }
+  });
+});
+
+describe('countUniqueRouteKeys', () => {
+  it('returns 0 for empty history', () => {
+    expect(countUniqueRouteKeys([])).toBe(0);
+  });
+
+  it('returns 0 when no entries have routes', () => {
+    expect(countUniqueRouteKeys([entry(), entry()])).toBe(0);
+  });
+
+  it('counts distinct routeKeys across entries', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 0, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 0, defaultedBySetting: false },
+    ];
+    const picks2: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 0, defaultedBySetting: false }, // dupe
+      { slot: 'B', routeKey: 'through_the_kirkyard', atGameTimeSec: 0, defaultedBySetting: false },
+    ];
+    const history = [entry({ routes: picks }), entry({ routes: picks2 })];
+    expect(countUniqueRouteKeys(history)).toBe(3);
+  });
+
+  it('tolerates entries with a missing routes field', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 0, defaultedBySetting: false },
+    ];
+    const history = [entry({ routes: picks }), entry()];
+    expect(countUniqueRouteKeys(history)).toBe(1);
   });
 });

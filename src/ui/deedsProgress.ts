@@ -15,6 +15,29 @@
 import { ACHIEVEMENT_DEFS, type AchievementId } from '../core/BalanceConfig';
 import { formatClock, getCodexRosterTotal } from './chronicleAggregates';
 
+/**
+ * Header subtitle + colour for the Deeds screen, keyed on the
+ * earned-vs-total state.
+ *
+ *   0 earned          → "_empty"    (warm introduction, soft tan)
+ *   earned >= total   → "_complete" (celebratory gold — total > 0 required)
+ *   anything between  → "_partial"  (neutral progress, same soft tan)
+ */
+export interface DeedsSubtitleStyle {
+  key: string;
+  color: string;
+}
+
+export function resolveDeedsSubtitleStyle(earned: number, total: number): DeedsSubtitleStyle {
+  if (earned === 0) {
+    return { key: 'ui.deeds.sub_empty', color: '#b8a88a' };
+  }
+  if (earned >= total && total > 0) {
+    return { key: 'ui.deeds.sub_complete', color: '#f7d27a' };
+  }
+  return { key: 'ui.deeds.sub_partial', color: '#b8a88a' };
+}
+
 export type DeedStatus = 'locked' | 'in_progress' | 'unlocked';
 
 export interface DeedProgress {

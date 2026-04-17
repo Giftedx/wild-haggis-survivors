@@ -10,9 +10,11 @@ import {
   computeAllDeeds,
   deedSummary,
   formatDeedProgressLabel,
+  resolveDeedsSubtitleStyle,
   type DeedProgress,
   type DeedStatsSnapshot,
 } from '../ui/deedsProgress';
+import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -38,10 +40,7 @@ export class DeedsScene extends Phaser.Scene {
 
     // W2 Moor Road: how many distinct route keys have been picked across
     // the gameplay save's runHistory. Feeds the "Kent the Moor" deed.
-    const uniqueRouteKeys = new Set<string>();
-    for (const entry of gameplay.runHistory ?? []) {
-      for (const p of entry.routes ?? []) uniqueRouteKeys.add(p.routeKey);
-    }
+    const uniqueRoutesWalked = countUniqueRouteKeys(gameplay.runHistory ?? []);
 
     const snapshot: DeedStatsSnapshot = {
       lifetimeKills: meta.totalKills + meta.totalKillsSpent,
@@ -50,7 +49,7 @@ export class DeedsScene extends Phaser.Scene {
       moorMomentsLifetime: meta.moorMomentsLifetime,
       unlockedIds: meta.unlockedAchievements,
       codexDiscoveredCount: meta.codexCulledKeys.length,
-      uniqueRoutesWalked: uniqueRouteKeys.size,
+      uniqueRoutesWalked,
       ceilidhPulsesLifetime: gameplay.ceilidhPulsesLifetime ?? 0,
       bestEndlessSeconds: gameplay.bestEndlessSeconds ?? 0,
     };
@@ -77,16 +76,12 @@ export class DeedsScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    const subKey = summary.earned === 0
-      ? 'ui.deeds.sub_empty'
-      : summary.earned === summary.total
-        ? 'ui.deeds.sub_complete'
-        : 'ui.deeds.sub_partial';
+    const subStyle = resolveDeedsSubtitleStyle(summary.earned, summary.total);
     this.add
-      .text(width / 2, 70, t(subKey, { earned: summary.earned, total: summary.total }), {
+      .text(width / 2, 70, t(subStyle.key, { earned: summary.earned, total: summary.total }), {
         fontFamily: 'monospace',
         fontSize: '13px',
-        color: summary.earned === summary.total ? '#f7d27a' : '#b8a88a',
+        color: subStyle.color,
         fontStyle: 'italic',
         align: 'center',
         wordWrap: { width: width - 60 },

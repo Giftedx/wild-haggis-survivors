@@ -5,6 +5,7 @@ import {
   computeDeedProgress,
   deedSummary,
   formatDeedProgressLabel,
+  resolveDeedsSubtitleStyle,
   type DeedStatsSnapshot,
 } from './deedsProgress';
 import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
@@ -232,5 +233,39 @@ describe('ach_endless_endurance — threshold', () => {
   it('formats progress label as M:SS (time-threshold deed)', () => {
     const p = computeDeedProgress('ach_endless_endurance', snap({ bestEndlessSeconds: 30 }));
     expect(formatDeedProgressLabel(p)).toBe('0:30 / 1:00');
+  });
+});
+
+describe('resolveDeedsSubtitleStyle', () => {
+  it('returns the "empty" style when earned is 0', () => {
+    const s = resolveDeedsSubtitleStyle(0, 20);
+    expect(s.key).toBe('ui.deeds.sub_empty');
+    expect(s.color).toBe('#b8a88a');
+  });
+
+  it('returns the "complete" gold style when earned equals total', () => {
+    const s = resolveDeedsSubtitleStyle(20, 20);
+    expect(s.key).toBe('ui.deeds.sub_complete');
+    expect(s.color).toBe('#f7d27a');
+  });
+
+  it('returns the "partial" style for in-between progress', () => {
+    const s = resolveDeedsSubtitleStyle(5, 20);
+    expect(s.key).toBe('ui.deeds.sub_partial');
+    expect(s.color).toBe('#b8a88a');
+  });
+
+  it('does not fire the "complete" branch when total is 0 (no deeds defined)', () => {
+    // Edge case: if total is 0 and earned is 0 → empty.
+    // If total is 0 but earned somehow > 0 (corrupted save), it should
+    // fall through to partial, NOT "complete" — complete is a
+    // celebratory state that requires real deeds to exist.
+    expect(resolveDeedsSubtitleStyle(0, 0).key).toBe('ui.deeds.sub_empty');
+    expect(resolveDeedsSubtitleStyle(1, 0).key).toBe('ui.deeds.sub_partial');
+  });
+
+  it('earned > total (shouldn\'t happen, but defensive) reads as complete', () => {
+    const s = resolveDeedsSubtitleStyle(25, 20);
+    expect(s.key).toBe('ui.deeds.sub_complete');
   });
 });
