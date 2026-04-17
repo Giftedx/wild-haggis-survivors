@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
 import { COLORS } from '../config';
-import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
 import { t } from '../core/i18n';
 import { SaveManager } from '../core/SaveManager';
 import { tryPurchaseMetaUpgrade } from '../core/MetaPurchase';
 import { META_SHOP_ITEMS, listMetaShopItemKeys, type MetaShopItemKey } from '../data/metaShopItems';
-import { resolveMetaShopRowState } from './metaShopRowState';
+import { resolveMetaShopRowState, buildMetaShopLockReasonSuffix } from './metaShopRowState';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 
@@ -168,10 +167,8 @@ export class MetaShopScene extends Phaser.Scene {
     pageKeys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
       const y = 124 + index * 72;
-      const { owned, achievementMet, prevMet, locked, canAfford } =
-        resolveMetaShopRowState(item, key, save);
-      const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
-      const prevReq = 'requiresPrevious' in item ? item.requiresPrevious : undefined;
+      const state = resolveMetaShopRowState(item, key, save);
+      const { owned, locked, canAfford } = state;
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, index % 2 === 0 ? 0x1a1828 : 0x161422, 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey), {
@@ -181,19 +178,8 @@ export class MetaShopScene extends Phaser.Scene {
         fontStyle: 'bold',
       });
 
-      // Build lock description — show what's needed
-      let descExtra = '';
-      if (!owned && req && !achievementMet) {
-        const achDef = ACHIEVEMENT_DEFS[req];
-        descExtra += `\n${t('ui.metaShop.requires_achievement', {
-          title: t(achDef.titleKey),
-          hint: t(achDef.descriptionKey),
-        })}`;
-      }
-      if (!owned && prevReq && !prevMet) {
-        const prevItem = META_SHOP_ITEMS[prevReq as MetaShopItemKey];
-        if (prevItem) descExtra += `\n${t('ui.metaShop.requires_previous', { name: t(prevItem.nameKey) })}`;
-      }
+      // Build lock description — show what's needed.
+      const descExtra = buildMetaShopLockReasonSuffix(item, state);
 
       const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra, {
         fontFamily: 'monospace',

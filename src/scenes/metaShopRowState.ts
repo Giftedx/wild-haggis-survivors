@@ -1,4 +1,6 @@
 import { META_SHOP_ITEMS, type MetaShopItemKey } from '../data/metaShopItems';
+import { ACHIEVEMENT_DEFS } from '../core/BalanceConfig';
+import { t } from '../core/i18n';
 
 /**
  * Narrow slice of the save the meta-shop row state needs. Stays
@@ -53,4 +55,36 @@ export function resolveMetaShopRowState(
   const locked = (!achievementMet || !prevMet) && !owned;
   const canAfford = !owned && achievementMet && prevMet && save.totalKills >= item.cost;
   return { owned, achievementMet, prevMet, locked, canAfford, cost: item.cost };
+}
+
+/**
+ * Build the "\\n{lock reason}" suffix appended to a locked item's
+ * description. Empty string when the item is owned or all gates met —
+ * scene appends the suffix unconditionally and it no-ops when empty.
+ *
+ * Two reason lines can stack (missing achievement AND missing prereq).
+ */
+export function buildMetaShopLockReasonSuffix(
+  item: MetaShopItem,
+  state: MetaShopRowState,
+): string {
+  if (state.owned) return '';
+  const parts: string[] = [];
+  const req = 'requiresAchievement' in item ? item.requiresAchievement : undefined;
+  const prevReq = 'requiresPrevious' in item ? item.requiresPrevious : undefined;
+  if (req && !state.achievementMet) {
+    const achDef = ACHIEVEMENT_DEFS[req];
+    parts.push(t('ui.metaShop.requires_achievement', {
+      title: t(achDef.titleKey),
+      hint: t(achDef.descriptionKey),
+    }));
+  }
+  if (prevReq && !state.prevMet) {
+    const prevItem = META_SHOP_ITEMS[prevReq as MetaShopItemKey];
+    if (prevItem) {
+      parts.push(t('ui.metaShop.requires_previous', { name: t(prevItem.nameKey) }));
+    }
+  }
+  if (parts.length === 0) return '';
+  return '\n' + parts.join('\n');
 }

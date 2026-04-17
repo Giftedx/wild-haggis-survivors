@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { resolveMetaShopRowState, type MetaShopRowSave } from './metaShopRowState';
+import {
+  resolveMetaShopRowState,
+  buildMetaShopLockReasonSuffix,
+  type MetaShopRowSave,
+} from './metaShopRowState';
 import { META_SHOP_ITEMS, type MetaShopItemKey } from '../data/metaShopItems';
 
 function saveOf(overrides: Partial<MetaShopRowSave> = {}): MetaShopRowSave {
@@ -111,5 +115,69 @@ describe('resolveMetaShopRowState', () => {
     const key = 'speed_tier_1' as MetaShopItemKey;
     const s = resolveMetaShopRowState(META_SHOP_ITEMS[key], key, saveOf());
     expect(s.cost).toBe(META_SHOP_ITEMS[key].cost);
+  });
+});
+
+describe('buildMetaShopLockReasonSuffix', () => {
+  it('returns an empty string when the item is owned', () => {
+    const key = 'speed_tier_2' as MetaShopItemKey;
+    const state = resolveMetaShopRowState(
+      META_SHOP_ITEMS[key],
+      key,
+      saveOf({ unlockedUpgrades: ['speed_tier_2'] }),
+    );
+    expect(buildMetaShopLockReasonSuffix(META_SHOP_ITEMS[key], state)).toBe('');
+  });
+
+  it('returns an empty string when all gates are met (just unaffordable)', () => {
+    const key = 'speed_tier_2' as MetaShopItemKey;
+    const state = resolveMetaShopRowState(
+      META_SHOP_ITEMS[key],
+      key,
+      saveOf({
+        unlockedUpgrades: ['speed_tier_1'],
+        unlockedAchievements: ['ach_survive_10m'],
+        totalKills: 0, // can't afford, but not locked
+      }),
+    );
+    expect(buildMetaShopLockReasonSuffix(META_SHOP_ITEMS[key], state)).toBe('');
+  });
+
+  it('returns the achievement-required line when the achievement is missing', () => {
+    const key = 'speed_tier_2' as MetaShopItemKey;
+    const state = resolveMetaShopRowState(
+      META_SHOP_ITEMS[key],
+      key,
+      saveOf({ unlockedUpgrades: ['speed_tier_1'] }), // ach missing, prereq met
+    );
+    const out = buildMetaShopLockReasonSuffix(META_SHOP_ITEMS[key], state);
+    expect(out.startsWith('\n')).toBe(true);
+    expect(out).not.toContain('ui.metaShop.requires_achievement');
+  });
+
+  it('returns the previous-required line when the prerequisite is missing', () => {
+    const key = 'speed_tier_2' as MetaShopItemKey;
+    const state = resolveMetaShopRowState(
+      META_SHOP_ITEMS[key],
+      key,
+      saveOf({ unlockedAchievements: ['ach_survive_10m'] }), // prereq missing, ach met
+    );
+    const out = buildMetaShopLockReasonSuffix(META_SHOP_ITEMS[key], state);
+    expect(out.startsWith('\n')).toBe(true);
+    expect(out).not.toContain('ui.metaShop.requires_previous');
+  });
+
+  it('stacks both lines when both gates are missing', () => {
+    const key = 'speed_tier_2' as MetaShopItemKey;
+    const state = resolveMetaShopRowState(
+      META_SHOP_ITEMS[key],
+      key,
+      saveOf(), // neither met
+    );
+    const out = buildMetaShopLockReasonSuffix(META_SHOP_ITEMS[key], state);
+    // Two reasons → starts with \n, contains one interior \n separator.
+    expect(out.startsWith('\n')).toBe(true);
+    const lines = out.split('\n').filter((l) => l.length > 0);
+    expect(lines).toHaveLength(2);
   });
 });
