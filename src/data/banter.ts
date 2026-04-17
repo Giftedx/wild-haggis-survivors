@@ -671,7 +671,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       ],
     },
   },
-  // W2 Moor Road — placeholder copy; full Glesga voice pass in M3.
+  // W2 Moor Road.
   {
     context: 'act_intermission_enter',
     tone: 'hearth',

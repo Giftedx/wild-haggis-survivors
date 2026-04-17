@@ -110,3 +110,27 @@ describe('W18 Scots overlay: route copy still fits voice-card budget', () => {
     }
   });
 });
+
+/**
+ * W2 M3 Scots parity: route_picked banter has six tag-specific sub-pools
+ * (one per route). The Scots overlay must override each key rather than
+ * silently falling back to English — otherwise a Scots player sees en
+ * banter immediately after picking a route, breaking the locale promise.
+ */
+describe('W2 M3 Scots parity: route_picked tag banter overridden', () => {
+  afterEach(() => setLocale(DEFAULT_LOCALE));
+
+  it('every route_picked tag variant is overridden in scs (not an en fallback)', () => {
+    for (const k of ROUTE_KEYS) {
+      for (const suffix of ['a', 'b'] as const) {
+        const key = `ui.banter.route_picked.${k}.${suffix}`;
+        setLocale('en');
+        const en = t(key);
+        setLocale('scs');
+        const scs = t(key);
+        expect(scs.length, `${key} resolves empty in scs`).toBeGreaterThan(0);
+        expect(scs, `${key} not translated to scs (still "${en}")`).not.toBe(en);
+      }
+    }
+  });
+});

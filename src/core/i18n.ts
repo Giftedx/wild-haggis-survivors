@@ -2348,6 +2348,30 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Line picked. Walk it, aye.',
           b: 'Decision made. Nae takin it back.',
         },
+        up_the_brae: {
+          a: 'Up we gae, then.',
+          b: 'Keep climbin, bauld lad.',
+        },
+        round_the_loch: {
+          a: 'Watter\'s cauld, mind.',
+          b: 'Langer way, safer way.',
+        },
+        through_the_kirkyard: {
+          a: 'Hope yer no feart.',
+          b: 'Shortcut through tha deid.',
+        },
+        stand_yer_ground: {
+          a: 'Nae rinnin noo.',
+          b: 'Aye, haud fast, ya daftie.',
+        },
+        run_for_the_hills: {
+          a: 'Leg it — smairt lad.',
+          b: 'Nae shame in rinnin awa.',
+        },
+        buckie_pitstop: {
+          a: 'Needit a braither onywey.',
+          b: 'Tonic o tha moor, that.',
+        },
       },
     },
   },
