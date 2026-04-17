@@ -27,7 +27,11 @@ export class ConsoleAnalyticsProvider implements IAnalyticsProvider {
  * Bridges `GlobalEventBus` and portal lifecycle hooks. Start once after boot;
  * use `beginGameplaySession` / `endGameplaySession` from `GameScene` for strict portal semantics.
  *
- * `telemetryOptIn` gates only `run_start` / `run_end` logs; boss/tutorial events always forward.
+ * `telemetryOptIn` gates the run-distribution events that encode session
+ * progression: `run_start`, `run_end`, `elite_affix_kill`, `moor_moment`,
+ * `route_picked`, `weapon_evolved`, `codex_first_cull`, `shop_purchase`.
+ * Player-visible signals that are already surfaced in-game forward
+ * unconditionally: `boss_kill`, `tutorial_completed`, `achievement_unlocked`.
  */
 export class AnalyticsManager {
   private readonly provider: IAnalyticsProvider;
