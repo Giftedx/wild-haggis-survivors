@@ -133,7 +133,7 @@ describe('GameTickers.tickLowHpCaption', () => {
   });
 
   it('passes the active variant key as banter tag', () => {
-    const { state, banter, hooks } = makeHarness({ hp: 10, variantKey: 'laird' });
+    const { banter, hooks } = makeHarness({ hp: 10, variantKey: 'laird' });
     const t = new GameTickers(hooks);
     t.tickLowHpCaption();
     expect(banter.request).toHaveBeenCalledWith('low_hp', { tag: 'laird' });
