@@ -358,6 +358,8 @@ export const EN_STRINGS: LocaleTree = {
     standingStones: {
       announce_toast: 'Three stones stir — pick yer blessing.',
       announce_caption: 'Three standing stones have risen — walk tae one tae claim it.',
+      warn_toast: 'The moor rumbles — stones are waking.',
+      warn_caption: 'Somethin\' is stirrin\' underfoot — stones rise in fifteen seconds.',
       grant_toast: '{title} — the stone\'s blessing holds.',
       mending: {
         title: 'Stone o\' Mending',

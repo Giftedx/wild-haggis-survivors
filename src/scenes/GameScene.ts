@@ -56,7 +56,7 @@ import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
-import { StandingStones, STONE_SPAWN_SEC, type StoneBoon } from './game/standingStones';
+import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC, type StoneBoon } from './game/standingStones';
 import {
   AncestralEcho,
   ECHO_GOLD_REWARD,
@@ -139,6 +139,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private moorMercyLuckGranted = false;
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
   private standingStones: StandingStones | null = null;
+  /** True once the 4:45 "stones stir" pre-warning has fired this run. */
+  private stonesWarned: boolean = false;
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
   private ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
@@ -296,6 +298,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.moorMercyLuckGranted = false;
     this.standingStones?.destroy();
     this.standingStones = null;
+    this.stonesWarned = false;
     this.ancestralEcho?.destroy();
     this.ancestralEcho = null;
     this.musicStateScratch.bossActive = false;
@@ -974,6 +977,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         wholeSecond: runSec,
       });
       this.moorMoments.tick(runSec);
+      if (runSec === STONE_WARN_SEC && !this.stonesWarned && !this.standingStones) {
+        this.stonesWarned = true;
+        this.juice.showToast(t('ui.standingStones.warn_toast'), '#ffe080');
+        this.caption('standing_stones_warn', t('ui.standingStones.warn_caption'), '#ffe080', 3000);
+      }
       if (runSec === STONE_SPAWN_SEC && !this.standingStones) {
         this.spawnStandingStones();
       }

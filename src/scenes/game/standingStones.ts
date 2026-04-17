@@ -44,6 +44,8 @@ export const STONE_BOONS: readonly StoneBoon[] = [
 
 /** Seconds into a run when the stones spawn. */
 export const STONE_SPAWN_SEC = 300;
+/** Seconds into a run when the moor rumbles to telegraph the upcoming spawn. */
+export const STONE_WARN_SEC = 285;
 /** Proximity threshold for claiming a stone (pixels). */
 export const STONE_PICK_RADIUS_PX = 40;
 /** Distance from player at spawn time (pixels). */
