@@ -27,3 +27,32 @@ export function sceneHeaderTextStyle(
     strokeThickness: 4,
   };
 }
+
+/**
+ * Sibling style for the small italic mood / progress subtitle that
+ * sits just under each scene title (Chronicle's mood line, Deeds'
+ * "earned/total" line). Same font, italic, centred, word-wrapped to
+ * `width - 60`.
+ */
+export interface SceneSubtitleTextStyle {
+  fontFamily: 'monospace';
+  fontSize: '13px';
+  color: string;
+  fontStyle: 'italic';
+  align: 'center';
+  wordWrap: { width: number };
+}
+
+export function sceneSubtitleTextStyle(
+  color: string,
+  sceneWidth: number,
+): SceneSubtitleTextStyle {
+  return {
+    fontFamily: 'monospace',
+    fontSize: '13px',
+    color,
+    fontStyle: 'italic',
+    align: 'center',
+    wordWrap: { width: sceneWidth - 60 },
+  };
+}

@@ -20,7 +20,7 @@ import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
-import { sceneHeaderTextStyle } from './sceneHeaderStyle';
+import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -77,14 +77,8 @@ export class DeedsScene extends Phaser.Scene {
 
     const subStyle = resolveDeedsSubtitleStyle(summary.earned, summary.total);
     this.add
-      .text(width / 2, 70, t(subStyle.key, { earned: summary.earned, total: summary.total }), {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: subStyle.color,
-        fontStyle: 'italic',
-        align: 'center',
-        wordWrap: { width: width - 60 },
-      })
+      .text(width / 2, 70, t(subStyle.key, { earned: summary.earned, total: summary.total }),
+        sceneSubtitleTextStyle(subStyle.color, width))
       .setOrigin(0.5)
       .setScale(uiScale);
 
