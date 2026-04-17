@@ -464,7 +464,7 @@ export class HUD {
       this.hpText.setColor(this.hcPalette?.textLowHp ?? '#ffcccc');
     } else {
       this.hpBarFill.setAlpha(1);
-      this.hpText.setColor(this.hcPalette?.text ?? '#ffffff');
+      this.hpText.setColor(this.hcPalette?.text ?? COLORS_CSS.WHITE);
       this.lowHpPulse = 0;
     }
 
@@ -517,7 +517,7 @@ export class HUD {
       const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
       const enemyColor = overCap
         ? (this.hcPalette?.killWarn ?? '#ff4444')
-        : (this.hcPalette?.kill ?? '#ffffff');
+        : (this.hcPalette?.kill ?? COLORS_CSS.WHITE);
       this.killText.setText(
         t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
       );
