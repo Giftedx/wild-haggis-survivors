@@ -7,6 +7,7 @@
  * produce the same map every time.
  */
 import type { RNG } from '../utils/rng';
+import { COLORS } from '../config';
 
 export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather';
 export type BiomeModifierKind =
@@ -86,7 +87,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
   heather: {
     id: 'heather',
     nameKey: 'biomes.heather.name',
-    tint: 0x6b3fa0,
+    tint: COLORS.HEATHER,
     entryToastKey: 'biomes.heather.entry',
     toastColor: '#c699ee',
     spawnWeightMods: {
