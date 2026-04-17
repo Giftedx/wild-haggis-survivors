@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { dispatchActComplete } from './dispatchActComplete';
+import { BOSSES } from '../../data/enemies';
 
 describe('dispatchActComplete', () => {
   it('returns 1 for gordon', () => {
@@ -28,5 +29,18 @@ describe('dispatchActComplete', () => {
 
   it('returns null for non-boss enemy keys', () => {
     expect(dispatchActComplete('tourist')).toEqual({ actToComplete: null });
+  });
+
+  /**
+   * Guards against a renamed / removed boss silently breaking the
+   * picker trigger: both act-gating keys must still appear in BOSSES
+   * (enemies.ts). If a future refactor renames `tour_bus` to
+   * `tourist_coach`, this assertion catches it before a real run
+   * silently swallows the act-2 picker.
+   */
+  it('act-gating boss keys exist in BOSSES definitions', () => {
+    const bossKeys = new Set(BOSSES.map((b) => b.key));
+    expect(bossKeys.has('gordon'), 'gordon missing from BOSSES').toBe(true);
+    expect(bossKeys.has('tour_bus'), 'tour_bus missing from BOSSES').toBe(true);
   });
 });
