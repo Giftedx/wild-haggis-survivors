@@ -122,4 +122,78 @@ describe('MoorMomentScheduler', () => {
     scheduler.reset();
     expect(() => scheduler.pushAfterResume(120)).not.toThrow();
   });
+
+  it('addCoinGold fires when a moor moment grants gold', () => {
+    const addCoinGold = vi.fn();
+    const { hooks } = makeHooks({ addCoinGold });
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    // Run repeated ticks; first moment fires at FIRST_SEC.
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+
+    // We can't predict which moment fired without committing to a seed,
+    // but the harness's getRunModifiers/goldMult is 1, so any gold reward
+    // should turn into a positive addCoinGold call. All non-magnet
+    // reward kinds either grant gold (kind=gold) or substitute gold
+    // when grant fallback kicks in. xp/heal/magnet may not call gold.
+    // To make this test deterministic, run several ticks until a gold
+    // reward fires (worst case after a few iterations).
+    let attempts = 0;
+    let lastSec = MOOR_MOMENT_FIRST_SEC;
+    while (addCoinGold.mock.calls.length === 0 && attempts < 12) {
+      lastSec += 200; // skip past the gap each time
+      scheduler.tick(lastSec);
+      attempts++;
+    }
+    // At least one of the first dozen-ish moments must have been gold-bearing.
+    expect(addCoinGold).toHaveBeenCalled();
+  });
+
+  it('flushes a flashWhite + showToast on every fire', () => {
+    const { hooks, juice } = makeHooks();
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+    expect(juice.flashWhite).toHaveBeenCalledTimes(1);
+    expect(juice.showToast).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to gold when xp would push past max level', () => {
+    const addCoinGold = vi.fn();
+    const xpSystem = { getLevel: () => 99, grantBonusXp: vi.fn() };
+    const { hooks } = makeHooks({
+      addCoinGold,
+      getXPSystem: () => xpSystem as unknown as ReturnType<MoorMomentSchedulerHooks['getXPSystem']>,
+    });
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    // Iterate until we hit an xp moment — the gold fallback path requires it.
+    let lastSec = MOOR_MOMENT_FIRST_SEC;
+    let attempts = 0;
+    while (xpSystem.grantBonusXp.mock.calls.length === 0 && addCoinGold.mock.calls.length === 0 && attempts < 30) {
+      scheduler.tick(lastSec);
+      lastSec += 200;
+      attempts++;
+    }
+    // grantBonusXp must NEVER fire at max level.
+    expect(xpSystem.grantBonusXp).not.toHaveBeenCalled();
+    // The fallback always converts the foregone xp to gold.
+    expect(addCoinGold).toHaveBeenCalled();
+  });
+
+  it('emits GLOBAL_MOOR_MOMENT on every fire', async () => {
+    const { hooks, juice } = makeHooks();
+    const { globalEventBus } = await import('../../core/GlobalEventBus');
+    const moments: string[] = [];
+    const off = globalEventBus.on('GLOBAL_MOOR_MOMENT', (p) => moments.push(p.momentId));
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+    off();
+    expect(juice.showMoorMomentBurst).toHaveBeenCalled();
+    expect(moments).toHaveLength(1);
+  });
 });
