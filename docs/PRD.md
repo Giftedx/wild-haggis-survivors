@@ -89,10 +89,15 @@ core gameplay feel. Ralph-mode managed.
   reductions with real impact are further Phaser subsetting (own
   P2 item) and app-chunk lazy-load (ditto) — both change the
   precache as a side effect, not by moving assets out of it.
-- [ ] App chunk climbed 500 KB → 679 KB over the W2 / W66 / W18 pass.
+- [x] App chunk climbed 500 KB → 679 KB over the W2 / W66 / W18 pass.
   Investigate whether the Scots overlay + route data can be
   lazy-loaded (currently eager via `EN_STRINGS` / `SCS_STRINGS`
-  imports).
+  imports). **Done 2026-04-17.** SCS_STRINGS extracted to
+  `src/core/i18n.scs.ts`, lazy-loaded via `ensureLocaleReady`
+  on locale switch. App chunk 679.74 KB → 641.68 KB (-38 KB,
+  -14 KB gzip). PWA precache 2117 KiB → 2080 KiB (Scots chunk
+  excluded via `workbox.globIgnores`). English-only players —
+  the default — never download the Scots dictionary.
 
 ### P3 — Accessibility Finish-Work
 - [x] Exercise the Comfort panel end-to-end in CI via a smoke test:
