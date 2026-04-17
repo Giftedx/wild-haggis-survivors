@@ -8,6 +8,7 @@ import type { CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from './formatHudCurseChip';
 import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
+import { formatClockTime } from '../utils/formatClockTime';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import {
   targetHpBarColor,
@@ -487,7 +488,7 @@ export class HUD {
         remaining > 0
           ? t('ui.hud.goal_countdown', { m: remMins, s: remSecs.toString().padStart(2, '0') })
           : t('ui.hud.goal_finale');
-      this.timerText.setText(`${mins}:${secs.toString().padStart(2, '0')}`);
+      this.timerText.setText(formatClockTime(gameTimeSec));
       this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));
     }
     // In high-contrast mode the timer keeps its warm palette color so the
