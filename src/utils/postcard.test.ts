@@ -56,4 +56,17 @@ describe('downloadPostcard', () => {
     // the test still exercises the null-safety branch.
     expect(downloadPostcard(fakeCanvas, { mode: 'victory', enemiesKilled: 1, timeSurvivedSec: 1 })).toBe(false);
   });
+
+  it('postBellSec accepts an absent / zero / positive value (type contract)', () => {
+    // The footer rendering needs canvas; this test pins the API.
+    const payload = {
+      mode: 'victory' as const,
+      enemiesKilled: 1,
+      timeSurvivedSec: 920,
+      postBellSec: 0,
+    };
+    expect(downloadPostcard(null, payload)).toBe(false); // null canvas branch
+    payload.postBellSec = 65;
+    expect(downloadPostcard(null, payload)).toBe(false);
+  });
 });
