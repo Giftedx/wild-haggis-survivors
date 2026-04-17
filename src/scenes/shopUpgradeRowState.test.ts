@@ -3,10 +3,13 @@ import {
   resolveShopUpgradeRowState,
   resolveShopPipStyle,
   resolveShopBuyButtonPalette,
+  resolveShopPageButtonPalette,
   SHOP_PIP_FILLED,
   SHOP_PIP_EMPTY,
   SHOP_BUY_AFFORDABLE,
   SHOP_BUY_UNAFFORDABLE,
+  SHOP_PAGE_BUTTON_ENABLED,
+  SHOP_PAGE_BUTTON_DISABLED,
 } from './shopUpgradeRowState';
 import type { PermanentUpgrade } from '../data/permanentUpgrades';
 
@@ -99,5 +102,19 @@ describe('resolveShopBuyButtonPalette', () => {
     expect(SHOP_BUY_AFFORDABLE.fillColor).not.toBe(SHOP_BUY_UNAFFORDABLE.fillColor);
     expect(SHOP_BUY_AFFORDABLE.strokeColor).not.toBe(SHOP_BUY_UNAFFORDABLE.strokeColor);
     expect(SHOP_BUY_AFFORDABLE.textColor).not.toBe(SHOP_BUY_UNAFFORDABLE.textColor);
+  });
+});
+
+describe('resolveShopPageButtonPalette', () => {
+  it('enabled → bright navy palette', () => {
+    expect(resolveShopPageButtonPalette(true)).toBe(SHOP_PAGE_BUTTON_ENABLED);
+  });
+  it('disabled → dim slate palette', () => {
+    expect(resolveShopPageButtonPalette(false)).toBe(SHOP_PAGE_BUTTON_DISABLED);
+  });
+  it('two palettes differ on every field', () => {
+    expect(SHOP_PAGE_BUTTON_ENABLED.fillColor).not.toBe(SHOP_PAGE_BUTTON_DISABLED.fillColor);
+    expect(SHOP_PAGE_BUTTON_ENABLED.strokeColor).not.toBe(SHOP_PAGE_BUTTON_DISABLED.strokeColor);
+    expect(SHOP_PAGE_BUTTON_ENABLED.textColor).not.toBe(SHOP_PAGE_BUTTON_DISABLED.textColor);
   });
 });

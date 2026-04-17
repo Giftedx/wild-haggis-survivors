@@ -5,6 +5,8 @@ import {
   resolveShopUpgradeRowState,
   resolveShopPipStyle,
   resolveShopBuyButtonPalette,
+  resolveShopPageButtonPalette,
+  SHOP_PAGE_BUTTON_HOVER_FILL,
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { COLORS } from '../config';
@@ -316,25 +318,23 @@ export class ShopScene extends Phaser.Scene {
     enabled: boolean,
     onClick: () => void
   ): void {
-    const fill = enabled ? 0x24314f : 0x1b2230;
-    const stroke = enabled ? 0x698ac2 : 0x343c4b;
-    const textColor = enabled ? '#d6e3ff' : '#6a7384';
+    const pageBtnStyle = resolveShopPageButtonPalette(enabled);
     const button = this.add
-      .rectangle(x, y, 116, 34, fill, 1)
-      .setStrokeStyle(1, stroke, 1)
+      .rectangle(x, y, 116, 34, pageBtnStyle.fillColor, 1)
+      .setStrokeStyle(1, pageBtnStyle.strokeColor, 1)
       .setInteractive({ useHandCursor: enabled });
     const text = this.add
       .text(x, y, label, {
         fontFamily: 'monospace',
         fontSize: '13px',
-        color: textColor,
+        color: pageBtnStyle.textColor,
         fontStyle: 'bold',
       })
       .setOrigin(0.5);
 
     if (enabled) {
-      button.on('pointerover', () => button.setFillStyle(0x304269));
-      button.on('pointerout', () => button.setFillStyle(fill));
+      button.on('pointerover', () => button.setFillStyle(SHOP_PAGE_BUTTON_HOVER_FILL));
+      button.on('pointerout', () => button.setFillStyle(pageBtnStyle.fillColor));
       button.on('pointerdown', onClick);
     }
 

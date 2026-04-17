@@ -63,3 +63,28 @@ export const SHOP_BUY_UNAFFORDABLE: ShopBuyButtonPalette = {
 export function resolveShopBuyButtonPalette(canAfford: boolean): ShopBuyButtonPalette {
   return canAfford ? SHOP_BUY_AFFORDABLE : SHOP_BUY_UNAFFORDABLE;
 }
+
+/**
+ * Page-nav button palette — enabled + hover-accent, or a dim
+ * "greyed out" look when the button is the current-edge (prev on
+ * page 0 / next on last page). Mirrors the 3-field buy-button
+ * pattern so visual style stays consistent.
+ */
+export interface ShopPageButtonPalette {
+  fillColor: number;
+  strokeColor: number;
+  textColor: string;
+}
+
+export const SHOP_PAGE_BUTTON_ENABLED: ShopPageButtonPalette = {
+  fillColor: 0x24314f, strokeColor: 0x698ac2, textColor: '#d6e3ff',
+};
+export const SHOP_PAGE_BUTTON_DISABLED: ShopPageButtonPalette = {
+  fillColor: 0x1b2230, strokeColor: 0x343c4b, textColor: '#6a7384',
+};
+/** Hover-accent fill for enabled page buttons. */
+export const SHOP_PAGE_BUTTON_HOVER_FILL = 0x304269;
+
+export function resolveShopPageButtonPalette(enabled: boolean): ShopPageButtonPalette {
+  return enabled ? SHOP_PAGE_BUTTON_ENABLED : SHOP_PAGE_BUTTON_DISABLED;
+}
