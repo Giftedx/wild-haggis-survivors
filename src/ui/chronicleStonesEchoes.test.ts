@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   computeStandingStonesStats,
   formatAncestralEchoesLine,
+  formatPostBellLine,
   formatStandingStonesLine,
 } from './chronicleAggregates';
 import { createDefaultSave, migrateSave, type SaveData } from '../utils/save';
@@ -97,6 +98,29 @@ describe('formatStandingStonesLine', () => {
       favouriteBoon: null,
     });
     expect(line.toLowerCase()).not.toContain('favourite');
+  });
+});
+
+describe('formatPostBellLine', () => {
+  it('returns empty string when bestEndlessSeconds is 0 / undefined', () => {
+    expect(formatPostBellLine(makeSave())).toBe('');
+    expect(formatPostBellLine(makeSave({ bestEndlessSeconds: 0 }))).toBe('');
+  });
+
+  it('returns empty string for negative values (defensive)', () => {
+    expect(formatPostBellLine(makeSave({ bestEndlessSeconds: -5 }))).toBe('');
+  });
+
+  it('formats "M:SS" with zero-padded seconds', () => {
+    expect(formatPostBellLine(makeSave({ bestEndlessSeconds: 65 }))).toBe('🔔 Past the bell — best 1:05');
+  });
+
+  it('handles sub-minute durations', () => {
+    expect(formatPostBellLine(makeSave({ bestEndlessSeconds: 7 }))).toBe('🔔 Past the bell — best 0:07');
+  });
+
+  it('handles long Post-Bell streaks (multi-minute)', () => {
+    expect(formatPostBellLine(makeSave({ bestEndlessSeconds: 645 }))).toBe('🔔 Past the bell — best 10:45');
   });
 });
 

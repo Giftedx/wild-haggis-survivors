@@ -22,6 +22,7 @@ import {
   formatMoorRoadStatus,
   formatStandingStonesLine,
   formatAncestralEchoesLine,
+  formatPostBellLine,
   computeStandingStonesStats,
   formatRelativeTime,
   formatRouteBreadcrumb,
@@ -205,8 +206,10 @@ export class ChronicleScene extends Phaser.Scene {
     const stonesSection = stonesLine ? `\n${stonesLine}` : '';
     const echoesLine = formatAncestralEchoesLine(save);
     const echoesSection = echoesLine ? `\n${echoesLine}` : '';
+    const postBellLine = formatPostBellLine(save);
+    const postBellSection = postBellLine ? `\n${postBellLine}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection;
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection;
     this.add
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace', fontSize: '12px', color: '#c4cdd8', align: 'center', lineSpacing: 4,

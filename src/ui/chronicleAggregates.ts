@@ -547,3 +547,16 @@ export function formatAncestralEchoesLine(save: SaveData): string {
   if (n === 0) return '';
   return `⟡ Echoes touched: ${n}`;
 }
+
+/**
+ * Single-line Chronicle readout for the longest Post-Bell run — the
+ * extra survival window after the Taxman is felled. Blank when the
+ * player has never gone past the bell. Time formatted as "M:SS".
+ */
+export function formatPostBellLine(save: SaveData): string {
+  const sec = save.bestEndlessSeconds ?? 0;
+  if (sec <= 0) return '';
+  const mins = Math.floor(sec / 60);
+  const secs = Math.floor(sec % 60).toString().padStart(2, '0');
+  return `🔔 Past the bell — best ${mins}:${secs}`;
+}
