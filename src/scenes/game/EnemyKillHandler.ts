@@ -27,6 +27,8 @@ import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
 import { dispatchActComplete } from './dispatchActComplete';
+import { formatSpeedrunTime } from '../../utils/formatSpeedrunTime';
+import { getSettingsManager } from '../../core/SettingsManager';
 import {
   healthOrbDropRate,
   healthOrbAmount,
@@ -211,6 +213,17 @@ export class EnemyKillHandler {
       const bossToast =
         bossKillText !== bossKillKey ? bossKillText : t('ui.game.boss_killed_generic');
       juice.showToast(bossToast, '#ffdd44');
+
+      // H1 speedrun split — when the toggle is on, show a brief toast with
+      // centisecond precision so speedrunners can read splits in-run without
+      // a separate widget. Cheap lookup; no new run-state plumbing.
+      if (getSettingsManager().load().speedrunTimerVisible === true) {
+        const splitSec = spawn.getGameTimeSec();
+        juice.showToast(
+          t('ui.hud.speedrun_split', { time: formatSpeedrunTime(splitSec) }),
+          '#d4a017',
+        );
+      }
 
       // Trophy Hunter — % max HP heal on boss kill.
       const healFrac = player.getBossHealFrac();

@@ -266,6 +266,7 @@ export const SCS_STRINGS: LocaleTree = {
       combo_bonus: ' · +{pct}% wallop',
       level_fmt: 'Lv {level}',
       wave_objective: 'Wave {wave}  •  {goal}',
+      speedrun_split: 'SPLIT: {time}',
       goal_countdown: 'Goal {time}',
       goal_finale: 'Finale',
       act_chip: '— Act {act} —',

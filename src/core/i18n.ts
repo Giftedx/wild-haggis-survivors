@@ -416,6 +416,8 @@ export const EN_STRINGS: LocaleTree = {
       combo_bonus: ' · +{pct}% wallop',
       level_fmt: 'Lv {level}',
       wave_objective: 'Wave {wave}  •  {goal}',
+      /** H1 speedrun split toast fired on boss kills when the timer is on. */
+      speedrun_split: 'SPLIT: {time}',
       goal_countdown: 'Goal {time}',
       goal_finale: 'Finale',
       /** W2 Moor Road chip — shown under the curse chip once the player has cleared an act. */
