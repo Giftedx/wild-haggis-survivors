@@ -4,6 +4,8 @@ import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
 import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
+import { loadSave } from '../utils/save';
+import { listCursesBested } from '../ui/chronicleAggregates';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -68,6 +70,11 @@ export class CurseScene extends Phaser.Scene {
     const tileH = 340;
     const tileY = 260;
 
+    // BESTED markers — surface curse-roster progress at the point of
+    // choice so players can see at-a-glance which curses they've yet
+    // to beat. Reads gameplay save's runHistory (capped FIFO window).
+    const besteredKeys = listCursesBested(loadSave().runHistory);
+
     CURSES.forEach((curse, i) => {
       const cx = gridMargin + tileW / 2 + i * (tileW + gutter);
       this.drawCurseTile(cx, tileY, tileW, tileH, uiScale, {
@@ -76,6 +83,7 @@ export class CurseScene extends Phaser.Scene {
         goldPct: curse.goldBonusPct,
         pickLabelKey: 'ui.curseScene.pick',
         accentColor: 0xb35287,
+        bested: besteredKeys.has(curse.key),
         onPick: () => this.commitCurse(curse.key),
       });
     });
@@ -89,6 +97,7 @@ export class CurseScene extends Phaser.Scene {
       goldPct: null,
       pickLabelKey: 'ui.curseScene.pick_none',
       accentColor: 0x4a6a9e,
+      bested: false,
       onPick: () => this.commitCurse(null),
     });
 
@@ -143,13 +152,36 @@ export class CurseScene extends Phaser.Scene {
       goldPct: number | null;
       pickLabelKey: string;
       accentColor: number;
+      /** True when the player has already won at least one run with this curse. */
+      bested: boolean;
       onPick: () => void;
     },
   ): void {
-    // Tile background
+    // Tile background — bested tiles get a slightly warmer fill + brighter
+    // border so the conquered ones read as a settled "trophy" state.
+    const fillColor = opts.bested ? 0x1a1326 : 0x10172a;
+    const borderAlpha = opts.bested ? 1 : 0.85;
     this.add
-      .rectangle(cx, cy, w, h, 0x10172a, 0.92)
-      .setStrokeStyle(2, opts.accentColor, 0.85);
+      .rectangle(cx, cy, w, h, fillColor, 0.92)
+      .setStrokeStyle(2, opts.accentColor, borderAlpha);
+
+    // BESTED ribbon — top-right corner, only on tiles the player has won.
+    if (opts.bested) {
+      const badgeX = cx + w / 2 - 6;
+      const badgeY = cy - h / 2 + 6;
+      this.add
+        .text(badgeX, badgeY, t('ui.curseScene.bested_badge'), {
+          fontFamily: 'monospace',
+          fontSize: '9px',
+          color: '#f7d27a',
+          fontStyle: 'bold',
+          backgroundColor: '#3a2c14',
+          padding: { left: 4, right: 4, top: 2, bottom: 2 },
+        })
+        .setOrigin(1, 0)
+        .setScale(uiScale)
+        .setDepth(2);
+    }
 
     // Title
     this.add

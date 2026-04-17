@@ -75,6 +75,8 @@ export const EN_STRINGS: LocaleTree = {
       /** Button on the "no curse" tile. */
       pick_none: 'START CLEAN',
       back: 'BACK',
+      /** Corner ribbon — shown on tiles whose curse the player has bested at least once. */
+      bested_badge: '✓ BESTED',
     },
     chronicle: {
       // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──
@@ -1817,6 +1819,7 @@ export const SCS_STRINGS: LocaleTree = {
       pick: 'TAKE IT ON',
       pick_none: 'STAIRT CLEAN',
       back: 'BACK',
+      bested_badge: '✓ BESTED',
     },
     chronicle: {
       title: 'THA HERD CHRONICLE',

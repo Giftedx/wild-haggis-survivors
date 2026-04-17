@@ -586,6 +586,21 @@ export interface CurseLifetimeStats {
   distinctCursesAttempted: number;
 }
 
+/**
+ * Returns the set of distinct curse keys the player has won at least
+ * once with. Used by CurseScene to mark bested tiles so the player
+ * can see at-a-glance which curses they still owe a victory.
+ */
+export function listCursesBested(history: readonly RunHistoryEntry[]): Set<string> {
+  const bested = new Set<string>();
+  for (const e of history) {
+    if (!e.isVictory) continue;
+    if (typeof e.curseKey !== 'string' || e.curseKey.length === 0) continue;
+    bested.add(e.curseKey);
+  }
+  return bested;
+}
+
 export function computeCurseStats(history: readonly RunHistoryEntry[]): CurseLifetimeStats {
   const bested = new Set<string>();
   const attempted = new Set<string>();

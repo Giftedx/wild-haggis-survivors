@@ -7,6 +7,7 @@ import {
   formatHearthBeatsLine,
   formatPostBellLine,
   formatStandingStonesLine,
+  listCursesBested,
 } from './chronicleAggregates';
 import { createDefaultSave, migrateSave, type RunHistoryEntry, type SaveData } from '../utils/save';
 
@@ -300,5 +301,31 @@ describe('formatCurseStatsLine', () => {
       0,
     );
     expect(line).toContain('0 / 1');
+  });
+});
+
+describe('listCursesBested', () => {
+  it('returns an empty set when no cursed wins exist', () => {
+    expect(listCursesBested([])).toEqual(new Set());
+    expect(
+      listCursesBested([
+        makeEntry({ curseKey: 'heavy_legs', isVictory: false }),
+        makeEntry({ curseKey: undefined, isVictory: true }),
+      ]),
+    ).toEqual(new Set());
+  });
+
+  it('collects every distinct curse the player has won at least once', () => {
+    const set = listCursesBested([
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+      makeEntry({ curseKey: 'thin_hide', isVictory: true }),
+      makeEntry({ curseKey: 'heavy_legs', isVictory: true }),
+      makeEntry({ curseKey: 'restless_spirits', isVictory: false }),
+    ]);
+    expect(set).toEqual(new Set(['heavy_legs', 'thin_hide']));
+  });
+
+  it('skips empty curseKey strings', () => {
+    expect(listCursesBested([makeEntry({ curseKey: '', isVictory: true })])).toEqual(new Set());
   });
 });
