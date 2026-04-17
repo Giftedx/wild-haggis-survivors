@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
-import { gamepadStickToMove, mergeMoveVectors } from './inputMath';
+import { clampVectorLength, gamepadStickToMove, mergeMoveVectors } from './inputMath';
 
 const GAMEPAD_MOVE_DEADZONE = 0.22;
 
@@ -129,11 +129,7 @@ export class InputManager {
       if (this.wasd.S.isDown) y += 1;
     }
 
-    const len = Math.hypot(x, y);
-    if (len > 0) {
-      return { x: x / len, y: y / len };
-    }
-    return { x: 0, y: 0 };
+    return clampVectorLength(x, y, 1);
   }
 
   private getGamepadMoveVector(): { x: number; y: number } {
@@ -152,10 +148,8 @@ export class InputManager {
     if (pad.right) dx += 1;
     if (pad.up) dy -= 1;
     if (pad.down) dy += 1;
-    const dlen = Math.hypot(dx, dy);
-    if (dlen > 0) {
-      return { x: dx / dlen, y: dy / dlen };
-    }
+    const dpad = clampVectorLength(dx, dy, 1);
+    if (dpad.x !== 0 || dpad.y !== 0) return dpad;
 
     // Right stick as look/move fallback (Steam Deck / twin-stick comfort)
     lx = pad.rightStick.x;
@@ -166,7 +160,7 @@ export class InputManager {
   private getJoystickDirection(): { x: number; y: number } {
     const dx = this.joystickCurrent.x - this.joystickOrigin.x;
     const dy = this.joystickCurrent.y - this.joystickOrigin.y;
-    const dist = Math.sqrt(dx * dx + dy * dy);
+    const dist = Math.hypot(dx, dy);
 
     if (dist < this.JOYSTICK_DEAD_ZONE) {
       return { x: 0, y: 0 };
@@ -230,7 +224,7 @@ export class InputManager {
         if (this.joystickThumb) {
           const dx = pointer.x - this.joystickOrigin.x;
           const dy = pointer.y - this.joystickOrigin.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+          const dist = Math.hypot(dx, dy);
           if (dist > this.JOYSTICK_MAX_DIST) {
             const scale = this.JOYSTICK_MAX_DIST / dist;
             this.joystickThumb.setPosition(
