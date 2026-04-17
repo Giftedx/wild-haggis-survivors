@@ -149,4 +149,46 @@ describe('AnalyticsManager', () => {
     globalEventBus.emit('TUTORIAL_COMPLETED', {});
     expect(provider.logEvent).toHaveBeenCalledWith('tutorial_completed', {});
   });
+
+  it('logs route_picked when GLOBAL_ROUTE_PICKED fires and telemetry opt-in is on', () => {
+    globalEventBus.emit('GLOBAL_ROUTE_PICKED', {
+      slot: 'A',
+      routeKey: 'up_the_brae',
+      atGameTimeSec: 182,
+      defaultedBySetting: false,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'route_picked',
+      {
+        slot: 'A',
+        routeKey: 'up_the_brae',
+        atGameTimeSec: 182,
+        defaultedBySetting: false,
+      },
+    );
+  });
+
+  it('forwards the defaultedBySetting flag so skip-rate can be computed', () => {
+    globalEventBus.emit('GLOBAL_ROUTE_PICKED', {
+      slot: 'B',
+      routeKey: 'buckie_pitstop',
+      atGameTimeSec: 420,
+      defaultedBySetting: true,
+    });
+    expect(provider.logEvent).toHaveBeenCalledWith(
+      'route_picked',
+      expect.objectContaining({ defaultedBySetting: true, slot: 'B' }),
+    );
+  });
+
+  it('skips route_picked when telemetry opt-in is off', () => {
+    settingsLoadMock.mockReturnValue({ telemetryOptIn: false });
+    globalEventBus.emit('GLOBAL_ROUTE_PICKED', {
+      slot: 'A',
+      routeKey: 'round_the_loch',
+      atGameTimeSec: 200,
+      defaultedBySetting: false,
+    });
+    expect(provider.logEvent).not.toHaveBeenCalled();
+  });
 });

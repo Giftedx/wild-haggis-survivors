@@ -93,6 +93,20 @@ export class AnalyticsManager {
         });
       })
     );
+
+    // W2 Moor Road — route pick telemetry. Feeds the route-monotony and
+    // skip-rate kill-criteria recorded in the W2 flagship ship-gate.
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_ROUTE_PICKED', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('route_picked', {
+          slot: p.slot,
+          routeKey: p.routeKey,
+          atGameTimeSec: p.atGameTimeSec,
+          defaultedBySetting: p.defaultedBySetting,
+        });
+      })
+    );
   }
 
   stopBusHandlers(): void {

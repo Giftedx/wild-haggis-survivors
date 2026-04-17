@@ -1,5 +1,6 @@
 import type { EliteAffixId } from '../data/eliteAffixes';
 import type { BiomeId } from '../data/biomes';
+import type { PickerSlot, RouteKey } from '../data/routes';
 
 export type GlobalEnemyKilledPayload = {
   enemyKey: string;
@@ -47,6 +48,19 @@ export type CodexFirstCullPayload = {
   enemyKey: string;
 };
 
+/**
+ * W2 Moor Road — a between-act route was finalised (either player pick or
+ * Skip-Intermissions auto-default). Feeds analytics so the route-monotony
+ * and skip-rate kill-criteria can be verified against live session data.
+ */
+export type GlobalRoutePickedPayload = {
+  slot: PickerSlot;
+  routeKey: RouteKey;
+  atGameTimeSec: number;
+  /** True when Skip Intermissions was on and the slot auto-resolved. */
+  defaultedBySetting: boolean;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -55,6 +69,7 @@ export type GlobalEvents = {
   GLOBAL_WEAPON_EVOLVED: GlobalWeaponEvolvedPayload;
   TUTORIAL_COMPLETED: TutorialCompletedPayload;
   GLOBAL_MOOR_MOMENT: GlobalMoorMomentPayload;
+  GLOBAL_ROUTE_PICKED: GlobalRoutePickedPayload;
   CODEX_FIRST_CULL: CodexFirstCullPayload;
   bossEnraged: string;
 };

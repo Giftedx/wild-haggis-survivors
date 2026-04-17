@@ -1237,6 +1237,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       );
       route.onResume?.(this.buildRouteResumeContext());
       this.timeManager.release('ACT_INTERMISSION');
+      // Telemetry fan-out — AnalyticsManager logs `route_picked` (opt-in
+      // only). Shape mirrors `RoutePick` so route-monotony and skip-rate
+      // kill-criteria can be computed directly from portal stats.
+      globalEventBus.emit('GLOBAL_ROUTE_PICKED', {
+        slot: pick.slot,
+        routeKey: pick.routeKey,
+        atGameTimeSec: pick.atGameTimeSec,
+        defaultedBySetting: pick.defaultedBySetting,
+      });
     };
 
     if (settings.skipActIntermissions) {
