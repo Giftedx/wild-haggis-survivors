@@ -7,7 +7,6 @@ import {
   setLocale,
   t,
   type LocaleKey,
-  type LocaleTree,
 } from './i18n';
 
 /**
@@ -29,8 +28,20 @@ describe('W18 locale scaffolding', () => {
     expect(getLocale()).toBe('en');
   });
 
-  it('ships Scots as an empty overlay (no-op scaffolding)', () => {
-    expect(SCS_STRINGS).toEqual({});
+  it('ships Scots as a non-empty overlay (W18 Phase B content)', () => {
+    expect(Object.keys(SCS_STRINGS).length).toBeGreaterThan(0);
+    // Spot-check: a high-visibility key is overridden in Scots.
+    setLocale('scs');
+    expect(t('ui.menu.start_run')).toBe('GAUN');
+    expect(t('ui.curseScene.title')).toBe('CURSE O\' THA MOOR');
+    expect(t('bossWarning.gordon')).toContain('mairchin');
+  });
+
+  it('scs overlay still falls back to English for keys it does not define', () => {
+    setLocale('scs');
+    // Pick a key the overlay does not currently translate (a passive name).
+    const s = t('ui.passive.pause_short.sporran');
+    expect(s).toBe('Sporran (+15% Luck)');
   });
 
   it('LOCALES exposes both keys', () => {
@@ -39,29 +50,22 @@ describe('W18 locale scaffolding', () => {
 
   it('scs locale falls back to English for undefined keys', () => {
     setLocale('scs');
-    // A known en key that scs does not override.
-    const s = t('ui.menu.start_run');
-    expect(s).toBe('START RUN');
-    expect(s).not.toBe('ui.menu.start_run');
+    // A known en key that scs does not currently override.
+    const s = t('ui.passive.hud_abbrev.sporran');
+    expect(s).toBe('SPR');
+    expect(s).not.toBe('ui.passive.hud_abbrev.sporran');
   });
 
   it('scs locale uses the overlay when a key is defined', () => {
-    // Temporarily inject a scs override to verify the lookup order
-    // without shipping real translations.
-    const scs = LOCALES.scs as unknown as Record<string, unknown>;
-    const originalUi = scs.ui;
-    scs.ui = { menu: { start_run: 'GAUN' } } as unknown as LocaleTree;
-    try {
-      setLocale('scs');
-      expect(t('ui.menu.start_run')).toBe('GAUN');
-    } finally {
-      if (originalUi === undefined) delete scs.ui;
-      else scs.ui = originalUi;
-    }
+    setLocale('scs');
+    // ui.menu.start_run is defined in the Scots overlay (Phase B content).
+    expect(t('ui.menu.start_run')).toBe('GAUN');
   });
 
-  it('interpolation still works under scs with en fallback', () => {
+  it('interpolation still works under scs', () => {
     setLocale('scs');
+    // buy_kills happens to be the same template in both locales — the
+    // contract under test is that {cost} interpolation still fires.
     const s = t('ui.common.buy_kills', { cost: 500 });
     expect(s).toBe('500 culls');
   });
