@@ -368,26 +368,18 @@ export class JuiceSystem {
       // moment between the rare Glesga-patter milestones below. Uses
       // the same scene duck-call as captions (see combo_11 branch).
       if (isCeilidhPulseMoment(this.comboCount)) {
-        const sceneHooks = this.scene as unknown as {
-          getPlayer?: () => {
-            grantCeilidhChainMagnet: (f: number, d: number) => void;
-            x: number;
-            y: number;
-          };
-          getTutorialSystem?: () => { notifyCeilidhChainIfFirst: () => void };
-        };
-        const pl = sceneHooks.getPlayer?.();
-        pl?.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
+        const pl = this.scene.getPlayer();
+        pl.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');
         this.showToast(msg, '#a0d8a0');
         this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
         audio.playCeilidhPulse();
-        sceneHooks.getTutorialSystem?.().notifyCeilidhChainIfFirst();
+        this.scene.getTutorialSystem().notifyCeilidhChainIfFirst();
         bumpCeilidhPulsesLifetime();
         // Expanding green ring sells the magnet pulse — the stat boost was
         // otherwise invisible, just a silent 2s widening of pickup range.
         // Gated on reduceParticles so the low-FX path stays clean.
-        if (pl && !this.settings.load().reduceParticles) {
+        if (!this.settings.load().reduceParticles) {
           const ring = this.scene.add
             .circle(pl.x, pl.y, 12, 0xa0d8a0, 0.45)
             .setDepth(55);
