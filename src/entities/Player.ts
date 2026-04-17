@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
+import type { IInput } from '../utils/iInput';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { softBoundarySteer } from './softBoundarySteer';
 import { playerGrowthScale } from './playerGrowthScale';
@@ -21,7 +22,7 @@ import type { ISceneContext } from '../core/ISceneContext';
  * while clockwise circling feels natural.
  */
 export class Player extends Phaser.Physics.Arcade.Sprite {
-  private inputManager: InputManager;
+  private inputManager: IInput;
   private time: TimeManager;
   private subs = new SubscriptionBag();
   /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
@@ -124,7 +125,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     y: number,
     textureKey: string = 'haggis_classic',
     timeManager: TimeManager,
-    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus' | 'hpRegen' | 'critBonus' | 'cooldownReduction' | 'xpGainBonus' | 'armorBonus' | 'dashCooldownReduction'>
+    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus' | 'hpRegen' | 'critBonus' | 'cooldownReduction' | 'xpGainBonus' | 'armorBonus' | 'dashCooldownReduction'>,
+    /**
+     * T1 replay — optional input source. Defaults to `new InputManager(scene)`
+     * for live play. GameScene injects a `ReplayInput` when replay mode is
+     * `play`, which drives Player from a recorded frame stream instead of
+     * live keyboard/gamepad. The injected source owns its own teardown via
+     * the `IInput.destroy()` contract.
+     */
+    inputSource?: IInput,
   ) {
     if (!timeManager) {
       throw new Error('Player requires a TimeManager (strict DI).');
@@ -175,7 +184,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // default to depth 0).
     this.shadow = scene.add.image(x, y + 22, 'entity_shadow').setDepth(-2).setScale(1.1);
 
-    this.inputManager = new InputManager(scene);
+    this.inputManager = inputSource ?? new InputManager(scene);
     this.time = timeManager;
   }
 

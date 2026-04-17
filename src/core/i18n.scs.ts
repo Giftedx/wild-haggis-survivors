@@ -277,6 +277,11 @@ export const SCS_STRINGS: LocaleTree = {
       dash_ready: 'ready',
       curse_chip: 'Curse: {name} (+{pct}% gold)',
     },
+    replay: {
+      watching_toast: 'Watchin replay · recorded run',
+      chronicle_watch_tooltip: 'Watch this run',
+      chronicle_watch_glyph: '▶',
+    },
     pause: {
       title: 'STAPPED',
       quip_1: 'Awa an pit tha kettle on.',

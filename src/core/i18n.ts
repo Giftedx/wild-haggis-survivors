@@ -434,6 +434,15 @@ export const EN_STRINGS: LocaleTree = {
       /** Shown under the wave objective when the run started with a curse. */
       curse_chip: 'Curse: {name} (+{pct}% gold)',
     },
+    /** T1 replay playback UI. */
+    replay: {
+      /** Toast shown at the start of a replay so it's clear this isn't a live run. */
+      watching_toast: 'Watching replay · recorded run',
+      /** Tooltip on the Chronicle "watch" button. */
+      chronicle_watch_tooltip: 'Watch this run',
+      /** Glyph for the Chronicle watch button. Kept separate so localisations can swap it. */
+      chronicle_watch_glyph: '▶',
+    },
     /** Gold elite modifiers — names for future tooltips / codex. */
     elite_affix: {
       swift: { name: 'Swift', blurb: 'Faster feet — harder to shake.' },

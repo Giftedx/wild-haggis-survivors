@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
+import type { IInput } from './iInput';
 import { clampVectorLength, gamepadStickToMove, mergeMoveVectors } from './inputMath';
 
 const GAMEPAD_MOVE_DEADZONE = 0.22;
@@ -9,7 +10,7 @@ const GAMEPAD_MOVE_DEADZONE = 0.22;
  * Movement is merged with max length 1. Dash: Space, gamepad South / RT, right-half tap (touch).
  * Pause: ESC/P handled in GameScene; gamepad Start/Options (`consumeMenuPausePressed`) polled there too.
  */
-export class InputManager {
+export class InputManager implements IInput {
   private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
   private wasd: Record<string, Phaser.Input.Keyboard.Key> | undefined;
   private spaceKey: Phaser.Input.Keyboard.Key | undefined;

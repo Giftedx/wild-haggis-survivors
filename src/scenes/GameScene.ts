@@ -24,7 +24,10 @@ import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
 import { ReplayRecorder } from '../replay/ReplayRecorder';
+import { ReplayInput } from '../replay/ReplayInput';
+import type { ReplayBlob } from '../replay/replayBlob';
 import { resolveReplayMode } from '../replay/replayConfig';
+import { parseGameSceneInitData } from './gameSceneInitData';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
@@ -121,6 +124,14 @@ export interface GameSceneInitData {
    * conditions).
    */
   forceVariantKey?: string;
+  /**
+   * T1 replay playback — when present, GameScene enters playback mode:
+   * the blob's seed + variant override `seed` / `forceVariantKey`, Player
+   * is built with a `ReplayInput` driver, recording is disabled, and the
+   * run writes nothing to history. Exiting the replay returns to the
+   * Chronicle (not MainMenu). v1 limitations documented in ADR-0002.
+   */
+  replay?: import('../replay/replayBlob').ReplayBlob;
 }
 
 export class GameScene extends Phaser.Scene implements ISceneContext {
@@ -176,6 +187,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * finalize/pushFrame calls are guarded by a null-check.
    */
   private replayRecorder: ReplayRecorder | null = null;
+  /**
+   * T1 replay playback driver. Non-null only during a replay run. Owns
+   * its own teardown via `IInput.destroy`; GameScene reset clears the
+   * reference but doesn't force a second destroy.
+   */
+  private replayInput: ReplayInput | null = null;
+  /** Replay blob captured from init data, consumed in create(). */
+  private pendingReplay: ReplayBlob | null = null;
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
   /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */
@@ -285,6 +304,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * any systems are constructed.
    */
   private resetTransientRunState(): void {
+    // T1 replay — drop the previous run's playback driver before we
+    // build the next one. Replay inputs hold no live listeners so
+    // skipping destroy() here is safe; we still null the ref to let GC
+    // reclaim the frame array.
+    this.replayInput?.destroy();
+    this.replayInput = null;
     this.iFrameController.reset();
     this.pauseMenu?.close();
     this.pauseMenu = null;
@@ -328,13 +353,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   init(data?: GameSceneInitData): void {
-    // Accept the optional seed + daily flag from `scene.start('Game', data)`.
-    // Phaser re-runs init on every scene.start, so this is the right hook
-    // for per-run entry parameters. create() promotes these into the run-
-    // scoped RNG and daily-tracking fields.
-    this.pendingRunSeed = typeof data?.seed === 'number' ? data.seed : null;
-    this.runIsDaily = Boolean(data?.isDaily);
-    this.pendingForceVariantKey = typeof data?.forceVariantKey === 'string' ? data.forceVariantKey : null;
+    // Parsing lives in a pure helper so the payload contract is testable
+    // without booting Phaser (see gameSceneInitData.test.ts). Precedence
+    // rules: valid `replay` blob overrides any seed / variant the caller
+    // also supplied, and forces `isDaily` off.
+    const resolved = parseGameSceneInitData(data);
+    this.pendingRunSeed = resolved.pendingRunSeed;
+    this.runIsDaily = resolved.runIsDaily;
+    this.pendingForceVariantKey = resolved.pendingForceVariantKey;
+    this.pendingReplay = resolved.pendingReplay;
   }
 
   create(): void {
@@ -396,17 +423,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
 
-    // T1 replay — construct the recorder exactly once per run, after seed
-    // + variant are resolved. `null` when record mode is off so the update
-    // tap is a single cheap null-check per frame.
-    this.replayRecorder =
-      resolveReplayMode() === 'record'
-        ? new ReplayRecorder({
-            seed: this.runRng.seed,
-            variantKey: selectedVariant.key,
-            build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
-          })
-        : null;
+    // T1 replay — mutually exclusive modes:
+    //   playback: `pendingReplay` was set by init(). Build a ReplayInput
+    //     from the blob and disable recording.
+    //   record: `resolveReplayMode() === 'record'` and no blob → build a
+    //     recorder; ReplayInput stays null.
+    //   off: both null.
+    // A single null-check per tick (recorder or replay input) keeps the
+    // update-path cheap for the default "off" case. Watching-toast is
+    // queued and fires later, once JuiceSystem is constructed.
+    this.replayInput = null;
+    if (this.pendingReplay) {
+      this.replayInput = new ReplayInput(this.pendingReplay);
+      this.pendingReplay = null;
+      this.replayRecorder = null;
+    } else {
+      this.replayRecorder =
+        resolveReplayMode() === 'record'
+          ? new ReplayRecorder({
+              seed: this.runRng.seed,
+              variantKey: selectedVariant.key,
+              build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
+            })
+          : null;
+    }
 
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
@@ -447,7 +487,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       spawnPy,
       selectedVariant.textureKey,
       this.timeManager,
-      composedStats
+      composedStats,
+      this.replayInput ?? undefined,
     );
 
     // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
@@ -814,7 +855,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
       buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
       recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
-      recordRun: (s, ctx) => recordRun(s, ctx),
+      recordRun: (s, ctx) =>
+        // T1 replay playback — don't pollute run history with a replay
+        // run. The Chronicle already has the original entry; re-adding
+        // would double-count the attempt and drift achievement progress.
+        this.replayInput
+          ? { save: loadSave(), goldEarned: 0, newlyUnlockedVariants: [] }
+          : recordRun(s, ctx),
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
       onActComplete: (actN) => this.launchActIntermission(actN),
       isIronmoorRun: () => this.activeIronmoorRun,
@@ -822,6 +869,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
+    // T1 replay — fire the watching-toast once JuiceSystem exists. Queued
+    // above at init-time, emitted here so the toast actually renders.
+    if (this.replayInput) {
+      this.juice.showToast(t('ui.replay.watching_toast'), '#88ccff');
+    }
     this.eventBusDispose?.();
     this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });
     this.edgeIndicators = new EdgeIndicators(this);
@@ -992,6 +1044,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private updateInner(delta: number): void {
+    // T1 replay playback — advance the recorded cursor each tick before
+    // Player reads input. When the blob is exhausted, return to Chronicle
+    // so the run doesn't grind on stale direction state forever.
+    if (this.replayInput) {
+      const next = this.replayInput.advanceFrame();
+      if (next === null) {
+        this.scene.start('Chronicle');
+        return;
+      }
+    }
+
     // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
     if (this.player.consumePauseMenuEdge()) {
       this.toggleUiPause();

@@ -119,3 +119,75 @@ SpawnSystem determinism fixes stay — they're value independent of replay
 Save v5 migration is no-op (v4 → v5 just bumps the version integer), so
 downgrading the schema constant back to 4 and re-running `migrateSave` is
 a one-line safe revert.
+
+---
+
+## Addendum — Phase 2 (2026-04-18): best-effort playback wired
+
+Phase 1 (record side, 2026-04-17) captured the blob but shipped no way
+to watch it. Phase 2 added the playback path without waiting for the
+fixed-step physics migration, on the understanding that v1 playback is
+**best-effort**: drift is expected and accepted.
+
+### What landed
+
+- `src/utils/iInput.ts` — `IInput` interface (5-method read surface).
+  `InputManager` and `ReplayInput` both declare `implements IInput`.
+- `Player` constructor gains an optional trailing `inputSource?: IInput`
+  parameter. Default still constructs `new InputManager(scene)` — no
+  behaviour change for live play.
+- `GameSceneInitData.replay?: ReplayBlob`. When present, `init()`
+  overrides seed / variant from the blob, forces `isDaily = false`, and
+  stashes the blob on `pendingReplay`.
+- GameScene `create()` branches on the blob: record and playback are
+  mutually exclusive. Playback constructs `ReplayInput`, passes it into
+  Player, skips the recorder, and fires an `ui.replay.watching_toast`
+  toast so the player knows the run is recorded.
+- Each `update()` tick advances the blob cursor before Player reads
+  input. Blob exhaustion → `scene.start('Chronicle')`; no run-history
+  write, no XP/gold persistence.
+- The `recordRun` hook short-circuits during playback so `runHistory`
+  and daily/Ironmoor leaderboards stay untouched.
+- `ChronicleScene` renders a small "▶" button at `x = width - 195` for
+  every entry whose `replay` field passes `isReplayBlob`. Click launches
+  `scene.start('Game', { replay })`.
+
+### Known v1 limitations (drift sources)
+
+1. **Variable Phaser delta.** Arcade physics has no `fps` / `fixedStep`
+   set in `src/main.ts`. Playback receives whatever `dtMs` the recorder
+   captured, but Phaser's RAF delivers its own variable delta underneath.
+   Cumulative divergence after ~seconds is the norm.
+2. **Curse effects not bundled.** The blob captures `seed + variantKey`
+   but not the active curse. Chronicle → Watch clears the pending-curse
+   singleton, so playback runs curse-free. Runs that bore a curse will
+   diverge immediately.
+3. **Moor Road picker state not bundled.** If the original run picked
+   routes (act 1 / 2), the replayed run will hit the act intermissions
+   as if it were a fresh attempt — not the recorded pick.
+4. **`Math.random()` in cosmetic paths.** Per `rng.ts` policy, VFX keeps
+   `Math.random()`. Playback visuals won't match the original run
+   frame-for-frame. Gameplay state is what the record captures.
+5. **Permanent upgrades + settings applied live.** If the player has
+   spent gold since the original run, their stats differ at replay
+   time. Seed stream is identical; player sheet isn't.
+
+### What still needs to happen for byte-accurate playback
+
+1. Phaser Arcade config `fps: 60, fixedStep: true` — tradeoff analysis
+   pending (affects every system that reads `delta`).
+2. Blob v2 schema: add `curseKey?`, `routes?`, snapshot `ComposedPlayerStats`.
+3. GameScene replay branch: apply blob metadata instead of consuming
+   live curse / settings / meta-upgrades.
+4. Determinism regression test: record a known script, replay, assert
+   identical `RunHistoryContext` (sans `replay` field).
+
+These are substantial — kept out of Phase 2 on purpose. Phase 2 ships a
+visible feature; Phase 3 ships determinism.
+
+### Rollback (Phase 2 only)
+
+Revert the Phase 2 feature commits. `IInput` interface extraction stays
+because it's a good shape regardless of replay (matches the DI
+precedent in `AnalyticsManager`, `ISceneContext`). No save / schema
+changes in this phase.

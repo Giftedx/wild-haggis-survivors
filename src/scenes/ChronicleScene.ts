@@ -8,6 +8,7 @@ import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { CURSES, getCurseByKey, setPendingCurse, type CurseKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
+import { isReplayBlob, type ReplayBlob } from '../replay/replayBlob';
 import {
   buildChronicleCodex,
   computeIronmoorStats,
@@ -323,6 +324,23 @@ export class ChronicleScene extends Phaser.Scene {
     this.scene.start('Game', { seed, forceVariantKey: variantKey });
   }
 
+  /**
+   * T1 replay — launches GameScene with a recorded blob. The blob's
+   * metadata overrides any seed / variant the caller might have
+   * supplied (see `GameScene.init`). On playback end, GameScene
+   * restarts this Chronicle scene.
+   */
+  private watchReplay(replay: ReplayBlob): void {
+    audio.playClick();
+    try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+    // Replay mode ignores the curse pending singleton — the recorded
+    // modifiers are already baked into the seeded RNG stream. V1
+    // limitation: mid-run curse effects aren't perfectly reproduced,
+    // documented in ADR-0002.
+    setPendingCurse(null);
+    this.scene.start('Game', { replay });
+  }
+
   private turnPage(delta: number): void {
     const pagination = paginationState(this.history.length, this.ROWS_PER_PAGE, this.page + delta);
     if (pagination.clampedPage === this.page) return;
@@ -491,6 +509,45 @@ export class ChronicleScene extends Phaser.Scene {
           this.rerunSeed(entry.runSeed!, entry.variantKey, entry.curseKey);
         });
         this.runRowObjects.push(rerun);
+      }
+
+      // T1 replay — watch this entry's recorded run. Only appears when
+      // the entry carries a valid blob (record mode was on for the
+      // original run). Placed left of the rerun glyph so the two live
+      // together as a "revisit this run" cluster.
+      if (entry.replay && isReplayBlob(entry.replay)) {
+        const replay = entry.replay;
+        const rerunPalette = resolveRerunLinkPalette();
+        const watch = this.add
+          .text(width - 195, y, t('ui.replay.chronicle_watch_glyph'), {
+            fontFamily: 'monospace', fontSize: '14px', color: rerunPalette.idle, fontStyle: 'bold',
+          })
+          .setOrigin(1, 0.5)
+          .setScale(uiScale)
+          .setInteractive({ useHandCursor: true });
+        let watchTip: Phaser.GameObjects.Text | null = null;
+        const showWatchTip = () => {
+          watch.setColor(rerunPalette.hover);
+          if (watchTip) return;
+          watchTip = this.add.text(width - 205, y, t('ui.replay.chronicle_watch_tooltip'), {
+            fontFamily: 'monospace', fontSize: '10px', color: rerunPalette.idle, fontStyle: 'italic',
+          }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10);
+          this.runRowObjects.push(watchTip);
+        };
+        const hideWatchTip = () => {
+          watch.setColor(rerunPalette.idle);
+          if (watchTip) {
+            watchTip.destroy();
+            watchTip = null;
+          }
+        };
+        watch.on('pointerover', showWatchTip);
+        watch.on('pointerout', hideWatchTip);
+        watch.on('pointerdown', () => {
+          hideWatchTip();
+          this.watchReplay(replay);
+        });
+        this.runRowObjects.push(watch);
       }
     });
 

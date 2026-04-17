@@ -18,11 +18,12 @@
  * their edge flag on first read so a caller that polls twice still
  * sees exactly one dash / pause fire per recorded frame.
  */
+import type { IInput } from '../utils/iInput';
 import type { ReplayBlob, ReplayFrame } from './replayBlob';
 
 const DEFAULT_FRAME: ReplayFrame = { dtMs: 0, dx: 0, dy: 0, dash: false, menu: false };
 
-export class ReplayInput {
+export class ReplayInput implements IInput {
   private index = -1;
   private dashConsumed = false;
   private menuConsumed = false;
@@ -89,6 +90,26 @@ export class ReplayInput {
     if (!f.menu) return false;
     this.menuConsumed = true;
     return true;
+  }
+
+  /**
+   * Non-destructive view of the current frame's snapshot. Present so the
+   * replay source satisfies the IInput contract — record-while-playback
+   * (future ghost-chain feature) needs this path for pass-through.
+   */
+  peekReplayFrame(): { dx: number; dy: number; dash: boolean; menu: boolean } {
+    const f = this.currentFrame();
+    return {
+      dx: f.dx,
+      dy: f.dy,
+      dash: f.dash && !this.dashConsumed,
+      menu: f.menu && !this.menuConsumed,
+    };
+  }
+
+  /** No listeners to tear down — the recorded blob is inert. IInput contract. */
+  destroy(): void {
+    /* no-op */
   }
 
   private currentFrame(): ReplayFrame {
