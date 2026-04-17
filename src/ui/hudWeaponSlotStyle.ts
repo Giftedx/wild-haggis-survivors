@@ -1,3 +1,5 @@
+import { COLORS, COLORS_CSS } from '../config';
+
 /**
  * Pure 2-state style resolver for the HUD weapon slot tile.
  *
@@ -21,8 +23,8 @@ export interface HudWeaponSlotStyle {
 }
 
 export const WEAPON_SLOT_EVOLVED_LABEL = '#ffdd44';
-export const WEAPON_SLOT_NORMAL_LABEL = '#ffffff';
-export const WEAPON_SLOT_EVOLVED_STROKE = 0xddaa00;
+export const WEAPON_SLOT_NORMAL_LABEL = COLORS_CSS.WHITE;
+export const WEAPON_SLOT_EVOLVED_STROKE = COLORS.LEGENDARY;
 export const WEAPON_SLOT_DEFAULT_STROKE = 0x666666;
 
 export function resolveHudWeaponSlotStyle(
