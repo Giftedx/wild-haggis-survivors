@@ -12,6 +12,12 @@ import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import { targetHpBarColor, packRgbColor } from './hudHpBarColor';
 import { resolveWaveLabel } from './hudWaveLabel';
 import { shouldTriggerXpLevelUpFlash } from './hudXpFlashGate';
+import {
+  dashLabelColor,
+  dashPulseScale,
+  dashPulseAlpha,
+  DASH_PULSE_PHASE_STEP,
+} from './hudDashStyle';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -529,27 +535,19 @@ export class HUD {
       // even when the game is timeScaled down (hit freeze, slow-mo), giving
       // the player a consistent "dash is there" signal.
       if (dashReady) {
-        this.dashReadyPulse += 0.1;
+        this.dashReadyPulse += DASH_PULSE_PHASE_STEP;
       } else {
         this.dashReadyPulse = 0;
       }
-      const readyPulseScale = dashReady
-        ? 1 + Math.sin(this.dashReadyPulse) * 0.12
-        : 1;
-      const readyPulseAlpha = dashReady
-        ? 0.75 + Math.sin(this.dashReadyPulse) * 0.25
-        : 1;
+      const readyPulseScale = dashPulseScale(dashReady, this.dashReadyPulse);
+      const readyPulseAlpha = dashPulseAlpha(dashReady, this.dashReadyPulse);
 
       this.dashPrefixText.setVisible(true);
       this.dashPrefixText.setText(t('ui.hud.dash_label'));
       this.dashPrefixText.setPosition(this.dashHudAnchorX, ay);
       // Prefix color follows the state: gold + bright when ready,
       // dim-grey-gold when on cooldown.
-      this.dashPrefixText.setColor(
-        dashReady
-          ? (this.highContrastUi ? '#ffe68a' : '#ffcc44')
-          : (this.highContrastUi ? '#8a7a4a' : '#7a6a3a')
-      );
+      this.dashPrefixText.setColor(dashLabelColor(dashReady, this.highContrastUi));
       // Pips rendered at a slightly larger stride so they breathe under
       // the bumped dash font.
       const pipStride = 14 * this.uiScale;
@@ -574,11 +572,7 @@ export class HUD {
       this.dashSuffixText.setVisible(true);
       this.dashSuffixText.setText(` ${suffix}`);
       this.dashSuffixText.setPosition(x + 2 * this.uiScale, ay);
-      this.dashSuffixText.setColor(
-        dashReady
-          ? (this.highContrastUi ? '#ffe68a' : '#ffcc44')
-          : (this.highContrastUi ? '#8a7a4a' : '#7a6a3a')
-      );
+      this.dashSuffixText.setColor(dashLabelColor(dashReady, this.highContrastUi));
     } else {
       this.dashPrefixText.setVisible(false);
       this.dashSuffixText.setVisible(false);
