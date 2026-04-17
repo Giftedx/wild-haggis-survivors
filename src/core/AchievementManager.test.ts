@@ -5,6 +5,8 @@ import { SaveManager } from './SaveManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 import { BOSSES, ENEMY_TYPES } from '../data/enemies';
 import { createDefaultSave, writeSave } from '../utils/save';
+import { ROUTES } from '../data/routes';
+import { VARIANT_KEYS } from '../data/variants';
 
 function allCodexKeysSorted(): string[] {
   const s = new Set<string>();
@@ -348,5 +350,100 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
       outcome: 'death', gameTimeSec: 300, enemiesKilled: 120,
     });
     expect(save.load().unlockedAchievements).not.toContain('ach_ceilidh_commander');
+  });
+
+  it('unlocks ach_walk_every_road when route history covers all 6 routes', () => {
+const allRoutes = ROUTES.map((r, i) => ({
+      slot: r.slot,
+      routeKey: r.key,
+      atGameTimeSec: 300 + i * 10,
+      defaultedBySetting: false,
+    }));
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA', routes: allRoutes,
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_walk_every_road');
+  });
+
+  it('does NOT unlock ach_walk_every_road with only some routes seen', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA',
+        routes: [
+          { slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305, defaultedBySetting: false },
+        ],
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_walk_every_road');
+  });
+
+  it('unlocks ach_ironmoor_victor when last entry is ironmoor + victory', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA', ironmoor: true,
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_ironmoor_victor');
+  });
+
+  it('does NOT unlock ach_ironmoor_victor on a non-ironmoor victory', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'classic', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA',
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_ironmoor_victor');
+  });
+
+  it('unlocks ach_laird_victor when last winning entry uses the laird variant', () => {
+    seedGameplaySave({
+      runHistory: [{
+        timestamp: 1, isVictory: true, timeSurvivedSec: 900, enemiesKilled: 200,
+        weaponKeys: ['thistle_shot'], variantKey: 'laird', bestCombo: 5, goldEarned: 50,
+        seedCode: 'AAAA',
+      }],
+    });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 200,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_laird_victor');
+  });
+
+  it('unlocks ach_full_herd when every variant is in unlockedVariants', () => {
+seedGameplaySave({ unlockedVariants: [...VARIANT_KEYS] });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 60, enemiesKilled: 10,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_full_herd');
+  });
+
+  it('does NOT unlock ach_full_herd when one variant is missing', () => {
+seedGameplaySave({ unlockedVariants: VARIANT_KEYS.slice(0, -1) });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 60, enemiesKilled: 10,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_full_herd');
   });
 });
