@@ -59,6 +59,7 @@ import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { crossesMoorMercyHpFrac } from './game/moorMercyTrigger';
 import { formatRunIdentityToast } from './game/runIdentityToast';
 import { PauseMenu } from './game/PauseMenu';
+import { canOpenPauseMenu } from './game/pauseGate';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
@@ -1077,10 +1078,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private toggleUiPause(): void {
-    // Don't open the pause menu while a modal owns pause (level-up, countdown, end screen).
-    if (this.timeManager.has('LEVEL_UP') || this.timeManager.has('COUNTDOWN') || this.timeManager.has('RUN_END')) return;
-    // Tutorial overlays own input/time while FTUE prompts are visible.
-    if (this.timeManager.has('TUTORIAL_MOVE') || this.timeManager.has('TUTORIAL_GEM')) return;
+    // Gated on any other modal that owns time — see pauseGate for the set.
+    if (!canOpenPauseMenu((tok) => this.timeManager.has(tok))) return;
 
     if (this.timeManager.has('UI_PAUSE')) {
       this.timeManager.release('UI_PAUSE');
