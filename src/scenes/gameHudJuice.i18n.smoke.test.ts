@@ -31,7 +31,7 @@ describe('in-run HUD / game / juice i18n smoke', () => {
 
   it('resolves ui.hud.* (HUD + JuiceSystem combo line)', () => {
     assertResolves('ui.hud.level_fmt', { level: 1 });
-    assertResolves('ui.hud.goal_countdown', { m: 0, s: '00' });
+    assertResolves('ui.hud.goal_countdown', { time: '0:00' });
     assertResolves('ui.hud.goal_finale');
     assertResolves('ui.hud.wave_objective', { wave: 1, goal: 'x' });
     assertResolves('ui.hud.enemies_capped_suffix');

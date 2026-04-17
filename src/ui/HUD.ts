@@ -482,11 +482,9 @@ export class HUD {
       this.prevMins = mins;
       this.prevSecs = secs;
       const remaining = Math.max(0, BALANCE.run.RUN_WIN_TIME_SEC - gameTimeSec);
-      const remMins = Math.floor(remaining / 60);
-      const remSecs = Math.floor(remaining % 60);
       const goalText =
         remaining > 0
-          ? t('ui.hud.goal_countdown', { m: remMins, s: remSecs.toString().padStart(2, '0') })
+          ? t('ui.hud.goal_countdown', { time: formatClockTime(remaining) })
           : t('ui.hud.goal_finale');
       this.timerText.setText(formatClockTime(gameTimeSec));
       this.objectiveText.setText(t('ui.hud.wave_objective', { wave, goal: goalText }));

@@ -1,4 +1,5 @@
 import { t } from '../../core/i18n';
+import { formatClockTime } from '../../utils/formatClockTime';
 
 /**
  * Inputs for the Pause-menu stats panel.
@@ -30,11 +31,8 @@ export interface PauseStatsInput {
  * the caller joins with '\n'.
  */
 export function buildPauseStatsLines(input: PauseStatsInput): string[] {
-  const safeTime = Math.max(0, Math.floor(input.timeSec));
-  const mins = Math.floor(safeTime / 60);
-  const secs = Math.floor(safeTime % 60);
   const lines: string[] = [
-    t('ui.pause.time_line', { m: mins, s: secs.toString().padStart(2, '0') }),
+    t('ui.pause.time_line', { time: formatClockTime(input.timeSec) }),
     t('ui.pause.stats_mid', { kills: input.killCount, level: input.level }),
     t('ui.pause.stats_loadout', { w: input.weaponCount, c: input.passiveCount }),
   ];

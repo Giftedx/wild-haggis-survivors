@@ -66,7 +66,7 @@ const MAIN_MENU_AND_PAUSE_DYNAMIC: ReadonlyArray<
   ['ui.menu.daily_fresh', { code: 'AAAAAAA' }],
   ['ui.menu.daily_cleared', { code: 'AAAAAAA' }],
   ['ui.menu.daily_attempts', { code: 'AAAAAAA', attempts: 1 }],
-  ['ui.pause.time_line', { m: 0, s: '00' }],
+  ['ui.pause.time_line', { time: '0:00' }],
   ['ui.pause.stats_mid', { kills: 0, level: 1 }],
   ['ui.pause.stats_loadout', { w: 0, c: 0 }],
   ['ui.pause.stats_gold', { gold: 0 }],

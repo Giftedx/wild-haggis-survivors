@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { HUD } from './HUD';
 import { BALANCE } from '../core/BalanceConfig';
 import { t } from '../core/i18n';
+import { formatClockTime } from '../utils/formatClockTime';
 
 vi.mock('phaser', () => ({
   default: {
@@ -85,10 +86,8 @@ describe('HUD', () => {
     hud.update(100, 100, 2, 0.4, 120, 10, 20);
     const objective = (hud as any).objectiveText.text as string;
     const expectedRemaining = BALANCE.run.RUN_WIN_TIME_SEC - 120;
-    const mins = Math.floor(expectedRemaining / 60);
-    const secs = expectedRemaining % 60;
     expect(objective).toContain(
-      t('ui.hud.goal_countdown', { m: mins, s: secs.toString().padStart(2, '0') })
+      t('ui.hud.goal_countdown', { time: formatClockTime(expectedRemaining) })
     );
   });
 
