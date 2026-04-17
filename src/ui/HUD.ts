@@ -699,7 +699,7 @@ export class HUD {
         const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, COLORS.BG_DARK, 0.85)
           .setOrigin(0, 0).setStrokeStyle(2, normalSlotStroke)
           .setScrollFactor(0).setDepth(this.DEPTH));
-        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - 4, size, 4, 0x005eb8, 0.85)
+        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - 4, size, 4, COLORS.SCOTTISH_BLUE, 0.85)
           .setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2)) as Phaser.GameObjects.Rectangle;
         // Weapon icon — real sprite instead of cryptic "TS1" abbreviation.
         // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
