@@ -17,6 +17,7 @@ import { installShopBackdrop } from './installShopBackdrop';
 import { clearGameObjects } from '../utils/clearGameObjects';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { audio } from '../systems/AudioSystem';
+import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { t } from '../core/i18n';
 
 /**
@@ -85,9 +86,7 @@ export class ShopScene extends Phaser.Scene {
     this.renderRows();
     this.renderFooter();
 
-    this.events.once('shutdown', () => {
-      audio.stopAmbientWind();
-    });
+    stopAmbientWindOnShutdown(this);
   }
 
   private getPagination() {
