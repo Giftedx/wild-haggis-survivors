@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
-import { ENEMIES, GAME } from '../config';
+import { COLORS, ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import {
@@ -326,11 +326,11 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.showHpBar) {
       if (!this.hpBarBg) {
         this.hpBarBg = this.scene.add.rectangle(0, 0, 24, 3, 0x333333).setDepth(30);
-        this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, 0xcc3333).setOrigin(0, 0.5).setDepth(31);
+        this.hpBarFill = this.scene.add.rectangle(0, 0, 24, 3, COLORS.HP_RED).setOrigin(0, 0.5).setDepth(31);
       }
       this.hpBarBg.setVisible(true).setPosition(this.x, this.y - 20);
       this.hpBarFill!.setVisible(true).setPosition(this.x - 12, this.y - 20);
-      this.hpBarFill!.setFillStyle(0xcc3333); // Reset to red (may have been gold from prior elite cycle)
+      this.hpBarFill!.setFillStyle(COLORS.HP_RED); // Reset to red (may have been gold from prior elite cycle)
       this.hpBarFill!.width = 24;
     } else {
       this.hpBarBg?.setVisible(false);
