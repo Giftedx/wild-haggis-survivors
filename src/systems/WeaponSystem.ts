@@ -10,6 +10,7 @@ import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
 import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
 import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
 import { resolveMuzzleFlashColor } from './muzzleFlashColors';
+import { fillCirclePool } from './fillCirclePool';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -125,11 +126,7 @@ export class WeaponSystem {
 
     // Pre-allocate VFX circle pool — 30 covers all weapon visual effects
     // (pulse rings, zones, blasts) with headroom above ~13 max simultaneous.
-    for (let i = 0; i < 30; i++) {
-      const c = scene.add.circle(0, 0, 10, 0xffffff, 0.5)
-        .setDepth(10).setVisible(false);
-      this.vfxCirclePool.push(c);
-    }
+    fillCirclePool(scene, this.vfxCirclePool, 30, 10, 0xffffff, 0.5, 10);
     // Pre-allocate VFX graphics pool — 5 covers arc sweep visuals
     for (let i = 0; i < 5; i++) {
       const g = scene.add.graphics().setDepth(10).setVisible(false);
