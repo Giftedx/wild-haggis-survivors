@@ -15,6 +15,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
@@ -224,8 +225,7 @@ export class MetaShopScene extends Phaser.Scene {
         .setOrigin(0.5);
 
       if (canAfford) {
-        buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a8f4f));
-        buyButton.on('pointerout', () => buyButton.setFillStyle(buyPalette.fillColor));
+        attachButtonHoverFill(buyButton, buyPalette.fillColor, 0x3a8f4f);
         buyButton.on('pointerdown', () => this.tryBuy(key));
         entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       }

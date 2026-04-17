@@ -14,6 +14,7 @@ import { startSceneFadeOut } from './sceneFade';
 import { playPurchaseBurst } from './purchaseBurst';
 import { installShopBackdrop } from './installShopBackdrop';
 import { clearGameObjects } from '../utils/clearGameObjects';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 
@@ -185,8 +186,7 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     if (canAfford) {
-      buyButton.on('pointerover', () => buyButton.setFillStyle(0x3a6a3a));
-      buyButton.on('pointerout', () => buyButton.setFillStyle(buyPalette.fillColor));
+      attachButtonHoverFill(buyButton, buyPalette.fillColor, 0x3a6a3a);
       buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade));
     }
 
@@ -249,8 +249,7 @@ export class ShopScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    backButton.on('pointerover', () => backButton.setFillStyle(0x4a566f));
-    backButton.on('pointerout', () => backButton.setFillStyle(0x3a4357));
+    attachButtonHoverFill(backButton, 0x3a4357, 0x4a566f);
     backButton.on('pointerdown', () => {
       audio.playClick();
       startSceneFadeOut(this, 260, () => this.scene.start('MainMenu'));
@@ -281,8 +280,7 @@ export class ShopScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     if (enabled) {
-      button.on('pointerover', () => button.setFillStyle(SHOP_PAGE_BUTTON_HOVER_FILL));
-      button.on('pointerout', () => button.setFillStyle(pageBtnStyle.fillColor));
+      attachButtonHoverFill(button, pageBtnStyle.fillColor, SHOP_PAGE_BUTTON_HOVER_FILL);
       button.on('pointerdown', onClick);
     }
 

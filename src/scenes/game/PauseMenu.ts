@@ -27,6 +27,7 @@ import {
   resolvePauseEliteRefColor,
 } from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
+import { attachButtonHoverFill } from '../../ui/buttonHover';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -116,8 +117,7 @@ export class PauseMenu {
     const resumeY = y + height * 0.48;
     const resumeBtn = scene.add.rectangle(x + width / 2, resumeY, 220, 50, PAUSE_RESUME_BUTTON_PALETTE.idle)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    resumeBtn.on('pointerover', () => resumeBtn.setFillStyle(PAUSE_RESUME_BUTTON_PALETTE.hover));
-    resumeBtn.on('pointerout', () => resumeBtn.setFillStyle(PAUSE_RESUME_BUTTON_PALETTE.idle));
+    attachButtonHoverFill(resumeBtn, PAUSE_RESUME_BUTTON_PALETTE.idle, PAUSE_RESUME_BUTTON_PALETTE.hover);
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
     this.elements.push(resumeBtn);
     this.elements.push(
@@ -231,8 +231,7 @@ export class PauseMenu {
 
     const quitBtn = scene.add.rectangle(x + width / 2, quitY, 220, 50, PAUSE_QUIT_BUTTON_PALETTE.idle)
       .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    quitBtn.on('pointerover', () => quitBtn.setFillStyle(PAUSE_QUIT_BUTTON_PALETTE.hover));
-    quitBtn.on('pointerout', () => quitBtn.setFillStyle(PAUSE_QUIT_BUTTON_PALETTE.idle));
+    attachButtonHoverFill(quitBtn, PAUSE_QUIT_BUTTON_PALETTE.idle, PAUSE_QUIT_BUTTON_PALETTE.hover);
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
     this.elements.push(quitBtn);
     this.elements.push(

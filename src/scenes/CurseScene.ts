@@ -7,6 +7,7 @@ import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
 import { resolveBackButtonPalette } from './backButtonPalette';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 
 /**
@@ -109,8 +110,7 @@ export class CurseScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setScale(uiScale);
-    backBtn.on('pointerover', () => backBtn.setFillStyle(backPalette.hover));
-    backBtn.on('pointerout', () => backBtn.setFillStyle(backPalette.idle));
+    attachButtonHoverFill(backBtn, backPalette.idle, backPalette.hover);
     backBtn.on('pointerdown', () => {
       audio.playClick();
       this.scene.start('Menu');

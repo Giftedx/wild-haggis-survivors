@@ -28,6 +28,7 @@ import {
 import { computeMenuLayout } from './menuLayout';
 import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -435,8 +436,7 @@ export class MenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
 
-    button.on('pointerover', () => button.setFillStyle(0x304269));
-    button.on('pointerout', () => button.setFillStyle(0x24314f));
+    attachButtonHoverFill(button, 0x24314f, 0x304269);
     button.on('pointerdown', onClick);
 
     this.variantPanelElements.push(button, text);

@@ -32,6 +32,7 @@ import { getCameraViewport } from '../ui/cameraViewport';
 import { resolveDailyStateDisplay } from './dailyMenuState';
 import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -329,8 +330,7 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5);
       abandonTxt.setScale(uiScale);
-      abandonBtn.on('pointerover', () => abandonBtn!.setFillStyle(MAIN_MENU_ABANDON_PALETTE.hover));
-      abandonBtn.on('pointerout', () => abandonBtn!.setFillStyle(MAIN_MENU_ABANDON_PALETTE.idle));
+      attachButtonHoverFill(abandonBtn, MAIN_MENU_ABANDON_PALETTE.idle, MAIN_MENU_ABANDON_PALETTE.hover);
       abandonBtn.on('pointerdown', goLoadoutFresh);
       abandonTxt.setInteractive({ useHandCursor: true });
       abandonTxt.on('pointerdown', goLoadoutFresh);
@@ -371,8 +371,7 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     dailySubtitle.setScale(uiScale);
-    dailyBtn.on('pointerover', () => dailyBtn.setFillStyle(MAIN_MENU_DAILY_PALETTE.hover));
-    dailyBtn.on('pointerout', () => dailyBtn.setFillStyle(MAIN_MENU_DAILY_PALETTE.idle));
+    attachButtonHoverFill(dailyBtn, MAIN_MENU_DAILY_PALETTE.idle, MAIN_MENU_DAILY_PALETTE.hover);
     const startDaily = () => this.startSeededRun(daily.seed, { isDaily: true });
     dailyBtn.on('pointerdown', startDaily);
     dailyTitle.setInteractive({ useHandCursor: true });
@@ -394,8 +393,7 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     metaTxt.setScale(uiScale);
-    metaBtn.on('pointerover', () => metaBtn.setFillStyle(MAIN_MENU_META_PALETTE.hover));
-    metaBtn.on('pointerout', () => metaBtn.setFillStyle(MAIN_MENU_META_PALETTE.idle));
+    attachButtonHoverFill(metaBtn, MAIN_MENU_META_PALETTE.idle, MAIN_MENU_META_PALETTE.hover);
     metaBtn.on('pointerdown', () => {
       this.scene.start('MetaShop');
     });
@@ -440,8 +438,7 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0.5);
       chronicleTxt.setScale(uiScale);
-      chronicleBtn.on('pointerover', () => chronicleBtn!.setFillStyle(MAIN_MENU_CHRONICLE_PALETTE.hover));
-      chronicleBtn.on('pointerout', () => chronicleBtn!.setFillStyle(MAIN_MENU_CHRONICLE_PALETTE.idle));
+      attachButtonHoverFill(chronicleBtn, MAIN_MENU_CHRONICLE_PALETTE.idle, MAIN_MENU_CHRONICLE_PALETTE.hover);
       chronicleBtn.on('pointerdown', goChronicle);
       chronicleTxt.setInteractive({ useHandCursor: true });
       chronicleTxt.on('pointerdown', goChronicle);
@@ -463,8 +460,7 @@ export class MainMenuScene extends Phaser.Scene {
         })
         .setOrigin(0.5, 0.5);
       deedsTxt.setScale(uiScale);
-      deedsBtn.on('pointerover', () => deedsBtn!.setFillStyle(MAIN_MENU_DEEDS_PALETTE.hover));
-      deedsBtn.on('pointerout', () => deedsBtn!.setFillStyle(MAIN_MENU_DEEDS_PALETTE.idle));
+      attachButtonHoverFill(deedsBtn, MAIN_MENU_DEEDS_PALETTE.idle, MAIN_MENU_DEEDS_PALETTE.hover);
       deedsBtn.on('pointerdown', goDeeds);
       deedsTxt.setInteractive({ useHandCursor: true });
       deedsTxt.on('pointerdown', goDeeds);
@@ -484,8 +480,7 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     optTxt.setScale(uiScale);
-    optBtn.on('pointerover', () => optBtn.setFillStyle(MAIN_MENU_OPTIONS_PALETTE.hover));
-    optBtn.on('pointerout', () => optBtn.setFillStyle(MAIN_MENU_OPTIONS_PALETTE.idle));
+    attachButtonHoverFill(optBtn, MAIN_MENU_OPTIONS_PALETTE.idle, MAIN_MENU_OPTIONS_PALETTE.hover);
     optBtn.on('pointerdown', () => {
       this.scene.start('Settings');
     });

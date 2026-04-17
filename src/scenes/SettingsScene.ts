@@ -27,6 +27,7 @@ import {
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
+import { attachButtonHoverFill } from '../ui/buttonHover';
 
 type SettingsGpRow =
   | {
@@ -870,13 +871,11 @@ export class SettingsScene extends Phaser.Scene {
       close();
     };
 
-    noBtn.on('pointerover', () => noBtn.setFillStyle(ironmoorBackPalette.hover));
-    noBtn.on('pointerout', () => noBtn.setFillStyle(ironmoorBackPalette.idle));
+    attachButtonHoverFill(noBtn, ironmoorBackPalette.idle, ironmoorBackPalette.hover);
     noBtn.on('pointerdown', onNo);
     noLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onNo);
 
-    yesBtn.on('pointerover', () => yesBtn.setFillStyle(0x4a2a20));
-    yesBtn.on('pointerout', () => yesBtn.setFillStyle(0x3a2218));
+    attachButtonHoverFill(yesBtn, 0x3a2218, 0x4a2a20);
     yesBtn.on('pointerdown', onYes);
     yesLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onYes);
 
