@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { RouteDef, RoutePick } from '../data/routes';
 import { getRoute } from '../data/routes';
 import { resolveDefaultRoute } from './actIntermissionResolve';
-import { t } from '../core/i18n';
+import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
 /**
  * Tests the pure resolveDefaultRoute helper directly — importing
@@ -79,6 +79,34 @@ describe('W2 M3 voice pass: copy quality guardrails', () => {
         const s = t(`routes.${k}.${suffix}`).toUpperCase();
         expect(s).not.toMatch(/\b(TODO|TBD|XXX|FIXME|PLACEHOLDER)\b/);
       }
+    }
+  });
+});
+
+/**
+ * The W2 M3 voice card budget (label ≤5 words, desc ≤15 words) protects
+ * the picker layout — long route copy overflows the card. The Scots
+ * overlay must respect the same budget or the layout breaks under
+ * `localeKey: 'scs'`.
+ */
+describe('W18 Scots overlay: route copy still fits voice-card budget', () => {
+  afterEach(() => setLocale(DEFAULT_LOCALE));
+
+  it('Scots route labels are <= 5 words', () => {
+    setLocale('scs');
+    for (const k of ROUTE_KEYS) {
+      const label = t(`routes.${k}.label`);
+      const words = label.split(/\s+/).filter(Boolean);
+      expect(words.length, `scs label "${label}" exceeds 5 words`).toBeLessThanOrEqual(5);
+    }
+  });
+
+  it('Scots route descriptions are <= 15 words', () => {
+    setLocale('scs');
+    for (const k of ROUTE_KEYS) {
+      const desc = t(`routes.${k}.desc`);
+      const words = desc.split(/\s+/).filter(Boolean);
+      expect(words.length, `scs desc "${desc}" exceeds 15 words`).toBeLessThanOrEqual(15);
     }
   });
 });
