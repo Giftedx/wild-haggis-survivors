@@ -9,6 +9,7 @@ import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { damageNumberStyle } from './damageNumberStyle';
+import { toastStackY, toastWrapWidth } from './toastLayout';
 import {
   CEILIDH_MAGNET_DURATION_MS,
   CEILIDH_MAGNET_FLAT_PX,
@@ -520,11 +521,10 @@ export class JuiceSystem {
   showToast(message: string, color: string = '#ffffff'): void {
     if (this.time.has('UI_PAUSE')) return;
     const { x, y, width } = this.getUiViewport();
-    const stackIndex = Math.min(this.activeToasts, 2);
-    const yOffset = y + 130 + stackIndex * 36;
+    const yOffset = toastStackY(y, this.activeToasts);
     this.activeToasts++;
 
-    const wrapW = Math.max(160, Math.min(420, width - 24));
+    const wrapW = toastWrapWidth(width);
     const toast = this.scene.add.text(x + width + 10, yOffset, message, {
       fontFamily: 'monospace', fontSize: scaledFontSize(16), color,
       fontStyle: 'bold', stroke: '#0a0a14', strokeThickness: scaledStrokeThickness(3),
