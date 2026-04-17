@@ -6,7 +6,7 @@ import {
   projectThreatAngleToScreenEdge,
   type OffScreenScratch,
 } from './edgeIndicatorMath';
-import { resolveEdgeIndicatorStyle } from './edgeIndicatorStyle';
+import { resolveEdgeIndicatorStyle, EDGE_INDICATOR_REGULAR_COLOR } from './edgeIndicatorStyle';
 
 /**
  * EdgeIndicators — small arrows at screen edges showing direction
@@ -32,7 +32,7 @@ export class EdgeIndicators {
 
     // Pre-create glow halos (behind the indicators for readability)
     for (let i = 0; i < this.MAX_INDICATORS; i++) {
-      const glow = scene.add.circle(0, 0, this.INDICATOR_SIZE + 3, 0xff4444, 0.15)
+      const glow = scene.add.circle(0, 0, this.INDICATOR_SIZE + 3, EDGE_INDICATOR_REGULAR_COLOR, 0.15)
         .setScrollFactor(0).setDepth(39).setVisible(false);
       this.glows.push(glow);
     }
@@ -41,7 +41,7 @@ export class EdgeIndicators {
       const tri = scene.add.triangle(0, 0, 0, -this.INDICATOR_SIZE,
         -this.INDICATOR_SIZE / 2, this.INDICATOR_SIZE / 2,
         this.INDICATOR_SIZE / 2, this.INDICATOR_SIZE / 2,
-        0xff4444, 0.8
+        EDGE_INDICATOR_REGULAR_COLOR, 0.8
       ).setScrollFactor(0).setDepth(40).setVisible(false);
       this.indicators.push(tri);
     }
