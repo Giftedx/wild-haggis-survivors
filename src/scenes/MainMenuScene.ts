@@ -8,6 +8,7 @@ import { DEFAULT_VARIANT_KEY, getVariantByKey } from '../data/variants';
 import { audio } from '../systems/AudioSystem';
 import { loadSave } from '../utils/save';
 import { formatMenuHistorySummary, formatMenuStatsStrip } from './menuStatsStrip';
+import { resolveMainMenuPalette } from './mainMenuPalette';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -56,11 +57,12 @@ export class MainMenuScene extends Phaser.Scene {
     const { uiScale, highContrastUi, reduceParticles } = settings;
     this.cozyTweenTargets = [];
 
-    const titleColor = highContrastUi ? '#ffe08a' : '#d4a017';
-    const subduedColor = highContrastUi ? '#c8d2e0' : '#95a5c3';
-    const hintColor = highContrastUi ? '#a8b3c8' : '#6a7390';
-    const mountainDark = highContrastUi ? 0x1a2a3a : 0x131c2a;
-    const mountainLight = highContrastUi ? 0x2a3a4a : 0x1b2638;
+    const palette = resolveMainMenuPalette(highContrastUi);
+    const titleColor = palette.title;
+    const subduedColor = palette.subdued;
+    const hintColor = palette.hint;
+    const mountainDark = palette.mountainDark;
+    const mountainLight = palette.mountainLight;
 
     // === Background — depth -100 so negative-depth decoration layers are
     // visible in front of it. The canvas also has a dark bg from main.ts,
