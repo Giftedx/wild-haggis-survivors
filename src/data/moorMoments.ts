@@ -137,6 +137,14 @@ export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
     captionKeyHome: 'ui.moor_moment.amber_glow.caption_home',
     toastKeyHome: 'ui.moor_moment.amber_glow.toast_home',
   },
+  {
+    // Drouthy-themed: an abandoned flask on the moor. Unanchored —
+    // fires in any biome. Small gold reward + a wee warmth line.
+    id: 'whisky_nip',
+    captionKey: 'ui.moor_moment.whisky_nip.caption',
+    toastKey: 'ui.moor_moment.whisky_nip.toast',
+    reward: { kind: 'gold', amount: 14 },
+  },
 ];
 
 export function shuffleMoorMoments(rng: RNG): MoorMomentDef[] {

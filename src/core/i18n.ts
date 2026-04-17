@@ -593,6 +593,10 @@ export const EN_STRINGS: LocaleTree = {
         caption_home: 'Deep bog amber — the squelch saved this wan just for ye.',
         toast_home: 'Home peat — +{gold}g, warm as a range.',
       },
+      whisky_nip: {
+        caption: 'A wee flask left oan the moor — someone else\'s tomorrow is yer today.',
+        toast: 'Wee nip o\' whisky — +{gold}g warmth for the hooves.',
+      },
       boon_at_ceiling: 'XP bar\'s chokker — have +{gold}g instead, ya legend.',
     },
     /** Run-start identity handoff (variant + intent); shown as an early toast in GameScene. */
