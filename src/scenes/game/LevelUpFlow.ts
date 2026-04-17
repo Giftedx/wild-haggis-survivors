@@ -39,6 +39,11 @@ import { loadSave } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { applyPassiveEffect as applyPassiveEffectPure } from './passiveEffects';
+import {
+  filterHealCardsWhenFull,
+  resolveLuckBonus,
+  resolveCardCount,
+} from './levelUpDraw';
 
 export interface LevelUpFlowHooks {
   getPlayer(): Player;
@@ -280,19 +285,12 @@ export class LevelUpFlow {
       weaponLevels[w.config.key] = w.level;
     }
 
-    let pool = buildCardPool(ownedWeapons, ownedPassives, weaponLevels, evolvedWeapons);
-    if (player.getHp() >= player.getMaxHp()) {
-      pool = pool.filter(c => !(c.effect.type === 'stat_boost' && (c.effect.stat === 'heal' || c.effect.stat === 'healPercent')));
-    }
+    const rawPool = buildCardPool(ownedWeapons, ownedPassives, weaponLevels, evolvedWeapons);
+    const pool = filterHealCardsWhenFull(rawPool, player.getHp() >= player.getMaxHp());
 
     const save = loadSave();
-    let luckBonus = 0;
-    if (ownedPassives.includes('sporran')) luckBonus += 15;
-    luckBonus += (save.upgrades['lucky_heather'] ?? 0) * 10;
-    luckBonus += player.getLuckDrawBonus();
-
-    const extraChoice = (save.upgrades['extra_choice'] ?? 0) > 0;
-    const cardCount = extraChoice ? XP.CARDS_PER_LEVEL + 1 : XP.CARDS_PER_LEVEL;
+    const luckBonus = resolveLuckBonus(save, ownedPassives, player.getLuckDrawBonus());
+    const cardCount = resolveCardCount(save, XP.CARDS_PER_LEVEL);
     const rng = this.hooks.getRunRng();
     return drawCards(pool, cardCount, luckBonus, () => rng.next(), {
       duplicateWeightMultiplier: 0.22,
