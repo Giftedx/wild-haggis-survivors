@@ -57,6 +57,7 @@ import { RunEndTickers } from './game/RunEndTickers';
 import { showCountdown } from './game/CountdownOverlay';
 import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { crossesMoorMercyHpFrac } from './game/moorMercyTrigger';
+import { formatRunIdentityToast } from './game/runIdentityToast';
 import { PauseMenu } from './game/PauseMenu';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
@@ -1207,14 +1208,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private showRunIdentityToast(isResume: boolean): void {
     const v = this.activeVariant;
-    const maxFlavor = 52;
-    const raw = v.flavorText.trim();
-    const flavor =
-      raw.length > maxFlavor ? `${raw.slice(0, maxFlavor - 1).trimEnd()}…` : raw;
-    const body = isResume
-      ? t('ui.run.resume_identity', { name: v.name, flavor })
-      : t('ui.run.start_identity', { name: v.name, flavor });
-    this.juice.showToast(body, '#c8dcff');
+    this.juice.showToast(formatRunIdentityToast(isResume, v.name, v.flavorText), '#c8dcff');
   }
 
   /**
