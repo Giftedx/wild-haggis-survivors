@@ -527,3 +527,73 @@ Net session shape:
     progress.txt tracks every fix with reproduction scenario.
   - No new production `as any`. Lint + typecheck + build green
     at every commit. `npm run ci` clean on the final tip.
+
+
+[2026-04-17] T1 deterministic replay — record-side MVP shipped.
+
+Goal: land the foundation for T1 (`docs/HUGE_INITIATIVES_MASTER_PLAN.md`)
+in one five-hour session. Record side only — playback engine remains
+open (needs fixed-step physics, tracked in ADR-0002 follow-ups).
+
+M1 — non-determinism fixes (commit 6276286):
+  - HazardZones: seeded RDG was `new Phaser.Math.RandomDataGenerator(
+    ['zones'])`. Lava + heal zone positions were invariant across seeds.
+    Extracted `computeHazardPlacements()` pure helper, routed zone
+    placement + `spawnHealingCircle` (W2 round_the_loch onResume)
+    through `runRng`. Daily challenges now layout-vary per day.
+  - SpawnSystem: `pauseSpawnsFor(ms)` wrote `Date.now() + ms` and gated
+    against the wall clock. W2 `buckie_pitstop` 15s pause drifted under
+    hit-freeze / tab-backgrounding. Converted to `gameTimeSec` mark;
+    gate = `this.gameTimeSec < spawnsPausedUntilGameSec`.
+  - Tests: 8 new in `hazardPlacement.test.ts` (seed determinism,
+    cross-seed divergence, daily-challenge seed parity), 4 new in
+    `SpawnSystem.pauseGameTime.test.ts` (game-time window, wall-clock
+    drift does NOT release the gate).
+
+M2 — replay record-side (commit b2e5e6d):
+  - `src/replay/replayBlob.ts` — `ReplayFrame` (dtMs, dx, dy, dash,
+    menu) + `ReplayBlob` (version, build, seed, variantKey, frames).
+    Clamp-on-read + clamp-on-push guard the stream from malformed
+    upstream data. Version 1 is the v1 MVP; reader rejects mismatched
+    versions rather than attempting partial-compat shims.
+  - `src/replay/ReplayRecorder.ts` — accumulates frames per run;
+    `finalize()` returns an independent snapshot (safe to call more
+    than once).
+  - `src/replay/replayConfig.ts` — mode resolver. Priority:
+    `globalThis.__REPLAY_MODE__` > `localStorage['whs_replay_mode']`
+    > off. Case-insensitive, unknowns → off.
+  - Save schema v4 → v5: added optional `RunHistoryEntry.replay?:
+    ReplayBlob`. Migration is additive — pre-v5 entries migrate with
+    `replay` absent. `coerceRunHistoryEntry` validates via `isReplayBlob`
+    so malformed blobs drop rather than killing the entry.
+  - `InputManager.peekReplayFrame()` snapshots dir + dash + menu edges
+    and clears the edge flags on read. One cheap call per tick.
+  - `Player.peekReplayInputFrame()` passes through.
+  - GameScene wraps `update()` in try/finally: on every tick (paused or
+    active) one frame is pushed into `this.replayRecorder`. Constructor
+    gates on `resolveReplayMode() === 'record'`; when off, the tap is a
+    single null-check per frame.
+  - `RunHistoryRecorder.buildContext()` pulls via optional
+    `getReplayBlob` hook; emits the `replay` field when a blob exists.
+  - Integration test in `src/replay/recorderIntegration.test.ts` —
+    60 frames → save v5 write → JSON round-trip → load → frames
+    intact with seed + variant metadata preserved.
+
+Net session shape:
+  - 2 commits, 21 files changed, ~1,572 insertions.
+  - Test suite 2412 → 2472 (+60) across 7 new test files.
+  - ADR-0002 published with format, non-goals, playback prerequisites,
+    rollback plan.
+  - Lint + vitest + tsc + vite build green at every commit.
+  - No new `as any`. Zero TODO/FIXME added.
+
+Deferred to next session (documented in ADR-0002 + plan doc):
+  - Playback engine. Audit found no fixed-step physics config on Phaser
+    Arcade — variable delta makes byte-deterministic playback impossible
+    without an engine-level migration.
+  - UI surfacing (Chronicle "watch replay" button).
+  - Cross-build replay compat.
+  - Gzip / typed-array encoding if blob size crosses localStorage quota
+    in practice (expected ~50-150KB per 20min run × 20-entry FIFO cap
+    ≈ well under 5MB).
+
