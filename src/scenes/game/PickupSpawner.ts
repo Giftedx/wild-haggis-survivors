@@ -22,6 +22,7 @@ import type { UpdateTickers, TickerHandle } from '../../utils/UpdateTickers';
 import type { SFXManager } from '../../systems/audio/SFXManager';
 import { t } from '../../core/i18n';
 import { audio } from '../../systems/AudioSystem';
+import { pickNearbyPosition } from './nearbySpawn';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -51,10 +52,13 @@ export class PickupSpawner {
     const scene = this.scene;
     const player = this.hooks.getPlayer();
     // Spawn near the player but not on top of them
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 150 + Math.random() * 200;
-    const x = Phaser.Math.Clamp(player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
-    const y = Phaser.Math.Clamp(player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
+    const { x, y } = pickNearbyPosition({
+      playerX: player.x,
+      playerY: player.y,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      rand: Math.random,
+    });
 
     this.hooks.getJuice().showToast(t('ui.game.treasure_nearby'), '#ffcc44');
 
@@ -208,10 +212,13 @@ export class PickupSpawner {
   spawnGoldenChest(): void {
     const scene = this.scene;
     const player = this.hooks.getPlayer();
-    const angle = Math.random() * Math.PI * 2;
-    const dist = 150 + Math.random() * 200;
-    const x = Phaser.Math.Clamp(player.x + Math.cos(angle) * dist, 50, GAME.WORLD_WIDTH - 50);
-    const y = Phaser.Math.Clamp(player.y + Math.sin(angle) * dist, 50, GAME.WORLD_HEIGHT - 50);
+    const { x, y } = pickNearbyPosition({
+      playerX: player.x,
+      playerY: player.y,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      rand: Math.random,
+    });
 
     this.hooks.getJuice().showToast(t('ui.game.golden_nearby'), '#ffaa00');
 
