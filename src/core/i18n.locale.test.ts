@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   DEFAULT_LOCALE,
+  EN_STRINGS,
   LOCALES,
   SCS_STRINGS,
   getLocale,
   setLocale,
   t,
   type LocaleKey,
+  type LocaleTree,
 } from './i18n';
 
 /**
@@ -79,5 +81,28 @@ describe('W18 locale scaffolding', () => {
   it('LocaleKey type narrows to en | scs at compile time', () => {
     const keys: LocaleKey[] = ['en', 'scs'];
     expect(keys).toHaveLength(2);
+  });
+
+  /**
+   * Catches the bossWarning / tutorial nesting bug class: every SCS leaf
+   * key path must exist in EN, otherwise the Scots translation is dead
+   * code (the call site reads a different path). Walks both trees in
+   * parallel and reports any orphan keys present in scs but missing in en.
+   */
+  it('every SCS key path also exists in EN (no orphan overlays)', () => {
+    const orphans: string[] = [];
+    const walk = (scs: LocaleTree, en: LocaleTree | undefined, path: string) => {
+      for (const [k, v] of Object.entries(scs)) {
+        const next = path ? `${path}.${k}` : k;
+        const enChild = en && typeof en === 'object' ? (en as Record<string, unknown>)[k] : undefined;
+        if (typeof v === 'string') {
+          if (typeof enChild !== 'string') orphans.push(next);
+        } else if (v && typeof v === 'object') {
+          walk(v as LocaleTree, enChild as LocaleTree | undefined, next);
+        }
+      }
+    };
+    walk(SCS_STRINGS, EN_STRINGS, '');
+    expect(orphans).toEqual([]);
   });
 });
