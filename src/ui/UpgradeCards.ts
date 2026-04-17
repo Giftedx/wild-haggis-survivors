@@ -5,6 +5,7 @@ import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
 import { resolveCardRarityGlowStyle } from './cardRarityGlowStyle';
 import { computeUpgradeCardLayout } from './upgradeCardLayout';
+import { numberToCssColor } from '../utils/colorFormat';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -273,7 +274,7 @@ export class UpgradeCardsUI {
     const rarityText = t(`ui.common.rarity.${card.rarity}`);
     const rarityLabel = this.scene.add.text(x, rarityPillY, rarityText, {
       fontFamily: 'monospace', fontSize: this.fs(11), fontStyle: 'bold',
-      color: `#${borderColor.toString(16).padStart(6, '0')}`,
+      color: numberToCssColor(borderColor),
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 2);
     const pillW = Math.max(rarityLabel.width + 20, 72);
     const pillH = 22;

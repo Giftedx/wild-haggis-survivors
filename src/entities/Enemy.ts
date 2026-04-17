@@ -18,6 +18,7 @@ import {
 } from '../data/eliteAffixes';
 import { isEnemySpatialPhysicsCulled } from '../core/spatialCull';
 import { isDiveOffscreen } from './isDiveOffscreen';
+import { numberToCssColor } from '../utils/colorFormat';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
@@ -1327,7 +1328,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
     this.ensureEliteAffixNameLabel();
     const tint = ELITE_AFFIXES[id].indicatorTint;
-    const css = `#${(tint & 0xffffff).toString(16).padStart(6, '0')}`;
+    const css = numberToCssColor(tint);
     this.eliteAffixNameText!
       .setText(t(`ui.elite_affix.${id}.name`))
       .setColor(css)
