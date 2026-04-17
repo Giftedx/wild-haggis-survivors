@@ -41,6 +41,7 @@ import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFad
 import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { clickToScene } from './clickToScene';
+import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 
 // Repeated text styles inside this scene — pinned so the row + pagination
 // look stays in sync. Both small monospace bold strings used for header
@@ -299,9 +300,7 @@ export class ChronicleScene extends Phaser.Scene {
 
     this.input.keyboard?.on('keydown-ESC', goBack);
 
-    this.events.once('shutdown', () => {
-      audio.stopAmbientWind();
-    });
+    stopAmbientWindOnShutdown(this);
   }
 
   /**

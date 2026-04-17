@@ -21,6 +21,7 @@ import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { clickToScene } from './clickToScene';
+import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -128,9 +129,7 @@ export class DeedsScene extends Phaser.Scene {
 
     this.input.keyboard?.on('keydown-ESC', goBack);
 
-    this.events.once('shutdown', () => {
-      audio.stopAmbientWind();
-    });
+    stopAmbientWindOnShutdown(this);
   }
 
   private drawDeedCard(

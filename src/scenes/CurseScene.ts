@@ -9,6 +9,7 @@ import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from '
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { brightenColor } from '../utils/brightenColor';
 import { clickToScene } from './clickToScene';
+import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle } from './sceneHeaderStyle';
@@ -106,9 +107,7 @@ export class CurseScene extends Phaser.Scene {
 
     this.input.keyboard?.on('keydown-ESC', goBack);
 
-    this.events.once('shutdown', () => {
-      audio.stopAmbientWind();
-    });
+    stopAmbientWindOnShutdown(this);
   }
 
   /**
