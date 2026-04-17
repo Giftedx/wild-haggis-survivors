@@ -27,6 +27,7 @@ import {
 import { bossHpBarStyle } from './hudBossBar';
 import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
+import { clamp01 } from '../utils/math';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -432,7 +433,7 @@ export class HUD {
     this.refreshResponsiveLayout();
     const hpDisplay = Math.max(0, Math.round(hp));
     const maxDisplay = Math.max(1, Math.round(maxHp));
-    const hpFrac = Math.max(0, Math.min(1, hpDisplay / maxDisplay));
+    const hpFrac = clamp01(hpDisplay / maxDisplay);
     this.hpBarFill.width = this.HP_BAR_W * hpFrac;
     this.hpText.setText(`${hpDisplay}/${maxDisplay}`);
 
@@ -532,7 +533,7 @@ export class HUD {
     ) {
       const clampedCharges = Phaser.Math.Clamp(Math.floor(dashCharges), 0, maxDashCharges);
       const cooldownPct = dashCooldownFrac !== undefined
-        ? Math.round(Math.max(0, Math.min(1, dashCooldownFrac)) * 100)
+        ? Math.round(clamp01(dashCooldownFrac) * 100)
         : 0;
       const dashReady = clampedCharges > 0;
       const suffix = dashReady ? t('ui.hud.dash_ready') : t('ui.hud.dash_cooldown_pct', { pct: cooldownPct });

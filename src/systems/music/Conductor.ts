@@ -44,6 +44,8 @@ const AEOLIAN_6TH_HI = 698.5;
 const MIXO_3RD = 277.2;
 const MIXO_3RD_HI = 554.4;
 
+import { clamp01 } from '../../utils/math';
+
 type Contour = 'ascending' | 'descending' | 'arch' | 'valley';
 
 export class Conductor {
@@ -82,7 +84,7 @@ export class Conductor {
     this.accentEvolutionGlow = eg;
     this.accentEnrage = ep;
 
-    const targetBt = Math.max(0, Math.min(1, state.biomeTimbre));
+    const targetBt = clamp01(state.biomeTimbre);
     this.smoothedBiomeTimbre = lerp(this.smoothedBiomeTimbre, targetBt, delta * 0.0011);
 
     if (this.resolutionMode) return;

@@ -7,6 +7,7 @@
  * Extracted from GameScene.update() as a pure function.
  */
 import type { ActiveWeapon } from '../../systems/WeaponSystem';
+import { clamp01 } from '../../utils/math';
 
 export interface HudWeaponRow {
   key: string;
@@ -34,7 +35,7 @@ export function updateHudWeaponRows(
     row.evolved = w.evolved;
     row.evolutionKey = w.evolutionKey;
     const cd = Math.max(1, w.cooldownMs);
-    row.cooldownFrac = Math.max(0, Math.min(1, 1 - w.cooldownRemaining / cd));
+    row.cooldownFrac = clamp01(1 - w.cooldownRemaining / cd);
   }
   return n;
 }

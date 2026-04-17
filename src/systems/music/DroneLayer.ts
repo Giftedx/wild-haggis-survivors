@@ -8,6 +8,8 @@
  * Two detuned triangle oscillators + a sub-octave sine for warmth,
  * through a lowpass filter. The detuning creates slow organic beating.
  */
+import { clamp01 } from '../../utils/math';
+
 export class DroneLayer {
   private osc1: OscillatorNode | null = null;
   private osc2: OscillatorNode | null = null;
@@ -81,7 +83,7 @@ export class DroneLayer {
   ): void {
     if (!this.osc1 || !this.osc2 || !this.padGain || !this.filter || !this.subGain) return;
     const t = ctx.currentTime + transitionSec;
-    const moor = Math.max(0, Math.min(1, biomeTimbre));
+    const moor = clamp01(biomeTimbre);
 
     // Volume: silent at start, fades in as intensity grows
     // Only becomes noticeable after intensity > 0.15 (~3 minutes in)

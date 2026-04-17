@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotateVectorIntoPrecomputed } from './math';
+import { rotateVectorIntoPrecomputed, clamp01 } from './math';
 
 function expectVec(v: { x: number; y: number }, ex: number, ey: number) {
   expect(v.x).toBeCloseTo(ex, 8);
@@ -60,5 +60,38 @@ describe('rotateVectorIntoPrecomputed', () => {
     const r = rotateVectorIntoPrecomputed(out, 1, 0, 1, 0);
     expect(r).toBe(out);
     expectVec(out, 1, 0);
+  });
+});
+
+describe('clamp01', () => {
+  it('values in [0, 1] pass through unchanged', () => {
+    expect(clamp01(0)).toBe(0);
+    expect(clamp01(0.5)).toBe(0.5);
+    expect(clamp01(1)).toBe(1);
+  });
+
+  it('negative values clamp to 0', () => {
+    expect(clamp01(-0.1)).toBe(0);
+    expect(clamp01(-1000)).toBe(0);
+  });
+
+  it('values above 1 clamp to 1', () => {
+    expect(clamp01(1.0001)).toBe(1);
+    expect(clamp01(9999)).toBe(1);
+  });
+
+  it('edges are inclusive', () => {
+    expect(clamp01(0)).toBe(0);
+    expect(clamp01(1)).toBe(1);
+  });
+
+  it('matches the Math.max(0, Math.min(1, x)) pattern for normal inputs', () => {
+    for (const x of [-5, -1, -0.5, 0, 0.25, 0.5, 0.75, 1, 1.5, 10]) {
+      expect(clamp01(x)).toBe(Math.max(0, Math.min(1, x)));
+    }
+  });
+
+  it('NaN stays NaN (matches the old pattern)', () => {
+    expect(Number.isNaN(clamp01(NaN))).toBe(true);
   });
 });

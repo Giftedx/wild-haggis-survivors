@@ -9,6 +9,7 @@ import { MOTION_TIMING } from '../../core/motionTiming';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from '../audioContext';
 import { expApproach } from './musicMath';
+import { clamp01 } from '../../utils/math';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
@@ -263,7 +264,7 @@ class ProceduralMusicEngine {
    */
   notifyGameplaySfxImpulse(strength: number): void {
     if (!this.playing || this.fadingOut) return;
-    const s = Math.max(0, Math.min(1, strength));
+    const s = clamp01(strength);
     this.musicSfxDuck = Math.min(1, this.musicSfxDuck + s);
   }
 
@@ -417,7 +418,7 @@ class ProceduralMusicEngine {
 
   /** Air-gapped prefs — scales dynamic music level. */
   applyUserVolume(masterVolume: number, musicVolume: number): void {
-    this.userMusicVolume = Math.max(0, Math.min(1, masterVolume)) * Math.max(0, Math.min(1, musicVolume));
+    this.userMusicVolume = clamp01(masterVolume) * clamp01(musicVolume);
     if (this.masterGain && this.ctx) {
       const t = this.ctx.currentTime;
       const target = this.enabled ? 0.25 * this.userMusicVolume : 0;

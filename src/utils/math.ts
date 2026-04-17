@@ -15,3 +15,16 @@ export function rotateVectorIntoPrecomputed(
   out.y = x * sin + y * cos;
   return out;
 }
+
+/**
+ * Clamp a value to the closed [0, 1] range. Replaces the
+ * `Math.max(0, Math.min(1, x))` pattern that was duplicated across
+ * volume mixers, HP fractions, fade progress, and cooldown
+ * normalisers. NaN inputs stay NaN (Math.max/min already do that);
+ * callers needing a default should handle it before calling.
+ */
+export function clamp01(x: number): number {
+  if (x < 0) return 0;
+  if (x > 1) return 1;
+  return x;
+}

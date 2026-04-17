@@ -11,6 +11,7 @@ import type { EliteAffixId } from '../data/eliteAffixes';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
 import { musicEngine } from './music/ProceduralMusicEngine';
+import { clamp01 } from '../utils/math';
 
 const BASE_SFX_GAIN = 0.3;
 
@@ -66,7 +67,7 @@ export class AudioSystem {
 
   /** Air-gapped prefs — does not touch meta save. */
   applyFromSettings(masterVolume: number, sfxVolume: number): void {
-    this.sfxGainMultiplier = Math.max(0, Math.min(1, masterVolume)) * Math.max(0, Math.min(1, sfxVolume));
+    this.sfxGainMultiplier = clamp01(masterVolume) * clamp01(sfxVolume);
     this.refreshOutputGain();
   }
 
