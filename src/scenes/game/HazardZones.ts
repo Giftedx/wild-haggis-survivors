@@ -16,6 +16,7 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
+import { computeHazardDamage, HEAL_ZONE_HEAL_AMOUNT, LAVA_BASE_DAMAGE } from './hazardDamage';
 
 export interface HazardZonesHooks {
   getPlayer(): Player;
@@ -127,7 +128,7 @@ export class HazardZones {
         const dx = player.x - z.x;
         const dy = player.y - z.y;
         if (dx * dx + dy * dy < rSq) {
-          const hazardDmg = Math.max(1, Math.round(3 * this.hooks.getDamageTakenMult()));
+          const hazardDmg = computeHazardDamage(LAVA_BASE_DAMAGE, this.hooks.getDamageTakenMult());
           const hpBefore = player.getHp();
           const dead = player.takeDamage(hazardDmg);
           if (!dead) {
@@ -158,7 +159,7 @@ export class HazardZones {
         if (!player.active) continue;
         const dx = player.x - z.x;
         const dy = player.y - z.y;
-        if (dx * dx + dy * dy < rSq) player.heal(2);
+        if (dx * dx + dy * dy < rSq) player.heal(HEAL_ZONE_HEAL_AMOUNT);
       }
     }
   }
