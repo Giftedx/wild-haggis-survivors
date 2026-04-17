@@ -20,6 +20,11 @@ import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveLoadoutBadgeStyle, formatVariantRequirementLine } from './loadoutBadge';
 import { resolveToggleTextColor } from './toggleTextPalette';
+import {
+  resolveVariantPanelStroke,
+  resolveVariantNameColor,
+  resolveVariantTallyColor,
+} from './variantPanelStyle';
 import { computeMenuLayout } from './menuLayout';
 
 /**
@@ -262,7 +267,7 @@ export class MenuScene extends Phaser.Scene {
 
     const panel = this.add
       .rectangle(panelX, panelY, panelWidth, panelHeight, 0x10192d, 0.95)
-      .setStrokeStyle(2, unlocked ? 0x4f77b7 : 0x3f4657, 1);
+      .setStrokeStyle(2, resolveVariantPanelStroke(unlocked), 1);
     this.variantPanelElements.push(panel);
 
     const header = this.add.text(panelX - panelWidth / 2 + 18, panelY - 68, t('ui.loadout.variant_loadout'), {
@@ -305,7 +310,7 @@ export class MenuScene extends Phaser.Scene {
     const nameText = this.add.text(infoX, panelY - 42, t(variant.nameKey), {
       fontFamily: 'monospace',
       fontSize: '24px',
-      color: unlocked ? '#ffffff' : '#d1d6e0',
+      color: resolveVariantNameColor(unlocked),
       fontStyle: 'bold',
     });
     // Wrap instead of truncating — all 5 flavors currently exceed 42 chars,
@@ -354,7 +359,7 @@ export class MenuScene extends Phaser.Scene {
           {
             fontFamily: 'monospace',
             fontSize: '11px',
-            color: variantStats.wins > 0 ? '#9de6a8' : '#a4a9b4',
+            color: resolveVariantTallyColor(variantStats.wins),
             fontStyle: 'italic',
           },
         );
