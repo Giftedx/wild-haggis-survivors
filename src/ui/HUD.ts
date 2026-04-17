@@ -10,6 +10,7 @@ import { resolveWeaponIconKey } from './hudWeaponIcon';
 import { weaponPulseState } from './hudWeaponPulse';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
 import { targetHpBarColor, packRgbColor } from './hudHpBarColor';
+import { resolveWaveLabel } from './hudWaveLabel';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -452,14 +453,7 @@ export class HUD {
     const secs = Math.floor(gameTimeSec % 60);
     // Wave difficulty indicator — resolved from BALANCE.hud so tuning stays
     // single-sourced with the wave timeline, not drifting inside UI code.
-    let wave: string = BALANCE.hud.WAVE_DIFFICULTY_MARKS[0].label;
-    let waveColor: string = BALANCE.hud.WAVE_DIFFICULTY_MARKS[0].color;
-    for (const mark of BALANCE.hud.WAVE_DIFFICULTY_MARKS) {
-      if (gameTimeSec >= mark.minSec) {
-        wave = mark.label;
-        waveColor = mark.color;
-      }
-    }
+    const { label: wave, color: waveColor } = resolveWaveLabel(gameTimeSec);
     // Only update timer + objective text when the displayed second changes
     if (mins !== this.prevMins || secs !== this.prevSecs) {
       this.prevMins = mins;
