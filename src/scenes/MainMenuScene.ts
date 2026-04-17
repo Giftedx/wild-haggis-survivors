@@ -19,6 +19,7 @@ import {
   MAIN_MENU_DEEDS_PALETTE,
   MAIN_MENU_OPTIONS_PALETTE,
 } from './mainMenuButtonPalettes';
+import { MAIN_MENU_HEARTH } from './mainMenuHearthPalette';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -577,22 +578,22 @@ export class MainMenuScene extends Phaser.Scene {
       // Slightly higher + warmer core so it reads as hearth embers, not an XP orb pickup.
       const fireY = optY + 52;
       const fireBase = this.add
-        .ellipse(fireX, fireY + 6, 40, 8, 0x3a2410, 0.85)
+        .ellipse(fireX, fireY + 6, 40, 8, MAIN_MENU_HEARTH.base, MAIN_MENU_HEARTH.baseAlpha)
         .setDepth(-1);
       const fireGlowOuter = this.add
-        .ellipse(fireX, fireY, 38, 16, 0xff7a1a, 0.25)
+        .ellipse(fireX, fireY, 38, 16, MAIN_MENU_HEARTH.glowOuter, MAIN_MENU_HEARTH.glowOuterAlpha)
         .setDepth(-1);
       const fireGlowInner = this.add
-        .ellipse(fireX, fireY - 2, 22, 12, 0xffc255, 0.55)
+        .ellipse(fireX, fireY - 2, 22, 12, MAIN_MENU_HEARTH.glowInner, MAIN_MENU_HEARTH.glowInnerAlpha)
         .setDepth(-1);
       const fireCore = this.add
-        .ellipse(fireX, fireY - 4, 8, 6, 0xff8833, 0.88)
+        .ellipse(fireX, fireY - 4, 8, 6, MAIN_MENU_HEARTH.core, MAIN_MENU_HEARTH.coreAlpha)
         .setDepth(-1);
       // ── Layered smoke wisps (multiple, staggered, drifting) ──
       const smokeWisps: Phaser.GameObjects.Ellipse[] = [];
       for (let si = 0; si < 3; si++) {
         const wisp = this.add
-          .ellipse(fireX + (si - 1) * 4, fireY - 14, 12 + si * 4, 5 + si, 0xccbbaa, 0.12 - si * 0.02)
+          .ellipse(fireX + (si - 1) * 4, fireY - 14, 12 + si * 4, 5 + si, MAIN_MENU_HEARTH.smoke, 0.12 - si * 0.02)
           .setDepth(-2);
         smokeWisps.push(wisp);
         this.tweens.add({
@@ -615,7 +616,7 @@ export class MainMenuScene extends Phaser.Scene {
       const embers: Phaser.GameObjects.Arc[] = [];
       for (let ei = 0; ei < 4; ei++) {
         const ember = this.add
-          .circle(fireX, fireY - 6, 1.5, 0xff8833, 0.7)
+          .circle(fireX, fireY - 6, 1.5, MAIN_MENU_HEARTH.ember, MAIN_MENU_HEARTH.emberAlpha)
           .setDepth(-1);
         embers.push(ember);
         this.tweens.add({
