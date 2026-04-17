@@ -28,6 +28,7 @@ import {
   formatCurseStatsLine,
   computeStandingStonesStats,
   formatRelativeTime,
+  formatRerunTooltip,
   formatRouteBreadcrumb,
   lifetimeTotals,
   type ChronicleMood,
@@ -479,6 +480,8 @@ export class ChronicleScene extends Phaser.Scene {
       // rerunning before they click.
       if (typeof entry.runSeed === 'number') {
         const seedCode = encodeSeed(entry.runSeed);
+        const tooltipCurseLabel = curseDef ? t(curseDef.nameKey) : null;
+        const tooltipText = formatRerunTooltip(seedCode, tooltipCurseLabel);
         const rerun = this.add
           .text(width - 160, y, '↻', {
             fontFamily: 'monospace', fontSize: '18px', color: '#b8d0a8', fontStyle: 'bold',
@@ -490,7 +493,7 @@ export class ChronicleScene extends Phaser.Scene {
         const showTooltip = () => {
           rerun.setColor('#e8fbd0');
           if (tooltip) return;
-          tooltip = this.add.text(width - 170, y, `rerun ${seedCode}`, {
+          tooltip = this.add.text(width - 170, y, tooltipText, {
             fontFamily: 'monospace', fontSize: '10px', color: '#b8d0a8', fontStyle: 'italic',
           }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10);
           this.runRowObjects.push(tooltip);

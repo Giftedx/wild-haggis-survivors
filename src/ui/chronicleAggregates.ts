@@ -691,3 +691,21 @@ export function formatCurseStatsLine(
     victories: stats.curseVictories,
   });
 }
+
+// ── Rerun tooltip ────────────────────────────────────────────────────
+
+/**
+ * Hover label on a run row's ↻ rerun button. When the row carried a
+ * curse, the tooltip surfaces it (`rerun ABC-123 ☠ Tartan Chains`) so
+ * the player isn't surprised that the rerun also re-applies the curse.
+ *
+ * `curseLabel` is the resolved display name (already passed through
+ * `t(curseDef.nameKey)` by the caller) — keeping the helper free of
+ * curse-data lookups means it's pure and easy to test.
+ */
+export function formatRerunTooltip(seedCode: string, curseLabel?: string | null): string {
+  if (curseLabel && curseLabel.length > 0) {
+    return t('ui.chronicle.rerun_tooltip_with_curse', { seed: seedCode, curse: curseLabel });
+  }
+  return t('ui.chronicle.rerun_tooltip', { seed: seedCode });
+}

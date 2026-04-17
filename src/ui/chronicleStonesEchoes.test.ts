@@ -7,6 +7,7 @@ import {
   formatCurseStatsLine,
   formatHearthBeatsLine,
   formatPostBellLine,
+  formatRerunTooltip,
   formatStandingStonesLine,
   listCursesBested,
 } from './chronicleAggregates';
@@ -352,5 +353,20 @@ describe('computeVariantRunStats', () => {
 
   it('handles an empty history without throwing', () => {
     expect(computeVariantRunStats([], 'classic')).toEqual({ runs: 0, wins: 0 });
+  });
+});
+
+describe('formatRerunTooltip', () => {
+  it('renders just the seed when no curse was active', () => {
+    expect(formatRerunTooltip('ABC-123')).toBe('rerun ABC-123');
+  });
+
+  it('appends the curse name when one carries forward', () => {
+    expect(formatRerunTooltip('ABC-123', 'Tartan Chains')).toBe('rerun ABC-123 ☠ Tartan Chains');
+  });
+
+  it('treats null / empty curse label as absent', () => {
+    expect(formatRerunTooltip('XYZ-999', null)).toBe('rerun XYZ-999');
+    expect(formatRerunTooltip('XYZ-999', '')).toBe('rerun XYZ-999');
   });
 });

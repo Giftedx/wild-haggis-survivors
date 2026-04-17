@@ -144,6 +144,10 @@ export const EN_STRINGS: LocaleTree = {
       run_daily_tag: '[DAILY]',
       /** Badge rendered on a run row where the player bore a curse. */
       run_curse_chip: '⚖ {curse}',
+      /** Hover tooltip on the rerun-this-seed button. */
+      rerun_tooltip: 'rerun {seed}',
+      /** Same tooltip when the rerun will carry a curse forward. */
+      rerun_tooltip_with_curse: 'rerun {seed} ☠ {curse}',
 
       // W2 Moor Road log — appended to run rows that hit a picker.
       moorRoad: {
@@ -1876,6 +1880,8 @@ export const SCS_STRINGS: LocaleTree = {
       run_row_defeat: '{time} · {kills} culls · L{level} · {variant}',
       run_daily_tag: '[DAILY]',
       run_curse_chip: '⚖ {curse}',
+      rerun_tooltip: 'rerun {seed}',
+      rerun_tooltip_with_curse: 'rerun {seed} ☠ {curse}',
       moorRoad: {
         title: 'Moor Road log',
         empty: 'Ye\'ve no picked a road yet. Heid oot, choose canny.',
