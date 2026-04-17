@@ -1408,6 +1408,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'The Moor Remembers',
       description: 'Touched an Ancestral Echo — nae grief wasted.',
     },
+    ach_ceilidh_commander: {
+      title: 'Ceilidh Commander',
+      description: 'Pulled fifteen ceilidh chains — the moor\'s dancin\' tae yer beat.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

@@ -128,6 +128,13 @@ export interface SaveData {
    */
   ancestralEchoesTouched?: number;
 
+  /**
+   * Lifetime count of Ceilidh Chain pulses fired (every-8th-kill magnet
+   * flare). Powers the "Ceilidh Commander" deed once the lifetime count
+   * crosses its threshold. Optional + defaulted.
+   */
+  ceilidhPulsesLifetime?: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -386,6 +393,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
+    ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     runHistory: coerceRunHistory(candidate.runHistory),
     settings: coerceSettings(candidate.settings),
   };

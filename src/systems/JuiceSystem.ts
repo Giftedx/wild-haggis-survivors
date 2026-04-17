@@ -14,6 +14,7 @@ import {
   isCeilidhPulseMoment,
 } from './ceilidhChain';
 import { audio } from './AudioSystem';
+import { loadSave, writeSave } from '../utils/save';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -388,6 +389,13 @@ export class JuiceSystem {
         this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
         audio.playCeilidhPulse();
         sceneHooks.getTutorialSystem?.().notifyCeilidhChainIfFirst();
+        // Lifetime counter — best-effort persistence. Feeds ach_ceilidh_commander.
+        try {
+          const cur = loadSave();
+          writeSave({ ...cur, ceilidhPulsesLifetime: (cur.ceilidhPulsesLifetime ?? 0) + 1 });
+        } catch {
+          /* best-effort */
+        }
         // Expanding green ring sells the magnet pulse — the stat boost was
         // otherwise invisible, just a silent 2s widening of pickup range.
         // Gated on reduceParticles so the low-FX path stays clean.

@@ -46,6 +46,8 @@ export interface DeedStatsSnapshot {
   codexDiscoveredCount: number;
   /** W2 Moor Road: count of distinct route keys picked across all logged runs. */
   uniqueRoutesWalked: number;
+  /** Lifetime Ceilidh Chain pulses fired — feeds ach_ceilidh_commander. */
+  ceilidhPulsesLifetime: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -68,6 +70,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_full_herd',
   'ach_echo_touched',
   'ach_stone_circle',
+  'ach_ceilidh_commander',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -80,6 +83,7 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_first_victory: { target: 1, readCurrent: (s) => Math.min(1, s.victories) },
   ach_moor_hearth_30: { target: 30, readCurrent: (s) => s.moorMomentsLifetime },
   ach_walk_every_road: { target: 6, readCurrent: (s) => Math.min(6, s.uniqueRoutesWalked) },
+  ach_ceilidh_commander: { target: 15, readCurrent: (s) => s.ceilidhPulsesLifetime },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

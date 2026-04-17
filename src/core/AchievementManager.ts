@@ -121,6 +121,13 @@ export class AchievementManager {
       if ((gameplay.ancestralEchoesTouched ?? 0) > 0) {
         this.tryUnlock('ach_echo_touched');
       }
+
+      // ach_ceilidh_commander — fired 15 lifetime Ceilidh Chain pulses
+      // (every-8th-kill flares). Threshold is comfortable for a mid-game
+      // player: ~2-3 full runs with competent combo play.
+      if ((gameplay.ceilidhPulsesLifetime ?? 0) >= 15) {
+        this.tryUnlock('ach_ceilidh_commander');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

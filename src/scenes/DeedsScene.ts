@@ -51,6 +51,7 @@ export class DeedsScene extends Phaser.Scene {
       unlockedIds: meta.unlockedAchievements,
       codexDiscoveredCount: meta.codexCulledKeys.length,
       uniqueRoutesWalked: uniqueRouteKeys.size,
+      ceilidhPulsesLifetime: gameplay.ceilidhPulsesLifetime ?? 0,
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);

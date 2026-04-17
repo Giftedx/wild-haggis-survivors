@@ -243,7 +243,8 @@ export type AchievementId =
   | 'ach_full_herd'
   | 'ach_laird_victor'
   | 'ach_stone_circle'
-  | 'ach_echo_touched';
+  | 'ach_echo_touched'
+  | 'ach_ceilidh_commander';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -323,6 +324,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_echo_touched: {
     titleKey: 'achievement.ach_echo_touched.title',
     descriptionKey: 'achievement.ach_echo_touched.description',
+  },
+  ach_ceilidh_commander: {
+    titleKey: 'achievement.ach_ceilidh_commander.title',
+    descriptionKey: 'achievement.ach_ceilidh_commander.description',
   },
 };
 
