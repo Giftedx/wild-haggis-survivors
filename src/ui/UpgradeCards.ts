@@ -4,6 +4,7 @@ import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
 import { resolveCardRarityGlowStyle } from './cardRarityGlowStyle';
+import { computeUpgradeCardLayout } from './upgradeCardLayout';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -128,24 +129,10 @@ export class UpgradeCardsUI {
       });
     }
 
-    // Card layout — scale down if too many cards for the screen width
-    const maxCardW = 210;
-    const gap = Math.max(10, Math.min(20, Math.round(width * 0.02)));
-    const sideMargin = Math.max(16, Math.round(width * 0.06));
-    const hoverScale = 1.05;
-    const availableW = Math.max(160, width - sideMargin * 2);
-    // Reserve room for hover expansion so edge cards do not clip at narrow widths.
-    let cardW = Math.min(maxCardW, ((availableW - (cards.length - 1) * gap) / cards.length) / hoverScale);
-    cardW = Math.max(90, cardW);
-    if (cards.length * cardW + (cards.length - 1) * gap > availableW) {
-      cardW = Math.max(72, (availableW - (cards.length - 1) * gap) / cards.length);
-    }
-    const cardH = Math.round(cardW * (260 / 210)); // maintain aspect ratio
-    const totalW = cards.length * cardW + (cards.length - 1) * gap;
-    const startX = left + sideMargin + cardW / 2 + Math.max(0, (availableW - totalW) / 2);
-    const minCardY = cardH / 2 + 20;
-    const maxCardY = height - cardH / 2 - 72;
-    const cardY = top + Math.max(minCardY, Math.min(height / 2 + 20, maxCardY));
+    // Card layout — responsive maths extracted to upgradeCardLayout.ts.
+    const { cardW, cardH, gap, startX, cardY } = computeUpgradeCardLayout({
+      left, top, width, height, cardCount: cards.length,
+    });
 
     cards.forEach((card, i) => {
       const x = startX + i * (cardW + gap);
