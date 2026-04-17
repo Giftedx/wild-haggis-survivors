@@ -23,6 +23,7 @@ import {
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
 import { downloadPostcard } from '../utils/postcard';
+import { copyTextToClipboard } from '../utils/clipboard';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -740,7 +741,7 @@ export class GameOverScene extends Phaser.Scene {
 
     let copied = false;
     const doCopy = () => {
-      const ok = this.copyToClipboard(code);
+      const ok = copyTextToClipboard(code);
       if (ok && !copied) {
         copied = true;
         text.setText(t('ui.gameOver.seed_copied', { code }));
@@ -847,33 +848,6 @@ export class GameOverScene extends Phaser.Scene {
       setPendingCurse(def ? def.key : null);
       this.scene.start('Game', { seed: p.runSeed, forceVariantKey: p.variantKey });
     });
-  }
-
-  /** Best-effort clipboard write; returns true on success. */
-  private copyToClipboard(text: string): boolean {
-    const nav = (globalThis as unknown as { navigator?: { clipboard?: { writeText: (s: string) => Promise<void> } } }).navigator;
-    if (nav?.clipboard?.writeText) {
-      // Fire-and-forget — permission dialogs resolve async; even if the user
-      // denies we still show the copied-state since pasting will fail
-      // naturally and the code is visible in the label anyway.
-      void nav.clipboard.writeText(text).catch(() => { /* ignore */ });
-      return true;
-    }
-    try {
-      const doc = (globalThis as unknown as { document?: Document }).document;
-      if (!doc) return false;
-      const ta = doc.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      doc.body.appendChild(ta);
-      ta.select();
-      const ok = doc.execCommand('copy');
-      doc.body.removeChild(ta);
-      return ok;
-    } catch {
-      return false;
-    }
   }
 
 }
