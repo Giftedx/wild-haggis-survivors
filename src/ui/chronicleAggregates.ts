@@ -338,8 +338,18 @@ export function formatIronmoorLine(
     const secs = Math.floor(sec % 60).toString().padStart(2, '0');
     return `${mins}:${secs}`;
   };
-  const base = `⚔ Ironmoor — ${s.victories}/${s.attempts} wins (${pct}%) · longest ${fmt(s.longestSec)}`;
-  if (bestVictorySec > 0) return `${base} · fastest win ${fmt(bestVictorySec)}`;
+  const base = t('ui.chronicle.ironmoor_line', {
+    victories: s.victories,
+    attempts: s.attempts,
+    pct,
+    longest: fmt(s.longestSec),
+  });
+  if (bestVictorySec > 0) {
+    return t('ui.chronicle.ironmoor_line_with_fastest', {
+      base,
+      fastest: fmt(bestVictorySec),
+    });
+  }
   return base;
 }
 
@@ -525,17 +535,23 @@ export const STANDING_STONES_FAVOURITE_THRESHOLD = 3;
 
 export function formatStandingStonesLine(stats: StandingStonesStats): string {
   if (stats.total === 0) return '';
-  const parts: string[] = [`⟁ Stones walked: ${stats.total}`];
   const m = stats.byBoon.mending ?? 0;
   const f = stats.byBoon.fire ?? 0;
   const h = stats.byBoon.haste ?? 0;
-  parts.push(`(mending ${m} · fire ${f} · haste ${h})`);
+  const base = t('ui.chronicle.stones_walked_line', {
+    total: stats.total,
+    mending: m,
+    fire: f,
+    haste: h,
+  });
   if (stats.favouriteBoon && stats.total >= STANDING_STONES_FAVOURITE_THRESHOLD) {
     const titleKey = `ui.standingStones.${stats.favouriteBoon}.title`;
     const title = t(titleKey);
-    if (title && title !== titleKey) parts.push(`· favourite ${title}`);
+    if (title && title !== titleKey) {
+      return t('ui.chronicle.stones_walked_line_with_fav', { base, favourite: title });
+    }
   }
-  return parts.join(' ');
+  return base;
 }
 
 /**
@@ -545,7 +561,7 @@ export function formatStandingStonesLine(stats: StandingStonesStats): string {
 export function formatAncestralEchoesLine(save: SaveData): string {
   const n = save.ancestralEchoesTouched ?? 0;
   if (n === 0) return '';
-  return `⟡ Echoes touched: ${n}`;
+  return t('ui.chronicle.echoes_touched_line', { count: n });
 }
 
 /**

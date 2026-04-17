@@ -124,6 +124,11 @@ export const EN_STRINGS: LocaleTree = {
       past_the_bell_line: '🔔 Past the bell — best {time}',
       hearth_beats_line: '🌾 Hearth beats: {count}',
       curses_line: '☠ Curses bested: {bested} / {total} ({victories} wins, {runs} attempts)',
+      stones_walked_line: '⟁ Stones walked: {total} (mending {mending} · fire {fire} · haste {haste})',
+      stones_walked_line_with_fav: '{base} · favourite {favourite}',
+      echoes_touched_line: '⟡ Echoes touched: {count}',
+      ironmoor_line: '⚔ Ironmoor — {victories}/{attempts} wins ({pct}%) · longest {longest}',
+      ironmoor_line_with_fastest: '{base} · fastest win {fastest}',
 
       // ── Cull codex (meta SaveManager — first kill per enemy key) ──
       codex_heading: 'CULL CODEX',
@@ -1856,6 +1861,11 @@ export const SCS_STRINGS: LocaleTree = {
       past_the_bell_line: '🔔 Past tha bell — best {time}',
       hearth_beats_line: '🌾 Hearth beats: {count}',
       curses_line: '☠ Curses bested: {bested} / {total} ({victories} wins, {runs} tries)',
+      stones_walked_line: '⟁ Stanes walked: {total} (mendin {mending} · fire {fire} · haste {haste})',
+      stones_walked_line_with_fav: '{base} · favourite {favourite}',
+      echoes_touched_line: '⟡ Echoes touched: {count}',
+      ironmoor_line: '⚔ Ironmoor — {victories}/{attempts} wins ({pct}%) · longest {longest}',
+      ironmoor_line_with_fastest: '{base} · fastest win {fastest}',
       codex_heading: 'CULL CODEX',
       codex_progress: '{discovered} / {total} beasties logged',
       codex_empty: 'Nae names in tha book yet — tha moor\'s still hauldin secrets.',
