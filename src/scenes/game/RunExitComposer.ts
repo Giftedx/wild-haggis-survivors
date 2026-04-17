@@ -60,6 +60,16 @@ export interface RunExitHooks {
   stopGameScene(): void;
   startGameOverScene(payload: GameOverPayload): void;
   startMainMenuScene(): void;
+
+  /**
+   * Called from `abandonToMainMenu` to tear down the window-level
+   * `pagehide` / `beforeunload` auto-save listeners before transitioning.
+   * Without this, a pagehide event firing in the race window between
+   * the abandon confirm and the scene unload could persist a stale
+   * `activeRun` snapshot for a run the player explicitly quit — and the
+   * next MainMenu → Resume button would offer to continue it.
+   */
+  unregisterRunAutoSave(): void;
 }
 
 /** Number of weapons listed per line in the build summary. */
@@ -175,6 +185,14 @@ export class RunExitComposer {
 
   /** Quit-to-menu from a pause menu or forfeit path. Drops the active run. */
   abandonToMainMenu(): void {
+    // Tear down the auto-save listener FIRST so the pagehide /
+    // beforeunload race between the clear + scene-start calls below
+    // can't re-persist a snapshot of the run the player just quit.
+    try {
+      this.hooks.unregisterRunAutoSave();
+    } catch {
+      /* ignore */
+    }
     try {
       this.hooks.getSaveManager().clearActiveRun();
     } catch {

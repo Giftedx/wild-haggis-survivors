@@ -578,6 +578,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       stopGameScene: () => this.scene.stop('Game'),
       startGameOverScene: (payload) => this.scene.start('GameOver', payload),
       startMainMenuScene: () => this.scene.start('MainMenu'),
+      unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
     });
 
     // Run history recorder — writes to meta save on run end, updates

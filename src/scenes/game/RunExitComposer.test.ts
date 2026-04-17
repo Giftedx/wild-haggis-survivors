@@ -35,6 +35,7 @@ function buildMocks(
   const stopGameScene = vi.fn();
   const startGameOverScene = vi.fn();
   const startMainMenuScene = vi.fn();
+  const unregisterRunAutoSave = vi.fn();
 
   const score = new RunScoreState();
   score.killCount = overrides.kills ?? 250;
@@ -77,8 +78,9 @@ function buildMocks(
     stopGameScene,
     startGameOverScene,
     startMainMenuScene,
+    unregisterRunAutoSave,
   };
-  return { hooks, saveManager, stopGameScene, startGameOverScene, startMainMenuScene };
+  return { hooks, saveManager, stopGameScene, startGameOverScene, startMainMenuScene, unregisterRunAutoSave };
 }
 
 describe('RunExitComposer', () => {
@@ -253,6 +255,24 @@ describe('RunExitComposer', () => {
 
     it('still starts MainMenu when clearActiveRun throws', () => {
       const { hooks, startMainMenuScene } = buildMocks({ saveThrows: true });
+      expect(() => new RunExitComposer(hooks).abandonToMainMenu()).not.toThrow();
+      expect(startMainMenuScene).toHaveBeenCalledOnce();
+    });
+
+    it('tears down the auto-save listener BEFORE clearing, so a pagehide race cannot re-persist', () => {
+      const { hooks, saveManager, unregisterRunAutoSave } = buildMocks();
+      new RunExitComposer(hooks).abandonToMainMenu();
+      expect(unregisterRunAutoSave).toHaveBeenCalledOnce();
+      // Order invariant: unregister happens before clearActiveRun so a
+      // pagehide fired between the two calls can't run persist() and
+      // snapshot a half-torn-down scene after the clear.
+      expect(unregisterRunAutoSave.mock.invocationCallOrder[0])
+        .toBeLessThan(saveManager.clearActiveRun.mock.invocationCallOrder[0]);
+    });
+
+    it('still tears down MainMenu if unregisterRunAutoSave throws', () => {
+      const { hooks, startMainMenuScene, unregisterRunAutoSave } = buildMocks();
+      unregisterRunAutoSave.mockImplementation(() => { throw new Error('fail'); });
       expect(() => new RunExitComposer(hooks).abandonToMainMenu()).not.toThrow();
       expect(startMainMenuScene).toHaveBeenCalledOnce();
     });
