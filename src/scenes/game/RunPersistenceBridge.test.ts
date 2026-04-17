@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { RunPersistenceBridge, type RunPersistenceHooks } from './RunPersistenceBridge';
 import { RunScoreState } from './RunScoreState';
+import { RunActState } from './RunActState';
+import { defaultModifiers } from '../../core/RunModifiers';
 
 /**
  * Harness covers the snapshot shape (schema drift is a known risk class
@@ -30,7 +32,9 @@ function buildState(
     owned: counters.owned ?? [],
     evolved: counters.evolved ?? [],
   };
-  return { score, flags };
+  const actState = new RunActState();
+  const modifiers = defaultModifiers();
+  return { score, flags, actState, modifiers };
 }
 
 function buildHooks(
@@ -47,6 +51,7 @@ function buildHooks(
       { config: { key: 'claymore' }, level: 5, evolved: true, evolutionKey: 'legendary_claymore' },
     ],
     replaceWeaponsFromRun: vi.fn(),
+    setCurseCooldownMul: vi.fn(),
   };
   const timeManager = { has: vi.fn((k: string) => k === 'RUN_END' && !!overrides.runEnd) };
   const hooks: RunPersistenceHooks = {
@@ -76,6 +81,7 @@ function buildHooks(
         getGameTimeSec: () => 180.5,
         getSpawnedBossKeys: () => ['gordon'],
         applyResumeTime: vi.fn(),
+        setSpawnIntervalMult: vi.fn(),
       }) as never,
     getJuice: () =>
       ({
@@ -94,6 +100,8 @@ function buildHooks(
     getSaveManager: () => saveManager as never,
     getActiveVariant: () => ({ key: 'moor_runner' }) as never,
     getRunScore: () => score,
+    getRunActState: () => stateBundle.actState,
+    getRunModifiers: () => stateBundle.modifiers,
     getRevivalAvailable: () => flags.revival,
     getOwnedPassives: () => flags.owned,
     getEvolvedWeapons: () => flags.evolved,
@@ -153,6 +161,11 @@ describe('RunPersistenceBridge', () => {
         weaponDamage: { thistle_shot: 5000 },
         spawnedBossKeys: ['gordon'],
         shieldCooldownMs: 0,
+        actState: {
+          currentAct: 1,
+          actStartTimeSec: 0,
+          pickerHistory: [],
+        },
       });
     });
 
@@ -224,6 +237,62 @@ describe('RunPersistenceBridge', () => {
       expect(score.coinGoldEarned).toBe(30);
       expect(flags.revival).toBe(true);
       expect(flags.owned).toEqual(['greaves']);
+    });
+
+    it('restores RunActState + re-applies route modifierDeltas from pickerHistory', () => {
+      const state = buildState();
+      const { hooks, weapons } = buildHooks(state);
+      // Mock spawnSystem on hooks so we can assert setSpawnIntervalMult was called.
+      const spawnSys = {
+        getGameTimeSec: () => 0,
+        getSpawnedBossKeys: () => [],
+        applyResumeTime: vi.fn(),
+        setSpawnIntervalMult: vi.fn(),
+      };
+      hooks.getSpawnSystem = () => spawnSys as never;
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        bossKillCount: 1,
+        bossGoldEarned: 0,
+        coinGoldEarned: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 360,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: ['gordon'],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 2,
+          actStartTimeSec: 300,
+          pickerHistory: [
+            {
+              slot: 'A',
+              routeKey: 'through_the_kirkyard',
+              atGameTimeSec: 300,
+              defaultedBySetting: false,
+            },
+          ],
+        },
+      } as never);
+      // Act state mirrors the snapshot — no re-picker fires on the re-killed gordon.
+      expect(state.actState.currentAct).toBe(2);
+      expect(state.actState.actStartTimeSec).toBe(300);
+      expect(state.actState.pickerHistory).toHaveLength(1);
+      expect(state.actState.pickerHistory[0].routeKey).toBe('through_the_kirkyard');
+      // runModifiers route log + multiplier replayed.
+      expect(state.modifiers.routePicks).toHaveLength(1);
+      expect(state.modifiers.spawnIntervalMult).toBe(0.7);
+      // SpawnSystem + WeaponSystem caches resynced (the core bug fix).
+      expect(spawnSys.setSpawnIntervalMult).toHaveBeenCalledWith(0.7);
+      expect(weapons.setCurseCooldownMul).toHaveBeenCalledWith(1);
     });
 
     it('clamps negative counters to 0 (defensive against malformed saves)', () => {

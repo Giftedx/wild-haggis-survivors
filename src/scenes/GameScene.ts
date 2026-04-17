@@ -517,6 +517,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSaveManager: () => this.metaSaveManager,
       getActiveVariant: () => this.activeVariant,
       getRunScore: () => this.runScore,
+      getRunActState: () => this.runActState,
+      getRunModifiers: () => this.runModifiers,
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,

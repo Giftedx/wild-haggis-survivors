@@ -23,6 +23,11 @@ import type { MoorMomentScheduler } from './MoorMomentScheduler';
 import type { LevelUpFlow } from './LevelUpFlow';
 import type { VariantDef } from '../../data/variants';
 import type { RunScoreState } from './RunScoreState';
+import type { RunActState } from './RunActState';
+import type { RunModifiers } from '../../core/RunModifiers';
+import type { PickerSlot, RouteKey } from '../../data/routes';
+import { getRoute } from '../../data/routes';
+import { applyRouteModifierDeltas } from '../actIntermissionResolve';
 
 export interface RunPersistenceHooks {
   // Systems (reads)
@@ -40,6 +45,12 @@ export interface RunPersistenceHooks {
 
   /** Shared per-run score (kill/boss/gold counters). Read + mutated in place. */
   getRunScore(): RunScoreState;
+
+  /** W2 Moor Road act state — read + mutated in place across the resume path. */
+  getRunActState(): RunActState;
+
+  /** Run-scoped modifier bag — read + mutated on resume to re-apply route deltas. */
+  getRunModifiers(): RunModifiers;
 
   // Non-score run flags (still scene-owned for now).
   getRevivalAvailable(): boolean;
@@ -96,6 +107,7 @@ export class RunPersistenceBridge {
       weaponDamage: h.getRunStatsTracker().snapshot(),
       spawnedBossKeys: h.getSpawnSystem().getSpawnedBossKeys(),
       shieldCooldownMs: player.getShieldCooldownMs(),
+      actState: snapshotRunActState(h.getRunActState()),
     };
   }
 
@@ -161,6 +173,13 @@ export class RunPersistenceBridge {
     }
     h.getRunStatsTracker().restore(run.weaponDamage);
     h.getMoorMoments().pushAfterResume(run.gameTimeSec);
+    restoreRunActStateAndModifiers(
+      run.actState,
+      h.getRunActState(),
+      h.getRunModifiers(),
+      h.getSpawnSystem(),
+      h.getWeaponSystem(),
+    );
   }
 
   /**
@@ -188,5 +207,70 @@ export class RunPersistenceBridge {
     window.removeEventListener('pagehide', this.pageHideBound);
     window.removeEventListener('beforeunload', this.pageHideBound);
     this.pageHideBound = undefined;
+  }
+}
+
+/**
+ * Flatten the live `RunActState` instance into the plain serialisable
+ * shape expected by `IRunState.actState`. Exported as a named module
+ * function so the `applyResume` path and future tests can share the
+ * round-trip helpers.
+ */
+function snapshotRunActState(actState: RunActState): IRunState['actState'] {
+  return {
+    currentAct: actState.currentAct,
+    actStartTimeSec: actState.actStartTimeSec,
+    pickerHistory: actState.pickerHistory.map((p) => ({
+      slot: p.slot,
+      routeKey: p.routeKey,
+      atGameTimeSec: p.atGameTimeSec,
+      defaultedBySetting: p.defaultedBySetting,
+    })),
+  };
+}
+
+/**
+ * Rehydrate the act state + re-apply modifier deltas so resumed runs
+ * don't re-fire a picker the player already resolved AND keep their
+ * route-granted multipliers live. Silent no-op when `snapshot` is
+ * absent (pre-W2 payloads or fresh-act-1 state).
+ */
+function restoreRunActStateAndModifiers(
+  snapshot: IRunState['actState'] | undefined,
+  actState: RunActState,
+  runModifiers: RunModifiers,
+  spawnSystem: { setSpawnIntervalMult(mult: number): void },
+  weaponSystem: { setCurseCooldownMul(mul: number): void },
+): void {
+  if (!snapshot) return;
+  actState.advanceToAct(snapshot.currentAct, snapshot.actStartTimeSec);
+  for (const p of snapshot.pickerHistory) {
+    const route = safeGetRoute(p.routeKey);
+    if (!route) continue;
+    actState.recordPick({
+      slot: p.slot as PickerSlot,
+      routeKey: p.routeKey as RouteKey,
+      atGameTimeSec: p.atGameTimeSec,
+      defaultedBySetting: p.defaultedBySetting,
+    });
+    runModifiers.routePicks.push({
+      slot: p.slot as PickerSlot,
+      routeKey: p.routeKey as RouteKey,
+      atGameTimeSec: p.atGameTimeSec,
+      defaultedBySetting: p.defaultedBySetting,
+    });
+    applyRouteModifierDeltas(runModifiers, route);
+  }
+  // Resync cached multipliers — the same pair the onResolve resolver
+  // touches after every live pick.
+  spawnSystem.setSpawnIntervalMult(runModifiers.spawnIntervalMult);
+  weaponSystem.setCurseCooldownMul(runModifiers.weaponCooldownMult);
+}
+
+function safeGetRoute(key: string) {
+  try {
+    return getRoute(key as RouteKey);
+  } catch {
+    return null;
   }
 }

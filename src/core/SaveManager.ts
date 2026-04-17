@@ -25,6 +25,24 @@ export interface IRunWeaponSlot {
   evolutionKey: string;
 }
 
+/**
+ * W2 Moor Road: per-run act state snapshot. Optional on pre-W2 resume
+ * payloads; defaulted to fresh state when absent. `pickerHistory` is
+ * the source of truth for re-applying `modifierDeltas` on resume, so
+ * the runtime multipliers (`spawnIntervalMult` / `weaponCooldownMult`)
+ * don't need a separate field in `IRunState`.
+ */
+export interface IRunActStateSnapshot {
+  currentAct: 1 | 2 | 3;
+  actStartTimeSec: number;
+  pickerHistory: Array<{
+    slot: 'A' | 'B';
+    routeKey: string;
+    atGameTimeSec: number;
+    defaultedBySetting: boolean;
+  }>;
+}
+
 /** Strict mid-run snapshot (meta save `activeRun`). */
 export interface IRunState {
   gameTimeSec: number;
@@ -63,6 +81,13 @@ export interface IRunState {
   spawnedBossKeys?: string[];
   /** Highland Shield cooldown remaining in ms at snapshot time. */
   shieldCooldownMs?: number;
+  /**
+   * W2 Moor Road — act state (current act, start time, picker history).
+   * Absent on pre-W2 resume payloads; the resume path treats that as a
+   * fresh act-1 start. When present, `pickerHistory` drives replay of
+   * the route `modifierDeltas` so post-pick multipliers are preserved.
+   */
+  actState?: IRunActStateSnapshot;
 }
 
 export interface ISaveDataV3 {
@@ -346,7 +371,33 @@ function coerceIRunState(raw: unknown): IRunState | null {
       ? toStringArray(o.spawnedBossKeys)
       : undefined,
     shieldCooldownMs: toOptionalNonNegativeInt(o.shieldCooldownMs),
+    actState: coerceRunActStateSnapshot(o.actState),
   };
+}
+
+function coerceRunActStateSnapshot(raw: unknown): IRunActStateSnapshot | undefined {
+  if (raw === null || raw === undefined || typeof raw !== 'object') return undefined;
+  const o = raw as Record<string, unknown>;
+  const currentAct = o.currentAct;
+  if (currentAct !== 1 && currentAct !== 2 && currentAct !== 3) return undefined;
+  const actStartTimeSec = Math.max(0, clampNumber(o.actStartTimeSec, 0));
+  const rawHistory = o.pickerHistory;
+  const pickerHistory: IRunActStateSnapshot['pickerHistory'] = [];
+  if (Array.isArray(rawHistory)) {
+    for (const p of rawHistory) {
+      if (p === null || typeof p !== 'object') continue;
+      const pp = p as Record<string, unknown>;
+      if (pp.slot !== 'A' && pp.slot !== 'B') continue;
+      if (typeof pp.routeKey !== 'string' || pp.routeKey.length === 0) continue;
+      pickerHistory.push({
+        slot: pp.slot,
+        routeKey: pp.routeKey,
+        atGameTimeSec: Math.max(0, clampNumber(pp.atGameTimeSec, 0)),
+        defaultedBySetting: toOptionalBool(pp.defaultedBySetting) === true,
+      });
+    }
+  }
+  return { currentAct, actStartTimeSec, pickerHistory };
 }
 
 function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
