@@ -47,3 +47,4 @@ Thumbs.db
 .ralph/docs/generated/*
 !.ralph/docs/generated/.gitkeep
 .ralph_backup_*
+build-output.txt
