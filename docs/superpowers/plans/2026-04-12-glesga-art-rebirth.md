@@ -1,5 +1,7 @@
 # The Glesga Rebirth — Full Art Pass Implementation Plan
 
+> **STATUS: ✅ SHIPPED** — all sprite rewrites landed in `src/scenes/BootScene.ts` (tourist: blue cagoule + tartan bucket hat + Greggs bag + wide bewildered eyes; chef, neds, tourists, Buckfast bottles, etc. all rebuilt per spec). Checklist below was not re-ticked post-ship; treat as historical reference for the art brief.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Rework every sprite in BootScene.ts with deep Glaswegian cultural personality — every sprite should have patter, every detail should reward a Glasgow eye.

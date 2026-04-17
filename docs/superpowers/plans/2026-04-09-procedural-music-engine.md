@@ -1,5 +1,7 @@
 # Procedural Music Engine Implementation Plan
 
+> **STATUS: ✅ SHIPPED** — engine lives at `src/systems/music/` (DroneLayer, PianoLayer, PercussionLayer, NoteScheduler, Conductor, ProceduralMusicEngine + tests). Shared AudioContext at `src/systems/audioContext.ts`. Checklist below was not re-ticked post-ship; treat as historical reference for the implementation order, not an active task list.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the existing linear MusicSystem with a game-state-reactive procedural music engine ("The Invisible Band") that dynamically adapts to HP, enemy density, combos, and boss fights.

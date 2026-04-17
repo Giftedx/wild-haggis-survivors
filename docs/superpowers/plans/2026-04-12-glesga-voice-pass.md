@@ -1,5 +1,7 @@
 # Glesga Voice Pass — Implementation Plan
 
+> **STATUS: ✅ SHIPPED** — `docs/VOICE_CARD.md` landed; cold/warm strings in `src/core/i18n.ts` rewritten. Further voice work now flows through the W18 bilingual pass (English + Scots parity) and route-specific banter. Checklist below was not re-ticked post-ship; treat as historical reference.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Audit and rewrite all cold/warm i18n strings to achieve consistent Glaswegian voice across the game, create a permanent voice reference card, and ship with passing tests.

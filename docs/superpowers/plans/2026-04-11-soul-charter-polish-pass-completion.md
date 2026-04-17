@@ -1,5 +1,7 @@
 # Soul Charter Polish Pass Completion — Implementation Plan
 
+> **STATUS: ✅ SHIPPED** — `docs/DESIGN_SOUL.md` published and referenced from `CLAUDE.md` / `AGENTS.md`; `.cursor/` + `.serena/` in `.gitignore`; polish pass + i18n data-file migration landed. Checklist below was not re-ticked post-ship; treat as historical reference.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Complete the in-flight Soul Charter polish pass and close all 27 loose threads identified by the audit, landing the work as 4 atomic bisect-friendly commits.
