@@ -13,6 +13,7 @@ import Phaser from 'phaser';
 import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
+import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL } from './hazardZonePalette';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
@@ -63,8 +64,8 @@ export class HazardZones {
       const ly = rng.between(200, H - 200);
       const lr = rng.between(35, 55);
 
-      scene.add.ellipse(lx, ly, lr * 2, lr * 1.5, 0xcc3300, 0.4).setDepth(-1);
-      const lavaGlow = scene.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, 0xff6600, 0.2).setDepth(-1);
+      scene.add.ellipse(lx, ly, lr * 2, lr * 1.5, HAZARD_ZONE_LAVA.baseColor, HAZARD_ZONE_LAVA.baseAlpha).setDepth(-1);
+      const lavaGlow = scene.add.ellipse(lx, ly, lr * 1.6, lr * 1.2, HAZARD_ZONE_LAVA.glowColor, HAZARD_ZONE_LAVA.glowAlpha).setDepth(-1);
       scene.tweens.add({
         targets: lavaGlow,
         alpha: { from: 0.15, to: 0.35 },
@@ -101,8 +102,8 @@ export class HazardZones {
 
   private addHealingCircle(hx: number, hy: number, hr: number, jitterMs: number): void {
     const scene = this.scene;
-    scene.add.ellipse(hx, hy, hr * 2, hr * 1.5, 0x22aa44, 0.2).setDepth(-1);
-    const healGlow = scene.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, 0x44dd66, 0.1).setDepth(-1);
+    scene.add.ellipse(hx, hy, hr * 2, hr * 1.5, HAZARD_ZONE_HEAL.baseColor, HAZARD_ZONE_HEAL.baseAlpha).setDepth(-1);
+    const healGlow = scene.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, HAZARD_ZONE_HEAL.glowColor, HAZARD_ZONE_HEAL.glowAlpha).setDepth(-1);
     scene.tweens.add({
       targets: healGlow,
       alpha: { from: 0.08, to: 0.2 },
