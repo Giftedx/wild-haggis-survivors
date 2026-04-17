@@ -18,7 +18,7 @@ import { audio } from '../systems/AudioSystem';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { resolveBackButtonPalette } from './backButtonPalette';
 import { resolveShopRowBgColor } from './shopRowBg';
-import { addAmberHeaderWash, AMBER_HEADER_WASH_ALPHA_QUIET, addSceneBackdrop } from './sceneFade';
+import { installShopBackdrop } from './installShopBackdrop';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -40,23 +40,7 @@ export class MetaShopScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
 
-    addSceneBackdrop(this);
-    // Warm amber wash at the top — cozy between storms
-    addAmberHeaderWash(this, AMBER_HEADER_WASH_ALPHA_QUIET);
-    this.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62).setStrokeStyle(2, 0x2d3e62, 0.8);
-    // Heather strip at the bottom for highland warmth
-    if (this.textures.exists('deco_heather')) {
-      for (let i = 0; i < 5; i++) {
-        const hx = 60 + i * (width - 120) / 4;
-        this.add.image(hx, height - 12, 'deco_heather').setAlpha(0.35).setScale(1.2).setDepth(0);
-      }
-    }
-
-    // Ambient moor wind — cozy between storms
-    audio.startAmbientWind();
-
-    const fadeIn = this.add.rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 1).setDepth(999);
-    this.tweens.add({ targets: fadeIn, alpha: 0, duration: 360, onComplete: () => fadeIn.destroy() });
+    installShopBackdrop(this);
 
     this.add
       .text(width / 2, 32, t('ui.metaShop.title'), {
