@@ -377,7 +377,11 @@ export class SettingsScene extends Phaser.Scene {
   private persistAndApply(): void {
     this.settingsManager.save(this.working);
     applyAudioFromUserSettings(this.working);
-    applyLocaleFromUserSettings(this.working);
+    // Scots overlay is lazy-loaded; the promise resolves when the chunk
+    // is cached. The locale row calls `scene.stop() + scene.start()` to
+    // force a rebuild, which gives the dynamic import time to settle
+    // before any strings are re-resolved — fire-and-forget is safe.
+    void applyLocaleFromUserSettings(this.working);
   }
 
   private addSliderRow(

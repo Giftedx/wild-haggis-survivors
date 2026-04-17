@@ -46,7 +46,10 @@ export class BootScene extends Phaser.Scene {
     // W18 locale scaffolding — apply persisted language before any other
     // scene pulls strings. `t(...)` called before this point resolves
     // through the default (en) locale, which is the intended fallback.
-    applyLocaleFromUserSettings(getSettingsManager().load());
+    // Scots overlay is code-split; returned promise resolves once the
+    // chunk lands (fire-and-forget here — the Boot splash tween gives
+    // the dynamic import plenty of time to complete before MainMenu).
+    void applyLocaleFromUserSettings(getSettingsManager().load());
 
     // Dev tool: skip splash and go straight to sprite export
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {

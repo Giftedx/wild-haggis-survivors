@@ -3,13 +3,16 @@ import {
   DEFAULT_LOCALE,
   EN_STRINGS,
   LOCALES,
-  SCS_STRINGS,
   getLocale,
   setLocale,
   t,
   type LocaleKey,
   type LocaleTree,
 } from './i18n';
+// Scots is code-split — import the overlay directly for structural tests
+// that need the full tree (parity walks, non-empty assertion). Production
+// fetches this chunk dynamically via `ensureLocaleReady('scs')`.
+import { SCS_STRINGS } from './i18n.scs';
 
 /**
  * W18 locale scaffolding regressions. Scots is a partial overlay —

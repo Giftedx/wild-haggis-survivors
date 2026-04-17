@@ -49,6 +49,14 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
+      // Skip the lazy-loaded Scots overlay chunk from precache. English-only
+      // players (the default locale) never download `i18n.scs-*.js`; Scots
+      // users fetch it on demand via the dynamic `import('./i18n.scs')` in
+      // `ensureLocaleReady` and workbox's default runtime caching keeps it
+      // warm on repeat activations.
+      workbox: {
+        globIgnores: ['**/i18n.scs-*.js'],
+      },
       manifest: {
         name: 'Wild Haggis Survivors',
         short_name: 'Haggis',
@@ -75,6 +83,10 @@ export default defineConfig({
     globals: false,
     environment: 'node',
     include: ['src/**/*.{test,spec}.ts'],
+    // Preloads the Scots overlay chunk so sync `setLocale('scs'); t(...)`
+    // patterns in tests keep working after the W18 Scots lazy-load pass.
+    // Production still fetches `./i18n.scs` dynamically on first use.
+    setupFiles: ['./src/core/i18n.testSetup.ts'],
     ...vitestNoWebStorage,
   },
 });
