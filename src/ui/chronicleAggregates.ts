@@ -447,21 +447,16 @@ export function formatIronmoorLine(
 ): string {
   if (s.attempts === 0) return '';
   const pct = Math.round(s.winRate * 100);
-  const fmt = (sec: number): string => {
-    const mins = Math.floor(sec / 60);
-    const secs = Math.floor(sec % 60).toString().padStart(2, '0');
-    return `${mins}:${secs}`;
-  };
   const base = t('ui.chronicle.ironmoor_line', {
     victories: s.victories,
     attempts: s.attempts,
     pct,
-    longest: fmt(s.longestSec),
+    longest: formatClock(s.longestSec),
   });
   if (bestVictorySec > 0) {
     return t('ui.chronicle.ironmoor_line_with_fastest', {
       base,
-      fastest: fmt(bestVictorySec),
+      fastest: formatClock(bestVictorySec),
     });
   }
   return base;
@@ -686,9 +681,7 @@ export function formatAncestralEchoesLine(save: SaveData): string {
 export function formatPostBellLine(save: SaveData): string {
   const sec = save.bestEndlessSeconds ?? 0;
   if (sec <= 0) return '';
-  const mins = Math.floor(sec / 60);
-  const secs = Math.floor(sec % 60).toString().padStart(2, '0');
-  return t('ui.chronicle.past_the_bell_line', { time: `${mins}:${secs}` });
+  return t('ui.chronicle.past_the_bell_line', { time: formatClock(sec) });
 }
 
 /**
