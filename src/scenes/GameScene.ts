@@ -977,12 +977,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         wholeSecond: runSec,
       });
       this.moorMoments.tick(runSec);
-      if (runSec === STONE_WARN_SEC && !this.stonesWarned && !this.standingStones) {
+      // Use `>=` so a lag spike or paused-then-resumed second-counter that
+      // skips the exact tick still triggers — once-only guard prevents repeats.
+      if (runSec >= STONE_WARN_SEC && !this.stonesWarned && !this.standingStones) {
         this.stonesWarned = true;
         this.juice.showToast(t('ui.standingStones.warn_toast'), '#ffe080');
         this.caption('standing_stones_warn', t('ui.standingStones.warn_caption'), '#ffe080', 3000);
       }
-      if (runSec === STONE_SPAWN_SEC && !this.standingStones) {
+      if (runSec >= STONE_SPAWN_SEC && !this.standingStones) {
         this.spawnStandingStones();
       }
     }
