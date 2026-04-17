@@ -697,7 +697,7 @@ export class HUD {
       for (let i = 0; i < weaponCount; i++) {
         const w = weapons[i];
         const x = startX + i * (size + gap);
-        const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, 0x1a1a2e, 0.85)
+        const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, COLORS.BG_DARK, 0.85)
           .setOrigin(0, 0).setStrokeStyle(2, normalSlotStroke)
           .setScrollFactor(0).setDepth(this.DEPTH));
         const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - 4, size, 4, 0x005eb8, 0.85)

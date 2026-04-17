@@ -96,7 +96,7 @@ export class GameOverScene extends Phaser.Scene {
     const panelTop = panelCenterY - PANEL_H / 2;
 
     const overlay = this.add
-      .rectangle(width / 2, height / 2, width, height, 0x1a1a2e, 0)
+      .rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK, 0)
       .setScrollFactor(0)
       .setDepth(d)
       .setInteractive();
