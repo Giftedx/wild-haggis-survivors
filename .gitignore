@@ -48,3 +48,6 @@ Thumbs.db
 !.ralph/docs/generated/.gitkeep
 .ralph_backup_*
 build-output.txt
+
+# Brainstorming / visual companion session dirs
+.superpowers/
