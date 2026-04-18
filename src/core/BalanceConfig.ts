@@ -34,6 +34,8 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 840, add: 'berserker' },
     { t: 870, add: 'traffic_cone_totem' },
     { t: 900, add: 'deep_fryer' },
+    { t: 930, add: 'ledger_wraith' },
+    { t: 1050, add: 'auditor_priest' },
   ];
   const keys: string[] = [];
   return milestones.map(({ t, add }) => {

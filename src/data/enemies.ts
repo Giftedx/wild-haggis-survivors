@@ -411,6 +411,45 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Taxman's Retinue opener — DESIGN_IDEAS section 3. Ghostly auditor
+  // trailing ledger pages and ink-red drips; the "immune until the
+  // Taxman takes damage" bullet stays open pending an event-bus gate
+  // (YAGNI until a second Retinue enemy wants the same hook). Ships
+  // as a late-game `chase` so the flavour lands — paper swirl on
+  // contact, higher HP than buckfast_ned because the player's build
+  // is mature by 15:30.
+  ledger_wraith: {
+    key: 'ledger_wraith',
+    texture: 'ledger_wraith',
+    speed: 85,
+    hp: 35,
+    damage: 11,
+    xpValue: 6,
+    appearsAt: 930,    // 15:30 — just after deep_fryer hazard; the
+                       // first Retinue sighting marks the "Taxman
+                       // is coming" beat ten minutes before the boss.
+    behavior: 'chase',
+    packSize: 1,
+  },
+  // Taxman's Retinue #2 — DESIGN_IDEAS section 3. Auditor-priest
+  // with a censer-tipped staff; "beam ranged, tests drift skill"
+  // deferred pending a beam-weapon class. Ships as a themed `ranged`
+  // variant — slow, keeps distance, lobs a slowing projectile that
+  // reads as a writ of audit. Late enough that the player's drift
+  // handling is already battle-tempered.
+  auditor_priest: {
+    key: 'auditor_priest',
+    texture: 'auditor_priest',
+    speed: 45,
+    hp: 32,
+    damage: 12,
+    xpValue: 7,
+    appearsAt: 1050,   // 17:30 — second Retinue slot; by here the
+                       // post-bell drumbeat is audible and the
+                       // player knows the Taxman fight is imminent.
+    behavior: 'ranged',
+    packSize: 1,
+  },
 };
 
 /**
@@ -447,6 +486,8 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   seelie_piper: 'Seelie Piper',
   unseelie_fiddler: 'Unseelie Fiddler',
   ceilidh_caller: 'Ceilidh Caller',
+  ledger_wraith: 'Ledger Wraith',
+  auditor_priest: 'Auditor Priest',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',
