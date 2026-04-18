@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { applyRunSummary, createDefaultSave, migrateSave } from '../utils/save';
 import { ReplayInput } from './ReplayInput';
 import { ReplayRecorder } from './ReplayRecorder';
-import { deserializeReplay, serializeReplay } from './replayBlob';
+import { deserializeReplay, serializeReplay, type ReplayBlob } from './replayBlob';
 
 /**
  * Integration: record a synthetic run's worth of input frames via
@@ -62,7 +62,9 @@ describe('replay recorder ↔ save v5 integration', () => {
   });
 
   it('empty-frames recording serializes cleanly (edge case: run aborted at t=0)', () => {
-    const blob = recorder.finalize();
+    // No v2 meta passed → recorder.finalize() is a v1 blob.
+    const blob = recorder.finalize() as ReplayBlob;
+    expect(blob.version).toBe(1);
     expect(blob.frameCount).toBe(0);
 
     const json = serializeReplay(blob);

@@ -7,8 +7,12 @@
  *
  * The recorder is constructed by GameScene when `resolveReplayMode() ===
  * 'record'` and flushed into `RunHistoryContext.replay` at run end.
- * Metadata (seed, variantKey, build) is set once at construction; only
- * frames are appended.
+ * Metadata (seed, variantKey, build) is set once at construction.
+ *
+ * T1 Phase 3: optional v2 metadata (curseKey, composedStats) may be
+ * passed at construction; route picks are captured via `pushRoute`.
+ * `finalize()` emits a v1 blob when none of the v2 fields were ever set
+ * (back-compat default) and a v2 blob when any of them were.
  */
 import {
   clampReplayFrame,
@@ -17,13 +21,34 @@ import {
   type ReplayBlobMeta,
   type ReplayFrame,
 } from './replayBlob';
+import {
+  createEmptyReplayBlobV2,
+  type ReplayBlobV2,
+} from './replayBlobV2';
+import type { ComposedStatsSnapshot } from './composedStatsSnapshot';
+import type { RoutePick } from '../data/routes';
+
+/** Extended meta accepted at construction. v2 fields are optional. */
+export interface ReplayRecorderMeta extends ReplayBlobMeta {
+  /** Active curse key if the player took one for this run. */
+  curseKey?: string;
+  /** Snapshot of composed player stats at run start. */
+  composedStats?: ComposedStatsSnapshot;
+}
 
 export class ReplayRecorder {
-  private readonly meta: ReplayBlobMeta;
+  private readonly meta: ReplayRecorderMeta;
   private frames: ReplayFrame[] = [];
+  private routes: RoutePick[] = [];
 
-  constructor(meta: ReplayBlobMeta) {
-    this.meta = { build: meta.build, seed: meta.seed, variantKey: meta.variantKey };
+  constructor(meta: ReplayRecorderMeta) {
+    this.meta = {
+      build: meta.build,
+      seed: meta.seed,
+      variantKey: meta.variantKey,
+      curseKey: meta.curseKey,
+      composedStats: meta.composedStats,
+    };
   }
 
   /** Push a single frame; values are clamped by the schema. */
@@ -31,22 +56,64 @@ export class ReplayRecorder {
     this.frames.push(clampReplayFrame(frame));
   }
 
-  /** Drop all captured frames; keep metadata. */
+  /**
+   * Record a Moor Road route pick as the intermission resolves. Order
+   * matters — the list is replayed in the same order by the playback
+   * branch in GameScene.
+   */
+  pushRoute(pick: RoutePick): void {
+    this.routes.push({
+      slot: pick.slot,
+      routeKey: pick.routeKey,
+      atGameTimeSec: pick.atGameTimeSec,
+      defaultedBySetting: pick.defaultedBySetting,
+    });
+  }
+
+  /** Drop all captured frames + routes. Construction meta is preserved. */
   reset(): void {
     this.frames = [];
+    this.routes = [];
   }
 
   getFrameCount(): number {
     return this.frames.length;
   }
 
+  /** True when run-start meta or captured routes require a v2 blob. */
+  private needsV2(): boolean {
+    return (
+      this.meta.curseKey !== undefined ||
+      this.meta.composedStats !== undefined ||
+      this.routes.length > 0
+    );
+  }
+
   /**
-   * Build a ReplayBlob snapshot. Frames are copied — callers may keep
-   * pushing into the recorder after finalize() without mutating the
-   * returned blob.
+   * Build a blob snapshot. Frames are copied — callers may keep pushing
+   * into the recorder after finalize() without mutating the returned
+   * blob. Returns a v1 blob for back-compat when no v2 metadata was
+   * captured, a v2 blob otherwise.
    */
-  finalize(): ReplayBlob {
-    const blob = createEmptyReplayBlob(this.meta);
+  finalize(): ReplayBlob | ReplayBlobV2 {
+    if (!this.needsV2()) {
+      const blob = createEmptyReplayBlob({
+        build: this.meta.build,
+        seed: this.meta.seed,
+        variantKey: this.meta.variantKey,
+      });
+      blob.frames = this.frames.slice();
+      blob.frameCount = blob.frames.length;
+      return blob;
+    }
+    const blob = createEmptyReplayBlobV2({
+      build: this.meta.build,
+      seed: this.meta.seed,
+      variantKey: this.meta.variantKey,
+      curseKey: this.meta.curseKey,
+      routes: this.routes.length > 0 ? this.routes.slice() : undefined,
+      composedStats: this.meta.composedStats,
+    });
     blob.frames = this.frames.slice();
     blob.frameCount = blob.frames.length;
     return blob;
