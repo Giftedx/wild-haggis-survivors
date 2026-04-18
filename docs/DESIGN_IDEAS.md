@@ -79,13 +79,13 @@ Families worth sketching (pick one per content drop):
 
 | Key | Family | Hook |
 |-----|--------|------|
-| `blue_man_of_minch` | Cryptids | Throws a "kenning" — banter literal-answer grants a buff. |
-| `kelpie_foal` | Cryptids | Lures with fake pickup glow. |
-| `barghest` | Cryptids | Off-screen howl 2 s before dive — clean telegraph. |
+| ~~`blue_man_of_minch`~~ | Cryptids | ✅ shipped 2026-04-18. Ranged ocean spirit at 10:30 (themed `ranged` alt; kenning-reward mechanic deferred). |
+| ~~`kelpie_foal`~~ | Cryptids | ✅ shipped 2026-04-18. Flee-behaviour water foal at 6:30 (fake-pickup lure deferred; visual carries the flavour). |
+| ~~`barghest`~~ | Cryptids | ✅ shipped 2026-04-18. Dive enemy at 9:30 (clean-telegraph howl deferred to banter/SFX layer). |
 | `seelie_piper` | Faerie | Aura buffs nearby mobs. Priority-target teaching. |
 | `unseelie_fiddler` | Faerie | Three-note pattern on moor-moment beats. |
-| `haar_wraith` | Weather | Spawns local fog on death. |
-| `gale_wraith` | Weather | Displaces player on contact. |
+| ~~`haar_wraith`~~ | Weather | ✅ shipped 2026-04-18. Chase enemy at 12:30; drops a fog patch on death that halves pickup radius (`HazardZones.spawnHaarFog` + `Player.inFog`). |
+| ~~`gale_wraith`~~ | Weather | ✅ shipped 2026-04-18. Chase enemy at 13:45; mass-15 override shoves the player on contact through Phaser's arcade resolver (no custom knockback code). |
 | ~~`buckfast_ned`~~ | Urban | ✅ shipped 2026-04-18. Body enemy at 12:00; drops a slick patch on death (`HazardZones.spawnBottleSlick`) that slows the player 45 % for 5 s. |
 | ~~`traffic_cone_totem`~~ | Urban | ✅ shipped 2026-04-18. Static at 14:30; collapses into four slick patches at the cardinals on death (reuses the ned slick via `onTotemFall`). |
 | ~~`edinburgh_ghost_guide`~~ | Urban | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; lobs projectiles at distance (reuses the `ranged` behavior). |

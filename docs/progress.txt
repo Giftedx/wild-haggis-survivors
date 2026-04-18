@@ -929,3 +929,85 @@ Tests across the session: 2524 -> 2566 (+42 net). Lint /
 tsc / vite all green at every commit. Eight bisect-friendly
 commits: 7e1c017 f2e6fcc 15b2678 3955784 d167058 2633fef
 d72ccc0 221b8a0.
+
+[2026-04-18] Second autonomous content pass — Cryptids + Weather
+families opened.
+
+Four commits landed after a fresh survey. Both families from
+DESIGN_IDEAS § 3 bestiary get their family opener plus a
+supporting member, keeping to the "max 6 new enemies per
+release, no more than 2 per family per drop" design guidance.
+
+(1) barghest (`a97698f`) — Cryptids family opener. Black-hound
+    silhouette with red-eye pinpricks and bared fangs. Reuses
+    the `dive` behaviour (like eagle) but lands at 9:30 so the
+    player has the dive vocabulary trained from eagle (7:00)
+    before the scarier silhouette arrives. Pre-dive howl
+    telegraph deferred to the banter/SFX layer — the visual
+    does the heavy lifting.
+
+(2) kelpie_foal + blue_man_of_minch (`08d7c76`) — Cryptids
+    #2 + #3. kelpie_foal at 6:30 is the second flee target
+    (after sheep) with shimmer-blue water-spirit coat +
+    mane-drip detail; three-pack. blue_man_of_minch at 10:30
+    is a themed `ranged` alt to haggis_hunter — rises
+    waist-up out of a dripping water pool, kenning-stone
+    projectile glowing cyan in a raised hand. Both reuse
+    existing AI paths; kenning-reward + fake-pickup-lure
+    mechanics deferred to future drops (YAGNI without a
+    dedicated system).
+
+(3) haar_wraith + fog hazard (`ffb8151`) — Weather family
+    opener. Pale-grey mist silhouette; frail chase enemy
+    whose mechanical bite lives in the fog patch it drops
+    on death. New hazard type: `HAZARD_ZONE_FOG` palette,
+    `HazardZones.spawnHaarFog`, 7 s / 52 px radius, expires
+    from game-time (pause-safe, seed-deterministic). Player
+    gains `inFog: boolean` + `FOG_PICKUP_MUL = 0.5` applied
+    inline in `getPickupRadius()`; no recalcStats bounce.
+    Effects compose with `inSlick` cleanly — a player caught
+    in both gets slowed AND magnet-halved. New
+    `EnemyKillHandler.onHaarDispel?` hook routes the fog
+    spawn. +5 tests (2 palette invariants, 3 handler
+    branches) across the commit.
+
+(4) gale_wraith + mass override (`35a4176`) — Weather #2.
+    Delivers "displaces player on contact" via a clean
+    physics path: new `EnemyConfig.massOverride` lets an
+    enemy opt into a non-default arcade body mass. Phaser's
+    collision resolver already respects mass, so a mass-15
+    body shoves the mass-1 player on every touch — no
+    custom knockback code, no new hooks. Precedence:
+    `massOverride → tank default 5 → otherwise 1`. Tank
+    behaviour unchanged; only enemies that ship an explicit
+    override deviate. Low damage (4) on purpose.
+
+Tests across the session: 2566 -> 2571 (+5 net). Lint / tsc
+/ vite all green at every commit. Four bisect-friendly
+commits: a97698f 08d7c76 ffb8151 35a4176.
+
+Idea ledger after this pass:
+- Section 3 (enemies): Urban Ghaists 3 / 3 shipped (done in
+  prior session); Cryptids 3 / 3 shipped (barghest, kelpie_
+  foal, blue_man_of_minch); Weather 2 / 2 shipped
+  (haar_wraith, gale_wraith). Faerie (seelie_piper +
+  unseelie_fiddler), Academic (edinburgh_ghost_guide, though
+  we shipped that as Urban; ceilidh_caller), and Taxman's
+  Retinue (ledger_wraith, auditor_priest) remain sketched.
+- Roster after this pass: 18 non-boss enemy keys in
+  ENEMY_TYPES, up from 13 at session start. Family design
+  spread: Baseline 4, Urban Ghaists 3, Cryptids 3, Weather
+  2, Elite/Specialist 6.
+- HazardZones now hosts three distinct patch types (lava,
+  heal, slick, fog) — each with a distinct mechanical
+  fingerprint: damage tick / heal tick / movement slow /
+  magnet halve. Fog + slick share the same time-expiry +
+  overlap-check shape; adding a fifth patch type now fits a
+  clear recipe.
+
+Carry-over for next session: the 6 variant-scoped banter
+pools don't yet enforce coverage for new enemy tags, so
+enemy-specific banter (e.g. "you killed a kelpie_foal") would
+still need a dedicated hook if desired. Not a current gap —
+kill_streak + first_blood already cover the moment from the
+variant angle.
