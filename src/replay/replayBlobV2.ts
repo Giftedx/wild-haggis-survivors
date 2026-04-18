@@ -11,19 +11,21 @@
  * in `./replayBlob.ts`.
  */
 import {
-  clampReplayFrame,
-  REPLAY_MAX_DT_MS,
+  isRecord,
+  parseReplayBaseMeta,
+  parseReplayFrames,
+  parseReplayRoot,
   type ReplayBlobMeta,
   type ReplayFrame,
 } from './replayBlob';
-import type { PickerSlot, RouteKey, RoutePick } from '../data/routes';
+import type { PickerSlot, RoutePick } from '../data/routes';
+import { getRoute } from '../data/routes';
 import {
   isComposedStatsSnapshot,
   type ComposedStatsSnapshot,
 } from './composedStatsSnapshot';
 
 export const REPLAY_BLOB_V2_VERSION = 2 as const;
-export { REPLAY_MAX_DT_MS };
 
 export interface ReplayBlobV2Meta extends ReplayBlobMeta {
   /** Active curse key for the run, if the player took one. */
@@ -59,40 +61,12 @@ export function serializeReplayV2(blob: ReplayBlobV2): string {
 }
 
 export function deserializeReplayV2(raw: string): ReplayBlobV2 | null {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return null;
-  }
-  if (!isRecord(parsed)) return null;
-  if (parsed.version !== REPLAY_BLOB_V2_VERSION) return null;
-  const build = typeof parsed.build === 'string' ? parsed.build : null;
-  const seed =
-    typeof parsed.seed === 'number' && Number.isFinite(parsed.seed)
-      ? Math.floor(parsed.seed)
-      : null;
-  const variantKey = typeof parsed.variantKey === 'string' ? parsed.variantKey : null;
-  if (build === null || seed === null || variantKey === null) return null;
+  const parsed = parseReplayRoot(raw, REPLAY_BLOB_V2_VERSION);
+  if (parsed === null) return null;
+  const meta = parseReplayBaseMeta(parsed);
+  if (meta === null) return null;
 
-  const framesRaw = Array.isArray(parsed.frames) ? parsed.frames : [];
-  const frames: ReplayFrame[] = [];
-  for (const f of framesRaw) {
-    if (!isRecord(f)) continue;
-    if (typeof f.dtMs !== 'number' || !Number.isFinite(f.dtMs)) continue;
-    if (typeof f.dx !== 'number' || !Number.isFinite(f.dx)) continue;
-    if (typeof f.dy !== 'number' || !Number.isFinite(f.dy)) continue;
-    frames.push(
-      clampReplayFrame({
-        dtMs: f.dtMs,
-        dx: f.dx,
-        dy: f.dy,
-        dash: Boolean(f.dash),
-        menu: Boolean(f.menu),
-      }),
-    );
-  }
-
+  const frames = parseReplayFrames(parsed);
   const curseKey = typeof parsed.curseKey === 'string' ? parsed.curseKey : undefined;
   const routes = Array.isArray(parsed.routes) ? coerceRoutes(parsed.routes) : undefined;
   const composedStats = isComposedStatsSnapshot(parsed.composedStats)
@@ -101,9 +75,7 @@ export function deserializeReplayV2(raw: string): ReplayBlobV2 | null {
 
   return {
     version: REPLAY_BLOB_V2_VERSION,
-    build,
-    seed,
-    variantKey,
+    ...meta,
     frameCount: frames.length,
     frames,
     curseKey,
@@ -123,40 +95,38 @@ export function isReplayBlobV2(value: unknown): value is ReplayBlobV2 {
   return true;
 }
 
-/** Route keys supported by W2 — kept in sync with `RouteKey` union. */
-const ROUTE_KEYS: ReadonlyArray<RouteKey> = [
-  'up_the_brae',
-  'round_the_loch',
-  'through_the_kirkyard',
-  'stand_yer_ground',
-  'run_for_the_hills',
-  'buckie_pitstop',
-];
-
-function isRouteKey(v: unknown): v is RouteKey {
-  return typeof v === 'string' && (ROUTE_KEYS as readonly string[]).includes(v);
-}
-
 function isPickerSlot(v: unknown): v is PickerSlot {
   return v === 'A' || v === 'B';
 }
 
+/**
+ * Validate a raw route-pick record against the live `RouteKey` union via
+ * the existing `getRoute` catalog — so adding a new route in `routes.ts`
+ * automatically widens what playback will accept, no parallel list to
+ * keep in sync.
+ */
 function coerceRoutes(arr: unknown[]): RoutePick[] | undefined {
   const out: RoutePick[] = [];
   for (const r of arr) {
     if (!isRecord(r)) continue;
     if (!isPickerSlot(r.slot)) continue;
-    if (!isRouteKey(r.routeKey)) continue;
+    if (typeof r.routeKey !== 'string') continue;
+    try {
+      getRoute(r.routeKey as never);
+    } catch {
+      continue; // unknown routeKey → drop this entry
+    }
     const atGameTimeSec =
       typeof r.atGameTimeSec === 'number' && Number.isFinite(r.atGameTimeSec)
         ? r.atGameTimeSec
         : 0;
     const defaultedBySetting = Boolean(r.defaultedBySetting);
-    out.push({ slot: r.slot, routeKey: r.routeKey, atGameTimeSec, defaultedBySetting });
+    out.push({
+      slot: r.slot,
+      routeKey: r.routeKey as RoutePick['routeKey'],
+      atGameTimeSec,
+      defaultedBySetting,
+    });
   }
   return out.length > 0 ? out : undefined;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

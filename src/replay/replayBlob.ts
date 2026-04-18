@@ -83,6 +83,24 @@ export function serializeReplay(blob: ReplayBlob): string {
 }
 
 export function deserializeReplay(raw: string): ReplayBlob | null {
+  const parsed = parseReplayRoot(raw, REPLAY_BLOB_VERSION);
+  if (parsed === null) return null;
+  const meta = parseReplayBaseMeta(parsed);
+  if (meta === null) return null;
+  const frames = parseReplayFrames(parsed);
+  return {
+    version: REPLAY_BLOB_VERSION,
+    ...meta,
+    frameCount: frames.length,
+    frames,
+  };
+}
+
+/**
+ * Shared v1/v2 deserializer helpers — extracted so v2 doesn't re-write
+ * the base-field + frame-array parsing. Exported for `replayBlobV2.ts`.
+ */
+export function parseReplayRoot(raw: string, expectedVersion: number): Record<string, unknown> | null {
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
@@ -90,12 +108,24 @@ export function deserializeReplay(raw: string): ReplayBlob | null {
     return null;
   }
   if (!isRecord(parsed)) return null;
-  if (parsed.version !== REPLAY_BLOB_VERSION) return null;
+  if (parsed.version !== expectedVersion) return null;
+  return parsed;
+}
+
+export function parseReplayBaseMeta(
+  parsed: Record<string, unknown>,
+): ReplayBlobMeta | null {
   const build = typeof parsed.build === 'string' ? parsed.build : null;
-  const seed = typeof parsed.seed === 'number' && Number.isFinite(parsed.seed) ? Math.floor(parsed.seed) : null;
+  const seed =
+    typeof parsed.seed === 'number' && Number.isFinite(parsed.seed)
+      ? Math.floor(parsed.seed)
+      : null;
   const variantKey = typeof parsed.variantKey === 'string' ? parsed.variantKey : null;
   if (build === null || seed === null || variantKey === null) return null;
+  return { build, seed, variantKey };
+}
 
+export function parseReplayFrames(parsed: Record<string, unknown>): ReplayFrame[] {
   const framesRaw = Array.isArray(parsed.frames) ? parsed.frames : [];
   const frames: ReplayFrame[] = [];
   for (const f of framesRaw) {
@@ -103,23 +133,17 @@ export function deserializeReplay(raw: string): ReplayBlob | null {
     if (typeof f.dtMs !== 'number' || !Number.isFinite(f.dtMs)) continue;
     if (typeof f.dx !== 'number' || !Number.isFinite(f.dx)) continue;
     if (typeof f.dy !== 'number' || !Number.isFinite(f.dy)) continue;
-    frames.push(clampReplayFrame({
-      dtMs: f.dtMs,
-      dx: f.dx,
-      dy: f.dy,
-      dash: toBoolean(f.dash),
-      menu: toBoolean(f.menu),
-    }));
+    frames.push(
+      clampReplayFrame({
+        dtMs: f.dtMs,
+        dx: f.dx,
+        dy: f.dy,
+        dash: toBoolean(f.dash),
+        menu: toBoolean(f.menu),
+      }),
+    );
   }
-
-  return {
-    version: REPLAY_BLOB_VERSION,
-    build,
-    seed,
-    variantKey,
-    frameCount: frames.length,
-    frames,
-  };
+  return frames;
 }
 
 export function isReplayBlob(value: unknown): value is ReplayBlob {
@@ -166,6 +190,7 @@ function toBoolean(v: unknown): boolean {
   return Boolean(v);
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+/** Exported for `replayBlobV2.ts`; also used internally. */
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
