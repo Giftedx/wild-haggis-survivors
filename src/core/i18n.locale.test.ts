@@ -110,6 +110,30 @@ describe('W18 locale scaffolding', () => {
   });
 
   /**
+   * W18 Phase B runtime spot-checks. Proves the full SCS banter tree
+   * resolves end-to-end through `t()` — not just structural parity.
+   * One leaf per sub-pool category so we catch any dot-path traversal
+   * regression without blowing up the test count.
+   */
+  it('SCS banter per-boss / per-variant / per-weapon / per-curse / per-biome / per-home-biome resolve end-to-end', () => {
+    setLocale('scs');
+    // per-boss (edge): boss_warn.gordon — Limmy cold identity line.
+    expect(t('ui.banter.boss_warn.gordon.a')).toBe('Heid chef\'s oot tha kitchen. Brace yersel.');
+    // per-variant (edge): low_hp.wee_ghostie — veil fade tint.
+    expect(t('ui.banter.low_hp.wee_ghostie.c')).toBe('A whisper\'s aw that\'s left. Braithe it in.');
+    // per-weapon (hearth): weapon_evolve.claymore — steel cleave tint.
+    expect(t('ui.banter.weapon_evolve.claymore.a')).toBe('Big sword energy. Tha moor approves.');
+    // per-curse (hearth decision): curse_start.heavy_legs — treacle boots.
+    expect(t('ui.banter.curse_start.heavy_legs.a')).toBe('Heavy legs, heavier purse. Ye askit fer it.');
+    // per-variant (hearth warm): level_up.iron_belly — wall thickens.
+    expect(t('ui.banter.level_up.iron_belly.a')).toBe('Anither layer tae tha wa.');
+    // per-biome (hearth sensory): biome_change.heather — open sky.
+    expect(t('ui.banter.biome_change.heather.a')).toBe('Heather\'s up — purple haze, open sky.');
+    // per-home-biome (hearth kin): moor_moment.home_bog — peat discount.
+    expect(t('ui.banter.moor_moment.home_bog.a')).toBe('Staundin in tha squelch — tha peat pays interest.');
+  });
+
+  /**
    * W18 Phase B completion guard — scoped to `ui.banter.*` only.
    *
    * Every EN banter leaf (generic + per-boss / per-variant / per-weapon /
