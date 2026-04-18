@@ -78,6 +78,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private moveSpeed: number = PLAYER.SPEED;
   /** Biome-driven speed multiplier — e.g. 0.85 in the bog. 1 = no effect. */
   private biomeSpeedMul: number = 1;
+  /** Hazard-driven slick slowdown — true while the player stands on a
+   *  buckfast-bottle slick zone. HazardZones ticks this each frame so
+   *  stepping off restores full speed without manual timer bookkeeping. */
+  private inSlick: boolean = false;
+  /** Movement multiplier applied while `inSlick` — 0.55 = 45 % slow. */
+  private readonly SLICK_SPEED_MUL = 0.55;
   /** Biome-driven knockback bonus applied on incoming damage. 1 = no effect. */
   private biomeKnockbackBonus: number = 1;
   /** Biome-driven XP gem value multiplier — read by XPSystem at collect time. */
@@ -345,9 +351,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.x, this.y, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
     );
 
+    const slickMul = this.inSlick ? this.SLICK_SPEED_MUL : 1;
     this.setVelocity(
-      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul + pushX,
-      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul + pushY
+      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul + pushX,
+      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul + pushY
     );
 
     // Rotate sprite to face movement direction
@@ -542,6 +549,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   setThorns(damage: number): void { this.thornsDamage = damage; }
+
+  /**
+   * Set whether the player is currently standing on a slick hazard zone
+   * (Buckfast bottle spill). HazardZones ticks this each frame — true
+   * while overlapping any slick zone, false otherwise. Idempotent;
+   * setting the same value does nothing.
+   */
+  setInSlick(active: boolean): void {
+    this.inSlick = active;
+  }
+
+  /** Test hook — read the slick-slow state without touching private fields. */
+  isInSlick(): boolean { return this.inSlick; }
 
   /**
    * Apply the biome's mechanical modifier. Called once per biome entry from

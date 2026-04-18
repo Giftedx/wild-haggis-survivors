@@ -13,7 +13,7 @@ import Phaser from 'phaser';
 import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
-import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL } from './hazardZonePalette';
+import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL, HAZARD_ZONE_SLICK } from './hazardZonePalette';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
@@ -48,9 +48,30 @@ interface Zone {
   tickAccMs: number;
 }
 
+/**
+ * Temporary slick zone spawned when a buckfast_ned dies. Carries the
+ * visuals so `tick` can destroy them when the zone expires, and an
+ * `expireAtMs` stamp in game-time so pausing doesn't bleed the timer.
+ */
+interface SlickZone {
+  x: number;
+  y: number;
+  r: number;
+  expireAtMs: number;
+  visuals: Phaser.GameObjects.GameObject[];
+}
+
+/** Slick zone radius (px) — tuned so a single spill is avoidable but
+ *  punishing if you walk into it while kiting. */
+const SLICK_RADIUS_PX = 36;
+/** Slick zone lifetime (ms) — long enough to matter in a fight,
+ *  short enough to clear before the next ned throw lands. */
+const SLICK_DURATION_MS = 5_000;
+
 export class HazardZones {
   private lavaZones: Zone[] = [];
   private healZones: Zone[] = [];
+  private slickZones: SlickZone[] = [];
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -60,6 +81,8 @@ export class HazardZones {
   reset(): void {
     this.lavaZones = [];
     this.healZones = [];
+    for (const z of this.slickZones) for (const v of z.visuals) v.destroy();
+    this.slickZones = [];
   }
 
   spawn(): void {
@@ -97,6 +120,36 @@ export class HazardZones {
     const H = GAME.WORLD_HEIGHT;
     const p = computeExtraHealingPlacement(this.hooks.getRunRng(), W, H);
     this.addHealingCircle(p.x, p.y, p.r, p.tweenJitterMs);
+  }
+
+  /**
+   * Spawn a short-lived slick patch at `(x, y)`. Called when a
+   * `buckfast_ned` enemy dies — the dropped bottle breaks, leaving a
+   * sticky spill that slows the player while they stand on it. Zone
+   * auto-expires after {@link SLICK_DURATION_MS}.
+   */
+  spawnBottleSlick(x: number, y: number): void {
+    const scene = this.scene;
+    const r = SLICK_RADIUS_PX;
+    const gameTimeMs = this.hooks.getSpawnSystem().getGameTimeSec() * 1000;
+    const base = scene.add
+      .ellipse(x, y, r * 2, r * 1.5, HAZARD_ZONE_SLICK.baseColor, HAZARD_ZONE_SLICK.baseAlpha)
+      .setDepth(-1);
+    const glow = scene.add
+      .ellipse(x, y, r * 1.6, r * 1.2, HAZARD_ZONE_SLICK.glowColor, HAZARD_ZONE_SLICK.glowAlpha)
+      .setDepth(-1);
+    scene.tweens.add({
+      targets: glow,
+      alpha: { from: HAZARD_ZONE_SLICK.glowAlpha * 0.4, to: HAZARD_ZONE_SLICK.glowAlpha },
+      scale: { from: 0.9, to: 1.05 },
+      duration: 700,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+    this.slickZones.push({
+      x, y, r,
+      expireAtMs: gameTimeMs + SLICK_DURATION_MS,
+      visuals: [base, glow],
+    });
   }
 
   private addHealingCircle(hx: number, hy: number, hr: number, jitterMs: number): void {
@@ -162,5 +215,23 @@ export class HazardZones {
         if (dx * dx + dy * dy < rSq) player.heal(HEAL_ZONE_HEAL_AMOUNT);
       }
     }
+
+    // Slick zones — check expiry + whether player overlaps any. Back-to-front
+    // iteration so splice() on expire doesn't shift the index under us.
+    const nowMs = this.hooks.getSpawnSystem().getGameTimeSec() * 1000;
+    let playerInSlick = false;
+    for (let i = this.slickZones.length - 1; i >= 0; i--) {
+      const z = this.slickZones[i];
+      if (nowMs >= z.expireAtMs) {
+        for (const v of z.visuals) v.destroy();
+        this.slickZones.splice(i, 1);
+        continue;
+      }
+      if (!player.active) continue;
+      const dx = player.x - z.x;
+      const dy = player.y - z.y;
+      if (dx * dx + dy * dy < z.r * z.r) playerInSlick = true;
+    }
+    player.setInSlick(playerInSlick);
   }
 }

@@ -44,6 +44,7 @@ type HookMocks = {
   rng: { bool: ReturnType<typeof vi.fn>; int: ReturnType<typeof vi.fn> };
   triggerVictory: ReturnType<typeof vi.fn>;
   onActComplete: ReturnType<typeof vi.fn>;
+  onBottleBreak: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -92,6 +93,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   };
   const triggerVictory = vi.fn();
   const onActComplete = vi.fn<(act: 1 | 2) => void>();
+  const onBottleBreak = vi.fn<(x: number, y: number) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -107,6 +109,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     getRunScore: () => score,
     triggerVictory,
     onActComplete,
+    onBottleBreak,
   };
 
   return {
@@ -123,6 +126,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     rng,
     triggerVictory,
     onActComplete,
+    onBottleBreak,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -445,6 +449,25 @@ describe('EnemyKillHandler', () => {
     it('does NOT call onActComplete for non-boss kills', () => {
       handler.handle(0, 0, 5, 'tourist', false);
       expect(m.onActComplete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Buckfast Ned bottle break', () => {
+    it('calls onBottleBreak with kill coordinates when buckfast_ned dies', () => {
+      handler.handle(123, 456, 4, 'buckfast_ned', false);
+      expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(123, 456);
+    });
+
+    it('does NOT call onBottleBreak for other enemy kills', () => {
+      handler.handle(10, 20, 5, 'tourist', false);
+      handler.handle(30, 40, 5, 'angry_scotsman', false);
+      handler.handle(50, 60, 75, 'gordon', true);
+      expect(m.onBottleBreak).not.toHaveBeenCalled();
+    });
+
+    it('fires even for elite buckfast_ned (slick still spawns)', () => {
+      handler.handle(7, 8, 4, 'buckfast_ned', false, true, null);
+      expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(7, 8);
     });
   });
 });

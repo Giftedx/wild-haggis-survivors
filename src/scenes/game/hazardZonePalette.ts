@@ -30,3 +30,15 @@ export const HAZARD_ZONE_HEAL: HazardZonePalette = {
   glowColor: 0x44dd66,
   glowAlpha: 0.1,
 };
+
+/**
+ * Slick (Buckfast bottle break) — dark olive-green base with an amber
+ * highlight pulse. Reads as "spilled sticky wine" rather than "poison"
+ * so players associate it with the ned enemy, not with a damage tile.
+ */
+export const HAZARD_ZONE_SLICK: HazardZonePalette = {
+  baseColor: 0x2a3a10,
+  baseAlpha: 0.5,
+  glowColor: 0xccaa22,
+  glowAlpha: 0.2,
+};

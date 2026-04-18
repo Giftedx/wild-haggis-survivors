@@ -206,6 +206,20 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     packSize: 16,
     spatialCullImmune: true,
   },
+  // Urban Ghaists family opener — DESIGN_IDEAS section 3. On death the
+  // dropped bottle breaks into a slick patch that slows the player
+  // (handled in EnemyKillHandler + HazardZones.spawnBottleSlick).
+  buckfast_ned: {
+    key: 'buckfast_ned',
+    texture: 'buckfast_ned',
+    speed: 100,
+    hp: 18,
+    damage: 8,
+    xpValue: 4,
+    appearsAt: 720,    // 12:00 — streets turn on you past the kirkyard
+    behavior: 'chase',
+    packSize: 1,
+  },
 };
 
 /**
@@ -231,6 +245,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   sheep: 'Sheep',
   kelpie: 'Kelpie',
   midgie_swarm: 'Midgie Swarm',
+  buckfast_ned: 'Buckfast Ned',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

@@ -732,6 +732,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunScore: () => this.runScore,
       triggerVictory: () => this.runLifecycle.handleVictory(),
       onActComplete: (actN) => this.launchActIntermission(actN),
+      onBottleBreak: (x, y) => this.hazardZones.spawnBottleSlick(x, y),
     });
     this.weaponSystem.events.on(
       'enemyKilled',

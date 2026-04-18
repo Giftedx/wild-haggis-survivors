@@ -57,6 +57,12 @@ export interface EnemyKillHandlerHooks {
 
   /** W2 Moor Road: called after boss-kill counters are bumped when the killed boss gates an act. */
   onActComplete(actN: 1 | 2): void;
+
+  /**
+   * Called when a `buckfast_ned` dies — bottle breaks at the kill site,
+   * leaving a slick hazard. Routed through HazardZones in GameScene.
+   */
+  onBottleBreak?(x: number, y: number): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -200,6 +206,11 @@ export class EnemyKillHandler {
     if (rng.bool(goldCoinDropRate(wasBoss, wasElite))) {
       const [lo, hi] = goldCoinAmountRange(wasBoss);
       h.getPickupSpawner().spawnGoldCoin(x, y, rng.int(lo, hi));
+    }
+
+    // Buckfast bottle break — leaves a slick patch at the kill site.
+    if (enemyKey === 'buckfast_ned') {
+      h.onBottleBreak?.(x, y);
     }
 
     if (wasBoss) {

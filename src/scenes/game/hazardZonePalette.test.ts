@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   HAZARD_ZONE_LAVA,
   HAZARD_ZONE_HEAL,
+  HAZARD_ZONE_SLICK,
   type HazardZonePalette,
 } from './hazardZonePalette';
 
@@ -23,5 +24,14 @@ describe('hazardZonePalette', () => {
 
   it('heal base is lower-alpha than lava base (danger is louder than comfort)', () => {
     expect(HAZARD_ZONE_HEAL.baseAlpha).toBeLessThan(HAZARD_ZONE_LAVA.baseAlpha);
+  });
+
+  it('slick is distinct from lava + heal (no shared base colour)', () => {
+    expect(HAZARD_ZONE_SLICK.baseColor).not.toBe(HAZARD_ZONE_LAVA.baseColor);
+    expect(HAZARD_ZONE_SLICK.baseColor).not.toBe(HAZARD_ZONE_HEAL.baseColor);
+  });
+
+  it('slick base is more opaque than its glow (consistent with lava / heal)', () => {
+    expect(HAZARD_ZONE_SLICK.baseAlpha).toBeGreaterThan(HAZARD_ZONE_SLICK.glowAlpha);
   });
 });
