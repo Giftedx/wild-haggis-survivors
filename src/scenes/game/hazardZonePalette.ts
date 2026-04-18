@@ -42,3 +42,16 @@ export const HAZARD_ZONE_SLICK: HazardZonePalette = {
   glowColor: 0xccaa22,
   glowAlpha: 0.2,
 };
+
+/**
+ * Fog (haar_wraith dispel) — pale blue-grey mist. Low contrast by
+ * design so it visually "drifts" rather than demanding attention.
+ * Reads as weather, not hazard; the mechanical bite is halved pickup
+ * radius while the player stands in it, not damage.
+ */
+export const HAZARD_ZONE_FOG: HazardZonePalette = {
+  baseColor: 0xc8d0dc,
+  baseAlpha: 0.35,
+  glowColor: 0xe8eef4,
+  glowAlpha: 0.18,
+};

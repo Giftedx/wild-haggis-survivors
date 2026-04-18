@@ -742,6 +742,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.hazardZones.spawnBottleSlick(x, y - offset);
         this.hazardZones.spawnBottleSlick(x, y + offset);
       },
+      onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
     });
     this.weaponSystem.events.on(
       'enemyKilled',

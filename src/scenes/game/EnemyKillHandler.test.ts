@@ -46,6 +46,7 @@ type HookMocks = {
   onActComplete: ReturnType<typeof vi.fn>;
   onBottleBreak: ReturnType<typeof vi.fn>;
   onTotemFall: ReturnType<typeof vi.fn>;
+  onHaarDispel: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -96,6 +97,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const onActComplete = vi.fn<(act: 1 | 2) => void>();
   const onBottleBreak = vi.fn<(x: number, y: number) => void>();
   const onTotemFall = vi.fn<(x: number, y: number) => void>();
+  const onHaarDispel = vi.fn<(x: number, y: number) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -113,6 +115,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onActComplete,
     onBottleBreak,
     onTotemFall,
+    onHaarDispel,
   };
 
   return {
@@ -131,6 +134,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onActComplete,
     onBottleBreak,
     onTotemFall,
+    onHaarDispel,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -492,6 +496,29 @@ describe('EnemyKillHandler', () => {
       handler.handle(20, 20, 6, 'traffic_cone_totem', false);
       expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(10, 10);
       expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(20, 20);
+    });
+  });
+
+  describe('Haar Wraith dispel', () => {
+    it('calls onHaarDispel with kill coordinates when haar_wraith dies', () => {
+      handler.handle(200, 300, 4, 'haar_wraith', false);
+      expect(m.onHaarDispel).toHaveBeenCalledExactlyOnceWith(200, 300);
+    });
+
+    it('does NOT call onHaarDispel for other enemy kills', () => {
+      handler.handle(10, 20, 4, 'buckfast_ned', false);
+      handler.handle(30, 40, 6, 'traffic_cone_totem', false);
+      handler.handle(50, 60, 5, 'tourist', false);
+      expect(m.onHaarDispel).not.toHaveBeenCalled();
+    });
+
+    it('slick / totem / fog hooks each fire on their own enemy in sequence', () => {
+      handler.handle(10, 10, 4, 'buckfast_ned', false);
+      handler.handle(20, 20, 6, 'traffic_cone_totem', false);
+      handler.handle(30, 30, 4, 'haar_wraith', false);
+      expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(10, 10);
+      expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(20, 20);
+      expect(m.onHaarDispel).toHaveBeenCalledExactlyOnceWith(30, 30);
     });
   });
 });

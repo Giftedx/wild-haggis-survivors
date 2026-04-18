@@ -70,6 +70,13 @@ export interface EnemyKillHandlerHooks {
    * GameScene wires this to four `HazardZones.spawnBottleSlick` calls.
    */
   onTotemFall?(x: number, y: number): void;
+
+  /**
+   * Called when a `haar_wraith` dies — the wraith's mist lingers as a
+   * local fog patch. GameScene wires this to
+   * `HazardZones.spawnHaarFog`.
+   */
+  onHaarDispel?(x: number, y: number): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -223,6 +230,11 @@ export class EnemyKillHandler {
     // Traffic-cone totem collapse — four slicks at the cardinals.
     if (enemyKey === 'traffic_cone_totem') {
       h.onTotemFall?.(x, y);
+    }
+
+    // Haar-wraith dispel — leaves a drifting fog patch.
+    if (enemyKey === 'haar_wraith') {
+      h.onHaarDispel?.(x, y);
     }
 
     if (wasBoss) {

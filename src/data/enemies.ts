@@ -278,6 +278,25 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'ranged',
     packSize: 1,
   },
+  // Weather family opener — DESIGN_IDEAS section 3. "Spawns local fog
+  // on death" lands through a new HazardZones patch: fog halves the
+  // player's pickup radius while they stand in it (parallel to the
+  // slick patch that halves movement). The wraith itself is a frail
+  // chase enemy — the fog is the real mechanical beat.
+  haar_wraith: {
+    key: 'haar_wraith',
+    texture: 'haar_wraith',
+    speed: 80,
+    hp: 12,
+    damage: 6,
+    xpValue: 4,
+    appearsAt: 750,    // 12:30 — sits between buckfast_ned (12:00)
+                       // and angry_scotsman (13:00); slot gives the
+                       // player time to notice the fog mechanic before
+                       // combat density climbs.
+    behavior: 'chase',
+    packSize: 1,
+  },
   // Urban Ghaists #3 — DESIGN_IDEAS section 3. Victorian ghost-tour
   // guide that keeps its distance and lobs projectiles. Ranged
   // behavior is already wired — the flavor carries through the sprite
@@ -343,6 +362,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   barghest: 'Barghest',
   kelpie_foal: 'Kelpie Foal',
   blue_man_of_minch: 'Blue Man of the Minch',
+  haar_wraith: 'Haar Wraith',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

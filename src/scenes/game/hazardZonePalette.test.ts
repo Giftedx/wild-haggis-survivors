@@ -3,6 +3,7 @@ import {
   HAZARD_ZONE_LAVA,
   HAZARD_ZONE_HEAL,
   HAZARD_ZONE_SLICK,
+  HAZARD_ZONE_FOG,
   type HazardZonePalette,
 } from './hazardZonePalette';
 
@@ -33,5 +34,15 @@ describe('hazardZonePalette', () => {
 
   it('slick base is more opaque than its glow (consistent with lava / heal)', () => {
     expect(HAZARD_ZONE_SLICK.baseAlpha).toBeGreaterThan(HAZARD_ZONE_SLICK.glowAlpha);
+  });
+
+  it('fog is distinct from lava / heal / slick', () => {
+    expect(HAZARD_ZONE_FOG.baseColor).not.toBe(HAZARD_ZONE_LAVA.baseColor);
+    expect(HAZARD_ZONE_FOG.baseColor).not.toBe(HAZARD_ZONE_HEAL.baseColor);
+    expect(HAZARD_ZONE_FOG.baseColor).not.toBe(HAZARD_ZONE_SLICK.baseColor);
+  });
+
+  it('fog base is more opaque than its glow', () => {
+    expect(HAZARD_ZONE_FOG.baseAlpha).toBeGreaterThan(HAZARD_ZONE_FOG.glowAlpha);
   });
 });

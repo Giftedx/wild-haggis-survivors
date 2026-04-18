@@ -13,7 +13,7 @@ import Phaser from 'phaser';
 import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
-import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL, HAZARD_ZONE_SLICK } from './hazardZonePalette';
+import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL, HAZARD_ZONE_SLICK, HAZARD_ZONE_FOG } from './hazardZonePalette';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
@@ -67,11 +67,22 @@ const SLICK_RADIUS_PX = 36;
 /** Slick zone lifetime (ms) — long enough to matter in a fight,
  *  short enough to clear before the next ned throw lands. */
 const SLICK_DURATION_MS = 5_000;
+/** Fog zone radius (px) — wider than slick; fog should feel like
+ *  drifting weather rather than a puddle. */
+const FOG_RADIUS_PX = 52;
+/** Fog zone lifetime (ms) — 7 s is one banter-tick longer than slick
+ *  so the two patches have different "smell" even when both fire
+ *  from a clustered pack. */
+const FOG_DURATION_MS = 7_000;
 
 export class HazardZones {
   private lavaZones: Zone[] = [];
   private healZones: Zone[] = [];
   private slickZones: SlickZone[] = [];
+  /** Fog zones share the `SlickZone` shape — same expiry + visuals
+   *  fields. Kept as a separate list so the tick loop reads fog-state
+   *  against its own radii without branching on a discriminator. */
+  private fogZones: SlickZone[] = [];
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -83,6 +94,8 @@ export class HazardZones {
     this.healZones = [];
     for (const z of this.slickZones) for (const v of z.visuals) v.destroy();
     this.slickZones = [];
+    for (const z of this.fogZones) for (const v of z.visuals) v.destroy();
+    this.fogZones = [];
   }
 
   spawn(): void {
@@ -148,6 +161,36 @@ export class HazardZones {
     this.slickZones.push({
       x, y, r,
       expireAtMs: gameTimeMs + SLICK_DURATION_MS,
+      visuals: [base, glow],
+    });
+  }
+
+  /**
+   * Spawn a drifting fog patch at `(x, y)`. Called when a haar_wraith
+   * dies — its mist lingers locally. Player's pickup radius halves
+   * while overlapping (see `Player.getPickupRadius`); no damage, no
+   * slow, so fog is a distinct kind of pressure from slick.
+   */
+  spawnHaarFog(x: number, y: number): void {
+    const scene = this.scene;
+    const r = FOG_RADIUS_PX;
+    const gameTimeMs = this.hooks.getSpawnSystem().getGameTimeSec() * 1000;
+    const base = scene.add
+      .ellipse(x, y, r * 2, r * 1.5, HAZARD_ZONE_FOG.baseColor, HAZARD_ZONE_FOG.baseAlpha)
+      .setDepth(-1);
+    const glow = scene.add
+      .ellipse(x, y, r * 1.7, r * 1.3, HAZARD_ZONE_FOG.glowColor, HAZARD_ZONE_FOG.glowAlpha)
+      .setDepth(-1);
+    scene.tweens.add({
+      targets: glow,
+      alpha: { from: HAZARD_ZONE_FOG.glowAlpha * 0.4, to: HAZARD_ZONE_FOG.glowAlpha },
+      scale: { from: 0.85, to: 1.1 },
+      duration: 1_000,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+    this.fogZones.push({
+      x, y, r,
+      expireAtMs: gameTimeMs + FOG_DURATION_MS,
       visuals: [base, glow],
     });
   }
@@ -233,5 +276,23 @@ export class HazardZones {
       if (dx * dx + dy * dy < z.r * z.r) playerInSlick = true;
     }
     player.setInSlick(playerInSlick);
+
+    // Fog zones — same expiry + overlap shape as slick, separate list so
+    // the two effects stay independent (e.g. a player kiting through both
+    // gets slowed AND magnet-halved, as intended).
+    let playerInFog = false;
+    for (let i = this.fogZones.length - 1; i >= 0; i--) {
+      const z = this.fogZones[i];
+      if (nowMs >= z.expireAtMs) {
+        for (const v of z.visuals) v.destroy();
+        this.fogZones.splice(i, 1);
+        continue;
+      }
+      if (!player.active) continue;
+      const dx = player.x - z.x;
+      const dy = player.y - z.y;
+      if (dx * dx + dy * dy < z.r * z.r) playerInFog = true;
+    }
+    player.setInFog(playerInFog);
   }
 }

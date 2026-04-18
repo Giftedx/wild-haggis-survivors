@@ -84,6 +84,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private inSlick: boolean = false;
   /** Movement multiplier applied while `inSlick` — 0.55 = 45 % slow. */
   private readonly SLICK_SPEED_MUL = 0.55;
+  /** Hazard-driven fog drift — true while the player stands inside a
+   *  haar-wraith fog patch. Halves the pickup radius so magnet farms
+   *  get interrupted; no speed / damage penalty (slick already covers
+   *  movement pressure). */
+  private inFog: boolean = false;
+  /** Pickup-radius multiplier applied while `inFog`. */
+  private readonly FOG_PICKUP_MUL = 0.5;
   /** Biome-driven knockback bonus applied on incoming damage. 1 = no effect. */
   private biomeKnockbackBonus: number = 1;
   /** Biome-driven XP gem value multiplier — read by XPSystem at collect time. */
@@ -476,7 +483,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getRunBasePickupRadius(): number { return this.runBasePickup; }
   getRunBaseDriftDegrees(): number { return this.runBaseDrift; }
   getLevel(): number { return this.currentLevel; }
-  getPickupRadius(): number { return this.pickupRadius; }
+  getPickupRadius(): number {
+    return this.pickupRadius * (this.inFog ? this.FOG_PICKUP_MUL : 1);
+  }
   getMoveSpeed(): number { return this.moveSpeed; }
   getDriftDegrees(): number { return this.driftDegrees; }
   getDamageMultiplier(): number { return this.bonusDamageMultiplier; }
@@ -562,6 +571,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   /** Test hook — read the slick-slow state without touching private fields. */
   isInSlick(): boolean { return this.inSlick; }
+
+  /** Set whether the player is currently drifting through a haar-wraith
+   *  fog patch. Same shape as `setInSlick` — single bool, no stack
+   *  bookkeeping. HazardZones ticks it every frame. */
+  setInFog(active: boolean): void {
+    this.inFog = active;
+  }
+
+  /** Test hook — read the fog state without touching private fields. */
+  isInFog(): boolean { return this.inFog; }
 
   /**
    * Apply the biome's mechanical modifier. Called once per biome entry from
