@@ -1429,6 +1429,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
         audio.playStoneGrant();
         bumpReliquaryCurioPick(curio.id);
+        this.banter?.request('reliquary_pick');
       },
     });
     this.reliquary.spawn();

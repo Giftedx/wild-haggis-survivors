@@ -15,6 +15,8 @@ describe('BANTER_POOLS structure', () => {
     'weapon_evolve', 'curse_start', 'moor_moment', 'idle',
     // W2 Moor Road
     'act_intermission_enter', 'act_complete', 'route_picked',
+    // Reliquary pickup
+    'reliquary_pick',
   ];
 
   it('covers every BanterContext exactly once', () => {

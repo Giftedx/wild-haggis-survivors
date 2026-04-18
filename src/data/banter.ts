@@ -33,7 +33,9 @@ export type BanterContext =
   // W2 Moor Road
   | 'act_intermission_enter'
   | 'act_complete'
-  | 'route_picked';
+  | 'route_picked'
+  // Reliquary pickup (M15) — off-path relic claimed
+  | 'reliquary_pick';
 
 export interface BanterPool {
   context: BanterContext;
@@ -761,6 +763,20 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.route_picked.buckie_pitstop.b',
       ],
     },
+  },
+  {
+    // Reliquary pickup (M15). Small hearth beat — the moor just handed
+    // you a curio, acknowledging the off-path detour. Generic-only pool;
+    // per-curio voice tint stays open for a future banter pass.
+    context: 'reliquary_pick',
+    tone: 'hearth',
+    priority: 45,
+    keys: [
+      'ui.banter.reliquary_pick.a',
+      'ui.banter.reliquary_pick.b',
+      'ui.banter.reliquary_pick.c',
+      'ui.banter.reliquary_pick.d',
+    ],
   },
 ];
 

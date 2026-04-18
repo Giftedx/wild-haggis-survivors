@@ -1169,6 +1169,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Tonic o tha moor, that.',
         },
       },
+      reliquary_pick: {
+        a: 'Moor haunded ye a wee somethin.',
+        b: 'Tha relic\'s been waitin on ye.',
+        c: 'Aye — tha hum hud yer name on it.',
+        d: 'Aff-path pays, noo an again.',
+      },
     },
   },
   boss: {

@@ -1315,6 +1315,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Tonic o\' the moor, that.',
         },
       },
+      reliquary_pick: {
+        a: 'Moor handed ye a wee somethin\'.',
+        b: 'That relic\'s been waitin\' on ye.',
+        c: 'Aye — the hum had yer name on it.',
+        d: 'Off-path pays, noo and again.',
+      },
     },
   },
   captions: {
