@@ -191,3 +191,93 @@ Revert the Phase 2 feature commits. `IInput` interface extraction stays
 because it's a good shape regardless of replay (matches the DI
 precedent in `AnalyticsManager`, `ISceneContext`). No save / schema
 changes in this phase.
+
+---
+
+## Addendum — Phase 3 (2026-04-18): byte-accurate playback path
+
+Phase 2 shipped best-effort playback with four documented drift
+sources. Phase 3 closes the two most impactful: variable-delta physics
+and the missing per-run metadata (curse, routes, composed stats).
+
+### What landed
+
+- `src/main.ts` — Phaser Arcade physics config gains `fps: 60,
+  fixedStep: true`. Physics integration decouples from RAF jitter;
+  recorded `dtMs` values remain accurate on playback. The 100 ms
+  `delta` clamp in `GameScene.update()` is unchanged.
+- `src/replay/replayBlobV2.ts` — `ReplayBlobV2` adds optional
+  `curseKey`, `routes`, `composedStats` on top of v1 shape.
+  `deserializeReplayV2` rejects v1 payloads (version mismatch) and
+  silently drops malformed optional fields so a partially-corrupt v2
+  blob still replays its frames.
+- `src/replay/composedStatsSnapshot.ts` — pure
+  `captureComposedStats(stats)` + `isComposedStatsSnapshot(value)`
+  guard. Snapshot type is `Pick<ComposedPlayerStats, …>` — the exact
+  11-field set `Player`'s constructor accepts. BALANCE.player
+  constants (dash, shield, hitbox) are excluded — they're build-level.
+- `src/replay/replayBlob.ts` — new `ReplayBlobAny = ReplayBlob |
+  ReplayBlobV2` union + `isReplayBlobAny` guard. v1 type / guard stay
+  for back-compat.
+- `src/replay/ReplayRecorder.ts` — `ReplayRecorderMeta` extends
+  `ReplayBlobMeta` with `curseKey?` and `composedStats?`. `pushRoute`
+  appends one `RoutePick` per resolved intermission. `finalize()`
+  emits a v1 blob when no v2 metadata was captured (back-compat
+  default) and a v2 blob otherwise.
+- `src/utils/save.ts` — `SAVE_SCHEMA_VERSION = 6`. `migrateV5ToV6` is
+  a no-op version bump. `RunHistoryEntry.replay` +
+  `RunHistoryContext.replay` widen to `ReplayBlobAny` so both v1 and
+  v2 blobs round-trip through write/load.
+- `src/scenes/GameScene.ts` — recorder construction relocates below
+  the curse + composedStats resolution so the v2 blob captures the
+  live metadata at run start. Playback branch reads `curseKey`,
+  `composedStats`, and `routes` from a v2 blob and applies them in
+  place of the live pending-curse singleton, live
+  `StatComposer.getPlayerStats(metaSave)`, and live
+  `ActIntermissionScene` card UI respectively. `launchActIntermission`
+  short-circuits when a recorded pick is queued for the current slot.
+- `src/replay/replayDeterminism.test.ts` — regression: two
+  `ReplayInput` cursors on an identical v2 blob must yield
+  frame-for-frame identical direction / dash / menu output; edges fire
+  exactly once; seed reproducibility holds across int / float / pick /
+  bool draws; serialize → deserialize preserves v2 metadata and frame
+  semantics. Pure node-env, 7 tests.
+
+### What's still not covered
+
+- `Math.random()` cosmetic paths (VFX particles, ambient wisps). Per
+  `rng.ts` policy these stay non-deterministic — gameplay state is
+  deterministic under v2 playback, but pure visual rolls may still
+  diverge frame-for-frame. Intentional.
+- Cross-build playback. A blob's `build` string gates replay; a
+  different build shows the archive-only state. Phase 2 decision.
+
+### Follow-ups
+
+1. A Chronicle indicator that a ▶ Watch entry is v2 (so the user
+   knows curse / routes / stats will match) would be a small UI
+   polish — Phase 3 shipped the mechanism; the Chronicle row currently
+   doesn't distinguish.
+2. A Playwright scenario that records a curse run, watches it, and
+   asserts the HUD curse chip re-appears during playback. Not
+   strictly needed — the vitest regression + the existing replay-loop
+   e2e cover the two ends — but a nice cross-check.
+
+### Rollback (Phase 3 only)
+
+Reverse commit order:
+1. `test(replay)` determinism regression → safe to revert alone.
+2. `feat(replay)` playback consumes v2 metadata → live path unaffected
+   (records still produce v2 blobs; playback falls back to consuming
+   live singletons as in Phase 2).
+3. `feat(replay)` GameScene feeds metadata to recorder → records
+   revert to v1 only; existing v2 save entries stay readable via
+   `ReplayBlobAny`.
+4. `feat(replay)` recorder v2 metadata → recorder back to v1-only API.
+5. `feat(save)` schema v6 + union widening → save v6 → v5 needs a
+   manual schemaVersion bump if any v6 save exists on disk. If no v6
+   save on disk yet, this is safe.
+6. `feat(replay)` blob v2 + snapshot modules → removes v2 types.
+7. `feat(replay)` Phaser fixed-step → single-line main.ts revert.
+
+Phase 1 + Phase 2 stay independent and shipping.

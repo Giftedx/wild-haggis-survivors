@@ -662,3 +662,69 @@ Known v1 limitations (in ADR-0002 addendum, not bugs):
     applies blob metadata instead of consuming live
     curse / settings / meta-upgrades.
 
+
+
+[2026-04-18] T1 Phase 3 — byte-accurate playback foundation shipped.
+
+Closed the variable-delta + missing-metadata drift sources from the
+Phase 2 addendum. Seven commits on top of the Phase 2 branch
+(e628b23 → d616d34):
+
+  1. feat(replay): Phaser Arcade fixed-step for T1 Phase 3 determinism
+     - src/main.ts: physics.arcade.fps: 60, fixedStep: true.
+     - No scaledDelta consumer changes needed — all six still take
+       delta from scene.update + scale by timeScale.
+
+  2. feat(replay): blob v2 type + ComposedStats snapshot for T1 Phase 3
+     - src/replay/replayBlobV2.ts: ReplayBlobV2 with optional
+       curseKey / routes / composedStats; deserializer rejects v1
+       payloads; coerces malformed route entries.
+     - src/replay/composedStatsSnapshot.ts: pure Pick<> 11-field
+       snapshot of ComposedPlayerStats — matches Player ctor's
+       consumption set. BALANCE.player constants intentionally
+       excluded (build-level, cross-build is archive-only).
+
+  3. feat(save): schema v6 + ReplayBlobAny union across replay callers
+     - SAVE_SCHEMA_VERSION 5 -> 6; migrateV5ToV6 is a version-bump
+       no-op.
+     - RunHistoryEntry.replay + RunHistoryContext.replay widen to
+       ReplayBlobAny; coerceRunHistoryEntry uses isReplayBlobAny.
+     - ChronicleScene, RunHistoryRecorder, ReplayInput, GameScene,
+       gameSceneInitData all widened. v1 blobs still round-trip.
+
+  4. feat(replay): ReplayRecorder captures curse + composedStats + routes
+     - Meta gains curseKey + composedStats at construction.
+     - pushRoute(pick) for Moor Road intermissions.
+     - finalize() returns v1 when no v2 metadata captured, v2 when any
+       of the optional fields set.
+
+  5. feat(replay): GameScene feeds v2 metadata into recorder
+     - Recorder construction moved BELOW curse + composedStats
+       resolution so it captures the live values.
+     - Moor Road onResolve now also calls replayRecorder?.pushRoute(pick).
+
+  6. feat(replay): GameScene playback consumes v2 curse + stats + routes
+     - playbackV2 local captures blob before pendingReplay clears.
+     - Curse: v2 blob's curseKey bypasses consumePendingCurse path.
+     - Stats: v2 composedStats spread over baseStats for Player ctor.
+     - Routes: pendingReplayRoutes stashed; launchActIntermission
+       shifts the queue, skips the card UI, runs onResolve inline.
+     - Slot mismatch logs + falls through without popping the queue.
+
+  7. test(replay): T1 Phase 3 determinism regression vitest
+     - Pure node-env. Two ReplayInput cursors on an identical blob
+       produce frame-for-frame identical output.
+     - Edges fire exactly once (10 dashes + 1 menu over 300f).
+     - Recorder round-trip preserves edge sequence.
+     - createRNG seed reproducibility across next / int / float / pick
+       / bool.
+     - v2 serialize -> deserialize preserves metadata + frame semantics
+       (symmetric JSON round-trip handles float ULP loss).
+
+Tests: 2469 -> 2499 (+30 across Phase 3). Lint / tsc / vite build /
+Playwright 8/8 green at every commit.
+
+Remaining non-determinism (per ADR-0002 Phase 3 addendum):
+  - Math.random cosmetic paths kept per rng.ts policy.
+  - Cross-build playback gated by blob.build (archive-only).
+
