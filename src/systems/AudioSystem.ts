@@ -567,6 +567,36 @@ export class AudioSystem {
     }
   }
 
+  /**
+   * Burn Leap whoosh — fast upward filter sweep on a noisy saw pair,
+   * tuned to read as "air-rush on a quick hop" rather than "dash".
+   * No music duck — the leap fires often enough that ducking would
+   * chop the procedural pad under every gesture.
+   */
+  playBurnLeap(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    // Two detuned sawtooths swept from ~220 Hz up to ~660 Hz over 180 ms
+    // — the upward glide mirrors the visual cyan flare.
+    for (let d = 0; d < 2; d++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.detune.value = d === 0 ? -14 : 14;
+      osc.frequency.setValueAtTime(220, t0);
+      osc.frequency.exponentialRampToValueAtTime(660, t0 + 0.18);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.06, t0 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t0);
+      osc.stop(t0 + 0.24);
+    }
+  }
+
   /** Menu button click */
   playClick(): void {
     this.gatedSfx('click', () => {

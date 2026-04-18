@@ -4,6 +4,7 @@ import { InputManager } from '../utils/input';
 import type { IInput } from '../utils/iInput';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
 import { evaluateBurnLeap } from './burnLeapInput';
+import { audio } from '../systems/AudioSystem';
 import { softBoundarySteer } from './softBoundarySteer';
 import { playerGrowthScale } from './playerGrowthScale';
 import { playerLevelSpeedMul, playerLevelDriftMul } from './playerLevelScaling';
@@ -423,6 +424,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.burnLeapBoostRemainingMs = this.BURN_LEAP_BOOST_MS;
         this.burnLeapCooldownRemainingMs = this.BURN_LEAP_COOLDOWN_MS;
         this.spawnBurnLeapFlash();
+        audio.playBurnLeap();
       }
     }
     this.burnLeapPrevDir = { x: dir.x, y: dir.y };
