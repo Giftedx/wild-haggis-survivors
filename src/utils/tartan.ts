@@ -9,6 +9,8 @@
  * Mantle-rendering (live in-game) is explicitly out of scope here —
  * that half of the DESIGN_IDEAS bullet requires the W71 rig layer.
  */
+import type { VariantKey } from '../data/variants';
+import type { WeaponKey } from '../data/weapons';
 
 /** A tartan's four-colour palette plus the fixed weave pattern. */
 export interface TartanProfile {
@@ -38,9 +40,10 @@ const ACCENT_BAND_PX = 1;
 const ACCENT_OFFSET_PX = 20;
 const WEFT_ALPHA = 0.55;
 
-/** Variant key → clan palette. Covers every shipped variant + a
- *  neutral fallback for unknown / missing variant keys. */
-const VARIANT_PALETTES: Readonly<Record<string, { base: string; primary: string }>> = {
+/** Variant key → clan palette. Keyed on `VariantKey` so adding a new
+ *  variant in `src/data/variants.ts` surfaces here as a type error
+ *  instead of silently falling back to the neutral palette. */
+const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: string }>> = {
   classic:       { base: '#3d2a1e', primary: '#a84828' }, // haggis brown + rust
   iron_belly:    { base: '#1f2a24', primary: '#3d6a4b' }, // deep forest
   moor_runner:   { base: '#2c1e1f', primary: '#c0382b' }, // run-blood red
@@ -52,8 +55,10 @@ const VARIANT_PALETTES: Readonly<Record<string, { base: string; primary: string 
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 
-/** Top-damage weapon key → secondary stripe colour. */
-const WEAPON_ACCENTS: Readonly<Record<string, string>> = {
+/** Top-damage weapon key → secondary stripe colour. Keyed on
+ *  `WeaponKey` so a new weapon declared in `src/data/weapons.ts`
+ *  fails typecheck here until it's given a clan accent. */
+const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   thistle_shot:    '#8c4ab3', // thistle purple
   bagpipe_blast:   '#4fb3c9', // cyan skirl
   caber_toss:      '#8b5a2b', // timber brown
@@ -103,13 +108,22 @@ export function pickTopWeaponKey(damage: Record<string, number> | undefined): st
 
 /** Resolve a `TartanSignature` → a concrete palette. Accent priority:
  *  cursed > ironmoor > post-bell > victory > death. Only the highest
- *  wins so the pattern never stacks conflicting threads into mud. */
+ *  wins so the pattern never stacks conflicting threads into mud.
+ *
+ *  Lookups accept unknown `variantKey` / `topWeaponKey` strings (the
+ *  signature type is intentionally loose since GameOverPayload can
+ *  carry legacy keys from old saves) and fall back to the neutral
+ *  palette. New keys declared in `variants.ts` / `weapons.ts` surface
+ *  as type errors on the `Record<VariantKey, ...>` / `Record<WeaponKey,
+ *  ...>` definitions above — that's the real guard. */
 export function buildTartanProfile(sig: TartanSignature): TartanProfile {
-  const variant = sig.variantKey ? VARIANT_PALETTES[sig.variantKey] : undefined;
+  const variant = sig.variantKey
+    ? VARIANT_PALETTES[sig.variantKey as VariantKey]
+    : undefined;
   const base = (variant ?? VARIANT_FALLBACK).base;
   const primary = (variant ?? VARIANT_FALLBACK).primary;
   const secondary = sig.topWeaponKey
-    ? WEAPON_ACCENTS[sig.topWeaponKey] ?? WEAPON_ACCENT_FALLBACK
+    ? WEAPON_ACCENTS[sig.topWeaponKey as WeaponKey] ?? WEAPON_ACCENT_FALLBACK
     : WEAPON_ACCENT_FALLBACK;
 
   let accent: string;
