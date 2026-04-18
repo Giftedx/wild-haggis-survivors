@@ -91,6 +91,8 @@ Families worth sketching (pick one per content drop):
 | ~~`edinburgh_ghost_guide`~~ | Urban | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; lobs projectiles at distance (reuses the `ranged` behavior). |
 | ~~`edinburgh_ghost_guide`~~ | Academic | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; "narrates as a damage source" deferred pending a caption-linked damage system. |
 | ~~`ceilidh_caller`~~ | Academic | ✅ shipped 2026-04-18. Orbit dance-master at 10:45; "forces enemies to move in sync" deferred pending a group-AI pass. |
+| ~~`tome_wraith`~~ | Academic | ✅ shipped 2026-04-18. Ranged floating tome at 11:30; torn pages + ghostly face between the leaves. Scroll-unfurl telegraph rides the sprite; existing `ranged` AI handles the projectile cadence. |
+| ~~`dean_apparition`~~ | Academic | ✅ shipped 2026-04-18. Chase at 12:45 with mass override 5 — formal dean in mortarboard + gown, contact-shoves the player as "the academy does not wait". |
 | ~~`ledger_wraith`~~ | Taxman | ✅ shipped 2026-04-18. Chase enemy at 15:30; ghostly auditor with floating ledger + red-ink drips. "Immune until Taxman takes damage" deferred pending an event-bus gate. |
 | ~~`auditor_priest`~~ | Taxman | ✅ shipped 2026-04-18. Ranged cleric at 17:30 with a censer-tipped staff (glowing amber telegraph). "Beam ranged, tests drift skill" deferred pending a beam-weapon class. |
 

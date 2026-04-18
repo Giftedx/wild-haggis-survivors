@@ -411,6 +411,46 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Academic Apparitions #2 — DESIGN_IDEAS section 3. Floating open
+  // tome with a ghostly face between the pages; torn scroll-corners
+  // orbit the volume. Ships on the existing `ranged` behaviour —
+  // pages read as the "scroll-unfurl telegraph" from the family
+  // bullet without a new projectile class. Slots after ceilidh_caller
+  // (10:45) so the two Academic members land close in time for the
+  // scholarly read to register.
+  tome_wraith: {
+    key: 'tome_wraith',
+    texture: 'tome_wraith',
+    speed: 50,
+    hp: 28,
+    damage: 9,
+    xpValue: 5,
+    appearsAt: 690,    // 11:30 — between nest (11:00) and
+                       // buckfast_ned (12:00); the library-of-the-
+                       // dead beat lands before the streets turn.
+    behavior: 'ranged',
+    packSize: 1,
+  },
+  // Academic Apparitions #3 — DESIGN_IDEAS section 3. Formal dean in
+  // mortarboard + gown with a stern ghostly face. Chase behaviour with
+  // a mass override so contact shoves the player — the dean presses
+  // through you "because the academy does not wait". Higher HP than
+  // the tome wraith to reward deliberate focus. Sits late enough that
+  // the player's weapons can actually handle the bulk.
+  dean_apparition: {
+    key: 'dean_apparition',
+    texture: 'dean_apparition',
+    speed: 50,
+    hp: 45,
+    damage: 13,
+    xpValue: 7,
+    appearsAt: 765,    // 12:45 — between haar_wraith (12:30) and
+                       // angry_scotsman (13:00); adds a tank-leaning
+                       // apparition to the late-teen pool.
+    behavior: 'chase',
+    packSize: 1,
+    massOverride: 5,
+  },
   // Taxman's Retinue opener — DESIGN_IDEAS section 3. Ghostly auditor
   // trailing ledger pages and ink-red drips; the "immune until the
   // Taxman takes damage" bullet stays open pending an event-bus gate
@@ -486,6 +526,8 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   seelie_piper: 'Seelie Piper',
   unseelie_fiddler: 'Unseelie Fiddler',
   ceilidh_caller: 'Ceilidh Caller',
+  tome_wraith: 'Tome Wraith',
+  dean_apparition: 'Dean Apparition',
   ledger_wraith: 'Ledger Wraith',
   auditor_priest: 'Auditor Priest',
   // Bosses
