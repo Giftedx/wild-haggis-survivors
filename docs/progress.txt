@@ -1011,3 +1011,32 @@ enemy-specific banter (e.g. "you killed a kelpie_foal") would
 still need a dedicated hook if desired. Not a current gap —
 kill_streak + first_blood already cover the moment from the
 variant angle.
+
+Follow-on commits same session — Faerie pair + Academic caller:
+
+(5) seelie_piper + unseelie_fiddler (`794f31d`) — Faerie Courts
+    pair. Fair-court (pale gold + iridescent wings + gold-eye
+    sparkle trail) and Dark-court (violet-black + jagged wings
+    + cold-blue eyes + shadow trail) both land on the existing
+    `orbit` behaviour. Timeline 8:20 and 8:40 — deliberately
+    clustered so the "fair vs dark" read lands in one beat.
+    Aura-buff + beat-sync mechanics deferred to future drops.
+
+(6) ceilidh_caller (`2133150`) — Academic Apparitions member.
+    Ethereal dance-master, translucent robes mid-twirl, one
+    arm raised in the "call" pose with sparkle dots trailing.
+    Orbit behaviour at 10:45. Group-AI sync mechanic deferred.
+
+Tests unchanged (2571); all three enemies auto-covered by the
+existing fences. Lint / tsc / vite green at every commit.
+Seven bisect-friendly commits this session after the initial
+four: a97698f 08d7c76 ffb8151 35a4176 29d0f71 794f31d 5eb7be4
+2133150 (+ docs commits).
+
+Final tally this session: 8 commits. Roster after: 21 non-boss
+enemy keys, up from 13 at session start. Family ledger:
+Baseline 4 / Urban Ghaists 3 / Cryptids 3 / Weather 2 / Faerie
+2 / Academic 1 + edinburgh_ghost_guide misfiled as Urban /
+Elite-specialist 6. Taxman's Retinue (ledger_wraith,
+auditor_priest) stays deferred — post-bell enemies wire through
+`PostBellEscalation.ts`, not `WAVE_TIMELINE`.

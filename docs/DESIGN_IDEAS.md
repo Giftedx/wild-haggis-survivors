@@ -89,8 +89,8 @@ Families worth sketching (pick one per content drop):
 | ~~`buckfast_ned`~~ | Urban | ✅ shipped 2026-04-18. Body enemy at 12:00; drops a slick patch on death (`HazardZones.spawnBottleSlick`) that slows the player 45 % for 5 s. |
 | ~~`traffic_cone_totem`~~ | Urban | ✅ shipped 2026-04-18. Static at 14:30; collapses into four slick patches at the cardinals on death (reuses the ned slick via `onTotemFall`). |
 | ~~`edinburgh_ghost_guide`~~ | Urban | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; lobs projectiles at distance (reuses the `ranged` behavior). |
-| `edinburgh_ghost_guide` | Academic | Narrates as a damage source. |
-| `ceilidh_caller` | Academic | Forces enemies to move in sync briefly. |
+| ~~`edinburgh_ghost_guide`~~ | Academic | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; "narrates as a damage source" deferred pending a caption-linked damage system. |
+| ~~`ceilidh_caller`~~ | Academic | ✅ shipped 2026-04-18. Orbit dance-master at 10:45; "forces enemies to move in sync" deferred pending a group-AI pass. |
 | `ledger_wraith` | Taxman | Immune until Taxman takes damage. |
 | `auditor_priest` | Taxman | Beam ranged, tests drift skill. |
 
