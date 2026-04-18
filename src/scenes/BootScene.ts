@@ -220,6 +220,8 @@ export class BootScene extends Phaser.Scene {
     this.createTrafficConeTotem();
     this.createEdinburghGhostGuide();
     this.createBarghest();
+    this.createKelpieFoal();
+    this.createBlueManOfMinch();
     this.createBoss();
     this.createThistle();
     this.createCaber();
@@ -4034,6 +4036,148 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx - 20, cy + 5, 3, 1);
 
     g.generateTexture('barghest', s, s);
+    g.destroy();
+  }
+
+  /**
+   * Kelpie Foal — DESIGN_IDEAS section 3 Cryptids #2. Young water-
+   * horse; flees when the player gets close (reuses sheep's `flee`
+   * behaviour). Shimmer-blue coat with mane-drip detail so it reads
+   * as water-spirit rather than livestock.
+   */
+  private createKelpieFoal(): void {
+    const s = 36;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+
+    // Soft under-glow — water-spirit aura.
+    g.fillStyle(0x4a8ab0, 0.2);
+    g.fillEllipse(cx, cy + 2, 26, 20);
+
+    // Body — compact, slightly rounder than adult.
+    g.fillStyle(0x1a3348, 1);
+    g.fillEllipse(cx, cy + 3, 18, 10);
+    g.fillStyle(0x2e5070, 1);
+    g.fillEllipse(cx, cy + 2, 15, 8);
+    // Dappled lighter highlights — wet-coat feel.
+    g.fillStyle(0x6fa0c0, 0.6);
+    g.fillEllipse(cx - 3, cy, 5, 3);
+    g.fillEllipse(cx + 4, cy + 1, 4, 2);
+
+    // Legs — 4 thin ones, pale at hooves.
+    g.fillStyle(0x1a3348, 1);
+    g.fillRect(cx - 7, cy + 7, 2, 6);
+    g.fillRect(cx - 2, cy + 8, 2, 5);
+    g.fillRect(cx + 2, cy + 8, 2, 5);
+    g.fillRect(cx + 6, cy + 7, 2, 6);
+    g.fillStyle(0xa0c8e0, 0.8);
+    g.fillRect(cx - 7, cy + 12, 2, 1);
+    g.fillRect(cx + 6, cy + 12, 2, 1);
+
+    // Head.
+    g.fillStyle(0x1a3348, 1);
+    g.fillEllipse(cx + 8, cy - 2, 7, 6);
+    g.fillStyle(0x2e5070, 1);
+    g.fillEllipse(cx + 8, cy - 3, 6, 4);
+
+    // Eye — luminous cyan.
+    g.fillStyle(0x8fe0ff, 1);
+    g.fillCircle(cx + 10, cy - 3, 1);
+
+    // Ears — tiny, water-pointed.
+    g.fillStyle(0x1a3348, 1);
+    g.fillTriangle(cx + 6, cy - 6, cx + 8, cy - 8, cx + 8, cy - 5);
+    g.fillTriangle(cx + 10, cy - 6, cx + 12, cy - 8, cx + 10, cy - 5);
+
+    // Mane — dripping water strands on neck.
+    g.fillStyle(0x6fa0c0, 0.8);
+    g.fillRect(cx + 3, cy - 4, 1, 5);
+    g.fillRect(cx + 5, cy - 5, 1, 6);
+    g.fillStyle(0xa0c8e0, 0.7);
+    g.fillRect(cx + 4, cy - 4, 1, 4);
+    // Drips below.
+    g.fillStyle(0x8fd0f0, 0.6);
+    g.fillCircle(cx + 3, cy + 2, 0.8);
+    g.fillCircle(cx + 6, cy + 3, 0.6);
+
+    // Tail — wispy water tail.
+    g.fillStyle(0x4a8ab0, 0.7);
+    g.fillTriangle(cx - 8, cy + 2, cx - 13, cy + 1, cx - 9, cy + 6);
+
+    g.generateTexture('kelpie_foal', s, s);
+    g.destroy();
+  }
+
+  /**
+   * Blue Man of the Minch — DESIGN_IDEAS section 3 Cryptids #3.
+   * Hebridean ocean spirit; slow ranged enemy that lobs a kenning
+   * projectile. Visual pitch: waist-up humanoid torso rising out of
+   * dripping water, deep indigo skin, pale-green eyes.
+   */
+  private createBlueManOfMinch(): void {
+    const s = 48;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 4;
+
+    // Water pool at the base — he's "rising" from it.
+    g.fillStyle(0x0a2238, 0.7);
+    g.fillEllipse(cx, cy + 16, 28, 6);
+    g.fillStyle(0x1a3d58, 0.5);
+    g.fillEllipse(cx, cy + 15, 24, 4);
+    // Water ripple suggestion.
+    g.fillStyle(0x8fc0e0, 0.4);
+    g.fillRect(cx - 10, cy + 14, 20, 1);
+
+    // Waist / torso.
+    g.fillStyle(0x0a1a3d, 1);
+    g.fillEllipse(cx, cy + 6, 18, 14);
+    g.fillStyle(0x1a2f5a, 1);
+    g.fillEllipse(cx, cy + 4, 15, 11);
+    // Chest sheen.
+    g.fillStyle(0x4060a0, 0.5);
+    g.fillEllipse(cx - 2, cy + 2, 10, 5);
+
+    // Arms — one raised holding kenning-stone (throwing stance).
+    g.fillStyle(0x0a1a3d, 1);
+    g.fillRect(cx + 7, cy - 3, 3, 8);
+    g.fillRect(cx - 10, cy, 3, 8);
+    // Kenning projectile in raised hand — glowing cyan rune-stone.
+    g.fillStyle(0x5fc0e0, 0.85);
+    g.fillCircle(cx + 12, cy - 5, 2.5);
+    g.fillStyle(0x9fe0ff, 1);
+    g.fillCircle(cx + 12, cy - 5, 1.3);
+    // Projectile glow ring.
+    g.fillStyle(0x5fc0e0, 0.3);
+    g.fillCircle(cx + 12, cy - 5, 5);
+
+    // Shoulders + neck.
+    g.fillStyle(0x0a1a3d, 1);
+    g.fillRect(cx - 8, cy - 6, 16, 3);
+    g.fillRect(cx - 2, cy - 9, 4, 4);
+
+    // Head — gaunt, angled.
+    g.fillStyle(0x0a1a3d, 1);
+    g.fillEllipse(cx, cy - 12, 10, 10);
+    g.fillStyle(0x1a2f5a, 1);
+    g.fillEllipse(cx, cy - 13, 8, 8);
+
+    // Eyes — pale sea-green pinpricks.
+    g.fillStyle(0xc8f0a0, 1);
+    g.fillCircle(cx - 2, cy - 13, 1);
+    g.fillCircle(cx + 2, cy - 13, 1);
+
+    // Beard — wet hair strands hanging off chin.
+    g.fillStyle(0x050a18, 0.9);
+    g.fillRect(cx - 3, cy - 8, 1, 4);
+    g.fillRect(cx, cy - 8, 1, 5);
+    g.fillRect(cx + 3, cy - 8, 1, 4);
+
+    // Drips from shoulders.
+    g.fillStyle(0x5fc0e0, 0.6);
+    g.fillCircle(cx - 9, cy + 4, 0.8);
+    g.fillCircle(cx + 8, cy + 4, 0.8);
+
+    g.generateTexture('blue_man_of_minch', s, s);
     g.destroy();
   }
 

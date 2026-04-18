@@ -241,6 +241,43 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'dive',
     packSize: 1,
   },
+  // Cryptids #2 — DESIGN_IDEAS section 3. Young kelpie; reuses the
+  // `flee` behaviour family (same as sheep) but at a faster gait
+  // and with higher XP on catch — the "lures with fake pickup
+  // glow" half of the idea sits in the shimmer-blue sprite rather
+  // than a bait-pickup system (shippable without a new decoy
+  // mechanic; lure-pickup stays open for a future drop).
+  kelpie_foal: {
+    key: 'kelpie_foal',
+    texture: 'kelpie_foal',
+    speed: 130,
+    hp: 4,
+    damage: 3,
+    xpValue: 4,
+    appearsAt: 390,    // 6:30 — after eagle teaches dive; this is the
+                       // first cryptid-coded flee target so it slots
+                       // before the barghest reveal.
+    behavior: 'flee',
+    packSize: 3,
+  },
+  // Cryptids #3 — DESIGN_IDEAS section 3. Slow-moving ocean spirit
+  // that keeps distance and lobs a "kenning" projectile. Ships as a
+  // themed `ranged` alt to haggis_hunter — the banter-literal-answer
+  // reward half of the bullet stays open for a future banter-hook
+  // pass; the visual + ranged cadence carries the flavour now.
+  blue_man_of_minch: {
+    key: 'blue_man_of_minch',
+    texture: 'blue_man_of_minch',
+    speed: 45,
+    hp: 30,
+    damage: 11,
+    xpValue: 6,
+    appearsAt: 630,    // 10:30 — sits between haggis_hunter (10:00)
+                       // and nest (11:00); second ranged enemy, so
+                       // the player has the projectile-dodge muscle.
+    behavior: 'ranged',
+    packSize: 1,
+  },
   // Urban Ghaists #3 — DESIGN_IDEAS section 3. Victorian ghost-tour
   // guide that keeps its distance and lobs projectiles. Ranged
   // behavior is already wired — the flavor carries through the sprite
@@ -304,6 +341,8 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   traffic_cone_totem: 'Traffic Cone Totem',
   edinburgh_ghost_guide: 'Edinburgh Ghost Guide',
   barghest: 'Barghest',
+  kelpie_foal: 'Kelpie Foal',
+  blue_man_of_minch: 'Blue Man of the Minch',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',
