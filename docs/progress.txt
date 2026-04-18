@@ -789,3 +789,39 @@ Master plan state after session: W2, W66, T1, W18 all shipped
 (struck through). Remaining flagship parking lot: W71 animation rig,
 W95 mobile rework, P3 cloud saves, W27 capture/share — each needs
 stakeholder selection + scoping spike.
+
+
+[2026-04-18] Tartan Banner — postcard slice.
+
+Pulled DESIGN_IDEAS "Tartan Banner" (postcard half) into a ship.
+Procedural plaid rendered into the postcard footer, keyed off the
+run signature: variant (base + primary palette), top-damage weapon
+(secondary stripe), mode tags (accent thread — cursed > ironmoor >
+post-bell > victory > death by priority).
+
+New module: src/utils/tartan.ts (pure generator + canvas renderer).
+
+  buildTartanProfile(sig: TartanSignature): TartanProfile
+  renderTartan(ctx, x, y, w, h, profile): void
+
+Integration:
+  - PostcardPayload gains `tartan?: TartanSignature`. Test fixtures
+    that omit it reproduce the pre-tartan output.
+  - renderPostcardDataUrl paints a 48x48 tartan patch on the left
+    edge of the footer; text columns shift 60px right to clear it.
+  - buildPostcardPayloadFromGameOver derives the signature from
+    GameOverPayload (variantKey, weaponDamage, mode / ironmoor /
+    curseKey / postBellSec).
+
+Verified in dev preview: 9 variant x weapon x mode combos render
+as distinct, recognizable plaids. Full postcard layout verified
+across classic / iron_belly ironmoor / moor_runner / laird — text
+shift clean, seed + brand unchanged.
+
+Tests 2503 -> 2524 (+21). Lint / tsc / vite build green. Bundle:
+app chunk +1.9 KB uncompressed (tartan module inline since it's
+used on every postcard save).
+
+Mantle half of the Tartan Banner idea still waits on W71 rig.
+DESIGN_IDEAS updated: Tartan Banner marked shipped (postcard).
+Same pass corrected the stale shipped-variants count (6 -> 8).
