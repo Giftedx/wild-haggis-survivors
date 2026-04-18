@@ -18,6 +18,8 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 420, add: 'eagle' },
     { t: 450, add: 'midgie_swarm' },
     { t: 480, add: 'piper' },
+    { t: 500, add: 'seelie_piper' },
+    { t: 520, add: 'unseelie_fiddler' },
     { t: 540, add: 'ghost' },
     { t: 570, add: 'barghest' },
     { t: 600, add: 'haggis_hunter' },

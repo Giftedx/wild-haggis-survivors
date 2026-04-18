@@ -224,6 +224,8 @@ export class BootScene extends Phaser.Scene {
     this.createBlueManOfMinch();
     this.createHaarWraith();
     this.createGaleWraith();
+    this.createSeeliePiper();
+    this.createUnseelieFiddler();
     this.createBoss();
     this.createThistle();
     this.createCaber();
@@ -4309,6 +4311,127 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(cx - 13, cy + 4, 7, 1);
 
     g.generateTexture('gale_wraith', s, s);
+    g.destroy();
+  }
+
+  /**
+   * Seelie Piper — DESIGN_IDEAS section 3 Faerie family opener.
+   * "Fair-court" faerie orbiting the player; pale gold palette with
+   * sparkle-before-commit hint in the visual. Pairs with
+   * unseelie_fiddler as the light half of a Seelie/Unseelie pair.
+   */
+  private createSeeliePiper(): void {
+    const s = 40;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+
+    // Fair-court glow.
+    g.fillStyle(0xffe49a, 0.25);
+    g.fillCircle(cx, cy, 14);
+    g.fillStyle(0xffe49a, 0.12);
+    g.fillCircle(cx, cy, 18);
+
+    // Tiny body — sprite-sized fairy.
+    g.fillStyle(0xb4955a, 1);
+    g.fillEllipse(cx, cy + 2, 9, 11);
+    g.fillStyle(0xdfc68a, 1);
+    g.fillEllipse(cx, cy + 1, 7, 9);
+
+    // Head.
+    g.fillStyle(0xffd9a0, 1);
+    g.fillCircle(cx, cy - 5, 3);
+
+    // Eyes — bright gold pinpricks.
+    g.fillStyle(0xff9628, 1);
+    g.fillCircle(cx - 1, cy - 5, 0.6);
+    g.fillCircle(cx + 1, cy - 5, 0.6);
+
+    // Tiny pipe in hand — gold with pale tip.
+    g.fillStyle(0xb4955a, 1);
+    g.fillRect(cx + 3, cy - 2, 6, 1);
+    g.fillStyle(0xffe49a, 1);
+    g.fillRect(cx + 8, cy - 2, 1, 1);
+
+    // Wings — iridescent, fanned out.
+    g.fillStyle(0xffe49a, 0.6);
+    g.fillEllipse(cx - 6, cy - 2, 6, 10);
+    g.fillEllipse(cx + 6, cy - 2, 6, 10);
+    // Wing highlights.
+    g.fillStyle(0xffffff, 0.5);
+    g.fillEllipse(cx - 6, cy - 3, 3, 5);
+    g.fillEllipse(cx + 6, cy - 3, 3, 5);
+
+    // Sparkle trail — three dots of different sizes.
+    g.fillStyle(0xfff0c0, 0.9);
+    g.fillCircle(cx - 10, cy + 5, 1);
+    g.fillStyle(0xfff0c0, 0.6);
+    g.fillCircle(cx - 13, cy + 2, 0.7);
+    g.fillStyle(0xfff0c0, 0.35);
+    g.fillCircle(cx - 15, cy + 6, 0.5);
+
+    g.generateTexture('seelie_piper', s, s);
+    g.destroy();
+  }
+
+  /**
+   * Unseelie Fiddler — DESIGN_IDEAS section 3 Faerie #2. "Dark-court"
+   * pair-mate. Orbits like seelie_piper but in violet-black palette
+   * with cold-blue eye-glow; plays a small fiddle instead of pipes.
+   */
+  private createUnseelieFiddler(): void {
+    const s = 40;
+    const g = this.add.graphics();
+    const cx = s / 2, cy = s / 2 + 2;
+
+    // Dark-court aura — cold indigo.
+    g.fillStyle(0x2a1a3a, 0.32);
+    g.fillCircle(cx, cy, 14);
+    g.fillStyle(0x2a1a3a, 0.15);
+    g.fillCircle(cx, cy, 18);
+
+    // Body — darker.
+    g.fillStyle(0x1a0f28, 1);
+    g.fillEllipse(cx, cy + 2, 9, 11);
+    g.fillStyle(0x3a2855, 1);
+    g.fillEllipse(cx, cy + 1, 7, 9);
+
+    // Head.
+    g.fillStyle(0x4a3065, 1);
+    g.fillCircle(cx, cy - 5, 3);
+
+    // Eyes — cold blue pinpricks (contrast to Seelie's gold).
+    g.fillStyle(0x8fd0f0, 1);
+    g.fillCircle(cx - 1, cy - 5, 0.6);
+    g.fillCircle(cx + 1, cy - 5, 0.6);
+
+    // Fiddle in hand — dark-wood body, pale string.
+    g.fillStyle(0x20101a, 1);
+    g.fillRect(cx + 3, cy - 2, 5, 2);
+    // Neck + string.
+    g.fillStyle(0x8fd0f0, 0.85);
+    g.fillRect(cx + 4, cy - 2, 4, 0.5);
+    // Bow — angled across.
+    g.fillStyle(0x8a6c40, 1);
+    g.fillRect(cx + 2, cy - 5, 8, 0.5);
+
+    // Wings — darker and more jagged (unseelie drape).
+    g.fillStyle(0x4a2a6a, 0.6);
+    g.fillTriangle(cx - 4, cy - 4, cx - 8, cy + 2, cx - 4, cy + 4);
+    g.fillTriangle(cx + 4, cy - 4, cx + 8, cy + 2, cx + 4, cy + 4);
+    // Wing highlights — violet edge.
+    g.fillStyle(0x9f7ac8, 0.5);
+    g.fillTriangle(cx - 5, cy - 2, cx - 7, cy + 1, cx - 5, cy + 2);
+    g.fillTriangle(cx + 5, cy - 2, cx + 7, cy + 1, cx + 5, cy + 2);
+
+    // Shadow trail — dark pinpricks (pair to Seelie's sparkle).
+    g.fillStyle(0x3a2040, 0.8);
+    g.fillCircle(cx - 10, cy + 5, 1);
+    g.fillStyle(0x3a2040, 0.55);
+    g.fillCircle(cx - 13, cy + 2, 0.7);
+    g.fillStyle(0x3a2040, 0.3);
+    g.fillCircle(cx - 15, cy + 6, 0.5);
+
+    g.generateTexture('unseelie_fiddler', s, s);
     g.destroy();
   }
 

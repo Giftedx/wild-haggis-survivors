@@ -303,6 +303,41 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Faerie family opener — DESIGN_IDEAS section 3. Seelie (fair)
+  // court piper that orbits the player; visual reads "tricksy,
+  // rhythmic, sparkle-then-commit" per the family description.
+  // Reuses the existing `orbit` behaviour (same AI as piper), so
+  // the ship is sprite + stats + timeline slot.
+  seelie_piper: {
+    key: 'seelie_piper',
+    texture: 'seelie_piper',
+    speed: 90,
+    hp: 16,
+    damage: 7,
+    xpValue: 5,
+    appearsAt: 500,    // 8:20 — sits between piper (8:00) and
+                       // ghost (9:00); second orbiter keeps the
+                       // beat but rotates in the opposite direction
+                       // relative to piper, visually.
+    behavior: 'orbit',
+    packSize: 1,
+  },
+  // Faerie #2 — DESIGN_IDEAS section 3. Unseelie (dark) court
+  // fiddler. Orbits like its Seelie sibling but with a darker
+  // palette so the two read as paired opposites at a glance.
+  unseelie_fiddler: {
+    key: 'unseelie_fiddler',
+    texture: 'unseelie_fiddler',
+    speed: 100,
+    hp: 18,
+    damage: 8,
+    xpValue: 5,
+    appearsAt: 520,    // 8:40 — just after seelie_piper; deliberate
+                       // pairing so the two court halves land close
+                       // in time for the "fair vs dark" read.
+    behavior: 'orbit',
+    packSize: 1,
+  },
   // Weather #2 — DESIGN_IDEAS section 3. "Displaces player on
   // contact" lands through a mass override: Phaser's arcade collision
   // resolver respects body.mass when computing rebound velocity, so
@@ -389,6 +424,8 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   blue_man_of_minch: 'Blue Man of the Minch',
   haar_wraith: 'Haar Wraith',
   gale_wraith: 'Gale Wraith',
+  seelie_piper: 'Seelie Piper',
+  unseelie_fiddler: 'Unseelie Fiddler',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',
