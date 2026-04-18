@@ -40,11 +40,11 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 
 ## 2. Playable haggis roster (ideas)
 
-**Current shipped variants (verified in `src/data/variants.ts`):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`, `wee_ghostie`, `laird`. **Eight variants.** Honest roster ceiling ≈ 10 before the pool dilutes — two slots left before "adding a variant" starts hurting the pool more than helping it.
+**Current shipped variants (verified in `src/data/variants.ts`):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`, `wee_ghostie`, `laird`, `glaswegian`. **Nine variants.** Honest roster ceiling ≈ 10 before the pool dilutes — one slot left before "adding a variant" starts hurting the pool more than helping it.
 
-Candidates worth a sketch (pick 2 max for a content drop):
+Candidates worth a sketch (pick 1 max for a content drop):
 
-- **Glaswegian** — fast, crit-on-dodge, Limmy-bite banter register. Punisher.
+- ~~**Glaswegian**~~ — ✅ shipped 2026-04-18. Punisher glass cannon (+18% dmg, +5% speed, -20 HP). Urban slate + tram-orange palette. Unlock: 2 000 lifetime kills. Limmy-bite banter across the six variant-scoped pools (EN + SCS).
 - **Hebridean** — water-hazard immune; favours Shore biome.
 - **Drouthy** — drunk; starts with Whisky stacks; drift doubled.
 - **Cailleach** — small slow-aura near the player; winter-crone fantasy.
@@ -86,8 +86,8 @@ Families worth sketching (pick one per content drop):
 | `unseelie_fiddler` | Faerie | Three-note pattern on moor-moment beats. |
 | `haar_wraith` | Weather | Spawns local fog on death. |
 | `gale_wraith` | Weather | Displaces player on contact. |
-| `buckfast_ned` | Urban | Bottle arc leaves slick ground. Glesga comedy. |
-| `traffic_cone_totem` | Urban | Static; bursts into four slow cones on death. |
+| ~~`buckfast_ned`~~ | Urban | ✅ shipped 2026-04-18. Body enemy at 12:00; drops a slick patch on death (`HazardZones.spawnBottleSlick`) that slows the player 45 % for 5 s. |
+| ~~`traffic_cone_totem`~~ | Urban | ✅ shipped 2026-04-18. Static at 14:30; collapses into four slick patches at the cardinals on death (reuses the ned slick via `onTotemFall`). |
 | `edinburgh_ghost_guide` | Academic | Narrates as a damage source. |
 | `ceilidh_caller` | Academic | Forces enemies to move in sync briefly. |
 | `ledger_wraith` | Taxman | Immune until Taxman takes damage. |
@@ -157,7 +157,7 @@ Candidate weapons (pick 4 for a content drop):
 ## 6. Cosmetic & identity (ideas)
 
 - Name your haggis (proc-gen names + custom, profanity-filtered).
-- ~~Tartan patterns — algorithmic~~ — ✅ shipped 2026-04-18 (`src/utils/tartan.ts` — postcard footer slice only; mantle half still blocks on W71). Authored patterns + deed-gated unlocks still open.
+- ~~Tartan patterns — algorithmic~~ — ✅ shipped 2026-04-18 (`src/utils/tartan.ts` — postcard footer slice only; mantle half still blocks on W71). ~~Authored patterns + deed-gated unlocks~~ ✅ also shipped 2026-04-18 (`src/utils/tartanAuthored.ts` — three curated presets gated on rare victory conditions: Ironmoor Crown, Cursed Triumph, Taxman's Reckoning). Gallery UI + per-preset i18n labels stay open until a surface needs them.
 - Mantle patterns unlocked by kill/biome/deed thresholds (blocks on W71 rig).
 - Hat/bonnet slot.
 - Cairn decoration set.

@@ -825,3 +825,80 @@ used on every postcard save).
 Mantle half of the Tartan Banner idea still waits on W71 rig.
 DESIGN_IDEAS updated: Tartan Banner marked shipped (postcard).
 Same pass corrected the stale shipped-variants count (6 -> 8).
+
+[2026-04-18] Autonomous content pass — 4 slices.
+
+All four ship independently and stay within DESIGN_IDEAS author's
+intent (no invented mechanics, no flagship scope creep).
+
+(1) Authored tartan presets (`7e1c017`) — extends the postcard
+    slice shipped on 2026-04-18 morning. Three curated plaids
+    replace the procedural derivation when a signature hits a
+    rare victory combo: `ironmoor_crown` (Ironmoor + victory),
+    `cursed_triumph` (cursed + victory), `taxman_reckoning`
+    (post-Bell + victory). Priority-based picker resolves
+    overlap; ordinary runs stay on variant + weapon derivation.
+    New module: `src/utils/tartanAuthored.ts` (12 unit tests).
+    `buildTartanProfile` stays unchanged; new
+    `resolveTartanProfile` entry point preferred-authored-or-
+    procedural, postcard renderer swapped to the resolver.
+    DESIGN_IDEAS section 6 "Authored patterns + deed-gated
+    unlocks" landed; deed-gating falls out of the signature —
+    every preset condition maps 1:1 to an existing achievement
+    pool, so unlocking is exactly finishing that kind of run.
+
+(2) buckfast_ned — Urban Ghaists family opener (`f2e6fcc`).
+    Body enemy at 12:00 that drops a Buckfast bottle on death;
+    the spill slows the player 45 % for 5 s if they walk on it.
+    New HazardZones surface: `spawnBottleSlick(x, y)` and a
+    single-bool `Player.setInSlick` (no stacked-debuff counter —
+    leaving the zone restores speed immediately; independent of
+    the existing net-slow counter). EnemyKillHandler gains an
+    optional `onBottleBreak?` hook; GameScene wires it.
+    Timeline: appears between `nest` (11:00) and
+    `angry_scotsman` (13:00). Sprite: scrawny tracksuit hoodie
+    with Buckfast bottle (contrast to the raging hench
+    angry_scotsman body).
+
+(3) traffic_cone_totem — Urban Ghaists #2 (`15b2678`). Static
+    roadworks totem (chase at speed 0) that collapses into
+    four slick patches at the cardinals when killed. Reuses
+    the slick infrastructure from (2) via four
+    `spawnBottleSlick` calls with ±32 px offsets so the kill
+    site stays walkable. EnemyKillHandler gains
+    `onTotemFall?`. Timeline: 14:30, between berserker and
+    deep_fryer. Sprite: three stacked orange cones on a
+    wet-asphalt puddle. Same commit fixed a shipping bug —
+    `buckfast_ned` was previously missing from `WAVE_TIMELINE`
+    and wouldn't spawn in real runs; now wired at 12:00.
+
+(4) Glaswegian variant (`3955784`) — ninth playable haggis.
+    Punisher glass cannon: +18 % damage, +5 % speed, -20 max
+    HP. Palette urban slate with Glasgow-tram-orange accent.
+    Unlocks at 2 000 lifetime kills. Full five-fence wiring:
+    VARIANT_KEYS, VARIANTS, tartan palette, i18n EN + SCS
+    name/flavor, and all six variant-scoped banter pools
+    (first_blood, kill_streak, level_up, low_hp, recover,
+    idle) with 4 Limmy-bite lines each, mirrored across EN
+    and SCS (48 new leaves; satisfies the W18 Phase B parity
+    guard). No BootScene edit — `createHaggisTextures`
+    iterates VARIANTS and `accentStyle: 'none'` hits the
+    default no-op accent branch, so the palette alone carries
+    the visual identity.
+
+Tests 2524 -> 2559 (+35). Lint / tsc / vite build green at
+every commit. Bundle: vendor unchanged (no new Phaser code);
+app chunk +3.6 KB uncompressed across the four commits
+(palette constants, sprite draw calls, banter i18n strings).
+PWA precache 1982 -> 1988 KiB.
+
+Idea ledger after this pass (DESIGN_IDEAS sections):
+- Section 2 (variants): 8 -> 9 shipped (Glaswegian). Cap ~10
+  before pool dilutes — one slot left.
+- Section 3 (enemies, Urban Ghaists family): 0 -> 2 shipped
+  (buckfast_ned, traffic_cone_totem). Family opener +
+  second member live; edinburgh_ghost_guide still on sketch.
+- Section 6 (cosmetic / tartan): authored-patterns bullet
+  marked shipped (deed-gated half delivered via signature-
+  matched presets; a gallery UI stays open when a surface
+  needs it). Mantle half still blocks on W71.
