@@ -88,7 +88,6 @@ export class BootScene extends Phaser.Scene {
     }
 
     const bakeMs = this.bakeHaggisAtlas();
-    // eslint-disable-next-line no-console
     console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
 
     const { width, height } = this.scale;
