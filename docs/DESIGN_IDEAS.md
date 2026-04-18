@@ -22,13 +22,13 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 - **Burn Leap** — double-tap movement = short hop with brief hazard immunity. Adds routing to peat/bog play.
 - **Whisky Breath** — collect stacks; hold to breathe a short cone of fire that leaves a burn puddle.
 - **Taxman Grudge Ledger** — silent tracker of how you finish elites/bosses; end-of-game dialogue shifts accordingly. Hidden state; save schema care.
-- **Ceilidh Chain Combo** — kill-chain timer; every 8th kill triggers a rhythm callout and doubles pickup magnet for 2 s. Fold into existing combo, don't stack.
-- **Standing Stones** — at 5:00 mid-run, three stones spawn; approach one for a run-scoped boon (heal aura, crit surge, or hazard immunity). Others crumble.
+- ~~**Ceilidh Chain Combo**~~ — ✅ shipped: every 8th kill in a streak pulls coins and gems in close (see `ach_ceilidh_commander`).
+- ~~**Standing Stones**~~ — ✅ shipped: three-stone mid-run boon picker (see `ach_stone_circle`).
 - **Reliquary Pickups** — ~1 per run, a hidden relic spawns off-path; grants a run-scoped curio + a lore page. Optional, non-blocking.
 - **Weather Memory Trails** — in fog, your last few seconds of path remain; enemies crossing your trail are briefly slowed.
 - **Shinty Parry** — a new weapon with a 350 ms reflect window against projectiles. High-skill defensive layer.
-- **Ancestral Echoes** — if you died last run, a spectral haggis walks the first 30 s of this run at the prior death spot; touching it returns a small pity reward.
-- **Tartan Banner** — StatComposer picks a procedural tartan from dominant stats; visible on mantle + postcard.
+- ~~**Ancestral Echoes**~~ — ✅ shipped: spectral haggis on the first 30 s at the prior death spot (see `ach_echo_touched`).
+- ~~**Tartan Banner** (postcard slice)~~ — ✅ shipped 2026-04-18: procedural plaid composited into the postcard footer, derived from variant + top-damage weapon + mode tags (`src/utils/tartan.ts`). **Mantle half** of the bullet is still blocked on the W71 rig layer and stays open as a future extension.
 
 ### Ideas cut (not here anymore)
 
@@ -40,15 +40,13 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 
 ## 2. Playable haggis roster (ideas)
 
-**Current shipped variants (verified in `src/data/variants.ts`):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`. **Six variants.** Honest roster ceiling ≈ 10 before the pool dilutes.
+**Current shipped variants (verified in `src/data/variants.ts`):** `classic`, `moor_runner`, `iron_belly`, `glen_forager`, `surefoot`, `pipe_breath`, `wee_ghostie`, `laird`. **Eight variants.** Honest roster ceiling ≈ 10 before the pool dilutes — two slots left before "adding a variant" starts hurting the pool more than helping it.
 
-Candidates worth a sketch (pick 4 max for a content drop):
+Candidates worth a sketch (pick 2 max for a content drop):
 
-- **Laird** — +HP, −speed, Braced-stance favoured. Bigger noble read.
 - **Glaswegian** — fast, crit-on-dodge, Limmy-bite banter register. Punisher.
 - **Hebridean** — water-hazard immune; favours Shore biome.
 - **Drouthy** — drunk; starts with Whisky stacks; drift doubled.
-- **Wee Ghostie** — brief phase on dodge; glass cannon. Chronicle-weave hook.
 - **Cailleach** — small slow-aura near the player; winter-crone fantasy.
 - **Engineer** — drops a single cairn-turret that fires main weapon at 50%.
 - **Selkie** — dual-form (seal = fast/no weapon, haggis = combat) swap on dodge cooldown.

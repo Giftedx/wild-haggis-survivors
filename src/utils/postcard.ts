@@ -1,5 +1,10 @@
 import { formatClockTime } from './formatClockTime';
 import { formatLocalYmd } from './formatDate';
+import {
+  buildTartanProfile,
+  renderTartan,
+  type TartanSignature,
+} from './tartan';
 
 /**
  * W27 Capture & Share — postcard export with composited run-summary footer.
@@ -40,6 +45,10 @@ export interface PostcardPayload {
    *  Callers that don't pass labels keep the pre-W18 English output
    *  (test fixtures, tooling that doesn't have a locale). */
   labels?: Partial<PostcardLabels>;
+  /** Optional tartan signature — when present, a procedural plaid patch
+   *  is composited into the footer. Absent = no tartan (pre-DESIGN_IDEAS
+   *  output reproduced, test fixtures that don't care). */
+  tartan?: TartanSignature;
 }
 
 /**
@@ -91,6 +100,12 @@ const FOOTER_H = 72;
 const FOOTER_PAD_TOP = 14;
 /** Horizontal margin inside the footer band for text. */
 const FOOTER_PAD_X = 20;
+/** Tartan patch geometry — sits at the left edge of the footer band
+ *  when a TartanSignature is passed. Text left-column shifts to
+ *  `FOOTER_PAD_X + TARTAN_W + TARTAN_PAD_RIGHT` in that case. */
+const TARTAN_W = 48;
+const TARTAN_H = 48;
+const TARTAN_PAD_RIGHT = 12;
 
 /**
  * Read the Phaser canvas, composite a summary footer, and trigger a
@@ -148,13 +163,23 @@ export function renderPostcardDataUrl(
 
   const labels = resolveLabels(payload.labels);
 
+  // Tartan patch (optional) — paint first so subsequent text isn't
+  // overdrawn. Left column shifts to clear the patch.
+  let leftCol = FOOTER_PAD_X;
+  if (payload.tartan) {
+    const tartanX = FOOTER_PAD_X;
+    const tartanY = h + Math.floor((FOOTER_H - TARTAN_H) / 2);
+    renderTartan(ctx, tartanX, tartanY, TARTAN_W, TARTAN_H, buildTartanProfile(payload.tartan));
+    leftCol = FOOTER_PAD_X + TARTAN_W + TARTAN_PAD_RIGHT;
+  }
+
   // Top-line: outcome tag + kills/time/seed.
   ctx.font = 'bold 14px monospace';
   ctx.textBaseline = 'top';
   const outcome = payload.mode === 'victory' ? labels.victory : labels.fell;
   ctx.fillStyle = payload.mode === 'victory' ? '#f7d27a' : '#c8d0e0';
   ctx.textAlign = 'left';
-  ctx.fillText(outcome, FOOTER_PAD_X, h + FOOTER_PAD_TOP);
+  ctx.fillText(outcome, leftCol, h + FOOTER_PAD_TOP);
 
   // Right-aligned seed (if present).
   if (payload.seedCode) {
@@ -167,7 +192,7 @@ export function renderPostcardDataUrl(
   ctx.font = '13px monospace';
   ctx.fillStyle = '#cdd4e0';
   ctx.textAlign = 'left';
-  ctx.fillText(buildPostcardFooterParts(payload).join('  ·  '), FOOTER_PAD_X, h + FOOTER_PAD_TOP + 22);
+  ctx.fillText(buildPostcardFooterParts(payload).join('  ·  '), leftCol, h + FOOTER_PAD_TOP + 22);
 
   // Bottom line: brand footer.
   ctx.font = 'italic 11px monospace';

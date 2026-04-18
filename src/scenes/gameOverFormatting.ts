@@ -6,6 +6,7 @@ import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getVariantByKey, type VariantKey } from '../data/variants';
 import type { PostcardLabels, PostcardPayload } from '../utils/postcard';
+import { pickTopWeaponKey, type TartanSignature } from '../utils/tartan';
 import type { GameOverPayload } from './gameOverPayload';
 
 import { formatClockTime } from '../utils/formatClockTime';
@@ -74,8 +75,17 @@ export function buildPostcardPayloadFromGameOver(
   payload: GameOverPayload,
   curseLabel?: string | null,
 ): PostcardPayload {
+  const victory = payload.mode === 'victory';
+  const tartan: TartanSignature = {
+    variantKey: payload.variantKey,
+    topWeaponKey: pickTopWeaponKey(payload.weaponDamage),
+    victory,
+    ironmoor: payload.ironmoor,
+    cursed: Boolean(payload.curseKey),
+    postBell: (payload.postBellSec ?? 0) > 0,
+  };
   return {
-    mode: payload.mode === 'victory' ? 'victory' : 'death',
+    mode: victory ? 'victory' : 'death',
     enemiesKilled: payload.summary?.enemiesKilled ?? 0,
     timeSurvivedSec: payload.summary?.timeSurvivedSec ?? 0,
     seedCode: payload.seedCode,
@@ -84,6 +94,7 @@ export function buildPostcardPayloadFromGameOver(
     postBellSec: payload.postBellSec,
     curseLabel: curseLabel ?? undefined,
     labels: buildPostcardLabels(),
+    tartan,
   };
 }
 
