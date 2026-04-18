@@ -303,6 +303,26 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Academic Apparitions — DESIGN_IDEAS section 3. Ceilidh caller is
+  // an ethereal dance-master; visually tries to suggest "forces
+  // enemies to move in sync" through orbit choreography rather than
+  // a new AI state (the sync mechanic stays open for a future drop).
+  // Existing orbit behaviour gives the caller a smooth rotation that
+  // reads as dance-time.
+  ceilidh_caller: {
+    key: 'ceilidh_caller',
+    texture: 'ceilidh_caller',
+    speed: 75,
+    hp: 20,
+    damage: 9,
+    xpValue: 5,
+    appearsAt: 645,    // 10:45 — after haggis_hunter + blue_man_of_
+                       // minch (both ranged), before nest; the
+                       // player's orbit-dodge vocabulary is trained
+                       // from piper/ghost by now.
+    behavior: 'orbit',
+    packSize: 1,
+  },
   // Faerie family opener — DESIGN_IDEAS section 3. Seelie (fair)
   // court piper that orbits the player; visual reads "tricksy,
   // rhythmic, sparkle-then-commit" per the family description.
@@ -426,6 +446,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   gale_wraith: 'Gale Wraith',
   seelie_piper: 'Seelie Piper',
   unseelie_fiddler: 'Unseelie Fiddler',
+  ceilidh_caller: 'Ceilidh Caller',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',
