@@ -22,6 +22,7 @@ import { allAtlasKeysForVariant } from '../animation/textureAtlas';
 import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
 import { CLASSIC_VARIANT } from '../art/palettes';
 import type { AnimationState } from '../animation/animationStates';
+import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -89,6 +90,9 @@ export class BootScene extends Phaser.Scene {
 
     const bakeMs = this.bakeHaggisAtlas();
     console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
+
+    const accessoryBakeMs = this.bakeAccessoryAtlas();
+    console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
 
     const { width, height } = this.scale;
 
@@ -7126,6 +7130,27 @@ export class BootScene extends Phaser.Scene {
       });
       g.generateTexture(key, size, size);
       g.destroy();
+    }
+    return performance.now() - startMs;
+  }
+
+  private bakeAccessoryAtlas(): number {
+    const startMs = performance.now();
+    for (const drawer of Object.values(ACCESSORY_REGISTRY)) {
+      for (const state of drawer.authoredStates) {
+        const frameCount = state === 'idle' ? 2 : 4; // matches FrameClock authoring
+        for (let frame = 0; frame < frameCount; frame++) {
+          const g = this.add.graphics();
+          drawer.draw(g, {
+            variantPalette: CLASSIC_VARIANT,
+            state,
+            frame,
+          });
+          const key = `${drawer.id}_${state}_${frame}`; // accessory key format (no variant)
+          g.generateTexture(key, 56, 56);
+          g.destroy();
+        }
+      }
     }
     return performance.now() - startMs;
   }
