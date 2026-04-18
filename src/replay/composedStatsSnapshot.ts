@@ -4,13 +4,16 @@
  * BALANCE.player constants are excluded — they're build-level and
  * cross-build replay is archive-only per ADR-0002.
  */
-import type { ComposedPlayerStats } from '../core/StatComposer';
+import type { ComposedPlayerStats, PlayerComposedSheet } from '../core/StatComposer';
 
 /**
- * Snapshot field set — must match the `Pick<ComposedPlayerStats, …>`
- * Player's constructor accepts. Changing either side without the other
- * breaks playback reconstruction.
+ * Snapshot is exactly `PlayerComposedSheet` — the same type Player's
+ * constructor reads. Any new field on PlayerComposedSheet surfaces as a
+ * compile error in `FIELDS` below (forces the runtime guard to be
+ * updated) while Player.ts picks it up automatically.
  */
+export type ComposedStatsSnapshot = PlayerComposedSheet;
+
 const FIELDS = [
   'speed',
   'maxHp',
@@ -23,13 +26,11 @@ const FIELDS = [
   'xpGainBonus',
   'armorBonus',
   'dashCooldownReduction',
-] as const;
+] as const satisfies ReadonlyArray<keyof PlayerComposedSheet>;
 
-export type ComposedStatsSnapshot = Pick<ComposedPlayerStats, typeof FIELDS[number]>;
-
-/** Shallow copy of just the whitelisted fields. */
+/** Shallow copy of just the PlayerComposedSheet fields. */
 export function captureComposedStats(stats: ComposedPlayerStats): ComposedStatsSnapshot {
-  const out = {} as Record<(typeof FIELDS)[number], number>;
+  const out = {} as ComposedStatsSnapshot;
   for (const key of FIELDS) out[key] = stats[key];
   return out;
 }

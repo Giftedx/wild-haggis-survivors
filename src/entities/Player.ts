@@ -10,7 +10,7 @@ import { TimeManager } from '../systems/TimeManager';
 import type { TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { BALANCE } from '../core/BalanceConfig';
-import type { ComposedPlayerStats } from '../core/StatComposer';
+import type { PlayerComposedSheet } from '../core/StatComposer';
 import type { ISceneContext } from '../core/ISceneContext';
 
 /**
@@ -125,7 +125,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     y: number,
     textureKey: string = 'haggis_classic',
     timeManager: TimeManager,
-    composed?: Pick<ComposedPlayerStats, 'speed' | 'maxHp' | 'driftDegrees' | 'pickupRadius' | 'damagePctBonus' | 'hpRegen' | 'critBonus' | 'cooldownReduction' | 'xpGainBonus' | 'armorBonus' | 'dashCooldownReduction'>,
+    composed?: PlayerComposedSheet,
     /**
      * T1 replay — optional input source. Defaults to `new InputManager(scene)`
      * for live play. GameScene injects a `ReplayInput` when replay mode is

@@ -6,7 +6,13 @@ import type { ISaveData } from './SaveManager';
  * Composed baseline stats for a new run (meta upgrades layered on tuning constants).
  * Dash / hitbox / shield timings remain on BALANCE.player; core locomotion + HP here.
  */
-export type ComposedPlayerStats = {
+/**
+ * Field set that actually drives the Player instance (locomotion, HP,
+ * meta bonuses). Lives here so both `Player`'s constructor and the T1
+ * replay `ComposedStatsSnapshot` key off the same source of truth —
+ * adding a field in one forces the type-error in the other.
+ */
+export type PlayerComposedSheet = {
   speed: number;
   maxHp: number;
   driftDegrees: number;
@@ -25,7 +31,9 @@ export type ComposedPlayerStats = {
   armorBonus: number;
   /** Meta dash cooldown reduction multiplier (e.g. 0.10 = -10%). */
   dashCooldownReduction: number;
-} & typeof BALANCE.player;
+};
+
+export type ComposedPlayerStats = PlayerComposedSheet & typeof BALANCE.player;
 
 export const StatComposer = {
   getPlayerStats(save: ISaveData): ComposedPlayerStats {
