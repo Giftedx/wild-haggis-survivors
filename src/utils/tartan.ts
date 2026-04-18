@@ -136,6 +136,27 @@ export function buildTartanProfile(sig: TartanSignature): TartanProfile {
   return { base, primary, secondary, accent };
 }
 
+import { pickAuthoredTartan } from './tartanAuthored';
+
+/**
+ * Resolve a signature to either a curated authored preset (rare
+ * victory conditions — Ironmoor, cursed triumph, post-Bell) or the
+ * procedural variant-+-weapon derivation. Postcards go through this
+ * entry point so authored presets override procedurally on match;
+ * tests that pin the procedural surface still call `buildTartanProfile`
+ * directly.
+ *
+ * The returned `authoredId` is set only when an authored preset won —
+ * consumers (gallery UI, analytics) can key on it to label the frame.
+ */
+export function resolveTartanProfile(
+  sig: TartanSignature,
+): { profile: TartanProfile; authoredId?: string } {
+  const authored = pickAuthoredTartan(sig);
+  if (authored) return { profile: authored.profile, authoredId: authored.id };
+  return { profile: buildTartanProfile(sig) };
+}
+
 /**
  * Paint a tartan patch into `ctx` at `(x, y)` covering `w × h` pixels.
  * Draws warp stripes first (full alpha), then weft stripes at reduced

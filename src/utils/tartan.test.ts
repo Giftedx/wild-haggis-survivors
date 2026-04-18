@@ -3,6 +3,7 @@ import {
   buildTartanProfile,
   pickTopWeaponKey,
   renderTartan,
+  resolveTartanProfile,
   type TartanProfile,
 } from './tartan';
 
@@ -111,6 +112,52 @@ describe('buildTartanProfile', () => {
   it('deterministic — same signature always returns an equal profile', () => {
     const sig = { variantKey: 'laird', topWeaponKey: 'claymore', victory: true, ironmoor: true };
     expect(buildTartanProfile(sig)).toEqual(buildTartanProfile(sig));
+  });
+});
+
+describe('resolveTartanProfile', () => {
+  it('plain death → procedural (no authored match), authoredId absent', () => {
+    const r = resolveTartanProfile({ victory: false });
+    expect(r.authoredId).toBeUndefined();
+    expect(r.profile).toEqual(buildTartanProfile({ victory: false }));
+  });
+
+  it('plain victory → procedural (no authored match), variant fingerprint preserved', () => {
+    const sig = { variantKey: 'laird', topWeaponKey: 'claymore', victory: true };
+    const r = resolveTartanProfile(sig);
+    expect(r.authoredId).toBeUndefined();
+    expect(r.profile).toEqual(buildTartanProfile(sig));
+  });
+
+  it('Ironmoor victory → ironmoor_crown authored profile', () => {
+    const r = resolveTartanProfile({ victory: true, ironmoor: true });
+    expect(r.authoredId).toBe('ironmoor_crown');
+    expect(r.profile.base).toBe('#12141a');
+  });
+
+  it('cursed victory → cursed_triumph authored profile', () => {
+    const r = resolveTartanProfile({ victory: true, cursed: true });
+    expect(r.authoredId).toBe('cursed_triumph');
+  });
+
+  it('post-Bell victory → taxman_reckoning authored profile', () => {
+    const r = resolveTartanProfile({ victory: true, postBell: true });
+    expect(r.authoredId).toBe('taxman_reckoning');
+  });
+
+  it('authored preset ignores variant + top weapon (authored is curated)', () => {
+    const a = resolveTartanProfile({
+      victory: true, ironmoor: true, variantKey: 'laird', topWeaponKey: 'claymore',
+    });
+    const b = resolveTartanProfile({
+      victory: true, ironmoor: true, variantKey: 'classic', topWeaponKey: 'thistle_shot',
+    });
+    expect(a.profile).toEqual(b.profile);
+  });
+
+  it('deterministic — same signature returns equal result on re-run', () => {
+    const sig = { victory: true, cursed: true, variantKey: 'moor_runner' };
+    expect(resolveTartanProfile(sig)).toEqual(resolveTartanProfile(sig));
   });
 });
 

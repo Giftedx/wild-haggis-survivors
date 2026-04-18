@@ -1,8 +1,8 @@
 import { formatClockTime } from './formatClockTime';
 import { formatLocalYmd } from './formatDate';
 import {
-  buildTartanProfile,
   renderTartan,
+  resolveTartanProfile,
   type TartanSignature,
 } from './tartan';
 
@@ -169,7 +169,7 @@ export function renderPostcardDataUrl(
   if (payload.tartan) {
     const tartanX = FOOTER_PAD_X;
     const tartanY = h + Math.floor((FOOTER_H - TARTAN_H) / 2);
-    renderTartan(ctx, tartanX, tartanY, TARTAN_W, TARTAN_H, buildTartanProfile(payload.tartan));
+    renderTartan(ctx, tartanX, tartanY, TARTAN_W, TARTAN_H, resolveTartanProfile(payload.tartan).profile);
     leftCol = FOOTER_PAD_X + TARTAN_W + TARTAN_PAD_RIGHT;
   }
 
