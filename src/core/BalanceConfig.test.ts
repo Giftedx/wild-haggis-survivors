@@ -6,6 +6,7 @@ import {
   WAVE_TIMELINE,
   getActiveWaveTimelineEntry,
 } from './BalanceConfig';
+import { ENEMY_TYPES, BOSSES } from '../data/enemies';
 
 /**
  * BalanceConfig is the tuning layer SpawnSystem + WeaponSystem +
@@ -41,6 +42,40 @@ describe('WAVE_TIMELINE', () => {
     for (const seg of WAVE_TIMELINE) {
       expect(seg.intervalSec).toBeGreaterThan(0);
       expect(seg.burstSize).toBeGreaterThan(0);
+    }
+  });
+
+  /**
+   * Coverage fence — catches the silent-gap failure mode where a new
+   * enemy lands in `ENEMY_TYPES` but the author forgets to wire it
+   * into `WAVE_TIMELINE` (or vice versa). Without this check the config
+   * compiles clean but the enemy never spawns in real runs.
+   *
+   * Bosses live in a separate list (`BOSSES`) driven by
+   * `spawnTimeSec` scheduling, so they're allowed to skip the timeline.
+   */
+  it('every WAVE_TIMELINE enemy key maps to an ENEMY_TYPES entry', () => {
+    const timelineKeys = new Set<string>();
+    for (const seg of WAVE_TIMELINE) {
+      for (const k of seg.enemyKeys) timelineKeys.add(k);
+    }
+    for (const k of timelineKeys) {
+      expect(ENEMY_TYPES[k], `WAVE_TIMELINE references missing ENEMY_TYPES['${k}']`).toBeDefined();
+    }
+  });
+
+  it('every non-boss ENEMY_TYPES entry appears in at least one WAVE_TIMELINE segment', () => {
+    const timelineKeys = new Set<string>();
+    for (const seg of WAVE_TIMELINE) {
+      for (const k of seg.enemyKeys) timelineKeys.add(k);
+    }
+    const bossKeys = new Set(BOSSES.map((b) => b.key));
+    for (const key of Object.keys(ENEMY_TYPES)) {
+      if (bossKeys.has(key)) continue;
+      expect(
+        timelineKeys.has(key),
+        `ENEMY_TYPES['${key}'] never spawns — add to WAVE_TIMELINE or mark as boss`,
+      ).toBe(true);
     }
   });
 });
