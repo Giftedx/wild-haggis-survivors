@@ -112,6 +112,7 @@ import {
 } from '../dev/AutoBattler';
 import { tickStressTest } from '../dev/StressTest';
 import { BALANCE } from '../core/BalanceConfig';
+import { registerDebugHotkeys } from './dev/debugHotkeys';
 
 /**
  * GameScene — the core gameplay loop.
@@ -547,6 +548,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       composedStats,
       this.replayInput ?? undefined,
     );
+    registerDebugHotkeys(this, {
+      getPlayer: () => this.player,
+      getScene: () => this,
+    });
 
     // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
