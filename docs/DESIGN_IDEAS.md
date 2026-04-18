@@ -157,8 +157,8 @@ Candidate weapons (pick 4 for a content drop):
 ## 6. Cosmetic & identity (ideas)
 
 - Name your haggis (proc-gen names + custom, profanity-filtered).
-- Tartan patterns — algorithmic + authored.
-- Mantle patterns unlocked by kill/biome/deed thresholds.
+- ~~Tartan patterns — algorithmic~~ — ✅ shipped 2026-04-18 (`src/utils/tartan.ts` — postcard footer slice only; mantle half still blocks on W71). Authored patterns + deed-gated unlocks still open.
+- Mantle patterns unlocked by kill/biome/deed thresholds (blocks on W71 rig).
 - Hat/bonnet slot.
 - Cairn decoration set.
 - Chronicle postcard frames.
@@ -182,7 +182,7 @@ Earlier drafts split this into W20 postcards / W27 highlights / W50 photo / W79 
 
 Outputs the pipeline should produce:
 
-- Still postcard (PNG) with run facts + tartan frame.
+- ~~Still postcard (PNG) with run facts + tartan frame~~ — ✅ shipped (`src/utils/postcard.ts`, 2026-04-17; tartan added 2026-04-18).
 - Short clip (WebM/GIF, 6–15 s), deterministic camera path.
 - Full screenshot at any pause.
 
