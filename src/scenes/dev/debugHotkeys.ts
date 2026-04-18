@@ -48,6 +48,12 @@ export function registerDebugHotkeys(
   kb.on('keydown-K', () => {
     captureHaggisScreenshot(scene, hooks.getPlayer());
   });
+
+  // I, W, H — force animation state; ESC clears the override.
+  kb.on('keydown-I', () => hooks.getPlayer().overrideAnimationState('idle'));
+  kb.on('keydown-W', () => hooks.getPlayer().overrideAnimationState('walking'));
+  kb.on('keydown-H', () => hooks.getPlayer().overrideAnimationState('hurt'));
+  kb.on('keydown-ESC', () => hooks.getPlayer().overrideAnimationState(null));
 }
 
 function captureHaggisScreenshot(scene: Phaser.Scene, player: Player): void {

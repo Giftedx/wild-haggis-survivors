@@ -15,7 +15,7 @@ import { BALANCE } from '../core/BalanceConfig';
 import type { PlayerComposedSheet } from '../core/StatComposer';
 import type { ISceneContext } from '../core/ISceneContext';
 import { AnimationController } from '../animation/AnimationController';
-import type { AnimationSignals } from '../animation/animationStates';
+import type { AnimationState } from '../animation/animationStates';
 import { HaggisContainer } from './haggisComposition/HaggisContainer';
 import type { AccessoryDrawer } from './haggisComposition/AccessoryDrawer';
 import { getAccessoryDrawer } from './haggisComposition/accessoryRegistry';
@@ -143,6 +143,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private animController!: AnimationController;
   private hurtEdgeThisFrame = false;
+  private animStateOverride: AnimationState | null = null;
   private haggisContainer!: HaggisContainer;
   private ownedAccessories: Array<{
     id: string;
@@ -488,13 +489,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // attack + celebrate edges land in Phase 1.
     const vx = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.x ?? 0;
     const vy = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.y ?? 0;
-    const signals: AnimationSignals = {
+    const signals = {
       velocityMag: Math.hypot(vx, vy),
       hurtEdge: this.consumeHurtEdge(),
       attackEdge: false,
       celebrateEdge: false,
       hp: this.hp,
     };
+    // Dev-only force-state override — tampers the signals so the FSM
+    // transitions to the requested state on the next tick. No-op in
+    // production (override is never set).
+    if (this.animStateOverride !== null) {
+      switch (this.animStateOverride) {
+        case 'walking':
+          signals.velocityMag = 1000;
+          break;
+        case 'hurt':
+          signals.hurtEdge = true;
+          break;
+        case 'attacking':
+          signals.attackEdge = true;
+          break;
+        case 'celebrating':
+          signals.celebrateEdge = true;
+          break;
+        case 'dying':
+          signals.hp = 0;
+          break;
+        case 'idle':
+        default:
+          signals.velocityMag = 0;
+          break;
+      }
+    }
     this.animController.tick(scaledDelta, signals);
     // Tick every owned accessory with the same signals. Sync layer
     // sprites to the Player body position.
@@ -896,6 +923,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** Dev / balance: override movement direction (normalized world vector). */
   setAutoBattleSteering(dir: { x: number; y: number } | null): void {
     this.autoBattleSteering = dir;
+  }
+
+  /** Dev-only: force the animation FSM into a specific state each frame.
+   *  Pass null to clear the override and resume normal signal-driven behaviour. */
+  public overrideAnimationState(state: AnimationState | null): void {
+    this.animStateOverride = state;
   }
 
   /** Keep the haggis inside soft world bounds during high-speed dash bursts. */
