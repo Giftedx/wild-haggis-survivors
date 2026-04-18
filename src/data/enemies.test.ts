@@ -100,6 +100,23 @@ describe('getEnemyDisplayName', () => {
   it('handles empty string without throwing', () => {
     expect(getEnemyDisplayName('')).toBe('');
   });
+
+  /**
+   * Coverage fence — every ENEMY_TYPES key should have a curated
+   * display name, not the underscore-to-title-case fallback. Catches
+   * the silent drift where a new enemy ships with a name like
+   * "Traffic Cone Totem" OK by accident but risks something uglier
+   * like "Buckfast Ned" → "Buckfast_ned" on an underscore typo.
+   */
+  it('every ENEMY_TYPES key has a curated display name (no underscore fallback)', () => {
+    for (const key of Object.keys(ENEMY_TYPES)) {
+      const display = getEnemyDisplayName(key);
+      expect(display, `'${key}' display name is empty`).not.toBe('');
+      // Curated names never contain underscores — fallback path is
+      // the only way a raw underscore slips through.
+      expect(display, `'${key}' display name has raw underscore: "${display}"`).not.toMatch(/_/);
+    }
+  });
 });
 
 describe('getEnemyConfigsByKeys', () => {
