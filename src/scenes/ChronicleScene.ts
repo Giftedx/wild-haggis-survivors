@@ -518,8 +518,15 @@ export class ChronicleScene extends Phaser.Scene {
       if (entry.replay && isReplayBlobAny(entry.replay)) {
         const replay = entry.replay;
         const rerunPalette = resolveRerunLinkPalette();
+        // v2 blobs carry curse + routes + composed-stats metadata so
+        // playback reproduces the recorded run's outcome; v1 is
+        // seed-only best-effort. Surface the difference in glyph +
+        // tooltip so users know which is which at a glance.
+        const isHd = replay.version === 2;
+        const glyphKey = isHd ? 'ui.replay.chronicle_watch_glyph_hd' : 'ui.replay.chronicle_watch_glyph';
+        const tooltipKey = isHd ? 'ui.replay.chronicle_watch_tooltip_hd' : 'ui.replay.chronicle_watch_tooltip';
         const watch = this.add
-          .text(width - 195, y, t('ui.replay.chronicle_watch_glyph'), {
+          .text(width - 195, y, t(glyphKey), {
             fontFamily: 'monospace', fontSize: '14px', color: rerunPalette.idle, fontStyle: 'bold',
           })
           .setOrigin(1, 0.5)
@@ -529,7 +536,7 @@ export class ChronicleScene extends Phaser.Scene {
         const showWatchTip = () => {
           watch.setColor(rerunPalette.hover);
           if (watchTip) return;
-          watchTip = this.add.text(width - 205, y, t('ui.replay.chronicle_watch_tooltip'), {
+          watchTip = this.add.text(width - 205, y, t(tooltipKey), {
             fontFamily: 'monospace', fontSize: '10px', color: rerunPalette.idle, fontStyle: 'italic',
           }).setOrigin(1, 0.5).setScale(uiScale).setDepth(10);
           this.runRowObjects.push(watchTip);

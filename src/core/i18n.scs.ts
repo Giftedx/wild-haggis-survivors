@@ -279,8 +279,10 @@ export const SCS_STRINGS: LocaleTree = {
     },
     replay: {
       watching_toast: 'Watchin replay · recorded run',
-      chronicle_watch_tooltip: 'Watch this run',
+      chronicle_watch_tooltip: 'Watch this run · seed-only (best-effort)',
+      chronicle_watch_tooltip_hd: 'Watch this run · HD (curse + stats locked in)',
       chronicle_watch_glyph: '▶',
+      chronicle_watch_glyph_hd: '▶²',
       hud_chip: '▶ REPLAY',
     },
     pause: {

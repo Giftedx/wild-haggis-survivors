@@ -438,10 +438,14 @@ export const EN_STRINGS: LocaleTree = {
     replay: {
       /** Toast shown at the start of a replay so it's clear this isn't a live run. */
       watching_toast: 'Watching replay · recorded run',
-      /** Tooltip on the Chronicle "watch" button. */
-      chronicle_watch_tooltip: 'Watch this run',
-      /** Glyph for the Chronicle watch button. Kept separate so localisations can swap it. */
+      /** Tooltip on the Chronicle "watch" button for v1 (seed-only) blobs. */
+      chronicle_watch_tooltip: 'Watch this run · seed-only (best-effort)',
+      /** Tooltip for v2 (HD) blobs — curse + routes + composed stats locked in. */
+      chronicle_watch_tooltip_hd: 'Watch this run · HD (curse + stats locked)',
+      /** Glyph for the Chronicle watch button on v1 blobs. */
       chronicle_watch_glyph: '▶',
+      /** Glyph for v2 (HD) blobs. Superscript 2 flags the HD payload. */
+      chronicle_watch_glyph_hd: '▶²',
       /** Persistent HUD chip shown throughout playback. Top-left corner. */
       hud_chip: '▶ REPLAY',
     },
