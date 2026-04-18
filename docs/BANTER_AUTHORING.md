@@ -39,14 +39,16 @@ Open in the 30–60 band: 32–34, 36–39, 41–47, 49, 51, 53–56, 58, 61–6
 
 Most common task. Two files.
 
-1. In `src/core/i18n.ts`, add the i18n key to **both** `EN_STRINGS` and `SCS_STRINGS` (parity test will fail otherwise):
+1. Add the i18n key to **both** `EN_STRINGS` (in `src/core/i18n.ts`) and `SCS_STRINGS` (in `src/core/i18n.scs.ts`). The W18 Phase B completion guard (`src/core/i18n.locale.test.ts` → "every EN banter leaf has a Scots translation") fails if EN adds a banter leaf without a matching SCS entry:
 
    ```ts
-   // EN_STRINGS
+   // EN_STRINGS — src/core/i18n.ts
    'ui.banter.boss_warn.gordon.d': 'Here comes Gordon. Brace yersel.',
-   // SCS_STRINGS
-   'ui.banter.boss_warn.gordon.d': 'Here comes Gordon. Brace yirsel.',
+   // SCS_STRINGS — src/core/i18n.scs.ts
+   'ui.banter.boss_warn.gordon.d': 'Here comes Gordon. Brace yersel.',
    ```
+
+   The SCS entry uses light-Glesga orthography (`tha` / `yer` / `ye` / `oot` / `aboot` / `doon` / `wi` / `nae` / `aye`) and stays in-register (hearth or edge per the parent pool's `tone`). Keep lines short — they ride the toast strip + caption bar.
 
 2. In `src/data/banter.ts`, append the key to the matching `keys` or `keysByTag[tag]` array.
 
@@ -57,9 +59,15 @@ That's it. The engine picks it up on next run; round-robin + no-repeat window ha
 Any context with `keysByTag` supports a new tag silently. Unknown tag falls back to the generic pool, so you can ship the boss first and author lines later.
 
 1. Pick the tag string the requester already passes (boss key from `SpawnSystem`, variant key from `MenuScene`, weapon key from `WeaponSystem`, etc.). Don't invent a new tag — grep for `request('context', { tag: ... })` to find the source.
-2. Add 3–4 i18n keys under the tag namespace (both locales):
+2. Add 3–4 i18n keys under the tag namespace in **both locales** (EN in `i18n.ts`, SCS in `i18n.scs.ts`):
 
    ```ts
+   // src/core/i18n.ts
+   'ui.banter.boss_warn.new_boss.a': '…',
+   'ui.banter.boss_warn.new_boss.b': '…',
+   'ui.banter.boss_warn.new_boss.c': '…',
+
+   // src/core/i18n.scs.ts
    'ui.banter.boss_warn.new_boss.a': '…',
    'ui.banter.boss_warn.new_boss.b': '…',
    'ui.banter.boss_warn.new_boss.c': '…',
@@ -109,8 +117,8 @@ Don't cross registers mid-pool. If a context mixes tones, split it into two cont
 
 ```
 npm test -- --run src/data/banter.test.ts src/systems/BanterSystem.test.ts
-npm test -- --run src/core/i18n.test.ts   # parity fence
+npm test -- --run src/core/i18n.test.ts src/core/i18n.locale.test.ts   # parity fences
 npm run build
 ```
 
-Banter tests cover: every declared context has a pool; every key resolves in both locales; priority ordering holds; cooldown + no-repeat window behave deterministically.
+Banter tests cover: every declared context has a pool; every key resolves under the default locale; priority ordering holds; cooldown + no-repeat window behave deterministically. The locale fence adds two directional guards — SCS→EN (no orphan overlays) and EN→SCS scoped to `ui.banter.*` (W18 Phase B completion). Adding a new `ui.banter.*` key without a matching Scots translation red-lines CI.
