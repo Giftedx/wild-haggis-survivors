@@ -760,3 +760,32 @@ to English players). App + vendor chunks unchanged. PWA precache
 1978 KiB (SCS chunk excluded via globIgnores).
 
 Tests: 2499 -> 2500 (+1 parity guard). Lint / tsc / vite build green.
+
+
+[2026-04-18] Autonomous 5hr session — W18 Phase B flagship + polish.
+
+Shipped the last open PRD P4 item (W18 bilingual banter) plus a pass
+of follow-up polish. Seven commits on master:
+
+  cfc9a26 W18 Phase B — full Scots banter overlay (294 keys) +
+          EN->SCS parity guard scoped to ui.banter.*
+  fdf3eb3 runtime spot-checks for seven sub-pool categories
+  90160be BANTER_AUTHORING.md — bilingual recipes + parity pointer
+  e9ae60e CLAUDE.md — i18n bilingual row + Arcade fixed-step contract
+  512872e AGENTS.md — schema v4->v6 fix + T1 + W18 architecture entries
+  0ca5146 postcard localization — BRAW / DOON / culls footer labels
+  ccfe5b3 SCS gap fill-in — gameOver stats + hud dps / dash pct
+
+Tests: 2499 -> 2503 (+4). Lint / tsc / vite build / 9/9 Playwright
+e2e green at every commit. Bundle: i18n.scs chunk 43 KB -> 54 KB
+(lazy-loaded via ensureLocaleReady; English-only players still never
+download it). App + vendor chunks unchanged.
+
+Remaining SCS gaps (9 keys): ui.passive.hud_abbrev.* three-char HUD
+labels (SPR / WFL / KLT / TAM / IRN / LOC / CRN / SHD / SAS) kept
+cross-language by design.
+
+Master plan state after session: W2, W66, T1, W18 all shipped
+(struck through). Remaining flagship parking lot: W71 animation rig,
+W95 mobile rework, P3 cloud saves, W27 capture/share — each needs
+stakeholder selection + scoping spike.
