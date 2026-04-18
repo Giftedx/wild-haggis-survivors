@@ -14,6 +14,15 @@ import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
 import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL, HAZARD_ZONE_SLICK, HAZARD_ZONE_FOG } from './hazardZonePalette';
+import type { Enemy } from '../../entities/Enemy';
+import {
+  MEMORY_TRAIL_DURATION_MS,
+  MEMORY_TRAIL_RADIUS_PX,
+  MEMORY_TRAIL_SLOW_MS,
+  MEMORY_TRAIL_SLOW_MUL,
+  memoryTrailOverlaps,
+  tickMemoryTrailEmit,
+} from './memoryTrail';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import { HAZARD_SOURCE_KEY } from '../../systems/DeathCauseTracker';
@@ -83,6 +92,13 @@ export class HazardZones {
    *  fields. Kept as a separate list so the tick loop reads fog-state
    *  against its own radii without branching on a discriminator. */
   private fogZones: SlickZone[] = [];
+  /** Memory trail zones — emitted while the player walks through fog,
+   *  slow any enemy that crosses them for a short window. Share the
+   *  `SlickZone` shape (expiry + visuals) so cleanup paths match. */
+  private memoryTrailZones: SlickZone[] = [];
+  /** Accumulator driving the memory-trail emit cadence. Reset when the
+   *  player leaves fog so re-entry starts a clean cadence. */
+  private memoryTrailAccMs: number = 0;
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -96,6 +112,9 @@ export class HazardZones {
     this.slickZones = [];
     for (const z of this.fogZones) for (const v of z.visuals) v.destroy();
     this.fogZones = [];
+    for (const z of this.memoryTrailZones) for (const v of z.visuals) v.destroy();
+    this.memoryTrailZones = [];
+    this.memoryTrailAccMs = 0;
   }
 
   spawn(): void {
@@ -192,6 +211,38 @@ export class HazardZones {
       x, y, r,
       expireAtMs: gameTimeMs + FOG_DURATION_MS,
       visuals: [base, glow],
+    });
+  }
+
+  /**
+   * Drop a single memory-trail wisp at `(x, y)`. Emitted by the tick
+   * loop while the player is walking through a fog patch — each wisp
+   * slows any enemy that crosses it for a short window.
+   */
+  private spawnMemoryTrail(x: number, y: number): void {
+    const scene = this.scene;
+    const r = MEMORY_TRAIL_RADIUS_PX;
+    const gameTimeMs = this.hooks.getSpawnSystem().getGameTimeSec() * 1000;
+    // Faint teal-white wisp — reads as "vapour left by the haggis" against
+    // the warm moor palette. Depth behind entities so it doesn't cloud the
+    // player silhouette.
+    const glow = scene.add
+      .ellipse(x, y, r * 1.4, r * 1.0, 0x88d0e0, 0.22)
+      .setDepth(-1);
+    const core = scene.add
+      .ellipse(x, y, r * 0.9, r * 0.65, 0xe8f6ff, 0.14)
+      .setDepth(-1);
+    scene.tweens.add({
+      targets: [glow, core],
+      alpha: 0,
+      scale: 0.65,
+      duration: MEMORY_TRAIL_DURATION_MS,
+      ease: 'Quad.easeOut',
+    });
+    this.memoryTrailZones.push({
+      x, y, r,
+      expireAtMs: gameTimeMs + MEMORY_TRAIL_DURATION_MS,
+      visuals: [glow, core],
     });
   }
 
@@ -294,5 +345,38 @@ export class HazardZones {
       if (dx * dx + dy * dy < z.r * z.r) playerInFog = true;
     }
     player.setInFog(playerInFog);
+
+    // Memory trail — emitted while the player is inside a fog patch.
+    // Any enemy overlapping a wisp gets a brief Enemy.applyFreeze slow,
+    // turning the fog into a defensive kiting lane instead of just a
+    // magnet debuff. Hazard enemies ignore freeze internally, so the
+    // trail can't cheese deep_fryer-style statics.
+    const emit = tickMemoryTrailEmit({
+      inFog: playerInFog,
+      accMs: this.memoryTrailAccMs,
+      scaledDelta,
+    });
+    this.memoryTrailAccMs = emit.nextAccMs;
+    for (let i = 0; i < emit.emitCount; i++) {
+      this.spawnMemoryTrail(player.x, player.y);
+    }
+
+    if (this.memoryTrailZones.length > 0) {
+      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
+      for (let i = this.memoryTrailZones.length - 1; i >= 0; i--) {
+        const z = this.memoryTrailZones[i];
+        if (nowMs >= z.expireAtMs) {
+          for (const v of z.visuals) v.destroy();
+          this.memoryTrailZones.splice(i, 1);
+          continue;
+        }
+        for (const e of enemies) {
+          if (!e.active) continue;
+          if (memoryTrailOverlaps(z.x, z.y, z.r, e.x, e.y)) {
+            e.applyFreeze(MEMORY_TRAIL_SLOW_MUL, MEMORY_TRAIL_SLOW_MS);
+          }
+        }
+      }
+    }
   }
 }
