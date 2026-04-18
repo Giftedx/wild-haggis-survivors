@@ -117,16 +117,102 @@ function drawIdleFrame1(g: Phaser.GameObjects.Graphics, p: VariantPalette): void
 // ──────────────────────────────────────────────────────────────
 
 function drawWalkingFrame0(g: Phaser.GameObjects.Graphics, p: VariantPalette): void {
-  // Placeholder — authored in Task 7. Draws same as idle for now
-  // so tests pass; gets replaced.
-  drawIdleFrame0(g, p);
+  // Contact pose — left foot forward, body centred, slight downward settle.
+  const cx = SPRITE_SIZE / 2;
+  const cy = SPRITE_SIZE / 2 + 2;
+
+  g.fillStyle(0x000000, 0.35);
+  g.fillEllipse(cx, cy + 14, 28, 5);
+
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillEllipse(cx, cy + 2, 32, 25);
+  g.fillStyle(p.body, 1);
+  g.fillEllipse(cx, cy + 1, 29, 22);
+
+  g.fillStyle(p.bodyHighlight, 0.6);
+  g.fillEllipse(cx - 6, cy - 4, 12, 8);
+
+  g.fillStyle(0x1a1010, 1);
+  g.fillCircle(cx - 5, cy - 2, 1.8);
+  g.fillCircle(cx + 5, cy - 2, 1.8);
+
+  // Feet — left forward, right back
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillRect(cx - 10, cy + 12, 4, 3);  // left forward
+  g.fillRect(cx + 6, cy + 13, 4, 3);   // right back
 }
 function drawWalkingFrame1(g: Phaser.GameObjects.Graphics, p: VariantPalette): void {
-  drawIdleFrame0(g, p);
+  // Passing pose — mid-step, body lifts slightly.
+  const cx = SPRITE_SIZE / 2;
+  const cy = SPRITE_SIZE / 2 + 1;  // body lifted by 1px
+
+  g.fillStyle(0x000000, 0.30);
+  g.fillEllipse(cx, cy + 15, 24, 4);
+
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillEllipse(cx, cy + 1, 31, 26);
+  g.fillStyle(p.body, 1);
+  g.fillEllipse(cx, cy, 28, 23);
+
+  g.fillStyle(p.bodyHighlight, 0.6);
+  g.fillEllipse(cx - 6, cy - 5, 12, 8);
+
+  g.fillStyle(0x1a1010, 1);
+  g.fillCircle(cx - 5, cy - 3, 1.8);
+  g.fillCircle(cx + 5, cy - 3, 1.8);
+
+  // Feet — together (both tucked under)
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillRect(cx - 4, cy + 13, 4, 3);
+  g.fillRect(cx, cy + 13, 4, 3);
 }
 function drawWalkingFrame2(g: Phaser.GameObjects.Graphics, p: VariantPalette): void {
-  drawIdleFrame0(g, p);
+  // Contact pose — right foot forward (mirror of frame 0), body centre.
+  const cx = SPRITE_SIZE / 2;
+  const cy = SPRITE_SIZE / 2 + 2;
+
+  g.fillStyle(0x000000, 0.35);
+  g.fillEllipse(cx, cy + 14, 28, 5);
+
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillEllipse(cx, cy + 2, 32, 25);
+  g.fillStyle(p.body, 1);
+  g.fillEllipse(cx, cy + 1, 29, 22);
+
+  g.fillStyle(p.bodyHighlight, 0.6);
+  g.fillEllipse(cx - 6, cy - 4, 12, 8);
+
+  g.fillStyle(0x1a1010, 1);
+  g.fillCircle(cx - 5, cy - 2, 1.8);
+  g.fillCircle(cx + 5, cy - 2, 1.8);
+
+  // Feet — right forward, left back
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillRect(cx - 10, cy + 13, 4, 3);  // left back
+  g.fillRect(cx + 6, cy + 12, 4, 3);   // right forward
 }
 function drawWalkingFrame3(g: Phaser.GameObjects.Graphics, p: VariantPalette): void {
-  drawIdleFrame0(g, p);
+  // Passing pose (second half) — same lift as frame 1, opposite foot grouping.
+  const cx = SPRITE_SIZE / 2;
+  const cy = SPRITE_SIZE / 2 + 1;
+
+  g.fillStyle(0x000000, 0.30);
+  g.fillEllipse(cx, cy + 15, 24, 4);
+
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillEllipse(cx, cy + 1, 31, 26);
+  g.fillStyle(p.body, 1);
+  g.fillEllipse(cx, cy, 28, 23);
+
+  g.fillStyle(p.bodyHighlight, 0.6);
+  g.fillEllipse(cx - 6, cy - 5, 12, 8);
+
+  g.fillStyle(0x1a1010, 1);
+  g.fillCircle(cx - 5, cy - 3, 1.8);
+  g.fillCircle(cx + 5, cy - 3, 1.8);
+
+  // Feet — together (both tucked under, inverse of frame 1)
+  g.fillStyle(p.bodyShadow, 1);
+  g.fillRect(cx, cy + 13, 4, 3);
+  g.fillRect(cx + 4, cy + 13, 4, 3);
 }
