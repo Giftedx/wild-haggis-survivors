@@ -338,6 +338,22 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     expect(save.load().unlockedAchievements).toContain('ach_echo_touched');
   });
 
+  it('unlocks ach_relic_seeker on first Reliquary curio pick', () => {
+    seedGameplaySave({ reliquaryCuriosPicked: { flint_charm: 1 } });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 400, enemiesKilled: 50,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_relic_seeker');
+  });
+
+  it('does NOT unlock ach_relic_seeker when no relic has been picked', () => {
+    seedGameplaySave({ reliquaryCuriosPicked: {} });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'death', gameTimeSec: 400, enemiesKilled: 50,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_relic_seeker');
+  });
+
   it('does NOT unlock ach_echo_touched when count is 0', () => {
     seedGameplaySave({ ancestralEchoesTouched: 0 });
     globalEventBus.emit('GLOBAL_RUN_ENDED', {

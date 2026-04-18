@@ -6,6 +6,7 @@ import {
   applyRunSummary,
   bumpAncestralEchoesTouched,
   bumpCeilidhPulsesLifetime,
+  bumpReliquaryCurioPick,
   bumpStandingStonePick,
   consumeLastDeath,
   recordIronmoorBest,
@@ -704,6 +705,24 @@ describe('lifetime-counter bumps', () => {
     writeSave({ ...createDefaultSave(), standingStonesPicked: { mending: 2, haste: 1 } });
     bumpStandingStonePick('fire');
     expect(loadSave().standingStonesPicked).toEqual({ mending: 2, haste: 1, fire: 1 });
+  });
+
+  it('bumpReliquaryCurioPick starts a new counter from 0', () => {
+    bumpReliquaryCurioPick('echoing_reed');
+    expect(loadSave().reliquaryCuriosPicked).toEqual({ echoing_reed: 1 });
+  });
+
+  it('bumpReliquaryCurioPick increments existing counters', () => {
+    writeSave({ ...createDefaultSave(), reliquaryCuriosPicked: { flint_charm: 2 } });
+    bumpReliquaryCurioPick('flint_charm');
+    bumpReliquaryCurioPick('flint_charm');
+    expect(loadSave().reliquaryCuriosPicked).toEqual({ flint_charm: 4 });
+  });
+
+  it('bumpReliquaryCurioPick keeps unrelated curios untouched', () => {
+    writeSave({ ...createDefaultSave(), reliquaryCuriosPicked: { cairn_moss: 3, echoing_reed: 1 } });
+    bumpReliquaryCurioPick('flint_charm');
+    expect(loadSave().reliquaryCuriosPicked).toEqual({ cairn_moss: 3, echoing_reed: 1, flint_charm: 1 });
   });
 
   it('bumpAncestralEchoesTouched starts a new counter from 0', () => {

@@ -127,6 +127,17 @@ export class AchievementManager {
         this.tryUnlock('ach_echo_touched');
       }
 
+      // ach_relic_seeker — picked any Reliquary curio at least once.
+      // Encourages the off-path detour; once earned the pin on the
+      // minimap is still useful for future curio variety.
+      const relics = gameplay.reliquaryCuriosPicked ?? {};
+      for (const count of Object.values(relics)) {
+        if (count > 0) {
+          this.tryUnlock('ach_relic_seeker');
+          break;
+        }
+      }
+
       // ach_ceilidh_commander — fired 15 lifetime Ceilidh Chain pulses
       // (every-8th-kill flares). Threshold is comfortable for a mid-game
       // player: ~2-3 full runs with competent combo play.

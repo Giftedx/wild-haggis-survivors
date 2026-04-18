@@ -133,6 +133,15 @@ export interface SaveData {
   standingStonesPicked?: Record<string, number>;
 
   /**
+   * Lifetime count of Reliquary curios picked, keyed by curio id
+   * ('echoing_reed' / 'flint_charm' / 'cairn_moss'). Powers the
+   * `ach_relic_seeker` deed and lets future chronicle surfaces
+   * show which curio the player favours. Optional + defaulted —
+   * pre-reliquary saves read as undefined and coerce to `{}`.
+   */
+  reliquaryCuriosPicked?: Record<string, number>;
+
+  /**
    * Lifetime count of Ancestral Echoes the player has touched. Surfaced
    * on the Chronicle once non-zero. Optional + defaulted.
    */
@@ -412,6 +421,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockResult = evaluateVariantUnlocks(progress, unlockedVariants);
   const lastDeath = coerceLastDeath(candidate.lastDeath);
   const stonesPicked = coerceStonesPicked(candidate.standingStonesPicked);
+  const reliquaryPicked = coerceReliquaryCuriosPicked(candidate.reliquaryCuriosPicked);
 
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
@@ -430,6 +440,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
+    ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     runHistory: coerceRunHistory(candidate.runHistory),
@@ -493,6 +504,23 @@ function coerceLastDeath(raw: unknown): { x: number; y: number; ts: number } | u
  * the save lean on fresh accounts).
  */
 function coerceStonesPicked(raw: unknown): Record<string, number> | undefined {
+  if (!isRecord(raw)) return undefined;
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof k !== 'string' || k.length === 0) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) continue;
+    out[k] = Math.floor(v);
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+/**
+ * Coerce persisted Reliquary pick counts. Same shape as
+ * `coerceStonesPicked` — drops non-numeric / non-finite / non-positive
+ * values and omits the field on empty / invalid input so the save
+ * stays lean until a player actually touches a relic.
+ */
+function coerceReliquaryCuriosPicked(raw: unknown): Record<string, number> | undefined {
   if (!isRecord(raw)) return undefined;
   const out: Record<string, number> = {};
   for (const [k, v] of Object.entries(raw)) {
@@ -600,6 +628,23 @@ export function bumpStandingStonePick(boonId: string): void {
     const picked = { ...(cur.standingStonesPicked ?? {}) };
     picked[boonId] = (picked[boonId] ?? 0) + 1;
     writeSave({ ...cur, standingStonesPicked: picked });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * Bump the lifetime count for a Reliquary curio id on pickup. Mirrors
+ * {@link bumpStandingStonePick} — best-effort, silent on storage failure.
+ * Used by GameScene's Reliquary.onPick callback so the chronicle +
+ * `ach_relic_seeker` deed pick up the event at run-end unlock check.
+ */
+export function bumpReliquaryCurioPick(curioId: string): void {
+  try {
+    const cur = loadSave();
+    const picked = { ...(cur.reliquaryCuriosPicked ?? {}) };
+    picked[curioId] = (picked[curioId] ?? 0) + 1;
+    writeSave({ ...cur, reliquaryCuriosPicked: picked });
   } catch {
     /* best-effort */
   }

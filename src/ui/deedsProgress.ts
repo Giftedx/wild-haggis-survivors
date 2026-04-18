@@ -205,6 +205,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_full_herd',
   'ach_echo_touched',
   'ach_stone_circle',
+  'ach_relic_seeker',
   'ach_ceilidh_commander',
   'ach_combo_100',
   'ach_past_the_bell',
@@ -236,6 +237,7 @@ const BINARY_DEEDS: ReadonlySet<AchievementId> = new Set<AchievementId>([
   'ach_full_herd',
   'ach_echo_touched',
   'ach_stone_circle',
+  'ach_relic_seeker',
   'ach_past_the_bell',
   'ach_cursed_victor',
 ]);

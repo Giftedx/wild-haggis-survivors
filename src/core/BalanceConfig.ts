@@ -259,6 +259,7 @@ export type AchievementId =
   | 'ach_full_herd'
   | 'ach_laird_victor'
   | 'ach_stone_circle'
+  | 'ach_relic_seeker'
   | 'ach_echo_touched'
   | 'ach_ceilidh_commander'
   | 'ach_past_the_bell'
@@ -340,6 +341,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_stone_circle: {
     titleKey: 'achievement.ach_stone_circle.title',
     descriptionKey: 'achievement.ach_stone_circle.description',
+  },
+  ach_relic_seeker: {
+    titleKey: 'achievement.ach_relic_seeker.title',
+    descriptionKey: 'achievement.ach_relic_seeker.description',
   },
   ach_echo_touched: {
     titleKey: 'achievement.ach_echo_touched.title',

@@ -1369,6 +1369,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Stane Circle',
       description: 'Walked every standin stane — mendin, fire, haste, aw three.',
     },
+    ach_relic_seeker: {
+      title: 'Relic Seeker',
+      description: 'Answered tha hum aff-path — claimed a Reliquary curio.',
+    },
     ach_echo_touched: {
       title: 'Tha Moor Minds',
       description: 'Touched an Ancestral Echo — nae grief wasted.',

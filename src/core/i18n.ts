@@ -1520,6 +1520,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Stone Circle',
       description: 'Walked every standing stone — mending, fire, haste, all three.',
     },
+    ach_relic_seeker: {
+      title: 'Relic Seeker',
+      description: 'Answered the hum off-path — claimed a Reliquary curio.',
+    },
     ach_echo_touched: {
       title: 'The Moor Remembers',
       description: 'Touched an Ancestral Echo — nae grief wasted.',

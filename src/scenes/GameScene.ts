@@ -13,7 +13,7 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import {
   recordRun, loadSave, isLastDeathFresh,
-  bumpStandingStonePick, bumpAncestralEchoesTouched,
+  bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -1428,6 +1428,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.juice.showToast(t('ui.reliquary.grant_toast', { title }), '#ffb060');
         this.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
         audio.playStoneGrant();
+        bumpReliquaryCurioPick(curio.id);
       },
     });
     this.reliquary.spawn();
