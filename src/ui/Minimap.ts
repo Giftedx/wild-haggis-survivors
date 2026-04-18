@@ -77,7 +77,10 @@ export class Minimap {
     playerY: number,
     enemyGroup: Phaser.GameObjects.Group,
     chestMarkers: Array<{ x: number; y: number; golden?: boolean }> = [],
-    playerRotation: number = 0
+    playerRotation: number = 0,
+    /** Optional amber pin for the Reliquary pickup — null when the relic is
+     *  collected, unspawned, or the mode doesn't use it. */
+    reliquaryMarker: { x: number; y: number } | null = null,
   ): void {
     this.gfx.clear();
 
@@ -141,6 +144,20 @@ export class Minimap {
       this.gfx.fillRect(cx - 3, cy - 3, 6, 6);
       this.gfx.fillStyle(chest.golden ? MINIMAP_CHEST_GOLDEN : MINIMAP_CHEST_NORMAL, 1);
       this.gfx.fillRect(cx - 2, cy - 2, 4, 4);
+    }
+
+    // Reliquary pin — amber diamond, larger than chest squares so it
+    // reads as a distinct "rare curio" cue. Off-path spawns otherwise
+    // risk never being discovered.
+    if (reliquaryMarker) {
+      const rx = Phaser.Math.Clamp(mapX + reliquaryMarker.x * scaleX, mapX, mapX + this.SIZE);
+      const ry = Phaser.Math.Clamp(mapY + reliquaryMarker.y * scaleY, mapY, mapY + this.SIZE);
+      this.gfx.fillStyle(0x000000, 0.6);
+      this.gfx.fillTriangle(rx, ry - 5, rx + 4, ry, rx, ry + 5);
+      this.gfx.fillTriangle(rx, ry - 5, rx - 4, ry, rx, ry + 5);
+      this.gfx.fillStyle(0xffb060, 1);
+      this.gfx.fillTriangle(rx, ry - 4, rx + 3, ry, rx, ry + 4);
+      this.gfx.fillTriangle(rx, ry - 4, rx - 3, ry, rx, ry + 4);
     }
 
     // Camera viewport outline.

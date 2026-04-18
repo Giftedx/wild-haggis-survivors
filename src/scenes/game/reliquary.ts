@@ -245,4 +245,16 @@ export class Reliquary {
   isResolved(): boolean {
     return this.picked;
   }
+
+  /**
+   * Current world-space position of the relic for the minimap, or null
+   * when unpicked / unspawned. Minimap uses this to render a small
+   * amber star so the relic is discoverable — it's off-path by
+   * design, but hidden completely would punish players who never
+   * wander.
+   */
+  getMinimapMarker(): { x: number; y: number } | null {
+    if (!this.instance || !this.instance.alive) return null;
+    return { x: this.instance.x, y: this.instance.y };
+  }
 }

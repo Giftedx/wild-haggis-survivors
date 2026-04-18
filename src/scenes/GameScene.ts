@@ -1235,7 +1235,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.y,
       this.spawnSystem.getEnemyGroup(),
       this.chestRegistry.getMarkers(),
-      this.player.rotation
+      this.player.rotation,
+      this.reliquary?.getMinimapMarker() ?? null,
     );
     const biomeId = this.getCurrentBiomeId();
     updateMusicStateScratch(
