@@ -45,6 +45,7 @@ type HookMocks = {
   triggerVictory: ReturnType<typeof vi.fn>;
   onActComplete: ReturnType<typeof vi.fn>;
   onBottleBreak: ReturnType<typeof vi.fn>;
+  onTotemFall: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -94,6 +95,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const triggerVictory = vi.fn();
   const onActComplete = vi.fn<(act: 1 | 2) => void>();
   const onBottleBreak = vi.fn<(x: number, y: number) => void>();
+  const onTotemFall = vi.fn<(x: number, y: number) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -110,6 +112,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     triggerVictory,
     onActComplete,
     onBottleBreak,
+    onTotemFall,
   };
 
   return {
@@ -127,6 +130,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     triggerVictory,
     onActComplete,
     onBottleBreak,
+    onTotemFall,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -468,6 +472,26 @@ describe('EnemyKillHandler', () => {
     it('fires even for elite buckfast_ned (slick still spawns)', () => {
       handler.handle(7, 8, 4, 'buckfast_ned', false, true, null);
       expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(7, 8);
+    });
+  });
+
+  describe('Traffic Cone Totem collapse', () => {
+    it('calls onTotemFall with kill coordinates when traffic_cone_totem dies', () => {
+      handler.handle(500, 300, 6, 'traffic_cone_totem', false);
+      expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(500, 300);
+    });
+
+    it('does NOT call onTotemFall for buckfast_ned or unrelated kills', () => {
+      handler.handle(10, 20, 4, 'buckfast_ned', false);
+      handler.handle(30, 40, 5, 'tourist', false);
+      expect(m.onTotemFall).not.toHaveBeenCalled();
+    });
+
+    it('totem and ned hooks fire independently when both enemies die in sequence', () => {
+      handler.handle(10, 10, 4, 'buckfast_ned', false);
+      handler.handle(20, 20, 6, 'traffic_cone_totem', false);
+      expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(10, 10);
+      expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(20, 20);
     });
   });
 });

@@ -20,8 +20,10 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 540, add: 'ghost' },
     { t: 600, add: 'haggis_hunter' },
     { t: 660, add: 'nest' },
+    { t: 720, add: 'buckfast_ned' },
     { t: 780, add: 'angry_scotsman' },
     { t: 840, add: 'berserker' },
+    { t: 870, add: 'traffic_cone_totem' },
     { t: 900, add: 'deep_fryer' },
   ];
   const keys: string[] = [];

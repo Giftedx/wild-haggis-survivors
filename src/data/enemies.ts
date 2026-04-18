@@ -220,6 +220,22 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Urban Ghaists #2 — DESIGN_IDEAS section 3. Static roadworks totem:
+  // stands still (chase behaviour at speed 0 so the damage path stays
+  // shared with normal enemies), but when killed bursts into four slick
+  // patches at the cardinals. Higher HP + contact damage than the ned
+  // to reward deliberate targeting.
+  traffic_cone_totem: {
+    key: 'traffic_cone_totem',
+    texture: 'traffic_cone_totem',
+    speed: 0,
+    hp: 45,
+    damage: 12,
+    xpValue: 6,
+    appearsAt: 870,    // 14:30 — roadworks close in as the run tightens
+    behavior: 'chase',
+    packSize: 1,
+  },
 };
 
 /**
@@ -246,6 +262,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   kelpie: 'Kelpie',
   midgie_swarm: 'Midgie Swarm',
   buckfast_ned: 'Buckfast Ned',
+  traffic_cone_totem: 'Traffic Cone Totem',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

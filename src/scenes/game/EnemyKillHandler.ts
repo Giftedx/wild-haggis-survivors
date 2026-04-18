@@ -63,6 +63,13 @@ export interface EnemyKillHandlerHooks {
    * leaving a slick hazard. Routed through HazardZones in GameScene.
    */
   onBottleBreak?(x: number, y: number): void;
+
+  /**
+   * Called when a `traffic_cone_totem` dies — totem collapses, spitting
+   * four slick patches in the cardinal directions from the kill site.
+   * GameScene wires this to four `HazardZones.spawnBottleSlick` calls.
+   */
+  onTotemFall?(x: number, y: number): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -211,6 +218,11 @@ export class EnemyKillHandler {
     // Buckfast bottle break — leaves a slick patch at the kill site.
     if (enemyKey === 'buckfast_ned') {
       h.onBottleBreak?.(x, y);
+    }
+
+    // Traffic-cone totem collapse — four slicks at the cardinals.
+    if (enemyKey === 'traffic_cone_totem') {
+      h.onTotemFall?.(x, y);
     }
 
     if (wasBoss) {

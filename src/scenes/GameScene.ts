@@ -733,6 +733,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       triggerVictory: () => this.runLifecycle.handleVictory(),
       onActComplete: (actN) => this.launchActIntermission(actN),
       onBottleBreak: (x, y) => this.hazardZones.spawnBottleSlick(x, y),
+      onTotemFall: (x, y) => {
+        // Four slicks at the cardinals, offset so the totem kill site is
+        // walkable — player shouldn't be trapped by the burst they caused.
+        const offset = 32;
+        this.hazardZones.spawnBottleSlick(x - offset, y);
+        this.hazardZones.spawnBottleSlick(x + offset, y);
+        this.hazardZones.spawnBottleSlick(x, y - offset);
+        this.hazardZones.spawnBottleSlick(x, y + offset);
+      },
     });
     this.weaponSystem.events.on(
       'enemyKilled',
