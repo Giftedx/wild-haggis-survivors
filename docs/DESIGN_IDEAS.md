@@ -84,6 +84,7 @@ Families worth sketching (pick one per content drop):
 | ~~`barghest`~~ | Cryptids | ✅ shipped 2026-04-18. Dive enemy at 9:30 (clean-telegraph howl deferred to banter/SFX layer). |
 | ~~`seelie_piper`~~ | Faerie | ✅ shipped 2026-04-18. Fair-court orbit enemy at 8:20 (pale-gold palette, sparkle trail); aura-buff mechanic deferred to future drop. |
 | ~~`unseelie_fiddler`~~ | Faerie | ✅ shipped 2026-04-18. Dark-court orbit pair-mate at 8:40 (violet-black palette, fiddle instead of pipes); three-note-pattern beat-sync mechanic deferred. |
+| ~~`redcap`~~ | Faerie | ✅ shipped 2026-04-18. Dive goblin at 8:50 — stocky silhouette + iron pike + blood-dipped cap. Dive behaviour contrasts cleanly with the Seelie / Unseelie orbit pair so the trio reads as "two courtiers + the enforcer". |
 | ~~`haar_wraith`~~ | Weather | ✅ shipped 2026-04-18. Chase enemy at 12:30; drops a fog patch on death that halves pickup radius (`HazardZones.spawnHaarFog` + `Player.inFog`). |
 | ~~`gale_wraith`~~ | Weather | ✅ shipped 2026-04-18. Chase enemy at 13:45; mass-15 override shoves the player on contact through Phaser's arcade resolver (no custom knockback code). |
 | ~~`buckfast_ned`~~ | Urban | ✅ shipped 2026-04-18. Body enemy at 12:00; drops a slick patch on death (`HazardZones.spawnBottleSlick`) that slows the player 45 % for 5 s. |

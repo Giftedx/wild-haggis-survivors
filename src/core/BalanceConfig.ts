@@ -20,6 +20,7 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 480, add: 'piper' },
     { t: 500, add: 'seelie_piper' },
     { t: 520, add: 'unseelie_fiddler' },
+    { t: 530, add: 'redcap' },
     { t: 540, add: 'ghost' },
     { t: 570, add: 'barghest' },
     { t: 600, add: 'haggis_hunter' },

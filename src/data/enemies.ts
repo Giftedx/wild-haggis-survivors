@@ -342,6 +342,25 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'orbit',
     packSize: 1,
   },
+  // Faerie #3 — DESIGN_IDEAS section 3. Redcap — the Scottish / Border
+  // folklore goblin whose cap is dipped in the blood of each victim.
+  // Short, stocky silhouette + dive behaviour contrasts cleanly with
+  // the Seelie / Unseelie orbit pair, so the Faerie trio reads as "two
+  // courtiers + the thug who actually takes the life". Slots tight
+  // against the pair to keep the family beat cohesive.
+  redcap: {
+    key: 'redcap',
+    texture: 'redcap',
+    speed: 220,
+    hp: 8,
+    damage: 12,
+    xpValue: 3,
+    appearsAt: 530,    // 8:50 — just after unseelie_fiddler (8:40),
+                       // just before ghost (9:00). The Faerie trio
+                       // lands in a 30 s window.
+    behavior: 'dive',
+    packSize: 1,
+  },
   // Faerie #2 — DESIGN_IDEAS section 3. Unseelie (dark) court
   // fiddler. Orbits like its Seelie sibling but with a darker
   // palette so the two read as paired opposites at a glance.
@@ -526,6 +545,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   seelie_piper: 'Seelie Piper',
   unseelie_fiddler: 'Unseelie Fiddler',
   ceilidh_caller: 'Ceilidh Caller',
+  redcap: 'Redcap',
   tome_wraith: 'Tome Wraith',
   dean_apparition: 'Dean Apparition',
   ledger_wraith: 'Ledger Wraith',
