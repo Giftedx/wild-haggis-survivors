@@ -503,4 +503,49 @@ describe('buildPostcardPayloadFromGameOver', () => {
     const out = buildPostcardPayloadFromGameOver(payload());
     expect(out.curseLabel).toBeUndefined();
   });
+
+  // Tartan signature derivation — fence the resolver entry point so the
+  // authored-tartan picker (Ironmoor Crown, Cursed Triumph, Taxman's
+  // Reckoning) fires only when the corresponding run condition lands on
+  // the postcard payload.
+  it('tartan signature carries variantKey + top weapon + run-mode flags', () => {
+    const out = buildPostcardPayloadFromGameOver(payload({
+      mode: 'victory',
+      variantKey: 'laird' as VariantKey,
+      weaponDamage: { thistle_shot: 100, claymore: 250 },
+      ironmoor: false,
+      postBellSec: 0,
+    }));
+    expect(out.tartan).toBeDefined();
+    expect(out.tartan?.variantKey).toBe('laird');
+    expect(out.tartan?.topWeaponKey).toBe('claymore');
+    expect(out.tartan?.victory).toBe(true);
+    expect(out.tartan?.ironmoor).toBe(false);
+    expect(out.tartan?.cursed).toBe(false);
+    expect(out.tartan?.postBell).toBe(false);
+  });
+
+  it('tartan.cursed reflects presence of any curseKey (non-empty string)', () => {
+    const cursed = buildPostcardPayloadFromGameOver(payload({ curseKey: 'heavy_legs' }));
+    expect(cursed.tartan?.cursed).toBe(true);
+    const uncursed = buildPostcardPayloadFromGameOver(payload({ curseKey: undefined }));
+    expect(uncursed.tartan?.cursed).toBe(false);
+  });
+
+  it('tartan.postBell is true only when postBellSec > 0', () => {
+    expect(buildPostcardPayloadFromGameOver(payload({ postBellSec: 42 })).tartan?.postBell).toBe(true);
+    expect(buildPostcardPayloadFromGameOver(payload({ postBellSec: 0 })).tartan?.postBell).toBe(false);
+    expect(buildPostcardPayloadFromGameOver(payload({ postBellSec: undefined })).tartan?.postBell).toBe(false);
+  });
+
+  it('Ironmoor victory produces a signature the authored tartan resolver matches', async () => {
+    const { resolveTartanProfile } = await import('../utils/tartan');
+    const out = buildPostcardPayloadFromGameOver(payload({
+      mode: 'victory',
+      ironmoor: true,
+    }));
+    expect(out.tartan).toBeDefined();
+    const resolved = resolveTartanProfile(out.tartan!);
+    expect(resolved.authoredId).toBe('ironmoor_crown');
+  });
 });
