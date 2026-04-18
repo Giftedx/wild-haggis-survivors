@@ -88,6 +88,7 @@ Families worth sketching (pick one per content drop):
 | `gale_wraith` | Weather | Displaces player on contact. |
 | ~~`buckfast_ned`~~ | Urban | ✅ shipped 2026-04-18. Body enemy at 12:00; drops a slick patch on death (`HazardZones.spawnBottleSlick`) that slows the player 45 % for 5 s. |
 | ~~`traffic_cone_totem`~~ | Urban | ✅ shipped 2026-04-18. Static at 14:30; collapses into four slick patches at the cardinals on death (reuses the ned slick via `onTotemFall`). |
+| ~~`edinburgh_ghost_guide`~~ | Urban | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; lobs projectiles at distance (reuses the `ranged` behavior). |
 | `edinburgh_ghost_guide` | Academic | Narrates as a damage source. |
 | `ceilidh_caller` | Academic | Forces enemies to move in sync briefly. |
 | `ledger_wraith` | Taxman | Immune until Taxman takes damage. |
