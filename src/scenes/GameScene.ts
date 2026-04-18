@@ -78,6 +78,7 @@ import {
 import { ActIntermissionScene } from './ActIntermissionScene';
 import { applyRouteModifierDeltas } from './actIntermissionResolve';
 import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
+import { getRoute } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
@@ -196,6 +197,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private replayInput: ReplayInput | null = null;
   /** Replay blob captured from init data, consumed in create(). */
   private pendingReplay: ReplayBlobAny | null = null;
+  /**
+   * T1 Phase 3 — recorded route picks from a v2 playback blob, consumed
+   * in order by `launchActIntermission` so the intermission auto-resolves
+   * with the captured pick instead of showing the card UI. Empty outside
+   * of v2 playback; reset per-run.
+   */
+  private pendingReplayRoutes: RoutePick[] = [];
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
   /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */
@@ -311,6 +319,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // reclaim the frame array.
     this.replayInput?.destroy();
     this.replayInput = null;
+    this.pendingReplayRoutes = [];
     this.iFrameController.reset();
     this.pauseMenu?.close();
     this.pauseMenu = null;
@@ -438,22 +447,37 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         : 'off';
     this.replayInput = null;
     this.replayRecorder = null;
-    if (replayMode === 'playback' && this.pendingReplay) {
-      this.replayInput = new ReplayInput(this.pendingReplay);
-      // Keep `pendingReplay` non-null through the curse / composedStats
-      // blocks — the playback branch reads v2 metadata from it below
-      // before clearing.
+    // Capture blob into a local BEFORE clearing pendingReplay so the
+    // v2 curse / composedStats / routes can be applied below from the
+    // blob without having to re-read it through `this.pendingReplay`
+    // after the InputManager-DI consumption.
+    const playbackBlob = replayMode === 'playback' ? this.pendingReplay : null;
+    if (playbackBlob) {
+      this.replayInput = new ReplayInput(playbackBlob);
+      this.pendingReplay = null;
     }
+    const playbackV2 =
+      playbackBlob && playbackBlob.version === 2 ? playbackBlob : null;
 
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
 
     // Consume pending curse exactly once. Curses don't apply to resumed
     // runs (they were already baked into the in-progress run) or daily
-    // attempts (fixed rules — seed equivalence).
+    // attempts (fixed rules — seed equivalence). During v2 playback the
+    // curse key comes from the blob, not the live pending-curse singleton
+    // — that keeps replays deterministic even if the player has selected
+    // a different curse in the intervening menu session.
     this.runModifiers = defaultModifiers();
     this.activeCurseKey = null;
-    if (!resumeRun && !this.runIsDaily) {
+    if (playbackV2 && playbackV2.curseKey) {
+      consumePendingCurse();
+      const curse = getCurseByKey(playbackV2.curseKey);
+      if (curse) {
+        curse.apply(this.runModifiers);
+        this.activeCurseKey = curse.key;
+      }
+    } else if (!resumeRun && !this.runIsDaily) {
       const key = consumePendingCurse();
       const curse = getCurseByKey(key);
       if (curse) {
@@ -467,11 +491,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Compose with per-run modifiers layered on meta bonuses. Player reads
     // these at construction — no post-hoc stat rewrites needed.
-    const composedStats = {
-      ...baseStats,
-      speed: baseStats.speed * this.runModifiers.moveSpeedMult,
-      maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
-    };
+    //
+    // v2 playback: the snapshot captured at record-time overrides the
+    // live meta-upgrade stat composition so the replayed run uses the
+    // exact sheet the recorder saw. BALANCE.player constants (dash etc.)
+    // come from `baseStats` as before — they're build-level.
+    const composedStats = playbackV2?.composedStats
+      ? { ...baseStats, ...playbackV2.composedStats }
+      : {
+          ...baseStats,
+          speed: baseStats.speed * this.runModifiers.moveSpeedMult,
+          maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
+        };
 
     // T1 Phase 3 — recorder construction moves here so the v2 blob
     // captures the live curse + composed stats. `pushRoute` is fed from
@@ -485,11 +516,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         composedStats: captureComposedStats(composedStats),
       });
     }
-    // Playback: blob is still non-null here for metadata reads in
-    // Phase 3 Task 7; leave consumption to that step.
-    if (replayMode === 'playback') {
-      this.pendingReplay = null;
-    }
+
+    // T1 Phase 3 — stash recorded route picks for the intermission
+    // resolver. `launchActIntermission` shifts one off the front per
+    // act boundary and applies it inline instead of launching the UI.
+    this.pendingReplayRoutes = playbackV2?.routes ? playbackV2.routes.slice() : [];
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
       : GAME.WORLD_WIDTH / 2;
@@ -1412,6 +1443,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         defaultedBySetting: pick.defaultedBySetting,
       });
     };
+
+    // T1 Phase 3 — playback: the recorded pick wins. No card UI, no
+    // pause — shift the next route off the queue and apply inline.
+    // Slot mismatch would indicate a corrupt blob; bail to the live
+    // path in that case so the run keeps moving.
+    if (this.pendingReplayRoutes.length > 0) {
+      const next = this.pendingReplayRoutes[0];
+      if (next.slot === slot) {
+        this.pendingReplayRoutes.shift();
+        const route = getRoute(next.routeKey);
+        this.time.delayedCall(0, () => onResolve(next, route));
+        return;
+      }
+      // Slot mismatch: log + fall through to live handling. Don't pop
+      // the queue — later picks may still line up.
+      console.warn('[replay] route slot mismatch', { expected: slot, got: next.slot });
+    }
 
     if (settings.skipActIntermissions) {
       const { pick, route } = ActIntermissionScene.resolveDefault(slot, atGameTimeSec);
