@@ -220,6 +220,24 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Urban Ghaists #3 — DESIGN_IDEAS section 3. Victorian ghost-tour
+  // guide that keeps its distance and lobs projectiles. Ranged
+  // behavior is already wired — the flavor carries through the sprite
+  // + name + i18n line; the "narrates as a damage source" beat from
+  // the idea bullet is served by the tour-guide silhouette + ranged
+  // telegraph, not a new caption system (YAGNI until a surface wants
+  // it).
+  edinburgh_ghost_guide: {
+    key: 'edinburgh_ghost_guide',
+    texture: 'edinburgh_ghost_guide',
+    speed: 55,
+    hp: 22,
+    damage: 10,
+    xpValue: 5,
+    appearsAt: 810,    // 13:30 — just past angry_scotsman, before berserker
+    behavior: 'ranged',
+    packSize: 1,
+  },
   // Urban Ghaists #2 — DESIGN_IDEAS section 3. Static roadworks totem:
   // stands still (chase behaviour at speed 0 so the damage path stays
   // shared with normal enemies), but when killed bursts into four slick
@@ -263,6 +281,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   midgie_swarm: 'Midgie Swarm',
   buckfast_ned: 'Buckfast Ned',
   traffic_cone_totem: 'Traffic Cone Totem',
+  edinburgh_ghost_guide: 'Edinburgh Ghost Guide',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

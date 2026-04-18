@@ -22,6 +22,7 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 660, add: 'nest' },
     { t: 720, add: 'buckfast_ned' },
     { t: 780, add: 'angry_scotsman' },
+    { t: 810, add: 'edinburgh_ghost_guide' },
     { t: 840, add: 'berserker' },
     { t: 870, add: 'traffic_cone_totem' },
     { t: 900, add: 'deep_fryer' },
