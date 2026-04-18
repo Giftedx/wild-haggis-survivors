@@ -902,3 +902,30 @@ Idea ledger after this pass (DESIGN_IDEAS sections):
   marked shipped (deed-gated half delivered via signature-
   matched presets; a gallery UI stays open when a surface
   needs it). Mantle half still blocks on W71.
+
+Follow-up: three regression fences shipped same session to
+close the silent-gap failure mode that hid `buckfast_ned`
+pre-15b2678 (config without timeline entry).
+
+(a) `2633fef` — ENEMY_TYPES <-> WAVE_TIMELINE coverage. Every
+    timeline enemy key maps to ENEMY_TYPES and every non-boss
+    ENEMY_TYPES entry appears in the timeline. Failure message
+    names the exact key so authors see the fix at test output.
+
+(b) `d72ccc0` — postcard tartan signature wiring. Four new
+    asserts in `buildPostcardPayloadFromGameOver` anchor the
+    cursed / postBell / ironmoor flag derivation plus an
+    end-to-end check that an Ironmoor victory payload resolves
+    through `resolveTartanProfile` to the `ironmoor_crown`
+    authored preset. Keeps the postcard builder + authored
+    registry linked under refactor.
+
+(c) `221b8a0` — ENEMY_TYPES display-name fence. Every key must
+    have a curated entry in `ENEMY_DISPLAY_NAMES` (rejects both
+    the empty string and the underscore-to-title-case fallback).
+    Same silent-drift family as (a), different surface.
+
+Tests across the session: 2524 -> 2566 (+42 net). Lint /
+tsc / vite all green at every commit. Eight bisect-friendly
+commits: 7e1c017 f2e6fcc 15b2678 3955784 d167058 2633fef
+d72ccc0 221b8a0.
