@@ -50,7 +50,7 @@ describe('buildTartanProfile', () => {
 
   it('maps each shipped variant to a distinct base + primary colour pair', () => {
     const variants = ['classic', 'iron_belly', 'moor_runner', 'glen_forager',
-      'surefoot', 'pipe_breath', 'laird', 'wee_ghostie'];
+      'surefoot', 'pipe_breath', 'laird', 'wee_ghostie', 'glaswegian'];
     const seen = new Set<string>();
     for (const v of variants) {
       const p = buildTartanProfile({ variantKey: v, victory: true });

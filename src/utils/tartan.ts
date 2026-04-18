@@ -52,6 +52,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   pipe_breath:   { base: '#25202e', primary: '#7a6ac0' }, // lilac reed
   laird:         { base: '#1f2a38', primary: '#2e6aa8' }, // royal blue
   wee_ghostie:   { base: '#1d2029', primary: '#9dabc2' }, // pale slate
+  glaswegian:    { base: '#1a2028', primary: '#ff5a00' }, // urban slate + tram orange
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

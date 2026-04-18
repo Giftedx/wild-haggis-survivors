@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -218,6 +218,30 @@ export const VARIANTS: VariantDef[] = [
         fur: 0xa07060,
         snout: 0xd8b088,
         accent: 0x3a8830,
+      },
+    },
+  },
+  {
+    // Glaswegian — DESIGN_IDEAS section 2 "fast, crit-on-dodge,
+    // Limmy-bite banter register. Punisher." For the first cut the
+    // identity is stats-shaped (glass cannon: big damage, fragile,
+    // lean silhouette); Limmy-bite voice coverage ships in a later
+    // banter pass to keep the EN↔SCS parity fence honest.
+    key: 'glaswegian',
+    nameKey: 'variant.glaswegian.name',
+    flavorKey: 'variant.glaswegian.flavor',
+    textureKey: 'haggis_glaswegian',
+    modifiers: { damagePct: 0.18, moveSpeedPct: 0.05, maxHpFlat: -20 },
+    unlock: { type: 'best_kills', required: 2000 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        outline: 0x0a0c12,
+        bodyDark: 0x2a3540,
+        bodyLight: 0x455868,
+        fur: 0x6a7b88,
+        snout: 0xc8a090,
+        accent: 0xff5a00, // Glasgow tram orange — signature
       },
     },
   },

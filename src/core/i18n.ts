@@ -766,6 +766,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'A whisper\'s aw that\'s left. Breathe it in.',
           d: 'Half here. Stay the other half.',
         },
+        glaswegian: {
+          a: 'Right, this is gettin\' ridiculous. Get a grip, eh.',
+          b: 'Hoof doon tae the bone. Pure no\' great, this.',
+          c: 'Last gasp — make it count or git tae.',
+          d: 'Hingin\' by a thread, pal. Pure hingin\'.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -941,6 +947,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Thicker at the edges noo.',
           d: 'Faint, but fierce.',
         },
+        glaswegian: {
+          a: 'Sharper, aye. Pure sharper.',
+          b: 'Levellin\' up — the toon taught ye well.',
+          c: 'Anither notch, anither grudge.',
+          d: 'That\'s new muscle. Use it or lose it.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -988,6 +1000,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Touch o\' cold — and they\'re doon.',
           c: 'Quiet strike. They never saw ye.',
           d: 'A breath. A blow. A body.',
+        },
+        glaswegian: {
+          a: 'First yin doon. Straight up, nae messin\'.',
+          b: 'Right, game on. That wan was for starters.',
+          c: 'One doon. Plenty mair tae go, pal.',
+          d: 'Clean hit. Let\'s get intae it.',
         },
       },
       kill_streak: {
@@ -1038,6 +1056,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Weightless, but the strikes land.',
           d: 'A hush that leaves naebody standin\'.',
         },
+        glaswegian: {
+          a: 'That\'s a streak, by the way.',
+          b: 'Stackin\' them up like empties.',
+          c: 'Every one\'s gettin\' it. Aye.',
+          d: 'Keep gaun — ye\'re pure on it.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1085,6 +1109,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Flicker held. Form returns.',
           c: 'Still here — faintly, but here.',
           d: 'Ghost knits itsel\' back tae shape.',
+        },
+        glaswegian: {
+          a: 'Back fae the brink. Respect.',
+          b: 'Stitched up. Back oan it.',
+          c: 'Pulled it oot the bag. No\' deid yet.',
+          d: 'Alive. Barely. Dinnae waste it.',
         },
       },
       biome_change: {
@@ -1217,6 +1247,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'The moor feels ye fainter here.',
           c: 'Breath thin as gossamer.',
           d: 'Still. Like a held note.',
+        },
+        glaswegian: {
+          a: 'Stop starin\', get movin\'.',
+          b: 'Aye, take yer time. Enemies dinnae wait.',
+          c: 'Moor\'s lookin\' at ye. Gie\'s somethin\' tae watch.',
+          d: 'Dae somethin\' — or dinnae. Yer call, pal.',
         },
       },
       // W2 Moor Road.
@@ -1573,6 +1609,10 @@ export const EN_STRINGS: LocaleTree = {
     wee_ghostie: {
       name: 'Wee Ghostie',
       flavor: 'Pale an\' thin — here an\' no\' here. Hits hard, breaks easy.',
+    },
+    glaswegian: {
+      name: 'Glaswegian',
+      flavor: 'Urban punisher. Heavy swing, skin like rice paper. Aye, mental.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

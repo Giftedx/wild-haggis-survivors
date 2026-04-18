@@ -150,6 +150,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.wee_ghostie.c',
         'ui.banter.low_hp.wee_ghostie.d',
       ],
+      glaswegian: [
+        'ui.banter.low_hp.glaswegian.a',
+        'ui.banter.low_hp.glaswegian.b',
+        'ui.banter.low_hp.glaswegian.c',
+        'ui.banter.low_hp.glaswegian.d',
+      ],
     },
   },
   {
@@ -350,6 +356,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.wee_ghostie.c',
         'ui.banter.level_up.wee_ghostie.d',
       ],
+      glaswegian: [
+        'ui.banter.level_up.glaswegian.a',
+        'ui.banter.level_up.glaswegian.b',
+        'ui.banter.level_up.glaswegian.c',
+        'ui.banter.level_up.glaswegian.d',
+      ],
     },
   },
   {
@@ -404,6 +416,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.wee_ghostie.b',
         'ui.banter.first_blood.wee_ghostie.c',
         'ui.banter.first_blood.wee_ghostie.d',
+      ],
+      glaswegian: [
+        'ui.banter.first_blood.glaswegian.a',
+        'ui.banter.first_blood.glaswegian.b',
+        'ui.banter.first_blood.glaswegian.c',
+        'ui.banter.first_blood.glaswegian.d',
       ],
     },
   },
@@ -461,6 +479,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.wee_ghostie.c',
         'ui.banter.kill_streak.wee_ghostie.d',
       ],
+      glaswegian: [
+        'ui.banter.kill_streak.glaswegian.a',
+        'ui.banter.kill_streak.glaswegian.b',
+        'ui.banter.kill_streak.glaswegian.c',
+        'ui.banter.kill_streak.glaswegian.d',
+      ],
     },
   },
   {
@@ -515,6 +539,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.wee_ghostie.b',
         'ui.banter.recover.wee_ghostie.c',
         'ui.banter.recover.wee_ghostie.d',
+      ],
+      glaswegian: [
+        'ui.banter.recover.glaswegian.a',
+        'ui.banter.recover.glaswegian.b',
+        'ui.banter.recover.glaswegian.c',
+        'ui.banter.recover.glaswegian.d',
       ],
     },
   },
@@ -668,6 +698,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.wee_ghostie.b',
         'ui.banter.idle.wee_ghostie.c',
         'ui.banter.idle.wee_ghostie.d',
+      ],
+      glaswegian: [
+        'ui.banter.idle.glaswegian.a',
+        'ui.banter.idle.glaswegian.b',
+        'ui.banter.idle.glaswegian.c',
+        'ui.banter.idle.glaswegian.d',
       ],
     },
   },

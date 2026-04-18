@@ -627,6 +627,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'A whisper\'s aw that\'s left. Braithe it in.',
           d: 'Hauf here. Stey tha ither hauf.',
         },
+        glaswegian: {
+          a: 'Right, this is gettin ridiculous. Git a grip, eh.',
+          b: 'Hoof doon tae tha bone. Pure no great, this.',
+          c: 'Last gasp — mak it coont or git tae.',
+          d: 'Hingin by a thread, pal. Pure hingin.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
@@ -800,6 +806,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Thicker at tha edges noo.',
           d: 'Faint, but fierce.',
         },
+        glaswegian: {
+          a: 'Shairper, aye. Pure shairper.',
+          b: 'Levellin up — tha toon taucht ye weel.',
+          c: 'Anither notch, anither grudge.',
+          d: 'That\'s new muscle. Uise it or loss it.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -847,6 +859,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Touch o cauld — an they\'re doon.',
           c: 'Quait strike. They never saw ye.',
           d: 'A braith. A blaw. A body.',
+        },
+        glaswegian: {
+          a: 'First yin doon. Straicht up, nae messin.',
+          b: 'Richt, gemme on. That wan was fer sterters.',
+          c: 'Wan doon. Plenty mair tae gae, pal.',
+          d: 'Clean hit. Let\'s git intae it.',
         },
       },
       kill_streak: {
@@ -897,6 +915,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Wechtless, but tha strikes land.',
           d: 'A hush that leaves naebody staundin.',
         },
+        glaswegian: {
+          a: 'That\'s a streak, by tha way.',
+          b: 'Stackin them up like empties.',
+          c: 'Every ane\'s gettin it. Aye.',
+          d: 'Keep gaun — yer pure on it.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
@@ -944,6 +968,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Flicker held. Form returns.',
           c: 'Still here — faintly, but here.',
           d: 'Ghaist knits itsel back tae shape.',
+        },
+        glaswegian: {
+          a: 'Back fae tha brink. Respect.',
+          b: 'Stitched up. Back oan it.',
+          c: 'Pulled it oot tha bag. No deid yet.',
+          d: 'Alive. Barely. Dinnae waste it.',
         },
       },
       biome_change: {
@@ -1076,6 +1106,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Tha moor feels ye fainter here.',
           c: 'Braith thin as gossamer.',
           d: 'Still. Like a held note.',
+        },
+        glaswegian: {
+          a: 'Stop starin, git movin.',
+          b: 'Aye, tak yer time. Enemies dinnae wait.',
+          c: 'Moor\'s lookin at ye. Gie\'s somethin tae watch.',
+          d: 'Dae somethin — or dinnae. Yer ca, pal.',
         },
       },
       act_intermission_enter: {
@@ -1408,6 +1444,10 @@ export const SCS_STRINGS: LocaleTree = {
     wee_ghostie: {
       name: 'Wee Ghostie',
       flavor: 'Pale an thin — here an no here. Hits haird, breks easy.',
+    },
+    glaswegian: {
+      name: 'Weegie',
+      flavor: 'Toon-hardened. Big swing, paper skin. Pure mental, so he is.',
     },
     summary: {
       speed: '{sign}{pct}% speed',
