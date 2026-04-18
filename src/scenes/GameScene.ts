@@ -27,6 +27,7 @@ import { ReplayRecorder } from '../replay/ReplayRecorder';
 import { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
 import { resolveReplayMode } from '../replay/replayConfig';
+import { captureComposedStats } from '../replay/composedStatsSnapshot';
 import { parseGameSceneInitData } from './gameSceneInitData';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
@@ -426,26 +427,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // T1 replay — mutually exclusive modes:
     //   playback: `pendingReplay` was set by init(). Build a ReplayInput
     //     from the blob and disable recording.
-    //   record: `resolveReplayMode() === 'record'` and no blob → build a
-    //     recorder; ReplayInput stays null.
-    //   off: both null.
-    // A single null-check per tick (recorder or replay input) keeps the
-    // update-path cheap for the default "off" case. Watching-toast is
-    // queued and fires later, once JuiceSystem is constructed.
+    //   record:   `resolveReplayMode() === 'record'` and no blob → build
+    //     a recorder below, after curse + composedStats resolve so the
+    //     v2 blob captures run-start metadata.
+    //   off:      both null.
+    const replayMode: 'playback' | 'record' | 'off' = this.pendingReplay
+      ? 'playback'
+      : resolveReplayMode() === 'record'
+        ? 'record'
+        : 'off';
     this.replayInput = null;
-    if (this.pendingReplay) {
+    this.replayRecorder = null;
+    if (replayMode === 'playback' && this.pendingReplay) {
       this.replayInput = new ReplayInput(this.pendingReplay);
-      this.pendingReplay = null;
-      this.replayRecorder = null;
-    } else {
-      this.replayRecorder =
-        resolveReplayMode() === 'record'
-          ? new ReplayRecorder({
-              seed: this.runRng.seed,
-              variantKey: selectedVariant.key,
-              build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
-            })
-          : null;
+      // Keep `pendingReplay` non-null through the curse / composedStats
+      // blocks — the playback branch reads v2 metadata from it below
+      // before clearing.
     }
 
     const metaSave = this.metaSaveManager.load();
@@ -475,6 +472,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       speed: baseStats.speed * this.runModifiers.moveSpeedMult,
       maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
     };
+
+    // T1 Phase 3 — recorder construction moves here so the v2 blob
+    // captures the live curse + composed stats. `pushRoute` is fed from
+    // the Moor Road resolver further down (search: `runActState.recordPick`).
+    if (replayMode === 'record') {
+      this.replayRecorder = new ReplayRecorder({
+        seed: this.runRng.seed,
+        variantKey: selectedVariant.key,
+        build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
+        curseKey: this.activeCurseKey ?? undefined,
+        composedStats: captureComposedStats(composedStats),
+      });
+    }
+    // Playback: blob is still non-null here for metadata reads in
+    // Phase 3 Task 7; leave consumption to that step.
+    if (replayMode === 'playback') {
+      this.pendingReplay = null;
+    }
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
       : GAME.WORLD_WIDTH / 2;
@@ -1364,6 +1379,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Common resolver — runs whether picker was shown or auto-defaulted.
     const onResolve = (pick: RoutePick, route: RouteDef) => {
       this.runActState.recordPick(pick);
+      this.replayRecorder?.pushRoute(pick);
       this.runModifiers.routePicks.push(pick);
       this.banter?.request('route_picked', { tag: pick.routeKey });
       applyRouteModifierDeltas(this.runModifiers, route);
