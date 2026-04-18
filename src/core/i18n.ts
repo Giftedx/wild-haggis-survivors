@@ -397,6 +397,26 @@ export const EN_STRINGS: LocaleTree = {
       touch_toast: '⟡ The moor remembers — a wee blessing.',
       touch_caption: 'Spectral blessing received — gold banked and wounds eased.',
     },
+    /**
+     * Reliquary — single rare pickup, placed off-path between 6:00 and
+     * 12:00. Grants one run-scoped curio on touch.
+     */
+    reliquary: {
+      grant_toast: '⟡ A relic hums — {title}.',
+      grant_caption: '{desc}',
+      echoing_reed: {
+        title: 'Echoing Reed',
+        desc: 'A reed thrums low — pickups drift wider toward ye.',
+      },
+      flint_charm: {
+        title: 'Flint Charm',
+        desc: 'The charm strikes warm — yir blows bite crit a shade more.',
+      },
+      cairn_moss: {
+        title: 'Cairn Moss',
+        desc: 'Moss cool underfoot — the moor mends ye steady.',
+      },
+    },
     /** Standing Stones — mid-run trinity at the 5:00 mark. */
     standingStones: {
       announce_toast: 'Three stones stir — pick yer blessing.',

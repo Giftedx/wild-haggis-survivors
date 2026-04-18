@@ -70,6 +70,7 @@ import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
 import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC, type StoneBoon } from './game/standingStones';
+import { Reliquary, chooseReliquarySpawnSec, type ReliquaryCurio } from './game/reliquary';
 import {
   AncestralEcho,
   ECHO_GOLD_REWARD,
@@ -164,6 +165,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private standingStones: StandingStones | null = null;
   /** True once the 4:45 "stones stir" pre-warning has fired this run. */
   private stonesWarned: boolean = false;
+  /** Reliquary — single rare pickup, placed off-path between 6:00 and 12:00. */
+  private reliquary: Reliquary | null = null;
+  /** Run-specific second at which the reliquary spawns. Rolled from runRng
+   *  at run start so the same seed always produces the same placement. */
+  private reliquarySpawnSec: number = 0;
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
   private ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
@@ -329,6 +335,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const runSeed = this.pendingRunSeed ?? randomSeed();
     this.runRng = createRNG(runSeed);
     this.pendingRunSeed = null;
+    // Reliquary spawn moment rolled once per run so the same seed always
+    // places the relic at the same second (daily runs + replay reproduce).
+    this.reliquarySpawnSec = chooseReliquarySpawnSec(this.runRng);
     this.pendingChests = [];
     this.pickupDespawnHandles = [];
     this.updateTickers.clear();
@@ -355,6 +364,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.standingStones?.destroy();
     this.standingStones = null;
     this.stonesWarned = false;
+    this.reliquary?.destroy();
+    this.reliquary = null;
     this.ancestralEcho?.destroy();
     this.ancestralEcho = null;
     this.musicStateScratch.bossActive = false;
@@ -1184,9 +1195,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (runSec >= STONE_SPAWN_SEC && !this.standingStones) {
         this.spawnStandingStones();
       }
+      if (this.reliquarySpawnSec > 0 && runSec >= this.reliquarySpawnSec && !this.reliquary) {
+        this.spawnReliquary();
+      }
     }
 
     this.standingStones?.tick();
+    this.reliquary?.tick();
 
     if (this.ancestralEcho) {
       const resolved = this.ancestralEcho.tick(scaledDelta);
@@ -1391,6 +1406,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.showToast(t('ui.standingStones.announce_toast'), '#ffe080');
     this.caption('standing_stones_announce', t('ui.standingStones.announce_caption'), '#ffe080', 3000);
     this.tutorialSystem?.notifyStandingStonesIfFirst();
+  }
+
+  /**
+   * Reliquary — single off-path relic. Grants a run-scoped curio when
+   * the player walks into it. No pre-warning, no crumble — finding it
+   * is itself the reward, so the announcement stays tight.
+   */
+  private spawnReliquary(): void {
+    if (this.reliquary) return;
+    this.reliquary = new Reliquary({
+      scene: this,
+      player: this.player,
+      rng: this.runRng,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      onPick: (curio: ReliquaryCurio) => {
+        const title = t(curio.titleKey);
+        const desc = t(curio.descKey);
+        this.juice.showToast(t('ui.reliquary.grant_toast', { title }), '#ffb060');
+        this.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
+        audio.playStoneGrant();
+      },
+    });
+    this.reliquary.spawn();
   }
 
   private showRunIdentityToast(isResume: boolean): void {

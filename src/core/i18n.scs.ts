@@ -271,6 +271,22 @@ export const SCS_STRINGS: LocaleTree = {
       touch_toast: '⟡ Tha moor minds — a wee blessin.',
       touch_caption: 'Spectral blessin received — gold banked an wounds eased.',
     },
+    reliquary: {
+      grant_toast: '⟡ A relic hums — {title}.',
+      grant_caption: '{desc}',
+      echoing_reed: {
+        title: 'Echoin Reed',
+        desc: 'A reed thrums low — pickups drift wider tae ye.',
+      },
+      flint_charm: {
+        title: 'Flint Cherm',
+        desc: 'Tha cherm strikes warm — yer blows bite crit a shade mair.',
+      },
+      cairn_moss: {
+        title: 'Cairn Moss',
+        desc: 'Moss cool unnerfit — tha moor mends ye steady.',
+      },
+    },
     standingStones: {
       announce_toast: 'Three stanes stir — pick yer blessin.',
       announce_caption: 'Three standin stanes hae risen — walk tae wan tae claim it.',
