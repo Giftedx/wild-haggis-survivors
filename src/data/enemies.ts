@@ -37,6 +37,12 @@ export interface EnemyConfig {
   packSize: number;
   /** When true, never spatial-cull physics/AI (dense off-screen swarms). */
   spatialCullImmune?: boolean;
+  /** Opt-in arcade-physics mass override. Defaults follow behaviour
+   *  ('tank' → 5, everything else → 1). Useful for signature contact
+   *  feel — e.g. gale_wraith's shove pushes the player harder than a
+   *  regular chase enemy because the collision resolver respects mass
+   *  in the rebound velocity. */
+  massOverride?: number;
 }
 
 export const ENEMY_TYPES: Record<string, EnemyConfig> = {
@@ -297,6 +303,25 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Weather #2 — DESIGN_IDEAS section 3. "Displaces player on
+  // contact" lands through a mass override: Phaser's arcade collision
+  // resolver respects body.mass when computing rebound velocity, so
+  // a mass-15 body shoves the mass-1 player on every touch. Damage
+  // stays low — the signature is the shove, not the sting.
+  gale_wraith: {
+    key: 'gale_wraith',
+    texture: 'gale_wraith',
+    speed: 115,
+    hp: 14,
+    damage: 4,
+    xpValue: 4,
+    appearsAt: 825,    // 13:45 — after haar_wraith + angry_scotsman so
+                       // the player knows both Weather flavours; sits
+                       // just before berserker (14:00).
+    behavior: 'chase',
+    packSize: 1,
+    massOverride: 15,
+  },
   // Urban Ghaists #3 — DESIGN_IDEAS section 3. Victorian ghost-tour
   // guide that keeps its distance and lobs projectiles. Ranged
   // behavior is already wired — the flavor carries through the sprite
@@ -363,6 +388,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   kelpie_foal: 'Kelpie Foal',
   blue_man_of_minch: 'Blue Man of the Minch',
   haar_wraith: 'Haar Wraith',
+  gale_wraith: 'Gale Wraith',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

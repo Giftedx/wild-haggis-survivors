@@ -320,8 +320,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       });
     }
 
-    // Tanks resist knockback via higher mass
-    if (this.behavior === 'tank') {
+    // Tanks resist knockback via higher mass. Individual enemies can
+    // opt-in to a custom mass via `EnemyConfig.massOverride` for
+    // signature collision feel (e.g. gale_wraith's shove-on-contact).
+    if (config.massOverride !== undefined) {
+      body.mass = config.massOverride;
+    } else if (this.behavior === 'tank') {
       body.mass = 5;
     } else {
       body.mass = 1;

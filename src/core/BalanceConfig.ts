@@ -27,6 +27,7 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 750, add: 'haar_wraith' },
     { t: 780, add: 'angry_scotsman' },
     { t: 810, add: 'edinburgh_ghost_guide' },
+    { t: 825, add: 'gale_wraith' },
     { t: 840, add: 'berserker' },
     { t: 870, add: 'traffic_cone_totem' },
     { t: 900, add: 'deep_fryer' },
