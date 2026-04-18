@@ -16,6 +16,9 @@ import type { PlayerComposedSheet } from '../core/StatComposer';
 import type { ISceneContext } from '../core/ISceneContext';
 import { AnimationController } from '../animation/AnimationController';
 import type { AnimationSignals } from '../animation/animationStates';
+import { HaggisContainer } from './haggisComposition/HaggisContainer';
+import type { AccessoryDrawer } from './haggisComposition/AccessoryDrawer';
+import { getAccessoryDrawer } from './haggisComposition/accessoryRegistry';
 
 /**
  * Player — the wild haggis.
@@ -140,6 +143,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private animController!: AnimationController;
   private hurtEdgeThisFrame = false;
+  private haggisContainer!: HaggisContainer;
+  private ownedAccessories: Array<{
+    id: string;
+    drawer: AccessoryDrawer;
+    controller: AnimationController;
+  }> = [];
 
   /** Soft ground shadow that follows the player */
   private shadow: Phaser.GameObjects.Image | null = null;
@@ -226,6 +235,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       subject: 'haggis',
       variant: 'classic', // Phase 0 — all variants in Phase 1
     });
+
+    this.haggisContainer = new HaggisContainer(scene, this);
 
     this.inputManager = inputSource ?? new InputManager(scene);
     this.time = timeManager;
@@ -485,6 +496,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       hp: this.hp,
     };
     this.animController.tick(scaledDelta, signals);
+    // Tick every owned accessory with the same signals. Sync layer
+    // sprites to the Player body position.
+    for (const a of this.ownedAccessories) {
+      a.controller.tick(scaledDelta, signals);
+    }
+    this.haggisContainer.syncToAnchor();
     this.setScale(playerGrowthScale(this.currentLevel));
   }
 
@@ -558,6 +575,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   heal(amount: number): void {
     this.hp = Math.min(this.hp + amount, this.maxHp);
+  }
+
+  public equipAccessory(id: string): void {
+    const drawer = getAccessoryDrawer(id);
+    if (!drawer) {
+      console.warn(`Player.equipAccessory: unknown id ${id}`);
+      return;
+    }
+    if (this.ownedAccessories.some((a) => a.id === id)) return; // no-op on re-equip
+
+    const layerSprite = this.haggisContainer.equipLayer(
+      drawer.layer,
+      `${id}_idle_0`, // start on idle frame 0
+    );
+    const controller = new AnimationController({
+      sprite: layerSprite,
+      subject: id,
+      variant: null, // accessory atlases are variant-agnostic in Phase 0
+    });
+    this.ownedAccessories.push({ id, drawer, controller });
+  }
+
+  public unequipAccessory(id: string): void {
+    const idx = this.ownedAccessories.findIndex((a) => a.id === id);
+    if (idx === -1) return;
+    const [removed] = this.ownedAccessories.splice(idx, 1);
+    this.haggisContainer.unequipLayer(removed.drawer.layer);
   }
 
   /** Mid-run resume — clamp to current max HP after stats are rebuilt. */

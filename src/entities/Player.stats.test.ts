@@ -44,10 +44,23 @@ vi.mock('../utils/SubscriptionBag', () => ({
 import { Player } from './Player';
 
 function makeScene(): any {
+  const spriteStub = () => ({
+    setVisible: () => spriteStub(),
+    setDepth: () => spriteStub(),
+    setPosition: () => spriteStub(),
+    setRotation: () => spriteStub(),
+    setScale: () => spriteStub(),
+    setTexture: () => spriteStub(),
+    destroy: () => {},
+    depth: 0,
+    x: 0,
+    y: 0,
+  });
   return {
     add: {
       existing: vi.fn(),
       image: () => ({ setDepth: () => ({ setScale: () => ({}) }) }),
+      sprite: spriteStub,
     },
     physics: {
       add: { existing: vi.fn() },
