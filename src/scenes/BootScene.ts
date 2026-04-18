@@ -18,6 +18,10 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
 import { setPendingCurse } from '../data/curses';
+import { allAtlasKeysForVariant } from '../animation/textureAtlas';
+import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
+import { CLASSIC_VARIANT } from '../art/palettes';
+import type { AnimationState } from '../animation/animationStates';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -82,6 +86,10 @@ export class BootScene extends Phaser.Scene {
         return;
       }
     }
+
+    const bakeMs = this.bakeHaggisAtlas();
+    // eslint-disable-next-line no-console
+    console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
 
     const { width, height } = this.scale;
 
@@ -7096,6 +7104,31 @@ export class BootScene extends Phaser.Scene {
 
     g.generateTexture('wicon_william_blade', s, s);
     g.destroy();
+  }
+
+  private bakeHaggisAtlas(): number {
+    const startMs = performance.now();
+    const allKeys = allAtlasKeysForVariant('haggis', 'classic');
+    const size = getHaggisSpriteSize();
+    for (const key of allKeys) {
+      // Parse state + frame from key: 'haggis_classic_<state>_<frame>'
+      const parts = key.split('_');
+      const frame = Number(parts[parts.length - 1]);
+      const state = parts.slice(2, -1).join('_') as AnimationState;
+      // Only bake idle + walking in Phase 0; others throw in drawHaggisFrame
+      // because they're not authored yet (Phase 1).
+      if (state !== 'idle' && state !== 'walking') continue;
+
+      const g = this.add.graphics();
+      drawHaggisFrame(g, {
+        variantPalette: CLASSIC_VARIANT,
+        state,
+        frame,
+      });
+      g.generateTexture(key, size, size);
+      g.destroy();
+    }
+    return performance.now() - startMs;
   }
 
 }
