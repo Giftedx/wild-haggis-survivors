@@ -1040,3 +1040,104 @@ Baseline 4 / Urban Ghaists 3 / Cryptids 3 / Weather 2 / Faerie
 Elite-specialist 6. Taxman's Retinue (ledger_wraith,
 auditor_priest) stays deferred — post-bell enemies wire through
 `PostBellEscalation.ts`, not `WAVE_TIMELINE`.
+
+═══════════════════════════════════════════════════════════════════
+
+Session 2026-04-18 (autonomous push) — four enemies + three
+mechanics + a minimap polish, seven bisect-friendly commits:
+
+(1) ledger_wraith + auditor_priest (`f41f2ce`) — Taxman's Retinue
+    pair, closing the section-3 sketch row. Re-reviewed the prior
+    session's carry-over note ("post-bell wire needed") and
+    decided the `WAVE_TIMELINE` path lands the enemies cleanly at
+    15:30 + 17:30 without a new system — the "Retinue as advance
+    guard before the Taxman fight" read comes through the slot
+    choice. Heavy mechanics (Taxman-damage-gated immunity / beam
+    ranged) deferred in the same spirit as haar_wraith's howl and
+    blue_man_of_minch's kenning stones.
+
+(2) Burn Leap — M8 (`e01f13f`) — double-tap direction for a short
+    hazard-iframe hop. New pure detector
+    `src/entities/burnLeapInput.ts` (+15 tests) covers release /
+    press edges, 280 ms window, 31° dot-product tolerance,
+    deadzone noise, cooldown gate, and the one-leap-does-not-
+    chain anti-retrigger path. Player integration wires timers
+    into `scaledDelta` so slow-mo behaves like dash; suppresses
+    slick slow, fog magnet-halve, and lava damage tick during
+    the 280 ms iframe; enemy contact still hurts. Distinct from
+    dash — routing tool, not combat immunity. Follow-up commit
+    `4329e2d` added a cyan burst ring at the player's feet on
+    trigger so the gesture is discoverable.
+
+(3) Reliquary Pickup — M15 (`ecb54f7`) — one relic per run,
+    placed 400–620 px off the player at a run-RNG-rolled second
+    in a 6:00–12:00 window. Three curios pull from existing
+    Player APIs (echoing_reed +20 px pickup / flint_charm +7 %
+    crit / cairn_moss +0.4 HP regen). New `src/scenes/game/
+    reliquary.ts` orchestrator + 12 pure tests (spawn window,
+    curio shuffle, placement margins, corner-clamp path, seed
+    determinism). i18n filled EN + SCS under `ui.reliquary.*`.
+    BootScene ships a carved-altar sprite — stone bowl with a
+    pulsing amber ember and a rising wisp. Lore page stays
+    open for a future codex pass. Follow-up commit `c0f8ced`
+    added an amber diamond pin on the minimap so the off-path
+    relic stays discoverable without being a scavenger hunt.
+
+(4) Weather Memory Trails — M16 (`e9e46b8`) — fifth HazardZones
+    patch type, completing the recipe noted in the prior
+    session carry-over (lava / heal / slick / fog + trail).
+    Player standing inside a fog patch emits a teal-white wisp
+    at their feet every 130 ms; each wisp lives 2.1 s and runs
+    `Enemy.applyFreeze(0.55, 320 ms)` on non-hazard enemies
+    that overlap. New pure module `src/scenes/game/memoryTrail.ts`
+    (+12 tests) covers cadence emit (incl. 3-segment catch-up
+    on a lag spike), per-frame emit cap, clean reset when
+    leaving fog, and exclusive-boundary overlap semantics.
+
+(5) tome_wraith + dean_apparition (`a6389f4`) — Academic
+    Apparitions fill, bringing the scholar cluster to 3/3 per
+    the section-3 sketches. tome_wraith (11:30, ranged) — open
+    book with torn pages + ghostly face between the leaves.
+    dean_apparition (12:45, chase + mass 5) — formal dean in
+    mortarboard + gown, contact-shove because "the academy
+    does not wait". Existing fences auto-cover both.
+
+Tests across the session: 2571 → 2610 (+39 net). Lint / tsc /
+vite green at every commit. No E2E run this session — Playwright
+suite unchanged, all new mechanics gate-tested via vitest + build.
+
+Roster after: 23 non-boss enemy keys, up from 21. Family ledger
+now: Baseline 4 / Urban Ghaists 3 / Cryptids 3 / Weather 2 /
+Faerie 2 / Academic 3 / Taxman Retinue 2 / Elite-specialist 6.
+
+HazardZones recipe: five patch types (lava, heal, slick, fog,
+memory_trail) with a shared {x, y, r, expireAtMs, visuals}
+shape. Each patch keeps its own mechanical fingerprint —
+damage tick / heal tick / player-slow / player-magnet-halve /
+enemy-slow-on-overlap. Adding a sixth fits the same recipe.
+
+Player adds: burnLeap active / boost / cooldown / time-accumulator
+timers + pure detector state. Pure helper boundary keeps replay
+determinism — the input→leap decision is reproducible from the
+recorded direction stream alone, no hidden state crosses the
+record/play boundary. `isHazardLeaping()` is the new gate;
+lava + slick + fog + pickup-radius readers all check it.
+
+Bisect-friendly commit list this session: f41f2ce e01f13f ecb54f7
+4329e2d e9e46b8 a6389f4 c0f8ced.
+
+Carry-over for next session:
+  - Burn Leap has no audio sting on trigger — the cyan ring is
+    the only feedback. First use is otherwise silent.
+  - Reliquary collect fires `audio.playStoneGrant` (reused for
+    voice economy) — a dedicated relic-chime would let the
+    ceremony feel different from the standing-stones grant.
+  - `ui.reliquary.*` has no banter hook — the pick is a toast +
+    caption only. W18 banter pool is complete; adding a
+    `reliquary_pick` tag would require EN + SCS entries under
+    the existing parity fence.
+  - Academic family fully fills section-3 sketch table. Faerie
+    has two; adding a third would complete the section.
+  - Taxman Retinue's deferred mechanics (gated immunity, beam
+    ranged) still stand — ship them when a second consumer
+    asks for the same hook.

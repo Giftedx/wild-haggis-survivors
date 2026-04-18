@@ -25,7 +25,7 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 - ~~**Ceilidh Chain Combo**~~ — ✅ shipped: every 8th kill in a streak pulls coins and gems in close (see `ach_ceilidh_commander`).
 - ~~**Standing Stones**~~ — ✅ shipped: three-stone mid-run boon picker (see `ach_stone_circle`).
 - ~~**Reliquary Pickups**~~ — ✅ shipped 2026-04-18 (`src/scenes/game/reliquary.ts`). One relic per run, spawned in a 6:00–12:00 window 400–620 px off the player, clamped to world margins. Three curios pull from existing Player APIs: `echoing_reed` (+20 px pickup radius), `flint_charm` (+7 % crit), `cairn_moss` (+0.4 HP regen). Lore page stays open for a future codex pass.
-- **Weather Memory Trails** — in fog, your last few seconds of path remain; enemies crossing your trail are briefly slowed.
+- ~~**Weather Memory Trails**~~ — ✅ shipped 2026-04-18 (`src/scenes/game/memoryTrail.ts` + HazardZones integration). While the player stands in a haar_wraith fog patch, HazardZones emits a small teal-white wisp at their feet every 130 ms; each wisp lives 2.1 s and runs `Enemy.applyFreeze(0.55, 320 ms)` on any non-hazard enemy that overlaps. Pure tick-cadence + overlap helpers keep the fifth HazardZones patch type tested without Phaser.
 - **Shinty Parry** — a new weapon with a 350 ms reflect window against projectiles. High-skill defensive layer.
 - ~~**Ancestral Echoes**~~ — ✅ shipped: spectral haggis on the first 30 s at the prior death spot (see `ach_echo_touched`).
 - ~~**Tartan Banner** (postcard slice)~~ — ✅ shipped 2026-04-18: procedural plaid composited into the postcard footer, derived from variant + top-damage weapon + mode tags (`src/utils/tartan.ts`). **Mantle half** of the bullet is still blocked on the W71 rig layer and stays open as a future extension.
