@@ -11,6 +11,12 @@ describe('drawHaggisFrame', () => {
       fillEllipse: vi.fn().mockReturnThis(),
       fillRect: vi.fn().mockReturnThis(),
       fillTriangle: vi.fn().mockReturnThis(),
+      lineStyle: vi.fn().mockReturnThis(),
+      strokeCircle: vi.fn().mockReturnThis(),
+      beginPath: vi.fn().mockReturnThis(),
+      strokePath: vi.fn().mockReturnThis(),
+      arc: vi.fn().mockReturnThis(),
+      lineBetween: vi.fn().mockReturnThis(),
     };
   }
 
