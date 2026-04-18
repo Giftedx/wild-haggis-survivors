@@ -25,7 +25,7 @@ import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
 import { ReplayRecorder } from '../replay/ReplayRecorder';
 import { ReplayInput } from '../replay/ReplayInput';
-import type { ReplayBlob } from '../replay/replayBlob';
+import type { ReplayBlobAny } from '../replay/replayBlob';
 import { resolveReplayMode } from '../replay/replayConfig';
 import { parseGameSceneInitData } from './gameSceneInitData';
 import { DebugOverlay } from '../ui/DebugOverlay';
@@ -131,7 +131,7 @@ export interface GameSceneInitData {
    * run writes nothing to history. Exiting the replay returns to the
    * Chronicle (not MainMenu). v1 limitations documented in ADR-0002.
    */
-  replay?: import('../replay/replayBlob').ReplayBlob;
+  replay?: import('../replay/replayBlob').ReplayBlobAny;
 }
 
 export class GameScene extends Phaser.Scene implements ISceneContext {
@@ -194,7 +194,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private replayInput: ReplayInput | null = null;
   /** Replay blob captured from init data, consumed in create(). */
-  private pendingReplay: ReplayBlob | null = null;
+  private pendingReplay: ReplayBlobAny | null = null;
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
   /** Set when the run is a Daily Challenge attempt — drives save tracking + end-of-run UI. */

@@ -15,7 +15,7 @@ import type { CurseKey } from '../../data/curses';
 import type { RNG } from '../../utils/rng';
 import type { RunSummary, RunResult, RunHistoryContext } from '../../utils/save';
 import type { RoutePick } from '../../data/routes';
-import type { ReplayBlob } from '../../replay/replayBlob';
+import type { ReplayBlobAny } from '../../replay/replayBlob';
 import { currentDailyDateKey } from '../../utils/rng';
 
 export interface RunHistoryHooks {
@@ -36,7 +36,7 @@ export interface RunHistoryHooks {
    * if recording was active. Returns `null` when replay mode was off.
    * Hook is optional so tests that don't care about replay can omit it.
    */
-  getReplayBlob?(): ReplayBlob | null;
+  getReplayBlob?(): ReplayBlobAny | null;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }

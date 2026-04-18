@@ -8,7 +8,7 @@ import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
 import { CURSES, getCurseByKey, setPendingCurse, type CurseKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
-import { isReplayBlob, type ReplayBlob } from '../replay/replayBlob';
+import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 import {
   buildChronicleCodex,
   computeIronmoorStats,
@@ -330,7 +330,7 @@ export class ChronicleScene extends Phaser.Scene {
    * supplied (see `GameScene.init`). On playback end, GameScene
    * restarts this Chronicle scene.
    */
-  private watchReplay(replay: ReplayBlob): void {
+  private watchReplay(replay: ReplayBlobAny): void {
     audio.playClick();
     try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
     // Replay mode ignores the curse pending singleton — the recorded
@@ -515,7 +515,7 @@ export class ChronicleScene extends Phaser.Scene {
       // the entry carries a valid blob (record mode was on for the
       // original run). Placed left of the rerun glyph so the two live
       // together as a "revisit this run" cluster.
-      if (entry.replay && isReplayBlob(entry.replay)) {
+      if (entry.replay && isReplayBlobAny(entry.replay)) {
         const replay = entry.replay;
         const rerunPalette = resolveRerunLinkPalette();
         const watch = this.add

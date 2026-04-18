@@ -7,14 +7,14 @@
  * untestable parsing logic, per the node-env vitest gotcha documented
  * in CLAUDE.md.
  */
-import { isReplayBlob, type ReplayBlob } from '../replay/replayBlob';
+import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 
 /** Shape of `scene.start('Game', data)` payload. */
 export interface GameSceneInitDataInput {
   seed?: number | null;
   isDaily?: boolean;
   forceVariantKey?: string;
-  replay?: ReplayBlob;
+  replay?: ReplayBlobAny;
 }
 
 /**
@@ -25,7 +25,7 @@ export interface ResolvedGameSceneInit {
   pendingRunSeed: number | null;
   runIsDaily: boolean;
   pendingForceVariantKey: string | null;
-  pendingReplay: ReplayBlob | null;
+  pendingReplay: ReplayBlobAny | null;
 }
 
 /**
@@ -52,7 +52,7 @@ export function parseGameSceneInitData(
     pendingReplay: null,
   };
 
-  if (data?.replay && isReplayBlob(data.replay)) {
+  if (data?.replay && isReplayBlobAny(data.replay)) {
     base.pendingReplay = data.replay;
     base.pendingRunSeed = data.replay.seed;
     base.pendingForceVariantKey = data.replay.variantKey;

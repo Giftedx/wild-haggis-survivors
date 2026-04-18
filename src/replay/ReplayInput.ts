@@ -19,7 +19,7 @@
  * sees exactly one dash / pause fire per recorded frame.
  */
 import type { IInput } from '../utils/iInput';
-import type { ReplayBlob, ReplayFrame } from './replayBlob';
+import type { ReplayBlobAny, ReplayFrame } from './replayBlob';
 
 const DEFAULT_FRAME: ReplayFrame = { dtMs: 0, dx: 0, dy: 0, dash: false, menu: false };
 
@@ -28,7 +28,7 @@ export class ReplayInput implements IInput {
   private dashConsumed = false;
   private menuConsumed = false;
 
-  constructor(private readonly blob: ReplayBlob) {}
+  constructor(private readonly blob: ReplayBlobAny) {}
 
   /**
    * Advance to the next recorded frame. Returns the frame the cursor

@@ -4,7 +4,7 @@
  */
 
 import type { RoutePick } from '../data/routes';
-import { isReplayBlob, type ReplayBlob } from '../replay/replayBlob';
+import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
@@ -16,7 +16,7 @@ import {
 } from '../data/variants';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 5;
+export const SAVE_SCHEMA_VERSION = 6;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -58,9 +58,11 @@ export interface RunHistoryEntry {
    * T1 deterministic replay — per-frame input + delta capture attached
    * to the run when record mode was active at start. Absent on runs
    * recorded before replay v1 shipped, and on runs where replay mode
-   * was off. Schema v5 added this field.
+   * was off. Schema v5 added this field; v6 widened to `ReplayBlobAny`
+   * so Phase 3 recordings (v2 blobs with curse / routes / composedStats)
+   * persist alongside v1 blobs from older saves.
    */
-  replay?: ReplayBlob;
+  replay?: ReplayBlobAny;
 }
 
 export interface SaveData {
@@ -179,7 +181,7 @@ export interface RunHistoryContext {
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
   ironmoor?: boolean;
   /** T1 replay blob (optional) attached to this run's history entry. */
-  replay?: ReplayBlob;
+  replay?: ReplayBlobAny;
 }
 
 export interface RunResult {
@@ -267,6 +269,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV3ToV4(raw));
     case 4:
       return finalizeSaveCandidate(migrateV4ToV5(raw));
+    case 5:
+      return finalizeSaveCandidate(migrateV5ToV6(raw));
     default:
       return finalizeSaveCandidate(raw);
   }
@@ -389,6 +393,16 @@ function migrateV3ToV4(raw: SaveRecord): SaveRecord {
  * pre-v5 history entries remain valid with `replay` absent.
  */
 function migrateV4ToV5(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
+/**
+ * v5 → v6 widens `RunHistoryEntry.replay` from `ReplayBlob` (v1) to
+ * `ReplayBlobAny` (v1 ∪ v2) for T1 Phase 3. No per-entry rewrite needed —
+ * existing v1 blobs already validate under the union via `isReplayBlobAny`.
+ * Pure version bump.
+ */
+function migrateV5ToV6(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
@@ -519,7 +533,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
-    ...(isReplayBlob(raw.replay) ? { replay: raw.replay } : {}),
+    ...(isReplayBlobAny(raw.replay) ? { replay: raw.replay } : {}),
   };
 }
 
