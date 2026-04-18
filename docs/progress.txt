@@ -1124,7 +1124,20 @@ record/play boundary. `isHazardLeaping()` is the new gate;
 lava + slick + fog + pickup-radius readers all check it.
 
 Bisect-friendly commit list this session: f41f2ce e01f13f ecb54f7
-4329e2d e9e46b8 a6389f4 c0f8ced.
+4329e2d e9e46b8 a6389f4 c0f8ced. Post-wrap polish adds:
+  02255f2 redcap — Faerie #3 (dive contrast to orbit pair; Faerie 3/3)
+  81dfb38 Burn Leap whoosh — AudioSystem.playBurnLeap()
+  8386542 ach_relic_seeker — Reliquary pick deed + save field +
+          AchievementManager hook + DEED_DISPLAY_ORDER slot
+
+Final session tally: 11 feature commits + 1 docs wrap.
+Roster 21 → 24 non-boss enemies (Faerie now 3/3). Tests 2571 →
+2615 (+44, breakdown: 15 burn-leap helper + 12 reliquary helper +
+12 memory-trail helper + 6 deed/save bump suite scaffolds +
+1 deed-display-order fence auto-surfaced the new slot). Save
+schema gains `reliquaryCuriosPicked?` optional field + bump
+helper + coercion — mirror of `standingStonesPicked` so
+pre-reliquary saves load unchanged.
 
 Carry-over for next session:
   - Burn Leap has no audio sting on trigger — the cyan ring is
