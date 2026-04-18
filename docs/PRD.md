@@ -124,8 +124,13 @@ core gameplay feel. Ralph-mode managed.
   65 with 8 weapon sub-tags, `curse_start` pool at priority 59
   with 5 curse sub-tags; triggers wired in `LevelUpFlow.ts:250`
   and `GameScene.ts:716`.** Verified 2026-04-17.
-- [ ] Finish **W18 Phase B — banter Scots overlay**. UI parity is
-  green; banter pool deferred pending voice-register review.
+- [x] Finish **W18 Phase B — banter Scots overlay**. Done 2026-04-18 —
+  294 leaf keys translated across generic + per-boss + per-variant +
+  per-weapon + per-curse + per-biome + per-route sub-pools. Voice
+  register per `feedback_voice_register` (Still Game hearth default,
+  Limmy edge for boss warnings / low-HP / decision moments). Parity
+  guard in `src/core/i18n.locale.test.ts` enforces every EN banter
+  leaf has a Scots translation. See `docs/BANTER_GAPS.md`.
 
 ### P5 — Observability
 - [x] Ship a telemetry toggle (opt-in) for run-completion distribution

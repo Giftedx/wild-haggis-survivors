@@ -500,9 +500,13 @@ export const SCS_STRINGS: LocaleTree = {
       },
     },
     /**
-     * Banter — generic-line overlay only. Per-variant, per-boss,
-     * per-biome and per-route lines stay in English (Glesga register
-     * already authored, voice-tuned). Falls back automatically.
+     * Banter — full Scots overlay. Generic lines + per-variant / per-boss
+     * / per-biome / per-route sub-pools. W18 Phase B shipped
+     * 2026-04-18 — voice-register follows `feedback_voice_register`
+     * (Still Game hearth default, Limmy edge for boss warnings / low-HP
+     * / decision moments). Orthography stays light-Glesga for
+     * readability (tha / yer / ye / oot / aboot / doon / wi / nae / aye).
+     * Numbers + interpolation slots untouched.
      */
     banter: {
       boss_warn: {
@@ -511,6 +515,31 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Tha moor\'s gane quait. Bad sign, that.',
         d: 'Aw naw. Here we go.',
         e: 'Big silhouette on tha horizon — nae a sheep.',
+        gordon: {
+          a: 'Heid chef\'s oot tha kitchen. Brace yersel.',
+          b: 'Smell tha burnin? That\'s Gordon.',
+          c: 'Big man wi a cleaver. Nae jokin.',
+        },
+        tour_bus: {
+          a: 'A hale busload. Aw naw.',
+          b: 'Forty tourists wi cameras. Leg it.',
+          c: 'That coach isnae stappin fer a tea-break.',
+        },
+        the_laird: {
+          a: 'Tha Laird\'s come tae collect.',
+          b: 'Posh git on horseback. Snobby dunter.',
+          c: 'Tweeds an teeth. Mind yer flanks.',
+        },
+        hunter_general: {
+          a: 'Tha General\'s got yer scent.',
+          b: 'Proper sodger noo. Nae mair eejits.',
+          c: 'Musket an medals. Mind they\'re loaded.',
+        },
+        taxman: {
+          a: 'Tha Taxman\'s here. An he\'s no takin council tax.',
+          b: 'Bureaucrat wi a scythe. Pure nichtmare fuel.',
+          c: 'Final demand. Broon envelope, black cloak.',
+        },
       },
       low_hp: {
         a: 'Yer on tha last shred, wee yin.',
@@ -518,18 +547,133 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Gie it laldy — naethin tae lose noo.',
         d: 'Hingin by a thistle.',
         e: 'Last-chance wather — mak it coont.',
+        iron_belly: {
+          a: 'Tha wa\'s shakkin — mind tha cracks.',
+          b: 'Even iron rings when it\'s neer through.',
+          c: 'Belly\'s loud — nae in a guid way.',
+          d: 'Wan mair chip an tha myth cracks.',
+        },
+        moor_runner: {
+          a: 'Legs owe a debt — pey in bluid or bail.',
+          b: 'Yer slower than yer shadae noo.',
+          c: 'Run\'s ower if ye dinnae move smairter.',
+          d: 'Sprint or story — pick ane.',
+        },
+        glen_forager: {
+          a: 'Satchel\'s licht — sae are ye, neer.',
+          b: 'Wrang pick, wrang moment. Survive it.',
+          c: 'Forager\'s gamble — dice are up.',
+          d: 'Empty pooches, empt\'er veins — move.',
+        },
+        surefoot: {
+          a: 'Fitin slipped — find it or fauld.',
+          b: 'Stanes turnt traitor undah hoof.',
+          c: 'Balance is a luxury ye dinnae hae.',
+          d: 'Wabble wance mair an it\'s ower.',
+        },
+        pipe_breath: {
+          a: 'Wind knocked oot — pipe\'s whistlin empty.',
+          b: 'Wan bad note fae silence. Braithe.',
+          c: 'Lungs say stap; pride says nae.',
+          d: 'Reed\'s cracked — blaw cannie noo.',
+        },
+        laird: {
+          a: 'Tartan\'s tae tha ankles — steady, Laird.',
+          b: 'Bluid oan tha estate — no tha end o it.',
+          c: 'Croun\'s wabblin — haud yer heid up.',
+          d: 'A Laird staundin bleedin is still a Laird staundin.',
+        },
+        wee_ghostie: {
+          a: 'Fadin at tha edges... haud oan.',
+          b: 'Near tha veil — step back fae it.',
+          c: 'A whisper\'s aw that\'s left. Braithe it in.',
+          d: 'Hauf here. Stey tha ither hauf.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
         b: 'That\'s him telt.',
         c: 'Lang may yer wee lum reek, ya beauty.',
         d: 'Boss doon — tha glen exhales.',
+        gordon: {
+          a: 'Telt Gordon whaur tae stick tha cleaver.',
+          b: 'Chef\'s oot. Last orders.',
+          c: 'Kitchen\'s closed. Yer welcome.',
+        },
+        tour_bus: {
+          a: 'Bus is oot o service.',
+          b: 'Tourist trap, that. Snap shut.',
+          c: 'End o tha line fer them.',
+        },
+        the_laird: {
+          a: 'Laird\'s nae laird nae mair.',
+          b: 'Laund\'s back wi tha moor.',
+          c: 'Posher than a polished thistle, an just as flat noo.',
+        },
+        hunter_general: {
+          a: 'General\'s aff-duty. Permanently.',
+          b: 'Ootranked tha big yin.',
+          c: 'That\'s him decommissioned.',
+        },
+        taxman: {
+          a: 'Taxman took a loss fer wance.',
+          b: 'Daith\'s back oan tha books.',
+          c: 'Owes us naethin. We owe him naethin. Sortit.',
+        },
       },
       weapon_evolve: {
         a: 'Noo THAT\'S a proper wapen.',
         b: 'Legendary. As it should be.',
         c: 'Tha moor trembles. Guid.',
         d: 'That\'s tha glow-up tha legends promised.',
+        thistle_shot: {
+          a: 'Thistle barbs — shairpened tae spite.',
+          b: 'Nae a saft prick noo. That\'s tha spirit.',
+          c: 'Every needle earned its legend.',
+          d: 'Thistle croun — naebody kneels.',
+        },
+        bagpipe_blast: {
+          a: 'Drone turnt wapen — tha glen\'s deifened.',
+          b: 'Blaw till tha windaes rattle. Guid.',
+          c: 'That\'s nae a tune — that\'s a declaration.',
+          d: 'Drone\'s no background — it\'s verdict.',
+        },
+        caber_toss: {
+          a: 'Tree\'s awa — pure lumber justice.',
+          b: 'Heave ho — tha moor clears a path.',
+          c: 'Spinnin timber — naebody staunds twice.',
+          d: 'Timber\'s airborne — physics is oan yer side.',
+        },
+        scotch_mist: {
+          a: 'Haar wi teeth. Lovely.',
+          b: 'Ye cannae see it — but it sees them.',
+          c: 'Wather turnt nasty. Their problem.',
+          d: 'Haar wi teeth — bonnie an cruel.',
+        },
+        haggis_hurler: {
+          a: 'Haggis evolved — chaos o tha finest kind.',
+          b: 'Naebody survives a weel-aimed supper.',
+          c: 'Tha platter\'s lethal noo. Fair.',
+          d: 'Supper\'s evolved — they\'re tha side dish.',
+        },
+        nessie_tentacle: {
+          a: 'Loch\'s lendin a haund. Tentacle tax paid.',
+          b: 'Somethin grabbed tha deep end — an it\'s yours.',
+          c: 'Splash o legend. Splash o pain.',
+          d: 'Deep watter diplomacy — firm haundshake.',
+        },
+        claymore: {
+          a: 'Big sword energy. Tha moor approves.',
+          b: 'Twa-haundit trouble — swing wance, end it.',
+          c: 'Steel wi stories. Mair stories comin.',
+          d: 'Claymore sings — choir o wan.',
+        },
+        bagpipes: {
+          a: 'Tha pipes woke up proper. Rin.',
+          b: 'Skirl turnt slaughter — beautiful.',
+          c: 'Every note a cut. Pure ceilidh violence.',
+          d: 'Ceilidh\'s cancelled — fer them.',
+        },
       },
       curse_start: {
         generic: {
@@ -537,6 +681,36 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Curse taen — nae takin it back noo.',
           c: 'Paid in teeth fer gold. Let\'s see it.',
           d: 'Deal\'s sealed — tha glen\'s collectin interest.',
+        },
+        heavy_legs: {
+          a: 'Heavy legs, heavier purse. Ye askit fer it.',
+          b: 'Tha moor\'s pullin at yer buits noo. Worth tha gold?',
+          c: 'Slower trot — shinier haul. That\'s tha deal.',
+          d: 'Buits feel like treacle — gold\'s heavy that way.',
+        },
+        thin_hide: {
+          a: 'Thin hide, thick trouble. Mind tha dunts.',
+          b: 'Every nip stings louder. Ye wantit tha bonus.',
+          c: 'Paper skin, metal nerve. Aff ye gae.',
+          d: 'Skin\'s paper — nerves are steel. Supposedly.',
+        },
+        restless_spirits: {
+          a: 'Restless spirits — they\'re aw comin fer a blether.',
+          b: 'Mair buits on tha heather. Ye peyed fer tha crood.',
+          c: 'Tha glen\'s busier than a ceilidh. Enjoy.',
+          d: 'Extra company — peyed admission, nae refunds.',
+        },
+        empty_larder: {
+          a: 'Empty larder stairt — belly rumblin, pooches jinglin.',
+          b: 'Less in tha tank, mair in tha purse. Fair swap?',
+          c: 'Ye skipped breakfast fer gold. Classic.',
+          d: 'Hunger\'s loud — purse is louder. Ye chose.',
+        },
+        windless_pipes: {
+          a: 'Pipes are quait — wapens drag their heels.',
+          b: 'Nae wind in tha reeds. Time yer shots.',
+          c: 'Slow an steady, bonus an braw.',
+          d: 'Tha drone\'s sleepin — yer awake.',
         },
       },
       level_up: {
@@ -546,12 +720,96 @@ export const SCS_STRINGS: LocaleTree = {
         d: 'Yer gettin tha hang o this.',
         e: 'Levelt up — tha glen noticed.',
         f: 'Mair in tha tank — spend it canny.',
+        iron_belly: {
+          a: 'Anither layer tae tha wa.',
+          b: 'Bigger, stronger, steadier.',
+          c: 'Tha belly minds every dunt.',
+          d: 'Iron thickens — sae does tha legend.',
+        },
+        moor_runner: {
+          a: 'Feet gettin faster by tha meenit.',
+          b: 'Pure flyin. Nae stap sign in sicht.',
+          c: 'Moor\'s a blur. Lovely.',
+          d: 'Cadence up — tha heather blurs.',
+        },
+        glen_forager: {
+          a: 'Levelt up — pooches get deeper, appetite stays.',
+          b: 'Mair room in tha satchel. Guid haul ahead.',
+          c: 'Ye grow like a bramble — shairp an useful.',
+          d: 'Satchel straps stretch — greed approved.',
+        },
+        surefoot: {
+          a: 'Levelt up — feet mind every stane.',
+          b: 'Steadier gait — tha moor\'s nae movin ye easy.',
+          c: 'Surefit, surer heid. On ye gae.',
+          d: 'Fitprint widens — confidence, nae swagger.',
+        },
+        pipe_breath: {
+          a: 'Levelt up — lungs like bellies noo.',
+          b: 'Braith hauds tha tune; tha tune hauds tha fecht.',
+          c: 'Wind in tha chest, fire in tha hooves.',
+          d: 'Reed hauds mair — sae dae ye.',
+        },
+        laird: {
+          a: 'Tha Laird grows intae his tartan.',
+          b: 'Anither generation o hoof — tha croft thrives.',
+          c: 'Stature earned, no gien. Braw.',
+          d: 'Tha glen notes tha rise, aye.',
+        },
+        wee_ghostie: {
+          a: 'A wee bit bricher. A wee bit neerer.',
+          b: 'Shape finds form. Wheesht.',
+          c: 'Thicker at tha edges noo.',
+          d: 'Faint, but fierce.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
         b: 'Hoofprints in tha heather. Game on.',
         c: 'That\'s tha ice broken.',
         d: 'First notch on tha moor — ink\'s still weet.',
+        iron_belly: {
+          a: 'First dunt boonced — tha belly never flinched.',
+          b: 'Wa\'s up; wan enemy doon. Business.',
+          c: 'Iron held. They didnae.',
+          d: 'First dent — tha myth hauds.',
+        },
+        moor_runner: {
+          a: 'First cull at a canter — habits awready.',
+          b: 'Ye didnae stap tae chat. Respect.',
+          c: 'Speed merchant: first sale complete.',
+          d: 'Openin sprint — nae warm-up.',
+        },
+        glen_forager: {
+          a: 'First harvest — satchel\'s nae empty noo.',
+          b: 'Picked clean. Wan less pest.',
+          c: 'Taste o tha glen — bitter fer them.',
+          d: 'First berry — shairp, as intendit.',
+        },
+        surefoot: {
+          a: 'First strike — plantit, nae slidin.',
+          b: 'Fitin held. They didnae.',
+          c: 'Clean step, clean finish.',
+          d: 'First root — nae wabble.',
+        },
+        pipe_breath: {
+          a: 'First note cut deep — nae encore.',
+          b: 'Braith oot, problem doon.',
+          c: 'Drone o doom. First verse.',
+          d: 'Openin skirl — crood o wan.',
+        },
+        laird: {
+          a: 'First poacher telt. Tha laund speaks fer itsel.',
+          b: 'Trespasser doon — estate defends itsel.',
+          c: 'Openin blow, clean. Tha tartan hauds.',
+          d: 'First droplet on tha heather. Proper.',
+        },
+        wee_ghostie: {
+          a: 'First ane slips through tha veil.',
+          b: 'Touch o cauld — an they\'re doon.',
+          c: 'Quait strike. They never saw ye.',
+          d: 'A braith. A blaw. A body.',
+        },
       },
       kill_streak: {
         a: 'Pure mental, this.',
@@ -559,18 +817,126 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Cannae stap, will nae stap.',
         d: 'Tha glen\'s tremblin.',
         e: 'Combo\'s a ceilidh — naebody leaves early.',
+        iron_belly: {
+          a: 'Chain keeps gaun — tha wa\'s nae tired.',
+          b: 'Momentum like a ceilidh table — nae stappin.',
+          c: 'Streak\'s a habit noo. Belly approves.',
+          d: 'Wa\'s a drum — yer tha solo.',
+        },
+        moor_runner: {
+          a: 'Yer stringin them like fence posts.',
+          b: 'Hot streak — cauld feet nae invitit.',
+          c: 'Runnin tally — an yer still runnin.',
+          d: 'Lap record — bluid edition.',
+        },
+        glen_forager: {
+          a: 'Harvest mode: nae a berry left staundin.',
+          b: 'Combo\'s a full basket — keep pickin.',
+          c: 'Streak\'s ripe — dinnae let it rot.',
+          d: 'Basket owerflow — guid problem.',
+        },
+        surefoot: {
+          a: 'Rhythm locked — nae wabble in tha chain.',
+          b: 'Wan efter anither — feet kent tha route.',
+          c: 'Steady slaughter. Elegant, almaist.',
+          d: 'Metronome o mayhem — tick tick.',
+        },
+        pipe_breath: {
+          a: 'Streak\'s a tune — yer on tha chorus.',
+          b: 'Braith hauds; tha beat keeps killin.',
+          c: 'Rowin riff o ruin. Lovely.',
+          d: 'Crescendo — nae conductor needit.',
+        },
+        laird: {
+          a: 'Tha Laird declares open season — an tha moor listens.',
+          b: 'Estate cleared, row efter row. Braw wark.',
+          c: 'Tha tartan cuts them doon like grain.',
+          d: 'A Laird hits heavy — an aften.',
+        },
+        wee_ghostie: {
+          a: 'They drap like they never wur.',
+          b: 'Chain o whispers — each ane final.',
+          c: 'Wechtless, but tha strikes land.',
+          d: 'A hush that leaves naebody staundin.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
         b: 'Still here. Still kickin.',
         c: 'Steady tha heid. Yer awricht.',
         d: 'Colour back — tha moor relents.',
+        iron_belly: {
+          a: 'Wa\'s back — paint it thicker next time.',
+          b: 'Iron minds hoo tae haud.',
+          c: 'Shrugged it aff. Maistly.',
+          d: 'Dents polish oot — eventually.',
+        },
+        moor_runner: {
+          a: 'Feet foond tha beat again.',
+          b: 'Back in stride — nae funeral yet.',
+          c: 'Second wind — third if ye need it.',
+          d: 'Cadence returns — mercy grantit.',
+        },
+        glen_forager: {
+          a: 'Satchel still shut — that\'s a win.',
+          b: 'Ye lived tae forage anither day.',
+          c: 'Bit o colour back in tha cheeks.',
+          d: 'Larder waits — ye earned tha walk.',
+        },
+        surefoot: {
+          a: 'Plantit again — guid.',
+          b: 'Fitin honest. Heid follows.',
+          c: 'Steady as ye meant tae be.',
+          d: 'Roots find stane — yer upricht.',
+        },
+        pipe_breath: {
+          a: 'Braith back in tha tune.',
+          b: 'Pipes warm — play oan.',
+          c: 'Air\'s yours again. Use it.',
+          d: 'Reed dries — next note\'s yours.',
+        },
+        laird: {
+          a: 'Resilience — a Laird\'s trade, that.',
+          b: 'Back oan hoof. Estate staunds.',
+          c: 'Tha laund heals faster than tha pride.',
+          d: 'Minor stumble. Tha tartan forgives.',
+        },
+        wee_ghostie: {
+          a: 'Pulled back fae tha veil. Thin wark.',
+          b: 'Flicker held. Form returns.',
+          c: 'Still here — faintly, but here.',
+          d: 'Ghaist knits itsel back tae shape.',
+        },
       },
       biome_change: {
         a: 'Different smell tae tha air here.',
         b: 'New bit o moor. Watch yer step.',
         c: 'Tha terrain\'s shiftin.',
         d: 'Postcode changed — same attitude.',
+        bog: {
+          a: 'Squelch. Tha bog\'s got opinions aboot yer buits.',
+          b: 'Peat underfit — dinnae rush it.',
+          c: 'Weet air, thick thochts. Classic bog.',
+          d: 'Mud tax — pey in dignity.',
+        },
+        loch: {
+          a: 'Loch braith — cauld enough tae shairpen ye.',
+          b: 'Watter\'s watchin fae tha edge. Aye.',
+          c: 'Ripple wather. Mind tha pull.',
+          d: 'Shoreline politics — yer a tourist.',
+        },
+        pine: {
+          a: 'Needles underfit — tha forest\'s cairpet.',
+          b: 'Tall shadaes. Short temper if ye rush.',
+          c: 'Sap an silence. Nae a bad combo.',
+          d: 'Canopy closes — mind yer heid.',
+        },
+        heather: {
+          a: 'Heather\'s up — purple haze, open sky.',
+          b: 'Wind aff tha taps — ye cannae hide here.',
+          c: 'Open moor, honest fecht. Lovely.',
+          d: 'Taps are honest — nae cover, nae lies.',
+        },
       },
       moor_moment: {
         a: 'Tha moor noticed ye. That\'s rare.',
@@ -579,6 +945,50 @@ export const SCS_STRINGS: LocaleTree = {
         d: 'Somethin kind tummled oot tha wather.',
         e: 'Tha glen tipped its hat — briefly, but sincerely.',
         f: 'Luck\'s a loan — spend it afore it notices.',
+        home_bog: {
+          a: 'Staundin in tha squelch — tha peat pays interest.',
+          b: 'Bog kin — tha mud minds yer name.',
+          c: 'Deep peat blessin. Yer buits earned it.',
+          d: 'Kin rates — squelch discount appliet.',
+        },
+        home_loch: {
+          a: 'Loch gless — tha watter tipped ye a favour.',
+          b: 'Shore gift: tha deep disnae charge interest.',
+          c: 'Yer reflection smiled back. Briefly.',
+          d: 'Hame watter — nae strangers at this shore.',
+        },
+        home_pine: {
+          a: 'Needle kin — tha wuid leans yer way.',
+          b: 'Sap on tha wind — that\'s a pine haundshake.',
+          c: 'Forest tithe: peyed in kindness.',
+          d: 'Needle kin — bark minds tha auld sangs.',
+        },
+        home_heather: {
+          a: 'Bloom kin — tha purple hush held ye ticht.',
+          b: 'Heather tithe: saft grund, shairp fortune.',
+          c: 'Open sky tithe — nae ruif but plenty hert.',
+          d: 'Purple kin — wind aff tha taps kens yer name.',
+        },
+        bog: {
+          a: 'Squelch brocht luck — bog\'s generous tha day.',
+          b: 'Peat air, lucky air.',
+          c: 'Mud kissed yer buits — say thank ye.',
+        },
+        loch: {
+          a: 'Watter luck — even dry buits get a splash.',
+          b: 'Ripple peyed ye — nae receipt.',
+          c: 'Loch winked — naebody else saw it.',
+        },
+        pine: {
+          a: 'Shadae luck — tha trees shared a crumb.',
+          b: 'Sap-stained fortune. Guid.',
+          c: 'Bough noddit — contract sealed.',
+        },
+        heather: {
+          a: 'Wind aff tha taps — cairried a coin o cheer.',
+          b: 'Purple hour — tha moor tipped its hat.',
+          c: 'Taps gied a whisper — listen close.',
+        },
       },
       idle: {
         a: 'Quait, this. Ower quait, mibbe.',
@@ -587,6 +997,48 @@ export const SCS_STRINGS: LocaleTree = {
         d: 'Somethin\'s brewin. Aye is.',
         e: 'Calm afore tha ceilidh — savour it.',
         f: 'Tha moor hums law — dinnae interrupt.',
+        iron_belly: {
+          a: 'Even tha wa needs a sit-doon.',
+          b: 'Belly\'s quait — dinnae trust it fully.',
+          c: 'Rest is tactical. Sae\'s a pie.',
+          d: 'Iron naps — nichtmares dinnae.',
+        },
+        moor_runner: {
+          a: 'Stillness itch — feet want tha next lap.',
+          b: 'Quait\'s juist tha stairtin gun loadin.',
+          c: 'Braithin room — then back tae blur.',
+          d: 'Idle hooves — guilty hooves.',
+        },
+        glen_forager: {
+          a: 'Eyes still roamin — habit, that.',
+          b: 'Nae pickin juist noo. Patience, thief.',
+          c: 'Satchel\'s patient. Tha moor isnae.',
+          d: 'Haunds empty — eyes full. Fer noo.',
+        },
+        surefoot: {
+          a: 'Staundin still — but tha map keeps turnin.',
+          b: 'Silence is juist slow fitwark.',
+          c: 'Calm feet, shairp ears.',
+          d: 'Pause is posture — nae weakness.',
+        },
+        pipe_breath: {
+          a: 'Rest between phrases — still music.',
+          b: 'Hums in tha chest — nae audience needit.',
+          c: 'Quait stage — pipes tune theirsels.',
+          d: 'Silence is tha rest — nae tha sang.',
+        },
+        laird: {
+          a: 'Tha Laird surveys his laund.',
+          b: 'A braith on tha heather — aye, earned.',
+          c: 'Tartan smoothed. Heid clear.',
+          d: 'Even a Laird needs a wee pause.',
+        },
+        wee_ghostie: {
+          a: 'Hover. Drift. Listen.',
+          b: 'Tha moor feels ye fainter here.',
+          c: 'Braith thin as gossamer.',
+          d: 'Still. Like a held note.',
+        },
       },
       act_intermission_enter: {
         a: 'Awricht, whit way, big yin?',

@@ -108,4 +108,40 @@ describe('W18 locale scaffolding', () => {
     walk(SCS_STRINGS, EN_STRINGS, '');
     expect(orphans).toEqual([]);
   });
+
+  /**
+   * W18 Phase B completion guard — scoped to `ui.banter.*` only.
+   *
+   * Every EN banter leaf (generic + per-boss / per-variant / per-weapon /
+   * per-biome / per-route sub-pool) must have a Scots translation.
+   * Catches future additions (new boss, new weapon, new variant tag)
+   * where EN content lands without a matching SCS entry — the Scots
+   * player would fall back to EN tagged lines, defeating the overlay
+   * for decision-moment copy (boss warnings, weapon evolution, curses).
+   *
+   * Out-of-scope for this guard: non-banter UI (kept narrow on purpose
+   * so adding a new level-up card description doesn't force a locked-
+   * step translation pass before merge — only the banter register is
+   * under full-parity obligation).
+   */
+  it('every EN banter leaf has a Scots translation (W18 Phase B parity)', () => {
+    const missing: string[] = [];
+    const walk = (en: LocaleTree, scs: LocaleTree | undefined, path: string) => {
+      for (const [k, v] of Object.entries(en)) {
+        const next = path ? `${path}.${k}` : k;
+        const scsChild = scs && typeof scs === 'object' ? (scs as Record<string, unknown>)[k] : undefined;
+        if (typeof v === 'string') {
+          if (typeof scsChild !== 'string') missing.push(next);
+        } else if (v && typeof v === 'object') {
+          walk(v as LocaleTree, scsChild as LocaleTree | undefined, next);
+        }
+      }
+    };
+    const enUi = EN_STRINGS.ui as LocaleTree;
+    const scsUi = SCS_STRINGS.ui as LocaleTree;
+    const enBanter = enUi.banter as LocaleTree;
+    const scsBanter = scsUi.banter as LocaleTree;
+    walk(enBanter, scsBanter, 'ui.banter');
+    expect(missing).toEqual([]);
+  });
 });

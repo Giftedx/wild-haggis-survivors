@@ -728,3 +728,35 @@ Remaining non-determinism (per ADR-0002 Phase 3 addendum):
   - Math.random cosmetic paths kept per rng.ts policy.
   - Cross-build playback gated by blob.build (archive-only).
 
+
+
+[2026-04-18] W18 Phase B — full Scots banter overlay shipped.
+
+Closed the last open PRD P4 item. Every ui.banter.* sub-pool in EN now
+has a matching SCS translation — 294 leaf keys across generic lines +
+per-boss / per-variant / per-weapon / per-curse / per-biome / per-route
+tagged sub-pools. Voice register per feedback_voice_register:
+
+  - Edge (Limmy bite): boss_warn per-boss (5 x 3), low_hp per-variant
+    (7 x 4) — dry, short, absurdist.
+  - Hearth (Still Game warmth): boss_down per-boss (5 x 3), weapon_evolve
+    per-weapon (8 x 4), curse_start per-curse (5 x 4), level_up /
+    first_blood / kill_streak / recover / idle per-variant (7 x 4 x 5
+    = 140), biome_change per-biome (4 x 4), moor_moment per-home-biome
+    + per-biome (16 + 12).
+
+Orthography stays light-Glesga (tha, yer, ye, oot, aboot, doon, wi, nae)
+so tone reads as Still Game / Limmy without alienating non-Glaswegian
+players. No tourist Scots.
+
+Regression guard: new EN -> SCS banter parity test in
+src/core/i18n.locale.test.ts. Scoped to ui.banter.* only — keeps
+non-banter UI under the existing one-way SCS->EN subset guard, so
+adding a new level-up card description doesn't force a locked-step
+translation pass before merge.
+
+Bundle impact: i18n.scs chunk 43 KB -> 52 KB (lazy-loaded, never shipped
+to English players). App + vendor chunks unchanged. PWA precache
+1978 KiB (SCS chunk excluded via globIgnores).
+
+Tests: 2499 -> 2500 (+1 parity guard). Lint / tsc / vite build green.

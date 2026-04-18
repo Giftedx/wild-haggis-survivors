@@ -1,4 +1,4 @@
-# Banter coverage audit — 2026-04-17
+# Banter coverage audit — 2026-04-18 (Phase B complete)
 
 Operational hygiene log of the banter pool state. Intended as a one-page
 answer to *"where are the holes and what's blocking them?"* so the next
@@ -31,37 +31,54 @@ source-of-truth sets:
 `act_intermission_enter` and `act_complete` are generic-only pools (no
 variant/boss differentiation intended).
 
-## Scots overlay — **deferred (Phase B, VO-blocked)**
+## Scots overlay — **complete (Phase B shipped 2026-04-18)**
 
-Scots banter is a Phase B translation task waiting on voice-register
-review. Line count snapshot as of 2026-04-17:
+Full Scots banter overlay is live. Every EN sub-pool has a matching SCS
+entry — generic lines, per-boss, per-variant, per-weapon, per-curse,
+per-biome, per-route, plus W2 act banter. Voice register per
+`feedback_voice_register`: Still Game hearth for warmth, Limmy edge for
+boss warnings / low-HP / decision moments.
 
-| Locale | `ui.banter.*` block lines | Notes |
-|--------|---------------------------|-------|
-| EN     | ~577 | Complete reference tree |
-| SCS    | ~124 | ~21% of EN — ambient / idle / biome-change tone pass, no boss/curse/weapon tags |
+| Locale | `ui.banter.*` tree | Notes |
+|--------|--------------------|-------|
+| EN     | Complete reference tree | Source of truth |
+| SCS    | Full parity (generic + all tagged sub-pools) | W18 Phase B shipped 2026-04-18 |
 
-No regression guard on Scots banter — a test that enforced parity today
-would go red on every commit because Phase B hasn't shipped. When VO
-review unblocks Phase B, the hole-filling plan is:
+The EN→SCS parity guard lives in `src/core/i18n.locale.test.ts`
+("every EN banter leaf has a Scots translation") — scoped to
+`ui.banter.*` only so future banter additions enforce bilingual ship,
+while non-banter UI (level-up card descriptions, meta-item flavour,
+etc.) stays under the existing one-way SCS→EN subset guard.
 
-1. Translate all `ui.banter.boss_warn.*` (16 keys — edge register, one
-   cold line per boss + generic).
-2. Translate `ui.banter.low_hp.*` (33 keys — variant-tagged + generic,
-   edge register).
-3. Translate `ui.banter.weapon_evolve.*` + `curse_start.*` (44 keys —
-   hearth register, decision moments).
-4. Translate `ui.banter.level_up.*` / `first_blood.*` / `kill_streak.*`
-   / `recover.*` / `idle.*` (~120 keys — hearth register, variant tint
-   per key).
-5. Translate `ui.banter.boss_down.*`, `moor_moment.*`, `biome_change.*`
-   (~60 keys — hearth register, warm celebration).
-6. Translate W2 banter (`act_intermission_enter.*`, `act_complete.*`,
-   `route_picked.*`) — ~20 keys.
+### What shipped in the Phase B pass
 
-Rough total: ~293 keys. At a Glesga-coached translator's working pace
-of ~30 lines / hour, ~10 hours plus ~2 hours of register review per
-block for consistency with the hearth / edge split.
+- `boss_warn` per-boss (5 bosses × 3 lines) — Limmy bite, one cold
+  identity line per boss (Gordon / Tour Bus / Laird / General / Taxman).
+- `low_hp` per-variant (7 variants × 4 lines) — edge, variant-tinted
+  (iron belly cracks, moor runner's debt, wee ghostie veil).
+- `boss_down` per-boss (5 × 3) — hearth celebration, dry-funny.
+- `weapon_evolve` per-weapon (8 × 4) — hearth, each evolution gets
+  its own voice (thistle crown, ceilidh violence, deep watter).
+- `curse_start` per-curse (5 × 4) — hearth, acknowledging the trade.
+- `level_up` / `first_blood` / `kill_streak` / `recover` / `idle`
+  per non-classic variant (7 × 4 × 5 blocks = 140) — hearth tint
+  per variant fantasy (iron wall, speed merchant, satchel thief,
+  surefooted, pipe-breath, laird estate, wee ghostie faint).
+- `biome_change` per-biome (4 × 4) — bog / loch / pine / heather
+  with sensory tint per region.
+- `moor_moment` per-home-biome and per-biome (4 home × 4 + 4 × 3) —
+  warm gift tone with kin-discount for the variant's home biome.
+
+Total Phase B additions: 294 leaf keys.
+
+### Maintenance
+
+When EN gains a new banter tag (new boss, new variant, new weapon),
+`i18n.locale.test.ts` will fail until the matching SCS entry lands.
+Keep SCS lines SHORT — they ride the toast strip + caption bar.
+Orthography stays light-Glesga (tha, yer, ye, oot, aboot, doon, wi,
+nae, aye) so the tone reads as Still Game warmth / Limmy edge without
+alienating non-Glaswegian players.
 
 ## Automation hooks
 
