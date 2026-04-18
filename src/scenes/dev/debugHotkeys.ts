@@ -7,9 +7,9 @@
  * Hotkeys (Phase 0):
  *   T — toggle tam_o_shanter on/off
  *   K — capture haggis sprite screenshot, downloaded to user's browser
- *
- * Force-state hotkeys (I / W / H / ESC) and /combinations toggle (C)
- * land in Tasks 16 + 17.
+ *   I / W / H — force animation state (idle / walking / hurt)
+ *   ESC — clear animation state override
+ *   C — toggle Combinations preview scene
  */
 
 import type { Player } from '../../entities/Player';
@@ -54,6 +54,13 @@ export function registerDebugHotkeys(
   kb.on('keydown-W', () => hooks.getPlayer().overrideAnimationState('walking'));
   kb.on('keydown-H', () => hooks.getPlayer().overrideAnimationState('hurt'));
   kb.on('keydown-ESC', () => hooks.getPlayer().overrideAnimationState(null));
+
+  // C — toggle Combinations preview scene
+  kb.on('keydown-C', () => {
+    const scene = hooks.getScene();
+    scene.scene.pause('Game');
+    scene.scene.launch('CombinationsPreview');
+  });
 }
 
 function captureHaggisScreenshot(scene: Phaser.Scene, player: Player): void {
