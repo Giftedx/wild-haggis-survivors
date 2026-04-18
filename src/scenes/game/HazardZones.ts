@@ -220,7 +220,7 @@ export class HazardZones {
       while (z.tickAccMs >= 500) {
         z.tickAccMs -= 500;
         if (!player.active || this.hooks.isVictoryPending()) continue;
-        if (this.hooks.isIFrames() || player.isDashInvincible()) continue;
+        if (this.hooks.isIFrames() || player.isDashInvincible() || player.isHazardLeaping()) continue;
         const dx = player.x - z.x;
         const dy = player.y - z.y;
         if (dx * dx + dy * dy < rSq) {

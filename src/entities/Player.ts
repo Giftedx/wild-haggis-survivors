@@ -3,6 +3,7 @@ import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import type { IInput } from '../utils/iInput';
 import { rotateVectorIntoPrecomputed } from '../utils/math';
+import { evaluateBurnLeap } from './burnLeapInput';
 import { softBoundarySteer } from './softBoundarySteer';
 import { playerGrowthScale } from './playerGrowthScale';
 import { playerLevelSpeedMul, playerLevelDriftMul } from './playerLevelScaling';
@@ -101,6 +102,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    *  multiplies — `Math.cos`/`Math.sin` only fire when stats actually change. */
   private driftCos: number = 1;
   private driftSin: number = 0;
+
+  // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
+  // Distinct from dash: no enemy-damage immunity, shorter windows, own
+  // cooldown. It's a routing tool for moor patches (slick / fog / lava),
+  // not a combat escape. Timers tick with scaledDelta so slow-motion and
+  // pause behave the same as dash. The `burnLeapPrevDir` + release-edge
+  // fields drive the pure detector in `burnLeapInput.ts`, kept here so
+  // the replay playback path re-detects the same leaps deterministically
+  // from the recorded direction stream.
+  private burnLeapActiveRemainingMs: number = 0;
+  private burnLeapBoostRemainingMs: number = 0;
+  private burnLeapCooldownRemainingMs: number = 0;
+  private burnLeapTimeMs: number = 0;
+  private burnLeapReleaseTimeMs: number = -99999;
+  private burnLeapReleaseDir: { x: number; y: number } | null = null;
+  private burnLeapPrevDir: { x: number; y: number } = { x: 0, y: 0 };
+  private readonly BURN_LEAP_ACTIVE_MS = 280;
+  private readonly BURN_LEAP_BOOST_MS = 180;
+  private readonly BURN_LEAP_COOLDOWN_MS = 700;
+  private readonly BURN_LEAP_SPEED_MUL = 1.55;
 
   // Dash ability — charge-based so Double Dash perk can grant a 2nd charge
   private dashCooldown: number = 0;
@@ -275,6 +296,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Tick shield cooldown
     if (this.shieldCooldown > 0) this.shieldCooldown -= scaledDelta;
 
+    // Tick Burn Leap timers. `burnLeapTimeMs` is a monotonic accumulator
+    // fed to the pure detector so double-tap windows measure in scaled
+    // time — slow-motion widens the window the same way it widens dash
+    // recovery, keeping feel consistent under curse effects.
+    this.burnLeapTimeMs += scaledDelta;
+    if (this.burnLeapActiveRemainingMs > 0) {
+      this.burnLeapActiveRemainingMs = Math.max(0, this.burnLeapActiveRemainingMs - scaledDelta);
+    }
+    if (this.burnLeapBoostRemainingMs > 0) {
+      this.burnLeapBoostRemainingMs = Math.max(0, this.burnLeapBoostRemainingMs - scaledDelta);
+    }
+    if (this.burnLeapCooldownRemainingMs > 0) {
+      this.burnLeapCooldownRemainingMs = Math.max(0, this.burnLeapCooldownRemainingMs - scaledDelta);
+    }
+
     // Tick dash lifecycle (bound to timeScale)
     if (this.isDashing) {
       this.dashRemainingMs -= scaledDelta;
@@ -336,6 +372,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       ? { x: this.autoBattleSteering.x, y: this.autoBattleSteering.y }
       : this.inputManager.getDirection();
 
+    // Burn Leap double-tap detection — evaluate against last frame's direction.
+    // Skipped when auto-battle is driving so the AI doesn't thrash-arm leaps.
+    if (!this.autoBattleSteering) {
+      const leap = evaluateBurnLeap({
+        prevDir: this.burnLeapPrevDir,
+        currDir: dir,
+        nowMs: this.burnLeapTimeMs,
+        lastReleaseTimeMs: this.burnLeapReleaseTimeMs,
+        lastReleaseDir: this.burnLeapReleaseDir,
+        cooldownActive: this.burnLeapCooldownRemainingMs > 0,
+      });
+      this.burnLeapReleaseTimeMs = leap.nextLastReleaseTimeMs;
+      this.burnLeapReleaseDir = leap.nextLastReleaseDir;
+      if (leap.trigger) {
+        this.burnLeapActiveRemainingMs = this.BURN_LEAP_ACTIVE_MS;
+        this.burnLeapBoostRemainingMs = this.BURN_LEAP_BOOST_MS;
+        this.burnLeapCooldownRemainingMs = this.BURN_LEAP_COOLDOWN_MS;
+      }
+    }
+    this.burnLeapPrevDir = { x: dir.x, y: dir.y };
+
     if (dir.x !== 0 || dir.y !== 0) {
       this.lastMoveDir.x = dir.x;
       this.lastMoveDir.y = dir.y;
@@ -358,10 +415,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.x, this.y, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
     );
 
-    const slickMul = this.inSlick ? this.SLICK_SPEED_MUL : 1;
+    // Burn Leap immunity suppresses slick slow while the iframe window is
+    // open — the patch visuals still render so the player keeps the spatial
+    // cue, but movement is unhampered.
+    const hazardLeaping = this.burnLeapActiveRemainingMs > 0;
+    const slickMul = this.inSlick && !hazardLeaping ? this.SLICK_SPEED_MUL : 1;
+    const leapBoostMul = this.burnLeapBoostRemainingMs > 0 ? this.BURN_LEAP_SPEED_MUL : 1;
     this.setVelocity(
-      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul + pushX,
-      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul + pushY
+      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushX,
+      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushY
     );
 
     // Rotate sprite to face movement direction
@@ -484,7 +546,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getRunBaseDriftDegrees(): number { return this.runBaseDrift; }
   getLevel(): number { return this.currentLevel; }
   getPickupRadius(): number {
-    return this.pickupRadius * (this.inFog ? this.FOG_PICKUP_MUL : 1);
+    // Burn Leap iframe also suppresses fog's magnet halving — same justification
+    // as the slick suppression: leap is the routing escape valve for hazards.
+    const fogMul = this.inFog && this.burnLeapActiveRemainingMs <= 0 ? this.FOG_PICKUP_MUL : 1;
+    return this.pickupRadius * fogMul;
   }
   getMoveSpeed(): number { return this.moveSpeed; }
   getDriftDegrees(): number { return this.driftDegrees; }
@@ -496,6 +561,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getHpRegen(): number { return this.hpRegen; }
   getCooldownReduction(): number { return this.bonusCooldownReduction; }
   isDashInvincible(): boolean { return this.dashInvincible; }
+  /** Burn Leap iframe window — hazard-only immunity, no enemy damage immunity. */
+  isHazardLeaping(): boolean { return this.burnLeapActiveRemainingMs > 0; }
   /** 0 when any charge is ready, otherwise fraction of the current charge's regen timer. */
   getDashCooldownFraction(): number {
     if (this.dashCharges >= this.maxDashCharges) return 0;
