@@ -14,6 +14,8 @@ import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { BALANCE } from '../core/BalanceConfig';
 import type { PlayerComposedSheet } from '../core/StatComposer';
 import type { ISceneContext } from '../core/ISceneContext';
+import { AnimationController } from '../animation/AnimationController';
+import type { AnimationSignals } from '../animation/animationStates';
 
 /**
  * Player — the wild haggis.
@@ -136,8 +138,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private maxDashCharges: number = 1;
   private dashCharges: number = 1;
 
-  // Squash-stretch animation
-  private wobblePhase: number = 0;
+  private animController!: AnimationController;
+  private hurtEdgeThisFrame = false;
 
   /** Soft ground shadow that follows the player */
   private shadow: Phaser.GameObjects.Image | null = null;
@@ -218,6 +220,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // so depth -1 places the shadow above terrain but below all entities (which
     // default to depth 0).
     this.shadow = scene.add.image(x, y + 22, 'entity_shadow').setDepth(-2).setScale(1.1);
+
+    this.animController = new AnimationController({
+      sprite: this,
+      subject: 'haggis',
+      variant: 'classic', // Phase 0 — all variants in Phase 1
+    });
 
     this.inputManager = inputSource ?? new InputManager(scene);
     this.time = timeManager;
@@ -436,8 +444,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(0, 0);
-      // Settle back to uniform scale when idle
-      this.wobblePhase = 0;
       return;
     }
 
@@ -466,15 +472,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const angle = Math.atan2(drifted.y, drifted.x);
     this.setRotation(angle + Math.PI / 2);
 
-    // Squash-stretch wobble while moving — gives the haggis a lively bounce.
-    // Uniform scale (not per-axis) so the physics circle body's auto-scaled
-    // radius doesn't oscillate frame-to-frame; non-uniform setScale made the
-    // hitbox jitter ±6% every frame and produced inconsistent damage zones.
-    // At ±6% the visual effect of uniform-vs-axis is barely distinguishable,
-    // so we trade one pixel of squash-stretch for a stable hitbox.
-    this.wobblePhase += 0.15;
-    const wobble = Math.sin(this.wobblePhase) * 0.06;
-    this.setScale(playerGrowthScale(this.currentLevel) * (1 + wobble));
+    // Animation controller — texture-swap replaces the legacy wobblePhase
+    // scale wobble. State driven by velocity + hurt edge (Phase 0);
+    // attack + celebrate edges land in Phase 1.
+    const vx = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.x ?? 0;
+    const vy = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.y ?? 0;
+    const signals: AnimationSignals = {
+      velocityMag: Math.hypot(vx, vy),
+      hurtEdge: this.consumeHurtEdge(),
+      attackEdge: false,
+      celebrateEdge: false,
+      hp: this.hp,
+    };
+    this.animController.tick(scaledDelta, signals);
+    this.setScale(playerGrowthScale(this.currentLevel));
   }
 
   /** Recalculate all stats from base + level scaling + upgrade bonuses */
@@ -521,7 +532,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       * (1 + 0.03 * (level - 1));
   }
 
+  private consumeHurtEdge(): boolean {
+    const v = this.hurtEdgeThisFrame;
+    this.hurtEdgeThisFrame = false;
+    return v;
+  }
+
   takeDamage(amount: number): boolean {
+    this.hurtEdgeThisFrame = true;
     // Armor reduces incoming damage (minimum 1)
     const mitigated = Math.max(1, amount - this.bonusArmor);
     this.hp -= mitigated;

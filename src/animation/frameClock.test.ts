@@ -32,7 +32,7 @@ describe('advanceFrameClock', () => {
 
   it('looping states wrap frame index at state frame count', () => {
     // idle has 2 frames; after 2 advances it wraps to 0
-    let r = advanceFrameClock({ accMs: 0, frameIndex: 1, state: 'idle', scaledDelta: 500 });
+    const r = advanceFrameClock({ accMs: 0, frameIndex: 1, state: 'idle', scaledDelta: 500 });
     expect(r.frameIndex).toBe(0); // wrapped from 2 back to 0
   });
 
