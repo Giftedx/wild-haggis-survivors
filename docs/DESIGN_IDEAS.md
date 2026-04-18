@@ -19,12 +19,12 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 - **Whistle-Call Companions** — one familiar slot: sheepdog, stoat, eagle, kelpie-foal. Unlocked via deeds. Extra entity load — pair with a perf budget.
 - **Stance Toggle (Braced / Loose / Reeling)** — cycle with Shift. Modifies drift, speed, defence. Skill layer for veterans.
 - **Heather Mantle** — kills grow a visible mantle; at max kill-threshold the mantle pulses and staggers nearby enemies. Needs a rig layer (see **W71** in master plan).
-- **Burn Leap** — double-tap movement = short hop with brief hazard immunity. Adds routing to peat/bog play.
+- ~~**Burn Leap**~~ — ✅ shipped 2026-04-18 (`src/entities/burnLeapInput.ts` + Player integration). Double-tap direction arms a 280 ms hazard-iframe window + 180 ms speed boost (1.55×); suppresses slick slow, fog pickup-halve, and lava tick damage. Enemy contact still hurts — it's routing, not combat immunity. Pure detector keeps replay determinism.
 - **Whisky Breath** — collect stacks; hold to breathe a short cone of fire that leaves a burn puddle.
 - **Taxman Grudge Ledger** — silent tracker of how you finish elites/bosses; end-of-game dialogue shifts accordingly. Hidden state; save schema care.
 - ~~**Ceilidh Chain Combo**~~ — ✅ shipped: every 8th kill in a streak pulls coins and gems in close (see `ach_ceilidh_commander`).
 - ~~**Standing Stones**~~ — ✅ shipped: three-stone mid-run boon picker (see `ach_stone_circle`).
-- **Reliquary Pickups** — ~1 per run, a hidden relic spawns off-path; grants a run-scoped curio + a lore page. Optional, non-blocking.
+- ~~**Reliquary Pickups**~~ — ✅ shipped 2026-04-18 (`src/scenes/game/reliquary.ts`). One relic per run, spawned in a 6:00–12:00 window 400–620 px off the player, clamped to world margins. Three curios pull from existing Player APIs: `echoing_reed` (+20 px pickup radius), `flint_charm` (+7 % crit), `cairn_moss` (+0.4 HP regen). Lore page stays open for a future codex pass.
 - **Weather Memory Trails** — in fog, your last few seconds of path remain; enemies crossing your trail are briefly slowed.
 - **Shinty Parry** — a new weapon with a 350 ms reflect window against projectiles. High-skill defensive layer.
 - ~~**Ancestral Echoes**~~ — ✅ shipped: spectral haggis on the first 30 s at the prior death spot (see `ach_echo_touched`).
@@ -91,8 +91,8 @@ Families worth sketching (pick one per content drop):
 | ~~`edinburgh_ghost_guide`~~ | Urban | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; lobs projectiles at distance (reuses the `ranged` behavior). |
 | ~~`edinburgh_ghost_guide`~~ | Academic | ✅ shipped 2026-04-18. Ranged Victorian-spectre tour guide at 13:30; "narrates as a damage source" deferred pending a caption-linked damage system. |
 | ~~`ceilidh_caller`~~ | Academic | ✅ shipped 2026-04-18. Orbit dance-master at 10:45; "forces enemies to move in sync" deferred pending a group-AI pass. |
-| `ledger_wraith` | Taxman | Immune until Taxman takes damage. |
-| `auditor_priest` | Taxman | Beam ranged, tests drift skill. |
+| ~~`ledger_wraith`~~ | Taxman | ✅ shipped 2026-04-18. Chase enemy at 15:30; ghostly auditor with floating ledger + red-ink drips. "Immune until Taxman takes damage" deferred pending an event-bus gate. |
+| ~~`auditor_priest`~~ | Taxman | ✅ shipped 2026-04-18. Ranged cleric at 17:30 with a censer-tipped staff (glowing amber telegraph). "Beam ranged, tests drift skill" deferred pending a beam-weapon class. |
 
 **Honest cap:** 4–6 new enemies per release. Retire weak ones.
 

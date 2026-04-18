@@ -222,6 +222,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.time = timeManager;
   }
 
+  /**
+   * Burn Leap visual cue — cyan burst ring at the player's feet on trigger.
+   * Reads at a glance as "something happened" without competing with the
+   * whiskey-gold dash after-images. Cosmetic-only — uses `Math.random()`
+   * per the rng.ts policy, so cosmetic jitter stays outside the replay
+   * determinism contract.
+   */
+  private spawnBurnLeapFlash(): void {
+    if (!this.active) return;
+    const ring = this.scene.add
+      .circle(this.x, this.y, 12, 0x80eefc, 0.55)
+      .setDepth(4);
+    this.scene.tweens.add({
+      targets: ring,
+      scale: 3.2,
+      alpha: 0,
+      duration: 260,
+      ease: 'Quad.easeOut',
+      onComplete: () => ring.destroy(),
+    });
+    const inner = this.scene.add
+      .circle(this.x, this.y, 7, 0xf0fcff, 0.7)
+      .setDepth(5);
+    this.scene.tweens.add({
+      targets: inner,
+      scale: 2.2,
+      alpha: 0,
+      duration: 180,
+      ease: 'Quad.easeOut',
+      onComplete: () => inner.destroy(),
+    });
+  }
+
   private tryDash(): void {
     if (this.dashCharges <= 0 || this.isDashing) return;
     const inputDir = this.inputManager.getDirection();
@@ -389,6 +422,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.burnLeapActiveRemainingMs = this.BURN_LEAP_ACTIVE_MS;
         this.burnLeapBoostRemainingMs = this.BURN_LEAP_BOOST_MS;
         this.burnLeapCooldownRemainingMs = this.BURN_LEAP_COOLDOWN_MS;
+        this.spawnBurnLeapFlash();
       }
     }
     this.burnLeapPrevDir = { x: dir.x, y: dir.y };
