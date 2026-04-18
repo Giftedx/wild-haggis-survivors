@@ -1,250 +1,392 @@
-# The Moor Renders Itself — design spec
+# The Moor Renders Itself — design spec (v2, handcrafted-quality rewrite)
 
-**Date:** 2026-04-18
-**Scope:** Multi-phase art / animation / world / audio push that shifts the
-game's identity surface from text-heavy toasts + captions + banter to
-procedurally-rendered visuals + reactive sound. Procedural-only (no PNG
-assets, no external art team). Each phase ships standalone as a flagship.
+**Date:** 2026-04-18 (rewritten same day after tear-down pass)
+**Scope:** Multi-phase procedural-art push that raises the game's visual
+and audio identity surface to handcrafted-quality without adopting a
+pixel-art asset pipeline. Commits to the craft bar the existing enemy
+sprites (dean_apparition, tome_wraith, redcap, ceilidh_caller,
+auditor_priest) already demonstrate — and bakes the process that made
+those sprites good into every new asset.
+
+> **Version history.** v1 shipped in the first draft of this file at
+> `f256684`. A tear-down pass caught: quality target mismatch (claimed
+> "Isaac-feel" from primitives), 10 Hz animation choppiness, 10× scope
+> compression, audio-drowns-in-combat premise, Phase Container perf
+> unverified, no art-direction budget, no style bible. v2 addresses
+> each.
 
 ---
 
-## 1. Problem statement
+## 1. Problem statement (revised)
+
+### Observation
+
+The recent session shipped seven procedural enemy sprites
+(`ledger_wraith`, `auditor_priest`, `tome_wraith`, `dean_apparition`,
+`redcap`, and the earlier family drops `seelie_piper`,
+`unseelie_fiddler`, `ceilidh_caller`, `haar_wraith`, `gale_wraith`,
+`barghest`, `kelpie_foal`, `blue_man_of_minch`, `buckfast_ned`,
+`traffic_cone_totem`, `edinburgh_ghost_guide`). Each is 60-140 lines of
+hand-placed `fillCircle` / `fillTriangle` / `fillEllipse` / `fillRect`
+composited with layered depth + highlights + character detail. Looked
+at in the game they read as handcrafted, coherent, Scottish. The
+existing craft bar is **real**.
+
+The gap is NOT the pipeline. The gap is:
+
+1. Sprites are **static** — no animation beyond `setScale` wobble.
+2. The haggis body has **no compositional layer** for worn items — no
+   Isaac-style visible build.
+3. The **moor is empty** — flora, weather, wildlife are missing.
+4. The game leans on **words** (biome-entry toasts, captions, toast
+   stacking on combo + damage numbers + pickup + level-up) where the
+   existing art could carry the beat.
 
 ### Player outcome
 
-The game currently leans hard on words to carry identity — banter toasts,
-caption strips, entry announcements, boss warnings, moor-moment narration,
-reliquary grant copy, stone-boon descriptions, route-pick verbiage. Recent
-pass (W18 Phase B, W2 Moor Road) added ~300+ new leaf keys. The screen is
-dense with text during combat, the player's eye is pulled away from the
-action, and the game's strongest features (art and music) are
-underrepresented.
+- Haggis silhouette changes every run and reads its build at a glance.
+- The moor feels like a place — flora sways, mist drifts, hares hop.
+- Animation is present on every entity that matters (player, bosses,
+  nearby enemies).
+- Text retreats to the moments it earns: boss warnings, banter soul
+  beats, accessibility captions, damage numbers. The HUD feels calmer.
 
-The player outcome: **the haggis looks different every run, the moor feels
-alive around it, the music + sound tell more of the story than the text
-ever could, and text retreats to the places it genuinely earns its keep
-(boss warnings, banter soul moments, accessibility captions).**
+### Craft outcome
 
-### Design / craft outcome
-
-Every shipped system in this push compounds on the previous:
-
-- An **animation layer** makes every subsequent visual change live.
-- A **compositional haggis body** turns passive/weapon pickups into
-  Isaac-style visible build accumulation — "this run's silhouette is
-  this run's story".
-- **World depth** (flora + weather + wildlife + terrain) turns the moor
-  from an empty canvas into a place.
-- **Reactive music + sound** reads from every system above and replaces
-  redundant text with audio cues.
-
-The craft outcome: a procedural-art maturity leap that honours the
-DESIGN_SOUL charter (handcrafted, warm, coherent, Scottish) without
-spending money on an art team, adopting pixel atlases, or breaking the
-offline-first + replay-determinism contracts.
+Every new sprite / drawer / animation / ambience hits the same craft
+bar the existing enemy sprites already set. Not geometric
+approximations. Not "first-draft draws". **Handcrafted. Period.**
 
 ---
 
-## 2. Non-goals
+## 2. Quality charter (NEW — what "handcrafted" means here)
 
-Explicitly out of scope for this spec:
+Non-negotiable bar for every new visual or audio asset in this push:
 
-- **No PNG / pixel-art assets.** No art-team dependency. No atlas pipeline.
-  All visuals stay in `BootScene` + runtime `Graphics` compositing.
-- **No skeletal animation rig** (W71 stays rejected at this scope).
-- **No online / multiplayer** (W82 offline-first doctrine preserved).
-- **No 3D or alternate camera.**
-- **No voice acting** (banter stays text, just reduced in density).
-- **No live-instrument music** (CP1 stays rejected — procedural engine
-  only).
-- **No ECS / engine rewrite.** Current `src/scenes/game/` modular layout
-  from R3/R3a stays authoritative.
-- **No save-schema content-pack system** (the prior "Moor as Platform"
-  pitch was torn apart and rejected — see session transcript).
-- **No reverb / 3D audio spatialisation.**
-- **No day/night cycle or seasonal MoorState** — possible follow-up
-  flagships but not in this push.
+### Visual charter
+
+1. **Defined silhouette.** Subject is identifiable at a glance by shape
+   alone — not dependent on colour. Test: squint at it. Still reads?
+2. **Consistent light source.** Upper-left primary, subtle upper-right
+   fill. Every highlight + shadow in every sprite respects this. No
+   sprite ships with reversed light.
+3. **Layered depth.** Minimum 3 tonal passes: dark base → mid body →
+   highlight rim → (optional) detail accent. No flat fills on focal
+   shapes.
+4. **Focal hierarchy.** One primary focal point (eyes / hat / weapon),
+   one secondary (tint detail / stripe / motion), tertiary is texture.
+   The eye lands right.
+5. **Palette discipline.** 2-4 main colours + 1-2 accents per sprite.
+   Pulled from `config.ts COLORS` or a new `src/art/palettes.ts`
+   curated set. No stray hex constants.
+6. **Anchor details.** Belts, stripes, spots, trim — break up mass so
+   sprites don't read as blobs at distance. See how the dean's gold
+   trim, sporran's seal, redcap's dipped cap all serve this.
+7. **Character pose.** Every sprite has posture / attitude — not a
+   neutral mannequin. Tilt, lean, stance. Character > symmetry.
+8. **Squash/rest proportions.** Body proportions exaggerate the
+   fantasy (chunky iron-belly, elongated moor-runner, etc.). Not
+   default-human proportions scaled.
+
+### Animation charter
+
+1. **Frames, not tweens.** Every animated state has 2-6 keyframes, not
+   one tween on one base shape. Walking = 4-frame cycle (contact →
+   passing → contact → passing). Attacking = 4-frame (anticipation →
+   strike → impact → recovery). Hurt = 2-frame snap-back.
+2. **24 fps nominal.** Texture-swap animation at ~24 fps — **not** live
+   Graphics redraw at 10 Hz. See Phase 1 architecture below for how.
+3. **Easing curves baked in per state.** Hurt = sharp compress then
+   slow release. Walking = sinusoidal bob. Not linear.
+4. **Motion serves character.** A haggis walks round-bellied with hip
+   sway. A ghost drifts. A berserker pumps. Per-entity motion, not
+   shared.
+
+### Authoring process
+
+1. **Reference-driven.** Each drawer opens with a comment block
+   pointing at 1-3 real-world references (Scottish attire photos, Celtic
+   illustration, Limmy promo stills, Still Game character art, McIntosh
+   roses, etc.). No drawer ships without a reference cite.
+2. **Iteration budget per drawer.** Minimum 3 passes before ship:
+   v1 first draft → review against charter → v2 refine → review in-game
+   → v3 ship. Build it in, don't apologise for it later.
+3. **Combination preview.** A dev-only route renders the haggis with
+   every possible accessory combination at once on a grid (~72 cells for
+   9 passives × 8 weapons) so visual conflicts surface before release.
+4. **Playtest gate.** Before any phase MVP claims "ship", play a real
+   5-minute run and screenshot. Does it land? Does the accessory read?
+   Is the hurt animation legible mid-swarm? Screenshot attached to the
+   commit message.
+5. **Quality-bar failure = rework, not lowered bar.** If a drawer
+   doesn't hit the charter after 3 passes, open a 4th pass. If after 4
+   passes it still doesn't land, escalate — restructure the approach
+   for that drawer, don't ship sub-bar.
 
 ---
 
-## 3. Design principles
+## 3. Style bible (NEW)
 
-1. **Procedural depth over procedural breadth.** Draw fewer things with
-   more craft per drawing. Layered compositions beat single-texture
-   sprites.
-2. **State-reactive, not wall-clock random.** Every animation, every
-   audio trigger, every weather state is a pure function of game state +
-   seeded RNG + scaled time. Preserves T1 replay determinism.
-3. **Hot-path aware.** Off-screen entities skip draw(); animation clock
-   runs at 10 Hz not 60 Hz; flora batched per voronoi cell; wildlife
-   capped per biome; audio throttled via existing `SFXManager`.
-4. **Each phase ships as a flagship.** No phase depends on a later phase
-   existing. Reversible.
-5. **Text stays where it earns its keep.** Cut biome-entry toasts, cut
-   low-HP toast, reduce moor-moment frequency. Keep boss warnings, keep
-   banter (the soul), keep accessibility captions.
-6. **Pattern over volume.** Each phase ships an MVP that proves the
-   pattern — 3-6 accessories, 1 biome, 1 wildlife, 1 weather. Follow-up
-   ships apply the pattern to the long tail.
+Commit one file, `docs/ART_STYLE_BIBLE.md`, at Phase 0 that codifies:
+
+- **The palette.** Anchor hex values pulled from the Soul Charter:
+  peat browns (3A2818, 5A3E20, 4A2E18), heather purples (8060A0,
+  9070B0, B090D0), loch blues (2A4A6A, 4A7090, 6A90B0), whisky golds
+  (C8A040, D4B055, FFC840), stone greys (2A2A30, 4A4A50, 8A8A90),
+  Scots-red accents (AA2020, C42828, 901818). Curated from existing
+  sprite hex inventory.
+- **Light model.** Upper-left primary at full strength; upper-right
+  fill at 50 %; ambient occlusion at the body underside.
+- **Line weight / stroke.** No strokes on procedural sprites (mass is
+  carried by tonal layering). Exception: gold trim (1 px at `0xc8a040`).
+- **Composition rules.** Head occupies upper 1/3 of silhouette; body
+  mid 1/3; base/shadow lower 1/6. Centred on x, bias down on y
+  (ground anchor).
+- **Inspiration wall.** Linked reference images + URLs — Mackintosh
+  roses, Glasgow Boys palette, Celtic illumination, Limmy title cards,
+  Still Game character poses, Trainspotting opening kinetic typography.
+  These anchor the voice — procedural or not.
+
+Shipped AT Phase 0 so every subsequent phase authors against it.
 
 ---
 
-## 4. Phase 1 — Animation Foundation
+## 4. Non-goals
+
+- **No PNG / pixel-art assets.** No art-team dependency. Procedural
+  only — but procedural at the craft bar the existing sprites set.
+- **No skeletal animation rig.** W71 stays rejected.
+- **No online / multiplayer.** W82 offline-first doctrine preserved.
+- **No 3D / alternate camera / ECS rewrite.**
+- **No voice acting.**
+- **No content-pack system / MoorState / day-night cycle.**
+- **No per-accessory / per-weapon audio signatures** (dropped in v2 —
+  see tear-down: drown in combat noise). Phase 4 scope narrows.
+- **No real-time Graphics-redraw animation.** v1's "10 Hz live redraw"
+  was wrong. Replaced by texture-swap sprite-sheets (see Phase 1).
+
+---
+
+## 5. Design principles (revised)
+
+1. **Charter + process over raw code.** Quality charter + authoring
+   process + review gates are load-bearing. A drawer that passes lint
+   but fails the charter is not shipped.
+2. **Texture-swap animation.** Pre-generate texture atlases at boot
+   (per-variant, per-state, per-frame). Runtime swaps sprite key —
+   cheap. No live Graphics redraw in the hot path.
+3. **State-reactive determinism.** Animation state driven by game
+   state + `scaledDelta`. T1 replay contract preserved.
+4. **Pattern proves before scale.** Phase 0 prototype validates one
+   haggis + one accessory + one state before committing to the full
+   build. Cancel criterion: if prototype's craft bar is visibly below
+   the existing enemy sprite bar after 1 focused week, reboot spec.
+5. **Text reduces by tightening, not bulk-cutting.** Toast stacking
+   /layout /fade choreography improvements land first; only cut the
+   toasts a matching visual clearly replaces. Banter stays whole.
+6. **Scope honestly.** Real timeline is months, not hours. See §13.
+
+---
+
+## 6. Architecture — texture-swap animation (revised)
+
+### v1 error
+
+Live `Graphics.fill*` redraw every animation tick across N entities.
+10 Hz tick rate chosen to keep cost low. Output = choppy animation and
+still-expensive transform propagation under Phaser `Container`.
+
+### v2 model
+
+At boot, pre-generate texture **atlases**: one atlas per
+(variant × state × frame-index). Runtime just calls
+`sprite.setTexture('haggis_classic_walking_2')` — O(1).
+
+```
+BootScene (or lazy-per-variant at MenuScene):
+  for each variant (classic, moor_runner, iron_belly, …):
+    for each state (idle, walking, attacking, hurt, celebrating, dying):
+      for each frame (0..N-1 where N per state):
+        draw procedurally into a Graphics
+        .generateTexture('<variant>_<state>_<frame>', w, h)
+        .destroy() (graphics)
+
+Runtime Player:
+  AnimationController tracks (state, frameT)
+  update(): advance frameT at 24 fps (scaledDelta-driven)
+    on frame index change: player.setTexture(<key>)
+  no Graphics objects allocated or destroyed per tick
+```
+
+Cost: **one-time** texture generation at ~O(variants × states ×
+frames) — acceptable amortised over a run. E.g. 9 variants × 6 states
+× 4 frames avg = 216 textures. Each ~60 × 60 px. ~0.8 MB GPU texture
+memory total. Phaser caches them; reuse is free.
+
+Accessories (Phase 2) follow the same pattern: each accessory drawer
+pre-generates its (state × frame) atlas at boot, runtime swaps child
+sprite's texture when state changes. Compositing is N children each
+doing an O(1) texture swap — **fast and fluid at 24 fps**.
+
+### Consequence
+
+- Animation fidelity unlocked to 24 fps without hot-path cost.
+- `Phaser.GameObjects.Container` with Sprite (not Graphics) children
+  — Phaser's own scene-graph fast path.
+- Pre-bake cost spent once at boot; runtime is just state-driven
+  texture-key lookup.
+- Drawer authoring stays the same — hand-placed primitives — just
+  run at bake time instead of every frame.
+
+---
+
+## 7. Phase 0 — Prototype gate (NEW — must pass before Phases 1-4)
 
 ### Component
 
-Runtime procedural animation layer. State machine + per-frame drawing
-dispatcher + shared frame clock.
+Build one end-to-end slice: **classic haggis** + **one accessory
+(`tam_o_shanter`)** + **two states** (idle, walking) + **4-frame
+walking cycle at 24 fps** + **texture-swap architecture**.
+
+Compare in-game against the existing enemy sprite craft bar.
+
+### Exit criteria (Phase 0)
+
+- Haggis visibly animated at 24 fps (walking cycle, idle breathing).
+- Tam-o-shanter visible on haggis, tilts with walking.
+- No FPS regression under single-run play.
+- **Craft-bar gate:** side-by-side screenshot of animated haggis vs.
+  existing `dean_apparition` sprite. If the haggis looks noticeably
+  less crafted, rework before proceeding. Post screenshot in commit.
+- Ship the style bible (`docs/ART_STYLE_BIBLE.md`).
+
+### Ship order
+
+1. Build texture-atlas pre-bake infrastructure (Phase 1 groundwork).
+2. Author `haggis_classic_idle` (2 frames) + `haggis_classic_walking`
+   (4 frames) as procedural drawers → generateTexture at boot.
+3. Wire AnimationController (minimal, texture-swap only).
+4. Author `tam_o_shanter` drawer with state × frame atlas.
+5. Wire accessory pickup → child-sprite texture swap.
+6. Play. Screenshot. Review against the style bible.
+7. Iterate through v1 → v2 → v3 until craft bar is met.
+8. Commit + `ART_STYLE_BIBLE.md`.
+
+### Phase 0 kill criterion
+
+If the animated classic haggis + tam, after 3 authored passes and one
+focused week, does not visibly match the craft bar of the existing
+enemy sprites (per side-by-side screenshot review), **close the spec
+and revisit Option D (hybrid pixel-art pipeline)**. The procedural
+path cannot deliver in this game. Don't push through — the tear-down
+predicted this outcome; honour it.
+
+**Phase 0 is a real gate. Phases 1-4 don't start until Phase 0
+passes.**
+
+---
+
+## 8. Phase 1 — Animation Foundation (revised)
+
+### Component
+
+Texture-swap animation across Player + 3 enemy archetypes, built on
+the Phase 0 infrastructure.
 
 ### New modules
 
 ```
 src/animation/
 ├── animationStates.ts      · pure state-transition logic (tested)
-├── frameClock.ts           · shared 10 Hz clock from scaledDelta
-├── AnimationController.ts  · per-entity state + clock owner
+├── frameClock.ts           · 24 fps clock from scaledDelta
+├── AnimationController.ts  · per-entity state + frame-index owner
+├── textureAtlas.ts         · pre-bake helper (variant, state, frames)
 └── frameDrawers/
-    ├── haggisFrames.ts     · player body poses per state
-    ├── enemyFrames.ts      · shared enemy-animation primitives
-    └── bossFrames.ts       · boss-specific
+    ├── haggisFrames.ts     · player body per state × frame
+    ├── enemyFrames.ts      · shared enemy primitives per state × frame
+    └── bossFrames.ts       · boss-specific per state × frame
 ```
 
-### States
+### Frames per state (authored budget)
 
-```
-idle | walking | attacking | hurt | celebrating | dying
-```
+| State | Frames | Tempo | Notes |
+|-------|--------|-------|-------|
+| idle | 2 | 2 fps loop | breathing in / breathing out |
+| walking | 4 | 24 fps loop | contact → passing → contact → passing |
+| attacking | 4 | 24 fps one-shot | anticipation → strike → impact → recovery |
+| hurt | 2 | 30 fps one-shot | snap-compress → slow-release |
+| celebrating | 4 | 12 fps loop | bounce cycle |
+| dying | 3 | 12 fps one-shot | collapse sequence |
 
-Transition rules:
-
-- `idle` → `walking`: velocity above threshold.
-- `walking` → `idle`: velocity below threshold.
-- `* → hurt`: `takeDamage` edge (fixed 120 ms window).
-- `hurt → walking/idle`: timeout.
-- `* → attacking`: weapon-fire edge (for melee weapons — claymore, caber).
-  Projectile weapons skip this state.
-- `* → celebrating`: boss kill / level up (time-bounded).
-- `* → dying`: `hp <= 0`.
-
-All transitions pure — evaluated in `animationStates.ts:evaluateTransition(current, signals): next`.
+Per-variant haggis = 2 + 4 + 4 + 2 + 4 + 3 = **19 frames × 9 variants
+= 171 haggis textures**. Plus per-enemy × per-state × per-frame. Total
+atlas at Phase 1 end: ~400 textures, ~1-2 MB GPU memory. Fine.
 
 ### Integration
 
-- `Player.ts` + `Enemy.ts` each hold an `AnimationController`.
-- `update()` calls `controller.tick(scaledDelta, signals)` then
-  `controller.draw()` for on-screen entities.
-- Existing procedural sprite textures become the idle base; animation
-  overrides the `Graphics` object each clock tick.
-- Existing `wobblePhase` on `Player` retires (replaced by walking
-  cadence).
+- `Player.ts` + `Enemy.ts` hold an `AnimationController`.
+- Each controller owns (currentState, currentFrameIndex, frameT).
+- `update(scaledDelta)`:
+  - Evaluate state transitions pure (`animationStates.evaluate`).
+  - Advance frameT; on frame boundary, `sprite.setTexture(key)`.
+- No per-frame Graphics allocation.
+- Retire `wobblePhase`.
 
 ### Hot-path protection
 
-- Off-screen entities skip `draw()` — use existing `SpatialCulling`.
-- Animation clock ticks at 10 Hz (~100 ms), not every Phaser frame.
-- Single shared `FrameClock` — one tick, many consumers.
-- LOD: bosses + player redraw every clock tick; regular enemies skip
-  every other tick.
-- Frame-budget gate: no FPS regression under `AutoBattler` stress test
-  (10× time scale, 200 enemies).
+- Atlas generation at boot or lazy at first-use. One-time cost.
+- Runtime per-frame per-entity: one texture lookup + one setTexture.
+- Off-screen entities pause frame advance (via `SpatialCulling`).
+- LOD: player + bosses always 24 fps; swarm enemies (midge, midgie)
+  stay on idle-loop only (no walking animation), they're ambient.
 
 ### Exit criteria
 
-- `Player` uses `AnimationController` for all visual states.
-- `wobblePhase` retired from `Player`.
-- 3 enemy archetypes animated: `chase`, `ranged`, `dive`.
-- Hurt-state animation on `takeDamage` for player + all enemies.
-- ~25 pure helper tests (state transitions, frame math, clock math).
-- No FPS regression under AutoBattler stress.
-- All existing tests green; lint + build clean.
+- Phase 0 gate passed.
+- 24 fps texture-swap animation on Player + chase + ranged + dive
+  enemy archetypes.
+- `wobblePhase` retired.
+- Hurt + attacking + celebrating + dying states authored for Player.
+- Atlas pre-bake takes < 500 ms on boot (or lazy).
+- No FPS regression under AutoBattler stress (200 enemies, 10×
+  time scale).
+- ~25 pure helper tests (state machine, frame clock, atlas key
+  mapping).
+- **Playtest gate:** 5-minute run screenshot attached to final
+  commit.
 
-### Ship order
+### Ship order (revised)
 
-1. `animationStates.ts` + tests (state transitions, pure).
-2. `frameClock.ts` + tests (tick math, LOD gating).
-3. `AnimationController.ts` + tests (integration glue).
-4. `haggisFrames.ts` — `idle` + `walking` + `hurt` first (3 of 6 states).
-5. Wire `Player` → controller. Remove `wobblePhase`. Commit.
-6. Add `celebrating` (boss kill / level up). Commit.
-7. Add `dying`. Commit.
-8. Add `attacking` for melee weapons. Commit.
-9. Replicate to chase-archetype enemy (buckfast_ned). Commit.
-10. Replicate to ranged + dive archetypes. Commit.
+1. `animationStates.ts` + tests.
+2. `frameClock.ts` + tests.
+3. `textureAtlas.ts` + tests (pure key-mapping helper).
+4. `AnimationController.ts` + tests.
+5. Phase 0 prototype ship (if not already gated).
+6. Haggis idle + walking frames for all 9 variants. Commit.
+7. Haggis hurt + attacking + celebrating + dying. Commit.
+8. Wire Player to controller. Retire wobblePhase. Commit.
+9. Enemy archetype: chase (buckfast_ned). Commit.
+10. Enemy archetype: ranged (haggis_hunter). Commit.
+11. Enemy archetype: dive (eagle). Commit.
 
 ### Phase 1 non-goals
 
-- Skeletal rig / bones.
-- Accessory layers on haggis (Phase 2).
-- Wildlife / terrain animation (Phase 3).
-- Audio hooks into animation states (Phase 4).
-- Projectile-weapon attack frames (static carry in Phase 2, attack
-  animation as a later polish pass).
+- Skeletal rig.
+- Accessory layers (Phase 2).
+- Wildlife / flora animation (Phase 3).
+- Audio hooks (Phase 4).
+- All enemy types — just 3 archetypes; long tail follows pattern in
+  follow-up ships.
 
 ---
 
-## 5. Phase 2 — Haggis-Wears-Build
+## 9. Phase 2 — Haggis-Wears-Build (revised)
 
 ### Component
 
-Isaac-style compositional haggis body. The haggis becomes a `Container`
-whose layered procedural children are the worn passives + carried weapons.
-Every pickup visibly drapes.
-
-### New module
-
-```
-src/entities/haggisComposition/
-├── HaggisContainer.ts       · Container lifecycle, layer stack
-├── AccessoryDrawer.ts       · interface + DrawCtx type
-├── accessoryRegistry.ts     · id → drawer map
-└── drawers/
-    ├── sporran.ts
-    ├── tamOShanter.ts
-    ├── kilt.ts
-    ├── claymore.ts
-    ├── caberToss.ts
-    └── bagpipes.ts
-    └── … (11 more post-MVP)
-```
-
-### Container layout
-
-```
-HaggisContainer (Phaser.GameObjects.Container)
-├─ body        · existing Sprite + procedural texture (variant palette)
-├─ layer_behind  · claymore on back, kilt-back-flutter
-├─ layer_body    · sporran, sash, flask, irn-bru, loch-vial
-├─ layer_front   · kilt-front-flutter, shield on arm, held-weapon
-└─ layer_above   · tam, thistle crown
-```
-
-Each layer is one `Graphics` object. On animation tick, iterate owned
-accessories in depth order and redraw. Body stays a Sprite so existing
-variant texture generation is unchanged.
-
-### AccessoryDrawer contract
-
-```typescript
-interface AccessoryDrawer {
-  readonly id: PassiveKey | WeaponKey | EvolvedWeaponKey;
-  readonly depth: 'behind' | 'body' | 'front' | 'above';
-  draw(g: Phaser.GameObjects.Graphics, ctx: DrawCtx): void;
-}
-
-interface DrawCtx {
-  cx: number;
-  cy: number;
-  bodyRadius: number;
-  frameT: number;           // 0..1 within current animation frame
-  state: AnimationState;    // from Phase 1
-  velocity: { x: number; y: number };
-  facing: number;           // player.rotation radians
-  variantPalette: VariantPalette;
-}
-```
-
-Pure — testable, replay-deterministic. Sway / bob / flutter computed
-from `frameT + velocity + state`, not wall-clock time.
+Isaac-style compositional haggis. `HaggisContainer` with layered child
+sprites per accessory. Each accessory is a pre-baked texture atlas
+(state × frame, per variant when variant-specific fit required).
 
 ### Accessory roster
 
@@ -254,393 +396,345 @@ loch_water, thistle_crown, highland_shield, tartan_sash.
 **8 weapons:** claymore, caber_toss, bagpipes, bagpipe_blast,
 thistle_shot, scotch_mist, haggis_hurler, nessie_tentacle.
 
-### MVP scope — 3 passives + 3 weapons
+### Container layout
 
-First six chosen to exercise every depth layer:
+```
+HaggisContainer (Phaser.GameObjects.Container)
+├─ body_sprite          · variant × state × frame atlas (Phase 1)
+├─ layer_behind_sprite  · optional atlas (claymore, kilt-back)
+├─ layer_body_sprite    · optional atlas (sporran, sash, flask, …)
+├─ layer_front_sprite   · optional atlas (shield, kilt-front, …)
+└─ layer_above_sprite   · optional atlas (tam, thistle crown)
+```
 
-| Accessory | Layer | Proves |
-|-----------|-------|--------|
-| `sporran` | body | sway-with-walking animation from Phase 1 |
-| `tam_o_shanter` | above | above-body layer + rotation-with-facing |
-| `kilt` | front+behind | dual-layer (front flutter overlaps back) |
-| `claymore` | behind | weapon-on-back; facing-rotated |
-| `caber_toss` | front | shouldered with attacking-state swing |
-| `bagpipes` | body | body-hugged + breath-puff particles |
+Each layer is a Phaser `Sprite` whose texture is swapped on state /
+frame change. Only layers with a currently-owned accessory render.
 
-After MVP: remaining 6 passives + 5 weapons each ≤1 hr using the same template.
+### Variant × accessory matrix (NEW)
 
-### Integration
+A tam-o-shanter on a classic haggis (round) looks different from a
+tam on an iron-belly (chunky) or a wee-ghostie (translucent). Accessory
+drawers must produce atlases **per variant where fit requires it**.
 
-- `Player.ts` owns `ownedAccessories: AccessoryDrawer[]` array.
-- On `addPassive(key)` / `addWeapon(key)` → push drawer from
-  `accessoryRegistry`.
-- On animation tick → sort by depth, redraw each layer via accessories'
-  `draw(g, ctx)`.
+Pre-bake cost: 9 passives × 9 variants × 2-4 states × 2-4 frames →
+worst case ~500 additional textures. GPU still well under budget.
 
-### Exit criteria
+Process: each accessory drawer declares which variants it ships
+variant-specific atlases for; others use the "classic" base pose.
+Decision documented per drawer.
 
-- `HaggisContainer` refactor landed without breaking existing behaviour.
-- 3 passives + 3 weapons draw + animate on the haggis.
-- Pickup → accessory child spawn wired through existing passive/weapon
-  code paths.
-- Game-over screen shows assembled silhouette (the run's build in one
-  image).
-- ~20 pure drawer unit tests (layout math, depth ordering).
+### Combination preview tool (NEW)
+
+A dev-only route `/combinations` (or debug overlay toggle) renders the
+haggis in a grid:
+- Rows: each haggis variant
+- Columns: each accessory combination (representative, not exhaustive)
+
+Screenshot this grid after every new drawer lands. Review against the
+charter: visual conflicts, overlaps, focal-competition between stacked
+accessories. Fix before shipping.
+
+### MVP scope — 6 accessories (unchanged choice, revised bar)
+
+| Accessory | Layer | Why in MVP |
+|-----------|-------|------------|
+| sporran | body | sway-with-walking (Phase 1 state-reactive proof) |
+| tam_o_shanter | above | above-body layer + facing rotation |
+| kilt | front+behind | dual-layer proof |
+| claymore | behind | weapon-on-back; facing-rotated |
+| caber_toss | front | shouldered + attacking-state integration |
+| bagpipes | body | body-hugged + passive-aura particles |
+
+Each drawer goes through the 3-pass iteration budget. Each appears in
+the combination preview. Each has a playtest-screenshot commit.
+
+### Exit criteria (revised)
+
+- `HaggisContainer` refactor landed; invisible behaviour change.
+- 6 MVP accessories shipped, each passing the charter.
+- Combination preview tool available.
+- Pickup → accessory child spawn wired end-to-end.
+- Game-over screen shows assembled silhouette.
+- **Playtest gate:** 5-minute run with all 6 MVP accessories
+  collected; screenshot attached. Silhouette reads at-a-glance which
+  accessories are on.
+- `docs/ACCESSORY_AUTHORING.md` documents the 3-pass authoring +
+  combination-preview workflow.
 - No FPS regression under AutoBattler stress.
-- Pattern doc `docs/ACCESSORY_AUTHORING.md` shipped.
 
 ### Ship order
 
-1. `HaggisContainer` refactor (invisible change, groundwork). Commit.
-2. `AccessoryDrawer` interface + `DrawCtx` + tests. Commit.
-3. Drawer `sporran` + pickup wiring. Commit.
-4. Drawer `tam_o_shanter`. Commit.
-5. Drawer `kilt` (dual-layer proof). Commit.
-6. Drawer `claymore`. Commit.
-7. Drawer `caber_toss` (attacking-state integration). Commit.
-8. Drawer `bagpipes`. Commit.
-9. Game-over screen silhouette render. Commit.
-10. `ACCESSORY_AUTHORING.md`. Commit.
+1. HaggisContainer refactor (Sprite body + layer sprites).
+2. AccessoryDrawer interface + atlas pre-bake helper.
+3. Combination preview tool (dev overlay).
+4. Drawer `sporran` — v1 → v2 → v3 → commit.
+5. Drawer `tam_o_shanter` — v1 → v2 → v3 → commit.
+6. Drawer `kilt` — v1 → v2 → v3 → commit.
+7. Drawer `claymore` — v1 → v2 → v3 → commit.
+8. Drawer `caber_toss` — v1 → v2 → v3 → commit.
+9. Drawer `bagpipes` — v1 → v2 → v3 → commit.
+10. Game-over silhouette render.
+11. `ACCESSORY_AUTHORING.md` including the combination-preview step.
 
 ### Phase 2 non-goals
 
-- Remaining 11 accessories (post-MVP follow-ups).
-- Evolved-weapon distinct drawers (Phase 2.5 follow-up).
-- Per-variant body-shape differences beyond palette (Phase 2.5).
-- Projectile-weapon attack frames (static carry in MVP).
+- Remaining 11 accessories — post-MVP ships, 1 per week each at
+  handcrafted bar.
+- Evolved-weapon distinct drawers — Phase 2.5.
+- Per-variant body-shape differences beyond palette — Phase 2.5 /
+  deferred.
 
 ---
 
-## 6. Phase 3 — World Depth
+## 10. Phase 3 — World Depth (tightened)
 
 ### Component
 
-Biome-driven procedural world rendering: flora, terrain features, weather,
-wildlife. Text reduction of biome entry toasts happens here.
+Biome flora + terrain + weather + wildlife. Same scope as v1. Quality
+bar raised to match Phases 1/2.
 
-### New module
+### Changes from v1
 
-```
-src/scenes/game/WorldRenderer/
-├── BiomeFlora.ts          · flora species + placement + sway
-├── floraConfig.ts         · per-biome species/density/clustering
-├── TerrainFeatures.ts     · cairns, ruined crofts, waymarker stones
-├── WeatherLayer.ts        · particle overlay + palette shift
-├── weatherState.ts        · pure state (cycle timing, seed-deterministic)
-├── Wildlife.ts            · entity pool, spawn, despawn
-└── wildlifeBehavior.ts    · flee / graze / soar / cluster (pure)
-```
-
-### Sub-systems
-
-**Flora:** procedural heather / thistle / grass tufts / pine / bog reeds
-/ loch rushes. Drawn once per biome voronoi cell at seed time. Swaying
-via Phase 1 clock. Static Sprites with procedural textures; batched into
-single `Graphics` per voronoi cell.
-
-**Terrain features:** rare static features — cairns, ruined crofts,
-waymarker stones, bones, wheel ruts. Sparse handcrafted clusters.
-Scatter count scales with world size. Sprites (not redrawn) since static.
-Depth sorted below entities.
-
-**Weather:** ambient overlay (rain streaks, mist wisps, snow drift,
-aurora bands) + palette shift. Cycles over game-time (60–120 s cycles).
-No mechanical effects (haar_wraith fog stays separate). Particle pool
-reused.
-
-**Wildlife:** non-combat entities — deer, hares, eagles, sheep, rooks,
-otters. Flee / graze / soar / cluster behaviours. Pass-through overlap
-(no damage, no XP). Animated via Phase 1 primitives.
-
-### Text reduction (tabulated)
-
-| Current toast / caption | Visual replacement | Verdict |
-|-------------------------|--------------------|---------|
-| `ui.biomes.bog.entry` | Flora bloom swirl + palette shift on entry | **CUT** |
-| `biomes.loch.entry` | Water ripples + reed bloom | **CUT** |
-| `biomes.pine.entry` | Pine shadow fall + needle drift | **CUT** |
-| `biomes.heather.entry` | Purple bloom ripple outward | **CUT** |
-| `banter.biome_change.*` | Variant voice per biome — keep | **KEEP** |
-| `banter.moor_moment.*` | Ambient ecology carries some weight | **REDUCE** |
-| Boss warning toasts | High-stakes moment, needs text | **KEEP** |
-| Accessibility captions | WCAG compliance | **KEEP** |
-
-Net: 4 biome-entry toasts removed; banter (soul) preserved; moor-moment
-density reduced.
+- Flora sprites pre-baked as texture atlases (sway animation =
+  frame-swap, not live redraw), matching Phase 1 architecture.
+- Wildlife sprites authored through the same 3-pass iteration budget
+  as accessories. Each wildlife species = one drawer, passes the
+  charter.
+- Weather particle system: pre-baked particle textures; per-frame cost
+  is just particle position update + alpha, no draw-call redraw.
+- Review gate: screenshot the heather biome from 3 camera angles after
+  MVP ship. Does it feel like a place?
 
 ### MVP scope — heather biome fully dressed
 
-- Heather clumps + thistle patches at density across heather voronoi
-  cells.
-- Sway animation tied to Phase 1 `frameClock`.
-- 1 wildlife species — **hare** (hops, flees from player, despawns
-  off-camera).
-- 1 weather beat — **mist drift** (ambient; no mechanical effect;
-  ~90 s cycle).
-- Text cut: `biomes.heather.entry` toast removed → purple bloom ripple on
-  entry.
-- ~3 cairn / waymarker features scatter at biome seed time.
+Unchanged from v1:
 
-Follow-up ships after MVP: `bog` + `loch` + `pine` each ~1 day using the
-pattern. Each = 1 flagship.
-
-### Hot-path protection
-
-- Flora batched per voronoi cell; only visible cells redraw.
-- Wildlife capped active count (≤ 30 per biome).
-- Weather particle pool.
-- Off-screen flora cells skip sway updates entirely.
-- Seed-determinism: flora placement + weather cycle from `runRng`.
+- Heather + thistle flora density.
+- Mist weather beat.
+- 1 wildlife species (hare, 2-state animation: hopping + idle).
+- Text cut: heather entry toast → purple bloom ripple on entry.
+- ~3 cairn scatter features.
 
 ### Exit criteria
 
-- Heather biome fully dressed (flora + weather + 1 wildlife).
-- Entry toast replaced with visual bloom.
-- Pure helpers tested (flora placement, wildlife behaviour, weather
-  state).
-- No FPS regression under AutoBattler stress.
-- Seed-determinism: same seed → same flora + wildlife + weather cycle.
-- Pattern doc `docs/BIOME_DRESSING.md` shipped.
+- Heather biome screenshot-reviewable as "a place".
+- Flora sway via frame clock; no FPS regression.
+- Hare animated at 24 fps (2-state).
+- Seed-determinism: same seed → same world.
+- `docs/BIOME_DRESSING.md`.
 
 ### Ship order
 
-1. Flora species primitives (heather, thistle, grass tuft) + tests.
-2. `BiomeFlora` placement into voronoi cells at biome seed. Commit.
-3. Flora swaying via Phase 1 clock. Commit.
-4. Hare wildlife — draw + flee behaviour + spawn logic. Commit.
-5. `WeatherLayer` skeleton + mist beat. Commit.
-6. Heather entry toast removal + bloom ripple VFX. Commit.
-7. Terrain scatter (cairns, waymarkers). Commit.
-8. `BIOME_DRESSING.md` doc. Commit.
+Unchanged from v1 but each drawer goes through 3-pass iteration.
 
 ### Phase 3 non-goals
 
-- Dressing all 4 biomes (post-MVP per-biome follow-ups).
-- Weather-as-gameplay (affecting enemy behaviour / player stats).
-- Wildlife as gameplay entities (no damage / XP / pickup interaction).
-- Day / night cycle.
-- Seasonal shifts / MoorState.
+Same as v1.
 
 ---
 
-## 7. Phase 4 — Music &amp; Sound
+## 11. Phase 4 — Music &amp; Sound (scope REDUCED per tear-down)
 
-### Component
+### v1 error
 
-Reactive audio layer hooking into Phases 1–3. Replaces redundant text
-cues with sound signatures. Extends existing `ProceduralMusicEngine` +
-`AudioSystem` without rewriting either.
+Claimed per-accessory SFX + per-weapon motifs would replace text. The
+critique: survivors-genre noise drowns subtle audio cues. User won't
+hear the sporran rattle during a 200-enemy swarm.
 
-### New / extended modules
+### v2 scope
 
-```
-src/systems/audio/
-├── AudioSystem.ts               · existing — accessory + weapon hooks added
-├── SFXManager.ts                · existing — throttling extended to accessories
-├── AccessoryAudio.ts            · new — per-accessory signature routines
-├── BiomeAmbience.ts             · new — per-biome ambient bed with crossfade
-└── accessoryAudioConfig.ts      · new — { accessory: signature } map (data)
+Keep the audio signals that genuinely cut through combat noise. Drop
+the ones that don't.
 
-src/systems/music/
-├── ProceduralMusicEngine.ts     · existing — add weapon-motif layer
-├── Conductor.ts                 · existing — add build-density axis
-└── weaponMotifs.ts              · new — per-weapon pitch/timbre params
-```
+**Kept:**
+- **Per-biome ambient beds** — crossfade on entry; they persist under
+  combat and set location. `BiomeAmbience.crossfadeTo(biome)`.
+- **Build-density Conductor axis** — fuller build = richer
+  orchestration. Compositional, not per-accessory — plays through the
+  existing music engine. Registers even during swarm because it
+  shifts the whole mix.
+- **Low-HP toast → heartbeat-only formalisation** — heartbeat already
+  exists; just remove the toast call site.
+- **Weapon-evolve sting** — already exists; formalise in the sting
+  registry.
+- **Curse-start dissonance shimmer** — short, high-priority audio
+  event; cuts through.
 
-### Five sub-systems
-
-**Accessory SFX:** per-passive sound signatures. Examples: sporran coin
-rattle on walking tick, kilt rustle on velocity change, shield clank on
-`takeDamage`, flask slosh at low HP, irn-bru fizz on HP regen tick.
-
-**Weapon motifs:** per-weapon musical layer in the music engine.
-Examples: claymore low brass stab on swing, bagpipes drone layer
-activates, caber wooden thud on impact, thistle harp pluck on cast.
-
-**Biome ambience:** per-biome ambient bed. Examples: bog wet wind + bog
-bubble; loch lap + gentle wind; pine needle rustle + distant crow;
-heather wind + soft bird.
-
-**Conductor axes:** new reactive input — **build density** (worn
-accessory count). Fuller build = richer orchestration. Joins existing HP
-/ combo / boss-proximity / time-past-bell axes.
-
-**Text cuts:** low-HP toast → heartbeat only (heartbeat already exists,
-just remove toast). Kill streak → music swell. Curse start →
-dissonance shimmer + short banter retained. Weapon evolve sting.
-
-### Integration with earlier phases
-
-```
-Phase 1 AnimationController → walking-state tick →
-  AccessoryAudio.tickStep(ownedAccessories)
-
-Phase 2 pickup wiring → AccessoryAudio.register(accessory) +
-  build-density axis bump
-
-Phase 3 BiomeController → on entry → BiomeAmbience.crossfadeTo(biome)
-
-Phase 4 Conductor → reads build-density axis → mood feeds piano /
-  drone / percussion layers
-```
-
-### MVP scope — B+A+C+D convergence
-
-| Sub-system | MVP pick | Hooks into |
-|------------|----------|------------|
-| Accessory SFX | `sporran` coin rattle on walk | Phase 1 walking state + Phase 2 sporran drawer |
-| Weapon motif | `claymore` low brass stab on swing | Phase 2 claymore drawer + music engine |
-| Biome ambience | `heather` wind + bird bed | Phase 3 heather dressing |
-| Conductor axis | **build density** mood input | Phase 2 pickup wiring |
-| Text cut | low-HP toast → heartbeat only | Existing heartbeat layer |
-
-Every subsequent accessory / weapon / biome follows the same template —
-~1 hr ship work each.
+**Dropped (per tear-down):**
+- ~~Per-accessory SFX signatures (sporran rattle, flask slosh, etc.)~~
+  — inaudible in combat.
+- ~~Per-weapon motif layer (claymore stab, caber thud)~~ — the
+  existing per-weapon fire SFX already carries this beat.
 
 ### Exit criteria
 
-- Sporran rattles on walk (tied to Phase 1 clock tick).
-- Claymore plays motif on swing (weaponMotifs layer active).
-- Heather biome has distinct ambient bed with crossfade on entry.
-- Conductor reads `buildDensity` as new axis.
+- 1 biome ambient bed shipped (heather, matching Phase 3 MVP).
+- `BiomeController.crossfadeTo` on entry.
+- `buildDensity` axis in Conductor mood calculation.
 - Low-HP toast removed; heartbeat carries it.
-- ~12 pure tests: signature config, crossfade state, density axis math.
-- No audio regression (existing music layers + SFX still fire).
-- `docs/AUDIO_AUTHORING.md` shipped.
+- Curse-start shimmer added.
+- No audio regression.
+- `docs/AUDIO_AUTHORING.md`.
 
 ### Ship order
 
-1. `AccessoryAudio` module + `accessoryAudioConfig` data shape.
-2. Sporran rattle signature + Phase 1 walking-tick hook. Commit.
-3. `weaponMotifs` layer in music engine. Commit.
-4. Claymore motif + fire-edge hook. Commit.
-5. `BiomeAmbience` module + heather bed. Commit.
-6. `BiomeController` crossfade on entry. Commit.
-7. Conductor build-density axis. Commit.
-8. Text cuts: remove `ui.hud.low_hp_warning`-style low-HP toast call
-   sites (heartbeat carries it). Verify no other cuts needed —
-   biome-entry cuts land in Phase 3; boss warnings + banter stay.
-   Commit.
-9. `AUDIO_AUTHORING.md`. Commit.
+1. `BiomeAmbience` module + heather bed.
+2. `BiomeController.crossfadeTo` wiring.
+3. Conductor `buildDensity` axis.
+4. Low-HP toast removal (1-liner at call site + existing heartbeat).
+5. Curse-start shimmer signal.
+6. `AUDIO_AUTHORING.md`.
 
 ### Phase 4 non-goals
 
+- Per-accessory / per-weapon audio signatures (dropped per tear-down).
 - Voice acting.
 - Live-instrument recordings.
-- Remaining accessory / weapon / biome signatures (follow-up ships).
-- Reverb / spatialisation / 3D panning.
-- Music export or loadout-remix share.
+- Reverb / spatialisation.
 
 ---
 
-## 8. Cross-cutting concerns
+## 12. Cross-cutting concerns
 
 ### Replay determinism
 
-All new systems read from state (velocity, HP, combat edges, seeded RNG,
-`scaledDelta`) — never from wall-clock time or `Math.random()` on the
-gameplay path. Existing T1 replay contract (ADR-0002 Phase 3) stays
-intact. Cosmetic particle jitter may use `Math.random()` per
-`src/utils/rng.ts` policy (same allowance as existing dash trail).
+Unchanged from v1. Everything reads from state + `scaledDelta` +
+seeded RNG. T1 contract preserved. Texture atlases are deterministic
+content — generated from pure drawer code; same inputs → same atlas.
 
-### Hot-path protection
+### Hot-path protection (revised)
 
-- Phase 1 animation clock: 10 Hz ticks, not 60 Hz.
-- Phase 2 accessory redraw: only visible haggis container; once per
-  animation tick.
-- Phase 3 flora: batched per voronoi cell, off-screen cells skip sway.
-- Phase 3 wildlife: capped at ≤ 30 active per biome.
-- Phase 4 audio: existing `SFXManager` throttling; new signatures add no
-  per-frame hot code.
+- Texture-swap runtime cost: O(1) per entity per frame (setTexture
+  lookup).
+- Atlas pre-bake: one-time at boot, < 500 ms budget.
+- Off-screen entities pause frame advance.
+- LOD: swarm enemies stay on idle loop only.
+- Gate: AutoBattler 10×, 200 enemies — no FPS regression vs
+  pre-Phase-1 baseline.
 
-Gate: AutoBattler stress test (10× time scale, 200 enemies) must not
-regress FPS vs pre-push baseline.
+### Testing strategy (revised)
 
-### Testing strategy
-
-- Pure helpers (state transitions, frame math, drawer layout, flora
-  placement, wildlife behaviour, weather state, signature config) all
-  unit-tested — estimate ~60 new tests across four phases.
-- Integration coverage via existing Playwright smoke + `AutoBattler`
-  stress.
-- Visual regression: out of scope (would require Playwright screenshot
-  baselines — deferred).
+- Pure helpers (state transitions, frame clock, atlas key mapping,
+  drawer layout math, flora placement, wildlife behaviour, weather
+  state, crossfade state, buildDensity math): ~80 new tests across
+  phases.
+- Integration: existing Playwright smoke + AutoBattler stress.
+- **Visual review gate** (new): screenshot comparison against style
+  bible after each drawer; combination-preview after each Phase 2
+  drawer; biome screenshot after Phase 3 MVP. Reviewed against
+  `ART_STYLE_BIBLE.md`.
+- Playtest gates per phase MVP.
 
 ### Soul charter alignment
 
-- **Handcrafted, warm:** more craft per drawing; procedural sophistication
-  over asset volume.
-- **Failure informative + compassionate:** hurt-state animation reads
-  clearly without shaming copy.
-- **Progression celebratory:** compositional build visible at all times
-  = constant "I earned this" feedback.
-- **One authored world:** procedural-art coherence across entities +
-  flora + weather.
-- **Text reduces, banter stays:** banter is soul. Biome-entry toasts
-  aren't.
+Unchanged from v1 + stricter enforcement via the quality charter.
 
 ### Dependency map
 
-- **Phase 1** depends on: `TimeManager` (existing), `SpatialCulling`
-  (existing), `Player` + `Enemy` entity classes.
-- **Phase 2** depends on: Phase 1 (animation states + clock), existing
-  passive / weapon pickup paths in `LevelUpFlow`.
-- **Phase 3** depends on: Phase 1 (animation primitives for wildlife),
-  existing `BiomeManager` + `BiomeController` + `BiomeRenderer` + voronoi
-  seeding, `runRng`.
-- **Phase 4** depends on: Phases 1–3 (reads state from each), existing
-  `AudioSystem` + `ProceduralMusicEngine` + `SFXManager` + `Conductor`.
+- Phase 0: depends on existing BootScene texture pipeline, one
+  variant (classic), one accessory.
+- Phase 1: depends on Phase 0, existing TimeManager + SpatialCulling
+  + Player / Enemy classes.
+- Phase 2: depends on Phase 1 (atlas pattern, state machine),
+  existing LevelUpFlow pickup paths.
+- Phase 3: depends on Phase 1 (atlas pattern for flora / wildlife
+  frames), existing BiomeManager / Controller / Renderer + runRng.
+- Phase 4: depends on existing AudioSystem + ProceduralMusicEngine +
+  SFXManager + Conductor. No dependency on Phases 1-3 for scope-
+  reduced v2 (biome ambience doesn't need new visuals).
 
 ---
 
-## 9. Kill criterion
+## 13. Honest timeline (NEW)
 
-**If Phase 1 FPS regresses > 10 % under AutoBattler stress and cannot be
-recovered within one focused session of LOD tuning, the direction is
-wrong.** Revert Phase 1 animation layer, keep existing wobble, close this
-spec.
+Per the tear-down: v1 estimates were 10× compressed. v2 estimates
+reflect realistic focused work, including the 3-pass iteration budget
+per drawer.
 
-Phase 2 / 3 / 4 each have their own scope-tight exit criteria but inherit
-the Phase 1 performance gate — if Phase 1 fails, nothing above it ships.
+| Phase | Scope | Realistic focused work |
+|-------|-------|------------------------|
+| Phase 0 | Prototype + style bible | 1 week |
+| Phase 1 | Animation foundation + 4 entity archetypes × 6 states × multi-frame atlases | 4-6 weeks |
+| Phase 2 | Container + 6 MVP accessories at 3-pass each + combination tool + game-over silhouette | 3-4 weeks |
+| Phase 3 | Heather biome full dressing (flora + terrain + weather + 1 wildlife) | 3-4 weeks |
+| Phase 4 | Scope-reduced audio (biome ambience + buildDensity + text cuts) | 1-2 weeks |
+| **Total** | **Phases 0-4 MVP** | **~3-4 months focused** |
+
+Post-MVP long tail:
+
+| Follow-up | Scope | Per-item work |
+|-----------|-------|---------------|
+| Phase 2.5 | 11 remaining accessories | 3-6 days each at charter bar |
+| Phase 3.5 | 3 more biomes (bog, loch, pine) | 1-2 weeks each |
+| Phase 4.5 | Sting / ambient additions as systems demand | ad-hoc |
+
+**These are order-of-magnitude estimates, honest ones.** Every phase
+carries compound uncertainty. Re-estimate after Phase 0 lands — the
+prototype is the best calibration signal available.
 
 ---
 
-## 10. Open follow-ups (not in this spec)
+## 14. Kill criterion (revised — product test, not FPS-only)
 
-- Phase 2.5: remaining 11 accessories + evolved-weapon distinct drawers +
+Two independent gates. Tripping either closes the spec:
+
+1. **Phase 0 craft-bar gate:** After 3 authored passes + 1 focused
+   week, the animated classic haggis + tam does not visibly match the
+   handcraft bar of the existing enemy sprites (side-by-side screenshot
+   review). Revisit Option D (hybrid pixel-art pipeline) — procedural
+   path can't deliver.
+
+2. **Phase 2 MVP product gate:** A blind playtester cannot correctly
+   identify from a single screenshot which 3 of 6 MVP accessories the
+   haggis has equipped. The visible-build feature failed its stated
+   value. Rework composition / iteration / authoring process, or
+   revisit Option D.
+
+Phase 1 FPS gate (technical) is an engineering hygiene check but no
+longer the primary kill criterion.
+
+---
+
+## 15. Plan decomposition
+
+Phase 0 ships as a single tight plan document. Phases 1-4 each get
+their own plan document at `writing-plans` time. 5 plan docs total:
+
+- `2026-04-18-moor-phase-0-prototype-plan.md`
+- `2026-04-18-moor-phase-1-animation-plan.md`
+- `2026-04-18-moor-phase-2-wear-build-plan.md`
+- `2026-04-18-moor-phase-3-world-depth-plan.md`
+- `2026-04-18-moor-phase-4-audio-plan.md`
+
+Phases 1-4 **do not start** until Phase 0 passes its gate.
+
+---
+
+## 16. Open follow-ups (not in this spec)
+
+- Phase 2.5: remaining 11 accessories, evolved-weapon drawers,
   per-variant body-shape differences.
-- Phase 3.5: bog + loch + pine biome full dressings.
-- Phase 4.5: remaining accessory / weapon / biome audio signatures.
-- Per-boss canon animations (integration with `Phase 1` bossFrames).
+- Phase 3.5: bog + loch + pine biome dressings.
+- Phase 4.5: curated per-boss stings, additional conductor axes.
 - Chronicle postcard scene-assembly (compositional silhouette export).
-- MoorState persistent layer (seasonal / lineage / fauna populations) —
-  stays deferred; not required for this push.
-- Day/night cycle — separate flagship if elevated.
+- MoorState persistent layer (seasonal / lineage / fauna).
+- Day/night cycle.
+- Per-variant body shape refactor (beyond palette tint).
 
 ---
 
-## 10a. Plan decomposition
-
-Each of the four phases is flagship-scale on its own. The downstream
-`writing-plans` step produces **four separate plan documents** — one per
-phase — under `docs/superpowers/plans/2026-04-18-moor-*.md`, not a single
-monolithic plan. Each plan can be executed independently in its own
-session; the dependency chain (Phase 1 → 2 → 3 → 4) is the only cross-plan
-contract.
-
----
-
-## 11. Implementation sequencing summary
+## 17. Implementation sequencing summary
 
 ```
-Phase 1 — Animation Foundation      [ships 10 commits over ~2-3 sessions]
+Phase 0 — Prototype gate + style bible         [1 week]
+   ↓ (gate passes)
+Phase 1 — Animation Foundation                 [4-6 weeks]
    ↓
-Phase 2 — Haggis-Wears-Build        [ships 10 commits over ~3-4 sessions]
+Phase 2 — Haggis-Wears-Build                   [3-4 weeks]
    ↓
-Phase 3 — World Depth (heather MVP) [ships 8 commits over ~2-3 sessions]
+Phase 3 — World Depth (heather MVP)            [3-4 weeks]
    ↓
-Phase 4 — Music & Sound (convergent MVP) [ships 9 commits over ~2 sessions]
+Phase 4 — Music & Sound (scope-reduced)        [1-2 weeks]
 ```
 
-Each phase reversible, each standalone-shippable as a flagship, each
-compounds on the previous. No phase gates on a later phase existing.
+Every phase reversible. Phase 0 is a real gate — not bureaucracy.
