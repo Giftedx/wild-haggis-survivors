@@ -183,6 +183,16 @@ export const SCS_STRINGS: LocaleTree = {
       ironmoor_victory_banner: '⚔ IRONMOOR WIN — WAN LIFE, AYE',
       ironmoor_death_banner: '⚔ Ironmoor run — walked it prood.',
       ironmoor_wipe_toast: '⚔ Chronicle dichted — wan life, nae peety',
+      // Postcard footer labels — hearth register; BRAW / DOON for outcome
+      // badges, "culls" for kills, past-bell picks up Scots "tha".
+      postcard_time_label: 'time',
+      postcard_kills_label: 'culls',
+      postcard_seed_label: 'seed',
+      postcard_outcome_victory: '✦ BRAW',
+      postcard_outcome_fell: 'DOON',
+      postcard_ironmoor_tag: '⚔ Ironmoor',
+      postcard_past_bell: '🔔 +{clock} past tha bell',
+      postcard_curse_tag: '☠ {curse}',
     },
     settings: {
       title: 'OPTIONS',

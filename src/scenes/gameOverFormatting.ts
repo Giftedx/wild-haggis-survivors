@@ -5,7 +5,7 @@ import { sortedWeaponDamageEntries } from '../systems/RunStatsTracker';
 import { getEnemyDisplayName } from '../data/enemies';
 import { headlineKeyFor, tipKeyFor, type DeathCause } from '../core/deathCauseClassifier';
 import { getVariantByKey, type VariantKey } from '../data/variants';
-import type { PostcardPayload } from '../utils/postcard';
+import type { PostcardLabels, PostcardPayload } from '../utils/postcard';
 import type { GameOverPayload } from './gameOverPayload';
 
 import { formatClockTime } from '../utils/formatClockTime';
@@ -83,6 +83,25 @@ export function buildPostcardPayloadFromGameOver(
     ironmoor: payload.ironmoor,
     postBellSec: payload.postBellSec,
     curseLabel: curseLabel ?? undefined,
+    labels: buildPostcardLabels(),
+  };
+}
+
+/**
+ * Resolve locale-aware postcard labels through `t()`. Called at render
+ * time so a mid-run locale switch reflects in the next save — the
+ * labels object is read once per download, not cached at boot.
+ */
+export function buildPostcardLabels(): PostcardLabels {
+  return {
+    time: t('ui.gameOver.postcard_time_label'),
+    kills: t('ui.gameOver.postcard_kills_label'),
+    seed: t('ui.gameOver.postcard_seed_label'),
+    victory: t('ui.gameOver.postcard_outcome_victory'),
+    fell: t('ui.gameOver.postcard_outcome_fell'),
+    ironmoor: t('ui.gameOver.postcard_ironmoor_tag'),
+    pastBell: (clock) => t('ui.gameOver.postcard_past_bell', { clock }),
+    curseTag: (curse) => t('ui.gameOver.postcard_curse_tag', { curse }),
   };
 }
 

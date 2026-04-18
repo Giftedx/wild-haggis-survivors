@@ -152,4 +152,44 @@ describe('buildPostcardFooterParts', () => {
     });
     expect(parts.some((p) => p.startsWith('☠'))).toBe(false);
   });
+
+  it('uses provided labels when payload.labels is passed (W18 bilingual)', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'victory',
+      enemiesKilled: 42,
+      timeSurvivedSec: 125,
+      variantLabel: 'Classic Haggis',
+      ironmoor: true,
+      curseLabel: 'Heavy Legs',
+      postBellSec: 30,
+      labels: {
+        time: 'tym',
+        kills: 'culls',
+        ironmoor: '⚔ Ironmoor',
+        pastBell: (clock) => `🔔 +${clock} past tha bell`,
+        curseTag: (curse) => `☠ ${curse}`,
+      },
+    });
+    expect(parts).toEqual([
+      'tym 2:05',
+      'culls 42',
+      'Classic Haggis',
+      '⚔ Ironmoor',
+      '☠ Heavy Legs',
+      '🔔 +0:30 past tha bell',
+    ]);
+  });
+
+  it('partial labels fall back to English defaults field-by-field', () => {
+    const parts = buildPostcardFooterParts({
+      mode: 'death',
+      enemiesKilled: 7,
+      timeSurvivedSec: 60,
+      labels: { kills: 'culls' },  // only override kills
+    });
+    expect(parts).toEqual([
+      'time 1:00',  // defaulted
+      'culls 7',    // overridden
+    ]);
+  });
 });

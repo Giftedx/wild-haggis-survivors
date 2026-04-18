@@ -35,6 +35,54 @@ export interface PostcardPayload {
   /** Resolved curse display name (e.g. "Heavy Legs"). When set, footer
    *  adds a "☠ {name}" tag — pride for cursed wins, honesty for cursed deaths. */
   curseLabel?: string;
+  /** Locale-resolved label overrides — W18 bilingual pass. Any omitted
+   *  field falls back to the English default in `DEFAULT_POSTCARD_LABELS`.
+   *  Callers that don't pass labels keep the pre-W18 English output
+   *  (test fixtures, tooling that doesn't have a locale). */
+  labels?: Partial<PostcardLabels>;
+}
+
+/**
+ * Viewer-facing strings composited into the postcard footer. Numbers
+ * interpolate at render time so callers can pre-localize once per run.
+ */
+export interface PostcardLabels {
+  /** Label before the MMSS clock ("time 12:34"). */
+  time: string;
+  /** Label before the kill count ("kills 432"). */
+  kills: string;
+  /** Label before the seed code ("seed ABC-123"). */
+  seed: string;
+  /** Victory outcome badge ("✦ VICTORY"). */
+  victory: string;
+  /** Death outcome badge ("FELL"). */
+  fell: string;
+  /** Ironmoor tag ("⚔ Ironmoor"). */
+  ironmoor: string;
+  /** Template for the past-bell tag; receives the MMSS clock string. */
+  pastBell: (clock: string) => string;
+  /** Template for the curse tag; receives the already-localized curse name. */
+  curseTag: (curse: string) => string;
+}
+
+/**
+ * English defaults. Callers who don't pass labels reproduce the pre-W18
+ * output byte-for-byte.
+ */
+export const DEFAULT_POSTCARD_LABELS: PostcardLabels = {
+  time: 'time',
+  kills: 'kills',
+  seed: 'seed',
+  victory: '✦ VICTORY',
+  fell: 'FELL',
+  ironmoor: '⚔ Ironmoor',
+  pastBell: (clock) => `🔔 +${clock} past the bell`,
+  curseTag: (curse) => `☠ ${curse}`,
+};
+
+function resolveLabels(labels?: Partial<PostcardLabels>): PostcardLabels {
+  if (!labels) return DEFAULT_POSTCARD_LABELS;
+  return { ...DEFAULT_POSTCARD_LABELS, ...labels };
 }
 
 /** Footer band height in CSS pixels. */
@@ -98,10 +146,12 @@ export function renderPostcardDataUrl(
   ctx.fillStyle = 'rgba(212, 160, 23, 0.10)';
   ctx.fillRect(0, h, w, FOOTER_H);
 
+  const labels = resolveLabels(payload.labels);
+
   // Top-line: outcome tag + kills/time/seed.
   ctx.font = 'bold 14px monospace';
   ctx.textBaseline = 'top';
-  const outcome = payload.mode === 'victory' ? '✦ VICTORY' : 'FELL';
+  const outcome = payload.mode === 'victory' ? labels.victory : labels.fell;
   ctx.fillStyle = payload.mode === 'victory' ? '#f7d27a' : '#c8d0e0';
   ctx.textAlign = 'left';
   ctx.fillText(outcome, FOOTER_PAD_X, h + FOOTER_PAD_TOP);
@@ -110,7 +160,7 @@ export function renderPostcardDataUrl(
   if (payload.seedCode) {
     ctx.textAlign = 'right';
     ctx.fillStyle = '#8a93a8';
-    ctx.fillText(`seed ${payload.seedCode}`, w - FOOTER_PAD_X, h + FOOTER_PAD_TOP);
+    ctx.fillText(`${labels.seed} ${payload.seedCode}`, w - FOOTER_PAD_X, h + FOOTER_PAD_TOP);
   }
 
   // Middle body: time · kills · variant · ironmoor tag
@@ -142,16 +192,17 @@ export function renderPostcardDataUrl(
  * normalisation but we never want a malformed input to print "kills -3".
  */
 export function buildPostcardFooterParts(payload: PostcardPayload): string[] {
+  const labels = resolveLabels(payload.labels);
   const clock = formatClockTime(payload.timeSurvivedSec);
   const parts: string[] = [
-    `time ${clock}`,
-    `kills ${Math.max(0, Math.floor(payload.enemiesKilled))}`,
+    `${labels.time} ${clock}`,
+    `${labels.kills} ${Math.max(0, Math.floor(payload.enemiesKilled))}`,
   ];
   if (payload.variantLabel) parts.push(payload.variantLabel);
-  if (payload.ironmoor) parts.push('⚔ Ironmoor');
-  if (payload.curseLabel) parts.push(`☠ ${payload.curseLabel}`);
+  if (payload.ironmoor) parts.push(labels.ironmoor);
+  if (payload.curseLabel) parts.push(labels.curseTag(payload.curseLabel));
   if (payload.postBellSec && payload.postBellSec > 0) {
-    parts.push(`🔔 +${formatClockTime(payload.postBellSec)} past the bell`);
+    parts.push(labels.pastBell(formatClockTime(payload.postBellSec)));
   }
   return parts;
 }

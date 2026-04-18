@@ -262,6 +262,19 @@ export const EN_STRINGS: LocaleTree = {
       // W27 Capture & Share — small link beside the seed readout.
       postcard_hint: 'save postcard',
       postcard_saved: 'postcard saved',
+      // ── Postcard footer labels (W18 Phase B — localized render). ──
+      // These ride the exported PNG's summary strip; each label fronts
+      // the next field so a Scots postcard reads "culls 432" instead of
+      // "kills 432". Templates use {clock} / {curse} interpolation so
+      // the utility stays locale-agnostic.
+      postcard_time_label: 'time',
+      postcard_kills_label: 'kills',
+      postcard_seed_label: 'seed',
+      postcard_outcome_victory: '✦ VICTORY',
+      postcard_outcome_fell: 'FELL',
+      postcard_ironmoor_tag: '⚔ Ironmoor',
+      postcard_past_bell: '🔔 +{clock} past the bell',
+      postcard_curse_tag: '☠ {curse}',
       /** Restart the current run with its exact seed — one-more-try retry. */
       rerun_same_seed: '↻ same seed',
       /** Same link when a curse is active — flag that the rerun re-applies it. */
