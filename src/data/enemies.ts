@@ -220,6 +220,27 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'chase',
     packSize: 1,
   },
+  // Cryptids family opener — DESIGN_IDEAS section 3. Off-screen howl
+  // 2 s before dive per the bullet (the "clean telegraph" half of the
+  // idea); the howl-timing UX sits in sprite framing + banter layer
+  // rather than a new AI state machine, so this ships as a themed
+  // dive alt to eagle — same behaviour family, scarier silhouette,
+  // later slot in the timeline so the player already knows what a
+  // dive feels like.
+  barghest: {
+    key: 'barghest',
+    texture: 'barghest',
+    speed: 275,
+    hp: 6,
+    damage: 14,
+    xpValue: 3,
+    appearsAt: 570,    // 9:30 — sits after ghost (9:00) and before
+                       // haggis_hunter (10:00), long enough past
+                       // eagle (7:00) that the dive vocabulary is
+                       // trained before the teeth come out.
+    behavior: 'dive',
+    packSize: 1,
+  },
   // Urban Ghaists #3 — DESIGN_IDEAS section 3. Victorian ghost-tour
   // guide that keeps its distance and lobs projectiles. Ranged
   // behavior is already wired — the flavor carries through the sprite
@@ -282,6 +303,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   buckfast_ned: 'Buckfast Ned',
   traffic_cone_totem: 'Traffic Cone Totem',
   edinburgh_ghost_guide: 'Edinburgh Ghost Guide',
+  barghest: 'Barghest',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',
