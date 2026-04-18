@@ -15,6 +15,34 @@ import {
 import { SCS_STRINGS } from './i18n.scs';
 
 /**
+ * Walk `source` and collect dot-path addresses whose leaves don't appear
+ * as strings in `target`. Used by both parity guards — SCS→EN (no orphan
+ * overlays) and EN→SCS scoped to `ui.banter.*` (Phase B completion).
+ */
+function collectMissingLeaves(
+  source: LocaleTree,
+  target: LocaleTree | undefined,
+  basePath: string,
+): string[] {
+  const missing: string[] = [];
+  const walk = (src: LocaleTree, tgt: LocaleTree | undefined, path: string) => {
+    for (const [k, v] of Object.entries(src)) {
+      const next = path ? `${path}.${k}` : k;
+      const tChild = tgt && typeof tgt === 'object'
+        ? (tgt as Record<string, unknown>)[k]
+        : undefined;
+      if (typeof v === 'string') {
+        if (typeof tChild !== 'string') missing.push(next);
+      } else if (v && typeof v === 'object') {
+        walk(v as LocaleTree, tChild as LocaleTree | undefined, next);
+      }
+    }
+  };
+  walk(source, target, basePath);
+  return missing;
+}
+
+/**
  * W18 locale scaffolding regressions. Scots is a partial overlay —
  * keys it doesn't define must fall back to English, not return the raw
  * key. English stays the reference locale.
@@ -93,20 +121,7 @@ describe('W18 locale scaffolding', () => {
    * parallel and reports any orphan keys present in scs but missing in en.
    */
   it('every SCS key path also exists in EN (no orphan overlays)', () => {
-    const orphans: string[] = [];
-    const walk = (scs: LocaleTree, en: LocaleTree | undefined, path: string) => {
-      for (const [k, v] of Object.entries(scs)) {
-        const next = path ? `${path}.${k}` : k;
-        const enChild = en && typeof en === 'object' ? (en as Record<string, unknown>)[k] : undefined;
-        if (typeof v === 'string') {
-          if (typeof enChild !== 'string') orphans.push(next);
-        } else if (v && typeof v === 'object') {
-          walk(v as LocaleTree, enChild as LocaleTree | undefined, next);
-        }
-      }
-    };
-    walk(SCS_STRINGS, EN_STRINGS, '');
-    expect(orphans).toEqual([]);
+    expect(collectMissingLeaves(SCS_STRINGS, EN_STRINGS, '')).toEqual([]);
   });
 
   /**
@@ -149,23 +164,8 @@ describe('W18 locale scaffolding', () => {
    * under full-parity obligation).
    */
   it('every EN banter leaf has a Scots translation (W18 Phase B parity)', () => {
-    const missing: string[] = [];
-    const walk = (en: LocaleTree, scs: LocaleTree | undefined, path: string) => {
-      for (const [k, v] of Object.entries(en)) {
-        const next = path ? `${path}.${k}` : k;
-        const scsChild = scs && typeof scs === 'object' ? (scs as Record<string, unknown>)[k] : undefined;
-        if (typeof v === 'string') {
-          if (typeof scsChild !== 'string') missing.push(next);
-        } else if (v && typeof v === 'object') {
-          walk(v as LocaleTree, scsChild as LocaleTree | undefined, next);
-        }
-      }
-    };
-    const enUi = EN_STRINGS.ui as LocaleTree;
-    const scsUi = SCS_STRINGS.ui as LocaleTree;
-    const enBanter = enUi.banter as LocaleTree;
-    const scsBanter = scsUi.banter as LocaleTree;
-    walk(enBanter, scsBanter, 'ui.banter');
-    expect(missing).toEqual([]);
+    const enBanter = (EN_STRINGS.ui as LocaleTree).banter as LocaleTree;
+    const scsBanter = (SCS_STRINGS.ui as LocaleTree).banter as LocaleTree;
+    expect(collectMissingLeaves(enBanter, scsBanter, 'ui.banter')).toEqual([]);
   });
 });
