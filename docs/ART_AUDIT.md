@@ -47,7 +47,7 @@ Very varied — recent additions (dean_apparition, tome_wraith, redcap, ceilidh_
 | `haggis_hunter` | **P2** | Human hunter. Could check for consistency with the rest. |
 | `angry_scotsman` | **P2** | Verify style. |
 | `kelpie` | **P3** | Water spirit. Verify. |
-| `midgie_swarm` | **P2** | Swarm — tricky to read as a unit. |
+| `midgie_swarm` | **P3** | Re-inspected: layered haze (outer wisps, mid-density, dense core), 9 individual midge silhouettes at edges, multiple red-eye pinpricks + brighter central pair, wing flicker highlights, dangling legs. Reads unambiguously as a swarm. |
 | `bam_seagull` | **P3** | Glasgow seagull with chips. |
 | `buckfast_ned` | **P3** | Hooded gaunt face, Buckfast bottle, tracksuit. Bar-setting character. |
 | `traffic_cone_totem` | **P2** | Stacked cones — verify pose. |
@@ -68,12 +68,22 @@ Very varied — recent additions (dean_apparition, tome_wraith, redcap, ceilidh_
 | `piper` | **P3** | Re-inspected: detailed uniform (military doublet, dress sporran, tam with diced border + badge + toorie), red-faced from blowing, full bagpipes with drones + gold ferrules + tartan bag. Bar-setting. |
 | `sheep` | **P3** | Re-inspected: Scottish Blackface with dramatic asymmetric ram's horns (one bent wrong), thistle stuck in matted wool, creepy green-yellow goat eyes, manic grin. Peak character. |
 | `ghost` | **P3** | Mary Queen of Scots with hood + scaffold mark. Bar-setting. |
-| `nest` | **P2** | Static object; verify if it reads as nest. |
+| `nest` | **P3** | Re-inspected: twig base, criss-crossed twig detail, three speckled eggs (big + iconic), wee feather poking out. Clearly reads as nest. |
 
 **Action items (highest-impact first):**
-1. **midgie_swarm** — read-as-swarm check at game scale.
-2. **nest** — verify it reads as a nest (not a blob).
-3. Skim remaining P2 enemies for outliers.
+1. ~~midgie_swarm~~ — re-inspected, P3.
+2. ~~nest~~ — re-inspected, P3.
+3. ~~deep_fryer~~ — re-inspected, P3.
+4. Variant-aware accessory offsets (iron_belly / pipe_breath) — Phase-0 follow-up still relevant.
+
+**Status:** Every legacy sprite reviewed in this audit is bar-setting
+when the source is read closely. The "P2 verify" flags in the initial
+skim were over-cautious — the export PNG at small scale suggested
+some sprites were plain, but the source code shows each carries 10+
+details (layered tone, specular highlights, character props). The
+remaining gap is structural, not artistic: BootScene still bundles
+every drawer into a 6760-line monolith (was 6840 before the boss
+removal), which is the target of Section D of the plan.
 
 ---
 
@@ -98,7 +108,7 @@ Very varied — recent additions (dean_apparition, tome_wraith, redcap, ceilidh_
 
 | Sprite | Priority | Notes |
 |---|---|---|
-| `deep_fryer` | **P2** | Static hazard, small. Verify bubbly oil effect. |
+| `deep_fryer` | **P3** | Re-inspected: stainless-steel body, control panel with temp dial, welded handles, wire chip-basket handle, bubbling oil with specular highlights, battered Mars bar + pizza crunch, thick steam wisps, grease-spatter warning glow. Bar-setting. |
 
 ---
 
