@@ -17,6 +17,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
       break;
     case 'kilt':
       player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.15));
+      player.equipAccessory('kilt');
       break;
     case 'loch_water':
       player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.40);
@@ -24,6 +25,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
       break;
     case 'sporran':
       player.addXpMultiplier(0.10);
+      player.equipAccessory('sporran');
       break;
     case 'whisky_flask':
       player.addAoeMultiplier(0.20);
@@ -37,6 +39,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
       break;
     case 'highland_shield':
       player.enableShield();
+      player.equipAccessory('highland_shield');
       break;
     case 'tartan_sash':
       player.addDamageMultiplier(0.08);

@@ -50,6 +50,7 @@ describe('applyPassiveEffect', () => {
 
     applyPassiveEffect(p as unknown as Player, 'kilt');
     expect(p.addMaxHp).toHaveBeenCalledWith(Math.ceil(PLAYER.MAX_HP * 0.15));
+    expect(p.equipAccessory).toHaveBeenCalledWith('kilt');
 
     applyPassiveEffect(p as unknown as Player, 'loch_water');
     expect(p.addPickupRadius).toHaveBeenCalledWith(PLAYER.PICKUP_RADIUS * 0.4);
@@ -57,6 +58,7 @@ describe('applyPassiveEffect', () => {
 
     applyPassiveEffect(p as unknown as Player, 'sporran');
     expect(p.addXpMultiplier).toHaveBeenCalledWith(0.1);
+    expect(p.equipAccessory).toHaveBeenCalledWith('sporran');
 
     applyPassiveEffect(p as unknown as Player, 'whisky_flask');
     expect(p.addAoeMultiplier).toHaveBeenCalledWith(0.2);
@@ -70,6 +72,7 @@ describe('applyPassiveEffect', () => {
 
     applyPassiveEffect(p as unknown as Player, 'highland_shield');
     expect(p.enableShield).toHaveBeenCalledWith();
+    expect(p.equipAccessory).toHaveBeenCalledWith('highland_shield');
 
     applyPassiveEffect(p as unknown as Player, 'tartan_sash');
     expect(p.addDamageMultiplier).toHaveBeenCalledWith(0.08);

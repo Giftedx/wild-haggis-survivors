@@ -1,14 +1,21 @@
 /**
  * id → AccessoryDrawer map. Populated by each accessory drawer module
- * registering itself. Phase 0 ships `tam_o_shanter`; remaining 16
- * accessories land in Phase 2 + 2.5.
+ * registering itself. Drawer ids match their passive-item keys in
+ * `passiveEffects.ts` so a picked passive can equip the visible
+ * accessory with a single lookup.
  */
 
 import type { AccessoryDrawer } from './AccessoryDrawer';
 import { TAM_O_SHANTER_DRAWER } from './drawers/tamOShanter';
+import { KILT_DRAWER } from './drawers/kilt';
+import { HIGHLAND_SHIELD_DRAWER } from './drawers/highlandShield';
+import { SPORRAN_DRAWER } from './drawers/sporran';
 
 export const ACCESSORY_REGISTRY: Readonly<Record<string, AccessoryDrawer>> = {
   tam_o_shanter: TAM_O_SHANTER_DRAWER,
+  kilt: KILT_DRAWER,
+  highland_shield: HIGHLAND_SHIELD_DRAWER,
+  sporran: SPORRAN_DRAWER,
 };
 
 export function getAccessoryDrawer(id: string): AccessoryDrawer | undefined {
