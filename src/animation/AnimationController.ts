@@ -23,6 +23,7 @@ import { atlasKey } from './textureAtlas';
 const ONE_SHOT_STATES: ReadonlySet<AnimationState> = new Set([
   'attacking',
   'hurt',
+  'celebrating',
   'dying',
 ]);
 

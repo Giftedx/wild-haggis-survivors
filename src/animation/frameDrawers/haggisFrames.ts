@@ -3,12 +3,10 @@
  * drawer delegates to the shared full-detail `drawHaggisBody` with
  * small per-frame offsets that sell the animation beat — breathing
  * pulse on idle, leg shuffle on walking, forward lunge on attacking,
- * flinch-back on hurt. The body itself is the same 160-line
- * handcrafted sprite that ships as `haggis_classic` via BootScene's
- * legacy texture bake. No downgrade.
- *
- * `celebrating` + `dying` land in Phase 1 (and throw here for now so
- * an unauthored state can't silently draw the wrong thing).
+ * flinch-back on hurt, celebratory bounce on level-up, a 3-beat
+ * collapse on death. The body itself is the same handcrafted sprite
+ * that ships as `haggis_classic` via BootScene's legacy texture bake.
+ * No downgrade.
  */
 
 import type { AnimationState } from '../animationStates';
@@ -97,6 +95,47 @@ function drawHurtFrame1(g: Phaser.GameObjects.Graphics, variant: VariantDef): vo
   drawHaggisBody(g, variant, { bodyX: -1, breathY: 0 });
 }
 
+// ── Celebrating (4 frames @ 12 fps, loop = ~333 ms per cycle) ──
+// Played on level-up + boss-kill moments. The haggis hunkers then hops
+// with a little sway — the same beat you get from a 3-frame squash-
+// and-stretch but paced so the hop lands cleanly on the whole-number
+// frame. Lifts use the existing breathY/bodyX offsets so accessories
+// ride along with no new plumbing.
+function drawCelebratingFrame0(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Windup — compress into the ground.
+  drawHaggisBody(g, variant, { breathY: 2 });
+}
+function drawCelebratingFrame1(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Apex — body lifts well above neutral.
+  drawHaggisBody(g, variant, { breathY: -6 });
+}
+function drawCelebratingFrame2(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Land — body settles with a subtle left lean.
+  drawHaggisBody(g, variant, { breathY: -1, bodyX: -1 });
+}
+function drawCelebratingFrame3(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Sway — right-lean counterbalance before the loop restarts.
+  drawHaggisBody(g, variant, { breathY: -1, bodyX: 1 });
+}
+
+// ── Dying (3 frames @ 12 fps, one-shot = ~250 ms total) ──
+// A clean three-beat fall: lean back, buckle, flat. The sprite stays
+// on frame 2 after the one-shot finishes (FSM gate keeps dying
+// terminal), so the "dead haggis" pose persists until the scene
+// resets. Legs splay outward on the buckle frame for extra misery.
+function drawDyingFrame0(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Stagger back — body leans with breath held.
+  drawHaggisBody(g, variant, { breathY: 1, bodyX: -1 });
+}
+function drawDyingFrame1(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Buckle — legs splay, body sinks.
+  drawHaggisBody(g, variant, { breathY: 4, leftLegY: 3, rightLegY: 3 });
+}
+function drawDyingFrame2(g: Phaser.GameObjects.Graphics, variant: VariantDef): void {
+  // Down — flat to the ground, final pose.
+  drawHaggisBody(g, variant, { breathY: 6, leftLegY: 4, rightLegY: 4 });
+}
+
 const DRAWERS: Partial<Record<AnimationState, StateFrameDrawer[]>> = {
   idle: [drawIdleFrame0, drawIdleFrame1],
   walking: [drawWalkingFrame0, drawWalkingFrame1, drawWalkingFrame2, drawWalkingFrame3],
@@ -107,7 +146,13 @@ const DRAWERS: Partial<Record<AnimationState, StateFrameDrawer[]>> = {
     drawAttackingFrame3,
   ],
   hurt: [drawHurtFrame0, drawHurtFrame1],
-  // celebrating, dying — Phase 1
+  celebrating: [
+    drawCelebratingFrame0,
+    drawCelebratingFrame1,
+    drawCelebratingFrame2,
+    drawCelebratingFrame3,
+  ],
+  dying: [drawDyingFrame0, drawDyingFrame1, drawDyingFrame2],
 };
 
 /**

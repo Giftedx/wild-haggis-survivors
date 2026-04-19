@@ -21,7 +21,7 @@ const STATE_DEFS: Record<AnimationState, StateDef> = {
   walking: { frames: 4, fps: 24, loop: true },
   attacking: { frames: 4, fps: 24, loop: false },
   hurt: { frames: 2, fps: 30, loop: false },
-  celebrating: { frames: 4, fps: 12, loop: true },
+  celebrating: { frames: 4, fps: 12, loop: false },
   dying: { frames: 3, fps: 12, loop: false },
 };
 

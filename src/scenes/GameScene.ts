@@ -798,6 +798,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // When player levels up, pause and show upgrade choices
     this.xpSystem.events.on('levelup', (newLevel: number) => {
       this.levelUpFlow.handleLevelUp(newLevel);
+      // Celebrating one-shot — haggis hops in place. Plays once, loops
+      // four frames while the upgrade overlay is up, then the FSM
+      // returns to idle/walking when the overlay dismisses.
+      this.player.notifyCelebrate();
       // Tag with the active variant so iron_belly/moor_runner flavor
       // their celebration; other variants fall through to the generic
       // pool silently (missing sub-pool == no special handling).

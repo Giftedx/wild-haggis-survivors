@@ -6798,9 +6798,6 @@ export class BootScene extends Phaser.Scene {
         const parts = key.split('_');
         const frame = Number(parts[parts.length - 1]);
         const state = parts[parts.length - 2] as AnimationState;
-        // Skip states that drawHaggisFrame throws on (not yet authored).
-        if (state === 'celebrating' || state === 'dying') continue;
-
         const g = this.add.graphics();
         drawHaggisFrame(g, {
           variantPalette: CLASSIC_VARIANT,

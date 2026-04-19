@@ -144,6 +144,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private animController!: AnimationController;
   private hurtEdgeThisFrame = false;
   private attackEdgeThisFrame = false;
+  private celebrateEdgeThisFrame = false;
   private animStateOverride: AnimationState | null = null;
   private haggisContainer!: HaggisContainer;
   private ownedAccessories: Array<{
@@ -518,7 +519,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       velocityMag: Math.hypot(vx, vy),
       hurtEdge: this.consumeHurtEdge(),
       attackEdge: this.consumeAttackEdge(),
-      celebrateEdge: false,
+      celebrateEdge: this.consumeCelebrateEdge(),
       hp: this.hp,
     };
     // Dev-only force-state override — tampers signals so the FSM
@@ -618,6 +619,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    */
   public notifyWeaponFired(): void {
     this.attackEdgeThisFrame = true;
+  }
+
+  private consumeCelebrateEdge(): boolean {
+    const v = this.celebrateEdgeThisFrame;
+    this.celebrateEdgeThisFrame = false;
+    return v;
+  }
+
+  /**
+   * Called by GameScene on level-up and other celebration moments.
+   * Flags the celebrating loop state. The 4-frame hop-cycle plays
+   * while the upgrade overlay is up and returns to idle/walking on
+   * next edge.
+   */
+  public notifyCelebrate(): void {
+    this.celebrateEdgeThisFrame = true;
   }
 
   takeDamage(amount: number): boolean {
