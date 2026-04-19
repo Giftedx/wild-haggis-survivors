@@ -3,7 +3,6 @@ import { COLORS_CSS } from '../config';
 import {
   DEFAULT_VARIANT_KEY,
   VARIANTS,
-  VariantDef,
   getVariantByKey,
 } from '../data/variants';
 import { achievementManager } from '../core/AchievementManager';
@@ -19,7 +18,6 @@ import { setPendingCurse } from '../data/curses';
 import { allAtlasKeysForVariant, ALL_ANIMATION_STATES } from '../animation/textureAtlas';
 import { getFrameCountForState } from '../animation/frameClock';
 import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
-import { drawHaggisBody } from '../animation/frameDrawers/haggisBodyDraw';
 import { CLASSIC_VARIANT } from '../art/palettes';
 import type { AnimationState } from '../animation/animationStates';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
@@ -32,6 +30,7 @@ import { bakeWeaponIcons } from '../art/sprites/icons/weapons';
 import { bakeCardIcons } from '../art/sprites/icons/cards';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
+import { bakePlayerVariants } from '../art/sprites/players';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -230,7 +229,7 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generateAllTextures(): void {
-    this.createHaggisTextures();
+    bakePlayerVariants(this);
     bakeEnemies(this);
     bakeProjectiles(this);
     bakeBosses(this);
@@ -245,37 +244,6 @@ export class BootScene extends Phaser.Scene {
     bakeWeaponIcons(this);
     bakeCardIcons(this);
   }
-
-  // === Terrain decorations ===
-  //
-  // All seven deco_* sprites moved to `src/art/sprites/decorations/`
-  // and wired via `bakeDecorations(this)` in generateAllTextures.
-  // Per-sprite files live at:
-  //   decorations/thistle.ts       → deco_thistle
-  //   decorations/rocks.ts         → deco_rock, deco_rock_2, deco_rock_3
-  //   decorations/heather.ts       → deco_heather
-  //   decorations/glasgowKite.ts   → deco_glasgow_kite
-  //   decorations/trafficCone.ts   → deco_cone
-  //   decorations/tunnock.ts       → deco_tunnock
-  //   decorations/abandonedPint.ts → deco_tennents
-
-  private createHaggisTextures(): void {
-    for (const variant of VARIANTS) {
-      this.createHaggisVariantTexture(variant);
-    }
-  }
-
-  private createHaggisVariantTexture(variant: VariantDef): void {
-    const s = 56;
-    const g = this.add.graphics();
-    drawHaggisBody(g, variant, {});
-    g.generateTexture(variant.textureKey, s, s);
-    g.destroy();
-  }
-
-
-
-  // === Unique Boss Textures ===
 
 
 

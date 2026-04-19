@@ -87,14 +87,14 @@ Every legacy `generateTexture` call from the old 6840-line BootScene now lives u
 | pickups/ | 5 | 4 | xp_gem, chest, health_orb, reliquary |
 | icons/weapons.ts | 1 | 15 | all `wicon_*` consolidated |
 | icons/cards.ts | 1 | 18 | all `ucard_*` consolidated |
-| enemies/ | 32 | 31 | one file per enemy + hazard `deep_fryer`; `index.ts` chains them |
+| enemies/ | 31 | 30 | one file per enemy + hazard `deep_fryer`; `index.ts` chains them |
 | bosses/ | 6 | 5 | gordon, tour_bus, laird, hunter_general, taxman; `index.ts` chains them |
+| players/ | 1 | 9 | the single-frame `haggis_<variant>` textures for menus + UI previews |
 
-`BootScene.ts`: **6840 → 336 lines (−95%)**. What remains is only scene lifecycle (boot splash, atlas bakes, sprite-export bail, quickplay shortcut).
+`BootScene.ts`: **6840 → 302 lines (−96%)**. What remains is only scene lifecycle (boot splash, atlas bakes, sprite-export bail, quickplay shortcut).
 
 ## What's NOT in this folder
 
-Two things stayed in BootScene because they're tied to scene setup:
+One thing stayed in BootScene because it's tied to scene setup:
 
-- `createHaggisTextures` + `createHaggisVariantTexture` — bake the 9 single-frame player-variant textures. Could move here as a future tidy but not load-bearing.
 - `bakeHaggisAtlas` + `bakeAccessoryAtlas` — bake the 324 Phase-0 atlas frames. Belong next to the atlas-key machinery in `src/animation/textureAtlas.ts` / `src/entities/haggisComposition/accessoryRegistry.ts`, not under sprite-drawer categories.

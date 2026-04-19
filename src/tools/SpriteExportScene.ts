@@ -8,6 +8,7 @@
  */
 import Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
+import { ENEMY_TYPES } from '../data/enemies';
 
 interface SpriteEntry {
   key: string;
@@ -48,6 +49,15 @@ function isAtlasFrameKey(key: string): boolean {
   return (ATLAS_STATE_NAMES as readonly string[]).includes(state);
 }
 
+/** Every enemy texture key in data/enemies.ts, sourced automatically.
+ *  Dedupes aliased textures (e.g. `berserker` shares `angry_scotsman`)
+ *  and excludes `deep_fryer`, which lives in its own Hazards bucket. */
+const ENEMY_TEXTURE_KEYS: ReadonlySet<string> = new Set(
+  Object.values(ENEMY_TYPES)
+    .map(e => e.texture)
+    .filter((k): k is string => typeof k === 'string' && k !== 'deep_fryer'),
+);
+
 /** Categorize a texture key for grouping */
 function categorize(key: string): string {
   // Phase-0 atlas frames — per-subject groups so readers can compare
@@ -75,10 +85,8 @@ function categorize(key: string): string {
   if (['thistle', 'caber', 'haggis_ball'].includes(key)) return 'Projectiles';
   if (['xp_gem', 'health_orb', 'chest'].includes(key)) return 'Pickups';
   if (['entity_shadow', 'boss_shadow'].includes(key)) return 'Shadows';
-  if (['piper', 'sheep', 'ghost', 'nest'].includes(key)) return 'Enemies';
   if (key === 'deep_fryer') return 'Hazards';
-  if (['tourist', 'chef', 'midge', 'highland_cow', 'eagle', 'haggis_hunter',
-       'angry_scotsman', 'kelpie', 'midgie_swarm'].includes(key)) return 'Enemies';
+  if (ENEMY_TEXTURE_KEYS.has(key)) return 'Enemies';
   return 'Other';
 }
 
