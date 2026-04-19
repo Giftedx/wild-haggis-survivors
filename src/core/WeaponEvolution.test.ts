@@ -97,28 +97,31 @@ describe('weapon evolution (chest-gated)', () => {
   });
 });
 
-describe('weapon icon texture consistency (BootScene static check)', () => {
-  const bootSource = readFileSync(
-    join(__dirname, '..', 'scenes', 'BootScene.ts'),
-    'utf-8'
-  );
+describe('weapon icon texture consistency (static check)', () => {
+  // Icons were extracted out of BootScene.ts into src/art/sprites/icons/
+  // as part of the 2026-04-19 asset refactor. Tests scan both locations
+  // so this check stays green across further moves.
+  const sources = [
+    readFileSync(join(__dirname, '..', 'scenes', 'BootScene.ts'), 'utf-8'),
+    readFileSync(join(__dirname, '..', 'art', 'sprites', 'icons', 'weapons.ts'), 'utf-8'),
+  ].join('\n');
 
-  it('every base weapon has an icon texture in BootScene', () => {
+  it('every base weapon has an icon texture baked somewhere', () => {
     for (const key of Object.keys(WEAPON_DEFS)) {
       const iconKey = `wicon_${key}`;
       expect(
-        bootSource.includes(`'${iconKey}'`),
-        `Missing weapon icon texture: ${iconKey}`
+        sources.includes(`'${iconKey}'`),
+        `Missing weapon icon texture: ${iconKey}`,
       ).toBe(true);
     }
   });
 
-  it('every evolved weapon has an icon texture in BootScene', () => {
+  it('every evolved weapon has an icon texture baked somewhere', () => {
     for (const r of EVOLUTION_RECIPES) {
       const iconKey = `wicon_${r.evolvedWeapon}`;
       expect(
-        bootSource.includes(`'${iconKey}'`),
-        `Missing evolved weapon icon: ${iconKey}`
+        sources.includes(`'${iconKey}'`),
+        `Missing evolved weapon icon: ${iconKey}`,
       ).toBe(true);
     }
   });
