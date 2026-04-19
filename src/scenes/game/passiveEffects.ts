@@ -36,6 +36,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
     case 'thistle_crown':
       player.addCritChance(0.05);
       player.setThorns(3);
+      player.equipAccessory('thistle_crown');
       break;
     case 'highland_shield':
       player.enableShield();
@@ -43,6 +44,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
       break;
     case 'tartan_sash':
       player.addDamageMultiplier(0.08);
+      player.equipAccessory('tartan_sash');
       break;
   }
 }

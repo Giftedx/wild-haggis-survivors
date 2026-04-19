@@ -69,6 +69,7 @@ describe('applyPassiveEffect', () => {
     applyPassiveEffect(p as unknown as Player, 'thistle_crown');
     expect(p.addCritChance).toHaveBeenCalledWith(0.05);
     expect(p.setThorns).toHaveBeenCalledWith(3);
+    expect(p.equipAccessory).toHaveBeenCalledWith('thistle_crown');
 
     applyPassiveEffect(p as unknown as Player, 'highland_shield');
     expect(p.enableShield).toHaveBeenCalledWith();
@@ -76,5 +77,6 @@ describe('applyPassiveEffect', () => {
 
     applyPassiveEffect(p as unknown as Player, 'tartan_sash');
     expect(p.addDamageMultiplier).toHaveBeenCalledWith(0.08);
+    expect(p.equipAccessory).toHaveBeenCalledWith('tartan_sash');
   });
 });

@@ -9,7 +9,13 @@ import Phaser from 'phaser';
 import { getHaggisSpriteSize } from '../../animation/frameDrawers/haggisFrames';
 
 type CellState = 'idle' | 'walking' | 'attacking' | 'hurt';
-type AccessoryId = 'tam_o_shanter' | 'kilt' | 'highland_shield' | 'sporran';
+type AccessoryId =
+  | 'tam_o_shanter'
+  | 'kilt'
+  | 'highland_shield'
+  | 'sporran'
+  | 'thistle_crown'
+  | 'tartan_sash';
 
 interface Cell {
   readonly label: string;
@@ -19,12 +25,15 @@ interface Cell {
   readonly frame?: number;
 }
 
-// Ordered bottom→top to match render depth (shield → kilt → sporran → tam).
+// Ordered bottom→top to match render depth (shield → kilt → sash →
+// sporran → tam → thistle_crown).
 const ALL_ACCESSORIES: ReadonlyArray<AccessoryId> = [
   'highland_shield',
   'kilt',
+  'tartan_sash',
   'sporran',
   'tam_o_shanter',
+  'thistle_crown',
 ];
 
 const CELLS: Cell[] = [
@@ -85,11 +94,17 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       if (cell.accessories.includes('kilt')) {
         this.add.sprite(x + size / 2, y + size / 2, `kilt_${cell.state}_${frame}`);
       }
+      if (cell.accessories.includes('tartan_sash')) {
+        this.add.sprite(x + size / 2, y + size / 2, `tartan_sash_${cell.state}_${frame}`);
+      }
       if (cell.accessories.includes('sporran')) {
         this.add.sprite(x + size / 2, y + size / 2, `sporran_${cell.state}_${frame}`);
       }
       if (cell.accessories.includes('tam_o_shanter')) {
         this.add.sprite(x + size / 2, y + size / 2, `tam_o_shanter_${cell.state}_${frame}`);
+      }
+      if (cell.accessories.includes('thistle_crown')) {
+        this.add.sprite(x + size / 2, y + size / 2, `thistle_crown_${cell.state}_${frame}`);
       }
     });
 
