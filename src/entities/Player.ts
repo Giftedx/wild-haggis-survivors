@@ -668,6 +668,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.ownedAccessories.some((a) => a.id === id)) return; // no-op on re-equip
 
     const layerSprite = this.haggisContainer.equipLayer(
+      id,
       drawer.layer,
       `${id}_idle_0`, // start on idle frame 0
     );
@@ -683,7 +684,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const idx = this.ownedAccessories.findIndex((a) => a.id === id);
     if (idx === -1) return;
     const [removed] = this.ownedAccessories.splice(idx, 1);
-    this.haggisContainer.unequipLayer(removed.drawer.layer);
+    this.haggisContainer.unequipLayer(removed.id);
   }
 
   /** Mid-run resume — clamp to current max HP after stats are rebuilt. */
