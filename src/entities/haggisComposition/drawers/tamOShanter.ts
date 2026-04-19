@@ -1,28 +1,46 @@
 /**
  * Tam-o-shanter — iconic Scottish flat wool bonnet. Phase 0 reference
- * accessory. Sits on the above layer so it renders on top of the
- * haggis body. Sprite size 56×56 matches the haggis texture so the
- * accessory-layer sprite can share the anchor transform 1:1.
+ * accessory. Sits on the `above` layer so it renders on top of the
+ * haggis body.
  *
- * Anatomy (from top):
- *   - Red toorie (pom-pom)
- *   - Navy wool crown — rounded cap with a lighter upper-left highlight
- *   - Gold-threaded tartan band with a green cross-stripe
- *   - Darker undershadow that nestles into the head fur
+ * Canvas: 80×80. The haggis body is 56×56 with its silhouette
+ * occupying texture y=11 through y=46. To give the tam air above the
+ * body silhouette, the accessory texture is larger than the haggis
+ * texture. Both sprites use origin (0.5, 0.5) and are positioned at
+ * the same anchor (Player), so the accessory's larger canvas means
+ * its extra pixels spread above/below/around the haggis equally —
+ * the tam gets drawn in the TOP portion, above where the haggis
+ * silhouette would appear if it were composited into this same 80×80
+ * frame.
  *
- * Position budget: the haggis body sprite centres at y≈26 with the
- * skull-top around y≈9–12. This drawer's `cy` baseline is 8 so the
- * brim lands at y≈12, the crown top at y≈5, and the toorie peaks at
- * y≈1. The whole tam sits cleanly above the brow tufts.
+ * Anchor math:
+ *   Player's haggis body center = texture (28, 26) in its 56×56 frame,
+ *   which maps to screen (player.x, player.y − 2). The top of the
+ *   haggis silhouette (body ellipse) lies at texture y=11 → screen
+ *   y = player.y − 17. The top of the brow tufts sits at y=13 in the
+ *   haggis frame (≈ screen player.y − 15).
  *
- * Inspiration: Still Game Jack's bonnet, Trainspotting cast stills,
- * Scottish regimental feather bonnets reduced to the everyday tam.
+ *   In this 80×80 accessory texture, origin (0.5, 0.5) puts texture
+ *   (40, 40) at the same screen position. To draw the tam CLEARLY
+ *   above the silhouette, we target screen y < player.y − 20 for the
+ *   bottom of the brim. That maps to accessory texture y < 20.
+ *
+ *   Crown at texture (40, 16); toorie at (40, 8); brim at (40, 22);
+ *   undershadow at (40, 26). Whole tam occupies accessory y=4 to y=28,
+ *   which maps to screen player.y − 36 to player.y − 12 — comfortably
+ *   above the haggis head, with a small shadow overlap into the very
+ *   top of the body fur for seating realism.
  */
 
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 
-const SPRITE_SIZE = 56;
+const SPRITE_SIZE = 80;
+/** Horizontal centre of the 80×80 accessory canvas. */
+const CX = SPRITE_SIZE / 2;
+/** Vertical anchor of the tam in the accessory texture. Matched to
+ *  "bonnet-sits-on-head" per the anchor math in the module doc. */
+const BASE_CY = 16;
 
 /** Navy wool — darker than the palette stone, not quite pure black. */
 const WOOL_SHADOW = 0x0e1020;
@@ -32,74 +50,78 @@ const WOOL_HIGHLIGHT = 0x3a4268;
 const TARTAN_GREEN = 0x2a5a3a;
 
 interface TamFrame {
-  /** Body y offset applied on top of the baseline cy. */
+  /** Body y offset applied on top of BASE_CY. */
   readonly y: number;
   /** Horizontal sway — tiny tilt during walking frames. */
   readonly x?: number;
 }
 
 function drawTam(g: Phaser.GameObjects.Graphics, frame: TamFrame): void {
-  const cx = SPRITE_SIZE / 2 + (frame.x ?? 0);
-  // Baseline cy = 8 puts the tam above the haggis's brow tufts (y≈16).
-  const cy = 8 + frame.y;
+  const cx = CX + (frame.x ?? 0);
+  const cy = BASE_CY + frame.y;
 
-  // Undershadow — darker ellipse tucked behind the brim so the tam
-  // looks seated on the fur, not floating.
-  g.fillStyle(0x000000, 0.35);
-  g.fillEllipse(cx, cy + 6, 22, 4);
+  // ── Undershadow — seats the bonnet into the fur below. Sits just
+  // inside the haggis silhouette top so the tam reads as worn, not
+  // floating. ──
+  g.fillStyle(0x000000, 0.4);
+  g.fillEllipse(cx, cy + 10, 26, 5);
 
-  // Brim — the flat lip that circles the head. Darker wool than the
-  // crown so the ring reads even with small bonnets.
+  // ── Brim — the flat wool lip that encircles the head. Two tonal
+  // passes so the ring stays visible at small sprite scales. ──
   g.fillStyle(WOOL_SHADOW, 1);
-  g.fillEllipse(cx, cy + 4, 22, 7);
+  g.fillEllipse(cx, cy + 7, 26, 8);
   g.fillStyle(WOOL_MID, 1);
-  g.fillEllipse(cx, cy + 4, 20, 5);
+  g.fillEllipse(cx, cy + 7, 24, 6);
 
-  // Crown — rounded wool dome. Slightly wider at the base.
+  // ── Crown — the rounded wool dome. Wider at the base than the top
+  // for a classic bonnet silhouette. ──
   g.fillStyle(WOOL_SHADOW, 1);
-  g.fillEllipse(cx, cy, 18, 11);
+  g.fillEllipse(cx, cy, 22, 14);
   g.fillStyle(WOOL_MID, 1);
-  g.fillEllipse(cx, cy - 1, 16, 10);
+  g.fillEllipse(cx, cy - 1, 20, 12);
 
-  // Upper-left highlight (per style bible light model).
-  g.fillStyle(WOOL_HIGHLIGHT, 0.75);
-  g.fillEllipse(cx - 4, cy - 3, 7, 4);
-  g.fillStyle(0xffffff, 0.18);
-  g.fillEllipse(cx - 5, cy - 4, 4, 2);
+  // Upper-left highlight (style-bible light model).
+  g.fillStyle(WOOL_HIGHLIGHT, 0.85);
+  g.fillEllipse(cx - 5, cy - 4, 9, 5);
+  g.fillStyle(0xffffff, 0.22);
+  g.fillEllipse(cx - 6, cy - 5, 5, 2);
 
-  // Wool texture — small speckle tufts suggest knit.
-  g.fillStyle(WOOL_HIGHLIGHT, 0.5);
-  g.fillCircle(cx + 3, cy - 2, 0.9);
-  g.fillCircle(cx - 2, cy + 1, 0.8);
-  g.fillCircle(cx + 5, cy + 1, 0.7);
+  // Wool knit-texture speckles.
+  g.fillStyle(WOOL_HIGHLIGHT, 0.55);
+  g.fillCircle(cx + 3, cy - 2, 1);
+  g.fillCircle(cx - 2, cy + 1, 1);
+  g.fillCircle(cx + 6, cy, 0.9);
+  g.fillCircle(cx - 7, cy + 2, 0.8);
+  g.fillStyle(WOOL_HIGHLIGHT, 0.3);
+  g.fillCircle(cx + 7, cy + 2, 0.7);
+  g.fillCircle(cx, cy + 3, 0.7);
 
-  // Tartan band — gold weft + forest-green warp stripe just above the
-  // brim seam. The gold reads first, green is the accent.
+  // ── Tartan band — gold weft + forest-green warp seam where crown
+  // meets brim. The gold reads first, the green is the accent. Cross-
+  // weave ticks give the band texture. ──
   g.fillStyle(PALETTE.gold.aged, 1);
-  g.fillRect(cx - 10, cy + 2, 20, 2);
-  g.fillStyle(TARTAN_GREEN, 0.85);
-  g.fillRect(cx - 10, cy + 3, 20, 1);
-  // Vertical cross-weave ticks — every 3 px.
-  g.fillStyle(PALETTE.gold.bright, 0.9);
-  for (let dx = -9; dx <= 9; dx += 3) {
-    g.fillRect(cx + dx, cy + 2, 1, 2);
+  g.fillRect(cx - 12, cy + 5, 24, 3);
+  g.fillStyle(TARTAN_GREEN, 0.9);
+  g.fillRect(cx - 12, cy + 6, 24, 1);
+  g.fillStyle(PALETTE.gold.bright, 1);
+  for (let dx = -11; dx <= 11; dx += 3) {
+    g.fillRect(cx + dx, cy + 5, 1, 3);
   }
 
-  // Seam line where brim meets crown.
+  // Seam line where brim meets crown — just a pencil-dark tick.
   g.fillStyle(0x000000, 0.35);
-  g.fillRect(cx - 9, cy + 1, 18, 1);
+  g.fillRect(cx - 11, cy + 4, 22, 1);
 
-  // Toorie (pom-pom) — proud red wool button on top. Two-stage for a
-  // rounded read: darker base + brighter highlight.
+  // ── Toorie (pom-pom) — proud red wool button on top. Three-stage
+  // red + white glint sells the roundness. ──
   g.fillStyle(PALETTE.red.dried, 1);
-  g.fillCircle(cx, cy - 6, 3);
+  g.fillCircle(cx, cy - 8, 3.6);
   g.fillStyle(PALETTE.red.deep, 1);
-  g.fillCircle(cx, cy - 7, 2.3);
+  g.fillCircle(cx - 0.3, cy - 9, 2.8);
   g.fillStyle(PALETTE.red.arterial, 1);
-  g.fillCircle(cx - 0.5, cy - 7.5, 1.3);
-  // Toorie glint.
-  g.fillStyle(0xffffff, 0.4);
-  g.fillCircle(cx - 1, cy - 8, 0.7);
+  g.fillCircle(cx - 0.8, cy - 9.5, 1.6);
+  g.fillStyle(0xffffff, 0.5);
+  g.fillCircle(cx - 1.5, cy - 10, 0.8);
 }
 
 function drawTamIdle0(g: Phaser.GameObjects.Graphics): void {

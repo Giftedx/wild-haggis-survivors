@@ -6818,7 +6818,7 @@ export class BootScene extends Phaser.Scene {
             frame,
           });
           const key = `${drawer.id}_${state}_${frame}`; // accessory key format (no variant)
-          g.generateTexture(key, 56, 56);
+          g.generateTexture(key, 80, 80);
           g.destroy();
         }
       }
