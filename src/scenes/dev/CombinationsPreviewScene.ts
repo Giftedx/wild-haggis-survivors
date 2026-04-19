@@ -30,18 +30,13 @@ import Phaser from 'phaser';
 import { getHaggisSpriteSize } from '../../animation/frameDrawers/haggisFrames';
 import { VARIANTS } from '../../data/variants';
 import type { VariantKey } from '../../data/variants';
+import { ACCESSORY_REGISTRY } from '../../entities/haggisComposition/accessoryRegistry';
 
 type CellState = 'idle' | 'walking' | 'attacking' | 'hurt';
-type AccessoryId =
-  | 'tam_o_shanter'
-  | 'kilt'
-  | 'highland_shield'
-  | 'sporran'
-  | 'thistle_crown'
-  | 'tartan_sash'
-  | 'whisky_flask'
-  | 'irn_bru'
-  | 'loch_water';
+// Sourced from the registry so a newly-registered accessory shows up
+// as a compile-time option here too (LAYER_ORDER below will then fail
+// to type-check unless the new id is slotted into draw order).
+type AccessoryId = keyof typeof ACCESSORY_REGISTRY;
 
 const LAYER_ORDER: ReadonlyArray<AccessoryId> = [
   'loch_water',

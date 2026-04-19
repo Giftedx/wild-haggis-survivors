@@ -9,6 +9,8 @@
 import Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
 import { ENEMY_TYPES } from '../data/enemies';
+import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
+import { ALL_ANIMATION_STATES } from '../animation/textureAtlas';
 
 interface SpriteEntry {
   key: string;
@@ -26,19 +28,11 @@ const COLS = 8;
 /** Ends with `_<state>_<frame>`. These are the Phase-0 atlas textures
  *  (`haggis_classic_idle_0`, `tam_o_shanter_walking_2`, etc.). They share
  *  one subject across many frames, so we category-group them separately
- *  from the legacy single-frame sprites. */
-const ATLAS_STATE_NAMES = ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const;
-const ACCESSORY_IDS = [
-  'tam_o_shanter',
-  'thistle_crown',
-  'highland_shield',
-  'kilt',
-  'tartan_sash',
-  'sporran',
-  'whisky_flask',
-  'irn_bru',
-  'loch_water',
-] as const;
+ *  from the legacy single-frame sprites. Sourced from the atlas module
+ *  + accessory registry so adding a new state/accessory updates this
+ *  tool automatically. */
+const ATLAS_STATE_NAMES = ALL_ANIMATION_STATES;
+const ACCESSORY_IDS = Object.keys(ACCESSORY_REGISTRY);
 
 function isAtlasFrameKey(key: string): boolean {
   const parts = key.split('_');
