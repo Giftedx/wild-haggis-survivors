@@ -114,11 +114,14 @@ function buildCells(): Cell[] {
 const CELLS: Cell[] = buildCells();
 
 const ZOOM = 2;
-const CELL_W = 180;
-const CELL_H = 180;
-const COLS = 2;
-const GRID_ORIGIN_X = 40;
-const GRID_ORIGIN_Y = 80;
+const CELL_W = 175;
+const CELL_H = 170;
+// 6 columns fills the 1094 px dev-build canvas width (6×175 + 24×2 = 1098).
+// Keeps the horizontal real-estate utilised instead of the old 2-col layout
+// that left more than half the window blank.
+const COLS = 6;
+const GRID_ORIGIN_X = 24;
+const GRID_ORIGIN_Y = 64;
 
 export class CombinationsPreviewScene extends Phaser.Scene {
   constructor() {
