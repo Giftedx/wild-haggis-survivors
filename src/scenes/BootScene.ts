@@ -24,6 +24,8 @@ import { CLASSIC_VARIANT } from '../art/palettes';
 import type { AnimationState } from '../animation/animationStates';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
 import { bakeDecorations } from '../art/sprites/decorations';
+import { bakeHud } from '../art/sprites/hud';
+import { bakeFx } from '../art/sprites/fx';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -268,207 +270,17 @@ export class BootScene extends Phaser.Scene {
     this.createChestTexture();
     this.createHealthOrb();
     this.createReliquary();
-    // Ground shadows & decoration
-    this.createEntityShadow();
-    this.createBossShadow();
+    // Ground shadows + weather + film grain live in src/art/sprites/fx/.
+    bakeFx(this);
+    // Environmental decoration sprites (thistle, rocks, heather, etc.).
     bakeDecorations(this);
+    // HUD chrome (shield, dash pips) lives in src/art/sprites/hud/.
+    bakeHud(this);
     this.createBamSeagull();
-    // Weapon HUD icons
+    // Weapon + upgrade-card icons — still inline, next D-phase will move
+    // them into src/art/sprites/icons/.
     this.createWeaponIcons();
     this.createUpgradeCardIcons();
-    this.createHudChromeTextures();
-    this.createFilmGrainTexture();
-  }
-
-  /**
-   * Seamless film-grain tile for gameplay — warm specks + rare dark pits.
-   * Rendered once; GameScene stretches it across the UI viewport (scroll 0).
-   */
-  private createFilmGrainTexture(): void {
-    if (this.textures.exists('film_grain')) return;
-    const size = 128;
-    const tex = this.textures.createCanvas('film_grain', size, size);
-    if (!tex) return;
-    const ctx = tex.getContext();
-    if (!ctx) return;
-    ctx.clearRect(0, 0, size, size);
-    for (let i = 0; i < 10000; i++) {
-      const x = Math.floor(Math.random() * size);
-      const y = Math.floor(Math.random() * size);
-      const hi = Math.random() * 0.13;
-      ctx.fillStyle = `rgba(255,245,220,${hi})`;
-      ctx.fillRect(x, y, 1, 1);
-      if (Math.random() > 0.52) {
-        const lo = Math.random() * 0.11;
-        ctx.fillStyle = `rgba(6,10,22,${lo})`;
-        ctx.fillRect(x, y, 1, 1);
-      }
-    }
-    // Larger, rarer specks — photographic clumping when stretched full-screen.
-    for (let i = 0; i < 900; i++) {
-      const x = Math.floor(Math.random() * (size - 2));
-      const y = Math.floor(Math.random() * (size - 2));
-      const a = Math.random() * 0.045;
-      ctx.fillStyle = `rgba(255,238,210,${a})`;
-      ctx.fillRect(x, y, 2, 2);
-      if (Math.random() > 0.45) {
-        ctx.fillStyle = `rgba(12,18,40,${a * 0.85})`;
-        ctx.fillRect(x, y, 2, 2);
-      }
-    }
-    // Subtle violet fringe (very low) — stops the grain feeling purely monochrome.
-    for (let i = 0; i < 3200; i++) {
-      const x = Math.floor(Math.random() * size);
-      const y = Math.floor(Math.random() * size);
-      ctx.fillStyle = `rgba(180,160,220,${Math.random() * 0.028})`;
-      ctx.fillRect(x, y, 1, 1);
-    }
-    tex.refresh();
-  }
-
-  /** Small HUD sprites (shield, dash pips) — avoids emoji / font-dependent glyphs.
-   *  These are on screen 100% of play time — every pixel counts. */
-  private createHudChromeTextures(): void {
-    // ── Shield icon — Highland targe shape with riveted rim and celtic knot hint ──
-    const s = 18;
-    const g = this.add.graphics();
-    const cx = s / 2;
-    const cy = s / 2;
-    // Dark outline
-    g.fillStyle(0x1a3a4a, 1);
-    g.fillTriangle(cx, cy - 8, cx + 7, cy + 2, cx, cy + 8);
-    g.fillTriangle(cx, cy - 8, cx - 7, cy + 2, cx, cy + 8);
-    // Steel-blue body
-    g.fillStyle(0x3a7ca5, 1);
-    g.fillTriangle(cx, cy - 7, cx + 6, cy + 2, cx, cy + 7);
-    g.fillTriangle(cx, cy - 7, cx - 6, cy + 2, cx, cy + 7);
-    // Inner highlight (lighter face — light from upper left)
-    g.fillStyle(0x5a9cc5, 0.6);
-    g.fillTriangle(cx, cy - 5, cx - 4, cy + 1, cx, cy + 4);
-    // Subtle bright edge (top-left rim catches light)
-    g.fillStyle(0x8fd4ff, 0.45);
-    g.fillTriangle(cx, cy - 5, cx - 3, cy, cx, cy + 3);
-    // Centre boss rivet (small bright dot — targe detail)
-    g.fillStyle(0xaaddee, 0.8);
-    g.fillCircle(cx, cy, 1.2);
-    g.fillStyle(0xddeeff, 0.5);
-    g.fillCircle(cx - 0.3, cy - 0.3, 0.5);
-    // Rim highlight (right edge — subtle, adds depth)
-    g.fillStyle(0x2a6080, 0.6);
-    g.fillRect(cx + 4, cy - 2, 1, 4);
-    g.generateTexture('hud_shield', s, s);
-    g.destroy();
-
-    // ── Dash pip (full) — golden orb with depth, not a flat circle ──
-    const ps = 10;
-    const gf = this.add.graphics();
-    const pcx = ps / 2, pcy = ps / 2;
-    // Dark gold outline
-    gf.fillStyle(0x8a6608, 1);
-    gf.fillCircle(pcx, pcy, 4);
-    // Golden body
-    gf.fillStyle(0xd4a017, 1);
-    gf.fillCircle(pcx, pcy, 3.5);
-    // Bright highlight (upper-left — spherical light)
-    gf.fillStyle(0xffcc44, 0.8);
-    gf.fillCircle(pcx - 0.8, pcy - 0.8, 1.8);
-    // Hot specular
-    gf.fillStyle(0xffffff, 0.5);
-    gf.fillCircle(pcx - 1, pcy - 1.2, 0.7);
-    gf.generateTexture('hud_dash_pip_full', ps, ps);
-    gf.destroy();
-
-    // ── Dash pip (empty) — hollow ring with subtle inner shadow ──
-    const ge = this.add.graphics();
-    ge.lineStyle(1.5, 0xd4a017, 0.7);
-    ge.strokeCircle(ps / 2, ps / 2, 3.2);
-    // Inner shadow (spent energy feel)
-    ge.fillStyle(0x000000, 0.15);
-    ge.fillCircle(ps / 2, ps / 2, 2.5);
-    ge.generateTexture('hud_dash_pip_empty', ps, ps);
-    ge.destroy();
-
-    // ── Snowflake particle — crisp ice crystal with branching arms ──
-    const snow = 10;
-    const gs = this.add.graphics();
-    const scx = snow / 2;
-    const scy = snow / 2;
-    // Outer glow
-    gs.fillStyle(0xaaddff, 0.15);
-    gs.fillCircle(scx, scy, 4.5);
-    // Six main arms
-    gs.lineStyle(1.5, 0xcce6ff, 1);
-    for (let i = 0; i < 6; i++) {
-      const a = (i / 6) * Math.PI * 2;
-      gs.beginPath();
-      gs.moveTo(scx, scy);
-      gs.lineTo(scx + Math.cos(a) * 4.2, scy + Math.sin(a) * 4.2);
-      gs.strokePath();
-      // Tiny branch on each arm (crystalline detail)
-      gs.lineStyle(0.8, 0xddeeff, 0.7);
-      const midX = scx + Math.cos(a) * 2.5;
-      const midY = scy + Math.sin(a) * 2.5;
-      const branchA1 = a + Math.PI * 0.3;
-      const branchA2 = a - Math.PI * 0.3;
-      gs.beginPath();
-      gs.moveTo(midX, midY);
-      gs.lineTo(midX + Math.cos(branchA1) * 1.5, midY + Math.sin(branchA1) * 1.5);
-      gs.strokePath();
-      gs.beginPath();
-      gs.moveTo(midX, midY);
-      gs.lineTo(midX + Math.cos(branchA2) * 1.5, midY + Math.sin(branchA2) * 1.5);
-      gs.strokePath();
-      gs.lineStyle(1.5, 0xcce6ff, 1);
-    }
-    // Bright centre crystal
-    gs.fillStyle(0xffffff, 1);
-    gs.fillCircle(scx, scy, 1.3);
-    gs.fillStyle(0xeef8ff, 0.7);
-    gs.fillCircle(scx, scy, 0.7);
-    gs.generateTexture('fx_snowflake', snow, snow);
-    gs.destroy();
-  }
-
-  /** Soft elliptical shadow placed under each entity. Dark translucent.
-   *  Uses warm dark-green tint (not cold black) to feel grounded on the moor.
-   *  Higher alpha values because the grass backdrop washes out subtle shadows. */
-  private createEntityShadow(): void {
-    const s = 40;
-    const g = this.add.graphics();
-    // Outermost penumbra — barely visible, warm-tinted
-    g.fillStyle(0x0a1a0a, 0.18);
-    g.fillEllipse(s / 2, s / 2, 36, 12);
-    // Mid shadow — green-tinted dark to blend with moor
-    g.fillStyle(0x081808, 0.35);
-    g.fillEllipse(s / 2, s / 2, 28, 9);
-    // Core contact shadow — darkest, directly under the entity
-    g.fillStyle(0x061206, 0.52);
-    g.fillEllipse(s / 2, s / 2, 20, 6);
-    // Warm centre dot (contact point catches ambient bounce light)
-    g.fillStyle(0x0a1a0a, 0.6);
-    g.fillEllipse(s / 2, s / 2, 12, 4);
-    g.generateTexture('entity_shadow', s, s);
-    g.destroy();
-  }
-
-  /** Bigger shadow for bosses — more dramatic, wider spread. */
-  private createBossShadow(): void {
-    const s = 80;
-    const g = this.add.graphics();
-    // Wide penumbra — boss casts a big presence
-    g.fillStyle(0x0a1a0a, 0.18);
-    g.fillEllipse(s / 2, s / 2, 74, 24);
-    // Mid shadow
-    g.fillStyle(0x081808, 0.33);
-    g.fillEllipse(s / 2, s / 2, 58, 18);
-    // Inner shadow
-    g.fillStyle(0x061206, 0.48);
-    g.fillEllipse(s / 2, s / 2, 42, 12);
-    // Core contact — darkest point
-    g.fillStyle(0x040e04, 0.58);
-    g.fillEllipse(s / 2, s / 2, 26, 8);
-    g.generateTexture('boss_shadow', s, s);
-    g.destroy();
   }
 
   // === Terrain decorations ===
