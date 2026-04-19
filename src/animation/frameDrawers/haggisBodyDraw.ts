@@ -304,27 +304,49 @@ function drawHaggisAccent(
       g.fillStyle(0xffffff, 0.4);
       g.fillRect(cx - 5, cy - 13, 10, 0.5);
       break;
-    case 'pipe_breath':
-      g.lineStyle(1.5, palette.accent, 0.5);
+    case 'pipe_breath': {
+      // Cold-moor exhale. Pure wind — curling breath wisps drift off
+      // the snout and dissipate to either side. No tobacco pipe bowl
+      // or flame, so hats / crowns / accessories sit flat on the head
+      // without clashing. Flavor: "wheesht — the moor exhales through
+      // this one." Stays within the 56×56 atlas frame bounds (max
+      // extent |cx±26|, vertical peak cy-4).
+      const s = palette.accent;
+
+      // Chest bellows glow — suggests the lungs inside. Stays fully
+      // inside body silhouette so it reads as inner light.
+      g.fillStyle(s, 0.1);
+      g.fillEllipse(cx, cy + 4, 18, 8);
+      g.fillStyle(s, 0.18);
+      g.fillEllipse(cx, cy + 4, 10, 4);
+
+      // Main exhale curl — semicircle riding off the right shoulder.
+      // Centre (cx+18, cy+2) r=6 peaks at cy-4, ~12px below body-top
+      // and well clear of the hat silhouette at cx±13. Right extent
+      // cx+24 stays inside the 56-wide frame.
+      g.lineStyle(1.6, s, 0.6);
       g.beginPath();
-      g.arc(cx - 8, cy - 2, 8, -Math.PI * 0.3, Math.PI * 0.5);
+      g.arc(cx + 18, cy + 2, 6, Math.PI, 0, true);
       g.strokePath();
+
+      // Floating droplets — wisps dispersing outward right, inside bounds.
+      g.fillStyle(s, 0.6);
+      g.fillCircle(cx + 24, cy - 2, 0.9);
+      g.fillCircle(cx + 26, cy + 2, 0.7);
+      g.fillStyle(s, 0.4);
+      g.fillCircle(cx + 22, cy + 5, 0.55);
+
+      // Left shoulder puff — symmetry without climbing the head.
+      g.lineStyle(1, s, 0.32);
       g.beginPath();
-      g.arc(cx + 10, cy + 1, 6, Math.PI * 0.2, Math.PI * 0.9);
+      g.arc(cx - 18, cy + 4, 4, Math.PI, 0, true);
       g.strokePath();
-      g.lineStyle(1, palette.accent, 0.25);
-      g.beginPath();
-      g.arc(cx - 12, cy - 4, 12, -Math.PI * 0.2, Math.PI * 0.4);
-      g.strokePath();
-      g.fillStyle(palette.accent, 0.9);
-      g.fillCircle(cx + 12, cy - 10, 2.2);
-      g.fillRect(cx + 13, cy - 16, 1.5, 7);
-      g.fillStyle(palette.accent, 0.7);
-      g.fillTriangle(cx + 14, cy - 16, cx + 17, cy - 14, cx + 14, cy - 13);
-      g.fillStyle(palette.accent, 0.5);
-      g.fillCircle(cx - 14, cy - 8, 1.5);
-      g.fillRect(cx - 13, cy - 13, 1, 5);
+      g.fillStyle(s, 0.4);
+      g.fillCircle(cx - 23, cy + 2, 0.7);
+      g.fillStyle(s, 0.3);
+      g.fillCircle(cx - 25, cy + 5, 0.5);
       break;
+    }
     case 'none':
     default:
       break;
