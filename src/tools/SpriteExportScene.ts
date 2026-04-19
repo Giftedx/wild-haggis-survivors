@@ -78,7 +78,7 @@ function categorize(key: string): string {
   if (['piper', 'sheep', 'ghost', 'nest'].includes(key)) return 'Enemies';
   if (key === 'deep_fryer') return 'Hazards';
   if (['tourist', 'chef', 'midge', 'highland_cow', 'eagle', 'haggis_hunter',
-       'angry_scotsman', 'kelpie', 'midgie_swarm', 'bam_seagull'].includes(key)) return 'Enemies';
+       'angry_scotsman', 'kelpie', 'midgie_swarm'].includes(key)) return 'Enemies';
   return 'Other';
 }
 

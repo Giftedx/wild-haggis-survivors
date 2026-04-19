@@ -1,3 +1,7 @@
+/**
+ * `ceilidh_caller` — academic apparition who counts the dances in from beyond — gown, mortarboard, baton raised mid-call.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeCeilidhCaller(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `unseelie_fiddler` — Dark Court fiddler: black-silver robes, pale face, bow aimed like a knife. Sinister twin to the seelie piper.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeUnseelieFiddler(scene: Phaser.Scene): void {

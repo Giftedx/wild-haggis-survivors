@@ -1,3 +1,7 @@
+/**
+ * `piper` — full-regalia highland bagpiper: military doublet, dress sporran, diced-border tam with badge + toorie, tartan pipe-bag.
+ */
+
 import Phaser from 'phaser';
 
 export function bakePiper(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `dean_apparition` — ceremonial-robed ghost: gold academic trim, stole, chain of office. Leader of the Academic Apparition family.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeDeanApparition(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `boss_tour_bus` — Act-2 boss: anthropomorphised tour bus, headlights as eyes, grille as teeth, a traffic cone on top. The joke made flesh.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBossTourBus(scene: Phaser.Scene): void {

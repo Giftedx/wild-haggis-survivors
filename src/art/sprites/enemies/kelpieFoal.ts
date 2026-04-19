@@ -1,3 +1,7 @@
+/**
+ * `kelpie_foal` — smaller kelpie, softer mane, still dripping loch water. Kin-of-boss at half the scale.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeKelpieFoal(scene: Phaser.Scene): void {

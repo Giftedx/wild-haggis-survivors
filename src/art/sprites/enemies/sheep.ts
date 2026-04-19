@@ -1,3 +1,7 @@
+/**
+ * `sheep` — Scottish Blackface with asymmetric ram's horns, thistle in the wool, creepy green-yellow goat eyes, manic grin.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeSheep(scene: Phaser.Scene): void {

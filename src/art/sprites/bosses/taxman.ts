@@ -1,3 +1,7 @@
+/**
+ * `boss_taxman` — final boss: pinstripe suit, briefcase, stamp of doom, gaunt clerical face. Inevitable end-state of any Scottish boss ladder.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBossTaxman(scene: Phaser.Scene): void {

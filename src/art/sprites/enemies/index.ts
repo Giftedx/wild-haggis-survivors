@@ -38,7 +38,6 @@ import { bakeTomeWraith } from './tomeWraith';
 import { bakeDeanApparition } from './deanApparition';
 import { bakeLedgerWraith } from './ledgerWraith';
 import { bakeAuditorPriest } from './auditorPriest';
-import { bakeBamSeagull } from './bamSeagull';
 import { bakePiper } from './piper';
 import { bakeSheep } from './sheep';
 import { bakeGhost } from './ghost';
@@ -72,9 +71,8 @@ export function bakeEnemies(scene: Phaser.Scene): void {
   bakeDeanApparition(scene);
   bakeLedgerWraith(scene);
   bakeAuditorPriest(scene);
-  // Older enemies + bamSeagull + hazard deepFryer — appended after the
-  // first split commit but still batched through the same entry point.
-  bakeBamSeagull(scene);
+  // Older enemies + hazard deepFryer — appended after the first split
+  // commit but still batched through the same entry point.
   bakePiper(scene);
   bakeSheep(scene);
   bakeGhost(scene);

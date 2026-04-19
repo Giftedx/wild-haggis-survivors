@@ -1,3 +1,7 @@
+/**
+ * `auditor_priest` — gaunt cleric with a staff topped by a ledger-seal. Gold trim, bone-white eyes — half priest, half auditor.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeAuditorPriest(scene: Phaser.Scene): void {

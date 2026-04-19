@@ -1,3 +1,7 @@
+/**
+ * `blue_man_of_minch` — Hebridean sea spirit: deep-blue skin, wave-curl hair, salt-crust on the shoulders.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBlueManOfMinch(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `chef` — chippie chef with a ladle and a wee white coat. Reads kitchen at a glance — the fryer-attendant is what's lobbing battered things at you.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeChef(scene: Phaser.Scene): void {

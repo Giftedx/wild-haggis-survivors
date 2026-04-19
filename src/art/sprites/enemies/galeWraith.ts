@@ -1,3 +1,7 @@
+/**
+ * `gale_wraith` — wind-wraith companion to the haar. Motion lines stream off the arms, hair horizontal, pale central core.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeGaleWraith(scene: Phaser.Scene): void {

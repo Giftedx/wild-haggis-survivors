@@ -1,3 +1,7 @@
+/**
+ * `tome_wraith` — open book floating in a sheet-ghost body, pages ruffled by unseen wind.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeTomeWraith(scene: Phaser.Scene): void {

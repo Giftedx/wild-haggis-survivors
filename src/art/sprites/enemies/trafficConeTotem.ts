@@ -1,3 +1,7 @@
+/**
+ * `traffic_cone_totem` — stack of three traffic cones stood on end like a cairn. Reflective bands catch the light.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeTrafficConeTotem(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `seelie_piper` — Light Court piper: gold-trimmed coat, fae glow, small pipes drawn in. Charms as much as threatens.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeSeeliePiper(scene: Phaser.Scene): void {

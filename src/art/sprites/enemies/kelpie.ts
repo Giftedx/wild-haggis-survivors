@@ -1,3 +1,7 @@
+/**
+ * `kelpie` — water spirit in equine shape, dripping mane, glowing eyes, loch-slick on the flank.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeKelpie(scene: Phaser.Scene): void {

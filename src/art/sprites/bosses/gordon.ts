@@ -1,3 +1,7 @@
+/**
+ * `boss_gordon` — Act-1 boss, roid-raging nightclub bouncer / chef amalgam. Squared shoulders, cleaver raised, red-faced. First "oh shit" encounter.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBossGordon(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `barghest` — phantom hound with matted shadow-fur and two burning yellow eyes. Lower to the ground than a wolf.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBarghest(scene: Phaser.Scene): void {

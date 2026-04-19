@@ -1,3 +1,7 @@
+/**
+ * `boss_laird` — landowner-as-enemy: tweed jacket, riding crop, gold-trim crown, rifle. Distinct from the `laird` player variant.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBossLaird(scene: Phaser.Scene): void {

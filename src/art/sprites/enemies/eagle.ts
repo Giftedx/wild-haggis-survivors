@@ -1,3 +1,7 @@
+/**
+ * `eagle` — fierce amber-eyed raptor, feathery finger-tip wings, hooked beak. Bar-setting for the aerial enemies.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeEagle(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `ledger_wraith` — floating clerk with a bound ledger clasped to the chest, counting-rosary at the belt. The Taxman family's book-keeper.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeLedgerWraith(scene: Phaser.Scene): void {

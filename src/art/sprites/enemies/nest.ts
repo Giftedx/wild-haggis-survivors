@@ -1,3 +1,7 @@
+/**
+ * `nest` — bird's nest: twig base with criss-crossed detail, three speckled eggs, a single feather poking out. Stationary spawner.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeNest(scene: Phaser.Scene): void {

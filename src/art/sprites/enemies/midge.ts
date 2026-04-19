@@ -1,3 +1,7 @@
+/**
+ * `midge` — lone highland midge: translucent wings, compound red eyes, proboscis, six distinct legs. Tiny insect silhouette.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeMidge(scene: Phaser.Scene): void {

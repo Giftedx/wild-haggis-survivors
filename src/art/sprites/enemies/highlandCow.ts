@@ -1,3 +1,7 @@
+/**
+ * `highland_cow` — hairy coo with the iconic dropped fringe and curved horns. Thick shaggy wool, eyes buried in the fringe — tank-class enemy.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeHighlandCow(scene: Phaser.Scene): void {

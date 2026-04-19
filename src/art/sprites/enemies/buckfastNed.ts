@@ -1,3 +1,7 @@
+/**
+ * `buckfast_ned` — hooded gaunt face, tracksuit, gold chain, Buckfast bottle clutched tight. Gantry-at-Trongate identity.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBuckfastNed(scene: Phaser.Scene): void {

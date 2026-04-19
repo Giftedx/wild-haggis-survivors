@@ -1,3 +1,7 @@
+/**
+ * `ghost` — Mary Queen of Scots revenant: hood, scaffold mark, translucent robe, reproachful stare.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeGhost(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `haar_wraith` — cold-coast mist spirit with tendril fingers and a bottom that dissolves into fog. Early weather-family member.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeHaarWraith(scene: Phaser.Scene): void {

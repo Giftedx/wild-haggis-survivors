@@ -1,3 +1,7 @@
+/**
+ * `edinburgh_ghost_guide` — cloaked apparition with a lantern, pale under-robe, wisp trails — the spectral guided tour.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeEdinburghGhostGuide(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `midgie_swarm` — living haze: outer wisps, mid-density cloud, dense core, nine individual midge silhouettes at the edges.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeMidgieSwarm(scene: Phaser.Scene): void {

@@ -1,3 +1,7 @@
+/**
+ * `haggis_hunter` — human hunter in hi-viz gilet with a rifle across the chest. The one enemy that explicitly out-tools the player.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeHaggisHunter(scene: Phaser.Scene): void {

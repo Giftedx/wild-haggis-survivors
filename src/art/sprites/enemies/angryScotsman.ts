@@ -1,3 +1,7 @@
+/**
+ * `angry_scotsman` — red-faced shouting highlander with wild brows, ginger beard, tartan trousers. Also the fallback texture for the `berserker` config.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeAngryScotsman(scene: Phaser.Scene): void {

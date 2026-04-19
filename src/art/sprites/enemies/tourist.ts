@@ -1,3 +1,9 @@
+/**
+ * `tourist` — sunburned visitor in a tartan bucket hat, selfie stick
+ * up like a flagpole. Regatta cagoule, open-mouthed at the bonnie
+ * scenery, ears glowing pink.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeTourist(scene: Phaser.Scene): void {

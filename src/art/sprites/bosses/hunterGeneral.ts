@@ -1,3 +1,7 @@
+/**
+ * `boss_hunter_general` — scaled-up haggis hunter with rifle, bandolier, hi-viz gilet + beret. The paramilitary evolution of the lone hunter.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeBossHunterGeneral(scene: Phaser.Scene): void {

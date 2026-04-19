@@ -1,3 +1,7 @@
+/**
+ * `redcap` — border-folklore goblin with a blood-soaked red cap, sharp teeth, iron-shod boots.
+ */
+
 import Phaser from 'phaser';
 
 export function bakeRedcap(scene: Phaser.Scene): void {
