@@ -11,6 +11,9 @@ export function applyPassiveEffect(player: Player, key: string): void {
   switch (key) {
     case 'tam_o_shanter':
       player.addSpeed(PLAYER.SPEED * 0.10);
+      // Visible wear-build: tam appears on the haggis's head for the rest
+      // of the run. Binding-of-Isaac-style — every picked item shows up.
+      player.equipAccessory('tam_o_shanter');
       break;
     case 'kilt':
       player.addMaxHp(Math.ceil(PLAYER.MAX_HP * 0.15));

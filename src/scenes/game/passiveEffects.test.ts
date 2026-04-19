@@ -15,6 +15,7 @@ function mockPlayer(): Pick<
   | 'setThorns'
   | 'enableShield'
   | 'addDamageMultiplier'
+  | 'equipAccessory'
 > {
   return {
     addSpeed: vi.fn(),
@@ -27,6 +28,7 @@ function mockPlayer(): Pick<
     setThorns: vi.fn(),
     enableShield: vi.fn(),
     addDamageMultiplier: vi.fn(),
+    equipAccessory: vi.fn(),
   };
 }
 
@@ -42,6 +44,9 @@ describe('applyPassiveEffect', () => {
     const p = mockPlayer();
     applyPassiveEffect(p as unknown as Player, 'tam_o_shanter');
     expect(p.addSpeed).toHaveBeenCalledWith(PLAYER.SPEED * 0.1);
+    // Visible wear-build: picking the tam passive equips the accessory
+    // sprite on the haggis — the Binding-of-Isaac-style visual feedback.
+    expect(p.equipAccessory).toHaveBeenCalledWith('tam_o_shanter');
 
     applyPassiveEffect(p as unknown as Player, 'kilt');
     expect(p.addMaxHp).toHaveBeenCalledWith(Math.ceil(PLAYER.MAX_HP * 0.15));
