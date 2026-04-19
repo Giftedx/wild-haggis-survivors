@@ -1,8 +1,16 @@
 /**
- * Dev-only Combinations Preview. Renders the classic haggis with
- * various accessory builds across idle, walking, attacking and hurt
- * states so wear-build combinations can be eyeballed side by side
- * without playing the whole run.
+ * Dev-only Combinations Preview. Two sections of cells so every
+ * accessory gets its own side-by-side idle + walking comparison, then
+ * the full 9-stack build across every animation state for tuning.
+ *
+ * Cells render at 2× zoom with a subtle crosshair + bounding-box
+ * outline so small placement issues (accessory clipping into the body,
+ * drifting off the anchor on a specific frame) are visible at a glance.
+ *
+ * Navigation:
+ *   ESC                → return to Game
+ *   Mouse wheel        → scroll the grid
+ *   ArrowUp / ArrowDn  → scroll the grid
  */
 
 import Phaser from 'phaser';
@@ -20,6 +28,24 @@ type AccessoryId =
   | 'irn_bru'
   | 'loch_water';
 
+/**
+ * Draw order is the accessory-layer depth order: bottom → top. Used
+ * for composite cells (tam row uses a subset; full row uses the whole
+ * list). Kept in one place so positional tweaks don't accidentally
+ * reorder layers.
+ */
+const LAYER_ORDER: ReadonlyArray<AccessoryId> = [
+  'loch_water',       // behind
+  'highland_shield',  // behind
+  'kilt',             // body
+  'tartan_sash',      // body
+  'sporran',          // front
+  'whisky_flask',     // front
+  'irn_bru',          // front
+  'tam_o_shanter',    // above
+  'thistle_crown',    // above
+];
+
 interface Cell {
   readonly label: string;
   readonly accessories: ReadonlyArray<AccessoryId>;
@@ -28,29 +54,40 @@ interface Cell {
   readonly frame?: number;
 }
 
-// Ordered bottom→top to match render depth.
-const ALL_ACCESSORIES: ReadonlyArray<AccessoryId> = [
-  'loch_water',
-  'highland_shield',
-  'kilt',
-  'tartan_sash',
-  'sporran',
-  'whisky_flask',
-  'irn_bru',
-  'tam_o_shanter',
-  'thistle_crown',
-];
+function soloRow(id: AccessoryId): [Cell, Cell] {
+  return [
+    { label: `${id} / idle`, accessories: [id], state: 'idle' },
+    { label: `${id} / walking`, accessories: [id], state: 'walking' },
+  ];
+}
 
 const CELLS: Cell[] = [
+  // Baseline — bare haggis
   { label: 'bare / idle', accessories: [], state: 'idle' },
   { label: 'bare / walking', accessories: [], state: 'walking' },
-  { label: 'tam / idle', accessories: ['tam_o_shanter'], state: 'idle' },
-  { label: 'tam / walking', accessories: ['tam_o_shanter'], state: 'walking' },
-  { label: 'full / idle', accessories: ALL_ACCESSORIES, state: 'idle' },
-  { label: 'full / walking', accessories: ALL_ACCESSORIES, state: 'walking' },
-  { label: 'full / attacking f1', accessories: ALL_ACCESSORIES, state: 'attacking', frame: 1 },
-  { label: 'full / hurt f0', accessories: ALL_ACCESSORIES, state: 'hurt', frame: 0 },
+  // Each accessory on its own so positioning issues are obvious
+  ...soloRow('tam_o_shanter'),
+  ...soloRow('thistle_crown'),
+  ...soloRow('highland_shield'),
+  ...soloRow('kilt'),
+  ...soloRow('tartan_sash'),
+  ...soloRow('sporran'),
+  ...soloRow('whisky_flask'),
+  ...soloRow('irn_bru'),
+  ...soloRow('loch_water'),
+  // Full 9-stack across every state
+  { label: 'full / idle', accessories: LAYER_ORDER, state: 'idle' },
+  { label: 'full / walking', accessories: LAYER_ORDER, state: 'walking' },
+  { label: 'full / attacking f1', accessories: LAYER_ORDER, state: 'attacking', frame: 1 },
+  { label: 'full / hurt f0', accessories: LAYER_ORDER, state: 'hurt', frame: 0 },
 ];
+
+const ZOOM = 2;
+const CELL_W = 180;
+const CELL_H = 180;
+const COLS = 2;
+const GRID_ORIGIN_X = 40;
+const GRID_ORIGIN_Y = 80;
 
 export class CombinationsPreviewScene extends Phaser.Scene {
   constructor() {
@@ -59,73 +96,118 @@ export class CombinationsPreviewScene extends Phaser.Scene {
 
   create(): void {
     const size = getHaggisSpriteSize();
-    const cellW = size + 40;
-    const cellH = size + 60;
-    const cols = 2;
+    const spriteScale = ZOOM;
 
     this.cameras.main.setBackgroundColor('#1a1a1a');
-    this.add.text(20, 10, 'Combinations Preview (Phase 0)', {
-      fontSize: '16px',
-      color: '#c8a040',
-    });
-    this.add.text(20, 34, 'Press ESC to return to game', {
-      fontSize: '12px',
-      color: '#8a9a6b',
-    });
+    this.add
+      .text(20, 10, 'Combinations Preview — ESC back, Wheel/Arrows scroll', {
+        fontSize: '14px',
+        color: '#c8a040',
+      })
+      .setScrollFactor(0);
+    this.add
+      .text(20, 32, `${CELLS.length} cells — each accessory solo, then full stacks`, {
+        fontSize: '12px',
+        color: '#8a9a6b',
+      })
+      .setScrollFactor(0);
+
+    const totalRows = Math.ceil(CELLS.length / COLS);
+    const gridHeight = GRID_ORIGIN_Y + totalRows * CELL_H + 40;
+    this.cameras.main.setBounds(0, 0, this.scale.width, gridHeight);
 
     CELLS.forEach((cell, idx) => {
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      const x = 40 + col * cellW;
-      const y = 70 + row * cellH;
+      const col = idx % COLS;
+      const row = Math.floor(idx / COLS);
+      const cellX = GRID_ORIGIN_X + col * CELL_W;
+      const cellY = GRID_ORIGIN_Y + row * CELL_H;
       const frame = cell.frame ?? 0;
 
-      // Cell background
-      this.add.rectangle(x + size / 2, y + size / 2, cellW - 10, cellH - 10, 0x2a2a30);
-      this.add.text(x - 10, y + size + 10, cell.label, {
+      // ── Cell chrome: background panel + label
+      this.add.rectangle(
+        cellX + CELL_W / 2 - 10,
+        cellY + CELL_H / 2 - 10,
+        CELL_W - 20,
+        CELL_H - 30,
+        0x2a2a30,
+      );
+
+      // Anchor (centre of the sprite stack) — helps spot off-centre drawers.
+      const cx = cellX + CELL_W / 2 - 10;
+      const cy = cellY + CELL_H / 2 - 20;
+
+      // Haggis-body silhouette reference rectangle (56×56 at zoom).
+      // Makes it visually obvious where the body "lives" vs where an
+      // accessory pokes out of it.
+      const bodyW = size * spriteScale;
+      this.add
+        .rectangle(cx, cy, bodyW, bodyW, 0x000000, 0)
+        .setStrokeStyle(1, 0x3a4268, 0.6);
+
+      // Centre crosshair — 9 px cross to sight-check drift across frames.
+      this.add.line(0, 0, cx - 4, cy, cx + 4, cy, 0xff5566, 0.7).setOrigin(0);
+      this.add.line(0, 0, cx, cy - 4, cx, cy + 4, 0xff5566, 0.7).setOrigin(0);
+
+      // ── Sprite stack: behind-layer accessories, then body, then
+      // body/front/above accessories in the declared layer order. Same
+      // ordering the live render path produces. ──
+      const included = new Set(cell.accessories);
+      const drawSprite = (key: string): void => {
+        this.add.sprite(cx, cy, key).setScale(spriteScale);
+      };
+
+      if (included.has('loch_water')) {
+        drawSprite(`loch_water_${cell.state}_${frame}`);
+      }
+      if (included.has('highland_shield')) {
+        drawSprite(`highland_shield_${cell.state}_${frame}`);
+      }
+      drawSprite(`haggis_classic_${cell.state}_${frame}`);
+      if (included.has('kilt')) {
+        drawSprite(`kilt_${cell.state}_${frame}`);
+      }
+      if (included.has('tartan_sash')) {
+        drawSprite(`tartan_sash_${cell.state}_${frame}`);
+      }
+      if (included.has('sporran')) {
+        drawSprite(`sporran_${cell.state}_${frame}`);
+      }
+      if (included.has('whisky_flask')) {
+        drawSprite(`whisky_flask_${cell.state}_${frame}`);
+      }
+      if (included.has('irn_bru')) {
+        drawSprite(`irn_bru_${cell.state}_${frame}`);
+      }
+      if (included.has('tam_o_shanter')) {
+        drawSprite(`tam_o_shanter_${cell.state}_${frame}`);
+      }
+      if (included.has('thistle_crown')) {
+        drawSprite(`thistle_crown_${cell.state}_${frame}`);
+      }
+
+      // Label pinned to the cell bottom.
+      this.add.text(cellX + 6, cellY + CELL_H - 28, cell.label, {
         fontSize: '11px',
         color: '#9aa590',
       });
-
-      // Behind-layer accessories render below the body; render them
-      // first, then the body, then any front/above layer accessories.
-      if (cell.accessories.includes('loch_water')) {
-        this.add.sprite(x + size / 2, y + size / 2, `loch_water_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('highland_shield')) {
-        this.add.sprite(x + size / 2, y + size / 2, `highland_shield_${cell.state}_${frame}`);
-      }
-
-      // Body
-      this.add.sprite(x + size / 2, y + size / 2, `haggis_classic_${cell.state}_${frame}`);
-
-      if (cell.accessories.includes('kilt')) {
-        this.add.sprite(x + size / 2, y + size / 2, `kilt_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('tartan_sash')) {
-        this.add.sprite(x + size / 2, y + size / 2, `tartan_sash_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('sporran')) {
-        this.add.sprite(x + size / 2, y + size / 2, `sporran_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('whisky_flask')) {
-        this.add.sprite(x + size / 2, y + size / 2, `whisky_flask_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('irn_bru')) {
-        this.add.sprite(x + size / 2, y + size / 2, `irn_bru_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('tam_o_shanter')) {
-        this.add.sprite(x + size / 2, y + size / 2, `tam_o_shanter_${cell.state}_${frame}`);
-      }
-      if (cell.accessories.includes('thistle_crown')) {
-        this.add.sprite(x + size / 2, y + size / 2, `thistle_crown_${cell.state}_${frame}`);
-      }
     });
 
-    // Return to game on ESC
+    // ── Input: ESC to return, wheel + arrow keys to scroll ──
     this.input.keyboard?.on('keydown-ESC', () => {
       this.scene.stop('CombinationsPreview');
       this.scene.resume('Game');
+    });
+
+    const scrollBy = (dy: number): void => {
+      const cam = this.cameras.main;
+      cam.scrollY = Phaser.Math.Clamp(cam.scrollY + dy, 0, cam.getBounds().height - cam.height);
+    };
+    this.input.keyboard?.on('keydown-UP', () => scrollBy(-60));
+    this.input.keyboard?.on('keydown-DOWN', () => scrollBy(60));
+    this.input.keyboard?.on('keydown-PAGE_UP', () => scrollBy(-this.scale.height));
+    this.input.keyboard?.on('keydown-PAGE_DOWN', () => scrollBy(this.scale.height));
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
+      scrollBy(dy);
     });
   }
 }
