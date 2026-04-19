@@ -125,13 +125,13 @@ function drawTam(g: Phaser.GameObjects.Graphics, frame: TamFrame): void {
 }
 
 function drawTamIdle0(g: Phaser.GameObjects.Graphics): void {
-  // Breathing in — bonnet settles 1 px with the body.
-  drawTam(g, { y: 1 });
+  // Hat is a rigid accessory — no independent idle sway. The body breathes
+  // beneath it; the hat rides the head anchor, not the breath cycle.
+  drawTam(g, { y: 0 });
 }
 
 function drawTamIdle1(g: Phaser.GameObjects.Graphics): void {
-  // Breathing out — bonnet rises with the body.
-  drawTam(g, { y: -1 });
+  drawTam(g, { y: 0 });
 }
 
 function drawTamWalking0(g: Phaser.GameObjects.Graphics): void {
