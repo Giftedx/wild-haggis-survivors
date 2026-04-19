@@ -18,11 +18,13 @@
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 
-// Pushed to upper-left so ~half the shield pokes out above the haggis's
-// left shoulder — reads clearly as "shield slung on the back" instead of
-// disappearing entirely behind the body silhouette.
-const CX = 20;
-const BASE_CY = 28;
+// Pushed to upper-left so roughly a quarter of the shield pokes out
+// above the haggis's left shoulder — reads as "shield slung on the
+// back" without dominating the silhouette. Previously sat too low
+// and too large; pulled up + shrunk to stop it from looking like a
+// second body beside the haggis.
+const CX = 16;
+const BASE_CY = 22;
 
 const WOOD_DARK = 0x2b1608;
 const WOOD_MID = 0x4a2a12;
@@ -40,52 +42,54 @@ function drawShield(g: Phaser.GameObjects.Graphics, frame: ShieldFrame): void {
   const cx = CX + (frame.x ?? 0);
   const cy = BASE_CY + frame.y;
 
-  // ── Shadow — the shield casts slight offset from the haggis body ──
+  // Shield radius — pulled from 15 to 11 so the shape reads as a
+  // slung accessory instead of a second body alongside the haggis.
+  // ── Shadow — slight offset from the body silhouette ──
   g.fillStyle(0x000000, 0.35);
-  g.fillCircle(cx + 1, cy + 2, 15);
+  g.fillCircle(cx + 1, cy + 2, 11);
 
   // ── Iron rim — outer metal band ──
   g.fillStyle(IRON_DARK, 1);
-  g.fillCircle(cx, cy, 15);
+  g.fillCircle(cx, cy, 11);
   g.fillStyle(IRON_MID, 1);
-  g.fillCircle(cx, cy, 14);
+  g.fillCircle(cx, cy, 10);
 
   // ── Wood face — layered tonal rings for depth ──
   g.fillStyle(WOOD_DARK, 1);
-  g.fillCircle(cx, cy, 13);
+  g.fillCircle(cx, cy, 9);
   g.fillStyle(WOOD_MID, 1);
-  g.fillCircle(cx, cy, 12);
+  g.fillCircle(cx, cy, 8);
   g.fillStyle(WOOD_LIGHT, 0.7);
-  g.fillCircle(cx - 2, cy - 2, 9);
+  g.fillCircle(cx - 1.5, cy - 1.5, 6);
 
   // ── Wood grain — two arcing fillet lines suggest plank seams ──
   g.fillStyle(WOOD_DARK, 0.5);
-  g.fillRect(cx - 11, cy - 1, 22, 1);
-  g.fillRect(cx - 10, cy + 4, 20, 1);
+  g.fillRect(cx - 7, cy - 1, 14, 1);
+  g.fillRect(cx - 6, cy + 2, 12, 1);
 
-  // ── Rivets — 8 around the rim, cardinal + diagonal ──
+  // ── Rivets — 6 around the rim, cardinal + a pair of diagonals ──
   g.fillStyle(IRON_LIGHT, 1);
-  const rivetR = 11;
-  for (let i = 0; i < 8; i++) {
-    const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+  const rivetR = 8;
+  for (let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
     const rx = cx + Math.cos(angle) * rivetR;
     const ry = cy + Math.sin(angle) * rivetR;
-    g.fillCircle(rx, ry, 1.4);
+    g.fillCircle(rx, ry, 1);
   }
 
   // ── Iron boss — central raised plate ──
   g.fillStyle(IRON_DARK, 1);
-  g.fillCircle(cx, cy, 5);
+  g.fillCircle(cx, cy, 3.5);
   g.fillStyle(PALETTE.gold.aged, 1);
-  g.fillCircle(cx, cy, 4);
+  g.fillCircle(cx, cy, 2.5);
   g.fillStyle(PALETTE.gold.bright, 1);
-  g.fillCircle(cx - 1, cy - 1, 2.5);
+  g.fillCircle(cx - 0.5, cy - 0.5, 1.5);
   g.fillStyle(0xffffff, 0.4);
-  g.fillCircle(cx - 1.5, cy - 1.5, 1.2);
+  g.fillCircle(cx - 1, cy - 1, 0.8);
 
   // ── Light-model highlight across the upper-left rim ──
   g.fillStyle(0xffffff, 0.15);
-  g.fillEllipse(cx - 5, cy - 8, 10, 4);
+  g.fillEllipse(cx - 3, cy - 5, 6, 2.5);
 }
 
 function drawShieldIdle0(g: Phaser.GameObjects.Graphics): void {

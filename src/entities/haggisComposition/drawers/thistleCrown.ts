@@ -34,27 +34,25 @@ function drawThistleBud(
   g: Phaser.GameObjects.Graphics,
   cx: number,
   cy: number,
-  scale = 1,
 ): void {
   // Sepal base — green cup.
   g.fillStyle(THISTLE_GREEN, 1);
-  g.fillEllipse(cx, cy + 2 * scale, 5 * scale, 3 * scale);
+  g.fillEllipse(cx, cy + 2, 4, 2.5);
   g.fillStyle(0x184020, 1);
-  g.fillEllipse(cx, cy + 2.5 * scale, 4 * scale, 2 * scale);
+  g.fillEllipse(cx, cy + 2.5, 3, 1.5);
 
   // Bloom — layered purple with highlight.
   g.fillStyle(THISTLE_PURPLE, 1);
-  g.fillEllipse(cx, cy - 1 * scale, 5 * scale, 5 * scale);
+  g.fillEllipse(cx, cy - 1, 4, 4);
   g.fillStyle(THISTLE_BLOOM, 1);
-  g.fillEllipse(cx - 0.5 * scale, cy - 2 * scale, 3 * scale, 3 * scale);
+  g.fillEllipse(cx - 0.5, cy - 1.5, 2.5, 2.5);
   g.fillStyle(0xffffff, 0.4);
-  g.fillCircle(cx - 1 * scale, cy - 2.5 * scale, 1 * scale);
+  g.fillCircle(cx - 0.8, cy - 2, 0.7);
 
-  // Spiky petals — three radial spikes.
+  // Two small spiky petals — reduced from three for a tighter crown.
   g.fillStyle(THISTLE_BLOOM, 0.9);
-  g.fillTriangle(cx - 3, cy - 3, cx - 2, cy - 5, cx - 1, cy - 3);
-  g.fillTriangle(cx, cy - 4, cx + 1, cy - 6, cx + 2, cy - 4);
-  g.fillTriangle(cx + 2, cy - 2, cx + 3, cy - 4, cx + 4, cy - 2);
+  g.fillTriangle(cx - 2, cy - 3, cx - 1, cy - 5, cx, cy - 3);
+  g.fillTriangle(cx + 1, cy - 3, cx + 2, cy - 5, cx + 3, cy - 3);
 }
 
 function drawThistleCrown(
@@ -66,16 +64,16 @@ function drawThistleCrown(
 
   // ── Gold band — thin arc binding the buds ──
   g.fillStyle(GOLD_BAND, 1);
-  g.fillEllipse(cx, cy + 4, 22, 3);
+  g.fillEllipse(cx, cy + 4, 16, 2.5);
   g.fillStyle(PALETTE.gold.bright, 0.8);
-  g.fillEllipse(cx, cy + 3.5, 20, 2);
+  g.fillEllipse(cx, cy + 3.5, 14, 1.5);
 
-  // ── Five thistle buds across the top ──
-  drawThistleBud(g, cx - 8, cy + 3);
-  drawThistleBud(g, cx - 4, cy + 1);
-  drawThistleBud(g, cx, cy);
-  drawThistleBud(g, cx + 4, cy + 1);
-  drawThistleBud(g, cx + 8, cy + 3);
+  // ── Three thistle buds — centre + two flanking, tighter than the
+  // previous five-bud arc so the crown reads as a single hero shape
+  // instead of a crowded hedge on top of the head. ──
+  drawThistleBud(g, cx - 5, cy + 1);
+  drawThistleBud(g, cx, cy - 1);
+  drawThistleBud(g, cx + 5, cy + 1);
 }
 
 function drawIdle0(g: Phaser.GameObjects.Graphics): void {
