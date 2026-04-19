@@ -60,6 +60,16 @@ function drawTam(g: Phaser.GameObjects.Graphics, frame: TamFrame): void {
   const cx = CX + (frame.x ?? 0);
   const cy = BASE_CY + frame.y;
 
+  // DIAGNOSTIC — cyan dot at texture (40, 40) = center of the 80×80
+  // accessory canvas. With origin (0.5, 0.5), this should render at
+  // exactly the Player position. Magenta dot at (40, 23) = expected
+  // haggis silhouette top (player.y − 17). Remove once position
+  // debugging is done.
+  g.fillStyle(0x00ffff, 1);
+  g.fillRect(CX - 1, 40 - 1, 2, 2);
+  g.fillStyle(0xff00ff, 1);
+  g.fillRect(CX - 1, 23 - 1, 2, 2);
+
   // ── Undershadow — seats the bonnet into the fur below. Sits just
   // inside the haggis silhouette top so the tam reads as worn, not
   // floating. ──
