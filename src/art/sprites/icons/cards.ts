@@ -60,31 +60,83 @@ function drawSporran(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_whisky_flask` — hip flask pickup icon. Design pivot: old
+ * grey metal rectangle with orange liquid puddle read as "radio" or
+ * "hip pouch". New pitch — proper CURVED HIP-FLASK silhouette
+ * (classic kidney-bean shape with screw-cap neck on top), polished
+ * pewter body with tartan label strip across the middle for the
+ * Scottish anchor. Screw-cap with chain is unmistakable.
+ */
 function drawWhiskyFlask(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x332211);
   const cx = 16, cy = 16;
-  g.fillStyle(0x555555, 1);
-  g.fillRoundedRect(cx - 7, cy - 4, 14, 16, 3);
-  g.fillStyle(0x888888, 1);
-  g.fillRoundedRect(cx - 6, cy - 3, 12, 14, 2);
-  g.fillStyle(0xaaaaaa, 1);
-  g.fillRect(cx - 5, cy - 2, 3, 12);
-  g.fillStyle(0xcccccc, 0.5);
-  g.fillRect(cx - 4, cy - 1, 1, 10);
-  g.fillStyle(0x666666, 1);
-  g.fillRect(cx - 3, cy - 8, 6, 5);
-  g.fillStyle(0x999999, 1);
-  g.fillRect(cx - 2, cy - 7, 4, 3);
-  g.fillStyle(0x777777, 1);
-  g.fillRect(cx - 3, cy - 7, 6, 1);
-  g.fillRect(cx - 3, cy - 5, 6, 1);
-  g.fillStyle(0x442200, 1);
-  g.fillEllipse(cx + 1, cy + 3, 6, 8);
-  g.fillStyle(0xcc7711, 1);
-  g.fillEllipse(cx + 1, cy + 4, 4, 5);
-  g.fillStyle(0xee9922, 0.6);
-  g.fillEllipse(cx + 1, cy + 3, 2, 3);
+
+  // ── Screw cap on top — the unmistakable flask-top tell. ──
+  g.fillStyle(0x1a1008, 1);
+  g.fillRect(cx - 3, cy - 12, 6, 3);
+  g.fillStyle(0x5a3818, 1);
+  g.fillRect(cx - 3, cy - 12, 6, 2);
+  g.fillStyle(0x8a6028, 1);
+  g.fillRect(cx - 3, cy - 12, 6, 0.8);
+  // Cap ridges
+  g.fillStyle(0x1a1008, 1);
+  g.fillRect(cx - 3, cy - 11, 6, 0.4);
+  g.fillRect(cx - 3, cy - 10.3, 6, 0.4);
+
+  // ── Flask neck — narrower column between cap and body. ──
+  g.fillStyle(0x2a2a32, 1);
+  g.fillRect(cx - 2, cy - 9, 4, 3);
+  g.fillStyle(0x6a6a72, 1);
+  g.fillRect(cx - 2, cy - 9, 4, 1);
+
+  // ── MAIN FLASK BODY — classic kidney/hip-flask curve. Rounded
+  // rect with pinched waist. ──
+  // Outline
+  g.fillStyle(0x0a0a12, 1);
+  g.fillRoundedRect(cx - 9, cy - 6, 18, 18, 5);
+  // Body — polished pewter
+  g.fillStyle(0x6a6a78, 1);
+  g.fillRoundedRect(cx - 8, cy - 5, 16, 16, 4);
+  g.fillStyle(0x8a8a98, 1);
+  g.fillRoundedRect(cx - 8, cy - 5, 16, 8, 4);
+  // Bright sheen strip down the left
+  g.fillStyle(0xbabac8, 1);
+  g.fillRect(cx - 7, cy - 4, 2, 14);
+  g.fillStyle(0xdcdce8, 0.85);
+  g.fillRect(cx - 7, cy - 4, 1, 14);
+
+  // ── TARTAN LABEL — wraps across the centre of the flask. Red +
+  // dark-green + gold = Royal Stewart palette, the Scottish anchor. ──
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx - 9, cy, 18, 5);
+  // Dark crossbars
+  g.fillStyle(0x2a0a0a, 0.9);
+  g.fillRect(cx - 9, cy + 1.5, 18, 0.6);
+  g.fillRect(cx - 9, cy + 3.5, 18, 0.6);
+  // Vertical gold stripes
+  g.fillStyle(0xdaaa40, 1);
+  g.fillRect(cx - 5, cy, 0.8, 5);
+  g.fillRect(cx + 3, cy, 0.8, 5);
+  // Dark green tiny stripe
+  g.fillStyle(0x1a4818, 1);
+  g.fillRect(cx - 1, cy, 0.8, 5);
+
+  // ── Amber whisky visible through a small window in the body
+  // above the label — tiny glass porthole so the "whisky" anchor
+  // isn't hidden. ──
+  g.fillStyle(0x4a2808, 1);
+  g.fillEllipse(cx + 4, cy - 2, 5, 3);
+  g.fillStyle(0xc8781a, 1);
+  g.fillEllipse(cx + 4, cy - 2, 4, 2.2);
+  g.fillStyle(0xffb060, 0.9);
+  g.fillCircle(cx + 3.3, cy - 2.5, 0.8);
+
+  // ── Small chain linking the cap to the body. ──
+  g.lineStyle(0.7, 0x6a6a72, 1);
+  g.lineBetween(cx + 3, cy - 11, cx + 7, cy - 6);
+
   g.generateTexture('ucard_whisky_flask', s, s);
   g.destroy();
 }
@@ -377,28 +429,70 @@ function drawStatSpeed(scene: Phaser.Scene): void {
 function drawStatPickup(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x243a22);
-  const cx = 16, cy = 14;
-  g.fillStyle(0x882222, 1);
-  g.fillRect(cx - 10, cy - 6, 5, 14);
-  g.fillStyle(0xcc3333, 1);
-  g.fillRect(cx - 9, cy - 5, 3, 12);
-  g.fillStyle(0x222288, 1);
-  g.fillRect(cx + 5, cy - 6, 5, 14);
-  g.fillStyle(0x3344cc, 1);
-  g.fillRect(cx + 6, cy - 5, 3, 12);
-  g.fillStyle(0x666666, 1);
-  g.fillRect(cx - 10, cy + 6, 20, 5);
-  g.fillRoundedRect(cx - 10, cy + 4, 20, 8, 4);
-  g.fillStyle(0x999999, 1);
-  g.fillRect(cx - 6, cy + 7, 12, 3);
-  g.fillStyle(0xff4444, 1);
-  g.fillRect(cx - 10, cy - 7, 5, 3);
-  g.fillStyle(0x4466ff, 1);
-  g.fillRect(cx + 5, cy - 7, 5, 3);
-  g.fillStyle(0x99dd88, 0.5);
-  g.fillCircle(cx, cy - 8, 1);
-  g.fillCircle(cx - 2, cy - 10, 0.8);
-  g.fillCircle(cx + 2, cy - 10, 0.8);
+  const cx = 16, cy = 16;
+
+  // ── Horseshoe magnet — the universal "pickup range" icon.
+  // Classic red body + white pole tips. Drawn facing down-right
+  // so an incoming XP gem can fly toward the opening. ──
+  // Magnet body shadow
+  g.fillStyle(0x441010, 1);
+  g.fillRect(cx - 9, cy - 10, 16, 4);
+  g.fillRect(cx - 9, cy - 10, 4, 12);
+  g.fillRect(cx + 3, cy - 10, 4, 12);
+  // Magnet red body
+  g.fillStyle(0xcc2222, 1);
+  g.fillRect(cx - 8, cy - 9, 14, 3);
+  g.fillRect(cx - 8, cy - 9, 3, 10);
+  g.fillRect(cx + 4, cy - 9, 3, 10);
+  // Magnet red highlight
+  g.fillStyle(0xee5544, 1);
+  g.fillRect(cx - 7, cy - 9, 12, 1);
+  g.fillRect(cx - 7, cy - 8, 1, 8);
+  g.fillRect(cx + 5, cy - 8, 1, 8);
+
+  // ── White pole tips at the open end (classic horseshoe-magnet
+  // detail — shows which ends attract). ──
+  g.fillStyle(0xf0f0e0, 1);
+  g.fillRect(cx - 8, cy + 1, 3, 2);
+  g.fillRect(cx + 4, cy + 1, 3, 2);
+  g.fillStyle(0xffffff, 1);
+  g.fillRect(cx - 8, cy + 1, 3, 1);
+  g.fillRect(cx + 4, cy + 1, 3, 1);
+
+  // ── Magnetic field arcs — three glowing cyan arcs radiating
+  // from the pole tips, selling the "pulling items in" fantasy. ──
+  g.lineStyle(1, 0x66ddff, 0.7);
+  g.beginPath();
+  g.arc(cx - 6.5, cy + 4, 3, -Math.PI * 0.1, Math.PI * 0.6);
+  g.strokePath();
+  g.beginPath();
+  g.arc(cx + 5.5, cy + 4, 3, Math.PI * 0.4, Math.PI * 1.1);
+  g.strokePath();
+  g.lineStyle(0.8, 0x88eeff, 0.5);
+  g.beginPath();
+  g.arc(cx - 6.5, cy + 4, 5, -Math.PI * 0.1, Math.PI * 0.6);
+  g.strokePath();
+  g.beginPath();
+  g.arc(cx + 5.5, cy + 4, 5, Math.PI * 0.4, Math.PI * 1.1);
+  g.strokePath();
+
+  // ── Incoming XP gem — green diamond being pulled toward the
+  // magnet. Classic "item flying in" beat. ──
+  g.fillStyle(0x3a7a2a, 1);
+  g.fillTriangle(cx, cy + 9, cx - 3, cy + 11, cx, cy + 13);
+  g.fillTriangle(cx, cy + 9, cx + 3, cy + 11, cx, cy + 13);
+  g.fillStyle(0x6adc4a, 1);
+  g.fillTriangle(cx, cy + 9.5, cx - 2, cy + 11, cx, cy + 12.5);
+  g.fillTriangle(cx, cy + 9.5, cx + 2, cy + 11, cx, cy + 12.5);
+  g.fillStyle(0xaaffaa, 0.9);
+  g.fillCircle(cx - 0.5, cy + 10.5, 0.8);
+
+  // ── Motion streak behind the gem — short trail dots showing
+  // it's being yanked toward the magnet. ──
+  g.fillStyle(0xaaffaa, 0.55);
+  g.fillCircle(cx, cy + 14, 0.6);
+  g.fillCircle(cx, cy + 15, 0.4);
+
   g.generateTexture('ucard_stat_pickup', s, s);
   g.destroy();
 }
@@ -429,42 +523,90 @@ function drawStatDamage(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_stat_drift` — drift-reduction stat icon. Design pivot: old
+ * spiral+arrow read as generic "motion" without anchoring the "steer
+ * your haggis" concept. New pitch — SHIP'S STEERING WHEEL with six
+ * spokes + visible handle-nubs around the rim. The universal
+ * control/steering icon. The haggis drift is a steering-correction
+ * mechanic, so the wheel IS the mechanic.
+ */
 function drawStatDrift(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x2a2744);
   const cx = 16, cy = 16;
-  g.lineStyle(3, 0x7755aa, 1);
-  g.beginPath();
-  for (let i = 0; i < 20; i++) {
-    const a = (i / 20) * Math.PI * 1.5 - Math.PI / 2;
-    const r = 5 + i * 0.4;
-    const px = cx + Math.cos(a) * r;
-    const py = cy + Math.sin(a) * r;
-    if (i === 0) g.moveTo(px, py);
-    else g.lineTo(px, py);
+
+  // Outer dark wood rim
+  g.fillStyle(0x2a1a0a, 1);
+  g.fillCircle(cx, cy, 12);
+  // Main wood rim
+  g.fillStyle(0x6a3818, 1);
+  g.fillCircle(cx, cy, 11);
+  // Inner dark ring (cutout)
+  g.fillStyle(0x1a0e04, 1);
+  g.fillCircle(cx, cy, 8.5);
+  // Inner ring wood
+  g.fillStyle(0x6a3818, 1);
+  g.fillCircle(cx, cy, 7.5);
+  // Centre hub cutout
+  g.fillStyle(0x1a0e04, 1);
+  g.fillCircle(cx, cy, 4);
+
+  // Six spokes — thick radial bars from hub to rim
+  const spokeAngles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, 4 * Math.PI / 3, 5 * Math.PI / 3];
+  for (const a of spokeAngles) {
+    // Spoke body
+    g.fillStyle(0x6a3818, 1);
+    const sx1 = cx + Math.cos(a) * 3;
+    const sy1 = cy + Math.sin(a) * 3;
+    const sx2 = cx + Math.cos(a) * 8;
+    const sy2 = cy + Math.sin(a) * 8;
+    // Draw thick spoke as two overlapping triangles for a rectangle
+    const perpX = -Math.sin(a) * 1.2;
+    const perpY = Math.cos(a) * 1.2;
+    g.fillTriangle(sx1 + perpX, sy1 + perpY, sx1 - perpX, sy1 - perpY, sx2 + perpX, sy2 + perpY);
+    g.fillTriangle(sx1 - perpX, sy1 - perpY, sx2 + perpX, sy2 + perpY, sx2 - perpX, sy2 - perpY);
+    // Spoke highlight
+    g.fillStyle(0x8a5028, 1);
+    const perpX2 = -Math.sin(a) * 0.5;
+    const perpY2 = Math.cos(a) * 0.5;
+    g.fillTriangle(sx1 + perpX2, sy1 + perpY2, sx2 + perpX2, sy2 + perpY2, sx2 - perpX2, sy2 - perpY2);
   }
-  g.strokePath();
-  g.lineStyle(2, 0xaa88dd, 1);
-  g.beginPath();
-  for (let i = 0; i < 15; i++) {
-    const a = (i / 15) * Math.PI * 1.3 - Math.PI / 2;
-    const r = 3 + i * 0.35;
-    const px = cx + Math.cos(a) * r;
-    const py = cy + Math.sin(a) * r;
-    if (i === 0) g.moveTo(px, py);
-    else g.lineTo(px, py);
+
+  // Handle nubs — six knobs sticking out beyond the rim
+  g.fillStyle(0x4a2810, 1);
+  for (const a of spokeAngles) {
+    const hx = cx + Math.cos(a) * 13;
+    const hy = cy + Math.sin(a) * 13;
+    g.fillCircle(hx, hy, 1.8);
   }
-  g.strokePath();
-  g.fillStyle(0xc1a4ff, 1);
-  g.fillCircle(cx, cy, 2.5);
-  g.fillStyle(0xe8d4ff, 1);
-  g.fillCircle(cx, cy, 1.2);
-  g.fillStyle(0xc1a4ff, 1);
-  const endA = (20 / 20) * Math.PI * 1.5 - Math.PI / 2;
-  const endR = 5 + 20 * 0.4;
-  const ex = cx + Math.cos(endA) * endR;
-  const ey = cy + Math.sin(endA) * endR;
-  g.fillTriangle(ex, ey, ex - 3, ey - 3, ex + 2, ey - 2);
+  g.fillStyle(0x8a5028, 1);
+  for (const a of spokeAngles) {
+    const hx = cx + Math.cos(a) * 13;
+    const hy = cy + Math.sin(a) * 13;
+    g.fillCircle(hx, hy, 1.2);
+  }
+  g.fillStyle(0xba7848, 0.9);
+  for (const a of spokeAngles) {
+    const hx = cx + Math.cos(a) * 13;
+    const hy = cy + Math.sin(a) * 13;
+    g.fillCircle(hx - 0.3, hy - 0.3, 0.5);
+  }
+
+  // Centre hub — brass knob with rivet
+  g.fillStyle(0xd8a848, 1);
+  g.fillCircle(cx, cy, 3);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillCircle(cx, cy, 2);
+  g.fillStyle(0x6a4818, 1);
+  g.fillCircle(cx, cy, 0.8);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(cx - 0.7, cy - 0.7, 0.5);
+
+  // Rim wood-grain highlight on top
+  g.fillStyle(0x8a5028, 0.85);
+  g.fillEllipse(cx, cy - 11, 6, 1);
+
   g.generateTexture('ucard_stat_drift', s, s);
   g.destroy();
 }
@@ -529,39 +671,80 @@ function drawStatUtility(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_stat_cooldown` — weapon cooldown-reduction stat icon.
+ * Design pivot: old hourglass-between-posts read as "gears" or
+ * "pressure clamp". New pitch — proper POCKET-WATCH CLOCK FACE
+ * with visible hour/minute hands + 12 tick marks + crown stem +
+ * ring loop on top. Universal "time/cooldown" icon that reads at
+ * 32px without needing culture context.
+ */
 function drawStatCooldown(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x2a2238);
   const cx = 16, cy = 16;
-  g.fillStyle(0x886622, 1);
-  g.fillRect(cx - 8, 5, 16, 3);
-  g.fillStyle(0xbb9933, 1);
-  g.fillRect(cx - 7, 6, 14, 1);
-  g.fillStyle(0x886622, 1);
-  g.fillRect(cx - 8, 24, 16, 3);
-  g.fillStyle(0xbb9933, 1);
-  g.fillRect(cx - 7, 25, 14, 1);
-  g.fillStyle(0x445566, 0.6);
-  g.fillTriangle(cx - 6, 8, cx + 6, 8, cx, cy);
-  g.fillStyle(0x5a7a8a, 0.4);
-  g.fillTriangle(cx - 5, 9, cx + 5, 9, cx, cy - 1);
-  g.fillStyle(0x445566, 0.6);
-  g.fillTriangle(cx, cy, cx - 6, 24, cx + 6, 24);
-  g.fillStyle(0x5a7a8a, 0.4);
-  g.fillTriangle(cx, cy + 1, cx - 5, 23, cx + 5, 23);
-  g.fillStyle(0xddaa44, 1);
-  g.fillTriangle(cx - 4, 24, cx + 4, 24, cx, 19);
-  g.fillStyle(0xffcc66, 1);
-  g.fillTriangle(cx - 3, 23, cx + 3, 23, cx, 20);
-  g.fillStyle(0xddaa44, 0.7);
-  g.fillRect(cx - 3, 9, 6, 3);
-  g.fillStyle(0xffcc66, 0.5);
-  g.fillRect(cx - 2, 10, 4, 1);
-  g.fillStyle(0xddaa44, 1);
-  g.fillRect(cx - 0.5, cy - 2, 1, 5);
-  g.fillStyle(0x886622, 1);
-  g.fillRect(cx - 7, 8, 2, 16);
-  g.fillRect(cx + 5, 8, 2, 16);
+
+  // Watch-loop ring on top (where the chain would attach)
+  g.lineStyle(1.5, 0xd8a848, 1);
+  g.strokeCircle(cx, cy - 14, 1.8);
+  // Watch crown stem (between loop and body)
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 1, cy - 12, 2, 2);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 0.5, cy - 12, 1, 2);
+
+  // Outer gold case ring
+  g.fillStyle(0x8a6018, 1);
+  g.fillCircle(cx, cy, 11.5);
+  g.fillStyle(0xd8a848, 1);
+  g.fillCircle(cx, cy, 10.5);
+  g.fillStyle(0xfadc6a, 0.9);
+  g.fillCircle(cx, cy - 0.5, 9.5);
+
+  // Watch face — cream/ivory
+  g.fillStyle(0xf4e8d0, 1);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(0xfaf0dc, 1);
+  g.fillCircle(cx, cy - 0.5, 8);
+
+  // 12 TICK MARKS around the dial
+  g.fillStyle(0x1a1008, 1);
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+    const isMajor = i % 3 === 0;
+    const r1 = 8;
+    const r2 = isMajor ? 6.5 : 7.3;
+    const sx1 = cx + Math.cos(a) * r1;
+    const sy1 = cy + Math.sin(a) * r1;
+    const sx2 = cx + Math.cos(a) * r2;
+    const sy2 = cy + Math.sin(a) * r2;
+    // Use a thick rect aligned along the radial line via perpendicular offset
+    const perpX = -Math.sin(a) * (isMajor ? 1 : 0.5);
+    const perpY = Math.cos(a) * (isMajor ? 1 : 0.5);
+    g.fillTriangle(sx1 + perpX, sy1 + perpY, sx1 - perpX, sy1 - perpY, sx2 + perpX, sy2 + perpY);
+    g.fillTriangle(sx1 - perpX, sy1 - perpY, sx2 + perpX, sy2 + perpY, sx2 - perpX, sy2 - perpY);
+  }
+
+  // HOUR HAND — thick, pointing up-right (10 o'clock-ish position)
+  g.fillStyle(0x0a0a10, 1);
+  // Hour hand as a thick triangle
+  g.fillTriangle(cx, cy, cx - 4, cy - 3, cx - 0.7, cy);
+  g.fillTriangle(cx, cy, cx - 0.7, cy, cx - 3, cy - 4);
+
+  // MINUTE HAND — longer, thinner, pointing up
+  g.fillStyle(0x0a0a10, 1);
+  g.fillTriangle(cx, cy, cx - 0.5, cy - 7, cx + 0.5, cy - 7);
+
+  // Centre pin (where the hands meet)
+  g.fillStyle(0xd8a848, 1);
+  g.fillCircle(cx, cy, 1.5);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillCircle(cx, cy, 0.8);
+
+  // Glass sheen on the top-left for depth
+  g.fillStyle(0xffffff, 0.3);
+  g.fillEllipse(cx - 3, cy - 4, 4, 2);
+
   g.generateTexture('ucard_stat_cooldown', s, s);
   g.destroy();
 }

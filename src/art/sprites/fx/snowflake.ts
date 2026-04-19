@@ -1,48 +1,64 @@
 /**
- * `fx_snowflake` — crisp ice-crystal particle with six main arms and
- * tiny branching detail. Used by the weather system for snow.
+ * `fx_snowflake` — snow particle at 10px. Design pivot: old 6-arm
+ * stroke-line crystal collapsed into illegible scribble at gameplay
+ * scale because 0.8px branches can't render cleanly on most
+ * displays. New pitch — bold plus-cross (4 main arms as solid
+ * rects) with a bright centre diamond. Reads as "snow" in motion
+ * without relying on fine line-rendering. Accepted trade: gives up
+ * the hexagonal fidelity for silhouette clarity at 10px.
  */
 
 import Phaser from 'phaser';
 
 export function bakeSnowflake(scene: Phaser.Scene): void {
-  // ── Snowflake particle — crisp ice crystal with branching arms ──
   const snow = 10;
   const gs = scene.add.graphics();
-  const scx = snow / 2;
-  const scy = snow / 2;
-  // Outer glow
-  gs.fillStyle(0xaaddff, 0.15);
-  gs.fillCircle(scx, scy, 4.5);
-  // Six main arms
-  gs.lineStyle(1.5, 0xcce6ff, 1);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    gs.beginPath();
-    gs.moveTo(scx, scy);
-    gs.lineTo(scx + Math.cos(a) * 4.2, scy + Math.sin(a) * 4.2);
-    gs.strokePath();
-    // Tiny branch on each arm (crystalline detail)
-    gs.lineStyle(0.8, 0xddeeff, 0.7);
-    const midX = scx + Math.cos(a) * 2.5;
-    const midY = scy + Math.sin(a) * 2.5;
-    const branchA1 = a + Math.PI * 0.3;
-    const branchA2 = a - Math.PI * 0.3;
-    gs.beginPath();
-    gs.moveTo(midX, midY);
-    gs.lineTo(midX + Math.cos(branchA1) * 1.5, midY + Math.sin(branchA1) * 1.5);
-    gs.strokePath();
-    gs.beginPath();
-    gs.moveTo(midX, midY);
-    gs.lineTo(midX + Math.cos(branchA2) * 1.5, midY + Math.sin(branchA2) * 1.5);
-    gs.strokePath();
-    gs.lineStyle(1.5, 0xcce6ff, 1);
-  }
-  // Bright centre crystal
+  const cx = snow / 2;
+  const cy = snow / 2;
+
+  // ── Outer glow — soft halo so the flake pops against dark moor. ──
+  gs.fillStyle(0xaaddff, 0.2);
+  gs.fillCircle(cx, cy, 4.5);
+  gs.fillStyle(0xccecff, 0.12);
+  gs.fillCircle(cx, cy, 5);
+
+  // ── Four main arms as solid rects. Horizontal + vertical cross
+  // is the cleanest silhouette at 10px. ──
+  gs.fillStyle(0xeaf4ff, 1);
+  // Vertical arm
+  gs.fillRect(cx - 0.5, cy - 4, 1, 8);
+  // Horizontal arm
+  gs.fillRect(cx - 4, cy - 0.5, 8, 1);
+
+  // ── Diagonal arms — shorter, for the 8-point feel without fine
+  // stroke lines. ──
+  gs.fillStyle(0xccecff, 0.9);
+  // NE-SW diagonal
+  gs.fillRect(cx - 2.5, cy - 2.5, 1, 1);
+  gs.fillRect(cx - 1.5, cy - 1.5, 1, 1);
+  gs.fillRect(cx + 0.5, cy + 0.5, 1, 1);
+  gs.fillRect(cx + 1.5, cy + 1.5, 1, 1);
+  // NW-SE diagonal
+  gs.fillRect(cx + 1.5, cy - 2.5, 1, 1);
+  gs.fillRect(cx + 0.5, cy - 1.5, 1, 1);
+  gs.fillRect(cx - 1.5, cy + 0.5, 1, 1);
+  gs.fillRect(cx - 2.5, cy + 1.5, 1, 1);
+
+  // ── Tip caps — small bright squares at the end of each main arm
+  // for the crystal-tip feel. ──
   gs.fillStyle(0xffffff, 1);
-  gs.fillCircle(scx, scy, 1.3);
-  gs.fillStyle(0xeef8ff, 0.7);
-  gs.fillCircle(scx, scy, 0.7);
+  gs.fillRect(cx - 1, cy - 4, 2, 1);
+  gs.fillRect(cx - 1, cy + 3, 2, 1);
+  gs.fillRect(cx - 4, cy - 1, 1, 2);
+  gs.fillRect(cx + 3, cy - 1, 1, 2);
+
+  // ── Bright centre — small diamond made of two overlapping rects. ──
+  gs.fillStyle(0xffffff, 1);
+  gs.fillRect(cx - 1, cy - 1, 2, 2);
+  gs.fillStyle(0xaaf0ff, 0.9);
+  gs.fillRect(cx - 0.5, cy - 1.5, 1, 3);
+  gs.fillRect(cx - 1.5, cy - 0.5, 3, 1);
+
   gs.generateTexture('fx_snowflake', snow, snow);
   gs.destroy();
 }

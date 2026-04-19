@@ -1,5 +1,11 @@
 /**
- * `sheep` — Scottish Blackface with asymmetric ram's horns, thistle in the wool, creepy green-yellow goat eyes, manic grin.
+ * `sheep` — Scottish Blackface ram gone feral. Design pivot: old
+ * side-profile with tiny black head on the right dissolved into a
+ * generic "woolly" at gameplay scale. New pitch — the BLACK HEAD is
+ * dead-centre front-on with the cursed yellow eyes and asymmetric
+ * horns framing the whole sprite. Wool body rolls out behind the
+ * head as a curly halo. Thistle jammed between the horns as the
+ * "Highlands" anchor so you never mistake it for a farm sheep.
  */
 
 import Phaser from 'phaser';
@@ -9,92 +15,128 @@ export function bakeSheep(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // Wool body (matted, dirty hill sheep)
-  g.fillStyle(0x999988, 1);
-  g.fillEllipse(cx, cy, 28, 20);
-  g.fillStyle(0xddddcc, 1);
-  g.fillCircle(cx - 8, cy, 7);
-  g.fillCircle(cx - 2, cy - 3, 8);
-  g.fillCircle(cx + 4, cy - 2, 7);
-  g.fillCircle(cx + 8, cy + 1, 6);
-  g.fillCircle(cx - 6, cy + 3, 6);
-  g.fillCircle(cx + 2, cy + 4, 6);
-  g.fillStyle(0xbbbb99, 0.6);
-  g.fillCircle(cx - 5, cy + 4, 3);
-  g.fillCircle(cx + 6, cy + 3, 2.5);
-  g.fillStyle(0xaaaa88, 0.4);
-  g.fillCircle(cx - 8, cy + 2, 2);
-  g.fillStyle(0xeeeedd, 1);
-  g.fillCircle(cx - 4, cy - 4, 4);
-  g.fillCircle(cx + 3, cy - 3, 4);
+  // ── Ground shadow. ──
+  g.fillStyle(0x000000, 0.3);
+  g.fillEllipse(cx, cy + 14, 22, 3);
 
-  // Thistle stuck in wool
-  g.fillStyle(0x9966cc, 1);
-  g.fillCircle(cx - 10, cy - 3, 1.5);
-  g.fillStyle(0xbb88ee, 1);
-  g.fillCircle(cx - 10, cy - 3, 0.8);
-  g.fillStyle(0x336622, 1);
-  g.fillRect(cx - 10, cy - 2, 1, 3);
+  // ── Wool body — billowing ellipse behind/around the head. Dirty
+  // hill-sheep off-white with darker clumps for volume. ──
+  g.fillStyle(0x888878, 1);
+  g.fillEllipse(cx, cy + 3, 28, 18);
+  // Curly wool clumps — fat circles stacked for the bouclé read
+  g.fillStyle(0xd8d8c8, 1);
+  g.fillCircle(cx - 11, cy + 2, 5);
+  g.fillCircle(cx + 11, cy + 2, 5);
+  g.fillCircle(cx - 6, cy + 7, 5);
+  g.fillCircle(cx + 6, cy + 7, 5);
+  g.fillCircle(cx, cy + 9, 5);
+  g.fillStyle(0xe8e8d8, 1);
+  g.fillCircle(cx - 9, cy + 4, 3);
+  g.fillCircle(cx + 9, cy + 4, 3);
+  g.fillCircle(cx - 4, cy + 9, 3);
+  g.fillCircle(cx + 4, cy + 9, 3);
+  // Grubby darker clumps for texture
+  g.fillStyle(0xa8a898, 0.8);
+  g.fillCircle(cx - 7, cy + 5, 2);
+  g.fillCircle(cx + 7, cy + 5, 2);
+  g.fillCircle(cx, cy + 5, 2);
 
-  // Legs
-  g.fillStyle(0x111111, 1);
-  g.fillRect(cx - 8, cy + 8, 3, 5);
-  g.fillRect(cx - 3, cy + 8, 3, 5);
-  g.fillRect(cx + 2, cy + 8, 3, 5);
-  g.fillRect(cx + 7, cy + 8, 3, 5);
-  g.fillStyle(0x332211, 0.7);
-  g.fillRect(cx - 8, cy + 12, 3, 1);
-  g.fillRect(cx + 7, cy + 12, 3, 1);
-
-  // Head (Scottish Blackface)
+  // ── Black legs peeking out at the bottom — Blackface breed mark. ──
   g.fillStyle(0x000000, 1);
-  g.fillCircle(cx + 11, cy - 1, 6);
+  g.fillRect(cx - 9, cy + 11, 2.5, 4);
+  g.fillRect(cx - 3, cy + 12, 2.5, 3);
+  g.fillRect(cx + 1, cy + 12, 2.5, 3);
+  g.fillRect(cx + 7, cy + 11, 2.5, 4);
+  // Hoof highlight
+  g.fillStyle(0x2a2a2a, 1);
+  g.fillRect(cx - 9, cy + 14, 2.5, 1);
+  g.fillRect(cx + 7, cy + 14, 2.5, 1);
+
+  // ── BLACK HEAD — dominant centre element. Front-on, slightly
+  // wider than tall for the Blackface breed silhouette. ──
+  g.fillStyle(0x000000, 1);
+  g.fillEllipse(cx, cy - 5, 14, 12);
   g.fillStyle(0x1a1a1a, 1);
-  g.fillCircle(cx + 11, cy - 1, 5);
-  g.fillStyle(0xddddcc, 0.7);
-  g.fillRect(cx + 10, cy - 2, 2, 4);
+  g.fillEllipse(cx, cy - 5, 12, 10);
+  // Muzzle — slightly lighter strip at the bottom of the face
+  g.fillStyle(0x2a2a2a, 1);
+  g.fillEllipse(cx, cy, 6, 3);
+  g.fillStyle(0x3a3a3a, 0.8);
+  g.fillEllipse(cx, cy + 0.5, 4, 2);
 
-  // DRAMATIC CURLING RAM'S HORNS
-  g.fillStyle(0x887755, 1);
-  g.fillTriangle(cx + 6, cy - 4, cx + 2, cy - 9, cx + 4, cy - 2);
-  g.fillStyle(0xaa9966, 1);
-  g.fillTriangle(cx + 6, cy - 4, cx + 3, cy - 8, cx + 5, cy - 3);
-  g.fillStyle(0x776644, 0.6);
-  g.fillRect(cx + 4, cy - 6, 2, 1);
-  // Right horn — visibly bent wrong, ~30° off the symmetric curl
-  g.fillStyle(0x887755, 1);
-  g.fillTriangle(cx + 16, cy - 3, cx + 22, cy - 5, cx + 19, cy - 1);
-  g.fillStyle(0xaa9966, 1);
-  g.fillTriangle(cx + 16, cy - 3, cx + 21, cy - 4, cx + 18, cy - 1);
-  g.fillStyle(0x776644, 0.6);
-  g.fillRect(cx + 19, cy - 3, 2, 1);
+  // ── MASSIVE CURLING RAM'S HORNS — asymmetric, twisted. Left horn
+  // curls tight, right horn angles outward like it grew wrong. ──
+  // Left horn — classic tight curl
+  g.fillStyle(0x665028, 1);
+  g.fillEllipse(cx - 9, cy - 9, 7, 4);
+  g.fillStyle(0x8a7038, 1);
+  g.fillEllipse(cx - 9, cy - 9, 6, 3);
+  // Left horn tip curling back in
+  g.fillStyle(0x665028, 1);
+  g.fillCircle(cx - 11, cy - 7, 2);
+  g.fillStyle(0x8a7038, 1);
+  g.fillCircle(cx - 11, cy - 7, 1.2);
+  // Horn ridges (growth rings)
+  g.fillStyle(0x4a3818, 0.8);
+  g.fillRect(cx - 11, cy - 10, 0.5, 3);
+  g.fillRect(cx - 9, cy - 10, 0.5, 3);
+  g.fillRect(cx - 7, cy - 10, 0.5, 3);
+  // Right horn — BENT WRONG, angles outward ~30° off
+  g.fillStyle(0x665028, 1);
+  g.fillEllipse(cx + 10, cy - 8, 7, 4);
+  g.fillStyle(0x8a7038, 1);
+  g.fillEllipse(cx + 10, cy - 8, 6, 3);
+  // Right horn tip — points outward, not curled
+  g.fillStyle(0x665028, 1);
+  g.fillTriangle(cx + 12, cy - 10, cx + 15, cy - 8, cx + 12, cy - 6);
+  g.fillStyle(0x8a7038, 1);
+  g.fillTriangle(cx + 12, cy - 9, cx + 14, cy - 8, cx + 12, cy - 7);
+  // Right horn ridges
+  g.fillStyle(0x4a3818, 0.8);
+  g.fillRect(cx + 8, cy - 9, 0.5, 3);
+  g.fillRect(cx + 10, cy - 9, 0.5, 3);
+  g.fillRect(cx + 12, cy - 9, 0.5, 3);
 
-  // Ears (one up, one flopped)
+  // ── Ears — small black triangles poking out from under the horns. ──
   g.fillStyle(0x000000, 1);
-  g.fillTriangle(cx + 8, cy - 7, cx + 10, cy - 4, cx + 6, cy - 4);
-  g.fillTriangle(cx + 14, cy - 4, cx + 16, cy - 2, cx + 13, cy - 1);
+  g.fillTriangle(cx - 7, cy - 5, cx - 9, cy - 2, cx - 5, cy - 2);
+  g.fillTriangle(cx + 7, cy - 5, cx + 9, cy - 2, cx + 5, cy - 2);
 
-  // Creepy green-yellow WRONG eyes — goat eyes should not glow like this
+  // ── CURSED YELLOW-GREEN EYES — the anchor that says "wrong".
+  // Big, with horizontal goat-pupils. ──
   g.fillStyle(0xccff00, 1);
-  g.fillCircle(cx + 10, cy - 2, 2);
-  g.fillCircle(cx + 13, cy - 2, 2);
+  g.fillEllipse(cx - 3, cy - 5, 2.5, 2);
+  g.fillEllipse(cx + 3, cy - 5, 2.5, 2);
+  // Goat-rectangle pupils (they look demonic)
   g.fillStyle(0x000000, 1);
-  g.fillRect(cx + 9, cy - 2, 2, 1);
-  g.fillRect(cx + 12, cy - 2, 2, 1);
+  g.fillRect(cx - 3.8, cy - 5, 1.6, 0.8);
+  g.fillRect(cx + 2.2, cy - 5, 1.6, 0.8);
+  // Bright highlight dot
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(cx - 3.5, cy - 5.3, 0.3);
+  g.fillCircle(cx + 2.5, cy - 5.3, 0.3);
 
-  // Asymmetric manic grin (left corner raised 3px — deeply wrong)
-  g.fillStyle(0x444444, 1);
-  g.fillRect(cx + 11, cy - 1, 1, 2);   // left corner high up
-  g.fillRect(cx + 12, cy, 1, 2);
-  g.fillRect(cx + 13, cy + 1, 1, 2);
-  g.fillRect(cx + 14, cy + 2, 1, 2);   // right corner stays low
-  g.fillRect(cx + 15, cy + 2, 1, 2);
+  // ── Manic grin showing teeth — a sheep should not smile. ──
+  g.fillStyle(0x3a1a1a, 1);
+  g.fillRect(cx - 2.5, cy + 1, 5, 1.5);
   g.fillStyle(0xeeeeee, 1);
-  g.fillRect(cx + 11, cy - 1, 1, 1);
-  g.fillRect(cx + 13, cy + 1, 1, 1);
-  g.fillRect(cx + 15, cy + 2, 1, 1);
+  g.fillRect(cx - 2, cy + 1, 0.8, 1.2);
+  g.fillRect(cx - 0.5, cy + 1.3, 0.8, 1);
+  g.fillRect(cx + 1, cy + 1, 0.8, 1.2);
+
+  // ── THISTLE wedged between the horns — unmistakable Scotland mark. ──
+  g.fillStyle(0x336622, 1);
+  g.fillRect(cx - 0.5, cy - 14, 1, 3);
+  g.fillStyle(0x9966cc, 1);
+  g.fillCircle(cx, cy - 15, 2);
+  g.fillStyle(0xbb88ee, 1);
+  g.fillCircle(cx, cy - 15, 1.2);
+  // Thistle spikes
+  g.fillStyle(0x8a5ab0, 1);
+  g.fillRect(cx - 1.5, cy - 16, 0.5, 1);
+  g.fillRect(cx + 1, cy - 16, 0.5, 1);
+  g.fillRect(cx - 0.5, cy - 17, 0.5, 1.2);
 
   g.generateTexture('sheep', s, s);
   g.destroy();
 }
-

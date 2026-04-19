@@ -1,7 +1,12 @@
 /**
- * `tourist` — sunburned visitor in a tartan bucket hat, selfie stick
- * up like a flagpole. Regatta cagoule, open-mouthed at the bonnie
- * scenery, ears glowing pink.
+ * `tourist` — overwhelmed Highland-holiday visitor. Design pivot:
+ * old sprite read as "generic blue-jacket person" because no
+ * unmistakable tourist props dominated. New pitch: BRIGHT-RED
+ * cagoule (tourists wear loud rain-jackets, and red pops against
+ * the moor green), BIG CAMERA hanging around neck (the universal
+ * tourist prop), TARTAN SHOPPING BAG clutched in one hand (Royal
+ * Mile tat), plus the selfie stick + bucket hat + sunburn. Every
+ * prop screams "I'm here on holiday".
  */
 
 import Phaser from 'phaser';
@@ -11,98 +16,173 @@ export function bakeTourist(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // === Legs (plain under cagoule — simplified for readability) ===
-  g.fillStyle(0xee8877, 1);
-  g.fillRect(cx - 7, cy + 10, 5, 8);
-  g.fillRect(cx + 2, cy + 10, 5, 8);
-  g.fillStyle(0x664422, 1);
-  g.fillRect(cx - 8, cy + 17, 7, 2);
-  g.fillRect(cx + 1, cy + 17, 7, 2);
+  // ── Ground shadow. ──
+  g.fillStyle(0x000000, 0.32);
+  g.fillEllipse(cx, cy + 20, 22, 3);
 
-  // === Bright blue cagoule (THE tourist silhouette — Regatta's finest) ===
-  g.fillStyle(0x0e2d77, 1);
+  // ── Legs in beige shorts peeking below the cagoule. ──
+  g.fillStyle(0xd8b880, 1);
+  g.fillRect(cx - 7, cy + 11, 5, 4);
+  g.fillRect(cx + 2, cy + 11, 5, 4);
+  // Pale sunburnt calves below the shorts
+  g.fillStyle(0xee9a78, 1);
+  g.fillRect(cx - 7, cy + 15, 5, 3);
+  g.fillRect(cx + 2, cy + 15, 5, 3);
+  // White socks (tourist classic)
+  g.fillStyle(0xf0f0f0, 1);
+  g.fillRect(cx - 7, cy + 18, 5, 1.5);
+  g.fillRect(cx + 2, cy + 18, 5, 1.5);
+  // Brown walking boots
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 8, cy + 19, 7, 2);
+  g.fillRect(cx + 1, cy + 19, 7, 2);
+  g.fillStyle(0x6a4028, 1);
+  g.fillRect(cx - 8, cy + 19, 7, 0.6);
+  g.fillRect(cx + 1, cy + 19, 7, 0.6);
+
+  // ── RED cagoule — bright scarlet, pops against moor green. ──
+  g.fillStyle(0x8a0808, 1);
   g.fillRect(cx - 12, cy - 6, 24, 18);
-  g.fillStyle(0x2255cc, 1);
+  g.fillStyle(0xc81818, 1);
   g.fillRect(cx - 11, cy - 5, 22, 16);
-  // Nylon sheen highlight
-  g.fillStyle(0x4477dd, 0.4);
-  g.fillRect(cx - 8, cy - 4, 10, 4);
-  // Zip line down center
-  g.fillStyle(0x1144aa, 1);
+  // Nylon sheen (brighter strip on the upper left)
+  g.fillStyle(0xe84040, 0.7);
+  g.fillRect(cx - 10, cy - 4, 8, 4);
+  // Zip line down centre
+  g.fillStyle(0x5a0404, 1);
   g.fillRect(cx, cy - 5, 1, 16);
+  // Drawstring toggles at the hem
+  g.fillStyle(0x2a0404, 1);
+  g.fillCircle(cx - 4, cy + 11, 0.8);
+  g.fillCircle(cx + 4, cy + 11, 0.8);
 
-  // === Head (SUNBURNED despite clearly overcast sky) ===
-  g.fillStyle(0xcc6644, 1);
+  // ── BIG CAMERA hanging around the neck — the universal tourist
+  // silhouette tell. Black body with big silver lens. ──
+  // Strap over the shoulder
+  g.fillStyle(0x2a1808, 1);
+  g.fillRect(cx - 6, cy - 5, 1.5, 6);
+  g.fillRect(cx + 4.5, cy - 5, 1.5, 6);
+  // Camera body — big black block
+  g.fillStyle(0x0a0a10, 1);
+  g.fillRect(cx - 6, cy, 12, 6);
+  g.fillStyle(0x2a2a32, 1);
+  g.fillRect(cx - 6, cy, 12, 1.2);
+  // Lens — silver circle in the centre
+  g.fillStyle(0x0a0a10, 1);
+  g.fillCircle(cx, cy + 3, 3);
+  g.fillStyle(0x4a4a52, 1);
+  g.fillCircle(cx, cy + 3, 2.2);
+  g.fillStyle(0x8a8a92, 1);
+  g.fillCircle(cx, cy + 3, 1.3);
+  g.fillStyle(0xffffff, 0.85);
+  g.fillCircle(cx - 0.5, cy + 2.5, 0.7);
+  // Flash + viewfinder bumps
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 5, cy + 0.5, 1.5, 1);
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx + 3.5, cy + 0.5, 1.5, 1);
+
+  // ── Head — pink-sunburned. ──
+  g.fillStyle(0xcc5a38, 1);
   g.fillCircle(cx, cy - 12, 9);
   g.fillStyle(0xee8866, 1);
   g.fillCircle(cx, cy - 12, 8);
-  // Sunburn flush on cheeks
-  g.fillStyle(0xff7755, 0.35);
-  g.fillCircle(cx - 4, cy - 10, 2);
-  g.fillCircle(cx + 4, cy - 10, 2);
+  // Cheek sunburn flush
+  g.fillStyle(0xff5030, 0.5);
+  g.fillCircle(cx - 4, cy - 10, 2.5);
+  g.fillCircle(cx + 4, cy - 10, 2.5);
   // Wide bewildered eyes
   g.fillStyle(0xffffff, 1);
-  g.fillCircle(cx - 4, cy - 13, 3.5);
-  g.fillCircle(cx + 4, cy - 13, 3.5);
-  g.fillStyle(0x445566, 1);
-  g.fillCircle(cx - 4, cy - 13, 2);
-  g.fillCircle(cx + 4, cy - 13, 2);
-  g.fillStyle(0x111111, 1);
-  g.fillCircle(cx - 4, cy - 13, 0.8);
-  g.fillCircle(cx + 4, cy - 13, 0.8);
+  g.fillCircle(cx - 3.5, cy - 13, 2.5);
+  g.fillCircle(cx + 3.5, cy - 13, 2.5);
+  g.fillStyle(0x3a5a88, 1);
+  g.fillCircle(cx - 3.5, cy - 13, 1.3);
+  g.fillCircle(cx + 3.5, cy - 13, 1.3);
+  g.fillStyle(0x000000, 1);
+  g.fillCircle(cx - 3.5, cy - 13, 0.6);
+  g.fillCircle(cx + 3.5, cy - 13, 0.6);
   // Worried eyebrows
-  g.lineStyle(1.5, 0x884422, 1);
-  g.lineBetween(cx - 7, cy - 16, cx - 3, cy - 17);
-  g.lineBetween(cx + 7, cy - 16, cx + 3, cy - 17);
-  // Open mouth
-  g.fillStyle(0x993322, 1);
+  g.fillStyle(0x4a2808, 1);
+  g.fillRect(cx - 6, cy - 16, 4, 0.8);
+  g.fillRect(cx + 2, cy - 16, 4, 0.8);
+  // Open mouth of amazement
+  g.fillStyle(0x5a1818, 1);
   g.fillEllipse(cx, cy - 8, 3, 2);
+  g.fillStyle(0xff6666, 0.85);
+  g.fillEllipse(cx, cy - 8, 2.2, 1.5);
 
-  // === Tartan bucket hat (the tat-shop special from Buchanan Street) ===
-  g.fillStyle(0x776633, 1);
+  // ── Tartan bucket hat — unchanged from before, still a solid
+  // anchor. ──
+  g.fillStyle(0x0a0604, 1);
   g.fillEllipse(cx, cy - 19, 22, 5);
-  g.fillStyle(0xbb8855, 1);
+  g.fillStyle(0x5a4028, 1);
   g.fillEllipse(cx, cy - 19, 20, 4);
-  g.fillStyle(0x886644, 1);
+  g.fillStyle(0x1a0e04, 1);
   g.fillRect(cx - 8, cy - 24, 16, 6);
-  g.fillStyle(0xbb8855, 1);
+  g.fillStyle(0x5a4028, 1);
   g.fillRect(cx - 7, cy - 23, 14, 5);
-  // Tartan crosshatch — proper check pattern, not just one red line.
-  // Two red horizontals frame top + middle of the crown.
-  g.fillStyle(0xcc3322, 0.75);
-  g.fillRect(cx - 7, cy - 22, 14, 1);
-  g.fillRect(cx - 7, cy - 20, 14, 1);
-  // Dark green verticals — the Black-Watch sett flavour.
-  g.fillStyle(0x2a4028, 0.7);
+  // Tartan crosshatch — Royal Stewart red
+  g.fillStyle(0xc82828, 0.9);
+  g.fillRect(cx - 7, cy - 22, 14, 1.2);
+  g.fillRect(cx - 7, cy - 20, 14, 1.2);
+  g.fillStyle(0x2a4028, 0.8);
   g.fillRect(cx - 5, cy - 23, 1, 5);
   g.fillRect(cx + 4, cy - 23, 1, 5);
-  // Red verticals — intersect the horizontals to form classic check.
-  g.fillStyle(0xcc3322, 0.55);
+  g.fillStyle(0xc82828, 0.7);
   g.fillRect(cx - 1, cy - 23, 1, 5);
   g.fillRect(cx + 2, cy - 23, 1, 5);
-  // Cream pin-stripe accents — single pixel highlights at crossings.
-  g.fillStyle(0xf0e4c0, 0.6);
+  g.fillStyle(0xfadc6a, 0.8);
   g.fillRect(cx - 5, cy - 22, 1, 1);
-  g.fillRect(cx + 4, cy - 22, 1, 1);
-  g.fillRect(cx - 1, cy - 20, 1, 1);
-  g.fillRect(cx + 2, cy - 20, 1, 1);
-  // Sunburned ears poking below brim
-  g.fillStyle(0xff7755, 1);
+  g.fillRect(cx + 4, cy - 20, 1, 1);
+
+  // Sunburned ears poking below the brim
+  g.fillStyle(0xff5030, 1);
   g.fillCircle(cx - 10, cy - 16, 2);
   g.fillCircle(cx + 10, cy - 16, 2);
 
-  // === Selfie stick + phone (the identifying prop — sticks UP above the silhouette) ===
-  g.fillStyle(0x555555, 1);
-  g.fillRect(cx - 14, cy - 6, 2, 18);
-  g.fillStyle(0x111111, 1);
-  g.fillRect(cx - 17, cy - 11, 6, 7);
-  g.fillStyle(0x4488cc, 0.8);
-  g.fillRect(cx - 16, cy - 10, 4, 4);
+  // ── SELFIE STICK — sticks UP above the whole silhouette. The
+  // unmistakable visitor prop. ──
+  g.fillStyle(0x2a2a32, 1);
+  g.fillRect(cx - 14, cy - 6, 2, 22);
+  g.fillStyle(0x6a6a72, 1);
+  g.fillRect(cx - 14, cy - 6, 0.8, 22);
+  // Phone clamp at top
+  g.fillStyle(0x0a0a10, 1);
+  g.fillRect(cx - 17, cy - 12, 6, 8);
+  g.fillStyle(0x2a3a8a, 0.9);
+  g.fillRect(cx - 16, cy - 11, 4, 6);
   // Screen glow
-  g.fillStyle(0xffffcc, 0.25);
-  g.fillCircle(cx - 14, cy - 12, 3);
+  g.fillStyle(0xffffcc, 0.4);
+  g.fillCircle(cx - 14, cy - 8, 2.5);
+  // Phone camera notch
+  g.fillStyle(0x000000, 1);
+  g.fillCircle(cx - 14, cy - 10.5, 0.5);
+
+  // ── TARTAN SHOPPING BAG clutched in the right hand — another
+  // unmistakable tourist-prop. Royal Mile tat. ──
+  // Hand holding the bag
+  g.fillStyle(0xee9a78, 1);
+  g.fillCircle(cx + 12, cy + 6, 1.5);
+  // Bag body — red + dark tartan
+  g.fillStyle(0x5a1010, 1);
+  g.fillRect(cx + 10, cy + 7, 6, 8);
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx + 10.5, cy + 7.5, 5, 7);
+  // Tartan crosshatch on bag
+  g.fillStyle(0x2a0404, 0.9);
+  g.fillRect(cx + 10.5, cy + 9, 5, 0.6);
+  g.fillRect(cx + 10.5, cy + 11.5, 5, 0.6);
+  g.fillRect(cx + 12, cy + 7.5, 0.5, 7);
+  g.fillRect(cx + 14, cy + 7.5, 0.5, 7);
+  // Gold thistle emblem on the bag
+  g.fillStyle(0xfadc6a, 1);
+  g.fillCircle(cx + 13, cy + 11, 1);
+  // Bag handle
+  g.fillStyle(0x2a0404, 1);
+  g.fillRect(cx + 11, cy + 6.5, 4, 1);
+  g.fillRect(cx + 11, cy + 5, 1, 2);
+  g.fillRect(cx + 14, cy + 5, 1, 2);
 
   g.generateTexture('tourist', s, s);
   g.destroy();
 }
-

@@ -1,5 +1,12 @@
 /**
- * `midgie_swarm` — living haze: outer wisps, mid-density cloud, dense core, nine individual midge silhouettes at the edges.
+ * `midgie_swarm` — Scottish biting midge cloud. Design pivot (v3):
+ * the v2 four-lead-midges approach read as an octopus-with-
+ * tentacles at 4× zoom. Real midge swarms don't have distinct
+ * individuals — they're a BLACK PEPPER BOTHER of tiny dots with a
+ * dense angry core. New pitch: 30+ pinprick midge dots clustered
+ * around a dense black core with angry RED PINPRICK EYES
+ * throughout. No individual silhouettes, no tentacles — just a
+ * living haze that reads "insect plague" at all scales.
  */
 
 import Phaser from 'phaser';
@@ -9,80 +16,78 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // ── Outermost haze — the swarm's "reach" ──
-  g.fillStyle(0x0a040a, 0.15);
+  // ── Outer sparse haze — faint purple-grey. ──
+  g.fillStyle(0x1a0a1a, 0.2);
   g.fillCircle(cx, cy, 12);
-  // Irregular outer wisps (cloud isn't perfectly round — it churns)
-  g.fillStyle(0x1a0a1a, 0.25);
-  g.fillEllipse(cx - 2, cy - 1, 20, 14);
-  g.fillEllipse(cx + 1, cy + 2, 16, 16);
-  // Mid-density cloud
-  g.fillStyle(0x2a1228, 0.45);
-  g.fillEllipse(cx, cy, 16, 12);
-  // Dense inner cloud (where most midges are)
-  g.fillStyle(0x3a1a30, 0.6);
-  g.fillEllipse(cx, cy, 12, 9);
-  // Darkest churning core
-  g.fillStyle(0x2a0e22, 0.7);
-  g.fillEllipse(cx - 1, cy, 8, 6);
+  g.fillStyle(0x1a0a1a, 0.35);
+  g.fillCircle(cx, cy, 10);
 
-  // ── Individual midge silhouettes at cloud edges (tiny, distinct) ──
-  // Positioned at the edge so they read as separate creatures
-  const midges: [number, number, number][] = [
-    [-5, -3, 1.5], [4, -2, 1.5], [-2, 3, 1.5],
-    [6, 2, 1.2], [-6, 2, 1.2], [1, -5, 1.2],
-    [-3, 5, 1.0], [5, -4, 1.0], [3, 4, 1.0],
+  // ── Dense BLACK core — the angry heart of the swarm. Irregular
+  // shape, not a clean circle. ──
+  g.fillStyle(0x0a040a, 0.85);
+  g.fillCircle(cx - 1, cy, 6);
+  g.fillCircle(cx + 2, cy - 1, 5);
+  g.fillCircle(cx, cy + 2, 5);
+  g.fillStyle(0x1a0614, 1);
+  g.fillCircle(cx, cy, 4);
+
+  // ── 30 PINPRICK MIDGE DOTS — scattered through and around the
+  // core. Small, dark, merging into the haze but countable. ──
+  const dots: [number, number, number][] = [
+    // Inner dense cluster
+    [-2, -1, 0.7], [1, -2, 0.7], [-1, 1, 0.7], [2, 1, 0.7],
+    [0, -3, 0.6], [3, -1, 0.6], [-3, 0, 0.6], [1, 3, 0.6],
+    [-2, 2, 0.5], [3, 2, 0.5], [-1, -3, 0.5],
+    // Middle ring
+    [-5, -2, 0.5], [4, -3, 0.5], [-4, 3, 0.5], [5, 2, 0.5],
+    [2, -5, 0.5], [-3, -4, 0.5], [4, 4, 0.4], [-2, 5, 0.4],
+    [-5, 1, 0.4], [6, 0, 0.4],
+    // Outer stragglers
+    [-7, -1, 0.4], [7, -2, 0.4], [-6, 4, 0.4], [6, 4, 0.4],
+    [1, -7, 0.4], [-1, 7, 0.4], [8, 2, 0.35], [-8, 2, 0.35],
+    [3, 7, 0.35], [-3, -6, 0.35],
   ];
-  for (const [dx, dy, r] of midges) {
-    // Tiny dark body
-    g.fillStyle(0x331122, 1);
+  g.fillStyle(0x0a040a, 1);
+  for (const [dx, dy, r] of dots) {
     g.fillCircle(cx + dx, cy + dy, r);
-    // Even tinier wings (bright flicker on each midge)
-    g.fillStyle(0xccbbdd, 0.4);
-    g.fillCircle(cx + dx - 0.5, cy + dy - r, 0.6);
-    g.fillCircle(cx + dx + 0.5, cy + dy - r, 0.6);
   }
 
-  // ── Red eyes — angry pinpricks staring out from the cloud ──
+  // ── ANGRY RED EYES — bright pinpricks scattered through the
+  // cloud. Not attached to any individual — they're the signature
+  // "something in the cloud is watching you" tell. ──
+  const eyes: [number, number, number][] = [
+    [-1, -1, 0.5],
+    [1, 0, 0.5],
+    [-2, 1, 0.4],
+    [0, 2, 0.4],
+    [3, -1, 0.4],
+    [-3, -1, 0.4],
+    [2, 2, 0.35],
+    [-1, -3, 0.35],
+    [4, 1, 0.3],
+    [-4, 0, 0.3],
+    [0, -4, 0.3],
+    [1, 4, 0.3],
+  ];
   g.fillStyle(0xff2233, 1);
-  g.fillCircle(cx - 4, cy - 3, 0.8);
-  g.fillCircle(cx + 3, cy - 2, 0.8);
-  g.fillCircle(cx - 1, cy + 2, 0.8);
-  g.fillCircle(cx + 5, cy + 1, 0.7);
-  g.fillCircle(cx - 5, cy + 2, 0.7);
-  g.fillCircle(cx + 1, cy - 5, 0.7);
-  g.fillCircle(cx - 3, cy + 4, 0.6);
-  g.fillCircle(cx + 4, cy - 4, 0.6);
-  // Brighter pair in the centre (the biggest midge, staring right at you)
-  g.fillStyle(0xff4455, 1);
-  g.fillCircle(cx - 1, cy - 1, 0.9);
-  g.fillCircle(cx + 1, cy - 1, 0.9);
+  for (const [dx, dy, r] of eyes) {
+    g.fillCircle(cx + dx, cy + dy, r);
+  }
 
-  // ── Wing flicker — translucent bright dots (motion) ──
-  g.fillStyle(0xddccee, 0.45);
-  g.fillCircle(cx - 4, cy - 4, 0.6);
-  g.fillCircle(cx + 5, cy - 3, 0.6);
-  g.fillCircle(cx, cy + 1, 0.5);
-  g.fillCircle(cx + 7, cy, 0.5);
-  g.fillCircle(cx - 6, cy - 1, 0.5);
-  g.fillCircle(cx + 2, cy + 5, 0.5);
+  // ── Brightest central glow — where the densest cluster of eyes
+  // reads as "face of the swarm". ──
+  g.fillStyle(0xff6677, 0.8);
+  g.fillCircle(cx, cy, 1);
+  g.fillStyle(0xffffff, 0.7);
+  g.fillCircle(cx, cy, 0.4);
 
-  // ── Dangling legs at bottom edge (visible stragglers) ──
-  g.lineStyle(0.8, 0x220a18, 0.7);
-  g.lineBetween(cx - 3, cy + 5, cx - 4, cy + 8);
-  g.lineBetween(cx + 2, cy + 5, cx + 3, cy + 8);
-  g.lineBetween(cx - 1, cy + 5, cx - 2, cy + 9);
-  g.lineBetween(cx + 4, cy + 4, cx + 5, cy + 7);
-  g.lineBetween(cx, cy + 6, cx - 1, cy + 9);
+  // ── Faint motion wisps at the edges — swarm is alive, moving. ──
+  g.fillStyle(0x332244, 0.4);
+  g.fillCircle(cx - 9, cy - 3, 0.8);
+  g.fillCircle(cx + 9, cy - 2, 0.8);
+  g.fillCircle(cx - 4, cy + 8, 0.7);
+  g.fillCircle(cx + 5, cy + 8, 0.7);
 
   g.generateTexture('midgie_swarm', s, s);
   g.destroy();
 }
-
-/**
- * Buckfast Ned — DESIGN_IDEAS section 3 Urban Ghaists family opener.
- * Scrawny tracksuit silhouette with a dark-green Buckfast bottle.
- * Smaller than angry_scotsman (who is the raging henchman archetype);
- * ned reads as "lean, jittery, streetwise". Kept concise vs. the big
- * hero enemies — a family opener, not a showpiece.
- */

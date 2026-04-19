@@ -14,316 +14,637 @@ import Phaser from 'phaser';
 function drawThistleShotIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
-  const cx = 16, cy = 15;
-  g.fillStyle(0x224411, 1);
-  g.fillTriangle(cx, cy + 5, cx - 6, cy + 10, cx + 6, cy + 10);
-  g.fillStyle(0x336622, 1);
-  g.fillTriangle(cx, cy + 6, cx - 4, cy + 9, cx + 4, cy + 9);
-  g.fillStyle(0x2a4a1a, 1);
-  g.fillRect(cx - 1, cy + 9, 2, 5);
-  g.fillStyle(0x331155, 1);
-  g.fillCircle(cx, cy, 10);
-  g.fillStyle(0x663399, 1);
+  const cx = 16, cy = 14;
+
+  // ── Green calyx (the prickly cup under the bloom) — bold spiked
+  // base so the silhouette reads "thistle flower" rather than
+  // "purple ball". Three pointed green spikes on top of a wider
+  // green cup. ──
+  g.fillStyle(0x1a3308, 1);
+  g.fillTriangle(cx, cy + 3, cx - 7, cy + 11, cx + 7, cy + 11);
+  g.fillStyle(0x2a5a14, 1);
+  g.fillTriangle(cx, cy + 4, cx - 6, cy + 11, cx + 6, cy + 11);
+  g.fillStyle(0x3a7a22, 1);
+  g.fillTriangle(cx, cy + 5, cx - 5, cy + 10, cx + 5, cy + 10);
+  // Calyx spike tips — three pointed green triangles poking into
+  // the bloom (signature thistle detail)
+  g.fillStyle(0x2a5a14, 1);
+  g.fillTriangle(cx - 4, cy + 5, cx - 5, cy + 8, cx - 2, cy + 7);
+  g.fillTriangle(cx, cy + 4, cx - 1, cy + 7, cx + 1, cy + 7);
+  g.fillTriangle(cx + 4, cy + 5, cx + 5, cy + 8, cx + 2, cy + 7);
+
+  // ── Stem — green vertical bar below the calyx. ──
+  g.fillStyle(0x1a3308, 1);
+  g.fillRect(cx - 1, cy + 11, 2, 4);
+  g.fillStyle(0x2a5a14, 1);
+  g.fillRect(cx - 0.5, cy + 11, 1, 4);
+
+  // ── Bloom base — dark purple sphere forms the underlying shape. ──
+  g.fillStyle(0x2a0a40, 1);
   g.fillCircle(cx, cy, 9);
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    g.fillStyle(0x552288, 1);
+
+  // ── Bristles — 16 short radial spikes fanning outward from the
+  // bloom. Denser = reads as a bristly thistle seed-head. ──
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 - Math.PI * 0.5;
+    const innerR = 7;
+    const outerR = 12;
+    const spread = 0.1;
+    g.fillStyle(0x4a1a6a, 1);
     g.fillTriangle(
-      cx + Math.cos(a) * 13, cy + Math.sin(a) * 13,
-      cx + Math.cos(a - 0.25) * 7, cy + Math.sin(a - 0.25) * 7,
-      cx + Math.cos(a + 0.25) * 7, cy + Math.sin(a + 0.25) * 7,
-    );
-    g.fillStyle(0xaa77dd, 0.7);
-    g.fillTriangle(
-      cx + Math.cos(a) * 11, cy + Math.sin(a) * 11,
-      cx + Math.cos(a - 0.15) * 7, cy + Math.sin(a - 0.15) * 7,
-      cx + Math.cos(a + 0.15) * 7, cy + Math.sin(a + 0.15) * 7,
+      cx + Math.cos(a) * outerR, cy + Math.sin(a) * outerR,
+      cx + Math.cos(a - spread) * innerR, cy + Math.sin(a - spread) * innerR,
+      cx + Math.cos(a + spread) * innerR, cy + Math.sin(a + spread) * innerR,
     );
   }
-  g.fillStyle(0x8855bb, 1);
-  g.fillCircle(cx, cy, 6);
-  g.fillStyle(0xaa77dd, 0.7);
-  g.fillCircle(cx - 1, cy - 1, 4);
-  g.fillStyle(0xddaaff, 1);
-  g.fillCircle(cx, cy, 2);
-  g.fillStyle(0xffffff, 0.6);
-  g.fillCircle(cx - 1, cy - 1, 1);
+  // Brighter inner bristle layer — shorter spikes, denser
+  for (let i = 0; i < 16; i++) {
+    const a = (i / 16) * Math.PI * 2 - Math.PI * 0.25;
+    const innerR = 5;
+    const outerR = 9;
+    const spread = 0.12;
+    g.fillStyle(0x7a3abb, 1);
+    g.fillTriangle(
+      cx + Math.cos(a) * outerR, cy + Math.sin(a) * outerR,
+      cx + Math.cos(a - spread) * innerR, cy + Math.sin(a - spread) * innerR,
+      cx + Math.cos(a + spread) * innerR, cy + Math.sin(a + spread) * innerR,
+    );
+  }
+  // Highlight bristles — 8 lightest strands on the upper half only
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI - Math.PI;
+    const innerR = 4;
+    const outerR = 8;
+    g.fillStyle(0xc88ade, 0.85);
+    g.fillTriangle(
+      cx + Math.cos(a) * outerR, cy + Math.sin(a) * outerR,
+      cx + Math.cos(a - 0.1) * innerR, cy + Math.sin(a - 0.1) * innerR,
+      cx + Math.cos(a + 0.1) * innerR, cy + Math.sin(a + 0.1) * innerR,
+    );
+  }
+
+  // ── Central bloom core — bright purple dome with a catch-light. ──
+  g.fillStyle(0x5a2088, 1);
+  g.fillCircle(cx, cy, 4.5);
+  g.fillStyle(0x8a50c0, 1);
+  g.fillCircle(cx - 0.5, cy - 0.5, 3);
+  g.fillStyle(0xcc9ae0, 0.95);
+  g.fillCircle(cx - 1, cy - 1, 1.5);
+  g.fillStyle(0xffffff, 0.8);
+  g.fillCircle(cx - 1.3, cy - 1.3, 0.6);
+
   g.generateTexture('wicon_thistle_shot', s, s);
   g.destroy();
 }
 
+/**
+ * `wicon_caber_toss` — caber-toss weapon icon. Design pivot: old
+ * icon was a horizontal log reading as "stick" with no toss-motion
+ * language. New pitch: DIAGONAL CABER mid-flip from lower-left to
+ * upper-right with bold MOTION ARC curving underneath it + speed
+ * lines trailing + a small Highland Games hand silhouette at the
+ * bottom having just thrown it. The arc + diagonal angle says
+ * "TOSS" instantly — this is not a log, it's a log IN FLIGHT.
+ */
 function drawCaberTossIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
-  const cy = 16;
-  g.fillStyle(0x1a0e02, 1);
-  g.fillRect(3, cy - 5, 22, 11);
-  g.fillCircle(24, cy, 5);
-  g.fillStyle(0x6a4a10, 1);
-  g.fillRect(4, cy - 4, 20, 9);
-  g.fillStyle(0x3a2808, 1);
-  g.fillRect(4, cy - 4, 20, 2);
-  g.fillRect(4, cy + 3, 20, 2);
-  g.fillStyle(0x5a3a08, 0.7);
-  g.fillRect(4, cy - 1, 20, 1);
-  g.fillRect(4, cy + 1, 20, 1);
-  g.fillStyle(0x8a6a20, 0.5);
-  g.fillRect(4, cy, 20, 1);
-  g.fillStyle(0x9a7a28, 0.5);
-  g.fillRect(5, cy - 3, 18, 1);
-  g.fillStyle(0x3a2206, 1);
-  g.fillCircle(12, cy, 1.5);
-  g.fillStyle(0x5a3e08, 1);
-  g.fillCircle(24, cy, 4.5);
-  g.fillStyle(0x7a5a14, 1);
-  g.fillCircle(24, cy, 3.5);
-  g.lineStyle(0.8, 0x5a4010, 0.6);
-  g.strokeCircle(24, cy, 2.5);
-  g.fillStyle(0x4a3008, 1);
-  g.fillCircle(24, cy, 0.8);
-  g.fillStyle(0x9a7a28, 0.3);
-  g.fillCircle(23, cy - 1, 1.5);
+  const cx = s / 2, cy = s / 2;
+
+  // ── Motion arc — curved dotted trail from lower-left hand up to
+  // the flying caber tip. Gives unmistakable toss direction. ──
+  const arcPoints: [number, number, number, number][] = [
+    // [x, y, radius, alpha]
+    [cx - 12, cy + 11, 0.9, 0.9],
+    [cx - 10, cy + 7, 0.9, 0.8],
+    [cx - 7, cy + 3, 1, 0.7],
+    [cx - 3, cy, 1, 0.6],
+    [cx, cy - 3, 1.1, 0.5],
+    [cx + 4, cy - 5, 1.1, 0.4],
+    [cx + 8, cy - 6, 1.1, 0.3],
+  ];
+  for (const [x, y, r, a] of arcPoints) {
+    g.fillStyle(0xe8d8a0, a);
+    g.fillCircle(x, y, r);
+  }
+
+  // ── Speed lines — three trailing white streaks behind the caber. ──
+  g.fillStyle(0xffffff, 0.85);
+  g.fillRect(cx - 11, cy - 10, 4, 0.7);
+  g.fillRect(cx - 13, cy - 8, 3, 0.7);
+  g.fillRect(cx - 9, cy - 13, 3, 0.7);
+
+  // ── CABER — thick wooden pole angled diagonally from lower-left
+  // to upper-right. Drawn as an overlapping series so it tapers
+  // slightly toward the cut end. ──
+  // Dark outline
+  g.fillStyle(0x0a0604, 1);
+  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 4.5);
+  // Main wood
+  g.fillStyle(0x6a3818, 1);
+  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 3.5);
+  // Wood grain highlight (upper edge catches light)
+  g.fillStyle(0xa0682a, 0.85);
+  drawThickDiagonal(g, cx - 5.5, cy + 1.5, cx + 11.5, cy - 12.5, 1.2);
+  // Grain lines
+  g.fillStyle(0x3a2010, 0.7);
+  g.fillRect(cx - 4, cy + 1, 1, 0.4);
+  g.fillRect(cx + 0, cy - 3, 1, 0.4);
+  g.fillRect(cx + 5, cy - 7, 1, 0.4);
+  g.fillRect(cx + 9, cy - 10, 1, 0.4);
+
+  // ── Cut end-grain ring at the top tip — the heavy end of the
+  // caber that lands first. ──
+  g.fillStyle(0x0a0604, 1);
+  g.fillCircle(cx + 12, cy - 12, 3);
+  g.fillStyle(0x8a5020, 1);
+  g.fillCircle(cx + 12, cy - 12, 2.3);
+  g.fillStyle(0xa0682a, 1);
+  g.fillCircle(cx + 12, cy - 12, 1.5);
+  // Tree rings
+  g.lineStyle(0.5, 0x3a2010, 0.8);
+  g.strokeCircle(cx + 12, cy - 12, 1.8);
+  g.strokeCircle(cx + 12, cy - 12, 1);
+
+  // ── Jagged bottom end — where the Scotsman grabbed it. ──
+  g.fillStyle(0x0a0604, 1);
+  g.fillTriangle(cx - 6, cy + 2, cx - 8, cy + 4, cx - 5, cy + 3);
+
+  // ── HIGHLAND GAMES HAND silhouette at the bottom-left — small,
+  // having just released the caber. Shoulder + raised fist. ──
+  // Shoulder blob
+  g.fillStyle(0x1a0a08, 1);
+  g.fillCircle(cx - 13, cy + 13, 3);
+  // Raised fist holding the release position
+  g.fillStyle(0xd8a878, 1);
+  g.fillCircle(cx - 11, cy + 10, 1.8);
+  // Wrist cuff (competitor's tartan armband)
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx - 12, cy + 11, 3, 1);
+
   g.generateTexture('wicon_caber_toss', s, s);
   g.destroy();
 }
 
+/**
+ * Draw a thick diagonal line from (x1,y1) to (x2,y2) as a series
+ * of overlapping filled circles. Used for the caber pole.
+ */
+function drawThickDiagonal(g: Phaser.GameObjects.Graphics, x1: number, y1: number, x2: number, y2: number, thickness: number): void {
+  const dx = x2 - x1, dy = y2 - y1;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.ceil(dist);
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    g.fillCircle(x1 + dx * t, y1 + dy * t, thickness / 2);
+  }
+}
+
+/**
+ * `wicon_haggis_hurler` — throwing-weapon icon. Design pivot: old
+ * icon was a dense brown blob at 32px with no motion language, so
+ * read as "circle" not "weapon-in-flight". New pitch — SINGLE
+ * compact haggis ball offset to the lower-right + prominent MOTION
+ * ARC trailing up-left with speed lines + hand silhouette mid-throw
+ * implied by the arc's tail. Silhouette says "I am being hurled".
+ */
 function drawHaggisHurlerIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = 16, cy = 16;
-  g.fillStyle(0xccbb88, 0.2);
-  g.fillCircle(cx - 2, cy - 12, 2.5);
-  g.fillCircle(cx + 3, cy - 11, 2);
-  g.fillCircle(cx, cy - 14, 1.5);
+
+  // Motion arc — curved dotted trail from upper-left to lower-right
+  // where the ball is. Gives direction + speed.
+  g.fillStyle(0xeaddb0, 0.9);
+  g.fillCircle(cx - 10, cy - 10, 1);
+  g.fillStyle(0xeaddb0, 0.75);
+  g.fillCircle(cx - 7, cy - 8, 1.1);
+  g.fillStyle(0xeaddb0, 0.6);
+  g.fillCircle(cx - 4, cy - 5, 1.2);
+  g.fillStyle(0xeaddb0, 0.45);
+  g.fillCircle(cx - 1, cy - 2, 1.3);
+
+  // Speed lines — three sharp white streaks behind the ball
+  g.fillStyle(0xffffff, 0.9);
+  g.fillRect(cx - 14, cy - 12, 4, 0.8);
+  g.fillRect(cx - 13, cy - 9, 3, 0.8);
+  g.fillRect(cx - 15, cy - 6, 4, 0.8);
+
+  // Haggis ball — bigger, offset lower-right, clear silhouette
   g.fillStyle(0x1a0e04, 1);
-  g.fillCircle(cx, cy, 11);
-  g.fillCircle(cx + 1, cy - 1, 10);
-  g.fillCircle(cx - 2, cy + 1, 9);
+  g.fillCircle(cx + 4, cy + 4, 9);
+  g.fillCircle(cx + 5, cy + 5, 8);
+  // Main body
   g.fillStyle(0x4a3008, 1);
-  g.fillCircle(cx, cy, 10);
-  g.fillCircle(cx + 1, cy - 1, 9);
+  g.fillCircle(cx + 4, cy + 4, 8);
   g.fillStyle(0x6a4a10, 1);
-  g.fillCircle(cx - 1, cy - 1, 8);
-  g.fillStyle(0x7a5a18, 0.7);
-  g.fillCircle(cx - 2, cy - 2, 5);
-  g.fillStyle(0x9a8030, 0.8);
-  g.fillCircle(cx - 4, cy - 1, 1.2);
-  g.fillCircle(cx + 3, cy + 3, 1.5);
-  g.fillCircle(cx + 1, cy - 4, 1);
-  g.fillCircle(cx - 1, cy + 4, 1.2);
-  g.fillCircle(cx + 5, cy, 0.8);
-  g.fillStyle(0x2a1806, 0.6);
-  g.fillCircle(cx + 4, cy - 2, 0.8);
-  g.fillCircle(cx - 3, cy + 5, 0.7);
-  g.fillStyle(0xbb9933, 0.5);
-  g.fillCircle(cx - 3, cy - 4, 2.5);
-  g.fillStyle(0xddbb55, 0.3);
-  g.fillCircle(cx - 4, cy - 5, 1.5);
-  g.fillStyle(0xffffff, 0.3);
-  g.fillCircle(cx - 4, cy - 5, 0.8);
+  g.fillCircle(cx + 3, cy + 3, 6.5);
+  g.fillStyle(0x8a6020, 0.8);
+  g.fillCircle(cx + 2, cy + 2, 4);
+
+  // Oat specks (texture) — kept minimal, not cluttering
+  g.fillStyle(0xc8a848, 0.9);
+  g.fillCircle(cx + 2, cy + 4, 0.8);
+  g.fillCircle(cx + 5, cy + 6, 0.8);
+  g.fillCircle(cx + 1, cy + 1, 0.7);
+  g.fillStyle(0x2a1806, 0.7);
+  g.fillCircle(cx + 5, cy + 2, 0.7);
+  g.fillCircle(cx + 3, cy + 6, 0.6);
+
+  // Specular highlight — bright pop so the ball reads as 3D
+  g.fillStyle(0xfff0c8, 1);
+  g.fillCircle(cx, cy, 1.3);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(cx - 0.3, cy - 0.3, 0.6);
+
   g.generateTexture('wicon_haggis_hurler', s, s);
   g.destroy();
 }
 
+/**
+ * `wicon_bagpipe_blast` — aura-pulse bagpipes weapon icon. Design
+ * pivot: old icon crammed bag + 3 drones + chanter + glow rings
+ * into 32px and the ellipses all merged into a bronze blob. New
+ * pitch: FOCUS on the chanter tip with MUSIC NOTES exploding out
+ * in an arc + bold radial sonic-ring behind them. The bag + single
+ * drone silhouette at the base anchors "bagpipes"; the music-note
+ * burst tells you it's the BLAST weapon (not the utility form).
+ */
 function drawBagpipeBlastIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  g.fillStyle(0x1a0d00, 1);
-  g.fillEllipse(cx + 1, cy + 6, 22, 17);
-  g.fillStyle(0x4a2200, 1);
-  g.fillEllipse(cx + 1, cy + 6, 20, 15);
-  g.fillStyle(0x7a3d10, 1);
-  g.fillEllipse(cx + 1, cy + 5, 16, 12);
-  g.fillStyle(0xaa6030, 1);
-  g.fillEllipse(cx - 2, cy + 3, 10, 7);
-  g.fillStyle(0xcc8855, 0.6);
-  g.fillEllipse(cx - 3, cy + 2, 6, 4);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 10, cy - 2, 2, 9);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 9, cy - 2, 1, 8);
-  g.fillStyle(0xddaa00, 1);
-  g.fillRect(cx - 11, cy - 3, 4, 2);
+
+  // ── Outer sonic-pulse ring — the blast energy. ──
+  g.lineStyle(1.2, 0xffcc44, 0.45);
+  g.strokeCircle(cx, cy, 14);
+  g.lineStyle(1.2, 0xffcc44, 0.7);
+  g.strokeCircle(cx, cy, 11);
+
+  // ── Tartan bag — compact, red-green-white plaid diamond shape
+  // on the lower-right. Smaller than before so it doesn't dominate. ──
+  g.fillStyle(0x1a0a08, 1);
+  g.fillEllipse(cx + 5, cy + 7, 14, 11);
+  g.fillStyle(0x8a1818, 1);
+  g.fillEllipse(cx + 5, cy + 7, 12, 9);
+  // Tartan crossbars
+  g.fillStyle(0x0a3818, 1);
+  g.fillRect(cx, cy + 5, 11, 1);
+  g.fillRect(cx, cy + 9, 11, 1);
+  g.fillRect(cx + 2, cy + 3, 0.8, 9);
+  g.fillRect(cx + 8, cy + 3, 0.8, 9);
+  // Cream pinstripe accents
+  g.fillStyle(0xf0e8c8, 0.8);
+  g.fillRect(cx + 4, cy + 5, 0.5, 5);
+
+  // ── ONE big bass drone — tall vertical pipe rising from the
+  // bag's upper-left. Bold black silhouette with brass ferrules. ──
+  g.fillStyle(0x0a0604, 1);
+  g.fillRect(cx - 3, cy - 14, 2.5, 16);
+  g.fillStyle(0x3a1808, 1);
+  g.fillRect(cx - 2.8, cy - 14, 2, 16);
+  // Brass ferrules at top + middle
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 4, cy - 15, 4, 2);
+  g.fillRect(cx - 4, cy - 7, 4, 1.5);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 4, cy - 15, 4, 0.6);
+  g.fillRect(cx - 4, cy - 7, 4, 0.4);
+
+  // ── Chanter pointing down-right from the bag, with finger holes.
+  // The business end where the blast exits. ──
+  g.fillStyle(0x0a0604, 1);
+  g.fillRect(cx + 5, cy + 1, 2.5, 10);
+  g.fillStyle(0x3a1808, 1);
+  g.fillRect(cx + 5.2, cy + 1, 2, 10);
+  // Finger holes
+  g.fillStyle(0x0a0604, 1);
+  g.fillCircle(cx + 6.2, cy + 3, 0.5);
+  g.fillCircle(cx + 6.2, cy + 5, 0.5);
+  g.fillCircle(cx + 6.2, cy + 7, 0.5);
+  g.fillCircle(cx + 6.2, cy + 9, 0.5);
+
+  // ── EXPLODING MUSIC NOTES — bursting up-right from the chanter
+  // tip. Each note is a solid black quarter-note (filled head +
+  // stem + flag) so the shape reads even at 32px. ──
+  drawMusicNote(g, cx + 10, cy - 2, 0);     // right note
+  drawMusicNote(g, cx + 6, cy - 8, 1);      // upper-right
+  drawMusicNote(g, cx - 2, cy - 12, 0);     // top
+  drawMusicNote(g, cx + 12, cy + 4, 1);     // lower-right
+  // Tiny trailing sparkles
   g.fillStyle(0xffdd44, 1);
-  g.fillRect(cx - 10, cy - 3, 2, 1);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 4, cy - 12, 3, 14);
-  g.fillRect(cx + 1, cy - 14, 3, 16);
-  g.fillRect(cx + 6, cy - 12, 3, 14);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 3, cy - 12, 1, 13);
-  g.fillRect(cx + 2, cy - 14, 1, 15);
-  g.fillRect(cx + 7, cy - 12, 1, 13);
-  g.fillStyle(0xddaa00, 1);
-  g.fillRect(cx - 5, cy - 13, 5, 2);
-  g.fillRect(cx, cy - 15, 5, 2);
-  g.fillRect(cx + 5, cy - 13, 5, 2);
-  g.fillStyle(0xffee66, 1);
-  g.fillRect(cx - 4, cy - 13, 2, 1);
-  g.fillRect(cx + 1, cy - 15, 2, 1);
-  g.fillRect(cx + 6, cy - 13, 2, 1);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 14, cy + 4, 14, 3);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 14, cy + 4, 14, 1);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 16, cy + 3, 3, 5);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 15, cy + 4, 1, 3);
-  g.lineStyle(1, 0xffaa33, 0.9);
-  g.strokeCircle(cx - 17, cy + 5, 3);
-  g.lineStyle(1, 0xffaa33, 0.6);
-  g.strokeCircle(cx - 17, cy + 5, 5);
-  g.lineStyle(1, 0xffaa33, 0.35);
-  g.strokeCircle(cx - 17, cy + 5, 7);
+  g.fillCircle(cx + 14, cy + 1, 0.8);
+  g.fillCircle(cx + 2, cy - 14, 0.7);
+  g.fillCircle(cx - 4, cy - 8, 0.6);
+
+  // ── Bright flash at the chanter tip — the "blast point". ──
+  g.fillStyle(0xffee88, 1);
+  g.fillCircle(cx + 6.2, cy + 11, 2);
+  g.fillStyle(0xffffff, 0.95);
+  g.fillCircle(cx + 6.2, cy + 11, 1);
+
   g.generateTexture('wicon_bagpipe_blast', s, s);
   g.destroy();
+}
+
+/**
+ * Draw a small filled music note — note-head (ellipse) + stem
+ * (rect) + optional flag (triangle). Used by bagpipe icons.
+ */
+function drawMusicNote(g: Phaser.GameObjects.Graphics, x: number, y: number, flipFlag: number): void {
+  // Note head — tilted oval
+  g.fillStyle(0x0a0604, 1);
+  g.fillEllipse(x, y, 3, 2.2);
+  g.fillStyle(0x4a4050, 1);
+  g.fillEllipse(x - 0.2, y - 0.2, 2, 1.4);
+  // Stem
+  g.fillStyle(0x0a0604, 1);
+  g.fillRect(x + 1, y - 4, 0.8, 4);
+  // Flag (eighth-note flag at the top of the stem)
+  if (flipFlag) {
+    g.fillTriangle(x + 1.8, y - 4, x + 3.5, y - 2.5, x + 1.8, y - 2);
+  } else {
+    g.fillTriangle(x + 1.8, y - 4, x + 3.2, y - 3, x + 1.8, y - 2.5);
+  }
 }
 
 function drawBagpipesUtilityIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
+
+  // ── Utility-buff halo — warm green-gold (utility weapon tint). ──
   g.fillStyle(0x336622, 0.25);
   g.fillCircle(cx, cy, 14);
   g.fillStyle(0x44aa33, 0.15);
   g.fillCircle(cx, cy, 10);
+
+  // ── Three drones — the ICONIC Highland-bagpipe silhouette.
+  // Two tenors + one bass, all parallel vertical pipes rising from
+  // the top of the bag. Drawn first (behind the bag). Each drone
+  // is dark wood with a cream-gold ferrule band and a flared cap. ──
+  // Left tenor drone
   g.fillStyle(0x1a0d00, 1);
-  g.fillEllipse(cx + 5, cy + 2, 18, 15);
-  g.fillStyle(0x4a2200, 1);
-  g.fillEllipse(cx + 5, cy + 2, 16, 13);
-  g.fillStyle(0x7a3d10, 1);
-  g.fillEllipse(cx + 5, cy + 1, 13, 10);
-  g.fillStyle(0xaa6030, 1);
-  g.fillEllipse(cx + 3, cy - 1, 8, 6);
-  g.fillStyle(0xcc8855, 0.5);
-  g.fillEllipse(cx + 2, cy - 2, 5, 3);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 13, cy + 2, 15, 3);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 13, cy + 2, 15, 1);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx - 15, cy + 1, 3, 5);
-  g.fillStyle(0x221100, 1);
-  g.fillRect(cx + 2, cy - 12, 3, 13);
-  g.fillRect(cx + 7, cy - 10, 3, 11);
-  g.fillStyle(0x553322, 1);
-  g.fillRect(cx + 3, cy - 12, 1, 12);
-  g.fillRect(cx + 8, cy - 10, 1, 10);
-  g.fillStyle(0xddaa00, 1);
-  g.fillRect(cx + 1, cy - 13, 5, 2);
-  g.fillRect(cx + 6, cy - 11, 5, 2);
-  g.fillStyle(0xffee66, 1);
-  g.fillRect(cx + 2, cy - 13, 2, 1);
-  g.fillRect(cx + 7, cy - 11, 2, 1);
-  g.fillStyle(0xffee44, 1);
-  g.fillCircle(cx - 10, cy - 8, 2.5);
-  g.fillRect(cx - 8, cy - 14, 2, 7);
-  g.fillRect(cx - 8, cy - 14, 5, 2);
-  g.fillStyle(0xffdd22, 0.8);
-  g.fillCircle(cx - 4, cy - 12, 1.5);
-  g.fillRect(cx - 2, cy - 16, 1.5, 5);
+  g.fillRect(cx - 5, cy - 13, 2, 14);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 5, cy - 13, 1, 13);
+  // Left tenor ferrule (cream band)
+  g.fillStyle(0xe8d078, 1);
+  g.fillRect(cx - 5.5, cy - 7, 3, 1.5);
+  // Left tenor cap flare
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx - 6, cy - 14, 4, 2);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 6, cy - 14, 4, 1);
+
+  // Right tenor drone (parallel to left)
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx, cy - 13, 2, 14);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx, cy - 13, 1, 13);
+  g.fillStyle(0xe8d078, 1);
+  g.fillRect(cx - 0.5, cy - 7, 3, 1.5);
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx - 1, cy - 14, 4, 2);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 1, cy - 14, 4, 1);
+
+  // Bass drone — taller, slightly right of the tenors
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx + 4, cy - 15, 2, 16);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx + 4, cy - 15, 1, 15);
+  // Bass drone has TWO ferrules (signature bass-drone detail)
+  g.fillStyle(0xe8d078, 1);
+  g.fillRect(cx + 3.5, cy - 10, 3, 1.5);
+  g.fillRect(cx + 3.5, cy - 5, 3, 1.5);
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx + 3, cy - 16, 4, 2);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx + 3, cy - 16, 4, 1);
+
+  // ── Tartan bag — teardrop body, royal Stewart red. Drawn
+  // in front of the drones. Tilted slightly so the top sits under
+  // the drone stubs. ──
+  // Shadow outline
+  g.fillStyle(0x3a0808, 1);
+  g.fillEllipse(cx, cy + 4, 18, 13);
+  // Main red body
+  g.fillStyle(0xaa2222, 1);
+  g.fillEllipse(cx, cy + 4, 16, 11);
+  // Lighter red top-left highlight
+  g.fillStyle(0xcc4a4a, 1);
+  g.fillEllipse(cx - 2, cy + 2, 9, 6);
+
+  // ── Tartan cross pattern on the bag — green + white stripes
+  // for instant plaid reading. ──
+  g.fillStyle(0x2a6630, 1);
+  g.fillRect(cx - 7, cy + 3, 14, 1);
+  g.fillRect(cx - 1, cy - 1, 1, 10);
+  g.fillStyle(0xe8e8c8, 0.85);
+  g.fillRect(cx - 7, cy + 5, 14, 0.5);
+  g.fillRect(cx + 1, cy - 1, 0.5, 10);
+
+  // ── Blowpipe — short stem poking up-left out of the bag. ──
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx - 9, cy - 3, 2, 6);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 9, cy - 3, 1, 5);
+  // Blowpipe mouthpiece tip (cream)
+  g.fillStyle(0xe8d078, 1);
+  g.fillRect(cx - 9.5, cy - 4, 3, 1.5);
+
+  // ── Chanter — longer pipe pointing down-left out of the bag
+  // (the finger-holes pipe). Four finger-holes visible as tiny dots. ──
+  g.fillStyle(0x1a0d00, 1);
+  g.fillRect(cx - 8, cy + 8, 2, 7);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 8, cy + 8, 1, 6);
+  // Finger-holes
+  g.fillStyle(0x000000, 1);
+  g.fillCircle(cx - 7, cy + 10, 0.4);
+  g.fillCircle(cx - 7, cy + 12, 0.4);
+  g.fillCircle(cx - 7, cy + 14, 0.4);
+  // Chanter reed tip (cream)
+  g.fillStyle(0xe8d078, 1);
+  g.fillRect(cx - 8.5, cy + 14.5, 3, 1);
+
+  // ── Utility sparkle — tiny buff glimmer at top-right to telegraph
+  // "support weapon". ──
+  g.fillStyle(0xffee66, 0.95);
+  g.fillRect(cx + 9, cy - 12, 1, 1);
+  g.fillStyle(0xffee66, 0.7);
+  g.fillRect(cx + 10, cy - 11, 0.5, 0.5);
+  g.fillRect(cx + 8, cy - 11, 0.5, 0.5);
+
   g.generateTexture('wicon_bagpipes', s, s);
   g.destroy();
 }
 
+/**
+ * `wicon_scotch_mist` — poisonous cloud icon. Design pivot: old
+ * icon was overlapping grey circles that merged into noise. New
+ * pitch — dominant DROPLET-SHAPE mist cloud silhouette with a
+ * visible SKULL face inside (hollow eye sockets + grin) so the
+ * icon reads "THIS MIST KILLS YOU", not "weather". Green toxic
+ * tint instead of flat grey so it pops against the HUD.
+ */
 function drawScotchMistIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  g.fillStyle(0x3a4d55, 0.35);
-  g.fillCircle(cx - 8, cy + 4, 7);
-  g.fillCircle(cx + 8, cy + 4, 7);
-  g.fillCircle(cx, cy - 4, 8);
-  g.fillCircle(cx - 5, cy + 6, 5);
-  g.fillCircle(cx + 5, cy + 6, 5);
-  g.fillStyle(0x556677, 0.55);
-  g.fillCircle(cx - 6, cy + 3, 6);
-  g.fillCircle(cx + 6, cy + 3, 6);
-  g.fillCircle(cx, cy - 3, 7);
-  g.fillCircle(cx - 3, cy + 4, 5);
-  g.fillCircle(cx + 3, cy + 4, 5);
-  g.fillStyle(0x6a7d8e, 0.75);
-  g.fillCircle(cx - 4, cy + 1, 5);
-  g.fillCircle(cx + 4, cy + 1, 5);
-  g.fillCircle(cx, cy - 2, 6);
-  g.fillCircle(cx - 1, cy + 2, 5);
-  g.fillCircle(cx + 1, cy + 2, 5);
-  g.fillStyle(0x8899aa, 0.9);
-  g.fillCircle(cx - 2, cy, 4);
-  g.fillCircle(cx + 2, cy, 4);
-  g.fillCircle(cx, cy - 2, 4.5);
-  g.fillStyle(0x99aabb, 0.5);
-  g.fillCircle(cx - 12, cy + 2, 2.5);
-  g.fillCircle(cx + 12, cy + 2, 2.5);
-  g.fillCircle(cx, cy + 10, 2.5);
-  g.fillStyle(0xaabbcc, 0.35);
-  g.fillCircle(cx - 13, cy, 1.5);
-  g.fillCircle(cx + 13, cy, 1.5);
-  g.fillStyle(0x223344, 0.7);
-  g.fillCircle(cx, cy + 1, 3);
-  g.fillStyle(0x334455, 0.5);
-  g.fillRect(cx - 1, cy + 3, 2, 2);
-  g.fillStyle(0x1a2a33, 0.8);
-  g.fillCircle(cx - 1, cy + 1, 0.8);
-  g.fillCircle(cx + 1, cy + 1, 0.8);
-  g.fillStyle(0xccddee, 1);
-  g.fillCircle(cx - 2, cy - 3, 1);
-  g.fillCircle(cx + 4, cy - 1, 0.8);
-  g.fillStyle(0xddeeff, 0.8);
-  g.fillCircle(cx - 6, cy + 1, 0.8);
-  g.fillCircle(cx + 7, cy, 0.7);
-  g.fillCircle(cx, cy + 6, 0.7);
+
+  // Outer toxic glow — sickly green halo
+  g.fillStyle(0x4a7a4a, 0.25);
+  g.fillCircle(cx, cy, 15);
+  g.fillStyle(0x5a8a5a, 0.18);
+  g.fillCircle(cx, cy, 13);
+
+  // Mist cloud — bulbous droplet shape. Dark teal base.
+  g.fillStyle(0x2a3a3a, 1);
+  g.fillCircle(cx - 6, cy + 2, 7);
+  g.fillCircle(cx + 6, cy + 2, 7);
+  g.fillCircle(cx, cy - 3, 8);
+  g.fillCircle(cx, cy + 6, 6);
+  // Mid-tone cloud body
+  g.fillStyle(0x4a6a6a, 1);
+  g.fillCircle(cx - 5, cy + 1, 6);
+  g.fillCircle(cx + 5, cy + 1, 6);
+  g.fillCircle(cx, cy - 2, 7);
+  g.fillCircle(cx, cy + 5, 5);
+  // Lighter outer mist
+  g.fillStyle(0x6a8a7a, 0.9);
+  g.fillCircle(cx - 4, cy, 5);
+  g.fillCircle(cx + 4, cy, 5);
+  g.fillCircle(cx, cy - 1, 6);
+  // Top highlight
+  g.fillStyle(0x9ababa, 0.8);
+  g.fillCircle(cx, cy - 3, 3.5);
+  g.fillCircle(cx - 3, cy - 2, 2.5);
+  g.fillCircle(cx + 3, cy - 2, 2.5);
+
+  // SKULL face inside the mist — the anchor that says "death cloud"
+  // Skull base (pale)
+  g.fillStyle(0xd0dcc8, 1);
+  g.fillCircle(cx, cy, 5);
+  g.fillStyle(0xe8f0dc, 1);
+  g.fillCircle(cx - 0.5, cy - 0.5, 4.2);
+  // Skull jaw — slight taper
+  g.fillStyle(0xc0ccb8, 1);
+  g.fillRect(cx - 2, cy + 3, 4, 2);
+
+  // Hollow eye sockets — BIG dark ovals
+  g.fillStyle(0x0a1a14, 1);
+  g.fillEllipse(cx - 2, cy - 1, 2.5, 2);
+  g.fillEllipse(cx + 2, cy - 1, 2.5, 2);
+  // Glowing green inside sockets
+  g.fillStyle(0x50dd70, 1);
+  g.fillCircle(cx - 2, cy - 1, 0.8);
+  g.fillCircle(cx + 2, cy - 1, 0.8);
+
+  // Nose gap — triangular dark hole
+  g.fillStyle(0x0a1a14, 1);
+  g.fillTriangle(cx, cy + 1, cx - 0.8, cy + 2.5, cx + 0.8, cy + 2.5);
+
+  // Grinning teeth — small white rectangles
+  g.fillStyle(0xf4f8e8, 1);
+  g.fillRect(cx - 2, cy + 3.5, 0.7, 1);
+  g.fillRect(cx - 1, cy + 3.5, 0.7, 1);
+  g.fillRect(cx, cy + 3.5, 0.7, 1);
+  g.fillRect(cx + 1, cy + 3.5, 0.7, 1);
+
+  // Outer mist wisps drifting off the cloud
+  g.fillStyle(0x9abaaa, 0.5);
+  g.fillCircle(cx - 12, cy, 1.5);
+  g.fillCircle(cx + 12, cy, 1.5);
+  g.fillCircle(cx, cy + 11, 1.5);
+  g.fillStyle(0xcadacc, 0.35);
+  g.fillCircle(cx - 14, cy - 2, 1);
+  g.fillCircle(cx + 14, cy - 2, 1);
+
   g.generateTexture('wicon_scotch_mist', s, s);
   g.destroy();
 }
 
+/**
+ * `wicon_nessie_tentacle` — Loch Ness tentacle lash icon. Design
+ * pivot: old icon was a string of overlapping green circles that
+ * read as "snake made of peas". New pitch — BOLD TAPERED TENTACLE
+ * silhouette lashing diagonally from bottom-left up-right, with a
+ * clear proximal-to-distal taper, bright cream suckers running
+ * along the underside, water splash at the base where it emerges.
+ * Reads "squid-like tentacle" not "row of dots".
+ */
 function drawNessieTentacleIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  g.fillStyle(0x0d2e1a, 1);
-  g.fillCircle(cx - 7, cy + 8, 6);
-  g.fillCircle(cx - 3, cy + 5, 5.5);
-  g.fillStyle(0x1e5c36, 1);
-  g.fillCircle(cx - 7, cy + 8, 5);
-  g.fillCircle(cx - 3, cy + 5, 4.5);
-  g.fillStyle(0x3a8c56, 1);
-  g.fillCircle(cx - 8, cy + 7, 2.5);
-  g.fillCircle(cx - 4, cy + 4, 2.2);
-  g.fillStyle(0x55bb77, 0.6);
-  g.fillCircle(cx - 8, cy + 6, 1.2);
-  g.fillStyle(0xbbaa88, 1);
-  g.fillCircle(cx - 4, cy + 9, 1.2);
-  g.fillCircle(cx - 1, cy + 7, 1.0);
-  g.fillStyle(0x0d2e1a, 1);
-  g.fillCircle(cx + 1, cy + 1, 4.5);
-  g.fillCircle(cx + 4, cy - 2, 4);
-  g.fillStyle(0x226644, 1);
-  g.fillCircle(cx + 1, cy + 1, 3.5);
-  g.fillCircle(cx + 4, cy - 2, 3.2);
-  g.fillStyle(0x44996a, 1);
-  g.fillCircle(cx, cy, 1.8);
-  g.fillCircle(cx + 3, cy - 3, 1.5);
-  g.fillStyle(0xbbaa88, 1);
-  g.fillCircle(cx + 4, cy + 2, 1.0);
-  g.fillCircle(cx + 6, cy - 1, 0.9);
-  g.fillStyle(0x0d2e1a, 1);
-  g.fillCircle(cx + 8, cy - 6, 3);
-  g.fillCircle(cx + 10, cy - 9, 2.2);
-  g.fillStyle(0x2a7752, 1);
-  g.fillCircle(cx + 8, cy - 6, 2.2);
-  g.fillCircle(cx + 10, cy - 9, 1.5);
-  g.fillStyle(0x55cc88, 1);
-  g.fillCircle(cx + 7, cy - 7, 1.0);
-  g.fillStyle(0x88ccee, 0.9);
-  g.fillCircle(cx + 13, cy - 8, 1.2);
-  g.fillCircle(cx + 11, cy - 12, 1.0);
-  g.fillCircle(cx - 10, cy + 10, 1.0);
-  g.fillStyle(0x66bbdd, 0.7);
-  g.fillCircle(cx + 14, cy - 5, 0.8);
-  g.fillCircle(cx - 12, cy + 7, 0.8);
+
+  // Water splash at the base (lower-left) — the loch-emergence tell
+  g.fillStyle(0x336688, 0.5);
+  g.fillEllipse(cx - 12, cy + 13, 12, 3);
+  g.fillStyle(0x66aacc, 0.8);
+  g.fillCircle(cx - 13, cy + 12, 1.3);
+  g.fillCircle(cx - 9, cy + 11, 1);
+  g.fillStyle(0x88ccee, 1);
+  g.fillCircle(cx - 14, cy + 10, 0.8);
+  g.fillCircle(cx - 10, cy + 9, 0.6);
+
+  // TENTACLE SHAPE — thick dark outline as a lashing S-curve from
+  // lower-left to upper-right. Drawn as overlapping ellipses of
+  // decreasing size for clean taper.
+  const points: [number, number, number][] = [
+    // [x, y, radius]
+    [cx - 11, cy + 11, 6.5],
+    [cx - 8, cy + 8, 6],
+    [cx - 5, cy + 5, 5.5],
+    [cx - 2, cy + 2, 5],
+    [cx + 1, cy - 1, 4.5],
+    [cx + 4, cy - 4, 4],
+    [cx + 7, cy - 7, 3.3],
+    [cx + 10, cy - 10, 2.6],
+    [cx + 12, cy - 12, 2],
+  ];
+  // Dark outline pass
+  g.fillStyle(0x0a2012, 1);
+  for (const [px, py, r] of points) g.fillCircle(px, py, r + 0.6);
+  // Main body — loch-water green
+  g.fillStyle(0x1e5a36, 1);
+  for (const [px, py, r] of points) g.fillCircle(px, py, r);
+  // Light top highlight (light hits the upper-right side)
+  g.fillStyle(0x3a8a5a, 1);
+  for (const [px, py, r] of points) g.fillCircle(px + 0.3, py - 0.3, r * 0.65);
+  // Brighter sheen
+  g.fillStyle(0x60b080, 0.85);
+  for (const [px, py, r] of points) g.fillCircle(px + 0.5, py - 0.6, r * 0.35);
+
+  // POINTED TIP — sharpen the distal end with a triangle
+  g.fillStyle(0x0a2012, 1);
+  g.fillTriangle(cx + 11, cy - 11, cx + 15, cy - 15, cx + 12, cy - 12);
+  g.fillStyle(0x1e5a36, 1);
+  g.fillTriangle(cx + 11.5, cy - 11, cx + 14, cy - 14, cx + 12, cy - 11);
+
+  // Suckers — cream-coloured circles running along the lower-right
+  // underside of the tentacle. Spaced so they don't merge.
+  g.fillStyle(0xeadcb8, 1);
+  g.fillCircle(cx - 7, cy + 10, 1.3);
+  g.fillCircle(cx - 3, cy + 7, 1.2);
+  g.fillCircle(cx, cy + 4, 1.1);
+  g.fillCircle(cx + 4, cy + 1, 1);
+  g.fillCircle(cx + 7, cy - 2, 0.9);
+  // Sucker rim shadow
+  g.fillStyle(0x8a7040, 0.9);
+  g.fillCircle(cx - 7, cy + 10, 0.7);
+  g.fillCircle(cx - 3, cy + 7, 0.6);
+  g.fillCircle(cx, cy + 4, 0.5);
+
+  // Bio-luminescent green glints on the back side
+  g.fillStyle(0x55ffaa, 0.8);
+  g.fillCircle(cx - 9, cy + 6, 0.5);
+  g.fillCircle(cx - 5, cy + 3, 0.5);
+  g.fillCircle(cx, cy - 2, 0.5);
+  g.fillCircle(cx + 5, cy - 6, 0.5);
+
   g.generateTexture('wicon_nessie_tentacle', s, s);
   g.destroy();
 }
@@ -429,57 +750,95 @@ function drawHighlandGamesIcon(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `wicon_haggis_cannon` — scatter-fire upgrade icon. Design pivot:
+ * old icon was 6 radial spoke-lines + center blob = concentric-
+ * circles mess reading as "gear" or "sunburst". New pitch — proper
+ * CANNON-BARREL shape angled diagonal from lower-left to upper-
+ * right, with a BIG MUZZLE FLASH at the tip and 3 haggis balls
+ * exploding outward in a scatter. Reads "cannon firing shrapnel"
+ * not "abstract pattern".
+ */
 function drawHaggisCannonIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  g.lineStyle(1.5, 0x7a5010, 0.5);
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    g.lineBetween(cx, cy, cx + Math.cos(a) * 13, cy + Math.sin(a) * 13);
-  }
-  for (let i = 0; i < 6; i++) {
-    const a = (i / 6) * Math.PI * 2;
-    const r = 10;
-    const jx = cx + Math.cos(a) * r;
-    const jy = cy + Math.sin(a) * r;
-    g.fillStyle(0x5a3808, 0.5);
-    g.fillCircle(jx - Math.cos(a) * 3, jy - Math.sin(a) * 3, 1.2);
-    g.fillStyle(0x6b4a0a, 0.35);
-    g.fillCircle(jx - Math.cos(a) * 5, jy - Math.sin(a) * 5, 0.8);
-    g.fillStyle(0x1e1004, 1);
-    g.fillCircle(jx, jy, 2.8);
-    g.fillStyle(0x5a3808, 1);
-    g.fillCircle(jx, jy, 2.2);
-    g.fillStyle(0x8a5a14, 1);
-    g.fillCircle(jx - 0.5, jy - 0.5, 1.2);
-    g.fillStyle(0xaa7020, 0.8);
-    g.fillCircle(jx - 0.8, jy - 0.8, 0.6);
-  }
-  g.fillStyle(0x6b4a0a, 0.7);
-  g.fillCircle(cx - 12, cy - 12, 1.5);
-  g.fillCircle(cx + 12, cy - 10, 1.2);
-  g.fillCircle(cx - 10, cy + 12, 1.2);
-  g.fillStyle(0x8a5a14, 0.5);
-  g.fillCircle(cx + 13, cy + 8, 1.0);
-  g.fillCircle(cx - 8, cy - 13, 0.8);
-  g.fillStyle(0x1e1004, 1);
-  g.fillCircle(cx, cy, 6.5);
-  g.fillStyle(0x4a2c06, 1);
-  g.fillCircle(cx, cy, 5.5);
-  g.fillStyle(0x7a4e10, 1);
-  g.fillCircle(cx - 1, cy - 1, 4);
-  g.fillStyle(0xaa7020, 1);
-  g.fillCircle(cx - 1.5, cy - 1.5, 2.2);
-  g.fillStyle(0xcc9030, 0.7);
-  g.fillCircle(cx - 2, cy - 2, 1.2);
-  g.fillStyle(0xddccbb, 0.4);
-  g.fillCircle(cx - 1, cy - 7, 1.5);
-  g.fillCircle(cx + 1, cy - 9, 1.2);
-  g.fillStyle(0xccbbaa, 0.25);
-  g.fillCircle(cx, cy - 11, 1.0);
+
+  // Cannon body — diagonal thick barrel from lower-left to centre
+  // Dark outline
+  g.fillStyle(0x0a0604, 1);
+  g.fillTriangle(cx - 14, cy + 12, cx - 10, cy + 14, cx + 4, cy);
+  g.fillTriangle(cx - 14, cy + 12, cx + 4, cy, cx + 2, cy - 4);
+  // Main barrel — brass/bronze
+  g.fillStyle(0x6a3010, 1);
+  g.fillTriangle(cx - 13, cy + 12, cx - 10, cy + 13, cx + 3, cy - 1);
+  g.fillTriangle(cx - 13, cy + 12, cx + 3, cy - 1, cx + 1, cy - 3);
+  // Barrel highlight (upper edge catching light)
+  g.fillStyle(0xba8040, 1);
+  g.fillRect(cx - 12, cy + 10, 2, 1);
+  g.fillRect(cx - 8, cy + 7, 3, 1);
+  g.fillRect(cx - 4, cy + 3, 3, 1);
+  g.fillRect(cx, cy - 1, 2, 1);
+  // Reinforcement bands — two darker rings on the barrel
+  g.fillStyle(0x2a1a08, 1);
+  g.fillRect(cx - 10, cy + 8, 4, 1.5);
+  g.fillRect(cx - 4, cy + 2, 4, 1.5);
+  // Band brass highlight
+  g.fillStyle(0xd8a840, 0.9);
+  g.fillRect(cx - 10, cy + 8, 4, 0.4);
+  g.fillRect(cx - 4, cy + 2, 4, 0.4);
+
+  // Cannon breech (back end) — larger rounded block
+  g.fillStyle(0x0a0604, 1);
+  g.fillCircle(cx - 13, cy + 12, 3);
+  g.fillStyle(0x6a3010, 1);
+  g.fillCircle(cx - 13, cy + 12, 2.5);
+  g.fillStyle(0xba8040, 0.9);
+  g.fillCircle(cx - 14, cy + 11, 1);
+
+  // MUZZLE FLASH — big bright orange-yellow burst at the tip
+  // Outer glow
+  g.fillStyle(0xff6020, 0.5);
+  g.fillCircle(cx + 3, cy - 3, 10);
+  g.fillStyle(0xffa040, 0.8);
+  g.fillCircle(cx + 3, cy - 3, 7);
+  // Core flash
+  g.fillStyle(0xffd880, 1);
+  g.fillCircle(cx + 3, cy - 3, 5);
+  g.fillStyle(0xfff4c8, 1);
+  g.fillCircle(cx + 3, cy - 3, 3);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx + 2, cy - 4, 1.3);
+
+  // Three SCATTER BALLS — haggis shrapnel spreading outward upper-right
+  drawMiniHaggis(g, cx + 9, cy - 9, 2.5);
+  drawMiniHaggis(g, cx + 12, cy - 5, 2);
+  drawMiniHaggis(g, cx + 7, cy - 13, 2);
+
+  // Smoke puffs trailing from the muzzle
+  g.fillStyle(0x8a8070, 0.6);
+  g.fillCircle(cx - 4, cy - 8, 1.5);
+  g.fillCircle(cx - 8, cy - 5, 1.2);
+  g.fillStyle(0xa8a090, 0.4);
+  g.fillCircle(cx - 6, cy - 11, 1);
+
   g.generateTexture('wicon_haggis_cannon', s, s);
   g.destroy();
+}
+
+/**
+ * Draw a small haggis ball for scatter-shrapnel decoration on
+ * weapon icons. Dark outline + brown body + oat fleck.
+ */
+function drawMiniHaggis(g: Phaser.GameObjects.Graphics, x: number, y: number, r: number): void {
+  g.fillStyle(0x0a0604, 1);
+  g.fillCircle(x, y, r + 0.4);
+  g.fillStyle(0x4a3008, 1);
+  g.fillCircle(x, y, r);
+  g.fillStyle(0x7a5020, 1);
+  g.fillCircle(x - 0.3, y - 0.3, r * 0.65);
+  g.fillStyle(0xc8a848, 0.9);
+  g.fillCircle(x + 0.3, y + 0.3, 0.4);
 }
 
 function drawHighlandFlingIcon(scene: Phaser.Scene): void {
@@ -582,62 +941,110 @@ function drawTheHaarIcon(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `wicon_nessie_unleashed` — legendary Nessie evolution icon. Design
+ * pivot: old icon was a tentacle-star of 12 small segment-blobs that
+ * read as "spiral pattern". New pitch — iconic NESSIE SERPENT NECK
+ * rising from water: curved long neck arching from lower-right loch,
+ * reaching upper-left, small head with glowing eye at the tip. The
+ * tourist-brochure silhouette everyone knows. Water splash at base
+ * plus two supporting coils beneath the surface.
+ */
 function drawNessieUnleashedIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
+
+  // ── Water surface at the bottom — dark loch. ──
+  g.fillStyle(0x0a2238, 1);
+  g.fillRect(0, cy + 8, s, s - (cy + 8));
+  g.fillStyle(0x1a3a58, 1);
+  g.fillRect(0, cy + 8, s, 1.5);
+  // Ripple lines
+  g.fillStyle(0x4a7a9a, 0.8);
+  g.fillRect(2, cy + 10, 8, 0.4);
+  g.fillRect(14, cy + 12, 10, 0.4);
+  g.fillRect(22, cy + 14, 8, 0.4);
+
+  // ── Mystic halo around the monster. ──
   g.fillStyle(0x336688, 0.3);
-  g.fillCircle(cx, cy, 15);
-  g.fillStyle(0x224466, 0.2);
-  g.fillCircle(cx, cy, 12);
-  g.fillStyle(0x66aacc, 0.7);
-  g.fillCircle(cx + 13, cy - 4, 1.5);
-  g.fillCircle(cx - 13, cy + 3, 1.2);
-  g.fillCircle(cx + 4, cy - 14, 1.3);
-  g.fillCircle(cx - 5, cy + 13, 1.2);
-  g.fillStyle(0x88ccee, 0.5);
-  g.fillCircle(cx + 14, cy + 2, 1.0);
-  g.fillCircle(cx - 2, cy - 14, 0.9);
-  const tentacleAngles = [0.4, 1.9, 3.4, 4.9];
-  for (let t = 0; t < 4; t++) {
-    const baseAngle = tentacleAngles[t];
-    for (let seg = 0; seg < 3; seg++) {
-      const a = baseAngle + seg * 0.6;
-      const r = 4 + seg * 3.5;
-      const px = cx + Math.cos(a) * r;
-      const py = cy + Math.sin(a) * r;
-      const size = 3.8 - seg * 0.8;
-      g.fillStyle(0x0d2e1a, 1);
-      g.fillCircle(px, py, size + 0.7);
-      g.fillStyle(0x1a5c36, 1);
-      g.fillCircle(px, py, size);
-      g.fillStyle(0x2a8052, 1);
-      g.fillCircle(px - 0.5, py - 0.5, size * 0.65);
-      g.fillStyle(0x44aa6a, 1);
-      g.fillCircle(px - 0.8, py - 0.8, size * 0.35);
-      if (seg > 0) {
-        const suckerA = a + 1.5;
-        const sx = px + Math.cos(suckerA) * (size - 0.5);
-        const sy = py + Math.sin(suckerA) * (size - 0.5);
-        g.fillStyle(0xbbaa88, 1);
-        g.fillCircle(sx, sy, 0.9);
-      }
-      g.fillStyle(0x33ffaa, 0.4);
-      g.fillCircle(px + Math.cos(a + 0.8) * size * 0.8, py + Math.sin(a + 0.8) * size * 0.8, 0.6);
-    }
-  }
-  g.fillStyle(0x3a2a00, 1);
-  g.fillCircle(cx, cy, 5);
-  g.fillStyle(0xcc9900, 1);
-  g.fillCircle(cx, cy, 4);
+  g.fillCircle(cx, cy - 2, 14);
+
+  // ── BACK COIL — visible hump behind the neck, peeking over water. ──
+  g.fillStyle(0x0a2012, 1);
+  g.fillEllipse(cx + 8, cy + 7, 12, 5);
+  g.fillStyle(0x1a4a2a, 1);
+  g.fillEllipse(cx + 8, cy + 7, 10, 4);
+  g.fillStyle(0x3a8a4a, 1);
+  g.fillEllipse(cx + 8, cy + 6.5, 8, 2.5);
+
+  // ── SECOND COIL — smaller hump further right. ──
+  g.fillStyle(0x0a2012, 1);
+  g.fillEllipse(cx + 14, cy + 9, 6, 3);
+  g.fillStyle(0x1a4a2a, 1);
+  g.fillEllipse(cx + 14, cy + 9, 5, 2.5);
+
+  // ── SERPENT NECK — long curving S from base (cx+6, cy+5) arching
+  // up to head (cx-8, cy-8). Drawn as overlapping circles of
+  // decreasing size for smooth taper. ──
+  const neckPoints: [number, number, number][] = [
+    [cx + 6, cy + 5, 4.5],
+    [cx + 4, cy + 2, 4.2],
+    [cx + 1, cy - 1, 3.8],
+    [cx - 2, cy - 4, 3.4],
+    [cx - 5, cy - 6, 3],
+    [cx - 7, cy - 8, 2.6],
+  ];
+  // Dark outline
+  g.fillStyle(0x0a2012, 1);
+  for (const [px, py, r] of neckPoints) g.fillCircle(px, py, r + 0.6);
+  // Main body — loch green
+  g.fillStyle(0x1a5a32, 1);
+  for (const [px, py, r] of neckPoints) g.fillCircle(px, py, r);
+  // Lighter belly (catches light on left side)
+  g.fillStyle(0x3a8a4a, 1);
+  for (const [px, py, r] of neckPoints) g.fillCircle(px - 0.5, py - 0.3, r * 0.6);
+  // Brightest highlight strip
+  g.fillStyle(0x5ab060, 0.85);
+  for (const [px, py, r] of neckPoints) g.fillCircle(px - 0.8, py - 0.5, r * 0.3);
+
+  // ── HEAD — teardrop shape at the neck tip, angled up-left. ──
+  g.fillStyle(0x0a2012, 1);
+  g.fillEllipse(cx - 9, cy - 9, 6, 4);
+  g.fillStyle(0x1a5a32, 1);
+  g.fillEllipse(cx - 9, cy - 9, 5, 3.5);
+  g.fillStyle(0x3a8a4a, 1);
+  g.fillEllipse(cx - 9.5, cy - 9.5, 4, 2.5);
+  // Head snout pointing up-left
+  g.fillStyle(0x0a2012, 1);
+  g.fillTriangle(cx - 11, cy - 9, cx - 13, cy - 11, cx - 11, cy - 10);
+  g.fillStyle(0x1a5a32, 1);
+  g.fillTriangle(cx - 11, cy - 9.2, cx - 12.5, cy - 10.5, cx - 11, cy - 9.8);
+
+  // ── GLOWING EYE — bright amber eye on the head, the anchor. ──
   g.fillStyle(0xffcc22, 1);
-  g.fillCircle(cx, cy, 3);
+  g.fillCircle(cx - 9, cy - 9.3, 1.2);
   g.fillStyle(0xffee88, 1);
-  g.fillCircle(cx - 0.5, cy - 0.5, 1.5);
+  g.fillCircle(cx - 9, cy - 9.3, 0.7);
   g.fillStyle(0x000000, 1);
-  g.fillRect(cx - 0.7, cy - 3, 1.4, 6);
-  g.lineStyle(1, 0x33ffaa, 0.5);
-  g.strokeCircle(cx, cy, 5.5);
+  g.fillRect(cx - 9.3, cy - 10, 0.6, 1.5);
+
+  // ── Mouth line — small dark curve. ──
+  g.fillStyle(0x0a0a08, 1);
+  g.fillRect(cx - 12, cy - 8, 1.5, 0.5);
+
+  // ── Water splash at the neck base — the emergence tell. ──
+  g.fillStyle(0x4a8aba, 0.85);
+  g.fillEllipse(cx + 5, cy + 9, 10, 2);
+  g.fillStyle(0x88ccee, 1);
+  g.fillCircle(cx + 9, cy + 8, 1);
+  g.fillCircle(cx + 2, cy + 8.5, 0.8);
+  g.fillCircle(cx - 1, cy + 10, 0.8);
+  // Splash droplets arching over
+  g.fillStyle(0xaaddee, 0.9);
+  g.fillCircle(cx + 11, cy + 5, 0.8);
+  g.fillCircle(cx + 2, cy + 3, 0.7);
+
   g.generateTexture('wicon_nessie_unleashed', s, s);
   g.destroy();
 }

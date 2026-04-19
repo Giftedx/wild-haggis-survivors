@@ -1,5 +1,11 @@
 /**
- * `nest` — bird's nest: twig base with criss-crossed detail, three speckled eggs, a single feather poking out. Stationary spawner.
+ * `nest` — eagle's nest spawner. Design pivot: old criss-cross twig
+ * lines softened at 1× and the eggs merged with the base tones. New
+ * pitch — chunky stick-ring silhouette in strong value contrast
+ * (dark-rim/light-interior), THREE bold blue-speckled eggs that pop
+ * against the brown bowl, a big auburn primary feather spearing
+ * up from the rim as a fight-happened tell. Reads "raptor's nest"
+ * at 40px, not "bowl of something".
  */
 
 import Phaser from 'phaser';
@@ -9,52 +15,91 @@ export function bakeNest(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // Nest base outline
-  g.fillStyle(0x3a2808, 1);
-  g.fillEllipse(cx, cy + 4, 34, 20);
-  // Nest twigs base
-  g.fillStyle(0x6b4e0a, 1);
-  g.fillEllipse(cx, cy + 3, 32, 18);
-  g.fillStyle(0x886622, 1);
-  g.fillEllipse(cx, cy + 1, 28, 14);
-  // Twig detail (criss-crossed lines)
-  g.lineStyle(1, 0x4a2a0a, 1);
-  g.lineBetween(cx - 14, cy + 6, cx + 12, cy - 2);
-  g.lineBetween(cx - 12, cy - 2, cx + 14, cy + 5);
-  g.lineBetween(cx - 10, cy + 8, cx + 10, cy + 3);
-  g.lineBetween(cx - 8, cy + 2, cx + 8, cy + 8);
-  // Nest inside (darker)
-  g.fillStyle(0x3a2808, 1);
-  g.fillEllipse(cx, cy - 1, 20, 8);
+  // ── Ground shadow. ──
+  g.fillStyle(0x000000, 0.4);
+  g.fillEllipse(cx, cy + 9, 30, 4);
 
-  // Eggs (iconic, big and speckled)
-  g.fillStyle(0xbbaa88, 1);
-  g.fillEllipse(cx - 6, cy - 3, 8, 10);
-  g.fillEllipse(cx + 6, cy - 3, 8, 10);
-  g.fillEllipse(cx, cy - 2, 8, 10);
-  g.fillStyle(0xeeeecc, 1);
-  g.fillEllipse(cx - 6, cy - 4, 6, 8);
-  g.fillEllipse(cx + 6, cy - 4, 6, 8);
-  g.fillEllipse(cx, cy - 3, 6, 8);
-  // Egg speckles
-  g.fillStyle(0x8b6914, 1);
-  g.fillCircle(cx - 6, cy - 2, 0.7);
-  g.fillCircle(cx - 4, cy - 5, 0.7);
-  g.fillCircle(cx + 6, cy - 4, 0.7);
-  g.fillCircle(cx + 7, cy - 1, 0.7);
-  g.fillCircle(cx, cy - 1, 0.7);
-  g.fillCircle(cx + 1, cy - 5, 0.7);
-  g.fillCircle(cx - 1, cy - 3, 0.7);
+  // ── Dark outer twig ring — rough bowl silhouette. ──
+  g.fillStyle(0x1a0e04, 1);
+  g.fillEllipse(cx, cy + 3, 34, 18);
+  // Warm brown mid-ring
+  g.fillStyle(0x4a2e10, 1);
+  g.fillEllipse(cx, cy + 2, 32, 16);
+  // Lighter twig highlights on the rim
+  g.fillStyle(0x7a5020, 1);
+  g.fillEllipse(cx, cy, 30, 13);
 
-  // Wee feather sticking out (brown, wispy)
-  g.fillStyle(0x886644, 0.8);
-  g.fillTriangle(cx + 12, cy - 4, cx + 16, cy - 8, cx + 13, cy - 2);
-  g.fillStyle(0xaa8866, 0.6);
-  g.fillTriangle(cx + 12, cy - 3, cx + 15, cy - 7, cx + 13, cy - 2);
-  g.lineStyle(0.5, 0x664422, 0.7);
-  g.lineBetween(cx + 12, cy - 2, cx + 15, cy - 7);
+  // ── Visible stick ends poking out of the rim — bold chunky
+  // rectangles at the cardinal angles, not thin 1px lines. ──
+  g.fillStyle(0x3a1e0a, 1);
+  g.fillRect(cx - 16, cy - 1, 4, 1.2);
+  g.fillRect(cx + 12, cy - 2, 4, 1.2);
+  g.fillRect(cx - 14, cy + 5, 4, 1.2);
+  g.fillRect(cx + 10, cy + 6, 4, 1.2);
+  g.fillRect(cx - 10, cy - 4, 3, 1);
+  g.fillRect(cx + 8, cy - 4, 3, 1);
+  // Stick highlight
+  g.fillStyle(0x8a5820, 1);
+  g.fillRect(cx - 16, cy - 1, 4, 0.4);
+  g.fillRect(cx + 12, cy - 2, 4, 0.4);
+
+  // ── Dark nest cavity — where the eggs sit. ──
+  g.fillStyle(0x2a1806, 1);
+  g.fillEllipse(cx, cy - 1, 22, 9);
+  g.fillStyle(0x1a0e04, 1);
+  g.fillEllipse(cx, cy - 1, 20, 7);
+
+  // ── THREE big eggs — pale blue-cream like raptor eggs. Positioned
+  // in a clear triangle so the count reads at a glance. ──
+  drawEgg(g, cx - 7, cy - 2);
+  drawEgg(g, cx + 7, cy - 2);
+  drawEgg(g, cx, cy - 4);
+
+  // ── Large auburn primary feather spearing up-right from the rim.
+  // The "bird's been here" tell. ──
+  // Shaft
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx + 8, cy - 12, 0.8, 8);
+  // Main feather vane — diagonal tear-drop
+  g.fillStyle(0x6a3818, 1);
+  g.fillTriangle(cx + 6, cy - 12, cx + 12, cy - 15, cx + 9, cy - 5);
+  g.fillStyle(0x8a5028, 1);
+  g.fillTriangle(cx + 7, cy - 11, cx + 11, cy - 14, cx + 9, cy - 6);
+  // Light-catching highlight
+  g.fillStyle(0xba7848, 0.85);
+  g.fillTriangle(cx + 8, cy - 10, cx + 10, cy - 13, cx + 9, cy - 8);
+  // Feather barbs (short cross-lines)
+  g.fillStyle(0x3a2010, 0.8);
+  g.fillRect(cx + 7, cy - 8, 2.5, 0.3);
+  g.fillRect(cx + 7, cy - 10, 2.5, 0.3);
+  g.fillRect(cx + 8, cy - 12, 2.5, 0.3);
 
   g.generateTexture('nest', s, s);
   g.destroy();
 }
 
+/**
+ * Draw one speckled eagle egg — pale blue-cream body, darker spots.
+ */
+function drawEgg(g: Phaser.GameObjects.Graphics, x: number, y: number): void {
+  // Shadow under the egg
+  g.fillStyle(0x000000, 0.5);
+  g.fillEllipse(x, y + 4, 6, 1.5);
+  // Main body — off-white with cold tint
+  g.fillStyle(0xe0e8d8, 1);
+  g.fillEllipse(x, y, 7, 9);
+  g.fillStyle(0xf0f4e4, 1);
+  g.fillEllipse(x - 0.5, y - 0.5, 5, 7);
+  // Highlight on the top-left
+  g.fillStyle(0xffffff, 0.9);
+  g.fillEllipse(x - 1.5, y - 2, 1.8, 2.5);
+  // Speckles — blue-brown freckling
+  g.fillStyle(0x6a4828, 1);
+  g.fillCircle(x - 1, y + 1, 0.6);
+  g.fillCircle(x + 1.5, y - 1, 0.5);
+  g.fillCircle(x + 0.5, y + 2.5, 0.5);
+  g.fillCircle(x - 2, y + 2, 0.4);
+  g.fillStyle(0x3a2818, 0.8);
+  g.fillCircle(x + 1, y + 1, 0.3);
+  g.fillCircle(x - 1.5, y - 1.5, 0.3);
+}

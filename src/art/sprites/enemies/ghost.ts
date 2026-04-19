@@ -1,5 +1,12 @@
 /**
- * `ghost` — Mary Queen of Scots revenant: hood, scaffold mark, translucent robe, reproachful stare.
+ * `ghost` — Mary Queen of Scots revenant. Design pivot: old sprite
+ * had a full head/hood/tartan-sash stack that all fell apart at
+ * gameplay scale; the beheading mark was a faint line. New pitch —
+ * she's HEADLESS, carrying her crowned head in her hands (the
+ * Anne Boleyn / Tower-ghost trope transposed onto Mary). The
+ * severed-head tell is the anchor: no other ghost in the game
+ * holds its own head. Pearl necklace, French collar ruff, trailing
+ * ghostly gown with a tartan bleed for Scotland.
  */
 
 import Phaser from 'phaser';
@@ -9,86 +16,115 @@ export function bakeGhost(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  g.fillStyle(0x668888, 0.35);
-  g.fillEllipse(cx, cy - 2, 30, 28);
-  g.fillStyle(0x88aaaa, 0.5);
-  g.fillEllipse(cx, cy - 2, 26, 24);
-  g.fillStyle(0xaacccc, 0.45);
-  g.fillEllipse(cx - 2, cy - 4, 20, 18);
+  // ── Ghostly aura — two layers of translucent mist. ──
+  g.fillStyle(0x668888, 0.2);
+  g.fillEllipse(cx, cy, 34, 32);
+  g.fillStyle(0x88aaaa, 0.3);
+  g.fillEllipse(cx, cy, 26, 26);
 
-  // Trailing tartan sash
-  g.fillStyle(0x334466, 0.4);
-  g.fillRect(cx - 4, cy - 8, 8, 20);
-  g.fillStyle(0x446688, 0.3);
-  g.fillRect(cx - 3, cy - 7, 6, 18);
-  g.fillStyle(0x556688, 0.3);
-  g.fillRect(cx - 3, cy - 3, 6, 1);
-  g.fillRect(cx - 3, cy + 3, 6, 1);
-  g.fillRect(cx - 1, cy - 7, 1, 18);
+  // ── Long gown — trailing to a wispy bottom (no feet, ghost drift).
+  // Pale blue-grey base. ──
+  g.fillStyle(0xa0b8c8, 0.8);
+  g.fillTriangle(cx - 11, cy + 18, cx + 11, cy + 18, cx + 6, cy - 10);
+  g.fillTriangle(cx - 11, cy + 18, cx - 6, cy - 10, cx + 6, cy - 10);
+  g.fillStyle(0xc0d0dc, 0.85);
+  g.fillTriangle(cx - 9, cy + 17, cx + 9, cy + 17, cx + 5, cy - 9);
+  g.fillTriangle(cx - 9, cy + 17, cx - 5, cy - 9, cx + 5, cy - 9);
 
-  // Wavy ghost-tail
+  // ── Tartan bleed down the centre — red-and-black tartan panel so
+  // the "Scots" anchor survives at scale. Semi-translucent. ──
+  g.fillStyle(0x6a1818, 0.55);
+  g.fillRect(cx - 2.5, cy - 8, 5, 22);
+  // Tartan crossbars
+  g.fillStyle(0x2a0a0a, 0.7);
+  g.fillRect(cx - 2.5, cy - 5, 5, 1);
+  g.fillRect(cx - 2.5, cy + 2, 5, 1);
+  g.fillRect(cx - 2.5, cy + 9, 5, 1);
+  g.fillStyle(0xdaaa40, 0.6);
+  g.fillRect(cx - 0.5, cy - 8, 1, 22);
+
+  // ── Wispy gown bottom — ectoplasm trails instead of hem. ──
   g.fillStyle(0x88aaaa, 0.5);
   for (let i = 0; i < 5; i++) {
-    g.fillCircle(cx - 12 + i * 6, cy + 10, 5);
+    g.fillCircle(cx - 9 + i * 4.5, cy + 17, 3);
   }
-  g.fillStyle(0xaacccc, 0.4);
+  g.fillStyle(0xaaccdc, 0.35);
   for (let i = 0; i < 5; i++) {
-    g.fillCircle(cx - 12 + i * 6, cy + 9, 4);
+    g.fillCircle(cx - 9 + i * 4.5, cy + 19, 2);
   }
 
-  // Chain links (castle dungeon ghost)
-  g.lineStyle(1.5, 0x8899aa, 0.6);
-  g.strokeCircle(cx + 10, cy + 4, 2);
-  g.strokeCircle(cx + 12, cy + 7, 2);
-  g.strokeCircle(cx + 10, cy + 10, 2);
+  // ── Shoulders + French collar ruff. Headless neck stump ends
+  // here — bright white ruff, red bloody stump above. ──
+  // Ruff collar (pleated white)
+  g.fillStyle(0xf0f4f8, 1);
+  g.fillEllipse(cx, cy - 8, 12, 3);
+  g.fillStyle(0xffffff, 1);
+  g.fillEllipse(cx, cy - 8.5, 10, 2);
+  // Pleat ridges
+  g.fillStyle(0xc0c8d0, 0.8);
+  for (let i = 0; i < 6; i++) g.fillRect(cx - 5 + i * 2, cy - 9, 0.4, 3);
 
-  // French hood (Mary Queen of Scots)
-  g.fillStyle(0x222233, 0.6);
-  g.fillEllipse(cx, cy - 12, 18, 6);
-  g.fillStyle(0x1a1a2a, 0.7);
-  g.fillEllipse(cx, cy - 13, 16, 4);
-  g.fillStyle(0xbbccdd, 0.5);
-  g.fillRect(cx - 5, cy - 11, 10, 2);
-  g.fillStyle(0xccddee, 0.4);
-  g.fillRect(cx - 4, cy - 11, 8, 1);
+  // ── HEADLESS NECK STUMP — bloody, the signature anchor. ──
+  g.fillStyle(0x4a0808, 1);
+  g.fillRect(cx - 2, cy - 11, 4, 3);
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx - 1.5, cy - 11, 3, 2);
+  g.fillStyle(0xc42828, 0.9);
+  g.fillRect(cx - 1, cy - 11, 2, 1);
+  // Blood drip off the ruff
+  g.fillStyle(0x6a1010, 0.9);
+  g.fillCircle(cx - 2, cy - 6, 0.8);
+  g.fillCircle(cx + 2, cy - 6, 0.7);
 
-  // Hollow eye sockets (glowing blue-green)
-  g.fillStyle(0x000000, 0.9);
-  g.fillCircle(cx - 5, cy - 6, 4);
-  g.fillCircle(cx + 5, cy - 6, 4);
-  g.fillStyle(0x44ddaa, 1);
-  g.fillCircle(cx - 5, cy - 6, 2.2);
-  g.fillCircle(cx + 5, cy - 6, 2.2);
-  g.fillStyle(0xaaffdd, 1);
-  g.fillCircle(cx - 5, cy - 7, 0.8);
-  g.fillCircle(cx + 5, cy - 7, 0.8);
+  // ── Pearl necklace — three white dots at the base of the ruff. ──
+  g.fillStyle(0xfff8e8, 1);
+  g.fillCircle(cx - 2.5, cy - 7, 0.7);
+  g.fillCircle(cx, cy - 6.8, 0.8);
+  g.fillCircle(cx + 2.5, cy - 7, 0.7);
 
-  // Wailing O-mouth (eternal scream)
-  g.fillStyle(0x000000, 0.9);
-  g.fillEllipse(cx, cy + 2, 6, 6);
-  g.fillStyle(0x1a3344, 1);
-  g.fillEllipse(cx, cy + 2, 4, 4);
+  // ── HELD HEAD — she's cradling her own severed head in her hands.
+  // Positioned down-centre so it reads below the body. This is the
+  // Mary-Queen-of-Scots anchor. ──
+  // Hands cupping the head
+  g.fillStyle(0xd8e6ee, 0.95);
+  g.fillCircle(cx - 5, cy + 7, 2);
+  g.fillCircle(cx + 5, cy + 7, 2);
+  // Head — pale, crowned, eyes-closed
+  g.fillStyle(0xe8d8c0, 1);
+  g.fillEllipse(cx, cy + 7, 8, 9);
+  g.fillStyle(0xf0e0c8, 1);
+  g.fillEllipse(cx, cy + 6.5, 7, 8);
+  // Auburn hair parted down the middle (Mary was red-haired)
+  g.fillStyle(0x6a2810, 1);
+  g.fillEllipse(cx, cy + 3.5, 7, 3);
+  g.fillRect(cx - 3, cy + 3, 6, 4);
+  // Small crown on the head — gold points
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 3, cy + 2, 6, 1.2);
+  g.fillTriangle(cx - 3, cy + 2, cx - 2, cy + 0.5, cx - 1, cy + 2);
+  g.fillTriangle(cx - 1, cy + 2, cx, cy + 0.5, cx + 1, cy + 2);
+  g.fillTriangle(cx + 1, cy + 2, cx + 2, cy + 0.5, cx + 3, cy + 2);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 3, cy + 2, 6, 0.5);
+  // Closed eyes — two small dark slits
+  g.fillStyle(0x2a1810, 1);
+  g.fillRect(cx - 2.5, cy + 6.5, 1.5, 0.4);
+  g.fillRect(cx + 1, cy + 6.5, 1.5, 0.4);
+  // Thin line mouth
+  g.fillStyle(0x6a2820, 1);
+  g.fillRect(cx - 1, cy + 9, 2, 0.4);
+  // Neck stump at bottom of head
+  g.fillStyle(0x8a1818, 0.95);
+  g.fillEllipse(cx, cy + 11, 4, 1.5);
 
-  // ── Mary's crucifix (she wore one to the scaffold — ghostly gold) ──
-  g.fillStyle(0xccaa55, 0.4);
-  g.fillRect(cx - 1, cy - 3, 2, 5);
-  g.fillRect(cx - 2, cy - 2, 4, 1);
-  g.fillStyle(0xddbb66, 0.3);
-  g.fillCircle(cx, cy - 3, 0.6);
-
-  // ── Ectoplasmic drip (ghostly substance trailing down) ──
-  g.fillStyle(0x88aaaa, 0.25);
-  g.fillRect(cx - 8, cy + 12, 2, 4);
-  g.fillCircle(cx - 7, cy + 16, 1);
-  g.fillStyle(0xaacccc, 0.2);
-  g.fillRect(cx + 6, cy + 13, 1, 3);
-  g.fillCircle(cx + 6, cy + 16, 0.8);
-
-  // ── Faint execution mark (dark line across neck — she was beheaded) ──
-  g.fillStyle(0x884455, 0.2);
-  g.fillRect(cx - 4, cy - 3, 8, 1);
+  // ── Drifting hair wisps from where her head used to be. ──
+  g.fillStyle(0x6a2810, 0.5);
+  g.fillCircle(cx - 4, cy - 13, 1.5);
+  g.fillCircle(cx + 4, cy - 13, 1.5);
+  g.fillCircle(cx, cy - 15, 1.8);
+  g.fillStyle(0x8a4028, 0.4);
+  g.fillCircle(cx, cy - 14, 1.2);
 
   g.generateTexture('ghost', s, s);
   g.destroy();
 }
-
