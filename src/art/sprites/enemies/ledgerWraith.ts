@@ -1,11 +1,14 @@
 /**
- * `ledger_wraith` — floating clerk with a massive open ledger held
- * forward at chest height. The Taxman family's book-keeper. Design
- * pivot: the LEDGER is the silhouette, not the robes — an open
- * double-page book with ruled lines and red tally-marks reads as
- * "this ghost is about to audit you" even at 40px. Head is small,
- * sits above the book; robes trail below. Red-ink drips are the
- * threat beat.
+ * `ledger_wraith` — floating clerk-spirit from the Taxman's retinue.
+ * Design pivot (v3): the book-as-silhouette version read as "flying
+ * ledger" at 40px because the head + robes were both narrow and
+ * secondary. New pitch: invert the hierarchy. The WRAITH BODY is
+ * the silhouette — big hooded robe filling 60% of the canvas. Big
+ * pale skull-face with BLAZING RED EYE SOCKETS is the centre mass
+ * and kill-target anchor. Ledger is held SMALL at chest height
+ * (16×6, half its former size) with a red quill stabbed into it.
+ * Red-ink drip trail cascades down the front of the robe as the
+ * threat beat. Ghost first, audit tool second.
  */
 
 import Phaser from 'phaser';
@@ -15,110 +18,132 @@ export function bakeLedgerWraith(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // ── Ghostly halo — cold paper-blue, two layers. ──
-  g.fillStyle(0x8899aa, 0.18);
+  // ── Ghostly halo — cold paper-blue, two layers wider than before
+  // so the wraith silhouette reads first. ──
+  g.fillStyle(0x8899aa, 0.15);
+  g.fillEllipse(cx, cy, 36, 38);
+  g.fillStyle(0x8899aa, 0.22);
   g.fillEllipse(cx, cy, 28, 30);
-  g.fillStyle(0x8899aa, 0.1);
-  g.fillEllipse(cx, cy, 34, 36);
 
-  // ── Floor-length robes — thin wedge trailing below the ledger.
-  // Deliberately narrower than the ledger so the book dominates. ──
-  g.fillStyle(0x1a1a28, 0.9);
-  g.fillTriangle(cx - 7, cy + 15, cx + 7, cy + 15, cx + 2, cy + 4);
-  g.fillTriangle(cx - 7, cy + 15, cx - 2, cy + 4, cx + 2, cy + 4);
-  g.fillStyle(0x2a2a3a, 1);
-  g.fillTriangle(cx - 5, cy + 14, cx + 5, cy + 14, cx + 1, cy + 5);
-  g.fillTriangle(cx - 5, cy + 14, cx - 1, cy + 5, cx + 1, cy + 5);
-
-  // ── Ledger shadow — dark outline behind the book so the spine
-  // pops against the halo. ──
+  // ── HOODED ROBE — the dominant silhouette. Tall cowl peak at the
+  // top, broad shoulders, tapering to jagged hem at the bottom. ──
+  // Outline shadow (near-black)
   g.fillStyle(0x0a0a14, 1);
-  g.fillRect(cx - 12, cy - 3, 24, 10);
+  g.fillTriangle(cx - 14, cy + 15, cx + 14, cy + 15, cx, cy - 14);
+  // Robe body — dark slate
+  g.fillStyle(0x1a1a2a, 1);
+  g.fillTriangle(cx - 12, cy + 14, cx + 12, cy + 14, cx, cy - 13);
+  // Inner robe highlight — slightly lighter where light catches the cowl
+  g.fillStyle(0x2a2a3a, 1);
+  g.fillTriangle(cx - 9, cy + 12, cx + 9, cy + 12, cx, cy - 11);
+  // Jagged tattered hem — three downward teeth at the bottom
+  g.fillStyle(0x0a0a14, 1);
+  g.fillTriangle(cx - 10, cy + 14, cx - 6, cy + 14, cx - 8, cy + 17);
+  g.fillTriangle(cx - 2, cy + 14, cx + 2, cy + 14, cx, cy + 18);
+  g.fillTriangle(cx + 6, cy + 14, cx + 10, cy + 14, cx + 8, cy + 17);
 
-  // ── Ledger cover — open book, two pages. Dark leather cover
-  // visible at the edges; parchment pages fill the middle. ──
-  g.fillStyle(0x3a2010, 1);
-  g.fillRect(cx - 12, cy - 3, 24, 10);
-  // Inner leather (slightly lighter) — frames the pages
-  g.fillStyle(0x5a3018, 1);
-  g.fillRect(cx - 11, cy - 2, 22, 8);
+  // ── Cowl HOOD interior — darker pocket around the face so the
+  // skull pops out of shadow. ──
+  g.fillStyle(0x050508, 1);
+  g.fillEllipse(cx, cy - 8, 12, 11);
 
-  // ── Parchment pages — left + right, cream with a faint shadow
-  // in the gutter where they meet. ──
-  g.fillStyle(0xe8ddb0, 1);
-  g.fillRect(cx - 10, cy - 1, 9, 6);
-  g.fillRect(cx + 1, cy - 1, 9, 6);
-  // Gutter shadow — reads as the spine crease
-  g.fillStyle(0x1a1006, 0.8);
-  g.fillRect(cx - 0.5, cy - 1, 1, 6);
-  // Page highlight — subtle top edge glow (parchment catches halo light)
-  g.fillStyle(0xf8eec8, 0.7);
-  g.fillRect(cx - 10, cy - 1, 9, 0.5);
-  g.fillRect(cx + 1, cy - 1, 9, 0.5);
+  // ── SKULL FACE — big, pale, dominant. This is the silhouette
+  // centre of mass. ──
+  g.fillStyle(0xddd4b0, 1);
+  g.fillEllipse(cx, cy - 8, 9, 10);
+  g.fillStyle(0xe8dec0, 1);
+  g.fillEllipse(cx - 0.5, cy - 9, 7, 8);
+  // Gaunt cheek hollows
+  g.fillStyle(0x3a3020, 0.7);
+  g.fillEllipse(cx - 3.5, cy - 6, 1.8, 2.5);
+  g.fillEllipse(cx + 3.5, cy - 6, 1.8, 2.5);
+  // Jaw line shadow
+  g.fillStyle(0x8a7e60, 0.6);
+  g.fillRect(cx - 3, cy - 4, 6, 0.8);
 
-  // ── Ruled lines on both pages — four dark horizontals each side.
-  // Readable at small zoom because the book is 20px wide. ──
-  g.fillStyle(0x1a1028, 0.85);
-  // Left page
-  g.fillRect(cx - 10, cy + 0.5, 9, 0.5);
-  g.fillRect(cx - 10, cy + 1.8, 9, 0.5);
-  g.fillRect(cx - 10, cy + 3.1, 9, 0.5);
-  g.fillRect(cx - 10, cy + 4.4, 9, 0.5);
-  // Right page
-  g.fillRect(cx + 1, cy + 0.5, 9, 0.5);
-  g.fillRect(cx + 1, cy + 1.8, 9, 0.5);
-  g.fillRect(cx + 1, cy + 3.1, 9, 0.5);
-  g.fillRect(cx + 1, cy + 4.4, 9, 0.5);
-
-  // ── Red tally-marks — three short red strikes on the right page
-  // (the audit entries). The signature threat colour. ──
-  g.fillStyle(0xaa2020, 1);
-  g.fillRect(cx + 2, cy + 0.3, 2, 0.8);
-  g.fillRect(cx + 5, cy + 1.6, 2.5, 0.8);
-  g.fillRect(cx + 3, cy + 2.9, 3, 0.8);
-
-  // ── Red-ink blot on the left page — centre stain for visual
-  // punctuation. ──
-  g.fillStyle(0xaa2020, 1);
-  g.fillCircle(cx - 5, cy + 2.5, 1);
-  g.fillStyle(0x881818, 1);
-  g.fillCircle(cx - 5, cy + 2.5, 0.6);
-
-  // ── Head — small, sits above the ledger. Pale gaunt skull. ──
-  g.fillStyle(0xddd4b0, 0.95);
-  g.fillEllipse(cx, cy - 8, 6, 7);
-
-  // ── Hollow eye sockets — black pits, slightly wider than before
-  // so they read at small scale. ──
+  // ── BLAZING RED EYE SOCKETS — the threat anchor. Big hollow
+  // black sockets with a burning red glow inside. ──
+  // Socket outer glow
+  g.fillStyle(0xff3030, 0.45);
+  g.fillCircle(cx - 2.5, cy - 9, 2.5);
+  g.fillCircle(cx + 2.5, cy - 9, 2.5);
+  // Hollow black pits
   g.fillStyle(0x000000, 1);
-  g.fillRect(cx - 2.5, cy - 9, 1.5, 2);
-  g.fillRect(cx + 1, cy - 9, 1.5, 2);
+  g.fillEllipse(cx - 2.5, cy - 9, 3, 3);
+  g.fillEllipse(cx + 2.5, cy - 9, 3, 3);
+  // Burning red embers inside
+  g.fillStyle(0xcc1818, 1);
+  g.fillCircle(cx - 2.5, cy - 9, 1.2);
+  g.fillCircle(cx + 2.5, cy - 9, 1.2);
+  g.fillStyle(0xff5a3a, 1);
+  g.fillCircle(cx - 2.5, cy - 9, 0.6);
+  g.fillCircle(cx + 2.5, cy - 9, 0.6);
 
-  // ── Thin moustache / dour frown. ──
-  g.fillStyle(0x1a1010, 1);
-  g.fillRect(cx - 2, cy - 6, 4, 0.8);
+  // ── Thin sneering slit mouth — full of teeth. ──
+  g.fillStyle(0x000000, 1);
+  g.fillRect(cx - 3, cy - 4, 6, 1);
+  g.fillStyle(0xddd4b0, 0.9);
+  g.fillRect(cx - 2.5, cy - 4, 0.6, 1);
+  g.fillRect(cx - 1, cy - 4, 0.6, 1);
+  g.fillRect(cx + 0.5, cy - 4, 0.6, 1);
+  g.fillRect(cx + 2, cy - 4, 0.6, 1);
 
-  // ── Bony hands gripping the ledger — thin stumps visible at
-  // the outer corners of the book. ──
-  g.fillStyle(0xddd4b0, 0.95);
-  g.fillCircle(cx - 12, cy + 1, 1.3);
-  g.fillCircle(cx + 12, cy + 1, 1.3);
-  // Finger shadow
+  // ── Bony skeletal hands gripping the ledger at chest level.
+  // Drawn BEFORE the ledger so the fingers curl over the cover. ──
+  g.fillStyle(0xddd4b0, 1);
+  g.fillCircle(cx - 9, cy + 2, 1.8);
+  g.fillCircle(cx + 9, cy + 2, 1.8);
   g.fillStyle(0x8a7e60, 0.7);
-  g.fillRect(cx - 13, cy + 1, 1, 1);
-  g.fillRect(cx + 12, cy + 1, 1, 1);
+  g.fillRect(cx - 10, cy + 2, 1, 1.5);
+  g.fillRect(cx + 9, cy + 2, 1, 1.5);
 
-  // ── Red-ink drips beneath the ledger — signature threat beat.
-  // Three drops descending-size, plus one big splat. ──
-  g.fillStyle(0xaa2020, 1);
-  g.fillCircle(cx - 3, cy + 9, 1.2);
-  g.fillStyle(0xaa2020, 0.85);
-  g.fillCircle(cx + 4, cy + 10, 1);
-  g.fillStyle(0xaa2020, 0.55);
-  g.fillCircle(cx + 1, cy + 12, 0.7);
-  // Tail trail below
-  g.fillStyle(0xaa2020, 0.35);
-  g.fillCircle(cx - 1, cy + 14, 0.5);
+  // ── Ledger — SMALL, held at chest height. 16×6 (was 24×10). ──
+  g.fillStyle(0x0a0a14, 1);
+  g.fillRect(cx - 8, cy + 0.5, 16, 6);
+  g.fillStyle(0x3a2010, 1);
+  g.fillRect(cx - 7.5, cy + 1, 15, 5);
+  // Parchment pages
+  g.fillStyle(0xe8ddb0, 1);
+  g.fillRect(cx - 7, cy + 1.5, 6, 4);
+  g.fillRect(cx + 1, cy + 1.5, 6, 4);
+  // Spine crease
+  g.fillStyle(0x1a1006, 0.8);
+  g.fillRect(cx - 0.3, cy + 1.5, 0.6, 4);
+  // Ruled lines — two per page
+  g.fillStyle(0x1a1028, 0.85);
+  g.fillRect(cx - 7, cy + 2.5, 6, 0.4);
+  g.fillRect(cx - 7, cy + 4, 6, 0.4);
+  g.fillRect(cx + 1, cy + 2.5, 6, 0.4);
+  g.fillRect(cx + 1, cy + 4, 6, 0.4);
+  // Red tally marks on right page
+  g.fillStyle(0xcc2020, 1);
+  g.fillRect(cx + 2, cy + 3, 2, 0.6);
+  g.fillRect(cx + 4, cy + 4.5, 2, 0.6);
+
+  // ── Red quill pen stabbed into the ledger at an angle — the
+  // "ready to strike your name out" beat. ──
+  g.fillStyle(0x8a1818, 1);
+  g.fillTriangle(cx + 3, cy - 2, cx + 8, cy - 7, cx + 4, cy - 1);
+  g.fillStyle(0xcc3030, 1);
+  g.fillTriangle(cx + 3.5, cy - 2.5, cx + 7.5, cy - 6.5, cx + 4, cy - 1.5);
+  // Quill tip (nib) resting on the page
+  g.fillStyle(0x000000, 1);
+  g.fillTriangle(cx + 3, cy - 1, cx + 3.5, cy + 0.5, cx + 4, cy - 1);
+
+  // ── Red-ink drip trail cascading down the front of the robe —
+  // aggressive threat beat. 4 drops of descending size. ──
+  g.fillStyle(0xcc1818, 1);
+  g.fillCircle(cx - 1, cy + 8, 1.6);
+  g.fillStyle(0xcc1818, 0.9);
+  g.fillCircle(cx + 2, cy + 10, 1.3);
+  g.fillStyle(0xcc1818, 0.75);
+  g.fillCircle(cx - 1, cy + 12, 1);
+  g.fillStyle(0xcc1818, 0.55);
+  g.fillCircle(cx + 1, cy + 15, 0.7);
+  // Splatter dots
+  g.fillStyle(0x881818, 0.8);
+  g.fillCircle(cx - 3, cy + 9, 0.5);
+  g.fillCircle(cx + 4, cy + 12, 0.5);
 
   g.generateTexture('ledger_wraith', s, s);
   g.destroy();
