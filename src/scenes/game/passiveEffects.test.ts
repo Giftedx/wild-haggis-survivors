@@ -55,6 +55,7 @@ describe('applyPassiveEffect', () => {
     applyPassiveEffect(p as unknown as Player, 'loch_water');
     expect(p.addPickupRadius).toHaveBeenCalledWith(PLAYER.PICKUP_RADIUS * 0.4);
     expect(p.addSpeed).toHaveBeenCalledWith(PLAYER.SPEED * 0.05);
+    expect(p.equipAccessory).toHaveBeenCalledWith('loch_water');
 
     applyPassiveEffect(p as unknown as Player, 'sporran');
     expect(p.addXpMultiplier).toHaveBeenCalledWith(0.1);
@@ -62,9 +63,11 @@ describe('applyPassiveEffect', () => {
 
     applyPassiveEffect(p as unknown as Player, 'whisky_flask');
     expect(p.addAoeMultiplier).toHaveBeenCalledWith(0.2);
+    expect(p.equipAccessory).toHaveBeenCalledWith('whisky_flask');
 
     applyPassiveEffect(p as unknown as Player, 'irn_bru');
     expect(p.addAttackSpeedMultiplier).toHaveBeenCalledWith(0.15);
+    expect(p.equipAccessory).toHaveBeenCalledWith('irn_bru');
 
     applyPassiveEffect(p as unknown as Player, 'thistle_crown');
     expect(p.addCritChance).toHaveBeenCalledWith(0.05);

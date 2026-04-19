@@ -22,6 +22,7 @@ export function applyPassiveEffect(player: Player, key: string): void {
     case 'loch_water':
       player.addPickupRadius(PLAYER.PICKUP_RADIUS * 0.40);
       player.addSpeed(PLAYER.SPEED * 0.05);
+      player.equipAccessory('loch_water');
       break;
     case 'sporran':
       player.addXpMultiplier(0.10);
@@ -29,9 +30,11 @@ export function applyPassiveEffect(player: Player, key: string): void {
       break;
     case 'whisky_flask':
       player.addAoeMultiplier(0.20);
+      player.equipAccessory('whisky_flask');
       break;
     case 'irn_bru':
       player.addAttackSpeedMultiplier(0.15);
+      player.equipAccessory('irn_bru');
       break;
     case 'thistle_crown':
       player.addCritChance(0.05);

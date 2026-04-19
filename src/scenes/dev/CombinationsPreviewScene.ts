@@ -15,7 +15,10 @@ type AccessoryId =
   | 'highland_shield'
   | 'sporran'
   | 'thistle_crown'
-  | 'tartan_sash';
+  | 'tartan_sash'
+  | 'whisky_flask'
+  | 'irn_bru'
+  | 'loch_water';
 
 interface Cell {
   readonly label: string;
@@ -25,13 +28,15 @@ interface Cell {
   readonly frame?: number;
 }
 
-// Ordered bottom→top to match render depth (shield → kilt → sash →
-// sporran → tam → thistle_crown).
+// Ordered bottom→top to match render depth.
 const ALL_ACCESSORIES: ReadonlyArray<AccessoryId> = [
+  'loch_water',
   'highland_shield',
   'kilt',
   'tartan_sash',
   'sporran',
+  'whisky_flask',
+  'irn_bru',
   'tam_o_shanter',
   'thistle_crown',
 ];
@@ -84,6 +89,9 @@ export class CombinationsPreviewScene extends Phaser.Scene {
 
       // Behind-layer accessories render below the body; render them
       // first, then the body, then any front/above layer accessories.
+      if (cell.accessories.includes('loch_water')) {
+        this.add.sprite(x + size / 2, y + size / 2, `loch_water_${cell.state}_${frame}`);
+      }
       if (cell.accessories.includes('highland_shield')) {
         this.add.sprite(x + size / 2, y + size / 2, `highland_shield_${cell.state}_${frame}`);
       }
@@ -99,6 +107,12 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       }
       if (cell.accessories.includes('sporran')) {
         this.add.sprite(x + size / 2, y + size / 2, `sporran_${cell.state}_${frame}`);
+      }
+      if (cell.accessories.includes('whisky_flask')) {
+        this.add.sprite(x + size / 2, y + size / 2, `whisky_flask_${cell.state}_${frame}`);
+      }
+      if (cell.accessories.includes('irn_bru')) {
+        this.add.sprite(x + size / 2, y + size / 2, `irn_bru_${cell.state}_${frame}`);
       }
       if (cell.accessories.includes('tam_o_shanter')) {
         this.add.sprite(x + size / 2, y + size / 2, `tam_o_shanter_${cell.state}_${frame}`);
