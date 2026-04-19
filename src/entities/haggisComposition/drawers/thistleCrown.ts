@@ -18,7 +18,11 @@ import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 
 const CX = 40;
-const BASE_CY = 10;
+// Lowered 10 → 18 so the gold band sits on the brow of the haggis
+// (accessory y=22 matches the body silhouette top at y=21). Previously
+// the crown floated 7+ px above the head. When worn with a tam, the
+// crown now rests cleanly on the tam's navy dome.
+const BASE_CY = 18;
 
 const THISTLE_PURPLE = 0x6a2a8c;
 const THISTLE_BLOOM = 0x9a4ac0;

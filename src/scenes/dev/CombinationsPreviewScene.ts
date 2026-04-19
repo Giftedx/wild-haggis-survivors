@@ -78,9 +78,9 @@ const ROWS: ReadonlyArray<RowSpec> = [
   { label: 'full', withAccessories: LAYER_ORDER },
 ];
 
-const ZOOM = 2;
-const CELL_W = 140;
-const CELL_H = 140;
+const ZOOM = 3;
+const CELL_W = 200;
+const CELL_H = 200;
 // 2 cols per variant → 9 variants × 2 = 18 cols total.
 const COLS_PER_VARIANT = 2;
 const GRID_ORIGIN_X = 24;

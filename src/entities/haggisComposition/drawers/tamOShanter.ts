@@ -38,9 +38,11 @@ import { PALETTE } from '../../../art/palettes';
 const SPRITE_SIZE = 80;
 /** Horizontal centre of the 80×80 accessory canvas. */
 const CX = SPRITE_SIZE / 2;
-/** Vertical anchor of the tam in the accessory texture. Matched to
- *  "bonnet-sits-on-head" per the anchor math in the module doc. */
-const BASE_CY = 16;
+/** Vertical anchor of the tam. Lowered 16 → 17 so the brim also
+ *  seats on the shorter heads of flatter variants (iron_belly) without
+ *  giving up the seating on standard-body variants — the brim still
+ *  covers the brow tufts of classic, just with 1 extra px of overlap. */
+const BASE_CY = 17;
 
 /** Navy wool — darker than the palette stone, not quite pure black. */
 const WOOL_SHADOW = 0x0e1020;

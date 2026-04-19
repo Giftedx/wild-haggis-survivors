@@ -38,35 +38,42 @@ function drawDroplet(
   cx: number,
   cy: number,
 ): void {
-  // Ripple halo — faint concentric ring beneath the droplet.
-  g.fillStyle(LOCH_MID, 0.25);
-  g.fillEllipse(cx, cy + 3, 10, 3);
+  // Ripple halo — wider concentric ring beneath the droplet so the
+  // feet look wet. Darker ring inside a lighter one sells the splash.
+  g.fillStyle(LOCH_MID, 0.35);
+  g.fillEllipse(cx, cy + 4, 13, 3.5);
+  g.fillStyle(LOCH_LIGHT, 0.25);
+  g.fillEllipse(cx, cy + 4, 9, 2);
 
-  // Teardrop — layered ellipses narrowing to a point at the top.
+  // Teardrop — layered ellipses (bumped 6×7 → 8×9) narrowing to a
+  // point at the top. Larger so it reads clearly at gameplay scale
+  // without drowning out the haggis.
   g.fillStyle(LOCH_DEEP, 1);
-  g.fillEllipse(cx, cy, 6, 7);
-  g.fillTriangle(cx - 2, cy - 2, cx, cy - 5, cx + 2, cy - 2);
+  g.fillEllipse(cx, cy, 8, 9);
+  g.fillTriangle(cx - 2.5, cy - 3, cx, cy - 7, cx + 2.5, cy - 3);
   g.fillStyle(LOCH_MID, 1);
-  g.fillEllipse(cx, cy, 4, 5);
-  g.fillTriangle(cx - 1.5, cy - 2, cx, cy - 4, cx + 1.5, cy - 2);
-  g.fillStyle(LOCH_LIGHT, 0.85);
-  g.fillEllipse(cx - 0.5, cy - 0.5, 2.5, 3);
+  g.fillEllipse(cx, cy, 6, 7);
+  g.fillTriangle(cx - 2, cy - 3, cx, cy - 6, cx + 2, cy - 3);
+  g.fillStyle(LOCH_LIGHT, 0.9);
+  g.fillEllipse(cx - 0.5, cy - 0.5, 4, 5);
 
-  // Highlight — small white spark top-left of the droplet.
-  g.fillStyle(LOCH_HIGHLIGHT, 0.9);
-  g.fillCircle(cx - 1, cy - 1, 0.8);
-  g.fillStyle(0xffffff, 0.6);
-  g.fillCircle(cx - 1.3, cy - 1.3, 0.4);
+  // Highlight — white spark top-left of the droplet. Slightly larger
+  // so the wet-shine reads even when the rest is small.
+  g.fillStyle(LOCH_HIGHLIGHT, 0.95);
+  g.fillCircle(cx - 1.2, cy - 1.5, 1.2);
+  g.fillStyle(0xffffff, 0.75);
+  g.fillCircle(cx - 1.5, cy - 2, 0.6);
 }
 
 function drawWater(g: Phaser.GameObjects.Graphics, frame: WaterFrame): void {
   const dx = frame.x ?? 0;
   const dy = frame.y;
-  // Left/right droplets flank the haggis feet. Pulled outward from
-  // (30, 62) / (50, 62) to (20, 64) / (60, 64) so the droplets sit
-  // beside the legs instead of under the belly where they got lost.
-  drawDroplet(g, 20 + dx + frame.left.x, 64 + dy + frame.left.y);
-  drawDroplet(g, 60 + dx + frame.right.x, 64 + dy + frame.right.y);
+  // Left/right droplets flank the haggis feet at y=62 (just beside
+  // the hoof line, not floating in mid-air below). Pushed outward to
+  // x=18/62 so the ripple halos frame the feet instead of tucking
+  // under the belly where they got lost.
+  drawDroplet(g, 18 + dx + frame.left.x, 62 + dy + frame.left.y);
+  drawDroplet(g, 62 + dx + frame.right.x, 62 + dy + frame.right.y);
 }
 
 function drawIdle0(g: Phaser.GameObjects.Graphics): void {
