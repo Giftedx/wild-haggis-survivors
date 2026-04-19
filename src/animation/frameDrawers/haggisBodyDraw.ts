@@ -305,12 +305,14 @@ function drawHaggisAccent(
       g.fillRect(cx - 5, cy - 13, 10, 0.5);
       break;
     case 'pipe_breath': {
-      // Cold-moor exhale. Pure wind — curling breath wisps drift off
-      // the snout and dissipate to either side. No tobacco pipe bowl
-      // or flame, so hats / crowns / accessories sit flat on the head
-      // without clashing. Flavor: "wheesht — the moor exhales through
-      // this one." Stays within the 56×56 atlas frame bounds (max
-      // extent |cx±26|, vertical peak cy-4).
+      // Cold-moor exhale. Pure wind — a tapered wisp-trail of breath
+      // on each side, drifting away from the body like steam off a
+      // teacup. No semicircular "horns" or "tusks" — just a series
+      // of shrinking ellipses + droplets that read as "organic gust"
+      // even at small sprite scales. Hats / crowns / accessories sit
+      // flat on the head; wisps stay well outside the hat silhouette
+      // (|cx±13|) and well below the body-top (cy-15).
+      // Flavor: "wheesht — the moor exhales through this one."
       const s = palette.accent;
 
       // Chest bellows glow — suggests the lungs inside. Stays fully
@@ -320,31 +322,33 @@ function drawHaggisAccent(
       g.fillStyle(s, 0.18);
       g.fillEllipse(cx, cy + 4, 10, 4);
 
-      // Main exhale curl — semicircle riding off the right shoulder.
-      // Centre (cx+18, cy+2) r=6 peaks at cy-4, ~12px below body-top
-      // and well clear of the hat silhouette at cx±13. Right extent
-      // cx+24 stays inside the 56-wide frame.
-      g.lineStyle(1.6, s, 0.6);
-      g.beginPath();
-      g.arc(cx + 18, cy + 2, 6, Math.PI, 0, true);
-      g.strokePath();
+      // Right-side exhale wisp — three shrinking ellipses form the
+      // main plume, angled slightly upward as the gust rises. Body
+      // right-edge sits at ~cx+22; wisps extend to cx+26 max.
+      g.fillStyle(s, 0.55);
+      g.fillEllipse(cx + 14, cy + 3, 5, 2.5);
+      g.fillStyle(s, 0.45);
+      g.fillEllipse(cx + 18, cy + 1, 4, 2);
+      g.fillStyle(s, 0.32);
+      g.fillEllipse(cx + 21, cy - 1, 3, 1.6);
+      // Trailing sparkle droplets that scatter outward
+      g.fillStyle(s, 0.7);
+      g.fillCircle(cx + 24, cy, 0.8);
+      g.fillStyle(s, 0.5);
+      g.fillCircle(cx + 25, cy + 3, 0.6);
+      g.fillStyle(s, 0.35);
+      g.fillCircle(cx + 26, cy - 3, 0.5);
 
-      // Floating droplets — wisps dispersing outward right, inside bounds.
-      g.fillStyle(s, 0.6);
-      g.fillCircle(cx + 24, cy - 2, 0.9);
-      g.fillCircle(cx + 26, cy + 2, 0.7);
-      g.fillStyle(s, 0.4);
-      g.fillCircle(cx + 22, cy + 5, 0.55);
-
-      // Left shoulder puff — symmetry without climbing the head.
-      g.lineStyle(1, s, 0.32);
-      g.beginPath();
-      g.arc(cx - 18, cy + 4, 4, Math.PI, 0, true);
-      g.strokePath();
-      g.fillStyle(s, 0.4);
-      g.fillCircle(cx - 23, cy + 2, 0.7);
+      // Left-side exhale wisp — mirror of the right but shorter,
+      // so one side reads as "main breath" and the other as "ambient".
+      g.fillStyle(s, 0.45);
+      g.fillEllipse(cx - 14, cy + 4, 4.5, 2.2);
+      g.fillStyle(s, 0.32);
+      g.fillEllipse(cx - 18, cy + 2, 3.5, 1.8);
+      g.fillStyle(s, 0.5);
+      g.fillCircle(cx - 22, cy + 1, 0.7);
       g.fillStyle(s, 0.3);
-      g.fillCircle(cx - 25, cy + 5, 0.5);
+      g.fillCircle(cx - 24, cy + 4, 0.5);
       break;
     }
     case 'none':
