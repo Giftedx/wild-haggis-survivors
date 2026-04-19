@@ -12,11 +12,12 @@
 
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 
-// Pushed further left (28→13) so the can hangs clearly OUTSIDE the
-// haggis body silhouette (which spans roughly accessory-canvas x=18..62)
-// instead of clipping inside the furry left flank.
-const CX = 13;
-const BASE_CY = 46;
+// Pulled in from the canvas edge (13 → 20) so the can hangs at the
+// haggis's left hip instead of floating detached at the edge of the
+// sprite. 20 puts the outer edge right at the body silhouette
+// (~x=18) so it reads as a belt-hung item.
+const CX = 20;
+const BASE_CY = 44;
 
 const ORANGE_DARK = 0xc04a00;
 const ORANGE_MID = 0xe86a10;

@@ -19,7 +19,9 @@ import { PALETTE } from '../../../art/palettes';
 
 const SPRITE_SIZE = 80;
 const CX = SPRITE_SIZE / 2;
-const BASE_CY = 44;
+// Lifted from 44 → 40 so the cantle sits on the belt line (roughly
+// level with the waist) instead of dangling between the legs.
+const BASE_CY = 40;
 
 const LEATHER_DARK = 0x1a0e06;
 const LEATHER_MID = 0x3a2010;

@@ -79,7 +79,7 @@ const ROWS: ReadonlyArray<RowSpec> = [
 ];
 
 const ZOOM = 2;
-const CELL_W = 130;
+const CELL_W = 140;
 const CELL_H = 140;
 // 2 cols per variant → 9 variants × 2 = 18 cols total.
 const COLS_PER_VARIANT = 2;

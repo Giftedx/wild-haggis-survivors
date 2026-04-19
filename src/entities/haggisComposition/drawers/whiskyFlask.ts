@@ -12,11 +12,12 @@
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 
-// Pushed further right (52→67) so the flask hangs OUTSIDE the haggis
-// body silhouette (which ends around x=62) instead of clipping into
-// the furry right flank. Mirrors the irn-bru placement on the left.
-const CX = 67;
-const BASE_CY = 46;
+// Pulled in from the canvas edge (67 → 60) so the flask hangs right
+// at the haggis's right hip instead of floating 10 px away from the
+// body. 60 still places the inner edge on the body silhouette (~x=62)
+// so it reads as a belt-hung item.
+const CX = 60;
+const BASE_CY = 44;
 
 const PEWTER_DARK = 0x2a2e34;
 const PEWTER_MID = 0x4a4e56;
