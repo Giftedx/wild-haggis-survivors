@@ -19,12 +19,12 @@ import { PALETTE } from '../../../art/palettes';
 
 const SPRITE_SIZE = 80;
 const CX = SPRITE_SIZE / 2;
-// 44 → 40 moved sporran to chest level (too high); 40 → 45 settles
-// the brass cantle right at the waist band — pouch body on the
-// belly, tassels skimming the leg tops without dangling between
-// them. Matches real highland dress where the sporran hangs at the
-// navel.
-const BASE_CY = 45;
+// Lowered 45 → 49 so the badger-fur top of the pouch clears the
+// haggis's mouth/snout line (which lives around y=45 in the
+// accessory canvas). The pouch now hangs from the navel — cantle
+// on the waist, fur cap at the belly, tassels skimming the hooves.
+// Covering the mouth was reading as "sporran eating the face".
+const BASE_CY = 49;
 
 const LEATHER_DARK = 0x1a0e06;
 const LEATHER_MID = 0x3a2010;

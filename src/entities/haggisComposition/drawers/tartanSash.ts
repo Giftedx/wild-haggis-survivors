@@ -28,13 +28,17 @@ function drawSash(g: Phaser.GameObjects.Graphics, frame: SashFrame): void {
   const dx = frame.x ?? 0;
   const dy = frame.y;
 
-  // ── Draw a diagonal band from (24, 22) to (54, 50) as a series of
-  // slightly-offset rectangles. 5px thick, 30-ish px long. ──
+  // ── Diagonal band from the haggis's left-shoulder edge (clear of
+  // the eye line) down to the right hip. Routed BELOW the face so the
+  // sash never crosses the eyes or mouth. Previously started at
+  // (24, 22) which painted straight across the left eye; now starts
+  // at the outside of the shoulder (18, 34) and runs to the right
+  // hip at (54, 58). ──
   const steps = 14;
-  const x0 = 24 + dx;
-  const y0 = 22 + dy;
+  const x0 = 18 + dx;
+  const y0 = 34 + dy;
   const x1 = 54 + dx;
-  const y1 = 50 + dy;
+  const y1 = 58 + dy;
 
   // Shadow / outline pass
   g.fillStyle(SASH_RED_DARK, 1);
