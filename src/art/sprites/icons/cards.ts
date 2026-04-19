@@ -239,32 +239,74 @@ function drawIrnBru(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_loch_water` — loch-water pickup icon. Design pivot: old
+ * icon was a generic corked bottle with blue-green liquid that read
+ * as "any apothecary potion". New pitch — wide glass jar with a
+ * MINIATURE LOCH LANDSCAPE visible inside: mountain silhouette with
+ * snow cap + teal water surface with ripple lines + inverted
+ * reflection. The "specific loch" anchor lives inside the glass.
+ */
 function drawLochWater(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x12334a);
   const cx = 16;
-  g.fillStyle(0x8a6a3a, 1);
-  g.fillRect(cx - 3, 5, 6, 4);
-  g.fillStyle(0xaa8a5a, 1);
-  g.fillRect(cx - 2, 6, 4, 2);
-  g.fillStyle(0x446688, 0.8);
-  g.fillRect(cx - 2, 9, 4, 3);
-  g.fillStyle(0x224466, 1);
-  g.fillRoundedRect(cx - 8, 12, 16, 14, 4);
-  g.fillStyle(0x114433, 1);
-  g.fillRoundedRect(cx - 7, 13, 14, 12, 3);
-  g.fillStyle(0x226655, 1);
-  g.fillRoundedRect(cx - 6, 14, 12, 10, 2);
-  g.fillStyle(0x44ccaa, 0.4);
-  g.fillCircle(cx, 20, 4);
-  g.fillStyle(0x66eedd, 0.3);
-  g.fillCircle(cx, 19, 2);
-  g.fillStyle(0x88ddcc, 0.7);
-  g.fillCircle(cx - 3, 17, 1);
-  g.fillCircle(cx + 2, 15, 0.8);
-  g.fillCircle(cx + 4, 19, 1);
-  g.fillStyle(0xffffff, 0.15);
-  g.fillRect(cx - 6, 14, 2, 10);
+
+  // ── Cork stopper on top. ──
+  g.fillStyle(0x6a4828, 1);
+  g.fillRect(cx - 4, 4, 8, 3);
+  g.fillStyle(0x8a6838, 1);
+  g.fillRect(cx - 4, 4, 8, 2);
+  g.fillStyle(0x4a3018, 1);
+  g.fillRect(cx - 3, 5, 1, 1);
+  g.fillRect(cx + 2, 5, 1, 1);
+
+  // ── Jar neck — narrower glass column. ──
+  g.fillStyle(0x1a4060, 1);
+  g.fillRect(cx - 3, 7, 6, 2);
+  g.fillStyle(0x4a80a0, 0.7);
+  g.fillRect(cx - 2.5, 7, 1, 2);
+
+  // ── Glass jar body. ──
+  g.fillStyle(0x0a2030, 1);
+  g.fillRoundedRect(cx - 9, 9, 18, 18, 3);
+  g.fillStyle(0x1a3a58, 1);
+  g.fillRoundedRect(cx - 8, 10, 16, 16, 2);
+
+  // ── Miniature loch scene — mountains. ──
+  g.fillStyle(0x0a1a24, 1);
+  g.fillTriangle(cx - 8, 22, cx - 2, 13, cx + 3, 22);
+  g.fillStyle(0x1a2e3a, 1);
+  g.fillTriangle(cx - 7, 22, cx - 2, 14, cx + 2, 22);
+  // Snow cap on main peak
+  g.fillStyle(0xe8f0f6, 0.95);
+  g.fillTriangle(cx - 3, 15, cx - 2, 13.5, cx - 1, 15);
+  // Secondary peak on the right
+  g.fillStyle(0x0a1a24, 1);
+  g.fillTriangle(cx, 22, cx + 4, 17, cx + 8, 22);
+  g.fillStyle(0x1a2e3a, 1);
+  g.fillTriangle(cx + 1, 22, cx + 4, 18, cx + 7, 22);
+
+  // ── Loch water surface — teal band lower third. ──
+  g.fillStyle(0x1a5a78, 1);
+  g.fillRect(cx - 8, 22, 16, 4);
+  g.fillStyle(0x2a7aa0, 1);
+  g.fillRect(cx - 8, 22, 16, 2);
+  g.fillStyle(0x88ccee, 0.85);
+  g.fillRect(cx - 6, 23, 4, 0.4);
+  g.fillRect(cx, 24.5, 5, 0.4);
+  g.fillRect(cx - 7, 25.5, 3, 0.4);
+
+  // ── Inverted mountain reflection on the water. ──
+  g.fillStyle(0x2a4a5e, 0.55);
+  g.fillTriangle(cx - 7, 22, cx - 2, 25, cx + 2, 22);
+
+  // ── Glass sheen — vertical highlight on the left. ──
+  g.fillStyle(0xffffff, 0.35);
+  g.fillRect(cx - 8, 11, 1, 14);
+  g.fillStyle(0xffffff, 0.18);
+  g.fillRect(cx - 7, 11, 0.8, 14);
+
   g.generateTexture('ucard_loch_water', s, s);
   g.destroy();
 }
@@ -342,37 +384,79 @@ function drawHighlandShield(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_tartan_sash` — tartan-sash accessory icon. Design pivot:
+ * old icon was a raw tartan-stripe band with a corner brooch that
+ * read as "fabric sample". New pitch — paint the sash ACROSS A DARK
+ * TORSO SILHOUETTE so it's unmistakably WORN, not a loose scrap.
+ * Brooch pins at the left shoulder, red-gold-green tartan stripes
+ * run along the sash axis, gold fringe tails trail at the waist.
+ */
 function drawTartanSash(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x3b1f2d);
-  g.fillStyle(0x661133, 1);
-  for (let i = 0; i < 20; i++) {
-    g.fillRect(4 + i, 4 + i, 8, 2);
+  const cx = 16;
+
+  // ── Dark torso silhouette — the body the sash drapes over. ──
+  g.fillStyle(0x0a0608, 1);
+  g.fillRoundedRect(cx - 10, 6, 20, 22, 6);
+  g.fillStyle(0x1a0c14, 1);
+  g.fillRoundedRect(cx - 9, 7, 18, 20, 5);
+  // Neckline V-cut
+  g.fillStyle(0x3b1f2d, 1);
+  g.fillTriangle(cx - 3, 7, cx + 3, 7, cx, 12);
+
+  // ── Sash body — thick diagonal red parallelogram from left
+  // shoulder down to right waist. ──
+  g.fillStyle(0x3a0a0a, 1);
+  g.fillTriangle(cx - 10, 9, cx - 6, 9, cx + 10, 27);
+  g.fillTriangle(cx - 10, 9, cx + 10, 27, cx + 6, 27);
+  g.fillStyle(0x8a1818, 1);
+  g.fillTriangle(cx - 9.5, 9.5, cx - 6.5, 9.5, cx + 9, 26.5);
+  g.fillTriangle(cx - 9.5, 9.5, cx + 9, 26.5, cx + 6.5, 26.5);
+  g.fillStyle(0xaa2828, 1);
+  g.fillTriangle(cx - 8.5, 10, cx - 7, 10, cx + 8, 26);
+  g.fillTriangle(cx - 8.5, 10, cx + 8, 26, cx + 6.5, 26);
+
+  // ── Gold pinstripe down the sash axis. ──
+  g.fillStyle(0xdaaa40, 1);
+  g.fillTriangle(cx - 8, 11, cx - 7.5, 11, cx + 7.5, 25.5);
+  g.fillTriangle(cx - 8, 11, cx + 7.5, 25.5, cx + 7, 25.5);
+  // Dark green secondary stripe
+  g.fillStyle(0x1a4418, 0.95);
+  g.fillTriangle(cx - 9, 11.5, cx - 8.5, 11.5, cx + 7, 25);
+  g.fillTriangle(cx - 9, 11.5, cx + 7, 25, cx + 6.5, 25);
+
+  // ── Tartan cross-beads suggesting perpendicular weave. ──
+  const beads: [number, number][] = [
+    [cx - 6, 12], [cx - 2, 17], [cx + 2, 21], [cx + 6, 25],
+  ];
+  for (const [px, py] of beads) {
+    g.fillStyle(0x1a0404, 1);
+    g.fillCircle(px, py, 0.9);
   }
-  g.fillStyle(0x992244, 1);
-  for (let i = 0; i < 20; i++) {
-    g.fillRect(5 + i, 5 + i, 6, 1);
-  }
-  g.fillStyle(0xcc5566, 0.6);
-  for (let i = 0; i < 18; i += 4) {
-    g.fillRect(5 + i, 5 + i, 6, 1);
-  }
-  g.fillStyle(0xffcc44, 0.4);
-  for (let i = 2; i < 18; i += 6) {
-    g.fillRect(5 + i, 5 + i, 6, 1);
-  }
-  g.fillStyle(0x888888, 1);
-  g.fillCircle(11, 11, 4);
-  g.fillStyle(0xcccccc, 1);
-  g.fillCircle(11, 11, 3);
+
+  // ── Brooch at the shoulder — silver disc with amethyst stone. ──
+  g.fillStyle(0x4a4a58, 1);
+  g.fillCircle(cx - 8, 10, 3);
+  g.fillStyle(0xaabacc, 1);
+  g.fillCircle(cx - 8, 10, 2.3);
+  g.fillStyle(0xdcdce8, 1);
+  g.fillCircle(cx - 8, 10, 1.5);
   g.fillStyle(0x8844aa, 1);
-  g.fillCircle(11, 11, 1.5);
-  g.fillStyle(0xdddddd, 1);
-  g.fillCircle(10, 10, 0.7);
-  g.fillStyle(0x661133, 1);
-  g.fillRect(22, 24, 2, 4);
-  g.fillRect(24, 25, 2, 3);
-  g.fillRect(26, 26, 2, 2);
+  g.fillCircle(cx - 8, 10, 0.9);
+  g.fillStyle(0xcc88ee, 1);
+  g.fillCircle(cx - 8.2, 9.8, 0.4);
+
+  // ── Gold fringe tails at the waist end. ──
+  g.fillStyle(0xdaaa40, 1);
+  g.fillRect(cx + 7, 26, 0.7, 3);
+  g.fillRect(cx + 8, 26, 0.7, 3.5);
+  g.fillRect(cx + 9, 26, 0.7, 2.8);
+  g.fillStyle(0x6a5020, 1);
+  g.fillRect(cx + 7, 28.5, 0.7, 0.5);
+  g.fillRect(cx + 8, 29, 0.7, 0.5);
+
   g.generateTexture('ucard_tartan_sash', s, s);
   g.destroy();
 }
@@ -611,62 +695,161 @@ function drawStatDrift(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_stat_defense` — defense stat icon. Design pivot: old icon
+ * was a rounded-rect slab with a central pillar + scalloped top
+ * that read as "door" or "castle tower". New pitch — classic
+ * HIGHLAND TARGE (round riveted shield) with a saltire etched on
+ * the face + a vertical broadsword behind it, all the unambiguous
+ * marks of Scottish defensive iconography.
+ */
 function drawStatDefense(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x1f2e3a);
   const cx = 16, cy = 16;
+
+  // ── Vertical broadsword behind — visible top + bottom only. ──
+  g.fillStyle(0x2a3848, 1);
+  g.fillRect(cx - 1, 3, 2, 26);
+  g.fillStyle(0x5a6e82, 1);
+  g.fillRect(cx - 0.5, 3, 1, 25);
+  g.fillStyle(0x5a6e82, 1);
+  g.fillTriangle(cx - 1, 3, cx + 1, 3, cx, 1);
+  g.fillStyle(0xc8dae8, 0.85);
+  g.fillRect(cx - 0.3, 3, 0.6, 8);
+  // Crossguard
+  g.fillStyle(0x4a3418, 1);
+  g.fillRect(cx - 6, cy - 10, 12, 2);
+  g.fillStyle(0x7a5428, 1);
+  g.fillRect(cx - 5, cy - 10, 10, 1);
+  // Pommel at bottom
+  g.fillStyle(0x4a3418, 1);
+  g.fillCircle(cx, 29, 2);
+  g.fillStyle(0x7a5428, 1);
+  g.fillCircle(cx, 29, 1.3);
+
+  // ── Round targe shield — fills the middle. ──
+  g.fillStyle(0x2a1a0a, 1);
+  g.fillCircle(cx, cy, 11);
+  g.fillStyle(0x5a3818, 1);
+  g.fillCircle(cx, cy, 10);
   g.fillStyle(0x556677, 1);
-  g.fillRoundedRect(cx - 9, cy - 8, 18, 20, 4);
-  g.fillStyle(0x778899, 1);
-  g.fillRoundedRect(cx - 8, cy - 7, 16, 18, 3);
-  g.fillStyle(0x1f2e3a, 1);
-  g.fillEllipse(cx, cy - 7, 8, 4);
-  g.fillStyle(0x99aabb, 1);
-  g.fillRect(cx - 1, cy - 5, 2, 14);
-  g.fillStyle(0xaabbcc, 0.6);
-  g.fillRect(cx - 6, cy - 4, 3, 10);
-  g.fillStyle(0xccddee, 0.3);
-  g.fillRect(cx - 5, cy - 3, 1, 8);
-  g.fillStyle(0xbbccdd, 1);
-  g.fillCircle(cx - 5, cy - 3, 1);
-  g.fillCircle(cx + 5, cy - 3, 1);
-  g.fillCircle(cx - 5, cy + 6, 1);
-  g.fillCircle(cx + 5, cy + 6, 1);
-  g.fillStyle(0x334455, 1);
-  g.fillRect(cx - 8, cy + 10, 16, 2);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(0x7a8a9a, 1);
+  g.fillCircle(cx - 1, cy - 1, 7.5);
+  // Concentric ring grooves
+  g.lineStyle(1, 0x3a4858, 0.9);
+  g.strokeCircle(cx, cy, 7);
+  g.lineStyle(0.8, 0x3a4858, 0.8);
+  g.strokeCircle(cx, cy, 4.5);
+
+  // ── Saltire etched on the shield face — pale white X. ──
+  g.lineStyle(1.3, 0xe8f0f8, 0.6);
+  g.lineBetween(cx - 6, cy - 6, cx + 6, cy + 6);
+  g.lineBetween(cx - 6, cy + 6, cx + 6, cy - 6);
+
+  // ── Centre boss — chunky steel dome with specular. ──
+  g.fillStyle(0x2a3440, 1);
+  g.fillCircle(cx, cy, 3);
+  g.fillStyle(0x6a7a8a, 1);
+  g.fillCircle(cx, cy, 2.3);
+  g.fillStyle(0xaabacc, 1);
+  g.fillCircle(cx, cy, 1.5);
+  g.fillStyle(0xffffff, 0.85);
+  g.fillCircle(cx - 0.4, cy - 0.4, 0.6);
+
+  // ── Brass rivets around the rim at 8 positions. ──
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const rx = cx + Math.cos(a) * 9;
+    const ry = cy + Math.sin(a) * 9;
+    g.fillStyle(0x2a1a0a, 1);
+    g.fillCircle(rx, ry, 0.9);
+    g.fillStyle(0xaa8a3a, 1);
+    g.fillCircle(rx, ry, 0.6);
+    g.fillStyle(0xddbb55, 0.9);
+    g.fillCircle(rx - 0.2, ry - 0.2, 0.3);
+  }
+
   g.generateTexture('ucard_stat_defense', s, s);
   g.destroy();
 }
 
+/**
+ * `ucard_stat_utility` — utility stat icon. Design pivot: old icon
+ * was a generic 8-point gold radial star that could have been any
+ * category's burst. New pitch — an ANTIQUE SKELETON KEY with a
+ * THISTLE-SHAPED BOW: the key is universal "utility/access"
+ * iconography, and the thistle-bow keeps the Scottish anchor.
+ */
 function drawStatUtility(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x2d2d22);
   const cx = 16, cy = 16;
-  g.fillStyle(0xd8d86e, 0.15);
-  g.fillCircle(cx, cy, 12);
-  g.fillStyle(0x99993a, 1);
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    const r = 10;
-    g.fillTriangle(
-      cx, cy,
-      cx + Math.cos(a - 0.15) * r, cy + Math.sin(a - 0.15) * r,
-      cx + Math.cos(a + 0.15) * r, cy + Math.sin(a + 0.15) * r,
-    );
+
+  // ── Warm gold aura behind the key. ──
+  g.fillStyle(0xd8a848, 0.15);
+  g.fillCircle(cx, cy, 13);
+
+  // ── Thistle bow at the top — green calyx with radiating bracts. ──
+  g.fillStyle(0x1a3810, 1);
+  g.fillEllipse(cx, cy - 5, 7, 4);
+  g.fillStyle(0x3a6a18, 1);
+  g.fillEllipse(cx, cy - 5, 6, 3);
+  g.fillStyle(0x1a3810, 1);
+  g.fillTriangle(cx - 4, cy - 5, cx - 6, cy - 7, cx - 3, cy - 4);
+  g.fillTriangle(cx + 4, cy - 5, cx + 6, cy - 7, cx + 3, cy - 4);
+  g.fillTriangle(cx - 2, cy - 7, cx, cy - 9, cx + 2, cy - 7);
+
+  // Purple thistle bloom inside the bow
+  g.fillStyle(0x4a1868, 1);
+  g.fillEllipse(cx, cy - 7, 6, 4);
+  g.fillStyle(0x8a3ab0, 1);
+  g.fillEllipse(cx, cy - 7, 5, 3);
+  // Bristly purple florets radiating upward
+  g.fillStyle(0xcc78dd, 1);
+  for (let i = 0; i < 7; i++) {
+    const bx = cx - 3 + i;
+    const h = 1.5 + (i % 3) * 0.5;
+    g.fillRect(bx, cy - 9 - h, 0.5, h);
   }
-  g.fillStyle(0xcccc55, 1);
-  g.fillCircle(cx, cy, 5);
-  g.fillStyle(0xdddd77, 1);
-  g.fillCircle(cx, cy, 3.5);
-  g.fillStyle(0xffffaa, 1);
-  g.fillCircle(cx, cy, 2);
-  g.fillStyle(0xffffff, 0.7);
-  g.fillCircle(cx - 1, cy - 1, 1);
-  g.fillStyle(0xffffff, 0.5);
-  g.fillCircle(cx, cy - 10, 1);
-  g.fillCircle(cx, cy + 10, 1);
-  g.fillCircle(cx - 10, cy, 1);
-  g.fillCircle(cx + 10, cy, 1);
+  // Bright tip dots
+  g.fillStyle(0xffccee, 1);
+  g.fillCircle(cx, cy - 11, 0.6);
+  g.fillCircle(cx - 2, cy - 10, 0.4);
+  g.fillCircle(cx + 2, cy - 10, 0.4);
+
+  // ── Key shaft — thick vertical gold bar. ──
+  g.fillStyle(0x4a3008, 1);
+  g.fillRect(cx - 1.5, cy - 2, 3, 13);
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 1, cy - 2, 2, 13);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 0.5, cy - 2, 1, 13);
+
+  // ── Key bit — antique L-shape with two teeth. ──
+  g.fillStyle(0x4a3008, 1);
+  g.fillRect(cx - 1.5, cy + 10, 7, 2.5);
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 1, cy + 10, 6, 2);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 1, cy + 10, 6, 0.6);
+  // First tooth (downward)
+  g.fillStyle(0x4a3008, 1);
+  g.fillRect(cx + 1, cy + 12, 1.8, 2.5);
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx + 1.3, cy + 12, 1.2, 2);
+  // Second tooth
+  g.fillStyle(0x4a3008, 1);
+  g.fillRect(cx + 3.5, cy + 12, 1.8, 2);
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx + 3.8, cy + 12, 1.2, 1.5);
+
+  // ── Sparkle at the thistle tip — magical key. ──
+  g.fillStyle(0xffffff, 0.95);
+  g.fillRect(cx - 3, cy - 11, 0.8, 0.4);
+  g.fillRect(cx - 3.3, cy - 11.3, 0.4, 0.8);
+
   g.generateTexture('ucard_stat_utility', s, s);
   g.destroy();
 }

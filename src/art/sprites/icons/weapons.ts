@@ -649,44 +649,91 @@ function drawNessieTentacleIcon(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `wicon_thistle_storm` — thistle-storm evolution icon. Design
+ * pivot: old icon was a centre bloom + 7 satellite dots inside a
+ * radial spoke pattern that merged into "abstract sunburst". New
+ * pitch — THREE thistle heads arranged on a visible SPIRAL inside
+ * a dark-purple storm halo, with motion-trail dots behind each
+ * head showing the rotation direction and a lightning spark
+ * punctuation at the core. Reads "multi-thistle storm" at scale.
+ */
 function drawThistleStormIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  g.fillStyle(0x440066, 0.3);
+
+  // ── Dark storm halo — two purple glow layers + lightning rim. ──
+  g.fillStyle(0x2a0844, 0.35);
   g.fillCircle(cx, cy, 15);
-  g.fillStyle(0x6622aa, 0.2);
-  g.fillCircle(cx, cy, 11);
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2;
-    const tx = cx + Math.cos(a) * 11;
-    const ty = cy + Math.sin(a) * 11;
-    g.lineStyle(1, 0x9944cc, 0.4);
-    g.lineBetween(cx, cy, tx, ty);
-  }
-  for (let i = 0; i < 7; i++) {
-    const a = (i / 7) * Math.PI * 2 + 0.3;
-    const r = 9 + (i % 2) * 1.5;
-    const tx = cx + Math.cos(a) * r;
-    const ty = cy + Math.sin(a) * r;
-    g.fillStyle(0x2a0044, 1);
-    g.fillCircle(tx, ty, 3);
-    g.fillStyle(0x7722aa, 1);
-    g.fillCircle(tx, ty, 2.2);
-    g.fillStyle(0xaa55dd, 1);
-    g.fillCircle(tx, ty, 1.2);
+  g.fillStyle(0x4a1068, 0.28);
+  g.fillCircle(cx, cy, 12);
+  g.lineStyle(1, 0xcc88ff, 0.55);
+  g.strokeCircle(cx, cy, 14);
+
+  // ── Spiral motion arc — sweep from top clockwise. ──
+  g.lineStyle(2, 0x8a3ab0, 0.85);
+  g.beginPath();
+  g.arc(cx, cy, 10, -Math.PI * 0.9, Math.PI * 0.4);
+  g.strokePath();
+  g.lineStyle(1.2, 0xcc88ff, 0.7);
+  g.beginPath();
+  g.arc(cx, cy, 10, -Math.PI * 0.9, Math.PI * 0.4);
+  g.strokePath();
+
+  // ── Three thistle heads in spiral formation (largest at top). ──
+  const heads: [number, number, number][] = [
+    [0, -7, 3.5],
+    [6, 3, 3],
+    [-6, 3, 2.5],
+  ];
+  for (const [dx, dy, r] of heads) {
+    const hx = cx + dx, hy = cy + dy;
+    // Green calyx base
+    g.fillStyle(0x1a3808, 1);
+    g.fillEllipse(hx, hy + r * 0.6, r * 1.4, r * 0.7);
+    g.fillStyle(0x2a5818, 1);
+    g.fillEllipse(hx, hy + r * 0.6, r * 1.1, r * 0.5);
+    // Dark purple bloom base
+    g.fillStyle(0x2a0844, 1);
+    g.fillCircle(hx, hy, r + 0.4);
+    g.fillStyle(0x5a1a88, 1);
+    g.fillCircle(hx, hy, r);
+    g.fillStyle(0x9944cc, 1);
+    g.fillCircle(hx - 0.3, hy - 0.3, r * 0.7);
+    // Short bristle spikes radiating
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2;
+      const tipX = hx + Math.cos(a) * (r + 1.3);
+      const tipY = hy + Math.sin(a) * (r + 1.3);
+      const bLx = hx + Math.cos(a - 0.15) * r * 0.8;
+      const bLy = hy + Math.sin(a - 0.15) * r * 0.8;
+      const bRx = hx + Math.cos(a + 0.15) * r * 0.8;
+      const bRy = hy + Math.sin(a + 0.15) * r * 0.8;
+      g.fillStyle(0x6a2088, 1);
+      g.fillTriangle(tipX, tipY, bLx, bLy, bRx, bRy);
+    }
+    // Bright core
     g.fillStyle(0xcc88ff, 1);
-    g.fillCircle(tx + Math.cos(a) * 2.5, ty + Math.sin(a) * 2.5, 0.9);
-    g.fillStyle(0xbb66ee, 0.8);
-    g.fillCircle(tx + Math.cos(a + 1.2) * 2, ty + Math.sin(a + 1.2) * 2, 0.7);
-    g.fillCircle(tx + Math.cos(a - 1.2) * 2, ty + Math.sin(a - 1.2) * 2, 0.7);
+    g.fillCircle(hx - 0.3, hy - 0.3, r * 0.4);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(hx - 0.5, hy - 0.5, r * 0.2);
   }
-  g.fillStyle(0x9944dd, 1);
-  g.fillCircle(cx, cy, 4);
-  g.fillStyle(0xdd88ff, 1);
-  g.fillCircle(cx, cy, 2.5);
+
+  // ── Motion-trail dots behind each head. ──
+  g.fillStyle(0xcc88ff, 0.7);
+  g.fillCircle(cx - 3, cy - 6, 0.8);
+  g.fillCircle(cx + 3, cy + 6, 0.7);
+  g.fillCircle(cx - 8, cy, 0.6);
+  g.fillStyle(0xaa55dd, 0.5);
+  g.fillCircle(cx - 5, cy - 5, 0.5);
+  g.fillCircle(cx + 5, cy + 5, 0.5);
+
+  // ── Lightning spark at centre — storm-threat anchor. ──
   g.fillStyle(0xffffff, 0.95);
-  g.fillCircle(cx, cy, 1.2);
+  g.fillRect(cx - 0.5, cy - 2, 1, 4);
+  g.fillRect(cx - 2, cy - 0.5, 4, 1);
+
   g.generateTexture('wicon_thistle_storm', s, s);
   g.destroy();
 }
@@ -841,102 +888,187 @@ function drawMiniHaggis(g: Phaser.GameObjects.Graphics, x: number, y: number, r:
   g.fillCircle(x + 0.3, y + 0.3, 0.4);
 }
 
+/**
+ * `wicon_highland_fling` — bagpipe-blast evolution icon. Design
+ * pivot: old icon was blue concentric rings + scattered arrow-
+ * stars that read as "generic AoE burst". New pitch — a TINY
+ * KILTED DANCER silhouette caught mid-fling pose (one arm raised
+ * overhead, one leg high-kicked sideways) inside rotating blue
+ * pulse rings. The figure ties the icon to "Highland Fling"
+ * specifically rather than any ring-burst AoE.
+ */
 function drawHighlandFlingIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2;
-  g.lineStyle(3, 0x2255cc, 0.6);
-  g.strokeCircle(cx, cy, 14);
-  g.fillStyle(0x3366dd, 0.35);
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    g.fillCircle(cx + Math.cos(a) * 14.5, cy + Math.sin(a) * 14.5, 1.2);
-  }
-  g.lineStyle(2, 0x3366ee, 1);
+  const cx = s / 2, cy = s / 2 + 2;
+
+  // ── Evolution halo + rotating pulse rings. ──
+  g.fillStyle(0x2244aa, 0.25);
+  g.fillCircle(cx, cy, 15);
+  g.fillStyle(0x4488ff, 0.18);
+  g.fillCircle(cx, cy, 12);
+  g.lineStyle(1.5, 0x66aaff, 0.85);
   g.strokeCircle(cx, cy, 13);
-  g.lineStyle(2, 0x4499ff, 0.85);
-  g.strokeCircle(cx, cy, 9);
-  g.lineStyle(2, 0x88ccff, 0.7);
-  g.strokeCircle(cx, cy, 5);
-  g.fillStyle(0xaaddff, 0.85);
-  g.fillCircle(cx + 10, cy - 6, 1.5);
-  g.fillRect(cx + 11, cy - 10, 1.5, 4.5);
-  g.fillRect(cx + 11, cy - 10, 4, 1.5);
-  g.fillCircle(cx - 8, cy + 9, 1.2);
-  g.fillRect(cx - 7, cy + 5, 1.2, 4);
-  g.fillStyle(0x66aaff, 0.7);
-  g.fillCircle(cx + 7, cy + 7, 1.0);
-  g.fillCircle(cx - 7, cy - 7, 1.0);
-  g.fillCircle(cx - 10, cy + 4, 0.9);
-  g.fillCircle(cx + 4, cy - 10, 0.9);
-  g.fillStyle(0x99ccff, 0.5);
-  g.fillCircle(cx + 11, cy + 2, 0.8);
-  g.fillCircle(cx - 2, cy + 11, 0.8);
-  g.fillStyle(0x2244bb, 1);
-  g.fillCircle(cx, cy, 4);
-  g.fillStyle(0x66aaff, 1);
-  g.fillCircle(cx, cy, 3);
+  g.lineStyle(1.2, 0x99ccff, 0.6);
+  g.strokeCircle(cx, cy, 10);
+
+  // ── Kilted dancer silhouette — signature Fling pose. ──
+  // Head
+  g.fillStyle(0x1a1a24, 1);
+  g.fillCircle(cx, cy - 8, 1.8);
+  g.fillStyle(0xd8b888, 1);
+  g.fillCircle(cx, cy - 8, 1.4);
+  // Raised arm (up-right, overhead)
+  g.fillStyle(0x1a1a24, 1);
+  g.fillRect(cx, cy - 10, 1.2, 4);
+  g.fillRect(cx + 2, cy - 13, 1.2, 3);
+  g.fillStyle(0xd8b888, 1);
+  g.fillCircle(cx + 2.5, cy - 13, 0.8);
+  // Opposite arm (bent to side)
+  g.fillStyle(0x1a1a24, 1);
+  g.fillRect(cx - 3, cy - 6, 1.2, 3);
+  g.fillStyle(0xd8b888, 1);
+  g.fillCircle(cx - 3.5, cy - 4, 0.7);
+  // Torso (dark jacket)
+  g.fillStyle(0x0a1a38, 1);
+  g.fillRect(cx - 2, cy - 6, 4, 5);
+  g.fillStyle(0x1a3858, 1);
+  g.fillRect(cx - 1.5, cy - 5.5, 3, 4);
+
+  // Kilt — tartan diamond
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx - 3, cy - 1, 6, 4);
+  g.fillStyle(0xaa2828, 1);
+  g.fillRect(cx - 2.5, cy - 0.5, 5, 3);
+  g.fillStyle(0x0a0808, 0.8);
+  g.fillRect(cx - 2.5, cy + 0.3, 5, 0.4);
+  g.fillRect(cx - 2.5, cy + 1.5, 5, 0.4);
+  g.fillRect(cx - 0.5, cy - 0.5, 0.4, 3);
+
+  // Standing leg — straight down with sock + shoe
+  g.fillStyle(0xd8b888, 1);
+  g.fillRect(cx - 1, cy + 3, 1.3, 3);
+  g.fillStyle(0xe8e8e0, 1);
+  g.fillRect(cx - 1, cy + 6, 1.3, 1.5);
+  g.fillStyle(0x1a1a24, 1);
+  g.fillRect(cx - 1.3, cy + 7.5, 2, 1.2);
+
+  // High-kicked leg — out to the right, the Fling tell
+  g.fillStyle(0xd8b888, 1);
+  g.fillRect(cx + 1, cy + 2, 3, 1.2);
+  g.fillRect(cx + 4, cy + 1, 3, 1.2);
+  g.fillStyle(0xe8e8e0, 1);
+  g.fillRect(cx + 6.5, cy + 0.5, 1.5, 1.2);
+  g.fillStyle(0x1a1a24, 1);
+  g.fillRect(cx + 7.5, cy + 0.3, 1.5, 1);
+
+  // ── Motion sparkles around the dancer. ──
   g.fillStyle(0xccddff, 1);
-  g.fillCircle(cx, cy, 1.8);
-  g.fillStyle(0xffffff, 1);
-  g.fillCircle(cx, cy, 1);
+  g.fillCircle(cx - 10, cy - 5, 1.2);
+  g.fillStyle(0xaaddff, 0.8);
+  g.fillCircle(cx + 10, cy + 5, 1.2);
+  g.fillStyle(0x88ccff, 0.75);
+  g.fillCircle(cx - 8, cy + 8, 0.9);
+  g.fillCircle(cx + 8, cy - 8, 0.9);
+  // Four-point star sparkles
+  g.fillStyle(0xffffff, 0.95);
+  g.fillRect(cx - 11, cy, 1.5, 0.5);
+  g.fillRect(cx - 10.3, cy - 0.7, 0.5, 1.5);
+  g.fillRect(cx + 10, cy, 1.5, 0.5);
+  g.fillRect(cx + 10.3, cy - 0.7, 0.5, 1.5);
+
   g.generateTexture('wicon_highland_fling', s, s);
   g.destroy();
 }
 
+/**
+ * `wicon_the_haar` — haar-fog evolution icon. Design pivot: old
+ * icon used a muted green-grey palette that read too close to
+ * `wicon_scotch_mist` (the sibling fog weapon) — the two were
+ * confusable at a glance. New pitch — pure COLD NORTH-SEA
+ * palette (teal-grey + pale-cyan, NO green), horizontal fog bands
+ * dominating the lower half (matching the `haar_wraith` enemy
+ * silhouette), and a pale SKELETAL FACE pushing forward through
+ * the top with cyan pinprick eyes. Cold palette is the key
+ * differentiator from the toxic green mist.
+ */
 function drawTheHaarIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
-  // Evolution-tier halo — muted green-grey to match the mist palette
-  // and pair with the other evolutions (highland_games orange,
-  // thistle_storm purple, highland_fling blue, william_blade gold).
-  // Kept low-alpha so the mist-skull composition stays the subject.
-  g.fillStyle(0x3a5548, 0.2);
+
+  // ── Cold north-sea halo — teal-grey, no green. ──
+  g.fillStyle(0x4a6278, 0.22);
   g.fillCircle(cx, cy, 15);
-  g.fillStyle(0x556e5c, 0.2);
-  g.fillCircle(cx, cy, 11);
-  g.fillStyle(0x2a3a33, 0.3);
-  g.fillCircle(cx - 10, cy + 4, 7);
-  g.fillCircle(cx + 10, cy + 4, 7);
-  g.fillCircle(cx, cy - 6, 8);
-  g.fillCircle(cx - 7, cy + 7, 5);
-  g.fillCircle(cx + 7, cy + 7, 5);
-  g.fillCircle(cx - 12, cy + 1, 4);
-  g.fillCircle(cx + 12, cy + 1, 4);
-  g.fillStyle(0x334433, 0.5);
-  g.fillCircle(cx - 8, cy + 3, 6);
-  g.fillCircle(cx + 8, cy + 3, 6);
-  g.fillCircle(cx, cy - 4, 7);
-  g.fillCircle(cx - 5, cy + 5, 5);
-  g.fillCircle(cx + 5, cy + 5, 5);
-  g.fillStyle(0x445544, 0.7);
-  g.fillCircle(cx - 6, cy + 2, 5.5);
-  g.fillCircle(cx + 6, cy + 2, 5.5);
-  g.fillCircle(cx, cy - 2, 6.5);
-  g.fillCircle(cx - 3, cy + 3, 5);
-  g.fillCircle(cx + 3, cy + 3, 5);
-  g.fillStyle(0x556655, 0.82);
-  g.fillCircle(cx - 4, cy + 1, 4.5);
-  g.fillCircle(cx + 4, cy + 1, 4.5);
-  g.fillCircle(cx, cy - 1, 5.5);
-  g.fillStyle(0x1e2d1e, 0.88);
-  g.fillCircle(cx, cy + 1, 5);
-  g.fillCircle(cx - 1, cy, 4);
-  g.fillCircle(cx + 1, cy, 4);
-  g.fillStyle(0x334433, 0.5);
-  g.fillCircle(cx, cy - 1, 3);
-  g.fillRect(cx - 2, cy + 2, 4, 4);
-  g.fillStyle(0x99cc88, 0.45);
-  g.fillCircle(cx - 1, cy - 1, 0.9);
-  g.fillCircle(cx + 1, cy - 1, 0.9);
-  g.fillStyle(0x88cc77, 0.5);
-  g.fillCircle(cx - 2, cy - 3, 1.5);
-  g.fillCircle(cx + 4, cy - 1, 1.2);
-  g.fillStyle(0xaaddaa, 0.4);
-  g.fillCircle(cx - 6, cy + 1, 1.0);
-  g.fillCircle(cx + 6, cy + 1, 1.0);
-  g.fillCircle(cx, cy + 8, 1.0);
+  g.fillStyle(0x7a94a8, 0.18);
+  g.fillCircle(cx, cy, 12);
+
+  // ── Horizontal fog bands at the bottom half — signature haar. ──
+  g.fillStyle(0x8aa4b4, 0.4);
+  g.fillEllipse(cx, cy + 13, 26, 2.5);
+  g.fillStyle(0x9ab4c4, 0.5);
+  g.fillEllipse(cx - 2, cy + 10, 24, 2.5);
+  g.fillStyle(0x7a94a8, 0.65);
+  g.fillEllipse(cx + 2, cy + 7, 22, 2.5);
+  g.fillStyle(0x6a84a0, 0.75);
+  g.fillEllipse(cx - 1, cy + 4, 20, 2.5);
+  g.fillStyle(0x5a7890, 0.85);
+  g.fillEllipse(cx, cy + 1, 18, 2.5);
+
+  // ── Cold skeletal face emerging forward through the fog. ──
+  g.fillStyle(0x1a2a34, 0.9);
+  g.fillEllipse(cx, cy - 3, 10, 11);
+  g.fillStyle(0x3a5060, 0.95);
+  g.fillEllipse(cx, cy - 3, 8, 9);
+  g.fillStyle(0xc8d4dc, 0.95);
+  g.fillEllipse(cx, cy - 4, 7, 8);
+  // Gaunt cheek hollows
+  g.fillStyle(0x3a5060, 0.7);
+  g.fillEllipse(cx - 2.5, cy - 1, 1.8, 2.5);
+  g.fillEllipse(cx + 2.5, cy - 1, 1.8, 2.5);
+
+  // Hollow eye sockets — cold cyan glow
+  g.fillStyle(0x0a1a28, 1);
+  g.fillEllipse(cx - 2, cy - 4, 2.2, 2.8);
+  g.fillEllipse(cx + 2, cy - 4, 2.2, 2.8);
+  g.fillStyle(0x8ad8f0, 0.5);
+  g.fillCircle(cx - 2, cy - 4, 1.5);
+  g.fillCircle(cx + 2, cy - 4, 1.5);
+  g.fillStyle(0xccf0ff, 1);
+  g.fillCircle(cx - 2, cy - 4, 0.9);
+  g.fillCircle(cx + 2, cy - 4, 0.9);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillCircle(cx - 2, cy - 4.3, 0.35);
+  g.fillCircle(cx + 2, cy - 4.3, 0.35);
+
+  // Nose hollow
+  g.fillStyle(0x0a1a28, 1);
+  g.fillTriangle(cx, cy, cx - 0.8, cy + 1.5, cx + 0.8, cy + 1.5);
+
+  // Skeletal grin — gapped teeth
+  g.fillStyle(0x1a2838, 1);
+  g.fillRect(cx - 2.5, cy + 2.5, 5, 1.5);
+  g.fillStyle(0xc8d4dc, 1);
+  g.fillRect(cx - 2.2, cy + 2.8, 0.7, 1);
+  g.fillRect(cx - 1, cy + 3, 0.7, 0.8);
+  g.fillRect(cx + 0.3, cy + 2.8, 0.7, 1);
+  g.fillRect(cx + 1.5, cy + 3, 0.7, 0.8);
+
+  // ── Drifting upper wisps above the head. ──
+  g.fillStyle(0xc4d4de, 0.5);
+  g.fillCircle(cx - 4, cy - 11, 1.3);
+  g.fillCircle(cx + 4, cy - 12, 1.2);
+  g.fillStyle(0xe0eaf0, 0.35);
+  g.fillCircle(cx, cy - 14, 1);
+
+  // ── Side-drift tendrils — the "creeping in from the sea" tell. ──
+  g.fillStyle(0xaac4d4, 0.5);
+  g.fillRect(cx - 14, cy + 5, 6, 1);
+  g.fillRect(cx + 8, cy + 6, 6, 1);
+  g.fillStyle(0xc4d4dc, 0.35);
+  g.fillRect(cx - 16, cy + 9, 5, 1);
+  g.fillRect(cx + 11, cy + 10, 5, 1);
+
   g.generateTexture('wicon_the_haar', s, s);
   g.destroy();
 }
