@@ -285,59 +285,12 @@ function drawHaggisAccent(
       g.fillStyle(0xffffff, 0.08);
       g.fillEllipse(cx, cy + 12, 22, 4);
       break;
-    case 'laird': {
-      // ── Clan plaid — rectangular swatch of proper tartan weave
-      // worn over the left shoulder and pinned with a brooch. Bounds
-      // chosen to clear the face (starts at cy+3, below the eye line)
-      // and the legs (ends at cy+11), and stops before the mouth at
-      // cx-4 (mouth sits at cx-1). Previously this was two stacked
-      // red triangles with three horizontal stripes — read as "a
-      // weird red rectangle," not tartan. ──
-      const plaidX = cx - 18;
-      const plaidY = cy + 3;
-      const plaidW = 14;
-      const plaidH = 8;
-      // Dark outline to lift the plaid off the fur.
-      g.fillStyle(0x1a0505, 0.85);
-      g.fillRect(plaidX - 1, plaidY - 1, plaidW + 2, plaidH + 2);
-      // Red field base (maroon) + slightly brighter red on top.
-      g.fillStyle(0x4a0e0e, 1);
-      g.fillRect(plaidX, plaidY, plaidW, plaidH);
-      g.fillStyle(0x9a1f1f, 0.95);
-      g.fillRect(plaidX + 1, plaidY + 1, plaidW - 2, plaidH - 2);
-      // Warp — vertical forest-green + gold pinstripes at regular
-      // intervals. This is the thread direction that was missing
-      // entirely from the old design, so the patch never read as a
-      // weave.
-      g.fillStyle(0x1a4a24, 0.9);
-      g.fillRect(plaidX + 2, plaidY, 1, plaidH);
-      g.fillRect(plaidX + 8, plaidY, 1, plaidH);
-      g.fillStyle(0xd4a017, 0.95);
-      g.fillRect(plaidX + 5, plaidY, 1, plaidH);
-      g.fillRect(plaidX + 11, plaidY, 1, plaidH);
-      // Weft — horizontal dark-green + a subtle white highlight
-      // running across.
-      g.fillStyle(0x1a4a24, 0.85);
-      g.fillRect(plaidX, plaidY + 2, plaidW, 1);
-      g.fillRect(plaidX, plaidY + 6, plaidW, 1);
-      g.fillStyle(0xffffff, 0.25);
-      g.fillRect(plaidX, plaidY + 4, plaidW, 1);
-      // Fringe — tiny gold hem along the bottom.
-      g.fillStyle(0xd4a017, 0.7);
-      g.fillRect(plaidX, plaidY + plaidH - 1, plaidW, 0.5);
-      // Shoulder brooch pin — gold circle with bright centre, fixing
-      // the plaid to the chest.
-      g.fillStyle(0x1a0505, 0.7);
-      g.fillCircle(plaidX + 1.5, plaidY + 1.5, 3);
-      g.fillStyle(0xd4a017, 1);
-      g.fillCircle(plaidX + 1.5, plaidY + 1.5, 2.3);
-      g.fillStyle(0xffe8a0, 0.95);
-      g.fillCircle(plaidX + 1, plaidY + 1, 1.3);
-      g.fillStyle(0xffffff, 0.7);
-      g.fillCircle(plaidX + 0.5, plaidY + 0.5, 0.6);
-
-      // ── Laird's gold crown — same as before. Three-point crown
-      // with red centre ruby and two accent gems. ──
+    case 'laird':
+      // ── Gold crown — three-point circlet with a red centre ruby
+      // and two accent gems. Previously paired with a clan-plaid
+      // swatch on the body, but the plaid read as a weird red
+      // rectangle at gameplay scale — removed for cleaner
+      // silhouette. The crown alone is enough to say "laird". ──
       g.fillStyle(0xd4a017, 1);
       g.fillRect(cx - 6, cy - 14, 12, 3);
       g.fillTriangle(cx - 6, cy - 14, cx - 4, cy - 17, cx - 2, cy - 14);
@@ -351,7 +304,6 @@ function drawHaggisAccent(
       g.fillStyle(0xffffff, 0.4);
       g.fillRect(cx - 5, cy - 13, 10, 0.5);
       break;
-    }
     case 'pipe_breath':
       g.lineStyle(1.5, palette.accent, 0.5);
       g.beginPath();
