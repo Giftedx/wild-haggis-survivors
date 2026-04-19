@@ -62,8 +62,11 @@ function drawDroplet(
 function drawWater(g: Phaser.GameObjects.Graphics, frame: WaterFrame): void {
   const dx = frame.x ?? 0;
   const dy = frame.y;
-  drawDroplet(g, 30 + dx + frame.left.x, 62 + dy + frame.left.y);
-  drawDroplet(g, 50 + dx + frame.right.x, 62 + dy + frame.right.y);
+  // Left/right droplets flank the haggis feet. Pulled outward from
+  // (30, 62) / (50, 62) to (20, 64) / (60, 64) so the droplets sit
+  // beside the legs instead of under the belly where they got lost.
+  drawDroplet(g, 20 + dx + frame.left.x, 64 + dy + frame.left.y);
+  drawDroplet(g, 60 + dx + frame.right.x, 64 + dy + frame.right.y);
 }
 
 function drawIdle0(g: Phaser.GameObjects.Graphics): void {

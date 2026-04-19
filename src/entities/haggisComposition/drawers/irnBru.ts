@@ -12,8 +12,11 @@
 
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 
-const CX = 28;
-const BASE_CY = 44;
+// Pushed further left (28→13) so the can hangs clearly OUTSIDE the
+// haggis body silhouette (which spans roughly accessory-canvas x=18..62)
+// instead of clipping inside the furry left flank.
+const CX = 13;
+const BASE_CY = 46;
 
 const ORANGE_DARK = 0xc04a00;
 const ORANGE_MID = 0xe86a10;

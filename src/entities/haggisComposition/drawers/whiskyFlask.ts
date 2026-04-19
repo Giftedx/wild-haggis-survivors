@@ -12,8 +12,11 @@
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 
-const CX = 52;
-const BASE_CY = 44;
+// Pushed further right (52→67) so the flask hangs OUTSIDE the haggis
+// body silhouette (which ends around x=62) instead of clipping into
+// the furry right flank. Mirrors the irn-bru placement on the left.
+const CX = 67;
+const BASE_CY = 46;
 
 const PEWTER_DARK = 0x2a2e34;
 const PEWTER_MID = 0x4a4e56;
