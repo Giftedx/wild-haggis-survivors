@@ -247,7 +247,8 @@ export class BootScene extends Phaser.Scene {
     this.createDeanApparition();
     this.createLedgerWraith();
     this.createAuditorPriest();
-    this.createBoss();
+    // Generic `boss` texture removed 2026-04-19 — no BOSSES config
+    // referenced it, so it was dead weight. Dedicated bosses below.
     this.createThistle();
     this.createCaber();
     this.createHaggisBall();
@@ -4577,86 +4578,6 @@ export class BootScene extends Phaser.Scene {
     g.fillCircle(cx + 7, cy - 22, 0.8);
 
     g.generateTexture('auditor_priest', s, s);
-    g.destroy();
-  }
-
-  private createBoss(): void {
-    // Generic boss fallback — dark crowned beast with glowing eyes and aura.
-    // Bosses now use dedicated textures, but this remains for edge-case fallback.
-    const s = 72;
-    const g = this.add.graphics();
-    const cx = s / 2, cy = s / 2;
-
-    // ── Menacing aura glow ──
-    g.fillStyle(0x440000, 0.15);
-    g.fillCircle(cx, cy, 35);
-
-    // ── Dark layered body ──
-    g.fillStyle(0x220404, 1);
-    g.fillCircle(cx, cy, 32);
-    g.fillStyle(0x551010, 1);
-    g.fillCircle(cx, cy, 28);
-    g.fillStyle(0x881a1a, 1);
-    g.fillCircle(cx, cy, 22);
-    // Lighter face — upper left light
-    g.fillStyle(0xaa2a2a, 0.5);
-    g.fillCircle(cx - 4, cy - 4, 16);
-    // Inner depth shadow
-    g.fillStyle(0x330808, 0.4);
-    g.fillCircle(cx + 4, cy + 6, 14);
-
-    // ── Crown horns (sharper, more ornate) ──
-    g.fillStyle(0x553300, 1);
-    g.fillTriangle(cx - 14, cy - 24, cx - 10, cy - 10, cx - 19, cy - 10);
-    g.fillTriangle(cx, cy - 28, cx - 5, cy - 10, cx + 5, cy - 10);
-    g.fillTriangle(cx + 14, cy - 24, cx + 10, cy - 10, cx + 19, cy - 10);
-    g.fillStyle(0xcc9900, 1);
-    g.fillTriangle(cx - 13, cy - 22, cx - 11, cy - 11, cx - 17, cy - 11);
-    g.fillTriangle(cx, cy - 26, cx - 4, cy - 11, cx + 4, cy - 11);
-    g.fillTriangle(cx + 13, cy - 22, cx + 11, cy - 11, cx + 17, cy - 11);
-    // Horn highlights
-    g.fillStyle(0xffdd44, 0.7);
-    g.fillTriangle(cx - 12, cy - 20, cx - 12, cy - 12, cx - 15, cy - 12);
-    g.fillTriangle(cx, cy - 24, cx - 2, cy - 12, cx + 2, cy - 12);
-    g.fillTriangle(cx + 12, cy - 20, cx + 12, cy - 12, cx + 15, cy - 12);
-    // Horn tips (bright gold with specular)
-    g.fillStyle(0xffcc33, 1);
-    g.fillCircle(cx - 14, cy - 23, 2);
-    g.fillCircle(cx, cy - 27, 2);
-    g.fillCircle(cx + 14, cy - 23, 2);
-    g.fillStyle(0xffffff, 0.5);
-    g.fillCircle(cx - 14, cy - 24, 0.8);
-    g.fillCircle(cx, cy - 28, 0.8);
-    g.fillCircle(cx + 14, cy - 24, 0.8);
-
-    // ── Evil eyes (narrowed slits — malevolent intelligence) ──
-    g.fillStyle(0x000000, 1);
-    g.fillEllipse(cx - 9, cy - 4, 14, 7);
-    g.fillEllipse(cx + 9, cy - 4, 14, 7);
-    g.fillStyle(0xffff00, 1);
-    g.fillEllipse(cx - 9, cy - 4, 12, 6);
-    g.fillEllipse(cx + 9, cy - 4, 12, 6);
-    g.fillStyle(0xff4400, 1);
-    g.fillEllipse(cx - 9, cy - 4, 6, 4);
-    g.fillEllipse(cx + 9, cy - 4, 6, 4);
-    g.fillStyle(0x000000, 1);
-    g.fillCircle(cx - 9, cy - 4, 1.5);
-    g.fillCircle(cx + 9, cy - 4, 1.5);
-    // Eye glow bleed
-    g.fillStyle(0xffaa00, 0.2);
-    g.fillEllipse(cx - 9, cy - 4, 16, 8);
-    g.fillEllipse(cx + 9, cy - 4, 16, 8);
-
-    // ── Snarling mouth ──
-    g.fillStyle(0x220000, 1);
-    g.fillRect(cx - 8, cy + 6, 16, 4);
-    g.fillStyle(0xddddcc, 1);
-    g.fillRect(cx - 6, cy + 6, 2, 3);
-    g.fillRect(cx - 2, cy + 6, 2, 3);
-    g.fillRect(cx + 2, cy + 6, 2, 3);
-    g.fillRect(cx + 6, cy + 6, 2, 3);
-
-    g.generateTexture('boss', s, s);
     g.destroy();
   }
 

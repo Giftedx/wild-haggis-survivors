@@ -66,7 +66,7 @@ function categorize(key: string): string {
   }
 
   if (key.startsWith('haggis_') && !key.includes('hunter') && !key.includes('ball') && !key.includes('cannon')) return 'Player Variants';
-  if (key.startsWith('boss_') || key === 'boss') return 'Bosses';
+  if (key.startsWith('boss_')) return 'Bosses';
   if (key.startsWith('wicon_')) return 'Weapon Icons';
   if (key.startsWith('ucard_')) return 'Card Icons';
   if (key.startsWith('deco_')) return 'Decorations';
