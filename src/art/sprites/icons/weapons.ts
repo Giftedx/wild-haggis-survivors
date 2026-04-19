@@ -373,6 +373,17 @@ function drawThistleStormIcon(scene: Phaser.Scene): void {
 function drawHighlandGamesIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
+  // Evolution-tier halo — fire/amber to match the flaming-hammer
+  // motif. Pairs with the glow rings on every other evolution icon
+  // (thistle_storm purple, highland_fling blue, william_blade gold,
+  // nessie_unleashed teal) so the HUD reads "legendary" at a glance.
+  const cx = 16, cy = 16;
+  g.fillStyle(0xaa4400, 0.2);
+  g.fillCircle(cx, cy, 15);
+  g.fillStyle(0xcc6600, 0.22);
+  g.fillCircle(cx, cy, 12);
+  g.fillStyle(0xff8822, 0.22);
+  g.fillCircle(cx, cy, 9);
   g.fillStyle(0x1a0e00, 1);
   g.fillRect(3, 14, 22, 8);
   g.fillStyle(0x3a2208, 1);
@@ -518,6 +529,14 @@ function drawTheHaarIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
+  // Evolution-tier halo — muted green-grey to match the mist palette
+  // and pair with the other evolutions (highland_games orange,
+  // thistle_storm purple, highland_fling blue, william_blade gold).
+  // Kept low-alpha so the mist-skull composition stays the subject.
+  g.fillStyle(0x3a5548, 0.2);
+  g.fillCircle(cx, cy, 15);
+  g.fillStyle(0x556e5c, 0.2);
+  g.fillCircle(cx, cy, 11);
   g.fillStyle(0x2a3a33, 0.3);
   g.fillCircle(cx - 10, cy + 4, 7);
   g.fillCircle(cx + 10, cy + 4, 7);
