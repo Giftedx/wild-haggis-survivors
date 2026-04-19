@@ -13,8 +13,34 @@
 
 import type { AnimationState, AnimationSignals } from './animationStates';
 import { evaluateAnimationState } from './animationStates';
-import { advanceFrameClock } from './frameClock';
+import { advanceFrameClock, getFrameCountForState } from './frameClock';
 import { atlasKey } from './textureAtlas';
+
+/**
+ * Non-loop one-shot states that must play through before giving up the
+ * frame clock to lower-priority transitions (walking/idle).
+ */
+const ONE_SHOT_STATES: ReadonlySet<AnimationState> = new Set([
+  'attacking',
+  'hurt',
+  'dying',
+]);
+
+/**
+ * Can `proposed` interrupt a live one-shot `current`? Only higher-priority
+ * one-shots qualify: dying always wins; hurt interrupts attacking (but not
+ * vice-versa). Lower-priority proposals (walking, idle, celebrating) have
+ * to wait the one-shot out.
+ */
+function canInterruptOneShot(
+  current: AnimationState,
+  proposed: AnimationState,
+): boolean {
+  if (proposed === current) return false;
+  if (proposed === 'dying') return true;
+  if (current === 'attacking' && proposed === 'hurt') return true;
+  return false;
+}
 
 export interface AnimationControllerInit {
   readonly sprite: Phaser.GameObjects.Sprite;
@@ -41,7 +67,18 @@ export class AnimationController {
   }
 
   tick(scaledDelta: number, signals: AnimationSignals): void {
-    const nextState = evaluateAnimationState(this.state, signals);
+    const proposed = evaluateAnimationState(this.state, signals);
+    // Gate: a live one-shot plays through unless a higher-priority one-shot
+    // forces the interrupt. Otherwise walking/idle would cut a 167 ms attack
+    // lunge to a single frame every time the player moves while firing.
+    const oneShotLive =
+      ONE_SHOT_STATES.has(this.state) &&
+      this.frameIndex < getFrameCountForState(this.state) - 1;
+    const nextState =
+      oneShotLive && !canInterruptOneShot(this.state, proposed)
+        ? this.state
+        : proposed;
+
     if (nextState !== this.state) {
       this.state = nextState;
       this.frameIndex = 0;

@@ -16,7 +16,7 @@ import type { AnimationState } from './animationStates';
 export type AtlasSubject = 'haggis' | string; // accessory ids are free strings
 export type AtlasVariant = string | null;
 
-const ALL_STATES: AnimationState[] = [
+export const ALL_ANIMATION_STATES: readonly AnimationState[] = [
   'idle',
   'walking',
   'attacking',
@@ -49,7 +49,7 @@ export function allAtlasKeysForVariant(
   variant: AtlasVariant,
 ): string[] {
   const out: string[] = [];
-  for (const state of ALL_STATES) {
+  for (const state of ALL_ANIMATION_STATES) {
     const count = getFrameCountForState(state);
     for (let f = 0; f < count; f++) {
       out.push(atlasKey(subject, variant, state, f));

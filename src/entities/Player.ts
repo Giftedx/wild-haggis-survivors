@@ -143,6 +143,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private animController!: AnimationController;
   private hurtEdgeThisFrame = false;
+  private attackEdgeThisFrame = false;
   private animStateOverride: AnimationState | null = null;
   private haggisContainer!: HaggisContainer;
   private ownedAccessories: Array<{
@@ -510,7 +511,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const signals = {
       velocityMag: Math.hypot(vx, vy),
       hurtEdge: this.consumeHurtEdge(),
-      attackEdge: false,
+      attackEdge: this.consumeAttackEdge(),
       celebrateEdge: false,
       hp: this.hp,
     };
@@ -594,6 +595,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const v = this.hurtEdgeThisFrame;
     this.hurtEdgeThisFrame = false;
     return v;
+  }
+
+  private consumeAttackEdge(): boolean {
+    const v = this.attackEdgeThisFrame;
+    this.attackEdgeThisFrame = false;
+    return v;
+  }
+
+  /**
+   * Called by WeaponSystem on every weapon fire. Flags the attacking
+   * one-shot for the next animation tick. Multiple fires in the same
+   * frame coalesce to one flag — the one-shot gating in
+   * `AnimationController` then plays the whole 167 ms attack beat
+   * before accepting the next retrigger.
+   */
+  public notifyWeaponFired(): void {
+    this.attackEdgeThisFrame = true;
   }
 
   takeDamage(amount: number): boolean {

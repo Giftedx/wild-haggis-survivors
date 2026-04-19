@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { TAM_O_SHANTER_DRAWER } from './tamOShanter';
 import { CLASSIC_VARIANT } from '../../../art/palettes';
+import { getFrameCountForState } from '../../../animation/frameClock';
 
 function makeGraphicsStub() {
   return {
@@ -18,13 +19,18 @@ describe('TAM_O_SHANTER_DRAWER', () => {
     expect(TAM_O_SHANTER_DRAWER.layer).toBe('above');
   });
 
-  it('authors idle + walking states only in Phase 0', () => {
-    expect(TAM_O_SHANTER_DRAWER.authoredStates).toEqual(['idle', 'walking']);
+  it('authors idle + walking + attacking + hurt (Phase 1)', () => {
+    expect(TAM_O_SHANTER_DRAWER.authoredStates).toEqual([
+      'idle',
+      'walking',
+      'attacking',
+      'hurt',
+    ]);
   });
 
   it('draws primitives for every authored (state × frame) pair', () => {
     for (const state of TAM_O_SHANTER_DRAWER.authoredStates) {
-      const framesInState = state === 'idle' ? 2 : 4;
+      const framesInState = getFrameCountForState(state);
       for (let frame = 0; frame < framesInState; frame++) {
         const g = makeGraphicsStub();
         TAM_O_SHANTER_DRAWER.draw(g as unknown as Phaser.GameObjects.Graphics, {

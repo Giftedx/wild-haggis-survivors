@@ -32,6 +32,8 @@ export interface HaggisBodyFrame {
   readonly leftLegY?: number;
   /** Extra y offset for RIGHT leg pair (px). */
   readonly rightLegY?: number;
+  /** Whole-body x offset (px). Used for hurt-flinch and attack-lean. */
+  readonly bodyX?: number;
 }
 
 /** Canonical sprite size — 56×56. Matches existing variant textures. */
@@ -74,7 +76,7 @@ export function drawHaggisBody(
     humpX = baseCx + 8; humpY = baseCy - 8; humpW = 16; humpH = 11;
   }
 
-  const cx = baseCx;
+  const cx = baseCx + (frame.bodyX ?? 0);
   const cy = baseCy + breathY;
   const leftDy = -Math.floor(tiltY / 2);
   const rightDy = Math.ceil(tiltY / 2);

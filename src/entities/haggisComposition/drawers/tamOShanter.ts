@@ -147,17 +147,50 @@ function drawTamWalking3(g: Phaser.GameObjects.Graphics): void {
   drawTam(g, { y: -1, x: 1 });
 }
 
+// ── Attacking frames mirror the body's bodyX/breathY beat so the hat
+// stays visually glued to the lunging head. Values match the
+// drawAttacking{0..3} offsets in haggisFrames.ts — keep in sync. ──
+function drawTamAttacking0(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 0, x: 1 });
+}
+function drawTamAttacking1(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: -2, x: 2 });
+}
+function drawTamAttacking2(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: -1, x: 1 });
+}
+function drawTamAttacking3(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 0, x: 0 });
+}
+
+// ── Hurt frames mirror the body flinch. ──
+function drawTamHurt0(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 1, x: -2 });
+}
+function drawTamHurt1(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 0, x: -1 });
+}
+
 const FRAMES = {
   idle: [drawTamIdle0, drawTamIdle1],
   walking: [drawTamWalking0, drawTamWalking1, drawTamWalking2, drawTamWalking3],
+  attacking: [
+    drawTamAttacking0,
+    drawTamAttacking1,
+    drawTamAttacking2,
+    drawTamAttacking3,
+  ],
+  hurt: [drawTamHurt0, drawTamHurt1],
 } as const;
+
+type AuthoredState = keyof typeof FRAMES;
 
 export const TAM_O_SHANTER_DRAWER: AccessoryDrawer = {
   id: 'tam_o_shanter',
   layer: 'above',
-  authoredStates: ['idle', 'walking'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
-    const drawers = FRAMES[ctx.state as 'idle' | 'walking'];
+    const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {
       FRAMES.idle[0](g);
       return;

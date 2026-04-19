@@ -16,7 +16,8 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
 import { setPendingCurse } from '../data/curses';
-import { allAtlasKeysForVariant } from '../animation/textureAtlas';
+import { allAtlasKeysForVariant, ALL_ANIMATION_STATES } from '../animation/textureAtlas';
+import { getFrameCountForState } from '../animation/frameClock';
 import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
 import { drawHaggisBody } from '../animation/frameDrawers/haggisBodyDraw';
 import { CLASSIC_VARIANT } from '../art/palettes';
@@ -6793,9 +6794,8 @@ export class BootScene extends Phaser.Scene {
       const parts = key.split('_');
       const frame = Number(parts[parts.length - 1]);
       const state = parts.slice(2, -1).join('_') as AnimationState;
-      // Only bake idle + walking in Phase 0; others throw in drawHaggisFrame
-      // because they're not authored yet (Phase 1).
-      if (state !== 'idle' && state !== 'walking') continue;
+      // Skip states that drawHaggisFrame throws on (not yet authored).
+      if (state === 'celebrating' || state === 'dying') continue;
 
       const g = this.add.graphics();
       drawHaggisFrame(g, {
@@ -6812,16 +6812,20 @@ export class BootScene extends Phaser.Scene {
   private bakeAccessoryAtlas(): number {
     const startMs = performance.now();
     for (const drawer of Object.values(ACCESSORY_REGISTRY)) {
-      for (const state of drawer.authoredStates) {
-        const frameCount = state === 'idle' ? 2 : 4; // matches FrameClock authoring
+      const authored = new Set<AnimationState>(drawer.authoredStates);
+      for (const state of ALL_ANIMATION_STATES) {
+        const frameCount = getFrameCountForState(state);
         for (let frame = 0; frame < frameCount; frame++) {
           const g = this.add.graphics();
-          drawer.draw(g, {
-            variantPalette: CLASSIC_VARIANT,
-            state,
-            frame,
-          });
-          const key = `${drawer.id}_${state}_${frame}`; // accessory key format (no variant)
+          // Unauthored states fall back to the drawer's idle frame 0 —
+          // rigid accessories ride the head anchor without per-state
+          // motion. Authored states get their own beat.
+          if (authored.has(state)) {
+            drawer.draw(g, { variantPalette: CLASSIC_VARIANT, state, frame });
+          } else {
+            drawer.draw(g, { variantPalette: CLASSIC_VARIANT, state: 'idle', frame: 0 });
+          }
+          const key = `${drawer.id}_${state}_${frame}`;
           g.generateTexture(key, 80, 80);
           g.destroy();
         }

@@ -329,6 +329,11 @@ export class WeaponSystem {
   }
 
   private fireWeapon(w: ActiveWeapon, px: number, py: number): void {
+    // Animation trigger: the haggis pulses forward on any weapon fire.
+    // One-shot gating in AnimationController absorbs duplicate emits from
+    // multi-weapon frames — the next fire after the beat retriggers.
+    this.events.emit('weaponFired');
+
     // Evolved weapons use dramatically different behavior
     if (w.evolved) {
       this.fireEvolved(w, px, py);

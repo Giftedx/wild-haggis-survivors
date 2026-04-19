@@ -788,6 +788,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice.spawnTrail(x, y, pickTrailColor(wKey, evolved, Math.random()));
     });
 
+    // Body-pulse animation beat — any weapon fire flags the attacking
+    // one-shot on the player. AnimationController gates so a 167 ms
+    // beat completes before the next fire can retrigger it.
+    this.weaponSystem.events.on('weaponFired', () => {
+      this.player.notifyWeaponFired();
+    });
+
     // When player levels up, pause and show upgrade choices
     this.xpSystem.events.on('levelup', (newLevel: number) => {
       this.levelUpFlow.handleLevelUp(newLevel);
