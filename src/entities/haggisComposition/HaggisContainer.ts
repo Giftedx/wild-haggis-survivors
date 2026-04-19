@@ -31,7 +31,8 @@ export class HaggisContainer {
     private readonly anchor: Phaser.GameObjects.Sprite, // the Player body sprite
   ) {
     for (const slot of ['behind', 'body', 'front', 'above'] as HaggisLayerSlot[]) {
-      const sprite = this.scene.add.sprite(anchor.x, anchor.y, '');
+      const sprite = this.scene.add.sprite(anchor.x, anchor.y, '__DEFAULT');
+      sprite.setOrigin(0.5, 0.5);
       sprite.setVisible(false);
       sprite.setDepth(anchor.depth + HAGGIS_LAYER_DEPTHS[slot]);
       this.layers.set(slot, sprite);
@@ -60,6 +61,8 @@ export class HaggisContainer {
     const sprite = this.layers.get(slot);
     if (!sprite) throw new Error(`HaggisContainer: unknown layer slot ${slot}`);
     sprite.setTexture(textureKey);
+    // Re-assert origin + visible in case setTexture disturbed either.
+    sprite.setOrigin(0.5, 0.5);
     sprite.setVisible(true);
     return sprite;
   }
