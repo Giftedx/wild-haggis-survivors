@@ -20,6 +20,30 @@ export const HAGGIS_LAYER_DEPTHS: Readonly<Record<HaggisLayerSlot, number>> = {
   above: 2,
 };
 
+/**
+ * Per-variant body-shape y-offset for accessory anchoring. Positive values
+ * push accessories DOWN on the screen; negative values push them UP. The
+ * baseline is the classic haggis body (bodyW=44, bodyH=34, legBase=cy+11).
+ *
+ * Variants with a flatter or shorter body need accessories shifted upward
+ * so they still read as "worn on the belt / head" rather than floating.
+ * `iron_belly` is the only variant whose body geometry differs from the
+ * baseline (54×28 instead of 44×34, legs at cy+9 instead of cy+11), which
+ * lifts every body landmark by ~3 px. Accessories baked for the classic
+ * baseline need the same lift when applied to an iron_belly.
+ */
+const VARIANT_ACCESSORY_OFFSET_Y: Readonly<Record<string, number>> = {
+  iron_belly: -3,
+  // every other variant uses the baseline (offset 0) — omit to keep the
+  // table listing ONLY the exceptions.
+};
+
+/** Look up the y-offset for a variant. Unknown keys default to 0. */
+export function getAccessoryOffsetY(variantKey: string | null): number {
+  if (!variantKey) return 0;
+  return VARIANT_ACCESSORY_OFFSET_Y[variantKey] ?? 0;
+}
+
 interface AccessorySpriteEntry {
   readonly sprite: Phaser.GameObjects.Sprite;
   readonly slot: HaggisLayerSlot;
@@ -27,20 +51,26 @@ interface AccessorySpriteEntry {
 
 export class HaggisContainer {
   private readonly accessorySprites: Map<string, AccessorySpriteEntry> = new Map();
+  /** Cached per-variant offset, applied to every accessory sprite on sync. */
+  private accessoryOffsetY = 0;
 
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly anchor: Phaser.GameObjects.Sprite, // the Player body sprite
-  ) {}
+    variantKey: string | null = null,
+  ) {
+    this.accessoryOffsetY = getAccessoryOffsetY(variantKey);
+  }
 
   /**
    * Per-frame: move every accessory sprite to the anchor's current
-   * position and copy its rotation. Called from Player.update() after
-   * physics velocity application.
+   * position plus the variant-aware y offset, and copy rotation + scale.
+   * Called from Player.update() after physics velocity application.
    */
   syncToAnchor(): void {
+    const offsetY = this.accessoryOffsetY * this.anchor.scaleY;
     for (const { sprite } of this.accessorySprites.values()) {
-      sprite.setPosition(this.anchor.x, this.anchor.y);
+      sprite.setPosition(this.anchor.x, this.anchor.y + offsetY);
       sprite.setRotation(this.anchor.rotation);
       sprite.setScale(this.anchor.scaleX, this.anchor.scaleY);
     }

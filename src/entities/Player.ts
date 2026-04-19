@@ -245,7 +245,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       variant: variantKey,
     });
 
-    this.haggisContainer = new HaggisContainer(scene, this);
+    this.haggisContainer = new HaggisContainer(scene, this, variantKey);
 
     this.inputManager = inputSource ?? new InputManager(scene);
     this.time = timeManager;
