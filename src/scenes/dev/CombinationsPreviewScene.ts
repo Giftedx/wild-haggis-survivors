@@ -1,20 +1,27 @@
 /**
- * Dev-only Combinations Preview. Two sections of cells so every
- * accessory gets its own side-by-side idle + walking comparison, then
- * the full 9-stack build across every animation state for tuning.
+ * Dev-only Combinations Preview. Three sections:
+ *  1. Baseline classic haggis (bare + every accessory solo + full
+ *     9-stack across every state) for accessory placement tuning.
+ *  2. Every playable haggis variant (classic, moor_runner, iron_belly,
+ *     glen_forager, surefoot, pipe_breath, laird, wee_ghostie,
+ *     glaswegian) bare + full kit so breed silhouettes + their fit
+ *     under a full accessory build are visible at a glance.
  *
  * Cells render at 2× zoom with a subtle crosshair + bounding-box
  * outline so small placement issues (accessory clipping into the body,
  * drifting off the anchor on a specific frame) are visible at a glance.
  *
  * Navigation:
- *   ESC                → return to Game
- *   Mouse wheel        → scroll the grid
- *   ArrowUp / ArrowDn  → scroll the grid
+ *   ESC                 → return to Game
+ *   Mouse wheel         → scroll the grid
+ *   ArrowUp / ArrowDn   → scroll the grid
+ *   PageUp / PageDown   → scroll one viewport
  */
 
 import Phaser from 'phaser';
 import { getHaggisSpriteSize } from '../../animation/frameDrawers/haggisFrames';
+import { VARIANTS } from '../../data/variants';
+import type { VariantKey } from '../../data/variants';
 
 type CellState = 'idle' | 'walking' | 'attacking' | 'hurt';
 type AccessoryId =
@@ -52,6 +59,8 @@ interface Cell {
   readonly state: CellState;
   /** Which frame of the state's atlas to show. Default 0. */
   readonly frame?: number;
+  /** Which haggis variant's atlas to draw. Default 'classic'. */
+  readonly variant?: VariantKey;
 }
 
 function soloRow(id: AccessoryId): [Cell, Cell] {
@@ -61,26 +70,48 @@ function soloRow(id: AccessoryId): [Cell, Cell] {
   ];
 }
 
-const CELLS: Cell[] = [
-  // Baseline — bare haggis
-  { label: 'bare / idle', accessories: [], state: 'idle' },
-  { label: 'bare / walking', accessories: [], state: 'walking' },
-  // Each accessory on its own so positioning issues are obvious
-  ...soloRow('tam_o_shanter'),
-  ...soloRow('thistle_crown'),
-  ...soloRow('highland_shield'),
-  ...soloRow('kilt'),
-  ...soloRow('tartan_sash'),
-  ...soloRow('sporran'),
-  ...soloRow('whisky_flask'),
-  ...soloRow('irn_bru'),
-  ...soloRow('loch_water'),
-  // Full 9-stack across every state
-  { label: 'full / idle', accessories: LAYER_ORDER, state: 'idle' },
-  { label: 'full / walking', accessories: LAYER_ORDER, state: 'walking' },
-  { label: 'full / attacking f1', accessories: LAYER_ORDER, state: 'attacking', frame: 1 },
-  { label: 'full / hurt f0', accessories: LAYER_ORDER, state: 'hurt', frame: 0 },
-];
+function variantRow(key: VariantKey, displayName: string): [Cell, Cell] {
+  return [
+    { label: `${displayName} / bare`, accessories: [], state: 'idle', variant: key },
+    { label: `${displayName} / full`, accessories: LAYER_ORDER, state: 'idle', variant: key },
+  ];
+}
+
+function buildCells(): Cell[] {
+  const cells: Cell[] = [
+    // ── Section 1: classic haggis — baseline + accessory solos ──
+    { label: 'bare / idle', accessories: [], state: 'idle' },
+    { label: 'bare / walking', accessories: [], state: 'walking' },
+    ...soloRow('tam_o_shanter'),
+    ...soloRow('thistle_crown'),
+    ...soloRow('highland_shield'),
+    ...soloRow('kilt'),
+    ...soloRow('tartan_sash'),
+    ...soloRow('sporran'),
+    ...soloRow('whisky_flask'),
+    ...soloRow('irn_bru'),
+    ...soloRow('loch_water'),
+    // Full 9-stack across every state
+    { label: 'full / idle', accessories: LAYER_ORDER, state: 'idle' },
+    { label: 'full / walking', accessories: LAYER_ORDER, state: 'walking' },
+    { label: 'full / attacking f1', accessories: LAYER_ORDER, state: 'attacking', frame: 1 },
+    { label: 'full / hurt f0', accessories: LAYER_ORDER, state: 'hurt', frame: 0 },
+  ];
+
+  // ── Section 2: every playable haggis variant, bare + full kit ──
+  // Derived from VARIANTS so new variants automatically show up.
+  for (const v of VARIANTS) {
+    // Pull the human-readable name from the variant key — the nameKey
+    // is an i18n path, not a display string, so we humanise the key
+    // instead to avoid bringing an i18n runtime into a dev preview.
+    const display = v.key.replace(/_/g, ' ');
+    cells.push(...variantRow(v.key, display));
+  }
+
+  return cells;
+}
+
+const CELLS: Cell[] = buildCells();
 
 const ZOOM = 2;
 const CELL_W = 180;
@@ -106,10 +137,12 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       })
       .setScrollFactor(0);
     this.add
-      .text(20, 32, `${CELLS.length} cells — each accessory solo, then full stacks`, {
-        fontSize: '12px',
-        color: '#8a9a6b',
-      })
+      .text(
+        20,
+        32,
+        `${CELLS.length} cells — accessory solos, full stacks, and every variant`,
+        { fontSize: '12px', color: '#8a9a6b' },
+      )
       .setScrollFactor(0);
 
     const totalRows = Math.ceil(CELLS.length / COLS);
@@ -122,6 +155,7 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       const cellX = GRID_ORIGIN_X + col * CELL_W;
       const cellY = GRID_ORIGIN_Y + row * CELL_H;
       const frame = cell.frame ?? 0;
+      const variant = cell.variant ?? 'classic';
 
       // ── Cell chrome: background panel + label
       this.add.rectangle(
@@ -137,8 +171,6 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       const cy = cellY + CELL_H / 2 - 20;
 
       // Haggis-body silhouette reference rectangle (56×56 at zoom).
-      // Makes it visually obvious where the body "lives" vs where an
-      // accessory pokes out of it.
       const bodyW = size * spriteScale;
       this.add
         .rectangle(cx, cy, bodyW, bodyW, 0x000000, 0)
@@ -148,9 +180,9 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       this.add.line(0, 0, cx - 4, cy, cx + 4, cy, 0xff5566, 0.7).setOrigin(0);
       this.add.line(0, 0, cx, cy - 4, cx, cy + 4, 0xff5566, 0.7).setOrigin(0);
 
-      // ── Sprite stack: behind-layer accessories, then body, then
-      // body/front/above accessories in the declared layer order. Same
-      // ordering the live render path produces. ──
+      // ── Sprite stack: behind-layer accessories, then variant body,
+      // then body/front/above accessories in the declared layer order.
+      // Same ordering the live render path produces. ──
       const included = new Set(cell.accessories);
       const drawSprite = (key: string): void => {
         this.add.sprite(cx, cy, key).setScale(spriteScale);
@@ -162,7 +194,7 @@ export class CombinationsPreviewScene extends Phaser.Scene {
       if (included.has('highland_shield')) {
         drawSprite(`highland_shield_${cell.state}_${frame}`);
       }
-      drawSprite(`haggis_classic_${cell.state}_${frame}`);
+      drawSprite(`haggis_${variant}_${cell.state}_${frame}`);
       if (included.has('kilt')) {
         drawSprite(`kilt_${cell.state}_${frame}`);
       }
@@ -206,8 +238,11 @@ export class CombinationsPreviewScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-DOWN', () => scrollBy(60));
     this.input.keyboard?.on('keydown-PAGE_UP', () => scrollBy(-this.scale.height));
     this.input.keyboard?.on('keydown-PAGE_DOWN', () => scrollBy(this.scale.height));
-    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
-      scrollBy(dy);
-    });
+    this.input.on(
+      'wheel',
+      (_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
+        scrollBy(dy);
+      },
+    );
   }
 }
