@@ -1,5 +1,8 @@
 /**
- * `haggis_hunter` — human hunter in hi-viz gilet with a rifle across the chest. The one enemy that explicitly out-tools the player.
+ * `haggis_hunter` — obsessive rural man in a waxed Barbour + Harris
+ * Tweed flat cap, Swarovski binoculars round the neck, and a big
+ * haggis-net on a pole raised over the shoulder. The joke enemy that
+ * takes catching wild haggis as seriously as field sports.
  */
 
 import Phaser from 'phaser';

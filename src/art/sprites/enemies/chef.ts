@@ -62,12 +62,25 @@ export function bakeChef(scene: Phaser.Scene): void {
   g.fillRect(cx + 1, cy + 6, 1, 1);
 
   // === Arms (sleeves rolled up, beefy forearms — burns and all) ===
+  // Rolled sleeve cuffs — bridge the apron edge to the forearm so
+  // the arm doesn't read as a floating rectangle beside the body.
+  g.fillStyle(0xccccbb, 1);
+  g.fillRect(cx - 11, cy - 3, 3, 3);
+  g.fillRect(cx + 8, cy - 3, 3, 3);
+  g.fillStyle(0xeeeedd, 1);
+  g.fillRect(cx - 11, cy - 3, 3, 1);
+  g.fillRect(cx + 8, cy - 3, 3, 1);
+  // Cuff roll shadow
+  g.fillStyle(0x998877, 0.5);
+  g.fillRect(cx - 11, cy, 3, 1);
+  g.fillRect(cx + 8, cy, 3, 1);
+  // Forearm proper
   g.fillStyle(0xaa6644, 1);
-  g.fillRect(cx - 14, cy - 2, 4, 7);
-  g.fillRect(cx + 10, cy - 2, 4, 7);
+  g.fillRect(cx - 14, cy + 1, 4, 4);
+  g.fillRect(cx + 10, cy + 1, 4, 4);
   g.fillStyle(0xbb7755, 1);
-  g.fillRect(cx - 13, cy - 1, 2, 5);
-  g.fillRect(cx + 11, cy - 1, 2, 5);
+  g.fillRect(cx - 13, cy + 2, 2, 2);
+  g.fillRect(cx + 11, cy + 2, 2, 2);
   // Burn mark on forearm (kitchen hazard — tiny red mark)
   g.fillStyle(0xcc6644, 0.5);
   g.fillCircle(cx - 12, cy + 2, 0.7);

@@ -67,11 +67,25 @@ export function bakeTourist(scene: Phaser.Scene): void {
   g.fillRect(cx - 8, cy - 24, 16, 6);
   g.fillStyle(0xbb8855, 1);
   g.fillRect(cx - 7, cy - 23, 14, 5);
-  // Tartan check
-  g.fillStyle(0xcc3322, 0.7);
-  g.fillRect(cx - 7, cy - 21, 14, 1);
-  g.fillRect(cx - 3, cy - 23, 1, 5);
-  g.fillRect(cx + 3, cy - 23, 1, 5);
+  // Tartan crosshatch — proper check pattern, not just one red line.
+  // Two red horizontals frame top + middle of the crown.
+  g.fillStyle(0xcc3322, 0.75);
+  g.fillRect(cx - 7, cy - 22, 14, 1);
+  g.fillRect(cx - 7, cy - 20, 14, 1);
+  // Dark green verticals — the Black-Watch sett flavour.
+  g.fillStyle(0x2a4028, 0.7);
+  g.fillRect(cx - 5, cy - 23, 1, 5);
+  g.fillRect(cx + 4, cy - 23, 1, 5);
+  // Red verticals — intersect the horizontals to form classic check.
+  g.fillStyle(0xcc3322, 0.55);
+  g.fillRect(cx - 1, cy - 23, 1, 5);
+  g.fillRect(cx + 2, cy - 23, 1, 5);
+  // Cream pin-stripe accents — single pixel highlights at crossings.
+  g.fillStyle(0xf0e4c0, 0.6);
+  g.fillRect(cx - 5, cy - 22, 1, 1);
+  g.fillRect(cx + 4, cy - 22, 1, 1);
+  g.fillRect(cx - 1, cy - 20, 1, 1);
+  g.fillRect(cx + 2, cy - 20, 1, 1);
   // Sunburned ears poking below brim
   g.fillStyle(0xff7755, 1);
   g.fillCircle(cx - 10, cy - 16, 2);

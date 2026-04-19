@@ -26,9 +26,31 @@ export function bakeBuckfastNed(scene: Phaser.Scene): void {
   g.fillRect(cx - 7, cy - 6, 14, 14);
   g.fillStyle(0x1a2438, 1);
   g.fillRect(cx - 6, cy - 5, 12, 12);
+  // Adidas-style arm stripes — three thin white bands down the sleeves.
+  g.fillStyle(0xdcdcdc, 0.85);
+  g.fillRect(cx - 7, cy - 4, 1, 1);
+  g.fillRect(cx - 7, cy - 2, 1, 1);
+  g.fillRect(cx - 7, cy, 1, 1);
+  g.fillRect(cx + 7, cy - 4, 1, 1);
+  g.fillRect(cx + 7, cy - 2, 1, 1);
+  g.fillRect(cx + 7, cy, 1, 1);
   // White chest zip.
   g.fillStyle(0xdcdcdc, 0.7);
   g.fillRect(cx, cy - 5, 1, 11);
+  // Gold chain — heavy Sovereign-style link visible on the neckline.
+  // The chain is a V of tiny gold segments + a small pendant.
+  g.fillStyle(0xccaa22, 1);
+  g.fillRect(cx - 4, cy - 5, 1, 1);
+  g.fillRect(cx - 3, cy - 4, 1, 1);
+  g.fillRect(cx - 2, cy - 3, 1, 1);
+  g.fillRect(cx - 1, cy - 2, 1, 1);
+  g.fillRect(cx + 1, cy - 2, 1, 1);
+  g.fillRect(cx + 2, cy - 3, 1, 1);
+  g.fillRect(cx + 3, cy - 4, 1, 1);
+  g.fillRect(cx + 4, cy - 5, 1, 1);
+  // Pendant — single brighter gold dot at the V of the chain.
+  g.fillStyle(0xffdd44, 1);
+  g.fillRect(cx, cy - 1, 1, 1);
   // Hood shadow framing the face.
   g.fillStyle(0x050810, 1);
   g.fillEllipse(cx, cy - 10, 12, 8);
@@ -36,9 +58,17 @@ export function bakeBuckfastNed(scene: Phaser.Scene): void {
   // Pale gaunt face in the hood (sharp cheekbones, sunk eyes).
   g.fillStyle(0xd8b89a, 1);
   g.fillEllipse(cx, cy - 10, 8, 6);
+  // Cheekbone shadows — gaunt / hollow.
+  g.fillStyle(0x8a6a4a, 0.4);
+  g.fillRect(cx - 3, cy - 8, 2, 1);
+  g.fillRect(cx + 2, cy - 8, 2, 1);
   g.fillStyle(0x111111, 1);
   g.fillCircle(cx - 2, cy - 10, 0.8);
   g.fillCircle(cx + 2, cy - 10, 0.8);
+  // Dark under-eye circles — haunted ned stare.
+  g.fillStyle(0x6a4832, 0.6);
+  g.fillRect(cx - 3, cy - 9, 2, 1);
+  g.fillRect(cx + 2, cy - 9, 2, 1);
   // Thin scowl.
   g.lineStyle(0.8, 0x222222, 1);
   g.lineBetween(cx - 1, cy - 7, cx + 2, cy - 7);
