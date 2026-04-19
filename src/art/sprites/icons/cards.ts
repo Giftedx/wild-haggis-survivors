@@ -26,114 +26,175 @@ function cardIconBg(g: Phaser.GameObjects.Graphics, s: number, bgColor: number):
 //  PASSIVE CARD ICONS — culturally-loaded accessories
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * `ucard_sporran` — Highland sporran pickup icon. Design pivot: old
+ * icon read as "generic fur pouch" with no Scottish specificity at
+ * 32px. New pitch — proper sporran hanging FROM A KILT BELT (brown
+ * strap with brass buckle at top), ORNATE BRASS CANTLE plate with
+ * a thistle emblem across the top of the pouch, FUR POUCH BODY with
+ * visible tufts, and THREE LONG HORSE-HAIR TASSELS with brass caps
+ * hanging 60%+ of pouch height. Every anchor says "worn-as-kilt-
+ * accessory" rather than "leather bag".
+ */
 function drawSporran(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x3d2a20);
   const cx = 16, cy = 16;
-  g.fillStyle(0x8a7a6a, 1);
-  g.fillRect(cx - 8, cy - 6, 16, 4);
-  g.fillStyle(0xa09080, 1);
-  for (let i = 0; i < 8; i++) g.fillRect(cx - 7 + i * 2, cy - 6, 1, 3);
-  g.fillStyle(0x3a2210, 1);
-  g.fillEllipse(cx, cy + 2, 18, 14);
-  g.fillStyle(0x5a3a1a, 1);
-  g.fillEllipse(cx, cy + 2, 16, 12);
-  g.fillStyle(0x6a4a28, 1);
-  g.fillEllipse(cx - 2, cy, 10, 6);
-  g.fillStyle(0x888888, 1);
-  g.fillCircle(cx, cy - 1, 4);
-  g.fillStyle(0xcccccc, 1);
-  g.fillCircle(cx, cy - 1, 3);
-  g.fillStyle(0xd4a017, 1);
-  g.fillCircle(cx, cy - 1, 2);
-  g.fillStyle(0xffcc44, 1);
-  g.fillCircle(cx - 1, cy - 2, 0.8);
-  g.fillStyle(0x3a2210, 1);
-  g.fillRect(cx - 5, cy + 8, 2, 6);
-  g.fillRect(cx - 1, cy + 8, 2, 7);
-  g.fillRect(cx + 3, cy + 8, 2, 6);
-  g.fillStyle(0x5a3a1a, 1);
-  g.fillCircle(cx - 4, cy + 14, 1.5);
-  g.fillCircle(cx, cy + 15, 1.5);
-  g.fillCircle(cx + 4, cy + 14, 1.5);
+
+  // ── KILT BELT — brown strap across the top, establishes that
+  // this is worn at the waist. ──
+  g.fillStyle(0x1a0e06, 1);
+  g.fillRect(cx - 14, cy - 10, 28, 3);
+  g.fillStyle(0x3a2212, 1);
+  g.fillRect(cx - 14, cy - 10, 28, 1.5);
+  // Brass belt buckle at centre
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 2, cy - 10, 4, 3);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 2, cy - 10, 4, 1);
+
+  // ── BRASS CANTLE — ornate metal plate across the top of the
+  // pouch. Unmistakable "sporran" architectural detail. ──
+  g.fillStyle(0x5a3810, 1);
+  g.fillRect(cx - 10, cy - 7, 20, 4);
+  g.fillStyle(0xc8a848, 1);
+  g.fillRect(cx - 9, cy - 7, 18, 3);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillRect(cx - 9, cy - 7, 18, 0.8);
+  // THISTLE emblem centred on the cantle — Scottish anchor
+  g.fillStyle(0x4a1a6a, 1);
+  g.fillCircle(cx, cy - 5.5, 1.3);
+  g.fillStyle(0x2a5a14, 1);
+  g.fillRect(cx - 0.5, cy - 4.5, 1, 1);
+  g.fillStyle(0x6a2a9a, 1);
+  g.fillCircle(cx - 0.2, cy - 5.8, 0.6);
+
+  // ── FUR POUCH BODY — dark brown with visible tufts. Taller
+  // and more rectangular than a generic oval. ──
+  g.fillStyle(0x1a0e06, 1);
+  g.fillRoundedRect(cx - 9, cy - 3, 18, 13, 3);
+  g.fillStyle(0x3a2212, 1);
+  g.fillRoundedRect(cx - 8, cy - 2, 16, 11, 2.5);
+  // Fur tufts — short vertical strokes showing hair texture
+  g.fillStyle(0x5a3212, 0.95);
+  for (let i = 0; i < 14; i++) {
+    g.fillRect(cx - 7 + i, cy - 1.5 + (i % 3) * 0.6, 0.6, 2.2);
+  }
+  // Lower shadow on the pouch (weight hangs down)
+  g.fillStyle(0x0a0604, 0.55);
+  g.fillRect(cx - 8, cy + 5, 16, 4);
+
+  // ── THREE LONG HORSE-HAIR TASSELS — the signature silhouette
+  // tell. Each has a brass cap at the top + dark horsehair body
+  // + splayed fringe at the tip. Hang well below the pouch. ──
+  const tasselXs = [cx - 5, cx, cx + 5];
+  for (const tx of tasselXs) {
+    // Brass cap at top
+    g.fillStyle(0xc8a848, 1);
+    g.fillRect(tx - 1.3, cy + 9, 2.6, 1.5);
+    g.fillStyle(0xfadc6a, 1);
+    g.fillRect(tx - 1.3, cy + 9, 2.6, 0.5);
+    // Tassel body — dark horsehair column
+    g.fillStyle(0x1a0e06, 1);
+    g.fillRect(tx - 1, cy + 10.5, 2, 3.5);
+    g.fillStyle(0x3a2010, 1);
+    g.fillRect(tx - 0.5, cy + 10.5, 1, 3.5);
+    // Splayed fringe strands at the tip
+    g.fillStyle(0x1a0e06, 1);
+    g.fillRect(tx - 1.6, cy + 14, 0.6, 1.8);
+    g.fillRect(tx - 0.3, cy + 14, 0.6, 1.8);
+    g.fillRect(tx + 1, cy + 14, 0.6, 1.8);
+  }
+
   g.generateTexture('ucard_sporran', s, s);
   g.destroy();
 }
 
 /**
- * `ucard_whisky_flask` — hip flask pickup icon. Design pivot: old
- * grey metal rectangle with orange liquid puddle read as "radio" or
- * "hip pouch". New pitch — proper CURVED HIP-FLASK silhouette
- * (classic kidney-bean shape with screw-cap neck on top), polished
- * pewter body with tartan label strip across the middle for the
- * Scottish anchor. Screw-cap with chain is unmistakable.
+ * `ucard_whisky_flask` — hip flask pickup icon. Design pivot (v2):
+ * old icon had tartan label too thin + amber porthole too small to
+ * read as "Scottish whisky" at 32px. New pitch — classic hip-flask
+ * silhouette with a BIG AMBER WINDOW occupying the lower 2/3 of
+ * the body (glass-panel flask showing the golden contents), tartan
+ * label band across the SHOULDER (Royal Stewart red + green + gold),
+ * and a bright gold whisky meniscus line. The amber glow is now
+ * the dominant colour tell — "this is whisky, not a generic flask".
  */
 function drawWhiskyFlask(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x332211);
   const cx = 16, cy = 16;
 
-  // ── Screw cap on top — the unmistakable flask-top tell. ──
+  // ── Screw cap on top — tapered brass flask cap. ──
   g.fillStyle(0x1a1008, 1);
   g.fillRect(cx - 3, cy - 12, 6, 3);
   g.fillStyle(0x5a3818, 1);
   g.fillRect(cx - 3, cy - 12, 6, 2);
   g.fillStyle(0x8a6028, 1);
-  g.fillRect(cx - 3, cy - 12, 6, 0.8);
+  g.fillRect(cx - 2.5, cy - 12, 5, 0.6);
   // Cap ridges
   g.fillStyle(0x1a1008, 1);
   g.fillRect(cx - 3, cy - 11, 6, 0.4);
   g.fillRect(cx - 3, cy - 10.3, 6, 0.4);
 
-  // ── Flask neck — narrower column between cap and body. ──
+  // ── Flask neck — narrow column between cap and body. ──
   g.fillStyle(0x2a2a32, 1);
   g.fillRect(cx - 2, cy - 9, 4, 3);
   g.fillStyle(0x6a6a72, 1);
   g.fillRect(cx - 2, cy - 9, 4, 1);
 
-  // ── MAIN FLASK BODY — classic kidney/hip-flask curve. Rounded
-  // rect with pinched waist. ──
-  // Outline
+  // ── FLASK BODY — classic kidney-bean hip-flask curve. Pewter
+  // outer shell acts as a frame around the amber window. ──
   g.fillStyle(0x0a0a12, 1);
   g.fillRoundedRect(cx - 9, cy - 6, 18, 18, 5);
-  // Body — polished pewter
-  g.fillStyle(0x6a6a78, 1);
+  g.fillStyle(0x5a5a68, 1);
   g.fillRoundedRect(cx - 8, cy - 5, 16, 16, 4);
-  g.fillStyle(0x8a8a98, 1);
-  g.fillRoundedRect(cx - 8, cy - 5, 16, 8, 4);
-  // Bright sheen strip down the left
-  g.fillStyle(0xbabac8, 1);
-  g.fillRect(cx - 7, cy - 4, 2, 14);
-  g.fillStyle(0xdcdce8, 0.85);
-  g.fillRect(cx - 7, cy - 4, 1, 14);
 
-  // ── TARTAN LABEL — wraps across the centre of the flask. Red +
-  // dark-green + gold = Royal Stewart palette, the Scottish anchor. ──
+  // ── BIG AMBER WHISKY WINDOW — occupies the lower 2/3 of the
+  // flask. Glass panel showing the golden contents. This is the
+  // dominant silhouette tell — the icon reads "whisky" at a glance. ──
+  g.fillStyle(0x3a1a04, 1);
+  g.fillRoundedRect(cx - 6, cy - 2, 12, 11, 2);
+  g.fillStyle(0xa06818, 1);
+  g.fillRoundedRect(cx - 5.5, cy - 1.5, 11, 10, 1.8);
+  g.fillStyle(0xd88a28, 1);
+  g.fillRoundedRect(cx - 5.5, cy - 1.5, 11, 7, 1.8);
+  g.fillStyle(0xf8b040, 1);
+  g.fillRoundedRect(cx - 5.5, cy - 1.5, 11, 3.5, 1.8);
+  // Bright amber highlight — sells the glow
+  g.fillStyle(0xffd878, 0.92);
+  g.fillRect(cx - 4, cy, 3, 6);
+  g.fillStyle(0xfff0c0, 0.9);
+  g.fillRect(cx - 4, cy, 1.5, 6);
+  // Whisky meniscus — gold surface line
+  g.fillStyle(0xfff0c0, 0.85);
+  g.fillRect(cx - 5, cy - 1, 10, 0.6);
+
+  // ── TARTAN LABEL BAND — wraps across the SHOULDER of the flask
+  // above the amber window. Royal Stewart red + dark green + gold. ──
+  g.fillStyle(0x0a0000, 1);
+  g.fillRect(cx - 9, cy - 6, 18, 3);
   g.fillStyle(0x8a1818, 1);
-  g.fillRect(cx - 9, cy, 18, 5);
-  // Dark crossbars
-  g.fillStyle(0x2a0a0a, 0.9);
-  g.fillRect(cx - 9, cy + 1.5, 18, 0.6);
-  g.fillRect(cx - 9, cy + 3.5, 18, 0.6);
-  // Vertical gold stripes
+  g.fillRect(cx - 9, cy - 5.5, 18, 2.5);
+  // Dark green crossbar
+  g.fillStyle(0x0a3018, 0.9);
+  g.fillRect(cx - 9, cy - 4.6, 18, 0.8);
+  // Gold vertical stripes
   g.fillStyle(0xdaaa40, 1);
-  g.fillRect(cx - 5, cy, 0.8, 5);
-  g.fillRect(cx + 3, cy, 0.8, 5);
-  // Dark green tiny stripe
-  g.fillStyle(0x1a4818, 1);
-  g.fillRect(cx - 1, cy, 0.8, 5);
+  g.fillRect(cx - 6, cy - 5.5, 0.6, 2.5);
+  g.fillRect(cx + 1, cy - 5.5, 0.6, 2.5);
+  g.fillRect(cx + 5, cy - 5.5, 0.6, 2.5);
+  // Cream highlight line
+  g.fillStyle(0xf0e8c8, 0.7);
+  g.fillRect(cx - 8, cy - 5.3, 16, 0.3);
 
-  // ── Amber whisky visible through a small window in the body
-  // above the label — tiny glass porthole so the "whisky" anchor
-  // isn't hidden. ──
-  g.fillStyle(0x4a2808, 1);
-  g.fillEllipse(cx + 4, cy - 2, 5, 3);
-  g.fillStyle(0xc8781a, 1);
-  g.fillEllipse(cx + 4, cy - 2, 4, 2.2);
-  g.fillStyle(0xffb060, 0.9);
-  g.fillCircle(cx + 3.3, cy - 2.5, 0.8);
+  // ── Pewter sheen highlight on the left edge of the flask. ──
+  g.fillStyle(0xbabac8, 0.8);
+  g.fillRect(cx - 7, cy - 3, 0.8, 14);
+  g.fillStyle(0xdcdce8, 0.85);
+  g.fillRect(cx - 7.5, cy - 3, 0.4, 14);
 
-  // ── Small chain linking the cap to the body. ──
+  // ── Small chain linking cap to body. ──
   g.lineStyle(0.7, 0x6a6a72, 1);
   g.lineBetween(cx + 3, cy - 11, cx + 7, cy - 6);
 
@@ -207,34 +268,73 @@ function drawTamOShanter(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_irn_bru` — Scottish health drink icon. Design pivot: old
+ * icon had a thin blue stripe on an orange bottle — read as "any
+ * generic orange soda" because the Scottish anchor was too faint
+ * at 32px. New pitch — clear bottle full of ORANGE Irn-Bru with a
+ * BOLD BLUE LABEL featuring a WHITE SALTIRE (Scottish flag cross)
+ * and yellow trim stripes. Blue + yellow + orange = unmistakable
+ * Irn-Bru brand palette; the saltire locks in "Scottish".
+ */
 function drawIrnBru(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x44220f);
   const cx = 16;
-  g.fillStyle(0x336633, 0.8);
-  g.fillRect(cx - 2, 5, 4, 5);
-  g.fillStyle(0x448844, 0.6);
-  g.fillRect(cx - 1, 6, 2, 3);
-  g.fillStyle(0xddaa00, 1);
+
+  // ── Bottle cap — dark blue with yellow rim (Irn-Bru brand). ──
+  g.fillStyle(0x0a1a44, 1);
+  g.fillRect(cx - 3, 4, 6, 4);
+  g.fillStyle(0x2244aa, 1);
   g.fillRect(cx - 3, 4, 6, 3);
-  g.fillStyle(0xffcc33, 1);
-  g.fillRect(cx - 2, 5, 4, 1);
-  g.fillStyle(0x224422, 1);
+  g.fillStyle(0xffcc22, 1);
+  g.fillRect(cx - 3, 7, 6, 1);
+  // Cap ridges
+  g.fillStyle(0x0a1a44, 1);
+  g.fillRect(cx - 3, 5, 6, 0.4);
+  g.fillRect(cx - 3, 6, 6, 0.4);
+
+  // ── Bottle neck. ──
+  g.fillStyle(0x0a0a12, 1);
+  g.fillRect(cx - 2, 8, 4, 2);
+
+  // ── BOTTLE BODY outline + ORANGE IRN-BRU liquid. The orange
+  // is the dominant tell. ──
+  g.fillStyle(0x1a0a00, 1);
   g.fillRoundedRect(cx - 7, 10, 14, 16, 3);
-  g.fillStyle(0xdd6600, 1);
+  g.fillStyle(0xdd5500, 1);
   g.fillRoundedRect(cx - 6, 11, 12, 14, 2);
-  g.fillStyle(0xff8811, 1);
-  g.fillRoundedRect(cx - 5, 12, 10, 12, 2);
-  g.fillStyle(0xffaa33, 0.7);
-  g.fillRect(cx - 3, 14, 4, 8);
-  g.fillStyle(0xffcc66, 0.4);
-  g.fillRect(cx - 2, 15, 2, 6);
-  g.fillStyle(0x1144aa, 1);
-  g.fillRect(cx - 6, 17, 12, 4);
-  g.fillStyle(0x2266cc, 1);
-  g.fillRect(cx - 5, 18, 10, 2);
-  g.fillStyle(0xffffff, 0.2);
-  g.fillRect(cx - 5, 12, 2, 12);
+  g.fillStyle(0xff7711, 1);
+  g.fillRoundedRect(cx - 6, 12, 12, 12, 2);
+  g.fillStyle(0xff9933, 1);
+  g.fillRoundedRect(cx - 5, 12, 10, 10, 1.5);
+  // Orange fizz highlight
+  g.fillStyle(0xffbb55, 0.85);
+  g.fillRect(cx - 3, 13, 3, 8);
+  g.fillStyle(0xffdd88, 0.55);
+  g.fillRect(cx - 2, 14, 2, 7);
+
+  // ── BLUE LABEL BAND with WHITE SALTIRE — the Scottish-flag
+  // anchor. Unmistakable Irn-Bru + Scotland. ──
+  g.fillStyle(0x0a0a2a, 1);
+  g.fillRect(cx - 7, 15.5, 14, 8);
+  g.fillStyle(0x1a3a88, 1);
+  g.fillRect(cx - 7, 16, 14, 7);
+  // WHITE SALTIRE — two diagonals crossing
+  g.lineStyle(1.6, 0xffffff, 1);
+  g.lineBetween(cx - 6, 16.5, cx + 6, 22.5);
+  g.lineBetween(cx + 6, 16.5, cx - 6, 22.5);
+  // Yellow trim stripes top + bottom of label
+  g.fillStyle(0xffcc22, 1);
+  g.fillRect(cx - 7, 15.5, 14, 0.6);
+  g.fillRect(cx - 7, 22.8, 14, 0.6);
+
+  // ── Glass sheen highlight. ──
+  g.fillStyle(0xffffff, 0.3);
+  g.fillRect(cx - 6, 12, 1.5, 13);
+  g.fillStyle(0xffffff, 0.15);
+  g.fillRect(cx - 5, 12, 0.8, 13);
+
   g.generateTexture('ucard_irn_bru', s, s);
   g.destroy();
 }
@@ -510,99 +610,155 @@ function drawStatSpeed(scene: Phaser.Scene): void {
   g.destroy();
 }
 
+/**
+ * `ucard_stat_pickup` — pickup-range stat icon. Design pivot: old
+ * icon had a magnet + flying gem + trail dots competing for attention
+ * so the "pickup range" concept got diluted. New pitch — BIG BOLD
+ * horseshoe magnet dominates the upper 2/3 of the icon, 3 BRIGHTER
+ * concentric cyan field arcs radiating from the pole opening, and a
+ * SINGLE bright sparkle-star at the bottom as the "pull target". No
+ * clutter — the magnet silhouette carries the meaning.
+ */
 function drawStatPickup(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x243a22);
-  const cx = 16, cy = 16;
+  const cx = 16, cy = 15;
 
-  // ── Horseshoe magnet — the universal "pickup range" icon.
-  // Classic red body + white pole tips. Drawn facing down-right
-  // so an incoming XP gem can fly toward the opening. ──
-  // Magnet body shadow
-  g.fillStyle(0x441010, 1);
-  g.fillRect(cx - 9, cy - 10, 16, 4);
-  g.fillRect(cx - 9, cy - 10, 4, 12);
-  g.fillRect(cx + 3, cy - 10, 4, 12);
-  // Magnet red body
-  g.fillStyle(0xcc2222, 1);
-  g.fillRect(cx - 8, cy - 9, 14, 3);
-  g.fillRect(cx - 8, cy - 9, 3, 10);
-  g.fillRect(cx + 4, cy - 9, 3, 10);
-  // Magnet red highlight
-  g.fillStyle(0xee5544, 1);
-  g.fillRect(cx - 7, cy - 9, 12, 1);
-  g.fillRect(cx - 7, cy - 8, 1, 8);
-  g.fillRect(cx + 5, cy - 8, 1, 8);
+  // ── HORSESHOE MAGNET — bigger and bolder than before. Red body
+  // + white pole tips. The dominant silhouette. ──
+  // Outline shadow
+  g.fillStyle(0x2a0808, 1);
+  g.fillRect(cx - 10, cy - 10, 20, 5);
+  g.fillRect(cx - 10, cy - 10, 5, 14);
+  g.fillRect(cx + 5, cy - 10, 5, 14);
 
-  // ── White pole tips at the open end (classic horseshoe-magnet
-  // detail — shows which ends attract). ──
-  g.fillStyle(0xf0f0e0, 1);
-  g.fillRect(cx - 8, cy + 1, 3, 2);
-  g.fillRect(cx + 4, cy + 1, 3, 2);
+  // Red magnet body
+  g.fillStyle(0xaa0a0a, 1);
+  g.fillRect(cx - 9, cy - 9, 18, 4);
+  g.fillRect(cx - 9, cy - 9, 4, 12);
+  g.fillRect(cx + 5, cy - 9, 4, 12);
+  g.fillStyle(0xdd2222, 1);
+  g.fillRect(cx - 9, cy - 9, 18, 3);
+  g.fillRect(cx - 9, cy - 9, 3, 11);
+  g.fillRect(cx + 6, cy - 9, 3, 11);
+  // Highlight
+  g.fillStyle(0xff5544, 1);
+  g.fillRect(cx - 8, cy - 9, 16, 1);
+  g.fillRect(cx - 8, cy - 8, 1, 9);
+  g.fillRect(cx + 7, cy - 8, 1, 9);
+
+  // ── WHITE POLE TIPS at the open end — classic horseshoe detail. ──
+  g.fillStyle(0xeaeae0, 1);
+  g.fillRect(cx - 9, cy + 3, 4, 3);
+  g.fillRect(cx + 5, cy + 3, 4, 3);
   g.fillStyle(0xffffff, 1);
-  g.fillRect(cx - 8, cy + 1, 3, 1);
-  g.fillRect(cx + 4, cy + 1, 3, 1);
+  g.fillRect(cx - 9, cy + 3, 4, 1);
+  g.fillRect(cx + 5, cy + 3, 4, 1);
 
-  // ── Magnetic field arcs — three glowing cyan arcs radiating
-  // from the pole tips, selling the "pulling items in" fantasy. ──
-  g.lineStyle(1, 0x66ddff, 0.7);
+  // ── MAGNETIC FIELD ARCS — three concentric cyan arcs radiating
+  // from the pole opening. Brighter + bolder than before. ──
+  g.lineStyle(1.5, 0x66ddff, 0.9);
   g.beginPath();
-  g.arc(cx - 6.5, cy + 4, 3, -Math.PI * 0.1, Math.PI * 0.6);
+  g.arc(cx, cy + 6, 4, Math.PI * 1.0, Math.PI * 2.0);
   g.strokePath();
+  g.lineStyle(1.2, 0x88eeff, 0.75);
   g.beginPath();
-  g.arc(cx + 5.5, cy + 4, 3, Math.PI * 0.4, Math.PI * 1.1);
+  g.arc(cx, cy + 6, 7, Math.PI * 1.0, Math.PI * 2.0);
   g.strokePath();
-  g.lineStyle(0.8, 0x88eeff, 0.5);
+  g.lineStyle(1.0, 0xaaf0ff, 0.55);
   g.beginPath();
-  g.arc(cx - 6.5, cy + 4, 5, -Math.PI * 0.1, Math.PI * 0.6);
-  g.strokePath();
-  g.beginPath();
-  g.arc(cx + 5.5, cy + 4, 5, Math.PI * 0.4, Math.PI * 1.1);
+  g.arc(cx, cy + 6, 10, Math.PI * 1.0, Math.PI * 2.0);
   g.strokePath();
 
-  // ── Incoming XP gem — green diamond being pulled toward the
-  // magnet. Classic "item flying in" beat. ──
-  g.fillStyle(0x3a7a2a, 1);
-  g.fillTriangle(cx, cy + 9, cx - 3, cy + 11, cx, cy + 13);
-  g.fillTriangle(cx, cy + 9, cx + 3, cy + 11, cx, cy + 13);
-  g.fillStyle(0x6adc4a, 1);
-  g.fillTriangle(cx, cy + 9.5, cx - 2, cy + 11, cx, cy + 12.5);
-  g.fillTriangle(cx, cy + 9.5, cx + 2, cy + 11, cx, cy + 12.5);
-  g.fillStyle(0xaaffaa, 0.9);
-  g.fillCircle(cx - 0.5, cy + 10.5, 0.8);
-
-  // ── Motion streak behind the gem — short trail dots showing
-  // it's being yanked toward the magnet. ──
-  g.fillStyle(0xaaffaa, 0.55);
-  g.fillCircle(cx, cy + 14, 0.6);
-  g.fillCircle(cx, cy + 15, 0.4);
+  // ── PULL-TARGET SPARKLE — single bright 4-point star at the
+  // bottom. Sells "thing being drawn toward the magnet" without
+  // the clutter of a gem + trail. ──
+  g.fillStyle(0xffffff, 1);
+  g.fillRect(cx - 0.6, cy + 11, 1.2, 4.5);
+  g.fillRect(cx - 2.2, cy + 12.5, 4.5, 1.2);
+  g.fillStyle(0xccf4ff, 1);
+  g.fillCircle(cx, cy + 13, 1.2);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx, cy + 13, 0.6);
 
   g.generateTexture('ucard_stat_pickup', s, s);
   g.destroy();
 }
 
+/**
+ * `ucard_stat_damage` — damage-boost stat icon. Design pivot: old
+ * icon used subtle diagonal rect-pillars as sword slashes that
+ * read as generic motion lines at 16×16. New pitch — TWO CROSSED
+ * BROADSWORD BLADES behind a big CENTRAL DAMAGE BURST. Blades form
+ * an X silhouette (combat crest); explosion at centre screams "hit".
+ * Flame wisps radiate from the core for impact-energy readability.
+ */
 function drawStatDamage(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x3c2318);
   const cx = 16, cy = 16;
-  g.fillStyle(0x667788, 1);
-  for (let i = 0; i < 18; i++) g.fillRect(5 + i, 5 + i, 3, 2);
-  g.fillStyle(0x99aabb, 1);
-  for (let i = 0; i < 16; i++) g.fillRect(6 + i, 6 + i, 2, 1);
-  g.fillStyle(0x667788, 1);
-  for (let i = 0; i < 18; i++) g.fillRect(24 - i, 5 + i, 3, 2);
-  g.fillStyle(0x99aabb, 1);
-  for (let i = 0; i < 16; i++) g.fillRect(24 - i, 6 + i, 2, 1);
-  g.fillStyle(0xcc8833, 1);
-  g.fillRect(cx - 1, cy - 3, 6, 2);
-  g.fillStyle(0xcc8833, 1);
-  g.fillRect(cx - 5, cy - 1, 6, 2);
-  g.fillStyle(0xffaa44, 1);
-  g.fillCircle(cx, cy, 3);
+
+  // ── CROSSED BROADSWORD BLADES — X-shape behind the burst. ──
+  // Sword 1: top-left to bottom-right
+  g.fillStyle(0x0a0a0a, 1);
+  g.fillTriangle(4, 4, 7, 4, 28, 28);
+  g.fillTriangle(4, 4, 28, 28, 28, 25);
+  g.fillStyle(0x6a7a8a, 1);
+  g.fillTriangle(5, 5, 7, 5, 27, 27);
+  g.fillTriangle(5, 5, 27, 27, 27, 25);
+  g.fillStyle(0xa8b8c8, 1);
+  g.fillTriangle(5, 5, 6, 5, 27, 27);
+
+  // Sword 2: top-right to bottom-left (mirror)
+  g.fillStyle(0x0a0a0a, 1);
+  g.fillTriangle(28, 4, 25, 4, 4, 28);
+  g.fillTriangle(28, 4, 4, 28, 4, 25);
+  g.fillStyle(0x6a7a8a, 1);
+  g.fillTriangle(27, 5, 25, 5, 5, 27);
+  g.fillTriangle(27, 5, 5, 27, 5, 25);
+  g.fillStyle(0xa8b8c8, 1);
+  g.fillTriangle(27, 5, 26, 5, 5, 27);
+
+  // ── Crossguards — brass horizontal bars where blade meets grip. ──
+  g.fillStyle(0x0a0a0a, 1);
+  g.fillRect(22, 21, 8, 2.5);
+  g.fillRect(2, 21, 8, 2.5);
+  g.fillStyle(0xc88a40, 1);
+  g.fillRect(23, 21.5, 6, 1.5);
+  g.fillRect(3, 21.5, 6, 1.5);
+
+  // ── Grips — leather-wrapped bars. ──
+  g.fillStyle(0x3a1a0a, 1);
+  g.fillRect(28, 23, 3, 2.5);
+  g.fillRect(1, 23, 3, 2.5);
+
+  // ── Pommels — round brass caps at the grip ends. ──
+  g.fillStyle(0xc88a40, 1);
+  g.fillCircle(30.5, 25, 1.5);
+  g.fillCircle(1.5, 25, 1.5);
+  g.fillStyle(0xfadc6a, 1);
+  g.fillCircle(30.5, 25, 0.8);
+  g.fillCircle(1.5, 25, 0.8);
+
+  // ── CENTRAL DAMAGE BURST — orange explosion with hot core. ──
+  g.fillStyle(0xff6a10, 0.65);
+  g.fillCircle(cx, cy, 7);
+  g.fillStyle(0xff8a20, 1);
+  g.fillCircle(cx, cy, 5);
+  g.fillStyle(0xffaa40, 1);
+  g.fillCircle(cx, cy, 3.5);
   g.fillStyle(0xffdd88, 1);
-  g.fillCircle(cx, cy, 1.5);
-  g.fillStyle(0xffffff, 0.6);
-  g.fillCircle(cx, cy, 0.8);
+  g.fillCircle(cx, cy, 2);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx, cy, 0.9);
+
+  // ── FLAME WISPS radiating from the core — 4 cardinal + 4 diagonal. ──
+  g.fillStyle(0xff8a20, 0.85);
+  g.fillTriangle(cx, cy - 8, cx - 1.2, cy - 4, cx + 1.2, cy - 4);
+  g.fillTriangle(cx, cy + 8, cx - 1.2, cy + 4, cx + 1.2, cy + 4);
+  g.fillTriangle(cx - 8, cy, cx - 4, cy - 1.2, cx - 4, cy + 1.2);
+  g.fillTriangle(cx + 8, cy, cx + 4, cy - 1.2, cx + 4, cy + 1.2);
+
   g.generateTexture('ucard_stat_damage', s, s);
   g.destroy();
 }

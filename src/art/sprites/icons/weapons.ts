@@ -98,89 +98,103 @@ function drawThistleShotIcon(scene: Phaser.Scene): void {
 }
 
 /**
- * `wicon_caber_toss` — caber-toss weapon icon. Design pivot: old
- * icon was a horizontal log reading as "stick" with no toss-motion
- * language. New pitch: DIAGONAL CABER mid-flip from lower-left to
- * upper-right with bold MOTION ARC curving underneath it + speed
- * lines trailing + a small Highland Games hand silhouette at the
- * bottom having just thrown it. The arc + diagonal angle says
- * "TOSS" instantly — this is not a log, it's a log IN FLIGHT.
+ * `wicon_caber_toss` — caber-toss weapon icon. Design pivot (v2):
+ * old icon had a thin pole + tiny thrower that could read as "any
+ * thrown stick" rather than specifically a CABER (Highland Games
+ * telephone-pole log). New pitch: MASSIVELY thicker pole (thickness
+ * 6 vs 4.5), BIG visible end-grain ring at the top tip (radius 4.5
+ * with concentric tree rings), and a CHUNKY thrower silhouette at
+ * the bottom with muscular arm + tartan wrist cuff. The mass of
+ * the pole + the release pose lock in "Highland Games caber toss".
  */
 function drawCaberTossIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // ── Motion arc — curved dotted trail from lower-left hand up to
-  // the flying caber tip. Gives unmistakable toss direction. ──
+  // ── MOTION ARC — curved dotted trail from lower-left hand up to
+  // the flying caber tip. ──
   const arcPoints: [number, number, number, number][] = [
-    // [x, y, radius, alpha]
-    [cx - 12, cy + 11, 0.9, 0.9],
-    [cx - 10, cy + 7, 0.9, 0.8],
-    [cx - 7, cy + 3, 1, 0.7],
-    [cx - 3, cy, 1, 0.6],
-    [cx, cy - 3, 1.1, 0.5],
-    [cx + 4, cy - 5, 1.1, 0.4],
-    [cx + 8, cy - 6, 1.1, 0.3],
+    [cx - 12, cy + 11, 1.0, 0.9],
+    [cx - 10, cy + 7, 1.0, 0.8],
+    [cx - 7, cy + 3, 1.1, 0.7],
+    [cx - 3, cy, 1.1, 0.6],
+    [cx, cy - 3, 1.2, 0.5],
+    [cx + 4, cy - 5, 1.2, 0.4],
+    [cx + 8, cy - 6, 1.2, 0.3],
   ];
   for (const [x, y, r, a] of arcPoints) {
     g.fillStyle(0xe8d8a0, a);
     g.fillCircle(x, y, r);
   }
 
-  // ── Speed lines — three trailing white streaks behind the caber. ──
-  g.fillStyle(0xffffff, 0.85);
-  g.fillRect(cx - 11, cy - 10, 4, 0.7);
-  g.fillRect(cx - 13, cy - 8, 3, 0.7);
-  g.fillRect(cx - 9, cy - 13, 3, 0.7);
+  // ── Speed lines — bolder white streaks behind the caber. ──
+  g.fillStyle(0xffffff, 0.95);
+  g.fillRect(cx - 11, cy - 10, 5, 1);
+  g.fillRect(cx - 13, cy - 8, 4, 1);
+  g.fillRect(cx - 9, cy - 13, 4, 1);
 
-  // ── CABER — thick wooden pole angled diagonally from lower-left
-  // to upper-right. Drawn as an overlapping series so it tapers
-  // slightly toward the cut end. ──
-  // Dark outline
+  // ── CABER POLE — THICK diagonal wooden pole, dominates the
+  // icon. Thickness 6 outline + 5 body = massive silhouette. ──
   g.fillStyle(0x0a0604, 1);
-  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 4.5);
-  // Main wood
+  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 6);
   g.fillStyle(0x6a3818, 1);
-  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 3.5);
-  // Wood grain highlight (upper edge catches light)
-  g.fillStyle(0xa0682a, 0.85);
-  drawThickDiagonal(g, cx - 5.5, cy + 1.5, cx + 11.5, cy - 12.5, 1.2);
-  // Grain lines
-  g.fillStyle(0x3a2010, 0.7);
-  g.fillRect(cx - 4, cy + 1, 1, 0.4);
-  g.fillRect(cx + 0, cy - 3, 1, 0.4);
-  g.fillRect(cx + 5, cy - 7, 1, 0.4);
-  g.fillRect(cx + 9, cy - 10, 1, 0.4);
+  drawThickDiagonal(g, cx - 6, cy + 2, cx + 12, cy - 12, 5);
+  // Upper-edge wood-grain highlight
+  g.fillStyle(0xa0682a, 0.9);
+  drawThickDiagonal(g, cx - 5.5, cy + 1.5, cx + 11.5, cy - 12.5, 2);
+  // Grain lines along the pole
+  g.fillStyle(0x3a2010, 0.8);
+  g.fillRect(cx - 4, cy + 1, 1.5, 0.5);
+  g.fillRect(cx + 0, cy - 3, 1.5, 0.5);
+  g.fillRect(cx + 5, cy - 7, 1.5, 0.5);
+  g.fillRect(cx + 9, cy - 10, 1.5, 0.5);
 
-  // ── Cut end-grain ring at the top tip — the heavy end of the
-  // caber that lands first. ──
+  // ── BIG END-GRAIN RING at the top tip — radius 4.5, tree rings
+  // visible. The "freshly-cut tree trunk" anchor. ──
   g.fillStyle(0x0a0604, 1);
-  g.fillCircle(cx + 12, cy - 12, 3);
+  g.fillCircle(cx + 12, cy - 12, 4.5);
   g.fillStyle(0x8a5020, 1);
-  g.fillCircle(cx + 12, cy - 12, 2.3);
+  g.fillCircle(cx + 12, cy - 12, 3.5);
   g.fillStyle(0xa0682a, 1);
-  g.fillCircle(cx + 12, cy - 12, 1.5);
-  // Tree rings
-  g.lineStyle(0.5, 0x3a2010, 0.8);
+  g.fillCircle(cx + 12, cy - 12, 2.5);
+  // Concentric tree rings
+  g.lineStyle(0.7, 0x3a2010, 0.95);
+  g.strokeCircle(cx + 12, cy - 12, 2.8);
   g.strokeCircle(cx + 12, cy - 12, 1.8);
-  g.strokeCircle(cx + 12, cy - 12, 1);
+  g.strokeCircle(cx + 12, cy - 12, 0.9);
 
-  // ── Jagged bottom end — where the Scotsman grabbed it. ──
+  // ── Jagged bottom end where the Scotsman's grip split the bark. ──
   g.fillStyle(0x0a0604, 1);
-  g.fillTriangle(cx - 6, cy + 2, cx - 8, cy + 4, cx - 5, cy + 3);
+  g.fillTriangle(cx - 6, cy + 2, cx - 9, cy + 5, cx - 4, cy + 4);
+  g.fillStyle(0x3a2010, 0.85);
+  g.fillRect(cx - 7, cy + 3, 2, 0.5);
 
-  // ── HIGHLAND GAMES HAND silhouette at the bottom-left — small,
-  // having just released the caber. Shoulder + raised fist. ──
+  // ── HIGHLAND GAMES THROWER — chunky silhouette at the bottom-
+  // left. Shoulder + raised arm + fist + TARTAN WRIST CUFF. The
+  // pose reads "just released the caber". ──
   // Shoulder blob
   g.fillStyle(0x1a0a08, 1);
-  g.fillCircle(cx - 13, cy + 13, 3);
-  // Raised fist holding the release position
+  g.fillCircle(cx - 13, cy + 13, 4.5);
+  g.fillStyle(0x3a1a18, 1);
+  g.fillCircle(cx - 13, cy + 13, 3.5);
+  // Arm stub reaching up toward the caber
   g.fillStyle(0xd8a878, 1);
-  g.fillCircle(cx - 11, cy + 10, 1.8);
-  // Wrist cuff (competitor's tartan armband)
+  g.fillRect(cx - 12, cy + 9, 2.5, 4);
+  g.fillStyle(0xeac090, 1);
+  g.fillRect(cx - 12, cy + 9, 1.5, 4);
+  // Raised fist
+  g.fillStyle(0xd8a878, 1);
+  g.fillCircle(cx - 11, cy + 8, 2.8);
+  g.fillStyle(0xeac090, 1);
+  g.fillCircle(cx - 11, cy + 8, 2);
+  // TARTAN WRIST CUFF — signature Scottish detail
   g.fillStyle(0x8a1818, 1);
-  g.fillRect(cx - 12, cy + 11, 3, 1);
+  g.fillRect(cx - 12.5, cy + 10, 4, 1.5);
+  g.fillStyle(0x0a3018, 1);
+  g.fillRect(cx - 12.5, cy + 10.5, 4, 0.5);
+  g.fillStyle(0xdaaa40, 0.9);
+  g.fillRect(cx - 11, cy + 10, 0.4, 1.5);
 
   g.generateTexture('wicon_caber_toss', s, s);
   g.destroy();
@@ -201,61 +215,93 @@ function drawThickDiagonal(g: Phaser.GameObjects.Graphics, x1: number, y1: numbe
 }
 
 /**
- * `wicon_haggis_hurler` — throwing-weapon icon. Design pivot: old
- * icon was a dense brown blob at 32px with no motion language, so
- * read as "circle" not "weapon-in-flight". New pitch — SINGLE
- * compact haggis ball offset to the lower-right + prominent MOTION
- * ARC trailing up-left with speed lines + hand silhouette mid-throw
- * implied by the arc's tail. Silhouette says "I am being hurled".
+ * `wicon_haggis_hurler` — throwing-weapon icon. Design pivot (v2):
+ * old icon had a round ball with motion arc but the ball itself
+ * read as "any sports sphere" — no haggis-specific tells. New pitch
+ * — haggis ball with STITCHED SEAM across the middle (natural
+ * casing sewing with cream cross-stitch marks), TARTAN BUTCHER'S
+ * WRAPPER tied at the top (Royal Stewart red/green), and TEARDROP
+ * OAT FLECKS instead of round dots. The seam + wrapper + oat
+ * pattern lock in "traditional Scottish haggis" specifically.
  */
 function drawHaggisHurlerIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = 16, cy = 16;
 
-  // Motion arc — curved dotted trail from upper-left to lower-right
-  // where the ball is. Gives direction + speed.
+  // ── Motion arc — curved trail from upper-left to the ball. ──
   g.fillStyle(0xeaddb0, 0.9);
-  g.fillCircle(cx - 10, cy - 10, 1);
+  g.fillCircle(cx - 10, cy - 10, 1.2);
   g.fillStyle(0xeaddb0, 0.75);
-  g.fillCircle(cx - 7, cy - 8, 1.1);
+  g.fillCircle(cx - 7, cy - 8, 1.3);
   g.fillStyle(0xeaddb0, 0.6);
-  g.fillCircle(cx - 4, cy - 5, 1.2);
+  g.fillCircle(cx - 4, cy - 5, 1.4);
   g.fillStyle(0xeaddb0, 0.45);
-  g.fillCircle(cx - 1, cy - 2, 1.3);
+  g.fillCircle(cx - 1, cy - 2, 1.5);
 
-  // Speed lines — three sharp white streaks behind the ball
+  // ── Speed lines — sharp white streaks. ──
   g.fillStyle(0xffffff, 0.9);
-  g.fillRect(cx - 14, cy - 12, 4, 0.8);
-  g.fillRect(cx - 13, cy - 9, 3, 0.8);
-  g.fillRect(cx - 15, cy - 6, 4, 0.8);
+  g.fillRect(cx - 14, cy - 12, 4, 1);
+  g.fillRect(cx - 13, cy - 9, 3, 1);
+  g.fillRect(cx - 15, cy - 6, 4, 1);
 
-  // Haggis ball — bigger, offset lower-right, clear silhouette
+  // ── HAGGIS BALL — oval silhouette offset lower-right. Natural
+  // casing texture with visible seam. ──
   g.fillStyle(0x1a0e04, 1);
-  g.fillCircle(cx + 4, cy + 4, 9);
-  g.fillCircle(cx + 5, cy + 5, 8);
-  // Main body
+  g.fillEllipse(cx + 4, cy + 4, 18, 16);
+  // Deep brown casing
   g.fillStyle(0x4a3008, 1);
-  g.fillCircle(cx + 4, cy + 4, 8);
+  g.fillEllipse(cx + 4, cy + 4, 16, 14);
   g.fillStyle(0x6a4a10, 1);
-  g.fillCircle(cx + 3, cy + 3, 6.5);
-  g.fillStyle(0x8a6020, 0.8);
-  g.fillCircle(cx + 2, cy + 2, 4);
+  g.fillEllipse(cx + 3, cy + 3, 14, 12);
+  // Upper-left highlight
+  g.fillStyle(0x8a6020, 0.85);
+  g.fillEllipse(cx + 1, cy + 1, 8, 6);
 
-  // Oat specks (texture) — kept minimal, not cluttering
-  g.fillStyle(0xc8a848, 0.9);
-  g.fillCircle(cx + 2, cy + 4, 0.8);
-  g.fillCircle(cx + 5, cy + 6, 0.8);
-  g.fillCircle(cx + 1, cy + 1, 0.7);
-  g.fillStyle(0x2a1806, 0.7);
-  g.fillCircle(cx + 5, cy + 2, 0.7);
-  g.fillCircle(cx + 3, cy + 6, 0.6);
+  // ── STITCHED SEAM across the middle — natural casing sewing.
+  // Dark thread line + cream cross-stitch marks. Unmistakable
+  // haggis tell. ──
+  g.fillStyle(0x0a0604, 1);
+  g.fillRect(cx - 2, cy + 4, 12, 0.8);
+  // Cream cross-stitch dots along the seam
+  g.fillStyle(0xc8a848, 1);
+  for (let i = 0; i < 6; i++) {
+    const sx = cx - 1 + i * 2;
+    g.fillRect(sx - 0.3, cy + 3.5, 0.6, 0.6);
+    g.fillRect(sx - 0.3, cy + 4.3, 0.6, 0.6);
+  }
 
-  // Specular highlight — bright pop so the ball reads as 3D
+  // ── TARTAN BUTCHER'S WRAPPER tied at the top — small red/green
+  // striped cap. Royal Stewart anchor makes it unmistakably
+  // Scottish haggis, not a generic food ball. ──
+  g.fillStyle(0x0a0000, 1);
+  g.fillRect(cx, cy - 4, 7, 2.8);
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx, cy - 3.8, 7, 2.2);
+  g.fillStyle(0x0a3018, 1);
+  g.fillRect(cx, cy - 3, 7, 0.6);
+  g.fillStyle(0xdaaa40, 1);
+  g.fillRect(cx + 2, cy - 3.8, 0.5, 2.2);
+  g.fillRect(cx + 5, cy - 3.8, 0.5, 2.2);
+  // Wrapper tail — little flag
+  g.fillStyle(0x6a1212, 1);
+  g.fillTriangle(cx + 7, cy - 4, cx + 9, cy - 3.5, cx + 7, cy - 2);
+
+  // ── TEARDROP OAT FLECKS — bigger, varied. Signals "stuffed
+  // with oats" clearly. ──
+  g.fillStyle(0xc8a848, 1);
+  g.fillEllipse(cx + 1, cy + 7, 1.6, 0.9);
+  g.fillEllipse(cx + 6, cy + 7, 1.2, 0.7);
+  g.fillEllipse(cx + 3, cy + 9, 1.4, 0.8);
+  g.fillStyle(0xf0d880, 0.85);
+  g.fillEllipse(cx + 1, cy + 7, 0.9, 0.5);
+  g.fillEllipse(cx + 3, cy + 9, 0.8, 0.4);
+
+  // ── Specular highlight — ball reads 3D. ──
   g.fillStyle(0xfff0c8, 1);
-  g.fillCircle(cx, cy, 1.3);
+  g.fillCircle(cx - 1, cy, 1.3);
   g.fillStyle(0xffffff, 0.9);
-  g.fillCircle(cx - 0.3, cy - 0.3, 0.6);
+  g.fillCircle(cx - 1.3, cy - 0.3, 0.6);
 
   g.generateTexture('wicon_haggis_hurler', s, s);
   g.destroy();
@@ -482,85 +528,105 @@ function drawBagpipesUtilityIcon(scene: Phaser.Scene): void {
 }
 
 /**
- * `wicon_scotch_mist` — poisonous cloud icon. Design pivot: old
- * icon was overlapping grey circles that merged into noise. New
- * pitch — dominant DROPLET-SHAPE mist cloud silhouette with a
- * visible SKULL face inside (hollow eye sockets + grin) so the
- * icon reads "THIS MIST KILLS YOU", not "weather". Green toxic
- * tint instead of flat grey so it pops against the HUD.
+ * `wicon_scotch_mist` — poisonous cloud icon. Design pivot (v2):
+ * old icon had the skull face buried inside a bulbous cloud that
+ * dominated over the death-tell. New pitch — SKULL IS THE THING.
+ * Bigger bone-white skull dominates the centre (radius 7 up from
+ * 5), with mist wisps framing the corners and horizontal drift
+ * tendrils selling "hanging poisonous mist" behind the skull. The
+ * green toxic tint stays but now supports the skull, not buries it.
  */
 function drawScotchMistIcon(scene: Phaser.Scene): void {
   const s = 32;
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // Outer toxic glow — sickly green halo
-  g.fillStyle(0x4a7a4a, 0.25);
-  g.fillCircle(cx, cy, 15);
-  g.fillStyle(0x5a8a5a, 0.18);
-  g.fillCircle(cx, cy, 13);
+  // ── Outer toxic halo — sickly green glow. ──
+  g.fillStyle(0x4a7a4a, 0.22);
+  g.fillCircle(cx, cy, 14);
+  g.fillStyle(0x5a8a5a, 0.15);
+  g.fillCircle(cx, cy, 16);
 
-  // Mist cloud — bulbous droplet shape. Dark teal base.
-  g.fillStyle(0x2a3a3a, 1);
-  g.fillCircle(cx - 6, cy + 2, 7);
-  g.fillCircle(cx + 6, cy + 2, 7);
-  g.fillCircle(cx, cy - 3, 8);
-  g.fillCircle(cx, cy + 6, 6);
-  // Mid-tone cloud body
-  g.fillStyle(0x4a6a6a, 1);
-  g.fillCircle(cx - 5, cy + 1, 6);
-  g.fillCircle(cx + 5, cy + 1, 6);
-  g.fillCircle(cx, cy - 2, 7);
-  g.fillCircle(cx, cy + 5, 5);
-  // Lighter outer mist
-  g.fillStyle(0x6a8a7a, 0.9);
-  g.fillCircle(cx - 4, cy, 5);
-  g.fillCircle(cx + 4, cy, 5);
-  g.fillCircle(cx, cy - 1, 6);
-  // Top highlight
-  g.fillStyle(0x9ababa, 0.8);
-  g.fillCircle(cx, cy - 3, 3.5);
-  g.fillCircle(cx - 3, cy - 2, 2.5);
-  g.fillCircle(cx + 3, cy - 2, 2.5);
+  // ── MIST WISPS FRAMING THE SKULL — smaller clumps at the four
+  // corners so the skull centre dominates. ──
+  g.fillStyle(0x3a5a50, 0.85);
+  g.fillCircle(cx - 10, cy - 6, 4);
+  g.fillCircle(cx + 10, cy - 6, 4);
+  g.fillCircle(cx - 9, cy + 8, 4);
+  g.fillCircle(cx + 9, cy + 8, 4);
+  g.fillStyle(0x4a7a6a, 0.85);
+  g.fillCircle(cx - 9, cy - 5, 3.5);
+  g.fillCircle(cx + 9, cy - 5, 3.5);
+  g.fillCircle(cx - 8, cy + 7, 3.5);
+  g.fillCircle(cx + 8, cy + 7, 3.5);
+  g.fillStyle(0x6a9a8a, 0.8);
+  g.fillCircle(cx - 8, cy - 5, 2.5);
+  g.fillCircle(cx + 8, cy - 5, 2.5);
+  g.fillCircle(cx - 7, cy + 7, 2.5);
+  g.fillCircle(cx + 7, cy + 7, 2.5);
 
-  // SKULL face inside the mist — the anchor that says "death cloud"
-  // Skull base (pale)
+  // ── HORIZONTAL DRIFT TENDRILS behind the skull — sells the
+  // "hanging mist" mood without competing with the skull. ──
+  g.fillStyle(0x5a8a7a, 0.65);
+  g.fillRect(cx - 12, cy - 4, 24, 1);
+  g.fillStyle(0x6a9a8a, 0.55);
+  g.fillRect(cx - 13, cy + 5, 26, 1);
+  g.fillStyle(0x8abaaa, 0.5);
+  g.fillRect(cx - 14, cy, 28, 0.8);
+
+  // ── BIG SKULL FACE — the lethal anchor. Bone-pale, now large
+  // enough to dominate the icon. ──
+  g.fillStyle(0x0a1a14, 1);
+  g.fillCircle(cx, cy - 1, 8);
   g.fillStyle(0xd0dcc8, 1);
-  g.fillCircle(cx, cy, 5);
+  g.fillCircle(cx, cy - 1, 7);
   g.fillStyle(0xe8f0dc, 1);
-  g.fillCircle(cx - 0.5, cy - 0.5, 4.2);
-  // Skull jaw — slight taper
+  g.fillCircle(cx - 1, cy - 2, 6);
+  // Jaw taper
   g.fillStyle(0xc0ccb8, 1);
-  g.fillRect(cx - 2, cy + 3, 4, 2);
+  g.fillRect(cx - 3, cy + 5, 6, 2.5);
+  g.fillStyle(0xd0dcc8, 1);
+  g.fillRect(cx - 2.5, cy + 5, 5, 2);
+  // Cranium ridge shading
+  g.fillStyle(0xb0bca8, 0.7);
+  g.fillRect(cx - 5, cy - 7, 10, 1.5);
 
-  // Hollow eye sockets — BIG dark ovals
-  g.fillStyle(0x0a1a14, 1);
-  g.fillEllipse(cx - 2, cy - 1, 2.5, 2);
-  g.fillEllipse(cx + 2, cy - 1, 2.5, 2);
-  // Glowing green inside sockets
+  // ── HOLLOW EYE SOCKETS — big dark ovals with glowing toxic
+  // green centres. The kill-tell. ──
+  g.fillStyle(0x0a1a10, 1);
+  g.fillEllipse(cx - 2.8, cy - 1.5, 3.5, 3);
+  g.fillEllipse(cx + 2.8, cy - 1.5, 3.5, 3);
   g.fillStyle(0x50dd70, 1);
-  g.fillCircle(cx - 2, cy - 1, 0.8);
-  g.fillCircle(cx + 2, cy - 1, 0.8);
+  g.fillCircle(cx - 2.8, cy - 1.5, 1.2);
+  g.fillCircle(cx + 2.8, cy - 1.5, 1.2);
+  g.fillStyle(0xa8f8c0, 1);
+  g.fillCircle(cx - 2.8, cy - 1.7, 0.5);
+  g.fillCircle(cx + 2.8, cy - 1.7, 0.5);
 
-  // Nose gap — triangular dark hole
-  g.fillStyle(0x0a1a14, 1);
-  g.fillTriangle(cx, cy + 1, cx - 0.8, cy + 2.5, cx + 0.8, cy + 2.5);
+  // ── Nose gap — dark triangle hole. ──
+  g.fillStyle(0x0a1a10, 1);
+  g.fillTriangle(cx, cy + 1.5, cx - 1.2, cy + 3.5, cx + 1.2, cy + 3.5);
 
-  // Grinning teeth — small white rectangles
+  // ── Grinning teeth — 5 white rectangles along the jaw. ──
   g.fillStyle(0xf4f8e8, 1);
-  g.fillRect(cx - 2, cy + 3.5, 0.7, 1);
-  g.fillRect(cx - 1, cy + 3.5, 0.7, 1);
-  g.fillRect(cx, cy + 3.5, 0.7, 1);
-  g.fillRect(cx + 1, cy + 3.5, 0.7, 1);
+  g.fillRect(cx - 3, cy + 5, 0.9, 1.5);
+  g.fillRect(cx - 1.7, cy + 5, 0.9, 1.5);
+  g.fillRect(cx - 0.4, cy + 5, 0.9, 1.5);
+  g.fillRect(cx + 0.9, cy + 5, 0.9, 1.5);
+  g.fillRect(cx + 2.2, cy + 5, 0.9, 1.5);
+  // Tooth gap shadows
+  g.fillStyle(0x1a2a1a, 0.6);
+  g.fillRect(cx - 2.1, cy + 5, 0.4, 1.5);
+  g.fillRect(cx - 0.8, cy + 5, 0.4, 1.5);
+  g.fillRect(cx + 0.5, cy + 5, 0.4, 1.5);
+  g.fillRect(cx + 1.8, cy + 5, 0.4, 1.5);
 
-  // Outer mist wisps drifting off the cloud
-  g.fillStyle(0x9abaaa, 0.5);
-  g.fillCircle(cx - 12, cy, 1.5);
-  g.fillCircle(cx + 12, cy, 1.5);
-  g.fillCircle(cx, cy + 11, 1.5);
-  g.fillStyle(0xcadacc, 0.35);
-  g.fillCircle(cx - 14, cy - 2, 1);
-  g.fillCircle(cx + 14, cy - 2, 1);
+  // ── Toxic fume wisps rising from the top of the skull. ──
+  g.fillStyle(0x88c8a0, 0.7);
+  g.fillCircle(cx - 3, cy - 12, 1.2);
+  g.fillCircle(cx + 3, cy - 13, 1);
+  g.fillStyle(0xa0d8b8, 0.5);
+  g.fillCircle(cx, cy - 15, 0.8);
 
   g.generateTexture('wicon_scotch_mist', s, s);
   g.destroy();
