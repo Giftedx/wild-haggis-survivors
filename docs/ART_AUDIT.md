@@ -215,7 +215,8 @@ Open issues tracked in plan `2026-04-19-art-audit-and-asset-refactor.md`:
 
 - [x] Check if `boss` texture is still referenced; delete if dead. → removed in this audit commit.
 - [x] Re-verify `piper` + `sheep` — both are already bar-setting on close inspection.
-- [ ] Weapon-icon sweep.
-- [ ] Card-icon sweep.
-- [ ] `deep_fryer` bubbling polish.
-- [ ] Variant-aware accessory offsets (Phase-0 follow-up).
+- [x] Weapon-icon sweep. → Highland Games + The Haar given evolution halos to match siblings.
+- [x] Card-icon sweep. → already consistent via shared `cardIconBg` helper; color variation is thematic per card and reads as a family at game scale.
+- [x] `deep_fryer` bubbling polish. → re-inspected P3 during sweep, no change needed.
+- [x] Variant-aware accessory offsets (Phase-0 follow-up). → iron_belly -3px shipped.
+- [x] `pipe_breath` pipe-stem clash with hats. → pipe bowl removed, redesigned as pure breath wisps.
