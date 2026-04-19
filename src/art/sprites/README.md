@@ -87,8 +87,8 @@ Every legacy `generateTexture` call from the old 6840-line BootScene now lives u
 | pickups/ | 5 | 4 | xp_gem, chest, health_orb, reliquary |
 | icons/weapons.ts | 1 | 15 | all `wicon_*` consolidated |
 | icons/cards.ts | 1 | 18 | all `ucard_*` consolidated |
-| enemies.ts | 1 | 31 | all non-boss enemies + hazard + `deep_fryer` |
-| bosses.ts | 1 | 5 | gordon, tour_bus, laird, hunter_general, taxman |
+| enemies/ | 32 | 31 | one file per enemy + hazard `deep_fryer`; `index.ts` chains them |
+| bosses/ | 6 | 5 | gordon, tour_bus, laird, hunter_general, taxman; `index.ts` chains them |
 
 `BootScene.ts`: **6840 → 336 lines (−95%)**. What remains is only scene lifecycle (boot splash, atlas bakes, sprite-export bail, quickplay shortcut).
 
