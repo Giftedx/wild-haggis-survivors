@@ -1,10 +1,14 @@
 /**
  * `ceilidh_caller` — academic apparition who calls the dance from
- * beyond. Design pivot: the CALLING POSE must dominate — one arm
- * raised HIGH overhead with a visible baton, body leaning in mid-spin,
- * robes flared wide to show motion. A burst of music-note sparkles
- * radiates from the baton tip. Dropped the subtle hand pinprick (it
- * vanished at gameplay scale) for a bold forearm + baton silhouette.
+ * beyond. Design pivot (v2): prior icon was academic robes + gold
+ * sash + raised baton — read "generic conductor", no Scottish or
+ * ceilidh-specific anchor. Academic robes alone don't separate from
+ * orchestra conductor. New pitch: keep the robes + raised-arm calling
+ * pose, but add MORTARBOARD (academic anchor), TARTAN SASH diagonal
+ * across the chest (Highland dress anchor), FIDDLE BOW in the raised
+ * hand (ceilidh music anchor — not a conductor's baton), and OPEN
+ * SHOUTING MOUTH (mid-call). The stack of specific tells — Scottish
+ * + academic + music-call — now lands in the silhouette.
  */
 
 import Phaser from 'phaser';
@@ -14,115 +18,158 @@ export function bakeCeilidhCaller(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // ── Soft violet halo. ──
-  g.fillStyle(0xb090d0, 0.2);
+  // Soft violet halo — academic apparition glow
+  g.fillStyle(0xb090d0, 0.22);
   g.fillEllipse(cx, cy, 24, 26);
-  g.fillStyle(0xb090d0, 0.1);
+  g.fillStyle(0xb090d0, 0.12);
   g.fillEllipse(cx, cy, 30, 32);
 
-  // ── Long robes — flared WIDE to show mid-spin motion. Asymmetric
-  // so one side sweeps further than the other. ──
-  g.fillStyle(0x2a1a48, 0.9);
-  g.fillTriangle(cx - 12, cy + 14, cx + 10, cy + 14, cx + 4, cy - 1);
-  g.fillTriangle(cx - 12, cy + 14, cx - 4, cy - 1, cx + 4, cy - 1);
+  // Long academic robes — flared slightly for calling motion
+  g.fillStyle(0x1a0828, 1);
+  g.fillTriangle(cx - 12, cy + 14, cx + 12, cy + 14, cx, cy - 2);
+  g.fillStyle(0x2a1a48, 1);
+  g.fillTriangle(cx - 11, cy + 13, cx + 11, cy + 13, cx, cy - 1);
   g.fillStyle(0x4a3068, 1);
-  g.fillTriangle(cx - 10, cy + 13, cx + 9, cy + 13, cx + 3, cy);
-  g.fillTriangle(cx - 10, cy + 13, cx - 3, cy, cx + 3, cy);
-  // Swirl highlight — bright lavender streak on the leading edge
-  g.fillStyle(0x9878c8, 0.7);
-  g.fillTriangle(cx - 11, cy + 12, cx - 4, cy + 3, cx - 7, cy + 8);
-  g.fillStyle(0xb890d8, 0.5);
-  g.fillTriangle(cx - 8, cy + 10, cx - 3, cy + 4, cx - 5, cy + 7);
+  g.fillTriangle(cx - 9, cy + 12, cx + 9, cy + 12, cx, cy);
 
-  // ── Gold sash at the waist — brighter to pop at small scale. ──
-  g.fillStyle(0xffd080, 1);
-  g.fillRect(cx - 8, cy + 1, 16, 1.5);
-  g.fillStyle(0xffeca0, 0.85);
-  g.fillRect(cx - 8, cy + 1, 16, 0.5);
+  // TARTAN SASH — RED+GREEN diagonal across chest (Highland anchor).
+  // From left shoulder down to right hip. Bold — this is the Scottish
+  // tell that separates from generic conductor.
+  g.fillStyle(0x5a0808, 1);
+  g.fillTriangle(cx - 7, cy - 3, cx - 5, cy - 3, cx + 6, cy + 8);
+  g.fillTriangle(cx - 5, cy - 3, cx + 6, cy + 8, cx + 8, cy + 8);
+  g.fillStyle(0xaa1818, 1);
+  g.fillTriangle(cx - 6.5, cy - 3, cx - 5.5, cy - 3, cx + 6.5, cy + 7.5);
+  g.fillTriangle(cx - 5.5, cy - 3, cx + 6.5, cy + 7.5, cx + 7.5, cy + 7.5);
+  // Green pinstripes on the sash (tartan cross-weave)
+  g.fillStyle(0x2a6a28, 1);
+  g.fillRect(cx - 5, cy - 2, 1, 1);
+  g.fillRect(cx - 2, cy + 1, 1, 1);
+  g.fillRect(cx + 1, cy + 4, 1, 1);
+  g.fillRect(cx + 4, cy + 7, 1, 1);
+  // Yellow pinstripes
+  g.fillStyle(0xffdd55, 0.9);
+  g.fillRect(cx - 3, cy - 1, 0.5, 0.5);
+  g.fillRect(cx, cy + 2, 0.5, 0.5);
+  g.fillRect(cx + 3, cy + 5, 0.5, 0.5);
 
-  // ── Torso — leaning slightly to suggest spin. ──
-  g.fillStyle(0x3a2055, 1);
-  g.fillEllipse(cx, cy - 3, 11, 8);
-  g.fillStyle(0x4e3070, 0.8);
-  g.fillEllipse(cx - 1, cy - 4, 8, 6);
+  // Gold belt at waist
+  g.fillStyle(0xaa7a10, 1);
+  g.fillRect(cx - 8, cy + 4, 16, 1.5);
+  g.fillStyle(0xffdd55, 1);
+  g.fillRect(cx - 8, cy + 4, 16, 0.6);
 
-  // ── Head — pale, slightly larger than before. ──
-  g.fillStyle(0xe0c8e8, 0.95);
-  g.fillEllipse(cx, cy - 10, 7, 8);
-  // Hair — dark, pulled back into a bun
+  // Torso — under the sash
+  g.fillStyle(0x2a1a44, 1);
+  g.fillEllipse(cx, cy - 1, 11, 8);
+
+  // Head — pale ghost-blue, slightly larger
   g.fillStyle(0x1a0a28, 1);
-  g.fillEllipse(cx, cy - 14, 6, 3);
-  g.fillCircle(cx + 4, cy - 13, 1.5);
-  // Hair fringe detail
-  g.fillStyle(0x2a1a3a, 1);
-  g.fillRect(cx - 3, cy - 12, 6, 1);
-
-  // ── Eyes — alert, commanding. ──
-  g.fillStyle(0x1a0a28, 1);
-  g.fillRect(cx - 2, cy - 10, 1.5, 1);
-  g.fillRect(cx + 0.5, cy - 10, 1.5, 1);
-  // Eye glint — violet pinprick
+  g.fillEllipse(cx, cy - 9, 8, 9);
   g.fillStyle(0xccaadd, 1);
-  g.fillRect(cx - 1.5, cy - 10, 0.5, 0.5);
-  g.fillRect(cx + 1, cy - 10, 0.5, 0.5);
-  // Open-mouth (mid-call)
-  g.fillStyle(0x2a1048, 1);
-  g.fillRect(cx - 1, cy - 6, 3, 1.5);
+  g.fillEllipse(cx, cy - 9, 7, 8);
 
-  // ── RAISED ARM — bold forearm going up-right, ending in a fist
-  // gripping a BATON held high overhead. This is the signature
-  // pose and must dominate. ──
+  // MORTARBOARD — flat academic cap (black diamond slab on top of head)
+  // This is the academic anchor.
+  g.fillStyle(0x050510, 1);
+  g.fillRect(cx - 8, cy - 13, 16, 2);
+  g.fillStyle(0x1a1028, 1);
+  g.fillRect(cx - 8, cy - 12.5, 16, 1);
+  // Cap crown (small rounded top)
+  g.fillStyle(0x050510, 1);
+  g.fillRect(cx - 4, cy - 15, 8, 3);
+  g.fillStyle(0x1a1028, 1);
+  g.fillRect(cx - 4, cy - 14.5, 8, 1);
+  // Mortarboard TASSEL — gold hanging off right corner
+  g.fillStyle(0xaa7a10, 1);
+  g.fillRect(cx + 7, cy - 13, 0.8, 4);
+  g.fillStyle(0xffdd55, 1);
+  g.fillRect(cx + 7, cy - 13, 0.4, 4);
+  // Tassel puff
+  g.fillStyle(0xffdd55, 1);
+  g.fillCircle(cx + 7.4, cy - 8.5, 1);
+  g.fillStyle(0xffeeaa, 0.9);
+  g.fillCircle(cx + 7.4, cy - 8.5, 0.5);
+
+  // Eyes — commanding violet glow
+  g.fillStyle(0x1a0a28, 1);
+  g.fillRect(cx - 2.5, cy - 10, 1.5, 1);
+  g.fillRect(cx + 1, cy - 10, 1.5, 1);
+  g.fillStyle(0xccaadd, 1);
+  g.fillRect(cx - 2, cy - 10, 0.5, 0.5);
+  g.fillRect(cx + 1.5, cy - 10, 0.5, 0.5);
+
+  // OPEN SHOUTING MOUTH — vertical black oval, mid-call. The caller
+  // is mid-bellow ("CROSS HANDS WITH YOUR PARTNER!").
+  g.fillStyle(0x0a0410, 1);
+  g.fillEllipse(cx, cy - 6, 1.8, 2.5);
+  g.fillStyle(0x1a0a28, 1);
+  g.fillEllipse(cx, cy - 6, 1.2, 1.8);
+  // Teeth glint
+  g.fillStyle(0xddccee, 0.85);
+  g.fillRect(cx - 0.8, cy - 6.5, 1.6, 0.4);
+
+  // Academic moustache — thin grey
+  g.fillStyle(0xaaa0c0, 1);
+  g.fillRect(cx - 2, cy - 7.5, 4, 0.8);
+
+  // RAISED ARM — bold forearm going up-right, ending in a fist
+  // gripping a FIDDLE BOW held high (not a conductor's baton).
   // Shoulder
-  g.fillStyle(0x3a2055, 1);
-  g.fillRect(cx + 3, cy - 5, 3, 2);
-  // Upper arm — angled up-right
-  g.fillStyle(0x3a2055, 1);
-  g.fillRect(cx + 4, cy - 9, 3, 4);
+  g.fillStyle(0x2a1a44, 1);
+  g.fillRect(cx + 3, cy - 4, 3, 2);
+  // Upper arm
+  g.fillRect(cx + 4, cy - 8, 3, 4);
   g.fillStyle(0x4e3070, 1);
-  g.fillRect(cx + 4, cy - 9, 2, 3);
-  // Forearm — angled further up-right
-  g.fillRect(cx + 6, cy - 13, 3, 4);
-  g.fillStyle(0x3a2055, 1);
-  g.fillRect(cx + 6, cy - 13, 3, 4);
+  g.fillRect(cx + 4, cy - 8, 2, 3);
+  // Forearm
+  g.fillStyle(0x2a1a44, 1);
+  g.fillRect(cx + 6, cy - 13, 3, 5);
   g.fillStyle(0x4e3070, 1);
-  g.fillRect(cx + 6, cy - 13, 2, 3);
+  g.fillRect(cx + 6, cy - 13, 2, 4);
   // Hand / fist
-  g.fillStyle(0xe0c8e8, 1);
+  g.fillStyle(0xccaadd, 1);
   g.fillCircle(cx + 8, cy - 13, 1.5);
 
-  // ── BATON — white polished conductor's baton angled up and to
-  // the right from the fist. Prominent silhouette anchor. ──
-  g.fillStyle(0x4a3820, 1);
-  g.fillRect(cx + 8, cy - 18, 2, 5);
-  g.fillStyle(0xf8eed0, 1);
-  g.fillRect(cx + 8.5, cy - 19, 1.2, 6);
-  // Baton tip bulb
-  g.fillStyle(0xffffff, 1);
-  g.fillCircle(cx + 9, cy - 19, 1);
-  g.fillStyle(0xffee88, 0.8);
-  g.fillCircle(cx + 9, cy - 19, 0.6);
+  // FIDDLE BOW — long wooden stick with bright horsehair strip. The
+  // ceilidh-music anchor (not a conductor's baton).
+  // Stick
+  g.fillStyle(0x3a1a06, 1);
+  g.fillRect(cx + 8, cy - 19, 0.8, 6);
+  g.fillStyle(0x5a2a10, 1);
+  g.fillRect(cx + 8, cy - 19, 0.4, 6);
+  // Horsehair — thick cream strip below the stick
+  g.fillStyle(0xf0e4c0, 1);
+  g.fillRect(cx + 8.8, cy - 19, 0.8, 6);
+  g.fillStyle(0xfff6d4, 0.85);
+  g.fillRect(cx + 8.8, cy - 19, 0.4, 6);
+  // Bow frog (tip at bottom)
+  g.fillStyle(0x2a0a04, 1);
+  g.fillRect(cx + 7.5, cy - 13.5, 1.8, 1);
+  // Bow tip silver
+  g.fillStyle(0xaaaaaa, 1);
+  g.fillRect(cx + 8, cy - 19.5, 1, 0.8);
 
-  // ── Opposite arm — curved down and across the body (dance pose). ──
-  g.fillStyle(0x3a2055, 1);
-  g.fillRect(cx - 7, cy - 3, 2, 6);
-  g.fillRect(cx - 8, cy + 2, 3, 3);
-  g.fillStyle(0xe0c8e8, 1);
-  g.fillCircle(cx - 8, cy + 4, 1.3);
+  // Opposite arm — curved down and across (dance-instructing pose)
+  g.fillStyle(0x2a1a44, 1);
+  g.fillRect(cx - 7, cy - 2, 2, 6);
+  g.fillRect(cx - 8, cy + 3, 3, 3);
+  g.fillStyle(0xccaadd, 1);
+  g.fillCircle(cx - 8, cy + 5, 1.3);
 
-  // ── Music-note sparkles — burst radiating from the baton tip
-  // in an arc. Bigger and bolder than before. ──
+  // Music-note sparkles — burst radiating from the bow tip, in an arc
   g.fillStyle(0xffeeaa, 1);
-  g.fillCircle(cx + 11, cy - 17, 1);
+  g.fillCircle(cx + 11, cy - 18, 1);
   g.fillStyle(0xffd0e0, 0.9);
-  g.fillCircle(cx + 13, cy - 14, 0.8);
+  g.fillCircle(cx + 13, cy - 15, 0.8);
   g.fillStyle(0xffeeaa, 0.7);
-  g.fillCircle(cx + 14, cy - 11, 0.6);
-  g.fillStyle(0xffd0e0, 0.5);
-  g.fillCircle(cx + 15, cy - 8, 0.5);
-  // Four-point star at the baton tip
+  g.fillCircle(cx + 14, cy - 12, 0.6);
+  g.fillStyle(0xffd0e0, 0.55);
+  g.fillCircle(cx + 15, cy - 9, 0.5);
+  // Four-point star at bow tip
   g.fillStyle(0xffffff, 1);
-  g.fillRect(cx + 11, cy - 19, 0.6, 1.5);
-  g.fillRect(cx + 10.4, cy - 18.3, 1.5, 0.6);
+  g.fillRect(cx + 11, cy - 20, 0.6, 1.5);
+  g.fillRect(cx + 10.4, cy - 19.3, 1.5, 0.6);
 
   g.generateTexture('ceilidh_caller', s, s);
   g.destroy();
