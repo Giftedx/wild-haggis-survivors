@@ -89,15 +89,31 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   // Nose cavity
   g.fillStyle(0x000000, 1);
   g.fillTriangle(cx - 1, cy - 3, cx + 1, cy - 3, cx, cy + 1);
-  // Jagged skull teeth (grinning — they've found a discrepancy)
+  // Jagged skull grin — upper + lower jaw lines with gapped teeth
+  // spikes, plus two longer fangs. Reads as a bone grin at sprite
+  // scale instead of an evenly-spaced picket fence.
   g.fillStyle(0x000000, 1);
-  g.fillRect(cx - 6, cy + 2, 12, 4);
+  g.fillRect(cx - 7, cy + 2, 14, 6);
+  // Upper jawline — solid bone bar across the top.
   g.fillStyle(0xddddcc, 1);
-  g.fillRect(cx - 5, cy + 2, 1, 3);
-  g.fillRect(cx - 3, cy + 2, 1, 4);
-  g.fillRect(cx - 1, cy + 2, 1, 3);
-  g.fillRect(cx + 1, cy + 2, 1, 4);
-  g.fillRect(cx + 3, cy + 2, 1, 3);
+  g.fillRect(cx - 7, cy + 2, 14, 1);
+  // Upper teeth — 1-pixel spikes pointing down, two fangs longer.
+  g.fillRect(cx - 6, cy + 3, 1, 2);
+  g.fillRect(cx - 4, cy + 3, 1, 3); // left fang
+  g.fillRect(cx - 2, cy + 3, 1, 2);
+  g.fillRect(cx, cy + 3, 1, 2);
+  g.fillRect(cx + 2, cy + 3, 1, 3); // right fang
+  g.fillRect(cx + 4, cy + 3, 1, 2);
+  g.fillRect(cx + 6, cy + 3, 1, 2);
+  // Lower jawline — bone bar across the bottom.
+  g.fillStyle(0xc0c0b0, 1);
+  g.fillRect(cx - 7, cy + 7, 14, 1);
+  // Lower teeth — spikes pointing up, one missing (ned with tax bills).
+  g.fillRect(cx - 5, cy + 5, 1, 2);
+  g.fillRect(cx - 3, cy + 5, 1, 2);
+  g.fillRect(cx + 1, cy + 5, 1, 2); // gap between cx-1 and cx+1
+  g.fillRect(cx + 3, cy + 5, 1, 2);
+  g.fillRect(cx + 5, cy + 5, 1, 2);
 
   // === SCYTHE (the weapon that signs your P45) ===
   // Handle
