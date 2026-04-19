@@ -56,6 +56,16 @@ export class BootScene extends Phaser.Scene {
     // the dynamic import plenty of time to complete before MainMenu).
     void applyLocaleFromUserSettings(getSettingsManager().load());
 
+    // Atlas bakes must happen on every boot path — quickplay AND
+    // sprite-export included — so Game never starts with `__MISSING`
+    // textures and so the export PNG contains every Phase-0 atlas
+    // frame alongside the legacy sprites.
+    const bakeMs = this.bakeHaggisAtlas();
+    console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
+
+    const accessoryBakeMs = this.bakeAccessoryAtlas();
+    console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
+
     // Dev tool: skip splash and go straight to sprite export
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
       this.scene.start('SpriteExport');
@@ -68,16 +78,6 @@ export class BootScene extends Phaser.Scene {
     // Initialize global meta progression exactly once (above the Scene lifecycle).
     metaProgressSystem.start();
     achievementManager.start();
-
-    // Atlas bakes must happen on every boot path — quickplay included —
-    // because Game relies on textures keyed like `haggis_classic_idle_0`
-    // and `tam_o_shanter_idle_0`. Skipping them left the above-layer
-    // sprite showing Phaser's `__MISSING` magenta checker on dev runs.
-    const bakeMs = this.bakeHaggisAtlas();
-    console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
-
-    const accessoryBakeMs = this.bakeAccessoryAtlas();
-    console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
 
     // Dev-only: skip splash + menus and start a fresh run (clean curse, no resume).
     // Optional fixed seed: ?quickplay&seed=12345

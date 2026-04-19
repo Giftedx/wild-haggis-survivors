@@ -22,8 +22,49 @@ const LABEL_HEIGHT = 20;
 const SECTION_HEIGHT = 48;
 const COLS = 8;
 
+/** Ends with `_<state>_<frame>`. These are the Phase-0 atlas textures
+ *  (`haggis_classic_idle_0`, `tam_o_shanter_walking_2`, etc.). They share
+ *  one subject across many frames, so we category-group them separately
+ *  from the legacy single-frame sprites. */
+const ATLAS_STATE_NAMES = ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const;
+const ACCESSORY_IDS = [
+  'tam_o_shanter',
+  'thistle_crown',
+  'highland_shield',
+  'kilt',
+  'tartan_sash',
+  'sporran',
+  'whisky_flask',
+  'irn_bru',
+  'loch_water',
+] as const;
+
+function isAtlasFrameKey(key: string): boolean {
+  const parts = key.split('_');
+  if (parts.length < 3) return false;
+  const frame = parts[parts.length - 1];
+  const state = parts[parts.length - 2];
+  if (!/^\d+$/.test(frame)) return false;
+  return (ATLAS_STATE_NAMES as readonly string[]).includes(state);
+}
+
 /** Categorize a texture key for grouping */
 function categorize(key: string): string {
+  // Phase-0 atlas frames — per-subject groups so readers can compare
+  // every frame of one variant / accessory at a glance.
+  if (isAtlasFrameKey(key)) {
+    if (key.startsWith('haggis_')) {
+      const parts = key.split('_');
+      // haggis_<variant>_<state>_<frame>
+      const variantKey = parts.slice(1, -2).join('_');
+      return `Haggis Frames — ${variantKey}`;
+    }
+    for (const accId of ACCESSORY_IDS) {
+      if (key.startsWith(`${accId}_`)) return `Accessory Frames — ${accId}`;
+    }
+    return 'Atlas Frames — Other';
+  }
+
   if (key.startsWith('haggis_') && !key.includes('hunter') && !key.includes('ball') && !key.includes('cannon')) return 'Player Variants';
   if (key.startsWith('boss_') || key === 'boss') return 'Bosses';
   if (key.startsWith('wicon_')) return 'Weapon Icons';
@@ -41,7 +82,11 @@ function categorize(key: string): string {
   return 'Other';
 }
 
-const CATEGORY_ORDER = [
+/**
+ * Base category-order. Atlas-frame groups are appended dynamically so
+ * a new variant or accessory shows up without touching this list.
+ */
+const BASE_CATEGORY_ORDER = [
   'Player Variants',
   'Enemies',
   'Bosses',
@@ -56,6 +101,43 @@ const CATEGORY_ORDER = [
   'Effects',
   'Other',
 ];
+
+// Preferred order within atlas-frame groups: variants first (classic
+// before the rest), then accessories in draw-depth order.
+const HAGGIS_VARIANT_ORDER = [
+  'classic',
+  'moor_runner',
+  'iron_belly',
+  'glen_forager',
+  'surefoot',
+  'pipe_breath',
+  'wee_ghostie',
+  'laird',
+  'glaswegian',
+];
+const ACCESSORY_ORDER_IN_EXPORT = [
+  'loch_water',
+  'highland_shield',
+  'kilt',
+  'tartan_sash',
+  'sporran',
+  'whisky_flask',
+  'irn_bru',
+  'tam_o_shanter',
+  'thistle_crown',
+];
+
+function buildCategoryOrder(cats: Set<string>): string[] {
+  const atlasHaggis = HAGGIS_VARIANT_ORDER
+    .map((v) => `Haggis Frames — ${v}`)
+    .filter((c) => cats.has(c));
+  const atlasAccessories = ACCESSORY_ORDER_IN_EXPORT
+    .map((a) => `Accessory Frames — ${a}`)
+    .filter((c) => cats.has(c));
+  const atlasOther = cats.has('Atlas Frames — Other') ? ['Atlas Frames — Other'] : [];
+  const base = BASE_CATEGORY_ORDER.filter((c) => cats.has(c));
+  return [...base, ...atlasHaggis, ...atlasAccessories, ...atlasOther];
+}
 
 export class SpriteExportScene extends Phaser.Scene {
   constructor() {
@@ -80,15 +162,20 @@ export class SpriteExportScene extends Phaser.Scene {
       entries.push({ key, width: w, height: h, category: categorize(key) });
     }
 
-    // Group by category
+    // Group by category. Atlas-frame groups sort by key (so frames
+    // appear in order: idle_0, idle_1, walking_0, …); everything else
+    // sorts by pixel area so the biggest sprite leads the row.
     const groups = new Map<string, SpriteEntry[]>();
-    for (const cat of CATEGORY_ORDER) {
+    const allCats = new Set(entries.map((e) => e.category));
+    for (const cat of buildCategoryOrder(allCats)) {
       const items = entries.filter((e) => e.category === cat);
-      if (items.length > 0) {
-        // Sort by size descending within group for visual tidiness
+      if (items.length === 0) continue;
+      if (cat.startsWith('Haggis Frames') || cat.startsWith('Accessory Frames')) {
+        items.sort((a, b) => a.key.localeCompare(b.key));
+      } else {
         items.sort((a, b) => (b.width * b.height) - (a.width * a.height));
-        groups.set(cat, items);
       }
+      groups.set(cat, items);
     }
 
     // Calculate canvas dimensions

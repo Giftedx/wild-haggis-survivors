@@ -10,6 +10,7 @@
  *   I / W / H — force animation state (idle / walking / hurt)
  *   ESC — clear animation state override
  *   C — toggle Combinations preview scene
+ *   F9 — export full sprite sheet PNG (every baked texture)
  */
 
 import type { Player } from '../../entities/Player';
@@ -78,6 +79,15 @@ export function registerDebugHotkeys(
     const s = hooks.getScene();
     s.scene.pause('Game');
     s.scene.launch('CombinationsPreview');
+  });
+
+  kb.on('keydown-F9', () => {
+    if (!isDevHotkeysEnabled()) return;
+    // Switch to the SpriteExport scene which composites every baked
+    // texture into a single PNG and auto-downloads it. Primary way to
+    // review all art in one go without editing the URL bar.
+    const s = hooks.getScene();
+    s.scene.start('SpriteExport');
   });
 }
 
