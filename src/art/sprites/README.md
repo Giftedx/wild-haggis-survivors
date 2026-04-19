@@ -73,3 +73,37 @@ The haggis body atlas (`haggis_<variant>_<state>_<frame>`) and accessory atlases
 - `src/entities/haggisComposition/drawers/*.ts` — per-accessory drawers.
 
 BootScene calls both systems: `generateAllTextures()` (via this folder) for the legacy + decoration sprites, then `bakeHaggisAtlas()` + `bakeAccessoryAtlas()` for the Phase-0 atlases. Both must run before any gameplay scene starts.
+
+## Progress checkpoint — 2026-04-19
+
+Categories extracted so far (seven categories, 66 sprites, 2937 lines out of BootScene):
+
+| Category | Files | Sprites | Notes |
+|----------|-------|---------|-------|
+| decorations/ | 8 | 9 | thistle, 3 rock variants, heather, Glasgow kite, cone, tunnock, pint |
+| fx/ | 5 | 4 | entity_shadow, boss_shadow, fx_snowflake, film_grain |
+| hud/ | 3 | 3 | hud_shield, hud_dash_pip_full, hud_dash_pip_empty |
+| projectiles/ | 4 | 3 | thistle, caber, haggis_ball |
+| pickups/ | 5 | 4 | xp_gem, chest, health_orb, reliquary |
+| icons/weapons.ts | 1 | 15 | all `wicon_*` consolidated |
+| icons/cards.ts | 1 | 18 | all `ucard_*` consolidated |
+
+BootScene monolith: 6840 → 3903 lines (−43%).
+
+## Remaining work
+
+Two categories still inline in BootScene:
+
+1. **Enemies** — about 30 sprites, roughly 2300 lines of drawing code. Candidates for extraction to either `src/art/sprites/enemies/<name>.ts` (one file per enemy, matches the accessory-drawer convention) or a consolidated `enemies.ts` (matches icons). One-file-per-enemy is the better long-term fit because enemy sprites vary more in scale + style than icons.
+2. **Bosses** — 5 sprites (gordon, tour_bus, laird, hunter_general, taxman) plus the player-variant texture bakers (`createHaggisTextures` + `createHaggisVariantTexture`). Bosses are ~100+ lines each with distinct styles, so the per-file convention suits them too.
+
+The extraction pattern is fully established — each file just needs:
+1. Copy the method body from BootScene.
+2. Replace `private createX(): void {` with `export function bakeX(scene: Phaser.Scene): void {`.
+3. Replace `this.add.graphics()` with `scene.add.graphics()`.
+4. Add imports.
+5. Create the category `index.ts`.
+6. Delete the old methods from BootScene with `sed -i '<start>,<end>d'`.
+7. Run lint + tests + verify all textures still exist via the preview console eval helper.
+
+Target when done: BootScene under ~1000 lines, holding only the scene-lifecycle wiring (boot splash, atlas bakes, scene transitions).
