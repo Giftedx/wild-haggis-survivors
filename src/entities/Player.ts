@@ -411,15 +411,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
 
-    // Skip normal movement during dash — velocity is set by tryDash
+    // Skip normal movement during dash — velocity is set by tryDash.
+    // Still tick + sync animation so accessories follow the dash.
     if (this.isDashing) {
       this.clampInsideWorld();
+      this.tickAnimationAndSync(scaledDelta);
       return;
     }
 
     if (!this.autoBattleSteering && this.inputManager.consumeDashPressed()) {
       this.tryDash();
-      if (this.isDashing) return;
+      if (this.isDashing) {
+        this.tickAnimationAndSync(scaledDelta);
+        return;
+      }
     }
 
     const dir = this.autoBattleSteering
@@ -456,6 +461,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(0, 0);
+      this.tickAnimationAndSync(scaledDelta);
       return;
     }
 
@@ -484,9 +490,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const angle = Math.atan2(drifted.y, drifted.x);
     this.setRotation(angle + Math.PI / 2);
 
-    // Animation controller — texture-swap replaces the legacy wobblePhase
-    // scale wobble. State driven by velocity + hurt edge (Phase 0);
-    // attack + celebrate edges land in Phase 1.
+    this.tickAnimationAndSync(scaledDelta);
+    this.setScale(playerGrowthScale(this.currentLevel));
+  }
+
+  /**
+   * Tick the Player + all accessory AnimationControllers from the
+   * current-frame velocity + signals, then sync the HaggisContainer
+   * accessory sprites to the Player's position / rotation / scale.
+   *
+   * Called from every exit path in `update()` (dash, idle, and the
+   * normal movement branch) so accessories never desync from the
+   * Player — a dash without this call would leave the tam frozen
+   * at the pre-dash position while the haggis flies off.
+   */
+  private tickAnimationAndSync(scaledDelta: number): void {
     const vx = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.x ?? 0;
     const vy = (this.body as Phaser.Physics.Arcade.Body | null)?.velocity.y ?? 0;
     const signals = {
@@ -496,9 +514,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       celebrateEdge: false,
       hp: this.hp,
     };
-    // Dev-only force-state override — tampers the signals so the FSM
-    // transitions to the requested state on the next tick. No-op in
-    // production (override is never set).
+    // Dev-only force-state override — tampers signals so the FSM
+    // transitions on the next tick. No-op in production.
     if (this.animStateOverride !== null) {
       switch (this.animStateOverride) {
         case 'walking':
@@ -523,13 +540,10 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       }
     }
     this.animController.tick(scaledDelta, signals);
-    // Tick every owned accessory with the same signals. Sync layer
-    // sprites to the Player body position.
     for (const a of this.ownedAccessories) {
       a.controller.tick(scaledDelta, signals);
     }
     this.haggisContainer.syncToAnchor();
-    this.setScale(playerGrowthScale(this.currentLevel));
   }
 
   /** Recalculate all stats from base + level scaling + upgrade bonuses */

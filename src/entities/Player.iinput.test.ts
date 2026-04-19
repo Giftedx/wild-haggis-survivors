@@ -86,6 +86,7 @@ function makeScene(): unknown {
     setRotation: () => spriteStub(),
     setScale: () => spriteStub(),
     setTexture: () => spriteStub(),
+    setOrigin: () => spriteStub(),
     destroy: () => {},
     depth: 0,
     x: 0,
