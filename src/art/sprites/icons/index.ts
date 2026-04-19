@@ -8,9 +8,9 @@
 import Phaser from 'phaser';
 
 import { bakeWeaponIcons } from './weapons';
+import { bakeCardIcons } from './cards';
 
 export function bakeIcons(scene: Phaser.Scene): void {
   bakeWeaponIcons(scene);
-  // Card icons (passive + stat) still inline in BootScene; next commit
-  // will add bakeCardIcons(scene) here.
+  bakeCardIcons(scene);
 }
