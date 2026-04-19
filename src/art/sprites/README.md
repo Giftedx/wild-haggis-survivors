@@ -74,9 +74,9 @@ The haggis body atlas (`haggis_<variant>_<state>_<frame>`) and accessory atlases
 
 BootScene calls both systems: `generateAllTextures()` (via this folder) for the legacy + decoration sprites, then `bakeHaggisAtlas()` + `bakeAccessoryAtlas()` for the Phase-0 atlases. Both must run before any gameplay scene starts.
 
-## Progress checkpoint — 2026-04-19
+## Final layout — 2026-04-19
 
-Categories extracted so far (seven categories, 66 sprites, 2937 lines out of BootScene):
+Every legacy `generateTexture` call from the old 6840-line BootScene now lives under this folder, split by category. Nine modular extraction targets covering 101 sprites.
 
 | Category | Files | Sprites | Notes |
 |----------|-------|---------|-------|
@@ -87,23 +87,14 @@ Categories extracted so far (seven categories, 66 sprites, 2937 lines out of Boo
 | pickups/ | 5 | 4 | xp_gem, chest, health_orb, reliquary |
 | icons/weapons.ts | 1 | 15 | all `wicon_*` consolidated |
 | icons/cards.ts | 1 | 18 | all `ucard_*` consolidated |
+| enemies.ts | 1 | 31 | all non-boss enemies + hazard + `deep_fryer` |
+| bosses.ts | 1 | 5 | gordon, tour_bus, laird, hunter_general, taxman |
 
-BootScene monolith: 6840 → 3903 lines (−43%).
+`BootScene.ts`: **6840 → 336 lines (−95%)**. What remains is only scene lifecycle (boot splash, atlas bakes, sprite-export bail, quickplay shortcut).
 
-## Remaining work
+## What's NOT in this folder
 
-Two categories still inline in BootScene:
+Two things stayed in BootScene because they're tied to scene setup:
 
-1. **Enemies** — about 30 sprites, roughly 2300 lines of drawing code. Candidates for extraction to either `src/art/sprites/enemies/<name>.ts` (one file per enemy, matches the accessory-drawer convention) or a consolidated `enemies.ts` (matches icons). One-file-per-enemy is the better long-term fit because enemy sprites vary more in scale + style than icons.
-2. **Bosses** — 5 sprites (gordon, tour_bus, laird, hunter_general, taxman) plus the player-variant texture bakers (`createHaggisTextures` + `createHaggisVariantTexture`). Bosses are ~100+ lines each with distinct styles, so the per-file convention suits them too.
-
-The extraction pattern is fully established — each file just needs:
-1. Copy the method body from BootScene.
-2. Replace `private createX(): void {` with `export function bakeX(scene: Phaser.Scene): void {`.
-3. Replace `this.add.graphics()` with `scene.add.graphics()`.
-4. Add imports.
-5. Create the category `index.ts`.
-6. Delete the old methods from BootScene with `sed -i '<start>,<end>d'`.
-7. Run lint + tests + verify all textures still exist via the preview console eval helper.
-
-Target when done: BootScene under ~1000 lines, holding only the scene-lifecycle wiring (boot splash, atlas bakes, scene transitions).
+- `createHaggisTextures` + `createHaggisVariantTexture` — bake the 9 single-frame player-variant textures. Could move here as a future tidy but not load-bearing.
+- `bakeHaggisAtlas` + `bakeAccessoryAtlas` — bake the 324 Phase-0 atlas frames. Belong next to the atlas-key machinery in `src/animation/textureAtlas.ts` / `src/entities/haggisComposition/accessoryRegistry.ts`, not under sprite-drawer categories.
