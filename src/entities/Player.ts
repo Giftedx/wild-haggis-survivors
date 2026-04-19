@@ -232,10 +232,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // default to depth 0).
     this.shadow = scene.add.image(x, y + 22, 'entity_shadow').setDepth(-2).setScale(1.1);
 
+    // Derive the variant key from the legacy texture key so the same
+    // variant selected upstream drives the animated atlas. All variant
+    // atlases are pre-baked at boot; runtime just binds by key.
+    const variantKey = textureKey.startsWith('haggis_')
+      ? textureKey.slice('haggis_'.length)
+      : 'classic';
     this.animController = new AnimationController({
       sprite: this,
       subject: 'haggis',
-      variant: 'classic', // Phase 0 — all variants in Phase 1
+      variant: variantKey,
     });
 
     this.haggisContainer = new HaggisContainer(scene, this);

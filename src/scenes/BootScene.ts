@@ -6787,24 +6787,30 @@ export class BootScene extends Phaser.Scene {
 
   private bakeHaggisAtlas(): number {
     const startMs = performance.now();
-    const allKeys = allAtlasKeysForVariant('haggis', 'classic');
     const size = getHaggisSpriteSize();
-    for (const key of allKeys) {
-      // Parse state + frame from key: 'haggis_classic_<state>_<frame>'
-      const parts = key.split('_');
-      const frame = Number(parts[parts.length - 1]);
-      const state = parts.slice(2, -1).join('_') as AnimationState;
-      // Skip states that drawHaggisFrame throws on (not yet authored).
-      if (state === 'celebrating' || state === 'dying') continue;
+    for (const variant of VARIANTS) {
+      const allKeys = allAtlasKeysForVariant('haggis', variant.key);
+      for (const key of allKeys) {
+        // Atlas key shape: `haggis_<variant>_<state>_<frame>`. All FSM
+        // state names are single tokens (idle, walking, attacking,
+        // hurt, celebrating, dying), so the state always sits at [-2]
+        // regardless of how many underscores the variant key contains.
+        const parts = key.split('_');
+        const frame = Number(parts[parts.length - 1]);
+        const state = parts[parts.length - 2] as AnimationState;
+        // Skip states that drawHaggisFrame throws on (not yet authored).
+        if (state === 'celebrating' || state === 'dying') continue;
 
-      const g = this.add.graphics();
-      drawHaggisFrame(g, {
-        variantPalette: CLASSIC_VARIANT,
-        state,
-        frame,
-      });
-      g.generateTexture(key, size, size);
-      g.destroy();
+        const g = this.add.graphics();
+        drawHaggisFrame(g, {
+          variantPalette: CLASSIC_VARIANT,
+          state,
+          frame,
+          variantKey: variant.key,
+        });
+        g.generateTexture(key, size, size);
+        g.destroy();
+      }
     }
     return performance.now() - startMs;
   }

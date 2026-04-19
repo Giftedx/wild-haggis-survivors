@@ -14,7 +14,7 @@
 import type { AnimationState } from '../animationStates';
 import type { VariantPalette } from '../../art/palettes';
 import { getVariantByKey } from '../../data/variants';
-import type { VariantDef } from '../../data/variants';
+import type { VariantDef, VariantKey } from '../../data/variants';
 import { drawHaggisBody, HAGGIS_SPRITE_SIZE } from './haggisBodyDraw';
 
 export interface HaggisDrawCtx {
@@ -22,6 +22,11 @@ export interface HaggisDrawCtx {
   readonly variantPalette: VariantPalette;
   readonly state: AnimationState;
   readonly frame: number;
+  /**
+   * Which haggis variant to draw. Defaults to `'classic'` when omitted.
+   * BootScene passes the full variant list to bake per-variant atlases.
+   */
+  readonly variantKey?: VariantKey;
 }
 
 type StateFrameDrawer = (g: Phaser.GameObjects.Graphics, variant: VariantDef) => void;
@@ -122,7 +127,7 @@ export function drawHaggisFrame(
   if (!drawer) {
     throw new Error(`drawHaggisFrame: frame ${ctx.frame} out of range for state ${ctx.state}`);
   }
-  const variant = getVariantByKey('classic');
+  const variant = getVariantByKey(ctx.variantKey ?? 'classic');
   drawer(g, variant);
 }
 
