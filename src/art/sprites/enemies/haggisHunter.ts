@@ -9,11 +9,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeHaggisHunter(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const HAGGIS_HUNTER_CANVAS_SIZE = 48;
+
+export function drawHaggisHunterBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = HAGGIS_HUNTER_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // ── Ground shadow — subtle. ──
   g.fillStyle(0x000000, 0.25);
@@ -21,22 +29,22 @@ export function bakeHaggisHunter(scene: Phaser.Scene): void {
 
   // ── Green wellies — classic Hunter boots, brown mud scuff. ──
   g.fillStyle(0x0a2a0a, 1);
-  g.fillRect(cx - 7, cy + 11, 5, 9);
-  g.fillRect(cx + 2, cy + 11, 5, 9);
+  g.fillRect(cx - 7, cy + 11 + lly, 5, 9);
+  g.fillRect(cx + 2, cy + 11 + rly, 5, 9);
   g.fillStyle(0x1a4a1a, 1);
-  g.fillRect(cx - 7, cy + 11, 5, 8);
-  g.fillRect(cx + 2, cy + 11, 5, 8);
+  g.fillRect(cx - 7, cy + 11 + lly, 5, 8);
+  g.fillRect(cx + 2, cy + 11 + rly, 5, 8);
   g.fillStyle(0x2a5a22, 1);
-  g.fillRect(cx - 6, cy + 12, 3, 6);
-  g.fillRect(cx + 3, cy + 12, 3, 6);
+  g.fillRect(cx - 6, cy + 12 + lly, 3, 6);
+  g.fillRect(cx + 3, cy + 12 + rly, 3, 6);
   // Mud scuff at the toe — been out on the moor
   g.fillStyle(0x3a2a10, 0.8);
-  g.fillRect(cx - 7, cy + 18, 5, 2);
-  g.fillRect(cx + 2, cy + 18, 5, 2);
+  g.fillRect(cx - 7, cy + 18 + lly, 5, 2);
+  g.fillRect(cx + 2, cy + 18 + rly, 5, 2);
   // Buckle strap at the top
   g.fillStyle(0x554422, 1);
-  g.fillRect(cx - 7, cy + 11, 5, 1);
-  g.fillRect(cx + 2, cy + 11, 5, 1);
+  g.fillRect(cx - 7, cy + 11 + lly, 5, 1);
+  g.fillRect(cx + 2, cy + 11 + rly, 5, 1);
 
   // ── Barbour wax jacket — dark olive green, bold block shape.
   // Collar popped high. ──
@@ -88,9 +96,7 @@ export function bakeHaggisHunter(scene: Phaser.Scene): void {
   g.fillStyle(0x3a2010, 1);
   g.fillRect(cx - 2, cy - 8, 4, 0.8);
 
-  // ── Harris Tweed flat cap — dominant block with a peak. Two
-  // scattered fleck dots are all we keep from the weave detail —
-  // everything else was sub-pixel noise. ──
+  // ── Harris Tweed flat cap — dominant block with a peak. ──
   g.fillStyle(0x2a2414, 1);
   g.fillRect(cx - 9, cy - 19, 18, 6);
   g.fillStyle(0x4a3d22, 1);
@@ -105,12 +111,8 @@ export function bakeHaggisHunter(scene: Phaser.Scene): void {
   g.fillStyle(0x3a3320, 1);
   g.fillRect(cx - 10, cy - 14, 11, 1);
 
-  // ── Haggis-net on a pole — BIG diagonal rig raised over the
-  // shoulder, pole runs from waist up to the top-right corner. The
-  // hoop dominates the sprite's right side. ──
-  // Wooden pole — diagonal, brown
+  // ── Haggis-net on a pole ──
   g.fillStyle(0x3a2410, 1);
-  // Thick pole drawn as stacked rects stepping up-right
   for (let i = 0; i < 18; i++) {
     g.fillRect(cx + 2 + i * 0.7, cy + 4 - i * 1.1, 2, 2);
   }
@@ -119,28 +121,28 @@ export function bakeHaggisHunter(scene: Phaser.Scene): void {
     g.fillRect(cx + 2 + i * 0.7, cy + 4 - i * 1.1, 1, 1);
   }
 
-  // ── Net hoop — big ring at the top-right, ring is bold 2-pixel
-  // wood so it reads clearly. ──
+  // ── Net hoop ──
   g.lineStyle(2.5, 0x3a2410, 1);
   g.strokeCircle(cx + 15, cy - 16, 7);
   g.lineStyle(1.2, 0x6a4418, 1);
   g.strokeCircle(cx + 15, cy - 16, 6.5);
 
-  // ── Net mesh — crosshatch INSIDE the hoop so the silhouette
-  // reads "net" not "wheel". Diagonal lattice, pale cream thread. ──
+  // ── Net mesh ──
   g.lineStyle(0.8, 0xc8b894, 0.9);
-  // Diagonal lines one way
   g.lineBetween(cx + 10, cy - 18, cx + 20, cy - 14);
   g.lineBetween(cx + 9, cy - 16, cx + 20, cy - 11);
   g.lineBetween(cx + 10, cy - 13, cx + 18, cy - 10);
-  // Diagonal lines the other way
   g.lineBetween(cx + 10, cy - 14, cx + 20, cy - 18);
   g.lineBetween(cx + 9, cy - 16, cx + 20, cy - 21);
   g.lineBetween(cx + 12, cy - 10, cx + 20, cy - 14);
-  // Net bag droop — subtle darker curve at the bottom of the hoop
+  // Net bag droop
   g.fillStyle(0x8a7a58, 0.4);
   g.fillEllipse(cx + 15, cy - 13, 12, 3);
+}
 
-  g.generateTexture('haggis_hunter', s, s);
+export function bakeHaggisHunter(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawHaggisHunterBody(g);
+  g.generateTexture('haggis_hunter', HAGGIS_HUNTER_CANVAS_SIZE, HAGGIS_HUNTER_CANVAS_SIZE);
   g.destroy();
 }
