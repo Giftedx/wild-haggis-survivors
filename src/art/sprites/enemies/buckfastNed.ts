@@ -3,23 +3,31 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBuckfastNed(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const BUCKFAST_NED_CANVAS_SIZE = 44;
+
+export function drawBuckfastNedBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BUCKFAST_NED_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // Tracksuit legs (navy with white stripe).
   g.fillStyle(0x0a1428, 1);
-  g.fillRect(cx - 5, cy + 8, 4, 10);
-  g.fillRect(cx + 1, cy + 8, 4, 10);
+  g.fillRect(cx - 5, cy + 8 + lly, 4, 10);
+  g.fillRect(cx + 1, cy + 8 + rly, 4, 10);
   g.fillStyle(0xdcdcdc, 1);
-  g.fillRect(cx - 4, cy + 8, 1, 10);
-  g.fillRect(cx + 2, cy + 8, 1, 10);
+  g.fillRect(cx - 4, cy + 8 + lly, 1, 10);
+  g.fillRect(cx + 2, cy + 8 + rly, 1, 10);
   // Trainers.
   g.fillStyle(0xffffff, 1);
-  g.fillEllipse(cx - 3, cy + 19, 5, 2);
-  g.fillEllipse(cx + 3, cy + 19, 5, 2);
+  g.fillEllipse(cx - 3, cy + 19 + lly, 5, 2);
+  g.fillEllipse(cx + 3, cy + 19 + rly, 5, 2);
 
   // Tracksuit top (matching navy, hood up).
   g.fillStyle(0x0a1428, 1);
@@ -86,8 +94,12 @@ export function bakeBuckfastNed(scene: Phaser.Scene): void {
   // Shadow under the figure.
   g.fillStyle(0x000000, 0.25);
   g.fillEllipse(cx, cy + 20, 12, 3);
+}
 
-  g.generateTexture('buckfast_ned', s, s);
+export function bakeBuckfastNed(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBuckfastNedBody(g);
+  g.generateTexture('buckfast_ned', BUCKFAST_NED_CANVAS_SIZE, BUCKFAST_NED_CANVAS_SIZE);
   g.destroy();
 }
 
