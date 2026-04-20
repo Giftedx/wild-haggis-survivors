@@ -14,11 +14,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBlueManOfMinch(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 4;
+export const BLUE_MAN_OF_MINCH_CANVAS_SIZE = 48;
+
+export function drawBlueManOfMinchBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BLUE_MAN_OF_MINCH_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // ── Storm-wisp overhead — the Blue Men summon squalls. A small
   // dark cloud fragment with pale-teal edge so the threat reads as
@@ -230,7 +236,11 @@ export function bakeBlueManOfMinch(scene: Phaser.Scene): void {
   g.fillStyle(0xaaddee, 0.55);
   g.fillCircle(cx - 5, cy + 7, 0.35);
   g.fillCircle(cx + 5, cy + 7, 0.3);
+}
 
-  g.generateTexture('blue_man_of_minch', s, s);
+export function bakeBlueManOfMinch(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBlueManOfMinchBody(g);
+  g.generateTexture('blue_man_of_minch', BLUE_MAN_OF_MINCH_CANVAS_SIZE, BLUE_MAN_OF_MINCH_CANVAS_SIZE);
   g.destroy();
 }
