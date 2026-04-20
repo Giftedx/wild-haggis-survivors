@@ -38,6 +38,7 @@ import '../animation/frameDrawers/enemies/eagleFrames';
 import '../animation/frameDrawers/enemies/haggisHunterFrames';
 import '../animation/frameDrawers/enemies/touristFrames';
 import '../animation/frameDrawers/enemies/chefFrames';
+import '../animation/frameDrawers/enemies/highlandCowFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.

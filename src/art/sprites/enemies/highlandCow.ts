@@ -3,11 +3,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeHighlandCow(scene: Phaser.Scene): void {
-  const s = 64;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const HIGHLAND_COW_CANVAS_SIZE = 64;
+
+export function drawHighlandCowBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = HIGHLAND_COW_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // ── Body outline ──
   g.fillStyle(0x3a1e08, 1);
@@ -35,28 +43,28 @@ export function bakeHighlandCow(scene: Phaser.Scene): void {
 
   // ── Legs (chunky, furry at the top) ──
   g.fillStyle(0x3a1e08, 1);
-  g.fillRect(cx - 13, cy + 14, 5, 10);
-  g.fillRect(cx - 5, cy + 14, 5, 10);
-  g.fillRect(cx + 2, cy + 14, 5, 10);
-  g.fillRect(cx + 10, cy + 14, 5, 10);
+  g.fillRect(cx - 13, cy + 14 + lly, 5, 10);
+  g.fillRect(cx - 5, cy + 14 + lly, 5, 10);
+  g.fillRect(cx + 2, cy + 14 + rly, 5, 10);
+  g.fillRect(cx + 10, cy + 14 + rly, 5, 10);
   // Fur feathering at leg tops
   g.fillStyle(0x7a3810, 0.6);
-  g.fillCircle(cx - 11, cy + 14, 3);
-  g.fillCircle(cx - 3, cy + 14, 3);
-  g.fillCircle(cx + 4, cy + 14, 3);
-  g.fillCircle(cx + 12, cy + 14, 3);
+  g.fillCircle(cx - 11, cy + 14 + lly, 3);
+  g.fillCircle(cx - 3, cy + 14 + lly, 3);
+  g.fillCircle(cx + 4, cy + 14 + rly, 3);
+  g.fillCircle(cx + 12, cy + 14 + rly, 3);
   // Hooves — dark, cloven
   g.fillStyle(0x0a0a0a, 1);
-  g.fillRect(cx - 13, cy + 22, 5, 3);
-  g.fillRect(cx - 5, cy + 22, 5, 3);
-  g.fillRect(cx + 2, cy + 22, 5, 3);
-  g.fillRect(cx + 10, cy + 22, 5, 3);
+  g.fillRect(cx - 13, cy + 22 + lly, 5, 3);
+  g.fillRect(cx - 5, cy + 22 + lly, 5, 3);
+  g.fillRect(cx + 2, cy + 22 + rly, 5, 3);
+  g.fillRect(cx + 10, cy + 22 + rly, 5, 3);
   // Hoof split (cloven detail)
   g.fillStyle(0x3a1e08, 0.5);
-  g.fillRect(cx - 11, cy + 22, 1, 3);
-  g.fillRect(cx - 3, cy + 22, 1, 3);
-  g.fillRect(cx + 4, cy + 22, 1, 3);
-  g.fillRect(cx + 12, cy + 22, 1, 3);
+  g.fillRect(cx - 11, cy + 22 + lly, 1, 3);
+  g.fillRect(cx - 3, cy + 22 + lly, 1, 3);
+  g.fillRect(cx + 4, cy + 22 + rly, 1, 3);
+  g.fillRect(cx + 12, cy + 22 + rly, 1, 3);
 
   // ── Head ──
   g.fillStyle(0x3a1e08, 1);
@@ -148,14 +156,14 @@ export function bakeHighlandCow(scene: Phaser.Scene): void {
 
   // ── Mud on hooves and lower legs (been in the field all winter) ──
   g.fillStyle(0x3a2a0a, 0.6);
-  g.fillCircle(cx - 11, cy + 23, 2.5);
-  g.fillCircle(cx + 4, cy + 23, 2.5);
-  g.fillCircle(cx - 3, cy + 22, 1.5);
-  g.fillCircle(cx + 12, cy + 22, 1.5);
+  g.fillCircle(cx - 11, cy + 23 + lly, 2.5);
+  g.fillCircle(cx + 4, cy + 23 + rly, 2.5);
+  g.fillCircle(cx - 3, cy + 22 + lly, 1.5);
+  g.fillCircle(cx + 12, cy + 22 + rly, 1.5);
   // Mud splash up the leg
   g.fillStyle(0x4a3a10, 0.3);
-  g.fillCircle(cx - 12, cy + 20, 1);
-  g.fillCircle(cx + 11, cy + 19, 1);
+  g.fillCircle(cx - 12, cy + 20 + lly, 1);
+  g.fillCircle(cx + 11, cy + 19 + rly, 1);
 
   // ── Tail tuft (swishing — long-haired, catches the wind) ──
   g.fillStyle(0x6a3010, 1);
@@ -163,7 +171,12 @@ export function bakeHighlandCow(scene: Phaser.Scene): void {
   g.fillStyle(0x8b4513, 0.8);
   g.fillTriangle(cx - 20, cy + 3, cx - 21, cy + 7, cx - 18, cy + 5);
 
-  g.generateTexture('highland_cow', s, s);
+}
+
+export function bakeHighlandCow(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawHighlandCowBody(g);
+  g.generateTexture('highland_cow', HIGHLAND_COW_CANVAS_SIZE, HIGHLAND_COW_CANVAS_SIZE);
   g.destroy();
 }
 
