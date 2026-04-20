@@ -3,22 +3,32 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakePiper(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const PIPER_CANVAS_SIZE = 48;
 
+export function drawPiperBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = PIPER_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
+
+  // Legs (hose with flashes)
   g.fillStyle(0x111111, 1);
-  g.fillRect(cx - 7, cy + 12, 5, 8);
-  g.fillRect(cx + 2, cy + 12, 5, 8);
+  g.fillRect(cx - 7, cy + 12 + lly, 5, 8);
+  g.fillRect(cx + 2, cy + 12 + rly, 5, 8);
   g.fillStyle(0xeeeeee, 0.5);
-  g.fillTriangle(cx - 5, cy + 14, cx - 4, cy + 16, cx - 6, cy + 16);
-  g.fillTriangle(cx + 4, cy + 14, cx + 5, cy + 16, cx + 3, cy + 16);
+  g.fillTriangle(cx - 5, cy + 14 + lly, cx - 4, cy + 16 + lly, cx - 6, cy + 16 + lly);
+  g.fillTriangle(cx + 4, cy + 14 + rly, cx + 5, cy + 16 + rly, cx + 3, cy + 16 + rly);
   g.fillStyle(0xcc0000, 1);
-  g.fillRect(cx - 7, cy + 12, 5, 1);
-  g.fillRect(cx + 2, cy + 12, 5, 1);
+  g.fillRect(cx - 7, cy + 12 + lly, 5, 1);
+  g.fillRect(cx + 2, cy + 12 + rly, 5, 1);
 
+  // Kilt
   g.fillStyle(0x001a44, 1);
   g.fillRect(cx - 10, cy + 2, 20, 12);
   g.fillStyle(0x003366, 1);
@@ -147,8 +157,11 @@ export function bakePiper(scene: Phaser.Scene): void {
 
   g.fillStyle(0x1a1100, 1);
   g.fillRect(cx - 8, cy - 12, 6, 2);
-
-  g.generateTexture('piper', s, s);
-  g.destroy();
 }
 
+export function bakePiper(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawPiperBody(g);
+  g.generateTexture('piper', PIPER_CANVAS_SIZE, PIPER_CANVAS_SIZE);
+  g.destroy();
+}
