@@ -303,7 +303,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (isEnemyAnimated(config.key)) {
       this.animController = new AnimationController({
         sprite: this,
-        subject: config.texture,
+        subject: config.key,
         variant: null,
       });
     } else {
