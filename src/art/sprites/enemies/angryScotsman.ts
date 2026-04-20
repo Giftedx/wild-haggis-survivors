@@ -3,22 +3,30 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeAngryScotsman(scene: Phaser.Scene): void {
-  const s = 52;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const ANGRY_SCOTSMAN_CANVAS_SIZE = 52;
+
+export function drawAngryScotsmanBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = ANGRY_SCOTSMAN_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // === Legs (bare, muscular, one sock fallen) ===
   g.fillStyle(0xcc7755, 1);
-  g.fillRect(cx - 8, cy + 13, 6, 9);
-  g.fillRect(cx + 2, cy + 13, 6, 9);
+  g.fillRect(cx - 8, cy + 13 + lly, 6, 9);
+  g.fillRect(cx + 2, cy + 13 + rly, 6, 9);
   g.fillStyle(0xeeeeee, 1);
-  g.fillRect(cx + 2, cy + 19, 6, 4);
+  g.fillRect(cx + 2, cy + 19 + rly, 6, 4);
   g.fillStyle(0xdddddd, 0.8);
-  g.fillRect(cx - 8, cy + 20, 6, 3);
+  g.fillRect(cx - 8, cy + 20 + lly, 6, 3);
   g.fillStyle(0xcccccc, 1);
-  g.fillEllipse(cx - 5, cy + 21, 7, 3);
+  g.fillEllipse(cx - 5, cy + 21 + lly, 7, 3);
 
   // === Royal Stewart tartan kilt (THE kilt — bold, proud, swinging) ===
   g.fillStyle(0x771111, 1);
@@ -180,9 +188,9 @@ export function bakeAngryScotsman(scene: Phaser.Scene): void {
 
   // === Sgian-dubh handle in right sock ===
   g.fillStyle(0x111111, 1);
-  g.fillRect(cx + 4, cy + 19, 2, 3);
+  g.fillRect(cx + 4, cy + 19 + rly, 2, 3);
   g.fillStyle(0xcc8833, 1);
-  g.fillCircle(cx + 5, cy + 19, 1);
+  g.fillCircle(cx + 5, cy + 19 + rly, 1);
 
   // === Kilt pin ===
   g.fillStyle(0xcccccc, 1);
@@ -190,7 +198,15 @@ export function bakeAngryScotsman(scene: Phaser.Scene): void {
   g.fillStyle(0xeeeeee, 1);
   g.fillCircle(cx + 9, cy + 9, 0.5);
 
-  g.generateTexture('angry_scotsman', s, s);
+  // Shadow under the figure.
+  g.fillStyle(0x000000, 0.25);
+  g.fillEllipse(cx, cy + 23, 14, 3);
+}
+
+export function bakeAngryScotsman(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawAngryScotsmanBody(g);
+  g.generateTexture('angry_scotsman', ANGRY_SCOTSMAN_CANVAS_SIZE, ANGRY_SCOTSMAN_CANVAS_SIZE);
   g.destroy();
 }
 
