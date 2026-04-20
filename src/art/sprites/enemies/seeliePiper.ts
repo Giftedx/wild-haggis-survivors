@@ -13,11 +13,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeSeeliePiper(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const SEELIE_PIPER_CANVAS_SIZE = 40;
+
+export function drawSeelieBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = SEELIE_PIPER_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Fair-court glow — warm amber halo, two soft layers. ──
   g.fillStyle(0xffd890, 0.18);
@@ -154,6 +160,11 @@ export function bakeSeeliePiper(scene: Phaser.Scene): void {
   g.fillRect(cx - 13, cy - 3, 1, 0.5);
   g.fillRect(cx - 12.7, cy - 3.3, 0.5, 1);
 
-  g.generateTexture('seelie_piper', s, s);
+}
+
+export function bakeSeeliePiper(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawSeelieBody(g);
+  g.generateTexture('seelie_piper', SEELIE_PIPER_CANVAS_SIZE, SEELIE_PIPER_CANVAS_SIZE);
   g.destroy();
 }
