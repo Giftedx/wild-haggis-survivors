@@ -237,7 +237,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
     hp: 0, maxHp: 0, gameTimeSec: 0, enemyCount: 0, comboCount: 0, killCount: 0, bossActive: false,
-    biomeTimbre: 0.45,
+    biomeTimbre: 0.45, buildDensity: 0,
   };
   /** Reused HUD weapon rows — mutated in place; length capped at max equippable weapons. */
   private readonly hudWeaponScratch: Array<{
@@ -1262,6 +1262,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice,
       this.runScore.killCount,
       biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
+      (this.weaponSystem.getWeapons().length + this.ownedPassives.length) / 17,
     );
     musicEngine.update(delta, this.musicStateScratch);
 

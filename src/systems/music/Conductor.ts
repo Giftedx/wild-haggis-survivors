@@ -26,6 +26,8 @@ export interface GameMusicState {
   evolutionGlow?: number;
   /** 0–1 — boss enrage pressure. */
   enragePressure?: number;
+  /** 0–1 — how full the player's weapon+passive build is (items owned / 17). */
+  buildDensity?: number;
 }
 
 export interface MoodValues {
@@ -33,6 +35,7 @@ export interface MoodValues {
   danger: number;
   chaos: number;
   triumph: number;
+  buildDensity: number;
 }
 
 const DORIAN = [
@@ -53,6 +56,7 @@ export class Conductor {
   danger = 0;
   chaos = 0;
   triumph = 0;
+  buildDensity = 0;
 
   private killHistory: { time: number; count: number }[] = [];
   private lastRecordedKillCount = 0;
@@ -86,6 +90,8 @@ export class Conductor {
 
     const targetBt = clamp01(state.biomeTimbre);
     this.smoothedBiomeTimbre = lerp(this.smoothedBiomeTimbre, targetBt, delta * 0.0011);
+
+    this.buildDensity = lerp(this.buildDensity, state.buildDensity ?? 0, delta * 0.001);
 
     if (this.resolutionMode) return;
 
@@ -137,6 +143,7 @@ export class Conductor {
       danger: this.danger,
       chaos: this.chaos,
       triumph: this.triumph,
+      buildDensity: this.buildDensity,
     };
   }
 

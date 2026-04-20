@@ -16,6 +16,7 @@ export function updateMusicStateScratch(
   juice: JuiceSystem,
   killCount: number,
   biomeTimbre: number,
+  buildDensity: number,
 ): void {
   scratch.hp = player.getHp();
   scratch.maxHp = player.getMaxHp();
@@ -25,4 +26,5 @@ export function updateMusicStateScratch(
   scratch.killCount = killCount;
   scratch.bossActive = spawnSystem.isBossActive();
   scratch.biomeTimbre = biomeTimbre;
+  scratch.buildDensity = buildDensity;
 }

@@ -38,7 +38,7 @@ describe('updateMusicStateScratch', () => {
   it('writes every field from the collaborators into the scratch', () => {
     const scratch = freshScratch();
     const { player, spawn, juice } = stubs();
-    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 99, 0.5);
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 99, 0.5, 0.35);
     expect(scratch).toEqual({
       hp: 80,
       maxHp: 100,
@@ -48,6 +48,7 @@ describe('updateMusicStateScratch', () => {
       killCount: 99,
       bossActive: false,
       biomeTimbre: 0.5,
+      buildDensity: 0.35,
     });
   });
 
@@ -55,7 +56,7 @@ describe('updateMusicStateScratch', () => {
     const scratch = freshScratch();
     const ref = scratch;
     const { player, spawn, juice } = stubs();
-    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0);
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0, 0);
     expect(scratch).toBe(ref);
   });
 
@@ -63,11 +64,12 @@ describe('updateMusicStateScratch', () => {
     const scratch: GameMusicState = {
       hp: 1, maxHp: 1, gameTimeSec: 1, enemyCount: 1,
       comboCount: 1, killCount: 1, bossActive: true, biomeTimbre: 1,
+      buildDensity: 1,
     };
     const { player, spawn, juice } = stubs({
       hp: 50, maxHp: 200, time: 999, enemies: 0, boss: false, combo: 0,
     });
-    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 42, 0.25);
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 42, 0.25, 0.6);
     expect(scratch.hp).toBe(50);
     expect(scratch.maxHp).toBe(200);
     expect(scratch.gameTimeSec).toBe(999);
@@ -76,12 +78,13 @@ describe('updateMusicStateScratch', () => {
     expect(scratch.comboCount).toBe(0);
     expect(scratch.killCount).toBe(42);
     expect(scratch.biomeTimbre).toBe(0.25);
+    expect(scratch.buildDensity).toBe(0.6);
   });
 
   it('propagates bossActive true', () => {
     const scratch = freshScratch();
     const { player, spawn, juice } = stubs({ boss: true });
-    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0);
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0, 0);
     expect(scratch.bossActive).toBe(true);
   });
 });
