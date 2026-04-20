@@ -910,6 +910,39 @@ export class JuiceSystem {
     this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, scaled);
   }
 
+  /** Ascending gold sparkle rain — victory celebration, 2 seconds of rising dots. */
+  victorySparkleRain(): void {
+    if (this.settings.load().reduceParticles) return;
+    const scene = this.scene;
+    const sparkleColors = [0xffd700, 0xffffff, 0xffee88];
+    const total = 30;
+    const interval = 66; // ~66ms between spawns ≈ 2s total
+    // Scene reference guard — if scene restarts, captured ref becomes stale.
+    const sceneRef = scene;
+    for (let i = 0; i < total; i++) {
+      setTimeout(() => {
+        // Guard: scene may have been restarted or destroyed.
+        if (!sceneRef.scene.isActive(sceneRef.scene.key)) return;
+        const vp = getCameraViewport(sceneRef);
+        const sx = vp.x + Math.random() * vp.width;
+        const sy = vp.y + vp.height + 10;
+        const color = Phaser.Utils.Array.GetRandom(sparkleColors) as number;
+        const dot = sceneRef.add.circle(sx, sy, 2, color, 0.8)
+          .setScrollFactor(0).setDepth(50);
+        const drift = (Math.random() - 0.5) * 60;
+        sceneRef.tweens.add({
+          targets: dot,
+          y: vp.y - 20,
+          x: sx + drift,
+          alpha: 0,
+          duration: 1800 + Math.random() * 400,
+          ease: 'Sine.easeIn',
+          onComplete: () => dot.destroy(),
+        });
+      }, 500 + i * interval);
+    }
+  }
+
   /** Colored particle bloom on first biome entry. */
   biomeEntryBurst(x: number, y: number, biomeId: string): void {
     if (this.settings.load().reduceParticles) return;
