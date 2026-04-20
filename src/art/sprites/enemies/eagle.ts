@@ -3,11 +3,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeEagle(scene: Phaser.Scene): void {
-  const s = 56;  // up from 48 — eagle should dominate the seagull
-  const g = scene.add.graphics();
-  const cx = s / 2 - 2, cy = s / 2;
+export const EAGLE_CANVAS_SIZE = 56;
+
+export function drawEagleBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = EAGLE_CANVAS_SIZE;
+  const cx = s / 2 - 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Wings — broad sweep reaching near canvas edges (~2px margin) ──
   // Outer wing (darkest — primary feathers)
@@ -103,8 +109,11 @@ export function bakeEagle(scene: Phaser.Scene): void {
   g.fillStyle(0x3a2a14, 0.6);
   g.fillCircle(cx - 1, cy + 5, 2.5);
   g.fillCircle(cx + 4, cy + 5, 2.5);
-
-  g.generateTexture('eagle', s, s);
-  g.destroy();
 }
 
+export function bakeEagle(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawEagleBody(g);
+  g.generateTexture('eagle', EAGLE_CANVAS_SIZE, EAGLE_CANVAS_SIZE);
+  g.destroy();
+}
