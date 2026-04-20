@@ -11,11 +11,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeHaarWraith(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const HAAR_WRAITH_CANVAS_SIZE = 44;
+
+export function drawHaarWraithBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = HAAR_WRAITH_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── AMBIENT COLD HAAR — wide teal halo so the sprite edge is
   // all mist, never a clean line. ──
@@ -97,7 +103,12 @@ export function bakeHaarWraith(scene: Phaser.Scene): void {
   g.fillRect(0, cy - 2, 8, 0.6);
   g.fillRect(36, cy - 2, 8, 0.6);
 
-  g.generateTexture('haar_wraith', s, s);
+}
+
+export function bakeHaarWraith(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawHaarWraithBody(g);
+  g.generateTexture('haar_wraith', HAAR_WRAITH_CANVAS_SIZE, HAAR_WRAITH_CANVAS_SIZE);
   g.destroy();
 }
 

@@ -49,6 +49,7 @@ import '../animation/frameDrawers/enemies/kelpieFoalFrames';
 import '../animation/frameDrawers/enemies/blueManOfMinchFrames';
 import '../animation/frameDrawers/enemies/edinburghGhostGuideFrames';
 import '../animation/frameDrawers/enemies/redcapFrames';
+import '../animation/frameDrawers/enemies/haarWraithFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
