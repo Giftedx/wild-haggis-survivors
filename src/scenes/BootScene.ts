@@ -62,6 +62,7 @@ import '../animation/frameDrawers/enemies/gordonFrames';
 import '../animation/frameDrawers/enemies/tourBusFrames';
 import '../animation/frameDrawers/enemies/lairdFrames';
 import '../animation/frameDrawers/enemies/hunterGeneralFrames';
+import '../animation/frameDrawers/enemies/taxmanFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.

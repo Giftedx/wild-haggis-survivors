@@ -3,11 +3,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBossTaxman(scene: Phaser.Scene): void {
-  const s = 80;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 4;
+export const BOSS_TAXMAN_CANVAS_SIZE = 80;
+
+export function drawBossTaxmanBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BOSS_TAXMAN_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
 
   // === Pinstripe cloak (death meets the civil service) ===
   g.fillStyle(0x000000, 1);
@@ -56,17 +62,17 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   g.fillCircle(cx - 6, cy - 4, 3);
   g.fillCircle(cx + 6, cy - 4, 3);
 
-  // === Thin wire-rimmed spectacles (the civil servant look — perched on bone) ===
-  g.lineStyle(0.8, 0x888888, 1); // thin wire — not thick frames
+  // === Thin wire-rimmed spectacles ===
+  g.lineStyle(0.8, 0x888888, 1);
   g.strokeCircle(cx - 5, cy - 8, 3.5);
   g.strokeCircle(cx + 5, cy - 8, 3.5);
-  // Bridge (thin wire connecting the lenses)
+  // Bridge
   g.lineStyle(0.6, 0x888888, 1);
   g.lineBetween(cx - 2, cy - 8, cx + 2, cy - 8);
-  // Temple arms (thin, going behind where ears would be)
+  // Temple arms
   g.lineBetween(cx - 8, cy - 8, cx - 12, cy - 6);
   g.lineBetween(cx + 8, cy - 8, cx + 12, cy - 6);
-  // Wire glint (catches the light — sinister)
+  // Wire glint
   g.fillStyle(0xcccccc, 0.4);
   g.fillCircle(cx - 7, cy - 9, 0.5);
   g.fillCircle(cx + 7, cy - 9, 0.5);
@@ -89,15 +95,13 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   // Nose cavity
   g.fillStyle(0x000000, 1);
   g.fillTriangle(cx - 1, cy - 3, cx + 1, cy - 3, cx, cy + 1);
-  // Jagged skull grin — upper + lower jaw lines with gapped teeth
-  // spikes, plus two longer fangs. Reads as a bone grin at sprite
-  // scale instead of an evenly-spaced picket fence.
+  // Jagged skull grin
   g.fillStyle(0x000000, 1);
   g.fillRect(cx - 7, cy + 2, 14, 6);
-  // Upper jawline — solid bone bar across the top.
+  // Upper jawline
   g.fillStyle(0xddddcc, 1);
   g.fillRect(cx - 7, cy + 2, 14, 1);
-  // Upper teeth — 1-pixel spikes pointing down, two fangs longer.
+  // Upper teeth
   g.fillRect(cx - 6, cy + 3, 1, 2);
   g.fillRect(cx - 4, cy + 3, 1, 3); // left fang
   g.fillRect(cx - 2, cy + 3, 1, 2);
@@ -105,13 +109,13 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   g.fillRect(cx + 2, cy + 3, 1, 3); // right fang
   g.fillRect(cx + 4, cy + 3, 1, 2);
   g.fillRect(cx + 6, cy + 3, 1, 2);
-  // Lower jawline — bone bar across the bottom.
+  // Lower jawline
   g.fillStyle(0xc0c0b0, 1);
   g.fillRect(cx - 7, cy + 7, 14, 1);
-  // Lower teeth — spikes pointing up, one missing (ned with tax bills).
+  // Lower teeth
   g.fillRect(cx - 5, cy + 5, 1, 2);
   g.fillRect(cx - 3, cy + 5, 1, 2);
-  g.fillRect(cx + 1, cy + 5, 1, 2); // gap between cx-1 and cx+1
+  g.fillRect(cx + 1, cy + 5, 1, 2);
   g.fillRect(cx + 3, cy + 5, 1, 2);
   g.fillRect(cx + 5, cy + 5, 1, 2);
 
@@ -129,12 +133,12 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   g.fillStyle(0xeeeeee, 0.7);
   g.fillTriangle(cx + 12, cy - 30, cx + 23, cy - 28, cx + 13, cy - 28);
 
-  // === Calculator hanging from scythe handle (the real weapon) ===
+  // === Calculator hanging from scythe handle ===
   g.fillStyle(0x222222, 1);
   g.fillRect(cx + 20, cy + 10, 6, 8);
   g.fillStyle(0x333333, 1);
   g.fillRect(cx + 21, cy + 11, 4, 6);
-  // Screen (showing a big number — your tax bill)
+  // Screen
   g.fillStyle(0x88ff88, 0.8);
   g.fillRect(cx + 21, cy + 11, 4, 2);
   // Buttons
@@ -146,7 +150,11 @@ export function bakeBossTaxman(scene: Phaser.Scene): void {
   // String attaching to handle
   g.lineStyle(0.8, 0x444444, 0.7);
   g.lineBetween(cx + 23, cy + 10, cx + 25, cy + 8);
+}
 
-  g.generateTexture('boss_taxman', s, s);
+export function bakeBossTaxman(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBossTaxmanBody(g);
+  g.generateTexture('boss_taxman', BOSS_TAXMAN_CANVAS_SIZE, BOSS_TAXMAN_CANVAS_SIZE);
   g.destroy();
 }
