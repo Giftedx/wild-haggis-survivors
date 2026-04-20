@@ -23,6 +23,9 @@ import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
+import { AnimationController } from '../animation/AnimationController';
+import type { AnimationSignals } from '../animation/animationStates';
+import { isEnemyAnimated } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
 
 // Mini HP bar above enemies: dark backing + red/gold fill. Colours used
 // in both the standard setup path and the elite upgrade path, so pinning
@@ -140,6 +143,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private shadow: Phaser.GameObjects.Image | null = null;
   /** Idle bob phase — each enemy gets a random offset so they don't bob in lockstep */
   private bobPhase: number = 0;
+  /** Animation controller for texture-swap animation. Null for non-animated enemies. */
+  private animController: AnimationController | null = null;
+  /** Consumed-once flag for hurt animation edge. */
+  private hurtEdgeThisFrame: boolean = false;
 
   private hazardTtlHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
   private damageTintHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
@@ -275,6 +282,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.speedDirty = false;
     this.poisonDamage = 0; this.poisonTimer = 0; this.poisonTickAccum = 0;
     this.chemicalExplosionFired = false;
+    this.hurtEdgeThisFrame = false;
     this.woolArmor = config.key === 'sheep' ? 1 : 0;
     // Reset spawner cooldown: nests fire a first midge quickly (500ms)
     // so they matter even if killed soon after spawn, then 4s cycles after
@@ -289,6 +297,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     // Random idle-bob phase so a pack of enemies doesn't visually pulse in sync
     this.bobPhase = Math.random() * Math.PI * 2;
+
+    // Animation controller — only for enemies with authored frame drawers.
+    // Non-animated enemies keep static texture + bobPhase wobble.
+    if (isEnemyAnimated(config.key)) {
+      this.animController = new AnimationController({
+        sprite: this,
+        subject: config.texture,
+        variant: null,
+      });
+    } else {
+      this.animController = null;
+    }
 
     // Scale HP and damage with game time
     const hpMul = 1 + ENEMIES.HP_SCALE_PER_MINUTE * (gameTimeSec / 60);
@@ -436,10 +456,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     this.ensureSpatialPhysicsActive();
 
-    // Idle breathing — subtle scaleY wobble anchored to baseDisplayScale
-    // (tracks elite 1.3×, boss 2.0-3.0×, enraged hazard 1.5×). Hazards and
-    // spawners stay static; everything else breathes, bosses included.
-    if (this.behavior !== 'hazard' && this.behavior !== 'spawner') {
+    // Animated enemies: tick the animation controller for texture-swap.
+    // Non-animated enemies: keep the legacy scaleY bob.
+    if (this.animController) {
+      const body = this.body as Phaser.Physics.Arcade.Body;
+      const signals: AnimationSignals = {
+        velocityMag: Math.hypot(body.velocity.x, body.velocity.y),
+        hurtEdge: this.hurtEdgeThisFrame,
+        attackEdge: false,
+        celebrateEdge: false,
+        hp: this.hp,
+      };
+      this.hurtEdgeThisFrame = false;
+      this.animController.tick(delta, signals);
+    } else if (this.behavior !== 'hazard' && this.behavior !== 'spawner') {
       this.bobPhase += 0.08;
       const wobble = Math.sin(this.bobPhase) * 0.04;
       const base = this.baseDisplayScale;
@@ -1011,6 +1041,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (this.behavior === 'hazard') return false;
     if (!this.active) return false;
     this.hp -= amount;
+    this.hurtEdgeThisFrame = true;
     if (this.hp <= 0) {
       const wasBoss = this.bossFlag;
       const wasElite = this.eliteFlag;
@@ -1074,6 +1105,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     this.hp -= amount;
+    this.hurtEdgeThisFrame = true;
     if (this.hp <= 0) {
       this.die();
       return true;
