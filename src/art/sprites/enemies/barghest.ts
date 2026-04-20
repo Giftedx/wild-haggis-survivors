@@ -3,11 +3,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBarghest(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const BARGHEST_CANVAS_SIZE = 44;
+
+export function drawBarghestBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BARGHEST_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;  // front legs
+  const rly = frame.rightLegY ?? 0; // back legs
 
   // Menacing under-shadow.
   g.fillStyle(0x000000, 0.35);
@@ -24,11 +32,13 @@ export function bakeBarghest(scene: Phaser.Scene): void {
   g.fillEllipse(cx + 4, cy, 4, 3);
 
   // Legs — 4, scruffy and taut mid-bound.
+  // Back pair (leftLegY mapped to back legs at left-side of body).
   g.fillStyle(0x0a0a0f, 1);
-  g.fillRect(cx - 10, cy + 8, 2, 7);
-  g.fillRect(cx - 4, cy + 9, 2, 6);
-  g.fillRect(cx + 2, cy + 9, 2, 6);
-  g.fillRect(cx + 8, cy + 8, 2, 7);
+  g.fillRect(cx - 10, cy + 8 + rly, 2, 7);
+  g.fillRect(cx - 4, cy + 9 + rly, 2, 6);
+  // Front pair (rightLegY mapped to front legs near head).
+  g.fillRect(cx + 2, cy + 9 + lly, 2, 6);
+  g.fillRect(cx + 8, cy + 8 + lly, 2, 7);
 
   // Tail — curling shadow behind.
   g.fillStyle(0x0a0a0f, 1);
@@ -63,8 +73,12 @@ export function bakeBarghest(scene: Phaser.Scene): void {
   g.fillStyle(0x220022, 0.3);
   g.fillRect(cx - 18, cy + 2, 4, 1);
   g.fillRect(cx - 20, cy + 5, 3, 1);
+}
 
-  g.generateTexture('barghest', s, s);
+export function bakeBarghest(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBarghestBody(g);
+  g.generateTexture('barghest', BARGHEST_CANVAS_SIZE, BARGHEST_CANVAS_SIZE);
   g.destroy();
 }
 
