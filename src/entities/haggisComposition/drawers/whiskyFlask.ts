@@ -109,11 +109,38 @@ function drawHurt1(g: Phaser.GameObjects.Graphics): void {
   drawFlask(g, { y: 0, x: -1 });
 }
 
+// ── Celebrating frames — flask bounces with the hop. ──
+function drawCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: +2 });
+}
+function drawCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: -5 });
+}
+function drawCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: 0, x: -1 });
+}
+function drawCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: 0, x: +1 });
+}
+
+// ── Dying frames — flask crumples with body. ──
+function drawDying0(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: +1, x: -1 });
+}
+function drawDying1(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: +3, x: -2 });
+}
+function drawDying2(g: Phaser.GameObjects.Graphics): void {
+  drawFlask(g, { y: +5, x: -3 });
+}
+
 const FRAMES = {
   idle: [drawIdle0, drawIdle1],
   walking: [drawWalking0, drawWalking1, drawWalking2, drawWalking3],
   attacking: [drawAttacking0, drawAttacking1, drawAttacking2, drawAttacking3],
   hurt: [drawHurt0, drawHurt1],
+  celebrating: [drawCelebrating0, drawCelebrating1, drawCelebrating2, drawCelebrating3],
+  dying: [drawDying0, drawDying1, drawDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -121,7 +148,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const WHISKY_FLASK_DRAWER: AccessoryDrawer = {
   id: 'whisky_flask',
   layer: 'front',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {

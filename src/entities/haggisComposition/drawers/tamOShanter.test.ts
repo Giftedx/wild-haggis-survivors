@@ -19,12 +19,14 @@ describe('TAM_O_SHANTER_DRAWER', () => {
     expect(TAM_O_SHANTER_DRAWER.layer).toBe('above');
   });
 
-  it('authors idle + walking + attacking + hurt (Phase 1)', () => {
+  it('authors idle + walking + attacking + hurt + celebrating + dying', () => {
     expect(TAM_O_SHANTER_DRAWER.authoredStates).toEqual([
       'idle',
       'walking',
       'attacking',
       'hurt',
+      'celebrating',
+      'dying',
     ]);
   });
 

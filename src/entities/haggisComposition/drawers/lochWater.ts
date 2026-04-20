@@ -115,11 +115,38 @@ function drawHurt1(g: Phaser.GameObjects.Graphics): void {
   drawWater(g, { y: 0, x: -1, left: { x: 0, y: 0 }, right: { x: 0, y: 0 } });
 }
 
+// ── Celebrating frames — droplets bounce with the hop. ──
+function drawCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: +2, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } });
+}
+function drawCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: -5, left: { x: 0, y: -2 }, right: { x: 0, y: -2 } });
+}
+function drawCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: 0, x: -1, left: { x: 1, y: 0 }, right: { x: -1, y: 0 } });
+}
+function drawCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: 0, x: +1, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } });
+}
+
+// ── Dying frames — droplets sink into the ground. ──
+function drawDying0(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: +1, x: -1, left: { x: 0, y: 1 }, right: { x: 0, y: 1 } });
+}
+function drawDying1(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: +3, x: -2, left: { x: -1, y: 2 }, right: { x: 1, y: 2 } });
+}
+function drawDying2(g: Phaser.GameObjects.Graphics): void {
+  drawWater(g, { y: +5, x: -3, left: { x: -2, y: 3 }, right: { x: 2, y: 3 } });
+}
+
 const FRAMES = {
   idle: [drawIdle0, drawIdle1],
   walking: [drawWalking0, drawWalking1, drawWalking2, drawWalking3],
   attacking: [drawAttacking0, drawAttacking1, drawAttacking2, drawAttacking3],
   hurt: [drawHurt0, drawHurt1],
+  celebrating: [drawCelebrating0, drawCelebrating1, drawCelebrating2, drawCelebrating3],
+  dying: [drawDying0, drawDying1, drawDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -127,7 +154,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const LOCH_WATER_DRAWER: AccessoryDrawer = {
   id: 'loch_water',
   layer: 'behind',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {

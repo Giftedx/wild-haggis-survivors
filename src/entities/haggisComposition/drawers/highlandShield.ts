@@ -129,6 +129,31 @@ function drawShieldHurt1(g: Phaser.GameObjects.Graphics): void {
   drawShield(g, { y: 0, x: -1 });
 }
 
+// ── Celebrating frames — shield bounces with the hop. ──
+function drawShieldCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: +2 });
+}
+function drawShieldCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: -5 });
+}
+function drawShieldCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: 0, x: -1 });
+}
+function drawShieldCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: 0, x: +1 });
+}
+
+// ── Dying frames — shield drops forward off the back. ──
+function drawShieldDying0(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: +1, x: -1 });
+}
+function drawShieldDying1(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: +3, x: -2 });
+}
+function drawShieldDying2(g: Phaser.GameObjects.Graphics): void {
+  drawShield(g, { y: +5, x: -3 });
+}
+
 const FRAMES = {
   idle: [drawShieldIdle0, drawShieldIdle1],
   walking: [
@@ -144,6 +169,13 @@ const FRAMES = {
     drawShieldAttacking3,
   ],
   hurt: [drawShieldHurt0, drawShieldHurt1],
+  celebrating: [
+    drawShieldCelebrating0,
+    drawShieldCelebrating1,
+    drawShieldCelebrating2,
+    drawShieldCelebrating3,
+  ],
+  dying: [drawShieldDying0, drawShieldDying1, drawShieldDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -151,7 +183,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const HIGHLAND_SHIELD_DRAWER: AccessoryDrawer = {
   id: 'highland_shield',
   layer: 'behind',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {

@@ -173,6 +173,31 @@ function drawTamHurt1(g: Phaser.GameObjects.Graphics): void {
   drawTam(g, { y: 0, x: -1 });
 }
 
+// ── Celebrating frames — hat flies up with the hop (above-layer: bigger y). ──
+function drawTamCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: +3 });
+}
+function drawTamCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: -7 });
+}
+function drawTamCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 0, x: -1 });
+}
+function drawTamCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: 0, x: +1 });
+}
+
+// ── Dying frames — hat slides off the head. ──
+function drawTamDying0(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: +1, x: -1 });
+}
+function drawTamDying1(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: +4, x: -3 });
+}
+function drawTamDying2(g: Phaser.GameObjects.Graphics): void {
+  drawTam(g, { y: +7, x: -5 });
+}
+
 const FRAMES = {
   idle: [drawTamIdle0, drawTamIdle1],
   walking: [drawTamWalking0, drawTamWalking1, drawTamWalking2, drawTamWalking3],
@@ -183,6 +208,13 @@ const FRAMES = {
     drawTamAttacking3,
   ],
   hurt: [drawTamHurt0, drawTamHurt1],
+  celebrating: [
+    drawTamCelebrating0,
+    drawTamCelebrating1,
+    drawTamCelebrating2,
+    drawTamCelebrating3,
+  ],
+  dying: [drawTamDying0, drawTamDying1, drawTamDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -190,7 +222,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const TAM_O_SHANTER_DRAWER: AccessoryDrawer = {
   id: 'tam_o_shanter',
   layer: 'above',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {

@@ -130,6 +130,31 @@ function drawKiltHurt1(g: Phaser.GameObjects.Graphics): void {
   drawKilt(g, { y: 0, x: -1 });
 }
 
+// ── Celebrating frames — kilt bounces forward with the hop. ──
+function drawKiltCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: +2 });
+}
+function drawKiltCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: -5 });
+}
+function drawKiltCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: 0, x: -1 });
+}
+function drawKiltCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: 0, x: +1 });
+}
+
+// ── Dying frames — kilt drops forward as body crumples. ──
+function drawKiltDying0(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: +1, x: -1 });
+}
+function drawKiltDying1(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: +3, x: -2 });
+}
+function drawKiltDying2(g: Phaser.GameObjects.Graphics): void {
+  drawKilt(g, { y: +5, x: -3 });
+}
+
 const FRAMES = {
   idle: [drawKiltIdle0, drawKiltIdle1],
   walking: [
@@ -145,6 +170,13 @@ const FRAMES = {
     drawKiltAttacking3,
   ],
   hurt: [drawKiltHurt0, drawKiltHurt1],
+  celebrating: [
+    drawKiltCelebrating0,
+    drawKiltCelebrating1,
+    drawKiltCelebrating2,
+    drawKiltCelebrating3,
+  ],
+  dying: [drawKiltDying0, drawKiltDying1, drawKiltDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -152,7 +184,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const KILT_DRAWER: AccessoryDrawer = {
   id: 'kilt',
   layer: 'body',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {

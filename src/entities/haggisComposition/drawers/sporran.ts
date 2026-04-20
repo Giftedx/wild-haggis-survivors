@@ -122,6 +122,31 @@ function drawSporranHurt1(g: Phaser.GameObjects.Graphics): void {
   drawSporran(g, { y: 0, x: -1 });
 }
 
+// ── Celebrating frames — pouch bounces with the hop. ──
+function drawSporranCelebrating0(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: +2 });
+}
+function drawSporranCelebrating1(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: -5 });
+}
+function drawSporranCelebrating2(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: 0, x: -1 });
+}
+function drawSporranCelebrating3(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: 0, x: +1 });
+}
+
+// ── Dying frames — pouch crumples with body. ──
+function drawSporranDying0(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: +1, x: -1 });
+}
+function drawSporranDying1(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: +3, x: -2 });
+}
+function drawSporranDying2(g: Phaser.GameObjects.Graphics): void {
+  drawSporran(g, { y: +5, x: -3 });
+}
+
 const FRAMES = {
   idle: [drawSporranIdle0, drawSporranIdle1],
   walking: [
@@ -137,6 +162,13 @@ const FRAMES = {
     drawSporranAttacking3,
   ],
   hurt: [drawSporranHurt0, drawSporranHurt1],
+  celebrating: [
+    drawSporranCelebrating0,
+    drawSporranCelebrating1,
+    drawSporranCelebrating2,
+    drawSporranCelebrating3,
+  ],
+  dying: [drawSporranDying0, drawSporranDying1, drawSporranDying2],
 } as const;
 
 type AuthoredState = keyof typeof FRAMES;
@@ -144,7 +176,7 @@ type AuthoredState = keyof typeof FRAMES;
 export const SPORRAN_DRAWER: AccessoryDrawer = {
   id: 'sporran',
   layer: 'front',
-  authoredStates: ['idle', 'walking', 'attacking', 'hurt'] as const,
+  authoredStates: ['idle', 'walking', 'attacking', 'hurt', 'celebrating', 'dying'] as const,
   draw(g: Phaser.GameObjects.Graphics, ctx: AccessoryDrawCtx): void {
     const drawers = FRAMES[ctx.state as AuthoredState];
     if (!drawers) {
