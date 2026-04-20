@@ -12,11 +12,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeGaleWraith(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const GALE_WRAITH_CANVAS_SIZE = 44;
+
+export function drawGaleWraithBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = GALE_WRAITH_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // Outer gust halo — elongated oval biased left (lee)
   g.fillStyle(0x9db0c0, 0.22);
@@ -145,7 +151,12 @@ export function bakeGaleWraith(scene: Phaser.Scene): void {
   g.fillRect(cx - 10, cy + 10, 1, 1);
   g.fillRect(cx - 19, cy - 4, 1, 1);
 
-  g.generateTexture('gale_wraith', s, s);
+}
+
+export function bakeGaleWraith(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawGaleWraithBody(g);
+  g.generateTexture('gale_wraith', GALE_WRAITH_CANVAS_SIZE, GALE_WRAITH_CANVAS_SIZE);
   g.destroy();
 }
 
