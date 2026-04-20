@@ -9,11 +9,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeDeanApparition(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const DEAN_APPARITION_CANVAS_SIZE = 44;
+
+export function drawDeanApparitionBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = DEAN_APPARITION_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Ghostly halo — cold blue-grey, two layers. ──
   g.fillStyle(0x6a7890, 0.2);
@@ -129,7 +135,12 @@ export function bakeDeanApparition(scene: Phaser.Scene): void {
   g.fillCircle(cx - 1, cy + 6, 0.4);
   g.fillCircle(cx + 1, cy + 6, 0.4);
 
-  g.generateTexture('dean_apparition', s, s);
+}
+
+export function bakeDeanApparition(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawDeanApparitionBody(g);
+  g.generateTexture('dean_apparition', DEAN_APPARITION_CANVAS_SIZE, DEAN_APPARITION_CANVAS_SIZE);
   g.destroy();
 }
 

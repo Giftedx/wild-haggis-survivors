@@ -52,6 +52,7 @@ import '../animation/frameDrawers/enemies/redcapFrames';
 import '../animation/frameDrawers/enemies/haarWraithFrames';
 import '../animation/frameDrawers/enemies/galeWraithFrames';
 import '../animation/frameDrawers/enemies/tomeWraithFrames';
+import '../animation/frameDrawers/enemies/deanApparitionFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
