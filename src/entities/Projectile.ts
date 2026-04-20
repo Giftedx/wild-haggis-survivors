@@ -161,8 +161,14 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setVelocity(0, 0);
+    // Reset visual motion applied by applyProjectileVisual
+    this.rotation = 0;
+    this.scaleX = 1;
+    this.scaleY = 1;
+    if (this.scene) this.scene.tweens.killTweensOf(this);
     this.hitTargets = new WeakSet(); // Prevent stale refs leaking into next pool cycle
     const body = this.body as Phaser.Physics.Arcade.Body;
+    if (body.angularVelocity) body.angularVelocity = 0;
     body.enable = false;
   }
 

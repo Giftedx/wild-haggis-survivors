@@ -423,6 +423,7 @@ export class WeaponSystem {
       const { damage, isCrit } = this.effectiveDamage(w);
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
       proj.setWeaponKey(w.config.key);
+      this.applyProjectileVisual(proj, texture);
     }
   }
 
@@ -444,6 +445,7 @@ export class WeaponSystem {
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, 0, w.config.range, isCrit);
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
+      this.applyProjectileVisual(proj, 'haggis_ball');
     }
   }
 
@@ -684,6 +686,7 @@ export class WeaponSystem {
 
       proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800, isCrit);
       proj.setWeaponKey(w.config.key);
+      this.applyProjectileVisual(proj, 'thistle');
     }
   }
 
@@ -781,6 +784,7 @@ export class WeaponSystem {
     const weaponKey = w.config.key;
     proj.fire(px, py, target.x, target.y, w.config.projectileSpeed, dmg, w.pierce, w.config.range, isCrit);
     proj.setWeaponKey(weaponKey);
+    this.applyProjectileVisual(proj, 'caber');
 
     // Use the safe callback field instead of monkey-patching deactivate
     proj.onDeactivateCallback = () => {
@@ -856,6 +860,7 @@ export class WeaponSystem {
       );
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
+      this.applyProjectileVisual(proj, 'haggis_ball');
     }
   }
 
@@ -943,6 +948,23 @@ export class WeaponSystem {
     const cap = BALANCE.weapons.maxSimultaneousProjectilesPerWeapon;
     const cur = this.countActiveProjectilesForWeapon(weaponKey);
     return Math.max(0, Math.min(desired, cap - cur));
+  }
+
+  /** Apply spinning/pulsing visual to a freshly fired projectile based on its texture. */
+  private applyProjectileVisual(proj: Projectile, texture: string): void {
+    const body = proj.body as Phaser.Physics.Arcade.Body;
+    if (texture === 'caber') {
+      body.setAllowRotation(true);
+      body.setAngularVelocity(720);
+    } else if (texture === 'thistle') {
+      this.scene.tweens.add({
+        targets: proj, scaleX: 1.15, scaleY: 1.15,
+        duration: 150, yoyo: true, repeat: -1, ease: 'Sine.easeInOut',
+      });
+    } else if (texture === 'haggis_ball') {
+      body.setAllowRotation(true);
+      body.setAngularVelocity(540);
+    }
   }
 
   private getProjectile(texture: string): Projectile | null {
