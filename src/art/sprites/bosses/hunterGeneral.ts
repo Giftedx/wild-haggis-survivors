@@ -3,11 +3,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
-  const s = 80;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 4;
+export const BOSS_HUNTER_GENERAL_CANVAS_SIZE = 80;
+
+export function drawBossHunterGeneralBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BOSS_HUNTER_GENERAL_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // === Military body (safari khaki-green, not camo) ===
   g.fillStyle(0x1a2a11, 1);
@@ -19,15 +27,15 @@ export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
 
   // === Jodhpurs visible below (buff/khaki riding pants) ===
   g.fillStyle(0x887755, 1);
-  g.fillRect(cx - 12, cy + 18, 10, 6);
-  g.fillRect(cx + 2, cy + 18, 10, 6);
+  g.fillRect(cx - 12, cy + 18 + lly, 10, 6);
+  g.fillRect(cx + 2, cy + 18 + rly, 10, 6);
   // Riding boots (tall, polished brown)
   g.fillStyle(0x442211, 1);
-  g.fillRect(cx - 12, cy + 22, 10, 4);
-  g.fillRect(cx + 2, cy + 22, 10, 4);
+  g.fillRect(cx - 12, cy + 22 + lly, 10, 4);
+  g.fillRect(cx + 2, cy + 22 + rly, 10, 4);
   g.fillStyle(0x553322, 1);
-  g.fillRect(cx - 11, cy + 22, 8, 3);
-  g.fillRect(cx + 3, cy + 22, 8, 3);
+  g.fillRect(cx - 11, cy + 22 + lly, 8, 3);
+  g.fillRect(cx + 3, cy + 22 + rly, 8, 3);
 
   // === Gold shoulder epaulettes (MASSIVE, ostentatious) ===
   g.fillStyle(0x886600, 1);
@@ -44,7 +52,7 @@ export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
   g.fillRect(cx + 20, cy - 4, 1, 3);
   g.fillRect(cx + 22, cy - 4, 1, 3);
 
-  // === Medals row (5 medals — he awards himself new ones weekly) ===
+  // === Medals row (5 medals) ===
   g.fillStyle(0xcc2222, 1);
   g.fillCircle(cx - 10, cy + 2, 2.5);
   g.fillStyle(0xddaa00, 1);
@@ -101,26 +109,26 @@ export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
   g.fillRect(cx - 8, cy - 12, 6, 1.5);
   g.fillTriangle(cx + 2, cy - 13, cx + 8, cy - 12, cx + 2, cy - 11);
 
-  // === Pith helmet (HIGH DOME — classic safari, the colonial big-game look) ===
-  // Wide brim (flat, wider at rear)
+  // === Pith helmet (HIGH DOME) ===
+  // Wide brim
   g.fillStyle(0x776644, 1);
   g.fillEllipse(cx, cy - 18, 30, 8);
   g.fillStyle(0xbbaa77, 1);
   g.fillEllipse(cx, cy - 18, 28, 7);
-  // HIGH dome (taller than you'd think — rigid, not floppy)
+  // HIGH dome
   g.fillStyle(0x776644, 1);
   g.fillEllipse(cx, cy - 24, 18, 12);
   g.fillStyle(0xaa9966, 1);
   g.fillEllipse(cx, cy - 24, 16, 11);
-  // Dome highlight (catches the light at the peak)
+  // Dome highlight
   g.fillStyle(0xccbb88, 0.6);
   g.fillEllipse(cx - 2, cy - 28, 10, 5);
-  // Ventilation knob on top (the little finial — real pith helmet detail)
+  // Ventilation knob on top
   g.fillStyle(0x887755, 1);
   g.fillCircle(cx, cy - 30, 2);
   g.fillStyle(0xaa9966, 1);
   g.fillCircle(cx, cy - 30, 1.2);
-  // Puggaree band (cloth wrap — the distinctive belt of fabric around the base)
+  // Puggaree band
   g.fillStyle(0x554422, 1);
   g.fillRect(cx - 13, cy - 19, 26, 3);
   g.fillStyle(0x665533, 1);
@@ -137,7 +145,7 @@ export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
   g.fillRect(cx + 22, cy + 4, 6, 18);
   g.fillStyle(0x553322, 1);
   g.fillRect(cx + 23, cy + 5, 4, 16);
-  // Barrel (flared at the end — that's what makes it a blunderbuss)
+  // Barrel
   g.fillStyle(0x333333, 1);
   g.fillRect(cx + 24, cy - 20, 4, 26);
   g.fillStyle(0x555555, 1);
@@ -151,7 +159,14 @@ export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
   g.fillStyle(0xddaa00, 1);
   g.fillCircle(cx + 24, cy + 4, 1.5);
 
-  g.generateTexture('boss_hunter_general', s, s);
-  g.destroy();
+  // Shadow under the figure.
+  g.fillStyle(0x000000, 0.25);
+  g.fillEllipse(cx, cy + 28, 26, 4);
 }
 
+export function bakeBossHunterGeneral(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBossHunterGeneralBody(g);
+  g.generateTexture('boss_hunter_general', BOSS_HUNTER_GENERAL_CANVAS_SIZE, BOSS_HUNTER_GENERAL_CANVAS_SIZE);
+  g.destroy();
+}
