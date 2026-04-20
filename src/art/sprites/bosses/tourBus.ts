@@ -3,11 +3,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBossTourBus(scene: Phaser.Scene): void {
-  const s = 96;  // up from 80 — a bus dwarfs a man
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2;
+export const BOSS_TOUR_BUS_CANVAS_SIZE = 96;
+
+export function drawBossTourBusBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BOSS_TOUR_BUS_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // All offsets scaled 1.2× from 80px originals to fill 96px canvas proportionally.
 
@@ -123,8 +129,11 @@ export function bakeBossTourBus(scene: Phaser.Scene): void {
   g.fillStyle(0x555555, 0.25);
   g.fillCircle(cx - 46, cy + 5, 4);
   g.fillCircle(cx - 50, cy + 1, 4);
-
-  g.generateTexture('boss_tour_bus', s, s);
-  g.destroy();
 }
 
+export function bakeBossTourBus(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBossTourBusBody(g);
+  g.generateTexture('boss_tour_bus', BOSS_TOUR_BUS_CANVAS_SIZE, BOSS_TOUR_BUS_CANVAS_SIZE);
+  g.destroy();
+}
