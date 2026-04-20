@@ -12,11 +12,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeLedgerWraith(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const LEDGER_WRAITH_CANVAS_SIZE = 40;
+
+export function drawLedgerWraithBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = LEDGER_WRAITH_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Ghostly halo — cold paper-blue, two layers wider than before
   // so the wraith silhouette reads first. ──
@@ -145,7 +151,12 @@ export function bakeLedgerWraith(scene: Phaser.Scene): void {
   g.fillCircle(cx - 3, cy + 9, 0.5);
   g.fillCircle(cx + 4, cy + 12, 0.5);
 
-  g.generateTexture('ledger_wraith', s, s);
+}
+
+export function bakeLedgerWraith(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawLedgerWraithBody(g);
+  g.generateTexture('ledger_wraith', LEDGER_WRAITH_CANVAS_SIZE, LEDGER_WRAITH_CANVAS_SIZE);
   g.destroy();
 }
 
