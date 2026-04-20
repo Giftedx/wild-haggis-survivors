@@ -58,6 +58,7 @@ import '../animation/frameDrawers/enemies/seelieFrames';
 import '../animation/frameDrawers/enemies/unseelieFiddlerFrames';
 import '../animation/frameDrawers/enemies/ceilidhCallerFrames';
 import '../animation/frameDrawers/enemies/auditorPriestFrames';
+import '../animation/frameDrawers/enemies/gordonFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.

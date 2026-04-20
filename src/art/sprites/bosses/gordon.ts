@@ -3,11 +3,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeBossGordon(scene: Phaser.Scene): void {
-  const s = 80;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 4;
+export const BOSS_GORDON_CANVAS_SIZE = 80;
+
+export function drawBossGordonBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = BOSS_GORDON_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 4 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // === Body (chef whites, splattered, IMPOSING) ===
   g.fillStyle(0x777777, 1);
@@ -27,6 +35,14 @@ export function bakeBossGordon(scene: Phaser.Scene): void {
   g.fillCircle(cx - 5, cy + 10, 1.8);
   g.fillCircle(cx + 5, cy + 4, 1.8);
   g.fillCircle(cx + 5, cy + 10, 1.8);
+
+  // === Legs (chef trousers — black-and-white check) ===
+  g.fillStyle(0x111111, 1);
+  g.fillRect(cx - 10, cy + 24 + lly, 8, 10);
+  g.fillRect(cx + 2, cy + 24 + rly, 8, 10);
+  g.fillStyle(0x333333, 1);
+  g.fillRect(cx - 9, cy + 25 + lly, 6, 8);
+  g.fillRect(cx + 3, cy + 25 + rly, 6, 8);
 
   // === Face (PURPLE with rage — this man has ascended beyond anger) ===
   g.fillStyle(0x883355, 1);
@@ -89,7 +105,6 @@ export function bakeBossGordon(scene: Phaser.Scene): void {
   g.fillStyle(0xeeeeee, 1);
   g.fillRect(cx - 12, cy - 27, 26, 5);
   // Puffy top (tilted slightly — he's been screaming so hard his hat shifted).
-  // Center puff y=-35 (was -36 — radius-9 circle there clipped at y=-1).
   g.fillStyle(0xbbbbbb, 1);
   g.fillCircle(cx - 9, cy - 33, 8);
   g.fillCircle(cx + 1, cy - 35, 9);
@@ -119,7 +134,14 @@ export function bakeBossGordon(scene: Phaser.Scene): void {
   g.fillCircle(cx - 27, cy + 1, 1);
   g.fillCircle(cx - 25, cy + 6, 1);
 
-  g.generateTexture('boss_gordon', s, s);
-  g.destroy();
+  // Shadow under the figure.
+  g.fillStyle(0x000000, 0.25);
+  g.fillEllipse(cx, cy + 36, 28, 5);
 }
 
+export function bakeBossGordon(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawBossGordonBody(g);
+  g.generateTexture('boss_gordon', BOSS_GORDON_CANVAS_SIZE, BOSS_GORDON_CANVAS_SIZE);
+  g.destroy();
+}
