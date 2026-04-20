@@ -10,11 +10,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeKelpieFoal(scene: Phaser.Scene): void {
-  const s = 36;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const KELPIE_FOAL_CANVAS_SIZE = 36;
+
+export function drawKelpieFoalBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = KELPIE_FOAL_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;  // front legs
+  const rly = frame.rightLegY ?? 0; // back legs
 
   // ── Splash-pool under the hooves — water-spirit tell. Bigger
   // than before so the "of the loch" reads even at gameplay scale. ──
@@ -48,17 +56,20 @@ export function bakeKelpieFoal(scene: Phaser.Scene): void {
 
   // ── Legs — four thin ones with pale hooves. Slightly longer than
   // before for a menacing gait. ──
+  // Back pair (rightLegY).
   g.fillStyle(0x0a1a28, 1);
-  g.fillRect(cx - 8, cy + 6, 2, 8);
-  g.fillRect(cx - 3, cy + 7, 2, 7);
-  g.fillRect(cx + 1, cy + 7, 2, 7);
-  g.fillRect(cx + 6, cy + 6, 2, 8);
-  // Pale bone-white hooves
+  g.fillRect(cx - 8, cy + 6 + rly, 2, 8);
+  g.fillRect(cx - 3, cy + 7 + rly, 2, 7);
+  // Front pair (leftLegY).
+  g.fillRect(cx + 1, cy + 7 + lly, 2, 7);
+  g.fillRect(cx + 6, cy + 6 + lly, 2, 8);
+  // Pale bone-white hooves — back pair.
   g.fillStyle(0xa0c8e0, 0.9);
-  g.fillRect(cx - 8, cy + 13, 2, 1.5);
-  g.fillRect(cx - 3, cy + 13, 2, 1.5);
-  g.fillRect(cx + 1, cy + 13, 2, 1.5);
-  g.fillRect(cx + 6, cy + 13, 2, 1.5);
+  g.fillRect(cx - 8, cy + 13 + rly, 2, 1.5);
+  g.fillRect(cx - 3, cy + 13 + rly, 2, 1.5);
+  // Pale bone-white hooves — front pair.
+  g.fillRect(cx + 1, cy + 13 + lly, 2, 1.5);
+  g.fillRect(cx + 6, cy + 13 + lly, 2, 1.5);
 
   // ── Head — angled out-right, bigger than before so the face
   // details land at small scale. ──
@@ -118,7 +129,11 @@ export function bakeKelpieFoal(scene: Phaser.Scene): void {
   // Tail-tip drip
   g.fillStyle(0x8fd0f0, 0.8);
   g.fillCircle(cx - 13, cy + 2, 0.7);
+}
 
-  g.generateTexture('kelpie_foal', s, s);
+export function bakeKelpieFoal(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawKelpieFoalBody(g);
+  g.generateTexture('kelpie_foal', KELPIE_FOAL_CANVAS_SIZE, KELPIE_FOAL_CANVAS_SIZE);
   g.destroy();
 }
