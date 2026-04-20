@@ -10,11 +10,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeRedcap(scene: Phaser.Scene): void {
-  const s = 32;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const REDCAP_CANVAS_SIZE = 32;
+
+export function drawRedcapBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = REDCAP_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // ── Ground shadow. ──
   g.fillStyle(0x000000, 0.35);
@@ -23,17 +31,17 @@ export function bakeRedcap(scene: Phaser.Scene): void {
   // ── Iron-shod boots — signature redcap prop. Chunky black-grey
   // blocks with rivet studs. ──
   g.fillStyle(0x1a1a1e, 1);
-  g.fillRect(cx - 6, cy + 7, 5, 4);
-  g.fillRect(cx + 1, cy + 7, 5, 4);
+  g.fillRect(cx - 6, cy + 7 + lly, 5, 4);
+  g.fillRect(cx + 1, cy + 7 + rly, 5, 4);
   g.fillStyle(0x3a3a42, 1);
-  g.fillRect(cx - 6, cy + 7, 5, 1);
-  g.fillRect(cx + 1, cy + 7, 5, 1);
+  g.fillRect(cx - 6, cy + 7 + lly, 5, 1);
+  g.fillRect(cx + 1, cy + 7 + rly, 5, 1);
   // Iron rivets on the toe
   g.fillStyle(0x6a6a72, 1);
-  g.fillCircle(cx - 5, cy + 10, 0.4);
-  g.fillCircle(cx - 2, cy + 10, 0.4);
-  g.fillCircle(cx + 2, cy + 10, 0.4);
-  g.fillCircle(cx + 5, cy + 10, 0.4);
+  g.fillCircle(cx - 5, cy + 10 + lly, 0.4);
+  g.fillCircle(cx - 2, cy + 10 + lly, 0.4);
+  g.fillCircle(cx + 2, cy + 10 + rly, 0.4);
+  g.fillCircle(cx + 5, cy + 10 + rly, 0.4);
 
   // ── Stocky body — earthy rag-clothing, darker than before so the
   // red cap pops harder. ──
@@ -118,7 +126,11 @@ export function bakeRedcap(scene: Phaser.Scene): void {
   g.fillRect(cx - 5, cy - 6, 0.8, 2);
   g.fillStyle(0xc42828, 0.9);
   g.fillCircle(cx - 4.8, cy - 4, 0.6);
+}
 
-  g.generateTexture('redcap', s, s);
+export function bakeRedcap(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawRedcapBody(g);
+  g.generateTexture('redcap', REDCAP_CANVAS_SIZE, REDCAP_CANVAS_SIZE);
   g.destroy();
 }
