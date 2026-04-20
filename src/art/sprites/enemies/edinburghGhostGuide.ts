@@ -10,11 +10,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeEdinburghGhostGuide(scene: Phaser.Scene): void {
-  const s = 44;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const EDINBURGH_GHOST_GUIDE_CANVAS_SIZE = 44;
+
+export function drawEdinburghGhostGuideBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = EDINBURGH_GHOST_GUIDE_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Ectoplasmic aura — two layers of cold cyan. ──
   g.fillStyle(0x8fc6d4, 0.2);
@@ -150,7 +156,11 @@ export function bakeEdinburghGhostGuide(scene: Phaser.Scene): void {
   g.fillTriangle(cx + 9, cy - 10, cx + 15, cy - 10, cx + 12, cy - 13);
   g.fillStyle(0x8a6028, 1);
   g.fillTriangle(cx + 10, cy - 10.5, cx + 14, cy - 10.5, cx + 12, cy - 12.5);
+}
 
-  g.generateTexture('edinburgh_ghost_guide', s, s);
+export function bakeEdinburghGhostGuide(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawEdinburghGhostGuideBody(g);
+  g.generateTexture('edinburgh_ghost_guide', EDINBURGH_GHOST_GUIDE_CANVAS_SIZE, EDINBURGH_GHOST_GUIDE_CANVAS_SIZE);
   g.destroy();
 }
