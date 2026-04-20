@@ -3,28 +3,36 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeChef(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const CHEF_CANVAS_SIZE = 48;
+
+export function drawChefBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = CHEF_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // === Legs (black work trousers, scuffed from the kitchen) ===
   g.fillStyle(0x1a1a1a, 1);
-  g.fillRect(cx - 7, cy + 12, 5, 8);
-  g.fillRect(cx + 2, cy + 12, 5, 8);
+  g.fillRect(cx - 7, cy + 12 + lly, 5, 8);
+  g.fillRect(cx + 2, cy + 12 + rly, 5, 8);
   // Trouser crease highlight
   g.fillStyle(0x222222, 0.6);
-  g.fillRect(cx - 5, cy + 13, 1, 6);
-  g.fillRect(cx + 4, cy + 13, 1, 6);
+  g.fillRect(cx - 5, cy + 13 + lly, 1, 6);
+  g.fillRect(cx + 4, cy + 13 + rly, 1, 6);
   // Non-slip kitchen shoes (chunky, black, oil-resistant)
   g.fillStyle(0x0a0a0a, 1);
-  g.fillRect(cx - 8, cy + 18, 6, 3);
-  g.fillRect(cx + 2, cy + 18, 6, 3);
+  g.fillRect(cx - 8, cy + 18 + lly, 6, 3);
+  g.fillRect(cx + 2, cy + 18 + rly, 6, 3);
   // Shoe sole edge (white rubber)
   g.fillStyle(0x444444, 1);
-  g.fillRect(cx - 8, cy + 20, 6, 1);
-  g.fillRect(cx + 2, cy + 20, 6, 1);
+  g.fillRect(cx - 8, cy + 20 + lly, 6, 1);
+  g.fillRect(cx + 2, cy + 20 + rly, 6, 1);
 
   // === Grease-splattered apron over shirt ===
   g.fillStyle(0x888877, 1);
@@ -172,7 +180,12 @@ export function bakeChef(scene: Phaser.Scene): void {
   g.fillStyle(0xeeeeee, 0.15);
   g.fillCircle(cx, cy - 25, 3);
 
-  g.generateTexture('chef', s, s);
+}
+
+export function bakeChef(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawChefBody(g);
+  g.generateTexture('chef', CHEF_CANVAS_SIZE, CHEF_CANVAS_SIZE);
   g.destroy();
 }
 
