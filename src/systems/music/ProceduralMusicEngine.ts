@@ -10,6 +10,7 @@ import { globalEventBus } from '../../core/GlobalEventBus';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from '../audioContext';
 import { expApproach } from './musicMath';
 import { clamp01 } from '../../utils/math';
+import { AmbientBedLayer } from './AmbientBedLayer';
 import { DroneLayer } from './DroneLayer';
 import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
@@ -37,6 +38,7 @@ class ProceduralMusicEngine {
   private reverbMix: GainNode | null = null;
   private pianoSendGain: GainNode | null = null;
 
+  private ambientBed = new AmbientBedLayer();
   private drone = new DroneLayer();
   private piano = new PianoLayer();
   private percussion = new PercussionLayer();
@@ -229,6 +231,7 @@ class ProceduralMusicEngine {
     this.pianoSendGain = this.buildFogDelay(ctx) as GainNode;
 
     this.drone.start(ctx, this.masterFilter);
+    this.ambientBed.start(ctx, this.masterFilter);
     this.piano.start(ctx, this.pianoSendGain);
     this.percussion.start(ctx, this.masterFilter);
 
@@ -284,6 +287,7 @@ class ProceduralMusicEngine {
   private teardownAudioGraph(): void {
     this.stopRafLoop();
     this.drone.stop();
+    this.ambientBed.stop();
     this.piano.stop();
     this.percussion.stop();
     this.disconnectGraph();
@@ -356,6 +360,7 @@ class ProceduralMusicEngine {
 
     const droneDanger = Math.min(1, mood.danger + this.enragePressureAcc * 0.36);
     this.drone.applyMood(this.ctx, mood.intensity, droneDanger, mood.triumph, 2.0, moor);
+    this.ambientBed.applyMood(this.ctx, moor, mood.buildDensity, mood.intensity, mood.danger);
 
     if (this.masterFilter) {
       const freq = 3500 + mood.intensity * 2000 + (moor - 0.5) * 950
