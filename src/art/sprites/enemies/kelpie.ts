@@ -6,11 +6,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeKelpie(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const KELPIE_CANVAS_SIZE = 48;
+
+export function drawKelpieBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = KELPIE_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;  // front pair
+  const rly = frame.rightLegY ?? 0; // back pair
 
   // ── Water-spirit under-glow — matches the foal's aura. ──
   g.fillStyle(0x4a8ab0, 0.2);
@@ -29,20 +37,22 @@ export function bakeKelpie(scene: Phaser.Scene): void {
   g.beginPath(); g.arc(cx, cy + 17, 9, Math.PI, 0); g.strokePath();
 
   // ── Legs — 4 equine, darker at top, pale at the hocks. ──
+  // Front pair (leftLegY)
   g.fillStyle(0x0d1a28, 1);
-  g.fillRect(cx - 10, cy + 5, 3, 12);
-  g.fillRect(cx - 4, cy + 7, 3, 10);
-  g.fillRect(cx + 2, cy + 7, 3, 10);
-  g.fillRect(cx + 8, cy + 5, 3, 12);
+  g.fillRect(cx - 10, cy + 5 + lly, 3, 12);
+  g.fillRect(cx - 4, cy + 7 + lly, 3, 10);
+  // Back pair (rightLegY)
+  g.fillRect(cx + 2, cy + 7 + rly, 3, 10);
+  g.fillRect(cx + 8, cy + 5 + rly, 3, 12);
   g.fillStyle(0x1a3348, 1);
-  g.fillRect(cx - 9, cy + 6, 1, 10);
-  g.fillRect(cx + 9, cy + 6, 1, 10);
+  g.fillRect(cx - 9, cy + 6 + lly, 1, 10);
+  g.fillRect(cx + 9, cy + 6 + rly, 1, 10);
   // Pale hocks / fetlocks (water-spirit glow runs down the legs)
   g.fillStyle(0xa0c8e0, 0.7);
-  g.fillRect(cx - 10, cy + 15, 3, 2);
-  g.fillRect(cx - 4, cy + 15, 3, 2);
-  g.fillRect(cx + 2, cy + 15, 3, 2);
-  g.fillRect(cx + 8, cy + 15, 3, 2);
+  g.fillRect(cx - 10, cy + 15 + lly, 3, 2);
+  g.fillRect(cx - 4, cy + 15 + lly, 3, 2);
+  g.fillRect(cx + 2, cy + 15 + rly, 3, 2);
+  g.fillRect(cx + 8, cy + 15 + rly, 3, 2);
 
   // ── Body — elongated equine torso, wet-coat sheen. ──
   g.fillStyle(0x0d1a28, 1);
@@ -149,7 +159,11 @@ export function bakeKelpie(scene: Phaser.Scene): void {
   g.fillStyle(0xaaddee, 0.55);
   g.fillCircle(cx + 6, cy + 13, 0.5);
   g.fillCircle(cx + 18, cy + 1, 0.4);
+}
 
-  g.generateTexture('kelpie', s, s);
+export function bakeKelpie(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawKelpieBody(g);
+  g.generateTexture('kelpie', KELPIE_CANVAS_SIZE, KELPIE_CANVAS_SIZE);
   g.destroy();
 }
