@@ -9,11 +9,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeTomeWraith(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const TOME_WRAITH_CANVAS_SIZE = 40;
+
+export function drawTomeWraithBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = TOME_WRAITH_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Ghostly halo — cool parchment-blue, larger than before. ──
   g.fillStyle(0xb0c8d8, 0.2);
@@ -109,7 +115,12 @@ export function bakeTomeWraith(scene: Phaser.Scene): void {
   g.fillStyle(0xaa2020, 0.7);
   g.fillCircle(cx + 11, cy + 13, 0.5);
 
-  g.generateTexture('tome_wraith', s, s);
+}
+
+export function bakeTomeWraith(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawTomeWraithBody(g);
+  g.generateTexture('tome_wraith', TOME_WRAITH_CANVAS_SIZE, TOME_WRAITH_CANVAS_SIZE);
   g.destroy();
 }
 
