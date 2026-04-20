@@ -10,11 +10,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeGhost(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2;
+export const GHOST_CANVAS_SIZE = 40;
+
+export function drawGhostBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = GHOST_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + (frame.breathY ?? 0);
 
   // ── Ghostly aura — two layers of translucent mist. ──
   g.fillStyle(0x668888, 0.2);
@@ -124,7 +130,11 @@ export function bakeGhost(scene: Phaser.Scene): void {
   g.fillCircle(cx, cy - 15, 1.8);
   g.fillStyle(0x8a4028, 0.4);
   g.fillCircle(cx, cy - 14, 1.2);
+}
 
-  g.generateTexture('ghost', s, s);
+export function bakeGhost(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawGhostBody(g);
+  g.generateTexture('ghost', GHOST_CANVAS_SIZE, GHOST_CANVAS_SIZE);
   g.destroy();
 }

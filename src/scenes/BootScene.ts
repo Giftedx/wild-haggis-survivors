@@ -41,6 +41,7 @@ import '../animation/frameDrawers/enemies/chefFrames';
 import '../animation/frameDrawers/enemies/highlandCowFrames';
 import '../animation/frameDrawers/enemies/angryScotsmanFrames';
 import '../animation/frameDrawers/enemies/piperFrames';
+import '../animation/frameDrawers/enemies/ghostFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
