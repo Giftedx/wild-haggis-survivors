@@ -10,11 +10,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeTourist(scene: Phaser.Scene): void {
-  const s = 48;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const TOURIST_CANVAS_SIZE = 48;
+
+export function drawTouristBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = TOURIST_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;
+  const rly = frame.rightLegY ?? 0;
 
   // ── Ground shadow. ──
   g.fillStyle(0x000000, 0.32);
@@ -22,23 +30,23 @@ export function bakeTourist(scene: Phaser.Scene): void {
 
   // ── Legs in beige shorts peeking below the cagoule. ──
   g.fillStyle(0xd8b880, 1);
-  g.fillRect(cx - 7, cy + 11, 5, 4);
-  g.fillRect(cx + 2, cy + 11, 5, 4);
+  g.fillRect(cx - 7, cy + 11 + lly, 5, 4);
+  g.fillRect(cx + 2, cy + 11 + rly, 5, 4);
   // Pale sunburnt calves below the shorts
   g.fillStyle(0xee9a78, 1);
-  g.fillRect(cx - 7, cy + 15, 5, 3);
-  g.fillRect(cx + 2, cy + 15, 5, 3);
+  g.fillRect(cx - 7, cy + 15 + lly, 5, 3);
+  g.fillRect(cx + 2, cy + 15 + rly, 5, 3);
   // White socks (tourist classic)
   g.fillStyle(0xf0f0f0, 1);
-  g.fillRect(cx - 7, cy + 18, 5, 1.5);
-  g.fillRect(cx + 2, cy + 18, 5, 1.5);
+  g.fillRect(cx - 7, cy + 18 + lly, 5, 1.5);
+  g.fillRect(cx + 2, cy + 18 + rly, 5, 1.5);
   // Brown walking boots
   g.fillStyle(0x3a2010, 1);
-  g.fillRect(cx - 8, cy + 19, 7, 2);
-  g.fillRect(cx + 1, cy + 19, 7, 2);
+  g.fillRect(cx - 8, cy + 19 + lly, 7, 2);
+  g.fillRect(cx + 1, cy + 19 + rly, 7, 2);
   g.fillStyle(0x6a4028, 1);
-  g.fillRect(cx - 8, cy + 19, 7, 0.6);
-  g.fillRect(cx + 1, cy + 19, 7, 0.6);
+  g.fillRect(cx - 8, cy + 19 + lly, 7, 0.6);
+  g.fillRect(cx + 1, cy + 19 + rly, 7, 0.6);
 
   // ── RED cagoule — bright scarlet, pops against moor green. ──
   g.fillStyle(0x8a0808, 1);
@@ -183,6 +191,11 @@ export function bakeTourist(scene: Phaser.Scene): void {
   g.fillRect(cx + 11, cy + 5, 1, 2);
   g.fillRect(cx + 14, cy + 5, 1, 2);
 
-  g.generateTexture('tourist', s, s);
+}
+
+export function bakeTourist(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawTouristBody(g);
+  g.generateTexture('tourist', TOURIST_CANVAS_SIZE, TOURIST_CANVAS_SIZE);
   g.destroy();
 }

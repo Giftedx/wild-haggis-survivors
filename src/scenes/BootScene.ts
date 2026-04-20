@@ -36,6 +36,7 @@ import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/en
 import '../animation/frameDrawers/enemies/buckfastNedFrames';
 import '../animation/frameDrawers/enemies/eagleFrames';
 import '../animation/frameDrawers/enemies/haggisHunterFrames';
+import '../animation/frameDrawers/enemies/touristFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
