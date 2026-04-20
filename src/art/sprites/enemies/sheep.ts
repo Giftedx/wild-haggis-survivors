@@ -9,11 +9,19 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeSheep(scene: Phaser.Scene): void {
-  const s = 36;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const SHEEP_CANVAS_SIZE = 36;
+
+export function drawSheepBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = SHEEP_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
+  const lly = frame.leftLegY ?? 0;  // front pair
+  const rly = frame.rightLegY ?? 0; // back pair
 
   // ── Ground shadow. ──
   g.fillStyle(0x000000, 0.3);
@@ -42,15 +50,17 @@ export function bakeSheep(scene: Phaser.Scene): void {
   g.fillCircle(cx, cy + 5, 2);
 
   // ── Black legs peeking out at the bottom — Blackface breed mark. ──
+  // Front pair (leftLegY)
   g.fillStyle(0x000000, 1);
-  g.fillRect(cx - 9, cy + 11, 2.5, 4);
-  g.fillRect(cx - 3, cy + 12, 2.5, 3);
-  g.fillRect(cx + 1, cy + 12, 2.5, 3);
-  g.fillRect(cx + 7, cy + 11, 2.5, 4);
+  g.fillRect(cx - 9, cy + 11 + lly, 2.5, 4);
+  g.fillRect(cx - 3, cy + 12 + lly, 2.5, 3);
+  // Back pair (rightLegY)
+  g.fillRect(cx + 1, cy + 12 + rly, 2.5, 3);
+  g.fillRect(cx + 7, cy + 11 + rly, 2.5, 4);
   // Hoof highlight
   g.fillStyle(0x2a2a2a, 1);
-  g.fillRect(cx - 9, cy + 14, 2.5, 1);
-  g.fillRect(cx + 7, cy + 14, 2.5, 1);
+  g.fillRect(cx - 9, cy + 14 + lly, 2.5, 1);
+  g.fillRect(cx + 7, cy + 14 + rly, 2.5, 1);
 
   // ── BLACK HEAD — dominant centre element. Front-on, slightly
   // wider than tall for the Blackface breed silhouette. ──
@@ -136,7 +146,11 @@ export function bakeSheep(scene: Phaser.Scene): void {
   g.fillRect(cx - 1.5, cy - 16, 0.5, 1);
   g.fillRect(cx + 1, cy - 16, 0.5, 1);
   g.fillRect(cx - 0.5, cy - 17, 0.5, 1.2);
+}
 
-  g.generateTexture('sheep', s, s);
+export function bakeSheep(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawSheepBody(g);
+  g.generateTexture('sheep', SHEEP_CANVAS_SIZE, SHEEP_CANVAS_SIZE);
   g.destroy();
 }
