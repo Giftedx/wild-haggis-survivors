@@ -57,6 +57,8 @@ import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
+import { FloraScatter } from '../systems/FloraScatter';
+import { MistLayer } from '../systems/MistLayer';
 import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
@@ -291,6 +293,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   });
 
   private moorMoments!: MoorMomentScheduler;
+  private floraScatter: FloraScatter | null = null;
+  private mistLayer: MistLayer | null = null;
 
   constructor() {
     super({ key: 'Game' });
@@ -421,6 +425,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       GAME.WORLD_WIDTH,
       GAME.WORLD_HEIGHT,
     );
+    // World dressing — decorations + atmospheric mist.
+    const bm = this.getBiomeManager();
+    if (bm) {
+      this.floraScatter?.destroy();
+      this.floraScatter = new FloraScatter();
+      this.floraScatter.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
+
+      this.mistLayer?.destroy();
+      this.mistLayer = new MistLayer();
+      this.mistLayer.create(
+        this, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
+        this.runRng.branch(),
+        this.settingsManager.load().reduceParticles,
+      );
+    }
+
     // Post-Bell + key handler live on RunLifecycle — reset on every scene
     // create since Phaser reuses scene instances across runs.
     this.runLifecycle?.reset();
@@ -1063,6 +1083,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runLifecycle?.uninstallPostBellKeyHandler();
       try { this.biomeController?.destroy(); } catch { /* ignore */ }
       this.biomeController = null;
+      try { this.floraScatter?.destroy(); } catch { /* ignore */ }
+      this.floraScatter = null;
+      try { this.mistLayer?.destroy(); } catch { /* ignore */ }
+      this.mistLayer = null;
       try { this.captionOverlay?.destroy(); } catch { /* ignore */ }
       this.captionOverlay = null;
       this.captionManager?.clear();
@@ -1184,6 +1208,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.hazardZones.tick(scaledDelta);
     if (this.biomeController) this.biomeController.tick(this.player, this.juice);
+    this.floraScatter?.update(scaledDelta, this.cameras.main);
+    this.mistLayer?.update(scaledDelta, GAME.WORLD_WIDTH);
     this.gameTickers.tickLowHpCaption();
     this.gameTickers.tickBanter();
     // Player input/movement stays on raw delta so controls stay snappy during
