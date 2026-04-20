@@ -31,6 +31,11 @@ import { bakeCardIcons } from '../art/sprites/icons/cards';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
 import { bakePlayerVariants } from '../art/sprites/players';
+import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
+// Side-effect imports — registers each drawer into the registry on module load:
+import '../animation/frameDrawers/enemies/buckfastNedFrames';
+import '../animation/frameDrawers/enemies/eagleFrames';
+import '../animation/frameDrawers/enemies/haggisHunterFrames';
 
 /**
  * BootScene — generates all placeholder sprites programmatically.
@@ -73,6 +78,9 @@ export class BootScene extends Phaser.Scene {
 
     const accessoryBakeMs = this.bakeAccessoryAtlas();
     console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
+
+    const enemyBakeMs = this.bakeEnemyAtlas();
+    console.info(`[BootScene] Enemy atlas bake: ${enemyBakeMs.toFixed(1)} ms`);
 
     // Dev tool: skip splash and go straight to sprite export
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
@@ -269,6 +277,28 @@ export class BootScene extends Phaser.Scene {
         });
         g.generateTexture(key, size, size);
         g.destroy();
+      }
+    }
+    return performance.now() - startMs;
+  }
+
+  private bakeEnemyAtlas(): number {
+    const startMs = performance.now();
+    const drawers = getAllAnimatedEnemyDrawers();
+    for (const drawer of drawers) {
+      const size = drawer.canvasSize;
+      for (const state of ALL_ANIMATION_STATES) {
+        const frameCount = getFrameCountForState(state);
+        for (let frame = 0; frame < frameCount; frame++) {
+          const g = this.add.graphics();
+          const bodyFrame = drawer.authoredStates.has(state)
+            ? drawer.getFrame(state, frame)
+            : drawer.getFrame('idle', 0);
+          drawer.draw(g, bodyFrame);
+          const key = `${drawer.enemyKey}_${state}_${frame}`;
+          g.generateTexture(key, size, size);
+          g.destroy();
+        }
       }
     }
     return performance.now() - startMs;
