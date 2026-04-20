@@ -12,11 +12,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeCeilidhCaller(scene: Phaser.Scene): void {
-  const s = 42;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const CEILIDH_CALLER_CANVAS_SIZE = 42;
+
+export function drawCeilidhCallerBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = CEILIDH_CALLER_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // Soft violet halo — academic apparition glow
   g.fillStyle(0xb090d0, 0.22);
@@ -171,7 +177,12 @@ export function bakeCeilidhCaller(scene: Phaser.Scene): void {
   g.fillRect(cx + 11, cy - 20, 0.6, 1.5);
   g.fillRect(cx + 10.4, cy - 19.3, 1.5, 0.6);
 
-  g.generateTexture('ceilidh_caller', s, s);
+}
+
+export function bakeCeilidhCaller(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawCeilidhCallerBody(g);
+  g.generateTexture('ceilidh_caller', CEILIDH_CALLER_CANVAS_SIZE, CEILIDH_CALLER_CANVAS_SIZE);
   g.destroy();
 }
 
