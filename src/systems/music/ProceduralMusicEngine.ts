@@ -150,6 +150,10 @@ class ProceduralMusicEngine {
         if (!this.playing) return;
         this.percussion.clearPendingPhaseNudge();
       }),
+      globalEventBus.on('GLOBAL_CURSE_STARTED', () => {
+        if (!this.playing) return;
+        this.playShimmer();
+      }),
       globalEventBus.on('GLOBAL_ENEMY_KILLED', (p) => {
         if (!this.playing) return;
         const now = performance.now();
@@ -448,6 +452,34 @@ class ProceduralMusicEngine {
       rhythm: h.rhythm * 1000,
       heartbeat: h.heartbeat * 1000,
     };
+  }
+
+  private playShimmer(): void {
+    if (!this.ctx || !this.masterFilter) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+
+    // Dissonant oscillator at tritone above drone base (unsettling)
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 155.56; // Eb3 — tritone against A2 drone
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+    gain.gain.linearRampToValueAtTime(0, now + 0.5);
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1200;
+    filter.Q.value = 8; // narrow = metallic ring
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.masterFilter!);
+
+    osc.start(now);
+    osc.stop(now + 0.6);
   }
 
   private startRafLoop(): void {

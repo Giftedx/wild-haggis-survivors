@@ -488,6 +488,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (curse) {
         curse.apply(this.runModifiers);
         this.activeCurseKey = curse.key;
+        globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
       }
     } else if (!resumeRun && !this.runIsDaily) {
       const key = consumePendingCurse();
@@ -495,6 +496,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (curse) {
         curse.apply(this.runModifiers);
         this.activeCurseKey = curse.key;
+        globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
       }
     } else {
       // Clear any stale pending key so it doesn't bleed into the next run.

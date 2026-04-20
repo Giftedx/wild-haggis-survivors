@@ -101,6 +101,11 @@ export type GlobalComboMilestonePayload = {
   count: number;
 };
 
+/** A curse was activated at the start of a run. */
+export type GlobalCurseStartedPayload = {
+  curseKey: string;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -113,6 +118,7 @@ export type GlobalEvents = {
   CODEX_FIRST_CULL: CodexFirstCullPayload;
   GLOBAL_SHOP_PURCHASE: GlobalShopPurchasePayload;
   GLOBAL_COMBO_MILESTONE: GlobalComboMilestonePayload;
+  GLOBAL_CURSE_STARTED: GlobalCurseStartedPayload;
   bossEnraged: string;
 };
 
