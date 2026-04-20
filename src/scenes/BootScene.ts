@@ -28,6 +28,7 @@ import { bakeProjectiles } from '../art/sprites/projectiles';
 import { bakePickups } from '../art/sprites/pickups';
 import { bakeWeaponIcons } from '../art/sprites/icons/weapons';
 import { bakeCardIcons } from '../art/sprites/icons/cards';
+import { bakeWildlife } from '../art/sprites/wildlife';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
 import { bakePlayerVariants } from '../art/sprites/players';
@@ -278,6 +279,8 @@ export class BootScene extends Phaser.Scene {
     // Weapon + upgrade-card icons live in src/art/sprites/icons/.
     bakeWeaponIcons(this);
     bakeCardIcons(this);
+    // Ambient wildlife (hare, etc.) for world dressing.
+    bakeWildlife(this);
   }
 
 
