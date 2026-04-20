@@ -187,6 +187,7 @@ describe('Conductor', () => {
         danger: 0.3,
         chaos: 0.2,
         triumph: 0.1,
+        buildDensity: 0,
       });
     });
   });
