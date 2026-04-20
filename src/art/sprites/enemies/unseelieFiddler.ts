@@ -13,11 +13,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeUnseelieFiddler(scene: Phaser.Scene): void {
-  const s = 40;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const UNSEELIE_FIDDLER_CANVAS_SIZE = 40;
+
+export function drawUnseelieFiddlerBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = UNSEELIE_FIDDLER_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Dark-court aura — cold violet-black halo, two soft layers. ──
   g.fillStyle(0x2a1038, 0.32);
@@ -159,6 +165,11 @@ export function bakeUnseelieFiddler(scene: Phaser.Scene): void {
   g.fillStyle(0x8a5fb0, 0.7);
   g.fillCircle(cx + 13, cy + 7, 0.4);
 
-  g.generateTexture('unseelie_fiddler', s, s);
+}
+
+export function bakeUnseelieFiddler(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawUnseelieFiddlerBody(g);
+  g.generateTexture('unseelie_fiddler', UNSEELIE_FIDDLER_CANVAS_SIZE, UNSEELIE_FIDDLER_CANVAS_SIZE);
   g.destroy();
 }
