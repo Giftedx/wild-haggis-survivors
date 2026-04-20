@@ -14,11 +14,17 @@
  */
 
 import Phaser from 'phaser';
+import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
-export function bakeAuditorPriest(scene: Phaser.Scene): void {
-  const s = 42;
-  const g = scene.add.graphics();
-  const cx = s / 2, cy = s / 2 + 2;
+export const AUDITOR_PRIEST_CANVAS_SIZE = 42;
+
+export function drawAuditorPriestBody(
+  g: Phaser.GameObjects.Graphics,
+  frame: EnemyBodyFrame = {},
+): void {
+  const s = AUDITOR_PRIEST_CANVAS_SIZE;
+  const cx = s / 2 + (frame.bodyX ?? 0);
+  const cy = s / 2 + 2 + (frame.breathY ?? 0);
 
   // ── Red audit-threat aura — two-layer soft glow (replaces muted gold). ──
   g.fillStyle(0xcc3030, 0.1);
@@ -130,6 +136,11 @@ export function bakeAuditorPriest(scene: Phaser.Scene): void {
   g.fillStyle(0xdd3030, 0.18);
   g.fillCircle(cx + 8, cy - 24, 0.7);
 
-  g.generateTexture('auditor_priest', s, s);
+}
+
+export function bakeAuditorPriest(scene: Phaser.Scene): void {
+  const g = scene.add.graphics();
+  drawAuditorPriestBody(g);
+  g.generateTexture('auditor_priest', AUDITOR_PRIEST_CANVAS_SIZE, AUDITOR_PRIEST_CANVAS_SIZE);
   g.destroy();
 }
