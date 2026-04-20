@@ -44,6 +44,7 @@ export class BiomeController {
       this.toasted.add(current);
       const def = BIOMES[current];
       juice.showToast(t(def.entryToastKey), def.toastColor);
+      juice.biomeEntryBurst(player.x, player.y, current);
     }
     player.setBiomeModifier(BIOMES[current].modifier);
   }

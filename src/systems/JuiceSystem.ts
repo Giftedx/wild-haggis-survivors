@@ -910,6 +910,42 @@ export class JuiceSystem {
     this.time.requestForDuration('SLOW_MO', { timeScale: 0.3 }, scaled);
   }
 
+  /** Colored particle bloom on first biome entry. */
+  biomeEntryBurst(x: number, y: number, biomeId: string): void {
+    if (this.settings.load().reduceParticles) return;
+    const colorMap: Record<string, number> = {
+      heather: 0xc699ee,
+      bog: 0x7a8a40,
+      loch: 0x88bbdd,
+      pine: 0x4a7a4a,
+    };
+    const color = colorMap[biomeId] ?? 0xffffff;
+    const count = 16;
+    for (let i = 0; i < count; i++) {
+      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.4;
+      const speed = 80 + Math.random() * 100;
+      const dot = this.burstDotPool[this.burstDotIdx];
+      this.burstDotIdx = (this.burstDotIdx + 1) % this.burstDotPool.length;
+      this.scene.tweens.killTweensOf(dot);
+      dot.setPosition(x, y);
+      dot.setRadius(Phaser.Math.Between(2, 4));
+      dot.setFillStyle(color, 0.8);
+      dot.setAlpha(0.8);
+      dot.setScale(1);
+      dot.setVisible(true);
+      this.scene.tweens.add({
+        targets: dot,
+        x: x + Math.cos(angle) * speed,
+        y: y + Math.sin(angle) * speed,
+        alpha: 0,
+        scale: 0,
+        duration: 600 + Math.random() * 300,
+        ease: 'Sine.easeOut',
+        onComplete: () => dot.setVisible(false),
+      });
+    }
+  }
+
   /** Clean up all pooled objects and tweens — called by GameScene shutdown. */
   destroy(): void {
     const killAndDestroy = (pool: Phaser.GameObjects.GameObject[]) => {
