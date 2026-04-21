@@ -9,12 +9,25 @@ import type Phaser from 'phaser';
  *
  * `pointerdown` is intentionally not handled — call sites usually
  * inline a multi-line click body that wants its own scope.
+ *
+ * Pass `withClick = true` to also fire a click sound via AudioSystem.
+ * Uses dynamic import to avoid circular deps — AudioSystem is a
+ * singleton that may not exist when buttonHover loads.
  */
 export function attachButtonHoverFill(
   btn: Phaser.GameObjects.Rectangle,
   idle: number,
   hover: number,
+  withClick?: boolean,
 ): void {
   btn.on('pointerover', () => btn.setFillStyle(hover));
   btn.on('pointerout', () => btn.setFillStyle(idle));
+  if (withClick) {
+    btn.on('pointerdown', () => {
+      import('../systems/AudioSystem').then(m => {
+        const mod = m as { audio?: { playClick?: () => void } };
+        mod.audio?.playClick?.();
+      });
+    });
+  }
 }
