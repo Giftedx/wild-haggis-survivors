@@ -837,6 +837,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.banter?.request('level_up', { tag: this.activeVariant?.key });
     });
 
+    // Post-cap echo cards — XP past MAX_LEVEL accumulates into an echo
+    // buffer. When it crosses the threshold, XPSystem emits `echoReady`
+    // and the player picks a small stat boost from the ECHO_CARDS pool.
+    // Same UI as a level-up but without the ceremony (no heal, no aura,
+    // no milestone pulse). Gives the back half of the 15-min run real
+    // agency instead of the old AFK XP-to-gold tail.
+    this.xpSystem.events.on('echoReady', () => {
+      this.levelUpFlow.handleEcho();
+    });
+
     // Player ↔ Enemy collision
     // Player ↔ Enemy overlap → PlayerHitResolver.handle (full cascade).
     // Hooks use lazy getters so this resolver safely references systems

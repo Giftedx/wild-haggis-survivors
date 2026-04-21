@@ -57,7 +57,7 @@ export const EN_STRINGS: LocaleTree = {
       rerun_last: '⟲ Rerun last run',
       seed_prompt: 'Enter a 7-character seed code (or a number):',
       seed_invalid: 'That seed didn\'t take — check it and try again.',
-      chronicle: 'THE HERD CHRONICLE',
+      chronicle: 'CHRONICLE',
       deeds: 'YIR DEEDS',
       curse: 'CURSE O\' THE MOOR',
     },
@@ -443,6 +443,9 @@ export const EN_STRINGS: LocaleTree = {
       reroll: 'Fresh picks ({count})',
       chest_evolution_title: 'SOMETHIN\' LEGENDARY',
       chest_evolution_sub: 'The chest cracked open and the moor felt it. Pick up what\'s inside.',
+      /** Post-cap echo pick banner — the moor keeps giving past max level. */
+      echo_title: 'Moor Echo',
+      echo_sub: 'The land remembers ye — pick what it whispers.',
     },
     hud: {
       combo: '{count}× streak{bonus}',
@@ -596,6 +599,7 @@ export const EN_STRINGS: LocaleTree = {
       upgrade_weapon_level: '{name} — pure sharper noo',
       upgrade_add_passive: '{name} — curio pocketed, ya dancer',
       upgrade_stat_boost: '{name}',
+      upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       max_level_toast: 'Max level — yir a walking storm! That\'s plenty.',
       /** Shown when XP converts to gold at max level (batched). */
@@ -1819,6 +1823,43 @@ export const EN_STRINGS: LocaleTree = {
     boost_luck: {
       name: 'Heather Fortune',
       description: 'The glen rolls a shade kinder — +8 luck on level-up draws (rarer picks, stacks wi\' curios).',
+    },
+    // ── Post-cap echo cards ──
+    // Small stat-boost whispers drawn after MAX_LEVEL. Voice register:
+    // warmer Still-Game note than the combat cards — these are the
+    // moor's memory, not a new weapon. Each copy leads with the echo /
+    // whisper / glen / land metaphor so the set reads as one family.
+    echo_damage: {
+      name: 'Sharper Echo',
+      description: 'A thistle-sharp whisper from the moor (+4% damage).',
+    },
+    echo_crit: {
+      name: 'Sharp Eyes',
+      description: 'The glen shows where it gives (+2% crit chance).',
+    },
+    echo_speed: {
+      name: 'Quick Whisper',
+      description: 'Light in the step, barely there (+3% move speed).',
+    },
+    echo_hp: {
+      name: 'Bone Deep',
+      description: 'The land lays iron in yir ribs (+5 max HP).',
+    },
+    echo_pickup: {
+      name: 'Pull of the Glen',
+      description: 'Gems lean in when called (+6 pickup radius).',
+    },
+    echo_armor: {
+      name: 'Stone Skin',
+      description: 'A fine layer o\' moor-grit on yir hide (+1 armor).',
+    },
+    echo_cooldown: {
+      name: 'Quick Hands',
+      description: 'Weapons snap back a shade sooner (-3% cooldowns).',
+    },
+    echo_lifesteal: {
+      name: 'Hungry Thistle',
+      description: 'Every cut feeds ye a wee bit back (+0.3 HP per kill).',
     },
     // Templates used by buildCardPool for level-up cards.
     // Space between "Lv" and the number to match ui.hud.level_fmt for visual

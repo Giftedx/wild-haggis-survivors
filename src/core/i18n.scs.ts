@@ -56,7 +56,7 @@ export const SCS_STRINGS: LocaleTree = {
       rerun_last: '⟲ Run tha last yin again',
       seed_prompt: 'Pit in a 7-character seed code (or a number):',
       seed_invalid: 'That seed didnae take — check it an gaun again.',
-      chronicle: 'THA HERD CHRONICLE',
+      chronicle: 'CHRONICLE',
       deeds: 'YER DEEDS',
       curse: 'CURSE O\' THA MOOR',
     },
@@ -312,6 +312,8 @@ export const SCS_STRINGS: LocaleTree = {
       reroll: 'Fresh picks ({count})',
       chest_evolution_title: 'SOMETHIN LEGENDARY',
       chest_evolution_sub: 'Tha kist crackt open an tha moor felt it. Pick up whit\'s inside.',
+      echo_title: 'Muir Echo',
+      echo_sub: 'Tha land minds ye — pick whit it whispers.',
     },
     hud: {
       combo: '{count}× streak{bonus}',
@@ -522,6 +524,7 @@ export const SCS_STRINGS: LocaleTree = {
       upgrade_weapon_level: '{name} — pure shairper noo',
       upgrade_add_passive: '{name} — curio pooched, ya dancer',
       upgrade_stat_boost: '{name}',
+      upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       max_level_toast: 'Max level — yer a walkin storm! That\'s plenty.',
       xp_overflow_gold: 'Max level — tha moor pays in gold: +{gold}g (overflow XP).',
@@ -1646,11 +1649,44 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Heather Fortune',
       description: 'Tha glen rowes a shade kinder — +8 luck on level-up draws (rarer picks, stacks wi curios).',
     },
+    // ── Post-cap echo cards — Scots overlay ──
+    echo_damage: {
+      name: 'Shairper Echo',
+      description: 'A thistle-shairp whisper fae tha muir (+4% damage).',
+    },
+    echo_crit: {
+      name: 'Shairp Een',
+      description: 'Tha glen shaws whaur it gies (+2% crit chance).',
+    },
+    echo_speed: {
+      name: 'Quick Whisper',
+      description: 'Licht in tha step, barely there (+3% move speed).',
+    },
+    echo_hp: {
+      name: 'Bane Deep',
+      description: 'Tha land lays airn in yer ribs (+5 max HP).',
+    },
+    echo_pickup: {
+      name: 'Pull o tha Glen',
+      description: 'Gems lean in when cried (+6 pickup radius).',
+    },
+    echo_armor: {
+      name: 'Stane Skin',
+      description: 'A fine layer o muir-grit on yer hide (+1 armor).',
+    },
+    echo_cooldown: {
+      name: 'Quick Haunds',
+      description: 'Wapens snap back a shade sooner (-3% cooldowns).',
+    },
+    echo_lifesteal: {
+      name: 'Hungert Thistle',
+      description: 'Every cut feeds ye a wee bit back (+0.3 HP per kill).',
+    },
     levelup: {
       name: '{weapon} Lv {level}',
       description: 'Hone {weapon} up tae level {level}. Every notch coonts.',
     },
-    evolution_hint: ' At Lv 5, crack a kist while cairryin {passive} — somethin legendary stirs.',
+    evolution_hint: ' At Lv 5, crack a kist while cairryin {passive} — somethin\' legendary stirs.',
   },
   routes: {
     up_the_brae: {

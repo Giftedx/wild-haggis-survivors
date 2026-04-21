@@ -25,7 +25,16 @@ export class XPSystem {
    */
   private dropValueMultiplier: number = 1;
 
-  /** Event emitter for level-up */
+  /**
+   * Post-cap echo cards — XP accumulated past MAX_LEVEL. When this buffer
+   * crosses XP.ECHO_XP_THRESHOLD, an echo card draw is queued. Each XP
+   * also still converts to overflow gold (both paid, intentional).
+   */
+  private postCapEchoBuffer: number = 0;
+  private pendingEchoes: number = 0;
+  private echoInProgress: boolean = false;
+
+  /** Event emitter for level-up and post-cap echoReady. */
   readonly events = new Phaser.Events.EventEmitter();
 
   constructor(scene: Phaser.Scene & ISceneContext) {
@@ -53,6 +62,9 @@ export class XPSystem {
     this.pendingLevelUps = [];
     this.levelUpInProgress = false;
     this.dropValueMultiplier = 1;
+    this.postCapEchoBuffer = 0;
+    this.pendingEchoes = 0;
+    this.echoInProgress = false;
 
     // Deactivate all gems so no orphaned pickups bleed into the next run.
     const gems = this.gemPool.children.entries as XPGem[];
@@ -147,6 +159,7 @@ export class XPSystem {
       const gold = Math.max(1, Math.floor(value * XP.OVERFLOW_XP_TO_GOLD_RATIO));
       this.scene.grantXpOverflowGold?.(gold);
       this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      this.accumulateEcho(value);
       return;
     }
 
@@ -181,6 +194,58 @@ export class XPSystem {
 
   hasPendingLevelUps(): boolean {
     return this.pendingLevelUps.length > 0;
+  }
+
+  /**
+   * Accumulate post-cap XP into the echo buffer. When the buffer crosses
+   * the threshold, an echo pick is queued. Emits `echoReady` at most once
+   * per accumulation (extras stay queued for `processNextEcho`).
+   */
+  private accumulateEcho(xpValue: number): void {
+    if (xpValue <= 0) return;
+    this.postCapEchoBuffer += xpValue;
+    while (this.postCapEchoBuffer >= XP.ECHO_XP_THRESHOLD) {
+      this.postCapEchoBuffer -= XP.ECHO_XP_THRESHOLD;
+      this.pendingEchoes++;
+    }
+    // Don't interrupt a level-up pick. Echoes only fire in the standalone
+    // post-cap phase; during the lvl-30 transition the game should settle
+    // before introducing the new card family.
+    if (!this.echoInProgress && !this.levelUpInProgress && this.pendingEchoes > 0) {
+      this.echoInProgress = true;
+      this.pendingEchoes--;
+      this.events.emit('echoReady');
+    }
+  }
+
+  /** Called by GameScene after the player picks an echo card. */
+  processNextEcho(): void {
+    if (this.pendingEchoes > 0) {
+      this.pendingEchoes--;
+      this.events.emit('echoReady');
+    } else {
+      this.echoInProgress = false;
+    }
+  }
+
+  hasPendingEchoes(): boolean {
+    return this.pendingEchoes > 0;
+  }
+
+  /**
+   * True while an echo card is currently being presented (on-screen + picking).
+   * Turns false only after processNextEcho drains the queue. Callers should
+   * check this (not hasPendingEchoes) to decide when to release the pause
+   * token — a fresh echo may have been emitted synchronously during the
+   * previous processNextEcho call.
+   */
+  isEchoInProgress(): boolean {
+    return this.echoInProgress;
+  }
+
+  /** For tests + dev tools — expose the current buffer. */
+  getPostCapEchoBuffer(): number {
+    return this.postCapEchoBuffer;
   }
 
   /** Exponential XP curve */
@@ -231,6 +296,7 @@ export class XPSystem {
       const gold = Math.max(1, Math.floor(value * XP.OVERFLOW_XP_TO_GOLD_RATIO));
       this.scene.grantXpOverflowGold?.(gold);
       this.scene.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      this.accumulateEcho(value);
       return;
     }
     this.currentXP += value;

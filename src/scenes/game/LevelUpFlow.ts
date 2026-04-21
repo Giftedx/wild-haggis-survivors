@@ -29,6 +29,7 @@ import {
   buildCardPool,
   drawCards,
   UpgradeCard,
+  ECHO_CARDS,
 } from '../../data/upgrades';
 import {
   evolutionRecipeToUpgradeCard,
@@ -70,6 +71,14 @@ export interface LevelUpFlowHooks {
 }
 
 export class LevelUpFlow {
+  /**
+   * When true, the UpgradeCards UI is currently showing a post-cap echo
+   * pick rather than a standard level-up. `apply()` branches on this to
+   * route through `applyEcho` (no level-up ceremony, no heal, no
+   * milestone pulse; releases the ECHO token instead of LEVEL_UP).
+   */
+  private echoInFlight: boolean = false;
+
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly hooks: LevelUpFlowHooks,
@@ -203,7 +212,36 @@ export class LevelUpFlow {
     });
   }
 
+  /**
+   * Post-cap echo pick — called from XPSystem's `echoReady` event.
+   * Mirrors the level-up card flow but skips the level-up ceremony
+   * (banner, heal, aura, milestone pulse) because the player isn't
+   * levelling up — they're receiving a small echo of progression
+   * from the moor. Uses the ECHO_CARDS pool, not the normal card pool.
+   */
+  handleEcho(): void {
+    this.echoInFlight = true;
+    const timeManager = this.hooks.getTimeManager();
+    timeManager.request('ECHO', { pausePhysics: true, timeScale: 0 });
+
+    const rng = this.hooks.getRunRng();
+    const cards = drawCards([...ECHO_CARDS], XP.CARDS_PER_LEVEL, 0, () => rng.next(), {
+      duplicateWeightMultiplier: 0.3,
+    });
+
+    const ui = this.hooks.getUpgradeUI();
+    ui.show(cards, this.hooks.getXPSystem().getLevel(), {
+      bannerTitle: t('ui.upgradeCards.echo_title'),
+      bannerSubtitle: t('ui.upgradeCards.echo_sub'),
+      hideReroll: true,
+    });
+  }
+
   apply(card: UpgradeCard): void {
+    if (this.echoInFlight) {
+      this.applyEcho(card);
+      return;
+    }
     const effect = card.effect;
     const cardTitle = t(card.name);
     const player = this.hooks.getPlayer();
@@ -270,6 +308,35 @@ export class LevelUpFlow {
       }
 
       this.hooks.drainPendingChests();
+    }
+  }
+
+  /**
+   * Echo card resolution — stat-only effect, brief toast, then advance
+   * the echo queue. Skips the heal / iFrames / chest-drain that
+   * `apply()` normally runs because echoes are a lightweight cadence,
+   * not a full level-up beat.
+   *
+   * Re-entrance note: `processNextEcho` emits `echoReady` synchronously
+   * when the queue has more echoes waiting, which calls back into
+   * `handleEcho` and opens the UI again. We branch on XPSystem's
+   * `isEchoInProgress` (not `hasPendingEchoes`) to decide whether the
+   * flow is genuinely done — the pending counter is already zero
+   * mid-chain because each pick consumes one.
+   */
+  private applyEcho(card: UpgradeCard): void {
+    const effect = card.effect;
+    if (effect.type === 'stat_boost') {
+      this.applyStatBoost(effect.stat, effect.amount);
+      const juice = this.hooks.getJuice();
+      juice.showToast(t('ui.game.upgrade_echo_applied', { name: t(card.name) }), '#88ccff');
+    }
+
+    const xpSystem = this.hooks.getXPSystem();
+    xpSystem.processNextEcho();
+    if (!xpSystem.isEchoInProgress()) {
+      this.echoInFlight = false;
+      this.hooks.getTimeManager().release('ECHO');
     }
   }
 

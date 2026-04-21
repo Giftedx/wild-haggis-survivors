@@ -61,6 +61,16 @@ export const XP = {
    * Applied as floor(xpValue * ratio); minimum 1 gold when xpValue >= 1.
    */
   OVERFLOW_XP_TO_GOLD_RATIO: 0.32,
+
+  /**
+   * Post-cap echo cards — XP accumulated past MAX_LEVEL triggers an
+   * echo card pick when this threshold is crossed. Overflow still
+   * converts to gold on the same XP (echoes + gold are both paid).
+   * Tuned to ~1 echo per 30-60s in the late game (kill density feeds
+   * the buffer at ~20-40 XP/sec). Smaller value = more echoes per run;
+   * larger value = rarer choices. See `src/data/upgrades.ts#ECHO_CARDS`.
+   */
+  ECHO_XP_THRESHOLD: 1000,
 } as const;
 
 export const ENEMIES = {
@@ -71,11 +81,13 @@ export const ENEMIES = {
   SPAWN_BUFFER: 80,
 
   /** HP scaling per minute of game time (percentage).
-   *  Rebalanced 0.05 → 0.08: player damage scales via level-ups + weapon
-   *  levels + passives at roughly 5-8× by minute 25, while enemy HP was
-   *  only scaling to 2.25×. Late game was trivial. New scale brings min-25
-   *  enemy HP to 3.0×, keeping pressure without being unfair. */
-  HP_SCALE_PER_MINUTE: 0.08,
+   *  Rebalanced 0.05 → 0.08 → 0.10: player damage scales to 5-8× by
+   *  minute 25 via level-ups + weapon levels + passives. Playtester
+   *  feedback (2026-04-21): reaching lvl 30 at ~5min leaves the back
+   *  half of the run feeling AFK because enemies don't keep up. At
+   *  0.10, min-25 enemy HP is 3.5× (was 3.0×) and the late-game
+   *  pressure is noticeable without being unfair on early levels. */
+  HP_SCALE_PER_MINUTE: 0.10,
 } as const;
 
 export const COLORS = {

@@ -344,6 +344,86 @@ export const STAT_CARDS: UpgradeCard[] = [
   },
 ];
 
+// ── Echo cards (post-cap progression) ──────────────────────────────────
+//
+// After reaching MAX_LEVEL, XP accumulates into a separate buffer instead
+// of vanishing. When the buffer crosses XP.ECHO_XP_THRESHOLD, the player
+// picks one echo card — small stat bumps, smaller than regular stat cards.
+// The moor's "echo": whispers of progression that linger past the cap.
+//
+// All echoes use the existing `stat_boost` effect so LevelUpFlow.apply()
+// can route them through the same applyStatBoost dispatch — no new effect
+// type, no duplicate switch. Amounts are intentionally small (roughly half
+// the STAT_CARDS equivalents) because the player receives many echoes over
+// the 10-minute back half of a run.
+
+export const ECHO_CARDS: UpgradeCard[] = [
+  {
+    id: 'echo_damage',
+    name: 'upgradeCard.echo_damage.name',
+    description: 'upgradeCard.echo_damage.description',
+    rarity: 'common',
+    icon: 'ucard_stat_damage',
+    effect: { type: 'stat_boost', stat: 'damage', amount: 0.04 },
+  },
+  {
+    id: 'echo_crit',
+    name: 'upgradeCard.echo_crit.name',
+    description: 'upgradeCard.echo_crit.description',
+    rarity: 'common',
+    icon: 'ucard_stat_damage',
+    effect: { type: 'stat_boost', stat: 'crit', amount: 0.02 },
+  },
+  {
+    id: 'echo_speed',
+    name: 'upgradeCard.echo_speed.name',
+    description: 'upgradeCard.echo_speed.description',
+    rarity: 'common',
+    icon: 'ucard_stat_speed',
+    effect: { type: 'stat_boost', stat: 'speed', amount: 0.03 },
+  },
+  {
+    id: 'echo_hp',
+    name: 'upgradeCard.echo_hp.name',
+    description: 'upgradeCard.echo_hp.description',
+    rarity: 'common',
+    icon: 'ucard_stat_health',
+    effect: { type: 'stat_boost', stat: 'maxHp', amount: 5 },
+  },
+  {
+    id: 'echo_pickup',
+    name: 'upgradeCard.echo_pickup.name',
+    description: 'upgradeCard.echo_pickup.description',
+    rarity: 'common',
+    icon: 'ucard_stat_pickup',
+    effect: { type: 'stat_boost', stat: 'pickup', amount: 6 },
+  },
+  {
+    id: 'echo_armor',
+    name: 'upgradeCard.echo_armor.name',
+    description: 'upgradeCard.echo_armor.description',
+    rarity: 'uncommon',
+    icon: 'ucard_stat_defense',
+    effect: { type: 'stat_boost', stat: 'armor', amount: 1 },
+  },
+  {
+    id: 'echo_cooldown',
+    name: 'upgradeCard.echo_cooldown.name',
+    description: 'upgradeCard.echo_cooldown.description',
+    rarity: 'uncommon',
+    icon: 'ucard_stat_cooldown',
+    effect: { type: 'stat_boost', stat: 'cooldown', amount: 0.03 },
+  },
+  {
+    id: 'echo_lifesteal',
+    name: 'upgradeCard.echo_lifesteal.name',
+    description: 'upgradeCard.echo_lifesteal.description',
+    rarity: 'rare',
+    icon: 'ucard_stat_health',
+    effect: { type: 'stat_boost', stat: 'lifesteal', amount: 0.3 },
+  },
+];
+
 const LEVELUP_DRIFT_CARD_ENABLED = true;
 
 /**
