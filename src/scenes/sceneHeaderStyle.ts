@@ -10,10 +10,9 @@ export type SceneHeaderTextStyle = GameTextStyle;
 export type SceneSubtitleTextStyle = GameTextStyle;
 
 export function sceneHeaderTextStyle(
-  fontSize: string,
   color: string,
 ): SceneHeaderTextStyle {
-  return textStyle('title', { color, fontSize });
+  return textStyle('title', { color });
 }
 
 /**

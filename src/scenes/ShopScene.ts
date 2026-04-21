@@ -54,13 +54,13 @@ export class ShopScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, 32, t('ui.shop.title'),
-        textStyle('title', { fontSize: '36px', color: COLORS_CSS.WHISKY_GOLD }),
+        textStyle('title', { color: COLORS_CSS.WHISKY_GOLD }),
       )
       .setOrigin(0.5);
 
     this.goldText = this.add
       .text(width / 2, 70, '',
-        textStyle('body', { fontSize: '20px', color: COLORS_CSS.WHISKY_GOLD }),
+        textStyle('heading', { color: COLORS_CSS.WHISKY_GOLD }),
       )
       .setOrigin(0.5);
 
@@ -72,7 +72,7 @@ export class ShopScene extends Phaser.Scene {
 
     this.pageText = this.add
       .text(width / 2, 528, '',
-        textStyle('body', { fontSize: '14px', color: '#b8a88a' }),
+        textStyle('label', { color: COLORS_CSS.DUSTY_TAN }),
       )
       .setOrigin(0.5);
 
@@ -133,7 +133,7 @@ export class ShopScene extends Phaser.Scene {
       0.82
     );
     const nameText = this.add.text(34, y + 3, t(upgrade.nameKey),
-      textStyle('body', { fontSize: '15px', color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE }),
+      textStyle('body', { color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE }),
     );
     const descText = this.add.text(34, y + 21, t(upgrade.descriptionKey),
       textStyle('small', { color: '#9ea7b9', wordWrap: { width: 320 } }),
@@ -153,7 +153,7 @@ export class ShopScene extends Phaser.Scene {
     if (isMaxed) {
       const maxLabel = this.add
         .text(width - 74, y + 16, t('ui.shop.max'),
-          textStyle('body', { fontSize: '14px', color: '#73c37d' }),
+          textStyle('label', { color: '#73c37d' }),
         )
         .setOrigin(0.5);
       this.rowElements.push(maxLabel);

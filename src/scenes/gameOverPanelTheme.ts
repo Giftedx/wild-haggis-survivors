@@ -16,8 +16,6 @@ export interface GameOverPanelTheme {
   titleColor: string;
   /** 0xRRGGBB integer for the panel outline stroke. */
   panelStroke: number;
-  /** CSS-style font size for the title text. */
-  titleFontSize: string;
   /** Starting scale multiplier — the scene then eases to 1×uiScale. */
   titleStartScale: number;
 }
@@ -99,14 +97,12 @@ export function resolveGameOverPanelTheme(isVictory: boolean): GameOverPanelThem
     return {
       titleColor: COLORS_CSS.WHISKY_GOLD,
       panelStroke: COLORS.WHISKY_GOLD,
-      titleFontSize: '56px',
       titleStartScale: 0.7,
     };
   }
   return {
     titleColor: COLORS_CSS.HP_RED,
     panelStroke: 0xaa4444,
-    titleFontSize: '52px',
     titleStartScale: 1.4,
   };
 }

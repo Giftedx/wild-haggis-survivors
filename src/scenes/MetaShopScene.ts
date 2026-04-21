@@ -50,19 +50,19 @@ export class MetaShopScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, 32, t('ui.metaShop.title'),
-        textStyle('title', { fontSize: '32px', color: '#77c977' }),
+        textStyle('title', { color: '#77c977' }),
       )
       .setOrigin(0.5);
 
     this.killsText = this.add
       .text(width / 2, 70, '',
-        textStyle('body', { fontSize: '18px', color: COLORS_CSS.WHISKY_GOLD }),
+        textStyle('body', { color: COLORS_CSS.WHISKY_GOLD }),
       )
       .setOrigin(0.5);
 
     this.add
       .text(width / 2, 94, t('ui.metaShop.subtitle'),
-        textStyle('label', { fontSize: '12px', color: '#8a93a8' }),
+        textStyle('label', { color: '#8a93a8' }),
       )
       .setOrigin(0.5);
 

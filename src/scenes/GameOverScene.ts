@@ -113,7 +113,7 @@ export class GameOverScene extends Phaser.Scene {
 
     const title = this.add
       .text(panelCenterX, panelTop + 54, t(deathTitleKey),
-        textStyle('display', { fontSize: theme.titleFontSize, color: titleColor }),
+        textStyle('display', { color: titleColor }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -123,7 +123,7 @@ export class GameOverScene extends Phaser.Scene {
     title.setScale(theme.titleStartScale * uiScale);
     const subtitle = this.add
       .text(panelCenterX, panelTop + 94, t(deathSubKey),
-        textStyle('body', { fontSize: '17px', color: '#b8a88a', align: 'center', wordWrap: { width: PANEL_W - 48 } }),
+        textStyle('body', { color: COLORS_CSS.DUSTY_TAN, align: 'center', wordWrap: { width: PANEL_W - 48 } }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)

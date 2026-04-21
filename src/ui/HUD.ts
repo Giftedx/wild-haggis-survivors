@@ -199,7 +199,7 @@ export class HUD {
   private build(): void {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
-    const style = textStyle('body', { fontSize: '18px', color: '#e8d4a0' });
+    const style = textStyle('body', { color: COLORS_CSS.WARM_TAN });
 
     // HP bar
     this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x1a1420)
@@ -207,7 +207,7 @@ export class HUD {
     this.hpBarFill = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, COLORS.HP_RED)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
     this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '',
-      textStyle('body', { fontSize: '15px', color: '#e8d4a0' }),
+      textStyle('body', { color: COLORS_CSS.WARM_TAN }),
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
 
     // Level
@@ -216,24 +216,24 @@ export class HUD {
 
     // Timer
     this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '',
-      textStyle('heading', { fontSize: '28px', color: '#e8d4a0' }),
+      textStyle('title', { color: COLORS_CSS.WARM_TAN }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
     this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '',
-      textStyle('body', { fontSize: '14px', color: '#b8a88a' }),
+      textStyle('label', { color: COLORS_CSS.DUSTY_TAN }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '',
-      textStyle('label', { fontSize: '12px', color: '#c49bbf' }),
+      textStyle('label', { color: '#c49bbf' }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W2 Moor Road act chip — hidden until the first picker resolves.
     this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '',
-      textStyle('body', { fontSize: '15px', color: '#e8d4a0' }),
+      textStyle('body', { color: COLORS_CSS.WARM_TAN }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W66 Ironmoor chip — only shown when single-life mode is active.
     this.ironmoorChipText = this.addEl(this.scene.add.text(width / 2, 94, '',
-      textStyle('label', { fontSize: '12px', color: '#c8a0a0' }),
+      textStyle('label', { color: '#c8a0a0' }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // T1 replay chip — persistent indicator during best-effort playback.

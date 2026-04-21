@@ -30,6 +30,7 @@ import { startSceneFadeOut, addSceneBackdrop, SCENE_FADE_OUT_MS } from './sceneF
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { createGameButton } from '../ui/gameButton';
+import { textStyle } from '../ui/typography';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -118,15 +119,9 @@ export class MenuScene extends Phaser.Scene {
     });
 
     const title = this.add
-      .text(width / 2, 150, t('ui.menu.title'), {
-        fontFamily: 'monospace',
-        fontSize: '56px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        align: 'center',
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 7,
-      })
+      .text(width / 2, 150, t('ui.menu.title'),
+        textStyle('display', { color: COLORS_CSS.WHISKY_GOLD, align: 'center' }),
+      )
       .setOrigin(0.5)
       .setAlpha(0);
     title.setScale(this.uiScale);

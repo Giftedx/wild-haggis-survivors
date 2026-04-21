@@ -23,15 +23,6 @@ describe('resolveGameOverPanelTheme', () => {
     expect(d.panelStroke).toBe(0xaa4444);
   });
 
-  it('victory title is larger (celebration) than death', () => {
-    const v = resolveGameOverPanelTheme(true);
-    const d = resolveGameOverPanelTheme(false);
-    // Both return CSS px strings — parse and compare.
-    const vPx = parseInt(v.titleFontSize, 10);
-    const dPx = parseInt(d.titleFontSize, 10);
-    expect(vPx).toBeGreaterThan(dPx);
-  });
-
   it('victory title starts small and grows in (scale < 1)', () => {
     const v = resolveGameOverPanelTheme(true);
     expect(v.titleStartScale).toBeLessThan(1);
@@ -47,7 +38,6 @@ describe('resolveGameOverPanelTheme', () => {
     const d = resolveGameOverPanelTheme(false);
     expect(v.titleColor).not.toBe(d.titleColor);
     expect(v.panelStroke).not.toBe(d.panelStroke);
-    expect(v.titleFontSize).not.toBe(d.titleFontSize);
     expect(v.titleStartScale).not.toBe(d.titleStartScale);
   });
 

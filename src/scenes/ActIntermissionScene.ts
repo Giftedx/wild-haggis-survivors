@@ -72,12 +72,12 @@ export class ActIntermissionScene extends Phaser.Scene {
       ? 'ui.actIntermission.title_act_1'
       : 'ui.actIntermission.title_act_2';
     this.add.text(width / 2, height / 2 - 200, t(titleKey),
-      textStyle('heading', { fontSize: '28px', color: COLORS_CSS.TOAST_GOLD }),
+      textStyle('title', { color: COLORS_CSS.TOAST_GOLD }),
     ).setOrigin(0.5);
 
     // Subtitle / hint.
     this.add.text(width / 2, height / 2 - 160, t('ui.actIntermission.pick_hint'),
-      textStyle('body', { fontSize: '14px', color: '#aaaaaa' }),
+      textStyle('label', { color: COLORS_CSS.HINT }),
     ).setOrigin(0.5);
 
     // Cards.
@@ -100,16 +100,16 @@ export class ActIntermissionScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     this.add.text(x, y - h / 2 + 24, t(route.labelKey),
-      textStyle('body', { fontSize: '20px', color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: w - 24 }, align: 'center' }),
+      textStyle('heading', { color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: w - 24 }, align: 'center' }),
     ).setOrigin(0.5, 0);
 
     this.add.text(x, y, t(route.descKey),
-      textStyle('body', { fontSize: '14px', color: '#ccccdd', wordWrap: { width: w - 24 }, align: 'center' }),
+      textStyle('label', { color: COLORS_CSS.COOL_GREY, wordWrap: { width: w - 24 }, align: 'center' }),
     ).setOrigin(0.5);
 
     // Shortcut digit corner badge — pairs with the 1/2/3 keyboard handler.
     this.add.text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`,
-      textStyle('body', { fontSize: '14px', color: '#7f8ca7' }),
+      textStyle('label', { color: COLORS_CSS.HINT }),
     ).setOrigin(0, 0);
 
     bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(cardStyle.hover.thickness, cardStyle.hover.color));

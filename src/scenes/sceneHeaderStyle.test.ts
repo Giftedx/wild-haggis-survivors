@@ -5,14 +5,14 @@ import {
 } from './sceneHeaderStyle';
 
 describe('sceneHeaderTextStyle — shared bold-stroke title', () => {
-  it('passes through caller-supplied fontSize and color', () => {
-    const s = sceneHeaderTextStyle('30px', '#d4a017');
+  it('uses title role (30px) and passes through caller-supplied color', () => {
+    const s = sceneHeaderTextStyle('#d4a017');
     expect(s.fontSize).toBe('30px');
     expect(s.color).toBe('#d4a017');
   });
 
   it('always pins monospace, bold weight, black 4px stroke', () => {
-    const s = sceneHeaderTextStyle('28px', '#e8a0c6');
+    const s = sceneHeaderTextStyle('#e8a0c6');
     expect(s.fontFamily).toBe('monospace');
     expect(s.fontStyle).toBe('bold');
     expect(s.stroke).toBe('#000');
@@ -20,8 +20,8 @@ describe('sceneHeaderTextStyle — shared bold-stroke title', () => {
   });
 
   it('returns a fresh object per call (no shared mutable state)', () => {
-    const a = sceneHeaderTextStyle('20px', '#fff');
-    const b = sceneHeaderTextStyle('20px', '#fff');
+    const a = sceneHeaderTextStyle('#fff');
+    const b = sceneHeaderTextStyle('#fff');
     expect(a).not.toBe(b);
   });
 });

@@ -118,7 +118,7 @@ export class ChronicleScene extends Phaser.Scene {
     // ── Header ──
     this.add
       .text(width / 2, 36, t('ui.chronicle.title'),
-        sceneHeaderTextStyle('30px', highContrastUi ? '#ffe08a' : COLORS_CSS.WHISKY_GOLD))
+        sceneHeaderTextStyle(highContrastUi ? '#ffe08a' : COLORS_CSS.WHISKY_GOLD))
       .setOrigin(0.5)
       .setScale(uiScale);
 

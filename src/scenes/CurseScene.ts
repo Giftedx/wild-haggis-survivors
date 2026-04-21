@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -14,6 +14,7 @@ import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle } from './sceneHeaderStyle';
+import { textStyle } from '../ui/typography';
 
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
@@ -47,19 +48,14 @@ export class CurseScene extends Phaser.Scene {
     // ── Header ──
     this.add
       .text(width / 2, 40, t('ui.curseScene.title'),
-        sceneHeaderTextStyle('28px', highContrastUi ? '#ffbadc' : '#e8a0c6'))
+        sceneHeaderTextStyle(highContrastUi ? '#ffbadc' : '#e8a0c6'))
       .setOrigin(0.5)
       .setScale(uiScale);
 
     this.add
-      .text(width / 2, 76, t('ui.curseScene.subtitle'), {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: '#c0a8b6',
-        fontStyle: 'italic',
-        align: 'center',
-        wordWrap: { width: width - 60 },
-      })
+      .text(width / 2, 76, t('ui.curseScene.subtitle'),
+        textStyle('subtitle', { color: '#c0a8b6', align: 'center' }),
+      )
       .setOrigin(0.5)
       .setScale(uiScale);
 
@@ -152,10 +148,7 @@ export class CurseScene extends Phaser.Scene {
       const badgeY = cy - h / 2 + 6;
       this.add
         .text(badgeX, badgeY, t('ui.curseScene.bested_badge'), {
-          fontFamily: 'monospace',
-          fontSize: '9px',
-          color: '#f7d27a',
-          fontStyle: 'bold',
+          ...textStyle('small', { color: COLORS_CSS.WHISKY_GOLD }),
           backgroundColor: '#3a2c14',
           padding: { left: 4, right: 4, top: 2, bottom: 2 },
         })
@@ -166,14 +159,9 @@ export class CurseScene extends Phaser.Scene {
 
     // Title
     this.add
-      .text(cx, cy - h / 2 + 26, t(opts.titleKey), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: '#f5e1a6',
-        fontStyle: 'bold',
-        align: 'center',
-        wordWrap: { width: w - 16 },
-      })
+      .text(cx, cy - h / 2 + 26, t(opts.titleKey),
+        textStyle('label', { color: COLORS_CSS.WARM_TAN, align: 'center', wordWrap: { width: w - 16 } }),
+      )
       .setOrigin(0.5, 0)
       .setScale(uiScale);
 
@@ -184,12 +172,9 @@ export class CurseScene extends Phaser.Scene {
         .rectangle(cx, chipY, w - 24, 22, 0x3a2c14, 1)
         .setStrokeStyle(1, COLORS.WHISKY_GOLD, 0.9);
       this.add
-        .text(cx, chipY, t('ui.curseScene.gold_chip', { pct: opts.goldPct }), {
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          color: '#f7d27a',
-          fontStyle: 'bold',
-        })
+        .text(cx, chipY, t('ui.curseScene.gold_chip', { pct: opts.goldPct }),
+          textStyle('small', { color: COLORS_CSS.WHISKY_GOLD }),
+        )
         .setOrigin(0.5)
         .setScale(uiScale);
     }
@@ -198,13 +183,9 @@ export class CurseScene extends Phaser.Scene {
     // reads under the title/chip without crowding the pick button.
     const descY = cy - 12;
     this.add
-      .text(cx, descY, t(opts.descKey), {
-        fontFamily: 'monospace',
-        fontSize: '10px',
-        color: '#bcc3d4',
-        align: 'center',
-        wordWrap: { width: w - 18 },
-      })
+      .text(cx, descY, t(opts.descKey),
+        textStyle('small', { color: COLORS_CSS.COOL_GREY, align: 'center', wordWrap: { width: w - 18 } }),
+      )
       .setOrigin(0.5)
       .setScale(uiScale);
 
