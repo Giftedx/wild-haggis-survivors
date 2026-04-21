@@ -258,7 +258,7 @@ export class JuiceSystem {
 
     // Scale with damage — big hits look big. Compound with uiScale so text
     // scale is legible for low-vision players without fighting the font size.
-    const style = damageNumberStyle(damage, isCrit);
+    const style = damageNumberStyle(damage, isCrit, this.comboCount);
     const uiScale = this.settings.load().uiScale;
     text.setScale(style.scale * uiScale);
     // Damage number colors: whisky gold palette, not cold white

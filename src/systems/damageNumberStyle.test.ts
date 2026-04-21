@@ -6,6 +6,8 @@ import {
   DAMAGE_NUMBER_BIG_THRESHOLD,
   DAMAGE_NUMBER_SCALE_BASE,
   DAMAGE_NUMBER_SCALE_SLOPE,
+  DAMAGE_NUMBER_COMBO_BOOST_MAX,
+  DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT,
 } from './damageNumberStyle';
 
 describe('damageNumberStyle — scale', () => {
@@ -47,6 +49,43 @@ describe('damageNumberStyle — scale', () => {
     const s = damageNumberStyle(-5, false);
     expect(s.scale).toBeCloseTo(DAMAGE_NUMBER_SCALE_BASE, 6);
     expect(s.color).toBe('#e8c848');
+  });
+});
+
+describe('damageNumberStyle — combo scaling', () => {
+  it('comboCount=0 produces the same scale as the two-argument call', () => {
+    const base = damageNumberStyle(10, false).scale;
+    expect(damageNumberStyle(10, false, 0).scale).toBeCloseTo(base, 6);
+  });
+
+  it('comboCount=20 adds 0.1 to scale', () => {
+    const base = damageNumberStyle(10, false).scale;
+    expect(damageNumberStyle(10, false, 20).scale).toBeCloseTo(
+      base + 20 * DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT,
+      6,
+    );
+  });
+
+  it('comboCount=40 adds the maximum boost', () => {
+    const base = damageNumberStyle(10, false).scale;
+    expect(damageNumberStyle(10, false, 40).scale).toBeCloseTo(
+      base + DAMAGE_NUMBER_COMBO_BOOST_MAX,
+      6,
+    );
+  });
+
+  it('comboCount=100 is still capped at the maximum boost', () => {
+    const at40 = damageNumberStyle(10, false, 40).scale;
+    expect(damageNumberStyle(10, false, 100).scale).toBeCloseTo(at40, 6);
+  });
+
+  it('combo boost applies on top of crit multiplier', () => {
+    const critBase = damageNumberStyle(10, true, 0).scale;
+    const critCombo = damageNumberStyle(10, true, 20).scale;
+    expect(critCombo).toBeCloseTo(
+      critBase + 20 * DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT,
+      6,
+    );
   });
 });
 

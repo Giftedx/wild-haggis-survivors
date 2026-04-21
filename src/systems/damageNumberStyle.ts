@@ -36,14 +36,23 @@ export const DAMAGE_NUMBER_SCALE_CAP = 2.0;
 export const DAMAGE_NUMBER_SCALE_SLOPE = 0.04;
 /** Baseline scale at 0 damage (clamped by the cap at large damage). */
 export const DAMAGE_NUMBER_SCALE_BASE = 0.8;
+/** Max combo boost added to scale (+0.2 at combo ≥ 40). */
+export const DAMAGE_NUMBER_COMBO_BOOST_MAX = 0.2;
+/** Scale added per combo count before cap (0.005 × combo). */
+export const DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT = 0.005;
 
-export function damageNumberStyle(damage: number, isCrit: boolean): DamageNumberStyle {
+export function damageNumberStyle(
+  damage: number,
+  isCrit: boolean,
+  comboCount: number = 0,
+): DamageNumberStyle {
   const safe = Math.max(0, damage);
   const sizeScale = Math.min(
     DAMAGE_NUMBER_SCALE_CAP,
     DAMAGE_NUMBER_SCALE_BASE + safe * DAMAGE_NUMBER_SCALE_SLOPE,
   );
-  const scale = isCrit ? sizeScale * DAMAGE_NUMBER_CRIT_SCALE_MUL : sizeScale;
+  const comboBoost = Math.min(DAMAGE_NUMBER_COMBO_BOOST_MAX, comboCount * DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT);
+  const scale = (isCrit ? sizeScale * DAMAGE_NUMBER_CRIT_SCALE_MUL : sizeScale) + comboBoost;
   const color = isCrit
     ? '#ffdd44'
     : safe >= DAMAGE_NUMBER_BIG_THRESHOLD
