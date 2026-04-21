@@ -28,6 +28,7 @@ import {
 import { resolveToggleTextColor } from '../toggleTextPalette';
 import { createGameButton } from '../../ui/gameButton';
 import { textStyle } from '../../ui/typography';
+import { audio } from '../../systems/AudioSystem';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -165,6 +166,7 @@ export class PauseMenu {
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     sfxText.on('pointerdown', () => {
+      audio.playClick();
       sfxOn = !sfxOn;
       sfxText.setText(sfxLabel(sfxOn));
       sfxText.setColor(resolveToggleTextColor(sfxOn));
@@ -181,6 +183,7 @@ export class PauseMenu {
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     musicText.on('pointerdown', () => {
+      audio.playClick();
       musicOn = !musicOn;
       musicText.setText(musicLabel(musicOn));
       musicText.setColor(resolveToggleTextColor(musicOn));

@@ -651,6 +651,39 @@ export class AudioSystem {
     this.duckMusicForGameplaySfx(0.35);
   }
 
+  /**
+   * Warm confirmation tone for selecting a passive/boon in the level-up
+   * flow. Two-note ascending sine (D5→A5) with soft attack, 200ms total.
+   */
+  playBoonSelect(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(0.06);
+
+    const now = ctx.currentTime;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.14, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    gain.connect(this.masterGain);
+
+    // D5
+    const o1 = ctx.createOscillator();
+    o1.type = 'sine';
+    o1.frequency.setValueAtTime(587.3, now);
+    o1.connect(gain);
+    o1.start(now);
+    o1.stop(now + 0.1);
+
+    // A5 (delayed 80ms)
+    const o2 = ctx.createOscillator();
+    o2.type = 'sine';
+    o2.frequency.setValueAtTime(880, now + 0.08);
+    o2.connect(gain);
+    o2.start(now + 0.08);
+    o2.stop(now + 0.2);
+  }
+
   /** Menu button click */
   playClick(): void {
     this.gatedSfx('click', () => {

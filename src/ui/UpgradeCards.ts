@@ -343,6 +343,8 @@ export class UpgradeCardsUI {
       if (card.rarity === 'legendary') {
         audio.playLegendarySelect();
         this.spawnLegendaryTrail(x, y);
+      } else if (card.effect.type === 'add_passive') {
+        audio.playBoonSelect();
       } else {
         audio.playLevelUp();
       }
