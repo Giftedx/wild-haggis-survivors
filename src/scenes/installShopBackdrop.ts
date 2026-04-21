@@ -6,6 +6,7 @@ import {
   AMBER_HEADER_WASH_ALPHA_QUIET,
   addSceneBackdrop,
 } from './sceneFade';
+import { PANEL_STROKE } from '../ui/panelStyle';
 
 /**
  * Builds the shared "shop scene" cozy backdrop — both ShopScene and
@@ -23,7 +24,7 @@ export function installShopBackdrop(scene: Phaser.Scene): void {
   // Warm amber wash at the top — cozy between storms
   addAmberHeaderWash(scene, AMBER_HEADER_WASH_ALPHA_QUIET);
   scene.add.rectangle(width / 2, 318, width - 26, 452, COLORS.PANEL, 0.62)
-    .setStrokeStyle(2, 0x2d3e62, 0.8);
+    .setStrokeStyle(PANEL_STROKE.standard.width, PANEL_STROKE.standard.color, PANEL_STROKE.standard.alpha);
   // Heather strip at the bottom for highland warmth
   if (scene.textures.exists('deco_heather')) {
     for (let i = 0; i < 5; i++) {
