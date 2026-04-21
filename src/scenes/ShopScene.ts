@@ -21,6 +21,7 @@ import { audio } from '../systems/AudioSystem';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
+import { ShopAmbientLoop } from '../systems/music/ShopAmbientLoop';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -29,6 +30,7 @@ export class ShopScene extends Phaser.Scene {
   private currentPage = 0;
   private readonly upgradesPerPage = 8;
   private saveData!: SaveData;
+  private shopMusic = new ShopAmbientLoop();
   private rowElements: Phaser.GameObjects.GameObject[] = [];
   private footerElements: Phaser.GameObjects.GameObject[] = [];
   private goldText!: Phaser.GameObjects.Text;
@@ -88,7 +90,9 @@ export class ShopScene extends Phaser.Scene {
     this.renderRows();
     this.renderFooter();
 
+    this.shopMusic.start();
     stopAmbientWindOnShutdown(this);
+    this.events.once('shutdown', () => this.shopMusic.stop());
     addSceneFadeIn(this, 400, 0x1a1008);
   }
 
