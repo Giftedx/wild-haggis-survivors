@@ -12,7 +12,7 @@ import {
 } from './shopUpgradeRowState';
 import { paginationState } from '../ui/pagination';
 import { resolveShopRowBgColor } from './shopRowBg';
-import { startSceneFadeOut } from './sceneFade';
+import { addSceneFadeIn, startSceneFadeOut } from './sceneFade';
 import { playPurchaseBurst } from './purchaseBurst';
 import { installShopBackdrop } from './installShopBackdrop';
 import { clearGameObjects } from '../utils/clearGameObjects';
@@ -89,6 +89,7 @@ export class ShopScene extends Phaser.Scene {
     this.renderFooter();
 
     stopAmbientWindOnShutdown(this);
+    addSceneFadeIn(this, 400, 0x1a1008);
   }
 
   private getPagination() {
@@ -259,7 +260,7 @@ export class ShopScene extends Phaser.Scene {
     attachButtonHoverFill(backButton, 0x3a4357, 0x4a566f);
     backButton.on('pointerdown', () => {
       audio.playClick();
-      startSceneFadeOut(this, 260, () => this.scene.start('MainMenu'));
+      startSceneFadeOut(this, 260, () => this.scene.start('MainMenu'), 0x1a1008);
     });
 
     this.footerElements.push(backButton, backText);

@@ -519,7 +519,7 @@ export class MenuScene extends Phaser.Scene {
   private fadeToScene(key: string): void {
     if (this.transitioning) return;
     this.transitioning = true;
-    startSceneFadeOut(this, 320, () => this.scene.start(key));
+    startSceneFadeOut(this, 500, () => this.scene.start(key));
   }
 
   private createToggle(

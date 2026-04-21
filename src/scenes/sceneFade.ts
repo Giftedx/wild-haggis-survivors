@@ -22,10 +22,14 @@ export const SCENE_FADE_DEPTH = 999;
  * `durationMs`, destroying the rectangle on complete. Call from a
  * scene's create() for a soft reveal.
  */
-export function addSceneFadeIn(scene: Phaser.Scene, durationMs: number = 360): void {
+export function addSceneFadeIn(
+  scene: Phaser.Scene,
+  durationMs: number = 360,
+  color: number = SCENE_FADE_COLOR,
+): void {
   const { width, height } = scene.scale;
   const fade = scene.add
-    .rectangle(width / 2, height / 2, width, height, SCENE_FADE_COLOR, 1)
+    .rectangle(width / 2, height / 2, width, height, color, 1)
     .setDepth(SCENE_FADE_DEPTH);
   scene.tweens.add({
     targets: fade,
@@ -44,10 +48,11 @@ export function startSceneFadeOut(
   scene: Phaser.Scene,
   durationMs: number,
   onComplete: () => void,
+  color: number = SCENE_FADE_COLOR,
 ): void {
   const { width, height } = scene.scale;
   const fade = scene.add
-    .rectangle(width / 2, height / 2, width, height, SCENE_FADE_COLOR, 0)
+    .rectangle(width / 2, height / 2, width, height, color, 0)
     .setDepth(SCENE_FADE_DEPTH);
   scene.tweens.add({
     targets: fade,
