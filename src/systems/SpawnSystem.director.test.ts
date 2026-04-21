@@ -5,7 +5,7 @@ import {
 } from '../core/BalanceConfig';
 
 vi.mock('./AudioSystem', () => ({
-  audio: { playBossWarning: vi.fn() },
+  audio: { playBossArrival: vi.fn() },
 }));
 
 vi.mock('phaser', () => {

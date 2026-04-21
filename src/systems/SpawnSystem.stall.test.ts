@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 vi.mock('./AudioSystem', () => ({
-  audio: { playBossWarning: vi.fn() },
+  audio: { playBossArrival: vi.fn() },
 }));
 
 vi.mock('phaser', () => {

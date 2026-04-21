@@ -1020,6 +1020,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     const prefs = this.settingsManager.load();
     applyAudioFromUserSettings(prefs);
+    audio.fadeOutAmbientWind(800);
     if (prefs.musicVolume > 0.001) {
       musicEngine.start();
     }

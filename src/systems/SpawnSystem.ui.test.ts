@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('./AudioSystem', () => ({
-  audio: { playBossWarning: vi.fn() },
+  audio: { playBossArrival: vi.fn() },
 }));
 
 // Default settings mock — individual tests can override with vi.doMock + resetModules

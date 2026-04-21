@@ -7,7 +7,6 @@ import { ENEMIES, GAME } from '../config';
 import { getEnemyConfigsByKeys, getSpawnWeight, EnemyConfig, ENEMY_TYPES, BOSSES, BossConfig } from '../data/enemies';
 import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { audio } from './AudioSystem';
-import { musicEngine } from './music/ProceduralMusicEngine';
 import { ISceneContext } from '../core/ISceneContext';
 import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
@@ -407,8 +406,7 @@ export class SpawnSystem {
   }
 
   private showBossWarning(text: string): void {
-    audio.playBossWarning();
-    musicEngine.playBossFanfare();
+    audio.playBossArrival();
     const { x, y, width, height } = this.getUiViewport();
     const settings = this.settings.load();
     // Accessibility: scale font by uiScale, swap palette when high-contrast.

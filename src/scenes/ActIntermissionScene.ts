@@ -27,6 +27,7 @@ import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
 import { COLORS, COLORS_CSS, UI } from '../config';
 import { textStyle } from '../ui/typography';
+import { audio } from '../systems/AudioSystem';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -55,9 +56,12 @@ export class ActIntermissionScene extends Phaser.Scene {
     const routes = ROUTES_BY_SLOT[this.launchData.slot];
     this.renderRouteCards(routes);
     this.installKeyboardShortcuts(routes);
-    // Uninstall when the scene tears down so the handler doesn't leak
-    // into the paired GameScene after resolve.
-    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.uninstallKeyboardShortcuts());
+    audio.startAmbientWind(0.04);
+    // Uninstall keyboard handler and fade wind when the scene tears down.
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.uninstallKeyboardShortcuts();
+      audio.fadeOutAmbientWind(400);
+    });
   }
 
   private renderRouteCards(routes: readonly RouteDef[]): void {

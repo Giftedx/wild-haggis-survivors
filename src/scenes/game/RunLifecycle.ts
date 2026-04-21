@@ -195,6 +195,7 @@ export class RunLifecycle {
       }
       this.postBellOfferActive = false;
       this.uninstallPostBellKeyHandler();
+      musicEngine.fadeOut(600);
       this.hooks.transitionToGameOver(
         this.hooks.buildGameOverPayload('victory', summary, runResult, previousBests),
       );

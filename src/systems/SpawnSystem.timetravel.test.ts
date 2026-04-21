@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 
 vi.mock('./AudioSystem', () => ({
-  audio: { playBossWarning: vi.fn() },
+  audio: { playBossArrival: vi.fn() },
 }));
 
 vi.mock('phaser', () => {

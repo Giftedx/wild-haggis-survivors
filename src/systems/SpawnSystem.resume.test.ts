@@ -3,7 +3,7 @@ import { BALANCE, getActiveWaveTimelineEntry } from '../core/BalanceConfig';
 import { BOSSES } from '../data/enemies';
 
 vi.mock('./AudioSystem', () => ({
-  audio: { playBossWarning: vi.fn() },
+  audio: { playBossArrival: vi.fn() },
 }));
 
 vi.mock('phaser', () => {

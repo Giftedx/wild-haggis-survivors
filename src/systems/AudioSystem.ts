@@ -21,6 +21,9 @@ function applySfxDetune(osc: OscillatorNode): void {
 }
 
 export class AudioSystem {
+  /** Default wind gain before sfxGainMultiplier scaling. */
+  static readonly DEFAULT_WIND_VOL = 0.08;
+
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private enabled: boolean = true;
@@ -71,7 +74,7 @@ export class AudioSystem {
     this.refreshOutputGain();
     if (this.ambientGain) {
       const ctx = this.ctx;
-      if (ctx) this.ambientGain.gain.setValueAtTime(0.08 * this.sfxGainMultiplier, ctx.currentTime);
+      if (ctx) this.ambientGain.gain.setValueAtTime(AudioSystem.DEFAULT_WIND_VOL * this.sfxGainMultiplier, ctx.currentTime);
     }
   }
 
@@ -424,6 +427,14 @@ export class AudioSystem {
     osc.stop(t + 1.0);
   }
 
+  /** Orchestrated boss entrance — warning swell into fanfare. */
+  playBossArrival(): void {
+    this.playBossWarning();
+    setTimeout(() => {
+      musicEngine.playBossFanfare();
+    }, 1400);
+  }
+
   /** Short descending growl for boss enrage — sawtooth, darker than warning. */
   playBossEnrage(): void {
     if (!this.enabled) return;
@@ -772,8 +783,9 @@ export class AudioSystem {
    * the procedural music engine (which runs during GameScene only).
    *
    * Safe to call multiple times — starts only once.
+   * @param volume Target gain (default: DEFAULT_WIND_VOL × sfxGainMultiplier).
    */
-  startAmbientWind(): void {
+  startAmbientWind(volume?: number): void {
     if (this.ambientSource) return;
     const ctx = this.ensureContext();
     if (!ctx || !this.masterGain) {
@@ -781,11 +793,13 @@ export class AudioSystem {
         this.ambientRetryScheduled = true;
         runWhenAudioActivated(() => {
           this.ambientRetryScheduled = false;
-          this.startAmbientWind();
+          this.startAmbientWind(volume);
         });
       }
       return;
     }
+
+    const targetVol = (volume ?? AudioSystem.DEFAULT_WIND_VOL) * this.sfxGainMultiplier;
 
     // Generate a brown noise buffer (2 seconds, loopable)
     const sampleRate = ctx.sampleRate;
@@ -812,7 +826,7 @@ export class AudioSystem {
     // Very quiet — ambient should be felt, not heard
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    gain.gain.linearRampToValueAtTime(0.08 * this.sfxGainMultiplier, ctx.currentTime + 1.5);
+    gain.gain.linearRampToValueAtTime(targetVol, ctx.currentTime + 1.5);
 
     source.connect(lpf);
     lpf.connect(gain);
@@ -823,8 +837,8 @@ export class AudioSystem {
     this.ambientGain = gain;
   }
 
-  /** Fade out and stop ambient wind. */
-  stopAmbientWind(): void {
+  /** Fade ambient wind to silence over `ms` milliseconds. No-op if not playing. */
+  fadeOutAmbientWind(ms: number): void {
     if (!this.ambientSource || !this.ambientGain) return;
     const ctx = this.ctx;
     if (!ctx) return;
@@ -834,12 +848,17 @@ export class AudioSystem {
     this.ambientSource = null;
     this.ambientGain = null;
 
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + ms / 1000);
     setTimeout(() => {
       try { source.stop(); } catch { /* already stopped */ }
       source.disconnect();
       gain.disconnect();
-    }, 1000);
+    }, ms + 200);
+  }
+
+  /** Fade out and stop ambient wind. */
+  stopAmbientWind(): void {
+    this.fadeOutAmbientWind(800);
   }
 }
 
