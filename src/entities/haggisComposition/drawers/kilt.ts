@@ -19,6 +19,7 @@
 import type { AccessoryDrawer, AccessoryDrawCtx } from '../AccessoryDrawer';
 import { PALETTE } from '../../../art/palettes';
 import { resolveKiltPalette, type KiltPalette } from '../../../art/kiltPalette';
+import { darkenColor } from '../../../utils/brightenColor';
 
 const SPRITE_SIZE = 80;
 const CX = SPRITE_SIZE / 2;
@@ -74,7 +75,7 @@ function drawKilt(g: Phaser.GameObjects.Graphics, frame: KiltFrame, palette: Kil
   }
 
   // ── Waistband — a narrow darker band at the top ──
-  g.fillStyle(0x1a0505, 1);
+  g.fillStyle(darkenColor(palette.fieldDark, 40), 1);
   g.fillRect(cx - 15, cy - 6, 30, 2);
   g.fillStyle(PALETTE.gold.aged, 0.85);
   g.fillRect(cx - 14, cy - 5, 28, 1);
