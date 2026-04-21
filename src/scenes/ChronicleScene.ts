@@ -37,6 +37,7 @@ import {
   resolveChronicleMilestonesDensityStyle,
 } from '../ui/chronicleAggregates';
 import { paginationState } from '../ui/pagination';
+import { createPaginationNav } from '../ui/gamePagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
@@ -45,12 +46,8 @@ import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle
 import { clickToScene } from './clickToScene';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 
-// Repeated text styles inside this scene — pinned so the row + pagination
-// look stays in sync. Both small monospace bold strings used for header
-// chips and pagination buttons / list section titles.
-const CHRONICLE_PAGER_BTN_TEXT = {
-  fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_PRIMARY, fontStyle: 'bold',
-} as const;
+// Repeated text styles inside this scene — pinned so the row section
+// header look stays in sync.
 const CHRONICLE_SECTION_HEADER_TEXT = {
   fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.TEXT_SUBTITLE,
   fontStyle: 'bold', letterSpacing: 1,
@@ -89,9 +86,7 @@ export class ChronicleScene extends Phaser.Scene {
   private page = 0;
   private runRowObjects: Phaser.GameObjects.GameObject[] = [];
   private history: RunHistoryEntry[] = [];
-  private pageLabel!: Phaser.GameObjects.Text;
-  private prevBtn!: Phaser.GameObjects.Rectangle;
-  private nextBtn!: Phaser.GameObjects.Rectangle;
+  private paginationNav: { destroy: () => void } = { destroy: () => {} };
 
   constructor() {
     super({ key: 'Chronicle' });
@@ -266,29 +261,6 @@ export class ChronicleScene extends Phaser.Scene {
       .rectangle(width / 2, this.ROWS_PANEL_CENTER_Y, width - 40, this.ROWS_PANEL_HEIGHT, 0x0f1828, 0.7)
       .setStrokeStyle(1, 0x243552, 0.8);
 
-    // Page controls (only wired if >ROWS_PER_PAGE entries)
-    const paginationY = this.PAGINATION_Y;
-    this.prevBtn = this.add
-      .rectangle(width / 2 - 120, paginationY, 72, 24, 0x252540, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 - 120, paginationY, t('ui.chronicle.prev'), CHRONICLE_PAGER_BTN_TEXT)
-      .setOrigin(0.5).setScale(uiScale);
-    this.prevBtn.on('pointerdown', () => this.turnPage(-1));
-
-    this.nextBtn = this.add
-      .rectangle(width / 2 + 120, paginationY, 72, 24, 0x252540, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add.text(width / 2 + 120, paginationY, t('ui.chronicle.next'), CHRONICLE_PAGER_BTN_TEXT)
-      .setOrigin(0.5).setScale(uiScale);
-    this.nextBtn.on('pointerdown', () => this.turnPage(1));
-
-    this.pageLabel = this.add
-      .text(width / 2, paginationY, '', {
-        fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_MUTED,
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-
     this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
 
     // ── Back button ──
@@ -341,16 +313,6 @@ export class ChronicleScene extends Phaser.Scene {
     this.scene.start('Game', { replay });
   }
 
-  private turnPage(delta: number): void {
-    const pagination = paginationState(this.history.length, this.ROWS_PER_PAGE, this.page + delta);
-    if (pagination.clampedPage === this.page) return;
-    this.page = pagination.clampedPage;
-    audio.playClick();
-    const { width } = this.scale;
-    const { uiScale } = getSettingsManager().load();
-    this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
-  }
-
   private renderRunsPage(startY: number, width: number, uiScale: number): void {
     for (const o of this.runRowObjects) o.destroy();
     this.runRowObjects = [];
@@ -364,9 +326,6 @@ export class ChronicleScene extends Phaser.Scene {
         .setOrigin(0.5)
         .setScale(uiScale);
       this.runRowObjects.push(empty);
-      this.pageLabel.setText('');
-      this.prevBtn.setVisible(false);
-      this.nextBtn.setVisible(false);
       return;
     }
 
@@ -558,17 +517,20 @@ export class ChronicleScene extends Phaser.Scene {
       }
     });
 
-    if (pagination.pageVisible) {
-      this.pageLabel.setText(pagination.pageLabel);
-      this.prevBtn.setVisible(true);
-      this.nextBtn.setVisible(true);
-      this.prevBtn.setAlpha(pagination.prevEnabled ? 1 : 0.4);
-      this.nextBtn.setAlpha(pagination.nextEnabled ? 1 : 0.4);
-    } else {
-      this.pageLabel.setText('');
-      this.prevBtn.setVisible(false);
-      this.nextBtn.setVisible(false);
-    }
+    this.paginationNav.destroy();
+    this.paginationNav = createPaginationNav(
+      this,
+      width / 2,
+      this.PAGINATION_Y,
+      this.history.length,
+      this.ROWS_PER_PAGE,
+      this.page,
+      (newPage) => {
+        this.page = newPage;
+        audio.playClick();
+        this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
+      },
+    );
   }
 
   private buildMilestoneLines(m: ReturnType<typeof computeMilestones>): string {

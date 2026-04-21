@@ -11,9 +11,9 @@ import {
   buildMetaShopLockReasonSuffix,
   META_SHOP_OWNED_PILL_COLOR,
   META_SHOP_LOCKED_PILL_COLOR,
-  META_SHOP_PAGE_BUTTON_STYLE,
 } from './metaShopRowState';
 import { paginationState } from '../ui/pagination';
+import { createPaginationNav } from '../ui/gamePagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
 import { createGameButton, setGameButtonDisabled } from '../ui/gameButton';
@@ -38,6 +38,7 @@ export class MetaShopScene extends Phaser.Scene {
   private page = 0;
   private readonly ROWS_PER_PAGE = 5;
   private pageText!: Phaser.GameObjects.Text;
+  private paginationNav: { destroy: () => void } = { destroy: () => {} };
 
   constructor() {
     super({ key: 'MetaShop' });
@@ -91,6 +92,7 @@ export class MetaShopScene extends Phaser.Scene {
       audio.stopAmbientWind();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
+      this.paginationNav.destroy();
     });
   }
 
@@ -112,33 +114,21 @@ export class MetaShopScene extends Phaser.Scene {
     const pageKeys = allKeys.slice(pagination.startIndex, pagination.endIndex);
     const entries: GamepadMenuEntry[] = [];
 
-    // Page navigation (prev / next)
-    if (pagination.pageVisible) {
-      this.pageText.setText(t('ui.shop.page', { current: pagination.clampedPage + 1, total: pagination.pageCount }));
-
-      if (pagination.prevEnabled) {
-        const prevBtn = this.add
-          .text(width / 2 - 90, height - 58, t('ui.shop.prev'),
-            textStyle('label', { color: META_SHOP_PAGE_BUTTON_STYLE.color }),
-          )
-          .setOrigin(0.5)
-          .setInteractive({ useHandCursor: true })
-          .on('pointerdown', () => { this.page--; this.renderRows(); });
-        this.rowElements.push(prevBtn);
-      }
-      if (pagination.nextEnabled) {
-        const nextBtn = this.add
-          .text(width / 2 + 90, height - 58, t('ui.shop.next'),
-            textStyle('label', { color: META_SHOP_PAGE_BUTTON_STYLE.color }),
-          )
-          .setOrigin(0.5)
-          .setInteractive({ useHandCursor: true })
-          .on('pointerdown', () => { this.page++; this.renderRows(); });
-        this.rowElements.push(nextBtn);
-      }
-    } else {
-      this.pageText.setText('');
-    }
+    // Page navigation — destroy previous nav then rebuild for current page.
+    this.pageText.setText('');
+    this.paginationNav.destroy();
+    this.paginationNav = createPaginationNav(
+      this,
+      width / 2,
+      height - 58,
+      allKeys.length,
+      this.ROWS_PER_PAGE,
+      this.page,
+      (newPage) => {
+        this.page = newPage;
+        this.renderRows();
+      },
+    );
 
     pageKeys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
