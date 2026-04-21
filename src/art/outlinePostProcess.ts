@@ -46,7 +46,11 @@ export function applyOutline(
   stamp.setPosition(1, 1);
   rt.draw(stamp);
 
-  // Replace the original texture with the outlined version
+  // Replace the original texture with the outlined version.
+  // Phaser 3.90's saveTexture rejects duplicate keys, so remove first.
+  if (scene.textures.exists(textureKey)) {
+    scene.textures.remove(textureKey);
+  }
   rt.saveTexture(textureKey);
 
   // Cleanup
