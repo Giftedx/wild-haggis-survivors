@@ -99,6 +99,22 @@ export const COLORS = {
 
   /** Background */
   BG_DARK: 0x1a1a2e,
+
+  /** Sprite art red — slightly cooler than HP_RED, used for clothing /
+   *  armour across angryScotsman, hunterGeneral, deepFryer, chest, and
+   *  the boss HP bar fill. Kept distinct from HP_RED (UI health bars)
+   *  so art palette and HUD palette can evolve independently. */
+  SPRITE_RED: 0xcc2222,
+
+  /** Toast / achievement overlay gold — warm highlight for transient
+   *  notifications (act intermission titles, achievement pops, event
+   *  bus toasts). */
+  TOAST_GOLD: 0xffdd88,
+
+  /** Danger-flash red — damage vignette, low-FPS indicator, HP-crit
+   *  feedback. Brighter and more saturated than HP_RED so it punches
+   *  through particle noise. */
+  DANGER_RED: 0xff4444,
 } as const;
 
 /**
@@ -125,4 +141,8 @@ export const COLORS_CSS = {
   /** CSS mirror of COLORS.HP_RED — used by the death-panel title so a
    *  recolour of the HP red carries through to the game-over gravitas hue. */
   HP_RED: '#cc3333',
+  SPRITE_RED: '#cc2222',
+  TOAST_GOLD: '#ffdd88',
+  DANGER_RED: '#ff4444',
+  LEGENDARY: '#ddaa00',
 } as const;
