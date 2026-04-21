@@ -443,6 +443,12 @@ class ProceduralMusicEngine {
     this.piano.playBiomeAccent(this.ctx.currentTime, biomeTimbre);
   }
 
+  /** Boss arrival fanfare — descending D minor through the piano. */
+  playBossFanfare(): void {
+    if (!this.ctx || !this.playing) return;
+    this.piano.playBossFanfare(this.ctx.currentTime);
+  }
+
   isPlaying(): boolean { return this.playing; }
 
   /**

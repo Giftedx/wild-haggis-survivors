@@ -184,6 +184,29 @@ export class PianoLayer {
   }
 
   /**
+   * Descending minor fanfare for boss arrival — 4 heavy notes, D minor.
+   * Contrasts with moorFlourish (ascending, bright) — this is ominous, weighty.
+   * Think brass stab descending into the bass register.
+   */
+  playBossFanfare(time: number): void {
+    if (!this.ctx || !this.filter) return;
+    // Briefly open the filter for clarity
+    if (this.filter) {
+      const f = this.filter.frequency;
+      f.linearRampToValueAtTime(5000, time + 0.05);
+      f.linearRampToValueAtTime(3000, time + 1.2);
+    }
+    // D minor descending: D4 → C4 → A3 → D3 (octave drop = weight)
+    const freqs = [293.66, 261.63, 220.0, 146.83];
+    const offsets = [0, 0.15, 0.32, 0.55];
+    const releases = [0.4, 0.4, 0.5, 0.9]; // Last note rings longest
+    const vels = [0.28, 0.24, 0.22, 0.3];   // First and last strongest
+    for (let i = 0; i < freqs.length; i++) {
+      this.playNote(freqs[i]!, time + offsets[i]!, vels[i]!, releases[i]!);
+    }
+  }
+
+  /**
    * Short 2-note interval on biome entry — pitch follows biome timbre.
    * Bog (timbre ~0.15): low root+fifth (D3-A3). Heather (timbre ~0.8): high (D4-A4).
    * Quick and subtle — just enough to feel the shift.
