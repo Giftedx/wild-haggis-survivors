@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, COLORS_CSS, UI } from '../config';
+import { COLORS, COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
@@ -78,7 +78,7 @@ export class MenuScene extends Phaser.Scene {
       .rectangle(width / 2, 106, width - 64, 184, COLORS.PANEL, this.highContrastUi ? 0.78 : 0.58)
       .setStrokeStyle(2, this.highContrastUi ? 0x4e6ea2 : 0x263655, 0.9);
     this.add
-      .rectangle(width / 2, layout.panelY, width - 40, layout.panelHeight + 18, 0x0d1323, 0.92)
+      .rectangle(width / 2, layout.panelY, width - 40, layout.panelHeight + 18, COLORS.PANEL, 0.92)
       .setStrokeStyle(2, 0x31476e, 0.95);
 
     this.floatingDots = [];
@@ -273,7 +273,7 @@ export class MenuScene extends Phaser.Scene {
     const infoX = panelX - 92;
 
     const panel = this.add
-      .rectangle(panelX, panelY, panelWidth, panelHeight, 0x10192d, 0.95)
+      .rectangle(panelX, panelY, panelWidth, panelHeight, COLORS.PANEL, 0.95)
       .setStrokeStyle(2, resolveVariantPanelStroke(unlocked), 1);
     this.variantPanelElements.push(panel);
 

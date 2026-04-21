@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS, UI } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantKey } from '../data/variants';
@@ -97,11 +97,11 @@ export class GameOverScene extends Phaser.Scene {
       .setDepth(d)
       .setInteractive();
     const panel = this.add
-      .rectangle(panelCenterX, panelCenterY, PANEL_W, PANEL_H, highContrastUi ? 0x080d17 : 0x101729, 0)
+      .rectangle(panelCenterX, panelCenterY, PANEL_W, PANEL_H, COLORS.PANEL, 0)
       .setScrollFactor(0)
       .setDepth(d + 1)
       .setStrokeStyle(2, highContrastUi ? 0x8fb4ff : panelStroke, 1);
-    this.tweens.add({ targets: overlay, alpha: 0.82, duration: 420 });
+    this.tweens.add({ targets: overlay, alpha: UI.OVERLAY_ALPHA, duration: 420 });
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
     // Rotating death titles/subtitles — each death feels different

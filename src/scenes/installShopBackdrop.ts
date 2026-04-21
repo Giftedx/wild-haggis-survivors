@@ -22,7 +22,7 @@ export function installShopBackdrop(scene: Phaser.Scene): void {
   addSceneBackdrop(scene);
   // Warm amber wash at the top — cozy between storms
   addAmberHeaderWash(scene, AMBER_HEADER_WASH_ALPHA_QUIET);
-  scene.add.rectangle(width / 2, 318, width - 26, 452, 0x11182a, 0.62)
+  scene.add.rectangle(width / 2, 318, width - 26, 452, COLORS.PANEL, 0.62)
     .setStrokeStyle(2, 0x2d3e62, 0.8);
   // Heather strip at the bottom for highland warmth
   if (scene.textures.exists('deco_heather')) {

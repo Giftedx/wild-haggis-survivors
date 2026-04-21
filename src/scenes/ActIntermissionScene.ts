@@ -25,7 +25,7 @@ import {
 } from './actIntermissionResolve';
 import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
-import { COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS, UI } from '../config';
 import { textStyle } from '../ui/typography';
 
 export interface ActIntermissionLaunchData {
@@ -64,7 +64,7 @@ export class ActIntermissionScene extends Phaser.Scene {
     const { width, height } = this.cameras.main;
 
     // Darkened backdrop — blocks input to the paired GameScene.
-    this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.65)
+    this.add.rectangle(width / 2, height / 2, width, height, COLORS.OVERLAY_DIM, UI.OVERLAY_ALPHA)
       .setInteractive();
 
     // Title — act 1 vs act 2.
@@ -95,7 +95,7 @@ export class ActIntermissionScene extends Phaser.Scene {
 
   private buildCard(x: number, y: number, w: number, h: number, route: RouteDef, shortcut: number): void {
     const cardStyle = resolveActIntermissionCardStyle();
-    const bg = this.add.rectangle(x, y, w, h, 0x1a1a28, 0.98)
+    const bg = this.add.rectangle(x, y, w, h, COLORS.PANEL_SURFACE, 0.98)
       .setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color)
       .setInteractive({ useHandCursor: true });
 

@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
-import { COLORS, COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS, UI } from '../config';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -97,7 +97,7 @@ export class UpgradeCardsUI {
 
     // Dark overlay — high opacity to fully hide the green terrain behind
     // Interactive to block joystick/other input from activating through it
-    const overlay = this.scene.add.rectangle(centerX, centerY, width, height, 0x000000, 0.85)
+    const overlay = this.scene.add.rectangle(centerX, centerY, width, height, COLORS.OVERLAY_DIM, UI.OVERLAY_ALPHA)
       .setScrollFactor(0).setDepth(depth).setInteractive();
     this.elements.push(overlay);
 

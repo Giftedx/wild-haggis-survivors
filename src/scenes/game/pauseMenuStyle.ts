@@ -17,7 +17,7 @@ export const PAUSE_TITLE_SIZE_SHORT = '34px';
 /** Title font size — wide viewport variant. */
 export const PAUSE_TITLE_SIZE_WIDE = '46px';
 
-import { COLORS, COLORS_CSS } from '../../config';
+import { COLORS, COLORS_CSS, UI } from '../../config';
 
 export const PAUSE_TITLE_COLOR = COLORS_CSS.WHISKY_GOLD;
 export const PAUSE_TITLE_COLOR_HC = '#ffe08a';
@@ -37,7 +37,7 @@ export function resolvePauseMenuStyle(viewportHeight: number, highContrast: bool
     ? (highContrast ? 6 : 4)
     : (highContrast ? 8 : 5);
   const titleColor = highContrast ? PAUSE_TITLE_COLOR_HC : PAUSE_TITLE_COLOR;
-  const backdropAlpha = highContrast ? 0.95 : 0.85;
+  const backdropAlpha = highContrast ? UI.OVERLAY_ALPHA_HC : UI.OVERLAY_ALPHA;
   return { titlePx, titleStroke, titleColor, backdropAlpha, shortViewport };
 }
 
