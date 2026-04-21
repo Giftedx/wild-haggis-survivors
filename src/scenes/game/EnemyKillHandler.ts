@@ -27,6 +27,7 @@ import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
 import { dispatchActComplete } from './dispatchActComplete';
+import { COLORS_CSS } from '../../config';
 import { formatSpeedrunTime } from '../../utils/formatSpeedrunTime';
 import { resolveEnemyDeathColor } from '../../systems/enemyDeathColors';
 import { getSettingsManager } from '../../core/SettingsManager';
@@ -257,7 +258,7 @@ export class EnemyKillHandler {
         const splitSec = spawn.getGameTimeSec();
         juice.showToast(
           t('ui.hud.speedrun_split', { time: formatSpeedrunTime(splitSec) }),
-          '#d4a017',
+          COLORS_CSS.WHISKY_GOLD,
         );
       }
 

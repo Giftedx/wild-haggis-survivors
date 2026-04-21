@@ -11,6 +11,7 @@ import { globalEventBus } from '../../core/GlobalEventBus';
 import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { getEnemyDisplayName } from '../../data/enemies';
+import { COLORS_CSS } from '../../config';
 
 export interface SceneEventBusHooks {
   getJuice(): JuiceSystem;
@@ -22,11 +23,11 @@ export interface SceneEventBusHooks {
  */
 export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
   const unsubAchievement = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
-    hooks.getJuice().showToast(t('ui.game.achievement_unlock', { title: p.title }), '#ffdd88');
+    hooks.getJuice().showToast(t('ui.game.achievement_unlock', { title: p.title }), COLORS_CSS.TOAST_GOLD);
     audio.playAchievement();
   });
   const unsubBossEnraged = globalEventBus.on('bossEnraged', () => {
-    hooks.getJuice().showToast(t('ui.game.boss_enraged'), '#ff4444');
+    hooks.getJuice().showToast(t('ui.game.boss_enraged'), COLORS_CSS.DANGER_RED);
   });
   const unsubCodexFirstCull = globalEventBus.on('CODEX_FIRST_CULL', (p) => {
     const name = getEnemyDisplayName(p.enemyKey);

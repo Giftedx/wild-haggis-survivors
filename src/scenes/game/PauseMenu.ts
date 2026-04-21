@@ -228,7 +228,7 @@ export class PauseMenu {
           x + width / 2, passiveBottomY,
           `${t('ui.pause.passives_heading')}\n${passiveList}`,
           {
-            fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00',
+            fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.LEGENDARY,
             align: 'center', lineSpacing: 3,
           },
         ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1)

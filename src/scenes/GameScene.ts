@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { GAME } from '../config';
+import { GAME, COLORS_CSS } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
@@ -1582,7 +1582,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.caption(
       'act_intermission_open',
       t('ui.captions.act_intermission_open'),
-      '#ffdd88',
+      COLORS_CSS.TOAST_GOLD,
       3000,
     );
     this.scene.launch(ActIntermissionScene.KEY, {

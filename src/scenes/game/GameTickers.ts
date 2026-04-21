@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, GAME } from '../../config';
+import { COLORS, COLORS_CSS, GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { BiomeId } from '../../data/biomes';
@@ -114,7 +114,7 @@ export class GameTickers {
     const player = this.hooks.getPlayer();
     const frac = player.getHp() / Math.max(1, player.getMaxHp());
     if (this.lowHpCaptionArmed && frac > 0 && frac < 0.2) {
-      this.hooks.caption('low_hp', t('ui.captions.low_hp'), '#ee5566');
+      this.hooks.caption('low_hp', t('ui.captions.low_hp'), COLORS_CSS.DANGER_RED);
       this.hooks.getBanter()?.request('low_hp', { tag: this.hooks.getActiveVariantKey() });
       this.lowHpCaptionArmed = false;
     } else if (!this.lowHpCaptionArmed && frac > 0.4) {

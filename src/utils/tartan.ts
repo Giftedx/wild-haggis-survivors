@@ -11,6 +11,7 @@
  */
 import type { VariantKey } from '../data/variants';
 import type { WeaponKey } from '../data/weapons';
+import { COLORS_CSS } from '../config';
 
 /** A tartan's four-colour palette plus the fixed weave pattern. */
 export interface TartanProfile {
@@ -67,7 +68,7 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   haggis_hurler:   '#6b2a2a', // oxblood
   nessie_tentacle: '#2f7a7a', // loch teal
   claymore:        '#7a8fa8', // steel blue
-  bagpipes:        '#d4a017', // ceilidh gold
+  bagpipes:        COLORS_CSS.WHISKY_GOLD, // ceilidh gold
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

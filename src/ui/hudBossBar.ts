@@ -16,6 +16,8 @@
 export const BOSS_HP_MID_THRESHOLD = 0.5;
 /** HP fraction at/above which the bar is in mid tier — below is warning. */
 export const BOSS_HP_WARNING_THRESHOLD = 0.25;
+import { COLORS } from '../config';
+
 /** Radians-per-ms for the warning glow pulse (matches the previous inline 0.006). */
 export const BOSS_GLOW_PULSE_RATE_RAD_PER_MS = 0.006;
 /** Warning glow alpha centre + amplitude — pulses inside [C-A, C+A]. */
@@ -63,7 +65,7 @@ export function bossHpBarStyle(hpFrac: number, nowMs: number): BossBarStyle {
 }
 
 /** Baseline (tier-3) fill — the "not worried yet" red. */
-export const BOSS_BAR_BASELINE_FILL = 0xcc2222;
+export const BOSS_BAR_BASELINE_FILL = COLORS.SPRITE_RED;
 /** Baseline (tier-3) top-highlight stripe. */
 export const BOSS_BAR_BASELINE_HIGHLIGHT = 0xff6644;
 /** Shared warn glow colour — used at baseline (alpha 0) and pulsed in warn tier. */

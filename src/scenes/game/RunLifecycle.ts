@@ -157,7 +157,7 @@ export class RunLifecycle {
     setTimeout(() => juice.victorySparkleRain(), 500);
     juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
     this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
-    juice.showToast(t('ui.gameOver.keep_going_offer'), '#ffdd88');
+    juice.showToast(t('ui.gameOver.keep_going_offer'), COLORS_CSS.TOAST_GOLD);
     this.postBellOfferActive = true;
     this.installPostBellKeyHandler();
 

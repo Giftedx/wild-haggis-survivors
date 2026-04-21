@@ -25,6 +25,7 @@ import {
 } from './actIntermissionResolve';
 import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
+import { COLORS_CSS } from '../config';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -70,7 +71,7 @@ export class ActIntermissionScene extends Phaser.Scene {
       ? 'ui.actIntermission.title_act_1'
       : 'ui.actIntermission.title_act_2';
     this.add.text(width / 2, height / 2 - 200, t(titleKey), {
-      fontFamily: 'monospace', fontSize: '28px', color: '#ffdd88',
+      fontFamily: 'monospace', fontSize: '28px', color: COLORS_CSS.TOAST_GOLD,
       stroke: '#000', strokeThickness: 3,
     }).setOrigin(0.5);
 
@@ -99,7 +100,7 @@ export class ActIntermissionScene extends Phaser.Scene {
       .setInteractive({ useHandCursor: true });
 
     this.add.text(x, y - h / 2 + 24, t(route.labelKey), {
-      fontFamily: 'monospace', fontSize: '20px', color: '#ffdd88',
+      fontFamily: 'monospace', fontSize: '20px', color: COLORS_CSS.TOAST_GOLD,
       wordWrap: { width: w - 24 }, align: 'center',
     }).setOrigin(0.5, 0);
 

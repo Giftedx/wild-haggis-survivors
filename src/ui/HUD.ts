@@ -541,7 +541,7 @@ export class HUD {
       this.prevEnemyCount = enemyCount;
       const enemyWarning = overCap ? t('ui.hud.enemies_capped_suffix') : '';
       const enemyColor = overCap
-        ? (this.hcPalette?.killWarn ?? '#ff4444')
+        ? (this.hcPalette?.killWarn ?? COLORS_CSS.DANGER_RED)
         : (this.hcPalette?.kill ?? COLORS_CSS.WHITE);
       this.killText.setText(
         t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
@@ -799,7 +799,7 @@ export class HUD {
       // substring fallback. See `resolvePassiveAbbrev`.
       const abbrev = resolvePassiveAbbrev(key);
       const label = this.addEl(this.scene.add.text(x + 16, y, abbrev, {
-        fontFamily: 'monospace', fontSize: '12px', color: '#ddaa00', fontStyle: 'bold',
+        fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.LEGENDARY, fontStyle: 'bold',
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));
       this.passiveSlots.push(label);

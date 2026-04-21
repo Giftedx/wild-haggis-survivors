@@ -230,7 +230,7 @@ export class LevelUpFlow {
       case 'add_passive':
         this.hooks.pushOwnedPassive(effect.passiveKey);
         this.applyPassiveEffect(effect.passiveKey);
-        juice.showToast(t('ui.game.upgrade_add_passive', { name: cardTitle }), '#ddaa00');
+        juice.showToast(t('ui.game.upgrade_add_passive', { name: cardTitle }), COLORS_CSS.LEGENDARY);
         break;
 
       case 'stat_boost':
