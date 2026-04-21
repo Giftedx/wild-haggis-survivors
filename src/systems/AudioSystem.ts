@@ -32,6 +32,13 @@ export class AudioSystem {
   /** Web Audio is gated on first user gesture — retry wiring once it unlocks. */
   private awaitingAudioActivation = false;
   private ambientRetryScheduled = false;
+  /**
+   * Wall-clock timeouts (boss fanfare delay, ambient-wind fade cleanup).
+   * Tracked so `resetTransient()` can cancel them on scene teardown — a
+   * delayed fanfare scheduled in run A would otherwise fire into run B's
+   * fresh music engine if the player deaths+retries within 1.4 s.
+   */
+  private pendingTimers = new Set<ReturnType<typeof setTimeout>>();
 
   constructor() {
     // AudioContext is created after the first user gesture (see audioContext.ts).
@@ -430,9 +437,11 @@ export class AudioSystem {
   /** Orchestrated boss entrance — warning swell into fanfare. */
   playBossArrival(): void {
     this.playBossWarning();
-    setTimeout(() => {
+    const handle = setTimeout(() => {
+      this.pendingTimers.delete(handle);
       musicEngine.playBossFanfare();
     }, 1400);
+    this.pendingTimers.add(handle);
   }
 
   /** Short descending growl for boss enrage — sawtooth, darker than warning. */
@@ -849,11 +858,23 @@ export class AudioSystem {
     this.ambientGain = null;
 
     gain.gain.linearRampToValueAtTime(0, ctx.currentTime + ms / 1000);
-    setTimeout(() => {
+    const handle = setTimeout(() => {
+      this.pendingTimers.delete(handle);
       try { source.stop(); } catch { /* already stopped */ }
       source.disconnect();
       gain.disconnect();
     }, ms + 200);
+    this.pendingTimers.add(handle);
+  }
+
+  /**
+   * Cancel pending wall-clock timeouts. Called from GameScene's shutdown
+   * handler so a scheduled boss fanfare or ambient-wind cleanup from the
+   * ending run can't land on the next run's music engine / node graph.
+   */
+  resetTransient(): void {
+    for (const handle of this.pendingTimers) clearTimeout(handle);
+    this.pendingTimers.clear();
   }
 
   /** Fade out and stop ambient wind. */

@@ -1,10 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { MOTION_TIMING } from '../core/motionTiming';
 
 const notifySpy = vi.hoisted(() => vi.fn((_: number) => {}));
+const bossFanfareSpy = vi.hoisted(() => vi.fn(() => {}));
 
 vi.mock('./music/ProceduralMusicEngine', () => ({
-  musicEngine: { notifyGameplaySfxImpulse: (s: number) => notifySpy(s) },
+  musicEngine: {
+    notifyGameplaySfxImpulse: (s: number) => notifySpy(s),
+    playBossFanfare: () => bossFanfareSpy(),
+  },
 }));
 
 let mockCtx: AudioContext | null = null;
@@ -98,5 +102,33 @@ describe('AudioSystem music duck impulses', () => {
     const sys = new AudioSystem();
     sys.playKillImmediate();
     expect(notifySpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('AudioSystem cross-run timer safety', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    bossFanfareSpy.mockClear();
+    mockCtx = makeFakeAudioContext();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('playBossArrival schedules the fanfare after 1.4s of real time', () => {
+    const sys = new AudioSystem();
+    sys.playBossArrival();
+    expect(bossFanfareSpy).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1400);
+    expect(bossFanfareSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('resetTransient cancels a pending boss fanfare so it cannot land on the next run', () => {
+    const sys = new AudioSystem();
+    sys.playBossArrival();
+    sys.resetTransient();
+    vi.advanceTimersByTime(5000);
+    expect(bossFanfareSpy).not.toHaveBeenCalled();
   });
 });

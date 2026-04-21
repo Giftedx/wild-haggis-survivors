@@ -1080,6 +1080,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.playerEnemyCollider = null;
       }
       sfxManager.clear();
+      audio.resetTransient();
       this.eventBusDispose?.();
       this.eventBusDispose = null;
       this.runPersistence?.unregisterMidRunHooks();
