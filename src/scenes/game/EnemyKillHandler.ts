@@ -28,6 +28,7 @@ import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
 import { dispatchActComplete } from './dispatchActComplete';
 import { formatSpeedrunTime } from '../../utils/formatSpeedrunTime';
+import { resolveEnemyDeathColor } from '../../systems/enemyDeathColors';
 import { getSettingsManager } from '../../core/SettingsManager';
 import {
   healthOrbDropRate,
@@ -146,7 +147,7 @@ export class EnemyKillHandler {
     }
 
     spawn.noteKillPressure();
-    juice.showKillBurst(x, y);
+    juice.showKillBurst(x, y, resolveEnemyDeathColor(enemyKey));
     juice.hitFreeze();
 
     // Volatile plays a dedicated boom in Enemy.die — skip the generic sting.

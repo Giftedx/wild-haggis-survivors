@@ -156,7 +156,7 @@ describe('EnemyKillHandler', () => {
 
       expect(m.score.killCount).toBe(1);
       expect(m.xp.spawnGem).toHaveBeenCalledWith(100, 200, 5);
-      expect(m.juice.showKillBurst).toHaveBeenCalledWith(100, 200);
+      expect(m.juice.showKillBurst).toHaveBeenCalledWith(100, 200, 0xcc2020);
       expect(m.juice.hitFreeze).toHaveBeenCalledOnce();
       expect(m.spawn.noteKillPressure).toHaveBeenCalledOnce();
     });
