@@ -58,6 +58,30 @@ describe('resolveComboDisplay — colour tiers', () => {
   });
 });
 
+describe('resolveComboDisplay — scale tiers', () => {
+  it('scale is 1.0 below amber tier', () => {
+    const s = resolveComboDisplay(COMBO_VISIBLE_THRESHOLD, 500);
+    expect(s.scale).toBe(1.0);
+    const s2 = resolveComboDisplay(COMBO_AMBER_TIER - 1, 500);
+    expect(s2.scale).toBe(1.0);
+  });
+
+  it('scale is 1.15 at amber tier', () => {
+    expect(resolveComboDisplay(COMBO_AMBER_TIER, 500).scale).toBe(1.15);
+    expect(resolveComboDisplay(COMBO_FIRE_TIER - 1, 500).scale).toBe(1.15);
+  });
+
+  it('scale is 1.3 at fire tier (50+)', () => {
+    expect(resolveComboDisplay(COMBO_FIRE_TIER, 500).scale).toBe(1.3);
+    expect(resolveComboDisplay(COMBO_FIRE_TIER + 100, 500).scale).toBe(1.3);
+  });
+
+  it('hidden state has scale 1.0', () => {
+    expect(resolveComboDisplay(COMBO_VISIBLE_THRESHOLD - 1, 1000).scale).toBe(1.0);
+    expect(resolveComboDisplay(20, 0).scale).toBe(1.0);
+  });
+});
+
 describe('resolveComboDisplay — text payload', () => {
   it('visible text contains the combo count', () => {
     const s = resolveComboDisplay(15, 500);

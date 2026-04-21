@@ -30,6 +30,8 @@ export interface ComboDisplayState {
   color: string;
   /** Fully-i18n'd text for `comboText.setText(...)` when visible. */
   text: string;
+  /** Scale multiplier — 1.0 at threshold, grows with tier. */
+  scale: number;
 }
 
 export function resolveComboDisplay(
@@ -37,14 +39,15 @@ export function resolveComboDisplay(
   comboTimerMs: number,
 ): ComboDisplayState {
   if (comboCount < COMBO_VISIBLE_THRESHOLD || comboTimerMs <= 0) {
-    return { visible: false, color: COMBO_COLOR_HIDDEN, text: '' };
+    return { visible: false, color: COMBO_COLOR_HIDDEN, text: '', scale: 1.0 };
   }
   const bonusPct = comboDamageBonusPct(comboCount);
   const bonusText = bonusPct > 0 ? t('ui.hud.combo_bonus', { pct: bonusPct }) : '';
   const text = t('ui.hud.combo', { count: comboCount, bonus: bonusText });
   let color: string;
-  if (comboCount >= COMBO_FIRE_TIER) color = COMBO_COLOR_FIRE;
-  else if (comboCount >= COMBO_AMBER_TIER) color = COMBO_COLOR_AMBER;
+  let scale = 1.0;
+  if (comboCount >= COMBO_FIRE_TIER) { color = COMBO_COLOR_FIRE; scale = 1.3; }
+  else if (comboCount >= COMBO_AMBER_TIER) { color = COMBO_COLOR_AMBER; scale = 1.15; }
   else color = COMBO_COLOR_ORANGE;
-  return { visible: true, color, text };
+  return { visible: true, color, text, scale };
 }

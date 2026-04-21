@@ -13,6 +13,7 @@ import { fillCirclePool } from './fillCirclePool';
 import { damageNumberStyle } from './damageNumberStyle';
 import { toastStackY, toastWrapWidth } from './toastLayout';
 import { resolveComboDisplay } from './comboDisplay';
+import { resolveComboMilestoneVfx } from './comboMilestoneVfx';
 import {
   resolveScreenShakeParams,
   BOSS_SHAKE_BASE_AMP,
@@ -355,13 +356,30 @@ export class JuiceSystem {
     if (this.comboCount >= 5) {
       this.syncComboText();
 
-      // Pulse effect
-      this.scene.tweens.add({
-        targets: this.comboText,
-        scale: 1.2,
-        duration: 100,
-        yoyo: true,
-      });
+      // Pulse effect — milestones override with their own scale; default is subtle
+      const milestoneVfx = resolveComboMilestoneVfx(this.comboCount);
+      const baseScale = resolveComboDisplay(this.comboCount, this.comboTimer).scale;
+      if (milestoneVfx) {
+        this.scene.tweens.add({
+          targets: this.comboText,
+          scale: baseScale * milestoneVfx.pulseScale,
+          duration: 150,
+          yoyo: true,
+        });
+        if (milestoneVfx.flashColor !== null) {
+          this.flashColored(milestoneVfx.flashColor, milestoneVfx.flashDurationMs);
+        }
+        if (milestoneVfx.burstParticles > 0) {
+          this.comboMilestoneBurst(milestoneVfx.burstParticles);
+        }
+      } else {
+        this.scene.tweens.add({
+          targets: this.comboText,
+          scale: baseScale * 1.2,
+          duration: 100,
+          yoyo: true,
+        });
+      }
 
       // Combo milestone cultural Easter eggs — Glesga patter at key numbers.
       // Captions piggyback on the toast copy — if a player is reading toasts,
@@ -405,17 +423,14 @@ export class JuiceSystem {
         const msg = t('ui.game.combo_50');
         this.showToast(msg, '#ffdd44');
         this.scene.caption?.(`combo_50`, msg, '#ffdd44');
-        this.flashWhite(100);
       } else if (this.comboCount === 100) {
         const msg = t('ui.game.combo_100');
         this.showToast(msg, '#ff8844');
         this.scene.caption?.(`combo_100`, msg, '#ff8844');
-        this.flashWhite(100);
       } else if (this.comboCount === 200) {
         const msg = t('ui.game.combo_200');
         this.showToast(msg, '#ff8844');
         this.scene.caption?.(`combo_200`, msg, '#ff8844');
-        this.flashWhite(100);
       }
     }
   }
@@ -556,6 +571,53 @@ export class JuiceSystem {
     });
   }
 
+  /** Colored screen flash — used for combo milestone VFX. Alpha scales with motionScale. */
+  private flashColored(color: number, duration: number): void {
+    const alpha = scaledFlashAlpha(0.35);
+    if (alpha <= 0) return;
+    this.scene.tweens.killTweensOf(this.flashRect);
+    this.flashRect.setFillStyle(color);
+    this.flashRect.setAlpha(alpha);
+    this.scene.tweens.add({
+      targets: this.flashRect,
+      alpha: 0,
+      duration,
+    });
+  }
+
+  /** Gold particle burst radiating from combo text — camera-locked. */
+  private comboMilestoneBurst(count: number): void {
+    const cx = this.comboText.x;
+    const cy = this.comboText.y;
+    for (let i = 0; i < count; i++) {
+      const dot = this.burstDotPool[this.burstDotIdx];
+      this.burstDotIdx = (this.burstDotIdx + 1) % this.burstDotPool.length;
+      this.scene.tweens.killTweensOf(dot);
+      const angle = (i / count) * Math.PI * 2;
+      const speed = 40 + Math.random() * 60;
+      dot.setPosition(cx, cy);
+      dot.setScrollFactor(0);
+      dot.setFillStyle(0xffd700, 0.8);
+      dot.setRadius(2);
+      dot.setVisible(true);
+      this.scene.tweens.add({
+        targets: dot,
+        x: cx + Math.cos(angle) * speed,
+        y: cy + Math.sin(angle) * speed,
+        alpha: 0,
+        scale: 0,
+        duration: 400 + Math.random() * 200,
+        ease: 'Cubic.easeOut',
+        onComplete: () => {
+          dot.setVisible(false);
+          dot.setScrollFactor(1);
+          dot.setAlpha(0.8);
+          dot.setScale(1);
+        },
+      });
+    }
+  }
+
   /** Red screen flash (damage taken). Alpha scales with motionScale. */
   flashRed(duration = 150): void {
     const alpha = scaledFlashAlpha(0.25);
@@ -640,7 +702,7 @@ export class JuiceSystem {
     }
     this.comboText.setText(state.text);
     this.comboText.setVisible(true);
-    this.comboText.setScale(1);
+    this.comboText.setScale(state.scale);
     this.comboText.setColor(state.color);
   }
 
