@@ -18,6 +18,7 @@ type HookMocks = {
     showKillBurst: ReturnType<typeof vi.fn>;
     hitFreeze: ReturnType<typeof vi.fn>;
     bossDeathSpectacle: ReturnType<typeof vi.fn>;
+    midRunBossDeathSpectacle: ReturnType<typeof vi.fn>;
     slowMotion: ReturnType<typeof vi.fn>;
     getComboCount: ReturnType<typeof vi.fn>;
   };
@@ -60,6 +61,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     showKillBurst: vi.fn(),
     hitFreeze: vi.fn(),
     bossDeathSpectacle: vi.fn(),
+    midRunBossDeathSpectacle: vi.fn(),
     slowMotion: vi.fn(),
     getComboCount: vi.fn(() => 0),
   };
@@ -374,11 +376,19 @@ describe('EnemyKillHandler', () => {
       m.score.firstKillSeen = true;
     });
 
-    it('increments boss kill count, plays spectacle, slow-motion', () => {
+    it('increments boss kill count, plays mid-run spectacle, slow-motion', () => {
       handler.handle(0, 0, 100, 'gordon', true);
       expect(m.score.bossKillCount).toBe(1);
-      expect(m.juice.bossDeathSpectacle).toHaveBeenCalledWith(0, 0);
+      expect(m.juice.midRunBossDeathSpectacle).toHaveBeenCalledWith(0, 0);
+      expect(m.juice.bossDeathSpectacle).not.toHaveBeenCalled();
       expect(m.juice.slowMotion).toHaveBeenCalledOnce();
+    });
+
+    it('taxman uses full bossDeathSpectacle, not midRunBossDeathSpectacle', () => {
+      m.score.firstKillSeen = true;
+      handler.handle(0, 0, 200, 'taxman', true);
+      expect(m.juice.bossDeathSpectacle).toHaveBeenCalledWith(0, 0);
+      expect(m.juice.midRunBossDeathSpectacle).not.toHaveBeenCalled();
     });
 
     it('adds bossGold = ceil(xpValue * 2)', () => {

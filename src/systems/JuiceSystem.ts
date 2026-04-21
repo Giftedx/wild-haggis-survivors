@@ -807,6 +807,68 @@ export class JuiceSystem {
     });
   }
 
+  /** Mid-run boss kill — between regular killBurst and the full victory
+   *  bossDeathSpectacle. 15 gold particles + 1 expanding ring + lighter shake. */
+  midRunBossDeathSpectacle(x: number, y: number): void {
+    const s = this.settings.load();
+
+    const shake = resolveScreenShakeParams(
+      BOSS_DEATH_SHAKE_BASE_AMP * 0.6,
+      BOSS_DEATH_SHAKE_DURATION_MS,
+      s.screenShake,
+      s.motionScale,
+    );
+    if (shake) {
+      this.scene.cameras.main.shake(shake.durationMs, shake.amplitude);
+    }
+
+    const baseCount = s.reduceParticles ? 6 : 15;
+    const particleCount = scaledParticleCount(baseCount, 3);
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
+      const speed = 100 + Math.random() * 160;
+      const size = Phaser.Math.Between(2, 5);
+      const color = Phaser.Utils.Array.GetRandom(JUICE_BOSS_DEATH_GOLDS as number[]) as number;
+      const particle = this.bossParticlePool[this.bossParticleIdx];
+      this.bossParticleIdx = (this.bossParticleIdx + 1) % this.bossParticlePool.length;
+      this.scene.tweens.killTweensOf(particle);
+      particle.setPosition(x, y);
+      particle.setRadius(size);
+      particle.setFillStyle(color, 0.9);
+      particle.setAlpha(0.9);
+      particle.setScale(1);
+      particle.setVisible(true);
+      this.scene.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * speed,
+        y: y + Math.sin(angle) * speed,
+        alpha: 0,
+        scale: 0,
+        duration: 600 + Math.random() * 400,
+        ease: 'Power2',
+        onComplete: () => particle.setVisible(false),
+      });
+    }
+
+    // Single expanding ring
+    const ring = this.bossRingPool[this.bossRingIdx];
+    this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
+    this.scene.tweens.killTweensOf(ring);
+    ring.setPosition(x, y);
+    ring.setRadius(10);
+    ring.setFillStyle(JUICE_BOSS_DEATH_RING_PRIMARY, 0.5);
+    ring.setAlpha(0.5);
+    ring.setScale(1);
+    ring.setVisible(true);
+    this.scene.tweens.add({
+      targets: ring,
+      radius: 60,
+      alpha: 0,
+      duration: 450,
+      onComplete: () => ring.setVisible(false),
+    });
+  }
+
   /** Weapon evolution spectacle — THE peak reward moment of the game.
    *  Legendary golden manifestation: radial beams, rings, particles, banner. */
   evolutionSpectacle(x: number, y: number, legendaryName: string): void {

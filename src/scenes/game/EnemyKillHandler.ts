@@ -271,7 +271,11 @@ export class EnemyKillHandler {
 
       // Boss gold scales with difficulty (xpValue is 25/50/75/100/200 per boss).
       score.addBossGold(Math.ceil(xpValue * 2));
-      juice.bossDeathSpectacle(x, y);
+      if (enemyKey === 'taxman') {
+        juice.bossDeathSpectacle(x, y);
+      } else {
+        juice.midRunBossDeathSpectacle(x, y);
+      }
       juice.slowMotion();
 
       // Victory — Taxman is the final boss. Delay 1.5s then trigger,
