@@ -23,10 +23,10 @@ import {
   actIntermissionCardStartX,
   actIntermissionShortcutIndex,
 } from './actIntermissionResolve';
-import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
 import { COLORS, COLORS_CSS, UI } from '../config';
 import { textStyle } from '../ui/typography';
+import { createRouteCard } from '../ui/routeCard';
 import { audio } from '../systems/AudioSystem';
 
 export interface ActIntermissionLaunchData {
@@ -93,32 +93,17 @@ export class ActIntermissionScene extends Phaser.Scene {
 
     routes.forEach((route, i) => {
       const x = startX + i * (cardW + gap);
-      this.buildCard(x, y, cardW, cardH, route, i + 1);
+      createRouteCard({
+        scene: this,
+        x,
+        y,
+        width: cardW,
+        height: cardH,
+        route,
+        shortcut: i + 1,
+        onSelect: (r) => this.resolve(r),
+      });
     });
-  }
-
-  private buildCard(x: number, y: number, w: number, h: number, route: RouteDef, shortcut: number): void {
-    const cardStyle = resolveActIntermissionCardStyle();
-    const bg = this.add.rectangle(x, y, w, h, COLORS.PANEL_SURFACE, 0.98)
-      .setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color)
-      .setInteractive({ useHandCursor: true });
-
-    this.add.text(x, y - h / 2 + 24, t(route.labelKey),
-      textStyle('heading', { color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: w - 24 }, align: 'center' }),
-    ).setOrigin(0.5, 0);
-
-    this.add.text(x, y, t(route.descKey),
-      textStyle('label', { color: COLORS_CSS.COOL_GREY, wordWrap: { width: w - 24 }, align: 'center' }),
-    ).setOrigin(0.5);
-
-    // Shortcut digit corner badge — pairs with the 1/2/3 keyboard handler.
-    this.add.text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`,
-      textStyle('label', { color: COLORS_CSS.HINT }),
-    ).setOrigin(0, 0);
-
-    bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(cardStyle.hover.thickness, cardStyle.hover.color));
-    bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color));
-    bg.on(Phaser.Input.Events.POINTER_DOWN, () => this.resolve(route));
   }
 
   /**
