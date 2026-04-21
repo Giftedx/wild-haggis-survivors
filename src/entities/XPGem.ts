@@ -138,8 +138,10 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     const dy = playerY - this.y;
     const distSq = dx * dx + dy * dy;
 
-    if (distSq < pickupRadius * pickupRadius) {
+    if (distSq < pickupRadius * pickupRadius && !this.magnetized) {
       this.magnetized = true;
+      this.setTint(0xffdd44); // Gold tint — visual feedback for pickup radius
+      this.setAlpha(1.0);     // Override breathe alpha so tint reads clearly
     }
 
     if (this.magnetized) {
@@ -163,7 +165,11 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
 
   /** Force this gem to magnetize (used by XP vacuum on level-up) */
   forceCollect(): void {
-    this.magnetized = true;
+    if (!this.magnetized) {
+      this.magnetized = true;
+      this.setTint(0xffdd44); // Gold tint — visual feedback for pickup radius
+      this.setAlpha(1.0);     // Override breathe alpha so tint reads clearly
+    }
   }
 
   collect(): number {
@@ -172,6 +178,7 @@ export class XPGem extends Phaser.Physics.Arcade.Sprite {
     this.settleHandle = null;
     this.scene.tweens.killTweensOf(this); // Stop infinite pulse tween
     if (this.aura) this.scene.tweens.killTweensOf(this.aura);
+    this.clearTint();
     this.setActive(false);
     this.setVisible(false);
     this.setVelocity(0, 0);
