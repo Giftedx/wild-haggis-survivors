@@ -19,7 +19,6 @@ import {
 import { computeVariantRunStats } from '../ui/chronicleAggregates';
 import { formatMenuStatsStrip } from './menuStatsStrip';
 import { resolveLoadoutBadgeStyle, formatVariantRequirementLine } from './loadoutBadge';
-import { resolveToggleTextColor } from './toggleTextPalette';
 import {
   resolveVariantPanelStroke,
   resolveVariantNameColor,
@@ -30,6 +29,7 @@ import { startSceneFadeOut, addSceneBackdrop, SCENE_FADE_OUT_MS } from './sceneF
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { createGameButton } from '../ui/gameButton';
+import { createGameToggle } from '../ui/gameToggle';
 import { textStyle } from '../ui/typography';
 
 /**
@@ -525,30 +525,31 @@ export class MenuScene extends Phaser.Scene {
     onChange: (on: boolean) => void,
     delay: number
   ): { hit: Phaser.GameObjects.Rectangle; fire: () => void } {
+    // Derive a short human label from the i18n key — strip the ": {state}" template.
+    const rawLabel = t(labelKey, { state: '' }).replace(/:\s*$/, '').trim();
+
+    const result = createGameToggle(this, {
+      x,
+      y,
+      label: rawLabel,
+      initialValue: initialState,
+      onChange,
+    });
+
+    result.container.setAlpha(0).setScale(this.uiScale);
+    this.tweens.add({ targets: result.container, alpha: 1, delay, duration: 320 });
+
+    // Transparent hit rect for GamepadMenuNav (same size as before).
+    const hit = this.add.rectangle(x, y, 230, 34, 0x000000, 0).setStrokeStyle(0);
+
+    // fire() toggles the value programmatically (gamepad confirm path).
     let on = initialState;
-    const text = this.add
-      .text(x, y, t(labelKey, { state: on ? t('ui.common.on') : t('ui.common.off') }), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        fontStyle: 'bold',
-        color: resolveToggleTextColor(on),
-      })
-      .setOrigin(0.5)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    text.setScale(this.uiScale);
-
-    this.tweens.add({ targets: text, alpha: 1, delay, duration: 320 });
-
     const fire = () => {
       on = !on;
-      text.setText(t(labelKey, { state: on ? t('ui.common.on') : t('ui.common.off') }));
-      text.setColor(resolveToggleTextColor(on));
+      result.setValue(on);
       onChange(on);
     };
-    text.on('pointerdown', fire);
 
-    const hit = this.add.rectangle(x, y, 230, 34, 0x000000, 0).setStrokeStyle(0);
     return { hit, fire };
   }
 
