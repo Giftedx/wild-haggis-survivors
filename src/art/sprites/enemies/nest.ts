@@ -15,10 +15,6 @@ export function bakeNest(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // ── Ground shadow. ──
-  g.fillStyle(0x000000, 0.4);
-  g.fillEllipse(cx, cy + 9, 30, 4);
-
   // ── Dark outer twig ring — rough bowl silhouette. ──
   g.fillStyle(0x1a0e04, 1);
   g.fillEllipse(cx, cy + 3, 34, 18);

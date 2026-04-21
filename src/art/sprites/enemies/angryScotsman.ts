@@ -198,9 +198,6 @@ export function drawAngryScotsmanBody(
   g.fillStyle(0xeeeeee, 1);
   g.fillCircle(cx + 9, cy + 9, 0.5);
 
-  // Shadow under the figure.
-  g.fillStyle(0x000000, 0.25);
-  g.fillEllipse(cx, cy + 23, 14, 3);
 }
 
 export function bakeAngryScotsman(scene: Phaser.Scene): void {

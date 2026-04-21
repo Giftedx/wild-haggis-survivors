@@ -17,10 +17,6 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 4;
 
-  // ── Wet asphalt shadow base. ──
-  g.fillStyle(0x000000, 0.7);
-  g.fillEllipse(cx, cy + 14, 22, 5);
-
   // ── Faint orange menace glow behind the whole totem. ──
   g.fillStyle(0xff4400, 0.18);
   g.fillCircle(cx, cy, 20);

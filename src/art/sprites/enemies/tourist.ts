@@ -24,10 +24,6 @@ export function drawTouristBody(
   const lly = frame.leftLegY ?? 0;
   const rly = frame.rightLegY ?? 0;
 
-  // ── Ground shadow. ──
-  g.fillStyle(0x000000, 0.32);
-  g.fillEllipse(cx, cy + 20, 22, 3);
-
   // ── Legs in beige shorts peeking below the cagoule. ──
   g.fillStyle(0xd8b880, 1);
   g.fillRect(cx - 7, cy + 11 + lly, 5, 4);

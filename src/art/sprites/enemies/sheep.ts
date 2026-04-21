@@ -23,10 +23,6 @@ export function drawSheepBody(
   const lly = frame.leftLegY ?? 0;  // front pair
   const rly = frame.rightLegY ?? 0; // back pair
 
-  // ── Ground shadow. ──
-  g.fillStyle(0x000000, 0.3);
-  g.fillEllipse(cx, cy + 14, 22, 3);
-
   // ── Wool body — billowing ellipse behind/around the head. Dirty
   // hill-sheep off-white with darker clumps for volume. ──
   g.fillStyle(0x888878, 1);

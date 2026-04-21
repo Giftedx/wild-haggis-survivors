@@ -17,10 +17,6 @@ export function drawBarghestBody(
   const lly = frame.leftLegY ?? 0;  // front legs
   const rly = frame.rightLegY ?? 0; // back legs
 
-  // Menacing under-shadow.
-  g.fillStyle(0x000000, 0.35);
-  g.fillEllipse(cx, cy + 15, 26, 5);
-
   // Lean hound body — elongated ellipse, nearly black.
   g.fillStyle(0x0a0a0f, 1);
   g.fillEllipse(cx, cy + 4, 26, 12);

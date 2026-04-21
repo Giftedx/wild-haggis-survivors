@@ -23,10 +23,6 @@ export function drawHaggisHunterBody(
   const lly = frame.leftLegY ?? 0;
   const rly = frame.rightLegY ?? 0;
 
-  // ── Ground shadow — subtle. ──
-  g.fillStyle(0x000000, 0.25);
-  g.fillEllipse(cx, cy + 20, 18, 4);
-
   // ── Green wellies — classic Hunter boots, brown mud scuff. ──
   g.fillStyle(0x0a2a0a, 1);
   g.fillRect(cx - 7, cy + 11 + lly, 5, 9);

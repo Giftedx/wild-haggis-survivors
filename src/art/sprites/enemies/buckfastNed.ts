@@ -91,9 +91,6 @@ export function drawBuckfastNedBody(
   g.fillStyle(0xccaa22, 1);
   g.fillRect(cx + 8, cy - 3, 2, 3);
 
-  // Shadow under the figure.
-  g.fillStyle(0x000000, 0.25);
-  g.fillEllipse(cx, cy + 20, 12, 3);
 }
 
 export function bakeBuckfastNed(scene: Phaser.Scene): void {

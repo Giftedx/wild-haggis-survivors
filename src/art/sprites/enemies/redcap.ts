@@ -24,10 +24,6 @@ export function drawRedcapBody(
   const lly = frame.leftLegY ?? 0;
   const rly = frame.rightLegY ?? 0;
 
-  // ── Ground shadow. ──
-  g.fillStyle(0x000000, 0.35);
-  g.fillEllipse(cx, cy + 11, 14, 3);
-
   // ── Iron-shod boots — signature redcap prop. Chunky black-grey
   // blocks with rivet studs. ──
   g.fillStyle(0x1a1a1e, 1);
