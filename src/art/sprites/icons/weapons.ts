@@ -20,23 +20,23 @@ function drawThistleShotIcon(scene: Phaser.Scene): void {
   // base so the silhouette reads "thistle flower" rather than
   // "purple ball". Three pointed green spikes on top of a wider
   // green cup. ──
-  g.fillStyle(0x1a3308, 1);
+  g.fillStyle(0x1a0a30, 1);
   g.fillTriangle(cx, cy + 3, cx - 7, cy + 11, cx + 7, cy + 11);
-  g.fillStyle(0x2a5a14, 1);
+  g.fillStyle(0x331155, 1);
   g.fillTriangle(cx, cy + 4, cx - 6, cy + 11, cx + 6, cy + 11);
-  g.fillStyle(0x3a7a22, 1);
+  g.fillStyle(0x442266, 1);
   g.fillTriangle(cx, cy + 5, cx - 5, cy + 10, cx + 5, cy + 10);
   // Calyx spike tips — three pointed green triangles poking into
   // the bloom (signature thistle detail)
-  g.fillStyle(0x2a5a14, 1);
+  g.fillStyle(0x331155, 1);
   g.fillTriangle(cx - 4, cy + 5, cx - 5, cy + 8, cx - 2, cy + 7);
   g.fillTriangle(cx, cy + 4, cx - 1, cy + 7, cx + 1, cy + 7);
   g.fillTriangle(cx + 4, cy + 5, cx + 5, cy + 8, cx + 2, cy + 7);
 
   // ── Stem — green vertical bar below the calyx. ──
-  g.fillStyle(0x1a3308, 1);
+  g.fillStyle(0x1a0a30, 1);
   g.fillRect(cx - 1, cy + 11, 2, 4);
-  g.fillStyle(0x2a5a14, 1);
+  g.fillStyle(0x331155, 1);
   g.fillRect(cx - 0.5, cy + 11, 1, 4);
 
   // ── Bloom base — dark purple sphere forms the underlying shape. ──
