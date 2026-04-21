@@ -9,7 +9,7 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { computeLevelScaledWeaponStats } from './weaponLevelScaling';
 import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
 import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
-import { resolveMuzzleFlashColor } from './muzzleFlashColors';
+import { resolveMuzzleFlashColor, resolveWeaponVfxColor } from './muzzleFlashColors';
 import { fillCirclePool } from './fillCirclePool';
 
 /** Runtime state for an equipped weapon */
@@ -456,7 +456,7 @@ export class WeaponSystem {
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
 
     // Visual pulse ring — pooled
-    const ring = this.acquireVfxCircle(px, py, 10, 0x4488ff, 0.4);
+    const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
     this.scene.tweens.add({
       targets: ring,
       radius: radius,
@@ -504,7 +504,7 @@ export class WeaponSystem {
     const weaponKey = w.config.key;
 
     // Create a fading mist zone — pooled
-    const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.3);
+    const zone = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), 0.3);
     const duration = 2000;
 
     // Damage enemies within the zone over its lifetime.
@@ -694,7 +694,7 @@ export class WeaponSystem {
   private fireAuraPulse(w: ActiveWeapon, px: number, py: number): void {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
-    const ring = this.acquireVfxCircle(px, py, radius, 0x339955, 0.38);
+    const ring = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), 0.38);
     this.scene.tweens.add({
       targets: ring,
       alpha: 0.1,
