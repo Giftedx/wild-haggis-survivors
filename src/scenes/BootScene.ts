@@ -32,6 +32,7 @@ import { bakeWildlife } from '../art/sprites/wildlife';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
 import { bakePlayerVariants } from '../art/sprites/players';
+import { applyOutline, snapshotTextureKeys, outlineNewTextures } from '../art/outlinePostProcess';
 import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
 // Side-effect imports — registers each drawer into the registry on module load:
 import '../animation/frameDrawers/enemies/buckfastNedFrames';
@@ -265,10 +266,27 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generateAllTextures(): void {
+    // Player variants — outline each variant texture.
+    let before = snapshotTextureKeys(this);
     bakePlayerVariants(this);
+    outlineNewTextures(this, before);
+
+    // Enemies — outline every enemy sprite (shadows excluded internally).
+    before = snapshotTextureKeys(this);
     bakeEnemies(this);
+    outlineNewTextures(this, before);
+
+    // Projectiles — outline every projectile sprite.
+    before = snapshotTextureKeys(this);
     bakeProjectiles(this);
+    outlineNewTextures(this, before);
+
+    // Bosses — outline every boss sprite (shadows excluded internally).
+    before = snapshotTextureKeys(this);
     bakeBosses(this);
+    outlineNewTextures(this, before);
+
+    // Pickups — NO outline (glows fight with borders).
     bakePickups(this);
     // Ground shadows + weather + film grain live in src/art/sprites/fx/.
     bakeFx(this);
@@ -307,6 +325,7 @@ export class BootScene extends Phaser.Scene {
         });
         g.generateTexture(key, size, size);
         g.destroy();
+        applyOutline(this, key, size, size);
       }
     }
     return performance.now() - startMs;
@@ -328,6 +347,7 @@ export class BootScene extends Phaser.Scene {
           const key = `${drawer.enemyKey}_${state}_${frame}`;
           g.generateTexture(key, size, size);
           g.destroy();
+          applyOutline(this, key, size, size);
         }
       }
     }
