@@ -230,7 +230,7 @@ export class AudioSystem {
     osc.frequency.value = 800 + Math.random() * 400;
     osc.frequency.exponentialRampToValueAtTime(1200 + Math.random() * 200, t + 0.05);
 
-    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.setValueAtTime(0.10, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
 
     osc.connect(gain);
@@ -463,7 +463,7 @@ export class AudioSystem {
     osc.frequency.value = 600 + Math.random() * 200;
     osc.frequency.exponentialRampToValueAtTime(200, t + 0.06);
 
-    gain.gain.setValueAtTime(0.06, t);
+    gain.gain.setValueAtTime(0.10, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
 
     osc.connect(gain);
@@ -558,7 +558,7 @@ export class AudioSystem {
       osc.frequency.setValueAtTime(440, t0);
       osc.frequency.exponentialRampToValueAtTime(329.63, t0 + 0.5);
       gain.gain.setValueAtTime(0, t0);
-      gain.gain.linearRampToValueAtTime(0.09, t0 + 0.04);
+      gain.gain.linearRampToValueAtTime(0.11, t0 + 0.04);
       gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
       osc.connect(gain);
       gain.connect(this.masterGain);
@@ -588,7 +588,7 @@ export class AudioSystem {
       osc.frequency.setValueAtTime(220, t0);
       osc.frequency.exponentialRampToValueAtTime(660, t0 + 0.18);
       gain.gain.setValueAtTime(0, t0);
-      gain.gain.linearRampToValueAtTime(0.06, t0 + 0.02);
+      gain.gain.linearRampToValueAtTime(0.10, t0 + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
       osc.connect(gain);
       gain.connect(this.masterGain);

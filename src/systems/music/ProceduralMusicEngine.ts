@@ -226,7 +226,7 @@ class ProceduralMusicEngine {
     this.masterFilter.Q.value = 0.5;
 
     this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = this.enabled ? 0.25 * this.userMusicVolume : 0;
+    this.masterGain.gain.value = this.enabled ? 0.35 * this.userMusicVolume : 0;
 
     const output = getOutputNode();
     this.masterFilter.connect(this.masterGain);
@@ -374,7 +374,7 @@ class ProceduralMusicEngine {
 
     if (this.masterGain && this.enabled && !this.fadingOut) {
       const duckMul = 1 - this.musicSfxDuck;
-      const vol = (0.20 + mood.intensity * 0.10) * this.userMusicVolume * duckMul;
+      const vol = (0.28 + mood.intensity * 0.12) * this.userMusicVolume * duckMul;
       this.masterGain.gain.linearRampToValueAtTime(vol, this.ctx.currentTime + 1);
     }
 
@@ -419,7 +419,7 @@ class ProceduralMusicEngine {
       this.masterGain.gain.cancelScheduledValues(t);
       this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
       this.masterGain.gain.linearRampToValueAtTime(
-        on ? 0.25 * this.userMusicVolume : 0,
+        on ? 0.35 * this.userMusicVolume : 0,
         t + 0.3
       );
     }
@@ -430,7 +430,7 @@ class ProceduralMusicEngine {
     this.userMusicVolume = clamp01(masterVolume) * clamp01(musicVolume);
     if (this.masterGain && this.ctx) {
       const t = this.ctx.currentTime;
-      const target = this.enabled ? 0.25 * this.userMusicVolume : 0;
+      const target = this.enabled ? 0.35 * this.userMusicVolume : 0;
       this.masterGain.gain.cancelScheduledValues(t);
       this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, t);
       this.masterGain.gain.linearRampToValueAtTime(target, t + 0.15);
