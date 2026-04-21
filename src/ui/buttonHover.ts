@@ -1,4 +1,5 @@
 import type Phaser from 'phaser';
+import { audio } from '../systems/AudioSystem';
 
 /**
  * Wires the standard pointerover / pointerout fill swap for an
@@ -11,8 +12,6 @@ import type Phaser from 'phaser';
  * inline a multi-line click body that wants its own scope.
  *
  * Pass `withClick = true` to also fire a click sound via AudioSystem.
- * Uses dynamic import to avoid circular deps — AudioSystem is a
- * singleton that may not exist when buttonHover loads.
  */
 export function attachButtonHoverFill(
   btn: Phaser.GameObjects.Rectangle,
@@ -23,11 +22,6 @@ export function attachButtonHoverFill(
   btn.on('pointerover', () => btn.setFillStyle(hover));
   btn.on('pointerout', () => btn.setFillStyle(idle));
   if (withClick) {
-    btn.on('pointerdown', () => {
-      import('../systems/AudioSystem').then(m => {
-        const mod = m as { audio?: { playClick?: () => void } };
-        mod.audio?.playClick?.();
-      });
-    });
+    btn.on('pointerdown', () => audio.playClick());
   }
 }
