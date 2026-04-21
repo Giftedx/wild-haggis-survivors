@@ -219,7 +219,7 @@ export class BootScene extends Phaser.Scene {
 
     // ── Tagline — the soul charter in miniature ──
     const tagline = this.add.text(width / 2, height * 0.48, t('ui.menu.built_on_moor'), {
-      fontFamily: 'monospace', fontSize: '12px', color: '#8a7a5a',
+      fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.STATUS_TAN,
       fontStyle: 'italic',
     }).setOrigin(0.5).setAlpha(0);
 

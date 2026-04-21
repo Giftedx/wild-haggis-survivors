@@ -20,7 +20,7 @@ export const COMBO_FIRE_TIER = 50;
 export const COMBO_AMBER_TIER = 20;
 
 export const COMBO_COLOR_FIRE = COLORS_CSS.WHISKY_GOLD;
-export const COMBO_COLOR_AMBER = '#e8a830';
+export const COMBO_COLOR_AMBER = COLORS_CSS.COMBO_AMBER;
 export const COMBO_COLOR_ORANGE = '#cc8822';
 /** Colour held while the combo chip is hidden (resets between visible bursts). */
 export const COMBO_COLOR_HIDDEN = '#ff8800';

@@ -54,7 +54,7 @@ export function damageNumberStyle(
   const comboBoost = Math.min(DAMAGE_NUMBER_COMBO_BOOST_MAX, comboCount * DAMAGE_NUMBER_COMBO_BOOST_PER_COUNT);
   const scale = (isCrit ? sizeScale * DAMAGE_NUMBER_CRIT_SCALE_MUL : sizeScale) + comboBoost;
   const color = isCrit
-    ? '#ffdd44'
+    ? COLORS_CSS.CRIT_GOLD
     : safe >= DAMAGE_NUMBER_BIG_THRESHOLD
       ? COLORS_CSS.WHISKY_GOLD
       : '#e8c848';

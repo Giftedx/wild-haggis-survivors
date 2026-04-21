@@ -54,7 +54,7 @@ export class CurseScene extends Phaser.Scene {
 
     this.add
       .text(width / 2, 76, t('ui.curseScene.subtitle'),
-        textStyle('subtitle', { color: '#c0a8b6', align: 'center' }),
+        textStyle('subtitle', { color: COLORS_CSS.CURSE_MAUVE, align: 'center' }),
       )
       .setOrigin(0.5)
       .setScale(uiScale);

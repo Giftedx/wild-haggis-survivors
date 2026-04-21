@@ -138,7 +138,7 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, 214, t('ui.loadout.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '18px',
-        color: '#9fb0cf',
+        color: COLORS_CSS.TEXT_SECONDARY,
       })
       .setOrigin(0.5)
       .setAlpha(0);
@@ -149,7 +149,7 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, 246, '', {
         fontFamily: 'monospace',
         fontSize: '15px',
-        color: '#c4dcff',
+        color: COLORS_CSS.TEXT_PRIMARY,
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
@@ -173,7 +173,7 @@ export class MenuScene extends Phaser.Scene {
       .text(width / 2, 274, statsLabel, {
         fontFamily: 'monospace',
         fontSize: '14px',
-        color: '#95a2bd',
+        color: COLORS_CSS.TEXT_SECONDARY,
         align: 'center',
         lineSpacing: 4,
       })
@@ -327,7 +327,7 @@ export class MenuScene extends Phaser.Scene {
     const modifierText = this.add.text(infoX, panelY + 18, formatVariantModifierSummary(variant), {
       fontFamily: 'monospace',
       fontSize: '13px',
-      color: '#e7ebf5',
+      color: COLORS_CSS.TEXT_BRIGHT,
       wordWrap: { width: 300 },
       lineSpacing: 3,
     });

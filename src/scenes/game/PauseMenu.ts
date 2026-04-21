@@ -80,7 +80,7 @@ export class PauseMenu {
     const quip = t(`ui.pause.quip_${quipIndex}`);
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.26, quip,
-        textStyle('subtitle', { fontSize: '14px', color: '#8a7a6a' }),
+        textStyle('subtitle', { fontSize: '14px', color: COLORS_CSS.STATUS_TAN }),
       ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
 
@@ -97,7 +97,7 @@ export class PauseMenu {
     });
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {
-        ...textStyle('body', { fontSize: '14px', color: '#bbbbbb', align: 'center' }),
+        ...textStyle('body', { fontSize: '14px', color: COLORS_CSS.COOL_GREY, align: 'center' }),
         lineSpacing: 6,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
@@ -124,7 +124,7 @@ export class PauseMenu {
     this.elements.push(resumeLabel);
     this.elements.push(
       scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'),
-        textStyle('small', { color: '#7a8a98' }),
+        textStyle('small', { color: COLORS_CSS.TEXT_SUBTITLE }),
       ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
 

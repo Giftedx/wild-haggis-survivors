@@ -37,9 +37,9 @@ export function resolveMenuFooterPalette(highContrastUi: boolean): MenuFooterPal
     };
   }
   return {
-    statsStrip: '#556280',
-    historyStrip: '#4a5c78',
-    creditText: '#445572',
+    statsStrip: '#556280', // scene-specific: pinned by menuFooterPalette.test.ts (near TEXT_DIM)
+    historyStrip: '#4a5c78', // scene-specific: slightly darker than TEXT_DIM for recessive layering
+    creditText: '#445572', // scene-specific: dimmest footer tier, below TEXT_DIM
     creditStroke: null,
   };
 }
