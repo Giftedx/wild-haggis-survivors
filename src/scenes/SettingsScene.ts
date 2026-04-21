@@ -83,6 +83,12 @@ export class SettingsScene extends Phaser.Scene {
   private rowY = 0;
   private working: ISettingsData;
   private uiScale = 1;
+  /** Scale used for row stride + section gap. Equals `uiScale` unless the
+   *  full cascade of 16 rows + 3 section headers would overflow the
+   *  viewport vertically — in that case it clamps to the largest factor
+   *  that still fits, so tall comfort settings don't push the last rows
+   *  off-canvas. Text inside rows still uses `uiScale` for legibility. */
+  private layoutScale = 1;
   private highContrastUi = false;
   private settingsLabelColor = '#c8d0e0';
   private sectionColor = '#d8b877';
@@ -119,6 +125,24 @@ export class SettingsScene extends Phaser.Scene {
     const { uiScale, highContrastUi } = this.settingsManager.load();
     this.uiScale = uiScale;
     this.highContrastUi = highContrastUi;
+    // Derive layoutScale — clamp so 16 rows + 3 section headers fit inside
+    // the current viewport height. Without this, uiScale 1.4 on a 768px
+    // canvas pushes the BACK-button row off the bottom and hides the last
+    // ~4 toggles. Text remains at `uiScale` so readability stays intact;
+    // only vertical stride compresses. Floor of 0.8 keeps labels from
+    // crashing into each other on very short viewports.
+    const rowsCount = 16;
+    const sectionCount = 3;
+    const rowBase = rowsCount * this.BASE_ROW_STEP;
+    const verticalReserve = 130 + 80; // rowY start + back-button margin
+    const availableH = Math.max(200, height - verticalReserve);
+    const requiredH = sectionCount * this.BASE_SECTION_GAP + (rowBase + sectionCount * 22) * uiScale;
+    if (requiredH > availableH) {
+      const fitScale = (availableH - sectionCount * this.BASE_SECTION_GAP) / (rowBase + sectionCount * 22);
+      this.layoutScale = Math.max(0.8, Math.min(uiScale, fitScale));
+    } else {
+      this.layoutScale = uiScale;
+    }
 
     // Ambient moor wind — matches MainMenu cozy feel
     if (!this.working.reduceParticles) audio.startAmbientWind();
@@ -199,7 +223,7 @@ export class SettingsScene extends Phaser.Scene {
         fontSize: '12px',
         color: hintColor,
         align: 'center',
-        wordWrap: { width: width - 64 },
+        wordWrap: { width: (width - 64) / Math.max(1, uiScale) },
       })
       .setOrigin(0.5)
       .setScale(uiScale);
@@ -317,7 +341,7 @@ export class SettingsScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
     void divider;
 
-    this.rowY += 22 + Math.round((this.uiScale - 1) * 8);
+    this.rowY += Math.round(22 * this.layoutScale);
   }
 
   private applyGpHighlight(): void {
@@ -419,7 +443,7 @@ export class SettingsScene extends Phaser.Scene {
   ): void {
     const { width } = this.scale;
     const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
     this.add
@@ -530,7 +554,7 @@ export class SettingsScene extends Phaser.Scene {
   ): void {
     const { width } = this.scale;
     const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
     this.add
@@ -556,7 +580,7 @@ export class SettingsScene extends Phaser.Scene {
     btn.setScale(this.uiScale);
     // Track inner shadow (depth)
     const shadow = this.add
-      .rectangle(cx, cy - (trackH / 2) + 2, trackW - 4, 2, 0x000000, 0.3)
+      .rectangle(cx, cy - (trackH / 2) + Math.round(2 * this.uiScale), trackW - 4, 2, 0x000000, 0.3)
       .setScale(this.uiScale);
     // Thumb (sliding circle)
     const thumbLeftX = cx - trackW / 2 + thumbR + 3;
@@ -659,7 +683,7 @@ export class SettingsScene extends Phaser.Scene {
   private addBanterFrequencyRow(): void {
     const { width } = this.scale;
     const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
     this.add
@@ -733,7 +757,7 @@ export class SettingsScene extends Phaser.Scene {
   private addLocaleRow(): void {
     const { width } = this.scale;
     const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.uiScale);
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
     this.add
@@ -883,7 +907,7 @@ export class SettingsScene extends Phaser.Scene {
         fontSize: '13px',
         color: palette.labelColor,
         align: 'center',
-        wordWrap: { width: panelW - 48 },
+        wordWrap: { width: (panelW - 48) / Math.max(1, this.uiScale) },
         lineSpacing: 2,
       })
       .setOrigin(0.5)

@@ -75,14 +75,24 @@ export class ChronicleScene extends Phaser.Scene {
   // panel (which now hosts 7+ optional sections: codex, moor road,
   // ironmoor, stones, echoes, post-bell, hearth beats, curses).
   private readonly ROWS_PER_PAGE = 4;
-  private readonly ROW_STRIDE = 30;
+  /** Base row stride at uiScale 1.0 — 13px main + 10px sub text stack
+   *  comfortably inside 30px. Multiplied by uiScale in create() so
+   *  uiScale 1.4 rows (18px+14px) don't overlap neighbours. */
+  private readonly BASE_ROW_STRIDE = 30;
   private readonly MILESTONES_PANEL_HEIGHT = 178;
   /** Below milestones + codex block — keep clearance above pagination + BACK. */
   private readonly RUNS_HEADER_Y = 398;
-  private readonly ROWS_START_Y = this.RUNS_HEADER_Y + 20; // row y = start + 16 + i*stride
-  private readonly ROWS_PANEL_HEIGHT = this.ROWS_PER_PAGE * this.ROW_STRIDE + 18;
-  private readonly ROWS_PANEL_CENTER_Y = this.ROWS_START_Y + this.ROWS_PANEL_HEIGHT / 2 - 6;
-  private readonly PAGINATION_Y = this.ROWS_PANEL_CENTER_Y + this.ROWS_PANEL_HEIGHT / 2 + 14;
+  /** Runtime-computed row layout — populated in create() from uiScale so
+   *  accessibility scaling grows the rows + panel together instead of
+   *  letting scaled badges/text overlap neighbour rows. */
+  private ROW_STRIDE = 30;
+  private ROWS_START_Y = 418;
+  private ROWS_PANEL_HEIGHT = 138;
+  private ROWS_PANEL_CENTER_Y = 481;
+  private PAGINATION_Y = 564;
+  /** Runtime pagination Y — clamped in create() so short viewports keep
+   *  the pagination row clear of the back button at `height - 18`. */
+  private paginationY = 564;
   private page = 0;
   private runRowObjects: Phaser.GameObjects.GameObject[] = [];
   private history: RunHistoryEntry[] = [];
@@ -95,6 +105,15 @@ export class ChronicleScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
+    // Scale row stride + panel dims with uiScale so 1.4x text doesn't
+    // overlap neighbour rows. Stays readonly-equivalent — set once per
+    // create() before any layout consumer reads them.
+    const scaleClamp = Math.max(1, uiScale);
+    this.ROW_STRIDE = Math.round(this.BASE_ROW_STRIDE * scaleClamp);
+    this.ROWS_START_Y = this.RUNS_HEADER_Y + 20;
+    this.ROWS_PANEL_HEIGHT = this.ROWS_PER_PAGE * this.ROW_STRIDE + 18;
+    this.ROWS_PANEL_CENTER_Y = this.ROWS_START_Y + this.ROWS_PANEL_HEIGHT / 2 - 6;
+    this.PAGINATION_Y = this.ROWS_PANEL_CENTER_Y + this.ROWS_PANEL_HEIGHT / 2 + 14;
     const save = loadSave();
     const metaSave = new SaveManager().load();
     // Newest-first for display; source list is newest-last.
@@ -236,7 +255,7 @@ export class ChronicleScene extends Phaser.Scene {
         color: COLORS_CSS.TEXT_PRIMARY,
         align: 'center',
         lineSpacing: density.lineSpacing,
-        wordWrap: { width: width - 80 },
+        wordWrap: { width: (width - 80) / Math.max(1, uiScale) },
       })
       .setOrigin(0.5, 0)
       .setScale(uiScale);
@@ -261,10 +280,14 @@ export class ChronicleScene extends Phaser.Scene {
       .rectangle(width / 2, this.ROWS_PANEL_CENTER_Y, width - 40, this.ROWS_PANEL_HEIGHT, 0x0f1828, 0.7)
       .setStrokeStyle(1, 0x243552, 0.8);
 
-    this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
-
-    // ── Back button ──
+    // Clamp pagination Y above the back button — short viewports (e.g.
+    // 480px tall on a mobile landscape window) otherwise push pagination
+    // arrows straight into the back row. 36px breathing room keeps the
+    // arrow glyphs legible over the back chrome.
     const backY = height - 18;
+    this.paginationY = Math.min(this.PAGINATION_Y, backY - 36);
+
+    this.renderRunsPage(this.ROWS_START_Y, width, uiScale);
     const backBtn = createBackButton(this, {
       x: width / 2, y: backY, width: 180, height: 30,
       label: t('ui.chronicle.back'), fontSize: '14px', uiScale,
@@ -321,7 +344,7 @@ export class ChronicleScene extends Phaser.Scene {
       const empty = this.add
         .text(width / 2, startY + 120, t('ui.chronicle.runs_empty'), {
           fontFamily: 'monospace', fontSize: '14px', color: COLORS_CSS.TEXT_MUTED, fontStyle: 'italic',
-          align: 'center', wordWrap: { width: width - 80 },
+          align: 'center', wordWrap: { width: (width - 80) / Math.max(1, uiScale) },
         })
         .setOrigin(0.5)
         .setScale(uiScale);
@@ -386,7 +409,7 @@ export class ChronicleScene extends Phaser.Scene {
         .text(150, y + 8, subLine, {
           fontFamily: 'monospace', fontSize: '10px',
           color: COLORS_CSS.TEXT_MUTED,
-          wordWrap: { width: width - 260 },
+          wordWrap: { width: (width - 310) / Math.max(1, uiScale) },
         })
         .setOrigin(0, 0.5)
         .setScale(uiScale);
@@ -521,7 +544,7 @@ export class ChronicleScene extends Phaser.Scene {
     this.paginationNav = createPaginationNav(
       this,
       width / 2,
-      this.PAGINATION_Y,
+      this.paginationY,
       this.history.length,
       this.ROWS_PER_PAGE,
       this.page,

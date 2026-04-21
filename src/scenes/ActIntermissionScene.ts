@@ -28,6 +28,7 @@ import { COLORS, COLORS_CSS, UI } from '../config';
 import { textStyle } from '../ui/typography';
 import { createRouteCard } from '../ui/routeCard';
 import { audio } from '../systems/AudioSystem';
+import { getSettingsManager } from '../core/SettingsManager';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -66,30 +67,39 @@ export class ActIntermissionScene extends Phaser.Scene {
 
   private renderRouteCards(routes: readonly RouteDef[]): void {
     const { width, height } = this.cameras.main;
+    const { uiScale } = getSettingsManager().load();
 
     // Darkened backdrop — blocks input to the paired GameScene.
     this.add.rectangle(width / 2, height / 2, width, height, COLORS.OVERLAY_DIM, UI.OVERLAY_ALPHA)
       .setInteractive();
 
     // Title — act 1 vs act 2.
+    // Clamp title/subtitle Y to a minimum top margin so short viewports
+    // (mobile landscape <500px tall) don't push the title off-screen at
+    // high uiScale. Offsets scale with uiScale up to the point where the
+    // scaled text would collide with the top edge, then snap to a fixed
+    // safe margin.
     const titleKey = this.launchData.slot === 'A'
       ? 'ui.actIntermission.title_act_1'
       : 'ui.actIntermission.title_act_2';
-    this.add.text(width / 2, height / 2 - 200, t(titleKey),
+    const titleY = Math.max(Math.round(40 * uiScale), height / 2 - Math.round(200 * uiScale));
+    const subtitleY = Math.max(titleY + Math.round(36 * uiScale), height / 2 - Math.round(160 * uiScale));
+    this.add.text(width / 2, titleY, t(titleKey),
       textStyle('title', { color: COLORS_CSS.TOAST_GOLD }),
-    ).setOrigin(0.5);
+    ).setOrigin(0.5).setScale(uiScale);
 
     // Subtitle / hint.
-    this.add.text(width / 2, height / 2 - 160, t('ui.actIntermission.pick_hint'),
+    this.add.text(width / 2, subtitleY, t('ui.actIntermission.pick_hint'),
       textStyle('label', { color: COLORS_CSS.HINT }),
-    ).setOrigin(0.5);
+    ).setOrigin(0.5).setScale(uiScale);
 
-    // Cards.
-    const cardW = 240;
-    const cardH = 300;
-    const gap = 32;
+    // Cards — shrink on narrow viewports so all routes stay on-screen.
+    const maxCardW = Math.floor((width - 64) / routes.length - 24);
+    const cardW = Math.min(240, Math.max(100, maxCardW));
+    const cardH = Math.round(cardW * 1.25);
+    const gap = Math.min(32, Math.max(8, Math.floor((width - routes.length * cardW) / (routes.length + 1))));
     const startX = actIntermissionCardStartX(width, routes.length, cardW, gap);
-    const y = height / 2 + 40;
+    const y = height / 2 + Math.round(40 * uiScale);
 
     routes.forEach((route, i) => {
       const x = startX + i * (cardW + gap);
@@ -101,6 +111,7 @@ export class ActIntermissionScene extends Phaser.Scene {
         height: cardH,
         route,
         shortcut: i + 1,
+        uiScale,
         onSelect: (r) => this.resolve(r),
       });
     });

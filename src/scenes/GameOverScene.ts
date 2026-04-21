@@ -82,8 +82,8 @@ export class GameOverScene extends Phaser.Scene {
     // title + subtitle dangling above the outline as a hardcoded
     // height/2 - 328 would do on screen sizes outside the original design
     // target (720px tall).
-    const PANEL_W = 684;
-    const PANEL_H = 656;
+    const PANEL_W = Math.min(684, width - 24);
+    const PANEL_H = Math.min(656, height - 24);
     // Clamp the panel so it stays fully visible even on viewports smaller
     // than PANEL_H. On small screens the panel becomes the clamp region;
     // on larger screens it centers naturally.
@@ -123,7 +123,7 @@ export class GameOverScene extends Phaser.Scene {
     title.setScale(theme.titleStartScale * uiScale);
     const subtitle = this.add
       .text(panelCenterX, panelTop + 94, t(deathSubKey),
-        textStyle('body', { color: COLORS_CSS.DUSTY_TAN, align: 'center', wordWrap: { width: PANEL_W - 48 } }),
+        textStyle('body', { color: COLORS_CSS.DUSTY_TAN, align: 'center', wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) } }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -149,7 +149,7 @@ export class GameOverScene extends Phaser.Scene {
       const banner_ = ironmoorBannerStyle(isVictory);
       const banner = this.add
         .text(panelCenterX, panelTop + 118, t(banner_.key),
-          textStyle('body', { color: banner_.color, align: 'center', wordWrap: { width: PANEL_W - 48 } }),
+          textStyle('body', { color: banner_.color, align: 'center', wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) } }),
         )
         .setOrigin(0.5)
         .setScrollFactor(0)
@@ -205,26 +205,57 @@ export class GameOverScene extends Phaser.Scene {
       this.tweens.add({ targets: [curseChip, curseText], alpha: 1, duration: 260, delay: 500 });
     }
 
+    const innerW = PANEL_W - 88;
+    // Panel heights scale with uiScale so the scaled text inside each one
+    // (weaponBody, goldText, unlockContent) doesn't spill past the panel
+    // border at uiScale 1.4. The weaponDamagePanel holds the most text
+    // (loadoutSummary + heading + 3 weapon rows) so it gets full scale;
+    // gold/unlock panels scale a touch less since their content is tighter.
+    // When the panel stack would exceed the PANEL_H budget, lower panels
+    // clamp so link/button rows at the panel bottom stay clickable.
+    const panelScale = Math.max(1, uiScale);
+    const weaponPanelH = Math.round(158 * panelScale);
+    const goldPanelH = Math.round(70 * panelScale);
+    const unlockPanelH = Math.round(94 * panelScale);
+    // weaponDamagePanel: keep top anchored near stats panel bottom (+273)
+    // so scaled content grows downward, not up into the variant/curse chips.
+    const weaponPanelTop = panelTop + 273;
+    const weaponPanelCenterY = weaponPanelTop + weaponPanelH / 2;
+    const weaponPanelBottom = weaponPanelTop + weaponPanelH;
+    // goldPanel: sits immediately under the weapon panel with a small gap.
+    const goldPanelCenterY = weaponPanelBottom + 2 + goldPanelH / 2;
+    const goldPanelBottom = goldPanelCenterY + goldPanelH / 2;
+    // unlockPanel: clamped so it never leaks past canvas bottom on short
+    // viewports (native 600 was pushing ~9px offscreen even at uiScale 1)
+    // *and* keeps breathing room above the link/button rows that anchor
+    // at PANEL_H - 44 / PANEL_H - 22. Without the PANEL_H clamp a 1.4x
+    // panel would push its bottom edge behind the rerun link.
+    const unlockPanelCenterYIdeal = goldPanelBottom + 2 + unlockPanelH / 2;
+    const unlockPanelCenterYMax = Math.min(
+      height - 8 - unlockPanelH / 2,
+      panelTop + PANEL_H - Math.round(56 * panelScale) - unlockPanelH / 2,
+    );
+    const unlockPanelY = Math.min(unlockPanelCenterYIdeal, unlockPanelCenterYMax);
     const statsPanel = this.add
-      .rectangle(panelCenterX, panelTop + 226, 596, 92, 0x131d32, 0.95)
+      .rectangle(panelCenterX, panelTop + 226, innerW, 92, 0x131d32, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283a5f, 1)
       .setAlpha(0);
     const goldPanel = this.add
-      .rectangle(panelCenterX, panelTop + 468, 596, 70, 0x141d2f, 0.95)
+      .rectangle(panelCenterX, goldPanelCenterY, innerW, goldPanelH, 0x141d2f, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x2f435f, 1)
       .setAlpha(0);
     const weaponDamagePanel = this.add
-      .rectangle(panelCenterX, panelTop + 352, 596, 158, 0x0f1828, 0.95)
+      .rectangle(panelCenterX, weaponPanelCenterY, innerW, weaponPanelH, 0x0f1828, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x243552, 1)
       .setAlpha(0);
     const unlockPanel = this.add
-      .rectangle(panelCenterX, panelTop + 550, 596, 94, 0x121a2a, 0.95)
+      .rectangle(panelCenterX, unlockPanelY, innerW, unlockPanelH, 0x121a2a, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283447, 1)
@@ -232,17 +263,18 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: [statsPanel, weaponDamagePanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
 
     const statBaseY = panelTop + 200;
-    const statGap = 142;
+    const statGap = Math.min(142, Math.floor(PANEL_W * 0.21));
+    const statRowGap = Math.round(42 * uiScale);
     const pb = this.payload.previousBests;
-    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600,
+    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600, uiScale,
       pb && summary.timeSurvivedSec > pb.bestTime);
-    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660,
+    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660, uiScale,
       pb && summary.enemiesKilled > pb.bestKills);
-    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720,
+    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720, uiScale,
       pb && this.payload.xpLevel > pb.bestLevel);
-    this.createResultStat(panelCenterX - statGap, statBaseY + 42, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780);
-    this.createResultStat(panelCenterX, statBaseY + 42, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840);
-    this.createResultStat(panelCenterX + statGap, statBaseY + 42, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900,
+    this.createResultStat(panelCenterX - statGap, statBaseY + statRowGap, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780, uiScale);
+    this.createResultStat(panelCenterX, statBaseY + statRowGap, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840, uiScale);
+    this.createResultStat(panelCenterX + statGap, statBaseY + statRowGap, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900, uiScale,
       pb && (summary.bestCombo ?? 0) > pb.bestCombo);
 
     const loadoutSummaryText = boundedLoadoutSummary(this.payload.buildSummary, 2);
@@ -253,10 +285,10 @@ export class GameOverScene extends Phaser.Scene {
     const loadoutSummary = this.add
       .text(
         panelCenterX,
-        panelTop + 288,
+        weaponPanelTop + Math.round(15 * panelScale),
         `${weaponsHead}\n${loadoutSummaryText}`,
         {
-          ...textStyle('label', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 560 } }),
+          ...textStyle('label', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(560, PANEL_W - 48) / Math.max(1, uiScale) } }),
           lineSpacing: 6,
         }
       )
@@ -274,9 +306,12 @@ export class GameOverScene extends Phaser.Scene {
       goldEarned: runResult.goldEarned,
       maxRows: 3,
     });
-    const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
+    // Use displayHeight (post-scale) so chained positions match visual bottom.
+    // Previous plain `.height` under-measured at uiScale 1.4, letting weapon
+    // rows overlap the goldPanel background.
+    const loadoutBottom = loadoutSummary.y + loadoutSummary.displayHeight;
     const weaponHeading = this.add
-      .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
+      .text(panelCenterX, loadoutBottom + Math.round(10 * panelScale), t('ui.gameOver.damage_by_weapon'), {
         ...textStyle('label', { color: COLORS_CSS.TEXT_SUBTITLE }),
         letterSpacing: 1,
       })
@@ -286,8 +321,8 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     weaponHeading.setScale(uiScale);
     const weaponBody = this.add
-      .text(panelCenterX, weaponHeading.y + 16, weaponRows, {
-        ...textStyle('label', { color: COLORS_CSS.TEXT_PRIMARY, align: 'center', wordWrap: { width: 560 } }),
+      .text(panelCenterX, weaponHeading.y + Math.round(16 * panelScale), weaponRows, {
+        ...textStyle('label', { color: COLORS_CSS.TEXT_PRIMARY, align: 'center', wordWrap: { width: Math.min(560, PANEL_W - 48) / Math.max(1, uiScale) } }),
         lineSpacing: 4,
       })
       .setOrigin(0.5, 0)
@@ -296,8 +331,9 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     weaponBody.setScale(uiScale);
     this.tweens.add({ targets: [weaponHeading, weaponBody], alpha: 1, duration: 260, delay: 940 });
-    const weaponBodyBottom = weaponBody.y + weaponBody.height;
-    const goldTitleY = Math.max(panelTop + 420, weaponBodyBottom + 16);
+    // goldTitleY anchors on the goldPanel centre (already shifted with scale)
+    // rather than a fixed +420 offset, so it moves with the panel at 1.4x.
+    const goldTitleY = goldPanelCenterY - Math.round(15 * panelScale);
 
     const goldTitle = this.add
       .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }),
@@ -309,7 +345,7 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     goldTitle.setScale(uiScale);
     const goldText = this.add
-      .text(panelCenterX, goldTitleY + 30, goldBreakdown,
+      .text(panelCenterX, goldTitleY + Math.round(30 * panelScale), goldBreakdown,
         textStyle('label', { fontSize: '12px', color: COLORS_CSS.LABEL_TAN, align: 'center' }),
       )
       .setOrigin(0.5)
@@ -327,20 +363,31 @@ export class GameOverScene extends Phaser.Scene {
     });
     this.tweens.add({ targets: goldText, alpha: 1, duration: 240, delay: 1080 });
 
-    this.addRunResultUnlockContent(panelCenterX, panelTop + 512, d + 3, runResult.newlyUnlockedVariants, 1140);
+    // Unlock content sits inside the unlockPanel — anchor on panel centre
+    // minus a small top-padding so scaled text stays visually contained at
+    // uiScale 1.4 instead of using the old fixed `panelTop + 512`.
+    this.addRunResultUnlockContent(panelCenterX, unlockPanelY - Math.round(38 * panelScale), d + 3, runResult.newlyUnlockedVariants, 1140);
 
     // Seed readout — sits just above the action buttons. For daily runs it
     // prefixes "DAILY" and shows the date; for seeded runs just the code.
     // Tapping copies the code to the clipboard so players can share.
     if (this.payload.seedCode) {
-      this.renderSeedReadout(panelCenterX, panelTop + 590, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
+      // Clamp seed readout above canvas bottom — default offset assumes a
+      // 720px-tall design target, but native 600 clips this by a couple px.
+      // At uiScale 1.4 we also anchor it above the scaled unlock panel so
+      // the seed code isn't swallowed by the unlock banner.
+      const seedY = Math.min(
+        Math.max(panelTop + 590, unlockPanelY + unlockPanelH / 2 + Math.round(14 * panelScale)),
+        height - Math.round(42 * panelScale),
+      );
+      this.renderSeedReadout(panelCenterX, seedY, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
     }
 
     // Two small text links side-by-side under the seed readout. Postcard
     // saves the frame; rerun starts the exact seed again. Only render
     // rerun when the payload actually carries a numeric seed.
     const hasRerun = typeof this.payload.runSeed === 'number';
-    const linkY = panelTop + 612;
+    const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale));
     if (hasRerun) {
       this.renderPostcardLink(panelCenterX - 100, linkY, d + 3, 1180);
       this.renderRerunSeedLink(panelCenterX + 100, linkY, d + 3, 1200);
@@ -348,8 +395,14 @@ export class GameOverScene extends Phaser.Scene {
       this.renderPostcardLink(panelCenterX, linkY, d + 3, 1180);
     }
 
-    const buttonsY = panelTop + 634;
-    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), 'primary', 1240, () => {
+    const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
+    // Responsive gap — default design target is ±196 between centre
+    // buttons at 800px, but on narrow viewports the left button otherwise
+    // clips the canvas edge. Floor keeps the 24px between-button breathing
+    // room intact (172 button width + 24 gap = 196 centre-to-centre).
+    const actionBtnW = 172;
+    const actionSideGap = Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
+    this.createResultActionButton(panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, () => {
       audio.playClick();
       musicEngine.stop();
       // Match MenuScene: wipe any lingering suspended-run snapshot before
@@ -358,12 +411,12 @@ export class GameOverScene extends Phaser.Scene {
       try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
       this.scene.start('Game');
     });
-    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, () => {
+    this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
     }, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
-    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 'secondary', 1360, () => {
+    this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');
@@ -386,7 +439,7 @@ export class GameOverScene extends Phaser.Scene {
   ): void {
     const text = this.add
       .text(centerX, y, formatDeathInsightLine(cause),
-        textStyle('subtitle', { color: COLORS_CSS.LABEL_TAN, align: 'center', wordWrap: { width: panelWidth - 48 } }),
+        textStyle('subtitle', { color: COLORS_CSS.LABEL_TAN, align: 'center', wordWrap: { width: (panelWidth - 48) / Math.max(1, uiScale) } }),
       )
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
@@ -428,7 +481,7 @@ export class GameOverScene extends Phaser.Scene {
     if (!hasUnlocks) {
       const tip = this.add
         .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)],
-          textStyle('subtitle', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 520 } }),
+          textStyle('subtitle', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(520, this.scale.width - 80) } }),
         )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
@@ -453,7 +506,7 @@ export class GameOverScene extends Phaser.Scene {
         .setAlpha(0);
       const flavorText = this.add
         .text(centerX, y + 58, t(variant.flavorKey),
-          textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 520 } }),
+          textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(520, this.scale.width - 80) } }),
         )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
@@ -467,7 +520,7 @@ export class GameOverScene extends Phaser.Scene {
     const bodyText = formatUnlockBodyText(variantKeys) ?? '';
     const unlockList = this.add
       .text(centerX, y + 30, bodyText, {
-        ...textStyle('body', { fontSize: variantKeys.length === 2 ? '18px' : '14px', color: COLORS_CSS.WHISKY_GOLD, align: 'center', wordWrap: { width: 500 } }),
+        ...textStyle('body', { fontSize: variantKeys.length === 2 ? '18px' : '14px', color: COLORS_CSS.WHISKY_GOLD, align: 'center', wordWrap: { width: Math.min(500, this.scale.width - 100) } }),
         lineSpacing: 6,
       })
       .setOrigin(0.5, 0)
@@ -479,14 +532,15 @@ export class GameOverScene extends Phaser.Scene {
 
   /** Celebratory sparkle burst — 8 golden particles radiating outward from center. */
   private addUnlockSparkles(cx: number, cy: number, depth: number, delay: number): void {
+    const { uiScale } = getSettingsManager().load();
     for (let i = 0; i < 8; i++) {
       const angle = (i / 8) * Math.PI * 2;
       const sparkle = this.add.circle(cx, cy, 3, 0xffdd44, 0)
         .setScrollFactor(0).setDepth(depth);
       this.tweens.add({
         targets: sparkle,
-        x: cx + Math.cos(angle) * 60,
-        y: cy + Math.sin(angle) * 40,
+        x: cx + Math.cos(angle) * Math.round(60 * uiScale),
+        y: cy + Math.sin(angle) * Math.round(40 * uiScale),
         alpha: { from: 0, to: 0.9 },
         scale: { from: 0.3, to: 1.5 },
         duration: 600,
@@ -512,6 +566,7 @@ export class GameOverScene extends Phaser.Scene {
     value: string,
     depth: number,
     delay: number,
+    uiScale: number,
     isNewBest?: boolean
   ): void {
     const labelText = this.add
@@ -521,32 +576,34 @@ export class GameOverScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(depth)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setScale(uiScale);
     const valueText = this.add
-      .text(x, y + 18, value,
+      .text(x, y + Math.round(18 * uiScale), value,
         textStyle('body', { fontSize: '20px', color: isNewBest ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(depth)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setScale(uiScale);
 
     this.tweens.add({ targets: [labelText, valueText], alpha: 1, duration: 220, delay });
 
     if (isNewBest) {
       const badge = this.add
-        .text(x + 46, y + 10, t('ui.gameOver.new_best'),
+        .text(x + Math.round(46 * uiScale), y + Math.round(10 * uiScale), t('ui.gameOver.new_best'),
           textStyle('small', { fontSize: '8px', color: COLORS_CSS.WHISKY_GOLD }),
         )
         .setOrigin(0, 0.5)
         .setScrollFactor(0)
         .setDepth(depth + 1)
         .setAlpha(0)
-        .setScale(0.5);
+        .setScale(0.5 * uiScale);
       this.tweens.add({
         targets: badge,
         alpha: 1,
-        scale: 1,
+        scale: uiScale,
         duration: 360,
         delay: delay + 200,
         ease: 'Back.easeOut',
@@ -562,6 +619,7 @@ export class GameOverScene extends Phaser.Scene {
     label: string,
     tier: import('../ui/gameButton').ButtonTier,
     delay: number,
+    uiScale: number,
     onClick: () => void,
     overrides?: { fillOverride?: number; hoverOverride?: number; textColorOverride?: string },
   ): void {
@@ -569,7 +627,7 @@ export class GameOverScene extends Phaser.Scene {
     // fade-in still provides the visual delay without softlocking the
     // buttons if a tween is interrupted by tab-backgrounding.
     const { rect: button, label: text } = createGameButton(this, {
-      x, y, width, height, label, tier,
+      x, y, width, height, label, tier, uiScale,
       fillOverride: overrides?.fillOverride,
       hoverOverride: overrides?.hoverOverride,
       textColorOverride: overrides?.textColorOverride,
