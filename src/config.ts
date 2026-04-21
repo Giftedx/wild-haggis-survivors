@@ -127,6 +127,15 @@ export const COLORS = {
   /** Full-screen overlay dimming — level-up, pause, death, act
    *  intermission. One value for every overlay in the game. */
   OVERLAY_DIM: 0x000000,
+
+  /** Bright gold — crits, legendary particles, evolution beams. */
+  CRIT_GOLD: 0xffdd44,
+  /** Reward gold — pickup toasts, boss ring secondary, chest collect. */
+  REWARD_GOLD: 0xffcc44,
+  /** Positive green — weapon acquire, heal, health orb. */
+  POSITIVE_GREEN: 0x44dd44,
+  /** Combo amber — warm combo counter tier (20–49). */
+  COMBO_AMBER: 0xe8a830,
 } as const;
 
 export const UI = {
@@ -172,4 +181,41 @@ export const COLORS_CSS = {
   HINT: '#6a7390',
   /** Cool grey — neutral body text on dark panels. */
   COOL_GREY: '#c8d0e0',
+
+  /** Bright gold for CSS contexts — crits, legendary moments. */
+  CRIT_GOLD: '#ffdd44',
+  /** Reward gold for CSS contexts — pickup/milestone toasts. */
+  REWARD_GOLD: '#ffcc44',
+  /** Positive green for CSS contexts — weapon acquire, heal. */
+  POSITIVE_GREEN: '#44dd44',
+  /** Combo amber for CSS contexts — combo 20+ tier. */
+  COMBO_AMBER: '#e8a830',
+
+  // ── Text gray family (cool-blue grays for body text / labels) ──
+
+  /** Brightest body text — bold titles, emphasis headings. */
+  TEXT_BRIGHT: '#e4e9f0',
+  /** Standard body text — default paragraph color. */
+  TEXT_PRIMARY: '#c4cdd8',
+  /** Secondary labels — less prominent info. */
+  TEXT_SECONDARY: '#9ea8bb',
+  /** De-emphasized info — tertiary context. */
+  TEXT_MUTED: '#8a93a8',
+  /** Italic subtitles — scene context, timestamps. */
+  TEXT_SUBTITLE: '#7f8ca7',
+  /** Footer / fine print — dimmest readable text. */
+  TEXT_DIM: '#596780',
+
+  // ── Semantic accent families ──
+
+  /** Curse text — death banners, curse labels. */
+  CURSE_MAUVE: '#c8a0a0',
+  /** Curse emphasis — bright mauve for active curse display. */
+  CURSE_MAUVE_BRIGHT: '#e8a0c6',
+  /** Victory / unlock green. */
+  VICTORY_GREEN: '#77c977',
+  /** Warm label tan — stat labels in GameOver. */
+  LABEL_TAN: '#b69643',
+  /** Status/copyright tan — muted informational text. */
+  STATUS_TAN: '#8a7a6a',
 } as const;
