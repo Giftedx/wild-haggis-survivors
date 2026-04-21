@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { t } from '../core/i18n';
+import { audio } from '../systems/AudioSystem';
 import { COLORS, COLORS_CSS } from '../config';
 import { UpgradeCard, RARITY_COLORS } from '../data/upgrades';
 import { getCameraViewport } from './cameraViewport';
@@ -143,6 +144,7 @@ export class UpgradeCardsUI {
 
       // Stagger animation — raw tickers (UI continues during gameplay pause)
       const handle = this.tickers.addOnce('raw', i * 120, () => {
+        audio.playCardReveal(i);
         this.createCard(x, cardY, cardW, cardH, card, depth + 2);
       });
       this.pendingHandles.push(handle);
@@ -327,7 +329,10 @@ export class UpgradeCardsUI {
     // `this.elements`) so hide() doesn't kill mid-flight particles.
     bg.on('pointerdown', () => {
       if (card.rarity === 'legendary') {
+        audio.playLegendarySelect();
         this.spawnLegendaryTrail(x, y);
+      } else {
+        audio.playLevelUp();
       }
       this.hide();
       this.onSelect(card);

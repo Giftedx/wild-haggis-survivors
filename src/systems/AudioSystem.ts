@@ -597,6 +597,60 @@ export class AudioSystem {
     }
   }
 
+  /** Rising tone per card slot — creates anticipation as cards fan out.
+   *  Index 0/1/2 maps to ascending G4/B4/D5 pitches. */
+  playCardReveal(index: number): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    const t = ctx.currentTime;
+    const freqs = [392.0, 493.88, 587.33]; // G4, B4, D5
+    const freq = freqs[Math.min(index, freqs.length - 1)];
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    applySfxDetune(osc);
+    osc.frequency.value = freq;
+
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.15);
+    this.duckMusicForGameplaySfx(0.15);
+  }
+
+  /** Dramatic ascending arpeggio for legendary weapon evolution selection. */
+  playLegendarySelect(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    const t = ctx.currentTime;
+    const freqs = [293.66, 369.99, 440.0, 587.33, 739.99]; // D major ascending
+    const offsets = [0, 0.06, 0.12, 0.2, 0.3];
+    const vols = [0.14, 0.14, 0.14, 0.16, 0.12];
+
+    for (let i = 0; i < freqs.length; i++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      applySfxDetune(osc);
+      osc.frequency.value = freqs[i];
+      gain.gain.setValueAtTime(vols[i], t + offsets[i]);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + offsets[i] + 0.25);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t + offsets[i]);
+      osc.stop(t + offsets[i] + 0.25);
+    }
+    this.duckMusicForGameplaySfx(0.35);
+  }
+
   /** Menu button click */
   playClick(): void {
     this.gatedSfx('click', () => {
