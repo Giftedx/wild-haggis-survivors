@@ -157,17 +157,23 @@ export class CurseScene extends Phaser.Scene {
         .setDepth(2);
     }
 
-    // Title
+    // Title — wrap divided by uiScale so scaled text respects tile edges
+    // at high comfort settings (1.4x would otherwise render ~2x past the
+    // tile width since setScale multiplies the pre-wrapped bounds). Top-
+    // edge Y also scales so the scaled 2-line title doesn't overlap the
+    // gold chip (16px * 1.4 * 2 lines = 45px height at 1.4x, which at the
+    // old +26 offset crashed into the chip sitting 50px below).
     this.add
-      .text(cx, cy - h / 2 + 26, t(opts.titleKey),
-        textStyle('label', { color: COLORS_CSS.WARM_TAN, align: 'center', wordWrap: { width: w - 16 } }),
+      .text(cx, cy - h / 2 + Math.round(26 * uiScale), t(opts.titleKey),
+        textStyle('label', { color: COLORS_CSS.WARM_TAN, align: 'center', wordWrap: { width: (w - 16) / Math.max(1, uiScale) } }),
       )
       .setOrigin(0.5, 0)
       .setScale(uiScale);
 
-    // Gold chip (curse tiles only)
+    // Gold chip (curse tiles only) — Y scaled from top edge so it tracks
+    // the scaled title below it.
     if (opts.goldPct !== null) {
-      const chipY = cy - h / 2 + 76;
+      const chipY = cy - h / 2 + Math.round(76 * uiScale);
       this.add
         .rectangle(cx, chipY, w - 24, 22, 0x3a2c14, 1)
         .setStrokeStyle(1, COLORS.WHISKY_GOLD, 0.9);
@@ -180,17 +186,20 @@ export class CurseScene extends Phaser.Scene {
     }
 
     // Description — wraps within the tile; positioned in the middle so it
-    // reads under the title/chip without crowding the pick button.
-    const descY = cy - 12;
+    // reads under the title/chip without crowding the pick button. Y offset
+    // from cy stays proportional to uiScale so the scaled desc block sits
+    // with the same visual weight relative to tile center.
+    const descY = cy - Math.round(12 * uiScale);
     this.add
       .text(cx, descY, t(opts.descKey),
-        textStyle('small', { color: COLORS_CSS.COOL_GREY, align: 'center', wordWrap: { width: w - 18 } }),
+        textStyle('small', { color: COLORS_CSS.COOL_GREY, align: 'center', wordWrap: { width: (w - 18) / Math.max(1, uiScale) } }),
       )
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    // Pick button (bottom of tile)
-    const btnY = cy + h / 2 - 26;
+    // Pick button (bottom of tile) — bottom-edge offset scales so the
+    // button doesn't float too high or clip the tile floor at 1.4x.
+    const btnY = cy + h / 2 - Math.round(26 * uiScale);
     const { rect: btn, label: btnLabel } = createGameButton(this, {
       x: cx, y: btnY, width: w - 24, height: 32,
       label: t(opts.pickLabelKey), tier: 'primary',

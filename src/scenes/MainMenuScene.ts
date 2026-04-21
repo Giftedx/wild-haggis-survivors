@@ -243,7 +243,7 @@ export class MainMenuScene extends Phaser.Scene {
         cx,
         titleY + 128,
         hintCopy,
-        textStyle('body', { fontSize: '14px', color: hintColor, align: 'center', wordWrap: { width: Math.max(120, vp.width - 80) } }),
+        textStyle('body', { fontSize: '14px', color: hintColor, align: 'center', wordWrap: { width: Math.max(120, (vp.width - 80) / Math.max(1, uiScale)) } }),
       )
       .setOrigin(0.5);
     hintText.setScale(uiScale);
@@ -255,8 +255,17 @@ export class MainMenuScene extends Phaser.Scene {
     const btnW = 240;
     const btnH = 48;
     const bx = cx;
+    // Scaled step helpers — scene sets setScale(uiScale) on each button,
+    // so visual heights grow with comfort scale. Hardcoded pixel offsets
+    // (btnH + 14) would let neighbouring buttons overlap vertically at
+    // uiScale 1.4 (48 + 14 = 62 < 48 * 1.4 = 67.2).
+    const gap = Math.round(14 * uiScale);
+    const gapTight = Math.round(10 * uiScale);
+    const gapLink = Math.round(16 * uiScale);
+    const btnHs = Math.round(btnH * uiScale);
+    const btnH42 = Math.round(42 * uiScale);
     const startY = titleY + 128 + 60;
-    let metaY = startY + btnH + 14;
+    let metaY = startY + btnHs + gap;
     let abandonBtn: Phaser.GameObjects.Rectangle | null = null;
     let goLoadoutFresh: (() => void) | null = null;
 
@@ -281,8 +290,8 @@ export class MainMenuScene extends Phaser.Scene {
     startTxt.on('pointerdown', goPrimary);
 
     if (suspended) {
-      const newY = startY + btnH + 10;
-      metaY = newY + btnH + 14;
+      const newY = startY + btnHs + gapTight;
+      metaY = newY + btnHs + gap;
       goLoadoutFresh = () => {
         this.saveManager.clearActiveRun();
         this.scene.start('Menu');
@@ -323,12 +332,16 @@ export class MainMenuScene extends Phaser.Scene {
       fillOverride: 0x8b6914, hoverOverride: 0xa87e1a, textColorOverride: '#fff3d1',
     });
     dailyBtn.setScale(uiScale);
-    // Shift title up to make room for the subtitle
-    dailyTitle.setY(dailyBtnY - 8);
+    // Shift title up to make room for the subtitle — offsets scale with
+    // uiScale so the 2-line layout still fits inside the scaled button
+    // box at 1.4x (hardcoded ±8/±10 collapsed once glyphs grew).
+    const dailyTitleOffset = Math.round(8 * uiScale);
+    const dailySubtitleOffset = Math.round(10 * uiScale);
+    dailyTitle.setY(dailyBtnY - dailyTitleOffset);
     dailyTitle.setScale(uiScale);
     const dailySubtitle = this.add
-      .text(bx, dailyBtnY + 10, daily.subtitle,
-        textStyle('small', { color: daily.completed ? '#9de6a8' : '#e2c97a' }),
+      .text(bx, dailyBtnY + dailySubtitleOffset, daily.subtitle,
+        textStyle('small', { color: daily.completed ? '#9de6a8' : '#e2c97a', wordWrap: { width: btnW / Math.max(1, uiScale) } }),
       )
       .setOrigin(0.5);
     dailySubtitle.setScale(uiScale);
@@ -339,7 +352,7 @@ export class MainMenuScene extends Phaser.Scene {
     dailySubtitle.setInteractive({ useHandCursor: true });
     dailySubtitle.on('pointerdown', startDaily);
 
-    const metaY2 = dailyBtnY + btnH + 14;
+    const metaY2 = dailyBtnY + btnHs + gap;
     const { rect: metaBtn, label: metaTxt } = createGameButton(this, {
       x: bx, y: metaY2, width: btnW, height: btnH,
       label: t('ui.menu.meta_upgrades'),
@@ -361,7 +374,7 @@ export class MainMenuScene extends Phaser.Scene {
     // compact. Chronicle = runs journal; Deeds = achievements. Both hidden
     // on fresh saves so the first-run player sees only the core ladder.
     const hasAnyRun = gameplay.totalRuns > 0;
-    const reflectionY = metaY2 + btnH + 14;
+    const reflectionY = metaY2 + btnHs + gap;
     const reflectionGap = 12;
     const halfBtnW = (btnW - reflectionGap) / 2;
     let chronicleBtn: Phaser.GameObjects.Rectangle | null = null;
@@ -369,7 +382,14 @@ export class MainMenuScene extends Phaser.Scene {
     const goChronicle = clickToScene(this, 'Chronicle');
     const goDeeds = clickToScene(this, 'Deeds');
     if (hasAnyRun) {
-      // Chronicle (left) — centers align to full btnW with an exact 12px gap (was off by 3px).
+      // Chronicle (left). The half-width reflection buttons share a row,
+      // so setScale(uiScale) on each rect would grow their edges inward
+      // past the 12px gap and visually merge them at 1.4x (each half
+      // gains ~22px on each side, 12px gap collapses into negative).
+      // Leave the rect at its natural width; only the label scales with
+      // uiScale (via the factory's internal setScale) so text stays
+      // legible at comfort settings. The rect dimensions (halfBtnW × 42)
+      // keep the tap target predictable across every uiScale.
       const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
       const { rect: chronicleRect, label: chronicleTxt } = createGameButton(this, {
         x: chronicleX, y: reflectionY, width: halfBtnW, height: 42,
@@ -377,13 +397,11 @@ export class MainMenuScene extends Phaser.Scene {
         tier: 'tertiary', fontSize: '13px', uiScale,
       });
       chronicleBtn = chronicleRect;
-      chronicleBtn.setScale(uiScale);
-      chronicleTxt.setScale(uiScale);
       chronicleBtn.on('pointerdown', goChronicle);
       chronicleTxt.setInteractive({ useHandCursor: true });
       chronicleTxt.on('pointerdown', goChronicle);
 
-      // Deeds (right)
+      // Deeds (right) — same treatment as Chronicle.
       const deedsX = bx + reflectionGap / 2 + halfBtnW / 2;
       const { rect: deedsRect, label: deedsTxt } = createGameButton(this, {
         x: deedsX, y: reflectionY, width: halfBtnW, height: 42,
@@ -391,14 +409,12 @@ export class MainMenuScene extends Phaser.Scene {
         tier: 'tertiary', fontSize: '13px', uiScale,
       });
       deedsBtn = deedsRect;
-      deedsBtn.setScale(uiScale);
-      deedsTxt.setScale(uiScale);
       deedsBtn.on('pointerdown', goDeeds);
       deedsTxt.setInteractive({ useHandCursor: true });
       deedsTxt.on('pointerdown', goDeeds);
     }
 
-    const optY = (hasAnyRun ? reflectionY + 42 : metaY2 + btnH) + 14;
+    const optY = (hasAnyRun ? reflectionY + btnH42 : metaY2 + btnHs) + gap;
     const { rect: optBtn, label: optTxt } = createGameButton(this, {
       x: bx, y: optY, width: btnW, height: 42,
       label: t('ui.menu.options'),
@@ -419,7 +435,7 @@ export class MainMenuScene extends Phaser.Scene {
     // code (or raw integer) and launches a seeded run. Uses window.prompt
     // for cross-platform simplicity — a full in-game keyboard overlay is
     // future work if mobile UX feedback demands it.
-    const customSeedY = optY + 42 + 16;
+    const customSeedY = optY + btnH42 + gapLink;
     const seedLinkStyle = resolveSeedLinkStyle(highContrastUi, titleColor);
     const customSeedTxt = this.add
       .text(bx, customSeedY, t('ui.menu.enter_seed'), {
@@ -449,7 +465,7 @@ export class MainMenuScene extends Phaser.Scene {
     // or fresh installs).
     const lastRunEntry = findLastSeededRun(gameplay.runHistory);
     if (lastRunEntry) {
-      const rerunLastY = customSeedY + 22;
+      const rerunLastY = customSeedY + Math.round(22 * uiScale);
       const rerunTxt = this.add
         .text(bx, rerunLastY, t('ui.menu.rerun_last'), {
           fontFamily: 'monospace',
@@ -589,7 +605,7 @@ export class MainMenuScene extends Phaser.Scene {
       const footerPalette = resolveMenuFooterPalette(highContrastUi);
       this.add
         .text(cx, uiBottom - 58, statsLine,
-          textStyle('small', { color: footerPalette.statsStrip, align: 'center', wordWrap: { width: Math.max(160, vp.width - 48) } }),
+          textStyle('small', { color: footerPalette.statsStrip, align: 'center', wordWrap: { width: Math.max(160, (vp.width - 48) / Math.max(1, uiScale)) } }),
         )
         .setOrigin(0.5, 1)
         .setScale(uiScale);
@@ -599,7 +615,7 @@ export class MainMenuScene extends Phaser.Scene {
       if (historyLine) {
         this.add
           .text(cx, uiBottom - 40, historyLine,
-            textStyle('subtitle', { color: footerPalette.historyStrip, align: 'center', wordWrap: { width: Math.max(160, vp.width - 48) } }),
+            textStyle('subtitle', { color: footerPalette.historyStrip, align: 'center', wordWrap: { width: Math.max(160, (vp.width - 48) / Math.max(1, uiScale)) } }),
           )
           .setOrigin(0.5, 1)
           .setScale(uiScale);

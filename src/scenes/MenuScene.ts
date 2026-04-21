@@ -266,13 +266,19 @@ export class MenuScene extends Phaser.Scene {
     const selected = this.selectedVariantKey === variant.key;
     const unlockProgress = getVariantUnlockProgress(variant, this.saveData);
     const infoX = panelX - 92;
+    // Vertical offsets scale with uiScale so the scaled variant rows
+    // (name 24px → 34px, flavor 13px → 18px wrap, modifier 13px, progress
+    // 12px, tally 11px) keep their row-to-row gaps and stay inside the
+    // scaled panelHeight. Without this the rows collapse into each other
+    // at 1.4x (flavor bottom crashes into modifier top).
+    const vy = (base: number) => Math.round(base * this.uiScale);
 
     const panel = this.add
       .rectangle(panelX, panelY, panelWidth, panelHeight, COLORS.PANEL, 0.95)
       .setStrokeStyle(2, resolveVariantPanelStroke(unlocked), 1);
     this.variantPanelElements.push(panel);
 
-    const header = this.add.text(panelX - panelWidth / 2 + 18, panelY - 68, t('ui.loadout.variant_loadout'), {
+    const header = this.add.text(panelX - panelWidth / 2 + 18, panelY - vy(68), t('ui.loadout.variant_loadout'), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#9bb6eb',
@@ -280,7 +286,7 @@ export class MenuScene extends Phaser.Scene {
       letterSpacing: 1,
     });
     const pageText = this.add
-      .text(panelX + panelWidth / 2 - 18, panelY - 68, `${this.carouselIndex + 1} / ${VARIANTS.length}`, {
+      .text(panelX + panelWidth / 2 - 18, panelY - vy(68), `${this.carouselIndex + 1} / ${VARIANTS.length}`, {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#8097c2',
@@ -301,7 +307,7 @@ export class MenuScene extends Phaser.Scene {
     });
 
     const previewFrame = this.add
-      .rectangle(panelX - 238, panelY + 8, 118, 112, 0x16213a, 0.95)
+      .rectangle(panelX - 238, panelY + vy(8), 118, 112, 0x16213a, 0.95)
       .setStrokeStyle(1, unlocked ? 0x406099 : 0x374157, 1);
     const preview = this.add
       .sprite(previewFrame.x, previewFrame.y - 2, variant.textureKey)
@@ -309,7 +315,7 @@ export class MenuScene extends Phaser.Scene {
       .setAlpha(unlocked ? 1 : 0.42);
     this.variantPanelElements.push(previewFrame, preview);
 
-    const nameText = this.add.text(infoX, panelY - 42, t(variant.nameKey), {
+    const nameText = this.add.text(infoX, panelY - vy(42), t(variant.nameKey), {
       fontFamily: 'monospace',
       fontSize: '24px',
       color: resolveVariantNameColor(unlocked),
@@ -318,13 +324,13 @@ export class MenuScene extends Phaser.Scene {
     // Wrap instead of truncating — all 5 flavors currently exceed 42 chars,
     // and any locale whose strings are longer would be cropped mid-word.
     // The ~300px wrap width gives room for 2 lines on the widest flavor.
-    const flavorText = this.add.text(infoX, panelY - 18, t(variant.flavorKey), {
+    const flavorText = this.add.text(infoX, panelY - vy(18), t(variant.flavorKey), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#95a8ca',
       wordWrap: { width: 300 },
     });
-    const modifierText = this.add.text(infoX, panelY + 18, formatVariantModifierSummary(variant), {
+    const modifierText = this.add.text(infoX, panelY + vy(18), formatVariantModifierSummary(variant), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: COLORS_CSS.TEXT_BRIGHT,
@@ -334,7 +340,7 @@ export class MenuScene extends Phaser.Scene {
     const requirementLine = formatVariantRequirementLine(unlocked, unlockProgress);
     const progressLine = this.add.text(
       infoX,
-      panelY + 46,
+      panelY + vy(46),
       requirementLine.text,
       {
         fontFamily: 'monospace',
@@ -353,7 +359,7 @@ export class MenuScene extends Phaser.Scene {
       if (variantStats.runs > 0) {
         const tallyText = this.add.text(
           infoX,
-          panelY + 76,
+          panelY + vy(76),
           t('ui.loadout.variant_tally', {
             wins: variantStats.wins,
             runs: variantStats.runs,
@@ -370,7 +376,7 @@ export class MenuScene extends Phaser.Scene {
     }
 
     const barX = infoX;
-    const barY = panelY + 66;
+    const barY = panelY + vy(66);
     const barWidth = 286;
     const progressBg = this.add.rectangle(barX, barY, barWidth, 8, 0x202839, 1).setOrigin(0, 0.5);
     const progressFill = this.add
@@ -389,7 +395,7 @@ export class MenuScene extends Phaser.Scene {
     this.variantSelectHit = null;
     const badgeStyle = resolveLoadoutBadgeStyle(selected, unlocked);
     const badge = this.add
-      .rectangle(panelX + 235, panelY - 6, 126, 38, badgeStyle.fillColor, 1)
+      .rectangle(panelX + 235, panelY - vy(6), 126, 38, badgeStyle.fillColor, 1)
       .setStrokeStyle(1, badgeStyle.strokeColor, 1);
     const badgeLabel = this.add
       .text(badge.x, badge.y, badgeStyle.labelText, {
@@ -402,7 +408,7 @@ export class MenuScene extends Phaser.Scene {
     this.variantPanelElements.push(badge, badgeLabel);
 
     const statusNote = this.add
-      .text(badge.x, panelY + 30, badgeStyle.statusText, {
+      .text(badge.x, panelY + vy(30), badgeStyle.statusText, {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#aab4c7',
@@ -428,10 +434,11 @@ export class MenuScene extends Phaser.Scene {
   private createCarouselButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Rectangle {
     const { rect: button, label: text } = createGameButton(this, {
       x, y, width: 38, height: 38, label,
-      tier: 'tertiary', fontSize: '22px',
+      tier: 'tertiary', fontSize: '22px', uiScale: this.uiScale,
     });
+    button.setScale(this.uiScale);
     // Shift text up 1px for visual alignment of < / > glyphs
-    text.setY(y - 1);
+    text.setY(y - Math.round(1 * this.uiScale));
     button.on('pointerdown', onClick);
 
     this.variantPanelElements.push(button, text);
@@ -501,7 +508,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private getMenuLayout(height: number) {
-    return computeMenuLayout(height);
+    return computeMenuLayout(height, this.uiScale);
   }
 
   private clearVariantPanel(): void {

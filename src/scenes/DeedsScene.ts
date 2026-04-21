@@ -99,10 +99,13 @@ export class DeedsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     // ── Deed grid ──
-    // 3-column layout; row count grows with the deed list. Cards shrink
-    // vertically as more deeds ship — gridHeight is fixed (y=104 →
-    // y=height-68 so the back button fits below).
-    const cols = 3;
+    // 3-column layout at default uiScale; drops to 2 cols above 1.2x so
+    // the scaled 13px title + 10px desc + progress label don't overflow
+    // card bounds (74px rowHeight at uiScale 1.4 cannot hold scaled text
+    // + 3-row wrap title). Row count grows with the deed list. Cards
+    // shrink vertically as more deeds ship — gridHeight is fixed (y=104
+    // → y=height-68 so the back button fits below).
+    const cols = uiScale > 1.2 ? 2 : 3;
     const rows = Math.ceil(deeds.length / cols);
     const gridTop = 104;
     const gridBottom = height - 68;
@@ -150,9 +153,13 @@ export class DeedsScene extends Phaser.Scene {
       .rectangle(cx, cy, w, h, palette.bgColor, 0.92)
       .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha);
 
-    // Top row: icon + title
-    const iconX = cx - w / 2 + 28;
-    const iconY = cy - h / 2 + 28;
+    // Top row: icon + title. Card-edge offsets scale with uiScale so the
+    // scaled icon/title sit the same visual distance from the card border
+    // at every comfort setting (old fixed +28 ate into the description
+    // band at 1.4x because scaled icon glyph + title line-height
+    // pushed below the anchor faster than the offset).
+    const iconX = cx - w / 2 + Math.round(28 * uiScale);
+    const iconY = cy - h / 2 + Math.round(28 * uiScale);
     this.add
       .text(iconX, iconY, palette.iconChar, {
         fontFamily: 'monospace',
@@ -164,18 +171,24 @@ export class DeedsScene extends Phaser.Scene {
       .setScale(uiScale);
 
     const titleColor = palette.titleColor;
+    // Reserve space for the top-right status tag — "IN PROGRESS" at 9px
+    // monospace scales to ~91px wide at uiScale 1.4, so the old `w - 120`
+    // cap let long titles collide with the status chip. `w - 170` keeps
+    // title right-edge clear at every uiScale. X offset from icon scales
+    // so the title reading edge tracks the scaled icon glyph.
     this.add
-      .text(iconX + 22, iconY - 10, t(def.titleKey), {
+      .text(iconX + Math.round(22 * uiScale), iconY - Math.round(10 * uiScale), t(def.titleKey), {
         fontFamily: 'monospace',
         fontSize: '13px',
         color: titleColor,
         fontStyle: 'bold',
-        wordWrap: { width: w - 80 },
+        wordWrap: { width: Math.max(50, (w - 170) / Math.max(1, uiScale)) },
       })
       .setOrigin(0, 0.5)
       .setScale(uiScale);
 
-    // Status tag (top-right)
+    // Status tag (top-right) — corner inset scales so the 9px→13px scaled
+    // label doesn't drift off the card edge.
     const statusLabel = deed.status === 'unlocked'
       ? t('ui.deeds.status_unlocked')
       : deed.status === 'in_progress'
@@ -183,7 +196,7 @@ export class DeedsScene extends Phaser.Scene {
         : t('ui.deeds.status_locked');
     const statusColor = palette.statusColor;
     this.add
-      .text(cx + w / 2 - 14, cy - h / 2 + 16, statusLabel, {
+      .text(cx + w / 2 - Math.round(14 * uiScale), cy - h / 2 + Math.round(16 * uiScale), statusLabel, {
         fontFamily: 'monospace',
         fontSize: '9px',
         color: statusColor,
@@ -193,7 +206,10 @@ export class DeedsScene extends Phaser.Scene {
       .setOrigin(1, 0)
       .setScale(uiScale);
 
-    // Description OR mystery hint for binary locked deeds
+    // Description OR mystery hint for binary locked deeds. Left inset
+    // scales with uiScale so the scaled text doesn't appear jammed into
+    // the card border at 1.4x. Y offset stays near card center — desc
+    // spans vertically from title bottom to progress bar top.
     const desc = resolveDeedDescription({
       status: deed.status,
       isBinary: deed.isBinary,
@@ -202,19 +218,21 @@ export class DeedsScene extends Phaser.Scene {
     });
     const descColor = palette.descColor;
     this.add
-      .text(cx - w / 2 + 14, cy - 4, desc.text, {
+      .text(cx - w / 2 + Math.round(14 * uiScale), cy - Math.round(4 * uiScale), desc.text, {
         fontFamily: 'monospace',
         fontSize: '10px',
         color: descColor,
         fontStyle: desc.italic ? 'italic' : 'normal',
-        wordWrap: { width: w - 28 },
+        wordWrap: { width: Math.max(60, (w - 28) / Math.max(1, uiScale)) },
       })
       .setOrigin(0, 0.5)
       .setScale(uiScale);
 
-    // Progress bar (bottom) — threshold deeds only
+    // Progress bar (bottom) — threshold deeds only. Bottom-edge offset
+    // scales so the scaled progress label sitting 12px below the bar
+    // doesn't spill past the card floor at 1.4x.
     if (!deed.isBinary) {
-      const barY = cy + h / 2 - 18;
+      const barY = cy + h / 2 - Math.round(18 * uiScale);
       const barMargin = 14;
       const barWidth = w - barMargin * 2;
       const barX = cx - barWidth / 2;
@@ -227,9 +245,10 @@ export class DeedsScene extends Phaser.Scene {
       const fillWidth = Math.max(2, barWidth * deed.ratio);
       this.add
         .rectangle(barX + fillWidth / 2, barY, fillWidth, 4, barStyle.fillColor, 1);
-      // Numeric label
+      // Numeric label — offset from bar scales so scaled 10px label
+      // clears the bar fill without crushing against the card edge.
       this.add
-        .text(cx, barY + 12, formatDeedProgressLabel(deed), {
+        .text(cx, barY + Math.round(12 * uiScale), formatDeedProgressLabel(deed), {
           fontFamily: 'monospace',
           fontSize: '10px',
           color: barStyle.labelColor,

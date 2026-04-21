@@ -112,13 +112,18 @@ export function renderVariantChip(
     scene.tweens.add({ targets: miniHaggis, alpha: 1, duration: 260, delay: 430 });
   }
 
+  // Y offsets from chip center scale with uiScale so the scaled 15px
+  // variant label (21px at 1.4x) doesn't overlap the scaled 11px flavor
+  // line below it. At fixed offsets -8/+10 the two text boxes collide
+  // at 1.4x — label spans ±11 centered at -8 (hits y+3); flavor spans
+  // ±8 centered at +10 (starts at y+2). The 1px gap closes into overlap.
   const variantText = scene.add
-    .text(centerX + 8, chipY - 8, t('ui.gameOver.run_variant', { label: payload.variantLabel }), {
+    .text(centerX + 8, chipY - Math.round(8 * uiScale), t('ui.gameOver.run_variant', { label: payload.variantLabel }), {
       fontFamily: 'monospace',
       fontSize: '15px',
       color: '#d7e3ff',
       fontStyle: 'bold',
-      wordWrap: { width: 500 },
+      wordWrap: { width: 500 / Math.max(1, uiScale) },
       align: 'center',
     })
     .setOrigin(0.5, 0.5)
@@ -130,12 +135,12 @@ export function renderVariantChip(
   const flavorKey = variantDef?.flavorKey;
   if (flavorKey) {
     const variantFlavor = scene.add
-      .text(centerX + 8, chipY + 10, t(flavorKey), {
+      .text(centerX + 8, chipY + Math.round(10 * uiScale), t(flavorKey), {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: '#8a9ab8',
         fontStyle: 'italic',
-        wordWrap: { width: 480 },
+        wordWrap: { width: 480 / Math.max(1, uiScale) },
         align: 'center',
       })
       .setOrigin(0.5, 0.5)
