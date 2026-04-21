@@ -195,7 +195,7 @@ export class GameOverScene extends Phaser.Scene {
           curse: t(curseDef.nameKey),
           pct: curseDef.goldBonusPct,
         }),
-          textStyle('label', { fontSize: '12px', color: '#e8a0c6' }),
+          textStyle('label', { fontSize: '12px', color: COLORS_CSS.CURSE_MAUVE_BRIGHT }),
         )
         .setOrigin(0.5)
         .setScrollFactor(0)
@@ -256,7 +256,7 @@ export class GameOverScene extends Phaser.Scene {
         panelTop + 288,
         `${weaponsHead}\n${loadoutSummaryText}`,
         {
-          ...textStyle('label', { color: '#9ea8bb', align: 'center', wordWrap: { width: 560 } }),
+          ...textStyle('label', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 560 } }),
           lineSpacing: 6,
         }
       )
@@ -277,7 +277,7 @@ export class GameOverScene extends Phaser.Scene {
     const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
       .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
-        ...textStyle('label', { color: '#7f8ca7' }),
+        ...textStyle('label', { color: COLORS_CSS.TEXT_SUBTITLE }),
         letterSpacing: 1,
       })
       .setOrigin(0.5)
@@ -287,7 +287,7 @@ export class GameOverScene extends Phaser.Scene {
     weaponHeading.setScale(uiScale);
     const weaponBody = this.add
       .text(panelCenterX, weaponHeading.y + 16, weaponRows, {
-        ...textStyle('label', { color: '#c4cdd8', align: 'center', wordWrap: { width: 560 } }),
+        ...textStyle('label', { color: COLORS_CSS.TEXT_PRIMARY, align: 'center', wordWrap: { width: 560 } }),
         lineSpacing: 4,
       })
       .setOrigin(0.5, 0)
@@ -310,7 +310,7 @@ export class GameOverScene extends Phaser.Scene {
     goldTitle.setScale(uiScale);
     const goldText = this.add
       .text(panelCenterX, goldTitleY + 30, goldBreakdown,
-        textStyle('label', { fontSize: '12px', color: '#b69643', align: 'center' }),
+        textStyle('label', { fontSize: '12px', color: COLORS_CSS.LABEL_TAN, align: 'center' }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -362,7 +362,7 @@ export class GameOverScene extends Phaser.Scene {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
-    }, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: '#000000' });
+    }, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
     this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 'secondary', 1360, () => {
       audio.playClick();
       musicEngine.stop();
@@ -386,7 +386,7 @@ export class GameOverScene extends Phaser.Scene {
   ): void {
     const text = this.add
       .text(centerX, y, formatDeathInsightLine(cause),
-        textStyle('subtitle', { color: '#dcc38a', align: 'center', wordWrap: { width: panelWidth - 48 } }),
+        textStyle('subtitle', { color: COLORS_CSS.LABEL_TAN, align: 'center', wordWrap: { width: panelWidth - 48 } }),
       )
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
@@ -428,7 +428,7 @@ export class GameOverScene extends Phaser.Scene {
     if (!hasUnlocks) {
       const tip = this.add
         .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)],
-          textStyle('subtitle', { color: '#a8b0c0', align: 'center', wordWrap: { width: 520 } }),
+          textStyle('subtitle', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 520 } }),
         )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
@@ -453,7 +453,7 @@ export class GameOverScene extends Phaser.Scene {
         .setAlpha(0);
       const flavorText = this.add
         .text(centerX, y + 58, t(variant.flavorKey),
-          textStyle('label', { fontSize: '12px', color: '#9ea8bb', align: 'center', wordWrap: { width: 520 } }),
+          textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: 520 } }),
         )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
@@ -516,7 +516,7 @@ export class GameOverScene extends Phaser.Scene {
   ): void {
     const labelText = this.add
       .text(x, y, label,
-        textStyle('label', { fontSize: '12px', color: '#7f8ca7' }),
+        textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SUBTITLE }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)

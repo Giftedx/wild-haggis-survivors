@@ -60,8 +60,8 @@ export interface IronmoorBannerStyle {
 
 export function ironmoorBannerStyle(isVictory: boolean): IronmoorBannerStyle {
   return isVictory
-    ? { key: 'ui.gameOver.ironmoor_victory_banner', color: '#f7c270' }
-    : { key: 'ui.gameOver.ironmoor_death_banner', color: '#c8a0a0' };
+    ? { key: 'ui.gameOver.ironmoor_victory_banner', color: '#f7c270' } // scene-specific: pinned by gameOverPanelTheme.test.ts
+    : { key: 'ui.gameOver.ironmoor_death_banner', color: '#c8a0a0' }; // scene-specific: pinned by gameOverPanelTheme.test.ts
 }
 
 /**

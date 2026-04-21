@@ -49,10 +49,10 @@ import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 // look stays in sync. Both small monospace bold strings used for header
 // chips and pagination buttons / list section titles.
 const CHRONICLE_PAGER_BTN_TEXT = {
-  fontFamily: 'monospace', fontSize: '11px', color: '#cdd4e0', fontStyle: 'bold',
+  fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_PRIMARY, fontStyle: 'bold',
 } as const;
 const CHRONICLE_SECTION_HEADER_TEXT = {
-  fontFamily: 'monospace', fontSize: '12px', color: '#7f8ca7',
+  fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.TEXT_SUBTITLE,
   fontStyle: 'bold', letterSpacing: 1,
 } as const;
 
@@ -137,7 +137,7 @@ export class ChronicleScene extends Phaser.Scene {
       .text(width / 2, lifetimePanelY, t('ui.chronicle.lifetime_heading'), {
         fontFamily: 'monospace',
         fontSize: '12px',
-        color: '#7f8ca7',
+        color: COLORS_CSS.TEXT_SUBTITLE,
         fontStyle: 'bold',
         letterSpacing: 1,
       })
@@ -165,13 +165,13 @@ export class ChronicleScene extends Phaser.Scene {
       const cy = lifetimePanelY + 24 + row * 22;
       this.add
         .text(cx, cy, `${cells[i].label}: `, {
-          fontFamily: 'monospace', fontSize: '11px', color: '#7f8ca7',
+          fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_SUBTITLE,
         })
         .setOrigin(1, 0.5)
         .setScale(uiScale);
       this.add
         .text(cx + 2, cy, cells[i].value, {
-          fontFamily: 'monospace', fontSize: '12px', color: '#e4e9f0', fontStyle: 'bold',
+          fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.TEXT_BRIGHT, fontStyle: 'bold',
         })
         .setOrigin(0, 0.5)
         .setScale(uiScale);
@@ -238,7 +238,7 @@ export class ChronicleScene extends Phaser.Scene {
       .text(width / 2, milestonesPanelY + 22, milestoneLines, {
         fontFamily: 'monospace',
         fontSize: density.fontSize,
-        color: '#c4cdd8',
+        color: COLORS_CSS.TEXT_PRIMARY,
         align: 'center',
         lineSpacing: density.lineSpacing,
         wordWrap: { width: width - 80 },
@@ -255,7 +255,7 @@ export class ChronicleScene extends Phaser.Scene {
     if (this.history.length >= MAX_RUN_HISTORY) {
       this.add
         .text(width - 40, runsHeaderY, t('ui.chronicle.runs_cap_note', { max: MAX_RUN_HISTORY }), {
-          fontFamily: 'monospace', fontSize: '10px', color: '#596780', fontStyle: 'italic',
+          fontFamily: 'monospace', fontSize: '10px', color: COLORS_CSS.TEXT_DIM, fontStyle: 'italic',
         })
         .setOrigin(1, 0.5)
         .setScale(uiScale);
@@ -284,7 +284,7 @@ export class ChronicleScene extends Phaser.Scene {
 
     this.pageLabel = this.add
       .text(width / 2, paginationY, '', {
-        fontFamily: 'monospace', fontSize: '11px', color: '#8a93a8',
+        fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_MUTED,
       })
       .setOrigin(0.5)
       .setScale(uiScale);
@@ -358,7 +358,7 @@ export class ChronicleScene extends Phaser.Scene {
     if (this.history.length === 0) {
       const empty = this.add
         .text(width / 2, startY + 120, t('ui.chronicle.runs_empty'), {
-          fontFamily: 'monospace', fontSize: '14px', color: '#8a93a8', fontStyle: 'italic',
+          fontFamily: 'monospace', fontSize: '14px', color: COLORS_CSS.TEXT_MUTED, fontStyle: 'italic',
           align: 'center', wordWrap: { width: width - 80 },
         })
         .setOrigin(0.5)
@@ -426,7 +426,7 @@ export class ChronicleScene extends Phaser.Scene {
       const sub = this.add
         .text(150, y + 8, subLine, {
           fontFamily: 'monospace', fontSize: '10px',
-          color: '#8a93a8',
+          color: COLORS_CSS.TEXT_MUTED,
           wordWrap: { width: width - 260 },
         })
         .setOrigin(0, 0.5)
@@ -436,7 +436,7 @@ export class ChronicleScene extends Phaser.Scene {
       // Right side: relative timestamp
       const rel = this.add
         .text(width - 40, y, formatRelativeTime(entry.timestamp), {
-          fontFamily: 'monospace', fontSize: '11px', color: '#596780', fontStyle: 'italic',
+          fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_DIM, fontStyle: 'italic',
         })
         .setOrigin(1, 0.5)
         .setScale(uiScale);
@@ -449,7 +449,7 @@ export class ChronicleScene extends Phaser.Scene {
       if (entry.ironmoor) {
         const imBadge = this.add
           .text(width - 180, y, '⚔', {
-            fontFamily: 'monospace', fontSize: '13px', color: '#c8a0a0', fontStyle: 'bold',
+            fontFamily: 'monospace', fontSize: '13px', color: COLORS_CSS.CURSE_MAUVE, fontStyle: 'bold',
           })
           .setOrigin(1, 0.5)
           .setScale(uiScale);
@@ -463,7 +463,7 @@ export class ChronicleScene extends Phaser.Scene {
       if (curseDef) {
         const badge = this.add
           .text(width - 92, y, t('ui.chronicle.run_curse_chip', { curse: t(curseDef.nameKey) }), {
-            fontFamily: 'monospace', fontSize: '10px', color: '#e8a0c6', fontStyle: 'bold',
+            fontFamily: 'monospace', fontSize: '10px', color: COLORS_CSS.CURSE_MAUVE_BRIGHT, fontStyle: 'bold',
           })
           .setOrigin(1, 0.5)
           .setScale(uiScale);
