@@ -16,6 +16,8 @@ import { COLORS } from '../config';
 export const SCENE_FADE_COLOR = COLORS.BG_DARK;
 /** Depth of the fade rectangle — sits above any scene-content depth. */
 export const SCENE_FADE_DEPTH = 999;
+/** Standard fade-out duration — every scene exit uses this. */
+export const SCENE_FADE_OUT_MS = 360;
 
 /**
  * Draw a full-screen dark rectangle at alpha 1 and tween to 0 over

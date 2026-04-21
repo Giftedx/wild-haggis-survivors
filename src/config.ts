@@ -100,6 +100,14 @@ export const COLORS = {
   /** Background */
   BG_DARK: 0x1a1a2e,
 
+  /** Primary panel/container background — menus, overlays, card
+   *  backdrops. Unifies the 8 ad-hoc dark-navy values that drifted
+   *  across scenes. */
+  PANEL: 0x111728,
+  /** Secondary surface — card interiors, list rows, tile fills.
+   *  Slightly lighter than PANEL for layered depth. */
+  PANEL_SURFACE: 0x1a1a28,
+
   /** Sprite art red — slightly cooler than HP_RED, used for clothing /
    *  armour across angryScotsman, hunterGeneral, deepFryer, chest, and
    *  the boss HP bar fill. Kept distinct from HP_RED (UI health bars)
@@ -115,6 +123,17 @@ export const COLORS = {
    *  feedback. Brighter and more saturated than HP_RED so it punches
    *  through particle noise. */
   DANGER_RED: 0xff4444,
+
+  /** Full-screen overlay dimming — level-up, pause, death, act
+   *  intermission. One value for every overlay in the game. */
+  OVERLAY_DIM: 0x000000,
+} as const;
+
+export const UI = {
+  /** Overlay backdrop alpha — all full-screen dimming overlays. */
+  OVERLAY_ALPHA: 0.82,
+  /** High-contrast overlay alpha. */
+  OVERLAY_ALPHA_HC: 0.92,
 } as const;
 
 /**
@@ -145,4 +164,12 @@ export const COLORS_CSS = {
   TOAST_GOLD: '#ffdd88',
   DANGER_RED: '#ff4444',
   LEGENDARY: '#ddaa00',
+  /** Warm tan — tertiary button text, HUD secondary info, card body. */
+  WARM_TAN: '#e8d4a0',
+  /** Dusty tan — subdued body text, stats, descriptions. */
+  DUSTY_TAN: '#b8a88a',
+  /** Hint grey — de-emphasized labels, placeholders. */
+  HINT: '#6a7390',
+  /** Cool grey — neutral body text on dark panels. */
+  COOL_GREY: '#c8d0e0',
 } as const;
