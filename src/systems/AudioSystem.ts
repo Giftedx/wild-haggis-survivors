@@ -69,6 +69,10 @@ export class AudioSystem {
   applyFromSettings(masterVolume: number, sfxVolume: number): void {
     this.sfxGainMultiplier = clamp01(masterVolume) * clamp01(sfxVolume);
     this.refreshOutputGain();
+    if (this.ambientGain) {
+      const ctx = this.ctx;
+      if (ctx) this.ambientGain.gain.setValueAtTime(0.08 * this.sfxGainMultiplier, ctx.currentTime);
+    }
   }
 
   private refreshOutputGain(): void {
@@ -230,7 +234,7 @@ export class AudioSystem {
     osc.frequency.value = 800 + Math.random() * 400;
     osc.frequency.exponentialRampToValueAtTime(1200 + Math.random() * 200, t + 0.05);
 
-    gain.gain.setValueAtTime(0.10, t);
+    gain.gain.setValueAtTime(0.14, t);
     gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
 
     osc.connect(gain);
@@ -418,6 +422,56 @@ export class AudioSystem {
     gain.connect(this.masterGain);
     osc.start(t);
     osc.stop(t + 1.0);
+  }
+
+  /** Short descending growl for boss enrage — sawtooth, darker than warning. */
+  playBossEnrage(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(220, t0);
+    osc.frequency.exponentialRampToValueAtTime(80, t0 + 0.25);
+
+    gain.gain.setValueAtTime(0.18, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.3);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.3);
+
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckBoss * 0.5);
+  }
+
+  /** Ascending tone for elite chain kills — pitch rises with count. */
+  playEliteChain(count: number): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+
+    const baseFreq = 440 + (count - 1) * 220;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(baseFreq, t0);
+    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, t0 + 0.12);
+
+    gain.gain.setValueAtTime(0.15, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.2);
   }
 
   /** Player death — descending wah-wah */
@@ -758,7 +812,7 @@ export class AudioSystem {
     // Very quiet — ambient should be felt, not heard
     const gain = ctx.createGain();
     gain.gain.value = 0;
-    gain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 1.5);
+    gain.gain.linearRampToValueAtTime(0.08 * this.sfxGainMultiplier, ctx.currentTime + 1.5);
 
     source.connect(lpf);
     lpf.connect(gain);

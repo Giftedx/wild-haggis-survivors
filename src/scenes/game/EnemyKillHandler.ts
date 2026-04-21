@@ -137,10 +137,12 @@ export class EnemyKillHandler {
         const g = BALANCE.enemy.eliteChainGoldSecond;
         score.addCoinGold(g);
         juice.showToast(t('ui.game.elite_chain_double', { gold: g }), '#e8c060');
+        audio.playEliteChain(2);
       } else if (nextCount >= 3) {
         const g = BALANCE.enemy.eliteChainGoldTriple;
         score.addCoinGold(g);
         juice.showToast(t('ui.game.elite_chain_triple', { gold: g }), '#ffdd44');
+        audio.playEliteChain(3);
         juice.flashWhite(100);
         score.eliteChainCount = 0;
         score.eliteChainLastGameSec = null;

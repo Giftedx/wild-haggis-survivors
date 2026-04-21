@@ -28,6 +28,7 @@ export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
   });
   const unsubBossEnraged = globalEventBus.on('bossEnraged', () => {
     hooks.getJuice().showToast(t('ui.game.boss_enraged'), COLORS_CSS.DANGER_RED);
+    audio.playBossEnrage();
   });
   const unsubCodexFirstCull = globalEventBus.on('CODEX_FIRST_CULL', (p) => {
     const name = getEnemyDisplayName(p.enemyKey);
