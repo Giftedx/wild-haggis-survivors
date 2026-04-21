@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, COLORS_CSS } from '../config';
+import { COLORS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -7,7 +7,7 @@ import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 import { brightenColor } from '../utils/brightenColor';
 import { clickToScene } from './clickToScene';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
@@ -210,19 +210,14 @@ export class CurseScene extends Phaser.Scene {
 
     // Pick button (bottom of tile)
     const btnY = cy + h / 2 - 26;
-    const btn = this.add
-      .rectangle(cx, btnY, w - 24, 32, opts.accentColor, 1)
-      .setInteractive({ useHandCursor: true });
-    this.add
-      .text(cx, btnY, t(opts.pickLabelKey), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    attachButtonHoverFill(btn, opts.accentColor, brightenColor(opts.accentColor, 15));
+    const { rect: btn, label: btnLabel } = createGameButton(this, {
+      x: cx, y: btnY, width: w - 24, height: 32,
+      label: t(opts.pickLabelKey), tier: 'primary',
+      fontSize: '12px',
+      fillOverride: opts.accentColor,
+      hoverOverride: brightenColor(opts.accentColor, 15),
+    });
+    btnLabel.setScale(uiScale);
     btn.on('pointerdown', opts.onPick);
   }
 }

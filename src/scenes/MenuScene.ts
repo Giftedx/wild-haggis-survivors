@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { COLORS, COLORS_CSS } from '../config';
+import { COLORS, COLORS_CSS, UI } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
@@ -75,7 +75,7 @@ export class MenuScene extends Phaser.Scene {
 
     addSceneBackdrop(this);
     this.add
-      .rectangle(width / 2, 106, width - 64, 184, this.highContrastUi ? 0x0a0f1b : 0x11172b, this.highContrastUi ? 0.78 : 0.58)
+      .rectangle(width / 2, 106, width - 64, 184, COLORS.PANEL, this.highContrastUi ? 0.78 : 0.58)
       .setStrokeStyle(2, this.highContrastUi ? 0x4e6ea2 : 0x263655, 0.9);
     this.add
       .rectangle(width / 2, layout.panelY, width - 40, layout.panelHeight + 18, 0x0d1323, 0.92)
@@ -420,7 +420,7 @@ export class MenuScene extends Phaser.Scene {
     if (unlocked && !selected) {
       this.variantSelectHit = badge;
       badge.setInteractive({ useHandCursor: true });
-      attachButtonHoverFill(badge, COLORS.SCOTTISH_BLUE, 0x0b73d1);
+      attachButtonHoverFill(badge, COLORS.SCOTTISH_BLUE, 0x0077dd);
       badge.on('pointerdown', () => {
         audio.playClick();
         this.selectVariant(variant.key);
@@ -434,7 +434,6 @@ export class MenuScene extends Phaser.Scene {
     const { rect: button, label: text } = createGameButton(this, {
       x, y, width: 38, height: 38, label,
       tier: 'tertiary', fontSize: '22px',
-      fillOverride: 0x24314f, hoverOverride: 0x304269, textColorOverride: '#ffffff',
     });
     // Shift text up 1px for visual alignment of < / > glyphs
     text.setY(y - 1);

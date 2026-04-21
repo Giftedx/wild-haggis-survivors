@@ -166,7 +166,7 @@ export class ShopScene extends Phaser.Scene {
       label: t('ui.shop.cost_gold', { cost }),
       tier: 'primary', fontSize: '13px',
       fillOverride: buyPalette.fillColor,
-      hoverOverride: canAfford ? 0x3a6a3a : buyPalette.fillColor,
+      hoverOverride: canAfford ? 0x0077dd : buyPalette.fillColor,
       textColorOverride: buyPalette.textColor,
     });
     buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
