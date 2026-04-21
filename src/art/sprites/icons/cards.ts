@@ -10,7 +10,7 @@
  */
 
 import Phaser from 'phaser';
-import { resolveKiltPalette } from '../../kiltPalette';
+import { resolveKiltPalette, HIGHLAND_TARTAN } from '../../kiltPalette';
 import { VARIANT_KEYS } from '../../../data/variants';
 
 /**
@@ -691,24 +691,24 @@ function drawTartanSash(scene: Phaser.Scene): void {
   g.fillStyle(0x3b1f2d, 1);
   g.fillTriangle(cx - 3, 7, cx + 3, 7, cx, 12);
 
-  // ── Sash body — thick diagonal red parallelogram from left
+  // ── Sash body — thick diagonal Highland tartan parallelogram from left
   // shoulder down to right waist. ──
-  g.fillStyle(0x3a0a0a, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillTriangle(cx - 10, 9, cx - 6, 9, cx + 10, 27);
   g.fillTriangle(cx - 10, 9, cx + 10, 27, cx + 6, 27);
-  g.fillStyle(0x8a1818, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillTriangle(cx - 9.5, 9.5, cx - 6.5, 9.5, cx + 9, 26.5);
   g.fillTriangle(cx - 9.5, 9.5, cx + 9, 26.5, cx + 6.5, 26.5);
-  g.fillStyle(0xaa2828, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillTriangle(cx - 8.5, 10, cx - 7, 10, cx + 8, 26);
   g.fillTriangle(cx - 8.5, 10, cx + 8, 26, cx + 6.5, 26);
 
   // ── Gold pinstripe down the sash axis. ──
-  g.fillStyle(0xdaaa40, 1);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 1);
   g.fillTriangle(cx - 8, 11, cx - 7.5, 11, cx + 7.5, 25.5);
   g.fillTriangle(cx - 8, 11, cx + 7.5, 25.5, cx + 7, 25.5);
   // Dark green secondary stripe
-  g.fillStyle(0x1a4418, 0.95);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.95);
   g.fillTriangle(cx - 9, 11.5, cx - 8.5, 11.5, cx + 7, 25);
   g.fillTriangle(cx - 9, 11.5, cx + 7, 25, cx + 6.5, 25);
 
@@ -734,7 +734,7 @@ function drawTartanSash(scene: Phaser.Scene): void {
   g.fillCircle(cx - 8.2, 9.8, 0.4);
 
   // ── Gold fringe tails at the waist end. ──
-  g.fillStyle(0xdaaa40, 1);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 1);
   g.fillRect(cx + 7, 26, 0.7, 3);
   g.fillRect(cx + 8, 26, 0.7, 3.5);
   g.fillRect(cx + 9, 26, 0.7, 2.8);

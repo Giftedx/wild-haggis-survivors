@@ -4,6 +4,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const ANGRY_SCOTSMAN_CANVAS_SIZE = 52;
 
@@ -29,12 +30,12 @@ export function drawAngryScotsmanBody(
   g.fillEllipse(cx - 5, cy + 21 + lly, 7, 3);
 
   // === Royal Stewart tartan kilt (THE kilt — bold, proud, swinging) ===
-  g.fillStyle(0x771111, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillRect(cx - 13, cy + 1, 26, 14);
-  g.fillStyle(0xcc2222, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillRect(cx - 12, cy + 2, 24, 12);
   // Green sett lines (horizontal + vertical)
-  g.fillStyle(0x114411, 0.8);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.8);
   g.fillRect(cx - 12, cy + 4, 24, 2);
   g.fillRect(cx - 12, cy + 10, 24, 2);
   g.fillRect(cx - 8, cy + 2, 2, 12);
@@ -49,11 +50,11 @@ export function drawAngryScotsmanBody(
   g.fillRect(cx - 12, cy + 3, 24, 1);
   g.fillRect(cx - 12, cy + 12, 24, 1);
   // Kilt pleats shadow (right side — back pleats visible at the side)
-  g.fillStyle(0x991111, 0.5);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 0.5);
   g.fillRect(cx + 10, cy + 2, 1, 12);
   g.fillRect(cx + 12, cy + 2, 1, 12);
   // Kilt swinging motion shadow (bottom edge — it's swinging as he charges)
-  g.fillStyle(0x661111, 0.4);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 0.4);
   g.fillRect(cx - 12, cy + 13, 24, 1);
   // Kilt pin (safety pin with clan crest — ornate)
   g.fillStyle(0xbbbbbb, 1);

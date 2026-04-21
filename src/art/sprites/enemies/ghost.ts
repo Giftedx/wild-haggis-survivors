@@ -11,6 +11,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const GHOST_CANVAS_SIZE = 40;
 
@@ -39,14 +40,14 @@ export function drawGhostBody(
 
   // ── Tartan bleed down the centre — red-and-black tartan panel so
   // the "Scots" anchor survives at scale. Semi-translucent. ──
-  g.fillStyle(0x6a1818, 0.55);
+  g.fillStyle(HIGHLAND_TARTAN.field, 0.55);
   g.fillRect(cx - 2.5, cy - 8, 5, 22);
   // Tartan crossbars
-  g.fillStyle(0x2a0a0a, 0.7);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.7);
   g.fillRect(cx - 2.5, cy - 5, 5, 1);
   g.fillRect(cx - 2.5, cy + 2, 5, 1);
   g.fillRect(cx - 2.5, cy + 9, 5, 1);
-  g.fillStyle(0xdaaa40, 0.6);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 0.6);
   g.fillRect(cx - 0.5, cy - 8, 1, 22);
 
   // ── Wispy gown bottom — ectoplasm trails instead of hem. ──

@@ -11,6 +11,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const EDINBURGH_GHOST_GUIDE_CANVAS_SIZE = 44;
 
@@ -103,12 +104,12 @@ export function drawEdinburghGhostGuideBody(
   // Sheen strip
   g.fillStyle(0x3a4858, 0.7);
   g.fillRect(cx - 5, cy - 19, 2, 5);
-  // RED TARTAN BAND — the anchor that says "Edinburgh tour"
-  g.fillStyle(0x8a1818, 1);
+  // TARTAN BAND — the anchor that says "Edinburgh tour"
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillRect(cx - 6, cy - 14.5, 12, 1.8);
-  g.fillStyle(0x2a0808, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillRect(cx - 6, cy - 14, 12, 0.5);
-  g.fillStyle(0xd8a848, 1);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 1);
   g.fillRect(cx - 3, cy - 14.5, 0.5, 1.8);
   g.fillRect(cx + 2.5, cy - 14.5, 0.5, 1.8);
   // Wide brim

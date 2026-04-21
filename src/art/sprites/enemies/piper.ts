@@ -4,6 +4,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const PIPER_CANVAS_SIZE = 48;
 
@@ -29,16 +30,16 @@ export function drawPiperBody(
   g.fillRect(cx + 2, cy + 12 + rly, 5, 1);
 
   // Kilt
-  g.fillStyle(0x001a44, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillRect(cx - 10, cy + 2, 20, 12);
-  g.fillStyle(0x003366, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillRect(cx - 9, cy + 3, 18, 10);
-  g.fillStyle(0x004488, 0.8);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.8);
   g.fillRect(cx - 9, cy + 6, 18, 1);
   g.fillRect(cx - 9, cy + 10, 18, 1);
   g.fillRect(cx - 4, cy + 3, 1, 10);
   g.fillRect(cx + 4, cy + 3, 1, 10);
-  g.fillStyle(0x2266aa, 0.5);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 0.5);
   g.fillRect(cx - 9, cy + 8, 18, 1);
 
   // Full dress sporran (white horsehair, silver cantle)
@@ -127,11 +128,11 @@ export function drawPiperBody(
   g.fillCircle(cx + 4, cy - 24, 1.5);
 
   // BAGPIPES (tartan bag under arm)
-  g.fillStyle(0x002244, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillEllipse(cx - 14, cy, 16, 14);
-  g.fillStyle(0x114466, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillEllipse(cx - 14, cy, 14, 12);
-  g.fillStyle(0x003366, 0.8);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.8);
   g.fillRect(cx - 20, cy - 2, 12, 1);
   g.fillRect(cx - 20, cy + 2, 12, 1);
   g.fillRect(cx - 16, cy - 5, 1, 10);

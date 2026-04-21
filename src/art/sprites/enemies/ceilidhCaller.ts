@@ -13,6 +13,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const CEILIDH_CALLER_CANVAS_SIZE = 42;
 
@@ -38,23 +39,23 @@ export function drawCeilidhCallerBody(
   g.fillStyle(0x4a3068, 1);
   g.fillTriangle(cx - 9, cy + 12, cx + 9, cy + 12, cx, cy);
 
-  // TARTAN SASH — RED+GREEN diagonal across chest (Highland anchor).
+  // TARTAN SASH — Highland tartan diagonal across chest (Scottish anchor).
   // From left shoulder down to right hip. Bold — this is the Scottish
   // tell that separates from generic conductor.
-  g.fillStyle(0x5a0808, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillTriangle(cx - 7, cy - 3, cx - 5, cy - 3, cx + 6, cy + 8);
   g.fillTriangle(cx - 5, cy - 3, cx + 6, cy + 8, cx + 8, cy + 8);
-  g.fillStyle(0xaa1818, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillTriangle(cx - 6.5, cy - 3, cx - 5.5, cy - 3, cx + 6.5, cy + 7.5);
   g.fillTriangle(cx - 5.5, cy - 3, cx + 6.5, cy + 7.5, cx + 7.5, cy + 7.5);
   // Green pinstripes on the sash (tartan cross-weave)
-  g.fillStyle(0x2a6a28, 1);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 1);
   g.fillRect(cx - 5, cy - 2, 1, 1);
   g.fillRect(cx - 2, cy + 1, 1, 1);
   g.fillRect(cx + 1, cy + 4, 1, 1);
   g.fillRect(cx + 4, cy + 7, 1, 1);
-  // Yellow pinstripes
-  g.fillStyle(0xffdd55, 0.9);
+  // Gold pinstripes
+  g.fillStyle(HIGHLAND_TARTAN.accent, 0.9);
   g.fillRect(cx - 3, cy - 1, 0.5, 0.5);
   g.fillRect(cx, cy + 2, 0.5, 0.5);
   g.fillRect(cx + 3, cy + 5, 0.5, 0.5);

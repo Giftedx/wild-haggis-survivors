@@ -11,6 +11,7 @@
 
 import Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
+import { HIGHLAND_TARTAN } from '../../kiltPalette';
 
 export const TOURIST_CANVAS_SIZE = 48;
 
@@ -125,17 +126,17 @@ export function drawTouristBody(
   g.fillRect(cx - 8, cy - 24, 16, 6);
   g.fillStyle(0x5a4028, 1);
   g.fillRect(cx - 7, cy - 23, 14, 5);
-  // Tartan crosshatch — Royal Stewart red
-  g.fillStyle(0xc82828, 0.9);
+  // Tartan crosshatch — Highland tartan
+  g.fillStyle(HIGHLAND_TARTAN.field, 0.9);
   g.fillRect(cx - 7, cy - 22, 14, 1.2);
   g.fillRect(cx - 7, cy - 20, 14, 1.2);
-  g.fillStyle(0x2a4028, 0.8);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.8);
   g.fillRect(cx - 5, cy - 23, 1, 5);
   g.fillRect(cx + 4, cy - 23, 1, 5);
-  g.fillStyle(0xc82828, 0.7);
+  g.fillStyle(HIGHLAND_TARTAN.field, 0.7);
   g.fillRect(cx - 1, cy - 23, 1, 5);
   g.fillRect(cx + 2, cy - 23, 1, 5);
-  g.fillStyle(0xfadc6a, 0.8);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 0.8);
   g.fillRect(cx - 5, cy - 22, 1, 1);
   g.fillRect(cx + 4, cy - 20, 1, 1);
 
@@ -167,22 +168,22 @@ export function drawTouristBody(
   // Hand holding the bag
   g.fillStyle(0xee9a78, 1);
   g.fillCircle(cx + 12, cy + 6, 1.5);
-  // Bag body — red + dark tartan
-  g.fillStyle(0x5a1010, 1);
+  // Bag body — Highland tartan
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillRect(cx + 10, cy + 7, 6, 8);
-  g.fillStyle(0x8a1818, 1);
+  g.fillStyle(HIGHLAND_TARTAN.field, 1);
   g.fillRect(cx + 10.5, cy + 7.5, 5, 7);
   // Tartan crosshatch on bag
-  g.fillStyle(0x2a0404, 0.9);
+  g.fillStyle(HIGHLAND_TARTAN.stripe, 0.9);
   g.fillRect(cx + 10.5, cy + 9, 5, 0.6);
   g.fillRect(cx + 10.5, cy + 11.5, 5, 0.6);
   g.fillRect(cx + 12, cy + 7.5, 0.5, 7);
   g.fillRect(cx + 14, cy + 7.5, 0.5, 7);
   // Gold thistle emblem on the bag
-  g.fillStyle(0xfadc6a, 1);
+  g.fillStyle(HIGHLAND_TARTAN.accent, 1);
   g.fillCircle(cx + 13, cy + 11, 1);
   // Bag handle
-  g.fillStyle(0x2a0404, 1);
+  g.fillStyle(HIGHLAND_TARTAN.fieldDark, 1);
   g.fillRect(cx + 11, cy + 6.5, 4, 1);
   g.fillRect(cx + 11, cy + 5, 1, 2);
   g.fillRect(cx + 14, cy + 5, 1, 2);
