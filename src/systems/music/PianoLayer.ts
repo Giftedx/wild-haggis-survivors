@@ -183,6 +183,20 @@ export class PianoLayer {
     f.linearRampToValueAtTime(base, time + 0.62);
   }
 
+  /**
+   * Short 2-note interval on biome entry — pitch follows biome timbre.
+   * Bog (timbre ~0.15): low root+fifth (D3-A3). Heather (timbre ~0.8): high (D4-A4).
+   * Quick and subtle — just enough to feel the shift.
+   */
+  playBiomeAccent(time: number, biomeTimbre: number): void {
+    if (!this.ctx || !this.filter) return;
+    // Root frequency: D3 (146.83) → D4 (293.66) based on timbre
+    const root = 146.83 + biomeTimbre * 146.83;
+    const fifth = root * 1.5; // Perfect fifth
+    this.playNote(root, time, 0.14, 0.6);
+    this.playNote(fifth, time + 0.08, 0.1, 0.5);
+  }
+
   stop(): void {
     for (let i = 0; i < this.voices.length; i++) {
       this.releaseVoice(i);

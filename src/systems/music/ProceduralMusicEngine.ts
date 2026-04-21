@@ -437,6 +437,12 @@ class ProceduralMusicEngine {
     }
   }
 
+  /** Short biome-entry accent — 2-note interval pitched to biome timbre. */
+  playBiomeAccent(biomeTimbre: number): void {
+    if (!this.ctx || !this.playing) return;
+    this.piano.playBiomeAccent(this.ctx.currentTime, biomeTimbre);
+  }
+
   isPlaying(): boolean { return this.playing; }
 
   /**

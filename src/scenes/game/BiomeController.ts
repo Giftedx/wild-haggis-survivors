@@ -16,6 +16,7 @@ import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { RNG } from '../../utils/rng';
 import { t } from '../../core/i18n';
+import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 
 export class BiomeController {
   private manager: BiomeManager;
@@ -45,6 +46,7 @@ export class BiomeController {
       const def = BIOMES[current];
       juice.showToast(t(def.entryToastKey), def.toastColor);
       juice.biomeEntryBurst(player.x, player.y, current);
+      musicEngine.playBiomeAccent(def.moodTimbre);
     }
     player.setBiomeModifier(BIOMES[current].modifier);
   }
