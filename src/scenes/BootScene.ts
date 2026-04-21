@@ -378,6 +378,7 @@ export class BootScene extends Phaser.Scene {
               : `${drawer.id}_${state}_${frame}`;
             g.generateTexture(key, 80, 80);
             g.destroy();
+            applyOutline(this, key, 80, 80);
           }
         }
       }
