@@ -26,7 +26,7 @@ import {
   resolveVariantTallyColor,
 } from './variantPanelStyle';
 import { computeMenuLayout } from './menuLayout';
-import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
+import { startSceneFadeOut, addSceneBackdrop, SCENE_FADE_OUT_MS } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
 import { createGameButton } from '../ui/gameButton';
@@ -54,6 +54,7 @@ export class MenuScene extends Phaser.Scene {
   private carouselLeftHit: Phaser.GameObjects.Rectangle | null = null;
   private carouselRightHit: Phaser.GameObjects.Rectangle | null = null;
   private variantSelectHit: Phaser.GameObjects.Rectangle | null = null;
+  private floatingDots: Phaser.GameObjects.Arc[] = [];
 
   constructor() {
     super({ key: 'Menu' });
@@ -80,6 +81,7 @@ export class MenuScene extends Phaser.Scene {
       .rectangle(width / 2, layout.panelY, width - 40, layout.panelHeight + 18, 0x0d1323, 0.92)
       .setStrokeStyle(2, 0x31476e, 0.95);
 
+    this.floatingDots = [];
     for (let i = 0; i < 24; i++) {
       const dot = this.add.circle(
         Phaser.Math.Between(30, width - 30),
@@ -96,6 +98,7 @@ export class MenuScene extends Phaser.Scene {
         repeat: -1,
         yoyo: true,
       });
+      this.floatingDots.push(dot);
     }
 
     this.mascot = this.add
@@ -239,6 +242,10 @@ export class MenuScene extends Phaser.Scene {
       audio.stopAmbientWind();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
+      for (const dot of this.floatingDots) {
+        try { this.tweens.killTweensOf(dot); } catch { /* ignore */ }
+      }
+      this.floatingDots.length = 0;
     });
 
     this.add
@@ -513,7 +520,7 @@ export class MenuScene extends Phaser.Scene {
   private fadeToScene(key: string): void {
     if (this.transitioning) return;
     this.transitioning = true;
-    startSceneFadeOut(this, 500, () => this.scene.start(key));
+    startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start(key));
   }
 
   private createToggle(

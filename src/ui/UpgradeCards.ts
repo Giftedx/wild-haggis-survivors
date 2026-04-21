@@ -134,6 +134,7 @@ export class UpgradeCardsUI {
       rerollBtn.on('pointerout', () => rerollBtn.setColor(titleColor));
       rerollBtn.on('pointerdown', () => {
         if (this.rerollsLeft > 0) {
+          audio.playClick();
           this.rerollsLeft--;
           this.hide();
           this.onReroll!();
@@ -220,7 +221,7 @@ export class UpgradeCardsUI {
           scale: { from: 0.5, to: 1.5 },
           y: sy - 15,
           duration: 800 + s * 200,
-          delay: s * 300,
+          delay: s * 120,
           yoyo: true,
           repeat: -1,
         });
