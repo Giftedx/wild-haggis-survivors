@@ -20,3 +20,15 @@
 export function numberToCssColor(color: number): string {
   return `#${(color & 0xffffff).toString(16).padStart(6, '0')}`;
 }
+
+/**
+ * Darken a 0xRRGGBB colour by `percent` (0–100). Pure math — no
+ * Phaser import, safe for node-env vitest.
+ */
+export function darkenHex(color: number, percent: number): number {
+  const factor = 1 - Math.min(percent, 100) / 100;
+  const r = Math.round(((color >> 16) & 0xff) * factor);
+  const g = Math.round(((color >> 8) & 0xff) * factor);
+  const b = Math.round((color & 0xff) * factor);
+  return (r << 16) | (g << 8) | b;
+}

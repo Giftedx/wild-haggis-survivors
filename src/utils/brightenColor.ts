@@ -14,11 +14,3 @@ import Phaser from 'phaser';
 export function brightenColor(color: number, percent: number): number {
   return Phaser.Display.Color.ValueToColor(color).lighten(percent).color;
 }
-
-/**
- * Darken a Phaser 0xRRGGBB colour number by `percent` points
- * (matches `Phaser.Display.Color.darken(n)`).
- */
-export function darkenColor(color: number, percent: number): number {
-  return Phaser.Display.Color.ValueToColor(color).darken(percent).color;
-}

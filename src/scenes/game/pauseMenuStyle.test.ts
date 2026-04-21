@@ -60,11 +60,11 @@ describe('resolvePauseMenuStyle — title stroke (2×2 table)', () => {
 });
 
 describe('resolvePauseMenuStyle — backdrop alpha', () => {
-  it('HC-off uses 0.85', () => {
-    expect(resolvePauseMenuStyle(600, false).backdropAlpha).toBe(0.85);
+  it('HC-off uses standard overlay alpha', () => {
+    expect(resolvePauseMenuStyle(600, false).backdropAlpha).toBe(0.82);
   });
-  it('HC-on uses 0.95 (darker for contrast)', () => {
-    expect(resolvePauseMenuStyle(600, true).backdropAlpha).toBe(0.95);
+  it('HC-on uses high-contrast overlay alpha', () => {
+    expect(resolvePauseMenuStyle(600, true).backdropAlpha).toBe(0.92);
   });
 });
 
