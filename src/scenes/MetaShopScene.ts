@@ -16,7 +16,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
-import { createGameButton } from '../ui/gameButton';
+import { createGameButton, setGameButtonDisabled } from '../ui/gameButton';
 import { clickToScene } from './clickToScene';
 import { audio } from '../systems/AudioSystem';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -188,7 +188,7 @@ export class MetaShopScene extends Phaser.Scene {
       buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
       if (!canAfford) {
-        buyButton.disableInteractive();
+        setGameButtonDisabled({ rect: buyButton, label: buyText }, true, buyPalette.fillColor);
       } else {
         buyButton.on('pointerdown', () => this.tryBuy(key));
         entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });

@@ -16,7 +16,7 @@ import { addSceneFadeIn, startSceneFadeOut, SCENE_FADE_OUT_MS } from './sceneFad
 import { playPurchaseBurst } from './purchaseBurst';
 import { installShopBackdrop } from './installShopBackdrop';
 import { clearGameObjects } from '../utils/clearGameObjects';
-import { createGameButton } from '../ui/gameButton';
+import { createGameButton, setGameButtonDisabled } from '../ui/gameButton';
 import { audio } from '../systems/AudioSystem';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -172,7 +172,7 @@ export class ShopScene extends Phaser.Scene {
     buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
     if (!canAfford) {
-      buyButton.disableInteractive();
+      setGameButtonDisabled({ rect: buyButton, label: buyText }, true, buyPalette.fillColor);
     } else {
       buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade, rowState));
     }
