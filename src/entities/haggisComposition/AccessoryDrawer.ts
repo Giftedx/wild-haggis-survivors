@@ -13,11 +13,16 @@ export interface AccessoryDrawCtx {
   readonly variantPalette: VariantPalette;
   readonly state: AnimationState;
   readonly frame: number;
+  /** Variant key for accessories that derive colors from the active variant (e.g. kilt tartan). */
+  readonly variantKey?: string;
 }
 
 export interface AccessoryDrawer {
   readonly id: string;
   readonly layer: HaggisLayerSlot;
+  /** When true, this accessory's atlas is baked per-variant and its
+   *  AnimationController receives the variant key for texture lookups. */
+  readonly variantAware?: boolean;
   /**
    * Authored state × frame pairs. Only states in this list get atlases;
    * others fall back to idle frame 0 (the accessory doesn't animate

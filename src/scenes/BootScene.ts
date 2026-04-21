@@ -338,21 +338,27 @@ export class BootScene extends Phaser.Scene {
     const startMs = performance.now();
     for (const drawer of Object.values(ACCESSORY_REGISTRY)) {
       const authored = new Set<AnimationState>(drawer.authoredStates);
-      for (const state of ALL_ANIMATION_STATES) {
-        const frameCount = getFrameCountForState(state);
-        for (let frame = 0; frame < frameCount; frame++) {
-          const g = this.add.graphics();
-          // Unauthored states fall back to the drawer's idle frame 0 —
-          // rigid accessories ride the head anchor without per-state
-          // motion. Authored states get their own beat.
-          if (authored.has(state)) {
-            drawer.draw(g, { variantPalette: CLASSIC_VARIANT, state, frame });
-          } else {
-            drawer.draw(g, { variantPalette: CLASSIC_VARIANT, state: 'idle', frame: 0 });
+      // Variant-aware accessories (e.g. kilt) are baked once per variant;
+      // all others are baked once with no variant suffix.
+      const variantList = drawer.variantAware
+        ? VARIANTS.map((v) => v.key)
+        : [null];
+      for (const variantKey of variantList) {
+        for (const state of ALL_ANIMATION_STATES) {
+          const frameCount = getFrameCountForState(state);
+          for (let frame = 0; frame < frameCount; frame++) {
+            const g = this.add.graphics();
+            const ctx = authored.has(state)
+              ? { variantPalette: CLASSIC_VARIANT, state, frame, variantKey: variantKey ?? undefined }
+              : { variantPalette: CLASSIC_VARIANT, state: 'idle' as AnimationState, frame: 0, variantKey: variantKey ?? undefined };
+            drawer.draw(g, ctx);
+            // Variant-aware: `kilt_classic_idle_0`; generic: `sporran_idle_0`
+            const key = variantKey !== null
+              ? `${drawer.id}_${variantKey}_${state}_${frame}`
+              : `${drawer.id}_${state}_${frame}`;
+            g.generateTexture(key, 80, 80);
+            g.destroy();
           }
-          const key = `${drawer.id}_${state}_${frame}`;
-          g.generateTexture(key, 80, 80);
-          g.destroy();
         }
       }
     }

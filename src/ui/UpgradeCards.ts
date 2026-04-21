@@ -36,6 +36,8 @@ export class UpgradeCardsUI {
   private rerollsLeft: number = 0;
   private uiScale: number = 1;
   private highContrastUi: boolean = false;
+  /** Active haggis variant key — used to pick variant-specific card icons (kilt tartan). */
+  private variantKey: string = 'classic';
   /** 1/2/3 keyboard shortcut handler — installed in show(), removed in hide(). */
   private keyHandler?: (e: KeyboardEvent) => void;
 
@@ -43,6 +45,11 @@ export class UpgradeCardsUI {
     this.scene = scene;
     this.onSelect = onSelect;
     this.tickers = tickers;
+  }
+
+  /** Set the active variant key so kilt card icons match the run's tartan. */
+  setVariantKey(key: string): void {
+    this.variantKey = key;
   }
 
   /** Resolve a font size in CSS px from a base px, rounded for crisp bitmap text. */
@@ -220,12 +227,17 @@ export class UpgradeCardsUI {
       }
     }
 
-    if (this.scene.textures && !this.scene.textures.exists(card.icon)) {
-      throw new Error(`Missing upgrade card icon texture: ${card.icon} (${card.id})`);
+    // Resolve variant-specific icon for the kilt card (tartan matches active variant).
+    const iconKey = card.icon === 'ucard_kilt'
+      ? `ucard_kilt_${this.variantKey}`
+      : card.icon;
+
+    if (this.scene.textures && !this.scene.textures.exists(iconKey)) {
+      throw new Error(`Missing upgrade card icon texture: ${iconKey} (${card.id})`);
     }
 
     // Card icon — leave headroom for title + body + footer (rarity strip).
-    const icon = this.scene.add.sprite(x, y - 72, card.icon)
+    const icon = this.scene.add.sprite(x, y - 72, iconKey)
       .setScale(1.4).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 

@@ -147,6 +147,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private celebrateEdgeThisFrame = false;
   private animStateOverride: AnimationState | null = null;
   private haggisContainer!: HaggisContainer;
+  /** Stored so variant-aware accessories (kilt) use the correct atlas. */
+  private variantKey: string = 'classic';
   private ownedAccessories: Array<{
     id: string;
     drawer: AccessoryDrawer;
@@ -239,6 +241,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const variantKey = textureKey.startsWith('haggis_')
       ? textureKey.slice('haggis_'.length)
       : 'classic';
+    this.variantKey = variantKey;
     this.animController = new AnimationController({
       sprite: this,
       subject: 'haggis',
@@ -667,15 +670,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
     if (this.ownedAccessories.some((a) => a.id === id)) return; // no-op on re-equip
 
+    // Variant-aware accessories (kilt) have per-variant atlas textures;
+    // others use the variant-agnostic atlas.
+    const variant = drawer.variantAware ? this.variantKey : null;
+    const initialKey = variant !== null
+      ? `${id}_${variant}_idle_0`
+      : `${id}_idle_0`;
     const layerSprite = this.haggisContainer.equipLayer(
       id,
       drawer.layer,
-      `${id}_idle_0`, // start on idle frame 0
+      initialKey,
     );
     const controller = new AnimationController({
       sprite: layerSprite,
       subject: id,
-      variant: null, // accessory atlases are variant-agnostic in Phase 0
+      variant,
     });
     this.ownedAccessories.push({ id, drawer, controller });
   }

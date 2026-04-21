@@ -222,7 +222,7 @@ export class CombinationsPreviewScene extends Phaser.Scene {
     if (included.has('loch_water')) drawSprite(`loch_water_${state}_${frame}`);
     if (included.has('highland_shield')) drawSprite(`highland_shield_${state}_${frame}`);
     drawSprite(`haggis_${variantKey}_${state}_${frame}`);
-    if (included.has('kilt')) drawSprite(`kilt_${state}_${frame}`);
+    if (included.has('kilt')) drawSprite(`kilt_${variantKey}_${state}_${frame}`);
     if (included.has('tartan_sash')) drawSprite(`tartan_sash_${state}_${frame}`);
     if (included.has('sporran')) drawSprite(`sporran_${state}_${frame}`);
     if (included.has('whisky_flask')) drawSprite(`whisky_flask_${state}_${frame}`);

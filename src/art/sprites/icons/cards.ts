@@ -10,6 +10,8 @@
  */
 
 import Phaser from 'phaser';
+import { resolveKiltPalette } from '../../kiltPalette';
+import { VARIANT_KEYS } from '../../../data/variants';
 
 /**
  * Shared card icon background — dark border, tinted interior, subtle
@@ -202,27 +204,37 @@ function drawWhiskyFlask(scene: Phaser.Scene): void {
   g.destroy();
 }
 
-function drawKilt(scene: Phaser.Scene): void {
+/** Darken a hex color by multiplying each channel. */
+function darkenHex(hex: number, factor: number): number {
+  const r = Math.floor(((hex >> 16) & 0xff) * factor);
+  const gg = Math.floor(((hex >> 8) & 0xff) * factor);
+  const b = Math.floor((hex & 0xff) * factor);
+  return (r << 16) | (gg << 8) | b;
+}
+
+function drawKilt(scene: Phaser.Scene, variantKey: string = 'classic'): void {
   const s = 32, g = scene.add.graphics();
-  cardIconBg(g, s, 0x1d2d5a);
+  const palette = resolveKiltPalette(variantKey);
+  const bgColor = darkenHex(palette.field, 0.3);
+  cardIconBg(g, s, bgColor);
   const cx = 16;
-  g.fillStyle(0x1a3a6a, 1);
+  g.fillStyle(palette.fieldDark, 1);
   g.fillRect(cx - 10, 8, 20, 18);
-  g.fillStyle(0x2a4a8a, 1);
+  g.fillStyle(palette.field, 1);
   g.fillRect(cx - 9, 9, 18, 16);
-  g.fillStyle(0x3a6aaa, 0.7);
+  g.fillStyle(palette.stripe, 0.7);
   g.fillRect(cx - 6, 9, 2, 16);
   g.fillRect(cx + 1, 9, 2, 16);
   g.fillRect(cx + 6, 9, 2, 16);
-  g.fillStyle(0x5a88cc, 0.5);
+  g.fillStyle(palette.stripe, 0.5);
   g.fillRect(cx - 9, 12, 18, 1);
   g.fillRect(cx - 9, 17, 18, 1);
   g.fillRect(cx - 9, 22, 18, 1);
-  g.fillStyle(0xcc3344, 0.6);
+  g.fillStyle(palette.accent, 0.6);
   g.fillRect(cx - 9, 14, 18, 1);
   g.fillRect(cx - 9, 20, 18, 1);
   g.fillRect(cx - 2, 9, 1, 16);
-  g.fillStyle(0x0a1a3a, 0.4);
+  g.fillStyle(darkenHex(palette.fieldDark, 0.5), 0.4);
   g.fillRect(cx - 4, 9, 1, 16);
   g.fillRect(cx + 4, 9, 1, 16);
   g.fillStyle(0x2a1a0a, 1);
@@ -233,7 +245,13 @@ function drawKilt(scene: Phaser.Scene): void {
   g.fillRect(cx - 2, 7, 4, 3);
   g.fillStyle(0xffdd66, 1);
   g.fillRect(cx - 1, 8, 2, 1);
-  g.generateTexture('ucard_kilt', s, s);
+  // Classic variant keeps the backwards-compat 'ucard_kilt' key;
+  // all variants also get 'ucard_kilt_<key>'.
+  const variantTexKey = `ucard_kilt_${variantKey}`;
+  g.generateTexture(variantTexKey, s, s);
+  if (variantKey === 'classic') {
+    g.generateTexture('ucard_kilt', s, s);
+  }
   g.destroy();
 }
 
@@ -1355,7 +1373,10 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   // Accessory passive cards
   drawSporran(scene);
   drawWhiskyFlask(scene);
-  drawKilt(scene);
+  // Kilt card icon baked per-variant so the card matches the active tartan.
+  for (const vk of VARIANT_KEYS) {
+    drawKilt(scene, vk);
+  }
   drawTamOShanter(scene);
   drawIrnBru(scene);
   drawLochWater(scene);

@@ -758,6 +758,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
     this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
+    this.upgradeUI.setVariantKey(this.activeVariant.key);
 
     // Enemy kill cascade: XP gem, elite chain, juice, drops, boss celebration,
     // victory trigger. Hooks use lazy getters so pickupSpawner / runLifecycle
