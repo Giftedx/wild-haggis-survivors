@@ -40,6 +40,8 @@ import {
   JUICE_EVOLUTION_BANNER_LINE_COLOR,
   JUICE_EVOLUTION_BANNER_BG_COLOR,
 } from './juiceGoldPalette';
+import { TOAST_COLORS } from '../ui/toastPalette';
+import { RING_TIMING, FLASH_TIMING } from './effectTimingPresets';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -222,9 +224,9 @@ export class JuiceSystem {
         this.comboCount = 0;
         this.syncComboText();
         if (droppedCount >= 30) {
-          this.showToast(t('ui.game.combo_dropped_big', { count: droppedCount }), '#8a7a6a');
+          this.showToast(t('ui.game.combo_dropped_big', { count: droppedCount }), TOAST_COLORS.info);
         } else if (droppedCount >= 15) {
-          this.showToast(t('ui.game.combo_dropped', { count: droppedCount }), '#6a5a4a');
+          this.showToast(t('ui.game.combo_dropped', { count: droppedCount }), TOAST_COLORS.info);
         }
       }
     }
@@ -299,7 +301,7 @@ export class JuiceSystem {
   /** Visual burst when an enemy dies — colored particles + combo tracking */
   showKillBurst(x: number, y: number, color: number = 0xcc4444): void {
     const lowFx = this.settings.load().reduceParticles;
-    const dots = lowFx ? 3 : 6;
+    const dots = scaledParticleCount(lowFx ? 3 : 6, 2);
     // Particle burst — pooled dots scatter outward
     for (let i = 0; i < dots; i++) {
       const angle = (i / dots) * Math.PI * 2;
@@ -336,7 +338,7 @@ export class JuiceSystem {
       targets: ring,
       radius: 20,
       alpha: 0,
-      duration: 200,
+      duration: RING_TIMING.tight,
       onComplete: () => ring.setVisible(false),
     });
 
@@ -392,8 +394,8 @@ export class JuiceSystem {
         const pl = this.scene.getPlayer();
         pl.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');
-        this.showToast(msg, '#a0d8a0');
-        this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, '#a0d8a0');
+        this.showToast(msg, TOAST_COLORS.positive);
+        this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, TOAST_COLORS.positive);
         audio.playCeilidhPulse();
         this.scene.getTutorialSystem().notifyCeilidhChainIfFirst();
         bumpCeilidhPulsesLifetime();
@@ -417,20 +419,20 @@ export class JuiceSystem {
 
       if (this.comboCount === 11) {
         const msg = t('ui.game.combo_11');
-        this.showToast(msg, '#ffdd44');
-        this.scene.caption?.(`combo_11`, msg, '#ffdd44');
+        this.showToast(msg, TOAST_COLORS.reward);
+        this.scene.caption?.(`combo_11`, msg, TOAST_COLORS.reward);
       } else if (this.comboCount === 50) {
         const msg = t('ui.game.combo_50');
-        this.showToast(msg, '#ffdd44');
-        this.scene.caption?.(`combo_50`, msg, '#ffdd44');
+        this.showToast(msg, TOAST_COLORS.reward);
+        this.scene.caption?.(`combo_50`, msg, TOAST_COLORS.reward);
       } else if (this.comboCount === 100) {
         const msg = t('ui.game.combo_100');
-        this.showToast(msg, '#ff8844');
-        this.scene.caption?.(`combo_100`, msg, '#ff8844');
+        this.showToast(msg, TOAST_COLORS.warning);
+        this.scene.caption?.(`combo_100`, msg, TOAST_COLORS.warning);
       } else if (this.comboCount === 200) {
         const msg = t('ui.game.combo_200');
-        this.showToast(msg, '#ff8844');
-        this.scene.caption?.(`combo_200`, msg, '#ff8844');
+        this.showToast(msg, TOAST_COLORS.warning);
+        this.scene.caption?.(`combo_200`, msg, TOAST_COLORS.warning);
       }
     }
   }
@@ -442,7 +444,7 @@ export class JuiceSystem {
   showMoorMomentBurst(x: number, y: number, tint?: number): void {
     const s = this.settings.load();
     const lowFx = s.reduceParticles;
-    const dots = lowFx ? 5 : 11;
+    const dots = scaledParticleCount(lowFx ? 5 : 11, 3);
     const color = tint ?? 0xe8c896;
     const wobble = Phaser.Math.FloatBetween(0, Math.PI * 2);
     for (let i = 0; i < dots; i++) {
@@ -481,7 +483,7 @@ export class JuiceSystem {
       targets: ring,
       radius: 52,
       alpha: 0,
-      duration: 400,
+      duration: RING_TIMING.medium,
       ease: 'Sine.easeOut',
       onComplete: () => ring.setVisible(false),
     });
@@ -725,7 +727,7 @@ export class JuiceSystem {
     const lowFx = this.settings.load().reduceParticles;
     const shakeOn = this.settings.load().screenShake;
     // Big white flash
-    this.flashWhite(400);
+    this.flashWhite(FLASH_TIMING.long);
 
     const bossDeathShake = resolveScreenShakeParams(
       BOSS_DEATH_SHAKE_BASE_AMP,
@@ -876,7 +878,7 @@ export class JuiceSystem {
     const shakeOn = this.settings.load().screenShake;
 
     // 1. Heavy white-to-gold flash (bigger than normal flashWhite)
-    this.flashWhite(500);
+    this.flashWhite(FLASH_TIMING.epic);
 
     // 2. Hit-freeze for dramatic pause (50ms — longer than combat freeze)
     if (!lowFx) {
@@ -940,7 +942,7 @@ export class JuiceSystem {
         targets: ring,
         scale: 10 + r * 3,
         alpha: 0,
-        duration: 700 + r * 150,
+        duration: RING_TIMING.grand + r * 150,
         delay: r * 80,
         ease: 'Quad.easeOut',
         onComplete: () => ring.destroy(),

@@ -25,6 +25,7 @@ import { audio } from '../../systems/AudioSystem';
 import { pickNearbyPosition } from './nearbySpawn';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 import { pulsePickupGlow } from './pickupGlowPulse';
+import { TOAST_COLORS } from '../../ui/toastPalette';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -62,7 +63,7 @@ export class PickupSpawner {
       rand: Math.random,
     });
 
-    this.hooks.getJuice().showToast(t('ui.game.treasure_nearby'), '#ffcc44');
+    this.hooks.getJuice().showToast(t('ui.game.treasure_nearby'), TOAST_COLORS.reward);
 
     // Create a glowing chest with sprite
     const chest = scene.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5);
@@ -70,7 +71,7 @@ export class PickupSpawner {
     const glow = scene.add.circle(x, y, 18, COLORS.WHISKY_GOLD, 0.2).setDepth(4);
 
     // Pulsing glow animation
-    pulsePickupGlow(scene, glow, 1.5, 800);
+    pulsePickupGlow(scene, glow, 1.5, 700);
 
     // Floating bob animation
     scene.tweens.add({
@@ -214,13 +215,13 @@ export class PickupSpawner {
       rand: Math.random,
     });
 
-    this.hooks.getJuice().showToast(t('ui.game.golden_nearby'), '#ffaa00');
+    this.hooks.getJuice().showToast(t('ui.game.golden_nearby'), TOAST_COLORS.reward);
 
     const chest = scene.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5).setTint(0xffdd44);
     this.hooks.trackChest(chest, true);
     const glow = scene.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
 
-    pulsePickupGlow(scene, glow, 1.6, 700);
+    pulsePickupGlow(scene, glow, 1.5, 700);
     scene.tweens.add({ targets: chest, y: y - 4, duration: 500, ...TWEEN_INFINITE_BREATHE });
 
     scene.physics.add.existing(chest, true);
@@ -233,7 +234,7 @@ export class PickupSpawner {
       despawnHandle?.cancel();
       const goldReward = Phaser.Math.Between(5, 15);
       this.hooks.onCoinCollected(goldReward);
-      this.hooks.getJuice().showToast(t('ui.game.golden_collected', { gold: goldReward }), '#ffaa00');
+      this.hooks.getJuice().showToast(t('ui.game.golden_collected', { gold: goldReward }), TOAST_COLORS.reward);
       this.hooks.getJuice().flashWhite(150);
       audio.playLevelUp();
       scene.tweens.killTweensOf(glow); scene.tweens.killTweensOf(chest);
@@ -324,7 +325,7 @@ export class PickupSpawner {
     const orb = scene.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
     const glow = scene.add.circle(x, y, 10, 0x44dd44, 0.3).setDepth(4);
 
-    pulsePickupGlow(scene, glow, 1.4, 600);
+    pulsePickupGlow(scene, glow, 1.5, 700);
 
     scene.physics.add.existing(orb, true);
     let collected = false;
