@@ -159,11 +159,11 @@ export class AudioSystem {
     const gain = ctx.createGain();
 
     const presets: Record<EliteAffixId, { f0: number; f1: number; type: OscillatorType; dur: number }> = {
-      swift: { f0: 520, f1: 1240, type: 'sine', dur: 0.1 },
+      swift: { f0: 440, f1: 880, type: 'sine', dur: 0.1 },
       bulwark: { f0: 110, f1: 95, type: 'sine', dur: 0.14 },
       relentless: { f0: 180, f1: 140, type: 'square', dur: 0.1 },
       wealthy: { f0: 740, f1: 990, type: 'triangle', dur: 0.1 },
-      volatile: { f0: 420, f1: 70, type: 'sawtooth', dur: 0.12 },
+      volatile: { f0: 440, f1: 55, type: 'sawtooth', dur: 0.12 },
     };
     const p = presets[affixId];
     osc.type = p.type;
@@ -290,7 +290,7 @@ export class AudioSystem {
     if (!ctx || !this.masterGain) return;
     this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckLevelUp);
 
-    const notes = [523, 659, 784]; // C5, E5, G5
+    const notes = [440, 523, 659]; // A4, C5, E5
     const t = ctx.currentTime;
 
     notes.forEach((freq, i) => {
@@ -321,10 +321,10 @@ export class AudioSystem {
     this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
 
     const t0 = ctx.currentTime;
-    // Two notes: C5 then G5, each with a pair of slightly detuned oscillators
+    // Two notes: A4 then E5, each with a pair of slightly detuned oscillators
     const notes = [
-      { freq: 523, start: 0 },
-      { freq: 784, start: 0.12 },
+      { freq: 440, start: 0 },
+      { freq: 659, start: 0.12 },
     ];
 
     for (const note of notes) {
@@ -358,8 +358,8 @@ export class AudioSystem {
     const gain = ctx.createGain();
     osc.type = 'sine';
     applySfxDetune(osc);
-    osc.frequency.setValueAtTime(660, t0);
-    osc.frequency.exponentialRampToValueAtTime(990, t0 + 0.1);
+    osc.frequency.setValueAtTime(587, t0);
+    osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.1);
     gain.gain.setValueAtTime(0, t0);
     gain.gain.linearRampToValueAtTime(0.16, t0 + 0.015);
     gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
@@ -659,7 +659,7 @@ export class AudioSystem {
     if (!ctx || !this.masterGain) return;
 
     const t = ctx.currentTime;
-    const freqs = [392.0, 493.88, 587.33]; // G4, B4, D5
+    const freqs = [392.0, 440.0, 587.33]; // G4, A4, D5
     const freq = freqs[Math.min(index, freqs.length - 1)];
 
     const osc = ctx.createOscillator();
@@ -750,7 +750,7 @@ export class AudioSystem {
 
       osc.type = 'sine';
       applySfxDetune(osc);
-      osc.frequency.value = 700;
+      osc.frequency.value = 392;
 
       gain.gain.setValueAtTime(0.1, t);
       gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
