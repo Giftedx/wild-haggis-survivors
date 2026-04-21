@@ -22,6 +22,7 @@ import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { ShopAmbientLoop } from '../systems/music/ShopAmbientLoop';
+import { textStyle } from '../ui/typography';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -52,23 +53,15 @@ export class ShopScene extends Phaser.Scene {
     installShopBackdrop(this);
 
     this.add
-      .text(width / 2, 32, t('ui.shop.title'), {
-        fontFamily: 'monospace',
-        fontSize: '36px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 5,
-      })
+      .text(width / 2, 32, t('ui.shop.title'),
+        textStyle('title', { fontSize: '36px', color: COLORS_CSS.WHISKY_GOLD }),
+      )
       .setOrigin(0.5);
 
     this.goldText = this.add
-      .text(width / 2, 70, '', {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        fontStyle: 'bold',
-      })
+      .text(width / 2, 70, '',
+        textStyle('body', { fontSize: '20px', color: COLORS_CSS.WHISKY_GOLD }),
+      )
       .setOrigin(0.5);
 
     const lineGfx = this.add.graphics();
@@ -78,12 +71,9 @@ export class ShopScene extends Phaser.Scene {
     lineGfx.lineBetween(24, 548, width - 24, 548);
 
     this.pageText = this.add
-      .text(width / 2, 528, '', {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: '#b8a88a',
-        fontStyle: 'bold',
-      })
+      .text(width / 2, 528, '',
+        textStyle('body', { fontSize: '14px', color: '#b8a88a' }),
+      )
       .setOrigin(0.5);
 
     this.updateHeader();
@@ -142,18 +132,12 @@ export class ShopScene extends Phaser.Scene {
       resolveShopRowBgColor(index),
       0.82
     );
-    const nameText = this.add.text(34, y + 3, t(upgrade.nameKey), {
-      fontFamily: 'monospace',
-      fontSize: '15px',
-      color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE,
-      fontStyle: 'bold',
-    });
-    const descText = this.add.text(34, y + 21, t(upgrade.descriptionKey), {
-      fontFamily: 'monospace',
-      fontSize: '11px',
-      color: '#9ea7b9',
-      wordWrap: { width: 320 },
-    });
+    const nameText = this.add.text(34, y + 3, t(upgrade.nameKey),
+      textStyle('body', { fontSize: '15px', color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE }),
+    );
+    const descText = this.add.text(34, y + 21, t(upgrade.descriptionKey),
+      textStyle('small', { color: '#9ea7b9', wordWrap: { width: 320 } }),
+    );
 
     this.rowElements.push(rowBg, nameText, descText);
 
@@ -168,12 +152,9 @@ export class ShopScene extends Phaser.Scene {
 
     if (isMaxed) {
       const maxLabel = this.add
-        .text(width - 74, y + 16, t('ui.shop.max'), {
-          fontFamily: 'monospace',
-          fontSize: '14px',
-          color: '#73c37d',
-          fontStyle: 'bold',
-        })
+        .text(width - 74, y + 16, t('ui.shop.max'),
+          textStyle('body', { fontSize: '14px', color: '#73c37d' }),
+        )
         .setOrigin(0.5);
       this.rowElements.push(maxLabel);
       return;

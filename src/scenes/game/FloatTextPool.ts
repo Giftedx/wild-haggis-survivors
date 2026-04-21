@@ -9,6 +9,7 @@
  */
 import Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
+import { textStyle } from '../../ui/typography';
 
 const POOL_SIZE = 12;
 
@@ -25,14 +26,7 @@ export class FloatTextPool {
     this.items = [];
     for (let i = 0; i < POOL_SIZE; i++) {
       const ft = scene.add
-        .text(0, 0, '', {
-          fontFamily: 'monospace',
-          fontSize: '16px',
-          color: COLORS_CSS.WHITE,
-          fontStyle: 'bold',
-          stroke: '#000',
-          strokeThickness: 3,
-        })
+        .text(0, 0, '', textStyle('body', { color: COLORS_CSS.WHITE }))
         .setDepth(85)
         .setVisible(false);
       this.items.push(ft);

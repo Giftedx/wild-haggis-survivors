@@ -41,7 +41,7 @@ describe('sceneSubtitleTextStyle — italic mood / progress subtitle', () => {
   });
 
   it('word-wraps to sceneWidth - 60 px', () => {
-    expect(sceneSubtitleTextStyle('#fff', 800).wordWrap.width).toBe(740);
-    expect(sceneSubtitleTextStyle('#fff', 600).wordWrap.width).toBe(540);
+    expect(sceneSubtitleTextStyle('#fff', 800).wordWrap?.width).toBe(740);
+    expect(sceneSubtitleTextStyle('#fff', 600).wordWrap?.width).toBe(540);
   });
 });

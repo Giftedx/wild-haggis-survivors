@@ -25,6 +25,7 @@ import { resolveDailyStateDisplay } from './dailyMenuState';
 import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { clickToScene } from './clickToScene';
+import { textStyle } from '../ui/typography';
 
 /**
  * Entry hub after boot: shows persistent meta stats and routes into loadout (Menu).
@@ -197,15 +198,9 @@ export class MainMenuScene extends Phaser.Scene {
     // === Title (bigger, bobs) ===
     const titleY = uiTop + 116;
     const titleText = this.add
-      .text(cx, titleY, t('ui.menu.title'), {
-        fontFamily: 'monospace',
-        fontSize: '48px',
-        color: titleColor,
-        fontStyle: 'bold',
-        align: 'center',
-        stroke: '#000',
-        strokeThickness: 4,
-      })
+      .text(cx, titleY, t('ui.menu.title'),
+        textStyle('display', { color: titleColor, align: 'center' }),
+      )
       .setOrigin(0.5);
     titleText.setScale(uiScale);
     if (!reduceParticles) {
@@ -224,11 +219,9 @@ export class MainMenuScene extends Phaser.Scene {
       ? t('ui.menu.kill_credits', { count: meta.totalKills })
       : t('ui.menu.kill_credits_fresh');
     const killCreditText = this.add
-      .text(cx, titleY + 88, killCreditCopy, {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: subduedColor,
-      })
+      .text(cx, titleY + 88, killCreditCopy,
+        textStyle('body', { fontSize: '20px', color: subduedColor }),
+      )
       .setOrigin(0.5);
     killCreditText.setScale(uiScale);
 
@@ -250,13 +243,7 @@ export class MainMenuScene extends Phaser.Scene {
         cx,
         titleY + 128,
         hintCopy,
-        {
-          fontFamily: 'monospace',
-          fontSize: '14px',
-          color: hintColor,
-          align: 'center',
-          wordWrap: { width: Math.max(120, vp.width - 80) },
-        }
+        textStyle('body', { fontSize: '14px', color: hintColor, align: 'center', wordWrap: { width: Math.max(120, vp.width - 80) } }),
       )
       .setOrigin(0.5);
     hintText.setScale(uiScale);
@@ -340,11 +327,9 @@ export class MainMenuScene extends Phaser.Scene {
     dailyTitle.setY(dailyBtnY - 8);
     dailyTitle.setScale(uiScale);
     const dailySubtitle = this.add
-      .text(bx, dailyBtnY + 10, daily.subtitle, {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: daily.completed ? '#9de6a8' : '#e2c97a',
-      })
+      .text(bx, dailyBtnY + 10, daily.subtitle,
+        textStyle('small', { color: daily.completed ? '#9de6a8' : '#e2c97a' }),
+      )
       .setOrigin(0.5);
     dailySubtitle.setScale(uiScale);
     const startDaily = () => this.startSeededRun(daily.seed, { isDaily: true });
@@ -603,13 +588,9 @@ export class MainMenuScene extends Phaser.Scene {
       });
       const footerPalette = resolveMenuFooterPalette(highContrastUi);
       this.add
-        .text(cx, uiBottom - 58, statsLine, {
-          fontFamily: 'monospace',
-          fontSize: '11px',
-          color: footerPalette.statsStrip,
-          align: 'center',
-          wordWrap: { width: Math.max(160, vp.width - 48) },
-        })
+        .text(cx, uiBottom - 58, statsLine,
+          textStyle('small', { color: footerPalette.statsStrip, align: 'center', wordWrap: { width: Math.max(160, vp.width - 48) } }),
+        )
         .setOrigin(0.5, 1)
         .setScale(uiScale);
 
@@ -617,14 +598,9 @@ export class MainMenuScene extends Phaser.Scene {
       const historyLine = formatMenuHistorySummary(runHistory, gameplay.totalRuns);
       if (historyLine) {
         this.add
-          .text(cx, uiBottom - 40, historyLine, {
-            fontFamily: 'monospace',
-            fontSize: '11px',
-            color: footerPalette.historyStrip,
-            fontStyle: 'italic',
-            align: 'center',
-            wordWrap: { width: Math.max(160, vp.width - 48) },
-          })
+          .text(cx, uiBottom - 40, historyLine,
+            textStyle('subtitle', { color: footerPalette.historyStrip, align: 'center', wordWrap: { width: Math.max(160, vp.width - 48) } }),
+          )
           .setOrigin(0.5, 1)
           .setScale(uiScale);
       }
@@ -634,20 +610,15 @@ export class MainMenuScene extends Phaser.Scene {
     const footerPalette = resolveMenuFooterPalette(highContrastUi);
     const creditX = vp.x + vp.width - Math.max(10, 14 * uiScale);
     const creditBuilt = this.add
-      .text(creditX, uiBottom - 28, t('ui.menu.built_on_moor'), {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: footerPalette.creditText,
-        fontStyle: 'italic',
-      })
+      .text(creditX, uiBottom - 28, t('ui.menu.built_on_moor'),
+        textStyle('subtitle', { color: footerPalette.creditText }),
+      )
       .setOrigin(1, 1)
       .setScale(uiScale);
     const creditVer = this.add
-      .text(creditX, uiBottom - 12, `v${__APP_VERSION__}`, {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: footerPalette.creditText,
-      })
+      .text(creditX, uiBottom - 12, `v${__APP_VERSION__}`,
+        textStyle('small', { color: footerPalette.creditText }),
+      )
       .setOrigin(1, 1)
       .setScale(uiScale);
     if (footerPalette.creditStroke) {

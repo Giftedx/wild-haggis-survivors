@@ -27,6 +27,7 @@ import {
 } from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
 import { createGameButton } from '../../ui/gameButton';
+import { textStyle } from '../../ui/typography';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -70,18 +71,16 @@ export class PauseMenu {
         .setScrollFactor(0).setDepth(d).setInteractive()
     );
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'), {
-        fontFamily: 'monospace', fontSize: style.titlePx, color: style.titleColor,
-        fontStyle: 'bold', stroke: COLORS_CSS.INK, strokeThickness: style.titleStroke,
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'),
+        textStyle('heading', { fontSize: style.titlePx, color: style.titleColor }),
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
     const quipIndex = Phaser.Math.Between(1, 8);
     const quip = t(`ui.pause.quip_${quipIndex}`);
     this.elements.push(
-      scene.add.text(x + width / 2, y + height * 0.26, quip, {
-        fontFamily: 'monospace', fontSize: '14px', color: '#8a7a6a',
-        fontStyle: 'italic',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      scene.add.text(x + width / 2, y + height * 0.26, quip,
+        textStyle('subtitle', { fontSize: '14px', color: '#8a7a6a' }),
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
 
     const statLines = buildPauseStatsLines({
@@ -97,18 +96,17 @@ export class PauseMenu {
     });
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {
-        fontFamily: 'monospace', fontSize: '14px', color: '#bbbbbb',
-        align: 'center', lineSpacing: 6,
+        ...textStyle('body', { fontSize: '14px', color: '#bbbbbb', align: 'center' }),
+        lineSpacing: 6,
       }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
     );
 
     const curseLine = this.hooks.getActiveCurseLine?.() ?? null;
     if (curseLine) {
       this.elements.push(
-        scene.add.text(x + width / 2, y + height * 0.415, curseLine, {
-          fontFamily: 'monospace', fontSize: '13px', color: resolvePauseCurseLineColor(hc),
-          align: 'center',
-        }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+        scene.add.text(x + width / 2, y + height * 0.415, curseLine,
+          textStyle('label', { color: resolvePauseCurseLineColor(hc), align: 'center' }),
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
       );
     }
 
@@ -124,9 +122,9 @@ export class PauseMenu {
     this.elements.push(resumeBtn);
     this.elements.push(resumeLabel);
     this.elements.push(
-      scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'), {
-        fontFamily: 'monospace', fontSize: '11px', color: '#7a8a98',
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'),
+        textStyle('small', { color: '#7a8a98' }),
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
     );
 
     const passives = this.hooks.getOwnedPassives();
@@ -152,12 +150,8 @@ export class PauseMenu {
         eliteAffixTop,
         `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
         {
-          fontFamily: 'monospace',
-          fontSize: style.shortViewport ? '9px' : '10px',
-          color: resolvePauseEliteRefColor(hc),
-          align: 'center',
+          ...textStyle('small', { fontSize: style.shortViewport ? '9px' : '10px', color: resolvePauseEliteRefColor(hc), align: 'center', wordWrap: { width: Math.max(200, width - 56) } }),
           lineSpacing: 2,
-          wordWrap: { width: Math.max(200, width - 56) },
         },
       ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1)
     );
@@ -166,10 +160,9 @@ export class PauseMenu {
     let sfxOn = prefs.sfxVolume > 0.001;
     const sfxLabel = (on: boolean) =>
       t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const sfxText = scene.add.text(x + width / 2 - 70, audioY, sfxLabel(sfxOn), {
-      fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-      color: resolveToggleTextColor(sfxOn),
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+    const sfxText = scene.add.text(x + width / 2 - 70, audioY, sfxLabel(sfxOn),
+      textStyle('body', { color: resolveToggleTextColor(sfxOn) }),
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     sfxText.on('pointerdown', () => {
       sfxOn = !sfxOn;
@@ -183,10 +176,9 @@ export class PauseMenu {
     let musicOn = prefs.musicVolume > 0.001;
     const musicLabel = (on: boolean) =>
       t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const musicText = scene.add.text(x + width / 2 + 80, audioY, musicLabel(musicOn), {
-      fontFamily: 'monospace', fontSize: '16px', fontStyle: 'bold',
-      color: resolveToggleTextColor(musicOn),
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+    const musicText = scene.add.text(x + width / 2 + 80, audioY, musicLabel(musicOn),
+      textStyle('body', { color: resolveToggleTextColor(musicOn) }),
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
       .setInteractive({ useHandCursor: true });
     musicText.on('pointerdown', () => {
       musicOn = !musicOn;
@@ -220,8 +212,8 @@ export class PauseMenu {
           x + width / 2, passiveBottomY,
           `${t('ui.pause.passives_heading')}\n${passiveList}`,
           {
-            fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.LEGENDARY,
-            align: 'center', lineSpacing: 3,
+            ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY, align: 'center' }),
+            lineSpacing: 3,
           },
         ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1)
       );

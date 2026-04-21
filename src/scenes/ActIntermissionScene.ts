@@ -26,6 +26,7 @@ import {
 import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 import { t } from '../core/i18n';
 import { COLORS_CSS } from '../config';
+import { textStyle } from '../ui/typography';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -70,15 +71,14 @@ export class ActIntermissionScene extends Phaser.Scene {
     const titleKey = this.launchData.slot === 'A'
       ? 'ui.actIntermission.title_act_1'
       : 'ui.actIntermission.title_act_2';
-    this.add.text(width / 2, height / 2 - 200, t(titleKey), {
-      fontFamily: 'monospace', fontSize: '28px', color: COLORS_CSS.TOAST_GOLD,
-      stroke: '#000', strokeThickness: 3,
-    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 - 200, t(titleKey),
+      textStyle('heading', { fontSize: '28px', color: COLORS_CSS.TOAST_GOLD }),
+    ).setOrigin(0.5);
 
     // Subtitle / hint.
-    this.add.text(width / 2, height / 2 - 160, t('ui.actIntermission.pick_hint'), {
-      fontFamily: 'monospace', fontSize: '14px', color: '#aaaaaa',
-    }).setOrigin(0.5);
+    this.add.text(width / 2, height / 2 - 160, t('ui.actIntermission.pick_hint'),
+      textStyle('body', { fontSize: '14px', color: '#aaaaaa' }),
+    ).setOrigin(0.5);
 
     // Cards.
     const cardW = 240;
@@ -99,21 +99,18 @@ export class ActIntermissionScene extends Phaser.Scene {
       .setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color)
       .setInteractive({ useHandCursor: true });
 
-    this.add.text(x, y - h / 2 + 24, t(route.labelKey), {
-      fontFamily: 'monospace', fontSize: '20px', color: COLORS_CSS.TOAST_GOLD,
-      wordWrap: { width: w - 24 }, align: 'center',
-    }).setOrigin(0.5, 0);
+    this.add.text(x, y - h / 2 + 24, t(route.labelKey),
+      textStyle('body', { fontSize: '20px', color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: w - 24 }, align: 'center' }),
+    ).setOrigin(0.5, 0);
 
-    this.add.text(x, y, t(route.descKey), {
-      fontFamily: 'monospace', fontSize: '14px', color: '#ccccdd',
-      wordWrap: { width: w - 24 }, align: 'center',
-    }).setOrigin(0.5);
+    this.add.text(x, y, t(route.descKey),
+      textStyle('body', { fontSize: '14px', color: '#ccccdd', wordWrap: { width: w - 24 }, align: 'center' }),
+    ).setOrigin(0.5);
 
     // Shortcut digit corner badge — pairs with the 1/2/3 keyboard handler.
-    this.add.text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`, {
-      fontFamily: 'monospace', fontSize: '14px', color: '#7f8ca7',
-      fontStyle: 'bold',
-    }).setOrigin(0, 0);
+    this.add.text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`,
+      textStyle('body', { fontSize: '14px', color: '#7f8ca7' }),
+    ).setOrigin(0, 0);
 
     bg.on(Phaser.Input.Events.POINTER_OVER, () => bg.setStrokeStyle(cardStyle.hover.thickness, cardStyle.hover.color));
     bg.on(Phaser.Input.Events.POINTER_OUT, () => bg.setStrokeStyle(cardStyle.idle.thickness, cardStyle.idle.color));

@@ -27,17 +27,13 @@ import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOve
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
 import { createGameButton } from '../ui/gameButton';
+import { textStyle } from '../ui/typography';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
 // site varies the colour from its own palette.idle on hover/press,
 // so the colour stays a per-call argument; everything else is fixed.
-const COPY_ACTION_LINK_TEXT_BASE = {
-  fontFamily: 'monospace',
-  fontSize: '12px',
-  fontStyle: 'italic',
-  align: 'center',
-} as const;
+const COPY_ACTION_LINK_TEXT_BASE = textStyle('subtitle', { fontSize: '12px', align: 'center' });
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -116,14 +112,9 @@ export class GameOverScene extends Phaser.Scene {
     );
 
     const title = this.add
-      .text(panelCenterX, panelTop + 54, t(deathTitleKey), {
-        fontFamily: 'monospace',
-        fontSize: theme.titleFontSize,
-        color: titleColor,
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 7,
-      })
+      .text(panelCenterX, panelTop + 54, t(deathTitleKey),
+        textStyle('display', { fontSize: theme.titleFontSize, color: titleColor }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 2)
@@ -131,15 +122,9 @@ export class GameOverScene extends Phaser.Scene {
       .setScale(theme.titleStartScale);
     title.setScale(theme.titleStartScale * uiScale);
     const subtitle = this.add
-      .text(panelCenterX, panelTop + 94, t(deathSubKey), {
-        fontFamily: 'monospace',
-        fontSize: '17px',
-        color: '#b8a88a',
-        align: 'center',
-        // Wrap within the panel so the subtitle doesn't run past the yellow
-        // outline on narrow viewports.
-        wordWrap: { width: PANEL_W - 48 },
-      })
+      .text(panelCenterX, panelTop + 94, t(deathSubKey),
+        textStyle('body', { fontSize: '17px', color: '#b8a88a', align: 'center', wordWrap: { width: PANEL_W - 48 } }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 2)
@@ -163,16 +148,9 @@ export class GameOverScene extends Phaser.Scene {
     if (this.payload.ironmoor) {
       const banner_ = ironmoorBannerStyle(isVictory);
       const banner = this.add
-        .text(panelCenterX, panelTop + 118, t(banner_.key), {
-          fontFamily: 'monospace',
-          fontSize: '16px',
-          color: banner_.color,
-          fontStyle: 'bold',
-          stroke: '#000',
-          strokeThickness: 3,
-          align: 'center',
-          wordWrap: { width: PANEL_W - 48 },
-        })
+        .text(panelCenterX, panelTop + 118, t(banner_.key),
+          textStyle('body', { color: banner_.color, align: 'center', wordWrap: { width: PANEL_W - 48 } }),
+        )
         .setOrigin(0.5)
         .setScrollFactor(0)
         .setDepth(d + 2)
@@ -216,12 +194,9 @@ export class GameOverScene extends Phaser.Scene {
         .text(panelCenterX, curseChipY, t('ui.gameOver.curse_chip', {
           curse: t(curseDef.nameKey),
           pct: curseDef.goldBonusPct,
-        }), {
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          color: '#e8a0c6',
-          fontStyle: 'bold',
-        })
+        }),
+          textStyle('label', { fontSize: '12px', color: '#e8a0c6' }),
+        )
         .setOrigin(0.5)
         .setScrollFactor(0)
         .setDepth(d + 3)
@@ -281,12 +256,8 @@ export class GameOverScene extends Phaser.Scene {
         panelTop + 288,
         `${weaponsHead}\n${loadoutSummaryText}`,
         {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: '#9ea8bb',
-          align: 'center',
+          ...textStyle('label', { color: '#9ea8bb', align: 'center', wordWrap: { width: 560 } }),
           lineSpacing: 6,
-          wordWrap: { width: 560 },
         }
       )
       .setOrigin(0.5, 0)
@@ -306,10 +277,7 @@ export class GameOverScene extends Phaser.Scene {
     const loadoutBottom = loadoutSummary.y + loadoutSummary.height;
     const weaponHeading = this.add
       .text(panelCenterX, loadoutBottom + 10, t('ui.gameOver.damage_by_weapon'), {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: '#7f8ca7',
-        fontStyle: 'bold',
+        ...textStyle('label', { color: '#7f8ca7' }),
         letterSpacing: 1,
       })
       .setOrigin(0.5)
@@ -319,12 +287,8 @@ export class GameOverScene extends Phaser.Scene {
     weaponHeading.setScale(uiScale);
     const weaponBody = this.add
       .text(panelCenterX, weaponHeading.y + 16, weaponRows, {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: '#c4cdd8',
-        align: 'center',
+        ...textStyle('label', { color: '#c4cdd8', align: 'center', wordWrap: { width: 560 } }),
         lineSpacing: 4,
-        wordWrap: { width: 560 },
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
@@ -336,26 +300,18 @@ export class GameOverScene extends Phaser.Scene {
     const goldTitleY = Math.max(panelTop + 420, weaponBodyBottom + 16);
 
     const goldTitle = this.add
-      .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }), {
-        fontFamily: 'monospace',
-        fontSize: '28px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 4,
-      })
+      .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }),
+        textStyle('heading', { fontSize: '28px', color: COLORS_CSS.WHISKY_GOLD }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 3)
       .setAlpha(0);
     goldTitle.setScale(uiScale);
     const goldText = this.add
-      .text(panelCenterX, goldTitleY + 30, goldBreakdown, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#b69643',
-        align: 'center',
-      })
+      .text(panelCenterX, goldTitleY + 30, goldBreakdown,
+        textStyle('label', { fontSize: '12px', color: '#b69643', align: 'center' }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 3)
@@ -429,14 +385,9 @@ export class GameOverScene extends Phaser.Scene {
     panelWidth: number,
   ): void {
     const text = this.add
-      .text(centerX, y, formatDeathInsightLine(cause), {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: '#dcc38a',
-        fontStyle: 'italic',
-        align: 'center',
-        wordWrap: { width: panelWidth - 48 },
-      })
+      .text(centerX, y, formatDeathInsightLine(cause),
+        textStyle('subtitle', { color: '#dcc38a', align: 'center', wordWrap: { width: panelWidth - 48 } }),
+      )
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(depth)
@@ -465,10 +416,7 @@ export class GameOverScene extends Phaser.Scene {
 
     const heading = this.add
       .text(centerX, y, headingText, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: headingColor,
-        fontStyle: 'bold',
+        ...textStyle('label', { fontSize: '12px', color: headingColor }),
         letterSpacing: 1,
       })
       .setOrigin(0.5, 0)
@@ -479,14 +427,9 @@ export class GameOverScene extends Phaser.Scene {
 
     if (!hasUnlocks) {
       const tip = this.add
-        .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)], {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: '#a8b0c0',
-          fontStyle: 'italic',
-          align: 'center',
-          wordWrap: { width: 520 },
-        })
+        .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)],
+          textStyle('subtitle', { color: '#a8b0c0', align: 'center', wordWrap: { width: 520 } }),
+        )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
         .setDepth(depth)
@@ -501,25 +444,17 @@ export class GameOverScene extends Phaser.Scene {
     if (variantKeys.length === 1) {
       const variant = getVariantByKey(variantKeys[0]);
       const nameText = this.add
-        .text(centerX, y + 26, t(variant.nameKey), {
-          fontFamily: 'monospace',
-          fontSize: '26px',
-          color: COLORS_CSS.WHISKY_GOLD,
-          fontStyle: 'bold',
-          align: 'center',
-        })
+        .text(centerX, y + 26, t(variant.nameKey),
+          textStyle('heading', { fontSize: '26px', color: COLORS_CSS.WHISKY_GOLD, align: 'center' }),
+        )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
         .setDepth(depth)
         .setAlpha(0);
       const flavorText = this.add
-        .text(centerX, y + 58, t(variant.flavorKey), {
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          color: '#9ea8bb',
-          align: 'center',
-          wordWrap: { width: 520 },
-        })
+        .text(centerX, y + 58, t(variant.flavorKey),
+          textStyle('label', { fontSize: '12px', color: '#9ea8bb', align: 'center', wordWrap: { width: 520 } }),
+        )
         .setOrigin(0.5, 0)
         .setScrollFactor(0)
         .setDepth(depth)
@@ -532,13 +467,8 @@ export class GameOverScene extends Phaser.Scene {
     const bodyText = formatUnlockBodyText(variantKeys) ?? '';
     const unlockList = this.add
       .text(centerX, y + 30, bodyText, {
-        fontFamily: 'monospace',
-        fontSize: variantKeys.length === 2 ? '18px' : '14px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        fontStyle: 'bold',
-        align: 'center',
+        ...textStyle('body', { fontSize: variantKeys.length === 2 ? '18px' : '14px', color: COLORS_CSS.WHISKY_GOLD, align: 'center', wordWrap: { width: 500 } }),
         lineSpacing: 6,
-        wordWrap: { width: 500 },
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
@@ -585,23 +515,17 @@ export class GameOverScene extends Phaser.Scene {
     isNewBest?: boolean
   ): void {
     const labelText = this.add
-      .text(x, y, label, {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#7f8ca7',
-        fontStyle: 'bold',
-      })
+      .text(x, y, label,
+        textStyle('label', { fontSize: '12px', color: '#7f8ca7' }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(depth)
       .setAlpha(0);
     const valueText = this.add
-      .text(x, y + 18, value, {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: isNewBest ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
+      .text(x, y + 18, value,
+        textStyle('body', { fontSize: '20px', color: isNewBest ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE }),
+      )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(depth)
@@ -611,12 +535,9 @@ export class GameOverScene extends Phaser.Scene {
 
     if (isNewBest) {
       const badge = this.add
-        .text(x + 46, y + 10, t('ui.gameOver.new_best'), {
-          fontFamily: 'monospace',
-          fontSize: '8px',
-          color: COLORS_CSS.WHISKY_GOLD,
-          fontStyle: 'bold',
-        })
+        .text(x + 46, y + 10, t('ui.gameOver.new_best'),
+          textStyle('small', { fontSize: '8px', color: COLORS_CSS.WHISKY_GOLD }),
+        )
         .setOrigin(0, 0.5)
         .setScrollFactor(0)
         .setDepth(depth + 1)

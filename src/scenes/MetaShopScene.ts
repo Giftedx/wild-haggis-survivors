@@ -24,6 +24,7 @@ import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { createBackButton } from './createBackButton';
 import { resolveShopRowBgColor } from './shopRowBg';
 import { installShopBackdrop } from './installShopBackdrop';
+import { textStyle } from '../ui/typography';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
@@ -48,31 +49,21 @@ export class MetaShopScene extends Phaser.Scene {
     installShopBackdrop(this);
 
     this.add
-      .text(width / 2, 32, t('ui.metaShop.title'), {
-        fontFamily: 'monospace',
-        fontSize: '32px',
-        color: '#77c977',
-        fontStyle: 'bold',
-        stroke: '#000',
-        strokeThickness: 5,
-      })
+      .text(width / 2, 32, t('ui.metaShop.title'),
+        textStyle('title', { fontSize: '32px', color: '#77c977' }),
+      )
       .setOrigin(0.5);
 
     this.killsText = this.add
-      .text(width / 2, 70, '', {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: COLORS_CSS.WHISKY_GOLD,
-        fontStyle: 'bold',
-      })
+      .text(width / 2, 70, '',
+        textStyle('body', { fontSize: '18px', color: COLORS_CSS.WHISKY_GOLD }),
+      )
       .setOrigin(0.5);
 
     this.add
-      .text(width / 2, 94, t('ui.metaShop.subtitle'), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#8a93a8',
-      })
+      .text(width / 2, 94, t('ui.metaShop.subtitle'),
+        textStyle('label', { fontSize: '12px', color: '#8a93a8' }),
+      )
       .setOrigin(0.5);
 
     const lineGfx = this.add.graphics();
@@ -88,11 +79,9 @@ export class MetaShopScene extends Phaser.Scene {
 
     // Page indicator
     this.pageText = this.add
-      .text(width / 2, height - 58, '', {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: '#8a93a8',
-      })
+      .text(width / 2, height - 58, '',
+        textStyle('label', { color: '#8a93a8' }),
+      )
       .setOrigin(0.5);
 
     this.page = 0;
@@ -129,9 +118,9 @@ export class MetaShopScene extends Phaser.Scene {
 
       if (pagination.prevEnabled) {
         const prevBtn = this.add
-          .text(width / 2 - 90, height - 58, t('ui.shop.prev'), {
-            fontFamily: 'monospace', fontSize: '13px', ...META_SHOP_PAGE_BUTTON_STYLE,
-          })
+          .text(width / 2 - 90, height - 58, t('ui.shop.prev'),
+            textStyle('label', { color: META_SHOP_PAGE_BUTTON_STYLE.color }),
+          )
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
           .on('pointerdown', () => { this.page--; this.renderRows(); });
@@ -139,9 +128,9 @@ export class MetaShopScene extends Phaser.Scene {
       }
       if (pagination.nextEnabled) {
         const nextBtn = this.add
-          .text(width / 2 + 90, height - 58, t('ui.shop.next'), {
-            fontFamily: 'monospace', fontSize: '13px', ...META_SHOP_PAGE_BUTTON_STYLE,
-          })
+          .text(width / 2 + 90, height - 58, t('ui.shop.next'),
+            textStyle('label', { color: META_SHOP_PAGE_BUTTON_STYLE.color }),
+          )
           .setOrigin(0.5)
           .setInteractive({ useHandCursor: true })
           .on('pointerdown', () => { this.page++; this.renderRows(); });
@@ -159,42 +148,30 @@ export class MetaShopScene extends Phaser.Scene {
       const rowPalette = resolveMetaShopRowPalette(state);
 
       const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, resolveShopRowBgColor(index), 0.82);
-      const nameText = this.add.text(34, y + 6, t(item.nameKey), {
-        fontFamily: 'monospace',
-        fontSize: '16px',
-        color: rowPalette.nameColor,
-        fontStyle: 'bold',
-      });
+      const nameText = this.add.text(34, y + 6, t(item.nameKey),
+        textStyle('body', { color: rowPalette.nameColor }),
+      );
 
       // Build lock description — show what's needed.
       const descExtra = buildMetaShopLockReasonSuffix(item, state);
 
-      const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra, {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: rowPalette.descColor,
-        wordWrap: { width: 420 },
-      });
+      const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra,
+        textStyle('small', { color: rowPalette.descColor, wordWrap: { width: 420 } }),
+      );
       this.rowElements.push(rowBg, nameText, descText);
 
       if (owned) {
-        const maxLabel = this.add.text(width - 80, y + 28, t('ui.common.owned'), {
-          fontFamily: 'monospace',
-          fontSize: '14px',
-          color: META_SHOP_OWNED_PILL_COLOR,
-          fontStyle: 'bold',
-        }).setOrigin(0.5);
+        const maxLabel = this.add.text(width - 80, y + 28, t('ui.common.owned'),
+          textStyle('body', { fontSize: '14px', color: META_SHOP_OWNED_PILL_COLOR }),
+        ).setOrigin(0.5);
         this.rowElements.push(maxLabel);
         return;
       }
 
       if (locked) {
-        const lockLabel = this.add.text(width - 80, y + 28, t('ui.common.locked'), {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: META_SHOP_LOCKED_PILL_COLOR,
-          fontStyle: 'bold',
-        }).setOrigin(0.5);
+        const lockLabel = this.add.text(width - 80, y + 28, t('ui.common.locked'),
+          textStyle('label', { color: META_SHOP_LOCKED_PILL_COLOR }),
+        ).setOrigin(0.5);
         this.rowElements.push(lockLabel);
         return;
       }

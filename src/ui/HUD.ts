@@ -38,6 +38,7 @@ import {
 import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
+import { textStyle } from './typography';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -198,54 +199,51 @@ export class HUD {
   private build(): void {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
-    const style = { fontFamily: 'monospace', fontSize: '18px', color: '#e8d4a0' };
+    const style = textStyle('body', { fontSize: '18px', color: '#e8d4a0' });
 
     // HP bar
     this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x1a1420)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
     this.hpBarFill = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, COLORS.HP_RED)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
-    this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '', {
-      ...style, fontSize: '15px',
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
+    this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '',
+      textStyle('body', { fontSize: '15px', color: '#e8d4a0' }),
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
 
     // Level
     this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
       .setScrollFactor(0).setDepth(d));
 
     // Timer
-    this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '', {
-      ...style, fontSize: '28px', fontStyle: 'bold',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
-    this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '', {
-      ...style, fontSize: '14px', color: '#b8a88a',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
+    this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '',
+      textStyle('heading', { fontSize: '28px', color: '#e8d4a0' }),
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
+    this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '',
+      textStyle('body', { fontSize: '14px', color: '#b8a88a' }),
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
-    this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '', {
-      fontFamily: 'monospace', fontSize: '12px', color: '#c49bbf',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
+    this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '',
+      textStyle('label', { fontSize: '12px', color: '#c49bbf' }),
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W2 Moor Road act chip — hidden until the first picker resolves.
-    this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '', {
-      fontFamily: 'monospace', fontSize: '15px', color: '#e8d4a0', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 3,
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+    this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '',
+      textStyle('body', { fontSize: '15px', color: '#e8d4a0' }),
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W66 Ironmoor chip — only shown when single-life mode is active.
-    this.ironmoorChipText = this.addEl(this.scene.add.text(width / 2, 94, '', {
-      fontFamily: 'monospace', fontSize: '12px', color: '#c8a0a0', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 2,
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+    this.ironmoorChipText = this.addEl(this.scene.add.text(width / 2, 94, '',
+      textStyle('label', { fontSize: '12px', color: '#c8a0a0' }),
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // T1 replay chip — persistent indicator during best-effort playback.
     // Bottom-right, above the XP bar, right-origin so it doesn't clash
     // with the minimap at the bottom-right corner (minimap anchors from
     // the scene edge). Light-blue tint matches the watching-toast so the
     // two cues read as one language.
-    this.replayChipText = this.addEl(this.scene.add.text(width - 12, height - this.XP_BAR_H - 24, '', {
-      fontFamily: 'monospace', fontSize: '13px', color: '#88ccff', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 3,
-    }).setOrigin(1, 1).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+    this.replayChipText = this.addEl(this.scene.add.text(width - 12, height - this.XP_BAR_H - 24, '',
+      textStyle('label', { color: '#88ccff' }),
+    ).setOrigin(1, 1).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
     // Kill count
     this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
@@ -266,9 +264,9 @@ export class HUD {
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2));
 
     // Pause button (visible on touch devices, small on desktop)
-    this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |', {
-      fontFamily: 'monospace', fontSize: '24px', color: '#b8a88a', fontStyle: 'bold',
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)
+    this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |',
+      textStyle('heading', { fontSize: '24px', color: '#b8a88a' }),
+    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)
       .setInteractive({ useHandCursor: true })) as Phaser.GameObjects.Text;
     this.pauseText.on('pointerdown', () => {
       if (this.onPause) this.onPause();
@@ -284,23 +282,23 @@ export class HUD {
       .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
     // Dash row — bumped 12px → 14px for readability under combat stress, and
     // pip pool rebuilt slightly larger so they scale along with the text.
-    const dashStyle = { ...style, fontSize: '14px', color: COLORS_CSS.WHISKY_GOLD, fontStyle: 'bold' };
-    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 20, '', {
-      ...dashStyle,
-    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    const dashStyle = textStyle('body', { fontSize: '14px', color: COLORS_CSS.WHISKY_GOLD });
+    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 20, '',
+      dashStyle,
+    ).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
     for (let i = 0; i < this.dashPipPool; i++) {
       const pip = this.addEl(this.scene.add.image(0, 0, 'hud_dash_pip_full')
         .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
       this.dashPipImages.push(pip);
     }
-    this.dashSuffixText = this.addEl(this.scene.add.text(0, 0, '', {
-      ...dashStyle,
-    }).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    this.dashSuffixText = this.addEl(this.scene.add.text(0, 0, '',
+      dashStyle,
+    ).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
 
     // DPS counter
-    this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '', {
-      ...style, fontSize: '16px', color: '#8a7a6a',
-    }).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
+    this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '',
+      textStyle('body', { color: '#8a7a6a' }),
+    ).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight
     const bossBarW = width * 0.55;
@@ -318,10 +316,9 @@ export class HUD {
     // Top highlight on fill (reads as 3D depth)
     this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, BOSS_BAR_BASELINE_HIGHLIGHT, 0.6)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '', {
-      fontFamily: 'monospace', fontSize: '17px', color: '#ff9999', fontStyle: 'bold',
-      stroke: '#000', strokeThickness: 3,
-    }).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '',
+      textStyle('body', { fontSize: '17px', color: '#ff9999' }),
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
     if (this.uiScale !== 1) {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
         this.hpText,
@@ -734,10 +731,9 @@ export class HUD {
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
           .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
-        const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '', {
-          fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.WHITE, fontStyle: 'bold',
-          stroke: '#000', strokeThickness: 2,
-        }).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
+        const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '',
+          textStyle('small', { color: COLORS_CSS.WHITE }),
+        ).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
         this.weaponSlots.push({ bg, icon, label, cdFill });
       }
     }
@@ -799,7 +795,7 @@ export class HUD {
       // substring fallback. See `resolvePassiveAbbrev`.
       const abbrev = resolvePassiveAbbrev(key);
       const label = this.addEl(this.scene.add.text(x + 16, y, abbrev, {
-        fontFamily: 'monospace', fontSize: '12px', color: COLORS_CSS.LEGENDARY, fontStyle: 'bold',
+        ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY }),
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));
       this.passiveSlots.push(label);
