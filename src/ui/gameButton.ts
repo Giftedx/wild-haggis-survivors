@@ -115,3 +115,26 @@ export function createGameButton(
 
   return { rect, label };
 }
+
+/**
+ * Toggle disabled appearance on a game button. When disabled:
+ *   - rect alpha → 0.6, label alpha → 0.5
+ *   - interaction disabled (no hover, no click)
+ * When re-enabled, restores full alpha and interaction.
+ */
+export function setGameButtonDisabled(
+  btn: GameButtonResult,
+  disabled: boolean,
+  idleFill?: number,
+): void {
+  if (disabled) {
+    btn.rect.setAlpha(0.6);
+    btn.label.setAlpha(0.5);
+    btn.rect.disableInteractive();
+  } else {
+    btn.rect.setAlpha(1);
+    btn.label.setAlpha(1);
+    btn.rect.setInteractive({ useHandCursor: true });
+    if (idleFill !== undefined) btn.rect.setFillStyle(idleFill);
+  }
+}
