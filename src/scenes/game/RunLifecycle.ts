@@ -247,95 +247,112 @@ export class RunLifecycle {
     const timeManager = this.hooks.getTimeManager();
     const player = this.hooks.getPlayer();
     const juice = this.hooks.getJuice();
-    timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
+
+    // Immediate audio — plays during slow-mo
     audio.playDeath();
     musicEngine.fadeOut(2000);
-    juice.flashRed(400);
-    tryCameraShake(this.hooks.getCamera(), 500, 0.02, this.hooks.getSettingsManager());
-    this.hooks.caption('death', t('ui.captions.death_fall'), '#cc8866');
 
-    const px = player.x;
-    const py = player.y;
-    player.setActive(false);
-    player.setVisible(false);
+    // Brief cinematic slow-mo (300ms real time) before full freeze.
+    // Uses TimeManager so existing slow-mo token logic (lowest-wins) is
+    // respected. setTimeout gives wall-clock timing independent of timeScale.
+    timeManager.request('DEATH_SLOWMO', { timeScale: 0.15 });
 
-    const colors = [0x8b6914, 0x6b4e0a, COLORS.WHISKY_GOLD, COLORS.HP_RED];
-    for (let i = 0; i < 20; i++) {
-      const particle = this.scene.add.circle(
-        px, py,
-        Phaser.Math.Between(3, 7),
-        Phaser.Utils.Array.GetRandom(colors) as number,
-        0.9,
-      );
-      const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.5;
-      const speed = 100 + Math.random() * 200;
-      this.scene.tweens.add({
-        targets: particle,
-        x: px + Math.cos(angle) * speed,
-        y: py + Math.sin(angle) * speed,
-        alpha: 0,
-        scale: 0,
-        duration: 600 + Math.random() * 400,
-        ease: 'Power2',
-        onComplete: () => particle.destroy(),
-      });
-    }
+    const scene = this.scene;
+    setTimeout(() => {
+      // Guard: scene may have restarted during the 300ms window.
+      if (!scene.sys.isActive()) return;
 
-    const previousBests = this.hooks.getSaveManager().getPersonalBests();
-    const summary = this.hooks.buildRunSummary(false);
-    const context = this.hooks.buildRunHistoryContext();
-    const runResult = this.hooks.recordRun(summary, context);
-    this.hooks.recordToHistory(summary, runResult);
+      // Hand control to TimeManager for the full freeze.
+      timeManager.release('DEATH_SLOWMO');
+      timeManager.request('RUN_END', { pausePhysics: true, timeScale: 0 });
 
-    if (this.postBell) {
-      recordPostBellBest(Math.floor(this.getSecondsPastBell()));
-      juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
-    }
+      juice.flashRed(400);
+      tryCameraShake(this.hooks.getCamera(), 500, 0.02, this.hooks.getSettingsManager());
+      this.hooks.caption('death', t('ui.captions.death_fall'), '#cc8866');
 
-    // Ancestral Echo — persist death position so next run can spawn a
-    // spectral haggis at the spot. Skipped for ironmoor runs (that mode
-    // already has its own ceremony + chronicle-wipe on death).
-    if (!this.hooks.isIronmoorRun()) {
-      recordLastDeath(px, py);
-    }
+      const px = player.x;
+      const py = player.y;
+      player.setActive(false);
+      player.setVisible(false);
 
-    // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with
-    // `ironmoorMode` on, every Ironmoor row in runHistory is cleared — the
-    // new attempt starts from a blank chronicle. `bestIronmoorSeconds` is
-    // the separate leaderboard and survives (it's the only artefact the
-    // permadeath spares). Silent wipe with a toast so the player knows
-    // what happened; showToast is a no-op if nothing changed.
-    if (this.hooks.isIronmoorRun()) {
-      if (wipeIronmoorHistoryInPlace()) {
-        juice.showToast(t('ui.gameOver.ironmoor_wipe_toast'), '#b84a2a');
+      const colors = [0x8b6914, 0x6b4e0a, COLORS.WHISKY_GOLD, COLORS.HP_RED];
+      for (let i = 0; i < 20; i++) {
+        const particle = scene.add.circle(
+          px, py,
+          Phaser.Math.Between(3, 7),
+          Phaser.Utils.Array.GetRandom(colors) as number,
+          0.9,
+        );
+        const angle = (i / 20) * Math.PI * 2 + Math.random() * 0.5;
+        const speed = 100 + Math.random() * 200;
+        scene.tweens.add({
+          targets: particle,
+          x: px + Math.cos(angle) * speed,
+          y: py + Math.sin(angle) * speed,
+          alpha: 0,
+          scale: 0,
+          duration: 600 + Math.random() * 400,
+          ease: 'Power2',
+          onComplete: () => particle.destroy(),
+        });
       }
-    }
 
-    const { x: duiX, y: duiY, width: duiW, height: duiH } = this.hooks.getUiViewport();
-    this.hooks.getDeathFade()?.destroy();
-    const deathFade = this.scene.add.rectangle(
-      duiX + duiW / 2, duiY + duiH / 2,
-      duiW + 200, duiH + 200,
-      0x000000, 0,
-    ).setScrollFactor(0).setDepth(500).setInteractive();
-    this.hooks.setDeathFade(deathFade);
-    this.scene.tweens.add({
-      targets: deathFade, alpha: 0.85,
-      duration: 1100,
-      ease: 'Sine.easeIn',
-    });
+      const previousBests = this.hooks.getSaveManager().getPersonalBests();
+      const summary = this.hooks.buildRunSummary(false);
+      const context = this.hooks.buildRunHistoryContext();
+      const runResult = this.hooks.recordRun(summary, context);
+      this.hooks.recordToHistory(summary, runResult);
 
-    const trackerSnap = this.hooks.getDeathCauseTracker().snapshot();
-    const deathCause = classifyDeath({
-      events: trackerSnap.events,
-      lastHealthyAtSec: trackerSnap.lastHealthyAtSec,
-      deathGameTimeSec: this.hooks.getSpawnSystem().getGameTimeSec(),
-    });
+      if (this.postBell) {
+        recordPostBellBest(Math.floor(this.getSecondsPastBell()));
+        juice.showToast(t('ui.gameOver.post_bell_sendoff'), '#ffaa44');
+      }
 
-    this.hooks.setDeathResultTicker(1200, () => {
-      this.hooks.transitionToGameOver(
-        this.hooks.buildGameOverPayload('death', summary, runResult, previousBests, deathCause),
-      );
-    });
+      // Ancestral Echo — persist death position so next run can spawn a
+      // spectral haggis at the spot. Skipped for ironmoor runs (that mode
+      // already has its own ceremony + chronicle-wipe on death).
+      if (!this.hooks.isIronmoorRun()) {
+        recordLastDeath(px, py);
+      }
+
+      // W66 Ironmoor chronicle wipe. Permadeath: when the player dies with
+      // `ironmoorMode` on, every Ironmoor row in runHistory is cleared — the
+      // new attempt starts from a blank chronicle. `bestIronmoorSeconds` is
+      // the separate leaderboard and survives (it's the only artefact the
+      // permadeath spares). Silent wipe with a toast so the player knows
+      // what happened; showToast is a no-op if nothing changed.
+      if (this.hooks.isIronmoorRun()) {
+        if (wipeIronmoorHistoryInPlace()) {
+          juice.showToast(t('ui.gameOver.ironmoor_wipe_toast'), '#b84a2a');
+        }
+      }
+
+      const { x: duiX, y: duiY, width: duiW, height: duiH } = this.hooks.getUiViewport();
+      this.hooks.getDeathFade()?.destroy();
+      const deathFade = scene.add.rectangle(
+        duiX + duiW / 2, duiY + duiH / 2,
+        duiW + 200, duiH + 200,
+        0x000000, 0,
+      ).setScrollFactor(0).setDepth(500).setInteractive();
+      this.hooks.setDeathFade(deathFade);
+      scene.tweens.add({
+        targets: deathFade, alpha: 0.85,
+        duration: 1100,
+        ease: 'Sine.easeIn',
+      });
+
+      const trackerSnap = this.hooks.getDeathCauseTracker().snapshot();
+      const deathCause = classifyDeath({
+        events: trackerSnap.events,
+        lastHealthyAtSec: trackerSnap.lastHealthyAtSec,
+        deathGameTimeSec: this.hooks.getSpawnSystem().getGameTimeSec(),
+      });
+
+      this.hooks.setDeathResultTicker(1200, () => {
+        this.hooks.transitionToGameOver(
+          this.hooks.buildGameOverPayload('death', summary, runResult, previousBests, deathCause),
+        );
+      });
+    }, 300);
   }
 }
