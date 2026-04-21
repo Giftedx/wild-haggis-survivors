@@ -281,6 +281,9 @@ export function migrateSave(raw: unknown): SaveData {
     case 5:
       return finalizeSaveCandidate(migrateV5ToV6(raw));
     default:
+      if (schemaVersion > SAVE_SCHEMA_VERSION) {
+        console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
+      }
       return finalizeSaveCandidate(raw);
   }
 }

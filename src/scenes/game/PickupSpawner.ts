@@ -46,6 +46,18 @@ export interface PickupSpawnerHooks {
 }
 
 export class PickupSpawner {
+  /**
+   * Gold pickup float text aggregation — when a cluster of coins is
+   * vacuumed in quick succession (common after an elite kill + ripple),
+   * amend the active float text instead of spawning N overlapping floats.
+   * The first coin anchors the position; subsequent coins within the
+   * window just bump the displayed total.
+   */
+  private goldFloatAggregate:
+    | { text: Phaser.GameObjects.Text; amount: number; createdMs: number }
+    | null = null;
+  private readonly GOLD_FLOAT_AGGREGATION_WINDOW_MS = 250;
+
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly hooks: PickupSpawnerHooks,
@@ -289,16 +301,28 @@ export class PickupSpawner {
       despawnHandle?.cancel();
       this.hooks.onCoinCollected(goldAmount);
 
-      const txt = this.hooks.acquireFloatText(
-        coin.x, coin.y - 12,
-        t('ui.game.gold_pickup_float', { gold: goldAmount }),
-        COLORS_CSS.WHISKY_GOLD, '16px', 80,
-      );
-      if (txt) {
-        scene.tweens.add({
-          targets: txt, y: txt.y - 20, alpha: 0, duration: 600,
-          onComplete: () => { txt.setVisible(false); },
-        });
+      const now = scene.time.now;
+      const agg = this.goldFloatAggregate;
+      if (agg && agg.text.visible && now - agg.createdMs < this.GOLD_FLOAT_AGGREGATION_WINDOW_MS) {
+        agg.amount += goldAmount;
+        agg.text.setText(t('ui.game.gold_pickup_float', { gold: agg.amount }));
+      } else {
+        const txt = this.hooks.acquireFloatText(
+          coin.x, coin.y - 12,
+          t('ui.game.gold_pickup_float', { gold: goldAmount }),
+          COLORS_CSS.WHISKY_GOLD, '16px', 80,
+        );
+        if (txt) {
+          const entry = { text: txt, amount: goldAmount, createdMs: now };
+          this.goldFloatAggregate = entry;
+          scene.tweens.add({
+            targets: txt, y: txt.y - 20, alpha: 0, duration: 600,
+            onComplete: () => {
+              txt.setVisible(false);
+              if (this.goldFloatAggregate === entry) this.goldFloatAggregate = null;
+            },
+          });
+        }
       }
 
       this.hooks.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());

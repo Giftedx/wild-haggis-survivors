@@ -198,7 +198,7 @@ export class TutorialSystem {
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(86)
+      .setDepth(92)
       .setAlpha(0);
 
     this.scene.tweens.add({
@@ -256,7 +256,7 @@ export class TutorialSystem {
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(86)
+      .setDepth(92)
       .setAlpha(0);
 
     this.scene.tweens.add({
@@ -344,7 +344,7 @@ export class TutorialSystem {
       })
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(86)
+      .setDepth(92)
       .setAlpha(0);
     this.oneShotBanners.push(banner);
     this.scene.tweens.add({ targets: banner, alpha: 1, duration: 400, ease: 'Power2' });

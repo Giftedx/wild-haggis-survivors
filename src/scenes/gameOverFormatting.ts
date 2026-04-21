@@ -54,7 +54,8 @@ export function buildWeaponDamageRows(input: WeaponDamageRowsInput): string {
   const evoDisplay = new Map(EVOLUTION_RECIPES.map((r) => [r.evolvedWeapon, t(r.nameKey)]));
   for (const e of entries.slice(0, cap)) {
     const def = WEAPON_DEFS[e.key as WeaponKey];
-    const label = (def ? t(def.nameKey) : (evoDisplay.get(e.key) ?? e.key)).slice(0, 18);
+    const raw = def ? t(def.nameKey) : (evoDisplay.get(e.key) ?? e.key);
+    const label = raw.length > 18 ? raw.slice(0, 17) + '…' : raw;
     const pct = totalDamage > 0 ? Math.round((e.damage / totalDamage) * 100) : 0;
     lines.push(`${label.padEnd(18, ' ')} ${e.damage.toString().padStart(6, ' ')}   ${pct.toString().padStart(2, ' ')}%`);
   }

@@ -152,9 +152,10 @@ export class RunLifecycle {
     juice.flashWhite(300);
     tryCameraShake(this.hooks.getCamera(), 800, 0.015, this.hooks.getSettingsManager());
     juice.bossDeathSpectacle(player.x, player.y);
-    // Sparkle rain starts 500ms after spectacle — uses raw setTimeout
+    // Sparkle rain starts 500ms after spectacle — uses scheduleRealTime
     // because RUN_END sets timeScale 0 (delayedCall would never fire).
-    setTimeout(() => juice.victorySparkleRain(), 500);
+    // scheduleRealTime auto-cancels on scene reset (TimeManager.reset).
+    timeManager.scheduleRealTime(500, () => juice.victorySparkleRain());
     juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
     this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
     juice.showToast(t('ui.gameOver.keep_going_offer'), COLORS_CSS.TOAST_GOLD);

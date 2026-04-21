@@ -91,14 +91,16 @@ export class Minimap {
     const scaleX = this.SIZE / GAME.WORLD_WIDTH;
     const scaleY = this.SIZE / GAME.WORLD_HEIGHT;
 
-    // Enemy dots — render every 4th ACTIVE enemy so we don't waste
-    // iterations on inactive pool entries and get spatially unbiased sampling.
+    // Enemy dots — render every active enemy. Previous implementation
+    // sampled every 4th active enemy via `activeIdx & 3`, but the active
+    // index shifts each frame as enemies (de)activate, so which enemies
+    // rendered flickered frame-to-frame — visible as minimap jitter.
+    // 400-enemy cap × a handful of draw calls is well inside the frame
+    // budget; no perf reason to skip any now.
     const enemies = enemyGroup.children.entries as Enemy[];
-    let activeIdx = 0;
     for (let i = 0, len = enemies.length; i < len; i++) {
       const e = enemies[i];
       if (!e.active) continue;
-      if ((activeIdx++ & 3) !== 0) continue; // every 4th active enemy
       // Clamp to minimap bounds so dots don't bleed outside the background rect
       const dx = Phaser.Math.Clamp(mapX + e.x * scaleX, mapX, mapX + this.SIZE);
       const dy = Phaser.Math.Clamp(mapY + e.y * scaleY, mapY, mapY + this.SIZE);

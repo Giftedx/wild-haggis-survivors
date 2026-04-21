@@ -103,8 +103,9 @@ export class HUD {
   private bossBarVisible: boolean = false;
   private bossHpFraction = 1;
 
-  // Passive items display
-  private passiveSlots: Phaser.GameObjects.Text[] = [];
+  // Passive items display — Image when the ucard texture exists, Text
+  // fallback for any passive without a baked icon.
+  private passiveSlots: Phaser.GameObjects.GameObject[] = [];
   private lastPassiveCount: number = 0;
   private lastPassiveKeys = new Set<string>();
 
@@ -218,12 +219,18 @@ export class HUD {
     this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '',
       textStyle('title', { color: COLORS_CSS.WARM_TAN }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
+    // Wraps divided by uiScale so scaled text still fits inside the
+    // responsive horizontal budget (setScale(uiScale) multiplies the
+    // pre-wrap measurement — leaving the wrap un-divided means a 1.4x
+    // UI scale pushes a centered 720px wrap to ~1008px rendered width,
+    // clipping off the canvas edges).
+    const uiScaleClamp = Math.max(1, this.uiScale);
     this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '',
-      textStyle('label', { color: COLORS_CSS.DUSTY_TAN }),
+      textStyle('label', { color: COLORS_CSS.DUSTY_TAN, wordWrap: { width: Math.max(160, (width - 80) / uiScaleClamp) } }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
 
     this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '',
-      textStyle('label', { color: '#c49bbf' }),
+      textStyle('label', { color: '#c49bbf', wordWrap: { width: Math.max(160, (width - 80) / uiScaleClamp) } }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W2 Moor Road act chip — hidden until the first picker resolves.
@@ -245,8 +252,12 @@ export class HUD {
       textStyle('label', { color: '#88ccff' }),
     ).setOrigin(1, 1).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
-    // Kill count
-    this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', style)
+    // Kill count — constrain width so it doesn't overlap the centered timer.
+    // 0.30 ratio divided by uiScale keeps the right-anchored kill readout
+    // clear of the 30px-title timer even at 1.4x comfort scale (previously
+    // 0.38 × 1.4 overlapped the timer bounding box).
+    const killStyle = textStyle('body', { color: COLORS_CSS.WARM_TAN, wordWrap: { width: Math.max(100, Math.floor((width * 0.30) / uiScaleClamp)) } });
+    this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', killStyle)
       .setOrigin(1, 0).setScrollFactor(0).setDepth(d));
 
     // XP bar — layered for depth (bg → dark shadow → fill → top highlight)
@@ -317,7 +328,7 @@ export class HUD {
     this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, BOSS_BAR_BASELINE_HIGHLIGHT, 0.6)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '',
-      textStyle('body', { fontSize: '17px', color: '#ff9999' }),
+      textStyle('body', { fontSize: '17px', color: '#ff9999', wordWrap: { width: Math.max(200, bossBarW / uiScaleClamp) } }),
     ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
     if (this.uiScale !== 1) {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
@@ -397,9 +408,10 @@ export class HUD {
     this.hpBarFill.setPosition(padX, padY);
     this.hpText.setPosition(padX + this.HP_BAR_W / 2, padY + this.HP_BAR_H / 2);
     this.levelText.setPosition(padX, padY + 28 * this.uiScale);
-    this.shieldIcon.setPosition(padX + this.HP_BAR_W + 10, padY + this.HP_BAR_H / 2);
+    const hpGap = Math.round(10 * this.uiScale);
+    this.shieldIcon.setPosition(padX + this.HP_BAR_W + hpGap, padY + this.HP_BAR_H / 2);
     this.shieldIcon.setScale(this.uiScale * 0.92);
-    this.dashHudAnchorX = padX + this.HP_BAR_W + 10;
+    this.dashHudAnchorX = padX + this.HP_BAR_W + hpGap;
     this.dashHudAnchorY = padY + this.HP_BAR_H / 2 + 18 * this.uiScale;
 
     this.xpBarBg.setPosition(x, xpY);
@@ -420,7 +432,11 @@ export class HUD {
     this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
 
     const bossBarW = width * 0.55;
-    const bossBarY = Math.max(y + 44, Math.min(y + this.topSafePad + 86, y + Math.max(44, height - 80)));
+    // Clear the top-center chip stack (objective + curse + act + ironmoor).
+    // Ironmoor sits lowest at topY + 82*uiScale; add ~30px for chip height
+    // and gap so the bar never kisses the ironmoor/act label even at uiScale 1.4.
+    const chipStackBottom = this.topSafePad + 82 * this.uiScale + 30;
+    const bossBarY = Math.max(y + 44, Math.min(y + chipStackBottom, y + Math.max(44, height - 80)));
     const bossBarLeft = x + width / 2 - bossBarW / 2;
     this.bossBarBg.setPosition(x + width / 2, bossBarY);
     this.bossBarBg.width = bossBarW;
@@ -698,10 +714,11 @@ export class HUD {
     weapons: { key: string; level: number; evolved?: boolean; evolutionKey?: string; cooldownFrac?: number }[],
     weaponCount: number
   ): void {
-    const startX = this.layoutX + 12;
-    const y = this.layoutY + this.topSafePad + 46;
-    const size = 40;
-    const gap = 6;
+    const uiS = this.uiScale;
+    const startX = this.layoutX + Math.round(12 * uiS);
+    const y = this.layoutY + this.topSafePad + Math.round(46 * uiS);
+    const size = Math.round(40 * uiS);
+    const gap = Math.round(6 * uiS);
 
     // Only rebuild if count changed
     if (this.weaponSlots.length !== weaponCount) {
@@ -721,7 +738,8 @@ export class HUD {
         const bg = this.addEl(this.scene.add.rectangle(x, y, size, size, COLORS.BG_DARK, 0.85)
           .setOrigin(0, 0).setStrokeStyle(2, normalSlotStroke)
           .setScrollFactor(0).setDepth(this.DEPTH));
-        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - 4, size, 4, COLORS.SCOTTISH_BLUE, 0.85)
+        const cdBarH = Math.max(2, Math.round(4 * uiS));
+        const cdFill = this.addEl(this.scene.add.rectangle(x, y + size - cdBarH, size, cdBarH, COLORS.SCOTTISH_BLUE, 0.85)
           .setOrigin(0, 0).setScrollFactor(0).setDepth(this.DEPTH + 2)) as Phaser.GameObjects.Rectangle;
         // Weapon icon — real sprite instead of cryptic "TS1" abbreviation.
         // Each weapon has a pre-rendered `wicon_{key}` or `wicon_{evolutionKey}`
@@ -729,11 +747,12 @@ export class HUD {
         // base, else the thistle_shot fallback.
         const initialKey = resolveWeaponIconKey(w, (k) => this.scene.textures.exists(k));
         const icon = this.addEl(this.scene.add.image(x + size / 2, y + size / 2, initialKey)
-          .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8)) as Phaser.GameObjects.Image;
+          .setScrollFactor(0).setDepth(this.DEPTH + 2).setScale(0.8 * uiS)) as Phaser.GameObjects.Image;
         // Small level pip in bottom-right corner (replaces the old full-cell text)
         const label = this.addEl(this.scene.add.text(x + size - 2, y + 2, '',
           textStyle('small', { color: COLORS_CSS.WHITE }),
         ).setOrigin(1, 0).setScrollFactor(0).setDepth(this.DEPTH + 3));
+        label.setScale(uiS);
         this.weaponSlots.push({ bg, icon, label, cdFill });
       }
     }
@@ -763,8 +782,9 @@ export class HUD {
 
         // Ready-state pulse: icon breathes gently when ready, dims when cooling.
         // Phase advance is ms-based — animation speed is frame-rate-independent.
+        // Compose pulse.scale on top of the uiScale-adjusted base (0.8 × uiS).
         const pulse = weaponPulseState(this.scene.time.now, i, isReady);
-        slot.icon.setScale(pulse.scale);
+        slot.icon.setScale(0.8 * uiS * pulse.scale);
         slot.icon.setAlpha(pulse.alpha);
       }
     }
@@ -785,33 +805,56 @@ export class HUD {
 
     // Bottom-left placement — above DPS line and XP bar, so the top-left
     // cluster (HP, level, weapons, shield, dash) has room to breathe.
-    const startX = this.layoutX + 12;
+    const startX = this.layoutX + Math.round(12 * this.uiScale);
     const y = this.layoutY + this.layoutHeight - (54 * this.uiScale) - this.XP_BAR_H;
+    const slotStride = Math.round(42 * this.uiScale);
+    const slotCenterOffset = Math.round(16 * this.uiScale);
 
+    // Icons are 32px baked textures; scale to match the old pill footprint
+    // (~26px at uiScale 1.0) so the bottom-left cluster keeps its breathing room.
+    const iconScale = this.uiScale * 0.82;
     let playedSfx = false;
     passives.forEach((key, i) => {
-      const x = startX + i * 42;
-      // HUD pill labels — preferred abbrev lives in i18n, else
-      // substring fallback. See `resolvePassiveAbbrev`.
-      const abbrev = resolvePassiveAbbrev(key);
-      const label = this.addEl(this.scene.add.text(x + 16, y, abbrev, {
-        ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY }),
-        backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));
-      this.passiveSlots.push(label);
+      const x = startX + i * slotStride;
+      const iconKey = `ucard_${key}`;
+      const hasIcon = this.scene.textures.exists(iconKey);
+
+      let slot: Phaser.GameObjects.Image | Phaser.GameObjects.Text;
+      let flashW: number;
+      let flashH: number;
+      if (hasIcon) {
+        // Preferred path — pre-rendered passive icon (mirrors weapon slot icons).
+        const icon = this.addEl(this.scene.add.image(x + slotCenterOffset, y, iconKey)
+          .setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Image;
+        icon.setScale(iconScale);
+        slot = icon;
+        flashW = icon.displayWidth + 6;
+        flashH = icon.displayHeight + 6;
+      } else {
+        // Fallback for any passive without a baked icon — old 3-letter pill.
+        const abbrev = resolvePassiveAbbrev(key);
+        const label = this.addEl(this.scene.add.text(x + slotCenterOffset, y, abbrev, {
+          ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY }),
+          backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
+        }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1)) as Phaser.GameObjects.Text;
+        slot = label;
+        flashW = label.width + 14;
+        flashH = label.height + 10;
+      }
+      this.passiveSlots.push(slot);
 
       if (newKeys.includes(key)) {
-        // Scale-in bounce
-        label.setScale(0);
+        const targetScale = hasIcon ? iconScale : 1;
+        (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).setScale(0);
         this.scene.tweens.add({
-          targets: label, scale: 1, duration: 250, ease: 'Back.easeOut',
+          targets: slot, scale: targetScale, duration: 250, ease: 'Back.easeOut',
         });
 
-        // Gold flash rect behind the pill — text bounds available after setText
-        // Origin is 0.5, so label.x/y is already the center.
+        // Gold flash rect behind the slot — size matches the rendered element.
         const flash = this.scene.add.rectangle(
-          label.x, label.y,
-          label.width + 14, label.height + 10,
+          (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).x,
+          (slot as Phaser.GameObjects.Image | Phaser.GameObjects.Text).y,
+          flashW, flashH,
           0xffdd44, 0.6,
         ).setScrollFactor(0).setDepth(this.DEPTH);
         this.scene.tweens.add({

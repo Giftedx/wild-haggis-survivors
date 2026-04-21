@@ -51,7 +51,9 @@ export class CaptionOverlay {
     this.manager.update(deltaMs);
 
     const captions = this.manager.getActive();
-    const enabled = getSettingsManager().load().captionsEnabled;
+    const settings = getSettingsManager().load();
+    const enabled = settings.captionsEnabled;
+    const uiScale = Math.max(0.5, settings.uiScale);
 
     const { x: vx, y: vy, width: vw, height: vh } = getCameraViewport(this.scene);
     const baseY = vy + vh - BOTTOM_INSET;
@@ -68,13 +70,15 @@ export class CaptionOverlay {
 
       const alpha = captionFadeAlpha(cap.remainingMs, CAPTION_FADE_OUT_MS);
 
+      line.text.setWordWrapWidth(Math.max(200, (vw - 48) / uiScale));
       line.text.setText(cap.message);
       line.text.setColor(cap.tint ?? DEFAULT_TINT);
-      line.text.setFontSize(`${BASE_FONT_PX}px`);
-      const paddedWidth = line.text.width + 24;
-      const paddedHeight = line.text.height + 10;
+      line.text.setFontSize(`${Math.round(BASE_FONT_PX * uiScale)}px`);
+      const pad = Math.round(24 * uiScale);
+      const paddedWidth = Math.min(vw - pad, line.text.width + pad);
+      const paddedHeight = line.text.height + Math.round(10 * uiScale);
 
-      const yOffset = captionStackYOffset(i, captions.length, LINE_SPACING);
+      const yOffset = captionStackYOffset(i, captions.length, Math.round(LINE_SPACING * uiScale));
       const ly = baseY + yOffset;
 
       line.backdrop.setPosition(centerX, ly);

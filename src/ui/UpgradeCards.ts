@@ -243,12 +243,22 @@ export class UpgradeCardsUI {
     this.elements.push(icon);
 
     // Name — fontSize scales with uiScale so a 1.4x comfort setting
-    // actually enlarges card text instead of leaving it tiny.
+    // actually enlarges card text instead of leaving it tiny. Shrink once
+    // to 14px if the base 17px wraps to 3+ lines so long i18n names never
+    // bleed down into the description area.
     const descColor = this.highContrastUi ? '#d8dfe8' : '#bbbbbb';
-    const name = this.scene.add.text(x, y - 28, t(card.name), {
+    const nameMaxH = 44 * Math.max(1, this.uiScale);
+    let name = this.scene.add.text(x, y - 28, t(card.name), {
       fontFamily: 'monospace', fontSize: this.fs(17), color: '#e8d4a0',
       fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
     }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
+    if (name.height > nameMaxH) {
+      name.destroy();
+      name = this.scene.add.text(x, y - 28, t(card.name), {
+        fontFamily: 'monospace', fontSize: this.fs(14), color: '#e8d4a0',
+        fontStyle: 'bold', align: 'center', wordWrap: { width: w - 20 },
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
+    }
     this.elements.push(name);
 
     // Description — shrink font if needed so body text never sits on the rarity pill.
@@ -283,6 +293,9 @@ export class UpgradeCardsUI {
         lineSpacing: 2,
         wordWrap: { width: w - 22 },
       }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(depth + 1);
+      if (desc.height > maxDescH) {
+        desc.setCrop(0, 0, desc.width, maxDescH);
+      }
     }
     this.elements.push(desc);
 

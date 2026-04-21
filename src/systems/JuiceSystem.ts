@@ -104,6 +104,12 @@ export class JuiceSystem {
   // Hit-freeze throttling (engine mutations handled by TimeManager)
   private freezeCooldownMs: number = 0;
 
+  // Ceilidh toast throttle — pulse gameplay fires every 8 combo. Magnet
+  // grant + audio + ring still fire each pulse; only the toast/caption is
+  // gated so the right-side toast stack doesn't overflow during long streaks.
+  private ceilidhToastCooldownMs: number = 0;
+  private readonly CEILIDH_TOAST_COOLDOWN_MS = 5000;
+
   private slowMotionRemainingMs: number = 0;
   /** Tracks pause transitions so we can restore combo text without per-frame `setVisible(true)`. */
   private uiPauseWasActive = false;
@@ -148,7 +154,8 @@ export class JuiceSystem {
     }
 
     // Combo text — fixed to screen, shows during streaks
-    this.comboText = scene.add.text(width / 2, Math.max(height * 0.15, 140), '', {
+    const comboUiScale = this.settings.load().uiScale;
+    this.comboText = scene.add.text(width / 2, Math.max(height * 0.15, 140 * comboUiScale), '', {
       fontFamily: 'monospace',
       fontSize: '30px',
       color: '#ff8800',
@@ -205,6 +212,7 @@ export class JuiceSystem {
 
     // Tick hit-freeze throttle (bound to timeScale so pause freezes cooldown)
     if (this.freezeCooldownMs > 0) this.freezeCooldownMs -= scaledDelta;
+    if (this.ceilidhToastCooldownMs > 0) this.ceilidhToastCooldownMs -= scaledDelta;
 
     // Tick slow-motion guard (bound to timeScale)
     if (this.slowMotionRemainingMs > 0) {
@@ -253,15 +261,16 @@ export class JuiceSystem {
     const text = this.dmgTextPool.find(t => !t.visible);
     if (!text) return;
 
+    const uiScale = this.settings.load().uiScale;
     text.setText(damage.toString());
-    text.setPosition(x + Phaser.Math.Between(-10, 10), y - 10);
+    const jitter = Math.round(10 * uiScale);
+    text.setPosition(x + Phaser.Math.Between(-jitter, jitter), y - Math.round(10 * uiScale));
     text.setVisible(true);
     text.setAlpha(1);
 
     // Scale with damage — big hits look big. Compound with uiScale so text
     // scale is legible for low-vision players without fighting the font size.
     const style = damageNumberStyle(damage, isCrit, this.comboCount);
-    const uiScale = this.settings.load().uiScale;
     text.setScale(style.scale * uiScale);
     // Damage number colors: whisky gold palette, not cold white
     text.setColor(style.color);
@@ -269,7 +278,7 @@ export class JuiceSystem {
 
     this.scene.tweens.add({
       targets: text,
-      y: text.y - 25 - damage * 0.3,
+      y: text.y - Math.round(25 * uiScale) - damage * 0.3,
       alpha: 0,
       rotation: text.rotation * 0.5,
       duration: 600,
@@ -394,8 +403,11 @@ export class JuiceSystem {
         const pl = this.scene.getPlayer();
         pl.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');
-        this.showToast(msg, TOAST_COLORS.positive);
-        this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, TOAST_COLORS.positive);
+        if (this.ceilidhToastCooldownMs <= 0) {
+          this.showToast(msg, TOAST_COLORS.positive);
+          this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, TOAST_COLORS.positive);
+          this.ceilidhToastCooldownMs = this.CEILIDH_TOAST_COOLDOWN_MS;
+        }
         audio.playCeilidhPulse();
         this.scene.getTutorialSystem().notifyCeilidhChainIfFirst();
         bumpCeilidhPulsesLifetime();
@@ -534,7 +546,6 @@ export class JuiceSystem {
       fontStyle: 'bold', stroke: COLORS_CSS.INK, strokeThickness: scaledStrokeThickness(3),
       backgroundColor: '#1a1a2ecc', padding: { x: 10, y: 5 },
       wordWrap: { width: wrapW },
-      align: 'right',
     }).setScrollFactor(0).setDepth(85).setOrigin(1, 0);
 
     // Slide in

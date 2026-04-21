@@ -65,7 +65,9 @@ export class PauseMenu {
     const { x, y, width, height } = this.hooks.getUiViewport();
     const d = 250;
     const scene = this.scene;
-    const hc = this.settings.load().highContrastUi;
+    const prefs = this.settings.load();
+    const hc = prefs.highContrastUi;
+    const uiScale = prefs.uiScale;
     const style = resolvePauseMenuStyle(height, hc);
     this.elements.push(
       scene.add.rectangle(x + width / 2, y + height / 2, width, height, COLORS.BG_DARK, style.backdropAlpha)
@@ -74,14 +76,14 @@ export class PauseMenu {
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.18, t('ui.pause.title'),
         textStyle('heading', { fontSize: style.titlePx, color: style.titleColor }),
-      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
     );
     const quipIndex = Phaser.Math.Between(1, 8);
     const quip = t(`ui.pause.quip_${quipIndex}`);
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.26, quip,
         textStyle('subtitle', { fontSize: '14px', color: COLORS_CSS.STATUS_TAN }),
-      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
     );
 
     const statLines = buildPauseStatsLines({
@@ -99,7 +101,7 @@ export class PauseMenu {
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {
         ...textStyle('body', { fontSize: '14px', color: COLORS_CSS.COOL_GREY, align: 'center' }),
         lineSpacing: 6,
-      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
     );
 
     const curseLine = this.hooks.getActiveCurseLine?.() ?? null;
@@ -107,7 +109,7 @@ export class PauseMenu {
       this.elements.push(
         scene.add.text(x + width / 2, y + height * 0.415, curseLine,
           textStyle('label', { color: resolvePauseCurseLineColor(hc), align: 'center' }),
-        ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1)
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
       );
     }
 
@@ -115,7 +117,7 @@ export class PauseMenu {
     const resumeY = y + height * 0.48;
     const { rect: resumeBtn, label: resumeLabel } = createGameButton(scene, {
       x: x + width / 2, y: resumeY, width: 220, height: 50,
-      label: t('ui.pause.resume'), tier: 'primary', fontSize: '22px',
+      label: t('ui.pause.resume'), tier: 'primary', fontSize: '22px', uiScale,
     });
     resumeBtn.setScrollFactor(0).setDepth(d + 1);
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
@@ -123,9 +125,9 @@ export class PauseMenu {
     this.elements.push(resumeBtn);
     this.elements.push(resumeLabel);
     this.elements.push(
-      scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'),
+      scene.add.text(x + width / 2, resumeY + Math.round(30 * uiScale), t('ui.pause.keys_resume'),
         textStyle('small', { color: COLORS_CSS.TEXT_SUBTITLE }),
-      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2).setScale(uiScale)
     );
 
     const passives = this.hooks.getOwnedPassives();
@@ -145,25 +147,28 @@ export class PauseMenu {
       const blurb = t(`ui.elite_affix.${id}.blurb`);
       return `${name} — ${blurb}`;
     });
-    this.elements.push(
-      scene.add.text(
-        x + width / 2,
-        eliteAffixTop,
-        `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
-        {
-          ...textStyle('small', { fontSize: style.shortViewport ? '9px' : '10px', color: resolvePauseEliteRefColor(hc), align: 'center', wordWrap: { width: Math.max(200, width - 56) } }),
-          lineSpacing: 2,
-        },
-      ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1)
-    );
+    const maxEliteH = Math.max(40, eliteRegionBottom - eliteAffixTop - 4);
+    const eliteText = scene.add.text(
+      x + width / 2,
+      eliteAffixTop,
+      `${t('ui.pause.elite_affix_heading')}\n${eliteAffixLines.join('\n')}`,
+      {
+        ...textStyle('small', { fontSize: style.shortViewport ? '9px' : '10px', color: resolvePauseEliteRefColor(hc), align: 'center', wordWrap: { width: Math.max(200, (width - 56) / Math.max(1, uiScale)) } }),
+        lineSpacing: 2,
+      },
+    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setScale(uiScale);
+    if (eliteText.height > maxEliteH) {
+      eliteText.setCrop(0, 0, eliteText.width, maxEliteH);
+    }
+    this.elements.push(eliteText);
 
-    const prefs = this.settings.load();
     let sfxOn = prefs.sfxVolume > 0.001;
     const sfxLabel = (on: boolean) =>
       t('ui.loadout.sfx_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const sfxText = scene.add.text(x + width / 2 - 70, audioY, sfxLabel(sfxOn),
+    const sfxText = scene.add.text(x + width / 2 - Math.round(75 * uiScale), audioY, sfxLabel(sfxOn),
       textStyle('body', { color: resolveToggleTextColor(sfxOn) }),
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      .setScale(uiScale)
       .setInteractive({ useHandCursor: true });
     sfxText.on('pointerdown', () => {
       audio.playClick();
@@ -178,9 +183,10 @@ export class PauseMenu {
     let musicOn = prefs.musicVolume > 0.001;
     const musicLabel = (on: boolean) =>
       t('ui.loadout.music_toggle', { state: t(on ? 'ui.common.on' : 'ui.common.off') });
-    const musicText = scene.add.text(x + width / 2 + 80, audioY, musicLabel(musicOn),
+    const musicText = scene.add.text(x + width / 2 + Math.round(75 * uiScale), audioY, musicLabel(musicOn),
       textStyle('body', { color: resolveToggleTextColor(musicOn) }),
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
+      .setScale(uiScale)
       .setInteractive({ useHandCursor: true });
     musicText.on('pointerdown', () => {
       audio.playClick();
@@ -218,13 +224,13 @@ export class PauseMenu {
             ...textStyle('label', { fontSize: '12px', color: COLORS_CSS.LEGENDARY, align: 'center' }),
             lineSpacing: 3,
           },
-        ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1)
+        ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
       );
     }
 
     const { rect: quitBtn, label: quitLabel } = createGameButton(scene, {
       x: x + width / 2, y: quitY, width: 220, height: 50,
-      label: t('ui.pause.quit'), tier: 'secondary', fontSize: '22px',
+      label: t('ui.pause.quit'), tier: 'secondary', fontSize: '22px', uiScale,
     });
     quitBtn.setScrollFactor(0).setDepth(d + 1);
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());

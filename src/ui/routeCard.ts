@@ -25,6 +25,8 @@ export interface RouteCardOpts {
   route: RouteDef;
   /** 1-based shortcut digit shown in the top-left corner badge. */
   shortcut: number;
+  /** UI scale (from settings) — applied to text and wrap widths. Defaults to 1. */
+  uiScale?: number;
   /** Called when the card is clicked. */
   onSelect: (route: RouteDef) => void;
 }
@@ -42,6 +44,8 @@ export interface RouteCardResult {
  */
 export function createRouteCard(opts: RouteCardOpts): RouteCardResult {
   const { scene, x, y, width: w, height: h, route, shortcut, onSelect } = opts;
+  const uiScale = opts.uiScale ?? 1;
+  const scaleDiv = Math.max(1, uiScale);
   const cardStyle = resolveActIntermissionCardStyle();
 
   const bg = scene.add
@@ -50,22 +54,25 @@ export function createRouteCard(opts: RouteCardOpts): RouteCardResult {
     .setInteractive({ useHandCursor: true });
 
   const heading = scene.add
-    .text(x, y - h / 2 + 24, t(route.labelKey),
-      textStyle('heading', { color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: w - 24 }, align: 'center' }),
+    .text(x, y - h / 2 + Math.round(24 * uiScale), t(route.labelKey),
+      textStyle('heading', { color: COLORS_CSS.TOAST_GOLD, wordWrap: { width: (w - 24) / scaleDiv }, align: 'center' }),
     )
-    .setOrigin(0.5, 0);
+    .setOrigin(0.5, 0)
+    .setScale(uiScale);
 
   const body = scene.add
     .text(x, y, t(route.descKey),
-      textStyle('label', { color: COLORS_CSS.COOL_GREY, wordWrap: { width: w - 24 }, align: 'center' }),
+      textStyle('label', { color: COLORS_CSS.COOL_GREY, wordWrap: { width: (w - 24) / scaleDiv }, align: 'center' }),
     )
-    .setOrigin(0.5);
+    .setOrigin(0.5)
+    .setScale(uiScale);
 
   const badge = scene.add
-    .text(x - w / 2 + 12, y - h / 2 + 10, `${shortcut}`,
+    .text(x - w / 2 + Math.round(12 * uiScale), y - h / 2 + Math.round(10 * uiScale), `${shortcut}`,
       textStyle('label', { color: COLORS_CSS.HINT }),
     )
-    .setOrigin(0, 0);
+    .setOrigin(0, 0)
+    .setScale(uiScale);
 
   bg.on('pointerover',  () => bg.setStrokeStyle(cardStyle.hover.thickness, cardStyle.hover.color));
   bg.on('pointerout',   () => bg.setStrokeStyle(cardStyle.idle.thickness,  cardStyle.idle.color));
