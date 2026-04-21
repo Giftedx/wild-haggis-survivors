@@ -16,7 +16,7 @@ import {
 import { paginationState } from '../ui/pagination';
 import { playPurchaseBurst } from './purchaseBurst';
 import { clearGameObjects } from '../utils/clearGameObjects';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 import { clickToScene } from './clickToScene';
 import { audio } from '../systems/AudioSystem';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -200,21 +200,19 @@ export class MetaShopScene extends Phaser.Scene {
       }
 
       const buyPalette = resolveMetaShopBuyButtonPalette(canAfford);
-      const buyButton = this.add
-        .rectangle(width - 80, y + 32, 108, 40, buyPalette.fillColor, 1)
-        .setStrokeStyle(1, buyPalette.strokeColor, 1)
-        .setInteractive({ useHandCursor: canAfford });
-      const buyText = this.add
-        .text(width - 80, y + 32, t('ui.common.buy_kills', { cost: item.cost }), {
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          color: buyPalette.textColor,
-          fontStyle: 'bold',
-        })
-        .setOrigin(0.5);
+      const { rect: buyButton, label: buyText } = createGameButton(this, {
+        x: width - 80, y: y + 32, width: 108, height: 40,
+        label: t('ui.common.buy_kills', { cost: item.cost }),
+        tier: 'primary', fontSize: '12px',
+        fillOverride: buyPalette.fillColor,
+        hoverOverride: canAfford ? 0x3a8f4f : buyPalette.fillColor,
+        textColorOverride: buyPalette.textColor,
+      });
+      buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
-      if (canAfford) {
-        attachButtonHoverFill(buyButton, buyPalette.fillColor, 0x3a8f4f);
+      if (!canAfford) {
+        buyButton.disableInteractive();
+      } else {
         buyButton.on('pointerdown', () => this.tryBuy(key));
         entries.push({ rect: buyButton, activate: () => this.tryBuy(key) });
       }

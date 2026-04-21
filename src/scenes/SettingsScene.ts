@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
@@ -25,10 +24,9 @@ import {
   SETTINGS_TROUGH_STROKE,
   SETTINGS_THUMB_STROKE,
 } from './settingsPalette';
-import { resolveBackButtonPalette } from './backButtonPalette';
 import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 import { performSettingsReset } from './settingsResetAction';
 import { renderSettingsPreview, type SettingsPreviewHandle } from './settingsPreviewCard';
 
@@ -254,22 +252,13 @@ export class SettingsScene extends Phaser.Scene {
     // Sit just below the last row with a breathing gap rather than pinned
     // to the bottom of the viewport.
     const backY = Math.min(this.rowY + 32, height - 40);
-    const backPalette = resolveBackButtonPalette();
-    const back = this.add
-      .rectangle(width / 2, backY, 220, 42, backPalette.idle, 1)
-      .setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.8)
-      .setInteractive({ useHandCursor: true });
+    const { rect: back, label: backLabel } = createGameButton(this, {
+      x: width / 2, y: backY, width: 220, height: 42,
+      label: t('ui.settings.back'), tier: 'tertiary', fontSize: '16px', uiScale,
+    });
+    back.setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.8);
     back.setScale(uiScale);
-    this.add
-      .text(width / 2, backY, t('ui.settings.back'), {
-        fontFamily: 'monospace',
-        fontSize: '16px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(uiScale);
-    attachButtonHoverFill(back, backPalette.idle, backPalette.hover);
+    backLabel.setScale(uiScale);
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
@@ -819,25 +808,15 @@ export class SettingsScene extends Phaser.Scene {
     const chipW = 110;
     const chipH = 32;
     const cx = width - 90;
-    const chipIdle = 0x2a2430;
-    const chipHover = 0x3a3040;
-    const btn = this.add
-      .rectangle(cx, y, chipW, chipH, chipIdle, 1)
-      .setStrokeStyle(1.5, 0x5a4e64, 0.9)
-      .setInteractive({ useHandCursor: true });
+    const { rect: btn, label: txt } = createGameButton(this, {
+      x: cx, y, width: chipW, height: chipH,
+      label: t('ui.settings.reset_action'),
+      tier: 'secondary', fontSize: '13px', uiScale: this.uiScale,
+      fillOverride: 0x2a2430, hoverOverride: 0x3a3040, textColorOverride: '#c8b8d4',
+    });
+    btn.setStrokeStyle(1.5, 0x5a4e64, 0.9);
     btn.setScale(this.uiScale);
-
-    const txt = this.add
-      .text(cx, y, t('ui.settings.reset_action'), {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: '#c8b8d4',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale);
-
-    attachButtonHoverFill(btn, chipIdle, chipHover);
+    txt.setScale(this.uiScale);
 
     const doReset = () => {
       audio.playClick();
@@ -912,38 +891,23 @@ export class SettingsScene extends Phaser.Scene {
       .setDepth(DEPTH_BASE + 2);
 
     const btnY = height / 2 + panelH / 2 - 44;
-    const ironmoorBackPalette = resolveBackButtonPalette();
-    const noBtn = this.add
-      .rectangle(width / 2 - 110, btnY, 180, 40, ironmoorBackPalette.idle, 1)
-      .setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.9)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(DEPTH_BASE + 2);
-    const noLabel = this.add
-      .text(width / 2 - 110, btnY, t('ui.settings.ironmoor_confirm_no'), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: '#c8d0e0',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale)
-      .setDepth(DEPTH_BASE + 3);
+    const { rect: noBtn, label: noLabel } = createGameButton(this, {
+      x: width / 2 - 110, y: btnY, width: 180, height: 40,
+      label: t('ui.settings.ironmoor_confirm_no'),
+      tier: 'tertiary', fontSize: '15px', uiScale: this.uiScale,
+    });
+    noBtn.setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.9).setDepth(DEPTH_BASE + 2);
+    noLabel.setDepth(DEPTH_BASE + 3);
 
-    const yesBtn = this.add
-      .rectangle(width / 2 + 110, btnY, 180, 40, 0x3a2218, 1)
-      .setStrokeStyle(2, palette.dangerAccent, 0.9)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(DEPTH_BASE + 2);
-    const yesLabel = this.add
-      .text(width / 2 + 110, btnY, t('ui.settings.ironmoor_confirm_yes'), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: this.highContrastUi ? palette.sectionColor : palette.titleColor,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale)
-      .setDepth(DEPTH_BASE + 3);
+    const { rect: yesBtn, label: yesLabel } = createGameButton(this, {
+      x: width / 2 + 110, y: btnY, width: 180, height: 40,
+      label: t('ui.settings.ironmoor_confirm_yes'),
+      tier: 'primary', fontSize: '15px', uiScale: this.uiScale,
+      fillOverride: 0x3a2218, hoverOverride: 0x4a2a20,
+      textColorOverride: this.highContrastUi ? palette.sectionColor : palette.titleColor,
+    });
+    yesBtn.setStrokeStyle(2, palette.dangerAccent, 0.9).setDepth(DEPTH_BASE + 2);
+    yesLabel.setDepth(DEPTH_BASE + 3);
 
     const cleanup: Phaser.GameObjects.GameObject[] = [
       scrim, panel, title, body, noBtn, noLabel, yesBtn, yesLabel,
@@ -969,11 +933,10 @@ export class SettingsScene extends Phaser.Scene {
       close();
     };
 
-    attachButtonHoverFill(noBtn, ironmoorBackPalette.idle, ironmoorBackPalette.hover);
+    // Factory already wired hover-fill and click sound for both buttons.
     noBtn.on('pointerdown', onNo);
     noLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onNo);
 
-    attachButtonHoverFill(yesBtn, 0x3a2218, 0x4a2a20);
     yesBtn.on('pointerdown', onYes);
     yesLabel.setInteractive({ useHandCursor: true }).on('pointerdown', onYes);
 

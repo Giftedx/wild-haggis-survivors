@@ -1,5 +1,4 @@
 import Phaser from 'phaser';
-import { COLORS, COLORS_CSS } from '../config';
 import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
@@ -12,15 +11,8 @@ import { resolveMainMenuPalette } from './mainMenuPalette';
 import { addSceneBackdrop } from './sceneFade';
 import { resolveSeedLinkStyle } from './seedLinkStyle';
 import { resolveMenuFooterPalette } from './menuFooterPalette';
-import {
-  MAIN_MENU_ABANDON_PALETTE,
-  MAIN_MENU_DAILY_PALETTE,
-  MAIN_MENU_META_PALETTE,
-  MAIN_MENU_CHRONICLE_PALETTE,
-  MAIN_MENU_DEEDS_PALETTE,
-  MAIN_MENU_OPTIONS_PALETTE,
-} from './mainMenuButtonPalettes';
 import { MAIN_MENU_HEARTH } from './mainMenuHearthPalette';
+import { createGameButton } from '../ui/gameButton';
 import {
   currentDailyDateKey,
   dailyChallengeSeed,
@@ -32,8 +24,6 @@ import { getCameraViewport } from '../ui/cameraViewport';
 import { resolveDailyStateDisplay } from './dailyMenuState';
 import { findLastSeededRun } from '../ui/chronicleAggregates';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
-import { attachButtonHoverFill } from '../ui/buttonHover';
-import { brightenColor } from '../utils/brightenColor';
 import { clickToScene } from './clickToScene';
 
 /**
@@ -283,20 +273,6 @@ export class MainMenuScene extends Phaser.Scene {
     let abandonBtn: Phaser.GameObjects.Rectangle | null = null;
     let goLoadoutFresh: (() => void) | null = null;
 
-    const startBtn = this.add
-      .rectangle(bx, startY, btnW, btnH, COLORS.SCOTTISH_BLUE, 1)
-      .setInteractive({ useHandCursor: true });
-    startBtn.setScale(uiScale);
-    const startTxt = this.add
-      .text(bx, startY, suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run'), {
-        fontFamily: 'monospace',
-        fontSize: '20px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-    startTxt.setScale(uiScale);
-
     const goPrimary = () => {
       if (suspended) {
         this.scene.start('Game');
@@ -305,7 +281,13 @@ export class MainMenuScene extends Phaser.Scene {
       }
     };
 
-    attachButtonHoverFill(startBtn, COLORS.SCOTTISH_BLUE, brightenColor(COLORS.SCOTTISH_BLUE, 18));
+    const { rect: startBtn, label: startTxt } = createGameButton(this, {
+      x: bx, y: startY, width: btnW, height: btnH,
+      label: suspended ? t('ui.menu.resume_run') : t('ui.menu.start_run'),
+      tier: 'primary', fontSize: '20px', uiScale,
+    });
+    startBtn.setScale(uiScale);
+    startTxt.setScale(uiScale);
     startBtn.on('pointerdown', goPrimary);
 
     startTxt.setInteractive({ useHandCursor: true });
@@ -318,20 +300,14 @@ export class MainMenuScene extends Phaser.Scene {
         this.saveManager.clearActiveRun();
         this.scene.start('Menu');
       };
-      abandonBtn = this.add
-        .rectangle(bx, newY, btnW, 42, MAIN_MENU_ABANDON_PALETTE.idle, 1)
-        .setInteractive({ useHandCursor: true });
+      const { rect: abandonRect, label: abandonTxt } = createGameButton(this, {
+        x: bx, y: newY, width: btnW, height: 42,
+        label: t('ui.menu.new_run_loadout'),
+        tier: 'secondary', fontSize: '16px', uiScale,
+      });
+      abandonBtn = abandonRect;
       abandonBtn.setScale(uiScale);
-      const abandonTxt = this.add
-        .text(bx, newY, t('ui.menu.new_run_loadout'), {
-          fontFamily: 'monospace',
-          fontSize: '16px',
-          color: '#e0e4ee',
-          fontStyle: 'bold',
-        })
-        .setOrigin(0.5);
       abandonTxt.setScale(uiScale);
-      attachButtonHoverFill(abandonBtn, MAIN_MENU_ABANDON_PALETTE.idle, MAIN_MENU_ABANDON_PALETTE.hover);
       abandonBtn.on('pointerdown', goLoadoutFresh);
       abandonTxt.setInteractive({ useHandCursor: true });
       abandonTxt.on('pointerdown', goLoadoutFresh);
@@ -344,10 +320,6 @@ export class MainMenuScene extends Phaser.Scene {
     // challenge. Launches a seeded run that skips the loadout picker —
     // daily rules mean everyone gets the same variant.
     const dailyBtnY = metaY;
-    const dailyBtn = this.add
-      .rectangle(bx, dailyBtnY, btnW, btnH, MAIN_MENU_DAILY_PALETTE.idle, 1)
-      .setInteractive({ useHandCursor: true });
-    dailyBtn.setScale(uiScale);
     const dailySeed = dailyChallengeSeed();
     const daily = resolveDailyStateDisplay({
       todayKey: currentDailyDateKey(),
@@ -355,14 +327,17 @@ export class MainMenuScene extends Phaser.Scene {
       seedCode: encodeSeed(dailySeed),
       recorded: meta.dailyChallenge,
     });
-    const dailyTitle = this.add
-      .text(bx, dailyBtnY - 8, t('ui.menu.daily_challenge'), {
-        fontFamily: 'monospace',
-        fontSize: '17px',
-        color: '#fff3d1',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
+    // Daily Challenge uses a two-line layout: factory provides the rect + title,
+    // subtitle is a separate text positioned below.
+    const { rect: dailyBtn, label: dailyTitle } = createGameButton(this, {
+      x: bx, y: dailyBtnY, width: btnW, height: btnH,
+      label: t('ui.menu.daily_challenge'),
+      tier: 'secondary', fontSize: '17px', uiScale,
+      fillOverride: 0x8b6914, hoverOverride: 0xa87e1a, textColorOverride: '#fff3d1',
+    });
+    dailyBtn.setScale(uiScale);
+    // Shift title up to make room for the subtitle
+    dailyTitle.setY(dailyBtnY - 8);
     dailyTitle.setScale(uiScale);
     const dailySubtitle = this.add
       .text(bx, dailyBtnY + 10, daily.subtitle, {
@@ -372,7 +347,6 @@ export class MainMenuScene extends Phaser.Scene {
       })
       .setOrigin(0.5);
     dailySubtitle.setScale(uiScale);
-    attachButtonHoverFill(dailyBtn, MAIN_MENU_DAILY_PALETTE.idle, MAIN_MENU_DAILY_PALETTE.hover);
     const startDaily = () => this.startSeededRun(daily.seed, { isDaily: true });
     dailyBtn.on('pointerdown', startDaily);
     dailyTitle.setInteractive({ useHandCursor: true });
@@ -381,20 +355,14 @@ export class MainMenuScene extends Phaser.Scene {
     dailySubtitle.on('pointerdown', startDaily);
 
     const metaY2 = dailyBtnY + btnH + 14;
-    const metaBtn = this.add
-      .rectangle(bx, metaY2, btnW, btnH, MAIN_MENU_META_PALETTE.idle, 1)
-      .setInteractive({ useHandCursor: true });
+    const { rect: metaBtn, label: metaTxt } = createGameButton(this, {
+      x: bx, y: metaY2, width: btnW, height: btnH,
+      label: t('ui.menu.meta_upgrades'),
+      tier: 'secondary', fontSize: '18px', uiScale,
+      fillOverride: 0x2d6a3e, hoverOverride: 0x3a8f4f,
+    });
     metaBtn.setScale(uiScale);
-    const metaTxt = this.add
-      .text(bx, metaY2, t('ui.menu.meta_upgrades'), {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
     metaTxt.setScale(uiScale);
-    attachButtonHoverFill(metaBtn, MAIN_MENU_META_PALETTE.idle, MAIN_MENU_META_PALETTE.hover);
     metaBtn.on('pointerdown', () => {
       this.scene.start('MetaShop');
     });
@@ -418,64 +386,41 @@ export class MainMenuScene extends Phaser.Scene {
     if (hasAnyRun) {
       // Chronicle (left) — centers align to full btnW with an exact 12px gap (was off by 3px).
       const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
-      chronicleBtn = this.add
-        .rectangle(chronicleX, reflectionY, halfBtnW, 42, MAIN_MENU_CHRONICLE_PALETTE.idle, 1)
-        .setInteractive({ useHandCursor: true });
+      const { rect: chronicleRect, label: chronicleTxt } = createGameButton(this, {
+        x: chronicleX, y: reflectionY, width: halfBtnW, height: 42,
+        label: t('ui.menu.chronicle'),
+        tier: 'tertiary', fontSize: '13px', uiScale,
+      });
+      chronicleBtn = chronicleRect;
       chronicleBtn.setScale(uiScale);
-      const chronicleTxt = this.add
-        .text(chronicleX, reflectionY, t('ui.menu.chronicle'), {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: '#e8d4a0',
-          fontStyle: 'bold',
-          align: 'center',
-          wordWrap: { width: Math.max(72, halfBtnW - 16) },
-        })
-        .setOrigin(0.5, 0.5);
       chronicleTxt.setScale(uiScale);
-      attachButtonHoverFill(chronicleBtn, MAIN_MENU_CHRONICLE_PALETTE.idle, MAIN_MENU_CHRONICLE_PALETTE.hover);
       chronicleBtn.on('pointerdown', goChronicle);
       chronicleTxt.setInteractive({ useHandCursor: true });
       chronicleTxt.on('pointerdown', goChronicle);
 
       // Deeds (right)
       const deedsX = bx + reflectionGap / 2 + halfBtnW / 2;
-      deedsBtn = this.add
-        .rectangle(deedsX, reflectionY, halfBtnW, 42, MAIN_MENU_DEEDS_PALETTE.idle, 1)
-        .setInteractive({ useHandCursor: true });
+      const { rect: deedsRect, label: deedsTxt } = createGameButton(this, {
+        x: deedsX, y: reflectionY, width: halfBtnW, height: 42,
+        label: t('ui.menu.deeds'),
+        tier: 'tertiary', fontSize: '13px', uiScale,
+      });
+      deedsBtn = deedsRect;
       deedsBtn.setScale(uiScale);
-      const deedsTxt = this.add
-        .text(deedsX, reflectionY, t('ui.menu.deeds'), {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: '#f5e1a6',
-          fontStyle: 'bold',
-          align: 'center',
-          wordWrap: { width: Math.max(72, halfBtnW - 16) },
-        })
-        .setOrigin(0.5, 0.5);
       deedsTxt.setScale(uiScale);
-      attachButtonHoverFill(deedsBtn, MAIN_MENU_DEEDS_PALETTE.idle, MAIN_MENU_DEEDS_PALETTE.hover);
       deedsBtn.on('pointerdown', goDeeds);
       deedsTxt.setInteractive({ useHandCursor: true });
       deedsTxt.on('pointerdown', goDeeds);
     }
 
     const optY = (hasAnyRun ? reflectionY + 42 : metaY2 + btnH) + 14;
-    const optBtn = this.add
-      .rectangle(bx, optY, btnW, 42, MAIN_MENU_OPTIONS_PALETTE.idle, 1)
-      .setInteractive({ useHandCursor: true });
+    const { rect: optBtn, label: optTxt } = createGameButton(this, {
+      x: bx, y: optY, width: btnW, height: 42,
+      label: t('ui.menu.options'),
+      tier: 'tertiary', fontSize: '17px', uiScale,
+    });
     optBtn.setScale(uiScale);
-    const optTxt = this.add
-      .text(bx, optY, t('ui.menu.options'), {
-        fontFamily: 'monospace',
-        fontSize: '17px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
     optTxt.setScale(uiScale);
-    attachButtonHoverFill(optBtn, MAIN_MENU_OPTIONS_PALETTE.idle, MAIN_MENU_OPTIONS_PALETTE.hover);
     optBtn.on('pointerdown', () => {
       this.scene.start('Settings');
     });

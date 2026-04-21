@@ -16,7 +16,7 @@ import { addSceneFadeIn, startSceneFadeOut } from './sceneFade';
 import { playPurchaseBurst } from './purchaseBurst';
 import { installShopBackdrop } from './installShopBackdrop';
 import { clearGameObjects } from '../utils/clearGameObjects';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 import { audio } from '../systems/AudioSystem';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import { globalEventBus } from '../core/GlobalEventBus';
@@ -180,21 +180,19 @@ export class ShopScene extends Phaser.Scene {
     }
 
     const buyPalette = resolveShopBuyButtonPalette(canAfford);
-    const buyButton = this.add
-      .rectangle(width - 74, y + 16, 96, 36, buyPalette.fillColor, 1)
-      .setStrokeStyle(1, buyPalette.strokeColor, 1)
-      .setInteractive({ useHandCursor: canAfford });
-    const buyText = this.add
-      .text(width - 74, y + 16, t('ui.shop.cost_gold', { cost }), {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: buyPalette.textColor,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
+    const { rect: buyButton, label: buyText } = createGameButton(this, {
+      x: width - 74, y: y + 16, width: 96, height: 36,
+      label: t('ui.shop.cost_gold', { cost }),
+      tier: 'primary', fontSize: '13px',
+      fillOverride: buyPalette.fillColor,
+      hoverOverride: canAfford ? 0x3a6a3a : buyPalette.fillColor,
+      textColorOverride: buyPalette.textColor,
+    });
+    buyButton.setStrokeStyle(1, buyPalette.strokeColor, 1);
 
-    if (canAfford) {
-      attachButtonHoverFill(buyButton, buyPalette.fillColor, 0x3a6a3a);
+    if (!canAfford) {
+      buyButton.disableInteractive();
+    } else {
       buyButton.on('pointerdown', () => this.purchaseUpgrade(upgrade, rowState));
     }
 
@@ -249,19 +247,11 @@ export class ShopScene extends Phaser.Scene {
       this.renderFooter();
     });
 
-    const backButton = this.add
-      .rectangle(width / 2, height - 26, 188, 36, 0x3a4357, 1)
-      .setInteractive({ useHandCursor: true });
-    const backText = this.add
-      .text(width / 2, height - 26, t('ui.shop.back_to_menu'), {
-        fontFamily: 'monospace',
-        fontSize: '15px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-
-    attachButtonHoverFill(backButton, 0x3a4357, 0x4a566f);
+    const { rect: backButton, label: backText } = createGameButton(this, {
+      x: width / 2, y: height - 26, width: 188, height: 36,
+      label: t('ui.shop.back_to_menu'),
+      tier: 'secondary', fontSize: '15px',
+    });
     backButton.on('pointerdown', () => {
       audio.playClick();
       startSceneFadeOut(this, 260, () => this.scene.start('MainMenu'), 0x1a1008);
@@ -278,21 +268,18 @@ export class ShopScene extends Phaser.Scene {
     onClick: () => void
   ): void {
     const pageBtnStyle = resolveShopPageButtonPalette(enabled);
-    const button = this.add
-      .rectangle(x, y, 116, 34, pageBtnStyle.fillColor, 1)
-      .setStrokeStyle(1, pageBtnStyle.strokeColor, 1)
-      .setInteractive({ useHandCursor: enabled });
-    const text = this.add
-      .text(x, y, label, {
-        fontFamily: 'monospace',
-        fontSize: '13px',
-        color: pageBtnStyle.textColor,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
+    const { rect: button, label: text } = createGameButton(this, {
+      x, y, width: 116, height: 34, label,
+      tier: 'tertiary', fontSize: '13px',
+      fillOverride: pageBtnStyle.fillColor,
+      hoverOverride: enabled ? SHOP_PAGE_BUTTON_HOVER_FILL : pageBtnStyle.fillColor,
+      textColorOverride: pageBtnStyle.textColor,
+    });
+    button.setStrokeStyle(1, pageBtnStyle.strokeColor, 1);
 
-    if (enabled) {
-      attachButtonHoverFill(button, pageBtnStyle.fillColor, SHOP_PAGE_BUTTON_HOVER_FILL);
+    if (!enabled) {
+      button.disableInteractive();
+    } else {
       button.on('pointerdown', onClick);
     }
 

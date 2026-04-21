@@ -22,19 +22,11 @@ import { ELITE_AFFIX_DISPLAY_ORDER } from '../../data/eliteAffixes';
 import { buildPauseStatsLines } from './pauseStats';
 import {
   resolvePauseMenuStyle,
-  PAUSE_RESUME_BUTTON_PALETTE,
-  PAUSE_QUIT_BUTTON_PALETTE,
   resolvePauseCurseLineColor,
   resolvePauseEliteRefColor,
 } from './pauseMenuStyle';
 import { resolveToggleTextColor } from '../toggleTextPalette';
-import { attachButtonHoverFill } from '../../ui/buttonHover';
-
-// Both the RESUME and QUIT primary-action labels wear the same 22px
-// white bold monospace coat — extract so tweaks stay in lockstep.
-const PAUSE_BUTTON_LABEL_TEXT = {
-  fontFamily: 'monospace', fontSize: '22px', color: COLORS_CSS.WHITE, fontStyle: 'bold',
-} as const;
+import { createGameButton } from '../../ui/gameButton';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -122,15 +114,15 @@ export class PauseMenu {
 
     // RESUME before the long elite-affix reference list so the button never covers traits text.
     const resumeY = y + height * 0.48;
-    const resumeBtn = scene.add.rectangle(x + width / 2, resumeY, 220, 50, PAUSE_RESUME_BUTTON_PALETTE.idle)
-      .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    attachButtonHoverFill(resumeBtn, PAUSE_RESUME_BUTTON_PALETTE.idle, PAUSE_RESUME_BUTTON_PALETTE.hover);
+    const { rect: resumeBtn, label: resumeLabel } = createGameButton(scene, {
+      x: x + width / 2, y: resumeY, width: 220, height: 50,
+      label: t('ui.pause.resume'), tier: 'primary', fontSize: '22px',
+    });
+    resumeBtn.setScrollFactor(0).setDepth(d + 1);
     resumeBtn.on('pointerdown', () => this.hooks.onResumeRequested());
+    resumeLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(resumeBtn);
-    this.elements.push(
-      scene.add.text(x + width / 2, resumeY, t('ui.pause.resume'), PAUSE_BUTTON_LABEL_TEXT)
-        .setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-    );
+    this.elements.push(resumeLabel);
     this.elements.push(
       scene.add.text(x + width / 2, resumeY + 30, t('ui.pause.keys_resume'), {
         fontFamily: 'monospace', fontSize: '11px', color: '#7a8a98',
@@ -235,15 +227,15 @@ export class PauseMenu {
       );
     }
 
-    const quitBtn = scene.add.rectangle(x + width / 2, quitY, 220, 50, PAUSE_QUIT_BUTTON_PALETTE.idle)
-      .setScrollFactor(0).setDepth(d + 1).setInteractive({ useHandCursor: true });
-    attachButtonHoverFill(quitBtn, PAUSE_QUIT_BUTTON_PALETTE.idle, PAUSE_QUIT_BUTTON_PALETTE.hover);
+    const { rect: quitBtn, label: quitLabel } = createGameButton(scene, {
+      x: x + width / 2, y: quitY, width: 220, height: 50,
+      label: t('ui.pause.quit'), tier: 'secondary', fontSize: '22px',
+    });
+    quitBtn.setScrollFactor(0).setDepth(d + 1);
     quitBtn.on('pointerdown', () => this.hooks.onQuitRequested());
+    quitLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(quitBtn);
-    this.elements.push(
-      scene.add.text(x + width / 2, quitY, t('ui.pause.quit'), PAUSE_BUTTON_LABEL_TEXT)
-        .setOrigin(0.5).setScrollFactor(0).setDepth(d + 2)
-    );
+    this.elements.push(quitLabel);
   }
 
   close(): void {

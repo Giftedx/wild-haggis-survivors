@@ -26,8 +26,7 @@ import { renderVariantChip } from './gameOverVariantChip';
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
-import { brightenColor } from '../utils/brightenColor';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -394,7 +393,7 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     const buttonsY = panelTop + 634;
-    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), COLORS.SCOTTISH_BLUE, COLORS_CSS.WHITE, 1240, () => {
+    this.createResultActionButton(panelCenterX - 196, buttonsY, 172, 42, t('ui.gameOver.play_again'), 'primary', 1240, () => {
       audio.playClick();
       musicEngine.stop();
       // Match MenuScene: wipe any lingering suspended-run snapshot before
@@ -403,12 +402,12 @@ export class GameOverScene extends Phaser.Scene {
       try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
       this.scene.start('Game');
     });
-    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), COLORS.WHISKY_GOLD, COLORS_CSS.BLACK, 1300, () => {
+    this.createResultActionButton(panelCenterX, buttonsY, 172, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
-    });
-    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 0x444444, COLORS_CSS.WHITE, 1360, () => {
+    }, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: '#000000' });
+    this.createResultActionButton(panelCenterX + 196, buttonsY, 172, 42, t('ui.gameOver.menu'), 'secondary', 1360, () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('MainMenu');
@@ -640,33 +639,22 @@ export class GameOverScene extends Phaser.Scene {
     width: number,
     height: number,
     label: string,
-    fill: number,
-    textColor: string,
+    tier: import('../ui/gameButton').ButtonTier,
     delay: number,
-    onClick: () => void
+    onClick: () => void,
+    overrides?: { fillOverride?: number; hoverOverride?: number; textColorOverride?: string },
   ): void {
-    // setInteractive must be called at construction — deferring it to the
-    // tween onComplete means a tween interrupted by tab-backgrounding or
-    // scene-shutdown leaves the buttons permanently dead, softlocking
-    // Restart/Menu/Shop actions. The alpha-0 fade-in still provides the
-    // visual delay.
-    const button = this.add
-      .rectangle(x, y, width, height, fill, 1)
-      .setScrollFactor(0)
-      .setDepth(203)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y, label, {
-        fontFamily: 'monospace',
-        fontSize: '18px',
-        color: textColor,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(204)
-      .setAlpha(0);
+    // setInteractive is called at construction by the factory — alpha-0
+    // fade-in still provides the visual delay without softlocking the
+    // buttons if a tween is interrupted by tab-backgrounding.
+    const { rect: button, label: text } = createGameButton(this, {
+      x, y, width, height, label, tier,
+      fillOverride: overrides?.fillOverride,
+      hoverOverride: overrides?.hoverOverride,
+      textColorOverride: overrides?.textColorOverride,
+    });
+    button.setScrollFactor(0).setDepth(203).setAlpha(0);
+    text.setScrollFactor(0).setDepth(204).setAlpha(0);
 
     this.tweens.add({
       targets: [button, text],
@@ -675,7 +663,6 @@ export class GameOverScene extends Phaser.Scene {
       delay,
     });
 
-    attachButtonHoverFill(button, fill, brightenColor(fill, 16));
     button.on('pointerdown', onClick);
   }
 

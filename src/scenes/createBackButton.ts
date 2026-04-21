@@ -1,6 +1,5 @@
 import type Phaser from 'phaser';
-import { resolveBackButtonPalette } from './backButtonPalette';
-import { attachButtonHoverFill } from '../ui/buttonHover';
+import { createGameButton } from '../ui/gameButton';
 
 /**
  * Builds the standard "Back" button rectangle + amber bold label that
@@ -26,19 +25,9 @@ export function createBackButton(
   scene: Phaser.Scene,
   opts: BackButtonOpts,
 ): Phaser.GameObjects.Rectangle {
-  const palette = resolveBackButtonPalette();
-  const btn = scene.add
-    .rectangle(opts.x, opts.y, opts.width, opts.height, palette.idle, 1)
-    .setInteractive({ useHandCursor: true });
-  const label = scene.add
-    .text(opts.x, opts.y, opts.label, {
-      fontFamily: 'monospace',
-      fontSize: opts.fontSize,
-      color: '#e8d4a0',
-      fontStyle: 'bold',
-    })
-    .setOrigin(0.5);
-  if (opts.uiScale !== undefined) label.setScale(opts.uiScale);
-  attachButtonHoverFill(btn, palette.idle, palette.hover);
-  return btn;
+  const { rect } = createGameButton(scene, {
+    x: opts.x, y: opts.y, width: opts.width, height: opts.height,
+    label: opts.label, tier: 'tertiary', fontSize: opts.fontSize, uiScale: opts.uiScale,
+  });
+  return rect;
 }

@@ -29,7 +29,7 @@ import { computeMenuLayout } from './menuLayout';
 import { startSceneFadeOut, addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { attachButtonHoverFill } from '../ui/buttonHover';
-import { brightenColor } from '../utils/brightenColor';
+import { createGameButton } from '../ui/gameButton';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -193,7 +193,7 @@ export class MenuScene extends Phaser.Scene {
     this.upgradesHit = this.createButton(width / 2 + 128, layout.buttonY, 220, 54, t('ui.loadout.upgrades'), 0x3a4357, () => {
       audio.playClick();
       this.fadeToScene('Shop');
-    }, 660);
+    }, 660, 'secondary');
 
     applyAudioFromUserSettings(prefs);
     const sfxOn = prefs.sfxVolume > 0.001;
@@ -424,19 +424,13 @@ export class MenuScene extends Phaser.Scene {
   }
 
   private createCarouselButton(x: number, y: number, label: string, onClick: () => void): Phaser.GameObjects.Rectangle {
-    const button = this.add
-      .rectangle(x, y, 38, 38, 0x24314f, 1)
-      .setInteractive({ useHandCursor: true });
-    const text = this.add
-      .text(x, y - 1, label, {
-        fontFamily: 'monospace',
-        fontSize: '22px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5);
-
-    attachButtonHoverFill(button, 0x24314f, 0x304269);
+    const { rect: button, label: text } = createGameButton(this, {
+      x, y, width: 38, height: 38, label,
+      tier: 'tertiary', fontSize: '22px',
+      fillOverride: 0x24314f, hoverOverride: 0x304269, textColorOverride: '#ffffff',
+    });
+    // Shift text up 1px for visual alignment of < / > glyphs
+    text.setY(y - 1);
     button.on('pointerdown', onClick);
 
     this.variantPanelElements.push(button, text);
@@ -565,22 +559,16 @@ export class MenuScene extends Phaser.Scene {
     label: string,
     color: number,
     onClick: () => void,
-    delay: number
+    delay: number,
+    tier: import('../ui/gameButton').ButtonTier = 'primary',
   ): Phaser.GameObjects.Rectangle {
-    const bg = this.add
-      .rectangle(x, y + 24, width, height, color)
-      .setInteractive({ useHandCursor: true })
-      .setAlpha(0);
-
-    const text = this.add
-      .text(x, y + 24, label, {
-        fontFamily: 'monospace',
-        fontSize: '26px',
-        color: COLORS_CSS.WHITE,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setAlpha(0);
+    const { rect: bg, label: text } = createGameButton(this, {
+      x, y: y + 24, width, height, label, tier,
+      fillOverride: color === COLORS.SCOTTISH_BLUE ? undefined : color,
+      fontSize: '26px', uiScale: this.uiScale,
+    });
+    bg.setAlpha(0);
+    text.setAlpha(0);
     bg.setScale(this.uiScale);
     text.setScale(this.uiScale);
 
@@ -593,18 +581,6 @@ export class MenuScene extends Phaser.Scene {
       ease: 'Power2',
     });
 
-    bg.on('pointerover', () => {
-      bg.setScale(this.uiScale * 1.03);
-      text.setScale(this.uiScale * 1.03);
-      bg.setFillStyle(brightenColor(color, 18));
-    });
-    bg.on('pointerout', () => {
-      // Restore to the initial uiScale, not 1 — otherwise every hover-out
-      // permanently shrinks the button at uiScale != 1.
-      bg.setScale(this.uiScale);
-      text.setScale(this.uiScale);
-      bg.setFillStyle(color);
-    });
     bg.on('pointerdown', onClick);
     return bg;
   }
