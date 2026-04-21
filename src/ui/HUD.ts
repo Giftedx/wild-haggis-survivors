@@ -12,6 +12,7 @@ import { formatClockTime } from '../utils/formatClockTime';
 import { formatSpeedrunTime } from '../utils/formatSpeedrunTime';
 import { TWEEN_ONE_SHOT_PULSE } from '../utils/tweenPresets';
 import { resolvePassiveAbbrev } from './hudPassiveAbbrev';
+import { audio } from '../systems/AudioSystem';
 import {
   targetHpBarColor,
   packRgbColor,
@@ -104,6 +105,7 @@ export class HUD {
   // Passive items display
   private passiveSlots: Phaser.GameObjects.Text[] = [];
   private lastPassiveCount: number = 0;
+  private lastPassiveKeys = new Set<string>();
 
   // Shield + dash row (sprites for shield / pips — no emoji or font glyphs)
   private shieldIcon!: Phaser.GameObjects.Image;
@@ -650,7 +652,7 @@ export class HUD {
     }
 
     // Update passive items display
-    if (passives && passives.length !== this.lastPassiveCount) {
+    if (passives && (passives.length !== this.lastPassiveCount || passives.some(k => !this.lastPassiveKeys.has(k)))) {
       this.updatePassiveSlots(passives);
     }
   }
@@ -773,6 +775,9 @@ export class HUD {
   }
 
   private updatePassiveSlots(passives: string[]): void {
+    // Identify newly added passives before destroying old slots
+    const newKeys = passives.filter(k => !this.lastPassiveKeys.has(k));
+
     // Clear old
     for (const slot of this.passiveSlots) {
       const idx = this.elements.indexOf(slot);
@@ -787,6 +792,7 @@ export class HUD {
     const startX = this.layoutX + 12;
     const y = this.layoutY + this.layoutHeight - (54 * this.uiScale) - this.XP_BAR_H;
 
+    let playedSfx = false;
     passives.forEach((key, i) => {
       const x = startX + i * 42;
       // HUD pill labels — preferred abbrev lives in i18n, else
@@ -797,7 +803,35 @@ export class HUD {
         backgroundColor: '#2a2a3a', padding: { x: 5, y: 3 },
       }).setOrigin(0.5).setScrollFactor(0).setDepth(this.DEPTH + 1));
       this.passiveSlots.push(label);
+
+      if (newKeys.includes(key)) {
+        // Scale-in bounce
+        label.setScale(0);
+        this.scene.tweens.add({
+          targets: label, scale: 1, duration: 250, ease: 'Back.easeOut',
+        });
+
+        // Gold flash rect behind the pill — text bounds available after setText
+        // Origin is 0.5, so label.x/y is already the center.
+        const flash = this.scene.add.rectangle(
+          label.x, label.y,
+          label.width + 14, label.height + 10,
+          0xffdd44, 0.6,
+        ).setScrollFactor(0).setDepth(this.DEPTH);
+        this.scene.tweens.add({
+          targets: flash, alpha: 0, duration: 400,
+          onComplete: () => flash.destroy(),
+        });
+
+        // Bell SFX — once per updatePassiveSlots call, not once per pill
+        if (!playedSfx) {
+          audio.playStoneGrant();
+          playedSfx = true;
+        }
+      }
     });
+
+    this.lastPassiveKeys = new Set(passives);
   }
 
   /** Update shield indicator */
