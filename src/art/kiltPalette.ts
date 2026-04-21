@@ -33,6 +33,19 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   glaswegian:   { field: 0xff5a00, fieldDark: 0x8a2a00, stripe: 0x1a2028, accent: 0xffaa44 },
 };
 
+/**
+ * Shared tartan palette for all enemy and world tartan elements.
+ * Muted Stewart red — reads as "generic Scottish" while sitting below
+ * player kilt saturation in visual hierarchy. Accent uses WHISKY_GOLD
+ * to tie into the game's primary accent language.
+ */
+export const HIGHLAND_TARTAN: KiltPalette = {
+  field: 0xa83030,
+  fieldDark: 0x6b1a1a,
+  stripe: 0x1a4422,
+  accent: 0xd4a017,
+};
+
 const FALLBACK: KiltPalette = KILT_PALETTES.classic;
 
 export function resolveKiltPalette(variantKey: string): KiltPalette {
