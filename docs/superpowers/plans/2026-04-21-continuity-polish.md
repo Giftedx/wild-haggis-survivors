@@ -1,5 +1,7 @@
 # Continuity Polish — Handcrafted Feel Across the Whole Game
 
+> **Shipped 2026-04-21** — verified 2026-04-22 against repo state. Checkboxes below remain unticked because superpowers:subagent-driven-development commits code without editing plan files. File retained in-tree as scope-vs-shipped record.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Thirteen targeted improvements that close every remaining gap where the game's atmosphere breaks continuity — from silent shop screens to generic boss deaths to invisible magnetism.
