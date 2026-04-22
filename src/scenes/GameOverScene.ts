@@ -28,6 +28,8 @@ import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
 import { saveScreenshot } from '../utils/screenshot';
 import { buildCaptureFilename } from '../utils/captureFilename';
+import { ClipRecorder } from '../utils/clipRecorder';
+import type { GameScene } from './GameScene';
 import { formatLocalYmd } from '../utils/formatDate';
 import { TOAST_COLORS } from '../ui/toastPalette';
 import { createGameButton } from '../ui/gameButton';
@@ -403,6 +405,11 @@ export class GameOverScene extends Phaser.Scene {
     if (getSettingsManager().load().captureEnabled) {
       const saveFrameLinkY = linkY + 16;
       this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
+      const gameScene = this.scene.get('Game') as GameScene | undefined;
+      const recorder = gameScene?.getClipRecorder();
+      if (recorder?.isAvailable()) {
+        this.renderSaveClipLink(panelCenterX, saveFrameLinkY + 16, d + 3, 1240, recorder);
+      }
     }
 
     const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
@@ -794,6 +801,76 @@ export class GameOverScene extends Phaser.Scene {
           saving = false;
         }
         audio.playClick();
+      });
+    };
+    text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
+    text.on('pointerout', () => { if (!saving) text.setColor(palette.idle); });
+    text.on('pointerdown', doSave);
+  }
+
+  /**
+   * W27 Phase 2 — "Save clip" text link. Downloads the last 15s of canvas
+   * recording as a WebM file. Only rendered when the ClipRecorder is
+   * available (MediaRecorder + captureStream support) and captureEnabled.
+   */
+  private renderSaveClipLink(
+    centerX: number,
+    y: number,
+    depth: number,
+    delay: number,
+    recorder: ClipRecorder,
+  ): void {
+    const hint = t('ui.gameOver.save_clip');
+    const palette = resolveCopyActionLinkPalette(false);
+    const text = this.add
+      .text(centerX, y, `📼 ${hint}`, {
+        ...COPY_ACTION_LINK_TEXT_BASE,
+        color: palette.idle,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    let saving = false;
+    const doSave = () => {
+      if (saving) return;
+      const p = this.payload;
+      if (!p) return;
+      saving = true;
+      const filename = buildCaptureFilename('clip', {
+        mode: p.mode,
+        variantLabel: p.variantLabel,
+        timeSurvivedSec: p.summary.timeSurvivedSec,
+        seedCode: p.seedCode,
+        dateYmd: formatLocalYmd(new Date()),
+      });
+      recorder.saveLast((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }).then((blob) => {
+        if (blob === null) {
+          text.setText(`📼 ${t('ui.toast.clip_empty')}`);
+          text.setColor(TOAST_COLORS.warning);
+          saving = false;
+        } else {
+          text.setText(`📼 ${t('ui.toast.clip_saved')}`);
+          text.setColor(palette.success);
+          audio.playClick();
+        }
+      }).catch(() => {
+        text.setText(`📼 ${t('ui.toast.clip_failed')}`);
+        text.setColor(TOAST_COLORS.warning);
+        saving = false;
       });
     };
     text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
