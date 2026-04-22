@@ -23,6 +23,10 @@ import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
+import { buildCaptureFilename } from '../utils/captureFilename';
+import { formatLocalYmd } from '../utils/formatDate';
+import { saveScreenshot } from '../utils/screenshot';
+import { TOAST_COLORS } from '../ui/toastPalette';
 import { ReplayRecorder } from '../replay/ReplayRecorder';
 import { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
@@ -1047,6 +1051,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     wireSceneKeybindings(this.input.keyboard, this.subs, {
       togglePause: () => this.toggleUiPause(),
       getDebugOverlay: () => this.debugOverlay,
+      saveScreenshotF10: () => this.handleF10Screenshot(),
     });
 
     // Run-intro ceremony — fade in from black + controls hint auto-hide.
@@ -1739,6 +1744,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       timeSurvivedSec: Math.floor(this.spawnSystem.getGameTimeSec()),
       seedCode: this.getRunSeedCode(),
     };
+  }
+
+  /** F10 screenshot handler — check captureEnabled, snap canvas, show toast. */
+  private handleF10Screenshot(): void {
+    if (!getSettingsManager().load().captureEnabled) return;
+    const canvas = this.game.canvas;
+    if (!canvas) return;
+    const ctx = this.getRunContextForCapture();
+    const filename = buildCaptureFilename('screenshot', {
+      mode: ctx.mode,
+      variantLabel: ctx.variantLabel,
+      timeSurvivedSec: ctx.timeSurvivedSec,
+      seedCode: ctx.seedCode,
+      dateYmd: formatLocalYmd(new Date()),
+    });
+    void saveScreenshot(canvas, filename).then((ok) => {
+      this.getJuice()?.showToast(
+        ok ? t('ui.toast.screenshot_saved') : t('ui.toast.screenshot_failed'),
+        ok ? TOAST_COLORS.positive : TOAST_COLORS.warning,
+      );
+    });
   }
 
   // Chest sprite track/untrack/markers extracted to ChestSpriteRegistry.

@@ -13,7 +13,7 @@ import { SubscriptionBag } from '../../utils/SubscriptionBag';
 type FakeKeyboard = EventEmitter & { dummy?: never };
 
 /**
- * wireSceneKeybindings: ESC / P → pause; F3 → debug overlay.
+ * wireSceneKeybindings: ESC / P → pause; F3 → debug overlay; F10 → screenshot.
  * Goes through SubscriptionBag so a single bag.dispose() clears them
  * all on scene shutdown.
  */
@@ -22,7 +22,8 @@ describe('wireSceneKeybindings', () => {
     const subs = new SubscriptionBag();
     const togglePause = vi.fn();
     const getDebugOverlay = vi.fn(() => null);
-    wireSceneKeybindings(null, subs, { togglePause, getDebugOverlay });
+    const saveScreenshotF10 = vi.fn();
+    wireSceneKeybindings(null, subs, { togglePause, getDebugOverlay, saveScreenshotF10 });
     // dispose is a no-op because nothing was registered
     subs.dispose();
     expect(togglePause).not.toHaveBeenCalled();
@@ -33,7 +34,8 @@ describe('wireSceneKeybindings', () => {
     const subs = new SubscriptionBag();
     const togglePause = vi.fn();
     const getDebugOverlay = vi.fn(() => null);
-    wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, { togglePause, getDebugOverlay });
+    const saveScreenshotF10 = vi.fn();
+    wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, { togglePause, getDebugOverlay, saveScreenshotF10 });
 
     keyboard.emit('keydown-ESC');
     expect(togglePause).toHaveBeenCalledTimes(1);
@@ -49,7 +51,7 @@ describe('wireSceneKeybindings', () => {
     let overlayRef: typeof overlay | null = null;
     const getDebugOverlay = () => overlayRef as never;
 
-    wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, { togglePause: vi.fn(), getDebugOverlay });
+    wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, { togglePause: vi.fn(), getDebugOverlay, saveScreenshotF10: vi.fn() });
 
     // Overlay absent → toggle not called
     keyboard.emit('keydown-F3');
@@ -69,6 +71,7 @@ describe('wireSceneKeybindings', () => {
     wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, {
       togglePause,
       getDebugOverlay: () => ({ toggle } as never),
+      saveScreenshotF10: vi.fn(),
     });
     subs.dispose();
     keyboard.emit('keydown-ESC');
