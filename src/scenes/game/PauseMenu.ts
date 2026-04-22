@@ -29,6 +29,10 @@ import { resolveToggleTextColor } from '../toggleTextPalette';
 import { createGameButton } from '../../ui/gameButton';
 import { textStyle } from '../../ui/typography';
 import { audio } from '../../systems/AudioSystem';
+import { saveScreenshot } from '../../utils/screenshot';
+import { buildCaptureFilename } from '../../utils/captureFilename';
+import { formatLocalYmd } from '../../utils/formatDate';
+import { TOAST_COLORS } from '../../ui/toastPalette';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -133,7 +137,10 @@ export class PauseMenu {
     const passives = this.hooks.getOwnedPassives();
     // Bottom-anchored controls so END RUN / audio never clip off short viewports (mobile landscape, etc.).
     const quitY = y + height - 33;
-    const audioY = quitY - 42;
+    const captureEnabled = this.settings.load().captureEnabled;
+    // When the Save screenshot button is shown it occupies 58px above Quit (50px button + 8px gap).
+    const saveScreenshotY = captureEnabled ? quitY - 58 : null;
+    const audioY = captureEnabled ? quitY - 100 : quitY - 42;
     const passiveBottomY = passives.length > 0 ? audioY - 14 : null;
     const eliteRegionBottom = passiveBottomY !== null ? passiveBottomY : audioY - 10;
     // Below RESUME label + ESC/P hint — keeps elite reference block from crowding keys.
@@ -228,6 +235,18 @@ export class PauseMenu {
       );
     }
 
+    if (saveScreenshotY !== null) {
+      const { rect: ssBtn, label: ssLabel } = createGameButton(scene, {
+        x: x + width / 2, y: saveScreenshotY, width: 220, height: 50,
+        label: t('ui.pause.save_screenshot'), tier: 'secondary', fontSize: '18px', uiScale,
+      });
+      ssBtn.setScrollFactor(0).setDepth(d + 1);
+      ssBtn.on('pointerdown', () => { void this.handleSaveScreenshot(); });
+      ssLabel.setScrollFactor(0).setDepth(d + 2);
+      this.elements.push(ssBtn);
+      this.elements.push(ssLabel);
+    }
+
     const { rect: quitBtn, label: quitLabel } = createGameButton(scene, {
       x: x + width / 2, y: quitY, width: 220, height: 50,
       label: t('ui.pause.quit'), tier: 'secondary', fontSize: '22px', uiScale,
@@ -237,6 +256,24 @@ export class PauseMenu {
     quitLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(quitBtn);
     this.elements.push(quitLabel);
+  }
+
+  private async handleSaveScreenshot(): Promise<void> {
+    const scene = this.scene;
+    const canvas = scene.game.canvas as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = scene.getRunContextForCapture();
+    const filename = buildCaptureFilename('screenshot', {
+      mode: ctx.mode,
+      variantLabel: ctx.variantLabel,
+      timeSurvivedSec: ctx.timeSurvivedSec,
+      seedCode: ctx.seedCode,
+      dateYmd: formatLocalYmd(new Date()),
+    });
+    const ok = await saveScreenshot(canvas, filename);
+    const msg = ok ? t('ui.toast.screenshot_saved') : t('ui.toast.screenshot_failed');
+    const color = ok ? TOAST_COLORS.positive : TOAST_COLORS.warning;
+    scene.getJuice().showToast(msg, color);
   }
 
   close(): void {

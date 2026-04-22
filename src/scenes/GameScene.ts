@@ -18,7 +18,7 @@ import {
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
-import { getVariantByKey, VariantDef } from '../data/variants';
+import { getVariantByKey, VariantDef, formatRunVariantLabel } from '../data/variants';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -1715,6 +1715,30 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** True when this run was launched as a Daily Challenge attempt. */
   isDailyRun(): boolean {
     return this.runIsDaily;
+  }
+
+  /** JuiceSystem accessor — used by PauseMenu and other scene-adjacent modules. */
+  getJuice(): JuiceSystem {
+    return this.juice;
+  }
+
+  /**
+   * Run context snapshot for the capture pipeline (Pause / F10 screenshot).
+   * At pause time the player is alive; GameOverScene supplies its own payload
+   * with the final mode for the death/victory capture path.
+   */
+  getRunContextForCapture(): {
+    mode: 'victory' | 'death';
+    variantLabel: string;
+    timeSurvivedSec: number;
+    seedCode?: string;
+  } {
+    return {
+      mode: 'victory',
+      variantLabel: formatRunVariantLabel(this.activeVariant),
+      timeSurvivedSec: Math.floor(this.spawnSystem.getGameTimeSec()),
+      seedCode: this.getRunSeedCode(),
+    };
   }
 
   // Chest sprite track/untrack/markers extracted to ChestSpriteRegistry.
