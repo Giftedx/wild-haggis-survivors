@@ -65,6 +65,7 @@ describe('SettingsManager air-gap', () => {
       skipActIntermissions: false,
       ironmoorMode: false,
       speedrunTimerVisible: false,
+      captureEnabled: true,
     });
 
     meta.reset();
@@ -120,6 +121,7 @@ describe('SettingsManager air-gap', () => {
       skipActIntermissions: false,
       ironmoorMode: false,
       speedrunTimerVisible: false,
+      captureEnabled: true,
     });
 
     meta.reset();
@@ -170,6 +172,7 @@ describe('SettingsManager air-gap', () => {
       skipActIntermissions: false,
       ironmoorMode: false,
       speedrunTimerVisible: false,
+      captureEnabled: true,
     });
 
     settings.reset();
@@ -199,6 +202,7 @@ describe('SettingsManager air-gap', () => {
       skipActIntermissions: false,
       ironmoorMode: false,
       speedrunTimerVisible: false,
+      captureEnabled: true,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });
@@ -340,5 +344,28 @@ describe('SettingsManager: W2 skipActIntermissions', () => {
     }));
     const settings = new SettingsManager({ storage: mem, key: 's' });
     expect(settings.load().localeKey).toBe('en');
+  });
+});
+
+describe('SettingsManager captureEnabled', () => {
+  it('defaults captureEnabled to true on a fresh load', () => {
+    const mgr = new SettingsManager({
+      storage: { getItem: () => null, setItem: () => {}, removeItem: () => {} },
+    });
+    expect(mgr.load().captureEnabled).toBe(true);
+  });
+
+  it('coerces saved captureEnabled=false', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({ captureEnabled: false }));
+    const mgr = new SettingsManager({ storage: mem, key: 's' });
+    expect(mgr.load().captureEnabled).toBe(false);
+  });
+
+  it('coerces missing captureEnabled back to the default', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({ masterVolume: 0.5 }));
+    const mgr = new SettingsManager({ storage: mem, key: 's' });
+    expect(mgr.load().captureEnabled).toBe(true);
   });
 });

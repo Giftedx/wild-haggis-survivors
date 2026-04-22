@@ -20,6 +20,7 @@ const baseSettings: ISettingsData = {
   skipActIntermissions: false,
   ironmoorMode: false,
   speedrunTimerVisible: false,
+  captureEnabled: true,
 };
 
 describe('applyLocaleFromUserSettings', () => {

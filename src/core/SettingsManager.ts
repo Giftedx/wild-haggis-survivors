@@ -60,6 +60,13 @@ export interface ISettingsData {
    */
   speedrunTimerVisible: boolean;
   /**
+   * W27 capture opt-out. When false, ClipRecorder doesn't start and
+   * both capture UI buttons hide. Default true — capture is lightweight
+   * and the kill-criterion is >3% CPU or >200 KB bundle; neither applies
+   * at default settings.
+   */
+  captureEnabled: boolean;
+  /**
    * W18 locale key. 'en' is the reference language (Glesga-register
    * English); 'scs' overlays Scots where translations exist, falling
    * back to English silently for unresolved keys. Optional for back-
@@ -97,6 +104,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   skipActIntermissions: false,
   ironmoorMode: false,
   speedrunTimerVisible: false,
+  captureEnabled: true,
   localeKey: 'en',
 };
 
@@ -204,6 +212,7 @@ export class SettingsManager {
       skipActIntermissions: toBool(o.skipActIntermissions, DEFAULT_SETTINGS.skipActIntermissions),
       ironmoorMode: toBool(o.ironmoorMode, DEFAULT_SETTINGS.ironmoorMode),
       speedrunTimerVisible: toBool(o.speedrunTimerVisible, DEFAULT_SETTINGS.speedrunTimerVisible),
+      captureEnabled: toBool(o.captureEnabled, DEFAULT_SETTINGS.captureEnabled),
       localeKey: toLocaleKey(o.localeKey, DEFAULT_SETTINGS.localeKey ?? 'en'),
     };
   }

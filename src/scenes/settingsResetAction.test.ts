@@ -19,6 +19,7 @@ const makeDefaults = (): ISettingsData => ({
   skipActIntermissions: false,
   ironmoorMode: false,
   speedrunTimerVisible: false,
+  captureEnabled: true,
   localeKey: 'en',
 });
 

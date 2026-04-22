@@ -39,6 +39,7 @@ const base: ISettingsData = {
   skipActIntermissions: false,
   ironmoorMode: false,
   speedrunTimerVisible: false,
+  captureEnabled: true,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

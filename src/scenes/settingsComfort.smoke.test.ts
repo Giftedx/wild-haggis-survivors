@@ -94,6 +94,7 @@ describe('Settings / Comfort panel smoke', () => {
       skipActIntermissions: true,
       ironmoorMode: true,
       speedrunTimerVisible: true,
+      captureEnabled: false,
       localeKey: 'scs',
     };
     sm.save(payload);
