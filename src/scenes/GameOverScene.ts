@@ -26,6 +26,10 @@ import { renderVariantChip } from './gameOverVariantChip';
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
 import { copyTextToClipboard } from '../utils/clipboard';
+import { saveScreenshot } from '../utils/screenshot';
+import { buildCaptureFilename } from '../utils/captureFilename';
+import { formatLocalYmd } from '../utils/formatDate';
+import { TOAST_COLORS } from '../ui/toastPalette';
 import { createGameButton } from '../ui/gameButton';
 import { textStyle } from '../ui/typography';
 
@@ -394,6 +398,12 @@ export class GameOverScene extends Phaser.Scene {
     } else {
       this.renderPostcardLink(panelCenterX, linkY, d + 3, 1180);
     }
+    // Save frame link — gated by captureEnabled setting; sits on a second
+    // row directly below the postcard/rerun link row.
+    if (getSettingsManager().load().captureEnabled) {
+      const saveFrameLinkY = linkY + 16;
+      this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
+    }
 
     const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
     // Responsive gap — default design target is ±196 between centre
@@ -733,6 +743,61 @@ export class GameOverScene extends Phaser.Scene {
     };
     text.on('pointerover', () => { if (!saved) text.setColor(palette.hover); });
     text.on('pointerout', () => { if (!saved) text.setColor(palette.idle); });
+    text.on('pointerdown', doSave);
+  }
+
+  /**
+   * W27 Phase 2 — "Save frame" text link. Downloads the current canvas as
+   * a PNG named with run context. Only rendered when captureEnabled is true
+   * (gate evaluated in create() before this method is called).
+   */
+  private renderSaveFrameLink(
+    centerX: number,
+    y: number,
+    depth: number,
+    delay: number,
+  ): void {
+    const hint = t('ui.gameOver.save_frame');
+    const palette = resolveCopyActionLinkPalette(false);
+    const text = this.add
+      .text(centerX, y, `📷 ${hint}`, {
+        ...COPY_ACTION_LINK_TEXT_BASE,
+        color: palette.idle,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    let saving = false;
+    const doSave = () => {
+      if (saving) return;
+      const p = this.payload;
+      if (!p) return;
+      saving = true;
+      const filename = buildCaptureFilename('screenshot', {
+        mode: p.mode,
+        variantLabel: p.variantLabel,
+        timeSurvivedSec: p.summary.timeSurvivedSec,
+        seedCode: p.seedCode,
+        dateYmd: formatLocalYmd(new Date()),
+      });
+      saveScreenshot(this.game.canvas as HTMLCanvasElement, filename).then((ok) => {
+        if (ok) {
+          text.setText(`📷 ${t('ui.toast.screenshot_saved')}`);
+          text.setColor(palette.success);
+        } else {
+          text.setText(`📷 ${t('ui.toast.screenshot_failed')}`);
+          text.setColor(TOAST_COLORS.warning);
+          saving = false;
+        }
+        audio.playClick();
+      });
+    };
+    text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
+    text.on('pointerout', () => { if (!saving) text.setColor(palette.idle); });
     text.on('pointerdown', doSave);
   }
 
