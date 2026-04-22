@@ -11,6 +11,7 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
+import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
@@ -156,6 +157,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private juice!: JuiceSystem;
   private timeManager!: TimeManager;
   private updateTickers = new UpdateTickers();
+  private clipRecorder: ClipRecorder | null = null;
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
   private readonly chestRegistry = new ChestSpriteRegistry();
@@ -1069,6 +1071,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.filmGrain.install();
     this.filmGrain.bindViewportResize();
 
+    // Start clip recorder if capture is enabled
+    if (getSettingsManager().load().captureEnabled) {
+      const canvas = this.game.canvas;
+      if (canvas) {
+        this.clipRecorder = new ClipRecorder(canvas, { fps: 30, durationSec: 15 });
+        if (this.clipRecorder.isAvailable()) {
+          this.clipRecorder.start();
+        } else {
+          this.clipRecorder = null;
+        }
+      }
+    }
+
     // Start countdown — game is paused until it finishes
     this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
     showCountdown(this, this.timeManager, this.updateTickers, () => this.getUiViewport());
@@ -1080,6 +1095,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private registerShutdownCleanup(): void {
     // Clean up on scene shutdown (prevents stale timers/listeners on restart)
     this.events.once('shutdown', () => {
+      this.clipRecorder?.stop();
+      this.clipRecorder = null;
       try {
         uninstallAutoBattleTimeScale(this);
       } catch {
@@ -1725,6 +1742,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** JuiceSystem accessor — used by PauseMenu and other scene-adjacent modules. */
   getJuice(): JuiceSystem {
     return this.juice;
+  }
+
+  public getClipRecorder(): ClipRecorder | null {
+    return this.clipRecorder;
   }
 
   /**
