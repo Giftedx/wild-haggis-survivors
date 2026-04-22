@@ -58,7 +58,8 @@ type ToggleKey =
   | 'telemetryOptIn'
   | 'skipActIntermissions'
   | 'ironmoorMode'
-  | 'speedrunTimerVisible';
+  | 'speedrunTimerVisible'
+  | 'captureEnabled';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -269,6 +270,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
+    this.addToggleRow(t('ui.settings.capture_enabled'), 'captureEnabled');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();
 
