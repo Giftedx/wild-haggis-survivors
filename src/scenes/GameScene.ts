@@ -1053,6 +1053,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     wireSceneKeybindings(this.input.keyboard, this.subs, {
       togglePause: () => this.toggleUiPause(),
       getDebugOverlay: () => this.debugOverlay,
+      saveClipF9: () => this.handleF9SaveClip(),
       saveScreenshotF10: () => this.handleF10Screenshot(),
     });
 
@@ -1768,6 +1769,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /** F10 screenshot handler — check captureEnabled, snap canvas, show toast. */
+  private lastClipSaveAt = 0;
+
   private handleF10Screenshot(): void {
     if (!getSettingsManager().load().captureEnabled) return;
     const canvas = this.game.canvas;
@@ -1785,6 +1788,43 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         ok ? t('ui.toast.screenshot_saved') : t('ui.toast.screenshot_failed'),
         ok ? TOAST_COLORS.positive : TOAST_COLORS.warning,
       );
+    });
+  }
+
+  private handleF9SaveClip(): void {
+    if (!getSettingsManager().load().captureEnabled) return;
+    const recorder = this.clipRecorder;
+    if (!recorder?.isAvailable()) return;
+
+    const now = performance.now();
+    if (now - this.lastClipSaveAt < 500) return;
+    this.lastClipSaveAt = now;
+
+    const ctx = this.getRunContextForCapture();
+    const filename = buildCaptureFilename('clip', {
+      mode: ctx.mode,
+      variantLabel: ctx.variantLabel,
+      timeSurvivedSec: ctx.timeSurvivedSec,
+      seedCode: ctx.seedCode,
+      dateYmd: formatLocalYmd(new Date()),
+    });
+
+    void recorder.saveLast((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }).then((blob) => {
+      const key = blob === null ? 'ui.toast.clip_empty' : 'ui.toast.clip_saved';
+      const color = blob ? TOAST_COLORS.positive : TOAST_COLORS.warning;
+      this.getJuice()?.showToast(t(key), color);
+    }).catch(() => {
+      this.getJuice()?.showToast(t('ui.toast.clip_failed'), TOAST_COLORS.warning);
     });
   }
 

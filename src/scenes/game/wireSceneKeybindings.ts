@@ -2,6 +2,7 @@
  * wireSceneKeybindings — register GameScene-level keyboard shortcuts:
  *   - ESC / P : toggle pause menu
  *   - F3      : toggle debug overlay
+ *   - F9      : save last 15s clip (if captureEnabled)
  *   - F10     : save screenshot (if captureEnabled)
  *
  * Uses SubscriptionBag so disposal is single-call — scene shutdown
@@ -14,6 +15,7 @@ import type { DebugOverlay } from '../../ui/DebugOverlay';
 export interface SceneKeybindingHooks {
   togglePause(): void;
   getDebugOverlay(): DebugOverlay | null;
+  saveClipF9(): void;
   saveScreenshotF10(): void;
 }
 
@@ -30,5 +32,6 @@ export function wireSceneKeybindings(
   subs.listen(kb, 'keydown-ESC', () => hooks.togglePause());
   subs.listen(kb, 'keydown-P', () => hooks.togglePause());
   subs.listen(kb, 'keydown-F3', () => hooks.getDebugOverlay()?.toggle());
+  subs.listen(kb, 'keydown-F9', () => hooks.saveClipF9());
   subs.listen(kb, 'keydown-F10', () => hooks.saveScreenshotF10());
 }
