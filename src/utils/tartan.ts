@@ -54,6 +54,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   laird:         { base: '#1f2a38', primary: '#2e6aa8' }, // royal blue
   wee_ghostie:   { base: '#1d2029', primary: '#9dabc2' }, // pale slate
   glaswegian:    { base: '#1a2028', primary: '#ff5a00' }, // urban slate + tram orange
+  cailleach:     { base: '#0f1a12', primary: '#d4d0c0' }, // deep moss + elder silver
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

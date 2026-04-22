@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -19,7 +19,8 @@ export type VariantUnlockCondition =
   | { type: 'best_time'; required: number }
   | { type: 'best_kills'; required: number }
   | { type: 'total_gold_earned'; required: number }
-  | { type: 'victories'; required: number };
+  | { type: 'victories'; required: number }
+  | { type: 'cursed_victories'; required: number };
 
 export interface HaggisPalette {
   outline: number;
@@ -30,7 +31,7 @@ export interface HaggisPalette {
   accent: number;
 }
 
-export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie';
+export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'cailleach';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -54,6 +55,7 @@ export interface VariantProgressSnapshot {
   bestKills: number;
   totalGoldEarned: number;
   victories: number;
+  cursedVictories?: number;
   unlockedVariants?: readonly VariantKey[];
 }
 
@@ -245,6 +247,31 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // Cailleach — mythic elder. Slow, tanky, massive pickup radius.
+    // +8% crit deferred — VariantModifier has no crit field today.
+    key: 'cailleach',
+    nameKey: 'variant.cailleach.name',
+    flavorKey: 'variant.cailleach.flavor',
+    textureKey: 'haggis_cailleach',
+    modifiers: {
+      moveSpeedPct: -15,
+      maxHpFlat: 10,
+      pickupRadiusFlat: 35,
+    },
+    unlock: { type: 'cursed_victories', required: 3 },
+    appearance: {
+      accentStyle: 'cailleach',
+      palette: {
+        outline: 0x0f1a12,
+        bodyDark: 0x2a3d2e,
+        bodyLight: 0x3a4f3a,
+        fur: 0x4a5f4a,
+        snout: 0x2a3d2e,
+        accent: 0xd4d0c0,
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -288,6 +315,8 @@ export function meetsVariantUnlockCondition(
       return progress.totalGoldEarned >= variant.unlock.required;
     case 'victories':
       return progress.victories >= variant.unlock.required;
+    case 'cursed_victories':
+      return (progress.cursedVictories ?? 0) >= variant.unlock.required;
   }
 }
 
@@ -335,6 +364,16 @@ export function getVariantUnlockProgress(
         `${progress.victories}`,
         `${variant.unlock.required}`
       );
+    case 'cursed_victories': {
+      const cv = progress.cursedVictories ?? 0;
+      return createUnlockProgress(
+        t('variant.unlock.cursed_victories'),
+        cv,
+        variant.unlock.required,
+        `${cv}`,
+        `${variant.unlock.required}`
+      );
+    }
   }
 }
 

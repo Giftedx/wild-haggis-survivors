@@ -59,6 +59,7 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     totalGoldEarned: 0,
     bestCombo: 0,
     victories: 0,
+    cursedVictoriesCompleted: 0,
     runHistory: [],
     settings: { soundOn: true, musicOn: true },
     ...overrides,

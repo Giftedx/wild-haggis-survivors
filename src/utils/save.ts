@@ -482,6 +482,7 @@ function buildProgressSnapshot(
     bestKills: coerceInteger(candidate.bestKills, DEFAULT_SAVE.bestKills),
     totalGoldEarned: coerceInteger(candidate.totalGoldEarned, DEFAULT_SAVE.totalGoldEarned),
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
+    cursedVictories: coerceInteger(candidate.cursedVictoriesCompleted, 0),
     unlockedVariants,
   };
 }
