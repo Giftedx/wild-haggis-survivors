@@ -224,3 +224,17 @@ Each of those earns its own phase after Phase 0 validates the core hook.
 ---
 
 *Spec complete. Next: `writing-plans` with 6-7 bite-sized tasks.*
+
+---
+
+## Verification (post-ship, 2026-04-22)
+
+- **Bundle delta** over post-Cailleach baseline (`223.82 KiB` gzip): **+1.60 KiB** (new total: 225.42 KiB).
+- **Tests**: 2949 vitest passed, 11 e2e passed.
+- **EN ↔ SCS parity**: ✅ all new keys mirrored (15 whispers + 8 kin + 3 framing).
+- **Backfill migration**: ✅ existing runHistory entries get deterministic names on load.
+- **Name persistence**: ✅ new runs save with the name generated at run-start.
+- **Ancestor whisper trigger**: ⏸ manual verification deferred — requires a save with ≥1 past run, fresh scene, observe toast at 3s mark.
+- **Chronicle display**: ✅ ancestor names visible on each past-run row.
+- **Pause + GameOver framing**: ✅ run name shown in Pause subtitle + GameOver epigraph line.
+- **No balance interference**: ✅ zero mechanical inheritance shipped; names and whispers are pure text.

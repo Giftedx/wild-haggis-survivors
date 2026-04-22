@@ -385,9 +385,10 @@ export class ChronicleScene extends Phaser.Scene {
         .setScale(uiScale);
       this.runRowObjects.push(badge);
 
-      // Main line: time · kills · level · variant
+      // Main line: [ancestor name ·] time · kills · level · variant
       const rowKey = isVictory ? 'ui.chronicle.run_row_victory' : 'ui.chronicle.run_row_defeat';
-      const mainLine = t(rowKey, {
+      const namePrefix = entry.name ? t('ui.chronicle.name_prefix', { name: entry.name }) + ' · ' : '';
+      const mainLine = namePrefix + t(rowKey, {
         time: formatClock(entry.timeSurvivedSec),
         kills: entry.enemiesKilled,
         level: entry.level,
