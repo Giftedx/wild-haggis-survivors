@@ -64,7 +64,7 @@ import { BIOMES, type BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { FloraScatter } from '../systems/FloraScatter';
-import { HareWildlife } from '../systems/HareWildlife';
+import { WildlifeSystem } from '../systems/WildlifeSystem';
 import { MistLayer } from '../systems/MistLayer';
 import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
@@ -302,7 +302,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private moorMoments!: MoorMomentScheduler;
   private floraScatter: FloraScatter | null = null;
-  private hareWildlife: HareWildlife | null = null;
+  private wildlifeSystem: WildlifeSystem | null = null;
   private mistLayer: MistLayer | null = null;
 
   constructor() {
@@ -441,9 +441,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.floraScatter = new FloraScatter();
       this.floraScatter.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
 
-      this.hareWildlife?.destroy();
-      this.hareWildlife = new HareWildlife();
-      this.hareWildlife.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
+      this.wildlifeSystem?.destroy();
+      this.wildlifeSystem = new WildlifeSystem();
+      this.wildlifeSystem.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
 
       this.mistLayer?.destroy();
       this.mistLayer = new MistLayer();
@@ -1130,8 +1130,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.biomeController = null;
       try { this.floraScatter?.destroy(); } catch { /* ignore */ }
       this.floraScatter = null;
-      try { this.hareWildlife?.destroy(); } catch { /* ignore */ }
-      this.hareWildlife = null;
+      try { this.wildlifeSystem?.destroy(); } catch { /* ignore */ }
+      this.wildlifeSystem = null;
       try { this.mistLayer?.destroy(); } catch { /* ignore */ }
       this.mistLayer = null;
       try { this.captionOverlay?.destroy(); } catch { /* ignore */ }
@@ -1256,7 +1256,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hazardZones.tick(scaledDelta);
     if (this.biomeController) this.biomeController.tick(this.player, this.juice);
     this.floraScatter?.update(scaledDelta, this.cameras.main);
-    this.hareWildlife?.update(scaledDelta, this.player.x, this.player.y);
+    this.wildlifeSystem?.update(scaledDelta, this.player.x, this.player.y);
     this.mistLayer?.update(scaledDelta, GAME.WORLD_WIDTH);
     this.gameTickers.tickLowHpCaption();
     this.gameTickers.tickBanter();
