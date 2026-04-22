@@ -62,7 +62,7 @@ export function drawHareBody(g: Phaser.GameObjects.Graphics, frame: HareFrame): 
 export function bakeHare(scene: Phaser.Scene): void {
   const s = HARE_CANVAS_SIZE;
 
-  // Idle frames (breathing)
+  // Idle frames (breathing) — used by legacy HareWildlife system
   for (let i = 0; i < 2; i++) {
     const g = scene.add.graphics();
     drawHareBody(g, { breathY: i === 0 ? 1 : -1 });
@@ -70,7 +70,7 @@ export function bakeHare(scene: Phaser.Scene): void {
     g.destroy();
   }
 
-  // Hop frames (4-frame arc)
+  // Hop frames (4-frame arc) — used by legacy HareWildlife system
   const hopYs = [0, -3, -5, -2];
   for (let i = 0; i < 4; i++) {
     const g = scene.add.graphics();
@@ -78,4 +78,15 @@ export function bakeHare(scene: Phaser.Scene): void {
     g.generateTexture(`hare_hop_${i}`, s, s);
     g.destroy();
   }
+
+  // T9 WildlifeSystem keys — two-frame (idle / move) interface
+  const gIdle = scene.add.graphics();
+  drawHareBody(gIdle, { breathY: 1 });
+  gIdle.generateTexture('wildlife_hare_idle', s, s);
+  gIdle.destroy();
+
+  const gMove = scene.add.graphics();
+  drawHareBody(gMove, { hopY: -3 });
+  gMove.generateTexture('wildlife_hare_move', s, s);
+  gMove.destroy();
 }
