@@ -78,6 +78,14 @@ describe('RunHistory', () => {
     expect(mgr.getRunHistory()).toHaveLength(0);
   });
 
+  it('preserves the cosmetic run name on record + load', () => {
+    const storage = new MemoryStorage();
+    const mgr = new SaveManager({ storage, key: 'k' });
+    mgr.recordRunToHistory(makeEntry({ name: 'Murdo MacFurryhooves' }));
+    const history = mgr.getRunHistory();
+    expect(history[0].name).toBe('Murdo MacFurryhooves');
+  });
+
   it('coerces corrupted history entries on load', () => {
     const storage = new MemoryStorage();
     storage.setItem('k', JSON.stringify({

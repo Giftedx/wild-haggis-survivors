@@ -941,4 +941,58 @@ describe('RunHistoryEntry name backfill', () => {
     const names = loaded.runHistory?.map((r) => r.name) ?? [];
     expect(names.every((n) => n && n.length > 0)).toBe(true);
   });
+
+  // Regression — the persisted field is `runSeed` (number), not `seed` (string).
+  // Real saves have runSeed; the backfill must hash it so two runs with the
+  // same time/kills but different seeds get different names.
+  it('backfills from runSeed when no saved name is present', () => {
+    const base = {
+      isVictory: false,
+      timeSurvivedSec: 60, enemiesKilled: 20,
+      variantKey: 'classic', timestamp: 1, level: 1,
+      bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [],
+    };
+    const a = migrateSave({ runHistory: [{ ...base, runSeed: 11111 }] });
+    const b = migrateSave({ runHistory: [{ ...base, runSeed: 22222 }] });
+    expect(a.runHistory?.[0]?.name).toBeTruthy();
+    expect(b.runHistory?.[0]?.name).toBeTruthy();
+    expect(a.runHistory?.[0]?.name).not.toBe(b.runHistory?.[0]?.name);
+  });
+
+  it('runSeed-based backfill is deterministic across loads', () => {
+    const entry = {
+      isVictory: false, runSeed: 98765,
+      timeSurvivedSec: 60, enemiesKilled: 20,
+      variantKey: 'classic', timestamp: 1, level: 1,
+      bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [],
+    };
+    const a = migrateSave({ runHistory: [entry] });
+    const b = migrateSave({ runHistory: [entry] });
+    expect(a.runHistory?.[0]?.name).toBe(b.runHistory?.[0]?.name);
+  });
+
+  // Regression — mid-run name shown on Pause / GameOver must match what
+  // Chronicle shows later. Achieved by threading context.name into the
+  // persisted entry. Without this, the backfill produces a different
+  // (seed-hashed) name than the Math.random name generated at run start.
+  it('applyRunSummary persists context.name onto the history entry', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 50, bossGold: 0, victory: false },
+      { level: 5, bossKills: 0, variantKey: 'classic', weaponKeys: ['thistle_shot'], name: 'Murdo MacFurryhooves' },
+    );
+    expect(result.save.runHistory[0].name).toBe('Murdo MacFurryhooves');
+  });
+
+  it('applyRunSummary omits name when context does not supply one', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 50, bossGold: 0, victory: false },
+      { level: 5, bossKills: 0, variantKey: 'classic', weaponKeys: ['thistle_shot'] },
+    );
+    // No name is fabricated on the write path; backfill runs on load only.
+    expect(result.save.runHistory[0].name).toBeUndefined();
+  });
 });

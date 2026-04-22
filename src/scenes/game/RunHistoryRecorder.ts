@@ -55,6 +55,7 @@ export class RunHistoryRecorder {
     const curse = h.getActiveCurseKey();
     const routes = h.getRoutePicks();
     const replay = h.getReplayBlob?.() ?? null;
+    const name = h.getRunName?.();
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -65,6 +66,7 @@ export class RunHistoryRecorder {
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
       ...(h.isIronmoor() ? { ironmoor: true } : {}),
       ...(replay ? { replay } : {}),
+      ...(name ? { name } : {}),
     };
   }
 

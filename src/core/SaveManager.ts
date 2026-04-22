@@ -436,6 +436,9 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
   if (typeof o.isDaily === 'boolean') {
     entry.isDaily = o.isDaily;
   }
+  if (typeof o.name === 'string' && o.name.length > 0) {
+    entry.name = o.name;
+  }
   return entry;
 }
 

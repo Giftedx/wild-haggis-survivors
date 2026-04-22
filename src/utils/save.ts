@@ -201,6 +201,14 @@ export interface RunHistoryContext {
   ironmoor?: boolean;
   /** T1 replay blob (optional) attached to this run's history entry. */
   replay?: ReplayBlobAny;
+  /**
+   * LG T3 — cosmetic run name generated at run start (Math.random-based,
+   * kept outside runRng per determinism policy). Passing it through here
+   * means the persisted entry matches the name the player saw on the
+   * pause screen and the run-end framing — otherwise the Chronicle would
+   * show a different backfilled hash-name on load.
+   */
+  name?: string;
 }
 
 export interface RunResult {
@@ -357,6 +365,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(typeof context?.runSeed === 'number' ? { runSeed: context.runSeed } : {}),
     ...(context?.ironmoor ? { ironmoor: true } : {}),
     ...(context?.replay ? { replay: context.replay } : {}),
+    ...(typeof context?.name === 'string' && context.name.length > 0 ? { name: context.name } : {}),
   };
 
   const isCursedVictory =
@@ -604,9 +613,18 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
 function coerceRunHistoryName(raw: Record<string, unknown>): string {
   if (typeof raw.name === 'string' && raw.name.length > 0) return raw.name;
   try {
-    const seed = typeof raw.seed === 'string' && raw.seed.length > 0
-      ? raw.seed
-      : `${raw.timeSurvivedSec ?? 0}-${raw.enemiesKilled ?? 0}`;
+    // Prefer the persisted `runSeed` (number) so two runs with identical
+    // time/kills still get distinct names. Fall back to a legacy `seed`
+    // string (test fixtures / speculative future field), then to
+    // timestamp+stats so pre-seed history entries still get a stable hash.
+    let seed: string;
+    if (typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed)) {
+      seed = `runSeed:${raw.runSeed >>> 0}`;
+    } else if (typeof raw.seed === 'string' && raw.seed.length > 0) {
+      seed = raw.seed;
+    } else {
+      seed = `${raw.timestamp ?? 0}-${raw.timeSurvivedSec ?? 0}-${raw.enemiesKilled ?? 0}`;
+    }
     return generateHaggisNameFromHash(seed);
   } catch {
     return 'Unknown Kin';
