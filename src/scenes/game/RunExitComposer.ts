@@ -47,6 +47,8 @@ export interface RunExitHooks {
   isDailyRun(): boolean;
   /** W66 Ironmoor: flags the run as single-life mode for the GameOver payload. */
   isIronmoorRun(): boolean;
+  /** Display name generated for this run — cosmetic, stable for run lifetime. */
+  getRunName(): string;
   /** Seconds the player survived past the Bell — 0 when not in Post-Bell. */
   getSecondsPastBell(): number;
 
@@ -140,6 +142,7 @@ export class RunExitComposer {
       ...(h.getSecondsPastBell() > 0 ? { postBellSec: Math.floor(h.getSecondsPastBell()) } : {}),
       curseKey: h.getActiveCurseKey() ?? undefined,
       deathCause,
+      name: h.getRunName(),
     };
   }
 

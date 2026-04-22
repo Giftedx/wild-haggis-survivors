@@ -83,6 +83,14 @@ export class PauseMenu {
         textStyle('heading', { fontSize: style.titlePx, color: style.titleColor }),
       ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
     );
+    const runName = scene.getRunName?.() ?? '';
+    if (runName) {
+      this.elements.push(
+        scene.add.text(x + width / 2, y + height * 0.22, t('ui.pause.name_header', { name: runName }),
+          textStyle('subtitle', { fontSize: '14px', color: COLORS_CSS.STATUS_TAN }),
+        ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
+      );
+    }
     const quipIndex = Phaser.Math.Between(1, 8);
     const quip = t(`ui.pause.quip_${quipIndex}`);
     this.elements.push(

@@ -24,6 +24,7 @@ function buildMocks(
     curseKey?: string | null;
     variantKey?: string;
     runSeed?: number;
+    runName?: string;
     saveThrows?: boolean;
   } = {},
 ) {
@@ -72,6 +73,7 @@ function buildMocks(
     isDailyRun: () => overrides.isDaily ?? false,
     isIronmoorRun: () => overrides.ironmoor ?? false,
     getSecondsPastBell: () => overrides.secondsPastBell ?? 0,
+    getRunName: () => overrides.runName ?? 'Wee Test Haggis',
     getRunScore: () => score,
     getOwnedPassivesLength: () => 3,
     getEvolvedWeaponsLength: () => 1,

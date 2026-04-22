@@ -173,6 +173,27 @@ export class GameOverScene extends Phaser.Scene {
       this.renderDeathInsight(panelCenterX, panelTop + 116, d + 3, this.payload.deathCause, uiScale, PANEL_W);
     }
 
+    // Run name epigraph — gentle "Here lies {name}" / "{name} walked home."
+    // Sits just above the variant chip as a soft elegy line. Only shown when
+    // the run had a generated name; absent on older saves that lack it.
+    const runName = this.payload.name ?? '';
+    if (runName) {
+      const framingKey = isVictory
+        ? 'ui.gameOver.name_framing.victory'
+        : 'ui.gameOver.name_framing.death';
+      const framingLine = this.add
+        .text(panelCenterX, panelTop + 142,
+          t(framingKey, { name: runName }),
+          textStyle('subtitle', { fontSize: '13px', color: COLORS_CSS.DUSTY_TAN, align: 'center' }),
+        )
+        .setOrigin(0.5)
+        .setScrollFactor(0)
+        .setDepth(d + 2)
+        .setAlpha(0)
+        .setScale(uiScale);
+      this.tweens.add({ targets: framingLine, alpha: 1, duration: 320, delay: 400 });
+    }
+
     // Variant chip — warm identity reminder with haggis sprite + flavor text
     const variantChipY = panelTop + 162;
     renderVariantChip(this, {

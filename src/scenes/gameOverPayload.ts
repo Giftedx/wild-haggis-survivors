@@ -37,4 +37,6 @@ export interface GameOverPayload {
   deathCause?: DeathCause;
   /** Curse key active for the run — drives the Game Over curse chip. */
   curseKey?: string;
+  /** Display name generated for this run — shown as epigraph on the result screen. */
+  name?: string;
 }

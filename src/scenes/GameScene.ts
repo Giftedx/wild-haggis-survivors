@@ -742,6 +742,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isDailyRun: () => this.runIsDaily,
       isIronmoorRun: () => this.activeIronmoorRun,
       getSecondsPastBell: () => this.runLifecycle?.getSecondsPastBell() ?? 0,
+      getRunName: () => this.runName,
       getRunScore: () => this.runScore,
       getOwnedPassivesLength: () => this.ownedPassives.length,
       getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
