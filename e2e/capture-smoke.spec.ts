@@ -91,5 +91,21 @@ test.describe('W27 capture: F9 + F10 keybinds', () => {
 
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/^whs_(victory|death)_.*\.webm$/);
+
+    // Assert ClipRecorder reports audio was attached. Use page.evaluate
+    // to reach into GameScene's clipRecorder instance. GameScene exposes
+    // the recorder via getClipRecorder() (public method from Task 10 of
+    // W27 Phase 2). The bootIntoGame() helper already satisfies the user
+    // gesture requirement via the canvas click.
+    const hasAudio = await page.evaluate(() => {
+      const game = (window as unknown as { game?: { scene: { getScene: (key: string) => unknown } } }).game;
+      if (!game) return false;
+      const scene = game.scene.getScene('Game') as unknown as {
+        getClipRecorder?: () => { hasAudio?: () => boolean } | null;
+      };
+      const rec = scene?.getClipRecorder?.();
+      return rec?.hasAudio?.() ?? false;
+    });
+    expect(hasAudio).toBe(true);
   });
 });
