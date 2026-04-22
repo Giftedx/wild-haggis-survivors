@@ -902,3 +902,43 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().bestIronmoorSeconds).toBe(700);
   });
 });
+
+describe('RunHistoryEntry name backfill', () => {
+  it('preserves saved names', () => {
+    const loaded = migrateSave({
+      runHistory: [
+        { isVictory: true, seed: 'a', timeSurvivedSec: 100, enemiesKilled: 50, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [], name: 'Moira of the Moor' },
+      ],
+    });
+    expect(loaded.runHistory?.[0]?.name).toBe('Moira of the Moor');
+  });
+
+  it('backfills missing names deterministically from seed', () => {
+    const entry = { isVictory: false, seed: 'seed-xyz', timeSurvivedSec: 60, enemiesKilled: 20, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] };
+    const a = migrateSave({ runHistory: [entry] });
+    const b = migrateSave({ runHistory: [entry] });
+    expect(a.runHistory?.[0]?.name).toBeTruthy();
+    expect(a.runHistory?.[0]?.name).toBe(b.runHistory?.[0]?.name);
+  });
+
+  it('backfill tolerates entries without a seed', () => {
+    const loaded = migrateSave({
+      runHistory: [
+        { isVictory: false, timeSurvivedSec: 90, enemiesKilled: 40, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] },
+      ],
+    });
+    expect(loaded.runHistory?.[0]?.name).toBeTruthy();
+  });
+
+  it('backfills different entries with different names (almost always)', () => {
+    const loaded = migrateSave({
+      runHistory: [
+        { isVictory: false, seed: 'seed-a', timeSurvivedSec: 60, enemiesKilled: 20, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] },
+        { isVictory: false, seed: 'seed-b', timeSurvivedSec: 120, enemiesKilled: 35, variantKey: 'classic', timestamp: 2, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] },
+        { isVictory: true, seed: 'seed-c', timeSurvivedSec: 400, enemiesKilled: 200, variantKey: 'classic', timestamp: 3, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] },
+      ],
+    });
+    const names = loaded.runHistory?.map((r) => r.name) ?? [];
+    expect(names.every((n) => n && n.length > 0)).toBe(true);
+  });
+});

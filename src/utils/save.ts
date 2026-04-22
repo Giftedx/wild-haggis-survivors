@@ -4,6 +4,7 @@
  */
 
 import type { RoutePick } from '../data/routes';
+import { generateHaggisNameFromHash } from '../data/haggisNames';
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 import {
   DEFAULT_VARIANT_KEY,
@@ -63,6 +64,8 @@ export interface RunHistoryEntry {
    * persist alongside v1 blobs from older saves.
    */
   replay?: ReplayBlobAny;
+  /** LG T3 — display name for this run, stable-hashed from seed on first load. */
+  name?: string;
 }
 
 export interface SaveData {
@@ -594,7 +597,20 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
     ...(isReplayBlobAny(raw.replay) ? { replay: raw.replay } : {}),
+    name: coerceRunHistoryName(raw),
   };
+}
+
+function coerceRunHistoryName(raw: Record<string, unknown>): string {
+  if (typeof raw.name === 'string' && raw.name.length > 0) return raw.name;
+  try {
+    const seed = typeof raw.seed === 'string' && raw.seed.length > 0
+      ? raw.seed
+      : `${raw.timeSurvivedSec ?? 0}-${raw.enemiesKilled ?? 0}`;
+    return generateHaggisNameFromHash(seed);
+  } catch {
+    return 'Unknown Kin';
+  }
 }
 
 function coerceRunHistory(value: unknown): RunHistoryEntry[] {
