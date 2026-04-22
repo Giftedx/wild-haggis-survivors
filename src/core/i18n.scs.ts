@@ -657,6 +657,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Last gasp — mak it coont or git tae.',
           d: 'Hingin by a thread, pal. Pure hingin.',
         },
+        cailleach: {
+          a: 'Tha moor\'s seen worse. Haud on, aye.',
+          b: 'Auld banes dinnae shatter easy. Survive this.',
+          c: 'Tae tha veil an back — ye\'ve dun it afore.',
+          d: 'Wee bit o bluid never stapped tha Cailleach.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
@@ -836,6 +842,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Anither notch, anither grudge.',
           d: 'That\'s new muscle. Uise it or loss it.',
         },
+        cailleach: {
+          a: 'Centuries o practice — an still learnin.',
+          b: 'Wiser, elder, braw-er.',
+          c: 'Tha moor shapes ye, aye. Keep growin.',
+          d: 'Auld banes, new power. Guid.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -889,6 +901,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Richt, gemme on. That wan was fer sterters.',
           c: 'Wan doon. Plenty mair tae gae, pal.',
           d: 'Clean hit. Let\'s git intae it.',
+        },
+        cailleach: {
+          a: 'First bluid — tha moor remembers this moment.',
+          b: 'She\'s stirred. Best they didnae wauk her.',
+          c: 'Auld grudge, first settled. Aye.',
+          d: 'Tae tha glen — this yin belangs tae tha Cailleach noo.',
         },
       },
       kill_streak: {
@@ -945,6 +963,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Every ane\'s gettin it. Aye.',
           d: 'Keep gaun — yer pure on it.',
         },
+        cailleach: {
+          a: 'Tha moor harvests its ain. Carry on.',
+          b: 'Aye, they faw. As aw things dae, eventually.',
+          c: 'Streak like winter — lang an relentless.',
+          d: 'She\'s been at this since afore yer gran was born.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
@@ -998,6 +1022,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Stitched up. Back oan it.',
           c: 'Pulled it oot tha bag. No deid yet.',
           d: 'Alive. Barely. Dinnae waste it.',
+        },
+        cailleach: {
+          a: 'Tha moor heals its ain. Aye.',
+          b: 'She\'s wethered worse. Back on hoof.',
+          c: 'Auld body, auld mend. Slow but sure.',
+          d: 'Roots haud — even in tha bleakest glen.',
         },
       },
       biome_change: {
@@ -1136,6 +1166,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Aye, tak yer time. Enemies dinnae wait.',
           c: 'Moor\'s lookin at ye. Gie\'s somethin tae watch.',
           d: 'Dae somethin — or dinnae. Yer ca, pal.',
+        },
+        cailleach: {
+          a: 'Tha Cailleach watches. Tha moor waits wi her.',
+          b: 'Still as stane, patient as winter.',
+          c: 'Aye, pause. Tha glen\'s been waitin langer than ye.',
+          d: 'She\'s in nae rush. Tha moor gangs naewhere.',
         },
       },
       act_intermission_enter: {
@@ -1489,6 +1525,10 @@ export const SCS_STRINGS: LocaleTree = {
     glaswegian: {
       name: 'Weegie',
       flavor: 'Toon-hardened. Big swing, paper skin. Pure mental, so he is.',
+    },
+    cailleach: {
+      name: 'The Cailleach',
+      flavor: 'Auld as tha moor itsel. Moves slow, hoards tha glen\'s secrets. Aye, she\'s been here langer than ye.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

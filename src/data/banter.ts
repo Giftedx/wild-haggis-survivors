@@ -158,6 +158,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.glaswegian.c',
         'ui.banter.low_hp.glaswegian.d',
       ],
+      cailleach: [
+        'ui.banter.low_hp.cailleach.a',
+        'ui.banter.low_hp.cailleach.b',
+        'ui.banter.low_hp.cailleach.c',
+        'ui.banter.low_hp.cailleach.d',
+      ],
     },
   },
   {
@@ -364,6 +370,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.glaswegian.c',
         'ui.banter.level_up.glaswegian.d',
       ],
+      cailleach: [
+        'ui.banter.level_up.cailleach.a',
+        'ui.banter.level_up.cailleach.b',
+        'ui.banter.level_up.cailleach.c',
+        'ui.banter.level_up.cailleach.d',
+      ],
     },
   },
   {
@@ -424,6 +436,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.glaswegian.b',
         'ui.banter.first_blood.glaswegian.c',
         'ui.banter.first_blood.glaswegian.d',
+      ],
+      cailleach: [
+        'ui.banter.first_blood.cailleach.a',
+        'ui.banter.first_blood.cailleach.b',
+        'ui.banter.first_blood.cailleach.c',
+        'ui.banter.first_blood.cailleach.d',
       ],
     },
   },
@@ -487,6 +505,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.glaswegian.c',
         'ui.banter.kill_streak.glaswegian.d',
       ],
+      cailleach: [
+        'ui.banter.kill_streak.cailleach.a',
+        'ui.banter.kill_streak.cailleach.b',
+        'ui.banter.kill_streak.cailleach.c',
+        'ui.banter.kill_streak.cailleach.d',
+      ],
     },
   },
   {
@@ -547,6 +571,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.glaswegian.b',
         'ui.banter.recover.glaswegian.c',
         'ui.banter.recover.glaswegian.d',
+      ],
+      cailleach: [
+        'ui.banter.recover.cailleach.a',
+        'ui.banter.recover.cailleach.b',
+        'ui.banter.recover.cailleach.c',
+        'ui.banter.recover.cailleach.d',
       ],
     },
   },
@@ -706,6 +736,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.glaswegian.b',
         'ui.banter.idle.glaswegian.c',
         'ui.banter.idle.glaswegian.d',
+      ],
+      cailleach: [
+        'ui.banter.idle.cailleach.a',
+        'ui.banter.idle.cailleach.b',
+        'ui.banter.idle.cailleach.c',
+        'ui.banter.idle.cailleach.d',
       ],
     },
   },

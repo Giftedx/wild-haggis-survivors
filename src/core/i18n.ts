@@ -801,6 +801,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Last gasp — make it count or git tae.',
           d: 'Hingin\' by a thread, pal. Pure hingin\'.',
         },
+        cailleach: {
+          a: 'The moor\'s seen worse. Haud on, aye.',
+          b: 'Ancient bones dinnae shatter easy. Survive this.',
+          c: 'Tae the veil an\' back — ye\'ve done it afore.',
+          d: 'Wee bit o\' blood never stopped the Cailleach.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -982,6 +988,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Anither notch, anither grudge.',
           d: 'That\'s new muscle. Use it or lose it.',
         },
+        cailleach: {
+          a: 'Centuries o\' practice — and still learnin\'.',
+          b: 'Wiser, elder, braw-er.',
+          c: 'The moor shapes ye, aye. Keep growin\'.',
+          d: 'Auld bones, new power. Guid.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1035,6 +1047,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Right, game on. That wan was for starters.',
           c: 'One doon. Plenty mair tae go, pal.',
           d: 'Clean hit. Let\'s get intae it.',
+        },
+        cailleach: {
+          a: 'First blood — the moor remembers this moment.',
+          b: 'She\'s stirred. Best they didnae wake her.',
+          c: 'Ancient grudge, first settled. Aye.',
+          d: 'Tae the glen — this yin belongs tae the Cailleach noo.',
         },
       },
       kill_streak: {
@@ -1091,6 +1109,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Every one\'s gettin\' it. Aye.',
           d: 'Keep gaun — ye\'re pure on it.',
         },
+        cailleach: {
+          a: 'The moor harvests its own. Carry on.',
+          b: 'Aye, they fall. As all things dae, eventually.',
+          c: 'Streak like winter — lang an\' relentless.',
+          d: 'She\'s been at this since afore yer gran was born.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1144,6 +1168,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Stitched up. Back oan it.',
           c: 'Pulled it oot the bag. No\' deid yet.',
           d: 'Alive. Barely. Dinnae waste it.',
+        },
+        cailleach: {
+          a: 'The moor heals its ain. Aye.',
+          b: 'She\'s weathered worse. Back on hoof.',
+          c: 'Ancient body, ancient mend. Slow but sure.',
+          d: 'Roots hold — even in the bleakest glen.',
         },
       },
       biome_change: {
@@ -1282,6 +1312,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Aye, take yer time. Enemies dinnae wait.',
           c: 'Moor\'s lookin\' at ye. Gie\'s somethin\' tae watch.',
           d: 'Dae somethin\' — or dinnae. Yer call, pal.',
+        },
+        cailleach: {
+          a: 'The Cailleach watches. The moor waits wi\' her.',
+          b: 'Still as stone, patient as winter.',
+          c: 'Aye, pause. The glen\'s been waitin\' longer than ye.',
+          d: 'She\'s in nae rush. The moor goes nowhere.',
         },
       },
       // W2 Moor Road.
@@ -1659,6 +1695,10 @@ export const EN_STRINGS: LocaleTree = {
     glaswegian: {
       name: 'Glaswegian',
       flavor: 'Urban punisher. Heavy swing, skin like rice paper. Aye, mental.',
+    },
+    cailleach: {
+      name: 'The Cailleach',
+      flavor: 'Ancient as the moor itself. Moves slow, hoards the glen\'s secrets. Aye, she\'s been here longer than ye.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

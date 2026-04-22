@@ -351,6 +351,18 @@ function drawHaggisAccent(
       g.fillCircle(cx - 24, cy + 4, 0.5);
       break;
     }
+    case 'cailleach': {
+      // Silver crone-hair tuft — wispy accents at crown
+      g.fillStyle(0xd4d0c0, 0.9);
+      g.fillEllipse(cx, cy - 14, 6, 3);
+      g.fillEllipse(cx - 3, cy - 15, 2, 2);
+      g.fillEllipse(cx + 3, cy - 15, 2, 2);
+
+      // Rowan-berry pip at the right temple
+      g.fillStyle(0x8a2828, 1);
+      g.fillCircle(cx + 6, cy - 10, 1.2);
+      break;
+    }
     case 'none':
     default:
       break;
