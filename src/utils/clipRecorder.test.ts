@@ -8,6 +8,11 @@ interface MockRecorder extends EventTarget {
   ondataavailable: ((e: { data: Blob }) => void) | null;
 }
 
+interface MockMediaStream {
+  getVideoTracks(): MediaStreamTrack[];
+  getAudioTracks(): MediaStreamTrack[];
+}
+
 function makeMockRecorder(): MockRecorder {
   const target = new EventTarget() as MockRecorder;
   target.state = 'inactive';
@@ -23,8 +28,15 @@ function makeMockRecorder(): MockRecorder {
 
 function makeMockCanvas(): HTMLCanvasElement {
   return {
-    captureStream: vi.fn(() => ({} as MediaStream)),
+    captureStream: vi.fn(() => makeMockMediaStream()),
   } as unknown as HTMLCanvasElement;
+}
+
+function makeMockMediaStream(hasAudio = false): MediaStream & MockMediaStream {
+  return {
+    getVideoTracks: () => [{ enabled: true } as unknown as MediaStreamTrack],
+    getAudioTracks: () => (hasAudio ? [{ enabled: true } as unknown as MediaStreamTrack] : []),
+  } as unknown as MediaStream & MockMediaStream;
 }
 
 function installMediaRecorderMock(): MockRecorder[] {
@@ -36,6 +48,7 @@ function installMediaRecorderMock(): MockRecorder[] {
   } as unknown as typeof MediaRecorder & { isTypeSupported: (t: string) => boolean };
   MR.isTypeSupported = (t: string) => t.includes('webm');
   vi.stubGlobal('MediaRecorder', MR);
+  vi.stubGlobal('MediaStream', makeMockMediaStream as unknown as typeof MediaStream);
   return instances;
 }
 
@@ -97,5 +110,54 @@ describe('ClipRecorder', () => {
     expect(calls).toContain('video/webm;codecs=vp9');
     expect(calls).toContain('video/webm;codecs=vp8');
     expect(calls).toContain('video/webm');
+  });
+});
+
+describe('ClipRecorder audio support', () => {
+  beforeEach(() => {
+    installMediaRecorderMock();
+  });
+
+  it('hasAudio returns false before start()', () => {
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    expect(rec.hasAudio()).toBe(false);
+  });
+
+  it('hasAudio returns true when started with an audio stream', () => {
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    const audioStream = makeMockMediaStream(true) as unknown as MediaStream;
+    rec.start(audioStream);
+    expect(rec.hasAudio()).toBe(true);
+  });
+
+  it('hasAudio returns false when started without audio stream', () => {
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    rec.start();
+    expect(rec.hasAudio()).toBe(false);
+  });
+
+  it('falls back to canvas-only stream when combined-stream recorder throws', () => {
+    let calls = 0;
+    const MR = function (this: MockRecorder, _stream: MediaStream) {
+      calls++;
+      if (calls === 1) {
+        throw new Error('Safari multi-track not supported');
+      }
+      return makeMockRecorder();
+    } as unknown as typeof MediaRecorder & { isTypeSupported: (t: string) => boolean };
+    MR.isTypeSupported = (t: string) => t.includes('webm');
+    vi.stubGlobal('MediaRecorder', MR);
+    vi.stubGlobal('MediaStream', makeMockMediaStream as unknown as typeof MediaStream);
+
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    const audioStream = makeMockMediaStream(true) as unknown as MediaStream;
+    rec.start(audioStream);
+
+    expect(calls).toBe(2);
+    expect(rec.hasAudio()).toBe(false);
   });
 });

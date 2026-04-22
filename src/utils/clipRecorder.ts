@@ -29,6 +29,7 @@ export class ClipRecorder {
   private stream: MediaStream | null = null;
   private mimeType: string | null = null;
   private running = false;
+  private audioAttached = false;
 
   constructor(canvas: HTMLCanvasElement, opts: ClipRecorderOptions = {}) {
     this.canvas = canvas;
@@ -52,27 +53,59 @@ export class ClipRecorder {
     return hasMR && hasStream && this.mimeType !== null;
   }
 
-  start(): void {
+  start(audioStream?: MediaStream): void {
     if (this.running || !this.isAvailable() || !this.mimeType) return;
     try {
-      const stream = (this.canvas as unknown as {
+      const videoStream = (this.canvas as unknown as {
         captureStream: (fps?: number) => MediaStream;
       }).captureStream(this.fps);
-      this.stream = stream;
-      const recorder = new MediaRecorder(stream, { mimeType: this.mimeType });
-      this.recorder = recorder;
-      recorder.ondataavailable = (e: BlobEvent) => {
-        if (!e.data || e.data.size === 0) return;
-        this.buffer.push(e.data);
-        if (this.buffer.length > this.capacity) {
-          this.buffer.splice(0, this.buffer.length - this.capacity);
+      this.stream = videoStream;
+
+      const streamWithAudio = audioStream
+        ? new MediaStream([
+            ...videoStream.getVideoTracks(),
+            ...audioStream.getAudioTracks(),
+          ])
+        : videoStream;
+
+      try {
+        const recorder = new MediaRecorder(streamWithAudio, { mimeType: this.mimeType });
+        this.recorder = recorder;
+        this.audioAttached = audioStream != null && audioStream.getAudioTracks().length > 0;
+        this.wireRecorder(recorder);
+        recorder.start(this.timesliceMs);
+        this.running = true;
+        return;
+      } catch {
+        // Safari multi-track fallback — retry with canvas-only stream.
+        if (audioStream) {
+          const recorder = new MediaRecorder(videoStream, { mimeType: this.mimeType });
+          this.recorder = recorder;
+          this.audioAttached = false;
+          this.wireRecorder(recorder);
+          recorder.start(this.timesliceMs);
+          this.running = true;
+          return;
         }
-      };
-      recorder.start(this.timesliceMs);
-      this.running = true;
+        throw new Error('MediaRecorder construct failed');
+      }
     } catch {
       this.running = false;
     }
+  }
+
+  hasAudio(): boolean {
+    return this.audioAttached && this.running;
+  }
+
+  private wireRecorder(recorder: MediaRecorder): void {
+    recorder.ondataavailable = (e: BlobEvent) => {
+      if (!e.data || e.data.size === 0) return;
+      this.buffer.push(e.data);
+      if (this.buffer.length > this.capacity) {
+        this.buffer.splice(0, this.buffer.length - this.capacity);
+      }
+    };
   }
 
   stop(): void {
@@ -84,6 +117,7 @@ export class ClipRecorder {
     this.stream?.getTracks().forEach((t) => t.stop());
     this.stream = null;
     this.running = false;
+    this.audioAttached = false;
     this.buffer = [];
   }
 
