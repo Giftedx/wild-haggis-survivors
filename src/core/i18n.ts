@@ -1678,6 +1678,7 @@ export const EN_STRINGS: LocaleTree = {
       best_kills: 'Best kills',
       total_gold: 'Gold banked',
       victories: 'Victories',
+      cursed_victories: 'Cursed wins',
       ready: 'Ye earned this one',
     },
   },

@@ -1506,6 +1506,7 @@ export const SCS_STRINGS: LocaleTree = {
       best_kills: 'Best culls',
       total_gold: 'Gold banked',
       victories: 'Wins',
+      cursed_victories: 'Cursed wins',
       ready: 'Ye earned this wan',
     },
   },
