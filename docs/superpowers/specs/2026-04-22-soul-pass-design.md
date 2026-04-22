@@ -254,3 +254,12 @@ Each feature ships as its own commit cluster. A revert of Feature B doesn't touc
 ---
 
 *Spec complete. Next: `superpowers:writing-plans` generates the implementation plan with checkbox steps.*
+
+---
+
+## Verification — Feature A (2026-04-22)
+
+- **Bundle delta** over W27 Phase 2 baseline (`221.50 KiB` gzip): **+0.27 KiB** gzip (new total: `221.77 KiB`).
+- **Kill criterion** (<200 KiB combined over all capture work, per W27 master plan): ✅ PASS.
+- **E2E audio assertion** (F9 test in `e2e/capture-smoke.spec.ts`): ✅ PASS. `getClipRecorder().hasAudio() === true` asserted in headless Chromium.
+- **Manual playback verification**: ⏸ Deferred. Agent cannot open a .webm in a media player. When a human saves a clip via F9 during a live run, the .webm should contain an audio track. If playback reveals silent audio, check `getAudioContext()` liveness (post-user-gesture) at the moment `createRecordingAudioStream` is called — the tap only produces signal if the shared compressor is active.
