@@ -37,6 +37,11 @@ export interface RunHistoryHooks {
    * Hook is optional so tests that don't care about replay can omit it.
    */
   getReplayBlob?(): ReplayBlobAny | null;
+  /**
+   * LG T5 — cosmetic display name generated at run start. Optional so
+   * existing tests that don't supply it keep compiling without change.
+   */
+  getRunName?(): string;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -71,6 +76,7 @@ export class RunHistoryRecorder {
     const h = this.hooks;
     const timestamp = (h.now ?? Date.now)();
     const routes = h.getRoutePicks();
+    const name = h.getRunName?.();
     h.getSaveManager().recordRunToHistory({
       timestamp,
       timeSurvivedSec: summary.timeSurvivedSec,
@@ -85,6 +91,7 @@ export class RunHistoryRecorder {
       runSeed: h.getRunRng().seed,
       isDaily: h.isDailyRun(),
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
+      ...(name ? { name } : {}),
     });
     if (h.isDailyRun()) {
       this.recordDailyChallengeResult(summary);

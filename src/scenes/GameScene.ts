@@ -93,6 +93,8 @@ import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
+import { generateHaggisName } from '@/data/haggisNames';
+import { pickAncestor } from '@/data/ancestorWhispers';
 import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
@@ -280,6 +282,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * to a permadeath run or silently drop a row from the leaderboard.
    */
   private activeIronmoorRun = false;
+  private runName = '';
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
@@ -375,6 +378,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
     this.moorMercyLuckGranted = false;
+    this.runName = '';
     this.standingStones?.destroy();
     this.standingStones = null;
     this.stonesWarned = false;
@@ -409,6 +413,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // scene.start, so field initializers only fire at construction and
     // anything mutated during gameplay would leak into the next run.
     this.resetTransientRunState();
+
+    // Cosmetic run name — uses Math.random(), not runRng (keeps gameplay
+    // determinism intact per rng.ts policy). Generated here so the name
+    // is available for the 3s whisper toast and the run-end history entry.
+    this.runName = generateHaggisName(() => Math.random());
 
     // Single authority over timeScale + physics pause state
     this.timeManager = new TimeManager(createPhaserTimeAdapter(this));
@@ -756,6 +765,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRoutePicks: () => this.runActState.pickerHistory,
       isIronmoor: () => this.activeIronmoorRun,
       getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
+      getRunName: () => this.runName,
     });
 
     if (resumeRun) {
@@ -1006,6 +1016,29 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.juice.showToast(t('ui.replay.watching_toast'), '#88ccff');
       this.hud.setReplayMode(true);
     }
+    // Ancestor whisper — 3s into the run, surface a quote from a past run's
+    // haggis. Only fires when history has at least one prior entry (no whisper
+    // on a player's very first run). Not fired during replay playback.
+    if (!this.replayInput) {
+      this.time.delayedCall(3000, () => {
+        if (!this.scene.isActive()) return;
+        const save = this.metaSaveManager.load();
+        const history = save.runHistory ?? [];
+        if (history.length === 0) return;
+        const pick = pickAncestor({
+          runHistory: history.map((h) => ({ name: h.name ?? '', seed: String(h.runSeed ?? '') })),
+          rngSample: Math.random(),
+        });
+        if (!pick || !pick.name) return;
+        const line = t(pick.whisperKey);
+        const kinKeys = ['Great-great-gran', 'Great-gran', 'Gran', 'Auntie', 'Uncle', 'Cousin', 'Elder', 'Forebear'] as const;
+        const kinKey = kinKeys[Math.floor(Math.random() * kinKeys.length)]!;
+        const kin = t(`ancestor.kin.${kinKey}`);
+        const msg = t('ancestor.toast', { kin, name: pick.name, line });
+        this.getJuice()?.showToast(msg, TOAST_COLORS.info);
+      });
+    }
+
     this.eventBusDispose?.();
     this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });
     this.edgeIndicators = new EdgeIndicators(this);
@@ -1746,6 +1779,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** JuiceSystem accessor — used by PauseMenu and other scene-adjacent modules. */
   getJuice(): JuiceSystem {
     return this.juice;
+  }
+
+  /** Display name generated for this run — stable for its lifetime, cosmetic only. */
+  public getRunName(): string {
+    return this.runName;
   }
 
   public getClipRecorder(): ClipRecorder | null {

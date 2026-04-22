@@ -144,6 +144,8 @@ export interface RunHistoryEntry {
   runSeed?: number;
   /** True when the run was launched from the Daily Challenge (V8+). */
   isDaily?: boolean;
+  /** LG T5 — cosmetic display name for this run. */
+  name?: string;
 }
 
 /**
