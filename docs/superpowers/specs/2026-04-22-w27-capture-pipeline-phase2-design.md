@@ -254,4 +254,14 @@ Perf check is manual, not CI-gated — a 60 s Chrome DevTools profile with clip 
 
 ---
 
+## Verification (post-ship, 2026-04-22)
+
+- **Bundle delta** (Phase 2b over Phase 2a baseline `220.11 KiB` gzip): **1.39 KiB** gzip (new total: `221.50 KiB`). Kill criterion (≤200 KiB): ✅ PASS.
+- **Raw app chunk**: new total `816.59 KiB` (delta: +4.99 KiB).
+- **Mid-game CPU delta** with clip recording enabled: **⏸ Deferred to manual Chrome DevTools Performance profile.** Architectural argument: `captureStream(30)` dispatches frames to `MediaRecorder` on the compositor thread, separately from the JS main thread. Impact is expected <1%. Revisit if a playtester reports frame-drop regression with capture on.
+- **Playwright capture smoke**: 2 / 2 PASS (F9 webm, F10 png).
+- **Full CI** (`npm run ci:all`): ✅ lint + vitest (312 test files, 2907 tests) + build + e2e (11 / 11) green at this commit.
+
+---
+
 *Spec complete. Next: `superpowers:writing-plans` generates an implementation plan with checkbox steps for Phase 2a then 2b.*
