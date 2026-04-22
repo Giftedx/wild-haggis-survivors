@@ -33,6 +33,7 @@ import { saveScreenshot } from '../../utils/screenshot';
 import { buildCaptureFilename } from '../../utils/captureFilename';
 import { formatLocalYmd } from '../../utils/formatDate';
 import { TOAST_COLORS } from '../../ui/toastPalette';
+import { ClipRecorder } from '../../utils/clipRecorder';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -138,9 +139,14 @@ export class PauseMenu {
     // Bottom-anchored controls so END RUN / audio never clip off short viewports (mobile landscape, etc.).
     const quitY = y + height - 33;
     const captureEnabled = this.settings.load().captureEnabled;
-    // When the Save screenshot button is shown it occupies 58px above Quit (50px button + 8px gap).
+    const clipRecorder = (scene as GameScene).getClipRecorder();
+    const clipAvailable = captureEnabled && clipRecorder != null && clipRecorder.isAvailable();
+    // Each capture button occupies 58px above Quit (50px button + 8px gap).
     const saveScreenshotY = captureEnabled ? quitY - 58 : null;
-    const audioY = captureEnabled ? quitY - 100 : quitY - 42;
+    const saveClipY = clipAvailable ? quitY - 116 : null;
+    // audioY shifts up by the number of capture buttons present.
+    const captureButtonCount = (captureEnabled ? 1 : 0) + (clipAvailable ? 1 : 0);
+    const audioY = captureButtonCount > 0 ? quitY - 42 - captureButtonCount * 58 : quitY - 42;
     const passiveBottomY = passives.length > 0 ? audioY - 14 : null;
     const eliteRegionBottom = passiveBottomY !== null ? passiveBottomY : audioY - 10;
     // Below RESUME label + ESC/P hint — keeps elite reference block from crowding keys.
@@ -235,6 +241,18 @@ export class PauseMenu {
       );
     }
 
+    if (saveClipY !== null && clipRecorder != null) {
+      const { rect: clipBtn, label: clipLabel } = createGameButton(scene, {
+        x: x + width / 2, y: saveClipY, width: 220, height: 50,
+        label: t('ui.pause.save_clip'), tier: 'secondary', fontSize: '18px', uiScale,
+      });
+      clipBtn.setScrollFactor(0).setDepth(d + 1);
+      clipBtn.on('pointerdown', () => { void this.handleSaveClip(clipRecorder); });
+      clipLabel.setScrollFactor(0).setDepth(d + 2);
+      this.elements.push(clipBtn);
+      this.elements.push(clipLabel);
+    }
+
     if (saveScreenshotY !== null) {
       const { rect: ssBtn, label: ssLabel } = createGameButton(scene, {
         x: x + width / 2, y: saveScreenshotY, width: 220, height: 50,
@@ -256,6 +274,36 @@ export class PauseMenu {
     quitLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(quitBtn);
     this.elements.push(quitLabel);
+  }
+
+  private async handleSaveClip(recorder: ClipRecorder): Promise<void> {
+    const scene = this.scene as GameScene;
+    const ctx = scene.getRunContextForCapture();
+    const filename = buildCaptureFilename('clip', {
+      mode: ctx.mode,
+      variantLabel: ctx.variantLabel,
+      timeSurvivedSec: ctx.timeSurvivedSec,
+      seedCode: ctx.seedCode,
+      dateYmd: formatLocalYmd(new Date()),
+    });
+    try {
+      const blob = await recorder.saveLast((b) => {
+        const url = URL.createObjectURL(b);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+      const msgKey = blob === null ? 'ui.toast.clip_empty' : 'ui.toast.clip_saved';
+      const color = blob === null ? TOAST_COLORS.warning : TOAST_COLORS.positive;
+      scene.getJuice()?.showToast(t(msgKey), color);
+    } catch {
+      scene.getJuice()?.showToast(t('ui.toast.clip_failed'), TOAST_COLORS.warning);
+    }
   }
 
   private async handleSaveScreenshot(): Promise<void> {
