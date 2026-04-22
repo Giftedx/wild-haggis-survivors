@@ -11,6 +11,7 @@ import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
+import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
 import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
@@ -1078,7 +1079,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (canvas) {
         this.clipRecorder = new ClipRecorder(canvas, { fps: 30, durationSec: 15 });
         if (this.clipRecorder.isAvailable()) {
-          this.clipRecorder.start();
+          const audioStream = createRecordingAudioStream();
+          this.clipRecorder.start(audioStream ?? undefined);
         } else {
           this.clipRecorder = null;
         }
@@ -1098,6 +1100,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.events.once('shutdown', () => {
       this.clipRecorder?.stop();
       this.clipRecorder = null;
+      disposeRecordingAudioStream();
       try {
         uninstallAutoBattleTimeScale(this);
       } catch {
