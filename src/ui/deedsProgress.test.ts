@@ -28,6 +28,7 @@ function snap(overrides: Partial<DeedStatsSnapshot> = {}): DeedStatsSnapshot {
     uniqueRoutesWalked: 0,
     ceilidhPulsesLifetime: 0,
     bestEndlessSeconds: 0,
+    cursedVictoriesCompleted: 0,
     ...overrides,
   };
 }

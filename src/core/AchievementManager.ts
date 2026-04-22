@@ -5,7 +5,7 @@ import { globalEventBus } from './GlobalEventBus';
 import { SaveManager } from './SaveManager';
 import { BOSSES } from '../data/enemies';
 import { ROUTES } from '../data/routes';
-import { VARIANT_KEYS } from '../data/variants';
+import { VARIANT_KEYS, VARIANTS } from '../data/variants';
 import { getCodexRosterTotal } from '../ui/chronicleAggregates';
 import { loadSave } from '../utils/save';
 
@@ -165,6 +165,17 @@ export class AchievementManager {
       );
       if (wonAnyCursedRun) {
         this.tryUnlock('ach_cursed_victor');
+      }
+
+      // ach_cailleach_unlock — won 3 cursed runs. The increment is handled
+      // by applyRunSummary in save.ts (cursedVictoriesCompleted field) so
+      // we just read the already-persisted gameplay-save count here.
+      // Threshold matches VariantDef: VARIANTS.find(v=>v.key==='cailleach').unlock.required.
+      const cailleachRequired = VARIANTS.find((v) => v.key === 'cailleach')?.unlock as
+        | { type: 'cursed_victories'; required: number }
+        | undefined;
+      if ((gameplay.cursedVictoriesCompleted ?? 0) >= (cailleachRequired?.required ?? 3)) {
+        this.tryUnlock('ach_cailleach_unlock');
       }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.

@@ -1606,6 +1606,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Storm Chaser',
       description: 'Strung a hundred culls intae a single streak — the moor\'s roarin\' wi ye.',
     },
+    ach_cailleach_unlock: {
+      title: 'Walked Through the Veil',
+      description: 'Finish three cursed runs alive.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

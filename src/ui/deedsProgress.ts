@@ -183,6 +183,8 @@ export interface DeedStatsSnapshot {
   ceilidhPulsesLifetime: number;
   /** Longest Post-Bell survival in seconds — feeds ach_endless_endurance. */
   bestEndlessSeconds: number;
+  /** Gameplay save: cursed run victories — feeds ach_cailleach_unlock. */
+  cursedVictoriesCompleted: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -211,6 +213,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_past_the_bell',
   'ach_endless_endurance',
   'ach_cursed_victor',
+  'ach_cailleach_unlock',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -225,6 +228,8 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_walk_every_road: { target: 6, readCurrent: (s) => Math.min(6, s.uniqueRoutesWalked) },
   ach_ceilidh_commander: { target: 15, readCurrent: (s) => s.ceilidhPulsesLifetime },
   ach_endless_endurance: { target: 60, readCurrent: (s) => s.bestEndlessSeconds },
+  // 3 matches VariantDef cailleach unlock.required
+  ach_cailleach_unlock: { target: 3, readCurrent: (s) => s.cursedVictoriesCompleted },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

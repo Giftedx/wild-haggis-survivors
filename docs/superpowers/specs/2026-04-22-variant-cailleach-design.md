@@ -169,3 +169,16 @@ If any fails, revert the variant commit range — game is unaffected.
 ---
 
 *Spec complete. Next: `writing-plans` with 8 bite-sized tasks.*
+
+---
+
+## Verification (post-ship, 2026-04-22)
+
+- **Bundle delta** over post-soul-pass baseline (222.73 KiB gzip): **+1.09 KiB** gzip (new total: 223.82 KiB).
+- **variantWireUp.test.ts**: ✅ 10-variant roster passes every per-variant fence.
+- **i18n parity**: ✅ EN + SCS banter, display, deed keys mirrored.
+- **Full CI** (`npm run ci:all`): ✅ lint + 2933 vitest + build + 11 e2e green.
+- **Unlock retroactive seed**: ✅ saves with past cursed victories seed `cursedVictoriesCompleted` at load time (finalizeSaveCandidate in save.ts).
+- **Deed grant**: ✅ `ach_cailleach_unlock` fires when `cursedVictoriesCompleted` reaches 3. Increment happens in `applyRunSummary` (save.ts) on each cursed victory; AchievementManager reads the already-persisted count from `loadSave()` in `onRunEnded`.
+- **Deferred** — +8% crit stat. `VariantModifier` has no crit field today; follow-up ticket when stat surface grows.
+- **Manual picker verification**: ⏸ Deferred to human smoke. Visual check: cailleach appears locked with "0/3 Cursed wins" progress until the threshold is crossed; sprite reads as mythic-elder (teal + silver + rowan).

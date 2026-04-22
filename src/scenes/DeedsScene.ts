@@ -60,6 +60,7 @@ export class DeedsScene extends Phaser.Scene {
       uniqueRoutesWalked,
       ceilidhPulsesLifetime: gameplay.ceilidhPulsesLifetime ?? 0,
       bestEndlessSeconds: gameplay.bestEndlessSeconds ?? 0,
+      cursedVictoriesCompleted: gameplay.cursedVictoriesCompleted ?? 0,
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);

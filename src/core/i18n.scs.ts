@@ -1454,6 +1454,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Storm Chaser',
       description: 'Strung a hunner culls intae wan streak — tha moor\'s roarin\' wi ye.',
     },
+    ach_cailleach_unlock: {
+      title: 'Walked Through the Veil',
+      description: 'Win three cursed runs.',
+    },
   },
   weapon: {
     thistle_shot: {

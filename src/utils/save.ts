@@ -356,6 +356,11 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(context?.replay ? { replay: context.replay } : {}),
   };
 
+  const isCursedVictory =
+    normalizedSummary.victory &&
+    typeof context?.curseKey === 'string' &&
+    context.curseKey.length > 0;
+
   const nextSave: SaveData = {
     ...baseSave,
     gold: baseSave.gold + goldEarned,
@@ -366,6 +371,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     totalGoldEarned: baseSave.totalGoldEarned + goldEarned,
     bestCombo: Math.max(baseSave.bestCombo, normalizedSummary.bestCombo),
     victories: baseSave.victories + (normalizedSummary.victory ? 1 : 0),
+    cursedVictoriesCompleted: baseSave.cursedVictoriesCompleted + (isCursedVictory ? 1 : 0),
     runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
