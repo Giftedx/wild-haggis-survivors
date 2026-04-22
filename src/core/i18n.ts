@@ -159,6 +159,7 @@ export const EN_STRINGS: LocaleTree = {
       back: 'BACK',
       prev: '< PREV',
       next: 'NEXT >',
+      name_prefix: '{name}',
     },
     deeds: {
       title: 'YIR DEEDS',
@@ -318,6 +319,10 @@ export const EN_STRINGS: LocaleTree = {
       curse_chip: 'Bore the {curse} — +{pct}% gold',
       save_frame: 'Save frame',
       save_clip: 'Save clip',
+      name_framing: {
+        death: 'Here lies {name}.',
+        victory: '{name} walked home.',
+      },
     },
     metaShop: {
       title: 'LASTING BOONS',
@@ -527,6 +532,7 @@ export const EN_STRINGS: LocaleTree = {
       elite_affix_heading: 'Gold elites — traits:',
       save_screenshot: 'Save screenshot',
       save_clip: 'Save last 15s',
+      name_header: '{name}',
     },
     passive: {
       pause_short: {
@@ -1957,6 +1963,36 @@ export const EN_STRINGS: LocaleTree = {
       label: 'Buckie pit-stop',
       desc: 'Fifteen seconds\' peace, free reroll. Enemies hit a bit harder after.',
     },
+  },
+  ancestor: {
+    whisper: {
+      '0': "Mind yer feet near the loch, pet.",
+      '1': "The moor's a thief. Carry less.",
+      '2': "Dinnae trust a tourist wi' a map.",
+      '3': "The sheep ken more than ye think.",
+      '4': "Ah died at minute twelve. Learn fae me.",
+      '5': "Whit's fer ye'll no go by ye.",
+      '6': "Keep an eye on the weather. Always.",
+      '7': "Every haggis picks up where the last left aff.",
+      '8': "The bell rings fer a reason, ye ken.",
+      '9': "Kilt, pipes, patience — in that order.",
+      '10': "If the midges stop biting, run.",
+      '11': "Ah should've taken the left path.",
+      '12': "Elites telegraph. Read the bloody glow.",
+      '13': "Ye're no the first o' us tae try this.",
+      '14': "The glen remembers ye. Make it a good memory.",
+    },
+    kin: {
+      'Great-great-gran': 'Great-great-gran',
+      'Great-gran': 'Great-gran',
+      'Gran': 'Gran',
+      'Auntie': 'Auntie',
+      'Uncle': 'Uncle',
+      'Cousin': 'Cousin',
+      'Elder': 'Elder',
+      'Forebear': 'Forebear',
+    },
+    toast: '{kin} {name}: "{line}"',
   },
 };
 

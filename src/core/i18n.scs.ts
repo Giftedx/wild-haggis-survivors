@@ -128,6 +128,7 @@ export const SCS_STRINGS: LocaleTree = {
       back: 'BACK',
       prev: '< PREV',
       next: 'NEXT >',
+      name_prefix: '{name}',
     },
     deeds: {
       title: 'YER DEEDS',
@@ -221,6 +222,10 @@ export const SCS_STRINGS: LocaleTree = {
       postcard_curse_tag: '☠ {curse}',
       save_frame: 'Keep this frame',
       save_clip: 'Keep the clip',
+      name_framing: {
+        death: 'Here lies {name}.',
+        victory: '{name} gaed hame.',
+      },
     },
     settings: {
       title: 'OPTIONS',
@@ -368,6 +373,7 @@ export const SCS_STRINGS: LocaleTree = {
       elite_affix_heading: 'Gowd elites — traits:',
       save_screenshot: 'Save a pic',
       save_clip: 'Keep the last 15s',
+      name_header: '{name}',
     },
     metaShop: {
       title: 'LASTIN BOONS',
@@ -1770,6 +1776,36 @@ export const SCS_STRINGS: LocaleTree = {
       label: 'Buckie pit-stap',
       desc: 'Fifteen seconds\' peace, free reroll. Beasties hit a bit herder efter.',
     },
+  },
+  ancestor: {
+    whisper: {
+      '0': "Mind yer feet near the loch, pet.",
+      '1': "The muir's a thief. Cairry less.",
+      '2': "Dinnae trust a tourist wi' a map.",
+      '3': "The sheep ken mair than ye think.",
+      '4': "A dee'd at meenit twelve. Learn fae me.",
+      '5': "Whit's fer ye'll no go by ye.",
+      '6': "Keep an ee on the weather. Aye.",
+      '7': "Ilka haggis picks up whaur the last left aff.",
+      '8': "The bell rings fer a raison, ye ken.",
+      '9': "Kilt, pipes, patience — in that order.",
+      '10': "Gin the midges stap bitin, rin.",
+      '11': "A should've taken the left path.",
+      '12': "Elites telegraph. Read the bluidy lowe.",
+      '13': "Ye're no the first o us tae try this.",
+      '14': "The glen minds ye. Mak it a guid memory.",
+    },
+    kin: {
+      'Great-great-gran': 'Great-great-gran',
+      'Great-gran': 'Great-gran',
+      'Gran': 'Gran',
+      'Auntie': 'Auntie',
+      'Uncle': 'Uncle',
+      'Cousin': 'Cousin',
+      'Elder': 'Elder',
+      'Forebear': 'Forebear',
+    },
+    toast: '{kin} {name}: "{line}"',
   },
   biomes: {
     bog: {
