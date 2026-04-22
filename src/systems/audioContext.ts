@@ -232,3 +232,37 @@ export function getOutputNode(): AudioNode | null {
   getAudioContext();
   return compressor;
 }
+
+let recordingDestination: MediaStreamAudioDestinationNode | null = null;
+
+/**
+ * W27 Phase 3 — expose an audio MediaStream that captures everything
+ * routed through the shared output compressor. Parallel tap; does not
+ * interfere with playback to `ctx.destination`.
+ *
+ * Returns null if AudioContext isn't available (pre-user-gesture or
+ * unsupported browser). Caller tears down via `disposeRecordingAudioStream`.
+ */
+export function createRecordingAudioStream(): MediaStream | null {
+  const ctx = getAudioContext();
+  if (!ctx) return null;
+  if (recordingDestination) return recordingDestination.stream;
+  try {
+    recordingDestination = ctx.createMediaStreamDestination();
+    const output = getOutputNode();
+    output?.connect(recordingDestination);
+    return recordingDestination.stream;
+  } catch {
+    recordingDestination = null;
+    return null;
+  }
+}
+
+export function disposeRecordingAudioStream(): void {
+  if (!recordingDestination) return;
+  try {
+    const output = getOutputNode();
+    output?.disconnect(recordingDestination);
+  } catch { /* already disconnected */ }
+  recordingDestination = null;
+}

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 describe('audioContext', () => {
   beforeEach(() => {
@@ -130,5 +130,107 @@ describe('audioContext', () => {
     const node = getOutputNode();
     expect(node).not.toBeNull();
     expect((node as unknown as { connect: ReturnType<typeof vi.fn> }).connect).toHaveBeenCalled();
+  });
+});
+
+describe('createRecordingAudioStream', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.unstubAllGlobals();
+    process.env.VITEST = 'true';
+  });
+
+  afterEach(() => {
+    delete process.env.VITEST;
+  });
+
+  it('returns a MediaStream when AudioContext is available', async () => {
+    vi.stubGlobal(
+      'AudioContext',
+      class Fake {
+        state = 'running';
+        destination = {} as AudioDestinationNode;
+        createDynamicsCompressor() {
+          return {
+            threshold: { value: 0 },
+            knee: { value: 0 },
+            ratio: { value: 0 },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+          };
+        }
+        createMediaStreamDestination() {
+          return {
+            stream: new MediaStream(),
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+          };
+        }
+      },
+    );
+    vi.stubGlobal('MediaStream', class Fake {});
+
+    const { createRecordingAudioStream, disposeRecordingAudioStream } = await import('./audioContext');
+    const stream = createRecordingAudioStream();
+    expect(stream).toBeInstanceOf(MediaStream);
+    disposeRecordingAudioStream();
+  });
+
+  it('returns null when AudioContext is unavailable', async () => {
+    vi.stubGlobal(
+      'AudioContext',
+      class {
+        constructor() {
+          throw new Error('unavailable');
+        }
+      },
+    );
+    const { createRecordingAudioStream, disposeRecordingAudioStream } = await import('./audioContext');
+    const stream = createRecordingAudioStream();
+    expect(stream).toBeNull();
+    disposeRecordingAudioStream();
+  });
+
+  it('reuses the same destination node across calls', async () => {
+    const destinations: unknown[] = [];
+    vi.stubGlobal(
+      'AudioContext',
+      class Fake {
+        state = 'running';
+        destination = {} as AudioDestinationNode;
+        createDynamicsCompressor() {
+          return {
+            threshold: { value: 0 },
+            knee: { value: 0 },
+            ratio: { value: 0 },
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+          };
+        }
+        createMediaStreamDestination() {
+          const dest = {
+            stream: new MediaStream(),
+            connect: vi.fn(),
+            disconnect: vi.fn(),
+          };
+          destinations.push(dest);
+          return dest;
+        }
+      },
+    );
+    vi.stubGlobal('MediaStream', class Fake {});
+
+    const { createRecordingAudioStream, disposeRecordingAudioStream } = await import('./audioContext');
+    const a = createRecordingAudioStream();
+    const b = createRecordingAudioStream();
+    expect(a).toBeDefined();
+    expect(b).toBeDefined();
+    expect(a).toBe(b);
+    expect(destinations).toHaveLength(1);
+    disposeRecordingAudioStream();
+    const c = createRecordingAudioStream();
+    expect(c).toBeDefined();
+    expect(destinations).toHaveLength(2);
+    disposeRecordingAudioStream();
   });
 });
