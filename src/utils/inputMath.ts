@@ -3,6 +3,38 @@
  * Ensures combined keyboard + analog input stays inside the unit circle (no diagonal speed exploit).
  */
 
+/**
+ * W95 Phase 0 — clamp a touch-origin point so the joystick base + thumb
+ * radius stays fully inside the viewport, with safe-area margin on each
+ * edge. Prevents joystick spawning under a notch or in the gesture-bar
+ * zone where thumb drag is ambiguous.
+ *
+ * All coordinates are viewport-local (CSS pixels).
+ */
+export interface ViewportSafeInsets {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export function clampJoystickOrigin(
+  raw: { x: number; y: number },
+  viewport: { width: number; height: number },
+  insets: ViewportSafeInsets,
+  joystickRadius: number,
+): { x: number; y: number } {
+  const minX = insets.left + joystickRadius;
+  const maxX = viewport.width - insets.right - joystickRadius;
+  const minY = insets.top + joystickRadius;
+  const maxY = viewport.height - insets.bottom - joystickRadius;
+
+  return {
+    x: Math.max(minX, Math.min(maxX, raw.x)),
+    y: Math.max(minY, Math.min(maxY, raw.y)),
+  };
+}
+
 const EPS = 1e-8;
 
 /** Clamp vector length to `maxLen` (default unit circle). */

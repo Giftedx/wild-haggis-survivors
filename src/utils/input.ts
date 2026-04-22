@@ -1,7 +1,24 @@
 import Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
 import type { IInput } from './iInput';
-import { clampVectorLength, gamepadStickToMove, mergeMoveVectors } from './inputMath';
+import { clampVectorLength, gamepadStickToMove, mergeMoveVectors, clampJoystickOrigin, type ViewportSafeInsets } from './inputMath';
+
+function readBodySafeInsets(): ViewportSafeInsets {
+  if (typeof document === 'undefined' || !document.body) {
+    return { top: 0, right: 0, bottom: 0, left: 0 };
+  }
+  const style = getComputedStyle(document.body);
+  const px = (value: string): number => {
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n : 0;
+  };
+  return {
+    top: px(style.paddingTop),
+    right: px(style.paddingRight),
+    bottom: px(style.paddingBottom),
+    left: px(style.paddingLeft),
+  };
+}
 
 const GAMEPAD_MOVE_DEADZONE = 0.22;
 
@@ -243,13 +260,23 @@ export class InputManager implements IInput {
         ensureVisuals();
         this.joystickActive = true;
         this.joystickPointerId = pointer.id;
-        this.joystickOrigin.x = pointer.x;
-        this.joystickOrigin.y = pointer.y;
+
+        const insets = readBodySafeInsets();
+        const viewport = { width: scene.scale.width, height: scene.scale.height };
+        const clamped = clampJoystickOrigin(
+          { x: pointer.x, y: pointer.y },
+          viewport,
+          insets,
+          this.JOYSTICK_MAX_DIST,
+        );
+
+        this.joystickOrigin.x = clamped.x;
+        this.joystickOrigin.y = clamped.y;
         this.joystickCurrent.x = pointer.x;
         this.joystickCurrent.y = pointer.y;
 
         if (this.joystickBase && this.joystickThumb) {
-          this.joystickBase.setPosition(pointer.x, pointer.y).setVisible(true);
+          this.joystickBase.setPosition(clamped.x, clamped.y).setVisible(true);
           this.joystickThumb.setPosition(pointer.x, pointer.y).setVisible(true);
         }
       }
