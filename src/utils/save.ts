@@ -154,6 +154,13 @@ export interface SaveData {
    */
   ceilidhPulsesLifetime?: number;
 
+  /**
+   * Total cursed-run victories across all time. Unlocks the Cailleach
+   * variant at count=3. Retroactively seeded from runHistory on first
+   * load for existing players who already have past cursed victories.
+   */
+  cursedVictoriesCompleted: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -219,6 +226,7 @@ const DEFAULT_SAVE: SaveData = {
   victories: 0,
   bestEndlessSeconds: 0,
   bestIronmoorSeconds: 0,
+  cursedVictoriesCompleted: 0,
   runHistory: [],
   settings: { ...DEFAULT_SETTINGS },
 };
@@ -425,6 +433,19 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const lastDeath = coerceLastDeath(candidate.lastDeath);
   const stonesPicked = coerceStonesPicked(candidate.standingStonesPicked);
   const reliquaryPicked = coerceReliquaryCuriosPicked(candidate.reliquaryCuriosPicked);
+  const runHistory = coerceRunHistory(candidate.runHistory);
+
+  // Retroactive seed: if the field was absent, count past cursed victories from history.
+  let cursedVictoriesCompleted = coerceInteger(candidate.cursedVictoriesCompleted, 0);
+  if (!('cursedVictoriesCompleted' in candidate) && runHistory.length > 0) {
+    try {
+      cursedVictoriesCompleted = runHistory.filter(
+        (r) => r.isVictory && typeof r.curseKey === 'string' && r.curseKey.length > 0
+      ).length;
+    } catch {
+      cursedVictoriesCompleted = 0;
+    }
+  }
 
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
@@ -441,12 +462,13 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
     bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
+    cursedVictoriesCompleted,
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
-    runHistory: coerceRunHistory(candidate.runHistory),
+    runHistory,
     settings: coerceSettings(candidate.settings),
   };
 }

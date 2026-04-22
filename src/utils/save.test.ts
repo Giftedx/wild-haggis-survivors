@@ -665,6 +665,46 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
   });
 });
 
+describe('cursedVictoriesCompleted migration', () => {
+  it('defaults to 0 on fresh save', () => {
+    const loaded = migrateSave({});
+    expect(loaded.cursedVictoriesCompleted).toBe(0);
+  });
+
+  it('preserves a saved counter value', () => {
+    const loaded = migrateSave({ cursedVictoriesCompleted: 2 });
+    expect(loaded.cursedVictoriesCompleted).toBe(2);
+  });
+
+  it('coerces invalid values to 0', () => {
+    const loaded = migrateSave({ cursedVictoriesCompleted: 'no' });
+    expect(loaded.cursedVictoriesCompleted).toBe(0);
+  });
+
+  it('seeds retroactively from runHistory on first load', () => {
+    const loaded = migrateSave({
+      runHistory: [
+        { isVictory: true, curseKey: 'heavy_legs', variantKey: 'classic', timestamp: 1, timeSurvivedSec: 900, enemiesKilled: 200, level: 5, bossKills: 1, goldEarned: 30, bestCombo: 5, weaponKeys: [] },
+        { isVictory: false, curseKey: 'heavy_legs', variantKey: 'classic', timestamp: 2, timeSurvivedSec: 60, enemiesKilled: 10, level: 1, bossKills: 0, goldEarned: 5, bestCombo: 1, weaponKeys: [] },
+        { isVictory: true, variantKey: 'classic', timestamp: 3, timeSurvivedSec: 900, enemiesKilled: 200, level: 5, bossKills: 1, goldEarned: 30, bestCombo: 5, weaponKeys: [] },
+        { isVictory: true, curseKey: 'iron_grip', variantKey: 'classic', timestamp: 4, timeSurvivedSec: 900, enemiesKilled: 200, level: 5, bossKills: 1, goldEarned: 30, bestCombo: 5, weaponKeys: [] },
+      ],
+    });
+    expect(loaded.cursedVictoriesCompleted).toBe(2);
+  });
+
+  it('does not re-seed when cursedVictoriesCompleted is already present', () => {
+    const loaded = migrateSave({
+      cursedVictoriesCompleted: 5,
+      runHistory: [
+        { isVictory: true, curseKey: 'heavy_legs', variantKey: 'classic', timestamp: 1, timeSurvivedSec: 900, enemiesKilled: 200, level: 5, bossKills: 1, goldEarned: 30, bestCombo: 5, weaponKeys: [] },
+      ],
+    });
+    // Counter was present (5) so no retroactive seed — stays at 5
+    expect(loaded.cursedVictoriesCompleted).toBe(5);
+  });
+});
+
 describe('lifetime-counter bumps', () => {
   let originalLocalStorage: Storage | undefined;
 
