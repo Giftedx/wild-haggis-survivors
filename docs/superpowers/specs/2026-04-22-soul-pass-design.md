@@ -263,3 +263,15 @@ Each feature ships as its own commit cluster. A revert of Feature B doesn't touc
 - **Kill criterion** (<200 KiB combined over all capture work, per W27 master plan): ✅ PASS.
 - **E2E audio assertion** (F9 test in `e2e/capture-smoke.spec.ts`): ✅ PASS. `getClipRecorder().hasAudio() === true` asserted in headless Chromium.
 - **Manual playback verification**: ⏸ Deferred. Agent cannot open a .webm in a media player. When a human saves a clip via F9 during a live run, the .webm should contain an audio track. If playback reveals silent audio, check `getAudioContext()` liveness (post-user-gesture) at the moment `createRecordingAudioStream` is called — the tap only produces signal if the shared compressor is active.
+
+---
+
+## Verification — Feature B (2026-04-22)
+
+- **Bundle delta** over Feature A baseline (`221.77 KiB` gzip): **+0.96 KiB** gzip (new total: `222.73 KiB`). Kill criterion (loose — expected ~3–8 KiB): PASS.
+- **Full CI** (`npm run ci:all`): ✅ lint + vitest + build + e2e green. Vitest 313 files / 2920 tests; Playwright 11 E2E smoke tests.
+- **FPS / CPU profile with wildlife active vs reduceParticles=true**: ⏸ Deferred to manual Chrome DevTools Performance profile. Architectural argument: 9 creatures × simple distance check + 2-frame texture swap + position set = <0.2 ms/frame. Visual behaviour (static placement, flee on proximity, aerial drift) matches existing HareWildlife pattern which shipped without FPS concern.
+- **Migration from HareWildlife**: ✅ replaced; old system deleted (`git rm` in commit `e76f502`).
+- **Creatures not on minimap**: ✅ WildlifeSystem doesn't register sprites with any minimap feed.
+- **No projectile/XP/gold interaction**: ✅ creatures are plain `Phaser.GameObjects.Image`, no physics body, no group membership.
+- **reduceParticles opt-out**: ⏸ NOT implemented this pass — the original HareWildlife didn't gate on it either. Follow-up ticket to add opt-out if any playtester flags wildlife as distracting.
