@@ -316,6 +316,8 @@ export const EN_STRINGS: LocaleTree = {
       // ── Curse chip (end-of-run) — shown regardless of win/lose ──
       /** Small chip showing the curse the player bore this run + its gold bonus. */
       curse_chip: 'Bore the {curse} — +{pct}% gold',
+      save_frame: 'Save frame',
+      save_clip: 'Save clip',
     },
     metaShop: {
       title: 'LASTING BOONS',
@@ -383,6 +385,7 @@ export const EN_STRINGS: LocaleTree = {
       ironmoor_confirm_body: 'Ironmoor is ONE LIFE. Nae Second Wind, nae revives. Die once — ye walk tae the menu. The wee ⚔ badge marks yer Chronicle row for ever. Switch it aff any time before ye start.',
       ironmoor_confirm_yes: 'Aye, I\'m ready',
       ironmoor_confirm_no: 'Naw, cancel',
+      capture_enabled: 'Capture enabled',
     },
     /** W2 Moor Road — the between-act modal. */
     actIntermission: {
@@ -522,6 +525,8 @@ export const EN_STRINGS: LocaleTree = {
       passives_heading: 'Curios:',
       /** Pause overlay — reference for gold elite trait names (lines use ui.elite_affix.*). */
       elite_affix_heading: 'Gold elites — traits:',
+      save_screenshot: 'Save screenshot',
+      save_clip: 'Save last 15s',
     },
     passive: {
       pause_short: {
@@ -1325,6 +1330,13 @@ export const EN_STRINGS: LocaleTree = {
         c: 'Aye — the hum had yer name on it.',
         d: 'Off-path pays, noo and again.',
       },
+    },
+    toast: {
+      screenshot_saved: 'Screenshot saved to downloads.',
+      screenshot_failed: "Couldnae save the frame — gie it another go.",
+      clip_saved: 'Clip saved to downloads.',
+      clip_failed: "Couldnae save the clip — gie it a wee minute.",
+      clip_empty: 'Play a wee bit longer before saving a clip.',
     },
   },
   captions: {

@@ -219,6 +219,8 @@ export const SCS_STRINGS: LocaleTree = {
       postcard_ironmoor_tag: '⚔ Ironmoor',
       postcard_past_bell: '🔔 +{clock} past tha bell',
       postcard_curse_tag: '☠ {curse}',
+      save_frame: 'Keep this frame',
+      save_clip: 'Keep the clip',
     },
     settings: {
       title: 'OPTIONS',
@@ -259,6 +261,7 @@ export const SCS_STRINGS: LocaleTree = {
       ironmoor_confirm_body: 'Ironmoor is WAN LIFE. Nae Second Wind, nae revives. Dee wance — ye walk tae tha menu. Tha wee ⚔ badge marks yer Chronicle row fer ever. Switch it aff ony time afore ye stairt.',
       ironmoor_confirm_yes: 'Aye, Ah\'m ready',
       ironmoor_confirm_no: 'Naw, cancel',
+      capture_enabled: 'Capture on',
     },
     actIntermission: {
       title_act_1: 'Awright, whit way then?',
@@ -363,6 +366,8 @@ export const SCS_STRINGS: LocaleTree = {
       keys_resume: 'ESC / P / Stairt — back intae it',
       passives_heading: 'Curios:',
       elite_affix_heading: 'Gowd elites — traits:',
+      save_screenshot: 'Save a pic',
+      save_clip: 'Keep the last 15s',
     },
     metaShop: {
       title: 'LASTIN BOONS',
@@ -1178,6 +1183,13 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Aye — tha hum hud yer name on it.',
         d: 'Aff-path pays, noo an again.',
       },
+    },
+    toast: {
+      screenshot_saved: 'Pic saved, aye.',
+      screenshot_failed: 'Couldnae save it — try again.',
+      clip_saved: 'Clip saved, braw.',
+      clip_failed: 'Couldnae save the clip — wait a wee minute.',
+      clip_empty: 'Play a bit longer before clipping.',
     },
   },
   boss: {
