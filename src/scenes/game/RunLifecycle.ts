@@ -24,7 +24,7 @@ import type { BanterSystem } from '../../systems/BanterSystem';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
 import {
-  recordPostBellBest, recordLastDeath, recordIronmoorBest,
+  recordPostBellBest, recordLastDeath, recordIronmoorBest, bumpFirstTimeEvent,
   wipeIronmoorHistoryInPlace,
 } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
@@ -184,6 +184,15 @@ export class RunLifecycle {
     // save — the run result is already persisted; we only supplement it.
     if (this.hooks.isIronmoorRun()) {
       recordIronmoorBest(Math.floor(summary.timeSurvivedSec));
+      // B1 Phase 3 Task 18 — reserved first-Ironmoor-victory line.
+      // Fires once per save, ever. Priority 110 beats gran's
+      // `run_end_victory` line requested above (28), so a milestone
+      // Ironmoor clear gets its bespoke couplet instead of Gran's
+      // generic warmth. Subsequent Ironmoor victories continue to
+      // land the Gran line.
+      if (bumpFirstTimeEvent('ironmoor_first_victory')) {
+        this.hooks.getBanter()?.request('first_time', { tag: 'ironmoor_first_victory' });
+      }
     }
 
     const { x: uiX, y: uiY, width: uiW, height: uiH } = this.hooks.getUiViewport();

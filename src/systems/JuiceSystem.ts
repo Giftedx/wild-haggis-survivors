@@ -27,7 +27,7 @@ import {
   isCeilidhPulseMoment,
 } from './ceilidhChain';
 import { audio } from './AudioSystem';
-import { bumpCeilidhPulsesLifetime } from '../utils/save';
+import { bumpCeilidhPulsesLifetime, bumpFirstTimeEvent } from '../utils/save';
 import { comboDamageMultiplier } from './comboDamage';
 import { globalEventBus } from '../core/GlobalEventBus';
 import {
@@ -362,6 +362,14 @@ export class JuiceSystem {
     // duplicate emit is harmless).
     if (this.comboCount === 100) {
       globalEventBus.emit('GLOBAL_COMBO_MILESTONE', { count: 100 });
+      // B1 Phase 3 Task 18 — first-time reserved line on the *very first*
+      // 100-combo streak any save ever reaches. Replays suppressed across
+      // runs via `SaveData.firstTimeEventsFired`. Routed through the
+      // scene's banter shim so the priority-110 `first_time` pool beats
+      // the generic `combo_100` warning toast emitted a few lines down.
+      if (bumpFirstTimeEvent('combo_100')) {
+        this.scene.requestBanter?.('first_time', 'combo_100');
+      }
     }
 
     if (this.comboCount >= 5) {
