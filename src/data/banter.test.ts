@@ -25,6 +25,8 @@ describe('BANTER_POOLS structure', () => {
     'act_intermission_enter', 'act_complete', 'route_picked',
     // Reliquary pickup
     'reliquary_pick',
+    // B1 Phase 2 — Gran-voice commentary
+    'gran_commentary',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -169,7 +171,6 @@ describe('BANTER_POOLS structure', () => {
 
 describe('B1 Phase 1 — pending pool metadata', () => {
   const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
-    ['gran_commentary', 30],
     ['haggis_ambient', 25],
     ['enemy_ambient', 40],
     ['cailleach_whisper', 55],

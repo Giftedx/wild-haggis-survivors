@@ -1294,6 +1294,65 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Tops gave a whisper — listen close.',
         },
       },
+      // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder
+      //    warmth *about* the run. Keep lines short and tender. Never
+      //    shaming, especially in the defeat sub-pool (per DESIGN_SOUL
+      //    Warmth Audit). Generic pool is the fallback when no tag is
+      //    passed; tagged sub-pools cover the four spec §3 triggers:
+      //    run_start, run_end_victory, run_end_defeat, moor_moment,
+      //    seasonal_event.
+      gran_commentary: {
+        a: 'Kettle\'s on, hen. Back in a wee while.',
+        b: 'Mind yersel\' oot there.',
+        c: 'Granny\'s watchin\'. Take yer time.',
+        d: 'Aye, yon haggis is farin\' braw.',
+        e: 'Come awa\' in when yer ready.',
+        f: 'The moor\'ll keep. So will the tea.',
+        g: 'Yer grandpa\'d be fair chuffed.',
+        h: 'Haud steady, wee yin.',
+        run_start: {
+          a: 'Aff ye go, bonnie. I\'ll keep the fire lit.',
+          b: 'Heather\'s oot bonnie this mornin\' — gan cannie.',
+          c: 'Nae rush. The moor\'ll wait fer ye.',
+          d: 'Pack the warm in yer belly, wee yin.',
+          e: 'Wind\'s fair gentle the day. Lucky lass.',
+          f: 'Yer boots are dry. Best time tae run.',
+          g: 'Gie it laldy — I\'ll put the scone on.',
+          h: 'Mind the fairies — dinnae stare back.',
+        },
+        run_end_victory: {
+          a: 'Come awa\' in, champion. Kettle\'s singin\'.',
+          b: 'Proud as a peacock on a thistle.',
+          c: 'Ye fair lit up the moor the day.',
+          d: 'Naebody\'s eaten like this since yer grandpa.',
+          e: 'Aw, the bonniest run. Sit yersel\' doon.',
+          f: 'That\'s ma hen. Feet up by the fire.',
+        },
+        run_end_defeat: {
+          a: 'Come awa\' in. Blanket\'s warm.',
+          b: 'Nae matter, wee yin. The moor\'ll be there the morn.',
+          c: 'Ye did grand. Really, ye did.',
+          d: 'Every brave haggis taks a breather. Coorie in.',
+          e: 'Saved ye a scone. It\'s no goin\' anywhere.',
+          f: 'Rest, bonnie. The glen forgives.',
+        },
+        moor_moment: {
+          a: 'See yon peat-glint? Yer grandpa loved that.',
+          b: 'The heather\'s pure purple — wee miracle, that.',
+          c: 'Bog smells like hame the day, eh?',
+          d: 'Kite\'s callin\'. Means rain soon.',
+          e: 'Distant sheep lookin\' fair smug.',
+          f: 'Wind through the pines — that\'s a lullaby.',
+        },
+        seasonal_event: {
+          a: 'It\'s that time o\' year again, hen.',
+          b: 'Granny\'s lit the candle. Come by after.',
+          c: 'Special night. Dae the moor proud.',
+          d: 'Auld bones ken this season.',
+          e: 'Keep a wee toast fer the ancestors.',
+          f: 'The year\'s turnin\'. Steady yersel\'.',
+        },
+      },
       idle: {
         a: 'Quiet, this. Too quiet, mibbe.',
         b: 'Listen tae the wind.',

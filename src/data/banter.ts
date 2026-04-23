@@ -35,7 +35,9 @@ export type BanterContext =
   | 'act_complete'
   | 'route_picked'
   // Reliquary pickup (M15) — off-path relic claimed
-  | 'reliquary_pick';
+  | 'reliquary_pick'
+  // B1 Phase 2 — Gran-voice commentary (hearth, elder warmth *about* the run)
+  | 'gran_commentary';
 
 export interface BanterPool {
   context: BanterContext;
@@ -837,6 +839,70 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     },
   },
   {
+    // B1 Phase 2 — Gran's commentary. Hearth, elder warmth *about* the run.
+    // Priority 28 sits between idle (10) and biome_change (30) so scenic
+    // biome shifts still win same-tick arbitration; Gran fires at run
+    // boundaries and moor moments where that rarely clashes. Spec §2
+    // proposed 30 but it collided with biome_change — resolved here.
+    context: 'gran_commentary',
+    tone: 'hearth',
+    priority: 28,
+    keys: [
+      'ui.banter.gran_commentary.a',
+      'ui.banter.gran_commentary.b',
+      'ui.banter.gran_commentary.c',
+      'ui.banter.gran_commentary.d',
+      'ui.banter.gran_commentary.e',
+      'ui.banter.gran_commentary.f',
+      'ui.banter.gran_commentary.g',
+      'ui.banter.gran_commentary.h',
+    ],
+    keysByTag: {
+      run_start: [
+        'ui.banter.gran_commentary.run_start.a',
+        'ui.banter.gran_commentary.run_start.b',
+        'ui.banter.gran_commentary.run_start.c',
+        'ui.banter.gran_commentary.run_start.d',
+        'ui.banter.gran_commentary.run_start.e',
+        'ui.banter.gran_commentary.run_start.f',
+        'ui.banter.gran_commentary.run_start.g',
+        'ui.banter.gran_commentary.run_start.h',
+      ],
+      run_end_victory: [
+        'ui.banter.gran_commentary.run_end_victory.a',
+        'ui.banter.gran_commentary.run_end_victory.b',
+        'ui.banter.gran_commentary.run_end_victory.c',
+        'ui.banter.gran_commentary.run_end_victory.d',
+        'ui.banter.gran_commentary.run_end_victory.e',
+        'ui.banter.gran_commentary.run_end_victory.f',
+      ],
+      run_end_defeat: [
+        'ui.banter.gran_commentary.run_end_defeat.a',
+        'ui.banter.gran_commentary.run_end_defeat.b',
+        'ui.banter.gran_commentary.run_end_defeat.c',
+        'ui.banter.gran_commentary.run_end_defeat.d',
+        'ui.banter.gran_commentary.run_end_defeat.e',
+        'ui.banter.gran_commentary.run_end_defeat.f',
+      ],
+      moor_moment: [
+        'ui.banter.gran_commentary.moor_moment.a',
+        'ui.banter.gran_commentary.moor_moment.b',
+        'ui.banter.gran_commentary.moor_moment.c',
+        'ui.banter.gran_commentary.moor_moment.d',
+        'ui.banter.gran_commentary.moor_moment.e',
+        'ui.banter.gran_commentary.moor_moment.f',
+      ],
+      seasonal_event: [
+        'ui.banter.gran_commentary.seasonal_event.a',
+        'ui.banter.gran_commentary.seasonal_event.b',
+        'ui.banter.gran_commentary.seasonal_event.c',
+        'ui.banter.gran_commentary.seasonal_event.d',
+        'ui.banter.gran_commentary.seasonal_event.e',
+        'ui.banter.gran_commentary.seasonal_event.f',
+      ],
+    },
+  },
+  {
     // Reliquary pickup (M15). Small hearth beat — the moor just handed
     // you a curio, acknowledging the off-path detour. Generic-only pool;
     // per-curio voice tint stays open for a future banter pass.
@@ -870,7 +936,6 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
  */
 export type PendingBanterContext =
-  | 'gran_commentary'
   | 'haggis_ambient'
   | 'enemy_ambient'
   | 'cailleach_whisper'
@@ -884,24 +949,23 @@ export interface PendingPoolMetadata {
 }
 
 /**
- * Tone + priority per spec §2 / §3. Priorities ladder:
+ * Tone + priority per spec §2 / §3. Priority ladder (high → low):
  *   first_time (110) > boss_warn (100) > low_hp (80) > boss_down (70) >
  *   seasonal_event (65) > weapon_evolve (65) > level_up (60) >
- *   curse_start (59) > cailleach_whisper (55) > act_complete (57) >
- *   first_blood (50) > act_intermission_enter (52) > route_picked (48) >
- *   burns_citation (45) > reliquary_pick (45) > kill_streak (40) >
- *   enemy_ambient (40) > recover (35) > moor_moment (31) >
- *   biome_change (30) > gran_commentary (30) > haggis_ambient (25) >
+ *   curse_start (59) > act_complete (57) > cailleach_whisper (55) >
+ *   act_intermission_enter (52) > first_blood (50) > route_picked (48) >
+ *   burns_citation (45) > reliquary_pick (45) > enemy_ambient (40) >
+ *   kill_streak (40) > recover (35) > moor_moment (31) >
+ *   biome_change (30) > gran_commentary (28) > haggis_ambient (25) >
  *   idle (10)
- * Duplicate priorities (weapon_evolve=65/seasonal_event=65, kill_streak=40/
- * enemy_ambient=40, biome_change=30/gran_commentary=30) are held apart
- * by trigger-context — they never fire in the same tick, so same-tick
- * arbitration doesn't collide. The BANTER_POOLS uniqueness test only
- * covers live entries; a pending pool graduates into BANTER_POOLS only
- * after its priority is reviewed against live ones for that phase.
+ *
+ * Pending pools graduate into BANTER_POOLS only after authoring lands
+ * (Phase 2+). The BANTER_POOLS uniqueness invariant forbids ties, so any
+ * graduating pool reconciles its priority against live entries at that
+ * point — e.g. `gran_commentary` shipped at 28 (not spec §2's 30, which
+ * collided with `biome_change`).
  */
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
-  gran_commentary: { tone: 'hearth', priority: 30 },
   haggis_ambient: { tone: 'hearth', priority: 25 },
   enemy_ambient: { tone: 'hearth', priority: 40 },
   cailleach_whisper: { tone: 'edge', priority: 55 },
