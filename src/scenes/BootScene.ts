@@ -32,6 +32,7 @@ import { bakeWildlife } from '../art/sprites/wildlife';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
 import { bakePlayerVariants } from '../art/sprites/players';
+import { drawMantleTier } from '../art/sprites/haggisMantle';
 import { applyOutline, snapshotTextureKeys, outlineNewTextures } from '../art/outlinePostProcess';
 import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
 // Side-effect imports — registers each drawer into the registry on module load:
@@ -107,6 +108,9 @@ export class BootScene extends Phaser.Scene {
 
     const accessoryBakeMs = this.bakeAccessoryAtlas();
     console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
+
+    const mantleBakeMs = this.bakeHaggisMantleAtlas();
+    console.info(`[BootScene] Mantle atlas bake: ${mantleBakeMs.toFixed(1)} ms`);
 
     const enemyBakeMs = this.bakeEnemyAtlas();
     console.info(`[BootScene] Enemy atlas bake: ${enemyBakeMs.toFixed(1)} ms`);
@@ -349,6 +353,22 @@ export class BootScene extends Phaser.Scene {
           g.destroy();
           applyOutline(this, key, size, size);
         }
+      }
+    }
+    return performance.now() - startMs;
+  }
+
+  private bakeHaggisMantleAtlas(): number {
+    const startMs = performance.now();
+    const size = getHaggisSpriteSize();
+    // Tier 0 is not baked — overlay sprite stays hidden until tier 1 is
+    // reached, so no texture is needed for the empty state.
+    for (const variant of VARIANTS) {
+      for (const tier of [1, 2] as const) {
+        const g = this.add.graphics();
+        drawMantleTier(g, variant, tier);
+        g.generateTexture(`mantle_${variant.key}_${tier}`, size, size);
+        g.destroy();
       }
     }
     return performance.now() - startMs;
