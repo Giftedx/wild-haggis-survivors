@@ -91,13 +91,23 @@ Two new pools graduated into `BANTER_POOLS`. Total **+162 EN + +162 SCS = 324 le
 | `nae_haste` | Tam o' Shanter (1790) time-won't-wait lines | curse_start or post-Bell slow window |
 | `lineage_moment` | John Anderson My Jo (1790) | ancestral echo touch / variant unlock |
 
-**Trigger wiring deferred** — priority 43 analysis shows the pool is dead-coded on evolution ticks (loses to `first_time` 110 on first pickup, loses to `weapon_evolve` 65 on subsequent pickups) and on most boss moments (loses to `boss_warn` 100 / `boss_down` 70). The natural live wire-surface is **rare author-tagged `moor_moment` triggers** where Burns's 43 beats the generic scenic 31, plus seasonal Burns Night firing (couples with E1 Phase 5). That surface selection wants the spec §3 trigger review before solo commits land.
+**Trigger wiring — 2 of 9 sub-pools live, 7 deferred.**
+
+- **Live** (`MoorMomentScheduler.fire`): `loch_moment` co-fires on `loch` / `home_loch` moor moments; `highland_moment` co-fires on `heather` / `home_heather` / `pine` / `home_pine`. Run-scoped once-per-tag throttle keeps Burns rare + special per spec §3. Priority 43 beats `moor_moment` 31 so Burns wins those ticks; `moor_moment` owns every other tick untouched. Pure helper `resolveBurnsTagForBiome` (unit-tested) pins the biome→Burns mapping.
+- **Deferred** (priority-starved at their natural trigger surfaces):
+  - `haggis_moment` / `mouse_moment` — evolution first-pickup loses to `first_time` 110; subsequent pickups lose to `weapon_evolve` 65.
+  - `victory_open` — beats `gran_commentary` 28 but that makes it redundant with `first_time` (110) on the first-ever victory per run-type and would clobber Gran every run after; wants explicit per-event reservation design.
+  - `defeat_lament` — `death_reflection` 75 beats 43; would need to wire inside the `death_reflection` subpool rather than as a competing request.
+  - `charge` — `act_intermission_enter` 52 + `route_picked` 48 both beat 43; needs a distinct post-resolve tick.
+  - `nae_haste` — `curse_start` 59 beats 43; no current post-Bell-window trigger.
+  - `lineage_moment` — ancestral-echo touch has no banter hook yet; this is the next natural Burns wire.
+- **Seasonal Burns Night firing** couples with E1 Phase 5 (unshipped).
 
 ## What's still pending
 
 - **Task 21 `cailleach_whisper`** — 20 EN + 20 SCS. **Merge-blocker:** Gaelic native-speaker review required per spec §3 + `CULTURAL_SENSITIVITIES_RESEARCH.md §3.1`. Do not draft without the consultation path locked in.
 - **Phase 5 seasonal pools** — `seasonal_event` pool graduation + 60 EN / 60 SCS across Burns Night + Hogmanay + Samhain. Coordinated with E1 Seasonal Events flagship (unshipped).
-- **`burns_citation` wiring** — pool live; needs a trigger-review pass to pick safe moor_moment and evolution tags per spec §3.
+- **`burns_citation` wiring** — 2 of 9 sub-pools live (loch_moment + highland_moment on biome moor_moments); 7 deferred per the starvation analysis above. Next natural wire is `lineage_moment` on ancestral-echo touch (no competing pool at that surface).
 - **`first_time` content expansion** — variants (13), routes (6), daily clear still reserved per spec §2; graduate as each wire surface is visited.
 
 ---
