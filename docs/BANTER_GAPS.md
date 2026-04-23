@@ -1,6 +1,6 @@
-# Banter coverage audit — 2026-04-23
+# Banter coverage audit — 2026-04-24
 
-**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools + Phase 3 flavour authoring** shipped (2026-04-23). Phase 4 specialist voices (Cailleach + Burns) + Phase 5 seasonal pending.
+**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools + Phase 3 flavour authoring** shipped (2026-04-23). Phase 4 **Task 22 (Burns citations) shipped (2026-04-24)**; Task 21 (Cailleach) blocked on Gaelic native-speaker review. Phase 5 seasonal coupled with E1 (unshipped).
 
 ---
 
@@ -66,9 +66,39 @@ Two new pools graduated into `BANTER_POOLS`. Total **+162 EN + +162 SCS = 324 le
 
 **Wiring + content follow-ups left open:**
 
-- `first_time` per-milestone wiring (all 15 events) is the next session's work. Save helper `bumpFirstTimeEvent(eventId)` already ships in `save.ts`; each call site just needs the pair `requestBanter('first_time', id)` + `bumpFirstTimeEvent(id)` under an `if (!save.firstTimeEventsFired.includes(id))` gate.
 - `first_time` pool still pending content: per-variant unlock (13 variants), per-route-first pick (6 Moor Road routes), first daily-challenge clear. Deferred to post-wire session so author sees each trigger surface before committing to voice.
 - `enemy_ambient` per-boss tags not authored (same priority-starve reason as the main pool comment; boss_warn / boss_down already own those moments).
+
+> **2026-04-24 update:** `first_time` wiring is now fully shipped. All 15 reserved milestones have live triggers: boss kills (5) in `EnemyKillHandler.handle`, weapon evolutions (8) in `LevelUpFlow.applyUpgrade`, `combo_100` in `JuiceSystem.addKill`, `ironmoor_first_victory` in `RunLifecycle.handleVictory`. Save helper `bumpFirstTimeEvent(eventId)` returns boolean so callers do atomic check-and-gate in one round-trip.
+
+---
+
+## What shipped in Phase C — Phase 4 Task 22 (2026-04-24)
+
+**`burns_citation` pool graduated** at priority 43 (spec §2's 45 collided with the live `reliquary_pick` slot — resolved just below so tangible curio pickups keep their tick, Burns pours through slightly quieter moments; same resolution pattern as `gran_commentary` 30→28 and `enemy_ambient` 40→41).
+
+20 EN + 20 SCS leaves — identical strings in both locales (Burns wrote in Scots; parity fence passes trivially). Every line is a verified quotation from Robert Burns (1759-1796, public domain) referenced against Kinsley's 1968 critical edition. Two generic + 9 tagged sub-pools × 2 lines:
+
+| Tag | Poems cited | Canonical trigger target |
+|---|---|---|
+| `haggis_moment` | Address to a Haggis (1786) | haggis_hurler evo + haggis-flavoured moor_moment |
+| `mouse_moment` | To a Mouse (1785) | sheep / midge / small-flee encounter |
+| `loch_moment` | Banks o' Doon (1791), Sweet Afton (1789) | loch-biome moor_moment |
+| `highland_moment` | My Heart's in the Highlands (1789) | heather / pine moor_moment |
+| `victory_open` | Tam o' Shanter (1790), Scots Wha Hae (1793) | final-boss approach + victory fade |
+| `defeat_lament` | Ae Fond Kiss (1791), Open the Door to Me O (1793) | death_reflection Burns variant |
+| `charge` | Scots Wha Hae (1793) — Bruce at Bannockburn | act-intermission "press on" routes |
+| `nae_haste` | Tam o' Shanter (1790) time-won't-wait lines | curse_start or post-Bell slow window |
+| `lineage_moment` | John Anderson My Jo (1790) | ancestral echo touch / variant unlock |
+
+**Trigger wiring deferred** — priority 43 analysis shows the pool is dead-coded on evolution ticks (loses to `first_time` 110 on first pickup, loses to `weapon_evolve` 65 on subsequent pickups) and on most boss moments (loses to `boss_warn` 100 / `boss_down` 70). The natural live wire-surface is **rare author-tagged `moor_moment` triggers** where Burns's 43 beats the generic scenic 31, plus seasonal Burns Night firing (couples with E1 Phase 5). That surface selection wants the spec §3 trigger review before solo commits land.
+
+## What's still pending
+
+- **Task 21 `cailleach_whisper`** — 20 EN + 20 SCS. **Merge-blocker:** Gaelic native-speaker review required per spec §3 + `CULTURAL_SENSITIVITIES_RESEARCH.md §3.1`. Do not draft without the consultation path locked in.
+- **Phase 5 seasonal pools** — `seasonal_event` pool graduation + 60 EN / 60 SCS across Burns Night + Hogmanay + Samhain. Coordinated with E1 Seasonal Events flagship (unshipped).
+- **`burns_citation` wiring** — pool live; needs a trigger-review pass to pick safe moor_moment and evolution tags per spec §3.
+- **`first_time` content expansion** — variants (13), routes (6), daily clear still reserved per spec §2; graduate as each wire surface is visited.
 
 ---
 
