@@ -1651,6 +1651,17 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Mortarboard ghost. Will mark ye late.',
           c: 'Auld dean, auld grudge, auld hallways in his walk.',
         },
+        // ── Taxman's Retinue. Bureaucratic-dread register.
+        ledger_wraith: {
+          a: 'Ledger comes first. That\'s how the Taxman sends his callin\' card.',
+          b: 'Quill an grudge. He owes ye nothin\' — takes it onyway.',
+          c: 'First o his clerks. That means the big yin\'s countin\' doors.',
+        },
+        auditor_priest: {
+          a: 'Priest wi a ledger staff. Nae sermon — just arithmetic.',
+          b: 'Auditor ordained. The collection plate is yersel.',
+          c: 'Censer swings slow. Every swing\'s a receipt.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match

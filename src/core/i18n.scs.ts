@@ -1494,6 +1494,17 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Mortarboard ghaist. Will mairk ye late.',
           c: 'Auld dean, auld grudge, auld corridors in his walk.',
         },
+        // ── Taxman's Retinue family (Task 17). SCS pair.
+        ledger_wraith: {
+          a: 'Ledger comes first. Yon\'s how tha Taxman sends his cawin caird.',
+          b: 'Quill an grudge. He awes ye naethin — taks it onywey.',
+          c: 'First o his clerks. That means tha big yin\'s coontin doors.',
+        },
+        auditor_priest: {
+          a: 'Priest wi a ledger stave. Nae sermon — jist arithmetic.',
+          b: 'Auditor ordained. Tha collection plate is yersel.',
+          c: 'Censer swings slaw. Ilka swing\'s a receipt.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:

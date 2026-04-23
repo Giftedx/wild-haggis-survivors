@@ -1181,6 +1181,19 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.dean_apparition.b',
         'ui.banter.enemy_ambient.dean_apparition.c',
       ],
+      // ── Taxman's Retinue family (Task 17). Bureaucratic-dread —
+      //    council-tax-reminder register, dry fear. Every line telegraphs
+      //    the approaching boss without begging the tension.
+      ledger_wraith: [
+        'ui.banter.enemy_ambient.ledger_wraith.a',
+        'ui.banter.enemy_ambient.ledger_wraith.b',
+        'ui.banter.enemy_ambient.ledger_wraith.c',
+      ],
+      auditor_priest: [
+        'ui.banter.enemy_ambient.auditor_priest.a',
+        'ui.banter.enemy_ambient.auditor_priest.b',
+        'ui.banter.enemy_ambient.auditor_priest.c',
+      ],
     },
   },
   {
