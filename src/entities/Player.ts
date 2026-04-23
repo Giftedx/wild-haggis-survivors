@@ -253,7 +253,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // sprite needs some texture to exist at construction; it is not
     // visible until a tier is actually shown.
     this.mantleOverlay = scene.add.sprite(x, y, `mantle_${this.variantKey}_1`);
-    this.mantleOverlay.setDepth(this.depth + 1);
+    // Depth sits just behind the body (-0.5 offset) so the haggis silhouette
+    // covers the front half of the cape/collar. HAGGIS_LAYER_DEPTHS reserves
+    // integer offsets (behind:-1, body:0, front:1, above:2) for the
+    // accessory container; the half-step keeps the mantle above `behind`
+    // accessories without colliding with any of the named slots.
+    this.mantleOverlay.setDepth(this.depth - 0.5);
     this.mantleOverlay.setAlpha(0);
     this.mantleOverlay.setVisible(false);
     this.mantleLastScale = 1;

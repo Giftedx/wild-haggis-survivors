@@ -27,9 +27,12 @@ export function applyMantleTier(args: ApplyMantleTierArgs): void {
     overlay.setAlpha(1);
     return;
   }
+  // Start from current alpha so tier 1→2 transitions (overlay already
+  // visible at alpha 1) don't flash-fade. For 0→1 the overlay alpha is 0
+  // so the visual is the intended reveal.
   tweens.add({
     targets: overlay,
-    alpha: { from: 0, to: 1 },
+    alpha: { from: overlay.alpha, to: 1 },
     duration: 300,
     ease: 'Cubic.easeOut',
   });

@@ -5,6 +5,9 @@ function makeFakeSprite() {
   const state = { texture: 'mantle_classic_1', alpha: 0, visible: false };
   return {
     state,
+    // `alpha` getter mirrors the instance-field exposure on Phaser sprites
+    // so applyMantleTier's `overlay.alpha` read returns the current value.
+    get alpha() { return state.alpha; },
     setTexture: vi.fn((key: string) => { state.texture = key; return undefined; }),
     setAlpha: vi.fn((a: number) => { state.alpha = a; return undefined; }),
     setVisible: vi.fn((v: boolean) => { state.visible = v; return undefined; }),
@@ -81,5 +84,29 @@ describe('applyMantleTier', () => {
     expect(tweens.add).toHaveBeenCalledOnce();
     const cfg = tweens.calls[0];
     expect(cfg.duration).toBe(300);
+    const alpha = cfg.alpha as { from: number; to: number };
+    expect(alpha.from).toBe(0);
+    expect(alpha.to).toBe(1);
+  });
+
+  it('tier 1→2 tween starts from current alpha (not zero) so no flash-fade', () => {
+    const sprite = makeFakeSprite();
+    const tweens = makeFakeTweens();
+    // Prime the overlay as if it is already at tier 1 — visible, alpha 1.
+    sprite.state.alpha = 1;
+    sprite.state.visible = true;
+    applyMantleTier({
+      overlay: sprite as unknown as Phaser.GameObjects.Sprite,
+      tweens: tweens as unknown as Phaser.Tweens.TweenManager,
+      variantKey: 'classic',
+      nextTier: 2 as MantleTier,
+      instant: false,
+    });
+    expect(sprite.setTexture).toHaveBeenCalledWith('mantle_classic_2');
+    expect(tweens.add).toHaveBeenCalledOnce();
+    const cfg = tweens.calls[0];
+    const alpha = cfg.alpha as { from: number; to: number };
+    expect(alpha.from).toBe(1);
+    expect(alpha.to).toBe(1);
   });
 });

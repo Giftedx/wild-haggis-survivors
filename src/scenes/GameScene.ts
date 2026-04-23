@@ -962,7 +962,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getEvolvedWeapons: () => this.evolvedWeapons,
       pushEvolvedWeapon: (key) => { this.evolvedWeapons.push(key); },
       getAnnouncedEvolutionReady: () => this.announcedEvolutionReady,
-      addKill: (n = 1) => { this.runScore.killCount += n; },
+      addKill: (n = 1) => {
+        // W71 Phase 2 — loop through incrementKillCount so onKillsChanged
+        // fires for each tallied kill. Direct `killCount += n` would bypass
+        // the notifier and leave the mantle-tier wiring stale after
+        // level-up cards like "destroy N nearest enemies."
+        for (let i = 0; i < n; i++) this.runScore.incrementKillCount();
+      },
       getUiViewport: () => this.getUiViewport(),
       armIFrames: (ms) => this.armIFrames(ms),
       drainPendingChests: () => this.drainPendingChests(),
