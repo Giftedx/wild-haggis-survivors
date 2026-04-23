@@ -96,9 +96,9 @@ test.describe('Mobile smoke', () => {
     expect(layout.safeAreaRulePresent, 'index.html safe-area CSS hooks present').toBe(true);
     expect(layout.gamePresent, 'window.game present').toBe(true);
 
-    // Just wait — no taps. Earlier diagnostic runs showed taps trigger a
-    // page-event-loop hang under iPhone emulation; the underlying Phaser
-    // 4 mobile-input code path is the suspect.
+    // P4-12 diagnostic: now try a tap — the hang was fixed alongside
+    // P4-13. See audioContext.ts runWhenAudioActivated setTimeout fix.
+    await canvas.tap({ position: { x: 180, y: 320 } });
     await page.waitForTimeout(3000);
 
     // Re-poll game state after taps.

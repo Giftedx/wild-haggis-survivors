@@ -344,6 +344,8 @@ First full multi-project run: 34 / 44 passed. Failures clustered on platforms th
 | firefox-desktop | 13 / 14 | Sole failure: `capture-smoke` F9 (WebM clip). Firefox MediaRecorder doesn't accept the codec. Added `test.skip(browserName === 'firefox', ...)` directive; F10 (PNG) still runs. |
 | webkit-desktop | 5 / 14 → gated to 4 / 4 | 9 failures, all `page.evaluate` timeouts on heavy-gameplay specs. Same family as the mobile-tap hang — WebKit-headless event loop becomes unresponsive once Phaser 4 game loop is running. Project gated to light specs (`smoke`, `scots-locale`, `replay-v2-playback`, `design-verify-boot`) — provides cross-engine sanity for boot + storage + one-shot rendering without tripping the hang. |
 
+**Update 2026-04-23 evening: all three followups (P4-11/12/13) CLOSED.** One shared root cause behind P4-12 and P4-13: a microtask-bomb in `runWhenAudioActivated` — once `audioOutputActivated` flipped, the retry path used `queueMicrotask`, and any caller whose context-creation still failed (headless WebKit + headless-emulated-mobile) re-queued indefinitely, starving the event loop and blocking `page.evaluate`. Fix: `setTimeout(fn, 0)` so retries yield to macrotasks. See `src/systems/audioContext.ts` + regression guard in `audioContext.test.ts`. Cross-browser matrix now: **43 / 47 passing, 4 expected skips** (F9 WebM on firefox + webkit, sprite-export chromium-only). Full webkit suite unlocked; `webkit-desktop` no longer gated by allow-list.
+
 **Net new permanent coverage:**
 - Mobile boot path
 - Cross-engine smoke (Firefox + WebKit prove Phaser 4 boots in non-Chromium engines)
@@ -352,47 +354,29 @@ First full multi-project run: 34 / 44 passed. Failures clustered on platforms th
 
 **Followup tasks logged below (P4-12 + P4-13)** for the WebKit / mobile hangs that prevent broader cross-browser coverage.
 
-### Task P4-13: Investigate WebKit-headless `page.evaluate` hang under Phaser 4
+### Task P4-13: WebKit-headless `page.evaluate` hang ✅ CLOSED 2026-04-23
 
-**Symptom:** webkit-desktop project hangs `page.evaluate` once the Game scene is actively rendering. Same surface symptom as Task P4-12's mobile-tap hang. Reproducible across capture-smoke, comfort-smoke, design-verify, long-session, replay-loop, resume, w2-moor-road specs.
+**Root cause:** `runWhenAudioActivated` queued retries via `queueMicrotask` once `audioOutputActivated = true`. Under headless WebKit, `new AudioContext()` / `createDynamicsCompressor` fails silently — `createSharedContext` returns null — so `AudioSystem.ensureContext` kept re-queuing its own retry. Microtask-only chain never yielded to the task queue, starving playwright's `page.evaluate` messages indefinitely.
 
-**Suspected cause:** WebKit-headless + Phaser 4 + Canvas-mode interaction. Headless Chromium dodges similar issues via `FORCE_CANVAS = true` in the shared fixture; WebKit's headless WebGL is also flaky but Canvas mode hits its own issues.
+**Fix:** `src/systems/audioContext.ts` — post-activation retries now use `setTimeout(fn, 0)` instead of `queueMicrotask(fn)`. Macrotask yield lets the event loop drain foreign messages between attempts. Regression guard: `src/systems/audioContext.test.ts` asserts scheduler choice.
 
-**Investigation steps:**
-- [ ] Try webkit WITHOUT FORCE_CANVAS — Phaser may pick WebGL on real Safari
-- [ ] Try webkit with a much longer timeout (300s) — see if eval just slow rather than truly hung
-- [ ] Run a minimal repro spec that just boots + waits 5s + queries a single property; compare with the same script on chromium
-- [ ] If reproducible on real macOS Safari, file upstream Phaser issue
+**Bisection trail** (kept for future reference): H1–H3 idle-canvas renders fine → H4 keydown-to-Game hung → H5 keydown-alone (no scene change) hung → H5b `?noaudio=1` (skip gesture-install) passed → H5c–H5j URL-switch bisection narrowed culprit from audio path to flag-flip-triggers-pending-callback-retry path → setTimeout fix confirmed on H5 + real specs. WebKit gated-to-4-specs before, **14 / 14 specs passing after** (F9 WebM clip skipped separately — codec mismatch, not a hang).
 
-### Task P4-12: `canvas.tap()` hangs page event loop on mobile-emulated Phaser 4
+### Task P4-12: `canvas.tap()` mobile hang ✅ CLOSED 2026-04-23
 
-**Symptom:** `await canvas.tap()` against a Phaser 4 canvas under iPhone-13 device emulation causes the page event loop to become silently unresponsive ~2 s later. No `pageerror`, no `console.error`, no Phaser log — just `page.evaluate` calls hang past their timeout.
+**Root cause:** same microtask-bomb as P4-13. iPhone-emulated Chromium reproduces the same AudioContext-fails-silently path. Fix in `audioContext.ts` resolved both tasks in one change.
 
-**Reproducible:** consistent across Playwright runs. Did NOT reproduce when skipping the tap (mobile spec passes if no input is dispatched). Did NOT reproduce on desktop Chromium.
+**Spec change:** `e2e/mobile-smoke.spec.ts` now dispatches `canvas.tap()` + verifies fps + scene activity after — confirms mobile input drives the menu cleanly under Phaser 4.
 
-**Suspected causes (not yet investigated):**
-- Phaser 4's input plugin mobile pointer-routing under emulated UA
-- AudioContext `.resume()` cascade triggered by first user gesture (project's `installAudioActivationOnUserGesture`)
-- Service worker registration race in `main.ts` (production-only path) interacting with mobile preview
-- v4's RESIZE scale mode reflowing on emulated viewport-meta
+### Task P4-11: Repair SpriteExportScene under v4 ✅ CLOSED 2026-04-23
 
-**Workaround in `mobile-smoke.spec.ts`:** the spec verifies boot + viewport + safe-area CSS without dispatching any tap. Real-device testing on actual iPhone/Android may not reproduce — emulation-only quirk is plausible.
+**Changes in `src/tools/SpriteExportScene.ts`:**
+- Widened texture-source type check — `drawImage` now accepts `HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas` (v4 widened texture source from HTML element to `CanvasImageSource`).
+- Skip atlas-frame keys by default (2376 → 173 relevant textures). Pass `?export=sprites&atlas=1` to include them.
+- Cap `MAX_ITEMS_PER_CATEGORY = 64` and `MAX_CELL_DIM = 96` so the composite canvas stays under Chromium's ~16k per-edge limit.
+- Switched from `link.href = canvas.toDataURL(...)` to `canvas.toBlob(...)` + object URL — Playwright's `waitForEvent('download')` doesn't fire reliably on multi-MB data URLs, Blob URLs do.
 
-**Investigation steps:**
-- [ ] Capture Playwright trace of the mobile spec with taps re-enabled (`--trace on`); examine the trace's "console" / "network" panels at the freeze point
-- [ ] Bisect: skip `installAudioActivationOnUserGesture` in `main.ts` for one run, see if hang clears
-- [ ] Bisect: skip the music engine boot in `BootScene`, see if hang clears
-- [ ] Try webkit-mobile (Safari) project — if it doesn't hang, the issue is Chromium-emulation-specific
-- [ ] Test on a real iOS device via Playwright's experimental ios platform if available
-
-### Task P4-11: Repair SpriteExportScene under v4 (follow-on)
-
-**File:** `src/tools/SpriteExportScene.ts`
-
-- [ ] Investigate Phaser 4 texture source shape — possibilities include `ImageBitmap`, a Phaser-internal canvas wrapper, or per-frame source for atlas-frame textures
-- [ ] Update the `srcCanvas` extraction block (lines ~270-290) to handle v4 source types
-- [ ] Verify the auto-download fires and PNG is intact
-- [ ] Optional: convert this dev tool into a proper Playwright spec so future Phaser bumps catch regressions automatically
+**Regression guard:** new `e2e/sprite-export.spec.ts` — boots `/?export=sprites`, asserts the download fires with a filename matching `/\.png$/` and PNG magic bytes intact. Chromium-only (dev tool).
 
 ### Remaining cleanup before merge to `main`
 

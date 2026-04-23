@@ -25,6 +25,15 @@ const LABEL_HEIGHT = 20;
 const SECTION_HEIGHT = 48;
 const COLS = 8;
 
+type DrawableSource = HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas;
+function isDrawableSource(v: unknown): v is DrawableSource {
+  if (v instanceof HTMLCanvasElement) return true;
+  if (v instanceof HTMLImageElement) return true;
+  if (typeof ImageBitmap !== 'undefined' && v instanceof ImageBitmap) return true;
+  if (typeof OffscreenCanvas !== 'undefined' && v instanceof OffscreenCanvas) return true;
+  return false;
+}
+
 /** Ends with `_<state>_<frame>`. These are the Phase-0 atlas textures
  *  (`haggis_classic_idle_0`, `tam_o_shanter_walking_2`, etc.). They share
  *  one subject across many frames, so we category-group them separately
@@ -42,6 +51,7 @@ function isAtlasFrameKey(key: string): boolean {
   if (!/^\d+$/.test(frame)) return false;
   return (ATLAS_STATE_NAMES as readonly string[]).includes(state);
 }
+
 
 /** Every enemy texture key in data/enemies.ts, sourced automatically.
  *  Dedupes aliased textures (e.g. `berserker` shares `angry_scotsman`)
@@ -147,10 +157,15 @@ export class SpriteExportScene extends Phaser.Scene {
   }
 
   create(): void {
-    // Collect all game textures (skip internal Phaser ones)
-    const allKeys = this.textures.getTextureKeys().filter(
-      (k) => !k.startsWith('__') || k === '__whs_missing_texture__'
-    );
+    // Collect all game textures. Skip internal Phaser ones and skip
+    // Phase-0 atlas-frame cells — those are per-state / per-accessory
+    // animation frames baked by BootScene, and including all of them
+    // produces a multi-hundred-thousand-pixel canvas that exceeds
+    // browser limits. Use `?export=sprites&atlas=1` to include them.
+    const includeAtlasFrames = new URLSearchParams(window.location.search).get('atlas') === '1';
+    const allKeys = this.textures.getTextureKeys()
+      .filter((k) => !k.startsWith('__') || k === '__whs_missing_texture__')
+      .filter((k) => includeAtlasFrames || !isAtlasFrameKey(k));
 
     // Build entries with dimensions
     const entries: SpriteEntry[] = [];
@@ -167,6 +182,12 @@ export class SpriteExportScene extends Phaser.Scene {
     // Group by category. Atlas-frame groups sort by key (so frames
     // appear in order: idle_0, idle_1, walking_0, …); everything else
     // sorts by pixel area so the biggest sprite leads the row.
+    //
+    // Per-category cap: the BootScene pre-bake pipeline produces many
+    // hundreds of transient textures (colour-shifted variants, glow
+    // frames, per-hit tints). Without a cap the canvas balloons past
+    // browser limits (~16k px per edge) and the export silently dies.
+    const MAX_ITEMS_PER_CATEGORY = 64;
     const groups = new Map<string, SpriteEntry[]>();
     const allCats = new Set(entries.map((e) => e.category));
     for (const cat of buildCategoryOrder(allCats)) {
@@ -177,7 +198,7 @@ export class SpriteExportScene extends Phaser.Scene {
       } else {
         items.sort((a, b) => (b.width * b.height) - (a.width * a.height));
       }
-      groups.set(cat, items);
+      groups.set(cat, items.slice(0, MAX_ITEMS_PER_CATEGORY));
     }
 
     // Calculate canvas dimensions
@@ -202,14 +223,21 @@ export class SpriteExportScene extends Phaser.Scene {
       y: number;
     }> = [];
 
+    // Hard caps so we don't blow past browser canvas limits (~16k px
+     // per edge on Chromium). Any sprite larger than MAX_CELL_DIM*SCALE
+     // will still render — it just won't inflate the cell beyond these
+     // bounds. cellW × COLS + margins must stay < 16384 too.
+    const MAX_CELL_DIM = 96;
+
     for (const [cat, items] of groups) {
       // Section header
       layoutRows.push({ type: 'header', text: cat, y: totalHeight });
       totalHeight += SECTION_HEIGHT;
 
-      // Calculate cell size for this category
-      const maxW = Math.max(...items.map((e) => e.width * SCALE));
-      const maxH = Math.max(...items.map((e) => e.height * SCALE));
+      // Calculate cell size for this category, capped to avoid oversized
+      // sprites blowing out the composite canvas.
+      const maxW = Math.min(Math.max(...items.map((e) => e.width * SCALE)), MAX_CELL_DIM * SCALE);
+      const maxH = Math.min(Math.max(...items.map((e) => e.height * SCALE)), MAX_CELL_DIM * SCALE);
       const cellW = maxW + PADDING * 2;
       const cellH = maxH + LABEL_HEIGHT + PADDING * 2;
 
@@ -228,6 +256,7 @@ export class SpriteExportScene extends Phaser.Scene {
     totalHeight += TOP_MARGIN;
     const canvasWidth = Math.max(maxRowWidth + LEFT_MARGIN, 800);
     const canvasHeight = totalHeight;
+    console.info('[SpriteExport] canvas:', canvasWidth, 'x', canvasHeight, 'entries:', entries.length);
 
     // Create the export canvas
     const canvas = document.createElement('canvas');
@@ -268,20 +297,15 @@ export class SpriteExportScene extends Phaser.Scene {
           const entry = items[i];
           const x = LEFT_MARGIN + i * cellW;
 
-          // Get the source canvas/image from Phaser texture
+          // Get the source canvas/image from Phaser texture. Phaser 4
+          // widens the texture source type — `tex.source[0].image` may
+          // be HTMLCanvasElement, HTMLImageElement, ImageBitmap, or
+          // OffscreenCanvas depending on how the texture was created.
+          // `ctx.drawImage` accepts all CanvasImageSource values, so
+          // accept any of them rather than narrow.
           const tex = this.textures.get(entry.key);
-
-          // Try to get the canvas source
-          let srcCanvas: HTMLCanvasElement | HTMLImageElement | null = null;
-          if (tex.source[0].image instanceof HTMLCanvasElement) {
-            srcCanvas = tex.source[0].image;
-          } else if (tex.source[0].image instanceof HTMLImageElement) {
-            srcCanvas = tex.source[0].image;
-          } else {
-            // Try getSourceImage
-            const si = tex.getSourceImage() as HTMLCanvasElement | HTMLImageElement;
-            if (si) srcCanvas = si;
-          }
+          const raw = tex.source[0]?.image ?? tex.getSourceImage();
+          const srcCanvas = isDrawableSource(raw) ? raw : null;
 
           if (srcCanvas) {
             // Draw sprite scaled up, centered in cell
@@ -313,11 +337,24 @@ export class SpriteExportScene extends Phaser.Scene {
       }
     }
 
-    // Auto-download the PNG
-    const link = document.createElement('a');
-    link.download = 'wild-haggis-survivors-sprites.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    // Auto-download the PNG via Blob URL. Large exports (multi-MB data
+     // URLs) aren't reliably treated as downloads by Playwright's
+     // `waitForEvent('download')`; Blob URLs fire the event cleanly.
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        console.error('[SpriteExport] canvas.toBlob returned null');
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.download = 'wild-haggis-survivors-sprites.png';
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      // Revoke the object URL after the browser has had a chance to
+      // consume the href (next microtask is enough).
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    }, 'image/png');
 
     // Also display in the game window for immediate viewing
     const { width, height } = this.scale;

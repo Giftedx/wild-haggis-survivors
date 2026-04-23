@@ -109,6 +109,61 @@ describe('audioContext', () => {
     expect(types).toContain('pagehide');
   });
 
+  it('runWhenAudioActivated yields via macrotask once activated — regression: P4-13 microtask bomb', async () => {
+    // Simulate headless-WebKit degraded state: ctx construction throws
+    // so `getAudioContext` perpetually returns null post-activation. Before
+    // the fix, a caller that re-queues on null (e.g. AudioSystem.ensureContext)
+    // would chain `queueMicrotask` into an infinite tight loop that starved
+    // the event loop and blocked Playwright `page.evaluate` messages.
+    vi.stubGlobal(
+      'AudioContext',
+      class {
+        constructor() {
+          throw new Error('webkit-headless-style failure');
+        }
+      },
+    );
+    vi.stubGlobal('navigator', { getGamepads: () => [] });
+
+    const listeners = new Map<string, EventListener>();
+    const win = {
+      addEventListener(type: string, listener: EventListener) {
+        listeners.set(type, listener);
+      },
+      removeEventListener: vi.fn(),
+      setInterval: () => 0,
+      clearInterval: () => undefined,
+    } as unknown as Window & typeof globalThis;
+
+    const queueMicrotaskSpy = vi.fn((fn: () => void) => fn());
+    const setTimeoutSpy = vi.fn();
+    vi.stubGlobal('queueMicrotask', queueMicrotaskSpy);
+    vi.stubGlobal('setTimeout', setTimeoutSpy);
+
+    const mod = await import('./audioContext');
+    mod.installAudioActivationOnUserGesture(win);
+
+    // Pre-activation: queues on array, neither scheduler fires.
+    let retryCount = 0;
+    const retryCb = (): void => {
+      retryCount += 1;
+    };
+    mod.runWhenAudioActivated(retryCb);
+    expect(setTimeoutSpy).not.toHaveBeenCalled();
+    expect(queueMicrotaskSpy).not.toHaveBeenCalled();
+
+    // Fire gesture → activate. Flush drains queue via direct call, not
+    // via setTimeout/queueMicrotask — so retryCount bumps once.
+    listeners.get('keydown')?.({} as Event);
+    expect(retryCount).toBe(1);
+
+    // Post-activation re-queue must go through setTimeout (macrotask),
+    // NOT queueMicrotask. That's the regression guard.
+    mod.runWhenAudioActivated(retryCb);
+    expect(setTimeoutSpy).toHaveBeenCalledTimes(1);
+    expect(queueMicrotaskSpy).not.toHaveBeenCalled();
+  });
+
   it('getOutputNode refreshes via getAudioContext and returns the compressor', async () => {
     vi.stubGlobal(
       'AudioContext',

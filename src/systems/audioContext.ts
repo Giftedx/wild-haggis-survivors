@@ -62,10 +62,20 @@ function tryResumeRunning(ctx: AudioContext): void {
 /**
  * Run `fn` after Web Audio is allowed (immediately if already active).
  * Used to retry ambient SFX / music start when the first call ran before activation.
+ *
+ * P4-13: once activated, we use `setTimeout(fn, 0)` rather than
+ * `queueMicrotask(fn)` so that a caller that re-queues on failure (e.g.
+ * `AudioSystem.ensureContext` when `createSharedContext` returns null in
+ * a degraded environment) cannot starve the event loop via a tight
+ * microtask chain. Observed under headless WebKit where AudioContext
+ * construction / compressor wiring silently fails and the retry loop
+ * blocked `page.evaluate` messages indefinitely. Macrotask yields let
+ * foreign messages through.
  */
 export function runWhenAudioActivated(fn: () => void): void {
   if (audioOutputActivated) {
-    queueMicrotask(fn);
+    if (typeof setTimeout === 'function') setTimeout(fn, 0);
+    else queueMicrotask(fn);
     return;
   }
   pendingAfterActivate.push(fn);
