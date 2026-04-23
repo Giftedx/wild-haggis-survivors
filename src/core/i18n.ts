@@ -1725,6 +1725,77 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Cloud o bites. Blow them off, dinnae stop.',
         },
       },
+      // ── First-time reserved (B1 Phase 3 Task 18). Priority 110 — these
+      //    fire ONCE per save, ever, the tick the milestone lands. Tone
+      //    per event (Edge for big defeats, Hearth for warm firsts). Each
+      //    event seeded with 2 lines so the no-repeat ring never starves
+      //    if the save-flag guard ever drops a write. Wiring lands with
+      //    each call site in follow-up commits — present pool ships
+      //    content-only so the parity fence + priority ladder stabilise.
+      first_time: {
+        a: 'Aye, that\'s a first. The kin-book remembers.',
+        b: 'New chapter fer the moor. Never happened afore.',
+        boss_gordon_kill: {
+          a: 'First time ye bested Gordon. The kitchen shut its windaes fer ye.',
+          b: 'Cleaver doon. Glen\'s takin\' notes.',
+        },
+        boss_tour_bus_kill: {
+          a: 'Hale busload beaten. The guidebooks will lie aboot this.',
+          b: 'First tour bus ever tipped. Pure havoc — braw havoc.',
+        },
+        boss_the_laird_kill: {
+          a: 'Laird\'s fallen ance. The tenants are stunned quiet.',
+          b: 'First stoon tae the tweed. Moor\'s cheerin\' low.',
+        },
+        boss_hunter_general_kill: {
+          a: 'Hunter-General met his match. First time. Worth a photo.',
+          b: 'Nae more hunters\' general. First o kin tae say it.',
+        },
+        boss_taxman_kill: {
+          a: 'Taxman paid in full. First time any haggis has done it.',
+          b: 'Ledger clean. The moor exhaled — an ye heard it.',
+        },
+        evo_thistle_shot: {
+          a: 'Thistle evolved first. That prickle\'s written in the song.',
+          b: 'First thistle-turn. Scotland\'s flower gets meaner still.',
+        },
+        evo_bagpipe_blast: {
+          a: 'Pipes blasted first. The moor\'s ears are ringin\' proud.',
+          b: 'Bagpipe blast evolved. The first drone they\'ll fear.',
+        },
+        evo_caber_toss: {
+          a: 'First caber evolved. Games night just got heavier.',
+          b: 'Caber\'s turned. A log wi intention.',
+        },
+        evo_scotch_mist: {
+          a: 'Mist evolved. Whisky-fog wi a say in things.',
+          b: 'First mist-turn. The moor breathes wi teeth noo.',
+        },
+        evo_haggis_hurler: {
+          a: 'First haggis-hurler evolved. Cousins takin\' fire — we\'ll buy em a pint.',
+          b: 'Hurler bloomed. Arc\'s as proud as a pibroch.',
+        },
+        evo_nessie_tentacle: {
+          a: 'Tentacle\'s a whole thing noo. Nessie waved back an all.',
+          b: 'First evolution doon in the loch. Big ripples.',
+        },
+        evo_claymore: {
+          a: 'Claymore\'s evolved. First swing that reads auld Gaelic.',
+          b: 'Claymore bloomed. A sweep wi a century behind it.',
+        },
+        evo_bagpipes: {
+          a: 'Bagpipes evolved. The drones agree wi each ither at last.',
+          b: 'First full pipe. The moor just hit tae the beat.',
+        },
+        combo_100: {
+          a: 'A hundred in a row. Ye just climbed ahint the ancestors.',
+          b: 'First century combo. Gran\'s proud, the moor\'s proud, aye.',
+        },
+        ironmoor_first_victory: {
+          a: 'Ironmoor survived ance. That\'s a wee legend noo.',
+          b: 'First iron-run cleared. Nae echo left — an that\'s the point.',
+        },
+      },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
       //    `DeathCauseTag` keys from `src/core/deathCauseClassifier.ts`.

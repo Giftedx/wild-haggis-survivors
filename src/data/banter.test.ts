@@ -34,6 +34,8 @@ describe('BANTER_POOLS structure', () => {
     'haggis_ambient',
     // B1 Phase 3 Task 17 — enemy flavour pool
     'enemy_ambient',
+    // B1 Phase 3 Task 18 — reserved first-time events
+    'first_time',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -193,7 +195,6 @@ describe('B1 Phase 1 — pending pool metadata', () => {
   const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
     ['cailleach_whisper', 55],
     ['burns_citation', 45],
-    ['first_time', 110],
     ['seasonal_event', 65],
   ];
 

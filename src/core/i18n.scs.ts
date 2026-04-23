@@ -1567,6 +1567,72 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Clood o bites. Blaw them aff, dinnae stap.',
         },
       },
+      // ── First-time reserved (B1 Phase 3 Task 18). SCS pair for
+      //    ui.banter.first_time.*. One-shot milestone lines, priority 110.
+      first_time: {
+        a: 'Aye, yon\'s a first. Tha kin-book remembers.',
+        b: 'New chapter fer tha moor. Niver happened afore.',
+        boss_gordon_kill: {
+          a: 'First time ye besterit Gordon. Tha kitchen shut its windaes fer ye.',
+          b: 'Cleaver doon. Glen\'s takkin notes.',
+        },
+        boss_tour_bus_kill: {
+          a: 'Hale busload beaten. Tha guidebooks\'ll lee aboot this.',
+          b: 'First tour bus iver coupit. Pure bedlam — braw bedlam.',
+        },
+        boss_the_laird_kill: {
+          a: 'Laird\'s fawed ance. Tha tenants are stunned quait.',
+          b: 'First stoon tae tha tweed. Moor\'s cheerin laich.',
+        },
+        boss_hunter_general_kill: {
+          a: 'Hunter-General met his match. First time. Worth a photo.',
+          b: 'Nae mair hunters\' general. First o tha kin tae say it.',
+        },
+        boss_taxman_kill: {
+          a: 'Taxman paid in full. Tha first time ony haggis has done it.',
+          b: 'Ledger cleant. Tha moor blew oot — an ye heard it.',
+        },
+        evo_thistle_shot: {
+          a: 'Thistle evolved first. Yon prickle\'s scrievin in tha song.',
+          b: 'First thistle-turn. Scotland\'s flooer gets grimmer still.',
+        },
+        evo_bagpipe_blast: {
+          a: 'Pipes blastit first. Tha moor\'s lugs are dirlin prood.',
+          b: 'Bagpipe blast evolved. Tha first drone they\'ll fear.',
+        },
+        evo_caber_toss: {
+          a: 'First caber evolved. Games nicht\'s heavier noo.',
+          b: 'Caber\'s turnt. A log wi intent.',
+        },
+        evo_scotch_mist: {
+          a: 'Mist evolved. Whisky-reek wi a say in things.',
+          b: 'First mist-turn. Tha moor breathes wi teeth noo.',
+        },
+        evo_haggis_hurler: {
+          a: 'First haggis-hurler evolved. Cousins takkin fire — we\'ll staund em a pint.',
+          b: 'Hurler bloomed. Airc\'s as prood as a pibroch.',
+        },
+        evo_nessie_tentacle: {
+          a: 'Tentacle\'s a hale thing noo. Nessie waved back an aw.',
+          b: 'First evolution doon in tha loch. Muckle ripples.',
+        },
+        evo_claymore: {
+          a: 'Claymore\'s evolved. First swing that reads auld Gaelic.',
+          b: 'Claymore bloomed. A sweep wi a century ahint it.',
+        },
+        evo_bagpipes: {
+          a: 'Bagpipes evolved. Tha drones gree wi ane anither at last.',
+          b: 'First hale pipe. Tha moor jist hit tae tha beat.',
+        },
+        combo_100: {
+          a: 'A hunder in a raw. Ye jist sclim\'d ahint tha ancestors.',
+          b: 'First century combo. Grannie\'s prood, tha moor\'s prood, aye.',
+        },
+        ironmoor_first_victory: {
+          a: 'Ironmoor endured ance. Yon\'s a wee legend noo.',
+          b: 'First iron-run cleart. Nae echo left — an yon\'s tha point.',
+        },
+      },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:
       //    tha/fae/wance/dinnae/disnae/wecht/braith/neist.

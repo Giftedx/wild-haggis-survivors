@@ -43,7 +43,9 @@ export type BanterContext =
   // B1 Phase 2 Task 10 — wee-beastie inner-monologue during quiet stretches
   | 'haggis_ambient'
   // B1 Phase 3 Task 17 — per-enemy flavour on first encounter + rare respawn
-  | 'enemy_ambient';
+  | 'enemy_ambient'
+  // B1 Phase 3 Task 18 — reserved once-per-save lines (priority 110)
+  | 'first_time';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1067,6 +1069,103 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     ],
   },
   {
+    // B1 Phase 3 Task 18 — reserved first-time lines. Priority 110 beats
+    // every other pool (boss_warn at 100 included) so these fire on the
+    // exact tick the milestone happens. Once fired, `SaveData.firstTime
+    // EventsFired` marks the event and the tag never replays across
+    // saves — that's why the pool rides at the top of the ladder.
+    //
+    // Authored events (15 milestones × 2 lines each = 30 EN + 30 SCS):
+    //   Boss first-kills:     gordon / tour_bus / the_laird /
+    //                         hunter_general / taxman
+    //   Evolution first-pick: thistle_shot / bagpipe_blast / caber_toss /
+    //                         scotch_mist / haggis_hurler / nessie_tentacle /
+    //                         claymore / bagpipes
+    //   Meta milestones:      combo_100 (first 100-hit streak) /
+    //                         ironmoor_first_victory
+    //
+    // Wiring lives with each call site (deferred per plan Task 6 — hook
+    // lands alongside content). Boss-kill hook will live in
+    // `EnemyKillHandler.handleBossKill`, evolution hook in
+    // `LevelUpFlow.applyEvolution`, combo_100 in whatever records combos
+    // top-out, and ironmoor_first_victory in the victory path.
+    //
+    // Every tagged sub-pool ships with 2+ lines so the no-repeat ring
+    // buffer won't starve it if (hypothetically) the save-flag guard
+    // ever fails to persist. Generic pool is an untagged fallback for
+    // unknown events — should never be reached in practice once wiring
+    // is complete, but stays for defensive behaviour.
+    context: 'first_time',
+    tone: 'hearth',
+    priority: 110,
+    keys: [
+      'ui.banter.first_time.a',
+      'ui.banter.first_time.b',
+    ],
+    keysByTag: {
+      boss_gordon_kill: [
+        'ui.banter.first_time.boss_gordon_kill.a',
+        'ui.banter.first_time.boss_gordon_kill.b',
+      ],
+      boss_tour_bus_kill: [
+        'ui.banter.first_time.boss_tour_bus_kill.a',
+        'ui.banter.first_time.boss_tour_bus_kill.b',
+      ],
+      boss_the_laird_kill: [
+        'ui.banter.first_time.boss_the_laird_kill.a',
+        'ui.banter.first_time.boss_the_laird_kill.b',
+      ],
+      boss_hunter_general_kill: [
+        'ui.banter.first_time.boss_hunter_general_kill.a',
+        'ui.banter.first_time.boss_hunter_general_kill.b',
+      ],
+      boss_taxman_kill: [
+        'ui.banter.first_time.boss_taxman_kill.a',
+        'ui.banter.first_time.boss_taxman_kill.b',
+      ],
+      evo_thistle_shot: [
+        'ui.banter.first_time.evo_thistle_shot.a',
+        'ui.banter.first_time.evo_thistle_shot.b',
+      ],
+      evo_bagpipe_blast: [
+        'ui.banter.first_time.evo_bagpipe_blast.a',
+        'ui.banter.first_time.evo_bagpipe_blast.b',
+      ],
+      evo_caber_toss: [
+        'ui.banter.first_time.evo_caber_toss.a',
+        'ui.banter.first_time.evo_caber_toss.b',
+      ],
+      evo_scotch_mist: [
+        'ui.banter.first_time.evo_scotch_mist.a',
+        'ui.banter.first_time.evo_scotch_mist.b',
+      ],
+      evo_haggis_hurler: [
+        'ui.banter.first_time.evo_haggis_hurler.a',
+        'ui.banter.first_time.evo_haggis_hurler.b',
+      ],
+      evo_nessie_tentacle: [
+        'ui.banter.first_time.evo_nessie_tentacle.a',
+        'ui.banter.first_time.evo_nessie_tentacle.b',
+      ],
+      evo_claymore: [
+        'ui.banter.first_time.evo_claymore.a',
+        'ui.banter.first_time.evo_claymore.b',
+      ],
+      evo_bagpipes: [
+        'ui.banter.first_time.evo_bagpipes.a',
+        'ui.banter.first_time.evo_bagpipes.b',
+      ],
+      combo_100: [
+        'ui.banter.first_time.combo_100.a',
+        'ui.banter.first_time.combo_100.b',
+      ],
+      ironmoor_first_victory: [
+        'ui.banter.first_time.ironmoor_first_victory.a',
+        'ui.banter.first_time.ironmoor_first_victory.b',
+      ],
+    },
+  },
+  {
     // B1 Phase 3 Task 17 — enemy flavour. Fires on first-encounter of an
     // enemy key (tracked in `SaveData.seenEnemies`) and on a rare 1/20
     // respawn roll thereafter. Priority 40 sits above moor_moment (31) so
@@ -1297,7 +1396,6 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
 export type PendingBanterContext =
   | 'cailleach_whisper'
   | 'burns_citation'
-  | 'first_time'
   | 'seasonal_event';
 
 export interface PendingPoolMetadata {
@@ -1329,7 +1427,6 @@ export interface PendingPoolMetadata {
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
   cailleach_whisper: { tone: 'edge', priority: 55 },
   burns_citation: { tone: 'hearth', priority: 45 },
-  first_time: { tone: 'hearth', priority: 110 },
   seasonal_event: { tone: 'hearth', priority: 65 },
 };
 
