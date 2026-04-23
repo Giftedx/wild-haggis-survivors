@@ -1462,6 +1462,22 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Gale-speerit. It dunts — it\'s nae personal.',
           c: 'Wather that dunts back. Fair play tae it.',
         },
+        // ── Urban Ghaists family (Task 17). SCS pair.
+        buckfast_ned: {
+          a: 'A ned wi a boatle. Classic Friday-nicht bother.',
+          b: 'Buckie\'s oot tha bag. Slip-slide time.',
+          c: 'Mon then big man — nae need fer tha tonic.',
+        },
+        traffic_cone_totem: {
+          a: 'Roadworks on tha moor? Somebody\'s takkin a len.',
+          b: 'Cone-heid totem. Cowp it — waur comes. Mynd that.',
+          c: 'Static in a high-viz jaicket. Tread cannie.',
+        },
+        edinburgh_ghost_guide: {
+          a: 'Ghost-tour guide. Narrates yer daith wi fit-notes.',
+          b: 'Auld Reekie in a waistcoat. Pure patter, nae mercy.',
+          c: 'Lantren raised, scrievin ready. Nae tip fer yon yin.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:

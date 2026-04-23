@@ -1619,6 +1619,22 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Gale-spirit. It shoves — it\'s nae personal.',
           c: 'Weather that pushes back. Fair play tae it.',
         },
+        // ── Urban Ghaists family. Glesga patter, sharp-comic.
+        buckfast_ned: {
+          a: 'A ned wi a bottle. Classic Friday-night bother.',
+          b: 'Buckie\'s oot the bag. Slip-slide time.',
+          c: 'Mon then big man — nae need fer the tonic.',
+        },
+        traffic_cone_totem: {
+          a: 'Roadworks on the moor? Somebody\'s takin\' a lend.',
+          b: 'Cone-heid totem. Tip it — worse comes. Mind that.',
+          c: 'Static in a high-viz vest. Tread careful.',
+        },
+        edinburgh_ghost_guide: {
+          a: 'Ghost tour guide. Narrates yer death wi footnotes.',
+          b: 'Auld Reekie in a waistcoat. Pure patter, nae mercy.',
+          c: 'Lantern raised, script ready. Nae tip fer this one.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match

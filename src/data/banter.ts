@@ -1144,6 +1144,24 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.gale_wraith.b',
         'ui.banter.enemy_ambient.gale_wraith.c',
       ],
+      // ── Urban Ghaists family (Task 17). Sharp-comic Glesga patter —
+      //    the moor's voice gets a city edge when the streets bleed
+      //    through. Edge-adjacent but kept hearth-toned overall.
+      buckfast_ned: [
+        'ui.banter.enemy_ambient.buckfast_ned.a',
+        'ui.banter.enemy_ambient.buckfast_ned.b',
+        'ui.banter.enemy_ambient.buckfast_ned.c',
+      ],
+      traffic_cone_totem: [
+        'ui.banter.enemy_ambient.traffic_cone_totem.a',
+        'ui.banter.enemy_ambient.traffic_cone_totem.b',
+        'ui.banter.enemy_ambient.traffic_cone_totem.c',
+      ],
+      edinburgh_ghost_guide: [
+        'ui.banter.enemy_ambient.edinburgh_ghost_guide.a',
+        'ui.banter.enemy_ambient.edinburgh_ghost_guide.b',
+        'ui.banter.enemy_ambient.edinburgh_ghost_guide.c',
+      ],
     },
   },
   {
