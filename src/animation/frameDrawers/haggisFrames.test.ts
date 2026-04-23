@@ -66,3 +66,52 @@ describe('drawHaggisFrame', () => {
     ).toThrow();
   });
 });
+
+// --- W71 Phase 2 tail lag regression ---
+import { FRAME_OFFSETS } from './haggisFrames';
+import type { HaggisBodyFrame } from './haggisBodyDraw';
+import type { AnimationState } from '../animationStates';
+
+const EXPECTED: Record<AnimationState, readonly HaggisBodyFrame[]> = {
+  idle: [
+    { breathY: 1, tailY: -1 },
+    { breathY: -1, tailY: 1 },
+  ],
+  walking: [
+    { breathY: 0, leftLegY: -2, rightLegY: 1, tailX: -1 },
+    { breathY: -1, leftLegY: -1, rightLegY: 0, tailX: 0 },
+    { breathY: 0, leftLegY: 1, rightLegY: -2, tailX: 1 },
+    { breathY: -1, leftLegY: 0, rightLegY: -1, tailX: 0 },
+  ],
+  attacking: [
+    { bodyX: 1, tailX: 0 },
+    { bodyX: 2, breathY: -2, tailX: -1 },
+    { bodyX: 1, breathY: -1, tailX: -1 },
+    { tailX: 0 },
+  ],
+  hurt: [
+    { bodyX: -2, breathY: 1, tailX: 1 },
+    { bodyX: -1, breathY: 0, tailX: 0 },
+  ],
+  celebrating: [
+    { breathY: 2, tailY: 0 },
+    { breathY: -6, tailY: 3 },
+    { breathY: -1, bodyX: -1, tailY: 1 },
+    { breathY: -1, bodyX: 1, tailY: -1 },
+  ],
+  dying: [
+    { breathY: 1, bodyX: -1, tailY: 0 },
+    { breathY: 4, leftLegY: 3, rightLegY: 3, tailY: 3 },
+    { breathY: 6, leftLegY: 4, rightLegY: 4, tailY: 5 },
+  ],
+};
+
+describe('W71 Phase 2 tail lag — FRAME_OFFSETS authored per spec §3.2', () => {
+  for (const [state, frames] of Object.entries(EXPECTED)) {
+    frames.forEach((expected, idx) => {
+      it(`${state}[${idx}] matches the spec`, () => {
+        expect(FRAME_OFFSETS[state as AnimationState]?.[idx]).toEqual(expected);
+      });
+    });
+  }
+});
