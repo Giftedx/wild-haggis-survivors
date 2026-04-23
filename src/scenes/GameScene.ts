@@ -923,6 +923,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.banter?.request('curse_start', { tag: curseTag });
       });
     }
+    // B1 Phase 2 — Gran's opening wink on a fresh run. Skipped during
+    // replay playback (Gran doesn't narrate the ghost) and on resume
+    // (mid-run rehydration, not a new door). Delayed past any curse_start
+    // line so the pact speaks first without collision.
+    if (!this.replayInput && !resumeRun) {
+      const grandOpenMs = this.activeCurseKey ? 2400 : 1200;
+      this.time.delayedCall(grandOpenMs, () => {
+        this.banter?.request('gran_commentary', { tag: 'run_start' });
+      });
+    }
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
       getScene: () => this,
@@ -983,6 +993,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getTimeManager: () => this.timeManager,
       getSaveManager: () => this.metaSaveManager,
       getDeathCauseTracker: () => this.deathCauseTracker,
+      getBanter: () => this.banter,
       getSettingsManager: () => this.settingsManager,
       getCamera: () => this.cameras.main,
       getUiViewport: () => this.getUiViewport(),

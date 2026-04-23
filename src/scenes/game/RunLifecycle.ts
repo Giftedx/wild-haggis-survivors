@@ -20,6 +20,7 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { TimeManager } from '../../systems/TimeManager';
 import type { SaveManager } from '../../core/SaveManager';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
+import type { BanterSystem } from '../../systems/BanterSystem';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
 import {
@@ -40,6 +41,12 @@ export interface RunLifecycleHooks {
   getTimeManager(): TimeManager;
   getSaveManager(): SaveManager;
   getDeathCauseTracker(): DeathCauseTracker;
+  /**
+   * B1 Phase 2 — Gran-voice banter fires on both run-end outcomes.
+   * Null during very early scene boot (before BanterSystem constructs)
+   * or headless tests; handlers must tolerate absence.
+   */
+  getBanter(): BanterSystem | null;
   getSettingsManager(): ReturnType<typeof import('../../core/SettingsManager').getSettingsManager>;
   getCamera(): Phaser.Cameras.Scene2D.Camera;
   getUiViewport(): { x: number; y: number; width: number; height: number };
@@ -159,6 +166,10 @@ export class RunLifecycle {
     juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
     this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
     juice.showToast(t('ui.gameOver.keep_going_offer'), COLORS_CSS.TOAST_GOLD);
+    // B1 Phase 2 — Gran's proud-modest line after victory. Priority 28
+    // yields to louder pools; fires cleanly here because RUN_END pauses
+    // combat chatter and the keep-going-offer toast is already above it.
+    this.hooks.getBanter()?.request('gran_commentary', { tag: 'run_end_victory' });
     this.postBellOfferActive = true;
     this.installPostBellKeyHandler();
 
@@ -271,6 +282,11 @@ export class RunLifecycle {
       juice.flashRed(400);
       tryCameraShake(this.hooks.getCamera(), 500, 0.02, this.hooks.getSettingsManager());
       this.hooks.caption('death', t('ui.captions.death_fall'), '#cc8866');
+      // B1 Phase 2 — Gran's warm lament. Never shaming (DESIGN_SOUL
+      // Warmth Audit). Fires at real-time death beat, before the
+      // death-fade crossfade begins, so the line reads as "kettle's on,
+      // come home" rather than a post-mortem.
+      this.hooks.getBanter()?.request('gran_commentary', { tag: 'run_end_defeat' });
 
       const px = player.x;
       const py = player.y;
