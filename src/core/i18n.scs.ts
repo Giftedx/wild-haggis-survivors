@@ -1451,6 +1451,17 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Yon bunnet\'s dripped. Hope it bides dripped.',
           c: 'Wee gobbin in tha bluidiest bunnet on tha moor.',
         },
+        // ── Weather family (Task 17). SCS pair.
+        haar_wraith: {
+          a: 'Tha haar\'s got a face tha day. No like it.',
+          b: 'Haar wi shouthers. Mynd yer pooches.',
+          c: 'Sea-reek that walks. Keep gaun — ye\'ll tyne it.',
+        },
+        gale_wraith: {
+          a: 'Wind wi a grudge. Brace yer hooves.',
+          b: 'Gale-speerit. It dunts — it\'s nae personal.',
+          c: 'Wather that dunts back. Fair play tae it.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:

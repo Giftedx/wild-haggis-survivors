@@ -1132,6 +1132,18 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.redcap.b',
         'ui.banter.enemy_ambient.redcap.c',
       ],
+      // ── Weather family (Task 17). Elemental-thin — treat the wraith as
+      //    weather given a face. Short, wispy, no metaphors piled on.
+      haar_wraith: [
+        'ui.banter.enemy_ambient.haar_wraith.a',
+        'ui.banter.enemy_ambient.haar_wraith.b',
+        'ui.banter.enemy_ambient.haar_wraith.c',
+      ],
+      gale_wraith: [
+        'ui.banter.enemy_ambient.gale_wraith.a',
+        'ui.banter.enemy_ambient.gale_wraith.b',
+        'ui.banter.enemy_ambient.gale_wraith.c',
+      ],
     },
   },
   {

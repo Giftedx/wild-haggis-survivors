@@ -1608,6 +1608,17 @@ export const EN_STRINGS: LocaleTree = {
           b: 'That bunnet\'s dripped. Hope it stays dripped.',
           c: 'Wee goblin in the bloodiest hat on the moor.',
         },
+        // ── Weather family. Elemental-thin.
+        haar_wraith: {
+          a: 'The haar\'s got a face this time. No like it.',
+          b: 'Fog wi shoulders. Watch yer pockets.',
+          c: 'Sea-mist that walks. Keep movin\' — ye\'ll lose it.',
+        },
+        gale_wraith: {
+          a: 'Wind wi a grudge. Brace yer hooves.',
+          b: 'Gale-spirit. It shoves — it\'s nae personal.',
+          c: 'Weather that pushes back. Fair play tae it.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
