@@ -1093,6 +1093,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.enemy_ambient.b',
       'ui.banter.enemy_ambient.c',
     ],
+    keysByTag: {
+      // ── Cryptids family (Task 17). Uncanny-warm moor voice naming the
+      //    wildwood half-legend: barghest (Yorkshire/Scots black-dog
+      //    omen), kelpie foal (water-horse lure), blue man of the Minch
+      //    (riddle-speaking sea spirit). Tone: curious, wary, not
+      //    terrified — the moor's seen stranger.
+      barghest: [
+        'ui.banter.enemy_ambient.barghest.a',
+        'ui.banter.enemy_ambient.barghest.b',
+        'ui.banter.enemy_ambient.barghest.c',
+      ],
+      kelpie_foal: [
+        'ui.banter.enemy_ambient.kelpie_foal.a',
+        'ui.banter.enemy_ambient.kelpie_foal.b',
+        'ui.banter.enemy_ambient.kelpie_foal.c',
+      ],
+      blue_man_of_minch: [
+        'ui.banter.enemy_ambient.blue_man_of_minch.a',
+        'ui.banter.enemy_ambient.blue_man_of_minch.b',
+        'ui.banter.enemy_ambient.blue_man_of_minch.c',
+      ],
+    },
   },
   {
     // Reliquary pickup (M15). Small hearth beat — the moor just handed

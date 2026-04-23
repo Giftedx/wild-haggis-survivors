@@ -1576,6 +1576,22 @@ export const EN_STRINGS: LocaleTree = {
         a: 'New shape on the moor. Mind yer step.',
         b: 'Somethin\' unfamiliar. Stay braw.',
         c: 'Aye, that\'s a new yin fer the kin-book.',
+        // ── Cryptids family. Uncanny-warm naming voice.
+        barghest: {
+          a: 'A muckle black dug wi too mony teeth. Mind the shadow first.',
+          b: 'Barghest. Heard o them — didnae want tae see one.',
+          c: 'Black hound\'s oot. Keep low an keep movin\'.',
+        },
+        kelpie_foal: {
+          a: 'Wee yin\'s aw shimmer an ribbon. Dinnae follow the glow.',
+          b: 'Kelpie foal, tempty wee thing. Hooves on land, aye?',
+          c: 'Shimmerin\' like wet tinfoil. That\'s nae invite.',
+        },
+        blue_man_of_minch: {
+          a: 'Blue fella fae the sea. Talks in riddles — dinnae answer.',
+          b: 'Minch-folk dinnae come ashore fer fun. Heads up.',
+          c: 'Salt-blue an watchin\'. Keep yer kennings tae yersel.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match

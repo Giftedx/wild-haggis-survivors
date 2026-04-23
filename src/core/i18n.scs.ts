@@ -1419,6 +1419,22 @@ export const SCS_STRINGS: LocaleTree = {
         a: 'New shape on tha moor. Mynd yer fuit.',
         b: 'Somethin unkent. Haud yer wits.',
         c: 'Aye, yon\'s a new yin fer tha kin-book.',
+        // ── Cryptids family (Task 17). SCS pair.
+        barghest: {
+          a: 'A muckle black dug wi ower mony teeth. Mynd tha shadda first.',
+          b: 'Barghest. Heard o them — didnae want tae see wan.',
+          c: 'Black hound\'s oot. Haud low an keep gaun.',
+        },
+        kelpie_foal: {
+          a: 'Wee yin\'s aw shimmer an ribbon. Dinnae chase tha gliff.',
+          b: 'Kelpie foal, tempty wee thing. Hooves on dry grund, aye?',
+          c: 'Shimmerin like weet tinfile. Yon\'s nae invite.',
+        },
+        blue_man_of_minch: {
+          a: 'Blue fella fae tha sea. Blethers in riddles — gie him nae answer.',
+          b: 'Minch-folk dinnae come tae laund fer fun. Keek up.',
+          c: 'Saut-blue an watchin. Keep yer kennings tae yersel.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:
