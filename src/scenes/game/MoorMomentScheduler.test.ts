@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { MoorMomentScheduler, type MoorMomentSchedulerHooks } from './MoorMomentScheduler';
+import {
+  MoorMomentScheduler,
+  resolveBurnsTagForBiome,
+  type MoorMomentSchedulerHooks,
+} from './MoorMomentScheduler';
 import { MOOR_MOMENT_FIRST_SEC, MOOR_MOMENT_GAP_BASE_SEC } from '../../data/moorMoments';
 import { createRNG } from '../../utils/rng';
 import { defaultModifiers } from '../../core/RunModifiers';
@@ -195,5 +199,90 @@ describe('MoorMomentScheduler', () => {
     off();
     expect(juice.showMoorMomentBurst).toHaveBeenCalled();
     expect(moments).toHaveLength(1);
+  });
+});
+
+describe('resolveBurnsTagForBiome', () => {
+  it('maps loch + home_loch to loch_moment', () => {
+    expect(resolveBurnsTagForBiome('loch')).toBe('loch_moment');
+    expect(resolveBurnsTagForBiome('home_loch')).toBe('loch_moment');
+  });
+
+  it('maps heather + pine (and their home forms) to highland_moment', () => {
+    expect(resolveBurnsTagForBiome('heather')).toBe('highland_moment');
+    expect(resolveBurnsTagForBiome('home_heather')).toBe('highland_moment');
+    expect(resolveBurnsTagForBiome('pine')).toBe('highland_moment');
+    expect(resolveBurnsTagForBiome('home_pine')).toBe('highland_moment');
+  });
+
+  it('returns null for bog + home_bog (no Burns canon for bogs)', () => {
+    expect(resolveBurnsTagForBiome('bog')).toBe(null);
+    expect(resolveBurnsTagForBiome('home_bog')).toBe(null);
+  });
+
+  it('returns null for undefined + unknown tags', () => {
+    expect(resolveBurnsTagForBiome(undefined)).toBe(null);
+    expect(resolveBurnsTagForBiome('')).toBe(null);
+    expect(resolveBurnsTagForBiome('mystery_tag')).toBe(null);
+  });
+});
+
+describe('MoorMomentScheduler burns_citation co-fire', () => {
+  it('requests burns_citation once per Burns-relevant biome tag per run', () => {
+    const banterRequest = vi.fn();
+    const banter = { request: banterRequest };
+    const { hooks } = makeHooks({
+      getBanter: () => banter as unknown as ReturnType<MoorMomentSchedulerHooks['getBanter']>,
+      getCurrentBiomeId: () => 'loch',
+    });
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    // Fire three moor moments back-to-back in loch biome.
+    let tickSec = MOOR_MOMENT_FIRST_SEC;
+    for (let i = 0; i < 3; i++) {
+      scheduler.tick(tickSec);
+      tickSec += 200;
+    }
+
+    const burnsCalls = banterRequest.mock.calls.filter((c) => c[0] === 'burns_citation');
+    expect(burnsCalls).toHaveLength(1);
+    expect(burnsCalls[0]).toEqual(['burns_citation', { tag: 'loch_moment' }]);
+  });
+
+  it('does not request burns_citation for bog biome', () => {
+    const banterRequest = vi.fn();
+    const banter = { request: banterRequest };
+    const { hooks } = makeHooks({
+      getBanter: () => banter as unknown as ReturnType<MoorMomentSchedulerHooks['getBanter']>,
+      getCurrentBiomeId: () => 'bog',
+    });
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+
+    const burnsCalls = banterRequest.mock.calls.filter((c) => c[0] === 'burns_citation');
+    expect(burnsCalls).toHaveLength(0);
+  });
+
+  it('re-opens Burns tags on reset (new run)', () => {
+    const banterRequest = vi.fn();
+    const banter = { request: banterRequest };
+    const { hooks } = makeHooks({
+      getBanter: () => banter as unknown as ReturnType<MoorMomentSchedulerHooks['getBanter']>,
+      getCurrentBiomeId: () => 'heather',
+    });
+    const scheduler = new MoorMomentScheduler(hooks);
+    scheduler.reset();
+
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+    scheduler.reset();
+    scheduler.tick(MOOR_MOMENT_FIRST_SEC);
+
+    const burnsCalls = banterRequest.mock.calls.filter((c) => c[0] === 'burns_citation');
+    expect(burnsCalls).toHaveLength(2);
+    expect(burnsCalls[0]).toEqual(['burns_citation', { tag: 'highland_moment' }]);
+    expect(burnsCalls[1]).toEqual(['burns_citation', { tag: 'highland_moment' }]);
   });
 });

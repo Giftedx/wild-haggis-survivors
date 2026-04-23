@@ -46,6 +46,14 @@ export class MoorMomentScheduler {
   private schedule: MoorMomentDef[] = [];
   private index = 0;
   private nextAtSec = MOOR_MOMENT_FIRST_SEC;
+  /**
+   * B1 Phase 4 Task 22 — tracks which `burns_citation` biome tags have
+   * already co-fired on a moor_moment this run. Re-seeds on `reset()`
+   * so each run gets its own once-per-tag Burns cadence. Spec §3 calls
+   * for Burns to feel rare + special — once per relevant biome per run
+   * is the live expression of that constraint.
+   */
+  private burnsFiredTagsThisRun: Set<string> = new Set();
 
   constructor(private readonly hooks: MoorMomentSchedulerHooks) {}
 
@@ -54,6 +62,7 @@ export class MoorMomentScheduler {
     this.schedule = shuffleMoorMoments(this.hooks.getRunRng());
     this.index = 0;
     this.nextAtSec = MOOR_MOMENT_FIRST_SEC;
+    this.burnsFiredTagsThisRun.clear();
   }
 
   /**
@@ -156,5 +165,36 @@ export class MoorMomentScheduler {
     if (atHome && def.homeBiome) banterTag = `home_${def.homeBiome}`;
     else if (here) banterTag = here;
     h.getBanter()?.request('moor_moment', banterTag ? { tag: banterTag } : undefined);
+
+    // Burns co-fire: once per Burns-relevant biome per run. Priority 43
+    // beats moor_moment 31 same-tick, so Burns wins the arbitration on
+    // the ticks we trigger it and lets moor_moment own every other tick.
+    // The run-scoped set keeps the pool feeling rare + special per
+    // spec §3 ("context-justified, never random").
+    const burnsTag = resolveBurnsTagForBiome(banterTag);
+    if (burnsTag && !this.burnsFiredTagsThisRun.has(burnsTag)) {
+      this.burnsFiredTagsThisRun.add(burnsTag);
+      h.getBanter()?.request('burns_citation', { tag: burnsTag });
+    }
   }
+}
+
+/**
+ * B1 Phase 4 Task 22 — map a moor_moment biome tag to the Burns sub-pool
+ * that fits it, or `null` when Burns has no canonical line for the biome
+ * (bog → nothing; Burns didn't write about bogs). Exported for unit
+ * tests so the mapping is pinned in one readable place.
+ *
+ * Tag conventions match `MoorMomentScheduler.fire`: biome key plain
+ * (`loch`, `heather`, `pine`, `bog`) for non-home hits, `home_{biome}`
+ * for home-biome hits — both routes share the same Burns sub-pool.
+ */
+export function resolveBurnsTagForBiome(
+  banterTag: string | undefined,
+): 'loch_moment' | 'highland_moment' | null {
+  if (!banterTag) return null;
+  if (banterTag === 'loch' || banterTag === 'home_loch') return 'loch_moment';
+  if (banterTag === 'heather' || banterTag === 'home_heather') return 'highland_moment';
+  if (banterTag === 'pine' || banterTag === 'home_pine') return 'highland_moment';
+  return null;
 }
