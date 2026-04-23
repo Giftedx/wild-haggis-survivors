@@ -1,6 +1,6 @@
 # Banter coverage audit — 2026-04-23
 
-**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra** shipped (2026-04-23); authoring phases pending.
+**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools** shipped (2026-04-23). Phase 3 flavour authoring + Phase 4 specialist voices + Phase 5 seasonal pending.
 
 ---
 
@@ -14,6 +14,27 @@ Infrastructure scaffolding, no player-facing change:
 - Parity fence (`i18n.locale.test.ts` "every EN banter leaf has a Scots translation") already scoped to `ui.banter.*` — no change needed; ready for Phase 2 authoring.
 
 **Scope trim vs plan:** Phase 1 Tasks 3–6 (trigger wiring in `BanterSystem`) deferred to Phase 2. Wiring hooks before content is dead code, and the spec §3 trigger surface may reshape once authoring starts (run:end outcome fan-out, interval rebound, enemy-spawn semantics). Each hook will land alongside its pool's authored leaves.
+
+---
+
+## What shipped in Phase C — Phase 2 (2026-04-23)
+
+All four core-authoring pools graduated into `BANTER_POOLS` with authored EN + SCS leaves and their triggers wired. EN↔SCS parity fence held each pool at CI merge time.
+
+| Task | Pool | Lines (EN + SCS) | Priority | Trigger surface |
+|------|------|------------------|----------|-----------------|
+| 9 | `gran_commentary` | 40 + 40 (8 generic + tagged sub-pools for `run_start`, `run_end_victory`, `moor_moment`, `seasonal_event`) | **28** (spec §2 proposed 30 — collided with `biome_change`; reconciled) | `GameScene.create` (run_start, 1200ms / 2400ms post-curse offset), `RunLifecycle.handleVictory` (run_end_victory). `run_end_defeat` trigger intentionally replaced in Task 12 by `death_reflection`; defeat sub-pool stays authored for future surfaces. |
+| 10 | `haggis_ambient` | 50 + 50 (generic only; variant sub-pools deferred) | **25** | `GameTickers.tickBanter` → `maybeFireHaggisAmbient`. Three gates: 45s±15s wall-clock, HP fraction > 75%, no enemy within 200px for 10s continuous. New `GameScene.hasEnemyNearby(radiusPx)` helper does squared-distance scan of the SpawnSystem enemy group. |
+| 11 | `moor_moment` (expansion) | +40 + +40 over Phase 1 baseline (26 generic + each biome tag +3, each home_biome +2) | 31 (existing) | Existing `MoorMomentScheduler` triggers — pool just grew. |
+| 12 | `death_reflection` (graduation) | 30 + 30 (6 generic + 3 per `DeathCauseTag` × 8 tags) | **75** | `RunLifecycle.handleDeath`. `classifyDeath` moved up before the banter request so the tag reaches the pool at the death-tick toast. Note: spec §2 assumed this pool existed — it didn't; graduated from absent, not expanded. |
+
+**Priority ladder reconciliation:** spec §2 proposed `gran_commentary` at 30 but `biome_change` already occupied that slot; resolved to 28. `death_reflection` at 75 slotted cleanly. `haggis_ambient` at 25 slotted cleanly.
+
+**Wiring follow-ups left open:**
+
+- Gran's `run_end_defeat` sub-pool (6 authored lines) currently never fires — `death_reflection` (priority 75) beats it same-tick. Sub-pool retained for potential future surfaces (post-bell death, post-mortem pane, dedicated follow-up toast).
+- `gran_commentary.seasonal_event` sub-pool (6 authored lines) dormant until E1 seasonal windows land.
+- `haggis_ambient` variant sub-pools not authored in this slice — could extend per-variant (iron_belly, laird, cailleach, etc.) as a future pass if playtest surfaces the need.
 
 ---
 

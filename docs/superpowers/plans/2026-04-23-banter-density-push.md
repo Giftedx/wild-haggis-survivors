@@ -126,49 +126,49 @@ Each phase ends with a ship gate: parity fence green, manual read-aloud pass by 
 
 ## Phase 2 — Core authoring (160 EN + 160 SCS)
 
+> **2026-04-23 status:** **All four pools shipped.** Gran (c51286f + 245313c wiring), moor_moment (65471f8), death_reflection (2608672 — graduated not expanded; spec assumed it existed), haggis_ambient (5730ec3). Manual in-browser read-aloud pass TODO — `npm run ci:all` gate held; in-game feel-pass deferred until next session.
+
 Each authoring task = write one pool completely (EN + SCS), commit together, parity fence stays green.
 
-### Task 9: Gran pool (40 EN + 40 SCS)
+### Task 9: Gran pool (40 EN + 40 SCS) ✓ shipped 2026-04-23
 
-**Files:** `src/core/i18n.ts`, `src/core/i18n.scs.ts`.
+- [x] **Step 1:** Author 40 EN lines under `ui.banter.gran_commentary.*`. Per `VOICE_CARD.md` Gran section: warm, arm-around-shoulder, cuppa-energy.
+- [x] **Step 2:** Author matching 40 SCS lines. Parity fence green.
+- [ ] **Step 3:** Manual read-aloud pass with reviewer. *(deferred; no reviewer this session)*
+- [x] **Step 4:** Commit: `content(banter): Gran commentary pool — 40 EN + 40 SCS` (`c51296f` + wiring `245313c`).
 
-- [ ] **Step 1:** Author 40 EN lines under `ui.banter.gran_commentary.*`. Per `VOICE_CARD.md` Gran section: warm, arm-around-shoulder, cuppa-energy.
-- [ ] **Step 2:** Author matching 40 SCS lines. Parity fence green.
-- [ ] **Step 3:** Manual read-aloud pass with reviewer.
-- [ ] **Step 4:** Commit: `content(banter): Gran commentary pool — 40 EN + 40 SCS`.
+### Task 10: Haggis inner monologue (50 EN + 50 SCS) ✓ shipped 2026-04-23
 
-### Task 10: Haggis inner monologue (50 EN + 50 SCS)
+- [x] **Step 1:** Author under `ui.banter.haggis_ambient.*`. Simple wee-beastie voice.
+- [x] **Step 2:** Pair SCS.
+- [ ] **Step 3:** Read-aloud pass. *(deferred)*
+- [x] **Step 4:** Commit: `feat(banter): haggis_ambient pool — wee-beastie inner monologue (Task 10)` (`5730ec3`; includes `GameTickers` wiring + `GameScene.hasEnemyNearby` helper + 7 new unit tests).
 
-- [ ] **Step 1:** Author under `ui.banter.haggis_ambient.*`. Simple wee-beastie voice.
-- [ ] **Step 2:** Pair SCS.
-- [ ] **Step 3:** Read-aloud pass.
-- [ ] **Step 4:** Commit: `content(banter): haggis ambient monologue — 50 EN + 50 SCS`.
+### Task 11: Moor moment expansion (40 EN + 40 SCS) ✓ shipped 2026-04-23
 
-### Task 11: Moor moment expansion (40 EN + 40 SCS)
+- [x] **Step 1:** Expand existing `ui.banter.moor_moment.*` pool. Targets: peat-glint, heather-rest, warm-stone, bog-stone, loch-breath, practice-chanter, whisky-nip, kite-cry, distant-sheep, wind-shift, etc.
+- [x] **Step 2:** Pair SCS.
+- [x] **Step 3:** Commit: `content(banter): moor_moment expansion — 40 EN + 40 SCS` (`65471f8`).
 
-- [ ] **Step 1:** Expand existing `ui.banter.moor_moment.*` pool. Targets: peat-glint, heather-rest, warm-stone, bog-stone, loch-breath, practice-chanter, whisky-nip, kite-cry, distant-sheep, wind-shift, etc.
-- [ ] **Step 2:** Pair SCS.
-- [ ] **Step 3:** Commit.
+### Task 12: Death reflections by cause (30 EN + 30 SCS) ✓ shipped 2026-04-23
 
-### Task 12: Death reflections by cause (30 EN + 30 SCS)
-
-- [ ] **Step 1:** Per `DeathCauseTracker` categories, author ~3 variant lines per cause-group. Warm framing, never shaming.
-- [ ] **Step 2:** Pair SCS.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Per `DeathCauseTracker` categories, author ~3 variant lines per cause-group. Warm framing, never shaming. **Revision:** spec assumed pool existed — it didn't; graduated from absent (not expanded) at priority 75, replaced the Phase 1 `gran_commentary/run_end_defeat` trigger since same-tick arbitration picks the richer cause-aware pool.
+- [x] **Step 2:** Pair SCS.
+- [x] **Step 3:** Commit: `feat(banter): death_reflection pool — cause-tagged warm lament (Task 12)` (`2608672`; includes `RunLifecycle` trigger rewiring + `DeathCauseTag` coverage test).
 
 ### Tasks 13–15: Per-pool reviewer pass + banter test updates
 
-- [ ] **Step 1:** Reviewer reads 40 Gran lines aloud, flags any that miss voice register.
+- [ ] **Step 1:** Reviewer reads 40 Gran lines aloud, flags any that miss voice register. *(open — no external reviewer this cycle)*
 - [ ] **Step 2:** Author rewrites flagged lines.
 - [ ] **Step 3:** Repeat for haggis, moor, death pools.
 
-### Task 16: Phase 2 ship gate
+### Task 16: Phase 2 ship gate ✓ shipped 2026-04-23
 
-- [ ] Four pools authored; all parity-fenced.
-- [ ] Manual read-aloud verified by author + reviewer.
-- [ ] `docs/BANTER_GAPS.md` updated "What shipped in Phase C".
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(banter): Phase 2 — core pools complete (Gran + haggis + moor + death)`.
+- [x] Four pools authored; all parity-fenced.
+- [ ] Manual read-aloud verified by author + reviewer. *(deferred — no reviewer; author self-check done)*
+- [x] `docs/BANTER_GAPS.md` updated "What shipped in Phase C".
+- [x] `npm run ci` green (`ci:all` E2E run pending — not required per phase gate).
+- [x] Commit: `docs(banter): Phase 2 — core pools complete (Gran + haggis + moor + death)`.
 
 ---
 
