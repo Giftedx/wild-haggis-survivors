@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BANTER_POOLS, BANTER_KEYS, getBanterPool, type BanterContext } from './banter';
+import {
+  BANTER_POOLS,
+  BANTER_KEYS,
+  PENDING_POOL_METADATA,
+  POOL_PRIORITIES,
+  getBanterPool,
+  type BanterContext,
+  type PendingBanterContext,
+} from './banter';
 import { BOSSES } from './enemies';
 import { CURSES } from './curses';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
@@ -156,6 +164,56 @@ describe('BANTER_POOLS structure', () => {
         expect(keys.length, `${pool.context}/${tag} has too few keys`).toBeGreaterThanOrEqual(2);
       }
     }
+  });
+});
+
+describe('B1 Phase 1 — pending pool metadata', () => {
+  const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
+    ['gran_commentary', 30],
+    ['haggis_ambient', 25],
+    ['enemy_ambient', 40],
+    ['cailleach_whisper', 55],
+    ['burns_citation', 45],
+    ['first_time', 110],
+    ['seasonal_event', 65],
+  ];
+
+  it('registers all seven pending pools with spec §2 priorities', () => {
+    for (const [id, priority] of expectedPending) {
+      expect(PENDING_POOL_METADATA[id].priority, `${id} priority wrong`).toBe(priority);
+    }
+    expect(Object.keys(PENDING_POOL_METADATA)).toHaveLength(expectedPending.length);
+  });
+
+  it('cailleach_whisper tone is edge; all others hearth', () => {
+    expect(PENDING_POOL_METADATA.cailleach_whisper.tone).toBe('edge');
+    for (const [id] of expectedPending) {
+      if (id === 'cailleach_whisper') continue;
+      expect(PENDING_POOL_METADATA[id].tone, `${id} should be hearth`).toBe('hearth');
+    }
+  });
+
+  it('pending IDs do not collide with live BanterContext entries', () => {
+    const liveContexts = new Set<string>(BANTER_POOLS.map((p) => p.context));
+    for (const id of Object.keys(PENDING_POOL_METADATA)) {
+      expect(liveContexts.has(id), `${id} already lives in BANTER_POOLS`).toBe(false);
+    }
+  });
+
+  it('POOL_PRIORITIES reflects live pool priorities', () => {
+    for (const pool of BANTER_POOLS) {
+      expect(POOL_PRIORITIES[pool.context]).toBe(pool.priority);
+    }
+  });
+
+  it('POOL_PRIORITIES reflects pending pool priorities', () => {
+    for (const [id, priority] of expectedPending) {
+      expect(POOL_PRIORITIES[id]).toBe(priority);
+    }
+  });
+
+  it('first_time beats boss_warn (spec §2 — first-encounter always wins)', () => {
+    expect(POOL_PRIORITIES.first_time).toBeGreaterThan(POOL_PRIORITIES.boss_warn);
   });
 });
 

@@ -856,6 +856,73 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
   return BANTER_POOLS.find((p) => p.context === context);
 }
 
+/**
+ * B1 Phase 1 — pools scheduled for authoring in later phases.
+ *
+ * These IDs are *not* members of `BanterContext` yet: each pool graduates
+ * into `BanterContext` + `BANTER_POOLS` only when its lines are authored
+ * (Phase 2 onward). Keeping them here preserves two existing invariants
+ * from `banter.test.ts`:
+ *   - every pool in `BANTER_POOLS` has ≥ 2 keys
+ *   - no two pools in `BANTER_POOLS` share a priority
+ *
+ * Tests read `POOL_PRIORITIES` (derived below) to verify the priority
+ * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
+ */
+export type PendingBanterContext =
+  | 'gran_commentary'
+  | 'haggis_ambient'
+  | 'enemy_ambient'
+  | 'cailleach_whisper'
+  | 'burns_citation'
+  | 'first_time'
+  | 'seasonal_event';
+
+export interface PendingPoolMetadata {
+  tone: BanterTone;
+  priority: number;
+}
+
+/**
+ * Tone + priority per spec §2 / §3. Priorities ladder:
+ *   first_time (110) > boss_warn (100) > low_hp (80) > boss_down (70) >
+ *   seasonal_event (65) > weapon_evolve (65) > level_up (60) >
+ *   curse_start (59) > cailleach_whisper (55) > act_complete (57) >
+ *   first_blood (50) > act_intermission_enter (52) > route_picked (48) >
+ *   burns_citation (45) > reliquary_pick (45) > kill_streak (40) >
+ *   enemy_ambient (40) > recover (35) > moor_moment (31) >
+ *   biome_change (30) > gran_commentary (30) > haggis_ambient (25) >
+ *   idle (10)
+ * Duplicate priorities (weapon_evolve=65/seasonal_event=65, kill_streak=40/
+ * enemy_ambient=40, biome_change=30/gran_commentary=30) are held apart
+ * by trigger-context — they never fire in the same tick, so same-tick
+ * arbitration doesn't collide. The BANTER_POOLS uniqueness test only
+ * covers live entries; a pending pool graduates into BANTER_POOLS only
+ * after its priority is reviewed against live ones for that phase.
+ */
+export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
+  gran_commentary: { tone: 'hearth', priority: 30 },
+  haggis_ambient: { tone: 'hearth', priority: 25 },
+  enemy_ambient: { tone: 'hearth', priority: 40 },
+  cailleach_whisper: { tone: 'edge', priority: 55 },
+  burns_citation: { tone: 'hearth', priority: 45 },
+  first_time: { tone: 'hearth', priority: 110 },
+  seasonal_event: { tone: 'hearth', priority: 65 },
+};
+
+/**
+ * Flat priority lookup spanning live (`BANTER_POOLS`) + pending
+ * (`PENDING_POOL_METADATA`) pools. Single source of truth for the
+ * ladder documented in B1 spec §2. Read-only at runtime; tests assert
+ * spec numbers against this map so the ladder can't drift silently.
+ */
+export const POOL_PRIORITIES: Readonly<Record<string, number>> = (() => {
+  const out: Record<string, number> = {};
+  for (const p of BANTER_POOLS) out[p.context] = p.priority;
+  for (const [id, meta] of Object.entries(PENDING_POOL_METADATA)) out[id] = meta.priority;
+  return out;
+})();
+
 /** All i18n keys, flat — generic + every tagged sub-pool. Tests lean on
  *  this to prove every declared key resolves to a real i18n string. */
 export const BANTER_KEYS: readonly string[] = BANTER_POOLS.flatMap((p) => {
