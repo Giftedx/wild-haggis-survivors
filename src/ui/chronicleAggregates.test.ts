@@ -61,6 +61,8 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     victories: 0,
     cursedVictoriesCompleted: 0,
     runHistory: [],
+    seenEnemies: [],
+    firstTimeEventsFired: [],
     settings: { soundOn: true, musicOn: true },
     ...overrides,
   };

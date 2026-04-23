@@ -17,7 +17,7 @@ import {
 } from '../data/variants';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 6;
+export const SAVE_SCHEMA_VERSION = 7;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -167,6 +167,22 @@ export interface SaveData {
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
+  /**
+   * B1 banter density push — enemy types the player has ever seen spawn.
+   * Used by `enemy_ambient` banter pool to distinguish first-encounter
+   * (high-priority flavour line) from routine respawn (rare 1/20 tick).
+   * Deduped + string-coerced at load. v7 addition.
+   */
+  seenEnemies: string[];
+
+  /**
+   * B1 banter density push — stable IDs of first-time banter reservations
+   * that have already fired (e.g. `first_boss_gordon`, `first_evo_thistle`).
+   * `first_time` pool priority 110 reads this set to gate emission.
+   * Deduped + string-coerced at load. v7 addition.
+   */
+  firstTimeEventsFired: string[];
+
   /** Settings */
   settings: SaveSettings;
 }
@@ -239,6 +255,8 @@ const DEFAULT_SAVE: SaveData = {
   bestIronmoorSeconds: 0,
   cursedVictoriesCompleted: 0,
   runHistory: [],
+  seenEnemies: [],
+  firstTimeEventsFired: [],
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -250,6 +268,8 @@ export function createDefaultSave(): SaveData {
     upgrades: {},
     unlockedVariants: [DEFAULT_VARIANT_KEY],
     runHistory: [],
+    seenEnemies: [],
+    firstTimeEventsFired: [],
     settings: { ...DEFAULT_SETTINGS },
   };
 }
@@ -299,6 +319,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV4ToV5(raw));
     case 5:
       return finalizeSaveCandidate(migrateV5ToV6(raw));
+    case 6:
+      return finalizeSaveCandidate(migrateV6ToV7(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -444,6 +466,17 @@ function migrateV5ToV6(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v6 → v7 adds `seenEnemies: string[]` and `firstTimeEventsFired: string[]`
+ * for the B1 banter density push. Both default to empty — pre-v7 saves
+ * simply haven't tracked these, so every enemy will fire the first-encounter
+ * line exactly once per player from the upgrade onward. Pure version bump;
+ * `finalizeSaveCandidate` coerces the fields via `coerceStringArray`.
+ */
+function migrateV6ToV7(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -487,8 +520,28 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     runHistory,
+    seenEnemies: coerceStringArray(candidate.seenEnemies),
+    firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),
     settings: coerceSettings(candidate.settings),
   };
+}
+
+/**
+ * B1 v7 — string-array coercer shared by `seenEnemies` and
+ * `firstTimeEventsFired`. Drops non-string / empty entries and dedupes
+ * while preserving first-seen order. Non-array input returns `[]`.
+ */
+function coerceStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of value) {
+    if (typeof raw !== 'string' || raw.length === 0) continue;
+    if (seen.has(raw)) continue;
+    seen.add(raw);
+    out.push(raw);
+  }
+  return out;
 }
 
 function buildProgressSnapshot(

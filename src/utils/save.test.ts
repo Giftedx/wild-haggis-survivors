@@ -48,7 +48,7 @@ describe('save migration', () => {
       unlockedVariants: ['classic'],
     });
 
-    expect(migrated.schemaVersion).toBe(6);
+    expect(migrated.schemaVersion).toBe(7);
     expect(migrated.gold).toBe(250);
     expect(migrated.upgrades).toEqual({ strong_legs: 2, thick_hide: 1 });
     expect(migrated.totalRuns).toBe(8);
@@ -358,8 +358,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 6', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(6);
+  it('SAVE_SCHEMA_VERSION is 7', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(7);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -392,7 +392,7 @@ describe('save schema v3 → v4 (W2 routes)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v3);
-    expect(migrated.schemaVersion).toBe(6);
+    expect(migrated.schemaVersion).toBe(7);
     expect(migrated.gold).toBe(123);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].routes).toEqual([]);
@@ -486,7 +486,7 @@ describe('save schema v4 → v5 (T1 replay blob)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v4);
-    expect(migrated.schemaVersion).toBe(6);
+    expect(migrated.schemaVersion).toBe(7);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].replay).toBeUndefined();
     expect(migrated.runHistory[0].timeSurvivedSec).toBe(400);
@@ -619,7 +619,7 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v5);
-    expect(migrated.schemaVersion).toBe(6);
+    expect(migrated.schemaVersion).toBe(7);
     expect(migrated.gold).toBe(77);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].replay).toEqual(replayBlobV1);
@@ -662,6 +662,67 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
       },
     );
     expect(result.save.runHistory[0].replay).toEqual(replayBlobV2);
+  });
+});
+
+describe('save schema v6 → v7 (B1 banter tracking)', () => {
+  it('fresh save defaults seenEnemies and firstTimeEventsFired to empty arrays', () => {
+    const fresh = createDefaultSave();
+    expect(fresh.seenEnemies).toEqual([]);
+    expect(fresh.firstTimeEventsFired).toEqual([]);
+  });
+
+  it('migrates a v6 save to v7 without data loss, defaults new fields to empty', () => {
+    const v6: unknown = {
+      schemaVersion: 6,
+      gold: 42,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 1,
+      bestTime: 100,
+      bestKills: 20,
+      totalKills: 20,
+      totalGoldEarned: 40,
+      bestCombo: 3,
+      victories: 0,
+      runHistory: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v6);
+    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.gold).toBe(42);
+    expect(migrated.seenEnemies).toEqual([]);
+    expect(migrated.firstTimeEventsFired).toEqual([]);
+  });
+
+  it('preserves seenEnemies and firstTimeEventsFired on round-trip', () => {
+    const save = {
+      ...createDefaultSave(),
+      seenEnemies: ['kelpie', 'selkie', 'cu_sith'],
+      firstTimeEventsFired: ['first_boss_gordon', 'first_evo_thistle'],
+    };
+    const migrated = migrateSave(save);
+    expect(migrated.seenEnemies).toEqual(['kelpie', 'selkie', 'cu_sith']);
+    expect(migrated.firstTimeEventsFired).toEqual(['first_boss_gordon', 'first_evo_thistle']);
+  });
+
+  it('coerces non-array seenEnemies / firstTimeEventsFired to empty', () => {
+    const migrated = migrateSave({
+      schemaVersion: 7,
+      seenEnemies: { not: 'an array' },
+      firstTimeEventsFired: 'nope',
+    });
+    expect(migrated.seenEnemies).toEqual([]);
+    expect(migrated.firstTimeEventsFired).toEqual([]);
+  });
+
+  it('drops non-string entries and dedupes seenEnemies', () => {
+    const migrated = migrateSave({
+      schemaVersion: 7,
+      seenEnemies: ['kelpie', 42, null, 'kelpie', 'selkie', ''],
+    });
+    expect(migrated.seenEnemies).toEqual(['kelpie', 'selkie']);
   });
 });
 
