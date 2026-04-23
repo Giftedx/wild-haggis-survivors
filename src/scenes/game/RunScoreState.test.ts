@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { RunScoreState } from './RunScoreState';
 
 describe('RunScoreState', () => {
@@ -111,6 +111,36 @@ describe('RunScoreState', () => {
       s.reset();
       s.incrementKillCount();
       expect(s.killCount).toBe(1);
+    });
+  });
+
+  describe('RunScoreState.onKillsChanged', () => {
+    it('fires after each incrementKillCount with the new kill total', () => {
+      const rs = new RunScoreState();
+      const spy = vi.fn();
+      rs.onKillsChanged = spy;
+      rs.incrementKillCount();
+      rs.incrementKillCount();
+      rs.incrementKillCount();
+      expect(spy).toHaveBeenCalledTimes(3);
+      expect(spy.mock.calls.map((c) => c[0])).toEqual([1, 2, 3]);
+    });
+
+    it('is a noop when callback is undefined', () => {
+      const rs = new RunScoreState();
+      expect(() => rs.incrementKillCount()).not.toThrow();
+      expect(rs.killCount).toBe(1);
+    });
+
+    it('reset() clears the counter but leaves the callback wired', () => {
+      const rs = new RunScoreState();
+      const spy = vi.fn();
+      rs.onKillsChanged = spy;
+      rs.incrementKillCount();
+      rs.reset();
+      expect(rs.killCount).toBe(0);
+      rs.incrementKillCount();
+      expect(spy).toHaveBeenLastCalledWith(1);
     });
   });
 });

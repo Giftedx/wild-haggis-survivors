@@ -31,6 +31,14 @@ export class RunScoreState {
   /** Monotonic generation counter — invalidates stale victory-delay callbacks on scene restart. */
   victoryDelayGen = 0;
 
+  /**
+   * Optional notifier fired immediately after `incrementKillCount`
+   * bumps the counter. Wired from `GameScene` to drive the W71 Phase 2
+   * mantle-tier transitions. Intentionally a single callback (not an
+   * event emitter) — only one consumer expected.
+   */
+  onKillsChanged?: (kills: number) => void;
+
   /** Zero every counter back to a fresh-run state. */
   reset(): void {
     this.killCount = 0;
@@ -46,6 +54,7 @@ export class RunScoreState {
 
   incrementKillCount(): void {
     this.killCount++;
+    this.onKillsChanged?.(this.killCount);
   }
 
   incrementBossKillCount(): void {
