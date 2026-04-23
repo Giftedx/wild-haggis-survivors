@@ -1633,6 +1633,50 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'First iron-run cleart. Nae echo left — an yon\'s tha point.',
         },
       },
+      // ── Burns citations (B1 Phase 4 Task 22). SCS pair for
+      //    ui.banter.burns_citation.*. Burns wrote in Scots; these lines
+      //    are his originals — SCS carries the same text verbatim. Parity
+      //    fence passes trivially.
+      burns_citation: {
+        a: 'Fair fa\' your honest, sonsie face.',
+        b: 'Best-laid schemes gang aft a-gley.',
+        haggis_moment: {
+          a: 'Fair fa\' your honest, sonsie face, / Great chieftain o\' the puddin\'-race!',
+          b: 'His knife see rustic Labour dight, / An\' cut you up wi\' ready slight.',
+        },
+        mouse_moment: {
+          a: 'Wee, sleekit, cow\'rin, tim\'rous beastie.',
+          b: 'The best-laid schemes o\' mice an\' men / Gang aft a-gley.',
+        },
+        loch_moment: {
+          a: 'Ye banks and braes o\' bonie Doon, / How can ye bloom sae fresh and fair?',
+          b: 'Flow gently, sweet Afton, amang thy green braes.',
+        },
+        highland_moment: {
+          a: 'My heart\'s in the Highlands, my heart is not here.',
+          b: 'My heart\'s in the Highlands, a-chasing the deer.',
+        },
+        victory_open: {
+          a: 'Kings may be blest, but Tam was glorious, / O\'er a\' the ills o\' life victorious!',
+          b: 'Now\'s the day, and now\'s the hour.',
+        },
+        defeat_lament: {
+          a: 'Ae fond kiss, and then we sever!',
+          b: 'The wan moon is setting ayont the white wave.',
+        },
+        charge: {
+          a: 'Scots, wha hae wi\' Wallace bled.',
+          b: 'Wha will be a traitor knave? / Wha can fill a coward\'s grave?',
+        },
+        nae_haste: {
+          a: 'Nae man can tether time nor tide.',
+          b: 'When chapman billies leave the street.',
+        },
+        lineage_moment: {
+          a: 'John Anderson my jo, John, / When we were first acquent.',
+          b: 'We clam the hill thegither, / An\' monie a canty day, John.',
+        },
+      },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:
       //    tha/fae/wance/dinnae/disnae/wecht/braith/neist.

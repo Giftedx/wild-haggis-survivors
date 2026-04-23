@@ -1796,6 +1796,64 @@ export const EN_STRINGS: LocaleTree = {
           b: 'First iron-run cleared. Nae echo left — an that\'s the point.',
         },
       },
+      // ── Burns citations (B1 Phase 4 Task 22). Every line is a verified
+      //    quotation from Robert Burns (1759-1796). Public domain.
+      //    Attributions below reference the poem + first-publication year
+      //    against the Kinsley 1968 critical edition (the canonical
+      //    scholarly reference).
+      //
+      //    Scots orthography preserved as Burns wrote it; i18n.scs.ts
+      //    carries the same line verbatim. The SCS pair is identical
+      //    string — parity fence passes trivially.
+      burns_citation: {
+        a: 'Fair fa\' your honest, sonsie face.',
+        b: 'Best-laid schemes gang aft a-gley.',
+        // ── "Address to a Haggis" (1786). Burns's birthday-supper anthem.
+        haggis_moment: {
+          a: 'Fair fa\' your honest, sonsie face, / Great chieftain o\' the puddin\'-race!',
+          b: 'His knife see rustic Labour dight, / An\' cut you up wi\' ready slight.',
+        },
+        // ── "To a Mouse" (1785). Ploughed mouse nest; ubiquitous.
+        mouse_moment: {
+          a: 'Wee, sleekit, cow\'rin, tim\'rous beastie.',
+          b: 'The best-laid schemes o\' mice an\' men / Gang aft a-gley.',
+        },
+        // ── "The Banks o\' Doon" (1791) + "Sweet Afton" (1789). Water-song.
+        loch_moment: {
+          a: 'Ye banks and braes o\' bonie Doon, / How can ye bloom sae fresh and fair?',
+          b: 'Flow gently, sweet Afton, amang thy green braes.',
+        },
+        // ── "My Heart\'s in the Highlands" (1789).
+        highland_moment: {
+          a: 'My heart\'s in the Highlands, my heart is not here.',
+          b: 'My heart\'s in the Highlands, a-chasing the deer.',
+        },
+        // ── "Tam o\' Shanter" (1790) + "Scots Wha Hae" (1793) — triumph.
+        victory_open: {
+          a: 'Kings may be blest, but Tam was glorious, / O\'er a\' the ills o\' life victorious!',
+          b: 'Now\'s the day, and now\'s the hour.',
+        },
+        // ── "Ae Fond Kiss" (1791) + "Open the Door to Me O" (1793).
+        defeat_lament: {
+          a: 'Ae fond kiss, and then we sever!',
+          b: 'The wan moon is setting ayont the white wave.',
+        },
+        // ── "Scots Wha Hae" (1793). Bruce at Bannockburn.
+        charge: {
+          a: 'Scots, wha hae wi\' Wallace bled.',
+          b: 'Wha will be a traitor knave? / Wha can fill a coward\'s grave?',
+        },
+        // ── "Tam o\' Shanter" (1790). Time-won\'t-wait.
+        nae_haste: {
+          a: 'Nae man can tether time nor tide.',
+          b: 'When chapman billies leave the street.',
+        },
+        // ── "John Anderson My Jo" (1790). Elder-kinship.
+        lineage_moment: {
+          a: 'John Anderson my jo, John, / When we were first acquent.',
+          b: 'We clam the hill thegither, / An\' monie a canty day, John.',
+        },
+      },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
       //    `DeathCauseTag` keys from `src/core/deathCauseClassifier.ts`.

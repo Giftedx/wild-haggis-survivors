@@ -36,6 +36,8 @@ describe('BANTER_POOLS structure', () => {
     'enemy_ambient',
     // B1 Phase 3 Task 18 — reserved first-time events
     'first_time',
+    // B1 Phase 4 Task 22 — Burns citations
+    'burns_citation',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -194,7 +196,6 @@ describe('BANTER_POOLS structure', () => {
 describe('B1 Phase 1 — pending pool metadata', () => {
   const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
     ['cailleach_whisper', 55],
-    ['burns_citation', 45],
     ['seasonal_event', 65],
   ];
 
@@ -240,6 +241,12 @@ describe('B1 Phase 1 — pending pool metadata', () => {
     expect(POOL_PRIORITIES.enemy_ambient).toBe(41);
     expect(POOL_PRIORITIES.enemy_ambient).toBeGreaterThan(POOL_PRIORITIES.kill_streak);
     expect(POOL_PRIORITIES.enemy_ambient).toBeLessThan(POOL_PRIORITIES.reliquary_pick);
+  });
+
+  it('burns_citation sits between enemy_ambient and reliquary_pick', () => {
+    expect(POOL_PRIORITIES.burns_citation).toBe(43);
+    expect(POOL_PRIORITIES.burns_citation).toBeGreaterThan(POOL_PRIORITIES.enemy_ambient);
+    expect(POOL_PRIORITIES.burns_citation).toBeLessThan(POOL_PRIORITIES.reliquary_pick);
   });
 });
 

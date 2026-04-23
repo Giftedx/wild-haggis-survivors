@@ -45,7 +45,9 @@ export type BanterContext =
   // B1 Phase 3 Task 17 — per-enemy flavour on first encounter + rare respawn
   | 'enemy_ambient'
   // B1 Phase 3 Task 18 — reserved once-per-save lines (priority 110)
-  | 'first_time';
+  | 'first_time'
+  // B1 Phase 4 Task 22 — verified Burns quotations at context-matched triggers
+  | 'burns_citation';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1069,6 +1071,80 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     ],
   },
   {
+    // B1 Phase 4 Task 22 — Burns citations. Every line is a verified
+    // quotation from Robert Burns (1759-1796), referenced against the
+    // Kinsley 1968 critical edition. Public domain; no attribution
+    // in-line (the voice itself carries the period cadence).
+    //
+    // Priority 43 — spec §2 called 45, which was already reliquary_pick's
+    // live slot; resolved just below reliquary so a tangible curio
+    // pickup keeps its tick and Burns pours through at the slightly
+    // quieter moments. Still beats enemy_ambient (41) / kill_streak
+    // (40) / moor_moment (31) same-tick.
+    //
+    // Trigger wiring deferred per plan Task 6 pattern — content ships
+    // now so the voice is authored before wires decide which surfaces
+    // earn a Burns moment. Seasonal Burns-Night firing lands with
+    // Phase 5 (coordinated with E1).
+    //
+    // Tag register per spec §3: context-justified, never random. Tags
+    // map to the trigger surface each sub-pool is authored against:
+    //   haggis_moment   → haggis_hurler evolution + haggis moor tags
+    //   mouse_moment    → sheep / midge / small-flee enemy moments
+    //   loch_moment     → loch-biome moor_moment
+    //   highland_moment → heather / pine biome moor_moment
+    //   victory_open    → final-boss approach + victory fade-in
+    //   defeat_lament   → death_reflection Burns variant
+    //   charge          → act-intermission "press on" route picks
+    //   nae_haste       → curse_start or post-Bell slow window
+    //   lineage_moment  → ancestral echo touch / variant unlock
+    context: 'burns_citation',
+    tone: 'hearth',
+    priority: 43,
+    keys: [
+      'ui.banter.burns_citation.a',
+      'ui.banter.burns_citation.b',
+    ],
+    keysByTag: {
+      haggis_moment: [
+        'ui.banter.burns_citation.haggis_moment.a',
+        'ui.banter.burns_citation.haggis_moment.b',
+      ],
+      mouse_moment: [
+        'ui.banter.burns_citation.mouse_moment.a',
+        'ui.banter.burns_citation.mouse_moment.b',
+      ],
+      loch_moment: [
+        'ui.banter.burns_citation.loch_moment.a',
+        'ui.banter.burns_citation.loch_moment.b',
+      ],
+      highland_moment: [
+        'ui.banter.burns_citation.highland_moment.a',
+        'ui.banter.burns_citation.highland_moment.b',
+      ],
+      victory_open: [
+        'ui.banter.burns_citation.victory_open.a',
+        'ui.banter.burns_citation.victory_open.b',
+      ],
+      defeat_lament: [
+        'ui.banter.burns_citation.defeat_lament.a',
+        'ui.banter.burns_citation.defeat_lament.b',
+      ],
+      charge: [
+        'ui.banter.burns_citation.charge.a',
+        'ui.banter.burns_citation.charge.b',
+      ],
+      nae_haste: [
+        'ui.banter.burns_citation.nae_haste.a',
+        'ui.banter.burns_citation.nae_haste.b',
+      ],
+      lineage_moment: [
+        'ui.banter.burns_citation.lineage_moment.a',
+        'ui.banter.burns_citation.lineage_moment.b',
+      ],
+    },
+  },
+  {
     // B1 Phase 3 Task 18 — reserved first-time lines. Priority 110 beats
     // every other pool (boss_warn at 100 included) so these fire on the
     // exact tick the milestone happens. Once fired, `SaveData.firstTime
@@ -1395,7 +1471,6 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  */
 export type PendingBanterContext =
   | 'cailleach_whisper'
-  | 'burns_citation'
   | 'seasonal_event';
 
 export interface PendingPoolMetadata {
@@ -1426,7 +1501,6 @@ export interface PendingPoolMetadata {
  */
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
   cailleach_whisper: { tone: 'edge', priority: 55 },
-  burns_citation: { tone: 'hearth', priority: 45 },
   seasonal_event: { tone: 'hearth', priority: 65 },
 };
 
