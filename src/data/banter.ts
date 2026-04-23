@@ -1194,6 +1194,71 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.auditor_priest.b',
         'ui.banter.enemy_ambient.auditor_priest.c',
       ],
+      // ── Moor-Classic (Task 17). Original enemies without a Phase-2
+      //    family tag — each gets 2 lines anchored to its silhouette
+      //    (tourist, chef, midge, highland_cow, eagle, haggis_hunter,
+      //    angry_scotsman, deep_fryer, piper, berserker, ghost, nest,
+      //    sheep, kelpie, midgie_swarm). Generic moor-voice hearth.
+      tourist: [
+        'ui.banter.enemy_ambient.tourist.a',
+        'ui.banter.enemy_ambient.tourist.b',
+      ],
+      chef: [
+        'ui.banter.enemy_ambient.chef.a',
+        'ui.banter.enemy_ambient.chef.b',
+      ],
+      midge: [
+        'ui.banter.enemy_ambient.midge.a',
+        'ui.banter.enemy_ambient.midge.b',
+      ],
+      highland_cow: [
+        'ui.banter.enemy_ambient.highland_cow.a',
+        'ui.banter.enemy_ambient.highland_cow.b',
+      ],
+      eagle: [
+        'ui.banter.enemy_ambient.eagle.a',
+        'ui.banter.enemy_ambient.eagle.b',
+      ],
+      haggis_hunter: [
+        'ui.banter.enemy_ambient.haggis_hunter.a',
+        'ui.banter.enemy_ambient.haggis_hunter.b',
+      ],
+      angry_scotsman: [
+        'ui.banter.enemy_ambient.angry_scotsman.a',
+        'ui.banter.enemy_ambient.angry_scotsman.b',
+      ],
+      deep_fryer: [
+        'ui.banter.enemy_ambient.deep_fryer.a',
+        'ui.banter.enemy_ambient.deep_fryer.b',
+      ],
+      piper: [
+        'ui.banter.enemy_ambient.piper.a',
+        'ui.banter.enemy_ambient.piper.b',
+      ],
+      berserker: [
+        'ui.banter.enemy_ambient.berserker.a',
+        'ui.banter.enemy_ambient.berserker.b',
+      ],
+      ghost: [
+        'ui.banter.enemy_ambient.ghost.a',
+        'ui.banter.enemy_ambient.ghost.b',
+      ],
+      nest: [
+        'ui.banter.enemy_ambient.nest.a',
+        'ui.banter.enemy_ambient.nest.b',
+      ],
+      sheep: [
+        'ui.banter.enemy_ambient.sheep.a',
+        'ui.banter.enemy_ambient.sheep.b',
+      ],
+      kelpie: [
+        'ui.banter.enemy_ambient.kelpie.a',
+        'ui.banter.enemy_ambient.kelpie.b',
+      ],
+      midgie_swarm: [
+        'ui.banter.enemy_ambient.midgie_swarm.a',
+        'ui.banter.enemy_ambient.midgie_swarm.b',
+      ],
     },
   },
   {

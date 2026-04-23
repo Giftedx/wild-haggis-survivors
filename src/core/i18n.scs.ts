@@ -1505,6 +1505,67 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Auditor ordained. Tha collection plate is yersel.',
           c: 'Censer swings slaw. Ilka swing\'s a receipt.',
         },
+        // ── Moor-Classic (Task 17). SCS pair.
+        tourist: {
+          a: 'Tourist. Got a map, nae idea. Dangerous when scunnered.',
+          b: 'Rammler wi a camera an nae sense. Classic.',
+        },
+        chef: {
+          a: 'Chef on tha moor. Somebody\'s missin a denner service.',
+          b: 'Peeny an cleaver. Bad mix on yer door.',
+        },
+        midge: {
+          a: 'Midges are oot. Nae wind tae save ye.',
+          b: 'Wee bitey thing. Multiplies if ye halt.',
+        },
+        highland_cow: {
+          a: 'Heilan coo. She\'ll get tae ye. Nae hurry, but she\'ll get thair.',
+          b: 'Shaggy tank. Gie her room — abody else does.',
+        },
+        eagle: {
+          a: 'Eagle\'s spied ye. Keek up, aye — up!',
+          b: 'Gowden talons. Haud tae tha deeper heather.',
+        },
+        haggis_hunter: {
+          a: 'Richt haggis hunter. Nae subtle aboot it.',
+          b: 'He\'s here fer tha kin. We dinnae like that.',
+        },
+        angry_scotsman: {
+          a: 'Crabbit man in a kilt. Some grudge, some lager.',
+          b: 'Bawlin up tha path. Somebody telt him aboot us.',
+        },
+        deep_fryer: {
+          a: 'A deep-fryer in tha wild. Tha moor accepts naethin an fears less.',
+          b: 'Oil burlin whaur nae oil should be. Steer wide.',
+        },
+        piper: {
+          a: 'Piper\'s oot. Wrang tune, wrang side.',
+          b: 'Bag-drone gane wrang. Mynd tha circle.',
+        },
+        berserker: {
+          a: 'Berserker. Nae plan, aw airm.',
+          b: 'Muckle lad wi nae brakes. Birl aside.',
+        },
+        ghost: {
+          a: 'Ghaist. Nae body tae ken whit it wants.',
+          b: 'Flicker an braith. Naebody likes a phase-shifter.',
+        },
+        nest: {
+          a: 'A nest oot here? Dae it in afore it dis in tha moor.',
+          b: 'Keek — tha moor\'s happit somethin. Squish tha egg.',
+        },
+        sheep: {
+          a: 'Wee sheep. Aye, they fear us. Still a dunt if ye ignore them.',
+          b: 'Timorous wee thing. Same hooves, different smeddum.',
+        },
+        kelpie: {
+          a: 'Kelpie, fu-growed. Dinnae sclim on its back.',
+          b: 'Watter-horse. Means weel fer naebody.',
+        },
+        midgie_swarm: {
+          a: 'Swaurm o midges. Keep a wind at yer back.',
+          b: 'Clood o bites. Blaw them aff, dinnae stap.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:

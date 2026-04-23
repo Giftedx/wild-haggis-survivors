@@ -1662,6 +1662,68 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Auditor ordained. The collection plate is yersel.',
           c: 'Censer swings slow. Every swing\'s a receipt.',
         },
+        // ── Moor-Classic (Task 17). Original enemies, each anchored to
+        //    its silhouette. Hearth default; short, character-first.
+        tourist: {
+          a: 'Tourist. Got a map, nae idea. Dangerous when bored.',
+          b: 'Rambler wi a camera an nae sense. Classic.',
+        },
+        chef: {
+          a: 'Chef on the moor. Somebody\'s missin\' a dinner service.',
+          b: 'Apron an cleaver. Bad combo on yer doorstep.',
+        },
+        midge: {
+          a: 'Midges are oot. Nae breeze tae save ye.',
+          b: 'Wee bitey thing. Multiplies if ye pause.',
+        },
+        highland_cow: {
+          a: 'Heilan coo. She\'ll get tae ye. Nae hurry, but she\'ll get there.',
+          b: 'Shaggy tank. Gie her room — everyone else does.',
+        },
+        eagle: {
+          a: 'Eagle\'s spotted ye. Look up, aye — up!',
+          b: 'Gold talons. Stick tae the thicker heather.',
+        },
+        haggis_hunter: {
+          a: 'Actual haggis hunter. Nae subtle aboot it.',
+          b: 'He\'s here fer the kin. We dinnae like that.',
+        },
+        angry_scotsman: {
+          a: 'Angry man in a kilt. Some grudge, some lager.',
+          b: 'Bellowin\' up the path. Somebody told him aboot us.',
+        },
+        deep_fryer: {
+          a: 'A deep-fryer in the wild. The moor accepts nothin\' an fears less.',
+          b: 'Oil bubbles where nae oil should be. Steer wide.',
+        },
+        piper: {
+          a: 'Piper\'s oot. Wrang tune, wrang team.',
+          b: 'Bag drone gone wrang. Mind the circle.',
+        },
+        berserker: {
+          a: 'Berserker. Nae plan, all arm.',
+          b: 'Big lad wi nae brakes. Dance aside.',
+        },
+        ghost: {
+          a: 'Ghost. Nae body tae ken whit it wants.',
+          b: 'Flicker an breath. Naebody likes a phase-shifter.',
+        },
+        nest: {
+          a: 'A nest oot here? Kill it afore it kills the moor.',
+          b: 'Keek — the moor\'s hatched somethin\'. Squish the egg.',
+        },
+        sheep: {
+          a: 'Wee sheep. Aye, they fear us. Still a dunt if ye ignore them.',
+          b: 'Scarey wee thing. Same hooves, different courage.',
+        },
+        kelpie: {
+          a: 'Kelpie, full-grown. Dinnae climb on its back.',
+          b: 'Water-horse. Means well fer nobody.',
+        },
+        midgie_swarm: {
+          a: 'Swarm o midges. Keep a breeze at yer back.',
+          b: 'Cloud o bites. Blow them off, dinnae stop.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
