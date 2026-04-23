@@ -124,6 +124,7 @@ import {
 import { tickStressTest } from '../dev/StressTest';
 import { BALANCE } from '../core/BalanceConfig';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
+import { computeMantleTier } from '../animation/mantleTier';
 
 /**
  * GameScene — the core gameplay loop.
@@ -1125,6 +1126,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
     showCountdown(this, this.timeManager, this.updateTickers, () => this.getUiViewport());
 
+    // Wire kill count → mantle tier. Pre-seeds from current killCount so
+    // replays and save-mid-run starts at the correct tier without a tween.
+    this.wireMantleTier();
+
     // Resume is now "committed": replace old suspended snapshot with a fresh one.
     finalizeResumeStartup(resumeRun, () => this.runPersistence.persist());
   }
@@ -1209,6 +1214,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }
       this.filmGrain = null;
     });
+  }
+
+  private wireMantleTier(): void {
+    const motionScale = this.settingsManager.load().motionScale;
+    const instantForComfort = motionScale === 0;
+    // Pre-seed from current kill count so replays / save-mid-run starts
+    // at the correct tier without a reveal tween.
+    this.player.setMantleTier(
+      computeMantleTier(this.runScore.killCount),
+      { instant: true },
+    );
+    this.runScore.onKillsChanged = (kills: number) => {
+      const nextTier = computeMantleTier(kills);
+      if (nextTier === this.player.getMantleTier()) return;
+      this.player.setMantleTier(nextTier, { instant: instantForComfort });
+    };
   }
 
   update(_time: number, delta: number): void {
