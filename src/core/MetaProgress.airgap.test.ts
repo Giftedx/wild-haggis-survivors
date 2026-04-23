@@ -15,14 +15,13 @@ vi.mock('phaser', () => {
     emit() {}
     removeAllListeners() {}
   }
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite } },
       GameObjects: { Group: DummyGroup },
       Events: { EventEmitter: DummyEmitter },
       Math: {},
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 describe('Meta progression air-gap', () => {

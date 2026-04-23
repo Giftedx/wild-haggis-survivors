@@ -1,13 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Minimap } from './Minimap';
 
-vi.mock('phaser', () => ({
-  default: {
+vi.mock('phaser', () => {
+  const __m = {
     Math: {
       Clamp: (value: number, min: number, max: number) => Math.max(min, Math.min(max, value)),
     },
-  },
-}));
+  };
+  return { default: __m, ...__m };
+});
 
 // Minimap now reads uiScale + highContrastUi in the constructor — mock the
 // settings manager so the test runs under vitest (no localStorage).

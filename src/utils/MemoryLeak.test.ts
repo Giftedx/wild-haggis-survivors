@@ -5,16 +5,15 @@ import { SubscriptionBag } from './SubscriptionBag';
 // Phaser expects a browser environment. For this test we only need InputManager
 // to register/unregister pointer listeners on the scene input emitter.
 vi.mock('phaser', () => {
-  return {
-    default: {
+  const __m = {
       Input: {
         Keyboard: {
           KeyCodes: { W: 87, A: 65, S: 83, D: 68 },
         },
       },
       Math: {},
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 function countListeners(emitter: any, event: string): number {

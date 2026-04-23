@@ -19,11 +19,10 @@ vi.mock('phaser', () => {
 
   class MockRect extends MockGO {}
 
-  return {
-    default: {
+  const __m = {
       GameObjects: { Text: MockText, Rectangle: MockRect },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 import { DebugOverlay } from './DebugOverlay';

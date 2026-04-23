@@ -28,14 +28,13 @@ vi.mock('phaser', () => {
     setOrigin() { return this; }
     destroy() {}
   }
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite, Body } },
       Math: {
         FloatBetween: () => 0,
       },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../core/SettingsManager', () => ({

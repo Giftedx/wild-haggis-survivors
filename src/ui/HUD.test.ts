@@ -4,13 +4,14 @@ import { BALANCE } from '../core/BalanceConfig';
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-vi.mock('phaser', () => ({
-  default: {
+vi.mock('phaser', () => {
+  const __m = {
     Math: {
       Clamp: (value: number, min: number, max: number) => Math.max(min, Math.min(max, value)),
     },
-  },
-}));
+  };
+  return { default: __m, ...__m };
+});
 vi.mock('../core/SettingsManager', () => ({
   getSettingsManager: () => ({
     load: () => ({

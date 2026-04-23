@@ -23,16 +23,15 @@ vi.mock('phaser', () => {
     setVelocity() {}
     body = { enable: false };
   }
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite } },
       Math: {
         Angle: { Between: () => 0 },
         Distance: { Between: () => 100 },
         Clamp: (v: number, min: number, max: number) => Math.max(min, Math.min(max, v)),
       },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../systems/AudioSystem', () => ({

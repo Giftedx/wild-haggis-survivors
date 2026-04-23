@@ -20,8 +20,7 @@ vi.mock('phaser', () => {
     countActive(v = true) { return this._children.filter(c => c.active === v).length; }
     clear() { this._children = []; }
   }
-  return {
-    default: {
+  const __m = {
       Events: { EventEmitter: EE },
       Math: {
         Between: (a: number, b: number) => Math.floor((a + b) / 2),
@@ -29,8 +28,8 @@ vi.mock('phaser', () => {
         Clamp: (v: number, min: number, max: number) => Math.min(max, Math.max(min, v)),
       },
       GameObjects: { Group },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../entities/Enemy', () => {

@@ -34,8 +34,7 @@ vi.mock('phaser', () => {
       this.y = y;
     }
   }
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite, Body } },
       Math: {
         Angle: {
@@ -45,8 +44,8 @@ vi.mock('phaser', () => {
         Clamp: (v: number, min: number, max: number) =>
           Math.min(max, Math.max(min, v)),
       },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../utils/input', () => ({

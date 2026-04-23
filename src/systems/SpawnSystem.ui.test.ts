@@ -33,13 +33,12 @@ vi.mock('phaser', () => {
     removeAllListeners() {}
   }
   class DummySprite {}
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite: DummySprite } },
       Events: { EventEmitter: DummyEmitter },
       GameObjects: { Group: class {} },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 describe('SpawnSystem boss warning layout', () => {

@@ -20,13 +20,12 @@ vi.mock('phaser', () => {
     countActive(v = true) { return this._children.filter(c => c.active === v).length; }
     clear() { this._children = []; }
   }
-  return {
-    default: {
+  const __m = {
       Events: { EventEmitter: EE },
       Math: {},
       GameObjects: { Group },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../entities/Projectile', () => {

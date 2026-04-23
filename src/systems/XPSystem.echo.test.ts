@@ -39,13 +39,12 @@ vi.mock('phaser', () => {
     getLength() { return this._children.length; }
     clear() { this._children = []; }
   }
-  return {
-    default: {
+  const __m = {
       Events: { EventEmitter: EE },
       Math: {},
       GameObjects: { Group },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 import { XPSystem } from './XPSystem';

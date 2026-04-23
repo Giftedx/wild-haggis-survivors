@@ -35,13 +35,12 @@ vi.mock('phaser', () => {
       return (this._children as { active: boolean }[]).filter(c => c.active === v).length;
     }
   }
-  return {
-    default: {
+  const __m = {
       Events: { EventEmitter: EE },
       Math: {},
       GameObjects: { Group },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../entities/Enemy', () => {

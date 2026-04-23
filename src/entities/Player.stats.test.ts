@@ -22,15 +22,14 @@ vi.mock('phaser', () => {
       this.y = y;
     }
   }
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite, Body } },
       Math: {
         Angle: { Between: (x1: number, y1: number, x2: number, y2: number) => Math.atan2(y2 - y1, x2 - x1) },
         Clamp: (v: number, min: number, max: number) => Math.min(max, Math.max(min, v)),
       },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 vi.mock('../utils/input', () => ({

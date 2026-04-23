@@ -4,13 +4,12 @@ vi.mock('phaser', () => {
   class Sprite {}
   class DummyGroup {}
   class DummyEmitter {}
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite } },
       GameObjects: { Group: DummyGroup },
       Events: { EventEmitter: DummyEmitter },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 /**

@@ -5,13 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 // constructor should throw before touching any Phaser internals.
 vi.mock('phaser', () => {
   class Sprite {}
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite } },
       Math: {},
       Utils: { Array: {} },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 describe('Player strict dependency injection', () => {

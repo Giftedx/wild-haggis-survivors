@@ -3,13 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 // Projectile imports Phaser; mock it for Node test environment.
 vi.mock('phaser', () => {
   class Sprite {}
-  return {
-    default: {
+  const __m = {
       Physics: { Arcade: { Sprite } },
       Math: {},
       Utils: { Array: {} },
-    },
-  };
+    };
+  return { default: __m, ...__m };
 });
 
 describe('Projectile.onHitEnemy pierce logic', () => {
