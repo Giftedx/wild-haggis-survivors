@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../config';
 import type { ISceneContext } from '../core/ISceneContext';
 import { globalEventBus } from '../core/GlobalEventBus';

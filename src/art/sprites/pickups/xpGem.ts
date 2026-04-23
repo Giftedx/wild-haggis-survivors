@@ -4,7 +4,7 @@
  * pop against the green moor + the satisfying sparkle matter every frame.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeXpGem(scene: Phaser.Scene): void {
   // 20×20 — golden XP gem, diamond shape with 4 distinct facets,

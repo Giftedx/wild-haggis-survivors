@@ -9,7 +9,7 @@
  * `icons/weapons/<name>.ts` — current scope fits one file cleanly.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 function drawThistleShotIcon(scene: Phaser.Scene): void {
   const s = 32;

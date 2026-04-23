@@ -11,7 +11,7 @@
  * threat beat. Ghost first, audit tool second.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const LEDGER_WRAITH_CANVAS_SIZE = 40;

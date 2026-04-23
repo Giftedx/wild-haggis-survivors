@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 /** Pure step helper for D-pad menus — wraps at bounds; `length === 0` yields 0. */
 export function stepGamepadMenuIndex(index: number, length: number, direction: number): number {

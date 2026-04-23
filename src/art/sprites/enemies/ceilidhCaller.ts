@@ -11,7 +11,7 @@
  * + academic + music-call — now lands in the silhouette.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { HIGHLAND_TARTAN } from '../../kiltPalette';
 

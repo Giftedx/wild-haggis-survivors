@@ -26,7 +26,7 @@
  *   PageUp / PageDown           → vertical page
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { getHaggisSpriteSize } from '../../animation/frameDrawers/haggisFrames';
 import { VARIANTS } from '../../data/variants';
 import type { VariantKey } from '../../data/variants';

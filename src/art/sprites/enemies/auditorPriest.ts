@@ -13,7 +13,7 @@
  * "audit" now — kinship with taxman + ledger_wraith locked.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const AUDITOR_PRIEST_CANVAS_SIZE = 42;

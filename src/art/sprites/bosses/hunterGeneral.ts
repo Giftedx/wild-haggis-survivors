@@ -2,7 +2,7 @@
  * `boss_hunter_general` — scaled-up haggis hunter with rifle, bandolier, hi-viz gilet + beret. The paramilitary evolution of the lone hunter.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_HUNTER_GENERAL_CANVAS_SIZE = 80;

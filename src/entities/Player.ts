@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS, PLAYER, GAME } from '../config';
 import { InputManager } from '../utils/input';
 import type { IInput } from '../utils/iInput';

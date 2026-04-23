@@ -3,7 +3,7 @@ import { GameTickers, type GameTickerHooks } from './GameTickers';
 import type { Player } from '../../entities/Player';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { BiomeId } from '../../data/biomes';
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 /**
  * GameTickers is mostly Phaser-bound, but two pure-ish methods —

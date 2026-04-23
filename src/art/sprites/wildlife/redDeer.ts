@@ -3,7 +3,7 @@
  * right-facing, with forked antlers, dished face, and tawny coat.
  * Frame 0 = idle (standing, head up), Frame 1 = walking (diagonal leg shift).
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export const RED_DEER_CANVAS_W = 40;
 export const RED_DEER_CANVAS_H = 28;

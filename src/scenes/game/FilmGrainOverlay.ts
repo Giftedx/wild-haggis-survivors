@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { SettingsManager } from '../../core/SettingsManager';
 import { resetCameraViewportCache } from '../../ui/cameraViewport';
 import { resolveFilmGrainBaseAlpha, resolveFilmGrainDriftPx } from './filmGrainTuning';

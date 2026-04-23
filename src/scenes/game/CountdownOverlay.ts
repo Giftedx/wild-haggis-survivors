@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
 import { audio } from '../../systems/AudioSystem';
 import type { TimeManager } from '../../systems/TimeManager';

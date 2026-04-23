@@ -8,8 +8,13 @@
  * still owns the Phaser overlap registration; this class is called
  * from the overlap callback.
  */
-import Phaser from 'phaser';
+import type Phaser from 'phaser';
 import { TWEEN_ONE_SHOT_PULSE } from '../../utils/tweenPresets';
+
+// Phaser 4's runtime touches `window` at module-eval time, breaking
+// node-env Vitest. Mirror Phaser.TintModes.FILL (=1) as a local constant
+// so this module never resolves Phaser as a value at import time.
+const TINT_MODE_FILL = 1;
 import type { Player } from '../../entities/Player';
 import type { Enemy } from '../../entities/Enemy';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
@@ -142,7 +147,7 @@ export class PlayerHitResolver {
 
     // Impact feedback — alpha dim + white fill + squash-stretch recoil.
     player.setAlpha(0.5);
-    player.setTintFill(0xffffff);
+    player.setTint(0xffffff).setTintMode(TINT_MODE_FILL);
     h.getIFrameController().armHitTint(HIT_TINT_MS);
 
     const baseScale = player.scaleX;

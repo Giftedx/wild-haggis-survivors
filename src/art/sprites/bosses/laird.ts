@@ -8,7 +8,7 @@
  * silhouette — this one is the stuffy absentee-landlord incarnate.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_LAIRD_CANVAS_SIZE = 80;

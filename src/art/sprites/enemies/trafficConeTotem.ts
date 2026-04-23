@@ -10,7 +10,7 @@
  * is the kill-target anchor.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   const s = 44;

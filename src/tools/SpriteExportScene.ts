@@ -6,7 +6,7 @@
  * Sprites are grouped by category with section headers.
  * Background is transparent for easy review.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
 import { ENEMY_TYPES } from '../data/enemies';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';

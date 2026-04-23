@@ -1,5 +1,5 @@
 import { registerSW } from 'virtual:pwa-register';
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 if (import.meta.env.PROD) {
   registerSW({
@@ -117,6 +117,9 @@ if (typeof window !== 'undefined') {
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   // Stress-test console hooks: startStressTest() / stopStressTest().
   void import('./dev/StressTest').then((m) => m.installStressTestConsoleHooks());
+  // Live tuning panel for WEAPON_DEFS / ENEMY_TYPES (Tweakpane).
+  // Pair with `?quickplay&seed=N` for fast iterate-by-restart loops.
+  void import('./dev/TuningPanel').then((m) => m.installTuningPanel());
 }
 
 // Canvas role + aria-label are applied in `config.callbacks.postBoot` (see above).

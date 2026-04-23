@@ -3,7 +3,7 @@
  * Shared by every entity so bake order is exported explicitly.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeEntityShadow } from './entityShadow';
 import { bakeBossShadow } from './bossShadow';

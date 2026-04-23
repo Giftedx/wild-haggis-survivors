@@ -11,7 +11,7 @@
  * Pure helpers live beside the orchestrator class so the decision
  * math (boon shuffle, nearest-stone index) tests without Phaser.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { Player } from '../../entities/Player';
 import type { RNG } from '../../utils/rng';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';

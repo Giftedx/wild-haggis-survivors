@@ -7,7 +7,7 @@
  * is vertically offset, oldest on top so new captions don't shove the
  * player's current read off screen mid-sentence.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
 import { CaptionManager } from './CaptionManager';
 import { getSettingsManager } from '../../core/SettingsManager';

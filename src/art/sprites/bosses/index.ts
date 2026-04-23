@@ -7,7 +7,7 @@
  * `?export=sprites` PNG + asset-validator snapshot stay byte-stable.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeBossGordon } from './gordon';
 import { bakeBossTourBus } from './tourBus';

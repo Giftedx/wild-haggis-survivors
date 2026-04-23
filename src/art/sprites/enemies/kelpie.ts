@@ -12,7 +12,7 @@
  * removed. What's left is the silhouette plus the cyan eye read.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const KELPIE_CANVAS_SIZE = 48;

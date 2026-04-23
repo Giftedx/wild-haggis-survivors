@@ -2,7 +2,7 @@
  * `boss_tour_bus` — Act-2 boss: anthropomorphised tour bus, headlights as eyes, grille as teeth, a traffic cone on top. The joke made flesh.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_TOUR_BUS_CANVAS_SIZE = 96;

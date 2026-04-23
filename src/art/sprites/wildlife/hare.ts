@@ -3,7 +3,7 @@
  * and hop animation frames. Compact brown oval body, tall pointed ears,
  * white tail puff, tiny dark eye.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export const HARE_CANVAS_SIZE = 24;
 

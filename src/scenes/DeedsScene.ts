@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';

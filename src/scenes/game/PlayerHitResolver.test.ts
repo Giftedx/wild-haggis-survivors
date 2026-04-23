@@ -19,7 +19,8 @@ function buildMocks(overrides: { damageTakenMult?: number } = {}) {
     takeDamage: vi.fn(() => false),
     isDashInvincible: vi.fn(() => false),
     setAlpha: vi.fn(),
-    setTintFill: vi.fn(),
+    setTint: vi.fn().mockReturnThis(),
+    setTintMode: vi.fn().mockReturnThis(),
   };
   const juice = { flashRed: vi.fn() };
   const spawn = { getGameTimeSec: vi.fn(() => 12.5) };

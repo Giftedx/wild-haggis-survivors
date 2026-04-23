@@ -9,7 +9,7 @@
  * prop screams "I'm here on holiday".
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { HIGHLAND_TARTAN } from '../../kiltPalette';
 

@@ -7,7 +7,7 @@
  * than the dropped feedback. `acquire` returns null when exhausted;
  * callers tween then hide, which frees the slot for the next acquire.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
 import { textStyle } from '../../ui/typography';
 

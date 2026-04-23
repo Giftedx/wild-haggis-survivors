@@ -12,7 +12,7 @@
  * Seelie/Unseelie court duet.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const UNSEELIE_FIDDLER_CANVAS_SIZE = 40;

@@ -10,7 +10,7 @@
  * shared body drawer so every menu preview matches the gameplay body.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { drawHaggisBody } from '../../../animation/frameDrawers/haggisBodyDraw';
 import { VARIANTS } from '../../../data/variants';

@@ -2,7 +2,7 @@
  * `angry_scotsman` — red-faced shouting highlander with wild brows, ginger beard, tartan trousers. Also the fallback texture for the `berserker` config.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { HIGHLAND_TARTAN } from '../../kiltPalette';
 

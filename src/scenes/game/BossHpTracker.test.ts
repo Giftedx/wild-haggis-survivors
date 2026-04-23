@@ -15,7 +15,7 @@ function buildHooks(enemies: ReturnType<typeof mockEnemy>[]) {
   const hooks: BossHpTrackerHooks = {
     getSpawnSystem: () =>
       ({
-        getEnemyGroup: () => ({ children: { entries: enemies } }),
+        getEnemyGroup: () => ({ children: { entries: enemies }, getChildren: () => enemies }),
       }) as never,
     updateBossBar,
   };

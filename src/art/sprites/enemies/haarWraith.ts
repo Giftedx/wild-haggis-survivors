@@ -10,7 +10,7 @@
  * first, "something in it" second.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const HAAR_WRAITH_CANVAS_SIZE = 44;

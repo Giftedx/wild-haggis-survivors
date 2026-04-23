@@ -13,7 +13,7 @@ type ActiveToken = {
   remainingMs: number | null;
 };
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export type TimeAdapter = {
   setTimeScale: (value: number) => void;

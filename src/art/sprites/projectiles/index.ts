@@ -2,7 +2,7 @@
  * Projectile sprites — the things the haggis throws at enemies.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeThistleProjectile } from './thistle';
 import { bakeCaber } from './caber';

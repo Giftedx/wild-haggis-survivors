@@ -11,7 +11,7 @@
  * buildGameOverPayload, transitionToGameOver) stay on GameScene because
  * they touch many scene fields and live near the scene's own lifecycle.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { SpawnSystem } from '../../systems/SpawnSystem';

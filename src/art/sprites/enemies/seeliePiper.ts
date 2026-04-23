@@ -12,7 +12,7 @@
  * into the chanter.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const SEELIE_PIPER_CANVAS_SIZE = 40;

@@ -4,7 +4,7 @@
  * match to sell the weight.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeBossShadow(scene: Phaser.Scene): void {
   const s = 80;

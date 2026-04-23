@@ -9,7 +9,7 @@
  * read as families at the call site.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { resolveKiltPalette, HIGHLAND_TARTAN } from '../../kiltPalette';
 import { VARIANT_KEYS } from '../../../data/variants';
 

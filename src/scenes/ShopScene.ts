@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';

@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 /**
  * Brighten a Phaser 0xRRGGBB colour number by `percent` points

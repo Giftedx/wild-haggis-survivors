@@ -5,7 +5,7 @@
  * Performance: all 200 images use visibility culling (camera bounds +
  * margin). Only visible sprites update position each frame.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { BiomeManager } from './BiomeManager';
 import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';

@@ -8,7 +8,7 @@
  * "Highlands" anchor so you never mistake it for a farm sheep.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const SHEEP_CANVAS_SIZE = 36;

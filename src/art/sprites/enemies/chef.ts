@@ -2,7 +2,7 @@
  * `chef` — chippie chef with a ladle and a wee white coat. Reads kitchen at a glance — the fryer-attendant is what's lobbing battered things at you.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const CHEF_CANVAS_SIZE = 48;

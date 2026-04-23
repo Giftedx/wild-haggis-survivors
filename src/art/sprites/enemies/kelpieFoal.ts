@@ -9,7 +9,7 @@
  * Pony".
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const KELPIE_FOAL_CANVAS_SIZE = 36;

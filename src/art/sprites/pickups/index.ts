@@ -4,7 +4,7 @@
  * reliquary relic altar.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeXpGem } from './xpGem';
 import { bakeChest } from './chest';

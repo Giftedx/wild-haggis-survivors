@@ -9,7 +9,7 @@
  * ghostly gown with a tartan bleed for Scotland.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { HIGHLAND_TARTAN } from '../../kiltPalette';
 

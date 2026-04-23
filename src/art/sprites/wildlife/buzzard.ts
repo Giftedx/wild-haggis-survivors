@@ -3,7 +3,7 @@
  * soaring overhead. Golden eye is the key ID feature.
  * Frame idle = wings spread flat, Frame move = wings mid-flap (angled up).
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export const BUZZARD_CANVAS_W = 32;
 export const BUZZARD_CANVAS_H = 20;

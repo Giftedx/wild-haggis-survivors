@@ -13,7 +13,7 @@
  * live on GameScene and are routed through the hooks object — this module
  * never reaches through `scene as any`.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME, COLORS, COLORS_CSS } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';

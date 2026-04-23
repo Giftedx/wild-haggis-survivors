@@ -70,7 +70,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
 
   const spawn = {
     noteKillPressure: vi.fn(),
-    getEnemyGroup: vi.fn(() => ({ children: { entries: enemies } })),
+    getEnemyGroup: vi.fn(() => ({ children: { entries: enemies }, getChildren: () => enemies })),
     getGameTimeSec: vi.fn(() => 0),
   };
 

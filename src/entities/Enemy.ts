@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
 import { EnemyConfig, EnemyBehavior } from '../data/enemies';
@@ -750,7 +750,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     if (piperDx * piperDx + piperDy * piperDy > 500 * 500) return;
 
     const BUFF_RANGE_SQ = 120 * 120;
-    const enemies = this.ctx.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
+    const enemies = this.ctx.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
     for (const e of enemies) {
       if (!e.active || e === this || e.isBoss()) continue;
       const dx = this.x - e.x;
@@ -913,7 +913,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       // so wool armor still blocks the splash — sheep caught in a
       // chemical explosion shouldn't lose their one-hit shield.
       const pool = this.ctx.getSpawnSystem().getEnemyGroup();
-      const nearby = pool.children.entries as Enemy[];
+      const nearby = pool.getChildren() as Enemy[];
       const splashRadiusSq = 60 * 60;
       for (const e of nearby) {
         if (!e.active || e === this) continue;
@@ -1094,7 +1094,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     // Wool armor absorbs one hit
     if (this.woolArmor > 0) {
       this.woolArmor--;
-      this.setTintFill(0xffffff);
+      this.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
       this.damageTintHandle?.cancel();
       this.damageTintHandle = this.ctx.getUpdateTickers().addOnce('scaled', 80, () => {
         if (!this.active) return;
@@ -1197,7 +1197,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       globalEventBus.emit('bossEnraged', this.enemyKey);
     }
 
-    this.setTintFill(0xffffff);
+    this.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
     this.damageTintHandle?.cancel();
     this.damageTintHandle = this.ctx.getUpdateTickers().addOnce('scaled', 60, () => {
       if (!this.active) return;
@@ -1242,7 +1242,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
     if (volatileSplash) {
       const pool = this.ctx.getSpawnSystem().getEnemyGroup();
-      const nearby = pool.children.entries as Enemy[];
+      const nearby = pool.getChildren() as Enemy[];
       const r2 = AFFIX_VOLATILE_RADIUS * AFFIX_VOLATILE_RADIUS;
       for (const e of nearby) {
         if (!e.active || e === this) continue;

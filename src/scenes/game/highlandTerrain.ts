@@ -8,7 +8,7 @@
  * Pure Phaser scene construction — no GameScene state touched. ~329
  * lines lifted verbatim out of GameScene.createHighlandTerrain.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME, COLORS } from '../../config';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 

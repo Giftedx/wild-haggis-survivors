@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { XPGem } from '../entities/XPGem';
 import { XP } from '../config';
 import { audio } from './AudioSystem';
@@ -67,7 +67,7 @@ export class XPSystem {
     this.echoInProgress = false;
 
     // Deactivate all gems so no orphaned pickups bleed into the next run.
-    const gems = this.gemPool.children.entries as XPGem[];
+    const gems = this.gemPool.getChildren() as XPGem[];
     for (const g of gems) {
       if (g.active) g.collect();
     }
@@ -77,7 +77,7 @@ export class XPSystem {
 
   destroy(): void {
     this.resetRunState();
-    const gems = this.gemPool.children.entries as XPGem[];
+    const gems = this.gemPool.getChildren() as XPGem[];
     for (const g of gems) {
       try { g.destroy(); } catch { /* ignore */ }
     }
@@ -86,7 +86,7 @@ export class XPSystem {
 
   /** Lightweight gem positions for dev auto-battler steering (no Phaser deps in consumer). */
   getGemPositionsForAutoBattle(): Array<{ x: number; y: number; active: boolean }> {
-    return (this.gemPool.children.entries as XPGem[]).map((g) => ({
+    return (this.gemPool.getChildren() as XPGem[]).map((g) => ({
       x: g.x,
       y: g.y,
       active: g.active,
@@ -126,7 +126,7 @@ export class XPSystem {
     if (hpFraction > 0 && hpFraction < BALANCE.xp.criticalHpMagnetThreshold) {
       pickupRadius *= BALANCE.xp.criticalHpMagnetMultiplier;
     }
-    const gems = this.gemPool.children.entries as XPGem[];
+    const gems = this.gemPool.getChildren() as XPGem[];
     // Squared-distance gate for the collect ring — sqrt would fire per gem
     // per frame for ~200 gems just to compare against a constant radius.
     const collectDistSq = BALANCE.xp.collectDistancePx * BALANCE.xp.collectDistancePx;
@@ -255,7 +255,7 @@ export class XPSystem {
 
   /** Vacuum all gems toward the player instantly (called on level-up) */
   vacuumAllGems(): void {
-    const gems = this.gemPool.children.entries as XPGem[];
+    const gems = this.gemPool.getChildren() as XPGem[];
     for (const gem of gems) {
       if (gem.active) {
         gem.forceCollect();

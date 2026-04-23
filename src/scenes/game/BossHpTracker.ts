@@ -39,7 +39,7 @@ export class BossHpTracker {
     if (!this.cachedBoss || !this.cachedBoss.active || !this.cachedBoss.isBoss()) {
       this.cachedBoss = null;
       this.cachedBossConfig = null;
-      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
+      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
       for (const enemy of enemies) {
         if (enemy.active && enemy.isBoss()) {
           // Lowest HP fraction wins — drama follows the dying one.

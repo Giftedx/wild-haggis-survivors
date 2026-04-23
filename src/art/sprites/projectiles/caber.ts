@@ -4,7 +4,7 @@
  * end, jagged left end. Flies horizontally through enemies.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeCaber(scene: Phaser.Scene): void {
   // 28×28 — Highland Games caber (telephone-pole-sized log).

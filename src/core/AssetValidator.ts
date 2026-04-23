@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { EVOLUTION_RECIPES } from './BalanceConfig';
 import { BOSSES, ENEMY_TYPES } from '../data/enemies';
 import { PASSIVE_CARDS, STAT_CARDS, WEAPON_CARDS } from '../data/upgrades';

@@ -8,7 +8,7 @@
  * Gold + amber palette so it can't be mistaken for a chest or coin.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeReliquary(scene: Phaser.Scene): void {
   const s = 28;

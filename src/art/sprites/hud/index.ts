@@ -3,7 +3,7 @@
  * UI scale, crisp at gameplay font sizes.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeShield } from './shield';
 import { bakeDashPips } from './dashPips';

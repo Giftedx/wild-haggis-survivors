@@ -13,7 +13,7 @@
  * (horse form) — this one is a sea-chief, not a drifter or a beast.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BLUE_MAN_OF_MINCH_CANVAS_SIZE = 48;

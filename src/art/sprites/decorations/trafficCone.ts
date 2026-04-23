@@ -5,7 +5,7 @@
  * Street and stick on a statue.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeTrafficCone(scene: Phaser.Scene): void {
   // 28×28 — THE Duke of Wellington cone. Upright, chunky, unmistakable.
