@@ -34,6 +34,16 @@ export interface HaggisBodyFrame {
   readonly rightLegY?: number;
   /** Whole-body x offset (px). Used for hurt-flinch and attack-lean. */
   readonly bodyX?: number;
+  /**
+   * Tail x offset (px). Positive = tail trails right. W71 Phase 2 —
+   * used by walking/attacking/hurt keyframes to sell secondary motion.
+   */
+  readonly tailX?: number;
+  /**
+   * Tail y offset (px). Positive = tail sinks (lags body rise).
+   * W71 Phase 2 — used by idle/celebrating/dying keyframes.
+   */
+  readonly tailY?: number;
 }
 
 /** Canonical sprite size — 56×56. Matches existing variant textures. */
@@ -82,10 +92,12 @@ export function drawHaggisBody(
   const rightDy = Math.ceil(tiltY / 2);
 
   // ── Wee tail nub at the rear ──
+  const tailDx = frame.tailX ?? 0;
+  const tailDy = frame.tailY ?? 0;
   g.fillStyle(palette.bodyDark, 1);
-  g.fillCircle(cx - 20, cy + 4 + leftDy, 4);
+  g.fillCircle(cx - 20 + tailDx, cy + 4 + leftDy + tailDy, 4);
   g.fillStyle(palette.fur, 0.7);
-  g.fillCircle(cx - 20, cy + 3 + leftDy, 2.5);
+  g.fillCircle(cx - 20 + tailDx, cy + 3 + leftDy + tailDy, 2.5);
 
   // ── Dark outline body silhouette ──
   g.fillStyle(palette.outline, 1);
