@@ -50,6 +50,7 @@ function makeScene(): any {
     setRotation: () => spriteStub(),
     setScale: () => spriteStub(),
     setTexture: () => spriteStub(),
+    setAlpha: () => spriteStub(),
     setOrigin: () => spriteStub(),
     destroy: () => {},
     depth: 0,

@@ -19,6 +19,8 @@ import type { AnimationState } from '../animation/animationStates';
 import { HaggisContainer } from './haggisComposition/HaggisContainer';
 import type { AccessoryDrawer } from './haggisComposition/AccessoryDrawer';
 import { getAccessoryDrawer } from './haggisComposition/accessoryRegistry';
+import type { MantleTier } from '../animation/mantleTier';
+import { applyMantleTier } from './Player.mantle';
 
 /**
  * Player — the wild haggis.
@@ -149,6 +151,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private haggisContainer!: HaggisContainer;
   /** Stored so variant-aware accessories (kilt) use the correct atlas. */
   private variantKey: string = 'classic';
+  private mantleOverlay: Phaser.GameObjects.Sprite | null = null;
+  private mantleTier: MantleTier = 0;
+  private mantleLastScale = 1;
   private ownedAccessories: Array<{
     id: string;
     drawer: AccessoryDrawer;
@@ -242,6 +247,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       ? textureKey.slice('haggis_'.length)
       : 'classic';
     this.variantKey = variantKey;
+    // W71 Phase 2 — heather mantle overlay. Starts invisible; GameScene
+    // will call setMantleTier immediately after spawn to pre-seed from
+    // current kill count. Tier 1 texture is the initial key because the
+    // sprite needs some texture to exist at construction; it is not
+    // visible until a tier is actually shown.
+    this.mantleOverlay = scene.add.sprite(x, y, `mantle_${this.variantKey}_1`);
+    this.mantleOverlay.setDepth(this.depth + 1);
+    this.mantleOverlay.setAlpha(0);
+    this.mantleOverlay.setVisible(false);
+    this.mantleLastScale = 1;
     this.animController = new AnimationController({
       sprite: this,
       subject: 'haggis',
@@ -347,6 +362,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Keep the ground shadow locked under the haggis at all times.
     if (this.shadow) {
       this.shadow.setPosition(this.x, this.y + this.height * this.scaleY * 0.4);
+    }
+
+    if (this.mantleOverlay) {
+      this.mantleOverlay.setPosition(this.x, this.y);
+      if (this.scaleX !== this.mantleLastScale) {
+        this.mantleOverlay.setScale(this.scaleX, this.scaleY);
+        this.mantleLastScale = this.scaleX;
+      }
     }
 
     // Tick dash cooldown — regen one charge at a time, then re-arm if still
@@ -1007,6 +1030,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     }
   }
 
+  public setMantleTier(tier: MantleTier, opts: { instant?: boolean } = {}): void {
+    if (!this.mantleOverlay) return;
+    if (tier === this.mantleTier) return;
+    this.mantleTier = tier;
+    applyMantleTier({
+      overlay: this.mantleOverlay,
+      tweens: this.scene.tweens,
+      variantKey: this.variantKey,
+      nextTier: tier,
+      instant: opts.instant === true,
+    });
+  }
+
+  public getMantleTier(): MantleTier {
+    return this.mantleTier;
+  }
+
   destroy(fromScene?: boolean): void {
     for (const h of this.dashTrailHandles) h.cancel();
     this.dashTrailHandles = [];
@@ -1017,6 +1057,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     this.shadow?.destroy();
     this.shadow = null;
+
+    this.mantleOverlay?.destroy();
+    this.mantleOverlay = null;
 
     super.destroy(fromScene);
   }
