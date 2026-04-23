@@ -65,7 +65,7 @@ export interface HaggisBodyFrame {
 
 ### 3.2 Tail lag authoring rule
 
-Phase-offset keyframing — the tail-frame reads from a body-frame in the past of the same state's cycle. Rule codified per state:
+**Rule:** tail-offset at frame *N* authored as if reading `body[N - lag]`, lag = 1 in all states. This is *secondary-motion-by-delay*, Disney-12 principle 6. The visual symptom on 2-frame loops (idle, hurt) is counter-phase; on longer cycles (walking, attacking, celebrating, dying) it is visibly trailing. The rule — not the symptom — generalises to enemy rigs later. Values per state:
 
 | State | Tail lag rule | Concrete values |
 |-------|---------------|-----------------|
@@ -156,7 +156,10 @@ this.mantleOverlay.setVisible(false);
 // inside update() — sync position + scale after body update
 if (this.mantleOverlay) {
   this.mantleOverlay.setPosition(this.x, this.y);
-  this.mantleOverlay.setScale(this.scaleX, this.scaleY); // propagates level-up growth
+  // Scale changes only on level-up — skip the matrix work when unchanged.
+  if (this.mantleOverlay.scaleX !== this.scaleX) {
+    this.mantleOverlay.setScale(this.scaleX, this.scaleY);
+  }
 }
 
 public setMantleTier(tier: MantleTier, opts: { instant?: boolean } = {}): void {
@@ -183,7 +186,9 @@ public setMantleTier(tier: MantleTier, opts: { instant?: boolean } = {}): void {
 }
 ```
 
-**Scale propagation**: setting the overlay's scale to match `this.scaleX/scaleY` each frame keeps the mantle aligned as the haggis grows with level-ups (existing `updateBounds()` mechanic). Overlay is not reparented — it reads scale each frame, same pattern as Player's other follower sprites. Avoids inheriting any transient pose mutations from the haggis sprite's `setScale` calls during hit flashes.
+**Scale propagation**: overlay reads `this.scaleX` each frame and only calls `setScale` when it has changed (level-up mechanic, rare). Overlay is not reparented — reading scale explicitly avoids inheriting transient pose mutations (hit-flash scale-pulses) from the haggis sprite.
+
+**Depth policy**: mantle overlay at `this.depth + 1`. At time of writing no other `+1`-offset claimant exists in Player's render tree; verify during impl with a grep for `this.depth + 1`. If a conflict emerges, promote mantle to `this.depth + 2` and document in `Player.ts` next to the overlay creation.
 
 **Cleanup**: `Player.destroy()` destroys the overlay. Scene `shutdown` sweeps scene-added objects by default; belt-and-braces explicit destroy in Player covers the rare mid-run teardown case.
 
@@ -195,6 +200,8 @@ public setMantleTier(tier: MantleTier, opts: { instant?: boolean } = {}): void {
 - Option B (rejected): GameScene.update() polls kills every frame and diff-checks. Wasted work, per-frame branch cost.
 
 `GameScene.handleEnemyKill` already bumps `RunScoreState.incrementKills`. Threading the tier check inline there (via a single helper call) is the minimal surface change. No new plugin, no event bus.
+
+**Spawn-time pre-seed:** immediately after Player spawn and after wiring the `onKillsChanged` callback, GameScene calls `player.setMantleTier(computeMantleTier(runScore.getKills()), { instant: true })`. Covers three cases uniformly: fresh run (0 → tier 0, no visible change), replay starting mid-run (kills > 0 → correct tier with no reveal tween), save-load continuing a run if that ever becomes a thing. Without this, first kill after spawn on a pre-seeded run would trigger the reveal tween for a tier the haggis should already be wearing.
 
 ### 3.8 Motion-reduce a11y
 
@@ -208,6 +215,8 @@ public setMantleTier(tier: MantleTier, opts: { instant?: boolean } = {}): void {
 - Rig state survives restart: mantle tier re-evaluates on spawn (`computeMantleTier(current kills)`), so a replay that jumps in at kill 300 instantly shows tier 2 without a reveal tween — correct behaviour.
 
 No changes to `ReplayRecorder`, `ReplayInput`, `replayDeterminism.test.ts`.
+
+**Tween determinism fallback.** Phaser 4's tween manager advances on scene update step (fixed-step since T1 Phase 3). Tween progression should be deterministic under `ReplayInput`. Impl-time verification: run the determinism regression with the mantle overlay active and one tier-cross during the replay — if byte-identity breaks, replace the 300ms alpha tween with an instant alpha set in the replay playback branch. Trivial one-line guard using the existing `whs_replay_mode` flag. Either outcome keeps byte-identical replay intact.
 
 ---
 
@@ -228,9 +237,7 @@ No changes to `ReplayRecorder`, `ReplayInput`, `replayDeterminism.test.ts`.
 | `src/scenes/game/RunScoreState.ts` | **Modify** | Add an `onKillsChanged` notifier hook (single callback, set once by GameScene). |
 | `src/scenes/game/RunScoreState.test.ts` | **Modify** | Test notifier fires on increment, idempotent on no-change. |
 | `src/scenes/GameScene.ts` | **Modify** | Wire `RunScoreState.onKillsChanged` → `player.setMantleTier(computeMantleTier(kills), { instant: reduceMotion })`. Single helper method. |
-| `src/scenes/game/mantleWire.test.ts` | **Create** | Integration-ish: mock Player + RunScoreState, assert threshold crossings propagate with instant flag respecting motion-reduce. |
-
-**Total:** 5 modified, 5 created. No more than 15 file touches.
+**Total:** 5 modified, 4 created. 14 file touches max.
 
 ---
 
@@ -246,14 +253,15 @@ No changes to `ReplayRecorder`, `ReplayInput`, `replayDeterminism.test.ts`.
   - Transition 1→1 is idempotent (no work, no tween).
   - Transition 2→0 hides overlay + sets alpha=0.
 - **RunScoreState notifier**: `incrementKills` fires `onKillsChanged(newKills)`. Noop if no callback set.
-- **Mantle wiring** (`mantleWire.test.ts`): simulate kill increments 1…300 with a mock Player; assert `setMantleTier` called with (1, {instant:false}) at kill 50, (2, {instant:false}) at kill 250. With reduceMotion flag true, assert both calls include `{instant:true}`.
 - **No e2e change required** this slice — visual-only feature verified via unit + manual playtest.
+
+The GameScene wire itself (2 lines: compute tier + call setter) is not unit-tested directly — `RunScoreState.onKillsChanged` fires deterministically (covered above), `computeMantleTier` is pure (covered above), `Player.setMantleTier` is tested (covered above). Testing the composition would require a mock Player and mock RunScoreState whose combined surface exceeds the value of the check. Build smoke + manual playtest cover the wire.
 
 ### Kill-criterion check
 
-- Bundle delta: target ≤ **2 KB gzip** for the whole slice. 20 mantle textures are small procedural shapes; 2 tiers × small fills × 10 variants compresses tight.
+- Bundle delta: target ≤ **5 KB gzip** for the whole slice. 20 baked textures (10 variants × 2 tiers) × small procedural mantle shapes. Raw uncompressed data is ~250 KB at 56×56 RGBA; after Phaser atlas packing + Vite asset pipeline gzip, realistic landing is 3–5 KB. Bundle-delta report in the follow-up plan logs actual.
 - Frame-time: target ≤ **1%** regression. Measurement via existing `AutoBattler` + `game.loop.actualFps` sample over a 5-minute soak. Expected delta: unmeasurable (sprite swap + alpha tween, no per-frame work beyond existing overlay position sync).
-- If bundle delta > 2 KB or frame-time > 3%: descope mantle-tier-2 bakes first, then mantle entirely (keep tail lag). Tail lag is essentially free.
+- If bundle delta > 5 KB or frame-time > 3%: descope mantle-tier-2 bakes first, then mantle entirely (keep tail lag). Tail lag is essentially free — always ships.
 
 ---
 
