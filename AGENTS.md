@@ -16,7 +16,23 @@ Before claiming anything is “fixed” or “done”, run at least `npm test` a
 **Windows / Git:** If almost every file shows as modified but diffs are only `100755` ↔ `100644`, run `git config core.filemode false` in the repo root (local setting).
 
 ## Player experience & tone
-- **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; use it when changing menus, HUD, toasts, game-over, or copy.
+- **Soul charter & UX weave**: `docs/DESIGN_SOUL.md` — handcrafted warmth, compassionate failure, celebratory progression, haggis fantasy at the center; **tonal spectrum** (Hearth/Wild/Fey/Grave/Wild Comedy), **Great Moment Recipe** (7-ingredient moment stack), **Warmth Audit** (cold-vs-warm diagnostic), **Soul Check** (pre-ship 6-question gate). Use when changing menus, HUD, toasts, game-over, or copy.
+- **Voice**: `docs/VOICE_CARD.md` — two-register voice (Hearth + Edge), variant-scoped voices (Cailleach, Hebridean, Doric, Gran, Burns-citational), regional vocabulary, Do/Don't rewrites, voice-switching triggers. Every new copy line should reference this.
+- **Visual direction**: `docs/ART_STYLE_BIBLE.md` — palette anchors, tonal palette map (per-biome palettes), signature motifs (thistle, haar), silhouette-first test, inspiration wall.
+- **Active sketchpad**: `docs/DESIGN_IDEAS.md` — not a roadmap; live ideas corpus with shipped markers.
+
+### Research foundation (`docs/research/`)
+Eight deep reference docs that back the above. Consult before speccing, planning, or shipping any new player-facing system:
+- `ROGUELITE_RESEARCH.md` — 25 canonical roguelites; structural patterns; WHS gap analysis + tiered opportunities.
+- `SCOTTISH_RESEARCH.md` — gazetteer of Scottish folklore, geography, history, culture; immediate content-mining section.
+- `SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish encyclopaedia (25 parts including deep haggis lore, dialects, clans, Scottish games industry).
+- `GAME_FEEL_RESEARCH.md` — the craft layer. Nijman/Sakurai/Thorson/Korb canon. Moment anatomy. 100+ WHS-specific opportunities tagged by effort/impact.
+- `MUSIC_ART_TECH_RESEARCH.md` — technical layer. Phaser 3 pipelines, Web Audio scheduling, GLSL shaders, procedural music, AI-era tooling.
+- `ACCESSIBILITY_RESEARCH.md` — accessibility engineering playbook; photosensitivity, colorblind, motor, cognitive; WHS audit + testing.
+- `CULTURAL_SENSITIVITIES_RESEARCH.md` — Scottish-content ethics reference; Gaelic/Scots, Highland Clearances, Culloden, trademarks, political framing.
+- `NARRATIVE_RESEARCH.md` — roguelite storytelling (Hades, Hollow Knight, Dark Souls, Inscryption); loop-native narrative craft.
+
+**Spec/PR discipline:** cite relevant research sections in design docs and PRs. Kept the knowledge graph alive; saved rediscovery time.
 
 ## Architecture quick map
 - **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`. `ActIntermissionScene.ts` is a paired modal for W2 Moor Road between-act route picks.
@@ -52,6 +68,18 @@ If you are asked to commit `node_modules/` or `dist/`, do it, but call out the c
 - Keep gameplay logic in systems/entities; keep UI logic in `src/ui/`.
 - Keep balance changes in data/config files when possible.
 - Avoid new cross-system reach-through (`as any` to access scene internals). Prefer explicit, typed interfaces passed into systems/entities.
+
+### Soul-charter check (for player-facing changes)
+Before merging any change that touches visuals, copy, audio, pacing, or player feedback:
+
+1. **Warmth** — does it feel like the game is on the player's side? (see Warmth Audit in `DESIGN_SOUL.md`).
+2. **Clarity** — first-time parsing within 3 seconds?
+3. **Tone** — sits deliberately within one of the five registers (Hearth/Wild/Fey/Grave/Wild Comedy)?
+4. **Voice** — any copy matches `VOICE_CARD.md` register and avoids anti-patterns?
+5. **Moment stack** — if it's a "moment" (boss kill, evolution, level-up, etc.), does it cover the 7-ingredient Great Moment Recipe?
+6. **Kindness** — failures feel supportive; successes feel earned?
+
+A "no" answer isn't a block — it's a known trade-off to document. Soul is about intention, not perfection.
 
 ## Commit conventions
 - Follow existing commit style (examples in `git log`): `fix: ...`, `feat: ...`, `refactor: ...`, `docs: ...`, `chore: ...`

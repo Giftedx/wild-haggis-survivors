@@ -24,6 +24,22 @@ This document anchors **player-facing tone**, **UX priorities**, and **where “
 
 ---
 
+## The tonal spectrum
+
+Scotland is a real place with real emotional complexity. Masterpiece-grade Scottish feel ranges fluidly across five registers — the game should *move* across them, not pick one. Each register calls for its own palette, music texture, pacing, and voice.
+
+| Register | Feeling | Calls for |
+|----------|---------|-----------|
+| **Hearth** | warm, welcoming, affectionate | Gran's croft; Moor Road intermissions; golden light; hearth voice; soft low tempo |
+| **Wild** | windswept, lonely, vast | Cairngorm plateau; empty moors at dawn; slow pibroch drone; silence; open compositions |
+| **Fey** | otherworldly, tricksy, magical | Seelie/Unseelie encounters; fairy pools; crystalline SFX; shifting palette; ambiguous banter |
+| **Grave** | heavy, historical, sombre | Culloden echoes; Glencoe memorial; desaturated palette; respectful banter; held silence |
+| **Wild Comedy** | absurd, cheeky, sharp | Buckie ned scuffles; Limmy-edge moments; deep-fried Mars bar pickups; sodium-amber streetlights |
+
+**Rule.** *Design every scene to sit deliberately in one register, then transition into the next with care.* Peaks-and-valleys across a run is a tonal journey, not just a difficulty curve.
+
+---
+
 ## Soul weave matrix (where soul must appear)
 
 | Area | Intent |
@@ -34,6 +50,46 @@ This document anchors **player-facing tone**, **UX priorities**, and **where “
 | **Failure & recovery** | Supportive language, clear takeaway, hopeful replay path. |
 | **Meta & menus** | Tactile responsiveness, clear purpose, cozy tone; no dead/silent flow. |
 | **Accessibility / readability** | Comfort is part of kindness, not an optional afterthought. |
+
+---
+
+## The Great Moment Recipe
+
+Every moment that's meant to land — evolution pickup, boss kill, act complete, first-time encounter, lineage beat — follows the same seven-ingredient stack. If a moment feels flat, diagnose by checking which ingredient is missing.
+
+1. **Pre-condition** — the moment is *earned* (skill, time, patience, rarity). Never automatic.
+2. **Anticipation beat** — a visible/audible build-up tells the player something's coming.
+3. **Short peak** — 200–800 ms of time-dilation or focused attention. Not longer; not shorter.
+4. **Multi-channel feedback** — audio + visual + input + music + camera all fire together.
+5. **Narrative reframe** — the moment *means something* in the game's world, not just mechanically.
+6. **Rest beat after** — 500 ms of held silence lets the moment land. Never cut straight to the next event.
+7. **First-time bonus (optional)** — reserved banter/music/VFX that *only* fires on the first occurrence of this event, ever.
+
+Reference: `docs/research/GAME_FEEL_RESEARCH.md` §2 for eight deconstructed examples.
+
+---
+
+## The Warmth Audit
+
+Before shipping any new system, ask: *does this make the player feel warm, or cold?*
+
+**Cold systems:**
+- Punitive mechanics without kindness.
+- Information hidden to manufacture difficulty.
+- Unspoken "you failed because you're bad."
+- UI that fights the player.
+- Features that grind for their own sake.
+- Voice that goes clinical or corporate.
+
+**Warm systems:**
+- Forgiveness and cushion (buffer frames, coyote time, edge-snap).
+- Transparent mechanics explained in-context.
+- Every failure has a reframe (*"ye learned summit, eh?"*).
+- UI that anticipates the player's next want.
+- Every investment of time has a visible return.
+- Voice that's an arm around the shoulder.
+
+*Apply every few months, and every time a new system ships.*
 
 ---
 
@@ -78,9 +134,38 @@ Every knob shipped under the Comfort banner, in one glance. All are persisted by
 
 ---
 
+## The Soul Check (pre-ship gate)
+
+Before merging any player-facing change, walk through these six quick questions:
+
+1. **Warmth** — does this feel like an arm around the shoulder? (Run the Warmth Audit above.)
+2. **Clarity** — can a first-time player parse what's happening in 3 seconds?
+3. **Tone** — is the register (Hearth / Wild / Fey / Grave / Wild Comedy) deliberate?
+4. **Voice** — if there's copy, does it match `VOICE_CARD.md` and sit in the right register?
+5. **Moment stack** — if this is a "moment" (evolution, boss kill, etc.), does it tick the 7-ingredient recipe?
+6. **Kindness** — does failure feel supportive? Does success feel earned?
+
+A "no" on any question doesn't block the change — but the author should know *why* and have a plan. Soul isn't about perfection; it's about intention.
+
+---
+
 ## For contributors
 
 - Prefer **data-driven** balance in `src/config.ts` and `src/data/*`; prefer **copy** in `src/core/i18n.ts` for player-facing strings.
 - **HUD, pause overlay, boss warnings, treasure toasts, upgrade feedback, and boot splash title** should use `t('ui…')` (or card/evolution keys resolved through `t`) — not hardcoded literals in scenes — so voice and future locales stay coherent.
 - When adding toasts, banners, or overlays: match existing **warm Scots-tinged** voice; avoid cold system jargon unless it is clearly diegetic.
 - Before claiming work is done: `npm test` and, for shippable changes, `npm run build` (see `AGENTS.md`).
+
+---
+
+## Research foundation
+
+The deep material that underpins this charter. Consult when designing new systems, writing new specs, or onboarding:
+
+- `docs/research/ROGUELITE_RESEARCH.md` — 25 roguelite games deconstructed; structural patterns; WHS gap analysis.
+- `docs/research/SCOTTISH_RESEARCH.md` — folklore, geography, history, culture (gazetteer-style); immediate content mining.
+- `docs/research/SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish reference across 25 topics; the encyclopaedia companion.
+- `docs/research/GAME_FEEL_RESEARCH.md` — craft canon (Nijman, Sakurai, Thorson, Korb); moment anatomy; toolkit.
+- `docs/research/MUSIC_ART_TECH_RESEARCH.md` — Phaser 3 + Web Audio + WebGL technical layer; procedural music; shader patterns.
+
+Citations from specs and plans back into these docs keep the knowledge graph alive.

@@ -6,9 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 3** (v3.90+) and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
 
-**Tone & UX north star**: `docs/DESIGN_SOUL.md` (Soul charter, weave matrix, shipping objectives).
+**Tone & UX north star**: `docs/DESIGN_SOUL.md` (Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Warmth Audit, Soul Check, shipping objectives).
 
-**Companion docs**: `AGENTS.md` (cross-agent conventions), `docs/PRD.md`, `docs/VOICE_CARD.md`. Multi-session work lives in `docs/superpowers/specs/` (design specs) and `docs/superpowers/plans/` (execution plans).
+**Companion docs**: `AGENTS.md` (cross-agent conventions), `docs/PRD.md`, `docs/VOICE_CARD.md` (voice registers, variant voices, Do/Don't examples), `docs/ART_STYLE_BIBLE.md` (palette anchors, tonal palette map, signature motifs), `docs/DESIGN_IDEAS.md` (active sketchpad). Multi-session work lives in `docs/superpowers/specs/` (design specs) and `docs/superpowers/plans/` (execution plans).
+
+**Research foundation** (`docs/research/`): eight deep reference docs the Soul Charter, Voice Card, and Art Style Bible all draw from. Consult before writing specs/plans for new systems:
+- `ROGUELITE_RESEARCH.md` — 25 games deconstructed; structural patterns; WHS gap analysis.
+- `SCOTTISH_RESEARCH.md` — gazetteer-style Scottish content (folklore, geography, history, culture).
+- `SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish reference (25 parts, ~28k words).
+- `GAME_FEEL_RESEARCH.md` — feel canon (Nijman/Sakurai/Thorson/Korb); moment anatomy; technical toolkit.
+- `MUSIC_ART_TECH_RESEARCH.md` — Phaser 3 + Web Audio + WebGL technical layer; procedural music; shaders.
+- `ACCESSIBILITY_RESEARCH.md` — accessibility engineering playbook; photosensitivity, colorblind, motor, cognitive; WHS audit.
+- `CULTURAL_SENSITIVITIES_RESEARCH.md` — ethics reference for Scottish content; Gaelic/Scots, Highland Clearances, Culloden, trademark, political framing.
+- `NARRATIVE_RESEARCH.md` — roguelite storytelling patterns (Hades, Hollow Knight, Dark Souls, Inscryption); loop-native narrative craft.
 
 ## Commands
 
@@ -103,3 +113,15 @@ Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing).
 - **Shared AudioContext**: SFX (`AudioSystem`) and music (`ProceduralMusicEngine`) share one `AudioContext` via `src/systems/audioContext.ts`. Never call `ctx.suspend()` on it — that silences both systems. A `DynamicsCompressorNode` on the output prevents clipping.
 - **Overlay input blocking**: All full-screen overlays (level-up, pause, death, victory) must have `.setInteractive()` to prevent the mobile virtual joystick from activating through them.
 - **Stale callback guards**: `setTimeout`/`delayedCall` callbacks from a prior run can fire after scene restart (same instance reused). Guard with reference identity checks (capture object ref at creation, compare to current before acting).
+
+## Soul checks & Feel Pass (before shipping player-facing work)
+
+Technical correctness is necessary but not sufficient. Every player-facing change should also pass a lightweight design review:
+
+- **Run the Soul Check** from `docs/DESIGN_SOUL.md` — six quick questions on warmth, clarity, tone, voice, moment-stack, kindness.
+- **Cite relevant research** in the PR/spec. If the change touches feel (VFX, SFX, hit-stop, camera), cite `GAME_FEEL_RESEARCH.md` sections. If it's content (new enemy, weapon, biome, event), cite the relevant Scottish doc. If it's audio or shader-level, cite `MUSIC_ART_TECH_RESEARCH.md`.
+- **Voice check** — if the change ships copy, run it past `docs/VOICE_CARD.md`. Does it sit in Hearth or Edge? Does it avoid the anti-patterns?
+- **Palette check** — if the change ships visuals, confirm it sits in one of the five tonal palettes from `docs/ART_STYLE_BIBLE.md` (Hearth/Wild/Fey/Grave/Wild Comedy).
+- **Moment check** — if the change is a "moment" (evolution pickup, boss kill, act complete, first-time event), verify it covers the 7-ingredient Great Moment Recipe.
+
+None of this replaces shipping discipline (`npm test`, `npm run build`). It augments it. The masterpiece bar requires both.
