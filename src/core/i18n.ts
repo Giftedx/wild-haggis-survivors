@@ -1592,6 +1592,22 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Minch-folk dinnae come ashore fer fun. Heads up.',
           c: 'Salt-blue an watchin\'. Keep yer kennings tae yersel.',
         },
+        // ── Faerie Courts family. Warm-tricksy. Bargain never.
+        seelie_piper: {
+          a: 'Fair-court piper. Mind yer manners — an yer hooves.',
+          b: 'Seelie one. Smile an nod, but nae bargains.',
+          c: 'Pretty tune. Pretty teeth. Careful, aye.',
+        },
+        unseelie_fiddler: {
+          a: 'Unseelie reel. No a tune ye hum back.',
+          b: 'Dark-court fiddler. Dance a wide circle.',
+          c: 'Black bow an a crooked grin. Dinnae clap.',
+        },
+        redcap: {
+          a: 'Redcap. Nae courtier — aw teeth an bonnet.',
+          b: 'That bunnet\'s dripped. Hope it stays dripped.',
+          c: 'Wee goblin in the bloodiest hat on the moor.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match

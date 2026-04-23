@@ -1435,6 +1435,22 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Minch-folk dinnae come tae laund fer fun. Keek up.',
           c: 'Saut-blue an watchin. Keep yer kennings tae yersel.',
         },
+        // ── Faerie Courts family (Task 17). SCS pair.
+        seelie_piper: {
+          a: 'Fair-court piper. Mynd yer manners — an yer hooves.',
+          b: 'Seelie wan. Smile an nod, but nae bargains.',
+          c: 'Bonnie tune. Bonnie teeth. Tak tent, aye.',
+        },
+        unseelie_fiddler: {
+          a: 'Unseelie reel. No a tune ye hum back.',
+          b: 'Dark-court fiddler. Birl a wide circle.',
+          c: 'Black bow an a crookit grin. Dinnae clap.',
+        },
+        redcap: {
+          a: 'Redcap. Nae courtier — aw teeth an bunnet.',
+          b: 'Yon bunnet\'s dripped. Hope it bides dripped.',
+          c: 'Wee gobbin in tha bluidiest bunnet on tha moor.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:

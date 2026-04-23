@@ -1114,6 +1114,24 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.blue_man_of_minch.b',
         'ui.banter.enemy_ambient.blue_man_of_minch.c',
       ],
+      // ── Faerie Courts family (Task 17). Fae warm-tricksy — respect the
+      //    manners, never strike a bargain. Redcap is the thug of the
+      //    trio: no courtier energy, pure teeth.
+      seelie_piper: [
+        'ui.banter.enemy_ambient.seelie_piper.a',
+        'ui.banter.enemy_ambient.seelie_piper.b',
+        'ui.banter.enemy_ambient.seelie_piper.c',
+      ],
+      unseelie_fiddler: [
+        'ui.banter.enemy_ambient.unseelie_fiddler.a',
+        'ui.banter.enemy_ambient.unseelie_fiddler.b',
+        'ui.banter.enemy_ambient.unseelie_fiddler.c',
+      ],
+      redcap: [
+        'ui.banter.enemy_ambient.redcap.a',
+        'ui.banter.enemy_ambient.redcap.b',
+        'ui.banter.enemy_ambient.redcap.c',
+      ],
     },
   },
   {
