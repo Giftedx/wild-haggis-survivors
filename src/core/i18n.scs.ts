@@ -669,6 +669,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Tae tha veil an back — ye\'ve dun it afore.',
           d: 'Wee bit o bluid never stapped tha Cailleach.',
         },
+        anticlockwise: {
+          a: 'Hale warld\'s leanin tha wrang way again.',
+          b: 'Every step turns left. Even tha hurtin.',
+          c: 'Widdershins or no, ma ribs felt that.',
+          d: 'Gie\'s a tick — ma balance is back-tae-front.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
@@ -854,6 +860,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Tha moor shapes ye, aye. Keep growin.',
           d: 'Auld banes, new power. Guid.',
         },
+        anticlockwise: {
+          a: 'Aye, gettin tha turn o it.',
+          b: 'Left is richt noo. Richt is new.',
+          c: 'Ma legs fund tha pattern.',
+          d: 'Tha glen keeps its ain time. Sae dae I.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -913,6 +925,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'She\'s stirred. Best they didnae wauk her.',
           c: 'Auld grudge, first settled. Aye.',
           d: 'Tae tha glen — this yin belangs tae tha Cailleach noo.',
+        },
+        anticlockwise: {
+          a: 'First o them. Left-handed, same as me.',
+          b: 'Cuiched that wan comin tha ither way.',
+          c: 'Ma drift met its match.',
+          d: 'Widdershins means forrit — sae it daes.',
         },
       },
       kill_streak: {
@@ -975,6 +993,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Streak like winter — lang an relentless.',
           d: 'She\'s been at this since afore yer gran was born.',
         },
+        anticlockwise: {
+          a: 'Roond an roond they gang. Ither way, mind.',
+          b: 'They reckoned wi clockwise. Joke\'s on them.',
+          c: 'Left, left, left — aye, tha left\'s haein it.',
+          d: 'Tha hale glen\'s spinnin backwards tha noo.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
@@ -1034,6 +1058,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'She\'s wethered worse. Back on hoof.',
           c: 'Auld body, auld mend. Slow but sure.',
           d: 'Roots haud — even in tha bleakest glen.',
+        },
+        anticlockwise: {
+          a: 'Braithin easier. Still tha wrang way, mind.',
+          b: 'Feet back unner me. Aw fower pointin left.',
+          c: 'Ma hert kent tha turn.',
+          d: 'Back tae it, widdershins an aw.',
         },
       },
       biome_change: {
@@ -1178,6 +1208,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Still as stane, patient as winter.',
           c: 'Aye, pause. Tha glen\'s been waitin langer than ye.',
           d: 'She\'s in nae rush. Tha moor gangs naewhere.',
+        },
+        anticlockwise: {
+          a: 'Staunin still. Even that leans left.',
+          b: 'Warld\'s quait whan yer no fichtin tha turn.',
+          c: 'Pause — ma drift still dreams o tha left.',
+          d: 'Widdershins staps fer nae yin. Least o aw me.',
         },
       },
       act_intermission_enter: {
@@ -1540,6 +1576,10 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'The Cailleach',
       flavor: 'Auld as tha moor itsel. Moves slow, hoards tha glen\'s secrets. Aye, she\'s been here langer than ye.',
     },
+    anticlockwise: {
+      name: 'Widdershins Haggis',
+      flavor: 'Tha ither subspecies, fae tha glens whaur tha hills lean left. Drift turns tha wrang way — or tha richt way, dependin wha ye ask.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -1549,6 +1589,7 @@ export const SCS_STRINGS: LocaleTree = {
       dmg: '{sign}{pct}% dmg',
       drift: '{sign}{pct}% drift',
       cdr: '{sign}{pct}% CDR',
+      drift_flip: 'Drift gangs widdershins',
       baseline: 'Baseline stats',
     },
     unlock: {

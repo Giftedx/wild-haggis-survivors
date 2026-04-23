@@ -813,6 +813,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Tae the veil an\' back — ye\'ve done it afore.',
           d: 'Wee bit o\' blood never stopped the Cailleach.',
         },
+        anticlockwise: {
+          a: 'Whole world\'s leanin\' the wrong way again.',
+          b: 'Every step turns left. Even the hurtin\'.',
+          c: 'Widdershins or no, ma ribs felt that.',
+          d: 'Gie\'s a tick — ma balance is back-tae-front.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -1000,6 +1006,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'The moor shapes ye, aye. Keep growin\'.',
           d: 'Auld bones, new power. Guid.',
         },
+        anticlockwise: {
+          a: 'Aye, gettin\' the turn o\' it.',
+          b: 'Left is right noo. Right is new.',
+          c: 'Ma legs found the pattern.',
+          d: 'The glen keeps its ain time. So dae I.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1059,6 +1071,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'She\'s stirred. Best they didnae wake her.',
           c: 'Ancient grudge, first settled. Aye.',
           d: 'Tae the glen — this yin belongs tae the Cailleach noo.',
+        },
+        anticlockwise: {
+          a: 'First o\' them. Left-handed, same as me.',
+          b: 'Caught that wan comin\' the other way.',
+          c: 'Ma drift met its match.',
+          d: 'Widdershins means forward — so it does.',
         },
       },
       kill_streak: {
@@ -1121,6 +1139,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Streak like winter — lang an\' relentless.',
           d: 'She\'s been at this since afore yer gran was born.',
         },
+        anticlockwise: {
+          a: 'Round an\' round they go. Other way, mind.',
+          b: 'They reckoned wi\' clockwise. Joke\'s on them.',
+          c: 'Left, left, left — aye, the left\'s havin\' it.',
+          d: 'The whole glen\'s spinnin\' backwards the noo.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1180,6 +1204,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'She\'s weathered worse. Back on hoof.',
           c: 'Ancient body, ancient mend. Slow but sure.',
           d: 'Roots hold — even in the bleakest glen.',
+        },
+        anticlockwise: {
+          a: 'Breathin\' easier. Still the wrong way, mind.',
+          b: 'Feet back under me. All four pointin\' left.',
+          c: 'Ma heart kent the turn.',
+          d: 'Back tae it, widdershins an\' all.',
         },
       },
       biome_change: {
@@ -1324,6 +1354,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Still as stone, patient as winter.',
           c: 'Aye, pause. The glen\'s been waitin\' longer than ye.',
           d: 'She\'s in nae rush. The moor goes nowhere.',
+        },
+        anticlockwise: {
+          a: 'Standin\' still. Even that leans left.',
+          b: 'World\'s quiet when yer no\' fightin\' the turn.',
+          c: 'Pause — ma drift still dreams of the left.',
+          d: 'Widdershins stops for nae yin. Least of all me.',
         },
       },
       // W2 Moor Road.
@@ -1710,6 +1746,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'The Cailleach',
       flavor: 'Ancient as the moor itself. Moves slow, hoards the glen\'s secrets. Aye, she\'s been here longer than ye.',
     },
+    anticlockwise: {
+      name: 'Widdershins Haggis',
+      flavor: 'The other subspecies, from the glens where the hills lean left. Drift turns the wrong way — or the right way, dependin\' who ye ask.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -1719,6 +1759,7 @@ export const EN_STRINGS: LocaleTree = {
       dmg: '{sign}{pct}% dmg',
       drift: '{sign}{pct}% drift',
       cdr: '{sign}{pct}% CDR',
+      drift_flip: 'Drift goes widdershins',
       baseline: 'Baseline stats',
     },
     unlock: {

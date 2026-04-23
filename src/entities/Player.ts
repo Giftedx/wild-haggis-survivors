@@ -54,6 +54,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // Accumulated upgrade bonuses (preserved across level-ups)
   private bonusSpeed: number = 0;
   private bonusDriftReduction: number = 0;  // Fraction reduced (0-1)
+  /**
+   * Sign of the Drift. +1 = clockwise (classic), -1 = anticlockwise
+   * (the second wild-haggis subspecies — SCOTTISH_RESEARCH_DEEP §11.5).
+   * Applied in recalcStats() to the pre-baked drift rotation matrix.
+   */
+  private driftSign: 1 | -1 = 1;
   private bonusMaxHp: number = 0;
   private bonusPickupRadius: number = 0;
   /** Moor moment — temporary vacuum wider than level scaling; ticks down in update(). */
@@ -612,11 +618,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.baseMoveSpeed = this.runBaseSpeed * playerLevelSpeedMul(level);
     this.moveSpeed = Math.max(20, this.baseMoveSpeed + this.bonusSpeed);
 
-    // Drift: base * level reduction * upgrade reduction
+    // Drift: base * level reduction * upgrade reduction * sign
     this.baseDriftDegrees = this.runBaseDrift * playerLevelDriftMul(level);
     this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction);
     // Pre-bake the drift rotation matrix so per-frame movement skips the trig.
-    const driftRad = this.driftDegrees * (Math.PI / 180);
+    // Sign flip mirrors the Drift (anticlockwise subspecies) without changing magnitude.
+    const driftRad = this.driftDegrees * (Math.PI / 180) * this.driftSign;
     this.driftCos = Math.cos(driftRad);
     this.driftSin = Math.sin(driftRad);
 
@@ -951,6 +958,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   reduceDrift(fraction: number): void {
     this.bonusDriftReduction = 1 - (1 - this.bonusDriftReduction) * (1 - fraction);
     this.recalcStats();
+  }
+
+  /**
+   * Mirror the Drift direction — clockwise (+1) toggles to anticlockwise (-1)
+   * and back. Set at run-start by the Anticlockwise Haggis variant; magnitude
+   * is unchanged, only the rotation-matrix sign flips.
+   */
+  flipDriftSign(): void {
+    this.driftSign = this.driftSign === 1 ? -1 : 1;
+    this.recalcStats();
+  }
+
+  getDriftSign(): 1 | -1 {
+    return this.driftSign;
   }
 
   addDamageMultiplier(fraction: number): void {

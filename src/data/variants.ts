@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -12,6 +12,13 @@ export interface VariantModifier {
   damagePct?: number;
   driftReductionPct?: number;
   cooldownReductionPct?: number;
+  /**
+   * Flip the sign of the Drift for this run (clockwise → anticlockwise).
+   * Per wild haggis myth (SCOTTISH_RESEARCH_DEEP §11.5): two subspecies
+   * exist with opposite-leg asymmetry. This modifier mirrors the Drift
+   * matrix without changing its magnitude.
+   */
+  driftSignFlip?: boolean;
 }
 
 export type VariantUnlockCondition =
@@ -248,6 +255,33 @@ export const VARIANTS: VariantDef[] = [
     },
   },
   {
+    // Anticlockwise Haggis — wild haggis myth's second subspecies.
+    // Per SCOTTISH_RESEARCH_DEEP §11.5, two subspecies of haggis are said
+    // to exist with opposite-leg asymmetry; one circles hills clockwise,
+    // the other anticlockwise. This variant mirrors the Drift sign with
+    // no other stat changes: the bias pulls *left* instead of *right*.
+    // Silhouette and combat profile are identical to classic; the twist
+    // is pure muscle memory. Mountain-hare palette signals the subspecies
+    // tell (silver coat vs. the classic gold).
+    key: 'anticlockwise',
+    nameKey: 'variant.anticlockwise.name',
+    flavorKey: 'variant.anticlockwise.flavor',
+    textureKey: 'haggis_anticlockwise',
+    modifiers: { driftSignFlip: true },
+    unlock: { type: 'victories', required: 5 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        outline: 0x2a2420,
+        bodyDark: 0x5a4e44,
+        bodyLight: 0x7d6f62,
+        fur: 0x9f8e7e,
+        snout: 0xbfa890,
+        accent: 0xc0d4d8,
+      },
+    },
+  },
+  {
     // Cailleach — mythic elder. Slow, tanky, massive pickup radius.
     // +8% crit deferred — VariantModifier has no crit field today.
     key: 'cailleach',
@@ -397,6 +431,7 @@ export function formatVariantModifierSummary(variant: VariantDef): string {
   if (modifiers.damagePct) parts.push(t('variant.summary.dmg', pctInterp(modifiers.damagePct)));
   if (modifiers.driftReductionPct) parts.push(t('variant.summary.drift', pctInterp(modifiers.driftReductionPct)));
   if (modifiers.cooldownReductionPct) parts.push(t('variant.summary.cdr', pctInterp(modifiers.cooldownReductionPct)));
+  if (modifiers.driftSignFlip) parts.push(t('variant.summary.drift_flip'));
 
   return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
 }
@@ -426,7 +461,8 @@ export function formatRunVariantLabel(variant: VariantDef): string {
     || !!modifiers.xpMultiplierPct
     || !!modifiers.damagePct
     || !!modifiers.driftReductionPct
-    || !!modifiers.cooldownReductionPct;
+    || !!modifiers.cooldownReductionPct
+    || !!modifiers.driftSignFlip;
   const name = t(variant.nameKey);
   if (!hasModifiers) return name;
   return `${name}  |  ${formatVariantModifierSummary(variant)}`;

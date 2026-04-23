@@ -56,7 +56,8 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.xpMultiplierPct
           || !!mods.damagePct
           || !!mods.driftReductionPct
-          || !!mods.cooldownReductionPct;
+          || !!mods.cooldownReductionPct
+          || !!mods.driftSignFlip;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });
 

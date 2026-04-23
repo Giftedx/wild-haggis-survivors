@@ -164,6 +164,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.cailleach.c',
         'ui.banter.low_hp.cailleach.d',
       ],
+      anticlockwise: [
+        'ui.banter.low_hp.anticlockwise.a',
+        'ui.banter.low_hp.anticlockwise.b',
+        'ui.banter.low_hp.anticlockwise.c',
+        'ui.banter.low_hp.anticlockwise.d',
+      ],
     },
   },
   {
@@ -376,6 +382,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.cailleach.c',
         'ui.banter.level_up.cailleach.d',
       ],
+      anticlockwise: [
+        'ui.banter.level_up.anticlockwise.a',
+        'ui.banter.level_up.anticlockwise.b',
+        'ui.banter.level_up.anticlockwise.c',
+        'ui.banter.level_up.anticlockwise.d',
+      ],
     },
   },
   {
@@ -442,6 +454,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.cailleach.b',
         'ui.banter.first_blood.cailleach.c',
         'ui.banter.first_blood.cailleach.d',
+      ],
+      anticlockwise: [
+        'ui.banter.first_blood.anticlockwise.a',
+        'ui.banter.first_blood.anticlockwise.b',
+        'ui.banter.first_blood.anticlockwise.c',
+        'ui.banter.first_blood.anticlockwise.d',
       ],
     },
   },
@@ -511,6 +529,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.cailleach.c',
         'ui.banter.kill_streak.cailleach.d',
       ],
+      anticlockwise: [
+        'ui.banter.kill_streak.anticlockwise.a',
+        'ui.banter.kill_streak.anticlockwise.b',
+        'ui.banter.kill_streak.anticlockwise.c',
+        'ui.banter.kill_streak.anticlockwise.d',
+      ],
     },
   },
   {
@@ -577,6 +601,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.cailleach.b',
         'ui.banter.recover.cailleach.c',
         'ui.banter.recover.cailleach.d',
+      ],
+      anticlockwise: [
+        'ui.banter.recover.anticlockwise.a',
+        'ui.banter.recover.anticlockwise.b',
+        'ui.banter.recover.anticlockwise.c',
+        'ui.banter.recover.anticlockwise.d',
       ],
     },
   },
@@ -742,6 +772,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.cailleach.b',
         'ui.banter.idle.cailleach.c',
         'ui.banter.idle.cailleach.d',
+      ],
+      anticlockwise: [
+        'ui.banter.idle.anticlockwise.a',
+        'ui.banter.idle.anticlockwise.b',
+        'ui.banter.idle.anticlockwise.c',
+        'ui.banter.idle.anticlockwise.d',
       ],
     },
   },

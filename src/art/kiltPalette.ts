@@ -32,6 +32,7 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   wee_ghostie:  { field: 0x9dabc2, fieldDark: 0x5a6878, stripe: 0x6a7a8a, accent: 0xd8e8f8 },
   glaswegian:   { field: 0xff5a00, fieldDark: 0x8a2a00, stripe: 0x1a2028, accent: 0xffaa44 },
   cailleach:    { field: 0x2a4a2a, fieldDark: 0x1a2f1a, stripe: 0x8a2828, accent: 0xd4d0c0 },
+  anticlockwise:{ field: 0x5a4e44, fieldDark: 0x2a2420, stripe: 0x7d6f62, accent: 0xc0d4d8 },
 };
 
 /**
