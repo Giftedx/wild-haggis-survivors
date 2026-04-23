@@ -13,8 +13,25 @@ export interface GameTickerHooks {
   getCurrentBiomeId(): BiomeId | null;
   /** Selected haggis variant — tags low_hp / recover banter like other variant hooks. */
   getActiveVariantKey(): string;
+  /**
+   * True iff at least one active enemy is within `radiusPx` of the player.
+   * Used by haggis_ambient (Task 10) to gate inner-monologue firing to
+   * quiet stretches. Implementation lives on GameScene where the
+   * SpawnSystem enemy group is in scope.
+   */
+  hasEnemyNearby(radiusPx: number): boolean;
   caption(id: string, message: string, tint?: string, durationMs?: number): void;
 }
+
+/** Radius (px) around player considered "in combat" for haggis_ambient gate. */
+export const HAGGIS_AMBIENT_COMBAT_RADIUS_PX = 200;
+/** Continuous no-enemy-near seconds required before haggis_ambient can fire. */
+export const HAGGIS_AMBIENT_IDLE_WINDOW_MS = 10_000;
+/** HP fraction floor — below this the haggis has bigger things to think about. */
+export const HAGGIS_AMBIENT_HP_FLOOR = 0.75;
+/** Interval base: 45s ±15s → 30..60s. Randomised each time we reschedule. */
+export const HAGGIS_AMBIENT_INTERVAL_BASE_MS = 30_000;
+export const HAGGIS_AMBIENT_INTERVAL_JITTER_MS = 30_000;
 
 export class GameTickers {
   private dashIndicator: Phaser.GameObjects.Graphics | null = null;
@@ -22,6 +39,15 @@ export class GameTickers {
   private lowHpCaptionArmed = true;
   private lastBiomeForBanter: BiomeId | null = null;
   private lastBanterFireMs = 0;
+  /**
+   * Haggis-ambient state (B1 Phase 2 Task 10). `nextHaggisAmbientMs` is
+   * set to `-1` as a sentinel so the first eligible tick primes it off
+   * the current scene clock rather than firing immediately at run start.
+   * `lastEnemyNearMs` tracks when an enemy was last seen inside the
+   * combat radius — firing requires a 10s continuous quiet window.
+   */
+  private nextHaggisAmbientMs = -1;
+  private lastEnemyNearMs = 0;
 
   constructor(private readonly hooks: GameTickerHooks) {}
 
@@ -33,6 +59,8 @@ export class GameTickers {
     this.lowHpCaptionArmed = true;
     this.lastBiomeForBanter = null;
     this.lastBanterFireMs = 0;
+    this.nextHaggisAmbientMs = -1;
+    this.lastEnemyNearMs = 0;
   }
 
   destroy(): void {
@@ -107,7 +135,50 @@ export class GameTickers {
       this.lastBanterFireMs = nowMs;
     }
 
+    this.maybeFireHaggisAmbient(nowMs, banter);
+
     banter.flush();
+  }
+
+  /**
+   * B1 Phase 2 Task 10 — haggis_ambient inner monologue.
+   *
+   * Bumps `lastEnemyNearMs` every tick an enemy is within the combat
+   * radius so the "10s continuous quiet" gate is a simple `nowMs -
+   * lastEnemyNearMs >= WINDOW` check. `nextHaggisAmbientMs` primes on
+   * first eligible tick (sentinel -1) and reschedules with fresh
+   * jitter after each fire so the cadence doesn't settle into a
+   * perceptible rhythm.
+   *
+   * Banter priority still governs the final surface: haggis_ambient
+   * (25) yields to biome_change (30) and the rest of the ladder, so
+   * this just queues a candidate for `flush()` to arbitrate.
+   */
+  private maybeFireHaggisAmbient(nowMs: number, banter: BanterSystem): void {
+    if (this.hooks.hasEnemyNearby(HAGGIS_AMBIENT_COMBAT_RADIUS_PX)) {
+      this.lastEnemyNearMs = nowMs;
+    }
+    if (this.nextHaggisAmbientMs === -1) {
+      // Prime on first tick; treat reset instant as a quiet start so
+      // the 10s window counts from run-start rather than from -Infinity.
+      this.nextHaggisAmbientMs = nowMs + this.rollHaggisAmbientGap();
+      this.lastEnemyNearMs = nowMs;
+      return;
+    }
+    if (nowMs < this.nextHaggisAmbientMs) return;
+
+    const player = this.hooks.getPlayer();
+    const frac = player.getHp() / Math.max(1, player.getMaxHp());
+    if (frac < HAGGIS_AMBIENT_HP_FLOOR) return;
+    if (nowMs - this.lastEnemyNearMs < HAGGIS_AMBIENT_IDLE_WINDOW_MS) return;
+
+    banter.request('haggis_ambient');
+    this.nextHaggisAmbientMs = nowMs + this.rollHaggisAmbientGap();
+  }
+
+  private rollHaggisAmbientGap(): number {
+    return HAGGIS_AMBIENT_INTERVAL_BASE_MS
+      + Math.floor(Math.random() * HAGGIS_AMBIENT_INTERVAL_JITTER_MS);
   }
 
   tickLowHpCaption(): void {

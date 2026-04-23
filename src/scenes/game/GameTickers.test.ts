@@ -1,5 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
-import { GameTickers, type GameTickerHooks } from './GameTickers';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import {
+  GameTickers,
+  HAGGIS_AMBIENT_IDLE_WINDOW_MS,
+  HAGGIS_AMBIENT_INTERVAL_BASE_MS,
+  HAGGIS_AMBIENT_INTERVAL_JITTER_MS,
+  type GameTickerHooks,
+} from './GameTickers';
 import type { Player } from '../../entities/Player';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { BiomeId } from '../../data/biomes';
@@ -19,6 +25,7 @@ interface MockState {
   biomeId: BiomeId | null;
   variantKey: string;
   sceneNowMs: number;
+  enemyNearby: boolean;
 }
 
 function makeHarness(initial: Partial<MockState> = {}): {
@@ -33,6 +40,7 @@ function makeHarness(initial: Partial<MockState> = {}): {
     biomeId: null,
     variantKey: 'classic',
     sceneNowMs: 0,
+    enemyNearby: false,
     ...initial,
   };
 
@@ -53,6 +61,7 @@ function makeHarness(initial: Partial<MockState> = {}): {
     getBanter: () => banter as unknown as BanterSystem,
     getCurrentBiomeId: () => state.biomeId,
     getActiveVariantKey: () => state.variantKey,
+    hasEnemyNearby: () => state.enemyNearby,
     caption,
   };
 
@@ -207,5 +216,130 @@ describe('GameTickers.tickBanter', () => {
     t.tickBanter(); // first observation post-reset — pine, should NOT fire biome_change
     const biomeChangeCalls = banter.request.mock.calls.filter((c) => c[0] === 'biome_change');
     expect(biomeChangeCalls).toHaveLength(0);
+  });
+});
+
+describe('GameTickers haggis_ambient scheduling (B1 Phase 2 Task 10)', () => {
+  // All tests stub Math.random to 0 so the jitter term is deterministic;
+  // intervals collapse to exactly INTERVAL_BASE_MS.
+  let rngSpy: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    rngSpy = vi.spyOn(Math, 'random').mockReturnValue(0);
+  });
+  afterEach(() => {
+    rngSpy.mockRestore();
+  });
+
+  const countHaggisRequests = (banter: { request: ReturnType<typeof vi.fn> }) =>
+    banter.request.mock.calls.filter((c) => c[0] === 'haggis_ambient').length;
+
+  it('does not fire at run start — 10s quiet window must pass first', () => {
+    const { banter, hooks } = makeHarness({ hp: 100, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(0);
+  });
+
+  it('fires once INTERVAL_BASE_MS has elapsed and quiet window is met', () => {
+    const { state, banter, hooks } = makeHarness({ hp: 100, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter(); // prime — nextHaggisAmbientMs = 0 + BASE
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
+  });
+
+  it('suppressed while HP sits below 75%', () => {
+    const { state, banter, hooks } = makeHarness({ hp: 70, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(0);
+  });
+
+  it('suppressed while an enemy remains inside the combat radius', () => {
+    const { state, banter, hooks } = makeHarness({
+      hp: 100, maxHp: 100, sceneNowMs: 0, enemyNearby: true,
+    });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter(); // enemy still present — lastEnemyNearMs keeps advancing
+    expect(countHaggisRequests(banter)).toBe(0);
+  });
+
+  it('resumes firing after the combat window clears for 10s', () => {
+    const { state, banter, hooks } = makeHarness({
+      hp: 100, maxHp: 100, sceneNowMs: 0, enemyNearby: true,
+    });
+    const t = new GameTickers(hooks);
+    t.tickBanter(); // prime — enemyNearby bumps lastEnemyNearMs to 0
+    // Hold combat for a while so the gate stays hot.
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(0);
+    // Enemies clear.
+    state.enemyNearby = false;
+    // Still within the 10s window of the last combat tick — no fire yet.
+    state.sceneNowMs += HAGGIS_AMBIENT_IDLE_WINDOW_MS - 1;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(0);
+    // Cross the window boundary — fire unlocks.
+    state.sceneNowMs += 2;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
+  });
+
+  it('reschedules after firing — does not double-fire on the next tick', () => {
+    const { state, banter, hooks } = makeHarness({ hp: 100, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter();
+    state.sceneNowMs += 1_000;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
+    // Next window opens INTERVAL_BASE_MS later (jitter=0 via stub).
+    state.sceneNowMs += HAGGIS_AMBIENT_INTERVAL_BASE_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(2);
+  });
+
+  it('reset() requires a fresh priming tick before the next fire', () => {
+    const { state, banter, hooks } = makeHarness({ hp: 100, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    state.sceneNowMs = HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
+    t.reset();
+    // Post-reset the scheduler primes again — a single tick far past
+    // the original cadence does NOT retroactively fire.
+    state.sceneNowMs += 1_000;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
+    // Wait the full base-interval after the priming tick and quiet window.
+    state.sceneNowMs += HAGGIS_AMBIENT_INTERVAL_BASE_MS + HAGGIS_AMBIENT_IDLE_WINDOW_MS;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(2);
+  });
+
+  it('jitter spans the expected envelope', () => {
+    // Spot-check: the reschedule uses `floor(rand * JITTER_MS)` as extra
+    // delay. With 0.5 as the RNG return we should land at BASE + JITTER/2.
+    rngSpy.mockReturnValue(0.5);
+    const { state, banter, hooks } = makeHarness({ hp: 100, maxHp: 100, sceneNowMs: 0 });
+    const t = new GameTickers(hooks);
+    t.tickBanter();
+    const threshold =
+      HAGGIS_AMBIENT_INTERVAL_BASE_MS
+      + Math.floor(HAGGIS_AMBIENT_INTERVAL_JITTER_MS * 0.5);
+    state.sceneNowMs = threshold - 100;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(0);
+    state.sceneNowMs = threshold + 100;
+    t.tickBanter();
+    expect(countHaggisRequests(banter)).toBe(1);
   });
 });

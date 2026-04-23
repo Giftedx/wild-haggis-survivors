@@ -940,6 +940,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getBanter: () => this.banter,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
       getActiveVariantKey: () => this.activeVariant.key,
+      hasEnemyNearby: (radiusPx) => this.hasEnemyNearby(radiusPx),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
     this.pickupSpawner = new PickupSpawner(this, {
@@ -1772,6 +1773,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   getCurrentBiomeId(): BiomeId | null {
     if (!this.biomeController || !this.player) return null;
     return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
+  }
+
+  /**
+   * True iff any active enemy sits within `radiusPx` of the player.
+   * Used by `GameTickers` to gate haggis_ambient banter to quiet
+   * stretches (Task 10). Squared-distance compare keeps this cheap at
+   * the per-frame cadence the ticker runs at.
+   */
+  private hasEnemyNearby(radiusPx: number): boolean {
+    if (!this.player || !this.spawnSystem) return false;
+    const r2 = radiusPx * radiusPx;
+    const px = this.player.x;
+    const py = this.player.y;
+    const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (!e.active) continue;
+      const dx = e.x - px;
+      const dy = e.y - py;
+      if (dx * dx + dy * dy <= r2) return true;
+    }
+    return false;
   }
 
   getBiomeManager(): BiomeManager | null {

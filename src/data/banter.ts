@@ -39,7 +39,9 @@ export type BanterContext =
   // B1 Phase 2 — Gran-voice commentary (hearth, elder warmth *about* the run)
   | 'gran_commentary'
   // B1 Phase 2 Task 12 — cause-tagged warm lament on death screen
-  | 'death_reflection';
+  | 'death_reflection'
+  // B1 Phase 2 Task 10 — wee-beastie inner-monologue during quiet stretches
+  | 'haggis_ambient';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1019,6 +1021,50 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     },
   },
   {
+    // B1 Phase 2 Task 10 — Haggis inner monologue.
+    //
+    // Fires from `GameTickers.tickBanter` on a 45s ±15s wall-clock
+    // interval, gated by HP > 75% AND no enemy within 200px for 10s
+    // continuous (quiet-moor-stretch only). Priority 25 sits between
+    // biome_change (30) and the 28 gran slot but beats idle (10) so
+    // mid-lull monologue surfaces over the catch-all idle chatter.
+    //
+    // Voice register: Hearth, wee-beastie simple — peaceful sensory
+    // notes, food daydreams, small philosophy. Short lines, child-like
+    // but never infantile. Generic pool only (no variant sub-pools in
+    // this slice; could extend per-variant in a later pass).
+    context: 'haggis_ambient',
+    tone: 'hearth',
+    priority: 25,
+    keys: [
+      'ui.banter.haggis_ambient.a', 'ui.banter.haggis_ambient.b',
+      'ui.banter.haggis_ambient.c', 'ui.banter.haggis_ambient.d',
+      'ui.banter.haggis_ambient.e', 'ui.banter.haggis_ambient.f',
+      'ui.banter.haggis_ambient.g', 'ui.banter.haggis_ambient.h',
+      'ui.banter.haggis_ambient.i', 'ui.banter.haggis_ambient.j',
+      'ui.banter.haggis_ambient.k', 'ui.banter.haggis_ambient.l',
+      'ui.banter.haggis_ambient.m', 'ui.banter.haggis_ambient.n',
+      'ui.banter.haggis_ambient.o', 'ui.banter.haggis_ambient.p',
+      'ui.banter.haggis_ambient.q', 'ui.banter.haggis_ambient.r',
+      'ui.banter.haggis_ambient.s', 'ui.banter.haggis_ambient.t',
+      'ui.banter.haggis_ambient.u', 'ui.banter.haggis_ambient.v',
+      'ui.banter.haggis_ambient.w', 'ui.banter.haggis_ambient.x',
+      'ui.banter.haggis_ambient.y', 'ui.banter.haggis_ambient.z',
+      'ui.banter.haggis_ambient.aa', 'ui.banter.haggis_ambient.ab',
+      'ui.banter.haggis_ambient.ac', 'ui.banter.haggis_ambient.ad',
+      'ui.banter.haggis_ambient.ae', 'ui.banter.haggis_ambient.af',
+      'ui.banter.haggis_ambient.ag', 'ui.banter.haggis_ambient.ah',
+      'ui.banter.haggis_ambient.ai', 'ui.banter.haggis_ambient.aj',
+      'ui.banter.haggis_ambient.ak', 'ui.banter.haggis_ambient.al',
+      'ui.banter.haggis_ambient.am', 'ui.banter.haggis_ambient.an',
+      'ui.banter.haggis_ambient.ao', 'ui.banter.haggis_ambient.ap',
+      'ui.banter.haggis_ambient.aq', 'ui.banter.haggis_ambient.ar',
+      'ui.banter.haggis_ambient.as', 'ui.banter.haggis_ambient.at',
+      'ui.banter.haggis_ambient.au', 'ui.banter.haggis_ambient.av',
+      'ui.banter.haggis_ambient.aw', 'ui.banter.haggis_ambient.ax',
+    ],
+  },
+  {
     // Reliquary pickup (M15). Small hearth beat — the moor just handed
     // you a curio, acknowledging the off-path detour. Generic-only pool;
     // per-curio voice tint stays open for a future banter pass.
@@ -1052,7 +1098,6 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
  */
 export type PendingBanterContext =
-  | 'haggis_ambient'
   | 'enemy_ambient'
   | 'cailleach_whisper'
   | 'burns_citation'
@@ -1082,7 +1127,6 @@ export interface PendingPoolMetadata {
  * collided with `biome_change`).
  */
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
-  haggis_ambient: { tone: 'hearth', priority: 25 },
   enemy_ambient: { tone: 'hearth', priority: 40 },
   cailleach_whisper: { tone: 'edge', priority: 55 },
   burns_citation: { tone: 'hearth', priority: 45 },

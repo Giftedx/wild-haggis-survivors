@@ -30,6 +30,8 @@ describe('BANTER_POOLS structure', () => {
     'gran_commentary',
     // B1 Phase 2 Task 12 — cause-tagged death reflection
     'death_reflection',
+    // B1 Phase 2 Task 10 — wee-beastie inner monologue
+    'haggis_ambient',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -187,7 +189,6 @@ describe('BANTER_POOLS structure', () => {
 
 describe('B1 Phase 1 — pending pool metadata', () => {
   const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
-    ['haggis_ambient', 25],
     ['enemy_ambient', 40],
     ['cailleach_whisper', 55],
     ['burns_citation', 45],
@@ -195,7 +196,7 @@ describe('B1 Phase 1 — pending pool metadata', () => {
     ['seasonal_event', 65],
   ];
 
-  it('registers all seven pending pools with spec §2 priorities', () => {
+  it('registers all remaining pending pools with spec §2 priorities', () => {
     for (const [id, priority] of expectedPending) {
       expect(PENDING_POOL_METADATA[id].priority, `${id} priority wrong`).toBe(priority);
     }
