@@ -14,6 +14,7 @@ import { WEAPON_DEFS, type WeaponKey } from './weapons';
 import { BIOMES, type BiomeId } from './biomes';
 import { VARIANTS } from './variants';
 import { ROUTES } from './routes';
+import type { DeathCauseTag } from '../core/deathCauseClassifier';
 import { t } from '../core/i18n';
 
 describe('BANTER_POOLS structure', () => {
@@ -27,6 +28,8 @@ describe('BANTER_POOLS structure', () => {
     'reliquary_pick',
     // B1 Phase 2 — Gran-voice commentary
     'gran_commentary',
+    // B1 Phase 2 Task 12 — cause-tagged death reflection
+    'death_reflection',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -143,6 +146,19 @@ describe('BANTER_POOLS structure', () => {
     const tags = Object.keys(pool!.keysByTag ?? {});
     for (const rk of routeKeys) {
       expect(tags, `route_picked missing tag '${rk}'`).toContain(rk);
+    }
+  });
+
+  it('death_reflection has keysByTag for every DeathCauseTag', () => {
+    const allTags: readonly DeathCauseTag[] = [
+      'hazard', 'boss_crushed', 'elite_kill', 'one_shot',
+      'same_killer', 'swarmed', 'low_hp_neglect', 'unlucky',
+    ];
+    const pool = getBanterPool('death_reflection');
+    expect(pool, 'death_reflection pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    for (const dct of allTags) {
+      expect(tags, `death_reflection missing tag '${dct}'`).toContain(dct);
     }
   });
 

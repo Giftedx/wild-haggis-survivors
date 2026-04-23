@@ -1507,6 +1507,60 @@ export const EN_STRINGS: LocaleTree = {
         c: 'Aye — the hum had yer name on it.',
         d: 'Off-path pays, noo and again.',
       },
+      // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
+      //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
+      //    `DeathCauseTag` keys from `src/core/deathCauseClassifier.ts`.
+      //    Never shaming — name the cause gently, offer a soft takeaway
+      //    where natural, avoid duplicating the game-over screen's
+      //    cause-tip sentence.
+      death_reflection: {
+        a: 'Moor-debt settled. Nae grudges held.',
+        b: 'Every hoof stumbles. The glen\'s patient.',
+        c: 'Dusk comes for us aw. Rest easy, wee yin.',
+        d: 'Heather doesnae keep score, bonnie.',
+        e: 'The land closed a page. Softly.',
+        f: 'Run\'s dune. The fire\'ll keep.',
+        hazard: {
+          a: 'The ground spoke louder than yer hooves. Worth a listen next time.',
+          b: 'Aye — the moor hides teeth in the kindest fields.',
+          c: 'The weather wasnae personal. It\'s weather aw the way doon.',
+        },
+        boss_crushed: {
+          a: 'A big yin caught ye. Nae disgrace in that, wee yin.',
+          b: 'That one had weight. It\'ll keep fer the next run.',
+          c: 'Ye met a proper menace the day. Fair play fer standin\' in front of it.',
+        },
+        elite_kill: {
+          a: 'The glintin\' ones hit heavy. Mind the gold shine next time.',
+          b: 'Elite\'s elite fer a reason. Respect earned.',
+          c: 'Golden trouble — they work fer their shine.',
+        },
+        one_shot: {
+          a: 'One clap — ye never had time tae flinch.',
+          b: 'A fortnight of damage in a single breath. Hardly fair, that.',
+          c: 'The moor disnae negotiate wi weight like yon. Next time, steer wider.',
+        },
+        same_killer: {
+          a: 'Same beastie, owre and owre. Kite it loose next run.',
+          b: 'That one found yer rhythm. Break the beat next time.',
+          c: 'Persistent bugger. Circle wide — it\'ll lose yer scent.',
+        },
+        swarmed: {
+          a: 'The moor sent a whole chorus. Nae shame in gettin\' sung at.',
+          b: 'Too many hands in the pot — that\'s ambushes fer ye.',
+          c: 'Outflanked. The road\'s wide — use the room next run.',
+        },
+        low_hp_neglect: {
+          a: 'Bled doon too long. Healin\' gets shy near zero.',
+          b: 'Red bar kept company. Come up earlier, bonnie.',
+          c: 'Low flame burns short. Eat when the moor offers, wee yin.',
+        },
+        unlucky: {
+          a: 'Sometimes the dice bite. The moor\'s a fair court, mostly.',
+          b: 'Weird deaths come and go. Nae mystery worth keepin\'.',
+          c: 'Bad weather day. The next\'ll clear.',
+        },
+      },
     },
     toast: {
       screenshot_saved: 'Screenshot saved to downloads.',

@@ -37,7 +37,9 @@ export type BanterContext =
   // Reliquary pickup (M15) — off-path relic claimed
   | 'reliquary_pick'
   // B1 Phase 2 — Gran-voice commentary (hearth, elder warmth *about* the run)
-  | 'gran_commentary';
+  | 'gran_commentary'
+  // B1 Phase 2 Task 12 — cause-tagged warm lament on death screen
+  | 'death_reflection';
 
 export interface BanterPool {
   context: BanterContext;
@@ -943,6 +945,76 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.gran_commentary.seasonal_event.d',
         'ui.banter.gran_commentary.seasonal_event.e',
         'ui.banter.gran_commentary.seasonal_event.f',
+      ],
+    },
+  },
+  {
+    // B1 Phase 2 Task 12 — Death-screen reflection.
+    //
+    // Fires from `RunLifecycle.handleDeath` with `tag = DeathCauseTag`
+    // (see `src/core/deathCauseClassifier.ts`). Priority 75 sits between
+    // boss_down (70) and low_hp (80) so it wins over gran_commentary (28)
+    // same-tick arbitration — death_reflection is richer (cause-aware,
+    // 30 lines) and replaces the gran run_end_defeat trigger per B1
+    // Phase 2 plan. The `run_end_defeat` sub-pool under gran_commentary
+    // stays authored for future wiring (post-bell death, future
+    // post-mortem pane, etc).
+    //
+    // Voice register: Hearth, warmly-framed per DESIGN_SOUL §Warmth Audit.
+    // Never shaming. Each cause-tag line gently names what happened and
+    // (where natural) offers a soft takeaway without duplicating the
+    // game-over screen's `formatDeathInsightLine` tip.
+    context: 'death_reflection',
+    tone: 'hearth',
+    priority: 75,
+    keys: [
+      'ui.banter.death_reflection.a',
+      'ui.banter.death_reflection.b',
+      'ui.banter.death_reflection.c',
+      'ui.banter.death_reflection.d',
+      'ui.banter.death_reflection.e',
+      'ui.banter.death_reflection.f',
+    ],
+    keysByTag: {
+      hazard: [
+        'ui.banter.death_reflection.hazard.a',
+        'ui.banter.death_reflection.hazard.b',
+        'ui.banter.death_reflection.hazard.c',
+      ],
+      boss_crushed: [
+        'ui.banter.death_reflection.boss_crushed.a',
+        'ui.banter.death_reflection.boss_crushed.b',
+        'ui.banter.death_reflection.boss_crushed.c',
+      ],
+      elite_kill: [
+        'ui.banter.death_reflection.elite_kill.a',
+        'ui.banter.death_reflection.elite_kill.b',
+        'ui.banter.death_reflection.elite_kill.c',
+      ],
+      one_shot: [
+        'ui.banter.death_reflection.one_shot.a',
+        'ui.banter.death_reflection.one_shot.b',
+        'ui.banter.death_reflection.one_shot.c',
+      ],
+      same_killer: [
+        'ui.banter.death_reflection.same_killer.a',
+        'ui.banter.death_reflection.same_killer.b',
+        'ui.banter.death_reflection.same_killer.c',
+      ],
+      swarmed: [
+        'ui.banter.death_reflection.swarmed.a',
+        'ui.banter.death_reflection.swarmed.b',
+        'ui.banter.death_reflection.swarmed.c',
+      ],
+      low_hp_neglect: [
+        'ui.banter.death_reflection.low_hp_neglect.a',
+        'ui.banter.death_reflection.low_hp_neglect.b',
+        'ui.banter.death_reflection.low_hp_neglect.c',
+      ],
+      unlucky: [
+        'ui.banter.death_reflection.unlucky.a',
+        'ui.banter.death_reflection.unlucky.b',
+        'ui.banter.death_reflection.unlucky.c',
       ],
     },
   },

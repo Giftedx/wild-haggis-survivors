@@ -282,11 +282,22 @@ export class RunLifecycle {
       juice.flashRed(400);
       tryCameraShake(this.hooks.getCamera(), 500, 0.02, this.hooks.getSettingsManager());
       this.hooks.caption('death', t('ui.captions.death_fall'), '#cc8866');
-      // B1 Phase 2 — Gran's warm lament. Never shaming (DESIGN_SOUL
-      // Warmth Audit). Fires at real-time death beat, before the
-      // death-fade crossfade begins, so the line reads as "kettle's on,
-      // come home" rather than a post-mortem.
-      this.hooks.getBanter()?.request('gran_commentary', { tag: 'run_end_defeat' });
+      // B1 Phase 2 Task 12 — Cause-tagged death reflection (pool priority
+      // 75). Classify here so the tag reaches the banter pool at the same
+      // tick as the toast surface — the tracker snapshot is frozen from
+      // the moment `onPlayerHitZero` entered, so moving `classifyDeath`
+      // up from the post-fade position doesn't change its inputs.
+      // Replaces the Phase 1 `gran_commentary/run_end_defeat` trigger:
+      // death_reflection is cause-aware + 30 lines and wins same-tick
+      // arbitration over gran (28). Gran's defeat sub-pool stays
+      // authored for future wiring (post-bell death, post-mortem pane).
+      const trackerSnap = this.hooks.getDeathCauseTracker().snapshot();
+      const deathCause = classifyDeath({
+        events: trackerSnap.events,
+        lastHealthyAtSec: trackerSnap.lastHealthyAtSec,
+        deathGameTimeSec: this.hooks.getSpawnSystem().getGameTimeSec(),
+      });
+      this.hooks.getBanter()?.request('death_reflection', { tag: deathCause.tag });
 
       const px = player.x;
       const py = player.y;
@@ -357,13 +368,6 @@ export class RunLifecycle {
         targets: deathFade, alpha: 0.85,
         duration: 1100,
         ease: 'Sine.easeIn',
-      });
-
-      const trackerSnap = this.hooks.getDeathCauseTracker().snapshot();
-      const deathCause = classifyDeath({
-        events: trackerSnap.events,
-        lastHealthyAtSec: trackerSnap.lastHealthyAtSec,
-        deathGameTimeSec: this.hooks.getSpawnSystem().getGameTimeSec(),
       });
 
       this.hooks.setDeathResultTicker(1200, () => {

@@ -1355,6 +1355,57 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Aye — tha hum hud yer name on it.',
         d: 'Aff-path pays, noo an again.',
       },
+      // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
+      //    ui.banter.death_reflection.*. Scots conventions per Phase B:
+      //    tha/fae/wance/dinnae/disnae/wecht/braith/neist.
+      death_reflection: {
+        a: 'Moor-debt settled. Nae grudges held.',
+        b: 'Ilka hoof stumbles. Tha glen\'s patient.',
+        c: 'Dusk comes fer us aw. Rest easy, wee yin.',
+        d: 'Heather disnae keep score, bonnie.',
+        e: 'Tha land closed a page. Saftly.',
+        f: 'Run\'s dune. Tha fire\'ll keep.',
+        hazard: {
+          a: 'Tha grund spak louder than yer hooves. Worth a listen neist time.',
+          b: 'Aye — tha moor hides teeth in tha kindest fields.',
+          c: 'Tha wather wasnae personal. It\'s wather aw tha wey doon.',
+        },
+        boss_crushed: {
+          a: 'A big yin catcht ye. Nae disgrace in that, wee yin.',
+          b: 'Yon wan hud wecht. It\'ll keep fer tha neist run.',
+          c: 'Ye met a proper menace tha day. Fair play fer staundin in front o it.',
+        },
+        elite_kill: {
+          a: 'Tha glintin yins hit heavy. Mind tha gowd shine neist time.',
+          b: 'Elite\'s elite fer a reason. Respect earned.',
+          c: 'Gowden trouble — they wark fer their shine.',
+        },
+        one_shot: {
+          a: 'Wan clap — ye never hud time tae flinch.',
+          b: 'A fortnicht o damage in a single braith. Haurdly fair, that.',
+          c: 'Tha moor disnae negotiate wi wecht like yon. Neist time, steer wider.',
+        },
+        same_killer: {
+          a: 'Same beastie, owre an owre. Kite it loose neist run.',
+          b: 'Yon wan foond yer rhythm. Brak tha beat neist time.',
+          c: 'Persistent bugger. Circle wide — it\'ll tyne yer scent.',
+        },
+        swarmed: {
+          a: 'Tha moor sent a hale chorus. Nae shame in gettin sung at.',
+          b: 'Ower mony haunds in tha pot — thon\'s ambushes fer ye.',
+          c: 'Outflanked. Tha road\'s wide — uise tha room neist run.',
+        },
+        low_hp_neglect: {
+          a: 'Bled doon ower lang. Healin gets shy near zero.',
+          b: 'Reid bar kept company. Come up earlier, bonnie.',
+          c: 'Low flame burns short. Eat when tha moor offers, wee yin.',
+        },
+        unlucky: {
+          a: 'Whiles tha dice bite. Tha moor\'s a fair court, maistly.',
+          b: 'Weird daiths come an gang. Nae mystery worth keepin.',
+          c: 'Bad wather day. Tha neist\'ll clear.',
+        },
+      },
     },
     toast: {
       screenshot_saved: 'Pic saved, aye.',
