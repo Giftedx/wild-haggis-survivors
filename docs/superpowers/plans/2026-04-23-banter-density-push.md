@@ -212,11 +212,13 @@ Each authoring task = write one pool completely (EN + SCS), commit together, par
 - [ ] **Step 3:** Pair SCS.
 - [ ] **Step 4:** Commit.
 
-### Task 22: Burns citations (20 EN + 20 SCS)
+### Task 22: Burns citations (20 EN + 20 SCS) ✓ shipped 2026-04-24 · live-wire 3 of 9 sub-pools
 
-- [ ] **Step 1:** Author citations — every line is either a direct Burns quotation (verified against authoritative edition) or a close paraphrase marked as such.
-- [ ] **Step 2:** Pair SCS (Scots originals stay; English adjacency where needed for comprehension).
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Author citations — every line is either a direct Burns quotation (verified against authoritative edition) or a close paraphrase marked as such. (`73a8813`.)
+- [x] **Step 2:** Pair SCS (Scots originals stay; English adjacency where needed for comprehension). Identical in both locales (Burns wrote in Scots).
+- [x] **Step 3:** Commit. (`2562260` doc'd the deferred-wire analysis.)
+- [x] **Step 4:** Wire `loch_moment` + `highland_moment` on biome moor_moments via `MoorMomentScheduler.fire` (`7bdbca5`, `fbaec6a`).
+- [x] **Step 5:** Wire `lineage_moment` on ancestral-echo touch in `GameScene.trySpawnAncestralEcho.onTouch` — naturally once-per-run via `consumeLastDeath` + ancestralEcho guard (2026-04-24).
 
 ### Task 23: Reviewer pass — specialist voices
 

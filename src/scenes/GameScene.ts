@@ -1537,6 +1537,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
           audio.playEchoTouch();
           bumpAncestralEchoesTouched();
+          // B1 Phase 4 Task 22 — "John Anderson My Jo" sub-pool. Echo touch
+          // is naturally once-per-run (consumeLastDeath + ancestralEcho
+          // guard), so no extra throttle needed. Priority 43 wins the tick
+          // after the echo reward toast lands.
+          this.banter?.request('burns_citation', { tag: 'lineage_moment' });
         },
       });
       this.ancestralEcho.spawn();
