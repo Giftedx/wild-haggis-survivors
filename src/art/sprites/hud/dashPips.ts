@@ -5,7 +5,7 @@
  * On screen 100% of play time — every pixel counts.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeDashPips(scene: Phaser.Scene): void {
   const ps = 10;

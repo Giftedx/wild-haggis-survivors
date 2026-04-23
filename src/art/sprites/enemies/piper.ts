@@ -2,7 +2,7 @@
  * `piper` — full-regalia highland bagpiper: military doublet, dress sporran, diced-border tam with badge + toorie, tartan pipe-bag.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 import { HIGHLAND_TARTAN } from '../../kiltPalette';
 

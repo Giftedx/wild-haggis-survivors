@@ -11,7 +11,7 @@
  * the body reads FIRST. The ghost rides the wind, not the other way.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const GALE_WRAITH_CANVAS_SIZE = 44;

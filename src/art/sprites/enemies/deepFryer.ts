@@ -2,7 +2,7 @@
  * `deep_fryer` — hazard: stainless-steel body, temp-dial panel, bubbling oil, battered Mars bar + pizza crunch, grease warning glow.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeDeepFryer(scene: Phaser.Scene): void {
   const s = 48;

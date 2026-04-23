@@ -7,7 +7,7 @@
  * One `Graphics` object per run. Lives at a depth between terrain and
  * entity shadows so it never covers gameplay-critical visuals.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { BIOMES } from '../data/biomes';
 import type { BiomeManager } from './BiomeManager';
 import { computeBiomeOverlayRadii } from './biomeOverlayRadius';

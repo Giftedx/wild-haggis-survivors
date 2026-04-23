@@ -9,7 +9,7 @@
  * self-contained: given a player position and hazard state, it knows
  * what to do.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';

@@ -9,7 +9,7 @@
  * stem. This is the shape on every Scotland jersey.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeThistle(scene: Phaser.Scene): void {
   const s = 24;

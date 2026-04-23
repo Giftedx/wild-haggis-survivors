@@ -5,7 +5,7 @@
  * (~14k) is faster as direct canvas writes.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeFilmGrain(scene: Phaser.Scene): void {
   if (scene.textures.exists('film_grain')) return;

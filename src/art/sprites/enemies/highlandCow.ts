@@ -2,7 +2,7 @@
  * `highland_cow` — hairy coo with the iconic dropped fringe and curved horns. Thick shaggy wool, eyes buried in the fringe — tank-class enemy.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const HIGHLAND_COW_CANVAS_SIZE = 64;

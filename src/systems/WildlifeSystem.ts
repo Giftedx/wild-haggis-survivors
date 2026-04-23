@@ -7,7 +7,7 @@
  * seed-deterministic placement via RunRng remains, generalized to
  * support multiple creature types from WILDLIFE_DEFS.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { BiomeManager } from './BiomeManager';
 import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';

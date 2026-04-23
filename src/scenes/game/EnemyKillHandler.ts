@@ -196,7 +196,7 @@ export class EnemyKillHandler {
     // Death ripple — push up to RIPPLE_MAX_TARGETS nearby enemies.
     // applyKnockback is required (not body.velocity +=) so the push
     // persists past the next chase-velocity reset.
-    const enemies = spawn.getEnemyGroup().children.entries as Enemy[];
+    const enemies = spawn.getEnemyGroup().getChildren() as Enemy[];
     let pushed = 0;
     for (let i = 0; i < enemies.length && pushed < RIPPLE_MAX_TARGETS; i++) {
       const e = enemies[i];

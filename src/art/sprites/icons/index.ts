@@ -5,7 +5,7 @@
  * the same pattern.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeWeaponIcons } from './weapons';
 import { bakeCardIcons } from './cards';

@@ -4,7 +4,7 @@
  * diamond xp_gem. Tiny fizz bubbles because of course it's Irn-Bru.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeHealthOrb(scene: Phaser.Scene): void {
   const s = 22;

@@ -4,7 +4,7 @@
  * base visible beneath, shiny foil specular highlights.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeTunnock(scene: Phaser.Scene): void {
   // 24×24 — Tunnock's Teacake in its iconic red & silver striped foil.

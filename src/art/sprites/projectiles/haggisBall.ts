@@ -4,7 +4,7 @@
  * sheen. Must look disgusting AND hilarious — peak Glesga humour.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeHaggisBall(scene: Phaser.Scene): void {
   const s = 22;

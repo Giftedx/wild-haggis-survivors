@@ -2,7 +2,7 @@
  * `buckfast_ned` — hooded gaunt face, tracksuit, gold chain, Buckfast bottle clutched tight. Gantry-at-Trongate identity.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BUCKFAST_NED_CANVAS_SIZE = 44;

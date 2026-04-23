@@ -5,7 +5,7 @@
  * Gated by the `reduceParticles` user setting — skips creation entirely
  * when enabled, or reduces count to 5 wisps.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { RNG } from '../utils/rng';
 
 interface MistWisp {

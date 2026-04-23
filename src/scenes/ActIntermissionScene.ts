@@ -14,7 +14,7 @@
  *
  * Mirrors the CurseScene/MenuScene pair pattern.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { PickerSlot, RouteDef, RoutePick } from '../data/routes';
 import { ROUTES_BY_SLOT } from '../data/routes';
 import {

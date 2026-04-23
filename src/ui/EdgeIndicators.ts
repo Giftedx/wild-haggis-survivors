@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { Enemy } from '../entities/Enemy';
 import {
   insertionSortOffScreenByDist,
@@ -73,7 +73,7 @@ export class EdgeIndicators {
 
     // Find off-screen enemies — write into pre-allocated buffer
     this.offScreenCount = 0;
-    const enemies = enemyGroup.children.entries as Enemy[];
+    const enemies = enemyGroup.getChildren() as Enemy[];
     const detectRangeSq = this.DETECT_RANGE * this.DETECT_RANGE;
 
     // Use actual camera viewport for off-screen check (handles camera clamping at world edges)

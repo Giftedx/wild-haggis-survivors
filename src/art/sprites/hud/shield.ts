@@ -3,7 +3,7 @@
  * indicator. Riveted rim, centre boss, subtle light model.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeShield(scene: Phaser.Scene): void {
   // ── Shield icon — Highland targe shape with riveted rim and celtic knot hint ──

@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { SettingsManager } from '../core/SettingsManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
@@ -160,7 +160,7 @@ export class SpawnSystem {
    * boss-sequence playthrough without exposing the pool directly.
    */
   findActiveBoss(): Enemy | null {
-    const active = this.pool.children.entries as Enemy[];
+    const active = this.pool.getChildren() as Enemy[];
     for (let i = 0; i < active.length; i++) {
       const e = active[i];
       if (e.active && e.isBoss()) return e;
@@ -229,7 +229,7 @@ export class SpawnSystem {
 
     this.scene.tweens.killTweensOf(this.scene.cameras.main);
 
-    const enemies = this.pool.children.entries as Enemy[];
+    const enemies = this.pool.getChildren() as Enemy[];
     for (const e of enemies) {
       if (e.active) {
         try { e.destroy(); } catch { /* ignore */ }
@@ -276,7 +276,7 @@ export class SpawnSystem {
     }
 
     if (!this.scene.getTimeManager().isGameplayPaused()) {
-      const active = this.pool.children.entries as Enemy[];
+      const active = this.pool.getChildren() as Enemy[];
       for (let i = 0; i < active.length; i++) {
         if (active[i].active) active[i].chaseTarget(playerX, playerY, delta);
       }
@@ -521,7 +521,7 @@ export class SpawnSystem {
 
   /** Removes active non-boss enemies without kill XP (screen wipe for finale). */
   private clearNonBossEnemiesForFinale(): void {
-    const enemies = this.pool.children.entries as Enemy[];
+    const enemies = this.pool.getChildren() as Enemy[];
     for (const e of enemies) {
       if (!e.active) continue;
       if (e.isBoss()) continue;
@@ -676,7 +676,7 @@ export class SpawnSystem {
     if (frame === this.bossCheckFrame) return this.bossActive;
     this.bossCheckFrame = frame;
     if (!this.bossActive) return false;
-    const active = this.pool.children.entries as Enemy[];
+    const active = this.pool.getChildren() as Enemy[];
     let found = false;
     for (let i = 0; i < active.length; i++) {
       if (active[i].active && (active[i] as Enemy).isBoss()) { found = true; break; }

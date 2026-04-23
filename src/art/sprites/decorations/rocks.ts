@@ -14,7 +14,7 @@
  *    (<4px) at the base as a "spot it" joke.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeRocks(scene: Phaser.Scene): void {
   const s = 24;

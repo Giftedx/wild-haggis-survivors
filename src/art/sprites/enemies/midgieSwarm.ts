@@ -9,7 +9,7 @@
  * living haze that reads "insect plague" at all scales.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   const s = 26;

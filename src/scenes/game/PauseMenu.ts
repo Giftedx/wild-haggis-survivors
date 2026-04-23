@@ -11,7 +11,7 @@
  * deferred-chest drain (GameScene keeps ownership of gameplay state).
  * This module is strictly display-object construction + teardown.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../../config';
 import type { GameScene } from '../GameScene';
 import { t } from '../../core/i18n';

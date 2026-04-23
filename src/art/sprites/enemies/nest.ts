@@ -8,7 +8,7 @@
  * at 40px, not "bowl of something".
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeNest(scene: Phaser.Scene): void {
   const s = 40;

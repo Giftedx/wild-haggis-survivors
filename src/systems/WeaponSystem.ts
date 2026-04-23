@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { Projectile } from '../entities/Projectile';
 import { Enemy } from '../entities/Enemy';
 import { WEAPON_DEFS, WeaponDef } from '../data/weapons';
@@ -85,7 +85,7 @@ export class WeaponSystem {
     this.trailCounter = 0;
     this.playerFacing = 0;
 
-    const projectiles = this.projectilePool.children.entries as Projectile[];
+    const projectiles = this.projectilePool.getChildren() as Projectile[];
     for (const p of projectiles) {
       if (p.active) {
         try { p.destroy(); } catch { /* ignore */ }
@@ -271,7 +271,7 @@ export class WeaponSystem {
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
     const spawnTrail = this.trailCounter % BALANCE.weapons.trailEveryNFrames === 0;
-    const projectiles = this.projectilePool.children.entries as Projectile[];
+    const projectiles = this.projectilePool.getChildren() as Projectile[];
     for (const proj of projectiles) {
       if (proj.active) {
         proj.update(delta);
@@ -470,7 +470,7 @@ export class WeaponSystem {
     // the ones that get hit pay for it, and even then we reuse the same
     // dx/dy as the knockback direction (no atan2 → cos/sin round-trip).
     const radiusSq = radius * radius;
-    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dx = enemy.x - px;
@@ -520,7 +520,7 @@ export class WeaponSystem {
       () => {
         if (this.scene.getTimeManager().isGameplayPaused()) return;
         const { damage: dmg, isCrit } = this.effectiveDamage(w);
-        const enemies = this.enemyGroup.children.entries as Enemy[];
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
         const radiusSq = radius * radius;
         for (const enemy of enemies) {
           if (!enemy.active) continue;
@@ -599,7 +599,7 @@ export class WeaponSystem {
     const fcos = Math.cos(facing);
     const fsin = Math.sin(facing);
     const arcThresh = Math.cos(halfArc);
-    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dx = enemy.x - px;
@@ -704,7 +704,7 @@ export class WeaponSystem {
     });
 
     const radiusSq = radius * radius;
-    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
     for (const enemy of enemies) {
       if (!enemy.active) continue;
       const dx = enemy.x - px;
@@ -752,7 +752,7 @@ export class WeaponSystem {
       // a tiny acceptable miss compared to the previously broken
       // delete-then-add re-hit pattern.)
       if (!this.scene.getTimeManager().isGameplayPaused()) {
-        const enemies = this.enemyGroup.children.entries as Enemy[];
+        const enemies = this.enemyGroup.getChildren() as Enemy[];
         const currentRadiusSq = currentRadius * currentRadius;
         for (const enemy of enemies) {
           if (!enemy.active) continue;
@@ -802,7 +802,7 @@ export class WeaponSystem {
         onComplete: () => blast.setVisible(false),
       });
 
-      const enemies = this.enemyGroup.children.entries as Enemy[];
+      const enemies = this.enemyGroup.getChildren() as Enemy[];
       const blastRadiusSq = 80 * 80;
       for (const enemy of enemies) {
         if (!enemy.active) continue;
@@ -823,7 +823,7 @@ export class WeaponSystem {
     const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
       if (this.scene.getTimeManager().isGameplayPaused()) return;
-      const enemies = this.enemyGroup.children.entries as Enemy[];
+      const enemies = this.enemyGroup.getChildren() as Enemy[];
       const radiusSq = radius * radius;
       for (const enemy of enemies) {
         if (!enemy.active) continue;
@@ -849,11 +849,13 @@ export class WeaponSystem {
   private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
     const sectors = Math.max(1, maxShot);
+    const rng = this.scene.getRunRng();
     for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('haggis_ball');
       if (!proj) continue;
       // Space by actual shots fired — `count` can exceed `maxShot` when the pool caps fire rate.
-      const angle = (i / sectors) * Math.PI * 2 + Math.random() * 0.3;
+      // Jitter draws from runRng so the seed reproduces Jobby Cannon trajectories byte-for-byte.
+      const angle = (i / sectors) * Math.PI * 2 + rng.float(0, 0.3);
       proj.fire(px, py,
         px + Math.cos(angle) * 500, py + Math.sin(angle) * 500,
         w.config.projectileSpeed * 1.5, dmg, 0, 2000, isCrit
@@ -875,7 +877,7 @@ export class WeaponSystem {
       onComplete: () => { gfx.setVisible(false); gfx.clear(); },
     });
 
-    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
     const radiusSq = radius * radius;
     for (const enemy of enemies) {
       if (!enemy.active) continue;
@@ -934,7 +936,7 @@ export class WeaponSystem {
   private lastPoolWarnTime: number = 0;
 
   private countActiveProjectilesForWeapon(weaponKey: string): number {
-    const entries = this.projectilePool.children.entries as Projectile[];
+    const entries = this.projectilePool.getChildren() as Projectile[];
     let n = 0;
     for (let i = 0; i < entries.length; i++) {
       const p = entries[i];
@@ -1003,7 +1005,7 @@ export class WeaponSystem {
 
   /** Build sorted-by-distance cache of active enemies. Called once per update(). */
   private buildEnemyCache(px: number, py: number): void {
-    const enemies = this.enemyGroup.children.entries as Enemy[];
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
     const sorted = this.cachedSortedEnemies;
     const distSq = this.cachedSortedDistSq;
     let count = 0;

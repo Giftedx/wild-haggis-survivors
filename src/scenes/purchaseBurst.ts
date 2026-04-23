@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 /**
  * Plays a coordinated "purchase confirmed" particle burst at (x, y):

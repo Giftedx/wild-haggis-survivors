@@ -8,7 +8,7 @@
  * it on the moor.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeGlasgowKite(scene: Phaser.Scene): void {
   const s = 24;

@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME, COLORS_CSS } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';

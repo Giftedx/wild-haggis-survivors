@@ -9,7 +9,7 @@
  * tiny body so the visual anchor survives at 1×.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeMidge(scene: Phaser.Scene): void {
   const s = 32;

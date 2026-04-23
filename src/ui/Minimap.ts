@@ -1,4 +1,4 @@
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { GAME } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
 import { Enemy } from '../entities/Enemy';
@@ -97,7 +97,7 @@ export class Minimap {
     // rendered flickered frame-to-frame — visible as minimap jitter.
     // 400-enemy cap × a handful of draw calls is well inside the frame
     // budget; no perf reason to skip any now.
-    const enemies = enemyGroup.children.entries as Enemy[];
+    const enemies = enemyGroup.getChildren() as Enemy[];
     for (let i = 0, len = enemies.length; i < len; i++) {
       const e = enemies[i];
       if (!e.active) continue;

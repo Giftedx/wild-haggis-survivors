@@ -8,7 +8,7 @@
  * the hexagonal fidelity for silhouette clarity at 10px.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeSnowflake(scene: Phaser.Scene): void {
   const snow = 10;

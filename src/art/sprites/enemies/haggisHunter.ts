@@ -8,7 +8,7 @@
  * diluting the silhouette.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const HAGGIS_HUNTER_CANVAS_SIZE = 48;

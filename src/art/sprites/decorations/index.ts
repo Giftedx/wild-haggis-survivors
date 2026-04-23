@@ -9,7 +9,7 @@
  * PNG byte-for-byte across runs.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeThistle } from './thistle';
 import { bakeRocks } from './rocks';

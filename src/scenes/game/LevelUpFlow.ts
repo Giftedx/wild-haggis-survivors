@@ -12,7 +12,7 @@
  * slice of the game: player, weapons, xp, spawns, juice, status FX,
  * time manager, tutorial, event bus, and run-scoped collections.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { Player } from '../../entities/Player';
 import type { Enemy } from '../../entities/Enemy';
 import type { WeaponSystem } from '../../systems/WeaponSystem';
@@ -147,7 +147,7 @@ export class LevelUpFlow {
       const dmg = newLevel * 3;
       const radius = 300 + newLevel * 10;
       const radiusSq = radius * radius;
-      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().children.entries as Enemy[];
+      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
       for (const e of enemies) {
         if (!e.active || e.isBoss()) continue;
         const dx = e.x - player.x;
@@ -445,7 +445,7 @@ export class LevelUpFlow {
         const spawnSystem = this.hooks.getSpawnSystem();
         const juice = this.hooks.getJuice();
         const xpSystem = this.hooks.getXPSystem();
-        const enemies = (spawnSystem.getEnemyGroup().children.entries as Enemy[])
+        const enemies = (spawnSystem.getEnemyGroup().getChildren() as Enemy[])
           .filter(e => {
             if (!e.active || e.isBoss() || e.getBehavior() === 'hazard') return false;
             const dx = e.x - px;

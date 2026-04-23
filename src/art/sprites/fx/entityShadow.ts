@@ -5,7 +5,7 @@
  * on. Alphas stacked for penumbra → mid → core → warm centre.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeEntityShadow(scene: Phaser.Scene): void {
   const s = 40;

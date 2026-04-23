@@ -3,7 +3,7 @@
  * bands, rivets, golden lock clasp, warm golden glow underneath.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeChest(scene: Phaser.Scene): void {
   const s = 32;

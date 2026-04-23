@@ -3,7 +3,7 @@
  * Needs to read clearly while spinning at speed across the moor.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeThistleProjectile(scene: Phaser.Scene): void {
   // 20×20 — purple thistle projectile. Spiky flower head with green calyx,

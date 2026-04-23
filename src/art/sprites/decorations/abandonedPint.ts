@@ -10,7 +10,7 @@
  * no pinstripes — Tennent's red IS the branding.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 export function bakeAbandonedPint(scene: Phaser.Scene): void {
   const s = 24;

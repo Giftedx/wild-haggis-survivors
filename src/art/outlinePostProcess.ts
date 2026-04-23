@@ -4,7 +4,7 @@
  * immediately after the Graphics-based bake writes it into the
  * TextureManager.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 /** 8-direction offsets for 1px outline. */
 const OFFSETS: ReadonlyArray<[number, number]> = [
@@ -31,11 +31,11 @@ export function applyOutline(
     false,
   );
 
-  const stamp = scene.make.image({ key: textureKey, x: 0, y: 0 }, false);
+  const stamp = new Phaser.GameObjects.Image(scene, 0, 0, textureKey);
   stamp.setOrigin(0, 0);
 
   // Stamp dark-tinted copies at 8 offsets
-  stamp.setTintFill(OUTLINE_TINT);
+  stamp.setTint(OUTLINE_TINT).setTintMode(Phaser.TintModes.FILL);
   for (const [dx, dy] of OFFSETS) {
     stamp.setPosition(1 + dx, 1 + dy);
     rt.draw(stamp);
@@ -46,8 +46,11 @@ export function applyOutline(
   stamp.setPosition(1, 1);
   rt.draw(stamp);
 
+  // Phaser 4: RenderTexture buffers draw commands; flush before saveTexture.
+  rt.render();
+
   // Replace the original texture with the outlined version.
-  // Phaser 3.90's saveTexture rejects duplicate keys, so remove first.
+  // saveTexture rejects duplicate keys, so remove first.
   if (scene.textures.exists(textureKey)) {
     scene.textures.remove(textureKey);
   }

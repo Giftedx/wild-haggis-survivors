@@ -2,7 +2,7 @@
  * `boss_taxman` — final boss: pinstripe suit, briefcase, stamp of doom, gaunt clerical face. Inevitable end-state of any Scottish boss ladder.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_TAXMAN_CANVAS_SIZE = 80;

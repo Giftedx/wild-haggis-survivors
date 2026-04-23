@@ -11,7 +11,7 @@
  * order has no semantic effect.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 
 import { bakeTourist } from './tourist';
 import { bakeChef } from './chef';

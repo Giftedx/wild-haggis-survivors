@@ -2,7 +2,7 @@
  * `boss_gordon` — Act-1 boss, roid-raging nightclub bouncer / chef amalgam. Squared shoulders, cleaver raised, red-faced. First "oh shit" encounter.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const BOSS_GORDON_CANVAS_SIZE = 80;

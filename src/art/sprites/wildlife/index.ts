@@ -1,7 +1,7 @@
 /**
  * Wildlife sprites — decorative ambient creatures.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import { bakeHare } from './hare';
 import { bakeRedDeer } from './redDeer';
 import { bakeBuzzard } from './buzzard';

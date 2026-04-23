@@ -15,7 +15,7 @@
  * Pure helpers live alongside the orchestrator class so the decision
  * math (curio shuffle, placement sampling) tests without Phaser.
  */
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { Player } from '../../entities/Player';
 import type { RNG } from '../../utils/rng';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';

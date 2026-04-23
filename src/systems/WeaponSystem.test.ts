@@ -50,7 +50,7 @@ function makeScene(): any {
   return {
     add: {
       group: () => ({
-        children: { entries: [] },
+        children: { entries: [] }, getChildren: () => [],
         add: vi.fn(),
         getFirstDead: () => null,
         getLength: () => 0,
@@ -84,7 +84,7 @@ describe('WeaponSystem', () => {
 
   beforeEach(() => {
     const scene = makeScene();
-    const enemyGroup = { children: { entries: [] } } as any;
+    const enemyGroup = { children: { entries: [] }, getChildren: () => [] } as any;
     ws = new WeaponSystem(scene, enemyGroup);
   });
 

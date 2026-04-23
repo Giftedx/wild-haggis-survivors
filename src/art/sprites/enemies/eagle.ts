@@ -2,7 +2,7 @@
  * `eagle` — fierce amber-eyed raptor, feathery finger-tip wings, hooked beak. Bar-setting for the aerial enemies.
  */
 
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import type { EnemyBodyFrame } from '../../../animation/frameDrawers/enemies/enemyFrameTypes';
 
 export const EAGLE_CANVAS_SIZE = 56;
