@@ -1,4 +1,35 @@
-# Banter coverage audit — 2026-04-18 (Phase B complete)
+# Banter coverage audit — 2026-04-23
+
+**Current state:** Phase B shipped (2026-04-18). Phase C specced + planned (2026-04-23) but not yet authored.
+
+---
+
+## Phase C — planned (B1 flagship)
+
+Spec: `docs/superpowers/specs/2026-04-23-banter-density-push-design.md`.
+Plan: `docs/superpowers/plans/2026-04-23-banter-density-push.md`.
+
+Adds ~780 leaf keys (EN + SCS) across 9 pools:
+
+| Pool | New lines (EN) | Priority | Trigger context |
+|------|----------|----------|-----------------|
+| `gran_commentary` | 40 | 30 (new) | Run start / end, moor moments, seasonal events |
+| `haggis_ambient` | 50 | 25 (new) | Quiet moor stretches every 45s±15s (HP > 75%, no combat) |
+| `enemy_ambient` | 100 (2-5 per enemy) | 40 (new) | First-time + 1/20 re-spawns |
+| `cailleach_whisper` | 20 | 55 (new) | Act intermissions, low HP, Bargain events |
+| `burns_citation` | 20-30 | 45 (new) | Seasonal Burns Night, lineage, specific evolutions |
+| `moor_moment` (expand) | +40 | 35 (existing) | Moor-moment triggers |
+| `death_reflection` (expand) | +30 | 75 (existing) | Death screens, per `DeathCauseTracker` |
+| `first_time` | 30 | 110 (new) | Reserved one-shots: each boss first-kill, each evolution, combo 100, etc. |
+| `seasonal_event` | 60 (3 events × 20) | 65 (new) | Burns Night + Hogmanay + Samhain windows |
+
+Phased delivery: Phase 1 infra → Phase 2 core pools → Phase 3 flavour → Phase 4 specialist voices → Phase 5 seasonal (coordinated with E1).
+
+EN→SCS parity fence (`src/core/i18n.locale.test.ts` scoped to `ui.banter.*`) stays — every new EN leaf merge-blocks without its SCS pair.
+
+---
+
+## Phase B — complete (shipped 2026-04-18)
 
 Operational hygiene log of the banter pool state. Intended as a one-page
 answer to *"where are the holes and what's blocking them?"* so the next

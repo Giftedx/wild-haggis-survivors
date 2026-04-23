@@ -3,7 +3,17 @@
 **Scope:** Stability, maintainability, and shipping velocity without changing
 core gameplay feel. Ralph-mode managed.
 
-## Current Snapshot (2026-04-17)
+## Current Snapshot (2026-04-23 — research + planning pass complete)
+
+### This refresh
+
+**2026-04-23 delivered:** Research phase complete (8 deep docs, ~150k words) across roguelite patterns, Scottish content ×2, game feel, music/art tech, accessibility, cultural sensitivities, narrative design. Foundational docs refreshed (Soul Charter, Voice Card, Art Style Bible, Design Ideas, CLAUDE, AGENTS). Master plan updated with 10 new flagship rows + 1 polish ticket. **11 design specs** drafted at `docs/superpowers/specs/2026-04-23-*.md` + **11 execution plans** at `docs/superpowers/plans/2026-04-23-*.md`. Research-corpus index at `docs/research/README.md`. Two new ADRs (0003 ShaderRegistry, 0004 SeasonalEventManager). Fact corrections applied to pre-existing content (Gaelic census 57→70k, Scottish wildcat figures, Lemmings sales, Hades voice lines).
+
+**Next flagship (pending stakeholder selection):** research recommends **A1 Accessibility foundation** first (non-optional before public ship), then **B1 Banter Density Push** (highest ROI + unblocks downstream content) + **R1 Relics** + **V2 Variants Pack**.
+
+---
+
+## Previous snapshot (2026-04-17)
 
 - **Stack:** Phaser 3.90 + Vite 6 + TypeScript 6 + Vitest 3
 - **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes +
@@ -154,6 +164,30 @@ core gameplay feel. Ralph-mode managed.
 
 - Locales beyond English + Scots (infrastructure is ready; not
   committing to a third locale's maintenance burden yet).
-- Cloud save (requires server; save-file encryption sufficient for
-  single-device use).
-- Gamepad rebinding UI (current binds adequate).
+- Cloud save (tracked as flagship P3 in the master plan).
+- Gamepad rebinding UI (covered by A1 Accessibility foundation).
+
+---
+
+## 2026-04-23 flagship pipeline (from research pass)
+
+Ten new flagships queued in `docs/HUGE_INITIATIVES_MASTER_PLAN.md`,
+each with a design spec at `docs/superpowers/specs/2026-04-23-*.md`
+and an execution plan at `docs/superpowers/plans/2026-04-23-*.md`:
+
+| ID | Flagship | Tier | One-line |
+|----|----------|------|----------|
+| **A1** | Accessibility foundation | S | PEAT audit + colorblind modes + remapping + captions expansion + reduceFlashing + Assist Mode scaffold |
+| **B1** | Banter Density Push | S | ~780 leaf keys across 9 pools (Gran, haggis ambient, enemy flavour, Cailleach, Burns, moor moments, death reflections, first-time, seasonal) |
+| **R1** | Relics (third progression tier) | A | 18 handcrafted Relics with 3-slot cap; drop from elites/bosses/legendary chests |
+| **V2** | Haggis Variants Pack | A | +3 new variants (Doric Quinie, Peerie Shetlander, Burns's Wee Beastie) — roster 10→13 |
+| **F1** | Shader pipeline + Haar fog | A | `ShaderRegistry` infra + first signature shader; ADR-0003 |
+| **H1** | Gran's Croft (hub that grows) | S | Persistent between-runs scene accumulating trophies + photos + drove + seasonal props |
+| **M1** | Moor Road multi-node expansion | S | 7 node types per act (Encounter/Shrine/Trader/Hidden/Bargain/Rest/Elite); replay v3 |
+| **U1** | Rune upgrades (rule-stack tier) | A | 30 Runes — conditional rules not flat stats (Balatro/Isaac pattern) |
+| **E1** | Seasonal events + Burns Night | S | Calendar-date-gated event framework; Burns Night first event; ADR-0004 |
+| **C1** | Highland Almanac | A | 4-book discovery log (Beasties/Weys/Finds/Banter) with silhouette teasing |
+| **C2** | Weapon lore pass | — | Dark-Souls-style implied-history flavour across ~50 items (polish ticket, not flagship) |
+
+**Rule-of-thumb preserved:** at-most-one flagship at a time. Sequence order
+recommended by research: A1 → B1 → R1 → V2 → F1 → C1 → H1 → M1 → U1 → E1 → C2.
