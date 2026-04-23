@@ -1,6 +1,6 @@
 # Banter coverage audit — 2026-04-23
 
-**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools** shipped (2026-04-23). Phase 3 flavour authoring + Phase 4 specialist voices + Phase 5 seasonal pending.
+**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools + Phase 3 flavour authoring** shipped (2026-04-23). Phase 4 specialist voices (Cailleach + Burns) + Phase 5 seasonal pending.
 
 ---
 
@@ -35,6 +35,40 @@ All four core-authoring pools graduated into `BANTER_POOLS` with authored EN + S
 - Gran's `run_end_defeat` sub-pool (6 authored lines) currently never fires — `death_reflection` (priority 75) beats it same-tick. Sub-pool retained for potential future surfaces (post-bell death, post-mortem pane, dedicated follow-up toast).
 - `gran_commentary.seasonal_event` sub-pool (6 authored lines) dormant until E1 seasonal windows land.
 - `haggis_ambient` variant sub-pools not authored in this slice — could extend per-variant (iron_belly, laird, cailleach, etc.) as a future pass if playtest surfaces the need.
+
+---
+
+## What shipped in Phase C — Phase 3 (2026-04-23)
+
+Two new pools graduated into `BANTER_POOLS`. Total **+162 EN + +162 SCS = 324 leaves** across this slice.
+
+| Task | Pool | Lines (EN + SCS) | Priority | Trigger surface |
+|------|------|------------------|----------|-----------------|
+| 17 | `enemy_ambient` | 81 + 81 (3 generic + 28 tagged sub-pools across 7 families) | **41** (spec §2 proposed 40; collided with `kill_streak`, reconciled +1 — same pattern as gran_commentary at 28) | `SpawnSystem.spawnBurst` + `SpawnSystem.forceSpawn`. Each regular (non-boss) spawn calls `resolveEnemyAmbientTrigger` (pure) — returns `'first'` on unseen enemy keys (persists to `SaveData.seenEnemies` via `bumpSeenEnemy`) and `'respawn'` on a rare 1/20 rng.bool roll. Bosses bypass this path (they own `boss_warn`). |
+| 18 | `first_time` | 30 + 30 (2 generic + 15 tagged milestones × 2 lines) | **110** (spec §2; beats boss_warn 100) | **Wiring deferred** — graduated content-only this slice. Per plan Task 6's "hook lands alongside content" pattern, the per-milestone `scene.requestBanter('first_time', tag)` calls land in EnemyKillHandler (boss_*_kill), LevelUpFlow (evo_*), combo tracker (combo_100), and victory path (ironmoor_first_victory). Each hook gates through `bumpFirstTimeEvent(eventId)` against `SaveData.firstTimeEventsFired`. |
+
+**Enemy families covered (Task 17):**
+
+- Cryptids (3): `barghest`, `kelpie_foal`, `blue_man_of_minch` — uncanny-warm naming voice.
+- Faerie Courts (3): `seelie_piper`, `unseelie_fiddler`, `redcap` — fae warm-tricksy; redcap breaks the pattern with pure-teeth energy.
+- Weather (2): `haar_wraith`, `gale_wraith` — elemental-thin; weather with a face.
+- Urban Ghaists (3): `buckfast_ned`, `traffic_cone_totem`, `edinburgh_ghost_guide` — sharp-comic Glesga patter, moor voice picking up a city edge.
+- Academic Apparitions (3): `ceilidh_caller`, `tome_wraith`, `dean_apparition` — stern-scholarly with a wry-warm undercut.
+- Taxman's Retinue (2): `ledger_wraith`, `auditor_priest` — bureaucratic-dread, council-tax-reminder register.
+- Moor-Classic (15): original enemies `tourist` / `chef` / `midge` / `highland_cow` / `eagle` / `haggis_hunter` / `angry_scotsman` / `deep_fryer` / `piper` / `berserker` / `ghost` / `nest` / `sheep` / `kelpie` / `midgie_swarm` — each gets 2 silhouette-anchored lines.
+
+**Milestones reserved (Task 18):**
+
+- All 5 boss first-kills: `gordon`, `tour_bus`, `the_laird`, `hunter_general`, `taxman`.
+- All 8 weapon evolution first-pickups: `thistle_shot`, `bagpipe_blast`, `caber_toss`, `scotch_mist`, `haggis_hurler`, `nessie_tentacle`, `claymore`, `bagpipes`.
+- First 100-combo streak (`combo_100`).
+- First Ironmoor victory (`ironmoor_first_victory`).
+
+**Wiring + content follow-ups left open:**
+
+- `first_time` per-milestone wiring (all 15 events) is the next session's work. Save helper `bumpFirstTimeEvent(eventId)` already ships in `save.ts`; each call site just needs the pair `requestBanter('first_time', id)` + `bumpFirstTimeEvent(id)` under an `if (!save.firstTimeEventsFired.includes(id))` gate.
+- `first_time` pool still pending content: per-variant unlock (13 variants), per-route-first pick (6 Moor Road routes), first daily-challenge clear. Deferred to post-wire session so author sees each trigger surface before committing to voice.
+- `enemy_ambient` per-boss tags not authored (same priority-starve reason as the main pool comment; boss_warn / boss_down already own those moments).
 
 ---
 
