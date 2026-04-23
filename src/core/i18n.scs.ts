@@ -1411,6 +1411,15 @@ export const SCS_STRINGS: LocaleTree = {
         aw: 'Forgot whit I wis thinkin aboot.',
         ax: 'Thistle. Prickly wee gits.',
       },
+      // ── Enemy flavour (B1 Phase 3 Task 17). SCS pair for
+      //    ui.banter.enemy_ambient.*. Tagged sub-pools get added family-
+      //    by-family as Task 17 progresses. Scots conventions per Phase B
+      //    (tha/fae/mynd/neist/muckle/haud).
+      enemy_ambient: {
+        a: 'New shape on tha moor. Mynd yer fuit.',
+        b: 'Somethin unkent. Haud yer wits.',
+        c: 'Aye, yon\'s a new yin fer tha kin-book.',
+      },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:
       //    tha/fae/wance/dinnae/disnae/wecht/braith/neist.

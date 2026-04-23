@@ -16,6 +16,8 @@ import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
 import { snapToNearestWorldEdge } from './snapToWorldEdge';
+import { resolveEnemyAmbientTrigger } from '../data/enemyAmbientTrigger';
+import { bumpSeenEnemy, loadSave } from '../utils/save';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -88,6 +90,15 @@ export class SpawnSystem {
   /** Active boss warning / intro VFX objects — cleaned up on destroy to prevent stale tween callbacks. */
   private activeBossVfx: Phaser.GameObjects.GameObject[] = [];
 
+  /**
+   * B1 Phase 3 Task 17 — mirror of `SaveData.seenEnemies` loaded at
+   * construction + mutated as fresh enemies surface. Holding an in-memory
+   * set keeps the per-spawn trigger decision off localStorage (which would
+   * be a syscall per mob). Writes go through `bumpSeenEnemy` only on the
+   * first-encounter transition, so persistence stays cheap.
+   */
+  private seenEnemiesCache: Set<string> = new Set();
+
   /** Emits 'bossWarning' and 'bossKilled' events */
   readonly events = new Phaser.Events.EventEmitter();
   private readonly settings: SettingsManager;
@@ -111,6 +122,15 @@ export class SpawnSystem {
     this.burstSize = init.burstSize;
     this.directorEnemyKeys = [...init.enemyKeys];
     this.lastWaveSeg = init;
+
+    // Seed the `enemy_ambient` first-encounter cache from persisted save.
+    // Best-effort — if localStorage is unavailable, treat every enemy as
+    // fresh this session (over-firing is preferable to silence).
+    try {
+      this.seenEnemiesCache = new Set(loadSave().seenEnemies);
+    } catch {
+      this.seenEnemiesCache = new Set();
+    }
   }
 
   /**
@@ -189,6 +209,30 @@ export class SpawnSystem {
       const rng = this.scene.getRunRng();
       const affix = pickEliteAffixId(config.behavior, rng);
       if (affix) enemy.applyEliteAffix(affix);
+    }
+    this.notifyEnemyAmbient(config);
+  }
+
+  /**
+   * B1 Phase 3 Task 17 — route a regular enemy spawn through the
+   * `enemy_ambient` banter pool. First-encounter fires a flavour line and
+   * persists the key into `seenEnemies`; subsequent encounters roll a
+   * rare 1/20 aside. Bosses bypass this path (they own their own
+   * `boss_warn` pool), so `spawnBoss` deliberately does not call this.
+   * No-op under the pending boss spawn path either.
+   */
+  private notifyEnemyAmbient(config: EnemyConfig): void {
+    const decision = resolveEnemyAmbientTrigger(
+      config.key,
+      this.seenEnemiesCache,
+      (p) => this.scene.getRunRng().bool(p),
+    );
+    if (decision === 'first') {
+      this.seenEnemiesCache.add(config.key);
+      bumpSeenEnemy(config.key);
+      this.scene.requestBanter?.('enemy_ambient', config.key);
+    } else if (decision === 'respawn') {
+      this.scene.requestBanter?.('enemy_ambient', config.key);
     }
   }
 
@@ -580,6 +624,11 @@ export class SpawnSystem {
           });
         }
       }
+
+      // Ambient banter hook — fires once per enemy *type* in the burst
+      // (not per pack member), since pack members share the same key
+      // and we already only want one request per context per tick anyway.
+      this.notifyEnemyAmbient(config);
     }
   }
 

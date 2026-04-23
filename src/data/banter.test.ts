@@ -32,6 +32,8 @@ describe('BANTER_POOLS structure', () => {
     'death_reflection',
     // B1 Phase 2 Task 10 — wee-beastie inner monologue
     'haggis_ambient',
+    // B1 Phase 3 Task 17 — enemy flavour pool
+    'enemy_ambient',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -189,7 +191,6 @@ describe('BANTER_POOLS structure', () => {
 
 describe('B1 Phase 1 — pending pool metadata', () => {
   const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
-    ['enemy_ambient', 40],
     ['cailleach_whisper', 55],
     ['burns_citation', 45],
     ['first_time', 110],
@@ -232,6 +233,12 @@ describe('B1 Phase 1 — pending pool metadata', () => {
 
   it('first_time beats boss_warn (spec §2 — first-encounter always wins)', () => {
     expect(POOL_PRIORITIES.first_time).toBeGreaterThan(POOL_PRIORITIES.boss_warn);
+  });
+
+  it('enemy_ambient sits just above kill_streak, below reliquary_pick', () => {
+    expect(POOL_PRIORITIES.enemy_ambient).toBe(41);
+    expect(POOL_PRIORITIES.enemy_ambient).toBeGreaterThan(POOL_PRIORITIES.kill_streak);
+    expect(POOL_PRIORITIES.enemy_ambient).toBeLessThan(POOL_PRIORITIES.reliquary_pick);
   });
 });
 

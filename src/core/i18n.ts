@@ -1565,6 +1565,18 @@ export const EN_STRINGS: LocaleTree = {
         aw: 'Forgot whit I wis thinkin\' aboot.',
         ax: 'Thistle. Prickly wee gits.',
       },
+      // ── Enemy flavour (B1 Phase 3 Task 17). Fires on first-encounter of
+      //    an enemy type and on a rare 1/20 respawn roll thereafter.
+      //    Generic pool = untagged fallback — warm, curious, moor-voiced
+      //    noticing. Tagged sub-pools land family-by-family as Task 17
+      //    progresses (Cryptids / Faerie / Weather / Urban / Academic /
+      //    Retinue / Moor-Classic / Bosses). Each tag colours the voice
+      //    to the enemy family per spec §3.
+      enemy_ambient: {
+        a: 'New shape on the moor. Mind yer step.',
+        b: 'Somethin\' unfamiliar. Stay braw.',
+        c: 'Aye, that\'s a new yin fer the kin-book.',
+      },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match
       //    `DeathCauseTag` keys from `src/core/deathCauseClassifier.ts`.

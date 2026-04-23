@@ -41,7 +41,9 @@ export type BanterContext =
   // B1 Phase 2 Task 12 — cause-tagged warm lament on death screen
   | 'death_reflection'
   // B1 Phase 2 Task 10 — wee-beastie inner-monologue during quiet stretches
-  | 'haggis_ambient';
+  | 'haggis_ambient'
+  // B1 Phase 3 Task 17 — per-enemy flavour on first encounter + rare respawn
+  | 'enemy_ambient';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1065,6 +1067,34 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     ],
   },
   {
+    // B1 Phase 3 Task 17 — enemy flavour. Fires on first-encounter of an
+    // enemy key (tracked in `SaveData.seenEnemies`) and on a rare 1/20
+    // respawn roll thereafter. Priority 40 sits above moor_moment (31) so
+    // a new foe's reveal out-talks scenic chatter, but below boss_down
+    // (70) / boss_warn (100) so boss moments own their tick cleanly.
+    //
+    // Wiring: SpawnSystem calls `resolveEnemyAmbientTrigger` (pure) and
+    // routes the decision through `scene.requestBanter('enemy_ambient',
+    // enemyKey)`. BanterSystem's no-repeat window + per-context cooldown
+    // prevent the line from firing twice for the same enemy in the same
+    // burst. `keysByTag` gets populated family-by-family across the
+    // remaining Task 17 commits; generic pool is the untagged fallback.
+    //
+    // Priority 41 — spec §2 called 40 but that's the live `kill_streak`
+    // slot; same resolution pattern as `gran_commentary` (28 ≠ spec 30).
+    // 41 sits just above kill_streak so a first-encounter reveal wins
+    // a same-tick arbitration against a streak line, and below
+    // reliquary_pick (45) so curio claims keep their moment.
+    context: 'enemy_ambient',
+    tone: 'hearth',
+    priority: 41,
+    keys: [
+      'ui.banter.enemy_ambient.a',
+      'ui.banter.enemy_ambient.b',
+      'ui.banter.enemy_ambient.c',
+    ],
+  },
+  {
     // Reliquary pickup (M15). Small hearth beat — the moor just handed
     // you a curio, acknowledging the off-path detour. Generic-only pool;
     // per-curio voice tint stays open for a future banter pass.
@@ -1098,7 +1128,6 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
  */
 export type PendingBanterContext =
-  | 'enemy_ambient'
   | 'cailleach_whisper'
   | 'burns_citation'
   | 'first_time'
@@ -1115,10 +1144,14 @@ export interface PendingPoolMetadata {
  *   seasonal_event (65) > weapon_evolve (65) > level_up (60) >
  *   curse_start (59) > act_complete (57) > cailleach_whisper (55) >
  *   act_intermission_enter (52) > first_blood (50) > route_picked (48) >
- *   burns_citation (45) > reliquary_pick (45) > enemy_ambient (40) >
+ *   burns_citation (45) > reliquary_pick (45) > enemy_ambient (41) >
  *   kill_streak (40) > recover (35) > moor_moment (31) >
  *   biome_change (30) > gran_commentary (28) > haggis_ambient (25) >
  *   idle (10)
+ *
+ * B1 Phase 3 Task 17 — `enemy_ambient` graduated at 41 (spec §2's 40 was
+ * already kill_streak's live slot; same resolution pattern as
+ * gran_commentary landing at 28 instead of spec's 30).
  *
  * Pending pools graduate into BANTER_POOLS only after authoring lands
  * (Phase 2+). The BANTER_POOLS uniqueness invariant forbids ties, so any
@@ -1127,7 +1160,6 @@ export interface PendingPoolMetadata {
  * collided with `biome_change`).
  */
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
-  enemy_ambient: { tone: 'hearth', priority: 40 },
   cailleach_whisper: { tone: 'edge', priority: 55 },
   burns_citation: { tone: 'hearth', priority: 45 },
   first_time: { tone: 'hearth', priority: 110 },

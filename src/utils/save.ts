@@ -788,6 +788,38 @@ export function bumpCeilidhPulsesLifetime(): void {
 }
 
 /**
+ * B1 Phase 3 Task 17 — persist an enemy key into `seenEnemies` the first
+ * time SpawnSystem encounters it. Best-effort — swallow storage errors
+ * so banter never blocks gameplay. No-op when the key is already tracked.
+ */
+export function bumpSeenEnemy(enemyKey: string): void {
+  if (!enemyKey) return;
+  try {
+    const cur = loadSave();
+    if (cur.seenEnemies.includes(enemyKey)) return;
+    writeSave({ ...cur, seenEnemies: [...cur.seenEnemies, enemyKey] });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * B1 Phase 3 Task 18 — persist a first-time banter event id into
+ * `firstTimeEventsFired` so the reserved `first_time` pool never
+ * replays the same line. Best-effort. No-op when already tracked.
+ */
+export function bumpFirstTimeEvent(eventId: string): void {
+  if (!eventId) return;
+  try {
+    const cur = loadSave();
+    if (cur.firstTimeEventsFired.includes(eventId)) return;
+    writeSave({ ...cur, firstTimeEventsFired: [...cur.firstTimeEventsFired, eventId] });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
  * Best-effort: write `secPast` to `bestEndlessSeconds` if it beats the
  * current record. No-op (and silent) when secPast <= the record. Used
  * by RunLifecycle on death after a Post-Bell run.
