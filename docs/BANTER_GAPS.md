@@ -1,6 +1,19 @@
 # Banter coverage audit — 2026-04-23
 
-**Current state:** Phase B shipped (2026-04-18). Phase C specced + planned (2026-04-23) but not yet authored.
+**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra** shipped (2026-04-23); authoring phases pending.
+
+---
+
+## What shipped in Phase C — Phase 1 (2026-04-23)
+
+Infrastructure scaffolding, no player-facing change:
+
+- `SAVE_SCHEMA_VERSION` **v6 → v7**. Adds `seenEnemies: string[]` + `firstTimeEventsFired: string[]` to `SaveData`. Migration is a pure version bump; `coerceStringArray` dedupes on load.
+- `PENDING_POOL_METADATA` (`src/data/banter.ts`) — tone + priority for the 7 pools scheduled for Phase 2+ authoring. Entries graduate into `BANTER_POOLS` once their leaves land.
+- `POOL_PRIORITIES` — single source of truth for the full priority ladder (live + pending). Unit tests lock spec §2 numbers.
+- Parity fence (`i18n.locale.test.ts` "every EN banter leaf has a Scots translation") already scoped to `ui.banter.*` — no change needed; ready for Phase 2 authoring.
+
+**Scope trim vs plan:** Phase 1 Tasks 3–6 (trigger wiring in `BanterSystem`) deferred to Phase 2. Wiring hooks before content is dead code, and the spec §3 trigger surface may reshape once authoring starts (run:end outcome fan-out, interval rebound, enemy-spawn semantics). Each hook will land alongside its pool's authored leaves.
 
 ---
 

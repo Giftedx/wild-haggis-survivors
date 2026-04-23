@@ -57,6 +57,8 @@ Each phase ends with a ship gate: parity fence green, manual read-aloud pass by 
 
 ## Phase 1 — Infrastructure
 
+> **2026-04-23 status:** Tasks 1, 2, 7 shipped. Tasks 3–6 (trigger wiring) deferred to Phase 2 — wiring hooks before content is dead code and the trigger surface may reshape once authoring begins. Each hook will land alongside its pool's authored leaves.
+
 ### Task 1: Save schema bump (v6 → v7)
 
 **Files:** `src/utils/save.ts`, `src/utils/save.test.ts`.
