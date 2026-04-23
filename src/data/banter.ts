@@ -1162,6 +1162,25 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.edinburgh_ghost_guide.b',
         'ui.banter.enemy_ambient.edinburgh_ghost_guide.c',
       ],
+      // ── Academic Apparitions family (Task 17). Stern-scholarly with a
+      //    wee comic undercut — the moor's voice is warm but wryly aware
+      //    the dead scholars are bossy. Auld-university patter (St
+      //    Andrews / Edinburgh / Glasgow).
+      ceilidh_caller: [
+        'ui.banter.enemy_ambient.ceilidh_caller.a',
+        'ui.banter.enemy_ambient.ceilidh_caller.b',
+        'ui.banter.enemy_ambient.ceilidh_caller.c',
+      ],
+      tome_wraith: [
+        'ui.banter.enemy_ambient.tome_wraith.a',
+        'ui.banter.enemy_ambient.tome_wraith.b',
+        'ui.banter.enemy_ambient.tome_wraith.c',
+      ],
+      dean_apparition: [
+        'ui.banter.enemy_ambient.dean_apparition.a',
+        'ui.banter.enemy_ambient.dean_apparition.b',
+        'ui.banter.enemy_ambient.dean_apparition.c',
+      ],
     },
   },
   {

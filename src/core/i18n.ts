@@ -1635,6 +1635,22 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Auld Reekie in a waistcoat. Pure patter, nae mercy.',
           c: 'Lantern raised, script ready. Nae tip fer this one.',
         },
+        // ── Academic Apparitions family. Stern-scholarly wi wry warmth.
+        ceilidh_caller: {
+          a: 'Caller spirit. Tells ye where tae turn — no polite, no wrong.',
+          b: 'A deid fiddle-maister wi a sense o time. Mind the beat.',
+          c: 'She calls the reel, the reel obeys. Aye, even you.',
+        },
+        tome_wraith: {
+          a: 'A book that stares back. That\'s no how libraries work.',
+          b: 'Pages turnin\' on their ain. Somethin\' bookish an cross.',
+          c: 'Tome wi a face. Dinnae argue the footnotes.',
+        },
+        dean_apparition: {
+          a: 'Dean\'s gown an stern breath. The academy does not wait.',
+          b: 'Mortarboard ghost. Will mark ye late.',
+          c: 'Auld dean, auld grudge, auld hallways in his walk.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
       //    per DESIGN_SOUL §Warmth Audit. Tagged sub-pools match

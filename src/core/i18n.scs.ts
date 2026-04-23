@@ -1478,6 +1478,22 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Auld Reekie in a waistcoat. Pure patter, nae mercy.',
           c: 'Lantren raised, scrievin ready. Nae tip fer yon yin.',
         },
+        // ── Academic Apparitions family (Task 17). SCS pair.
+        ceilidh_caller: {
+          a: 'Caller speerit. Tells ye whaur tae turn — no polite, no wrang.',
+          b: 'A deid fiddle-maister wi a sense o time. Mynd tha beat.',
+          c: 'She ca\'s tha reel, tha reel obeys. Aye, even ye.',
+        },
+        tome_wraith: {
+          a: 'A beuk that stares back. Yon\'s no how libraries wark.',
+          b: 'Pages birlin on their ain. Somethin bookish an crabbit.',
+          c: 'Tome wi a face. Dinnae argue tha fit-notes.',
+        },
+        dean_apparition: {
+          a: 'Dean\'s goun an stern braith. Tha academy does not wait.',
+          b: 'Mortarboard ghaist. Will mairk ye late.',
+          c: 'Auld dean, auld grudge, auld corridors in his walk.',
+        },
       },
       // ── Death reflections (B1 Phase 2 Task 12). SCS pair for
       //    ui.banter.death_reflection.*. Scots conventions per Phase B:
