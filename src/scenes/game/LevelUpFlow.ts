@@ -36,7 +36,7 @@ import {
   findEligibleChestEvolution,
 } from '../../core/evolutionChest';
 import { t } from '../../core/i18n';
-import { loadSave } from '../../utils/save';
+import { bumpFirstTimeEvent, loadSave } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { applyPassiveEffect as applyPassiveEffectPure } from './passiveEffects';
@@ -285,6 +285,17 @@ export class LevelUpFlow {
         juice.showToast(t('ui.game.upgrade_evolve_weapon', { name: cardTitle }), '#ffaa00');
         juice.evolutionSpectacle(player.x, player.y, cardTitle);
         audio.playLevelUp();
+        // B1 Phase 3 Task 18 — reserved first-pickup line for this weapon
+        // evolution key across all saves. Priority 110 beats the generic
+        // `weapon_evolve` (65) call that follows, so the bespoke milestone
+        // line fires instead of the generic evolve-shout. Subsequent
+        // evolutions of the same weapon fall through to the normal pool.
+        {
+          const firstEvoEvent = `evo_${effect.weaponKey}`;
+          if (bumpFirstTimeEvent(firstEvoEvent)) {
+            this.hooks.requestBanter?.('first_time', firstEvoEvent);
+          }
+        }
         this.hooks.requestBanter?.('weapon_evolve', effect.weaponKey);
         globalEventBus.emit('GLOBAL_WEAPON_EVOLVED', {
           weaponKey: effect.weaponKey,

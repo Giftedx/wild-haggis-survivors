@@ -804,18 +804,22 @@ export function bumpSeenEnemy(enemyKey: string): void {
 }
 
 /**
- * B1 Phase 3 Task 18 — persist a first-time banter event id into
- * `firstTimeEventsFired` so the reserved `first_time` pool never
- * replays the same line. Best-effort. No-op when already tracked.
+ * B1 Phase 3 Task 18 — atomic check-and-record for first-time banter
+ * events. Returns `true` the very first call per event id (caller
+ * then fires the `first_time` banter request); returns `false` on
+ * every subsequent call + on empty id + on storage failure. The
+ * once-and-only-once guarantee lives in `SaveData.firstTimeEventsFired`
+ * (persisted), so the line never replays across runs either.
  */
-export function bumpFirstTimeEvent(eventId: string): void {
-  if (!eventId) return;
+export function bumpFirstTimeEvent(eventId: string): boolean {
+  if (!eventId) return false;
   try {
     const cur = loadSave();
-    if (cur.firstTimeEventsFired.includes(eventId)) return;
+    if (cur.firstTimeEventsFired.includes(eventId)) return false;
     writeSave({ ...cur, firstTimeEventsFired: [...cur.firstTimeEventsFired, eventId] });
+    return true;
   } catch {
-    /* best-effort */
+    return false;
   }
 }
 

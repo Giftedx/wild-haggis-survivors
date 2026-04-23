@@ -6,7 +6,9 @@ import {
   applyRunSummary,
   bumpAncestralEchoesTouched,
   bumpCeilidhPulsesLifetime,
+  bumpFirstTimeEvent,
   bumpReliquaryCurioPick,
+  bumpSeenEnemy,
   bumpStandingStonePick,
   consumeLastDeath,
   recordIronmoorBest,
@@ -961,6 +963,38 @@ describe('lifetime-counter bumps', () => {
     });
     wipeIronmoorHistoryInPlace();
     expect(loadSave().bestIronmoorSeconds).toBe(700);
+  });
+
+  // ── B1 Phase 3 banter-tracking bumps ─────────────────────────────────
+
+  it('bumpSeenEnemy appends a new key once and is idempotent on repeat', () => {
+    bumpSeenEnemy('kelpie');
+    bumpSeenEnemy('kelpie');
+    bumpSeenEnemy('kelpie_foal');
+    expect(loadSave().seenEnemies).toEqual(['kelpie', 'kelpie_foal']);
+  });
+
+  it('bumpSeenEnemy is a no-op on empty key', () => {
+    bumpSeenEnemy('');
+    expect(loadSave().seenEnemies).toEqual([]);
+  });
+
+  it('bumpFirstTimeEvent returns true exactly once per event id', () => {
+    expect(bumpFirstTimeEvent('boss_gordon_kill')).toBe(true);
+    expect(bumpFirstTimeEvent('boss_gordon_kill')).toBe(false);
+    expect(bumpFirstTimeEvent('boss_gordon_kill')).toBe(false);
+  });
+
+  it('bumpFirstTimeEvent tracks distinct events independently', () => {
+    expect(bumpFirstTimeEvent('evo_thistle_shot')).toBe(true);
+    expect(bumpFirstTimeEvent('evo_claymore')).toBe(true);
+    expect(bumpFirstTimeEvent('evo_thistle_shot')).toBe(false);
+    expect(loadSave().firstTimeEventsFired).toEqual(['evo_thistle_shot', 'evo_claymore']);
+  });
+
+  it('bumpFirstTimeEvent returns false on empty id', () => {
+    expect(bumpFirstTimeEvent('')).toBe(false);
+    expect(loadSave().firstTimeEventsFired).toEqual([]);
   });
 });
 

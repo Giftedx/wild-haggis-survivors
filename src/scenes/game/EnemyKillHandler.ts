@@ -37,6 +37,7 @@ import {
   goldCoinDropRate,
   goldCoinAmountRange,
 } from './killDrops';
+import { bumpFirstTimeEvent } from '../../utils/save';
 
 export interface EnemyKillHandlerHooks {
   // Systems
@@ -243,6 +244,19 @@ export class EnemyKillHandler {
 
     if (wasBoss) {
       score.incrementBossKillCount();
+
+      // B1 Phase 3 Task 18 — first-time reserved line on the very first
+      // kill of this boss key across all saves. Priority 110 means it
+      // wins same-tick arbitration against boss_down (70), so the warm
+      // milestone line fires instead of the generic boss-felled toast.
+      // `bumpFirstTimeEvent` returns true exactly once per event id, so
+      // subsequent kills fall back to the normal `boss_down` request
+      // below without needing an explicit guard here.
+      const firstKillEvent = `boss_${enemyKey}_kill`;
+      if (bumpFirstTimeEvent(firstKillEvent)) {
+        banter?.request('first_time', { tag: firstKillEvent });
+      }
+
       const { actToComplete } = dispatchActComplete(enemyKey);
       if (actToComplete !== null) {
         h.onActComplete(actToComplete);
