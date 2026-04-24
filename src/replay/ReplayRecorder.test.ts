@@ -149,3 +149,49 @@ describe('ReplayRecorder v2 upgrade path', () => {
     expect((blob as { routes?: unknown[] }).routes).toBeUndefined();
   });
 });
+
+describe('ReplayRecorder v3 upgrade (M1 nodeOutcomes)', () => {
+  it('stays v1 with no node outcomes + no v2 triggers', () => {
+    const r = new ReplayRecorder(META);
+    expect(r.finalize().version).toBe(1);
+  });
+
+  it('upgrades to v3 when a node outcome is pushed', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize();
+    expect(blob.version).toBe(3);
+  });
+
+  it('v3 blob carries every captured outcome in order', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 60 });
+    r.pushNodeOutcome({
+      nodeKey: 'a2_shrine_fairy_ring',
+      chosenRewardKey: 'buff_luck',
+      visitedAtGameTimeSec: 420,
+    });
+    const blob = r.finalize() as { nodeOutcomes?: unknown[] };
+    expect(blob.nodeOutcomes).toEqual([
+      { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 60 },
+      { nodeKey: 'a2_shrine_fairy_ring', chosenRewardKey: 'buff_luck', visitedAtGameTimeSec: 420 },
+    ]);
+  });
+
+  it('v3 also carries v2-tier meta (curseKey + routes) when present', () => {
+    const r = new ReplayRecorder({ ...META, curseKey: 'heavy_legs' });
+    r.pushRoute({ slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305, defaultedBySetting: false });
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize() as { curseKey?: string; routes?: unknown[]; nodeOutcomes?: unknown[] };
+    expect(blob.curseKey).toBe('heavy_legs');
+    expect(blob.routes).toHaveLength(1);
+    expect(blob.nodeOutcomes).toHaveLength(1);
+  });
+
+  it('reset clears node outcomes; fresh finalize drops back to v1', () => {
+    const r = new ReplayRecorder(META);
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    r.reset();
+    expect(r.finalize().version).toBe(1);
+  });
+});

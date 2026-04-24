@@ -2016,11 +2016,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private finalizeNodeVisit(index: number, nodeKey: string, chosenRewardKey?: string): void {
     this.nodeMapSystem.markVisited(index);
-    this.runActState.recordNodeOutcome({
+    const outcome = {
       nodeKey,
       ...(chosenRewardKey ? { chosenRewardKey } : {}),
       visitedAtGameTimeSec: this.spawnSystem.getGameTimeSec(),
-    });
+    };
+    this.runActState.recordNodeOutcome(outcome);
+    this.replayRecorder?.pushNodeOutcome(outcome);
     const map = this.runActState.currentActNodeMap;
     if (!map) return;
     while (
