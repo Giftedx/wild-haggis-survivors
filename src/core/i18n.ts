@@ -3049,6 +3049,12 @@ export const EN_STRINGS: LocaleTree = {
       /** E1 T9/T22 — on-screen banner at run start / Croft re-entry. */
       ceremony_banner: '🕯 Burns Night is live — the bard keeps watch.',
     },
+    hogmanay: {
+      name: 'Hogmanay',
+      description: 'Dec 28 – Jan 3 — kirk bells crack the year open.',
+      badge_suffix: 'Hogmanay',
+      ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
+    },
   },
   /**
    * R1 M4 Task 25 — Relic names, effects, flavour. 18 relics × 3

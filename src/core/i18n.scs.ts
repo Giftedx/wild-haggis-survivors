@@ -2707,6 +2707,12 @@ export const SCS_STRINGS: LocaleTree = {
       badge_suffix: 'Burns Nicht',
       ceremony_banner: '🕯 Burns Nicht is live — tha bard keeps watch.',
     },
+    hogmanay: {
+      name: 'Hogmanay',
+      description: 'Dec 28 – Jan 3 — kirk bells crack tha year open.',
+      badge_suffix: 'Hogmanay',
+      ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
+    },
   },
   relics: {
     sporran_of_holding: {

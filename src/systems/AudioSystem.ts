@@ -689,6 +689,72 @@ export class AudioSystem {
   }
 
   /**
+   * E1 follow-up — Hogmanay run-start stinger. Evokes midnight
+   * kirk bells: two struck-bell tones (F# + A, a rising minor
+   * third) using FM-ish sine pairs with harmonic ring + slow
+   * exponential decay. Three strikes in a ding-dong-ding cadence
+   * then decays into silence. No drone — bells alone should feel
+   * like the stroke of midnight, not a procession.
+   */
+  playHogmanayBellsStinger(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
+    const t0 = ctx.currentTime;
+
+    // Three bell strikes — F#5 (740), A5 (880), F#5 (740). Each
+    // strike layers a fundamental + overtone pair for the inharmonic
+    // ring bells actually produce.
+    const strikes = [
+      { fund: 740, start: 0 },
+      { fund: 880, start: 0.36 },
+      { fund: 740, start: 0.72 },
+    ];
+    for (const strike of strikes) {
+      // Fundamental — sine with fast attack, long decay.
+      const fund = ctx.createOscillator();
+      const fundGain = ctx.createGain();
+      fund.type = 'sine';
+      fund.frequency.value = strike.fund;
+      const fs = t0 + strike.start;
+      fundGain.gain.setValueAtTime(0, fs);
+      fundGain.gain.linearRampToValueAtTime(0.22, fs + 0.004);
+      fundGain.gain.exponentialRampToValueAtTime(0.001, fs + 1.1);
+      fund.connect(fundGain);
+      fundGain.connect(this.masterGain);
+      fund.start(fs);
+      fund.stop(fs + 1.15);
+
+      // Overtone — 2.76× the fundamental (classic bell inharmonic).
+      const over = ctx.createOscillator();
+      const overGain = ctx.createGain();
+      over.type = 'sine';
+      over.frequency.value = strike.fund * 2.76;
+      overGain.gain.setValueAtTime(0, fs);
+      overGain.gain.linearRampToValueAtTime(0.075, fs + 0.006);
+      overGain.gain.exponentialRampToValueAtTime(0.001, fs + 0.6);
+      over.connect(overGain);
+      overGain.connect(this.masterGain);
+      over.start(fs);
+      over.stop(fs + 0.65);
+
+      // Sub overtone — half frequency for body.
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.value = strike.fund * 0.5;
+      subGain.gain.setValueAtTime(0, fs);
+      subGain.gain.linearRampToValueAtTime(0.08, fs + 0.004);
+      subGain.gain.exponentialRampToValueAtTime(0.001, fs + 1.4);
+      sub.connect(subGain);
+      subGain.connect(this.masterGain);
+      sub.start(fs);
+      sub.stop(fs + 1.45);
+    }
+  }
+
+  /**
    * E1 M4 T21 — Burns Night piper-layer accent. Smaller, softer
    * cousin of `playBurnsPipesStinger`: low-A drone for ~0.9 s plus
    * a two-note grace flick (A-E). Sits under combat music without

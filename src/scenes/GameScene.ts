@@ -1101,6 +1101,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.time.delayedCall(grandOpenMs, () => {
         if (ceremony?.stingerId === 'burns_pipes_in') {
           audio.playBurnsPipesStinger();
+        } else if (ceremony?.stingerId === 'hogmanay_bells') {
+          audio.playHogmanayBellsStinger();
         }
         const ctx = ceremony ? ceremony.banterContext : 'gran_commentary';
         const tag = ceremony ? ceremony.banterTag : 'run_start';

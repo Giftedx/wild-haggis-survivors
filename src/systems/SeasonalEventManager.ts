@@ -59,6 +59,17 @@ export function isInWindow(
 }
 
 export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
+  // Hogmanay — Scottish new year, traditionally bigger than Christmas.
+  // First-footing, Auld Lang Syne, Stonehaven fireballs, Edinburgh
+  // street party. Window straddles 31 Dec so both NYE and early-
+  // January play sessions land inside the event; year-wrap is
+  // handled by `isInWindow`'s ordinal compare.
+  hogmanay: {
+    key: 'hogmanay',
+    nameKey: 'seasonalEvent.hogmanay.name',
+    descriptionKey: 'seasonalEvent.hogmanay.description',
+    dateWindow: { startMonth: 12, startDay: 28, endMonth: 1, endDay: 3 },
+  },
   burns_night: {
     key: 'burns_night',
     nameKey: 'seasonalEvent.burns_night.name',

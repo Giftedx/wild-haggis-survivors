@@ -121,11 +121,48 @@ describe('E1 SeasonalEventManager — time-sensitivity immunity', () => {
 });
 
 describe('E1 SeasonalEventManager — data shape', () => {
-  it('Burns Night is the first registered event', () => {
+  it('Burns Night is a registered event', () => {
     expect(Object.keys(SEASONAL_EVENTS)).toContain('burns_night');
     expect(SEASONAL_EVENTS.burns_night.nameKey).toBe('seasonalEvent.burns_night.name');
     expect(SEASONAL_EVENTS.burns_night.descriptionKey).toBe(
       'seasonalEvent.burns_night.description',
     );
+  });
+
+  it('Hogmanay is a registered event with year-wrap window (E1 follow-up)', () => {
+    expect(Object.keys(SEASONAL_EVENTS)).toContain('hogmanay');
+    const hog = SEASONAL_EVENTS.hogmanay;
+    expect(hog.dateWindow.startMonth).toBe(12);
+    expect(hog.dateWindow.startDay).toBe(28);
+    expect(hog.dateWindow.endMonth).toBe(1);
+    expect(hog.dateWindow.endDay).toBe(3);
+  });
+});
+
+describe('E1 Hogmanay — year-wrap calendar', () => {
+  it('is active on New Year\'s Eve + Day', () => {
+    expect(isSeasonalEventActive('hogmanay', d(2027, 12, 31))).toBe(true);
+    expect(isSeasonalEventActive('hogmanay', d(2028, 1, 1))).toBe(true);
+  });
+
+  it('is active on the window edges (Dec 28 + Jan 3)', () => {
+    expect(isSeasonalEventActive('hogmanay', d(2027, 12, 28))).toBe(true);
+    expect(isSeasonalEventActive('hogmanay', d(2028, 1, 3))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('hogmanay', d(2027, 12, 27))).toBe(false);
+    expect(isSeasonalEventActive('hogmanay', d(2028, 1, 4))).toBe(false);
+  });
+
+  it('is inactive in midsummer', () => {
+    expect(isSeasonalEventActive('hogmanay', d(2027, 7, 4))).toBe(false);
+  });
+
+  it('does not bleed into the Burns Night window', () => {
+    // On Jan 25 only Burns Night should be active; Hogmanay is long gone.
+    const keys = activeSeasonalEvents(d(2027, 1, 25));
+    expect(keys).toContain('burns_night');
+    expect(keys).not.toContain('hogmanay');
   });
 });

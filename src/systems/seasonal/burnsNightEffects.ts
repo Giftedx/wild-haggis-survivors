@@ -52,6 +52,14 @@ export function seasonalRunStartCeremony(
         banterTag: 'seasonal_event',
         bannerKey: 'seasonalEvent.burns_night.ceremony_banner',
       };
+    case 'hogmanay':
+      return {
+        eventKey,
+        stingerId: 'hogmanay_bells',
+        banterContext: 'gran_commentary',
+        banterTag: 'seasonal_event',
+        bannerKey: 'seasonalEvent.hogmanay.ceremony_banner',
+      };
     default:
       return null;
   }

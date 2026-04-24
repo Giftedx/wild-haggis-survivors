@@ -53,6 +53,19 @@ describe('E1 T9 seasonalRunStartCeremony', () => {
     expect(seasonalRunStartCeremony(d(2028, 1, 25), false)?.eventKey).toBe('burns_night');
     expect(seasonalRunStartCeremony(d(2099, 1, 25), false)?.eventKey).toBe('burns_night');
   });
+
+  it('returns Hogmanay ceremony with bells stinger inside its window', () => {
+    const ceremony = seasonalRunStartCeremony(d(2027, 12, 31), false);
+    expect(ceremony).not.toBeNull();
+    expect(ceremony?.eventKey).toBe('hogmanay');
+    expect(ceremony?.stingerId).toBe('hogmanay_bells');
+    expect(ceremony?.bannerKey).toBe('seasonalEvent.hogmanay.ceremony_banner');
+  });
+
+  it('Hogmanay ceremony spans the year-wrap boundary', () => {
+    expect(seasonalRunStartCeremony(d(2027, 12, 28), false)?.eventKey).toBe('hogmanay');
+    expect(seasonalRunStartCeremony(d(2028, 1, 3), false)?.eventKey).toBe('hogmanay');
+  });
 });
 
 describe('E1 T10 shouldSpawnBurnsPlatter', () => {
