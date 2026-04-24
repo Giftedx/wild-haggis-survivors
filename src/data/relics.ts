@@ -272,4 +272,4 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
 };
 
 /** Ordered key list — iteration order matches catalogue authorship order. */
-export const RELIC_KEYS: readonly RelicKey[] = Object.keys(RELICS) as RelicKey[];
+export const RELIC_KEYS = Object.keys(RELICS) as (keyof typeof RELICS)[];

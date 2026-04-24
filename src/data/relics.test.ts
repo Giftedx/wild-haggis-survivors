@@ -8,6 +8,20 @@ import {
   type RelicRarity,
 } from './relics';
 
+describe('RELICS — full catalogue shape', () => {
+  it('every relic has non-empty dropAffinity and well-formed keys', () => {
+    for (const k of RELIC_KEYS) {
+      const r = RELICS[k];
+      expect(r.dropAffinity.length).toBeGreaterThan(0);
+      expect(r.nameKey).toMatch(/^relics\.[a-z_]+\.name$/);
+      expect(r.effectKey).toMatch(/^relics\.[a-z_]+\.effect$/);
+      expect(r.flavourKey).toMatch(/^relics\.[a-z_]+\.flavour$/);
+      expect(r.iconSprite).toMatch(/^relic_/);
+      expect(typeof r.particleColour).toBe('number');
+    }
+  });
+});
+
 describe('RELICS — Task 1: 8 common relics', () => {
   it('sporran_of_holding is common and drops from elites', () => {
     const sporran = RELICS.sporran_of_holding;
@@ -18,20 +32,6 @@ describe('RELICS — Task 1: 8 common relics', () => {
   it('has exactly 8 common relics', () => {
     const commons = RELIC_KEYS.filter((k) => RELICS[k].rarity === 'common');
     expect(commons).toHaveLength(8);
-  });
-
-  it('every common relic has a non-empty dropAffinity and well-formed i18n keys', () => {
-    const commons: readonly RelicDef[] = RELIC_KEYS
-      .map((k) => RELICS[k])
-      .filter((r) => r.rarity === 'common');
-    for (const r of commons) {
-      expect(r.dropAffinity.length).toBeGreaterThan(0);
-      expect(r.nameKey).toMatch(/^relics\.[a-z_]+\.name$/);
-      expect(r.effectKey).toMatch(/^relics\.[a-z_]+\.effect$/);
-      expect(r.flavourKey).toMatch(/^relics\.[a-z_]+\.flavour$/);
-      expect(r.iconSprite).toMatch(/^relic_/);
-      expect(typeof r.particleColour).toBe('number');
-    }
   });
 
   it('every relic record entry has a matching key field', () => {
@@ -85,8 +85,9 @@ describe('RELICS — Task 3: 3 rare relics', () => {
     }
   });
 
-  it("Fingal's Horn is activatable from the sporran menu", () => {
+  it("Fingal's Horn and Whisky Dram are activatable from the sporran menu", () => {
     expect(RELICS.fingals_horn.activate).toBe(true);
+    expect(RELICS.whisky_dram.activate).toBe(true);
   });
 });
 
