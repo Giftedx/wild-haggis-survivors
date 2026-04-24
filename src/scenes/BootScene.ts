@@ -25,6 +25,11 @@ import { bakeDecorations } from '../art/sprites/decorations';
 import { bakeGranTextures } from '../art/sprites/croft/gran';
 import { bakeHearthTextures } from '../art/sprites/croft/hearth';
 import { uploadNoiseTexture, type TextureManagerLike } from '../systems/shaders/shaders/uploadNoise';
+import {
+  markPhotosensitivityWarningSeen,
+  shouldShowPhotosensitivityWarning,
+} from '../ui/photosensitivityWarning';
+import { showPhotosensitivityWarningSplash } from '../ui/PhotosensitivityWarningSplash';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
 import { bakeProjectiles } from '../art/sprites/projectiles';
@@ -260,14 +265,41 @@ export class BootScene extends Phaser.Scene {
           yoyo: true,
           ease: 'Sine.easeInOut',
         });
-        // Hold, then fade everything and transition
+        // Hold, then fade everything and transition to MainMenu — with
+        // an A1 M5 intercept: on a fresh save, surface the
+        // photosensitivity warning splash before the first menu paints.
+        // The dawn painting is already faded to black underneath the
+        // modal, so there's no competing imagery.
         this.tweens.add({
           targets: allFadeTargets,
           alpha: 0,
           delay: 800,
           duration: 400,
-          onComplete: () => this.scene.start('MainMenu'),
+          onComplete: () => this.maybeShowPhotosensitivityWarningThenStart(),
         });
+      },
+    });
+  }
+
+  /**
+   * A1 M5 — first-launch photosensitivity warning gate. Called once the
+   * boot dawn painting has faded. On a fresh save the splash shows; the
+   * "I understand" button persists the flag and then transitions to the
+   * MainMenu. Returning players skip straight to the MainMenu. The flag
+   * is strictly sticky — there is no way to re-trigger the splash short
+   * of wiping the settings storage entirely.
+   */
+  private maybeShowPhotosensitivityWarningThenStart(): void {
+    const settings = getSettingsManager();
+    const goMenu = () => this.scene.start('MainMenu');
+    if (!shouldShowPhotosensitivityWarning(settings.load())) {
+      goMenu();
+      return;
+    }
+    showPhotosensitivityWarningSplash(this, {
+      onDismiss: () => {
+        settings.update((cur) => markPhotosensitivityWarningSeen(cur));
+        goMenu();
       },
     });
   }

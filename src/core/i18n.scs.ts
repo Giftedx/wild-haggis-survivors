@@ -282,6 +282,7 @@ export const SCS_STRINGS: LocaleTree = {
       screen_shake: 'Screen shake',
       damage_numbers: 'Damage numbers',
       reduce_particles: 'Cut particles (perf)',
+      reduce_flashing: 'Cut flashin (photosensitivity)',
       telemetry_opt_in: 'Share anonymous run-end stats (opt in)',
       high_contrast_ui: 'High-contrast UI',
       captions: 'Captions',
@@ -307,6 +308,12 @@ export const SCS_STRINGS: LocaleTree = {
       ironmoor_confirm_yes: 'Aye, Ah\'m ready',
       ironmoor_confirm_no: 'Naw, cancel',
       capture_enabled: 'Capture on',
+    },
+    photosensitivity: {
+      title: 'A wee word afore ye stairt',
+      body: 'This yin has flashin lichts, fast motion, an bricht colour. If you or someone near ye has had fits frae flashin lichts, switch on Cut Flashin in Settings afore ye play — it caps flashes an slaws motion. Ye can chenge it ony time.',
+      hint: 'Settings → Accessibility → Cut flashin',
+      dismiss: 'Aye, Ah hear ye',
     },
     actIntermission: {
       title_act_1: 'Awright, whit way then?',

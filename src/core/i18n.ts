@@ -490,6 +490,10 @@ export const EN_STRINGS: LocaleTree = {
       screen_shake: 'Screen shake',
       damage_numbers: 'Damage numbers',
       reduce_particles: 'Reduce particles (perf)',
+      /** A1 M5 — strict photosensitivity posture. Hard-caps flash alpha
+       *  at 0.4, floors flash duration at 200ms, clamps haar density at
+       *  0.4 with maximum ramp stretch. Stronger than motionScale alone. */
+      reduce_flashing: 'Reduce flashing (photosensitivity)',
       /** Run telemetry — end-of-run only, no PII; copy must stay anonymous-forward. */
       telemetry_opt_in: 'Share anonymous run-end stats (opt in)',
       high_contrast_ui: 'High-contrast UI',
@@ -524,6 +528,19 @@ export const EN_STRINGS: LocaleTree = {
       ironmoor_confirm_yes: 'Aye, I\'m ready',
       ironmoor_confirm_no: 'Naw, cancel',
       capture_enabled: 'Capture enabled',
+    },
+    /**
+     * A1 M5 — first-launch photosensitivity warning splash. Shown once
+     * on fresh save, dismissed forever via the "I understand" button
+     * (flag `photosensitivityWarningSeen` in SettingsManager). Voice
+     * stays in the Hearth register — safety-critical copy is warm,
+     * direct, and avoids both sterile disclaimer tone and Limmy edge.
+     */
+    photosensitivity: {
+      title: 'A wee word before ye start',
+      body: 'This game has flashing lights, rapid motion, and bright colour. If ye or someone near ye has had photosensitive seizures, turn on Reduce Flashing in Settings before ye play — it caps flashes and slows motion. Ye can change it any time.',
+      hint: 'Settings → Accessibility → Reduce flashing',
+      dismiss: 'I understand',
     },
     /** W2 Moor Road — the between-act modal. */
     actIntermission: {
