@@ -25,6 +25,8 @@ import { TROPHY_BOSS_KEYS } from './croft/CroftTrophies';
 import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
+import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
+import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -56,6 +58,7 @@ export class CroftScene extends Phaser.Scene {
   private droveGfx: Phaser.GameObjects.Graphics | null = null;
   private droveSlots: DroveSlot[] = [];
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
+  private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
   private trophyHits: Phaser.GameObjects.Rectangle[] = [];
   private granBubble: Phaser.GameObjects.Container | null = null;
   private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
@@ -90,6 +93,8 @@ export class CroftScene extends Phaser.Scene {
     this.droveSlots = [];
     this.droveHits.forEach((r) => r.destroy());
     this.droveHits = [];
+    this.seasonalPropsGfx?.destroy();
+    this.seasonalPropsGfx = null;
     this.trophyHits.forEach((r) => r.destroy());
     this.trophyHits = [];
     this.granBubble?.destroy();
@@ -110,6 +115,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
+    this.drawSeasonal(layout);
     this.drawHeader(width);
     this.drawActions();
     this.drawBack();
@@ -362,6 +368,21 @@ export class CroftScene extends Phaser.Scene {
         sprite.setTexture(GRAN_TEXTURE_KEYS[this.knittingFrame]);
       },
     });
+  }
+
+  /**
+   * If a seasonal event window is active (E1 framework), paint the
+   * event's props on top of the composition. Burns Night is the only
+   * event shipping props today; the drawer is a no-op for null /
+   * unknown keys so future events land safely once authored.
+   */
+  private drawSeasonal(layout: CroftLayout): void {
+    const key = getActiveSeasonalEventKey(new Date());
+    if (!key) return;
+    const gfx = this.add.graphics();
+    gfx.setDepth(45); // Above composition, below the Gran-bubble overlay (50).
+    drawSeasonalProps(gfx, key, layout);
+    this.seasonalPropsGfx = gfx;
   }
 
   private drawHeader(width: number): void {
