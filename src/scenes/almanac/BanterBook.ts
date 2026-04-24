@@ -25,7 +25,11 @@ const TONE_TINT = {
 } as const;
 
 /** Max heard lines to render inline before collapsing into a "… N more" chip. */
-const HEARD_LINE_DISPLAY_CAP = 10;
+const HEARD_LINE_DISPLAY_CAP = 8;
+/** Max ??? teaser rows inline. Unheard pools can be huge (level_up has
+ *  ~44 lines) so the cap keeps the panel readable; overflow collapses
+ *  into a "… N more to find" chip the same way heard lines do. */
+const UNHEARD_LINE_DISPLAY_CAP = 8;
 
 export interface BanterBookHandle {
   destroy(): void;
@@ -229,7 +233,8 @@ function renderExpandedOverlay(
     .setScale(uiScale);
   sink.push(hint);
 
-  // Heard lines list — paginated at HEARD_LINE_DISPLAY_CAP.
+  // Lines list — heard block first, unheard teasers below. Both
+  // paginate to keep big pools readable.
   const listTop = panelCy - panelH / 2 + 128;
   const listMaxY = panelCy + panelH / 2 - 44;
   const lineGap = 18 * uiScale;
@@ -237,12 +242,13 @@ function renderExpandedOverlay(
 
   if (detail.heardLines === 0) {
     const empty = scene.add
-      .text(panelCx, listTop,
+      .text(panelCx, cursorY,
         t('ui.almanac.banter_none_heard'),
         textStyle('small', { color: COLORS_CSS.TEXT_DIM, align: 'center' }))
       .setOrigin(0.5, 0)
       .setScale(uiScale);
     sink.push(empty);
+    cursorY += empty.height * uiScale + 8;
   } else {
     const heardToShow = detail.heard.slice(0, HEARD_LINE_DISPLAY_CAP);
     for (const line of heardToShow) {
@@ -268,6 +274,34 @@ function renderExpandedOverlay(
         .text(panelCx, cursorY,
           t('ui.almanac.banter_more_heard', { count: overflow }),
           textStyle('small', { color: COLORS_CSS.TEXT_SUBTITLE, align: 'center' }))
+        .setOrigin(0.5, 0)
+        .setScale(uiScale);
+      sink.push(more);
+      cursorY += more.height * uiScale + 4;
+    }
+  }
+
+  // Unheard teaser rows — ??? per line so the player sees how many
+  // lines are still waiting to be heard, paginated.
+  if (detail.unheard.length > 0 && cursorY + lineGap <= listMaxY) {
+    cursorY += 4;
+    const unheardToShow = detail.unheard.slice(0, UNHEARD_LINE_DISPLAY_CAP);
+    for (const line of unheardToShow) {
+      if (cursorY + lineGap > listMaxY) break;
+      const teaser = scene.add
+        .text(panelCx, cursorY, `· ${line.teaserText}`,
+          textStyle('small', { color: COLORS_CSS.TEXT_DIM, align: 'center' }))
+        .setOrigin(0.5, 0)
+        .setScale(uiScale);
+      sink.push(teaser);
+      cursorY += teaser.height * uiScale + 2;
+    }
+    if (detail.unheard.length > UNHEARD_LINE_DISPLAY_CAP && cursorY + lineGap <= listMaxY) {
+      const overflow = detail.unheard.length - UNHEARD_LINE_DISPLAY_CAP;
+      const more = scene.add
+        .text(panelCx, cursorY,
+          t('ui.almanac.banter_more_unheard', { count: overflow }),
+          textStyle('small', { color: COLORS_CSS.TEXT_DIM, align: 'center' }))
         .setOrigin(0.5, 0)
         .setScale(uiScale);
       sink.push(more);

@@ -227,6 +227,8 @@ export const EN_STRINGS: LocaleTree = {
       banter_none_heard: 'Nae lines yet — keep walkin.',
       /** Shown when heard lines overflow the inline display cap. */
       banter_more_heard: '… an {count} mair ye\'ve heard',
+      /** Shown when unheard teaser rows overflow the inline display cap. */
+      banter_more_unheard: '… an {count} mair waitin tae be heard',
       /** Tone pill labels surfaced in the expanded panel. */
       banter_tone_hearth: 'HEARTH',
       banter_tone_edge: 'EDGE',

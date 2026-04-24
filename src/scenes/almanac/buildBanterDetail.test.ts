@@ -52,4 +52,22 @@ describe('buildBanterDetail', () => {
     const idle = buildBanterDetail(find(log, 'idle'));
     expect(idle.progressText).toBe(`${idle.heardLines} of ${idle.totalLines}`);
   });
+
+  it('emits a teaser row for every unheard line, preserving key + tag', () => {
+    const detail = buildBanterDetail(find(undefined, 'boss_warn'));
+    expect(detail.unheard.length).toBe(detail.totalLines);
+    expect(detail.unheard.every((u) => u.teaserText === '???')).toBe(true);
+    // Sub-pool tags (e.g. 'gordon') survive into the teaser so Task 21's
+    // Hear Again button can forceFire them.
+    expect(detail.unheard.some((u) => u.tag === 'gordon')).toBe(true);
+  });
+
+  it('splits heard and unheard as a partition over lines', () => {
+    let log = createEmptyDiscoveryLog();
+    log = recordBanterHeard(log, 'ui.banter.low_hp.a', 'run-1', 100);
+    const detail = buildBanterDetail(find(log, 'low_hp'));
+    expect(detail.heard.length + detail.unheard.length).toBe(detail.totalLines);
+    const allKeys = [...detail.heard.map((h) => h.key), ...detail.unheard.map((u) => u.key)];
+    expect(new Set(allKeys).size).toBe(allKeys.length);
+  });
 });
