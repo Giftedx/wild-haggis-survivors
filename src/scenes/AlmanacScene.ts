@@ -13,6 +13,7 @@ import {
   ALMANAC_TAB_KEYS,
   DEFAULT_ALMANAC_TAB,
   almanacTabLabelKey,
+  cycleAlmanacTab,
   type AlmanacTabKey,
 } from './almanac/tabNavigation';
 import { buildBeastiesEntries } from './almanac/buildBeastiesEntries';
@@ -23,7 +24,8 @@ import { buildFindsEntries } from './almanac/buildFindsEntries';
 import { renderFindsBook, type FindsBookHandle } from './almanac/FindsBook';
 import { buildBanterEntries } from './almanac/buildBanterEntries';
 import { renderBanterBook, type BanterBookHandle } from './almanac/BanterBook';
-import { createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
+import { closeExpanded, createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
+import { resolveAlmanacEnterToggle, resolveAlmanacEsc } from './almanac/keyboardNav';
 import { flushBeastieKills, loadSave } from '../utils/save';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
@@ -104,16 +106,73 @@ export class AlmanacScene extends Phaser.Scene {
     // ── Active book body ──
     this.renderActiveBook(width, height, uiScale);
 
-    // ── Back button + ESC ──
+    // ── Back button + keyboard navigation ──
     const backBtn = createBackButton(this, {
       x: width / 2, y: height - 32, width: 200, height: 38,
       label: t('ui.almanac.back'), fontSize: '15px', uiScale,
     });
     const goBack = clickToScene(this, 'MainMenu');
     backBtn.on('pointerdown', goBack);
-    this.input.keyboard?.on('keydown-ESC', goBack);
+
+    // Esc is overloaded via resolveAlmanacEsc: if an entry is expanded
+    // on the active tab, close it; otherwise exit. Lets keyboard users
+    // escape a deep read without leaving the Almanac entirely.
+    this.input.keyboard?.on('keydown-ESC', () => {
+      if (resolveAlmanacEsc(this.activeTab, this.expandStates) === 'close-expanded') {
+        this.expandStates[this.activeTab] = closeExpanded(this.expandStates[this.activeTab]);
+        this.renderActiveBook(width, this.scale.height, uiScale);
+        return;
+      }
+      goBack();
+    });
+
+    // Tab / Shift+Tab + Left / Right cycle the active book. Capture TAB
+    // so the browser doesn't yank focus out of the canvas on press.
+    this.input.keyboard?.addCapture('TAB');
+    const cycleTab = (direction: 'next' | 'prev') => {
+      audio.playClick();
+      this.activeTab = cycleAlmanacTab(this.activeTab, direction);
+      this.renderTabBar(width, uiScale);
+      this.renderActiveBook(width, this.scale.height, uiScale);
+    };
+    this.input.keyboard?.on('keydown-TAB', (event: KeyboardEvent) => {
+      cycleTab(event.shiftKey ? 'prev' : 'next');
+    });
+    this.input.keyboard?.on('keydown-LEFT', () => cycleTab('prev'));
+    this.input.keyboard?.on('keydown-RIGHT', () => cycleTab('next'));
+
+    // Enter toggles the active book's expansion — collapses the open
+    // panel, or opens the first entry when nothing is open. Keeps the
+    // keyboard contract coherent without a full focused-cell model.
+    this.input.keyboard?.on('keydown-ENTER', () => {
+      const firstKey = this.firstEntryKeyForActiveTab();
+      const action = resolveAlmanacEnterToggle(firstKey, this.expandStates[this.activeTab]);
+      if (action.action === 'none') return;
+      audio.playClick();
+      this.expandStates[this.activeTab] =
+        action.action === 'collapse'
+          ? closeExpanded(this.expandStates[this.activeTab])
+          : toggleExpanded(this.expandStates[this.activeTab], action.key!);
+      this.renderActiveBook(width, this.scale.height, uiScale);
+    });
 
     stopAmbientWindOnShutdown(this);
+  }
+
+  /**
+   * First-entry-in-book-order key for the current tab. Delegates to
+   * each book's pure VM builder so "first" matches the order the
+   * renderer draws. Returns null when the book is empty (a fresh save
+   * pre-retroactive-seed Weys/Finds etc. can exhibit this).
+   */
+  private firstEntryKeyForActiveTab(): string | null {
+    const log = loadSave().discoveryLog;
+    switch (this.activeTab) {
+      case 'beasties': return buildBeastiesEntries(log)[0]?.key ?? null;
+      case 'weys':     return buildWeysEntries(log)[0]?.key ?? null;
+      case 'finds':    return buildFindsEntries(log)[0]?.key ?? null;
+      case 'banter':   return buildBanterEntries(log)[0]?.key ?? null;
+    }
   }
 
   private renderTabBar(width: number, uiScale: number): void {

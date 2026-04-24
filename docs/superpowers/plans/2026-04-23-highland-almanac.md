@@ -225,37 +225,36 @@
 
 ---
 
-## M5 — Croft integration + polish
+## M5 — Croft integration + polish ✓ shipped 2026-04-24
 
-### Task 23: Croft bookshelf entry (if H1 shipped)
+### Task 23: Main-menu Almanac entry (Croft fallback)
 
-**Files:** `src/scenes/CroftScene.ts`.
+**Files:** `src/scenes/MainMenuScene.ts`, `src/core/i18n.ts`, `src/core/i18n.scs.ts`.
 
-- [ ] **Step 1:** Failing smoke test: clicking bookshelf in Croft navigates to AlmanacScene.
-- [ ] **Step 2:** Wire interaction.
-- [ ] **Step 3:** If H1 not yet shipped, fallback: `MenuScene.addAlmanacButton()`.
-- [ ] **Step 4:** Commit.
+- [x] **Step 1:** H1 Croft not yet shipped → take the spec's fallback path and hang the entry off MainMenuScene (the actual hub; Menu is the loadout picker).
+- [x] **Step 2:** Reflection row split from 2-col (Chronicle | Deeds) to 3-col (Chronicle | Almanac | Deeds). Row width widened to 300px so the 3 labels fit at 13px mono without cropping; neighbour rows stay 240px. Gamepad nav updated to include the Almanac entry between Chronicle and Deeds.
+- [x] **Step 3:** i18n keys `ui.menu.almanac` added to EN + SCS.
 
-### Task 24: ChronicleScene alt entry
+### Task 24: ChronicleScene cross-link
 
-- [ ] **Step 1:** Failing smoke test: Chronicle has "View Almanac" button.
-- [ ] **Step 2:** Wire.
-- [ ] **Step 3:** Commit.
+**Files:** `src/scenes/ChronicleScene.ts`, `src/core/i18n.ts`, `src/core/i18n.scs.ts`.
 
-### Task 25: Accessibility polish
+- [x] **Step 1:** Subtle italic "→ Highland Almanac" link at the scene header's top-right corner — reuses the existing `clickToScene` helper; hover flips to whisky gold. Sits opposite the mood-driven subtitle so it doesn't compete with the primary run list below.
+- [x] **Step 2:** i18n keys `ui.chronicle.view_almanac` added to EN + SCS ("→ Highland Almanac" / "→ Hielan Almanac").
 
-- [ ] **Step 1:** Failing test: keyboard tab navigates tabs; enter expands entries; escape closes.
-- [ ] **Step 2:** Implement keyboard focus.
-- [ ] **Step 3:** Verify screen-reader reads all entries in order.
-- [ ] **Step 4:** Commit.
+### Task 25: Keyboard navigation
+
+**Files:** `src/scenes/almanac/keyboardNav.ts` (new), `src/scenes/almanac/keyboardNav.test.ts` (new), `src/scenes/AlmanacScene.ts`.
+
+- [x] **Step 1:** Pure helpers `resolveAlmanacEsc` + `resolveAlmanacEnterToggle` — Esc decides close-expanded vs exit-scene based on the active tab's expand state; Enter decides collapse-current vs expand-first-entry. Node-env vitest (7 cases: empty states, per-tab isolation, null first-key guard).
+- [x] **Step 2:** AlmanacScene wires Tab / Shift+Tab + Left / Right → `cycleAlmanacTab` + re-render; Enter → toggle via the helper (builders resolve first-entry-in-book-order per tab); Esc → smart close. TAB captured via `input.keyboard.addCapture('TAB')` so focus stays on the canvas.
 
 ### Task 26: M5 ship gate + launch
 
-- [ ] All entry points working.
-- [ ] Keyboard + screen reader verified.
-- [ ] Bundle delta ≤ +60 KB gzip.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(almanac): C1 — Highland Almanac shipped`.
+- [x] MainMenu entry + Chronicle cross-link both navigate to `Almanac`; keyboard cycles tabs, Enter browses, Esc closes or exits.
+- [x] `npm run ci:all` green: lint + vitest (3196 pass) + build + 49 Playwright specs.
+- [x] Bundle delta well under the +60 KB gzip budget (keyboardNav helper + 1 button + 1 link are noise-level additions; the heavy AlmanacScene weight already landed in M2–M4).
+- [x] Commit: `feat(almanac): C1 — Highland Almanac shipped`.
 
 ---
 

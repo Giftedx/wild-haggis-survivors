@@ -58,6 +58,7 @@ export const SCS_STRINGS: LocaleTree = {
       seed_invalid: 'That seed didnae take — check it an gaun again.',
       chronicle: 'CHRONICLE',
       deeds: 'YER DEEDS',
+      almanac: 'ALMANAC',
       curse: 'CURSE O\' THA MOOR',
     },
     curseScene: {
@@ -129,6 +130,7 @@ export const SCS_STRINGS: LocaleTree = {
       prev: '< PREV',
       next: 'NEXT >',
       name_prefix: '{name}',
+      view_almanac: '→ Hielan Almanac',
     },
     deeds: {
       title: 'YER DEEDS',

@@ -369,30 +369,35 @@ export class MainMenuScene extends Phaser.Scene {
       this.scene.start('MetaShop');
     });
 
-    // === Reflection row: Chronicle + Deeds (side-by-side) ===
-    // Two meta-reflection surfaces laid out horizontally to keep the menu
-    // compact. Chronicle = runs journal; Deeds = achievements. Both hidden
-    // on fresh saves so the first-run player sees only the core ladder.
+    // === Reflection row: Chronicle | Almanac | Deeds (3-col thirds) ===
+    // Three meta-reflection surfaces laid out horizontally to keep the menu
+    // compact. Chronicle = runs journal; Almanac = discovery log; Deeds =
+    // achievements. All three hidden on fresh saves so the first-run player
+    // sees only the core ladder. Row width widened past btnW so the 3
+    // labels ("CHRONICLE" / "ALMANAC" / "YIR DEEDS") fit at 13px mono
+    // without cropping.
     const hasAnyRun = gameplay.totalRuns > 0;
     const reflectionY = metaY2 + btnHs + gap;
-    const reflectionGap = 12;
-    const halfBtnW = (btnW - reflectionGap) / 2;
+    const reflectionRowW = 300;
+    const reflectionGap = 10;
+    const thirdBtnW = (reflectionRowW - reflectionGap * 2) / 3;
     let chronicleBtn: Phaser.GameObjects.Rectangle | null = null;
+    let almanacBtn: Phaser.GameObjects.Rectangle | null = null;
     let deedsBtn: Phaser.GameObjects.Rectangle | null = null;
     const goChronicle = clickToScene(this, 'Chronicle');
+    const goAlmanac = clickToScene(this, 'Almanac');
     const goDeeds = clickToScene(this, 'Deeds');
     if (hasAnyRun) {
-      // Chronicle (left). The half-width reflection buttons share a row,
+      // Chronicle (left). The third-width reflection buttons share a row,
       // so setScale(uiScale) on each rect would grow their edges inward
-      // past the 12px gap and visually merge them at 1.4x (each half
-      // gains ~22px on each side, 12px gap collapses into negative).
-      // Leave the rect at its natural width; only the label scales with
-      // uiScale (via the factory's internal setScale) so text stays
-      // legible at comfort settings. The rect dimensions (halfBtnW × 42)
-      // keep the tap target predictable across every uiScale.
-      const chronicleX = bx - reflectionGap / 2 - halfBtnW / 2;
+      // past the 10px gap and visually merge them at 1.4x. Leave the rect
+      // at its natural width; only the label scales with uiScale (via the
+      // factory's internal setScale) so text stays legible at comfort
+      // settings. The rect dimensions (thirdBtnW × 42) keep the tap
+      // target predictable across every uiScale.
+      const chronicleX = bx - thirdBtnW - reflectionGap;
       const { rect: chronicleRect, label: chronicleTxt } = createGameButton(this, {
-        x: chronicleX, y: reflectionY, width: halfBtnW, height: 42,
+        x: chronicleX, y: reflectionY, width: thirdBtnW, height: 42,
         label: t('ui.menu.chronicle'),
         tier: 'tertiary', fontSize: '13px', uiScale,
       });
@@ -401,10 +406,21 @@ export class MainMenuScene extends Phaser.Scene {
       chronicleTxt.setInteractive({ useHandCursor: true });
       chronicleTxt.on('pointerdown', goChronicle);
 
-      // Deeds (right) — same treatment as Chronicle.
-      const deedsX = bx + reflectionGap / 2 + halfBtnW / 2;
+      // Almanac (centre) — discoveries sit between runs and achievements.
+      const { rect: almanacRect, label: almanacTxt } = createGameButton(this, {
+        x: bx, y: reflectionY, width: thirdBtnW, height: 42,
+        label: t('ui.menu.almanac'),
+        tier: 'tertiary', fontSize: '13px', uiScale,
+      });
+      almanacBtn = almanacRect;
+      almanacBtn.on('pointerdown', goAlmanac);
+      almanacTxt.setInteractive({ useHandCursor: true });
+      almanacTxt.on('pointerdown', goAlmanac);
+
+      // Deeds (right).
+      const deedsX = bx + thirdBtnW + reflectionGap;
       const { rect: deedsRect, label: deedsTxt } = createGameButton(this, {
-        x: deedsX, y: reflectionY, width: halfBtnW, height: 42,
+        x: deedsX, y: reflectionY, width: thirdBtnW, height: 42,
         label: t('ui.menu.deeds'),
         tier: 'tertiary', fontSize: '13px', uiScale,
       });
@@ -656,6 +672,7 @@ export class MainMenuScene extends Phaser.Scene {
       { rect: metaBtn, activate: () => this.scene.start('MetaShop') },
     );
     if (chronicleBtn) entries.push({ rect: chronicleBtn, activate: goChronicle });
+    if (almanacBtn) entries.push({ rect: almanacBtn, activate: goAlmanac });
     if (deedsBtn) entries.push({ rect: deedsBtn, activate: goDeeds });
     entries.push({ rect: optBtn, activate: () => this.scene.start('Settings') });
     this.gamepadNav = new GamepadMenuNav(this, entries);

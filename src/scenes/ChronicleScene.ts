@@ -142,6 +142,26 @@ export class ChronicleScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
+    // ── Cross-link: Highland Almanac ──
+    // Top-right corner — subtle italic link. The Chronicle's Cull Codex
+    // section is a subset of what the Almanac surfaces (full beasties +
+    // weys + finds + banter), so players who want depth get a one-click
+    // jump across.
+    const goAlmanac = clickToScene(this, 'Almanac');
+    const almanacLink = this.add
+      .text(width - 40, 36, t('ui.chronicle.view_almanac'), {
+        fontFamily: 'monospace',
+        fontSize: '13px',
+        color: COLORS_CSS.TEXT_SUBTITLE,
+        fontStyle: 'italic',
+      })
+      .setOrigin(1, 0.5)
+      .setScale(uiScale)
+      .setInteractive({ useHandCursor: true });
+    almanacLink.on('pointerover', () => almanacLink.setColor(COLORS_CSS.WHISKY_GOLD));
+    almanacLink.on('pointerout', () => almanacLink.setColor(COLORS_CSS.TEXT_SUBTITLE));
+    almanacLink.on('pointerdown', goAlmanac);
+
     // ── Lifetime panel ──
     const lifetimePanelY = 118;
     this.add

@@ -59,6 +59,7 @@ export const EN_STRINGS: LocaleTree = {
       seed_invalid: 'That seed didn\'t take — check it and try again.',
       chronicle: 'CHRONICLE',
       deeds: 'YIR DEEDS',
+      almanac: 'ALMANAC',
       curse: 'CURSE O\' THE MOOR',
     },
     curseScene: {
@@ -160,6 +161,8 @@ export const EN_STRINGS: LocaleTree = {
       prev: '< PREV',
       next: 'NEXT >',
       name_prefix: '{name}',
+      /** Top-right cross-link — takes the player to the Highland Almanac discovery log. */
+      view_almanac: '→ Highland Almanac',
     },
     deeds: {
       title: 'YIR DEEDS',
