@@ -155,9 +155,10 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
         .filter((e) => e.active && typeof e.nodeWaveTag === 'string' && e.nodeWaveTag.length > 0);
       const killedCount = taggedEnemies.length;
       for (const e of taggedEnemies) e.takeDamageWithKillEvents(99999);
-      // Wait a couple of frames so the tracker's tick finalizes the
-      // node + adds the outcome.
-      await new Promise((r) => setTimeout(r, 200));
+      // Wait several frames so the tracker's tick finalizes the node +
+      // adds the outcome. 400 ms keeps headroom for concurrent-browser
+      // rAF throttling when the whole e2e suite runs in parallel.
+      await new Promise((r) => setTimeout(r, 400));
       const after = game.getRunActState();
       return {
         killedCount,

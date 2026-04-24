@@ -2065,6 +2065,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     };
     this.runActState.recordNodeOutcome(outcome);
     this.replayRecorder?.pushNodeOutcome(outcome);
+    // M1 F5 — playback consumes the matching recorded outcome so the
+    // cursor stays aligned with node-trigger order (passive finalizes
+    // and early-outs like 'empty_pool' / 'no_stock' consume too, so the
+    // next interactive node sees its own outcome).
+    if (this.replayInput) {
+      const next = this.replayInput.peekNextNodeOutcome();
+      if (next && next.nodeKey === nodeKey) {
+        this.replayInput.consumeNodeOutcome();
+      }
+    }
     const map = this.runActState.currentActNodeMap;
     if (!map) return;
     while (
@@ -2073,6 +2083,29 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     ) {
       this.runActState.currentNodeIndex++;
     }
+  }
+
+  /**
+   * M1 F5 — if the scene is in playback mode AND the next recorded
+   * outcome matches the triggered node's key, returns the recorded
+   * `chosenRewardKey`. Caller uses this to skip the NodePromptUI and
+   * apply the recorded choice inline. Non-destructive: finalize consumes
+   * the cursor so passive finalizes + interactive short-circuits stay
+   * aligned. Returns null when not in replay mode, the outcome log is
+   * exhausted, or the next outcome is for a different node (a warn is
+   * logged in the latter case and the live path falls through).
+   */
+  private peekReplayChoiceFor(nodeKey: string): string | null {
+    if (!this.replayInput) return null;
+    const outcome = this.replayInput.peekNextNodeOutcome();
+    if (!outcome) return null;
+    if (outcome.nodeKey !== nodeKey) {
+      console.warn(
+        `[replay] node-outcome mismatch: expected ${outcome.nodeKey}, got ${nodeKey} — opening live prompt`,
+      );
+      return null;
+    }
+    return outcome.chosenRewardKey ?? null;
   }
 
   /**
@@ -2206,6 +2239,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.finalizeNodeVisit(index, node.key, 'empty_pool');
       return;
     }
+    // M1 F5 — playback auto-applies the recorded boon pick instead of
+    // re-opening the modal. `applyShrineBoon` consumes runRng for
+    // `buff_luck`, so skipping it in replay would desync future rolls —
+    // we run the same apply path here.
+    const replayChoice = this.peekReplayChoiceFor(node.key);
+    if (replayChoice !== null) {
+      if (replayChoice !== 'refused') this.applyShrineBoon(replayChoice);
+      this.finalizeNodeVisit(index, node.key, replayChoice);
+      return;
+    }
     this.enterInteractivePrompt(index);
     this.nodePromptUI?.show({
       title: t('nodes.ui.shrine_title'),
@@ -2285,6 +2328,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.finalizeNodeVisit(index, node.key, 'no_stock');
       return;
     }
+    // M1 F5 — playback auto-applies the recorded trader pick. applyTraderRelic
+    // consumes runRng for the relic roll, so we run the same apply path here
+    // to keep the rolled-relic deterministic with the live run.
+    const replayChoice = this.peekReplayChoiceFor(node.key);
+    if (replayChoice !== null) {
+      if (replayChoice === 'relic') {
+        this.applyTraderRelic(state.worldPositions[index]);
+      } else if (replayChoice === 'passive') {
+        this.runScore.addCoinGold(40);
+        this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
+      } else if (replayChoice === 'reroll') {
+        this.upgradeUI?.grantReroll();
+        this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
+      }
+      this.finalizeNodeVisit(index, node.key, replayChoice);
+      return;
+    }
     this.enterInteractivePrompt(index);
     this.nodePromptUI?.show({
       title: t('nodes.ui.trader_title'),
@@ -2329,6 +2389,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private openBargainNode(node: NodeDef, index: number): void {
     const spec = resolveBargainEvent(node, this.runRng, this.player.getMaxHp());
+    // M1 F5 — playback auto-applies the recorded bargain pick. Accept
+    // consumes HP + applies the offer (which may roll a relic via runRng,
+    // so we run the same apply path to stay deterministic). Refuse just
+    // surfaces the toast. `canAfford` is ignored in replay — if the live
+    // run was able to accept, HP at this game-time was enough.
+    const replayChoice = this.peekReplayChoiceFor(node.key);
+    if (replayChoice !== null) {
+      if (replayChoice === 'accept') {
+        this.player.takeDamage(spec.hpCost);
+        this.applyBargainOffer(spec.offerKind, spec.offerKey);
+      } else {
+        this.juice.showToast(t('nodes.ui.toast.bargain_refused'), '#cccccc');
+      }
+      this.finalizeNodeVisit(index, node.key, replayChoice);
+      return;
+    }
     this.enterInteractivePrompt(index);
     const canAfford = this.player.getHp() > spec.hpCost;
     this.nodePromptUI?.show({

@@ -20,6 +20,7 @@
  */
 import type { IInput } from '../utils/iInput';
 import type { ReplayBlobAny, ReplayFrame } from './replayBlob';
+import type { NodeOutcome } from '../data/nodeTypes';
 
 const DEFAULT_FRAME: ReplayFrame = { dtMs: 0, dx: 0, dy: 0, dash: false, menu: false };
 
@@ -28,7 +29,21 @@ export class ReplayInput implements IInput {
   private dashConsumed = false;
   private menuConsumed = false;
 
-  constructor(private readonly blob: ReplayBlobAny) {}
+  /**
+   * M1 F5 — cursor over recorded node outcomes. v3 blobs carry the
+   * append-only outcome log; v1/v2 blobs report empty (the field doesn't
+   * exist on those schemas). Scene pops the next outcome when an
+   * interactive node triggers during playback, so shrine / trader /
+   * bargain auto-apply the recorded pick instead of re-opening the
+   * prompt.
+   */
+  private readonly nodeOutcomes: readonly NodeOutcome[];
+  private nodeOutcomeIndex = 0;
+
+  constructor(private readonly blob: ReplayBlobAny) {
+    const maybe = (blob as { nodeOutcomes?: NodeOutcome[] }).nodeOutcomes;
+    this.nodeOutcomes = maybe ?? [];
+  }
 
   /**
    * Advance to the next recorded frame. Returns the frame the cursor
@@ -91,6 +106,32 @@ export class ReplayInput implements IInput {
     this.menuConsumed = true;
     return true;
   }
+
+  // ── Node-outcome cursor (M1 F5) ─────────────────────────────────
+
+  /**
+   * Non-destructive view of the next recorded node outcome, or null
+   * when the log is empty / exhausted. Scene uses this to short-circuit
+   * interactive node prompts during playback.
+   */
+  peekNextNodeOutcome(): NodeOutcome | null {
+    if (this.nodeOutcomeIndex >= this.nodeOutcomes.length) return null;
+    return this.nodeOutcomes[this.nodeOutcomeIndex]!;
+  }
+
+  /** Consume and return the next outcome; null + no-op once exhausted. */
+  consumeNodeOutcome(): NodeOutcome | null {
+    const outcome = this.peekNextNodeOutcome();
+    if (outcome) this.nodeOutcomeIndex++;
+    return outcome;
+  }
+
+  /** Count of outcomes remaining ahead of the cursor. */
+  getRemainingNodeOutcomeCount(): number {
+    return Math.max(0, this.nodeOutcomes.length - this.nodeOutcomeIndex);
+  }
+
+  // ────────────────────────────────────────────────────────────────
 
   /**
    * Non-destructive view of the current frame's snapshot. Present so the

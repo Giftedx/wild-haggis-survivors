@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ReplayInput } from './ReplayInput';
 import { createEmptyReplayBlob, type ReplayBlob, type ReplayFrame } from './replayBlob';
+import { createEmptyReplayBlobV3 } from './replayBlobV3';
+import type { NodeOutcome } from '../data/nodeTypes';
 
 function blobWith(frames: ReplayFrame[]): ReplayBlob {
   const b = createEmptyReplayBlob({ build: 't', seed: 1, variantKey: 'classic' });
@@ -131,6 +133,56 @@ describe('ReplayInput', () => {
       expect(r.getCurrentDeltaMs()).toBe(16);
       r.advanceFrame();
       expect(r.getCurrentDeltaMs()).toBe(33);
+    });
+  });
+
+  describe('M1 F5 — nodeOutcome cursor', () => {
+    const baseMeta = () => ({ build: 't', seed: 1, variantKey: 'classic' });
+
+    it('peeks null when the blob carries no nodeOutcomes (v1/v2)', () => {
+      const r = new ReplayInput(blobWith([F()]));
+      expect(r.peekNextNodeOutcome()).toBeNull();
+      expect(r.consumeNodeOutcome()).toBeNull();
+      expect(r.getRemainingNodeOutcomeCount()).toBe(0);
+    });
+
+    it('peeks + consumes outcomes in order (v3 blob)', () => {
+      const outcomes: NodeOutcome[] = [
+        { nodeKey: 'shrine_standing_stone', chosenRewardKey: 'buff_damage', visitedAtGameTimeSec: 42 },
+        { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 110 },
+        { nodeKey: 'bargain_wee_folk', chosenRewardKey: 'refused', visitedAtGameTimeSec: 205 },
+      ];
+      const blob = createEmptyReplayBlobV3({ ...baseMeta(), nodeOutcomes: outcomes });
+      const r = new ReplayInput(blob);
+
+      expect(r.getRemainingNodeOutcomeCount()).toBe(3);
+      expect(r.peekNextNodeOutcome()).toEqual(outcomes[0]);
+      // Peeking is non-destructive.
+      expect(r.peekNextNodeOutcome()).toEqual(outcomes[0]);
+      expect(r.getRemainingNodeOutcomeCount()).toBe(3);
+
+      expect(r.consumeNodeOutcome()).toEqual(outcomes[0]);
+      expect(r.getRemainingNodeOutcomeCount()).toBe(2);
+      expect(r.consumeNodeOutcome()).toEqual(outcomes[1]);
+      expect(r.consumeNodeOutcome()).toEqual(outcomes[2]);
+      expect(r.consumeNodeOutcome()).toBeNull();
+      expect(r.peekNextNodeOutcome()).toBeNull();
+      expect(r.getRemainingNodeOutcomeCount()).toBe(0);
+    });
+
+    it('cursor is independent of the frame cursor', () => {
+      const outcomes: NodeOutcome[] = [
+        { nodeKey: 'x', chosenRewardKey: 'k', visitedAtGameTimeSec: 0 },
+      ];
+      const blob = createEmptyReplayBlobV3({ ...baseMeta(), nodeOutcomes: outcomes });
+      blob.frames = [F(), F()];
+      blob.frameCount = 2;
+      const r = new ReplayInput(blob);
+
+      // Advancing frames must not touch the outcome cursor.
+      r.advanceFrame();
+      r.advanceFrame();
+      expect(r.peekNextNodeOutcome()).toEqual(outcomes[0]);
     });
   });
 });

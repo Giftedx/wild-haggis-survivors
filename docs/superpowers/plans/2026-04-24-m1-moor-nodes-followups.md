@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers).
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers).
 
 ---
 
@@ -40,13 +40,9 @@ Same tracker handles elite nodes. Relic roll stays at trigger-time (determinism)
 
 ---
 
-## F5 — ReplayInput nodeOutcomes consumption
+## ~~F5 — ReplayInput nodeOutcomes consumption~~ ✅ shipped 2026-04-24
 
-**Current behaviour (`src/replay/ReplayInput.ts`)**: during playback, the scene still runs the live listener — interactive prompts re-open, player has to manually pick every shrine/trader/bargain the original run resolved. Scene isn't aware it's in replay mode for node purposes.
-
-**Target:** when a v3 blob's `nodeOutcomes` is non-empty, suppress the NodePromptUI and auto-apply the recorded `chosenRewardKey`. Playback flow: tick fires the listener → scene checks replay-mode flag → pops next expected outcome from the v3 metadata → forwards the chosenRewardKey to the event's apply path, skipping the modal entirely. Passive outcomes need no change (they're deterministic given rng).
-
-**Touch-points:** `src/replay/ReplayInput.ts` (expose `pendingNodeOutcomes` queue + `popNext()`), `src/scenes/GameScene.ts` (check `this.replayInput` before each `open*Node` call; short-circuit on match).
+`ReplayInput` now exposes `peekNextNodeOutcome` / `consumeNodeOutcome` / `getRemainingNodeOutcomeCount`. `GameScene.finalizeNodeVisit` consumes the matching recorded outcome on every finalize (passive, early-out, interactive), keeping the cursor aligned one-per-trigger. `openShrineNode` / `openTraderNode` / `openBargainNode` each short-circuit before the modal when `peekReplayChoiceFor(node.key)` returns the recorded `chosenRewardKey` — the apply path runs inline so RNG consumption (e.g. shrine `buff_luck`, trader relic roll, bargain relic offer) stays byte-identical to the live run. Mismatches log a console.warn and fall through to live prompt for safety. 11 new ReplayInput tests.
 
 ---
 
