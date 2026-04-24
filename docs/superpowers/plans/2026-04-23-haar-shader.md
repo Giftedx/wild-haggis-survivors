@@ -1,14 +1,16 @@
 # F1 — Shader pipeline + Haar fog implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** In progress (2026-04-24 Phaser 4 rebase).
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 
-**Goal:** Ship custom Phaser 3 `PostFXPipeline` infrastructure + first shader (animated haar fog) per `docs/superpowers/specs/2026-04-23-haar-shader-design.md`. 4 milestones.
+**Goal:** Ship custom Phaser filter-render-node infrastructure + first shader (animated haar fog) per `docs/superpowers/specs/2026-04-23-haar-shader-design.md`. 4 milestones.
 
-**Architecture:** Central `ShaderRegistry` registers all custom pipelines at game-config time. `HaarFogPipeline` subclasses `PostFXPipeline`; fragment shader samples pre-generated 2D noise texture; density + colour + time controlled via uniforms. Biome transitions drive density ramps via `BiomeController`. Accessibility settings cap haar intensity and transition speed.
+**Architecture:** Central `ShaderRegistry` registers all custom render nodes at game-config time via `Phaser.Types.Core.GameConfig.renderNodes`. `HaarFogRenderNode` extends `Phaser.Renderer.WebGL.RenderNodes.BaseFilterShader` (GPU: GLSL source + uniform setup + texture setup). `HaarFogController` extends `Phaser.Filters.Controller` (state: density, colour, elapsed time) and references the render node by id `'HaarFog'`. Applied via `camera.filters.internal.add(new HaarFogController(camera))`. Fragment shader samples pre-generated 2D noise texture. Biome transitions drive density ramps via `BiomeController`. Accessibility settings cap haar intensity and transition speed.
 
-**Tech Stack:** TypeScript strict, Phaser 3.90+ (WebGL only), GLSL ES 1.00/3.00, Vitest, Playwright. Canvas-mode gracefully degrades to no-haar.
+> **2026-04-24 note.** The original plan body references Phaser 3 `PostFXPipeline`; the migration to Phaser 4 (shipped 2026-04-23) deleted that class. All task code follows the filter-render-node split documented in `docs/adr/0003-shader-registry-phaser-postfx-pipeline.md §2026-04-24 addendum`. File names updated: `HaarFogPipeline` → `HaarFogRenderNode` + `HaarFogController`.
+
+**Tech Stack:** TypeScript strict, Phaser 4 (WebGL only), GLSL ES, Vitest, Playwright. Canvas renderer: controllers silently no-op.
 
 **Commit cadence:** One commit per TDD cycle. `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`.
 

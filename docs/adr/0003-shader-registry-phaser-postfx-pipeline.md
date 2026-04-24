@@ -1,9 +1,34 @@
-# ADR 0003 — ShaderRegistry uses Phaser 3 `PostFXPipeline`, not a bespoke GL layer
+# ADR 0003 — ShaderRegistry uses Phaser's filter render-node system, not a bespoke GL layer
 
-**Status:** Proposed (drafted with F1 flagship spec + plan, 2026-04-23)
-**Date:** 2026-04-23
+**Status:** Accepted (2026-04-24 addendum rebases to Phaser 4 API)
+**Date:** 2026-04-23 (original) / 2026-04-24 (Phaser 4 addendum)
 **Supersedes:** —
 **Superseded by:** —
+
+## 2026-04-24 addendum — Phaser 4 rebase
+
+This ADR was drafted **on the same day** the Phaser 3 → 4 migration landed, and the original body below describes the Phaser 3 `PostFXPipeline` class pattern. Phaser 4 deleted that class outright. The decision — **every custom shader lives inside Phaser's own shader lifecycle, not bespoke WebGL** — holds. Only the API surface changes.
+
+**New Phaser 4 shader pattern (authoritative for F1 and all future shaders):**
+
+1. **`Phaser.Renderer.WebGL.RenderNodes.BaseFilterShader` subclass** owns GPU concerns: fragment-shader source, texture bindings, uniform layout. Overrides `setupUniforms(controller, drawingContext)` + `setupTextures(controller, textures, drawingContext)`.
+2. **`Phaser.Filters.Controller` subclass** owns per-instance state (density, colour, elapsed-time accumulator). Constructor passes the render-node ID string (`'HaarFog'`) to `super(camera, renderNode)`.
+3. **Game config `renderNodes` map** registers the render node by ID:
+
+    ```typescript
+    const config: Phaser.Types.Core.GameConfig = {
+      renderNodes: {
+        HaarFog: HaarFogRenderNode,
+      },
+    };
+    ```
+
+4. **Apply at runtime** via `camera.filters.internal.add(new HaarFogController(camera))` (or `.external` for canvas-sized drawing). The controller's `renderNode` field is resolved by name against the config map.
+5. **Canvas-mode fallback** — Phaser 4 filter system is WebGL-only; controllers silently no-op on the Canvas renderer. Same graceful-degradation story as the original ADR, different mechanism.
+
+The Phaser 3 text below is kept as a design record; treat it as superseded detail. All F1 code follows the Phaser 4 pattern above.
+
+---
 
 ## Context
 

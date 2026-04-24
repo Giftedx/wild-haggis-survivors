@@ -1,9 +1,19 @@
 # F1 — Shader pipeline + Haar fog design spec
 
-**Date:** 2026-04-23
+**Date:** 2026-04-23 (original) / 2026-04-24 (Phaser 4 addendum)
 **Initiative:** F1 (`docs/HUGE_INITIATIVES_MASTER_PLAN.md`)
-**Status:** Draft
-**Prerequisite:** None. Phaser 3 PostFX pipeline infrastructure is core to all future shader work; F1 establishes it.
+**Status:** Accepted (Phaser 4 rebase)
+**Prerequisite:** None. Phaser filter render-node infrastructure is core to all future shader work; F1 establishes it.
+
+> **2026-04-24 Phaser 4 addendum.** The architecture below was drafted for Phaser 3 `PostFXPipeline`, which Phaser 4 deleted. The high-level design (`ShaderRegistry`, haar visual, biome integration, a11y caps, perf budget) is unchanged. Only the API surface moves. The **authoritative Phaser 4 pattern** lives in `docs/adr/0003-shader-registry-phaser-postfx-pipeline.md §2026-04-24 addendum`:
+>
+> - `HaarFogRenderNode extends Phaser.Renderer.WebGL.RenderNodes.BaseFilterShader` — GPU-side, embeds GLSL, overrides `setupUniforms` + `setupTextures`.
+> - `HaarFogController extends Phaser.Filters.Controller` — per-instance state (density, color, time), passes `'HaarFog'` as `renderNode` id to super.
+> - Register in game config `renderNodes: { HaarFog: HaarFogRenderNode }`.
+> - Apply via `camera.filters.internal.add(new HaarFogController(camera))`.
+> - Canvas renderer: filter controllers silently no-op (WebGL-only in Phaser 4).
+>
+> The Phaser-3-style Architecture §4 code block below is kept as **design record** — treat it as superseded. M2 tasks 7–10 follow the Phaser 4 pattern.
 
 ---
 
