@@ -20,11 +20,19 @@ const DESKTOP_IGNORE = ['**/mobile-smoke.spec.ts'];
 const FIREFOX_IGNORE = [
   ...DESKTOP_IGNORE,
   '**/marathon-smoke.spec.ts',
+  // A1 M3 input-remap relies on precise `KeyboardEvent.keyCode` routing
+  // into Phaser's scene-level Key poll; only chromium reliably dispatches
+  // it headless. Cross-engine rebind coverage lives in the unit tests on
+  // InputMapper / applyKeyRebind.
+  '**/input-remap.spec.ts',
 ];
 const WEBKIT_IGNORE = [
   ...DESKTOP_IGNORE,
   // Marathon is a 30-min soak — keep it on the primary project only.
   '**/marathon-smoke.spec.ts',
+  // Same rationale as firefox — headless keyboard injection is chromium-only
+  // for keyCode-dependent paths.
+  '**/input-remap.spec.ts',
 ];
 
 export default defineConfig({
