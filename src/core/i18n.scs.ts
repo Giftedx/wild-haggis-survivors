@@ -73,6 +73,32 @@ export const SCS_STRINGS: LocaleTree = {
       bested_badge: '✓ BESTED',
     },
     croft: {
+      trophy_quip: {
+        empty: {
+          a: 'That shelf\'s a wee bit bare, mind. Awa an bag me somethin.',
+          b: 'Ye\'ll fill it yet. I\'ve faith in that coupon o yours.',
+        },
+        gordon: {
+          a: 'Gordon? Man salted his tatties like he owed them money, so he did.',
+          b: 'Went doon wi tha ladle still swingin. Nae surprise there.',
+        },
+        tour_bus: {
+          a: 'Yon bus service wis a pure disgrace. Stops on a whim, so it did.',
+          b: 'Heard tha driver billed folk fer tha scenery. Guid riddance.',
+        },
+        the_laird: {
+          a: 'Tha Laird thocht tha glen belonged tae him. Tha moor disagreed.',
+          b: 'Stick like yon, an still couldnae outwalk a wee haggis.',
+        },
+        hunter_general: {
+          a: 'Pith helmet on tha moor? Tha man wis askin fer bother.',
+          b: 'Wrote it aw doon in yon journal tae tha very end, mind.',
+        },
+        taxman: {
+          a: 'Tha taxman. Pure dead brilliant tae see him aff. Here, hae a biscuit.',
+          b: 'Every run o red ink in yon ledger\'s a wee victory, so it is.',
+        },
+      },
       title: 'GRAN\'S CROFT',
       subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
       gran_greet: 'Come awa in — tha kettle\'s on.',

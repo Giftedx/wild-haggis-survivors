@@ -80,6 +80,32 @@ export const EN_STRINGS: LocaleTree = {
       bested_badge: '✓ BESTED',
     },
     croft: {
+      trophy_quip: {
+        empty: {
+          a: 'That shelf\'s a wee bit bare, mind. Awa an\' bag me somethin.',
+          b: 'Ye\'ll fill it yet. I\'ve got faith in that coupon o\' yours.',
+        },
+        gordon: {
+          a: 'Gordon? That man salted his tatties like he owed them money.',
+          b: 'Went down with the ladle still swingin. No surprise there.',
+        },
+        tour_bus: {
+          a: 'That bus service was a pure disgrace. Stops on a whim, so it did.',
+          b: 'Heard the driver used to bill folk for the scenery. Good riddance.',
+        },
+        the_laird: {
+          a: 'The Laird thought the glen belonged tae him. The moor disagreed.',
+          b: 'A stick like that, an\' still couldnae outwalk a wee haggis.',
+        },
+        hunter_general: {
+          a: 'Pith helmet on the moor? The man was askin\' fir bother.',
+          b: 'Wrote it all doon in that journal till the very end, mind.',
+        },
+        taxman: {
+          a: 'The taxman. Pure dead brilliant tae see him off. Here, have a biscuit.',
+          b: 'Every run of red ink in that ledger\'s a wee victory, so it is.',
+        },
+      },
       /** Scene title — Hearth voice, kept short so the banner reads at a glance. */
       title: 'GRAN\'S CROFT',
       /** Sub-line under the title — Hearth warmth, Still Game register. */

@@ -20,7 +20,9 @@ import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
 import { loadSave } from '../utils/save';
 import { computeAllTrophies } from './croft/CroftTrophies';
-import { drawMantelpieceTrophies } from '../art/sprites/croft/mantelpiece';
+import { drawMantelpieceTrophies, computeTrophySlotXs } from '../art/sprites/croft/mantelpiece';
+import { TROPHY_BOSS_KEYS } from './croft/CroftTrophies';
+import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 
 /**
@@ -50,6 +52,9 @@ export class CroftScene extends Phaser.Scene {
   private ambient: CroftAmbientLoop | null = null;
   private mantelGfx: Phaser.GameObjects.Graphics | null = null;
   private photoWallGfx: Phaser.GameObjects.Graphics | null = null;
+  private trophyHits: Phaser.GameObjects.Rectangle[] = [];
+  private granBubble: Phaser.GameObjects.Container | null = null;
+  private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -76,6 +81,12 @@ export class CroftScene extends Phaser.Scene {
     this.mantelGfx = null;
     this.photoWallGfx?.destroy();
     this.photoWallGfx = null;
+    this.trophyHits.forEach((r) => r.destroy());
+    this.trophyHits = [];
+    this.granBubble?.destroy();
+    this.granBubble = null;
+    this.granBubbleTimer?.remove(false);
+    this.granBubbleTimer = null;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -132,6 +143,9 @@ export class CroftScene extends Phaser.Scene {
    * boss (see CroftTrophies.TROPHY_BOSS_KEYS). Trophy art tier is
    * resolved from the current save — kills / cursed wins promote
    * the slot to 'first' / 'tenth' / 'cursed' variants.
+   *
+   * Each slot gets an invisible interactive hit rectangle on top so
+   * clicking a trophy fires a Gran-voice quip (T17).
    */
   private drawMantelpiece(layout: CroftLayout): void {
     const save = loadSave();
@@ -139,6 +153,107 @@ export class CroftScene extends Phaser.Scene {
     const gfx = this.add.graphics();
     drawMantelpieceTrophies(gfx, trophies, layout.mantelpiece);
     this.mantelGfx = gfx;
+
+    const shelf = layout.mantelpiece;
+    const xs = computeTrophySlotXs(shelf.x, shelf.w, TROPHY_BOSS_KEYS.length);
+    const hitY = shelf.y - 10;
+    const hitW = Math.max(20, shelf.w / (TROPHY_BOSS_KEYS.length + 1));
+    const hitH = Math.max(28, shelf.h + 24);
+    TROPHY_BOSS_KEYS.forEach((bossKey, idx) => {
+      const hit = this.add
+        .rectangle(xs[idx], hitY, hitW, hitH, 0x000000, 0)
+        .setOrigin(0.5, 0)
+        .setInteractive({ useHandCursor: true });
+      hit.on('pointerdown', () => this.onTrophyClicked(bossKey, layout));
+      this.trophyHits.push(hit);
+    });
+  }
+
+  /**
+   * Pick a Gran trophy-quip line for the clicked boss (`empty` if no
+   * trophy yet) and surface it in a small speech bubble near her.
+   * The bubble auto-fades after a few seconds; subsequent clicks cut
+   * the current bubble short so rapid clicking doesn't stack.
+   */
+  private onTrophyClicked(bossKey: string, layout: CroftLayout): void {
+    const save = loadSave();
+    const killed = (save.bossKillCounts[bossKey] ?? 0) > 0;
+    const tag = killed ? bossKey : 'empty';
+    const line = this.pickTrophyQuipLine(tag);
+    audio.playClick();
+    this.showGranBubble(line, layout);
+  }
+
+  private pickTrophyQuipLine(tag: string): string {
+    // Two lines per tag — random pick. Miss-keyed tags silently fall
+    // through to the 'empty' bucket so future boss additions are
+    // harmless until lines are authored.
+    const chosen = Math.random() < 0.5 ? 'a' : 'b';
+    const key = `ui.croft.trophy_quip.${tag}.${chosen}`;
+    const line = t(key);
+    if (line === key) {
+      // Unresolved — fall back to empty.a.
+      return t('ui.croft.trophy_quip.empty.a');
+    }
+    return line;
+  }
+
+  private showGranBubble(line: string, layout: CroftLayout): void {
+    this.granBubble?.destroy();
+    this.granBubble = null;
+    this.granBubbleTimer?.remove(false);
+    this.granBubbleTimer = null;
+
+    // Anchor above Gran's head, nudged right so the bubble doesn't
+    // obscure her face.
+    const anchorX = layout.gran.x + 28;
+    const anchorY = layout.gran.y - 44;
+    const maxWidth = 260;
+
+    const text = this.add.text(0, 0, `"${line}"`, textStyle('body', {
+      color: COLORS_CSS.INK,
+      wordWrap: { width: maxWidth - 16 },
+      align: 'left',
+    })).setOrigin(0, 0);
+
+    const { width: tw, height: th } = text;
+    const padX = 8;
+    const padY = 6;
+    const bubbleW = Math.min(maxWidth, tw + padX * 2);
+    const bubbleH = th + padY * 2;
+
+    // Rounded paper-coloured bubble.
+    const bg = this.add.graphics();
+    bg.fillStyle(0xfaf2d8, 0.96);
+    bg.fillRoundedRect(0, 0, bubbleW, bubbleH, 6);
+    bg.lineStyle(1.2, 0x5a4028, 0.9);
+    bg.strokeRoundedRect(0, 0, bubbleW, bubbleH, 6);
+    // Tail pointing down toward Gran.
+    bg.fillStyle(0xfaf2d8, 0.96);
+    bg.fillTriangle(bubbleW / 3, bubbleH - 1, bubbleW / 3 + 14, bubbleH + 8, bubbleW / 3 + 18, bubbleH - 1);
+    bg.lineStyle(1.2, 0x5a4028, 0.9);
+    bg.strokeTriangle(bubbleW / 3, bubbleH - 1, bubbleW / 3 + 14, bubbleH + 8, bubbleW / 3 + 18, bubbleH - 1);
+
+    text.setPosition(padX, padY);
+
+    const container = this.add.container(anchorX, anchorY - bubbleH, [bg, text]);
+    container.setDepth(50);
+    container.setAlpha(0);
+    this.tweens.add({ targets: container, alpha: 1, duration: 140 });
+
+    this.granBubble = container;
+    this.granBubbleTimer = this.time.delayedCall(3500, () => {
+      if (!this.granBubble) return;
+      this.tweens.add({
+        targets: this.granBubble,
+        alpha: 0,
+        duration: 240,
+        onComplete: () => {
+          this.granBubble?.destroy();
+          this.granBubble = null;
+        },
+      });
+    });
   }
 
   /**
