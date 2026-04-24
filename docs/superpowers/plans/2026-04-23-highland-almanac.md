@@ -111,50 +111,45 @@
 
 ---
 
-## M2 — AlmanacScene scaffolding + Beasties book
+## M2 — AlmanacScene scaffolding + Beasties book ✓ shipped 2026-04-24
 
 ### Task 7: `AlmanacScene` scene skeleton
 
-**Files:** `src/scenes/AlmanacScene.ts` + smoke test.
-
-- [ ] **Step 1:** Failing smoke test: scene launches without error.
-- [ ] **Step 2:** Implement scene lifecycle + tab-bar with 4 tab placeholders.
-- [ ] **Step 3:** Commit: `feat(almanac): AlmanacScene skeleton with 4 tabs`.
+- [x] **Step 1:** Pure `tabNavigation` helper (4-book ordered key list, wrap/cycle, i18n label path). Failing unit test then green.
+- [x] **Step 2:** `AlmanacScene` renders header + 4-tab bar + body placeholder + back/ESC. Scene registered in `main.ts`. i18n keys under `ui.almanac.*` (EN only — Scots overlay can land later; EN→SCS fence is banter-scoped).
+- [x] **Step 3:** Commit — `083fc4d`.
 
 ### Task 8: `BeastiesBook` renderer
 
-**Files:** `src/scenes/almanac/BeastiesBook.ts`.
-
-- [ ] **Step 1:** Failing test: `BeastiesBook.render(discoveryLog)` produces a list of entries, one per enemy in `enemies.ts`.
-- [ ] **Step 2:** Implement; each entry shows name (or "???" if not seen), silhouette or sprite, kill count.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Pure `buildBeastiesEntries` builds the ordered VM (regulars by `appearsAt`, bosses by `spawnTimeSec`, with per-key `texture` + `displayName` + seen/kill-count from the log).
+- [x] **Step 2:** `renderBeastiesBook` draws a 6×6 grid — progress pill, sprite cells, kill-count chips, boss star. AlmanacScene dispatches the Beasties tab to it.
+- [x] **Step 3:** Commit — `f4b0f8b`.
 
 ### Task 9: Silhouette rendering for unseen
 
-- [ ] **Step 1:** Failing smoke test: unseen beastie renders as outline-only in lowered opacity.
-- [ ] **Step 2:** Implement silhouette shader (reuse existing outline system if any; else duotone tint to black).
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Pure `resolveBeastieDisplay` maps entry → `{ tint, alpha, displayName, isSilhouette }`. Pinned: silhouette tint ≤ `0x404040` (shadow, not pure black — preserves outline); alpha ∈ (0.25, 1); name overridden to `???`.
+- [x] **Step 2:** BeastiesBook applies `setTint` + alpha via the helper and adds a name label under each cell. Real name on seen, `???` on silhouette.
+- [x] **Step 3:** Commit — `f9fb3f3`.
 
 ### Task 10: Entry expand/collapse
 
-- [ ] **Step 1:** Failing smoke test: click entry → expanded view with lore, where-found, drop info.
-- [ ] **Step 2:** Implement expanded card overlay.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Pure `expandState` (`toggleExpanded`, `closeExpanded`) + `buildBeastieDetail` (title/lore/where-found/kill-count/first-seen VM). Unseen entries never leak the real name or timing cue.
+- [x] **Step 2:** BeastiesBook cells become interactive; renderer stamps an overlay panel (scrim + card + × close) when `expandedKey` matches. Per-tab expand state persists across tab flips within a scene visit.
+- [x] **Step 3:** Commit — `8ed19c2`.
 
-### Task 11: Enemy-first-seen wiring
+### Task 11: Enemy-first-seen + kill wiring
 
-**Files:** `src/systems/SpawnSystem.ts`, `src/entities/Enemy.ts`.
+**Files:** `src/utils/save.ts`, `src/systems/SpawnSystem.ts`, `src/scenes/game/EnemyKillHandler.ts`.
 
-- [ ] **Step 1:** Failing test: enemy spawn records in `DiscoveryLog`.
-- [ ] **Step 2:** Wire hook.
-- [ ] **Step 3:** Enemy death also increments kill count.
-- [ ] **Step 4:** Commit.
+- [x] **Step 1:** `bumpBeastieSeen(key, runId, ts)` — writes only on the cross-run first-encounter transition; mirrors the `bumpSeenEnemy` pattern. SpawnSystem captures `run:${seed}` as the runId at construction and fires the bump from both `notifyEnemyAmbient` (regulars) and `spawnBoss` (bosses bypass the ambient path but still seed the DiscoveryLog).
+- [x] **Step 2:** `bumpBeastieKilled(key)` batches into an in-memory Map + autoflushes every 64 kills. `flushBeastieKills()` drains the buffer; RunLifecycle calls it on both victory + death before `recordRun`. Per-kill `loadSave/writeSave` round-trips pushed the marathon enemy-pool slope 2% over threshold (1.53 → 0.97 after batching).
+- [x] **Step 3:** Commit — `ac05b38`.
 
 ### Task 12: M2 ship gate + `e2e/almanac-navigation.spec.ts`
 
-- [ ] E2E: enter Almanac → Beasties tab → entries visible; silhouettes visible for unseen.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(almanac): M2 — Beasties book complete`.
+- [x] E2E drives the scene manager directly (Phaser renders to canvas, no DOM-text assertions): launch Almanac, Beasties tab live, switch to Weys, expand tourist, ESC → MainMenu. Mirrors `w2-moor-road.spec.ts` pattern.
+- [x] `npm run ci:all` green: lint + 3137 vitest + build + 49 e2e across chromium / firefox / webkit / mobile.
+- [x] Commit — `610814a`.
 
 ---
 
