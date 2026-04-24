@@ -157,18 +157,19 @@ export function isReplayBlob(value: unknown): value is ReplayBlob {
   return true;
 }
 
-// ── v1 / v2 union ──────────────────────────────────────────────────
+// ── v1 / v2 / v3 union ─────────────────────────────────────────────
 //
-// Callers that should accept either shape go through `ReplayBlobAny` +
+// Callers that should accept any shape go through `ReplayBlobAny` +
 // `isReplayBlobAny`. The imports stay at the bottom to avoid a forward
-// reference during eval (v2 module imports from this file for shared
-// clamp / frame types).
+// reference during eval (the v2 / v3 modules import from this file for
+// shared clamp / frame helpers).
 import { isReplayBlobV2, type ReplayBlobV2 } from './replayBlobV2';
+import { isReplayBlobV3, type ReplayBlobV3 } from './replayBlobV3';
 
-export type ReplayBlobAny = ReplayBlob | ReplayBlobV2;
+export type ReplayBlobAny = ReplayBlob | ReplayBlobV2 | ReplayBlobV3;
 
 export function isReplayBlobAny(value: unknown): value is ReplayBlobAny {
-  return isReplayBlob(value) || isReplayBlobV2(value);
+  return isReplayBlob(value) || isReplayBlobV2(value) || isReplayBlobV3(value);
 }
 
 function clampFinite(value: number, min: number, max: number, fallback: number): number {
