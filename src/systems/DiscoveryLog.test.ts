@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { createEmptyDiscoveryLog, recordBeastieSeen } from './DiscoveryLog';
+import {
+  createEmptyDiscoveryLog,
+  recordBanterHeard,
+  recordBeastieKilled,
+  recordBeastieSeen,
+  recordItemAcquired,
+  recordRoutePicked,
+  BANTER_HEAR_COUNT_CAP,
+} from './DiscoveryLog';
 
 describe('DiscoveryLog scaffold', () => {
   it('creates an empty log with all tracking sets empty and zero visits', () => {
@@ -65,5 +73,111 @@ describe('DiscoveryLog.recordBeastieSeen', () => {
     const next = recordBeastieSeen(empty, '', 'run-1', 100);
 
     expect(next).toBe(empty);
+  });
+});
+
+describe('DiscoveryLog.recordBeastieKilled', () => {
+  it('requires a prior seen entry — kill on unseen beastie is a no-op', () => {
+    const empty = createEmptyDiscoveryLog();
+    const next = recordBeastieKilled(empty, 'kelpie');
+
+    expect(next).toBe(empty);
+  });
+
+  it('increments killCount on a previously-seen beastie', () => {
+    let log = recordBeastieSeen(createEmptyDiscoveryLog(), 'kelpie', 'run-1', 100);
+    log = recordBeastieKilled(log, 'kelpie');
+    log = recordBeastieKilled(log, 'kelpie');
+
+    expect(log.beastiesSeen.kelpie.killCount).toBe(2);
+    expect(log.beastiesSeen.kelpie.seenCount).toBe(1);
+  });
+
+  it('is a no-op on empty key', () => {
+    let log = recordBeastieSeen(createEmptyDiscoveryLog(), 'kelpie', 'run-1', 100);
+    const next = recordBeastieKilled(log, '');
+    expect(next).toBe(log);
+  });
+});
+
+describe('DiscoveryLog.recordRoutePicked', () => {
+  it('seeds firstPickedAt + pickCount=1 on first pick', () => {
+    const log = recordRoutePicked(createEmptyDiscoveryLog(), 'up_the_brae', 'run-1', 555);
+
+    expect(log.routesVisited.up_the_brae).toEqual({
+      firstPickedAt: { runId: 'run-1', timestamp: 555 },
+      pickCount: 1,
+    });
+  });
+
+  it('increments pickCount; firstPickedAt immutable', () => {
+    let log = recordRoutePicked(createEmptyDiscoveryLog(), 'up_the_brae', 'run-1', 555);
+    log = recordRoutePicked(log, 'up_the_brae', 'run-2', 999);
+
+    expect(log.routesVisited.up_the_brae.pickCount).toBe(2);
+    expect(log.routesVisited.up_the_brae.firstPickedAt.runId).toBe('run-1');
+  });
+
+  it('is a no-op on empty key', () => {
+    const empty = createEmptyDiscoveryLog();
+    expect(recordRoutePicked(empty, '', 'run-1', 1)).toBe(empty);
+  });
+});
+
+describe('DiscoveryLog.recordItemAcquired', () => {
+  it('seeds firstAcquiredAt + acquireCount=1', () => {
+    const log = recordItemAcquired(createEmptyDiscoveryLog(), 'thistle_shot', 'run-1', 100);
+
+    expect(log.findsAcquired.thistle_shot).toEqual({
+      firstAcquiredAt: { runId: 'run-1', timestamp: 100 },
+      acquireCount: 1,
+    });
+  });
+
+  it('increments acquireCount; firstAcquiredAt immutable', () => {
+    let log = recordItemAcquired(createEmptyDiscoveryLog(), 'thistle_shot', 'run-1', 100);
+    log = recordItemAcquired(log, 'thistle_shot', 'run-2', 200);
+    log = recordItemAcquired(log, 'thistle_shot', 'run-3', 300);
+
+    expect(log.findsAcquired.thistle_shot.acquireCount).toBe(3);
+    expect(log.findsAcquired.thistle_shot.firstAcquiredAt).toEqual({
+      runId: 'run-1',
+      timestamp: 100,
+    });
+  });
+
+  it('is a no-op on empty key', () => {
+    const empty = createEmptyDiscoveryLog();
+    expect(recordItemAcquired(empty, '', 'run-1', 1)).toBe(empty);
+  });
+});
+
+describe('DiscoveryLog.recordBanterHeard', () => {
+  it('seeds firstHeardAt + hearCount=1', () => {
+    const log = recordBanterHeard(
+      createEmptyDiscoveryLog(),
+      'ui.banter.gran_commentary.run_start.0',
+      'run-1',
+      500,
+    );
+
+    expect(log.banterHeard['ui.banter.gran_commentary.run_start.0']).toEqual({
+      firstHeardAt: { runId: 'run-1', timestamp: 500 },
+      hearCount: 1,
+    });
+  });
+
+  it('caps hearCount at the configured max to keep save size bounded', () => {
+    let log = createEmptyDiscoveryLog();
+    const leafKey = 'ui.banter.haggis_ambient.0';
+    for (let i = 0; i < BANTER_HEAR_COUNT_CAP + 100; i++) {
+      log = recordBanterHeard(log, leafKey, 'run-1', 1);
+    }
+    expect(log.banterHeard[leafKey].hearCount).toBe(BANTER_HEAR_COUNT_CAP);
+  });
+
+  it('is a no-op on empty leaf key', () => {
+    const empty = createEmptyDiscoveryLog();
+    expect(recordBanterHeard(empty, '', 'run-1', 1)).toBe(empty);
   });
 });
