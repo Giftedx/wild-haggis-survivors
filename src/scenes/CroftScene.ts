@@ -16,6 +16,7 @@ import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/he
 import { CroftAmbientLoop } from './croft/CroftMusic';
 import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
 import { createGameButton } from '../ui/gameButton';
+import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
 import { loadSave, writeSave } from '../utils/save';
@@ -60,6 +61,8 @@ export class CroftScene extends Phaser.Scene {
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
   private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
+  private gamepadNav: GamepadMenuNav | null = null;
+  private actionEntries: Array<{ key: CroftActionKey; rect: Phaser.GameObjects.Rectangle }> = [];
   private trophyHits: Phaser.GameObjects.Rectangle[] = [];
   private granBubble: Phaser.GameObjects.Container | null = null;
   private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
@@ -98,6 +101,9 @@ export class CroftScene extends Phaser.Scene {
     this.seasonalPropsGfx = null;
     this.bookshelfHit?.destroy();
     this.bookshelfHit = null;
+    this.gamepadNav?.destroy();
+    this.gamepadNav = null;
+    this.actionEntries = [];
     this.trophyHits.forEach((r) => r.destroy());
     this.trophyHits = [];
     this.granBubble?.destroy();
@@ -453,6 +459,25 @@ export class CroftScene extends Phaser.Scene {
       });
       rect.on('pointerdown', () => this.handleAction(action.key));
       this.placeholders.push(rect, label);
+      this.actionEntries.push({ key: action.key, rect });
+    });
+
+    // H1 M3 T23 — gamepad + keyboard nav over the action column. D-pad
+    // / left-stick cycles through entries; Enter / A activates the
+    // focused one. Pointer clicks still work in parallel.
+    const navEntries: GamepadMenuEntry[] = this.actionEntries.map((e) => ({
+      rect: e.rect,
+      activate: () => this.handleAction(e.key),
+    }));
+    this.gamepadNav = new GamepadMenuNav(this, navEntries);
+
+    // Keyboard shortcut: Enter activates Start Run (the primary action).
+    // GamepadMenuNav drives gamepad navigation separately — its entries
+    // share the same activate() closures so both input paths route to
+    // `handleAction`. Arrow-key keyboard nav is a future polish pass.
+    this.input.keyboard?.on('keydown-ENTER', () => {
+      const first = this.actionEntries[0];
+      if (first) this.handleAction(first.key);
     });
   }
 
