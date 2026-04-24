@@ -10,6 +10,7 @@
 import * as Phaser from 'phaser';
 import { COLORS } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
+import { t } from '../core/i18n';
 import type { NodeMapState } from '../systems/NodeMapSystem';
 import {
   NODE_ICON_CURRENT_STROKE,
@@ -17,7 +18,7 @@ import {
   NODE_ICON_FILL,
   NODE_ICON_VISITED_ALPHA,
   computeNodeMapBarLayout,
-  formatProgressLabel,
+  nodeMapProgressPosition,
 } from './nodeMapUiLayout';
 
 const MARGIN_X = 14;
@@ -85,9 +86,16 @@ export class NodeMapUI {
       .setDisplaySize(layout.bgW, layout.bgH)
       .setVisible(true);
 
+    const progress = nodeMapProgressPosition(currentIndex, map.nodes.length);
     this.label
       .setPosition(layout.labelCx, layout.labelCy)
-      .setText(formatProgressLabel(map.act, currentIndex, map.nodes.length))
+      .setText(
+        t('nodes.ui.progress', {
+          act: String(map.act),
+          current: String(progress.current),
+          total: String(progress.total),
+        }),
+      )
       .setFontSize(Math.round(12 * uiScale))
       .setVisible(true);
 

@@ -2081,7 +2081,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     for (let i = 0; i < spec.rerollTokens; i++) {
       this.upgradeUI?.grantReroll();
     }
-    this.juice.showToast('Hearth warmth — rested.', TOAST_COLORS.reward);
+    this.juice.showToast(t('nodes.ui.toast.rest'), TOAST_COLORS.reward);
     this.finalizeNodeVisit(index, node.key);
   }
 
@@ -2101,7 +2101,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         return;
       }
     }
-    this.juice.showToast('A forgotten cairn — empty but for the wind.', TOAST_COLORS.reward);
+    this.juice.showToast(t('nodes.ui.toast.hidden_empty'), TOAST_COLORS.reward);
     this.finalizeNodeVisit(index, node.key, 'lore_fragment');
   }
 
@@ -2130,8 +2130,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
     this.enterInteractivePrompt(index);
     this.nodePromptUI?.show({
-      title: 'An old shrine stirs.',
-      body: 'Offer a thought — claim a wee boon.',
+      title: t('nodes.ui.shrine_title'),
+      body: t('nodes.ui.shrine_body'),
       options: spec.candidates.map((c) => ({
         key: c.key,
         label: shrineLabelFromKey(c.key),
@@ -2163,19 +2163,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // Follow-up: real temporary-buff system with durationMs wiring.
         const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * 0.2));
         this.player.heal(heal);
-        this.juice.showToast(`Shrine boon: ${shrineLabelFromKey(key)}`, TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.shrine_boon', { label: shrineLabelFromKey(key) }), TOAST_COLORS.reward);
         break;
       }
       case 'buff_gold': {
         this.runScore.addCoinGold(50);
-        this.juice.showToast('Shrine boon: +50 gold', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.shrine_gold'), TOAST_COLORS.reward);
         break;
       }
       case 'buff_xp': {
-        // Spawn a single high-value XP gem on the player; auto-collects
-        // via the existing pickup-radius overlap next frame.
         this.xpSystem?.spawnGem(this.player.x, this.player.y, 25);
-        this.juice.showToast('Shrine boon: +25 XP', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.shrine_xp'), TOAST_COLORS.reward);
         break;
       }
       case 'buff_luck': {
@@ -2184,16 +2182,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
           if (relic) {
             this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'hidden_node');
-            this.juice.showToast('Shrine boon: a relic glints in the cairn', TOAST_COLORS.reward);
+            this.juice.showToast(t('nodes.ui.toast.shrine_luck_relic'), TOAST_COLORS.reward);
             break;
           }
         }
         this.runScore.addCoinGold(30);
-        this.juice.showToast('Shrine boon: +30 gold (shelves bare)', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.shrine_luck_gold'), TOAST_COLORS.reward);
         break;
       }
       default:
-        this.juice.showToast(`Shrine boon: ${key}`, TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.shrine_boon', { label: shrineLabelFromKey(key) }), TOAST_COLORS.reward);
     }
   }
 
@@ -2211,30 +2209,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
     this.enterInteractivePrompt(index);
     this.nodePromptUI?.show({
-      title: 'The wee trader spreads a blanket.',
-      body: 'Pick one from the pack.',
+      title: t('nodes.ui.trader_title'),
+      body: t('nodes.ui.trader_body'),
       options: items.map((item) => ({
         key: item.kind,
-        label:
-          item.kind === 'relic'
-            ? 'Rare curio'
-            : item.kind === 'passive'
-              ? 'Passive charm'
-              : 'Reroll token',
-        subLabel: `(was ${item.priceGold}g, gift today)`,
+        label: t(`nodes.ui.trader_item.${item.kind}`),
+        subLabel: t('nodes.ui.trader_old_price', { price: String(item.priceGold) }),
       })),
       allowSkip: true,
       onResolve: (chosenKey) => {
         if (chosenKey === 'relic') {
           this.applyTraderRelic(state.worldPositions[index]);
         } else if (chosenKey === 'passive') {
-          // v1: passives need a catalogue hook we don't have — compensate
-          // with 40g so the player still gets a reward.
           this.runScore.addCoinGold(40);
-          this.juice.showToast('No passives in stock — kept your coin (+40g).', TOAST_COLORS.reward);
+          this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
         } else if (chosenKey === 'reroll') {
           this.upgradeUI?.grantReroll();
-          this.juice.showToast('Reroll token pocketed.', TOAST_COLORS.reward);
+          this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
         }
         this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
       },
@@ -2246,11 +2237,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
     if (!relic) {
       this.runScore.addCoinGold(40);
-      this.juice.showToast('The pack is empty — +40g on the house.', TOAST_COLORS.reward);
+      this.juice.showToast(t('nodes.ui.toast.trader_empty_pack'), TOAST_COLORS.reward);
       return;
     }
     this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
-    this.juice.showToast('A curio joins the sporran.', TOAST_COLORS.reward);
+    this.juice.showToast(t('nodes.ui.toast.trader_relic'), TOAST_COLORS.reward);
   }
 
   /**
@@ -2263,13 +2254,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.enterInteractivePrompt(index);
     const canAfford = this.player.getHp() > spec.hpCost;
     this.nodePromptUI?.show({
-      title: 'A cold voice on the wind.',
-      body: `"Pay ${spec.hpCost} HP, take ${bargainLabelFromOfferKey(spec.offerKey)}."`,
+      title: t('nodes.ui.bargain_title'),
+      body: t('nodes.ui.bargain_body', {
+        hp: String(spec.hpCost),
+        offer: bargainLabelFromOfferKey(spec.offerKey),
+      }),
       options: [
         {
           key: 'accept',
-          label: 'Accept',
-          subLabel: `(-${spec.hpCost} HP)`,
+          label: t('nodes.ui.accept'),
+          subLabel: t('nodes.ui.accept_cost', { hp: String(spec.hpCost) }),
           disabled: !canAfford,
         },
       ],
@@ -2279,7 +2273,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           this.player.takeDamage(spec.hpCost);
           this.applyBargainOffer(spec.offerKind, spec.offerKey);
         } else {
-          this.juice.showToast('Refused the bargain.', '#cccccc');
+          this.juice.showToast(t('nodes.ui.toast.bargain_refused'), '#cccccc');
         }
         this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
       },
@@ -2291,7 +2285,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const relic = this.relicSystem.rollDrop('bargain', this.runRng);
       if (relic) {
         this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'bargain');
-        this.juice.showToast('The bargain delivers a relic.', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.bargain_relic'), TOAST_COLORS.reward);
         return;
       }
     }
@@ -2300,21 +2294,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // weaponCooldownMult depending on the key.
       if (offerKey.includes('gold')) {
         this.runModifiers.goldMult *= 1.1;
-        this.juice.showToast('The bargain: +10% gold for the rest of the run.', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.bargain_gold'), TOAST_COLORS.reward);
       } else if (offerKey.includes('cooldown')) {
         this.runModifiers.weaponCooldownMult *= 0.9;
         this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-        this.juice.showToast('The bargain: weapons cool 10% faster.', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.bargain_cooldown'), TOAST_COLORS.reward);
       } else {
         this.runModifiers.damageTakenMult *= 0.9;
-        this.juice.showToast('The bargain: take 10% less damage.', TOAST_COLORS.reward);
+        this.juice.showToast(t('nodes.ui.toast.bargain_armor'), TOAST_COLORS.reward);
       }
       return;
     }
     // weapon_upgrade_token — v1 placeholder: +1 reroll + 30g.
     this.upgradeUI?.grantReroll();
     this.runScore.addCoinGold(30);
-    this.juice.showToast('The bargain: a token and a few coins.', TOAST_COLORS.reward);
+    this.juice.showToast(t('nodes.ui.toast.bargain_token'), TOAST_COLORS.reward);
   }
 
   private launchActIntermission(actN: 1 | 2): void {

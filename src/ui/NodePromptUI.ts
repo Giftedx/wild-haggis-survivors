@@ -12,6 +12,7 @@
 import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
+import { t } from '../core/i18n';
 
 export interface NodePromptOption {
   readonly key: string;
@@ -142,7 +143,7 @@ export class NodePromptUI {
         y,
         panelW - 2 * PANEL_PADDING * scale,
         scale,
-        { key: '__skip__', label: 'Leave' },
+        { key: '__skip__', label: t('nodes.ui.leave') },
         () => this.resolve(null, opts.onResolve),
       );
     }

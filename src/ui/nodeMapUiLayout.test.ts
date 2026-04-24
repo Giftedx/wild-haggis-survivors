@@ -5,7 +5,7 @@ import {
   NODE_ICON_FILL,
   NODE_ICON_VISITED_ALPHA,
   computeNodeMapBarLayout,
-  formatProgressLabel,
+  nodeMapProgressPosition,
 } from './nodeMapUiLayout';
 
 function make(type: NodeType, key = type): NodeDef {
@@ -82,19 +82,19 @@ describe('computeNodeMapBarLayout', () => {
   });
 });
 
-describe('formatProgressLabel', () => {
-  it('renders act + 1-based progress', () => {
-    expect(formatProgressLabel(1, 0, 4)).toBe('Act 1 · 1/4');
-    expect(formatProgressLabel(2, 2, 4)).toBe('Act 2 · 3/4');
-    expect(formatProgressLabel(3, 4, 5)).toBe('Act 3 · 5/5');
+describe('nodeMapProgressPosition', () => {
+  it('1-based cursor on a non-empty path', () => {
+    expect(nodeMapProgressPosition(0, 4)).toEqual({ current: 1, total: 4 });
+    expect(nodeMapProgressPosition(2, 4)).toEqual({ current: 3, total: 4 });
+    expect(nodeMapProgressPosition(4, 5)).toEqual({ current: 5, total: 5 });
   });
 
   it('handles an empty path cleanly', () => {
-    expect(formatProgressLabel(1, 0, 0)).toBe('Act 1 · 0/0');
+    expect(nodeMapProgressPosition(0, 0)).toEqual({ current: 0, total: 0 });
   });
 
   it('never reports past the total', () => {
-    expect(formatProgressLabel(1, 99, 4)).toBe('Act 1 · 4/4');
+    expect(nodeMapProgressPosition(99, 4)).toEqual({ current: 4, total: 4 });
   });
 });
 

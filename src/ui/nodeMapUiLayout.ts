@@ -123,12 +123,16 @@ export function computeNodeMapBarLayout(
   return { bgX, bgY, bgW, bgH, labelCx, labelCy, icons };
 }
 
-export function formatProgressLabel(
-  act: 1 | 2 | 3,
+/**
+ * Compute the 1-based progress pair for the HUD label.
+ * Rendering (locale-aware "Act N · x/y") is done by the NodeMapUI
+ * adapter via `t('nodes.ui.progress', …)`.
+ */
+export function nodeMapProgressPosition(
   currentIndex: number,
   total: number,
-): string {
-  // Clamp displayed "at" so the first node shows "1/N" rather than "0/N".
-  const displayed = total === 0 ? 0 : Math.min(total, Math.max(1, currentIndex + 1));
-  return `Act ${act} · ${displayed}/${total}`;
+): { current: number; total: number } {
+  if (total === 0) return { current: 0, total: 0 };
+  const current = Math.min(total, Math.max(1, currentIndex + 1));
+  return { current, total };
 }
