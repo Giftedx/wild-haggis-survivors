@@ -206,6 +206,19 @@ export const EN_STRINGS: LocaleTree = {
       wey_unknown_title: 'Untrod road',
       /** Lore line shown when the route is still hidden. */
       wey_unknown_lore: 'Not yet walked. The moor keeps the path quiet till ye choose it.',
+      /** Finds book — progress pill at the top of the grid. */
+      finds_progress: '{acquired} of {total} finds gathered',
+      /** Acquire-count chip on each cell. */
+      finds_count_chip: '×{count}',
+      /** Title + lore shown over an entry the player has not yet acquired. */
+      find_unknown_title: 'Hidden find',
+      find_unknown_lore: 'Not yet found. Some treasures only the moor can deliver.',
+      /** Category badge labels — surface in the expanded detail panel. */
+      find_cat_weapon: 'WEAPON',
+      find_cat_evolution: 'EVOLUTION',
+      find_cat_passive: 'PASSIVE',
+      find_cat_permanent: 'LASTING BOON',
+      find_cat_relic: 'RELIC',
       back: 'BACK',
     },
     loadout: {
