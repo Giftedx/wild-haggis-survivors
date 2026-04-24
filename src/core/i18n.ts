@@ -2242,6 +2242,12 @@ export const EN_STRINGS: LocaleTree = {
     low_hp: 'HP dangerously low — heartbeat thunders.',
     /** W2 Moor Road — fired when ActIntermissionScene launches. */
     act_intermission_open: 'Road splits — pick a route with 1, 2, or 3.',
+    /** A1 M4 — level-up moment: player gained a level, cards open next. */
+    level_up: 'Level up — pick a card.',
+    /** A1 M4 — echo-card draw post-cap. */
+    echo_ready: 'Echo offered — choose a small boon.',
+    /** A1 M4 — boss enrage: music swells, enemies pressure up. */
+    boss_enrage: 'Boss enrages — music swells.',
   },
   biomes: {
     bog: {

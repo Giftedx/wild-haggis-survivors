@@ -969,6 +969,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // their celebration; other variants fall through to the generic
       // pool silently (missing sub-pool == no special handling).
       this.banter?.request('level_up', { tag: this.activeVariant?.key });
+      // A1 M4 — accessibility caption.
+      this.caption('level_up', t('ui.captions.level_up'), '#ffdd66', 3500);
     });
 
     // Post-cap echo cards — XP past MAX_LEVEL accumulates into an echo
@@ -979,6 +981,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // agency instead of the old AFK XP-to-gold tail.
     this.xpSystem.events.on('echoReady', () => {
       this.levelUpFlow.handleEcho();
+      // A1 M4 — accessibility caption.
+      this.caption('echo_ready', t('ui.captions.echo_ready'), '#c8a8e8', 3500);
     });
 
     // Player ↔ Enemy collision
@@ -1207,7 +1211,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
 
     this.eventBusDispose?.();
-    this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });
+    this.eventBusDispose = wireSceneEventBus({
+      getJuice: () => this.juice,
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.relicSlotUI?.destroy();

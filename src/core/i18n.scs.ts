@@ -2024,6 +2024,9 @@ export const SCS_STRINGS: LocaleTree = {
     death_fall: 'Hooves doon — tha moor quaitens.',
     low_hp: 'HP dangerously low — hertbeat dunders.',
     act_intermission_open: 'Road splits — pick a route wi 1, 2, or 3.',
+    level_up: 'Level up — pick a cairt.',
+    echo_ready: 'Echo offered — wale a wee boon.',
+    boss_enrage: 'Boss enrages — tha music swells.',
   },
   tutorial: {
     move: 'WASD or stick tae roam — wapens fire theirsels. SPACE: a cheeky dash through trouble (an through beasties).',

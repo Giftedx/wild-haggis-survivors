@@ -60,4 +60,25 @@ describe('wireSceneEventBus', () => {
     expect(showToast).toHaveBeenCalledTimes(1); // only the B subscription
     disposeB();
   });
+
+  it('A1 M4 — emits parity captions for boss enrage + achievement when hook is present', () => {
+    const caption = vi.fn();
+    const dispose = wireSceneEventBus({ ...hooks, caption });
+    globalEventBus.emit('bossEnraged', 'gordon');
+    globalEventBus.emit('ACHIEVEMENT_UNLOCKED', { id: 'x', title: 'Deed Done' });
+    expect(caption).toHaveBeenCalledTimes(2);
+    const ids = caption.mock.calls.map((c) => c[0]);
+    expect(ids).toContain('boss_enrage');
+    expect(ids).toContain('achievement');
+    dispose();
+  });
+
+  it('no-ops when caption hook absent (older scene consumers)', () => {
+    const dispose = wireSceneEventBus(hooks);
+    expect(() => {
+      globalEventBus.emit('bossEnraged', 'gordon');
+      globalEventBus.emit('ACHIEVEMENT_UNLOCKED', { id: 'x', title: 'y' });
+    }).not.toThrow();
+    dispose();
+  });
 });
