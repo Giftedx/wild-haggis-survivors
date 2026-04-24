@@ -1357,6 +1357,36 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().standingStonesPicked).toEqual({ mending: 1 });
   });
 
+  it('bumpBossKillCount starts and increments per-boss lifetime tally', async () => {
+    const { bumpBossKillCount } = await import('./save');
+    bumpBossKillCount('gordon');
+    bumpBossKillCount('gordon');
+    bumpBossKillCount('tour_bus');
+    const save = loadSave();
+    expect(save.bossKillCounts.gordon).toBe(2);
+    expect(save.bossKillCounts.tour_bus).toBe(1);
+    expect(save.bossKillCounts.taxman).toBeUndefined();
+  });
+
+  it('bumpCursedVictoryByBoss tracks per-boss cursed-run kills', async () => {
+    const { bumpCursedVictoryByBoss } = await import('./save');
+    bumpCursedVictoryByBoss('taxman');
+    bumpCursedVictoryByBoss('taxman');
+    bumpCursedVictoryByBoss('gordon');
+    const save = loadSave();
+    expect(save.cursedVictoriesByBoss.taxman).toBe(2);
+    expect(save.cursedVictoriesByBoss.gordon).toBe(1);
+  });
+
+  it('addFirstRouteVisit is idempotent on repeat keys', async () => {
+    const { addFirstRouteVisit } = await import('./save');
+    addFirstRouteVisit('up_the_brae');
+    addFirstRouteVisit('up_the_brae');
+    addFirstRouteVisit('round_the_loch');
+    const save = loadSave();
+    expect(save.firstRouteVisits).toEqual(['up_the_brae', 'round_the_loch']);
+  });
+
   it('bumpStandingStonePick increments existing counters', () => {
     writeSave({ ...createDefaultSave(), standingStonesPicked: { fire: 4 } });
     bumpStandingStonePick('fire');

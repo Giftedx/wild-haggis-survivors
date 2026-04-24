@@ -1204,6 +1204,59 @@ export function wipeIronmoorHistory(save: SaveData): SaveData {
  * Centralising lets the storage failure mode evolve in one place
  * (silent now; could become a debug warning later).
  */
+/**
+ * H1 M2 T15 — bump the lifetime boss kill count for `bossKey`. Called
+ * live from GameScene's boss-kill hook so the Croft mantelpiece picks
+ * up new trophies even if the player abandons the run (quits to menu
+ * / closes the tab mid-run). Best-effort on storage failure — no run
+ * gameplay depends on this counter.
+ */
+export function bumpBossKillCount(bossKey: string): void {
+  try {
+    const cur = loadSave();
+    const counts = { ...(cur.bossKillCounts ?? {}) };
+    counts[bossKey] = (counts[bossKey] ?? 0) + 1;
+    writeSave({ ...cur, bossKillCounts: counts });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * H1 M2 T15 — bump the per-boss cursed-kill tally for `bossKey`. Called
+ * when a boss dies while a curse was active on the run, regardless of
+ * whether the run ultimately ends in victory. The mantelpiece's
+ * 'cursed' tier gates on `>=1` here, so any cursed-run boss kill
+ * promotes the trophy to its cursed variant (see `CroftTrophies`).
+ */
+export function bumpCursedVictoryByBoss(bossKey: string): void {
+  try {
+    const cur = loadSave();
+    const counts = { ...(cur.cursedVictoriesByBoss ?? {}) };
+    counts[bossKey] = (counts[bossKey] ?? 0) + 1;
+    writeSave({ ...cur, cursedVictoriesByBoss: counts });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * H1 M2 T16 — record a first-picked Moor Road route. Idempotent —
+ * writes only when the routeKey isn't already present. Used by
+ * ActIntermissionScene's resolve callback to light up the Croft
+ * photo-wall polaroid on the first pick, then stay quiet on reruns.
+ */
+export function addFirstRouteVisit(routeKey: string): void {
+  try {
+    const cur = loadSave();
+    const visits = cur.firstRouteVisits ?? [];
+    if (visits.includes(routeKey)) return;
+    writeSave({ ...cur, firstRouteVisits: [...visits, routeKey] });
+  } catch {
+    /* best-effort */
+  }
+}
+
 export function bumpStandingStonePick(boonId: string): void {
   try {
     const cur = loadSave();

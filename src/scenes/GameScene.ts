@@ -18,6 +18,7 @@ import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
   bumpRoutePicked, bumpItemAcquired, bumpBanterHeard, bumpFirstTimeEvent,
+  bumpBossKillCount, bumpCursedVictoryByBoss,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -888,7 +889,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       },
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
       onEliteKilled: (x, y) => this.rollAndSpawnRelic('elite', x, y),
-      onBossKilled: (bossKey, x, y) => this.rollAndSpawnRelic('boss', x, y, bossKey),
+      onBossKilled: (bossKey, x, y) => {
+        // H1 M2 T15 — persist per-boss kill counts for the Croft
+        // mantelpiece trophy tiers. Cursed-run kills also promote the
+        // cursed tier regardless of whether the run ends in victory.
+        bumpBossKillCount(bossKey);
+        if (this.activeCurseKey) bumpCursedVictoryByBoss(bossKey);
+        this.rollAndSpawnRelic('boss', x, y, bossKey);
+      },
       modifyLifesteal: (base) => this.relicEffectDriver?.modifyLifesteal(base, this.time.now) ?? base,
       modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
       tryCairnStoneMagnet: (x, y) => {
