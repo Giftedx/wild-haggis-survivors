@@ -52,3 +52,25 @@ export function createEmptyDiscoveryLog(): DiscoveryLog {
     almanacVisits: 0,
   };
 }
+
+/**
+ * Record a beastie encounter. Seeds `firstSeenAt` on the first call for
+ * this key and increments `seenCount` on every call. Returns a new log;
+ * never mutates the input. Empty `beastieKey` is a no-op (same ref back).
+ */
+export function recordBeastieSeen(
+  log: DiscoveryLog,
+  beastieKey: string,
+  runId: string,
+  timestamp: number,
+): DiscoveryLog {
+  if (!beastieKey) return log;
+  const prev = log.beastiesSeen[beastieKey];
+  const entry: BeastieEntry = prev
+    ? { ...prev, seenCount: prev.seenCount + 1 }
+    : { firstSeenAt: { runId, timestamp }, seenCount: 1, killCount: 0 };
+  return {
+    ...log,
+    beastiesSeen: { ...log.beastiesSeen, [beastieKey]: entry },
+  };
+}
