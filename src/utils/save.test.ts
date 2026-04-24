@@ -50,7 +50,7 @@ describe('save migration', () => {
       unlockedVariants: ['classic'],
     });
 
-    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.gold).toBe(250);
     expect(migrated.upgrades).toEqual({ strong_legs: 2, thick_hide: 1 });
     expect(migrated.totalRuns).toBe(8);
@@ -360,8 +360,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 7', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(7);
+  it('SAVE_SCHEMA_VERSION is 8', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(8);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -394,7 +394,7 @@ describe('save schema v3 → v4 (W2 routes)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v3);
-    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.gold).toBe(123);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].routes).toEqual([]);
@@ -488,7 +488,7 @@ describe('save schema v4 → v5 (T1 replay blob)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v4);
-    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].replay).toBeUndefined();
     expect(migrated.runHistory[0].timeSurvivedSec).toBe(400);
@@ -621,7 +621,7 @@ describe('save schema v5 → v6 (T1 Phase 3 ReplayBlobAny widening)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v5);
-    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.gold).toBe(77);
     expect(migrated.runHistory).toHaveLength(1);
     expect(migrated.runHistory[0].replay).toEqual(replayBlobV1);
@@ -692,7 +692,7 @@ describe('save schema v6 → v7 (B1 banter tracking)', () => {
       settings: { soundOn: true, musicOn: true },
     };
     const migrated = migrateSave(v6);
-    expect(migrated.schemaVersion).toBe(7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.gold).toBe(42);
     expect(migrated.seenEnemies).toEqual([]);
     expect(migrated.firstTimeEventsFired).toEqual([]);
@@ -725,6 +725,154 @@ describe('save schema v6 → v7 (B1 banter tracking)', () => {
       seenEnemies: ['kelpie', 42, null, 'kelpie', 'selkie', ''],
     });
     expect(migrated.seenEnemies).toEqual(['kelpie', 'selkie']);
+  });
+});
+
+describe('save schema v7 → v8 (C1 Highland Almanac discoveryLog)', () => {
+  it('fresh save has an empty discoveryLog', () => {
+    const fresh = createDefaultSave();
+    expect(fresh.discoveryLog).toEqual({
+      beastiesSeen: {},
+      routesVisited: {},
+      findsAcquired: {},
+      banterHeard: {},
+      almanacVisits: 0,
+    });
+  });
+
+  it('migrates a v7 save to current, retro-seeds discoveryLog from runHistory', () => {
+    const routes: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 180, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'through_the_kirkyard', atGameTimeSec: 420, defaultedBySetting: false },
+    ];
+    const v7: unknown = {
+      schemaVersion: 7,
+      gold: 100,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 2,
+      bestTime: 500,
+      bestKills: 100,
+      totalKills: 150,
+      totalGoldEarned: 200,
+      bestCombo: 10,
+      victories: 1,
+      runHistory: [
+        {
+          timestamp: 1000,
+          timeSurvivedSec: 300,
+          enemiesKilled: 50,
+          level: 5,
+          bossKills: 1,
+          goldEarned: 50,
+          bestCombo: 5,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: ['thistle_shot', 'claymore'],
+          routes,
+          runSeed: 42,
+        },
+      ],
+      seenEnemies: [],
+      firstTimeEventsFired: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.gold).toBe(100);
+    expect(migrated.discoveryLog.routesVisited.up_the_brae.pickCount).toBe(1);
+    expect(migrated.discoveryLog.routesVisited.through_the_kirkyard.pickCount).toBe(1);
+    expect(migrated.discoveryLog.findsAcquired.thistle_shot.acquireCount).toBe(1);
+    expect(migrated.discoveryLog.findsAcquired.claymore.acquireCount).toBe(1);
+    expect(migrated.discoveryLog.findsAcquired.thistle_shot.firstAcquiredAt.runId).toBe(
+      'legacy:42',
+    );
+    // Beasties + banter not reconstructible from pre-v8 history.
+    expect(migrated.discoveryLog.beastiesSeen).toEqual({});
+    expect(migrated.discoveryLog.banterHeard).toEqual({});
+  });
+
+  it('preserves an existing discoveryLog verbatim on round-trip', () => {
+    const save = {
+      ...createDefaultSave(),
+      discoveryLog: {
+        beastiesSeen: {
+          kelpie: {
+            firstSeenAt: { runId: 'run-1', timestamp: 100 },
+            seenCount: 5,
+            killCount: 3,
+          },
+        },
+        routesVisited: {},
+        findsAcquired: {},
+        banterHeard: {
+          'ui.banter.gran.run_start.0': {
+            firstHeardAt: { runId: 'run-1', timestamp: 200 },
+            hearCount: 7,
+          },
+        },
+        almanacVisits: 2,
+      },
+    };
+    const migrated = migrateSave(save);
+    expect(migrated.discoveryLog.beastiesSeen.kelpie.seenCount).toBe(5);
+    expect(migrated.discoveryLog.beastiesSeen.kelpie.killCount).toBe(3);
+    expect(
+      migrated.discoveryLog.banterHeard['ui.banter.gran.run_start.0'].hearCount,
+    ).toBe(7);
+    expect(migrated.discoveryLog.almanacVisits).toBe(2);
+  });
+
+  it('coerces a malformed discoveryLog to empty without touching other fields', () => {
+    const migrated = migrateSave({
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      gold: 50,
+      discoveryLog: 'not an object',
+    });
+    expect(migrated.gold).toBe(50);
+    expect(migrated.discoveryLog).toEqual({
+      beastiesSeen: {},
+      routesVisited: {},
+      findsAcquired: {},
+      banterHeard: {},
+      almanacVisits: 0,
+    });
+  });
+
+  it('does not retro-seed when discoveryLog is present (even if runHistory has routes)', () => {
+    const save = {
+      ...createDefaultSave(),
+      runHistory: [
+        {
+          timestamp: 1000,
+          timeSurvivedSec: 300,
+          enemiesKilled: 50,
+          level: 5,
+          bossKills: 1,
+          goldEarned: 50,
+          bestCombo: 5,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: ['thistle_shot'],
+          routes: [
+            { slot: 1 as const, routeKey: 'brae_forest', atGameTimeSec: 180, defaultedBySetting: false },
+          ],
+          runSeed: 42,
+        },
+      ],
+      discoveryLog: {
+        beastiesSeen: {},
+        routesVisited: {},
+        findsAcquired: {},
+        banterHeard: {},
+        almanacVisits: 3,
+      },
+    };
+    const migrated = migrateSave(save);
+    expect(migrated.discoveryLog.routesVisited).toEqual({});
+    expect(migrated.discoveryLog.findsAcquired).toEqual({});
+    expect(migrated.discoveryLog.almanacVisits).toBe(3);
   });
 });
 

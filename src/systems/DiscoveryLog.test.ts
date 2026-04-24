@@ -9,6 +9,7 @@ import {
   recordBeastieSeen,
   recordItemAcquired,
   recordRoutePicked,
+  retroactiveSeedFromHistory,
   BANTER_HEAR_COUNT_CAP,
 } from './DiscoveryLog';
 
@@ -96,7 +97,7 @@ describe('DiscoveryLog.recordBeastieKilled', () => {
   });
 
   it('is a no-op on empty key', () => {
-    let log = recordBeastieSeen(createEmptyDiscoveryLog(), 'kelpie', 'run-1', 100);
+    const log = recordBeastieSeen(createEmptyDiscoveryLog(), 'kelpie', 'run-1', 100);
     const next = recordBeastieKilled(log, '');
     expect(next).toBe(log);
   });
@@ -256,5 +257,64 @@ describe('DiscoveryLog serialisation', () => {
       },
     });
     expect(revived.banterHeard['leaf.a'].hearCount).toBe(BANTER_HEAR_COUNT_CAP);
+  });
+});
+
+describe('DiscoveryLog.retroactiveSeedFromHistory', () => {
+  it('returns empty log on empty history', () => {
+    expect(retroactiveSeedFromHistory([])).toEqual(createEmptyDiscoveryLog());
+  });
+
+  it('seeds routes + weapons from run history, sorted by timestamp', () => {
+    const log = retroactiveSeedFromHistory([
+      {
+        timestamp: 2000,
+        weaponKeys: ['thistle_shot', 'claymore'],
+        routes: [{ routeKey: 'up_the_brae' }],
+        runSeed: 42,
+      },
+      {
+        timestamp: 1000,
+        weaponKeys: ['thistle_shot'],
+        routes: [{ routeKey: 'through_the_kirkyard' }, { routeKey: 'up_the_brae' }],
+        runSeed: 7,
+      },
+    ]);
+
+    expect(log.routesVisited.up_the_brae.pickCount).toBe(2);
+    expect(log.routesVisited.up_the_brae.firstPickedAt).toEqual({
+      runId: 'legacy:7',
+      timestamp: 1000,
+    });
+    expect(log.routesVisited.through_the_kirkyard.pickCount).toBe(1);
+    expect(log.findsAcquired.thistle_shot.acquireCount).toBe(2);
+    expect(log.findsAcquired.claymore.acquireCount).toBe(1);
+    expect(log.findsAcquired.thistle_shot.firstAcquiredAt.runId).toBe('legacy:7');
+  });
+
+  it('falls back to timestamp-based runId when runSeed is absent', () => {
+    const log = retroactiveSeedFromHistory([
+      {
+        timestamp: 5555,
+        weaponKeys: ['thistle_shot'],
+        routes: [{ routeKey: 'up_the_brae' }],
+      },
+    ]);
+    expect(log.findsAcquired.thistle_shot.firstAcquiredAt.runId).toBe('legacy:5555');
+  });
+
+  it('leaves beasties + banter empty (not reconstructible from history)', () => {
+    const log = retroactiveSeedFromHistory([
+      { timestamp: 1, weaponKeys: ['thistle_shot'], routes: [{ routeKey: 'up_the_brae' }] },
+    ]);
+    expect(log.beastiesSeen).toEqual({});
+    expect(log.banterHeard).toEqual({});
+    expect(log.almanacVisits).toBe(0);
+  });
+
+  it('tolerates missing routes / weapons fields', () => {
+    const log = retroactiveSeedFromHistory([{ timestamp: 1, weaponKeys: [] }]);
+    expect(log.routesVisited).toEqual({});
+    expect(log.findsAcquired).toEqual({});
   });
 });

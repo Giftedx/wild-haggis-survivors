@@ -272,3 +272,49 @@ function coerceBanterMap(raw: unknown): Record<string, BanterEntry> {
   }
   return out;
 }
+
+/**
+ * Run-history entry shape the retroactive seeder needs. Narrower than
+ * the full `RunHistoryEntry` in save.ts so the seeder stays decoupled
+ * from the save module (no circular import).
+ */
+export interface RetroHistoryEntry {
+  readonly timestamp: number;
+  readonly weaponKeys: readonly string[];
+  readonly routes?: readonly { readonly routeKey: string }[];
+  readonly runSeed?: number;
+}
+
+/**
+ * Reconstruct an approximate DiscoveryLog from pre-C1 run history.
+ * Spec §3 + §8: we can seed `routesVisited` (history carries
+ * `routes`) and `findsAcquired` for weapons (history carries
+ * `weaponKeys`). Beasties and banter aren't reconstructible — the
+ * run-summary only carries aggregate counts, not which enemy types
+ * were encountered, and no banter tracking exists pre-C1. Those
+ * stay empty and fill forward from first in-game encounter post-C1.
+ *
+ * `firstSeenAt.runId` synthesises from `runSeed` when present, else
+ * `legacy:${timestamp}` — enough to disambiguate entries while being
+ * honest that pre-C1 precision is low.
+ */
+export function retroactiveSeedFromHistory(
+  history: readonly RetroHistoryEntry[],
+): DiscoveryLog {
+  let log = createEmptyDiscoveryLog();
+  const sorted = [...history].sort((a, b) => a.timestamp - b.timestamp);
+  for (const entry of sorted) {
+    const runId =
+      typeof entry.runSeed === 'number' && Number.isFinite(entry.runSeed)
+        ? `legacy:${entry.runSeed >>> 0}`
+        : `legacy:${entry.timestamp}`;
+    const ts = entry.timestamp;
+    for (const pick of entry.routes ?? []) {
+      if (pick?.routeKey) log = recordRoutePicked(log, pick.routeKey, runId, ts);
+    }
+    for (const weaponKey of entry.weaponKeys ?? []) {
+      if (weaponKey) log = recordItemAcquired(log, weaponKey, runId, ts);
+    }
+  }
+  return log;
+}

@@ -63,6 +63,13 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     runHistory: [],
     seenEnemies: [],
     firstTimeEventsFired: [],
+    discoveryLog: {
+      beastiesSeen: {},
+      routesVisited: {},
+      findsAcquired: {},
+      banterHeard: {},
+      almanacVisits: 0,
+    },
     settings: { soundOn: true, musicOn: true },
     ...overrides,
   };

@@ -15,9 +15,16 @@ import {
   getVariantByKey,
   meetsVariantUnlockCondition,
 } from '../data/variants';
+import {
+  createEmptyDiscoveryLog,
+  discoveryLogFromJSON,
+  retroactiveSeedFromHistory,
+  type DiscoveryLog,
+  type RetroHistoryEntry,
+} from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 7;
+export const SAVE_SCHEMA_VERSION = 8;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -183,6 +190,15 @@ export interface SaveData {
    */
   firstTimeEventsFired: string[];
 
+  /**
+   * C1 Highland Almanac — discovery-log tracking for the four-book meta.
+   * Pure data; all increments live in `src/systems/DiscoveryLog.ts`.
+   * Pre-v8 saves get a retroactive seed from `runHistory` on first load
+   * (routes + weapons reconstructible; beasties + banter start empty).
+   * v8 addition.
+   */
+  discoveryLog: DiscoveryLog;
+
   /** Settings */
   settings: SaveSettings;
 }
@@ -257,6 +273,7 @@ const DEFAULT_SAVE: SaveData = {
   runHistory: [],
   seenEnemies: [],
   firstTimeEventsFired: [],
+  discoveryLog: createEmptyDiscoveryLog(),
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -270,6 +287,7 @@ export function createDefaultSave(): SaveData {
     runHistory: [],
     seenEnemies: [],
     firstTimeEventsFired: [],
+    discoveryLog: createEmptyDiscoveryLog(),
     settings: { ...DEFAULT_SETTINGS },
   };
 }
@@ -321,6 +339,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV5ToV6(raw));
     case 6:
       return finalizeSaveCandidate(migrateV6ToV7(raw));
+    case 7:
+      return finalizeSaveCandidate(migrateV7ToV8(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -477,6 +497,16 @@ function migrateV6ToV7(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v7 → v8 adds `discoveryLog: DiscoveryLog` for the C1 Highland Almanac.
+ * Pure version bump; `finalizeSaveCandidate` handles two cases:
+ * (a) field absent (pre-v8 save) — retroactively seed from runHistory;
+ * (b) field present but malformed — coerce via discoveryLogFromJSON.
+ */
+function migrateV7ToV8(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -497,6 +527,8 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
       cursedVictoriesCompleted = 0;
     }
   }
+
+  const discoveryLog = coerceDiscoveryLog(candidate, runHistory);
 
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
@@ -522,8 +554,32 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     runHistory,
     seenEnemies: coerceStringArray(candidate.seenEnemies),
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),
+    discoveryLog,
     settings: coerceSettings(candidate.settings),
   };
+}
+
+/**
+ * C1 v8 — discovery-log coercion with retroactive seed. Two cases:
+ * (a) the field is absent from the candidate — pre-v8 save; seed an
+ *     approximate log from runHistory (routes + weapons reconstructible).
+ * (b) the field is present — coerce malformed entries away via
+ *     discoveryLogFromJSON; caller's good entries survive.
+ */
+function coerceDiscoveryLog(
+  candidate: SaveRecord,
+  runHistory: readonly RunHistoryEntry[],
+): DiscoveryLog {
+  if ('discoveryLog' in candidate) {
+    return discoveryLogFromJSON(candidate.discoveryLog);
+  }
+  const retroEntries: RetroHistoryEntry[] = runHistory.map((entry) => ({
+    timestamp: entry.timestamp,
+    weaponKeys: entry.weaponKeys,
+    routes: entry.routes,
+    ...(typeof entry.runSeed === 'number' ? { runSeed: entry.runSeed } : {}),
+  }));
+  return retroactiveSeedFromHistory(retroEntries);
 }
 
 /**
