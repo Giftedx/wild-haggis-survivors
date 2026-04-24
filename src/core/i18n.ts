@@ -219,6 +219,44 @@ export const EN_STRINGS: LocaleTree = {
       find_cat_passive: 'PASSIVE',
       find_cat_permanent: 'LASTING BOON',
       find_cat_relic: 'RELIC',
+      /** Banter book — progress pill at the top of the pool list. */
+      banter_progress: '{heard} of {total} lines kent',
+      /** Per-pool heard-count chip (row chip + expanded panel). */
+      banter_heard_chip: '{heard}/{total}',
+      /** Shown in the expansion when the pool has no heard lines yet. */
+      banter_none_heard: 'Nae lines yet — keep walkin.',
+      /** Shown when heard lines overflow the inline display cap. */
+      banter_more_heard: '… an {count} mair ye\'ve heard',
+      /** Tone pill labels surfaced in the expanded panel. */
+      banter_tone_hearth: 'HEARTH',
+      banter_tone_edge: 'EDGE',
+      /** Pool labels + trigger hints. Hints fall back in-code if a leaf
+       *  is missing (see `buildBanterDetail.HINT_FALLBACK`); labels use
+       *  a title-cased context fallback. */
+      banter_pool: {
+        first_time: { label: 'First-Time Marks', hint: 'Fires the first time ye cross a milestone.' },
+        boss_warn: { label: 'Boss On Approach', hint: 'Fires when a boss is on the horizon.' },
+        low_hp: { label: 'Last Gasp', hint: 'Fires when yir hide\'s thin.' },
+        boss_down: { label: 'Boss Felled', hint: 'Fires when a boss drops.' },
+        weapon_evolve: { label: 'Evolution', hint: 'Fires when a weapon graduates tae its legendary form.' },
+        level_up: { label: 'Level Up', hint: 'Fires on level up.' },
+        curse_start: { label: 'Curse at the Door', hint: 'Fires when ye pick a curse at the Croft.' },
+        first_blood: { label: 'First Blood', hint: 'Fires on the first kill of a run.' },
+        kill_streak: { label: 'Killstreak', hint: 'Fires when the culls stack up.' },
+        recover: { label: 'Recover', hint: 'Fires when ye claw health back.' },
+        biome_change: { label: 'Biome Shift', hint: 'Fires when the moor shifts beneath ye.' },
+        moor_moment: { label: 'Moor Moment', hint: 'Fires when the moor offers a painted beat.' },
+        idle: { label: 'Idle', hint: 'Fires in quiet stretches.' },
+        act_intermission_enter: { label: 'Moor Road Opens', hint: 'Fires when an intermission opens.' },
+        act_complete: { label: 'Act Closed', hint: 'Fires when an act closes oot.' },
+        route_picked: { label: 'Route Picked', hint: 'Fires when ye choose a road.' },
+        gran_commentary: { label: 'Gran\'s Wink', hint: 'Fires when Gran hovers at the edge o\' the run.' },
+        death_reflection: { label: 'Death Reflection', hint: 'Fires on the death screen.' },
+        haggis_ambient: { label: 'Wee Monologues', hint: 'Fires while the beastie trots between scraps.' },
+        burns_citation: { label: 'Burns Echo', hint: 'Fires when a moment echoes a Burns line.' },
+        reliquary_pick: { label: 'Relic Lifted', hint: 'Fires when ye lift a curio fae the moor.' },
+        enemy_ambient: { label: 'Beastie Brush', hint: 'Fires when a specific beastie wanders close.' },
+      },
       back: 'BACK',
     },
     loadout: {

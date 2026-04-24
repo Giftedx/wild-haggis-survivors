@@ -65,6 +65,14 @@ export interface BanterPool {
    * `keys` silently.
    */
   keysByTag?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * C1 M4 Task 21 — pool-level rarity flag for the Almanac's Banter
+   * book. Lines in a `rare` pool surface with a ✨ marker so the player
+   * sees them as collectibles rather than everyday lines. Trigger-gated
+   * or once-per-save pools (first_time, burns_citation, reliquary_pick,
+   * ...) set this true; default = false.
+   */
+  rare?: boolean;
 }
 
 export const BANTER_POOLS: readonly BanterPool[] = [
@@ -1101,6 +1109,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     context: 'burns_citation',
     tone: 'hearth',
     priority: 43,
+    rare: true,
     keys: [
       'ui.banter.burns_citation.a',
       'ui.banter.burns_citation.b',
@@ -1174,6 +1183,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     context: 'first_time',
     tone: 'hearth',
     priority: 110,
+    rare: true,
     keys: [
       'ui.banter.first_time.a',
       'ui.banter.first_time.b',
@@ -1443,6 +1453,7 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     context: 'reliquary_pick',
     tone: 'hearth',
     priority: 45,
+    rare: true,
     keys: [
       'ui.banter.reliquary_pick.a',
       'ui.banter.reliquary_pick.b',
