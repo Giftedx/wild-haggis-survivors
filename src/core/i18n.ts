@@ -612,6 +612,9 @@ export const EN_STRINGS: LocaleTree = {
       stats_damage: 'Damage dealt: {dmg}',
       /** Subtle affordance under RESUME — keyboard + gamepad Start. */
       keys_resume: 'ESC / P / Start — resume',
+      /** R1 M3 T21 — whisky_dram active-relic button label. */
+      whisky_dram_use: 'Sip the Whisky Dram (+20% HP)',
+      whisky_dram_drunk: 'Whisky Dram — took the edge off.',
       passives_heading: 'Curios:',
       /** Pause overlay — reference for gold elite trait names (lines use ui.elite_affix.*). */
       elite_affix_heading: 'Gold elites — traits:',

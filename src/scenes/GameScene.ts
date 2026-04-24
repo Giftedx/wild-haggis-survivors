@@ -1543,6 +1543,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           getRunDamageDealt: () => this.runStatsTracker.getTotalDamage(),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
+          isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
+          onWhiskyDramRequested: () => this.activateWhiskyDram(),
         });
       }
       this.pauseMenu.open();
@@ -1914,6 +1916,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** R1 — e2e accessor; also used by the HUD slot widget in M3. */
   getHeldRelicKeys(): readonly RelicKey[] {
     return this.relicSystem?.heldKeys() ?? [];
+  }
+
+  /**
+   * R1 M3 T21 — trigger the Whisky Dram active relic. Routes the
+   * pause-menu button through the driver's one-shot; toast + SFX fire
+   * on the first successful activation only.
+   */
+  private activateWhiskyDram(): void {
+    if (!this.relicEffectDriver) return;
+    const currentHp = this.player.getHp();
+    const maxHp = this.player.getMaxHp();
+    const result = this.relicEffectDriver.activateWhiskyDram(currentHp, maxHp);
+    if (!result.fired) return;
+    const healed = Math.max(0, Math.ceil(result.hp - currentHp));
+    if (healed > 0) this.player.heal(healed);
+    this.juice.showToast(t('ui.pause.whisky_dram_drunk'), TOAST_COLORS.reward);
+    this.juice.flashWhite(120);
+    audio.playLevelUp();
   }
 
   private buildRouteResumeContext(): RouteResumeContext {

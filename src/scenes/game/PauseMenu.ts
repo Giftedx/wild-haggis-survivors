@@ -54,6 +54,16 @@ export interface PauseMenuHooks {
   getRunDamageDealt?: () => number;
   onResumeRequested(): void;
   onQuitRequested(): void;
+  /**
+   * R1 M3 T21 — Whisky Dram active-relic button. Returns true iff the
+   * player is holding whisky_dram and hasn't drunk it yet this run.
+   */
+  isWhiskyDramAvailable?: () => boolean;
+  /**
+   * R1 M3 T21 — triggered by the "Use" button when the relic is held.
+   * Scene side applies the heal + toast + SFX; menu just requests.
+   */
+  onWhiskyDramRequested?: () => void;
 }
 
 export class PauseMenu {
@@ -124,6 +134,28 @@ export class PauseMenu {
           textStyle('label', { color: resolvePauseCurseLineColor(hc), align: 'center' }),
         ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 1).setScale(uiScale)
       );
+    }
+
+    // R1 M3 T21 — Whisky Dram active-relic button. Shown only while the
+    // relic is held + unused. Positioned just below the curse chip so it
+    // reads as another run-scoped status affordance, not a settings toggle.
+    if (this.hooks.isWhiskyDramAvailable?.() === true) {
+      const whiskyY = y + height * (curseLine ? 0.445 : 0.415);
+      const { rect: whiskyBtn, label: whiskyLabel } = createGameButton(scene, {
+        x: x + width / 2, y: whiskyY, width: 240, height: 40,
+        label: t('ui.pause.whisky_dram_use'),
+        tier: 'secondary', fontSize: '16px', uiScale,
+      });
+      whiskyBtn.setScrollFactor(0).setDepth(d + 1);
+      whiskyLabel.setScrollFactor(0).setDepth(d + 2);
+      whiskyBtn.on('pointerdown', () => {
+        this.hooks.onWhiskyDramRequested?.();
+        // Re-render the menu so the button disappears after use.
+        this.close();
+        this.open();
+      });
+      this.elements.push(whiskyBtn);
+      this.elements.push(whiskyLabel);
     }
 
     // RESUME before the long elite-affix reference list so the button never covers traits text.
