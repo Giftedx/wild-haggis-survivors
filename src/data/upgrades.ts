@@ -9,6 +9,7 @@ import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { COLORS } from '../config';
 import { WEAPON_DEFS } from './weapons';
 import { t } from '../core/i18n';
+import type { RNG } from '../utils/rng';
 
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
 
@@ -202,6 +203,26 @@ export const PASSIVE_KEYS: string[] = PASSIVE_CARDS
   .filter((c): c is UpgradeCard & { effect: { type: 'add_passive'; passiveKey: string } } =>
     c.effect.type === 'add_passive')
   .map((c) => c.effect.passiveKey);
+
+/**
+ * M1 F8 — roll a random passive the player doesn't already own.
+ * Returns the UpgradeCard (for name + icon) so callers can show a
+ * proper toast and wire the apply path through `LevelUpFlow
+ * .applyPassiveEffect`. Returns null when the roster is full —
+ * callers should fall back to a refund / stub path.
+ */
+export function rollRandomUnheldPassive(
+  rng: RNG,
+  ownedPassiveKeys: readonly string[],
+): UpgradeCard | null {
+  const held = new Set(ownedPassiveKeys);
+  const available = PASSIVE_CARDS.filter((c) => {
+    const eff = c.effect as { type: 'add_passive'; passiveKey: string };
+    return !held.has(eff.passiveKey);
+  });
+  if (available.length === 0) return null;
+  return rng.pick(available);
+}
 
 // ── Stat boost cards (common filler) ──
 

@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F3 (mid-run gold-spend), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers). Trader now charges the rolled `priceGold` on every pick via `RunScoreState.spendCoinGold`; balance shown in the prompt body + a persistent HUD chip; `computeGoldReward` subtracts `coinGoldSpent` so mid-run spends can't double-dip at the Golden Haggis mint. Passive stub still refunds +40g until F8 lands.
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F3 (mid-run gold-spend), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft), F8 (trader passive-grant) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers). Trader now charges the rolled `priceGold` on every pick via `RunScoreState.spendCoinGold`; balance shown in the prompt body + a persistent HUD chip; `computeGoldReward` subtracts `coinGoldSpent` so mid-run spends can't double-dip at the Golden Haggis mint. Trader passive slot grants a real unheld passive via `rollRandomUnheldPassive` + `LevelUpFlow.grantPassive`; roster-full path still refunds +40g with the legacy stub toast.
 
 ---
 
@@ -54,13 +54,9 @@ New `dispatchStretchComplete(bossKey)` mapping (`src/scenes/game/dispatchStretch
 
 ---
 
-## F8 — Passives catalogue for trader
+## ~~F8 — Passives catalogue for trader~~ ✅ shipped 2026-04-24
 
-**Current behaviour (`openTraderNode`)**: the trader spec always offers a relic + passive + reroll in its first 3 slots. The 'passive' pick branch is a stub — it gives 40g instead of an actual passive item because no mid-run passive-grant API exists.
-
-**Target:** wire a `PassiveCatalogue.rollRandomUnheld(rng)` that returns an item the player doesn't already own, then grant it via the existing level-up card hookup. Same pattern as evolution cards — reuses `LevelUpFlow.apply(card)`.
-
-**Touch-points:** `src/data/passives.ts` (add roll helper), `src/scenes/game/LevelUpFlow.ts` (expose apply by key), `src/scenes/GameScene.ts` (`openTraderNode` passive branch).
+`rollRandomUnheldPassive(rng, held)` added alongside `PASSIVE_KEYS` in `src/data/upgrades.ts` — pure filter over `PASSIVE_CARDS` returning an `UpgradeCard` (so callers get name + icon) or `null` when the roster is full. `LevelUpFlow.grantPassive(key)` wraps the existing `pushOwnedPassive` + `applyPassiveEffect` + `bumpItemAcquired` triad so external callers skip the upgrade-card toast and surface their own flavour. `GameScene.grantTraderPassive` is the new private helper called from both live + replay paths in `openTraderNode`; it falls back to the legacy +40g stub toast (`trader_no_passives`) when the roster is full so the slot is still honest at endgame. New toast key `nodes.ui.toast.trader_passive_granted` (EN + SCS) carries `{name}` for the granted item.
 
 ---
 

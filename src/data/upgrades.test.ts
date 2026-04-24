@@ -2,10 +2,13 @@ import { describe, it, expect } from 'vitest';
 import {
   buildCardPool,
   drawCards,
+  rollRandomUnheldPassive,
   WEAPON_CARDS,
   PASSIVE_CARDS,
+  PASSIVE_KEYS,
   UpgradeCard,
 } from './upgrades';
+import { createRNG } from '../utils/rng';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 
@@ -173,5 +176,40 @@ describe('upgrade cards i18n parity', () => {
     } finally {
       setLocale(DEFAULT_LOCALE);
     }
+  });
+});
+
+describe('rollRandomUnheldPassive', () => {
+  it('returns a passive card when player owns nothing', () => {
+    const rng = createRNG(1);
+    const card = rollRandomUnheldPassive(rng, []);
+    expect(card).not.toBeNull();
+    expect(card!.effect.type).toBe('add_passive');
+  });
+
+  it('never returns a card the player already owns', () => {
+    const held: string[] = [];
+    let rng = createRNG(2);
+    // Drain the roster by rolling + recording each pick.
+    for (let i = 0; i < PASSIVE_KEYS.length; i++) {
+      const card = rollRandomUnheldPassive(rng, held);
+      expect(card).not.toBeNull();
+      const key = (card!.effect as { passiveKey: string }).passiveKey;
+      expect(held).not.toContain(key);
+      held.push(key);
+      rng = createRNG(i + 100);
+    }
+    expect(held).toHaveLength(PASSIVE_KEYS.length);
+  });
+
+  it('returns null when every passive is held', () => {
+    const rng = createRNG(3);
+    expect(rollRandomUnheldPassive(rng, PASSIVE_KEYS)).toBeNull();
+  });
+
+  it('is deterministic for the same seed + held set', () => {
+    const a = rollRandomUnheldPassive(createRNG(42), []);
+    const b = rollRandomUnheldPassive(createRNG(42), []);
+    expect(a?.id).toBe(b?.id);
   });
 });

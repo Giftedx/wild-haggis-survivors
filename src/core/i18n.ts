@@ -3049,6 +3049,8 @@ export const EN_STRINGS: LocaleTree = {
         trader_relic: 'A curio joins the sporran.',
         trader_empty_pack: 'The pack is empty — +40g on the house.',
         trader_no_passives: 'No passives in stock — kept your coin (+40g).',
+        /** M1 F8 — trader passive pick that successfully delivered. */
+        trader_passive_granted: '{name} tucked into the sporran.',
         trader_reroll: 'Reroll token pocketed.',
         shrine_boon: 'Shrine boon: {label}',
         shrine_gold: 'Shrine boon: +50 gold',

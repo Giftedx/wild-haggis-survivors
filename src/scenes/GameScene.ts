@@ -27,6 +27,7 @@ import { resolveRestEvent } from '../systems/nodeEvents/restEvent';
 import { resolveHiddenEvent } from '../systems/nodeEvents/hiddenEvent';
 import { resolveShrineEvent } from '../systems/nodeEvents/shrineEvent';
 import { resolveWeeTraderEvent } from '../systems/nodeEvents/weeTraderEvent';
+import { rollRandomUnheldPassive } from '../data/upgrades';
 import { resolveBargainEvent } from '../systems/nodeEvents/bargainEvent';
 import { NodeWaveTracker, type NodeWaveMember } from '../systems/nodeEvents/NodeWaveTracker';
 import { shrineLabelFromKey, bargainLabelFromOfferKey } from './game/nodeEventLabels';
@@ -2341,8 +2342,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (replayChoice === 'relic') {
         this.applyTraderRelic(state.worldPositions[index]);
       } else if (replayChoice === 'passive') {
-        this.runScore.addCoinGold(40);
-        this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
+        this.grantTraderPassive();
       } else if (replayChoice === 'reroll') {
         this.upgradeUI?.grantReroll();
         this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
@@ -2373,8 +2373,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           if (chosenKey === 'relic') {
             this.applyTraderRelic(state.worldPositions[index]);
           } else if (chosenKey === 'passive') {
-            this.runScore.addCoinGold(40);
-            this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
+            this.grantTraderPassive();
           } else if (chosenKey === 'reroll') {
             this.upgradeUI?.grantReroll();
             this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
@@ -2395,6 +2394,28 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
     this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
     this.juice.showToast(t('nodes.ui.toast.trader_relic'), TOAST_COLORS.reward);
+  }
+
+  /**
+   * M1 F8 — trader "passive" branch. Rolls an unheld passive from the
+   * catalogue and grants it through `LevelUpFlow.grantPassive` (same
+   * effect path as the level-up modal). Falls back to the pre-F8
+   * +40g stub when the player's roster is already full, keeping the
+   * slot honest even at endgame. Uses `runRng` for replay determinism.
+   */
+  private grantTraderPassive(): void {
+    const card = rollRandomUnheldPassive(this.runRng, this.ownedPassives);
+    if (!card) {
+      this.runScore.addCoinGold(40);
+      this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
+      return;
+    }
+    const key = (card.effect as { passiveKey: string }).passiveKey;
+    this.levelUpFlow.grantPassive(key);
+    this.juice.showToast(
+      t('nodes.ui.toast.trader_passive_granted', { name: t(card.name) }),
+      TOAST_COLORS.reward,
+    );
   }
 
   /**

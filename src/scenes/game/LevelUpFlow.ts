@@ -433,6 +433,22 @@ export class LevelUpFlow {
     applyPassiveEffectPure(this.hooks.getPlayer(), key);
   }
 
+  /**
+   * M1 F8 — grant a passive from outside the level-up modal (node
+   * trader, future event rewards). Mirrors the `add_passive` case in
+   * `apply()` but without the upgrade-card toast: callers surface
+   * their own flavoured toast. Idempotent-ish — if the key is already
+   * held the push is a no-op at the hook side (set semantics), and
+   * `applyPassiveEffectPure` re-applies stats (safe for this roster:
+   * no key layers ownership — first grant is the only grant because
+   * rolling never returns held keys).
+   */
+  grantPassive(key: string): void {
+    this.hooks.pushOwnedPassive(key);
+    this.applyPassiveEffect(key);
+    bumpItemAcquired(key, this.hooks.getDiscoveryRunId(), Date.now());
+  }
+
   private applyStatBoost(stat: string, amount: number): void {
     const player = this.hooks.getPlayer();
     switch (stat) {
