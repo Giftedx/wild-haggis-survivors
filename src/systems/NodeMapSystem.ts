@@ -28,6 +28,38 @@ export interface Position {
   y: number;
 }
 
+/**
+ * Snapshot of a generated per-act node path plus its in-run visit state.
+ * Immutable fields (act, nodes, worldPositions) are frozen at generation
+ * time; `visited` mutates as the player clears nodes. `NodeMapSystem`
+ * owns reads/writes; `RunActState` holds the reference.
+ */
+export interface NodeMapState {
+  readonly act: Act;
+  readonly nodes: readonly NodeDef[];
+  readonly worldPositions: readonly Position[];
+  visited: boolean[];
+}
+
+/** Build a fresh NodeMapState from generated nodes + positions. */
+export function buildNodeMapState(
+  act: Act,
+  nodes: readonly NodeDef[],
+  worldPositions: readonly Position[],
+): NodeMapState {
+  if (nodes.length !== worldPositions.length) {
+    throw new Error(
+      `buildNodeMapState: nodes.length (${nodes.length}) !== worldPositions.length (${worldPositions.length})`,
+    );
+  }
+  return {
+    act,
+    nodes,
+    worldPositions,
+    visited: new Array(nodes.length).fill(false),
+  };
+}
+
 // ----------------------------------------------------------------------------
 // Path generation
 // ----------------------------------------------------------------------------
