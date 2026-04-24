@@ -1,3 +1,5 @@
+import { HaarFogRenderNode } from './HaarFogRenderNode';
+import { HAAR_FOG_SHADER_ID } from './haarFog';
 import { registerShader } from './ShaderRegistry';
 
 /**
@@ -5,10 +7,9 @@ import { registerShader } from './ShaderRegistry';
  * shader ships its render-node class in this module. Keeping the registration
  * list here avoids module-import-for-side-effect patterns in `main.ts`.
  *
- * F1 M2 adds HaarFogRenderNode. Future shaders (palette-swap, outline,
- * dissolve, heat-shimmer) slot in the same way.
+ * Future shaders (palette-swap, outline, dissolve, heat-shimmer) slot in
+ * the same way.
  */
 export function registerAllShaders(): void {
-  // Placeholder — no shaders registered yet. F1 M2 adds `HaarFog`.
-  void registerShader;
+  registerShader(HAAR_FOG_SHADER_ID, HaarFogRenderNode);
 }

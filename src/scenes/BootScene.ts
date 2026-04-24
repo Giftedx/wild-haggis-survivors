@@ -24,6 +24,7 @@ import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegis
 import { bakeDecorations } from '../art/sprites/decorations';
 import { bakeGranTextures } from '../art/sprites/croft/gran';
 import { bakeHearthTextures } from '../art/sprites/croft/hearth';
+import { uploadNoiseTexture, type TextureManagerLike } from '../systems/shaders/shaders/uploadNoise';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
 import { bakeProjectiles } from '../art/sprites/projectiles';
@@ -308,6 +309,11 @@ export class BootScene extends Phaser.Scene {
     // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
     bakeGranTextures(this);
     bakeHearthTextures(this);
+    // F1 — shared noise texture for haar fog (and future shaders that
+    // sample from it: dissolve, heat-shimmer). One TextureManager entry
+    // referenced by `NOISE_TEXTURE_KEY`; Phaser handles WebGL
+    // context-lost restore automatically for cached entries.
+    uploadNoiseTexture(this.textures as unknown as TextureManagerLike);
   }
 
 
