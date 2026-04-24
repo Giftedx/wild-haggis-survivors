@@ -54,5 +54,18 @@ export interface ISceneContext {
    * lookup so JuiceSystem doesn't import RelicSystem directly.
    */
   getCeilidhChainPeriod?(): number;
+
+  /**
+   * R1 M4 — boss HP multiplier. Default 1; stone_of_destiny_shard
+   * relic raises it to 1.15. Applied on top of the existing time-
+   * scale ramp in SpawnSystem.spawnBoss.
+   */
+  getBossHpMultiplier?(): number;
+
+  /**
+   * R1 M4 — elite spawn chance multiplier. Default 1; highland_torque
+   * relic raises it to 1.2 (clamped to 1.0 after mult).
+   */
+  getEliteSpawnMultiplier?(): number;
 }
 

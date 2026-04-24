@@ -265,16 +265,20 @@ export class WeaponSystem {
 
   /**
    * R1 M3 T20d — per-hit damage modifier. Called inside dealDamageToEnemy
-   * with the resolved damage + wall-clock ms; return value replaces the
-   * damage before it lands. Used for bronze_clasp's first-hit-per-second
-   * bonus. Null = identity (no modifier). Cleared on scene restart by
-   * GameScene's resetTransientRunState pass.
+   * with the resolved damage + wall-clock ms + elite flag; return value
+   * replaces the damage before it lands. Used for bronze_clasp's
+   * first-hit-per-second bonus + highland_torque's +100% elite damage.
+   * Null = identity. Cleared on scene restart.
    */
-  setHitDamageModifier(fn: ((damage: number, nowMs: number) => number) | null): void {
+  setHitDamageModifier(
+    fn: ((damage: number, nowMs: number, isElite: boolean) => number) | null,
+  ): void {
     this.hitDamageModifier = fn;
   }
 
-  private hitDamageModifier: ((damage: number, nowMs: number) => number) | null = null;
+  private hitDamageModifier:
+    | ((damage: number, nowMs: number, isElite: boolean) => number)
+    | null = null;
 
   update(delta: number, playerX: number, playerY: number): void {
     this.frameCounter++;
@@ -918,11 +922,15 @@ export class WeaponSystem {
     isCrit: boolean = false,
     weaponKey: string = 'unknown'
   ): void {
-    // R1 M3 T20d — bronze_clasp (+15% first hit each second) + any
-    // future per-hit modifier runs first so damageDealt + enemy.takeDamage
-    // + damage logs all see the same final number.
+    // R1 M3 T20d + M4 — per-hit damage modifier runs first so
+    // damageDealt + enemy.takeDamage + damage logs all see the same
+    // final number. Covers bronze_clasp, highland_torque elite mult,
+    // fishermens_net (future velocity-aware wire).
     const finalDamage = this.hitDamageModifier
-      ? Math.max(0, Math.ceil(this.hitDamageModifier(damage, this.scene.time.now)))
+      ? Math.max(
+          0,
+          Math.ceil(this.hitDamageModifier(damage, this.scene.time.now, enemy.isElite())),
+        )
       : damage;
     this.events.emit('damageDealt', enemy.x, enemy.y, finalDamage, isCrit, weaponKey);
     const wasBoss = enemy.isBoss();

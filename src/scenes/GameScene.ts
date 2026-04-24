@@ -344,6 +344,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.relicEffectDriver?.ceilidhChainThreshold(8) ?? 8;
   }
 
+  /** R1 M4 — stone_of_destiny_shard boss HP multiplier. 1 if not held. */
+  getBossHpMultiplier(): number {
+    return this.relicEffectDriver?.modifyBossMaxHp(1) ?? 1;
+  }
+
+  /** R1 M4 — highland_torque elite spawn chance multiplier. 1 if not held. */
+  getEliteSpawnMultiplier(): number {
+    return this.relicEffectDriver?.modifyEliteSpawnChance(1) ?? 1;
+  }
+
   grantXpOverflowGold(amount: number): void {
     if (amount <= 0) return;
     this.runScore.addCoinGold(amount);
@@ -653,6 +663,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getDamageTakenMult: () => this.runModifiers.damageTakenMult,
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
       onAfterPlayerDamaged: (hpBefore) => {
+        this.relicEffectDriver?.noteDamageTaken(this.time.now);
         if (this.player.getHp() > 0) this.tryMoorMercyLuck(hpBefore);
       },
       modifyFireDamageTaken: (d) => this.relicEffectDriver.modifyFireDamageTaken(d),
@@ -665,12 +676,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-    // R1 M3 T20d — bronze_clasp +15% first hit per second. The driver
-    // owns the 1s window state so pause / restart behaviour follows
-    // the rest of the relic state.
-    this.weaponSystem.setHitDamageModifier((dmg, now) =>
-      this.relicEffectDriver.modifyWeaponDamage(dmg, now),
-    );
+    // R1 M3 T20d + M4 — per-hit damage stack. Bronze clasp first-hit
+    // window runs before highland_torque elite mult so the +15% +
+    // +100% compose predictably (no double-counting on the same hit).
+    this.weaponSystem.setHitDamageModifier((dmg, now, isElite) => {
+      const afterClasp = this.relicEffectDriver.modifyWeaponDamage(dmg, now);
+      return this.relicEffectDriver.modifyEliteDamage(afterClasp, isElite);
+    });
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
     this.bossHpTracker?.reset();
@@ -853,6 +865,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
       onEliteKilled: (x, y) => this.rollAndSpawnRelic('elite', x, y),
       onBossKilled: (bossKey, x, y) => this.rollAndSpawnRelic('boss', x, y, bossKey),
+      modifyLifesteal: (base) => this.relicEffectDriver?.modifyLifesteal(base, this.time.now) ?? base,
+      modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
     });
     this.weaponSystem.events.on(
       'enemyKilled',
@@ -929,9 +943,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getTweens: () => this.tweens,
       getSettingsManager: () => this.settingsManager,
       isVictoryPending: () => this.runScore.victoryPending,
-      onAfterNonFatalHit: (hpBefore) => this.tryMoorMercyLuck(hpBefore),
+      onAfterNonFatalHit: (hpBefore) => {
+        // R1 M4 — stamp clootie_rag lifesteal-double window + reset
+        // grans_teapot damage-free timer on every hit the haggis
+        // survives. Fatal hits skip: no run remains to collect on.
+        this.relicEffectDriver?.noteDamageTaken(this.time.now);
+        this.tryMoorMercyLuck(hpBefore);
+      },
       armIFrames: (ms) => this.armIFrames(ms),
       onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
+      modifyEnemyContactDamage: (base, enemyKey) => {
+        // R1 M4 — midgie_repellent zeroes midge-swarm damage.
+        if (enemyKey === 'midge' && this.relicEffectDriver?.isMidgieSwarmImmune()) {
+          return 0;
+        }
+        return base;
+      },
     });
     this.playerEnemyCollider = this.physics.add.overlap(
       this.player,
@@ -1440,6 +1467,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // rare effects (Gran's Teapot damage-free seconds) pause correctly
     // with the game rather than running off wall-clock.
     this.relicEffectDriver?.updatePerFrame(scaledDelta);
+    // grans_teapot — heal 5% max HP/s after 5s unharmed. Integer heals
+    // only; fractional carry lives inside the driver state.
+    const teapotHeal = this.relicEffectDriver?.tickGransTeapotFrame(
+      scaledDelta,
+      this.player.getMaxHp(),
+    ) ?? 0;
+    if (teapotHeal > 0) this.player.heal(teapotHeal);
     this.relicSlotUI?.update();
 
     if (this.ancestralEcho) {

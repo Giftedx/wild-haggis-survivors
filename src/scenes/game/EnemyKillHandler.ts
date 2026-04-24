@@ -91,6 +91,19 @@ export interface EnemyKillHandlerHooks {
   onEliteKilled?(x: number, y: number): void;
 
   /**
+   * R1 M4 — clootie_rag doubles lifesteal for 5s after taking damage.
+   * Identity default when the driver isn't wired.
+   */
+  modifyLifesteal?(base: number): number;
+
+  /**
+   * R1 M4 — stone_of_destiny_shard +50% XP from all sources. Applied
+   * after player XP multiplier + combo bonus so the relic composes
+   * on top of every existing XP stack.
+   */
+  modifyXpGain?(base: number): number;
+
+  /**
    * Called after every boss kill. R1 M2 T14: GameScene wires this to a
    * guaranteed Relic drop for Tier-2+ bosses (whitelist lives in
    * data/relicDrops.ts). `bossKey` lets the hook short-circuit for
@@ -135,11 +148,9 @@ export class EnemyKillHandler {
 
     // Kill-streak XP bonus: +1% per combo count (capped at +50%).
     const comboXpBonus = Math.min(0.5, juice.getComboCount() * 0.01);
-    h.getXPSystem().spawnGem(
-      x,
-      y,
-      Math.ceil(xpValue * player.getXpMultiplier() * (1 + comboXpBonus)),
-    );
+    const baseXp = xpValue * player.getXpMultiplier() * (1 + comboXpBonus);
+    const boostedXp = h.modifyXpGain?.(baseXp) ?? baseXp;
+    h.getXPSystem().spawnGem(x, y, Math.ceil(boostedXp));
     score.incrementKillCount();
 
     // C1 M2 Task 11 — Almanac Beasties book kill tally. Best-effort
@@ -201,8 +212,10 @@ export class EnemyKillHandler {
       }
     }
 
-    // Lifesteal heal on kill.
-    const lifesteal = player.getLifesteal();
+    // Lifesteal heal on kill. clootie_rag (R1 M4) doubles this for
+    // 5s after the haggis takes damage; identity otherwise.
+    const rawLifesteal = player.getLifesteal();
+    const lifesteal = h.modifyLifesteal?.(rawLifesteal) ?? rawLifesteal;
     if (lifesteal > 0) player.heal(lifesteal);
 
     // Kill milestones — per-threshold Glesga one-liner + gold reward.

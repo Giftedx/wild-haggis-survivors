@@ -45,6 +45,12 @@ export interface PlayerHitResolverHooks {
   onAfterNonFatalHit(hpBefore: number): void;
   armIFrames(durationMs: number): void;
   onPlayerKilled(): void;
+  /**
+   * R1 M4 — midgie_repellent cancels midge-swarm damage entirely. Default
+   * identity; returning 0 short-circuits the hit cascade (no iframes, no
+   * damage log, no toast) so immune midge contact reads as "bounced off."
+   */
+  modifyEnemyContactDamage?(baseDamage: number, enemyKey: string): number;
 }
 
 /** Post-hit invulnerability window (ms). Matches prior inline constant. */
@@ -95,9 +101,14 @@ export class PlayerHitResolver {
     // Curse-scaled damage before armor mitigation. Thin Hide inflates
     // incoming blows by 25%; identity mult is a no-op.
     const rawDmg = enemy.getDamage();
+    // R1 M4 — midgie_repellent zeroes midge-swarm damage. Apply first
+    // so a 0 result short-circuits the whole cascade without burning
+    // iframes or toasts.
+    const relicScaled = h.modifyEnemyContactDamage?.(rawDmg, enemy.getEnemyKey()) ?? rawDmg;
+    if (relicScaled <= 0) return;
     const incomingDmg = Math.max(
       1,
-      Math.round(rawDmg * h.getRunModifiers().damageTakenMult),
+      Math.round(relicScaled * h.getRunModifiers().damageTakenMult),
     );
     const armor = player.getArmor();
     const hpBefore = player.getHp();

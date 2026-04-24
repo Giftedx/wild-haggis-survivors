@@ -409,8 +409,12 @@ export class SpawnSystem {
       // Scale boss HP with game time — keeps bosses challenging as player
       // power grows. bossHpTimeScale() encodes the grace period + ramp.
       const timeScale = bossHpTimeScale(this.gameTimeSec);
-      if (timeScale > 1) {
-        bossAsConfig.hp = Math.ceil(boss.hp * timeScale);
+      // R1 M4 — stone_of_destiny_shard adds +15% boss HP on top of the
+      // time-ramp. Default 1 when the relic isn't held / scene doesn't
+      // expose the hook.
+      const relicMult = this.scene.getBossHpMultiplier?.() ?? 1;
+      if (timeScale > 1 || relicMult !== 1) {
+        bossAsConfig.hp = Math.ceil(boss.hp * timeScale * relicMult);
       }
 
       // Pass gameTimeSec=0 so regular HP_SCALE_PER_MINUTE isn't applied
@@ -637,7 +641,12 @@ export class SpawnSystem {
 
         // Elite chance — base from BalanceConfig + kill-pressure nudge (decays),
         // then tilted by the run-scoped W2 route weight and capped at 24%.
-        const eliteChance = resolveEliteChance(this.killPressure, this.eliteWeightMultiplier);
+        // R1 M4 — highland_torque relic adds a further *1.2 multiplier on
+        // top (clamped to [0, 1]) so elite-hunter builds get even heavier
+        // elite flow.
+        const baseEliteChance = resolveEliteChance(this.killPressure, this.eliteWeightMultiplier);
+        const relicEliteMult = this.scene.getEliteSpawnMultiplier?.() ?? 1;
+        const eliteChance = Math.min(1, baseEliteChance * relicEliteMult);
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
             && config.packSize <= 1
