@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F6 (Act 3 stretch switching) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool.
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers).
 
 ---
 
@@ -56,13 +56,9 @@ New `dispatchStretchComplete(bossKey)` mapping (`src/scenes/game/dispatchStretch
 
 ---
 
-## F7 — SCS node-name pass
+## ~~F7 — SCS node-name pass~~ ✅ shipped 2026-04-24 (draft, review open)
 
-**Current state**: `src/core/i18n.scs.ts` carries Scots overlays for the HUD progress template, prompt titles, toast strings, boon labels, offer descriptors. **56 node names fall through to EN** under the SCS→EN subset fence (EN→SCS is only locked on `ui.banter.*`, so nodes.* is legal to partial-translate).
-
-**Target:** author Scots equivalents for the 56 `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*.name` keys. Voice: same Still Game warmth as routes (e.g. "Standing stone" → "Staundin stane", "Fairy ring" → "Fairy rink"). Prompt-bodies for interactive nodes are already in SCS; names close the parity.
-
-**Touch-points:** `src/core/i18n.scs.ts` only.
+71 name keys + 28 prompt keys authored in `src/core/i18n.scs.ts` under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*`. Voice: Still Game warmth per `docs/VOICE_CARD.md` — functional phonetics (tha/ye/wi/fae/nae/auld/ken/wee), avoid caricature "och aye". Examples: "Standing stone" → "Staundin stane", "Fairy ring" → "Fairy rink", "Ghostie flit" → "Bogle flit", "Wallace-mark shrine" → "Wallace-mark shrine" (proper noun kept). Parity fence (`src/core/i18n.locale.test.ts`) holds. Native-speaker review open alongside the V2 variants blockers (Doric + Shetlandic natives, Burns Canongate audit).
 
 ---
 
