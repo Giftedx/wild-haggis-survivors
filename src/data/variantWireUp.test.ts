@@ -29,6 +29,8 @@ const SCOTS_MARKERS = [
   'hoof', 'croft', 'loch',
   // Doric (V2 Track 1)
   'quinie', 'min', 'haar', 'een',
+  // Shetlandic (V2 Track 2)
+  'peerie', 'voe', 'du', 'dee', 'skerry', 'mirry',
 ];
 
 describe('every non-classic variant is fully wired', () => {
@@ -61,6 +63,7 @@ describe('every non-classic variant is fully wired', () => {
           || !!mods.damagePct
           || !!mods.driftReductionPct
           || !!mods.cooldownReductionPct
+          || !!mods.critChancePct
           || !!mods.driftSignFlip;
         expect(hasAnyMod, `${v.key} has no stat modifier`).toBe(true);
       });

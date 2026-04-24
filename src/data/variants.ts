@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -12,6 +12,12 @@ export interface VariantModifier {
   damagePct?: number;
   driftReductionPct?: number;
   cooldownReductionPct?: number;
+  /**
+   * V2 — additive crit-chance bonus (e.g. 0.05 = +5 percentage points).
+   * Applied at run start via `applyVariantModifiers` → `Player.addCritChance`.
+   * Shared by Peerie Shetlander (+5%) and Burns's Wee Beastie (+20%).
+   */
+  critChancePct?: number;
   /**
    * Flip the sign of the Drift for this run (clockwise → anticlockwise).
    * Per wild haggis myth (SCOTTISH_RESEARCH_DEEP §11.5): two subspecies
@@ -31,7 +37,12 @@ export type VariantUnlockCondition =
   // V2 Track 1 — Doric Quinie unlock: "survive on what you caught yesterday".
   // Counter increments on victory when the run never overlapped a healing
   // circle. Wired in `applyRunSummary` via `RunHistoryContext.enteredHealingCircle`.
-  | { type: 'runs_without_healing'; required: number };
+  | { type: 'runs_without_healing'; required: number }
+  // V2 Track 2 — Peerie Shetlander unlock: "the sea way home".
+  // Counter increments on victory when biomes visited were a subset of
+  // {loch, pine} (never entered bog or heather — the "moor" biomes).
+  // Wired via `RunHistoryContext.biomesVisited` and BiomeController.
+  | { type: 'runs_in_coastal_only'; required: number };
 
 export interface HaggisPalette {
   outline: number;
@@ -72,6 +83,12 @@ export interface VariantProgressSnapshot {
    * overlapping a healing circle. Unlocks the Doric Quinie at 1.
    */
   runsWithoutHealing?: number;
+  /**
+   * V2 Track 2 — lifetime count of victorious runs whose visited-biome
+   * set was a subset of {loch, pine} (the "coastal" biomes — no bog, no
+   * heather). Unlocks the Peerie Shetlander at 1.
+   */
+  runsInCoastalOnly?: number;
   unlockedVariants?: readonly VariantKey[];
 }
 
@@ -348,6 +365,39 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // V2 Track 2 — Peerie Shetlander. Norn-tinged Shetland dialect.
+    // Stats per spec §2: +5% speed, -10 HP, +5% crit, -10% drift.
+    // Cold-hazard resist is FLAVOUR-ONLY this ship — no cold-damage
+    // concept exists in-codebase yet (see followups plan: reserved
+    // for a future winter-biome initiative). Up Helly Aa passive is
+    // similarly descoped to pure voice colour. Unlock: first run
+    // where visited biomes ⊆ {loch, pine} ("the sea way home" — no
+    // moor, no bog). Ships with `accentStyle: 'none'`; dedicated
+    // kelp-collar silhouette cue is a follow-up.
+    key: 'peerie_shetlander',
+    nameKey: 'variant.peerie_shetlander.name',
+    flavorKey: 'variant.peerie_shetlander.flavor',
+    textureKey: 'haggis_peerie_shetlander',
+    modifiers: {
+      moveSpeedPct: 0.05,
+      maxHpFlat: -10,
+      critChancePct: 0.05,
+      driftReductionPct: 0.10,
+    },
+    unlock: { type: 'runs_in_coastal_only', required: 1 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        outline: 0x121e26,
+        bodyDark: 0x1e3545,
+        bodyLight: 0x2a4a5a,
+        fur: 0x3e6275,
+        snout: 0xa8b6c4,
+        accent: 0xe0d8c8,
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -395,6 +445,8 @@ export function meetsVariantUnlockCondition(
       return (progress.cursedVictories ?? 0) >= variant.unlock.required;
     case 'runs_without_healing':
       return (progress.runsWithoutHealing ?? 0) >= variant.unlock.required;
+    case 'runs_in_coastal_only':
+      return (progress.runsInCoastalOnly ?? 0) >= variant.unlock.required;
   }
 }
 
@@ -462,6 +514,16 @@ export function getVariantUnlockProgress(
         `${variant.unlock.required}`
       );
     }
+    case 'runs_in_coastal_only': {
+      const rc = progress.runsInCoastalOnly ?? 0;
+      return createUnlockProgress(
+        t('variant.unlock.runs_in_coastal_only'),
+        rc,
+        variant.unlock.required,
+        `${rc}`,
+        `${variant.unlock.required}`
+      );
+    }
   }
 }
 
@@ -485,6 +547,7 @@ export function formatVariantModifierSummary(variant: VariantDef): string {
   if (modifiers.damagePct) parts.push(t('variant.summary.dmg', pctInterp(modifiers.damagePct)));
   if (modifiers.driftReductionPct) parts.push(t('variant.summary.drift', pctInterp(modifiers.driftReductionPct)));
   if (modifiers.cooldownReductionPct) parts.push(t('variant.summary.cdr', pctInterp(modifiers.cooldownReductionPct)));
+  if (modifiers.critChancePct) parts.push(t('variant.summary.crit', pctInterp(modifiers.critChancePct)));
   if (modifiers.driftSignFlip) parts.push(t('variant.summary.drift_flip'));
 
   return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
@@ -516,6 +579,7 @@ export function formatRunVariantLabel(variant: VariantDef): string {
     || !!modifiers.damagePct
     || !!modifiers.driftReductionPct
     || !!modifiers.cooldownReductionPct
+    || !!modifiers.critChancePct
     || !!modifiers.driftSignFlip;
   const name = t(variant.nameKey);
   if (!hasModifiers) return name;

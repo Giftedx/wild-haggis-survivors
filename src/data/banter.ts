@@ -196,6 +196,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.doric_quinie.c',
         'ui.banter.low_hp.doric_quinie.d',
       ],
+      peerie_shetlander: [
+        'ui.banter.low_hp.peerie_shetlander.a',
+        'ui.banter.low_hp.peerie_shetlander.b',
+        'ui.banter.low_hp.peerie_shetlander.c',
+        'ui.banter.low_hp.peerie_shetlander.d',
+      ],
     },
   },
   {
@@ -420,6 +426,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.doric_quinie.c',
         'ui.banter.level_up.doric_quinie.d',
       ],
+      peerie_shetlander: [
+        'ui.banter.level_up.peerie_shetlander.a',
+        'ui.banter.level_up.peerie_shetlander.b',
+        'ui.banter.level_up.peerie_shetlander.c',
+        'ui.banter.level_up.peerie_shetlander.d',
+      ],
     },
   },
   {
@@ -498,6 +510,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.doric_quinie.b',
         'ui.banter.first_blood.doric_quinie.c',
         'ui.banter.first_blood.doric_quinie.d',
+      ],
+      peerie_shetlander: [
+        'ui.banter.first_blood.peerie_shetlander.a',
+        'ui.banter.first_blood.peerie_shetlander.b',
+        'ui.banter.first_blood.peerie_shetlander.c',
+        'ui.banter.first_blood.peerie_shetlander.d',
       ],
     },
   },
@@ -579,6 +597,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.doric_quinie.c',
         'ui.banter.kill_streak.doric_quinie.d',
       ],
+      peerie_shetlander: [
+        'ui.banter.kill_streak.peerie_shetlander.a',
+        'ui.banter.kill_streak.peerie_shetlander.b',
+        'ui.banter.kill_streak.peerie_shetlander.c',
+        'ui.banter.kill_streak.peerie_shetlander.d',
+      ],
     },
   },
   {
@@ -657,6 +681,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.doric_quinie.b',
         'ui.banter.recover.doric_quinie.c',
         'ui.banter.recover.doric_quinie.d',
+      ],
+      peerie_shetlander: [
+        'ui.banter.recover.peerie_shetlander.a',
+        'ui.banter.recover.peerie_shetlander.b',
+        'ui.banter.recover.peerie_shetlander.c',
+        'ui.banter.recover.peerie_shetlander.d',
       ],
     },
   },
@@ -878,6 +908,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.doric_quinie.b',
         'ui.banter.idle.doric_quinie.c',
         'ui.banter.idle.doric_quinie.d',
+      ],
+      peerie_shetlander: [
+        'ui.banter.idle.peerie_shetlander.a',
+        'ui.banter.idle.peerie_shetlander.b',
+        'ui.banter.idle.peerie_shetlander.c',
+        'ui.banter.idle.peerie_shetlander.d',
       ],
     },
   },

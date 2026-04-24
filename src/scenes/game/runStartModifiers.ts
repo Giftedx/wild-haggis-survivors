@@ -32,6 +32,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.damagePct) player.addDamageMultiplier(modifiers.damagePct);
   if (modifiers.driftReductionPct) player.reduceDrift(modifiers.driftReductionPct);
   if (modifiers.cooldownReductionPct) player.addCooldownReduction(modifiers.cooldownReductionPct);
+  if (modifiers.critChancePct) player.addCritChance(modifiers.critChancePct);
   if (modifiers.driftSignFlip) player.flipDriftSign();
 }
 

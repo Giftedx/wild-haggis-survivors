@@ -929,6 +929,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Doon tae the bone, quinie. Grit teeth.',
           d: 'Ma breest\'s sore. Onwards.',
         },
+        peerie_shetlander: {
+          a: 'Peerie step noo, du. Wind\'s up.',
+          b: 'Skerry teeth bitin\'. Haud tae course.',
+          c: 'Keep tee risin\', du. Nae yet.',
+          d: 'Voe\'s cold. I\'m caulder. Onwards.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -1128,6 +1134,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Stronger the day. Fit we work for.',
           d: 'Fit like, a level up. Braw.',
         },
+        peerie_shetlander: {
+          a: 'Stronger, du. The wind kens.',
+          b: 'Peerie gains stack. Aye, mirry.',
+          c: 'Learnt the skerry. The ocean taught me.',
+          d: 'Up again. Like the tide, du.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1199,6 +1211,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Fit like, pal? Tae the bottom wi ye.',
           c: 'That\'s thon settled, quinie.',
           d: 'Caught wan — same as ma grandfaither wid.',
+        },
+        peerie_shetlander: {
+          a: 'First wan doon. Sea gave.',
+          b: 'Caught aff the lee side. Peerie quick.',
+          c: 'Ower the gunnel wi yon. Done.',
+          d: 'Aye, du. The harvest begins.',
         },
       },
       kill_streak: {
@@ -1273,6 +1291,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Thon\'s a braw count. Keep an een on the line.',
           d: 'Fishin\'s fine the day, quinie.',
         },
+        peerie_shetlander: {
+          a: 'Rowin\' steady, du. They fall.',
+          b: 'Peerie blades, mony o them.',
+          c: 'Like herring runs — mass comes, mass goes.',
+          d: 'The voe runs red. Braw ebb.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1344,6 +1368,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Hale again. Fit a relief, eh.',
           c: 'Ken ma legs again. Aye.',
           d: 'Fisher-family constitution, thon.',
+        },
+        peerie_shetlander: {
+          a: 'Breath back. The sea took nae yet.',
+          b: 'Peerie wounds knit. Crofter tough.',
+          c: 'Hale again, du. Mirry noo.',
+          d: 'Northern bones mend. Carry on.',
         },
       },
       biome_change: {
@@ -1599,6 +1629,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Quate spell. I\'ll tak it.',
           c: 'Nae trouble, nae troth. Aye.',
           d: 'Hear yon wind? Smells o\' haar.',
+        },
+        peerie_shetlander: {
+          a: 'Quate. Hear the wind aff the skerries.',
+          b: 'Even the seabirds are stillt.',
+          c: 'Peerie pause. Watch the sky, du.',
+          d: 'Voe\'s glass. That\'ll break shortly.',
         },
       },
       // W2 Moor Road.
@@ -2403,6 +2439,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Doric Quinie',
       flavor: 'Nor\'-east fisher-family wee beastie. Granite constitution, quick een, a heid for the haar. Fit like, min?',
     },
+    peerie_shetlander: {
+      name: 'Peerie Shetlander',
+      flavor: 'Fae the northern isles — Norn-tinged, peerie, sea-footed. The voe remembers ye, du. The wind\'s already up.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -2412,6 +2452,7 @@ export const EN_STRINGS: LocaleTree = {
       dmg: '{sign}{pct}% dmg',
       drift: '{sign}{pct}% drift',
       cdr: '{sign}{pct}% CDR',
+      crit: '{sign}{pct}% crit',
       drift_flip: 'Drift goes widdershins',
       baseline: 'Baseline stats',
     },
@@ -2424,6 +2465,7 @@ export const EN_STRINGS: LocaleTree = {
       victories: 'Victories',
       cursed_victories: 'Cursed wins',
       runs_without_healing: 'No-heal runs',
+      runs_in_coastal_only: 'Coastal-only runs',
       ready: 'Ye earned this one',
     },
   },

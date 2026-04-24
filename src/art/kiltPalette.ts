@@ -36,6 +36,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // V2 Track 1 — Doric Quinie. Aberdonian granite field, North Sea
   // silver-blue stripe, aged-gold accent (mainline palette anchor).
   doric_quinie: { field: 0x4a5a6a, fieldDark: 0x2a3a4a, stripe: 0xd0d4e0, accent: 0xc8a040 },
+  // V2 Track 2 — Peerie Shetlander. Moss + sea field, rust stripe
+  // (Viking iron echo), bleached-driftwood accent.
+  peerie_shetlander: { field: 0x3a5a4a, fieldDark: 0x1e3a2a, stripe: 0xaa6030, accent: 0xe0d8c8 },
 };
 
 /**
