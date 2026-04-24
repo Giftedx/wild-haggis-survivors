@@ -189,39 +189,39 @@
 
 ---
 
-## M4 — Banter book + rare-line teasing
+## M4 — Banter book + rare-line teasing ✓ shipped 2026-04-24
 
 ### Task 18: `BanterBook` renderer
 
-- [ ] **Step 1:** Failing test: renders one entry per banter pool with `lines heard: X of Y`.
-- [ ] **Step 2:** Implement — shows progress per pool.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `buildBanterEntries.test.ts` + `buildBanterDetail.test.ts` lock the VM (one entry per pool, ordered by priority descending, `lines heard: X of Y`).
+- [x] **Step 2:** Implement — `buildBanterEntries.ts` / `buildBanterDetail.ts` / `BanterBook.ts` renderer + i18n chrome + AlmanacScene tab wiring.
+- [x] **Step 3:** Commit — `859a42e`.
 
 ### Task 19: Line-fired wiring
 
 **Files:** `src/systems/BanterSystem.ts`.
 
-- [ ] **Step 1:** Failing test: banter line fire records in DiscoveryLog.
-- [ ] **Step 2:** Wire hook on `onLineFired`.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `BanterSystem.test.ts › onLineFired` describe block — fires once per sink emission, dropped on rate-limit / missing translation, exceptions swallowed.
+- [x] **Step 2:** Add `onLineFired?: (evt) => void` to `BanterSystemOptions`; GameScene wires it to `bumpBanterHeard`.
+- [x] **Step 3:** Commit — `8bd7c51`.
 
 ### Task 20: Unheard-line teaser
 
-- [ ] **Step 1:** Failing test: unheard line shows as "???" with trigger context hint.
-- [ ] **Step 2:** Implement teaser row in expanded pool view.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `buildBanterDetail.test.ts` locks the teaser partition (every unheard line → `???`, tags survive, heard+unheard partitions the total).
+- [x] **Step 2:** Implement — teaser rows + overflow chip below the heard block in the expanded panel (capped at 8 rows).
+- [x] **Step 3:** Commit — `8e9caff`.
 
 ### Task 21: Rare-line marker + "Hear Again" button
 
-- [ ] **Step 1:** Failing test: line with <1% fire-rate shows ✨ marker; "Hear Again" button triggers `BanterSystem.forceFire(key)`.
-- [ ] **Step 2:** Implement.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `buildBanterEntries.test.ts` locks the `rare` flag passthrough for pool-level rare pools (first_time / burns_citation / reliquary_pick).
+- [x] **Step 2:** `✨` prefix on the row label, expanded title, and heard rows of rare pools; `↻` per-line Hear Again button wired through `opts.onHearAgain` → AlmanacScene-local rehearsal toast (decoupled from GameScene's BanterSystem instance).
+- [x] **Step 3:** Commit — `acce00d`.
 
 ### Task 22: M4 ship gate
 
-- [ ] All 4 books functional.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(almanac): M4 — all 4 books complete`.
+- [x] All 4 books functional.
+- [x] `npm run ci:all` green (3189 vitest + 49 e2e passed, 4 skipped).
+- [x] Commit: `feat(almanac): M4 — Banter book complete`.
 
 ---
 
