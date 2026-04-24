@@ -155,6 +155,7 @@ describe('RunPersistenceBridge', () => {
         bossKillCount: 2,
         bossGoldEarned: 400,
         coinGoldEarned: 125,
+        coinGoldSpent: 0,
         revivalAvailable: true,
         bestCombo: 100,
         comboCount: 20,

@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers).
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F3 (mid-run gold-spend), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers). Trader now charges the rolled `priceGold` on every pick via `RunScoreState.spendCoinGold`; balance shown in the prompt body + a persistent HUD chip; `computeGoldReward` subtracts `coinGoldSpent` so mid-run spends can't double-dip at the Golden Haggis mint. Passive stub still refunds +40g until F8 lands.
 
 ---
 
@@ -20,13 +20,9 @@ Same tracker handles elite nodes. Relic roll stays at trigger-time (determinism)
 
 ---
 
-## F3 — Trader mid-run gold-spend
+## ~~F3 — Trader mid-run gold-spend~~ ✅ shipped 2026-04-24
 
-**Current behaviour (`openTraderNode`)**: trader items show `priceGold` in the label but the actual pick is free. Rationale — no mid-run gold-spend plumbing exists (gold is only earned + surfaced in `RunScoreState.coinGoldEarned`; `ShopScene` operates between-runs).
-
-**Target:** add `RunScoreState.spendCoinGold(n): boolean` (returns false when insufficient), wire the trader's option handler to call it before applying the reward, and disable the option button when the player can't afford it (mirror the bargain flow's `canAfford` gate). Also expose current-gold on the HUD chip so the player knows their budget.
-
-**Touch-points:** `src/scenes/game/RunScoreState.ts`, `src/scenes/GameScene.ts` (`openTraderNode` + `applyTraderRelic`), `src/ui/HUD.ts` (gold chip).
+`RunScoreState` gained `coinGoldSpent` + `getGoldBalance()` + `spendCoinGold(n): boolean`. `IRunState` + `RunSummary` both carry `coinGoldSpent?: number` so resume + run-end pipelines round-trip the counter. `computeGoldReward` subtracts spent from the coin pool before minting (clamped at zero so boss gold is never refunded by an over-spend). Trader modal now gates each option on `balance >= priceGold` (disabled sub-label `({price}g — short)`), and `spendCoinGold` fires before apply on both live + replay paths so RNG consumption stays byte-identical. HUD gains a `gold_chip` line (`{gold}g`) under the level readout, refreshed every frame via `this.hud.setGold(this.runScore.getGoldBalance())` with a `prevGold` cache so setText only fires on change. The passive trader slot still grants the +40g stub toast until F8 lands.
 
 ---
 

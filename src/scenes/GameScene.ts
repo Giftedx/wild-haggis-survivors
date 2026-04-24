@@ -1774,6 +1774,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hud.updateShield(this.player.hasShield());
     this.hud.setAct(this.runActState.currentAct);
     this.hud.setIronmoor(this.activeIronmoorRun);
+    this.hud.setGold(this.runScore.getGoldBalance());
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),
@@ -2317,9 +2318,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /**
-   * Wee Trader node — prompt with the resolver's stock. v1 ignores the
-   * rolled priceGold (no mid-run gold spend exists yet) and treats the
-   * offer as free-pick "bartered" flavour. Follow-up: real gold-spend.
+   * Wee Trader node — prompt with the resolver's stock. Each pick costs
+   * the rolled `priceGold`, deducted from `RunScoreState.coinGoldSpent`
+   * via `spendCoinGold`. Unaffordable options are disabled at the modal.
+   * F8-pending: the 'passive' slot still grants a stub +40g refund when
+   * accepted because no mid-run passive grant exists yet.
    */
   private openTraderNode(node: NodeDef, index: number, state: NodeMapState): void {
     const spec = resolveWeeTraderEvent(node, this.runRng);
@@ -2333,6 +2336,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // to keep the rolled-relic deterministic with the live run.
     const replayChoice = this.peekReplayChoiceFor(node.key);
     if (replayChoice !== null) {
+      const replayItem = items.find((it) => it.kind === replayChoice);
+      if (replayItem) this.runScore.spendCoinGold(replayItem.priceGold);
       if (replayChoice === 'relic') {
         this.applyTraderRelic(state.worldPositions[index]);
       } else if (replayChoice === 'passive') {
@@ -2346,24 +2351,34 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       return;
     }
     this.enterInteractivePrompt(index);
+    const balance = this.runScore.getGoldBalance();
     this.nodePromptUI?.show({
       title: t('nodes.ui.trader_title'),
-      body: t('nodes.ui.trader_body'),
-      options: items.map((item) => ({
-        key: item.kind,
-        label: t(`nodes.ui.trader_item.${item.kind}`),
-        subLabel: t('nodes.ui.trader_old_price', { price: String(item.priceGold) }),
-      })),
+      body: t('nodes.ui.trader_body', { gold: String(balance) }),
+      options: items.map((item) => {
+        const canAfford = balance >= item.priceGold;
+        return {
+          key: item.kind,
+          label: t(`nodes.ui.trader_item.${item.kind}`),
+          subLabel: canAfford
+            ? t('nodes.ui.trader_price', { price: String(item.priceGold) })
+            : t('nodes.ui.trader_price_short', { price: String(item.priceGold) }),
+          disabled: !canAfford,
+        };
+      }),
       allowSkip: true,
       onResolve: (chosenKey) => {
-        if (chosenKey === 'relic') {
-          this.applyTraderRelic(state.worldPositions[index]);
-        } else if (chosenKey === 'passive') {
-          this.runScore.addCoinGold(40);
-          this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
-        } else if (chosenKey === 'reroll') {
-          this.upgradeUI?.grantReroll();
-          this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
+        const item = chosenKey ? items.find((it) => it.kind === chosenKey) : null;
+        if (item && this.runScore.spendCoinGold(item.priceGold)) {
+          if (chosenKey === 'relic') {
+            this.applyTraderRelic(state.worldPositions[index]);
+          } else if (chosenKey === 'passive') {
+            this.runScore.addCoinGold(40);
+            this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
+          } else if (chosenKey === 'reroll') {
+            this.upgradeUI?.grantReroll();
+            this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
+          }
         }
         this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
       },

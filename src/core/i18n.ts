@@ -682,6 +682,8 @@ export const EN_STRINGS: LocaleTree = {
       dps_line: 'DPS (1s): {dps}',
       /** Shown under the wave objective when the run started with a curse. */
       curse_chip: 'Curse: {name} (+{pct}% gold)',
+      /** M1 F3 — mid-run gold balance shown under the level readout. */
+      gold_chip: '{gold}g',
     },
     /** T1 replay playback UI. */
     replay: {
@@ -3020,13 +3022,16 @@ export const EN_STRINGS: LocaleTree = {
       shrine_title: 'An old shrine stirs.',
       shrine_body: 'Offer a thought — claim a wee boon.',
       trader_title: 'The wee trader spreads a blanket.',
-      trader_body: 'Pick one from the pack.',
+      trader_body: 'Pick one from the pack. (Sporran: {gold}g)',
       bargain_title: 'A cold voice on the wind.',
       bargain_body: '"Pay {hp} HP, take {offer}."',
       leave: 'Leave',
       accept: 'Accept',
       accept_cost: '(-{hp} HP)',
-      trader_old_price: '(was {price}g, gift today)',
+      /** Affordable price subLabel — worn on the option when balance covers it. */
+      trader_price: '({price}g)',
+      /** Unaffordable price subLabel — same text, disabled option handles the grey. */
+      trader_price_short: '({price}g — short)',
       trader_item: {
         relic: 'Rare curio',
         passive: 'Passive charm',

@@ -91,6 +91,7 @@ export class RunExitComposer {
       enemiesKilled: score.killCount,
       bossGold: score.bossGoldEarned,
       coinGold: score.coinGoldEarned,
+      coinGoldSpent: score.coinGoldSpent,
       bestCombo: h.getJuice().getBestCombo(),
       victory,
       goldMult: h.getRunModifiers().goldMult,

@@ -63,6 +63,8 @@ export interface IRunState {
   bossGoldEarned?: number;
   /** Gold earned from coins/chests/kill milestones so far this run. */
   coinGoldEarned?: number;
+  /** Gold spent mid-run (W2 node trader purchases). */
+  coinGoldSpent?: number;
   /** One-time revive remaining at snapshot time. */
   revivalAvailable?: boolean;
   /** Best combo reached before the snapshot. */
@@ -370,6 +372,7 @@ function coerceIRunState(raw: unknown): IRunState | null {
     bossKillCount: toOptionalNonNegativeInt(o.bossKillCount),
     bossGoldEarned: toOptionalNonNegativeInt(o.bossGoldEarned),
     coinGoldEarned: toOptionalNonNegativeInt(o.coinGoldEarned),
+    coinGoldSpent: toOptionalNonNegativeInt(o.coinGoldSpent),
     revivalAvailable: toOptionalBool(o.revivalAvailable),
     bestCombo: toOptionalNonNegativeInt(o.bestCombo),
     comboCount: toOptionalNonNegativeInt(o.comboCount),

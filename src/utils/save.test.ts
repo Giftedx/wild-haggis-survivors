@@ -285,6 +285,18 @@ describe('gold reward — curse multiplier', () => {
     expect(computeGoldReward({ ...base, goldMult: -2 })).toBe(584);
     expect(computeGoldReward({ ...base, goldMult: Number.NaN })).toBe(584);
   });
+
+  it('subtracts coinGoldSpent from the earned coin pool (mid-run trader spends reduce the mint)', () => {
+    // base mint = 584 (coinGold 8 contributes 8 of that). Spending 5
+    // means the coin pool contributes only 3 → reward drops by 5.
+    expect(computeGoldReward({ ...base, coinGoldSpent: 5 })).toBe(584 - 5);
+  });
+
+  it('clamps negative coin pool to zero when spend exceeds earn (never refunds bossGold)', () => {
+    // Spend 20 against coinGold 8 zeros the coin contribution but leaves
+    // timeSurvivedSec + enemiesKilled + bossGold intact.
+    expect(computeGoldReward({ ...base, coinGoldSpent: 20 })).toBe(584 - 8);
+  });
 });
 
 describe('computeGoldReward time normalization', () => {

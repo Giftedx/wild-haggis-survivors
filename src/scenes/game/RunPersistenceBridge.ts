@@ -101,6 +101,7 @@ export class RunPersistenceBridge {
       bossKillCount: score.bossKillCount,
       bossGoldEarned: score.bossGoldEarned,
       coinGoldEarned: score.coinGoldEarned,
+      coinGoldSpent: score.coinGoldSpent,
       revivalAvailable: h.getRevivalAvailable(),
       bestCombo: juice.getBestCombo(),
       comboCount: juice.getComboCount(),
@@ -172,6 +173,7 @@ export class RunPersistenceBridge {
     score.bossKillCount = Math.max(0, run.bossKillCount ?? 0);
     score.bossGoldEarned = Math.max(0, run.bossGoldEarned ?? 0);
     score.coinGoldEarned = Math.max(0, run.coinGoldEarned ?? 0);
+    score.coinGoldSpent = Math.max(0, run.coinGoldSpent ?? 0);
     if (run.revivalAvailable !== undefined) {
       h.setRevivalAvailable(run.revivalAvailable);
     }

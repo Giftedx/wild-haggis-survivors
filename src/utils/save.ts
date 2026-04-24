@@ -342,6 +342,13 @@ export interface RunSummary {
   enemiesKilled: number;
   bossGold: number;
   coinGold?: number;
+  /**
+   * Gold spent mid-run (W2 node trader). `computeGoldReward` subtracts
+   * this so a mid-run spend reduces the post-run Golden Haggis mint —
+   * preventing a double-dip where the player buys a relic AND banks
+   * the earned gold at full value.
+   */
+  coinGoldSpent?: number;
   bestCombo?: number;
   victory?: boolean;
   /**
@@ -548,11 +555,12 @@ export function migrateSave(raw: unknown): SaveData {
 
 export function computeGoldReward(summary: RunSummary): number {
   const normalized = normalizeRunSummary(summary);
+  const netCoin = Math.max(0, normalized.coinGold - normalized.coinGoldSpent);
   const base =
     normalized.timeSurvivedSec * 0.4 +
     normalized.enemiesKilled * 0.4 +
     normalized.bossGold +
-    normalized.coinGold;
+    netCoin;
   return Math.floor(base * normalized.goldMult);
 }
 
@@ -1009,6 +1017,7 @@ function normalizeRunSummary(summary: RunSummary): Required<RunSummary> {
     enemiesKilled: coerceInteger(summary.enemiesKilled, 0),
     bossGold: coerceInteger(summary.bossGold, 0),
     coinGold: coerceInteger(summary.coinGold, 0),
+    coinGoldSpent: coerceInteger(summary.coinGoldSpent, 0),
     bestCombo: coerceInteger(summary.bestCombo, 0),
     victory: Boolean(summary.victory),
     goldMult: coerceFinitePositive(summary.goldMult, 1),

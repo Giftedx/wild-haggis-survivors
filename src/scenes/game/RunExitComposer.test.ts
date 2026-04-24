@@ -95,6 +95,7 @@ describe('RunExitComposer', () => {
         enemiesKilled: 300,
         bossGold: 500,
         coinGold: 120,
+        coinGoldSpent: 0,
         bestCombo: 42,
         victory: true,
         goldMult: 1,

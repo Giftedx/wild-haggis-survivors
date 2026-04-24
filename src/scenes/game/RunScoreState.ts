@@ -20,6 +20,12 @@ export class RunScoreState {
   bossGoldEarned = 0;
   /** Gold earned from regular kills + pickups + milestone rewards. */
   coinGoldEarned = 0;
+  /**
+   * Gold spent mid-run (W2 node trader purchases).
+   * Monotonic: accumulates across a run, reset only at run start.
+   * Run-end gold reward subtracts this so mid-run spends don't double-count.
+   */
+  coinGoldSpent = 0;
   /** Latched true after the first kill of the run (fires `first_blood` banter once). */
   firstKillSeen = false;
   /** Count of elite kills inside the current back-to-back chain window. */
@@ -45,6 +51,7 @@ export class RunScoreState {
     this.bossKillCount = 0;
     this.bossGoldEarned = 0;
     this.coinGoldEarned = 0;
+    this.coinGoldSpent = 0;
     this.firstKillSeen = false;
     this.eliteChainCount = 0;
     this.eliteChainLastGameSec = null;
@@ -67,6 +74,27 @@ export class RunScoreState {
 
   addBossGold(n: number): void {
     this.bossGoldEarned += n;
+  }
+
+  /**
+   * Current spendable gold = earned (coin + boss) minus spent.
+   * Guarded to never report negative even if a save blob is corrupt.
+   */
+  getGoldBalance(): number {
+    return Math.max(0, this.coinGoldEarned + this.bossGoldEarned - this.coinGoldSpent);
+  }
+
+  /**
+   * Attempt to spend `n` gold. Returns true and increments `coinGoldSpent`
+   * when the balance covers it; returns false (no-op) otherwise. Callers
+   * should treat `false` as "transaction refused" and leave the reward
+   * un-applied.
+   */
+  spendCoinGold(n: number): boolean {
+    if (n <= 0) return false;
+    if (this.getGoldBalance() < n) return false;
+    this.coinGoldSpent += n;
+    return true;
   }
 
   markFirstKillSeen(): void {

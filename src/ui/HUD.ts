@@ -60,6 +60,9 @@ export class HUD {
   private xpBarHighlight!: Phaser.GameObjects.Rectangle;
 
   private levelText!: Phaser.GameObjects.Text;
+  /** Mid-run gold balance (earned − spent). Sits below the level readout. */
+  private goldText!: Phaser.GameObjects.Text;
+  private prevGold = -1;
   private timerText!: Phaser.GameObjects.Text;
   private objectiveText!: Phaser.GameObjects.Text;
   /** Shown when the run has an active curse (trade reminder). */
@@ -215,6 +218,13 @@ export class HUD {
     this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
       .setScrollFactor(0).setDepth(d));
 
+    // Gold balance chip (whisky-gold tint — matches dash/coin palette).
+    // Updated in `update()` whenever the balance changes; hidden until
+    // the first setText fires from GameScene.
+    this.goldText = this.addEl(this.scene.add.text(12, 62, '',
+      textStyle('body', { color: COLORS_CSS.WHISKY_GOLD }),
+    ).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
+
     // Timer
     this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '',
       textStyle('title', { color: COLORS_CSS.WARM_TAN }),
@@ -334,6 +344,7 @@ export class HUD {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
         this.hpText,
         this.levelText,
+        this.goldText,
         this.timerText,
         this.objectiveText,
         this.curseChipText,
@@ -373,6 +384,7 @@ export class HUD {
       this.dpsText.setColor(this.hcPalette.dps);
       this.hpText.setColor(this.hcPalette.text);
       this.levelText.setColor(this.hcPalette.text);
+      this.goldText.setColor(this.hcPalette.text);
       this.timerText.setColor(this.hcPalette.timer);
       this.killText.setColor(this.hcPalette.kill);
       this.pauseText.setColor(this.hcPalette.text);
@@ -408,6 +420,7 @@ export class HUD {
     this.hpBarFill.setPosition(padX, padY);
     this.hpText.setPosition(padX + this.HP_BAR_W / 2, padY + this.HP_BAR_H / 2);
     this.levelText.setPosition(padX, padY + 28 * this.uiScale);
+    this.goldText.setPosition(padX, padY + 50 * this.uiScale);
     const hpGap = Math.round(10 * this.uiScale);
     this.shieldIcon.setPosition(padX + this.HP_BAR_W + hpGap, padY + this.HP_BAR_H / 2);
     this.shieldIcon.setScale(this.uiScale * 0.92);
@@ -876,6 +889,19 @@ export class HUD {
   /** Update shield indicator */
   updateShield(hasShield: boolean): void {
     this.shieldIcon.setVisible(hasShield);
+  }
+
+  /**
+   * Mid-run gold balance chip. Caches the last written value so the
+   * setText / setVisible calls only fire on change — matches the rest
+   * of the HUD's prev-value caching pattern.
+   */
+  setGold(balance: number): void {
+    const safe = Math.max(0, Math.floor(balance));
+    if (safe === this.prevGold) return;
+    this.prevGold = safe;
+    this.goldText.setText(t('ui.hud.gold_chip', { gold: String(safe) }));
+    this.goldText.setVisible(true);
   }
 
   /**

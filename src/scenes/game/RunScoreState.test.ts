@@ -9,6 +9,7 @@ describe('RunScoreState', () => {
       expect(s.bossKillCount).toBe(0);
       expect(s.bossGoldEarned).toBe(0);
       expect(s.coinGoldEarned).toBe(0);
+      expect(s.coinGoldSpent).toBe(0);
       expect(s.firstKillSeen).toBe(false);
       expect(s.eliteChainCount).toBe(0);
       expect(s.eliteChainLastGameSec).toBeNull();
@@ -46,6 +47,48 @@ describe('RunScoreState', () => {
       s.addCoinGold(20);
       expect(s.bossGoldEarned).toBe(50);
       expect(s.coinGoldEarned).toBe(20);
+    });
+
+    describe('gold balance / spend', () => {
+      it('getGoldBalance sums coin + boss minus spent', () => {
+        const s = new RunScoreState();
+        s.addCoinGold(40);
+        s.addBossGold(60);
+        expect(s.getGoldBalance()).toBe(100);
+        s.spendCoinGold(30);
+        expect(s.getGoldBalance()).toBe(70);
+      });
+
+      it('spendCoinGold returns true and mutates when affordable', () => {
+        const s = new RunScoreState();
+        s.addCoinGold(50);
+        expect(s.spendCoinGold(20)).toBe(true);
+        expect(s.coinGoldSpent).toBe(20);
+        expect(s.getGoldBalance()).toBe(30);
+      });
+
+      it('spendCoinGold returns false and leaves counters alone when unaffordable', () => {
+        const s = new RunScoreState();
+        s.addCoinGold(10);
+        expect(s.spendCoinGold(25)).toBe(false);
+        expect(s.coinGoldSpent).toBe(0);
+        expect(s.getGoldBalance()).toBe(10);
+      });
+
+      it('spendCoinGold rejects non-positive amounts', () => {
+        const s = new RunScoreState();
+        s.addCoinGold(100);
+        expect(s.spendCoinGold(0)).toBe(false);
+        expect(s.spendCoinGold(-5)).toBe(false);
+        expect(s.coinGoldSpent).toBe(0);
+      });
+
+      it('getGoldBalance clamps to zero when corrupt save over-spends', () => {
+        const s = new RunScoreState();
+        s.coinGoldEarned = 10;
+        s.coinGoldSpent = 50;
+        expect(s.getGoldBalance()).toBe(0);
+      });
     });
 
     it('markFirstKillSeen latches true (idempotent)', () => {
@@ -86,6 +129,7 @@ describe('RunScoreState', () => {
       s.incrementBossKillCount();
       s.addCoinGold(100);
       s.addBossGold(200);
+      s.spendCoinGold(40);
       s.markFirstKillSeen();
       s.eliteChainCount = 3;
       s.eliteChainLastGameSec = 42;
@@ -98,6 +142,7 @@ describe('RunScoreState', () => {
       expect(s.bossKillCount).toBe(0);
       expect(s.bossGoldEarned).toBe(0);
       expect(s.coinGoldEarned).toBe(0);
+      expect(s.coinGoldSpent).toBe(0);
       expect(s.firstKillSeen).toBe(false);
       expect(s.eliteChainCount).toBe(0);
       expect(s.eliteChainLastGameSec).toBeNull();
