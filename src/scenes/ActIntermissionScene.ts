@@ -29,6 +29,7 @@ import { textStyle } from '../ui/typography';
 import { createRouteCard } from '../ui/routeCard';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
+import { HaarFogController } from '../systems/shaders/HaarFogController';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -44,6 +45,8 @@ export class ActIntermissionScene extends Phaser.Scene {
   private launchData!: ActIntermissionLaunchData;
   /** Shortcut map — 1/2/3 keys resolve the matching card. Cleared on stop. */
   private keyHandler?: (e: KeyboardEvent) => void;
+  /** F1 — haar fog filter controller applied to this scene's camera. */
+  private haar?: HaarFogController;
 
   constructor() {
     super({ key: ActIntermissionScene.KEY });
@@ -57,12 +60,45 @@ export class ActIntermissionScene extends Phaser.Scene {
     const routes = ROUTES_BY_SLOT[this.launchData.slot];
     this.renderRouteCards(routes);
     this.installKeyboardShortcuts(routes);
+    this.applyHaarWash();
     audio.startAmbientWind(0.04);
     // Uninstall keyboard handler and fade wind when the scene tears down.
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.uninstallKeyboardShortcuts();
       audio.fadeOutAmbientWind(400);
+      this.haar = undefined;
     });
+  }
+
+  /**
+   * F1 — apply a haar-fog filter to this scene's camera, ramping from 0 to
+   * ~0.8 density over 800 ms while the picker fades in. The filter lives on
+   * the scene's own camera; tearing down the scene removes it automatically.
+   * WebGL-only — Canvas renderer silently skips (Phaser's filter system
+   * no-ops there).
+   */
+  private applyHaarWash(): void {
+    const cam = this.cameras.main;
+    const filters = cam.filters;
+    if (!filters) return;
+    try {
+      this.haar = new HaarFogController(cam, { density: 0 });
+      filters.internal.add(this.haar);
+      this.tweens.add({
+        targets: this.haar.state,
+        density: 0.8,
+        duration: 800,
+        ease: 'Sine.easeOut',
+      });
+    } catch {
+      // If the filter API isn't available on this renderer, haar is disabled
+      // for this scene. The picker still functions.
+      this.haar = undefined;
+    }
+  }
+
+  update(_time: number, delta: number): void {
+    if (this.haar) this.haar.advanceTime(delta * 0.001);
   }
 
   private renderRouteCards(routes: readonly RouteDef[]): void {

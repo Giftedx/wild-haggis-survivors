@@ -23,6 +23,24 @@ describe('biomes data', () => {
       }
     }
   });
+
+  it('ambientHaarDensity sits in [0, 1] for every biome', () => {
+    for (const id of BIOME_IDS) {
+      const density = BIOMES[id].ambientHaarDensity;
+      expect(density).toBeGreaterThanOrEqual(0);
+      expect(density).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('loch is haar-prone (highest ambient density); pine and heather are dry', () => {
+    // Haar is signature Scottish sea/water mist — lochs breathe it, open heather
+    // moors and pine forests do not. Locking the ordering prevents a balance
+    // edit from sneaking haar back into dry biomes without a design review.
+    expect(BIOMES.loch.ambientHaarDensity).toBeGreaterThan(BIOMES.bog.ambientHaarDensity);
+    expect(BIOMES.bog.ambientHaarDensity).toBeGreaterThan(0);
+    expect(BIOMES.pine.ambientHaarDensity).toBe(0);
+    expect(BIOMES.heather.ambientHaarDensity).toBe(0);
+  });
 });
 
 describe('pickBiomeAssignment', () => {

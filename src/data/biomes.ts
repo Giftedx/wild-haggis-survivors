@@ -34,6 +34,13 @@ export interface BiomeDef {
    * 0 = grounded/peat, 1 = bright/airy.
    */
   readonly moodTimbre: number;
+  /**
+   * F1 — resting haar-fog density (0..1) applied while the player is inside
+   * this biome. Loch and bog sit low to water and hold mist naturally; pine
+   * and heather sit higher and drier. Biome transitions briefly ramp this
+   * to 1.0 via HaarFogController; see `haarTransitionSequence`.
+   */
+  readonly ambientHaarDensity: number;
 }
 
 export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
@@ -52,6 +59,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     },
     modifier: 'bogSlow',
     moodTimbre: 0.15,
+    ambientHaarDensity: 0.1,
   },
   loch: {
     id: 'loch',
@@ -68,6 +76,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     },
     modifier: 'lochKnockback',
     moodTimbre: 0.55,
+    ambientHaarDensity: 0.2,
   },
   pine: {
     id: 'pine',
@@ -83,6 +92,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     },
     modifier: 'pineConcealment',
     moodTimbre: 0.3,
+    ambientHaarDensity: 0,
   },
   heather: {
     id: 'heather',
@@ -98,6 +108,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     },
     modifier: 'heatherBloom',
     moodTimbre: 0.8,
+    ambientHaarDensity: 0,
   },
 } as const;
 
