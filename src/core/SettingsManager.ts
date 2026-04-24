@@ -117,6 +117,12 @@ export interface ISettingsData {
   /** A1 M6 — full invincibility (Phase 2 wires effect). */
   assistModeInvincibility: boolean;
   /**
+   * A1 M4 — caption text-size multiplier (0.8–1.4). Scales the
+   * CaptionOverlay font independently of the HUD `uiScale` so players
+   * can dial up captions without blowing out the rest of the interface.
+   */
+  captionTextScale: number;
+  /**
    * A1 M3 — keyboard bindings per `ActionKey`. `KeyboardEvent.code`
    * values (`'ArrowUp'`, `'KeyW'`, `'Space'`). Every action has a
    * primary; secondary is optional. On legacy saves without the field,
@@ -169,6 +175,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  captionTextScale: 1,
   keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
   gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
 };
@@ -368,6 +375,12 @@ export class SettingsManager {
       assistModeInvincibility: toBool(
         o.assistModeInvincibility,
         DEFAULT_SETTINGS.assistModeInvincibility,
+      ),
+      captionTextScale: clampRange(
+        o.captionTextScale,
+        0.8,
+        1.4,
+        DEFAULT_SETTINGS.captionTextScale,
       ),
       keyBindings: coerceKeyBindings(o.keyBindings),
       gamepadBindings: coerceGamepadBindings(o.gamepadBindings),

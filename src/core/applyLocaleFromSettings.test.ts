@@ -29,6 +29,7 @@ const baseSettings: ISettingsData = {
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  captionTextScale: 1,
   keyBindings: DEFAULT_KEYBINDINGS,
   gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
 };

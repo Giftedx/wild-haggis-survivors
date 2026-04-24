@@ -287,6 +287,7 @@ export const SCS_STRINGS: LocaleTree = {
       telemetry_opt_in: 'Share anonymous run-end stats (opt in)',
       high_contrast_ui: 'High-contrast UI',
       captions: 'Captions',
+      caption_text_scale: 'Caption size',
       banter_frequency: 'Banter',
       banter_off: 'Wheesht',
       banter_sparing: 'Sparin',

@@ -74,6 +74,7 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      captionTextScale: 1,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -139,6 +140,7 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      captionTextScale: 1,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -199,6 +201,7 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      captionTextScale: 1,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -238,6 +241,7 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      captionTextScale: 1,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     })).not.toThrow();

@@ -54,6 +54,7 @@ type VolumeKey =
   | 'musicVolume'
   | 'uiScale'
   | 'motionScale'
+  | 'captionTextScale'
   | 'assistModeGameSpeed';
 type ToggleKey =
   | 'screenShake'
@@ -279,6 +280,7 @@ export class SettingsScene extends Phaser.Scene {
 
     this.addSectionHeader(t('ui.settings.section_access'));
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
+    this.addSliderRow(t('ui.settings.caption_text_scale'), 'captionTextScale', 0.8, 1.4, 0.05);
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.reduce_flashing'), 'reduceFlashing');

@@ -45,6 +45,7 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.banter_sparing',
   'ui.settings.banter_normal',
   'ui.settings.banter_chatty',
+  'ui.settings.caption_text_scale',
   'ui.settings.section_assist',
   'ui.settings.assist_mode',
   'ui.settings.assist_mode_speed',
@@ -71,6 +72,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'ironmoorMode',
   'localeKey',
   'reduceFlashing',
+  'captionTextScale',
   'assistMode',
   'assistModeGameSpeed',
   'assistModeExtendedIFrames',
@@ -117,6 +119,7 @@ describe('Settings / Comfort panel smoke', () => {
       assistModeExtendedIFrames: true,
       assistModeExtendedComboWindow: true,
       assistModeInvincibility: true,
+      captionTextScale: 1.2,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     };

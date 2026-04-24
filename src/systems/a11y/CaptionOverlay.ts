@@ -54,6 +54,8 @@ export class CaptionOverlay {
     const settings = getSettingsManager().load();
     const enabled = settings.captionsEnabled;
     const uiScale = Math.max(0.5, settings.uiScale);
+    // A1 M4 — separate multiplier so captions can be enlarged past HUD.
+    const captionScale = Math.max(0.5, settings.captionTextScale ?? 1) * uiScale;
 
     const { x: vx, y: vy, width: vw, height: vh } = getCameraViewport(this.scene);
     const baseY = vy + vh - BOTTOM_INSET;
@@ -70,13 +72,13 @@ export class CaptionOverlay {
 
       const alpha = captionFadeAlpha(cap.remainingMs, CAPTION_FADE_OUT_MS);
 
-      line.text.setWordWrapWidth(Math.max(200, (vw - 48) / uiScale));
+      line.text.setWordWrapWidth(Math.max(200, (vw - 48) / captionScale));
       line.text.setText(cap.message);
       line.text.setColor(cap.tint ?? DEFAULT_TINT);
-      line.text.setFontSize(`${Math.round(BASE_FONT_PX * uiScale)}px`);
-      const pad = Math.round(24 * uiScale);
+      line.text.setFontSize(`${Math.round(BASE_FONT_PX * captionScale)}px`);
+      const pad = Math.round(24 * captionScale);
       const paddedWidth = Math.min(vw - pad, line.text.width + pad);
-      const paddedHeight = line.text.height + Math.round(10 * uiScale);
+      const paddedHeight = line.text.height + Math.round(10 * captionScale);
 
       const yOffset = captionStackYOffset(i, captions.length, Math.round(LINE_SPACING * uiScale));
       const ly = baseY + yOffset;

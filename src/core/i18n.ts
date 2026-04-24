@@ -504,6 +504,9 @@ export const EN_STRINGS: LocaleTree = {
       /** On-screen captions for critical audio cues (boss warnings,
        *  low HP, evolution ready, combo milestones, death, victory). */
       captions: 'Captions',
+      /** A1 M4 — caption text size multiplier (80%–140%). Independent of
+       *  uiScale so players can enlarge captions without rescaling the HUD. */
+      caption_text_scale: 'Caption size',
       /** Banter frequency row — ambient Glesga commentary volume. */
       banter_frequency: 'Banter',
       banter_off: 'Wheesht',

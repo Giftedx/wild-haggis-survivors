@@ -139,6 +139,39 @@ describe('accessibility settings', () => {
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
 
+  describe('captionTextScale (A1 M4)', () => {
+    it('defaults to 1', () => {
+      const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+      expect(s.load().captionTextScale).toBe(1);
+    });
+
+    it('clamps to [0.8, 1.4]', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      s.update((cur) => ({ ...cur, captionTextScale: 5 }));
+      expect(s.load().captionTextScale).toBe(1.4);
+      s.update((cur) => ({ ...cur, captionTextScale: -2 }));
+      expect(s.load().captionTextScale).toBe(0.8);
+    });
+
+    it('coerces non-numeric back to default', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        captionTextScale: 'huge' as unknown as number,
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      expect(s.load().captionTextScale).toBe(1);
+    });
+
+    it('round-trips a persisted captionTextScale', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      s.update((cur) => ({ ...cur, captionTextScale: 1.25 }));
+      expect(s.load().captionTextScale).toBe(1.25);
+    });
+  });
+
   describe('Key + Gamepad bindings (A1 M3)', () => {
     it('defaults keyBindings to the classic arrows+WASD+Space+Escape layout', () => {
       const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
