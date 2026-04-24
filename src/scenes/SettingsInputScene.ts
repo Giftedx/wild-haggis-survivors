@@ -8,10 +8,14 @@ import { createGameButton } from '../ui/gameButton';
 import { resolveSettingsPalette } from './settingsPalette';
 import { formatKeyCode } from '../input/keyCodeDisplay';
 import { applyKeyRebind, type RebindSlot } from '../input/applyKeyRebind';
+import { applyGamepadRebind } from '../input/applyGamepadRebind';
+
+type CaptureKind = 'keyboard' | 'gamepad';
 
 interface CaptureTarget {
   action: ActionKey;
   slot: RebindSlot;
+  kind: CaptureKind;
 }
 
 /**
@@ -33,6 +37,10 @@ export class SettingsInputScene extends Phaser.Scene {
   private uiScale = 1;
   private capture?: CaptureTarget;
   private statusText?: Phaser.GameObjects.Text;
+  /** Button states at the moment gamepad capture entered, so we only
+   *  match *new* button presses. Otherwise a held button would instantly
+   *  resolve the capture. */
+  private captureGamepadBaseline: boolean[] = [];
 
   constructor() {
     super({ key: 'SettingsInput' });
@@ -107,25 +115,25 @@ export class SettingsInputScene extends Phaser.Scene {
       })
       .setScale(this.uiScale);
 
-    const slotX = Math.round(width * 0.46);
-    this.renderSlotChip(action, 'primary', key.primary, slotX, y);
-    this.renderSlotChip(action, 'secondary', key.secondary ?? '', slotX + 90, y);
+    const slotX = Math.round(width * 0.40);
+    this.renderKeySlotChip(action, 'primary', key.primary, slotX, y);
+    this.renderKeySlotChip(action, 'secondary', key.secondary ?? '', slotX + 90, y);
 
-    const gamepadLabel = pad
-      ? `${t('ui.inputRebind.gamepadPrefix')} ${pad.primary}${pad.secondary != null ? ` / ${pad.secondary}` : ''}`
-      : '';
-    if (gamepadLabel) {
-      this.add
-        .text(slotX + 200, y, gamepadLabel, {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          color: palette.valueColor,
-        })
-        .setScale(this.uiScale);
+    // Gamepad chips only render for actions with a default gamepad
+    // binding (dash + pause). Movement actions rely on sticks / D-pad.
+    if (pad) {
+      this.renderGamepadSlotChip(action, 'primary', pad.primary, slotX + 190, y);
+      this.renderGamepadSlotChip(
+        action,
+        'secondary',
+        pad.secondary ?? null,
+        slotX + 250,
+        y,
+      );
     }
   }
 
-  private renderSlotChip(
+  private renderKeySlotChip(
     action: ActionKey,
     slot: RebindSlot,
     code: string,
@@ -133,18 +141,48 @@ export class SettingsInputScene extends Phaser.Scene {
     y: number,
   ): void {
     const capturing =
-      this.capture && this.capture.action === action && this.capture.slot === slot;
+      this.capture?.action === action
+      && this.capture.slot === slot
+      && this.capture.kind === 'keyboard';
     const label = capturing
       ? '…'
       : code
         ? formatKeyCode(code)
         : t('ui.inputRebind.unbound');
-    const chipW = 82;
+    this.drawSlotChip(x, y, 82, label, capturing, () => this.beginCapture(action, slot, 'keyboard'));
+  }
+
+  private renderGamepadSlotChip(
+    action: ActionKey,
+    slot: RebindSlot,
+    button: number | null,
+    x: number,
+    y: number,
+  ): void {
+    const capturing =
+      this.capture?.action === action
+      && this.capture.slot === slot
+      && this.capture.kind === 'gamepad';
+    const label = capturing
+      ? '…'
+      : button != null
+        ? `${t('ui.inputRebind.gamepadPrefix')} ${button}`
+        : t('ui.inputRebind.unbound');
+    this.drawSlotChip(x, y, 56, label, capturing, () => this.beginCapture(action, slot, 'gamepad'));
+  }
+
+  private drawSlotChip(
+    cx: number,
+    y: number,
+    w: number,
+    label: string,
+    capturing: boolean,
+    onClick: () => void,
+  ): void {
     const chipH = 26;
-    const cx = x;
     const cy = y + 10;
     const chip = this.add
-      .rectangle(cx, cy, chipW, chipH, capturing ? 0x6a4a2a : 0x2d3e5a, 1)
+      .rectangle(cx, cy, w, chipH, capturing ? 0x6a4a2a : 0x2d3e5a, 1)
       .setStrokeStyle(1.5, capturing ? 0xffaa55 : 0x4a6a8a, 0.9)
       .setInteractive({ useHandCursor: true });
     chip.setScale(this.uiScale);
@@ -159,16 +197,21 @@ export class SettingsInputScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(this.uiScale);
 
-    const beginCapture = () => {
-      if (this.capture) return;
-      audio.playClick();
-      this.capture = { action, slot };
-      this.statusText?.setText(t('ui.inputRebind.rebind_hint'));
-      this.scene.restart();
-    };
-    chip.on('pointerdown', beginCapture);
+    chip.on('pointerdown', onClick);
     txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', beginCapture);
+    txt.on('pointerdown', onClick);
+  }
+
+  private beginCapture(action: ActionKey, slot: RebindSlot, kind: CaptureKind): void {
+    if (this.capture) return;
+    audio.playClick();
+    this.capture = { action, slot, kind };
+    if (kind === 'gamepad') {
+      const pad = this.input.gamepad?.pad1;
+      this.captureGamepadBaseline = pad?.buttons.map((b) => b.pressed) ?? [];
+    }
+    this.statusText?.setText(t('ui.inputRebind.rebind_hint'));
+    this.scene.restart();
   }
 
   private renderResetChip(y: number, palette: ReturnType<typeof resolveSettingsPalette>): void {
@@ -226,6 +269,8 @@ export class SettingsInputScene extends Phaser.Scene {
       this.scene.restart();
       return;
     }
+    // ESC cancels all captures; keyboard events only drive keyboard captures.
+    if (this.capture.kind !== 'keyboard') return;
     const { keyBindings } = this.settingsManager.load();
     const result = applyKeyRebind(keyBindings, this.capture.action, this.capture.slot, e.code);
     if (result.conflict) {
@@ -240,6 +285,42 @@ export class SettingsInputScene extends Phaser.Scene {
     this.statusText?.setText('');
     this.scene.restart();
   };
+
+  update(): void {
+    if (!this.capture || this.capture.kind !== 'gamepad') return;
+    const pad = this.input.gamepad?.pad1;
+    if (!pad?.connected) return;
+    for (let i = 0; i < pad.buttons.length; i++) {
+      const pressed = pad.buttons[i].pressed;
+      const wasPressed = this.captureGamepadBaseline[i] === true;
+      if (pressed && !wasPressed) {
+        this.resolveGamepadCapture(i);
+        return;
+      }
+    }
+  }
+
+  private resolveGamepadCapture(button: number): void {
+    if (!this.capture) return;
+    const { gamepadBindings } = this.settingsManager.load();
+    const result = applyGamepadRebind(
+      gamepadBindings,
+      this.capture.action,
+      this.capture.slot,
+      button,
+    );
+    if (result.conflict) {
+      const conflictAction = t(`ui.inputRebind.action.${result.conflict}`);
+      this.statusText?.setText(`${t('ui.inputRebind.conflict_warning')} (${conflictAction})`);
+      this.capture = undefined;
+      return;
+    }
+    this.settingsManager.update((cur) => ({ ...cur, gamepadBindings: result.bindings }));
+    audio.playClick();
+    this.capture = undefined;
+    this.statusText?.setText('');
+    this.scene.restart();
+  }
 
   /** Reset all bindings to defaults. Exposed for tests + UI chip. */
   resetToDefaults(): void {
