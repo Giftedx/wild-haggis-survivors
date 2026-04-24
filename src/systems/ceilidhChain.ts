@@ -18,10 +18,14 @@ export const CEILIDH_PULSE_PERIOD = 8;
  * Fractional / negative / non-finite inputs return false — guards
  * against buggy callers rather than silently triggering.
  */
-export function isCeilidhPulseMoment(comboCount: number): boolean {
+export function isCeilidhPulseMoment(
+  comboCount: number,
+  period: number = CEILIDH_PULSE_PERIOD,
+): boolean {
   if (!Number.isInteger(comboCount)) return false;
-  if (comboCount < CEILIDH_PULSE_PERIOD) return false;
-  return comboCount % CEILIDH_PULSE_PERIOD === 0;
+  if (!Number.isInteger(period) || period < 1) return false;
+  if (comboCount < period) return false;
+  return comboCount % period === 0;
 }
 
 /** Pulse magnet radius bonus (flat pixels). Matches a moor moment grant. */

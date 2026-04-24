@@ -44,6 +44,24 @@ describe('isCeilidhPulseMoment', () => {
     expect(isCeilidhPulseMoment(Number.POSITIVE_INFINITY)).toBe(false);
     expect(isCeilidhPulseMoment(Number.NaN)).toBe(false);
   });
+
+  it('honours an explicit period override (R1 ceilidh_dancers_ribbon 8→5)', () => {
+    expect(isCeilidhPulseMoment(5, 5)).toBe(true);
+    expect(isCeilidhPulseMoment(10, 5)).toBe(true);
+    expect(isCeilidhPulseMoment(4, 5)).toBe(false);
+    expect(isCeilidhPulseMoment(8, 5)).toBe(false);
+  });
+
+  it('undefined period falls back to default (8)', () => {
+    expect(isCeilidhPulseMoment(8, undefined)).toBe(true);
+    expect(isCeilidhPulseMoment(5, undefined)).toBe(false);
+  });
+
+  it('rejects non-positive / fractional periods', () => {
+    expect(isCeilidhPulseMoment(8, 0)).toBe(false);
+    expect(isCeilidhPulseMoment(8, -1)).toBe(false);
+    expect(isCeilidhPulseMoment(8, 2.5)).toBe(false);
+  });
 });
 
 describe('ceilidh chain constants', () => {

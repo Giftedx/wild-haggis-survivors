@@ -332,6 +332,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /** Max-level XP (gems + scripted grants) becomes run gold — batched toasts. */
+  /**
+   * R1 M3 T20e — ceilidh_dancers_ribbon lowers the chain-pulse period
+   * from 8 → 5. Read by JuiceSystem each kill; defaults to 8 when the
+   * driver isn't constructed yet (e.g. pre-reset transient frames).
+   */
+  getCeilidhChainPeriod(): number {
+    return this.relicEffectDriver?.ceilidhChainThreshold(8) ?? 8;
+  }
+
   grantXpOverflowGold(amount: number): void {
     if (amount <= 0) return;
     this.runScore.addCoinGold(amount);
@@ -1003,6 +1012,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
       offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
       acquireFloatText: (x, y, str, color, fs, d) => this.floatTextPool.acquire(x, y, str, color, fs, d),
+      modifyHealOrbAmount: (a) => this.relicEffectDriver.modifyHealOnOrb(a),
     });
     this.levelUpFlow = new LevelUpFlow(this, {
       getPlayer: () => this.player,
@@ -1034,6 +1044,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
       getDiscoveryRunId: () => this.discoveryRunId(),
       tryChestLegendaryRelicOverride: () => this.tryRelicChestOverride(),
+      getRelicLuckPoints: () => this.relicEffectDriver?.luckDrawPoints() ?? 0,
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,

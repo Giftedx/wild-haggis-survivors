@@ -407,7 +407,7 @@ export class JuiceSystem {
       // up the beat and the magnet pulses wider for 2s. A cheap joy
       // moment between the rare Glesga-patter milestones below. Uses
       // the same scene duck-call as captions (see combo_11 branch).
-      if (isCeilidhPulseMoment(this.comboCount)) {
+      if (isCeilidhPulseMoment(this.comboCount, this.scene.getCeilidhChainPeriod?.())) {
         const pl = this.scene.getPlayer();
         pl.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');

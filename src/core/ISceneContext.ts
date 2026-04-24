@@ -48,5 +48,11 @@ export interface ISceneContext {
    * run gold (coin pickup meta). Optional so lightweight test scenes omit it.
    */
   grantXpOverflowGold?(amount: number): void;
+  /**
+   * R1 M3 T20e — effective ceilidh-chain pulse period. Default 8; the
+   * Ceilidh Dancer's Ribbon relic lowers it to 5. Kept as a scene-side
+   * lookup so JuiceSystem doesn't import RelicSystem directly.
+   */
+  getCeilidhChainPeriod?(): number;
 }
 

@@ -103,11 +103,21 @@ export class RelicEffectDriver {
       : baseHeal;
   }
 
-  /** lucky_heather_sprig — +0.03 luck (card-draw weight bias). */
+  /** lucky_heather_sprig — +0.03 luck in 0-to-1 units. Used where luck is a fraction. */
   modifyLuckDraw(baseLuck: number): number {
     return this.isHolding('lucky_heather_sprig')
       ? applyLuckyHeatherSprigLuck(baseLuck)
       : baseLuck;
+  }
+
+  /**
+   * lucky_heather_sprig — +3 card-draw luck *points* (same scale as
+   * `sporran` passive's +15 and each `lucky_heather` permanent level's
+   * +10). LevelUpFlow.apply adds this on top of resolveLuckBonus() so
+   * the in-run relic composes with the meta-progression ladder.
+   */
+  luckDrawPoints(): number {
+    return this.isHolding('lucky_heather_sprig') ? 3 : 0;
   }
 
   /** ceilidh_dancers_ribbon — lowers the pickup-chain threshold from 8 → 5. */

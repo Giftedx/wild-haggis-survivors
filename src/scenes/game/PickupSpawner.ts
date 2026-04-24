@@ -43,6 +43,12 @@ export interface PickupSpawnerHooks {
     x: number, y: number, str: string,
     color: string, fontSize?: string, depth?: number,
   ): Phaser.GameObjects.Text | null;
+  /**
+   * R1 M3 T20f — oatcake_stash adds +2 HP on a healing orb pickup.
+   * Identity default when the driver isn't wired. Applied at pickup
+   * time (not at drop time) so the spawn math stays unchanged.
+   */
+  modifyHealOrbAmount?(amount: number): number;
 }
 
 export class PickupSpawner {
@@ -359,8 +365,9 @@ export class PickupSpawner {
       if (collected) return;
       collected = true;
       despawnHandle?.cancel();
-      player.heal(healAmount);
-      this.hooks.getJuice().showDamageNumber(player.x, player.y - 20, healAmount, false);
+      const effectiveHeal = this.hooks.modifyHealOrbAmount?.(healAmount) ?? healAmount;
+      player.heal(effectiveHeal);
+      this.hooks.getJuice().showDamageNumber(player.x, player.y - 20, effectiveHeal, false);
       scene.tweens.killTweensOf(glow);
       orb.destroy();
       glow.destroy();

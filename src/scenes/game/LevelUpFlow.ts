@@ -77,6 +77,14 @@ export interface LevelUpFlowHooks {
   getDiscoveryRunId(): string;
 
   /**
+   * R1 M3 T20f — additive luck-draw points from held relics. Default
+   * 0 when the driver isn't wired (unit-test scenes). LevelUpFlow
+   * threads this on top of `resolveLuckBonus()` so a relic composes
+   * with the existing sporran/lucky_heather ladder.
+   */
+  getRelicLuckPoints?(): number;
+
+  /**
    * R1 M2 T15 — legendary chest Relic override. When a chest would
    * show an evolution card, this hook rolls the 25% Relic-override
    * chance. Returning `true` means the override fired: a Relic
@@ -395,7 +403,9 @@ export class LevelUpFlow {
     const pool = filterHealCardsWhenFull(rawPool, player.getHp() >= player.getMaxHp());
 
     const save = loadSave();
-    const luckBonus = resolveLuckBonus(save, ownedPassives, player.getLuckDrawBonus());
+    const luckBonus =
+      resolveLuckBonus(save, ownedPassives, player.getLuckDrawBonus())
+      + (this.hooks.getRelicLuckPoints?.() ?? 0);
     const cardCount = resolveCardCount(save, XP.CARDS_PER_LEVEL);
     const rng = this.hooks.getRunRng();
     return drawCards(pool, cardCount, luckBonus, () => rng.next(), {
