@@ -387,7 +387,8 @@ export class CroftScene extends Phaser.Scene {
    * unknown keys so future events land safely once authored.
    */
   private drawSeasonal(layout: CroftLayout): void {
-    const key = getActiveSeasonalEventKey(new Date());
+    const disabled = getSettingsManager().load().disableSeasonalEvents;
+    const key = getActiveSeasonalEventKey(new Date(), disabled);
     if (!key) return;
     const gfx = this.add.graphics();
     gfx.setDepth(45); // Above composition, below the Gran-bubble overlay (50).

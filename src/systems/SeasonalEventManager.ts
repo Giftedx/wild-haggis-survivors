@@ -84,8 +84,13 @@ export function isSeasonalEventActive(eventKey: string, now: Date): boolean {
  * Keys of every event whose window currently contains `now`. The order
  * matches `SEASONAL_EVENTS` insertion (which is Object.keys-stable for
  * string keys in modern V8/SpiderMonkey — spec-compliant since ES2015).
+ *
+ * `disabled` (wired from `SettingsManager.disableSeasonalEvents` at call
+ * sites) short-circuits to `[]` — players who opt out never see the
+ * seasonal badge, ceremony, or variant gate regardless of real date.
  */
-export function activeSeasonalEvents(now: Date): string[] {
+export function activeSeasonalEvents(now: Date, disabled: boolean = false): string[] {
+  if (disabled) return [];
   const today = monthDay(now);
   return Object.keys(SEASONAL_EVENTS).filter((k) =>
     isInWindow(today, SEASONAL_EVENTS[k].dateWindow),
@@ -95,9 +100,10 @@ export function activeSeasonalEvents(now: Date): string[] {
 /**
  * First active event's key, or `null` when none is active. The Chronicle
  * stamp uses this — one run belongs to one event even if windows ever
- * overlapped in the future.
+ * overlapped in the future. `disabled` respects the opt-out setting the
+ * same way `activeSeasonalEvents` does.
  */
-export function getActiveSeasonalEventKey(now: Date): string | null {
-  const keys = activeSeasonalEvents(now);
+export function getActiveSeasonalEventKey(now: Date, disabled: boolean = false): string | null {
+  const keys = activeSeasonalEvents(now, disabled);
   return keys.length > 0 ? keys[0] : null;
 }

@@ -52,6 +52,7 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.colorblind_deuteranopia',
   'ui.settings.colorblind_tritanopia',
   'ui.settings.colorblind_monochrome',
+  'ui.settings.disable_seasonal_events',
   'ui.settings.section_assist',
   'ui.settings.assist_mode',
   'ui.settings.assist_mode_speed',
@@ -80,6 +81,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'reduceFlashing',
   'captionTextScale',
   'colorblindMode',
+  'disableSeasonalEvents',
   'assistMode',
   'assistModeGameSpeed',
   'assistModeExtendedIFrames',
@@ -128,6 +130,7 @@ describe('Settings / Comfort panel smoke', () => {
       assistModeInvincibility: true,
       captionTextScale: 1.2,
       colorblindMode: 'deuteranopia',
+      disableSeasonalEvents: true,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     };

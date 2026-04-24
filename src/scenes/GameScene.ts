@@ -868,6 +868,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getEnteredHealingCircle: () => this.hazardZones?.didEnterHealingCircle() ?? false,
       getBiomesVisited: () => this.biomeController?.getBiomesVisited() ?? [],
       getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
+      areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
     });
 
     if (resumeRun) {

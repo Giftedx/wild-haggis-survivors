@@ -96,6 +96,14 @@ describe('E1 SeasonalEventManager — activation helpers', () => {
   it('unknown event key never activates', () => {
     expect(isSeasonalEventActive('not_a_real_event', d(2027, 1, 25))).toBe(false);
   });
+
+  it('E1 M4 opt-out — disabled=true short-circuits to empty regardless of date', () => {
+    const burnsDate = d(2027, 1, 25);
+    expect(activeSeasonalEvents(burnsDate, false)).toContain('burns_night');
+    expect(activeSeasonalEvents(burnsDate, true)).toEqual([]);
+    expect(getActiveSeasonalEventKey(burnsDate, false)).toBe('burns_night');
+    expect(getActiveSeasonalEventKey(burnsDate, true)).toBeNull();
+  });
 });
 
 describe('E1 SeasonalEventManager — time-sensitivity immunity', () => {

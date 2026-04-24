@@ -76,6 +76,7 @@ describe('SettingsManager air-gap', () => {
       assistModeInvincibility: false,
       captionTextScale: 1,
       colorblindMode: 'off',
+      disableSeasonalEvents: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -143,6 +144,7 @@ describe('SettingsManager air-gap', () => {
       assistModeInvincibility: false,
       captionTextScale: 1,
       colorblindMode: 'off',
+      disableSeasonalEvents: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -205,6 +207,7 @@ describe('SettingsManager air-gap', () => {
       assistModeInvincibility: false,
       captionTextScale: 1,
       colorblindMode: 'off',
+      disableSeasonalEvents: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -246,6 +249,7 @@ describe('SettingsManager air-gap', () => {
       assistModeInvincibility: false,
       captionTextScale: 1,
       colorblindMode: 'off',
+      disableSeasonalEvents: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     })).not.toThrow();

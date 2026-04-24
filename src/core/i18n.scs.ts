@@ -294,6 +294,7 @@ export const SCS_STRINGS: LocaleTree = {
       colorblind_deuteranopia: 'Deuteranopia',
       colorblind_tritanopia: 'Tritanopia',
       colorblind_monochrome: 'Monochrome',
+      disable_seasonal_events: 'Turn aff seasonal events',
       banter_frequency: 'Banter',
       banter_off: 'Wheesht',
       banter_sparing: 'Sparin',

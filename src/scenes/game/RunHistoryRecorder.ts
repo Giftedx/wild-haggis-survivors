@@ -50,6 +50,11 @@ export interface RunHistoryHooks {
    */
   getRunName?(): string;
   /**
+   * E1 M4 — opt-out for seasonal events. Optional so tests that don't
+   * exercise the seasonal path keep compiling; defaults to `false`.
+   */
+  areSeasonalEventsDisabled?(): boolean;
+  /**
    * V2 Track 1 — true if the player ever received a heal-tick from a
    * healing circle this run. `applyRunSummary` increments the Doric
    * Quinie no-heal counter when this stays false through a victory.
@@ -115,7 +120,10 @@ export class RunHistoryRecorder {
     const routes = h.getRoutePicks();
     const relics = h.getHeldRelicKeys?.() ?? [];
     const name = h.getRunName?.();
-    const seasonalEvent = getActiveSeasonalEventKey(new Date(timestamp));
+    // E1 M4 — opt-out respects the setting: a player who's silenced
+    // seasonal events gets no badge on their Chronicle row either.
+    const seasonalDisabled = h.areSeasonalEventsDisabled?.() ?? false;
+    const seasonalEvent = getActiveSeasonalEventKey(new Date(timestamp), seasonalDisabled);
     h.getSaveManager().recordRunToHistory({
       timestamp,
       timeSurvivedSec: summary.timeSurvivedSec,

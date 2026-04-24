@@ -73,7 +73,8 @@ type ToggleKey =
   | 'assistMode'
   | 'assistModeExtendedIFrames'
   | 'assistModeExtendedComboWindow'
-  | 'assistModeInvincibility';
+  | 'assistModeInvincibility'
+  | 'disableSeasonalEvents';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -289,6 +290,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.reduce_flashing'), 'reduceFlashing');
     this.addToggleRow(t('ui.settings.capture_enabled'), 'captureEnabled');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
+    this.addToggleRow(t('ui.settings.disable_seasonal_events'), 'disableSeasonalEvents');
     this.addLocaleRow();
     this.addInputRebindRow();
 

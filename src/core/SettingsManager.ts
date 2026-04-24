@@ -129,6 +129,15 @@ export interface ISettingsData {
    */
   colorblindMode: ColorblindMode;
   /**
+   * E1 M4 — opt-out for real-world-date-gated seasonal events (Burns
+   * Night, Hogmanay, …). Off by default so the date logic stays
+   * quiet; players who'd rather not have the game lean on calendar
+   * behaviour can silence every event at once. Respected by
+   * `SeasonalEventManager.activeSeasonalEvents` — when true the
+   * list is always empty regardless of date.
+   */
+  disableSeasonalEvents: boolean;
+  /**
    * A1 M3 — keyboard bindings per `ActionKey`. `KeyboardEvent.code`
    * values (`'ArrowUp'`, `'KeyW'`, `'Space'`). Every action has a
    * primary; secondary is optional. On legacy saves without the field,
@@ -186,6 +195,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   assistModeInvincibility: false,
   captionTextScale: 1,
   colorblindMode: 'off',
+  disableSeasonalEvents: false,
   keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
   gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
 };
@@ -399,6 +409,10 @@ export class SettingsManager {
         DEFAULT_SETTINGS.captionTextScale,
       ),
       colorblindMode: toColorblindMode(o.colorblindMode, DEFAULT_SETTINGS.colorblindMode),
+      disableSeasonalEvents: toBool(
+        o.disableSeasonalEvents,
+        DEFAULT_SETTINGS.disableSeasonalEvents,
+      ),
       keyBindings: coerceKeyBindings(o.keyBindings),
       gamepadBindings: coerceGamepadBindings(o.gamepadBindings),
     };
