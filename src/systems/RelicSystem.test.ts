@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RELICS } from '../data/relics';
+import { createRNG } from '../utils/rng';
 import { RelicSystem } from './RelicSystem';
 
 describe('RelicSystem — slot model (T11)', () => {
@@ -98,5 +99,85 @@ describe('RelicSystem — slot model (T11)', () => {
     sys.reset();
     expect(sys.heldCount()).toBe(0);
     for (const slot of sys.getSlots()) expect(slot.def).toBeNull();
+  });
+});
+
+describe('RelicSystem.rollDrop — source routing (T12)', () => {
+  it('elite source respects 15% base chance', () => {
+    const sys = new RelicSystem();
+    const rng = createRNG(1234);
+    let hits = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      if (sys.rollDrop('elite', rng) !== null) hits++;
+    }
+    const rate = hits / N;
+    expect(rate).toBeGreaterThan(0.12);
+    expect(rate).toBeLessThan(0.18);
+  });
+
+  it('elite source with luckMultiplier=2 doubles the drop rate', () => {
+    const sys = new RelicSystem();
+    const rng = createRNG(1234);
+    let hits = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      if (sys.rollDrop('elite', rng, { luckMultiplier: 2 }) !== null) hits++;
+    }
+    const rate = hits / N;
+    expect(rate).toBeGreaterThan(0.26);
+    expect(rate).toBeLessThan(0.34);
+  });
+
+  it('chest source fires at 25%', () => {
+    const sys = new RelicSystem();
+    const rng = createRNG(77);
+    let hits = 0;
+    const N = 2000;
+    for (let i = 0; i < N; i++) {
+      if (sys.rollDrop('chest', rng) !== null) hits++;
+    }
+    const rate = hits / N;
+    expect(rate).toBeGreaterThan(0.22);
+    expect(rate).toBeLessThan(0.28);
+  });
+
+  it('boss source returns a relic iff bossKey is whitelisted', () => {
+    const sys = new RelicSystem();
+    const rng = createRNG(42);
+    // Whitelisted — always drops.
+    for (let i = 0; i < 20; i++) {
+      const r = sys.rollDrop('boss', rng, { bossKey: 'tour_bus' });
+      expect(r).not.toBeNull();
+      expect(r!.dropAffinity.includes('boss')).toBe(true);
+    }
+    // Not whitelisted — never drops.
+    for (let i = 0; i < 20; i++) {
+      expect(sys.rollDrop('boss', rng, { bossKey: 'gordon' })).toBeNull();
+    }
+    // No bossKey — never drops.
+    expect(sys.rollDrop('boss', rng)).toBeNull();
+  });
+
+  it('hidden_node and bargain sources always produce a relic when offered', () => {
+    const sys = new RelicSystem();
+    const rng = createRNG(9);
+    for (let i = 0; i < 20; i++) {
+      expect(sys.rollDrop('hidden_node', rng)).not.toBeNull();
+      expect(sys.rollDrop('bargain', rng)).not.toBeNull();
+    }
+  });
+
+  it('rolled relic is never one currently held', () => {
+    const sys = new RelicSystem();
+    sys.add(RELICS.sporran_of_holding);
+    sys.add(RELICS.oatcake_stash);
+    const rng = createRNG(777);
+    for (let i = 0; i < 100; i++) {
+      const r = sys.rollDrop('boss', rng, { bossKey: 'taxman' });
+      expect(r).not.toBeNull();
+      expect(r!.key).not.toBe('sporran_of_holding');
+      expect(r!.key).not.toBe('oatcake_stash');
+    }
   });
 });

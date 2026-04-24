@@ -19,7 +19,14 @@
  * so M3 effect wiring (Whisky Dram one-shot, Gran's Teapot timer) can
  * store per-slot state without re-introducing parallel arrays.
  */
-import type { RelicDef, RelicKey } from '../data/relics';
+import type { RelicDef, RelicDropSource, RelicKey } from '../data/relics';
+import type { RNG } from '../utils/rng';
+import {
+  bossGrantsRelic,
+  pickRelicFromPool,
+  rollChestOverrideOccurs,
+  rollEliteDropOccurs,
+} from '../data/relicDrops';
 
 export interface RelicSlot {
   def: RelicDef | null;
@@ -106,6 +113,48 @@ export class RelicSystem {
   reset(): void {
     for (let i = 0; i < this.slots.length; i++) {
       this.slots[i] = makeEmptySlot();
+    }
+  }
+
+  /**
+   * Roll a drop for the given source. Returns the selected RelicDef or
+   * null when no drop fires. Delegates occurrence + pool-selection to
+   * the pure helpers in `data/relicDrops.ts`.
+   *
+   * - `elite`: 15% base, scaled by `luckMultiplier` (default 1).
+   * - `chest`: 25% override on a legendary chest roll; caller decides
+   *   whether the host chest roll was legendary in the first place.
+   * - `boss`: guaranteed iff `bossKey` is on the Tier-2+ whitelist.
+   * - `hidden_node` / `bargain`: always occur (caller-gated event);
+   *   this method just picks the relic.
+   *
+   * Always excludes relics the player already holds.
+   */
+  rollDrop(
+    source: RelicDropSource,
+    rng: RNG,
+    opts: { luckMultiplier?: number; bossKey?: string } = {},
+  ): RelicDef | null {
+    const occurs = this.dropOccurs(source, rng, opts);
+    if (!occurs) return null;
+    return pickRelicFromPool(source, rng, this.heldKeys());
+  }
+
+  private dropOccurs(
+    source: RelicDropSource,
+    rng: RNG,
+    opts: { luckMultiplier?: number; bossKey?: string },
+  ): boolean {
+    switch (source) {
+      case 'elite':
+        return rollEliteDropOccurs(rng, opts.luckMultiplier ?? 1);
+      case 'chest':
+        return rollChestOverrideOccurs(rng);
+      case 'boss':
+        return opts.bossKey ? bossGrantsRelic(opts.bossKey) : false;
+      case 'hidden_node':
+      case 'bargain':
+        return true;
     }
   }
 }
