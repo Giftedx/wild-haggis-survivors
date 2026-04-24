@@ -45,6 +45,7 @@ import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
+import { seasonalRunStartCeremony } from '../systems/seasonal/burnsNightEffects';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
@@ -1070,10 +1071,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // replay playback (Gran doesn't narrate the ghost) and on resume
     // (mid-run rehydration, not a new door). Delayed past any curse_start
     // line so the pact speaks first without collision.
+    //
+    // E1 M2 T9 — Burns Night swaps the tag to `seasonal_event` and
+    // fires a bagpipe stinger alongside the Gran line; the ceremony
+    // only resolves during the real-world Jan 18 – Feb 1 window.
     if (!this.replayInput && !resumeRun) {
       const grandOpenMs = this.activeCurseKey ? 2400 : 1200;
+      const ceremony = seasonalRunStartCeremony(
+        new Date(),
+        this.settingsManager.load().disableSeasonalEvents,
+      );
       this.time.delayedCall(grandOpenMs, () => {
-        this.banter?.request('gran_commentary', { tag: 'run_start' });
+        if (ceremony?.stingerId === 'burns_pipes_in') {
+          audio.playBurnsPipesStinger();
+        }
+        const ctx = ceremony ? ceremony.banterContext : 'gran_commentary';
+        const tag = ceremony ? ceremony.banterTag : 'run_start';
+        this.banter?.request(ctx, { tag });
       });
     }
     this.gameTickers = new GameTickers({

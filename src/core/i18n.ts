@@ -3042,6 +3042,8 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Burns Night',
       description: 'Jan 18 – Feb 1 — the bard\'s week on the moor.',
       badge_suffix: 'Burns Night',
+      /** E1 T9/T22 — on-screen banner at run start / Croft re-entry. */
+      ceremony_banner: '🕯 Burns Night is live — the bard keeps watch.',
     },
   },
   /**

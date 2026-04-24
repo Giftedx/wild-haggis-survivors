@@ -615,6 +615,80 @@ export class AudioSystem {
   }
 
   /**
+   * E1 M2 T9 — Burns Night run-start ceremony stinger. "Pipes-in" feel:
+   * a low A drone under a short pentatonic flourish (A-B-D-E). Sawtooth
+   * + square supply the reedy bagpipe colour; the drone lingers 1.1 s
+   * while the melodic notes fire off the top in fast grace-noted pairs.
+   * Music ducks per stoneGrant level so the ceremony sits forward
+   * without stepping on the opening pad.
+   */
+  playBurnsPipesStinger(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
+    const t0 = ctx.currentTime;
+
+    // Low drone — sawtooth A2, detuned pair for reed body.
+    for (let d = 0; d < 2; d++) {
+      const drone = ctx.createOscillator();
+      const droneGain = ctx.createGain();
+      drone.type = 'sawtooth';
+      drone.detune.value = d === 0 ? -7 : 7;
+      drone.frequency.value = 110; // A2
+      droneGain.gain.setValueAtTime(0, t0);
+      droneGain.gain.linearRampToValueAtTime(0.09, t0 + 0.08);
+      droneGain.gain.setValueAtTime(0.09, t0 + 0.9);
+      droneGain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.2);
+      drone.connect(droneGain);
+      droneGain.connect(this.masterGain);
+      drone.start(t0);
+      drone.stop(t0 + 1.22);
+    }
+
+    // Melodic flourish — A4, B4, D5, E5 pentatonic ascent with a grace
+    // note flick at the start of each (a bagpipe-tuning mannerism).
+    const notes = [
+      { freq: 440, start: 0.08 },     // A4
+      { freq: 493.88, start: 0.28 },  // B4
+      { freq: 587.33, start: 0.5 },   // D5
+      { freq: 659.25, start: 0.72 },  // E5
+    ];
+    for (const note of notes) {
+      // Grace-note tick — 50 ms above the target pitch.
+      const grace = ctx.createOscillator();
+      const graceGain = ctx.createGain();
+      grace.type = 'square';
+      grace.frequency.value = note.freq * 1.12;
+      const gs = t0 + note.start;
+      graceGain.gain.setValueAtTime(0, gs);
+      graceGain.gain.linearRampToValueAtTime(0.06, gs + 0.01);
+      graceGain.gain.exponentialRampToValueAtTime(0.001, gs + 0.05);
+      grace.connect(graceGain);
+      graceGain.connect(this.masterGain);
+      grace.start(gs);
+      grace.stop(gs + 0.06);
+
+      // Main note — square+saw pair for a thick chanter attack.
+      for (let h = 0; h < 2; h++) {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = h === 0 ? 'square' : 'sawtooth';
+        osc.detune.value = h === 0 ? -4 : 4;
+        osc.frequency.value = note.freq;
+        const ns = t0 + note.start + 0.02;
+        oscGain.gain.setValueAtTime(0, ns);
+        oscGain.gain.linearRampToValueAtTime(h === 0 ? 0.1 : 0.05, ns + 0.015);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, ns + 0.18);
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+        osc.start(ns);
+        osc.stop(ns + 0.2);
+      }
+    }
+  }
+
+  /**
    * Ancestral Echo touch — ghostly detuned pair with a falling pitch
    * sweep. Soft and airy; the ghost dissipates as the note decays.
    */

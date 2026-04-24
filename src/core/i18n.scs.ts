@@ -2702,6 +2702,7 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Burns Nicht',
       description: 'Jan 18 – Feb 1 — tha bard\'s week on tha moor.',
       badge_suffix: 'Burns Nicht',
+      ceremony_banner: '🕯 Burns Nicht is live — tha bard keeps watch.',
     },
   },
   relics: {
