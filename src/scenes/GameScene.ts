@@ -136,6 +136,9 @@ import { tickStressTest } from '../dev/StressTest';
 import { BALANCE } from '../core/BalanceConfig';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
+import { HaarFogController } from '../systems/shaders/HaarFogController';
+import { biomeHaarTarget } from '../systems/shaders/biomeHaar';
+import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
 
 /**
  * GameScene — the core gameplay loop.
@@ -300,6 +303,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
+  /** F1 M5 — persistent haar fog controller on the main camera. Null when
+   *  the Canvas renderer is in use (filter pipeline unavailable there). */
+  private haarFog: HaarFogController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
   /** R1 — Relic slots + drop-roll orchestration. Fresh instance per run. */
@@ -491,6 +497,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Draw the Highland ground
     createHighlandTerrain(this);
 
+    // F1 M5 — attach a persistent HaarFogController to the main camera so
+    // biome-driven ambient fog can live across the whole run. WebGL-only;
+    // Canvas silently runs without haar.
+    this.installHaarFog();
+
     // Biome partition — voronoi regions seeded from the run RNG.
     // Owns manager, renderer, entry-toast state, and player-modifier push.
     this.biomeController?.destroy();
@@ -499,6 +510,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runRng.branch(),
       GAME.WORLD_WIDTH,
       GAME.WORLD_HEIGHT,
+      { onBiomeEnter: (biome) => this.handleBiomeEnteredForHaar(biome) },
     );
     // World dressing — decorations + atmospheric mist.
     const bm = this.getBiomeManager();
@@ -1324,6 +1336,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runLifecycle?.uninstallPostBellKeyHandler();
       try { this.biomeController?.destroy(); } catch { /* ignore */ }
       this.biomeController = null;
+      // F1 M5 — drop the haar reference; the camera's filter list is torn
+      // down with the scene, so the controller object is released with it.
+      this.haarFog = null;
       try { this.floraScatter?.destroy(); } catch { /* ignore */ }
       this.floraScatter = null;
       try { this.wildlifeSystem?.destroy(); } catch { /* ignore */ }
@@ -1466,6 +1481,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
 
     this.hazardZones.tick(scaledDelta);
+    if (this.haarFog) this.haarFog.advanceTime(delta * 0.001);
     if (this.biomeController) this.biomeController.tick(this.player, this.juice);
     this.floraScatter?.update(scaledDelta, this.cameras.main);
     this.wildlifeSystem?.update(scaledDelta, this.player.x, this.player.y);
@@ -2210,6 +2226,46 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   getBiomeManager(): BiomeManager | null {
     return this.biomeController?.getManager() ?? null;
+  }
+
+  /**
+   * F1 M5 — mount a persistent HaarFogController on the main camera so
+   * BiomeController can tween ambient density through it. Idempotent:
+   * earlier-run controllers get torn down with the previous camera's
+   * filter list on scene restart; this method always builds a fresh one.
+   */
+  private installHaarFog(): void {
+    this.haarFog = null;
+    if (this.sys.game.renderer.type !== Phaser.WEBGL) return;
+    const cam = this.cameras.main;
+    const filters = cam.filters;
+    if (!filters) return;
+    try {
+      const haar = new HaarFogController(cam, { density: 0 });
+      filters.internal.add(haar);
+      this.haarFog = haar;
+    } catch {
+      this.haarFog = null;
+    }
+  }
+
+  /**
+   * F1 M5 — BiomeController calls this when the player crosses a biome
+   * boundary. First-entry into a haar-prone biome ramps up with the
+   * spec transition; subsequent re-entries tween smoothly to the new
+   * ambient density. Dry biomes (pine/heather) tween back down to 0.
+   */
+  private handleBiomeEnteredForHaar(biome: BiomeId): void {
+    if (!this.haarFog) return;
+    const { motionScale, reduceParticles } = getSettingsManager().load();
+    const target = biomeHaarTarget({ motionScale, reduceParticles }, biome);
+    this.tweens.killTweensOf(this.haarFog.state);
+    this.tweens.add({
+      targets: this.haarFog.state,
+      density: target,
+      duration: DEFAULT_HAAR_TRANSITION.rampInMs,
+      ease: 'Sine.easeInOut',
+    });
   }
 
   getPlayer(): Player { return this.player; }

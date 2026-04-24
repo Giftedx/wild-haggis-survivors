@@ -18,25 +18,35 @@ import type { RNG } from '../../utils/rng';
 import { t } from '../../core/i18n';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 
+export interface BiomeControllerOptions {
+  /** F1 — invoked every time the player transitions into a biome (first-entry
+   *  AND subsequent re-entries), with the new biome id. Consumers tween haar
+   *  density, swap ambient audio beds, etc. */
+  onBiomeEnter?: (biome: BiomeId) => void;
+}
+
 export class BiomeController {
   private manager: BiomeManager;
   private renderer: BiomeRenderer;
   private lastBiome: BiomeId | null = null;
   private toasted = new Set<BiomeId>();
+  private onBiomeEnter?: (biome: BiomeId) => void;
 
   constructor(
     scene: Phaser.Scene,
     rng: RNG,
     worldWidth: number,
     worldHeight: number,
+    opts: BiomeControllerOptions = {},
   ) {
     const layout = createBiomeLayout(rng, worldWidth, worldHeight);
     this.manager = new BiomeManager(layout);
     this.renderer = new BiomeRenderer(scene, this.manager);
+    this.onBiomeEnter = opts.onBiomeEnter;
   }
 
   /** Called once per update from GameScene. Toasts on first entry;
-   *  pushes modifier into Player. */
+   *  pushes modifier into Player; fires onBiomeEnter on every transition. */
   tick(player: Player, juice: JuiceSystem): void {
     const current = this.manager.biomeAt(player.x, player.y);
     if (current === this.lastBiome) return;
@@ -49,6 +59,7 @@ export class BiomeController {
       musicEngine.playBiomeAccent(def.moodTimbre);
     }
     player.setBiomeModifier(BIOMES[current].modifier);
+    this.onBiomeEnter?.(current);
   }
 
   currentBiomeAt(x: number, y: number): BiomeId {
