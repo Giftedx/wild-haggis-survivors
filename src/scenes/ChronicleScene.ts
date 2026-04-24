@@ -455,6 +455,28 @@ export class ChronicleScene extends Phaser.Scene {
         .setScale(uiScale);
       this.runRowObjects.push(rel);
 
+      // E1 M1 — seasonal event badge. Rendered when the run landed
+      // inside a real-world event window (Burns Night for now).
+      // Slot further left than the ironmoor chip so the two don't
+      // overlap on a cursed-ironmoor-during-Burns-Night row.
+      if (entry.seasonalEvent) {
+        const key = `seasonalEvent.${entry.seasonalEvent}.badge_suffix`;
+        const resolved = t(key);
+        // Only render when the key resolves to a real string (hides
+        // gracefully if a future event was removed from the i18n tree
+        // but is still stamped on an old history entry).
+        if (resolved && resolved !== key) {
+          const seasonalBadge = this.add
+            .text(width - 250, y, resolved, {
+              fontFamily: 'monospace', fontSize: '10px',
+              color: COLORS_CSS.WHISKY_GOLD, fontStyle: 'italic',
+            })
+            .setOrigin(1, 0.5)
+            .setScale(uiScale);
+          this.runRowObjects.push(seasonalBadge);
+        }
+      }
+
       // W66 Ironmoor badge — short "⚔" chip on the right side of the
       // row. Coexists with the curse chip (different x-slots: ironmoor
       // sits further left at width-180, curse at width-92), so a cursed
