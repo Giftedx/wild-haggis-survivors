@@ -51,6 +51,8 @@ import { SpriteExportScene } from './tools/SpriteExportScene';
 import { CombinationsPreviewScene } from './scenes/dev/CombinationsPreviewScene';
 import { buildRenderNodesConfig } from './systems/shaders/ShaderRegistry';
 import { registerAllShaders } from './systems/shaders/registerAllShaders';
+import { applyColorblindFilterToCanvas } from './systems/accessibility/applyColorblindFilter';
+import { getSettingsManager } from './core/SettingsManager';
 
 // Register custom render-node shaders before the Phaser.Game constructor reads
 // the config map. See docs/adr/0003-shader-registry-phaser-postfx-pipeline.md.
@@ -111,6 +113,16 @@ const config: Phaser.Types.Core.GameConfig = {
       if (!canvas) return;
       canvas.setAttribute('role', 'application');
       canvas.setAttribute('aria-label', GAME_CANVAS_ARIA_LABEL);
+      // A1 M2 — apply the persisted colorblind filter mode to the
+      // canvas on boot. SettingsScene also calls this on change.
+      try {
+        applyColorblindFilterToCanvas(
+          canvas as HTMLCanvasElement,
+          getSettingsManager().load().colorblindMode,
+        );
+      } catch {
+        /* non-DOM environments (tests) skip silently */
+      }
     },
   },
 };

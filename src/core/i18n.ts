@@ -507,6 +507,14 @@ export const EN_STRINGS: LocaleTree = {
       /** A1 M4 — caption text size multiplier (80%–140%). Independent of
        *  uiScale so players can enlarge captions without rescaling the HUD. */
       caption_text_scale: 'Caption size',
+      /** A1 M2 — colorblind LUT mode. Simulation matrices for design
+       *  audits + monochrome for real severe-deficit accommodation. */
+      colorblind_mode: 'Colour mode',
+      colorblind_off: 'Off',
+      colorblind_protanopia: 'Protanopia',
+      colorblind_deuteranopia: 'Deuteranopia',
+      colorblind_tritanopia: 'Tritanopia',
+      colorblind_monochrome: 'Monochrome',
       /** Banter frequency row — ambient Glesga commentary volume. */
       banter_frequency: 'Banter',
       banter_off: 'Wheesht',
