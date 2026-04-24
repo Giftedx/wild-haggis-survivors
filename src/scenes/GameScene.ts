@@ -2776,6 +2776,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   getPlayer(): Player { return this.player; }
+  /** M1 — test hooks for Moor Road node-map. */
+  getRunActState(): RunActState { return this.runActState; }
+  getNodeMapSystem(): NodeMapSystem { return this.nodeMapSystem; }
   getTimeManager(): TimeManager { return this.timeManager; }
   getUpdateTickers(): UpdateTickers { return this.updateTickers; }
   getSpawnSystem(): SpawnSystem { return this.spawnSystem; }
