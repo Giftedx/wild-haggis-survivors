@@ -13,6 +13,8 @@ import {
 } from './settingsSliderMath';
 import { toggleStateDisplay, resolveToggleTrackStyle } from './settingsToggle';
 import { cycleLocaleKey, labelForLocale } from './settingsLocale';
+import { cycleColorblindMode, labelForColorblindMode } from './settingsColorblind';
+import { applyColorblindFilterToCanvas } from '../systems/accessibility/applyColorblindFilter';
 import {
   banterChipStyle,
   cycleBanterFrequency,
@@ -281,6 +283,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addSectionHeader(t('ui.settings.section_access'));
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
     this.addSliderRow(t('ui.settings.caption_text_scale'), 'captionTextScale', 0.8, 1.4, 0.05);
+    this.addColorblindRow();
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
     this.addToggleRow(t('ui.settings.reduce_flashing'), 'reduceFlashing');
@@ -831,6 +834,72 @@ export class SettingsScene extends Phaser.Scene {
       // so every row picks up the new overlay.
       this.scene.stop();
       this.scene.start('Settings');
+    };
+
+    btn.on('pointerdown', cycle);
+    txt.setInteractive({ useHandCursor: true });
+    txt.on('pointerdown', cycle);
+
+    const mark = this.add
+      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .setStrokeStyle(0);
+    this.gpRows.push({
+      kind: 'toggle',
+      toggle: cycle,
+      mark,
+    });
+  }
+
+  /**
+   * A1 M2 — cycle row for colorblind LUT mode. Pattern mirrors the
+   * locale row: a dim chip on the right cycles through the modes;
+   * each change persists, applies the SVG filter live, and restarts
+   * the scene so downstream palette references re-resolve cleanly.
+   */
+  private addColorblindRow(): void {
+    const { width } = this.scale;
+    const y = this.rowY;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
+    this.rowY += rowStep;
+
+    this.add
+      .text(40, y + 4, t('ui.settings.colorblind_mode'), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+
+    const chipW = 130;
+    const chipH = 26;
+    const cx = width - 88;
+    const cy = y + 18;
+    const btn = this.add
+      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
+      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
+      .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
+
+    const current = () => this.working.colorblindMode;
+    const txt = this.add
+      .text(cx, cy, labelForColorblindMode(current()), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#d4c2e8',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
+
+    const cycle = () => {
+      audio.playClick();
+      this.working = { ...this.working, colorblindMode: cycleColorblindMode(current()) };
+      txt.setText(labelForColorblindMode(current()));
+      this.persistAndApply();
+      // Apply live so player previews without a restart. Canvas ref
+      // taken from the game game instance.
+      const canvas = this.sys.game.canvas as HTMLCanvasElement | undefined;
+      if (canvas) applyColorblindFilterToCanvas(canvas, current());
     };
 
     btn.on('pointerdown', cycle);
