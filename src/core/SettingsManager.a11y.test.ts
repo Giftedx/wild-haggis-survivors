@@ -139,6 +139,32 @@ describe('accessibility settings', () => {
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
 
+  describe('colorblindMode (A1 M2)', () => {
+    it('defaults to off', () => {
+      const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+      expect(s.load().colorblindMode).toBe('off');
+    });
+
+    it('persists each valid mode', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      for (const mode of ['protanopia', 'deuteranopia', 'tritanopia', 'monochrome', 'off'] as const) {
+        s.update((cur) => ({ ...cur, colorblindMode: mode }));
+        expect(s.load().colorblindMode).toBe(mode);
+      }
+    });
+
+    it('coerces unknown values to off', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        colorblindMode: 'chromodynamic' as unknown,
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      expect(s.load().colorblindMode).toBe('off');
+    });
+  });
+
   describe('captionTextScale (A1 M4)', () => {
     it('defaults to 1', () => {
       const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });

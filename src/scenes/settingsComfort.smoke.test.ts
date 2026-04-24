@@ -73,6 +73,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'localeKey',
   'reduceFlashing',
   'captionTextScale',
+  'colorblindMode',
   'assistMode',
   'assistModeGameSpeed',
   'assistModeExtendedIFrames',
@@ -120,6 +121,7 @@ describe('Settings / Comfort panel smoke', () => {
       assistModeExtendedComboWindow: true,
       assistModeInvincibility: true,
       captionTextScale: 1.2,
+      colorblindMode: 'deuteranopia',
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     };

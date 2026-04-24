@@ -123,6 +123,12 @@ export interface ISettingsData {
    */
   captionTextScale: number;
   /**
+   * A1 M2 — colorblind simulation / remap mode. 'off' is default; the
+   * four modes apply a LUT remap via the F1 ShaderRegistry so hue pairs
+   * that would collapse under each vision type remain distinguishable.
+   */
+  colorblindMode: ColorblindMode;
+  /**
    * A1 M3 — keyboard bindings per `ActionKey`. `KeyboardEvent.code`
    * values (`'ArrowUp'`, `'KeyW'`, `'Space'`). Every action has a
    * primary; secondary is optional. On legacy saves without the field,
@@ -148,6 +154,9 @@ function toLocaleKey(v: unknown, fallback: LocaleKey): LocaleKey {
 
 export type BanterFrequency = 'off' | 'sparing' | 'normal' | 'chatty';
 const BANTER_FREQUENCIES: readonly BanterFrequency[] = ['off', 'sparing', 'normal', 'chatty'];
+
+export type ColorblindMode = 'off' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'monochrome';
+const COLORBLIND_MODES: readonly ColorblindMode[] = ['off', 'protanopia', 'deuteranopia', 'tritanopia', 'monochrome'];
 
 const DEFAULT_SETTINGS: ISettingsData = {
   settingsVersion: CURRENT_SETTINGS_VERSION,
@@ -176,6 +185,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
   captionTextScale: 1,
+  colorblindMode: 'off',
   keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
   gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
 };
@@ -249,6 +259,12 @@ function coerceGamepadBindings(v: unknown): Partial<Record<ActionKey, GamepadBin
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
   return typeof v === 'string' && (BANTER_FREQUENCIES as readonly string[]).includes(v)
     ? (v as BanterFrequency)
+    : fallback;
+}
+
+function toColorblindMode(v: unknown, fallback: ColorblindMode): ColorblindMode {
+  return typeof v === 'string' && (COLORBLIND_MODES as readonly string[]).includes(v)
+    ? (v as ColorblindMode)
     : fallback;
 }
 
@@ -382,6 +398,7 @@ export class SettingsManager {
         1.4,
         DEFAULT_SETTINGS.captionTextScale,
       ),
+      colorblindMode: toColorblindMode(o.colorblindMode, DEFAULT_SETTINGS.colorblindMode),
       keyBindings: coerceKeyBindings(o.keyBindings),
       gamepadBindings: coerceGamepadBindings(o.gamepadBindings),
     };

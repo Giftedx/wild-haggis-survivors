@@ -30,6 +30,7 @@ const makeDefaults = (): ISettingsData => ({
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
   captionTextScale: 1,
+  colorblindMode: 'off',
   keyBindings: DEFAULT_KEYBINDINGS,
   gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
 });
