@@ -40,4 +40,13 @@ describe('resolveCardRarityGlowStyle — 3 visual tiers across 4 rarities', () =
     expect(leg.alpha).toBeGreaterThan(rare.alpha);
     expect(rare.alpha).toBeGreaterThan(com.alpha);
   });
+
+  it('rune sits between rare and legendary: tinted with its border, mid-pad + mid-alpha', () => {
+    const s = resolveCardRarityGlowStyle('rune', RARITY_COLORS.rune);
+    expect(s.color).toBe(RARITY_COLORS.rune);
+    expect(s.padExpand).toBeGreaterThan(4); // > rare
+    expect(s.padExpand).toBeLessThan(8);    // < legendary
+    expect(s.alpha).toBeGreaterThan(0.1);   // > rare
+    expect(s.alpha).toBeLessThan(0.15);     // < legendary
+  });
 });

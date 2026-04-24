@@ -34,6 +34,11 @@ export function resolveCardRarityGlowStyle(
   if (rarity === 'legendary') {
     return { padExpand: 8, color: borderColor, alpha: 0.15 };
   }
+  if (rarity === 'rune') {
+    // U1 Rune tier — carved-stone wash, tinted with the rune-mauve border.
+    // Sits between rare and legendary on the visual spectrum.
+    return { padExpand: 6, color: borderColor, alpha: 0.12 };
+  }
   if (rarity === 'rare') {
     return { padExpand: 4, color: borderColor, alpha: 0.1 };
   }

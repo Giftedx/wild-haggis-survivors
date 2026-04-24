@@ -108,6 +108,9 @@ export const COLORS = {
   UNCOMMON: 0x44aa44,
   RARE: 0x4488dd,
   LEGENDARY: 0xddaa00,
+  /** U1 Rune tier — carved-stone mauve, sits between rare (blue) and
+   *  legendary (gold) on the rarity spectrum. */
+  RUNE: 0x8c7aa0,
 
   /** Background */
   BG_DARK: 0x1a1a2e,

@@ -8,10 +8,11 @@
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { COLORS } from '../config';
 import { WEAPON_DEFS } from './weapons';
+import { buildRuneCards } from './runeCards';
 import { t } from '../core/i18n';
 import type { RNG } from '../utils/rng';
 
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary';
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'rune';
 
 /** All valid passive item keys — single source of truth. */
 export type PassiveKey =
@@ -30,7 +31,8 @@ export type UpgradeEffect =
   | { type: 'level_weapon'; weaponKey: string }
   | { type: 'add_passive'; passiveKey: string }
   | { type: 'stat_boost'; stat: string; amount: number }
-  | { type: 'evolve_weapon'; weaponKey: string; evolutionKey: string };
+  | { type: 'evolve_weapon'; weaponKey: string; evolutionKey: string }
+  | { type: 'grant_rune'; runeId: string };
 
 export interface UpgradeCard {
   id: string;
@@ -43,11 +45,15 @@ export interface UpgradeCard {
 
 /** Rarity drop weights. Rebalanced 60/25/12/3 → 55/28/13/4 for slightly
  *  more uncommon/rare/legendary variety at baseline. */
+/** Rune rarity weight — between rare (13) and legendary (4) per U1 spec §2. */
+export const RUNE_RARITY_WEIGHT = 7;
+
 export const RARITY_WEIGHTS: Record<Rarity, number> = {
   common: 55,
   uncommon: 28,
   rare: 13,
   legendary: 4,
+  rune: RUNE_RARITY_WEIGHT,
 };
 
 /** Rarity colors for card borders — mirrors the `COLORS` card-rarity
@@ -58,6 +64,7 @@ export const RARITY_COLORS: Record<Rarity, number> = {
   uncommon: COLORS.UNCOMMON,
   rare: COLORS.RARE,
   legendary: COLORS.LEGENDARY,
+  rune: COLORS.RUNE,
 };
 
 // ── Weapon cards ──
@@ -447,6 +454,14 @@ export const ECHO_CARDS: UpgradeCard[] = [
 
 const LEVELUP_DRIFT_CARD_ENABLED = true;
 
+/** Extra context for pool building. New in U1 (rune tier). */
+export interface BuildCardPoolContext {
+  /** True once ANY boss has been killed this run — unlocks rune tier. */
+  readonly bossKilledThisRun?: boolean;
+  /** Rune ids already owned this run (filtered from draw). */
+  readonly ownedRuneIds?: readonly string[];
+}
+
 /**
  * Build the available card pool based on current player state.
  * Filters out weapons already owned, passives already held, etc.
@@ -455,7 +470,8 @@ export function buildCardPool(
   ownedWeaponKeys: string[],
   ownedPassiveKeys: string[],
   weaponLevels: Record<string, number>,
-  evolvedWeaponKeys: string[] = []
+  evolvedWeaponKeys: string[] = [],
+  ctx: BuildCardPoolContext = {},
 ): UpgradeCard[] {
   const pool: UpgradeCard[] = [];
 
@@ -509,6 +525,16 @@ export function buildCardPool(
     const eff = card.effect as { type: 'add_passive'; passiveKey: string };
     if (!ownedPassiveKeys.includes(eff.passiveKey)) {
       pool.push(card);
+    }
+  }
+
+  // Rune tier — gated on first-boss-kill-this-run; excludes already-owned
+  // runes so a player can never be offered a duplicate slot in the same run.
+  if (ctx.bossKilledThisRun) {
+    const owned = new Set(ctx.ownedRuneIds ?? []);
+    for (const card of buildRuneCards()) {
+      const eff = card.effect as { type: 'grant_rune'; runeId: string };
+      if (!owned.has(eff.runeId)) pool.push(card);
     }
   }
 
