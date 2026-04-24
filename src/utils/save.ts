@@ -4,6 +4,7 @@
  */
 
 import type { RoutePick } from '../data/routes';
+import type { NodeOutcome } from '../data/nodeTypes';
 import { RELIC_KEYS, type RelicKey } from '../data/relics';
 import { generateHaggisNameFromHash } from '../data/haggisNames';
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
@@ -30,7 +31,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 15;
+export const SAVE_SCHEMA_VERSION = 16;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -126,6 +127,14 @@ export interface RunHistoryEntry {
    * future renamed event doesn't corrupt old entries.
    */
   seasonalEvent?: string;
+  /**
+   * M1 Moor Road multi-node — ordered log of every node visited during
+   * the run (across all acts). Absent on pre-v16 entries; coercion
+   * defaults to [] for back-compat. Used by Chronicle to display path
+   * breadcrumbs and by ReplayInput (v3 blob) to reconstruct events
+   * without rerolling RNG.
+   */
+  nodeOutcomes?: NodeOutcome[];
 }
 
 export interface SaveData {
@@ -383,6 +392,13 @@ export interface RunHistoryContext {
   /** T1 replay blob (optional) attached to this run's history entry. */
   replay?: ReplayBlobAny;
   /**
+   * M1 Moor Road multi-node — resolved node outcomes from `RunActState`
+   * (all acts concatenated in visit order). Passed through to
+   * `RunHistoryEntry.nodeOutcomes` so Chronicle can render the walked
+   * path and ReplayInput (v3) can reconstruct events without re-rolling.
+   */
+  nodeOutcomes?: readonly NodeOutcome[];
+  /**
    * LG T3 — cosmetic run name generated at run start (Math.random-based,
    * kept outside runRng per determinism policy). Passing it through here
    * means the persisted entry matches the name the player saw on the
@@ -520,6 +536,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV13ToV14(raw));
     case 14:
       return finalizeSaveCandidate(migrateV14ToV15(raw));
+    case 15:
+      return finalizeSaveCandidate(migrateV15ToV16(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -588,6 +606,9 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(context?.ironmoor ? { ironmoor: true } : {}),
     ...(context?.replay ? { replay: context.replay } : {}),
     ...(typeof context?.name === 'string' && context.name.length > 0 ? { name: context.name } : {}),
+    ...(context?.nodeOutcomes && context.nodeOutcomes.length > 0
+      ? { nodeOutcomes: [...context.nodeOutcomes] }
+      : { nodeOutcomes: [] }),
   };
 
   const isCursedVictory =
@@ -819,6 +840,16 @@ function migrateV13ToV14(raw: SaveRecord): SaveRecord {
  * unrecoverable. Fresh counter starts at 0 for all.
  */
 function migrateV14ToV15(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
+/**
+ * v15 → v16 adds `RunHistoryEntry.nodeOutcomes?: NodeOutcome[]` (M1
+ * Moor Road multi-node). Pure version bump — `coerceRunHistoryEntry`
+ * defaults the field to `[]` for pre-v16 entries. No retroactive seed:
+ * pre-M1 runs had no node events to reconstruct.
+ */
+function migrateV15ToV16(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
@@ -1195,8 +1226,30 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     ...(typeof raw.seasonalEvent === 'string' && raw.seasonalEvent
       ? { seasonalEvent: raw.seasonalEvent }
       : {}),
+    nodeOutcomes: coerceNodeOutcomes(raw.nodeOutcomes),
     name: coerceRunHistoryName(raw),
   };
+}
+
+function coerceNodeOutcomes(value: unknown): NodeOutcome[] {
+  if (!Array.isArray(value)) return [];
+  const out: NodeOutcome[] = [];
+  for (const raw of value) {
+    if (!isRecord(raw)) continue;
+    const nodeKey = typeof raw.nodeKey === 'string' && raw.nodeKey ? raw.nodeKey : null;
+    if (!nodeKey) continue;
+    const visitedAtGameTimeSec =
+      typeof raw.visitedAtGameTimeSec === 'number' && Number.isFinite(raw.visitedAtGameTimeSec)
+        ? raw.visitedAtGameTimeSec
+        : 0;
+    const entry: NodeOutcome = { nodeKey, visitedAtGameTimeSec };
+    if (typeof raw.chosenRewardKey === 'string' && raw.chosenRewardKey) {
+      out.push({ ...entry, chosenRewardKey: raw.chosenRewardKey });
+    } else {
+      out.push(entry);
+    }
+  }
+  return out;
 }
 
 function coerceRunHistoryName(raw: Record<string, unknown>): string {

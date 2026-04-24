@@ -367,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 15', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(15);
+  it('SAVE_SCHEMA_VERSION is 16', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(16);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -2063,6 +2063,90 @@ describe('save schema v13 → v14 (Croft trophies + seed)', () => {
     expect(migrated.bossKillCounts).toEqual({ gordon: 7, tour_bus: 4, taxman: 2, laird: 1 });
     expect(migrated.firstRouteVisits).toEqual(['up_the_brae', 'buckie_pitstop']);
     expect(migrated.cursedVictoriesByBoss).toEqual({ taxman: 1 });
+  });
+});
+
+describe('migrateSave v15 → v16 (M1 nodeOutcomes)', () => {
+  it('bumps schema version and defaults nodeOutcomes to empty on legacy entries', () => {
+    const migrated = migrateSave({
+      schemaVersion: 15,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 600,
+          enemiesKilled: 100,
+          level: 5,
+          bossKills: 1,
+          goldEarned: 10,
+          bestCombo: 50,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: ['bagpipes'],
+        },
+      ],
+    });
+    expect(migrated.schemaVersion).toBe(16);
+    expect(migrated.runHistory[0].nodeOutcomes).toEqual([]);
+  });
+
+  it('preserves nodeOutcomes arrays on v16 entries', () => {
+    const migrated = migrateSave({
+      schemaVersion: 16,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 600,
+          enemiesKilled: 100,
+          level: 5,
+          bossKills: 1,
+          goldEarned: 10,
+          bestCombo: 50,
+          variantKey: 'classic',
+          isVictory: true,
+          weaponKeys: ['bagpipes'],
+          nodeOutcomes: [
+            { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 120 },
+            { nodeKey: 'a1_shrine_cairn', chosenRewardKey: 'buff_damage', visitedAtGameTimeSec: 240 },
+          ],
+        },
+      ],
+    });
+    expect(migrated.runHistory[0].nodeOutcomes).toEqual([
+      { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 120 },
+      { nodeKey: 'a1_shrine_cairn', chosenRewardKey: 'buff_damage', visitedAtGameTimeSec: 240 },
+    ]);
+  });
+
+  it('drops malformed nodeOutcome entries', () => {
+    const migrated = migrateSave({
+      schemaVersion: 16,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 600,
+          enemiesKilled: 100,
+          level: 5,
+          bossKills: 0,
+          goldEarned: 10,
+          bestCombo: 0,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: [],
+          nodeOutcomes: [
+            { nodeKey: 'valid', visitedAtGameTimeSec: 5 },
+            { nodeKey: '', visitedAtGameTimeSec: 10 }, // dropped: empty key
+            { visitedAtGameTimeSec: 15 }, // dropped: no key
+            null,
+            'notarecord',
+            { nodeKey: 'numeric_time_only' }, // kept: missing time defaults to 0
+          ],
+        },
+      ],
+    });
+    expect(migrated.runHistory[0].nodeOutcomes).toEqual([
+      { nodeKey: 'valid', visitedAtGameTimeSec: 5 },
+      { nodeKey: 'numeric_time_only', visitedAtGameTimeSec: 0 },
+    ]);
   });
 });
 
