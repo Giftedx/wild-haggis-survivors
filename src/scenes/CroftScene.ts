@@ -21,6 +21,7 @@ import { SaveManager } from '../core/SaveManager';
 import { loadSave } from '../utils/save';
 import { computeAllTrophies } from './croft/CroftTrophies';
 import { drawMantelpieceTrophies } from '../art/sprites/croft/mantelpiece';
+import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -48,6 +49,7 @@ export class CroftScene extends Phaser.Scene {
   private hearthFrame = 0;
   private ambient: CroftAmbientLoop | null = null;
   private mantelGfx: Phaser.GameObjects.Graphics | null = null;
+  private photoWallGfx: Phaser.GameObjects.Graphics | null = null;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -72,6 +74,8 @@ export class CroftScene extends Phaser.Scene {
     this.hearthFrame = 0;
     this.mantelGfx?.destroy();
     this.mantelGfx = null;
+    this.photoWallGfx?.destroy();
+    this.photoWallGfx = null;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -82,6 +86,7 @@ export class CroftScene extends Phaser.Scene {
 
     this.drawComposition(layout, highContrastUi);
     this.drawMantelpiece(layout);
+    this.drawPhotoWall(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawHeader(width);
@@ -109,8 +114,8 @@ export class CroftScene extends Phaser.Scene {
     const alphaFill = highContrast ? 0.4 : 0.22;
     const alphaStroke = highContrast ? 0.9 : 0.6;
     for (const key of CROFT_DRAW_ORDER) {
-      // Gran + hearth + mantelpiece now have real drawers — skip placeholders.
-      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece') continue;
+      // Real drawers now own these elements — skip placeholders.
+      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece' || key === 'photoWall') continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -134,6 +139,18 @@ export class CroftScene extends Phaser.Scene {
     const gfx = this.add.graphics();
     drawMantelpieceTrophies(gfx, trophies, layout.mantelpiece);
     this.mantelGfx = gfx;
+  }
+
+  /**
+   * Draw the photo wall — one polaroid per canonical Moor Road route.
+   * Visited routes (present in `firstRouteVisits`) show full colour;
+   * unvisited sit as sepia placeholders waiting to be earned.
+   */
+  private drawPhotoWall(layout: CroftLayout): void {
+    const save = loadSave();
+    const gfx = this.add.graphics();
+    drawPhotoWall(gfx, layout.photoWall, save.firstRouteVisits);
+    this.photoWallGfx = gfx;
   }
 
   /**
