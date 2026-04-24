@@ -18,12 +18,13 @@ import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
 import { createGameButton } from '../ui/gameButton';
 import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
-import { loadSave } from '../utils/save';
+import { loadSave, writeSave } from '../utils/save';
 import { computeAllTrophies } from './croft/CroftTrophies';
 import { drawMantelpieceTrophies, computeTrophySlotXs } from '../art/sprites/croft/mantelpiece';
 import { TROPHY_BOSS_KEYS } from './croft/CroftTrophies';
 import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
+import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -52,6 +53,9 @@ export class CroftScene extends Phaser.Scene {
   private ambient: CroftAmbientLoop | null = null;
   private mantelGfx: Phaser.GameObjects.Graphics | null = null;
   private photoWallGfx: Phaser.GameObjects.Graphics | null = null;
+  private droveGfx: Phaser.GameObjects.Graphics | null = null;
+  private droveSlots: DroveSlot[] = [];
+  private droveHits: Phaser.GameObjects.Rectangle[] = [];
   private trophyHits: Phaser.GameObjects.Rectangle[] = [];
   private granBubble: Phaser.GameObjects.Container | null = null;
   private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
@@ -81,6 +85,11 @@ export class CroftScene extends Phaser.Scene {
     this.mantelGfx = null;
     this.photoWallGfx?.destroy();
     this.photoWallGfx = null;
+    this.droveGfx?.destroy();
+    this.droveGfx = null;
+    this.droveSlots = [];
+    this.droveHits.forEach((r) => r.destroy());
+    this.droveHits = [];
     this.trophyHits.forEach((r) => r.destroy());
     this.trophyHits = [];
     this.granBubble?.destroy();
@@ -98,6 +107,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawComposition(layout, highContrastUi);
     this.drawMantelpiece(layout);
     this.drawPhotoWall(layout);
+    this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawHeader(width);
@@ -126,7 +136,7 @@ export class CroftScene extends Phaser.Scene {
     const alphaStroke = highContrast ? 0.9 : 0.6;
     for (const key of CROFT_DRAW_ORDER) {
       // Real drawers now own these elements — skip placeholders.
-      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece' || key === 'photoWall') continue;
+      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece' || key === 'photoWall' || key === 'drove') continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -266,6 +276,52 @@ export class CroftScene extends Phaser.Scene {
     const gfx = this.add.graphics();
     drawPhotoWall(gfx, layout.photoWall, save.firstRouteVisits);
     this.photoWallGfx = gfx;
+  }
+
+  /**
+   * Draw the drove silhouettes along the window sill — one per
+   * variant, unlocked variants in full palette + the selected
+   * variant wearing a whisky-gold accent ring. Clicking a silhouette
+   * is wired in T20.
+   */
+  private drawDroveWindow(layout: CroftLayout): void {
+    const save = loadSave();
+    const gfx = this.add.graphics();
+    this.droveSlots = drawDrove(gfx, layout.drove, save.unlockedVariants, save.selectedVariant);
+    this.droveGfx = gfx;
+
+    // Unlocked silhouettes are clickable — selects for next run.
+    // Locked ones get a hit area that fires a "locked" quip so the
+    // player learns the variant exists without seeing its palette.
+    this.droveHits = this.droveSlots.map((slot) => {
+      const hit = this.add
+        .rectangle(slot.x + slot.w / 2, slot.y, slot.w + 2, slot.h + 6, 0x000000, 0)
+        .setInteractive({ useHandCursor: slot.unlocked });
+      hit.on('pointerdown', () => this.onDroveSlotClicked(slot, layout));
+      return hit;
+    });
+  }
+
+  /**
+   * Click handler for a drove silhouette. Unlocked variants replace
+   * `save.selectedVariant` for the next run; the scene re-renders so
+   * the accent ring moves immediately. Locked variants play the click
+   * sound but take no save action (a fuller locked-flavour reveal
+   * lands with M3 a11y polish).
+   */
+  private onDroveSlotClicked(slot: DroveSlot, layout: CroftLayout): void {
+    audio.playClick();
+    if (!slot.unlocked) return;
+    const current = loadSave();
+    if (current.selectedVariant === slot.variant.key) return;
+    writeSave({ ...current, selectedVariant: slot.variant.key });
+    // Redraw the drove so the gold accent ring jumps to the newly
+    // picked silhouette without a full scene restart.
+    this.droveGfx?.destroy();
+    this.droveHits.forEach((h) => h.destroy());
+    this.droveHits = [];
+    this.droveSlots = [];
+    this.drawDroveWindow(layout);
   }
 
   /**
