@@ -225,6 +225,7 @@ export class AlmanacScene extends Phaser.Scene {
           this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
           this.renderActiveBook(width, this.scale.height, uiScale);
         },
+        onHearAgain: (key) => this.rehearseBanterLine(key),
       });
       return;
     }
@@ -241,4 +242,45 @@ export class AlmanacScene extends Phaser.Scene {
       .setScale(uiScale);
     this.bodyObjects.push(placeholder);
   }
+
+  /**
+   * C1 M4 Task 21 — local rehearsal of a heard banter line. The Almanac
+   * scene is decoupled from the in-game `BanterSystem` instance (lives
+   * in GameScene), so Hear Again renders directly to a short-lived
+   * toast on this scene. User-initiated, so it bypasses rate-limit /
+   * frequency gates by design — the player clicked, they deserve the
+   * line.
+   */
+  private rehearseBanterLine(key: string): void {
+    if (this.activeRehearsal) {
+      this.activeRehearsal.destroy();
+      this.activeRehearsal = null;
+    }
+    const resolved = t(key);
+    if (resolved === key) return; // no translation — stay silent per BanterSystem contract
+    const { width, height } = this.scale;
+    const { uiScale } = getSettingsManager().load();
+    const toast = this.add
+      .text(width / 2, height - 72, resolved,
+        textStyle('label', { color: COLORS_CSS.WHISKY_GOLD, align: 'center' }))
+      .setOrigin(0.5, 1)
+      .setScale(uiScale)
+      .setAlpha(0);
+    this.activeRehearsal = toast;
+    this.tweens.add({
+      targets: toast, alpha: 1, duration: 180, ease: 'Sine.easeOut',
+    });
+    this.time.delayedCall(2400, () => {
+      if (!toast.scene) return;
+      this.tweens.add({
+        targets: toast, alpha: 0, duration: 280, ease: 'Sine.easeIn',
+        onComplete: () => {
+          if (this.activeRehearsal === toast) this.activeRehearsal = null;
+          toast.destroy();
+        },
+      });
+    });
+  }
+
+  private activeRehearsal: Phaser.GameObjects.Text | null = null;
 }

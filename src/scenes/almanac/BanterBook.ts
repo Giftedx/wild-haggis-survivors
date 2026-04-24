@@ -45,7 +45,16 @@ export interface BanterBookViewport {
 export interface BanterBookOpts {
   readonly expandedKey: string | null;
   readonly onToggle: (key: string) => void;
+  /**
+   * Called when the user clicks the ↻ button on a heard line. Scene
+   * wires this to a local rehearsal toast — the line plays back
+   * through the Almanac's own surface, bypassing BanterSystem rate
+   * limits since this is a user-initiated reveal, not a game event.
+   */
+  readonly onHearAgain?: (key: string) => void;
 }
+
+const RARE_MARKER = '✨ ';
 
 /**
  * C1 M4 — Banter book renderer.
@@ -115,22 +124,18 @@ export function renderBanterBook(
     );
     objects.push(pill);
 
+    const labelKey = `ui.almanac.banter_pool.${entry.context}.label`;
+    const labelRaw = t(labelKey);
+    const labelResolved = labelRaw === labelKey ? fallbackPoolLabel(entry.context) : labelRaw;
+    const labelText = entry.rare ? `${RARE_MARKER}${labelResolved}` : labelResolved;
     const label = scene.add
-      .text(pillX + 16, rowY,
-        t(`ui.almanac.banter_pool.${entry.context}.label`),
+      .text(pillX + 16, rowY, labelText,
         textStyle('label', {
           color: entry.heardLines > 0 ? COLORS_CSS.TEXT_PRIMARY : COLORS_CSS.TEXT_DIM,
           wordWrap: { width: Math.max(60, (rowInnerW - 160) / Math.max(1, uiScale)) },
         }))
       .setOrigin(0, 0.5)
       .setScale(uiScale);
-    // Resolve i18n fallback inline so the row still reads before
-    // authored leaves ship (same pattern as BeastiesBook lore).
-    const labelRaw = label.text;
-    const labelKey = `ui.almanac.banter_pool.${entry.context}.label`;
-    if (labelRaw === labelKey) {
-      label.setText(fallbackPoolLabel(entry.context));
-    }
     objects.push(label);
 
     const chip = scene.add
@@ -147,7 +152,10 @@ export function renderBanterBook(
   if (opts.expandedKey !== null) {
     const expanded = entries.find((e) => e.key === opts.expandedKey);
     if (expanded) {
-      renderExpandedOverlay(scene, viewport, expanded, uiScale, opts.onToggle, objects);
+      renderExpandedOverlay(
+        scene, viewport, expanded, uiScale,
+        opts.onToggle, opts.onHearAgain ?? null, objects,
+      );
     }
   }
 
@@ -165,6 +173,7 @@ function renderExpandedOverlay(
   entry: BanterPoolEntryVM,
   uiScale: number,
   onToggle: (key: string) => void,
+  onHearAgain: ((key: string) => void) | null,
   sink: Phaser.GameObjects.GameObject[],
 ): void {
   const { x: vx, y: vy, width: vw, height: vh } = viewport;
@@ -198,9 +207,12 @@ function renderExpandedOverlay(
   );
   sink.push(stripe);
 
-  // Title — pool label, fall back to formatted context.
+  // Title — pool label, fall back to formatted context. Rare pools
+  // prefix the title with ✨ so the collector status is obvious on
+  // expansion.
   const titleRaw = t(detail.titleKey);
-  const titleText = titleRaw === detail.titleKey ? detail.titleFallback : titleRaw;
+  const titleBase = titleRaw === detail.titleKey ? detail.titleFallback : titleRaw;
+  const titleText = detail.rare ? `${RARE_MARKER}${titleBase}` : titleBase;
   const title = scene.add
     .text(panelCx, panelCy - panelH / 2 + 24, titleText,
       textStyle('heading', { color: COLORS_CSS.WHISKY_GOLD }))
@@ -254,18 +266,34 @@ function renderExpandedOverlay(
     for (const line of heardToShow) {
       if (cursorY + lineGap > listMaxY) break;
       const raw = t(line.key);
-      const text = raw === line.key ? line.key : raw;
+      const resolved = raw === line.key ? line.key : raw;
+      const prefix = detail.rare ? `${RARE_MARKER}• ` : '• ';
       const heardRow = scene.add
-        .text(panelCx, cursorY, `• ${text}`, {
+        .text(panelCx - (onHearAgain ? 14 : 0), cursorY, `${prefix}${resolved}`, {
           ...textStyle('small', {
             color: COLORS_CSS.TEXT_PRIMARY,
             align: 'center',
-            wordWrap: { width: (panelW - 48) / Math.max(1, uiScale) },
+            wordWrap: { width: (panelW - 60) / Math.max(1, uiScale) },
           }),
         })
         .setOrigin(0.5, 0)
         .setScale(uiScale);
       sink.push(heardRow);
+
+      if (onHearAgain) {
+        const replayBtn = scene.add
+          .text(panelCx + panelW / 2 - 20, cursorY, '↻',
+            textStyle('small', { color: COLORS_CSS.WHISKY_GOLD }))
+          .setOrigin(1, 0)
+          .setScale(uiScale)
+          .setInteractive({ useHandCursor: true });
+        replayBtn.on('pointerdown', () => {
+          audio.playClick();
+          onHearAgain(line.key);
+        });
+        sink.push(replayBtn);
+      }
+
       cursorY += heardRow.height * uiScale + 4;
     }
     if (detail.heard.length > HEARD_LINE_DISPLAY_CAP) {
