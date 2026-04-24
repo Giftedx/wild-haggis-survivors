@@ -3,6 +3,7 @@ import { COLORS_CSS } from '../../config';
 import { t } from '../../core/i18n';
 import { textStyle } from '../../ui/typography';
 import { type BeastieEntryVM, beastiesDiscoverySummary } from './buildBeastiesEntries';
+import { resolveBeastieDisplay } from './beastieDisplay';
 
 const GRID_COLS = 6;
 const GRID_ROWS = 6; // 36 slots — fits 30 enemies + 5 bosses with one spare
@@ -78,17 +79,34 @@ export function renderBeastiesBook(
       .setStrokeStyle(1, entry.seen ? CELL_STROKE_SEEN : CELL_STROKE_UNSEEN, 0.9);
     objects.push(cell);
 
+    const display = resolveBeastieDisplay(entry);
     if (scene.textures.exists(entry.texture)) {
-      const sprite = scene.add.sprite(cx, cy - 4, entry.texture);
+      const sprite = scene.add.sprite(cx, cy - 6, entry.texture);
       const nativeSize = Math.max(sprite.width, sprite.height, 1);
       const fit = spriteBudget / nativeSize;
       sprite.setScale(fit * (entry.isBoss ? 0.8 : 1.0));
-      // Task 9 will replace this alpha dim with the silhouette display
-      // treatment; the low alpha here is a placeholder so unseen slots
-      // still read as "unknown" without a shader path.
-      sprite.setAlpha(entry.seen ? 1 : 0.25);
+      sprite.setAlpha(display.alpha);
+      if (display.tint !== null) {
+        // Phaser tint multiplies RGB channels — setting a very dark
+        // tone collapses the sprite to a shadow silhouette while
+        // preserving the outline shape.
+        sprite.setTint(display.tint);
+      }
       objects.push(sprite);
     }
+
+    // Name label under the sprite — real name when seen, '???' when
+    // silhouetted. Lets players scan the grid without expanding.
+    const nameLabel = scene.add
+      .text(cx, cy + (cellH - 6) / 2 - 8, display.displayName,
+        textStyle('small', {
+          color: display.isSilhouette ? COLORS_CSS.TEXT_DIM : COLORS_CSS.TEXT_PRIMARY,
+          align: 'center',
+          wordWrap: { width: Math.max(40, (cellW - 10) / Math.max(1, uiScale)) },
+        }))
+      .setOrigin(0.5, 1)
+      .setScale(uiScale);
+    objects.push(nameLabel);
 
     // Kill count chip — top-right of the cell, seen-only.
     if (entry.seen && entry.killCount > 0) {
@@ -106,7 +124,9 @@ export function renderBeastiesBook(
     if (entry.isBoss) {
       const dot = scene.add
         .text(cx - (cellW - 6) / 2 + 4, cy - (cellH - 6) / 2 + 2, '★',
-          textStyle('small', { color: COLORS_CSS.WHISKY_GOLD }))
+          textStyle('small', {
+            color: entry.seen ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.TEXT_DIM,
+          }))
         .setOrigin(0, 0)
         .setScale(uiScale);
       objects.push(dot);
