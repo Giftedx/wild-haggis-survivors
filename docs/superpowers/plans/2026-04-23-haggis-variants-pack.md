@@ -1,6 +1,11 @@
 # V2 — Haggis Variants Pack (+3 new variants) implementation plan
 
-> **STATUS:** Track 1 (Doric Quinie) SHIPPED 2026-04-24 in commits `b49fd40` + `487221b`. Tracks 2 + 3 blocked on decisions recorded in `docs/superpowers/plans/2026-04-24-v2-variants-followups.md`.
+> **STATUS:** ALL THREE TRACKS SHIPPED 2026-04-24.
+>  - Track 1 (Doric Quinie): commits `b49fd40` + `487221b`.
+>  - Track 2 (Peerie Shetlander): commits `f9f3b0c` + `24f4044`.
+>  - Track 3 (Burns's Wee Beastie): commits `314d7de` + `bf83f5e`.
+>
+> Roster is 14 variants. Native-speaker + Burns-edition review blockers captured in `docs/superpowers/plans/2026-04-24-v2-variants-followups.md` — code is live; *cohort-final* merge of flavor prose waits on review.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 >

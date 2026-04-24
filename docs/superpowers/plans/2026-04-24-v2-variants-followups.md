@@ -1,100 +1,89 @@
 # V2 — variants pack followups
 
-> **STATUS:** Open. Created 2026-04-24 after shipping V2 Track 1 (Doric Quinie) in commits `b49fd40` + `487221b`.
+> **STATUS:** Partial. Updated 2026-04-24 after shipping all three tracks.
 >
-> Tracks 2 (Peerie Shetlander) and 3 (Burns's Wee Beastie) pause pending the resolutions below. Spec: `docs/superpowers/specs/2026-04-23-haggis-variants-pack-design.md`. Plan: `docs/superpowers/plans/2026-04-23-haggis-variants-pack.md`.
+> - Track 1 Doric Quinie: `b49fd40` + `487221b`
+> - Track 2 Peerie Shetlander: `f9f3b0c` + `24f4044`
+> - Track 3 Burns's Wee Beastie: `314d7de` + `bf83f5e`
+>
+> Code is live. Remaining items are **review blockers** (dialect + Burns-edition authenticity), **deferred polish** (accent art, field-name snapshot adapter), and **placeholder-unlock tightening** (Burns, once E1 ships).
+
+Spec: `docs/superpowers/specs/2026-04-23-haggis-variants-pack-design.md`. Plan: `docs/superpowers/plans/2026-04-23-haggis-variants-pack.md`.
 
 ---
 
-## Open on all future tracks
+## Review blockers (must close before final cohort sign-off)
 
-### Native-speaker banter review for Doric Quinie
+### Doric Quinie native-speaker review
 
-- Track 1 banter shipped as *draft*. 24 EN + 24 SCS lines for `doric_quinie` across six variant-scoped pools (low_hp, level_up, first_blood, kill_streak, recover, idle), plus name + flavor + deed copy.
-- Merge-blocker per `CULTURAL_SENSITIVITIES_RESEARCH.md §4.3` — Northeast Scotland (Aberdeenshire / Moray / Angus) native reviewer required before V2 is considered "shipped" as a cohort.
-- If review comes back clean: close this followup.
-- If review flags authenticity drift: patch lines in place; tests auto-fence.
+- 24 EN + 24 SCS lines + name + flavor + deed copy shipped as draft.
+- Per `CULTURAL_SENSITIVITIES_RESEARCH.md §4.3`: Northeast Scotland (Aberdeenshire / Moray / Angus) native reviewer required.
+- If review clean: close. If drift flagged: patch lines in place; parity + wireup tests auto-fence.
 
-### Accent art for Doric Quinie
+### Peerie Shetlander Shetlandic review
 
-- V2 T1 shipped with `accentStyle: 'none'`. BootScene adds the accent cue per variant; Doric has none.
-- Spec §2 called for "slightly longer 'fisherman's bonnet' tuft; upright posture." Implement as a new `HaggisAccentStyle: 'doric_quinie'` + BootScene render block.
-- Not blocking V2 cohort ship — kilt + body palette already read distinct from other variants. Cosmetic depth.
+- 24 EN + 24 SCS lines in Shetlandic (du / dee / peerie / voe / skerry / mirry) shipped as draft.
+- Shetland ForWirds is the named reviewer body (Shetlandic now has its own ISO 639-3 code `scz` — treat with care).
+- If review confirms: close. If authenticity drift: patch in place.
 
-### MenuScene snapshot lacks `runsWithoutHealing`
+### Burns's Wee Beastie Burns-edition audit
 
-- `MenuScene.renderVariantPanel` passes `this.saveData` directly as `VariantProgressSnapshot`. `SaveData.runsWithoutHealingCircleCompleted` doesn't match the snapshot field name `runsWithoutHealing`, so the locked-progress strip reads "0/1" regardless of true count.
-- Doric's threshold is 1, so the strip flips to "earned" on first no-heal win — effectively invisible. But Peerie/Burns (if they also have longer thresholds) would show stale "0/N".
-- Fix before Track 2 lands if any condition type uses a required >1: either map fields through an adapter in `MenuScene`, or align snapshot field names to SaveData long-form.
-- Same latent issue pre-existed for `cursedVictoriesCompleted` → `cursedVictories` (see variants.ts:342 snapshot field naming). Fixing should standardise.
+- 24 EN + 24 SCS lines drafted from well-known Burns poems (To a Mouse, A Man's a Man for A' That, Scots Wha Hae, Auld Lang Syne, A Red Red Rose, Tam o' Shanter, Address to a Haggis).
+- Spec §5 requires every direct quotation to be verified against *The Canongate Burns*. No paraphrase attributed directly to Burns if not his wording.
+- **Audit checklist** — confirm exact wording + spelling + line-break for each direct quote. Modernised paraphrases OK if clearly flagged (italics reserved for direct Burns wording in future UI work).
 
 ---
 
-## Track 2 — Peerie Shetlander (blocked)
+## Deferred polish (non-blocking)
 
-### Prerequisite: define "cold source" for cold-hazard resist
+### Accent art for all three variants
 
-- Spec §2: "Cold-hazard resist 50% — northern constitution."
-- Current codebase has **no cold-damage concept**. Damage sources are lava (hot), slick (slow, not damage), fog (pickup-radius debuff), enemies (neutral), bosses (neutral). No hazard carries a `"cold"` tag.
-- Three options, in order of ship effort:
-  1. **Flavour-only** (cheapest): ship `coldHazardResistPct` as a declared `VariantModifier` field with no runtime consumer. Note in variant flavor. Reserved for future winter biome.
-  2. **Tag-the-bogs** (low-lift mechanical): classify bog's implied chill + pine's spectral-ghost hits as "cold", reduce their damage 50% for Peerie. Requires a `coldDamageMult` read in `hazardDamage.ts` + per-enemy tagging. Spec-adjacent but ships a real mechanic.
-  3. **Full cold hazard system** (large scope): introduce a cold-biome frost zone type paralleling lava. Winter-map DLC scope. Out of V2.
-- **Recommendation:** option 1 for V2 ship, note as technical debt for future winter-biome initiative.
+- All shipped with `accentStyle: 'none'`. Kilt + body palette carry visual identity. Not a blocker.
+- Spec proposed:
+  - Doric Quinie: "longer fisherman's bonnet tuft; upright posture."
+  - Peerie Shetlander: "wisps of kelp at the collar; slight lean into wind."
+  - Burns's Wee Beastie: already ships at `spriteScale: 0.85` (distinct silhouette); no additional accent cue.
+- Implementation when picked up: new `HaggisAccentStyle` enum entries + BootScene render blocks.
 
-### Prerequisite: biome-visited tracking for "coastal-exclusive" unlock
+### MenuScene `VariantProgressSnapshot` field-name adapter
 
-- Spec unlock: "Complete a run in the coastal/loch biome cluster exclusively (never enter moor)."
-- "Coastal" isn't a shipped biome. Shipped biomes: `bog`, `loch`, `pine`, `heather`. "Moor" isn't one either — it's the ambient terrain between biomes (see `BiomeManager`).
-- Two questions:
-  1. Which biomes count as "coastal"? Propose: `loch` + `pine` (pine grows on Scottish islands; loch is water). Reject `bog` + `heather` as moor-adjacent.
-  2. New per-run telemetry: `biomesVisited: BiomeId[]`. Set added on `onBiomeEntered`, read at run-end. Persist as field on `RunHistoryEntry` (not lifetime save) for replay-exact reconstruction; lifetime counter `runsInCoastalOnlyCompleted` increments when `biomesVisited ⊆ {loch, pine}`.
-- Save schema bump v10 → v11 for the new field + per-entry field. Migration pure bump; retroactive seed impossible (no pre-v11 biome telemetry).
-- Decision required before coding: which biomes map to "coastal"?
+- MenuScene passes `this.saveData` (SaveData type) directly as the snapshot. SaveData uses long field names (`runsWithoutHealingCircleCompleted`, `runsInCoastalOnlyCompleted`, `runsWithAllEvolutionsCompleted`, `cursedVictoriesCompleted`) but VariantProgressSnapshot uses short names (`runsWithoutHealing`, `runsInCoastalOnly`, `runsWithAllEvolutions`, `cursedVictories`). Structural read returns undefined → locked-progress strip shows "0/1" regardless of real count.
+- All current unlock thresholds are 1, so the strip flips to "earned" on first triggering run — effectively invisible. But future unlocks at higher thresholds will show stale progress.
+- Fix: build a proper snapshot in `MenuScene.renderVariantPanel` the same way `applyRunSummary` does (post-cohort commit `24f4044` established the pattern via `runEndSnapshot`).
 
-### Peerie stats TODO
+### Starter passives (Arbroath Smokie, Up Helly Aa, A Red Red Rose)
 
-- Propose using existing `VariantModifier` fields where possible:
-  - `+5% speed` → `moveSpeedPct: 0.05`
-  - `-10 HP` → `maxHpFlat: -10`
-  - `+5% crit` → **no existing field**. Either add `critChancePct` modifier (requires Player.critChance read site) or defer to flavor-only via passive-equivalent (similar approach to Doric's xpMultiplierPct for Arbroath Smokie).
-  - `-10% drift` → `driftReductionPct: 0.10`
-  - Cold resist → see above.
-
-### Peerie banter
-
-- 24 EN + 24 SCS in Shetlandic. Spec flags: "du / dee" (thou/thee), "peerie" (small), "voe" (inlet), "mirry" (happy), "skerry" (rocky outcrop). Shetlandic has its own ISO 639-3 code (`scz`) — treat respectfully.
-- Shetlandic native speaker consultation is a merge-blocker (spec §5). Shetland ForWirds is the named reviewer body.
+- Spec §2 described starter passive equivalents for all three variants. V2 ships them as **flavour-only** — their stat intent is absorbed into existing `VariantModifier` scalars (Arbroath → xpMultiplierPct +5%; Up Helly Aa → no mechanic, pure voice; A Red Red Rose → no mechanic, pure voice).
+- Full implementation requires a new `VariantDef.startWithPassives?: string[]` field + runStartModifiers branch calling `applyPassiveEffect` the same way `lucky_start` already does. Clean extension; not V2 scope.
 
 ---
 
-## Track 3 — Burns's Wee Beastie (blocked on Track 2 + E1)
+## Placeholder-unlock tightening
 
-### Prerequisite: `VariantModifier.spriteScale` + Player hitbox regression
+### Burns's Wee Beastie → Burns Night (E1 dep)
 
-- Spec §2: "Sprite scale 0.85× — literally wee."
-- Requires extending `VariantModifier` with `spriteScale?: number` (default 1.0), reading it in `Player.onLevelUp` (where circle-body sizing already handles scale via `setCircle` unscaled-radius pattern per CLAUDE.md Phaser gotcha).
-- Regression test: verify at 0.85× scale, all weapons, hazards, and enemies still hit correctly. `Player.test.ts` covers hitbox math already — extend to parameterise by spriteScale.
+- V2 ships Burns with `runs_with_all_evolutions` (victory + all 7 evolvable weapons evolved in a single run). Threshold is exported as `BURNS_EVOLUTION_THRESHOLD` in `src/utils/save.ts`.
+- Spec §2 called for "Complete Burns Night event (E1 flagship) with 100% weapon-evolution completion."
+- When E1 Seasonal Events (`docs/superpowers/plans/2026-04-23-seasonal-events-burns-night.md`) ships: add a check against the in-progress Burns-Night window alongside the existing evo-count check. Either requirement extends the `VariantUnlockCondition` union (e.g. `runs_with_all_evolutions_in_burns_night`) or the existing counter gains a secondary boolean gate on the date.
+- Telemetry proxy for tightening: `gameplay.runsWithAllEvolutionsCompleted` shows how often this threshold is actually hit once E1 lands — if it's already rare, additional Burns-Night gating may over-constrain and should be relaxed to a flat full-evo or Burns-Night-alone.
 
-### Prerequisite: `+20% crit` stat
+### Cold-hazard resist for Peerie Shetlander (currently flavour-only)
 
-- Same as Peerie — needs new `critChancePct` VariantModifier field + Player read site. Both tracks share this; resolve once, both benefit.
-
-### Prerequisite: E1 Seasonal Events + Burns Night
-
-- Spec unlock: "Complete Burns Night event (E1 flagship) with 100% weapon-evolution completion."
-- E1 (`docs/superpowers/plans/2026-04-23-seasonal-events-burns-night.md`) is a draft, not shipped.
-- Option A: ship Burns with a **placeholder unlock** — e.g. "Complete a run with every weapon evolved" alone (no Burns-Night gating). Deed flavor still references Burns.
-- Option B: hold Track 3 until E1 lands. Follows spec literally.
-- **Recommendation:** option A with a note to tighten the unlock when E1 ships. Keeps Track 3 shippable as part of V2 cohort.
-
-### Burns quotation audit
-
-- Every direct quote verified against *The Canongate Burns* before merge. Merge-blocker per spec §5.
-- Modernised paraphrase labelled as such (italics reserved for direct Burns wording).
+- Shipped as pure voice colour — no cold-damage concept exists in-codebase.
+- Real implementation options (in increasing scope):
+  1. Tag bog's implied chill + pine's ghost-wraith hits as "cold"; reduce those for Peerie. Low-lift mechanical bite.
+  2. Introduce cold frost-zone hazards (parallel to lava). Winter-biome DLC scope.
+- Not required to sign off V2 cohort. Revisit when a cold mechanic lands.
 
 ---
 
-## Next step
+## Close criteria
 
-When the above decisions land (cold-resist semantics, coastal biome set, crit field, Burns unlock strategy), unblock the Track 2 + 3 plan tasks and proceed. Ideal order: **resolve crit field once → Track 2 (Peerie) → Track 3 (Burns)** so the shared crit-field work ships once.
+V2 is **final** (not just "code shipped") when:
+
+- [x] Three variants live in the picker with correct stats, palette, banter, and unlock telemetry.
+- [x] Three deeds fire at the right thresholds and persist across saves.
+- [ ] Doric native-speaker review complete.
+- [ ] Shetlandic native-speaker review complete.
+- [ ] Burns-edition audit complete.
+- [ ] Telemetry (at least one month of save data) shows each variant's pick rate ≥ 3% (spec §7 kill-criterion).
