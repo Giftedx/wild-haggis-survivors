@@ -106,6 +106,21 @@ export type GlobalCurseStartedPayload = {
   curseKey: string;
 };
 
+/**
+ * R1 M4 T28 — a Relic pickup was resolved (add or replace-held). The
+ * `source` identifies where the roll originated so telemetry can
+ * break down pick rate by drop channel (elite / boss / chest / …).
+ * `replacedKey` is set on 4th-offered flows where an existing relic
+ * was discarded; null otherwise.
+ */
+export type GlobalRelicPickedPayload = {
+  relicKey: string;
+  rarity: 'common' | 'uncommon' | 'rare';
+  source: 'elite' | 'boss' | 'chest' | 'hidden_node' | 'bargain' | 'unknown';
+  replacedKey: string | null;
+  atGameTimeSec: number;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -119,6 +134,7 @@ export type GlobalEvents = {
   GLOBAL_SHOP_PURCHASE: GlobalShopPurchasePayload;
   GLOBAL_COMBO_MILESTONE: GlobalComboMilestonePayload;
   GLOBAL_CURSE_STARTED: GlobalCurseStartedPayload;
+  GLOBAL_RELIC_PICKED: GlobalRelicPickedPayload;
   bossEnraged: string;
 };
 

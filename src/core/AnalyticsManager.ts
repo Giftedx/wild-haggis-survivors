@@ -117,6 +117,22 @@ export class AnalyticsManager {
       })
     );
 
+    // R1 M4 T28 — Relic pickup telemetry. Feeds the pick-rate +
+    // per-rarity distribution kill criteria (M4 ship gate wants no
+    // Relic dominating >70% and no Relic <5% pick rate).
+    this.busUnsubs.push(
+      globalEventBus.on('GLOBAL_RELIC_PICKED', (p) => {
+        if (!this.runDistributionTelemetryEnabled()) return;
+        this.safeLogEvent('relic_picked', {
+          relicKey: p.relicKey,
+          rarity: p.rarity,
+          source: p.source,
+          atGameTimeSec: p.atGameTimeSec,
+          ...(p.replacedKey ? { replacedKey: p.replacedKey } : {}),
+        });
+      })
+    );
+
     // Weapon evolution telemetry — which base/evolved pairs actually
     // happen in the wild, for balance + card-pool tuning.
     this.busUnsubs.push(

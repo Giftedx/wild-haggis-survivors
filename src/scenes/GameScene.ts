@@ -117,6 +117,7 @@ import { RelicEffectDriver } from '../systems/relics/RelicEffectDriver';
 import { RelicPickupSpawner } from '../entities/RelicPickup';
 import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
 import { RELICS, type RelicDef, type RelicKey } from '../data/relics';
+import type { RelicPickupSource } from '../entities/RelicPickup';
 import { decideRelicCollect } from '../ui/relicCollect';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
@@ -1027,7 +1028,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       scene: this,
       player: this.player,
       tickers: this.updateTickers,
-      onCollect: (relic, x, y) => this.handleRelicCollect(relic, x, y),
+      onCollect: (relic, x, y, source) => this.handleRelicCollect(relic, x, y, source),
     });
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
@@ -1869,7 +1870,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       luckMultiplier: 1,
     });
     if (!relic) return;
-    this.relicPickupSpawner.spawn(relic, x, y);
+    this.relicPickupSpawner.spawn(relic, x, y, source);
   }
 
   /**
@@ -1881,7 +1882,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (!this.relicPickupSpawner) return false;
     const relic = this.relicSystem.rollDrop('chest', this.runRng, {});
     if (!relic) return false;
-    this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y);
+    this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'chest');
     this.juice.showToast(t('ui.game.relic_drop_near'), TOAST_COLORS.reward);
     return true;
   }
@@ -1891,7 +1892,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * the 4th-relic discard modal, or silently skip a duplicate. Called
    * by the `RelicPickupSpawner.onCollect` callback.
    */
-  private handleRelicCollect(relic: RelicDef, _x: number, _y: number): void {
+  private handleRelicCollect(
+    relic: RelicDef,
+    _x: number,
+    _y: number,
+    source: RelicPickupSource,
+  ): void {
     const isDuplicate = this.relicSystem.isHolding(relic.key);
     const action = decideRelicCollect({
       heldCount: this.relicSystem.heldCount(),
@@ -1904,14 +1910,34 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       case 'add':
         this.relicSystem.add(relic);
         this.onRelicAdded();
+        this.emitRelicPickedTelemetry(relic, source, null);
         this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
         this.juice.flashWhite(80);
         audio.playLevelUp();
         return;
       case 'discard_ui':
-        this.openRelicDiscardModal(relic);
+        this.openRelicDiscardModal(relic, source);
         return;
     }
+  }
+
+  /**
+   * R1 M4 T28 — fire-and-forget Relic-pickup telemetry. Global event
+   * bus bridge; AnalyticsManager gates on the `telemetryOptIn` user
+   * setting (matches the route_picked / weapon_evolved precedent).
+   */
+  private emitRelicPickedTelemetry(
+    relic: RelicDef,
+    source: RelicPickupSource,
+    replacedKey: RelicKey | null,
+  ): void {
+    globalEventBus.emit('GLOBAL_RELIC_PICKED', {
+      relicKey: relic.key,
+      rarity: relic.rarity,
+      source,
+      replacedKey: replacedKey ?? null,
+      atGameTimeSec: this.spawnSystem?.getGameTimeSec() ?? 0,
+    });
   }
 
   /**
@@ -1927,7 +1953,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private relicDiscardModalOpen = false;
 
-  private openRelicDiscardModal(incoming: RelicDef): void {
+  private openRelicDiscardModal(incoming: RelicDef, source: RelicPickupSource): void {
     if (this.relicDiscardModalOpen) return;
     this.relicDiscardModalOpen = true;
     this.timeManager.request('RELIC_DISCARD', { pausePhysics: true, timeScale: 0 });
@@ -1938,10 +1964,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       incoming,
       uiScale: 1,
       onReplaceHeld: (slotIndex) => {
+        const replaced = this.relicSystem.getSlots()[slotIndex].def?.key ?? null;
         this.relicSystem.replaceAt(slotIndex, incoming);
         // Replacing at full sporran still counts as the first acquired
         // relic (if it is) — fire the reserved line.
         this.onRelicAdded();
+        this.emitRelicPickedTelemetry(incoming, source, replaced);
         this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
         this.juice.flashWhite(80);
         audio.playLevelUp();

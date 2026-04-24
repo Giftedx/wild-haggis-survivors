@@ -31,6 +31,20 @@ import {
   RELIC_PICKUP_RADIUS_PX,
 } from './relicPickupMath';
 
+/**
+ * R1 M4 T28 — drop source is threaded through so analytics can
+ * break down pick rate by channel (elite / boss / chest / …).
+ * `unknown` covers the DEBUG e2e seam + any future caller that
+ * doesn't annotate.
+ */
+export type RelicPickupSource =
+  | 'elite'
+  | 'boss'
+  | 'chest'
+  | 'hidden_node'
+  | 'bargain'
+  | 'unknown';
+
 export interface RelicPickupSpawnerHooks {
   readonly scene: Phaser.Scene;
   readonly player: Player;
@@ -40,13 +54,14 @@ export interface RelicPickupSpawnerHooks {
    * for slot-model routing (add vs discard UI) — this entity just fires
    * the callback, plays a collect sting, and removes itself.
    */
-  onCollect(relic: RelicDef, x: number, y: number): void;
+  onCollect(relic: RelicDef, x: number, y: number, source: RelicPickupSource): void;
 }
 
 interface RelicPickupInstance {
   relic: RelicDef;
   x: number;
   y: number;
+  source: RelicPickupSource;
   gem: Phaser.GameObjects.Graphics;
   glow: Phaser.GameObjects.Arc;
   overlap: Phaser.Physics.Arcade.Collider | null;
@@ -63,8 +78,9 @@ export class RelicPickupSpawner {
   /**
    * Spawn a Relic pickup at (x, y). The pickup bobs gently, fades at
    * 60s, or collects on player overlap. Colour = relic.particleColour.
+   * `source` is threaded to the collect callback for telemetry.
    */
-  spawn(relic: RelicDef, x: number, y: number): void {
+  spawn(relic: RelicDef, x: number, y: number, source: RelicPickupSource = 'unknown'): void {
     const scene = this.hooks.scene;
     const colour = relic.particleColour;
 
@@ -82,6 +98,7 @@ export class RelicPickupSpawner {
       relic,
       x,
       y,
+      source,
       gem,
       glow,
       hitbox,
@@ -143,7 +160,7 @@ export class RelicPickupSpawner {
       onComplete: () => instance.gem.destroy(),
     });
     instance.hitbox.destroy();
-    this.hooks.onCollect(instance.relic, instance.x, instance.y);
+    this.hooks.onCollect(instance.relic, instance.x, instance.y, instance.source);
   }
 
   private despawn(instance: RelicPickupInstance): void {
