@@ -16,6 +16,7 @@ import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
 import { NodeMapUI } from '../ui/NodeMapUI';
+import { NodePromptUI } from '../ui/NodePromptUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { getActBank } from '../data/nodeBanks';
 import type { NodeDef } from '../data/nodeTypes';
@@ -24,6 +25,10 @@ import { resolveEncounterEvent } from '../systems/nodeEvents/encounterEvent';
 import { resolveEliteEvent } from '../systems/nodeEvents/eliteEvent';
 import { resolveRestEvent } from '../systems/nodeEvents/restEvent';
 import { resolveHiddenEvent } from '../systems/nodeEvents/hiddenEvent';
+import { resolveShrineEvent } from '../systems/nodeEvents/shrineEvent';
+import { resolveWeeTraderEvent } from '../systems/nodeEvents/weeTraderEvent';
+import { resolveBargainEvent } from '../systems/nodeEvents/bargainEvent';
+import { shrineLabelFromKey, bargainLabelFromOfferKey } from './game/nodeEventLabels';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
@@ -205,6 +210,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** M1 Moor Road — per-run node-path system + HUD widget. */
   private readonly nodeMapSystem = new NodeMapSystem();
   private nodeMapUI: NodeMapUI | null = null;
+  private nodePromptUI: NodePromptUI | null = null;
+  /** Index of the interactive node whose prompt is currently open. -1 when none. */
+  private interactivePromptIndex = -1;
   /** R1 M3 T22 — 3-slot HUD widget for held Relics. */
   private relicSlotUI: RelicSlotUI | null = null;
   private readonly chestRegistry = new ChestSpriteRegistry();
@@ -436,6 +444,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.nodeMapSystem.reset();
     this.nodeMapUI?.destroy();
     this.nodeMapUI = null;
+    this.nodePromptUI?.destroy();
+    this.nodePromptUI = null;
+    this.interactivePromptIndex = -1;
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
     this.runRng = createRNG(runSeed);
@@ -1294,12 +1305,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
     this.nodeMapUI = new NodeMapUI(this);
+    this.nodePromptUI = new NodePromptUI(this);
     // Listener is registered once per scene-create and lives until reset.
     // Dispatches to per-type handlers which in turn call finalizeNodeVisit.
     // Interactive types (shrine / wee_trader / bargain) route through the
     // stub handler until NodePromptUI lands — see follow-up tasks.
     this.nodeMapSystem.setTriggerListener((index, state) => {
       if (state.visited[index]) return;
+      // Block re-trigger while an interactive prompt is already resolving.
+      if (this.interactivePromptIndex >= 0) return;
       this.handleNodeTriggered(state.nodes[index], index, state);
     });
     this.initNodeMapForAct(1);
@@ -1460,6 +1474,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.minimap?.destroy(); } catch { /* ignore */ }
       try { this.nodeMapUI?.destroy(); } catch { /* ignore */ }
       this.nodeMapUI = null;
+      try { this.nodePromptUI?.destroy(); } catch { /* ignore */ }
+      this.nodePromptUI = null;
+      this.interactivePromptIndex = -1;
       this.nodeMapSystem.reset();
       try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
@@ -1980,9 +1997,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.applyHiddenNode(node, index, state);
         break;
       case 'shrine':
+        this.openShrineNode(node, index);
+        break;
       case 'wee_trader':
+        this.openTraderNode(node, index, state);
+        break;
       case 'bargain':
-        this.stubInteractiveNode(node, index);
+        this.openBargainNode(node, index);
         break;
     }
   }
@@ -2082,21 +2103,216 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.finalizeNodeVisit(index, node.key, 'lore_fragment');
   }
 
+  /** Open/close pause bracket for interactive node prompts. */
+  private enterInteractivePrompt(index: number): void {
+    this.interactivePromptIndex = index;
+    this.timeManager.request('NODE_PROMPT', { pausePhysics: true, timeScale: 0 });
+  }
+
+  private exitInteractivePrompt(index: number, nodeKey: string, chosenRewardKey: string | null): void {
+    this.timeManager.release('NODE_PROMPT');
+    this.interactivePromptIndex = -1;
+    this.finalizeNodeVisit(index, nodeKey, chosenRewardKey ?? undefined);
+  }
+
   /**
-   * Stub for interactive nodes until NodePromptUI lands. Surfaces a
-   * toast so the player knows the node fired, then marks it visited.
-   * Follow-ups — shrine buff picker, trader stock UI, bargain accept/
-   * refuse — will replace this path per type.
+   * Shrine node — prompt with 3 buff candidates. v1 applies a simple
+   * immediate reward per key (heal / gold / xp) rather than a timed
+   * buff; full temporary-buff system is a follow-up.
    */
-  private stubInteractiveNode(node: NodeDef, index: number): void {
-    const label =
-      node.type === 'shrine'
-        ? 'Shrine stands silent — picker UI pending.'
-        : node.type === 'wee_trader'
-          ? 'Wee trader passed by — stock UI pending.'
-          : 'A bargain whispered on the wind — decline UI pending.';
-    this.juice.showToast(label, '#cccccc');
-    this.finalizeNodeVisit(index, node.key, 'stubbed');
+  private openShrineNode(node: NodeDef, index: number): void {
+    const spec = resolveShrineEvent(node, this.runRng);
+    if (spec.candidates.length === 0) {
+      this.finalizeNodeVisit(index, node.key, 'empty_pool');
+      return;
+    }
+    this.enterInteractivePrompt(index);
+    this.nodePromptUI?.show({
+      title: 'An old shrine stirs.',
+      body: 'Offer a thought — claim a wee boon.',
+      options: spec.candidates.map((c) => ({
+        key: c.key,
+        label: shrineLabelFromKey(c.key),
+      })),
+      allowSkip: true,
+      onResolve: (chosenKey) => {
+        if (chosenKey) this.applyShrineBoon(chosenKey);
+        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
+      },
+    });
+  }
+
+  /**
+   * Apply a shrine boon's immediate effect. v1 handles a curated set
+   * of keys with direct rewards; unknown keys just surface a toast so
+   * nothing silently drops.
+   */
+  private applyShrineBoon(key: string): void {
+    switch (key) {
+      case 'buff_regen':
+      case 'buff_armor':
+      case 'buff_damage':
+      case 'buff_crit':
+      case 'buff_reflect':
+      case 'buff_speed':
+      case 'buff_dodge':
+      case 'buff_pickup': {
+        // v1: heal 20% max HP as a stand-in for the timed buff.
+        // Follow-up: real temporary-buff system with durationMs wiring.
+        const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * 0.2));
+        this.player.heal(heal);
+        this.juice.showToast(`Shrine boon: ${shrineLabelFromKey(key)}`, TOAST_COLORS.reward);
+        break;
+      }
+      case 'buff_gold': {
+        this.runScore.addCoinGold(50);
+        this.juice.showToast('Shrine boon: +50 gold', TOAST_COLORS.reward);
+        break;
+      }
+      case 'buff_xp': {
+        // Spawn a single high-value XP gem on the player; auto-collects
+        // via the existing pickup-radius overlap next frame.
+        this.xpSystem?.spawnGem(this.player.x, this.player.y, 25);
+        this.juice.showToast('Shrine boon: +25 XP', TOAST_COLORS.reward);
+        break;
+      }
+      case 'buff_luck': {
+        // v1: drop a rare relic right there, treated as "lucky pick".
+        if (this.relicPickupSpawner) {
+          const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
+          if (relic) {
+            this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'hidden_node');
+            this.juice.showToast('Shrine boon: a relic glints in the cairn', TOAST_COLORS.reward);
+            break;
+          }
+        }
+        this.runScore.addCoinGold(30);
+        this.juice.showToast('Shrine boon: +30 gold (shelves bare)', TOAST_COLORS.reward);
+        break;
+      }
+      default:
+        this.juice.showToast(`Shrine boon: ${key}`, TOAST_COLORS.reward);
+    }
+  }
+
+  /**
+   * Wee Trader node — prompt with the resolver's stock. v1 ignores the
+   * rolled priceGold (no mid-run gold spend exists yet) and treats the
+   * offer as free-pick "bartered" flavour. Follow-up: real gold-spend.
+   */
+  private openTraderNode(node: NodeDef, index: number, state: NodeMapState): void {
+    const spec = resolveWeeTraderEvent(node, this.runRng);
+    const items = spec.items;
+    if (items.length === 0) {
+      this.finalizeNodeVisit(index, node.key, 'no_stock');
+      return;
+    }
+    this.enterInteractivePrompt(index);
+    this.nodePromptUI?.show({
+      title: 'The wee trader spreads a blanket.',
+      body: 'Pick one from the pack.',
+      options: items.map((item) => ({
+        key: item.kind,
+        label:
+          item.kind === 'relic'
+            ? 'Rare curio'
+            : item.kind === 'passive'
+              ? 'Passive charm'
+              : 'Reroll token',
+        subLabel: `(was ${item.priceGold}g, gift today)`,
+      })),
+      allowSkip: true,
+      onResolve: (chosenKey) => {
+        if (chosenKey === 'relic') {
+          this.applyTraderRelic(state.worldPositions[index]);
+        } else if (chosenKey === 'passive') {
+          // v1: passives need a catalogue hook we don't have — compensate
+          // with 40g so the player still gets a reward.
+          this.runScore.addCoinGold(40);
+          this.juice.showToast('No passives in stock — kept your coin (+40g).', TOAST_COLORS.reward);
+        } else if (chosenKey === 'reroll') {
+          this.upgradeUI?.grantReroll();
+          this.juice.showToast('Reroll token pocketed.', TOAST_COLORS.reward);
+        }
+        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
+      },
+    });
+  }
+
+  private applyTraderRelic(pos: { x: number; y: number }): void {
+    if (!this.relicPickupSpawner) return;
+    const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
+    if (!relic) {
+      this.runScore.addCoinGold(40);
+      this.juice.showToast('The pack is empty — +40g on the house.', TOAST_COLORS.reward);
+      return;
+    }
+    this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
+    this.juice.showToast('A curio joins the sporran.', TOAST_COLORS.reward);
+  }
+
+  /**
+   * Bargain node — accept takes hpCost damage + grants the offered
+   * boon, refuse marks visited with no effect. Skip on scrim-click
+   * counts as refuse.
+   */
+  private openBargainNode(node: NodeDef, index: number): void {
+    const spec = resolveBargainEvent(node, this.runRng, this.player.getMaxHp());
+    this.enterInteractivePrompt(index);
+    const canAfford = this.player.getHp() > spec.hpCost;
+    this.nodePromptUI?.show({
+      title: 'A cold voice on the wind.',
+      body: `"Pay ${spec.hpCost} HP, take ${bargainLabelFromOfferKey(spec.offerKey)}."`,
+      options: [
+        {
+          key: 'accept',
+          label: 'Accept',
+          subLabel: `(-${spec.hpCost} HP)`,
+          disabled: !canAfford,
+        },
+      ],
+      allowSkip: true,
+      onResolve: (chosenKey) => {
+        if (chosenKey === 'accept') {
+          this.player.takeDamage(spec.hpCost);
+          this.applyBargainOffer(spec.offerKind, spec.offerKey);
+        } else {
+          this.juice.showToast('Refused the bargain.', '#cccccc');
+        }
+        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
+      },
+    });
+  }
+
+  private applyBargainOffer(offerKind: 'relic' | 'buff_run' | 'weapon_upgrade_token', offerKey: string): void {
+    if (offerKind === 'relic' && this.relicPickupSpawner) {
+      const relic = this.relicSystem.rollDrop('bargain', this.runRng);
+      if (relic) {
+        this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'bargain');
+        this.juice.showToast('The bargain delivers a relic.', TOAST_COLORS.reward);
+        return;
+      }
+    }
+    if (offerKind === 'buff_run') {
+      // v1: run-long bag multiplier bumps. One of goldMult / damageTakenMult /
+      // weaponCooldownMult depending on the key.
+      if (offerKey.includes('gold')) {
+        this.runModifiers.goldMult *= 1.1;
+        this.juice.showToast('The bargain: +10% gold for the rest of the run.', TOAST_COLORS.reward);
+      } else if (offerKey.includes('cooldown')) {
+        this.runModifiers.weaponCooldownMult *= 0.9;
+        this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
+        this.juice.showToast('The bargain: weapons cool 10% faster.', TOAST_COLORS.reward);
+      } else {
+        this.runModifiers.damageTakenMult *= 0.9;
+        this.juice.showToast('The bargain: take 10% less damage.', TOAST_COLORS.reward);
+      }
+      return;
+    }
+    // weapon_upgrade_token — v1 placeholder: +1 reroll + 30g.
+    this.upgradeUI?.grantReroll();
+    this.runScore.addCoinGold(30);
+    this.juice.showToast('The bargain: a token and a few coins.', TOAST_COLORS.reward);
   }
 
   private launchActIntermission(actN: 1 | 2): void {
