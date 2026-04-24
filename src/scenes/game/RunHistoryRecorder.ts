@@ -48,6 +48,13 @@ export interface RunHistoryHooks {
    * existing tests that don't supply it keep compiling without change.
    */
   getRunName?(): string;
+  /**
+   * V2 Track 1 — true if the player ever received a heal-tick from a
+   * healing circle this run. `applyRunSummary` increments the Doric
+   * Quinie no-heal counter when this stays false through a victory.
+   * Optional so tests that don't exercise the path keep compiling.
+   */
+  getEnteredHealingCircle?(): boolean;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -63,6 +70,7 @@ export class RunHistoryRecorder {
     const relics = h.getHeldRelicKeys?.() ?? [];
     const replay = h.getReplayBlob?.() ?? null;
     const name = h.getRunName?.();
+    const enteredHealingCircle = h.getEnteredHealingCircle?.() ?? true;
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -75,6 +83,7 @@ export class RunHistoryRecorder {
       ...(h.isIronmoor() ? { ironmoor: true } : {}),
       ...(replay ? { replay } : {}),
       ...(name ? { name } : {}),
+      enteredHealingCircle,
     };
   }
 

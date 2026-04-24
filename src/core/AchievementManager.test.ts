@@ -378,6 +378,22 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     expect(save.load().unlockedAchievements).not.toContain('ach_ceilidh_commander');
   });
 
+  it('unlocks ach_doric_unlock at 1 no-heal victory (V2 T1)', () => {
+    seedGameplaySave({ runsWithoutHealingCircleCompleted: 1 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_doric_unlock');
+  });
+
+  it('does NOT unlock ach_doric_unlock at 0 no-heal victories', () => {
+    seedGameplaySave({ runsWithoutHealingCircleCompleted: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_doric_unlock');
+  });
+
   it('unlocks ach_walk_every_road when route history covers all 6 routes', () => {
 const allRoutes = ROUTES.map((r, i) => ({
       slot: r.slot,

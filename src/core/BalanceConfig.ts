@@ -266,7 +266,8 @@ export type AchievementId =
   | 'ach_endless_endurance'
   | 'ach_cursed_victor'
   | 'ach_combo_100'
-  | 'ach_cailleach_unlock';
+  | 'ach_cailleach_unlock'
+  | 'ach_doric_unlock';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -374,6 +375,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_cailleach_unlock: {
     titleKey: 'achievement.ach_cailleach_unlock.title',
     descriptionKey: 'achievement.ach_cailleach_unlock.description',
+  },
+  ach_doric_unlock: {
+    titleKey: 'achievement.ach_doric_unlock.title',
+    descriptionKey: 'achievement.ach_doric_unlock.description',
   },
 };
 

@@ -30,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 9;
+export const SAVE_SCHEMA_VERSION = 10;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -185,6 +185,14 @@ export interface SaveData {
    */
   cursedVictoriesCompleted: number;
 
+  /**
+   * V2 Track 1 — total victorious runs completed without ever standing
+   * in a healing circle. Unlocks the Doric Quinie variant at count=1.
+   * No retroactive seed possible (pre-v10 runs didn't track per-run
+   * healing-circle overlap); fresh counter starts at 0 for all players.
+   */
+  runsWithoutHealingCircleCompleted: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -243,6 +251,13 @@ export interface RunHistoryContext {
   routes?: RoutePick[];
   /** R1 Relics held at run-end. Passed through to history for Chronicle / Almanac display. */
   relics?: RelicKey[];
+  /**
+   * V2 Track 1 — true if the player ever overlapped a healing circle
+   * during this run. A `false`-on-victory bumps
+   * `runsWithoutHealingCircleCompleted` and unlocks the Doric Quinie
+   * variant. Not persisted per-run — only influences lifetime counter.
+   */
+  enteredHealingCircle?: boolean;
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
@@ -286,6 +301,7 @@ const DEFAULT_SAVE: SaveData = {
   bestEndlessSeconds: 0,
   bestIronmoorSeconds: 0,
   cursedVictoriesCompleted: 0,
+  runsWithoutHealingCircleCompleted: 0,
   runHistory: [],
   seenEnemies: [],
   firstTimeEventsFired: [],
@@ -359,6 +375,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV7ToV8(raw));
     case 8:
       return finalizeSaveCandidate(migrateV8ToV9(raw));
+    case 9:
+      return finalizeSaveCandidate(migrateV9ToV10(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -434,6 +452,14 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     typeof context?.curseKey === 'string' &&
     context.curseKey.length > 0;
 
+  // V2 T1 — bumps when the player won WITHOUT ever standing in a
+  // healing circle. `enteredHealingCircle` defaults to true on the
+  // callsite side for safety (undefined context flag shouldn't false-
+  // positive the Doric unlock); the flag is only asserted false by
+  // GameScene after a clean run.
+  const isNoHealVictory =
+    normalizedSummary.victory && context?.enteredHealingCircle === false;
+
   const nextSave: SaveData = {
     ...baseSave,
     gold: baseSave.gold + goldEarned,
@@ -445,10 +471,25 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     bestCombo: Math.max(baseSave.bestCombo, normalizedSummary.bestCombo),
     victories: baseSave.victories + (normalizedSummary.victory ? 1 : 0),
     cursedVictoriesCompleted: baseSave.cursedVictoriesCompleted + (isCursedVictory ? 1 : 0),
+    runsWithoutHealingCircleCompleted:
+      baseSave.runsWithoutHealingCircleCompleted + (isNoHealVictory ? 1 : 0),
     runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
-  const unlockResult = evaluateVariantUnlocks(nextSave, baseSave.unlockedVariants);
+  // Build a snapshot whose field names match `VariantProgressSnapshot`
+  // (SaveData uses longer field names for cursedVictories / runsWithoutHealing,
+  // so structural typing without an explicit map would silently read `undefined`
+  // and fail cursed-victory + no-heal unlock resolutions at run-end).
+  const runEndSnapshot: VariantProgressSnapshot = {
+    bestTime: nextSave.bestTime,
+    bestKills: nextSave.bestKills,
+    totalGoldEarned: nextSave.totalGoldEarned,
+    victories: nextSave.victories,
+    cursedVictories: nextSave.cursedVictoriesCompleted,
+    runsWithoutHealing: nextSave.runsWithoutHealingCircleCompleted,
+    unlockedVariants: baseSave.unlockedVariants,
+  };
+  const unlockResult = evaluateVariantUnlocks(runEndSnapshot, baseSave.unlockedVariants);
   nextSave.unlockedVariants = unlockResult.unlockedVariants;
   nextSave.selectedVariant = coerceSelectedVariant(baseSave.selectedVariant, nextSave.unlockedVariants);
 
@@ -537,6 +578,16 @@ function migrateV8ToV9(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v9 → v10 adds `runsWithoutHealingCircleCompleted: number` (V2 Track 1,
+ * Doric Quinie unlock). Pure version bump — `finalizeSaveCandidate`
+ * coerces the missing field to 0 via `coerceInteger`. No retroactive
+ * seed possible (pre-v10 runs didn't track per-run healing overlap).
+ */
+function migrateV9ToV10(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -576,6 +627,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     bestEndlessSeconds: coerceInteger(candidate.bestEndlessSeconds, 0),
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
     cursedVictoriesCompleted,
+    runsWithoutHealingCircleCompleted: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
@@ -640,6 +692,7 @@ function buildProgressSnapshot(
     totalGoldEarned: coerceInteger(candidate.totalGoldEarned, DEFAULT_SAVE.totalGoldEarned),
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
     cursedVictories: coerceInteger(candidate.cursedVictoriesCompleted, 0),
+    runsWithoutHealing: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     unlockedVariants,
   };
 }

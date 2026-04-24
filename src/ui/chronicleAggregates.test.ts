@@ -60,6 +60,7 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     bestCombo: 0,
     victories: 0,
     cursedVictoriesCompleted: 0,
+    runsWithoutHealingCircleCompleted: 0,
     runHistory: [],
     seenEnemies: [],
     firstTimeEventsFired: [],

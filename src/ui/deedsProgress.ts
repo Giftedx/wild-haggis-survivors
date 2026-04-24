@@ -185,6 +185,8 @@ export interface DeedStatsSnapshot {
   bestEndlessSeconds: number;
   /** Gameplay save: cursed run victories — feeds ach_cailleach_unlock. */
   cursedVictoriesCompleted: number;
+  /** Gameplay save: no-heal victorious runs — feeds ach_doric_unlock (V2 T1). */
+  runsWithoutHealingCircleCompleted: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -214,6 +216,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_endless_endurance',
   'ach_cursed_victor',
   'ach_cailleach_unlock',
+  'ach_doric_unlock',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -230,6 +233,8 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_endless_endurance: { target: 60, readCurrent: (s) => s.bestEndlessSeconds },
   // 3 matches VariantDef cailleach unlock.required
   ach_cailleach_unlock: { target: 3, readCurrent: (s) => s.cursedVictoriesCompleted },
+  // 1 matches VariantDef doric_quinie unlock.required (V2 T1)
+  ach_doric_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsWithoutHealingCircleCompleted) },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

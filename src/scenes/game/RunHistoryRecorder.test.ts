@@ -47,7 +47,7 @@ function buildMocks(overrides: {
 
 describe('RunHistoryRecorder', () => {
   describe('buildContext', () => {
-    it('includes level, boss kills, variant, weapon keys, and runSeed', () => {
+    it('includes level, boss kills, variant, weapon keys, runSeed, and healing-circle flag', () => {
       const { hooks } = buildMocks();
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect(ctx).toEqual({
@@ -56,7 +56,23 @@ describe('RunHistoryRecorder', () => {
         bossKills: 3,
         variantKey: 'classic',
         weaponKeys: ['thistle_shot', 'claymore'],
+        // V2 T1 — default true (hook absent = "assume player used healing").
+        enteredHealingCircle: true,
       });
+    });
+
+    it('V2 T1 — propagates enteredHealingCircle=false when hook returns false (Doric no-heal path)', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEnteredHealingCircle: () => false };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.enteredHealingCircle).toBe(false);
+    });
+
+    it('V2 T1 — propagates enteredHealingCircle=true when hook returns true', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEnteredHealingCircle: () => true };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.enteredHealingCircle).toBe(true);
     });
 
     it('includes curseKey only when present', () => {

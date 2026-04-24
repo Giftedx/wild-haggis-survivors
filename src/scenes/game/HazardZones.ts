@@ -107,6 +107,15 @@ export class HazardZones {
    *  player leaves fog so re-entry starts a clean cadence. */
   private memoryTrailAccMs: number = 0;
 
+  /**
+   * V2 Track 1 — sticky flag set the first time the player's heal-tick
+   * check finds them inside a healing circle this run. Reset in
+   * `reset()`. Surfaced via `didEnterHealingCircle()` for
+   * RunHistoryRecorder to thread into `applyRunSummary`'s Doric Quinie
+   * no-heal-run counter.
+   */
+  private enteredHealingCircle: boolean = false;
+
   constructor(
     private readonly scene: Phaser.Scene,
     private readonly hooks: HazardZonesHooks,
@@ -122,6 +131,16 @@ export class HazardZones {
     for (const z of this.memoryTrailZones) for (const v of z.visuals) v.destroy();
     this.memoryTrailZones = [];
     this.memoryTrailAccMs = 0;
+    this.enteredHealingCircle = false;
+  }
+
+  /**
+   * V2 Track 1 — true if the player has overlapped any healing circle
+   * this run. Sticky; flipped once inside the tick loop, cleared on
+   * `reset()`. Read by RunHistoryRecorder.buildContext.
+   */
+  didEnterHealingCircle(): boolean {
+    return this.enteredHealingCircle;
   }
 
   spawn(): void {
@@ -317,7 +336,12 @@ export class HazardZones {
         if (!player.active) continue;
         const dx = player.x - z.x;
         const dy = player.y - z.y;
-        if (dx * dx + dy * dy < rSq) player.heal(HEAL_ZONE_HEAL_AMOUNT);
+        if (dx * dx + dy * dy < rSq) {
+          player.heal(HEAL_ZONE_HEAL_AMOUNT);
+          // V2 T1 — sticky per-run flag; Doric Quinie unlock gates on
+          // this staying false through a victorious run.
+          this.enteredHealingCircle = true;
+        }
       }
     }
 

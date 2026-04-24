@@ -29,6 +29,7 @@ function snap(overrides: Partial<DeedStatsSnapshot> = {}): DeedStatsSnapshot {
     ceilidhPulsesLifetime: 0,
     bestEndlessSeconds: 0,
     cursedVictoriesCompleted: 0,
+    runsWithoutHealingCircleCompleted: 0,
     ...overrides,
   };
 }

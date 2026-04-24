@@ -56,6 +56,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   glaswegian:    { base: '#1a2028', primary: '#ff5a00' }, // urban slate + tram orange
   cailleach:     { base: '#0f1a12', primary: '#d4d0c0' }, // deep moss + elder silver
   anticlockwise: { base: '#2a2420', primary: '#c0d4d8' }, // mountain-hare silver + mercury
+  doric_quinie:  { base: '#2a3040', primary: '#d0d4e0' }, // granite grey-blue + North Sea silver
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

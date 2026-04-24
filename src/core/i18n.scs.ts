@@ -2019,6 +2019,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Walked Through the Veil',
       description: 'Win three cursed runs.',
     },
+    ach_doric_unlock: {
+      title: 'Survive on Whit Ye Caucht Yesterday',
+      description: 'Wan a run wi\'oot staunin in a single healin circle. Tha Doric way.',
+    },
   },
   weapon: {
     thistle_shot: {

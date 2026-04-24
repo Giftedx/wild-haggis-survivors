@@ -2297,6 +2297,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Walked Through the Veil',
       description: 'Finish three cursed runs alive.',
     },
+    ach_doric_unlock: {
+      title: 'Survive on What Ye Caught Yesterday',
+      description: 'Won a run wi\'oot standin\' in a single healin\' circle. The Doric way.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

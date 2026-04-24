@@ -366,8 +366,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 9', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(9);
+  it('SAVE_SCHEMA_VERSION is 10', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(10);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1083,6 +1083,75 @@ describe('cursedVictoriesCompleted migration', () => {
     });
     // Counter was present (5) so no retroactive seed — stays at 5
     expect(loaded.cursedVictoriesCompleted).toBe(5);
+  });
+});
+
+describe('V2 T1 — runsWithoutHealingCircleCompleted (Doric Quinie unlock)', () => {
+  it('defaults to 0 on fresh save', () => {
+    const loaded = migrateSave({});
+    expect(loaded.runsWithoutHealingCircleCompleted).toBe(0);
+  });
+
+  it('preserves a saved counter value', () => {
+    const loaded = migrateSave({ runsWithoutHealingCircleCompleted: 3 });
+    expect(loaded.runsWithoutHealingCircleCompleted).toBe(3);
+  });
+
+  it('coerces invalid values to 0', () => {
+    const loaded = migrateSave({ runsWithoutHealingCircleCompleted: 'nope' });
+    expect(loaded.runsWithoutHealingCircleCompleted).toBe(0);
+  });
+
+  it('applyRunSummary increments on victory when enteredHealingCircle is false', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], enteredHealingCircle: false },
+    );
+    expect(result.save.runsWithoutHealingCircleCompleted).toBe(1);
+  });
+
+  it('applyRunSummary does NOT increment when player entered a healing circle', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], enteredHealingCircle: true },
+    );
+    expect(result.save.runsWithoutHealingCircleCompleted).toBe(0);
+  });
+
+  it('applyRunSummary does NOT increment on a non-victory run, even without healing', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
+      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [], enteredHealingCircle: false },
+    );
+    expect(result.save.runsWithoutHealingCircleCompleted).toBe(0);
+  });
+
+  it('applyRunSummary unlocks doric_quinie at run-end when condition is first met', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], enteredHealingCircle: false },
+    );
+    expect(result.save.unlockedVariants).toContain('doric_quinie');
+    expect(result.newlyUnlockedVariants).toContain('doric_quinie');
+  });
+
+  it('context without enteredHealingCircle field defaults to safe path (no counter bump)', () => {
+    // Conservative default: if the hook isn't wired, don't false-positive the unlock.
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
+    );
+    expect(result.save.runsWithoutHealingCircleCompleted).toBe(0);
   });
 });
 

@@ -843,6 +843,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
       getRunName: () => this.runName,
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
+      getEnteredHealingCircle: () => this.hazardZones?.didEnterHealingCircle() ?? false,
     });
 
     if (resumeRun) {

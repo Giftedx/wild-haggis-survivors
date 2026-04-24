@@ -177,6 +177,17 @@ export class AchievementManager {
       if ((gameplay.cursedVictoriesCompleted ?? 0) >= (cailleachRequired?.required ?? 3)) {
         this.tryUnlock('ach_cailleach_unlock');
       }
+
+      // V2 Track 1 — ach_doric_unlock. Won a run without ever overlapping a
+      // healing circle. Counter written by applyRunSummary via
+      // `RunHistoryContext.enteredHealingCircle`; threshold matches
+      // VariantDef.doric_quinie.unlock.required (currently 1).
+      const doricRequired = VARIANTS.find((v) => v.key === 'doric_quinie')?.unlock as
+        | { type: 'runs_without_healing'; required: number }
+        | undefined;
+      if ((gameplay.runsWithoutHealingCircleCompleted ?? 0) >= (doricRequired?.required ?? 1)) {
+        this.tryUnlock('ach_doric_unlock');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }
