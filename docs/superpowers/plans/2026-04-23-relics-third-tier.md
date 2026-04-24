@@ -69,55 +69,57 @@
 
 ## M1 — Data + schema
 
-### Task 1: `RelicDef` + 8 common Relics
+### Task 1: `RelicDef` + 8 common Relics ✅ shipped (`861e32c`)
 
 **Files:** Create `src/data/relics.ts`, `src/data/relics.test.ts`.
 
-- [ ] **Step 1:** Failing test: `RELICS.sporran_of_holding.rarity === 'common'`; `RELICS.sporran_of_holding.dropAffinity.includes('elite')`.
-- [ ] **Step 2:** Define `RelicDef` interface; author 8 common relics per spec §3 with nameKey, effectKey, flavourKey, dropAffinity.
-- [ ] **Step 3:** Green.
-- [ ] **Step 4:** Commit: `feat(relics): data for 8 common Relics`.
+- [x] **Step 1:** Failing test: `RELICS.sporran_of_holding.rarity === 'common'`; `RELICS.sporran_of_holding.dropAffinity.includes('elite')`.
+- [x] **Step 2:** Define `RelicDef` interface; author 8 common relics per spec §3 with nameKey, effectKey, flavourKey, dropAffinity.
+- [x] **Step 3:** Green.
+- [x] **Step 4:** Commit: `feat(relics): data for 8 common Relics`.
 
-### Task 2: 7 uncommon Relics
+### Task 2: 7 uncommon Relics ✅ shipped (`fc4c207`)
 
-- [ ] **Step 1:** Failing test: 7 uncommon relics present.
-- [ ] **Step 2:** Author per spec.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Failing test: 7 uncommon relics present.
+- [x] **Step 2:** Author per spec.
+- [x] **Step 3:** Commit.
 
-### Task 3: 3 rare Relics
+### Task 3: 3 rare Relics ✅ shipped (`5ef9ec7`)
 
-- [ ] **Step 1:** Failing test: 3 rare relics present.
-- [ ] **Step 2:** Author per spec (Gran's Teapot, Fingal's Horn, Stone of Destiny shard).
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Failing test: 3 rare relics present.
+- [x] **Step 2:** Author per spec (Gran's Teapot, Fingal's Horn, Stone of Destiny shard).
+- [x] **Step 3:** Commit.
 
-### Task 4: Rarity distribution assertion
+### Task 4: Rarity distribution assertion ✅ shipped (`ceab0ca`, fix `ff007a5`)
 
-- [ ] **Step 1:** Failing test: 8 + 7 + 3 = 18 total; rarities aggregate to 50/35/15 weight.
-- [ ] **Step 2:** Implement via `test.ts` computation.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Failing test: 8 + 7 + 3 = 18 total; `RARITY_DROP_WEIGHTS` = `{ common: 50, uncommon: 35, rare: 15 }` sums to 100. (Counts 8/7/3 are the *catalogue split*; 50/35/15 are the *drop-pool weights* M2 consumes.)
+- [x] **Step 2:** Implement via `test.ts` computation.
+- [x] **Step 3:** Commit.
 
-### Task 5: `RunHistoryEntry.relics` schema
+### Task 5: `RunHistoryEntry.relics` schema ✅ shipped (`1ba20d3`)
 
 **Files:** `src/utils/save.ts`, `src/utils/save.test.ts`.
 
-- [ ] **Step 1:** Failing test: save v7 → v8 migration sets `relics: []` on existing runHistory entries.
-- [ ] **Step 2:** Bump `SAVE_SCHEMA_VERSION`; add field; write migration.
-- [ ] **Step 3:** Green.
-- [ ] **Step 4:** Commit: `feat(save): schema v8 — RunHistoryEntry.relics`.
+> **Correction:** Plan originally said v7 → v8. Actual bump is v8 → v9 — C1 Highland Almanac already used v8 before this plan shipped.
 
-### Task 6–9: Pure-function effect implementations (8 common)
+- [x] **Step 1:** Failing tests: v7→v9 + v8→v9 migrations set `relics: []`; stale-key filter drops unknown keys; `applyRunSummary` with `context.relics` threads through; default-empty when context omits.
+- [x] **Step 2:** Bumped `SAVE_SCHEMA_VERSION` 8→9; added optional field; `migrateV8ToV9` pure version bump; switch `case 8`; `coerceRunHistoryEntry` filters via `RELIC_KEYS.includes`.
+- [x] **Step 3:** Green.
+- [x] **Step 4:** Commit: `feat(save): schema v9 — RunHistoryEntry.relics`.
+
+### Task 6–9: Pure-function effect implementations (8 common) ✅ shipped (`376c58c`, `0e2f279`, `bd239ab`, `3b4d588`)
 
 One task per 2 relics. Each task:
-- [ ] **Step 1:** Failing test per relic (e.g., `applySporranOfHolding(gold: 5)` returns `7`).
-- [ ] **Step 2:** Implement as pure function.
-- [ ] **Step 3:** Green.
-- [ ] **Step 4:** Commit: `feat(relics): effect — {relic_key}`.
+- [x] **Step 1:** Failing test per relic (normal / edge / boundary cases; stateful helpers thread state through input+output).
+- [x] **Step 2:** Implement as pure function in `src/systems/relics/relicEffects.ts`. Stateful helpers (`applyBronzeClaspFirstHit`, `applyWhiskyDramActivation`) expose `Object.freeze`d `initial<Name>State` exports.
+- [x] **Step 3:** Green.
+- [x] **Step 4:** Commit per pair: `feat(relics): effects — {relic_a} + {relic_b}`.
 
 ### Task 10: M1 ship gate
 
-- [ ] 18 relics defined; 18 effects implemented + unit tested; schema migrated.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(relics): M1 — data + schema + pure effects complete`.
+- [x] 18 relics defined; 8 common effects implemented + unit-tested (10 uncommon + rare deferred to M2/M3 per spec §6); schema migrated v8→v9.
+- [x] `npm run ci` green (lint + 3243 vitest + tsc + vite build). E2E deferred to M2 ship gate once `e2e/relic-pickup.spec.ts` lands.
+- [x] Commit: `feat(relics): M1 — data + schema + pure effects complete`.
 
 ---
 

@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { SAVE_SCHEMA_VERSION } from '../src/utils/save';
 
 /**
  * T1 replay loop E2E — verifies the record → save → Chronicle → Watch
@@ -123,7 +124,7 @@ test.describe('T1 replay loop', () => {
       };
     });
 
-    expect(recordPhase.schemaVersion, 'save should migrate to current schema').toBe(8);
+    expect(recordPhase.schemaVersion, 'save should migrate to current schema').toBe(SAVE_SCHEMA_VERSION);
     expect(recordPhase.historyLen, 'one run should be recorded').toBe(1);
     expect(recordPhase.hasReplay, 'blob should attach to the entry').toBe(true);
     expect(recordPhase.replaySeed, 'blob should carry the launch seed').toBe(4242);
