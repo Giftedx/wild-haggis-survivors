@@ -153,39 +153,39 @@
 
 ---
 
-## M3 — Weys + Finds books
+## M3 — Weys + Finds books ✓ shipped 2026-04-24
 
 ### Task 13: `WeysBook` renderer
 
-- [ ] **Step 1:** Failing test: renders one entry per route in `routes.ts`.
-- [ ] **Step 2:** Implement; each entry shows illustrated banner, first-picked, pick-count, lore.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Pure builder + detail VMs (`buildWeysEntries`, `buildWeyDetail`) with vitest coverage of ordering, pick-count formatting, and unpicked-route silhouette policy.
+- [x] **Step 2:** Two-column grid (slot A / slot B) with slot-tinted banners standing in for route artwork. Click expands a detail overlay with description, pick count, and first-walked date. Mirrors BeastiesBook chrome.
+- [x] **Step 3:** Commit — `7907aaf`.
 
 ### Task 14: Route pick wiring
 
-**Files:** `src/scenes/ActIntermissionScene.ts`.
+**Files:** `src/utils/save.ts`, `src/scenes/GameScene.ts`.
 
-- [ ] **Step 1:** Failing test: route pick records in DiscoveryLog.
-- [ ] **Step 2:** Wire hook.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `bumpRoutePicked(key, runId, ts)` mirrors `bumpBeastieSeen` shape — best-effort localStorage write that increments `pickCount` and seeds `firstPickedAt` on first call. Test coverage in `save.test.ts` — first-call + repeat + empty-key + cross-key scenarios.
+- [x] **Step 2:** `GameScene.launchActIntermission.onResolve` fires the bump from the common resolver so both UI-pick and skip-default paths feed the DiscoveryLog. Run id sourced from `discoveryRunId()` (folds `runRng.seed` into the same `run:${seed}` shape SpawnSystem uses).
+- [x] **Step 3:** Commit — `bfdb13e`.
 
 ### Task 15: `FindsBook` renderer
 
-- [ ] **Step 1:** Failing test: renders entries per weapon, evolution, passive, relic, permanent upgrade.
-- [ ] **Step 2:** Implement grid layout; tap expands.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Pure builder + detail VMs (`buildFindsEntries`, `buildFindDetail`) sourcing from `WEAPON_DEFS`, `EVOLUTION_RECIPES`, `PASSIVE_CARDS`, `PERMANENT_UPGRADES`, `RELIQUARY_CURIOS`. Vitest coverage of category ordering, pluralised count copy, unacquired silhouette policy, and starter-weapon inclusion.
+- [x] **Step 2:** Single grid (6 cols × N rows) spanning all five categories with category-tinted accent stripe per cell so the page reads "weapon block / passive block / permanent block" without scanning every label. Click expands the same scrim+panel chrome with a category badge under the title.
+- [x] **Step 3:** Commit — `efc0e65` (alongside Task 16, single ship surface).
 
 ### Task 16: Item-acquired wiring
 
-- [ ] **Step 1:** Failing test: picking up a passive records in DiscoveryLog.
-- [ ] **Step 2:** Wire hooks in `PickupSpawner`, `LevelUpFlow`, `RelicSystem` (if R1 shipped).
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `bumpItemAcquired(key, runId, ts)` lands beside `bumpRoutePicked` in `save.ts` with vitest coverage.
+- [x] **Step 2:** Four call sites — `LevelUpFlow.apply` (`add_weapon`, `add_passive`, `evolve_weapon`), `ShopScene.purchaseUpgrade` (runId `'shop'`), `GameScene.reliquary.onPick` (runId `discoveryRunId`). LevelUpFlow takes a new `getDiscoveryRunId` hook so it can stamp the firstAcquiredAt entry with the same `run:${seed}` shape.
+- [x] **Step 3:** Commit — `efc0e65`.
 
 ### Task 17: M3 ship gate
 
-- [ ] Beasties + Weys + Finds all render.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(almanac): M3 — Weys + Finds books complete`.
+- [x] Beasties + Weys + Finds all render via the AlmanacScene tab branch. Banter tab still falls through to the `coming_soon` placeholder until M4.
+- [x] `npm run ci:all` green: 3170 vitest tests + 49 Playwright specs.
+- [x] Commit — this commit.
 
 ---
 
