@@ -544,6 +544,24 @@ export const EN_STRINGS: LocaleTree = {
       /** Toggle: full invincibility. Biggest hammer in the box. */
       assist_mode_invincibility: 'Invincibility',
     },
+    /** A1 M3 — key + gamepad remapping scene copy. Hearth register. */
+    inputRebind: {
+      title: 'Controls',
+      subtitle: 'Bind every action yer own way. Click a slot to capture a new key.',
+      unbound: '—',
+      gamepadPrefix: 'Pad',
+      rebind_hint: 'Press any key tae set. ESC cancels.',
+      conflict_warning: 'That key already binds another action.',
+      reset_defaults: 'Reset to defaults',
+      action: {
+        moveUp: 'Move up',
+        moveDown: 'Move doon',
+        moveLeft: 'Move left',
+        moveRight: 'Move right',
+        dash: 'Dash',
+        pause: 'Pause',
+      },
+    },
     /**
      * A1 M5 — first-launch photosensitivity warning splash. Shown once
      * on fresh save, dismissed forever via the "I understand" button

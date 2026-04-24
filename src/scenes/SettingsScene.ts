@@ -285,6 +285,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.capture_enabled'), 'captureEnabled');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();
+    this.addInputRebindRow();
 
     // A1 M6 — Assist Mode scaffold. Master toggle + game-speed slider
     // + three effect flags. Prefs persist today; the effects themselves
@@ -840,6 +841,65 @@ export class SettingsScene extends Phaser.Scene {
     this.gpRows.push({
       kind: 'toggle',
       toggle: cycle,
+      mark,
+    });
+  }
+
+  /**
+   * A1 M3 — row that launches `SettingsInputScene` for key + gamepad
+   * remap. Matches the locale-row chip style so it scans like the
+   * rest of the accessibility cluster.
+   */
+  private addInputRebindRow(): void {
+    const { width } = this.scale;
+    const y = this.rowY;
+    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
+    this.rowY += rowStep;
+
+    this.add
+      .text(40, y + 4, t('ui.inputRebind.title'), {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+
+    const chipW = 130;
+    const chipH = 26;
+    const cx = width - 88;
+    const cy = y + 18;
+    const btn = this.add
+      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
+      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
+      .setInteractive({ useHandCursor: true });
+    btn.setScale(this.uiScale);
+
+    const txt = this.add
+      .text(cx, cy, t('ui.inputRebind.title'), {
+        fontFamily: 'monospace',
+        fontSize: '12px',
+        color: '#d4c2e8',
+        fontStyle: 'bold',
+      })
+      .setOrigin(0.5)
+      .setScale(this.uiScale);
+
+    const openRebindScene = () => {
+      audio.playClick();
+      this.persistAndApply();
+      this.scene.start('SettingsInput');
+    };
+
+    btn.on('pointerdown', openRebindScene);
+    txt.setInteractive({ useHandCursor: true });
+    txt.on('pointerdown', openRebindScene);
+
+    const mark = this.add
+      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .setStrokeStyle(0);
+    this.gpRows.push({
+      kind: 'toggle',
+      toggle: openRebindScene,
       mark,
     });
   }

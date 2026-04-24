@@ -39,6 +39,7 @@ import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { MetaShopScene } from './scenes/MetaShopScene';
 import { SettingsScene } from './scenes/SettingsScene';
+import { SettingsInputScene } from './scenes/SettingsInputScene';
 import { ShopScene } from './scenes/ShopScene';
 import { ChronicleScene } from './scenes/ChronicleScene';
 import { CroftScene } from './scenes/CroftScene';
@@ -86,7 +87,7 @@ const config: Phaser.Types.Core.GameConfig = {
   },
   scene: isSpriteExport
     ? [BootScene, SpriteExportScene]
-    : [BootScene, MainMenuScene, MenuScene, CroftScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, AlmanacScene, CurseScene, SettingsScene, CombinationsPreviewScene],
+    : [BootScene, MainMenuScene, MenuScene, CroftScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, AlmanacScene, CurseScene, SettingsScene, SettingsInputScene, CombinationsPreviewScene],
   render: {
     pixelArt: true,
     antialias: false,

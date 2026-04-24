@@ -315,6 +315,23 @@ export const SCS_STRINGS: LocaleTree = {
       assist_mode_extended_combo: 'Langer combo grace',
       assist_mode_invincibility: 'Invincibility',
     },
+    inputRebind: {
+      title: 'Controls',
+      subtitle: 'Bind every action yer ain wey. Click a slot tae capture a new key.',
+      unbound: '—',
+      gamepadPrefix: 'Pad',
+      rebind_hint: 'Press ony key tae set. ESC cancels.',
+      conflict_warning: 'That key awready binds anither action.',
+      reset_defaults: 'Back tae defaults',
+      action: {
+        moveUp: 'Move up',
+        moveDown: 'Move doon',
+        moveLeft: 'Move left',
+        moveRight: 'Move right',
+        dash: 'Dash',
+        pause: 'Pause',
+      },
+    },
     photosensitivity: {
       title: 'A wee word afore ye stairt',
       body: 'This yin has flashin lichts, fast motion, an bricht colour. If you or someone near ye has had fits frae flashin lichts, switch on Cut Flashin in Settings afore ye play — it caps flashes an slaws motion. Ye can chenge it ony time.',
