@@ -49,7 +49,8 @@ export interface CroftRoute {
 }
 
 const ROUTES: Readonly<Record<CroftActionKey, CroftRoute>> = {
-  start_run: { target: 'Game', leavesCroft: true },
+  // Start Run routes to Curse picker first — Curse commits to Game on its own pick.
+  start_run: { target: 'Curse', leavesCroft: true },
   shop: { target: 'Shop', leavesCroft: false },
   settings: { target: 'Settings', leavesCroft: false },
   chronicle: { target: 'Chronicle', leavesCroft: false },

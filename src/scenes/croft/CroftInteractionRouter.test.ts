@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { CROFT_ACTION_KEYS, route } from './CroftInteractionRouter';
 
 describe('CroftInteractionRouter', () => {
-  it('routes start_run to the Game scene and marks it as leaving the croft', () => {
+  it('routes start_run to the Curse picker (leaves croft; Curse commits to Game)', () => {
     const r = route('start_run');
-    expect(r.target).toBe('Game');
+    expect(r.target).toBe('Curse');
     expect(r.leavesCroft).toBe(true);
   });
 

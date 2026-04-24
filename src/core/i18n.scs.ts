@@ -77,6 +77,12 @@ export const SCS_STRINGS: LocaleTree = {
       subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
       gran_greet: 'Come awa in — tha kettle\'s on.',
       back: 'BACK BEN THA HOOSE',
+      actions: {
+        start_run: 'OOT THA DOOR',
+        shop: 'GRAN\'S SPORRAN',
+        chronicle: 'THA ALBUM',
+        settings: 'THA WIRELESS',
+      },
     },
     chronicle: {
       title: 'THA HERD CHRONICLE',

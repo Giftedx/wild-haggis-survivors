@@ -88,6 +88,16 @@ export const EN_STRINGS: LocaleTree = {
       gran_greet: 'Come awa in — the kettle\'s on.',
       /** Back button — returns the player to MenuScene (pre-T9 placeholder). */
       back: 'BACK BEN THE HOOSE',
+      actions: {
+        /** Primary action — starts a fresh run (via Curse picker). Hearth voice. */
+        start_run: 'OOT THE DOOR',
+        /** Shop sub-view — Gran\'s sporran holds the meta upgrades. */
+        shop: 'GRAN\'S SPORRAN',
+        /** Chronicle sub-view — the herd album lives on the mantelpiece. */
+        chronicle: 'THE ALBUM',
+        /** Settings sub-view — the wireless prop wires to the settings panel. */
+        settings: 'THE WIRELESS',
+      },
     },
     chronicle: {
       // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──

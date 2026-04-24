@@ -175,6 +175,10 @@ export const CROFT_I18N_KEYS = [
   'ui.croft.subtitle',
   'ui.croft.gran_greet',
   'ui.croft.back',
+  'ui.croft.actions.start_run',
+  'ui.croft.actions.shop',
+  'ui.croft.actions.chronicle',
+  'ui.croft.actions.settings',
 ] as const;
 
 export type CroftI18nKey = (typeof CROFT_I18N_KEYS)[number];

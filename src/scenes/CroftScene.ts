@@ -14,6 +14,10 @@ import {
 import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
 import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/hearth';
 import { CroftAmbientLoop } from './croft/CroftMusic';
+import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
+import { createGameButton } from '../ui/gameButton';
+import { audio } from '../systems/AudioSystem';
+import { SaveManager } from '../core/SaveManager';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -74,6 +78,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawHeader(width);
+    this.drawActions();
     this.drawBack();
 
     // Keyboard ESC returns to Menu.
@@ -161,6 +166,56 @@ export class CroftScene extends Phaser.Scene {
       .text(width / 2, 118, t('ui.croft.gran_greet'), sceneSubtitleTextStyle(COLORS_CSS.DUSTY_TAN, width))
       .setOrigin(0.5);
     this.placeholders.push(title, subtitle, greet);
+  }
+
+  /**
+   * Right-column action buttons. Order top-to-bottom:
+   *   Start Run (primary) → Shop → Album → Wireless. Each button
+   *   routes through CroftInteractionRouter so sub-view vs. leaving
+   *   semantics are a single source of truth. "Start Run" additionally
+   *   clears the active-run slot before transitioning (same commit
+   *   behaviour that MenuScene's PLAY button used to carry).
+   */
+  private drawActions(): void {
+    const { width, height } = this.scale;
+    const x = width - 88;
+    const baseY = Math.max(120, height * 0.36);
+    const gapY = 52;
+    const actions: ReadonlyArray<{ key: CroftActionKey; i18n: string; tier: 'primary' | 'secondary' }> = [
+      { key: 'start_run', i18n: 'ui.croft.actions.start_run', tier: 'primary' },
+      { key: 'shop', i18n: 'ui.croft.actions.shop', tier: 'secondary' },
+      { key: 'chronicle', i18n: 'ui.croft.actions.chronicle', tier: 'secondary' },
+      { key: 'settings', i18n: 'ui.croft.actions.settings', tier: 'secondary' },
+    ];
+
+    actions.forEach((action, idx) => {
+      const { rect, label } = createGameButton(this, {
+        x,
+        y: baseY + gapY * idx,
+        width: 160,
+        height: 40,
+        label: t(action.i18n),
+        tier: action.tier,
+      });
+      rect.on('pointerdown', () => this.handleAction(action.key));
+      this.placeholders.push(rect, label);
+    });
+  }
+
+  private handleAction(key: CroftActionKey): void {
+    if (this.transitioning) return;
+    audio.playClick();
+    const r = route(key);
+    // Start Run is the one action that commits — wipe any suspended
+    // run so the Curse picker opens on a fresh slate (matches the
+    // contract that used to live on MenuScene's PLAY button).
+    if (key === 'start_run') {
+      try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
+    }
+    this.transitioning = true;
+    startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => {
+      this.scene.start(r.target);
+    });
   }
 
   private drawBack(): void {
