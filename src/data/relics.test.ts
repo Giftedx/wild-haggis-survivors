@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { RELICS, RELIC_KEYS, type RelicDef, type RelicKey } from './relics';
+import {
+  RARITY_DROP_WEIGHTS,
+  RELICS,
+  RELIC_KEYS,
+  type RelicDef,
+  type RelicKey,
+  type RelicRarity,
+} from './relics';
 
 describe('RELICS — Task 1: 8 common relics', () => {
   it('sporran_of_holding is common and drops from elites', () => {
@@ -80,5 +87,42 @@ describe('RELICS — Task 3: 3 rare relics', () => {
 
   it("Fingal's Horn is activatable from the sporran menu", () => {
     expect(RELICS.fingals_horn.activate).toBe(true);
+  });
+});
+
+describe('RELICS — Task 4: rarity distribution', () => {
+  it('has 18 relics total split 8 common / 7 uncommon / 3 rare', () => {
+    expect(RELIC_KEYS).toHaveLength(18);
+    const counts: Record<RelicRarity, number> = RELIC_KEYS.reduce(
+      (acc, k) => {
+        acc[RELICS[k].rarity] += 1;
+        return acc;
+      },
+      { common: 0, uncommon: 0, rare: 0 } as Record<RelicRarity, number>
+    );
+    expect(counts).toEqual({ common: 8, uncommon: 7, rare: 3 });
+  });
+
+  it('drop-pool weights are 50/35/15 and sum to 100', () => {
+    expect(RARITY_DROP_WEIGHTS.common).toBe(50);
+    expect(RARITY_DROP_WEIGHTS.uncommon).toBe(35);
+    expect(RARITY_DROP_WEIGHTS.rare).toBe(15);
+    const total =
+      RARITY_DROP_WEIGHTS.common +
+      RARITY_DROP_WEIGHTS.uncommon +
+      RARITY_DROP_WEIGHTS.rare;
+    expect(total).toBe(100);
+  });
+
+  it('relic keys are unique', () => {
+    expect(new Set(RELIC_KEYS).size).toBe(RELIC_KEYS.length);
+  });
+
+  it('every relic belongs to a known rarity tier', () => {
+    const validRarities: readonly RelicRarity[] = ['common', 'uncommon', 'rare'];
+    for (const k of RELIC_KEYS) {
+      const r: RelicDef = RELICS[k];
+      expect(validRarities).toContain(r.rarity);
+    }
   });
 });

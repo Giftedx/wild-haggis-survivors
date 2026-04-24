@@ -65,6 +65,22 @@ export interface RelicDef {
   readonly activate?: boolean;
 }
 
+/**
+ * Drop-pool weights by rarity. Consumed by the M2 drop roller when
+ * a relic drop is triggered (elite kill, boss kill, chest open) to
+ * decide which rarity tier the drop rolls against. Sums to 100.
+ *
+ * Note: these are pool weights, not count ratios. The actual catalogue
+ * split is 8/7/3 = 44/39/17, but the roller is weighted 50/35/15 so
+ * that common drops feel consistently common regardless of catalogue
+ * growth in later waves.
+ */
+export const RARITY_DROP_WEIGHTS: Readonly<Record<RelicRarity, number>> = {
+  common: 50,
+  uncommon: 35,
+  rare: 15,
+};
+
 export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
   // -------- Common (8) --------
   sporran_of_holding: {
