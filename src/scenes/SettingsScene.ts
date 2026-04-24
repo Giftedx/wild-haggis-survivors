@@ -53,6 +53,7 @@ type ToggleKey =
   | 'screenShake'
   | 'damageNumbers'
   | 'reduceParticles'
+  | 'reduceFlashing'
   | 'highContrastUi'
   | 'captionsEnabled'
   | 'telemetryOptIn'
@@ -132,7 +133,7 @@ export class SettingsScene extends Phaser.Scene {
     // ~4 toggles. Text remains at `uiScale` so readability stays intact;
     // only vertical stride compresses. Floor of 0.8 keeps labels from
     // crashing into each other on very short viewports.
-    const rowsCount = 16;
+    const rowsCount = 17;
     const sectionCount = 3;
     const rowBase = rowsCount * this.BASE_ROW_STEP;
     const verticalReserve = 130 + 80; // rowY start + back-button margin
@@ -270,6 +271,7 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.captions'), 'captionsEnabled');
     this.addToggleRow(t('ui.settings.high_contrast_ui'), 'highContrastUi');
     this.addToggleRow(t('ui.settings.reduce_particles'), 'reduceParticles');
+    this.addToggleRow(t('ui.settings.reduce_flashing'), 'reduceFlashing');
     this.addToggleRow(t('ui.settings.capture_enabled'), 'captureEnabled');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();

@@ -25,6 +25,7 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.captions',
   'ui.settings.high_contrast_ui',
   'ui.settings.reduce_particles',
+  'ui.settings.reduce_flashing',
   'ui.settings.telemetry_opt_in',
   'ui.settings.skipActIntermissions',
   'ui.settings.ironmoorMode',
