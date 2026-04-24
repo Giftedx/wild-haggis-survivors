@@ -11,6 +11,7 @@ import {
   bumpFirstTimeEvent,
   bumpReliquaryCurioPick,
   bumpSeenEnemy,
+  flushBeastieKills,
   bumpStandingStonePick,
   consumeLastDeath,
   recordIronmoorBest,
@@ -1166,22 +1167,46 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().discoveryLog.beastiesSeen).toEqual({});
   });
 
-  it('bumpBeastieKilled increments killCount once per call, only after seen', () => {
-    // Unseen first — kill bump must be a silent no-op.
-    bumpBeastieKilled('haar_wraith');
-    expect(loadSave().discoveryLog.beastiesSeen.haar_wraith).toBeUndefined();
-
+  it('bumpBeastieKilled accumulates in memory; flushBeastieKills persists the batch', () => {
     bumpBeastieSeen('haar_wraith', 'run-1', 500);
     bumpBeastieKilled('haar_wraith');
     bumpBeastieKilled('haar_wraith');
     bumpBeastieKilled('haar_wraith');
+    // Nothing in the save yet — kills are buffered.
+    expect(loadSave().discoveryLog.beastiesSeen.haar_wraith!.killCount).toBe(0);
+    flushBeastieKills();
     expect(loadSave().discoveryLog.beastiesSeen.haar_wraith!.killCount).toBe(3);
+  });
+
+  it('flushBeastieKills silently drops kills for beasties that were never seen', () => {
+    // Never-seen key — flush must not blow up, and save stays untouched.
+    bumpBeastieKilled('fictional_beastie');
+    flushBeastieKills();
+    expect(loadSave().discoveryLog.beastiesSeen.fictional_beastie).toBeUndefined();
   });
 
   it('bumpBeastieKilled no-ops on empty key', () => {
     bumpBeastieSeen('tourist', 'run-1', 0);
     bumpBeastieKilled('');
+    flushBeastieKills();
     expect(loadSave().discoveryLog.beastiesSeen.tourist!.killCount).toBe(0);
+  });
+
+  it('bumpBeastieKilled autoflushes once the buffer hits the threshold', () => {
+    bumpBeastieSeen('chef', 'run-1', 0);
+    // 64 bumps = autoflush threshold. The save should reflect the
+    // persisted count without an explicit flushBeastieKills() call.
+    for (let i = 0; i < 64; i++) bumpBeastieKilled('chef');
+    expect(loadSave().discoveryLog.beastiesSeen.chef!.killCount).toBe(64);
+  });
+
+  it('flushBeastieKills is idempotent — double-flush keeps the same counts', () => {
+    bumpBeastieSeen('midge', 'run-1', 0);
+    bumpBeastieKilled('midge');
+    bumpBeastieKilled('midge');
+    flushBeastieKills();
+    flushBeastieKills();
+    expect(loadSave().discoveryLog.beastiesSeen.midge!.killCount).toBe(2);
   });
 
   it('bumpBeastieSeen tracks distinct beasties independently', () => {

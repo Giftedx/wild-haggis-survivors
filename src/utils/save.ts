@@ -886,20 +886,61 @@ export function bumpBeastieSeen(
 }
 
 /**
+ * C1 M2 Task 11 — per-run buffer of kill counts waiting to be persisted.
+ * Populated by `bumpBeastieKilled`, drained by the threshold autoflush
+ * inside that function and by explicit `flushBeastieKills()` calls at
+ * run-end (RunLifecycle victory/death paths). Batching matters — the
+ * marathon smoke regressed the enemy-pool slope by ~2% under per-kill
+ * localStorage writes because each kill was doing a full loadSave /
+ * finalizeSaveCandidate / writeSave round-trip.
+ */
+const beastieKillBuffer = new Map<string, number>();
+
+/**
+ * Flush auto-triggers once the pending kill tally crosses this many.
+ * At peak kill rate (~50/sec) this caps persistence to roughly one
+ * write per second — cheap enough for the marathon window while still
+ * small enough that a crash loses at most a handful of kills.
+ */
+const BEASTIE_KILL_FLUSH_THRESHOLD = 64;
+
+/**
  * C1 M2 Task 11 — bump `killCount` for a beastie in the DiscoveryLog.
- * Requires a prior `bumpBeastieSeen` (the DiscoveryLog module no-ops
- * on unseen keys so kill events on edge-case orderings don't blow up);
- * EnemyKillHandler calls this on every kill.
+ * Accumulates in memory and autoflushes once `BEASTIE_KILL_FLUSH_THRESHOLD`
+ * kills queue up; RunLifecycle flushes the remainder at run-end so no
+ * kills are lost across a regular victory/death transition. On a
+ * hard crash (tab close mid-run) the last <64 kills fall on the
+ * floor — acceptable tradeoff per spec §8 "seen before your first
+ * journal entry" tolerance.
  */
 export function bumpBeastieKilled(beastieKey: string): void {
   if (!beastieKey) return;
+  const prev = beastieKillBuffer.get(beastieKey) ?? 0;
+  beastieKillBuffer.set(beastieKey, prev + 1);
+  let total = 0;
+  for (const n of beastieKillBuffer.values()) total += n;
+  if (total >= BEASTIE_KILL_FLUSH_THRESHOLD) flushBeastieKills();
+}
+
+/**
+ * Drain the in-memory kill buffer into the persisted DiscoveryLog.
+ * Safe to call at any time — no-ops when the buffer is empty, and
+ * silently drops keys that were never `bumpBeastieSeen`'d (the
+ * DiscoveryLog module's guard rejects kills on unseen keys).
+ */
+export function flushBeastieKills(): void {
+  if (beastieKillBuffer.size === 0) return;
   try {
     const cur = loadSave();
-    const nextLog = recordBeastieKilled(cur.discoveryLog, beastieKey);
-    if (nextLog === cur.discoveryLog) return; // no-op when key unseen
-    writeSave({ ...cur, discoveryLog: nextLog });
+    let log = cur.discoveryLog;
+    for (const [key, n] of beastieKillBuffer) {
+      for (let i = 0; i < n; i++) log = recordBeastieKilled(log, key);
+    }
+    beastieKillBuffer.clear();
+    if (log === cur.discoveryLog) return; // every key was unseen
+    writeSave({ ...cur, discoveryLog: log });
   } catch {
-    /* best-effort */
+    /* best-effort — keep the buffer populated so the next flush retries */
   }
 }
 

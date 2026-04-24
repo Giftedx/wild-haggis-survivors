@@ -25,7 +25,7 @@ import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save'
 import type { GameOverPayload } from '../gameOverPayload';
 import {
   recordPostBellBest, recordLastDeath, recordIronmoorBest, bumpFirstTimeEvent,
-  wipeIronmoorHistoryInPlace,
+  flushBeastieKills, wipeIronmoorHistoryInPlace,
 } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
@@ -176,6 +176,10 @@ export class RunLifecycle {
     const previousBests = this.hooks.getSaveManager().getPersonalBests();
     const summary = this.hooks.buildRunSummary(true);
     const context = this.hooks.buildRunHistoryContext();
+    // C1 M2 Task 11 — persist the Almanac kill buffer before the run
+    // summary is snapshotted to save. Subsequent save writes
+    // (recordRun, recordIronmoorBest) preserve the discoveryLog field.
+    flushBeastieKills();
     const runResult = this.hooks.recordRun(summary, context);
     this.hooks.recordToHistory(summary, runResult);
 
@@ -338,6 +342,8 @@ export class RunLifecycle {
       const previousBests = this.hooks.getSaveManager().getPersonalBests();
       const summary = this.hooks.buildRunSummary(false);
       const context = this.hooks.buildRunHistoryContext();
+      // C1 M2 Task 11 — persist buffered Almanac kills before run write.
+      flushBeastieKills();
       const runResult = this.hooks.recordRun(summary, context);
       this.hooks.recordToHistory(summary, runResult);
 

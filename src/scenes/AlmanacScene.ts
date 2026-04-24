@@ -18,7 +18,7 @@ import {
 import { buildBeastiesEntries } from './almanac/buildBeastiesEntries';
 import { renderBeastiesBook, type BeastiesBookHandle } from './almanac/BeastiesBook';
 import { createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
-import { loadSave } from '../utils/save';
+import { flushBeastieKills, loadSave } from '../utils/save';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
 const TAB_IDLE_BG = 0x11182a;
@@ -63,6 +63,11 @@ export class AlmanacScene extends Phaser.Scene {
   create(): void {
     const { width, height } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
+
+    // Flush any pending kill buffer so the Beasties book reads the
+    // freshest counts even if the player alt-tabbed mid-run into the
+    // Almanac. No-op between runs (buffer is empty).
+    flushBeastieKills();
 
     addSceneBackdrop(this);
     addAmberHeaderWash(this);
