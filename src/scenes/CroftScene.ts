@@ -28,6 +28,7 @@ import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
 import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
 import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
+import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -60,6 +61,7 @@ export class CroftScene extends Phaser.Scene {
   private droveSlots: DroveSlot[] = [];
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
   private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
+  private seasonalBanner: SeasonalBannerHandle | null = null;
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
   private gamepadNav: GamepadMenuNav | null = null;
   private actionEntries: Array<{ key: CroftActionKey; rect: Phaser.GameObjects.Rectangle }> = [];
@@ -99,6 +101,8 @@ export class CroftScene extends Phaser.Scene {
     this.droveHits = [];
     this.seasonalPropsGfx?.destroy();
     this.seasonalPropsGfx = null;
+    this.seasonalBanner?.destroy();
+    this.seasonalBanner = null;
     this.bookshelfHit?.destroy();
     this.bookshelfHit = null;
     this.gamepadNav?.destroy();
@@ -129,6 +133,9 @@ export class CroftScene extends Phaser.Scene {
     this.drawHeader(width);
     this.drawActions();
     this.drawBack();
+    // E1 M4 T22 — seasonal banner appears only when an event window
+    // is live; the helper itself handles the no-op path.
+    this.seasonalBanner = installSeasonalEventBanner(this);
 
     // Keyboard ESC returns to Menu.
     this.input.keyboard?.on('keydown-ESC', () => this.exitToMenu());

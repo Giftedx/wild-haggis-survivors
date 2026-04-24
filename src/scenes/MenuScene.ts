@@ -30,6 +30,7 @@ import { attachButtonHoverFill } from '../ui/buttonHover';
 import { createGameButton } from '../ui/gameButton';
 import { createGameToggle } from '../ui/gameToggle';
 import { textStyle } from '../ui/typography';
+import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
 
 /**
  * MenuScene — main menu with variant loadout selection.
@@ -55,6 +56,7 @@ export class MenuScene extends Phaser.Scene {
   private carouselRightHit: Phaser.GameObjects.Rectangle | null = null;
   private variantSelectHit: Phaser.GameObjects.Rectangle | null = null;
   private floatingDots: Phaser.GameObjects.Arc[] = [];
+  private seasonalBanner: SeasonalBannerHandle | null = null;
 
   constructor() {
     super({ key: 'Menu' });
@@ -234,10 +236,17 @@ export class MenuScene extends Phaser.Scene {
     // Ambient moor wind — cozy between storms
     audio.startAmbientWind();
 
+    // E1 M4 T22 — seasonal banner on the main menu. Helper is a no-op
+    // outside event windows + when `disableSeasonalEvents` is on.
+    this.seasonalBanner?.destroy();
+    this.seasonalBanner = installSeasonalEventBanner(this);
+
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
+      this.seasonalBanner?.destroy();
+      this.seasonalBanner = null;
       for (const dot of this.floatingDots) {
         try { this.tweens.killTweensOf(dot); } catch { /* ignore */ }
       }
