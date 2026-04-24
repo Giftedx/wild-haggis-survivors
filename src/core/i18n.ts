@@ -2915,6 +2915,19 @@ export const EN_STRINGS: LocaleTree = {
     toast: '{kin} {name}: "{line}"',
   },
   /**
+   * E1 M1 — Seasonal events (real-world-date-gated). Burns Night is
+   * the first event; framework scaffolded in `SeasonalEventManager.ts`.
+   * Chronicle stamps runs that started inside an event window with
+   * the event's name; future events drop into this block.
+   */
+  seasonalEvent: {
+    burns_night: {
+      name: 'Burns Night',
+      description: 'Jan 18 – Feb 1 — the bard\'s week on the moor.',
+      badge_suffix: 'Burns Night',
+    },
+  },
+  /**
    * R1 M4 Task 25 — Relic names, effects, flavour. 18 relics × 3
    * leaves = 54 EN keys. Voice tone per `docs/VOICE_CARD.md`:
    * - Common: Hearth register, warm + domestic ("Gran insists").

@@ -1,6 +1,6 @@
 # E1 — Seasonal events + Burns Night implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** M1 framework SHIPPED 2026-04-24. `SeasonalEventManager` live with pure date-math; Burns Night (Jan 18 – Feb 1) registered as first event; save schema v12 → v13 with optional `RunHistoryEntry.seasonalEvent`; `RunHistoryRecorder` stamps runs ended inside any active event window. 17 dedicated calendar tests + 2 recorder tests — year-wrap, leap-year, hour-of-day, edge-day all covered. Remaining M2 (run-start haggis-piped ceremony + haggis-platter pickup + themed buff), M3 (croft props — BLOCKED on H1 Gran's Croft), M4 (music layer + banter + Chronicle badge render + variant unlock tightening). Bundle delta: ~+1 KB gzip.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

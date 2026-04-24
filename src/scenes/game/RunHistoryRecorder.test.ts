@@ -204,6 +204,26 @@ describe('RunHistoryRecorder', () => {
       new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
       expect(saveManager.update).not.toHaveBeenCalled();
     });
+
+    it('stamps `seasonalEvent` when the run ends inside Burns Night', () => {
+      // Jan 25 2027 12:00 local — mid-Burns-Night.
+      const burnsNightLocal = new Date(2027, 0, 25, 12, 0, 0, 0).getTime();
+      const { hooks, saveManager } = buildMocks();
+      (hooks as { now: () => number }).now = () => burnsNightLocal;
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
+      const call = saveManager.recordRunToHistory.mock.calls[0][0];
+      expect(call.seasonalEvent).toBe('burns_night');
+    });
+
+    it('omits `seasonalEvent` when the run ends outside every event window', () => {
+      // July 4 2027 — no WHS event active.
+      const offSeasonLocal = new Date(2027, 6, 4, 12, 0, 0, 0).getTime();
+      const { hooks, saveManager } = buildMocks();
+      (hooks as { now: () => number }).now = () => offSeasonLocal;
+      new RunHistoryRecorder(hooks).record(baseSummary as never, { goldEarned: 1 } as never);
+      const call = saveManager.recordRunToHistory.mock.calls[0][0];
+      expect(call.seasonalEvent).toBeUndefined();
+    });
   });
 
   describe('daily challenge record', () => {

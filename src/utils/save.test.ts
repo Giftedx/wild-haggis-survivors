@@ -367,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 12', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(12);
+  it('SAVE_SCHEMA_VERSION is 13', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(13);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {

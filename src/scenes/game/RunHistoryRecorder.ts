@@ -18,6 +18,7 @@ import type { RunSummary, RunResult, RunHistoryContext } from '../../utils/save'
 import type { RoutePick } from '../../data/routes';
 import type { ReplayBlobAny } from '../../replay/replayBlob';
 import { currentDailyDateKey } from '../../utils/rng';
+import { getActiveSeasonalEventKey } from '../../systems/SeasonalEventManager';
 
 export interface RunHistoryHooks {
   getSaveManager(): SaveManager;
@@ -114,6 +115,7 @@ export class RunHistoryRecorder {
     const routes = h.getRoutePicks();
     const relics = h.getHeldRelicKeys?.() ?? [];
     const name = h.getRunName?.();
+    const seasonalEvent = getActiveSeasonalEventKey(new Date(timestamp));
     h.getSaveManager().recordRunToHistory({
       timestamp,
       timeSurvivedSec: summary.timeSurvivedSec,
@@ -130,6 +132,7 @@ export class RunHistoryRecorder {
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
       ...(relics.length > 0 ? { relics: [...relics] } : {}),
       ...(name ? { name } : {}),
+      ...(seasonalEvent ? { seasonalEvent } : {}),
     });
     if (h.isDailyRun()) {
       this.recordDailyChallengeResult(summary);

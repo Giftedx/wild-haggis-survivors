@@ -30,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 12;
+export const SAVE_SCHEMA_VERSION = 13;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -118,6 +118,14 @@ export interface RunHistoryEntry {
   replay?: ReplayBlobAny;
   /** LG T3 — display name for this run, stable-hashed from seed on first load. */
   name?: string;
+  /**
+   * E1 M1 — seasonal event key active when this run was recorded
+   * (e.g. 'burns_night'). Absent on runs played outside any event
+   * window and on pre-v13 entries. Chronicle displays the event
+   * badge alongside the run; coercion drops unknown keys so a
+   * future renamed event doesn't corrupt old entries.
+   */
+  seasonalEvent?: string;
 }
 
 export interface SaveData {
@@ -447,6 +455,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV10ToV11(raw));
     case 11:
       return finalizeSaveCandidate(migrateV11ToV12(raw));
+    case 12:
+      return finalizeSaveCandidate(migrateV12ToV13(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -703,6 +713,17 @@ function migrateV11ToV12(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v12 → v13 adds `RunHistoryEntry.seasonalEvent?: string` (E1 M1
+ * seasonal events). Pure version bump — field is optional, absent on
+ * every pre-v13 entry by default. No retroactive seed: we cannot
+ * reconstruct past event-window membership without the original run
+ * timestamp + event calendar, and the Chronicle badge is cosmetic.
+ */
+function migrateV12ToV13(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -922,6 +943,9 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
     ...(isReplayBlobAny(raw.replay) ? { replay: raw.replay } : {}),
+    ...(typeof raw.seasonalEvent === 'string' && raw.seasonalEvent
+      ? { seasonalEvent: raw.seasonalEvent }
+      : {}),
     name: coerceRunHistoryName(raw),
   };
 }

@@ -2618,6 +2618,13 @@ export const SCS_STRINGS: LocaleTree = {
    * for commons. Gaelic-derived names (Fingal, Bodhran) retain
    * English form — Scots speakers recognise them as loanwords.
    */
+  seasonalEvent: {
+    burns_night: {
+      name: 'Burns Nicht',
+      description: 'Jan 18 – Feb 1 — tha bard\'s week on tha moor.',
+      badge_suffix: 'Burns Nicht',
+    },
+  },
   relics: {
     sporran_of_holding: {
       name: 'Sporran o Haudin',
