@@ -86,8 +86,8 @@ export const EN_STRINGS: LocaleTree = {
       subtitle: 'Hearth, kettle, and the kindness o\' the stove.',
       /** Gran's opening greeting when the scene fades in. Still Game hearth. */
       gran_greet: 'Come awa in — the kettle\'s on.',
-      /** Back button — returns the player to MenuScene (pre-T9 placeholder). */
-      back: 'BACK BEN THE HOOSE',
+      /** Back button — exits the croft back to the loadout screen. "Ben" is Scots for inward, so we stay outward-facing with "the door". */
+      back: 'BACK TAE THE DOOR',
       actions: {
         /** Primary action — starts a fresh run (via Curse picker). Hearth voice. */
         start_run: 'OOT THE DOOR',
@@ -353,7 +353,8 @@ export const EN_STRINGS: LocaleTree = {
       gold_breakdown: 'Time {timeGold}  |  Kills {killGold}  |  Boss {bossGold}  |  Coins {coinGold}',
       play_again: 'PLAY AGAIN',
       upgrades: 'GOLD SHOP',
-      menu: 'MENU',
+      /** "Back to the hub" — post-T9 leads to CroftScene, not MainMenu. Hearth voice. */
+      menu: 'TAE GRAN\'S',
       damage_summary: 'Kills {kills}  ·  Time {time}  ·  Gold +{gold}',
       no_weapon_damage: '(quiet run — nae weapon tally this time)',
       more_weapons: '… +{count} more',

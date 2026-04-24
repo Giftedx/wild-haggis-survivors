@@ -76,7 +76,7 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'GRAN\'S CROFT',
       subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
       gran_greet: 'Come awa in — tha kettle\'s on.',
-      back: 'BACK BEN THA HOOSE',
+      back: 'BACK TAE THA DOOR',
       actions: {
         start_run: 'OOT THA DOOR',
         shop: 'GRAN\'S SPORRAN',
@@ -218,7 +218,7 @@ export const SCS_STRINGS: LocaleTree = {
       curse_chip: 'Bore tha {curse} — +{pct}% gold',
       play_again: 'AT IT AGAIN',
       upgrades: 'GOLD SHOP',
-      menu: 'MENU',
+      menu: 'TAE GRAN\'S',
       next_tip: 'FER THA NEXT RUN',
       new_best: 'YA DANCER!',
       ironmoor_victory_banner: '⚔ IRONMOOR WIN — WAN LIFE, AYE',

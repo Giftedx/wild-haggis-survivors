@@ -457,7 +457,8 @@ export class GameOverScene extends Phaser.Scene {
     this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, () => {
       audio.playClick();
       musicEngine.stop();
-      this.scene.start('MainMenu');
+      // H1 T9 — return to Croft hub, not MainMenu.
+      this.scene.start('Croft');
     });
   }
 

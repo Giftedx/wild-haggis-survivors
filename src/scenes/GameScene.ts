@@ -823,7 +823,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
       stopGameScene: () => this.scene.stop('Game'),
       startGameOverScene: (payload) => this.scene.start('GameOver', payload),
-      startMainMenuScene: () => this.scene.start('MainMenu'),
+      // H1 T9 — post-run lands in CroftScene (hub) rather than MainMenu.
+      // Hook name retained until a broader rename sweep (scope: future polish).
+      startMainMenuScene: () => this.scene.start('Croft'),
       unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
     });
 
