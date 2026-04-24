@@ -19,6 +19,19 @@
 import { BANTER_POOLS, BanterContext, BanterPool, getBanterPool } from '../data/banter';
 import type { BanterFrequency } from '../core/SettingsManager';
 
+/**
+ * Callback emitted after a banter line successfully fires through the
+ * sink. Consumers wire this into the C1 Highland Almanac's DiscoveryLog
+ * so `recordBanterHeard` bumps per heard line. Fires only for real
+ * user-facing emissions — not for dropped / rate-limited / translated-
+ * missing requests.
+ */
+export interface BanterLineFiredEvent {
+  readonly key: string;
+  readonly context: BanterContext;
+  readonly tag?: string;
+}
+
 /** Minimum gap (ms) between any two banter lines, per frequency. */
 export const BANTER_COOLDOWN_MS: Record<BanterFrequency, number> = {
   off: Number.POSITIVE_INFINITY,
@@ -47,6 +60,12 @@ export interface BanterSystemOptions {
   rng?: () => number;
   /** Mutable reader — evaluated every request so live setting changes take effect. */
   getFrequency: () => BanterFrequency;
+  /**
+   * Optional — called once per line that actually reaches the sink.
+   * GameScene wires this to `bumpBanterHeard` so the Almanac's Banter
+   * book fills in as lines are heard. Thrown errors are swallowed.
+   */
+  onLineFired?: (event: BanterLineFiredEvent) => void;
 }
 
 const TONE_COLORS = {
@@ -60,6 +79,7 @@ export class BanterSystem {
   private readonly now: () => number;
   private readonly rng: () => number;
   private readonly getFrequency: () => BanterFrequency;
+  private readonly onLineFired: ((event: BanterLineFiredEvent) => void) | null;
 
   private lastFireMs = -Infinity;
   private lastContext: BanterContext | null = null;
@@ -74,6 +94,7 @@ export class BanterSystem {
     this.now = opts.now;
     this.rng = opts.rng ?? Math.random;
     this.getFrequency = opts.getFrequency;
+    this.onLineFired = opts.onLineFired ?? null;
   }
 
   /**
@@ -132,6 +153,16 @@ export class BanterSystem {
     this.lastContext = pool.context;
     this.recent.push(key);
     if (this.recent.length > BANTER_NO_REPEAT_WINDOW) this.recent.shift();
+
+    // Discovery-log hook — best-effort. A throwing listener must never
+    // corrupt banter state.
+    if (this.onLineFired) {
+      try {
+        this.onLineFired({ key, context: pool.context, tag });
+      } catch {
+        /* swallowed */
+      }
+    }
   }
 
   /** Forget all history — call on new run so lines are fresh. */

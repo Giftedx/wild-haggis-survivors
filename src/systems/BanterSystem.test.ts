@@ -300,6 +300,72 @@ describe('BanterSystem', () => {
     });
   });
 
+  describe('onLineFired', () => {
+    it('fires once per line committed to the sink, with key + context', () => {
+      const events: Array<{ key: string; context: string; tag?: string }> = [];
+      const sys = new BanterSystem({
+        sink: { toast: () => undefined },
+        translate: t,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: (evt) => events.push({ ...evt }),
+      });
+      sys.request('boss_warn', { tag: 'gordon' });
+      sys.flush();
+      expect(events).toHaveLength(1);
+      expect(events[0].context).toBe('boss_warn');
+      expect(events[0].tag).toBe('gordon');
+      expect(events[0].key.startsWith('ui.banter.boss_warn.gordon.')).toBe(true);
+    });
+
+    it('does not fire when the request is rate-limited', () => {
+      const events: Array<{ key: string }> = [];
+      const sys = new BanterSystem({
+        sink: { toast: () => undefined },
+        translate: t,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: (evt) => events.push(evt),
+      });
+      sys.request('kill_streak');
+      sys.flush();
+      expect(events).toHaveLength(1);
+      // second request inside cooldown is dropped at `request` before flush
+      sys.request('kill_streak');
+      sys.flush();
+      expect(events).toHaveLength(1);
+    });
+
+    it('does not fire when translation resolves to the key itself', () => {
+      const events: Array<{ key: string }> = [];
+      const sys = new BanterSystem({
+        sink: { toast: () => undefined },
+        translate: (k) => k,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: (evt) => events.push(evt),
+      });
+      sys.request('idle');
+      sys.flush();
+      expect(events).toHaveLength(0);
+    });
+
+    it('swallows listener exceptions so banter state stays consistent', () => {
+      const sys = new BanterSystem({
+        sink: { toast: () => undefined },
+        translate: t,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: () => { throw new Error('boom'); },
+      });
+      expect(() => { sys.request('kill_streak'); sys.flush(); }).not.toThrow();
+    });
+  });
+
   describe('translation fallback', () => {
     it('stays silent if the pool key has no translation', () => {
       // Construct a system with a translate that always returns the key —

@@ -16,7 +16,7 @@ import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
-  bumpRoutePicked, bumpItemAcquired,
+  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -914,6 +914,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         translate: t,
         now: () => this.time.now,
         getFrequency: () => getSettingsManager().load().banterFrequency,
+        // C1 M4 Task 19 — route every fired line into the Almanac's
+        // Banter book via the shared save bump helper.
+        onLineFired: (evt) => bumpBanterHeard(evt.key, this.discoveryRunId(), Date.now()),
       });
     }
     this.banter.reset();

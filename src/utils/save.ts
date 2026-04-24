@@ -18,6 +18,7 @@ import {
 import {
   createEmptyDiscoveryLog,
   discoveryLogFromJSON,
+  recordBanterHeard,
   recordBeastieKilled,
   recordBeastieSeen,
   recordItemAcquired,
@@ -986,6 +987,29 @@ export function bumpItemAcquired(
   try {
     const cur = loadSave();
     const nextLog = recordItemAcquired(cur.discoveryLog, findKey, runId, timestamp);
+    writeSave({ ...cur, discoveryLog: nextLog });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * C1 M4 Task 19 — record a banter-line firing into the DiscoveryLog.
+ * Called from `BanterSystem.onLineFired` after each sink emission.
+ * Best-effort — swallows storage errors so a persistence failure
+ * never drops a banter line. Caps at `BANTER_HEAR_COUNT_CAP`
+ * automatically via `recordBanterHeard`.
+ */
+export function bumpBanterHeard(
+  leafKey: string,
+  runId: string,
+  timestamp: number,
+): void {
+  if (!leafKey) return;
+  try {
+    const cur = loadSave();
+    const nextLog = recordBanterHeard(cur.discoveryLog, leafKey, runId, timestamp);
+    if (nextLog === cur.discoveryLog) return;
     writeSave({ ...cur, discoveryLog: nextLog });
   } catch {
     /* best-effort */
