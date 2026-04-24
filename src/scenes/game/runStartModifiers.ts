@@ -33,6 +33,7 @@ export function applyVariantModifiers(player: Player, variant: VariantDef): void
   if (modifiers.driftReductionPct) player.reduceDrift(modifiers.driftReductionPct);
   if (modifiers.cooldownReductionPct) player.addCooldownReduction(modifiers.cooldownReductionPct);
   if (modifiers.critChancePct) player.addCritChance(modifiers.critChancePct);
+  if (modifiers.spriteScale) player.setScale(modifiers.spriteScale);
   if (modifiers.driftSignFlip) player.flipDriftSign();
 }
 

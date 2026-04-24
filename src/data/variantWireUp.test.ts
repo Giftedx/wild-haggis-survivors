@@ -31,6 +31,8 @@ const SCOTS_MARKERS = [
   'quinie', 'min', 'haar', 'een',
   // Shetlandic (V2 Track 2)
   'peerie', 'voe', 'du', 'dee', 'skerry', 'mirry',
+  // Burns-citational (V2 Track 3)
+  'sleekit', 'sonsie', 'agley', 'syne',
 ];
 
 describe('every non-classic variant is fully wired', () => {

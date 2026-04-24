@@ -39,6 +39,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // V2 Track 2 — Peerie Shetlander. Moss + sea field, rust stripe
   // (Viking iron echo), bleached-driftwood accent.
   peerie_shetlander: { field: 0x3a5a4a, fieldDark: 0x1e3a2a, stripe: 0xaa6030, accent: 0xe0d8c8 },
+  // V2 Track 3 — Burns's Wee Beastie. Aged-ink field, Ayrshire
+  // arterial-red stripe, poet's cream accent.
+  burns_wee_beastie: { field: 0x6a4030, fieldDark: 0x3a201c, stripe: 0xc82830, accent: 0xf0e4c8 },
 };
 
 /**

@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -18,6 +18,14 @@ export interface VariantModifier {
    * Shared by Peerie Shetlander (+5%) and Burns's Wee Beastie (+20%).
    */
   critChancePct?: number;
+  /**
+   * V2 Track 3 — visual sprite scale multiplier (1.0 = unchanged).
+   * Applied via `Player.setScale`. Phaser's arcade physics auto-scales
+   * circular hitboxes when the sprite scales, so the hitbox tracks
+   * the visual. Shadow + mantle overlays follow the Player transform.
+   * Burns's Wee Beastie ships at 0.85 — "tiny, trembling, noble-hearted".
+   */
+  spriteScale?: number;
   /**
    * Flip the sign of the Drift for this run (clockwise → anticlockwise).
    * Per wild haggis myth (SCOTTISH_RESEARCH_DEEP §11.5): two subspecies
@@ -42,7 +50,14 @@ export type VariantUnlockCondition =
   // Counter increments on victory when biomes visited were a subset of
   // {loch, pine} (never entered bog or heather — the "moor" biomes).
   // Wired via `RunHistoryContext.biomesVisited` and BiomeController.
-  | { type: 'runs_in_coastal_only'; required: number };
+  | { type: 'runs_in_coastal_only'; required: number }
+  // V2 Track 3 — Burns's Wee Beastie unlock: "earned when the bard is
+  // honoured". Counter increments on victory when >= 7 weapons evolved
+  // in the same run (all 7 evolutions fired — Burns, Ayrshire poet of
+  // the haggis itself, emerges when the player has fully earned him).
+  // Placeholder until E1 Seasonal Events ships — original spec called
+  // for Burns-Night + full-evo, but this ships today without the dep.
+  | { type: 'runs_with_all_evolutions'; required: number };
 
 export interface HaggisPalette {
   outline: number;
@@ -89,6 +104,12 @@ export interface VariantProgressSnapshot {
    * heather). Unlocks the Peerie Shetlander at 1.
    */
   runsInCoastalOnly?: number;
+  /**
+   * V2 Track 3 — lifetime count of victorious runs where all seven
+   * evolvable weapons reached their evolved form in the same run.
+   * Unlocks Burns's Wee Beastie at 1.
+   */
+  runsWithAllEvolutions?: number;
   unlockedVariants?: readonly VariantKey[];
 }
 
@@ -398,6 +419,41 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // V2 Track 3 — Burns's Wee Beastie. Ayrshire. Stepped out of the
+    // bard's "To a Mouse". Tiny, trembling, noble-hearted.
+    // Stats per spec §2: -15 HP, +20% crit, +10% speed, +15% XP,
+    // sprite scale 0.85×. Starter passive "A Red, Red Rose"
+    // (thistle-bloom heal on crit) is descoped to pure voice flavour
+    // this ship — no startWithPassives infra exists (see followups).
+    // Unlock: PLACEHOLDER until E1 Seasonal Events (Burns Night)
+    // ships — spec called for "Burns Night + 100% evolutions", this
+    // drops the Burns-Night dep so the variant ships with V2 cohort.
+    // Revisit once E1 lands; tighten to seasonal gate.
+    key: 'burns_wee_beastie',
+    nameKey: 'variant.burns_wee_beastie.name',
+    flavorKey: 'variant.burns_wee_beastie.flavor',
+    textureKey: 'haggis_burns_wee_beastie',
+    modifiers: {
+      moveSpeedPct: 0.10,
+      maxHpFlat: -15,
+      critChancePct: 0.20,
+      xpMultiplierPct: 0.15,
+      spriteScale: 0.85,
+    },
+    unlock: { type: 'runs_with_all_evolutions', required: 1 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        outline: 0x3a2418,
+        bodyDark: 0x6a4e38,
+        bodyLight: 0xa08060,
+        fur: 0xb89a78,
+        snout: 0xd4c0a0,
+        accent: 0xf0e4c8,
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -447,6 +503,8 @@ export function meetsVariantUnlockCondition(
       return (progress.runsWithoutHealing ?? 0) >= variant.unlock.required;
     case 'runs_in_coastal_only':
       return (progress.runsInCoastalOnly ?? 0) >= variant.unlock.required;
+    case 'runs_with_all_evolutions':
+      return (progress.runsWithAllEvolutions ?? 0) >= variant.unlock.required;
   }
 }
 
@@ -524,6 +582,16 @@ export function getVariantUnlockProgress(
         `${variant.unlock.required}`
       );
     }
+    case 'runs_with_all_evolutions': {
+      const re = progress.runsWithAllEvolutions ?? 0;
+      return createUnlockProgress(
+        t('variant.unlock.runs_with_all_evolutions'),
+        re,
+        variant.unlock.required,
+        `${re}`,
+        `${variant.unlock.required}`
+      );
+    }
   }
 }
 
@@ -548,6 +616,11 @@ export function formatVariantModifierSummary(variant: VariantDef): string {
   if (modifiers.driftReductionPct) parts.push(t('variant.summary.drift', pctInterp(modifiers.driftReductionPct)));
   if (modifiers.cooldownReductionPct) parts.push(t('variant.summary.cdr', pctInterp(modifiers.cooldownReductionPct)));
   if (modifiers.critChancePct) parts.push(t('variant.summary.crit', pctInterp(modifiers.critChancePct)));
+  if (modifiers.spriteScale && modifiers.spriteScale !== 1) {
+    // Shown as an integer percentage off baseline: 0.85 → -15%, 1.15 → +15%.
+    const delta = modifiers.spriteScale - 1;
+    parts.push(t('variant.summary.size', pctInterp(delta)));
+  }
   if (modifiers.driftSignFlip) parts.push(t('variant.summary.drift_flip'));
 
   return parts.length > 0 ? parts.join('  |  ') : t('variant.summary.baseline');
@@ -580,6 +653,10 @@ export function formatRunVariantLabel(variant: VariantDef): string {
     || !!modifiers.driftReductionPct
     || !!modifiers.cooldownReductionPct
     || !!modifiers.critChancePct
+    // spriteScale defaults to 1; anything ≠ 1 counts as a real mod so
+    // the variant panel shows the modifier summary line instead of
+    // "Baseline stats" for a variant that only differs visually.
+    || (!!modifiers.spriteScale && modifiers.spriteScale !== 1)
     || !!modifiers.driftSignFlip;
   const name = t(variant.nameKey);
   if (!hasModifiers) return name;

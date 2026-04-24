@@ -935,6 +935,14 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Keep tee risin\', du. Nae yet.',
           d: 'Voe\'s cold. I\'m caulder. Onwards.',
         },
+        // Burns citational — echoes of "To a Mouse". Native-speaker /
+        // editorial audit per spec §5 (The Canongate Burns) still pending.
+        burns_wee_beastie: {
+          a: 'Och, my breastie trembles — sleekit pangs.',
+          b: 'The best-laid schemes gang aft agley.',
+          c: 'An icy blast has blawn ma hoose awa.',
+          d: 'A wee bit blude — still honest, still mine.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -1140,6 +1148,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Learnt the skerry. The ocean taught me.',
           d: 'Up again. Like the tide, du.',
         },
+        burns_wee_beastie: {
+          a: 'Gie me ae spark o\' Nature\'s fire!',
+          b: 'Risin\' — the bard smiles.',
+          c: 'A man\'s a man for a\' that — an\' so\'s a haggis.',
+          d: 'Honest growth. Sonsie at last.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1217,6 +1231,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Caught aff the lee side. Peerie quick.',
           c: 'Ower the gunnel wi yon. Done.',
           d: 'Aye, du. The harvest begins.',
+        },
+        burns_wee_beastie: {
+          a: 'First doon — fair fa\' yir honest face!',
+          b: 'Thou need na start awa sae hasty.',
+          c: 'Scots, wha hae — an\' taken first blood.',
+          d: 'Auld lang syne begins wi\' a cull.',
         },
       },
       kill_streak: {
@@ -1297,6 +1317,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Like herring runs — mass comes, mass goes.',
           d: 'The voe runs red. Braw ebb.',
         },
+        burns_wee_beastie: {
+          a: 'Canny, canny — the streak minds itsel.',
+          b: 'A man\'s a man, an\' this man\'s on fire.',
+          c: 'Sonsie an\' stern — the moor submits.',
+          d: 'Coortin\' lichtnin\', ilka stroke sure.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1374,6 +1400,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Peerie wounds knit. Crofter tough.',
           c: 'Hale again, du. Mirry noo.',
           d: 'Northern bones mend. Carry on.',
+        },
+        burns_wee_beastie: {
+          a: 'Nae man can tether time or tide — but breath returns.',
+          b: 'Blude warm again, heid clear.',
+          c: 'An honest recovery — sonsie noo.',
+          d: 'Thou\'rt blessed — breath is lent, not owed.',
         },
       },
       biome_change: {
@@ -1635,6 +1667,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Even the seabirds are stillt.',
           c: 'Peerie pause. Watch the sky, du.',
           d: 'Voe\'s glass. That\'ll break shortly.',
+        },
+        burns_wee_beastie: {
+          a: 'For auld lang syne, I wait.',
+          b: 'A quait moment, an\' the heart takes stock.',
+          c: 'My love is like a red, red rose — the moor rests.',
+          d: 'Should auld acquaintance be forgot... the glen remembers.',
         },
       },
       // W2 Moor Road.
@@ -2447,6 +2485,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Peerie Shetlander',
       flavor: 'Fae the northern isles — Norn-tinged, peerie, sea-footed. The voe remembers ye, du. The wind\'s already up.',
     },
+    burns_wee_beastie: {
+      name: 'Burns\'s Wee Beastie',
+      flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot the bard\'s poem. Smaller than the moor, fiercer than it looks.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -2457,6 +2499,7 @@ export const EN_STRINGS: LocaleTree = {
       drift: '{sign}{pct}% drift',
       cdr: '{sign}{pct}% CDR',
       crit: '{sign}{pct}% crit',
+      size: '{sign}{pct}% size',
       drift_flip: 'Drift goes widdershins',
       baseline: 'Baseline stats',
     },
@@ -2470,6 +2513,7 @@ export const EN_STRINGS: LocaleTree = {
       cursed_victories: 'Cursed wins',
       runs_without_healing: 'No-heal runs',
       runs_in_coastal_only: 'Coastal-only runs',
+      runs_with_all_evolutions: 'Full-evo victories',
       ready: 'Ye earned this one',
     },
   },

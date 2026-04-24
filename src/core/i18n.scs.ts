@@ -698,6 +698,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Keep tee risin, du. Nae yit.',
           d: 'Voe\'s cauld. I\'m caulder. Onwairds.',
         },
+        burns_wee_beastie: {
+          a: 'Och, ma breastie trimmles — sleekit pangs.',
+          b: 'Tha best-laid schemes gang aft agley.',
+          c: 'An icy blast has blawn ma hoose awa.',
+          d: 'A wee bit bluid — still honest, still mine.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
@@ -901,6 +907,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Learnt tha skerry. Tha ocean taucht me.',
           d: 'Up again. Like tha tide, du.',
         },
+        burns_wee_beastie: {
+          a: 'Gie me ae spark o Nature\'s fire!',
+          b: 'Risin — tha bard smiles.',
+          c: 'A man\'s a man fer aw that — an so\'s a haggis.',
+          d: 'Honest growth. Sonsie at last.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -978,6 +990,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Caucht aff tha lee side. Peerie quick.',
           c: 'Ower tha gunnel wi yon. Duin.',
           d: 'Aye, du. Tha hairst begins.',
+        },
+        burns_wee_beastie: {
+          a: 'First doon — fair fa yir honest face!',
+          b: 'Thou need na stairt awa sae hasty.',
+          c: 'Scots, wha hae — an taen first bluid.',
+          d: 'Auld lang syne begins wi a cull.',
         },
       },
       kill_streak: {
@@ -1058,6 +1076,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Like herrin runs — mass comes, mass gaes.',
           d: 'Tha voe rins reid. Braw ebb.',
         },
+        burns_wee_beastie: {
+          a: 'Canny, canny — tha streak minds itsel.',
+          b: 'A man\'s a man, an this man\'s on fire.',
+          c: 'Sonsie an stern — tha moor submits.',
+          d: 'Coortin lichtnin, ilka straik sure.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
@@ -1135,6 +1159,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Peerie wounds knit. Crafter tough.',
           c: 'Hale again, du. Mirry noo.',
           d: 'Northern banes mend. Cairry on.',
+        },
+        burns_wee_beastie: {
+          a: 'Nae man can tether time or tide — but braith returns.',
+          b: 'Bluid warm again, heid clair.',
+          c: 'An honest recovery — sonsie noo.',
+          d: 'Thou\'rt blessed — braith is lent, no owed.',
         },
       },
       biome_change: {
@@ -1391,6 +1421,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Even tha seabirds are stillt.',
           c: 'Peerie pause. Watch tha sky, du.',
           d: 'Voe\'s gless. That\'ll brak shortly.',
+        },
+        burns_wee_beastie: {
+          a: 'Fer auld lang syne, I bide.',
+          b: 'A quait moment, an tha hert taks stock.',
+          c: 'Ma love is like a reid, reid rose — tha moor rests.',
+          d: 'Should auld acquaintance be forgot... tha glen minds.',
         },
       },
       act_intermission_enter: {
@@ -2151,6 +2187,10 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Peerie Shetlander',
       flavor: 'Fae tha northern isles — Norn-tinged, peerie, sea-fittit. Tha voe minds ye, du. Tha wind\'s aw ready up.',
     },
+    burns_wee_beastie: {
+      name: 'Burns\'s Wee Beastie',
+      flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot tha bard\'s poem. Wee-er nor tha moor, fiercer nor it looks.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -2161,6 +2201,7 @@ export const SCS_STRINGS: LocaleTree = {
       drift: '{sign}{pct}% drift',
       cdr: '{sign}{pct}% CDR',
       crit: '{sign}{pct}% crit',
+      size: '{sign}{pct}% size',
       drift_flip: 'Drift gangs widdershins',
       baseline: 'Baseline stats',
     },
@@ -2172,6 +2213,7 @@ export const SCS_STRINGS: LocaleTree = {
       cursed_victories: 'Cursed wins',
       runs_without_healing: 'Nae-heal runs',
       runs_in_coastal_only: 'Sea-way runs',
+      runs_with_all_evolutions: 'Fu\'-evo wins',
       ready: 'Ye earned this wan',
     },
   },
