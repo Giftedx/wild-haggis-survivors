@@ -66,48 +66,48 @@
 
 ---
 
-## M1 — DiscoveryLog + save schema
+## M1 — DiscoveryLog + save schema ✓ shipped 2026-04-24
 
 ### Task 1: `DiscoveryLog` module scaffold
 
-**Files:** `src/systems/DiscoveryLog.ts` + test.
-
-- [ ] **Step 1:** Failing test: new `DiscoveryLog` has empty `beastiesSeen`, `routesVisited`, `findsAcquired`, `banterHeard`, `almanacVisits: 0`.
-- [ ] **Step 2:** Implement plain-data class.
-- [ ] **Step 3:** Commit: `feat(almanac): DiscoveryLog scaffold`.
+- [x] **Step 1:** Failing test: new `DiscoveryLog` has empty `beastiesSeen`, `routesVisited`, `findsAcquired`, `banterHeard`, `almanacVisits: 0`.
+- [x] **Step 2:** Implement plain-data module (pure functional, immutable — matches `save.ts` style so HUDs can later shallow-compare for dirty checks).
+- [x] **Step 3:** Commit: `feat(almanac): DiscoveryLog scaffold (C1 M1 Task 1)` — `e9103ab`.
 
 ### Task 2: `recordBeastieSeen` increment
 
-- [ ] **Step 1:** Failing test: `recordBeastieSeen('kelpie', runId, now)` → `beastiesSeen.kelpie.seenCount === 1`; `firstSeenAt.runId === runId`.
-- [ ] **Step 2:** Implement increment; `firstSeenAt` only set if absent.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** Failing tests cover first-seen seeding, increment immutability of `firstSeenAt`, multi-beastie tracking, input-log non-mutation, empty-key no-op.
+- [x] **Step 2:** Implement increment; `firstSeenAt` only set if absent.
+- [x] **Step 3:** Commit — `0f2db5c`.
 
 ### Task 3: `recordBeastieKilled`, `recordRoutePicked`, `recordItemAcquired`, `recordBanterHeard`
 
-- [ ] **Step 1:** Failing tests per method.
-- [ ] **Step 2:** Implement four more methods mirroring the pattern.
-- [ ] **Step 3:** Commit per pair.
+- [x] **Step 1:** Failing tests per method — mirrors Task 2 patterns.
+- [x] **Step 2:** Implement four more methods + `BANTER_HEAR_COUNT_CAP = 1000` per spec §8 save-size mitigation.
+- [x] **Step 3:** Bundled single commit rather than per-pair — pattern was identical across the four and splitting would have been churn — `2fd5220`.
 
 ### Task 4: Serialisation to/from JSON
 
-- [ ] **Step 1:** Failing test: `DiscoveryLog.toJSON()` + `fromJSON()` round-trip.
-- [ ] **Step 2:** Implement.
-- [ ] **Step 3:** Commit: `feat(almanac): DiscoveryLog serialisation`.
+- [x] **Step 1:** Round-trip + defensive-coercion tests.
+- [x] **Step 2:** `discoveryLogToJSON` (effectively identity) + `discoveryLogFromJSON` with coercers mirroring save.ts's `coerceRunHistoryEntry` — drops malformed entries, defaults missing subsections, clamps `hearCount` to cap on revive.
+- [x] **Step 3:** Commit — `d77fa73`.
 
 ### Task 5: Save schema bump + retroactive seed
 
-**Files:** `src/utils/save.ts`, tests.
+**Files:** `src/utils/save.ts`, `src/systems/DiscoveryLog.ts`, tests.
 
-- [ ] **Step 1:** Failing test: migration v{N} → v{N+1} adds empty `discoveryLog` field; `retroactiveSeedFromHistory(runHistory)` reconstructs approximate state.
-- [ ] **Step 2:** Implement migration + seed function (scans `RunHistoryEntry` for bosses killed, routes picked, etc.).
-- [ ] **Step 3:** Commit: `feat(save): schema bump — discoveryLog with retroactive seed`.
+- [x] **Step 1:** Failing tests cover v7→v8 retro-seed from runHistory, round-trip preservation, malformed-log coercion, no-seed-when-present guard.
+- [x] **Step 2:** `SAVE_SCHEMA_VERSION = 8`; `migrateV7ToV8` is a pure version bump; the real work is in `finalizeSaveCandidate.coerceDiscoveryLog` — retro-seed when `discoveryLog` is absent from the candidate, `discoveryLogFromJSON` when present. `RetroHistoryEntry` interface keeps `DiscoveryLog.ts` decoupled from save.ts (no circular import).
+- [x] **Step 3:** Commit — `1aae9ef`.
+
+**Seed scope — honest pre-v8 reconstruction.** From pre-v8 `RunHistoryEntry` we can rebuild `routesVisited` (each entry has `routes`) and the weapon slice of `findsAcquired` (each entry has `weaponKeys`). We **cannot** rebuild `beastiesSeen` (run summaries track aggregate `bossKills`, not which bosses; non-boss enemies aren't tracked at all) or `banterHeard` (no prior tracking). Those start empty post-v8 and fill forward from first in-game encounter, per spec §8 "seen before your first journal entry" framing.
 
 ### Task 6: M1 ship gate
 
-- [ ] All increments + migration tested.
-- [ ] Retroactive seed handles pre-C1 saves gracefully.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(almanac): M1 — DiscoveryLog + save schema complete`.
+- [x] All increments + migration tested (31 DiscoveryLog + 82 save tests).
+- [x] Retroactive seed handles pre-C1 saves gracefully.
+- [x] `npm run ci` green (lint + 3098 vitest + build). Full `ci:all` verified post-slice.
+- [x] Commit: `feat(almanac): M1 — DiscoveryLog + save schema complete`.
 
 ---
 

@@ -123,7 +123,7 @@ test.describe('T1 replay loop', () => {
       };
     });
 
-    expect(recordPhase.schemaVersion, 'save should migrate to v7').toBe(7);
+    expect(recordPhase.schemaVersion, 'save should migrate to current schema').toBe(8);
     expect(recordPhase.historyLen, 'one run should be recorded').toBe(1);
     expect(recordPhase.hasReplay, 'blob should attach to the entry').toBe(true);
     expect(recordPhase.replaySeed, 'blob should carry the launch seed').toBe(4242);
