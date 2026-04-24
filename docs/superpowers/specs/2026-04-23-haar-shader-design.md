@@ -236,3 +236,43 @@ If haar is un-performant on any supported-hardware target and can't be optimised
 ---
 
 *Spec complete. Plan breaks into M1 ShaderRegistry + infrastructure, M2 HaarFogPipeline implementation + noise texture, M3 biome-transition integration, M4 accessibility settings + perf validation.*
+
+---
+
+## 9. 2026-04-24 ship notes
+
+**M4 perf validation** — full `npm run ci:all` run with haar live on
+ActIntermissionScene exercises the shader across chromium-desktop /
+firefox-desktop / webkit-desktop / chromium-mobile. The existing
+`long-session-smoke.spec.ts` (5-minute simulated run through Game + act
+intermissions) passes in all four browsers with no FPS degradation flagged
+— haar's per-frame cost sits inside the noise floor of that harness. A
+dedicated `shaderPerf` measurement path is wired in `shaderPerf.ts` for
+future devtool probes; the long-session-smoke outcome is the current
+real-world evidence for the <0.5 ms/frame budget.
+
+**A11y posture** — WHS does not yet ship a dedicated `reduceFlashing`
+toggle (A1 Accessibility Foundation owns that). F1 derives a
+photosensitivity-safe haar from the shipped settings via `capHaarForA11y`:
+- `motionScale=0` caps density at 0.4 and doubles ramp durations.
+- `motionScale=0.5` interpolates linearly (cap 0.7, ramp ×1.5).
+- `reduceParticles=true` hard-caps density at 0.5 regardless of motionScale.
+- `reduceParticles=true` + `motionScale=0` take the stricter (lower) cap.
+
+When A1 lands `reduceFlashing`, wire it as an OR with `motionScale === 0`
+inside `capHaarForA11y`. Caps already in place carry over.
+
+**Canvas-mode** — `ActIntermissionScene.applyHaarWash` early-returns on
+`renderer.type !== Phaser.WEBGL`. The picker still renders cleanly on
+Canvas; only the haar visual is degraded.
+
+**Follow-ups not shipped in F1:**
+- BiomeController ambient-density driver (loch=0.2, bog=0.1). BiomeDef
+  already carries the field; hook the BiomeController tick into a
+  HaarFogController on GameScene's main camera in a future ticket.
+- Biome-transition density ramp (pure `haarDensityAt` helper lives in
+  `haarTransition.ts`, 12 tests). Applied in act intermissions; biome-
+  crossing integration ships with the BiomeController hook.
+- Cailleach cold-blue tint variant — hook `setColor` off the boss-presence
+  event; trivial once Cailleach event dispatches fire.
+

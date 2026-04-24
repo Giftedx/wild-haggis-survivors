@@ -30,6 +30,8 @@ import { createRouteCard } from '../ui/routeCard';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
 import { HaarFogController } from '../systems/shaders/HaarFogController';
+import { capHaarForA11y } from '../systems/shaders/haarA11y';
+import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -71,23 +73,33 @@ export class ActIntermissionScene extends Phaser.Scene {
   }
 
   /**
-   * F1 — apply a haar-fog filter to this scene's camera, ramping from 0 to
-   * ~0.8 density over 800 ms while the picker fades in. The filter lives on
-   * the scene's own camera; tearing down the scene removes it automatically.
-   * WebGL-only — Canvas renderer silently skips (Phaser's filter system
-   * no-ops there).
+   * F1 — apply a haar-fog filter to this scene's camera, ramping density
+   * from 0 up to the a11y-capped target over the ramp-in window. The filter
+   * lives on the scene's own camera; tearing down the scene removes it
+   * automatically.
+   *
+   * WebGL-only: Canvas renderer doesn't expose the filter pipeline, so this
+   * method returns early there. reduceParticles and motionScale settings
+   * cap the density + slow the ramp — see `capHaarForA11y`.
    */
   private applyHaarWash(): void {
+    if (this.sys.game.renderer.type !== Phaser.WEBGL) return;
     const cam = this.cameras.main;
     const filters = cam.filters;
     if (!filters) return;
     try {
+      const { motionScale, reduceParticles } = getSettingsManager().load();
+      const target = capHaarForA11y(
+        { motionScale, reduceParticles },
+        0.8,
+        DEFAULT_HAAR_TRANSITION,
+      );
       this.haar = new HaarFogController(cam, { density: 0 });
       filters.internal.add(this.haar);
       this.tweens.add({
         targets: this.haar.state,
-        density: 0.8,
-        duration: 800,
+        density: target.density,
+        duration: target.transition.rampInMs,
         ease: 'Sine.easeOut',
       });
     } catch {
