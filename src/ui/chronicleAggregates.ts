@@ -357,7 +357,31 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
   const routeTrail = entry.routes && entry.routes.length > 0
     ? `  ·  ${formatRouteBreadcrumb(entry.routes)}`
     : '';
-  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}`;
+  // R1 M4 T27 — Relic trail. Resolves each held key through the
+  // relics catalogue; unknown keys (pre-R1 saves or corruption) are
+  // silently skipped. "⟡" sigil groups the relic chips so the
+  // subline reads visually distinct from weapons + route.
+  const relicTrail = entry.relics && entry.relics.length > 0
+    ? `  ·  ${formatRelicTrail(entry.relics)}`
+    : '';
+  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}${relicTrail}`;
+}
+
+/**
+ * R1 M4 T27 — "⟡ Sporran, Thimble, Teapot" breadcrumb for the
+ * Chronicle subline. Names resolve through the Relic i18n pool; any
+ * key that's been cut / renamed mid-telemetry is gracefully dropped.
+ */
+function formatRelicTrail(keys: readonly string[]): string {
+  const names = keys
+    .map((k) => {
+      const nameKey = `relics.${k}.name`;
+      const resolved = t(nameKey);
+      return resolved === nameKey ? null : resolved;
+    })
+    .filter((v): v is string => v !== null);
+  if (names.length === 0) return '';
+  return `⟡ ${names.join(', ')}`;
 }
 
 /**

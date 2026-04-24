@@ -662,6 +662,44 @@ describe('formatChronicleRunSubLine', () => {
     // Trail should be the formatted breadcrumb, not raw route keys.
     expect(segments[3]).toBe(formatRouteBreadcrumb(picks));
   });
+
+  it('appends a relic trail with ⟡ sigil when relics exist (R1 M4 T27)', () => {
+    const out = formatChronicleRunSubLine(
+      entry({ relics: ['sporran_of_holding', 'grans_thimble'] as never }),
+    );
+    const segments = out.split('  ·  ');
+    // weapons | bosses | combo | ⟡ trail (no routes on this entry).
+    expect(segments).toHaveLength(4);
+    expect(segments[3]).toContain('⟡');
+    expect(segments[3]).toContain('Sporran of Holding');
+    expect(segments[3]).toContain('Gran\'s Thimble');
+  });
+
+  it('omits relic trail when the list is empty (R1 M4 T27)', () => {
+    const out = formatChronicleRunSubLine(entry({ relics: [] as never }));
+    expect(out).not.toContain('⟡');
+  });
+
+  it('silently skips unknown relic keys (e.g. cut in a future balance pass)', () => {
+    const out = formatChronicleRunSubLine(
+      entry({ relics: ['sporran_of_holding', 'nonexistent_relic'] as never }),
+    );
+    expect(out).toContain('Sporran of Holding');
+    expect(out).not.toContain('nonexistent_relic');
+  });
+
+  it('both route + relic trails co-exist when the run has both', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+    ];
+    const out = formatChronicleRunSubLine(
+      entry({ routes: picks, relics: ['bronze_clasp'] as never }),
+    );
+    const segments = out.split('  ·  ');
+    // weapons | bosses | combo | routes | relics
+    expect(segments).toHaveLength(5);
+    expect(segments[4]).toContain('⟡');
+  });
 });
 
 describe('moodSubtitleKey', () => {

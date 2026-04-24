@@ -824,6 +824,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isIronmoor: () => this.activeIronmoorRun,
       getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
       getRunName: () => this.runName,
+      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
     });
 
     if (resumeRun) {

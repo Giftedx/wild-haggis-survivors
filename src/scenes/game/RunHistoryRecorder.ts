@@ -12,6 +12,7 @@ import type { XPSystem } from '../../systems/XPSystem';
 import type { WeaponSystem } from '../../systems/WeaponSystem';
 import type { VariantDef } from '../../data/variants';
 import type { CurseKey } from '../../data/curses';
+import type { RelicKey } from '../../data/relics';
 import type { RNG } from '../../utils/rng';
 import type { RunSummary, RunResult, RunHistoryContext } from '../../utils/save';
 import type { RoutePick } from '../../data/routes';
@@ -29,6 +30,11 @@ export interface RunHistoryHooks {
   isDailyRun(): boolean;
   /** W2 Moor Road: snapshot of picker resolutions for this run. */
   getRoutePicks(): readonly RoutePick[];
+  /**
+   * R1 M4 T27 — snapshot of held Relic keys at run-end. Empty array
+   * when the player held none or the relic system wasn't active.
+   */
+  getHeldRelicKeys?(): readonly RelicKey[];
   /** W66 Ironmoor: true when this run had single-life mode on. */
   isIronmoor(): boolean;
   /**
@@ -54,6 +60,7 @@ export class RunHistoryRecorder {
     const h = this.hooks;
     const curse = h.getActiveCurseKey();
     const routes = h.getRoutePicks();
+    const relics = h.getHeldRelicKeys?.() ?? [];
     const replay = h.getReplayBlob?.() ?? null;
     const name = h.getRunName?.();
     return {
@@ -64,6 +71,7 @@ export class RunHistoryRecorder {
       runSeed: h.getRunRng().seed,
       ...(curse ? { curseKey: curse } : {}),
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
+      ...(relics.length > 0 ? { relics: [...relics] } : {}),
       ...(h.isIronmoor() ? { ironmoor: true } : {}),
       ...(replay ? { replay } : {}),
       ...(name ? { name } : {}),
@@ -78,6 +86,7 @@ export class RunHistoryRecorder {
     const h = this.hooks;
     const timestamp = (h.now ?? Date.now)();
     const routes = h.getRoutePicks();
+    const relics = h.getHeldRelicKeys?.() ?? [];
     const name = h.getRunName?.();
     h.getSaveManager().recordRunToHistory({
       timestamp,
@@ -93,6 +102,7 @@ export class RunHistoryRecorder {
       runSeed: h.getRunRng().seed,
       isDaily: h.isDailyRun(),
       ...(routes.length > 0 ? { routes: routes.slice() } : {}),
+      ...(relics.length > 0 ? { relics: [...relics] } : {}),
       ...(name ? { name } : {}),
     });
     if (h.isDailyRun()) {
