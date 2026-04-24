@@ -36,6 +36,8 @@ export class ShopScene extends Phaser.Scene {
   private footerElements: Phaser.GameObjects.GameObject[] = [];
   private goldText!: Phaser.GameObjects.Text;
   private pageText!: Phaser.GameObjects.Text;
+  /** C2 M1.5 — shared flavour-reveal strip. Hidden until a row is hovered. */
+  private flavourText!: Phaser.GameObjects.Text;
 
   constructor() {
     super({ key: 'Shop' });
@@ -76,6 +78,20 @@ export class ShopScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
+    // C2 M1.5 — flavour-reveal strip. Sits in the empty gap between the
+    // last row bottom (y=479) and the footer line (y=510). Italic subtitle
+    // style, dusty-tan. Hidden by default; row hover flips it on.
+    this.flavourText = this.add
+      .text(width / 2, 494, '',
+        textStyle('subtitle', {
+          color: COLORS_CSS.DUSTY_TAN,
+          align: 'center',
+          wordWrap: { width: width - 60 },
+        }),
+      )
+      .setOrigin(0.5)
+      .setVisible(false);
+
     this.updateHeader();
     this.renderRows();
     this.renderFooter();
@@ -105,6 +121,9 @@ export class ShopScene extends Phaser.Scene {
 
   private renderRows(): void {
     clearGameObjects(this.rowElements);
+    // Stale hovered row may have been destroyed mid-pointer (page flip).
+    // Reset the flavour strip so a phantom line doesn't linger.
+    if (this.flavourText) this.flavourText.setVisible(false);
 
     const { width } = this.scale;
     const pagination = this.getPagination();
@@ -131,7 +150,23 @@ export class ShopScene extends Phaser.Scene {
       44,
       resolveShopRowBgColor(index),
       0.82
-    );
+    ).setInteractive({ useHandCursor: false });
+    // C2 M1.5 — hover to reveal lore flavour in the footer strip. Pointer
+    // enter resolves the per-upgrade `permanentUpgrade.{key}.flavour` key
+    // and shows it; pointer leave hides. Deliberately no click affordance
+    // — the Buy button owns clicks; hover is a pure read surface.
+    rowBg.on('pointerover', () => {
+      const flavour = t(`permanentUpgrade.${upgrade.key}.flavour`);
+      // Fall back to hiding if the key is missing (defensive — the flavour
+      // fence asserts presence, but a stray future upgrade without lore
+      // should still render the shop without a dot-path leaking through).
+      if (flavour && !flavour.startsWith('permanentUpgrade.')) {
+        this.flavourText.setText(flavour).setVisible(true);
+      }
+    });
+    rowBg.on('pointerout', () => {
+      this.flavourText.setVisible(false);
+    });
     const nameText = this.add.text(34, y + 3, t(upgrade.nameKey),
       textStyle('body', { color: isMaxed ? '#73c37d' : COLORS_CSS.WHITE }),
     );
