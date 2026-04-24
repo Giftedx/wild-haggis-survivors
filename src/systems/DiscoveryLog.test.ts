@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   createEmptyDiscoveryLog,
+  discoveryLogFromJSON,
+  discoveryLogToJSON,
   recordBanterHeard,
   recordBeastieKilled,
   recordBeastieSeen,
@@ -179,5 +181,80 @@ describe('DiscoveryLog.recordBanterHeard', () => {
   it('is a no-op on empty leaf key', () => {
     const empty = createEmptyDiscoveryLog();
     expect(recordBanterHeard(empty, '', 'run-1', 1)).toBe(empty);
+  });
+});
+
+describe('DiscoveryLog serialisation', () => {
+  it('round-trips an empty log through JSON', () => {
+    const empty = createEmptyDiscoveryLog();
+    const revived = discoveryLogFromJSON(JSON.parse(JSON.stringify(discoveryLogToJSON(empty))));
+    expect(revived).toEqual(empty);
+  });
+
+  it('round-trips a populated log through JSON', () => {
+    let log = createEmptyDiscoveryLog();
+    log = recordBeastieSeen(log, 'kelpie', 'run-1', 100);
+    log = recordBeastieKilled(log, 'kelpie');
+    log = recordRoutePicked(log, 'up_the_brae', 'run-1', 150);
+    log = recordItemAcquired(log, 'thistle_shot', 'run-1', 200);
+    log = recordBanterHeard(log, 'ui.banter.gran.run_start.0', 'run-1', 250);
+
+    const revived = discoveryLogFromJSON(JSON.parse(JSON.stringify(discoveryLogToJSON(log))));
+    expect(revived).toEqual(log);
+  });
+
+  it('fromJSON on non-object returns an empty log', () => {
+    expect(discoveryLogFromJSON(null)).toEqual(createEmptyDiscoveryLog());
+    expect(discoveryLogFromJSON(undefined)).toEqual(createEmptyDiscoveryLog());
+    expect(discoveryLogFromJSON('nope')).toEqual(createEmptyDiscoveryLog());
+    expect(discoveryLogFromJSON([1, 2, 3])).toEqual(createEmptyDiscoveryLog());
+  });
+
+  it('fromJSON drops malformed beastie entries but keeps good ones', () => {
+    const revived = discoveryLogFromJSON({
+      beastiesSeen: {
+        kelpie: { firstSeenAt: { runId: 'run-1', timestamp: 100 }, seenCount: 3, killCount: 2 },
+        broken_no_seen: { firstSeenAt: { runId: 'run-1', timestamp: 1 } },
+        broken_bad_first: { firstSeenAt: 'not an object', seenCount: 1, killCount: 0 },
+        broken_neg_count: {
+          firstSeenAt: { runId: 'run-1', timestamp: 1 },
+          seenCount: -5,
+          killCount: 0,
+        },
+      },
+      routesVisited: {},
+      findsAcquired: {},
+      banterHeard: {},
+      almanacVisits: 0,
+    });
+    expect(Object.keys(revived.beastiesSeen)).toEqual(['kelpie']);
+    expect(revived.beastiesSeen.kelpie.seenCount).toBe(3);
+  });
+
+  it('fromJSON tolerates missing subsections and defaults them', () => {
+    const revived = discoveryLogFromJSON({ almanacVisits: 7 });
+    expect(revived.beastiesSeen).toEqual({});
+    expect(revived.routesVisited).toEqual({});
+    expect(revived.findsAcquired).toEqual({});
+    expect(revived.banterHeard).toEqual({});
+    expect(revived.almanacVisits).toBe(7);
+  });
+
+  it('fromJSON coerces non-integer almanacVisits to 0', () => {
+    expect(discoveryLogFromJSON({ almanacVisits: 'seven' }).almanacVisits).toBe(0);
+    expect(discoveryLogFromJSON({ almanacVisits: Number.NaN }).almanacVisits).toBe(0);
+    expect(discoveryLogFromJSON({ almanacVisits: -3 }).almanacVisits).toBe(0);
+  });
+
+  it('fromJSON clamps banter hearCount to the cap on revive (defensive)', () => {
+    const revived = discoveryLogFromJSON({
+      banterHeard: {
+        'leaf.a': {
+          firstHeardAt: { runId: 'run-1', timestamp: 1 },
+          hearCount: BANTER_HEAR_COUNT_CAP + 5000,
+        },
+      },
+    });
+    expect(revived.banterHeard['leaf.a'].hearCount).toBe(BANTER_HEAR_COUNT_CAP);
   });
 });

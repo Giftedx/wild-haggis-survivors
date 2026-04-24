@@ -162,3 +162,113 @@ export function recordBanterHeard(
     banterHeard: { ...log.banterHeard, [leafKey]: entry },
   };
 }
+
+/**
+ * Serialise to a JSON-safe plain object. DiscoveryLog is already plain
+ * data, so this is essentially identity — the function exists to name
+ * the save-boundary contract and to mirror `discoveryLogFromJSON`.
+ */
+export function discoveryLogToJSON(log: DiscoveryLog): unknown {
+  return {
+    beastiesSeen: log.beastiesSeen,
+    routesVisited: log.routesVisited,
+    findsAcquired: log.findsAcquired,
+    banterHeard: log.banterHeard,
+    almanacVisits: log.almanacVisits,
+  };
+}
+
+/**
+ * Defensive coercion from persisted JSON back into a DiscoveryLog.
+ * Drops malformed entries silently (same pattern as `coerceStringArray`
+ * + `coerceRunHistoryEntry` in save.ts). Missing subsections default
+ * to empty; non-object input returns an empty log.
+ */
+export function discoveryLogFromJSON(raw: unknown): DiscoveryLog {
+  if (!isPlainRecord(raw)) return createEmptyDiscoveryLog();
+  return {
+    beastiesSeen: coerceBeastieMap(raw.beastiesSeen),
+    routesVisited: coerceRouteMap(raw.routesVisited),
+    findsAcquired: coerceFindMap(raw.findsAcquired),
+    banterHeard: coerceBanterMap(raw.banterHeard),
+    almanacVisits: coerceNonNegInt(raw.almanacVisits),
+  };
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function coerceNonNegInt(value: unknown): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return 0;
+  return Math.max(0, Math.floor(value));
+}
+
+function coerceFirstSeenAt(raw: unknown): FirstSeenAt | null {
+  if (!isPlainRecord(raw)) return null;
+  const runId = typeof raw.runId === 'string' ? raw.runId : null;
+  const timestamp =
+    typeof raw.timestamp === 'number' && Number.isFinite(raw.timestamp)
+      ? Math.floor(raw.timestamp)
+      : null;
+  if (runId === null || timestamp === null) return null;
+  return { runId, timestamp };
+}
+
+function coerceBeastieMap(raw: unknown): Record<string, BeastieEntry> {
+  if (!isPlainRecord(raw)) return {};
+  const out: Record<string, BeastieEntry> = {};
+  for (const [key, rawEntry] of Object.entries(raw)) {
+    if (!key || !isPlainRecord(rawEntry)) continue;
+    const firstSeenAt = coerceFirstSeenAt(rawEntry.firstSeenAt);
+    if (!firstSeenAt) continue;
+    if (typeof rawEntry.seenCount !== 'number' || typeof rawEntry.killCount !== 'number') continue;
+    const seenCount = coerceNonNegInt(rawEntry.seenCount);
+    const killCount = coerceNonNegInt(rawEntry.killCount);
+    if (seenCount < 1) continue;
+    out[key] = { firstSeenAt, seenCount, killCount };
+  }
+  return out;
+}
+
+function coerceRouteMap(raw: unknown): Record<string, RouteEntry> {
+  if (!isPlainRecord(raw)) return {};
+  const out: Record<string, RouteEntry> = {};
+  for (const [key, rawEntry] of Object.entries(raw)) {
+    if (!key || !isPlainRecord(rawEntry)) continue;
+    const firstPickedAt = coerceFirstSeenAt(rawEntry.firstPickedAt);
+    if (!firstPickedAt) continue;
+    const pickCount = coerceNonNegInt(rawEntry.pickCount);
+    if (pickCount < 1) continue;
+    out[key] = { firstPickedAt, pickCount };
+  }
+  return out;
+}
+
+function coerceFindMap(raw: unknown): Record<string, FindEntry> {
+  if (!isPlainRecord(raw)) return {};
+  const out: Record<string, FindEntry> = {};
+  for (const [key, rawEntry] of Object.entries(raw)) {
+    if (!key || !isPlainRecord(rawEntry)) continue;
+    const firstAcquiredAt = coerceFirstSeenAt(rawEntry.firstAcquiredAt);
+    if (!firstAcquiredAt) continue;
+    const acquireCount = coerceNonNegInt(rawEntry.acquireCount);
+    if (acquireCount < 1) continue;
+    out[key] = { firstAcquiredAt, acquireCount };
+  }
+  return out;
+}
+
+function coerceBanterMap(raw: unknown): Record<string, BanterEntry> {
+  if (!isPlainRecord(raw)) return {};
+  const out: Record<string, BanterEntry> = {};
+  for (const [key, rawEntry] of Object.entries(raw)) {
+    if (!key || !isPlainRecord(rawEntry)) continue;
+    const firstHeardAt = coerceFirstSeenAt(rawEntry.firstHeardAt);
+    if (!firstHeardAt) continue;
+    const hearCount = coerceNonNegInt(rawEntry.hearCount);
+    if (hearCount < 1) continue;
+    out[key] = { firstHeardAt, hearCount: Math.min(hearCount, BANTER_HEAR_COUNT_CAP) };
+  }
+  return out;
+}
