@@ -1249,6 +1249,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.ironmoor_first_victory.a',
         'ui.banter.first_time.ironmoor_first_victory.b',
       ],
+      // R1 M4 T26 — first Relic pickup this account. Gran voice,
+      // Hearth register; fires once via `bumpFirstTimeEvent('relic_first_pickup')`.
+      relic_first_pickup: [
+        'ui.banter.first_time.relic_first_pickup.a',
+        'ui.banter.first_time.relic_first_pickup.b',
+      ],
     },
   },
   {

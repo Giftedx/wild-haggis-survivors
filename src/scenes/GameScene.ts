@@ -17,7 +17,7 @@ import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
-  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard,
+  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard, bumpFirstTimeEvent,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -1902,6 +1902,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         return;
       case 'add':
         this.relicSystem.add(relic);
+        this.onRelicAdded();
         this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
         this.juice.flashWhite(80);
         audio.playLevelUp();
@@ -1909,6 +1910,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       case 'discard_ui':
         this.openRelicDiscardModal(relic);
         return;
+    }
+  }
+
+  /**
+   * R1 M4 T26 — first-Relic reserved banter. Priority 110 (first_time
+   * pool) beats the standard relic_pickup tier so Gran's reserved line
+   * fires once per save regardless of which relic dropped first.
+   */
+  private onRelicAdded(): void {
+    if (bumpFirstTimeEvent('relic_first_pickup')) {
+      this.requestBanter('first_time', 'relic_first_pickup');
     }
   }
 
@@ -1926,6 +1938,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       uiScale: 1,
       onReplaceHeld: (slotIndex) => {
         this.relicSystem.replaceAt(slotIndex, incoming);
+        // Replacing at full sporran still counts as the first acquired
+        // relic (if it is) — fire the reserved line.
+        this.onRelicAdded();
         this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
         this.juice.flashWhite(80);
         audio.playLevelUp();

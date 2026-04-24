@@ -1896,6 +1896,11 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Ironmoor survived ance. That\'s a wee legend noo.',
           b: 'First iron-run cleared. Nae echo left — an that\'s the point.',
         },
+        /** R1 M4 T26 — first Relic ever. Gran voice, quiet reverence. */
+        relic_first_pickup: {
+          a: 'A relic, hen. Tuck it away — things like this remember ye.',
+          b: 'Away an pocket that — the glen only hands these oot ance.',
+        },
       },
       // ── Burns citations (B1 Phase 4 Task 22). Every line is a verified
       //    quotation from Robert Burns (1759-1796). Public domain.

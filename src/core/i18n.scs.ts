@@ -1643,6 +1643,11 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Ironmoor endured ance. Yon\'s a wee legend noo.',
           b: 'First iron-run cleart. Nae echo left — an yon\'s tha point.',
         },
+        /** R1 M4 T26 — first Relic ever. Grannie voice, quiet reverence. */
+        relic_first_pickup: {
+          a: 'A relic, hen. Tuck it awa — things like this mind ye.',
+          b: 'Awa an pocket yon — tha glen haunds em oot but ance.',
+        },
       },
       // ── Burns citations (B1 Phase 4 Task 22). SCS pair for
       //    ui.banter.burns_citation.*. Burns wrote in Scots; these lines
