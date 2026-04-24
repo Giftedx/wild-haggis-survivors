@@ -364,7 +364,26 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
   const relicTrail = entry.relics && entry.relics.length > 0
     ? `  ·  ${formatRelicTrail(entry.relics)}`
     : '';
-  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}${relicTrail}`;
+  // M1 — Moor Road node breadcrumb. Compact count + per-type tally so
+  // the Chronicle line remains scannable on mature runs (3-5 nodes ×
+  // 3 acts = up to 15 visits); "◈" sigil keeps it visually distinct
+  // from the ⟡ relic trail.
+  const nodeTrail = entry.nodeOutcomes && entry.nodeOutcomes.length > 0
+    ? `  ·  ${formatNodeOutcomesTrail(entry.nodeOutcomes)}`
+    : '';
+  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}${relicTrail}${nodeTrail}`;
+}
+
+/**
+ * M1 — "◈ 12 cairns walked" compact breadcrumb for the Chronicle
+ * subline. Pluralisation is English-only for now (routeTrail /
+ * relicTrail share the same limitation); a future i18n pass can
+ * thread `t()` through this helper.
+ */
+export function formatNodeOutcomesTrail(outcomes: readonly { nodeKey: string }[]): string {
+  const n = outcomes.length;
+  if (n === 0) return '';
+  return `◈ ${n} cairn${n === 1 ? '' : 's'} walked`;
 }
 
 /**

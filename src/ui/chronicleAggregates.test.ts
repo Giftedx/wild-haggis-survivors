@@ -707,6 +707,37 @@ describe('formatChronicleRunSubLine', () => {
     expect(segments).toHaveLength(5);
     expect(segments[4]).toContain('⟡');
   });
+
+  it('appends a node-cairn breadcrumb with ◈ sigil when nodeOutcomes exist (M1)', () => {
+    const out = formatChronicleRunSubLine(
+      entry({
+        nodeOutcomes: [
+          { nodeKey: 'a1_thistle_ambush', visitedAtGameTimeSec: 60 },
+          { nodeKey: 'a1_shrine_cairn', chosenRewardKey: 'buff_luck', visitedAtGameTimeSec: 120 },
+          { nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 200 },
+        ] as never,
+      }),
+    );
+    const segments = out.split('  ·  ');
+    // weapons | bosses | combo | ◈ trail (no routes / relics on this entry).
+    expect(segments).toHaveLength(4);
+    expect(segments[3]).toBe('◈ 3 cairns walked');
+  });
+
+  it('uses "cairn" (singular) for exactly 1 node', () => {
+    const out = formatChronicleRunSubLine(
+      entry({
+        nodeOutcomes: [{ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 200 }] as never,
+      }),
+    );
+    expect(out).toContain('◈ 1 cairn walked');
+    expect(out).not.toContain('cairns');
+  });
+
+  it('omits node trail when the list is empty (M1)', () => {
+    const out = formatChronicleRunSubLine(entry({ nodeOutcomes: [] as never }));
+    expect(out).not.toContain('◈');
+  });
 });
 
 describe('moodSubtitleKey', () => {
