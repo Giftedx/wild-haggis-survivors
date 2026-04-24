@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
 import type { IInput } from './iInput';
 import { clampVectorLength, gamepadStickToMove, mergeMoveVectors, clampJoystickOrigin, type ViewportSafeInsets } from './inputMath';
+import { InputMapper } from '../input/InputMapper';
 
 function readBodySafeInsets(): ViewportSafeInsets {
   if (typeof document === 'undefined' || !document.body) {
@@ -28,9 +29,7 @@ const GAMEPAD_MOVE_DEADZONE = 0.22;
  * Pause: ESC/P handled in GameScene; gamepad Start/Options (`consumeMenuPausePressed`) polled there too.
  */
 export class InputManager implements IInput {
-  private cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
-  private wasd: Record<string, Phaser.Input.Keyboard.Key> | undefined;
-  private spaceKey: Phaser.Input.Keyboard.Key | undefined;
+  private mapper: InputMapper | undefined;
 
   // Virtual joystick state (mobile)
   private joystickActive = false;
@@ -63,14 +62,7 @@ export class InputManager implements IInput {
     this.isTouchDevice = scene.sys.game.device.input.touch;
 
     if (scene.input.keyboard) {
-      this.cursors = scene.input.keyboard.createCursorKeys();
-      this.wasd = {
-        W: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
-        A: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
-        S: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
-        D: scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
-      };
-      this.spaceKey = scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+      this.mapper = new InputMapper(scene);
     }
 
     if (this.isTouchDevice) {
@@ -87,7 +79,7 @@ export class InputManager implements IInput {
     if (this.pendingTouchDash) {
       this.pendingTouchDash = false;
       edge = true;
-    } else if (this.spaceKey && Phaser.Input.Keyboard.JustDown(this.spaceKey)) {
+    } else if (this.mapper?.justDown('dash')) {
       edge = true;
     } else if (this.pollGamepadDashEdge()) {
       edge = true;
@@ -168,24 +160,24 @@ export class InputManager implements IInput {
   }
 
   private getKeyboardDirection(): { x: number; y: number } {
+    if (!this.mapper) return { x: 0, y: 0 };
+
     let x = 0;
     let y = 0;
-
-    if (this.cursors) {
-      if (this.cursors.left.isDown) x -= 1;
-      if (this.cursors.right.isDown) x += 1;
-      if (this.cursors.up.isDown) y -= 1;
-      if (this.cursors.down.isDown) y += 1;
-    }
-
-    if (this.wasd) {
-      if (this.wasd.A.isDown) x -= 1;
-      if (this.wasd.D.isDown) x += 1;
-      if (this.wasd.W.isDown) y -= 1;
-      if (this.wasd.S.isDown) y += 1;
-    }
-
+    if (this.mapper.isDown('moveLeft')) x -= 1;
+    if (this.mapper.isDown('moveRight')) x += 1;
+    if (this.mapper.isDown('moveUp')) y -= 1;
+    if (this.mapper.isDown('moveDown')) y += 1;
     return clampVectorLength(x, y, 1);
+  }
+
+  /**
+   * A1 M3 — re-read key bindings from SettingsManager. Call this after
+   * a SettingsInputScene rebind so the new key takes effect without a
+   * full scene reload. Safe to call when the scene has no keyboard.
+   */
+  refreshKeyBindings(): void {
+    this.mapper?.refresh();
   }
 
   private getGamepadMoveVector(): { x: number; y: number } {

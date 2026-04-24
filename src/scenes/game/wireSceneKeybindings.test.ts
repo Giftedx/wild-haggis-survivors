@@ -30,7 +30,7 @@ describe('wireSceneKeybindings', () => {
     expect(togglePause).not.toHaveBeenCalled();
   });
 
-  it('ESC and P both trigger togglePause', () => {
+  it('Escape and P (default pause bindings) both trigger togglePause', () => {
     const keyboard = new EventEmitter() as FakeKeyboard;
     const subs = new SubscriptionBag();
     const togglePause = vi.fn();
@@ -39,10 +39,58 @@ describe('wireSceneKeybindings', () => {
     const saveScreenshotF10 = vi.fn();
     wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, { togglePause, getDebugOverlay, saveClipF9, saveScreenshotF10 });
 
-    keyboard.emit('keydown-ESC');
+    keyboard.emit('keydown', { code: 'Escape' } as KeyboardEvent);
     expect(togglePause).toHaveBeenCalledTimes(1);
-    keyboard.emit('keydown-P');
+    keyboard.emit('keydown', { code: 'KeyP' } as KeyboardEvent);
     expect(togglePause).toHaveBeenCalledTimes(2);
+  });
+
+  it('non-bound keys do not trigger togglePause', () => {
+    const keyboard = new EventEmitter() as FakeKeyboard;
+    const subs = new SubscriptionBag();
+    const togglePause = vi.fn();
+    wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, {
+      togglePause,
+      getDebugOverlay: () => null,
+      saveClipF9: vi.fn(),
+      saveScreenshotF10: vi.fn(),
+    });
+    keyboard.emit('keydown', { code: 'KeyQ' } as KeyboardEvent);
+    keyboard.emit('keydown', { code: 'Space' } as KeyboardEvent);
+    expect(togglePause).not.toHaveBeenCalled();
+  });
+
+  it('rebinding pause to KeyQ routes that key through togglePause', () => {
+    // Stand up a fresh SettingsManager singleton with a custom binding.
+    // We import dynamically to avoid holding the singleton across tests.
+    return import('../../core/SettingsManager').then(({ getSettingsManager, resetSettingsManagerSingletonForTests }) => {
+      resetSettingsManagerSingletonForTests();
+      getSettingsManager().update((cur) => ({
+        ...cur,
+        keyBindings: {
+          ...cur.keyBindings,
+          pause: { primary: 'KeyQ' },
+        },
+      }));
+
+      const keyboard = new EventEmitter() as FakeKeyboard;
+      const subs = new SubscriptionBag();
+      const togglePause = vi.fn();
+      wireSceneKeybindings(keyboard as unknown as Phaser.Input.Keyboard.KeyboardPlugin, subs, {
+        togglePause,
+        getDebugOverlay: () => null,
+        saveClipF9: vi.fn(),
+        saveScreenshotF10: vi.fn(),
+      });
+
+      keyboard.emit('keydown', { code: 'KeyQ' } as KeyboardEvent);
+      expect(togglePause).toHaveBeenCalledTimes(1);
+      // Default binding no longer fires now that we rebound primary.
+      keyboard.emit('keydown', { code: 'Escape' } as KeyboardEvent);
+      expect(togglePause).toHaveBeenCalledTimes(1);
+
+      resetSettingsManagerSingletonForTests();
+    });
   });
 
   it('F3 toggles the debug overlay when present, no-op when null', () => {
@@ -77,8 +125,8 @@ describe('wireSceneKeybindings', () => {
       saveScreenshotF10: vi.fn(),
     });
     subs.dispose();
-    keyboard.emit('keydown-ESC');
-    keyboard.emit('keydown-P');
+    keyboard.emit('keydown', { code: 'Escape' } as KeyboardEvent);
+    keyboard.emit('keydown', { code: 'KeyP' } as KeyboardEvent);
     keyboard.emit('keydown-F3');
     expect(togglePause).not.toHaveBeenCalled();
     expect(toggle).not.toHaveBeenCalled();
