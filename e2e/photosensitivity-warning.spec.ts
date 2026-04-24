@@ -1,0 +1,142 @@
+import { expect, test } from './fixtures';
+
+/**
+ * A1 M5 — photosensitivity warning splash e2e.
+ *
+ * Contract:
+ *  1. Fresh save (no `whs_game_settings` in localStorage): the BootScene
+ *     paints its dawn cinematic then shows the splash. MainMenu must NOT
+ *     activate until the player dismisses.
+ *  2. Dismissal (Escape key here — accepted alongside Enter/Space/click
+ *     so someone hitting the universal "close" key isn't trapped) flips
+ *     `photosensitivityWarningSeen` to true in localStorage and MainMenu
+ *     activates.
+ *  3. Reload after dismissal: MainMenu activates directly, no splash.
+ *
+ * Phaser renders into a canvas so there's no DOM text to scrape. The
+ * splash-blocking-MainMenu fact is the observable signal: we poll
+ * `game.scene.isActive('MainMenu')` and compare timings.
+ *
+ * Boot dawn painting takes roughly 2.8s before the splash mounts:
+ *   400ms sky fade → 200ms overlap → 500ms mountains → 600ms dawn →
+ *   400ms mascot → 800ms hold → 400ms final fade = ~2.8s.
+ * We wait 7s on the fresh-load path, which is comfortably longer but
+ * still should never see MainMenu if the splash is correctly blocking.
+ */
+test.describe('A1 M5 photosensitivity warning splash', () => {
+  test('fresh save: splash blocks MainMenu until dismissed; flag persists through reload', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => { pageErrors.push(err.message); });
+
+    // Do NOT seed `whs_game_settings` — fresh save is the whole point.
+    // But still seed the meta save tutorial-complete flag so other
+    // first-launch UX doesn't interfere (the splash gate is independent
+    // of the tutorial; the only thing that matters is that MainMenu
+    // doesn't activate until dismissal).
+    await page.addInitScript(() => {
+      try {
+        const existingRaw = localStorage.getItem('whs_meta_save');
+        const existing = (existingRaw
+          ? (JSON.parse(existingRaw) as Record<string, unknown>)
+          : {}) as Record<string, unknown>;
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          saveVersion: 9,
+          hasCompletedTutorial: true,
+        }));
+      } catch {
+        /* ignore */
+      }
+    });
+
+    await page.goto('/');
+    const canvas = page.locator('canvas[role="application"]');
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+    await canvas.click({ position: { x: 8, y: 8 } });
+    await page.bringToFront();
+    await canvas.focus();
+
+    // Give the boot dawn cinematic + splash-mount a generous window to
+    // settle, then confirm MainMenu has NOT activated. If the splash
+    // isn't blocking, MainMenu would activate ~2.8s after boot.
+    const mainMenuBlocked = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: { isActive(k: string): boolean };
+      } }).game;
+      if (!g) return { ok: false, reason: 'no game object' };
+      const deadline = Date.now() + 7_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('MainMenu')) {
+          return { ok: false, reason: 'MainMenu activated before dismissal' };
+        }
+        await new Promise((r) => setTimeout(r, 150));
+      }
+      return { ok: true, reason: 'MainMenu blocked for 7s as expected' };
+    });
+    expect(mainMenuBlocked.ok, `${mainMenuBlocked.reason}`).toBe(true);
+
+    // Flag should still be unseen at this point. Absent settings file
+    // (null raw), absent field (undefined), or persisted-false all count
+    // as "not yet dismissed".
+    const flagBeforeDismiss = await page.evaluate(() => {
+      const raw = localStorage.getItem('whs_game_settings');
+      if (!raw) return null;
+      try { return (JSON.parse(raw) as Record<string, unknown>).photosensitivityWarningSeen; }
+      catch { return null; }
+    });
+    expect(
+      !flagBeforeDismiss,
+      `Expected unseen-or-absent, got ${JSON.stringify(flagBeforeDismiss)}`,
+    ).toBe(true);
+
+    // Dismiss via Escape (splash handler accepts Enter/Space/Escape/
+    // click; Escape is the most stable in Playwright — no focus
+    // quirks with the canvas). The splash persists the flag before
+    // firing scene.start, so by the time MainMenu is active, localStorage
+    // already has photosensitivityWarningSeen: true.
+    await page.keyboard.press('Escape');
+
+    const mainMenuAfterDismiss = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: { isActive(k: string): boolean };
+      } }).game;
+      if (!g) return false;
+      const deadline = Date.now() + 5_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('MainMenu')) return true;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return false;
+    });
+    expect(mainMenuAfterDismiss, 'MainMenu should activate after dismiss').toBe(true);
+
+    const flagAfterDismiss = await page.evaluate(() => {
+      const raw = localStorage.getItem('whs_game_settings');
+      if (!raw) return null;
+      try { return (JSON.parse(raw) as Record<string, unknown>).photosensitivityWarningSeen; }
+      catch { return null; }
+    });
+    expect(flagAfterDismiss).toBe(true);
+
+    // Reload: the flag persisted, so no splash this time — MainMenu
+    // should activate on its own as soon as the boot painting finishes.
+    await page.reload();
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+
+    const straightToMenu = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: { isActive(k: string): boolean };
+      } }).game;
+      if (!g) return false;
+      const deadline = Date.now() + 15_000;
+      while (Date.now() < deadline) {
+        if (g.scene.isActive('MainMenu')) return true;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return false;
+    });
+    expect(straightToMenu, 'Returning player must not see splash again').toBe(true);
+
+    expect(pageErrors).toEqual([]);
+  });
+});
