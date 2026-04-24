@@ -79,6 +79,16 @@ export const EN_STRINGS: LocaleTree = {
       /** Corner ribbon — shown on tiles whose curse the player has bested at least once. */
       bested_badge: '✓ BESTED',
     },
+    croft: {
+      /** Scene title — Hearth voice, kept short so the banner reads at a glance. */
+      title: 'GRAN\'S CROFT',
+      /** Sub-line under the title — Hearth warmth, Still Game register. */
+      subtitle: 'Hearth, kettle, and the kindness o\' the stove.',
+      /** Gran's opening greeting when the scene fades in. Still Game hearth. */
+      gran_greet: 'Come awa in — the kettle\'s on.',
+      /** Back button — returns the player to MenuScene (pre-T9 placeholder). */
+      back: 'BACK BEN THE HOOSE',
+    },
     chronicle: {
       // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──
       title: 'THE HERD CHRONICLE',

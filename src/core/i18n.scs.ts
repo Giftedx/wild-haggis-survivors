@@ -72,6 +72,12 @@ export const SCS_STRINGS: LocaleTree = {
       back: 'BACK',
       bested_badge: '✓ BESTED',
     },
+    croft: {
+      title: 'GRAN\'S CROFT',
+      subtitle: 'Hearth, kettle, an tha kindness o tha stove.',
+      gran_greet: 'Come awa in — tha kettle\'s on.',
+      back: 'BACK BEN THA HOOSE',
+    },
     chronicle: {
       title: 'THA HERD CHRONICLE',
       sub_empty: 'Tha page is blank. Tha moor\'s waitin — make a mark.',

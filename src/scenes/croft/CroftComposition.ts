@@ -36,9 +36,13 @@ export interface Rect extends Point {
   h: number;
 }
 
-export interface CroftLayout {
-  /** Canvas center — useful for diagnostics / fade anchors. */
-  center: Point;
+/**
+ * The drawable elements of the croft — every field is a Point or Rect
+ * so iterating CROFT_DRAW_ORDER yields a uniform geometry union.
+ * `CroftLayout` extends this with non-drawable metadata (`center`,
+ * `spriteScale`) the renderer also needs at compose time.
+ */
+export interface CroftElements {
   /** Gran herself, seated (sprite anchor). */
   gran: Point;
   /** Hearth fire anchor. */
@@ -61,6 +65,11 @@ export interface CroftLayout {
   rug: Rect;
   /** Thistle prop beside the window. */
   thistle: Point;
+}
+
+export interface CroftLayout extends CroftElements {
+  /** Canvas center — useful for diagnostics / fade anchors. */
+  center: Point;
   /** Uniform scale factor caller should apply to each sprite. */
   spriteScale: number;
 }
@@ -134,7 +143,7 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
  * All element keys in draw order (back-to-front).
  * Caller renders sprites in this order so foreground props sit on top.
  */
-export const CROFT_DRAW_ORDER: readonly (keyof CroftLayout)[] = [
+export const CROFT_DRAW_ORDER: readonly (keyof CroftElements)[] = [
   'windowView',
   'drove',
   'thistle',
@@ -147,3 +156,25 @@ export const CROFT_DRAW_ORDER: readonly (keyof CroftLayout)[] = [
   'table',
   'gran',
 ] as const;
+
+/**
+ * Phaser scene key for CroftScene. Exposed as a pure constant so
+ * tests + callers can reference it without importing the scene class
+ * (which would drag Phaser into node-env vitest).
+ */
+export const CROFT_SCENE_KEY = 'Croft';
+
+/**
+ * The i18n keys CroftScene reads at render time. Kept here so a
+ * single source of truth drives both the scene and its smoke test —
+ * adding a new string means adding it to this list, adding the EN
+ * value, and (ideally) adding the SCS overlay.
+ */
+export const CROFT_I18N_KEYS = [
+  'ui.croft.title',
+  'ui.croft.subtitle',
+  'ui.croft.gran_greet',
+  'ui.croft.back',
+] as const;
+
+export type CroftI18nKey = (typeof CROFT_I18N_KEYS)[number];
