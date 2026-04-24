@@ -641,6 +641,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onAfterPlayerDamaged: (hpBefore) => {
         if (this.player.getHp() > 0) this.tryMoorMercyLuck(hpBefore);
       },
+      modifyFireDamageTaken: (d) => this.relicEffectDriver.modifyFireDamageTaken(d),
     });
     this.hazardZones.spawn();
 
@@ -650,6 +651,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
+    // R1 M3 T20d — bronze_clasp +15% first hit per second. The driver
+    // owns the 1s window state so pause / restart behaviour follows
+    // the rest of the relic state.
+    this.weaponSystem.setHitDamageModifier((dmg, now) =>
+      this.relicEffectDriver.modifyWeaponDamage(dmg, now),
+    );
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
     this.bossHpTracker?.reset();
@@ -987,7 +994,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getUpdateTickers: () => this.updateTickers,
       getSFXManager: () => this.getSFXManager(),
       getChestDurationBonusMs: () => this.chestDurationBonusMs,
-      onCoinCollected: (amount) => { this.runScore.addCoinGold(amount); },
+      onCoinCollected: (amount) => {
+        // R1 M3 T20b — sporran_of_holding grants +2 per gold pickup.
+        this.runScore.addCoinGold(this.relicEffectDriver.modifyGoldPickup(amount));
+      },
       trackChest: (s, g) => this.chestRegistry.track(s, g),
       untrackChest: (s) => this.chestRegistry.untrack(s),
       pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
@@ -1426,7 +1436,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.player.getAttackSpeedMultiplier(),
       this.player.getCritChance(),
       this.player.getCooldownReduction(),
-      this.player.getCritDamageMultiplier()
+      // R1 M3 T20a — grans_thimble +8% crit multiplier composes on top
+      // of existing stacks so it scales with other crit bonuses rather
+      // than replacing them.
+      this.relicEffectDriver.modifyCritMultiplier(this.player.getCritDamageMultiplier()),
     );
     this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
     this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHpFraction());

@@ -48,6 +48,13 @@ export interface HazardZonesHooks {
   onPlayerKilled(): void;
   /** Lava damage only — for run-wide mechanics that care about HP thresholds. */
   onAfterPlayerDamaged?(hpBefore: number): void;
+  /**
+   * R1 M3 T20c — damp_tinder relic reduces fire hazard damage by 40%.
+   * Returns the potentially-reduced damage; default behaviour is
+   * identity. Applied after the generic `damageTakenMult` so stacking
+   * with other effects composes predictably (curses first, then relics).
+   */
+  modifyFireDamageTaken?(baseDamage: number): number;
 }
 
 interface Zone {
@@ -275,7 +282,11 @@ export class HazardZones {
         const dx = player.x - z.x;
         const dy = player.y - z.y;
         if (dx * dx + dy * dy < rSq) {
-          const hazardDmg = computeHazardDamage(LAVA_BASE_DAMAGE, this.hooks.getDamageTakenMult());
+          const afterMult = computeHazardDamage(LAVA_BASE_DAMAGE, this.hooks.getDamageTakenMult());
+          const hazardDmg = Math.max(
+            1,
+            Math.round(this.hooks.modifyFireDamageTaken?.(afterMult) ?? afterMult),
+          );
           const hpBefore = player.getHp();
           const dead = player.takeDamage(hazardDmg);
           if (!dead) {

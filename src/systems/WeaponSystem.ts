@@ -263,6 +263,19 @@ export class WeaponSystem {
     return this.curseCooldownMul;
   }
 
+  /**
+   * R1 M3 T20d — per-hit damage modifier. Called inside dealDamageToEnemy
+   * with the resolved damage + wall-clock ms; return value replaces the
+   * damage before it lands. Used for bronze_clasp's first-hit-per-second
+   * bonus. Null = identity (no modifier). Cleared on scene restart by
+   * GameScene's resetTransientRunState pass.
+   */
+  setHitDamageModifier(fn: ((damage: number, nowMs: number) => number) | null): void {
+    this.hitDamageModifier = fn;
+  }
+
+  private hitDamageModifier: ((damage: number, nowMs: number) => number) | null = null;
+
   update(delta: number, playerX: number, playerY: number): void {
     this.frameCounter++;
     this.cachePlayerX = playerX;
@@ -905,10 +918,16 @@ export class WeaponSystem {
     isCrit: boolean = false,
     weaponKey: string = 'unknown'
   ): void {
-    this.events.emit('damageDealt', enemy.x, enemy.y, damage, isCrit, weaponKey);
+    // R1 M3 T20d — bronze_clasp (+15% first hit each second) + any
+    // future per-hit modifier runs first so damageDealt + enemy.takeDamage
+    // + damage logs all see the same final number.
+    const finalDamage = this.hitDamageModifier
+      ? Math.max(0, Math.ceil(this.hitDamageModifier(damage, this.scene.time.now)))
+      : damage;
+    this.events.emit('damageDealt', enemy.x, enemy.y, finalDamage, isCrit, weaponKey);
     const wasBoss = enemy.isBoss();
     const wasElite = enemy.isElite();
-    const killed = enemy.takeDamage(damage);
+    const killed = enemy.takeDamage(finalDamage);
     if (killed) {
       this.events.emit(
         'enemyKilled',
