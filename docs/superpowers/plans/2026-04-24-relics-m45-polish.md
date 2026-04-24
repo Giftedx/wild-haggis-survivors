@@ -1,6 +1,6 @@
 # R1 Relics — M4.5 polish plan
 
-> **STATUS:** Draft. Ships after R1 M4 (`17907ec`).
+> **STATUS:** SHIPPED 2026-04-24 in commit `214e9ce`. All 5 effect wires + T29 histogram live; bundle delta +1.82 KB gzip.
 >
 > **For agentic workers:** Use superpowers:executing-plans to pick up individual tasks. Each is independently scoped — order by interest / available wire-site.
 
