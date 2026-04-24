@@ -139,6 +139,47 @@ describe('E1 SeasonalEventManager — data shape', () => {
   });
 });
 
+describe('E1 Samhain + St Andrew\'s Day — autumn events', () => {
+  it('Samhain is active across Halloween', () => {
+    expect(isSeasonalEventActive('samhain', d(2027, 10, 31))).toBe(true);
+    expect(isSeasonalEventActive('samhain', d(2027, 10, 28))).toBe(true);
+    expect(isSeasonalEventActive('samhain', d(2027, 11, 3))).toBe(true);
+  });
+
+  it('Samhain is inactive outside the window', () => {
+    expect(isSeasonalEventActive('samhain', d(2027, 10, 27))).toBe(false);
+    expect(isSeasonalEventActive('samhain', d(2027, 11, 4))).toBe(false);
+    expect(isSeasonalEventActive('samhain', d(2027, 6, 15))).toBe(false);
+  });
+
+  it('St Andrew\'s Day covers Nov 30', () => {
+    expect(isSeasonalEventActive('st_andrews', d(2027, 11, 30))).toBe(true);
+    expect(isSeasonalEventActive('st_andrews', d(2027, 11, 27))).toBe(true);
+    expect(isSeasonalEventActive('st_andrews', d(2027, 12, 3))).toBe(true);
+  });
+
+  it('St Andrew\'s Day does not bleed into Hogmanay', () => {
+    expect(isSeasonalEventActive('st_andrews', d(2027, 12, 28))).toBe(false);
+    expect(isSeasonalEventActive('hogmanay', d(2027, 11, 30))).toBe(false);
+  });
+
+  it('no two events ever overlap in `activeSeasonalEvents` across the calendar', () => {
+    // Sweep every day of the year; assert at most one event is active
+    // at any time. Catches accidental overlaps when new events ship.
+    for (let m = 1; m <= 12; m++) {
+      for (let day = 1; day <= 31; day++) {
+        // Skip impossible dates (e.g. Feb 30). The Date constructor
+        // normalises, so `new Date(2027, 1, 30)` becomes Mar 2 —
+        // filter those out by comparing the read-back month.
+        const date = d(2027, m, day);
+        if (date.getMonth() + 1 !== m) continue;
+        const active = activeSeasonalEvents(date);
+        expect(active.length).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+});
+
 describe('E1 Hogmanay — year-wrap calendar', () => {
   it('is active on New Year\'s Eve + Day', () => {
     expect(isSeasonalEventActive('hogmanay', d(2027, 12, 31))).toBe(true);

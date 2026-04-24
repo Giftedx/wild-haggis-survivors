@@ -59,6 +59,25 @@ export function isInWindow(
 }
 
 export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
+  // Samhain — Gaelic festival marking the end of harvest / start of
+  // winter. The veil between worlds thins; Cailleach ascendant.
+  // Grave-tone per DESIGN_SOUL.md. Oct 28 – Nov 3 overlaps the modern
+  // Halloween window and the older Gaelic reckoning.
+  samhain: {
+    key: 'samhain',
+    nameKey: 'seasonalEvent.samhain.name',
+    descriptionKey: 'seasonalEvent.samhain.description',
+    dateWindow: { startMonth: 10, startDay: 28, endMonth: 11, endDay: 3 },
+  },
+  // St Andrew's Day — Scottish national day (Nov 30). Warm Hearth
+  // tone; saltire imagery. ±3 days keeps the window forgiving
+  // without stretching into the Hogmanay run-up.
+  st_andrews: {
+    key: 'st_andrews',
+    nameKey: 'seasonalEvent.st_andrews.name',
+    descriptionKey: 'seasonalEvent.st_andrews.description',
+    dateWindow: { startMonth: 11, startDay: 27, endMonth: 12, endDay: 3 },
+  },
   // Hogmanay — Scottish new year, traditionally bigger than Christmas.
   // First-footing, Auld Lang Syne, Stonehaven fireballs, Edinburgh
   // street party. Window straddles 31 Dec so both NYE and early-

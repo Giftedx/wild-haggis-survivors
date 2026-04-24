@@ -2713,6 +2713,18 @@ export const SCS_STRINGS: LocaleTree = {
       badge_suffix: 'Hogmanay',
       ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
     },
+    samhain: {
+      name: 'Samhain',
+      description: 'Oct 28 – Nov 3 — tha veil\'s thin; mind yer manners.',
+      badge_suffix: 'Samhain',
+      ceremony_banner: '🕯 Samhain is live — tha Cailleach is watchin.',
+    },
+    st_andrews: {
+      name: 'St Andra\'s Day',
+      description: 'Nov 27 – Dec 3 — saltire wather on tha muir.',
+      badge_suffix: 'St Andra\'s Day',
+      ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andra\'s Day is live — haud on fer hame.',
+    },
   },
   relics: {
     sporran_of_holding: {

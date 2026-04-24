@@ -3055,6 +3055,18 @@ export const EN_STRINGS: LocaleTree = {
       badge_suffix: 'Hogmanay',
       ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
     },
+    samhain: {
+      name: 'Samhain',
+      description: 'Oct 28 – Nov 3 — the veil is thin; mind yer manners.',
+      badge_suffix: 'Samhain',
+      ceremony_banner: '🕯 Samhain is live — the Cailleach is watching.',
+    },
+    st_andrews: {
+      name: 'St Andrew\'s Day',
+      description: 'Nov 27 – Dec 3 — saltire weather on the moor.',
+      badge_suffix: 'St Andrew\'s Day',
+      ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andrew\'s Day is live — haud on fer hame.',
+    },
   },
   /**
    * R1 M4 Task 25 — Relic names, effects, flavour. 18 relics × 3

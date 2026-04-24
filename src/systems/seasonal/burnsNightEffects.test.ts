@@ -66,6 +66,20 @@ describe('E1 T9 seasonalRunStartCeremony', () => {
     expect(seasonalRunStartCeremony(d(2027, 12, 28), false)?.eventKey).toBe('hogmanay');
     expect(seasonalRunStartCeremony(d(2028, 1, 3), false)?.eventKey).toBe('hogmanay');
   });
+
+  it('Samhain ceremony fires with null stingerId (banner/banter only)', () => {
+    const ceremony = seasonalRunStartCeremony(d(2027, 10, 31), false);
+    expect(ceremony?.eventKey).toBe('samhain');
+    expect(ceremony?.stingerId).toBeNull();
+    expect(ceremony?.bannerKey).toBe('seasonalEvent.samhain.ceremony_banner');
+  });
+
+  it('St Andrew\'s Day ceremony fires with null stingerId', () => {
+    const ceremony = seasonalRunStartCeremony(d(2027, 11, 30), false);
+    expect(ceremony?.eventKey).toBe('st_andrews');
+    expect(ceremony?.stingerId).toBeNull();
+    expect(ceremony?.bannerKey).toBe('seasonalEvent.st_andrews.ceremony_banner');
+  });
 });
 
 describe('E1 T10 shouldSpawnBurnsPlatter', () => {

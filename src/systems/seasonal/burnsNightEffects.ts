@@ -23,8 +23,13 @@ import { getActiveSeasonalEventKey } from '../SeasonalEventManager';
 export interface SeasonalRunStartCeremony {
   /** Active event key (e.g. `'burns_night'`). */
   eventKey: string;
-  /** Audio id — maps to a dedicated method on AudioSystem. */
-  stingerId: string;
+  /**
+   * Audio id — maps to a dedicated method on AudioSystem. `null` when
+   * the event ships without a bespoke stinger (banner + banter + badge
+   * still fire); lets lightweight data-only events slot into the
+   * ceremony pipeline without requiring a new audio method per event.
+   */
+  stingerId: string | null;
   /** Banter context the scene should request. */
   banterContext: BanterContext;
   /** Banter sub-pool tag (picks themed lines inside the context). */
@@ -59,6 +64,19 @@ export function seasonalRunStartCeremony(
         banterContext: 'gran_commentary',
         banterTag: 'seasonal_event',
         bannerKey: 'seasonalEvent.hogmanay.ceremony_banner',
+      };
+    case 'samhain':
+    case 'st_andrews':
+      // Lightweight data-only events — banner + badge + banter fire
+      // off the generic seasonal_event pool; no dedicated stinger
+      // this ship. Adding a bespoke audio motif later is a pure
+      // switch-branch + AudioSystem method (no call-site churn).
+      return {
+        eventKey,
+        stingerId: null,
+        banterContext: 'gran_commentary',
+        banterTag: 'seasonal_event',
+        bannerKey: `seasonalEvent.${eventKey}.ceremony_banner`,
       };
     default:
       return null;
