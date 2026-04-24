@@ -88,9 +88,9 @@ export class ActIntermissionScene extends Phaser.Scene {
     const filters = cam.filters;
     if (!filters) return;
     try {
-      const { motionScale, reduceParticles } = getSettingsManager().load();
+      const { motionScale, reduceParticles, reduceFlashing } = getSettingsManager().load();
       const target = capHaarForA11y(
-        { motionScale, reduceParticles },
+        { motionScale, reduceParticles, reduceFlashing },
         0.8,
         DEFAULT_HAAR_TRANSITION,
       );

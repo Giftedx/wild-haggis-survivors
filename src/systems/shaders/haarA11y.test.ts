@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { capHaarForA11y, type HaarA11ySettings } from './haarA11y';
 
-const NEUTRAL: HaarA11ySettings = { motionScale: 1, reduceParticles: false };
+const NEUTRAL: HaarA11ySettings = {
+  motionScale: 1,
+  reduceParticles: false,
+  reduceFlashing: false,
+};
 
 describe('capHaarForA11y', () => {
   it('returns inputs unchanged at neutral settings', () => {
@@ -42,19 +46,82 @@ describe('capHaarForA11y', () => {
   });
 
   it('reduceParticles=true hard-caps density at 0.5 regardless of motionScale', () => {
-    const out = capHaarForA11y({ motionScale: 1, reduceParticles: true }, 0.8, { rampInMs: 800, holdMs: 500, rampOutMs: 1000 });
+    const out = capHaarForA11y(
+      { motionScale: 1, reduceParticles: true, reduceFlashing: false },
+      0.8,
+      { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+    );
     expect(out.density).toBe(0.5);
   });
 
   it('reduceParticles + motionScale 0 take the stricter cap', () => {
     // reduceParticles caps at 0.5; motionScale 0 caps at 0.4. The stricter
     // (lower) cap wins.
-    const out = capHaarForA11y({ motionScale: 0, reduceParticles: true }, 0.8, { rampInMs: 800, holdMs: 500, rampOutMs: 1000 });
+    const out = capHaarForA11y(
+      { motionScale: 0, reduceParticles: true, reduceFlashing: false },
+      0.8,
+      { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+    );
     expect(out.density).toBe(0.4);
   });
 
   it('clamps negative densities to 0', () => {
     const out = capHaarForA11y(NEUTRAL, -0.3, { rampInMs: 100, holdMs: 50, rampOutMs: 100 });
     expect(out.density).toBe(0);
+  });
+
+  describe('reduceFlashing', () => {
+    it('forces density cap at MIN_CAP (0.4) regardless of motionScale', () => {
+      const out = capHaarForA11y(
+        { motionScale: 1, reduceParticles: false, reduceFlashing: true },
+        0.8,
+        { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+      );
+      expect(out.density).toBe(0.4);
+    });
+
+    it('forces ramp stretch to MAX (2×) regardless of motionScale', () => {
+      const out = capHaarForA11y(
+        { motionScale: 1, reduceParticles: false, reduceFlashing: true },
+        0.8,
+        { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+      );
+      expect(out.transition.rampInMs).toBe(1600);
+      expect(out.transition.rampOutMs).toBe(2000);
+      // Hold is unchanged — same rationale as motionScale 0.
+      expect(out.transition.holdMs).toBe(500);
+    });
+
+    it('combines with reduceParticles — stricter cap still wins (0.4)', () => {
+      const out = capHaarForA11y(
+        { motionScale: 1, reduceParticles: true, reduceFlashing: true },
+        0.8,
+        { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+      );
+      // reduceParticles caps at 0.5; reduceFlashing caps at 0.4 — stricter wins.
+      expect(out.density).toBe(0.4);
+    });
+
+    it('combines with motionScale high — reduceFlashing still forces slow ramp', () => {
+      // Without reduceFlashing, motionScale=1 leaves ramps unchanged.
+      // With reduceFlashing, ramps must stretch to 2× regardless.
+      const out = capHaarForA11y(
+        { motionScale: 1, reduceParticles: false, reduceFlashing: true },
+        0.2,
+        { rampInMs: 500, holdMs: 250, rampOutMs: 500 },
+      );
+      expect(out.transition.rampInMs).toBe(1000);
+      expect(out.transition.rampOutMs).toBe(1000);
+    });
+
+    it('does not raise density beyond its inbound value', () => {
+      const out = capHaarForA11y(
+        { motionScale: 1, reduceParticles: false, reduceFlashing: true },
+        0.15,
+        { rampInMs: 800, holdMs: 500, rampOutMs: 1000 },
+      );
+      // Cap allows 0.4 but inbound is 0.15 — caps only reduce.
+      expect(out.density).toBe(0.15);
+    });
   });
 });

@@ -2257,8 +2257,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private handleBiomeEnteredForHaar(biome: BiomeId): void {
     if (!this.haarFog) return;
-    const { motionScale, reduceParticles } = getSettingsManager().load();
-    const target = biomeHaarTarget({ motionScale, reduceParticles }, biome);
+    const { motionScale, reduceParticles, reduceFlashing } = getSettingsManager().load();
+    const target = biomeHaarTarget({ motionScale, reduceParticles, reduceFlashing }, biome);
     this.tweens.killTweensOf(this.haarFog.state);
     this.tweens.add({
       targets: this.haarFog.state,
