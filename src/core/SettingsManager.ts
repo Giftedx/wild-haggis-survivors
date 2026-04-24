@@ -74,6 +74,22 @@ export interface ISettingsData {
    * absent or malformed values coerce to 'en'.
    */
   localeKey?: LocaleKey;
+  /**
+   * A1 M5 — strict photosensitivity posture. When true, caps flash alpha
+   * at 0.4, floors flash duration at 200ms, hard-caps haar density at
+   * MIN_CAP, and stretches shader ramp durations to MAX. Stronger than
+   * motionScale alone — motionScale sits on a continuum; this is a hard
+   * toggle the WCAG / PEAT guidance pairs with the "three flashes per
+   * second or fewer" rule.
+   */
+  reduceFlashing: boolean;
+  /**
+   * A1 M5 — has the player dismissed the first-launch photosensitivity
+   * warning splash? False on fresh saves; flips true on dismissal and
+   * stays sticky. No UI in the settings panel — this is a one-way
+   * acknowledgement, not a preference.
+   */
+  photosensitivityWarningSeen: boolean;
 }
 
 const LOCALE_KEYS: readonly LocaleKey[] = ['en', 'scs'];
@@ -106,6 +122,8 @@ const DEFAULT_SETTINGS: ISettingsData = {
   speedrunTimerVisible: false,
   captureEnabled: true,
   localeKey: 'en',
+  reduceFlashing: false,
+  photosensitivityWarningSeen: false,
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -214,6 +232,11 @@ export class SettingsManager {
       speedrunTimerVisible: toBool(o.speedrunTimerVisible, DEFAULT_SETTINGS.speedrunTimerVisible),
       captureEnabled: toBool(o.captureEnabled, DEFAULT_SETTINGS.captureEnabled),
       localeKey: toLocaleKey(o.localeKey, DEFAULT_SETTINGS.localeKey ?? 'en'),
+      reduceFlashing: toBool(o.reduceFlashing, DEFAULT_SETTINGS.reduceFlashing),
+      photosensitivityWarningSeen: toBool(
+        o.photosensitivityWarningSeen,
+        DEFAULT_SETTINGS.photosensitivityWarningSeen,
+      ),
     };
   }
 }

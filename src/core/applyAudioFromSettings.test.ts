@@ -40,6 +40,8 @@ const base: ISettingsData = {
   ironmoorMode: false,
   speedrunTimerVisible: false,
   captureEnabled: true,
+  reduceFlashing: false,
+  photosensitivityWarningSeen: false,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

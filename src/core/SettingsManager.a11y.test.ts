@@ -73,4 +73,69 @@ describe('accessibility settings', () => {
     expect(loaded.motionScale).toBe(1);
     expect(loaded.captionsEnabled).toBe(false);
   });
+
+  it('reduceFlashing + photosensitivityWarningSeen default to false', () => {
+    const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+    const d = s.load();
+    expect(d.reduceFlashing).toBe(false);
+    expect(d.photosensitivityWarningSeen).toBe(false);
+  });
+
+  it('persists reduceFlashing + photosensitivityWarningSeen', () => {
+    const mem = new MemoryStorage();
+    const s = new SettingsManager({ storage: mem, key: 's' });
+    s.update((cur) => ({
+      ...cur,
+      reduceFlashing: true,
+      photosensitivityWarningSeen: true,
+    }));
+    const loaded = s.load();
+    expect(loaded.reduceFlashing).toBe(true);
+    expect(loaded.photosensitivityWarningSeen).toBe(true);
+  });
+
+  it('coerces non-boolean reduceFlashing / photosensitivityWarningSeen to defaults', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 1,
+      captionsEnabled: false,
+      reduceFlashing: 'yes' as unknown as boolean,
+      photosensitivityWarningSeen: 1 as unknown as boolean,
+    }));
+    const s = new SettingsManager({ storage: mem, key: 's' });
+    const loaded = s.load();
+    expect(loaded.reduceFlashing).toBe(false);
+    expect(loaded.photosensitivityWarningSeen).toBe(false);
+  });
+
+  it('legacy save without reduceFlashing / warning-seen fields loads with defaults', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      masterVolume: 1,
+      sfxVolume: 1,
+      musicVolume: 1,
+      screenShake: true,
+      damageNumbers: true,
+      reduceParticles: false,
+      uiScale: 1,
+      highContrastUi: false,
+      motionScale: 0.5,
+      captionsEnabled: false,
+      // reduceFlashing + photosensitivityWarningSeen absent — pre-A1-M5 save
+    }));
+    const s = new SettingsManager({ storage: mem, key: 's' });
+    const loaded = s.load();
+    expect(loaded.reduceFlashing).toBe(false);
+    expect(loaded.photosensitivityWarningSeen).toBe(false);
+  });
 });

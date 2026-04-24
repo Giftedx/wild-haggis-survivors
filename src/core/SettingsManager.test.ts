@@ -66,6 +66,8 @@ describe('SettingsManager air-gap', () => {
       ironmoorMode: false,
       speedrunTimerVisible: false,
       captureEnabled: true,
+      reduceFlashing: false,
+      photosensitivityWarningSeen: false,
     });
 
     meta.reset();
@@ -122,6 +124,8 @@ describe('SettingsManager air-gap', () => {
       ironmoorMode: false,
       speedrunTimerVisible: false,
       captureEnabled: true,
+      reduceFlashing: false,
+      photosensitivityWarningSeen: false,
     });
 
     meta.reset();
@@ -173,6 +177,8 @@ describe('SettingsManager air-gap', () => {
       ironmoorMode: false,
       speedrunTimerVisible: false,
       captureEnabled: true,
+      reduceFlashing: false,
+      photosensitivityWarningSeen: false,
     });
 
     settings.reset();
@@ -203,6 +209,8 @@ describe('SettingsManager air-gap', () => {
       ironmoorMode: false,
       speedrunTimerVisible: false,
       captureEnabled: true,
+      reduceFlashing: false,
+      photosensitivityWarningSeen: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });

@@ -21,6 +21,8 @@ const makeDefaults = (): ISettingsData => ({
   speedrunTimerVisible: false,
   captureEnabled: true,
   localeKey: 'en',
+  reduceFlashing: false,
+  photosensitivityWarningSeen: false,
 });
 
 describe('performSettingsReset', () => {

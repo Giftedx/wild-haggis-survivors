@@ -21,6 +21,8 @@ const baseSettings: ISettingsData = {
   ironmoorMode: false,
   speedrunTimerVisible: false,
   captureEnabled: true,
+  reduceFlashing: false,
+  photosensitivityWarningSeen: false,
 };
 
 describe('applyLocaleFromUserSettings', () => {

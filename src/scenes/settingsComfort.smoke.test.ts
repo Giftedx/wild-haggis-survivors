@@ -62,6 +62,7 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'skipActIntermissions',
   'ironmoorMode',
   'localeKey',
+  'reduceFlashing',
 ];
 
 describe('Settings / Comfort panel smoke', () => {
@@ -96,6 +97,8 @@ describe('Settings / Comfort panel smoke', () => {
       speedrunTimerVisible: true,
       captureEnabled: false,
       localeKey: 'scs',
+      reduceFlashing: true,
+      photosensitivityWarningSeen: true,
     };
     sm.save(payload);
     const loaded = sm.load();
