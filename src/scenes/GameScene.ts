@@ -112,6 +112,7 @@ import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { RelicSystem } from '../systems/RelicSystem';
+import { RelicEffectDriver } from '../systems/relics/RelicEffectDriver';
 import { RelicPickupSpawner } from '../entities/RelicPickup';
 import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
 import { RELICS, type RelicDef, type RelicKey } from '../data/relics';
@@ -297,6 +298,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private pickupSpawner!: PickupSpawner;
   /** R1 — Relic slots + drop-roll orchestration. Fresh instance per run. */
   private relicSystem!: RelicSystem;
+  /** R1 — stateful effect dispatcher. Fresh instance per run. */
+  private relicEffectDriver!: RelicEffectDriver;
   /** R1 — Phaser-bound spawner for dropped Relic pickups. */
   private relicPickupSpawner: RelicPickupSpawner | null = null;
   private levelUpFlow!: LevelUpFlow;
@@ -403,6 +406,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.relicPickupSpawner?.destroyAll();
     this.relicPickupSpawner = null;
     this.relicSystem = new RelicSystem();
+    this.relicEffectDriver = new RelicEffectDriver(this.relicSystem);
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -1402,6 +1406,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.standingStones?.tick();
     this.reliquary?.tick();
+    // R1 — per-frame relic effect tick. Scaled delta so timer-based
+    // rare effects (Gran's Teapot damage-free seconds) pause correctly
+    // with the game rather than running off wall-clock.
+    this.relicEffectDriver?.updatePerFrame(scaledDelta);
 
     if (this.ancestralEcho) {
       const resolved = this.ancestralEcho.tick(scaledDelta);
