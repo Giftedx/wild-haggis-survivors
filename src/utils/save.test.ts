@@ -7,6 +7,8 @@ import {
   bumpAncestralEchoesTouched,
   bumpBeastieKilled,
   bumpBeastieSeen,
+  bumpItemAcquired,
+  bumpRoutePicked,
   bumpCeilidhPulsesLifetime,
   bumpFirstTimeEvent,
   bumpReliquaryCurioPick,
@@ -1215,6 +1217,45 @@ describe('lifetime-counter bumps', () => {
     const log = loadSave().discoveryLog;
     expect(Object.keys(log.beastiesSeen).sort()).toEqual(['gordon', 'tourist']);
     expect(log.beastiesSeen.gordon!.firstSeenAt).toEqual({ runId: 'run-1', timestamp: 200 });
+  });
+
+  // ── C1 M3 Task 14 + 16 route + finds bumps ─────────────────────────
+
+  it('bumpRoutePicked seeds firstPickedAt on first call, increments pickCount on repeat', () => {
+    bumpRoutePicked('up_the_brae', 'run-1', 1000);
+    bumpRoutePicked('up_the_brae', 'run-2', 9999);
+    const entry = loadSave().discoveryLog.routesVisited.up_the_brae;
+    expect(entry).toBeDefined();
+    expect(entry!.firstPickedAt).toEqual({ runId: 'run-1', timestamp: 1000 });
+    expect(entry!.pickCount).toBe(2);
+  });
+
+  it('bumpRoutePicked no-ops on empty key', () => {
+    bumpRoutePicked('', 'run-1', 1000);
+    expect(loadSave().discoveryLog.routesVisited).toEqual({});
+  });
+
+  it('bumpItemAcquired seeds firstAcquiredAt on first call, increments on repeat', () => {
+    bumpItemAcquired('thistle_shot', 'run-1', 1000);
+    bumpItemAcquired('thistle_shot', 'run-2', 5000);
+    const entry = loadSave().discoveryLog.findsAcquired.thistle_shot;
+    expect(entry).toBeDefined();
+    expect(entry!.firstAcquiredAt).toEqual({ runId: 'run-1', timestamp: 1000 });
+    expect(entry!.acquireCount).toBe(2);
+  });
+
+  it('bumpItemAcquired no-ops on empty key', () => {
+    bumpItemAcquired('', 'run-1', 1000);
+    expect(loadSave().discoveryLog.findsAcquired).toEqual({});
+  });
+
+  it('bumpItemAcquired tracks distinct find keys independently', () => {
+    bumpItemAcquired('thistle_shot', 'run-1', 100);
+    bumpItemAcquired('sporran', 'run-1', 200);
+    bumpItemAcquired('thick_hide', 'shop', 300);
+    const log = loadSave().discoveryLog.findsAcquired;
+    expect(Object.keys(log).sort()).toEqual(['sporran', 'thick_hide', 'thistle_shot']);
+    expect(log.thick_hide!.firstAcquiredAt.runId).toBe('shop');
   });
 });
 

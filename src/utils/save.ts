@@ -20,6 +20,8 @@ import {
   discoveryLogFromJSON,
   recordBeastieKilled,
   recordBeastieSeen,
+  recordItemAcquired,
+  recordRoutePicked,
   retroactiveSeedFromHistory,
   type DiscoveryLog,
   type RetroHistoryEntry,
@@ -941,6 +943,52 @@ export function flushBeastieKills(): void {
     writeSave({ ...cur, discoveryLog: log });
   } catch {
     /* best-effort — keep the buffer populated so the next flush retries */
+  }
+}
+
+/**
+ * C1 M3 Task 14 — record a Moor Road route pick into the DiscoveryLog.
+ * Called once per pick-resolve in `GameScene.launchActIntermission`.
+ * Best-effort — swallow storage errors so the act-transition never
+ * blocks gameplay. Increments `pickCount` on every call (mid-run
+ * picks can cross a save boundary, but the bag itself is the source
+ * of truth for the run; the persisted log accumulates lifetime picks).
+ */
+export function bumpRoutePicked(
+  routeKey: string,
+  runId: string,
+  timestamp: number,
+): void {
+  if (!routeKey) return;
+  try {
+    const cur = loadSave();
+    const nextLog = recordRoutePicked(cur.discoveryLog, routeKey, runId, timestamp);
+    writeSave({ ...cur, discoveryLog: nextLog });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * C1 M3 Task 16 — record an item acquisition (weapon / passive /
+ * evolution / permanent upgrade / relic) into the DiscoveryLog.
+ * Called from LevelUpFlow.apply, ShopScene.purchaseUpgrade, and
+ * the Reliquary onPick callback. Best-effort — never blocks gameplay
+ * or the shop on storage failure. Increments `acquireCount` on every
+ * call so the Finds book can show "picked 5 times" lifetime totals.
+ */
+export function bumpItemAcquired(
+  findKey: string,
+  runId: string,
+  timestamp: number,
+): void {
+  if (!findKey) return;
+  try {
+    const cur = loadSave();
+    const nextLog = recordItemAcquired(cur.discoveryLog, findKey, runId, timestamp);
+    writeSave({ ...cur, discoveryLog: nextLog });
+  } catch {
+    /* best-effort */
   }
 }
 

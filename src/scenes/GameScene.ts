@@ -16,6 +16,7 @@ import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
+  bumpRoutePicked,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -1636,6 +1637,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runActState.recordPick(pick);
       this.replayRecorder?.pushRoute(pick);
       this.runModifiers.routePicks.push(pick);
+      // C1 M3 Task 14 — persist into the DiscoveryLog so the Almanac's
+      // Weys book lights up the entry. Best-effort write; the act
+      // transition still proceeds even if the save fails.
+      bumpRoutePicked(pick.routeKey, this.discoveryRunId(), Date.now());
       this.banter?.request('route_picked', { tag: pick.routeKey });
       applyRouteModifierDeltas(this.runModifiers, route);
       // Mid-run bag writes don't propagate through the cached private
@@ -1707,6 +1712,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       atGameTimeSec,
       onResolve,
     });
+  }
+
+  /**
+   * Stable per-run discovery id used by C1 Highland Almanac persistence
+   * helpers. Mirrors `SpawnSystem.discoveryRunId` so a single run shows
+   * the same `run:${seed}` stamp across beasties / weys / finds entries.
+   * Falls back to a sentinel if the rng wasn't ready (cold scene init
+   * paths shouldn't hit this; the sentinel keeps the bump non-throwing).
+   */
+  private discoveryRunId(): string {
+    try {
+      return `run:${this.runRng.seed >>> 0}`;
+    } catch {
+      return 'run:unknown';
+    }
   }
 
   private buildRouteResumeContext(): RouteResumeContext {
