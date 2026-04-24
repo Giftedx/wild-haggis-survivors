@@ -138,4 +138,116 @@ describe('accessibility settings', () => {
     expect(loaded.reduceFlashing).toBe(false);
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
+
+  describe('Assist Mode (A1 M6)', () => {
+    it('defaults all assist-mode fields off / unity', () => {
+      const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+      const d = s.load();
+      expect(d.assistMode).toBe(false);
+      expect(d.assistModeGameSpeed).toBe(1);
+      expect(d.assistModeExtendedIFrames).toBe(false);
+      expect(d.assistModeExtendedComboWindow).toBe(false);
+      expect(d.assistModeInvincibility).toBe(false);
+    });
+
+    it('persists all assist-mode fields round-trip', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      s.update((cur) => ({
+        ...cur,
+        assistMode: true,
+        assistModeGameSpeed: 0.7,
+        assistModeExtendedIFrames: true,
+        assistModeExtendedComboWindow: true,
+        assistModeInvincibility: true,
+      }));
+      const loaded = s.load();
+      expect(loaded.assistMode).toBe(true);
+      expect(loaded.assistModeGameSpeed).toBe(0.7);
+      expect(loaded.assistModeExtendedIFrames).toBe(true);
+      expect(loaded.assistModeExtendedComboWindow).toBe(true);
+      expect(loaded.assistModeInvincibility).toBe(true);
+    });
+
+    it('clamps assistModeGameSpeed to [0.5, 1]', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      s.update((cur) => ({ ...cur, assistModeGameSpeed: 2.5 }));
+      expect(s.load().assistModeGameSpeed).toBe(1);
+      s.update((cur) => ({ ...cur, assistModeGameSpeed: 0.1 }));
+      expect(s.load().assistModeGameSpeed).toBe(0.5);
+    });
+
+    it('coerces non-numeric assistModeGameSpeed to default 1', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        masterVolume: 1,
+        sfxVolume: 1,
+        musicVolume: 1,
+        screenShake: true,
+        damageNumbers: true,
+        reduceParticles: false,
+        uiScale: 1,
+        highContrastUi: false,
+        motionScale: 1,
+        captionsEnabled: false,
+        assistModeGameSpeed: 'slow' as unknown as number,
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      expect(s.load().assistModeGameSpeed).toBe(1);
+    });
+
+    it('coerces non-boolean assist-mode toggles to defaults', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        masterVolume: 1,
+        sfxVolume: 1,
+        musicVolume: 1,
+        screenShake: true,
+        damageNumbers: true,
+        reduceParticles: false,
+        uiScale: 1,
+        highContrastUi: false,
+        motionScale: 1,
+        captionsEnabled: false,
+        assistMode: 'on' as unknown as boolean,
+        assistModeExtendedIFrames: 1 as unknown as boolean,
+        assistModeExtendedComboWindow: null as unknown as boolean,
+        assistModeInvincibility: {} as unknown as boolean,
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      expect(loaded.assistMode).toBe(false);
+      expect(loaded.assistModeExtendedIFrames).toBe(false);
+      expect(loaded.assistModeExtendedComboWindow).toBe(false);
+      expect(loaded.assistModeInvincibility).toBe(false);
+    });
+
+    it('legacy save without assist-mode fields loads with defaults', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        masterVolume: 1,
+        sfxVolume: 1,
+        musicVolume: 1,
+        screenShake: true,
+        damageNumbers: true,
+        reduceParticles: false,
+        uiScale: 1,
+        highContrastUi: false,
+        motionScale: 1,
+        captionsEnabled: false,
+        // assistMode fields absent — pre-A1-M6 save
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      expect(loaded.assistMode).toBe(false);
+      expect(loaded.assistModeGameSpeed).toBe(1);
+      expect(loaded.assistModeExtendedIFrames).toBe(false);
+      expect(loaded.assistModeExtendedComboWindow).toBe(false);
+      expect(loaded.assistModeInvincibility).toBe(false);
+    });
+  });
 });

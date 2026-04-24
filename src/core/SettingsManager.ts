@@ -90,6 +90,24 @@ export interface ISettingsData {
    * acknowledgement, not a preference.
    */
   photosensitivityWarningSeen: boolean;
+  /**
+   * A1 M6 — Assist Mode master toggle. When true, the Settings panel
+   * reveals the sub-settings below. Effects themselves are stubbed in
+   * M6 and wired in Phase 2 — this scaffold only persists the prefs.
+   */
+  assistMode: boolean;
+  /**
+   * A1 M6 — gameplay speed multiplier under Assist Mode (0.5–1.0).
+   * 1.0 = normal. Clamped to a half-speed floor so the game stays
+   * playable without crossing into stall territory.
+   */
+  assistModeGameSpeed: number;
+  /** A1 M6 — extend post-hit iframe window (Phase 2 wires effect). */
+  assistModeExtendedIFrames: boolean;
+  /** A1 M6 — extend combo-drop grace window (Phase 2 wires effect). */
+  assistModeExtendedComboWindow: boolean;
+  /** A1 M6 — full invincibility (Phase 2 wires effect). */
+  assistModeInvincibility: boolean;
 }
 
 const LOCALE_KEYS: readonly LocaleKey[] = ['en', 'scs'];
@@ -124,6 +142,11 @@ const DEFAULT_SETTINGS: ISettingsData = {
   localeKey: 'en',
   reduceFlashing: false,
   photosensitivityWarningSeen: false,
+  assistMode: false,
+  assistModeGameSpeed: 1,
+  assistModeExtendedIFrames: false,
+  assistModeExtendedComboWindow: false,
+  assistModeInvincibility: false,
 };
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
@@ -236,6 +259,25 @@ export class SettingsManager {
       photosensitivityWarningSeen: toBool(
         o.photosensitivityWarningSeen,
         DEFAULT_SETTINGS.photosensitivityWarningSeen,
+      ),
+      assistMode: toBool(o.assistMode, DEFAULT_SETTINGS.assistMode),
+      assistModeGameSpeed: clampRange(
+        o.assistModeGameSpeed,
+        0.5,
+        1,
+        DEFAULT_SETTINGS.assistModeGameSpeed,
+      ),
+      assistModeExtendedIFrames: toBool(
+        o.assistModeExtendedIFrames,
+        DEFAULT_SETTINGS.assistModeExtendedIFrames,
+      ),
+      assistModeExtendedComboWindow: toBool(
+        o.assistModeExtendedComboWindow,
+        DEFAULT_SETTINGS.assistModeExtendedComboWindow,
+      ),
+      assistModeInvincibility: toBool(
+        o.assistModeInvincibility,
+        DEFAULT_SETTINGS.assistModeInvincibility,
       ),
     };
   }

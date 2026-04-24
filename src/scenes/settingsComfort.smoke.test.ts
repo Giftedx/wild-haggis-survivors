@@ -100,6 +100,11 @@ describe('Settings / Comfort panel smoke', () => {
       localeKey: 'scs',
       reduceFlashing: true,
       photosensitivityWarningSeen: true,
+      assistMode: false,
+      assistModeGameSpeed: 1,
+      assistModeExtendedIFrames: false,
+      assistModeExtendedComboWindow: false,
+      assistModeInvincibility: false,
     };
     sm.save(payload);
     const loaded = sm.load();

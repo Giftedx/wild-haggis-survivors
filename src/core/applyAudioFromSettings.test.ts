@@ -42,6 +42,11 @@ const base: ISettingsData = {
   captureEnabled: true,
   reduceFlashing: false,
   photosensitivityWarningSeen: false,
+  assistMode: false,
+  assistModeGameSpeed: 1,
+  assistModeExtendedIFrames: false,
+  assistModeExtendedComboWindow: false,
+  assistModeInvincibility: false,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

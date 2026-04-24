@@ -68,6 +68,11 @@ describe('SettingsManager air-gap', () => {
       captureEnabled: true,
       reduceFlashing: false,
       photosensitivityWarningSeen: false,
+      assistMode: false,
+      assistModeGameSpeed: 1,
+      assistModeExtendedIFrames: false,
+      assistModeExtendedComboWindow: false,
+      assistModeInvincibility: false,
     });
 
     meta.reset();
@@ -126,6 +131,11 @@ describe('SettingsManager air-gap', () => {
       captureEnabled: true,
       reduceFlashing: false,
       photosensitivityWarningSeen: false,
+      assistMode: false,
+      assistModeGameSpeed: 1,
+      assistModeExtendedIFrames: false,
+      assistModeExtendedComboWindow: false,
+      assistModeInvincibility: false,
     });
 
     meta.reset();
@@ -179,6 +189,11 @@ describe('SettingsManager air-gap', () => {
       captureEnabled: true,
       reduceFlashing: false,
       photosensitivityWarningSeen: false,
+      assistMode: false,
+      assistModeGameSpeed: 1,
+      assistModeExtendedIFrames: false,
+      assistModeExtendedComboWindow: false,
+      assistModeInvincibility: false,
     });
 
     settings.reset();
@@ -211,6 +226,11 @@ describe('SettingsManager air-gap', () => {
       captureEnabled: true,
       reduceFlashing: false,
       photosensitivityWarningSeen: false,
+      assistMode: false,
+      assistModeGameSpeed: 1,
+      assistModeExtendedIFrames: false,
+      assistModeExtendedComboWindow: false,
+      assistModeInvincibility: false,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });
