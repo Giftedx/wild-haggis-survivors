@@ -91,3 +91,41 @@ export const CEILIDH_DANCERS_RIBBON_PICKUP_CHAIN_THRESHOLD = 5;
 export function applyCeilidhDancersRibbonThreshold(_defaultThreshold: number): number {
   return CEILIDH_DANCERS_RIBBON_PICKUP_CHAIN_THRESHOLD;
 }
+
+/**
+ * damp_tinder — Fire hazards deal 40% less damage to the haggis.
+ * Multiplies incoming fire damage by 0.6.
+ */
+export function applyDampTinderFireReduction(fireDamage: number): number {
+  return fireDamage * 0.6;
+}
+
+/**
+ * whisky_dram — Once per run, regain 20% max HP instantly (activated via
+ * sporran menu). State tracks whether the one-shot has been spent; a
+ * second call is a no-op that returns reference-equal state.
+ */
+export interface WhiskyDramState {
+  readonly used: boolean;
+}
+
+export interface WhiskyDramResult {
+  readonly hp: number;
+  readonly state: WhiskyDramState;
+}
+
+export const initialWhiskyDramState: WhiskyDramState = Object.freeze({
+  used: false,
+});
+
+export function applyWhiskyDramActivation(
+  currentHp: number,
+  maxHp: number,
+  state: WhiskyDramState,
+): WhiskyDramResult {
+  if (state.used) {
+    return { hp: currentHp, state };
+  }
+  const healed = Math.min(maxHp, currentHp + maxHp * 0.2);
+  return { hp: healed, state: { used: true } };
+}

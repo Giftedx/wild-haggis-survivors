@@ -3,12 +3,16 @@ import { describe, expect, it } from 'vitest';
 import {
   applyBronzeClaspFirstHit,
   applyCeilidhDancersRibbonThreshold,
+  applyDampTinderFireReduction,
   applyGransThimbleCritBonus,
   applyLuckyHeatherSprigLuck,
   applyOatcakeHealOnCircleEntry,
   applySporranOfHolding,
+  applyWhiskyDramActivation,
   initialBronzeClaspState,
+  initialWhiskyDramState,
   type BronzeClaspState,
+  type WhiskyDramState,
 } from './relicEffects';
 
 describe('sporran_of_holding', () => {
@@ -107,5 +111,53 @@ describe('ceilidh_dancers_ribbon', () => {
 
   it('handles a zero default without error', () => {
     expect(applyCeilidhDancersRibbonThreshold(0)).toBe(5);
+  });
+});
+
+describe('damp_tinder', () => {
+  it('reduces a 10-damage fire tick to 6 (×0.6)', () => {
+    expect(applyDampTinderFireReduction(10)).toBeCloseTo(6, 10);
+  });
+
+  it('returns 0 when the incoming fire damage is 0', () => {
+    expect(applyDampTinderFireReduction(0)).toBe(0);
+  });
+
+  it('scales proportionally for small and large values', () => {
+    expect(applyDampTinderFireReduction(1)).toBeCloseTo(0.6, 10);
+    expect(applyDampTinderFireReduction(100)).toBeCloseTo(60, 10);
+  });
+});
+
+describe('whisky_dram', () => {
+  it('heals 20% of max HP on first activation and marks state used', () => {
+    const result = applyWhiskyDramActivation(40, 100, initialWhiskyDramState);
+    expect(result.hp).toBe(60);
+    expect(result.state.used).toBe(true);
+  });
+
+  it('clamps the heal to maxHp (no overflow at high HP)', () => {
+    const result = applyWhiskyDramActivation(95, 100, initialWhiskyDramState);
+    expect(result.hp).toBe(100);
+    expect(result.state.used).toBe(true);
+  });
+
+  it('is inert on a second activation — HP and state both unchanged', () => {
+    const spent: WhiskyDramState = { used: true };
+    const result = applyWhiskyDramActivation(40, 100, spent);
+    expect(result.hp).toBe(40);
+    expect(result.state).toBe(spent);
+  });
+
+  it('heals from zero HP as expected (clutch activation)', () => {
+    const result = applyWhiskyDramActivation(0, 100, initialWhiskyDramState);
+    expect(result.hp).toBe(20);
+    expect(result.state.used).toBe(true);
+  });
+
+  it('does not mutate input state on activation', () => {
+    const fresh: WhiskyDramState = { used: false };
+    applyWhiskyDramActivation(50, 100, fresh);
+    expect(fresh.used).toBe(false);
   });
 });
