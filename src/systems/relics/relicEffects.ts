@@ -23,3 +23,22 @@ export function applySporranOfHolding(goldFromPickup: number): number {
 export function applyOatcakeHealOnCircleEntry(healAmount: number): number {
   return healAmount + 2;
 }
+
+/**
+ * grans_thimble — Critical hits deal +8% damage.
+ * Caller passes the current crit multiplier (e.g. 2× base) and receives
+ * the scaled value. Applied to the multiplier, not the raw damage, so the
+ * bonus scales with other crit buffs.
+ */
+export function applyGransThimbleCritBonus(critMultiplier: number): number {
+  return critMultiplier * 1.08;
+}
+
+/**
+ * lucky_heather_sprig — +3% luck (card-draw rarity bias).
+ * Additive with existing luck. Callers are responsible for any upper
+ * clamp — the helper applies the delta unconditionally.
+ */
+export function applyLuckyHeatherSprigLuck(luck: number): number {
+  return luck + 0.03;
+}
