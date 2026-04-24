@@ -188,3 +188,125 @@ export function clampPosition(pos: Position, bounds: WorldBounds): Position {
     y: Math.max(bounds.minY, Math.min(bounds.maxY, pos.y)),
   };
 }
+
+// ----------------------------------------------------------------------------
+// Proximity
+// ----------------------------------------------------------------------------
+
+/** Default radius in which the player "reaches" a node and triggers it. */
+export const NODE_TRIGGER_RADIUS_PX = 80;
+
+export interface NearestNodeResult {
+  readonly index: number;
+  readonly distance: number;
+}
+
+/**
+ * Find the nearest un-visited node within `triggerRadius` of `playerPos`.
+ * Returns `null` if no eligible node is in range. Pure — no scene coupling.
+ *
+ * Ties broken by index order (first un-visited wins) so the path reads in
+ * sequence even if two nodes happen to cluster within jitter range.
+ */
+export function findTriggerableNode(
+  state: NodeMapState,
+  playerPos: Position,
+  triggerRadius: number = NODE_TRIGGER_RADIUS_PX,
+): NearestNodeResult | null {
+  const r2 = triggerRadius * triggerRadius;
+  let best: NearestNodeResult | null = null;
+  for (let i = 0; i < state.nodes.length; i++) {
+    if (state.visited[i]) continue;
+    const pos = state.worldPositions[i];
+    const dx = pos.x - playerPos.x;
+    const dy = pos.y - playerPos.y;
+    const d2 = dx * dx + dy * dy;
+    if (d2 > r2) continue;
+    if (best === null || d2 < best.distance * best.distance) {
+      best = { index: i, distance: Math.sqrt(d2) };
+    }
+  }
+  return best;
+}
+
+/**
+ * Pointer from `playerPos` toward the next un-visited node. Returns null
+ * when every node has been visited. Angle in radians, `[-π, π]`.
+ */
+export function directionToNextNode(
+  state: NodeMapState,
+  playerPos: Position,
+): { angle: number; distance: number; targetIndex: number } | null {
+  const nextIndex = state.visited.findIndex((v) => !v);
+  if (nextIndex < 0) return null;
+  const target = state.worldPositions[nextIndex];
+  const dx = target.x - playerPos.x;
+  const dy = target.y - playerPos.y;
+  return {
+    angle: Math.atan2(dy, dx),
+    distance: Math.sqrt(dx * dx + dy * dy),
+    targetIndex: nextIndex,
+  };
+}
+
+// ----------------------------------------------------------------------------
+// System class — per-run orchestrator
+// ----------------------------------------------------------------------------
+
+export type NodeTriggerListener = (index: number, state: NodeMapState) => void;
+
+/**
+ * NodeMapSystem — holds the active map for the current act and fires a
+ * listener when the player walks within trigger range of an un-visited
+ * node. Scene owns the active state; this class stays headless so unit
+ * tests drive it without Phaser.
+ *
+ * Lifecycle per act:
+ *   1. `setMap(state)` at act start — typically right after `RunActState.
+ *      advanceToAct` + `NodeMapSystem` generator output
+ *   2. Scene calls `tick(playerPos)` each frame
+ *   3. On trigger, listener fires, scene resolves the event, scene calls
+ *      `markVisited(index, outcome)` when the event completes
+ */
+export class NodeMapSystem {
+  private state: NodeMapState | null = null;
+  private listener: NodeTriggerListener | null = null;
+  private triggerRadius: number = NODE_TRIGGER_RADIUS_PX;
+
+  setMap(state: NodeMapState | null): void {
+    this.state = state;
+  }
+
+  getMap(): NodeMapState | null {
+    return this.state;
+  }
+
+  setTriggerListener(listener: NodeTriggerListener | null): void {
+    this.listener = listener;
+  }
+
+  setTriggerRadius(px: number): void {
+    this.triggerRadius = px;
+  }
+
+  /** Called each frame with the player's world position. Fires listener on entry. */
+  tick(playerPos: Position): void {
+    if (!this.state || !this.listener) return;
+    const hit = findTriggerableNode(this.state, playerPos, this.triggerRadius);
+    if (hit === null) return;
+    this.listener(hit.index, this.state);
+  }
+
+  /** Marks the node at `index` as visited — callers pair this with a NodeOutcome log entry. */
+  markVisited(index: number): void {
+    if (!this.state) return;
+    if (index < 0 || index >= this.state.visited.length) return;
+    this.state.visited[index] = true;
+  }
+
+  reset(): void {
+    this.state = null;
+    this.listener = null;
+    this.triggerRadius = NODE_TRIGGER_RADIUS_PX;
+  }
+}

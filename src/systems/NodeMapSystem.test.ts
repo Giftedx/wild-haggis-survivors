@@ -8,7 +8,15 @@ import {
 } from '../data/nodeBanks';
 import type { NodeDef, NodeType } from '../data/nodeTypes';
 import { createRNG } from '../utils/rng';
-import { generateNodePath, placeNodes, clampPosition } from './NodeMapSystem';
+import {
+  buildNodeMapState,
+  clampPosition,
+  directionToNextNode,
+  findTriggerableNode,
+  generateNodePath,
+  NodeMapSystem,
+  placeNodes,
+} from './NodeMapSystem';
 
 function countBy(nodes: readonly NodeDef[]): Record<NodeType, number> {
   const out: Record<NodeType, number> = {
@@ -155,5 +163,136 @@ describe('clampPosition', () => {
 
   it('clamps x and y to bounds when outside', () => {
     expect(clampPosition({ x: 20, y: -5 }, { minX: 0, minY: 0, maxX: 10, maxY: 10 })).toEqual({ x: 10, y: 0 });
+  });
+});
+
+function makeFixtureMap(): ReturnType<typeof buildNodeMapState> {
+  const nodes: NodeDef[] = [
+    { key: 'n0', type: 'encounter', nameKey: 'n', weightInBank: 1, actAffinity: [1], data: {} },
+    { key: 'n1', type: 'shrine', nameKey: 'n', weightInBank: 1, actAffinity: [1], data: {} },
+    { key: 'n2', type: 'rest', nameKey: 'n', weightInBank: 1, actAffinity: [1], data: {} },
+  ];
+  const positions = [
+    { x: 0, y: 0 },
+    { x: 200, y: 0 },
+    { x: 200, y: 200 },
+  ];
+  return buildNodeMapState(1, nodes, positions);
+}
+
+describe('findTriggerableNode', () => {
+  it('returns null when no node is within range', () => {
+    const map = makeFixtureMap();
+    expect(findTriggerableNode(map, { x: 1000, y: 1000 })).toBeNull();
+  });
+
+  it('returns the node inside trigger range', () => {
+    const map = makeFixtureMap();
+    const hit = findTriggerableNode(map, { x: 10, y: 0 });
+    expect(hit?.index).toBe(0);
+    expect(hit?.distance).toBeCloseTo(10);
+  });
+
+  it('skips visited nodes', () => {
+    const map = makeFixtureMap();
+    map.visited[0] = true;
+    const hit = findTriggerableNode(map, { x: 10, y: 0 });
+    expect(hit).toBeNull();
+  });
+
+  it('ties resolve by index (earlier wins)', () => {
+    const map = makeFixtureMap();
+    // Move player exactly equidistant between n1 (200,0) and n2 (200,200)
+    const hit = findTriggerableNode(map, { x: 200, y: 100 }, 150);
+    // n1 is index 1, n2 is index 2 — earlier index wins on tie
+    expect(hit?.index).toBe(1);
+  });
+
+  it('honours a custom trigger radius', () => {
+    const map = makeFixtureMap();
+    const tight = findTriggerableNode(map, { x: 50, y: 0 }, 40);
+    expect(tight).toBeNull();
+    const loose = findTriggerableNode(map, { x: 50, y: 0 }, 60);
+    expect(loose?.index).toBe(0);
+  });
+});
+
+describe('directionToNextNode', () => {
+  it('returns angle + distance + index of the first un-visited node', () => {
+    const map = makeFixtureMap();
+    const dir = directionToNextNode(map, { x: 0, y: 0 });
+    expect(dir?.targetIndex).toBe(0);
+    expect(dir?.distance).toBe(0);
+  });
+
+  it('skips visited nodes and points at the next un-visited one', () => {
+    const map = makeFixtureMap();
+    map.visited[0] = true;
+    const dir = directionToNextNode(map, { x: 0, y: 0 });
+    expect(dir?.targetIndex).toBe(1);
+    expect(dir?.angle).toBeCloseTo(0); // n1 is east of origin
+  });
+
+  it('returns null when every node is visited', () => {
+    const map = makeFixtureMap();
+    map.visited = [true, true, true];
+    expect(directionToNextNode(map, { x: 0, y: 0 })).toBeNull();
+  });
+});
+
+describe('NodeMapSystem class', () => {
+  it('fires listener exactly once per tick-within-range before visit', () => {
+    const sys = new NodeMapSystem();
+    const map = makeFixtureMap();
+    sys.setMap(map);
+    const triggered: number[] = [];
+    sys.setTriggerListener((idx) => triggered.push(idx));
+    sys.tick({ x: 1000, y: 1000 }); // out of range
+    sys.tick({ x: 10, y: 0 });      // in range of n0
+    expect(triggered).toEqual([0]);
+  });
+
+  it('continues firing for the same node until markVisited is called', () => {
+    const sys = new NodeMapSystem();
+    sys.setMap(makeFixtureMap());
+    const triggered: number[] = [];
+    sys.setTriggerListener((idx) => triggered.push(idx));
+    sys.tick({ x: 10, y: 0 });
+    sys.tick({ x: 10, y: 0 });
+    sys.tick({ x: 10, y: 0 });
+    expect(triggered).toEqual([0, 0, 0]);
+    sys.markVisited(0);
+    sys.tick({ x: 10, y: 0 });
+    expect(triggered).toEqual([0, 0, 0]); // no new trigger — node is visited
+  });
+
+  it('no-ops with no map or no listener', () => {
+    const sys = new NodeMapSystem();
+    expect(() => sys.tick({ x: 0, y: 0 })).not.toThrow();
+    sys.setMap(makeFixtureMap());
+    expect(() => sys.tick({ x: 0, y: 0 })).not.toThrow();
+  });
+
+  it('markVisited ignores out-of-range indices', () => {
+    const sys = new NodeMapSystem();
+    sys.setMap(makeFixtureMap());
+    expect(() => sys.markVisited(-1)).not.toThrow();
+    expect(() => sys.markVisited(99)).not.toThrow();
+    expect(sys.getMap()?.visited).toEqual([false, false, false]);
+  });
+
+  it('reset clears map + listener + radius', () => {
+    const sys = new NodeMapSystem();
+    sys.setMap(makeFixtureMap());
+    sys.setTriggerListener(() => {});
+    sys.setTriggerRadius(500);
+    sys.reset();
+    expect(sys.getMap()).toBeNull();
+    const fired: number[] = [];
+    sys.setMap(makeFixtureMap());
+    sys.setTriggerListener((i) => fired.push(i));
+    sys.tick({ x: 10, y: 0 });
+    // listener reassigned after reset — should still fire
+    expect(fired).toEqual([0]);
   });
 });
