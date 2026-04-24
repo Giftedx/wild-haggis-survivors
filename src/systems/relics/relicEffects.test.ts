@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyBronzeClaspFirstHit,
+  applyCeilidhDancersRibbonThreshold,
   applyGransThimbleCritBonus,
   applyLuckyHeatherSprigLuck,
   applyOatcakeHealOnCircleEntry,
   applySporranOfHolding,
+  initialBronzeClaspState,
+  type BronzeClaspState,
 } from './relicEffects';
 
 describe('sporran_of_holding', () => {
@@ -61,5 +65,47 @@ describe('lucky_heather_sprig', () => {
 
   it('stacks without clamping (callers own upper bound)', () => {
     expect(applyLuckyHeatherSprigLuck(0.99)).toBeCloseTo(1.02, 10);
+  });
+});
+
+describe('bronze_clasp', () => {
+  it('first ever hit triggers the +15% bonus and stamps lastHitTime', () => {
+    const result = applyBronzeClaspFirstHit(100, 500, initialBronzeClaspState);
+    expect(result.damage).toBeCloseTo(115, 10);
+    expect(result.state.lastHitTime).toBe(500);
+  });
+
+  it('a second hit within 1000ms returns base damage and preserves state', () => {
+    const primed: BronzeClaspState = { lastHitTime: 500 };
+    const result = applyBronzeClaspFirstHit(100, 1200, primed);
+    expect(result.damage).toBe(100);
+    expect(result.state).toBe(primed);
+  });
+
+  it('a hit exactly 1000ms after the last one re-triggers the bonus', () => {
+    const primed: BronzeClaspState = { lastHitTime: 500 };
+    const result = applyBronzeClaspFirstHit(100, 1500, primed);
+    expect(result.damage).toBeCloseTo(115, 10);
+    expect(result.state.lastHitTime).toBe(1500);
+  });
+
+  it('does not mutate the input state when bonus fires', () => {
+    const primed: BronzeClaspState = { lastHitTime: 0 };
+    applyBronzeClaspFirstHit(10, 2000, primed);
+    expect(primed.lastHitTime).toBe(0);
+  });
+});
+
+describe('ceilidh_dancers_ribbon', () => {
+  it('returns 5 as the override threshold regardless of default', () => {
+    expect(applyCeilidhDancersRibbonThreshold(8)).toBe(5);
+  });
+
+  it('overrides even a lower default threshold to 5 (relic is the source of truth)', () => {
+    expect(applyCeilidhDancersRibbonThreshold(3)).toBe(5);
+  });
+
+  it('handles a zero default without error', () => {
+    expect(applyCeilidhDancersRibbonThreshold(0)).toBe(5);
   });
 });

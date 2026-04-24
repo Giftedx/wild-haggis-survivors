@@ -42,3 +42,52 @@ export function applyGransThimbleCritBonus(critMultiplier: number): number {
 export function applyLuckyHeatherSprigLuck(luck: number): number {
   return luck + 0.03;
 }
+
+/**
+ * bronze_clasp — First hit each second deals +15% damage.
+ *
+ * State is threaded explicitly so the helper stays pure. A hit fires the
+ * bonus iff at least 1000ms have passed since the previous bonus-triggering
+ * hit; on a successful fire the helper returns a new state with the
+ * current timestamp. Within the 1s window the input state is returned
+ * unchanged (reference-equal) and base damage passes through.
+ */
+export interface BronzeClaspState {
+  readonly lastHitTime: number; // ms; Number.NEGATIVE_INFINITY means "no hits yet".
+}
+
+export interface BronzeClaspResult {
+  readonly damage: number;
+  readonly state: BronzeClaspState;
+}
+
+export const initialBronzeClaspState: BronzeClaspState = Object.freeze({
+  lastHitTime: Number.NEGATIVE_INFINITY,
+});
+
+export function applyBronzeClaspFirstHit(
+  baseDamage: number,
+  now: number,
+  state: BronzeClaspState,
+): BronzeClaspResult {
+  const bonusActive = now - state.lastHitTime >= 1000;
+  return {
+    damage: bonusActive ? baseDamage * 1.15 : baseDamage,
+    state: bonusActive ? { lastHitTime: now } : state,
+  };
+}
+
+/**
+ * ceilidh_dancers_ribbon — Pickup-chain bonus activates at 5 in a row
+ * (default would otherwise be 8). Helper overrides whatever default the
+ * caller supplies to the relic-dictated constant, so the call-site reads:
+ *
+ *   const threshold = hasRibbon
+ *     ? applyCeilidhDancersRibbonThreshold(DEFAULT_CHAIN_THRESHOLD)
+ *     : DEFAULT_CHAIN_THRESHOLD;
+ */
+export const CEILIDH_DANCERS_RIBBON_PICKUP_CHAIN_THRESHOLD = 5;
+
+export function applyCeilidhDancersRibbonThreshold(_defaultThreshold: number): number {
+  return CEILIDH_DANCERS_RIBBON_PICKUP_CHAIN_THRESHOLD;
+}
