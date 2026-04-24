@@ -40,7 +40,11 @@ export type RelicKey =
   | 'bodhran_skin'
   | 'clootie_rag'
   | 'fishermens_net'
-  | 'midgie_repellent';
+  | 'midgie_repellent'
+  // Rare (3)
+  | 'grans_teapot'
+  | 'fingals_horn'
+  | 'stone_of_destiny_shard';
 
 export interface RelicDef {
   readonly key: RelicKey;
@@ -215,6 +219,39 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
     iconSprite: 'relic_midgie_repellent',
     particleColour: 0x6b8e23, // moss green
     dropAffinity: ['chest', 'bargain'],
+  },
+
+  // -------- Rare (3) --------
+  grans_teapot: {
+    key: 'grans_teapot',
+    rarity: 'rare',
+    nameKey: 'relics.grans_teapot.name',
+    effectKey: 'relics.grans_teapot.effect',
+    flavourKey: 'relics.grans_teapot.flavour',
+    iconSprite: 'relic_teapot',
+    particleColour: 0xf4a261, // hearth ember
+    dropAffinity: ['boss', 'chest'],
+  },
+  fingals_horn: {
+    key: 'fingals_horn',
+    rarity: 'rare',
+    nameKey: 'relics.fingals_horn.name',
+    effectKey: 'relics.fingals_horn.effect',
+    flavourKey: 'relics.fingals_horn.flavour',
+    iconSprite: 'relic_horn',
+    particleColour: 0xe8d8a0, // bone ivory
+    dropAffinity: ['boss'],
+    activate: true,
+  },
+  stone_of_destiny_shard: {
+    key: 'stone_of_destiny_shard',
+    rarity: 'rare',
+    nameKey: 'relics.stone_of_destiny_shard.name',
+    effectKey: 'relics.stone_of_destiny_shard.effect',
+    flavourKey: 'relics.stone_of_destiny_shard.flavour',
+    iconSprite: 'relic_destiny_shard',
+    particleColour: 0xd8c88c, // sandstone
+    dropAffinity: ['boss'],
   },
 };
 

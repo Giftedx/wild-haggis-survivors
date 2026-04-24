@@ -58,3 +58,27 @@ describe('RELICS — Task 2: 7 uncommon relics', () => {
     }
   });
 });
+
+describe('RELICS — Task 3: 3 rare relics', () => {
+  it('has exactly 3 rare relics', () => {
+    const rares = RELIC_KEYS.filter((k) => RELICS[k].rarity === 'rare');
+    expect(rares).toHaveLength(3);
+  });
+
+  it('expected rare keys are present and include boss-drop affinity', () => {
+    const expected: readonly RelicKey[] = [
+      'grans_teapot',
+      'fingals_horn',
+      'stone_of_destiny_shard',
+    ];
+    for (const k of expected) {
+      expect(RELICS[k]).toBeDefined();
+      expect(RELICS[k].rarity).toBe('rare');
+      expect(RELICS[k].dropAffinity.includes('boss')).toBe(true);
+    }
+  });
+
+  it("Fingal's Horn is activatable from the sporran menu", () => {
+    expect(RELICS.fingals_horn.activate).toBe(true);
+  });
+});
