@@ -17,6 +17,7 @@ import {
 } from './almanac/tabNavigation';
 import { buildBeastiesEntries } from './almanac/buildBeastiesEntries';
 import { renderBeastiesBook, type BeastiesBookHandle } from './almanac/BeastiesBook';
+import { createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
 import { loadSave } from '../utils/save';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
@@ -43,6 +44,17 @@ export class AlmanacScene extends Phaser.Scene {
   private bodyObjects: Phaser.GameObjects.GameObject[] = [];
   private tabObjects: Phaser.GameObjects.GameObject[] = [];
   private activeBookHandle: BeastiesBookHandle | null = null;
+  /**
+   * Per-book expand state. Keyed by tab so flipping between Beasties
+   * and a future Weys book doesn't collapse an open entry you were
+   * reading; switching back keeps your place.
+   */
+  private expandStates: Record<AlmanacTabKey, ExpandState> = {
+    beasties: createExpandState(),
+    weys: createExpandState(),
+    finds: createExpandState(),
+    banter: createExpandState(),
+  };
 
   constructor() {
     super({ key: 'Almanac' });
@@ -151,7 +163,14 @@ export class AlmanacScene extends Phaser.Scene {
 
     if (this.activeTab === 'beasties') {
       const entries = buildBeastiesEntries(loadSave().discoveryLog);
-      this.activeBookHandle = renderBeastiesBook(this, viewport, entries, uiScale);
+      const tab: AlmanacTabKey = 'beasties';
+      this.activeBookHandle = renderBeastiesBook(this, viewport, entries, uiScale, {
+        expandedKey: this.expandStates[tab].expandedKey,
+        onToggle: (key) => {
+          this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
+          this.renderActiveBook(width, this.scale.height, uiScale);
+        },
+      });
       return;
     }
 

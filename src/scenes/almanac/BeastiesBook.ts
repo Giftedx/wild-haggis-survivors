@@ -1,9 +1,11 @@
 import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../../config';
 import { t } from '../../core/i18n';
+import { audio } from '../../systems/AudioSystem';
 import { textStyle } from '../../ui/typography';
 import { type BeastieEntryVM, beastiesDiscoverySummary } from './buildBeastiesEntries';
 import { resolveBeastieDisplay } from './beastieDisplay';
+import { buildBeastieDetail } from './buildBeastieDetail';
 
 const GRID_COLS = 6;
 const GRID_ROWS = 6; // 36 slots — fits 30 enemies + 5 bosses with one spare
@@ -11,6 +13,9 @@ const CELL_BG_SEEN = 0x1a2236;
 const CELL_BG_UNSEEN = 0x0e1524;
 const CELL_STROKE_SEEN = 0x355079;
 const CELL_STROKE_UNSEEN = 0x1f2c48;
+const PANEL_BG = 0x12192b;
+const PANEL_STROKE = 0x355079;
+const SCRIM_COLOR = 0x000000;
 
 export interface BeastiesBookHandle {
   destroy(): void;
@@ -23,30 +28,32 @@ export interface BeastiesBookViewport {
   readonly height: number;
 }
 
+export interface BeastiesBookOpts {
+  readonly expandedKey: string | null;
+  readonly onToggle: (key: string) => void;
+}
+
 /**
- * C1 M2 Task 8 — Beasties book renderer.
+ * C1 M2 — Beasties book renderer.
  *
- * Fixed 6×6 grid at default uiScale. Each cell shows the enemy sprite
- * (if seen) and a small kill-count chip at the top-right. Progress
- * pill at the top of the viewport reads "X of Y discovered". Returns
- * a handle whose `destroy()` tears down every spawned GameObject so
- * the scene can swap tabs cleanly.
+ * Fixed 6×6 grid at default uiScale. Each cell is clickable; clicking
+ * calls `onToggle(key)`, which the scene uses to flip `expandedKey`
+ * and re-render with the detail overlay visible. Clicking the scrim
+ * or the × button also collapses.
  *
- * Silhouette handling for unseen entries lands in Task 9 — for now
- * unseen cells render the sprite at low alpha against a dimmer panel
- * so the grid still reads as populated. The final "???" + outline
- * treatment comes with the beastieDisplay helper.
+ * Returns a handle whose `destroy()` tears down every spawned
+ * GameObject so the scene can swap tabs or re-render cleanly.
  */
 export function renderBeastiesBook(
   scene: Phaser.Scene,
   viewport: BeastiesBookViewport,
   entries: readonly BeastieEntryVM[],
   uiScale: number,
+  opts: BeastiesBookOpts,
 ): BeastiesBookHandle {
   const objects: Phaser.GameObjects.GameObject[] = [];
   const { x: vx, y: vy, width: vw, height: vh } = viewport;
 
-  // Progress pill — sits above the grid, mirrors Deeds' counter pill.
   const summary = beastiesDiscoverySummary(entries);
   const progress = scene.add
     .text(vx + vw / 2, vy + 12,
@@ -56,27 +63,28 @@ export function renderBeastiesBook(
     .setScale(uiScale);
   objects.push(progress);
 
-  // Grid viewport — leaves 36px at top for the progress line.
   const gridTop = vy + 40;
   const gridHeight = Math.max(1, vh - 48);
   const cellW = vw / GRID_COLS;
   const cellH = gridHeight / GRID_ROWS;
-  // Slightly smaller sprite scale than the cell so name + kill chip
-  // fit without colliding. Small enemy sprites (16×16) scale 2×;
-  // boss sprites (64×64+) scale down to fit.
   const spriteBudget = Math.min(cellW, cellH) * 0.55;
 
   entries.forEach((entry, i) => {
     const col = i % GRID_COLS;
     const row = Math.floor(i / GRID_COLS);
-    if (row >= GRID_ROWS) return; // overflow safety — spec target is 36 slots
+    if (row >= GRID_ROWS) return;
     const cx = vx + cellW / 2 + col * cellW;
     const cy = gridTop + cellH / 2 + row * cellH;
 
     const cell = scene.add
       .rectangle(cx, cy, cellW - 6, cellH - 6,
         entry.seen ? CELL_BG_SEEN : CELL_BG_UNSEEN, 0.85)
-      .setStrokeStyle(1, entry.seen ? CELL_STROKE_SEEN : CELL_STROKE_UNSEEN, 0.9);
+      .setStrokeStyle(1, entry.seen ? CELL_STROKE_SEEN : CELL_STROKE_UNSEEN, 0.9)
+      .setInteractive({ useHandCursor: true });
+    cell.on('pointerdown', () => {
+      audio.playClick();
+      opts.onToggle(entry.key);
+    });
     objects.push(cell);
 
     const display = resolveBeastieDisplay(entry);
@@ -87,16 +95,11 @@ export function renderBeastiesBook(
       sprite.setScale(fit * (entry.isBoss ? 0.8 : 1.0));
       sprite.setAlpha(display.alpha);
       if (display.tint !== null) {
-        // Phaser tint multiplies RGB channels — setting a very dark
-        // tone collapses the sprite to a shadow silhouette while
-        // preserving the outline shape.
         sprite.setTint(display.tint);
       }
       objects.push(sprite);
     }
 
-    // Name label under the sprite — real name when seen, '???' when
-    // silhouetted. Lets players scan the grid without expanding.
     const nameLabel = scene.add
       .text(cx, cy + (cellH - 6) / 2 - 8, display.displayName,
         textStyle('small', {
@@ -108,7 +111,6 @@ export function renderBeastiesBook(
       .setScale(uiScale);
     objects.push(nameLabel);
 
-    // Kill count chip — top-right of the cell, seen-only.
     if (entry.seen && entry.killCount > 0) {
       const chip = scene.add
         .text(cx + (cellW - 6) / 2 - 6, cy - (cellH - 6) / 2 + 6,
@@ -119,8 +121,6 @@ export function renderBeastiesBook(
       objects.push(chip);
     }
 
-    // Boss marker — top-left dot so bosses read at a glance even
-    // before the player has seen them.
     if (entry.isBoss) {
       const dot = scene.add
         .text(cx - (cellW - 6) / 2 + 4, cy - (cellH - 6) / 2 + 2, '★',
@@ -133,10 +133,129 @@ export function renderBeastiesBook(
     }
   });
 
+  if (opts.expandedKey !== null) {
+    const expanded = entries.find((e) => e.key === opts.expandedKey);
+    if (expanded) {
+      renderExpandedOverlay(scene, viewport, expanded, uiScale, opts.onToggle, objects);
+    }
+  }
+
   return {
     destroy(): void {
       for (const o of objects) o.destroy();
       objects.length = 0;
     },
   };
+}
+
+function renderExpandedOverlay(
+  scene: Phaser.Scene,
+  viewport: BeastiesBookViewport,
+  entry: BeastieEntryVM,
+  uiScale: number,
+  onToggle: (key: string) => void,
+  sink: Phaser.GameObjects.GameObject[],
+): void {
+  const { x: vx, y: vy, width: vw, height: vh } = viewport;
+  const detail = buildBeastieDetail(entry);
+
+  // Scrim — sits over the grid, catches outside clicks to collapse.
+  const scrim = scene.add
+    .rectangle(vx + vw / 2, vy + vh / 2, vw, vh, SCRIM_COLOR, 0.72)
+    .setInteractive();
+  scrim.on('pointerdown', () => {
+    audio.playClick();
+    onToggle(entry.key);
+  });
+  sink.push(scrim);
+
+  // Panel — centred within the viewport. Clamped so the detail card
+  // stays visible even at high uiScale.
+  const panelW = Math.min(480, vw - 40);
+  const panelH = Math.min(300, vh - 40);
+  const panelCx = vx + vw / 2;
+  const panelCy = vy + vh / 2;
+
+  const panel = scene.add
+    .rectangle(panelCx, panelCy, panelW, panelH, PANEL_BG, 0.98)
+    .setStrokeStyle(1, PANEL_STROKE, 1)
+    .setInteractive();
+  // Panel swallows pointer events so clicks on its body don't reach
+  // the scrim behind it — otherwise tapping the lore would close
+  // the overlay.
+  panel.on('pointerdown', () => undefined);
+  sink.push(panel);
+
+  // Title
+  const title = scene.add
+    .text(panelCx, panelCy - panelH / 2 + 24, detail.titleText,
+      textStyle('heading', {
+        color: detail.isSilhouette ? COLORS_CSS.TEXT_MUTED : COLORS_CSS.WHISKY_GOLD,
+      }))
+    .setOrigin(0.5, 0)
+    .setScale(uiScale);
+  sink.push(title);
+
+  // Sprite preview — larger than the grid thumbnail so the player
+  // can actually see what they caught.
+  if (scene.textures.exists(entry.texture)) {
+    const sprite = scene.add.sprite(panelCx, panelCy - panelH / 2 + 84, entry.texture);
+    const nativeSize = Math.max(sprite.width, sprite.height, 1);
+    sprite.setScale((64 / nativeSize) * (entry.isBoss ? 0.9 : 1));
+    sprite.setAlpha(detail.isSilhouette ? 0.55 : 1);
+    if (detail.isSilhouette) sprite.setTint(0x1a2236);
+    sink.push(sprite);
+  }
+
+  // Chips row — where-found + kill count + first-seen
+  const chipsY = panelCy - panelH / 2 + 130;
+  const chipParts: string[] = [];
+  if (detail.whereFoundText) chipParts.push(detail.whereFoundText);
+  if (detail.killCountText) chipParts.push(detail.killCountText);
+  if (detail.firstSeenText) chipParts.push(detail.firstSeenText);
+  if (chipParts.length > 0) {
+    const chips = scene.add
+      .text(panelCx, chipsY, chipParts.join('  ·  '),
+        textStyle('small', { color: COLORS_CSS.TEXT_SUBTITLE, align: 'center' }))
+      .setOrigin(0.5, 0)
+      .setScale(uiScale);
+    sink.push(chips);
+  }
+
+  // Lore paragraph — i18n lookup with inline fallback so the panel
+  // stays readable even before flavour leaves ship.
+  const loreRaw = t(detail.loreKey);
+  const lore = loreRaw === detail.loreKey ? detail.loreFallback : loreRaw;
+  const loreY = panelCy - panelH / 2 + 164;
+  const loreMaxHeight = panelH - (loreY - (panelCy - panelH / 2)) - 20;
+  const loreText = scene.add
+    .text(panelCx, loreY, lore, {
+      ...textStyle('label', {
+        color: COLORS_CSS.TEXT_PRIMARY,
+        align: 'center',
+        wordWrap: { width: (panelW - 40) / Math.max(1, uiScale) },
+      }),
+      fontStyle: 'italic',
+    })
+    .setOrigin(0.5, 0)
+    .setScale(uiScale);
+  // Clamp the lore — some flavour entries (especially unseen)
+  // are long enough to push past the panel floor at large uiScale.
+  if (loreText.height * uiScale > loreMaxHeight) {
+    loreText.setScale(Math.max(0.6, loreMaxHeight / loreText.height));
+  }
+  sink.push(loreText);
+
+  // Close button — top-right corner of the panel.
+  const closeBtn = scene.add
+    .text(panelCx + panelW / 2 - 10, panelCy - panelH / 2 + 10, '×',
+      textStyle('heading', { color: COLORS_CSS.TEXT_MUTED }))
+    .setOrigin(1, 0)
+    .setScale(uiScale)
+    .setInteractive({ useHandCursor: true });
+  closeBtn.on('pointerdown', () => {
+    audio.playClick();
+    onToggle(entry.key);
+  });
+  sink.push(closeBtn);
 }
