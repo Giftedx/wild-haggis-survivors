@@ -101,3 +101,38 @@ export function burnsPlatterDamageBuff(
   if (nowMs >= pickedUpAtMs + BURNS_PLATTER_BUFF_MS) return 1;
   return BURNS_PLATTER_BUFF_MULT;
 }
+
+// ── T21 Conductor piper-layer accent ───────────────────────────────
+
+/**
+ * Minimum gap (ms) between two piper accents during a Burns Night
+ * run. Keeps the colour sparse so it reads as an event marker rather
+ * than a new instrument taking over the mix.
+ */
+export const BURNS_PIPER_ACCENT_COOLDOWN_MS = 22_000;
+
+/**
+ * Intensity threshold below which no accent fires — calm early-run
+ * stretches stay uncoloured. Matches the drone-pad's own "barely
+ * audible below 0.15" ramp so the accent joins once the music is
+ * already in combat range.
+ */
+export const BURNS_PIPER_ACCENT_MIN_INTENSITY = 0.35;
+
+/**
+ * Pure cooldown + intensity gate for the Burns Night piper-layer
+ * accent. `burnsActive` is the output of `isSeasonalEventActive`
+ * (opt-out already resolved at the call site). The caller rolls
+ * their own RNG after a `true` return so the accent lands irregularly
+ * rather than at a metronomic cadence.
+ */
+export function shouldConsiderBurnsPiperAccent(
+  nowMs: number,
+  lastAccentAtMs: number,
+  intensity: number,
+  burnsActive: boolean,
+): boolean {
+  if (!burnsActive) return false;
+  if (intensity < BURNS_PIPER_ACCENT_MIN_INTENSITY) return false;
+  return nowMs - lastAccentAtMs >= BURNS_PIPER_ACCENT_COOLDOWN_MS;
+}

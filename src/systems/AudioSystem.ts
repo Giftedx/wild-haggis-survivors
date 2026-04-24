@@ -689,6 +689,56 @@ export class AudioSystem {
   }
 
   /**
+   * E1 M4 T21 — Burns Night piper-layer accent. Smaller, softer
+   * cousin of `playBurnsPipesStinger`: low-A drone for ~0.9 s plus
+   * a two-note grace flick (A-E). Sits under combat music without
+   * taking over the mix; duck is lighter too so the accent reads
+   * as seasonal colouring, not an earcon.
+   */
+  playBurnsPiperAccent(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckPurchase);
+    const t0 = ctx.currentTime;
+
+    // Drone — short sustained A2 sawtooth, roughly 2/3 the stinger
+    // volume so combat SFX still sits on top.
+    const drone = ctx.createOscillator();
+    const droneGain = ctx.createGain();
+    drone.type = 'sawtooth';
+    drone.frequency.value = 110;
+    droneGain.gain.setValueAtTime(0, t0);
+    droneGain.gain.linearRampToValueAtTime(0.06, t0 + 0.08);
+    droneGain.gain.setValueAtTime(0.06, t0 + 0.55);
+    droneGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.9);
+    drone.connect(droneGain);
+    droneGain.connect(this.masterGain);
+    drone.start(t0);
+    drone.stop(t0 + 0.92);
+
+    // Two-note chanter flick — A4 → E5, square wave, very brief.
+    const notes = [
+      { freq: 440, start: 0.06 },
+      { freq: 659.25, start: 0.26 },
+    ];
+    for (const note of notes) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = note.freq;
+      const ns = t0 + note.start;
+      gain.gain.setValueAtTime(0, ns);
+      gain.gain.linearRampToValueAtTime(0.055, ns + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.001, ns + 0.14);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(ns);
+      osc.stop(ns + 0.16);
+    }
+  }
+
+  /**
    * Ancestral Echo touch — ghostly detuned pair with a falling pitch
    * sweep. Soft and airy; the ghost dissipates as the note decays.
    */

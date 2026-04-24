@@ -8,11 +8,14 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
+  BURNS_PIPER_ACCENT_COOLDOWN_MS,
+  BURNS_PIPER_ACCENT_MIN_INTENSITY,
   BURNS_PLATTER_BUFF_MS,
   BURNS_PLATTER_BUFF_MULT,
   BURNS_PLATTER_SPAWN_MS,
   burnsPlatterDamageBuff,
   seasonalRunStartCeremony,
+  shouldConsiderBurnsPiperAccent,
   shouldSpawnBurnsPlatter,
 } from './burnsNightEffects';
 
@@ -97,5 +100,38 @@ describe('E1 T10 burnsPlatterDamageBuff', () => {
     // A 30 s delay reliably drops the platter before the first act gate.
     expect(BURNS_PLATTER_SPAWN_MS).toBeGreaterThanOrEqual(10_000);
     expect(BURNS_PLATTER_SPAWN_MS).toBeLessThanOrEqual(60_000);
+  });
+});
+
+describe('E1 T21 shouldConsiderBurnsPiperAccent', () => {
+  it('returns false when Burns Night is not active', () => {
+    expect(shouldConsiderBurnsPiperAccent(100_000, 0, 0.7, false)).toBe(false);
+  });
+
+  it('returns false when intensity is below the combat threshold', () => {
+    expect(shouldConsiderBurnsPiperAccent(
+      100_000, 0, BURNS_PIPER_ACCENT_MIN_INTENSITY - 0.001, true,
+    )).toBe(false);
+  });
+
+  it('returns false inside the cooldown even when Burns + intensity clear', () => {
+    const last = 100_000;
+    expect(shouldConsiderBurnsPiperAccent(
+      last + BURNS_PIPER_ACCENT_COOLDOWN_MS - 1, last, 0.8, true,
+    )).toBe(false);
+  });
+
+  it('returns true once cooldown clears and intensity meets the threshold', () => {
+    const last = 100_000;
+    expect(shouldConsiderBurnsPiperAccent(
+      last + BURNS_PIPER_ACCENT_COOLDOWN_MS, last, BURNS_PIPER_ACCENT_MIN_INTENSITY, true,
+    )).toBe(true);
+    expect(shouldConsiderBurnsPiperAccent(
+      last + BURNS_PIPER_ACCENT_COOLDOWN_MS + 5_000, last, 0.9, true,
+    )).toBe(true);
+  });
+
+  it('cooldown is at least 15 s (sparse colour, not another instrument)', () => {
+    expect(BURNS_PIPER_ACCENT_COOLDOWN_MS).toBeGreaterThanOrEqual(15_000);
   });
 });

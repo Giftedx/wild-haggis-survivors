@@ -16,6 +16,14 @@ import { PianoLayer } from './PianoLayer';
 import { PercussionLayer } from './PercussionLayer';
 import { NoteScheduler } from './NoteScheduler';
 import { Conductor, GameMusicState } from './Conductor';
+import {
+  getActiveSeasonalEventKey,
+} from '../SeasonalEventManager';
+import {
+  shouldConsiderBurnsPiperAccent,
+} from '../seasonal/burnsNightEffects';
+import { audio } from '../AudioSystem';
+import { getSettingsManager } from '../../core/SettingsManager';
 
 export type { GameMusicState };
 
@@ -73,6 +81,12 @@ class ProceduralMusicEngine {
   private lastEliteAccentAtMs = 0;
   private lastBossDownAccentAtMs = 0;
   private lastMoorPianoFlourishAtMs = 0;
+  /**
+   * E1 M4 T21 — last tick (perf.now) a Burns Night piper accent
+   * fired. Reset on `start()` so a stale timestamp from a prior
+   * session never blocks the first accent after a reopen.
+   */
+  private lastBurnsPiperAccentAtMs = 0;
   private static readonly ELITE_KILL_ACCENT_COOLDOWN_MS = 3000;
   private static readonly BOSS_DOWN_ACCENT_COOLDOWN_MS = 12000;
   /** Pentatonic moor flourish — spaced so it never fights the SFX earcon. */
@@ -82,6 +96,33 @@ class ProceduralMusicEngine {
    * Cross-attenuate so moor / evolution / enrage don’t mask each other in one breath.
    * Higher-impact gestures (enrage) pull harder against the others.
    */
+  /**
+   * E1 M4 T21 — fire a quiet piper accent through the AudioSystem
+   * when a Burns Night cooldown window clears during combat-intensity
+   * music. Pure helper handles the gate; RNG trims half the eligible
+   * windows so the colour lands irregularly.
+   */
+  private maybeFireBurnsPiperAccent(intensity: number): void {
+    const disabled = getSettingsManager().load().disableSeasonalEvents;
+    const burnsActive = getActiveSeasonalEventKey(new Date(), disabled) === 'burns_night';
+    const nowMs = performance.now();
+    if (!shouldConsiderBurnsPiperAccent(nowMs, this.lastBurnsPiperAccentAtMs, intensity, burnsActive)) {
+      return;
+    }
+    // Coin-flip on top of the gate: the accent is *eligible* every
+    // cooldown window, but fires only ~50% of them (scaled up with
+    // intensity so combat peaks still get the colour).
+    const p = 0.5 + (intensity - 0.35) * 0.6;
+    if (Math.random() >= Math.min(0.9, p)) {
+      // Still mark the timestamp so we don't retry every frame; the
+      // accent gets a fresh window on the next cooldown boundary.
+      this.lastBurnsPiperAccentAtMs = nowMs;
+      return;
+    }
+    this.lastBurnsPiperAccentAtMs = nowMs;
+    audio.playBurnsPiperAccent();
+  }
+
   private attenuateOthersForMoor(): void {
     this.evolutionGlowAcc *= 0.78;
     this.enragePressureAcc *= 0.72;
@@ -202,6 +243,9 @@ class ProceduralMusicEngine {
 
   start(): void {
     if (this.playing) { this.stop(); } // force-stop if still fading out from a prior run
+    // E1 M4 T21 — zero the piper-accent timestamp so the first
+    // accent can fire as soon as cooldown clears on the new run.
+    this.lastBurnsPiperAccentAtMs = 0;
     const ctx = getAudioContext();
     if (!ctx) {
       if (!this.startRetryScheduled) {
@@ -365,6 +409,13 @@ class ProceduralMusicEngine {
     const droneDanger = Math.min(1, mood.danger + this.enragePressureAcc * 0.36);
     this.drone.applyMood(this.ctx, mood.intensity, droneDanger, mood.triumph, 2.0, moor);
     this.ambientBed.applyMood(this.ctx, moor, mood.buildDensity, mood.intensity, mood.danger);
+
+    // E1 M4 T21 — Burns Night piper accent. Pure helper gates on
+    // cooldown + intensity; a subsequent RNG roll adds the "might
+    // not fire this window" feel so the pipes don't become a
+    // metronome. `disableSeasonalEvents` collapses the gate by
+    // returning `null` from `getActiveSeasonalEventKey`.
+    this.maybeFireBurnsPiperAccent(mood.intensity);
 
     if (this.masterFilter) {
       const freq = 3500 + mood.intensity * 2000 + (moor - 0.5) * 950
