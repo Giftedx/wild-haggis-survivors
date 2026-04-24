@@ -93,6 +93,24 @@ describe('RUNES catalogue — action-chain (U1 Task 3)', () => {
   });
 });
 
+describe('RUNES i18n coverage (U1 Task 17)', () => {
+  it('every rune has an EN name / description / flavour', async () => {
+    const { setLocale, t } = await import('../core/i18n');
+    setLocale('en');
+    for (const id of Object.keys(RUNES)) {
+      const name = t(`runes.${id}.name`);
+      const desc = t(`runes.${id}.description`);
+      const flav = t(`runes.${id}.flavour`);
+      expect(name, `missing EN name for ${id}`).not.toBe(`runes.${id}.name`);
+      expect(desc, `missing EN description for ${id}`).not.toBe(`runes.${id}.description`);
+      expect(flav, `missing EN flavour for ${id}`).not.toBe(`runes.${id}.flavour`);
+      expect(name.length).toBeGreaterThan(0);
+      expect(desc.length).toBeGreaterThan(0);
+      expect(flav.length).toBeGreaterThan(0);
+    }
+  });
+});
+
 describe('RUNES catalogue — integrity (U1 Task 4)', () => {
   it('exactly 30 runes catalogued', () => {
     expect(Object.keys(RUNES)).toHaveLength(30);

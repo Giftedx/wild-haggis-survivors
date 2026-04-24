@@ -1363,6 +1363,13 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.relic_first_pickup.a',
         'ui.banter.first_time.relic_first_pickup.b',
       ],
+      // U1 Task 18 — first Rune pickup this account. Gran voice,
+      // Hearth register with a touch of Fey-wonder (cairn-age mystery).
+      // Fires once via `bumpFirstTimeEvent('rune_first_pickup')`.
+      rune_first_pickup: [
+        'ui.banter.first_time.rune_first_pickup.a',
+        'ui.banter.first_time.rune_first_pickup.b',
+      ],
     },
   },
   {

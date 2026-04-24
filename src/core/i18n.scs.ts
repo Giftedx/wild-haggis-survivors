@@ -1836,6 +1836,11 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'A relic, hen. Tuck it awa — things like this mind ye.',
           b: 'Awa an pocket yon — tha glen haunds em oot but ance.',
         },
+        /** U1 Task 18 — first Rune ever. Grannie voice, cairn-age hush. */
+        rune_first_pickup: {
+          a: 'A rune, hen — aulder than speech. Cairy it gentle.',
+          b: 'A stane carved afore tha glen had a name. Listen tae it.',
+        },
       },
       // ── Burns citations (B1 Phase 4 Task 22). SCS pair for
       //    ui.banter.burns_citation.*. Burns wrote in Scots; these lines
@@ -3072,6 +3077,130 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Stane o Destiny (shaird)',
       effect: '+50% XP frae aw sources. Boss HP +15%.',
       flavour: 'A splinter tha size o a thumbnail. Naebody notticed it missin.',
+    },
+  },
+  /** U1 Rune tier — Scots overlay. Names + descriptions carry through;
+   *  flavour lines fall back to EN under the SCS → EN subset fence. */
+  runes: {
+    haar_rune: {
+      name: 'Haar Rune',
+      description: 'While tha haar rolls in, ilka blaw lands wi twicet tha wecht.',
+    },
+    peat_rune: {
+      name: 'Peat Rune',
+      description: 'In tha bog, blaws bite harder — but tha grund is heavier tae.',
+    },
+    heather_rune: {
+      name: 'Heather Rune',
+      description: 'Ilka kill in tha heather flings oot wan extra gem.',
+    },
+    loch_rune: {
+      name: 'Loch Rune',
+      description: 'Aside open water, yer hide hauds a tenth mair.',
+    },
+    cairn_rune: {
+      name: 'Cairn Rune',
+      description: 'Airm\'s-reach o a stanin stane, luck rins thick.',
+    },
+    gloaming_rune: {
+      name: 'Gloamin Rune',
+      description: 'In tha dusk licht, yer blaws find tha saft places mair aften.',
+    },
+    frost_rune: {
+      name: 'Frost Rune',
+      description: 'In cauld country, faes move slawer. They aye did.',
+    },
+    seawrack_rune: {
+      name: 'Sea-Wrack Rune',
+      description: 'By tha coast, yer pickup-chain hauds twicet as lang.',
+    },
+    kirkyard_rune: {
+      name: 'Kirkyaird Rune',
+      description: 'Efter tha bell, faes aneath a fifth o their health jist stap.',
+    },
+    edinburgh_rune: {
+      name: 'Auld-Reekie Rune',
+      description: 'In tha urban places, coin draps come a quarter fatter.',
+    },
+    thirst_rune: {
+      name: 'Thirst Rune',
+      description: 'Unner a third o yer health, ilka blaw bites a third deeper.',
+    },
+    flush_rune: {
+      name: 'Flush Rune',
+      description: 'Abuin nine-tenths health, crit chance adds fifteen in tha hunnerd.',
+    },
+    drover_rune: {
+      name: 'Drover Rune',
+      description: 'Wi three relics in haund, ilka stat lifts by a tenth.',
+    },
+    piper_rune: {
+      name: 'Piper Rune',
+      description: 'While tha bagpipes sit on yer back, their aura raxes a quarter further.',
+    },
+    trek_rune: {
+      name: 'Trek Rune',
+      description: 'Fer tha first minute o a run, ye move a quarter faster.',
+    },
+    warden_rune: {
+      name: 'Wairden Rune',
+      description: 'Past twinty minutes on tha muir, ilka blaw lands twa-fifths harder.',
+    },
+    combo_rune: {
+      name: 'Combo Rune',
+      description: 'At a fifty-kill streak, ilka kill draps wan extra pickup.',
+    },
+    lucky_streak_rune: {
+      name: 'Lucky-Streak Rune',
+      description: 'While three or mair kists sit unopened, tha neist kill draps anither.',
+    },
+    fastburn_rune: {
+      name: 'Fast-Burn Rune',
+      description: 'Within twa seconds o a dash, ilka blaw lands haulf again as hard fer yin.',
+    },
+    evolved_rune: {
+      name: 'Evolved Rune',
+      description: 'Haudin twa or mair evolved weapons, their cooldoons shed a fifth.',
+    },
+    echo_rune: {
+      name: 'Echo Rune',
+      description: 'Ilka tenth kill roots a healin thristle whaur tha fae fell.',
+    },
+    cascade_rune: {
+      name: 'Cascade Rune',
+      description: 'Ilka kill within haulf a second o tha last stacks five in tha hunnerd damage, up tae ten deep.',
+    },
+    chorus_rune: {
+      name: 'Chorus Rune',
+      description: 'Three different kinds o fae felled in five seconds — tha muir grants a free caird reroll.',
+    },
+    storm_rune: {
+      name: 'Storm Rune',
+      description: 'A crit on a wabbit fae chains lichtnin tae three mair.',
+    },
+    ceilidh_chain_rune: {
+      name: 'Ceilidh-Chain Rune',
+      description: 'Haud a pickup-chain fer five seconds — yer health pool grows a fifth, fer tha run.',
+    },
+    drift_rune: {
+      name: 'Drift Rune',
+      description: 'Exactly five seconds efter a dash, tha first shot lands wi twicet tha bite.',
+    },
+    lairds_rune: {
+      name: 'Laird\'s Rune',
+      description: 'Fell a named elite an a shrine-buff descends, unbid.',
+    },
+    thistle_crown_rune: {
+      name: 'Thristle-Croun Rune',
+      description: 'Kill whilst staunin on thristle an a bomb bursts frae yer feet.',
+    },
+    song_rune: {
+      name: 'Sang Rune',
+      description: 'While tha music\'s bass hauds its line, yer blaws match tha tempo.',
+    },
+    pilgrim_rune: {
+      name: 'Pilgrim Rune',
+      description: 'Walk three Muir Road cairns an ilka scrap o XP grows haulf again fer tha rest o tha run.',
     },
   },
 };

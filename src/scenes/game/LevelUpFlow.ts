@@ -333,6 +333,12 @@ export class LevelUpFlow {
         this.hooks.grantRune?.(effect.runeId);
         bumpItemAcquired(effect.runeId, runId, now);
         juice.showToast(t('ui.game.upgrade_grant_rune', { name: cardTitle }), '#bca3d4');
+        // U1 Task 18 — once-per-account cairn-hush line on the first rune
+        //              pick. Subsequent rune picks fall through silently;
+        //              per-rune bespoke lines are M3+ content work.
+        if (bumpFirstTimeEvent('rune_first_pickup')) {
+          this.hooks.requestBanter?.('first_time', 'rune_first_pickup');
+        }
         break;
 
       case 'evolve_weapon':
