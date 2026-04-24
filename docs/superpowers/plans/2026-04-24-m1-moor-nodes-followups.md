@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F3 (mid-run gold-spend), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft), F8 (trader passive-grant) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers). Trader now charges the rolled `priceGold` on every pick via `RunScoreState.spendCoinGold`; balance shown in the prompt body + a persistent HUD chip; `computeGoldReward` subtracts `coinGoldSpent` so mid-run spends can't double-dip at the Golden Haggis mint. Trader passive slot grants a real unheld passive via `rollRandomUnheldPassive` + `LevelUpFlow.grantPassive`; roster-full path still refunds +40g with the legacy stub toast.
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F3 (mid-run gold-spend), F4 (shrine timed-buff bag), F5 (replay outcome consumption), F6 (Act 3 stretch switching), F7 (SCS node names draft), F8 (trader passive-grant) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Replay playback auto-applies recorded shrine / trader / bargain choices instead of re-opening the prompt. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool. Scots overlays authored for 71 node names + 28 prompts under `nodes.{a1,a2,a3s1,a3s2,a3s3,shrine,trader,rest,hidden,bargain,elite}.*` (draft — native review open alongside V2 Doric/Shetlandic blockers). Trader now charges the rolled `priceGold` on every pick via `RunScoreState.spendCoinGold`; balance shown in the prompt body + a persistent HUD chip; `computeGoldReward` subtracts `coinGoldSpent` so mid-run spends can't double-dip at the Golden Haggis mint. Trader passive slot grants a real unheld passive via `rollRandomUnheldPassive` + `LevelUpFlow.grantPassive`; roster-full path still refunds +40g with the legacy stub toast.
 
 ---
 
@@ -26,13 +26,15 @@ Same tracker handles elite nodes. Relic roll stays at trigger-time (determinism)
 
 ---
 
-## F4 — Shrine timed-buff system
+## ~~F4 — Shrine timed-buff system~~ ✅ shipped 2026-04-24 (5 of 8 buff keys, 3 parked)
 
-**Current behaviour (`applyShrineBoon`)**: the 3 picked candidates apply as *immediate* rewards (heal 20% for combat buffs; +50g for gold; XP gem for xp; one-shot relic for luck). Resolver-side `durationMs: 60000` is unused.
+`TempBuffBag` (`src/systems/TempBuffBag.ts`) owns `add(key, durationMs, apply)` / `tick(deltaMs)` / `clear()` / `revertAll()` / `has()` / `snapshot()`. Apply closures return their own revert closure, so the bag stays Player-agnostic. GameScene ticks the bag on `scaledDelta` each frame (so pause / HIT_FREEZE / slow-mo freeze the countdown the same way XP collection + spawn timing freeze), and calls `clear()` — not `revertAll()` — in the reset block because Player is rebuilt fresh on scene restart (reverting onto a stale instance would mis-apply).
 
-**Target:** real temporary-buff system. A `TempBuffBag` class holding `{ key, remainingMs, apply, revert }` entries, ticking down in `update()`; `Player` / `WeaponSystem` consumers read from it via composition so multipliers stack cleanly with existing relic effects. First-pass palette: damage mult, speed mult, armor (damage-taken mult), regen (HP/sec), crit chance, reflect %, dodge %, pickup radius. Kill-criterion: shrine-picked buffs should *feel* different from relic effects (shorter, more intense) — tune multipliers once the bag exists.
+Wired keys: `buff_damage` (+25% damage), `buff_speed` (+20% base speed), `buff_armor` (+3 flat), `buff_crit` (+15%), `buff_pickup` (+40% pickup radius). Duration is the resolver's `durationMs` (60s default). Toast format: `Shrine boon: {label} — {seconds}s` (new i18n key `nodes.ui.toast.shrine_buff_timed`, EN + SCS).
 
-**Touch-points:** `src/systems/TempBuffBag.ts` (new), `src/entities/Player.ts` (read from bag in `recalcStats`), `src/systems/WeaponSystem.ts` (cooldown + damage mult read-through), `src/scenes/GameScene.ts` (instantiate + tick + swap `applyShrineBoon`).
+**Parked (v2 follow-up):** `buff_regen` (Player.addHpRegen is cap-clamped so revert subtracting a delta > remaining room would break negative), `buff_reflect` (setThorns is a non-additive setter), `buff_dodge` (no dodge stat on Player). These three still fall back to the pre-F4 20% heal stand-in so the pick always delivers something.
+
+**Touch-points:** `src/systems/TempBuffBag.ts` (new) + test, `src/scenes/GameScene.ts` (`applyShrineBoon` rewrite + tick + clear), i18n EN + SCS.
 
 ---
 

@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { GAME, COLORS_CSS } from '../config';
+import { GAME, COLORS_CSS, PLAYER } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
@@ -88,6 +88,7 @@ import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
+import { TempBuffBag } from '../systems/TempBuffBag';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
@@ -248,6 +249,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private evolvedWeapons: string[] = [];
   /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
   private readonly runScore = new RunScoreState();
+  /** M1 F4 — timed shrine buffs. Cleared (not reverted) on scene restart. */
+  private readonly tempBuffBag = new TempBuffBag();
   /** W2 Moor Road: act number + picker history across the run. */
   private readonly runActState = new RunActState();
   /** One-time +luck draw weight when HP first crosses into the mercy band. */
@@ -466,6 +469,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pauseMenu?.close();
     this.pauseMenu = null;
     this.runScore.reset();
+    this.tempBuffBag.clear();
     this.runActState.reset();
     this.nodeMapSystem.reset();
     this.nodeWaveTracker.reset();
@@ -1606,6 +1610,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.iFrameController.tick(scaledDelta);
     this.runEndTickers.tick(delta);
 
+    // M1 F4 — shrine-granted timed buffs. Ticks on scaledDelta so pause
+    // / HIT_FREEZE / slow-mo freeze the countdown the same way they
+    // freeze XP collection and spawn timing; a paused buff at 12s
+    // remaining stays at 12s until play resumes.
+    this.tempBuffBag.tick(scaledDelta);
+
     // M1 F1+F2 — poll pending encounter/elite waves every frame (raw
     // bookkeeping; must tick regardless of the pause early-return below
     // so a wave that resolved during a COUNTDOWN / pause window still
@@ -2231,9 +2241,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /**
-   * Shrine node — prompt with 3 buff candidates. v1 applies a simple
-   * immediate reward per key (heal / gold / xp) rather than a timed
-   * buff; full temporary-buff system is a follow-up.
+   * Shrine node — prompt with 3 buff candidates. Combat-buff keys
+   * (damage / speed / armor / crit / pickup) route through `TempBuffBag`
+   * with the resolver's `durationMs`; gold / xp / luck stay immediate.
    */
   private openShrineNode(node: NodeDef, index: number): void {
     const spec = resolveShrineEvent(node, this.runRng);
@@ -2247,7 +2257,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // we run the same apply path here.
     const replayChoice = this.peekReplayChoiceFor(node.key);
     if (replayChoice !== null) {
-      if (replayChoice !== 'refused') this.applyShrineBoon(replayChoice);
+      if (replayChoice !== 'refused') this.applyShrineBoon(replayChoice, spec.durationMs);
       this.finalizeNodeVisit(index, node.key, replayChoice);
       return;
     }
@@ -2261,29 +2271,75 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       })),
       allowSkip: true,
       onResolve: (chosenKey) => {
-        if (chosenKey) this.applyShrineBoon(chosenKey);
+        if (chosenKey) this.applyShrineBoon(chosenKey, spec.durationMs);
         this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
       },
     });
   }
 
   /**
-   * Apply a shrine boon's immediate effect. v1 handles a curated set
-   * of keys with direct rewards; unknown keys just surface a toast so
-   * nothing silently drops.
+   * Apply a shrine boon. M1 F4 — combat buffs (damage / speed / armor /
+   * crit / pickup) route through `TempBuffBag` for `durationMs`; gold
+   * / xp / luck stay immediate, and unsupported keys (regen / reflect
+   * / dodge — missing revertible stat hooks) fall back to the pre-F4
+   * 20% heal stand-in so the pick always delivers something.
    */
-  private applyShrineBoon(key: string): void {
+  private applyShrineBoon(key: string, durationMs: number): void {
     switch (key) {
-      case 'buff_regen':
-      case 'buff_armor':
-      case 'buff_damage':
-      case 'buff_crit':
-      case 'buff_reflect':
-      case 'buff_speed':
-      case 'buff_dodge':
+      case 'buff_damage': {
+        // +25% damage multiplier — additive so revert is a clean -0.25.
+        const delta = 0.25;
+        this.tempBuffBag.add(key, durationMs, () => {
+          this.player.addDamageMultiplier(delta);
+          return () => this.player.addDamageMultiplier(-delta);
+        });
+        this.showShrineTimedToast(key, durationMs);
+        break;
+      }
+      case 'buff_speed': {
+        // +20% of base speed — matches Loch Water's footprint but temp.
+        const delta = PLAYER.SPEED * 0.20;
+        this.tempBuffBag.add(key, durationMs, () => {
+          this.player.addSpeed(delta);
+          return () => this.player.addSpeed(-delta);
+        });
+        this.showShrineTimedToast(key, durationMs);
+        break;
+      }
+      case 'buff_armor': {
+        // Flat +3 armor for the window — leans toward survivability.
+        const delta = 3;
+        this.tempBuffBag.add(key, durationMs, () => {
+          this.player.addArmor(delta);
+          return () => this.player.addArmor(-delta);
+        });
+        this.showShrineTimedToast(key, durationMs);
+        break;
+      }
+      case 'buff_crit': {
+        const delta = 0.15;
+        this.tempBuffBag.add(key, durationMs, () => {
+          this.player.addCritChance(delta);
+          return () => this.player.addCritChance(-delta);
+        });
+        this.showShrineTimedToast(key, durationMs);
+        break;
+      }
       case 'buff_pickup': {
-        // v1: heal 20% max HP as a stand-in for the timed buff.
-        // Follow-up: real temporary-buff system with durationMs wiring.
+        const delta = PLAYER.PICKUP_RADIUS * 0.40;
+        this.tempBuffBag.add(key, durationMs, () => {
+          this.player.addPickupRadius(delta);
+          return () => this.player.addPickupRadius(-delta);
+        });
+        this.showShrineTimedToast(key, durationMs);
+        break;
+      }
+      case 'buff_regen':
+      case 'buff_reflect':
+      case 'buff_dodge': {
+        // Missing revertible hooks (addHpRegen is capped, setThorns is
+        // non-additive, no dodge stat). Ship the 20% heal stand-in until
+        // the stat API grows — documented as a known F4 gap.
         const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * 0.2));
         this.player.heal(heal);
         this.juice.showToast(t('nodes.ui.toast.shrine_boon', { label: shrineLabelFromKey(key) }), TOAST_COLORS.reward);
@@ -2394,6 +2450,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
     this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
     this.juice.showToast(t('nodes.ui.toast.trader_relic'), TOAST_COLORS.reward);
+  }
+
+  /**
+   * M1 F4 — compose the shrine timed-buff toast with a rounded-seconds
+   * duration tag so the player sees how long the buff will live.
+   */
+  private showShrineTimedToast(key: string, durationMs: number): void {
+    const seconds = Math.max(1, Math.round(durationMs / 1000));
+    this.juice.showToast(
+      t('nodes.ui.toast.shrine_buff_timed', {
+        label: shrineLabelFromKey(key),
+        seconds: String(seconds),
+      }),
+      TOAST_COLORS.reward,
+    );
   }
 
   /**

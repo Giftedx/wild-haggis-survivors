@@ -2688,6 +2688,7 @@ export const SCS_STRINGS: LocaleTree = {
         trader_passive_granted: '{name} tucked intae the sporran.',
         trader_reroll: 'Reroll token pooched.',
         shrine_boon: 'Shrine boon: {label}',
+        shrine_buff_timed: 'Shrine boon: {label} — {seconds}s',
         shrine_gold: 'Shrine boon: +50 gowd',
         shrine_xp: 'Shrine boon: +25 XP',
         shrine_luck_relic: 'Shrine boon: a relic gleams in tha cairn',

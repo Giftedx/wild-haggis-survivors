@@ -3053,6 +3053,8 @@ export const EN_STRINGS: LocaleTree = {
         trader_passive_granted: '{name} tucked into the sporran.',
         trader_reroll: 'Reroll token pocketed.',
         shrine_boon: 'Shrine boon: {label}',
+        /** M1 F4 — timed shrine buff toast. `{seconds}` is the duration tag. */
+        shrine_buff_timed: 'Shrine boon: {label} — {seconds}s',
         shrine_gold: 'Shrine boon: +50 gold',
         shrine_xp: 'Shrine boon: +25 XP',
         shrine_luck_relic: 'Shrine boon: a relic glints in the cairn',
