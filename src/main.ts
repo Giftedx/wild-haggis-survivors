@@ -48,6 +48,12 @@ import { CurseScene } from './scenes/CurseScene';
 import { ActIntermissionScene } from './scenes/ActIntermissionScene';
 import { SpriteExportScene } from './tools/SpriteExportScene';
 import { CombinationsPreviewScene } from './scenes/dev/CombinationsPreviewScene';
+import { buildRenderNodesConfig } from './systems/shaders/ShaderRegistry';
+import { registerAllShaders } from './systems/shaders/registerAllShaders';
+
+// Register custom render-node shaders before the Phaser.Game constructor reads
+// the config map. See docs/adr/0003-shader-registry-phaser-postfx-pipeline.md.
+registerAllShaders();
 
 /** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
 const isSpriteExport = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export');
@@ -85,6 +91,9 @@ const config: Phaser.Types.Core.GameConfig = {
     pixelArt: true,
     antialias: false,
     roundPixels: true,
+    // F1 — custom shader render nodes. Map is populated by
+    // `registerAllShaders()` above; stays empty until M2 lands HaarFog.
+    renderNodes: buildRenderNodesConfig(),
   },
   input: {
     keyboard: true,
