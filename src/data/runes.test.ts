@@ -67,3 +67,72 @@ describe('RUNES catalogue — state-conditional (U1 Task 2)', () => {
     }
   });
 });
+
+describe('RUNES catalogue — action-chain (U1 Task 3)', () => {
+  it('echo_rune carries every_nth_kill:10 conditionKey (param embedded)', () => {
+    const r = RUNES.echo_rune;
+    expect(r.conditionKey).toBe('every_nth_kill:10');
+    expect(r.effects[0]!.key).toBe('healing_thistle_spawn');
+  });
+
+  it('cascade_rune carries kill_cascade + stacking damage', () => {
+    const r = RUNES.cascade_rune;
+    expect(r.conditionKey).toBe('kill_cascade');
+    expect(r.effects[0]!.key).toBe('dmg_stack');
+    expect(r.effects[0]!.params.maxStacks).toBe(10);
+  });
+
+  it('all 10 action-chain runes present', () => {
+    const ids = [
+      'echo_rune', 'cascade_rune', 'chorus_rune', 'storm_rune', 'ceilidh_chain_rune',
+      'drift_rune', 'lairds_rune', 'thistle_crown_rune', 'song_rune', 'pilgrim_rune',
+    ];
+    for (const id of ids) {
+      expect(RUNES[id], `missing ${id}`).toBeDefined();
+    }
+  });
+});
+
+describe('RUNES catalogue — integrity (U1 Task 4)', () => {
+  it('exactly 30 runes catalogued', () => {
+    expect(Object.keys(RUNES)).toHaveLength(30);
+  });
+
+  it('all rune ids unique', () => {
+    const ids = Object.values(RUNES).map((r) => r.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('all conditionKeys are drawn from the known union (no typos)', () => {
+    const allowed = new Set<string>([
+      'biome_fog', 'biome_bog', 'biome_heather', 'near_water_hazard', 'near_cairn',
+      'biome_dusk', 'biome_cold', 'biome_coastal', 'post_bell', 'biome_urban',
+      'hp_low', 'hp_high', 'relics_full', 'weapon_bagpipes', 'run_early',
+      'run_late', 'combo_high', 'chests_many', 'dash_recent_2s', 'evolved_multi',
+      'every_nth_kill:10', 'kill_cascade', 'three_types_in_5s', 'crit_on_weakened',
+      'pickup_chain_5s', 'dashed_5s_ago', 'kill_named_elite', 'kill_on_thistle',
+      'music_bass_active', 'visited_3_nodes',
+    ]);
+    for (const r of Object.values(RUNES)) {
+      expect(allowed.has(r.conditionKey), `unknown conditionKey ${r.conditionKey} on ${r.id}`).toBe(true);
+    }
+  });
+
+  it('every rune carries at least one effect', () => {
+    for (const r of Object.values(RUNES)) {
+      expect(r.effects.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('10 biome + 10 state + 10 action-chain distribution', () => {
+    // Light sanity: the three known bucket-identifying conditions exist in
+    // the expected counts (stand-ins for 3×10 split).
+    const byType = { biome: 0, state: 0, chain: 0 };
+    for (const r of Object.values(RUNES)) {
+      if (r.conditionKey.startsWith('biome_') || r.conditionKey.startsWith('near_') || r.conditionKey === 'post_bell') byType.biome++;
+      else if (['hp_low', 'hp_high', 'relics_full', 'weapon_bagpipes', 'run_early', 'run_late', 'combo_high', 'chests_many', 'dash_recent_2s', 'evolved_multi'].includes(r.conditionKey)) byType.state++;
+      else byType.chain++;
+    }
+    expect(byType).toEqual({ biome: 10, state: 10, chain: 10 });
+  });
+});
