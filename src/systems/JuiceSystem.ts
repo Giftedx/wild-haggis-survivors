@@ -5,7 +5,12 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { TimeManager } from './TimeManager';
 import { t } from '../core/i18n';
 import { getCameraViewport } from '../ui/cameraViewport';
-import { scaledFlashAlpha, scaledSlowMoDurationMs, scaledParticleCount } from '../core/a11yMotion';
+import {
+  scaledFlashAlpha,
+  scaledFlashDurationMs,
+  scaledSlowMoDurationMs,
+  scaledParticleCount,
+} from '../core/a11yMotion';
 import { scaledFontSize, scaledStrokeThickness } from '../utils/a11yText';
 import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
@@ -578,7 +583,11 @@ export class JuiceSystem {
     });
   }
 
-  /** White screen flash (level-up, big event). Alpha scales with motionScale. */
+  /**
+   * White screen flash (level-up, big event). Alpha scales with
+   * motionScale; under `reduceFlashing` alpha is capped at 0.4 and
+   * fade duration is floored at 200ms so the flash reads as a ramp.
+   */
   flashWhite(duration = 200): void {
     const alpha = scaledFlashAlpha(0.4);
     if (alpha <= 0) return;
@@ -588,11 +597,15 @@ export class JuiceSystem {
     this.scene.tweens.add({
       targets: this.flashRect,
       alpha: 0,
-      duration,
+      duration: scaledFlashDurationMs(duration),
     });
   }
 
-  /** Colored screen flash — used for combo milestone VFX. Alpha scales with motionScale. */
+  /**
+   * Colored screen flash — used for combo milestone VFX. Alpha scales
+   * with motionScale; respects reduceFlashing caps on both alpha and
+   * fade duration.
+   */
   private flashColored(color: number, duration: number): void {
     const alpha = scaledFlashAlpha(0.35);
     if (alpha <= 0) return;
@@ -602,7 +615,7 @@ export class JuiceSystem {
     this.scene.tweens.add({
       targets: this.flashRect,
       alpha: 0,
-      duration,
+      duration: scaledFlashDurationMs(duration),
     });
   }
 
@@ -639,7 +652,12 @@ export class JuiceSystem {
     }
   }
 
-  /** Red screen flash (damage taken). Alpha scales with motionScale. */
+  /**
+   * Red screen flash (damage taken). Alpha scales with motionScale;
+   * under `reduceFlashing` alpha is capped at 0.4 and fade duration
+   * is floored at 200ms (the red-flash default of 150ms trips PEAT
+   * "red flash" thresholds, so the floor genuinely matters here).
+   */
   flashRed(duration = 150): void {
     const alpha = scaledFlashAlpha(0.25);
     if (alpha <= 0) return;
@@ -649,7 +667,7 @@ export class JuiceSystem {
     this.scene.tweens.add({
       targets: this.flashRect,
       alpha: 0,
-      duration,
+      duration: scaledFlashDurationMs(duration),
     });
   }
 

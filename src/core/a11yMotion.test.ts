@@ -3,9 +3,11 @@ import {
   getMotionScale,
   scaledShakeAmplitude,
   scaledFlashAlpha,
+  scaledFlashDurationMs,
   scaledSlowMoDurationMs,
   scaledParticleCount,
   scaledTweenDurationMs,
+  isReduceFlashingOn,
 } from './a11yMotion';
 import {
   getSettingsManager,
@@ -65,5 +67,49 @@ describe('a11yMotion helpers', () => {
     expect(scaledTweenDurationMs(300)).toBe(120);
     sm.update((cur) => ({ ...cur, motionScale: 1 }));
     expect(scaledTweenDurationMs(300)).toBe(300);
+  });
+
+  describe('reduceFlashing', () => {
+    it('reads live from settings via isReduceFlashingOn', () => {
+      const sm = getSettingsManager();
+      sm.update((cur) => ({ ...cur, reduceFlashing: true }));
+      expect(isReduceFlashingOn()).toBe(true);
+      sm.update((cur) => ({ ...cur, reduceFlashing: false }));
+      expect(isReduceFlashingOn()).toBe(false);
+    });
+
+    it('caps flash alpha at 0.4 when reduceFlashing is on', () => {
+      const sm = getSettingsManager();
+      // baseline: full motion, flashing allowed — unclipped
+      sm.update((cur) => ({ ...cur, motionScale: 1, reduceFlashing: false }));
+      expect(scaledFlashAlpha(0.8)).toBeCloseTo(0.8, 5);
+      // reduceFlashing clips to 0.4
+      sm.update((cur) => ({ ...cur, motionScale: 1, reduceFlashing: true }));
+      expect(scaledFlashAlpha(0.8)).toBeCloseTo(0.4, 5);
+      // and honours the stricter of (motionScale, reduceFlashing cap)
+      sm.update((cur) => ({ ...cur, motionScale: 0.2, reduceFlashing: true }));
+      expect(scaledFlashAlpha(0.8)).toBeCloseTo(0.16, 5);
+    });
+
+    it('lowers the flash alpha cap below 0.4 if base is already below', () => {
+      const sm = getSettingsManager();
+      sm.update((cur) => ({ ...cur, motionScale: 1, reduceFlashing: true }));
+      expect(scaledFlashAlpha(0.2)).toBeCloseTo(0.2, 5);
+    });
+
+    it('scaledFlashDurationMs passes through at default settings', () => {
+      const sm = getSettingsManager();
+      sm.update((cur) => ({ ...cur, reduceFlashing: false }));
+      expect(scaledFlashDurationMs(150)).toBe(150);
+      expect(scaledFlashDurationMs(400)).toBe(400);
+    });
+
+    it('scaledFlashDurationMs floors at 200ms when reduceFlashing is on', () => {
+      const sm = getSettingsManager();
+      sm.update((cur) => ({ ...cur, reduceFlashing: true }));
+      expect(scaledFlashDurationMs(100)).toBe(200);
+      expect(scaledFlashDurationMs(150)).toBe(200);
+      expect(scaledFlashDurationMs(250)).toBe(250);
+    });
   });
 });

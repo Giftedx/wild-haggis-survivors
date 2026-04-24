@@ -1,6 +1,10 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JuiceSystem } from './JuiceSystem';
 import { TimeManager, type TimeAdapter } from './TimeManager';
+import {
+  getSettingsManager,
+  resetSettingsManagerSingletonForTests,
+} from '../core/SettingsManager';
 
 vi.mock('phaser', () => ({
   default: {
@@ -120,6 +124,91 @@ describe('JuiceSystem combo timer', () => {
 
     expect(juice.getComboCount()).toBe(7);
     expect(juice.getComboTimerRemainingMs()).toBe(1300);
+  });
+
+  describe('reduceFlashing compliance', () => {
+    beforeEach(() => {
+      resetSettingsManagerSingletonForTests();
+    });
+    afterEach(() => {
+      resetSettingsManagerSingletonForTests();
+    });
+
+    function makeJuice() {
+      const { adapter } = makeAdapter();
+      const time = new TimeManager(adapter);
+      const scene = makeScene();
+      const settings: any = {
+        load: () => ({
+          damageNumbers: true,
+          reduceParticles: false,
+          screenShake: true,
+        }),
+      };
+      const juice = new JuiceSystem(scene as any, time, {} as any, settings);
+      return { juice, scene };
+    }
+
+    it('flashWhite honours default settings (alpha + duration pass through)', () => {
+      getSettingsManager().update((cur) => ({
+        ...cur,
+        motionScale: 1,
+        reduceFlashing: false,
+      }));
+      const { juice, scene } = makeJuice();
+      scene.tweens.add.mockClear();
+      juice.flashWhite(250);
+      expect((juice as any).flashRect.alpha).toBeCloseTo(0.4, 5);
+      const calls = scene.tweens.add.mock.calls;
+      const call = calls[calls.length - 1]?.[0];
+      expect(call.duration).toBe(250);
+    });
+
+    it('flashWhite under reduceFlashing caps alpha at 0.4 and floors duration at 200', () => {
+      getSettingsManager().update((cur) => ({
+        ...cur,
+        motionScale: 1,
+        reduceFlashing: true,
+      }));
+      const { juice, scene } = makeJuice();
+      scene.tweens.add.mockClear();
+      juice.flashWhite(100);
+      // Base 0.4 × motionScale 1 = 0.4 → at cap, reduceFlashing no-op on alpha
+      expect((juice as any).flashRect.alpha).toBeLessThanOrEqual(0.4);
+      const calls = scene.tweens.add.mock.calls;
+      const call = calls[calls.length - 1]?.[0];
+      expect(call.duration).toBeGreaterThanOrEqual(200);
+    });
+
+    it('flashRed under reduceFlashing cannot exceed 0.4 alpha and cannot run faster than 200ms', () => {
+      getSettingsManager().update((cur) => ({
+        ...cur,
+        motionScale: 1,
+        reduceFlashing: true,
+      }));
+      const { juice, scene } = makeJuice();
+      scene.tweens.add.mockClear();
+      juice.flashRed(150);
+      expect((juice as any).flashRect.alpha).toBeLessThanOrEqual(0.4);
+      const calls = scene.tweens.add.mock.calls;
+      const call = calls[calls.length - 1]?.[0];
+      expect(call.duration).toBeGreaterThanOrEqual(200);
+    });
+
+    it('flashRed without reduceFlashing keeps shipped defaults (alpha 0.25, duration 150)', () => {
+      getSettingsManager().update((cur) => ({
+        ...cur,
+        motionScale: 1,
+        reduceFlashing: false,
+      }));
+      const { juice, scene } = makeJuice();
+      scene.tweens.add.mockClear();
+      juice.flashRed(150);
+      expect((juice as any).flashRect.alpha).toBeCloseTo(0.25, 5);
+      const calls = scene.tweens.add.mock.calls;
+      const call = calls[calls.length - 1]?.[0];
+      expect(call.duration).toBe(150);
+    });
   });
 
   it('reflows fixed overlays against the UI viewport', () => {

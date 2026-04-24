@@ -16,9 +16,29 @@
  */
 import { getSettingsManager } from './SettingsManager';
 
+/**
+ * A1 M5 — hard cap on flash alpha when the player has opted into the
+ * strict photosensitivity posture. Mirrors the WCAG / PEAT guidance
+ * that flashes above ~0.4 opacity trip the "general flash" threshold
+ * irrespective of duration.
+ */
+const REDUCE_FLASHING_ALPHA_CAP = 0.4;
+
+/**
+ * A1 M5 — floor on flash duration when reduceFlashing is on. Short,
+ * bright flashes are the PEAT failure mode; stretching duration past
+ * 200ms turns them into ramps, which are seizure-safer.
+ */
+const REDUCE_FLASHING_DURATION_FLOOR_MS = 200;
+
 /** Raw 0..1 scale. Read from settings each call. */
 export function getMotionScale(): number {
   return getSettingsManager().load().motionScale;
+}
+
+/** A1 M5 — true when the player has opted into strict photosensitivity caps. */
+export function isReduceFlashingOn(): boolean {
+  return getSettingsManager().load().reduceFlashing === true;
 }
 
 /** Scale a camera-shake amplitude. Returns 0 when the user has fully opted out. */
@@ -26,9 +46,30 @@ export function scaledShakeAmplitude(baseAmp: number): number {
   return baseAmp * getMotionScale();
 }
 
-/** Scale a white/red flash alpha. Floor 0 — at motionScale 0 the flash disappears. */
+/**
+ * Scale a white/red flash alpha.
+ *  - Floor 0 at motionScale 0 (flash disappears entirely).
+ *  - When `reduceFlashing` is on, the result is additionally capped at
+ *    0.4 — the PEAT / WCAG general-flash threshold — *after* the
+ *    motion-scale multiply. If motionScale already pulls the alpha
+ *    below 0.4, the cap is a no-op (stricter-wins).
+ */
 export function scaledFlashAlpha(baseAlpha: number): number {
-  return Math.max(0, baseAlpha * getMotionScale());
+  const scaled = Math.max(0, baseAlpha * getMotionScale());
+  if (isReduceFlashingOn()) return Math.min(scaled, REDUCE_FLASHING_ALPHA_CAP);
+  return scaled;
+}
+
+/**
+ * Scale a flash-event duration.
+ *  - Default: pass-through (flashes are inherently short; shortening
+ *    them further is not a motion-scale concern).
+ *  - When `reduceFlashing` is on, floor the duration at 200ms so the
+ *    flash reads as a ramp rather than a strobe.
+ */
+export function scaledFlashDurationMs(baseDurationMs: number): number {
+  if (!isReduceFlashingOn()) return baseDurationMs;
+  return Math.max(REDUCE_FLASHING_DURATION_FLOOR_MS, baseDurationMs);
 }
 
 /**
