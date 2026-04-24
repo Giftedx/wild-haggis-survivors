@@ -18,6 +18,9 @@ import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
 import { createGameButton } from '../ui/gameButton';
 import { audio } from '../systems/AudioSystem';
 import { SaveManager } from '../core/SaveManager';
+import { loadSave } from '../utils/save';
+import { computeAllTrophies } from './croft/CroftTrophies';
+import { drawMantelpieceTrophies } from '../art/sprites/croft/mantelpiece';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -44,6 +47,7 @@ export class CroftScene extends Phaser.Scene {
   private hearthTimer: Phaser.Time.TimerEvent | null = null;
   private hearthFrame = 0;
   private ambient: CroftAmbientLoop | null = null;
+  private mantelGfx: Phaser.GameObjects.Graphics | null = null;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -66,6 +70,8 @@ export class CroftScene extends Phaser.Scene {
     this.hearthTimer?.remove(false);
     this.hearthTimer = null;
     this.hearthFrame = 0;
+    this.mantelGfx?.destroy();
+    this.mantelGfx = null;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -75,6 +81,7 @@ export class CroftScene extends Phaser.Scene {
     addAmberHeaderWash(this);
 
     this.drawComposition(layout, highContrastUi);
+    this.drawMantelpiece(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawHeader(width);
@@ -102,8 +109,8 @@ export class CroftScene extends Phaser.Scene {
     const alphaFill = highContrast ? 0.4 : 0.22;
     const alphaStroke = highContrast ? 0.9 : 0.6;
     for (const key of CROFT_DRAW_ORDER) {
-      // Gran + hearth have real sprites now — skip placeholders.
-      if (key === 'gran' || key === 'hearth') continue;
+      // Gran + hearth + mantelpiece now have real drawers — skip placeholders.
+      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece') continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -113,6 +120,20 @@ export class CroftScene extends Phaser.Scene {
         .setStrokeStyle(1, color, alphaStroke);
       this.placeholders.push(rect);
     }
+  }
+
+  /**
+   * Draw the mantelpiece shelf with one trophy slot per canonical
+   * boss (see CroftTrophies.TROPHY_BOSS_KEYS). Trophy art tier is
+   * resolved from the current save — kills / cursed wins promote
+   * the slot to 'first' / 'tenth' / 'cursed' variants.
+   */
+  private drawMantelpiece(layout: CroftLayout): void {
+    const save = loadSave();
+    const trophies = computeAllTrophies(save);
+    const gfx = this.add.graphics();
+    drawMantelpieceTrophies(gfx, trophies, layout.mantelpiece);
+    this.mantelGfx = gfx;
   }
 
   /**
