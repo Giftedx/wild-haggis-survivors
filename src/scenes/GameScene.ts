@@ -9,6 +9,7 @@ import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
+import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
@@ -171,6 +172,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private clipRecorder: ClipRecorder | null = null;
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
+  /** R1 M3 T22 — 3-slot HUD widget for held Relics. */
+  private relicSlotUI: RelicSlotUI | null = null;
   private readonly chestRegistry = new ChestSpriteRegistry();
   private readonly iFrameController = new IFrameController(() => this.player);
 
@@ -416,6 +419,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.relicPickupSpawner = null;
     this.relicSystem = new RelicSystem();
     this.relicEffectDriver = new RelicEffectDriver(this.relicSystem);
+    this.relicSlotUI?.destroy();
+    this.relicSlotUI = null;
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -1123,6 +1128,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.eventBusDispose = wireSceneEventBus({ getJuice: () => this.juice });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
+    this.relicSlotUI?.destroy();
+    this.relicSlotUI = new RelicSlotUI(this, {
+      getHeldSlots: () => this.relicSystem.getSlots().map((s) => s.def),
+    });
     this.hud.setOnPause(() => this.toggleUiPause());
 
     this.debugOverlay = new DebugOverlay(this, {
@@ -1431,6 +1440,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // rare effects (Gran's Teapot damage-free seconds) pause correctly
     // with the game rather than running off wall-clock.
     this.relicEffectDriver?.updatePerFrame(scaledDelta);
+    this.relicSlotUI?.update();
 
     if (this.ancestralEcho) {
       const resolved = this.ancestralEcho.tick(scaledDelta);
