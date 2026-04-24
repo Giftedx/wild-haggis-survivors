@@ -45,7 +45,12 @@ import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
-import { seasonalRunStartCeremony } from '../systems/seasonal/burnsNightEffects';
+import {
+  BURNS_PLATTER_SPAWN_MS,
+  burnsPlatterDamageBuff,
+  seasonalRunStartCeremony,
+  shouldSpawnBurnsPlatter,
+} from '../systems/seasonal/burnsNightEffects';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
@@ -296,6 +301,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Curse key chosen for this run, if any — persisted into run history. */
   private activeCurseKey: CurseKey | null = null;
   /**
+   * E1 M2 T10 — Burns Night haggis-platter state. `spawned` flips once
+   * the platter is dropped this run (so the scheduler never double-
+   * fires after a TimeManager reset); `pickedUpAtMs` captures
+   * `this.time.now` at collision so the damage-buff helper can decay
+   * the 1.3× multiplier after 60 s. Both reset on every `create()`
+   * run — see the reset block near the top.
+   */
+  private burnsPlatterSpawned: boolean = false;
+  private burnsPlatterPickedUpAtMs: number | null = null;
+  /**
    * W66 Ironmoor — locked in at run start (from Settings on a fresh run,
    * from the snapshot on resume). Every ironmoor-sensitive decision
    * (revival suppression, HUD badge, wipe-on-death, leaderboard write)
@@ -432,6 +447,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.killCount = 0;
     this.moorMercyLuckGranted = false;
     this.runName = '';
+    // E1 M2 T10 — wipe Burns platter state so a recycled scene instance
+    // never claims it already spawned/collected across runs.
+    this.burnsPlatterSpawned = false;
+    this.burnsPlatterPickedUpAtMs = null;
     this.standingStones?.destroy();
     this.standingStones = null;
     this.stonesWarned = false;
@@ -1077,10 +1096,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // only resolves during the real-world Jan 18 – Feb 1 window.
     if (!this.replayInput && !resumeRun) {
       const grandOpenMs = this.activeCurseKey ? 2400 : 1200;
-      const ceremony = seasonalRunStartCeremony(
-        new Date(),
-        this.settingsManager.load().disableSeasonalEvents,
-      );
+      const disabled = this.settingsManager.load().disableSeasonalEvents;
+      const ceremony = seasonalRunStartCeremony(new Date(), disabled);
       this.time.delayedCall(grandOpenMs, () => {
         if (ceremony?.stingerId === 'burns_pipes_in') {
           audio.playBurnsPipesStinger();
@@ -1089,6 +1106,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         const tag = ceremony ? ceremony.banterTag : 'run_start';
         this.banter?.request(ctx, { tag });
       });
+      // E1 M2 T10 — schedule the Burns Night haggis-platter pickup once
+      // the ceremony resolves for Burns. `delayedCall` respects scene
+      // pause/timeScale so the platter slides out when the player is
+      // actually moving on the moor. Guarded in the callback against a
+      // mid-flight restart (the reset block nulls `burnsPlatterSpawned`
+      // so a stale future call can't double-fire).
+      if (shouldSpawnBurnsPlatter(new Date(), disabled, this.burnsPlatterSpawned)) {
+        this.time.delayedCall(BURNS_PLATTER_SPAWN_MS, () => {
+          if (this.burnsPlatterSpawned) return;
+          if (!this.pickupSpawner) return;
+          this.burnsPlatterSpawned = true;
+          this.pickupSpawner.spawnBurnsPlatter();
+        });
+      }
     }
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
@@ -1126,6 +1157,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
       acquireFloatText: (x, y, str, color, fs, d) => this.floatTextPool.acquire(x, y, str, color, fs, d),
       modifyHealOrbAmount: (a) => this.relicEffectDriver.modifyHealOnOrb(a),
+      onBurnsPlatterCollect: () => this.handleBurnsPlatterCollect(),
     });
     this.levelUpFlow = new LevelUpFlow(this, {
       getPlayer: () => this.player,
@@ -1574,7 +1606,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // directional weapons like arc_sweep don't use a stale angle.
     this.weaponSystem.setPlayerFacing(this.player.rotation - Math.PI / 2);
     this.weaponSystem.setMultipliers(
-      this.player.getDamageMultiplier() * this.juice.getComboDamageMultiplier(),
+      this.player.getDamageMultiplier()
+        * this.juice.getComboDamageMultiplier()
+        * burnsPlatterDamageBuff(this.time.now, this.burnsPlatterPickedUpAtMs),
       this.player.getAoeMultiplier(),
       this.player.getAttackSpeedMultiplier(),
       this.player.getCritChance(),
@@ -1996,6 +2030,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'chest');
     this.juice.showToast(t('ui.game.relic_drop_near'), TOAST_COLORS.reward);
     return true;
+  }
+
+  /**
+   * E1 M2 T10 — Burns Night platter collect callback. Records the
+   * pickup timestamp so `burnsPlatterDamageBuff` reads 1.3× for the
+   * next 60 s, then fires the Burns-citational banter line. Heal +
+   * VFX live in `PickupSpawner.spawnBurnsPlatter`; this handler owns
+   * scene state + narrative voice.
+   */
+  private handleBurnsPlatterCollect(): void {
+    this.burnsPlatterPickedUpAtMs = this.time.now;
+    this.banter?.request('burns_citation', { tag: 'haggis_moment' });
   }
 
   /**

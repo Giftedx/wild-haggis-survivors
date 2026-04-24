@@ -632,6 +632,8 @@ export const SCS_STRINGS: LocaleTree = {
       treasure_collected: 'Kist crackt — that\'s a feed an a hauf (+25% HP)',
       golden_nearby: 'Glimmer o gold nearby!',
       golden_collected: 'Gowden kist — nice wee earner! +{gold}g',
+      burns_platter_nearby: 'Smell that? Haggis on the muir — pipes\'ll be startin suin.',
+      burns_platter_collected: 'The bard\'s feast — full belly, quick fists (+30% dmg, 60s).',
       controls_hint: 'WASD tae roam  •  SPACE fer a cheeky dash  •  ESC, P, or Stairt tae catch yer braith',
       armor_blocked: '-{amount} dinged aff',
       countdown_go: 'MON THEN!',

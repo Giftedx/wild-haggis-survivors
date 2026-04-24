@@ -837,6 +837,9 @@ export const EN_STRINGS: LocaleTree = {
       relic_collected: 'Relic tucked intae the sporran.',
       golden_nearby: 'Glimmer o\' gold nearby!',
       golden_collected: 'Golden chest — nice wee earner! +{gold}g',
+      /** E1 T10 — Burns Night haggis-platter pickup. */
+      burns_platter_nearby: 'Smell that? Haggis on the moor — pipes\'ll be startin soon.',
+      burns_platter_collected: 'The bard\'s feast — full belly, quick fists (+30% dmg, 60s).',
       controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC, P, or Start to catch yir breath',
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',

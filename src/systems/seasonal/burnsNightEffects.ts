@@ -56,3 +56,48 @@ export function seasonalRunStartCeremony(
       return null;
   }
 }
+
+// ── T10 Haggis-platter pickup ───────────────────────────────────────
+
+/** Damage multiplier applied while the platter buff is active. */
+export const BURNS_PLATTER_BUFF_MULT = 1.3;
+
+/** Buff lifetime in ms once the platter is collected. */
+export const BURNS_PLATTER_BUFF_MS = 60_000;
+
+/**
+ * When (ms into the run) the single platter pickup appears. W2 act 1
+ * begins around 3:00, so 30 s reliably drops the platter during the
+ * first node — visible without crowding the curse-pact / intro toast.
+ */
+export const BURNS_PLATTER_SPAWN_MS = 30_000;
+
+/**
+ * `true` when the run is inside an active Burns Night window, the
+ * opt-out is off, and the one-per-run pickup has not spawned yet.
+ */
+export function shouldSpawnBurnsPlatter(
+  now: Date,
+  disabled: boolean,
+  alreadySpawned: boolean,
+): boolean {
+  if (alreadySpawned) return false;
+  return getActiveSeasonalEventKey(now, disabled) === 'burns_night';
+}
+
+/**
+ * Current damage multiplier contributed by the platter buff.
+ * `pickedUpAtMs === null` → not collected yet → identity (1). Once
+ * collected, returns `BURNS_PLATTER_BUFF_MULT` for the next
+ * `BURNS_PLATTER_BUFF_MS`; reverts to 1 after the window closes.
+ * The `now` value must be drawn from the same clock the caller uses
+ * for `pickedUpAtMs` (scene.time.now) so pause-aware ticking works.
+ */
+export function burnsPlatterDamageBuff(
+  nowMs: number,
+  pickedUpAtMs: number | null,
+): number {
+  if (pickedUpAtMs === null) return 1;
+  if (nowMs >= pickedUpAtMs + BURNS_PLATTER_BUFF_MS) return 1;
+  return BURNS_PLATTER_BUFF_MULT;
+}

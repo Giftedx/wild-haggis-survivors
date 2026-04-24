@@ -10,10 +10,12 @@ import { bakeXpGem } from './xpGem';
 import { bakeChest } from './chest';
 import { bakeHealthOrb } from './healthOrb';
 import { bakeReliquary } from './reliquary';
+import { bakeBurnsPlatter } from './burnsPlatter';
 
 export function bakePickups(scene: Phaser.Scene): void {
   bakeXpGem(scene);
   bakeChest(scene);
   bakeHealthOrb(scene);
   bakeReliquary(scene);
+  bakeBurnsPlatter(scene);
 }

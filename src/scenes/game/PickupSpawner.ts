@@ -26,6 +26,7 @@ import { pickNearbyPosition } from './nearbySpawn';
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 import { pulsePickupGlow } from './pickupGlowPulse';
 import { TOAST_COLORS } from '../../ui/toastPalette';
+import { BURNS_PLATTER_TEXTURE_KEY } from '../../art/sprites/pickups/burnsPlatter';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -49,6 +50,13 @@ export interface PickupSpawnerHooks {
    * time (not at drop time) so the spawn math stays unchanged.
    */
   modifyHealOrbAmount?(amount: number): number;
+  /**
+   * E1 M2 T10 — Burns Night platter pickup. Called on collision with
+   * the one-per-run platter; GameScene owns the damage-buff start-ms
+   * + banter dispatch. Hook is optional so non-Burns runs don't pay
+   * a reference.
+   */
+  onBurnsPlatterCollect?(): void;
 }
 
 export class PickupSpawner {
@@ -342,6 +350,114 @@ export class PickupSpawner {
       scene.tweens.add({
         targets: coin, alpha: 0, duration: 400, onComplete: () => {
           coin.destroy();
+          scene.physics.world.removeCollider(overlapColl);
+        },
+      });
+    });
+    this.hooks.pushDespawnHandle(despawnHandle);
+  }
+
+  /**
+   * E1 M2 T10 — Burns Night haggis-platter pickup. One-off, spawned
+   * by GameScene during Burns Night runs only. Collision heals the
+   * player fully, fires the 60 s damage buff (owned by GameScene),
+   * and triggers a Burns-citational banter line. Visually a tinted
+   * glow + a floating platter, spectacle-tier feedback on collect.
+   */
+  spawnBurnsPlatter(): void {
+    const scene = this.scene;
+    const player = this.hooks.getPlayer();
+    const { x, y } = pickNearbyPosition({
+      playerX: player.x,
+      playerY: player.y,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      rand: Math.random,
+    });
+
+    this.hooks.getJuice().showToast(t('ui.game.burns_platter_nearby'), '#ffcc44');
+
+    const platter = scene.add.sprite(x, y, BURNS_PLATTER_TEXTURE_KEY).setDepth(5);
+    const glow = scene.add.circle(x, y, 28, 0xffcc44, 0.22).setDepth(4);
+
+    pulsePickupGlow(scene, glow, 1.35, 800);
+    scene.tweens.add({ targets: platter, y: y - 3, duration: 650, ...TWEEN_INFINITE_BREATHE });
+
+    scene.physics.add.existing(platter, true);
+    let collected = false;
+    let despawnHandle: TickerHandle | null = null;
+
+    const overlapColl = scene.physics.add.overlap(player, platter, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+
+      // Full heal — generous because the buff itself is short-lived.
+      player.heal(player.getMaxHp());
+
+      // Pop spectacle — double gold-warm ring, platter scales up then
+      // fades. Mirrors the treasure chest cadence so the player reads
+      // this as a "bigger than a coin" moment.
+      scene.tweens.killTweensOf(platter);
+      scene.tweens.killTweensOf(glow);
+      scene.tweens.add({
+        targets: platter, y: y - 6, scale: 1.2, duration: 140, ease: 'Quad.easeOut',
+      });
+      const ring = scene.add.circle(x, y, 22, 0xffdd88, 0.85).setDepth(6);
+      scene.tweens.add({
+        targets: ring, scale: 5, alpha: 0, duration: 460, ease: 'Quad.easeOut',
+        onComplete: () => ring.destroy(),
+      });
+      const ring2 = scene.add.circle(x, y, 14, 0xffbb33, 0.55).setDepth(6);
+      scene.tweens.add({
+        targets: ring2, scale: 5.5, alpha: 0, duration: 540, delay: 120, ease: 'Quad.easeOut',
+        onComplete: () => ring2.destroy(),
+      });
+      // Gentle gold-flake spray — evokes steam curls caught by wind.
+      for (let i = 0; i < 10; i++) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+        const speed = Phaser.Math.Between(30, 60);
+        const dot = scene.add.circle(
+          x, y, Phaser.Math.Between(2, 3),
+          i % 2 === 0 ? 0xffd88a : 0xf0c070, 0.9,
+        ).setDepth(7);
+        const endX = x + Math.cos(angle) * speed;
+        const peakY = y + Math.sin(angle) * speed - 12;
+        scene.tweens.add({ targets: dot, x: endX, duration: 600 });
+        scene.tweens.add({
+          targets: dot, y: { value: peakY, duration: 260, ease: 'Quad.easeOut' },
+        });
+        scene.tweens.add({
+          targets: dot, y: { value: y + 30, duration: 380, ease: 'Quad.easeIn', delay: 260 },
+          alpha: { value: 0, duration: 300, delay: 320 }, onComplete: () => dot.destroy(),
+        });
+      }
+
+      scene.tweens.add({
+        targets: [platter, glow], alpha: 0, scale: 0.4, duration: 220, delay: 180,
+        onComplete: () => {
+          platter.destroy();
+          glow.destroy();
+        },
+      });
+
+      this.hooks.getJuice().flashWhite(100);
+      this.hooks.getJuice().showToast(t('ui.game.burns_platter_collected'), '#ffdd88');
+      audio.playLevelUp();
+      scene.physics.world.removeCollider(overlapColl);
+      this.hooks.onBurnsPlatterCollect?.();
+    });
+
+    // Platter lingers longer than a chest — it's a once-per-run gift.
+    despawnHandle = this.hooks.getUpdateTickers().addOnce('scaled', 45_000, () => {
+      if (collected) return;
+      collected = true;
+      scene.tweens.killTweensOf(glow);
+      scene.tweens.killTweensOf(platter);
+      scene.tweens.add({
+        targets: [platter, glow], alpha: 0, duration: 500, onComplete: () => {
+          platter.destroy();
+          glow.destroy();
           scene.physics.world.removeCollider(overlapColl);
         },
       });
