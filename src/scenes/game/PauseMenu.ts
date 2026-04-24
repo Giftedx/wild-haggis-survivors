@@ -64,6 +64,17 @@ export interface PauseMenuHooks {
    * Scene side applies the heal + toast + SFX; menu just requests.
    */
   onWhiskyDramRequested?: () => void;
+
+  /**
+   * R1 M4.5 P5 — Fingal's Horn active-relic button. Returns true iff
+   * the player holds fingals_horn and hasn't blown it yet this run.
+   */
+  isFingalsHornAvailable?: () => boolean;
+  /**
+   * R1 M4.5 P5 — triggered by the "Sound" button when the horn is
+   * held. Scene summons 3 Fianna spirits + plays the SFX/toast.
+   */
+  onFingalsHornRequested?: () => void;
 }
 
 export class PauseMenu {
@@ -139,23 +150,41 @@ export class PauseMenu {
     // R1 M3 T21 — Whisky Dram active-relic button. Shown only while the
     // relic is held + unused. Positioned just below the curse chip so it
     // reads as another run-scoped status affordance, not a settings toggle.
-    if (this.hooks.isWhiskyDramAvailable?.() === true) {
-      const whiskyY = y + height * (curseLine ? 0.445 : 0.415);
-      const { rect: whiskyBtn, label: whiskyLabel } = createGameButton(scene, {
-        x: x + width / 2, y: whiskyY, width: 240, height: 40,
-        label: t('ui.pause.whisky_dram_use'),
-        tier: 'secondary', fontSize: '16px', uiScale,
+    // R1 M4.5 P5 — Fingal's Horn stacks beneath Whisky Dram when both
+    // relics are held and unused.
+    const activeSlotBaseY = y + height * (curseLine ? 0.445 : 0.415);
+    let activeSlotIdx = 0;
+    const renderActiveRelicButton = (
+      label: string,
+      onClick: () => void,
+    ): void => {
+      const btnY = activeSlotBaseY + activeSlotIdx * 48;
+      activeSlotIdx++;
+      const { rect, label: lbl } = createGameButton(scene, {
+        x: x + width / 2, y: btnY, width: 240, height: 40,
+        label, tier: 'secondary', fontSize: '16px', uiScale,
       });
-      whiskyBtn.setScrollFactor(0).setDepth(d + 1);
-      whiskyLabel.setScrollFactor(0).setDepth(d + 2);
-      whiskyBtn.on('pointerdown', () => {
-        this.hooks.onWhiskyDramRequested?.();
-        // Re-render the menu so the button disappears after use.
+      rect.setScrollFactor(0).setDepth(d + 1);
+      lbl.setScrollFactor(0).setDepth(d + 2);
+      rect.on('pointerdown', () => {
+        onClick();
         this.close();
         this.open();
       });
-      this.elements.push(whiskyBtn);
-      this.elements.push(whiskyLabel);
+      this.elements.push(rect);
+      this.elements.push(lbl);
+    };
+    if (this.hooks.isWhiskyDramAvailable?.() === true) {
+      renderActiveRelicButton(
+        t('ui.pause.whisky_dram_use'),
+        () => this.hooks.onWhiskyDramRequested?.(),
+      );
+    }
+    if (this.hooks.isFingalsHornAvailable?.() === true) {
+      renderActiveRelicButton(
+        t('ui.pause.fingals_horn_use'),
+        () => this.hooks.onFingalsHornRequested?.(),
+      );
     }
 
     // RESUME before the long elite-affix reference list so the button never covers traits text.

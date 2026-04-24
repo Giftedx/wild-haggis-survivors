@@ -50,6 +50,7 @@ type HookMocks = {
   onHaarDispel: ReturnType<typeof vi.fn>;
   onEliteKilled: ReturnType<typeof vi.fn>;
   onBossKilled: ReturnType<typeof vi.fn>;
+  tryCairnStoneMagnet: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -104,6 +105,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const onHaarDispel = vi.fn<(x: number, y: number) => void>();
   const onEliteKilled = vi.fn<(x: number, y: number) => void>();
   const onBossKilled = vi.fn<(bossKey: string, x: number, y: number) => void>();
+  const tryCairnStoneMagnet = vi.fn<(x: number, y: number) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -124,6 +126,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onHaarDispel,
     onEliteKilled,
     onBossKilled,
+    tryCairnStoneMagnet,
   };
 
   return {
@@ -145,6 +148,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onHaarDispel,
     onEliteKilled,
     onBossKilled,
+    tryCairnStoneMagnet,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -551,6 +555,14 @@ describe('EnemyKillHandler', () => {
       handler.handle(1, 1, 5, 'tourist', false);
       handler.handle(2, 2, 5, 'ghost', false, true);
       expect(m.onBossKilled).not.toHaveBeenCalled();
+    });
+
+    it('fires tryCairnStoneMagnet on every kill with coords (M4.5 P1)', () => {
+      handler.handle(11, 22, 5, 'tourist', false, false);
+      handler.handle(33, 44, 100, 'gordon', true);
+      expect(m.tryCairnStoneMagnet).toHaveBeenCalledTimes(2);
+      expect(m.tryCairnStoneMagnet).toHaveBeenNthCalledWith(1, 11, 22);
+      expect(m.tryCairnStoneMagnet).toHaveBeenNthCalledWith(2, 33, 44);
     });
   });
 

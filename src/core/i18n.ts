@@ -624,6 +624,9 @@ export const EN_STRINGS: LocaleTree = {
       /** R1 M3 T21 — whisky_dram active-relic button label. */
       whisky_dram_use: 'Sip the Whisky Dram (+20% HP)',
       whisky_dram_drunk: 'Whisky Dram — took the edge off.',
+      /** R1 M4.5 P5 — fingals_horn active-relic button + summon toast. */
+      fingals_horn_use: 'Sound Fingal\'s Horn (summon the Fianna)',
+      fingals_horn_sounded: 'The Fianna rise at your call.',
       passives_heading: 'Curios:',
       /** Pause overlay — reference for gold elite trait names (lines use ui.elite_affix.*). */
       elite_affix_heading: 'Gold elites — traits:',

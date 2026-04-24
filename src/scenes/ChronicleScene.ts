@@ -44,6 +44,10 @@ import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFad
 import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { clickToScene } from './clickToScene';
+import {
+  computeRelicHistogram,
+  formatRelicHistogramRow,
+} from './game/relicHistogram';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 
 // Repeated text styles inside this scene — pinned so the row section
@@ -262,7 +266,13 @@ export class ChronicleScene extends Phaser.Scene {
     const curseLine = formatCurseStatsLine(computeCurseStats(save.runHistory), CURSES.length);
     const curseSection = curseLine ? `\n${curseLine}` : '';
 
-    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection + curseSection;
+    // R1 M4.5 P6 (T29) — dev-only Relic pick-rate histogram. Gated on
+    // the `?devRelicStats=1` URL param so playtesters can self-serve
+    // without shipping a prod-visible pane. Kill criteria live in the
+    // M4.5 plan: <5% pick rate = deadweight; >70% = auto-pick.
+    const relicHistogramSection = formatDevRelicHistogramSection(save.runHistory);
+
+    const milestoneLines = this.buildMilestoneLines(milestones) + codexSection + moorRoadSection + ironmoorSection + stonesSection + echoesSection + postBellSection + hearthSection + curseSection + relicHistogramSection;
     // Optional sections grow over a player's lifetime — tighten font +
     // line spacing once content gets dense so the panel still fits.
     // The threshold is generous (~12 lines) so casual saves keep the
@@ -580,5 +590,28 @@ export class ChronicleScene extends Phaser.Scene {
   private buildMilestoneLines(m: ReturnType<typeof computeMilestones>): string {
     return formatChronicleMilestoneLines(m).join('\n');
   }
+}
+
+/**
+ * R1 M4.5 P6 (T29) — optional Relic pick-rate block. Renders when the
+ * URL contains `?devRelicStats=1` so playtesters can self-report
+ * without a prod UI. Silent on fresh saves. Returns '' to keep the
+ * milestone block unchanged in the default (non-dev) path.
+ */
+function formatDevRelicHistogramSection(history: readonly RunHistoryEntry[]): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('devRelicStats') !== '1') return '';
+  } catch {
+    return '';
+  }
+  const summary = computeRelicHistogram(history);
+  if (summary.sampleRuns === 0) return '';
+  const top = summary.rows.filter((r) => r.pickCount > 0);
+  if (top.length === 0) return '';
+  const lines = top.map((r) => formatRelicHistogramRow(r, summary.sampleRuns));
+  const heading = `\n\nRelic pick-rates — ${summary.runsWithAnyRelic}/${summary.sampleRuns} runs held a relic (dev only)`;
+  return `${heading}\n${lines.join('\n')}`;
 }
 

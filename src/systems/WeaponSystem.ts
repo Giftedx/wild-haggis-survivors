@@ -265,19 +265,20 @@ export class WeaponSystem {
 
   /**
    * R1 M3 T20d — per-hit damage modifier. Called inside dealDamageToEnemy
-   * with the resolved damage + wall-clock ms + elite flag; return value
-   * replaces the damage before it lands. Used for bronze_clasp's
-   * first-hit-per-second bonus + highland_torque's +100% elite damage.
-   * Null = identity. Cleared on scene restart.
+   * with the resolved damage + wall-clock ms + elite flag + enemy velocity
+   * dot toward player; return value replaces the damage before it lands.
+   * Used for bronze_clasp's first-hit-per-second bonus, highland_torque's
+   * +100% elite damage, and (R1 M4.5 P3) fishermens_net's +30% for
+   * enemies fleeing the haggis. Null = identity. Cleared on scene restart.
    */
   setHitDamageModifier(
-    fn: ((damage: number, nowMs: number, isElite: boolean) => number) | null,
+    fn: ((damage: number, nowMs: number, isElite: boolean, velocityDotTowardPlayer: number) => number) | null,
   ): void {
     this.hitDamageModifier = fn;
   }
 
   private hitDamageModifier:
-    | ((damage: number, nowMs: number, isElite: boolean) => number)
+    | ((damage: number, nowMs: number, isElite: boolean, velocityDotTowardPlayer: number) => number)
     | null = null;
 
   update(delta: number, playerX: number, playerY: number): void {
@@ -922,16 +923,30 @@ export class WeaponSystem {
     isCrit: boolean = false,
     weaponKey: string = 'unknown'
   ): void {
-    // R1 M3 T20d + M4 — per-hit damage modifier runs first so
+    // R1 M3 T20d + M4 + M4.5 P3 — per-hit damage modifier runs first so
     // damageDealt + enemy.takeDamage + damage logs all see the same
     // final number. Covers bronze_clasp, highland_torque elite mult,
-    // fishermens_net (future velocity-aware wire).
-    const finalDamage = this.hitDamageModifier
-      ? Math.max(
-          0,
-          Math.ceil(this.hitDamageModifier(damage, this.scene.time.now, enemy.isElite())),
-        )
-      : damage;
+    // fishermens_net (velocity-aware +30% when fleeing).
+    let finalDamage = damage;
+    if (this.hitDamageModifier) {
+      const body = enemy.body as Phaser.Physics.Arcade.Body | null;
+      const vx = body?.velocity?.x ?? 0;
+      const vy = body?.velocity?.y ?? 0;
+      // dot = enemyVelocity · (playerPos − enemyPos). > 0 toward, < 0 away.
+      const velocityDotTowardPlayer =
+        vx * (this.cachePlayerX - enemy.x) + vy * (this.cachePlayerY - enemy.y);
+      finalDamage = Math.max(
+        0,
+        Math.ceil(
+          this.hitDamageModifier(
+            damage,
+            this.scene.time.now,
+            enemy.isElite(),
+            velocityDotTowardPlayer,
+          ),
+        ),
+      );
+    }
     this.events.emit('damageDealt', enemy.x, enemy.y, finalDamage, isCrit, weaponKey);
     const wasBoss = enemy.isBoss();
     const wasElite = enemy.isElite();

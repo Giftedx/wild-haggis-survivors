@@ -196,6 +196,20 @@ export class RelicPickupSpawner {
     return this.active.size;
   }
 
+  /**
+   * R1 M4.5 P2 — positions of every live pickup, for pictish_compass
+   * minimap pins. Returns rarity so the minimap can tint each pin by
+   * the Relic's particleColour downstream.
+   */
+  getActivePickupPositions(): Array<{ x: number; y: number; colour: number }> {
+    const out: Array<{ x: number; y: number; colour: number }> = [];
+    for (const inst of this.active) {
+      if (!inst.alive) continue;
+      out.push({ x: inst.x, y: inst.y, colour: inst.relic.particleColour });
+    }
+    return out;
+  }
+
   private drawGem(g: Phaser.GameObjects.Graphics, x: number, y: number, colour: number): void {
     // Diamond-shape gem with a brighter inner highlight. Compact so a
     // cluster of pickups doesn't overwhelm the play field.

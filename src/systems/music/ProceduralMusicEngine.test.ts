@@ -368,3 +368,62 @@ describe('ProceduralMusicEngine.getSchedulerHorizonsMs', () => {
   });
 });
 
+describe('ProceduralMusicEngine beat-phase getters (R1 M4.5 P4)', () => {
+  type BeatProbe = {
+    playing: boolean;
+    ctx: { currentTime: number } | null;
+    rhythmBPM: number;
+  };
+
+  let saved: { playing: boolean; ctx: unknown; bpm: number };
+
+  beforeEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    saved = {
+      playing: eng.playing as boolean,
+      ctx: eng.ctx,
+      bpm: eng.rhythmBPM as number,
+    };
+  });
+
+  afterEach(() => {
+    const eng = musicEngine as unknown as Record<string, unknown>;
+    eng.playing = saved.playing;
+    eng.ctx = saved.ctx;
+    eng.rhythmBPM = saved.bpm;
+  });
+
+  it('returns 0 period + 0 msSinceLastBeat when not playing', () => {
+    const probe = musicEngine as unknown as BeatProbe;
+    probe.playing = false;
+    probe.ctx = { currentTime: 1 };
+    probe.rhythmBPM = 120;
+    expect(musicEngine.getQuarterNotePeriodMs()).toBe(0);
+    expect(musicEngine.getMsSinceLastQuarterNote()).toBe(0);
+  });
+
+  it('derives quarter period from rhythmBPM when playing', () => {
+    const probe = musicEngine as unknown as BeatProbe;
+    probe.playing = true;
+    probe.ctx = { currentTime: 0 };
+    probe.rhythmBPM = 120; // 500ms/quarter
+    expect(musicEngine.getQuarterNotePeriodMs()).toBeCloseTo(500);
+  });
+
+  it('wraps msSinceLastBeat into [0, period) using audio-ctx clock', () => {
+    const probe = musicEngine as unknown as BeatProbe;
+    probe.playing = true;
+    probe.rhythmBPM = 120; // 500ms/quarter
+    probe.ctx = { currentTime: 1.75 }; // 1750ms → mod 500 = 250
+    expect(musicEngine.getMsSinceLastQuarterNote()).toBeCloseTo(250);
+  });
+
+  it('clamps BPM floor at 30 (2000ms/quarter) when rhythmBPM is very low', () => {
+    const probe = musicEngine as unknown as BeatProbe;
+    probe.playing = true;
+    probe.ctx = { currentTime: 0 };
+    probe.rhythmBPM = 10; // below 30 floor
+    expect(musicEngine.getQuarterNotePeriodMs()).toBeCloseTo(2000);
+  });
+});
+

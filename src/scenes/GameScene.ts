@@ -115,6 +115,7 @@ import { RunLifecycle } from './game/RunLifecycle';
 import { RelicSystem } from '../systems/RelicSystem';
 import { RelicEffectDriver } from '../systems/relics/RelicEffectDriver';
 import { RelicPickupSpawner } from '../entities/RelicPickup';
+import { FiannaSpirit } from '../entities/FiannaSpirit';
 import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
 import { RELICS, type RelicDef, type RelicKey } from '../data/relics';
 import type { RelicPickupSource } from '../entities/RelicPickup';
@@ -306,6 +307,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private relicEffectDriver!: RelicEffectDriver;
   /** R1 — Phaser-bound spawner for dropped Relic pickups. */
   private relicPickupSpawner: RelicPickupSpawner | null = null;
+  /** R1 M4.5 P5 — live Fianna summon entities (fingals_horn). Empty
+   *  until the horn is sounded; cleared on scene restart. */
+  private activeFiannaSpirits: FiannaSpirit[] = [];
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
   private enemyKillHandler!: EnemyKillHandler;
@@ -428,6 +432,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // previous run's sporran bleeds into the next.
     this.relicPickupSpawner?.destroyAll();
     this.relicPickupSpawner = null;
+    // R1 M4.5 P5 — dispose lingering Fianna from prior run before a
+    // fresh start (10s lifetime straddles restart otherwise).
+    for (const spirit of this.activeFiannaSpirits) {
+      try { spirit.destroy(); } catch { /* ignore */ }
+    }
+    this.activeFiannaSpirits = [];
     this.relicSystem = new RelicSystem();
     this.relicEffectDriver = new RelicEffectDriver(this.relicSystem);
     this.relicSlotUI?.destroy();
@@ -677,12 +687,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
     this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
     this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-    // R1 M3 T20d + M4 — per-hit damage stack. Bronze clasp first-hit
-    // window runs before highland_torque elite mult so the +15% +
-    // +100% compose predictably (no double-counting on the same hit).
-    this.weaponSystem.setHitDamageModifier((dmg, now, isElite) => {
+    // R1 M3 T20d + M4 + M4.5 P3/P4 — per-hit damage stack. Bronze
+    // clasp first-hit window runs before highland_torque elite mult
+    // so +15% + +100% compose predictably; fishermens_net applies
+    // after (velocity-aware), then bodhran_skin's on-beat window on
+    // top. Beat phase is sampled from the shared music engine at
+    // hit-time so a 60Hz frame lines up with the audio-ctx clock.
+    this.weaponSystem.setHitDamageModifier((dmg, now, isElite, velocityDot) => {
       const afterClasp = this.relicEffectDriver.modifyWeaponDamage(dmg, now);
-      return this.relicEffectDriver.modifyEliteDamage(afterClasp, isElite);
+      const afterElite = this.relicEffectDriver.modifyEliteDamage(afterClasp, isElite);
+      const afterFisher = this.relicEffectDriver.modifyFishermensNetDamage(afterElite, velocityDot);
+      const beatMs = musicEngine.getMsSinceLastQuarterNote();
+      const periodMs = musicEngine.getQuarterNotePeriodMs();
+      return this.relicEffectDriver.modifyBodhranBeatDamage(afterFisher, beatMs, periodMs);
     });
     this.xpSystem = new XPSystem(this);
     Enemy.refreshSettings();
@@ -869,6 +886,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onBossKilled: (bossKey, x, y) => this.rollAndSpawnRelic('boss', x, y, bossKey),
       modifyLifesteal: (base) => this.relicEffectDriver?.modifyLifesteal(base, this.time.now) ?? base,
       modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
+      tryCairnStoneMagnet: (x, y) => {
+        // R1 M4.5 P1 — heather-biome kills grant a short pickup-magnet
+        // pulse, reusing the ceilidh-chain buff path (flat radius +
+        // duration). Cooldown lives inside the driver.
+        const driver = this.relicEffectDriver;
+        if (!driver) return;
+        const biome = this.getBiomeManager()?.biomeAt(x, y);
+        if (biome !== 'heather') return;
+        if (!driver.tryCairnStoneHeatherKill(this.time.now)) return;
+        this.player.grantCeilidhChainMagnet(40, 2000);
+      },
     });
     this.weaponSystem.events.on(
       'enemyKilled',
@@ -1499,6 +1527,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.relicEffectDriver.modifyCritMultiplier(this.player.getCritDamageMultiplier()),
     );
     this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
+
+    // R1 M4.5 P5 — tick live Fianna summons + sweep expired. Use
+    // scaledDelta so slow-mo shortens the spirits' effective lifetime
+    // in lockstep with every other timed effect.
+    if (this.activeFiannaSpirits.length > 0) {
+      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      const kept: FiannaSpirit[] = [];
+      for (const spirit of this.activeFiannaSpirits) {
+        spirit.tick(scaledDelta, enemies);
+        if (spirit.active && !spirit.isExpired()) kept.push(spirit);
+      }
+      this.activeFiannaSpirits = kept;
+    }
+
     this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHpFraction());
     // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw
     // delta so VFX don't stall during slow-mo and the combo meter still decays
@@ -1508,6 +1550,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Boss HP bar + edge indicators
     this.bossHpTracker.tick();
     this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
+    // R1 M4.5 P2 — pictish_compass surfaces live relic pickup pins on
+    // the minimap. Gated on isHolding so non-holders see no change.
+    const relicPins =
+      this.relicEffectDriver?.isHolding('pictish_compass') && this.relicPickupSpawner
+        ? this.relicPickupSpawner.getActivePickupPositions()
+        : [];
     this.minimap.update(
       this.player.x,
       this.player.y,
@@ -1515,6 +1563,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.chestRegistry.getMarkers(),
       this.player.rotation,
       this.reliquary?.getMinimapMarker() ?? null,
+      relicPins,
     );
     const biomeId = this.getCurrentBiomeId();
     updateMusicStateScratch(
@@ -1591,6 +1640,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
           isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
           onWhiskyDramRequested: () => this.activateWhiskyDram(),
+          isFingalsHornAvailable: () => this.relicEffectDriver?.isFingalsHornAvailable() ?? false,
+          onFingalsHornRequested: () => this.activateFingalsHorn(),
         });
       }
       this.pauseMenu.open();
@@ -2021,6 +2072,32 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (healed > 0) this.player.heal(healed);
     this.juice.showToast(t('ui.pause.whisky_dram_drunk'), TOAST_COLORS.reward);
     this.juice.flashWhite(120);
+    audio.playLevelUp();
+  }
+
+  /**
+   * R1 M4.5 P5 — blow Fingal's Horn. One-shot active relic: summons
+   * `result.summonCount` Fianna at the haggis's position; each lives
+   * `result.durationMs` ms and hunts nearest non-boss enemies. Driver
+   * gates re-use so the button disappears after firing.
+   */
+  private activateFingalsHorn(): void {
+    if (!this.relicEffectDriver) return;
+    const result = this.relicEffectDriver.activateFingalsHorn();
+    if (!result.fired) return;
+    const px = this.player.x;
+    const py = this.player.y;
+    // Fan out the spawn ring so the three spirits don't stack into
+    // one visible glyph at t=0.
+    for (let i = 0; i < result.summonCount; i++) {
+      const angle = (i / result.summonCount) * Math.PI * 2;
+      const sx = px + Math.cos(angle) * 18;
+      const sy = py + Math.sin(angle) * 18;
+      const spirit = new FiannaSpirit(this, sx, sy, result.durationMs);
+      this.activeFiannaSpirits.push(spirit);
+    }
+    this.juice.showToast(t('ui.pause.fingals_horn_sounded'), TOAST_COLORS.reward);
+    this.juice.flashWhite(140);
     audio.playLevelUp();
   }
 

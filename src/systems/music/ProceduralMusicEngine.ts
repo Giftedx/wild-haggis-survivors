@@ -452,6 +452,33 @@ class ProceduralMusicEngine {
   isPlaying(): boolean { return this.playing; }
 
   /**
+   * R1 M4.5 P4 — quarter-note period in ms, derived from current
+   * rhythm BPM. Consumed by bodhran_skin's per-hit damage modifier.
+   * Returns 0 when the engine isn't playing (caller's pure fn treats
+   * that as "no beat", so baseline damage).
+   */
+  getQuarterNotePeriodMs(): number {
+    if (!this.playing) return 0;
+    const bpm = Math.max(30, this.rhythmBPM);
+    return 60000 / bpm;
+  }
+
+  /**
+   * R1 M4.5 P4 — ms since the last quarter-note downbeat, derived
+   * directly from the shared AudioContext clock. Phase is defined as
+   * `(audioCtxTimeMs) mod period`, so the window stays stable without
+   * tracking individual rhythm-callback events; `msSinceLastBeat` is
+   * always in [0, period). Returns 0 when not playing.
+   */
+  getMsSinceLastQuarterNote(): number {
+    if (!this.playing || !this.ctx) return 0;
+    const bpm = Math.max(30, this.rhythmBPM);
+    const periodMs = 60000 / bpm;
+    const nowMs = this.ctx.currentTime * 1000;
+    return ((nowMs % periodMs) + periodMs) % periodMs;
+  }
+
+  /**
    * Diagnostic — lookahead horizons (ms) for each scheduler layer relative to
    * the audio-context current time. Returns null when the engine is not
    * playing or the audio context isn't available. Consumed by DebugOverlay.

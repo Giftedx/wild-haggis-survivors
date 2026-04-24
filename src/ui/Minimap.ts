@@ -81,6 +81,9 @@ export class Minimap {
     /** Optional amber pin for the Reliquary pickup — null when the relic is
      *  collected, unspawned, or the mode doesn't use it. */
     reliquaryMarker: { x: number; y: number } | null = null,
+    /** R1 M4.5 P2 — optional per-Relic pickup pins, rendered only when the
+     *  pictish_compass relic is held. Empty array when not held. */
+    relicMarkers: Array<{ x: number; y: number; colour: number }> = [],
   ): void {
     this.gfx.clear();
 
@@ -160,6 +163,20 @@ export class Minimap {
       this.gfx.fillStyle(0xffb060, 1);
       this.gfx.fillTriangle(rx, ry - 4, rx + 3, ry, rx, ry + 4);
       this.gfx.fillTriangle(rx, ry - 4, rx - 3, ry, rx, ry + 4);
+    }
+
+    // Relic pickup pins — coloured diamonds, one per live pickup. Only
+    // rendered when the caller passes a non-empty array (i.e. the
+    // pictish_compass relic is held).
+    for (const pin of relicMarkers) {
+      const px2 = Phaser.Math.Clamp(mapX + pin.x * scaleX, mapX, mapX + this.SIZE);
+      const py2 = Phaser.Math.Clamp(mapY + pin.y * scaleY, mapY, mapY + this.SIZE);
+      this.gfx.fillStyle(0x000000, 0.6);
+      this.gfx.fillTriangle(px2, py2 - 4, px2 + 3, py2, px2, py2 + 4);
+      this.gfx.fillTriangle(px2, py2 - 4, px2 - 3, py2, px2, py2 + 4);
+      this.gfx.fillStyle(pin.colour, 1);
+      this.gfx.fillTriangle(px2, py2 - 3, px2 + 2, py2, px2, py2 + 3);
+      this.gfx.fillTriangle(px2, py2 - 3, px2 - 2, py2, px2, py2 + 3);
     }
 
     // Camera viewport outline.

@@ -110,6 +110,14 @@ export interface EnemyKillHandlerHooks {
    * gordon (Tier-1) and taxman (victory path).
    */
   onBossKilled?(bossKey: string, x: number, y: number): void;
+
+  /**
+   * R1 M4.5 P1 — called on every kill so the scene can gate a
+   * cairn_stone heather-kill magnet pulse (biome lookup + driver
+   * cooldown + player.grantCeilidhChainMagnet). Handler stays
+   * biome-agnostic; scene owns the side-effect.
+   */
+  tryCairnStoneMagnet?(x: number, y: number): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -190,6 +198,10 @@ export class EnemyKillHandler {
     }
 
     spawn.noteKillPressure();
+
+    // R1 M4.5 P1 — cairn_stone heather-kill magnet hook.
+    h.tryCairnStoneMagnet?.(x, y);
+
     juice.showKillBurst(x, y, resolveEnemyDeathColor(enemyKey));
     juice.hitFreeze();
 
