@@ -5,11 +5,19 @@ import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
 import { WeaponSystem } from '../systems/WeaponSystem';
 import { XPSystem } from '../systems/XPSystem';
+import {
+  NodeMapSystem,
+  buildNodeMapState,
+  generateNodePath,
+  placeNodes,
+} from '../systems/NodeMapSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
 import { Minimap } from '../ui/Minimap';
+import { NodeMapUI } from '../ui/NodeMapUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
+import { getActBank } from '../data/nodeBanks';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
@@ -188,6 +196,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private clipRecorder: ClipRecorder | null = null;
   private edgeIndicators!: EdgeIndicators;
   private minimap!: Minimap;
+  /** M1 Moor Road — per-run node-path system + HUD widget. */
+  private readonly nodeMapSystem = new NodeMapSystem();
+  private nodeMapUI: NodeMapUI | null = null;
   /** R1 M3 T22 — 3-slot HUD widget for held Relics. */
   private relicSlotUI: RelicSlotUI | null = null;
   private readonly chestRegistry = new ChestSpriteRegistry();
@@ -416,6 +427,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pauseMenu = null;
     this.runScore.reset();
     this.runActState.reset();
+    this.nodeMapSystem.reset();
+    this.nodeMapUI?.destroy();
+    this.nodeMapUI = null;
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
     this.runRng = createRNG(runSeed);
@@ -1273,6 +1287,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
+    this.nodeMapUI = new NodeMapUI(this);
+    // Listener is registered once per scene-create and lives until reset.
+    // Placeholder visit behaviour: mark + log + advance cursor. The M3
+    // event handlers will intercept here with real effects (encounter
+    // wave / shrine picker / trader UI / etc.).
+    this.nodeMapSystem.setTriggerListener((index, state) => {
+      if (state.visited[index]) return;
+      this.nodeMapSystem.markVisited(index);
+      this.runActState.recordNodeOutcome({
+        nodeKey: state.nodes[index].key,
+        visitedAtGameTimeSec: this.spawnSystem.getGameTimeSec(),
+      });
+      const mapLen = state.nodes.length;
+      while (
+        this.runActState.currentNodeIndex < mapLen &&
+        state.visited[this.runActState.currentNodeIndex]
+      ) {
+        this.runActState.currentNodeIndex++;
+      }
+    });
+    this.initNodeMapForAct(1);
     this.relicSlotUI?.destroy();
     this.relicSlotUI = new RelicSlotUI(this, {
       getHeldSlots: () => this.relicSystem.getSlots().map((s) => s.def),
@@ -1428,6 +1463,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       try { this.juice?.destroy(); } catch { /* ignore */ }
       try { this.hud?.destroy(); } catch { /* ignore */ }
       try { this.minimap?.destroy(); } catch { /* ignore */ }
+      try { this.nodeMapUI?.destroy(); } catch { /* ignore */ }
+      this.nodeMapUI = null;
+      this.nodeMapSystem.reset();
       try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
       try { this.gameTickers?.destroy(); } catch { /* ignore */ }
@@ -1559,6 +1597,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.player.update(delta);
     this.player.tickRegen(scaledDelta);
     this.spawnSystem.update(scaledDelta, this.player.x, this.player.y);
+
+    // M1 — tick node proximity + refresh HUD widget. Tick fires listener
+    // while player is within trigger radius of an un-visited node; the
+    // registered listener marks visited + logs outcome + advances cursor.
+    this.nodeMapSystem.tick({ x: this.player.x, y: this.player.y });
+    this.nodeMapUI?.update(
+      this.runActState.currentActNodeMap,
+      this.runActState.currentNodeIndex,
+    );
 
     const runSec = Math.floor(this.spawnSystem.getGameTimeSec());
     if (runSec !== this.lastEmittedRunSecond) {
@@ -1890,6 +1937,33 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * so the kill-handling pipeline can finish cleanly (camera shake, XP gem
    * spawn, banter) before the modal opens.
    */
+  /**
+   * Roll and install a node-path for the requested act. Generation is
+   * seeded off `runRng.branch()` so the same run seed deterministically
+   * reproduces the path for replay; positions are placed relative to the
+   * player's current position so Act 2/3 paths unfold wherever the
+   * player happens to be on the moor when a picker resolves.
+   */
+  private initNodeMapForAct(act: 1 | 2 | 3): void {
+    const bank = getActBank(act);
+    const rng = this.runRng.branch();
+    const nodes = generateNodePath(bank, act, rng);
+    const origin = { x: this.player.x, y: this.player.y };
+    const positions = placeNodes(nodes.length, origin, rng.branch(), {
+      separation: 1000,
+      worldBounds: {
+        minX: 40,
+        minY: 40,
+        maxX: GAME.WORLD_WIDTH - 40,
+        maxY: GAME.WORLD_HEIGHT - 40,
+      },
+    });
+    const state = buildNodeMapState(act, nodes, positions);
+    this.runActState.currentActNodeMap = state;
+    this.runActState.currentNodeIndex = 0;
+    this.nodeMapSystem.setMap(state);
+  }
+
   private launchActIntermission(actN: 1 | 2): void {
     const slot: PickerSlot = actN === 1 ? 'A' : 'B';
     const atGameTimeSec = Math.floor(this.spawnSystem.getGameTimeSec());
@@ -1927,6 +2001,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         (actN + 1) as 1 | 2 | 3,
         this.spawnSystem.getGameTimeSec(),
       );
+      // M1 — fresh node path for the new act. Runs after advanceToAct so
+      // `runActState.currentAct` reads the new value everywhere downstream.
+      this.initNodeMapForAct((actN + 1) as 1 | 2 | 3);
       route.onResume?.(this.buildRouteResumeContext());
       this.timeManager.release('ACT_INTERMISSION');
       // Telemetry fan-out — AnalyticsManager logs `route_picked` (opt-in
