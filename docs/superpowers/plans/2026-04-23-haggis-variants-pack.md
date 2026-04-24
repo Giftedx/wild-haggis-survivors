@@ -1,6 +1,6 @@
 # V2 — Haggis Variants Pack (+3 new variants) implementation plan
 
-> **STATUS:** Draft. Track 1 (Doric Quinie) in-flight 2026-04-24.
+> **STATUS:** Track 1 (Doric Quinie) SHIPPED 2026-04-24 in commits `b49fd40` + `487221b`. Tracks 2 + 3 blocked on decisions recorded in `docs/superpowers/plans/2026-04-24-v2-variants-followups.md`.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
 >
