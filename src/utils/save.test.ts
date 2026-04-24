@@ -1982,3 +1982,42 @@ describe('save schema v13 → v14 (Croft trophies + seed)', () => {
     expect(migrated.cursedVictoriesByBoss).toEqual({ taxman: 1 });
   });
 });
+
+describe('progressSnapshotFromSave (V2 followup)', () => {
+  it('maps SaveData long-field names to VariantProgressSnapshot short names', async () => {
+    const { progressSnapshotFromSave, createDefaultSave } = await import('./save');
+    const save = createDefaultSave();
+    save.bestTime = 600;
+    save.bestKills = 420;
+    save.totalGoldEarned = 12_500;
+    save.victories = 3;
+    save.cursedVictoriesCompleted = 2;
+    save.runsWithoutHealingCircleCompleted = 5;
+    save.runsInCoastalOnlyCompleted = 1;
+    save.runsWithAllEvolutionsCompleted = 1;
+    save.unlockedVariants = ['classic', 'moor_runner'];
+
+    const snap = progressSnapshotFromSave(save);
+
+    expect(snap.bestTime).toBe(600);
+    expect(snap.bestKills).toBe(420);
+    expect(snap.totalGoldEarned).toBe(12_500);
+    expect(snap.victories).toBe(3);
+    // Long names on SaveData become short names on the snapshot.
+    expect(snap.cursedVictories).toBe(2);
+    expect(snap.runsWithoutHealing).toBe(5);
+    expect(snap.runsInCoastalOnly).toBe(1);
+    expect(snap.runsWithAllEvolutions).toBe(1);
+    expect(snap.unlockedVariants).toEqual(['classic', 'moor_runner']);
+  });
+
+  it('defaults on a fresh save are all zero / empty', async () => {
+    const { progressSnapshotFromSave, createDefaultSave } = await import('./save');
+    const snap = progressSnapshotFromSave(createDefaultSave());
+    expect(snap.bestTime).toBe(0);
+    expect(snap.cursedVictories).toBe(0);
+    expect(snap.runsWithoutHealing).toBe(0);
+    expect(snap.runsInCoastalOnly).toBe(0);
+    expect(snap.runsWithAllEvolutions).toBe(0);
+  });
+});

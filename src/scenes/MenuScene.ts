@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
-import { SaveData, loadSave, writeSave } from '../utils/save';
+import { SaveData, loadSave, writeSave, progressSnapshotFromSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
@@ -263,9 +263,14 @@ export class MenuScene extends Phaser.Scene {
     const panelWidth = 680;
     const panelHeight = layout.panelHeight;
     const variant = VARIANTS[this.carouselIndex];
-    const unlocked = isVariantUnlocked(variant, this.saveData);
+    // V2 followup — structural typing masks the SaveData long-field ↔
+    // VariantProgressSnapshot short-field mismatch; pass a properly-
+    // keyed snapshot so unlock progress above a 1-run threshold reads
+    // correctly.
+    const variantProgress = progressSnapshotFromSave(this.saveData);
+    const unlocked = isVariantUnlocked(variant, variantProgress);
     const selected = this.selectedVariantKey === variant.key;
-    const unlockProgress = getVariantUnlockProgress(variant, this.saveData);
+    const unlockProgress = getVariantUnlockProgress(variant, variantProgress);
     const infoX = panelX - 92;
     // Vertical offsets scale with uiScale so the scaled variant rows
     // (name 24px → 34px, flavor 13px → 18px wrap, modifier 13px, progress
@@ -477,7 +482,7 @@ export class MenuScene extends Phaser.Scene {
     });
     push(this.variantSelectHit, () => {
       const v = VARIANTS[this.carouselIndex];
-      if (!v || !isVariantUnlocked(v, this.saveData) || this.selectedVariantKey === v.key) return;
+      if (!v || !isVariantUnlocked(v, progressSnapshotFromSave(this.saveData)) || this.selectedVariantKey === v.key) return;
       audio.playClick();
       this.selectVariant(v.key);
     });

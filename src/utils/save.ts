@@ -880,6 +880,28 @@ function coerceStringArray(value: unknown): string[] {
   return out;
 }
 
+/**
+ * V2 followup — build a `VariantProgressSnapshot` whose field names
+ * match the snapshot contract (short names: `cursedVictories`, not
+ * the SaveData long form `cursedVictoriesCompleted`). SaveScenes
+ * rendering variant-progress strips must route through this helper
+ * rather than pass `SaveData` directly — structural typing masks the
+ * name mismatch and silently reports "0/N" for every progress row.
+ */
+export function progressSnapshotFromSave(save: SaveData): VariantProgressSnapshot {
+  return {
+    bestTime: save.bestTime,
+    bestKills: save.bestKills,
+    totalGoldEarned: save.totalGoldEarned,
+    victories: save.victories,
+    cursedVictories: save.cursedVictoriesCompleted,
+    runsWithoutHealing: save.runsWithoutHealingCircleCompleted,
+    runsInCoastalOnly: save.runsInCoastalOnlyCompleted,
+    runsWithAllEvolutions: save.runsWithAllEvolutionsCompleted,
+    unlockedVariants: save.unlockedVariants,
+  };
+}
+
 function buildProgressSnapshot(
   candidate: SaveRecord,
   unlockedVariants: readonly VariantKey[]
