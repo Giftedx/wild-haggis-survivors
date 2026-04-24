@@ -2186,58 +2186,72 @@ export const SCS_STRINGS: LocaleTree = {
     classic: {
       name: 'Classic Haggis',
       flavor: 'Tha baseline beast. Crooked legs, straicht ambition.',
+      lore: 'Tha baseline beast, afore records began. Whit tha moor wis afore it wis named. Gran says ivvery haggis comes hame tae this yin in tha end.',
     },
     moor_runner: {
       name: 'Moor Runner',
       flavor: 'Lean an wind-cut, biggit tae skim tha heather.',
+      lore: 'Lean as a winter stoat. Skin ticht tae tha frame; ivvery ounce wedded tae speed. Tha moor maks runners o them it cannae haud.',
     },
     iron_belly: {
       name: 'Iron Belly',
       flavor: 'Heavy, thrawn — an haird tae stap wance it stairts rowin.',
+      lore: 'Slow-steppin kin o tha bog, thick-ribbed an granite-sided. Gordon tha Chef\'s tried, on three occasions, tae pit a knife through yin. Tha knife lost.',
     },
     glen_forager: {
       name: 'Glen Forager',
       flavor: 'A scavenger o glens an glitterin spoils.',
+      lore: 'Tracks tha glen bi whit it leaves behind. Ivvery thistle-seed, ivvery coin lost tae tha heather. Gran keeps yin in tha kitchen fer tha gleanins.',
     },
     surefoot: {
       name: 'Surefit',
       flavor: 'Tha drift still whispers, aye, but it nae langer decides.',
+      lore: 'Tha drift still whispers in tha crookit legs. Tha surefoot\'s learnt tae listen wi\'oot obeyin. Tha hill pays it nae mind; it pays tha hill tha same.',
     },
     pipe_breath: {
       name: 'Pipe Braith',
       flavor: 'Wheesht — tha moor exhales through this wan.',
+      lore: 'Born tae tha drone. Its heart keeps time tae a ceòl mòr nae ither craitur hears. Tha pipes are an echo; this haggis is tha braith ahint them.',
     },
     laird: {
       name: 'Tha Laird',
       flavor: 'Wears tha tartan proper. Lordly swagger, heavier swing.',
+      lore: 'Wears tha Royal Stewart wi\'oot permission an wi\'oot apology. Tenants boo; rents nivver rise. Tha kilt is pinned straicht; tha swing is heavier.',
     },
     wee_ghostie: {
       name: 'Wee Ghostie',
       flavor: 'Pale an thin — here an no here. Hits haird, breks easy.',
+      lore: 'Pale at tha edges, thin as a thocht. Here an then no. Tha Cailleach keeps yin in her shawl, or sae it\'s said; tha wee ghostie disnae mind bein kept.',
     },
     glaswegian: {
       name: 'Weegie',
       flavor: 'Toon-hardened. Big swing, paper skin. Pure mental, so he is.',
+      lore: 'Fae tha city whaur tha rain\'s horizontal. Skin like rice paper, swing like a hemmer. Aye, mental — but tha moor\'s learnt respect.',
     },
     cailleach: {
       name: 'The Cailleach',
       flavor: 'Auld as tha moor itsel. Moves slow, hoards tha glen\'s secrets. Aye, she\'s been here langer than ye.',
+      lore: 'She\'s aulder than tha moor. Tha stanes mind her. Whan tha first frost comes doon fae tha glen, it comes acause she\'s askit it tae.',
     },
     anticlockwise: {
       name: 'Widdershins Haggis',
       flavor: 'Tha ither subspecies, fae tha glens whaur tha hills lean left. Drift turns tha wrang way — or tha richt way, dependin wha ye ask.',
+      lore: 'Tha ither subspecies, fae tha glens whaur tha hills lean widdershins. Tha drift mirrors. Tha clock in tha kirk at Glen Lyon rins tha richt way; ivvery haggis born there rins tha ither.',
     },
     doric_quinie: {
       name: 'Doric Quinie',
       flavor: 'Nor\'-east fisher-faimly wee beastie. Granite constitution, quick een, a heid fer tha haar. Fit like, min?',
+      lore: 'Fae tha nor\'-east, whaur tha land draps tae tha sea an tha sea disnae forgive. Granite constitution, an een fer tha haar rowin aff Aiberdeen. Fit like, min?',
     },
     peerie_shetlander: {
       name: 'Peerie Shetlander',
       flavor: 'Fae tha northern isles — Norn-tinged, peerie, sea-fittit. Tha voe minds ye, du. Tha wind\'s aw ready up.',
+      lore: 'Fae tha northern isles, whaur Norn is still whispered in bairns\' names. Peerie — wee — but wind-tempered. Tha voe minds ye; du\'ll mind it back.',
     },
     burns_wee_beastie: {
       name: 'Burns\'s Wee Beastie',
       flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot tha bard\'s poem. Wee-er nor tha moor, fiercer nor it looks.',
+      lore: '"Wee, sleekit, cow\'rin, tim\'rous beastie, O whit a panic\'s in thy breastie" — Burns spoke o mice, but tha wild haggis listened. Wee-er than tha moor; braver than it should be.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

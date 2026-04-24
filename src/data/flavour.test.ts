@@ -2,6 +2,7 @@ import { describe, expect, it, afterEach } from 'vitest';
 import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 import { WEAPON_DEFS } from './weapons';
 import { PERMANENT_UPGRADES } from './permanentUpgrades';
+import { VARIANTS } from './variants';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import type { PassiveKey } from './upgrades';
 
@@ -54,6 +55,13 @@ describe('C2 — flavour leaves present in EN + SCS', () => {
     {
       scope: 'permanentUpgrade',
       keys: PERMANENT_UPGRADES.map((u) => `permanentUpgrade.${u.key}.flavour`),
+    },
+    {
+      // M2 — variants carry Dark-Souls-style `lore` alongside the existing
+      // short `flavor` tagline. Separate leaf name so the variant panel's
+      // tagline render keeps working untouched.
+      scope: 'variant',
+      keys: VARIANTS.map((v) => `variant.${v.key}.lore`),
     },
   ];
 
