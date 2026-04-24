@@ -2622,7 +2622,7 @@ export const SCS_STRINGS: LocaleTree = {
     sporran_of_holding: {
       name: 'Sporran o Haudin',
       effect: 'Ilka gold pickup gies ye +2.',
-      flavour: 'Roomier than it looks. Gran insists it\'s just weel-ordered.',
+      flavour: 'Tha guid sporran — tha Sunday yin. Lined in Loch Shin seal-skin afore tha ban. It hauds whit tha day-sporran couldnae fit.',
     },
     oatcake_stash: {
       name: 'Oatcake Stash',
@@ -2632,12 +2632,12 @@ export const SCS_STRINGS: LocaleTree = {
     grans_thimble: {
       name: 'Gran\'s Thimmle',
       effect: 'Crits bite fer +8% damage.',
-      flavour: 'Precision passed doon eight generations o mendin.',
+      flavour: 'Siller, pittit fae echt generations o mendin. Gran wore it through tha kilt, through tha sash, through tha thistle croun\'s thorns. It hasnae missed a stitch.',
     },
     lucky_heather_sprig: {
       name: 'Lucky Heather Sprig',
       effect: '+3 luck on level-up draws.',
-      flavour: 'Fund in tha peat whaur a shepherd fell in 1820. Still sweet-smellin.',
+      flavour: 'A twin tae tha heather in tha shop-jar. Fund at a different daith. Still sweet-smellin; still lucky — fer aw but tha shepherd wha led it.',
     },
     bronze_clasp: {
       name: 'Bronze Clasp',

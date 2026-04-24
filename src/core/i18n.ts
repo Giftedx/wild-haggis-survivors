@@ -2925,7 +2925,7 @@ export const EN_STRINGS: LocaleTree = {
     sporran_of_holding: {
       name: 'Sporran of Holding',
       effect: 'Every gold pickup yields +2.',
-      flavour: 'Capacious beyond reason. Gran insists it\'s just well-organised.',
+      flavour: 'The good sporran — the Sunday one. Lined in Loch Shin seal-skin before the ban. It holds what the day-sporran couldn\'t fit.',
     },
     oatcake_stash: {
       name: 'Oatcake Stash',
@@ -2935,12 +2935,12 @@ export const EN_STRINGS: LocaleTree = {
     grans_thimble: {
       name: 'Gran\'s Thimble',
       effect: 'Critical hits deal +8% damage.',
-      flavour: 'Precision passed through eight generations of mending.',
+      flavour: 'Silver, pitted from eight generations of mending. Gran wore it through the kilt, through the sash, through the thistle-crown\'s thorns. It has not missed a stitch.',
     },
     lucky_heather_sprig: {
       name: 'Lucky Heather Sprig',
       effect: '+3 luck on level-up card draws.',
-      flavour: 'Found in the peat below where a shepherd fell in 1820. Still fragrant.',
+      flavour: 'A twin to the heather in the shop-jar. Found at a different death. Still fragrant; still lucky — for all but the shepherd who led it.',
     },
     bronze_clasp: {
       name: 'Bronze Clasp',
