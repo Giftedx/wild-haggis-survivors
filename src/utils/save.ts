@@ -18,6 +18,8 @@ import {
 import {
   createEmptyDiscoveryLog,
   discoveryLogFromJSON,
+  recordBeastieKilled,
+  recordBeastieSeen,
   retroactiveSeedFromHistory,
   type DiscoveryLog,
   type RetroHistoryEntry,
@@ -854,6 +856,48 @@ export function bumpSeenEnemy(enemyKey: string): void {
     const cur = loadSave();
     if (cur.seenEnemies.includes(enemyKey)) return;
     writeSave({ ...cur, seenEnemies: [...cur.seenEnemies, enemyKey] });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * C1 M2 Task 11 — record a beastie sighting into the DiscoveryLog.
+ * Best-effort — swallow storage errors so spawns never block. Writes
+ * only on the first-encounter transition per key to keep the spawn
+ * hot path off localStorage; subsequent `seenCount` bumps live in
+ * memory only (and the Beasties book never surfaces that counter
+ * anyway, per spec §2 — only kill count + first-seen are visible).
+ */
+export function bumpBeastieSeen(
+  beastieKey: string,
+  runId: string,
+  timestamp: number,
+): void {
+  if (!beastieKey) return;
+  try {
+    const cur = loadSave();
+    if (cur.discoveryLog.beastiesSeen[beastieKey]) return;
+    const nextLog = recordBeastieSeen(cur.discoveryLog, beastieKey, runId, timestamp);
+    writeSave({ ...cur, discoveryLog: nextLog });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * C1 M2 Task 11 — bump `killCount` for a beastie in the DiscoveryLog.
+ * Requires a prior `bumpBeastieSeen` (the DiscoveryLog module no-ops
+ * on unseen keys so kill events on edge-case orderings don't blow up);
+ * EnemyKillHandler calls this on every kill.
+ */
+export function bumpBeastieKilled(beastieKey: string): void {
+  if (!beastieKey) return;
+  try {
+    const cur = loadSave();
+    const nextLog = recordBeastieKilled(cur.discoveryLog, beastieKey);
+    if (nextLog === cur.discoveryLog) return; // no-op when key unseen
+    writeSave({ ...cur, discoveryLog: nextLog });
   } catch {
     /* best-effort */
   }

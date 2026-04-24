@@ -37,7 +37,7 @@ import {
   goldCoinDropRate,
   goldCoinAmountRange,
 } from './killDrops';
-import { bumpFirstTimeEvent } from '../../utils/save';
+import { bumpBeastieKilled, bumpFirstTimeEvent } from '../../utils/save';
 
 export interface EnemyKillHandlerHooks {
   // Systems
@@ -124,6 +124,12 @@ export class EnemyKillHandler {
       Math.ceil(xpValue * player.getXpMultiplier() * (1 + comboXpBonus)),
     );
     score.incrementKillCount();
+
+    // C1 M2 Task 11 — Almanac Beasties book kill tally. Best-effort
+    // localStorage write per kill; DiscoveryLog.recordBeastieKilled
+    // no-ops on keys that were never `bumpBeastieSeen`'d, so a
+    // stray kill on a pre-discovery-log save stays silent.
+    bumpBeastieKilled(enemyKey);
 
     // Elite back-to-back chain — gold bonus only, resets after triple.
     if (wasElite && !wasBoss) {

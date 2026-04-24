@@ -17,7 +17,7 @@ import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
 import { snapToNearestWorldEdge } from './snapToWorldEdge';
 import { resolveEnemyAmbientTrigger } from '../data/enemyAmbientTrigger';
-import { bumpSeenEnemy, loadSave } from '../utils/save';
+import { bumpBeastieSeen, bumpSeenEnemy, loadSave } from '../utils/save';
 
 /** First matching reason wins — see `getSpawnStallReason()`. Boss lifecycle is orthogonal to wave stalls. */
 export type SpawnStallReason =
@@ -99,6 +99,14 @@ export class SpawnSystem {
    */
   private seenEnemiesCache: Set<string> = new Set();
 
+  /**
+   * C1 M2 Task 11 — stable runId stamped into new DiscoveryLog entries
+   * on first-encounter. Derived from the run RNG's 32-bit seed so a
+   * player rerunning a Chronicle seed shows the same `run:${seed}` id
+   * (cosmetic — not surfaced yet, but keeps the telemetry honest).
+   */
+  private discoveryRunId: string = 'run:unknown';
+
   /** Emits 'bossWarning' and 'bossKilled' events */
   readonly events = new Phaser.Events.EventEmitter();
   private readonly settings: SettingsManager;
@@ -130,6 +138,16 @@ export class SpawnSystem {
       this.seenEnemiesCache = new Set(loadSave().seenEnemies);
     } catch {
       this.seenEnemiesCache = new Set();
+    }
+
+    // C1 M2 Task 11 — capture the run seed as the DiscoveryLog runId.
+    // Best-effort: test scenes without a run RNG keep the default
+    // sentinel string.
+    try {
+      const seed = scene.getRunRng().seed;
+      this.discoveryRunId = `run:${seed >>> 0}`;
+    } catch {
+      /* keep sentinel */
     }
   }
 
@@ -230,6 +248,11 @@ export class SpawnSystem {
     if (decision === 'first') {
       this.seenEnemiesCache.add(config.key);
       bumpSeenEnemy(config.key);
+      // C1 M2 Task 11 — persist into the DiscoveryLog so the Almanac's
+      // Beasties book can paint in the silhouette. `bumpBeastieSeen`
+      // itself short-circuits on a repeat key, so the cache above is
+      // the per-run gate; this persists cross-run.
+      bumpBeastieSeen(config.key, this.discoveryRunId, Date.now());
       this.scene.requestBanter?.('enemy_ambient', config.key);
     } else if (decision === 'respawn') {
       this.scene.requestBanter?.('enemy_ambient', config.key);
@@ -400,6 +423,12 @@ export class SpawnSystem {
       enemy.markAsBoss();
       this.bossActive = true;
       this.spawnedBossKeys.add(boss.key);
+
+      // C1 M2 Task 11 — bosses are beasties too. Skip the `enemy_ambient`
+      // path (bosses own their own warning banter) but still seed the
+      // DiscoveryLog so the Almanac's Beasties book reveals the sprite
+      // on first spawn.
+      bumpBeastieSeen(boss.key, this.discoveryRunId, Date.now());
 
       // Dramatic entrance — camera zoom pulse + shake
       const cam = this.scene.cameras.main;

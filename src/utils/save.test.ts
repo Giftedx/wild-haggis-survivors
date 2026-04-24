@@ -5,6 +5,8 @@ import {
   SAVE_SCHEMA_VERSION,
   applyRunSummary,
   bumpAncestralEchoesTouched,
+  bumpBeastieKilled,
+  bumpBeastieSeen,
   bumpCeilidhPulsesLifetime,
   bumpFirstTimeEvent,
   bumpReliquaryCurioPick,
@@ -1143,6 +1145,51 @@ describe('lifetime-counter bumps', () => {
   it('bumpFirstTimeEvent returns false on empty id', () => {
     expect(bumpFirstTimeEvent('')).toBe(false);
     expect(loadSave().firstTimeEventsFired).toEqual([]);
+  });
+
+  // ── C1 M2 Task 11 discovery-log bumps ────────────────────────────────
+
+  it('bumpBeastieSeen seeds firstSeenAt on first call, no-ops on repeat', () => {
+    bumpBeastieSeen('tourist', 'run-1', 1000);
+    bumpBeastieSeen('tourist', 'run-2', 9999); // later call must not overwrite
+    const entry = loadSave().discoveryLog.beastiesSeen.tourist;
+    expect(entry).toBeDefined();
+    expect(entry!.firstSeenAt).toEqual({ runId: 'run-1', timestamp: 1000 });
+    // seenCount intentionally stays at 1 — mid-run bumps live in memory
+    // only so the spawn hot path stays off localStorage.
+    expect(entry!.seenCount).toBe(1);
+    expect(entry!.killCount).toBe(0);
+  });
+
+  it('bumpBeastieSeen no-ops on empty key', () => {
+    bumpBeastieSeen('', 'run-1', 1000);
+    expect(loadSave().discoveryLog.beastiesSeen).toEqual({});
+  });
+
+  it('bumpBeastieKilled increments killCount once per call, only after seen', () => {
+    // Unseen first — kill bump must be a silent no-op.
+    bumpBeastieKilled('haar_wraith');
+    expect(loadSave().discoveryLog.beastiesSeen.haar_wraith).toBeUndefined();
+
+    bumpBeastieSeen('haar_wraith', 'run-1', 500);
+    bumpBeastieKilled('haar_wraith');
+    bumpBeastieKilled('haar_wraith');
+    bumpBeastieKilled('haar_wraith');
+    expect(loadSave().discoveryLog.beastiesSeen.haar_wraith!.killCount).toBe(3);
+  });
+
+  it('bumpBeastieKilled no-ops on empty key', () => {
+    bumpBeastieSeen('tourist', 'run-1', 0);
+    bumpBeastieKilled('');
+    expect(loadSave().discoveryLog.beastiesSeen.tourist!.killCount).toBe(0);
+  });
+
+  it('bumpBeastieSeen tracks distinct beasties independently', () => {
+    bumpBeastieSeen('tourist', 'run-1', 100);
+    bumpBeastieSeen('gordon', 'run-1', 200);
+    const log = loadSave().discoveryLog;
+    expect(Object.keys(log.beastiesSeen).sort()).toEqual(['gordon', 'tourist']);
+    expect(log.beastiesSeen.gordon!.firstSeenAt).toEqual({ runId: 'run-1', timestamp: 200 });
   });
 });
 
