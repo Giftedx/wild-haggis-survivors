@@ -18,7 +18,7 @@ import { Minimap } from '../ui/Minimap';
 import { NodeMapUI } from '../ui/NodeMapUI';
 import { NodePromptUI } from '../ui/NodePromptUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
-import { getActBank } from '../data/nodeBanks';
+import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
 import type { NodeDef } from '../data/nodeTypes';
 import type { NodeMapState } from '../systems/NodeMapSystem';
 import { resolveEncounterEvent } from '../systems/nodeEvents/encounterEvent';
@@ -974,6 +974,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunScore: () => this.runScore,
       triggerVictory: () => this.runLifecycle.handleVictory(),
       onActComplete: (actN) => this.launchActIntermission(actN),
+      onStretchComplete: (stretch) => this.initNodeMapForAct(3, stretch),
       onBottleBreak: (x, y) => this.hazardZones.spawnBottleSlick(x, y),
       onTotemFall: (x, y) => {
         // Four slicks at the cardinals, offset so the totem kill site is
@@ -1988,9 +1989,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * reproduces the path for replay; positions are placed relative to the
    * player's current position so Act 2/3 paths unfold wherever the
    * player happens to be on the moor when a picker resolves.
+   *
+   * M1 F6 — when `act === 3`, `stretch` selects which of the three Act 3
+   * banks loads (stretch 1 = pre-Laird, 2 = post-Laird, 3 = post-Hunter-
+   * General). Default is stretch 1 so entry into Act 3 loads the same
+   * bank it always did; mid-act-3 boss kills call this with stretch = 2
+   * or 3 to swap the bank and reset the cursor. `RunActState.currentAct`
+   * stays 3 across stretch switches — stretch is a sub-state only the
+   * bank + cursor care about.
    */
-  private initNodeMapForAct(act: 1 | 2 | 3): void {
-    const bank = getActBank(act);
+  private initNodeMapForAct(act: 1 | 2 | 3, stretch: Act3Stretch = 1): void {
+    const bank = act === 3 ? getAct3Bank(stretch) : getActBank(act);
     const rng = this.runRng.branch();
     const nodes = generateNodePath(bank, act, rng);
     const origin = { x: this.player.x, y: this.player.y };

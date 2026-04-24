@@ -4,7 +4,7 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
-**Shipped since kickoff:** F1 + F2 (reward-on-kill gate) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip.
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate), F6 (Act 3 stretch switching) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip. Act 3 stretch bank now swaps on `the_laird` / `hunter_general` kills so each beat gets its own flavoured node pool.
 
 ---
 
@@ -50,13 +50,9 @@ Same tracker handles elite nodes. Relic roll stays at trigger-time (determinism)
 
 ---
 
-## F6 — Act 3 sub-stretch switching on boss kills
+## ~~F6 — Act 3 sub-stretch switching on boss kills~~ ✅ shipped 2026-04-24
 
-**Current behaviour (`initNodeMapForAct`)**: at Act 3 start, `getActBank(3)` returns `ACT_3_STRETCH_1_BANK` — the same 10-entry pre-Laird bank regardless of progress. The other two stretch banks (`ACT_3_STRETCH_2_BANK`, `ACT_3_STRETCH_3_BANK`) are authored but never loaded.
-
-**Target:** hook `dispatchActComplete` (or the `onActComplete` callback in `SpawnSystem`) for Laird + Hunter-General kills; each should re-roll the Act 3 path from the next stretch's bank and reset `RunActState.currentNodeIndex` to 0. Keeps Laird → Hunter-General → Taxman beats distinct in terms of node flavour.
-
-**Touch-points:** `src/scenes/game/dispatchActComplete.ts` (extend mapping), `src/scenes/GameScene.ts` (add `onBossMidActKill` hook), `src/data/nodeBanks.ts` (`getAct3Bank(stretch)` already exists — just wire it).
+New `dispatchStretchComplete(bossKey)` mapping (`src/scenes/game/dispatchStretchComplete.ts`) returns `2` for `the_laird` and `3` for `hunter_general`. `EnemyKillHandler` routes the kill through a new `onStretchComplete` hook (mutually exclusive with `onActComplete`). `initNodeMapForAct` extended with an optional `Act3Stretch` parameter; act=3 now reads from `getAct3Bank(stretch)`. Cursor resets to 0 on swap; nodeOutcomes from the prior stretch remain in the log. Replay-safe: deterministic RNG branch + T1 Phase 3 byte-accurate kill timing → same stretch swap reproduces on playback.
 
 ---
 

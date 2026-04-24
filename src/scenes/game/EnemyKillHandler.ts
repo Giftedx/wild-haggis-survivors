@@ -27,6 +27,8 @@ import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { BALANCE } from '../../core/BalanceConfig';
 import { dispatchActComplete } from './dispatchActComplete';
+import { dispatchStretchComplete } from './dispatchStretchComplete';
+import type { Act3Stretch } from '../../data/nodeBanks';
 import { COLORS_CSS } from '../../config';
 import { formatSpeedrunTime } from '../../utils/formatSpeedrunTime';
 import { resolveEnemyDeathColor } from '../../systems/enemyDeathColors';
@@ -60,6 +62,16 @@ export interface EnemyKillHandlerHooks {
 
   /** W2 Moor Road: called after boss-kill counters are bumped when the killed boss gates an act. */
   onActComplete(actN: 1 | 2): void;
+
+  /**
+   * M1 F6 — called after the_laird / hunter_general dies to swap the
+   * Act 3 node-path bank. Laird → stretch 2 (post-Laird), Hunter-General
+   * → stretch 3 (post-Hunter-General). Scene wires this to
+   * `initNodeMapForAct(3, stretch)` which re-rolls the path and resets
+   * the cursor. Not fired for gordon / tour_bus (those go through
+   * `onActComplete`) or taxman (victory path).
+   */
+  onStretchComplete?(stretch: Act3Stretch): void;
 
   /**
    * Called when a `buckfast_ned` dies — bottle breaks at the kill site,
@@ -318,6 +330,15 @@ export class EnemyKillHandler {
       const { actToComplete } = dispatchActComplete(enemyKey);
       if (actToComplete !== null) {
         h.onActComplete(actToComplete);
+      } else {
+        // M1 F6 — mid-act-3 boss kill: swap the Act 3 stretch bank.
+        // Mutually exclusive with act-complete (gordon / tour_bus never
+        // advance a stretch, and laird / hunter_general never advance
+        // an act), so the else-branch keeps both dispatches from firing.
+        const { stretchToLoad } = dispatchStretchComplete(enemyKey);
+        if (stretchToLoad !== null) {
+          h.onStretchComplete?.(stretchToLoad);
+        }
       }
       const bossKillKey = `ui.game.boss_killed_${enemyKey}`;
       const bossKillText = t(bossKillKey);
