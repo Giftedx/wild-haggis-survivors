@@ -48,6 +48,8 @@ type HookMocks = {
   onBottleBreak: ReturnType<typeof vi.fn>;
   onTotemFall: ReturnType<typeof vi.fn>;
   onHaarDispel: ReturnType<typeof vi.fn>;
+  onEliteKilled: ReturnType<typeof vi.fn>;
+  onBossKilled: ReturnType<typeof vi.fn>;
   setEnemies: (es: unknown[]) => void;
 };
 
@@ -100,6 +102,8 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const onBottleBreak = vi.fn<(x: number, y: number) => void>();
   const onTotemFall = vi.fn<(x: number, y: number) => void>();
   const onHaarDispel = vi.fn<(x: number, y: number) => void>();
+  const onEliteKilled = vi.fn<(x: number, y: number) => void>();
+  const onBossKilled = vi.fn<(bossKey: string, x: number, y: number) => void>();
 
   const hooks: EnemyKillHandlerHooks = {
     getPlayer: () => player as never,
@@ -118,6 +122,8 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onBottleBreak,
     onTotemFall,
     onHaarDispel,
+    onEliteKilled,
+    onBossKilled,
   };
 
   return {
@@ -137,6 +143,8 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onBottleBreak,
     onTotemFall,
     onHaarDispel,
+    onEliteKilled,
+    onBossKilled,
     setEnemies: (es) => {
       enemies = es;
     },
@@ -506,6 +514,43 @@ describe('EnemyKillHandler', () => {
       handler.handle(20, 20, 6, 'traffic_cone_totem', false);
       expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(10, 10);
       expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(20, 20);
+    });
+  });
+
+  describe('R1 Relic drop hooks', () => {
+    beforeEach(() => {
+      m.score.firstKillSeen = true;
+    });
+
+    it('fires onEliteKilled with kill coords when a non-boss elite dies (T13)', () => {
+      handler.handle(123, 456, 5, 'ghost', false, true);
+      expect(m.onEliteKilled).toHaveBeenCalledExactlyOnceWith(123, 456);
+    });
+
+    it('does NOT fire onEliteKilled for non-elite kills', () => {
+      handler.handle(10, 20, 5, 'tourist', false, false);
+      expect(m.onEliteKilled).not.toHaveBeenCalled();
+    });
+
+    it('does NOT fire onEliteKilled for elite bosses (boss path owns the drop)', () => {
+      handler.handle(10, 20, 100, 'gordon', true, true);
+      expect(m.onEliteKilled).not.toHaveBeenCalled();
+    });
+
+    it('fires onBossKilled with bossKey + coords for every boss kill (T14)', () => {
+      handler.handle(77, 88, 75, 'gordon', true);
+      expect(m.onBossKilled).toHaveBeenCalledExactlyOnceWith('gordon', 77, 88);
+    });
+
+    it('fires onBossKilled for taxman — hook handles victory-path routing itself', () => {
+      handler.handle(5, 5, 200, 'taxman', true);
+      expect(m.onBossKilled).toHaveBeenCalledExactlyOnceWith('taxman', 5, 5);
+    });
+
+    it('does NOT fire onBossKilled for regular or elite kills', () => {
+      handler.handle(1, 1, 5, 'tourist', false);
+      handler.handle(2, 2, 5, 'ghost', false, true);
+      expect(m.onBossKilled).not.toHaveBeenCalled();
     });
   });
 

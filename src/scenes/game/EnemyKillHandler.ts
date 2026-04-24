@@ -80,6 +80,23 @@ export interface EnemyKillHandlerHooks {
    * `HazardZones.spawnHaarFog`.
    */
   onHaarDispel?(x: number, y: number): void;
+
+  /**
+   * Called after every elite non-boss kill. R1 M2 T13: GameScene wires
+   * this to a RelicSystem drop-roll + RelicPickup spawn at (x, y).
+   * Fires regardless of whether a Relic actually drops — the roll
+   * itself lives in the hook so the drop rate can vary by variant /
+   * moor route / difficulty without re-plumbing this handler.
+   */
+  onEliteKilled?(x: number, y: number): void;
+
+  /**
+   * Called after every boss kill. R1 M2 T14: GameScene wires this to a
+   * guaranteed Relic drop for Tier-2+ bosses (whitelist lives in
+   * data/relicDrops.ts). `bossKey` lets the hook short-circuit for
+   * gordon (Tier-1) and taxman (victory path).
+   */
+  onBossKilled?(bossKey: string, x: number, y: number): void;
 }
 
 /** Kill-count thresholds that trigger milestone toasts + gold reward. */
@@ -154,6 +171,11 @@ export class EnemyKillHandler {
         score.eliteChainCount = 0;
         score.eliteChainLastGameSec = null;
       }
+
+      // R1 M2 T13 — Relic drop roll. Placed inside the elite branch so
+      // a single-hook call from this handler reaches the RelicSystem in
+      // one place; GameScene wires the concrete drop + pickup spawn.
+      h.onEliteKilled?.(x, y);
     }
 
     spawn.noteKillPressure();
@@ -250,6 +272,11 @@ export class EnemyKillHandler {
 
     if (wasBoss) {
       score.incrementBossKillCount();
+
+      // R1 M2 T14 — guaranteed Relic drop for Tier-2+ bosses. Scene
+      // hook reads the boss whitelist (tour_bus / the_laird /
+      // hunter_general / taxman) and spawns the pickup.
+      h.onBossKilled?.(enemyKey, x, y);
 
       // B1 Phase 3 Task 18 — first-time reserved line on the very first
       // kill of this boss key across all saves. Priority 110 means it
