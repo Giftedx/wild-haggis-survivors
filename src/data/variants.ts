@@ -85,6 +85,17 @@ export interface VariantDef {
   modifiers: VariantModifier;
   unlock: VariantUnlockCondition;
   appearance: VariantAppearance;
+  /**
+   * V2 followup — signature passive item(s) the player starts the run
+   * already owning. Each key is applied once via `applyPassiveEffect`
+   * and pushed into `ownedPassives` so the item card pool / evolution
+   * pairing / Chronicle summary all treat it as a real pickup.
+   *
+   * Shape mirrors spec §2's "starter passive equivalents"; left
+   * unused on classic variants so existing balance is untouched.
+   * Future V2 cohort audits assign keys per variant.
+   */
+  startWithPassives?: string[];
 }
 
 export interface VariantProgressSnapshot {

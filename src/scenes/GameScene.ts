@@ -124,7 +124,11 @@ import { decideRelicCollect } from '../ui/relicCollect';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
 import { GameTickers } from './game/GameTickers';
-import { applyPermanentUpgrades, applyVariantModifiers } from './game/runStartModifiers';
+import {
+  applyPermanentUpgrades,
+  applyVariantModifiers,
+  applyVariantStartPassives,
+} from './game/runStartModifiers';
 import { CaptionManager } from '../systems/a11y/CaptionManager';
 import { CaptionOverlay } from '../systems/a11y/CaptionOverlay';
 import {
@@ -727,6 +731,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     // Variant modifiers establish the run archetype before permanent upgrades stack on top.
     applyVariantModifiers(this.player, selectedVariant);
+    // V2 followup — variant starter passives land before permanent
+    // upgrades so lucky_start reads the pre-populated ownedPassives.
+    applyVariantStartPassives(this.player, this.ownedPassives, selectedVariant);
 
     // Apply permanent upgrades from save data. The two flag outputs
     // don't live on Player so come back as a result object.

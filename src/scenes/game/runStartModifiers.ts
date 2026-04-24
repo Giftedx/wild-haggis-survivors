@@ -22,6 +22,32 @@ import { loadSave } from '../../utils/save';
 import { PASSIVE_KEYS } from '../../data/upgrades';
 import { applyPassiveEffect } from './passiveEffects';
 
+/**
+ * V2 followup — apply the variant's signature starter passive(s).
+ *
+ * Mirrors the `lucky_start` permanent-upgrade branch: each key is
+ * pushed into `ownedPassives` + `applyPassiveEffect` fires once so
+ * stat bumps land before the first enemy ticks. A key already present
+ * in `ownedPassives` is skipped (no double-apply) but the function
+ * still ensures the rest of the list lands.
+ *
+ * Called after `applyVariantModifiers` + before `applyPermanentUpgrades`
+ * so permanent-upgrade percentages compute against the correct base.
+ */
+export function applyVariantStartPassives(
+  player: Player,
+  ownedPassives: string[],
+  variant: VariantDef,
+): void {
+  const keys = variant.startWithPassives;
+  if (!keys || keys.length === 0) return;
+  for (const key of keys) {
+    if (ownedPassives.includes(key)) continue;
+    ownedPassives.push(key);
+    applyPassiveEffect(player, key);
+  }
+}
+
 export function applyVariantModifiers(player: Player, variant: VariantDef): void {
   const { modifiers } = variant;
   if (modifiers.moveSpeedPct) player.addSpeed(player.getRunBaseSpeed() * modifiers.moveSpeedPct);

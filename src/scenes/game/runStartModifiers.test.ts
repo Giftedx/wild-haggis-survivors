@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { applyVariantModifiers, applyPermanentUpgrades } from './runStartModifiers';
+import {
+  applyVariantModifiers,
+  applyPermanentUpgrades,
+  applyVariantStartPassives,
+} from './runStartModifiers';
 import type { VariantDef } from '../../data/variants';
 
 vi.mock('../../utils/save', () => ({
@@ -153,5 +157,64 @@ describe('applyPermanentUpgrades', () => {
     const player = mockPlayer();
     applyPermanentUpgrades({ player, weaponSystem: mockWeaponSystem(), ownedPassives: [], runRng: mockRng() });
     expect(player.addDashCharge).toHaveBeenCalledOnce();
+  });
+});
+
+describe('applyVariantStartPassives', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('no-ops when the variant has no startWithPassives field', async () => {
+    const { applyPassiveEffect } = await import('./passiveEffects');
+    const player = mockPlayer();
+    const owned: string[] = [];
+    applyVariantStartPassives(player, owned, { modifiers: {} } as unknown as VariantDef);
+    expect(applyPassiveEffect).not.toHaveBeenCalled();
+    expect(owned).toEqual([]);
+  });
+
+  it('pushes each key into ownedPassives and applies its effect', async () => {
+    const { applyPassiveEffect } = await import('./passiveEffects');
+    const player = mockPlayer();
+    const owned: string[] = [];
+    applyVariantStartPassives(player, owned, {
+      modifiers: {},
+      startWithPassives: ['tam_o_shanter', 'kilt'],
+    } as unknown as VariantDef);
+    expect(owned).toEqual(['tam_o_shanter', 'kilt']);
+    expect(applyPassiveEffect).toHaveBeenCalledTimes(2);
+    expect(applyPassiveEffect).toHaveBeenNthCalledWith(1, player, 'tam_o_shanter');
+    expect(applyPassiveEffect).toHaveBeenNthCalledWith(2, player, 'kilt');
+  });
+
+  it('skips a starter passive the player already owns (no duplicate apply)', async () => {
+    const { applyPassiveEffect } = await import('./passiveEffects');
+    const player = mockPlayer();
+    const owned: string[] = ['tam_o_shanter'];
+    applyVariantStartPassives(player, owned, {
+      modifiers: {},
+      startWithPassives: ['tam_o_shanter', 'kilt'],
+    } as unknown as VariantDef);
+    expect(owned).toEqual(['tam_o_shanter', 'kilt']);
+    expect(applyPassiveEffect).toHaveBeenCalledTimes(1);
+    expect(applyPassiveEffect).toHaveBeenCalledWith(player, 'kilt');
+  });
+
+  it('rejects unknown passive keys silently', async () => {
+    const { applyPassiveEffect } = await import('./passiveEffects');
+    vi.mocked(applyPassiveEffect).mockImplementation(() => {
+      /* real applyPassiveEffect no-ops on unknown; stub mirrors that */
+    });
+    const player = mockPlayer();
+    const owned: string[] = [];
+    applyVariantStartPassives(player, owned, {
+      modifiers: {},
+      startWithPassives: ['not_a_real_passive'],
+    } as unknown as VariantDef);
+    // Unknown keys get recorded in ownedPassives (the data-driver is the
+    // source of truth) but applyPassiveEffect itself handles unknowns.
+    expect(owned).toEqual(['not_a_real_passive']);
+    expect(applyPassiveEffect).toHaveBeenCalledOnce();
   });
 });
