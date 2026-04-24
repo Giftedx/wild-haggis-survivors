@@ -18,6 +18,12 @@ import { Minimap } from '../ui/Minimap';
 import { NodeMapUI } from '../ui/NodeMapUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { getActBank } from '../data/nodeBanks';
+import type { NodeDef } from '../data/nodeTypes';
+import type { NodeMapState } from '../systems/NodeMapSystem';
+import { resolveEncounterEvent } from '../systems/nodeEvents/encounterEvent';
+import { resolveEliteEvent } from '../systems/nodeEvents/eliteEvent';
+import { resolveRestEvent } from '../systems/nodeEvents/restEvent';
+import { resolveHiddenEvent } from '../systems/nodeEvents/hiddenEvent';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
@@ -1289,23 +1295,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.minimap = new Minimap(this);
     this.nodeMapUI = new NodeMapUI(this);
     // Listener is registered once per scene-create and lives until reset.
-    // Placeholder visit behaviour: mark + log + advance cursor. The M3
-    // event handlers will intercept here with real effects (encounter
-    // wave / shrine picker / trader UI / etc.).
+    // Dispatches to per-type handlers which in turn call finalizeNodeVisit.
+    // Interactive types (shrine / wee_trader / bargain) route through the
+    // stub handler until NodePromptUI lands — see follow-up tasks.
     this.nodeMapSystem.setTriggerListener((index, state) => {
       if (state.visited[index]) return;
-      this.nodeMapSystem.markVisited(index);
-      this.runActState.recordNodeOutcome({
-        nodeKey: state.nodes[index].key,
-        visitedAtGameTimeSec: this.spawnSystem.getGameTimeSec(),
-      });
-      const mapLen = state.nodes.length;
-      while (
-        this.runActState.currentNodeIndex < mapLen &&
-        state.visited[this.runActState.currentNodeIndex]
-      ) {
-        this.runActState.currentNodeIndex++;
-      }
+      this.handleNodeTriggered(state.nodes[index], index, state);
     });
     this.initNodeMapForAct(1);
     this.relicSlotUI?.destroy();
@@ -1962,6 +1957,146 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runActState.currentActNodeMap = state;
     this.runActState.currentNodeIndex = 0;
     this.nodeMapSystem.setMap(state);
+  }
+
+  /**
+   * Dispatch a triggered node to the right event handler. Passive
+   * events (encounter / elite / rest / hidden) apply inline; interactive
+   * events (shrine / wee_trader / bargain) route through the stub until
+   * NodePromptUI lands in a follow-up task.
+   */
+  private handleNodeTriggered(node: NodeDef, index: number, state: NodeMapState): void {
+    switch (node.type) {
+      case 'encounter':
+        this.applyEncounterNode(node, index, state);
+        break;
+      case 'elite':
+        this.applyEliteNode(node, index, state);
+        break;
+      case 'rest':
+        this.applyRestNode(node, index);
+        break;
+      case 'hidden':
+        this.applyHiddenNode(node, index, state);
+        break;
+      case 'shrine':
+      case 'wee_trader':
+      case 'bargain':
+        this.stubInteractiveNode(node, index);
+        break;
+    }
+  }
+
+  /**
+   * Finish a node visit: mark in the system, log the outcome, advance
+   * the HUD cursor past any run of now-visited nodes. Shared by every
+   * event handler — callers pass `chosenRewardKey` when the event had
+   * a branching outcome (reward kind picked / trade accepted).
+   */
+  private finalizeNodeVisit(index: number, nodeKey: string, chosenRewardKey?: string): void {
+    this.nodeMapSystem.markVisited(index);
+    this.runActState.recordNodeOutcome({
+      nodeKey,
+      ...(chosenRewardKey ? { chosenRewardKey } : {}),
+      visitedAtGameTimeSec: this.spawnSystem.getGameTimeSec(),
+    });
+    const map = this.runActState.currentActNodeMap;
+    if (!map) return;
+    while (
+      this.runActState.currentNodeIndex < map.nodes.length &&
+      map.visited[this.runActState.currentNodeIndex]
+    ) {
+      this.runActState.currentNodeIndex++;
+    }
+  }
+
+  /**
+   * Encounter node — spawn the declared enemy mix inline via
+   * SpawnSystem.forceSpawn. v1: no "clear the wave to complete" gating;
+   * node marks visited immediately, spawned enemies join the regular
+   * combat flow. Follow-up: wave-completion gate so the node only
+   * clears when its spawned enemies die.
+   */
+  private applyEncounterNode(node: NodeDef, index: number, _state: NodeMapState): void {
+    const spec = resolveEncounterEvent(node);
+    for (const entry of spec.enemyMix) {
+      for (let i = 0; i < entry.count; i++) {
+        this.spawnSystem.forceSpawn(entry.key);
+      }
+    }
+    this.finalizeNodeVisit(index, node.key);
+  }
+
+  /**
+   * Elite node — force-spawn the declared elite + drop a guaranteed
+   * relic at the node position. v1: relic appears on the ground at
+   * trigger-time rather than on elite kill; player walks over to collect.
+   * Follow-up: gate the drop on the elite's actual death so the
+   * guaranteed reward reads as an earned reward rather than a free pickup.
+   */
+  private applyEliteNode(node: NodeDef, index: number, state: NodeMapState): void {
+    const spec = resolveEliteEvent(node);
+    this.spawnSystem.forceSpawn(spec.enemyKey, { elite: true });
+    if (spec.guaranteedRelic && this.relicPickupSpawner) {
+      const relic = this.relicSystem.rollDrop('elite', this.runRng, { luckMultiplier: 2 });
+      if (relic) {
+        const pos = state.worldPositions[index];
+        this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'elite');
+      }
+    }
+    this.finalizeNodeVisit(index, node.key);
+  }
+
+  /**
+   * Rest node — heal + grant a reroll token. Toast carries the flavour
+   * line (full i18n copy lands in M5).
+   */
+  private applyRestNode(node: NodeDef, index: number): void {
+    const spec = resolveRestEvent(node);
+    const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * spec.healRatio));
+    this.player.heal(heal);
+    for (let i = 0; i < spec.rerollTokens; i++) {
+      this.upgradeUI?.grantReroll();
+    }
+    this.juice.showToast('Hearth warmth — rested.', TOAST_COLORS.reward);
+    this.finalizeNodeVisit(index, node.key);
+  }
+
+  /**
+   * Hidden node — roll reward. 'relic' spawns a relic pickup at the
+   * node position; 'lore_fragment' surfaces a toast. Relic falls back
+   * to a lore toast if every relic is already held.
+   */
+  private applyHiddenNode(node: NodeDef, index: number, state: NodeMapState): void {
+    const spec = resolveHiddenEvent(node, this.runRng);
+    if (spec.kind === 'relic' && this.relicPickupSpawner) {
+      const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
+      if (relic) {
+        const pos = state.worldPositions[index];
+        this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
+        this.finalizeNodeVisit(index, node.key, 'relic');
+        return;
+      }
+    }
+    this.juice.showToast('A forgotten cairn — empty but for the wind.', TOAST_COLORS.reward);
+    this.finalizeNodeVisit(index, node.key, 'lore_fragment');
+  }
+
+  /**
+   * Stub for interactive nodes until NodePromptUI lands. Surfaces a
+   * toast so the player knows the node fired, then marks it visited.
+   * Follow-ups — shrine buff picker, trader stock UI, bargain accept/
+   * refuse — will replace this path per type.
+   */
+  private stubInteractiveNode(node: NodeDef, index: number): void {
+    const label =
+      node.type === 'shrine'
+        ? 'Shrine stands silent — picker UI pending.'
+        : node.type === 'wee_trader'
+          ? 'Wee trader passed by — stock UI pending.'
+          : 'A bargain whispered on the wind — decline UI pending.';
+    this.juice.showToast(label, '#cccccc');
+    this.finalizeNodeVisit(index, node.key, 'stubbed');
   }
 
   private launchActIntermission(actN: 1 | 2): void {
