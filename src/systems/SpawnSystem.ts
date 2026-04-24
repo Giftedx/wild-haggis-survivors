@@ -212,13 +212,20 @@ export class SpawnSystem {
    * bodies (e.g. `through_the_kirkyard` drops an elite haggis_hunter
    * the moment the run resumes from the picker).
    *
+   * Returns the spawned Enemy (or null when the pool was saturated or
+   * the enemy key was unknown). M1 F1+F2 — node-spawned enemies pass
+   * `waveTag` so `NodeWaveTracker` can gate finalize-on-death.
+   *
    * No-ops if the enemy key is unknown or the pool is saturated.
    */
-  forceSpawn(enemyKey: string, opts?: { elite?: boolean }): void {
+  forceSpawn(
+    enemyKey: string,
+    opts?: { elite?: boolean; waveTag?: string | null },
+  ): Enemy | null {
     const config = ENEMY_TYPES[enemyKey];
-    if (!config) return;
+    if (!config) return null;
     const enemy = Enemy.acquireFromPool(this.pool, this.scene);
-    if (!enemy) return;
+    if (!enemy) return null;
     const player = this.scene.getPlayer();
     const pos = this.getSpawnPosition(this.scene.cameras.main, player.x, player.y);
     enemy.spawn(pos.x, pos.y, config, this.gameTimeSec);
@@ -228,7 +235,11 @@ export class SpawnSystem {
       const affix = pickEliteAffixId(config.behavior, rng);
       if (affix) enemy.applyEliteAffix(affix);
     }
+    if (opts?.waveTag) {
+      enemy.nodeWaveTag = opts.waveTag;
+    }
     this.notifyEnemyAmbient(config);
+    return enemy;
   }
 
   /**

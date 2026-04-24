@@ -89,10 +89,17 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
     expect(initialMap?.firstNodeType).toBe('encounter');
     expect(initialMap?.firstNodePos).not.toBeNull();
 
-    // Directly drive the NodeMapSystem tick at the first node position.
-    // Avoids the Phaser physics-body-reset subtlety that makes
-    // Player.setPosition a fragile way to verify proximity in headless.
-    const afterTrigger = await page.evaluate(async () => {
+    // Directly drive the NodeMapSystem tick at the first node position,
+    // then verify the M1 F1 reward-on-kill gate:
+    //   1. Immediately after proximity, the encounter node's enemies are
+    //      spawned but the node is NOT yet visited.
+    //   2. After every spawned enemy dies, the tracker's next frame
+    //      finalizes the visit (adds a NodeOutcome, flips visited[0]).
+    //
+    // The tracker lives behind scene.update() so the test waits for a
+    // real frame after killing the wave rather than driving the tick
+    // directly — matches the live-run path.
+    const afterProximity = await page.evaluate(async () => {
       const g = (window as unknown as { game?: {
         scene: { getScene(k: string): unknown };
       } }).game;
@@ -112,22 +119,58 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
       const pos = state.currentActNodeMap?.worldPositions[0];
       if (!pos) return { error: 'no-positions' };
       game.getPlayer().setPosition(pos.x, pos.y);
-      // Fire the tick directly so the test doesn't depend on physics-
-      // body sync timing. Real-game flow goes through update() which
-      // calls the same tick helper each frame.
       game.getNodeMapSystem().tick(pos);
       await new Promise((r) => setTimeout(r, 100));
       const after = game.getRunActState();
       return {
         visited0: after.currentActNodeMap?.visited[0] === true,
         outcomeCount: after.nodeOutcomes.length,
+      };
+    });
+
+    // M1 F1 — the node is NOT visited while spawned enemies are alive.
+    expect(afterProximity?.visited0).toBe(false);
+    expect(afterProximity?.outcomeCount).toBe(0);
+
+    // Kill every enemy tagged for this encounter wave, then wait a frame
+    // so NodeWaveTracker.tick picks up the empty-roster and finalizes.
+    const afterKill = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: { getScene(k: string): unknown };
+      } }).game;
+      if (!g) return null;
+      const game = g.scene.getScene('Game') as {
+        getRunActState?(): {
+          currentActNodeMap: { worldPositions: { x: number; y: number }[]; visited: boolean[] } | null;
+          nodeOutcomes: { nodeKey: string; visitedAtGameTimeSec: number }[];
+        };
+        getSpawnSystem?(): { getEnemyGroup(): { getChildren(): Array<{
+          active: boolean;
+          nodeWaveTag: string | null;
+          takeDamageWithKillEvents(amount: number): boolean;
+        }> } };
+      } | null;
+      if (!game?.getRunActState || !game?.getSpawnSystem) return { error: 'no-hooks' };
+      const taggedEnemies = game.getSpawnSystem().getEnemyGroup().getChildren()
+        .filter((e) => e.active && typeof e.nodeWaveTag === 'string' && e.nodeWaveTag.length > 0);
+      const killedCount = taggedEnemies.length;
+      for (const e of taggedEnemies) e.takeDamageWithKillEvents(99999);
+      // Wait a couple of frames so the tracker's tick finalizes the
+      // node + adds the outcome.
+      await new Promise((r) => setTimeout(r, 200));
+      const after = game.getRunActState();
+      return {
+        killedCount,
+        visited0: after.currentActNodeMap?.visited[0] === true,
+        outcomeCount: after.nodeOutcomes.length,
         firstOutcomeKey: after.nodeOutcomes[0]?.nodeKey ?? null,
       };
     });
 
-    expect(afterTrigger?.visited0).toBe(true);
-    expect(afterTrigger?.outcomeCount).toBeGreaterThanOrEqual(1);
-    expect(afterTrigger?.firstOutcomeKey).toBe(initialMap?.firstNodeKey);
+    expect(afterKill?.killedCount ?? 0).toBeGreaterThan(0);
+    expect(afterKill?.visited0).toBe(true);
+    expect(afterKill?.outcomeCount).toBeGreaterThanOrEqual(1);
+    expect(afterKill?.firstOutcomeKey).toBe(initialMap?.firstNodeKey);
 
     expect(pageErrors, 'No page errors during M1 smoke').toEqual([]);
   });

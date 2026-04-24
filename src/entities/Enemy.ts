@@ -70,6 +70,15 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   /** Multiplier on incoming knockback impulses (Relentless < 1). */
   private knockbackTakenMul: number = 1;
 
+  /**
+   * M1 F1+F2 — wave tag stamped by `SpawnSystem.forceSpawn({ waveTag })`
+   * when the enemy is spawned as part of a node (encounter or elite).
+   * Cleared on every `spawn()` so pool re-acquire wipes stale identity;
+   * `NodeWaveTracker` uses tag-identity to distinguish same-object
+   * re-use from still-alive membership.
+   */
+  public nodeWaveTag: string | null = null;
+
   /** Dive enemies lock their angle on spawn and don't re-aim */
   private diveAngle: number = 0;
   private diveStarted: boolean = false;
@@ -202,6 +211,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.setFlipX(false);
     this.setRotation(0); // dive enemies set rotation; clear for pool reuse
     this.clearTint();
+    this.nodeWaveTag = null;
 
     // Ground shadow — boss uses the bigger shadow texture. Depth -1 sits
     // above the terrain (-10 to -5) but below entities (default 0).

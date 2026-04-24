@@ -28,6 +28,7 @@ import { resolveHiddenEvent } from '../systems/nodeEvents/hiddenEvent';
 import { resolveShrineEvent } from '../systems/nodeEvents/shrineEvent';
 import { resolveWeeTraderEvent } from '../systems/nodeEvents/weeTraderEvent';
 import { resolveBargainEvent } from '../systems/nodeEvents/bargainEvent';
+import { NodeWaveTracker, type NodeWaveMember } from '../systems/nodeEvents/NodeWaveTracker';
 import { shrineLabelFromKey, bargainLabelFromOfferKey } from './game/nodeEventLabels';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
@@ -193,6 +194,24 @@ export interface GameSceneInitData {
   replay?: import('../replay/replayBlob').ReplayBlobAny;
 }
 
+/**
+ * Adapt an Enemy to the NodeWaveTracker's member contract. Alive-for-wave
+ * keys off both `active` (die() path clears it) and the tag identity so
+ * pool re-acquire reads as "not this wave". Position getters return the
+ * enemy's live coords each tick — the tracker uses them to capture the
+ * last-known centroid one frame before all members die (elite relic
+ * drops at the kill site rather than the node pip).
+ */
+function buildEnemyWaveMember(enemy: Enemy): NodeWaveMember {
+  return {
+    get x() { return enemy.x; },
+    get y() { return enemy.y; },
+    isAliveForWave(tag: string) {
+      return enemy.active && enemy.nodeWaveTag === tag;
+    },
+  };
+}
+
 export class GameScene extends Phaser.Scene implements ISceneContext {
   private player!: Player;
   private spawnSystem!: SpawnSystem;
@@ -209,6 +228,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
   private readonly nodeMapSystem = new NodeMapSystem();
+  /**
+   * M1 F1 + F2 — defers finalize for encounter / elite nodes until the
+   * spawned enemies die. Ticked once per frame from the main update loop
+   * after `nodeMapSystem.tick`.
+   */
+  private readonly nodeWaveTracker = new NodeWaveTracker();
   private nodeMapUI: NodeMapUI | null = null;
   private nodePromptUI: NodePromptUI | null = null;
   /** Index of the interactive node whose prompt is currently open. -1 when none. */
@@ -442,6 +467,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runScore.reset();
     this.runActState.reset();
     this.nodeMapSystem.reset();
+    this.nodeWaveTracker.reset();
     this.nodeMapUI?.destroy();
     this.nodeMapUI = null;
     this.nodePromptUI?.destroy();
@@ -1478,6 +1504,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.nodePromptUI = null;
       this.interactivePromptIndex = -1;
       this.nodeMapSystem.reset();
+    this.nodeWaveTracker.reset();
       try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
       try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
       try { this.gameTickers?.destroy(); } catch { /* ignore */ }
@@ -1576,6 +1603,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.iFrameController.tick(scaledDelta);
     this.runEndTickers.tick(delta);
+
+    // M1 F1+F2 — poll pending encounter/elite waves every frame (raw
+    // bookkeeping; must tick regardless of the pause early-return below
+    // so a wave that resolved during a COUNTDOWN / pause window still
+    // finalizes the node).
+    this.nodeWaveTracker.tick();
 
     tickAutoBattleSteering(this.player, this.xpSystem, this.spawnSystem);
 
@@ -2034,40 +2067,76 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /**
-   * Encounter node — spawn the declared enemy mix inline via
-   * SpawnSystem.forceSpawn. v1: no "clear the wave to complete" gating;
-   * node marks visited immediately, spawned enemies join the regular
-   * combat flow. Follow-up: wave-completion gate so the node only
-   * clears when its spawned enemies die.
+   * Encounter node (M1 F1) — spawn the declared enemy mix with a wave
+   * tag, then defer finalize until every spawned enemy dies. Each
+   * `forceSpawn` call returns the acquired Enemy; it's wrapped as a
+   * NodeWaveMember whose `isAliveForWave(tag)` gate keys off the
+   * scene-visible `Enemy.active` + `Enemy.nodeWaveTag`. Pool re-acquire
+   * nulls the tag in `Enemy.spawn()`, so a stale reference reads as
+   * "not alive for this wave" even if the pool recycles the object.
+   *
+   * Empty `enemyMix` (should not happen in authored data, but resolver
+   * contract allows it) falls through the tracker's zero-member path and
+   * finalizes synchronously.
    */
-  private applyEncounterNode(node: NodeDef, index: number, _state: NodeMapState): void {
+  private applyEncounterNode(node: NodeDef, index: number, state: NodeMapState): void {
     const spec = resolveEncounterEvent(node);
-    for (const entry of spec.enemyMix) {
-      for (let i = 0; i < entry.count; i++) {
-        this.spawnSystem.forceSpawn(entry.key);
-      }
-    }
-    this.finalizeNodeVisit(index, node.key);
+    const spawnPos = state.worldPositions[index];
+    this.nodeWaveTracker.register(
+      index,
+      node.key,
+      'encounter',
+      (tag) => {
+        const members: NodeWaveMember[] = [];
+        for (const entry of spec.enemyMix) {
+          for (let i = 0; i < entry.count; i++) {
+            const enemy = this.spawnSystem.forceSpawn(entry.key, { waveTag: tag });
+            if (enemy) members.push(buildEnemyWaveMember(enemy));
+          }
+        }
+        return members;
+      },
+      () => {
+        this.finalizeNodeVisit(index, node.key);
+      },
+      { x: spawnPos.x, y: spawnPos.y },
+    );
   }
 
   /**
-   * Elite node — force-spawn the declared elite + drop a guaranteed
-   * relic at the node position. v1: relic appears on the ground at
-   * trigger-time rather than on elite kill; player walks over to collect.
-   * Follow-up: gate the drop on the elite's actual death so the
-   * guaranteed reward reads as an earned reward rather than a free pickup.
+   * Elite node (M1 F2) — force-spawn the declared elite with a wave
+   * tag; defer finalize AND the guaranteed relic drop until the elite
+   * dies. Relic drops at the kill position (centroid from the tracker's
+   * last tick while alive) so the reward reads as earned rather than
+   * as a free pickup at the node pip. Drop roll is rolled on death so
+   * `runRng` consumption stays deterministic (same seed → same relic).
+   *
+   * If the pool is saturated and `forceSpawn` returns null, the wave has
+   * zero members and finalizes synchronously via the zero-member path
+   * (the relic drop still fires at the node position).
    */
   private applyEliteNode(node: NodeDef, index: number, state: NodeMapState): void {
     const spec = resolveEliteEvent(node);
-    this.spawnSystem.forceSpawn(spec.enemyKey, { elite: true });
-    if (spec.guaranteedRelic && this.relicPickupSpawner) {
-      const relic = this.relicSystem.rollDrop('elite', this.runRng, { luckMultiplier: 2 });
-      if (relic) {
-        const pos = state.worldPositions[index];
-        this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'elite');
-      }
-    }
-    this.finalizeNodeVisit(index, node.key);
+    const spawnPos = state.worldPositions[index];
+    this.nodeWaveTracker.register(
+      index,
+      node.key,
+      'elite',
+      (tag) => {
+        const enemy = this.spawnSystem.forceSpawn(spec.enemyKey, { elite: true, waveTag: tag });
+        return enemy ? [buildEnemyWaveMember(enemy)] : [];
+      },
+      (killPos) => {
+        if (spec.guaranteedRelic && this.relicPickupSpawner) {
+          const relic = this.relicSystem.rollDrop('elite', this.runRng, { luckMultiplier: 2 });
+          if (relic) {
+            this.relicPickupSpawner.spawn(relic, killPos.x, killPos.y, 'elite');
+          }
+        }
+        this.finalizeNodeVisit(index, node.key);
+      },
+      { x: spawnPos.x, y: spawnPos.y },
+    );
   }
 
   /**

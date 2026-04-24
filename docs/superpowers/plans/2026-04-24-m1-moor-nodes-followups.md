@@ -4,25 +4,19 @@
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.
 
----
-
-## F1 — Encounter wave-completion gate
-
-**Current behaviour (`src/scenes/GameScene.ts` → `applyEncounterNode`)**: proximity triggers the listener → every enemy in `spec.enemyMix` spawns via `SpawnSystem.forceSpawn` → node marks visited *immediately*. Player can walk away from the wave and the HUD still shows the node as cleared.
-
-**Target:** node marks visited only when all enemies spawned by the encounter are dead. Add a wave-id tracker on the encounter event result; hook `Enemy.onDeath` (or the existing kill-handler fan-out) to decrement a pending count; finalize when count hits 0. Edge case — player dies with encounter still pending — node stays un-visited (run ends anyway, no observable difference).
-
-**Touch-points:** `src/scenes/game/encounterEvent.ts` (extend spec to return a `waveId`), `src/scenes/GameScene.ts` (track pending waves + gate `finalizeNodeVisit`), `src/scenes/game/EnemyKillHandler.ts` (decrement hook).
+**Shipped since kickoff:** F1 + F2 (reward-on-kill gate) — 2026-04-24. `NodeWaveTracker` now defers encounter / elite node finalize until spawned enemies die; elite relic drops at the kill-site centroid rather than the node pip.
 
 ---
 
-## F2 — Elite on-kill relic drop
+## ~~F1 — Encounter wave-completion gate~~ ✅ shipped 2026-04-24
 
-**Current behaviour (`applyEliteNode`)**: force-spawn the elite AND drop the guaranteed relic at the node position in the same tick. Player gets the relic *before* killing anything.
+Encounter node now registers spawned enemies with `NodeWaveTracker` (pure helper, `src/systems/nodeEvents/NodeWaveTracker.ts`). Finalize fires on the first frame after every tagged enemy dies. Pool-reuse safe: `Enemy.spawn()` clears the wave tag, so a recycled pool entry reads as "not this wave" even if the same object is reacquired. Ticks in `GameScene.updateInner` before the pause-early-return so countdown / HIT_FREEZE don't strand pending waves.
 
-**Target:** defer the relic drop to the elite's death. Needs the same "pending drop" pattern as F1 — track the spawned elite's instance id, hook its death, then call `this.relicPickupSpawner.spawn(...)` at the death position. Rolls at trigger-time (to preserve determinism) but the pickup only materialises on kill.
+---
 
-**Touch-points:** same as F1. Consider bundling both under a single `NodeOnEnemyDeath` hook.
+## ~~F2 — Elite on-kill relic drop~~ ✅ shipped 2026-04-24
+
+Same tracker handles elite nodes. Relic roll stays at trigger-time (determinism), but the pickup materialises at the elite's last-known position on death. If `forceSpawn` returns null (pool saturated), the zero-member path still finalizes + drops at the node pip.
 
 ---
 
