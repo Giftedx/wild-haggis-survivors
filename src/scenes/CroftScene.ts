@@ -13,6 +13,7 @@ import {
 } from './croft/CroftComposition';
 import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
 import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/hearth';
+import { CroftAmbientLoop } from './croft/CroftMusic';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -38,6 +39,7 @@ export class CroftScene extends Phaser.Scene {
   private hearthSprite: Phaser.GameObjects.Sprite | null = null;
   private hearthTimer: Phaser.Time.TimerEvent | null = null;
   private hearthFrame = 0;
+  private ambient: CroftAmbientLoop | null = null;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -76,6 +78,11 @@ export class CroftScene extends Phaser.Scene {
 
     // Keyboard ESC returns to Menu.
     this.input.keyboard?.on('keydown-ESC', () => this.exitToMenu());
+
+    // Warm pibroch-soft bed starts quiet and fades in.
+    this.ambient = new CroftAmbientLoop();
+    this.ambient.start();
+    this.events.once('shutdown', () => this.ambient?.stop());
 
     addSceneFadeIn(this, 300);
   }
