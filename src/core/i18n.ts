@@ -3067,6 +3067,12 @@ export const EN_STRINGS: LocaleTree = {
       badge_suffix: 'St Andrew\'s Day',
       ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andrew\'s Day is live — haud on fer hame.',
     },
+    beltane: {
+      name: 'Beltane',
+      description: 'Apr 28 – May 4 — twin fires on the moor; the cattle run between.',
+      badge_suffix: 'Beltane',
+      ceremony_banner: '🔥 Beltane is live — pass between the twin fires.',
+    },
   },
   /**
    * R1 M4 Task 25 — Relic names, effects, flavour. 18 relics × 3

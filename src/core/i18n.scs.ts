@@ -2725,6 +2725,12 @@ export const SCS_STRINGS: LocaleTree = {
       badge_suffix: 'St Andra\'s Day',
       ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andra\'s Day is live — haud on fer hame.',
     },
+    beltane: {
+      name: 'Beltane',
+      description: 'Apr 28 – May 4 — twin fires on tha muir; tha kye run atween.',
+      badge_suffix: 'Beltane',
+      ceremony_banner: '🔥 Beltane is live — pass atween tha twin fires.',
+    },
   },
   relics: {
     sporran_of_holding: {

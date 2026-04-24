@@ -65,6 +65,7 @@ export function seasonalRunStartCeremony(
         banterTag: 'seasonal_event',
         bannerKey: 'seasonalEvent.hogmanay.ceremony_banner',
       };
+    case 'beltane':
     case 'samhain':
     case 'st_andrews':
       // Lightweight data-only events — banner + badge + banter fire

@@ -163,6 +163,17 @@ describe('E1 Samhain + St Andrew\'s Day — autumn events', () => {
     expect(isSeasonalEventActive('hogmanay', d(2027, 11, 30))).toBe(false);
   });
 
+  it('Beltane covers May Day', () => {
+    expect(isSeasonalEventActive('beltane', d(2027, 5, 1))).toBe(true);
+    expect(isSeasonalEventActive('beltane', d(2027, 4, 28))).toBe(true);
+    expect(isSeasonalEventActive('beltane', d(2027, 5, 4))).toBe(true);
+  });
+
+  it('Beltane is inactive outside the window', () => {
+    expect(isSeasonalEventActive('beltane', d(2027, 4, 27))).toBe(false);
+    expect(isSeasonalEventActive('beltane', d(2027, 5, 5))).toBe(false);
+  });
+
   it('no two events ever overlap in `activeSeasonalEvents` across the calendar', () => {
     // Sweep every day of the year; assert at most one event is active
     // at any time. Catches accidental overlaps when new events ship.

@@ -59,6 +59,16 @@ export function isInWindow(
 }
 
 export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
+  // Beltane — Gaelic fire festival marking the start of summer
+  // (Apr 28 – May 4 around May 1). Bonfires, livestock driven
+  // between twin fires for purification. Wild / Hearth tonal pair
+  // depending on time of day; we frame it warm here.
+  beltane: {
+    key: 'beltane',
+    nameKey: 'seasonalEvent.beltane.name',
+    descriptionKey: 'seasonalEvent.beltane.description',
+    dateWindow: { startMonth: 4, startDay: 28, endMonth: 5, endDay: 4 },
+  },
   // Samhain — Gaelic festival marking the end of harvest / start of
   // winter. The veil between worlds thins; Cailleach ascendant.
   // Grave-tone per DESIGN_SOUL.md. Oct 28 – Nov 3 overlaps the modern
