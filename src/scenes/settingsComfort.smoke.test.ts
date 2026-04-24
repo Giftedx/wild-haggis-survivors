@@ -44,6 +44,12 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.banter_sparing',
   'ui.settings.banter_normal',
   'ui.settings.banter_chatty',
+  'ui.settings.section_assist',
+  'ui.settings.assist_mode',
+  'ui.settings.assist_mode_speed',
+  'ui.settings.assist_mode_extended_iframes',
+  'ui.settings.assist_mode_extended_combo',
+  'ui.settings.assist_mode_invincibility',
 ] as const;
 
 /** Fields the Comfort panel sliders/toggles/banter row persist (excludes version). */
@@ -64,6 +70,11 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'ironmoorMode',
   'localeKey',
   'reduceFlashing',
+  'assistMode',
+  'assistModeGameSpeed',
+  'assistModeExtendedIFrames',
+  'assistModeExtendedComboWindow',
+  'assistModeInvincibility',
 ];
 
 describe('Settings / Comfort panel smoke', () => {
@@ -100,11 +111,11 @@ describe('Settings / Comfort panel smoke', () => {
       localeKey: 'scs',
       reduceFlashing: true,
       photosensitivityWarningSeen: true,
-      assistMode: false,
-      assistModeGameSpeed: 1,
-      assistModeExtendedIFrames: false,
-      assistModeExtendedComboWindow: false,
-      assistModeInvincibility: false,
+      assistMode: true,
+      assistModeGameSpeed: 0.75,
+      assistModeExtendedIFrames: true,
+      assistModeExtendedComboWindow: true,
+      assistModeInvincibility: true,
     };
     sm.save(payload);
     const loaded = sm.load();

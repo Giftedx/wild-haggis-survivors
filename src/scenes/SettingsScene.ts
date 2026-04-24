@@ -48,7 +48,13 @@ type SettingsGpRow =
       mark: Phaser.GameObjects.Rectangle;
     };
 
-type VolumeKey = 'masterVolume' | 'sfxVolume' | 'musicVolume' | 'uiScale' | 'motionScale';
+type VolumeKey =
+  | 'masterVolume'
+  | 'sfxVolume'
+  | 'musicVolume'
+  | 'uiScale'
+  | 'motionScale'
+  | 'assistModeGameSpeed';
 type ToggleKey =
   | 'screenShake'
   | 'damageNumbers'
@@ -60,7 +66,11 @@ type ToggleKey =
   | 'skipActIntermissions'
   | 'ironmoorMode'
   | 'speedrunTimerVisible'
-  | 'captureEnabled';
+  | 'captureEnabled'
+  | 'assistMode'
+  | 'assistModeExtendedIFrames'
+  | 'assistModeExtendedComboWindow'
+  | 'assistModeInvincibility';
 
 /**
  * Air-gapped preferences (volumes, shake, damage numbers, perf).
@@ -275,6 +285,16 @@ export class SettingsScene extends Phaser.Scene {
     this.addToggleRow(t('ui.settings.capture_enabled'), 'captureEnabled');
     this.addToggleRow(t('ui.settings.telemetry_opt_in'), 'telemetryOptIn');
     this.addLocaleRow();
+
+    // A1 M6 — Assist Mode scaffold. Master toggle + game-speed slider
+    // + three effect flags. Prefs persist today; the effects themselves
+    // land in a follow-up update (see AssistMode.ts readers).
+    this.addSectionHeader(t('ui.settings.section_assist'));
+    this.addToggleRow(t('ui.settings.assist_mode'), 'assistMode');
+    this.addSliderRow(t('ui.settings.assist_mode_speed'), 'assistModeGameSpeed', 0.5, 1, 0.05);
+    this.addToggleRow(t('ui.settings.assist_mode_extended_iframes'), 'assistModeExtendedIFrames');
+    this.addToggleRow(t('ui.settings.assist_mode_extended_combo'), 'assistModeExtendedComboWindow');
+    this.addToggleRow(t('ui.settings.assist_mode_invincibility'), 'assistModeInvincibility');
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned

@@ -477,6 +477,10 @@ export const EN_STRINGS: LocaleTree = {
       section_sound: 'Hearth sound',
       section_comfort: 'Comfort & motion',
       section_access: 'Accessibility',
+      /** A1 M6 — Assist Mode section. Master toggle + four sub-settings.
+       *  Effects themselves land in a future update — the rows persist
+       *  prefs today so settings carry forward when the wiring arrives. */
+      section_assist: 'Assist Mode (coming soon)',
       /** Tiny heading on the live-preview card above slider changes. */
       preview_heading: 'PREVIEW',
       master_volume: 'Master volume',
@@ -528,6 +532,17 @@ export const EN_STRINGS: LocaleTree = {
       ironmoor_confirm_yes: 'Aye, I\'m ready',
       ironmoor_confirm_no: 'Naw, cancel',
       capture_enabled: 'Capture enabled',
+      /** A1 M6 — Assist Mode master toggle. Turning it on reveals the
+       *  sub-settings below; effects arrive in a follow-up update. */
+      assist_mode: 'Assist Mode',
+      /** Slider: global gameplay speed under Assist Mode (50%–100%). */
+      assist_mode_speed: 'Game speed',
+      /** Toggle: longer invulnerability after a hit. */
+      assist_mode_extended_iframes: 'Extended post-hit invulnerability',
+      /** Toggle: longer grace before the combo counter drops. */
+      assist_mode_extended_combo: 'Extended combo grace',
+      /** Toggle: full invincibility. Biggest hammer in the box. */
+      assist_mode_invincibility: 'Invincibility',
     },
     /**
      * A1 M5 — first-launch photosensitivity warning splash. Shown once
