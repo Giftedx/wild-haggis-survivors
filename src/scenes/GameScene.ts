@@ -16,7 +16,7 @@ import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
-  bumpRoutePicked,
+  bumpRoutePicked, bumpItemAcquired,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -986,6 +986,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       drainPendingChests: () => this.drainPendingChests(),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
+      getDiscoveryRunId: () => this.discoveryRunId(),
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,
@@ -1601,6 +1602,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
         audio.playStoneGrant();
         bumpReliquaryCurioPick(curio.id);
+        // C1 M3 Task 16 — also persist into the DiscoveryLog so the
+        // Almanac's Finds book lights up the relic entry. Lifetime
+        // counter (`bumpReliquaryCurioPick`) and discovery counter
+        // are kept distinct: the lifetime counter powers the
+        // `ach_relic_seeker` deed, the discovery log feeds Finds.
+        bumpItemAcquired(curio.id, this.discoveryRunId(), Date.now());
         this.banter?.request('reliquary_pick');
       },
     });

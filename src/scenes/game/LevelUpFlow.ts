@@ -36,7 +36,7 @@ import {
   findEligibleChestEvolution,
 } from '../../core/evolutionChest';
 import { t } from '../../core/i18n';
-import { bumpFirstTimeEvent, loadSave } from '../../utils/save';
+import { bumpFirstTimeEvent, bumpItemAcquired, loadSave } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { applyPassiveEffect as applyPassiveEffectPure } from './passiveEffects';
@@ -68,6 +68,13 @@ export interface LevelUpFlowHooks {
   drainPendingChests(): void;
   caption(id: string, message: string, tint?: string, durationMs?: number): void;
   requestBanter?(context: import('../../data/banter').BanterContext, tag?: string): void;
+  /**
+   * C1 M3 Task 16 — stable per-run discovery id (shape: `run:${seed}`).
+   * Threaded through so `bumpItemAcquired` can stamp the firstAcquiredAt
+   * record with the run that picked the item — keeps the persisted log
+   * matching SpawnSystem's beasties stamps.
+   */
+  getDiscoveryRunId(): string;
 }
 
 export class LevelUpFlow {
@@ -249,9 +256,13 @@ export class LevelUpFlow {
     const weaponSystem = this.hooks.getWeaponSystem();
     const scene = this.scene;
 
+    const runId = this.hooks.getDiscoveryRunId();
+    const now = Date.now();
+
     switch (effect.type) {
       case 'add_weapon':
         weaponSystem.addWeapon(effect.weaponKey);
+        bumpItemAcquired(effect.weaponKey, runId, now);
         juice.showToast(t('ui.game.upgrade_new_weapon', { name: cardTitle }), '#44dd44');
         juice.flashWhite(200);
         {
@@ -268,6 +279,7 @@ export class LevelUpFlow {
       case 'add_passive':
         this.hooks.pushOwnedPassive(effect.passiveKey);
         this.applyPassiveEffect(effect.passiveKey);
+        bumpItemAcquired(effect.passiveKey, runId, now);
         juice.showToast(t('ui.game.upgrade_add_passive', { name: cardTitle }), COLORS_CSS.LEGENDARY);
         break;
 
@@ -278,6 +290,7 @@ export class LevelUpFlow {
 
       case 'evolve_weapon':
         weaponSystem.evolveWeapon(effect.weaponKey, effect.evolutionKey);
+        bumpItemAcquired(effect.evolutionKey, runId, now);
         if (!this.hooks.getEvolvedWeapons().includes(effect.weaponKey)) {
           this.hooks.pushEvolvedWeapon(effect.weaponKey);
         }

@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
-import { SaveData, loadSave, writeSave } from '../utils/save';
+import { SaveData, bumpItemAcquired, loadSave, writeSave } from '../utils/save';
 import { PERMANENT_UPGRADES, PermanentUpgrade } from '../data/permanentUpgrades';
 import {
   resolveShopUpgradeRowState,
@@ -189,6 +189,10 @@ export class ShopScene extends Phaser.Scene {
     const newLevel = currentLevel + 1;
     this.saveData.upgrades[upgrade.key] = newLevel;
     this.saveData = writeSave(this.saveData);
+    // C1 M3 Task 16 — record into the DiscoveryLog so the Almanac's
+    // Finds book lights up the LASTING BOON entry. Runs between runs,
+    // so the runId is the literal `shop` (no live runRng to draw from).
+    bumpItemAcquired(upgrade.key, 'shop', Date.now());
     audio.playPurchase();
     // Cross-scene fan-out — AnalyticsManager listens for upgrade popularity.
     globalEventBus.emit('GLOBAL_SHOP_PURCHASE', {
