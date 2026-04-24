@@ -705,6 +705,10 @@ export const EN_STRINGS: LocaleTree = {
       second_wind: 'Second wind — yir no done yet, pal!',
       treasure_nearby: 'Somethin\' glintin\' oot there…',
       treasure_collected: 'Chest cracked — that\'s a feed and a half (+25% HP)',
+      /** R1 — relic pickup floating in the world, not yet collected. */
+      relic_drop_near: 'A relic hums — walk on oer.',
+      /** R1 — relic tucked into the sporran (either first add or a discard-swap). */
+      relic_collected: 'Relic tucked intae the sporran.',
       golden_nearby: 'Glimmer o\' gold nearby!',
       golden_collected: 'Golden chest — nice wee earner! +{gold}g',
       controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC, P, or Start to catch yir breath',

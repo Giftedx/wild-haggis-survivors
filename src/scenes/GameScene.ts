@@ -111,6 +111,11 @@ import { updateHudWeaponRows } from './game/updateHudWeaponRows';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
+import { RelicSystem } from '../systems/RelicSystem';
+import { RelicPickupSpawner } from '../entities/RelicPickup';
+import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
+import type { RelicDef } from '../data/relics';
+import { decideRelicCollect } from '../ui/relicCollect';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
 import { GameTickers } from './game/GameTickers';
@@ -290,6 +295,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private biomeController: BiomeController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
+  /** R1 — Relic slots + drop-roll orchestration. Fresh instance per run. */
+  private relicSystem!: RelicSystem;
+  /** R1 — Phaser-bound spawner for dropped Relic pickups. */
+  private relicPickupSpawner: RelicPickupSpawner | null = null;
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
   private enemyKillHandler!: EnemyKillHandler;
@@ -388,6 +397,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.reliquary = null;
     this.ancestralEcho?.destroy();
     this.ancestralEcho = null;
+    // R1 — clear held Relics + dropped pickups before a fresh run. A
+    // scene instance can be reused across runs; without this the
+    // previous run's sporran bleeds into the next.
+    this.relicPickupSpawner?.destroyAll();
+    this.relicPickupSpawner = null;
+    this.relicSystem = new RelicSystem();
     this.musicStateScratch.bossActive = false;
     this.musicStateScratch.biomeTimbre = 0.45;
     this.xpOverflowGoldBatch = 0;
@@ -808,6 +823,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.hazardZones.spawnBottleSlick(x, y + offset);
       },
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
+      onEliteKilled: (x, y) => this.rollAndSpawnRelic('elite', x, y),
+      onBossKilled: (bossKey, x, y) => this.rollAndSpawnRelic('boss', x, y, bossKey),
     });
     this.weaponSystem.events.on(
       'enemyKilled',
@@ -947,6 +964,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       hasEnemyNearby: (radiusPx) => this.hasEnemyNearby(radiusPx),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
+    // R1 — Phaser-bound Relic pickup spawner. Constructed fresh each
+    // run because the spawner holds a live reference set that must
+    // not survive a scene restart (stale sprites would leak).
+    this.relicPickupSpawner = new RelicPickupSpawner({
+      scene: this,
+      player: this.player,
+      tickers: this.updateTickers,
+      onCollect: (relic, x, y) => this.handleRelicCollect(relic, x, y),
+    });
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,
@@ -990,6 +1016,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
       getDiscoveryRunId: () => this.discoveryRunId(),
+      tryChestLegendaryRelicOverride: () => this.tryRelicChestOverride(),
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,
@@ -1737,6 +1764,102 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     } catch {
       return 'run:unknown';
     }
+  }
+
+  /**
+   * R1 — roll a Relic drop for the given source and spawn the pickup
+   * at (x, y) if the roll fires. Wired from EnemyKillHandler's
+   * onEliteKilled / onBossKilled hooks. Routes through RelicSystem so
+   * held-key exclusion + rarity weighting share one pure path.
+   */
+  private rollAndSpawnRelic(
+    source: 'elite' | 'boss',
+    x: number,
+    y: number,
+    bossKey?: string,
+  ): void {
+    if (!this.relicPickupSpawner) return;
+    const relic = this.relicSystem.rollDrop(source, this.runRng, {
+      bossKey,
+      // Luck hookup lands with the lucky_heather_sprig effect wiring
+      // in M3. For M2 the base 15% elite rate + guaranteed boss drop
+      // is the shippable behaviour.
+      luckMultiplier: 1,
+    });
+    if (!relic) return;
+    this.relicPickupSpawner.spawn(relic, x, y);
+  }
+
+  /**
+   * R1 — 25% chance the legendary chest evolution roll overrides to a
+   * Relic drop. Called by LevelUpFlow.offerChestEvolution before the
+   * evolution card UI is shown. Returning true suppresses the card.
+   */
+  private tryRelicChestOverride(): boolean {
+    if (!this.relicPickupSpawner) return false;
+    const relic = this.relicSystem.rollDrop('chest', this.runRng, {});
+    if (!relic) return false;
+    this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y);
+    this.juice.showToast(t('ui.game.relic_drop_near'), TOAST_COLORS.reward);
+    return true;
+  }
+
+  /**
+   * R1 — route a walked-over Relic pickup: add to an empty slot, open
+   * the 4th-relic discard modal, or silently skip a duplicate. Called
+   * by the `RelicPickupSpawner.onCollect` callback.
+   */
+  private handleRelicCollect(relic: RelicDef, _x: number, _y: number): void {
+    const isDuplicate = this.relicSystem.isHolding(relic.key);
+    const action = decideRelicCollect({
+      heldCount: this.relicSystem.heldCount(),
+      isDuplicate,
+      slotCap: 3,
+    });
+    switch (action) {
+      case 'skip_duplicate':
+        return;
+      case 'add':
+        this.relicSystem.add(relic);
+        this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
+        this.juice.flashWhite(80);
+        audio.playLevelUp();
+        return;
+      case 'discard_ui':
+        this.openRelicDiscardModal(relic);
+        return;
+    }
+  }
+
+  private relicDiscardModalOpen = false;
+
+  private openRelicDiscardModal(incoming: RelicDef): void {
+    if (this.relicDiscardModalOpen) return;
+    this.relicDiscardModalOpen = true;
+    this.timeManager.request('RELIC_DISCARD', { pausePhysics: true, timeScale: 0 });
+    const held = this.relicSystem.getSlots().map((s) => s.def);
+    openRelicPickupPrompt({
+      scene: this,
+      held,
+      incoming,
+      uiScale: 1,
+      onReplaceHeld: (slotIndex) => {
+        this.relicSystem.replaceAt(slotIndex, incoming);
+        this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
+        this.juice.flashWhite(80);
+        audio.playLevelUp();
+        this.closeRelicDiscardModal();
+      },
+      onReject: () => {
+        this.closeRelicDiscardModal();
+      },
+    });
+  }
+
+  private closeRelicDiscardModal(): void {
+    if (!this.relicDiscardModalOpen) return;
+    this.relicDiscardModalOpen = false;
+    this.timeManager.release('RELIC_DISCARD');
   }
 
   private buildRouteResumeContext(): RouteResumeContext {
