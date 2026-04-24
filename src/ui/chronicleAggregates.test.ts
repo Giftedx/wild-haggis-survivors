@@ -77,6 +77,7 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
       banterHeard: {},
       almanacVisits: 0,
     },
+    seenRunes: [],
     settings: { soundOn: true, musicOn: true },
     ...overrides,
   };

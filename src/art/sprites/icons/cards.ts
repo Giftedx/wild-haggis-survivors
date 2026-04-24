@@ -1365,6 +1365,44 @@ function drawStatKnockback(scene: Phaser.Scene): void {
 }
 
 /**
+ * U1 Rune tier — single shared 32×32 carved-stone panel with a
+ * stylised rune-cross glyph. Every rune card points at this texture
+ * key in v1; M3 polish will fan out per-id glyph variants (authored or
+ * procedural-by-id-hash). See RUNE_GLYPH_TEXTURE_KEY in data/runes.ts.
+ */
+function drawRuneGlyph(scene: Phaser.Scene): void {
+  const s = 32, g = scene.add.graphics();
+  // Stone panel background with rune-mauve wash.
+  cardIconBg(g, s, 0x4a3e55);
+  const cx = 16, cy = 16;
+  // Outer carved border — two tones for incised depth.
+  g.lineStyle(1.5, 0x2a2336, 1);
+  g.strokeRoundedRect(6, 6, 20, 20, 3);
+  g.lineStyle(0.5, 0x8c7aa0, 0.7);
+  g.strokeRoundedRect(7, 7, 18, 18, 2.5);
+  // Carved rune cross — a vertical stroke + two angled branches.
+  g.lineStyle(2, 0x0e0a14, 1);
+  g.beginPath();
+  g.moveTo(cx, cy - 7);
+  g.lineTo(cx, cy + 7);
+  g.moveTo(cx, cy - 4);
+  g.lineTo(cx - 4, cy - 7);
+  g.moveTo(cx, cy - 4);
+  g.lineTo(cx + 4, cy - 7);
+  g.moveTo(cx, cy + 3);
+  g.lineTo(cx + 4, cy + 6);
+  g.strokePath();
+  // Highlight stroke — mauve gleam along the carved edge.
+  g.lineStyle(0.8, 0xbca3d4, 0.85);
+  g.beginPath();
+  g.moveTo(cx, cy - 6.5);
+  g.lineTo(cx, cy + 6.5);
+  g.strokePath();
+  g.generateTexture('rune_glyph', s, s);
+  g.destroy();
+}
+
+/**
  * Bake every upgrade-card icon. Nine accessory cards + nine stat
  * cards = 18 textures total. Order matches BootScene's original call
  * sequence.
@@ -1393,4 +1431,6 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawStatUtility(scene);
   drawStatCooldown(scene);
   drawStatKnockback(scene);
+  // U1 Rune tier — shared glyph.
+  drawRuneGlyph(scene);
 }

@@ -623,6 +623,7 @@ export const SCS_STRINGS: LocaleTree = {
       upgrade_weapon_level: '{name} — pure shairper noo',
       upgrade_add_passive: '{name} — curio pooched, ya dancer',
       upgrade_stat_boost: '{name}',
+      upgrade_grant_rune: 'Rune struck: {name} — cairn-chiseled.',
       upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       max_level_toast: 'Max level — yer a walkin storm! That\'s plenty.',

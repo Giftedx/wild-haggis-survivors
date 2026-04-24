@@ -36,7 +36,7 @@ import {
   findEligibleChestEvolution,
 } from '../../core/evolutionChest';
 import { t } from '../../core/i18n';
-import { bumpFirstTimeEvent, bumpItemAcquired, loadSave } from '../../utils/save';
+import { bumpFirstTimeEvent, bumpItemAcquired, bumpSeenRune, loadSave } from '../../utils/save';
 import { audio } from '../../systems/AudioSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
 import { applyPassiveEffect as applyPassiveEffectPure } from './passiveEffects';
@@ -93,6 +93,22 @@ export interface LevelUpFlowHooks {
    * routes the normal evolution flow.
    */
   tryChestLegendaryRelicOverride?(): boolean;
+
+  /**
+   * U1 Task 14 — rune lifecycle hooks.
+   *
+   * - `isBossKilledThisRun()` gates whether buildCardPool offers rune
+   *    cards at all. False (or missing) keeps the tier out of the pool.
+   * - `getOwnedRuneIds()` filters out runes already held this run so a
+   *    duplicate slot is never offered.
+   * - `grantRune(runeId)` is invoked by apply() when a `grant_rune` card
+   *    is picked. The scene side registers the RuneDef with the
+   *    RuneConditionSystem. Missing hook = rune picks are no-ops
+   *    (graceful degrade for unit-test scenes without the system wired).
+   */
+  isBossKilledThisRun?(): boolean;
+  getOwnedRuneIds?(): readonly string[];
+  grantRune?(runeId: string): void;
 }
 
 export class LevelUpFlow {
@@ -208,6 +224,7 @@ export class LevelUpFlow {
 
     const ui = this.hooks.getUpgradeUI();
     ui.grantReroll();
+    markOfferedRunesSeen(cards);
     ui.show(cards, newLevel);
   }
 
@@ -221,6 +238,7 @@ export class LevelUpFlow {
       this.hooks.getXPSystem().processNextLevelUp();
       return;
     }
+    markOfferedRunesSeen(cards);
     this.hooks.getUpgradeUI().show(cards, level);
     audio.playClick();
   }
@@ -311,6 +329,12 @@ export class LevelUpFlow {
         juice.showToast(t('ui.game.upgrade_stat_boost', { name: cardTitle }), '#88ccff');
         break;
 
+      case 'grant_rune':
+        this.hooks.grantRune?.(effect.runeId);
+        bumpItemAcquired(effect.runeId, runId, now);
+        juice.showToast(t('ui.game.upgrade_grant_rune', { name: cardTitle }), '#bca3d4');
+        break;
+
       case 'evolve_weapon':
         weaponSystem.evolveWeapon(effect.weaponKey, effect.evolutionKey);
         bumpItemAcquired(effect.evolutionKey, runId, now);
@@ -399,7 +423,16 @@ export class LevelUpFlow {
       weaponLevels[w.config.key] = w.level;
     }
 
-    const rawPool = buildCardPool(ownedWeapons, ownedPassives, weaponLevels, evolvedWeapons);
+    const rawPool = buildCardPool(
+      ownedWeapons,
+      ownedPassives,
+      weaponLevels,
+      evolvedWeapons,
+      {
+        bossKilledThisRun: this.hooks.isBossKilledThisRun?.() ?? false,
+        ownedRuneIds: this.hooks.getOwnedRuneIds?.() ?? [],
+      },
+    );
     const pool = filterHealCardsWhenFull(rawPool, player.getHp() >= player.getMaxHp());
 
     const save = loadSave();
@@ -540,5 +573,17 @@ export class LevelUpFlow {
         break;
       }
     }
+  }
+}
+
+/**
+ * U1 Task 15 — on every offered rune in a card-draw, stamp its id into
+ * `seenRunes` so the meta-unlock collection persists across runs. Seeing
+ * counts; picking is not required. Best-effort (the save layer swallows
+ * its own errors) so the hot level-up path never blocks.
+ */
+function markOfferedRunesSeen(cards: readonly UpgradeCard[]): void {
+  for (const c of cards) {
+    if (c.effect.type === 'grant_rune') bumpSeenRune(c.effect.runeId);
   }
 }

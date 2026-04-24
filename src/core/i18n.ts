@@ -823,6 +823,7 @@ export const EN_STRINGS: LocaleTree = {
       upgrade_weapon_level: '{name} — pure sharper noo',
       upgrade_add_passive: '{name} — curio pocketed, ya dancer',
       upgrade_stat_boost: '{name}',
+      upgrade_grant_rune: 'Rune struck: {name} — cairn-chiseled.',
       upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       max_level_toast: 'Max level — yir a walking storm! That\'s plenty.',

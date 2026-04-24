@@ -609,6 +609,11 @@ export function drawCards(
     uncommon: RARITY_WEIGHTS.uncommon,
     rare: RARITY_WEIGHTS.rare + luckBonus * 0.6,
     legendary: RARITY_WEIGHTS.legendary + luckBonus * 0.4,
+    // U1 Rune tier — luck-coupled (doubled same as rare/legendary) so a
+    // sporran build lifts the chance of seeing a rune offer alongside
+    // the usual legendary surge. Floor at 1 to keep the tier live even
+    // if hostile luck math pushed it below zero.
+    rune: Math.max(1, RARITY_WEIGHTS.rune + luckBonus * 0.3),
   };
 
   const drawn: UpgradeCard[] = [];

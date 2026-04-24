@@ -98,6 +98,10 @@ export interface RuneDef {
   readonly glyph: string;        // BootScene texture key (rune_*)
 }
 
+/** BootScene texture key baked once — carved-stone panel every rune reuses
+ *  in v1. M3 polish authors per-id glyph variants keyed `rune_<id>`. */
+export const RUNE_GLYPH_TEXTURE_KEY = 'rune_glyph';
+
 /** Factory: build a frozen RuneDef with frozen effect list. */
 function rune(
   id: string,
@@ -110,7 +114,7 @@ function rune(
     conditionKey,
     effects: Object.freeze(effects.map((e) => Object.freeze({ ...e, params: Object.freeze({ ...e.params }) }))),
     flavourKey: `runes.${id}.flavour`,
-    glyph: `rune_${id.replace(/_rune$/, '')}`,
+    glyph: RUNE_GLYPH_TEXTURE_KEY,
   });
 }
 

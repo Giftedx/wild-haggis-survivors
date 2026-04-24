@@ -89,6 +89,10 @@ import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curse
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
+import { RuneConditionSystem } from '../systems/RuneConditionSystem';
+import { createRuneEffectBag } from '../systems/runes/runeEffects';
+import { RUNES } from '../data/runes';
+import { buildRuneEvalContextFromScene } from './game/runeContextBuilder';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
@@ -247,6 +251,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   private ownedPassives: string[] = [];
   private evolvedWeapons: string[] = [];
+  /** U1 Rune tier — per-run owned rune ids. Filter for buildCardPool's
+   *  ownedRuneIds ctx so duplicate offers are filtered. Cleared on scene
+   *  restart. */
+  private ownedRuneIds: string[] = [];
+  /** U1 — shared effect accumulator read by Player/WeaponSystem readers.
+   *  The RuneConditionSystem mutates it via apply/remove on transitions. */
+  private runeBag = createRuneEffectBag();
+  /** U1 — transition-driven rune orchestrator. Ticked from update() with
+   *  a freshly-built RuneEvalContext each frame. */
+  private runeSystem = new RuneConditionSystem(this.runeBag);
   /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
   private readonly runScore = new RunScoreState();
   /** M1 F4 — timed shrine buffs. Cleared (not reverted) on scene restart. */
@@ -805,6 +819,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.bossHpTracker?.reset();
     this.ownedPassives = [];
     this.evolvedWeapons = [];
+    this.ownedRuneIds = [];
+    // U1 — fresh rune bag + system per run (scene instance is reused).
+    this.runeBag = createRuneEffectBag();
+    this.runeSystem = new RuneConditionSystem(this.runeBag);
     this.xpOverflowGoldBatch = 0;
     this.revivalAvailable = false;
 
@@ -1255,6 +1273,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getDiscoveryRunId: () => this.discoveryRunId(),
       tryChestLegendaryRelicOverride: () => this.tryRelicChestOverride(),
       getRelicLuckPoints: () => this.relicEffectDriver?.luckDrawPoints() ?? 0,
+      isBossKilledThisRun: () => this.runScore.bossKillCount > 0,
+      getOwnedRuneIds: () => this.ownedRuneIds,
+      grantRune: (runeId) => this.grantRune(runeId),
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,
@@ -1615,6 +1636,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // freeze XP collection and spawn timing; a paused buff at 12s
     // remaining stays at 12s until play resumes.
     this.tempBuffBag.tick(scaledDelta);
+
+    // U1 Task 14 — rune condition tick. Evaluate each active rune against
+    // a fresh context built from live scene state; transitions fire
+    // apply/remove on the shared runeBag which Player / WeaponSystem read.
+    this.tickRuneSystem(delta);
 
     // M1 F1+F2 — poll pending encounter/elite waves every frame (raw
     // bookkeeping; must tick regardless of the pause early-return below
@@ -2710,6 +2736,64 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Relic drop. Called by LevelUpFlow.offerChestEvolution before the
    * evolution card UI is shown. Returning true suppresses the card.
    */
+  /**
+   * U1 Task 14 — register a rune with the condition system. Called by
+   * LevelUpFlow.apply() on a 'grant_rune' card pick. Also records the
+   * run-owned rune id so future card draws filter it from the offer pool.
+   * Unknown rune ids are silently skipped — defensive against future
+   * save/replay drift.
+   */
+  private grantRune(runeId: string): void {
+    const def = RUNES[runeId];
+    if (!def) return;
+    if (this.ownedRuneIds.includes(runeId)) return;
+    this.ownedRuneIds.push(runeId);
+    this.runeSystem.addRune(def);
+  }
+
+  /**
+   * U1 Task 14 — per-frame rune tick. Builds a RuneEvalContext from live
+   * scene state and feeds it to the condition system. The system fires
+   * apply/remove on transitions; the shared runeBag is read by consumers
+   * (Player stats, WeaponSystem effects) downstream.
+   */
+  private tickRuneSystem(delta: number): void {
+    if (this.runeSystem.activeCount() === 0) return;
+    // Advance the bag's nowMs for latched-timed effects (dmg_mult_timed).
+    this.runeBag.nowMs += delta;
+    const p = this.player;
+    const maxHp = p.getMaxHp();
+    const biomeKey = this.biomeController
+      ? this.biomeController.currentBiomeAt(p.x, p.y)
+      : null;
+    const ctx = buildRuneEvalContextFromScene({
+      biomeKey,
+      hpFrac: maxHp > 0 ? p.getHp() / maxHp : 1,
+      nearHazardWater: false,
+      nearCairn: false,
+      ownedRelicsCount: this.relicSystem?.heldCount() ?? 0,
+      ownedWeaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
+      runTimeMs: this.spawnSystem.getGameTimeSec() * 1000,
+      combo: this.juice.getComboCount(),
+      unopenedChestsCount: 0,
+      dashMsAgo: null,
+      evolvedWeaponsCount: this.evolvedWeapons.length,
+      killsThisRun: this.runScore.killCount,
+      justKilled: false,
+      lastKillDeltaMs: null,
+      distinctKillTypesIn5s: 0,
+      critOnWeakenedThisFrame: false,
+      pickupChainDurationMs: 0,
+      namedEliteKilledThisFrame: false,
+      killOnThistleThisFrame: false,
+      musicBassActive: false,
+      nodesVisited: 0,
+      postBell: this.runScore.victoryPending,
+      timeOfDayKey: null,
+    });
+    this.runeSystem.tick(ctx);
+  }
+
   private tryRelicChestOverride(): boolean {
     if (!this.relicPickupSpawner) return false;
     const relic = this.relicSystem.rollDrop('chest', this.runRng, {});
