@@ -2244,30 +2244,37 @@ export const EN_STRINGS: LocaleTree = {
     thistle_storm: {
       name: 'Thistle Storm',
       description: 'Eight homing thistles seek their quarry across the moor. The storm has teeth.',
+      flavour: 'A hundred thistles where there was one. The bairn grew old; the thistles did not. She is buried in Alloway; her garden is everywhere.',
     },
     highland_fling: {
       name: 'The Highland Fling',
       description: 'A great sonic ring blooms outward. The moor sings; yir enemies come apart.',
+      flavour: 'The dance steps are three centuries old; the drum beneath them older still. The Fling is not a fling at all — it is a promise, kept.',
     },
     highland_games: {
       name: 'Highland Games',
       description: 'The caber detonates on its final pierce, leaving a burning patch o\' grass. Heave, ho.',
+      flavour: 'Twenty-two pounds of hammer; one-fourteen of stone; one haggis wielding the catalogue. The Braemar Gathering would have concerns.',
     },
     the_haar: {
       name: 'The Haar',
       description: 'The great Highland fog rolls in. Half the moor vanishes; anything caught in it dissolves.',
+      flavour: 'Sea-fog named for the east coast, where Aberdeen fishermen watch it come. It lifts on its own time. The visibility is a courtesy.',
     },
     haggis_cannon: {
       name: 'Jobby Cannon',
       description: 'Rapid-fire wee jobbies — every bounce ends in a messy pop.',
+      flavour: 'Every shot is a haggis; every haggis an eulogy. The range improves with practice; the flavour does not.',
     },
     nessie_unleashed: {
       name: 'Nessie Unleashed',
       description: 'Every tentacle, every angle. The loch herself comes to yir aid.',
+      flavour: 'She is visible, for a moment. The moment ends badly for whomever she was looking at.',
     },
     william_blade: {
       name: 'William Blade',
       description: 'Legendary claymore — shockwaves tear across the moor like a battle-cry.',
+      flavour: 'Blessed in his name, not his possession. Wallace never held it; the blade has pretended otherwise since 1305.',
     },
   },
   achievement: {
@@ -2399,34 +2406,42 @@ export const EN_STRINGS: LocaleTree = {
     thistle_shot: {
       name: 'Thistle Shot',
       description: 'Sharp thistles fly at the nearest bother.',
+      flavour: "First thrown by a crofter's bairn who'd watched a Viking bare his sole on a thistle. \"If it kept a kingdom,\" she reasoned, \"it might keep me.\" Every thistle since remembers her.",
     },
     bagpipe_blast: {
       name: 'Bagpipe Blast',
       description: 'A wee shockwave to knock the breath oot o\' foes.',
+      flavour: 'A note held too long. The drone has a name — no piper recalls it. The beasties scatter, as they did at Killiecrankie.',
     },
     caber_toss: {
       name: 'Caber Toss',
       description: 'A log the size of a door, thrown clean through a crowd.',
+      flavour: 'Two-and-twenty feet of pine, tossed end-over-end for form, not distance. The judge at Braemar is never impressed. The haggis practices anyway.',
     },
     scotch_mist: {
       name: 'Scotch Mist',
       description: 'Trail a creeping fog. What wanders in doesnae wander oot.',
+      flavour: "A trick of weather. A trick of poets. The mist \"scotches\" what it passes. Some say the word means nothing; some say it means everything.",
     },
     haggis_hurler: {
       name: 'Jobby Hurler',
       description: 'Bouncing wee jobbies that ricochet till they stick.',
+      flavour: 'The old sport. Lorne Coltart threw one sixty-six metres, in 2011. A wild haggis throws itself further, given cause.',
     },
     nessie_tentacle: {
       name: "Nessie's Tentacle",
       description: 'A sweeping arm from the loch — wide reach, meatier knockback.',
+      flavour: "She's never been seen whole. A wrinkle of the loch's surface. A shadow at Urquhart. The tentacle is what's visible; the rest is what's believed.",
     },
     claymore: {
       name: 'Highland Claymore',
       description: 'A sword the weight of a man. Slow to lift, enormous in the sweep.',
+      flavour: "Too heavy for any creature save a legend. Wallace is said to have wielded one, though a haggis wouldn't know the difference. The blade remembers Falkirk. It does not forgive it.",
     },
     bagpipes: {
       name: 'Ceòl Mòr Bagpipes',
       description: 'A great drone that presses on yir enemies like weather.',
+      flavour: "Drones older than speech. In the Highland tongue they are the \"great music\" — ceòl mòr. Enemies who know the old tunes keep their distance. Those who don't, learn.",
     },
   },
   boss: {
@@ -2435,6 +2450,40 @@ export const EN_STRINGS: LocaleTree = {
     the_laird: { name: 'The Laird' },
     hunter_general: { name: 'The Haggis Hunter General' },
     taxman: { name: 'Death (The Taxman)' },
+  },
+  /**
+   * C2 — passive curios. Dark-Souls-style flavour text, domestic-mystical
+   * register (croft-corner found objects). Mechanical descriptions live on
+   * the `upgradeCard.add_*` entries; flavour sits alongside them here.
+   */
+  passive: {
+    sporran: {
+      flavour: 'Capacious beyond reason. Gran insists it\'s just well-organised. It holds the day\'s pickings and, sometimes, things the haggis doesn\'t remember collecting.',
+    },
+    whisky_flask: {
+      flavour: 'Filled from a distillery that was drowned when the dam went up. The ten-year-old lasts forever. It is not quite the same as the ten-year-old one can buy.',
+    },
+    kilt: {
+      flavour: 'The great kilt, the feileadh mòr — eighteen feet of wool, belted at the waist and thrown over the shoulder. Gran pinned it. Gran mends it.',
+    },
+    tam_o_shanter: {
+      flavour: "Red toorie on a flat bonnet, named for Burns's drunk, who rode past Alloway Kirk one winter and saw what he oughtn't have. The haggis rides lighter.",
+    },
+    irn_bru: {
+      flavour: "Cumbernauld's contribution to the canon. 1901. The recipe is secret; the caffeine is real. The orange stains of it have been known to save marriages.",
+    },
+    loch_water: {
+      flavour: 'Drawn from a burn that feeds into a loch that no-one names. Peat-dark. Cold. The haggis holds it close; so does whatever else is in it.',
+    },
+    thistle_crown: {
+      flavour: 'Woven by the bairn who invented the Thistle Shot. Gran says it has never been removed; the haggis is not sure who is wearing whom.',
+    },
+    highland_shield: {
+      flavour: 'Round, oak-faced, oxhide-bound. The targe at Culloden. It saved some and not others. The haggis carries one anyway.',
+    },
+    tartan_sash: {
+      flavour: 'Royal Stewart, by the design — though the wearer has no right to it. The moor does not mind. The sash is proud to be worn.',
+    },
   },
   variant: {
     classic: {
@@ -2522,23 +2571,91 @@ export const EN_STRINGS: LocaleTree = {
     },
   },
   permanentUpgrade: {
-    thick_hide: { name: 'Thick Hide', description: 'A hide thick enough to shrug off the first wee knocks (+5% starting HP).' },
-    strong_legs: { name: 'Gallus Legs', description: 'Quicker hooves from the very first step — pure gallus (+3% speed).' },
-    sharp_thistles: { name: 'Sharp Thistles', description: 'Every thistle hits a shade harder (+5% damage).' },
-    magnetic_personality: { name: 'Magnetic Personality', description: 'Gems lean toward ye of their own accord (+10% pickup radius).' },
-    lucky_heather: { name: 'Lucky Heather', description: 'The glen rolls kinder picks (+10% card rarity).' },
-    drift_control: { name: 'Drift Control', description: 'Tighter turns, fewer tumbles (-15% clockwise drift).' },
-    extra_choice: { name: 'Extra Choice', description: 'One more pick at every level-up, for when ye cannae decide.' },
-    battle_hardened: { name: 'Battle Hardened', description: 'Old scars become plate — start each run with +2 armor.' },
-    weapon_training: { name: 'Battle-Tested', description: 'Ye\'ve been oot before — yir Thistle Shot starts a level stronger.' },
-    crit_power: { name: 'Heid-the-Baw', description: 'Ye ken exactly where tae wallop them (+3% crit chance, +25% crit damage).' },
-    xp_boost: { name: 'Scholar\'s Mind', description: 'The glen teaches ye faster (+8% XP gain).' },
-    lucky_start: { name: 'Lucky Start', description: 'Start each run with a random curio already in yir pocket.' },
-    natural_recovery: { name: 'Moor\'s Mend', description: 'The moor patches ye up as ye run — slow and steady like (+0.3 HP/sec).' },
-    revival: { name: 'Second Wind', description: 'Once per run, shrug off death wi\' 50% HP and keep going.' },
-    double_dash: { name: 'Double Dash', description: 'Two dashes in the hoof instead of one.' },
-    treasure_magnet: { name: 'Treasure Magnet', description: 'Chests and coins linger a few breaths longer (+5s).' },
-    dirk_hand: { name: 'Dirk Hand', description: 'A quicker draw on every weapon (+3% attack speed).' },
+    thick_hide: {
+      name: 'Thick Hide',
+      description: 'A hide thick enough to shrug off the first wee knocks (+5% starting HP).',
+      flavour: 'Passed down. Each generation thickens a little. The haggis in the shop mirror looks weathered; Gran says that\'s just the light.',
+    },
+    strong_legs: {
+      name: 'Gallus Legs',
+      description: 'Quicker hooves from the very first step — pure gallus (+3% speed).',
+      flavour: 'Hill-walked since before memory. The uphill leg is shorter than the downhill. Or the other way. It depends on which side of the hill.',
+    },
+    sharp_thistles: {
+      name: 'Sharp Thistles',
+      description: 'Every thistle hits a shade harder (+5% damage).',
+      flavour: 'Selection takes place in the soil. Each year\'s crop grows pricklier. Gran composts the herbaceous; the haggis composts the rest.',
+    },
+    magnetic_personality: {
+      name: 'Magnetic Personality',
+      description: 'Gems lean toward ye of their own accord (+10% pickup radius).',
+      flavour: 'Some beasties lean closer without being asked. Gran calls it charm; the haggis suspects it\'s the smell of the sporran.',
+    },
+    lucky_heather: {
+      name: 'Lucky Heather',
+      description: 'The glen rolls kinder picks (+10% card rarity).',
+      flavour: 'White heather, found in the peat below where a shepherd fell in 1820. Still fragrant. Still lucky — though not for him.',
+    },
+    drift_control: {
+      name: 'Drift Control',
+      description: 'Tighter turns, fewer tumbles (-15% clockwise drift).',
+      flavour: 'Crooked legs cannot be straightened. They can be listened to. After enough hills, one learns which leg to trust on which slope.',
+    },
+    extra_choice: {
+      name: 'Extra Choice',
+      description: 'One more pick at every level-up, for when ye cannae decide.',
+      flavour: 'Three roads and a riddle. The glen offers a fourth. It will not offer the riddle twice.',
+    },
+    battle_hardened: {
+      name: 'Battle Hardened',
+      description: 'Old scars become plate — start each run with +2 armor.',
+      flavour: 'Old scars become plate. Gran mended them once; the haggis has since stopped counting.',
+    },
+    weapon_training: {
+      name: 'Battle-Tested',
+      description: 'Ye\'ve been oot before — yir Thistle Shot starts a level stronger.',
+      flavour: 'The first thistle fires cleaner than it used to. Not from practice — from the ones fired before, remembering.',
+    },
+    crit_power: {
+      name: 'Heid-the-Baw',
+      description: 'Ye ken exactly where tae wallop them (+3% crit chance, +25% crit damage).',
+      flavour: 'Where to strike is a question. When to strike is another. The haggis has begun asking both at once.',
+    },
+    xp_boost: {
+      name: 'Scholar\'s Mind',
+      description: 'The glen teaches ye faster (+8% XP gain).',
+      flavour: 'The glen is a long book. It is kinder to those who have read it once.',
+    },
+    lucky_start: {
+      name: 'Lucky Start',
+      description: 'Start each run with a random curio already in yir pocket.',
+      flavour: 'Some mornings the sporran is already heavier than it should be. Gran denies it. The pickings deny nothing.',
+    },
+    natural_recovery: {
+      name: 'Moor\'s Mend',
+      description: 'The moor patches ye up as ye run — slow and steady like (+0.3 HP/sec).',
+      flavour: 'The peat closes over a wound the way it closes over a bog-body: slowly, and without comment.',
+    },
+    revival: {
+      name: 'Second Wind',
+      description: 'Once per run, shrug off death wi\' 50% HP and keep going.',
+      flavour: 'Once, the haggis died before the run ended. The moor was displeased. It has since taken steps.',
+    },
+    double_dash: {
+      name: 'Double Dash',
+      description: 'Two dashes in the hoof instead of one.',
+      flavour: 'Two breaths between, instead of one. The second one is for Gran.',
+    },
+    treasure_magnet: {
+      name: 'Treasure Magnet',
+      description: 'Chests and coins linger a few breaths longer (+5s).',
+      flavour: 'Chests hesitate longer in the grass. Coins remember who has patience. The haggis has learned to wait — almost.',
+    },
+    dirk_hand: {
+      name: 'Dirk Hand',
+      description: 'A quicker draw on every weapon (+3% attack speed).',
+      flavour: 'The dirk was worn inside the sleeve. The hand learned where to find it. So did every weapon since.',
+    },
   },
   upgradeCard: {
     // Weapon cards

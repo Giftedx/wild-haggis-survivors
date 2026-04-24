@@ -1868,6 +1868,35 @@ export const SCS_STRINGS: LocaleTree = {
     hunter_general: { name: 'Tha Haggis Hunter General' },
     taxman: { name: 'Daith (Tha Taxman)' },
   },
+  passive: {
+    sporran: {
+      flavour: 'Capacious beyond reason. Gran insists it\'s jist weel-organised. It hauds tha day\'s pickins an, whiles, things tha haggis disnae mind collectin.',
+    },
+    whisky_flask: {
+      flavour: 'Filled fae a distillery that wis droont whan tha dam went up. Tha ten-year-auld lasts forever. It\'s no quite tha same as tha ten-year-auld ye can buy.',
+    },
+    kilt: {
+      flavour: 'Tha great kilt, tha feileadh mòr — echteen feet o oo\', belted at tha waist an flung ower tha shooder. Gran pinned it. Gran mends it.',
+    },
+    tam_o_shanter: {
+      flavour: 'Reid toorie on a flat bunnet, named fer Burns\'s drunk, wha rade past Alloway Kirk yin winter an saw whit he oughtnae hae. Tha haggis rides lichter.',
+    },
+    irn_bru: {
+      flavour: 'Cumbernauld\'s contribution tae tha canon. 1901. Tha recipe\'s secret; tha caffeine\'s real. Tha orange stains o it hae been kent tae save mairriages.',
+    },
+    loch_water: {
+      flavour: 'Drawn fae a burn that feeds intae a loch nae-body names. Peat-daurk. Cauld. Tha haggis hauds it close; sae does whitivver else is in it.',
+    },
+    thistle_crown: {
+      flavour: 'Woven bi tha bairn wha invented tha Thistle Shot. Gran says it\'s nivver been removed; tha haggis isnae sure wha\'s wearin whom.',
+    },
+    highland_shield: {
+      flavour: 'Roond, aik-faced, oxhide-boond. Tha targe at Culloden. It saved some an no ithers. Tha haggis carries ane onyway.',
+    },
+    tartan_sash: {
+      flavour: 'Royal Stewart, bi tha design — though tha wearer\'s nae richt tae it. Tha moor disnae mind. Tha sash is prood tae be worn.',
+    },
+  },
   metaItem: {
     speed_tier_1: {
       name: 'Sprint Boots',
@@ -1964,30 +1993,37 @@ export const SCS_STRINGS: LocaleTree = {
     thistle_storm: {
       name: 'Thistle Storm',
       description: 'Echt homin thistles seek their quarry across tha moor. Tha storm has teeth.',
+      flavour: 'A hunner thistles whaur there wis ane. Tha bairn grew auld; tha thistles didnae. She\'s beirit in Alloway; her gairdin\'s ivverywhere.',
     },
     highland_fling: {
       name: 'Tha Heiland Fling',
       description: 'A great sonic ring blooms ootward. Tha moor sings; yer beasties come apairt.',
+      flavour: 'Tha dance steps are three centuries auld; tha drum ablow them aulder still. Tha Fling\'s no a fling at aw — it\'s a promise, kept.',
     },
     highland_games: {
       name: 'Heiland Games',
       description: 'Tha caber detonates on its final pierce, leavin a burnin patch o gress. Heave, ho.',
+      flavour: 'Twa-an-twenty pund o hammer; yin-fourteen o stane; yin haggis wieldin tha catalogue. Tha Braemar Gatherin wid hae concerns.',
     },
     the_haar: {
       name: 'Tha Haar',
       description: 'Tha great Heiland fog rowes in. Hauf tha moor vanishes; ocht caught in it dissolves.',
+      flavour: 'Sea-fog named fer tha east coast, whaur Aiberdeen fishermen watch it come. It lifts on its ain time. Tha sichtability\'s a courtesy.',
     },
     haggis_cannon: {
       name: 'Jobby Cannon',
       description: 'Rapid-fire wee jobbies — every bounce ends in a messy pop.',
+      flavour: 'Ivvery shot\'s a haggis; ivvery haggis an elegy. Tha range improves wi practice; tha flavour disnae.',
     },
     nessie_unleashed: {
       name: 'Nessie Unleashed',
       description: 'Every tentacle, every angle. Tha loch hersel comes tae yer aid.',
+      flavour: 'She\'s visible, fer a moment. Tha moment ends ill fer whaever she\'s lookin at.',
     },
     william_blade: {
       name: 'William Blade',
       description: 'Legendary claymore — shockwaves rive across tha moor like a battle-cry.',
+      flavour: 'Blessed in his name, no his possession. Wallace nivver held it; tha blade\'s been pretendin otherwise since 1305.',
     },
   },
   achievement: {
@@ -2108,34 +2144,42 @@ export const SCS_STRINGS: LocaleTree = {
     thistle_shot: {
       name: 'Thistle Shot',
       description: 'Sharp thistles flee at tha nearest bother.',
+      flavour: 'First flung bi a crofter\'s bairn wha\'d watched a Viking bare his sole on a thistle. "Gif it kept a kingdom," she reasoned, "it micht keep me." Every thistle since minds her.',
     },
     bagpipe_blast: {
       name: 'Bagpipe Blast',
       description: 'A wee shockwave tae knock tha braith oot o foes.',
+      flavour: 'A note hauldit ower lang. Tha drone haes a name — nae piper recalls it. Tha beasties scattered, as they did at Killiecrankie.',
     },
     caber_toss: {
       name: 'Caber Toss',
       description: 'A log tha size o a door, throwed clean through a crood.',
+      flavour: 'Twa-an-twenty feet o pine, tossed end-ower-end fer form, no distance. Tha judge at Braemar\'s nivver impressed. Tha haggis practices onyway.',
     },
     scotch_mist: {
       name: 'Scotch Mist',
       description: 'Trail a creepin haar. Whit wanders in disnae wander oot.',
+      flavour: 'A trick o tha wather. A trick o poets. Tha mist "scotches" whit it passes. Some say tha wurd means naethin; some say it means ivverythin.',
     },
     haggis_hurler: {
       name: 'Jobby Hurler',
       description: 'Bouncin wee jobbies that ricochet til they stick.',
+      flavour: 'Tha auld sport. Lorne Coltart threw ane sixty-six metres, in 2011. A wild haggis flings itsel faurther, gien cause.',
     },
     nessie_tentacle: {
       name: 'Nessie\'s Tentacle',
       description: 'A sweepin airm fae tha loch — wide reach, meatier knockback.',
+      flavour: 'She\'s nivver been seen haill. A wrinkle o tha loch\'s surface. A shadow by Urquhart. Tha tentacle\'s whit\'s visible; tha rest is whit\'s believed.',
     },
     claymore: {
       name: 'Heiland Claymore',
       description: 'A swurd tha wecht o a man. Slow tae lift, enormous in tha sweep.',
+      flavour: 'Ower heavy fer ony craitur save a legend. Wallace is said tae hae wielded ane, though a haggis wouldnae ken tha difference. Tha blade minds Falkirk. It disnae forgive it.',
     },
     bagpipes: {
       name: 'Ceòl Mòr Bagpipes',
       description: 'A great drone that presses on yer beasties like wather.',
+      flavour: 'Drones aulder than speech. In tha Heiland tongue they\'re tha "great music" — ceòl mòr. Foes wha ken tha auld tunes keep their distance. Them that dinnae, learn.',
     },
   },
   variant: {
@@ -2222,23 +2266,91 @@ export const SCS_STRINGS: LocaleTree = {
     },
   },
   permanentUpgrade: {
-    thick_hide: { name: 'Thick Hide', description: 'A hide thick enough tae shrug aff tha first wee dunts (+5% stairtin HP).' },
-    strong_legs: { name: 'Gallus Legs', description: 'Quicker hooves fae tha very first step — pure gallus (+3% speed).' },
-    sharp_thistles: { name: 'Sharp Thistles', description: 'Every thistle hits a shade herder (+5% damage).' },
-    magnetic_personality: { name: 'Magnetic Personality', description: 'Gems lean toward ye o their ain accord (+10% pickup radius).' },
-    lucky_heather: { name: 'Lucky Heather', description: 'Tha glen rowes kinder picks (+10% caird rarity).' },
-    drift_control: { name: 'Drift Control', description: 'Tichter turns, fewer tummles (-15% clockwise drift).' },
-    extra_choice: { name: 'Extra Choice', description: 'Wan mair pick at every level-up, fer whan ye cannae decide.' },
-    battle_hardened: { name: 'Battle Hardened', description: 'Auld scars become plate — stairt each run wi +2 armor.' },
-    weapon_training: { name: 'Battle-Tested', description: 'Ye\'ve been oot afore — yer Thistle Shot stairts a level stronger.' },
-    crit_power: { name: 'Heid-the-Baw', description: 'Ye ken exactly whaur tae wallop them (+3% crit chance, +25% crit damage).' },
-    xp_boost: { name: 'Scholar\'s Mind', description: 'Tha glen teaches ye faster (+8% XP gain).' },
-    lucky_start: { name: 'Lucky Stairt', description: 'Stairt each run wi a random curio already in yer pooch.' },
-    natural_recovery: { name: 'Moor\'s Mend', description: 'Tha moor patches ye up as ye rin — slow an steady (+0.3 HP/sec).' },
-    revival: { name: 'Second Wind', description: 'Wance per run, shrug aff daith wi 50% HP an keep gaun.' },
-    double_dash: { name: 'Double Dash', description: 'Twa dashes in tha hoof insteid o wan.' },
-    treasure_magnet: { name: 'Treasure Magnet', description: 'Kists an coins linger a few braiths langer (+5s).' },
-    dirk_hand: { name: 'Dirk Haund', description: 'A quicker draw on every wapen (+3% attack speed).' },
+    thick_hide: {
+      name: 'Thick Hide',
+      description: 'A hide thick enough tae shrug aff tha first wee dunts (+5% stairtin HP).',
+      flavour: 'Passed doon. Ivvery generation thickens a wee bit. Tha haggis in tha shop mirror looks weathered; Gran says that\'s jist tha licht.',
+    },
+    strong_legs: {
+      name: 'Gallus Legs',
+      description: 'Quicker hooves fae tha very first step — pure gallus (+3% speed).',
+      flavour: 'Hill-walked since afore memory. Tha uphill leg\'s shorter than tha doonhill. Or tha ither way. Depends whit side o tha hill ye\'re on.',
+    },
+    sharp_thistles: {
+      name: 'Sharp Thistles',
+      description: 'Every thistle hits a shade herder (+5% damage).',
+      flavour: 'Selection tak\'s place in tha soil. Ivvery year\'s crop grows pricklier. Gran composts tha herbaceous; tha haggis composts tha rest.',
+    },
+    magnetic_personality: {
+      name: 'Magnetic Personality',
+      description: 'Gems lean toward ye o their ain accord (+10% pickup radius).',
+      flavour: 'Some beasties lean closer wi\'oot bein asked. Gran cries it chairm; tha haggis reckons it\'s tha smell o tha sporran.',
+    },
+    lucky_heather: {
+      name: 'Lucky Heather',
+      description: 'Tha glen rowes kinder picks (+10% caird rarity).',
+      flavour: 'White heather, fund in tha peat ablow whaur a shepherd fell in 1820. Still fragrant. Still lucky — though no fer him.',
+    },
+    drift_control: {
+      name: 'Drift Control',
+      description: 'Tichter turns, fewer tummles (-15% clockwise drift).',
+      flavour: 'Crookit legs cannae be straightened. They can be listened tae. Efter enough hills, ye learn which leg tae trust on which slope.',
+    },
+    extra_choice: {
+      name: 'Extra Choice',
+      description: 'Wan mair pick at every level-up, fer whan ye cannae decide.',
+      flavour: 'Three roads an a riddle. Tha glen offers a fourth. It\'ll no offer tha riddle twice.',
+    },
+    battle_hardened: {
+      name: 'Battle Hardened',
+      description: 'Auld scars become plate — stairt each run wi +2 armor.',
+      flavour: 'Auld scars become plate. Gran mended them yince; tha haggis has since stopped coontin.',
+    },
+    weapon_training: {
+      name: 'Battle-Tested',
+      description: 'Ye\'ve been oot afore — yer Thistle Shot stairts a level stronger.',
+      flavour: 'Tha first thistle fires cleaner than it yaised tae. No fae practice — fae tha yins fired afore, mindin.',
+    },
+    crit_power: {
+      name: 'Heid-the-Baw',
+      description: 'Ye ken exactly whaur tae wallop them (+3% crit chance, +25% crit damage).',
+      flavour: 'Whaur tae strike\'s a question. Whan tae strike\'s anither. Tha haggis has stairted speirin baith at yince.',
+    },
+    xp_boost: {
+      name: 'Scholar\'s Mind',
+      description: 'Tha glen teaches ye faster (+8% XP gain).',
+      flavour: 'Tha glen\'s a lang book. It\'s kinder tae them that\'s read it yince.',
+    },
+    lucky_start: {
+      name: 'Lucky Stairt',
+      description: 'Stairt each run wi a random curio already in yer pooch.',
+      flavour: 'Some moarnins tha sporran\'s heavier than it should be. Gran denies it. Tha pickins deny naethin.',
+    },
+    natural_recovery: {
+      name: 'Moor\'s Mend',
+      description: 'Tha moor patches ye up as ye rin — slow an steady (+0.3 HP/sec).',
+      flavour: 'Tha peat closes ower a wound tha way it closes ower a bog-body: slowly, an wi\'oot comment.',
+    },
+    revival: {
+      name: 'Second Wind',
+      description: 'Wance per run, shrug aff daith wi 50% HP an keep gaun.',
+      flavour: 'Yince, tha haggis died afore tha run ended. Tha moor wisnae pleased. It\'s taen steps since.',
+    },
+    double_dash: {
+      name: 'Double Dash',
+      description: 'Twa dashes in tha hoof insteid o wan.',
+      flavour: 'Twa braiths atween, insteid o yin. Tha second\'s fer Gran.',
+    },
+    treasure_magnet: {
+      name: 'Treasure Magnet',
+      description: 'Kists an coins linger a few braiths langer (+5s).',
+      flavour: 'Kists hesitate langer in tha gress. Coins mind wha\'s got patience. Tha haggis has learnt tae bide — nearly.',
+    },
+    dirk_hand: {
+      name: 'Dirk Haund',
+      description: 'A quicker draw on every wapen (+3% attack speed).',
+      flavour: 'Tha dirk wis worn inside tha sleeve. Tha haun learnt whaur tae find it. Sae did ivvery wapen since.',
+    },
   },
   upgradeCard: {
     add_bagpipe_blast: {
