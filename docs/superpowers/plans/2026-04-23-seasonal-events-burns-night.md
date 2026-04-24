@@ -1,6 +1,12 @@
 # E1 — Seasonal events + Burns Night implementation plan
 
-> **STATUS:** M1 framework SHIPPED 2026-04-24. `SeasonalEventManager` live with pure date-math; Burns Night (Jan 18 – Feb 1) registered as first event; save schema v12 → v13 with optional `RunHistoryEntry.seasonalEvent`; `RunHistoryRecorder` stamps runs ended inside any active event window. 17 dedicated calendar tests + 2 recorder tests — year-wrap, leap-year, hour-of-day, edge-day all covered. Remaining M2 (run-start haggis-piped ceremony + haggis-platter pickup + themed buff), M3 (croft props — BLOCKED on H1 Gran's Croft), M4 (music layer + banter + Chronicle badge render + variant unlock tightening). Bundle delta: ~+1 KB gzip.
+> **STATUS:** SHIPPED 2026-04-24. All four milestones complete:
+> - **M1** — `SeasonalEventManager` + pure date-math + Burns Night window + `RunHistoryEntry.seasonalEvent` + Chronicle stamp.
+> - **M2** — run-start bagpipe stinger + Gran banter swap to `seasonal_event`; one-off haggis-platter pickup (full heal + 60s +30% damage buff + burns_citation banter); tightened Burns's Wee Beastie unlock gate to `burns_night_full_evo` (save v14 → v15, new counter `burnsNightFullEvoRunsCompleted`); Playwright clock-mocked smoke spec.
+> - **M3** — Croft seasonal props (shipped alongside H1 via `seasonalProps.ts` — haggis platter on the table, Address card on the mantel, bloomed thistle).
+> - **M4** — Conductor piper accent (gated on Burns + combat intensity + 22 s cooldown); `SeasonalEventBanner` HUD on Menu + Croft; `disableSeasonalEvents` opt-out short-circuits every surface.
+>
+> 3761 unit tests + 27 e2e green on chromium-desktop. Bundle delta vs. pre-M1: ~+2 KB gzip (well under the +30 KB budget).
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 
