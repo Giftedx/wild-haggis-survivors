@@ -23,6 +23,7 @@ import type { AnimationState } from '../animation/animationStates';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
 import { bakeDecorations } from '../art/sprites/decorations';
 import { bakeGranTextures } from '../art/sprites/croft/gran';
+import { bakeHearthTextures } from '../art/sprites/croft/hearth';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
 import { bakeProjectiles } from '../art/sprites/projectiles';
@@ -306,6 +307,7 @@ export class BootScene extends Phaser.Scene {
     bakeWildlife(this);
     // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
     bakeGranTextures(this);
+    bakeHearthTextures(this);
   }
 
 

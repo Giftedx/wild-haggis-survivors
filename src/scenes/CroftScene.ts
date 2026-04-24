@@ -12,6 +12,7 @@ import {
   type CroftLayout,
 } from './croft/CroftComposition';
 import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
+import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/hearth';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -34,6 +35,9 @@ export class CroftScene extends Phaser.Scene {
   private granSprite: Phaser.GameObjects.Sprite | null = null;
   private knittingTimer: Phaser.Time.TimerEvent | null = null;
   private knittingFrame = 0;
+  private hearthSprite: Phaser.GameObjects.Sprite | null = null;
+  private hearthTimer: Phaser.Time.TimerEvent | null = null;
+  private hearthFrame = 0;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -51,6 +55,11 @@ export class CroftScene extends Phaser.Scene {
     this.knittingTimer?.remove(false);
     this.knittingTimer = null;
     this.knittingFrame = 0;
+    this.hearthSprite?.destroy();
+    this.hearthSprite = null;
+    this.hearthTimer?.remove(false);
+    this.hearthTimer = null;
+    this.hearthFrame = 0;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -60,6 +69,7 @@ export class CroftScene extends Phaser.Scene {
     addAmberHeaderWash(this);
 
     this.drawComposition(layout, highContrastUi);
+    this.drawHearth(layout);
     this.drawGran(layout);
     this.drawHeader(width);
     this.drawBack();
@@ -80,8 +90,8 @@ export class CroftScene extends Phaser.Scene {
     const alphaFill = highContrast ? 0.4 : 0.22;
     const alphaStroke = highContrast ? 0.9 : 0.6;
     for (const key of CROFT_DRAW_ORDER) {
-      // Gran has a real sprite now (T3) — skip her placeholder.
-      if (key === 'gran') continue;
+      // Gran + hearth have real sprites now — skip placeholders.
+      if (key === 'gran' || key === 'hearth') continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -91,6 +101,25 @@ export class CroftScene extends Phaser.Scene {
         .setStrokeStyle(1, color, alphaStroke);
       this.placeholders.push(rect);
     }
+  }
+
+  /**
+   * Display the hearth sprite and tick its 4-frame flicker at ~8 fps.
+   */
+  private drawHearth(layout: CroftLayout): void {
+    const sprite = this.add
+      .sprite(layout.hearth.x, layout.hearth.y, HEARTH_TEXTURE_KEYS[0])
+      .setOrigin(0.5, 0.5)
+      .setScale(layout.spriteScale * 1.4);
+    this.hearthSprite = sprite;
+    this.hearthTimer = this.time.addEvent({
+      delay: 125,
+      loop: true,
+      callback: () => {
+        this.hearthFrame = (this.hearthFrame + 1) % HEARTH_FRAME_COUNT;
+        sprite.setTexture(HEARTH_TEXTURE_KEYS[this.hearthFrame]);
+      },
+    });
   }
 
   /**
