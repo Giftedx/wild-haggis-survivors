@@ -34,3 +34,27 @@ describe('RELICS — Task 1: 8 common relics', () => {
     }
   });
 });
+
+describe('RELICS — Task 2: 7 uncommon relics', () => {
+  it('has exactly 7 uncommon relics', () => {
+    const uncommons = RELIC_KEYS.filter((k) => RELICS[k].rarity === 'uncommon');
+    expect(uncommons).toHaveLength(7);
+  });
+
+  it('expected uncommon keys are present', () => {
+    const expected: readonly RelicKey[] = [
+      'cairn_stone',
+      'pictish_compass',
+      'highland_torque',
+      'bodhran_skin',
+      'clootie_rag',
+      'fishermens_net',
+      'midgie_repellent',
+    ];
+    for (const k of expected) {
+      expect(RELICS[k]).toBeDefined();
+      expect(RELICS[k].rarity).toBe('uncommon');
+      expect(RELICS[k].dropAffinity.length).toBeGreaterThan(0);
+    }
+  });
+});

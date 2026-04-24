@@ -32,7 +32,15 @@ export type RelicKey =
   | 'bronze_clasp'
   | 'ceilidh_dancers_ribbon'
   | 'damp_tinder'
-  | 'whisky_dram';
+  | 'whisky_dram'
+  // Uncommon (7)
+  | 'cairn_stone'
+  | 'pictish_compass'
+  | 'highland_torque'
+  | 'bodhran_skin'
+  | 'clootie_rag'
+  | 'fishermens_net'
+  | 'midgie_repellent';
 
 export interface RelicDef {
   readonly key: RelicKey;
@@ -135,6 +143,78 @@ export const RELICS: Readonly<Record<RelicKey, RelicDef>> = {
     particleColour: 0xd4a017, // whisky amber
     dropAffinity: ['chest', 'bargain'],
     activate: true,
+  },
+
+  // -------- Uncommon (7) --------
+  cairn_stone: {
+    key: 'cairn_stone',
+    rarity: 'uncommon',
+    nameKey: 'relics.cairn_stone.name',
+    effectKey: 'relics.cairn_stone.effect',
+    flavourKey: 'relics.cairn_stone.flavour',
+    iconSprite: 'relic_cairn',
+    particleColour: 0x8a8a8a, // weathered stone
+    dropAffinity: ['elite', 'hidden_node'],
+  },
+  pictish_compass: {
+    key: 'pictish_compass',
+    rarity: 'uncommon',
+    nameKey: 'relics.pictish_compass.name',
+    effectKey: 'relics.pictish_compass.effect',
+    flavourKey: 'relics.pictish_compass.flavour',
+    iconSprite: 'relic_compass',
+    particleColour: 0x6b8e23, // moss green
+    dropAffinity: ['chest', 'hidden_node'],
+  },
+  highland_torque: {
+    key: 'highland_torque',
+    rarity: 'uncommon',
+    nameKey: 'relics.highland_torque.name',
+    effectKey: 'relics.highland_torque.effect',
+    flavourKey: 'relics.highland_torque.flavour',
+    iconSprite: 'relic_torque',
+    particleColour: 0xffd700, // gold
+    dropAffinity: ['elite', 'boss'],
+  },
+  bodhran_skin: {
+    key: 'bodhran_skin',
+    rarity: 'uncommon',
+    nameKey: 'relics.bodhran_skin.name',
+    effectKey: 'relics.bodhran_skin.effect',
+    flavourKey: 'relics.bodhran_skin.flavour',
+    iconSprite: 'relic_bodhran',
+    particleColour: 0x8b4513, // drum-skin brown
+    dropAffinity: ['chest', 'bargain'],
+  },
+  clootie_rag: {
+    key: 'clootie_rag',
+    rarity: 'uncommon',
+    nameKey: 'relics.clootie_rag.name',
+    effectKey: 'relics.clootie_rag.effect',
+    flavourKey: 'relics.clootie_rag.flavour',
+    iconSprite: 'relic_clootie',
+    particleColour: 0xa8b5b5, // damp-linen grey
+    dropAffinity: ['hidden_node', 'chest'],
+  },
+  fishermens_net: {
+    key: 'fishermens_net',
+    rarity: 'uncommon',
+    nameKey: 'relics.fishermens_net.name',
+    effectKey: 'relics.fishermens_net.effect',
+    flavourKey: 'relics.fishermens_net.flavour',
+    iconSprite: 'relic_net',
+    particleColour: 0x4a6b7a, // sea slate
+    dropAffinity: ['elite', 'chest'],
+  },
+  midgie_repellent: {
+    key: 'midgie_repellent',
+    rarity: 'uncommon',
+    nameKey: 'relics.midgie_repellent.name',
+    effectKey: 'relics.midgie_repellent.effect',
+    flavourKey: 'relics.midgie_repellent.flavour',
+    iconSprite: 'relic_midgie_repellent',
+    particleColour: 0x6b8e23, // moss green
+    dropAffinity: ['chest', 'bargain'],
   },
 };
 
