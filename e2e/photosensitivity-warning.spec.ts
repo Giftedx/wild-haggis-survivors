@@ -28,22 +28,40 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    // Do NOT seed `whs_game_settings` — fresh save is the whole point.
-    // But still seed the meta save tutorial-complete flag so other
-    // first-launch UX doesn't interfere (the splash gate is independent
-    // of the tutorial; the only thing that matters is that MainMenu
-    // doesn't activate until dismissal).
+    // The shared `fixtures.ts` seeds `photosensitivityWarningSeen: true`
+    // by default so existing specs aren't blocked by the splash. This
+    // spec genuinely wants to observe a first-launch, so it runs a
+    // later init script that clears the settings blob on the very
+    // first navigation only. On `page.reload()` (second navigation in
+    // this test), the marker in sessionStorage short-circuits the
+    // removal so the production-persisted flag survives the reload.
+    //
+    // sessionStorage is scoped to the browsing session, persists
+    // across reloads, and resets per Playwright context — perfect
+    // first-navigation-only marker.
+    //
+    // Meta save still gets `hasCompletedTutorial: true` so the other
+    // first-launch UX (tutorial) doesn't interfere; the splash is
+    // independent of the tutorial.
     await page.addInitScript(() => {
       try {
-        const existingRaw = localStorage.getItem('whs_meta_save');
-        const existing = (existingRaw
-          ? (JSON.parse(existingRaw) as Record<string, unknown>)
+        const metaRaw = localStorage.getItem('whs_meta_save');
+        const meta = (metaRaw
+          ? (JSON.parse(metaRaw) as Record<string, unknown>)
           : {}) as Record<string, unknown>;
         localStorage.setItem('whs_meta_save', JSON.stringify({
-          ...existing,
+          ...meta,
           saveVersion: 9,
           hasCompletedTutorial: true,
         }));
+
+        if (sessionStorage.getItem('__photoTestFreshLoaded') === '1') {
+          // Second (or later) navigation — keep production-persisted
+          // settings intact so we can verify the flag actually stuck.
+          return;
+        }
+        sessionStorage.setItem('__photoTestFreshLoaded', '1');
+        localStorage.removeItem('whs_game_settings');
       } catch {
         /* ignore */
       }

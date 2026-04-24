@@ -53,6 +53,18 @@ test.describe('Mobile smoke', () => {
           saveVersion: ver,
           hasCompletedTutorial: true,
         }));
+        // A1 M5 — this spec bypasses the shared `fixtures.ts`, so the
+        // photosensitivity-warning-seen flag has to be seeded inline.
+        // Without it, the BootScene splash blocks the Boot → MainMenu
+        // transition that this spec is explicitly observing.
+        const settingsRaw = localStorage.getItem('whs_game_settings');
+        const settings = (settingsRaw
+          ? (JSON.parse(settingsRaw) as Record<string, unknown>)
+          : {}) as Record<string, unknown>;
+        localStorage.setItem('whs_game_settings', JSON.stringify({
+          ...settings,
+          photosensitivityWarningSeen: true,
+        }));
       } catch {
         /* ignore */
       }
