@@ -47,7 +47,7 @@ function buildMocks(overrides: {
 
 describe('RunHistoryRecorder', () => {
   describe('buildContext', () => {
-    it('includes level, boss kills, variant, weapon keys, runSeed, healing-circle flag, and biomesVisited', () => {
+    it('includes level, boss kills, variant, weapon keys, runSeed, healing flag, biomesVisited, and evolvedWeaponCount', () => {
       const { hooks } = buildMocks();
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect(ctx).toEqual({
@@ -60,7 +60,16 @@ describe('RunHistoryRecorder', () => {
         enteredHealingCircle: true,
         // V2 T2 — default empty (hook absent = "no biomes recorded").
         biomesVisited: [],
+        // V2 T3 — default 0 (hook absent = "no evolutions tracked").
+        evolvedWeaponCount: 0,
       });
+    });
+
+    it('V2 T3 — propagates evolvedWeaponCount when hook returns it', () => {
+      const { hooks } = buildMocks();
+      const withHook = { ...hooks, getEvolvedWeaponCount: () => 5 };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.evolvedWeaponCount).toBe(5);
     });
 
     it('V2 T1 — propagates enteredHealingCircle=false when hook returns false (Doric no-heal path)', () => {

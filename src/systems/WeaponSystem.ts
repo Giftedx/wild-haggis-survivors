@@ -1148,6 +1148,15 @@ export class WeaponSystem {
     return this.weapons;
   }
 
+  /**
+   * V2 Track 3 — number of currently-held weapons that have fired their
+   * evolution (reached evolved form via chest). Read by the run-end
+   * recorder to decide the Burns's Wee Beastie unlock.
+   */
+  getEvolvedWeaponCount(): number {
+    return this.weapons.reduce((n, w) => (w.evolved ? n + 1 : n), 0);
+  }
+
   getProjectileGroup(): Phaser.GameObjects.Group {
     return this.projectilePool;
   }

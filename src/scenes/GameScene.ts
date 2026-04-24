@@ -845,6 +845,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
       getEnteredHealingCircle: () => this.hazardZones?.didEnterHealingCircle() ?? false,
       getBiomesVisited: () => this.biomeController?.getBiomesVisited() ?? [],
+      getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
     });
 
     if (resumeRun) {

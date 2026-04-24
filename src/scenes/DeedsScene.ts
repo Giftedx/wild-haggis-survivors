@@ -63,6 +63,7 @@ export class DeedsScene extends Phaser.Scene {
       cursedVictoriesCompleted: gameplay.cursedVictoriesCompleted ?? 0,
       runsWithoutHealingCircleCompleted: gameplay.runsWithoutHealingCircleCompleted ?? 0,
       runsInCoastalOnlyCompleted: gameplay.runsInCoastalOnlyCompleted ?? 0,
+      runsWithAllEvolutionsCompleted: gameplay.runsWithAllEvolutionsCompleted ?? 0,
     };
     const deeds = computeAllDeeds(snapshot);
     const summary = deedSummary(snapshot);

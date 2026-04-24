@@ -268,7 +268,8 @@ export type AchievementId =
   | 'ach_combo_100'
   | 'ach_cailleach_unlock'
   | 'ach_doric_unlock'
-  | 'ach_peerie_unlock';
+  | 'ach_peerie_unlock'
+  | 'ach_burns_beastie_unlock';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -384,6 +385,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_peerie_unlock: {
     titleKey: 'achievement.ach_peerie_unlock.title',
     descriptionKey: 'achievement.ach_peerie_unlock.description',
+  },
+  ach_burns_beastie_unlock: {
+    titleKey: 'achievement.ach_burns_beastie_unlock.title',
+    descriptionKey: 'achievement.ach_burns_beastie_unlock.description',
   },
 };
 

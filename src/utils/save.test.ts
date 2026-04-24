@@ -367,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 11', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(11);
+  it('SAVE_SCHEMA_VERSION is 12', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(12);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1257,6 +1257,74 @@ describe('V2 T2 — runsInCoastalOnlyCompleted (Peerie Shetlander unlock)', () =
       { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
     );
     expect(result.save.runsInCoastalOnlyCompleted).toBe(0);
+  });
+});
+
+describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)', () => {
+  it('defaults to 0 on fresh save', () => {
+    const loaded = migrateSave({});
+    expect(loaded.runsWithAllEvolutionsCompleted).toBe(0);
+  });
+
+  it('preserves a saved counter value', () => {
+    const loaded = migrateSave({ runsWithAllEvolutionsCompleted: 2 });
+    expect(loaded.runsWithAllEvolutionsCompleted).toBe(2);
+  });
+
+  it('coerces invalid values to 0', () => {
+    const loaded = migrateSave({ runsWithAllEvolutionsCompleted: 'nope' });
+    expect(loaded.runsWithAllEvolutionsCompleted).toBe(0);
+  });
+
+  it('applyRunSummary increments on victory when evolvedWeaponCount >= 7 (threshold)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+    );
+    expect(result.save.runsWithAllEvolutionsCompleted).toBe(1);
+  });
+
+  it('applyRunSummary does NOT increment when evolvedWeaponCount is 6 (one short)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 6 },
+    );
+    expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
+  });
+
+  it('applyRunSummary does NOT increment on non-victory, even at threshold', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
+      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+    );
+    expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
+  });
+
+  it('applyRunSummary unlocks burns_wee_beastie at run-end when condition is first met', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+    );
+    expect(result.save.unlockedVariants).toContain('burns_wee_beastie');
+    expect(result.newlyUnlockedVariants).toContain('burns_wee_beastie');
+  });
+
+  it('context without evolvedWeaponCount defaults to safe path (no counter bump)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
+    );
+    expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
   });
 });
 

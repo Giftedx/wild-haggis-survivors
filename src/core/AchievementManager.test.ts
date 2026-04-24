@@ -410,6 +410,22 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     expect(save.load().unlockedAchievements).not.toContain('ach_peerie_unlock');
   });
 
+  it('unlocks ach_burns_beastie_unlock at 1 full-evo victory (V2 T3)', () => {
+    seedGameplaySave({ runsWithAllEvolutionsCompleted: 1 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_burns_beastie_unlock');
+  });
+
+  it('does NOT unlock ach_burns_beastie_unlock at 0 full-evo victories', () => {
+    seedGameplaySave({ runsWithAllEvolutionsCompleted: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_burns_beastie_unlock');
+  });
+
   it('unlocks ach_walk_every_road when route history covers all 6 routes', () => {
 const allRoutes = ROUTES.map((r, i) => ({
       slot: r.slot,

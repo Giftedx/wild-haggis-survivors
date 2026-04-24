@@ -31,6 +31,7 @@ function snap(overrides: Partial<DeedStatsSnapshot> = {}): DeedStatsSnapshot {
     cursedVictoriesCompleted: 0,
     runsWithoutHealingCircleCompleted: 0,
     runsInCoastalOnlyCompleted: 0,
+    runsWithAllEvolutionsCompleted: 0,
     ...overrides,
   };
 }

@@ -2099,6 +2099,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Tha Sea Way Hame',
       description: 'Wan a run by coast an wid alane — voe an pine, nae moor, nae bog.',
     },
+    ach_burns_beastie_unlock: {
+      title: 'Earnt Whan Tha Baird Is Honoured',
+      description: 'Wan a run wi every wapen in its evolved form. Burns smiles.',
+    },
   },
   weapon: {
     thistle_shot: {

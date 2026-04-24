@@ -2379,6 +2379,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'The Sea Way Home',
       description: 'Won a run by coast an\' wood alone — voe and pine, no moor, no bog.',
     },
+    ach_burns_beastie_unlock: {
+      title: 'Earned When the Bard Is Honoured',
+      description: 'Won a run wi\' every weapon in its evolved form. Burns smiles.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

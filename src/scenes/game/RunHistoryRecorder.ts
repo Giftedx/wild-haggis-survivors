@@ -62,6 +62,12 @@ export interface RunHistoryHooks {
    * tests that don't exercise the path keep compiling.
    */
   getBiomesVisited?(): readonly string[];
+  /**
+   * V2 Track 3 — number of weapons currently in evolved form. Read at
+   * run-end to decide the Burns's Wee Beastie unlock (threshold 7).
+   * Optional so tests that don't exercise the path keep compiling.
+   */
+  getEvolvedWeaponCount?(): number;
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -79,6 +85,7 @@ export class RunHistoryRecorder {
     const name = h.getRunName?.();
     const enteredHealingCircle = h.getEnteredHealingCircle?.() ?? true;
     const biomesVisited = h.getBiomesVisited?.() ?? [];
+    const evolvedWeaponCount = h.getEvolvedWeaponCount?.() ?? 0;
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -93,6 +100,7 @@ export class RunHistoryRecorder {
       ...(name ? { name } : {}),
       enteredHealingCircle,
       biomesVisited: [...biomesVisited],
+      evolvedWeaponCount,
     };
   }
 

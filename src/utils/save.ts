@@ -30,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 11;
+export const SAVE_SCHEMA_VERSION = 12;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -40,6 +40,13 @@ export const SAVE_SCHEMA_VERSION = 11;
  * "moor" biomes and disqualify the run.
  */
 export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
+
+/**
+ * V2 Track 3 — evolutions-threshold for the Burns's Wee Beastie unlock.
+ * Seven of the eight weapons have an evolved form (bagpipes is
+ * utility-only per CLAUDE.md); seven = the max achievable in one run.
+ */
+export const BURNS_EVOLUTION_THRESHOLD = 7;
 
 /**
  * Returns true when the run was victorious AND the player visited a
@@ -226,6 +233,15 @@ export interface SaveData {
    */
   runsInCoastalOnlyCompleted: number;
 
+  /**
+   * V2 Track 3 — total victorious runs where the player reached the
+   * `BURNS_EVOLUTION_THRESHOLD` (7) — i.e. all seven evolvable weapons
+   * reached evolved form in the same run. Unlocks Burns's Wee Beastie
+   * at 1. No retroactive seed possible (pre-v12 runs didn't persist
+   * per-run evolution count). Fresh counter starts at 0 for all.
+   */
+  runsWithAllEvolutionsCompleted: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -299,6 +315,13 @@ export interface RunHistoryContext {
    * unlocks. Not persisted per history entry.
    */
   biomesVisited?: readonly string[];
+  /**
+   * V2 Track 3 — number of weapons that reached evolved form this run.
+   * Compared against `BURNS_EVOLUTION_THRESHOLD` (7); a victory at
+   * threshold bumps `runsWithAllEvolutionsCompleted` and unlocks the
+   * Burns's Wee Beastie. Not persisted per history entry.
+   */
+  evolvedWeaponCount?: number;
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
@@ -344,6 +367,7 @@ const DEFAULT_SAVE: SaveData = {
   cursedVictoriesCompleted: 0,
   runsWithoutHealingCircleCompleted: 0,
   runsInCoastalOnlyCompleted: 0,
+  runsWithAllEvolutionsCompleted: 0,
   runHistory: [],
   seenEnemies: [],
   firstTimeEventsFired: [],
@@ -421,6 +445,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV9ToV10(raw));
     case 10:
       return finalizeSaveCandidate(migrateV10ToV11(raw));
+    case 11:
+      return finalizeSaveCandidate(migrateV11ToV12(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -512,6 +538,14 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     context?.biomesVisited,
   );
 
+  // V2 T3 — bumps when the player won AND reached the evolution
+  // threshold (7, all evolvable weapons). Missing / below-threshold
+  // evolvedWeaponCount defaults false so unwired callers never false-
+  // positive the Burns's Wee Beastie unlock.
+  const isFullEvoVictory =
+    normalizedSummary.victory &&
+    (context?.evolvedWeaponCount ?? 0) >= BURNS_EVOLUTION_THRESHOLD;
+
   const nextSave: SaveData = {
     ...baseSave,
     gold: baseSave.gold + goldEarned,
@@ -527,6 +561,8 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
       baseSave.runsWithoutHealingCircleCompleted + (isNoHealVictory ? 1 : 0),
     runsInCoastalOnlyCompleted:
       baseSave.runsInCoastalOnlyCompleted + (isCoastalOnlyVictory ? 1 : 0),
+    runsWithAllEvolutionsCompleted:
+      baseSave.runsWithAllEvolutionsCompleted + (isFullEvoVictory ? 1 : 0),
     runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
@@ -542,6 +578,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     cursedVictories: nextSave.cursedVictoriesCompleted,
     runsWithoutHealing: nextSave.runsWithoutHealingCircleCompleted,
     runsInCoastalOnly: nextSave.runsInCoastalOnlyCompleted,
+    runsWithAllEvolutions: nextSave.runsWithAllEvolutionsCompleted,
     unlockedVariants: baseSave.unlockedVariants,
   };
   const unlockResult = evaluateVariantUnlocks(runEndSnapshot, baseSave.unlockedVariants);
@@ -656,6 +693,16 @@ function migrateV10ToV11(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v11 → v12 adds `runsWithAllEvolutionsCompleted: number` (V2 Track 3,
+ * Burns's Wee Beastie unlock placeholder). Pure version bump — counter
+ * coerced to 0 on load. Per-run evolution count is transient context,
+ * not persisted per history entry.
+ */
+function migrateV11ToV12(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -697,6 +744,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     cursedVictoriesCompleted,
     runsWithoutHealingCircleCompleted: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     runsInCoastalOnlyCompleted: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
+    runsWithAllEvolutionsCompleted: coerceInteger(candidate.runsWithAllEvolutionsCompleted, 0),
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
@@ -763,6 +811,7 @@ function buildProgressSnapshot(
     cursedVictories: coerceInteger(candidate.cursedVictoriesCompleted, 0),
     runsWithoutHealing: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     runsInCoastalOnly: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
+    runsWithAllEvolutions: coerceInteger(candidate.runsWithAllEvolutionsCompleted, 0),
     unlockedVariants,
   };
 }

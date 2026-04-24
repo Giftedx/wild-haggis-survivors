@@ -200,6 +200,19 @@ export class AchievementManager {
       if ((gameplay.runsInCoastalOnlyCompleted ?? 0) >= (peerieRequired?.required ?? 1)) {
         this.tryUnlock('ach_peerie_unlock');
       }
+
+      // V2 Track 3 — ach_burns_beastie_unlock. Won a run where all seven
+      // evolvable weapons reached evolved form (BURNS_EVOLUTION_THRESHOLD).
+      // Counter written by applyRunSummary via
+      // `RunHistoryContext.evolvedWeaponCount`; threshold matches
+      // VariantDef.burns_wee_beastie.unlock.required (currently 1).
+      // PLACEHOLDER — tighten to Burns-Night seasonal gate when E1 ships.
+      const burnsRequired = VARIANTS.find((v) => v.key === 'burns_wee_beastie')?.unlock as
+        | { type: 'runs_with_all_evolutions'; required: number }
+        | undefined;
+      if ((gameplay.runsWithAllEvolutionsCompleted ?? 0) >= (burnsRequired?.required ?? 1)) {
+        this.tryUnlock('ach_burns_beastie_unlock');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }
