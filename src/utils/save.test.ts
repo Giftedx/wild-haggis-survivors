@@ -367,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 13', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(13);
+  it('SAVE_SCHEMA_VERSION is 14', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(14);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1757,5 +1757,198 @@ describe('RunHistoryEntry name backfill', () => {
     );
     // No name is fabricated on the write path; backfill runs on load only.
     expect(result.save.runHistory[0].name).toBeUndefined();
+  });
+});
+
+// ── H1 M2 T11 — schema v13 → v14, croft trophy fields + retroactive seed ─────
+//
+// New fields:
+//   - bossKillCounts: Record<bossKey, number>        per-boss kill tally
+//   - firstRouteVisits: string[]                     dedupe'd route keys
+//   - cursedVictoriesByBoss: Record<bossKey, number> per-boss cursed wins
+//
+// Retroactive seed inferences (Moor Road act gates, per W2 design):
+//   - routes[0] picked → gordon was killed to complete act 1 → bossKillCounts.gordon += 1
+//   - routes[1] picked → tour_bus was killed to complete act 2 → bossKillCounts.tour_bus += 1
+//   - isVictory         → taxman killed (victory gate)        → bossKillCounts.taxman += 1
+//   - victory + curseKey → bump cursedVictoriesByBoss.taxman
+//   - firstRouteVisits = union of routeKeys across all history
+//
+// Mid-act bosses (laird, hunterGeneral) are NOT gate-bound to routes; they
+// can't be reconstructed from history. Existing players' trophies for
+// those bosses fill in organically from T15 going forward.
+describe('save schema v13 → v14 (Croft trophies + seed)', () => {
+  it('v13 save without trophy fields gets empty defaults on migration', () => {
+    const v13: unknown = {
+      schemaVersion: 13,
+      runHistory: [],
+    };
+    const migrated = migrateSave(v13);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.bossKillCounts).toEqual({});
+    expect(migrated.firstRouteVisits).toEqual([]);
+    expect(migrated.cursedVictoriesByBoss).toEqual({});
+  });
+
+  it('retroactive seed: completed act 1 pick counts a gordon kill', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        {
+          timestamp: 1, timeSurvivedSec: 300, enemiesKilled: 50,
+          level: 5, bossKills: 1, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: false, weaponKeys: [],
+          routes: [{ slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305 }],
+        },
+      ],
+    });
+    expect(migrated.bossKillCounts.gordon).toBe(1);
+    expect(migrated.bossKillCounts.tour_bus).toBeUndefined();
+    expect(migrated.bossKillCounts.taxman).toBeUndefined();
+  });
+
+  it('retroactive seed: completing act 2 pick counts gordon + tour_bus', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        {
+          timestamp: 1, timeSurvivedSec: 400, enemiesKilled: 80,
+          level: 7, bossKills: 2, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: false, weaponKeys: [],
+          routes: [
+            { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'stand_yer_ground', atGameTimeSec: 610 },
+          ],
+        },
+      ],
+    });
+    expect(migrated.bossKillCounts.gordon).toBe(1);
+    expect(migrated.bossKillCounts.tour_bus).toBe(1);
+  });
+
+  it('retroactive seed: victorious run counts a taxman kill', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        {
+          timestamp: 1, timeSurvivedSec: 600, enemiesKilled: 120,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [],
+          routes: [
+            { slot: 'A', routeKey: 'through_the_kirkyard', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'run_for_the_hills', atGameTimeSec: 610 },
+          ],
+        },
+      ],
+    });
+    expect(migrated.bossKillCounts.gordon).toBe(1);
+    expect(migrated.bossKillCounts.tour_bus).toBe(1);
+    expect(migrated.bossKillCounts.taxman).toBe(1);
+  });
+
+  it('retroactive seed: accumulates boss kills across multiple runs', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        // Run A: reached act 1 only
+        {
+          timestamp: 1, timeSurvivedSec: 300, enemiesKilled: 50,
+          level: 5, bossKills: 1, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: false, weaponKeys: [],
+          routes: [{ slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 }],
+        },
+        // Run B: victorious
+        {
+          timestamp: 2, timeSurvivedSec: 600, enemiesKilled: 120,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [],
+          routes: [
+            { slot: 'A', routeKey: 'round_the_loch', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'buckie_pitstop', atGameTimeSec: 610 },
+          ],
+        },
+      ],
+    });
+    expect(migrated.bossKillCounts.gordon).toBe(2);
+    expect(migrated.bossKillCounts.tour_bus).toBe(1);
+    expect(migrated.bossKillCounts.taxman).toBe(1);
+  });
+
+  it('retroactive seed: firstRouteVisits is the dedupe-union of all picked routes', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        {
+          timestamp: 1, timeSurvivedSec: 300, enemiesKilled: 50,
+          level: 5, bossKills: 1, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: false, weaponKeys: [],
+          routes: [{ slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 }],
+        },
+        {
+          timestamp: 2, timeSurvivedSec: 600, enemiesKilled: 120,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [],
+          routes: [
+            { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'stand_yer_ground', atGameTimeSec: 610 },
+          ],
+        },
+      ],
+    });
+    expect(new Set(migrated.firstRouteVisits)).toEqual(
+      new Set(['up_the_brae', 'stand_yer_ground']),
+    );
+  });
+
+  it('retroactive seed: cursedVictoriesByBoss.taxman bumps for each cursed victory', () => {
+    const migrated = migrateSave({
+      schemaVersion: 13,
+      runHistory: [
+        // Cursed victory #1
+        {
+          timestamp: 1, timeSurvivedSec: 600, enemiesKilled: 120,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [], curseKey: 'bogey',
+          routes: [
+            { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'stand_yer_ground', atGameTimeSec: 610 },
+          ],
+        },
+        // Normal victory (no curse)
+        {
+          timestamp: 2, timeSurvivedSec: 580, enemiesKilled: 115,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [],
+          routes: [
+            { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'stand_yer_ground', atGameTimeSec: 610 },
+          ],
+        },
+        // Cursed victory #2
+        {
+          timestamp: 3, timeSurvivedSec: 610, enemiesKilled: 125,
+          level: 9, bossKills: 3, goldEarned: 0, bestCombo: 0,
+          variantKey: 'classic', isVictory: true, weaponKeys: [], curseKey: 'brollachan',
+          routes: [
+            { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 305 },
+            { slot: 'B', routeKey: 'stand_yer_ground', atGameTimeSec: 610 },
+          ],
+        },
+      ],
+    });
+    expect(migrated.cursedVictoriesByBoss.taxman).toBe(2);
+  });
+
+  it('existing v14 save with explicit fields preserves them verbatim', () => {
+    const migrated = migrateSave({
+      schemaVersion: 14,
+      bossKillCounts: { gordon: 7, tour_bus: 4, taxman: 2, laird: 1 },
+      firstRouteVisits: ['up_the_brae', 'buckie_pitstop'],
+      cursedVictoriesByBoss: { taxman: 1 },
+      runHistory: [],
+    });
+    expect(migrated.bossKillCounts).toEqual({ gordon: 7, tour_bus: 4, taxman: 2, laird: 1 });
+    expect(migrated.firstRouteVisits).toEqual(['up_the_brae', 'buckie_pitstop']);
+    expect(migrated.cursedVictoriesByBoss).toEqual({ taxman: 1 });
   });
 });

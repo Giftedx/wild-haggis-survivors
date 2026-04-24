@@ -30,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 13;
+export const SAVE_SCHEMA_VERSION = 14;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -250,6 +250,39 @@ export interface SaveData {
    */
   runsWithAllEvolutionsCompleted: number;
 
+  /**
+   * H1 Gran's Croft — per-boss kill tally powering mantelpiece trophy
+   * tiers (see `src/scenes/croft/CroftTrophies.ts`). Keys are boss IDs
+   * from `BOSSES` (gordon / tour_bus / laird / hunter_general / taxman);
+   * values are lifetime kill counts.
+   *
+   * Retroactive seed (v13→v14): existing players get three boss counts
+   * reconstructed from `runHistory` using W2 act gates — picked
+   * act 1 routes imply gordon kills, picked act 2 routes imply
+   * tour_bus kills, victorious runs imply taxman kills. Mid-act bosses
+   * (laird, hunter_general) are not gate-bound so their retroactive
+   * counts start at 0 and fill in from T15's live kill hook. v14 addition.
+   */
+  bossKillCounts: Record<string, number>;
+
+  /**
+   * H1 Gran's Croft — set of Moor Road route keys ever picked (dedupe-
+   * unioned across all runs). Powers the photo wall polaroids:
+   * sepia-to-colour fade on first pick, colour print thereafter.
+   * Retroactively seeded from `runHistory[].routes[].routeKey` at
+   * migration. v14 addition.
+   */
+  firstRouteVisits: string[];
+
+  /**
+   * H1 Gran's Croft — per-boss cursed-victory tally. Promotes the
+   * mantelpiece trophy to its "cursed" tier (singed apron, cracked
+   * windshield, red-ink bleed — see spec §3). Retroactive seed bumps
+   * `taxman` only (we know cursed + victory = taxman kill); other
+   * bosses' cursed-kill counts start at 0. v14 addition.
+   */
+  cursedVictoriesByBoss: Record<string, number>;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -376,6 +409,9 @@ const DEFAULT_SAVE: SaveData = {
   runsWithoutHealingCircleCompleted: 0,
   runsInCoastalOnlyCompleted: 0,
   runsWithAllEvolutionsCompleted: 0,
+  bossKillCounts: {},
+  firstRouteVisits: [],
+  cursedVictoriesByBoss: {},
   runHistory: [],
   seenEnemies: [],
   firstTimeEventsFired: [],
@@ -457,6 +493,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV11ToV12(raw));
     case 12:
       return finalizeSaveCandidate(migrateV12ToV13(raw));
+    case 13:
+      return finalizeSaveCandidate(migrateV13ToV14(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -724,6 +762,18 @@ function migrateV12ToV13(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v13 → v14 adds three H1 Gran's Croft fields — `bossKillCounts`,
+ * `firstRouteVisits`, `cursedVictoriesByBoss`. Pure version bump here;
+ * the actual retroactive seed from `runHistory` lives in
+ * `finalizeSaveCandidate` alongside the existing v8 discoveryLog +
+ * cursedVictoriesCompleted seeds, so new saves get the full
+ * coerce-and-seed treatment uniformly.
+ */
+function migrateV13ToV14(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -747,6 +797,13 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
 
   const discoveryLog = coerceDiscoveryLog(candidate, runHistory);
 
+  // H1 M2 T11 — Croft trophy fields. Coerce if present, otherwise
+  // reconstruct approximate counts from W2 act gates (routes[0]
+  // picked = gordon kill, routes[1] picked = tour_bus kill,
+  // isVictory = taxman kill). Mid-act bosses can't be seeded.
+  const { bossKillCounts, firstRouteVisits, cursedVictoriesByBoss } =
+    coerceCroftTrophyFields(candidate, runHistory);
+
   return {
     schemaVersion: SAVE_SCHEMA_VERSION,
     gold: coerceInteger(candidate.gold, DEFAULT_SAVE.gold),
@@ -766,6 +823,9 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     runsWithoutHealingCircleCompleted: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     runsInCoastalOnlyCompleted: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
     runsWithAllEvolutionsCompleted: coerceInteger(candidate.runsWithAllEvolutionsCompleted, 0),
+    bossKillCounts,
+    firstRouteVisits,
+    cursedVictoriesByBoss,
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
@@ -888,6 +948,122 @@ function coerceStonesPicked(raw: unknown): Record<string, number> | undefined {
     out[k] = Math.floor(v);
   }
   return Object.keys(out).length > 0 ? out : undefined;
+}
+
+/**
+ * H1 M2 T11 — coerce + retroactively seed the three Croft trophy
+ * fields (`bossKillCounts`, `firstRouteVisits`, `cursedVictoriesByBoss`).
+ *
+ * If a field is already present on the candidate, the stored value
+ * wins (saves that have been writing these fields since v14 should
+ * never regress to seed-reconstructed values). Absence triggers a
+ * best-effort seed from `runHistory` using W2 act-gate inferences:
+ *
+ *   - routes[0] (slot A) picked → gordon kill credited
+ *   - routes[1] (slot B) picked → tour_bus kill credited
+ *   - isVictory = true          → taxman kill credited
+ *   - victory + curseKey → cursedVictoriesByBoss.taxman += 1
+ *
+ * Mid-act bosses (laird, hunter_general) aren't route-gated so the
+ * seed can't credit them; their kill tallies fill in from the live
+ * boss-death hook (T15) going forward.
+ */
+function coerceCroftTrophyFields(
+  candidate: SaveRecord,
+  runHistory: readonly RunHistoryEntry[],
+): {
+  bossKillCounts: Record<string, number>;
+  firstRouteVisits: string[];
+  cursedVictoriesByBoss: Record<string, number>;
+} {
+  const bossKillCountsProvided = 'bossKillCounts' in candidate;
+  const firstRouteVisitsProvided = 'firstRouteVisits' in candidate;
+  const cursedVictoriesByBossProvided = 'cursedVictoriesByBoss' in candidate;
+
+  let bossKillCounts: Record<string, number> = bossKillCountsProvided
+    ? coerceStringNumberRecord(candidate.bossKillCounts)
+    : {};
+  let firstRouteVisits: string[] = firstRouteVisitsProvided
+    ? coerceStringArray(candidate.firstRouteVisits)
+    : [];
+  let cursedVictoriesByBoss: Record<string, number> = cursedVictoriesByBossProvided
+    ? coerceStringNumberRecord(candidate.cursedVictoriesByBoss)
+    : {};
+
+  // Retroactive seed — only when the field is absent. Explicitly-set
+  // empty {} / [] in the persisted save is honoured.
+  if (!bossKillCountsProvided && runHistory.length > 0) {
+    bossKillCounts = seedBossKillCountsFromHistory(runHistory);
+  }
+  if (!firstRouteVisitsProvided && runHistory.length > 0) {
+    firstRouteVisits = seedFirstRouteVisitsFromHistory(runHistory);
+  }
+  if (!cursedVictoriesByBossProvided && runHistory.length > 0) {
+    cursedVictoriesByBoss = seedCursedVictoriesByBossFromHistory(runHistory);
+  }
+
+  return { bossKillCounts, firstRouteVisits, cursedVictoriesByBoss };
+}
+
+function seedBossKillCountsFromHistory(
+  runHistory: readonly RunHistoryEntry[],
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  const bump = (key: string) => {
+    out[key] = (out[key] ?? 0) + 1;
+  };
+  for (const entry of runHistory) {
+    const routes = Array.isArray(entry.routes) ? entry.routes : [];
+    if (routes.length >= 1) bump('gordon');
+    if (routes.length >= 2) bump('tour_bus');
+    if (entry.isVictory) bump('taxman');
+  }
+  return out;
+}
+
+function seedFirstRouteVisitsFromHistory(
+  runHistory: readonly RunHistoryEntry[],
+): string[] {
+  const seen = new Set<string>();
+  for (const entry of runHistory) {
+    const routes = Array.isArray(entry.routes) ? entry.routes : [];
+    for (const pick of routes) {
+      if (typeof pick?.routeKey === 'string' && pick.routeKey.length > 0) {
+        seen.add(pick.routeKey);
+      }
+    }
+  }
+  return [...seen];
+}
+
+function seedCursedVictoriesByBossFromHistory(
+  runHistory: readonly RunHistoryEntry[],
+): Record<string, number> {
+  let taxmanCursedWins = 0;
+  for (const entry of runHistory) {
+    if (entry.isVictory && typeof entry.curseKey === 'string' && entry.curseKey.length > 0) {
+      taxmanCursedWins += 1;
+    }
+  }
+  return taxmanCursedWins > 0 ? { taxman: taxmanCursedWins } : {};
+}
+
+/**
+ * Generic `Record<string, number>` coercion — drops non-numeric /
+ * non-finite / negative values and floors to integer. Unlike
+ * `coerceStonesPicked` / `coerceReliquaryCuriosPicked`, returns an
+ * empty object rather than `undefined` when all inputs are invalid,
+ * because the Croft trophy fields are required on SaveData.
+ */
+function coerceStringNumberRecord(raw: unknown): Record<string, number> {
+  if (!isRecord(raw)) return {};
+  const out: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof k !== 'string' || k.length === 0) continue;
+    if (typeof v !== 'number' || !Number.isFinite(v) || v < 0) continue;
+    out[k] = Math.floor(v);
+  }
+  return out;
 }
 
 /**
