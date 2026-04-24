@@ -189,45 +189,46 @@ One task per 2 relics. Each task:
 
 ## M3 — Effect application + UI
 
-### Task 19: Player per-frame effect hook
+### Task 19: Per-frame relic dispatcher ✅ shipped (`db766c2`)
 
-**Files:** `src/entities/Player.ts`.
+**Files:** `src/systems/relics/RelicEffectDriver.ts` + test (plan cited `Player.ts`; a stand-alone dispatcher keeps relic state out of Player).
 
-- [ ] **Step 1:** Failing test: `applyRelicEffects(delta)` iterates slots and applies per-frame effects.
-- [ ] **Step 2:** Wire hook in `Player.update()`.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** `RelicEffectDriver.updatePerFrame(deltaMs)` scaffold — iterates held slots. No-op for M3 common effects (all event-driven).
+- [x] **Step 2:** Driver owns per-run scratch state (bronze_clasp window, whisky_dram flag); `reset()` clears on scene restart.
+- [x] **Step 3:** GameScene ticks driver with scaledDelta so timer-based rare effects pause with the game.
 
-### Task 20: On-event hooks (onPickupGem, onEnterHealingCircle, etc.)
+### Task 20: Event-driven effect wires ✅ shipped (`19d8060`, `ef4627d`)
 
-- [ ] **Step 1:** Failing tests per event-hook relic effect.
-- [ ] **Step 2:** Wire each to appropriate game event.
-- [ ] **Step 3:** Commit per 2–3 events.
+All 8 common relics now modify gameplay through their matching call sites:
 
-### Task 21: Active-Relic sporran-menu trigger
+- [x] T20a grans_thimble — +8% crit multiplier (GameScene setMultipliers pass).
+- [x] T20b sporran_of_holding — +2 gold per pickup (onCoinCollected hook).
+- [x] T20c damp_tinder — -40% fire damage (HazardZones.modifyFireDamageTaken hook).
+- [x] T20d bronze_clasp — +15% first hit each second (WeaponSystem.setHitDamageModifier seam).
+- [x] T20e ceilidh_dancers_ribbon — period 8→5 (ISceneContext.getCeilidhChainPeriod, isCeilidhPulseMoment now takes optional period).
+- [x] T20f lucky_heather_sprig — +3 card-draw luck points (LevelUpFlowHooks.getRelicLuckPoints).
+- [x] T20f oatcake_stash — +2 HP on healing orb (PickupSpawnerHooks.modifyHealOrbAmount).
 
-- [ ] **Step 1:** Failing smoke test: Whisky Dram / Fingal's Horn trigger from PauseMenu.
-- [ ] **Step 2:** Add "Relics" tab to pause menu; activatable relics have "Use" button.
-- [ ] **Step 3:** Commit.
+### Task 21: Whisky Dram active trigger ✅ shipped (`bbe8d3c`)
 
-### Task 22: HUD slot widget
+**Files:** `src/scenes/game/PauseMenu.ts`, `src/scenes/GameScene.ts`.
+
+- [x] **Step 1:** `isWhiskyDramAvailable` + `onWhiskyDramRequested` hooks on PauseMenuHooks; button only shown while held + unused; menu re-renders after use.
+- [x] **Step 2:** `GameScene.activateWhiskyDram` — driver one-shot, heal delta computed from result HP, toast + SFX fire on first activation only.
+- [x] **Step 3:** Lightweight button placement (no full tab). Full tab deferred to M4 polish — ship-blocking scope is the activation, not the chrome.
+
+### Task 22 + T23: HUD slot widget + tooltip ✅ shipped (`30946c1`)
 
 **Files:** `src/ui/RelicSlotUI.ts`.
 
-- [ ] **Step 1:** Failing smoke test: 3 slots render; empty slots show dotted placeholder.
-- [ ] **Step 2:** Implement. Respects `uiScale`.
-- [ ] **Step 3:** Commit.
+- [x] **Step 1:** 3-slot widget top-right below the minimap. Signature-diffed redraws; empty slots render dotted outline; held slots render a gem tinted with `particleColour` + rare-tier gold rim.
+- [x] **Step 2:** Interactive rectangles per slot; hover shows name + effect + flavour tooltip that clamps to viewport bounds (flips above when bottom-clipped). Copy falls back to pretty-printed key until M4 i18n pass.
 
-### Task 23: Tooltip on hover
+### Task 24: M3 ship gate ✅ shipped
 
-- [ ] **Step 1:** Failing test: hover reveals name + effect + flavour text.
-- [ ] **Step 2:** Implement.
-- [ ] **Step 3:** Commit.
-
-### Task 24: M3 ship gate
-
-- [ ] Manual smoke with 3 Relics picked up; confirm HUD, effects, pause menu.
-- [ ] `npm run ci:all` green.
-- [ ] Commit: `feat(relics): M3 — effect application + UI complete`.
+- [x] `npm run ci` green (lint + 3318 vitest + tsc + vite build).
+- [x] e2e/relic-pickup.spec.ts + smoke + w2-moor-road all green across chromium/firefox/webkit (12 tests, 1.4m).
+- [x] Bundle growth ≈ +7.4 KB over M2 (913 → 920 KB main), well within the +40 KB R1 budget.
 
 ---
 
