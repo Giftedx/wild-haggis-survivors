@@ -405,7 +405,7 @@ export const SCS_STRINGS: LocaleTree = {
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back baulder. Tha herd believes in ye.',
       stats_hint: 'Deed-unlocked variants are sidegrades — same hert, new tricks. Gowden haggis still fuels tha lang-game shop.',
-      play: 'PLAY',
+      play: 'AWA TAE GRAN\'S',
       upgrades: 'GOLD SHOP',
       current_loadout: 'CURRENT LOADOUT: {name}',
       variant_loadout: 'VARIANT LOADOUT',

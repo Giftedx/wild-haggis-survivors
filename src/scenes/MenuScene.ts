@@ -2,7 +2,6 @@ import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS } from '../config';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
-import { SaveManager } from '../core/SaveManager';
 import { SaveData, loadSave, writeSave } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
@@ -184,8 +183,10 @@ export class MenuScene extends Phaser.Scene {
 
     this.playHit = this.createButton(width / 2 - 128, layout.buttonY, 220, 54, t('ui.loadout.play'), COLORS.SCOTTISH_BLUE, () => {
       audio.playClick();
-      new SaveManager().clearActiveRun();
-      this.fadeToScene('Curse');
+      // H1 T7 — primary button now routes to Gran's Croft; the
+      // actual run-start commit (clearActiveRun + Curse picker) moves
+      // into CroftScene's own "Start Run" action (T8).
+      this.fadeToScene('Croft');
     }, 560);
 
     this.upgradesHit = this.createButton(width / 2 + 128, layout.buttonY, 220, 54, t('ui.loadout.upgrades'), 0x3a4357, () => {
@@ -456,8 +457,9 @@ export class MenuScene extends Phaser.Scene {
 
     push(this.playHit, () => {
       audio.playClick();
-      new SaveManager().clearActiveRun();
-      this.fadeToScene('Curse');
+      // H1 T7 — gamepad-Activate on primary button matches pointer behaviour:
+      // route to the croft hub, defer run-start commit to CroftScene.
+      this.fadeToScene('Croft');
     });
     push(this.upgradesHit, () => {
       audio.playClick();

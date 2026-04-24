@@ -277,7 +277,8 @@ export const EN_STRINGS: LocaleTree = {
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back bolder. The herd believes in ye.',
       stats_hint: 'Deed-unlocked variants are sidegrades — same heart, new tricks. Golden haggis still fuels the long-game shop.',
-      play: 'PLAY',
+      /** H1 T7 — the primary menu button now carries the player to Gran's Croft rather than straight to the run. Keep voice Hearth (Still Game). */
+      play: 'AWA TAE GRAN\'S',
       upgrades: 'GOLD SHOP',
       current_loadout: 'CURRENT LOADOUT: {name}',
       variant_loadout: 'VARIANT LOADOUT',
