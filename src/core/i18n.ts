@@ -179,6 +179,22 @@ export const EN_STRINGS: LocaleTree = {
       status_unlocked: 'DONE',
       back: 'BACK',
     },
+    almanac: {
+      // C1 Highland Almanac — four-book discovery log. Hearth voice.
+      title: 'THE HIGHLAND ALMANAC',
+      /** Sits under the title — generic scene subtitle. Tab-specific
+       *  progress lines live inside each book (M2+). */
+      subtitle: 'What the moor has shown ye, pressed intae the pages.',
+      // Tab labels — short, shouty, monospace. Match the tonal register
+      // of CHRONICLE / DEEDS / LASTING BOONS above.
+      tab_beasties: 'BEASTIES',
+      tab_weys: 'WEYS',
+      tab_finds: 'FINDS',
+      tab_banter: 'BANTER',
+      /** Placeholder body for tabs that have not yet shipped content. */
+      coming_soon: 'Page unturned — the ink\'s still dryin.',
+      back: 'BACK',
+    },
     loadout: {
       subtitle: 'Drift, scrape through, bank gold, come back bolder. The herd believes in ye.',
       stats_hint: 'Deed-unlocked variants are sidegrades — same heart, new tricks. Golden haggis still fuels the long-game shop.',
