@@ -18,7 +18,7 @@ import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
   bumpRoutePicked, bumpItemAcquired, bumpBanterHeard, bumpFirstTimeEvent,
-  bumpBossKillCount, bumpCursedVictoryByBoss,
+  bumpBossKillCount, bumpCursedVictoryByBoss, addFirstRouteVisit,
   consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
@@ -1825,6 +1825,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // Weys book lights up the entry. Best-effort write; the act
       // transition still proceeds even if the save fails.
       bumpRoutePicked(pick.routeKey, this.discoveryRunId(), Date.now());
+      // H1 M2 T16 — light up the Croft photo-wall polaroid on first pick.
+      addFirstRouteVisit(pick.routeKey);
       this.banter?.request('route_picked', { tag: pick.routeKey });
       applyRouteModifierDeltas(this.runModifiers, route);
       // Mid-run bag writes don't propagate through the cached private
