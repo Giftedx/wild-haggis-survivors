@@ -132,7 +132,22 @@ const BIOME_RUNES: readonly RuneDef[] = [
   rune('edinburgh_rune', 'biome_urban', [{ key: 'gold_mult', params: { mult: 1.25 } }]),
 ];
 
+// ── 10 state-conditional runes ──
+
+const STATE_RUNES: readonly RuneDef[] = [
+  rune('thirst_rune', 'hp_low', [{ key: 'dmg_mult', params: { mult: 1.3 } }]),
+  rune('flush_rune', 'hp_high', [{ key: 'crit_flat', params: { flat: 0.15 } }]),
+  rune('drover_rune', 'relics_full', [{ key: 'all_stats_mult', params: { mult: 1.1 } }]),
+  rune('piper_rune', 'weapon_bagpipes', [{ key: 'bagpipes_radius_mult', params: { mult: 1.25 } }]),
+  rune('trek_rune', 'run_early', [{ key: 'speed_mult', params: { mult: 1.25 } }]),
+  rune('warden_rune', 'run_late', [{ key: 'dmg_mult', params: { mult: 1.4 } }]),
+  rune('combo_rune', 'combo_high', [{ key: 'pickup_per_kill', params: { extra: 1 } }]),
+  rune('lucky_streak_rune', 'chests_many', [{ key: 'next_chest_drop', params: { prob: 1 } }]),
+  rune('fastburn_rune', 'dash_recent_2s', [{ key: 'dmg_mult_timed', params: { mult: 1.5, durationMs: 1000 } }]),
+  rune('evolved_rune', 'evolved_multi', [{ key: 'evo_cooldown_mul', params: { mult: 0.8 } }]),
+];
+
 /** All runes keyed by id. Frozen. */
 export const RUNES: Readonly<Record<string, RuneDef>> = Object.freeze(
-  Object.fromEntries(BIOME_RUNES.map((r) => [r.id, r])),
+  Object.fromEntries([...BIOME_RUNES, ...STATE_RUNES].map((r) => [r.id, r])),
 );

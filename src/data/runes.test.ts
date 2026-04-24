@@ -48,3 +48,22 @@ describe('RUNES catalogue — biome-conditional (U1 Task 1)', () => {
     }
   });
 });
+
+describe('RUNES catalogue — state-conditional (U1 Task 2)', () => {
+  it('thirst_rune has hp_low + dmg_mult effect', () => {
+    const r = RUNES.thirst_rune;
+    expect(r.conditionKey).toBe('hp_low');
+    expect(r.effects[0]!.key).toBe('dmg_mult');
+    expect(r.effects[0]!.params.mult).toBe(1.3);
+  });
+
+  it('all 10 state runes present', () => {
+    const ids = [
+      'thirst_rune', 'flush_rune', 'drover_rune', 'piper_rune', 'trek_rune',
+      'warden_rune', 'combo_rune', 'lucky_streak_rune', 'fastburn_rune', 'evolved_rune',
+    ];
+    for (const id of ids) {
+      expect(RUNES[id], `missing ${id}`).toBeDefined();
+    }
+  });
+});
