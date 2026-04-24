@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { applyLocaleFromUserSettings } from './applyLocaleFromSettings';
 import { DEFAULT_LOCALE, getLocale, setLocale } from './i18n';
 import { CURRENT_SETTINGS_VERSION, type ISettingsData } from './SettingsManager';
+import { DEFAULT_KEYBINDINGS, DEFAULT_GAMEPAD_BINDINGS } from './actions';
 
 const baseSettings: ISettingsData = {
   settingsVersion: CURRENT_SETTINGS_VERSION,
@@ -28,6 +29,8 @@ const baseSettings: ISettingsData = {
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  keyBindings: DEFAULT_KEYBINDINGS,
+  gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
 };
 
 describe('applyLocaleFromUserSettings', () => {

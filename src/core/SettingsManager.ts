@@ -1,5 +1,13 @@
 import type { StorageLike } from './SaveManager';
 import type { LocaleKey } from './i18n';
+import {
+  ACTION_KEYS,
+  DEFAULT_GAMEPAD_BINDINGS,
+  DEFAULT_KEYBINDINGS,
+  type ActionKey,
+  type GamepadBinding,
+  type KeyBinding,
+} from './actions';
 
 export const SETTINGS_STORAGE_KEY = 'whs_game_settings';
 export const CURRENT_SETTINGS_VERSION = 1 as const;
@@ -108,6 +116,20 @@ export interface ISettingsData {
   assistModeExtendedComboWindow: boolean;
   /** A1 M6 — full invincibility (Phase 2 wires effect). */
   assistModeInvincibility: boolean;
+  /**
+   * A1 M3 — keyboard bindings per `ActionKey`. `KeyboardEvent.code`
+   * values (`'ArrowUp'`, `'KeyW'`, `'Space'`). Every action has a
+   * primary; secondary is optional. On legacy saves without the field,
+   * coerce seeds `DEFAULT_KEYBINDINGS`.
+   */
+  keyBindings: Record<ActionKey, KeyBinding>;
+  /**
+   * A1 M3 — gamepad bindings per `ActionKey`. Only dash + pause are
+   * gamepad-rebindable in M3; movement lives on sticks / D-pad. Numbers
+   * are Standard Gamepad button indices (0 = South, 7 = RT, 9 = Start).
+   * Actions without a gamepad binding simply aren't in the map.
+   */
+  gamepadBindings: Partial<Record<ActionKey, GamepadBinding>>;
 }
 
 const LOCALE_KEYS: readonly LocaleKey[] = ['en', 'scs'];
@@ -147,7 +169,75 @@ const DEFAULT_SETTINGS: ISettingsData = {
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
+  gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
 };
+
+function cloneKeyBindings(src: Record<ActionKey, KeyBinding>): Record<ActionKey, KeyBinding> {
+  const out = {} as Record<ActionKey, KeyBinding>;
+  for (const a of ACTION_KEYS) {
+    const b = src[a];
+    out[a] = b.secondary ? { primary: b.primary, secondary: b.secondary } : { primary: b.primary };
+  }
+  return out;
+}
+
+function cloneGamepadBindings(
+  src: Partial<Record<ActionKey, GamepadBinding>>,
+): Partial<Record<ActionKey, GamepadBinding>> {
+  const out: Partial<Record<ActionKey, GamepadBinding>> = {};
+  for (const a of ACTION_KEYS) {
+    const b = src[a];
+    if (!b) continue;
+    out[a] = b.secondary != null ? { primary: b.primary, secondary: b.secondary } : { primary: b.primary };
+  }
+  return out;
+}
+
+function coerceKeyBinding(v: unknown, fallback: KeyBinding): KeyBinding {
+  if (typeof v !== 'object' || v === null) return { ...fallback };
+  const o = v as Record<string, unknown>;
+  const primary = typeof o.primary === 'string' && o.primary.length > 0 ? o.primary : fallback.primary;
+  const secondary = typeof o.secondary === 'string' && o.secondary.length > 0 ? o.secondary : fallback.secondary;
+  return secondary ? { primary, secondary } : { primary };
+}
+
+function coerceGamepadBinding(
+  v: unknown,
+  fallback: GamepadBinding | undefined,
+): GamepadBinding | undefined {
+  if (typeof v !== 'object' || v === null) return fallback ? { ...fallback } : undefined;
+  const o = v as Record<string, unknown>;
+  const primaryRaw = o.primary;
+  if (typeof primaryRaw !== 'number' || !Number.isInteger(primaryRaw) || primaryRaw < 0 || primaryRaw > 31) {
+    return fallback ? { ...fallback } : undefined;
+  }
+  const secondaryRaw = o.secondary;
+  const secondary =
+    typeof secondaryRaw === 'number' && Number.isInteger(secondaryRaw) && secondaryRaw >= 0 && secondaryRaw <= 31
+      ? secondaryRaw
+      : undefined;
+  return secondary != null ? { primary: primaryRaw, secondary } : { primary: primaryRaw };
+}
+
+function coerceKeyBindings(v: unknown): Record<ActionKey, KeyBinding> {
+  const o = typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
+  const out = {} as Record<ActionKey, KeyBinding>;
+  for (const a of ACTION_KEYS) {
+    out[a] = coerceKeyBinding(o[a], DEFAULT_KEYBINDINGS[a]);
+  }
+  return out;
+}
+
+function coerceGamepadBindings(v: unknown): Partial<Record<ActionKey, GamepadBinding>> {
+  const o = typeof v === 'object' && v !== null ? (v as Record<string, unknown>) : {};
+  const out: Partial<Record<ActionKey, GamepadBinding>> = {};
+  for (const a of ACTION_KEYS) {
+    const coerced = coerceGamepadBinding(o[a], DEFAULT_GAMEPAD_BINDINGS[a]);
+    if (coerced) out[a] = coerced;
+  }
+  return out;
+}
 
 function toBanterFrequency(v: unknown, fallback: BanterFrequency): BanterFrequency {
   return typeof v === 'string' && (BANTER_FREQUENCIES as readonly string[]).includes(v)
@@ -279,6 +369,8 @@ export class SettingsManager {
         o.assistModeInvincibility,
         DEFAULT_SETTINGS.assistModeInvincibility,
       ),
+      keyBindings: coerceKeyBindings(o.keyBindings),
+      gamepadBindings: coerceGamepadBindings(o.gamepadBindings),
     };
   }
 }

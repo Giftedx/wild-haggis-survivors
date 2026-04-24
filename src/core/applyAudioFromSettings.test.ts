@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CURRENT_SETTINGS_VERSION, type ISettingsData } from './SettingsManager';
+import { DEFAULT_KEYBINDINGS, DEFAULT_GAMEPAD_BINDINGS } from './actions';
 
 const applyFromSettings = vi.hoisted(() => vi.fn());
 const setEnabledAudio = vi.hoisted(() => vi.fn());
@@ -47,6 +48,8 @@ const base: ISettingsData = {
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  keyBindings: DEFAULT_KEYBINDINGS,
+  gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
 };
 
 function withVolumes(p: Partial<Pick<ISettingsData, 'masterVolume' | 'sfxVolume' | 'musicVolume'>>): ISettingsData {

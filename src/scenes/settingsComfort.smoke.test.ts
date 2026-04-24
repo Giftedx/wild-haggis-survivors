@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { t } from '../core/i18n';
 import { SettingsManager, CURRENT_SETTINGS_VERSION, type ISettingsData } from '../core/SettingsManager';
 import { MemoryStorage } from '../test/MemoryStorage';
+import { DEFAULT_KEYBINDINGS, DEFAULT_GAMEPAD_BINDINGS } from '../core/actions';
 
 /**
  * Regression fence for the Options / Comfort panel: every string shown in
@@ -116,6 +117,8 @@ describe('Settings / Comfort panel smoke', () => {
       assistModeExtendedIFrames: true,
       assistModeExtendedComboWindow: true,
       assistModeInvincibility: true,
+      keyBindings: DEFAULT_KEYBINDINGS,
+      gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     };
     sm.save(payload);
     const loaded = sm.load();

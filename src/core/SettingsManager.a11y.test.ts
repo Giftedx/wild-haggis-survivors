@@ -139,6 +139,116 @@ describe('accessibility settings', () => {
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
 
+  describe('Key + Gamepad bindings (A1 M3)', () => {
+    it('defaults keyBindings to the classic arrows+WASD+Space+Escape layout', () => {
+      const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+      const d = s.load();
+      expect(d.keyBindings.moveUp).toEqual({ primary: 'ArrowUp', secondary: 'KeyW' });
+      expect(d.keyBindings.moveDown).toEqual({ primary: 'ArrowDown', secondary: 'KeyS' });
+      expect(d.keyBindings.moveLeft).toEqual({ primary: 'ArrowLeft', secondary: 'KeyA' });
+      expect(d.keyBindings.moveRight).toEqual({ primary: 'ArrowRight', secondary: 'KeyD' });
+      expect(d.keyBindings.dash).toEqual({ primary: 'Space' });
+      expect(d.keyBindings.pause).toEqual({ primary: 'Escape', secondary: 'KeyP' });
+    });
+
+    it('defaults gamepadBindings to dash + pause only', () => {
+      const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+      const d = s.load();
+      expect(d.gamepadBindings.dash).toEqual({ primary: 0, secondary: 7 });
+      expect(d.gamepadBindings.pause).toEqual({ primary: 9 });
+      expect(d.gamepadBindings.moveUp).toBeUndefined();
+    });
+
+    it('persists rebinds round-trip', () => {
+      const mem = new MemoryStorage();
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      s.update((cur) => ({
+        ...cur,
+        keyBindings: {
+          ...cur.keyBindings,
+          dash: { primary: 'ShiftLeft' },
+          pause: { primary: 'Tab', secondary: 'Backspace' },
+        },
+        gamepadBindings: {
+          ...cur.gamepadBindings,
+          dash: { primary: 2 },
+        },
+      }));
+      const loaded = s.load();
+      expect(loaded.keyBindings.dash.primary).toBe('ShiftLeft');
+      expect(loaded.keyBindings.dash.secondary).toBeUndefined();
+      expect(loaded.keyBindings.pause).toEqual({ primary: 'Tab', secondary: 'Backspace' });
+      expect(loaded.gamepadBindings.dash).toEqual({ primary: 2 });
+      // Untouched actions keep their defaults.
+      expect(loaded.keyBindings.moveUp).toEqual({ primary: 'ArrowUp', secondary: 'KeyW' });
+    });
+
+    it('coerces missing per-action keyBinding back to default', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        keyBindings: {
+          dash: { primary: 'F' },
+          // moveUp / moveDown / moveLeft / moveRight / pause missing — coerce fills them
+        },
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      expect(loaded.keyBindings.dash.primary).toBe('F');
+      expect(loaded.keyBindings.moveUp).toEqual({ primary: 'ArrowUp', secondary: 'KeyW' });
+      expect(loaded.keyBindings.pause).toEqual({ primary: 'Escape', secondary: 'KeyP' });
+    });
+
+    it('coerces malformed per-action keyBinding shape to default', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        keyBindings: {
+          dash: 'not-an-object',
+          moveUp: { primary: 42, secondary: 'KeyW' },
+          pause: { primary: '', secondary: 'KeyP' },
+        },
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      // dash — whole value malformed → default fills in.
+      expect(loaded.keyBindings.dash).toEqual({ primary: 'Space' });
+      // moveUp — primary non-string → falls back; secondary preserved.
+      expect(loaded.keyBindings.moveUp.primary).toBe('ArrowUp');
+      // pause — empty-string primary → fallback.
+      expect(loaded.keyBindings.pause.primary).toBe('Escape');
+    });
+
+    it('drops out-of-range gamepad button indices', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        gamepadBindings: {
+          dash: { primary: -1 },
+          pause: { primary: 9, secondary: 99 },
+        },
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      // dash — negative primary → fallback default.
+      expect(loaded.gamepadBindings.dash).toEqual({ primary: 0, secondary: 7 });
+      // pause — valid primary kept; out-of-range secondary dropped.
+      expect(loaded.gamepadBindings.pause).toEqual({ primary: 9 });
+    });
+
+    it('legacy save without bindings fields loads with defaults', () => {
+      const mem = new MemoryStorage();
+      mem.setItem('s', JSON.stringify({
+        settingsVersion: 1,
+        masterVolume: 0.5,
+      }));
+      const s = new SettingsManager({ storage: mem, key: 's' });
+      const loaded = s.load();
+      expect(loaded.keyBindings.dash).toEqual({ primary: 'Space' });
+      expect(loaded.gamepadBindings.pause).toEqual({ primary: 9 });
+    });
+  });
+
   describe('Assist Mode (A1 M6)', () => {
     it('defaults all assist-mode fields off / unity', () => {
       const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });

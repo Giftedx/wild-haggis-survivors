@@ -10,6 +10,7 @@ import {
   getSettingsManager,
 } from './SettingsManager';
 import { MemoryStorage } from '../test/MemoryStorage';
+import { DEFAULT_KEYBINDINGS, DEFAULT_GAMEPAD_BINDINGS } from './actions';
 
 class ThrowingStorage implements StorageLike {
   private m = new Map<string, string>();
@@ -73,6 +74,8 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      keyBindings: DEFAULT_KEYBINDINGS,
+      gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
 
     meta.reset();
@@ -136,6 +139,8 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      keyBindings: DEFAULT_KEYBINDINGS,
+      gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
 
     meta.reset();
@@ -194,6 +199,8 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      keyBindings: DEFAULT_KEYBINDINGS,
+      gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
 
     settings.reset();
@@ -231,6 +238,8 @@ describe('SettingsManager air-gap', () => {
       assistModeExtendedIFrames: false,
       assistModeExtendedComboWindow: false,
       assistModeInvincibility: false,
+      keyBindings: DEFAULT_KEYBINDINGS,
+      gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
   });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { performSettingsReset } from './settingsResetAction';
 import type { ISettingsData } from '../core/SettingsManager';
+import { DEFAULT_KEYBINDINGS, DEFAULT_GAMEPAD_BINDINGS } from '../core/actions';
 
 const makeDefaults = (): ISettingsData => ({
   settingsVersion: 1,
@@ -28,6 +29,8 @@ const makeDefaults = (): ISettingsData => ({
   assistModeExtendedIFrames: false,
   assistModeExtendedComboWindow: false,
   assistModeInvincibility: false,
+  keyBindings: DEFAULT_KEYBINDINGS,
+  gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
 });
 
 describe('performSettingsReset', () => {
