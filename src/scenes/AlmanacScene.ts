@@ -17,6 +17,8 @@ import {
 } from './almanac/tabNavigation';
 import { buildBeastiesEntries } from './almanac/buildBeastiesEntries';
 import { renderBeastiesBook, type BeastiesBookHandle } from './almanac/BeastiesBook';
+import { buildWeysEntries } from './almanac/buildWeysEntries';
+import { renderWeysBook, type WeysBookHandle } from './almanac/WeysBook';
 import { createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
 import { flushBeastieKills, loadSave } from '../utils/save';
 
@@ -43,7 +45,7 @@ export class AlmanacScene extends Phaser.Scene {
   private activeTab: AlmanacTabKey = DEFAULT_ALMANAC_TAB;
   private bodyObjects: Phaser.GameObjects.GameObject[] = [];
   private tabObjects: Phaser.GameObjects.GameObject[] = [];
-  private activeBookHandle: BeastiesBookHandle | null = null;
+  private activeBookHandle: BeastiesBookHandle | WeysBookHandle | null = null;
   /**
    * Per-book expand state. Keyed by tab so flipping between Beasties
    * and a future Weys book doesn't collapse an open entry you were
@@ -179,7 +181,20 @@ export class AlmanacScene extends Phaser.Scene {
       return;
     }
 
-    // Placeholder for M3 / M4 tabs.
+    if (this.activeTab === 'weys') {
+      const entries = buildWeysEntries(loadSave().discoveryLog);
+      const tab: AlmanacTabKey = 'weys';
+      this.activeBookHandle = renderWeysBook(this, viewport, entries, uiScale, {
+        expandedKey: this.expandStates[tab].expandedKey,
+        onToggle: (key) => {
+          this.expandStates[tab] = toggleExpanded(this.expandStates[tab], key);
+          this.renderActiveBook(width, this.scale.height, uiScale);
+        },
+      });
+      return;
+    }
+
+    // Placeholder for M4 banter tab + finds (T15 wires Finds next).
     const placeholder = this.add
       .text(width / 2, bodyTop + bodyHeight / 2, t('ui.almanac.coming_soon'), {
         ...textStyle('body', { color: COLORS_CSS.TEXT_MUTED, align: 'center' }),

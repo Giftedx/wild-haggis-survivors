@@ -198,6 +198,14 @@ export const EN_STRINGS: LocaleTree = {
       /** Kill-count chip on each cell. Intentionally short — the cell
        *  is ~100px wide so long labels would overflow. */
       beasties_kill_chip: '×{count}',
+      /** Weys book — progress pill at the top of the column grid. */
+      weys_progress: '{picked} of {total} weys walked',
+      /** Pick-count chip on each cell. Cells are narrow; keep it terse. */
+      weys_pickcount_chip: '×{count}',
+      /** Title shown over a route the player has not yet walked. */
+      wey_unknown_title: 'Untrod road',
+      /** Lore line shown when the route is still hidden. */
+      wey_unknown_lore: 'Not yet walked. The moor keeps the path quiet till ye choose it.',
       back: 'BACK',
     },
     loadout: {
