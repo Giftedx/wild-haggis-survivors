@@ -31,7 +31,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 16;
+export const SAVE_SCHEMA_VERSION = 17;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -333,6 +333,15 @@ export interface SaveData {
    */
   discoveryLog: DiscoveryLog;
 
+  /**
+   * U1 Rune-tier meta-unlock. Each rune id written once the first time
+   * it appears in a card-draw offer (NOT once picked — seeing it counts).
+   * Deduped + string-coerced at load. Pre-v17 saves default to `[]`
+   * so returning players start the collection from zero without losing
+   * any other data. v17 addition.
+   */
+  seenRunes: string[];
+
   /** Settings */
   settings: SaveSettings;
 }
@@ -462,6 +471,7 @@ const DEFAULT_SAVE: SaveData = {
   seenEnemies: [],
   firstTimeEventsFired: [],
   discoveryLog: createEmptyDiscoveryLog(),
+  seenRunes: [],
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -476,6 +486,7 @@ export function createDefaultSave(): SaveData {
     seenEnemies: [],
     firstTimeEventsFired: [],
     discoveryLog: createEmptyDiscoveryLog(),
+    seenRunes: [],
     settings: { ...DEFAULT_SETTINGS },
   };
 }
@@ -545,6 +556,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV14ToV15(raw));
     case 15:
       return finalizeSaveCandidate(migrateV15ToV16(raw));
+    case 16:
+      return finalizeSaveCandidate(migrateV16ToV17(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -861,6 +874,17 @@ function migrateV15ToV16(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v16 → v17 (U1 Rune tier). Adds `seenRunes: string[]` — the meta-unlock
+ * set for the Rune upgrade rarity. Pre-v17 saves default to an empty
+ * array; field is lazily populated at card-offer time by the Rune system.
+ * No field-level migration beyond the version bump — the coercer below
+ * handles absent / malformed arrays.
+ */
+function migrateV16ToV17(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -923,6 +947,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     seenEnemies: coerceStringArray(candidate.seenEnemies),
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),
     discoveryLog,
+    seenRunes: coerceStringArray(candidate.seenRunes),
     settings: coerceSettings(candidate.settings),
   };
 }
@@ -1449,6 +1474,23 @@ export function bumpSeenEnemy(enemyKey: string): void {
     const cur = loadSave();
     if (cur.seenEnemies.includes(enemyKey)) return;
     writeSave({ ...cur, seenEnemies: [...cur.seenEnemies, enemyKey] });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
+ * U1 Task 15 — persist a rune id into `seenRunes` the first time that rune
+ * is OFFERED in a card-draw (not once picked — sighting alone meta-unlocks
+ * it for future runs). Best-effort — swallow storage errors so level-up
+ * never blocks. No-op when the id is already tracked.
+ */
+export function bumpSeenRune(runeId: string): void {
+  if (!runeId) return;
+  try {
+    const cur = loadSave();
+    if (cur.seenRunes.includes(runeId)) return;
+    writeSave({ ...cur, seenRunes: [...cur.seenRunes, runeId] });
   } catch {
     /* best-effort */
   }

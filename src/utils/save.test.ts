@@ -379,8 +379,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 16', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(16);
+  it('SAVE_SCHEMA_VERSION is 17', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(17);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1789,6 +1789,21 @@ describe('lifetime-counter bumps', () => {
     expect(Object.keys(log).sort()).toEqual(['sporran', 'thick_hide', 'thistle_shot']);
     expect(log.thick_hide!.firstAcquiredAt.runId).toBe('shop');
   });
+
+  // ── U1 Task 15 seenRunes ─────────────────────────────────────────
+  it('bumpSeenRune appends an id once and is idempotent on repeat', async () => {
+    const { bumpSeenRune } = await import('./save');
+    bumpSeenRune('haar_rune');
+    bumpSeenRune('haar_rune');
+    bumpSeenRune('thirst_rune');
+    expect(loadSave().seenRunes).toEqual(['haar_rune', 'thirst_rune']);
+  });
+
+  it('bumpSeenRune is a no-op on empty key', async () => {
+    const { bumpSeenRune } = await import('./save');
+    bumpSeenRune('');
+    expect(loadSave().seenRunes).toEqual([]);
+  });
 });
 
 describe('RunHistoryEntry name backfill', () => {
@@ -2097,7 +2112,7 @@ describe('migrateSave v15 → v16 (M1 nodeOutcomes)', () => {
         },
       ],
     });
-    expect(migrated.schemaVersion).toBe(16);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.runHistory[0].nodeOutcomes).toEqual([]);
   });
 
@@ -2200,3 +2215,38 @@ describe('progressSnapshotFromSave (V2 followup)', () => {
     expect(snap.runsWithAllEvolutions).toBe(0);
   });
 });
+
+describe('save schema v16 → v17 (U1 seenRunes)', () => {
+  it('fresh save defaults seenRunes to an empty array', () => {
+    const fresh = createDefaultSave();
+    expect(fresh.seenRunes).toEqual([]);
+  });
+
+  it('migrates a v16 save to current, defaults seenRunes to []', () => {
+    const migrated = migrateSave({ schemaVersion: 16, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.seenRunes).toEqual([]);
+  });
+
+  it('preserves seenRunes on round-trip', () => {
+    const migrated = migrateSave({
+      ...createDefaultSave(),
+      seenRunes: ['haar_rune', 'thirst_rune'],
+    });
+    expect(migrated.seenRunes).toEqual(['haar_rune', 'thirst_rune']);
+  });
+
+  it('drops non-string entries and dedupes seenRunes', () => {
+    const migrated = migrateSave({
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      seenRunes: ['haar_rune', 42, null, 'haar_rune', 'thirst_rune', ''],
+    });
+    expect(migrated.seenRunes).toEqual(['haar_rune', 'thirst_rune']);
+  });
+
+  it('coerces non-array seenRunes to empty', () => {
+    const migrated = migrateSave({ schemaVersion: SAVE_SCHEMA_VERSION, seenRunes: { x: 1 } });
+    expect(migrated.seenRunes).toEqual([]);
+  });
+});
+
