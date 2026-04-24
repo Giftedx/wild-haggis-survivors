@@ -55,9 +55,15 @@ export type VariantUnlockCondition =
   // honoured". Counter increments on victory when >= 7 weapons evolved
   // in the same run (all 7 evolutions fired — Burns, Ayrshire poet of
   // the haggis itself, emerges when the player has fully earned him).
-  // Placeholder until E1 Seasonal Events ships — original spec called
-  // for Burns-Night + full-evo, but this ships today without the dep.
-  | { type: 'runs_with_all_evolutions'; required: number };
+  // Retained on the type for back-compat; no variant currently uses
+  // this gate after the E1 tightening.
+  | { type: 'runs_with_all_evolutions'; required: number }
+  // E1 M2 T11 — tightened Burns's Wee Beastie gate. Victory with
+  // all-7 evolutions AND run ended inside a Burns Night window
+  // (device-local date). Counter is `burnsNightFullEvoRuns` on the
+  // VariantProgressSnapshot; SaveData mirrors it as
+  // `burnsNightFullEvoRunsCompleted`.
+  | { type: 'burns_night_full_evo'; required: number };
 
 export interface HaggisPalette {
   outline: number;
@@ -118,9 +124,17 @@ export interface VariantProgressSnapshot {
   /**
    * V2 Track 3 — lifetime count of victorious runs where all seven
    * evolvable weapons reached their evolved form in the same run.
-   * Unlocks Burns's Wee Beastie at 1.
+   * Kept for stats; no longer gates a variant unlock after the E1
+   * tightening.
    */
   runsWithAllEvolutions?: number;
+  /**
+   * E1 M2 T11 — lifetime count of victorious runs that (a) reached
+   * the evolution threshold AND (b) landed inside a Burns Night
+   * window. Tight gate replaces the V2 placeholder for Burns's
+   * Wee Beastie — unlock at 1.
+   */
+  burnsNightFullEvoRuns?: number;
   unlockedVariants?: readonly VariantKey[];
 }
 
@@ -437,10 +451,12 @@ export const VARIANTS: VariantDef[] = [
     // sprite scale 0.85×. Starter passive "A Red, Red Rose"
     // (thistle-bloom heal on crit) is descoped to pure voice flavour
     // this ship — no startWithPassives infra exists (see followups).
-    // Unlock: PLACEHOLDER until E1 Seasonal Events (Burns Night)
-    // ships — spec called for "Burns Night + 100% evolutions", this
-    // drops the Burns-Night dep so the variant ships with V2 cohort.
-    // Revisit once E1 lands; tighten to seasonal gate.
+    // Unlock tightened via E1 M2 T11 (2026-04-24) — now gated on a
+    // full-evo victory inside a Burns Night window (Jan 18–Feb 1).
+    // Honours the bard in the calendar sense, not just the gameplay
+    // sense. The `disableSeasonalEvents` opt-out collapses the gate
+    // to "impossible" by design — players who silence the season
+    // trade this unlock for calmer runs.
     key: 'burns_wee_beastie',
     nameKey: 'variant.burns_wee_beastie.name',
     flavorKey: 'variant.burns_wee_beastie.flavor',
@@ -452,7 +468,7 @@ export const VARIANTS: VariantDef[] = [
       xpMultiplierPct: 0.15,
       spriteScale: 0.85,
     },
-    unlock: { type: 'runs_with_all_evolutions', required: 1 },
+    unlock: { type: 'burns_night_full_evo', required: 1 },
     appearance: {
       accentStyle: 'none',
       palette: {
@@ -516,6 +532,8 @@ export function meetsVariantUnlockCondition(
       return (progress.runsInCoastalOnly ?? 0) >= variant.unlock.required;
     case 'runs_with_all_evolutions':
       return (progress.runsWithAllEvolutions ?? 0) >= variant.unlock.required;
+    case 'burns_night_full_evo':
+      return (progress.burnsNightFullEvoRuns ?? 0) >= variant.unlock.required;
   }
 }
 
@@ -600,6 +618,16 @@ export function getVariantUnlockProgress(
         re,
         variant.unlock.required,
         `${re}`,
+        `${variant.unlock.required}`
+      );
+    }
+    case 'burns_night_full_evo': {
+      const bn = progress.burnsNightFullEvoRuns ?? 0;
+      return createUnlockProgress(
+        t('variant.unlock.burns_night_full_evo'),
+        bn,
+        variant.unlock.required,
+        `${bn}`,
         `${variant.unlock.required}`
       );
     }

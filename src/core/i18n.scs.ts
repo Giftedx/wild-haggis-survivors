@@ -2357,6 +2357,7 @@ export const SCS_STRINGS: LocaleTree = {
       runs_without_healing: 'Nae-heal runs',
       runs_in_coastal_only: 'Sea-way runs',
       runs_with_all_evolutions: 'Fu\'-evo wins',
+      burns_night_full_evo: 'Fu\'-evo Burns Nicht wins',
       ready: 'Ye earned this wan',
     },
   },

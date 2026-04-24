@@ -201,16 +201,16 @@ export class AchievementManager {
         this.tryUnlock('ach_peerie_unlock');
       }
 
-      // V2 Track 3 — ach_burns_beastie_unlock. Won a run where all seven
-      // evolvable weapons reached evolved form (BURNS_EVOLUTION_THRESHOLD).
+      // E1 M2 T11 — ach_burns_beastie_unlock. Tightened to
+      // `burns_night_full_evo`: a victory with all seven evolvable
+      // weapons evolved AND the run ended inside a Burns Night window.
       // Counter written by applyRunSummary via
-      // `RunHistoryContext.evolvedWeaponCount`; threshold matches
-      // VariantDef.burns_wee_beastie.unlock.required (currently 1).
-      // PLACEHOLDER — tighten to Burns-Night seasonal gate when E1 ships.
+      // `RunHistoryContext.seasonalEventKey` + evolvedWeaponCount;
+      // threshold matches VariantDef.burns_wee_beastie.unlock.required.
       const burnsRequired = VARIANTS.find((v) => v.key === 'burns_wee_beastie')?.unlock as
-        | { type: 'runs_with_all_evolutions'; required: number }
+        | { type: 'burns_night_full_evo'; required: number }
         | undefined;
-      if ((gameplay.runsWithAllEvolutionsCompleted ?? 0) >= (burnsRequired?.required ?? 1)) {
+      if ((gameplay.burnsNightFullEvoRunsCompleted ?? 0) >= (burnsRequired?.required ?? 1)) {
         this.tryUnlock('ach_burns_beastie_unlock');
       }
     } catch {

@@ -92,6 +92,11 @@ export class RunHistoryRecorder {
     const enteredHealingCircle = h.getEnteredHealingCircle?.() ?? true;
     const biomesVisited = h.getBiomesVisited?.() ?? [];
     const evolvedWeaponCount = h.getEvolvedWeaponCount?.() ?? 0;
+    // E1 M2 T11 — resolve active event at build-context time, same
+    // opt-out semantics as the Chronicle stamp so the unlock gate
+    // matches what the player sees in their run history.
+    const seasonalDisabled = h.areSeasonalEventsDisabled?.() ?? false;
+    const seasonalEventKey = getActiveSeasonalEventKey(new Date(), seasonalDisabled);
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -104,6 +109,7 @@ export class RunHistoryRecorder {
       ...(h.isIronmoor() ? { ironmoor: true } : {}),
       ...(replay ? { replay } : {}),
       ...(name ? { name } : {}),
+      ...(seasonalEventKey ? { seasonalEventKey } : {}),
       enteredHealingCircle,
       biomesVisited: [...biomesVisited],
       evolvedWeaponCount,

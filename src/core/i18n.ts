@@ -2701,6 +2701,7 @@ export const EN_STRINGS: LocaleTree = {
       runs_without_healing: 'No-heal runs',
       runs_in_coastal_only: 'Coastal-only runs',
       runs_with_all_evolutions: 'Full-evo victories',
+      burns_night_full_evo: 'Full-evo Burns Night wins',
       ready: 'Ye earned this one',
     },
   },

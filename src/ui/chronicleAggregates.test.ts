@@ -63,6 +63,7 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     runsWithoutHealingCircleCompleted: 0,
     runsInCoastalOnlyCompleted: 0,
     runsWithAllEvolutionsCompleted: 0,
+    burnsNightFullEvoRunsCompleted: 0,
     bossKillCounts: {},
     firstRouteVisits: [],
     cursedVictoriesByBoss: {},

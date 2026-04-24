@@ -189,8 +189,10 @@ export interface DeedStatsSnapshot {
   runsWithoutHealingCircleCompleted: number;
   /** Gameplay save: coastal-only victorious runs — feeds ach_peerie_unlock (V2 T2). */
   runsInCoastalOnlyCompleted: number;
-  /** Gameplay save: full-evolution victorious runs — feeds ach_burns_beastie_unlock (V2 T3). */
+  /** Gameplay save: full-evolution victorious runs — retained for stats; no longer feeds an achievement. */
   runsWithAllEvolutionsCompleted: number;
+  /** Gameplay save: full-evo victorious runs inside a Burns Night window — feeds ach_burns_beastie_unlock (E1 T11). */
+  burnsNightFullEvoRunsCompleted: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -243,8 +245,8 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_doric_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsWithoutHealingCircleCompleted) },
   // 1 matches VariantDef peerie_shetlander unlock.required (V2 T2)
   ach_peerie_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsInCoastalOnlyCompleted) },
-  // 1 matches VariantDef burns_wee_beastie unlock.required (V2 T3)
-  ach_burns_beastie_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsWithAllEvolutionsCompleted) },
+  // 1 matches VariantDef burns_wee_beastie unlock.required (E1 T11 — tightened to Burns Night gate)
+  ach_burns_beastie_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.burnsNightFullEvoRunsCompleted) },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

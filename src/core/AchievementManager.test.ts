@@ -410,16 +410,26 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     expect(save.load().unlockedAchievements).not.toContain('ach_peerie_unlock');
   });
 
-  it('unlocks ach_burns_beastie_unlock at 1 full-evo victory (V2 T3)', () => {
-    seedGameplaySave({ runsWithAllEvolutionsCompleted: 1 });
+  it('unlocks ach_burns_beastie_unlock at 1 Burns Night full-evo victory (E1 T11)', () => {
+    seedGameplaySave({ burnsNightFullEvoRunsCompleted: 1 });
     globalEventBus.emit('GLOBAL_RUN_ENDED', {
       outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
     });
     expect(save.load().unlockedAchievements).toContain('ach_burns_beastie_unlock');
   });
 
-  it('does NOT unlock ach_burns_beastie_unlock at 0 full-evo victories', () => {
-    seedGameplaySave({ runsWithAllEvolutionsCompleted: 0 });
+  it('does NOT unlock ach_burns_beastie_unlock when only runsWithAllEvolutionsCompleted is non-zero', () => {
+    // E1 T11 severed the deed from the raw full-evo counter; Burns
+    // Night must be the gate.
+    seedGameplaySave({ runsWithAllEvolutionsCompleted: 1, burnsNightFullEvoRunsCompleted: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_burns_beastie_unlock');
+  });
+
+  it('does NOT unlock ach_burns_beastie_unlock at 0 Burns Night full-evo victories', () => {
+    seedGameplaySave({ burnsNightFullEvoRunsCompleted: 0 });
     globalEventBus.emit('GLOBAL_RUN_ENDED', {
       outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
     });

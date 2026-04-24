@@ -30,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 14;
+export const SAVE_SCHEMA_VERSION = 15;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
@@ -244,11 +244,24 @@ export interface SaveData {
   /**
    * V2 Track 3 — total victorious runs where the player reached the
    * `BURNS_EVOLUTION_THRESHOLD` (7) — i.e. all seven evolvable weapons
-   * reached evolved form in the same run. Unlocks Burns's Wee Beastie
-   * at 1. No retroactive seed possible (pre-v12 runs didn't persist
-   * per-run evolution count). Fresh counter starts at 0 for all.
+   * reached evolved form in the same run. No retroactive seed possible
+   * (pre-v12 runs didn't persist per-run evolution count). Fresh
+   * counter starts at 0 for all. (Kept for internal stat tracking;
+   * Burns's Wee Beastie unlock now gates on the tightened v15
+   * `burnsNightFullEvoRunsCompleted` counter instead.)
    */
   runsWithAllEvolutionsCompleted: number;
+
+  /**
+   * E1 M2 T11 — total victorious runs that (a) met the full-evo
+   * threshold AND (b) landed inside a real-world Burns Night window.
+   * This is the unlock gate for Burns's Wee Beastie in v15+ — ties
+   * the variant to the bard's actual week on the calendar. No
+   * retroactive seed possible; the seasonal event stamp was only
+   * introduced in v13 and we never recorded evolvedWeaponCount on
+   * history entries. Fresh counter starts at 0 for all. v15 addition.
+   */
+  burnsNightFullEvoRunsCompleted: number;
 
   /**
    * H1 Gran's Croft — per-boss kill tally powering mantelpiece trophy
@@ -377,6 +390,15 @@ export interface RunHistoryContext {
    * show a different backfilled hash-name on load.
    */
   name?: string;
+  /**
+   * E1 M2 T11 — active seasonal event key at run-end (resolved at
+   * `buildContext()` time with the opt-out setting respected). When
+   * set to `'burns_night'` on a full-evo victory, `applyRunSummary`
+   * increments `burnsNightFullEvoRunsCompleted` and unlocks Burns's
+   * Wee Beastie. Absent when no event was live or the player opted
+   * out — the downstream check short-circuits without special-casing.
+   */
+  seasonalEventKey?: string;
 }
 
 export interface RunResult {
@@ -409,6 +431,7 @@ const DEFAULT_SAVE: SaveData = {
   runsWithoutHealingCircleCompleted: 0,
   runsInCoastalOnlyCompleted: 0,
   runsWithAllEvolutionsCompleted: 0,
+  burnsNightFullEvoRunsCompleted: 0,
   bossKillCounts: {},
   firstRouteVisits: [],
   cursedVictoriesByBoss: {},
@@ -495,6 +518,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV12ToV13(raw));
     case 13:
       return finalizeSaveCandidate(migrateV13ToV14(raw));
+    case 14:
+      return finalizeSaveCandidate(migrateV14ToV15(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -594,6 +619,14 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     normalizedSummary.victory &&
     (context?.evolvedWeaponCount ?? 0) >= BURNS_EVOLUTION_THRESHOLD;
 
+  // E1 M2 T11 — Burns's Wee Beastie now requires (a) full evo AND (b)
+  // run landed inside a Burns Night window. `seasonalEventKey` is
+  // supplied by RunHistoryRecorder.buildContext so the opt-out +
+  // device-date are already resolved at source; a missing key (non-
+  // Burns run) collapses to false without extra defensive checks.
+  const isBurnsFullEvoVictory =
+    isFullEvoVictory && context?.seasonalEventKey === 'burns_night';
+
   const nextSave: SaveData = {
     ...baseSave,
     gold: baseSave.gold + goldEarned,
@@ -611,6 +644,8 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
       baseSave.runsInCoastalOnlyCompleted + (isCoastalOnlyVictory ? 1 : 0),
     runsWithAllEvolutionsCompleted:
       baseSave.runsWithAllEvolutionsCompleted + (isFullEvoVictory ? 1 : 0),
+    burnsNightFullEvoRunsCompleted:
+      baseSave.burnsNightFullEvoRunsCompleted + (isBurnsFullEvoVictory ? 1 : 0),
     runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
@@ -627,6 +662,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     runsWithoutHealing: nextSave.runsWithoutHealingCircleCompleted,
     runsInCoastalOnly: nextSave.runsInCoastalOnlyCompleted,
     runsWithAllEvolutions: nextSave.runsWithAllEvolutionsCompleted,
+    burnsNightFullEvoRuns: nextSave.burnsNightFullEvoRunsCompleted,
     unlockedVariants: baseSave.unlockedVariants,
   };
   const unlockResult = evaluateVariantUnlocks(runEndSnapshot, baseSave.unlockedVariants);
@@ -774,6 +810,18 @@ function migrateV13ToV14(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v14 → v15 adds `burnsNightFullEvoRunsCompleted: number` (E1 M2 T11,
+ * tightened Burns's Wee Beastie unlock gate). Pure version bump —
+ * `finalizeSaveCandidate` coerces the missing field to 0 via
+ * `coerceInteger`. No retroactive seed: we never stored evolvedWeaponCount
+ * on history entries, so past full-evo-during-Burns-Night runs are
+ * unrecoverable. Fresh counter starts at 0 for all.
+ */
+function migrateV14ToV15(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -823,6 +871,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     runsWithoutHealingCircleCompleted: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     runsInCoastalOnlyCompleted: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
     runsWithAllEvolutionsCompleted: coerceInteger(candidate.runsWithAllEvolutionsCompleted, 0),
+    burnsNightFullEvoRunsCompleted: coerceInteger(candidate.burnsNightFullEvoRunsCompleted, 0),
     bossKillCounts,
     firstRouteVisits,
     cursedVictoriesByBoss,
@@ -898,6 +947,7 @@ export function progressSnapshotFromSave(save: SaveData): VariantProgressSnapsho
     runsWithoutHealing: save.runsWithoutHealingCircleCompleted,
     runsInCoastalOnly: save.runsInCoastalOnlyCompleted,
     runsWithAllEvolutions: save.runsWithAllEvolutionsCompleted,
+    burnsNightFullEvoRuns: save.burnsNightFullEvoRunsCompleted,
     unlockedVariants: save.unlockedVariants,
   };
 }
@@ -915,6 +965,7 @@ function buildProgressSnapshot(
     runsWithoutHealing: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
     runsInCoastalOnly: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
     runsWithAllEvolutions: coerceInteger(candidate.runsWithAllEvolutionsCompleted, 0),
+    burnsNightFullEvoRuns: coerceInteger(candidate.burnsNightFullEvoRunsCompleted, 0),
     unlockedVariants,
   };
 }

@@ -367,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 14', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(14);
+  it('SAVE_SCHEMA_VERSION is 15', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(15);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1306,15 +1306,18 @@ describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)
     expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
   });
 
-  it('applyRunSummary unlocks burns_wee_beastie at run-end when condition is first met', () => {
+  it('full-evo victory WITHOUT Burns Night does NOT unlock burns_wee_beastie', () => {
+    // E1 T11 tightened the unlock: full-evo alone is no longer enough;
+    // the run must also land inside a real-world Burns Night window.
     const save = createDefaultSave();
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
       { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
     );
-    expect(result.save.unlockedVariants).toContain('burns_wee_beastie');
-    expect(result.newlyUnlockedVariants).toContain('burns_wee_beastie');
+    expect(result.save.unlockedVariants).not.toContain('burns_wee_beastie');
+    expect(result.newlyUnlockedVariants).not.toContain('burns_wee_beastie');
+    expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
   });
 
   it('context without evolvedWeaponCount defaults to safe path (no counter bump)', () => {
@@ -1325,6 +1328,86 @@ describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)
       { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
     );
     expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
+  });
+});
+
+describe('E1 T11 — burnsNightFullEvoRunsCompleted (Burns\'s Wee Beastie gate)', () => {
+  it('defaults to 0 on fresh save', () => {
+    const loaded = migrateSave({});
+    expect(loaded.burnsNightFullEvoRunsCompleted).toBe(0);
+  });
+
+  it('preserves a saved counter value', () => {
+    const loaded = migrateSave({ burnsNightFullEvoRunsCompleted: 4 });
+    expect(loaded.burnsNightFullEvoRunsCompleted).toBe(4);
+  });
+
+  it('coerces invalid values to 0', () => {
+    const loaded = migrateSave({ burnsNightFullEvoRunsCompleted: 'nope' });
+    expect(loaded.burnsNightFullEvoRunsCompleted).toBe(0);
+  });
+
+  it('increments on victory when full evo AND seasonalEventKey=burns_night', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      {
+        level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
+        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+      },
+    );
+    expect(result.save.burnsNightFullEvoRunsCompleted).toBe(1);
+  });
+
+  it('does NOT increment without a seasonal event key (non-Burns run)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+    );
+    expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
+  });
+
+  it('does NOT increment when evolvedWeaponCount is 6 (one short) even on Burns Night', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      {
+        level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
+        evolvedWeaponCount: 6, seasonalEventKey: 'burns_night',
+      },
+    );
+    expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
+  });
+
+  it('does NOT increment on defeat, even at full evo during Burns Night', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
+      {
+        level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [],
+        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+      },
+    );
+    expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
+  });
+
+  it('unlocks burns_wee_beastie on first qualifying run', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      {
+        level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
+        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+      },
+    );
+    expect(result.save.unlockedVariants).toContain('burns_wee_beastie');
+    expect(result.newlyUnlockedVariants).toContain('burns_wee_beastie');
   });
 });
 
