@@ -9,8 +9,37 @@ import {
   applyOatcakeHealOnCircleEntry,
   applySporranOfHolding,
   applyWhiskyDramActivation,
+  applyBodhranSkinBeatDamage,
+  applyClootieRagLifesteal,
+  applyFishermensNetDamage,
+  applyHighlandTorqueEliteDamage,
+  applyHighlandTorqueEliteSpawnRate,
+  applyStoneOfDestinyBossHp,
+  applyStoneOfDestinyXp,
+  activateFingalsHorn,
   initialBronzeClaspState,
+  initialClootieRagState,
+  initialFingalsHornState,
+  initialGransTeapotState,
+  initialCairnStoneState,
   initialWhiskyDramState,
+  isClootieRagDoubleActive,
+  isMidgieRepellentImmune,
+  noteClootieRagDamageTaken,
+  noteGransTeapotDamageTaken,
+  resolveCairnStoneOnHeatherKill,
+  tickGransTeapot,
+  BODHRAN_SKIN_ON_BEAT_WINDOW_MS,
+  CAIRN_STONE_COOLDOWN_MS,
+  CLOOTIE_RAG_WINDOW_MS,
+  FINGALS_HORN_SUMMON_COUNT,
+  FINGALS_HORN_SUMMON_DURATION_MS,
+  GRANS_TEAPOT_DAMAGE_FREE_MS,
+  GRANS_TEAPOT_HEAL_FRAC_PER_SEC,
+  HIGHLAND_TORQUE_ELITE_DAMAGE_MULT,
+  HIGHLAND_TORQUE_ELITE_SPAWN_MULT,
+  STONE_OF_DESTINY_BOSS_HP_MULT,
+  STONE_OF_DESTINY_XP_MULT,
   type BronzeClaspState,
   type WhiskyDramState,
 } from './relicEffects';
@@ -159,5 +188,180 @@ describe('whisky_dram', () => {
     const fresh: WhiskyDramState = { used: false };
     applyWhiskyDramActivation(50, 100, fresh);
     expect(fresh.used).toBe(false);
+  });
+});
+
+describe('cairn_stone', () => {
+  it('spawns on first heather kill', () => {
+    const r = resolveCairnStoneOnHeatherKill(1000, initialCairnStoneState);
+    expect(r.spawn).toBe(true);
+    expect(r.state.lastSpawnMs).toBe(1000);
+  });
+
+  it('suppresses spawn inside the 5s cooldown', () => {
+    const first = resolveCairnStoneOnHeatherKill(1000, initialCairnStoneState);
+    const second = resolveCairnStoneOnHeatherKill(2000, first.state);
+    expect(second.spawn).toBe(false);
+    expect(second.state).toBe(first.state);
+  });
+
+  it('re-fires after the 5s cooldown lapses', () => {
+    const first = resolveCairnStoneOnHeatherKill(0, initialCairnStoneState);
+    const later = resolveCairnStoneOnHeatherKill(CAIRN_STONE_COOLDOWN_MS, first.state);
+    expect(later.spawn).toBe(true);
+  });
+
+  it('initial state has a -Infinity last-spawn so the first kill always fires', () => {
+    expect(initialCairnStoneState.lastSpawnMs).toBe(Number.NEGATIVE_INFINITY);
+  });
+});
+
+describe('highland_torque', () => {
+  it('doubles elite damage via the multiplier constant', () => {
+    expect(HIGHLAND_TORQUE_ELITE_DAMAGE_MULT).toBe(2.0);
+    expect(applyHighlandTorqueEliteDamage(10)).toBe(20);
+    expect(applyHighlandTorqueEliteDamage(0)).toBe(0);
+  });
+
+  it('scales elite spawn chance by 20%, clamped to 1', () => {
+    expect(HIGHLAND_TORQUE_ELITE_SPAWN_MULT).toBe(1.2);
+    expect(applyHighlandTorqueEliteSpawnRate(0.1)).toBeCloseTo(0.12);
+    expect(applyHighlandTorqueEliteSpawnRate(0.9)).toBeCloseTo(1);
+    expect(applyHighlandTorqueEliteSpawnRate(1)).toBe(1);
+  });
+});
+
+describe('bodhran_skin', () => {
+  const period = 500; // 120 BPM quarter-note
+
+  it('grants +20% exactly on the beat', () => {
+    expect(applyBodhranSkinBeatDamage(10, 0, period)).toBeCloseTo(12);
+  });
+
+  it('grants +20% inside the ±80ms window', () => {
+    expect(applyBodhranSkinBeatDamage(10, BODHRAN_SKIN_ON_BEAT_WINDOW_MS, period)).toBeCloseTo(12);
+    expect(applyBodhranSkinBeatDamage(10, period - BODHRAN_SKIN_ON_BEAT_WINDOW_MS, period)).toBeCloseTo(12);
+  });
+
+  it('falls back to baseline just outside the window', () => {
+    expect(applyBodhranSkinBeatDamage(10, BODHRAN_SKIN_ON_BEAT_WINDOW_MS + 1, period)).toBe(10);
+  });
+
+  it('handles ms past a full period (wraps cleanly)', () => {
+    expect(applyBodhranSkinBeatDamage(10, period * 3, period)).toBeCloseTo(12);
+  });
+
+  it('rejects invalid period / elapsed', () => {
+    expect(applyBodhranSkinBeatDamage(10, 0, 0)).toBe(10);
+    expect(applyBodhranSkinBeatDamage(10, Number.NaN, 500)).toBe(10);
+  });
+});
+
+describe('clootie_rag', () => {
+  it('notes damage sets the timer to now', () => {
+    const s = noteClootieRagDamageTaken(1000, initialClootieRagState);
+    expect(s.lastDamagedMs).toBe(1000);
+  });
+
+  it('doubles lifesteal inside the 5s window', () => {
+    const s = noteClootieRagDamageTaken(0, initialClootieRagState);
+    expect(applyClootieRagLifesteal(3, 2500, s)).toBe(6);
+    expect(isClootieRagDoubleActive(2500, s)).toBe(true);
+  });
+
+  it('reverts to baseline lifesteal after 5s', () => {
+    const s = noteClootieRagDamageTaken(0, initialClootieRagState);
+    expect(applyClootieRagLifesteal(3, CLOOTIE_RAG_WINDOW_MS + 1, s)).toBe(3);
+    expect(isClootieRagDoubleActive(CLOOTIE_RAG_WINDOW_MS + 1, s)).toBe(false);
+  });
+
+  it('never-damaged start state leaves lifesteal untouched', () => {
+    expect(applyClootieRagLifesteal(3, 0, initialClootieRagState)).toBe(3);
+  });
+});
+
+describe('fishermens_net', () => {
+  it('applies +30% when the dot toward player is negative (fleeing)', () => {
+    expect(applyFishermensNetDamage(10, -1)).toBeCloseTo(13);
+  });
+
+  it('baseline when the enemy is approaching (positive dot)', () => {
+    expect(applyFishermensNetDamage(10, 1)).toBe(10);
+  });
+
+  it('baseline at exactly zero velocity (neither approaching nor fleeing)', () => {
+    expect(applyFishermensNetDamage(10, 0)).toBe(10);
+  });
+});
+
+describe('midgie_repellent', () => {
+  it('is immune when held', () => {
+    expect(isMidgieRepellentImmune(true)).toBe(true);
+  });
+  it('is not immune when not held', () => {
+    expect(isMidgieRepellentImmune(false)).toBe(false);
+  });
+});
+
+describe('grans_teapot', () => {
+  it('does not heal inside the 5s damage-free window', () => {
+    const r = tickGransTeapot(1000, 100, initialGransTeapotState);
+    expect(r.healHp).toBe(0);
+    expect(r.state.msSinceDamage).toBe(1000);
+  });
+
+  it('heals 5% max HP per second after the window elapses', () => {
+    // Simulate 5000ms of damage-free, then 1000ms of heal.
+    const afterWindow = tickGransTeapot(GRANS_TEAPOT_DAMAGE_FREE_MS, 100, initialGransTeapotState);
+    expect(afterWindow.healHp).toBe(0);
+    const oneSec = tickGransTeapot(1000, 100, afterWindow.state);
+    expect(oneSec.healHp).toBe(GRANS_TEAPOT_HEAL_FRAC_PER_SEC * 100);
+  });
+
+  it('accumulates sub-1-HP ticks via healCarry', () => {
+    // With maxHp=10, 5% per second is 0.5 HP/s; 100ms ticks each yield 0.
+    const after5sWindow = tickGransTeapot(GRANS_TEAPOT_DAMAGE_FREE_MS, 10, initialGransTeapotState);
+    const t1 = tickGransTeapot(100, 10, after5sWindow.state);
+    expect(t1.healHp).toBe(0);
+    expect(t1.state.healCarry).toBeCloseTo(0.05);
+    // 2 seconds in total should yield 1 integer HP with carry.
+    const t2 = tickGransTeapot(1900, 10, t1.state);
+    expect(t2.healHp).toBe(1);
+  });
+
+  it('damage taken resets the window to 0', () => {
+    const mid = tickGransTeapot(3000, 100, initialGransTeapotState);
+    const reset = noteGransTeapotDamageTaken(mid.state);
+    expect(reset.msSinceDamage).toBe(0);
+    expect(reset.healCarry).toBe(0);
+  });
+});
+
+describe('stone_of_destiny_shard', () => {
+  it('+50% XP multiplier', () => {
+    expect(STONE_OF_DESTINY_XP_MULT).toBe(1.5);
+    expect(applyStoneOfDestinyXp(10)).toBe(15);
+  });
+
+  it('+15% boss HP multiplier', () => {
+    expect(STONE_OF_DESTINY_BOSS_HP_MULT).toBeCloseTo(1.15);
+    expect(applyStoneOfDestinyBossHp(100)).toBeCloseTo(115);
+  });
+});
+
+describe('fingals_horn', () => {
+  it('fires once; second call is no-op', () => {
+    const first = activateFingalsHorn(initialFingalsHornState);
+    expect(first.fired).toBe(true);
+    expect(first.state.used).toBe(true);
+
+    const second = activateFingalsHorn(first.state);
+    expect(second.fired).toBe(false);
+    expect(second.state).toBe(first.state);
+  });
+
+  it('summon constants are reasonable (3 Fianna, 10s)', () => {
+    expect(FINGALS_HORN_SUMMON_COUNT).toBe(3);
+    expect(FINGALS_HORN_SUMMON_DURATION_MS).toBe(10_000);
   });
 });

@@ -26,17 +26,40 @@
 import type { RelicKey } from '../../data/relics';
 import type { RelicSystem } from '../RelicSystem';
 import {
+  activateFingalsHorn,
+  applyBodhranSkinBeatDamage,
   applyBronzeClaspFirstHit,
   applyCeilidhDancersRibbonThreshold,
+  applyClootieRagLifesteal,
   applyDampTinderFireReduction,
+  applyFishermensNetDamage,
   applyGransThimbleCritBonus,
+  applyHighlandTorqueEliteDamage,
+  applyHighlandTorqueEliteSpawnRate,
   applyLuckyHeatherSprigLuck,
   applyOatcakeHealOnCircleEntry,
   applySporranOfHolding,
+  applyStoneOfDestinyBossHp,
+  applyStoneOfDestinyXp,
   applyWhiskyDramActivation,
   initialBronzeClaspState,
+  initialCairnStoneState,
+  initialClootieRagState,
+  initialFingalsHornState,
+  initialGransTeapotState,
   initialWhiskyDramState,
+  isMidgieRepellentImmune,
+  noteClootieRagDamageTaken,
+  noteGransTeapotDamageTaken,
+  resolveCairnStoneOnHeatherKill,
+  tickGransTeapot,
+  FINGALS_HORN_SUMMON_COUNT,
+  FINGALS_HORN_SUMMON_DURATION_MS,
   type BronzeClaspState,
+  type CairnStoneState,
+  type ClootieRagState,
+  type FingalsHornState,
+  type GransTeapotState,
   type WhiskyDramState,
 } from './relicEffects';
 
@@ -49,9 +72,19 @@ export interface WhiskyDramActivationResult {
   readonly available: boolean;
 }
 
+export interface FingalsHornActivationResult {
+  readonly fired: boolean;
+  readonly summonCount: number;
+  readonly durationMs: number;
+}
+
 export class RelicEffectDriver {
   private bronzeClaspState: BronzeClaspState = initialBronzeClaspState;
   private whiskyDramState: WhiskyDramState = initialWhiskyDramState;
+  private cairnStoneState: CairnStoneState = initialCairnStoneState;
+  private clootieRagState: ClootieRagState = initialClootieRagState;
+  private fingalsHornState: FingalsHornState = initialFingalsHornState;
+  private gransTeapotState: GransTeapotState = initialGransTeapotState;
 
   constructor(private readonly relicSystem: RelicSystem) {}
 
@@ -61,15 +94,45 @@ export class RelicEffectDriver {
   }
 
   /**
-   * Per-frame tick. Called once per game-frame from the scene's update
-   * loop. No-op for the 8 M3 common effects (all event-driven); rare
-   * effects with damage-free timers will add cases here.
+   * Per-frame tick. Gran's Teapot timer advances here so the
+   * 5s-damage-free trigger + 5%-max-HP-per-second heal ride the same
+   * scaled-delta clock as the rest of the game (pause + slow-mo
+   * behave correctly).
+   *
+   * Returns the integer HP to heal this frame (0 when not eligible or
+   * carrying fractional progress). Caller applies `player.heal()`.
    */
-  updatePerFrame(_deltaMs: number): void {
-    // Placeholder — iteration kept so the happy path still runs.
-    for (const _slot of this.relicSystem.getSlots()) {
-      if (_slot.def === null) continue;
-      // Per-frame dispatch lands with rare-tier effects.
+  updatePerFrame(_deltaMs: number): number {
+    if (!this.isHolding('grans_teapot')) {
+      // Keep the state fresh so a mid-run discard+re-acquire doesn't
+      // inherit a stale damage-free clock.
+      this.gransTeapotState = initialGransTeapotState;
+      return 0;
+    }
+    // maxHp is supplied externally — driver stays Player-free. Wire
+    // passes the caller's maxHp via `tickGransTeapotFrame`.
+    return 0;
+  }
+
+  /**
+   * grans_teapot per-frame heal — scene passes `maxHp` because the
+   * driver doesn't own Player. Returns integer HP to heal; carry
+   * persists in state for fractional ticks.
+   */
+  tickGransTeapotFrame(deltaMs: number, maxHp: number): number {
+    if (!this.isHolding('grans_teapot')) return 0;
+    const result = tickGransTeapot(deltaMs, maxHp, this.gransTeapotState);
+    this.gransTeapotState = result.state;
+    return result.healHp;
+  }
+
+  /** Called when the haggis takes damage — resets Gran's Teapot timer. */
+  noteDamageTaken(nowMs: number): void {
+    if (this.isHolding('grans_teapot')) {
+      this.gransTeapotState = noteGransTeapotDamageTaken(this.gransTeapotState);
+    }
+    if (this.isHolding('clootie_rag')) {
+      this.clootieRagState = noteClootieRagDamageTaken(nowMs, this.clootieRagState);
     }
   }
 
@@ -172,9 +235,101 @@ export class RelicEffectDriver {
     return { hp: result.hp, fired, available: !result.state.used };
   }
 
+  // ── Uncommon + rare effect wires (R1 M4) ────────────────────
+
+  /**
+   * highland_torque — +100% damage to elites, +20% elite spawn rate.
+   * Callers thread the "is elite" flag so the damage wire doesn't
+   * need to read enemy metadata itself.
+   */
+  modifyEliteDamage(baseDamage: number, isElite: boolean): number {
+    if (!isElite || !this.isHolding('highland_torque')) return baseDamage;
+    return applyHighlandTorqueEliteDamage(baseDamage);
+  }
+
+  modifyEliteSpawnChance(baseChance: number): number {
+    return this.isHolding('highland_torque')
+      ? applyHighlandTorqueEliteSpawnRate(baseChance)
+      : baseChance;
+  }
+
+  /** stone_of_destiny_shard — +50% XP from all sources. */
+  modifyXpGain(baseXp: number): number {
+    return this.isHolding('stone_of_destiny_shard')
+      ? applyStoneOfDestinyXp(baseXp)
+      : baseXp;
+  }
+
+  /** stone_of_destiny_shard — boss HP +15%. */
+  modifyBossMaxHp(baseHp: number): number {
+    return this.isHolding('stone_of_destiny_shard')
+      ? applyStoneOfDestinyBossHp(baseHp)
+      : baseHp;
+  }
+
+  /** clootie_rag — lifesteal doubled for 5s after taking damage. */
+  modifyLifesteal(baseLifesteal: number, nowMs: number): number {
+    if (!this.isHolding('clootie_rag')) return baseLifesteal;
+    return applyClootieRagLifesteal(baseLifesteal, nowMs, this.clootieRagState);
+  }
+
+  /** fishermens_net — enemies moving away from the player take +30%. */
+  modifyFishermensNetDamage(baseDamage: number, velocityDotTowardPlayer: number): number {
+    if (!this.isHolding('fishermens_net')) return baseDamage;
+    return applyFishermensNetDamage(baseDamage, velocityDotTowardPlayer);
+  }
+
+  /** bodhran_skin — +20% on-beat damage. `msSinceLastBeat` is scene-owned. */
+  modifyBodhranBeatDamage(
+    baseDamage: number,
+    msSinceLastBeat: number,
+    beatPeriodMs: number,
+  ): number {
+    if (!this.isHolding('bodhran_skin')) return baseDamage;
+    return applyBodhranSkinBeatDamage(baseDamage, msSinceLastBeat, beatPeriodMs);
+  }
+
+  /** midgie_repellent — immune to midge-swarm stacking damage. */
+  isMidgieSwarmImmune(): boolean {
+    return isMidgieRepellentImmune(this.isHolding('midgie_repellent'));
+  }
+
+  /**
+   * cairn_stone — heather kill spawns a pickup-magnet gem once per 5s.
+   * Returns true iff the caller should fire the side effect now.
+   */
+  tryCairnStoneHeatherKill(nowMs: number): boolean {
+    if (!this.isHolding('cairn_stone')) return false;
+    const r = resolveCairnStoneOnHeatherKill(nowMs, this.cairnStoneState);
+    this.cairnStoneState = r.state;
+    return r.spawn;
+  }
+
+  /** fingals_horn — one-shot summon; available iff held + unused. */
+  isFingalsHornAvailable(): boolean {
+    return this.isHolding('fingals_horn') && !this.fingalsHornState.used;
+  }
+
+  activateFingalsHorn(): FingalsHornActivationResult {
+    if (!this.isHolding('fingals_horn')) {
+      return { fired: false, summonCount: 0, durationMs: 0 };
+    }
+    const result = activateFingalsHorn(this.fingalsHornState);
+    this.fingalsHornState = result.state;
+    return {
+      fired: result.fired,
+      summonCount: FINGALS_HORN_SUMMON_COUNT,
+      durationMs: FINGALS_HORN_SUMMON_DURATION_MS,
+    };
+  }
+
   /** Reset every per-run scratch state — called on scene restart. */
   reset(): void {
     this.bronzeClaspState = initialBronzeClaspState;
     this.whiskyDramState = initialWhiskyDramState;
+    this.cairnStoneState = initialCairnStoneState;
+    this.clootieRagState = initialClootieRagState;
+    this.fingalsHornState = initialFingalsHornState;
+    this.gransTeapotState = initialGransTeapotState;
   }
 }

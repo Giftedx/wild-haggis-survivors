@@ -129,3 +129,235 @@ export function applyWhiskyDramActivation(
   const healed = Math.min(maxHp, currentHp + maxHp * 0.2);
   return { hp: healed, state: { used: true } };
 }
+
+// ─────────────────────────────────────────────────────────────────
+// Uncommon + Rare pure effects (R1 M4).
+//
+// Authored together so the pure-fn library is complete at M4 ship.
+// Wire-site plumbing for each lives in GameScene / driver / hook;
+// complex ones (cairn_stone heather detection, bodhran_skin beat
+// alignment, fingals_horn spawn) stay behind their wire sites so
+// the pure layer tests without Phaser.
+// ─────────────────────────────────────────────────────────────────
+
+/**
+ * cairn_stone — enemies killed on heather spawn a pickup-magnet gem,
+ * once per 5s. Stateful (threads last-spawn timestamp). Returns
+ * `{ spawn: boolean, state }` — caller uses `spawn` to decide whether
+ * to fire the side effect.
+ */
+export interface CairnStoneState {
+  readonly lastSpawnMs: number;
+}
+
+export const initialCairnStoneState: CairnStoneState = Object.freeze({
+  lastSpawnMs: Number.NEGATIVE_INFINITY,
+});
+
+export interface CairnStoneResult {
+  readonly spawn: boolean;
+  readonly state: CairnStoneState;
+}
+
+export const CAIRN_STONE_COOLDOWN_MS = 5000;
+
+export function resolveCairnStoneOnHeatherKill(
+  now: number,
+  state: CairnStoneState,
+): CairnStoneResult {
+  const ready = now - state.lastSpawnMs >= CAIRN_STONE_COOLDOWN_MS;
+  return {
+    spawn: ready,
+    state: ready ? { lastSpawnMs: now } : state,
+  };
+}
+
+/**
+ * highland_torque — +100% damage to elites; elite spawn rate +20%.
+ * Two pure helpers; each call-site composes with its existing
+ * multiplier stack.
+ */
+export const HIGHLAND_TORQUE_ELITE_DAMAGE_MULT = 2.0;
+export const HIGHLAND_TORQUE_ELITE_SPAWN_MULT = 1.2;
+
+export function applyHighlandTorqueEliteDamage(baseDamage: number): number {
+  return baseDamage * HIGHLAND_TORQUE_ELITE_DAMAGE_MULT;
+}
+
+export function applyHighlandTorqueEliteSpawnRate(baseChance: number): number {
+  return Math.min(1, baseChance * HIGHLAND_TORQUE_ELITE_SPAWN_MULT);
+}
+
+/**
+ * bodhran_skin — +20% damage on hits landed within ±80ms of a
+ * quarter-note beat. Beat phase comes from the music engine;
+ * distance is the minimum of |elapsed| and |period - elapsed|.
+ */
+export const BODHRAN_SKIN_ON_BEAT_WINDOW_MS = 80;
+export const BODHRAN_SKIN_ON_BEAT_DAMAGE_BONUS = 0.2;
+
+export function applyBodhranSkinBeatDamage(
+  baseDamage: number,
+  msSinceLastBeat: number,
+  beatPeriodMs: number,
+): number {
+  if (!Number.isFinite(msSinceLastBeat) || !Number.isFinite(beatPeriodMs) || beatPeriodMs <= 0) {
+    return baseDamage;
+  }
+  const wrapped = ((msSinceLastBeat % beatPeriodMs) + beatPeriodMs) % beatPeriodMs;
+  const distance = Math.min(wrapped, beatPeriodMs - wrapped);
+  if (distance <= BODHRAN_SKIN_ON_BEAT_WINDOW_MS) {
+    return baseDamage * (1 + BODHRAN_SKIN_ON_BEAT_DAMAGE_BONUS);
+  }
+  return baseDamage;
+}
+
+/**
+ * clootie_rag — lifesteal doubled for 5s after the haggis takes
+ * damage. State threads the last-hurt timestamp; caller consults
+ * `isDoubleLifestealActive(now, state)` each heal.
+ */
+export interface ClootieRagState {
+  readonly lastDamagedMs: number;
+}
+
+export const initialClootieRagState: ClootieRagState = Object.freeze({
+  lastDamagedMs: Number.NEGATIVE_INFINITY,
+});
+
+export const CLOOTIE_RAG_WINDOW_MS = 5000;
+
+export function noteClootieRagDamageTaken(
+  now: number,
+  _state: ClootieRagState,
+): ClootieRagState {
+  return { lastDamagedMs: now };
+}
+
+export function isClootieRagDoubleActive(now: number, state: ClootieRagState): boolean {
+  return now - state.lastDamagedMs <= CLOOTIE_RAG_WINDOW_MS;
+}
+
+export function applyClootieRagLifesteal(
+  baseLifesteal: number,
+  now: number,
+  state: ClootieRagState,
+): number {
+  return isClootieRagDoubleActive(now, state) ? baseLifesteal * 2 : baseLifesteal;
+}
+
+/**
+ * fishermens_net — enemies moving *away* from the player take +30%
+ * damage. Input is the dot product of (enemy velocity) · (playerPos
+ * − enemyPos). Dot > 0 means the enemy is moving toward the player;
+ * < 0 means away. Zero-velocity enemies are "neither" — baseline.
+ */
+export const FISHERMENS_NET_AWAY_BONUS = 0.3;
+
+export function applyFishermensNetDamage(baseDamage: number, velocityDotTowardPlayer: number): number {
+  return velocityDotTowardPlayer < 0
+    ? baseDamage * (1 + FISHERMENS_NET_AWAY_BONUS)
+    : baseDamage;
+}
+
+/**
+ * midgie_repellent — immune to midge-swarm stacking damage. Immunity
+ * is a pure boolean; the consumer gates its stacking damage path.
+ * Kept as a helper so the "held → immune" check travels with the
+ * rest of the pure layer.
+ */
+export function isMidgieRepellentImmune(held: boolean): boolean {
+  return held === true;
+}
+
+/**
+ * grans_teapot — after 5s without taking damage, heal 5% max HP per
+ * second. Stateful: threads (time since last damage) + (fractional HP
+ * accumulator for sub-1-HP ticks). Returns integer HP to add this
+ * frame (0 if not yet eligible, or fractional carry).
+ */
+export interface GransTeapotState {
+  readonly msSinceDamage: number;
+  readonly healCarry: number;
+}
+
+export const initialGransTeapotState: GransTeapotState = Object.freeze({
+  msSinceDamage: 0,
+  healCarry: 0,
+});
+
+export const GRANS_TEAPOT_DAMAGE_FREE_MS = 5000;
+export const GRANS_TEAPOT_HEAL_FRAC_PER_SEC = 0.05;
+
+export interface GransTeapotTickResult {
+  readonly healHp: number;
+  readonly state: GransTeapotState;
+}
+
+export function tickGransTeapot(
+  deltaMs: number,
+  maxHp: number,
+  state: GransTeapotState,
+): GransTeapotTickResult {
+  const safeDelta = Math.max(0, deltaMs);
+  const nextMs = state.msSinceDamage + safeDelta;
+  if (nextMs < GRANS_TEAPOT_DAMAGE_FREE_MS) {
+    return { healHp: 0, state: { msSinceDamage: nextMs, healCarry: state.healCarry } };
+  }
+  // Only the ms past the 5s threshold count toward the heal tick; a
+  // transition frame that partially crosses heals for the post-window
+  // slice only, not the full delta.
+  const eligibleMs = Math.min(safeDelta, nextMs - GRANS_TEAPOT_DAMAGE_FREE_MS);
+  const healPerMs = (maxHp * GRANS_TEAPOT_HEAL_FRAC_PER_SEC) / 1000;
+  const heal = state.healCarry + healPerMs * eligibleMs;
+  const whole = Math.floor(heal);
+  return {
+    healHp: whole,
+    state: { msSinceDamage: nextMs, healCarry: heal - whole },
+  };
+}
+
+export function noteGransTeapotDamageTaken(_state: GransTeapotState): GransTeapotState {
+  return { msSinceDamage: 0, healCarry: 0 };
+}
+
+/**
+ * stone_of_destiny_shard — +50% XP from all sources; boss HP +15%.
+ * Two pure helpers; each call-site composes with its existing stack.
+ */
+export const STONE_OF_DESTINY_XP_MULT = 1.5;
+export const STONE_OF_DESTINY_BOSS_HP_MULT = 1.15;
+
+export function applyStoneOfDestinyXp(baseXp: number): number {
+  return baseXp * STONE_OF_DESTINY_XP_MULT;
+}
+
+export function applyStoneOfDestinyBossHp(baseHp: number): number {
+  return baseHp * STONE_OF_DESTINY_BOSS_HP_MULT;
+}
+
+/**
+ * fingals_horn — once per run, summon 3 Fianna warriors for 10s.
+ * Pure layer owns the one-shot flag; summoning side effect lives in
+ * the wire. Same shape as whisky_dram.
+ */
+export interface FingalsHornState {
+  readonly used: boolean;
+}
+
+export const initialFingalsHornState: FingalsHornState = Object.freeze({
+  used: false,
+});
+
+export const FINGALS_HORN_SUMMON_DURATION_MS = 10_000;
+export const FINGALS_HORN_SUMMON_COUNT = 3;
+
+export interface FingalsHornResult {
+  readonly fired: boolean;
+  readonly state: FingalsHornState;
+}
+
+export function activateFingalsHorn(state: FingalsHornState): FingalsHornResult {
+  if (state.used) return { fired: false, state };
+  return { fired: true, state: { used: true } };
+}
