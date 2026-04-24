@@ -21,10 +21,14 @@ const NON_CLASSIC_VARIANTS = VARIANTS.filter((v) => v.key !== 'classic');
 // Glesga / Highland / Scottish register markers. A non-classic variant's
 // name+flavor must hit at least one — guards against accidental English-
 // RP drift (e.g. "one's estate, quite", which Laird nearly shipped with).
+// V2 extends with Doric markers (quinie, min, haar, een) so Northeast
+// dialect copy has its own authenticated vocabulary to draw from.
 const SCOTS_MARKERS = [
   'aye', 'ye', 'wee', 'tae', 'braw', 'oot', 'nae',
   'laird', 'tartan', 'moor', 'glen', 'heather', 'ghostie',
   'hoof', 'croft', 'loch',
+  // Doric (V2 Track 1)
+  'quinie', 'min', 'haar', 'een',
 ];
 
 describe('every non-classic variant is fully wired', () => {

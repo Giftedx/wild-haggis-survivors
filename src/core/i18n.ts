@@ -923,6 +923,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Widdershins or no, ma ribs felt that.',
           d: 'Gie\'s a tick — ma balance is back-tae-front.',
         },
+        doric_quinie: {
+          a: 'Sair dunt, min. Haud on noo.',
+          b: 'Bowfin, thon. Keep movin.',
+          c: 'Doon tae the bone, quinie. Grit teeth.',
+          d: 'Ma breest\'s sore. Onwards.',
+        },
       },
       boss_down: {
         a: 'Away in a box. Pure textbook.',
@@ -1116,6 +1122,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Ma legs found the pattern.',
           d: 'The glen keeps its ain time. So dae I.',
         },
+        doric_quinie: {
+          a: 'Braw, thon. Fit\'s next, min?',
+          b: 'Aye — the glen learns ye.',
+          c: 'Stronger the day. Fit we work for.',
+          d: 'Fit like, a level up. Braw.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1181,6 +1193,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Caught that wan comin\' the other way.',
           c: 'Ma drift met its match.',
           d: 'Widdershins means forward — so it does.',
+        },
+        doric_quinie: {
+          a: 'First doon, min. Aye.',
+          b: 'Fit like, pal? Tae the bottom wi ye.',
+          c: 'That\'s thon settled, quinie.',
+          d: 'Caught wan — same as ma grandfaither wid.',
         },
       },
       kill_streak: {
@@ -1249,6 +1267,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Left, left, left — aye, the left\'s havin\' it.',
           d: 'The whole glen\'s spinnin\' backwards the noo.',
         },
+        doric_quinie: {
+          a: 'Aye, min, they\'re droppin.',
+          b: 'Jist like haulin nets — pull steady.',
+          c: 'Thon\'s a braw count. Keep an een on the line.',
+          d: 'Fishin\'s fine the day, quinie.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
@@ -1314,6 +1338,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Feet back under me. All four pointin\' left.',
           c: 'Ma heart kent the turn.',
           d: 'Back tae it, widdershins an\' all.',
+        },
+        doric_quinie: {
+          a: 'Back tae the hale o\' it. Braw.',
+          b: 'Hale again. Fit a relief, eh.',
+          c: 'Ken ma legs again. Aye.',
+          d: 'Fisher-family constitution, thon.',
         },
       },
       biome_change: {
@@ -1563,6 +1593,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'World\'s quiet when yer no\' fightin\' the turn.',
           c: 'Pause — ma drift still dreams of the left.',
           d: 'Widdershins stops for nae yin. Least of all me.',
+        },
+        doric_quinie: {
+          a: 'Fit like, min. Naethin doon the road yet.',
+          b: 'Quate spell. I\'ll tak it.',
+          c: 'Nae trouble, nae troth. Aye.',
+          d: 'Hear yon wind? Smells o\' haar.',
         },
       },
       // W2 Moor Road.
@@ -2359,6 +2395,10 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Widdershins Haggis',
       flavor: 'The other subspecies, from the glens where the hills lean left. Drift turns the wrong way — or the right way, dependin\' who ye ask.',
     },
+    doric_quinie: {
+      name: 'Doric Quinie',
+      flavor: 'Nor\'-east fisher-family wee beastie. Granite constitution, quick een, a heid for the haar. Fit like, min?',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -2379,6 +2419,7 @@ export const EN_STRINGS: LocaleTree = {
       total_gold: 'Gold banked',
       victories: 'Victories',
       cursed_victories: 'Cursed wins',
+      runs_without_healing: 'No-heal runs',
       ready: 'Ye earned this one',
     },
   },

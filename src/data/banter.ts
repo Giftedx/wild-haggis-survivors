@@ -190,6 +190,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.anticlockwise.c',
         'ui.banter.low_hp.anticlockwise.d',
       ],
+      doric_quinie: [
+        'ui.banter.low_hp.doric_quinie.a',
+        'ui.banter.low_hp.doric_quinie.b',
+        'ui.banter.low_hp.doric_quinie.c',
+        'ui.banter.low_hp.doric_quinie.d',
+      ],
     },
   },
   {
@@ -408,6 +414,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.anticlockwise.c',
         'ui.banter.level_up.anticlockwise.d',
       ],
+      doric_quinie: [
+        'ui.banter.level_up.doric_quinie.a',
+        'ui.banter.level_up.doric_quinie.b',
+        'ui.banter.level_up.doric_quinie.c',
+        'ui.banter.level_up.doric_quinie.d',
+      ],
     },
   },
   {
@@ -480,6 +492,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.anticlockwise.b',
         'ui.banter.first_blood.anticlockwise.c',
         'ui.banter.first_blood.anticlockwise.d',
+      ],
+      doric_quinie: [
+        'ui.banter.first_blood.doric_quinie.a',
+        'ui.banter.first_blood.doric_quinie.b',
+        'ui.banter.first_blood.doric_quinie.c',
+        'ui.banter.first_blood.doric_quinie.d',
       ],
     },
   },
@@ -555,6 +573,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.anticlockwise.c',
         'ui.banter.kill_streak.anticlockwise.d',
       ],
+      doric_quinie: [
+        'ui.banter.kill_streak.doric_quinie.a',
+        'ui.banter.kill_streak.doric_quinie.b',
+        'ui.banter.kill_streak.doric_quinie.c',
+        'ui.banter.kill_streak.doric_quinie.d',
+      ],
     },
   },
   {
@@ -627,6 +651,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.anticlockwise.b',
         'ui.banter.recover.anticlockwise.c',
         'ui.banter.recover.anticlockwise.d',
+      ],
+      doric_quinie: [
+        'ui.banter.recover.doric_quinie.a',
+        'ui.banter.recover.doric_quinie.b',
+        'ui.banter.recover.doric_quinie.c',
+        'ui.banter.recover.doric_quinie.d',
       ],
     },
   },
@@ -842,6 +872,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.anticlockwise.b',
         'ui.banter.idle.anticlockwise.c',
         'ui.banter.idle.anticlockwise.d',
+      ],
+      doric_quinie: [
+        'ui.banter.idle.doric_quinie.a',
+        'ui.banter.idle.doric_quinie.b',
+        'ui.banter.idle.doric_quinie.c',
+        'ui.banter.idle.doric_quinie.d',
       ],
     },
   },

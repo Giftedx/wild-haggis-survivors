@@ -33,6 +33,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   glaswegian:   { field: 0xff5a00, fieldDark: 0x8a2a00, stripe: 0x1a2028, accent: 0xffaa44 },
   cailleach:    { field: 0x2a4a2a, fieldDark: 0x1a2f1a, stripe: 0x8a2828, accent: 0xd4d0c0 },
   anticlockwise:{ field: 0x5a4e44, fieldDark: 0x2a2420, stripe: 0x7d6f62, accent: 0xc0d4d8 },
+  // V2 Track 1 — Doric Quinie. Aberdonian granite field, North Sea
+  // silver-blue stripe, aged-gold accent (mainline palette anchor).
+  doric_quinie: { field: 0x4a5a6a, fieldDark: 0x2a3a4a, stripe: 0xd0d4e0, accent: 0xc8a040 },
 };
 
 /**

@@ -1,10 +1,21 @@
 # V2 — Haggis Variants Pack (+3 new variants) implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** Draft. Track 1 (Doric Quinie) in-flight 2026-04-24.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
+>
+> **⚠ STALE-NOTICE (2026-04-24):** Plan was written assuming roster 10 + a set of infra that didn't ship. Reality deltas before execution:
+> - Roster is **11** pre-V2 (classic, moor_runner, iron_belly, glen_forager, surefoot, pipe_breath, wee_ghostie, laird, glaswegian, anticlockwise, cailleach). Goal is **11 → 14**, not 10 → 13.
+> - `src/art/sprites/variants/` directory does **not** exist. Cailleach precedent is **inline** in `variants.ts::VARIANTS` (body+accent palette on the VariantDef) plus an `accentStyle` rendered by BootScene. No separate palette module per variant. Track tasks drop the "create `{key}Palette.ts`" step and author palette inline.
+> - `VariantDef.startWithPassives` field does **not** exist. The Doric "Arbroath Smokie" and Peerie "Up Helly Aa" starter-passive flavour is absorbed into existing `VariantModifier` scalars (xpMultiplierPct for Arbroath, damage/speed for Up Helly Aa). Creating the field is a follow-up initiative, not V2 scope.
+> - `VariantModifier` has no `critChancePct`, `coldHazardResistPct`, or `spriteScale`. Doric stats fit existing fields. Peerie cold-resist and Burns sprite-scale need new fields — add them with their variant (not up-front).
+> - `HaggisAccentStyle` is an enum rendered by BootScene; new accent styles need BootScene wiring. Doric ships with `accentStyle: 'none'` to keep the Doric commit self-contained; dedicated accent art is a follow-up task per variant.
+> - `variantWireUp.test.ts` is **dynamic** (iterates VARIANTS array). Adding a variant that meets the shape auto-passes. No hardcoded "11-variant" / "12-variant" / "13-variant" assertions to bump.
+> - Unlock-condition types `runs_with_no_healing`, `runs_in_coastal_only`, `burns_nights_with_evolutions` do not exist yet — each track adds its own condition type to `VariantUnlockCondition`, save schema field, migration, retroactive seed, and deed.
+>
+> Follow-ups written during execution go in `docs/superpowers/plans/2026-04-24-v2-variants-followups.md` (created when first needed).
 
-**Goal:** Ship 3 new playable haggis variants per `docs/superpowers/specs/2026-04-23-haggis-variants-pack-design.md`: **Doric Quinie** (Northeast voice), **Peerie Shetlander** (Norn-tinged), **Burns's Wee Beastie** (Burns citational, smaller sprite). Roster goes 10 → 13 and pauses for review.
+**Goal:** Ship 3 new playable haggis variants per `docs/superpowers/specs/2026-04-23-haggis-variants-pack-design.md`: **Doric Quinie** (Northeast voice), **Peerie Shetlander** (Norn-tinged), **Burns's Wee Beastie** (Burns citational, smaller sprite). Roster goes 11 → 14 and pauses for review.
 
 **Architecture:** Each variant follows the shipped Cailleach precedent (`docs/superpowers/specs/2026-04-22-variant-cailleach-design.md`) — palette module + `VariantDef` data + kiltPalette entry + 24 EN/SCS banter keys + unlock deed. Three parallel variant tracks; one sprint per variant.
 

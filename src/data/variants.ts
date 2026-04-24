@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -27,7 +27,11 @@ export type VariantUnlockCondition =
   | { type: 'best_kills'; required: number }
   | { type: 'total_gold_earned'; required: number }
   | { type: 'victories'; required: number }
-  | { type: 'cursed_victories'; required: number };
+  | { type: 'cursed_victories'; required: number }
+  // V2 Track 1 — Doric Quinie unlock: "survive on what you caught yesterday".
+  // Counter increments on victory when the run never overlapped a healing
+  // circle. Wired in `applyRunSummary` via `RunHistoryContext.enteredHealingCircle`.
+  | { type: 'runs_without_healing'; required: number };
 
 export interface HaggisPalette {
   outline: number;
@@ -63,6 +67,11 @@ export interface VariantProgressSnapshot {
   totalGoldEarned: number;
   victories: number;
   cursedVictories?: number;
+  /**
+   * V2 Track 1 — lifetime count of victories completed without ever
+   * overlapping a healing circle. Unlocks the Doric Quinie at 1.
+   */
+  runsWithoutHealing?: number;
   unlockedVariants?: readonly VariantKey[];
 }
 
@@ -306,6 +315,39 @@ export const VARIANTS: VariantDef[] = [
       },
     },
   },
+  {
+    // V2 Track 1 — Doric Quinie. Aberdeenshire fisher-family stoic.
+    // Stats per spec §2 with `startWithPassives` absorbed into
+    // xpMultiplierPct (Arbroath Smokie starter flavour: +5% XP from
+    // pickups). pickupRadiusFlat = +10 approximates spec's "+15%".
+    // Accent art deferred — ships with `accentStyle: 'none'` and
+    // inline palette (granite body, silver-blue accent). Unlock:
+    // first run completed without ever overlapping a healing circle
+    // ("survive on what you caught yesterday").
+    key: 'doric_quinie',
+    nameKey: 'variant.doric_quinie.name',
+    flavorKey: 'variant.doric_quinie.flavor',
+    textureKey: 'haggis_doric_quinie',
+    modifiers: {
+      moveSpeedPct: -0.05,
+      maxHpFlat: 8,
+      pickupRadiusFlat: 10,
+      damagePct: 0.05,
+      xpMultiplierPct: 0.05,
+    },
+    unlock: { type: 'runs_without_healing', required: 1 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        outline: 0x2a2418,
+        bodyDark: 0x4a4030,
+        bodyLight: 0x6a5a3a,
+        fur: 0x8a7850,
+        snout: 0xc8a580,
+        accent: 0xd0d4e0,
+      },
+    },
+  },
 ];
 
 export const VARIANT_KEYS = VARIANTS.map((variant) => variant.key) as VariantKey[];
@@ -351,6 +393,8 @@ export function meetsVariantUnlockCondition(
       return progress.victories >= variant.unlock.required;
     case 'cursed_victories':
       return (progress.cursedVictories ?? 0) >= variant.unlock.required;
+    case 'runs_without_healing':
+      return (progress.runsWithoutHealing ?? 0) >= variant.unlock.required;
   }
 }
 
@@ -405,6 +449,16 @@ export function getVariantUnlockProgress(
         cv,
         variant.unlock.required,
         `${cv}`,
+        `${variant.unlock.required}`
+      );
+    }
+    case 'runs_without_healing': {
+      const rh = progress.runsWithoutHealing ?? 0;
+      return createUnlockProgress(
+        t('variant.unlock.runs_without_healing'),
+        rh,
+        variant.unlock.required,
+        `${rh}`,
         `${variant.unlock.required}`
       );
     }

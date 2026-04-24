@@ -686,6 +686,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Widdershins or no, ma ribs felt that.',
           d: 'Gie\'s a tick — ma balance is back-tae-front.',
         },
+        doric_quinie: {
+          a: 'Sair dunt, min. Haud oan noo.',
+          b: 'Bowfin, thon. Keep movin.',
+          c: 'Doon tae tha bane, quinie. Grit teeth.',
+          d: 'Ma breest\'s sore. Onwairds.',
+        },
       },
       boss_down: {
         a: 'Awa in a box. Pure textbook.',
@@ -877,6 +883,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Ma legs fund tha pattern.',
           d: 'Tha glen keeps its ain time. Sae dae I.',
         },
+        doric_quinie: {
+          a: 'Braw, thon. Fit\'s neist, min?',
+          b: 'Aye — tha glen learns ye.',
+          c: 'Stranger tha day. Fit we wark fer.',
+          d: 'Fit like, a level up. Braw.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -942,6 +954,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Cuiched that wan comin tha ither way.',
           c: 'Ma drift met its match.',
           d: 'Widdershins means forrit — sae it daes.',
+        },
+        doric_quinie: {
+          a: 'First doon, min. Aye.',
+          b: 'Fit like, pal? Tae tha bottom wi ye.',
+          c: 'That\'s thon sortit, quinie.',
+          d: 'Caucht wan — same as ma grandfaither wid.',
         },
       },
       kill_streak: {
@@ -1010,6 +1028,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Left, left, left — aye, tha left\'s haein it.',
           d: 'Tha hale glen\'s spinnin backwards tha noo.',
         },
+        doric_quinie: {
+          a: 'Aye, min, thae\'re drappin.',
+          b: 'Jist like haulin nets — pull steady.',
+          c: 'Thon\'s a braw coont. Keep an een on tha line.',
+          d: 'Fishin\'s fine tha day, quinie.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
@@ -1075,6 +1099,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Feet back unner me. Aw fower pointin left.',
           c: 'Ma hert kent tha turn.',
           d: 'Back tae it, widdershins an aw.',
+        },
+        doric_quinie: {
+          a: 'Back tae tha hale o it. Braw.',
+          b: 'Hale again. Fit a relief, eh.',
+          c: 'Ken ma legs again. Aye.',
+          d: 'Fisher-faimly constitution, thon.',
         },
       },
       biome_change: {
@@ -1319,6 +1349,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Warld\'s quait whan yer no fichtin tha turn.',
           c: 'Pause — ma drift still dreams o tha left.',
           d: 'Widdershins staps fer nae yin. Least o aw me.',
+        },
+        doric_quinie: {
+          a: 'Fit like, min. Naethin doon tha road yet.',
+          b: 'Quate spell. I\'ll tak it.',
+          c: 'Nae trouble, nae troth. Aye.',
+          d: 'Hear yon wind? Smells o haar.',
         },
       },
       act_intermission_enter: {
@@ -2063,6 +2099,10 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Widdershins Haggis',
       flavor: 'Tha ither subspecies, fae tha glens whaur tha hills lean left. Drift turns tha wrang way — or tha richt way, dependin wha ye ask.',
     },
+    doric_quinie: {
+      name: 'Doric Quinie',
+      flavor: 'Nor\'-east fisher-faimly wee beastie. Granite constitution, quick een, a heid fer tha haar. Fit like, min?',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -2081,6 +2121,7 @@ export const SCS_STRINGS: LocaleTree = {
       total_gold: 'Gold banked',
       victories: 'Wins',
       cursed_victories: 'Cursed wins',
+      runs_without_healing: 'Nae-heal runs',
       ready: 'Ye earned this wan',
     },
   },
