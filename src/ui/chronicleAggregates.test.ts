@@ -61,6 +61,7 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     victories: 0,
     cursedVictoriesCompleted: 0,
     runsWithoutHealingCircleCompleted: 0,
+    runsInCoastalOnlyCompleted: 0,
     runHistory: [],
     seenEnemies: [],
     firstTimeEventsFired: [],

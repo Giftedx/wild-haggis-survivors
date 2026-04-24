@@ -47,7 +47,7 @@ function buildMocks(overrides: {
 
 describe('RunHistoryRecorder', () => {
   describe('buildContext', () => {
-    it('includes level, boss kills, variant, weapon keys, runSeed, and healing-circle flag', () => {
+    it('includes level, boss kills, variant, weapon keys, runSeed, healing-circle flag, and biomesVisited', () => {
       const { hooks } = buildMocks();
       const ctx = new RunHistoryRecorder(hooks).buildContext();
       expect(ctx).toEqual({
@@ -58,6 +58,8 @@ describe('RunHistoryRecorder', () => {
         weaponKeys: ['thistle_shot', 'claymore'],
         // V2 T1 — default true (hook absent = "assume player used healing").
         enteredHealingCircle: true,
+        // V2 T2 — default empty (hook absent = "no biomes recorded").
+        biomesVisited: [],
       });
     });
 
@@ -73,6 +75,22 @@ describe('RunHistoryRecorder', () => {
       const withHook = { ...hooks, getEnteredHealingCircle: () => true };
       const ctx = new RunHistoryRecorder(withHook).buildContext();
       expect(ctx.enteredHealingCircle).toBe(true);
+    });
+
+    it('V2 T2 — biomesVisited empty when hook is absent', () => {
+      const { hooks } = buildMocks();
+      const ctx = new RunHistoryRecorder(hooks).buildContext();
+      expect(ctx.biomesVisited).toEqual([]);
+    });
+
+    it('V2 T2 — biomesVisited snapshot matches hook output', () => {
+      const { hooks } = buildMocks();
+      const biomes = ['loch', 'pine'];
+      const withHook = { ...hooks, getBiomesVisited: () => biomes };
+      const ctx = new RunHistoryRecorder(withHook).buildContext();
+      expect(ctx.biomesVisited).toEqual(['loch', 'pine']);
+      // Snapshot — mutating the source must not poison the context.
+      expect(ctx.biomesVisited).not.toBe(biomes);
     });
 
     it('includes curseKey only when present', () => {

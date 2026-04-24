@@ -267,7 +267,8 @@ export type AchievementId =
   | 'ach_cursed_victor'
   | 'ach_combo_100'
   | 'ach_cailleach_unlock'
-  | 'ach_doric_unlock';
+  | 'ach_doric_unlock'
+  | 'ach_peerie_unlock';
 
 export const ACHIEVEMENT_DEFS: Record<
   AchievementId,
@@ -379,6 +380,10 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_doric_unlock: {
     titleKey: 'achievement.ach_doric_unlock.title',
     descriptionKey: 'achievement.ach_doric_unlock.description',
+  },
+  ach_peerie_unlock: {
+    titleKey: 'achievement.ach_peerie_unlock.title',
+    descriptionKey: 'achievement.ach_peerie_unlock.description',
   },
 };
 

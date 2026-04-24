@@ -187,6 +187,8 @@ export interface DeedStatsSnapshot {
   cursedVictoriesCompleted: number;
   /** Gameplay save: no-heal victorious runs — feeds ach_doric_unlock (V2 T1). */
   runsWithoutHealingCircleCompleted: number;
+  /** Gameplay save: coastal-only victorious runs — feeds ach_peerie_unlock (V2 T2). */
+  runsInCoastalOnlyCompleted: number;
 }
 
 /** Stable display order — progression-oriented, easiest→hardest-ish. */
@@ -217,6 +219,7 @@ export const DEED_DISPLAY_ORDER: AchievementId[] = [
   'ach_cursed_victor',
   'ach_cailleach_unlock',
   'ach_doric_unlock',
+  'ach_peerie_unlock',
 ];
 
 /** Threshold-deed definitions — id → target (integer). */
@@ -235,6 +238,8 @@ const THRESHOLD_TARGETS: Partial<Record<AchievementId, { target: number; readCur
   ach_cailleach_unlock: { target: 3, readCurrent: (s) => s.cursedVictoriesCompleted },
   // 1 matches VariantDef doric_quinie unlock.required (V2 T1)
   ach_doric_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsWithoutHealingCircleCompleted) },
+  // 1 matches VariantDef peerie_shetlander unlock.required (V2 T2)
+  ach_peerie_unlock: { target: 1, readCurrent: (s) => Math.min(1, s.runsInCoastalOnlyCompleted) },
 };
 
 /** Deeds without any persisted progress proxy — UI treats them as binary. */

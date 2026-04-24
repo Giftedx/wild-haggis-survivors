@@ -24,6 +24,7 @@ import {
   computeGoldReward,
   createDefaultSave,
   evaluateVariantUnlocks,
+  isCoastalOnlyRun,
   loadSave,
   migrateSave,
   writeSave,
@@ -366,8 +367,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 10', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(10);
+  it('SAVE_SCHEMA_VERSION is 11', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(11);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1152,6 +1153,110 @@ describe('V2 T1 — runsWithoutHealingCircleCompleted (Doric Quinie unlock)', ()
       { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
     );
     expect(result.save.runsWithoutHealingCircleCompleted).toBe(0);
+  });
+});
+
+describe('V2 T2 — isCoastalOnlyRun (pure helper)', () => {
+  it('returns false when the run was not a victory', () => {
+    expect(isCoastalOnlyRun(false, ['loch', 'pine'])).toBe(false);
+  });
+
+  it('returns false when biomesVisited is undefined', () => {
+    expect(isCoastalOnlyRun(true, undefined)).toBe(false);
+  });
+
+  it('returns false when biomesVisited is empty (treated as "nothing visited")', () => {
+    expect(isCoastalOnlyRun(true, [])).toBe(false);
+  });
+
+  it('returns true when biomes visited are exactly {loch}', () => {
+    expect(isCoastalOnlyRun(true, ['loch'])).toBe(true);
+  });
+
+  it('returns true when biomes visited are exactly {pine}', () => {
+    expect(isCoastalOnlyRun(true, ['pine'])).toBe(true);
+  });
+
+  it('returns true when biomes visited are {loch, pine}', () => {
+    expect(isCoastalOnlyRun(true, ['loch', 'pine'])).toBe(true);
+  });
+
+  it('returns false when any "moor" biome (bog or heather) is in the set', () => {
+    expect(isCoastalOnlyRun(true, ['loch', 'bog'])).toBe(false);
+    expect(isCoastalOnlyRun(true, ['pine', 'heather'])).toBe(false);
+    expect(isCoastalOnlyRun(true, ['loch', 'pine', 'heather'])).toBe(false);
+  });
+
+  it('returns false for any unknown biome id', () => {
+    expect(isCoastalOnlyRun(true, ['loch', 'volcano'])).toBe(false);
+  });
+});
+
+describe('V2 T2 — runsInCoastalOnlyCompleted (Peerie Shetlander unlock)', () => {
+  it('defaults to 0 on fresh save', () => {
+    const loaded = migrateSave({});
+    expect(loaded.runsInCoastalOnlyCompleted).toBe(0);
+  });
+
+  it('preserves a saved counter value', () => {
+    const loaded = migrateSave({ runsInCoastalOnlyCompleted: 4 });
+    expect(loaded.runsInCoastalOnlyCompleted).toBe(4);
+  });
+
+  it('coerces invalid values to 0', () => {
+    const loaded = migrateSave({ runsInCoastalOnlyCompleted: 'nope' });
+    expect(loaded.runsInCoastalOnlyCompleted).toBe(0);
+  });
+
+  it('applyRunSummary increments on victory when biomesVisited ⊆ {loch, pine}', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], biomesVisited: ['loch', 'pine'] },
+    );
+    expect(result.save.runsInCoastalOnlyCompleted).toBe(1);
+  });
+
+  it('applyRunSummary does NOT increment when a moor biome (bog/heather) is visited', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], biomesVisited: ['loch', 'bog'] },
+    );
+    expect(result.save.runsInCoastalOnlyCompleted).toBe(0);
+  });
+
+  it('applyRunSummary does NOT increment on non-victory, even with coastal-only biomes', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
+      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [], biomesVisited: ['loch'] },
+    );
+    expect(result.save.runsInCoastalOnlyCompleted).toBe(0);
+  });
+
+  it('applyRunSummary unlocks peerie_shetlander at run-end when condition is first met', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], biomesVisited: ['loch'] },
+    );
+    expect(result.save.unlockedVariants).toContain('peerie_shetlander');
+    expect(result.newlyUnlockedVariants).toContain('peerie_shetlander');
+  });
+
+  it('context without biomesVisited defaults to safe path (no counter bump)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [] },
+    );
+    expect(result.save.runsInCoastalOnlyCompleted).toBe(0);
   });
 });
 

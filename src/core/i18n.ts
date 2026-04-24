@@ -2337,6 +2337,10 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Survive on What Ye Caught Yesterday',
       description: 'Won a run wi\'oot standin\' in a single healin\' circle. The Doric way.',
     },
+    ach_peerie_unlock: {
+      title: 'The Sea Way Home',
+      description: 'Won a run by coast an\' wood alone — voe and pine, no moor, no bog.',
+    },
   },
   tutorial: {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',

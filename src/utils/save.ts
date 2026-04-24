@@ -30,7 +30,31 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 10;
+export const SAVE_SCHEMA_VERSION = 11;
+
+/**
+ * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
+ * unlock. Subset of the four live biomes (see `src/data/biomes.ts`).
+ * `loch` = water; `pine` = forested island landscape (Scottish isles
+ * carry Scots pine where heather wouldn't thrive). Bog + heather are
+ * "moor" biomes and disqualify the run.
+ */
+export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
+
+/**
+ * Returns true when the run was victorious AND the player visited a
+ * non-empty set of biomes all drawn from `COASTAL_BIOMES`. Used by
+ * `applyRunSummary` to decide whether to bump the Peerie Shetlander
+ * lifetime counter. Pure — safe to call in tests.
+ */
+export function isCoastalOnlyRun(
+  victory: boolean,
+  biomesVisited: readonly string[] | undefined,
+): boolean {
+  if (!victory) return false;
+  if (!biomesVisited || biomesVisited.length === 0) return false;
+  return biomesVisited.every((id) => COASTAL_BIOMES.has(id));
+}
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -193,6 +217,15 @@ export interface SaveData {
    */
   runsWithoutHealingCircleCompleted: number;
 
+  /**
+   * V2 Track 2 — total victorious runs where biomes visited were a
+   * subset of {loch, pine} — the "coastal" biomes, never bog or
+   * heather (the "moor" biomes). Unlocks the Peerie Shetlander at 1.
+   * No retroactive seed possible (pre-v11 runs didn't persist per-run
+   * biomes-visited set). Fresh counter starts at 0 for all players.
+   */
+  runsInCoastalOnlyCompleted: number;
+
   /** Per-run history (capped at MAX_RUN_HISTORY, newest last). */
   runHistory: RunHistoryEntry[];
 
@@ -258,6 +291,14 @@ export interface RunHistoryContext {
    * variant. Not persisted per-run — only influences lifetime counter.
    */
   enteredHealingCircle?: boolean;
+  /**
+   * V2 Track 2 — the set of biome IDs the player entered during this
+   * run (non-empty on completed runs). When the run is victorious AND
+   * the set is a non-empty subset of `COASTAL_BIOMES` (loch + pine),
+   * `runsInCoastalOnlyCompleted` increments and the Peerie Shetlander
+   * unlocks. Not persisted per history entry.
+   */
+  biomesVisited?: readonly string[];
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
@@ -302,6 +343,7 @@ const DEFAULT_SAVE: SaveData = {
   bestIronmoorSeconds: 0,
   cursedVictoriesCompleted: 0,
   runsWithoutHealingCircleCompleted: 0,
+  runsInCoastalOnlyCompleted: 0,
   runHistory: [],
   seenEnemies: [],
   firstTimeEventsFired: [],
@@ -377,6 +419,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV8ToV9(raw));
     case 9:
       return finalizeSaveCandidate(migrateV9ToV10(raw));
+    case 10:
+      return finalizeSaveCandidate(migrateV10ToV11(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -460,6 +504,14 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
   const isNoHealVictory =
     normalizedSummary.victory && context?.enteredHealingCircle === false;
 
+  // V2 T2 — bumps when the player won AND only entered the coastal
+  // biomes (loch + pine). Missing / empty biomesVisited array defaults
+  // false so unwired callers never false-positive the Peerie unlock.
+  const isCoastalOnlyVictory = isCoastalOnlyRun(
+    normalizedSummary.victory,
+    context?.biomesVisited,
+  );
+
   const nextSave: SaveData = {
     ...baseSave,
     gold: baseSave.gold + goldEarned,
@@ -473,13 +525,15 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     cursedVictoriesCompleted: baseSave.cursedVictoriesCompleted + (isCursedVictory ? 1 : 0),
     runsWithoutHealingCircleCompleted:
       baseSave.runsWithoutHealingCircleCompleted + (isNoHealVictory ? 1 : 0),
+    runsInCoastalOnlyCompleted:
+      baseSave.runsInCoastalOnlyCompleted + (isCoastalOnlyVictory ? 1 : 0),
     runHistory: appendRunHistory(baseSave.runHistory, historyEntry),
   };
 
   // Build a snapshot whose field names match `VariantProgressSnapshot`
-  // (SaveData uses longer field names for cursedVictories / runsWithoutHealing,
-  // so structural typing without an explicit map would silently read `undefined`
-  // and fail cursed-victory + no-heal unlock resolutions at run-end).
+  // (SaveData uses longer field names for cursedVictories / runsWithoutHealing
+  // / runsInCoastalOnly, so structural typing without an explicit map would
+  // silently read `undefined` and fail those unlock resolutions at run-end).
   const runEndSnapshot: VariantProgressSnapshot = {
     bestTime: nextSave.bestTime,
     bestKills: nextSave.bestKills,
@@ -487,6 +541,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     victories: nextSave.victories,
     cursedVictories: nextSave.cursedVictoriesCompleted,
     runsWithoutHealing: nextSave.runsWithoutHealingCircleCompleted,
+    runsInCoastalOnly: nextSave.runsInCoastalOnlyCompleted,
     unlockedVariants: baseSave.unlockedVariants,
   };
   const unlockResult = evaluateVariantUnlocks(runEndSnapshot, baseSave.unlockedVariants);
@@ -588,6 +643,19 @@ function migrateV9ToV10(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v10 → v11 adds `runsInCoastalOnlyCompleted: number` (V2 Track 2,
+ * Peerie Shetlander unlock). Pure version bump — `finalizeSaveCandidate`
+ * coerces the missing field to 0 via `coerceInteger`. No retroactive
+ * seed possible (pre-v11 runs didn't persist per-run biomes-visited
+ * set). Per-run biome set is transient context on `RunHistoryContext`,
+ * not persisted per history entry — the lifetime counter is the only
+ * durable state needed.
+ */
+function migrateV10ToV11(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -628,6 +696,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     bestIronmoorSeconds: coerceInteger(candidate.bestIronmoorSeconds, 0),
     cursedVictoriesCompleted,
     runsWithoutHealingCircleCompleted: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
+    runsInCoastalOnlyCompleted: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
     ...(lastDeath ? { lastDeath } : {}),
     ...(stonesPicked ? { standingStonesPicked: stonesPicked } : {}),
     ...(reliquaryPicked ? { reliquaryCuriosPicked: reliquaryPicked } : {}),
@@ -693,6 +762,7 @@ function buildProgressSnapshot(
     victories: coerceInteger(candidate.victories, DEFAULT_SAVE.victories),
     cursedVictories: coerceInteger(candidate.cursedVictoriesCompleted, 0),
     runsWithoutHealing: coerceInteger(candidate.runsWithoutHealingCircleCompleted, 0),
+    runsInCoastalOnly: coerceInteger(candidate.runsInCoastalOnlyCompleted, 0),
     unlockedVariants,
   };
 }

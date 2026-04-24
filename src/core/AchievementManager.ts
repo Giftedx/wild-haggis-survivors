@@ -188,6 +188,18 @@ export class AchievementManager {
       if ((gameplay.runsWithoutHealingCircleCompleted ?? 0) >= (doricRequired?.required ?? 1)) {
         this.tryUnlock('ach_doric_unlock');
       }
+
+      // V2 Track 2 — ach_peerie_unlock. Won a run where visited biomes were
+      // a subset of {loch, pine} (coastal only — never bog, never heather).
+      // Counter written by applyRunSummary via
+      // `RunHistoryContext.biomesVisited`; threshold matches
+      // VariantDef.peerie_shetlander.unlock.required (currently 1).
+      const peerieRequired = VARIANTS.find((v) => v.key === 'peerie_shetlander')?.unlock as
+        | { type: 'runs_in_coastal_only'; required: number }
+        | undefined;
+      if ((gameplay.runsInCoastalOnlyCompleted ?? 0) >= (peerieRequired?.required ?? 1)) {
+        this.tryUnlock('ach_peerie_unlock');
+      }
     } catch {
       // best-effort — don't let a corrupt save block run-end flow.
     }

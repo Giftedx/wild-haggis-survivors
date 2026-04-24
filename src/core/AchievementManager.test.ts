@@ -394,6 +394,22 @@ describe('AchievementManager — gameplay-save-driven unlocks', () => {
     expect(save.load().unlockedAchievements).not.toContain('ach_doric_unlock');
   });
 
+  it('unlocks ach_peerie_unlock at 1 coastal-only victory (V2 T2)', () => {
+    seedGameplaySave({ runsInCoastalOnlyCompleted: 1 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).toContain('ach_peerie_unlock');
+  });
+
+  it('does NOT unlock ach_peerie_unlock at 0 coastal-only victories', () => {
+    seedGameplaySave({ runsInCoastalOnlyCompleted: 0 });
+    globalEventBus.emit('GLOBAL_RUN_ENDED', {
+      outcome: 'victory', gameTimeSec: 900, enemiesKilled: 250,
+    });
+    expect(save.load().unlockedAchievements).not.toContain('ach_peerie_unlock');
+  });
+
   it('unlocks ach_walk_every_road when route history covers all 6 routes', () => {
 const allRoutes = ROUTES.map((r, i) => ({
       slot: r.slot,

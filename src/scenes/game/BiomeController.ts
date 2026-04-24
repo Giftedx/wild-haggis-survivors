@@ -55,6 +55,16 @@ export class BiomeController {
     return this.manager.biomeAt(x, y);
   }
 
+  /**
+   * V2 Track 2 — the set of biome IDs the player has actually entered
+   * so far this run. Updated by `tick()` (same seam as the toast +
+   * modifier-push). Exposed for RunHistoryRecorder so the Peerie
+   * Shetlander coastal-only unlock can gate on the set.
+   */
+  getBiomesVisited(): BiomeId[] {
+    return Array.from(this.toasted);
+  }
+
   getManager(): BiomeManager {
     return this.manager;
   }

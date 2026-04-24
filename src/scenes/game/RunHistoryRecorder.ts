@@ -55,6 +55,13 @@ export interface RunHistoryHooks {
    * Optional so tests that don't exercise the path keep compiling.
    */
   getEnteredHealingCircle?(): boolean;
+  /**
+   * V2 Track 2 — snapshot of biome IDs the player entered this run.
+   * Passed through to `applyRunSummary` as `biomesVisited`; used to
+   * decide the Peerie Shetlander coastal-only unlock. Optional so
+   * tests that don't exercise the path keep compiling.
+   */
+  getBiomesVisited?(): readonly string[];
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -71,6 +78,7 @@ export class RunHistoryRecorder {
     const replay = h.getReplayBlob?.() ?? null;
     const name = h.getRunName?.();
     const enteredHealingCircle = h.getEnteredHealingCircle?.() ?? true;
+    const biomesVisited = h.getBiomesVisited?.() ?? [];
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -84,6 +92,7 @@ export class RunHistoryRecorder {
       ...(replay ? { replay } : {}),
       ...(name ? { name } : {}),
       enteredHealingCircle,
+      biomesVisited: [...biomesVisited],
     };
   }
 

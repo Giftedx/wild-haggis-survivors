@@ -2059,6 +2059,10 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Survive on Whit Ye Caucht Yesterday',
       description: 'Wan a run wi\'oot staunin in a single healin circle. Tha Doric way.',
     },
+    ach_peerie_unlock: {
+      title: 'Tha Sea Way Hame',
+      description: 'Wan a run by coast an wid alane — voe an pine, nae moor, nae bog.',
+    },
   },
   weapon: {
     thistle_shot: {
