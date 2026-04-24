@@ -59,6 +59,7 @@ export class CroftScene extends Phaser.Scene {
   private droveSlots: DroveSlot[] = [];
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
   private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
+  private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
   private trophyHits: Phaser.GameObjects.Rectangle[] = [];
   private granBubble: Phaser.GameObjects.Container | null = null;
   private granBubbleTimer: Phaser.Time.TimerEvent | null = null;
@@ -95,6 +96,8 @@ export class CroftScene extends Phaser.Scene {
     this.droveHits = [];
     this.seasonalPropsGfx?.destroy();
     this.seasonalPropsGfx = null;
+    this.bookshelfHit?.destroy();
+    this.bookshelfHit = null;
     this.trophyHits.forEach((r) => r.destroy());
     this.trophyHits = [];
     this.granBubble?.destroy();
@@ -116,6 +119,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawSeasonal(layout);
+    this.drawBookshelfHit(layout);
     this.drawHeader(width);
     this.drawActions();
     this.drawBack();
@@ -383,6 +387,26 @@ export class CroftScene extends Phaser.Scene {
     gfx.setDepth(45); // Above composition, below the Gran-bubble overlay (50).
     drawSeasonalProps(gfx, key, layout);
     this.seasonalPropsGfx = gfx;
+  }
+
+  /**
+   * Bookshelf is a diegetic entry point to the Highland Almanac (C1).
+   * Click fades to the Almanac scene; returning from Almanac currently
+   * lands in MainMenu (AlmanacScene's back-button target) — rewiring
+   * that back-route through Croft is a follow-up tied to the broader
+   * sub-scene return-path sweep called out in the T9 commit.
+   */
+  private drawBookshelfHit(layout: CroftLayout): void {
+    const hit = this.add
+      .rectangle(layout.bookshelf.x, layout.bookshelf.y, 48, 72, 0x000000, 0)
+      .setInteractive({ useHandCursor: true });
+    hit.on('pointerdown', () => {
+      if (this.transitioning) return;
+      audio.playClick();
+      this.transitioning = true;
+      startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start('Almanac'));
+    });
+    this.bookshelfHit = hit;
   }
 
   private drawHeader(width: number): void {
