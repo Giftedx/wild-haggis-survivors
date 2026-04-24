@@ -15,6 +15,9 @@ import {
   almanacTabLabelKey,
   type AlmanacTabKey,
 } from './almanac/tabNavigation';
+import { buildBeastiesEntries } from './almanac/buildBeastiesEntries';
+import { renderBeastiesBook, type BeastiesBookHandle } from './almanac/BeastiesBook';
+import { loadSave } from '../utils/save';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
 const TAB_IDLE_BG = 0x11182a;
@@ -39,6 +42,7 @@ export class AlmanacScene extends Phaser.Scene {
   private activeTab: AlmanacTabKey = DEFAULT_ALMANAC_TAB;
   private bodyObjects: Phaser.GameObjects.GameObject[] = [];
   private tabObjects: Phaser.GameObjects.GameObject[] = [];
+  private activeBookHandle: BeastiesBookHandle | null = null;
 
   constructor() {
     super({ key: 'Almanac' });
@@ -129,15 +133,31 @@ export class AlmanacScene extends Phaser.Scene {
    * silently swapping to blank.
    */
   private renderActiveBook(width: number, height: number, uiScale: number): void {
+    this.activeBookHandle?.destroy();
+    this.activeBookHandle = null;
     for (const o of this.bodyObjects) o.destroy();
     this.bodyObjects = [];
 
-    const bodyCenterY = (148 + (height - 72)) / 2;
+    const bodyTop = 140;
+    const bodyBottom = height - 72;
+    const bodyHeight = Math.max(1, bodyBottom - bodyTop);
+    const bodyMargin = 24;
+    const viewport = {
+      x: bodyMargin,
+      y: bodyTop,
+      width: width - bodyMargin * 2,
+      height: bodyHeight,
+    };
 
-    // Placeholder — replaced in M2 Task 8 for Beasties, then M3 / M4
-    // for the other three books.
+    if (this.activeTab === 'beasties') {
+      const entries = buildBeastiesEntries(loadSave().discoveryLog);
+      this.activeBookHandle = renderBeastiesBook(this, viewport, entries, uiScale);
+      return;
+    }
+
+    // Placeholder for M3 / M4 tabs.
     const placeholder = this.add
-      .text(width / 2, bodyCenterY, t('ui.almanac.coming_soon'), {
+      .text(width / 2, bodyTop + bodyHeight / 2, t('ui.almanac.coming_soon'), {
         ...textStyle('body', { color: COLORS_CSS.TEXT_MUTED, align: 'center' }),
         fontStyle: 'italic',
       })
