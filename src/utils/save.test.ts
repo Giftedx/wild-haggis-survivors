@@ -29,6 +29,7 @@ import {
   writeSave,
 } from './save';
 import type { RoutePick } from '../data/routes';
+import type { RelicKey } from '../data/relics';
 
 describe('save migration', () => {
   it('returns a fresh default save when the payload is not a plain object', () => {
@@ -365,8 +366,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 8', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(8);
+  it('SAVE_SCHEMA_VERSION is 9', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(9);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -878,6 +879,170 @@ describe('save schema v7 → v8 (C1 Highland Almanac discoveryLog)', () => {
     expect(migrated.discoveryLog.routesVisited).toEqual({});
     expect(migrated.discoveryLog.findsAcquired).toEqual({});
     expect(migrated.discoveryLog.almanacVisits).toBe(3);
+  });
+});
+
+describe('save schema v8 → v9 (R1 Relics — RunHistoryEntry.relics)', () => {
+  it('fresh save appends entries with relics defaulted to empty array on write', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 5, victory: false },
+      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: ['thistle_shot'] },
+    );
+    expect(result.save.runHistory[0].relics).toEqual([]);
+  });
+
+  it('migrates a pre-v8 (v7) save to v9, seeding relics:[] on every runHistory entry', () => {
+    const v7: unknown = {
+      schemaVersion: 7,
+      gold: 50,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 1,
+      bestTime: 300,
+      bestKills: 100,
+      totalKills: 100,
+      totalGoldEarned: 50,
+      bestCombo: 8,
+      victories: 0,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 300,
+          enemiesKilled: 100,
+          level: 5,
+          bossKills: 1,
+          goldEarned: 50,
+          bestCombo: 8,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: ['thistle_shot'],
+        },
+      ],
+      seenEnemies: [],
+      firstTimeEventsFired: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v7);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.runHistory).toHaveLength(1);
+    expect(migrated.runHistory[0].relics).toEqual([]);
+  });
+
+  it('migrates a v8 save to v9, seeding relics:[] on entries that lack the field', () => {
+    const v8: unknown = {
+      schemaVersion: 8,
+      gold: 10,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 1,
+      bestTime: 200,
+      bestKills: 50,
+      totalKills: 50,
+      totalGoldEarned: 10,
+      bestCombo: 5,
+      victories: 0,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 200,
+          enemiesKilled: 50,
+          level: 4,
+          bossKills: 0,
+          goldEarned: 10,
+          bestCombo: 5,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: ['thistle_shot'],
+          routes: [],
+        },
+      ],
+      seenEnemies: [],
+      firstTimeEventsFired: [],
+      discoveryLog: {
+        beastiesSeen: {},
+        routesVisited: {},
+        findsAcquired: {},
+        banterHeard: {},
+        almanacVisits: 0,
+      },
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(v8);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.runHistory[0].relics).toEqual([]);
+  });
+
+  it('preserves a v9 relics array on round-trip', () => {
+    const relics: RelicKey[] = ['sporran_of_holding', 'cairn_stone'];
+    const save = createDefaultSave();
+    save.runHistory = [{
+      timestamp: 1700000000000,
+      timeSurvivedSec: 600,
+      enemiesKilled: 200,
+      level: 10,
+      bossKills: 2,
+      goldEarned: 80,
+      bestCombo: 20,
+      variantKey: 'classic',
+      isVictory: true,
+      weaponKeys: ['thistle_shot'],
+      routes: [],
+      relics,
+    }];
+    const migrated = migrateSave(save);
+    expect(migrated.runHistory[0].relics).toEqual(relics);
+  });
+
+  it('filters stale / unknown relic keys on load', () => {
+    const save = createDefaultSave();
+    save.runHistory = [{
+      timestamp: 1700000000000,
+      timeSurvivedSec: 300,
+      enemiesKilled: 100,
+      level: 6,
+      bossKills: 1,
+      goldEarned: 40,
+      bestCombo: 10,
+      variantKey: 'classic',
+      isVictory: false,
+      weaponKeys: ['thistle_shot'],
+      routes: [],
+      // `not_a_real_relic` is stale (renamed/removed in a future release);
+      // `42` and `null` are malformed. Only the valid RelicKey survives.
+      relics: ['sporran_of_holding', 'not_a_real_relic', 42, null] as unknown as RelicKey[],
+    }];
+    const migrated = migrateSave(save);
+    expect(migrated.runHistory[0].relics).toEqual(['sporran_of_holding']);
+  });
+
+  it('applyRunSummary writes context.relics onto the new entry', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 400, enemiesKilled: 150, bossGold: 20, victory: true },
+      {
+        level: 8,
+        bossKills: 2,
+        variantKey: 'classic',
+        weaponKeys: ['thistle_shot'],
+        relics: ['cairn_stone'],
+      },
+    );
+    expect(result.save.runHistory[0].relics).toEqual(['cairn_stone']);
+  });
+
+  it('applyRunSummary writes relics:[] when context omits the field', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 90, enemiesKilled: 30, bossGold: 0, victory: false },
+      { level: 2, bossKills: 0, variantKey: 'classic', weaponKeys: [] },
+    );
+    expect(result.save.runHistory[0].relics).toEqual([]);
   });
 });
 

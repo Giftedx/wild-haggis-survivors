@@ -4,6 +4,7 @@
  */
 
 import type { RoutePick } from '../data/routes';
+import { RELIC_KEYS, type RelicKey } from '../data/relics';
 import { generateHaggisNameFromHash } from '../data/haggisNames';
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 import {
@@ -29,7 +30,7 @@ import {
 } from '../systems/DiscoveryLog';
 
 const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 8;
+export const SAVE_SCHEMA_VERSION = 9;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;
@@ -63,6 +64,14 @@ export interface RunHistoryEntry {
   curseKey?: string;
   /** W2 Moor Road picker history. Absent on pre-v4 entries; default []. */
   routes?: RoutePick[];
+  /**
+   * R1 Relics — which relics the player held when the run ended. Pre-v9
+   * entries have it absent; migration/coercion defaults to [] for
+   * back-compat. Coercion also drops stale keys that no longer exist in
+   * `RELIC_KEYS` so a renamed or removed relic in a future release
+   * doesn't corrupt the Chronicle.
+   */
+  relics?: RelicKey[];
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
   /** W66 Ironmoor — true when the run was taken with ironmoorMode on. */
@@ -232,6 +241,8 @@ export interface RunHistoryContext {
   curseKey?: string;
   /** Between-act picker resolutions (W2). Passed through to history. */
   routes?: RoutePick[];
+  /** R1 Relics held at run-end. Passed through to history for Chronicle / Almanac display. */
+  relics?: RelicKey[];
   /** 32-bit RNG seed for this run — enables Chronicle "rerun this seed". */
   runSeed?: number;
   /** W66 Ironmoor flag passed through to RunHistoryEntry. */
@@ -346,6 +357,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV6ToV7(raw));
     case 7:
       return finalizeSaveCandidate(migrateV7ToV8(raw));
+    case 8:
+      return finalizeSaveCandidate(migrateV8ToV9(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -409,6 +422,7 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     weaponKeys: context?.weaponKeys ?? [],
     ...(context?.curseKey ? { curseKey: context.curseKey } : {}),
     ...(context?.routes && context.routes.length > 0 ? { routes: [...context.routes] } : { routes: [] }),
+    ...(context?.relics && context.relics.length > 0 ? { relics: [...context.relics] } : { relics: [] }),
     ...(typeof context?.runSeed === 'number' ? { runSeed: context.runSeed } : {}),
     ...(context?.ironmoor ? { ironmoor: true } : {}),
     ...(context?.replay ? { replay: context.replay } : {}),
@@ -509,6 +523,17 @@ function migrateV6ToV7(raw: SaveRecord): SaveRecord {
  * (b) field present but malformed — coerce via discoveryLogFromJSON.
  */
 function migrateV7ToV8(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
+/**
+ * v8 → v9 adds `RunHistoryEntry.relics?: RelicKey[]` for R1 Relics —
+ * records the relics the player held when the run ended so the
+ * Chronicle + Highland Almanac can surface them. Pure version bump;
+ * `coerceRunHistoryEntry` defaults the field to `[]` for pre-v9 entries
+ * and filters out stale / malformed keys on load.
+ */
+function migrateV8ToV9(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
@@ -717,6 +742,11 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
       : [],
     ...(typeof raw.curseKey === 'string' && raw.curseKey ? { curseKey: raw.curseKey } : {}),
     routes: Array.isArray(raw.routes) ? (raw.routes as RoutePick[]) : [],
+    relics: Array.isArray(raw.relics)
+      ? (raw.relics as unknown[]).filter((x): x is RelicKey =>
+          typeof x === 'string' && (RELIC_KEYS as readonly string[]).includes(x),
+        )
+      : [],
     ...(typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed) ? { runSeed: raw.runSeed } : {}),
     ...(raw.ironmoor === true ? { ironmoor: true } : {}),
     ...(isReplayBlobAny(raw.replay) ? { replay: raw.replay } : {}),
