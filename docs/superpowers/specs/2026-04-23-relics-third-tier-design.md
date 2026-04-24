@@ -48,7 +48,7 @@ The research surfaced 15–20 specific Relic candidates with WHS-native flavour 
 | Source | Drop rate | Design rationale |
 |---|---|---|
 | **Elite kill** | 15% per elite (currently ~1 elite per 3 min after 2:00; expected ~2 Relics/run at that rate) | Makes elites narratively valuable |
-| **Boss kill (first phase)** | 100% chance of a guaranteed Relic drop from Tier-2+ bosses (Tour Bus, The Laird, Haggis Hunter General, Taxman — not Gordon) | Bosses anchor the run rhythm |
+| **Boss kill (first phase)** | 100% chance of a guaranteed Relic drop from Tier-2+ bosses (keys `tour_bus`, `the_laird`, `hunter_general`, `taxman` — not `gordon`) | Bosses anchor the run rhythm |
 | **Treasure chest (legendary only)** | 25% chance the legendary roll is a Relic instead of weapon/evolution | Preserves existing chest economy |
 | **Moor Road Hidden node** (post-M1 flagship) | Specific Hidden nodes can offer Relics as reward | Ties to M1 flagship content |
 | **Cailleach's Bargain** (future Bargain event) | A high-stakes trade: health-for-Relic | Completes the "devil deal" vocabulary |
@@ -182,7 +182,7 @@ Existing pause menu extends — new "Relics" tab shows full slot inventory with 
 - `src/scenes/game/evolutionChest.ts` — legendary chest 25% rolls Relic instead.
 - `src/systems/Player.ts` — `applyRelicEffects()` called each `update()`; Relic effect modifiers composed per-frame.
 - `src/core/i18n.ts` + `src/core/i18n.scs.ts` — 18 Relic names + 18 effects + 18 flavour texts × 2 locales = ~108 leaf keys.
-- `src/utils/save.ts` — `RunHistoryEntry.relics: RelicKey[]` (track which Relics appeared per run; for Chronicle display and Almanac). Schema v7 (if B1 lands first) → **v8**.
+- `src/utils/save.ts` — `RunHistoryEntry.relics: RelicKey[]` (track which Relics appeared per run; for Chronicle display and Almanac). Schema v8 → **v9** (shipped M1 2026-04-24, `1ba20d3`).
 - `src/data/banter.ts` — new `relic_pickup` pool, priority 50; first-time Relic banter reserved.
 - `src/scenes/game/PauseMenu.ts` — add Relics tab.
 - `src/scenes/ChronicleScene.ts` — show held Relics per past run.
