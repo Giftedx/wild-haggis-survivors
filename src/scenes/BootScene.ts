@@ -22,6 +22,7 @@ import { CLASSIC_VARIANT } from '../art/palettes';
 import type { AnimationState } from '../animation/animationStates';
 import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
 import { bakeDecorations } from '../art/sprites/decorations';
+import { bakeGranTextures } from '../art/sprites/croft/gran';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
 import { bakeProjectiles } from '../art/sprites/projectiles';
@@ -303,6 +304,8 @@ export class BootScene extends Phaser.Scene {
     bakeCardIcons(this);
     // Ambient wildlife (hare, etc.) for world dressing.
     bakeWildlife(this);
+    // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
+    bakeGranTextures(this);
   }
 
 

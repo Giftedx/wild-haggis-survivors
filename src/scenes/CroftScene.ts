@@ -11,6 +11,7 @@ import {
   layoutCroft,
   type CroftLayout,
 } from './croft/CroftComposition';
+import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -30,6 +31,9 @@ import {
 export class CroftScene extends Phaser.Scene {
   private transitioning = false;
   private placeholders: Phaser.GameObjects.GameObject[] = [];
+  private granSprite: Phaser.GameObjects.Sprite | null = null;
+  private knittingTimer: Phaser.Time.TimerEvent | null = null;
+  private knittingFrame = 0;
 
   constructor() {
     super({ key: CROFT_SCENE_KEY });
@@ -42,6 +46,11 @@ export class CroftScene extends Phaser.Scene {
     this.transitioning = false;
     this.placeholders.forEach((obj) => obj.destroy());
     this.placeholders = [];
+    this.granSprite?.destroy();
+    this.granSprite = null;
+    this.knittingTimer?.remove(false);
+    this.knittingTimer = null;
+    this.knittingFrame = 0;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -51,6 +60,7 @@ export class CroftScene extends Phaser.Scene {
     addAmberHeaderWash(this);
 
     this.drawComposition(layout, highContrastUi);
+    this.drawGran(layout);
     this.drawHeader(width);
     this.drawBack();
 
@@ -70,6 +80,8 @@ export class CroftScene extends Phaser.Scene {
     const alphaFill = highContrast ? 0.4 : 0.22;
     const alphaStroke = highContrast ? 0.9 : 0.6;
     for (const key of CROFT_DRAW_ORDER) {
+      // Gran has a real sprite now (T3) — skip her placeholder.
+      if (key === 'gran') continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -79,6 +91,27 @@ export class CroftScene extends Phaser.Scene {
         .setStrokeStyle(1, color, alphaStroke);
       this.placeholders.push(rect);
     }
+  }
+
+  /**
+   * Display Gran at her layout anchor and tick through her 3 knitting
+   * frames at ~4 fps. Frame swap uses `scene.time.addEvent` so it
+   * participates in the scene pause/resume lifecycle cleanly.
+   */
+  private drawGran(layout: CroftLayout): void {
+    const sprite = this.add
+      .sprite(layout.gran.x, layout.gran.y, GRAN_TEXTURE_KEYS[0])
+      .setOrigin(0.5, 0.6)
+      .setScale(layout.spriteScale * 2);
+    this.granSprite = sprite;
+    this.knittingTimer = this.time.addEvent({
+      delay: 260,
+      loop: true,
+      callback: () => {
+        this.knittingFrame = (this.knittingFrame + 1) % GRAN_FRAME_COUNT;
+        sprite.setTexture(GRAN_TEXTURE_KEYS[this.knittingFrame]);
+      },
+    });
   }
 
   private drawHeader(width: number): void {
