@@ -75,6 +75,16 @@ export interface LevelUpFlowHooks {
    * matching SpawnSystem's beasties stamps.
    */
   getDiscoveryRunId(): string;
+
+  /**
+   * R1 M2 T15 — legendary chest Relic override. When a chest would
+   * show an evolution card, this hook rolls the 25% Relic-override
+   * chance. Returning `true` means the override fired: a Relic
+   * pickup was spawned in place of the evolution offer and the UI
+   * should NOT be shown. Returning `false` (or omitting the hook)
+   * routes the normal evolution flow.
+   */
+  tryChestLegendaryRelicOverride?(): boolean;
 }
 
 export class LevelUpFlow {
@@ -210,6 +220,11 @@ export class LevelUpFlow {
   offerChestEvolution(): void {
     const recipe = this.findEvolution();
     if (!recipe) return;
+    // R1 M2 T15 — 25% Relic-override on a legendary chest roll. The
+    // override fires only when an evolution was actually eligible, so
+    // early-game chests (no lv5 weapon + matching passive yet) still
+    // surface their existing legendary card when the pool has one.
+    if (this.hooks.tryChestLegendaryRelicOverride?.() === true) return;
     this.hooks.getTimeManager().request('LEVEL_UP', { pausePhysics: true, timeScale: 0 });
     const card = evolutionRecipeToUpgradeCard(recipe);
     this.hooks.getUpgradeUI().show([card], this.hooks.getXPSystem().getLevel(), {
