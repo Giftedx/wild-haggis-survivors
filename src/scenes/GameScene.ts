@@ -114,7 +114,7 @@ import { RunLifecycle } from './game/RunLifecycle';
 import { RelicSystem } from '../systems/RelicSystem';
 import { RelicPickupSpawner } from '../entities/RelicPickup';
 import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
-import type { RelicDef } from '../data/relics';
+import { RELICS, type RelicDef, type RelicKey } from '../data/relics';
 import { decideRelicCollect } from '../ui/relicCollect';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
@@ -741,6 +741,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.debugTimeTravelApi = new DebugTimeTravelApi({
       getSpawnSystem: () => this.spawnSystem,
       isSceneActive: () => this.scene.isActive(),
+      spawnRelicAt: (key, x, y) => this.debugSpawnRelicAt(key, x, y),
+      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
+      getRelicCatalogue: () => RELICS,
     });
 
     // Run-end composer — builds RunSummary / GameOverPayload and
@@ -1860,6 +1863,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (!this.relicDiscardModalOpen) return;
     this.relicDiscardModalOpen = false;
     this.timeManager.release('RELIC_DISCARD');
+  }
+
+  /**
+   * R1 e2e test seam — force a Relic pickup at a world position without
+   * routing through the probabilistic drop roll. Used by
+   * `e2e/relic-pickup.spec.ts`. Returns true on success, false if the
+   * key doesn't exist or the spawner isn't ready.
+   */
+  private debugSpawnRelicAt(key: string, x: number, y: number): boolean {
+    if (!this.relicPickupSpawner) return false;
+    const def = (RELICS as Record<string, RelicDef>)[key];
+    if (!def) return false;
+    this.relicPickupSpawner.spawn(def, x, y);
+    return true;
+  }
+
+  /** R1 — e2e accessor; also used by the HUD slot widget in M3. */
+  getHeldRelicKeys(): readonly RelicKey[] {
+    return this.relicSystem?.heldKeys() ?? [];
   }
 
   private buildRouteResumeContext(): RouteResumeContext {

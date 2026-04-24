@@ -8,10 +8,17 @@
  * is undefined (Vitest / headless tests).
  */
 import type { SpawnSystem } from '../../systems/SpawnSystem';
+import type { RelicDef, RelicKey } from '../../data/relics';
 
 export interface DebugTimeTravelHooks {
   getSpawnSystem(): SpawnSystem;
   isSceneActive(): boolean;
+  /** R1 test seam — force a Relic pickup to spawn at a world position. */
+  spawnRelicAt?(key: RelicKey, x: number, y: number): boolean;
+  /** R1 test seam — snapshot held Relic slot keys for e2e assertions. */
+  getHeldRelicKeys?(): readonly string[];
+  /** R1 test seam — access the registered Relic catalogue for e2e. */
+  getRelicCatalogue?(): Readonly<Record<RelicKey, RelicDef>>;
 }
 
 /** Keybind: Shift+] advances 60 game seconds. */
@@ -36,6 +43,9 @@ export class DebugTimeTravelApi {
         skipToMinute: (m: number) => void;
         skipToGameSecond: (s: number) => void;
         killCurrentBoss: () => boolean;
+        spawnRelicAt?: (key: string, x: number, y: number) => boolean;
+        getHeldRelicKeys?: () => readonly string[];
+        getRelicCatalogueKeys?: () => readonly string[];
       };
     };
     g.DEBUG = {
@@ -55,6 +65,13 @@ export class DebugTimeTravelApi {
         // the standard emit flow.
         boss.takeDamageWithKillEvents(999_999);
         return true;
+      },
+      spawnRelicAt: (key, x, y) =>
+        this.hooks.spawnRelicAt?.(key as RelicKey, Number(x) || 0, Number(y) || 0) ?? false,
+      getHeldRelicKeys: () => this.hooks.getHeldRelicKeys?.() ?? [],
+      getRelicCatalogueKeys: () => {
+        const cat = this.hooks.getRelicCatalogue?.();
+        return cat ? Object.keys(cat) : [];
       },
     };
 
