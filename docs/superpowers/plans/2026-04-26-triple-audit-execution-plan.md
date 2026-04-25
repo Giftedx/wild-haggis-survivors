@@ -125,7 +125,7 @@ Complete in order **1A → 1B → 1C** where noted; 1D can overlap 1B.
 | T402 | **Run summary panel** — in-run HUD or pause: variant, curse, routes, relics, runes, act. | UI module | Manual | ☐ |
 | T403 | **GameOver: change variant/curse** before retry. | `GameOverScene.ts` | E2E | ☐ |
 | T404 | **MainMenu “last patch” banner** + **Almanac progress badge** (X/Y). | `MainMenuScene`, save version | Copy + UI test | ☐ |
-| T405 | **Croft timer stress** — scene reuse 5×, assert no listener growth (Opus B12). | Test or manual | | ☐ |
+| T405 | **Croft timer stress** — scene reuse 5×, assert no listener growth (Opus B12). | Test or manual | | ☑ — `e2e/croft-stress.spec.ts` cycles Croft → Curse five times and asserts `scene.children.list.length` matches the first cycle's count on every subsequent entry. Audit also caught a small reset-block gap: `ambient` was nulled by the shutdown handler but not the create() reset block, so a `start('Croft')` racing the prior shutdown could overwrite a still-live `CroftAmbientLoop` — fixed with a belt-and-braces `this.ambient?.stop(); this.ambient = null;` in the reset block. |
 | T406 | **Save compaction** — periodic trim of `seenEnemies` / discovery log if unbounded. | `save.ts` | Long-run simulation test | ☐ |
 | T407 | **DOM / focus for menus** (larger effort) — optional accessibility layer for critical menus. | TBD architecture | Defer if scope explodes | ☐ |
 | T408 | **Visual regression** — Playwright screenshots at `uiScale` 1.4 + mobile viewport. | `e2e/` | CI optional job | ☐ |

@@ -115,6 +115,12 @@ export class CroftScene extends Phaser.Scene {
     this.granBubble = null;
     this.granBubbleTimer?.remove(false);
     this.granBubbleTimer = null;
+    // T405 belt-and-braces — the shutdown handler stops `ambient` on
+    // scene exit, but pairing the cleanup here too means a `start('Croft')`
+    // call that races the prior shutdown still hands a fresh field to
+    // the new `CroftAmbientLoop` rather than overwriting a live one.
+    this.ambient?.stop();
+    this.ambient = null;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
