@@ -447,7 +447,13 @@ export class GameOverScene extends Phaser.Scene {
       // starting a fresh run. GameScene's end-of-run cleanup already clears
       // it, but swallowed storage errors could otherwise resurrect a ghost run.
       try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
-      this.scene.start('Game');
+      // T403 — route through Curse picker instead of straight into Game.
+      // Lets the player swap curses (or pick A CLEAN RUN) without bouncing
+      // through MainMenu — the previous path silently re-launched with no
+      // curse, hiding the choice from anyone who cleared a brutal one and
+      // wanted a different bargain. The "Rerun seed" link (one row down)
+      // still carries the original curse for masochist re-attempts.
+      this.scene.start('Curse');
     });
     this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, () => {
       audio.playClick();
