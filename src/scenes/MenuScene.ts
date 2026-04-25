@@ -301,6 +301,7 @@ export class MenuScene extends Phaser.Scene {
     // landed at x ≈ -43 on iPhone widths.
     const panelWidth = Math.min(680, width - 24);
     const panelHeight = layout.panelHeight;
+    const compactPanel = panelWidth < 480;
     const variant = VARIANTS[this.carouselIndex];
     // V2 followup — structural typing masks the SaveData long-field ↔
     // VariantProgressSnapshot short-field mismatch; pass a properly-
@@ -313,9 +314,9 @@ export class MenuScene extends Phaser.Scene {
     // Mascot frame and info column scale with panelWidth so the layout
     // collapses cleanly on narrow viewports instead of fixing infoX at
     // panelX-92 (which crashed text into the mascot at width=390).
-    const mascotOffsetFromPanelLeft = Math.min(64, panelWidth * 0.12);
+    const mascotOffsetFromPanelLeft = compactPanel ? Math.min(58, panelWidth * 0.16) : Math.min(64, panelWidth * 0.12);
     const mascotX = panelX - panelWidth / 2 + mascotOffsetFromPanelLeft;
-    const infoX = panelX - panelWidth / 2 + Math.min(160, panelWidth * 0.28);
+    const infoX = panelX - panelWidth / 2 + (compactPanel ? Math.min(122, panelWidth * 0.33) : Math.min(160, panelWidth * 0.28));
     // Vertical offsets scale with uiScale so the scaled variant rows
     // (name 24px → 34px, flavor 13px → 18px wrap, modifier 13px, progress
     // 12px, tally 11px) keep their row-to-row gaps and stay inside the
@@ -344,13 +345,14 @@ export class MenuScene extends Phaser.Scene {
       .setOrigin(1, 0);
     this.variantPanelElements.push(header, pageText);
 
-    this.carouselLeftHit = this.createCarouselButton(panelX - panelWidth / 2 + 34, panelY, '<', () => {
+    const carouselButtonY = compactPanel ? panelY + vy(46) : panelY;
+    this.carouselLeftHit = this.createCarouselButton(panelX - panelWidth / 2 + 34, carouselButtonY, '<', () => {
       audio.playClick();
       this.carouselIndex = (this.carouselIndex - 1 + VARIANTS.length) % VARIANTS.length;
       this.renderVariantCarousel();
     });
 
-    this.carouselRightHit = this.createCarouselButton(panelX + panelWidth / 2 - 34, panelY, '>', () => {
+    this.carouselRightHit = this.createCarouselButton(panelX + panelWidth / 2 - 34, carouselButtonY, '>', () => {
       audio.playClick();
       this.carouselIndex = (this.carouselIndex + 1) % VARIANTS.length;
       this.renderVariantCarousel();
@@ -361,12 +363,14 @@ export class MenuScene extends Phaser.Scene {
     // showed the mascot ears poking above the bbox stroke). mascotX is
     // panel-relative (was hardcoded panelX-238) so the frame stays inside
     // the panel on every viewport.
+    const previewFrameW = compactPanel ? 92 : 124;
+    const previewFrameH = compactPanel ? 104 : 128;
     const previewFrame = this.add
-      .rectangle(mascotX, panelY + vy(8), 124, 128, 0x16213a, 0.95)
+      .rectangle(mascotX, panelY + vy(compactPanel ? 14 : 8), previewFrameW, previewFrameH, 0x16213a, 0.95)
       .setStrokeStyle(1, unlocked ? 0x406099 : 0x374157, 1);
     const preview = this.add
       .sprite(previewFrame.x, previewFrame.y + 4, variant.textureKey)
-      .setScale(2.7)
+      .setScale(compactPanel ? 1.95 : 2.7)
       .setAlpha(unlocked ? 1 : 0.42);
     this.variantPanelElements.push(previewFrame, preview);
 
@@ -375,24 +379,27 @@ export class MenuScene extends Phaser.Scene {
     // infoX sits at panel-left + 28 % of panelWidth; reserve 132 px on the
     // right for the SELECTED badge column. The remaining wrap budget is
     // panelWidth - mascotOffset - badgeReserve.
-    const badgeReserveW = Math.min(150, Math.max(110, panelWidth * 0.32));
-    const infoWrap = Math.max(160, panelWidth - (infoX - (panelX - panelWidth / 2)) - badgeReserveW);
+    const badgeReserveW = compactPanel ? Math.min(112, Math.max(96, panelWidth * 0.30)) : Math.min(150, Math.max(110, panelWidth * 0.32));
+    const infoWrap = Math.max(
+      compactPanel ? 110 : 160,
+      panelWidth - (infoX - (panelX - panelWidth / 2)) - badgeReserveW,
+    );
     const nameText = this.add.text(infoX, panelY - vy(42), t(variant.nameKey), {
       fontFamily: 'monospace',
-      fontSize: '24px',
+      fontSize: compactPanel ? '18px' : '24px',
       color: resolveVariantNameColor(unlocked),
       fontStyle: 'bold',
       wordWrap: { width: infoWrap },
     });
     const flavorText = this.add.text(infoX, panelY - vy(18), t(variant.flavorKey), {
       fontFamily: 'monospace',
-      fontSize: '13px',
+      fontSize: compactPanel ? '11px' : '13px',
       color: '#95a8ca',
       wordWrap: { width: infoWrap },
     });
     const modifierText = this.add.text(infoX, panelY + vy(18), formatVariantModifierSummary(variant), {
       fontFamily: 'monospace',
-      fontSize: '13px',
+      fontSize: compactPanel ? '11px' : '13px',
       color: COLORS_CSS.TEXT_BRIGHT,
       wordWrap: { width: infoWrap },
       lineSpacing: 3,
@@ -404,7 +411,7 @@ export class MenuScene extends Phaser.Scene {
       requirementLine.text,
       {
         fontFamily: 'monospace',
-        fontSize: '12px',
+        fontSize: compactPanel ? '10px' : '12px',
         color: requirementLine.color,
       }
     );
@@ -426,7 +433,7 @@ export class MenuScene extends Phaser.Scene {
           }),
           {
             fontFamily: 'monospace',
-            fontSize: '11px',
+          fontSize: compactPanel ? '10px' : '11px',
             color: resolveVariantTallyColor(variantStats.wins),
             fontStyle: 'italic',
           },
@@ -462,15 +469,15 @@ export class MenuScene extends Phaser.Scene {
     const badgeStyle = resolveLoadoutBadgeStyle(selected, unlocked);
     // P1.5 — badge X is panel-relative (was `panelX + 235`, off-canvas at
     // panelWidth=366). Anchor inside panel-right with a small inset.
-    const badgeW = Math.min(126, badgeReserveW - 12);
+    const badgeW = Math.min(compactPanel ? 98 : 126, badgeReserveW - 12);
     const badgeX = panelX + panelWidth / 2 - badgeW / 2 - 12;
     const badge = this.add
-      .rectangle(badgeX, panelY - vy(6), badgeW, 38, badgeStyle.fillColor, 1)
+      .rectangle(badgeX, panelY - vy(compactPanel ? 42 : 6), badgeW, compactPanel ? 32 : 38, badgeStyle.fillColor, 1)
       .setStrokeStyle(1, badgeStyle.strokeColor, 1);
     const badgeLabel = this.add
       .text(badge.x, badge.y, badgeStyle.labelText, {
         fontFamily: 'monospace',
-        fontSize: '15px',
+        fontSize: compactPanel ? '12px' : '15px',
         color: badgeStyle.labelColor,
         fontStyle: 'bold',
       })
@@ -478,12 +485,12 @@ export class MenuScene extends Phaser.Scene {
     this.variantPanelElements.push(badge, badgeLabel);
 
     const statusNote = this.add
-      .text(badge.x, panelY + vy(30), badgeStyle.statusText, {
+      .text(badge.x, panelY - vy(compactPanel ? 15 : -30), badgeStyle.statusText, {
         fontFamily: 'monospace',
-        fontSize: '11px',
+        fontSize: compactPanel ? '10px' : '11px',
         color: '#aab4c7',
         align: 'center',
-        wordWrap: { width: 170 },
+        wordWrap: { width: compactPanel ? badgeW + 8 : 170 },
       })
       .setOrigin(0.5);
     this.variantPanelElements.push(statusNote);

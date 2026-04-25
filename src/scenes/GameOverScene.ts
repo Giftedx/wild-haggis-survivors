@@ -96,6 +96,7 @@ export class GameOverScene extends Phaser.Scene {
     // buttons. Raising to 712 (full 720p canvas minus margin) buys the
     // ~56 px the unlock + seed + double link-row stack actually needs.
     const PANEL_H = Math.min(712, height - 8);
+    const compact = width < 600 || height < 680;
     // Clamp the panel so it stays fully visible even on viewports smaller
     // than PANEL_H. On small screens the panel becomes the clamp region;
     // on larger screens it centers naturally.
@@ -104,15 +105,17 @@ export class GameOverScene extends Phaser.Scene {
     const panelTop = panelCenterY - PANEL_H / 2;
 
     const overlay = this.add
-      .rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK, 0)
+      .rectangle(width / 2, height / 2, width, height, COLORS.BG_DARK, 1)
       .setScrollFactor(0)
       .setDepth(d)
-      .setInteractive();
+      .setInteractive()
+      .setAlpha(0);
     const panel = this.add
-      .rectangle(panelCenterX, panelCenterY, PANEL_W, PANEL_H, COLORS.PANEL, 0)
+      .rectangle(panelCenterX, panelCenterY, PANEL_W, PANEL_H, COLORS.PANEL, 0.98)
       .setScrollFactor(0)
       .setDepth(d + 1)
-      .setStrokeStyle(2, highContrastUi ? 0x8fb4ff : panelStroke, 1);
+      .setStrokeStyle(2, highContrastUi ? 0x8fb4ff : panelStroke, 1)
+      .setAlpha(0);
     this.tweens.add({ targets: overlay, alpha: UI.OVERLAY_ALPHA, duration: 420 });
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
@@ -124,18 +127,28 @@ export class GameOverScene extends Phaser.Scene {
     );
 
     const title = this.add
-      .text(panelCenterX, panelTop + 54, t(deathTitleKey),
-        textStyle('display', { color: titleColor }),
+      .text(panelCenterX, panelTop + (compact ? 38 : 54), t(deathTitleKey),
+        textStyle('display', {
+          color: titleColor,
+          align: 'center',
+          fontSize: compact ? '30px' : '48px',
+          wordWrap: { width: (PANEL_W - 32) / Math.max(1, uiScale) },
+        }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setAlpha(0)
-      .setScale(theme.titleStartScale);
-    title.setScale(theme.titleStartScale * uiScale);
+      .setScale(compact ? uiScale : theme.titleStartScale);
+    title.setScale((compact ? 1 : theme.titleStartScale) * uiScale);
     const subtitle = this.add
-      .text(panelCenterX, panelTop + 94, t(deathSubKey),
-        textStyle('body', { color: COLORS_CSS.DUSTY_TAN, align: 'center', wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) } }),
+      .text(panelCenterX, panelTop + (compact ? 78 : 94), t(deathSubKey),
+        textStyle('body', {
+          color: COLORS_CSS.DUSTY_TAN,
+          align: 'center',
+          fontSize: compact ? '12px' : '16px',
+          wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) },
+        }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -160,7 +173,7 @@ export class GameOverScene extends Phaser.Scene {
     if (this.payload.ironmoor) {
       const banner_ = ironmoorBannerStyle(isVictory);
       const banner = this.add
-        .text(panelCenterX, panelTop + 118, t(banner_.key),
+        .text(panelCenterX, panelTop + (compact ? 104 : 118), t(banner_.key),
           textStyle('body', { color: banner_.color, align: 'center', wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) } }),
         )
         .setOrigin(0.5)
@@ -176,7 +189,7 @@ export class GameOverScene extends Phaser.Scene {
     // (+94) and variant chip (+140). Soul Charter: failure must be
     // *informative and compassionate, never shaming*.
     if (!isVictory && this.payload.deathCause) {
-      this.renderDeathInsight(panelCenterX, panelTop + 116, d + 3, this.payload.deathCause, uiScale, PANEL_W);
+      this.renderDeathInsight(panelCenterX, panelTop + (compact ? 104 : 116), d + 3, this.payload.deathCause, uiScale, PANEL_W);
     }
 
     // Run name epigraph — gentle "Here lies {name}" / "{name} walked home."
@@ -188,7 +201,7 @@ export class GameOverScene extends Phaser.Scene {
         ? 'ui.gameOver.name_framing.victory'
         : 'ui.gameOver.name_framing.death';
       const framingLine = this.add
-        .text(panelCenterX, panelTop + 142,
+        .text(panelCenterX, panelTop + (compact ? 116 : 142),
           t(framingKey, { name: runName }),
           textStyle('subtitle', { fontSize: '13px', color: COLORS_CSS.DUSTY_TAN, align: 'center' }),
         )
@@ -201,7 +214,7 @@ export class GameOverScene extends Phaser.Scene {
     }
 
     // Variant chip — warm identity reminder with haggis sprite + flavor text
-    const variantChipY = panelTop + 162;
+    const variantChipY = panelTop + (compact ? 132 : 162);
     renderVariantChip(this, {
       centerX: panelCenterX,
       top: variantChipY,
@@ -218,7 +231,7 @@ export class GameOverScene extends Phaser.Scene {
     if (curseDef) {
       const curseChipY = variantChipY + 38;
       const curseChip = this.add
-        .rectangle(panelCenterX, curseChipY, 560, 22, 0x2a1830, 0.96)
+        .rectangle(panelCenterX, curseChipY, Math.min(560, PANEL_W - 48), 22, 0x2a1830, 0.96)
         .setScrollFactor(0)
         .setDepth(d + 2)
         .setStrokeStyle(1, 0xb35287, 0.9)
@@ -238,7 +251,7 @@ export class GameOverScene extends Phaser.Scene {
       this.tweens.add({ targets: [curseChip, curseText], alpha: 1, duration: 260, delay: 500 });
     }
 
-    const innerW = PANEL_W - 88;
+    const innerW = compact ? PANEL_W - 32 : PANEL_W - 88;
     // Panel heights scale with uiScale so the scaled text inside each one
     // (weaponBody, goldText, unlockContent) doesn't spill past the panel
     // border at uiScale 1.4. The weaponDamagePanel holds the most text
@@ -247,12 +260,12 @@ export class GameOverScene extends Phaser.Scene {
     // When the panel stack would exceed the PANEL_H budget, lower panels
     // clamp so link/button rows at the panel bottom stay clickable.
     const panelScale = Math.max(1, uiScale);
-    const weaponPanelH = Math.round(158 * panelScale);
-    const goldPanelH = Math.round(70 * panelScale);
-    const unlockPanelH = Math.round(94 * panelScale);
+    const weaponPanelH = Math.round((compact ? 150 : 158) * panelScale);
+    const goldPanelH = Math.round((compact ? 64 : 70) * panelScale);
+    const unlockPanelH = Math.round((compact ? 90 : 94) * panelScale);
     // weaponDamagePanel: keep top anchored near stats panel bottom (+273)
     // so scaled content grows downward, not up into the variant/curse chips.
-    const weaponPanelTop = panelTop + 273;
+    const weaponPanelTop = panelTop + (compact ? 250 : 273);
     const weaponPanelCenterY = weaponPanelTop + weaponPanelH / 2;
     const weaponPanelBottom = weaponPanelTop + weaponPanelH;
     // goldPanel: sits immediately under the weapon panel with a small gap.
@@ -270,7 +283,7 @@ export class GameOverScene extends Phaser.Scene {
     );
     const unlockPanelY = Math.min(unlockPanelCenterYIdeal, unlockPanelCenterYMax);
     const statsPanel = this.add
-      .rectangle(panelCenterX, panelTop + 226, innerW, 92, 0x131d32, 0.95)
+      .rectangle(panelCenterX, panelTop + (compact ? 204 : 226), innerW, 92, 0x131d32, 0.95)
       .setScrollFactor(0)
       .setDepth(d + 2)
       .setStrokeStyle(1, 0x283a5f, 1)
@@ -295,9 +308,9 @@ export class GameOverScene extends Phaser.Scene {
       .setAlpha(0);
     this.tweens.add({ targets: [statsPanel, weaponDamagePanel, goldPanel, unlockPanel], alpha: 1, duration: 260, delay: 520 });
 
-    const statBaseY = panelTop + 200;
+    const statBaseY = panelTop + (compact ? 178 : 200);
     const statGap = Math.min(142, Math.floor(PANEL_W * 0.21));
-    const statRowGap = Math.round(42 * uiScale);
+    const statRowGap = Math.round((compact ? 36 : 42) * uiScale);
     const pb = this.payload.previousBests;
     this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600, uiScale,
       pb && summary.timeSurvivedSec > pb.bestTime);
@@ -370,7 +383,12 @@ export class GameOverScene extends Phaser.Scene {
 
     const goldTitle = this.add
       .text(panelCenterX, goldTitleY, t('ui.gameOver.gold_title', { amount: runResult.goldEarned }),
-        textStyle('heading', { fontSize: '28px', color: COLORS_CSS.WHISKY_GOLD }),
+        textStyle('heading', {
+          fontSize: compact ? '22px' : '28px',
+          color: COLORS_CSS.WHISKY_GOLD,
+          align: 'center',
+          wordWrap: { width: (innerW - 24) / Math.max(1, uiScale) },
+        }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
@@ -404,6 +422,9 @@ export class GameOverScene extends Phaser.Scene {
     // Seed readout — sits just above the action buttons. For daily runs it
     // prefixes "DAILY" and shows the date; for seeded runs just the code.
     // Tapping copies the code to the clipboard so players can share.
+    const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
+    const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale), buttonsY - Math.round(compact ? 28 : 0));
+
     if (this.payload.seedCode) {
       // Clamp seed readout above canvas bottom — default offset assumes a
       // 720px-tall design target, but native 600 clips this by a couple px.
@@ -411,7 +432,7 @@ export class GameOverScene extends Phaser.Scene {
       // the seed code isn't swallowed by the unlock banner.
       const seedY = Math.min(
         Math.max(panelTop + 590, unlockPanelY + unlockPanelH / 2 + Math.round(14 * panelScale)),
-        height - Math.round(42 * panelScale),
+        compact ? linkY - Math.round(18 * panelScale) : height - Math.round(42 * panelScale),
       );
       this.renderSeedReadout(panelCenterX, seedY, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
     }
@@ -420,7 +441,6 @@ export class GameOverScene extends Phaser.Scene {
     // saves the frame; rerun starts the exact seed again. Only render
     // rerun when the payload actually carries a numeric seed.
     const hasRerun = typeof this.payload.runSeed === 'number';
-    const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale));
     if (hasRerun) {
       this.renderPostcardLink(panelCenterX - 100, linkY, d + 3, 1180);
       this.renderRerunSeedLink(panelCenterX + 100, linkY, d + 3, 1200);
@@ -429,7 +449,7 @@ export class GameOverScene extends Phaser.Scene {
     }
     // Save frame link — gated by captureEnabled setting; sits on a second
     // row directly below the postcard/rerun link row.
-    if (getSettingsManager().load().captureEnabled) {
+    if (getSettingsManager().load().captureEnabled && !compact) {
       const saveFrameLinkY = linkY + 16;
       this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
       const gameScene = this.scene.get('Game') as GameScene | undefined;
@@ -439,13 +459,14 @@ export class GameOverScene extends Phaser.Scene {
       }
     }
 
-    const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
     // Responsive gap — default design target is ±196 between centre
     // buttons at 800px, but on narrow viewports the left button otherwise
     // clips the canvas edge. Floor keeps the 24px between-button breathing
     // room intact (172 button width + 24 gap = 196 centre-to-centre).
-    const actionBtnW = 172;
-    const actionSideGap = Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
+    const actionBtnW = compact ? Math.floor((PANEL_W - 52) / 3) : 172;
+    const actionSideGap = compact
+      ? actionBtnW + 14
+      : Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
     this.createResultActionButton(panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, () => {
       audio.playClick();
       musicEngine.stop();

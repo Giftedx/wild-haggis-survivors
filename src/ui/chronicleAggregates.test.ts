@@ -865,8 +865,8 @@ describe('resolveChronicleMilestonesDensityStyle', () => {
   it('at threshold → dense style kicks in (>=)', () => {
     const s = resolveChronicleMilestonesDensityStyle(CHRONICLE_MILESTONES_DENSE_THRESHOLD);
     expect(s.dense).toBe(true);
-    expect(s.fontSize).toBe('11px');
-    expect(s.lineSpacing).toBe(2);
+    expect(s.fontSize).toBe('10px');
+    expect(s.lineSpacing).toBe(1);
   });
 
   it('well above threshold stays in dense style', () => {

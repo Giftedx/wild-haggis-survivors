@@ -60,13 +60,17 @@ export interface RelicPickupPromptHandle {
 const CARD_W = 180;
 const CARD_H = 220;
 const CARD_GAP = 16;
+const PROMPT_DEPTH = 1600;
+const NARROW_BREAKPOINT = 600;
 
 export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupPromptHandle {
   const { scene, held, incoming, onReplaceHeld, onReject } = opts;
   const uiScale = opts.uiScale ?? 1;
   const cam = scene.cameras.main;
-  const cx = cam.worldView.x + cam.width / 2;
-  const cy = cam.worldView.y + cam.height / 2;
+  const cx = cam.width / 2;
+  const cy = cam.height / 2;
+  const isNarrow = cam.width < NARROW_BREAKPOINT;
+  const availableW = Math.max(260, cam.width - (isNarrow ? 80 : 32));
 
   const objects: Phaser.GameObjects.GameObject[] = [];
 
@@ -74,7 +78,7 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
   const backdrop = scene.add
     .rectangle(cx, cy, cam.width, cam.height, 0x000000, 0.72)
     .setScrollFactor(0)
-    .setDepth(1000)
+    .setDepth(PROMPT_DEPTH)
     .setInteractive();
   backdrop.on('pointerdown', () => doReject());
   objects.push(backdrop);
@@ -83,11 +87,16 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
     .text(
       cx, cy - 180 * uiScale,
       resolveModalString('ui.relics.sporran_full.title', 'Sporran’s full'),
-      textStyle('heading', { color: COLORS_CSS.TOAST_GOLD, align: 'center' }),
+      textStyle('heading', {
+        color: COLORS_CSS.TOAST_GOLD,
+        align: 'center',
+        fontSize: isNarrow ? '20px' : undefined,
+        wordWrap: { width: Math.min(availableW, cam.width - 40) / Math.max(1, uiScale) },
+      }),
     )
     .setOrigin(0.5)
     .setScrollFactor(0)
-    .setDepth(1001)
+    .setDepth(PROMPT_DEPTH + 1)
     .setScale(uiScale);
   objects.push(title);
 
@@ -98,11 +107,16 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
         'ui.relics.sporran_full.hint',
         'Pick one to let go, or skip the new relic.',
       ),
-      textStyle('label', { color: COLORS_CSS.COOL_GREY, align: 'center' }),
+      textStyle('label', {
+        color: COLORS_CSS.COOL_GREY,
+        align: 'center',
+        fontSize: isNarrow ? '10px' : undefined,
+        wordWrap: { width: Math.min(availableW, cam.width - 44) / Math.max(1, uiScale) },
+      }),
     )
     .setOrigin(0.5)
     .setScrollFactor(0)
-    .setDepth(1001)
+    .setDepth(PROMPT_DEPTH + 1)
     .setScale(uiScale);
   objects.push(hint);
 
@@ -114,65 +128,111 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
     held[2]!,
     incoming,
   ];
-  const totalW = cards.length * CARD_W + (cards.length - 1) * CARD_GAP;
-  const startX = cx - totalW / 2 + CARD_W / 2;
+  const cols = availableW < cards.length * CARD_W + (cards.length - 1) * CARD_GAP ? 2 : 4;
+  const gap = cols === 2 ? 10 : CARD_GAP;
+  const compactCards = cols === 2;
+  const cardW = Math.min(
+    CARD_W,
+    compactCards ? 150 : Math.floor((availableW - (cols - 1) * gap) / cols),
+    Math.max(120, Math.floor((availableW - (cols - 1) * gap) / cols)),
+  );
+  const cardH = compactCards ? 164 : CARD_H;
+  const rows = Math.ceil(cards.length / cols);
+  const totalW = cols * cardW + (cols - 1) * gap;
+  const totalH = rows * cardH + (rows - 1) * gap;
+  let gridTop = cy - totalH / 2;
+  const minGridTop = (compactCards ? 126 : 116) * uiScale;
+  const maxGridTop = cam.height - totalH - 16;
+  gridTop = Math.max(Math.min(gridTop, maxGridTop), Math.min(minGridTop, maxGridTop));
+  title.setY(gridTop - (compactCards ? 64 : 74) * uiScale);
+  hint.setY(gridTop - (compactCards ? 28 : 40) * uiScale);
+  if (compactCards) {
+    const headerTop = Math.round(12 * uiScale);
+    const headerBottom = Math.max(headerTop + Math.round(84 * uiScale), gridTop - Math.round(8 * uiScale));
+    const header = scene.add
+      .rectangle(
+        cx,
+        (headerTop + headerBottom) / 2,
+        Math.min(cam.width - 16, totalW + 32),
+        headerBottom - headerTop,
+        COLORS.PANEL,
+        0.94,
+      )
+      .setStrokeStyle(2, COLORS.WHISKY_GOLD, 0.5)
+      .setScrollFactor(0)
+      .setDepth(PROMPT_DEPTH + 0.5);
+    objects.push(header);
+  }
+
   for (let i = 0; i < cards.length; i++) {
     const def = cards[i];
     const isIncoming = i === 3;
-    const cardX = startX + i * (CARD_W + CARD_GAP);
-    const cardY = cy;
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const cardX = cx - totalW / 2 + cardW / 2 + col * (cardW + gap);
+    const cardY = gridTop + cardH / 2 + row * (cardH + gap);
+    const cardTop = cardY - cardH / 2;
 
     const bg = scene.add
-      .rectangle(cardX, cardY, CARD_W, CARD_H, COLORS.PANEL_SURFACE, 0.98)
+      .rectangle(cardX, cardY, cardW, cardH, COLORS.PANEL_SURFACE, 0.98)
       .setStrokeStyle(isIncoming ? 3 : 2, isIncoming ? COLORS.WHISKY_GOLD : def.particleColour)
       .setScrollFactor(0)
-      .setDepth(1002)
+      .setDepth(PROMPT_DEPTH + 2)
       .setInteractive({ useHandCursor: true });
     objects.push(bg);
 
     // Swatch at top = relic colour.
     const swatch = scene.add
-      .circle(cardX, cardY - CARD_H / 2 + 32, 18, def.particleColour, 1)
+      .circle(cardX, cardTop + 30, compactCards ? 15 : 18, def.particleColour, 1)
       .setStrokeStyle(2, 0xffffff, 0.5)
       .setScrollFactor(0)
-      .setDepth(1003);
+      .setDepth(PROMPT_DEPTH + 3);
     objects.push(swatch);
 
     const name = scene.add
       .text(
-        cardX, cardY - CARD_H / 2 + 64,
+        cardX, cardTop + 56,
         resolveLocalisedOrPretty(def.nameKey, def.key),
         textStyle('label', { color: COLORS_CSS.TOAST_GOLD, align: 'center',
-          wordWrap: { width: CARD_W - 16 } }),
+          fontSize: compactCards ? '12px' : '13px',
+          wordWrap: { width: cardW - 16 } }),
       )
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(1003);
+      .setDepth(PROMPT_DEPTH + 3);
     objects.push(name);
 
     const effect = scene.add
       .text(
-        cardX, cardY - 8,
+        cardX, cardTop + (compactCards ? 82 : 108),
         resolveLocalisedOrPretty(def.effectKey, ''),
         textStyle('label', { color: COLORS_CSS.COOL_GREY, align: 'center',
-          fontSize: '13px', wordWrap: { width: CARD_W - 16 } }),
+          fontSize: compactCards ? '11px' : '13px', wordWrap: { width: cardW - 16 } }),
       )
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
-      .setDepth(1003);
+      .setDepth(PROMPT_DEPTH + 3);
     objects.push(effect);
 
     const label = scene.add
       .text(
-        cardX, cardY + CARD_H / 2 - 24,
+        cardX, cardY + cardH / 2 - (compactCards ? 14 : 24),
         isIncoming
-          ? resolveModalString('ui.relics.sporran_full.keep_new', 'Click a held relic to swap, or here to skip')
+          ? resolveModalString(
+            compactCards ? 'ui.relics.sporran_full.keep_new_short' : 'ui.relics.sporran_full.keep_new',
+            compactCards ? 'Skip new relic' : 'Click a held relic to swap, or here to skip',
+          )
           : resolveModalString('ui.relics.sporran_full.discard', 'Let this go'),
-        textStyle('label', { color: isIncoming ? COLORS_CSS.HINT : COLORS_CSS.WHISKY_GOLD, align: 'center' }),
+        textStyle('label', {
+          color: isIncoming ? COLORS_CSS.HINT : COLORS_CSS.WHISKY_GOLD,
+          align: 'center',
+          fontSize: compactCards ? '11px' : '13px',
+          wordWrap: { width: cardW - 14 },
+        }),
       )
       .setOrigin(0.5)
       .setScrollFactor(0)
-      .setDepth(1003);
+      .setDepth(PROMPT_DEPTH + 3);
     objects.push(label);
 
     bg.on('pointerover', () => bg.setStrokeStyle(3, 0xffffff, 1));

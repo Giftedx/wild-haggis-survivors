@@ -624,6 +624,7 @@ export const EN_STRINGS: LocaleTree = {
         title: 'Sporran\'s full',
         hint: 'Pick one to let go, or skip the new relic.',
         keep_new: 'Click a held relic to swap, or here to skip',
+        keep_new_short: 'Skip new relic',
         discard: 'Let this go',
       },
     },

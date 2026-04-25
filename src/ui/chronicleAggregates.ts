@@ -74,11 +74,12 @@ export interface ChronicleMilestonesDensityStyle {
 export function resolveChronicleMilestonesDensityStyle(
   lineCount: number,
 ): ChronicleMilestonesDensityStyle {
-  const dense = lineCount >= CHRONICLE_MILESTONES_DENSE_THRESHOLD;
+  const ultraDense = lineCount >= CHRONICLE_MILESTONES_DENSE_THRESHOLD + 6;
+  const dense = ultraDense || lineCount >= CHRONICLE_MILESTONES_DENSE_THRESHOLD;
   return {
     dense,
-    fontSize: dense ? '11px' : '12px',
-    lineSpacing: dense ? 2 : 4,
+    fontSize: ultraDense ? '9px' : dense ? '10px' : '12px',
+    lineSpacing: ultraDense ? 0 : dense ? 1 : 4,
   };
 }
 

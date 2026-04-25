@@ -364,6 +364,7 @@ export const SCS_STRINGS: LocaleTree = {
         title: 'Sporran\'s fu',
         hint: 'Pick wan tae let go, or skip tha new relic.',
         keep_new: 'Click a held relic tae swap, or here tae skip',
+        keep_new_short: 'Skip tha new relic',
         discard: 'Let this go',
       },
     },

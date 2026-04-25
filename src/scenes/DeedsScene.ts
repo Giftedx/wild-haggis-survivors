@@ -109,12 +109,16 @@ export class DeedsScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    // Counter chip (top-right)
+    const isMobileDeeds = width < 600;
+
+    // Counter chip (top-right on desktop, under subtitle on mobile)
+    const counterX = isMobileDeeds ? width / 2 : width - 70;
+    const counterY = isMobileDeeds ? 96 : 36;
     this.add
-      .rectangle(width - 70, 36, 120, 26, 0x11182a, 0.85)
+      .rectangle(counterX, counterY, 120, 26, 0x11182a, 0.85)
       .setStrokeStyle(1, 0x355079, 1);
     this.add
-      .text(width - 70, 36, t('ui.deeds.counter', { earned: summary.earned, total: summary.total }), {
+      .text(counterX, counterY, t('ui.deeds.counter', { earned: summary.earned, total: summary.total }), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: COLORS_CSS.WHISKY_GOLD,
@@ -129,8 +133,8 @@ export class DeedsScene extends Phaser.Scene {
     // at the same Y as the description hint. Capping the page at 12 keeps
     // rowHeight ≥ 120 px @ 720p so title + desc + progress all sit in their
     // own bands.
-    const cols = uiScale > 1.2 ? 2 : 3;
-    const cardsPerPage = DEEDS_CARDS_PER_PAGE;
+    const cols = isMobileDeeds ? 1 : uiScale > 1.2 ? 2 : 3;
+    const cardsPerPage = isMobileDeeds ? 4 : DEEDS_CARDS_PER_PAGE;
     const totalPages = Math.max(1, Math.ceil(deeds.length / cardsPerPage));
 
     // ── Back button ──
@@ -154,7 +158,7 @@ export class DeedsScene extends Phaser.Scene {
       const slice = deeds.slice(start, start + cardsPerPage);
       const rows = Math.max(1, Math.ceil(slice.length / cols));
 
-      const gridTop = 104;
+      const gridTop = isMobileDeeds ? 126 : 104;
       const gridBottom = height - 96; // reserve room for page nav + BACK
       const gridHeight = gridBottom - gridTop;
       const horizontalMargin = 24;

@@ -245,8 +245,10 @@ export class SettingsScene extends Phaser.Scene {
     this.add
       .text(width / 2, 72, t('ui.settings.subtitle'), {
         fontFamily: 'monospace',
-        fontSize: '13px',
+        fontSize: width < 600 ? '10px' : '13px',
         color: subtitleColor,
+        align: 'center',
+        wordWrap: { width: (width - 40) / Math.max(1, uiScale) },
       })
       .setOrigin(0.5)
       .setScale(uiScale);
@@ -267,33 +269,26 @@ export class SettingsScene extends Phaser.Scene {
     // a faux damage number, both re-rendering as the player tweaks uiScale,
     // damageNumbers, highContrastUi, and screenShake. Gives the "what does
     // this setting do" answer without requiring a trip to a live run.
-    // P1.6 — below 600 px (mobile) the right-anchored preview panel
-    // overlapped the centred OPTIONS title. Drop it below the title row
-    // and shrink it so the row stack starts cleanly below.
     const previewIsMobile = width < 600;
-    const previewCenterX = previewIsMobile ? width / 2 : width - 128;
-    const previewCenterY = previewIsMobile ? 96 : 72;
-    const previewW = previewIsMobile ? Math.min(width - 24, 240) : 220;
-    const previewH = previewIsMobile ? 56 : 76;
-    this.previewHandle = renderSettingsPreview(this, {
-      centerX: previewCenterX,
-      centerY: previewCenterY,
-      width: previewW,
-      height: previewH,
-      depth: 4,
-    }, {
-      uiScale: this.working.uiScale,
-      damageNumbers: this.working.damageNumbers,
-      highContrastUi: this.working.highContrastUi,
-      screenShake: this.working.screenShake,
-    });
+    if (!previewIsMobile) {
+      this.previewHandle = renderSettingsPreview(this, {
+        centerX: width - 128,
+        centerY: 72,
+        width: 220,
+        height: 76,
+        depth: 4,
+      }, {
+        uiScale: this.working.uiScale,
+        damageNumbers: this.working.damageNumbers,
+        highContrastUi: this.working.highContrastUi,
+        screenShake: this.working.screenShake,
+      });
+    } else {
+      this.previewHandle = undefined;
+    }
 
     // --- Rows (grouped) -------------------------------------------------
-    // P1.6 — on mobile, start rows below the preview card (which dropped
-    // out of the top-right corner into a full-width row below the title).
-    this.rowY = previewIsMobile
-      ? Math.max(130, previewCenterY + previewH / 2 + 16)
-      : 130;
+    this.rowY = previewIsMobile ? 122 : 130;
     this.addSectionHeader(t('ui.settings.section_sound'));
     this.addSliderRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1, 0.1);
     this.addSliderRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1, 0.1);
@@ -340,9 +335,16 @@ export class SettingsScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x1f2a44, 0.9)
       .setDepth(20);
     const backY = stickyBarY;
+    const narrowLayout = this.isNarrowLayout();
     const { rect: back, label: backLabel } = createGameButton(this, {
-      x: width / 2, y: backY, width: 220, height: 42,
-      label: t('ui.settings.back'), tier: 'tertiary', fontSize: '16px', uiScale,
+      x: narrowLayout ? width / 2 - 34 : width / 2,
+      y: backY,
+      width: narrowLayout ? 150 : 220,
+      height: 42,
+      label: t('ui.settings.back'),
+      tier: 'tertiary',
+      fontSize: narrowLayout ? '14px' : '16px',
+      uiScale,
     });
     back.setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.8);
     back.setScale(uiScale).setDepth(21);
@@ -406,6 +408,39 @@ export class SettingsScene extends Phaser.Scene {
     void divider;
 
     this.rowY += Math.round(22 * this.layoutScale);
+  }
+
+  private isNarrowLayout(): boolean {
+    return this.scale.width < 600;
+  }
+
+  private compactSettingsLabel(label: string): string {
+    if (!this.isNarrowLayout()) return label;
+    const stripped = label.replace(/\s*\([^)]*\)/g, '');
+    if (/^Skip road-forks/i.test(stripped)) return 'Skip road-forks';
+    if (/^Speedrun timer/i.test(stripped)) return 'Speedrun timer';
+    if (/^Ironmoor/i.test(stripped)) return 'Ironmoor';
+    if (/^Reduce particles/i.test(stripped)) return 'Reduce particles';
+    if (/^Reduce flashing/i.test(stripped)) return 'Reduce flashing';
+    if (/^Share anonymous/i.test(stripped)) return 'Share run stats';
+    return stripped;
+  }
+
+  private addRowLabel(label: string, y: number, yOffset = 4): Phaser.GameObjects.Text {
+    const narrow = this.isNarrowLayout();
+    return this.add
+      .text(narrow ? 28 : 40, y + yOffset, this.compactSettingsLabel(label), {
+        fontFamily: 'monospace',
+        fontSize: narrow ? '12px' : '14px',
+        color: this.settingsLabelColor,
+      })
+      .setScale(this.uiScale);
+  }
+
+  private rightControlCenter(controlWidth: number): number {
+    return this.isNarrowLayout()
+      ? this.scale.width - controlWidth / 2 - 24
+      : this.scale.width - 88;
   }
 
   private applyGpHighlight(): void {
@@ -510,18 +545,13 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 6, label, {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(label, y, 6);
 
     // Slider track geometry — keep the right margin clear for the value text.
-    const trackX = Math.round(width * 0.46);
+    const narrow = this.isNarrowLayout();
+    const trackX = narrow ? Math.round(width * 0.46) : Math.round(width * 0.46);
     const trackY = y + 14;
-    const trackW = 240;
+    const trackW = narrow ? Math.max(104, width - trackX - 76) : 240;
     const trackH = 8;
 
     // Dim background trough.
@@ -545,9 +575,9 @@ export class SettingsScene extends Phaser.Scene {
 
     // Readable value on the right of the track.
     const valText = this.add
-      .text(trackX + (trackW + 18) * this.uiScale, y + 6, '', {
+      .text(Math.min(width - 44, trackX + (trackW + 14) * this.uiScale), y + 6, '', {
         fontFamily: 'monospace',
-        fontSize: '14px',
+        fontSize: narrow ? '11px' : '14px',
         color: this.valueColor,
       })
       .setOrigin(0, 0)
@@ -625,19 +655,14 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 4, label, {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(label, y);
 
     // Proper toggle switch: track + sliding thumb + side labels
     const trackStyle = resolveToggleTrackStyle(this.working[key]);
-    const cx = width - 88;
+    const narrow = this.isNarrowLayout();
+    const cx = this.rightControlCenter(narrow ? 54 : 58);
     const cy = y + 18;
-    const trackW = 58;
+    const trackW = narrow ? 54 : 58;
     const trackH = 22;
     const thumbR = 9;
     // Track (rounded rect appearance via stroked rect)
@@ -676,13 +701,13 @@ export class SettingsScene extends Phaser.Scene {
     // Status text beside the toggle
     const initialState = toggleStateDisplay(this.working[key]);
     const txt = this.add
-      .text(cx - trackW / 2 - 8, cy, initialState.text, {
+      .text(narrow ? cx : cx - trackW / 2 - 8, cy, initialState.text, {
         fontFamily: 'monospace',
         fontSize: '11px',
         color: initialState.color,
         fontStyle: 'bold',
       })
-      .setOrigin(1, 0.5)
+      .setOrigin(narrow ? 0.5 : 1, 0.5)
       .setScale(this.uiScale);
 
     const sync = () => {
@@ -757,17 +782,11 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 4, t('ui.settings.banter_frequency'), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(t('ui.settings.banter_frequency'), y);
 
-    const chipW = 110;
+    const chipW = this.isNarrowLayout() ? 104 : 110;
     const chipH = 26;
-    const cx = width - 88;
+    const cx = this.rightControlCenter(chipW);
     const cy = y + 18;
     const initialStyle = banterChipStyle(this.working.banterFrequency);
     const btn = this.add
@@ -834,17 +853,11 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 4, t('ui.settings.language'), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(t('ui.settings.language'), y);
 
-    const chipW = 130;
+    const chipW = this.isNarrowLayout() ? 118 : 130;
     const chipH = 26;
-    const cx = width - 88;
+    const cx = this.rightControlCenter(chipW);
     const cy = y + 18;
     const btn = this.add
       .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
@@ -853,8 +866,9 @@ export class SettingsScene extends Phaser.Scene {
     btn.setScale(this.uiScale);
 
     const current = (): LocaleKey => this.working.localeKey ?? 'en';
+    const localeLabel = () => this.isNarrowLayout() ? current().toUpperCase() : labelForLocale(current());
     const txt = this.add
-      .text(cx, cy, labelForLocale(current()), {
+      .text(cx, cy, localeLabel(), {
         fontFamily: 'monospace',
         fontSize: '12px',
         color: '#d4c2e8',
@@ -864,7 +878,7 @@ export class SettingsScene extends Phaser.Scene {
       .setScale(this.uiScale);
 
     const sync = () => {
-      txt.setText(labelForLocale(current()));
+      txt.setText(localeLabel());
     };
 
     const cycle = () => {
@@ -909,17 +923,11 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 4, t('ui.settings.colorblind_mode'), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(t('ui.settings.colorblind_mode'), y);
 
-    const chipW = 130;
+    const chipW = this.isNarrowLayout() ? 118 : 130;
     const chipH = 26;
-    const cx = width - 88;
+    const cx = this.rightControlCenter(chipW);
     const cy = y + 18;
     const btn = this.add
       .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
@@ -977,17 +985,11 @@ export class SettingsScene extends Phaser.Scene {
     const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
     this.rowY += rowStep;
 
-    this.add
-      .text(40, y + 4, t('ui.inputRebind.title'), {
-        fontFamily: 'monospace',
-        fontSize: '14px',
-        color: this.settingsLabelColor,
-      })
-      .setScale(this.uiScale);
+    this.addRowLabel(t('ui.inputRebind.title'), y);
 
-    const chipW = 130;
+    const chipW = this.isNarrowLayout() ? 118 : 130;
     const chipH = 26;
-    const cx = width - 88;
+    const cx = this.rightControlCenter(chipW);
     const cy = y + 18;
     const btn = this.add
       .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
@@ -1037,13 +1039,14 @@ export class SettingsScene extends Phaser.Scene {
    */
   private addResetChip(y: number): void {
     const { width } = this.scale;
-    const chipW = 110;
+    const narrow = this.isNarrowLayout();
+    const chipW = narrow ? 84 : 110;
     const chipH = 32;
-    const cx = width - 90;
+    const cx = narrow ? width - chipW / 2 - 28 : width - 90;
     const { rect: btn, label: txt } = createGameButton(this, {
       x: cx, y, width: chipW, height: chipH,
       label: t('ui.settings.reset_action'),
-      tier: 'secondary', fontSize: '13px', uiScale: this.uiScale,
+      tier: 'secondary', fontSize: narrow ? '11px' : '13px', uiScale: this.uiScale,
       fillOverride: 0x2a2430, hoverOverride: 0x3a3040, textColorOverride: '#c8b8d4',
     });
     btn.setStrokeStyle(1.5, 0x5a4e64, 0.9);
@@ -1091,8 +1094,9 @@ export class SettingsScene extends Phaser.Scene {
       .setDepth(DEPTH_BASE)
       .setInteractive();
 
-    const panelW = Math.min(width - 80, 520);
-    const panelH = 280;
+    const narrow = width < 600;
+    const panelW = Math.min(width - (narrow ? 40 : 80), 520);
+    const panelH = narrow ? 280 : 280;
     const panel = this.add
       .rectangle(width / 2, height / 2, panelW, panelH, 0x1a1420, 1)
       .setStrokeStyle(2, palette.sectionAccent, 1)
@@ -1123,18 +1127,21 @@ export class SettingsScene extends Phaser.Scene {
       .setDepth(DEPTH_BASE + 2);
 
     const btnY = height / 2 + panelH / 2 - 44;
+    const btnGap = narrow ? 16 : 40;
+    const btnW = narrow ? Math.floor((panelW - 48 - btnGap) / 2) : 180;
+    const btnOffset = btnW / 2 + btnGap / 2;
     const { rect: noBtn, label: noLabel } = createGameButton(this, {
-      x: width / 2 - 110, y: btnY, width: 180, height: 40,
+      x: width / 2 - btnOffset, y: btnY, width: btnW, height: 40,
       label: t('ui.settings.ironmoor_confirm_no'),
-      tier: 'tertiary', fontSize: '15px', uiScale: this.uiScale,
+      tier: 'tertiary', fontSize: narrow ? '13px' : '15px', uiScale: this.uiScale,
     });
     noBtn.setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.9).setDepth(DEPTH_BASE + 2);
     noLabel.setDepth(DEPTH_BASE + 3);
 
     const { rect: yesBtn, label: yesLabel } = createGameButton(this, {
-      x: width / 2 + 110, y: btnY, width: 180, height: 40,
+      x: width / 2 + btnOffset, y: btnY, width: btnW, height: 40,
       label: t('ui.settings.ironmoor_confirm_yes'),
-      tier: 'primary', fontSize: '15px', uiScale: this.uiScale,
+      tier: 'primary', fontSize: narrow ? '13px' : '15px', uiScale: this.uiScale,
       fillOverride: 0x3a2218, hoverOverride: 0x4a2a20,
       textColorOverride: this.highContrastUi ? palette.sectionColor : palette.titleColor,
     });

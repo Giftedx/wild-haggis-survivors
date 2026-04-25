@@ -73,8 +73,9 @@ export function renderVariantChip(
 ): RenderVariantChipResult {
   const { centerX, top, payload, uiScale, reduceParticles, depth } = opts;
   const chipY = top;
-  const chipW = 596;
-  const chipH = 48;
+  const narrow = scene.scale.width < 600;
+  const chipW = Math.min(596, Math.max(280, scene.scale.width - 56));
+  const chipH = narrow ? 54 : 48;
   const hasUnlock = (payload.runResult?.newlyUnlockedVariants?.length ?? 0) > 0;
   const { strokeWidth, haggisScale } = resolveVariantChipStyle(hasUnlock);
 
@@ -104,8 +105,8 @@ export function renderVariantChip(
   const variantDef = payload.variantKey ? getVariantByKey(payload.variantKey) : null;
   if (variantDef && scene.textures.exists(variantDef.textureKey)) {
     const miniHaggis = scene.add
-      .sprite(centerX - 270, chipY, variantDef.textureKey)
-      .setScale(haggisScale * uiScale)
+      .sprite(centerX - chipW / 2 + (narrow ? 34 : 28), chipY + (narrow ? 2 : 0), variantDef.textureKey)
+      .setScale((narrow ? 1.18 : haggisScale) * uiScale)
       .setScrollFactor(0)
       .setDepth(depth + 3)
       .setAlpha(0);
@@ -118,12 +119,12 @@ export function renderVariantChip(
   // at 1.4x — label spans ±11 centered at -8 (hits y+3); flavor spans
   // ±8 centered at +10 (starts at y+2). The 1px gap closes into overlap.
   const variantText = scene.add
-    .text(centerX + 8, chipY - Math.round(8 * uiScale), t('ui.gameOver.run_variant', { label: payload.variantLabel }), {
+    .text(centerX + (narrow ? 24 : 8), chipY - Math.round(8 * uiScale), t('ui.gameOver.run_variant', { label: payload.variantLabel }), {
       fontFamily: 'monospace',
-      fontSize: '15px',
+      fontSize: narrow ? '12px' : '15px',
       color: '#d7e3ff',
       fontStyle: 'bold',
-      wordWrap: { width: 500 / Math.max(1, uiScale) },
+      wordWrap: { width: Math.max(150, (chipW - (narrow ? 82 : 96)) / Math.max(1, uiScale)) },
       align: 'center',
     })
     .setOrigin(0.5, 0.5)
@@ -135,12 +136,12 @@ export function renderVariantChip(
   const flavorKey = variantDef?.flavorKey;
   if (flavorKey) {
     const variantFlavor = scene.add
-      .text(centerX + 8, chipY + Math.round(10 * uiScale), t(flavorKey), {
+      .text(centerX + (narrow ? 24 : 8), chipY + Math.round(11 * uiScale), t(flavorKey), {
         fontFamily: 'monospace',
-        fontSize: '11px',
+        fontSize: narrow ? '10px' : '11px',
         color: '#8a9ab8',
         fontStyle: 'italic',
-        wordWrap: { width: 480 / Math.max(1, uiScale) },
+        wordWrap: { width: Math.max(150, (chipW - (narrow ? 92 : 116)) / Math.max(1, uiScale)) },
         align: 'center',
       })
       .setOrigin(0.5, 0.5)

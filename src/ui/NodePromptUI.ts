@@ -37,7 +37,7 @@ export interface NodePromptOpts {
   readonly onResolve: (chosenKey: string | null) => void;
 }
 
-const PANEL_DEPTH = 300;
+const PANEL_DEPTH = 1400;
 const PANEL_BASE_WIDTH = 420;
 const PANEL_BASE_HEIGHT_PER_OPTION = 56;
 const PANEL_MIN_HEIGHT = 180;
@@ -86,10 +86,16 @@ export class NodePromptUI {
     const cy = cam.height / 2;
 
     const optionCount = opts.options.length + (opts.allowSkip !== false ? 1 : 0);
-    const panelW = PANEL_BASE_WIDTH * scale;
-    const panelH = Math.max(
+    const panelW = Math.min(
+      PANEL_BASE_WIDTH * scale,
+      Math.max(280, cam.width - 32),
+    );
+    const panelH = Math.min(
+      Math.max(
       PANEL_MIN_HEIGHT * scale,
       (80 + optionCount * PANEL_BASE_HEIGHT_PER_OPTION) * scale,
+      ),
+      Math.max(PANEL_MIN_HEIGHT * scale, cam.height - 32),
     );
 
     // Scrim — blocks input behind the panel.
@@ -197,19 +203,47 @@ export class NodePromptUI {
       rect.on('pointerup', onClick);
     }
     const textColor = option.disabled ? '#666677' : '#f0f0f8';
-    const mainLabel = option.subLabel
-      ? `${option.label}   ${option.subLabel}`
-      : option.label;
-    const label = this.scene.add
-      .text(x, y, mainLabel, {
-        fontFamily: 'monospace',
-        fontSize: `${Math.round(OPTION_FONT_PX * scale)}px`,
-        color: textColor,
-      })
-      .setOrigin(0.5, 0.5)
-      .setScrollFactor(0)
-      .setDepth(PANEL_DEPTH + 3);
-    this.children.push(rect, label);
+    const padX = 12 * scale;
+    if (option.subLabel) {
+      const subLabelW = Math.min(96 * scale, width * 0.34);
+      const labelW = Math.max(90, width - subLabelW - padX * 3);
+      const label = this.scene.add
+        .text(x - width / 2 + padX, y, option.label, {
+          fontFamily: 'monospace',
+          fontSize: `${Math.round(OPTION_FONT_PX * scale)}px`,
+          color: textColor,
+          wordWrap: { width: labelW },
+          align: 'left',
+        })
+        .setOrigin(0, 0.5)
+        .setScrollFactor(0)
+        .setDepth(PANEL_DEPTH + 3);
+      const sub = this.scene.add
+        .text(x + width / 2 - padX, y, option.subLabel, {
+          fontFamily: 'monospace',
+          fontSize: `${Math.round((OPTION_FONT_PX - 1) * scale)}px`,
+          color: option.disabled ? '#666677' : COLORS_CSS.WHISKY_GOLD,
+          wordWrap: { width: subLabelW },
+          align: 'right',
+        })
+        .setOrigin(1, 0.5)
+        .setScrollFactor(0)
+        .setDepth(PANEL_DEPTH + 3);
+      this.children.push(rect, label, sub);
+    } else {
+      const label = this.scene.add
+        .text(x, y, option.label, {
+          fontFamily: 'monospace',
+          fontSize: `${Math.round(OPTION_FONT_PX * scale)}px`,
+          color: textColor,
+          wordWrap: { width: Math.max(90, width - padX * 2) },
+          align: 'center',
+        })
+        .setOrigin(0.5, 0.5)
+        .setScrollFactor(0)
+        .setDepth(PANEL_DEPTH + 3);
+      this.children.push(rect, label);
+    }
     this.buttonEntries.push({
       rect,
       activate: onClick,
