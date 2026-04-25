@@ -144,4 +144,110 @@ test.describe('Mobile smoke', () => {
       'a Phaser scene is active',
     ).toBe(true);
   });
+
+  /**
+   * T309 — mobile multi-tap E2E.
+   *
+   * Issues two consecutive canvas taps at distinct positions and asserts
+   * Phaser's scene-level `pointerdown` handler fires once per tap. The
+   * single-tap smoke above only proved the canvas accepts a touch
+   * without hanging the page (the P4-12 / P4-13 regression class) —
+   * this proves a chained two-touch sequence reaches the InputManager
+   * pipeline as distinct pointerdown events, which is the prerequisite
+   * for joystick + dash gestures, level-up card picks, pause toggles,
+   * and any other multi-touch UI.
+   *
+   * Listener install + counter reset happen inside `page.evaluate` so
+   * the count is captured deterministically across the touch-driver
+   * boundary; reading `scene.input.activePointer` afterward would race
+   * the next pointermove tick.
+   */
+  test('iPhone viewport: two consecutive canvas taps each register', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => { pageErrors.push(err.message); });
+
+    await page.addInitScript(({ ver }) => {
+      try {
+        const existingRaw = localStorage.getItem('whs_meta_save');
+        const existing = (existingRaw
+          ? (JSON.parse(existingRaw) as Record<string, unknown>)
+          : {}) as Record<string, unknown>;
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          ...existing,
+          saveVersion: ver,
+          hasCompletedTutorial: true,
+        }));
+        const settingsRaw = localStorage.getItem('whs_game_settings');
+        const settings = (settingsRaw
+          ? (JSON.parse(settingsRaw) as Record<string, unknown>)
+          : {}) as Record<string, unknown>;
+        localStorage.setItem('whs_game_settings', JSON.stringify({
+          ...settings,
+          photosensitivityWarningSeen: true,
+        }));
+      } catch {
+        /* ignore */
+      }
+    }, { ver: CURRENT_SAVE_VERSION });
+
+    await page.goto('/');
+    const canvas = page.locator('canvas[role="application"]');
+    await expect(canvas).toBeVisible({ timeout: 60_000 });
+
+    // Drive into the Game scene so the pointerdown listener attaches to
+    // a known scene (each scene has its own input plugin instance).
+    const gameBooted = await page.evaluate(async () => {
+      const g = (window as unknown as { game?: {
+        scene: { start(k: string): void; isActive(k: string): boolean };
+      } }).game;
+      if (!g) return false;
+      g.scene.start('Game');
+      const start = Date.now();
+      while (Date.now() - start < 30_000) {
+        if (g.scene.isActive('Game')) return true;
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      return false;
+    });
+    expect(gameBooted, 'Game scene failed to activate').toBe(true);
+    await page.waitForTimeout(400);
+
+    // Install a per-scene pointerdown counter. The listener stays armed
+    // across both taps; we read the count at the end. Storing on a
+    // window-level slot keeps it visible to subsequent page.evaluate
+    // calls without leaking through the scene API.
+    await page.evaluate(() => {
+      const w = window as unknown as { __pointerdownCount?: number; game?: {
+        scene: { scenes: Array<{ scene: { key: string };
+          input?: { on(evt: string, cb: () => void): void } }> };
+      } };
+      w.__pointerdownCount = 0;
+      const gs = w.game?.scene.scenes.find((s) => s.scene.key === 'Game');
+      gs?.input?.on('pointerdown', () => {
+        w.__pointerdownCount = (w.__pointerdownCount ?? 0) + 1;
+      });
+    });
+
+    // Tap the joystick zone (left half) then the dash zone (right half).
+    // Both positions land on canvas with no other intercepting element,
+    // and exercise distinct pointerdown receivers in the InputManager
+    // (joystick activator + pendingTouchDash flag respectively).
+    await canvas.tap({ position: { x: 100, y: 500 } });
+    await page.waitForTimeout(120);
+    await canvas.tap({ position: { x: 320, y: 500 } });
+
+    const tapCount = await page.evaluate(async () => {
+      const w = window as unknown as { __pointerdownCount?: number };
+      // Brief settle to let any debounced PointerEvent batch flush.
+      const deadline = Date.now() + 1_500;
+      while (Date.now() < deadline) {
+        if ((w.__pointerdownCount ?? 0) >= 2) break;
+        await new Promise((r) => setTimeout(r, 32));
+      }
+      return w.__pointerdownCount ?? 0;
+    });
+    expect(tapCount, 'two canvas taps must each fire a pointerdown').toBeGreaterThanOrEqual(2);
+
+    expect(pageErrors, `Page errors during multi-tap test:\n${pageErrors.join('\n')}`).toEqual([]);
+  });
 });
