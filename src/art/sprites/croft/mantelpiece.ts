@@ -25,6 +25,24 @@ const SHELF_SHADOW = 0x000000;
 const OUTLINE = 0x0a0604;
 const DUST = 0x8a7a60;
 
+// ── Decor palette — candle + framed photo. ───────────────────────────
+// Pulled toward the Hearth tonal palette (Art Bible) so decor sits with
+// the hearth glow rather than competing.
+const BRASS_DARK = 0x6a4a18;
+const BRASS_MID = 0xa07a30;
+const BRASS_HI = 0xe8c860;
+const WAX_BODY = 0xeadfb0;
+const WAX_DRIP = 0xc8b88a;
+const WICK = 0x1a0a04;
+const FLAME_OUTER = 0xff8a40;
+const FLAME_INNER = 0xffe080;
+const FRAME_DARK = 0x3a2010;
+const FRAME_MID = 0x6a4218;
+const FRAME_HI = 0x9a6830;
+const PHOTO_SEPIA = 0xc89868;
+const PHOTO_SEPIA_HI = 0xe8c890;
+const PHOTO_INK = 0x4a2a18;
+
 // ── Per-boss palettes ──────────────────────────────────────────────
 
 const PALETTE_GORDON = {
@@ -67,6 +85,35 @@ const PALETTE_TAXMAN = {
   redInk: 0xcc2222,
   redInkHi: 0xff4444,
 };
+
+/**
+ * Per-shelf anchor points for static decor (candle holder + framed
+ * photo). Sit just inside the side gutter so they never collide with
+ * trophy slots from `computeTrophySlotXs`. Pure — unit-testable.
+ */
+export interface MantelDecorAnchors {
+  candle: { x: number; y: number };
+  photo: { x: number; y: number };
+}
+
+export function computeMantelDecorAnchors(
+  shelf: { x: number; y: number; w: number; h: number },
+): MantelDecorAnchors {
+  // Anchor X just inside the OUTER edge of the side gutter so decor
+  // hugs the corners instead of competing with trophies. Trophies use
+  // `sideGutter = max(8, w*0.06)` and slots start at `sideGutter +
+  // step/2` from the edge — decor at `gutter * 0.45` lands clearly
+  // outside the leftmost trophy.
+  const sideGutter = Math.max(8, shelf.w * 0.06);
+  const inset = Math.max(4, sideGutter * 0.45);
+  // Y baseline matches the trophy baseline so props share the shelf
+  // surface line.
+  const baseline = shelf.y + 2;
+  return {
+    candle: { x: shelf.x + inset, y: baseline },
+    photo: { x: shelf.x + shelf.w - inset, y: baseline },
+  };
+}
 
 /**
  * Compute per-slot X positions across a mantelpiece shelf rect.
@@ -151,9 +198,121 @@ export function drawMantelpieceTrophies(
   shelf: { x: number; y: number; w: number; h: number },
 ): void {
   drawMantelpieceShelf(g, shelf.x, shelf.y, shelf.w, shelf.h);
+  // Static decor sits at the shelf corners so even a fully-empty mantel
+  // (all trophies tier === 'none') reads as a lived-in shelf rather
+  // than a flat plank. Drawn before trophies so a hypothetical edge-case
+  // overlap leaves the trophy as the foreground read.
+  const decor = computeMantelDecorAnchors(shelf);
+  drawMantelCandle(g, decor.candle.x, decor.candle.y);
+  drawMantelPhoto(g, decor.photo.x, decor.photo.y);
   const xs = computeTrophySlotXs(shelf.x, shelf.w, trophies.length);
   const baseline = shelf.y + 2; // tops of trophies sit just above the shelf
   trophies.forEach((t, i) => drawTrophyCell(g, xs[i], baseline, t));
+}
+
+// ── Candle holder ──────────────────────────────────────────────────
+//
+// Brass candlestick with a wax taper and a tiny lit wick. Sits at the
+// LEFT corner of the shelf. The flame is a static two-pixel speck
+// rather than a tweened sprite — Croft already animates the hearth
+// flames, and adding another tween here would steal the reader's eye
+// from Gran.
+function drawMantelCandle(
+  g: Phaser.GameObjects.Graphics,
+  cx: number,
+  cy: number,
+): void {
+  // Base saucer.
+  g.fillStyle(OUTLINE, 1);
+  g.fillEllipse(cx, cy, 9, 3.2);
+  g.fillStyle(BRASS_DARK, 1);
+  g.fillEllipse(cx, cy, 7.5, 2.4);
+  g.fillStyle(BRASS_MID, 1);
+  g.fillEllipse(cx, cy - 0.2, 5.5, 1.4);
+
+  // Stem.
+  g.fillStyle(OUTLINE, 1);
+  g.fillRect(cx - 1.5, cy - 6, 3, 6);
+  g.fillStyle(BRASS_MID, 1);
+  g.fillRect(cx - 1, cy - 5.5, 2, 5.5);
+  g.fillStyle(BRASS_HI, 0.85);
+  g.fillRect(cx - 0.6, cy - 5.5, 0.6, 5);
+
+  // Cup at the top of the stem.
+  g.fillStyle(OUTLINE, 1);
+  g.fillEllipse(cx, cy - 6, 5, 2);
+  g.fillStyle(BRASS_DARK, 1);
+  g.fillEllipse(cx, cy - 6, 4, 1.4);
+  g.fillStyle(BRASS_HI, 1);
+  g.fillEllipse(cx - 0.8, cy - 6.2, 1.6, 0.5);
+
+  // Wax taper.
+  g.fillStyle(OUTLINE, 1);
+  g.fillRect(cx - 1.4, cy - 12, 2.8, 6);
+  g.fillStyle(WAX_BODY, 1);
+  g.fillRect(cx - 1, cy - 11.6, 2, 5.4);
+  g.fillStyle(WAX_DRIP, 0.9);
+  g.fillRect(cx - 0.4, cy - 7, 0.8, 1.6);
+
+  // Wick + flame.
+  g.fillStyle(WICK, 1);
+  g.fillRect(cx - 0.3, cy - 13.6, 0.6, 1.8);
+  g.fillStyle(FLAME_OUTER, 1);
+  g.fillEllipse(cx, cy - 14.2, 1.8, 2.4);
+  g.fillStyle(FLAME_INNER, 1);
+  g.fillEllipse(cx, cy - 14.4, 0.9, 1.4);
+}
+
+// ── Framed photo ───────────────────────────────────────────────────
+//
+// Small sepia portrait — wee ambient cue that the player belongs in
+// this scene. Sits at the RIGHT corner of the shelf, leaning slightly
+// into the mantel. The "subject" is a single haggis silhouette so the
+// frame still reads even at this 12 × 14 px size.
+function drawMantelPhoto(
+  g: Phaser.GameObjects.Graphics,
+  cx: number,
+  cy: number,
+): void {
+  const fw = 14;
+  const fh = 16;
+  const fx = cx - fw / 2;
+  const fy = cy - fh - 1;
+
+  // Outer frame.
+  g.fillStyle(OUTLINE, 1);
+  g.fillRect(fx, fy, fw, fh);
+  g.fillStyle(FRAME_DARK, 1);
+  g.fillRect(fx + 0.6, fy + 0.6, fw - 1.2, fh - 1.2);
+  g.fillStyle(FRAME_MID, 1);
+  g.fillRect(fx + 1.5, fy + 1.5, fw - 3, fh - 3);
+  g.fillStyle(FRAME_HI, 0.85);
+  g.fillRect(fx + 1.5, fy + 1.5, fw - 3, 0.6);
+
+  // Photo plate.
+  const pw = fw - 4;
+  const ph = fh - 5;
+  const px = fx + 2;
+  const py = fy + 2;
+  g.fillStyle(OUTLINE, 1);
+  g.fillRect(px, py, pw, ph);
+  g.fillStyle(PHOTO_SEPIA, 1);
+  g.fillRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
+  // Faux-light wash along the top of the photo.
+  g.fillStyle(PHOTO_SEPIA_HI, 0.8);
+  g.fillRect(px + 0.5, py + 0.5, pw - 1, 1.2);
+
+  // Tiny haggis silhouette (round body + two spike ears).
+  const hx = px + pw / 2;
+  const hy = py + ph - 2.4;
+  g.fillStyle(PHOTO_INK, 1);
+  g.fillEllipse(hx, hy, 5, 3.2);
+  g.fillTriangle(hx - 1.6, hy - 1.6, hx - 0.8, hy - 3, hx - 0.4, hy - 1.6);
+  g.fillTriangle(hx + 0.4, hy - 1.6, hx + 0.8, hy - 3, hx + 1.6, hy - 1.6);
+
+  // Foot of the frame catches a brass kiss from the candle's glow.
+  g.fillStyle(BRASS_HI, 0.25);
+  g.fillRect(fx + 0.6, fy + fh - 1.4, fw - 1.2, 0.8);
 }
 
 // ── Empty slot ─────────────────────────────────────────────────────

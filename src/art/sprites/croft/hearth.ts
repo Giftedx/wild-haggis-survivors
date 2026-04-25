@@ -62,6 +62,12 @@ const FLAME_TIP = 0xfff0a0;
 const EMBER_CORE = 0xff8040;
 const EMBER_BRIGHT = 0xffe080;
 const GLOW_WARM = 0xffaa50;
+// Kettle on the hob — Gran's "kettle's on" greeting made literal.
+const KETTLE_OUTLINE = 0x080404;
+const KETTLE_BODY = 0x1a1410;
+const KETTLE_HI = 0x4a3a30;
+const KETTLE_RIM_GLOW = 0x6a4828;
+const STEAM = 0xf0eee0;
 
 /**
  * Draw one hearth frame into a Graphics context.
@@ -215,6 +221,83 @@ export function drawHearthFrame(g: Phaser.GameObjects.Graphics, frameIdx: number
   g.fillRect(3, s - 7, s - 6, 4);
   g.fillStyle(STONE_HI, 0.6);
   g.fillRect(3, s - 7, s - 6, 1);
+
+  // ── Kettle on the right hob. ──
+  // Sits on the hearthstone, just right of the fire mouth so the
+  // canonical "kettle's on" reading is unambiguous and Gran's greeting
+  // gets a visual referent. Steam wisps only on the brighter frames so
+  // the puff times with the flame's strongest tugs.
+  drawKettleOnHob(g, mouthX + mouthW + 4, s - 9, frame.emberGlow);
+}
+
+function drawKettleOnHob(
+  g: Phaser.GameObjects.Graphics,
+  x: number,
+  y: number,
+  emberGlow: number,
+): void {
+  // Body — squat cast-iron belly. Origin (x, y) is the bottom-left of
+  // the belly footprint sitting on the hearthstone.
+  const bw = 11;
+  const bh = 8;
+  g.fillStyle(KETTLE_OUTLINE, 1);
+  g.fillRoundedRect(x, y - bh, bw, bh, 2);
+  g.fillStyle(KETTLE_BODY, 1);
+  g.fillRoundedRect(x + 0.6, y - bh + 0.6, bw - 1.2, bh - 1.2, 1.5);
+  // Highlight crescent on the upper-left (firelight).
+  g.fillStyle(KETTLE_HI, 0.85);
+  g.fillEllipse(x + 3.4, y - bh + 2.4, 4, 1.3);
+
+  // Rim glow that pulses with the ember frame.
+  g.fillStyle(KETTLE_RIM_GLOW, Math.max(0.35, emberGlow * 0.85));
+  g.fillRect(x + 1, y - bh + 0.4, bw - 2, 0.7);
+
+  // Lid + knob.
+  const lidX = x + 2;
+  const lidY = y - bh - 1.4;
+  g.fillStyle(KETTLE_OUTLINE, 1);
+  g.fillRect(lidX, lidY, bw - 4, 1.6);
+  g.fillStyle(KETTLE_BODY, 1);
+  g.fillRect(lidX + 0.4, lidY + 0.4, bw - 4.8, 0.9);
+  // Knob.
+  g.fillStyle(KETTLE_OUTLINE, 1);
+  g.fillRect(lidX + (bw - 4) / 2 - 0.8, lidY - 1.4, 1.8, 1.6);
+  g.fillStyle(KETTLE_HI, 0.7);
+  g.fillRect(lidX + (bw - 4) / 2 - 0.4, lidY - 1.2, 0.6, 0.6);
+
+  // Spout — pokes left toward the fire so steam reads as rising into
+  // the warm draught.
+  g.fillStyle(KETTLE_OUTLINE, 1);
+  g.fillTriangle(
+    x - 2, y - bh + 2,
+    x + 1, y - bh + 1,
+    x + 1, y - bh + 4,
+  );
+  g.fillStyle(KETTLE_BODY, 1);
+  g.fillTriangle(
+    x - 1.4, y - bh + 2.4,
+    x + 0.8, y - bh + 1.8,
+    x + 0.8, y - bh + 3.4,
+  );
+
+  // Handle — arch over the lid.
+  g.lineStyle(1, KETTLE_OUTLINE, 1);
+  g.beginPath();
+  g.arc(x + bw / 2, y - bh - 0.4, 4, Math.PI * 1.05, Math.PI * 1.95, false);
+  g.strokePath();
+
+  // Steam wisp — only on the brighter frames so the puff feels timed.
+  if (emberGlow > 0.85) {
+    g.fillStyle(STEAM, 0.75);
+    g.fillEllipse(x - 1.6, y - bh - 3, 2.6, 1.4);
+    g.fillStyle(STEAM, 0.55);
+    g.fillEllipse(x - 3.0, y - bh - 5, 2.2, 1.2);
+    g.fillStyle(STEAM, 0.35);
+    g.fillEllipse(x - 1.8, y - bh - 7, 1.6, 1);
+  } else if (emberGlow > 0.7) {
+    g.fillStyle(STEAM, 0.4);
+    g.fillEllipse(x - 1.6, y - bh - 3, 2, 1.2);
+  }
 }
 
 /**
