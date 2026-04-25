@@ -580,6 +580,67 @@ describe('RunPersistenceBridge', () => {
       expect(snapshot.actState?.nodeOutcomes).toBeUndefined();
     });
 
+    it('round-trips active TempBuffBag entries via snapshotEntries (T101 follow-up)', async () => {
+      // Use the real TempBuffBag + a fake Player so the round-trip exercises
+      // the registry (apply → revert pair) end-to-end.
+      const { TempBuffBag } = await import('../../systems/TempBuffBag');
+      const bag = new TempBuffBag();
+      const playerFake = {
+        x: 0, y: 0,
+        getHp: () => 60, getMaxHp: () => 100,
+        getDashCharges: () => 0, getDashCooldownMs: () => 0,
+        getShieldCooldownMs: () => 0,
+        onLevelUp: vi.fn(),
+        setResumeHealth: vi.fn(),
+        setResumeShieldCooldown: vi.fn(),
+        setResumeDashState: vi.fn(),
+        damage: 0,
+        addDamageMultiplier: vi.fn(function (this: { damage: number }, d: number) { this.damage += d; }),
+      };
+      // Hand-bind so `this` survives the registry's arrow-function calls.
+      playerFake.addDamageMultiplier = playerFake.addDamageMultiplier.bind(playerFake);
+
+      const state = buildState();
+      const { hooks } = buildHooks(state);
+      hooks.getPlayer = () => playerFake as never;
+      hooks.getTempBuffBag = () => bag;
+
+      // Live: apply a damage buff via the registry path.
+      const { applyShrineBuff } = await import('../../systems/shrineBuffRegistry');
+      applyShrineBuff(bag, 'buff_damage', 600, { player: playerFake } as never);
+      expect(bag.activeCount()).toBe(1);
+      expect(playerFake.damage).toBeCloseTo(0.25);
+
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.tempBuffs).toEqual([
+        { key: 'buff_damage', remainingMs: 600 },
+      ]);
+
+      // Reset bag + player + actState; re-apply snapshot. Buff re-attaches.
+      const freshBag = new TempBuffBag();
+      const freshPlayer = { ...playerFake, damage: 0 };
+      freshPlayer.addDamageMultiplier = (function (this: typeof freshPlayer, d: number) {
+        this.damage += d;
+      }).bind(freshPlayer);
+      hooks.getTempBuffBag = () => freshBag;
+      hooks.getPlayer = () => freshPlayer as never;
+      state.actState.reset();
+      new RunPersistenceBridge(hooks).applyResume({ ...snapshot } as never);
+      expect(freshBag.activeCount()).toBe(1);
+      expect(freshPlayer.damage).toBeCloseTo(0.25);
+
+      // Tick past expiry → revert lands on the fresh player.
+      freshBag.tick(700);
+      expect(freshBag.activeCount()).toBe(0);
+      expect(freshPlayer.damage).toBeCloseTo(0);
+    });
+
+    it('omits tempBuffs from snapshot when bag is empty (no orphan key)', () => {
+      const { hooks } = buildHooks(buildState());
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.tempBuffs).toBeUndefined();
+    });
+
     it('clamps negative counters to 0 (defensive against malformed saves)', () => {
       const state = buildState();
       const { hooks, score } = buildHooks(state);

@@ -129,6 +129,14 @@ export interface IRunState {
    */
   actState?: IRunActStateSnapshot;
   /**
+   * T101 follow-up — active shrine combat buffs (M1 F4) at snapshot time.
+   * Each entry is `{ key, remainingMs }`; the resume path looks up the
+   * matching `apply` / `revert` from the shrine-buff registry and
+   * re-attaches the entry to the rebuilt `TempBuffBag`. Absent on
+   * pre-T101 payloads.
+   */
+  tempBuffs?: Array<{ key: string; remainingMs: number }>;
+  /**
    * W66 Ironmoor — true when the run was started in single-life mode.
    * Resumed runs HONOUR this field over the live `ironmoorMode` setting
    * so a mid-run toggle-off can't retroactively grant Second Wind
@@ -429,7 +437,24 @@ function coerceIRunState(raw: unknown): IRunState | null {
     heldRelicKeys: toOptionalStringArray(o.heldRelicKeys),
     actState: coerceRunActStateSnapshot(o.actState),
     ironmoor: toOptionalBool(o.ironmoor),
+    tempBuffs: coerceTempBuffSnapshot(o.tempBuffs),
   };
+}
+
+function coerceTempBuffSnapshot(
+  raw: unknown,
+): NonNullable<IRunState['tempBuffs']> | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: NonNullable<IRunState['tempBuffs']> = [];
+  for (const item of raw) {
+    if (item === null || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    if (typeof o.key !== 'string' || o.key.length === 0) continue;
+    const remainingMs = typeof o.remainingMs === 'number' ? o.remainingMs : 0;
+    if (!Number.isFinite(remainingMs) || remainingMs <= 0) continue;
+    out.push({ key: o.key, remainingMs });
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 function coerceRunActStateSnapshot(raw: unknown): IRunActStateSnapshot | undefined {

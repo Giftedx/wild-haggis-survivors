@@ -102,4 +102,15 @@ export class TempBuffBag {
   snapshot(): readonly TempBuffEntry[] {
     return this.entries.slice();
   }
+
+  /**
+   * Serialisable snapshot — `{ key, remainingMs }` only (the closure-bound
+   * `revert` is dropped because it can't be JSON-encoded). T101 follow-up:
+   * lets `RunPersistenceBridge` round-trip the bag through `IRunState`,
+   * paired with `restoreShrineBuffs` which re-applies each entry against
+   * the freshly-built Player by registry lookup.
+   */
+  snapshotEntries(): Array<{ key: string; remainingMs: number }> {
+    return this.entries.map((e) => ({ key: e.key, remainingMs: e.remainingMs }));
+  }
 }

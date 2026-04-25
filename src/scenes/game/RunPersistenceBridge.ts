@@ -35,6 +35,8 @@ import { applyRouteModifierDeltas } from '../actIntermissionResolve';
 import { emitSaveFailure } from '../../utils/saveFailure';
 import { getNodeDef } from '../../data/nodeBanks';
 import { buildNodeMapState } from '../../systems/NodeMapSystem';
+import { restoreShrineBuffs } from '../../systems/shrineBuffRegistry';
+import type { TempBuffBag } from '../../systems/TempBuffBag';
 
 export interface RunPersistenceHooks {
   // Systems (reads)
@@ -61,6 +63,16 @@ export interface RunPersistenceHooks {
 
   /** W66 Ironmoor — run-scoped flag (locked in at run start, NOT live setting). */
   isIronmoorRun(): boolean;
+
+  /**
+   * T101 follow-up — TempBuffBag accessor so the persistence bridge can
+   * round-trip active shrine buffs through `IRunState.tempBuffs`. The
+   * bag's serialisable snapshot covers `{ key, remainingMs }` only;
+   * `apply` / `revert` route through the shrine-buff registry on
+   * resume. Optional: scenes that don't yet wire it up keep the
+   * legacy "buffs are dropped on resume" behaviour as a graceful fallback.
+   */
+  getTempBuffBag?(): TempBuffBag;
 
   /**
    * T101 — signal to GameScene that the next `initNodeMapForAct` call
@@ -132,6 +144,12 @@ export class RunPersistenceBridge {
       ...(heldRelicKeys.length > 0 ? { heldRelicKeys: [...heldRelicKeys] } : {}),
       actState: snapshotRunActState(h.getRunActState()),
       ironmoor: h.isIronmoorRun(),
+      ...(() => {
+        const bag = h.getTempBuffBag?.();
+        if (!bag) return {};
+        const entries = bag.snapshotEntries();
+        return entries.length > 0 ? { tempBuffs: entries } : {};
+      })(),
     };
   }
 
@@ -216,6 +234,16 @@ export class RunPersistenceBridge {
     );
     if (restoredNodeMap) {
       h.suppressNextNodeMapRoll?.();
+    }
+    // T101 follow-up — re-attach active shrine buffs after the player is
+    // built and the act state is restored. Each entry's remainingMs
+    // survives through the bag's tick loop; the registry's apply/revert
+    // run against the live Player.
+    if (run.tempBuffs && run.tempBuffs.length > 0) {
+      const bag = h.getTempBuffBag?.();
+      if (bag) {
+        restoreShrineBuffs(bag, run.tempBuffs, { player });
+      }
     }
   }
 

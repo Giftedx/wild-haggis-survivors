@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { GAME, COLORS_CSS, PLAYER } from '../config';
+import { GAME, COLORS_CSS } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
@@ -89,6 +89,7 @@ import { getCurseByKey, type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
+import { applyShrineBuff, isRegisteredShrineBuffKey } from '../systems/shrineBuffRegistry';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
 import { RUNES } from '../data/runes';
@@ -912,6 +913,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRunActState: () => this.runActState,
       getRunModifiers: () => this.runModifiers,
       isIronmoorRun: () => this.activeIronmoorRun,
+      getTempBuffBag: () => this.tempBuffBag,
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,
@@ -2359,61 +2361,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   /**
    * Apply a shrine boon. M1 F4 — combat buffs (damage / speed / armor /
-   * crit / pickup) route through `TempBuffBag` for `durationMs`; gold
-   * / xp / luck stay immediate, and unsupported keys (regen / reflect
-   * / dodge — missing revertible stat hooks) fall back to the pre-F4
-   * 20% heal stand-in so the pick always delivers something.
+   * crit / pickup) route through `TempBuffBag` via the shrine-buff
+   * registry (single applyShrineBuff entry point so the deltas stay in
+   * one place AND the bag's snapshot stays JSON-serialisable for resume
+   * — T101 follow-up). Gold / xp / luck stay immediate, and unsupported
+   * keys (regen / reflect / dodge — missing revertible stat hooks) fall
+   * back to the pre-F4 20% heal stand-in so the pick always delivers
+   * something.
    */
   private applyShrineBoon(key: string, durationMs: number): void {
+    if (isRegisteredShrineBuffKey(key)) {
+      applyShrineBuff(this.tempBuffBag, key, durationMs, { player: this.player });
+      this.showShrineTimedToast(key, durationMs);
+      return;
+    }
     switch (key) {
-      case 'buff_damage': {
-        // +25% damage multiplier — additive so revert is a clean -0.25.
-        const delta = 0.25;
-        this.tempBuffBag.add(key, durationMs, () => {
-          this.player.addDamageMultiplier(delta);
-          return () => this.player.addDamageMultiplier(-delta);
-        });
-        this.showShrineTimedToast(key, durationMs);
-        break;
-      }
-      case 'buff_speed': {
-        // +20% of base speed — matches Loch Water's footprint but temp.
-        const delta = PLAYER.SPEED * 0.20;
-        this.tempBuffBag.add(key, durationMs, () => {
-          this.player.addSpeed(delta);
-          return () => this.player.addSpeed(-delta);
-        });
-        this.showShrineTimedToast(key, durationMs);
-        break;
-      }
-      case 'buff_armor': {
-        // Flat +3 armor for the window — leans toward survivability.
-        const delta = 3;
-        this.tempBuffBag.add(key, durationMs, () => {
-          this.player.addArmor(delta);
-          return () => this.player.addArmor(-delta);
-        });
-        this.showShrineTimedToast(key, durationMs);
-        break;
-      }
-      case 'buff_crit': {
-        const delta = 0.15;
-        this.tempBuffBag.add(key, durationMs, () => {
-          this.player.addCritChance(delta);
-          return () => this.player.addCritChance(-delta);
-        });
-        this.showShrineTimedToast(key, durationMs);
-        break;
-      }
-      case 'buff_pickup': {
-        const delta = PLAYER.PICKUP_RADIUS * 0.40;
-        this.tempBuffBag.add(key, durationMs, () => {
-          this.player.addPickupRadius(delta);
-          return () => this.player.addPickupRadius(-delta);
-        });
-        this.showShrineTimedToast(key, durationMs);
-        break;
-      }
       case 'buff_regen':
       case 'buff_reflect':
       case 'buff_dodge': {
