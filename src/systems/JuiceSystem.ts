@@ -16,7 +16,7 @@ import type { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
 import { fillCirclePool } from './fillCirclePool';
 import { damageNumberStyle } from './damageNumberStyle';
-import { toastStackY, toastWrapWidth } from './toastLayout';
+import { decideEnqueue, toastStackY, toastWrapWidth } from './toastLayout';
 import { resolveComboDisplay } from './comboDisplay';
 import { resolveComboMilestoneVfx } from './comboMilestoneVfx';
 import {
@@ -94,8 +94,11 @@ export class JuiceSystem {
   private comboText: Phaser.GameObjects.Text;
 
   // Toast stacking + live-toast registry (so modal-open can fade them).
+  // P2.6 — concurrent visible count is capped (see MAX_VISIBLE_TOASTS);
+  // overflow waits in `pendingToasts` and drains as live toasts retire.
   private activeToasts: number = 0;
   private liveToasts: Phaser.GameObjects.Text[] = [];
+  private pendingToasts: Array<{ message: string; color: string }> = [];
 
   // Danger vignette (low HP warning)
   private vignette: Phaser.GameObjects.Graphics;
@@ -576,9 +579,30 @@ export class JuiceSystem {
       || this.time.has('COUNTDOWN');
   }
 
-  /** Toast notification — slides in from the right and fades out, stacks vertically */
+  /**
+   * Toast notification — slides in from the right and fades out.
+   *
+   * P2.6 single-lane queue: at most `MAX_VISIBLE_TOASTS` are rendered
+   * at once. Excess goes through `pendingToasts` and is spawned as
+   * live toasts retire. A bounded backlog drops the OLDEST pending
+   * entry on overflow — late signals are usually the most relevant
+   * once the player is already mid-flurry.
+   */
   showToast(message: string, color: string = COLORS_CSS.WHITE): void {
     if (this.isModalActive()) return;
+    const decision = decideEnqueue(this.activeToasts, this.pendingToasts.length);
+    if (decision.kind === 'spawn-now') {
+      this.spawnToastNow(message, color);
+      return;
+    }
+    if (decision.kind === 'queue-with-drop') {
+      this.pendingToasts.splice(decision.droppedIndex, 1);
+    }
+    this.pendingToasts.push({ message, color });
+  }
+
+  /** Render a toast immediately. Caller is responsible for the queue gate. */
+  private spawnToastNow(message: string, color: string): void {
     const { x, y, width } = this.getUiViewport();
     const yOffset = toastStackY(y, this.activeToasts);
     this.activeToasts++;
@@ -610,18 +634,38 @@ export class JuiceSystem {
             if (idx >= 0) this.liveToasts.splice(idx, 1);
             toast.destroy();
             this.activeToasts = Math.max(0, this.activeToasts - 1);
+            this.drainPendingToast();
           },
         });
       },
     });
   }
 
+  /** Pop the oldest pending toast and spawn it, if any. */
+  private drainPendingToast(): void {
+    if (this.pendingToasts.length === 0) return;
+    if (this.activeToasts >= 0 && this.isModalActive()) {
+      // Modal opened during the lane's lifetime — flush the queue so
+      // we don't crash the modal banner with a delayed-arrival toast
+      // the moment the player exits the menu. Matches the
+      // dismissActiveToasts contract.
+      this.pendingToasts.length = 0;
+      return;
+    }
+    const next = this.pendingToasts.shift();
+    if (next) this.spawnToastNow(next.message, next.color);
+  }
+
   /**
    * Fade out every active toast immediately. Modal-open hooks (level-up,
    * pause, intermission) call this so prior banter / kill-log toasts
    * don't render on top of the modal title (audit 06a / 05g).
+   *
+   * Also clears the pending-toast queue — players should not see a
+   * trickle of stale signals re-emerge once the modal closes.
    */
   dismissActiveToasts(): void {
+    this.pendingToasts.length = 0;
     for (const toast of this.liveToasts.slice()) {
       this.scene.tweens.killTweensOf(toast);
       this.scene.tweens.add({
