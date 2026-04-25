@@ -47,19 +47,17 @@ import { DeedsScene } from './scenes/DeedsScene';
 import { AlmanacScene } from './scenes/AlmanacScene';
 import { CurseScene } from './scenes/CurseScene';
 import { ActIntermissionScene } from './scenes/ActIntermissionScene';
-import { SpriteExportScene } from './tools/SpriteExportScene';
-import { CombinationsPreviewScene } from './scenes/dev/CombinationsPreviewScene';
 import { buildRenderNodesConfig } from './systems/shaders/ShaderRegistry';
 import { registerAllShaders } from './systems/shaders/registerAllShaders';
 import { applyColorblindFilterToCanvas } from './systems/accessibility/applyColorblindFilter';
 import { getSettingsManager } from './core/SettingsManager';
+import { installLazyToolSceneLoader } from './tools/lazyToolScenes';
 
 // Register custom render-node shaders before the Phaser.Game constructor reads
 // the config map. See docs/adr/0003-shader-registry-phaser-postfx-pipeline.md.
 registerAllShaders();
 
 /** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
-const isSpriteExport = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export');
 
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */
 const config: Phaser.Types.Core.GameConfig = {
@@ -87,9 +85,7 @@ const config: Phaser.Types.Core.GameConfig = {
       fixedStep: true,
     },
   },
-  scene: isSpriteExport
-    ? [BootScene, SpriteExportScene]
-    : [BootScene, MainMenuScene, MenuScene, CroftScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, AlmanacScene, CurseScene, SettingsScene, SettingsInputScene, CombinationsPreviewScene],
+  scene: [BootScene, MainMenuScene, MenuScene, CroftScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, AlmanacScene, CurseScene, SettingsScene, SettingsInputScene],
   render: {
     pixelArt: true,
     antialias: false,
@@ -141,6 +137,10 @@ if (typeof window !== 'undefined') {
   // Exposed unconditionally so Playwright E2E can drive scene transitions
   // (see e2e/resume.spec.ts). Dev convenience still works identically.
   (window as Window & { game?: Phaser.Game }).game = game;
+  const params = new URLSearchParams(window.location.search);
+  if (import.meta.env.DEV || params.has('devScenes')) {
+    installLazyToolSceneLoader(game);
+  }
 }
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   // Stress-test console hooks: startStressTest() / stopStressTest().

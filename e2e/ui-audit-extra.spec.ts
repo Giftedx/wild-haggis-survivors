@@ -184,6 +184,21 @@ async function gotoScene(page: PageT, key: string, data: unknown = {}, settleMs 
   await page.waitForTimeout(settleMs);
 }
 
+async function loadToolScene(page: PageT, key: 'CombinationsPreview' | 'SpriteExport'): Promise<void> {
+  const ok = await page.evaluate(async (toolKey) => {
+    const loader = (window as unknown as {
+      __WHS_LOAD_TOOL_SCENE__?: (key: string) => Promise<boolean>;
+    }).__WHS_LOAD_TOOL_SCENE__;
+    if (!loader) return false;
+    try {
+      return await loader(toolKey);
+    } catch {
+      return false;
+    }
+  }, key);
+  expect(ok, `tool scene ${key} failed to lazy-register`).toBe(true);
+}
+
 async function snap(page: PageT, name: string): Promise<void> {
   const canvas = page.locator('canvas[role="application"]');
   await canvas.screenshot({ path: path.join(OUT_DIR, `${name}.png`) });
@@ -438,12 +453,13 @@ test.describe('UI design audit — extra mapped states', () => {
     await page.waitForTimeout(1000);
     await snap(page, '19a-sprite-export-scene');
 
-    await bootCanvas(page);
+    await bootCanvas(page, '/?devScenes=1');
     await gotoScene(page, 'Game', {}, 1300);
     await page.keyboard.press('F3');
     await page.waitForTimeout(300);
     await snap(page, '19b-debug-overlay');
 
+    await loadToolScene(page, 'CombinationsPreview');
     await gotoScene(page, 'CombinationsPreview', {}, 1000);
     await snap(page, '19c-combinations-preview');
   });

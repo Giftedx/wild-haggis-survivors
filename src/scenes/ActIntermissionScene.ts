@@ -27,11 +27,17 @@ import { t } from '../core/i18n';
 import { COLORS, COLORS_CSS, UI } from '../config';
 import { textStyle } from '../ui/typography';
 import { createRouteCard } from '../ui/routeCard';
+import {
+  firstEnabledModalFocusIndex,
+  moveModalFocusIndex,
+  type ModalFocusEntry,
+} from '../ui/modalFocus';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
 import { HaarFogController } from '../systems/shaders/HaarFogController';
 import { capHaarForA11y } from '../systems/shaders/haarA11y';
 import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
+import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -41,12 +47,23 @@ export interface ActIntermissionLaunchData {
   onResolve: (pick: RoutePick, route: RouteDef) => void;
 }
 
+interface RouteFocusEntry extends ModalFocusEntry {
+  readonly route: RouteDef;
+  readonly bg: Phaser.GameObjects.Rectangle;
+}
+
 export class ActIntermissionScene extends Phaser.Scene {
   static readonly KEY = 'ActIntermission';
 
   private launchData!: ActIntermissionLaunchData;
-  /** Shortcut map — 1/2/3 keys resolve the matching card. Cleared on stop. */
+  /** Scene-scoped keyboard handler. Cleared on stop. */
   private keyHandler?: (e: KeyboardEvent) => void;
+  private routeFocusEntries: RouteFocusEntry[] = [];
+  private focusedRouteIndex = -1;
+  private gamepadUpdateHandler: (() => void) | null = null;
+  private prevPadBack = false;
+  private prevPadForward = false;
+  private prevPadConfirm = false;
   /** F1 — haar fog filter controller applied to this scene's camera. */
   private haar?: HaarFogController;
 
@@ -59,14 +76,19 @@ export class ActIntermissionScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.routeFocusEntries = [];
+    this.focusedRouteIndex = -1;
+    this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
     const routes = ROUTES_BY_SLOT[this.launchData.slot];
     this.renderRouteCards(routes);
     this.installKeyboardShortcuts(routes);
+    this.installGamepadShortcuts();
     this.applyHaarWash();
     audio.startAmbientWind(0.04);
     // Uninstall keyboard handler and fade wind when the scene tears down.
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.uninstallKeyboardShortcuts();
+      this.uninstallGamepadShortcuts();
       audio.fadeOutAmbientWind(400);
       this.haar = undefined;
     });
@@ -153,7 +175,7 @@ export class ActIntermissionScene extends Phaser.Scene {
 
     routes.forEach((route, i) => {
       const x = startX + i * (cardW + gap);
-      createRouteCard({
+      const card = createRouteCard({
         scene: this,
         x,
         y,
@@ -164,33 +186,124 @@ export class ActIntermissionScene extends Phaser.Scene {
         uiScale,
         onSelect: (r) => this.resolve(r),
       });
+      this.routeFocusEntries.push({ route, bg: card.bg });
+      card.bg.on('pointerover', () => {
+        this.focusedRouteIndex = i;
+        this.applyRouteFocus();
+      });
+      card.bg.on('pointerout', () => this.applyRouteFocus());
     });
+    this.focusedRouteIndex = firstEnabledModalFocusIndex(this.routeFocusEntries);
+    this.applyRouteFocus();
   }
 
   /**
-   * 1/2/3 keys resolve the matching card. Installed once per scene launch;
+   * 1/2/3 keys resolve the matching card. Arrow keys / Tab move focus and
+   * Enter / Space confirm the focused route. Installed once per scene launch;
    * SHUTDOWN event (Phaser emits on scene.stop) uninstalls so no stray
    * handler bleeds into GameScene after the picker closes.
    */
   private installKeyboardShortcuts(routes: readonly RouteDef[]): void {
-    if (typeof window === 'undefined') return;
+    const keyboard = this.input.keyboard;
+    if (!keyboard) return;
     this.keyHandler = (e: KeyboardEvent) => {
       const idx = actIntermissionShortcutIndex(e.key);
-      if (idx === null) return;
-      const route = routes[idx];
-      if (!route) return;
+      if (idx !== null) {
+        const route = routes[idx];
+        if (!route) return;
+        e.preventDefault();
+        this.resolve(route);
+        return;
+      }
+
+      if (
+        e.key === 'ArrowLeft'
+        || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        this.moveRouteFocus(-1);
+        return;
+      }
+
+      if (
+        e.key === 'ArrowRight'
+        || e.key === 'ArrowDown'
+        || e.key === 'Tab'
+      ) {
+        e.preventDefault();
+        this.moveRouteFocus(1);
+        return;
+      }
+
+      if (e.key !== 'Enter' && e.key !== ' ') return;
       e.preventDefault();
-      this.resolve(route);
+      this.activateFocusedRoute();
     };
-    window.addEventListener('keydown', this.keyHandler);
+    keyboard.on('keydown', this.keyHandler);
   }
 
   private uninstallKeyboardShortcuts(): void {
     if (!this.keyHandler) return;
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('keydown', this.keyHandler);
-    }
+    this.input.keyboard?.off('keydown', this.keyHandler);
     this.keyHandler = undefined;
+  }
+
+  private installGamepadShortcuts(): void {
+    this.uninstallGamepadShortcuts();
+    this.gamepadUpdateHandler = () => {
+      const pad = this.input.gamepad?.pad1;
+      if (!pad?.connected) {
+        this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
+        return;
+      }
+
+      const back = pad.left || pad.up || pad.leftStick.x < -0.5 || pad.leftStick.y < -0.5;
+      const forward = pad.right || pad.down || pad.leftStick.x > 0.5 || pad.leftStick.y > 0.5;
+      const confirm = pad.buttons[0]?.pressed === true || pad.buttons[9]?.pressed === true;
+
+      if (back && !this.prevPadBack) this.moveRouteFocus(-1);
+      if (forward && !this.prevPadForward) this.moveRouteFocus(1);
+      if (confirm && !this.prevPadConfirm) this.activateFocusedRoute();
+
+      this.prevPadBack = back;
+      this.prevPadForward = forward;
+      this.prevPadConfirm = confirm;
+    };
+    this.events.on('update', this.gamepadUpdateHandler);
+  }
+
+  private uninstallGamepadShortcuts(): void {
+    if (!this.gamepadUpdateHandler) return;
+    this.events.off('update', this.gamepadUpdateHandler);
+    this.gamepadUpdateHandler = null;
+  }
+
+  private moveRouteFocus(direction: -1 | 1): void {
+    this.focusedRouteIndex = moveModalFocusIndex(
+      this.routeFocusEntries,
+      this.focusedRouteIndex,
+      direction,
+    );
+    this.applyRouteFocus();
+  }
+
+  private activateFocusedRoute(): void {
+    const entry = this.routeFocusEntries[this.focusedRouteIndex];
+    if (!entry || entry.disabled) return;
+    this.resolve(entry.route);
+  }
+
+  private applyRouteFocus(): void {
+    const style = resolveActIntermissionCardStyle();
+    for (let i = 0; i < this.routeFocusEntries.length; i++) {
+      const entry = this.routeFocusEntries[i]!;
+      if (i === this.focusedRouteIndex) {
+        entry.bg.setStrokeStyle(style.hover.thickness, style.hover.color);
+      } else {
+        entry.bg.setStrokeStyle(style.idle.thickness, style.idle.color);
+      }
+    }
   }
 
   /**
@@ -199,6 +312,7 @@ export class ActIntermissionScene extends Phaser.Scene {
    */
   resolve(route: RouteDef, opts?: { defaultedBySetting?: boolean }): void {
     this.uninstallKeyboardShortcuts();
+    this.uninstallGamepadShortcuts();
     const pick = buildRoutePick(route, this.launchData.atGameTimeSec, opts);
     this.launchData.onResolve(pick, route);
     this.scene.stop();

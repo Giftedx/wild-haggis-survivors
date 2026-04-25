@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { expectValidEnemyBodyFrame } from './enemyFrameTestHelpers';
 import { eagleDrawer } from './eagleFrames';
 import { getFrameCountForState } from '../../frameClock';
 import type { AnimationState } from '../../animationStates';
@@ -21,7 +22,7 @@ describe('eagleFrames', () => {
       const count = getFrameCountForState(state);
       for (let f = 0; f < count; f++) {
         const frame = eagleDrawer.getFrame(state, f);
-        expect(frame).toBeDefined();
+        expectValidEnemyBodyFrame(frame, state + ':' + f);
       }
     }
   });

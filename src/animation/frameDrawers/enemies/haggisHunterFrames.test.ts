@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { expectValidEnemyBodyFrame } from './enemyFrameTestHelpers';
 import { haggisHunterDrawer } from './haggisHunterFrames';
 import { getFrameCountForState } from '../../frameClock';
 import type { AnimationState } from '../../animationStates';
@@ -20,7 +21,7 @@ describe('haggisHunterFrames', () => {
       const count = getFrameCountForState(state);
       for (let f = 0; f < count; f++) {
         const frame = haggisHunterDrawer.getFrame(state, f);
-        expect(frame).toBeDefined();
+        expectValidEnemyBodyFrame(frame, state + ':' + f);
       }
     }
   });

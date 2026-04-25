@@ -21,6 +21,7 @@
  */
 
 import type { Player } from '../../entities/Player';
+import { ensureLazyToolScene } from '../../tools/lazyToolScenes';
 
 /**
  * Read from globalThis every call so runtime flag changes work. Previous
@@ -103,8 +104,14 @@ export function registerDebugHotkeys(
   kb.on('keydown-C', () => {
     if (!isDevHotkeysEnabled()) return;
     const s = hooks.getScene();
-    s.scene.pause('Game');
-    s.scene.launch('CombinationsPreview');
+    void ensureLazyToolScene(s.game, 'CombinationsPreview')
+      .then(() => {
+        s.scene.pause('Game');
+        s.scene.launch('CombinationsPreview');
+      })
+      .catch((err) => {
+        console.error('[debugHotkeys] Failed to load CombinationsPreview scene', err);
+      });
   });
 
   kb.on('keydown-F9', () => {
@@ -113,7 +120,11 @@ export function registerDebugHotkeys(
     // texture into a single PNG and auto-downloads it. Primary way to
     // review all art in one go without editing the URL bar.
     const s = hooks.getScene();
-    s.scene.start('SpriteExport');
+    void ensureLazyToolScene(s.game, 'SpriteExport')
+      .then(() => s.scene.start('SpriteExport'))
+      .catch((err) => {
+        console.error('[debugHotkeys] Failed to load SpriteExport scene', err);
+      });
   });
 }
 

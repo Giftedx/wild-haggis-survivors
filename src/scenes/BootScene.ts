@@ -29,6 +29,7 @@ import {
   shouldShowPhotosensitivityWarning,
 } from '../ui/photosensitivityWarning';
 import { showPhotosensitivityWarningSplash } from '../ui/PhotosensitivityWarningSplash';
+import { ensureLazyToolScene } from '../tools/lazyToolScenes';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
 import { bakeProjectiles } from '../art/sprites/projectiles';
@@ -124,7 +125,7 @@ export class BootScene extends Phaser.Scene {
 
     // Dev tool: skip splash and go straight to sprite export
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
-      this.scene.start('SpriteExport');
+      void this.startSpriteExportScene();
       return;
     }
 
@@ -300,6 +301,27 @@ export class BootScene extends Phaser.Scene {
         goMenu();
       },
     });
+  }
+
+  private async startSpriteExportScene(): Promise<void> {
+    try {
+      await ensureLazyToolScene(this.game, 'SpriteExport');
+      this.scene.start('SpriteExport');
+    } catch (err) {
+      console.error('[BootScene] Failed to load SpriteExport scene', err);
+      this.add
+        .text(
+          this.scale.width / 2,
+          this.scale.height / 2,
+          'Sprite export failed to load',
+          {
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            color: COLORS_CSS.WHISKY_GOLD,
+          },
+        )
+        .setOrigin(0.5);
+    }
   }
 
   private generateAllTextures(): void {

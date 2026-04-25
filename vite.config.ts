@@ -60,8 +60,15 @@ export default defineConfig({
       // users fetch it on demand via the dynamic `import('./i18n.scs')` in
       // `ensureLocaleReady` and workbox's default runtime caching keeps it
       // warm on repeat activations.
+      // Dev/tool scenes are also lazy-loaded only when explicitly requested
+      // (`?export`, `?devScenes=1`, or dev hotkeys), so keep them out of
+      // the install-time production cache.
       workbox: {
-        globIgnores: ['**/i18n.scs-*.js'],
+        globIgnores: [
+          '**/i18n.scs-*.js',
+          '**/CombinationsPreviewScene-*.js',
+          '**/SpriteExportScene-*.js',
+        ],
       },
       manifest: {
         name: 'Wild Haggis Survivors',

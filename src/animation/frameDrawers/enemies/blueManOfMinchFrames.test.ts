@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { expectValidEnemyBodyFrame } from './enemyFrameTestHelpers';
 import { blueManOfMinchDrawer } from './blueManOfMinchFrames';
 import { getFrameCountForState } from '../../frameClock';
 import type { AnimationState } from '../../animationStates';
@@ -21,8 +22,7 @@ describe('blueManOfMinchFrames', () => {
       const count = getFrameCountForState(state);
       for (let f = 0; f < count; f++) {
         const frame = blueManOfMinchDrawer.getFrame(state, f);
-        expect(frame).toBeDefined();
-        expect(typeof frame).toBe('object');
+        expectValidEnemyBodyFrame(frame, state + ':' + f);
       }
     }
   });

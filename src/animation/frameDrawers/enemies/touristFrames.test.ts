@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { expectValidEnemyBodyFrame } from './enemyFrameTestHelpers';
 import { touristDrawer } from './touristFrames';
 import { getFrameCountForState } from '../../frameClock';
 import type { AnimationState } from '../../animationStates';
@@ -21,8 +22,7 @@ describe('touristFrames', () => {
       const count = getFrameCountForState(state);
       for (let f = 0; f < count; f++) {
         const frame = touristDrawer.getFrame(state, f);
-        expect(frame).toBeDefined();
-        expect(typeof frame).toBe('object');
+        expectValidEnemyBodyFrame(frame, state + ':' + f);
       }
     }
   });
