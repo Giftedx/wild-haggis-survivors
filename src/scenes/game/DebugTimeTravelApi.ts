@@ -19,6 +19,8 @@ export interface DebugTimeTravelHooks {
   getHeldRelicKeys?(): readonly string[];
   /** R1 test seam — access the registered Relic catalogue for e2e. */
   getRelicCatalogue?(): Readonly<Record<RelicKey, RelicDef>>;
+  /** R1 audit seam — open the full-sporran discard modal deterministically. */
+  openRelicDiscardPromptForAudit?(): boolean;
 }
 
 /** Keybind: Shift+] advances 60 game seconds. */
@@ -46,6 +48,7 @@ export class DebugTimeTravelApi {
         spawnRelicAt?: (key: string, x: number, y: number) => boolean;
         getHeldRelicKeys?: () => readonly string[];
         getRelicCatalogueKeys?: () => readonly string[];
+        openRelicDiscardPromptForAudit?: () => boolean;
       };
     };
     g.DEBUG = {
@@ -73,6 +76,8 @@ export class DebugTimeTravelApi {
         const cat = this.hooks.getRelicCatalogue?.();
         return cat ? Object.keys(cat) : [];
       },
+      openRelicDiscardPromptForAudit: () =>
+        this.hooks.openRelicDiscardPromptForAudit?.() ?? false,
     };
 
     if (typeof window === 'undefined') return;

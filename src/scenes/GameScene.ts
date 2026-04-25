@@ -941,6 +941,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       spawnRelicAt: (key, x, y) => this.debugSpawnRelicAt(key, x, y),
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
       getRelicCatalogue: () => RELICS,
+      openRelicDiscardPromptForAudit: () => {
+        if (this.relicDiscardModalOpen) return false;
+        this.restoreHeldRelics(['sporran_of_holding', 'oatcake_stash', 'grans_thimble']);
+        this.openRelicDiscardModal(RELICS.whisky_dram, 'bargain');
+        return true;
+      },
     });
 
     // Run-end composer — builds RunSummary / GameOverPayload and
