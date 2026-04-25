@@ -229,6 +229,10 @@ export class SettingsInputScene extends Phaser.Scene {
     void palette;
     const { width } = this.scale;
     const cx = width - 150;
+    // P3.6 — drop the custom fill / text-colour overrides so the RESET
+    // chip inherits the standard 'secondary' tier styling (matches BACK
+    // pill). Pre-fix the chip looked borderless / tacked on next to the
+    // framed BACK button.
     const { rect, label } = createGameButton(this, {
       x: cx,
       y,
@@ -238,9 +242,6 @@ export class SettingsInputScene extends Phaser.Scene {
       tier: 'secondary',
       fontSize: '12px',
       uiScale: this.uiScale,
-      fillOverride: 0x2a2430,
-      hoverOverride: 0x3a3040,
-      textColorOverride: '#c8b8d4',
     });
     rect.setScale(this.uiScale);
     label.setScale(this.uiScale);

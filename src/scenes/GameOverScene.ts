@@ -89,7 +89,13 @@ export class GameOverScene extends Phaser.Scene {
     // height/2 - 328 would do on screen sizes outside the original design
     // target (720px tall).
     const PANEL_W = Math.min(684, width - 24);
-    const PANEL_H = Math.min(656, height - 24);
+    // Pre-fix ceiling 656 left only ~22 px between the unlock panel bottom
+    // and the action buttons, so a multi-line variant-unlock paragraph
+    // (e.g. Burns's Wee Beastie + flavor + Ironmoor banner + save-clip
+    // link row) clipped THROUGH the PLAY AGAIN / GOLD SHOP / TAE GRAN'S
+    // buttons. Raising to 712 (full 720p canvas minus margin) buys the
+    // ~56 px the unlock + seed + double link-row stack actually needs.
+    const PANEL_H = Math.min(712, height - 8);
     // Clamp the panel so it stays fully visible even on viewports smaller
     // than PANEL_H. On small screens the panel becomes the clamp region;
     // on larger screens it centers naturally.

@@ -50,7 +50,7 @@ export function buildBeastieDetail(entry: BeastieEntryVM): BeastieDetailVM {
     loreFallback: GENERIC_LORE,
     whereFoundText: formatWhereFound(entry.appearsAt),
     killCountText: formatKillCount(entry.killCount),
-    firstSeenText: entry.firstSeenAt
+    firstSeenText: entry.firstSeenAt && entry.firstSeenAt.timestamp > 0
       ? formatFirstSeen(entry.firstSeenAt.timestamp)
       : null,
   };

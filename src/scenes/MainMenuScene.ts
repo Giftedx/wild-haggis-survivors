@@ -220,7 +220,7 @@ export class MainMenuScene extends Phaser.Scene {
       : t('ui.menu.kill_credits_fresh');
     const killCreditText = this.add
       .text(cx, titleY + 88, killCreditCopy,
-        textStyle('body', { fontSize: '20px', color: subduedColor }),
+        textStyle('body', { fontSize: '20px', color: subduedColor, align: 'center', wordWrap: { width: Math.max(120, (vp.width - 40) / Math.max(1, uiScale)) } }),
       )
       .setOrigin(0.5);
     killCreditText.setScale(uiScale);
@@ -451,7 +451,11 @@ export class MainMenuScene extends Phaser.Scene {
     // code (or raw integer) and launches a seeded run. Uses window.prompt
     // for cross-platform simplicity — a full in-game keyboard overlay is
     // future work if mobile UX feedback demands it.
-    const customSeedY = optY + btnH42 + gapLink;
+    // P3.2 — push custom-seed link clear of the campfire embers below.
+    // Pre-fix: customSeedY = optY + 58 sat directly on the campfire glow
+    // (fireY = optY + 52); they shared the same Y band and merged
+    // visually. +14 px clearance so the text sits below the embers.
+    const customSeedY = optY + btnH42 + gapLink + Math.round(14 * uiScale);
     const seedLinkStyle = resolveSeedLinkStyle(highContrastUi, titleColor);
     const customSeedTxt = this.add
       .text(bx, customSeedY, t('ui.menu.enter_seed'), {

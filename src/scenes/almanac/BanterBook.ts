@@ -87,6 +87,19 @@ export function renderBanterBook(
     .setOrigin(0.5, 0)
     .setScale(uiScale);
   objects.push(progress);
+  // P2.4 — sparkle prefix legend. Pre-fix the ✨ on First-Time Marks /
+  // Relic Lifted / Burns Echo had no on-page key, so players couldn't
+  // tell whether it meant "new", "rare", or "special". Single muted line
+  // sits below the progress count.
+  if (entries.some((e) => e.rare)) {
+    const legend = scene.add
+      .text(vx + vw / 2, vy + 28, t('ui.almanac.banter_rare_legend'),
+        textStyle('label', { fontSize: '11px', color: COLORS_CSS.TEXT_MUTED }))
+      .setOrigin(0.5, 0)
+      .setScale(uiScale);
+    legend.setFontStyle('italic');
+    objects.push(legend);
+  }
 
   const listTop = vy + 40;
   const listHeight = Math.max(1, vh - 48);

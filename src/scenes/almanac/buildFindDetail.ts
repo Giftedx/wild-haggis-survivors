@@ -47,7 +47,7 @@ export function buildFindDetail(entry: FindEntryVM): FindDetailVM {
     descKey: entry.descKey,
     descFallback: '',
     acquireCountText: formatAcquireCount(entry.acquireCount),
-    firstAcquiredText: entry.firstAcquiredAt
+    firstAcquiredText: entry.firstAcquiredAt && entry.firstAcquiredAt.timestamp > 0
       ? formatFirstAcquired(entry.firstAcquiredAt.timestamp)
       : null,
   };

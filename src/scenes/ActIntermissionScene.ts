@@ -142,9 +142,11 @@ export class ActIntermissionScene extends Phaser.Scene {
     ).setOrigin(0.5).setScale(uiScale);
 
     // Cards — shrink on narrow viewports so all routes stay on-screen.
+    // Card aspect dropped 1.25 → 0.95 so the route cards no longer carry
+    // ~250 px of dead space below their two-line description (audit 07).
     const maxCardW = Math.floor((width - 64) / routes.length - 24);
     const cardW = Math.min(240, Math.max(100, maxCardW));
-    const cardH = Math.round(cardW * 1.25);
+    const cardH = Math.round(cardW * 0.95);
     const gap = Math.min(32, Math.max(8, Math.floor((width - routes.length * cardW) / (routes.length + 1))));
     const startX = actIntermissionCardStartX(width, routes.length, cardW, gap);
     const y = height / 2 + Math.round(40 * uiScale);

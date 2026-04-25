@@ -117,10 +117,13 @@ export class MetaShopScene extends Phaser.Scene {
     // Page navigation — destroy previous nav then rebuild for current page.
     this.pageText.setText('');
     this.paginationNav.destroy();
+    // P2.5 — pagination nudged up 14 px (height-58 → height-72) so the
+    // "1 / 3" page index has visible padding above the BACK button row
+    // instead of butting against its top edge.
     this.paginationNav = createPaginationNav(
       this,
       width / 2,
-      height - 58,
+      height - 72,
       allKeys.length,
       this.ROWS_PER_PAGE,
       this.page,
@@ -132,26 +135,33 @@ export class MetaShopScene extends Phaser.Scene {
 
     pageKeys.forEach((key, index) => {
       const item = META_SHOP_ITEMS[key];
-      const y = 124 + index * 72;
+      // Row stride bumped 72 → 92 so the multi-line description + prereq
+      // suffix ("Requires: X first") fit within the row band. Pre-fix the
+      // 420-px word-wrap wrapped descriptions to 4–5 lines, which spilled
+      // through the next item's name at the original 72-px stride
+      // (audit 03e — Sprint Boots II / Thick Pelt II overlap).
+      const y = 124 + index * 92;
       const state = resolveMetaShopRowState(item, key, save);
       const { owned, locked, canAfford } = state;
       const rowPalette = resolveMetaShopRowPalette(state);
 
-      const rowBg = this.add.rectangle(width / 2, y + 28, width - 30, 64, resolveShopRowBgColor(index), 0.82);
+      const rowBg = this.add.rectangle(width / 2, y + 38, width - 30, 84, resolveShopRowBgColor(index), 0.82);
       const nameText = this.add.text(34, y + 6, t(item.nameKey),
         textStyle('body', { color: rowPalette.nameColor }),
       );
 
-      // Build lock description — show what's needed.
+      // Build lock description — show what's needed. Wider wrap (820 vs
+      // 420) keeps prose to ≤2 lines so the prereq suffix lands on its
+      // own line below, not on top of the description.
       const descExtra = buildMetaShopLockReasonSuffix(item, state);
 
       const descText = this.add.text(34, y + 28, t(item.descriptionKey) + descExtra,
-        textStyle('small', { color: rowPalette.descColor, wordWrap: { width: 420 } }),
+        textStyle('small', { color: rowPalette.descColor, wordWrap: { width: Math.min(820, width - 220) } }),
       );
       this.rowElements.push(rowBg, nameText, descText);
 
       if (owned) {
-        const maxLabel = this.add.text(width - 80, y + 28, t('ui.common.owned'),
+        const maxLabel = this.add.text(width - 80, y + 38, t('ui.common.owned'),
           textStyle('body', { fontSize: '14px', color: META_SHOP_OWNED_PILL_COLOR }),
         ).setOrigin(0.5);
         this.rowElements.push(maxLabel);
@@ -159,7 +169,7 @@ export class MetaShopScene extends Phaser.Scene {
       }
 
       if (locked) {
-        const lockLabel = this.add.text(width - 80, y + 28, t('ui.common.locked'),
+        const lockLabel = this.add.text(width - 80, y + 38, t('ui.common.locked'),
           textStyle('label', { color: META_SHOP_LOCKED_PILL_COLOR }),
         ).setOrigin(0.5);
         this.rowElements.push(lockLabel);
@@ -168,7 +178,7 @@ export class MetaShopScene extends Phaser.Scene {
 
       const buyPalette = resolveMetaShopBuyButtonPalette(canAfford);
       const { rect: buyButton, label: buyText } = createGameButton(this, {
-        x: width - 80, y: y + 32, width: 108, height: 40,
+        x: width - 80, y: y + 42, width: 108, height: 40,
         label: t('ui.common.buy_kills', { cost: item.cost }),
         tier: 'primary', fontSize: '12px',
         fillOverride: buyPalette.fillColor,

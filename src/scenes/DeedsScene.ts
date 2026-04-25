@@ -37,9 +37,18 @@ import {
  * progress to preserve first-unlock surprise; the scene labels them
  * "a rumour on the moor" instead of revealing triggers.
  */
+/**
+ * Cards per page. 3 cols × 4 rows = 12 cards × ~125 px row height @ 720p,
+ * which fits the title + word-wrapped description + progress label without
+ * the row-overlap collision the un-paginated 10-row layout produced.
+ */
+const DEEDS_CARDS_PER_PAGE = 12;
+
 export class DeedsScene extends Phaser.Scene {
   private saveManager = new SaveManager();
   private returnTo: SceneReturnTarget = 'MainMenu';
+  private currentPage = 0;
+  private pageElements: Phaser.GameObjects.GameObject[] = [];
 
   constructor() {
     super({ key: 'Deeds' });
@@ -47,6 +56,8 @@ export class DeedsScene extends Phaser.Scene {
 
   init(data?: SceneReturnData): void {
     this.returnTo = resolveSceneReturnTarget(data?.returnTo);
+    this.currentPage = 0;
+    this.pageElements = [];
   }
 
   create(): void {
@@ -112,30 +123,15 @@ export class DeedsScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    // ── Deed grid ──
-    // 3-column layout at default uiScale; drops to 2 cols above 1.2x so
-    // the scaled 13px title + 10px desc + progress label don't overflow
-    // card bounds (74px rowHeight at uiScale 1.4 cannot hold scaled text
-    // + 3-row wrap title). Row count grows with the deed list. Cards
-    // shrink vertically as more deeds ship — gridHeight is fixed (y=104
-    // → y=height-68 so the back button fits below).
+    // ── Deed grid (paginated) ──
+    // Pre-pagination the 28-deed list packed 10 rows into the gridHeight,
+    // collapsing rowHeight below 50 px and forcing the title text to render
+    // at the same Y as the description hint. Capping the page at 12 keeps
+    // rowHeight ≥ 120 px @ 720p so title + desc + progress all sit in their
+    // own bands.
     const cols = uiScale > 1.2 ? 2 : 3;
-    const rows = Math.ceil(deeds.length / cols);
-    const gridTop = 104;
-    const gridBottom = height - 68;
-    const gridHeight = gridBottom - gridTop;
-    const horizontalMargin = 24;
-    const gutter = 14;
-    const colWidth = (width - horizontalMargin * 2 - gutter * (cols - 1)) / cols;
-    const rowHeight = (gridHeight - gutter * (rows - 1)) / rows;
-
-    deeds.forEach((deed, idx) => {
-      const col = idx % cols;
-      const row = Math.floor(idx / cols);
-      const cx = horizontalMargin + colWidth / 2 + col * (colWidth + gutter);
-      const cy = gridTop + rowHeight / 2 + row * (rowHeight + gutter);
-      this.drawDeedCard(deed, cx, cy, colWidth, rowHeight, uiScale);
-    });
+    const cardsPerPage = DEEDS_CARDS_PER_PAGE;
+    const totalPages = Math.max(1, Math.ceil(deeds.length / cardsPerPage));
 
     // ── Back button ──
     const backBtn = createBackButton(this, {
@@ -147,8 +143,105 @@ export class DeedsScene extends Phaser.Scene {
       this.scene.start(this.returnTo);
     };
     backBtn.on('pointerdown', goBack);
-
     this.input.keyboard?.on('keydown-ESC', goBack);
+
+    const renderPage = (page: number): void => {
+      // Tear down prior page's transient elements (cards + page nav).
+      for (const el of this.pageElements) el.destroy();
+      this.pageElements = [];
+
+      const start = page * cardsPerPage;
+      const slice = deeds.slice(start, start + cardsPerPage);
+      const rows = Math.max(1, Math.ceil(slice.length / cols));
+
+      const gridTop = 104;
+      const gridBottom = height - 96; // reserve room for page nav + BACK
+      const gridHeight = gridBottom - gridTop;
+      const horizontalMargin = 24;
+      const gutter = 14;
+      const colWidth = (width - horizontalMargin * 2 - gutter * (cols - 1)) / cols;
+      const rowHeight = (gridHeight - gutter * (rows - 1)) / rows;
+
+      slice.forEach((deed, idx) => {
+        const col = idx % cols;
+        const row = Math.floor(idx / cols);
+        const cx = horizontalMargin + colWidth / 2 + col * (colWidth + gutter);
+        const cy = gridTop + rowHeight / 2 + row * (rowHeight + gutter);
+        this.drawDeedCard(deed, cx, cy, colWidth, rowHeight, uiScale);
+      });
+
+      if (totalPages > 1) {
+        const navY = height - 70;
+        const indicator = this.add
+          .text(width / 2, navY, `${page + 1} / ${totalPages}`, {
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            color: COLORS_CSS.WHISKY_GOLD,
+            fontStyle: 'bold',
+          })
+          .setOrigin(0.5)
+          .setScale(uiScale);
+        this.pageElements.push(indicator);
+
+        const prevHit = this.add
+          .rectangle(width / 2 - 76, navY, 32, 28, 0x11182a, 0.6)
+          .setStrokeStyle(1, 0x355079, 1)
+          .setInteractive({ useHandCursor: true });
+        const prevLabel = this.add
+          .text(width / 2 - 76, navY, '◀', {
+            fontFamily: 'monospace', fontSize: '14px',
+            color: page > 0 ? COLORS_CSS.WHISKY_GOLD : '#586075',
+          })
+          .setOrigin(0.5)
+          .setScale(uiScale);
+        prevHit.on('pointerdown', () => {
+          if (page > 0) {
+            audio.playClick();
+            this.currentPage = page - 1;
+            renderPage(this.currentPage);
+          }
+        });
+        this.pageElements.push(prevHit, prevLabel);
+
+        const nextHit = this.add
+          .rectangle(width / 2 + 76, navY, 32, 28, 0x11182a, 0.6)
+          .setStrokeStyle(1, 0x355079, 1)
+          .setInteractive({ useHandCursor: true });
+        const nextLabel = this.add
+          .text(width / 2 + 76, navY, '▶', {
+            fontFamily: 'monospace', fontSize: '14px',
+            color: page < totalPages - 1 ? COLORS_CSS.WHISKY_GOLD : '#586075',
+          })
+          .setOrigin(0.5)
+          .setScale(uiScale);
+        nextHit.on('pointerdown', () => {
+          if (page < totalPages - 1) {
+            audio.playClick();
+            this.currentPage = page + 1;
+            renderPage(this.currentPage);
+          }
+        });
+        this.pageElements.push(nextHit, nextLabel);
+      }
+    };
+
+    renderPage(this.currentPage);
+
+    // Arrow keys for page nav.
+    this.input.keyboard?.on('keydown-LEFT', () => {
+      if (this.currentPage > 0) {
+        audio.playClick();
+        this.currentPage--;
+        renderPage(this.currentPage);
+      }
+    });
+    this.input.keyboard?.on('keydown-RIGHT', () => {
+      if (this.currentPage < totalPages - 1) {
+        audio.playClick();
+        this.currentPage++;
+        renderPage(this.currentPage);
+      }
+    });
 
     stopAmbientWindOnShutdown(this);
   }
@@ -164,11 +257,15 @@ export class DeedsScene extends Phaser.Scene {
     const def = ACHIEVEMENT_DEFS[deed.id];
     const isUnlocked = deed.status === 'unlocked';
     const palette = resolveDeedCardPalette(deed.status);
+    const track = (obj: Phaser.GameObjects.GameObject) => {
+      this.pageElements.push(obj);
+      return obj;
+    };
 
     // Card background — gold-tinted for unlocked, cool slate for locked.
-    this.add
+    track(this.add
       .rectangle(cx, cy, w, h, palette.bgColor, 0.92)
-      .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha);
+      .setStrokeStyle(palette.strokeWidth, palette.strokeColor, palette.strokeAlpha));
 
     // Top row: icon + title. Card-edge offsets scale with uiScale so the
     // scaled icon/title sit the same visual distance from the card border
@@ -177,7 +274,7 @@ export class DeedsScene extends Phaser.Scene {
     // pushed below the anchor faster than the offset).
     const iconX = cx - w / 2 + Math.round(28 * uiScale);
     const iconY = cy - h / 2 + Math.round(28 * uiScale);
-    this.add
+    track(this.add
       .text(iconX, iconY, palette.iconChar, {
         fontFamily: 'monospace',
         fontSize: '22px',
@@ -185,7 +282,7 @@ export class DeedsScene extends Phaser.Scene {
         fontStyle: 'bold',
       })
       .setOrigin(0.5)
-      .setScale(uiScale);
+      .setScale(uiScale));
 
     const titleColor = palette.titleColor;
     // Reserve space for the top-right status tag — "IN PROGRESS" at 9px
@@ -193,7 +290,7 @@ export class DeedsScene extends Phaser.Scene {
     // cap let long titles collide with the status chip. `w - 170` keeps
     // title right-edge clear at every uiScale. X offset from icon scales
     // so the title reading edge tracks the scaled icon glyph.
-    this.add
+    track(this.add
       .text(iconX + Math.round(22 * uiScale), iconY - Math.round(10 * uiScale), t(def.titleKey), {
         fontFamily: 'monospace',
         fontSize: '13px',
@@ -202,7 +299,7 @@ export class DeedsScene extends Phaser.Scene {
         wordWrap: { width: Math.max(50, (w - 170) / Math.max(1, uiScale)) },
       })
       .setOrigin(0, 0.5)
-      .setScale(uiScale);
+      .setScale(uiScale));
 
     // Status tag (top-right) — corner inset scales so the 9px→13px scaled
     // label doesn't drift off the card edge.
@@ -212,7 +309,7 @@ export class DeedsScene extends Phaser.Scene {
         ? t('ui.deeds.status_in_progress')
         : t('ui.deeds.status_locked');
     const statusColor = palette.statusColor;
-    this.add
+    track(this.add
       .text(cx + w / 2 - Math.round(14 * uiScale), cy - h / 2 + Math.round(16 * uiScale), statusLabel, {
         fontFamily: 'monospace',
         fontSize: '9px',
@@ -221,7 +318,7 @@ export class DeedsScene extends Phaser.Scene {
         letterSpacing: 1,
       })
       .setOrigin(1, 0)
-      .setScale(uiScale);
+      .setScale(uiScale));
 
     // Description OR mystery hint for binary locked deeds. Left inset
     // scales with uiScale so the scaled text doesn't appear jammed into
@@ -234,16 +331,24 @@ export class DeedsScene extends Phaser.Scene {
       mysteryHint: t('ui.deeds.locked_mystery'),
     });
     const descColor = palette.descColor;
-    this.add
-      .text(cx - w / 2 + Math.round(14 * uiScale), cy - Math.round(4 * uiScale), desc.text, {
+    // Description sits TOP-anchored just below the title baseline. Pre-fix
+    // it used origin (0, 0.5) anchored to cy, which placed it ON the same
+    // band as the title at small row heights — the un-paginated 10-row
+    // layout produced rowHeight ≈ 42 px and the title + desc text bands
+    // overlapped. Pagination keeps rowHeight ≈ 125 px, but anchoring desc
+    // top below the icon band makes the rule hold even if the deed list
+    // grows.
+    const descTopY = iconY + Math.round(14 * uiScale);
+    track(this.add
+      .text(cx - w / 2 + Math.round(14 * uiScale), descTopY, desc.text, {
         fontFamily: 'monospace',
         fontSize: '10px',
         color: descColor,
         fontStyle: desc.italic ? 'italic' : 'normal',
         wordWrap: { width: Math.max(60, (w - 28) / Math.max(1, uiScale)) },
       })
-      .setOrigin(0, 0.5)
-      .setScale(uiScale);
+      .setOrigin(0, 0)
+      .setScale(uiScale));
 
     // Progress bar (bottom) — threshold deeds only. Bottom-edge offset
     // scales so the scaled progress label sitting 12px below the bar
@@ -254,17 +359,17 @@ export class DeedsScene extends Phaser.Scene {
       const barWidth = w - barMargin * 2;
       const barX = cx - barWidth / 2;
       // Track
-      this.add
+      track(this.add
         .rectangle(cx, barY, barWidth, 6, 0x0a1020, 1)
-        .setStrokeStyle(1, 0x243552, 1);
+        .setStrokeStyle(1, 0x243552, 1));
       // Fill
       const barStyle = resolveDeedProgressBarStyle(isUnlocked);
       const fillWidth = Math.max(2, barWidth * deed.ratio);
-      this.add
-        .rectangle(barX + fillWidth / 2, barY, fillWidth, 4, barStyle.fillColor, 1);
+      track(this.add
+        .rectangle(barX + fillWidth / 2, barY, fillWidth, 4, barStyle.fillColor, 1));
       // Numeric label — offset from bar scales so scaled 10px label
       // clears the bar fill without crushing against the card edge.
-      this.add
+      track(this.add
         .text(cx, barY + Math.round(12 * uiScale), formatDeedProgressLabel(deed), {
           fontFamily: 'monospace',
           fontSize: '10px',
@@ -272,7 +377,7 @@ export class DeedsScene extends Phaser.Scene {
           fontStyle: 'bold',
         })
         .setOrigin(0.5)
-        .setScale(uiScale);
+        .setScale(uiScale));
     }
   }
 }

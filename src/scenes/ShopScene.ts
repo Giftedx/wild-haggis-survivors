@@ -73,6 +73,15 @@ export class ShopScene extends Phaser.Scene {
       )
       .setOrigin(0.5);
 
+    // P3.7 — tier-pip legend. Pre-fix the row of empty squares had no
+    // explanation; new players couldn't tell whether the dots meant
+    // "rarity", "owned tiers", or "max tiers". Single muted line.
+    const tierLegend = this.add
+      .text(width - 24, 96, t('ui.shop.tier_pip_legend'),
+        textStyle('label', { fontSize: '11px', color: COLORS_CSS.TEXT_MUTED }))
+      .setOrigin(1, 0);
+    tierLegend.setFontStyle('italic');
+
     const lineGfx = this.add.graphics();
     lineGfx.lineStyle(2, 0x3a2a3a, 1);
     lineGfx.lineBetween(24, 92, width - 24, 92);

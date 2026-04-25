@@ -106,7 +106,7 @@ function toHeard(line: BanterLineVM): BanterHeardLineVM {
     key: line.key,
     tag: line.tag,
     hearCount: line.hearCount,
-    firstHeardText: line.firstHeardAt ? formatFirstHeard(line.firstHeardAt.timestamp) : null,
+    firstHeardText: line.firstHeardAt && line.firstHeardAt.timestamp > 0 ? formatFirstHeard(line.firstHeardAt.timestamp) : null,
   };
 }
 
