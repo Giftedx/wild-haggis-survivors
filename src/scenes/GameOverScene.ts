@@ -34,6 +34,18 @@ import { formatLocalYmd } from '../utils/formatDate';
 import { TOAST_COLORS } from '../ui/toastPalette';
 import { createGameButton } from '../ui/gameButton';
 import { textStyle } from '../ui/typography';
+import {
+  firstEnabledModalFocusIndex,
+  moveModalFocusIndex,
+  type ModalFocusEntry,
+} from '../ui/modalFocus';
+
+interface GameOverActionFocusEntry extends ModalFocusEntry {
+  readonly rect: Phaser.GameObjects.Rectangle;
+  readonly onActivate: () => void;
+  /** Snapshot of the rect's idle stroke (HC tier border or none) so applyActionFocus can restore it on de-focus. */
+  readonly idleStroke: { width: number; color: number; alpha: number };
+}
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -50,6 +62,13 @@ export class GameOverScene extends Phaser.Scene {
   // We fall back to MainMenu in create() when it's missing rather than
   // asserting non-null here and crashing on the first field access.
   private payload: GameOverPayload | null = null;
+  private actionEntries: GameOverActionFocusEntry[] = [];
+  private focusedActionIndex = -1;
+  private keyHandler?: (e: KeyboardEvent) => void;
+  private gamepadUpdateHandler: (() => void) | null = null;
+  private prevPadBack = false;
+  private prevPadForward = false;
+  private prevPadConfirm = false;
 
   constructor() {
     super({ key: 'GameOver' });
@@ -60,6 +79,9 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(): void {
+    this.actionEntries = [];
+    this.focusedActionIndex = -1;
+    this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
     if (!this.payload?.summary || !this.payload.runResult) {
       this.scene.start('MainMenu');
       return;
@@ -493,6 +515,116 @@ export class GameOverScene extends Phaser.Scene {
       // H1 T9 — return to Croft hub, not MainMenu.
       this.scene.start('Croft');
     });
+
+    this.focusedActionIndex = firstEnabledModalFocusIndex(this.actionEntries);
+    this.applyActionFocus();
+    this.installKeyboardShortcuts();
+    this.installGamepadShortcuts();
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.uninstallKeyboardShortcuts();
+      this.uninstallGamepadShortcuts();
+    });
+  }
+
+  private installKeyboardShortcuts(): void {
+    const keyboard = this.input.keyboard;
+    if (!keyboard) return;
+    this.keyHandler = (e: KeyboardEvent) => {
+      const digit = parseInt(e.key, 10);
+      if (Number.isFinite(digit) && digit >= 1 && digit <= this.actionEntries.length) {
+        const entry = this.actionEntries[digit - 1];
+        if (entry && !entry.disabled) {
+          e.preventDefault();
+          this.focusedActionIndex = digit - 1;
+          this.applyActionFocus();
+          entry.onActivate();
+        }
+        return;
+      }
+      if (
+        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+        || (e.key === 'Tab' && e.shiftKey)
+      ) {
+        e.preventDefault();
+        this.moveActionFocus(-1);
+        return;
+      }
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
+        e.preventDefault();
+        this.moveActionFocus(1);
+        return;
+      }
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
+      this.activateFocusedAction();
+    };
+    keyboard.on('keydown', this.keyHandler);
+  }
+
+  private uninstallKeyboardShortcuts(): void {
+    if (!this.keyHandler) return;
+    this.input.keyboard?.off('keydown', this.keyHandler);
+    this.keyHandler = undefined;
+  }
+
+  private installGamepadShortcuts(): void {
+    this.uninstallGamepadShortcuts();
+    this.gamepadUpdateHandler = () => {
+      const pad = this.input.gamepad?.pad1;
+      if (!pad?.connected) {
+        this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
+        return;
+      }
+      const back = pad.left || pad.up || pad.leftStick.x < -0.5 || pad.leftStick.y < -0.5;
+      const forward = pad.right || pad.down || pad.leftStick.x > 0.5 || pad.leftStick.y > 0.5;
+      const confirm = pad.buttons[0]?.pressed === true || pad.buttons[9]?.pressed === true;
+      if (back && !this.prevPadBack) this.moveActionFocus(-1);
+      if (forward && !this.prevPadForward) this.moveActionFocus(1);
+      if (confirm && !this.prevPadConfirm) this.activateFocusedAction();
+      this.prevPadBack = back;
+      this.prevPadForward = forward;
+      this.prevPadConfirm = confirm;
+    };
+    this.events.on('update', this.gamepadUpdateHandler);
+  }
+
+  private uninstallGamepadShortcuts(): void {
+    if (!this.gamepadUpdateHandler) return;
+    this.events.off('update', this.gamepadUpdateHandler);
+    this.gamepadUpdateHandler = null;
+  }
+
+  private moveActionFocus(direction: -1 | 1): void {
+    this.focusedActionIndex = moveModalFocusIndex(
+      this.actionEntries,
+      this.focusedActionIndex,
+      direction,
+    );
+    this.applyActionFocus();
+  }
+
+  private activateFocusedAction(): void {
+    const entry = this.actionEntries[this.focusedActionIndex];
+    if (!entry || entry.disabled) return;
+    entry.onActivate();
+  }
+
+  private applyActionFocus(): void {
+    for (let i = 0; i < this.actionEntries.length; i++) {
+      const entry = this.actionEntries[i]!;
+      if (i === this.focusedActionIndex) {
+        entry.rect.setStrokeStyle(3, 0xffe080, 1);
+      } else if (entry.idleStroke.width > 0) {
+        entry.rect.setStrokeStyle(
+          entry.idleStroke.width,
+          entry.idleStroke.color,
+          entry.idleStroke.alpha,
+        );
+      } else {
+        entry.rect.setStrokeStyle();
+      }
+    }
   }
 
   /**
@@ -715,6 +847,23 @@ export class GameOverScene extends Phaser.Scene {
     });
 
     button.on('pointerdown', onClick);
+    button.on('pointerover', () => {
+      const idx = this.actionEntries.findIndex((e) => e.rect === button);
+      if (idx === -1) return;
+      this.focusedActionIndex = idx;
+      this.applyActionFocus();
+    });
+    // Snapshot the idle stroke (createGameButton may have set an HC tier
+    // border) so applyActionFocus can restore it on de-focus.
+    this.actionEntries.push({
+      rect: button,
+      onActivate: onClick,
+      idleStroke: {
+        width: button.lineWidth,
+        color: button.strokeColor,
+        alpha: button.strokeAlpha,
+      },
+    });
   }
 
   /**
