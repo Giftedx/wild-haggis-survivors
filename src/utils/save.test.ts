@@ -2250,3 +2250,55 @@ describe('save schema v16 → v17 (U1 seenRunes)', () => {
   });
 });
 
+describe('T406 — replay-blob compaction in run history', () => {
+  it('REPLAY_HISTORY_CAP is 5 — only the last 5 entries keep replay blobs', async () => {
+    const { REPLAY_HISTORY_CAP, appendRunHistory } = await import('./save');
+    expect(REPLAY_HISTORY_CAP).toBe(5);
+
+    const fakeReplay = { version: 1, build: 'x', seed: 1, frameCount: 0, frames: [] } as never;
+    let history: ReturnType<typeof appendRunHistory> = [];
+    for (let i = 0; i < 8; i++) {
+      history = appendRunHistory(history, {
+        timestamp: i,
+        timeSurvivedSec: 60,
+        kills: 1,
+        levelReached: 1,
+        goldEarned: 0,
+        bestCombo: 0,
+        variantKey: 'classic',
+        isVictory: false,
+        weaponKeys: [],
+        replay: fakeReplay,
+      } as never);
+    }
+    // Latest 5 entries keep their replay; older 3 are stripped.
+    const withReplay = history.filter((e) => 'replay' in e && e.replay !== undefined);
+    expect(withReplay).toHaveLength(REPLAY_HISTORY_CAP);
+    // Stripped entries are the oldest in the queue.
+    const withoutReplay = history.filter((e) => !('replay' in e) || e.replay === undefined);
+    expect(withoutReplay).toHaveLength(history.length - REPLAY_HISTORY_CAP);
+    expect(withoutReplay.every((e) => e.timestamp < 3)).toBe(true);
+  });
+
+  it('appendRunHistory still respects MAX_RUN_HISTORY (replay compaction is orthogonal)', async () => {
+    const { appendRunHistory } = await import('./save');
+    let history: ReturnType<typeof appendRunHistory> = [];
+    for (let i = 0; i < MAX_RUN_HISTORY + 5; i++) {
+      history = appendRunHistory(history, {
+        timestamp: i,
+        timeSurvivedSec: 60,
+        kills: 1,
+        levelReached: 1,
+        goldEarned: 0,
+        bestCombo: 0,
+        variantKey: 'classic',
+        isVictory: false,
+        weaponKeys: [],
+      } as never);
+    }
+    expect(history).toHaveLength(MAX_RUN_HISTORY);
+    // Oldest entries shifted out — newest survives.
+    expect(history[history.length - 1].timestamp).toBe(MAX_RUN_HISTORY + 4);
+  });
+});
+

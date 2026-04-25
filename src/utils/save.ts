@@ -1316,13 +1316,36 @@ function coerceRunHistory(value: unknown): RunHistoryEntry[] {
     const entry = coerceRunHistoryEntry(raw);
     if (entry) entries.push(entry);
   }
-  return entries.slice(-MAX_RUN_HISTORY);
+  return compactReplayBlobs(entries.slice(-MAX_RUN_HISTORY));
+}
+
+/**
+ * T406 — only the most-recent N runs keep their `replay` blob; older
+ * entries drop it on the next history append. A 90k-frame cap (T308)
+ * keeps any single replay under ~600 KB, but 20 capped replays still
+ * eats up to ~12 MB — past localStorage's per-origin quota on most
+ * browsers. Capping the replay slice means the Chronicle's "watch
+ * recent run" feature still works for the freshest runs while
+ * marathon players don't blow the quota.
+ */
+export const REPLAY_HISTORY_CAP = 5;
+
+function compactReplayBlobs(entries: RunHistoryEntry[]): RunHistoryEntry[] {
+  if (entries.length <= REPLAY_HISTORY_CAP) return entries;
+  const cutoff = entries.length - REPLAY_HISTORY_CAP;
+  return entries.map((e, i) => {
+    if (i >= cutoff) return e;
+    if (!e.replay) return e;
+    const { replay: _drop, ...rest } = e;
+    void _drop;
+    return rest as RunHistoryEntry;
+  });
 }
 
 export function appendRunHistory(history: RunHistoryEntry[], entry: RunHistoryEntry): RunHistoryEntry[] {
   const next = [...history, entry];
   if (next.length > MAX_RUN_HISTORY) next.shift();
-  return next;
+  return compactReplayBlobs(next);
 }
 
 export interface PersonalBests {
