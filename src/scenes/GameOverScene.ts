@@ -8,7 +8,7 @@ import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
 import type { DeathCause } from '../core/deathCauseClassifier';
-import { getCurseByKey, setPendingCurse } from '../data/curses';
+import { getCurseByKey } from '../data/curses';
 import {
   formatClockTime,
   computeGoldBreakdown,
@@ -940,8 +940,11 @@ export class GameOverScene extends Phaser.Scene {
       // is silently easier than the original (and the boss/spawn cadence
       // diverges since several modifiers gate their flow on a curse).
       const def = getCurseByKey(p.curseKey ?? null);
-      setPendingCurse(def ? def.key : null);
-      this.scene.start('Game', { seed: p.runSeed, forceVariantKey: p.variantKey });
+      this.scene.start('Game', {
+        seed: p.runSeed,
+        forceVariantKey: p.variantKey,
+        curseKey: def ? def.key : null,
+      });
     });
   }
 

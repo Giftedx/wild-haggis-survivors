@@ -22,6 +22,7 @@ describe('parseGameSceneInitData', () => {
         runIsDaily: false,
         pendingForceVariantKey: null,
         pendingReplay: null,
+        pendingCurseKey: null,
       });
     });
 
@@ -31,6 +32,7 @@ describe('parseGameSceneInitData', () => {
         runIsDaily: false,
         pendingForceVariantKey: null,
         pendingReplay: null,
+        pendingCurseKey: null,
       });
     });
   });
@@ -92,6 +94,36 @@ describe('parseGameSceneInitData', () => {
         replay: { ...validReplay, seed: 222 },
       });
       expect(resolved.pendingRunSeed).toBe(222);
+    });
+  });
+
+  describe('curseKey (T303)', () => {
+    it('captures string curseKey from caller payload', () => {
+      expect(
+        parseGameSceneInitData({ curseKey: 'heavy_legs' }).pendingCurseKey,
+      ).toBe('heavy_legs');
+    });
+
+    it('null / undefined / empty curseKey resolves to null', () => {
+      expect(parseGameSceneInitData({}).pendingCurseKey).toBeNull();
+      expect(parseGameSceneInitData({ curseKey: null }).pendingCurseKey).toBeNull();
+      expect(parseGameSceneInitData({ curseKey: '' }).pendingCurseKey).toBeNull();
+    });
+
+    it('replay blob with curseKey overrides caller-passed curseKey', () => {
+      const resolved = parseGameSceneInitData({
+        curseKey: 'thin_hide',
+        replay: { ...validReplay, curseKey: 'heavy_legs' } as typeof validReplay & { curseKey: string },
+      });
+      expect(resolved.pendingCurseKey).toBe('heavy_legs');
+    });
+
+    it('replay blob without curseKey clears caller-passed curseKey', () => {
+      const resolved = parseGameSceneInitData({
+        curseKey: 'thin_hide',
+        replay: validReplay,
+      });
+      expect(resolved.pendingCurseKey).toBeNull();
     });
   });
 });

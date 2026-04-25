@@ -1,10 +1,7 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   CURSES,
-  consumePendingCurse,
   getCurseByKey,
-  peekPendingCurse,
-  setPendingCurse,
 } from './curses';
 import { defaultModifiers } from '../core/RunModifiers';
 import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
@@ -93,23 +90,3 @@ describe('curse.apply — modifies only its own lever + goldMult', () => {
   });
 });
 
-describe('pending curse state', () => {
-  beforeEach(() => {
-    setPendingCurse(null);
-  });
-
-  it('consume returns set value once then clears', () => {
-    setPendingCurse('thin_hide');
-    expect(peekPendingCurse()).toBe('thin_hide');
-    expect(consumePendingCurse()).toBe('thin_hide');
-    expect(consumePendingCurse()).toBeNull();
-    expect(peekPendingCurse()).toBeNull();
-  });
-
-  it('peek does not clear', () => {
-    setPendingCurse('heavy_legs');
-    expect(peekPendingCurse()).toBe('heavy_legs');
-    expect(peekPendingCurse()).toBe('heavy_legs');
-    expect(consumePendingCurse()).toBe('heavy_legs');
-  });
-});

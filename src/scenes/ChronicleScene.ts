@@ -6,7 +6,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { loadSave, MAX_RUN_HISTORY, type RunHistoryEntry } from '../utils/save';
 import { SaveManager } from '../core/SaveManager';
 import { getVariantByKey } from '../data/variants';
-import { CURSES, getCurseByKey, setPendingCurse, type CurseKey } from '../data/curses';
+import { CURSES, getCurseByKey, type CurseKey } from '../data/curses';
 import { encodeSeed } from '../utils/rng';
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 import {
@@ -352,17 +352,20 @@ export class ChronicleScene extends Phaser.Scene {
    * suspended active run is cleared first (matches the "Play Again"
    * path on GameOverScene) so the new run isn't treated as a resume.
    *
-   * If the original run bore a curse, the rerun re-applies it via
-   * the pending-curse singleton — otherwise a "rerun cursed seed"
-   * silently dropped the curse and gave the player an easier rerun
-   * than the original (and a visibly different boss/spawn cadence).
+   * If the original run bore a curse, the rerun re-applies it via the
+   * GameScene init payload — otherwise a "rerun cursed seed" silently
+   * dropped the curse and gave the player an easier rerun than the
+   * original (and a visibly different boss/spawn cadence).
    */
   private rerunSeed(seed: number, variantKey: string, curseKey?: string): void {
     audio.playClick();
     try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
     const def = getCurseByKey(curseKey ?? null);
-    setPendingCurse(def ? (def.key as CurseKey) : null);
-    this.scene.start('Game', { seed, forceVariantKey: variantKey });
+    this.scene.start('Game', {
+      seed,
+      forceVariantKey: variantKey,
+      curseKey: def ? (def.key as CurseKey) : null,
+    });
   }
 
   /**
@@ -374,11 +377,11 @@ export class ChronicleScene extends Phaser.Scene {
   private watchReplay(replay: ReplayBlobAny): void {
     audio.playClick();
     try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
-    // Replay mode ignores the curse pending singleton — the recorded
+    // Replay mode ignores any caller-passed curse — the parser pulls
+    // the curseKey from the blob itself when v2+, and the recorded
     // modifiers are already baked into the seeded RNG stream. V1
     // limitation: mid-run curse effects aren't perfectly reproduced,
     // documented in ADR-0002.
-    setPendingCurse(null);
     this.scene.start('Game', { replay });
   }
 

@@ -3,7 +3,7 @@ import { COLORS, COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { getSettingsManager } from '../core/SettingsManager';
-import { CURSES, setPendingCurse, type CurseKey } from '../data/curses';
+import { CURSES, type CurseKey } from '../data/curses';
 import { loadSave } from '../utils/save';
 import { listCursesBested } from '../ui/chronicleAggregates';
 import { curseTileRowLayout, tileXForIndex, resolveCurseTileBestedStyle } from './curseTileLayout';
@@ -19,8 +19,9 @@ import { textStyle } from '../ui/typography';
 /**
  * Curse picker — interstitial between loadout and run. The player may pick
  * one curse (trading difficulty for gold) or skip with "A CLEAN RUN".
- * State is passed downstream via the module-level pendingCurseKey singleton
- * in data/curses.ts (GameScene.create() consumes it exactly once).
+ * State is passed downstream via the GameScene init payload
+ * (`scene.start('Game', { curseKey })`); GameScene.create() consumes it
+ * exactly once. T303 replaced the prior module-level singleton.
  *
  * Layout: 5 tiles in a single row along the bottom half (4 curses + the
  * "clean run" escape tile at the end). At 800×600 that gives each tile
@@ -108,13 +109,13 @@ export class CurseScene extends Phaser.Scene {
   }
 
   /**
-   * Pending curse is set on the module singleton and the Game scene is
-   * started immediately — GameScene.create() consumes + clears the key.
+   * Curse selection rides the GameScene init payload directly so a stale
+   * pick can't survive an abandoned Curse→Menu→Curse cycle (T303 — the
+   * pre-existing module singleton was a known cross-run bleed seam).
    */
   private commitCurse(key: CurseKey | null): void {
     audio.playClick();
-    setPendingCurse(key);
-    this.scene.start('Game');
+    this.scene.start('Game', { curseKey: key });
   }
 
   private drawCurseTile(

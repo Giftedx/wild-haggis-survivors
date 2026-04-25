@@ -85,7 +85,7 @@ import {
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
-import { consumePendingCurse, getCurseByKey, type CurseKey } from '../data/curses';
+import { getCurseByKey, type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
@@ -325,6 +325,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runIsDaily: boolean = false;
   /** Optional variant override from init data (seeded / daily runs). Cleared in create(). */
   private pendingForceVariantKey: string | null = null;
+  /**
+   * T303 — curse selection passed via `scene.start('Game', { curseKey })`.
+   * Replaces the prior `pendingCurseKey` module singleton so a stale pick
+   * cannot leak from one run into the next via process-wide state. Set by
+   * init() (or the v2 replay blob), consumed once in create().
+   */
+  private pendingCurseKey: string | null = null;
 
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
   private pickupDespawnHandles: TickerHandle[] = [];
@@ -565,6 +572,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runIsDaily = resolved.runIsDaily;
     this.pendingForceVariantKey = resolved.pendingForceVariantKey;
     this.pendingReplay = resolved.pendingReplay;
+    this.pendingCurseKey = resolved.pendingCurseKey;
   }
 
   create(): void {
@@ -686,16 +694,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
 
-    // Consume pending curse exactly once. Curses don't apply to resumed
-    // runs (they were already baked into the in-progress run) or daily
-    // attempts (fixed rules — seed equivalence). During v2 playback the
-    // curse key comes from the blob, not the live pending-curse singleton
-    // — that keeps replays deterministic even if the player has selected
-    // a different curse in the intervening menu session.
+    // T303 — consume pending curse from the scene-data payload exactly
+    // once. Curses don't apply to resumed runs (they were already baked
+    // into the in-progress run) or daily attempts (fixed rules — seed
+    // equivalence). During v2 playback the curse key comes from the
+    // blob, which the parser already promoted into `pendingCurseKey` so
+    // replays stay deterministic even if the player picked a different
+    // curse in an intervening menu session. Always clear the field so
+    // it can't bleed into the next run on scene-reuse.
     this.runModifiers = defaultModifiers();
     this.activeCurseKey = null;
+    const consumedCurseKey = this.pendingCurseKey;
+    this.pendingCurseKey = null;
     if (playbackV2 && playbackV2.curseKey) {
-      consumePendingCurse();
       const curse = getCurseByKey(playbackV2.curseKey);
       if (curse) {
         curse.apply(this.runModifiers);
@@ -703,16 +714,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
       }
     } else if (!resumeRun && !this.runIsDaily) {
-      const key = consumePendingCurse();
-      const curse = getCurseByKey(key);
+      const curse = getCurseByKey(consumedCurseKey);
       if (curse) {
         curse.apply(this.runModifiers);
         this.activeCurseKey = curse.key;
         globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
       }
-    } else {
-      // Clear any stale pending key so it doesn't bleed into the next run.
-      consumePendingCurse();
     }
 
     // Compose with per-run modifiers layered on meta bonuses. Player reads

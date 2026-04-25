@@ -1,10 +1,10 @@
 /**
  * Curses of the Moor — opt-in pre-run modifiers that trade difficulty for
  * gold. One curse per run (no stacking in v1 — keeps the balance surface
- * small and the choice intentional). The selection is held in module-level
- * state, set by CurseScene before scene.start('Game'), consumed once by
- * GameScene.create() and then cleared — so an abandoned flow doesn't leak
- * into the next run.
+ * small and the choice intentional). The selection rides the GameScene
+ * init payload (`scene.start('Game', { curseKey })`) so it's bounded to
+ * the run that picked it; T303 replaced an earlier module-level singleton
+ * that could leak across abandoned Curse→Menu→Curse cycles.
  *
  * Voice registers are Hearth (warm-ribbing) and Edge (deadpan dread) per
  * Voice Card — each curse carries the flavour appropriate to its teeth.
@@ -97,26 +97,4 @@ const CURSES_BY_KEY: Map<CurseKey, CurseDef> = new Map(
 export function getCurseByKey(key: string | null | undefined): CurseDef | null {
   if (!key) return null;
   return CURSES_BY_KEY.get(key as CurseKey) ?? null;
-}
-
-/**
- * Module-level pending state. Set by CurseScene immediately before
- * scene.start('Game'); read + cleared by GameScene.create(). Using a
- * module singleton (rather than Phaser's scene-data bag) keeps the
- * integration point decoupled from scene plumbing.
- */
-let pendingCurseKey: CurseKey | null = null;
-
-export function setPendingCurse(key: CurseKey | null): void {
-  pendingCurseKey = key;
-}
-
-export function consumePendingCurse(): CurseKey | null {
-  const key = pendingCurseKey;
-  pendingCurseKey = null;
-  return key;
-}
-
-export function peekPendingCurse(): CurseKey | null {
-  return pendingCurseKey;
 }

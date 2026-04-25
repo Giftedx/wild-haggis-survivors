@@ -14,7 +14,6 @@ import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
-import { setPendingCurse } from '../data/curses';
 import { allAtlasKeysForVariant, ALL_ANIMATION_STATES } from '../animation/textureAtlas';
 import { getFrameCountForState } from '../animation/frameClock';
 import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
@@ -146,7 +145,6 @@ export class BootScene extends Phaser.Scene {
         } catch {
           /* ignore */
         }
-        setPendingCurse(null);
         const raw = bootParams.get('seed');
         const n = raw != null && raw !== '' ? Number(raw) : NaN;
         const seed = Number.isFinite(n) ? n : undefined;

@@ -15,6 +15,14 @@ export interface GameSceneInitDataInput {
   isDaily?: boolean;
   forceVariantKey?: string;
   replay?: ReplayBlobAny;
+  /**
+   * T303 — curse selection passed via scene data (replaces the
+   * pre-removal `pendingCurseKey` module singleton). `null` or absent
+   * means a clean run. Replay blobs carrying their own `curseKey`
+   * override this value (the replay is the source of truth for what
+   * was live at record-time).
+   */
+  curseKey?: string | null;
 }
 
 /**
@@ -26,6 +34,8 @@ export interface ResolvedGameSceneInit {
   runIsDaily: boolean;
   pendingForceVariantKey: string | null;
   pendingReplay: ReplayBlobAny | null;
+  /** T303 — resolved curse key (string) or null for a clean run. */
+  pendingCurseKey: string | null;
 }
 
 /**
@@ -50,6 +60,10 @@ export function parseGameSceneInitData(
     pendingForceVariantKey:
       typeof data?.forceVariantKey === 'string' ? data.forceVariantKey : null,
     pendingReplay: null,
+    pendingCurseKey:
+      typeof data?.curseKey === 'string' && data.curseKey.length > 0
+        ? data.curseKey
+        : null,
   };
 
   if (data?.replay && isReplayBlobAny(data.replay)) {
@@ -57,6 +71,14 @@ export function parseGameSceneInitData(
     base.pendingRunSeed = data.replay.seed;
     base.pendingForceVariantKey = data.replay.variantKey;
     base.runIsDaily = false;
+    // Replay carries its own curseKey when v2+ recorded one. That always
+    // overrides anything the caller stamped on the init payload — the
+    // replay must reproduce the run that was actually recorded.
+    const blob = data.replay as { curseKey?: unknown };
+    base.pendingCurseKey =
+      typeof blob.curseKey === 'string' && blob.curseKey.length > 0
+        ? blob.curseKey
+        : null;
   }
 
   return base;
