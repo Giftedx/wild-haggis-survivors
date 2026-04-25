@@ -94,6 +94,69 @@ describe('buildCardPool', () => {
     expect(lv5).toBeDefined();
     expect(lv5!.rarity).toBe('legendary');
   });
+
+  describe('T215 — passive card evolution-ready hint', () => {
+    const recipe = EVOLUTION_RECIPES[0]; // thistle_shot + sporran
+    const passiveCard = PASSIVE_CARDS.find((c) =>
+      c.effect.type === 'add_passive'
+      && (c.effect as { type: 'add_passive'; passiveKey: string }).passiveKey === recipe.requiredPassive,
+    );
+
+    it('passive card flips to legendary + appends evolution_ready_hint when weapon is at lv5', () => {
+      setLocale(DEFAULT_LOCALE);
+      const pool = buildCardPool(
+        [recipe.baseWeapon],
+        [],
+        { [recipe.baseWeapon]: 5 },
+      );
+      const card = pool.find((c) =>
+        c.effect.type === 'add_passive'
+        && (c.effect as { type: 'add_passive'; passiveKey: string }).passiveKey === recipe.requiredPassive,
+      );
+      expect(card, 'completing-passive card present').toBeDefined();
+      expect(card!.rarity).toBe('legendary');
+      const expectedHint = t('upgradeCard.evolution_ready_hint', { evolved: t(recipe.nameKey) });
+      expect(card!.description).toContain(expectedHint);
+    });
+
+    it('passive card stays at default rarity when weapon below lv5', () => {
+      const pool = buildCardPool(
+        [recipe.baseWeapon],
+        [],
+        { [recipe.baseWeapon]: 4 },
+      );
+      const card = pool.find((c) =>
+        c.effect.type === 'add_passive'
+        && (c.effect as { type: 'add_passive'; passiveKey: string }).passiveKey === recipe.requiredPassive,
+      );
+      expect(card, 'card present').toBeDefined();
+      expect(card!.rarity).toBe(passiveCard!.rarity);
+    });
+
+    it('hint suppressed when matching weapon already evolved', () => {
+      const pool = buildCardPool(
+        [recipe.baseWeapon],
+        [],
+        { [recipe.baseWeapon]: 5 },
+        [recipe.baseWeapon],
+      );
+      const card = pool.find((c) =>
+        c.effect.type === 'add_passive'
+        && (c.effect as { type: 'add_passive'; passiveKey: string }).passiveKey === recipe.requiredPassive,
+      );
+      expect(card, 'card present').toBeDefined();
+      expect(card!.rarity).toBe(passiveCard!.rarity);
+    });
+
+    it('hint suppressed when matching weapon not owned', () => {
+      const pool = buildCardPool([], [], {});
+      const card = pool.find((c) =>
+        c.effect.type === 'add_passive'
+        && (c.effect as { type: 'add_passive'; passiveKey: string }).passiveKey === recipe.requiredPassive,
+      );
+      expect(card!.rarity).toBe(passiveCard!.rarity);
+    });
+  });
 });
 
 describe('drawCards', () => {

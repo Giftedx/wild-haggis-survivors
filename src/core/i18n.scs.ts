@@ -2626,6 +2626,7 @@ export const SCS_STRINGS: LocaleTree = {
       description: 'Hone {weapon} up tae level {level}. Every notch coonts.',
     },
     evolution_hint: ' At Lv 5, crack a kist while cairryin {passive} — somethin\' legendary stirs.',
+    evolution_ready_hint: ' ★ Evolves intae {evolved} at the next kist.',
   },
   routes: {
     up_the_brae: {

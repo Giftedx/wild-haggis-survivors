@@ -2985,6 +2985,13 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Hone {weapon} up tae level {level}. Every notch counts.',
     },
     evolution_hint: ' At Lv 5, crack a chest while carrying {passive} — somethin\' legendary stirs.',
+    /**
+     * T215 — appended to a passive card's description when picking it
+     * would complete an evolution recipe (matching weapon already at
+     * Lv 5, not yet evolved). Tells the player the next chest will
+     * offer the named legendary form. Hearth-warm voice; no shouty caps.
+     */
+    evolution_ready_hint: ' ★ Evolves into {evolved} at the next chest.',
   },
   // W2 Moor Road — route labels + descriptions.
   // Voice-card rules (M3 pass):

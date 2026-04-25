@@ -618,8 +618,8 @@ describe('RunPersistenceBridge', () => {
 
       // Reset bag + player + actState; re-apply snapshot. Buff re-attaches.
       const freshBag = new TempBuffBag();
-      const freshPlayer = { ...playerFake, damage: 0 };
-      freshPlayer.addDamageMultiplier = (function (this: typeof freshPlayer, d: number) {
+      const freshPlayer: typeof playerFake = { ...playerFake, damage: 0 };
+      freshPlayer.addDamageMultiplier = vi.fn(function (this: { damage: number }, d: number) {
         this.damage += d;
       }).bind(freshPlayer);
       hooks.getTempBuffBag = () => freshBag;

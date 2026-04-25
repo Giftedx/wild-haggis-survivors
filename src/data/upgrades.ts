@@ -529,10 +529,32 @@ export function buildCardPool(
     }
   }
 
-  // Passive cards (only if not already owned)
+  // Passive cards (only if not already owned). T215 — when picking the
+  // passive would complete an evolution recipe (matching weapon already
+  // at lv5 + not yet evolved), surface that prominently with an
+  // "Evolves into <X>" tag and a legendary-rarity bump so the player
+  // recognises which pick lights up the legendary form. The actual
+  // evolution still fires from a chest; this only signals that the
+  // synergy is unlocked once the chest appears.
   for (const card of PASSIVE_CARDS) {
     const eff = card.effect as { type: 'add_passive'; passiveKey: string };
-    if (!ownedPassiveKeys.includes(eff.passiveKey)) {
+    if (ownedPassiveKeys.includes(eff.passiveKey)) continue;
+    const recipe = EVOLUTION_RECIPES.find((r) =>
+      r.requiredPassive === eff.passiveKey
+      && ownedWeaponKeys.includes(r.baseWeapon)
+      && (weaponLevels[r.baseWeapon] ?? 1) >= 5
+      && !evolvedWeaponKeys.includes(r.baseWeapon),
+    );
+    if (recipe) {
+      const evolvedName = t(recipe.nameKey);
+      pool.push({
+        ...card,
+        rarity: 'legendary',
+        description:
+          t(card.description)
+          + t('upgradeCard.evolution_ready_hint', { evolved: evolvedName }),
+      });
+    } else {
       pool.push(card);
     }
   }
