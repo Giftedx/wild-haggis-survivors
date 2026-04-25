@@ -124,6 +124,13 @@ export const EN_STRINGS: LocaleTree = {
         /** Settings sub-view — the wireless prop wires to the settings panel. */
         settings: 'THE WIRELESS',
       },
+      /**
+       * T404 — small "{seen}/{total} bested" chip rendered under the
+       * bookshelf hit-zone so the player sees their Almanac progress at
+       * a glance. Hidden when no beasties seen so the chip never reads
+       * as "0 / N" nag. Kept short — it sits next to the diegetic prop.
+       */
+      almanac_chip: '{seen} / {total} kent',
     },
     chronicle: {
       // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──

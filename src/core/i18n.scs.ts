@@ -109,6 +109,7 @@ export const SCS_STRINGS: LocaleTree = {
         chronicle: 'THA ALBUM',
         settings: 'THA WIRELESS',
       },
+      almanac_chip: '{seen} / {total} kent',
     },
     chronicle: {
       title: 'THA HERD CHRONICLE',

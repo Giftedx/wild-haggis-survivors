@@ -27,6 +27,10 @@ import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
 import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
+import {
+  beastiesDiscoverySummary,
+  buildBeastiesEntries,
+} from './almanac/buildBeastiesEntries';
 import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
 import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
 import { returnTargetData } from './returnTarget';
@@ -415,6 +419,11 @@ export class CroftScene extends Phaser.Scene {
    * Click fades to the Almanac scene and preserves Croft as the parent
    * hub so the back button returns the player to Gran instead of kicking
    * them out to the front menu.
+   *
+   * T404 — also paints a small "{seen}/{total}" beasties progress chip
+   * just below the bookshelf hit so the player sees their Almanac
+   * progress at a glance without entering the book. Hidden when no
+   * beasties are seen (chip would only nag).
    */
   private drawBookshelfHit(layout: CroftLayout): void {
     const hit = this.add
@@ -429,6 +438,20 @@ export class CroftScene extends Phaser.Scene {
       );
     });
     this.bookshelfHit = hit;
+
+    const summary = beastiesDiscoverySummary(buildBeastiesEntries(loadSave().discoveryLog));
+    if (summary.seen > 0) {
+      const chip = this.add
+        .text(
+          layout.bookshelf.x,
+          layout.bookshelf.y + 44,
+          t('ui.croft.almanac_chip', { seen: summary.seen, total: summary.total }),
+          textStyle('subtitle', { color: COLORS_CSS.WHISKY_GOLD, align: 'center' }),
+        )
+        .setOrigin(0.5, 0)
+        .setAlpha(0.85);
+      this.placeholders.push(chip);
+    }
   }
 
   private drawHeader(width: number): void {
