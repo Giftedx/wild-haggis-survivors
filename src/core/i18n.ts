@@ -739,6 +739,12 @@ export const EN_STRINGS: LocaleTree = {
       stats_dps: 'DPS (1s): {dps}',
       /** Total weapon damage recorded this run (RunStatsTracker). */
       stats_damage: 'Damage dealt: {dmg}',
+      /** T402 — Moor Road act marker, shown from act 2 onward. */
+      stats_act: 'Act {act} of 3',
+      /** T402 — comma-separated route picks resolved this run. */
+      stats_routes: 'Routes: {routes}',
+      /** T402 — comma-separated held relic labels. */
+      stats_relics: 'Sporran: {relics}',
       /** Subtle affordance under RESUME — keyboard + gamepad Start. */
       keys_resume: 'ESC / P / Start — resume',
       /** R1 M3 T21 — whisky_dram active-relic button label. */

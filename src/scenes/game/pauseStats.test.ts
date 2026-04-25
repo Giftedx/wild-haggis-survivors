@@ -73,6 +73,45 @@ describe('buildPauseStatsLines — optional lines', () => {
     expect(lines).toHaveLength(7);
   });
 
+  it('omits the act line for act 1 (default state)', () => {
+    expect(buildPauseStatsLines(base({ currentAct: 1 })).length).toBe(3);
+  });
+
+  it('includes the act line for act 2 and 3', () => {
+    const a2 = buildPauseStatsLines(base({ currentAct: 2 }));
+    expect(a2.length).toBe(4);
+    expect(a2[3]).toContain('2');
+    const a3 = buildPauseStatsLines(base({ currentAct: 3 }));
+    expect(a3.length).toBe(4);
+    expect(a3[3]).toContain('3');
+  });
+
+  it('omits routes line when no picks resolved', () => {
+    expect(buildPauseStatsLines(base({ routeLabels: [] })).length).toBe(3);
+  });
+
+  it('joins resolved route labels with commas', () => {
+    const lines = buildPauseStatsLines(base({
+      routeLabels: ['Up the Brae', 'Through the Kirkyard'],
+    }));
+    expect(lines.length).toBe(4);
+    expect(lines[3]).toContain('Up the Brae');
+    expect(lines[3]).toContain('Through the Kirkyard');
+  });
+
+  it('omits relics line when sporran empty', () => {
+    expect(buildPauseStatsLines(base({ relicLabels: [] })).length).toBe(3);
+  });
+
+  it('joins held relic labels with commas', () => {
+    const lines = buildPauseStatsLines(base({
+      relicLabels: ['Sporran o\' Holding', 'Bronze Clasp'],
+    }));
+    expect(lines.length).toBe(4);
+    expect(lines[3]).toContain('Sporran o\' Holding');
+    expect(lines[3]).toContain('Bronze Clasp');
+  });
+
   it('produces lines in a stable order (time, mid, loadout, gold, dps, dmg, streak)', () => {
     const lines = buildPauseStatsLines(base({
       timeSec: 120,

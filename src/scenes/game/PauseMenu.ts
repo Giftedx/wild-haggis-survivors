@@ -52,6 +52,12 @@ export interface PauseMenuHooks {
   getLastHudDps?: () => number;
   /** Sum of weapon damage tracked this run (RunStatsTracker). */
   getRunDamageDealt?: () => number;
+  /** T402 — Moor Road act, 1-3. Omitted hide line on act 1 (default). */
+  getCurrentAct?: () => 1 | 2 | 3;
+  /** T402 — picker history this run, resolved to display labels. */
+  getRouteLabels?: () => readonly string[];
+  /** T402 — held relic display labels in slot order. */
+  getRelicLabels?: () => readonly string[];
   onResumeRequested(): void;
   onQuitRequested(): void;
   /**
@@ -130,6 +136,9 @@ export class PauseMenu {
       dps: this.hooks.getLastHudDps?.(),
       dmgDealt: this.hooks.getRunDamageDealt?.(),
       streak: this.hooks.getKillStreakStats?.(),
+      currentAct: this.hooks.getCurrentAct?.(),
+      routeLabels: this.hooks.getRouteLabels?.(),
+      relicLabels: this.hooks.getRelicLabels?.(),
     });
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {

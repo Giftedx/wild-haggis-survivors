@@ -1906,6 +1906,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           }),
           getLastHudDps: () => this.hud.getLastDisplayedDps(),
           getRunDamageDealt: () => this.runStatsTracker.getTotalDamage(),
+          // T402 — run identity radiator: act, route picks, held relics.
+          // Each line in pauseStats only renders when the data is non-
+          // default, so the panel stays clean on a fresh act-1 run.
+          getCurrentAct: () => this.runActState.currentAct,
+          getRouteLabels: () =>
+            this.runActState.pickerHistory
+              .map((p) => {
+                try { return t(getRoute(p.routeKey).labelKey); } catch { return null; }
+              })
+              .filter((s): s is string => typeof s === 'string'),
+          getRelicLabels: () =>
+            (this.relicSystem?.getSlots() ?? [])
+              .map((s) => s.def?.nameKey)
+              .filter((k): k is string => typeof k === 'string')
+              .map((k) => t(k)),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
           isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,

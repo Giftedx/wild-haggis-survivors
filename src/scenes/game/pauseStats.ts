@@ -23,6 +23,23 @@ export interface PauseStatsInput {
   dmgDealt?: number;
   /** Streak is only shown when current or best >= 2. */
   streak?: { current: number; best: number };
+  /**
+   * T402 — current Moor-Road act (1-3). Omitted when undefined or 1
+   * (act 1 is the default state and printing it would clutter early
+   * runs); shown as "Act 2 / 3" once the player crosses a picker.
+   */
+  currentAct?: 1 | 2 | 3;
+  /**
+   * T402 — picker history this run, in order. Each line shows the
+   * route's display label. Omitted when empty (pre-picker runs).
+   */
+  routeLabels?: readonly string[];
+  /**
+   * T402 — relic keys currently held in the sporran, in slot order.
+   * Resolved labels (already i18n-formatted) so this module stays
+   * pure. Omitted when empty.
+   */
+  relicLabels?: readonly string[];
 }
 
 /**
@@ -52,6 +69,19 @@ export function buildPauseStatsLines(input: PauseStatsInput): string[] {
   const streak = input.streak;
   if (streak && (streak.best >= 2 || streak.current >= 2)) {
     lines.push(t('ui.pause.stats_streak', { current: streak.current, best: streak.best }));
+  }
+
+  // T402 — run identity radiator. Lines only render once the player
+  // actually has the data to show: act 2+ (skipped on the default
+  // act-1 state), at least one resolved picker, at least one relic.
+  if (input.currentAct !== undefined && input.currentAct >= 2) {
+    lines.push(t('ui.pause.stats_act', { act: input.currentAct }));
+  }
+  if (input.routeLabels && input.routeLabels.length > 0) {
+    lines.push(t('ui.pause.stats_routes', { routes: input.routeLabels.join(', ') }));
+  }
+  if (input.relicLabels && input.relicLabels.length > 0) {
+    lines.push(t('ui.pause.stats_relics', { relics: input.relicLabels.join(', ') }));
   }
 
   return lines;
