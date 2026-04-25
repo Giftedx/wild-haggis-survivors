@@ -426,7 +426,6 @@ test.describe('UI design audit — full screenshot sweep', () => {
       gameScenePlugin?.scene.launch('ActIntermission', {
         slot: 'A',
         atGameTimeSec: 305,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onResolve: () => {},
       });
     });
@@ -443,7 +442,6 @@ test.describe('UI design audit — full screenshot sweep', () => {
       gameScenePlugin?.scene.launch('ActIntermission', {
         slot: 'B',
         atGameTimeSec: 605,
-        // eslint-disable-next-line @typescript-eslint/no-empty-function
         onResolve: () => {},
       });
     });
