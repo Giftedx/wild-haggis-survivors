@@ -1062,6 +1062,13 @@ export class JuiceSystem {
     this.time.requestForDuration('HIT_FREEZE', { pausePhysics: true }, 20);
   }
 
+  /**
+   * Wall-clock timeouts that must not fire after this system is destroyed
+   * (GameScene recycles; `scene.sys.isActive('Game')` can be true for the
+   * next run — same as AudioSystem `pendingTimers` + `resetTransient`.)
+   */
+  private pendingWallClockHandles = new Set<ReturnType<typeof setTimeout>>();
+
   /** Brief slow-motion effect — guarded against overlapping calls.
    *  Duration scales with motionScale (floor 60ms so the beat still lands). */
   private slowMotionActive = false;
@@ -1076,6 +1083,8 @@ export class JuiceSystem {
   /** Ascending gold sparkle rain — victory celebration, 2 seconds of rising dots. */
   victorySparkleRain(): void {
     if (this.settings.load().reduceParticles) return;
+    for (const h of this.pendingWallClockHandles) clearTimeout(h);
+    this.pendingWallClockHandles.clear();
     const scene = this.scene;
     const sparkleColors = [0xffd700, 0xffffff, 0xffee88];
     const total = 30;
@@ -1083,7 +1092,8 @@ export class JuiceSystem {
     // Scene reference guard — if scene restarts, captured ref becomes stale.
     const sceneRef = scene;
     for (let i = 0; i < total; i++) {
-      setTimeout(() => {
+      const handle = setTimeout(() => {
+        this.pendingWallClockHandles.delete(handle);
         // Guard: scene may have been restarted or destroyed.
         if (!sceneRef.scene.isActive(sceneRef.scene.key)) return;
         const vp = getCameraViewport(sceneRef);
@@ -1103,6 +1113,7 @@ export class JuiceSystem {
           onComplete: () => dot.destroy(),
         });
       }, 500 + i * interval);
+      this.pendingWallClockHandles.add(handle);
     }
   }
 
@@ -1144,6 +1155,8 @@ export class JuiceSystem {
 
   /** Clean up all pooled objects and tweens — called by GameScene shutdown. */
   destroy(): void {
+    for (const h of this.pendingWallClockHandles) clearTimeout(h);
+    this.pendingWallClockHandles.clear();
     const killAndDestroy = (pool: Phaser.GameObjects.GameObject[]) => {
       for (const obj of pool) {
         this.scene.tweens.killTweensOf(obj);

@@ -213,6 +213,9 @@ export class RunPersistenceBridge {
    */
   registerMidRunHooks(): void {
     if (typeof window === 'undefined') return;
+    // Defensive: idempotent re-entry — avoid orphan listeners if create()
+    // ever double-installs (abnormal) before shutdown.
+    this.unregisterMidRunHooks();
     this.pageHideBound = () => {
       try {
         if (!this.hooks.isSceneActive()) return;
