@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   resolveButtonStyle,
+  resolveTierBorder,
   setGameButtonDisabled,
   type ButtonTier,
   type GameButtonResult,
@@ -47,6 +48,48 @@ describe('resolveButtonStyle', () => {
     for (const tier of ['primary', 'secondary', 'tertiary'] as ButtonTier[]) {
       const s = resolveButtonStyle(tier);
       expect(s.strokeThickness).toBeGreaterThanOrEqual(2);
+    }
+  });
+});
+
+describe('resolveTierBorder (HC non-colour cue)', () => {
+  it('returns null for every tier when high contrast is off', () => {
+    for (const tier of ['primary', 'secondary', 'tertiary'] as ButtonTier[]) {
+      expect(resolveTierBorder(tier, false)).toBeNull();
+    }
+  });
+
+  it('primary in HC gets the thickest, brightest brass border', () => {
+    const primary = resolveTierBorder('primary', true);
+    const secondary = resolveTierBorder('secondary', true);
+    expect(primary).not.toBeNull();
+    expect(secondary).not.toBeNull();
+    expect(primary!.width).toBeGreaterThan(secondary!.width);
+    expect(primary!.alpha).toBeGreaterThan(secondary!.alpha);
+  });
+
+  it('secondary in HC gets a thinner dimmer border than primary but is still drawn', () => {
+    const secondary = resolveTierBorder('secondary', true);
+    expect(secondary).not.toBeNull();
+    expect(secondary!.width).toBeGreaterThan(0);
+  });
+
+  it('tertiary in HC stays borderless so the dimmest tier reads as quiet', () => {
+    expect(resolveTierBorder('tertiary', true)).toBeNull();
+  });
+
+  it('all HC borders use a brass-family hue (warm gold) so they read as a hierarchy cue, not chrome', () => {
+    for (const tier of ['primary', 'secondary'] as ButtonTier[]) {
+      const b = resolveTierBorder(tier, true);
+      expect(b).not.toBeNull();
+      // Brass hues sit in 0xRRGGBB with R > G > B — sanity-check the
+      // ordering instead of pinning exact values so future palette
+      // tweaks don't churn the test.
+      const r = (b!.color >> 16) & 0xff;
+      const g = (b!.color >> 8) & 0xff;
+      const bl = b!.color & 0xff;
+      expect(r).toBeGreaterThan(g);
+      expect(g).toBeGreaterThan(bl);
     }
   });
 });

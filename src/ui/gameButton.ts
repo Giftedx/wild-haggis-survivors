@@ -11,6 +11,7 @@
  */
 import type Phaser from 'phaser';
 import { COLORS } from '../config';
+import { getSettingsManager } from '../core/SettingsManager';
 import { attachButtonHoverFill } from './buttonHover';
 
 // ── Tier palette ─────────────────────────────────────────────────────
@@ -53,6 +54,39 @@ export function resolveButtonStyle(tier: ButtonTier): ButtonStyle {
   return STYLES[tier];
 }
 
+// ── HC tier border ──────────────────────────────────────────────────
+//
+// In high-contrast mode the three tier fills can read as "just
+// different shades of dark" — primary / secondary lose the saturation
+// cue when paired with a HC backdrop. Layering a per-tier brass
+// outline restores the hierarchy without depending on hue alone:
+//
+//   - primary   — thick, bright brass: the visual "primary CTA" tier.
+//   - secondary — thin, dim brass: present but recessive.
+//   - tertiary  — no border: stays quiet.
+//
+// Returns null when the tier should not draw a border, otherwise
+// `{ color, width, alpha }`. Pure — exported for unit tests.
+export interface ButtonHcBorder {
+  color: number;
+  width: number;
+  alpha: number;
+}
+
+const HC_BORDERS: Record<ButtonTier, ButtonHcBorder | null> = {
+  primary: { color: 0xe8c860, width: 2.4, alpha: 0.95 },
+  secondary: { color: 0x8a7c50, width: 1.2, alpha: 0.7 },
+  tertiary: null,
+};
+
+export function resolveTierBorder(
+  tier: ButtonTier,
+  highContrast: boolean,
+): ButtonHcBorder | null {
+  if (!highContrast) return null;
+  return HC_BORDERS[tier];
+}
+
 // ── Factory ─────────────────────────────────────────────────────────
 
 export interface GameButtonOpts {
@@ -72,6 +106,12 @@ export interface GameButtonOpts {
   hoverOverride?: number;
   /** Override tier's default text color. */
   textColorOverride?: string;
+  /**
+   * Force HC styling on/off for this button. When omitted, the factory
+   * reads `highContrastUi` from the live settings; tests pass an
+   * explicit boolean to keep the helper deterministic.
+   */
+  highContrast?: boolean;
 }
 
 export interface GameButtonResult {
@@ -98,6 +138,12 @@ export function createGameButton(
     .rectangle(opts.x, opts.y, opts.width, opts.height, fill, 1)
     .setInteractive({ useHandCursor: true });
 
+  const highContrast = opts.highContrast ?? readHighContrastFromSettings();
+  const border = resolveTierBorder(opts.tier, highContrast);
+  if (border !== null) {
+    rect.setStrokeStyle(border.width, border.color, border.alpha);
+  }
+
   const label = scene.add
     .text(opts.x, opts.y, opts.label, {
       fontFamily: 'monospace',
@@ -114,6 +160,17 @@ export function createGameButton(
   attachButtonHoverFill(rect, fill, hover, true);
 
   return { rect, label };
+}
+
+// Reading the live settings can throw inside test harnesses that mount
+// gameButton without a configured manager — fall back to "no HC" so
+// the legacy code path keeps working when the helper is unreachable.
+function readHighContrastFromSettings(): boolean {
+  try {
+    return getSettingsManager().load().highContrastUi === true;
+  } catch {
+    return false;
+  }
 }
 
 /**
