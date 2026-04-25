@@ -97,8 +97,9 @@ export interface LevelUpFlowHooks {
   /**
    * U1 Task 14 — rune lifecycle hooks.
    *
-   * - `isBossKilledThisRun()` gates whether buildCardPool offers rune
-   *    cards at all. False (or missing) keeps the tier out of the pool.
+   * - `isBossKilledThisRun()` is the design gate for rune cards. The card
+   *    pool also has a release gate in `upgrades.ts` so runes stay hidden
+   *    until their effect bag is fully consumed by gameplay systems.
    * - `getOwnedRuneIds()` filters out runes already held this run so a
    *    duplicate slot is never offered.
    * - `grantRune(runeId)` is invoked by apply() when a `grant_rune` card

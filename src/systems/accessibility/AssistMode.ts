@@ -9,9 +9,8 @@ import { getSettingsManager } from '../../core/SettingsManager';
  * the individual flag persists true. This keeps the contract simple for
  * call sites in Phase 2 — one read per effect, no manual master-check.
  *
- * Effects themselves aren't wired in M6 (scaffold milestone). Phase 2
- * threads these readers into JuiceSystem / Player iFrames / combo grace
- * window / GameScene timeScale.
+ * Effects themselves are not wired yet. The Settings panel keeps these
+ * controls hidden until runtime readers are threaded into gameplay.
  */
 
 export function isAssistModeEnabled(): boolean {

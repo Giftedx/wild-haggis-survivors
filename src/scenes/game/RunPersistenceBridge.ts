@@ -25,9 +25,14 @@ import type { VariantDef } from '../../data/variants';
 import type { RunScoreState } from './RunScoreState';
 import type { RunActState } from './RunActState';
 import type { RunModifiers } from '../../core/RunModifiers';
-import type { PickerSlot, RouteKey } from '../../data/routes';
-import { getRoute } from '../../data/routes';
+import type { PickerSlot, RouteDef, RouteKey } from '../../data/routes';
+import {
+  getRoute,
+  KIRKYARD_SPAWN_RELEASE_MS,
+  STAND_YER_GROUND_XP_RELEASE_MS,
+} from '../../data/routes';
 import { applyRouteModifierDeltas } from '../actIntermissionResolve';
+import { emitSaveFailure } from '../../utils/saveFailure';
 
 export interface RunPersistenceHooks {
   // Systems (reads)
@@ -59,9 +64,11 @@ export interface RunPersistenceHooks {
   getRevivalAvailable(): boolean;
   getOwnedPassives(): readonly string[];
   getEvolvedWeapons(): readonly string[];
+  getHeldRelicKeys?(): readonly string[];
   setRevivalAvailable(v: boolean): void;
   setOwnedPassives(p: string[]): void;
   setEvolvedWeapons(e: string[]): void;
+  restoreHeldRelics?(keys: readonly string[]): void;
 
   // Auto-save gate (skip when scene is already torn down)
   isSceneActive(): boolean;
@@ -80,6 +87,7 @@ export class RunPersistenceBridge {
     const weapons = h.getWeaponSystem();
     const juice = h.getJuice();
     const score = h.getRunScore();
+    const heldRelicKeys = h.getHeldRelicKeys?.() ?? [];
     return {
       gameTimeSec: h.getSpawnSystem().getGameTimeSec(),
       playerX: player.x,
@@ -111,6 +119,7 @@ export class RunPersistenceBridge {
       weaponDamage: h.getRunStatsTracker().snapshot(),
       spawnedBossKeys: h.getSpawnSystem().getSpawnedBossKeys(),
       shieldCooldownMs: player.getShieldCooldownMs(),
+      ...(heldRelicKeys.length > 0 ? { heldRelicKeys: [...heldRelicKeys] } : {}),
       actState: snapshotRunActState(h.getRunActState()),
       ironmoor: h.isIronmoorRun(),
     };
@@ -128,8 +137,11 @@ export class RunPersistenceBridge {
     if (timeManager.has('RUN_END')) return;
     try {
       h.getSaveManager().saveActiveRun(this.collect());
-    } catch {
-      /* ignore — best-effort save path */
+    } catch (err) {
+      // SaveManager.save() already emits via emitSaveFailure on its own
+      // catch — this handles `JSON.stringify` failures in the snapshot
+      // collect path (cyclic state, etc.). Distinct path tag.
+      emitSaveFailure('active_run', err);
     }
   }
 
@@ -177,6 +189,9 @@ export class RunPersistenceBridge {
     if (run.revivalAvailable !== undefined) {
       h.setRevivalAvailable(run.revivalAvailable);
     }
+    if (run.heldRelicKeys) {
+      h.restoreHeldRelics?.(run.heldRelicKeys);
+    }
     h.getRunStatsTracker().restore(run.weaponDamage);
     h.getMoorMoments().pushAfterResume(run.gameTimeSec);
     restoreRunActStateAndModifiers(
@@ -185,6 +200,9 @@ export class RunPersistenceBridge {
       h.getRunModifiers(),
       h.getSpawnSystem(),
       h.getWeaponSystem(),
+      h.getXPSystem(),
+      h.getTimeManager(),
+      run.gameTimeSec,
     );
   }
 
@@ -223,7 +241,7 @@ export class RunPersistenceBridge {
  * round-trip helpers.
  */
 function snapshotRunActState(actState: RunActState): IRunState['actState'] {
-  return {
+  const out: NonNullable<IRunState['actState']> = {
     currentAct: actState.currentAct,
     actStartTimeSec: actState.actStartTimeSec,
     pickerHistory: actState.pickerHistory.map((p) => ({
@@ -233,6 +251,15 @@ function snapshotRunActState(actState: RunActState): IRunState['actState'] {
       defaultedBySetting: p.defaultedBySetting,
     })),
   };
+  if (actState.currentNodeIndex > 0) out.currentNodeIndex = actState.currentNodeIndex;
+  if (actState.nodeOutcomes.length > 0) {
+    out.nodeOutcomes = actState.nodeOutcomes.map((o) => ({
+      nodeKey: o.nodeKey,
+      ...(o.chosenRewardKey ? { chosenRewardKey: o.chosenRewardKey } : {}),
+      visitedAtGameTimeSec: o.visitedAtGameTimeSec,
+    }));
+  }
+  return out;
 }
 
 /**
@@ -245,11 +272,35 @@ function restoreRunActStateAndModifiers(
   snapshot: IRunState['actState'] | undefined,
   actState: RunActState,
   runModifiers: RunModifiers,
-  spawnSystem: { setSpawnIntervalMult(mult: number): void },
+  spawnSystem: {
+    setSpawnIntervalMult(mult: number): void;
+    setEliteWeightMultiplier?(mult: number): void;
+    setEnemyHpMultiplier?(mult: number): void;
+  },
   weaponSystem: { setCurseCooldownMul(mul: number): void },
+  xpSystem: { setDropValueMultiplier?(mult: number): void },
+  timeManager: { scheduleRealTime?(ms: number, cb: () => void): unknown },
+  gameTimeSec: number,
 ): void {
   if (!snapshot) return;
   actState.advanceToAct(snapshot.currentAct, snapshot.actStartTimeSec);
+  // Restore append-only log + cursor BEFORE GameScene re-rolls the act's
+  // node-map. The freshly-generated map's `visited[]` is not yet
+  // reconstructed (run RNG state is not serialised — tracked as a plan
+  // exception). Cursor + log restoration keeps Chronicle breadcrumbs and
+  // replay node-cursor counts coherent on resume.
+  if (snapshot.currentNodeIndex !== undefined) {
+    actState.currentNodeIndex = Math.max(0, Math.floor(snapshot.currentNodeIndex));
+  }
+  if (snapshot.nodeOutcomes) {
+    for (const o of snapshot.nodeOutcomes) {
+      actState.recordNodeOutcome({
+        nodeKey: o.nodeKey,
+        ...(o.chosenRewardKey ? { chosenRewardKey: o.chosenRewardKey } : {}),
+        visitedAtGameTimeSec: o.visitedAtGameTimeSec,
+      });
+    }
+  }
   for (const p of snapshot.pickerHistory) {
     const route = safeGetRoute(p.routeKey);
     if (!route) continue;
@@ -265,12 +316,85 @@ function restoreRunActStateAndModifiers(
       atGameTimeSec: p.atGameTimeSec,
       defaultedBySetting: p.defaultedBySetting,
     });
-    applyRouteModifierDeltas(runModifiers, route);
+    restoreRouteRuntimeState(
+      p,
+      route,
+      gameTimeSec,
+      runModifiers,
+      spawnSystem,
+      xpSystem,
+      timeManager,
+    );
   }
   // Resync cached multipliers — the same pair the onResolve resolver
   // touches after every live pick.
   spawnSystem.setSpawnIntervalMult(runModifiers.spawnIntervalMult);
   weaponSystem.setCurseCooldownMul(runModifiers.weaponCooldownMult);
+}
+
+function restoreRouteRuntimeState(
+  pick: NonNullable<IRunState['actState']>['pickerHistory'][number],
+  route: RouteDef,
+  gameTimeSec: number,
+  runModifiers: RunModifiers,
+  spawnSystem: {
+    setSpawnIntervalMult(mult: number): void;
+    setEliteWeightMultiplier?(mult: number): void;
+    setEnemyHpMultiplier?(mult: number): void;
+  },
+  xpSystem: { setDropValueMultiplier?(mult: number): void },
+  timeManager: { scheduleRealTime?(ms: number, cb: () => void): unknown },
+): void {
+  switch (route.key) {
+    case 'up_the_brae':
+      applyRouteModifierDeltas(runModifiers, route);
+      spawnSystem.setEliteWeightMultiplier?.(1.5);
+      return;
+    case 'through_the_kirkyard': {
+      const remainingMs = remainingRouteMs(
+        pick.atGameTimeSec,
+        gameTimeSec,
+        KIRKYARD_SPAWN_RELEASE_MS,
+      );
+      if (remainingMs <= 0) return;
+      applyRouteModifierDeltas(runModifiers, route);
+      timeManager.scheduleRealTime?.(remainingMs, () => {
+        runModifiers.spawnIntervalMult = 1;
+        spawnSystem.setSpawnIntervalMult(1);
+      });
+      return;
+    }
+    case 'stand_yer_ground': {
+      const remainingMs = remainingRouteMs(
+        pick.atGameTimeSec,
+        gameTimeSec,
+        STAND_YER_GROUND_XP_RELEASE_MS,
+      );
+      if (remainingMs <= 0) return;
+      xpSystem.setDropValueMultiplier?.(2);
+      timeManager.scheduleRealTime?.(remainingMs, () => xpSystem.setDropValueMultiplier?.(1));
+      return;
+    }
+    case 'run_for_the_hills':
+      applyRouteModifierDeltas(runModifiers, route);
+      return;
+    case 'buckie_pitstop':
+      applyRouteModifierDeltas(runModifiers, route);
+      spawnSystem.setEnemyHpMultiplier?.(1.10);
+      return;
+    case 'round_the_loch':
+      applyRouteModifierDeltas(runModifiers, route);
+      return;
+  }
+}
+
+function remainingRouteMs(
+  pickedAtGameTimeSec: number,
+  resumeGameTimeSec: number,
+  totalMs: number,
+): number {
+  const elapsedMs = Math.max(0, resumeGameTimeSec - pickedAtGameTimeSec) * 1000;
+  return Math.max(0, Math.round(totalMs - elapsedMs));
 }
 
 function safeGetRoute(key: string) {

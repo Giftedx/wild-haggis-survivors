@@ -11,15 +11,14 @@
  * config map at draw time. See `docs/adr/0003-shader-registry-phaser-postfx-pipeline.md`.
  */
 
-// Phaser's RenderNodesConfig value type is `{ key?: string; function?: any }`
-// — the constructor is intentionally `any` on Phaser's side, so we accept any
-// class-shaped value here rather than inventing a stricter local constraint.
+// Phaser's `Types.Core.RenderNodesConfig` type def claims values are
+// `{ key?: string; function?: any }`, but the runtime
+// (`RenderNodeManager.js` line ~234) iterates `Object.entries(renderNodes)`
+// and calls `addNodeConstructor(name, entry[1])` — passing entry[1] as the
+// constructor directly. The wrapper object the type def implies fails with
+// `_nodeConstructors[name] is not a constructor` at first render. Pass the
+// bare class.
 type ShaderClass = new (...args: any[]) => unknown;
-
-interface RenderNodeConfigEntry {
-  key: string;
-  function: ShaderClass;
-}
 
 const registry = new Map<string, ShaderClass>();
 
@@ -42,10 +41,10 @@ export function clearShaderRegistry(): void {
   registry.clear();
 }
 
-export function buildRenderNodesConfig(): Record<string, RenderNodeConfigEntry> {
-  const out: Record<string, RenderNodeConfigEntry> = {};
+export function buildRenderNodesConfig(): Record<string, ShaderClass> {
+  const out: Record<string, ShaderClass> = {};
   for (const [id, ctor] of registry) {
-    out[id] = { key: id, function: ctor };
+    out[id] = ctor;
   }
   return out;
 }

@@ -41,11 +41,25 @@ export interface ReplayRecorderMeta extends ReplayBlobMeta {
   composedStats?: ComposedStatsSnapshot;
 }
 
+/**
+ * T308 — soft cap on captured frames so a marathon run can't blow past
+ * localStorage quota. 90,000 frames ≈ 25 minutes at 60fps; runs longer
+ * than this are exceedingly rare (median run ≈ 8 min per RunStatsTracker
+ * telemetry), so the cap chooses "preserve the early game completely"
+ * over the alternative of sampling. Frames past the cap are dropped with
+ * a single console warning; the recorded blob still finalises cleanly,
+ * just with a truncated suffix. Replay playback degrades gracefully —
+ * `ReplayInput.isComplete()` fires when the recorded frame stream ends,
+ * after which the player drives manually.
+ */
+export const REPLAY_RECORDER_FRAME_CAP = 90_000;
+
 export class ReplayRecorder {
   private readonly meta: ReplayRecorderMeta;
   private frames: ReplayFrame[] = [];
   private routes: RoutePick[] = [];
   private nodeOutcomes: NodeOutcome[] = [];
+  private capWarned = false;
 
   constructor(meta: ReplayRecorderMeta) {
     this.meta = {
@@ -59,6 +73,17 @@ export class ReplayRecorder {
 
   /** Push a single frame; values are clamped by the schema. */
   pushFrame(frame: ReplayFrame): void {
+    if (this.frames.length >= REPLAY_RECORDER_FRAME_CAP) {
+      if (!this.capWarned) {
+        this.capWarned = true;
+        if (typeof console !== 'undefined' && console.warn) {
+          console.warn(
+            `[replay] frame cap reached (${REPLAY_RECORDER_FRAME_CAP}); subsequent frames dropped`,
+          );
+        }
+      }
+      return;
+    }
     this.frames.push(clampReplayFrame(frame));
   }
 

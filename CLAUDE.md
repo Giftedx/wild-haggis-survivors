@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 3** (v3.90+) and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
+Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 4** and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
 
 **Tone & UX north star**: `docs/DESIGN_SOUL.md` (Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Warmth Audit, Soul Check, shipping objectives).
 
@@ -90,7 +90,7 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 ### Rendering
 Pixel art mode enabled (`pixelArt: true`, `roundPixels: true`, no antialiasing). Uses Phaser's Arcade Physics with zero gravity (top-down).
 
-## Phaser 3 Gotchas
+## Phaser 4 Gotchas
 
 - **Scene reuse**: `scene.start('Game')` reuses the same instance — `create()` must reset ALL transient state (field initializers only run at construction). See the reset block at top of `GameScene.create()`.
 - **`scene.time` vs `physics.pause()`**: `scene.time` timers keep running when physics is paused. Use guards like `if (this.scene.physics.world.isPaused) return` in timer callbacks, or defer work via flags (see `pendingChest` pattern).

@@ -301,12 +301,10 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.claymore.c',
         'ui.banter.weapon_evolve.claymore.d',
       ],
-      bagpipes: [
-        'ui.banter.weapon_evolve.bagpipes.a',
-        'ui.banter.weapon_evolve.bagpipes.b',
-        'ui.banter.weapon_evolve.bagpipes.c',
-        'ui.banter.weapon_evolve.bagpipes.d',
-      ],
+      // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
+      // CLAUDE.md "7 of the 8 weapons have a paired passive". Banter pool
+      // intentionally omits a `bagpipes` tag so the system can never queue
+      // a line that promises a non-existent evolution (T212).
     },
   },
   {
@@ -1345,10 +1343,8 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.evo_claymore.a',
         'ui.banter.first_time.evo_claymore.b',
       ],
-      evo_bagpipes: [
-        'ui.banter.first_time.evo_bagpipes.a',
-        'ui.banter.first_time.evo_bagpipes.b',
-      ],
+      // No evo_bagpipes pool — bagpipes has no evolution per
+      // EVOLUTION_RECIPES. T212 audit cleanup.
       combo_100: [
         'ui.banter.first_time.combo_100.a',
         'ui.banter.first_time.combo_100.b',

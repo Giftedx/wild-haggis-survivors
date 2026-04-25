@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildCardPool, type Rarity } from './upgrades';
+import { buildCardPool, RUNE_CARD_OFFERS_ENABLED, type Rarity } from './upgrades';
 import { buildRuneCards } from './runeCards';
 import { RUNES } from './runes';
 
@@ -30,18 +30,29 @@ describe('rune rarity + buildRuneCards (U1 Task 11)', () => {
     expect(pool.every((c) => c.rarity !== 'rune')).toBe(true);
   });
 
-  it('buildCardPool INCLUDES rune cards when bossKilledThisRun is true', () => {
+  it('keeps live rune offers disabled until runtime consumers are wired', () => {
+    expect(RUNE_CARD_OFFERS_ENABLED).toBe(false);
     const pool = buildCardPool([], [], {}, [], { bossKilledThisRun: true });
+    const runeCards = pool.filter((c) => c.rarity === 'rune');
+    expect(runeCards).toHaveLength(0);
+  });
+
+  it('buildCardPool includes rune cards only when the rollout gate is explicitly enabled', () => {
+    const pool = buildCardPool([], [], {}, [], {
+      bossKilledThisRun: true,
+      runeOffersEnabled: true,
+    });
     const runeCards = pool.filter((c) => c.rarity === 'rune');
     expect(runeCards.length).toBeGreaterThan(0);
     // 30 runes, none owned, none seen — all eligible.
     expect(runeCards).toHaveLength(Object.keys(RUNES).length);
   });
 
-  it('buildCardPool excludes already-owned runes even when bossKilled', () => {
+  it('buildCardPool excludes already-owned runes when the rollout gate is enabled', () => {
     const pool = buildCardPool([], [], {}, [], {
       bossKilledThisRun: true,
       ownedRuneIds: ['haar_rune', 'thirst_rune'],
+      runeOffersEnabled: true,
     });
     const runeIds = pool
       .filter((c) => c.rarity === 'rune')

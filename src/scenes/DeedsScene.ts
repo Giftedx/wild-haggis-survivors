@@ -21,8 +21,12 @@ import { countUniqueRouteKeys } from '../ui/chronicleAggregates';
 import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
-import { clickToScene } from './clickToScene';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
+import {
+  resolveSceneReturnTarget,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 /**
  * Browse screen for achievements ("deeds"). Shows every defined deed with
@@ -35,9 +39,14 @@ import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
  */
 export class DeedsScene extends Phaser.Scene {
   private saveManager = new SaveManager();
+  private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
     super({ key: 'Deeds' });
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -133,7 +142,10 @@ export class DeedsScene extends Phaser.Scene {
       x: width / 2, y: height - 32, width: 200, height: 38,
       label: t('ui.deeds.back'), fontSize: '15px', uiScale,
     });
-    const goBack = clickToScene(this, 'MainMenu');
+    const goBack = () => {
+      audio.playClick();
+      this.scene.start(this.returnTo);
+    };
     backBtn.on('pointerdown', goBack);
 
     this.input.keyboard?.on('keydown-ESC', goBack);

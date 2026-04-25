@@ -4,6 +4,8 @@ export type StorageLike = {
   removeItem: (key: string) => void;
 };
 
+import { emitSaveFailure } from '../utils/saveFailure';
+
 export interface ISaveDataV1 {
   saveVersion: 1;
   totalKills: number;
@@ -40,6 +42,24 @@ export interface IRunActStateSnapshot {
     routeKey: string;
     atGameTimeSec: number;
     defaultedBySetting: boolean;
+  }>;
+  /**
+   * Cursor into the current act's node-map. Restored so a resumed run
+   * keeps Chronicle / minimap counts coherent. The freshly-rolled map's
+   * `visited` array is NOT yet reconstructed from `nodeOutcomes` (run
+   * RNG state is not serialised — see plan exceptions for the deferred
+   * visited-state restoration item). Optional on pre-T101 payloads.
+   */
+  currentNodeIndex?: number;
+  /**
+   * Append-only log of every resolved node outcome this run (all acts).
+   * Restored so Chronicle breadcrumbs / replay node-cursor stay aligned
+   * with the live run.
+   */
+  nodeOutcomes?: Array<{
+    nodeKey: string;
+    chosenRewardKey?: string;
+    visitedAtGameTimeSec: number;
   }>;
 }
 
@@ -83,6 +103,8 @@ export interface IRunState {
   spawnedBossKeys?: string[];
   /** Highland Shield cooldown remaining in ms at snapshot time. */
   shieldCooldownMs?: number;
+  /** Relic keys held in the three run slots, in slot order. */
+  heldRelicKeys?: string[];
   /**
    * W2 Moor Road — act state (current act, start time, picker history).
    * Absent on pre-W2 resume payloads; the resume path treats that as a
@@ -297,6 +319,10 @@ function toStringArray(v: unknown): string[] {
   return v.filter((x): x is string => typeof x === 'string');
 }
 
+function toOptionalStringArray(v: unknown): string[] | undefined {
+  return Array.isArray(v) ? toStringArray(v) : undefined;
+}
+
 /** Sorted unique strings — stable JSON for codex keys. */
 function coerceCodexCulledKeys(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
@@ -384,6 +410,7 @@ function coerceIRunState(raw: unknown): IRunState | null {
       ? toStringArray(o.spawnedBossKeys)
       : undefined,
     shieldCooldownMs: toOptionalNonNegativeInt(o.shieldCooldownMs),
+    heldRelicKeys: toOptionalStringArray(o.heldRelicKeys),
     actState: coerceRunActStateSnapshot(o.actState),
     ironmoor: toOptionalBool(o.ironmoor),
   };
@@ -411,7 +438,32 @@ function coerceRunActStateSnapshot(raw: unknown): IRunActStateSnapshot | undefin
       });
     }
   }
-  return { currentAct, actStartTimeSec, pickerHistory };
+  const currentNodeIndex = toOptionalNonNegativeInt(o.currentNodeIndex);
+  const nodeOutcomes = coerceNodeOutcomes(o.nodeOutcomes);
+  const out: IRunActStateSnapshot = { currentAct, actStartTimeSec, pickerHistory };
+  if (currentNodeIndex !== undefined) out.currentNodeIndex = currentNodeIndex;
+  if (nodeOutcomes !== undefined) out.nodeOutcomes = nodeOutcomes;
+  return out;
+}
+
+function coerceNodeOutcomes(raw: unknown): NonNullable<IRunActStateSnapshot['nodeOutcomes']> | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: NonNullable<IRunActStateSnapshot['nodeOutcomes']> = [];
+  for (const item of raw) {
+    if (item === null || typeof item !== 'object') continue;
+    const o = item as Record<string, unknown>;
+    if (typeof o.nodeKey !== 'string' || o.nodeKey.length === 0) continue;
+    const visitedAtGameTimeSec = Math.max(0, clampNumber(o.visitedAtGameTimeSec, 0));
+    const entry: NonNullable<IRunActStateSnapshot['nodeOutcomes']>[number] = {
+      nodeKey: o.nodeKey,
+      visitedAtGameTimeSec,
+    };
+    if (typeof o.chosenRewardKey === 'string' && o.chosenRewardKey.length > 0) {
+      entry.chosenRewardKey = o.chosenRewardKey;
+    }
+    out.push(entry);
+  }
+  return out.length > 0 ? out : undefined;
 }
 
 function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
@@ -504,9 +556,11 @@ export class SaveManager {
     const coerced = this.migrateAndCoerce(data);
     try {
       this.storage.setItem(this.key, JSON.stringify(coerced));
-    } catch {
+    } catch (err) {
       // Storage can throw in private mode, quota exhaustion, or blocked contexts.
-      // SaveManager callers should continue running even if persistence fails.
+      // T131 — surface the failure so a UI listener can toast the player
+      // instead of the previous silent swallow.
+      emitSaveFailure('meta', err);
     }
   }
 

@@ -9,6 +9,12 @@ import { resolveSettingsPalette } from './settingsPalette';
 import { formatKeyCode } from '../input/keyCodeDisplay';
 import { applyKeyRebind, type RebindSlot } from '../input/applyKeyRebind';
 import { applyGamepadRebind } from '../input/applyGamepadRebind';
+import {
+  resolveSceneReturnTarget,
+  returnTargetData,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 type CaptureKind = 'keyboard' | 'gamepad';
 
@@ -41,9 +47,14 @@ export class SettingsInputScene extends Phaser.Scene {
    *  match *new* button presses. Otherwise a held button would instantly
    *  resolve the capture. */
   private captureGamepadBaseline: boolean[] = [];
+  private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
     super({ key: 'SettingsInput' });
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -211,7 +222,7 @@ export class SettingsInputScene extends Phaser.Scene {
       this.captureGamepadBaseline = pad?.buttons.map((b) => b.pressed) ?? [];
     }
     this.statusText?.setText(t('ui.inputRebind.rebind_hint'));
-    this.scene.restart();
+    this.scene.restart(returnTargetData(this.returnTo));
   }
 
   private renderResetChip(y: number, palette: ReturnType<typeof resolveSettingsPalette>): void {
@@ -236,7 +247,7 @@ export class SettingsInputScene extends Phaser.Scene {
     rect.on('pointerdown', () => {
       audio.playClick();
       this.resetToDefaults();
-      this.scene.restart();
+      this.scene.restart(returnTargetData(this.returnTo));
     });
   }
 
@@ -256,7 +267,7 @@ export class SettingsInputScene extends Phaser.Scene {
     backLabel.setScale(uiScale);
     const goBack = () => {
       audio.playClick();
-      this.scene.start('Settings');
+      this.scene.start('Settings', returnTargetData(this.returnTo));
     };
     back.on('pointerdown', goBack);
   }
@@ -266,7 +277,7 @@ export class SettingsInputScene extends Phaser.Scene {
     if (e.code === 'Escape') {
       this.capture = undefined;
       this.statusText?.setText('');
-      this.scene.restart();
+      this.scene.restart(returnTargetData(this.returnTo));
       return;
     }
     // ESC cancels all captures; keyboard events only drive keyboard captures.
@@ -283,7 +294,7 @@ export class SettingsInputScene extends Phaser.Scene {
     audio.playClick();
     this.capture = undefined;
     this.statusText?.setText('');
-    this.scene.restart();
+    this.scene.restart(returnTargetData(this.returnTo));
   };
 
   update(): void {
@@ -319,7 +330,7 @@ export class SettingsInputScene extends Phaser.Scene {
     audio.playClick();
     this.capture = undefined;
     this.statusText?.setText('');
-    this.scene.restart();
+    this.scene.restart(returnTargetData(this.returnTo));
   }
 
   /** Reset all bindings to defaults. Exposed for tests + UI chip. */

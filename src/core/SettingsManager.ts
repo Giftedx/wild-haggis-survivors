@@ -1,5 +1,6 @@
 import type { StorageLike } from './SaveManager';
 import type { LocaleKey } from './i18n';
+import { emitSaveFailure } from '../utils/saveFailure';
 import {
   ACTION_KEYS,
   DEFAULT_GAMEPAD_BINDINGS,
@@ -99,9 +100,8 @@ export interface ISettingsData {
    */
   photosensitivityWarningSeen: boolean;
   /**
-   * A1 M6 — Assist Mode master toggle. When true, the Settings panel
-   * reveals the sub-settings below. Effects themselves are stubbed in
-   * M6 and wired in Phase 2 — this scaffold only persists the prefs.
+   * A1 M6 — Assist Mode master toggle. Persisted for future builds, but
+   * hidden from the Settings panel until the runtime effects are wired.
    */
   assistMode: boolean;
   /**
@@ -327,8 +327,10 @@ export class SettingsManager {
   save(data: ISettingsData): void {
     try {
       this.storage.setItem(this.key, JSON.stringify(this.coerce(data)));
-    } catch {
-      // Keep gameplay/settings UI responsive if persistence is unavailable.
+    } catch (err) {
+      // Keep gameplay/settings UI responsive if persistence is unavailable —
+      // T131 surfaces the failure to the UI toast listener.
+      emitSaveFailure('settings', err);
     }
   }
 

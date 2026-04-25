@@ -121,6 +121,19 @@ export type GlobalRelicPickedPayload = {
   atGameTimeSec: number;
 };
 
+/**
+ * T131 — emitted whenever a `localStorage.setItem` call fails (quota
+ * exhausted, private mode, blocked context). UI surfaces (Game / Menu /
+ * Settings) listen and show a one-shot toast so silent persistence
+ * failures stop hiding behind a swallowed catch.
+ */
+export type GlobalSaveFailedPayload = {
+  /** Which storage path threw — disambiguates meta vs settings vs legacy save.ts. */
+  path: 'meta' | 'active_run' | 'settings' | 'legacy_save';
+  /** Best-effort error message (Error.message, or 'unknown'). */
+  reason: string;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -135,6 +148,7 @@ export type GlobalEvents = {
   GLOBAL_COMBO_MILESTONE: GlobalComboMilestonePayload;
   GLOBAL_CURSE_STARTED: GlobalCurseStartedPayload;
   GLOBAL_RELIC_PICKED: GlobalRelicPickedPayload;
+  GLOBAL_SAVE_FAILED: GlobalSaveFailedPayload;
   bossEnraged: string;
 };
 

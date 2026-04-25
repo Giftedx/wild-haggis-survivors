@@ -31,6 +31,12 @@ import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { createGameButton } from '../ui/gameButton';
 import { performSettingsReset } from './settingsResetAction';
 import { renderSettingsPreview, type SettingsPreviewHandle } from './settingsPreviewCard';
+import {
+  resolveSceneReturnTarget,
+  returnTargetData,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 type SettingsGpRow =
   | {
@@ -119,6 +125,7 @@ export class SettingsScene extends Phaser.Scene {
   private gpUpdate?: (time: number, delta: number) => void;
   private glowTweens: Phaser.Tweens.Tween[] = [];
   private previewHandle?: SettingsPreviewHandle;
+  private returnTo: SceneReturnTarget = 'MainMenu';
   /** Base row stride before uiScale — shrunk from 42 to fit the 15-row
    *  panel once W18 language + W66 ironmoor + W2 skip rows landed. */
   private readonly BASE_ROW_STEP = 38;
@@ -127,6 +134,10 @@ export class SettingsScene extends Phaser.Scene {
   constructor() {
     super({ key: 'Settings' });
     this.working = this.settingsManager.load();
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -147,7 +158,7 @@ export class SettingsScene extends Phaser.Scene {
     // ~4 toggles. Text remains at `uiScale` so readability stays intact;
     // only vertical stride compresses. Floor of 0.8 keeps labels from
     // crashing into each other on very short viewports.
-    const rowsCount = 17;
+    const rowsCount = 22;
     const sectionCount = 3;
     const rowBase = rowsCount * this.BASE_ROW_STEP;
     const verticalReserve = 130 + 80; // rowY start + back-button margin
@@ -294,15 +305,8 @@ export class SettingsScene extends Phaser.Scene {
     this.addLocaleRow();
     this.addInputRebindRow();
 
-    // A1 M6 — Assist Mode scaffold. Master toggle + game-speed slider
-    // + three effect flags. Prefs persist today; the effects themselves
-    // land in a follow-up update (see AssistMode.ts readers).
-    this.addSectionHeader(t('ui.settings.section_assist'));
-    this.addToggleRow(t('ui.settings.assist_mode'), 'assistMode');
-    this.addSliderRow(t('ui.settings.assist_mode_speed'), 'assistModeGameSpeed', 0.5, 1, 0.05);
-    this.addToggleRow(t('ui.settings.assist_mode_extended_iframes'), 'assistModeExtendedIFrames');
-    this.addToggleRow(t('ui.settings.assist_mode_extended_combo'), 'assistModeExtendedComboWindow');
-    this.addToggleRow(t('ui.settings.assist_mode_invincibility'), 'assistModeInvincibility');
+    // Assist Mode preferences remain persisted for future builds, but the
+    // visible controls stay hidden until their runtime effects are wired.
 
     // --- BACK button ----------------------------------------------------
     // Sit just below the last row with a breathing gap rather than pinned
@@ -318,7 +322,7 @@ export class SettingsScene extends Phaser.Scene {
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
-      this.scene.start('MainMenu');
+      this.scene.start(this.returnTo);
     };
     back.on('pointerdown', goBack);
 
@@ -835,7 +839,7 @@ export class SettingsScene extends Phaser.Scene {
       // list before create() re-runs; stop + start forces a clean rebuild
       // so every row picks up the new overlay.
       this.scene.stop();
-      this.scene.start('Settings');
+      this.scene.start('Settings', returnTargetData(this.returnTo));
     };
 
     btn.on('pointerdown', cycle);
@@ -960,7 +964,7 @@ export class SettingsScene extends Phaser.Scene {
     const openRebindScene = () => {
       audio.playClick();
       this.persistAndApply();
-      this.scene.start('SettingsInput');
+      this.scene.start('SettingsInput', returnTargetData(this.returnTo));
     };
 
     btn.on('pointerdown', openRebindScene);
@@ -1005,7 +1009,7 @@ export class SettingsScene extends Phaser.Scene {
         settingsManager: this.settingsManager,
         restartScene: () => {
           this.scene.stop();
-          this.scene.start('Settings');
+          this.scene.start('Settings', returnTargetData(this.returnTo));
         },
       });
     };

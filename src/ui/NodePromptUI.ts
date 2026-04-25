@@ -1,7 +1,7 @@
 /**
  * NodePromptUI — blocking modal for interactive Moor Road node events
- * (shrine / wee_trader / bargain). Minimal panel with 1–3 option
- * buttons plus an optional "Leave" skip.
+ * (shrine / wee_trader / bargain). Panel with 1–3 option buttons,
+ * keyboard/gamepad focus navigation, and an optional explicit "Leave" skip.
  *
  * Caller is responsible for pausing game time around the prompt (scene
  * uses TimeManager 'NODE_PROMPT' token). This class owns only the
@@ -13,6 +13,11 @@ import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
 import { t } from '../core/i18n';
+import {
+  firstEnabledPromptEntryIndex,
+  movePromptFocusIndex,
+  type NodePromptNavEntry,
+} from './nodePromptNav';
 
 export interface NodePromptOption {
   readonly key: string;
@@ -41,11 +46,25 @@ const TITLE_FONT_PX = 20;
 const BODY_FONT_PX = 14;
 const OPTION_FONT_PX = 15;
 
+interface NodePromptButtonEntry extends NodePromptNavEntry {
+  readonly rect: Phaser.GameObjects.Rectangle;
+  readonly activate: () => void;
+  readonly baseStroke: number;
+}
+
 export class NodePromptUI {
   private readonly scene: Phaser.Scene;
   private scrim: Phaser.GameObjects.Rectangle | null = null;
   private panel: Phaser.GameObjects.Rectangle | null = null;
   private children: Phaser.GameObjects.GameObject[] = [];
+  private buttonEntries: NodePromptButtonEntry[] = [];
+  private focusedIndex = -1;
+  private keyboardHandlers: Array<{ event: string; handler: (event: KeyboardEvent) => void }> = [];
+  private updateHandler: (() => void) | null = null;
+  private prevPadUp = false;
+  private prevPadDown = false;
+  private prevPadConfirm = false;
+  private prevPadCancel = false;
   private open = false;
 
   constructor(scene: Phaser.Scene) {
@@ -79,10 +98,8 @@ export class NodePromptUI {
       .setScrollFactor(0)
       .setDepth(PANEL_DEPTH)
       .setInteractive();
-    this.scrim.on('pointerdown', () => {
-      // Click on scrim = implicit skip, only when allowed.
-      if (opts.allowSkip !== false) this.resolve(null, opts.onResolve);
-    });
+    // Scrim click only blocks the playfield. Skipping is deliberate via
+    // the Leave button, Esc/B, or the explicit caller-provided option.
 
     this.panel = this.scene.add
       .rectangle(cx, cy, panelW, panelH, 0x0a0a10, 0.95)
@@ -147,6 +164,11 @@ export class NodePromptUI {
         () => this.resolve(null, opts.onResolve),
       );
     }
+
+    this.focusedIndex = firstEnabledPromptEntryIndex(this.buttonEntries);
+    this.applyFocus();
+    this.installKeyboard(opts);
+    this.installGamepad(opts);
   }
 
   private buildButton(
@@ -167,8 +189,11 @@ export class NodePromptUI {
       .setDepth(PANEL_DEPTH + 2);
     if (!option.disabled) {
       rect.setInteractive({ useHandCursor: true });
-      rect.on('pointerover', () => rect.setStrokeStyle(2, 0xd4a017, 1));
-      rect.on('pointerout', () => rect.setStrokeStyle(1, stroke, 1));
+      rect.on('pointerover', () => {
+        this.focusedIndex = this.buttonEntries.findIndex((entry) => entry.rect === rect);
+        this.applyFocus();
+      });
+      rect.on('pointerout', () => this.applyFocus());
       rect.on('pointerup', onClick);
     }
     const textColor = option.disabled ? '#666677' : '#f0f0f8';
@@ -185,6 +210,94 @@ export class NodePromptUI {
       .setScrollFactor(0)
       .setDepth(PANEL_DEPTH + 3);
     this.children.push(rect, label);
+    this.buttonEntries.push({
+      rect,
+      activate: onClick,
+      baseStroke: stroke,
+      disabled: option.disabled,
+    });
+  }
+
+  private installKeyboard(opts: NodePromptOpts): void {
+    const keyboard = this.scene.input.keyboard;
+    if (!keyboard) return;
+    const move = (direction: -1 | 1) => {
+      this.focusedIndex = movePromptFocusIndex(this.buttonEntries, this.focusedIndex, direction);
+      this.applyFocus();
+    };
+    const activate = () => this.activateFocused();
+    const leave = () => {
+      if (opts.allowSkip !== false) this.resolve(null, opts.onResolve);
+    };
+    const handlers = [
+      ['keydown-UP', (event: KeyboardEvent) => { event.preventDefault(); move(-1); }],
+      ['keydown-DOWN', (event: KeyboardEvent) => { event.preventDefault(); move(1); }],
+      ['keydown-TAB', (event: KeyboardEvent) => {
+        event.preventDefault();
+        move(event.shiftKey ? -1 : 1);
+      }],
+      ['keydown-ENTER', (event: KeyboardEvent) => { event.preventDefault(); activate(); }],
+      ['keydown-SPACE', (event: KeyboardEvent) => { event.preventDefault(); activate(); }],
+      ['keydown-ESC', (event: KeyboardEvent) => { event.preventDefault(); leave(); }],
+    ] as const;
+    for (const [event, handler] of handlers) {
+      keyboard.on(event, handler);
+      this.keyboardHandlers.push({ event, handler });
+    }
+  }
+
+  private installGamepad(opts: NodePromptOpts): void {
+    this.updateHandler = () => {
+      if (!this.open) return;
+      const pad = this.scene.input.gamepad?.pad1;
+      if (!pad?.connected) {
+        this.prevPadUp = this.prevPadDown = this.prevPadConfirm = this.prevPadCancel = false;
+        return;
+      }
+
+      const up = pad.up || pad.leftStick.y < -0.5;
+      const down = pad.down || pad.leftStick.y > 0.5;
+      const confirm = pad.buttons[0]?.pressed === true || pad.buttons[9]?.pressed === true;
+      const cancel = pad.buttons[1]?.pressed === true;
+
+      if (up && !this.prevPadUp) {
+        this.focusedIndex = movePromptFocusIndex(this.buttonEntries, this.focusedIndex, -1);
+        this.applyFocus();
+      }
+      if (down && !this.prevPadDown) {
+        this.focusedIndex = movePromptFocusIndex(this.buttonEntries, this.focusedIndex, 1);
+        this.applyFocus();
+      }
+      if (confirm && !this.prevPadConfirm) this.activateFocused();
+      if (cancel && !this.prevPadCancel && opts.allowSkip !== false) {
+        this.resolve(null, opts.onResolve);
+      }
+
+      this.prevPadUp = up;
+      this.prevPadDown = down;
+      this.prevPadConfirm = confirm;
+      this.prevPadCancel = cancel;
+    };
+    this.scene.events.on('update', this.updateHandler);
+  }
+
+  private activateFocused(): void {
+    const entry = this.buttonEntries[this.focusedIndex];
+    if (!entry || entry.disabled) return;
+    entry.activate();
+  }
+
+  private applyFocus(): void {
+    for (let i = 0; i < this.buttonEntries.length; i++) {
+      const entry = this.buttonEntries[i]!;
+      if (entry.disabled) {
+        entry.rect.setStrokeStyle(1, entry.baseStroke, 1);
+      } else if (i === this.focusedIndex) {
+        entry.rect.setStrokeStyle(2, 0xd4a017, 1);
+      } else {
+        entry.rect.setStrokeStyle(1, entry.baseStroke, 1);
+      }
+    }
   }
 
   private resolve(key: string | null, onResolve: (k: string | null) => void): void {
@@ -195,6 +308,20 @@ export class NodePromptUI {
 
   close(): void {
     this.open = false;
+    const keyboard = this.scene.input.keyboard;
+    if (keyboard) {
+      for (const { event, handler } of this.keyboardHandlers) {
+        keyboard.off(event, handler);
+      }
+    }
+    this.keyboardHandlers = [];
+    if (this.updateHandler) {
+      this.scene.events.off('update', this.updateHandler);
+      this.updateHandler = null;
+    }
+    this.buttonEntries = [];
+    this.focusedIndex = -1;
+    this.prevPadUp = this.prevPadDown = this.prevPadConfirm = this.prevPadCancel = false;
     for (const c of this.children) {
       try { c.destroy(); } catch { /* ignore */ }
     }

@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { ReplayRecorder } from './ReplayRecorder';
+import { describe, expect, it, vi } from 'vitest';
+import { ReplayRecorder, REPLAY_RECORDER_FRAME_CAP } from './ReplayRecorder';
 import { BALANCE } from '../core/BalanceConfig';
 import { captureComposedStats } from './composedStatsSnapshot';
 import type { ComposedPlayerStats } from '../core/StatComposer';
@@ -193,5 +193,36 @@ describe('ReplayRecorder v3 upgrade (M1 nodeOutcomes)', () => {
     r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
     r.reset();
     expect(r.finalize().version).toBe(1);
+  });
+});
+
+describe('ReplayRecorder T308 frame cap', () => {
+  const SAMPLE_FRAME = { dx: 0, dy: 0, dtMs: 16, dash: false, menu: false } as const;
+
+  it('caps recorded frames at REPLAY_RECORDER_FRAME_CAP and warns once', () => {
+    const r = new ReplayRecorder(META);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Push two frames past the cap to confirm the second one also no-ops
+    // and the warning fires only once.
+    for (let i = 0; i < REPLAY_RECORDER_FRAME_CAP + 2; i++) {
+      r.pushFrame({ ...SAMPLE_FRAME });
+    }
+    expect(r.getFrameCount()).toBe(REPLAY_RECORDER_FRAME_CAP);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]?.[0]).toContain('frame cap reached');
+    warn.mockRestore();
+  });
+
+  it('reset() lets a recorder accept frames again after the cap', () => {
+    const r = new ReplayRecorder(META);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (let i = 0; i < REPLAY_RECORDER_FRAME_CAP + 5; i++) {
+      r.pushFrame({ ...SAMPLE_FRAME });
+    }
+    expect(r.getFrameCount()).toBe(REPLAY_RECORDER_FRAME_CAP);
+    r.reset();
+    r.pushFrame({ ...SAMPLE_FRAME });
+    expect(r.getFrameCount()).toBe(1);
+    vi.restoreAllMocks();
   });
 });

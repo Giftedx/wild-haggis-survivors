@@ -49,8 +49,19 @@ export class HaarFogRenderNode extends (Phaser.Renderer.WebGL.RenderNodes
     controller: Phaser.Filters.Controller,
     _drawingContext: Phaser.Renderer.WebGL.DrawingContext,
   ): void {
+    // Phaser 4 pattern: uniforms are written through `programManager.setUniform`
+    // (see `FilterBlend.js:134`). The `setUniform` method does NOT live on the
+    // render node itself — earlier impl read `this.setUniform` and threw
+    // `s is not a function` at first render.
+    const programManager = (this as unknown as {
+      programManager: { setUniform: (name: string, value: number | number[]) => void };
+    }).programManager;
+    const setUniform = (name: string, value: number | number[]): void => {
+      programManager.setUniform(name, value);
+    };
+    // Bind sampler2 to texture unit 1 (paired with `setupTextures` slot 1).
+    setUniform('uMainSampler2', 1);
     const state = readControllerState(controller);
-    const setUniform = (this as unknown as { setUniform: (name: string, value: number | number[]) => void }).setUniform;
     applyHaarUniforms(state, setUniform);
   }
 }

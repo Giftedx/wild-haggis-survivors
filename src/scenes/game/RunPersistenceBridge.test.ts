@@ -20,6 +20,7 @@ function buildState(
     revival?: boolean;
     owned?: string[];
     evolved?: string[];
+    relics?: string[];
     ironmoor?: boolean;
   } = {},
 ) {
@@ -32,6 +33,7 @@ function buildState(
     revival: counters.revival ?? false,
     owned: counters.owned ?? [],
     evolved: counters.evolved ?? [],
+    relics: counters.relics ?? [],
   };
   const actState = new RunActState();
   const modifiers = defaultModifiers();
@@ -55,7 +57,24 @@ function buildHooks(
     replaceWeaponsFromRun: vi.fn(),
     setCurseCooldownMul: vi.fn(),
   };
-  const timeManager = { has: vi.fn((k: string) => k === 'RUN_END' && !!overrides.runEnd) };
+  const xpSystem = {
+    getCurrentXP: () => 42,
+    getLevel: () => 5,
+    hydrateRunState: vi.fn(),
+    setDropValueMultiplier: vi.fn(),
+  };
+  const spawnSystem = {
+    getGameTimeSec: () => 180.5,
+    getSpawnedBossKeys: () => ['gordon'],
+    applyResumeTime: vi.fn(),
+    setSpawnIntervalMult: vi.fn(),
+    setEliteWeightMultiplier: vi.fn(),
+    setEnemyHpMultiplier: vi.fn(),
+  };
+  const timeManager = {
+    has: vi.fn((k: string) => k === 'RUN_END' && !!overrides.runEnd),
+    scheduleRealTime: vi.fn(),
+  };
   const hooks: RunPersistenceHooks = {
     getPlayer: () =>
       ({
@@ -71,20 +90,9 @@ function buildHooks(
         setResumeShieldCooldown: vi.fn(),
         setResumeDashState: vi.fn(),
       }) as never,
-    getXPSystem: () =>
-      ({
-        getCurrentXP: () => 42,
-        getLevel: () => 5,
-        hydrateRunState: vi.fn(),
-      }) as never,
+    getXPSystem: () => xpSystem as never,
     getWeaponSystem: () => weapons as never,
-    getSpawnSystem: () =>
-      ({
-        getGameTimeSec: () => 180.5,
-        getSpawnedBossKeys: () => ['gordon'],
-        applyResumeTime: vi.fn(),
-        setSpawnIntervalMult: vi.fn(),
-      }) as never,
+    getSpawnSystem: () => spawnSystem as never,
     getJuice: () =>
       ({
         getBestCombo: () => 100,
@@ -108,6 +116,7 @@ function buildHooks(
     getRevivalAvailable: () => flags.revival,
     getOwnedPassives: () => flags.owned,
     getEvolvedWeapons: () => flags.evolved,
+    getHeldRelicKeys: () => flags.relics,
     setRevivalAvailable: (v) => {
       flags.revival = v;
     },
@@ -117,9 +126,12 @@ function buildHooks(
     setEvolvedWeapons: (e) => {
       flags.evolved = e;
     },
+    restoreHeldRelics: (keys) => {
+      flags.relics = [...keys];
+    },
     isSceneActive: () => overrides.sceneActive ?? true,
   };
-  return { hooks, saveManager, timeManager, weapons, score, flags };
+  return { hooks, saveManager, timeManager, weapons, xpSystem, spawnSystem, score, flags };
 }
 
 describe('RunPersistenceBridge', () => {
@@ -182,6 +194,14 @@ describe('RunPersistenceBridge', () => {
       expect(snapshot.ownedPassives).not.toBe(owned);
       expect(snapshot.evolvedWeaponKeys).not.toBe(evolved);
     });
+
+    it('snapshots held relic keys in slot order when present', () => {
+      const state = buildState({ relics: ['sporran_of_holding', 'bronze_clasp'] });
+      const { hooks } = buildHooks(state);
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.heldRelicKeys).toEqual(['sporran_of_holding', 'bronze_clasp']);
+      expect(snapshot.heldRelicKeys).not.toBe(state.flags.relics);
+    });
   });
 
   describe('persist', () => {
@@ -226,6 +246,7 @@ describe('RunPersistenceBridge', () => {
         bossKillCount: 1,
         bossGoldEarned: 50,
         coinGoldEarned: 30,
+        heldRelicKeys: ['sporran_of_holding'],
         revivalAvailable: true,
         bestCombo: 0,
         comboCount: 0,
@@ -242,6 +263,7 @@ describe('RunPersistenceBridge', () => {
       expect(score.coinGoldEarned).toBe(30);
       expect(flags.revival).toBe(true);
       expect(flags.owned).toEqual(['greaves']);
+      expect(flags.relics).toEqual(['sporran_of_holding']);
     });
 
     it('snapshots the run-scoped ironmoor flag (locked-in, not live setting)', () => {
@@ -253,7 +275,7 @@ describe('RunPersistenceBridge', () => {
 
     it('restores RunActState + re-applies route modifierDeltas from pickerHistory', () => {
       const state = buildState();
-      const { hooks, weapons } = buildHooks(state);
+      const { hooks, weapons, timeManager } = buildHooks(state);
       // Mock spawnSystem on hooks so we can assert setSpawnIntervalMult was called.
       const spawnSys = {
         getGameTimeSec: () => 0,
@@ -305,6 +327,164 @@ describe('RunPersistenceBridge', () => {
       // SpawnSystem + WeaponSystem caches resynced (the core bug fix).
       expect(spawnSys.setSpawnIntervalMult).toHaveBeenCalledWith(0.7);
       expect(weapons.setCurseCooldownMul).toHaveBeenCalledWith(1);
+      expect(timeManager.scheduleRealTime).toHaveBeenCalledWith(30_000, expect.any(Function));
+    });
+
+    it('does not restore an expired timed route modifier', () => {
+      const state = buildState();
+      const { hooks, spawnSystem, timeManager } = buildHooks(state);
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 391,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: [],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 2,
+          actStartTimeSec: 300,
+          pickerHistory: [
+            {
+              slot: 'A',
+              routeKey: 'through_the_kirkyard',
+              atGameTimeSec: 300,
+              defaultedBySetting: false,
+            },
+          ],
+        },
+      } as never);
+      expect(state.modifiers.spawnIntervalMult).toBe(1);
+      expect(spawnSystem.setSpawnIntervalMult).toHaveBeenCalledWith(1);
+      expect(timeManager.scheduleRealTime).not.toHaveBeenCalled();
+    });
+
+    it('restores timed XP route state with remaining duration', () => {
+      const state = buildState();
+      const { hooks, xpSystem, timeManager } = buildHooks(state);
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 615,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: [],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 3,
+          actStartTimeSec: 600,
+          pickerHistory: [
+            {
+              slot: 'B',
+              routeKey: 'stand_yer_ground',
+              atGameTimeSec: 600,
+              defaultedBySetting: false,
+            },
+          ],
+        },
+      } as never);
+      expect(xpSystem.setDropValueMultiplier).toHaveBeenCalledWith(2);
+      expect(timeManager.scheduleRealTime).toHaveBeenCalledWith(15_000, expect.any(Function));
+    });
+
+    it('restores persistent route side-effect caches without replaying one-shot rewards', () => {
+      const state = buildState();
+      const { hooks, spawnSystem } = buildHooks(state);
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 700,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: [],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 3,
+          actStartTimeSec: 600,
+          pickerHistory: [
+            {
+              slot: 'A',
+              routeKey: 'up_the_brae',
+              atGameTimeSec: 300,
+              defaultedBySetting: false,
+            },
+            {
+              slot: 'B',
+              routeKey: 'buckie_pitstop',
+              atGameTimeSec: 600,
+              defaultedBySetting: false,
+            },
+          ],
+        },
+      } as never);
+      expect(spawnSystem.setEliteWeightMultiplier).toHaveBeenCalledWith(1.5);
+      expect(spawnSystem.setEnemyHpMultiplier).toHaveBeenCalledWith(1.1);
+    });
+
+    it('round-trips currentNodeIndex + nodeOutcomes through actState (T101 sub-fix)', () => {
+      const state = buildState();
+      const { hooks } = buildHooks(state);
+      // Seed live actState with some node visits, snapshot, then restore on a
+      // fresh actState to confirm the values survive serialise → coerce → restore.
+      state.actState.currentNodeIndex = 2;
+      state.actState.recordNodeOutcome({
+        nodeKey: 'a1_rest_bothy',
+        visitedAtGameTimeSec: 120,
+      });
+      state.actState.recordNodeOutcome({
+        nodeKey: 'a1_shrine_cairn',
+        chosenRewardKey: 'buff_damage',
+        visitedAtGameTimeSec: 180,
+      });
+
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.actState?.currentNodeIndex).toBe(2);
+      expect(snapshot.actState?.nodeOutcomes).toEqual([
+        { nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 120 },
+        { nodeKey: 'a1_shrine_cairn', chosenRewardKey: 'buff_damage', visitedAtGameTimeSec: 180 },
+      ]);
+
+      // Reset live actState then re-apply the snapshot — restored values must match.
+      state.actState.reset();
+      new RunPersistenceBridge(hooks).applyResume({
+        ...snapshot,
+      } as never);
+      expect(state.actState.currentNodeIndex).toBe(2);
+      expect(state.actState.nodeOutcomes).toEqual([
+        { nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 120 },
+        { nodeKey: 'a1_shrine_cairn', chosenRewardKey: 'buff_damage', visitedAtGameTimeSec: 180 },
+      ]);
+    });
+
+    it('omits currentNodeIndex + nodeOutcomes from snapshot when default-zero (no orphan keys)', () => {
+      const { hooks } = buildHooks(buildState());
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.actState?.currentNodeIndex).toBeUndefined();
+      expect(snapshot.actState?.nodeOutcomes).toBeUndefined();
     });
 
     it('clamps negative counters to 0 (defensive against malformed saves)', () => {

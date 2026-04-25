@@ -1,6 +1,6 @@
 # AGENTS.md — Working Agreement for AI Agents
 
-This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bundled with Vite.
+This repo is **Wild Haggis Survivors**, a Phaser 4 + TypeScript browser game bundled with Vite.
 
 ## How to run / verify
 - **Dev**: `npm run dev`
@@ -27,7 +27,7 @@ Eight deep reference docs that back the above. Consult before speccing, planning
 - `SCOTTISH_RESEARCH.md` — gazetteer of Scottish folklore, geography, history, culture; immediate content-mining section.
 - `SCOTTISH_RESEARCH_DEEP.md` — comprehensive Scottish encyclopaedia (25 parts including deep haggis lore, dialects, clans, Scottish games industry).
 - `GAME_FEEL_RESEARCH.md` — the craft layer. Nijman/Sakurai/Thorson/Korb canon. Moment anatomy. 100+ WHS-specific opportunities tagged by effort/impact.
-- `MUSIC_ART_TECH_RESEARCH.md` — technical layer. Phaser 3 pipelines, Web Audio scheduling, GLSL shaders, procedural music, AI-era tooling.
+- `MUSIC_ART_TECH_RESEARCH.md` — technical layer. Phaser 4 pipelines (the research doc itself was authored against Phaser 3 conventions; treat the rendering / pipeline notes as ports — see `docs/superpowers/plans/` for Phaser 4 migration history), Web Audio scheduling, GLSL shaders, procedural music, AI-era tooling.
 - `ACCESSIBILITY_RESEARCH.md` — accessibility engineering playbook; photosensitivity, colorblind, motor, cognitive; WHS audit + testing.
 - `CULTURAL_SENSITIVITIES_RESEARCH.md` — Scottish-content ethics reference; Gaelic/Scots, Highland Clearances, Culloden, trademarks, political framing.
 - `NARRATIVE_RESEARCH.md` — roguelite storytelling (Hades, Hollow Knight, Dark Souls, Inscryption); loop-native narrative craft.
@@ -37,7 +37,12 @@ Eight deep reference docs that back the above. Consult before speccing, planning
 ## Architecture quick map
 - **Scenes**: `src/scenes/BootScene.ts` → `MenuScene.ts` → `GameScene.ts` → `ShopScene.ts`. `ActIntermissionScene.ts` is a paired modal for W2 Moor Road between-act route picks.
 - **Core systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`. Per-run state holders live under `src/scenes/game/`: `RunScoreState`, `RunActState`, `RunLifecycle`, etc.
-- **Persistence**: `src/utils/save.ts` uses `localStorage` (key `whs_save`) with schema migration. Current schema is **v6** — `RunHistoryEntry.routes` carries W2 picker history; `RunHistoryEntry.replay` widens to `ReplayBlobAny` (v1 ∪ v2) per T1 Phase 3.
+- **Persistence (T132 diagram)** — three independent `localStorage` keys, each owned by a single module:
+  - `whs_save` — `src/utils/save.ts` (legacy combined save: meta progression + run history + replay blob; current schema **v17**, see `SAVE_SCHEMA_VERSION`).
+  - `whs_meta_save` — `src/core/SaveManager.ts` (`SaveManager.save`; meta-only save: kills, unlocks, achievements, `activeRun: IRunState | null` for mid-run resume; current schema **v9**).
+  - `whs_game_settings` — `src/core/SettingsManager.ts` (audio / motion / accessibility / keybindings / locale; settings schema **v1**).
+  - **All three** route their `setItem` catch through `src/utils/saveFailure.ts` `emitSaveFailure(path, err)` which fires `globalEventBus.GLOBAL_SAVE_FAILED`. `GameScene.create()` listens and toasts; structured `console.warn` records the failure either way (T131).
+  - The historical `whs_save` and the newer `whs_meta_save` overlap on some fields by design — the migration to a single owner is a future cleanup tracked in P3.
 - **Data files**: `src/config.ts`, `src/data/{weapons,enemies,upgrades,permanentUpgrades,variants,routes,banter,curses,biomes,eliteAffixes}.ts`
 - **W2 Moor Road**: act gating via `dispatchActComplete.ts` (gordon → act 1, tour_bus → act 2; taxman rides the victory path). Routes are data-driven with `modifierDeltas` applied at pick-resolve time + optional `onResume(ctx)` for side-effect callbacks (heals, spawn tilts, timed releases). `DEFAULT_ROUTE_ON_SKIP` backs the Skip Intermissions setting.
 - **T1 Deterministic replay** (`src/replay/`): `ReplayRecorder` captures `ReplayFrame[]` + optional v2 metadata (`curseKey`, `routes`, `composedStats`). `ReplayInput` implements `IInput` so `Player` can be driven by replayed frames. GameScene `create()` has mutually exclusive record vs. playback branches; act intermissions auto-resolve from recorded picks during playback. ADR-0002 documents the format + the cosmetic-RNG + cross-build non-goals.

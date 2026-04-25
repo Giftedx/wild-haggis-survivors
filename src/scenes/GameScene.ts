@@ -128,6 +128,7 @@ import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
+import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
 import { pickAncestor } from '@/data/ancestorWhispers';
 import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
@@ -898,9 +899,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,
+      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       setOwnedPassives: (p) => { this.ownedPassives = p; },
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
+      restoreHeldRelics: (keys) => this.restoreHeldRelics(keys),
       isSceneActive: () => this.scene.isActive(),
     });
 
@@ -974,6 +977,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (resumeRun) {
       this.runPersistence.applyResume(resumeRun);
     }
+
+    // T131 — surface save-failure events as a one-shot toast so silent
+    // localStorage write failures (quota, private mode) reach the player
+    // instead of dying in a swallowed catch. The off() handle returned by
+    // globalEventBus.on is registered with the scene shutdown event so the
+    // listener is freed when the scene is reused.
+    const offSaveFailed = globalEventBus.on('GLOBAL_SAVE_FAILED', (payload) => {
+      this.juice?.showToast(t('ui.game.save_failed', { path: payload.path }), '#ffb070');
+    });
+    this.events.once('shutdown', offSaveFailed);
 
     // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);
@@ -1291,6 +1304,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getUiViewport: () => this.getUiViewport(),
       getVictoryPending: () => this.runScore.victoryPending,
       setVictoryPending: (v) => { this.runScore.victoryPending = v; },
+      invalidatePendingVictoryTicker: () => { this.runScore.nextVictoryDelayGen(); },
       getRevivalAvailable: () => this.revivalAvailable,
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       getVictoryFade: () => this.victoryFade,
@@ -1305,7 +1319,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       buildRunSummary: (victory) => this.runExit.buildSummary(victory),
       buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
       buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
-      recordToHistory: (s, r) => this.runHistoryRecorder.record(s, r),
+      // T307 — recordToHistory writes a duplicate row into Chronicle (and
+      // bumps Daily Challenge attempts) when fired during replay playback.
+      // Pair the no-op gate with the existing `recordRun` no-op below so
+      // the meta save survives playback untouched.
+      recordToHistory: (s, r) => {
+        if (this.replayInput) return;
+        this.runHistoryRecorder.record(s, r);
+      },
       recordRun: (s, ctx) =>
         // T1 replay playback — don't pollute run history with a replay
         // run. The Chronicle already has the original entry; re-adding
@@ -1361,15 +1382,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.nodePromptUI = new NodePromptUI(this);
     // Listener is registered once per scene-create and lives until reset.
     // Dispatches to per-type handlers which in turn call finalizeNodeVisit.
-    // Interactive types (shrine / wee_trader / bargain) route through the
-    // stub handler until NodePromptUI lands — see follow-up tasks.
+    // Interactive types (shrine / wee_trader / bargain) route through
+    // NodePromptUI so pointer, keyboard, and gamepad paths resolve the
+    // same outcome contract.
     this.nodeMapSystem.setTriggerListener((index, state) => {
       if (state.visited[index]) return;
       // Block re-trigger while an interactive prompt is already resolving.
       if (this.interactivePromptIndex >= 0) return;
       this.handleNodeTriggered(state.nodes[index], index, state);
     });
-    this.initNodeMapForAct(1);
+    const resumeNodeTarget = resolveResumeNodeMapTarget(
+      this.runActState.currentAct,
+      this.spawnSystem.getSpawnedBossKeys(),
+    );
+    this.initNodeMapForAct(resumeNodeTarget.act, resumeNodeTarget.stretch);
     this.relicSlotUI?.destroy();
     this.relicSlotUI = new RelicSlotUI(this, {
       getHeldSlots: () => this.relicSystem.getSlots().map((s) => s.def),
@@ -2059,8 +2085,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /**
    * Dispatch a triggered node to the right event handler. Passive
    * events (encounter / elite / rest / hidden) apply inline; interactive
-   * events (shrine / wee_trader / bargain) route through the stub until
-   * NodePromptUI lands in a follow-up task.
+   * events (shrine / wee_trader / bargain) route through NodePromptUI.
    */
   private handleNodeTriggered(node: NodeDef, index: number, state: NodeMapState): void {
     switch (node.type) {
@@ -2670,6 +2695,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     if (settings.skipActIntermissions) {
       const { pick, route } = ActIntermissionScene.resolveDefault(slot, atGameTimeSec);
+      // T301 — surface the auto-picked route so a player who toggled
+      // Skip Intermissions still sees which fork the moor took. Without
+      // this toast the route silently changes the run's modifiers and
+      // the player has no way to learn what just happened.
+      this.juice.showToast(
+        t('ui.game.skip_route_picked', { route: t(route.labelKey) }),
+        '#ffe080',
+      );
       // No pause, no scene launch — apply inline on a delayedCall(0) so
       // current frame (camera shake, XP gem spawn, banter) finishes.
       this.time.delayedCall(0, () => onResolve(pick, route));
@@ -2932,6 +2965,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** R1 — e2e accessor; also used by the HUD slot widget in M3. */
   getHeldRelicKeys(): readonly RelicKey[] {
     return this.relicSystem?.heldKeys() ?? [];
+  }
+
+  private restoreHeldRelics(keys: readonly string[]): void {
+    if (!this.relicSystem) return;
+    this.relicSystem.reset();
+    this.relicEffectDriver?.reset();
+    const seen = new Set<string>();
+    for (const key of keys) {
+      if (seen.has(key)) continue;
+      const relic = (RELICS as Readonly<Record<string, RelicDef | undefined>>)[key];
+      if (!relic) continue;
+      if (this.relicSystem.add(relic)) seen.add(key);
+    }
   }
 
   /**

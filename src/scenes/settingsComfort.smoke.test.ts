@@ -30,6 +30,8 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.telemetry_opt_in',
   'ui.settings.skipActIntermissions',
   'ui.settings.ironmoorMode',
+  'ui.settings.speedrun_timer',
+  'ui.settings.capture_enabled',
   'ui.settings.ironmoor_confirm_title',
   'ui.settings.ironmoor_confirm_body',
   'ui.settings.ironmoor_confirm_yes',
@@ -53,12 +55,6 @@ const SETTINGS_SCENE_I18N_KEYS = [
   'ui.settings.colorblind_tritanopia',
   'ui.settings.colorblind_monochrome',
   'ui.settings.disable_seasonal_events',
-  'ui.settings.section_assist',
-  'ui.settings.assist_mode',
-  'ui.settings.assist_mode_speed',
-  'ui.settings.assist_mode_extended_iframes',
-  'ui.settings.assist_mode_extended_combo',
-  'ui.settings.assist_mode_invincibility',
 ] as const;
 
 /** Fields the Comfort panel sliders/toggles/banter row persist (excludes version). */
@@ -77,16 +73,13 @@ const COMFORT_PANEL_DATA_KEYS: (keyof ISettingsData)[] = [
   'telemetryOptIn',
   'skipActIntermissions',
   'ironmoorMode',
+  'speedrunTimerVisible',
+  'captureEnabled',
   'localeKey',
   'reduceFlashing',
   'captionTextScale',
   'colorblindMode',
   'disableSeasonalEvents',
-  'assistMode',
-  'assistModeGameSpeed',
-  'assistModeExtendedIFrames',
-  'assistModeExtendedComboWindow',
-  'assistModeInvincibility',
 ];
 
 describe('Settings / Comfort panel smoke', () => {

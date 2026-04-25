@@ -95,8 +95,12 @@ const config: Phaser.Types.Core.GameConfig = {
     antialias: false,
     roundPixels: true,
     // F1 — custom shader render nodes. Map is populated by
-    // `registerAllShaders()` above; stays empty until M2 lands HaarFog.
-    renderNodes: buildRenderNodesConfig(),
+    // `registerAllShaders()` above. Phaser's `RenderNodesConfig` type claims
+    // values are `{key?, function?}` wrappers, but the runtime
+    // (`RenderNodeManager.js` ~line 234) calls `addNodeConstructor(name, entry[1])`
+    // directly — wrappers crash with `_nodeConstructors[name] is not a constructor`
+    // at first render. Bare constructors are correct; cast to bypass the wrong type.
+    renderNodes: buildRenderNodesConfig() as unknown as Record<string, Phaser.Types.Core.RenderNodesConfig>,
   },
   input: {
     keyboard: true,

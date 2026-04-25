@@ -11,6 +11,7 @@ import {
 import { BOSSES } from './enemies';
 import { CURSES } from './curses';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
+import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { BIOMES, type BiomeId } from './biomes';
 import { VARIANTS } from './variants';
 import { ROUTES } from './routes';
@@ -67,13 +68,25 @@ describe('BANTER_POOLS structure', () => {
     }
   });
 
-  it('weapon_evolve has keysByTag for every weapon', () => {
-    const weaponKeys = Object.keys(WEAPON_DEFS) as WeaponKey[];
+  it('weapon_evolve has keysByTag for every evolvable weapon (T212 — utility-only weapons excluded)', () => {
+    // Source of truth: EVOLUTION_RECIPES. Bagpipes is utility-only (no
+    // recipe) and intentionally has no banter tag — pre-T212 there was a
+    // dead `bagpipes` pool that promised an evolution that never lands.
+    const evolvableKeys = EVOLUTION_RECIPES.map((r) => r.baseWeapon as WeaponKey);
     const pool = getBanterPool('weapon_evolve');
     expect(pool, 'weapon_evolve pool missing').toBeDefined();
     const tags = Object.keys(pool!.keysByTag ?? {});
-    for (const wk of weaponKeys) {
+    for (const wk of evolvableKeys) {
       expect(tags, `weapon_evolve missing tag '${wk}'`).toContain(wk);
+    }
+    // Negative assertion: utility-only weapons (currently bagpipes) MUST
+    // NOT have a banter tag, otherwise the pool can queue a line that
+    // promises an evolution the player will never see.
+    const utilityOnlyKeys = (Object.keys(WEAPON_DEFS) as WeaponKey[]).filter(
+      (k) => !evolvableKeys.includes(k),
+    );
+    for (const uk of utilityOnlyKeys) {
+      expect(tags, `weapon_evolve has stale utility-only tag '${uk}'`).not.toContain(uk);
     }
   });
 

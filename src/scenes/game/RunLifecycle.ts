@@ -54,6 +54,17 @@ export interface RunLifecycleHooks {
   // Mutable state accessors
   getVictoryPending(): boolean;
   setVictoryPending(v: boolean): void;
+  /**
+   * T201 — invalidate any victory-delay ticker scheduled BEFORE this
+   * call returns. Called at the top of `handleDeath` so a same-frame
+   * race (player dies + taxman dies on the same frame; both schedule
+   * tickers at distinct gens) can't transition the scene to a victory
+   * ceremony after the death FX have already started. The boss-kill
+   * branch in `EnemyKillHandler` captures the gen returned by
+   * `nextVictoryDelayGen` and the ticker compares it against the
+   * latest gen — bumping cancels.
+   */
+  invalidatePendingVictoryTicker(): void;
   getRevivalAvailable(): boolean;
   setRevivalAvailable(v: boolean): void;
   getVictoryFade(): Phaser.GameObjects.Rectangle | null;
@@ -273,6 +284,15 @@ export class RunLifecycle {
     const timeManager = this.hooks.getTimeManager();
     const player = this.hooks.getPlayer();
     const juice = this.hooks.getJuice();
+
+    // T201 — pre-empt same-frame "boss kill + player death" race. If a
+    // taxman-kill on this frame scheduled a victory ticker, bumping the
+    // delay-gen invalidates it (the ticker compares its captured gen
+    // against the latest and no-ops on mismatch). `victoryPending` is
+    // also forced false so any other consumer reading the flag during
+    // the death cinematic sees the post-resolution truth.
+    this.hooks.invalidatePendingVictoryTicker();
+    this.hooks.setVictoryPending(false);
 
     // Immediate audio — plays during slow-mo
     audio.playDeath();

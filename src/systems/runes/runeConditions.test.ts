@@ -66,8 +66,9 @@ describe('runeConditions — state bucket (U1 Task 6)', () => {
     expect(evaluateRuneCondition('relics_full', ctx({ ownedRelicsCount: 2 }))).toBe(false);
   });
 
-  it('weapon_bagpipes true when bagpipe_blast owned', () => {
-    expect(evaluateRuneCondition('weapon_bagpipes', ctx({ ownedWeaponKeys: ['bagpipe_blast'] }))).toBe(true);
+  it('weapon_bagpipes true only when bagpipes owned', () => {
+    expect(evaluateRuneCondition('weapon_bagpipes', ctx({ ownedWeaponKeys: ['bagpipes'] }))).toBe(true);
+    expect(evaluateRuneCondition('weapon_bagpipes', ctx({ ownedWeaponKeys: ['bagpipe_blast'] }))).toBe(false);
     expect(evaluateRuneCondition('weapon_bagpipes', ctx({ ownedWeaponKeys: ['caber_toss'] }))).toBe(false);
   });
 

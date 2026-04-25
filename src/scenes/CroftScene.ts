@@ -29,6 +29,7 @@ import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
 import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
 import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
 import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
+import { returnTargetData } from './returnTarget';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -405,10 +406,9 @@ export class CroftScene extends Phaser.Scene {
 
   /**
    * Bookshelf is a diegetic entry point to the Highland Almanac (C1).
-   * Click fades to the Almanac scene; returning from Almanac currently
-   * lands in MainMenu (AlmanacScene's back-button target) — rewiring
-   * that back-route through Croft is a follow-up tied to the broader
-   * sub-scene return-path sweep called out in the T9 commit.
+   * Click fades to the Almanac scene and preserves Croft as the parent
+   * hub so the back button returns the player to Gran instead of kicking
+   * them out to the front menu.
    */
   private drawBookshelfHit(layout: CroftLayout): void {
     const hit = this.add
@@ -418,7 +418,9 @@ export class CroftScene extends Phaser.Scene {
       if (this.transitioning) return;
       audio.playClick();
       this.transitioning = true;
-      startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start('Almanac'));
+      startSceneFadeOut(this, SCENE_FADE_OUT_MS, () =>
+        this.scene.start('Almanac', returnTargetData('Croft')),
+      );
     });
     this.bookshelfHit = hit;
   }
@@ -501,7 +503,7 @@ export class CroftScene extends Phaser.Scene {
     }
     this.transitioning = true;
     startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => {
-      this.scene.start(r.target);
+      this.scene.start(r.target, r.leavesCroft ? undefined : returnTargetData('Croft'));
     });
   }
 

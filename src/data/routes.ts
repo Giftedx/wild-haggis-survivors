@@ -28,6 +28,9 @@ export type RouteKey =
   | 'run_for_the_hills'
   | 'buckie_pitstop';
 
+export const KIRKYARD_SPAWN_RELEASE_MS = 90_000;
+export const STAND_YER_GROUND_XP_RELEASE_MS = 30_000;
+
 export interface RoutePick {
   readonly slot: PickerSlot;
   readonly routeKey: RouteKey;
@@ -130,7 +133,7 @@ export const ROUTES: readonly RouteDef[] = [
       // private field — the cache is only refreshed when
       // `setSpawnIntervalMult` is called explicitly, so a bag-only
       // write would leave the 0.70 throttle in place forever.
-      ctx.timeManager.scheduleRealTime(90_000, () => {
+      ctx.timeManager.scheduleRealTime(KIRKYARD_SPAWN_RELEASE_MS, () => {
         ctx.modifiers.spawnIntervalMult = 1;
         ctx.spawnSystem.setSpawnIntervalMult(1);
       });
@@ -146,7 +149,7 @@ export const ROUTES: readonly RouteDef[] = [
     modifierDeltas: {},
     onResume: (ctx) => {
       ctx.xpSystem.setDropValueMultiplier(2);
-      ctx.timeManager.scheduleRealTime(30_000, () => {
+      ctx.timeManager.scheduleRealTime(STAND_YER_GROUND_XP_RELEASE_MS, () => {
         ctx.xpSystem.setDropValueMultiplier(1);
       });
     },

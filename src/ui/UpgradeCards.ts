@@ -38,13 +38,31 @@ export class UpgradeCardsUI {
   private highContrastUi: boolean = false;
   /** Active haggis variant key — used to pick variant-specific card icons (kilt tartan). */
   private variantKey: string = 'classic';
-  /** 1/2/3 keyboard shortcut handler — installed in show(), removed in hide(). */
+  /**
+   * 1/2/3 keyboard shortcut handler — installed in show(), removed in
+   * hide(). T302 — bound to `scene.input.keyboard` so the listener is
+   * scene-scoped (auto-cleaned on scene shutdown / restart) rather than
+   * a window-level listener that survives scene tear-down.
+   */
   private keyHandler?: (e: KeyboardEvent) => void;
+  /** Subscription to scene shutdown — guarantees listener cleanup even if hide() never fires. */
+  private shutdownSub?: () => void;
 
   constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
     this.onSelect = onSelect;
     this.tickers = tickers;
+    // T302 — defensive net: if the scene tears down with the picker
+    // open, free the keyboard listener so it can't fire into a
+    // destroyed UI on the next scene boot. Skipped when the test stub
+    // scene doesn't expose `events` (existing layout tests pass a
+    // minimal mock); the keyboard listener is also installed against a
+    // possibly-absent `input.keyboard` so the no-event case is safe.
+    if (this.scene.events && typeof this.scene.events.once === 'function') {
+      const shutdownHandler = () => this.uninstallKeyboardShortcuts();
+      this.scene.events.once('shutdown', shutdownHandler);
+      this.shutdownSub = () => this.scene.events?.off?.('shutdown', shutdownHandler);
+    }
   }
 
   /** Set the active variant key so kilt card icons match the run's tartan. */
@@ -417,8 +435,13 @@ export class UpgradeCardsUI {
    * the card count (2-card choice can't resolve a "3" press).
    */
   private installKeyboardShortcuts(cards: UpgradeCard[]): void {
-    if (typeof window === 'undefined') return;
+    const kb = this.scene.input?.keyboard;
+    if (!kb) return;
     this.uninstallKeyboardShortcuts();
+    // T302 — scene-scoped listener (mirrors ActIntermissionScene). The
+    // raw Phaser KeyboardEvent matches the existing handler shape; the
+    // wrapping cb signature lets us reuse the same `keyHandler` field for
+    // off() bookkeeping.
     this.keyHandler = (e: KeyboardEvent) => {
       const idx = ({ '1': 0, '2': 1, '3': 2 } as Record<string, number | undefined>)[e.key];
       if (idx === undefined) return;
@@ -428,14 +451,19 @@ export class UpgradeCardsUI {
       this.hide();
       this.onSelect(card);
     };
-    window.addEventListener('keydown', this.keyHandler);
+    kb.on('keydown', this.keyHandler);
   }
 
   private uninstallKeyboardShortcuts(): void {
     if (!this.keyHandler) return;
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('keydown', this.keyHandler);
-    }
+    this.scene.input?.keyboard?.off('keydown', this.keyHandler);
     this.keyHandler = undefined;
+  }
+
+  /** Test / explicit-teardown helper — releases the shutdown subscription. */
+  destroy(): void {
+    this.uninstallKeyboardShortcuts();
+    this.shutdownSub?.();
+    this.shutdownSub = undefined;
   }
 }

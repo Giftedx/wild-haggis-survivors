@@ -29,6 +29,7 @@ import {
   type DiscoveryLog,
   type RetroHistoryEntry,
 } from '../systems/DiscoveryLog';
+import { emitSaveFailure } from './saveFailure';
 
 const SAVE_KEY = 'whs_save';
 export const SAVE_SCHEMA_VERSION = 17;
@@ -506,8 +507,9 @@ export function writeSave(data: SaveData): SaveData {
 
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(normalized));
-  } catch {
-    // localStorage full or unavailable — silently fail
+  } catch (err) {
+    // T131 — surface the failure so the UI can toast instead of silently failing.
+    emitSaveFailure('legacy_save', err);
   }
 
   return normalized;

@@ -853,6 +853,10 @@ export const EN_STRINGS: LocaleTree = {
       /** One-time luck bonus when HP first drops into the mercy band. */
       moor_mercy_luck: 'The moor remembers the desperate — yer draws lean finer!',
       moor_mercy_luck_caption: 'Mercy luck — next level-up cards favour rare finds.',
+      /** T131 — surfaced when localStorage.setItem throws (quota / private mode). */
+      save_failed: 'The cairn won\'t take it — saving failed ({path}). Yer last steps may not stick.',
+      /** T301 — surfaces the auto-picked route name when Skip Intermissions is on. */
+      skip_route_picked: 'Moor chose for ye — {route}.',
     },
     /**
      * Moor moments — timed hearth beats mid-run (caption + toast + small gift).

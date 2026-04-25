@@ -7,7 +7,6 @@ import { textStyle } from '../ui/typography';
 import { createBackButton } from './createBackButton';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
-import { clickToScene } from './clickToScene';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
 import {
   ALMANAC_TAB_KEYS,
@@ -27,6 +26,11 @@ import { renderBanterBook, type BanterBookHandle } from './almanac/BanterBook';
 import { closeExpanded, createExpandState, toggleExpanded, type ExpandState } from './almanac/expandState';
 import { resolveAlmanacEnterToggle, resolveAlmanacEsc } from './almanac/keyboardNav';
 import { flushBeastieKills, loadSave } from '../utils/save';
+import {
+  resolveSceneReturnTarget,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 const TAB_ACTIVE_BG = 0x3a2e12;
 const TAB_IDLE_BG = 0x11182a;
@@ -68,9 +72,14 @@ export class AlmanacScene extends Phaser.Scene {
     finds: createExpandState(),
     banter: createExpandState(),
   };
+  private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
     super({ key: 'Almanac' });
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -111,7 +120,10 @@ export class AlmanacScene extends Phaser.Scene {
       x: width / 2, y: height - 32, width: 200, height: 38,
       label: t('ui.almanac.back'), fontSize: '15px', uiScale,
     });
-    const goBack = clickToScene(this, 'MainMenu');
+    const goBack = () => {
+      audio.playClick();
+      this.scene.start(this.returnTo);
+    };
     backBtn.on('pointerdown', goBack);
 
     // Esc is overloaded via resolveAlmanacEsc: if an entry is expanded

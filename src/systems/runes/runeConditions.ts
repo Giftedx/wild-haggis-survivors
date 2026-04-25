@@ -110,7 +110,7 @@ export function evaluateRuneCondition(
     case 'hp_low': return ctx.hpFrac < RUNE_THRESHOLDS.HP_LOW_FRAC;
     case 'hp_high': return ctx.hpFrac > RUNE_THRESHOLDS.HP_HIGH_FRAC;
     case 'relics_full': return ctx.ownedRelicsCount >= RUNE_THRESHOLDS.RELICS_FULL;
-    case 'weapon_bagpipes': return ctx.ownedWeaponKeys.includes('bagpipe_blast');
+    case 'weapon_bagpipes': return ctx.ownedWeaponKeys.includes('bagpipes');
     case 'run_early': return ctx.runTimeMs < RUNE_THRESHOLDS.RUN_EARLY_MS;
     case 'run_late': return ctx.runTimeMs > RUNE_THRESHOLDS.RUN_LATE_MS;
     case 'combo_high': return ctx.combo >= RUNE_THRESHOLDS.COMBO_HIGH;

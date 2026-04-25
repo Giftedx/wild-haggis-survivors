@@ -47,6 +47,13 @@ export interface UpgradeCard {
  *  more uncommon/rare/legendary variety at baseline. */
 /** Rune rarity weight — between rare (13) and legendary (4) per U1 spec §2. */
 export const RUNE_RARITY_WEIGHT = 7;
+/**
+ * Release gate for player-visible rune cards. The catalogue, card bridge,
+ * and condition/effect system remain tested, but live offers stay disabled
+ * until the effect bag is consumed by Player, WeaponSystem, XP, Spawn,
+ * pickup, and gold systems. A visible card must be a true promise.
+ */
+export const RUNE_CARD_OFFERS_ENABLED = false;
 
 export const RARITY_WEIGHTS: Record<Rarity, number> = {
   common: 55,
@@ -460,6 +467,8 @@ export interface BuildCardPoolContext {
   readonly bossKilledThisRun?: boolean;
   /** Rune ids already owned this run (filtered from draw). */
   readonly ownedRuneIds?: readonly string[];
+  /** Test/future-rollout override for the release gate above. */
+  readonly runeOffersEnabled?: boolean;
 }
 
 /**
@@ -528,9 +537,11 @@ export function buildCardPool(
     }
   }
 
-  // Rune tier — gated on first-boss-kill-this-run; excludes already-owned
-  // runes so a player can never be offered a duplicate slot in the same run.
-  if (ctx.bossKilledThisRun) {
+  // Rune tier — still behind a release gate. Until runtime consumers read
+  // RuneEffectBag, offering these cards would over-promise to the player.
+  // The explicit context override keeps the pure pool logic testable for
+  // the future re-enable path.
+  if (ctx.bossKilledThisRun && (ctx.runeOffersEnabled ?? RUNE_CARD_OFFERS_ENABLED)) {
     const owned = new Set(ctx.ownedRuneIds ?? []);
     for (const card of buildRuneCards()) {
       const eff = card.effect as { type: 'grant_rune'; runeId: string };

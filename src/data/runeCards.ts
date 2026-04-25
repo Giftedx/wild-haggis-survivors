@@ -5,7 +5,8 @@
  *
  * Kept separate from `runes.ts` so the pure data module has no dependency
  * on the card shape — tests driving condition / effect behaviour do not
- * pull the whole card layer.
+ * pull the whole card layer. Live card-pool inclusion is release-gated in
+ * `upgrades.ts` until runtime systems consume the rune effect bag.
  */
 
 import type { UpgradeCard } from './upgrades';

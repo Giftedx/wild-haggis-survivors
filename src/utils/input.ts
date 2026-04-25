@@ -3,6 +3,9 @@ import { SubscriptionBag } from './SubscriptionBag';
 import type { IInput } from './iInput';
 import { clampVectorLength, gamepadStickToMove, mergeMoveVectors, clampJoystickOrigin, type ViewportSafeInsets } from './inputMath';
 import { InputMapper } from '../input/InputMapper';
+import { isGamepadActionPressed } from '../input/gamepadAction';
+import { getSettingsManager } from '../core/SettingsManager';
+import type { ActionKey, GamepadBinding } from '../core/actions';
 
 function readBodySafeInsets(): ViewportSafeInsets {
   if (typeof document === 'undefined' || !document.body) {
@@ -48,6 +51,7 @@ export class InputManager implements IInput {
   private pendingTouchDash = false;
   private prevGamepadDash = false;
   private prevGamepadMenu = false;
+  private gamepadBindings: Partial<Record<ActionKey, GamepadBinding>> = {};
 
   // T1 deterministic replay: per-frame snapshot of the most recent direction +
   // whether dash / menu edges fired this tick. Values are cached here (not
@@ -64,6 +68,8 @@ export class InputManager implements IInput {
     if (scene.input.keyboard) {
       this.mapper = new InputMapper(scene);
     }
+
+    this.refreshGamepadBindings();
 
     if (this.isTouchDevice) {
       this.setupTouchInput();
@@ -98,7 +104,7 @@ export class InputManager implements IInput {
       this.prevGamepadMenu = false;
       return false;
     }
-    const menu = pad.buttons[9]?.pressed ?? false;
+    const menu = isGamepadActionPressed(pad.buttons, this.gamepadBindings.pause);
     const edge = menu && !this.prevGamepadMenu;
     this.prevGamepadMenu = menu;
     if (edge) this.menuEdgeThisFrame = true;
@@ -111,9 +117,7 @@ export class InputManager implements IInput {
       this.prevGamepadDash = false;
       return false;
     }
-    const south = pad.buttons[0]?.pressed ?? false;
-    const rt = (pad.buttons[7]?.value ?? 0) > 0.35;
-    const now = south || rt;
+    const now = isGamepadActionPressed(pad.buttons, this.gamepadBindings.dash);
     const edge = now && !this.prevGamepadDash;
     this.prevGamepadDash = now;
     return edge;
@@ -172,12 +176,18 @@ export class InputManager implements IInput {
   }
 
   /**
-   * A1 M3 — re-read key bindings from SettingsManager. Call this after
-   * a SettingsInputScene rebind so the new key takes effect without a
-   * full scene reload. Safe to call when the scene has no keyboard.
+   * A1 M3 — re-read key + gamepad bindings from SettingsManager. Call
+   * this after a SettingsInputScene rebind so the new mapping takes
+   * effect without a full scene reload. Safe to call when the scene has
+   * no keyboard.
    */
   refreshKeyBindings(): void {
     this.mapper?.refresh();
+    this.refreshGamepadBindings();
+  }
+
+  private refreshGamepadBindings(): void {
+    this.gamepadBindings = getSettingsManager().load().gamepadBindings;
   }
 
   private getGamepadMoveVector(): { x: number; y: number } {

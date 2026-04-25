@@ -105,6 +105,32 @@ describe('TimeManager token stack', () => {
     expect(tm.isGameplayPaused()).toBe(false);
   });
 
+  it('T304 — ACT_INTERMISSION nesting: pressing pause inside an intermission keeps both tokens; release order doesn\'t matter', () => {
+    const { adapter, state } = makeAdapter();
+    const tm = new TimeManager(adapter);
+
+    // Player kills gordon → ActIntermissionScene launches.
+    tm.request('ACT_INTERMISSION', { pausePhysics: true, timeScale: 0 });
+    expect(tm.getActiveTokenKeys()).toEqual(['ACT_INTERMISSION']);
+    expect(state.physicsPaused).toBe(true);
+
+    // Player hits ESC inside the intermission to read help text.
+    tm.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
+    expect(tm.getActiveTokenKeys()).toEqual(['ACT_INTERMISSION', 'UI_PAUSE']);
+    expect(state.physicsPaused).toBe(true);
+
+    // Dismiss UI pause first — intermission must KEEP gameplay paused.
+    tm.release('UI_PAUSE');
+    expect(tm.getActiveTokenKeys()).toEqual(['ACT_INTERMISSION']);
+    expect(state.physicsPaused).toBe(true);
+    expect(state.timeScale).toBe(0);
+
+    // Resolving the intermission picker frees the last token.
+    tm.release('ACT_INTERMISSION');
+    expect(state.physicsPaused).toBe(false);
+    expect(state.timeScale).toBe(1);
+  });
+
   it('reset() drops every token and restores timeScale + physics defaults', () => {
     const { adapter, state } = makeAdapter();
     const tm = new TimeManager(adapter);

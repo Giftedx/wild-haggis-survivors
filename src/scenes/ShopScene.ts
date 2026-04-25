@@ -23,6 +23,11 @@ import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { ShopAmbientLoop } from '../systems/music/ShopAmbientLoop';
 import { textStyle } from '../ui/typography';
+import {
+  resolveSceneReturnTarget,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -38,13 +43,15 @@ export class ShopScene extends Phaser.Scene {
   private pageText!: Phaser.GameObjects.Text;
   /** C2 M1.5 — shared flavour-reveal strip. Hidden until a row is hovered. */
   private flavourText!: Phaser.GameObjects.Text;
+  private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
     super({ key: 'Shop' });
   }
 
-  init(data: { page?: number }): void {
-    this.currentPage = data.page ?? 0;
+  init(data?: { page?: number } & SceneReturnData): void {
+    this.currentPage = data?.page ?? 0;
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -274,7 +281,7 @@ export class ShopScene extends Phaser.Scene {
     });
     backButton.on('pointerdown', () => {
       audio.playClick();
-      startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start('MainMenu'));
+      startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start(this.returnTo));
     });
 
     this.footerElements.push(backButton, backText);

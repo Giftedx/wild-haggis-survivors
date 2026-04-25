@@ -39,13 +39,13 @@ describe('ShaderRegistry', () => {
     expect(() => registerShader('HaarFog', DummyNodeB)).toThrow(/duplicate|already/i);
   });
 
-  it('buildRenderNodesConfig shapes entries for Phaser game config', () => {
+  it('buildRenderNodesConfig returns bare constructors (Phaser 4 RenderNodeManager reads entry[1] as the constructor — type def claims a {key, function} wrapper but runtime ignores it)', () => {
     registerShader('HaarFog', DummyNodeA);
     registerShader('PaletteSwap', DummyNodeB);
     const config = buildRenderNodesConfig();
     expect(config).toEqual({
-      HaarFog: { key: 'HaarFog', function: DummyNodeA },
-      PaletteSwap: { key: 'PaletteSwap', function: DummyNodeB },
+      HaarFog: DummyNodeA,
+      PaletteSwap: DummyNodeB,
     });
   });
 

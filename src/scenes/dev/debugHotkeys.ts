@@ -1,8 +1,15 @@
 /**
- * Dev-only hotkeys for Phase 0 iteration loop. Registered in GameScene
- * regardless of flag state — the gate fires at KEY PRESS time, not
- * registration time. That way setting `globalThis.DEV_HOTKEYS = true`
- * from devtools mid-run actually enables the keys.
+ * Dev-only hotkeys for Phase 0 iteration loop.
+ *
+ * Two-stage gate (T312):
+ *   1. **Registration** — `registerDebugHotkeys` early-returns when
+ *      `import.meta.env.DEV` is false AND `globalThis.DEV_HOTKEYS` is
+ *      not explicitly true. Production builds therefore install zero
+ *      keydown listeners, so a stray keypress can never be intercepted
+ *      by dev code in shipped bundles.
+ *   2. **Fire** — every handler re-checks `isDevHotkeysEnabled()` at
+ *      key-press time so setting `globalThis.DEV_HOTKEYS = true` from
+ *      devtools (in DEV builds) toggles the keys without a scene reload.
  *
  * Hotkeys (Phase 0):
  *   T — toggle tam_o_shanter on/off
@@ -27,6 +34,19 @@ export function isDevHotkeysEnabled(): boolean {
   );
 }
 
+/**
+ * True in DEV builds OR when the runtime devtools flag is explicitly on.
+ * Used as the registration-time gate so production bundles never wire
+ * the dev keydown listeners at all.
+ */
+function shouldRegisterDevHotkeys(): boolean {
+  // `import.meta.env.DEV` is replaced by Vite at build time — production
+  // bundles see a literal `false` here and tree-shake the entire
+  // registration body when paired with the early-return below.
+  if (import.meta.env.DEV) return true;
+  return isDevHotkeysEnabled();
+}
+
 export interface DebugHotkeyHooks {
   getPlayer(): Player;
   getScene(): Phaser.Scene;
@@ -36,6 +56,12 @@ export function registerDebugHotkeys(
   scene: Phaser.Scene,
   hooks: DebugHotkeyHooks,
 ): void {
+  // T312 — production gate. In a shipped build with no devtools flag
+  // override, install zero listeners so a stray keypress can never be
+  // routed through dev code. DEV builds always register so the runtime
+  // `globalThis.DEV_HOTKEYS = true` flip from devtools works mid-run.
+  if (!shouldRegisterDevHotkeys()) return;
+
   const kb = scene.input.keyboard;
   if (!kb) return;
 

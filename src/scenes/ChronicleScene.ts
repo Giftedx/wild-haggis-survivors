@@ -43,12 +43,17 @@ import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
-import { clickToScene } from './clickToScene';
 import {
   computeRelicHistogram,
   formatRelicHistogramRow,
 } from './game/relicHistogram';
 import { stopAmbientWindOnShutdown } from './stopAmbientWindOnShutdown';
+import {
+  resolveSceneReturnTarget,
+  returnTargetData,
+  type SceneReturnData,
+  type SceneReturnTarget,
+} from './returnTarget';
 
 // Repeated text styles inside this scene — pinned so the row section
 // header look stays in sync.
@@ -101,9 +106,14 @@ export class ChronicleScene extends Phaser.Scene {
   private runRowObjects: Phaser.GameObjects.GameObject[] = [];
   private history: RunHistoryEntry[] = [];
   private paginationNav: { destroy: () => void } = { destroy: () => {} };
+  private returnTo: SceneReturnTarget = 'MainMenu';
 
   constructor() {
     super({ key: 'Chronicle' });
+  }
+
+  init(data?: SceneReturnData): void {
+    this.returnTo = resolveSceneReturnTarget(data?.returnTo);
   }
 
   create(): void {
@@ -151,7 +161,10 @@ export class ChronicleScene extends Phaser.Scene {
     // section is a subset of what the Almanac surfaces (full beasties +
     // weys + finds + banter), so players who want depth get a one-click
     // jump across.
-    const goAlmanac = clickToScene(this, 'Almanac');
+    const goAlmanac = () => {
+      audio.playClick();
+      this.scene.start('Almanac', returnTargetData(this.returnTo));
+    };
     const almanacLink = this.add
       .text(width - 40, 36, t('ui.chronicle.view_almanac'), {
         fontFamily: 'monospace',
@@ -322,7 +335,10 @@ export class ChronicleScene extends Phaser.Scene {
       x: width / 2, y: backY, width: 180, height: 30,
       label: t('ui.chronicle.back'), fontSize: '14px', uiScale,
     });
-    const goBack = clickToScene(this, 'MainMenu');
+    const goBack = () => {
+      audio.playClick();
+      this.scene.start(this.returnTo);
+    };
     backBtn.on('pointerdown', goBack);
 
     this.input.keyboard?.on('keydown-ESC', goBack);

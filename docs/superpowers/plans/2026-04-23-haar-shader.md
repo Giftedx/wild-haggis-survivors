@@ -248,3 +248,28 @@
 | Perf >0.5ms/frame | Reduce noise resolution; cap density; or ship as transition-only (no ambient). |
 | Visible artefacts (banding, flicker) | Adjust noise octaves; higher-precision uniforms. |
 | Context-lost crashes | WebGL-context-lost handler must be robust; e2e covers. |
+
+---
+
+## Post-ship follow-ups (added 2026-04-25)
+
+F1 shipped 2026-04-24 but two latent render-path bugs hid until first real prod paint. Caught + fixed 2026-04-25 (commit pending). The same bug class could ship again in any future shader; both follow-ups close the gap.
+
+### F1-FU1: Render-error smoke E2E
+
+- [ ] **Step 1:** Add `e2e/render-smoke.spec.ts` — boots `?quickplay&seed=1`, listens for `pageerror` + `console.error` events, fails if any fire during the first 60 frames after `gameplayStart`.
+- [ ] **Step 2:** Wire into `npm run test:e2e` default suite (not opt-in) — these errors are silent in headed dev but block prod render entirely.
+- [ ] **Step 3:** Cover the two bug shapes that hid F1: (a) `_nodeConstructors[name] is not a constructor` — wrong `renderNodes` config shape; (b) `setUniform is not a function` — uniform write through the wrong receiver.
+- [ ] **Step 4:** Commit.
+
+### F1-FU2: Visual haar drift verification
+
+- [ ] **Step 1:** Manual playtest — load a run, advance to a node-map intermission OR cross a loch-biome boundary, confirm the haar density tween plays AND that noise drift visibly animates (uTime advancing).
+- [ ] **Step 2:** If still broken, screenshot + add a screen-grab assertion to `e2e/haar-intermission.spec.ts` (currently checks controller-attached, not pixel output).
+- [ ] **Step 3:** Once confirmed, F1 truly shipped.
+
+### Background — what hid the bugs
+
+- Vitest cannot import Phaser (window-touching at eval time) — render-node code is untestable under unit harness.
+- Existing `haar-intermission.spec.ts` + `haar-biome-ambient.spec.ts` check `haarPresent` flag (controller attached to camera) — never trigger an actual GL draw.
+- Type-vs-runtime divergence in `Phaser.Types.Core.RenderNodesConfig` (declares `{key, function}` wrapper; runtime reads `entry[1]` as the constructor directly) made the wrong shape look correct to the type-checker.
