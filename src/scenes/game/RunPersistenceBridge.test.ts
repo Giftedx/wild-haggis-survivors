@@ -480,6 +480,99 @@ describe('RunPersistenceBridge', () => {
       ]);
     });
 
+    it('round-trips the rolled nodeMap with visited[] preserved (T101)', () => {
+      const state = buildState();
+      const { hooks } = buildHooks(state);
+      // Stub a NodeMapState into actState — keys come from ACT_1_BANK so
+      // the lookup-by-key path resolves the NodeDefs back. visited[] is
+      // mid-progress so the round-trip must keep it intact.
+      const nodes = [
+        { key: 'a1_thistle_ambush' },
+        { key: 'a1_shrine_cairn' },
+        { key: 'a1_rest_bothy' },
+      ] as never;
+      const positions = [
+        { x: 100, y: 200 },
+        { x: 800, y: 350 },
+        { x: 1500, y: 500 },
+      ];
+      state.actState.currentActNodeMap = {
+        act: 1,
+        nodes,
+        worldPositions: positions,
+        visited: [true, false, false],
+      };
+      state.actState.currentNodeIndex = 1;
+
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.actState?.nodeMap).toEqual({
+        act: 1,
+        nodeKeys: ['a1_thistle_ambush', 'a1_shrine_cairn', 'a1_rest_bothy'],
+        worldPositions: positions,
+        visited: [true, false, false],
+      });
+
+      // Reset and re-apply → live actState rebuilds the same map state.
+      state.actState.reset();
+      let suppressed = 0;
+      hooks.suppressNextNodeMapRoll = () => { suppressed++; };
+      new RunPersistenceBridge(hooks).applyResume({ ...snapshot } as never);
+      expect(suppressed).toBe(1);
+      expect(state.actState.currentActNodeMap).not.toBeNull();
+      const restored = state.actState.currentActNodeMap!;
+      expect(restored.act).toBe(1);
+      expect(restored.nodes.map((n) => n.key)).toEqual([
+        'a1_thistle_ambush', 'a1_shrine_cairn', 'a1_rest_bothy',
+      ]);
+      expect(restored.worldPositions).toEqual(positions);
+      expect(restored.visited).toEqual([true, false, false]);
+    });
+
+    it('omits nodeMap from snapshot when no act-map has been rolled yet (T101)', () => {
+      const { hooks } = buildHooks(buildState());
+      const snapshot = new RunPersistenceBridge(hooks).collect();
+      expect(snapshot.actState?.nodeMap).toBeUndefined();
+    });
+
+    it('falls back to re-roll when restored nodeMap references an unknown key (T101)', () => {
+      const state = buildState();
+      const { hooks } = buildHooks(state);
+      let suppressed = 0;
+      hooks.suppressNextNodeMapRoll = () => { suppressed++; };
+      new RunPersistenceBridge(hooks).applyResume({
+        killCount: 0,
+        ownedPassives: [],
+        evolvedWeaponKeys: [],
+        acquiredWeapons: [],
+        currentLevel: 1,
+        currentXp: 0,
+        selectedVariantKey: 'classic',
+        gameTimeSec: 0,
+        playerX: 0,
+        playerY: 0,
+        playerHealth: 50,
+        playerMaxHp: 100,
+        weaponDamage: {},
+        spawnedBossKeys: [],
+        shieldCooldownMs: 0,
+        actState: {
+          currentAct: 1,
+          actStartTimeSec: 0,
+          pickerHistory: [],
+          nodeMap: {
+            act: 1,
+            nodeKeys: ['a1_does_not_exist'],
+            worldPositions: [{ x: 0, y: 0 }],
+            visited: [false],
+          },
+        },
+      } as never);
+      // Lookup failed → live actState's currentActNodeMap stays null and
+      // the suppression hook never fires — GameScene re-rolls normally.
+      expect(state.actState.currentActNodeMap).toBeNull();
+      expect(suppressed).toBe(0);
+    });
+
     it('omits currentNodeIndex + nodeOutcomes from snapshot when default-zero (no orphan keys)', () => {
       const { hooks } = buildHooks(buildState());
       const snapshot = new RunPersistenceBridge(hooks).collect();

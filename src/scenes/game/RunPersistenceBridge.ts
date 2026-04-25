@@ -33,6 +33,8 @@ import {
 } from '../../data/routes';
 import { applyRouteModifierDeltas } from '../actIntermissionResolve';
 import { emitSaveFailure } from '../../utils/saveFailure';
+import { getNodeDef } from '../../data/nodeBanks';
+import { buildNodeMapState } from '../../systems/NodeMapSystem';
 
 export interface RunPersistenceHooks {
   // Systems (reads)
@@ -59,6 +61,14 @@ export interface RunPersistenceHooks {
 
   /** W66 Ironmoor — run-scoped flag (locked in at run start, NOT live setting). */
   isIronmoorRun(): boolean;
+
+  /**
+   * T101 — signal to GameScene that the next `initNodeMapForAct` call
+   * should reuse the already-restored `currentActNodeMap` instead of
+   * re-rolling. Optional: scenes that don't yet wire this up keep the
+   * legacy re-roll-on-resume behaviour as a graceful fallback.
+   */
+  suppressNextNodeMapRoll?(): void;
 
   // Non-score run flags (still scene-owned for now).
   getRevivalAvailable(): boolean;
@@ -194,7 +204,7 @@ export class RunPersistenceBridge {
     }
     h.getRunStatsTracker().restore(run.weaponDamage);
     h.getMoorMoments().pushAfterResume(run.gameTimeSec);
-    restoreRunActStateAndModifiers(
+    const restoredNodeMap = restoreRunActStateAndModifiers(
       run.actState,
       h.getRunActState(),
       h.getRunModifiers(),
@@ -204,6 +214,9 @@ export class RunPersistenceBridge {
       h.getTimeManager(),
       run.gameTimeSec,
     );
+    if (restoredNodeMap) {
+      h.suppressNextNodeMapRoll?.();
+    }
   }
 
   /**
@@ -262,6 +275,19 @@ function snapshotRunActState(actState: RunActState): IRunState['actState'] {
       visitedAtGameTimeSec: o.visitedAtGameTimeSec,
     }));
   }
+  // T101 — freeze the rolled per-act node map so resume rebuilds the
+  // exact path the player saw, including which nodes they've cleared.
+  // Empty when the active map hasn't been generated yet (the resume
+  // path then falls back to the legacy re-roll behaviour).
+  const map = actState.currentActNodeMap;
+  if (map && map.nodes.length > 0) {
+    out.nodeMap = {
+      act: map.act,
+      nodeKeys: map.nodes.map((n) => n.key),
+      worldPositions: map.worldPositions.map((p) => ({ x: p.x, y: p.y })),
+      visited: map.visited.slice(),
+    };
+  }
   return out;
 }
 
@@ -284,8 +310,8 @@ function restoreRunActStateAndModifiers(
   xpSystem: { setDropValueMultiplier?(mult: number): void },
   timeManager: { scheduleRealTime?(ms: number, cb: () => void): unknown },
   gameTimeSec: number,
-): void {
-  if (!snapshot) return;
+): boolean {
+  if (!snapshot) return false;
   actState.advanceToAct(snapshot.currentAct, snapshot.actStartTimeSec);
   // Restore append-only log + cursor BEFORE GameScene re-rolls the act's
   // node-map. The freshly-generated map's `visited[]` is not yet
@@ -333,6 +359,40 @@ function restoreRunActStateAndModifiers(
   // touches after every live pick.
   spawnSystem.setSpawnIntervalMult(runModifiers.spawnIntervalMult);
   weaponSystem.setCurseCooldownMul(runModifiers.weaponCooldownMult);
+  // T101 — restore the rolled node-map last so visited[] survives
+  // resume. Returns whether a map was actually restored so the caller
+  // can signal GameScene to skip its own re-roll.
+  return restoreNodeMapFromSnapshot(snapshot, actState);
+}
+
+function restoreNodeMapFromSnapshot(
+  snapshot: NonNullable<IRunState['actState']>,
+  actState: RunActState,
+): boolean {
+  const nm = snapshot.nodeMap;
+  if (!nm) return false;
+  if (nm.nodeKeys.length !== nm.worldPositions.length) return false;
+  if (nm.visited.length !== nm.nodeKeys.length) return false;
+  // A drifted node-bank between save + load (build with a renamed key
+  // would fail this lookup) silently falls back to a fresh re-roll
+  // rather than crashing the resume; the save-version coercion already
+  // dropped malformed entries upstream.
+  const nodes: Array<NonNullable<ReturnType<typeof getNodeDef>>> = [];
+  for (const key of nm.nodeKeys) {
+    const def = getNodeDef(key);
+    if (!def) return false;
+    nodes.push(def);
+  }
+  const restored = buildNodeMapState(
+    nm.act,
+    nodes,
+    nm.worldPositions.map((p) => ({ x: p.x, y: p.y })),
+  );
+  for (let i = 0; i < nm.visited.length; i++) {
+    restored.visited[i] = nm.visited[i];
+  }
+  actState.currentActNodeMap = restored;
+  return true;
 }
 
 function restoreRouteRuntimeState(

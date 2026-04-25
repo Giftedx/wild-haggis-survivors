@@ -61,6 +61,22 @@ export interface IRunActStateSnapshot {
     chosenRewardKey?: string;
     visitedAtGameTimeSec: number;
   }>;
+  /**
+   * T101 — frozen snapshot of the rolled per-act node-map so resume
+   * doesn't depend on `runRng` state being byte-identical (which it
+   * isn't — every `next()` call between act-roll and the snapshot
+   * advances the stream). Storing keys + positions + visited[] lets
+   * the resume path reconstruct the exact map the player saw, including
+   * which nodes they've cleared. Optional on pre-T101 payloads — absent
+   * snapshots fall back to the legacy "re-roll on resume, accept slight
+   * divergence" path covered in M1 F5.
+   */
+  nodeMap?: {
+    act: 1 | 2 | 3;
+    nodeKeys: string[];
+    worldPositions: Array<{ x: number; y: number }>;
+    visited: boolean[];
+  };
 }
 
 /** Strict mid-run snapshot (meta save `activeRun`). */
@@ -440,10 +456,46 @@ function coerceRunActStateSnapshot(raw: unknown): IRunActStateSnapshot | undefin
   }
   const currentNodeIndex = toOptionalNonNegativeInt(o.currentNodeIndex);
   const nodeOutcomes = coerceNodeOutcomes(o.nodeOutcomes);
+  const nodeMap = coerceNodeMapSnapshot(o.nodeMap);
   const out: IRunActStateSnapshot = { currentAct, actStartTimeSec, pickerHistory };
   if (currentNodeIndex !== undefined) out.currentNodeIndex = currentNodeIndex;
   if (nodeOutcomes !== undefined) out.nodeOutcomes = nodeOutcomes;
+  if (nodeMap !== undefined) out.nodeMap = nodeMap;
   return out;
+}
+
+function coerceNodeMapSnapshot(
+  raw: unknown,
+): NonNullable<IRunActStateSnapshot['nodeMap']> | undefined {
+  if (raw === null || raw === undefined || typeof raw !== 'object') return undefined;
+  const o = raw as Record<string, unknown>;
+  if (o.act !== 1 && o.act !== 2 && o.act !== 3) return undefined;
+  const nodeKeys = toStringArray(o.nodeKeys);
+  if (nodeKeys.length === 0) return undefined;
+  const positionsRaw = o.worldPositions;
+  if (!Array.isArray(positionsRaw)) return undefined;
+  const worldPositions: Array<{ x: number; y: number }> = [];
+  for (const item of positionsRaw) {
+    if (item === null || typeof item !== 'object') continue;
+    const pp = item as Record<string, unknown>;
+    if (typeof pp.x !== 'number' || typeof pp.y !== 'number') continue;
+    if (!Number.isFinite(pp.x) || !Number.isFinite(pp.y)) continue;
+    worldPositions.push({ x: pp.x, y: pp.y });
+  }
+  // Length parity: nodes vs positions must agree, otherwise the snapshot
+  // is unusable (buildNodeMapState throws). Drop rather than partially
+  // restore — the legacy re-roll fallback gives a coherent fresh map.
+  if (worldPositions.length !== nodeKeys.length) return undefined;
+  const visitedRaw = o.visited;
+  const visited: boolean[] = [];
+  if (Array.isArray(visitedRaw)) {
+    for (let i = 0; i < nodeKeys.length; i++) {
+      visited.push(visitedRaw[i] === true);
+    }
+  } else {
+    for (let i = 0; i < nodeKeys.length; i++) visited.push(false);
+  }
+  return { act: o.act, nodeKeys, worldPositions, visited };
 }
 
 function coerceNodeOutcomes(raw: unknown): NonNullable<IRunActStateSnapshot['nodeOutcomes']> | undefined {

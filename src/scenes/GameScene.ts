@@ -332,6 +332,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * init() (or the v2 replay blob), consumed once in create().
    */
   private pendingCurseKey: string | null = null;
+  /**
+   * T101 — set by `RunPersistenceBridge.applyResume` when it reconstructs
+   * the rolled `currentActNodeMap` from the snapshot. The next
+   * `initNodeMapForAct` call clears the flag and reuses the restored map
+   * instead of re-rolling — so the player's visited[] survives resume.
+   * Subsequent calls (act 3 stretch transitions) re-roll normally.
+   */
+  private suppressNextNodeMapRoll = false;
 
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
   private pickupDespawnHandles: TickerHandle[] = [];
@@ -493,6 +501,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runScore.reset();
     this.tempBuffBag.clear();
     this.runActState.reset();
+    this.suppressNextNodeMapRoll = false;
     this.nodeMapSystem.reset();
     this.nodeWaveTracker.reset();
     this.nodeMapUI?.destroy();
@@ -912,6 +921,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
       restoreHeldRelics: (keys) => this.restoreHeldRelics(keys),
       isSceneActive: () => this.scene.isActive(),
+      suppressNextNodeMapRoll: () => { this.suppressNextNodeMapRoll = true; },
     });
 
     // Boss HP bar tracker — caches current spotlight boss and pushes
@@ -2070,6 +2080,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * bank + cursor care about.
    */
   private initNodeMapForAct(act: 1 | 2 | 3, stretch: Act3Stretch = 1): void {
+    // T101 — when the resume hydrate just rebuilt the rolled map from
+    // the IRunState snapshot, reuse it instead of re-rolling. The flag
+    // is one-shot so later act-3 stretch transitions still roll fresh
+    // banks normally.
+    if (this.suppressNextNodeMapRoll) {
+      this.suppressNextNodeMapRoll = false;
+      const restored = this.runActState.currentActNodeMap;
+      if (restored && restored.act === act && restored.nodes.length > 0) {
+        this.nodeMapSystem.setMap(restored);
+        return;
+      }
+    }
     const bank = act === 3 ? getAct3Bank(stretch) : getActBank(act);
     const rng = this.runRng.branch();
     const nodes = generateNodePath(bank, act, rng);
