@@ -53,9 +53,28 @@ export class TutorialSystem {
   private oneShotBanners: Phaser.GameObjects.Text[] = [];
   private oneShotTimerHandles: import('../utils/UpdateTickers').TickerHandle[] = [];
 
+  /** True while a full-screen modal (pause / level-up / intermission) is up.
+   *  Set via `setAmbientBannersVisible` — ambient banners (drift, elite,
+   *  moor-moment, one-shots) hide while a modal is active so they don't
+   *  bleed through the dim underlay (P1.1 / P1.2 / P1.12 fix). */
+  private ambientBannersHidden: boolean = false;
+
   constructor(scene: Phaser.Scene & ISceneContext, metaSave: SaveManager) {
     this.scene = scene;
     this.metaSave = metaSave;
+  }
+
+  /** Toggle visibility of all ambient banners (drift, elite-affix, moor-moment,
+   *  one-shot tips) for the duration of a full-screen modal. Called from
+   *  JuiceSystem on modal edge. Idempotent — safe to call repeatedly. */
+  setAmbientBannersVisible(visible: boolean): void {
+    if (this.ambientBannersHidden === !visible) return;
+    this.ambientBannersHidden = !visible;
+    this.driftBanner?.setVisible(visible);
+    this.driftArrow?.setVisible(visible);
+    this.eliteAffixBanner?.setVisible(visible);
+    this.moorMomentBanner?.setVisible(visible);
+    for (const b of this.oneShotBanners) b.setVisible(visible);
   }
 
   private getUiViewport(): { x: number; y: number; width: number; height: number } {
@@ -199,7 +218,8 @@ export class TutorialSystem {
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(92)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setVisible(!this.ambientBannersHidden);
 
     this.scene.tweens.add({
       targets: this.eliteAffixBanner,
@@ -257,7 +277,8 @@ export class TutorialSystem {
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(92)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setVisible(!this.ambientBannersHidden);
 
     this.scene.tweens.add({
       targets: this.moorMomentBanner,
@@ -345,7 +366,8 @@ export class TutorialSystem {
       .setOrigin(0.5, 0)
       .setScrollFactor(0)
       .setDepth(92)
-      .setAlpha(0);
+      .setAlpha(0)
+      .setVisible(!this.ambientBannersHidden);
     this.oneShotBanners.push(banner);
     this.scene.tweens.add({ targets: banner, alpha: 1, duration: 400, ease: 'Power2' });
 
@@ -400,7 +422,8 @@ export class TutorialSystem {
       padding: { x: 12, y: 8 },
       wordWrap: { width: wrapW },
       align: 'center',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(85).setAlpha(0);
+    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(85).setAlpha(0)
+      .setVisible(!this.ambientBannersHidden);
 
     // Fade in
     this.scene.tweens.add({

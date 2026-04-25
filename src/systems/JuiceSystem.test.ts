@@ -47,6 +47,7 @@ class MockDisplayObject {
   setColor(color: string) { this.color = color; return this; }
   setText(text: string) { this.text = text; return this; }
   setPosition(x: number, y: number) { this.x = x; this.y = y; return this; }
+  setStyle() { return this; }
   setFillStyle() { return this; }
   setRadius() { return this; }
   setRotation() { return this; }

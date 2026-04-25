@@ -288,6 +288,7 @@ describe('TutorialSystem', () => {
         setScrollFactor() { return this; },
         setDepth() { return this; },
         setAlpha() { return this; },
+        setVisible() { return this; },
         destroy() {},
       });
       const scene: any = {
@@ -321,6 +322,9 @@ describe('TutorialSystem', () => {
         return this;
       },
       setAlpha() {
+        return this;
+      },
+      setVisible() {
         return this;
       },
       destroy() {},

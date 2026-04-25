@@ -93,8 +93,9 @@ export class JuiceSystem {
   private readonly COMBO_TIMEOUT_MS = 1500;
   private comboText: Phaser.GameObjects.Text;
 
-  // Toast stacking
+  // Toast stacking + live-toast registry (so modal-open can fade them).
   private activeToasts: number = 0;
+  private liveToasts: Phaser.GameObjects.Text[] = [];
 
   // Danger vignette (low HP warning)
   private vignette: Phaser.GameObjects.Graphics;
@@ -205,13 +206,27 @@ export class JuiceSystem {
   /** Call each frame */
   update(delta: number, hpFraction?: number): void {
     this.refreshFixedLayout();
-    const uiPause = this.time.has('UI_PAUSE');
-    if (uiPause) {
+    // Combo text hides while ANY modal is up — old gate only checked
+    // UI_PAUSE so the streak banner kept rendering on top of the
+    // level-up / intermission / echo overlays.
+    const modalActive = this.isModalActive();
+    if (modalActive) {
       this.comboText.setVisible(false);
-    } else if (this.uiPauseWasActive && this.comboCount > 0) {
-      this.syncComboText();
+      // Edge-trigger on modal-open: fade out any in-flight toasts AND
+      // hide ambient tutorial banners (drift, elite-affix, moor-moment,
+      // one-shot tips). Pre-fix: tutorial banners had no modal gate so
+      // they bled through the dim underlay even after toasts cleared
+      // (P1.1 / P1.2 / P1.12).
+      if (!this.uiPauseWasActive) {
+        if (this.liveToasts.length > 0) this.dismissActiveToasts();
+        try { this.scene.getTutorialSystem?.()?.setAmbientBannersVisible(false); } catch { /* ignore */ }
+      }
+    } else if (this.uiPauseWasActive) {
+      // Edge-trigger on modal-close: restore ambient banners + combo if any.
+      try { this.scene.getTutorialSystem?.()?.setAmbientBannersVisible(true); } catch { /* ignore */ }
+      if (this.comboCount > 0) this.syncComboText();
     }
-    this.uiPauseWasActive = uiPause;
+    this.uiPauseWasActive = modalActive;
     const timeScale = this.time.getEffectiveTimeScale();
     const scaledDelta = delta * timeScale;
 
@@ -546,9 +561,24 @@ export class JuiceSystem {
     }
   }
 
+  /**
+   * Returns true while any full-screen modal is active. Toasts/banter/combo
+   * text suppress themselves while a modal is up so they don't bleed through
+   * the dim underlay (pre-fix: streak banner + banter rendered on top of the
+   * level-up cards; see audit 06a / 05g).
+   */
+  private isModalActive(): boolean {
+    return this.time.has('UI_PAUSE')
+      || this.time.has('LEVEL_UP')
+      || this.time.has('ECHO')
+      || this.time.has('RUN_END')
+      || this.time.has('ACT_INTERMISSION')
+      || this.time.has('COUNTDOWN');
+  }
+
   /** Toast notification — slides in from the right and fades out, stacks vertically */
   showToast(message: string, color: string = COLORS_CSS.WHITE): void {
-    if (this.time.has('UI_PAUSE')) return;
+    if (this.isModalActive()) return;
     const { x, y, width } = this.getUiViewport();
     const yOffset = toastStackY(y, this.activeToasts);
     this.activeToasts++;
@@ -560,6 +590,7 @@ export class JuiceSystem {
       backgroundColor: '#1a1a2ecc', padding: { x: 10, y: 5 },
       wordWrap: { width: wrapW },
     }).setScrollFactor(0).setDepth(85).setOrigin(1, 0);
+    this.liveToasts.push(toast);
 
     // Slide in
     this.scene.tweens.add({
@@ -575,12 +606,34 @@ export class JuiceSystem {
           delay: 1500,
           duration: 400,
           onComplete: () => {
+            const idx = this.liveToasts.indexOf(toast);
+            if (idx >= 0) this.liveToasts.splice(idx, 1);
             toast.destroy();
             this.activeToasts = Math.max(0, this.activeToasts - 1);
           },
         });
       },
     });
+  }
+
+  /**
+   * Fade out every active toast immediately. Modal-open hooks (level-up,
+   * pause, intermission) call this so prior banter / kill-log toasts
+   * don't render on top of the modal title (audit 06a / 05g).
+   */
+  dismissActiveToasts(): void {
+    for (const toast of this.liveToasts.slice()) {
+      this.scene.tweens.killTweensOf(toast);
+      this.scene.tweens.add({
+        targets: toast, alpha: 0, duration: 180,
+        onComplete: () => {
+          const idx = this.liveToasts.indexOf(toast);
+          if (idx >= 0) this.liveToasts.splice(idx, 1);
+          toast.destroy();
+          this.activeToasts = Math.max(0, this.activeToasts - 1);
+        },
+      });
+    }
   }
 
   /**
@@ -1197,6 +1250,10 @@ export class JuiceSystem {
     this.flashRect.width = width;
     this.flashRect.height = height;
     this.comboText.setPosition(x + width / 2, y + Math.max(height * 0.2, 128 / Math.max(0.001, zoom)));
+    // P1.8 — clamp combo text to viewport width (was clipping both edges
+    // of "63x streak · +30% wallop" on 390-px iPhones). Wrap kicks in on
+    // mobile, the line keeps growing on desktop.
+    this.comboText.setStyle({ wordWrap: { width: Math.max(220, width - 24) } });
     this.vignette.setPosition(x, y);
     if (sizeChanged) this.drawVignette();
   }

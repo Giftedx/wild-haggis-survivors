@@ -154,10 +154,14 @@ export const COLORS = {
 } as const;
 
 export const UI = {
-  /** Overlay backdrop alpha — all full-screen dimming overlays. */
-  OVERLAY_ALPHA: 0.82,
+  /** Overlay backdrop alpha — all full-screen dimming overlays.
+   *  Pre-fix value (0.82) let the bright kill-streak banner, banter
+   *  bubbles, and active toasts bleed visibly through pause / level-up /
+   *  intermission / game-over. 0.94 hides everything below it but still
+   *  leaves enough sight of the gameplay layer to anchor the overlay. */
+  OVERLAY_ALPHA: 0.94,
   /** High-contrast overlay alpha. */
-  OVERLAY_ALPHA_HC: 0.92,
+  OVERLAY_ALPHA_HC: 0.98,
 } as const;
 
 /**
