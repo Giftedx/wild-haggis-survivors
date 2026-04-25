@@ -124,7 +124,10 @@ export class ChronicleScene extends Phaser.Scene {
     // create() before any layout consumer reads them.
     const scaleClamp = Math.max(1, uiScale);
     this.ROW_STRIDE = Math.round(this.BASE_ROW_STRIDE * scaleClamp);
-    this.ROWS_START_Y = this.RUNS_HEADER_Y + 20;
+    // Push the RECENT RUNS header lower on mobile so it clears the
+    // taller single-column lifetime + milestones stack (audit 09f).
+    const computedRunsHeaderY = width < 600 ? this.RUNS_HEADER_Y + 110 : this.RUNS_HEADER_Y;
+    this.ROWS_START_Y = computedRunsHeaderY + 20;
     this.ROWS_PANEL_HEIGHT = this.ROWS_PER_PAGE * this.ROW_STRIDE + 18;
     this.ROWS_PANEL_CENTER_Y = this.ROWS_START_Y + this.ROWS_PANEL_HEIGHT / 2 - 6;
     this.PAGINATION_Y = this.ROWS_PANEL_CENTER_Y + this.ROWS_PANEL_HEIGHT / 2 + 14;
@@ -181,8 +184,14 @@ export class ChronicleScene extends Phaser.Scene {
 
     // ── Lifetime panel ──
     const lifetimePanelY = 118;
+    // Stats grid drops from 3 cols × 3 rows (desktop) to 1 col × 9 rows
+    // (mobile) so adjacent labels don't render on top of each other.
+    // Panel height grows in step so the milestones panel below has clean
+    // separation from the bottom row.
+    const isMobileChronicle = width < 600;
+    const lifetimePanelH = isMobileChronicle ? 188 : 94;
     this.add
-      .rectangle(width / 2, lifetimePanelY + 38, width - 40, 94, 0x11182a, 0.7)
+      .rectangle(width / 2, lifetimePanelY + lifetimePanelH / 2 - 9, width - 40, lifetimePanelH, 0x11182a, 0.7)
       .setStrokeStyle(1, 0x2d3e62, 0.8);
     this.add
       .text(width / 2, lifetimePanelY, t('ui.chronicle.lifetime_heading'), {
@@ -195,8 +204,11 @@ export class ChronicleScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setScale(uiScale);
 
-    // 3 columns × 3 rows of lifetime stats
-    const statCellWidth = (width - 120) / 3;
+    // 3 columns × 3 rows on desktop; 1 column × 9 rows on mobile so
+    // adjacent labels don't collide ("Total culls: 0 Gold banked: 0"
+    // smear from audit 09f).
+    const cols = width < 600 ? 1 : 3;
+    const statCellWidth = (width - 120) / cols;
     const statStartX = 60 + statCellWidth / 2;
     const cells: { label: string; value: string }[] = [
       { label: t('ui.chronicle.stat_runs'), value: `${totals.totalRuns}` },
@@ -209,11 +221,16 @@ export class ChronicleScene extends Phaser.Scene {
       { label: t('ui.chronicle.stat_best_kills'), value: `${totals.bestKills}` },
       { label: t('ui.chronicle.stat_best_combo'), value: `${totals.bestCombo}x` },
     ];
+    // Single-column mobile layout grows the lifetime panel to fit nine
+    // rows; the panel rectangle drawn above is 94 px tall, fine for
+    // 3 rows but cuts off 6 of 9 rows on mobile. Push subsequent panel
+    // anchors below with a per-viewport offset.
+    const rowStride = cols === 1 ? 18 : 22;
     for (let i = 0; i < cells.length; i++) {
-      const col = i % 3;
-      const row = Math.floor(i / 3);
+      const col = i % cols;
+      const row = Math.floor(i / cols);
       const cx = statStartX + col * statCellWidth;
-      const cy = lifetimePanelY + 24 + row * 22;
+      const cy = lifetimePanelY + 24 + row * rowStride;
       this.add
         .text(cx, cy, `${cells[i].label}: `, {
           fontFamily: 'monospace', fontSize: '11px', color: COLORS_CSS.TEXT_SUBTITLE,
@@ -229,7 +246,9 @@ export class ChronicleScene extends Phaser.Scene {
     }
 
     // ── Milestones panel ──
-    const milestonesPanelY = 232;
+    // Pushed down on mobile because the lifetime panel grows ~94 px taller
+    // when stats grid drops to single column.
+    const milestonesPanelY = isMobileChronicle ? 326 : 232;
     this.add
       .rectangle(width / 2, milestonesPanelY + 65, width - 40, this.MILESTONES_PANEL_HEIGHT, 0x12192b, 0.7)
       .setStrokeStyle(1, 0x283a5f, 0.8);
@@ -304,7 +323,9 @@ export class ChronicleScene extends Phaser.Scene {
       .setScale(uiScale);
 
     // ── Run list header ──
-    const runsHeaderY = this.RUNS_HEADER_Y;
+    // Mirror the mobile shift used in create() so the header label sits
+    // just above the panel rectangle even on narrow viewports.
+    const runsHeaderY = width < 600 ? this.RUNS_HEADER_Y + 110 : this.RUNS_HEADER_Y;
     this.add
       .text(40, runsHeaderY, t('ui.chronicle.runs_heading'), CHRONICLE_SECTION_HEADER_TEXT)
       .setOrigin(0, 0.5)
@@ -390,8 +411,15 @@ export class ChronicleScene extends Phaser.Scene {
     this.runRowObjects = [];
 
     if (this.history.length === 0) {
+      // P1.9 — clamp empty-state Y above the bottom BACK button row.
+      // Pre-fix: at startY + 120 on mobile (664-height viewport) the
+      // copy "Nothin logged yet. Go bag the first tale." landed at
+      // y=648 right where the BACK button sits, splitting the sentence
+      // around the button visually.
+      const { height } = this.scale;
+      const emptyY = Math.min(startY + 120, height - 80);
       const empty = this.add
-        .text(width / 2, startY + 120, t('ui.chronicle.runs_empty'), {
+        .text(width / 2, emptyY, t('ui.chronicle.runs_empty'), {
           fontFamily: 'monospace', fontSize: '14px', color: COLORS_CSS.TEXT_MUTED, fontStyle: 'italic',
           align: 'center', wordWrap: { width: (width - 80) / Math.max(1, uiScale) },
         })

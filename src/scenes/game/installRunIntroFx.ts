@@ -49,6 +49,9 @@ export function installRunIntroFx(
   });
 
   // Controls hint — show for first HINT_VISIBLE_MS, then fade out.
+  // P1.8 — wrap to viewport width so the bottom-edge hint doesn't clip
+  // both edges on a 390-px iPhone. align: center keeps the wrapped lines
+  // visually balanced under the centred origin.
   const { x: hintX, y: hintY, width: hintW, height: hintH } = getUiViewport();
   const hint = scene.add
     .text(hintX + hintW / 2, hintY + hintH - 36, t('ui.game.controls_hint'), {
@@ -57,8 +60,10 @@ export function installRunIntroFx(
       color: '#a09890',
       stroke: '#0a0a0c',
       strokeThickness: 3,
+      align: 'center',
+      wordWrap: { width: Math.max(220, hintW - 24) },
     })
-    .setOrigin(0.5)
+    .setOrigin(0.5, 1)
     .setScrollFactor(0)
     .setDepth(60)
     .setAlpha(0);

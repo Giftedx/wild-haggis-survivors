@@ -17,12 +17,18 @@ interface Viewport {
  * once the final step fades. Countdown steps are scheduled on raw-time
  * update tickers (not scene.time.delayedCall) so they also fire if the
  * caller uses the same raw/scaled split this scene uses everywhere.
+ *
+ * `onComplete` runs after the final step's fade-out — used by GameScene
+ * to defer the FTUE paused overlay until the countdown text has cleared
+ * (otherwise depth-1000 countdown sits on top of depth-600 FTUE banner
+ * and the tutorial copy is unreadable on first run).
  */
 export function showCountdown(
   scene: Phaser.Scene,
   timeManager: TimeManager,
   updateTickers: UpdateTickers,
   getUiViewport: () => Viewport,
+  onComplete?: () => void,
 ): void {
   const { x, y, width, height } = getUiViewport();
   const steps = ['3', '2', '1', t('ui.game.countdown_go')];
@@ -31,6 +37,7 @@ export function showCountdown(
   const showNext = () => {
     if (i >= steps.length) {
       timeManager.release('COUNTDOWN');
+      onComplete?.();
       return;
     }
 

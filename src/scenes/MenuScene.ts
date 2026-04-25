@@ -76,9 +76,12 @@ export class MenuScene extends Phaser.Scene {
     const layout = this.getMenuLayout(height);
 
     addSceneBackdrop(this);
+    // P3.4 — drop stroke alpha 0.9 → 0.35 (HC unchanged) so the title-panel
+    // outline doesn't read as a debug bbox. The dim fill still anchors the
+    // title without the hard rectangular outline.
     this.add
       .rectangle(width / 2, 106, width - 64, 184, COLORS.PANEL, this.highContrastUi ? 0.78 : 0.58)
-      .setStrokeStyle(2, this.highContrastUi ? 0x4e6ea2 : 0x263655, 0.9);
+      .setStrokeStyle(2, this.highContrastUi ? 0x4e6ea2 : 0x263655, this.highContrastUi ? 0.9 : 0.35);
     this.add
       .rectangle(width / 2, layout.panelY, width - 40, layout.panelHeight + 18, COLORS.PANEL, 0.92)
       .setStrokeStyle(2, 0x31476e, 0.95);
@@ -135,11 +138,18 @@ export class MenuScene extends Phaser.Scene {
       ease: 'Power2',
     });
 
+    // P1.5 — wrap copy to viewport width so the tagline doesn't clip both
+    // edges on a 390-px iPhone screen. uiScale-divided so a 1.4× scaled
+    // string still fits inside the responsive horizontal budget.
+    const uiScaleClamp = Math.max(1, this.uiScale);
+    const copyWrap = Math.max(220, (width - 32) / uiScaleClamp);
     const subtitle = this.add
       .text(width / 2, 214, t('ui.loadout.subtitle'), {
         fontFamily: 'monospace',
         fontSize: '18px',
         color: COLORS_CSS.TEXT_SECONDARY,
+        align: 'center',
+        wordWrap: { width: copyWrap },
       })
       .setOrigin(0.5)
       .setAlpha(0);
@@ -152,6 +162,8 @@ export class MenuScene extends Phaser.Scene {
         fontSize: '15px',
         color: COLORS_CSS.TEXT_PRIMARY,
         fontStyle: 'bold',
+        align: 'center',
+        wordWrap: { width: copyWrap },
       })
       .setOrigin(0.5)
       .setAlpha(0);
@@ -177,13 +189,23 @@ export class MenuScene extends Phaser.Scene {
         color: COLORS_CSS.TEXT_SECONDARY,
         align: 'center',
         lineSpacing: 4,
+        wordWrap: { width: copyWrap },
       })
       .setOrigin(0.5)
       .setAlpha(0);
     statsText.setScale(this.uiScale);
     this.tweens.add({ targets: statsText, alpha: 1, duration: 450, delay: 520 });
 
-    this.playHit = this.createButton(width / 2 - 128, layout.buttonY, 220, 54, t('ui.loadout.play'), COLORS.SCOTTISH_BLUE, () => {
+    // P1.5 — below 600 px (mobile) stack the two primary buttons vertically
+    // so 220-px buttons don't clip both edges on a 390-wide iPhone. Above
+    // breakpoint, keep the desktop side-by-side composition.
+    const isMobile = width < 600;
+    const btnW = Math.min(220, width - 28);
+    const btnX1 = isMobile ? width / 2 : width / 2 - 128;
+    const btnY1 = layout.buttonY;
+    const btnX2 = isMobile ? width / 2 : width / 2 + 128;
+    const btnY2 = isMobile ? layout.buttonY + 64 : layout.buttonY;
+    this.playHit = this.createButton(btnX1, btnY1, btnW, 54, t('ui.loadout.play'), COLORS.SCOTTISH_BLUE, () => {
       audio.playClick();
       // H1 T7 — primary button now routes to Gran's Croft; the
       // actual run-start commit (clearActiveRun + Curse picker) moves
@@ -191,7 +213,7 @@ export class MenuScene extends Phaser.Scene {
       this.fadeToScene('Croft');
     }, 560);
 
-    this.upgradesHit = this.createButton(width / 2 + 128, layout.buttonY, 220, 54, t('ui.loadout.upgrades'), 0x3a4357, () => {
+    this.upgradesHit = this.createButton(btnX2, btnY2, btnW, 54, t('ui.loadout.upgrades'), 0x3a4357, () => {
       audio.playClick();
       this.fadeToScene('Shop');
     }, 660, 'secondary');
@@ -200,14 +222,19 @@ export class MenuScene extends Phaser.Scene {
     const sfxOn = prefs.sfxVolume > 0.001;
     const musicOn = prefs.musicVolume > 0.001;
 
-    const sfxT = this.createToggle(104, height - 26, 'ui.loadout.sfx_toggle', sfxOn, (on) => {
+    // Pre-fix the two toggles sat at x=104 and x=218 (114 px apart). The
+    // toggle label renders at -60 from container with origin (1, 0.5) and
+    // "Music" at the body-label font measures ~50 px wide, so its left
+    // edge crashed into the SFX track at x=84..124. Pushed Music right
+    // to x=260 so the label stack clears the SFX track.
+    const sfxT = this.createToggle(96, height - 26, 'ui.loadout.sfx_toggle', sfxOn, (on) => {
       getSettingsManager().update((st) => ({ ...st, sfxVolume: on ? 1 : 0 }));
       applyAudioFromUserSettings(getSettingsManager().load());
     }, 760);
     this.sfxHit = sfxT.hit;
     this.sfxToggleFire = sfxT.fire;
 
-    const musicT = this.createToggle(218, height - 26, 'ui.loadout.music_toggle', musicOn, (on) => {
+    const musicT = this.createToggle(260, height - 26, 'ui.loadout.music_toggle', musicOn, (on) => {
       getSettingsManager().update((st) => ({ ...st, musicVolume: on ? 1 : 0 }));
       applyAudioFromUserSettings(getSettingsManager().load());
     }, 820);
@@ -269,7 +296,10 @@ export class MenuScene extends Phaser.Scene {
     const layout = this.getMenuLayout(height);
     const panelX = width / 2;
     const panelY = layout.panelY;
-    const panelWidth = 680;
+    // Clamp panel width to viewport so mobile (390 px) doesn't render an
+    // off-screen 680-px panel — pre-fix the mascot frame at panelX-238
+    // landed at x ≈ -43 on iPhone widths.
+    const panelWidth = Math.min(680, width - 24);
     const panelHeight = layout.panelHeight;
     const variant = VARIANTS[this.carouselIndex];
     // V2 followup — structural typing masks the SaveData long-field ↔
@@ -280,7 +310,12 @@ export class MenuScene extends Phaser.Scene {
     const unlocked = isVariantUnlocked(variant, variantProgress);
     const selected = this.selectedVariantKey === variant.key;
     const unlockProgress = getVariantUnlockProgress(variant, variantProgress);
-    const infoX = panelX - 92;
+    // Mascot frame and info column scale with panelWidth so the layout
+    // collapses cleanly on narrow viewports instead of fixing infoX at
+    // panelX-92 (which crashed text into the mascot at width=390).
+    const mascotOffsetFromPanelLeft = Math.min(64, panelWidth * 0.12);
+    const mascotX = panelX - panelWidth / 2 + mascotOffsetFromPanelLeft;
+    const infoX = panelX - panelWidth / 2 + Math.min(160, panelWidth * 0.28);
     // Vertical offsets scale with uiScale so the scaled variant rows
     // (name 24px → 34px, flavor 13px → 18px wrap, modifier 13px, progress
     // 12px, tally 11px) keep their row-to-row gaps and stay inside the
@@ -321,35 +356,45 @@ export class MenuScene extends Phaser.Scene {
       this.renderVariantCarousel();
     });
 
+    // Frame grew 118×112 → 124×128 and mascot scale dropped 3.05 → 2.7
+    // so the sprite head no longer crops out the top edge (audit 03b
+    // showed the mascot ears poking above the bbox stroke). mascotX is
+    // panel-relative (was hardcoded panelX-238) so the frame stays inside
+    // the panel on every viewport.
     const previewFrame = this.add
-      .rectangle(panelX - 238, panelY + vy(8), 118, 112, 0x16213a, 0.95)
+      .rectangle(mascotX, panelY + vy(8), 124, 128, 0x16213a, 0.95)
       .setStrokeStyle(1, unlocked ? 0x406099 : 0x374157, 1);
     const preview = this.add
-      .sprite(previewFrame.x, previewFrame.y - 2, variant.textureKey)
-      .setScale(3.05)
+      .sprite(previewFrame.x, previewFrame.y + 4, variant.textureKey)
+      .setScale(2.7)
       .setAlpha(unlocked ? 1 : 0.42);
     this.variantPanelElements.push(previewFrame, preview);
 
+    // P1.5 — wrap widths are panel-relative so the variant info column
+    // doesn't run past the panel right edge on a 390-wide viewport.
+    // infoX sits at panel-left + 28 % of panelWidth; reserve 132 px on the
+    // right for the SELECTED badge column. The remaining wrap budget is
+    // panelWidth - mascotOffset - badgeReserve.
+    const badgeReserveW = Math.min(150, Math.max(110, panelWidth * 0.32));
+    const infoWrap = Math.max(160, panelWidth - (infoX - (panelX - panelWidth / 2)) - badgeReserveW);
     const nameText = this.add.text(infoX, panelY - vy(42), t(variant.nameKey), {
       fontFamily: 'monospace',
       fontSize: '24px',
       color: resolveVariantNameColor(unlocked),
       fontStyle: 'bold',
+      wordWrap: { width: infoWrap },
     });
-    // Wrap instead of truncating — all 5 flavors currently exceed 42 chars,
-    // and any locale whose strings are longer would be cropped mid-word.
-    // The ~300px wrap width gives room for 2 lines on the widest flavor.
     const flavorText = this.add.text(infoX, panelY - vy(18), t(variant.flavorKey), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: '#95a8ca',
-      wordWrap: { width: 300 },
+      wordWrap: { width: infoWrap },
     });
     const modifierText = this.add.text(infoX, panelY + vy(18), formatVariantModifierSummary(variant), {
       fontFamily: 'monospace',
       fontSize: '13px',
       color: COLORS_CSS.TEXT_BRIGHT,
-      wordWrap: { width: 300 },
+      wordWrap: { width: infoWrap },
       lineSpacing: 3,
     });
     const requirementLine = formatVariantRequirementLine(unlocked, unlockProgress);
@@ -390,27 +435,37 @@ export class MenuScene extends Phaser.Scene {
       }
     }
 
-    const barX = infoX;
-    const barY = panelY + vy(66);
-    const barWidth = 286;
-    const progressBg = this.add.rectangle(barX, barY, barWidth, 8, 0x202839, 1).setOrigin(0, 0.5);
-    const progressFill = this.add
-      .rectangle(
-        barX + 1,
-        barY,
-        Math.max(0, (barWidth - 2) * (unlocked ? 1 : unlockProgress?.ratio ?? 0)),
-        6,
-        unlocked ? 0x51b36d : COLORS.WHISKY_GOLD,
-        1
-      )
-      .setOrigin(0, 0.5);
-    const progressBorder = this.add.rectangle(barX + barWidth / 2, barY, barWidth, 8, 0, 0).setStrokeStyle(1, 0x46536f, 1);
-    this.variantPanelElements.push(progressBg, progressFill, progressBorder);
+    // P3.5 — hide the progress bar for the currently SELECTED variant.
+    // For an already-unlocked & selected variant the bar shows full
+    // green and adds no info; the SELECTED badge already conveys
+    // status. Pre-fix the bar read as "leftover unlock-progress UI".
+    if (!selected) {
+      const barX = infoX;
+      const barY = panelY + vy(66);
+      const barWidth = Math.min(286, infoWrap);
+      const progressBg = this.add.rectangle(barX, barY, barWidth, 8, 0x202839, 1).setOrigin(0, 0.5);
+      const progressFill = this.add
+        .rectangle(
+          barX + 1,
+          barY,
+          Math.max(0, (barWidth - 2) * (unlocked ? 1 : unlockProgress?.ratio ?? 0)),
+          6,
+          unlocked ? 0x51b36d : COLORS.WHISKY_GOLD,
+          1
+        )
+        .setOrigin(0, 0.5);
+      const progressBorder = this.add.rectangle(barX + barWidth / 2, barY, barWidth, 8, 0, 0).setStrokeStyle(1, 0x46536f, 1);
+      this.variantPanelElements.push(progressBg, progressFill, progressBorder);
+    }
 
     this.variantSelectHit = null;
     const badgeStyle = resolveLoadoutBadgeStyle(selected, unlocked);
+    // P1.5 — badge X is panel-relative (was `panelX + 235`, off-canvas at
+    // panelWidth=366). Anchor inside panel-right with a small inset.
+    const badgeW = Math.min(126, badgeReserveW - 12);
+    const badgeX = panelX + panelWidth / 2 - badgeW / 2 - 12;
     const badge = this.add
-      .rectangle(panelX + 235, panelY - vy(6), 126, 38, badgeStyle.fillColor, 1)
+      .rectangle(badgeX, panelY - vy(6), badgeW, 38, badgeStyle.fillColor, 1)
       .setStrokeStyle(1, badgeStyle.strokeColor, 1);
     const badgeLabel = this.add
       .text(badge.x, badge.y, badgeStyle.labelText, {

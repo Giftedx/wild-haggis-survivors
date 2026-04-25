@@ -135,7 +135,13 @@ export class CroftScene extends Phaser.Scene {
 
     this.drawComposition(layout, highContrastUi);
     this.drawMantelpiece(layout);
-    this.drawPhotoWall(layout);
+    // P1.7 — below 600 px the right-edge action button column overlaps the
+    // photo wall (buttons run from width-168 to width-8; wall sits at
+    // 0.62w..0.82w, which maps to 242-320 on a 390 viewport). Hide the
+    // decorative wall on mobile so the buttons read cleanly. Polaroids are
+    // ambient flavor — desktop / tablet keep them.
+    const isMobileCroft = this.scale.width < 600;
+    if (!isMobileCroft) this.drawPhotoWall(layout);
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
@@ -161,13 +167,21 @@ export class CroftScene extends Phaser.Scene {
 
   /**
    * Paint placeholder rectangles for every element from the layout
-   * draw order. T3 replaces `gran` + T4 replaces `hearth` with
-   * proper procedural sprite drawers. Remaining placeholders stay
-   * until M2/M3 fill them in.
+   * draw order whose proper sprite hasn't shipped yet. Pre-fix the
+   * placeholders were drawn at alphaFill 0.22 / stroke 0.6 — they
+   * read as "broken UI rectangles" in the audit (top-left blue square,
+   * lower purple/grey rects). Now drawn at the lowest legible alpha
+   * so they read as decorative props rather than missing assets.
+   * High-contrast still gets a stronger draw so the scene's
+   * affordances stay perceivable.
    */
   private drawComposition(layout: CroftLayout, highContrast: boolean): void {
-    const alphaFill = highContrast ? 0.4 : 0.22;
-    const alphaStroke = highContrast ? 0.9 : 0.6;
+    // High-contrast players still get a faint outline so the scene's
+    // structure is perceivable; everyone else gets nothing — the
+    // placeholder rectangles read as broken UI in screenshots (audit 03j).
+    if (!highContrast) return;
+    const alphaFill = 0.18;
+    const alphaStroke = 0.55;
     for (const key of CROFT_DRAW_ORDER) {
       // Real drawers now own these elements — skip placeholders.
       if (key === 'gran' || key === 'hearth' || key === 'mantelpiece' || key === 'photoWall' || key === 'drove') continue;

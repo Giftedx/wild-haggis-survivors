@@ -152,21 +152,28 @@ export class SettingsScene extends Phaser.Scene {
     const { uiScale, highContrastUi } = this.settingsManager.load();
     this.uiScale = uiScale;
     this.highContrastUi = highContrastUi;
-    // Derive layoutScale — clamp so 16 rows + 3 section headers fit inside
-    // the current viewport height. Without this, uiScale 1.4 on a 768px
-    // canvas pushes the BACK-button row off the bottom and hides the last
-    // ~4 toggles. Text remains at `uiScale` so readability stays intact;
-    // only vertical stride compresses. Floor of 0.8 keeps labels from
-    // crashing into each other on very short viewports.
+    // Derive layoutScale — clamp so 22 rows + 3 section headers fit inside
+    // the current viewport height. Pre-fix the floor was 0.8 which couldn't
+    // shrink the stack enough at 720p; the BACK + RESET buttons pinned to
+    // height-40 ended up overlapping the bottom rows (audit 03c). A 0.55
+    // floor keeps labels legible at the densest stride while guaranteeing
+    // every row sits above the button strip. Text remains at `uiScale`
+    // for readability; only vertical stride compresses.
     const rowsCount = 22;
     const sectionCount = 3;
     const rowBase = rowsCount * this.BASE_ROW_STEP;
-    const verticalReserve = 130 + 80; // rowY start + back-button margin
+    // P1.4 — verticalReserve was 190 (130 + 60) which only matched a 56-px
+    // sticky bar inside a 60-px reserve. The Controls sub-header at the
+    // bottom of the row stack was being clipped under the bar. Bumped to
+    // 130 + 80 = 210 to keep the last header clear of the bar's top edge.
+    const verticalReserve = 130 + 80;
     const availableH = Math.max(200, height - verticalReserve);
     const requiredH = sectionCount * this.BASE_SECTION_GAP + (rowBase + sectionCount * 22) * uiScale;
     if (requiredH > availableH) {
       const fitScale = (availableH - sectionCount * this.BASE_SECTION_GAP) / (rowBase + sectionCount * 22);
-      this.layoutScale = Math.max(0.8, Math.min(uiScale, fitScale));
+      // P1.4 — floor dropped 0.55 → 0.45 so the densest stride still
+      // squeezes the last "Controls" header above the sticky bar at 720 p.
+      this.layoutScale = Math.max(0.45, Math.min(uiScale, fitScale));
     } else {
       this.layoutScale = uiScale;
     }
@@ -260,11 +267,19 @@ export class SettingsScene extends Phaser.Scene {
     // a faux damage number, both re-rendering as the player tweaks uiScale,
     // damageNumbers, highContrastUi, and screenShake. Gives the "what does
     // this setting do" answer without requiring a trip to a live run.
+    // P1.6 — below 600 px (mobile) the right-anchored preview panel
+    // overlapped the centred OPTIONS title. Drop it below the title row
+    // and shrink it so the row stack starts cleanly below.
+    const previewIsMobile = width < 600;
+    const previewCenterX = previewIsMobile ? width / 2 : width - 128;
+    const previewCenterY = previewIsMobile ? 96 : 72;
+    const previewW = previewIsMobile ? Math.min(width - 24, 240) : 220;
+    const previewH = previewIsMobile ? 56 : 76;
     this.previewHandle = renderSettingsPreview(this, {
-      centerX: width - 128,
-      centerY: 72,
-      width: 220,
-      height: 76,
+      centerX: previewCenterX,
+      centerY: previewCenterY,
+      width: previewW,
+      height: previewH,
       depth: 4,
     }, {
       uiScale: this.working.uiScale,
@@ -274,7 +289,11 @@ export class SettingsScene extends Phaser.Scene {
     });
 
     // --- Rows (grouped) -------------------------------------------------
-    this.rowY = 130;
+    // P1.6 — on mobile, start rows below the preview card (which dropped
+    // out of the top-right corner into a full-width row below the title).
+    this.rowY = previewIsMobile
+      ? Math.max(130, previewCenterY + previewH / 2 + 16)
+      : 130;
     this.addSectionHeader(t('ui.settings.section_sound'));
     this.addSliderRow(t('ui.settings.master_volume'), 'masterVolume', 0, 1, 0.1);
     this.addSliderRow(t('ui.settings.sfx_volume'), 'sfxVolume', 0, 1, 0.1);
@@ -308,17 +327,26 @@ export class SettingsScene extends Phaser.Scene {
     // Assist Mode preferences remain persisted for future builds, but the
     // visible controls stay hidden until their runtime effects are wired.
 
-    // --- BACK button ----------------------------------------------------
-    // Sit just below the last row with a breathing gap rather than pinned
-    // to the bottom of the viewport.
-    const backY = Math.min(this.rowY + 32, height - 40);
+    // --- BACK button (sticky bottom bar) -------------------------------
+    // Pre-fix BACK + RESET sat at `Math.min(rowY+32, height-40)` with no
+    // backdrop, so the row stack could extend underneath them on dense
+    // viewports — the audit caught BACK overlapping the High-contrast UI
+    // row (03c). Sticky bar with an opaque underlay hides any residual
+    // overflow above and gives the buttons a clear seat at the bottom.
+    const stickyBarH = 56;
+    const stickyBarY = height - stickyBarH / 2 - 8;
+    this.add
+      .rectangle(width / 2, stickyBarY, width, stickyBarH, 0x0a1322, 0.96)
+      .setStrokeStyle(1, 0x1f2a44, 0.9)
+      .setDepth(20);
+    const backY = stickyBarY;
     const { rect: back, label: backLabel } = createGameButton(this, {
       x: width / 2, y: backY, width: 220, height: 42,
       label: t('ui.settings.back'), tier: 'tertiary', fontSize: '16px', uiScale,
     });
     back.setStrokeStyle(2, SETTINGS_TROUGH_STROKE, 0.8);
-    back.setScale(uiScale);
-    backLabel.setScale(uiScale);
+    back.setScale(uiScale).setDepth(21);
+    backLabel.setScale(uiScale).setDepth(22);
     const goBack = () => {
       audio.playClick();
       this.persistAndApply();
@@ -572,8 +600,12 @@ export class SettingsScene extends Phaser.Scene {
       audio.playClick();
     });
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale (was fixed 36 px while rowStep
+    // can drop to ~21 px when settings condense to fit a small viewport).
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 14, width - 56, 36, 0x000000, 0)
+      .rectangle(width / 2, y + 14, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'slider',
@@ -701,8 +733,11 @@ export class SettingsScene extends Phaser.Scene {
     // Silence unused-variable warning for shadow (it's drawn, not interacted with)
     void shadow;
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale.
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
@@ -774,8 +809,11 @@ export class SettingsScene extends Phaser.Scene {
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', cycle);
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale.
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
@@ -846,8 +884,11 @@ export class SettingsScene extends Phaser.Scene {
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', cycle);
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale.
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
@@ -912,8 +953,11 @@ export class SettingsScene extends Phaser.Scene {
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', cycle);
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale.
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
@@ -971,8 +1015,11 @@ export class SettingsScene extends Phaser.Scene {
     txt.setInteractive({ useHandCursor: true });
     txt.on('pointerdown', openRebindScene);
 
+    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
+    // into adjacent rows at low layoutScale.
+    const markH = Math.max(20, rowStep - 4);
     const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, 34, 0x000000, 0)
+      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({
       kind: 'toggle',
@@ -1000,8 +1047,8 @@ export class SettingsScene extends Phaser.Scene {
       fillOverride: 0x2a2430, hoverOverride: 0x3a3040, textColorOverride: '#c8b8d4',
     });
     btn.setStrokeStyle(1.5, 0x5a4e64, 0.9);
-    btn.setScale(this.uiScale);
-    txt.setScale(this.uiScale);
+    btn.setScale(this.uiScale).setDepth(21);
+    txt.setScale(this.uiScale).setDepth(22);
 
     const doReset = () => {
       audio.playClick();

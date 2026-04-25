@@ -7,8 +7,9 @@ import { type BeastieEntryVM, beastiesDiscoverySummary } from './buildBeastiesEn
 import { resolveBeastieDisplay } from './beastieDisplay';
 import { buildBeastieDetail } from './buildBeastieDetail';
 
-const GRID_COLS = 6;
-const GRID_ROWS = 6; // 36 slots — fits 30 enemies + 5 bosses with one spare
+const GRID_COLS_DESKTOP = 6;
+const GRID_COLS_MOBILE = 4;
+const TOTAL_SLOTS = 36; // 30 enemies + 5 bosses with one spare
 const CELL_BG_SEEN = 0x1a2236;
 const CELL_BG_UNSEEN = 0x0e1524;
 const CELL_STROKE_SEEN = 0x355079;
@@ -65,6 +66,11 @@ export function renderBeastiesBook(
 
   const gridTop = vy + 40;
   const gridHeight = Math.max(1, vh - 48);
+  // Drop to 4 cols below 600 px viewport so beastie names ("Gordon the
+  // Chef", "Tour Bus") have room to read without truncating to 3 lines
+  // (audit 09d).
+  const GRID_COLS = vw < 600 ? GRID_COLS_MOBILE : GRID_COLS_DESKTOP;
+  const GRID_ROWS = Math.ceil(TOTAL_SLOTS / GRID_COLS);
   const cellW = vw / GRID_COLS;
   const cellH = gridHeight / GRID_ROWS;
   const spriteBudget = Math.min(cellW, cellH) * 0.55;
@@ -100,9 +106,15 @@ export function renderBeastiesBook(
       objects.push(sprite);
     }
 
+    // P2.9 — long beastie names ("Gordon the Chef", "Tour Bus") clipped
+    // inside 4-col mobile cells. Drop to a tighter font on narrow
+    // viewports so the longest names fit on two lines without wrapping
+    // mid-word.
+    const labelFontSize = vw < 600 ? '9px' : undefined;
     const nameLabel = scene.add
       .text(cx, cy + (cellH - 6) / 2 - 8, display.displayName,
         textStyle('small', {
+          ...(labelFontSize ? { fontSize: labelFontSize } : {}),
           color: display.isSilhouette ? COLORS_CSS.TEXT_DIM : COLORS_CSS.TEXT_PRIMARY,
           align: 'center',
           wordWrap: { width: Math.max(40, (cellW - 10) / Math.max(1, uiScale)) },

@@ -103,11 +103,16 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
       w: width * 0.4,
       h: height * 0.08,
     },
-    // Photo wall fills the right interior wall.
+    // Photo wall on the right interior wall. Pre-fix the wall's right
+    // edge (0.94 × width) ran 90+ px past the action-column left edge
+    // (width − 168) at desktop widths — the OOT THE DOOR / SPORRAN /
+    // ALBUM / WIRELESS buttons covered the rightmost polaroid column.
+    // Trimmed width 0.26 → 0.20 and shifted x 0.68 → 0.62 so the wall
+    // ends at 0.82 × width with a clear gutter before the buttons.
     photoWall: {
-      x: width * 0.68,
+      x: width * 0.62,
       y: topBand - height * 0.05,
-      w: width * 0.26,
+      w: width * 0.2,
       h: height * 0.3,
     },
     // Drove silhouettes along window sill (left half).

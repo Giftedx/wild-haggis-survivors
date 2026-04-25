@@ -1431,7 +1431,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
 
     this.tutorialSystem = new TutorialSystem(this, this.metaSaveManager);
-    this.tutorialSystem.startRunIfNeeded({ resumeRun: Boolean(resumeRun) });
+    // FTUE start is deferred to the countdown's onComplete (see showCountdown
+    // call below) — fixes P1.10: depth-1000 countdown text was rendering on
+    // top of the depth-600 FTUE banner, hiding the tutorial copy on first run.
 
     this.debugTimeTravelApi.install();
     this.runPersistence.registerMidRunHooks();
@@ -1496,9 +1498,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       }
     }
 
-    // Start countdown — game is paused until it finishes
+    // Start countdown — game is paused until it finishes. FTUE banner waits
+    // for countdown to clear so the depth-1000 countdown text doesn't sit on
+    // top of the depth-600 FTUE overlay (P1.10).
     this.timeManager.request('COUNTDOWN', { pausePhysics: true, timeScale: 0 });
-    showCountdown(this, this.timeManager, this.updateTickers, () => this.getUiViewport());
+    const startFtue = () => this.tutorialSystem.startRunIfNeeded({ resumeRun: Boolean(resumeRun) });
+    showCountdown(this, this.timeManager, this.updateTickers, () => this.getUiViewport(), startFtue);
 
     // Wire kill count → mantle tier. Pre-seeds from current killCount so
     // replays and save-mid-run starts at the correct tier without a tween.
@@ -1856,6 +1861,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hud.updateShield(this.player.hasShield());
     this.hud.setAct(this.runActState.currentAct);
     this.hud.setIronmoor(this.activeIronmoorRun);
+    this.hud.setDaily(this.runIsDaily, this.getRunSeedCode());
     this.hud.setGold(this.runScore.getGoldBalance());
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(

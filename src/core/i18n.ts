@@ -277,6 +277,9 @@ export const EN_STRINGS: LocaleTree = {
       find_cat_relic: 'RELIC',
       /** Banter book — progress pill at the top of the pool list. */
       banter_progress: '{heard} of {total} lines kent',
+      /** P2.4 — legend for the ✨ prefix on rare-pool rows (first-time
+       *  marks, relic lifted, Burns echo). Sits below the progress total. */
+      banter_rare_legend: '✨ — special pools (one-shot lines)',
       /** Per-pool heard-count chip (row chip + expanded panel). */
       banter_heard_chip: '{heard}/{total}',
       /** Shown in the expansion when the pool has no heard lines yet. */
@@ -347,6 +350,9 @@ export const EN_STRINGS: LocaleTree = {
       page: 'Page {current} / {total}',
       max: 'MAX',
       cost_gold: '{cost}g',
+      /** P3.7 — legend for the tier-pip row on each item; explains the
+       *  empty-square stack so new players don't read it as rarity. */
+      tier_pip_legend: 'pips = tiers owned',
       back_to_menu: 'BACK TO MENU',
       prev: '< PREV',
       next: 'NEXT >',
@@ -680,7 +686,12 @@ export const EN_STRINGS: LocaleTree = {
       act_chip: '— Act {act} —',
       /** W66 Ironmoor chip — shown when single-life mode is on. */
       ironmoor_chip: '⚔ IRONMOOR',
+      /** P2.12 — daily-mode reminder. Persistent for the whole run. */
+      daily_chip: '☀ DAILY · {seed}',
       kills_enemies: 'Kills: {kills}  Enemies: {count}{suffix}',
+      /** P1.8 — compact mobile single-line variant. Used below 600 px so
+       *  the right-aligned readout stays one line clear of the dash row. */
+      kills_enemies_compact: 'K:{kills} · E:{count}{suffix}',
       enemies_capped_suffix: ' MAX!',
       dash_label: 'Dash ',
       dash_ready: 'ready',

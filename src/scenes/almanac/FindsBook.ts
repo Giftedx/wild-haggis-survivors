@@ -6,7 +6,8 @@ import { textStyle } from '../../ui/typography';
 import { type FindEntryVM, findsDiscoverySummary } from './buildFindsEntries';
 import { buildFindDetail, categoryLabelKeyFor } from './buildFindDetail';
 
-const GRID_COLS = 6;
+const GRID_COLS_DESKTOP = 6;
+const GRID_COLS_MOBILE = 3;
 const CELL_BG_FOUND = 0x1a2236;
 const CELL_BG_UNFOUND = 0x0e1524;
 const PANEL_BG = 0x12192b;
@@ -78,6 +79,7 @@ export function renderFindsBook(
 
   const gridTop = vy + 40;
   const gridHeight = Math.max(1, vh - 48);
+  const GRID_COLS = vw < 600 ? GRID_COLS_MOBILE : GRID_COLS_DESKTOP;
   const rows = Math.max(1, Math.ceil(entries.length / GRID_COLS));
   const cellW = vw / GRID_COLS;
   const cellH = gridHeight / rows;

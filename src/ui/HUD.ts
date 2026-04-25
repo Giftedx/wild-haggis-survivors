@@ -74,12 +74,17 @@ export class HUD {
   private prevAct: 1 | 2 | 3 = 1;
   /** W66 Ironmoor — small "IRONMOOR" chip shown when single-life mode is active. */
   private ironmoorChipText!: Phaser.GameObjects.Text;
+  private dailyChipText!: Phaser.GameObjects.Text;
   /** T1 replay — persistent "REPLAY" chip shown during best-effort playback. */
   private replayChipText!: Phaser.GameObjects.Text;
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
-  private readonly HP_BAR_W = 260;
+  /** HP bar width — shrinks on narrow viewports so the centered timer
+   *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
+   *  can rebalance against the live viewport (was a fixed 260 which
+   *  obscured the timer at width 390 — audit 09g). */
+  private HP_BAR_W = 260;
   private readonly HP_BAR_H = 20;
   private readonly XP_BAR_H = 14;
   private readonly DEPTH = 50;
@@ -253,6 +258,15 @@ export class HUD {
       textStyle('label', { color: '#c8a0a0' }),
     ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
 
+    // P2.12 — DAILY chip. Shown only when the run was launched via the
+    // Daily Challenge button. Pre-fix: a daily run looked identical to
+    // a normal run during play — no on-screen reminder. Right-anchored
+    // top-band so it pairs with the Kills readout and doesn't fight
+    // the centred countdown / banter overlays.
+    this.dailyChipText = this.addEl(this.scene.add.text(width - 12, 64, '',
+      textStyle('label', { color: '#e2c97a' }),
+    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+
     // T1 replay chip — persistent indicator during best-effort playback.
     // Bottom-right, above the XP bar, right-origin so it doesn't clash
     // with the minimap at the bottom-right corner (minimap anchors from
@@ -316,30 +330,47 @@ export class HUD {
       dashStyle,
     ).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
 
-    // DPS counter
+    // DPS counter — dev/observability HUD element. Hidden in normal play
+    // so the bottom-left edge stays clean (the pause menu already shows
+    // DPS in the run-stats column). Re-enable with `?devDps=1` in the
+    // URL or by setting `window.__SHOW_HUD_DPS = true` before scene.start.
     this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '',
       textStyle('body', { color: '#8a7a6a' }),
     ).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
+    const showDps = (() => {
+      try {
+        const w = window as unknown as { __SHOW_HUD_DPS?: boolean };
+        if (w.__SHOW_HUD_DPS === true) return true;
+        const params = new URLSearchParams(window.location?.search ?? '');
+        return params.get('devDps') === '1';
+      } catch { return false; }
+    })();
+    if (!showDps) this.dpsText.setVisible(false);
 
-    // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight
+    // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight.
+    // Boss bar lives ABOVE the banter / tutorial-tip layer (depths 85-92) so a
+    // boss fight can never have its HP bar hidden behind ambient toast text
+    // (P1.11 fix). Stays well below modal underlays (599+) so pause/level-up
+    // still occlude it.
     const bossBarW = width * 0.55;
     const bossBarY = 98;
+    const bd = 95;
     // Warning glow (sits behind everything, fades in when low HP)
     this.bossBarGlow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW + 12, 30, BOSS_BAR_WARN_GLOW_COLOR, 0)
-      .setScrollFactor(0).setDepth(d - 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
+      .setScrollFactor(0).setDepth(bd - 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, BOSS_BAR_BG)
-      .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
+      .setScrollFactor(0).setDepth(bd).setVisible(false)) as Phaser.GameObjects.Rectangle;
     // Inner shadow line
     this.bossBarShadow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY - 9, bossBarW, 2, 0x000000, 0.6)
-      .setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Rectangle;
+      .setScrollFactor(0).setDepth(bd).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, BOSS_BAR_BASELINE_FILL)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
+      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(bd + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
     // Top highlight on fill (reads as 3D depth)
     this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, BOSS_BAR_BASELINE_HIGHLIGHT, 0.6)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
+      .setOrigin(0, 0).setScrollFactor(0).setDepth(bd + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
     this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '',
       textStyle('body', { fontSize: '17px', color: '#ff9999', wordWrap: { width: Math.max(200, bossBarW / uiScaleClamp) } }),
-    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(bd + 2).setVisible(false)) as Phaser.GameObjects.Text;
     if (this.uiScale !== 1) {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
         this.hpText,
@@ -355,6 +386,9 @@ export class HUD {
         this.dashSuffixText,
         this.dpsText,
         this.bossNameText,
+        this.actChipText,
+        this.ironmoorChipText,
+        this.dailyChipText,
       ];
       for (const target of scaleTargets) {
         (target as unknown as { setScale?: (x: number, y?: number) => void }).setScale?.(this.uiScale);
@@ -412,7 +446,20 @@ export class HUD {
     const padPx = Math.max(8, (12 * this.uiScale) / Math.max(0.001, zoom));
     const bottomPad = Math.max(2, 4 / Math.max(0.001, zoom));
     this.topSafePad = padPx;
+    // Cap HP bar to ~38% of viewport width so the centered timer stays
+    // clear of the bar fill on narrow viewports (mobile + windowed).
+    // Floor at 140 keeps the bar usable; ceiling at 260 preserves the
+    // desktop look unchanged.
+    this.HP_BAR_W = Math.round(Math.max(140, Math.min(260, width * 0.38)));
     const padX = Math.max(x + 8, Math.min(x + 12 * this.uiScale, x + Math.max(8, width - this.HP_BAR_W - 8)));
+    // Resize HP bar bg + fill to match the new HP_BAR_W. Phaser
+    // Rectangles let you assign `.width` / `.height` directly; using the
+    // raw fields stays compatible with the HUD test mocks (which don't
+    // implement setSize).
+    this.hpBarBg.width = this.HP_BAR_W;
+    this.hpBarBg.height = this.HP_BAR_H;
+    if (this.hpBarFill.width > this.HP_BAR_W) this.hpBarFill.width = this.HP_BAR_W;
+    this.hpBarFill.height = this.HP_BAR_H;
     const padY = y + this.topSafePad;
     const xpY = y + height - this.XP_BAR_H - bottomPad;
 
@@ -440,6 +487,10 @@ export class HUD {
     this.curseChipText.setPosition(x + width / 2, topY + 50 * this.uiScale);
     this.actChipText.setPosition(x + width / 2, topY + 66 * this.uiScale);
     this.ironmoorChipText.setPosition(x + width / 2, topY + 82 * this.uiScale);
+    // P2.12 — daily chip sits ABOVE the timer at the top edge so it
+    // never collides with countdown / banter overlays that occupy the
+    // upper third. Right-anchored so it pairs with the Kills readout.
+    this.dailyChipText.setPosition(x + width - 12, topY + 64 * this.uiScale);
     this.killText.setPosition(x + width - 12, topY);
     this.pauseText.setPosition(x + width - 12, topY + 28 * this.uiScale);
     this.dpsText.setPosition(x + 12, y + height - ((24 * this.uiScale) + this.XP_BAR_H + bottomPad));
@@ -569,8 +620,14 @@ export class HUD {
       const enemyColor = overCap
         ? (this.hcPalette?.killWarn ?? COLORS_CSS.DANGER_RED)
         : (this.hcPalette?.kill ?? COLORS_CSS.WHITE);
+      // P1.8 — below 600 px the long "Kills: X  Enemies: Y" string wrapped
+      // to two lines and bled into the dash row at y=44. Switch to a
+      // compact " K:X · E:Y " single-line format on mobile so the row
+      // stays clear of the dash readout.
+      const isMobileWidth = this.layoutWidth < 600;
+      const labelKey = isMobileWidth ? 'ui.hud.kills_enemies_compact' : 'ui.hud.kills_enemies';
       this.killText.setText(
-        t('ui.hud.kills_enemies', { kills: killCount, count: enemyCount, suffix: enemyWarning })
+        t(labelKey, { kills: killCount, count: enemyCount, suffix: enemyWarning })
       );
       this.killText.setColor(enemyColor);
     }
@@ -921,6 +978,20 @@ export class HUD {
     }
     this.ironmoorChipText.setText(t('ui.hud.ironmoor_chip'));
     this.ironmoorChipText.setVisible(true);
+  }
+
+  /**
+   * P2.12 — DAILY chip. Called once at run-start from GameScene when
+   * `runIsDaily` is true; persistent for the whole run as a reminder
+   * the player is on the daily attempt (parity with the menu badge).
+   */
+  setDaily(active: boolean, seedCode?: string): void {
+    if (!active) {
+      this.dailyChipText.setVisible(false);
+      return;
+    }
+    this.dailyChipText.setText(t('ui.hud.daily_chip', { seed: seedCode ?? '' }));
+    this.dailyChipText.setVisible(true);
   }
 
   /**
