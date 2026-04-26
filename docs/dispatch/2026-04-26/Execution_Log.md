@@ -121,3 +121,21 @@ ls scripts/
 ```
 
 If any line in the table above contradicts what you observe, treat the working tree as truth and update this section, not the audit table above it.
+
+---
+
+## Backlog-drain dispatch — 2026-04-26 (evening)
+
+After the post-audit snapshot landed, all ten task entries were committed (commits `b3bec32` … `a220f76`). A coordinator-driven backlog-drain pass began with the orchestrator prompt at `docs/prompts/orchestrator-backlog-drain.md`. Tier-A parallel batch (different scopes) and Tier-B serial batch (GameScene contention) follow the orchestrator's rules.
+
+### Tier-A round 1 — shipped to `master`
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `task_09` (T310 wire-up) | `4fb95ce` | `npm run ci` chain now runs `lint → test → build → budget → flash-budget`. Bundle gate (vendor-phaser ≤ 390 KB gzip, index ≤ 285 KB gzip) and flash gate enforced on every CI / PR. New `npm run budget` alias. Flash-budget header docstring truthed-up. |
+| **P1.4** (bagpipes utility-only copy) | `72778be` | Burns deed `ach_burns_beastie_unlock.description` was promising "every weapon in its evolved form" — bagpipes never evolves; reworded to "all seven legends forged" in EN + SCS. Removed dead `ui.banter.first_time.evo_bagpipes` orphans (no `BANTER_POOLS` source). 3 new evolution-test fences guard against regression. |
+
+### Standing follow-ups surfaced this session
+
+- **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated (700 ms), times out at 5 s when run with all 425 transform-heavy files in parallel. Pre-existing on `master`; reproduced both before and after Tier-A diffs. Suggested fix: bump that test's `timeout` to 30 000 ms, or move the dynamic `await import('./Player')` outside the test body to amortise transform cost. Track as `T420`.
+- **Visual-regression PNG baselines still missing thresholded comparison** — covered by existing `T408` in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`; not in scope of T310.
