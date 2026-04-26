@@ -574,6 +574,12 @@ export const EN_STRINGS: LocaleTree = {
       assist_mode_extended_combo: 'Extended combo grace',
       /** Toggle: full invincibility. Biggest hammer in the box. */
       assist_mode_invincibility: 'Invincibility',
+      /** Preset row labels — single cycling row replaces individual sub-toggles
+       *  in the live UI. Off → Timing → Invincibility. Game speed stays hidden
+       *  pending replay-determinism wiring (see A1_ASSIST_MODE_CALLSITES.md). */
+      assist_mode_preset_off: 'Off',
+      assist_mode_preset_timing: 'Timing help',
+      assist_mode_preset_invincible: 'Invincibility',
     },
     /** A1 M3 — key + gamepad remapping scene copy. Hearth register. */
     inputRebind: {
@@ -702,6 +708,9 @@ export const EN_STRINGS: LocaleTree = {
       dash_label: 'Dash ',
       dash_ready: 'ready',
       dash_cooldown_pct: '{pct}%',
+      /** W95 — visible right-zone tap hint shown on touch-primary devices
+       *  until the player taps the dash zone for the first time. */
+      dash_zone_hint: 'TAP TAE DASH',
       /** Rolling 1s window — same meter as HUD damage log, not kill streak. */
       dps_line: 'DPS (1s): {dps}',
       /** Shown under the wave objective when the run started with a curse. */
@@ -762,6 +771,14 @@ export const EN_STRINGS: LocaleTree = {
       stats_routes: 'Routes: {routes}',
       /** T402 — comma-separated held relic labels. */
       stats_relics: 'Sporran: {relics}',
+      /** T402 follow-up — variant identity (haggis pick) shown above the
+       *  act / routes / relics block. Always emitted when the variant is
+       *  not the default 'classic' so the radiator shows what made the
+       *  run unique. */
+      stats_variant: 'Variant: {variant}',
+      /** T402 follow-up — comma-separated owned rune labels. Empty
+       *  collections omit the line. */
+      stats_runes: 'Runes: {runes}',
       /** Subtle affordance under RESUME — keyboard + gamepad Start. */
       keys_resume: 'ESC / P / Start — resume',
       /** R1 M3 T21 — whisky_dram active-relic button label. */
@@ -2901,6 +2918,10 @@ export const EN_STRINGS: LocaleTree = {
     move: 'WASD or stick to roam — weapons fire themselves. SPACE: a cheeky dash through trouble (and through enemies).',
     gem: 'Gather gems to level. Max a weapon plus its paired curio, then pop a treasure chest for a legendary glow-up.',
     drift: 'Yir wee haggis drifts clockwise — crooked legs! Lean into it.',
+    /** Drift micro-practice (replaces the passive drift hint). Banner text
+     *  while a marker glows nearby — player walks into the marker to clear,
+     *  Enter / Space / tap to skip, 12s auto-timeout. Hearth register. */
+    drift_practice: 'Yir wee haggis curves clockwise — wander into the gold ring tae feel it. Enter or tap tae skip.',
     /** One-shot when the first affixed gold elite spawns — `{name}` is the trait title. */
     elite_affix_first: '{name} — gold elites carry a trait. The tag by the bar tells ye which.',
     moor_moment_first: 'The moor gives wee gifts noo and then — a line, a boon, a breath. Bide wi it.',
