@@ -205,4 +205,35 @@ _Updated as agents complete (notification-driven; not polled)._
 
 **Next steps for coordinator:** run reconciliation in stash-and-merge order above; review each branch's blocker doc; line up native-reviewer sessions; PEAT runs; backend-pick decision.
 
+---
+
+## Reconciliation outcome — 2026-04-26 (same day)
+
+All 10 charters cherry-picked onto `master` directly via 22 commits. No detangle branch needed — picked agent #2 commit (`c77dcd5`) and agent #6 commit (`1e117c7`) sequentially instead of restructuring the stack.
+
+**Order executed** (safest-first, refactor-base-before-features):
+
+| Step | Charter | Commits added | Conflicts | Notes |
+|---|---|---|---|---|
+| 1 | #4 W95 mobile | `0f5e801` | none | clean |
+| 2 | #7 W27 clipboard | `97c171f` | duplicate audit doc auto-skipped | clean |
+| 3 | #1 A1 a11y | `e55f080`, `a3de622`, `0142629` | none | clean |
+| 4 | #3 P3 cloud | `60fed77`, `fa7c86d` | none | clean |
+| 5 | #2 W71 ADR | `d86eeb7` | none | clean |
+| 6 | #10 T401 refactor | `4ac13de`, `0506425`, `37187f8` | none | clean |
+| 7 | #6 B1 banter | `b163eb3` | i18n.ts/i18n.scs.ts auto-merged | clean |
+| 8 | #8 C2 lore | `f3fba68`, `68f26c6`, `67aae75` | i18n.ts/i18n.scs.ts auto-merged | clean |
+| 9 | #5 biomes/endless | `0b997cb`, `b4d7c79`, `511d021`, `92b09ec`, `740b0c8`, `773cfdd` | **GameScene.ts whole-file conflict on commit 3** — caused by `core.autocrlf=true` (master CRLF blob, agent LF blob, no `.gitattributes`); resolved with `git -c merge.renormalize=true cherry-pick`, applied across remaining commits | clean |
+| 10 | #9 U1 runes | `a86afe5` | SpawnSystem/GameScene/WeaponSystem all auto-merged | clean |
+
+**CI evidence per step:** lint clean, vitest progressed 4140 → 4148 → 4150 → 4203 → 4206 → 4219 → 4221 → 4225 → 4255 → 4297 (final), build green every step.
+
+**Final master tip:** `a86afe5`. Bundle: index 965.65 KB / gzip 267.16 KB; vendor-phaser 1656.88 KB / gzip 374.43 KB. Total app gzip ≈641 KB across both chunks.
+
+**EOL note (added to repo root):** consider committing a `.gitattributes` declaring `*.ts text eol=lf` so future cross-worktree cherry-picks don't need the renormalize flag. Not done in this session — out of scope.
+
+**Worktrees:** 9 still locked at their tip commits in `.claude/worktrees/`. Branches preserved (`worktree-agent-*`, `feat/w71-phase1-close`) for reference. No-op for next push; can be pruned later via `git worktree remove --force` + `git branch -D`.
+
+**Outstanding human gates:** the ≈25-item list above is unchanged — reconciliation lands code only. PEAT runs, native-speaker reviews, real-device QA, backend pick, balance playtests, etc. all still ahead.
+
 
