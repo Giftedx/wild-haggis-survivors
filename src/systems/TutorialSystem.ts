@@ -11,6 +11,13 @@ import {
   TUTORIAL_TIP_STANDING_STONES,
   TUTORIAL_TIP_ANCESTRAL_ECHO,
 } from './tutorialTipPalettes';
+import {
+  DRIFT_PRACTICE_RADIUS_PX,
+  driftPracticeMarkerFor,
+  resolveDriftPracticeStep,
+  shouldStartDriftPractice,
+  type DriftPracticeOutcome,
+} from './driftPractice';
 
 const TOKEN_MOVE = 'TUTORIAL_MOVE';
 const TOKEN_GEM = 'TUTORIAL_GEM';
@@ -35,9 +42,16 @@ export class TutorialSystem {
 
   // Drift tutorial state
   private driftBanner: Phaser.GameObjects.Text | null = null;
-  private driftArrow: Phaser.GameObjects.Graphics | null = null;
   private driftTimerHandle: import('../utils/UpdateTickers').TickerHandle | null = null;
   private driftScheduled: boolean = false;
+  /** Drift micro-practice (post-FTUE) — marker the player navigates to. */
+  private driftPracticeMarker: Phaser.GameObjects.Graphics | null = null;
+  private driftPracticeMarkerPos: { x: number; y: number } | null = null;
+  private driftPracticeStartMs: number = 0;
+  private driftPracticeSkipRequested: boolean = false;
+  private driftPracticeKeyHandler?: (e: KeyboardEvent) => void;
+  private driftPracticePointerHandler?: () => void;
+  private driftPracticeTickHandler?: () => void;
 
   /** First affixed elite — non-blocking banner (same family as drift hint). */
   private eliteAffixBanner: Phaser.GameObjects.Text | null = null;
@@ -71,7 +85,7 @@ export class TutorialSystem {
     if (this.ambientBannersHidden === !visible) return;
     this.ambientBannersHidden = !visible;
     this.driftBanner?.setVisible(visible);
-    this.driftArrow?.setVisible(visible);
+    this.driftPracticeMarker?.setVisible(visible);
     this.eliteAffixBanner?.setVisible(visible);
     this.moorMomentBanner?.setVisible(visible);
     for (const b of this.oneShotBanners) b.setVisible(visible);
@@ -106,15 +120,23 @@ export class TutorialSystem {
       this.dismissDriftBannerRef.destroy();
       this.dismissDriftBannerRef = null;
     }
-    if (this.driftArrow) {
-      this.scene.tweens.killTweensOf(this.driftArrow);
-      this.driftArrow.destroy();
-      this.driftArrow = null;
+    if (this.driftPracticeMarker) {
+      this.scene.tweens.killTweensOf(this.driftPracticeMarker);
+      this.driftPracticeMarker.destroy();
+      this.driftPracticeMarker = null;
     }
-    if (this.dismissDriftArrowRef) {
-      this.scene.tweens.killTweensOf(this.dismissDriftArrowRef);
-      this.dismissDriftArrowRef.destroy();
-      this.dismissDriftArrowRef = null;
+    this.driftPracticeMarkerPos = null;
+    if (this.driftPracticeTickHandler) {
+      this.scene.events.off('update', this.driftPracticeTickHandler);
+      this.driftPracticeTickHandler = undefined;
+    }
+    if (this.driftPracticeKeyHandler && typeof document !== 'undefined') {
+      document.removeEventListener('keydown', this.driftPracticeKeyHandler);
+      this.driftPracticeKeyHandler = undefined;
+    }
+    if (this.driftPracticePointerHandler) {
+      this.scene.input.off('pointerdown', this.driftPracticePointerHandler);
+      this.driftPracticePointerHandler = undefined;
     }
     if (this.eliteAffixTimerHandle) {
       this.eliteAffixTimerHandle.cancel();
@@ -386,145 +408,174 @@ export class TutorialSystem {
     this.oneShotTimerHandles.push(handle);
   }
 
-  // ── Drift tutorial (non-pausing) ───────────────────────────────────
+  // ── Drift micro-practice (non-pausing) ─────────────────────────────
+  // T213/T214 — replaces the prior 6s passive drift hint with an active
+  // practice: a marker spawns near the player; the player walks into it
+  // (the haggis drift means a straight-line input curves clockwise so
+  // the marker is offset to invite a curve). Resolves via the helpers in
+  // `driftPractice.ts` — `complete` (player reached marker), `timeout`
+  // (12s cap), or `skip` (Enter / Space / canvas tap).
 
   private scheduleDriftHintIfNeeded(): void {
     if (this.driftScheduled) return;
-    if (this.metaSave.load().hasSeenDriftTutorial) return;
+    const save = this.metaSave.load();
+    if (!shouldStartDriftPractice({
+      hasSeenDriftTutorial: save.hasSeenDriftTutorial,
+    })) return;
     this.driftScheduled = true;
-    // Show 3 seconds after FTUE completes (or run start if FTUE already done).
-    // Use the RAW ticker (wall-clock) so the hint isn't frozen when the FTUE
-    // overlay sets `timeScale: 0`. `scene.time.delayedCall` respects
-    // timeScale — a 3s hint behind a 20s pause would fire 20s late.
+    // 3s after FTUE completes (or run start if FTUE already done) on the
+    // RAW ticker so a level-up overlay's `timeScale: 0` doesn't stall it.
     this.driftTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 3000, () => {
       this.driftTimerHandle = null;
-      this.showDriftHint();
+      this.showDriftPractice();
     });
   }
 
-  private showDriftHint(): void {
+  private showDriftPractice(): void {
     if (this.metaSave.load().hasSeenDriftTutorial) return;
-    this.metaSave.update((cur) => ({ ...cur, hasSeenDriftTutorial: true }));
+
+    const player = this.scene.getPlayer();
+    // driftSign default of 1 (clockwise) — the variant's `driftSignFlip`
+    // would mirror the marker, but variant access is not on ISceneContext.
+    // Anticlockwise variants get the marker on the same side as drift,
+    // which still produces a teaching curve, just opposite-handed.
+    const marker = driftPracticeMarkerFor(player.x, player.y, 1);
+    this.driftPracticeMarkerPos = marker;
 
     const { x, y, width } = this.getUiViewport();
     const bannerY = y + 80;
     const wrapW = Math.max(160, Math.min(420, width - 48));
 
-    // Semi-transparent banner — no pause, no input blocking
-    this.driftBanner = this.scene.add.text(x + width / 2, bannerY, t('tutorial.drift'), {
-      fontFamily: 'monospace',
-      fontSize: '14px',
-      color: '#ffe8a0',
-      fontStyle: 'bold',
-      stroke: COLORS_CSS.BLACK,
-      strokeThickness: 3,
-      backgroundColor: '#1a1020cc',
-      padding: { x: 12, y: 8 },
-      wordWrap: { width: wrapW },
-      align: 'center',
-    }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(85).setAlpha(0)
+    // Banner — viewport-anchored, named so the e2e smoke can find it.
+    this.driftBanner = this.scene.add.text(
+      x + width / 2,
+      bannerY,
+      t('tutorial.drift_practice'),
+      {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#ffe8a0',
+        fontStyle: 'bold',
+        stroke: COLORS_CSS.BLACK,
+        strokeThickness: 3,
+        backgroundColor: '#1a1020cc',
+        padding: { x: 12, y: 8 },
+        wordWrap: { width: wrapW },
+        align: 'center',
+      },
+    )
+      .setName('drift-practice-banner')
+      .setOrigin(0.5, 0)
+      .setScrollFactor(0)
+      .setDepth(85)
+      .setAlpha(0)
       .setVisible(!this.ambientBannersHidden);
-
-    // Fade in
     this.scene.tweens.add({
-      targets: this.driftBanner,
-      alpha: 1,
-      duration: 400,
-      ease: 'Power2',
+      targets: this.driftBanner, alpha: 1, duration: 400, ease: 'Power2',
     });
 
-    // Curved clockwise arrow near player
-    this.driftArrow = this.scene.add.graphics().setDepth(55).setAlpha(0);
-    this.drawCurvedArrow(this.driftArrow);
-
+    // Marker — world-space ring with a soft fill so it reads as a target,
+    // not just a line. Named so e2e + reflow smokes can find it.
+    const gfx = this.scene.add.graphics()
+      .setName('drift-practice-marker')
+      .setDepth(55)
+      .setAlpha(0);
+    gfx.fillStyle(0xffd44a, 0.18);
+    gfx.fillCircle(marker.x, marker.y, DRIFT_PRACTICE_RADIUS_PX);
+    gfx.lineStyle(3, 0xffd44a, 0.95);
+    gfx.strokeCircle(marker.x, marker.y, DRIFT_PRACTICE_RADIUS_PX);
+    this.driftPracticeMarker = gfx;
     this.scene.tweens.add({
-      targets: this.driftArrow,
-      alpha: 0.7,
-      duration: 400,
-      ease: 'Power2',
+      targets: this.driftPracticeMarker, alpha: 1, duration: 400, ease: 'Power2',
     });
 
-    // Auto-dismiss after 6 wall-clock seconds — tracked so dispose() can
-    // cancel if the scene tears down mid-hint (otherwise the callback fires
-    // on already-destroyed driftBanner / driftArrow fields). Raw ticker so
-    // the auto-dismiss doesn't stall if the player hits a level-up overlay
-    // during those 6 seconds.
-    this.driftTimerHandle = this.scene.getUpdateTickers().addOnce('raw', 6000, () => {
-      this.driftTimerHandle = null;
-      this.dismissDriftHint();
-    });
-  }
+    this.driftPracticeStartMs = (typeof performance !== 'undefined'
+      ? performance.now() : Date.now());
+    this.driftPracticeSkipRequested = false;
 
-  private drawCurvedArrow(gfx: Phaser.GameObjects.Graphics): void {
-    const player = this.scene.getPlayer();
-    const cx = player.x;
-    const cy = player.y;
-    const radius = 40;
-
-    // Draw a clockwise arc (~270 degrees)
-    gfx.lineStyle(2.5, 0xffe8a0, 0.8);
-    gfx.beginPath();
-    const startAngle = -Math.PI * 0.6;
-    const endAngle = Math.PI * 0.9;
-    const steps = 32;
-    for (let i = 0; i <= steps; i++) {
-      const angle = startAngle + (endAngle - startAngle) * (i / steps);
-      const px = cx + Math.cos(angle) * radius;
-      const py = cy + Math.sin(angle) * radius;
-      if (i === 0) gfx.moveTo(px, py);
-      else gfx.lineTo(px, py);
+    // Skip handlers — Enter / Space (keyboard) OR pointerdown anywhere
+    // on the canvas (touch primary). Both set the same flag the tick
+    // handler reads via `resolveDriftPracticeStep`.
+    this.driftPracticeKeyHandler = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        this.driftPracticeSkipRequested = true;
+      }
+    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', this.driftPracticeKeyHandler);
     }
-    gfx.strokePath();
+    this.driftPracticePointerHandler = () => {
+      this.driftPracticeSkipRequested = true;
+    };
+    this.scene.input.on('pointerdown', this.driftPracticePointerHandler);
 
-    // Arrowhead at the end of the arc
-    const endX = cx + Math.cos(endAngle) * radius;
-    const endY = cy + Math.sin(endAngle) * radius;
-    const arrowAngle = endAngle + Math.PI / 2; // tangent direction (clockwise)
-    const headLen = 10;
-    gfx.fillStyle(0xffe8a0, 0.8);
-    gfx.fillTriangle(
-      endX + Math.cos(arrowAngle) * headLen,
-      endY + Math.sin(arrowAngle) * headLen,
-      endX + Math.cos(arrowAngle + 2.4) * headLen * 0.6,
-      endY + Math.sin(arrowAngle + 2.4) * headLen * 0.6,
-      endX + Math.cos(arrowAngle - 2.4) * headLen * 0.6,
-      endY + Math.sin(arrowAngle - 2.4) * headLen * 0.6,
-    );
+    // Tick handler — runs each scene update; reads distance + elapsed,
+    // resolves outcome via the pure helper, dismisses on non-continue.
+    this.driftPracticeTickHandler = () => {
+      if (!this.driftPracticeMarker || !this.driftPracticeMarkerPos) return;
+      const now = (typeof performance !== 'undefined'
+        ? performance.now() : Date.now());
+      const elapsedMs = now - this.driftPracticeStartMs;
+      const playerNow = this.scene.getPlayer();
+      const dx = playerNow.x - this.driftPracticeMarkerPos.x;
+      const dy = playerNow.y - this.driftPracticeMarkerPos.y;
+      const distanceToMarkerPx = Math.hypot(dx, dy);
+      const outcome = resolveDriftPracticeStep({
+        elapsedMs,
+        distanceToMarkerPx,
+        skipRequested: this.driftPracticeSkipRequested,
+      });
+      if (outcome !== 'continue') {
+        this.dismissDriftPractice(outcome);
+      }
+    };
+    this.scene.events.on('update', this.driftPracticeTickHandler);
   }
 
-  private dismissDriftBannerRef: Phaser.GameObjects.Text | null = null;
-  private dismissDriftArrowRef: Phaser.GameObjects.Graphics | null = null;
+  private dismissDriftPractice(_outcome: DriftPracticeOutcome): void {
+    // Persist seen so a subsequent run / scene reuse skips the practice.
+    this.metaSave.update((cur) => ({ ...cur, hasSeenDriftTutorial: true }));
 
-  private dismissDriftHint(): void {
+    if (this.driftPracticeTickHandler) {
+      this.scene.events.off('update', this.driftPracticeTickHandler);
+      this.driftPracticeTickHandler = undefined;
+    }
+    if (this.driftPracticeKeyHandler && typeof document !== 'undefined') {
+      document.removeEventListener('keydown', this.driftPracticeKeyHandler);
+      this.driftPracticeKeyHandler = undefined;
+    }
+    if (this.driftPracticePointerHandler) {
+      this.scene.input.off('pointerdown', this.driftPracticePointerHandler);
+      this.driftPracticePointerHandler = undefined;
+    }
+    this.driftPracticeMarkerPos = null;
+
     if (this.driftBanner) {
       const banner = this.driftBanner;
       this.driftBanner = null;
       this.dismissDriftBannerRef = banner;
       this.scene.tweens.add({
-        targets: banner,
-        alpha: 0,
-        duration: 400,
+        targets: banner, alpha: 0, duration: 400,
         onComplete: () => {
           if (this.dismissDriftBannerRef === banner) this.dismissDriftBannerRef = null;
           banner.destroy();
         },
       });
     }
-    if (this.driftArrow) {
-      const arrow = this.driftArrow;
-      this.driftArrow = null;
-      this.dismissDriftArrowRef = arrow;
+    if (this.driftPracticeMarker) {
+      const m = this.driftPracticeMarker;
+      this.driftPracticeMarker = null;
       this.scene.tweens.add({
-        targets: arrow,
-        alpha: 0,
-        duration: 400,
-        onComplete: () => {
-          if (this.dismissDriftArrowRef === arrow) this.dismissDriftArrowRef = null;
-          arrow.destroy();
-        },
+        targets: m, alpha: 0, duration: 400,
+        onComplete: () => m.destroy(),
       });
     }
   }
+
+  // Banner-fade-tween reference kept around so dispose() can kill an
+  // in-flight tween if the scene tears down mid-fade (otherwise the
+  // onComplete fires on a destroyed object).
+  private dismissDriftBannerRef: Phaser.GameObjects.Text | null = null;
 
   // ── FTUE internals (unchanged) ────────────────────────────────────
 

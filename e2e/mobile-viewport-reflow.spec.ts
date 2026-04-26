@@ -174,6 +174,51 @@ test.describe('W95 mobile viewport reflow', () => {
         expect(fit.xpBar.y, 'XP bar y in bottom half').toBeGreaterThan(fit.height * 0.5);
       }
 
+      // W95 — visible right-zone dash affordance. The band + label only
+      // spawn when Phaser sees the device as touch-primary; under
+      // chromium-mobile device emulation that should resolve to true.
+      // If the device is reported as desktop the assertion below
+      // tolerantly skips (touch-primary detection lives in InputManager
+      // constructor and is not under test from this spec).
+      const dashHint = await page.evaluate(() => {
+        const g = (window as unknown as { game: {
+          scale: { width: number; height: number };
+          scene: { getScene(k: string): unknown };
+          device?: { input?: { touch?: boolean } };
+        } }).game;
+        const isTouch = Boolean(g.device?.input?.touch);
+        const scene = g.scene.getScene('Game') as {
+          children?: { list?: Array<{ name?: string; x?: number; y?: number; width?: number; height?: number }> };
+        };
+        const list = scene.children?.list ?? [];
+        const band = list.find((o) => o.name === 'dash-zone-hint-band');
+        const label = list.find((o) => o.name === 'dash-zone-hint-label');
+        return {
+          isTouch,
+          width: g.scale.width,
+          height: g.scale.height,
+          band: band ? { x: band.x, y: band.y, width: band.width, height: band.height } : null,
+          label: label ? { x: label.x, y: label.y } : null,
+        };
+      });
+      if (dashHint.isTouch) {
+        expect(dashHint.band, 'dash-zone-hint-band should mount on touch-primary devices').not.toBeNull();
+        expect(dashHint.label, 'dash-zone-hint-label should mount on touch-primary devices').not.toBeNull();
+        if (dashHint.band) {
+          // The band is centred on the right 40% of the viewport. Its
+          // centreX should be near width * 0.8 (= 0.6 + 0.4/2). Allow a
+          // small tolerance for sub-pixel rounding across viewports.
+          expect(
+            Math.abs(dashHint.band.x - dashHint.width * 0.8),
+            `band centreX ${dashHint.band.x} drifted from expected ${dashHint.width * 0.8}`,
+          ).toBeLessThanOrEqual(2);
+          expect(
+            Math.abs(dashHint.band.width - dashHint.width * 0.4),
+            `band width ${dashHint.band.width} drifted from expected ${dashHint.width * 0.4}`,
+          ).toBeLessThanOrEqual(2);
+        }
+      }
+
       expect(pageErrors, `Page errors at ${vp.name}: ${pageErrors.join("\n")}`).toEqual([]);
     });
   }

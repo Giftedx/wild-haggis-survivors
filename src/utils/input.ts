@@ -2,6 +2,8 @@ import * as Phaser from 'phaser';
 import { SubscriptionBag } from './SubscriptionBag';
 import type { IInput } from './iInput';
 import { clampVectorLength, gamepadStickToMove, mergeMoveVectors, clampJoystickOrigin, type ViewportSafeInsets } from './inputMath';
+import { resolveDashZoneBounds, dashZoneHintPulseAlpha } from '../ui/dashZoneAffordance';
+import { t } from '../core/i18n';
 import { InputMapper } from '../input/InputMapper';
 import { isGamepadActionPressed } from '../input/gamepadAction';
 import { getSettingsManager } from '../core/SettingsManager';
@@ -44,6 +46,15 @@ export class InputManager implements IInput {
 
   private joystickBase: Phaser.GameObjects.Arc | null = null;
   private joystickThumb: Phaser.GameObjects.Arc | null = null;
+
+  // W95 — visible right-side dash-zone affordance. Faint band + label
+  // shown on touch-primary devices so first-time mobile players can
+  // discover the dash tap target. Fades out + destroys on the first
+  // tap inside the zone.
+  private dashZoneBand: Phaser.GameObjects.Rectangle | null = null;
+  private dashZoneLabel: Phaser.GameObjects.Text | null = null;
+  private dashZoneHintActive = false;
+  private dashZoneHintStartMs = 0;
 
   private isTouchDevice: boolean;
   private subs = new SubscriptionBag();
@@ -234,6 +245,8 @@ export class InputManager implements IInput {
   private setupTouchInput(): void {
     const scene = this.scene;
 
+    this.spawnDashZoneHint();
+
     const ensureVisuals = () => {
       if (this.joystickBase && this.joystickThumb) return;
       this.joystickBase = scene.add
@@ -255,6 +268,9 @@ export class InputManager implements IInput {
 
       if (pointer.x >= scene.scale.width * 0.6) {
         this.pendingTouchDash = true;
+        // First tap inside the dash zone dismisses the discoverability
+        // hint — once the player has used it, the band would be noise.
+        this.dismissDashZoneHint();
         return;
       }
 
@@ -319,6 +335,101 @@ export class InputManager implements IInput {
     this.subs.listen(scene.input, 'pointerup', onPointerUp);
   }
 
+  /**
+   * Spawn the visible dash-zone discoverability hint (W95). Faint band
+   * over the right 40% with a centred "DASH" label that breathes via a
+   * slow pulse. Touch-only — not shown on desktop. Auto-dismissed on
+   * the first dash tap (`onPointerDown` above) and on session teardown.
+   */
+  private spawnDashZoneHint(): void {
+    if (this.dashZoneHintActive) return;
+    const scene = this.scene;
+    // Defensive — minimal scene stubs in unit tests (e.g. MemoryLeak)
+    // don't carry add.rectangle / add.text / events. Skip the visible
+    // affordance gracefully so the input wiring itself stays testable.
+    const sceneAddAny = scene.add as unknown as {
+      rectangle?: (...args: unknown[]) => unknown;
+      text?: (...args: unknown[]) => unknown;
+    };
+    if (typeof sceneAddAny.rectangle !== 'function' || typeof sceneAddAny.text !== 'function') return;
+    if (!scene.events || typeof scene.events.on !== 'function') return;
+    const bounds = resolveDashZoneBounds(scene.scale.width, scene.scale.height);
+    this.dashZoneBand = scene.add
+      .rectangle(bounds.centreX, bounds.centreY, bounds.width, bounds.height, 0xffd980, 0.08)
+      .setName('dash-zone-hint-band')
+      .setScrollFactor(0)
+      .setDepth(998)
+      .setBlendMode(Phaser.BlendModes.ADD);
+    let dashHintLabel = '';
+    try {
+      dashHintLabel = t('ui.hud.dash_zone_hint');
+    } catch {
+      dashHintLabel = 'DASH';
+    }
+    this.dashZoneLabel = scene.add
+      .text(bounds.centreX, bounds.centreY, dashHintLabel || 'DASH', {
+        fontFamily: 'monospace',
+        fontSize: '14px',
+        color: '#ffe7a8',
+        fontStyle: 'bold',
+        stroke: '#1a1020',
+        strokeThickness: 3,
+        align: 'center',
+      })
+      .setName('dash-zone-hint-label')
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(999);
+    this.dashZoneHintActive = true;
+    this.dashZoneHintStartMs = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    // Subscribe to scene `update` so the pulse animates in lockstep with
+    // the rest of the scene without spinning a separate timer.
+    const onUpdate = () => {
+      if (!this.dashZoneHintActive || !this.dashZoneBand || !this.dashZoneLabel) return;
+      const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const elapsed = now - this.dashZoneHintStartMs;
+      const a = dashZoneHintPulseAlpha(elapsed);
+      this.dashZoneBand.setAlpha(a);
+      this.dashZoneLabel.setAlpha(a * 2.4);
+    };
+    this.subs.listen(scene.events, Phaser.Scenes.Events.UPDATE, onUpdate);
+  }
+
+  /** Fade out + destroy the dash-zone discoverability hint. Idempotent. */
+  private dismissDashZoneHint(): void {
+    if (!this.dashZoneHintActive) return;
+    this.dashZoneHintActive = false;
+    const band = this.dashZoneBand;
+    const label = this.dashZoneLabel;
+    this.dashZoneBand = null;
+    this.dashZoneLabel = null;
+    const tweens = this.scene.tweens;
+    if (band) {
+      if (tweens && typeof tweens.add === 'function') {
+        tweens.add({
+          targets: band,
+          alpha: 0,
+          duration: 320,
+          onComplete: () => band.destroy(),
+        });
+      } else {
+        band.destroy();
+      }
+    }
+    if (label) {
+      if (tweens && typeof tweens.add === 'function') {
+        tweens.add({
+          targets: label,
+          alpha: 0,
+          duration: 320,
+          onComplete: () => label.destroy(),
+        });
+      } else {
+        label.destroy();
+      }
+    }
+  }
+
   destroy(): void {
     this.subs.dispose();
 
@@ -327,6 +438,12 @@ export class InputManager implements IInput {
     this.joystickBase = null;
     this.joystickThumb = null;
     this.joystickActive = false;
+
+    this.dashZoneBand?.destroy();
+    this.dashZoneLabel?.destroy();
+    this.dashZoneBand = null;
+    this.dashZoneLabel = null;
+    this.dashZoneHintActive = false;
     this.joystickPointerId = -1;
     this.pendingTouchDash = false;
     this.prevGamepadDash = false;
