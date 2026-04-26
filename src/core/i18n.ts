@@ -854,6 +854,13 @@ export const EN_STRINGS: LocaleTree = {
       upgrade_add_passive: '{name} — curio pocketed, ya dancer',
       upgrade_stat_boost: '{name}',
       upgrade_grant_rune: 'Rune struck: {name} — cairn-chiseled.',
+      /** U1 M4 — rune pulse drains. Hearth-with-bite voice. */
+      rune_thistle_pulse: 'Thistle pulse — heal blooms ({count}).',
+      rune_reroll_grant: 'Rune reroll — try again, dear ({count}).',
+      rune_shrine_pulse: 'Shrine echo — wee bonny boost ({count}).',
+      rune_thistle_bomb: 'Thistle bomb — purple wallop!',
+      rune_lightning: 'Storm rune — chain crack!',
+      rune_chest_omen: 'Lucky-streak rune — gold gleam (+50g).',
       upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
       /** Phase B Endless — Overcharge mythic-tier toast. Edge register. */

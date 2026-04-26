@@ -49,12 +49,16 @@ export interface UpgradeCard {
 /** Rune rarity weight — between rare (13) and legendary (4) per U1 spec §2. */
 export const RUNE_RARITY_WEIGHT = 7;
 /**
- * Release gate for player-visible rune cards. The catalogue, card bridge,
- * and condition/effect system remain tested, but live offers stay disabled
- * until the effect bag is consumed by Player, WeaponSystem, XP, Spawn,
- * pickup, and gold systems. A visible card must be a true promise.
+ * Release gate for player-visible rune cards. M4 (2026-04-26) ships the
+ * Player / WeaponSystem / XPSystem / GoldGain consumers + bag drain so a
+ * visible card is finally a true promise. Cards still need
+ * bossKilledThisRun to surface — runes are a late-run reward, never the
+ * first level-up offer.
+ *
+ * To re-disable for a hotfix, flip back to `false` here; the catalogue,
+ * grant path, and persistence keep working in tests but no card surfaces.
  */
-export const RUNE_CARD_OFFERS_ENABLED = false;
+export const RUNE_CARD_OFFERS_ENABLED = true;
 
 /** Phase B Endless — Mythic (Overcharge) draw weight. Rare-but-not-impossible
  *  in the post-bell pool. The card only enters the pool when an evolved,

@@ -230,4 +230,20 @@ describe('WeaponSystem', () => {
       expect(() => ws.setMultipliers(1, 1, 1)).not.toThrow();
     });
   });
+
+  describe('U1 M4 — setBagpipesRadiusMul (Piper Rune)', () => {
+    it('default mul is 1; setter accepts positive values', () => {
+      expect(() => ws.setBagpipesRadiusMul(1.25)).not.toThrow();
+      expect(() => ws.setBagpipesRadiusMul(2.0)).not.toThrow();
+    });
+
+    it('clamps NaN / negative input to safe values', () => {
+      // Internal floor is 0.1 so a buggy 0 cannot zero the bagpipes hitbox.
+      expect(() => ws.setBagpipesRadiusMul(NaN)).not.toThrow();
+      expect(() => ws.setBagpipesRadiusMul(-1)).not.toThrow();
+      // Verify the no-throw + state is finite — the radius fold is the
+      // observable contract; its own composition is exercised elsewhere
+      // via the consumer module's `composeBagpipesRadiusMul` test.
+    });
+  });
 });

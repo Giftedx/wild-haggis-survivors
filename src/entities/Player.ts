@@ -21,6 +21,15 @@ import type { AccessoryDrawer } from './haggisComposition/AccessoryDrawer';
 import { getAccessoryDrawer } from './haggisComposition/accessoryRegistry';
 import type { MantleTier } from '../animation/mantleTier';
 import { applyMantleTier } from './Player.mantle';
+import type { RuneEffectBag } from '../systems/runes/runeEffects';
+import {
+  composeDamageMul,
+  composeMaxHpMul,
+  composeSpeedMul,
+  composeXpMul,
+  composeCritBonus,
+  composeLuckBonus,
+} from '../systems/runes/runeConsumer';
 
 /**
  * Player — the wild haggis.
@@ -180,6 +189,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   private readonly BASE_HITBOX_RADIUS = BALANCE.player.baseHitboxRadius;
   private dashTrailHandles: TickerHandle[] = [];
+
+  /**
+   * U1 M4 — RuneEffectBag accessor. Set by GameScene right after Player
+   * construction; getters fold the bag into final stat multipliers without
+   * touching `recalcStats` per frame. Returns null when no rune system is
+   * attached (tests, Phaser-free harnesses) — getters degrade to identity.
+   *
+   * The accessor is a function rather than a direct reference so the
+   * GameScene-side bag can be replaced on run reset without re-wiring.
+   */
+  private runeBagAccessor: (() => RuneEffectBag | null) = () => null;
+
+  /** Inject the rune bag accessor. Called once in GameScene.create(). */
+  setRuneBagAccessor(accessor: (() => RuneEffectBag | null) | null): void {
+    this.runeBagAccessor = accessor ?? (() => null);
+  }
 
   constructor(
     scene: Phaser.Scene,
@@ -526,9 +551,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hazardLeaping = this.burnLeapActiveRemainingMs > 0;
     const slickMul = this.inSlick && !hazardLeaping ? this.SLICK_SPEED_MUL : 1;
     const leapBoostMul = this.burnLeapBoostRemainingMs > 0 ? this.BURN_LEAP_SPEED_MUL : 1;
+    // U1 M4 — getMoveSpeed() folds the rune bag (Trek / Peat / Frost speed
+    // muls + allStats); identity when no rune is active.
+    const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushX,
-      drifted.y * this.moveSpeed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushY
     );
 
     // Rotate sprite to face movement direction
@@ -694,7 +722,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   heal(amount: number): void {
-    this.hp = Math.min(this.hp + amount, this.maxHp);
+    // U1 M4 — clamp against folded max HP so a Loch / Drover / Ceilidh
+    // Chain rune actually lets the player heal above the base bar.
+    this.hp = Math.min(this.hp + amount, this.getMaxHp());
   }
 
   public equipAccessory(id: string): void {
@@ -759,7 +789,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   // ── Getters ──
 
   getHp(): number { return this.hp; }
-  getMaxHp(): number { return this.maxHp; }
+  getMaxHp(): number {
+    // U1 M4 — fold rune-bag max-HP multiplier (haggis_loch / drover /
+    // ceilidh-chain). Identity when no bag attached.
+    const bag = this.runeBagAccessor();
+    if (!bag) return this.maxHp;
+    return Math.max(1, Math.round(this.maxHp * composeMaxHpMul(bag)));
+  }
+  /** Raw max-HP (pre-rune fold). Used by recalcStats / hp clamp. */
+  getMaxHpBase(): number { return this.maxHp; }
   /** Safe ratio for HUD / magnet / juice — avoids NaN if maxHp is ever pathological. */
   getHpFraction(): number {
     if (this.maxHp <= 0) return 1;
@@ -776,12 +814,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const fogMul = this.inFog && this.burnLeapActiveRemainingMs <= 0 ? this.FOG_PICKUP_MUL : 1;
     return this.pickupRadius * fogMul;
   }
-  getMoveSpeed(): number { return this.moveSpeed; }
+  getMoveSpeed(): number {
+    // U1 M4 — Trek / Peat / Frost runes (peat slows speed, trek boosts it).
+    const bag = this.runeBagAccessor();
+    if (!bag) return this.moveSpeed;
+    return this.moveSpeed * composeSpeedMul(bag);
+  }
   getDriftDegrees(): number { return this.driftDegrees; }
-  getDamageMultiplier(): number { return this.bonusDamageMultiplier; }
+  getDamageMultiplier(): number {
+    // U1 M4 — Haar / Peat / Thirst / Warden / cascade dmg fold here so
+    // every weapon path picks them up via WeaponSystem.setMultipliers.
+    const bag = this.runeBagAccessor();
+    if (!bag) return this.bonusDamageMultiplier;
+    return this.bonusDamageMultiplier * composeDamageMul(bag);
+  }
   getAoeMultiplier(): number { return this.bonusAoeMultiplier; }
   getAttackSpeedMultiplier(): number { return this.bonusAttackSpeedMultiplier; }
-  getCritChance(): number { return 0.10 + this.bonusCritChance; }
+  getCritChance(): number {
+    // U1 M4 — Gloaming / Flush rune crit additive.
+    const bag = this.runeBagAccessor();
+    const runeBonus = bag ? composeCritBonus(bag) : 0;
+    return 0.10 + this.bonusCritChance + runeBonus;
+  }
   getArmor(): number { return this.bonusArmor; }
   getHpRegen(): number { return this.hpRegen; }
   getCooldownReduction(): number { return this.bonusCooldownReduction; }
@@ -822,14 +876,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.dashCharges = this.maxDashCharges;
     this.dashCooldown = 0;
   }
-  getXpMultiplier(): number { return this.bonusXpMultiplier; }
+  getXpMultiplier(): number {
+    // U1 M4 — Pilgrim rune (xp_mult_run) folds onto the existing
+    // permanent + variant XP stack so existing callers (XPSystem,
+    // EnemyKillHandler, MoorMomentScheduler) compose for free.
+    const bag = this.runeBagAccessor();
+    if (!bag) return this.bonusXpMultiplier;
+    return this.bonusXpMultiplier * composeXpMul(bag);
+  }
 
   addXpMultiplier(fraction: number): void {
     this.bonusXpMultiplier += fraction;
   }
 
   getLuckDrawBonus(): number {
-    return this.bonusLuckDraw;
+    // U1 M4 — Cairn rune adds +15 to draw luck (sporran-equivalent).
+    const bag = this.runeBagAccessor();
+    const runeBonus = bag ? composeLuckBonus(bag) : 0;
+    return this.bonusLuckDraw + runeBonus;
   }
 
   addLuckDrawBonus(amount: number): void {
@@ -1006,7 +1070,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   /** Tick HP regeneration — call each frame with delta in ms */
   tickRegen(delta: number): void {
-    if (this.hpRegen <= 0 || this.hp >= this.maxHp) return;
+    if (this.hpRegen <= 0 || this.hp >= this.getMaxHp()) return;
     this.regenAccumulator += this.hpRegen * (delta / 1000);
     if (this.regenAccumulator >= 1) {
       const healed = Math.floor(this.regenAccumulator);

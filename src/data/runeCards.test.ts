@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { buildCardPool, RUNE_CARD_OFFERS_ENABLED, type Rarity } from './upgrades';
-import { buildRuneCards } from './runeCards';
+import { buildRuneCards, isRuneConditionGrounded } from './runeCards';
 import { RUNES } from './runes';
 
-describe('rune rarity + buildRuneCards (U1 Task 11)', () => {
+const groundedCount = Object.values(RUNES).filter(isRuneConditionGrounded).length;
+
+describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
   it('"rune" is now a valid Rarity literal', () => {
     const r: Rarity = 'rune';
     expect(r).toBe('rune');
   });
 
-  it('buildRuneCards returns one UpgradeCard per rune def, all tagged "rune" rarity', () => {
+  it('buildRuneCards returns one UpgradeCard per *grounded* rune def, all tagged "rune" rarity', () => {
     const cards = buildRuneCards();
-    expect(cards).toHaveLength(Object.keys(RUNES).length);
+    expect(cards).toHaveLength(groundedCount);
+    expect(cards.length).toBeLessThan(Object.keys(RUNES).length);
     for (const c of cards) {
       expect(c.rarity).toBe('rune');
       expect(c.effect.type).toBe('grant_rune');
@@ -25,16 +28,27 @@ describe('rune rarity + buildRuneCards (U1 Task 11)', () => {
     }
   });
 
+  it('M4 T113 — ungrounded biome runes are filtered out', () => {
+    const cards = buildRuneCards();
+    const ids = cards.map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
+    // These rune IDs reference unshipped biome / time-of-day axes.
+    expect(ids).not.toContain('haar_rune');     // biome_fog
+    expect(ids).not.toContain('frost_rune');    // biome_cold
+    expect(ids).not.toContain('seawrack_rune'); // biome_coastal
+    expect(ids).not.toContain('edinburgh_rune'); // biome_urban
+    expect(ids).not.toContain('gloaming_rune'); // biome_dusk
+  });
+
   it('buildCardPool EXCLUDES runes when bossKilledThisRun is false', () => {
     const pool = buildCardPool([], [], {}, [], { bossKilledThisRun: false });
     expect(pool.every((c) => c.rarity !== 'rune')).toBe(true);
   });
 
-  it('keeps live rune offers disabled until runtime consumers are wired', () => {
-    expect(RUNE_CARD_OFFERS_ENABLED).toBe(false);
+  it('U1 M4 — live rune offers ENABLED after consumers wired', () => {
+    expect(RUNE_CARD_OFFERS_ENABLED).toBe(true);
     const pool = buildCardPool([], [], {}, [], { bossKilledThisRun: true });
     const runeCards = pool.filter((c) => c.rarity === 'rune');
-    expect(runeCards).toHaveLength(0);
+    expect(runeCards.length).toBe(groundedCount);
   });
 
   it('buildCardPool includes rune cards only when the rollout gate is explicitly enabled', () => {
@@ -44,22 +58,22 @@ describe('rune rarity + buildRuneCards (U1 Task 11)', () => {
     });
     const runeCards = pool.filter((c) => c.rarity === 'rune');
     expect(runeCards.length).toBeGreaterThan(0);
-    // 30 runes, none owned, none seen — all eligible.
-    expect(runeCards).toHaveLength(Object.keys(RUNES).length);
+    // grounded subset, none owned, none seen — all eligible.
+    expect(runeCards).toHaveLength(groundedCount);
   });
 
   it('buildCardPool excludes already-owned runes when the rollout gate is enabled', () => {
     const pool = buildCardPool([], [], {}, [], {
       bossKilledThisRun: true,
-      ownedRuneIds: ['haar_rune', 'thirst_rune'],
+      ownedRuneIds: ['peat_rune', 'thirst_rune'],
       runeOffersEnabled: true,
     });
     const runeIds = pool
       .filter((c) => c.rarity === 'rune')
       .map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
-    expect(runeIds).not.toContain('haar_rune');
+    expect(runeIds).not.toContain('peat_rune');
     expect(runeIds).not.toContain('thirst_rune');
-    expect(runeIds).toHaveLength(Object.keys(RUNES).length - 2);
+    expect(runeIds).toHaveLength(groundedCount - 2);
   });
 
   it('buildCardPool remains backward compatible when ctx argument is omitted', () => {

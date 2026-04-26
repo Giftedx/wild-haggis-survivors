@@ -191,6 +191,35 @@ export class SpawnSystem {
   }
 
   /**
+   * U1 M4 — broadcast a global enemy-slow multiplier from the rune
+   * effect bag (Frost Rune in biome_cold; currently ungrounded but kept
+   * wired for the future cold biome). Idempotent — applied as a fresh
+   * `applyFreeze` pulse on every active enemy when the rune toggles
+   * non-identity. Hands of-no rune state when called with `1`.
+   *
+   * Per the bag-vs-cached-field gotcha, the GameScene calls this every
+   * frame so a transition flips behaviour mid-run without re-plumbing.
+   */
+  private runeEnemySlowMul: number = 1;
+  setRuneEnemySlowMul(mul: number): void {
+    const clamped = Math.max(0.1, Number.isFinite(mul) ? mul : 1);
+    if (clamped === this.runeEnemySlowMul) return;
+    this.runeEnemySlowMul = clamped;
+    if (clamped >= 1) return;
+    // One-shot freeze pulse so the new mul lands on already-spawned
+    // enemies. New spawns pick it up via Enemy's freeze multiplier
+    // baseline (long duration window). 30s window covers typical rune
+    // transitions; further refresh re-applies through this same path.
+    const enemies = this.pool.getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (e.active) e.applyFreeze(clamped, 30_000);
+    }
+  }
+  getRuneEnemySlowMul(): number {
+    return this.runeEnemySlowMul;
+  }
+
+  /**
    * W2 Moor Road: suppress regular spawn bursts for `ms` of game-time.
    * Used by `buckie_pitstop` to give the player 15s of peace before
    * resuming. Boss timeline is untouched. Game-time (not wall-clock) so

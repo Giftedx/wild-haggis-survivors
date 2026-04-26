@@ -363,9 +363,23 @@ export class WeaponSystem {
     return { damage: isCrit ? Math.ceil(baseDmg * this.critDamageMultiplier) : baseDmg, isCrit };
   }
 
-  /** Compute effective AoE radius with global multiplier */
+  /** Compute effective AoE radius with global multiplier.
+   *  U1 M4 — Piper Rune (`bagpipes_radius_mult`) folds onto bagpipes
+   *  + bagpipe_blast aura/AoE only; other weapons unaffected. */
   private effectiveAoe(w: ActiveWeapon): number {
-    return w.aoeRadius * this.aoeMultiplier;
+    const k = w.config.key;
+    const piperMul = (k === 'bagpipes' || k === 'bagpipe_blast')
+      ? this.bagpipesRadiusMul
+      : 1;
+    return w.aoeRadius * this.aoeMultiplier * piperMul;
+  }
+
+  /** U1 M4 — Piper Rune (bagpipes_radius_mult) write-through.
+   *  Cached field; GameScene refreshes via setBagpipesRadiusMul each
+   *  frame so a transition picks up immediately (bag-vs-cache rule). */
+  private bagpipesRadiusMul: number = 1;
+  setBagpipesRadiusMul(mul: number): void {
+    this.bagpipesRadiusMul = Math.max(0.1, Number.isFinite(mul) ? mul : 1);
   }
 
   private fireWeapon(w: ActiveWeapon, px: number, py: number): void {

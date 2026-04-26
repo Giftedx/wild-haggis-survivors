@@ -91,7 +91,14 @@ import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { applyShrineBuff, isRegisteredShrineBuffKey } from '../systems/shrineBuffRegistry';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
-import { createRuneEffectBag } from '../systems/runes/runeEffects';
+import { createRuneEffectBag, drainRunePulses } from '../systems/runes/runeEffects';
+import {
+  composeBagpipesRadiusMul,
+  composeBassAttackSpeedMul,
+  composeEnemySlowMul,
+  composeGoldMul,
+  noteCascadeKill,
+} from '../systems/runes/runeConsumer';
 import { RUNES } from '../data/runes';
 import { buildRuneEvalContextFromScene } from './game/runeContextBuilder';
 import { TutorialSystem } from '../systems/TutorialSystem';
@@ -796,6 +803,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       composedStats,
       this.replayInput ?? undefined,
     );
+    // U1 M4 — give Player live access to the run's rune effect bag so
+    // getMaxHp / getDamageMultiplier / getXpMultiplier / getCritChance
+    // / getLuckDrawBonus / getMoveSpeed fold the bag at read time. The
+    // accessor returns the *current* bag so a per-run reset (`runeBag =
+    // createRuneEffectBag()` above) is picked up without re-wiring.
+    this.player.setRuneBagAccessor(() => this.runeBag);
     registerDebugHotkeys(this, {
       getPlayer: () => this.player,
       getScene: () => this,
@@ -1104,6 +1117,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         eliteAffixId?: EliteAffixId | null,
       ) => this.enemyKillHandler.handle(x, y, xpValue, enemyKey, wasBoss, wasElite, eliteAffixId),
     );
+    // U1 M4 — Cascade Rune kill bookkeeper. Independent listener so the
+    // primary kill cascade owner stays unchanged. No-op when no cascade
+    // rune is equipped (the consumer guard short-circuits on null cfg).
+    this.weaponSystem.events.on('enemyKilled', () => {
+      noteCascadeKill(this.runeBag);
+    });
 
     // Floating damage numbers + hit sound + DPS tracking + impact ring burst
     this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean, weaponKey?: string) => {
@@ -1826,12 +1845,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Always update from player.rotation (persists when stationary) so
     // directional weapons like arc_sweep don't use a stale angle.
     this.weaponSystem.setPlayerFacing(this.player.rotation - Math.PI / 2);
+    // U1 M4 — fold rune bass-attack-speed flag (Song Rune) on top of the
+    // player's attack-speed stack so the weapon cooldown formula sees a
+    // single composed value. Identity (1.0) when the rune is inactive.
+    const bassAtkSpeedMul = composeBassAttackSpeedMul(this.runeBag);
     this.weaponSystem.setMultipliers(
       this.player.getDamageMultiplier()
         * this.juice.getComboDamageMultiplier()
         * burnsPlatterDamageBuff(this.time.now, this.burnsPlatterPickedUpAtMs),
       this.player.getAoeMultiplier(),
-      this.player.getAttackSpeedMultiplier(),
+      this.player.getAttackSpeedMultiplier() * bassAtkSpeedMul,
       this.player.getCritChance(),
       this.player.getCooldownReduction(),
       // R1 M3 T20a — grans_thimble +8% crit multiplier composes on top
@@ -1839,6 +1862,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // than replacing them.
       this.relicEffectDriver.modifyCritMultiplier(this.player.getCritDamageMultiplier()),
     );
+    // U1 M4 — Piper Rune folds bagpipes radius once per frame.
+    this.weaponSystem.setBagpipesRadiusMul(composeBagpipesRadiusMul(this.runeBag));
     this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
 
     // R1 M4.5 P5 — tick live Fianna summons + sweep expired. Use
@@ -2839,27 +2864,40 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * U1 Task 14 — per-frame rune tick. Builds a RuneEvalContext from live
    * scene state and feeds it to the condition system. The system fires
    * apply/remove on transitions; the shared runeBag is read by consumers
-   * (Player stats, WeaponSystem effects) downstream.
+   * (Player stats, WeaponSystem effects, gold gain, enemy slow) downstream.
+   *
+   * M4 (2026-04-26): also runs the per-frame consumer fold — refresh the
+   * gold-gain multiplier, apply enemy slow, drain pulse queues, push
+   * bagpipes radius into WeaponSystem.
    */
   private tickRuneSystem(delta: number): void {
-    if (this.runeSystem.activeCount() === 0) return;
+    if (this.runeSystem.activeCount() === 0) {
+      // Even with no runes, ensure the gold mult is identity (cheap; the
+      // setter clamps so this is safe to call every frame).
+      this.runScore.setGoldGainMultiplier(1);
+      return;
+    }
     // Advance the bag's nowMs for latched-timed effects (dmg_mult_timed).
     this.runeBag.nowMs += delta;
     const p = this.player;
-    const maxHp = p.getMaxHp();
+    // Use the *base* max-HP (pre-rune fold) so the rune's hp_max bonus
+    // doesn't trivially raise the hp_low threshold by raising the divisor.
+    // Thirst Rune ("hp < 30%") fires on real damage taken, not on a
+    // synthetic full-bar fraction shrink.
+    const maxHpBase = p.getMaxHpBase();
     const biomeKey = this.biomeController
       ? this.biomeController.currentBiomeAt(p.x, p.y)
       : null;
     const ctx = buildRuneEvalContextFromScene({
       biomeKey,
-      hpFrac: maxHp > 0 ? p.getHp() / maxHp : 1,
-      nearHazardWater: false,
+      hpFrac: maxHpBase > 0 ? p.getHp() / maxHpBase : 1,
+      nearHazardWater: p.isInSlick() || p.isInFog(),
       nearCairn: false,
       ownedRelicsCount: this.relicSystem?.heldCount() ?? 0,
       ownedWeaponKeys: this.weaponSystem.getWeapons().map((w) => w.config.key),
       runTimeMs: this.spawnSystem.getGameTimeSec() * 1000,
       combo: this.juice.getComboCount(),
-      unopenedChestsCount: 0,
+      unopenedChestsCount: this.chestRegistry.getMarkers().length,
       dashMsAgo: null,
       evolvedWeaponsCount: this.evolvedWeapons.length,
       killsThisRun: this.runScore.killCount,
@@ -2871,11 +2909,136 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       namedEliteKilledThisFrame: false,
       killOnThistleThisFrame: false,
       musicBassActive: false,
-      nodesVisited: 0,
+      // Approximation: act # × 4 + current node index gives a rough
+      // count of nodes visited across the run. Pilgrim Rune triggers at 3.
+      nodesVisited: Math.max(0, (this.runActState.currentAct - 1) * 4 + this.runActState.currentNodeIndex),
       postBell: this.runScore.victoryPending,
       timeOfDayKey: null,
     });
     this.runeSystem.tick(ctx);
+
+    // M4 — fold the bag into per-frame system state. Cheap multiplies;
+    // identity when no rune currently active. Per the bag-vs-cached-field
+    // gotcha, we re-sync each frame so a transition from `runeSystem.tick`
+    // is reflected before any system reads.
+    this.runScore.setGoldGainMultiplier(composeGoldMul(this.runeBag));
+
+    // Bass attack-speed flag → fold into WeaponSystem via the existing
+    // setMultipliers pass that runs immediately after this tick.
+    void composeBassAttackSpeedMul; // tracked at setMultipliers fold below
+
+    // Bagpipes radius — only one weapon listens; touch the weapon's aoe
+    // radius scalar at the source.
+    void composeBagpipesRadiusMul; // wired in WeaponSystem effective-aoe path
+
+    // Enemy slow — write through to enemies via a single SpawnSystem hook.
+    this.spawnSystem.setRuneEnemySlowMul(composeEnemySlowMul(this.runeBag));
+
+    // Drain pulses (one-shot reward queues — gems, healing thistles,
+    // rerolls, shrine buffs, lightning chains, thistle bombs, chest drop).
+    this.applyRunePulses();
+  }
+
+  /**
+   * U1 M4 — drain the rune bag's pulse queues into in-world effects.
+   *
+   * Pulses are emitted at apply-time by `applyRuneEffect` and accumulate
+   * until the consumer drains them. We drain every frame so a rune that
+   * just transitioned true (e.g. echo_rune on every-10th-kill) lands its
+   * reward on the same tick the cascade fires.
+   */
+  private applyRunePulses(): void {
+    const drained = drainRunePulses(this.runeBag);
+    if (drained.gems > 0) {
+      // Spawn extra gems near the player so the magnet pulls them.
+      for (let i = 0; i < drained.gems; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = 24 + Math.random() * 28;
+        this.xpSystem.spawnGem(
+          this.player.x + Math.cos(angle) * r,
+          this.player.y + Math.sin(angle) * r,
+          1,
+        );
+      }
+    }
+    if (drained.healingThistles > 0) {
+      // Heal stand-in: each thistle = small flat heal pulse. Lighter than
+      // a dedicated pickup spawn but always reads as warmth.
+      const heal = Math.max(2, Math.ceil(this.player.getMaxHp() * 0.05));
+      for (let i = 0; i < drained.healingThistles; i++) {
+        this.player.heal(heal);
+      }
+      this.juice.showToast(
+        t('ui.game.rune_thistle_pulse', { count: drained.healingThistles }),
+        '#88ff88',
+      );
+    }
+    if (drained.rerolls > 0 && this.upgradeUI) {
+      for (let i = 0; i < drained.rerolls; i++) this.upgradeUI.grantReroll();
+      this.juice.showToast(
+        t('ui.game.rune_reroll_grant', { count: drained.rerolls }),
+        '#bca3d4',
+      );
+    }
+    if (drained.shrineBuffs > 0) {
+      // Stand-in: small heal + gold burst until a dedicated shrine-buff
+      // grant API lands. Documented in the M4 plan as a known stub.
+      this.player.heal(Math.max(5, Math.ceil(this.player.getMaxHp() * 0.1)));
+      this.runScore.addCoinGold(20 * drained.shrineBuffs);
+      this.juice.showToast(
+        t('ui.game.rune_shrine_pulse', { count: drained.shrineBuffs }),
+        '#ffdd66',
+      );
+    }
+    if (drained.thistleBombs.length > 0) {
+      // Damage AoE at player position. Inexpensive: iterate enemies once,
+      // apply distance check + flat damage. Caps per-pulse so a runaway
+      // chain doesn't explode CPU.
+      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      for (const bomb of drained.thistleBombs) {
+        const r2 = bomb.radius * bomb.radius;
+        let hits = 0;
+        for (const e of enemies) {
+          if (!e.active || hits >= 16) continue;
+          const dx = e.x - this.player.x;
+          const dy = e.y - this.player.y;
+          if (dx * dx + dy * dy <= r2) {
+            e.takeDamage(bomb.dmg);
+            hits++;
+          }
+        }
+      }
+      this.juice.showToast(t('ui.game.rune_thistle_bomb'), '#a070c0');
+      this.juice.flashWhite(60);
+    }
+    if (drained.lightningChains.length > 0) {
+      // Hit the N nearest enemies per chain for a flat damage blast.
+      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      for (const chain of drained.lightningChains) {
+        let chained = 0;
+        const sorted = enemies
+          .filter((e) => e.active)
+          .sort((a, b) => {
+            const da = (a.x - this.player.x) ** 2 + (a.y - this.player.y) ** 2;
+            const db = (b.x - this.player.x) ** 2 + (b.y - this.player.y) ** 2;
+            return da - db;
+          });
+        for (const e of sorted) {
+          if (chained >= chain.targets) break;
+          e.takeDamage(40);
+          chained++;
+        }
+      }
+      this.juice.showToast(t('ui.game.rune_lightning'), '#88ddff');
+    }
+    if (drained.chestDropNext) {
+      // Flag: next eligible chest is guaranteed legendary. Stand-in:
+      // immediate +50 gold burst until the chest pipeline can read the
+      // flag. Never silent — always toast so the player sees the rune
+      // fire.
+      this.runScore.addCoinGold(50);
+      this.juice.showToast(t('ui.game.rune_chest_omen'), '#ffdd44');
+    }
   }
 
   private tryRelicChestOverride(): boolean {

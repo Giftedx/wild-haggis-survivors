@@ -122,6 +122,52 @@ describe('RunScoreState', () => {
     });
   });
 
+  describe('U1 M4 — goldGainMultiplier (Edinburgh Rune)', () => {
+    it('default multiplier is 1 — addCoinGold matches input', () => {
+      const s = new RunScoreState();
+      s.addCoinGold(10);
+      expect(s.coinGoldEarned).toBe(10);
+    });
+
+    it('1.25× mul rounds positive deposits up', () => {
+      const s = new RunScoreState();
+      s.setGoldGainMultiplier(1.25);
+      s.addCoinGold(10);
+      expect(s.coinGoldEarned).toBe(13); // ceil(12.5)
+      s.addCoinGold(4);
+      expect(s.coinGoldEarned).toBe(13 + 5); // ceil(5)
+    });
+
+    it('negative deposits (refunds) skip the mul', () => {
+      const s = new RunScoreState();
+      s.setGoldGainMultiplier(2);
+      s.addCoinGold(10);
+      s.addCoinGold(-3);
+      expect(s.coinGoldEarned).toBe(20 - 3);
+    });
+
+    it('reset clears the multiplier back to 1', () => {
+      const s = new RunScoreState();
+      s.setGoldGainMultiplier(2);
+      s.reset();
+      s.addCoinGold(10);
+      expect(s.coinGoldEarned).toBe(10);
+    });
+
+    it('clamps NaN to 1 and negative to 0 (deposit floors at 1)', () => {
+      const s = new RunScoreState();
+      s.setGoldGainMultiplier(NaN as unknown as number);
+      s.addCoinGold(10);
+      expect(s.coinGoldEarned).toBe(10);
+      // Negative clamps to 0 → ceil(10 * 0) = 0 → max(1, 0) = 1.
+      // Positive deposits never zero out completely; the floor reads
+      // as "rune at least registered something."
+      s.setGoldGainMultiplier(-5);
+      s.addCoinGold(10);
+      expect(s.coinGoldEarned).toBe(11);
+    });
+  });
+
   describe('reset', () => {
     it('returns every field to its initial value', () => {
       const s = new RunScoreState();

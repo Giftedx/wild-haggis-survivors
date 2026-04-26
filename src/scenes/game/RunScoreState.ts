@@ -57,6 +57,7 @@ export class RunScoreState {
     this.eliteChainLastGameSec = null;
     this.victoryPending = false;
     this.victoryDelayGen = 0;
+    this.goldGainMultiplier = 1;
   }
 
   incrementKillCount(): void {
@@ -68,8 +69,34 @@ export class RunScoreState {
     this.bossKillCount++;
   }
 
+  /**
+   * U1 M4 — gold-gain multiplier folded at deposit time. Used by the
+   * Edinburgh Rune (`gold_mult`) so every coin source — kill drops,
+   * milestones, elite chains, boss gold, XP overflow — composes the
+   * rune bonus once. GameScene refreshes this each frame via
+   * `setGoldGainMultiplier` so transitions in/out of the rune's
+   * condition are felt immediately.
+   *
+   * Identity (1) by default; clamped to >= 0 so a buggy negative mult
+   * can't subtract gold the player legitimately earned.
+   */
+  private goldGainMultiplier = 1;
+
+  setGoldGainMultiplier(mul: number): void {
+    this.goldGainMultiplier = Math.max(0, Number.isFinite(mul) ? mul : 1);
+  }
+
   addCoinGold(n: number): void {
-    this.coinGoldEarned += n;
+    if (n <= 0) {
+      this.coinGoldEarned += n;
+      return;
+    }
+    if (this.goldGainMultiplier === 1) {
+      this.coinGoldEarned += n;
+      return;
+    }
+    // Round up so a 1.25x mul on small drops still feels rewarding.
+    this.coinGoldEarned += Math.max(1, Math.ceil(n * this.goldGainMultiplier));
   }
 
   addBossGold(n: number): void {

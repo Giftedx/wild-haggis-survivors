@@ -10,7 +10,7 @@
  */
 
 import type { UpgradeCard } from './upgrades';
-import { RUNES, type RuneDef } from './runes';
+import { RUNES, type RuneDef, type RuneConditionKey } from './runes';
 
 function toUpgradeCard(rune: RuneDef): UpgradeCard {
   return {
@@ -23,10 +23,56 @@ function toUpgradeCard(rune: RuneDef): UpgradeCard {
   };
 }
 
-/** One `UpgradeCard` per `RuneDef`, deterministic order (id-sorted). */
+/**
+ * U1 M4 T113 — condition keys that currently have no live-state binding.
+ *
+ * Live biome IDs are `bog | loch | pine | heather` (`src/data/biomes.ts`).
+ * Conditions baked into the rune catalogue at U1 M1 reference future
+ * biomes (`fog`, `cold`, `coastal`, `urban`) and a time-of-day axis
+ * (`dusk`) that the live game does not yet expose.
+ *
+ * Until those systems land, runes carrying these keys would be
+ * permanent dead picks — a player could equip them and never see the
+ * effect fire. Filter them out of the card-pool bridge so the pool
+ * only offers runes whose conditions can actually transition.
+ *
+ * The catalogue itself stays intact (run-history / Almanac references
+ * remain stable). Once a missing biome / time-of-day axis ships, the
+ * relevant key drops off this list and the rune comes back online
+ * with no data churn.
+ */
+const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
+  // No live biome 'fog' — pine carries grave-atmospheric, not haar.
+  'biome_fog',
+  // No live biome 'cold' — Cailleach winter biome unshipped.
+  'biome_cold',
+  // No live biome 'coastal' — loch is the closest live cousin but the
+  // Seawrack rune semantics (pickup-radius doubling on the shore) read
+  // as dedicated coastal flavour; gate until that biome lands.
+  'biome_coastal',
+  // No live biome 'urban' — Edinburgh/Glasgow biomes future work.
+  'biome_urban',
+  // No time-of-day axis — `timeOfDayKey` is null in every live ctx.
+  'biome_dusk',
+]);
+
+/**
+ * True when the rune's condition has at least one possible live trigger
+ * in the current build. Exposed for tests + Almanac filters.
+ */
+export function isRuneConditionGrounded(rune: RuneDef): boolean {
+  return !UNGROUNDED_CONDITION_KEYS.has(rune.conditionKey);
+}
+
+/**
+ * One `UpgradeCard` per *grounded* `RuneDef`, deterministic order
+ * (id-sorted). Ungrounded runes are filtered so the card pool never
+ * offers a rune the player cannot trigger in this build.
+ */
 export function buildRuneCards(): UpgradeCard[] {
   return Object.values(RUNES)
     .slice()
     .sort((a, b) => a.id.localeCompare(b.id))
+    .filter(isRuneConditionGrounded)
     .map(toUpgradeCard);
 }
