@@ -73,6 +73,44 @@ async function snap(page: Parameters<Parameters<typeof test>[1]>[0], name: strin
   await canvas.screenshot({ path: path.join(OUT_DIR, `${name}.png`) });
 }
 
+function gameOverPayload() {
+  return {
+    mode: 'death',
+    isVictory: false,
+    summary: {
+      timeSurvivedSec: 348,
+      enemiesKilled: 287,
+      bossGold: 100,
+      coinGold: 220,
+      coinGoldSpent: 0,
+      bestCombo: 47,
+      victory: false,
+    },
+    runResult: {
+      save: {},
+      goldEarned: 320,
+      newlyUnlockedVariants: [],
+    },
+    xpLevel: 14,
+    bossKillCount: 1,
+    ownedPassiveCount: 3,
+    weaponCount: 4,
+    evolvedCount: 1,
+    buildSummary: 'Tartan Toss / Whisky Glass / Bagpipes',
+    variantLabel: 'Wild Haggis',
+    variantKey: 'haggis',
+    weaponDamage: {
+      tartan_toss: 24_817,
+      whisky_glass: 12_104,
+      bagpipes: 8902,
+    },
+    seedCode: 'GLEN-7842-MIST',
+    runSeed: 7842,
+    ironmoor: false,
+    isDaily: false,
+  };
+}
+
 test.describe('DESIGN.md scene capture', () => {
   test.setTimeout(120_000);
 
@@ -135,7 +173,7 @@ test.describe('DESIGN.md scene capture', () => {
     await snap(page, '12-shop');
 
     // 13 — Game over
-    await gotoScene(page, 'GameOver');
+    await gotoScene(page, 'GameOver', gameOverPayload());
     await snap(page, '13-game-over');
   });
 });

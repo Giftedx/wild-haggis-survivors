@@ -33,20 +33,9 @@ import { installAudioActivationOnUserGesture } from './systems/audioContext';
 import { GAME_CANVAS_ARIA_LABEL } from './constants/gameCanvasA11y';
 import { GAME, COLORS_CSS } from './config';
 import { BootScene } from './scenes/BootScene';
-import { MainMenuScene } from './scenes/MainMenuScene';
-import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
-import { GameOverScene } from './scenes/GameOverScene';
-import { MetaShopScene } from './scenes/MetaShopScene';
-import { SettingsScene } from './scenes/SettingsScene';
-import { SettingsInputScene } from './scenes/SettingsInputScene';
-import { ShopScene } from './scenes/ShopScene';
-import { ChronicleScene } from './scenes/ChronicleScene';
-import { CroftScene } from './scenes/CroftScene';
-import { DeedsScene } from './scenes/DeedsScene';
-import { AlmanacScene } from './scenes/AlmanacScene';
-import { CurseScene } from './scenes/CurseScene';
 import { ActIntermissionScene } from './scenes/ActIntermissionScene';
+import { installLazyProductionSceneLoader } from './scenes/lazyProductionScenes';
 import { buildRenderNodesConfig } from './systems/shaders/ShaderRegistry';
 import { registerAllShaders } from './systems/shaders/registerAllShaders';
 import { applyColorblindFilterToCanvas } from './systems/accessibility/applyColorblindFilter';
@@ -56,6 +45,7 @@ import { installLazyToolSceneLoader } from './tools/lazyToolScenes';
 // Register custom render-node shaders before the Phaser.Game constructor reads
 // the config map. See docs/adr/0003-shader-registry-phaser-postfx-pipeline.md.
 registerAllShaders();
+installLazyProductionSceneLoader();
 
 /** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
 
@@ -85,7 +75,7 @@ const config: Phaser.Types.Core.GameConfig = {
       fixedStep: true,
     },
   },
-  scene: [BootScene, MainMenuScene, MenuScene, CroftScene, GameScene, ActIntermissionScene, GameOverScene, ShopScene, MetaShopScene, ChronicleScene, DeedsScene, AlmanacScene, CurseScene, SettingsScene, SettingsInputScene],
+  scene: [BootScene, GameScene, ActIntermissionScene],
   render: {
     pixelArt: true,
     antialias: false,

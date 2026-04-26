@@ -15,6 +15,7 @@ import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
 import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/hearth';
 import { CroftAmbientLoop } from './croft/CroftMusic';
 import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
+import { startRunTargetForCroft, visibleCroftActions } from './croftProgressiveDisclosure';
 import { createGameButton } from '../ui/gameButton';
 import { GamepadMenuNav, type GamepadMenuEntry } from '../utils/GamepadMenuNav';
 import { audio } from '../systems/AudioSystem';
@@ -494,12 +495,14 @@ export class CroftScene extends Phaser.Scene {
     const x = width - 88;
     const baseY = Math.max(120, height * 0.36);
     const gapY = 52;
-    const actions: ReadonlyArray<{ key: CroftActionKey; i18n: string; tier: 'primary' | 'secondary' }> = [
+    const allActions: ReadonlyArray<{ key: CroftActionKey; i18n: string; tier: 'primary' | 'secondary' }> = [
       { key: 'start_run', i18n: 'ui.croft.actions.start_run', tier: 'primary' },
       { key: 'shop', i18n: 'ui.croft.actions.shop', tier: 'secondary' },
       { key: 'chronicle', i18n: 'ui.croft.actions.chronicle', tier: 'secondary' },
       { key: 'settings', i18n: 'ui.croft.actions.settings', tier: 'secondary' },
     ];
+    const visible = new Set(visibleCroftActions(loadSave()));
+    const actions = allActions.filter((action) => visible.has(action.key));
 
     actions.forEach((action, idx) => {
       const { rect, label } = createGameButton(this, {
@@ -537,16 +540,17 @@ export class CroftScene extends Phaser.Scene {
   private handleAction(key: CroftActionKey): void {
     if (this.transitioning) return;
     audio.playClick();
-    const r = route(key);
+    const target = key === 'start_run' ? startRunTargetForCroft(loadSave()) : route(key).target;
+    const leavesCroft = key === 'start_run' ? true : route(key).leavesCroft;
     // Start Run is the one action that commits — wipe any suspended
-    // run so the Curse picker opens on a fresh slate (matches the
-    // contract that used to live on MenuScene's PLAY button).
+    // run first. Fresh saves skip the curse picker entirely; returning
+    // saves still route through it on a clean slate.
     if (key === 'start_run') {
       try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
     }
     this.transitioning = true;
     startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => {
-      this.scene.start(r.target, r.leavesCroft ? undefined : returnTargetData('Croft'));
+      this.scene.start(target, leavesCroft ? undefined : returnTargetData('Croft'));
     });
   }
 

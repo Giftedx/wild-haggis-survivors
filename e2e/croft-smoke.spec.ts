@@ -12,8 +12,8 @@ import { expect, test } from './fixtures';
  *      spec's 500 ms budget.
  *   3. CroftScene mounts its signature sprites — Gran + hearth — in
  *      the display list, confirming BootScene baked the textures.
- *   4. Invoking the internal `handleAction('start_run')` routes out of
- *      Croft into the Curse picker (leaves-croft branch).
+ *   4. On a fresh save, Croft shows only Start Run + Settings and
+ *      `handleAction('start_run')` routes directly into a clean Game.
  *   5. Starting 'Croft' again reactivates cleanly — post-run return
  *      from GameOver (T9) relies on this re-entry path.
  */
@@ -21,7 +21,7 @@ import { expect, test } from './fixtures';
 const CURRENT_SAVE_VERSION = 13;
 
 test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
-  test('Croft activates, shows Gran+hearth, routes to Curse, and reactivates', async ({ page }) => {
+  test('Croft activates, shows Gran+hearth, starts first run cleanly, and reactivates', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
@@ -96,7 +96,19 @@ test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
     expect(displayList.hasGran, 'Gran sprite not rendered in CroftScene').toBe(true);
     expect(displayList.hasHearth, 'Hearth sprite not rendered in CroftScene').toBe(true);
 
-    // (4) — Start Run action routes to Curse.
+    // (4) — First-run progressive disclosure: no empty Shop/Chronicle
+    // detour, and Start Run routes straight into a clean Game.
+    const firstRunActions = await page.evaluate(() => {
+      const g = (window as unknown as { game: {
+        scene: { getScene(k: string): unknown };
+      } }).game;
+      const scene = g.scene.getScene('Croft') as {
+        actionEntries?: Array<{ key: string }>;
+      };
+      return scene.actionEntries?.map((e) => e.key) ?? [];
+    });
+    expect(firstRunActions).toEqual(['start_run', 'settings']);
+
     const routed = await page.evaluate(async () => {
       const g = (window as unknown as { game: {
         scene: {
@@ -110,14 +122,14 @@ test.describe('H1 Gran\'s Croft — M1 scene smoke', () => {
       scene.handleAction?.('start_run');
       const deadline = Date.now() + 5_000;
       while (Date.now() < deadline) {
-        if (g.scene.isActive('Curse')) return true;
+        if (g.scene.isActive('Game')) return true;
         await new Promise((r) => setTimeout(r, 50));
       }
       return false;
     });
-    expect(routed, 'Start Run did not transition Croft → Curse').toBe(true);
+    expect(routed, 'Start Run did not transition Croft → Game for a first run').toBe(true);
 
-    // (5) — Re-enter Croft from the Curse picker (simulates the T9 return path
+    // (5) — Re-enter Croft from the Game scene (simulates the T9 return path
     // but bypasses the full run/die cycle, which `long-session-smoke.spec.ts`
     // already exercises).
     const reEntered = await page.evaluate(async () => {
