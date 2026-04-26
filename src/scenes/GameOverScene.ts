@@ -25,7 +25,7 @@ import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle }
 import { renderVariantChip } from './gameOverVariantChip';
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
-import { copyTextToClipboard } from '../utils/clipboard';
+import { copyTextToClipboard, copyCanvasToClipboard } from '../utils/clipboard';
 import { saveScreenshot } from '../utils/screenshot';
 import { buildCaptureFilename } from '../utils/captureFilename';
 import { ClipRecorder } from '../utils/clipRecorder';
@@ -52,6 +52,19 @@ interface GameOverActionFocusEntry extends ModalFocusEntry {
 // site varies the colour from its own palette.idle on hover/press,
 // so the colour stays a per-call argument; everything else is fixed.
 const COPY_ACTION_LINK_TEXT_BASE = textStyle('subtitle', { fontSize: '12px', align: 'center' });
+
+/**
+ * W27 Phase 4 — feature-detect the modern image clipboard API.
+ * Chrome 76+, Firefox 127+, Safari 16.4+ (write). Older browsers
+ * fall back to the existing "Save frame" download path.
+ */
+function isImageClipboardAvailable(): boolean {
+  const g = globalThis as unknown as {
+    navigator?: { clipboard?: { write?: unknown } };
+    ClipboardItem?: unknown;
+  };
+  return Boolean(g.navigator?.clipboard?.write && g.ClipboardItem);
+}
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -470,10 +483,19 @@ export class GameOverScene extends Phaser.Scene {
       this.renderPostcardLink(panelCenterX, linkY, d + 3, 1180);
     }
     // Save frame link — gated by captureEnabled setting; sits on a second
-    // row directly below the postcard/rerun link row.
+    // row directly below the postcard/rerun link row. Phase 4 — Copy frame
+    // sits beside Save frame when the modern Clipboard API is available
+    // (Chrome 76+, FF 127+, Safari 16.4+). Otherwise Save frame keeps the
+    // centre slot solo.
     if (getSettingsManager().load().captureEnabled && !compact) {
       const saveFrameLinkY = linkY + 16;
-      this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
+      const hasImageClipboard = isImageClipboardAvailable();
+      if (hasImageClipboard) {
+        this.renderSaveFrameLink(panelCenterX - 100, saveFrameLinkY, d + 3, 1220);
+        this.renderCopyFrameLink(panelCenterX + 100, saveFrameLinkY, d + 3, 1230);
+      } else {
+        this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
+      }
       const gameScene = this.scene.get('Game') as GameScene | undefined;
       const recorder = gameScene?.getClipRecorder();
       if (recorder?.isAvailable()) {
@@ -1010,6 +1032,57 @@ export class GameOverScene extends Phaser.Scene {
     text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
     text.on('pointerout', () => { if (!saving) text.setColor(palette.idle); });
     text.on('pointerdown', doSave);
+  }
+
+  /**
+   * W27 Phase 4 — "Copy frame" text link. Pushes the current canvas as a
+   * PNG into the user's clipboard via `navigator.clipboard.write`. The
+   * caller already feature-detected `ClipboardItem` so this method
+   * assumes the API is available; if the write rejects (iframe
+   * permission denial), the link surfaces the failure inline.
+   *
+   * Pairs with renderSaveFrameLink as a 2-link row when the modern
+   * clipboard API is available; otherwise Save frame stays solo.
+   */
+  private renderCopyFrameLink(
+    centerX: number,
+    y: number,
+    depth: number,
+    delay: number,
+  ): void {
+    const hint = t('ui.gameOver.copy_frame');
+    const palette = resolveCopyActionLinkPalette(false);
+    const text = this.add
+      .text(centerX, y, `📋 ${hint}`, {
+        ...COPY_ACTION_LINK_TEXT_BASE,
+        color: palette.idle,
+      })
+      .setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(depth)
+      .setAlpha(0)
+      .setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
+
+    let copying = false;
+    const doCopy = () => {
+      if (copying) return;
+      copying = true;
+      copyCanvasToClipboard(this.game.canvas as HTMLCanvasElement).then((ok) => {
+        if (ok) {
+          text.setText(`📋 ${t('ui.toast.frame_copied')}`);
+          text.setColor(palette.success);
+        } else {
+          text.setText(`📋 ${t('ui.toast.frame_copy_failed')}`);
+          text.setColor(TOAST_COLORS.warning);
+          copying = false;
+        }
+        audio.playClick();
+      });
+    };
+    text.on('pointerover', () => { if (!copying) text.setColor(palette.hover); });
+    text.on('pointerout', () => { if (!copying) text.setColor(palette.idle); });
+    text.on('pointerdown', doCopy);
   }
 
   /**

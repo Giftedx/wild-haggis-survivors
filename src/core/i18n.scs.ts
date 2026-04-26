@@ -263,6 +263,7 @@ export const SCS_STRINGS: LocaleTree = {
       postcard_curse_tag: '☠ {curse}',
       save_frame: 'Keep this frame',
       save_clip: 'Keep the clip',
+      copy_frame: 'Copy this frame',
       name_framing: {
         death: 'Here lies {name}.',
         victory: '{name} gaed hame.',
@@ -1951,6 +1952,8 @@ export const SCS_STRINGS: LocaleTree = {
       clip_saved: 'Clip saved, braw.',
       clip_failed: 'Couldnae save the clip — wait a wee minute.',
       clip_empty: 'Play a bit longer before clipping.',
+      frame_copied: 'Frame copied — paste awa.',
+      frame_copy_failed: 'Couldnae copy — try Keep instead.',
     },
   },
   boss: {

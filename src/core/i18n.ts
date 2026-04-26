@@ -465,6 +465,7 @@ export const EN_STRINGS: LocaleTree = {
       curse_chip: 'Bore the {curse} — +{pct}% gold',
       save_frame: 'Save frame',
       save_clip: 'Save clip',
+      copy_frame: 'Copy frame',
       name_framing: {
         death: 'Here lies {name}.',
         victory: '{name} walked home.',
@@ -2285,6 +2286,8 @@ export const EN_STRINGS: LocaleTree = {
       clip_saved: 'Clip saved to downloads.',
       clip_failed: "Couldnae save the clip — gie it a wee minute.",
       clip_empty: 'Play a wee bit longer before saving a clip.',
+      frame_copied: 'Frame copied — paste it where ye like.',
+      frame_copy_failed: "Couldnae copy the frame — try Save instead.",
     },
   },
   captions: {
