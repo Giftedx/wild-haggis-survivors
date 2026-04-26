@@ -20,6 +20,8 @@ import {
   moveModalFocusIndex,
   type ModalFocusEntry,
 } from '../ui/modalFocus';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildCurseDomFocusActions } from './curseDomFocusActions';
 
 /** Tile entry with the data needed to wire keyboard + gamepad focus. */
 interface CurseTileFocusEntry extends ModalFocusEntry {
@@ -51,6 +53,13 @@ export class CurseScene extends Phaser.Scene {
   private prevPadBack = false;
   private prevPadForward = false;
   private prevPadConfirm = false;
+  /**
+   * T407 — DOM-visible focus mirror. Visually hidden (1×1 clipped div)
+   * but readable by screen readers + Tab-focusable. Mirrors the Phaser
+   * tile state so assistive-tech users hear what is selected and can
+   * activate any tile / Back without a working mouse.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor() {
     super({ key: 'Curse' });
@@ -137,9 +146,18 @@ export class CurseScene extends Phaser.Scene {
 
     this.input.keyboard?.on('keydown-ESC', goBack);
 
+    // T407 — install the DOM-visible focus mirror after all tile entries
+    // and the Back action exist. The mirror is read-only from Phaser's
+    // perspective: when the user navigates via DOM (screen-reader Tab,
+    // arrow keys inside the layer), `onFocusChange` mirrors the index
+    // back into `focusedTileIndex` so the visible Phaser stroke moves
+    // with assistive-tech focus.
+    this.installDomFocusLayer({ goBack });
+
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.uninstallKeyboardShortcuts();
       this.uninstallGamepadShortcuts();
+      this.uninstallDomFocusLayer();
     });
 
     stopAmbientWindOnShutdown(this);
@@ -249,6 +267,63 @@ export class CurseScene extends Phaser.Scene {
         entry.bg.setStrokeStyle(2, entry.accentColor, entry.idleAlpha);
       }
     }
+    // Keep the DOM focus mirror in lockstep with the visible Phaser
+    // cursor so assistive tech announces the same row the user sees.
+    // Indices < tileEntries.length map to the matching DOM tile button;
+    // the trailing Back DOM action is reached by Tab past the tiles.
+    if (this.domFocusLayer && this.focusedTileIndex >= 0 && this.focusedTileIndex < this.tileEntries.length) {
+      this.domFocusLayer.setFocusedIndex(this.focusedTileIndex);
+    }
+  }
+
+  private installDomFocusLayer(callbacks: { goBack: () => void }): void {
+    if (typeof document === 'undefined') return;
+    const actions = buildCurseDomFocusActions({
+      onPickCurse: (key) => this.commitCurse(key),
+      onPickClean: () => this.commitCurse(null),
+      onBack: callbacks.goBack,
+      onFocusChange: (index) => {
+        if (index < 0 || index >= this.tileEntries.length) return;
+        const entry = this.tileEntries[index];
+        if (!entry || entry.disabled) return;
+        this.focusedTileIndex = index;
+        // applyTileFocus would re-call setFocusedIndex on the layer
+        // (stable since the index is already current); re-render the
+        // Phaser strokes only.
+        for (let i = 0; i < this.tileEntries.length; i++) {
+          const e = this.tileEntries[i]!;
+          e.bg.setStrokeStyle(
+            i === this.focusedTileIndex ? 3 : 2,
+            i === this.focusedTileIndex ? 0xffe080 : e.accentColor,
+            i === this.focusedTileIndex ? 1 : e.idleAlpha,
+          );
+        }
+      },
+    });
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-curse-focus-layer',
+      label: t('ui.curseScene.title'),
+      description: t('ui.curseScene.subtitle'),
+      role: 'group',
+      actions,
+      initialFocusIndex: this.focusedTileIndex >= 0 ? this.focusedTileIndex : 0,
+      onFocusIndexChange: (index) => {
+        // Forward the index into our actions handler so onFocusChange
+        // (defined in the actions builder above) updates Phaser state.
+        const action = actions[index];
+        if (!action) return;
+        // The action's onFocus is a no-op by design — onFocusIndexChange
+        // is the canonical channel for index sync.
+        if (index < this.tileEntries.length) {
+          this.focusedTileIndex = index;
+        }
+      },
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 
   /**
