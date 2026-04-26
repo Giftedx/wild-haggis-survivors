@@ -3,6 +3,8 @@ import { DEFAULT_LOCALE, setLocale, t } from '../core/i18n';
 import { WEAPON_DEFS } from './weapons';
 import { PERMANENT_UPGRADES } from './permanentUpgrades';
 import { VARIANTS } from './variants';
+import { RELICS } from './relics';
+import { RUNES } from './runes';
 import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import type { PassiveKey } from './upgrades';
 
@@ -62,6 +64,18 @@ describe('C2 — flavour leaves present in EN + SCS', () => {
       // tagline render keeps working untouched.
       scope: 'variant',
       keys: VARIANTS.map((v) => `variant.${v.key}.lore`),
+    },
+    {
+      // R1 M4 — 18 relics carry `flavour`. SCS overlay shipped 2026-04-24.
+      scope: 'relic',
+      keys: Object.values(RELICS).map((r) => r.flavourKey),
+    },
+    {
+      // U1 — 30 runes. EN-only at M1 ship; SCS overlays added by C2
+      // Sub-task D (2026-04-26). Extending parity fence here so any
+      // future rune addition fails CI without an SCS pair.
+      scope: 'rune',
+      keys: Object.values(RUNES).map((r) => r.flavourKey),
     },
   ];
 
