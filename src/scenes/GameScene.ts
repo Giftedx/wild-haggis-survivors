@@ -1420,6 +1420,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.edgeIndicators = new EdgeIndicators(this);
     this.minimap = new Minimap(this);
+    // Phase B Biomes — paint biome regions on the minimap.
+    this.minimap.setBiomeManager(this.getBiomeManager());
     this.nodeMapUI = new NodeMapUI(this);
     this.nodePromptUI = new NodePromptUI(this);
     // Listener is registered once per scene-create and lives until reset.
@@ -1749,6 +1751,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         if (shouldReseedAtSec(sec, this.postBellLastReseedSec)) {
           this.postBellLastReseedSec = sec;
           this.biomeController.reseed(this, this.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+          this.minimap?.setBiomeManager(this.getBiomeManager());
           this.juice.showToast(t('ui.gameOver.post_bell_reseed'), '#aa66dd');
         }
       }

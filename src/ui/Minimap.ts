@@ -2,6 +2,8 @@ import * as Phaser from 'phaser';
 import { GAME } from '../config';
 import { getSettingsManager } from '../core/SettingsManager';
 import { Enemy } from '../entities/Enemy';
+import { BIOMES } from '../data/biomes';
+import type { BiomeManager } from '../systems/BiomeManager';
 import { getCameraViewport } from './cameraViewport';
 import {
   resolveMinimapPalette,
@@ -41,6 +43,12 @@ export class Minimap {
   private readonly SIZE: number;
   private readonly MARGIN = 12;
   private readonly DEPTH = 48; // just below HUD
+  /**
+   * Phase B Biomes — when set, the minimap fills each grid cell with the
+   * biome tint at low alpha before drawing dots. Refreshed on reseed by
+   * calling setBiomeManager again from GameScene.
+   */
+  private biomeManager: BiomeManager | null = null;
 
   private getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number } {
     const { x, y, width, height, zoom } = getCameraViewport(this.scene);
@@ -93,6 +101,20 @@ export class Minimap {
     this.bg.setPosition(mapX + this.SIZE / 2, mapY + this.SIZE / 2);
     const scaleX = this.SIZE / GAME.WORLD_WIDTH;
     const scaleY = this.SIZE / GAME.WORLD_HEIGHT;
+
+    // Phase B Biomes — tint each grid cell with the biome colour at low
+    // alpha so the player can read the world's regions at a glance.
+    // Drawn before everything else so dots sit on top.
+    if (this.biomeManager) {
+      const res = this.biomeManager.getGridResolution();
+      const cellW = this.SIZE / res;
+      const cellH = this.SIZE / res;
+      this.biomeManager.forEachCell((gx, gy, biome) => {
+        const tint = BIOMES[biome].tint;
+        this.gfx.fillStyle(tint, 0.35);
+        this.gfx.fillRect(mapX + gx * cellW, mapY + gy * cellH, cellW + 0.5, cellH + 0.5);
+      });
+    }
 
     // Enemy dots — render every active enemy. Previous implementation
     // sampled every 4th active enemy via `activeIdx & 3`, but the active
@@ -220,6 +242,16 @@ export class Minimap {
     const cx2 = cx + ca * -size * 0.6 + sa * -size * 0.7;
     const cy2 = cy + sa * -size * 0.6 - ca * -size * 0.7;
     return { ax, ay, bx, by, cx: cx2, cy: cy2 };
+  }
+
+  /**
+   * Phase B Biomes — register / refresh the BiomeManager used by the
+   * tint pass. Call once from GameScene after BiomeController constructs;
+   * call again after a post-bell reseed so the new layout takes effect.
+   * Pass null to disable the tint (test scenes / minimap variants).
+   */
+  setBiomeManager(mgr: BiomeManager | null): void {
+    this.biomeManager = mgr;
   }
 
   destroy(): void {
