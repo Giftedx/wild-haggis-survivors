@@ -238,9 +238,19 @@ test.describe('Marathon smoke', () => {
       );
     }
 
-    const enemySlope = linearSlope(samples.map((s) => s.enemies));
-    const projectileSlope = linearSlope(samples.map((s) => s.projectiles));
-    const gemSlope = linearSlope(samples.map((s) => s.gems));
+    // Slope on steady-state samples only (minute >= 10). The early ramp-up
+    // (m0.5..m7) carries high variance from RNG-timed wave peaks: the
+    // pre-bell wave count routinely spikes to 90+ enemies then drops to
+    // single digits as the wave clears. A linear regression across the
+    // ramp-and-decay swing is dominated by that peak, not by leakage. The
+    // meaningful leak signal is whether the steady-state pool grows. Caught
+    // 2026-04-26 during top-10 reconciliation when the early peak shifted
+    // (cursed enemies live 40% longer) and pushed the all-samples slope
+    // to 1.87 in one run / 1.48 in the next on identical code.
+    const steadyState = samples.filter((s) => s.minute >= 10);
+    const enemySlope = linearSlope(steadyState.map((s) => s.enemies));
+    const projectileSlope = linearSlope(steadyState.map((s) => s.projectiles));
+    const gemSlope = linearSlope(steadyState.map((s) => s.gems));
     const fpsValues = samples.map((s) => s.fps).sort((a, b) => a - b);
     const medianFps = fpsValues[Math.floor(fpsValues.length / 2)] ?? 0;
     const minFps = fpsValues[0] ?? 0;
