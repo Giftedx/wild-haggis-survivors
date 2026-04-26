@@ -18,6 +18,8 @@ import {
   movePromptFocusIndex,
   type NodePromptNavEntry,
 } from './nodePromptNav';
+import { createDomFocusLayer, type DomFocusLayer } from './domFocusLayer';
+import { buildNodePromptDomFocusActions } from './nodePromptDomFocus';
 
 export interface NodePromptOption {
   readonly key: string;
@@ -66,6 +68,15 @@ export class NodePromptUI {
   private prevPadConfirm = false;
   private prevPadCancel = false;
   private open = false;
+  /**
+   * T407 — DOM-visible focus mirror. Visually hidden 1×1 clipped div
+   * exposing the same option list + Leave button as native `<button>`
+   * elements. Mirrors the Phaser focus state so screen-reader / keyboard
+   * users hear what is selected and can activate any option without a
+   * working pointer. Per-show lifecycle: created in `show()`, destroyed
+   * in `close()` — paired exactly like the scrim + panel.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -175,6 +186,7 @@ export class NodePromptUI {
     this.applyFocus();
     this.installKeyboard(opts);
     this.installGamepad(opts);
+    this.installDomFocusLayer(opts);
   }
 
   private buildButton(
@@ -332,6 +344,76 @@ export class NodePromptUI {
         entry.rect.setStrokeStyle(1, entry.baseStroke, 1);
       }
     }
+    // Keep the DOM focus mirror in lockstep with the visible Phaser cursor
+    // so assistive tech announces the same row the user sees. The DOM layer
+    // builds its actions from `opts.options` in the same order as the
+    // Phaser button entries, so indices map directly (no remap needed).
+    if (this.domFocusLayer && this.focusedIndex >= 0 && this.focusedIndex < this.buttonEntries.length) {
+      this.domFocusLayer.setFocusedIndex(this.focusedIndex);
+    }
+  }
+
+  /**
+   * T407 — install the DOM-visible focus layer for this prompt invocation.
+   * The layer is paired one-for-one with the Phaser button entries: each
+   * option appears as a native `<button>` carrying the option label + the
+   * folded subLabel (price / cost) so screen-reader users hear the
+   * trade-off in one announcement. Activation routes through the same
+   * `activate` callback as the Phaser button (single source of truth for
+   * the resolve contract), and DOM-driven focus changes mirror back into
+   * `focusedIndex` so the visible cursor moves with assistive-tech focus.
+   */
+  private installDomFocusLayer(opts: NodePromptOpts): void {
+    if (typeof document === 'undefined') return;
+    const allowSkip = opts.allowSkip !== false;
+    const actions = buildNodePromptDomFocusActions({
+      options: opts.options,
+      allowSkip,
+      onActivateOption: (index) => {
+        const entry = this.buttonEntries[index];
+        if (!entry || entry.disabled) return;
+        entry.activate();
+      },
+      onActivateLeave: () => {
+        if (allowSkip) this.resolve(null, opts.onResolve);
+      },
+    });
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-node-prompt-focus-layer',
+      label: opts.title,
+      description: opts.body && opts.body.length > 0 ? opts.body : undefined,
+      role: 'dialog',
+      actions,
+      initialFocusIndex: this.focusedIndex >= 0 ? this.focusedIndex : 0,
+      onFocusIndexChange: (index) => {
+        // Sync the visible Phaser cursor back to the DOM-driven focus.
+        // Bounds + disabled checks mirror what `movePromptFocusIndex`
+        // would enforce — guard before mutating focusedIndex.
+        if (index < 0 || index >= this.buttonEntries.length) return;
+        const entry = this.buttonEntries[index];
+        if (!entry || entry.disabled) return;
+        this.focusedIndex = index;
+        // Re-render Phaser strokes only — calling applyFocus() would
+        // round-trip back into setFocusedIndex on the layer (stable but
+        // wasteful). Mirror the disabled / focused / idle stroke logic
+        // inline.
+        for (let i = 0; i < this.buttonEntries.length; i++) {
+          const e = this.buttonEntries[i]!;
+          if (e.disabled) {
+            e.rect.setStrokeStyle(1, e.baseStroke, 1);
+          } else if (i === this.focusedIndex) {
+            e.rect.setStrokeStyle(2, 0xd4a017, 1);
+          } else {
+            e.rect.setStrokeStyle(1, e.baseStroke, 1);
+          }
+        }
+      },
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 
   private resolve(key: string | null, onResolve: (k: string | null) => void): void {
@@ -353,6 +435,10 @@ export class NodePromptUI {
       this.scene.events.off('update', this.updateHandler);
       this.updateHandler = null;
     }
+    // Tear down the DOM mirror BEFORE clearing buttonEntries — destroy()
+    // is idempotent on the layer side (re-entry is a no-op) but pairing
+    // it here keeps the lifecycle symmetric with show()/installDomFocusLayer.
+    this.uninstallDomFocusLayer();
     this.buttonEntries = [];
     this.focusedIndex = -1;
     this.prevPadUp = this.prevPadDown = this.prevPadConfirm = this.prevPadCancel = false;
