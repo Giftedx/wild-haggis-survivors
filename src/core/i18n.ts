@@ -202,6 +202,16 @@ export const EN_STRINGS: LocaleTree = {
       rerun_tooltip: 'rerun {seed}',
       /** Same tooltip when the rerun will carry a curse forward. */
       rerun_tooltip_with_curse: 'rerun {seed} ☠ {curse}',
+      /**
+       * Task 10 — explicit "act reached" chip on the run sub-line.
+       * Derived from `1 + routes.length` (capped at 3), shown only when
+       * the player crossed at least one picker (act ≥ 2). Parity with
+       * the pause-panel `ui.pause.stats_act` radiator line: same Edge
+       * voice (terse, scannable), but rendered inline as a chip rather
+       * than a full "Act {act} of 3" line because the chronicle row is
+       * already dense with weapons/bosses/combo segments.
+       */
+      run_act_reached: '↟ Act {act}',
 
       // W2 Moor Road log — appended to run rows that hit a picker.
       moorRoad: {

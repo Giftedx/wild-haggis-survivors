@@ -161,6 +161,7 @@ export const SCS_STRINGS: LocaleTree = {
       run_curse_chip: '⚖ {curse}',
       rerun_tooltip: 'rerun {seed}',
       rerun_tooltip_with_curse: 'rerun {seed} ☠ {curse}',
+      run_act_reached: '↟ Act {act}',
       moorRoad: {
         title: 'Moor Road log',
         empty: 'Ye\'ve no picked a road yet. Heid oot, choose canny.',

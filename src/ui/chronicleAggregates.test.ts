@@ -7,6 +7,7 @@ import {
   countUniqueRouteKeys,
   findLastSeededRun,
   detectMood,
+  formatActReachedChip,
   formatChronicleMilestoneLines,
   formatChronicleRunSubLine,
   formatClock,
@@ -664,11 +665,15 @@ describe('formatChronicleRunSubLine', () => {
       { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 180, defaultedBySetting: false },
     ];
     const out = formatChronicleRunSubLine(entry({ routes: picks }));
-    // Breadcrumb is delimited by "  ·  " from the combo segment.
+    // Breadcrumb is delimited by "  ·  " from the combo segment. Task 10
+    // adds an explicit "↟ Act N" chip ahead of the breadcrumb when any
+    // picker resolved, so segments now read: weapons | bosses | combo |
+    // act chip | trail (5 total) instead of the pre-Task-10 four.
     const segments = out.split('  ·  ');
-    expect(segments).toHaveLength(4); // weapons | bosses | combo | trail
+    expect(segments).toHaveLength(5);
+    expect(segments[3]).toBe('↟ Act 3');
     // Trail should be the formatted breadcrumb, not raw route keys.
-    expect(segments[3]).toBe(formatRouteBreadcrumb(picks));
+    expect(segments[4]).toBe(formatRouteBreadcrumb(picks));
   });
 
   it('appends a relic trail with ⟡ sigil when relics exist (R1 M4 T27)', () => {
@@ -704,9 +709,12 @@ describe('formatChronicleRunSubLine', () => {
       entry({ routes: picks, relics: ['bronze_clasp'] as never }),
     );
     const segments = out.split('  ·  ');
-    // weapons | bosses | combo | routes | relics
-    expect(segments).toHaveLength(5);
-    expect(segments[4]).toContain('⟡');
+    // weapons | bosses | combo | act | routes | relics — Task 10 inserts
+    // the act chip between combo and the route breadcrumb, so the relic
+    // trail moves from index 4 to index 5.
+    expect(segments).toHaveLength(6);
+    expect(segments[3]).toBe('↟ Act 2');
+    expect(segments[5]).toContain('⟡');
   });
 
   it('appends a node-cairn breadcrumb with ◈ sigil when nodeOutcomes exist (M1)', () => {
@@ -738,6 +746,81 @@ describe('formatChronicleRunSubLine', () => {
   it('omits node trail when the list is empty (M1)', () => {
     const out = formatChronicleRunSubLine(entry({ nodeOutcomes: [] as never }));
     expect(out).not.toContain('◈');
+  });
+
+  // Task 10 / T402 — explicit "act reached" chip on the run sub-line
+  // (parity with pause-panel `currentAct` radiator).
+  it('omits the act chip when no routes were resolved (act 1 default)', () => {
+    expect(formatChronicleRunSubLine(entry({ routes: [] }))).not.toContain('Act');
+    // Legacy (pre-W2) saves: `routes` field absent entirely.
+    expect(formatChronicleRunSubLine(entry({ routes: undefined }))).not.toContain('Act');
+  });
+
+  it('appends an "↟ Act 2" chip when 1 picker was crossed', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+    ];
+    const out = formatChronicleRunSubLine(entry({ routes: picks }));
+    expect(out).toContain('↟ Act 2');
+    // Act chip lands before the route breadcrumb so the act number reads
+    // first; the breadcrumb (resolved through `t(routes.up_the_brae.label)`
+    // — "Up the brae", lowercase b) still follows on the same line.
+    const actIdx = out.indexOf('Act 2');
+    const trailIdx = out.indexOf('Up the brae');
+    expect(actIdx).toBeGreaterThanOrEqual(0);
+    expect(trailIdx).toBeGreaterThan(actIdx);
+  });
+
+  it('appends an "↟ Act 3" chip when 2 pickers were crossed', () => {
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 180, defaultedBySetting: false },
+    ];
+    const out = formatChronicleRunSubLine(entry({ routes: picks }));
+    expect(out).toContain('↟ Act 3');
+  });
+});
+
+describe('formatActReachedChip', () => {
+  it('returns the empty string when routes is undefined or empty', () => {
+    expect(formatActReachedChip(undefined)).toBe('');
+    expect(formatActReachedChip([])).toBe('');
+  });
+
+  it('returns "↟ Act 2" for 1 pick (gordon → picker A)', () => {
+    expect(
+      formatActReachedChip([
+        { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+      ]),
+    ).toBe('↟ Act 2');
+  });
+
+  it('returns "↟ Act 3" for 2 picks (gordon + tour_bus)', () => {
+    expect(
+      formatActReachedChip([
+        { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+        { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 180, defaultedBySetting: false },
+      ]),
+    ).toBe('↟ Act 3');
+  });
+
+  it('caps at "↟ Act 3" even if a corrupt save records more than 2 picks', () => {
+    // Three-act ceiling — a pathological save with 5 recorded picks must
+    // not render as "Act 6"; cap keeps the chip honest.
+    const picks: RoutePick[] = [
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 60, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 180, defaultedBySetting: false },
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 240, defaultedBySetting: false },
+      { slot: 'B', routeKey: 'round_the_loch', atGameTimeSec: 320, defaultedBySetting: false },
+      { slot: 'A', routeKey: 'up_the_brae', atGameTimeSec: 400, defaultedBySetting: false },
+    ];
+    expect(formatActReachedChip(picks)).toBe('↟ Act 3');
+  });
+
+  it('handles non-array (legacy) input by returning empty', () => {
+    // Coerce-pass: a malformed save where `routes` deserialised to a
+    // non-array (e.g. an object) must not throw or print "Act NaN".
+    expect(formatActReachedChip('garbage' as never)).toBe('');
   });
 });
 

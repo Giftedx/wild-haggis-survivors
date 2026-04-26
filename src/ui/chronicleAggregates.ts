@@ -355,6 +355,14 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
     })
     .join(', ');
   const bossWord = entry.bossKills === 1 ? 'boss' : 'bosses';
+  // T402 / Task 10 — explicit act-reached chip mirroring the pause/
+  // GameOver `currentAct` line. Each picker resolution advances the act,
+  // so the run reached `1 + routes.length` (capped at 3). Same gating
+  // semantics as `buildPauseStatsLines` — silent on act 1 (the default
+  // pre-picker state) so unmodified runs stay uncluttered. Sits before
+  // the route breadcrumb so the act number reads first, then the path.
+  const actChip = formatActReachedChip(entry.routes);
+  const actSegment = actChip ? `  ·  ${actChip}` : '';
   const routeTrail = entry.routes && entry.routes.length > 0
     ? `  ·  ${formatRouteBreadcrumb(entry.routes)}`
     : '';
@@ -372,7 +380,28 @@ export function formatChronicleRunSubLine(entry: RunHistoryEntry): string {
   const nodeTrail = entry.nodeOutcomes && entry.nodeOutcomes.length > 0
     ? `  ·  ${formatNodeOutcomesTrail(entry.nodeOutcomes)}`
     : '';
-  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${routeTrail}${relicTrail}${nodeTrail}`;
+  return `${weapons || '—'}  ·  ${entry.bossKills} ${bossWord}  ·  combo ${entry.bestCombo}x${actSegment}${routeTrail}${relicTrail}${nodeTrail}`;
+}
+
+/**
+ * T402 / Task 10 — explicit "↟ Act N" chip for the Chronicle run-row
+ * sub-line, parity with the pause-panel run-identity radiator.
+ *
+ * Derivation: act reached = 1 + routes.length, capped at 3 (the
+ * three-act ceiling). Each picker resolution carries the player into
+ * the next act (gordon → picker A → act 2; tour_bus → picker B → act 3).
+ * Returns the empty string for any state that should stay silent:
+ *   - missing or empty routes (act 1 default — no chrome on early runs)
+ *   - non-array routes (legacy/corrupt save data)
+ *
+ * Pure: only reads `t('ui.chronicle.run_act_reached', …)` via the
+ * module i18n singleton. Capping at 3 means a corrupted save with 5
+ * recorded picks still renders as "Act 3" rather than spilling over.
+ */
+export function formatActReachedChip(routes: RunHistoryEntry['routes']): string {
+  if (!Array.isArray(routes) || routes.length === 0) return '';
+  const actReached = Math.min(3, 1 + routes.length);
+  return t('ui.chronicle.run_act_reached', { act: actReached });
 }
 
 /**
