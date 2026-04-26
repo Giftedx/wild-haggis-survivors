@@ -77,6 +77,7 @@ describe('SettingsManager air-gap', () => {
       captionTextScale: 1,
       colorblindMode: 'off',
       disableSeasonalEvents: false,
+      cloudSaveOptIn: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -145,6 +146,7 @@ describe('SettingsManager air-gap', () => {
       captionTextScale: 1,
       colorblindMode: 'off',
       disableSeasonalEvents: false,
+      cloudSaveOptIn: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -208,6 +210,7 @@ describe('SettingsManager air-gap', () => {
       captionTextScale: 1,
       colorblindMode: 'off',
       disableSeasonalEvents: false,
+      cloudSaveOptIn: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     });
@@ -250,10 +253,40 @@ describe('SettingsManager air-gap', () => {
       captionTextScale: 1,
       colorblindMode: 'off',
       disableSeasonalEvents: false,
+      cloudSaveOptIn: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     })).not.toThrow();
     expect(() => settings.update((cur) => ({ ...cur, musicVolume: 0.2 }))).not.toThrow();
+  });
+});
+
+describe('SettingsManager: P3 cloudSaveOptIn', () => {
+  beforeEach(() => {
+    resetSettingsManagerSingletonForTests();
+  });
+
+  it('defaults cloudSaveOptIn to false (offline-first)', () => {
+    const sm = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
+    expect(sm.load().cloudSaveOptIn).toBe(false);
+  });
+
+  it('round-trips a true value through persistence', () => {
+    const mem = new MemoryStorage();
+    const sm = new SettingsManager({ storage: mem, key: 's' });
+    sm.update((cur) => ({ ...cur, cloudSaveOptIn: true }));
+    const reloaded = new SettingsManager({ storage: mem, key: 's' }).load();
+    expect(reloaded.cloudSaveOptIn).toBe(true);
+  });
+
+  it('coerces non-boolean values to the default', () => {
+    const mem = new MemoryStorage();
+    mem.setItem('s', JSON.stringify({
+      settingsVersion: 1,
+      cloudSaveOptIn: 'yes please',
+    }));
+    const sm = new SettingsManager({ storage: mem, key: 's' });
+    expect(sm.load().cloudSaveOptIn).toBe(false);
   });
 });
 

@@ -138,6 +138,17 @@ export interface ISettingsData {
    */
   disableSeasonalEvents: boolean;
   /**
+   * P3 Cloud Saves — opt-in for cloud sync of the existing `whs_save`
+   * payload. Off by default; the game stays fully playable offline-
+   * first when this is false (charter §Anti-patterns "Don't gate
+   * single-player on cloud"). The Settings panel UI is gated behind
+   * the `?cloudSavePreview=1` URL flag until the live backend ships;
+   * see `docs/top-10-tasks/blocked/03-blocked-on-human.md`. The flag
+   * persists regardless of UI visibility so a player who has opted
+   * in keeps that preference across builds.
+   */
+  cloudSaveOptIn: boolean;
+  /**
    * A1 M3 — keyboard bindings per `ActionKey`. `KeyboardEvent.code`
    * values (`'ArrowUp'`, `'KeyW'`, `'Space'`). Every action has a
    * primary; secondary is optional. On legacy saves without the field,
@@ -196,6 +207,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   captionTextScale: 1,
   colorblindMode: 'off',
   disableSeasonalEvents: false,
+  cloudSaveOptIn: false,
   keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
   gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
 };
@@ -415,6 +427,7 @@ export class SettingsManager {
         o.disableSeasonalEvents,
         DEFAULT_SETTINGS.disableSeasonalEvents,
       ),
+      cloudSaveOptIn: toBool(o.cloudSaveOptIn, DEFAULT_SETTINGS.cloudSaveOptIn),
       keyBindings: coerceKeyBindings(o.keyBindings),
       gamepadBindings: coerceGamepadBindings(o.gamepadBindings),
     };

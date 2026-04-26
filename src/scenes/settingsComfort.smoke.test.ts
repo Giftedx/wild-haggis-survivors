@@ -124,6 +124,7 @@ describe('Settings / Comfort panel smoke', () => {
       captionTextScale: 1.2,
       colorblindMode: 'deuteranopia',
       disableSeasonalEvents: true,
+      cloudSaveOptIn: false,
       keyBindings: DEFAULT_KEYBINDINGS,
       gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,
     };
