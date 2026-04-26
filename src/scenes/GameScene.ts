@@ -66,12 +66,7 @@ import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
-import {
-  BURNS_PLATTER_SPAWN_MS,
-  burnsPlatterDamageBuff,
-  seasonalRunStartCeremony,
-  shouldSpawnBurnsPlatter,
-} from '../systems/seasonal/burnsNightEffects';
+import { burnsPlatterDamageBuff } from '../systems/seasonal/burnsNightEffects';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
@@ -153,6 +148,7 @@ import { RunExitComposer } from './game/RunExitComposer';
 import { RunScoreState } from './game/RunScoreState';
 import { wireSceneEventBus } from './game/wireSceneEventBus';
 import { installRunIntroFx } from './game/installRunIntroFx';
+import { installRunStartCeremony } from './game/runStartCeremony';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -1271,43 +1267,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.banter?.request('curse_start', { tag: curseTag });
       });
     }
-    // B1 Phase 2 — Gran's opening wink on a fresh run. Skipped during
-    // replay playback (Gran doesn't narrate the ghost) and on resume
-    // (mid-run rehydration, not a new door). Delayed past any curse_start
-    // line so the pact speaks first without collision.
-    //
-    // E1 M2 T9 — Burns Night swaps the tag to `seasonal_event` and
-    // fires a bagpipe stinger alongside the Gran line; the ceremony
-    // only resolves during the real-world Jan 18 – Feb 1 window.
-    if (!this.replayInput && !resumeRun) {
-      const grandOpenMs = this.activeCurseKey ? 2400 : 1200;
-      const disabled = this.settingsManager.load().disableSeasonalEvents;
-      const ceremony = seasonalRunStartCeremony(new Date(), disabled);
-      this.time.delayedCall(grandOpenMs, () => {
-        if (ceremony?.stingerId === 'burns_pipes_in') {
-          audio.playBurnsPipesStinger();
-        } else if (ceremony?.stingerId === 'hogmanay_bells') {
-          audio.playHogmanayBellsStinger();
-        }
-        const ctx = ceremony ? ceremony.banterContext : 'gran_commentary';
-        const tag = ceremony ? ceremony.banterTag : 'run_start';
-        this.banter?.request(ctx, { tag });
-      });
-      // E1 M2 T10 — schedule the Burns Night haggis-platter pickup once
-      // the ceremony resolves for Burns. `delayedCall` respects scene
-      // pause/timeScale so the platter slides out when the player is
-      // actually moving on the moor. Guarded in the callback against a
-      // mid-flight restart (the reset block nulls `burnsPlatterSpawned`
-      // so a stale future call can't double-fire).
-      if (shouldSpawnBurnsPlatter(new Date(), disabled, this.burnsPlatterSpawned)) {
-        this.time.delayedCall(BURNS_PLATTER_SPAWN_MS, () => {
-          if (this.burnsPlatterSpawned) return;
-          if (!this.pickupSpawner) return;
-          this.burnsPlatterSpawned = true;
-          this.pickupSpawner.spawnBurnsPlatter();
-        });
-      }
-    }
+    // B1 Phase 2 + E1 M2 T9/T10 — Gran's opening wink, Burns Night
+    // stinger swap, and Burns Night haggis-platter spawn schedule.
+    // Extracted to runStartCeremony.ts (T401) so the gating + scheduling
+    // contract is testable without booting Phaser.
+    installRunStartCeremony({
+      isReplayPlayback: !!this.replayInput,
+      isResume: !!resumeRun,
+      activeCurseKey: this.activeCurseKey,
+      disableSeasonalEvents: this.settingsManager.load().disableSeasonalEvents,
+      now: new Date(),
+      scheduleSceneDelay: (ms, cb) => { this.time.delayedCall(ms, cb); },
+      getBurnsPlatterSpawned: () => this.burnsPlatterSpawned,
+      setBurnsPlatterSpawned: () => { this.burnsPlatterSpawned = true; },
+      getPickupSpawner: () => this.pickupSpawner ?? null,
+      banter: this.banter,
+      audio,
+    });
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
       getScene: () => this,
