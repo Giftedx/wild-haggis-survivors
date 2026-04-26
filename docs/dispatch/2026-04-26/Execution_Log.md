@@ -135,6 +135,41 @@ After the post-audit snapshot landed, all ten task entries were committed (commi
 | `task_09` (T310 wire-up) | `4fb95ce` | `npm run ci` chain now runs `lint → test → build → budget → flash-budget`. Bundle gate (vendor-phaser ≤ 390 KB gzip, index ≤ 285 KB gzip) and flash gate enforced on every CI / PR. New `npm run budget` alias. Flash-budget header docstring truthed-up. |
 | **P1.4** (bagpipes utility-only copy) | `72778be` | Burns deed `ach_burns_beastie_unlock.description` was promising "every weapon in its evolved form" — bagpipes never evolves; reworded to "all seven legends forged" in EN + SCS. Removed dead `ui.banter.first_time.evo_bagpipes` orphans (no `BANTER_POOLS` source). 3 new evolution-test fences guard against regression. |
 
+### Tier-B serial — shipped to `master`
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `task_01` slice 3 — run-start ceremony | `10adb90` | Burns Night / Hogmanay seasonal stinger + Gran banter + Burns Platter spawn schedule extracted from `GameScene.create()` into `src/scenes/game/runStartCeremony.ts` (Phaser-import-free, scheduleSceneDelay thunk). 11 vitest cover gating matrix. GameScene 3526 → 3502 LOC. |
+| `task_10` — chronicle act chip | `f93d311` | `formatActReachedChip(routes)` adds `↟ Act N` chip to Chronicle run-history rows (was implicit in route-breadcrumb arrow count). GameOver was already at parity. EN+SCS string. Runes deferred — would need RunHistoryEntry schema bump. |
+| `task_02` adoption #2 — NodePromptUI DOM focus | `8daf2f7` | DOM mirror for the node-event prompt: `role=dialog`, aria-label = title, aria-describedby = body, one button per option labelled `"{label} — {subLabel}"` so price chips / HP costs reach assistive tech in one announcement. CurseScene was already adoption #1; per dispatch rule, pivoted to next priority. |
+| `task_02` adoption #3 — SettingsScene DOM focus | `b6143cf` | 22-row per-row mirror. Slider value folded into label (`"Master volume — 80%"`), toggle state echoed (`"Captions — ON"`), cycle current label exposed (`"Language — English (Glesga)"`). Section headers + keybind capture deferred. |
+
+### Tier-B items already shipped — skipped per hard-no rule
+
+After dispatch landed, several Tier-B items in the orchestrator's serial list turned out to be already implemented in `master`. Verified by reading the source directly; banner in `report-backlog-consolidated-250426.md` was stale relative to `git log`.
+
+| Item | Evidence |
+|---|---|
+| `task_04` drift micro-practice — touch-primary skip | `src/systems/TutorialSystem.ts:507-510` already wires `scene.input.on('pointerdown', ...)` alongside the keyboard handler; `driftPractice.test.ts` already covers timeout/complete/skip-priority/full-poll/mid-window cases. |
+| `task_02` adoption #1 — CurseScene DOM focus | `src/scenes/curseDomFocusActions.ts` + 7 vitest + `e2e/curse-dom-focus.spec.ts` all pre-shipped. |
+| **P0.4** — save failure UX | T131 fully shipped: `src/utils/saveFailure.ts` `emitSaveFailure` invoked from all four save paths (legacy/meta/settings/active_run), `src/scenes/game/wireSceneEventBus.ts:55-57` listens for `GLOBAL_SAVE_FAILED` and toasts via `i18n.save_failed` (Hearth-warm: "The cairn won't take it…"). |
+| **P1.1** — boss kill vs death same frame | T201 fully shipped: `src/scenes/game/RunLifecycle.ts:288-295` calls `invalidatePendingVictoryTicker()` + forces `victoryPending = false` at top of `handleDeath()`. `onPlayerHitZero` early-returns on `victoryPending`. Test coverage in `RunLifecycle.test.ts`. |
+| **P1.5** — gamepad E2E | T202 fully shipped at `e2e/gamepad.spec.ts` — synthetic pad via `addInitScript`, asserts d-pad-right movement + button-0 dash. |
+
+### Tier-B not dispatched (product-gated or out of scope)
+
+- `task_03` — Assist Mode game-speed expose-vs-hide decision still requires product call. Replay-snapshot helper for assist + comfort fields is already shipped; only the UX surface decision is open.
+
+### Spawn-tasks created this session
+
+- **Back-fill GameOverScene DOM focus mirror** — sub-agent confirmed `docs/status/a11y/A1_DOM_FOCUS_LAYER.md` claims GameOver as first adopter aspirationally; the scene file does NOT actually import the helper. CurseScene + NodePromptUI + SettingsScene are the live adopters. Either back-fill the GameOverScene adoption or correct the doc. (Chip showing in user UI for spawn.)
+
+### Standing follow-ups surfaced this session
+
+- **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated, times out at 5 s under full 425-file parallel transform. Pre-existing on `master`. Suggested fix: `timeout: 30_000` on the test, or hoist `await import('./Player')` outside the test body. Track as `T420`.
+- **SettingsInputScene keybind capture DOM mirror** — sub-scene launched from rebind row needs a different DOM gesture (announce "press a key for X" + temporary press-listener bridge). Next adoption candidate after the GameOver back-fill.
+- **Visual-regression PNG baselines still missing thresholded comparison** — covered by existing `T408` in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`; not in scope of T310.
+
 ### Standing follow-ups surfaced this session
 
 - **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated (700 ms), times out at 5 s when run with all 425 transform-heavy files in parallel. Pre-existing on `master`; reproduced both before and after Tier-A diffs. Suggested fix: bump that test's `timeout` to 30 000 ms, or move the dynamic `await import('./Player')` outside the test body to amortise transform cost. Track as `T420`.
