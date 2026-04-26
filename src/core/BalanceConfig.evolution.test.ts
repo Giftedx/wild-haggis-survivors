@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { EVOLUTION_RECIPES } from './BalanceConfig';
 import { WEAPON_DEFS } from '../data/weapons';
 import { PASSIVE_KEYS } from '../data/upgrades';
-import { t } from './i18n';
+import { EN_STRINGS, t, type LocaleTree } from './i18n';
+import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
   it('has 7 evolution recipes (all weapons except bagpipes)', () => {
@@ -48,5 +49,49 @@ describe('EVOLUTION_RECIPES', () => {
   it('bagpipes has no evolution recipe', () => {
     const hasBagpipes = EVOLUTION_RECIPES.some((r) => r.baseWeapon === 'bagpipes');
     expect(hasBagpipes).toBe(false);
+  });
+});
+
+/**
+ * P1.4 — bagpipes is utility-only with no legendary form. Player-facing
+ * copy must not promise "every weapon evolves" (the achievement
+ * description, the variant unlock label, the orphan banter leaf). These
+ * fences pin the truth-up: regression here means a future copy edit
+ * accidentally re-introduced the false promise the audit caught.
+ */
+describe('P1.4 — bagpipes utility-only player-facing copy', () => {
+  /** Walk a banter sub-tree and assert no `evo_bagpipes` key exists at any depth. */
+  function assertNoEvoBagpipesLeaf(tree: LocaleTree | undefined, locale: 'en' | 'scs'): void {
+    if (!tree || typeof tree !== 'object') return;
+    for (const [key, value] of Object.entries(tree)) {
+      expect(
+        key,
+        `${locale} i18n: orphan evo_bagpipes leaf — bagpipes has no evolution`,
+      ).not.toBe('evo_bagpipes');
+      if (value && typeof value === 'object') {
+        assertNoEvoBagpipesLeaf(value as LocaleTree, locale);
+      }
+    }
+  }
+
+  it('Burns Wee Beastie achievement description does not promise "every weapon" evolves', () => {
+    const desc = t('achievement.ach_burns_beastie_unlock.description');
+    // Hard string-match guard. Any future edit that puts "every weapon"
+    // back in the same line trips the test loudly.
+    expect(desc.toLowerCase(), `EN achievement copy implies all 8 weapons evolve: ${desc}`)
+      .not.toContain('every weapon');
+    // Truth-anchor: the line must reference the seven legendary forms
+    // the recipe table actually delivers.
+    expect(desc.toLowerCase()).toContain('seven');
+  });
+
+  it('no orphan evo_bagpipes leaf in EN banter (data/banter.ts has no pool)', () => {
+    const banter = (EN_STRINGS.ui as LocaleTree).banter as LocaleTree;
+    assertNoEvoBagpipesLeaf(banter, 'en');
+  });
+
+  it('no orphan evo_bagpipes leaf in SCS banter (mirrors EN deletion)', () => {
+    const banter = (SCS_STRINGS.ui as LocaleTree).banter as LocaleTree;
+    assertNoEvoBagpipesLeaf(banter, 'scs');
   });
 });

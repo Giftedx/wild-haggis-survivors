@@ -2219,10 +2219,8 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Claymore\'s evolved. First swing that reads auld Gaelic.',
           b: 'Claymore bloomed. A sweep wi a century behind it.',
         },
-        evo_bagpipes: {
-          a: 'Bagpipes evolved. The drones agree wi each ither at last.',
-          b: 'First full pipe. The moor just hit tae the beat.',
-        },
+        // P1.4 — no evo_bagpipes leaf: bagpipes is utility-only, no
+        // evolution recipe. Pool intentionally absent in `data/banter.ts`.
         combo_100: {
           a: 'A hundred in a row. Ye just climbed ahint the ancestors.',
           b: 'First century combo. Gran\'s proud, the moor\'s proud, aye.',
@@ -2911,7 +2909,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     ach_burns_beastie_unlock: {
       title: 'Earned When the Bard Is Honoured',
-      description: 'Won a run wi\' every weapon in its evolved form. Burns smiles.',
+      description: 'Won a run wi\' all seven legends forged. Burns smiles.',
     },
   },
   tutorial: {

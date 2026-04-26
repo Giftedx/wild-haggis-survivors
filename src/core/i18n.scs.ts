@@ -1878,10 +1878,8 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Claymore\'s evolved. First swing that reads auld Gaelic.',
           b: 'Claymore bloomed. A sweep wi a century ahint it.',
         },
-        evo_bagpipes: {
-          a: 'Bagpipes evolved. Tha drones gree wi ane anither at last.',
-          b: 'First hale pipe. Tha moor jist hit tae tha beat.',
-        },
+        // P1.4 — no evo_bagpipes leaf: bagpipes is utility-only, no
+        // evolution recipe. Mirrors EN deletion (i18n.ts comment).
         combo_100: {
           a: 'A hunder in a raw. Ye jist sclim\'d ahint tha ancestors.',
           b: 'First century combo. Grannie\'s prood, tha moor\'s prood, aye.',
@@ -2505,7 +2503,7 @@ export const SCS_STRINGS: LocaleTree = {
     },
     ach_burns_beastie_unlock: {
       title: 'Earnt Whan Tha Baird Is Honoured',
-      description: 'Wan a run wi every wapen in its evolved form. Burns smiles.',
+      description: 'Wan a run wi aw seeven legends forged. Burns smiles.',
     },
   },
   weapon: {
