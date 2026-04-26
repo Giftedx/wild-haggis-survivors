@@ -98,7 +98,14 @@ export default defineConfig({
   test: {
     globals: false,
     environment: 'node',
-    include: ['src/**/*.{test,spec}.ts'],
+    // `server/worker/**` is the cloud-save Worker spike (P3). It is a
+    // sibling project — not bundled by Vite, not under `src/tsconfig.json`.
+    // Vitest discovers its contract tests directly. ADR 0006 + spike
+    // README in `server/worker/README.md`.
+    include: [
+      'src/**/*.{test,spec}.ts',
+      'server/worker/test/**/*.{test,spec}.ts',
+    ],
     // Preloads the Scots overlay chunk so sync `setLocale('scs'); t(...)`
     // patterns in tests keep working after the W18 Scots lazy-load pass.
     // Production still fetches `./i18n.scs` dynamically on first use.

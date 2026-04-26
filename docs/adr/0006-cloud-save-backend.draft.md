@@ -106,6 +106,83 @@ Full matrix in `docs/P3_BACKEND_DECISION_MATRIX.md §3`. Summary:
 - **Privacy policy** at `/privacy.html`. Stakeholder owns the legal
   text; agent provides plain-language skeleton on request.
 
+## Spike status (2026-04-26)
+
+A Cloudflare Worker scaffold lives at `server/worker/`:
+
+- `server/worker/src/handlers.ts` — pure handler `(Request, Storage) →
+  Response`. No Cloudflare globals, so it tests directly under Vitest.
+- `server/worker/src/storage.ts` — `Storage` interface plus
+  `InMemoryStorage` (used by tests) and a `D1Storage` sketch
+  (production binding shape; not exercised by tests).
+- `server/worker/src/index.ts` — Cloudflare `fetch` entrypoint that
+  picks `D1Storage` when `env.DB` is bound, falls back to
+  `InMemoryStorage` for `wrangler dev` without D1.
+- `server/worker/test/handlers.test.ts` — 23 contract tests covering
+  envelope round-trip, stale-write conflict (409), auth (401/403),
+  body validation (400/413), routing (404/405), account deletion.
+- `server/worker/wrangler.toml.example` — template config, no live
+  account_id or database_id. Real `wrangler.toml` is gitignored
+  per `.gitignore` policy.
+
+The Worker is a sibling project — not in `tsconfig.json`'s `include`
+glob, not imported from any `src/` file, so it does not enter the
+game bundle. Vitest's `test.include` was extended to discover
+`server/worker/test/**/*.test.ts`; the production `vite build` chunk
+sizes for `dist/assets/*.js` are unchanged.
+
+### What the spike proves
+
+- **Envelope wire contract round-trips.** PUT then GET yields the
+  same envelope payload, schema version, deviceId, and lastModified.
+- **Stale-write conflict policy is enforceable server-side** without
+  client changes, by comparing the body's `envelope.lastModified`
+  against the stored row's. Stale writes → 409 with `current` body
+  for the client to feed into `detectCloudSaveConflict`.
+- **Auth shape is consistent with `httpCloudSaveClient.ts`.** Bearer
+  must equal the URL's `:userId`; missing → 401, mismatch → 403.
+- **Adapter abstraction is real.** `D1Storage` and `InMemoryStorage`
+  share the same `Storage` interface; the handler doesn't know which
+  one it has.
+- **Schema-blind passthrough holds.** The Worker never JSON.parses
+  the inner save payload; the inner schema can change client-side
+  without Worker redeploy, matching the ADR-recommended split.
+
+### What the spike does NOT prove
+
+- **Real D1 throughput, durability, or contention behaviour.** The
+  contract tests exercise an in-memory `Map`. D1's `INSERT … ON
+  CONFLICT … DO UPDATE` pattern is in `D1Storage` but not run.
+- **Real magic-link auth.** The bearer-equals-userId scheme is a
+  spike stand-in. The production auth flow (charter §sub-tasks 11)
+  still owes us: token issuance, single-use enforcement, replay
+  defence, rate-limit on `/auth/request`, OWASP review.
+- **Production deployment.** No live `wrangler.toml`, no Cloudflare
+  account_id, no D1 database_id. `wrangler deploy` has not been run.
+- **Privacy policy / GDPR soft-delete.** The current `DELETE` is
+  immediate, not soft with 7-day undo. The audit log table is
+  sketched in code comments only.
+- **Resend / email-delivery integration.** Not wired; auth is
+  out of scope for the spike.
+- **Cost economics under load.** The matrix's $0/mo claim is from
+  Cloudflare's published free tier, not from observed usage.
+- **Bundle/cost regression from real auth-client code.** The
+  `httpCloudSaveClient` already shipped at ~1.5 KB; adding
+  magic-link request/verify is the v1 cost to budget against §C6.
+
+### Next steps blocked on humans
+
+- Stakeholder approval of the ADR (rename `0006-…draft.md` →
+  `0006-…md`).
+- Privacy policy text at `/privacy.html` (charter blocked-on-human
+  list).
+- Real auth design pick (magic-link via Resend, OAuth, or scoped
+  expansion of the current bearer for testing).
+- Cloudflare account creation + D1 database provision + cost-alert
+  thresholds.
+- Decision on data residency: confirm the Cloudflare account targets
+  EU/UK per §C10 before any real data lands.
+
 ## Rollback
 
 If D1 turns out wrong:
@@ -142,3 +219,7 @@ on the agent's own timeline.
 - `src/cloud/cloudSaveClient.ts` — client contract (this branch).
 - `src/cloud/cloudSaveConflict.ts` — conflict-detection helper (this
   branch).
+- `src/cloud/httpCloudSaveClient.ts` — local HTTP `CloudSaveClient`
+  implementation (this branch).
+- `server/worker/` — Cloudflare Worker scaffold + contract tests
+  (this branch). README at `server/worker/README.md`.
