@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PlayerHitResolver, type PlayerHitResolverHooks } from './PlayerHitResolver';
+import {
+  getSettingsManager,
+  resetSettingsManagerSingletonForTests,
+} from '../../core/SettingsManager';
 
 /**
  * Scene-free harness. Mocks every hook; the resolver should touch only
@@ -141,6 +145,35 @@ describe('PlayerHitResolver', () => {
     it('skips when enemy is inactive', () => {
       resolver.handle(mockEnemy({ active: false }) as never);
       expect(m.player.takeDamage).not.toHaveBeenCalled();
+    });
+
+    describe('A1 M4 — Assist Mode invincibility', () => {
+      beforeEach(() => {
+        resetSettingsManagerSingletonForTests();
+        getSettingsManager().reset();
+      });
+
+      it('skips damage entirely when assistMode + assistModeInvincibility are both ON', () => {
+        getSettingsManager().update((cur) => ({
+          ...cur,
+          assistMode: true,
+          assistModeInvincibility: true,
+        }));
+        resolver.handle(mockEnemy({ damage: 99 }) as never);
+        expect(m.player.takeDamage).not.toHaveBeenCalled();
+        expect(m.deathCauseTracker.recordDamage).not.toHaveBeenCalled();
+        expect(m.armIFrames).not.toHaveBeenCalled();
+      });
+
+      it('still applies damage when assistModeInvincibility is true but master is off', () => {
+        getSettingsManager().update((cur) => ({
+          ...cur,
+          assistMode: false,
+          assistModeInvincibility: true,
+        }));
+        resolver.handle(mockEnemy({ damage: 7 }) as never);
+        expect(m.player.takeDamage).toHaveBeenCalledWith(7);
+      });
     });
   });
 

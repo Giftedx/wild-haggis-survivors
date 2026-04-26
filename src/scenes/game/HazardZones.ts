@@ -30,6 +30,7 @@ import { computeHazardDamage, HEAL_ZONE_HEAL_AMOUNT, LAVA_BASE_DAMAGE } from './
 import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 import { computeExtraHealingPlacement, computeHazardPlacements } from './hazardPlacement';
 import type { RNG } from '../../utils/rng';
+import { isInvincibilityEnabled } from '../../systems/accessibility/AssistMode';
 
 export interface HazardZonesHooks {
   getPlayer(): Player;
@@ -298,6 +299,10 @@ export class HazardZones {
         z.tickAccMs -= 500;
         if (!player.active || this.hooks.isVictoryPending()) continue;
         if (this.hooks.isIFrames() || player.isDashInvincible() || player.isHazardLeaping()) continue;
+        // A1 M4 — Assist Mode invincibility short-circuits hazard damage.
+        // Master toggle is checked inside the reader; returns false when
+        // assistMode master is off regardless of sub-flag state.
+        if (isInvincibilityEnabled()) continue;
         const dx = player.x - z.x;
         const dy = player.y - z.y;
         if (dx * dx + dy * dy < rSq) {

@@ -27,6 +27,7 @@ import type { FloatTextPool } from './FloatTextPool';
 import { audio } from '../../systems/AudioSystem';
 import { t } from '../../core/i18n';
 import { tryCameraShake } from '../../utils/cameraShake';
+import { isInvincibilityEnabled } from '../../systems/accessibility/AssistMode';
 
 export interface PlayerHitResolverHooks {
   getPlayer(): Player;
@@ -90,7 +91,12 @@ export class PlayerHitResolver {
       h.getIFrameController().isActive() ||
       h.getTimeManager().isGameplayPaused() ||
       h.isVictoryPending() ||
-      player.isDashInvincible()
+      player.isDashInvincible() ||
+      // A1 M4 — Assist Mode invincibility short-circuits the entire hit
+      // cascade before damage / iframes / death-cause logging. Master
+      // toggle is gated inside the reader: returns false when assistMode
+      // master is off, regardless of the sub-flag.
+      isInvincibilityEnabled()
     ) {
       return;
     }
