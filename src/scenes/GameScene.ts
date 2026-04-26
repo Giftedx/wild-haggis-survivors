@@ -1003,15 +1003,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runPersistence.applyResume(resumeRun);
     }
 
-    // T131 — surface save-failure events as a one-shot toast so silent
-    // localStorage write failures (quota, private mode) reach the player
-    // instead of dying in a swallowed catch. The off() handle returned by
-    // globalEventBus.on is registered with the scene shutdown event so the
-    // listener is freed when the scene is reused.
-    const offSaveFailed = globalEventBus.on('GLOBAL_SAVE_FAILED', (payload) => {
-      this.juice?.showToast(t('ui.game.save_failed', { path: payload.path }), '#ffb070');
-    });
-    this.events.once('shutdown', offSaveFailed);
+    // T131 save-failure listener now installed via wireSceneEventBus
+    // alongside the rest of the run-scoped global-bus subscriptions
+    // (this.eventBusDispose lifecycle); see call below.
 
     // Upgrade card UI
     this.upgradeUI = new UpgradeCardsUI(this, (card) => this.levelUpFlow.apply(card), this.updateTickers);

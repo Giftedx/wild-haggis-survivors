@@ -1,10 +1,11 @@
 /**
  * wireSceneEventBus — subscribes run-scoped toasts to the global event
- * bus (achievements, boss enrage, codex first-cull). Extracted from
- * GameScene.create() to keep the orchestration block scannable.
+ * bus (achievements, boss enrage, codex first-cull, save failure).
+ * Extracted from GameScene.create() to keep the orchestration block
+ * scannable.
  *
- * Returns a disposer that removes all three subscriptions; callers
- * invoke it on scene shutdown or before re-subscribing on scene reuse.
+ * Returns a disposer that removes all subscriptions; callers invoke
+ * it on scene shutdown or before re-subscribing on scene reuse.
  */
 import type { JuiceSystem } from '../../systems/JuiceSystem';
 import { globalEventBus } from '../../core/GlobalEventBus';
@@ -21,8 +22,16 @@ export interface SceneEventBusHooks {
 }
 
 /**
- * Install the three global-event-bus subscriptions used by GameScene.
+ * Install the global-event-bus subscriptions used by GameScene.
  * Returns a dispose function that removes all of them.
+ *
+ * Subscriptions:
+ *   - ACHIEVEMENT_UNLOCKED → toast + achievement chime + caption
+ *   - bossEnraged → danger toast + enrage stinger + caption
+ *   - CODEX_FIRST_CULL → first-kill toast for newly-discovered enemy
+ *   - GLOBAL_SAVE_FAILED → T131: surface localStorage write failures so
+ *       silent quota / private-mode failures reach the player instead
+ *       of dying in a swallowed catch.
  */
 export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
   const unsubAchievement = globalEventBus.on('ACHIEVEMENT_UNLOCKED', (p) => {
@@ -41,10 +50,16 @@ export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
     const name = getEnemyDisplayName(p.enemyKey);
     hooks.getJuice().showToast(t('ui.game.codex_first_cull', { name }), '#aaddff');
   });
+  // T131 — surface save-failure events as a one-shot toast. Defensive
+  // optional-chain: very early failures can fire before juice is wired.
+  const unsubSaveFailed = globalEventBus.on('GLOBAL_SAVE_FAILED', (payload) => {
+    hooks.getJuice()?.showToast(t('ui.game.save_failed', { path: payload.path }), '#ffb070');
+  });
 
   return () => {
     unsubAchievement();
     unsubBossEnraged();
     unsubCodexFirstCull();
+    unsubSaveFailed();
   };
 }

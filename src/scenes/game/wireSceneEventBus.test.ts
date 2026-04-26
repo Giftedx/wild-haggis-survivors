@@ -3,9 +3,10 @@ import { wireSceneEventBus } from './wireSceneEventBus';
 import { globalEventBus } from '../../core/GlobalEventBus';
 
 /**
- * wireSceneEventBus: installs three run-scoped toast subscriptions on
- * the global event bus. Dispose fn must remove all of them so scene
- * reuse doesn't double-subscribe (which would fire each toast twice).
+ * wireSceneEventBus: installs run-scoped toast subscriptions on the
+ * global event bus (achievement, boss enrage, codex first-cull, save
+ * failure). Dispose fn must remove all of them so scene reuse doesn't
+ * double-subscribe (which would fire each toast twice).
  */
 describe('wireSceneEventBus', () => {
   const showToast = vi.fn();
@@ -43,12 +44,23 @@ describe('wireSceneEventBus', () => {
     dispose();
   });
 
+  it('T131 — fires a save-failed toast with the failing path', () => {
+    const dispose = wireSceneEventBus(hooks);
+    globalEventBus.emit('GLOBAL_SAVE_FAILED', { path: 'meta', reason: 'quota' });
+    expect(showToast).toHaveBeenCalledTimes(1);
+    const [msg, tint] = showToast.mock.calls[0] ?? [];
+    expect(msg).toContain('meta');
+    expect(tint).toBe('#ffb070');
+    dispose();
+  });
+
   it('dispose() removes every subscription', () => {
     const dispose = wireSceneEventBus(hooks);
     dispose();
     globalEventBus.emit('ACHIEVEMENT_UNLOCKED', { id: 'x', title: 'y' });
     globalEventBus.emit('bossEnraged', 'gordon');
     globalEventBus.emit('CODEX_FIRST_CULL', { enemyKey: 'tourist' });
+    globalEventBus.emit('GLOBAL_SAVE_FAILED', { path: 'meta', reason: 'q' });
     expect(showToast).not.toHaveBeenCalled();
   });
 
