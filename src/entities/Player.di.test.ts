@@ -14,7 +14,8 @@ vi.mock('phaser', () => {
 });
 
 describe('Player strict dependency injection', () => {
-  it('throws immediately if TimeManager is not provided', async () => {
+  // 30s under full vitest concurrency; isolated runtime ~700ms — see T420 in dispatch ledger.
+  it('throws immediately if TimeManager is not provided', { timeout: 30_000 }, async () => {
     const { Player } = await import('./Player');
     expect(() => {
       // Force an invalid call-site to simulate a developer mistake.
