@@ -42,8 +42,11 @@ export default defineConfig({
   },
   build: {
     target: 'ES2020',
-    // Default 500kb warns on main (~508kb) and vendor-phaser (~1.4mb); latter is expected with manualChunks.
-    chunkSizeWarningLimit: 1600,
+    // Phaser 4 vendor chunk currently ~1.66 MB raw (Matter + Box2D ride along until
+    // Phaser publishes a tree-shakeable build — see resolve.alias note above).
+    // Set above natural size with breathing room so the warning re-fires only on
+    // genuine accidental growth.
+    chunkSizeWarningLimit: 1750,
     rollupOptions: {
       output: {
         manualChunks: {
