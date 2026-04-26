@@ -54,3 +54,6 @@ build-output.txt
 
 # Brainstorming / visual companion session dirs
 .superpowers/
+
+# Claude Code tool state (per-checkout, agent worktrees, session caches)
+.claude/
