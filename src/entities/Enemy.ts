@@ -65,6 +65,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private spatialCullImmune: boolean = false;
   private bossFlag: boolean = false;
   private eliteFlag: boolean = false;
+  /** Phase B Endless — purple-aura "Cursed" variant; +40% damage; non-boss. */
+  private cursedFlag: boolean = false;
   /** After markAsElite — at most one affix per elite. */
   private eliteAffixId: EliteAffixId | null = null;
   /** Multiplier on incoming knockback impulses (Relentless < 1). */
@@ -270,6 +272,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.behavior = config.behavior;
     this.bossFlag = false;
     this.eliteFlag = false;
+    this.cursedFlag = false;
     this.eliteAffixId = null;
     this.eliteAffixNameText?.setVisible(false);
     this.knockbackTakenMul = 1;
@@ -1439,4 +1442,27 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   isElite(): boolean { return this.eliteFlag; }
+
+  /**
+   * Phase B Endless — mark this enemy as a "Cursed" variant. Visually
+   * distinct via a purple aura tint and slightly bumped scale; mechanically
+   * +40% damage. Idempotent. Bosses, hazards, and already-elites are
+   * filtered at the call site (SpawnSystem) — this method does not gate
+   * itself so tests can opt enemies in directly.
+   */
+  markAsCursed(): void {
+    if (this.cursedFlag) return;
+    this.cursedFlag = true;
+    this.damage = Math.ceil(this.damage * 1.4);
+    // Soft purple base tint — composes with damage flash via clearTint
+    // restore path. 0xaa66dd reads as cursed/spectral against the
+    // existing palette without bleeding into rune (yellow) or boss (red).
+    this.setBaseTint(0xaa66dd);
+    // Subtle scale bump — bigger than baseline, smaller than elite, so a
+    // cursed-non-elite reads as off without competing with elite gold.
+    this.baseDisplayScale = this.baseDisplayScale * 1.1;
+    this.setScale(this.baseDisplayScale);
+  }
+
+  isCursed(): boolean { return this.cursedFlag; }
 }

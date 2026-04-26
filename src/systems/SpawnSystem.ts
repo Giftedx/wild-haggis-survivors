@@ -12,6 +12,7 @@ import { getCameraViewport } from '../ui/cameraViewport';
 import { t } from '../core/i18n';
 import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
+import { shouldMarkCursed } from './cursedSpawnRoll';
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
@@ -670,6 +671,29 @@ export class SpawnSystem {
           this.scene.tweens.add({
             targets: flash, scale: 2, alpha: 0, duration: 400,
             onComplete: () => { flash.setVisible(false); },
+          });
+        }
+
+        // Phase B Endless — Cursed variant. Pure helper consumes the seeded
+        // RNG so a replay reproduces the same cursed population. Cursed
+        // does not stack on elite, hazards, or pack spawns; eligibility
+        // lives in shouldMarkCursed.
+        if (shouldMarkCursed({
+          cursedChance: pb.cursedChance,
+          isElite: enemy.isElite(),
+          behavior: config.behavior,
+          packSize: config.packSize,
+          rng01: rng.next(),
+        })) {
+          enemy.markAsCursed();
+          // Soft purple pop on the spawn point — quieter than the elite
+          // gold flash so the two cues stay readable side by side.
+          const cursedFlash = this.scene.getStatusFxPool().acquireArc(
+            pos.x + scatter, pos.y + scatter, 13, 0xaa66dd, 0.4,
+          );
+          this.scene.tweens.add({
+            targets: cursedFlash, scale: 1.6, alpha: 0, duration: 360,
+            onComplete: () => { cursedFlash.setVisible(false); },
           });
         }
       }

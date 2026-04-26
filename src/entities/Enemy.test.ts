@@ -284,3 +284,30 @@ describe('Enemy applyPostBellScaling', () => {
     expect(e.speed).toBe(100);
   });
 });
+
+describe('Enemy markAsCursed', () => {
+  it('marks the cursed flag and bumps damage by 40%', async () => {
+    const e = await createBareEnemy();
+    e.cursedFlag = false;
+    e.markAsCursed();
+    expect(e.cursedFlag).toBe(true);
+    expect(e.damage).toBe(Math.ceil(5 * 1.4));
+  });
+
+  it('is idempotent — second call no-op', async () => {
+    const e = await createBareEnemy();
+    e.cursedFlag = false;
+    e.markAsCursed();
+    const dmgAfterFirst = e.damage;
+    e.markAsCursed();
+    expect(e.damage).toBe(dmgAfterFirst);
+  });
+
+  it('isCursed reflects state', async () => {
+    const e = await createBareEnemy();
+    e.cursedFlag = false;
+    expect(e.isCursed()).toBe(false);
+    e.markAsCursed();
+    expect(e.isCursed()).toBe(true);
+  });
+});
