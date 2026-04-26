@@ -13,6 +13,7 @@ import { t } from '../core/i18n';
 import { BIOMES } from '../data/biomes';
 import { computePostBellMultipliers, NEUTRAL_POST_BELL, type PostBellMultipliers } from '../core/PostBellEscalation';
 import { shouldMarkCursed } from './cursedSpawnRoll';
+import { evaluatePostBellBossTick } from './postBellBossCadence';
 import { ELITE_AFFIXES, pickEliteAffixId } from '../data/eliteAffixes';
 import { resolveEliteChance } from './eliteChance';
 import { bossHpTimeScale } from './bossHpTimeScale';
@@ -77,6 +78,13 @@ export class SpawnSystem {
   private bossSpawnScheduled: Set<string> = new Set();
   /** Cached boss-active flag — avoids iterating 400 enemies per frame */
   private bossActive: boolean = false;
+  /**
+   * Phase B Endless — game-time of the most recent post-bell boss
+   * spawn. Initialised to -1 (= "no post-bell boss yet — first cadence
+   * tick anchored at the bell time when secondsPastBell first goes
+   * positive"). Reset on resetRunState.
+   */
+  private postBellBossLastSpawnSec: number = -1;
   /** One-shot: run reached `RUN_WIN_TIME_SEC` — timeline bursts off, finale boss queued. */
   private runWinFinaleStarted: boolean = false;
   /** 0–1 — rises on kills, decays over time; nudges elite spawn chance. */
@@ -296,6 +304,7 @@ export class SpawnSystem {
     this.eliteWeightMultiplier = 1.0;
     this.enemyHpMultiplier = 1.0;
     this.spawnsPausedUntilGameSec = 0;
+    this.postBellBossLastSpawnSec = -1;
     this.events.removeAllListeners();
 
     if (this.activeBossVfx) {
@@ -346,6 +355,7 @@ export class SpawnSystem {
 
     this.syncWaveDirectorFromTimeline();
     this.checkBossSpawns(playerX, playerY);
+    this.tickPostBellBoss(playerX, playerY);
 
     if (this.spawnTimer >= this.spawnInterval) {
       // Carry over small overshoots for accurate rate, but cap to prevent
@@ -372,6 +382,39 @@ export class SpawnSystem {
       this.bossSpawnScheduled.add(boss.key);
       this.spawnBoss(boss, playerX, playerY);
     }
+  }
+
+  /**
+   * Phase B Endless — recurring boss respawn while the player is past
+   * the bell. Pulls cadence + flag from `getPostBellMultipliers`, picks
+   * a random non-final boss from the seeded run RNG, and respawns it
+   * via the existing spawnBoss path (cleared from `spawnedBossKeys`
+   * first so the boss-key dedupe doesn't reject the re-spawn).
+   */
+  private tickPostBellBoss(playerX: number, playerY: number): void {
+    const sec = this.scene.getSecondsPastBell?.();
+    if (!sec || sec <= 0) return;
+    const pb = this.getPostBellMultipliers();
+    if (this.postBellBossLastSpawnSec < 0) {
+      this.postBellBossLastSpawnSec = this.gameTimeSec - sec; // bell time
+    }
+    const sched = evaluatePostBellBossTick(
+      this.gameTimeSec,
+      this.postBellBossLastSpawnSec,
+      pb.bossCadenceSec,
+      this.isBossActive(),
+    );
+    if (!sched.due) return;
+    const candidates = BOSSES.filter(b => b.key !== BALANCE.run.FINAL_BOSS_KEY);
+    if (candidates.length === 0) return;
+    const rng = this.scene.getRunRng();
+    const boss = candidates[rng.int(0, candidates.length - 1)];
+    // Clear key + scheduled-set so the existing spawnBoss path proceeds.
+    this.spawnedBossKeys.delete(boss.key);
+    this.bossSpawnScheduled.delete(boss.key);
+    this.bossSpawnScheduled.add(boss.key);
+    this.postBellBossLastSpawnSec = this.gameTimeSec;
+    this.spawnBoss(boss, playerX, playerY);
   }
 
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {
@@ -658,7 +701,11 @@ export class SpawnSystem {
         // elite flow.
         const baseEliteChance = resolveEliteChance(this.killPressure, this.eliteWeightMultiplier);
         const relicEliteMult = this.scene.getEliteSpawnMultiplier?.() ?? 1;
-        const eliteChance = Math.min(1, baseEliteChance * relicEliteMult);
+        // Phase B Endless — bonusEliteSlots tilts the per-spawn elite
+        // roll upward instead of opening a separate slot pipeline; +25% per
+        // bonus slot keeps the curve readable and clamps at 1.0 anyway.
+        const postBellEliteTilt = 1 + pb.bonusEliteSlots * 0.25;
+        const eliteChance = Math.min(1, baseEliteChance * relicEliteMult * postBellEliteTilt);
         if (this.gameTimeSec > BALANCE.enemy.ELITE_UNLOCK_SEC
             && config.behavior !== 'hazard'
             && config.packSize <= 1
