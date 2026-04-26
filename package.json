@@ -17,7 +17,8 @@
     "test:watch": "vitest",
     "lint": "eslint src e2e playwright.config.ts vite.config.ts eslint.config.mjs",
     "flash-budget": "node scripts/check-flash-budget.mjs",
-    "ci": "npm run lint && npm test && npm run build",
+    "budget": "node scripts/check-bundle-budget.mjs",
+    "ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget",
     "test:e2e": "playwright test",
     "ci:all": "npm run ci && npm run test:e2e"
   },

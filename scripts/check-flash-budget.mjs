@@ -38,8 +38,9 @@
  *                   diagnostic runs or first wiring into CI.
  *   --verbose       Print the full match context for every finding.
  *
- * Wired into `npm run flash-budget`. Designed to also fold cleanly
- * into `npm run ci` once the steady-state false-positive rate is 0.
+ * Wired into `npm run flash-budget` (standalone) and `npm run ci`
+ * (steady-state false-positive rate is 0; folded in 2026-04-26
+ * alongside the bundle-budget gate — see Task 09 dispatch).
  */
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
