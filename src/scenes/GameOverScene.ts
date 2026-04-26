@@ -40,6 +40,8 @@ import {
   moveModalFocusIndex,
   type ModalFocusEntry,
 } from '../ui/modalFocus';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
 
 interface GameOverActionFocusEntry extends ModalFocusEntry {
   readonly rect: Phaser.GameObjects.Rectangle;
@@ -83,6 +85,16 @@ export class GameOverScene extends Phaser.Scene {
   private prevPadBack = false;
   private prevPadForward = false;
   private prevPadConfirm = false;
+  /**
+   * T407 — DOM-visible focus mirror. Visually hidden (1×1 clipped div)
+   * but readable by screen readers + Tab-focusable. Mirrors the Phaser
+   * action-button focus state so assistive-tech users hear which post-run
+   * action is selected and can activate any of PLAY AGAIN / GOLD SHOP /
+   * TAE GRAN'S without a working pointer. The dialog is genuinely modal
+   * (the overlay rectangle has `setInteractive()` blocking the playfield),
+   * hence `role="dialog"` rather than `role="group"`.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor() {
     super({ key: 'GameOver' });
@@ -93,6 +105,10 @@ export class GameOverScene extends Phaser.Scene {
   }
 
   create(): void {
+    // Phaser scene reuse: create() runs again on the same instance. If a
+    // prior shutdown didn't fire (e.g. mid-tween scene swap), tear down
+    // the lingering DOM mirror first so we don't leak a hidden node.
+    this.uninstallDomFocusLayer();
     this.actionEntries = [];
     this.focusedActionIndex = -1;
     this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
@@ -526,7 +542,11 @@ export class GameOverScene extends Phaser.Scene {
     const actionSideGap = compact
       ? actionBtnW + 14
       : Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
-    this.createResultActionButton(panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, () => {
+    // Action callbacks shared between the visible Phaser buttons and the
+    // T407 DOM focus mirror — single source of truth for activation
+    // behaviour so a screen-reader Tab + Enter takes the same path as a
+    // pointer click.
+    const onPlayAgain = () => {
       audio.playClick();
       musicEngine.stop();
       // Match MenuScene: wipe any lingering suspended-run snapshot before
@@ -540,27 +560,37 @@ export class GameOverScene extends Phaser.Scene {
       // wanted a different bargain. The "Rerun seed" link (one row down)
       // still carries the original curse for masochist re-attempts.
       this.scene.start('Curse');
-    });
-    this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, () => {
+    };
+    const onGoldShop = () => {
       audio.playClick();
       musicEngine.stop();
       this.scene.start('Shop');
-    }, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
-    this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, () => {
+    };
+    const onTaeGran = () => {
       audio.playClick();
       musicEngine.stop();
       // H1 T9 — return to Croft hub, not MainMenu.
       this.scene.start('Croft');
-    });
+    };
+
+    this.createResultActionButton(panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, onPlayAgain);
+    this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
+    this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
 
     this.focusedActionIndex = firstEnabledModalFocusIndex(this.actionEntries);
     this.applyActionFocus();
     this.installKeyboardShortcuts();
     this.installGamepadShortcuts();
+    // T407 — install the DOM-visible focus mirror after all three action
+    // buttons exist. Mirrors the Phaser focus state via setFocusedIndex
+    // (driven from applyActionFocus); DOM-side activation routes through
+    // the same callbacks the visible buttons use.
+    this.installDomFocusLayer({ onPlayAgain, onGoldShop, onTaeGran });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.uninstallKeyboardShortcuts();
       this.uninstallGamepadShortcuts();
+      this.uninstallDomFocusLayer();
     });
   }
 
@@ -662,6 +692,64 @@ export class GameOverScene extends Phaser.Scene {
         entry.rect.setStrokeStyle();
       }
     }
+    // T407 — keep the DOM focus mirror lockstep with the visible Phaser
+    // cursor so assistive tech announces the same action the sighted
+    // player sees. Layer's setFocusedIndex is a no-op when the index is
+    // already current, so we don't need a guard against re-entry.
+    if (this.domFocusLayer && this.focusedActionIndex >= 0) {
+      this.domFocusLayer.setFocusedIndex(this.focusedActionIndex);
+    }
+  }
+
+  /**
+   * T407 — mount the visually hidden DOM action mirror. Three buttons
+   * (PLAY AGAIN / GOLD SHOP / TAE GRAN'S) reflect the visible row;
+   * `aria-label` carries the resolved death/victory title and
+   * `aria-describedby` carries a one-line run digest (variant +
+   * kills/time/gold). The layer's polite live region announces the
+   * focused button as the user navigates.
+   */
+  private installDomFocusLayer(callbacks: {
+    onPlayAgain: () => void;
+    onGoldShop: () => void;
+    onTaeGran: () => void;
+  }): void {
+    if (typeof document === 'undefined') return;
+    const p = this.payload;
+    if (!p?.summary || !p.runResult) return;
+
+    const isVictory = p.isVictory ?? (p.mode === 'victory');
+    const titleKey = isVictory ? 'ui.gameOver.victory_title' : 'ui.gameOver.death_title';
+    const summaryDigest = `${p.variantLabel} · ${t('ui.gameOver.damage_summary', {
+      kills: p.summary.enemiesKilled,
+      time: formatClockTime(p.summary.timeSurvivedSec),
+      gold: p.runResult.goldEarned,
+    })}`;
+
+    const actions = buildGameOverDomFocusActions(callbacks);
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-game-over-focus-layer',
+      label: t(titleKey),
+      description: summaryDigest,
+      role: 'dialog',
+      actions,
+      initialFocusIndex: this.focusedActionIndex >= 0 ? this.focusedActionIndex : 0,
+      onFocusIndexChange: (index) => {
+        // Mirror DOM-side focus changes (screen-reader Tab) back into the
+        // Phaser-side index so the visible stroke follows assistive-tech
+        // navigation. applyActionFocus → setFocusedIndex on the layer is
+        // a no-op when the index is already current, so re-entry is safe.
+        const entry = this.actionEntries[index];
+        if (!entry || entry.disabled) return;
+        this.focusedActionIndex = index;
+        this.applyActionFocus();
+      },
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 
   /**

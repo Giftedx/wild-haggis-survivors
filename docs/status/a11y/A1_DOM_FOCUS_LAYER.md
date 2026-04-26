@@ -11,17 +11,7 @@ T407 now has a first thin implementation: a visually hidden DOM focus layer that
 
 ## Adopted Screens
 
-### GameOverScene (first adopter)
-
-`GameOverScene` mirrors its three primary post-run actions:
-
-- Play again
-- Gold shop
-- Tae Gran's
-
-Run result screen is critical, has a clear focus model, three stable actions.
-
-### CurseScene (second adopter — 2026-04-26)
+### CurseScene (first live adopter — 2026-04-26)
 
 `CurseScene` mirrors its 4 curse tiles + clean-run + back action through a
 single DOM group at `[data-whs-dom-focus-layer="whs-curse-focus-layer"]`.
@@ -46,7 +36,7 @@ trailing `data-focus-id` is `curse-back`. Run via `npm run test:e2e` after
 a production build (the smoke is part of the standard Playwright project,
 not a gated optional run).
 
-### NodePromptUI (third adopter — 2026-04-26)
+### NodePromptUI (second adopter — 2026-04-26)
 
 `src/ui/NodePromptUI.ts` is the Moor Road interactive prompt panel
 (shrine / wee_trader / bargain). Each `show()` mounts a per-prompt DOM
@@ -95,7 +85,7 @@ prove the contract that an e2e smoke would assert. Future Playwright
 adoption should ride a deterministic prompt-injection harness rather
 than a synthetic act-1 walkthrough.
 
-### SettingsScene (fourth adopter — 2026-04-26)
+### SettingsScene (third adopter — 2026-04-26)
 
 `src/scenes/SettingsScene.ts` mirrors its full row stack — sliders,
 toggles, cycles (banter / locale / colorblind), launch rows (input
@@ -173,6 +163,60 @@ Limits / known follow-ups:
   matches the canonical gamepad confirm path so the contract stays
   consistent across surfaces.
 
+### GameOverScene (fourth adopter — 2026-04-26)
+
+`src/scenes/GameOverScene.ts` mirrors its three primary post-run
+actions through a single DOM group at `[data-whs-dom-focus-layer=
+"whs-game-over-focus-layer"]`:
+
+- PLAY AGAIN  → restart through the Curse picker
+- GOLD SHOP   → between-run upgrade shop
+- TAE GRAN'S  → Croft hub
+
+This back-fills the doc's original "first adopter" claim — the prior
+note was aspirational; the scene file did not import the helper until
+this commit. CurseScene was the genuine first live adopter, then
+NodePromptUI and SettingsScene; GameOver lands as the fourth.
+
+- DOM container uses `role="dialog"` because the post-run overlay is
+  genuinely modal — the full-screen scrim has `setInteractive()` and
+  blocks the playfield until one of the three actions resolves.
+  `aria-label` carries the resolved death/victory title (the same
+  string shown in the visible big title) and `aria-describedby` carries
+  a one-line run digest of the form `"{variantLabel} · Kills {kills} ·
+  Time {time} · Gold +{gold}"`. The digest re-uses the existing
+  `ui.gameOver.damage_summary` key — no new copy was authored, voice
+  stays Hearth (Still Game).
+- Action labels resolve through the existing `ui.gameOver.play_again`,
+  `ui.gameOver.upgrades`, and `ui.gameOver.menu` keys. SCS overlays for
+  these already exist (no parity fence work needed).
+- Action callbacks are extracted into local arrow consts in `create()`
+  and shared between the visible Phaser buttons and the DOM mirror so
+  pointer click, keyboard Enter, gamepad confirm, and assistive-tech
+  Tab-Enter all route through one path. No behaviour drift between the
+  surfaces.
+- Phaser keyboard / gamepad navigation continues to drive
+  `focusedActionIndex` unchanged. The DOM layer mirrors that index via
+  `setFocusedIndex` whenever `applyActionFocus` runs (called on arrow /
+  Tab navigation, digit shortcuts, and pointer hover).
+- DOM-side focus changes (screen-reader Tab, Shift+Tab) call back into
+  `onFocusIndexChange`, which writes `focusedActionIndex` and re-runs
+  `applyActionFocus`. The layer's `setFocusedIndex` is a no-op when the
+  index is already current, so re-entry through `applyActionFocus → 
+  setFocusedIndex` is safe.
+- Lifecycle: `create()` calls `uninstallDomFocusLayer()` first to cover
+  Phaser scene reuse (the same instance is re-init'd whenever the
+  player loses or wins), and the `SHUTDOWN` listener also disposes.
+
+Helper coverage: `src/scenes/gameOverDomFocusActions.test.ts` (7 tests
+on the pure action builder — count, ordering, per-callback routing,
+non-empty resolved labels, and independence between the three slots).
+
+Smoke coverage: deferred. The pure-helper tests prove the action-shape
+contract; a Playwright smoke covering the live DOM mount is the
+natural next step but rides the broader assistive-tech regression
+harness rather than this single adoption.
+
 ## Research Hooks
 
 - `docs/research/ACCESSIBILITY_RESEARCH.md` Part 3.6: screen-reader-friendly menus are a realistic WHS target even if full blind play is out of scope.
@@ -192,5 +236,5 @@ Limits / known follow-ups:
 1. ~~CurseScene tiles~~ — adopted 2026-04-26.
 2. ~~NodePromptUI~~ — adopted 2026-04-26.
 3. ~~Settings accessibility rows~~ — adopted 2026-04-26 (per-row mirror, slider + toggle + cycle + launch row types covered).
-4. `SettingsInputScene` — keybind / gamepad rebind capture rows; deferred from the SettingsScene adoption because the capture loop is its own sub-scene with a different input model (waiting on a key press rather than activating an action).
-5. `GameOverScene` — the original adopter; the project doc is aspirational, the scene file does not yet import the helper. Back-fill is open as a separate follow-up task.
+4. ~~GameOverScene actions~~ — back-filled 2026-04-26 (the prior "first adopter" note was aspirational; CurseScene was the genuine first live adopter).
+5. `SettingsInputScene` — keybind / gamepad rebind capture rows; deferred from the SettingsScene adoption because the capture loop is its own sub-scene with a different input model (waiting on a key press rather than activating an action).
