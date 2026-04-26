@@ -80,6 +80,28 @@ export class BiomeController {
     return this.manager;
   }
 
+  /**
+   * Phase B Endless — rebuild the biome layout + renderer from a fresh
+   * RNG draw. Called every `POST_BELL_RESEED_INTERVAL_SEC` seconds while
+   * the player is past the bell. The toasted-set is cleared so the
+   * player gets the entry quip again on first contact with each new
+   * region; lastBiome stays current so we don't fire a transition for
+   * the cell we already occupy. The onBiomeEnter callback is re-fired
+   * on the next tick if the player's position now sits in a different
+   * biome cell.
+   */
+  reseed(scene: Phaser.Scene, rng: RNG, worldWidth: number, worldHeight: number): void {
+    const layout = createBiomeLayout(rng, worldWidth, worldHeight);
+    this.manager = new BiomeManager(layout);
+    this.renderer.destroy();
+    this.renderer = new BiomeRenderer(scene, this.manager);
+    this.toasted.clear();
+    // Clear lastBiome so the next tick triggers a fresh transition into
+    // whichever cell the player is now standing in (post-reseed the cell
+    // identity has almost certainly changed).
+    this.lastBiome = null;
+  }
+
   destroy(): void {
     this.renderer.destroy();
   }

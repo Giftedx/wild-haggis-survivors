@@ -367,6 +367,8 @@ export const EN_STRINGS: LocaleTree = {
       post_bell_start: 'Post-Bell — the moor\'s no\' done with ye yet.',
       /** Send-off toast when the player finally falls in Post-Bell. */
       post_bell_sendoff: 'Ye went further than any haggis before ye.',
+      /** Phase B Endless — toast when the moor reshuffles every 3 min post-bell. */
+      post_bell_reseed: 'The moor shifts beneath ye.',
       death_title: 'Hooves down — braw try',
       /** Rotating death titles — picked randomly so each death feels different. */
       death_title_2: 'Aw naw — doon ye go',

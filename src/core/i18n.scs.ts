@@ -214,6 +214,7 @@ export const SCS_STRINGS: LocaleTree = {
       keep_going_offer: 'Keep gaun? Hit ENTER afore tha bell rings.',
       post_bell_start: 'Post-Bell — tha moor\'s no duin wi ye yet.',
       post_bell_sendoff: 'Ye gaed further than ony haggis afore ye.',
+      post_bell_reseed: 'Tha moor shifts unner ye.',
       death_title: 'Hooves doon — braw try',
       death_title_2: 'Aw naw — doon ye gaun',
       death_title_3: 'That\'s yer lot, pal',

@@ -99,6 +99,7 @@ import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
+import { shouldReseedAtSec } from '../systems/biomeReseedSchedule';
 import { FloraScatter } from '../systems/FloraScatter';
 import { WildlifeSystem } from '../systems/WildlifeSystem';
 import { MistLayer } from '../systems/MistLayer';
@@ -410,6 +411,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
   private biomeController: BiomeController | null = null;
+  /**
+   * Phase B Endless — secondsPastBell at which we last reseeded
+   * the biome layout. -1 = never. Reset on scene reuse via the
+   * BiomeController construction path which already resets this.
+   */
+  private postBellLastReseedSec: number = -1;
   /** F1 M5 — persistent haar fog controller on the main camera. Null when
    *  the Canvas renderer is in use (filter pipeline unavailable there). */
   private haarFog: HaarFogController | null = null;
@@ -633,6 +640,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Biome partition — voronoi regions seeded from the run RNG.
     // Owns manager, renderer, entry-toast state, and player-modifier push.
     this.biomeController?.destroy();
+    this.postBellLastReseedSec = -1;
     this.biomeController = new BiomeController(
       this,
       this.runRng.branch(),
@@ -1728,7 +1736,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     this.hazardZones.tick(scaledDelta);
     if (this.haarFog) this.haarFog.advanceTime(delta * 0.001);
-    if (this.biomeController) this.biomeController.tick(this.player, this.juice);
+    if (this.biomeController) {
+      this.biomeController.tick(this.player, this.juice);
+      // Phase B Endless — fresh voronoi every 3 min past the bell so
+      // the world keeps shifting under a player who refuses to leave.
+      const sec = this.runLifecycle?.getSecondsPastBell() ?? 0;
+      if (sec > 0) {
+        if (this.postBellLastReseedSec < 0) this.postBellLastReseedSec = 0;
+        if (shouldReseedAtSec(sec, this.postBellLastReseedSec)) {
+          this.postBellLastReseedSec = sec;
+          this.biomeController.reseed(this, this.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
+          this.juice.showToast(t('ui.gameOver.post_bell_reseed'), '#aa66dd');
+        }
+      }
+    }
     this.floraScatter?.update(scaledDelta, this.cameras.main);
     this.wildlifeSystem?.update(scaledDelta, this.player.x, this.player.y);
     this.mistLayer?.update(scaledDelta, GAME.WORLD_WIDTH);
