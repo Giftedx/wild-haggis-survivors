@@ -37,6 +37,11 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import {
+  buildSettingsDomFocusActions,
+  type SettingsDomActionInput,
+} from './settingsDomFocusActions';
 
 type SettingsGpRow =
   | {
@@ -116,6 +121,12 @@ export class SettingsScene extends Phaser.Scene {
   private sectionColor = '#d8b877';
   private valueColor = '#88aacc';
   private gpRows: SettingsGpRow[] = [];
+  /** Per-row hook that re-reads the row's current value text and pushes
+   *  the refreshed action label into the DOM mirror. Indices line up
+   *  one-for-one with `gpRows` so the focus mirror, gamepad index, and
+   *  this array stay in lockstep. */
+  private domRowSyncs: Array<() => SettingsDomActionInput> = [];
+  private domFocusLayer: DomFocusLayer | null = null;
   private gpIdx = 0;
   private gpPrevU = false;
   private gpPrevD = false;
@@ -142,7 +153,13 @@ export class SettingsScene extends Phaser.Scene {
 
   create(): void {
     this.working = { ...this.settingsManager.load() };
+    // Scene reuse: tear down any DOM mirror left over from a previous
+    // mount (locale cycle / reset both call `scene.start('Settings')`).
+    // The shutdown handler also disposes; this guard covers the case
+    // where create() runs before shutdown fires (Phaser scene reuse).
+    this.uninstallDomFocusLayer();
     this.gpRows = [];
+    this.domRowSyncs = [];
     this.glowTweens = [];
     const { width, height } = this.scale;
 
@@ -360,6 +377,14 @@ export class SettingsScene extends Phaser.Scene {
       .rectangle(width / 2, backY, width - 48, 44, 0x000000, 0)
       .setStrokeStyle(0);
     this.gpRows.push({ kind: 'back', go: goBack, mark: backMark });
+    // DOM mirror — BACK action persists settings + returns to caller.
+    const backRowLabel = t('ui.settings.back');
+    this.domRowSyncs.push(() => ({
+      id: 'launch-back',
+      kind: 'launch',
+      label: backRowLabel,
+      onActivate: goBack,
+    }));
 
     // Reset-to-defaults chip — sits on the BACK row rather than adding
     // another row. Visual reset of every slider/toggle is its own
@@ -368,6 +393,7 @@ export class SettingsScene extends Phaser.Scene {
 
     this.gpIdx = 0;
     this.applyGpHighlight();
+    this.installDomFocusLayer();
 
     this.gpUpdate = (_t: number, delta: number) => this.tickGamepad(delta);
     this.events.on('update', this.gpUpdate);
@@ -380,6 +406,7 @@ export class SettingsScene extends Phaser.Scene {
       this.glowTweens = [];
       this.previewHandle?.destroy();
       this.previewHandle = undefined;
+      this.uninstallDomFocusLayer();
     });
   }
 
@@ -450,6 +477,60 @@ export class SettingsScene extends Phaser.Scene {
       if (i === this.gpIdx) m.setStrokeStyle(2, 0xffe066, 0.9);
       else m.setStrokeStyle(0);
     }
+    // Mirror the visible Phaser cursor into the DOM focus layer so an
+    // assistive-tech user hears the same row the sighted player sees.
+    this.domFocusLayer?.setFocusedIndex(this.gpIdx);
+  }
+
+  /**
+   * T407 — install the DOM-visible focus mirror after every row has
+   * been registered. Each row pushed an entry on `domRowSyncs` that
+   * recomputes its current value text + activation callback; we run
+   * that array once now to seed the action list.
+   */
+  private installDomFocusLayer(): void {
+    if (typeof document === 'undefined') return;
+    const inputs = this.domRowSyncs.map((sync) => sync());
+    const actions = buildSettingsDomFocusActions(inputs);
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-settings-focus-layer',
+      label: t('ui.settings.title'),
+      description: t('ui.settings.subtitle'),
+      role: 'group',
+      actions,
+      initialFocusIndex: this.gpIdx >= 0 ? this.gpIdx : 0,
+      onFocusIndexChange: (index) => {
+        // DOM-side focus drives the canonical gamepad index. Re-render
+        // the visible Phaser focus stroke without round-tripping back
+        // into setFocusedIndex on the layer (it's already current).
+        if (index < 0 || index >= this.gpRows.length) return;
+        this.gpIdx = index;
+        for (let i = 0; i < this.gpRows.length; i++) {
+          const m = this.gpRows[i].mark;
+          if (!m.active) continue;
+          if (i === this.gpIdx) m.setStrokeStyle(2, 0xffe066, 0.9);
+          else m.setStrokeStyle(0);
+        }
+      },
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  }
+
+  /**
+   * Refresh the entire DOM action set from the per-row sync hooks.
+   * Called after any row's value mutates (slider bump, toggle flip,
+   * cycle step) so the accessible label reflects the new state. The
+   * focused index is preserved through the rebuild.
+   */
+  private refreshDomActions(): void {
+    if (!this.domFocusLayer) return;
+    const inputs = this.domRowSyncs.map((sync) => sync());
+    this.domFocusLayer.setActions(buildSettingsDomFocusActions(inputs));
+    this.domFocusLayer.setFocusedIndex(this.gpIdx);
   }
 
   private tickGamepad(delta: number): void {
@@ -599,12 +680,14 @@ export class SettingsScene extends Phaser.Scene {
       this.working[key] = sliderValueFromRatio(ratio, min, max, step);
       syncVisual();
       this.persistAndApply();
+      this.refreshDomActions();
     };
 
     const bump = (direction: number) => {
       this.working[key] = steppedSliderBump(this.working[key], direction, min, max, step);
       syncVisual();
       this.persistAndApply();
+      this.refreshDomActions();
     };
 
     syncVisual();
@@ -643,6 +726,16 @@ export class SettingsScene extends Phaser.Scene {
       plus: () => bump(+1),
       mark,
     });
+    // DOM mirror — Enter / Space activates the same +1 bump path the
+    // gamepad confirm button uses. The current value is folded into the
+    // accessible label so a screen reader announces "Master volume — 80%".
+    this.domRowSyncs.push(() => ({
+      id: `slider-${key}`,
+      kind: 'slider',
+      label: this.compactSettingsLabel(label),
+      valueText: formatSliderValue(key, this.working[key]),
+      onActivate: () => bump(+1),
+    }));
   }
 
   private addToggleRow(
@@ -741,12 +834,14 @@ export class SettingsScene extends Phaser.Scene {
           this.working[key] = true;
           sync();
           this.persistAndApply();
+          this.refreshDomActions();
         });
         return;
       }
       this.working[key] = nextValue;
       sync();
       this.persistAndApply();
+      this.refreshDomActions();
     };
 
     btn.on('pointerdown', doToggle);
@@ -769,6 +864,15 @@ export class SettingsScene extends Phaser.Scene {
       toggle: doToggle,
       mark,
     });
+    // DOM mirror — Enter / Space drives the same flip-or-confirm path as
+    // the canvas pointer. The current ON/OFF state folds into the label.
+    this.domRowSyncs.push(() => ({
+      id: `toggle-${key}`,
+      kind: 'toggle',
+      label: this.compactSettingsLabel(label),
+      valueText: toggleStateDisplay(this.working[key]).text,
+      onActivate: doToggle,
+    }));
   }
 
   /**
@@ -822,6 +926,7 @@ export class SettingsScene extends Phaser.Scene {
       };
       sync();
       this.persistAndApply();
+      this.refreshDomActions();
     };
 
     btn.on('pointerdown', cycle);
@@ -839,6 +944,15 @@ export class SettingsScene extends Phaser.Scene {
       toggle: cycle,
       mark,
     });
+    // DOM mirror — cycles forward through the four banter levels.
+    const banterLabel = t('ui.settings.banter_frequency');
+    this.domRowSyncs.push(() => ({
+      id: 'cycle-banter',
+      kind: 'cycle',
+      label: this.compactSettingsLabel(banterLabel),
+      valueText: labelForBanterFrequency(this.working.banterFrequency),
+      onActivate: cycle,
+    }));
   }
 
   /**
@@ -909,6 +1023,17 @@ export class SettingsScene extends Phaser.Scene {
       toggle: cycle,
       mark,
     });
+    // DOM mirror — locale cycle. Activation restarts the scene which
+    // reinstalls the layer with the new locale's labels, so no
+    // refreshDomActions is needed here.
+    const langLabel = t('ui.settings.language');
+    this.domRowSyncs.push(() => ({
+      id: 'cycle-locale',
+      kind: 'cycle',
+      label: this.compactSettingsLabel(langLabel),
+      valueText: localeLabel(),
+      onActivate: cycle,
+    }));
   }
 
   /**
@@ -955,6 +1080,7 @@ export class SettingsScene extends Phaser.Scene {
       // taken from the game game instance.
       const canvas = this.sys.game.canvas as HTMLCanvasElement | undefined;
       if (canvas) applyColorblindFilterToCanvas(canvas, current());
+      this.refreshDomActions();
     };
 
     btn.on('pointerdown', cycle);
@@ -972,6 +1098,16 @@ export class SettingsScene extends Phaser.Scene {
       toggle: cycle,
       mark,
     });
+    // DOM mirror — colorblind cycle. Re-emit the action set after each
+    // step so the announce string carries the new mode label.
+    const cbLabel = t('ui.settings.colorblind_mode');
+    this.domRowSyncs.push(() => ({
+      id: 'cycle-colorblind',
+      kind: 'cycle',
+      label: this.compactSettingsLabel(cbLabel),
+      valueText: labelForColorblindMode(current()),
+      onActivate: cycle,
+    }));
   }
 
   /**
@@ -1028,6 +1164,15 @@ export class SettingsScene extends Phaser.Scene {
       toggle: openRebindScene,
       mark,
     });
+    // DOM mirror — launch action; opens the rebind sub-scene which
+    // restarts SettingsScene on return, so no live refresh needed.
+    const rebindLabel = t('ui.inputRebind.title');
+    this.domRowSyncs.push(() => ({
+      id: 'launch-rebind',
+      kind: 'launch',
+      label: this.compactSettingsLabel(rebindLabel),
+      onActivate: openRebindScene,
+    }));
   }
 
   /**
@@ -1076,6 +1221,14 @@ export class SettingsScene extends Phaser.Scene {
       toggle: doReset,
       mark,
     });
+    // DOM mirror — RESET action restarts the scene so no live refresh.
+    const resetLabel = t('ui.settings.reset_action');
+    this.domRowSyncs.push(() => ({
+      id: 'launch-reset',
+      kind: 'launch',
+      label: resetLabel,
+      onActivate: doReset,
+    }));
   }
 
   /**
