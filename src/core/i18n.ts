@@ -2344,7 +2344,7 @@ export const EN_STRINGS: LocaleTree = {
         // ── "Ae Fond Kiss" (1791) + "Open the Door to Me O" (1793).
         defeat_lament: {
           a: 'Ae fond kiss, and then we sever!',
-          b: 'The wan moon is setting ayont the white wave.',
+          b: 'The wan moon is setting behind the white wave.',
         },
         // ── "Scots Wha Hae" (1793). Bruce at Bannockburn.
         charge: {
@@ -2353,13 +2353,13 @@ export const EN_STRINGS: LocaleTree = {
         },
         // ── "Tam o\' Shanter" (1790). Time-won\'t-wait.
         nae_haste: {
-          a: 'Nae man can tether time nor tide.',
+          a: 'Nae man can tether time or tide.',
           b: 'When chapman billies leave the street.',
         },
         // ── "John Anderson My Jo" (1790). Elder-kinship.
         lineage_moment: {
           a: 'John Anderson my jo, John, / When we were first acquent.',
-          b: 'We clam the hill thegither, / An\' monie a canty day, John.',
+          b: 'We clamb the hill thegither, / An\' monie a canty day, John.',
         },
       },
       // ── Death reflections (B1 Phase 2 Task 12). Hearth, warmly-framed
