@@ -1,0 +1,30 @@
+# Normalize text files to LF in the stored blob (matches .editorconfig intent).
+# Working trees on Windows still get CRLF on checkout via core.autocrlf=true;
+# this just keeps the stored blob consistent so cross-worktree merges and
+# cherry-picks don't whole-file-conflict on EOL alone (caught during the
+# 2026-04-26 top-10 dispatch reconciliation — see docs/top-10-tasks/Execution_Log.md).
+* text=auto eol=lf
+
+# Markdown — preserve trailing whitespace per .editorconfig override.
+*.md text eol=lf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.wav binary
+*.mp3 binary
+*.ogg binary
+*.webm binary
+*.mp4 binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
