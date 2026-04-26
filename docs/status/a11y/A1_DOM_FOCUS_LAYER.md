@@ -135,13 +135,13 @@ tests on the pure label-folding + action-builder logic — slider /
 toggle / cycle / launch label composition, action-id namespacing,
 ordering, callback routing, empty-input edge case).
 
-Smoke coverage: deferred. The scene smoke
-(`src/scenes/settingsComfort.smoke.test.ts`) already proves the row
-stack assembles cleanly under jsdom; a Playwright accessibility smoke
-covering the new DOM mirror is the natural next step but rides the
-broader assistive-tech regression harness rather than this single
-adoption. The pure-helper tests already prove the action-shape
-contract a smoke would assert.
+Smoke coverage: `e2e/settings-dom-focus.spec.ts` (2026-04-27) boots
+the scene through the global game manager, asserts the layer mounts,
+verifies button count meets the row-stack lower bound, every button
+carries a non-empty accessible name without leaking i18n keys, and at
+least one slider row folds its percentage value into the label
+(canonical `"{label} — {value}"` separator). Runs against the standard
+Playwright project triple (chromium / firefox / webkit).
 
 Limits / known follow-ups:
 
@@ -212,10 +212,14 @@ Helper coverage: `src/scenes/gameOverDomFocusActions.test.ts` (7 tests
 on the pure action builder — count, ordering, per-callback routing,
 non-empty resolved labels, and independence between the three slots).
 
-Smoke coverage: deferred. The pure-helper tests prove the action-shape
-contract; a Playwright smoke covering the live DOM mount is the
-natural next step but rides the broader assistive-tech regression
-harness rather than this single adoption.
+Smoke coverage: `e2e/game-over-dom-focus.spec.ts` (2026-04-27) boots
+the scene with a synthetic minimal `GameOverPayload` (just enough for
+`create()` to mount), asserts the layer is attached, verifies
+`role="dialog"` (the post-run scrim is genuinely modal), checks the
+three `data-focus-id` slots in canonical order (`gameover-play-again`,
+`gameover-gold-shop`, `gameover-tae-gran`), and confirms every button
+carries a non-empty accessible name without leaking i18n keys. Runs
+against the standard Playwright project triple.
 
 ## Research Hooks
 
