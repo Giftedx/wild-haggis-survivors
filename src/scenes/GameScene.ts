@@ -128,6 +128,7 @@ import { getRoute } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
+import { restoreHeldRelics } from './game/SavedStateHydrator';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
@@ -2980,16 +2981,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private restoreHeldRelics(keys: readonly string[]): void {
-    if (!this.relicSystem) return;
-    this.relicSystem.reset();
-    this.relicEffectDriver?.reset();
-    const seen = new Set<string>();
-    for (const key of keys) {
-      if (seen.has(key)) continue;
-      const relic = (RELICS as Readonly<Record<string, RelicDef | undefined>>)[key];
-      if (!relic) continue;
-      if (this.relicSystem.add(relic)) seen.add(key);
-    }
+    // Pure helper — see src/scenes/game/SavedStateHydrator.ts. Keeps
+    // the private method in place so existing call sites
+    // (RunPersistenceBridge hook, DebugTimeTravelApi audit hook) don't
+    // shift, but the body is one line of delegation.
+    restoreHeldRelics(this.relicSystem, this.relicEffectDriver, keys);
   }
 
   /**
