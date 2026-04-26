@@ -2,6 +2,8 @@
 
 > Phase 0 of the Moor-Renders-Itself push. Spec: `docs/superpowers/specs/2026-04-18-moor-renders-itself-design.md` (v3). Plan: `docs/superpowers/plans/2026-04-18-moor-phase-0-prototype-plan.md`. Gate criteria live in spec §14.
 
+> **2026-04-26 status update.** Phase 0, Phase 1 (enemy archetypes — buckfast_ned / eagle / haggis_hunter wired through `AnimationController`, plus 27 additional drawers self-registered in the registry), and Phase 2 (secondary-motion: tail lag + tier-gated heather mantle) have all shipped. Format choice ratified in [ADR-0005](adr/0005-skeletal-animation-rig.md). Runtime perf baseline captured in `src/animation/animationPerf.bench.test.ts` — 201-entity steady state averages 0.0196 ms/tick on the CI runner (≈0.10 µs/entity). Remaining Phase 0 gates (live FPS A/B vs procedural baseline, Gate A 24-h squint test, Gate B external reviewer panel) remain human-gated; tracked in `docs/top-10-tasks/blocked/02-blocked-on-human.md`.
+
 ## Commits shipped
 
 | Task | Commit | Summary |
