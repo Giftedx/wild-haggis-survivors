@@ -110,6 +110,13 @@ export interface LevelUpFlowHooks {
   isBossKilledThisRun?(): boolean;
   getOwnedRuneIds?(): readonly string[];
   grantRune?(runeId: string): void;
+  /** Phase B Endless — gates the Overcharge mythic card. Optional so test scenes pass. */
+  isPostBell?(): boolean;
+  /**
+   * Phase B Endless — list of weapon keys already overcharged this run.
+   * Filters Overcharge cards from the offer pool. Optional for test scenes.
+   */
+  getOverchargedWeaponKeys?(): readonly string[];
 }
 
 export class LevelUpFlow {
@@ -369,6 +376,20 @@ export class LevelUpFlow {
           evolvedKey: effect.evolutionKey,
         });
         break;
+
+      case 'overcharge_weapon':
+        // Phase B Endless — Overcharge applies +25% damage / +20% area on
+        // top of the evolved stats. Idempotent at the WeaponSystem level.
+        weaponSystem.applyOvercharge(effect.weaponKey);
+        juice.showToast(t('ui.game.upgrade_overcharge_weapon', { name: cardTitle }), '#ff66cc');
+        // Spectral pop on the player — quieter than full evolution spectacle
+        // because Overcharge layers onto a weapon that's already legendary.
+        {
+          const ring = this.hooks.getStatusFxPool().acquireArc(player.x, player.y, 12, 0xff66cc, 0.55);
+          scene.tweens.add({ targets: ring, radius: 110, alpha: 0, duration: 600, onComplete: () => { ring.setVisible(false); } });
+        }
+        audio.playLevelUp();
+        break;
     }
 
     const xpSystem = this.hooks.getXPSystem();
@@ -438,6 +459,8 @@ export class LevelUpFlow {
       {
         bossKilledThisRun: this.hooks.isBossKilledThisRun?.() ?? false,
         ownedRuneIds: this.hooks.getOwnedRuneIds?.() ?? [],
+        isPostBell: this.hooks.isPostBell?.() ?? false,
+        overchargedWeaponKeys: this.hooks.getOverchargedWeaponKeys?.() ?? [],
       },
     );
     const pool = filterHealCardsWhenFull(rawPool, player.getHp() >= player.getMaxHp());

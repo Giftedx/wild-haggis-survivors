@@ -31,6 +31,11 @@ export function resolveCardRarityGlowStyle(
   rarity: Rarity,
   borderColor: number,
 ): CardRarityGlowStyle {
+  if (rarity === 'mythic') {
+    // Phase B Endless — Overcharge sits one notch above legendary; the
+    // wash extends a touch further and the alpha is the loudest.
+    return { padExpand: 10, color: borderColor, alpha: 0.18 };
+  }
   if (rarity === 'legendary') {
     return { padExpand: 8, color: borderColor, alpha: 0.15 };
   }

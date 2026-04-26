@@ -856,6 +856,8 @@ export const EN_STRINGS: LocaleTree = {
       upgrade_grant_rune: 'Rune struck: {name} — cairn-chiseled.',
       upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
+      /** Phase B Endless — Overcharge mythic-tier toast. Edge register. */
+      upgrade_overcharge_weapon: 'Overcharged: {name} — pure radge.',
       max_level_toast: 'Max level — yir a walking storm! That\'s plenty.',
       /** Shown when XP converts to gold at max level (batched). */
       xp_overflow_gold: 'Max level — the moor pays in gold: +{gold}g (overflow XP).',
@@ -3357,6 +3359,16 @@ export const EN_STRINGS: LocaleTree = {
      * offer the named legendary form. Hearth-warm voice; no shouty caps.
      */
     evolution_ready_hint: ' ★ Evolves into {evolved} at the next chest.',
+    /**
+     * Phase B Endless — Overcharge mythic-tier card. Post-bell only,
+     * once per evolved weapon per run. Voice: Edge register — the
+     * weapon "remembers what it was; remember what it was for". Damage
+     * + area scaled, but the line trades on the moment, not the math.
+     */
+    overcharge: {
+      name: 'Overcharge {weapon}',
+      description: '{weapon} burns hotter — +25% damage, +20% area. Once only.',
+    },
   },
   // W2 Moor Road — route labels + descriptions.
   // Voice-card rules (M3 pass):

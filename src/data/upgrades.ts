@@ -12,7 +12,7 @@ import { buildRuneCards } from './runeCards';
 import { t } from '../core/i18n';
 import type { RNG } from '../utils/rng';
 
-export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'rune';
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'legendary' | 'rune' | 'mythic';
 
 /** All valid passive item keys — single source of truth. */
 export type PassiveKey =
@@ -32,7 +32,8 @@ export type UpgradeEffect =
   | { type: 'add_passive'; passiveKey: string }
   | { type: 'stat_boost'; stat: string; amount: number }
   | { type: 'evolve_weapon'; weaponKey: string; evolutionKey: string }
-  | { type: 'grant_rune'; runeId: string };
+  | { type: 'grant_rune'; runeId: string }
+  | { type: 'overcharge_weapon'; weaponKey: string };
 
 export interface UpgradeCard {
   id: string;
@@ -55,12 +56,19 @@ export const RUNE_RARITY_WEIGHT = 7;
  */
 export const RUNE_CARD_OFFERS_ENABLED = false;
 
+/** Phase B Endless — Mythic (Overcharge) draw weight. Rare-but-not-impossible
+ *  in the post-bell pool. The card only enters the pool when an evolved,
+ *  un-overcharged weapon exists, so weight here is a within-pool bias not a
+ *  per-level guarantee. */
+export const MYTHIC_RARITY_WEIGHT = 6;
+
 export const RARITY_WEIGHTS: Record<Rarity, number> = {
   common: 55,
   uncommon: 28,
   rare: 13,
   legendary: 4,
   rune: RUNE_RARITY_WEIGHT,
+  mythic: MYTHIC_RARITY_WEIGHT,
 };
 
 /** Rarity colors for card borders — mirrors the `COLORS` card-rarity
@@ -72,6 +80,7 @@ export const RARITY_COLORS: Record<Rarity, number> = {
   rare: COLORS.RARE,
   legendary: COLORS.LEGENDARY,
   rune: COLORS.RUNE,
+  mythic: COLORS.MYTHIC,
 };
 
 // ── Weapon cards ──
@@ -469,6 +478,14 @@ export interface BuildCardPoolContext {
   readonly ownedRuneIds?: readonly string[];
   /** Test/future-rollout override for the release gate above. */
   readonly runeOffersEnabled?: boolean;
+  /** Phase B Endless — true while in post-bell. Gates Overcharge cards. */
+  readonly isPostBell?: boolean;
+  /**
+   * Phase B Endless — weapon keys already overcharged this run. The
+   * Overcharge tier is once-per-weapon-per-run; entries listed here are
+   * filtered out of the offered pool.
+   */
+  readonly overchargedWeaponKeys?: readonly string[];
 }
 
 /**
@@ -571,6 +588,26 @@ export function buildCardPool(
     }
   }
 
+  // Phase B Endless — Overcharge cards. Once per weapon per run, gated
+  // to post-bell + already-evolved + not-yet-overcharged. Generated
+  // programmatically so a new evolution recipe in BalanceConfig adds an
+  // overcharge automatically.
+  if (ctx.isPostBell && evolvedWeaponKeys.length > 0) {
+    const already = new Set(ctx.overchargedWeaponKeys ?? []);
+    for (const key of evolvedWeaponKeys) {
+      if (already.has(key)) continue;
+      const weaponName = formatWeaponName(key);
+      pool.push({
+        id: `overcharge_${key}`,
+        name: t('upgradeCard.overcharge.name', { weapon: weaponName }),
+        description: t('upgradeCard.overcharge.description', { weapon: weaponName }),
+        rarity: 'mythic',
+        icon: `wicon_${key}`,
+        effect: { type: 'overcharge_weapon', weaponKey: key },
+      });
+    }
+  }
+
   return pool;
 }
 
@@ -647,6 +684,10 @@ export function drawCards(
     // the usual legendary surge. Floor at 1 to keep the tier live even
     // if hostile luck math pushed it below zero.
     rune: Math.max(1, RARITY_WEIGHTS.rune + luckBonus * 0.3),
+    // Phase B Endless — Mythic / Overcharge tier. Same luck coupling as
+    // legendary so a sporran build sees overcharges more often. Card only
+    // enters the pool post-bell + on already-evolved un-overcharged weapons.
+    mythic: Math.max(1, RARITY_WEIGHTS.mythic + luckBonus * 0.4),
   };
 
   const drawn: UpgradeCard[] = [];

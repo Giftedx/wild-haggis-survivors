@@ -111,6 +111,10 @@ export const COLORS = {
   /** U1 Rune tier — carved-stone mauve, sits between rare (blue) and
    *  legendary (gold) on the rarity spectrum. */
   RUNE: 0x8c7aa0,
+  /** Phase B Endless — Mythic tier (Overcharge cards). Spectral purple
+   *  ramping into hot pink — visually distinct from RUNE (mauve) so the
+   *  two tiers don't compete on the rarity spectrum. */
+  MYTHIC: 0xff66cc,
 
   /** Background */
   BG_DARK: 0x1a1a2e,

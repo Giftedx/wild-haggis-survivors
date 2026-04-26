@@ -1336,6 +1336,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isBossKilledThisRun: () => this.runScore.bossKillCount > 0,
       getOwnedRuneIds: () => this.ownedRuneIds,
       grantRune: (runeId) => this.grantRune(runeId),
+      // Phase B Endless — Overcharge mythic-tier card hooks.
+      isPostBell: () => this.runLifecycle?.isPostBell() ?? false,
+      getOverchargedWeaponKeys: () => this.weaponSystem.getOverchargedKeys(),
     });
     this.runLifecycle = new RunLifecycle(this, {
       getPlayer: () => this.player,

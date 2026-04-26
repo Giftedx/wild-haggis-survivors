@@ -635,6 +635,7 @@ export const SCS_STRINGS: LocaleTree = {
       upgrade_grant_rune: 'Rune struck: {name} — cairn-chiseled.',
       upgrade_echo_applied: 'Echo heard — {name}.',
       upgrade_evolve_weapon: 'Legend forged: {name}! Mon then!',
+      upgrade_overcharge_weapon: 'Owerchairged: {name} — pure radge.',
       max_level_toast: 'Max level — yer a walkin storm! That\'s plenty.',
       xp_overflow_gold: 'Max level — tha moor pays in gold: +{gold}g (overflow XP).',
       codex_first_cull: 'First cull logged: {name} — tha herd\'s takin notes.',
@@ -2899,6 +2900,10 @@ export const SCS_STRINGS: LocaleTree = {
     },
     evolution_hint: ' At Lv 5, crack a kist while cairryin {passive} — somethin\' legendary stirs.',
     evolution_ready_hint: ' ★ Evolves intae {evolved} at the next kist.',
+    overcharge: {
+      name: 'Owercharge {weapon}',
+      description: '{weapon} burns hotter — +25% skaith, +20% area. The wance only.',
+    },
   },
   routes: {
     up_the_brae: {

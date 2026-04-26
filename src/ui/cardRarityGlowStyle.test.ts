@@ -50,3 +50,12 @@ describe('resolveCardRarityGlowStyle — 3 visual tiers across 4 rarities', () =
     expect(s.alpha).toBeLessThan(0.15);     // < legendary
   });
 });
+
+describe('mythic — Phase B Endless Overcharge tier', () => {
+  it('mythic sits above legendary: widest pad, loudest alpha, tinted border', () => {
+    const s = resolveCardRarityGlowStyle('mythic', RARITY_COLORS.mythic);
+    expect(s.color).toBe(RARITY_COLORS.mythic);
+    expect(s.padExpand).toBeGreaterThan(8); // > legendary
+    expect(s.alpha).toBeGreaterThan(0.15); // > legendary
+  });
+});

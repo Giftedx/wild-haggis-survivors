@@ -25,6 +25,8 @@ export interface ActiveWeapon {
   /** Set when weapon is evolved — changes behavior in fireWeapon */
   evolved: boolean;
   evolutionKey: string;
+  /** Phase B Endless — true after Overcharge upgrade (post-bell only). */
+  overcharged: boolean;
 }
 
 /**
@@ -187,6 +189,7 @@ export class WeaponSystem {
       aoeRadius: def.aoeRadius,
       evolved: false,
       evolutionKey: '',
+      overcharged: false,
     });
     return true;
   }
@@ -237,6 +240,25 @@ export class WeaponSystem {
     w.pierce = boosted.pierce;
 
     return true;
+  }
+
+  /**
+   * Phase B Endless — Overcharge an evolved weapon: +25% damage and +20%
+   * area. Post-bell mythic-tier offer. Idempotent — returns false if not
+   * found, not evolved yet, or already overcharged.
+   */
+  applyOvercharge(weaponKey: string): boolean {
+    const w = this.weapons.find(w => w.config.key === weaponKey);
+    if (!w || !w.evolved || w.overcharged) return false;
+    w.overcharged = true;
+    w.damage = Math.ceil(w.damage * 1.25);
+    w.aoeRadius = Math.ceil(w.aoeRadius * 1.20);
+    return true;
+  }
+
+  /** Phase B Endless — keys of currently overcharged weapons (for save / UI). */
+  getOverchargedKeys(): string[] {
+    return this.weapons.filter(w => w.overcharged).map(w => w.config.key);
   }
 
   /** Update player facing from external source (called by GameScene) */

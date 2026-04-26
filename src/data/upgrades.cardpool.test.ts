@@ -107,3 +107,45 @@ describe('PASSIVE_KEYS', () => {
     expect(PASSIVE_KEYS).toContain('tartan_sash');
   });
 });
+
+describe('overcharge — Phase B Endless mythic-tier cards', () => {
+  it('does NOT add overcharge cards outside post-bell', () => {
+    const pool = buildCardPool(
+      ['thistle_shot'], ['sporran'], { thistle_shot: 5 }, ['thistle_shot'],
+      { isPostBell: false },
+    );
+    const overcharge = pool.filter(c => c.effect.type === 'overcharge_weapon');
+    expect(overcharge.length).toBe(0);
+  });
+
+  it('does NOT add overcharge for un-evolved weapons', () => {
+    const pool = buildCardPool(
+      ['thistle_shot'], [], { thistle_shot: 5 }, [],
+      { isPostBell: true },
+    );
+    const overcharge = pool.filter(c => c.effect.type === 'overcharge_weapon');
+    expect(overcharge.length).toBe(0);
+  });
+
+  it('adds one Overcharge mythic card per evolved weapon when post-bell', () => {
+    const pool = buildCardPool(
+      ['thistle_shot', 'caber_toss'],
+      [], {}, ['thistle_shot', 'caber_toss'],
+      { isPostBell: true },
+    );
+    const overcharge = pool.filter(c => c.effect.type === 'overcharge_weapon');
+    expect(overcharge.length).toBe(2);
+    expect(overcharge.every(c => c.rarity === 'mythic')).toBe(true);
+  });
+
+  it('filters out already-overcharged weapons', () => {
+    const pool = buildCardPool(
+      ['thistle_shot', 'caber_toss'],
+      [], {}, ['thistle_shot', 'caber_toss'],
+      { isPostBell: true, overchargedWeaponKeys: ['thistle_shot'] },
+    );
+    const overcharge = pool.filter(c => c.effect.type === 'overcharge_weapon');
+    expect(overcharge.length).toBe(1);
+    expect((overcharge[0].effect as { type: 'overcharge_weapon'; weaponKey: string }).weaponKey).toBe('caber_toss');
+  });
+});
