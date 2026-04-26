@@ -1430,6 +1430,49 @@ export const SCS_STRINGS: LocaleTree = {
           e: 'Keep a wee toast fer tha ancestors.',
           f: 'Tha year\'s turnin. Steady yersel.',
         },
+        // ── B1 Phase 4 expansion — H1 Croft hub touchpoints (SCS pair).
+        //    Glesga-warm Scots conventions per Phase B: tha/yer/dinnae/
+        //    coorie/cuppa.
+        croft_arrival: {
+          a: 'Door\'s open. Buits on tha mat. Same as ever.',
+          b: 'Aye, ye made it back. Kettle wis stairtit ten meenits ago.',
+          c: 'Coorie in. Tha moor can wait while ye warm.',
+          d: 'Smell yon? Stew\'s on its second day. Better that wey.',
+          e: 'Sit yersel doon — fire\'s built, blanket\'s aired.',
+          f: 'A wee dram\'s in tha dresser. Dinnae act surprised.',
+          g: 'Tuik ye lang enough. I\'ve hud time fer twa crosswords.',
+          h: 'Tha dug says hullo. He\'s tactful that wey.',
+        },
+        morning_hub: {
+          a: 'Mornin, wee yin. Tha kettle\'s yawnin tae.',
+          b: 'First licht\'s tha kindest licht. Aye.',
+          c: 'Parritch wi a thumb o jam. Yer da\'s recipe.',
+          d: 'New day\'s a fresh sheet. Write somethin guid on it.',
+          e: 'I lit tha fire afore I lit tha lamp. Auld habit.',
+          f: 'Tha robin\'s back at tha feeder — guid omen.',
+          g: 'A wee cuppa, then tha moor. In that order, mind.',
+          h: 'Tha dew\'s up an tha heather\'s smug. Aff ye go.',
+        },
+        drove_return: {
+          a: 'Back fae tha drove? Hooves up, kid.',
+          b: 'Drove wis kind, then? Or juist kind enough?',
+          c: 'Map\'s redder by an inch. That\'s yer doin.',
+          d: 'Tell me three things ye saw. Juist three. Then sleep.',
+          e: 'A lang road back is still a road back. Welcome.',
+          f: 'Yer satchel\'s heavy — sit, braithe, dinnae spill.',
+          g: 'Aye, aye — drove went hoo it went. Noo: tea.',
+          h: 'Kept tha fire fer ye. Hud faith ye\'d find it.',
+        },
+        mantel_glance: {
+          a: 'See yon photae? Yer grandpa, day he won tha Caber Toss.',
+          b: 'Yon tin held grandma\'s shortbread. Empty syne \'82, mind.',
+          c: 'Tha pipes on tha mantel — yer uncle\'s. Still in tune.',
+          d: 'Wee porcelain doggie. Yer ma loved yon thing.',
+          e: 'That clock keeps its ain time. Aye has.',
+          f: 'See tha medal? Sheepdog trials, second place. Robbed.',
+          g: 'Photae fae tha Glesga trip. Aye, even then ye scowled.',
+          h: 'Tha brass kelpie. Yer da brocht it back fae Skye.',
+        },
       },
       idle: {
         a: 'Quait, this. Ower quait, mibbe.',
@@ -1849,6 +1892,88 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'A rune, hen — aulder than speech. Cairy it gentle.',
           b: 'A stane carved afore tha glen had a name. Listen tae it.',
         },
+        // ── B1 Phase 4 expansion — variant + route + daily milestones
+        //    (SCS pair). Glesga-warm orthography per Phase B convention.
+        variant_moor_runner_unlocked: {
+          a: 'A moor runner — yer hooves never settle. Welcome.',
+          b: 'Aye nine yairds aheid. Nice tae see ye, runner.',
+        },
+        variant_iron_belly_unlocked: {
+          a: 'Iron belly, saft hairt. Tha wa\'s yours, hen.',
+          b: 'Built tae tak it. Tak it then, ye legend.',
+        },
+        variant_glen_forager_unlocked: {
+          a: 'A forager noo. Sticky-fingered, eagle-eed.',
+          b: 'Glen forager — somebody\'ll wonder whaur their tatties went.',
+        },
+        variant_surefoot_unlocked: {
+          a: 'Surefoot. Slope, scree, scaur — same hooves.',
+          b: 'Steady ye go. Tha mountain trusts ye noo.',
+        },
+        variant_pipe_breath_unlocked: {
+          a: 'Pipe braith. Lung-volume, melodic intent.',
+          b: 'Pibroch lungs. Music in ilka gasp.',
+        },
+        variant_wee_ghostie_unlocked: {
+          a: 'A wee ghostie. Hauf here, hauf elsewhaur — fully you.',
+          b: 'Faintly, friend. Faintly does it.',
+        },
+        variant_laird_unlocked: {
+          a: 'Tha Laird answers tha moor\'s caw. Tartan first.',
+          b: 'A laird wi lambs in his estate — earned, mind.',
+        },
+        variant_glaswegian_unlocked: {
+          a: 'Glesga haggis on tha moor. Aye. Square go.',
+          b: 'Pure-mental moor energy. Tha city walks tae wark.',
+        },
+        variant_anticlockwise_unlocked: {
+          a: 'Widdershins. Backwards. Lefty-loosey. Aye, fine.',
+          b: 'Drift\'s mirrored noo. Sun rises in yer wast.',
+        },
+        variant_cailleach_unlocked: {
+          a: 'Tha Cailleach\'s line wakes. Winter watches through ye.',
+          b: 'Hag-stane in yer bluid noo. Tha mountain boos.',
+        },
+        variant_doric_quinie_unlocked: {
+          a: 'Fit like, quinie. Tha Northeast joins tha herd.',
+          b: 'A Doric haggis. Tha fishin village minds.',
+        },
+        variant_peerie_shetlander_unlocked: {
+          a: 'A peerie haggis fae tha Soond. Norse bluid, saut braith.',
+          b: 'Welcome fae tha Voe, du. Tha skerries sent ye.',
+        },
+        variant_burns_wee_beastie_unlocked: {
+          a: 'Tha Bard\'s wee beastie — quotation an thrissle, baith.',
+          b: 'Sleekit, cow\'rin, glorious. Burns walks aside ye.',
+        },
+        route_up_the_brae_first: {
+          a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
+          b: 'Climbed it ance. Winnae forget tha air.',
+        },
+        route_round_the_loch_first: {
+          a: 'First trip roond tha Loch. Watter\'s lang memory.',
+          b: 'Loch road, first time. Reflections aw\'place.',
+        },
+        route_through_the_kirkyard_first: {
+          a: 'Walked through tha kirkyaird. Tha names stay polite, maistly.',
+          b: 'First time through tha deid lane. Tread saft.',
+        },
+        route_stand_yer_ground_first: {
+          a: 'Stood grund first time. Tha moor felt tha plantit hooves.',
+          b: 'Held it. Tha wind respects a wa, hooever wee.',
+        },
+        route_run_for_the_hills_first: {
+          a: 'First retreat. Nae shame — tha hills hide kindly.',
+          b: 'Ran fer tha hills, an tha hills catcht ye saft.',
+        },
+        route_buckie_pitstop_first: {
+          a: 'Buckie pitstop, first roond. Tha bottle\'s honest, even if tha label\'s blue.',
+          b: 'First taste o tha tonic. Yer heid will discuss it later.',
+        },
+        daily_first_clear: {
+          a: 'First daily on tha books. Aye — same code, fresh hooves.',
+          b: 'Daily cleared. Tha morn will be a different moor.',
+        },
       },
       // ── Burns citations (B1 Phase 4 Task 22). SCS pair for
       //    ui.banter.burns_citation.*. Burns wrote in Scots; these lines
@@ -1908,41 +2033,177 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Tha grund spak louder than yer hooves. Worth a listen neist time.',
           b: 'Aye — tha moor hides teeth in tha kindest fields.',
           c: 'Tha wather wasnae personal. It\'s wather aw tha wey doon.',
+          // ── B1 Phase 4 expansion — extra leaves on existing tags.
+          d: 'Heather-pit tuik ye. They keep their secrets close.',
+          e: 'A hidden ruck o stane. Nae faut o yer hooves.',
+          f: 'Tha bog spak saft. Ye couldnae hae heard it.',
         },
         boss_crushed: {
           a: 'A big yin catcht ye. Nae disgrace in that, wee yin.',
           b: 'Yon wan hud wecht. It\'ll keep fer tha neist run.',
           c: 'Ye met a proper menace tha day. Fair play fer staundin in front o it.',
+          d: 'A heid-corp catch — ye stuid when mony wad rin. Mind that.',
+          e: 'They wear tha moor like airmour. Ye\'ll find a seam neist time.',
+          f: 'Tuik it on tha chin like an auld fechter. Nae shame, hen.',
         },
         elite_kill: {
           a: 'Tha glintin yins hit heavy. Mind tha gowd shine neist time.',
           b: 'Elite\'s elite fer a reason. Respect earned.',
           c: 'Gowden trouble — they wark fer their shine.',
+          d: 'Tha shiny yins learn yer style. Chynge it up.',
+          e: 'Gowdglow saw ye comin. Throw a feint neist run.',
+          f: 'Their gowden hour wis yours an aw — ye juist blinked first.',
         },
         one_shot: {
           a: 'Wan clap — ye never hud time tae flinch.',
           b: 'A fortnicht o damage in a single braith. Haurdly fair, that.',
           c: 'Tha moor disnae negotiate wi wecht like yon. Neist time, steer wider.',
+          d: 'A blow oot tha daurk. Tha moor blinked an ye were doon.',
+          e: 'Naethin tae be done — yon wan wis reservin a slot fer ye.',
+          f: 'A clean takin. Walk it aff, hen.',
         },
         same_killer: {
           a: 'Same beastie, owre an owre. Kite it loose neist run.',
           b: 'Yon wan foond yer rhythm. Brak tha beat neist time.',
           c: 'Persistent bugger. Circle wide — it\'ll tyne yer scent.',
+          d: 'Yon same brute again — it\'s personal noo. Pey it forrit.',
+          e: 'Yer rhythm tells. Fake it neist time, ye sneak.',
+          f: 'Tha moor sent tha same caller — answer different.',
         },
         swarmed: {
           a: 'Tha moor sent a hale chorus. Nae shame in gettin sung at.',
           b: 'Ower mony haunds in tha pot — thon\'s ambushes fer ye.',
           c: 'Outflanked. Tha road\'s wide — uise tha room neist run.',
+          d: 'A hunner legs an nae kindness. Spin oot wider neist run.',
+          e: 'Crowd-killed. Tha moor disnae aye queue politely.',
+          f: 'Numbers talked. Ye ken tha rebuttal — keep movin.',
         },
         low_hp_neglect: {
           a: 'Bled doon ower lang. Healin gets shy near zero.',
           b: 'Reid bar kept company. Come up earlier, bonnie.',
           c: 'Low flame burns short. Eat when tha moor offers, wee yin.',
+          d: 'Ridin tha line wears tha line through. Eat earlier.',
+          e: 'A reid bar is tha moor offerin ye chances. Neist time, tak ane.',
+          f: 'Heroic at wan HP, gane at zero. Different sums.',
         },
         unlucky: {
           a: 'Whiles tha dice bite. Tha moor\'s a fair court, maistly.',
           b: 'Weird daiths come an gang. Nae mystery worth keepin.',
           c: 'Bad wather day. Tha neist\'ll clear.',
+          d: 'Aye, that wis tha moor in a mood.',
+          e: 'Variance happens. Glen\'s patient.',
+          f: 'A bad bounce, a bad day. Tha morn\'s tha moor\'s.',
+        },
+      },
+      // ── Cailleach Whispers (B1 Phase 4 Task 21) — SCS pair. Cailleach
+      //    voice; Edge / Grave register. Gaelic fragments preserved
+      //    verbatim from EN — Gaelic is not Scots and is not translated;
+      //    it carries through both locales identically.
+      //    [GAELIC-REVIEW] markers preserved on the same lines as EN.
+      cailleach_whisper: {
+        a: 'Winter\'s patient. Ye winnae be.',
+        b: 'Tha mountain wis here afore ye, an efter.',
+        c: 'I shaped these stanes. Mind whaur ye staund.',
+        d: 'Heid up, wee yin. Tha frost respects posture.',
+        // [GAELIC-REVIEW] `a chiall` — see EN comment. NEEDS NATIVE REVIEW.
+        e: 'A chiall — sense, child. Ye keep losin it.',
+        f: 'Cauld shairpens whit warmth saftens. Walk on.',
+        // [GAELIC-REVIEW] `mo nighean` — see EN comment. NEEDS NATIVE REVIEW.
+        g: 'Mo nighean. Ye cairy yer ain wather.',
+        h: 'Tha hag-stane sees through ye. Staund still.',
+        // [GAELIC-REVIEW] `is fada an oidhche` — see EN comment. NEEDS NATIVE REVIEW.
+        i: 'Is fada an oidhche. Tha nicht is lang. Steady, then.',
+        j: 'Ye are a wee fire. I hae warmed at smaller.',
+        // [GAELIC-REVIEW] `tog ort` — see EN comment. NEEDS NATIVE REVIEW.
+        k: 'Tog ort. Nae pity — instruction.',
+        l: 'Frost minds ilka fitfaw. Sae dae I.',
+        m: 'Beira watches. Tha herd hears it in tha wind.',
+        // [GAELIC-REVIEW] `cha mhór` — see EN comment. NEEDS NATIVE REVIEW.
+        n: 'Cha mhór. Almost — but tha mountain isnae fooled.',
+        o: 'A blizzard taucht me silence. I\'ll teach ye, if ye ask.',
+        // [GAELIC-REVIEW] `a ghaoil` — see EN comment. NEEDS NATIVE REVIEW.
+        p: 'A ghaoil. Tha warld winnae coddle ye.',
+        q: 'Ye think tha daurk hates ye. It only ootlasts ye.',
+        // [GAELIC-REVIEW] `gabh air do shocair` — see EN comment. NEEDS NATIVE REVIEW.
+        r: 'Gabh air do shocair. Slow, child. Slow.',
+        s: 'I hae waitit langer than these hills fer less worthy weans.',
+        // [GAELIC-REVIEW] `sgrìobhte sa chloich` — see EN comment. NEEDS NATIVE REVIEW.
+        t: 'Sgrìobhte sa chloich. Written in stane — an read by tha wind.',
+      },
+      // ── Seasonal Event pool (B1 Phase 5) — SCS pair. Burns Night
+      //    quotes preserved verbatim (Burns wrote in Scots; the SCS
+      //    locale matches the EN line). Other event banter rendered
+      //    with Glesga-warm orthography.
+      seasonal_event: {
+        a: 'Tha wheel turns. Tha moor minds.',
+        b: 'Auld festival. New hooves on it.',
+        burns_night: {
+          a: 'Tha Bard\'s nicht. "Fair fa\' your honest, sonsie face."',
+          b: '"Great chieftain o\' the puddin\'-race!" — Address to a Haggis.',
+          c: 'It\'s tha Bard\'s week — even mice walk lichter.',
+          d: '"O my Luve\'s like a red, red rose." Burns is in tha air.',
+          e: 'Should auld acquaintance be forgot — no\' tha nicht, hen.',
+          f: 'Tam\'s ride is telt by ilka fire this week.',
+          g: '"Scots, wha hae wi\' Wallace bled" — pipes cairy it.',
+          h: '"A man\'s a man for a\' that." Even a wee haggis.',
+          i: 'Toast tha Immortal Memory afore ye chairge.',
+          j: 'Tha haggis is piped in tha nicht. Ye\'re royalty.',
+          k: 'Selkirk Grace tha nicht — somebody\'s sayin it fer us.',
+          l: 'Kilt straichtened, gless raised. Tha moor boos back.',
+          m: 'Tha Address tha nicht — ilka word a wee fire.',
+          n: 'Tha poet at Alloway is listenin. Walk steady.',
+          o: 'Burns nicht across tha warld. Ye\'re pairt o it, hen.',
+          p: '"Ae fond kiss, and then we sever" — saft yin tha nicht.',
+          q: '"Green grow the rashes, O." Cheery toast.',
+          r: 'Tha Bard hud a wickit grin. Dust aff yer ain.',
+          s: 'Efter tha haggis, efter tha toasts — back tae tha moor.',
+          t: 'Tha Bard\'s lamp glints on ilka dram tha nicht. Aye.',
+        },
+        hogmanay: {
+          a: 'Hogmanay. Tha year hinges. Walk through it bonnie.',
+          b: 'Bells in tha distance. New year takkin a braith.',
+          c: 'First-fitin tha moor — a coin, a coal, a kindness.',
+          d: 'A daurk-haired haggis at tha door is best luck.',
+          e: 'Auld Lang Syne hummed in tha heather.',
+          f: 'Stonehaven\'s fireballs whirled tha daurk awa. Same idea here.',
+          g: 'Edinburgh\'s street singin. Tha moor sings quaiter.',
+          h: 'Twal bells, twal futures. Pick a guid yin.',
+          i: 'Oot wi tha auld year — gently, mind.',
+          j: 'Black bun an a dram waitin fer tha survivor.',
+          k: 'A stranger\'s gift opens tha year.',
+          l: 'Year\'s last wind. Push through it.',
+          m: 'Hogmanay\'s a lang word fer "hae a chance, hen."',
+          n: 'Sainin tha threshold — tha moor blesses its ain.',
+          o: 'A Hogmanay haggis is a lucky haggis.',
+          p: 'Three knocks, three wishes — tha door opens this nicht.',
+        },
+        samhain: {
+          a: 'Samhain. Tha boundary thins. Hooves walk atween.',
+          b: 'Tha deid nod tha nicht. Nod back, but keep movin.',
+          c: 'Cailleach reigns again. Warmth is a memory.',
+          d: 'Ancestors are nearer. Honour them by survivin.',
+          e: 'Bane-fire, soul-licht — aulder than tha calendar.',
+          f: 'A neep wi a caundle. A wee defiance.',
+          g: 'Tha Wild Hunt rides somewhaur faur. Dinnae look up.',
+          h: 'Soul-cake left oot. Dinnae eat whit\'s fer tha deid.',
+          i: 'Last hairst in. Tha earth sleeps efter this.',
+          j: 'A name spaken in tha daurk stays heard.',
+          k: 'Tha moor wears a different face this week.',
+          l: 'Lantren in tha kale-yaird — fer tha yins wha came.',
+        },
+        beltane: {
+          a: 'Beltane fires lit. Cattle pass atween them. Sae dae you.',
+          b: 'Tha young Cailleach tha day — May Queen wi tha heather.',
+          c: 'Twa fires, ane road through. Walk lucky.',
+          d: 'Calton Hill flickers. Edinburgh minds.',
+          e: 'Simmer\'s door swings open. Mind tha threshold.',
+          f: 'May-dew in tha heather. Wash yer face fer luck.',
+          g: 'Green Man in tha bracken. Wave back.',
+          h: 'Fire-jumpers tha nicht. Show em hoo a haggis hops.',
+          i: 'Wells dressed wi rags an wishes. Mak ane.',
+          j: 'Tha birk is in leaf. Tha warld\'s saft fer a moment.',
+          k: 'Dance tha bealtain widdershins — joy, nae curse.',
+          l: 'Bonfire braith, sun-warm hooves. This is tha bricht hauf.',
         },
       },
     },

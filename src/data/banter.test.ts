@@ -39,6 +39,10 @@ describe('BANTER_POOLS structure', () => {
     'first_time',
     // B1 Phase 4 Task 22 — Burns citations
     'burns_citation',
+    // B1 Phase 4 Task 21 — Cailleach whispers
+    'cailleach_whisper',
+    // B1 Phase 5 — Seasonal event banter
+    'seasonal_event',
   ];
 
   it('covers every BanterContext exactly once', () => {
@@ -207,24 +211,14 @@ describe('BANTER_POOLS structure', () => {
 });
 
 describe('B1 Phase 1 — pending pool metadata', () => {
-  const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [
-    ['cailleach_whisper', 55],
-    ['seasonal_event', 65],
-  ];
+  // B1 Phase 4 + 5 graduation (2026-04-26): all pools that were pending
+  // are now live in BANTER_POOLS. PENDING_POOL_METADATA is now empty;
+  // tests below confirm the empty state + the live priorities of the
+  // graduated pools.
+  const expectedPending: ReadonlyArray<[PendingBanterContext, number]> = [];
 
-  it('registers all remaining pending pools with spec §2 priorities', () => {
-    for (const [id, priority] of expectedPending) {
-      expect(PENDING_POOL_METADATA[id].priority, `${id} priority wrong`).toBe(priority);
-    }
-    expect(Object.keys(PENDING_POOL_METADATA)).toHaveLength(expectedPending.length);
-  });
-
-  it('cailleach_whisper tone is edge; all others hearth', () => {
-    expect(PENDING_POOL_METADATA.cailleach_whisper.tone).toBe('edge');
-    for (const [id] of expectedPending) {
-      if (id === 'cailleach_whisper') continue;
-      expect(PENDING_POOL_METADATA[id].tone, `${id} should be hearth`).toBe('hearth');
-    }
+  it('PENDING_POOL_METADATA is empty after B1 Phase 4+5 graduation', () => {
+    expect(Object.keys(PENDING_POOL_METADATA)).toHaveLength(0);
   });
 
   it('pending IDs do not collide with live BanterContext entries', () => {
@@ -240,7 +234,7 @@ describe('B1 Phase 1 — pending pool metadata', () => {
     }
   });
 
-  it('POOL_PRIORITIES reflects pending pool priorities', () => {
+  it('POOL_PRIORITIES has no pending entries left', () => {
     for (const [id, priority] of expectedPending) {
       expect(POOL_PRIORITIES[id]).toBe(priority);
     }
@@ -260,6 +254,35 @@ describe('B1 Phase 1 — pending pool metadata', () => {
     expect(POOL_PRIORITIES.burns_citation).toBe(43);
     expect(POOL_PRIORITIES.burns_citation).toBeGreaterThan(POOL_PRIORITIES.enemy_ambient);
     expect(POOL_PRIORITIES.burns_citation).toBeLessThan(POOL_PRIORITIES.reliquary_pick);
+  });
+
+  // B1 Phase 4+5 graduation: spec §2 reconciled to live ladder slots.
+  it('cailleach_whisper graduated at edge tone, priority 55', () => {
+    const pool = BANTER_POOLS.find((p) => p.context === 'cailleach_whisper');
+    expect(pool, 'cailleach_whisper should be live').toBeDefined();
+    expect(pool!.tone).toBe('edge');
+    expect(pool!.priority).toBe(55);
+  });
+
+  it('seasonal_event graduated at hearth tone, priority 64 (reconciled from spec 65 — collided with weapon_evolve)', () => {
+    const pool = BANTER_POOLS.find((p) => p.context === 'seasonal_event');
+    expect(pool, 'seasonal_event should be live').toBeDefined();
+    expect(pool!.tone).toBe('hearth');
+    expect(pool!.priority).toBe(64);
+    expect(POOL_PRIORITIES.seasonal_event).toBeLessThan(POOL_PRIORITIES.weapon_evolve);
+    expect(POOL_PRIORITIES.seasonal_event).toBeGreaterThan(POOL_PRIORITIES.level_up);
+  });
+
+  it('seasonal_event has sub-pools for every getActiveSeasonalEventKey return value', () => {
+    const pool = BANTER_POOLS.find((p) => p.context === 'seasonal_event');
+    expect(pool, 'seasonal_event pool missing').toBeDefined();
+    const tags = Object.keys(pool!.keysByTag ?? {});
+    // st_andrews has no banter sub-pool yet (lightweight data-only event;
+    // the ceremony resolver routes it through gran_commentary.seasonal_event).
+    // burns_night / hogmanay / samhain / beltane are required.
+    for (const evt of ['burns_night', 'hogmanay', 'samhain', 'beltane']) {
+      expect(tags, `seasonal_event missing tag '${evt}'`).toContain(evt);
+    }
   });
 });
 

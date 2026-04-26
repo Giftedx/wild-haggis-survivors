@@ -75,6 +75,8 @@ const HINT_FALLBACK: Record<string, string> = {
   burns_citation: 'Fires when a moment echoes a Burns line.',
   reliquary_pick: 'Fires when ye lift a relic fae the moor.',
   enemy_ambient: 'Fires when a specific beastie wanders close.',
+  cailleach_whisper: 'Fires when the Winter Queen leans in close.',
+  seasonal_event: 'Fires when a feast-day touches the moor.',
 };
 
 const GENERIC_FALLBACK_HINT = 'Fires in a specific moment. Keep wanderin.';

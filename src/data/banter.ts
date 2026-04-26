@@ -47,7 +47,18 @@ export type BanterContext =
   // B1 Phase 3 Task 18 — reserved once-per-save lines (priority 110)
   | 'first_time'
   // B1 Phase 4 Task 22 — verified Burns quotations at context-matched triggers
-  | 'burns_citation';
+  | 'burns_citation'
+  // B1 Phase 4 Task 21 — Cailleach voice; act intermissions, low-HP, Bargain.
+  // [GAELIC-REVIEW] Some leaves carry untranslated Gaelic fragments — every
+  // such line is flagged with `[GAELIC-REVIEW]` in i18n.ts and listed in
+  // docs/top-10-tasks/blocked/06-blocked-on-human.md. Native review required
+  // before the lines reach a public release; pool ships hidden from general
+  // play until reviewed (see graduation below).
+  | 'cailleach_whisper'
+  // B1 Phase 5 — seasonal-event banter. Fires when a seasonal window is
+  // active (see SeasonalEventManager.activeSeasonalEvents). Sub-pool tags
+  // mirror event keys: burns_night | hogmanay | samhain | beltane.
+  | 'seasonal_event';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1068,6 +1079,49 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.gran_commentary.seasonal_event.e',
         'ui.banter.gran_commentary.seasonal_event.f',
       ],
+      // B1 Phase 4 expansion — H1 Croft hub touchpoints. Wired to
+      // CroftScene at first arrival, mantel glance, drove-route
+      // returns, and morning-visit reset (per BANTER_GAPS §Phase 4).
+      croft_arrival: [
+        'ui.banter.gran_commentary.croft_arrival.a',
+        'ui.banter.gran_commentary.croft_arrival.b',
+        'ui.banter.gran_commentary.croft_arrival.c',
+        'ui.banter.gran_commentary.croft_arrival.d',
+        'ui.banter.gran_commentary.croft_arrival.e',
+        'ui.banter.gran_commentary.croft_arrival.f',
+        'ui.banter.gran_commentary.croft_arrival.g',
+        'ui.banter.gran_commentary.croft_arrival.h',
+      ],
+      morning_hub: [
+        'ui.banter.gran_commentary.morning_hub.a',
+        'ui.banter.gran_commentary.morning_hub.b',
+        'ui.banter.gran_commentary.morning_hub.c',
+        'ui.banter.gran_commentary.morning_hub.d',
+        'ui.banter.gran_commentary.morning_hub.e',
+        'ui.banter.gran_commentary.morning_hub.f',
+        'ui.banter.gran_commentary.morning_hub.g',
+        'ui.banter.gran_commentary.morning_hub.h',
+      ],
+      drove_return: [
+        'ui.banter.gran_commentary.drove_return.a',
+        'ui.banter.gran_commentary.drove_return.b',
+        'ui.banter.gran_commentary.drove_return.c',
+        'ui.banter.gran_commentary.drove_return.d',
+        'ui.banter.gran_commentary.drove_return.e',
+        'ui.banter.gran_commentary.drove_return.f',
+        'ui.banter.gran_commentary.drove_return.g',
+        'ui.banter.gran_commentary.drove_return.h',
+      ],
+      mantel_glance: [
+        'ui.banter.gran_commentary.mantel_glance.a',
+        'ui.banter.gran_commentary.mantel_glance.b',
+        'ui.banter.gran_commentary.mantel_glance.c',
+        'ui.banter.gran_commentary.mantel_glance.d',
+        'ui.banter.gran_commentary.mantel_glance.e',
+        'ui.banter.gran_commentary.mantel_glance.f',
+        'ui.banter.gran_commentary.mantel_glance.g',
+        'ui.banter.gran_commentary.mantel_glance.h',
+      ],
     },
   },
   {
@@ -1097,46 +1151,73 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.death_reflection.e',
       'ui.banter.death_reflection.f',
     ],
+    // B1 Phase 4 expansion — each tag grew from 3 → 6 leaves so the
+    // no-repeat ring buffer (size 8) has room across consecutive
+    // same-cause deaths in playtests.
     keysByTag: {
       hazard: [
         'ui.banter.death_reflection.hazard.a',
         'ui.banter.death_reflection.hazard.b',
         'ui.banter.death_reflection.hazard.c',
+        'ui.banter.death_reflection.hazard.d',
+        'ui.banter.death_reflection.hazard.e',
+        'ui.banter.death_reflection.hazard.f',
       ],
       boss_crushed: [
         'ui.banter.death_reflection.boss_crushed.a',
         'ui.banter.death_reflection.boss_crushed.b',
         'ui.banter.death_reflection.boss_crushed.c',
+        'ui.banter.death_reflection.boss_crushed.d',
+        'ui.banter.death_reflection.boss_crushed.e',
+        'ui.banter.death_reflection.boss_crushed.f',
       ],
       elite_kill: [
         'ui.banter.death_reflection.elite_kill.a',
         'ui.banter.death_reflection.elite_kill.b',
         'ui.banter.death_reflection.elite_kill.c',
+        'ui.banter.death_reflection.elite_kill.d',
+        'ui.banter.death_reflection.elite_kill.e',
+        'ui.banter.death_reflection.elite_kill.f',
       ],
       one_shot: [
         'ui.banter.death_reflection.one_shot.a',
         'ui.banter.death_reflection.one_shot.b',
         'ui.banter.death_reflection.one_shot.c',
+        'ui.banter.death_reflection.one_shot.d',
+        'ui.banter.death_reflection.one_shot.e',
+        'ui.banter.death_reflection.one_shot.f',
       ],
       same_killer: [
         'ui.banter.death_reflection.same_killer.a',
         'ui.banter.death_reflection.same_killer.b',
         'ui.banter.death_reflection.same_killer.c',
+        'ui.banter.death_reflection.same_killer.d',
+        'ui.banter.death_reflection.same_killer.e',
+        'ui.banter.death_reflection.same_killer.f',
       ],
       swarmed: [
         'ui.banter.death_reflection.swarmed.a',
         'ui.banter.death_reflection.swarmed.b',
         'ui.banter.death_reflection.swarmed.c',
+        'ui.banter.death_reflection.swarmed.d',
+        'ui.banter.death_reflection.swarmed.e',
+        'ui.banter.death_reflection.swarmed.f',
       ],
       low_hp_neglect: [
         'ui.banter.death_reflection.low_hp_neglect.a',
         'ui.banter.death_reflection.low_hp_neglect.b',
         'ui.banter.death_reflection.low_hp_neglect.c',
+        'ui.banter.death_reflection.low_hp_neglect.d',
+        'ui.banter.death_reflection.low_hp_neglect.e',
+        'ui.banter.death_reflection.low_hp_neglect.f',
       ],
       unlucky: [
         'ui.banter.death_reflection.unlucky.a',
         'ui.banter.death_reflection.unlucky.b',
         'ui.banter.death_reflection.unlucky.c',
+        'ui.banter.death_reflection.unlucky.d',
+        'ui.banter.death_reflection.unlucky.e',
+        'ui.banter.death_reflection.unlucky.f',
       ],
     },
   },
@@ -1366,6 +1447,98 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.rune_first_pickup.a',
         'ui.banter.first_time.rune_first_pickup.b',
       ],
+      // ── B1 Phase 4 expansion — variant unlock first-time banter
+      //    (12 non-classic variants). Fires once per unlock-event via
+      //    `bumpFirstTimeEvent('variant_${key}_unlocked')` on the
+      //    eventual MetaProgression.unlockVariant call surface.
+      //    Voice tilts variant-specific per Voice Card §Variant-scoped.
+      variant_moor_runner_unlocked: [
+        'ui.banter.first_time.variant_moor_runner_unlocked.a',
+        'ui.banter.first_time.variant_moor_runner_unlocked.b',
+      ],
+      variant_iron_belly_unlocked: [
+        'ui.banter.first_time.variant_iron_belly_unlocked.a',
+        'ui.banter.first_time.variant_iron_belly_unlocked.b',
+      ],
+      variant_glen_forager_unlocked: [
+        'ui.banter.first_time.variant_glen_forager_unlocked.a',
+        'ui.banter.first_time.variant_glen_forager_unlocked.b',
+      ],
+      variant_surefoot_unlocked: [
+        'ui.banter.first_time.variant_surefoot_unlocked.a',
+        'ui.banter.first_time.variant_surefoot_unlocked.b',
+      ],
+      variant_pipe_breath_unlocked: [
+        'ui.banter.first_time.variant_pipe_breath_unlocked.a',
+        'ui.banter.first_time.variant_pipe_breath_unlocked.b',
+      ],
+      variant_wee_ghostie_unlocked: [
+        'ui.banter.first_time.variant_wee_ghostie_unlocked.a',
+        'ui.banter.first_time.variant_wee_ghostie_unlocked.b',
+      ],
+      variant_laird_unlocked: [
+        'ui.banter.first_time.variant_laird_unlocked.a',
+        'ui.banter.first_time.variant_laird_unlocked.b',
+      ],
+      variant_glaswegian_unlocked: [
+        'ui.banter.first_time.variant_glaswegian_unlocked.a',
+        'ui.banter.first_time.variant_glaswegian_unlocked.b',
+      ],
+      variant_anticlockwise_unlocked: [
+        'ui.banter.first_time.variant_anticlockwise_unlocked.a',
+        'ui.banter.first_time.variant_anticlockwise_unlocked.b',
+      ],
+      variant_cailleach_unlocked: [
+        'ui.banter.first_time.variant_cailleach_unlocked.a',
+        'ui.banter.first_time.variant_cailleach_unlocked.b',
+      ],
+      variant_doric_quinie_unlocked: [
+        'ui.banter.first_time.variant_doric_quinie_unlocked.a',
+        'ui.banter.first_time.variant_doric_quinie_unlocked.b',
+      ],
+      variant_peerie_shetlander_unlocked: [
+        'ui.banter.first_time.variant_peerie_shetlander_unlocked.a',
+        'ui.banter.first_time.variant_peerie_shetlander_unlocked.b',
+      ],
+      variant_burns_wee_beastie_unlocked: [
+        'ui.banter.first_time.variant_burns_wee_beastie_unlocked.a',
+        'ui.banter.first_time.variant_burns_wee_beastie_unlocked.b',
+      ],
+      // ── B1 Phase 4 expansion — first-pick of each W2 route. Fires
+      //    once per route via
+      //    `bumpFirstTimeEvent('route_${routeKey}_first')` on the
+      //    ActIntermissionScene resolve callback.
+      route_up_the_brae_first: [
+        'ui.banter.first_time.route_up_the_brae_first.a',
+        'ui.banter.first_time.route_up_the_brae_first.b',
+      ],
+      route_round_the_loch_first: [
+        'ui.banter.first_time.route_round_the_loch_first.a',
+        'ui.banter.first_time.route_round_the_loch_first.b',
+      ],
+      route_through_the_kirkyard_first: [
+        'ui.banter.first_time.route_through_the_kirkyard_first.a',
+        'ui.banter.first_time.route_through_the_kirkyard_first.b',
+      ],
+      route_stand_yer_ground_first: [
+        'ui.banter.first_time.route_stand_yer_ground_first.a',
+        'ui.banter.first_time.route_stand_yer_ground_first.b',
+      ],
+      route_run_for_the_hills_first: [
+        'ui.banter.first_time.route_run_for_the_hills_first.a',
+        'ui.banter.first_time.route_run_for_the_hills_first.b',
+      ],
+      route_buckie_pitstop_first: [
+        'ui.banter.first_time.route_buckie_pitstop_first.a',
+        'ui.banter.first_time.route_buckie_pitstop_first.b',
+      ],
+      // ── B1 Phase 4 expansion — first daily-challenge clear. Fires
+      //    once via `bumpFirstTimeEvent('daily_first_clear')` on the
+      //    daily victory path in RunLifecycle.handleVictory.
+      daily_first_clear: [
+        'ui.banter.first_time.daily_first_clear.a',
+        'ui.banter.first_time.daily_first_clear.b',
+      ],
     },
   },
   {
@@ -1578,6 +1751,152 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.reliquary_pick.d',
     ],
   },
+  // ── B1 Phase 4 Task 21 — Cailleach whispers.
+  //
+  // Voice register: EDGE / GRAVE per Voice Card §Cailleach. Cailleach
+  // Bheur — the Winter Queen, elder hag, shaper of mountains and keeper
+  // of wild beasts. Stern, motherly, Gaelic-inflected. *Not* villainous;
+  // an elder who expects better. Sparing words; every one carries weight.
+  //
+  // Priority 55 — sits below act_intermission_enter (52) (so the route-
+  // pick beats it on the very-tick of the intermission opening) but above
+  // first_blood (50). Wires planned: act intermissions (post-pick tick),
+  // low-HP follow-on, Bargain events. Wiring lands in a follow-up commit
+  // alongside content per "hook with content" pattern.
+  //
+  // [GAELIC-REVIEW] Some leaves carry untranslated Gaelic fragments
+  // (a chiall / mo nighean / is fada an oidhche / tog ort / cha mhór /
+  // a ghaoil / gabh air do shocair / sgrìobhte sa chloich). Every such
+  // line is flagged inline in i18n.ts and listed in
+  // docs/top-10-tasks/blocked/06-blocked-on-human.md. The pool is gated
+  // by `rare: true` so the lines surface as collectible / accent
+  // moments rather than ambient chatter — consistent with first_time,
+  // burns_citation, and reliquary_pick precedent.
+  {
+    context: 'cailleach_whisper',
+    tone: 'edge',
+    priority: 55,
+    rare: true,
+    keys: [
+      'ui.banter.cailleach_whisper.a',
+      'ui.banter.cailleach_whisper.b',
+      'ui.banter.cailleach_whisper.c',
+      'ui.banter.cailleach_whisper.d',
+      'ui.banter.cailleach_whisper.e',
+      'ui.banter.cailleach_whisper.f',
+      'ui.banter.cailleach_whisper.g',
+      'ui.banter.cailleach_whisper.h',
+      'ui.banter.cailleach_whisper.i',
+      'ui.banter.cailleach_whisper.j',
+      'ui.banter.cailleach_whisper.k',
+      'ui.banter.cailleach_whisper.l',
+      'ui.banter.cailleach_whisper.m',
+      'ui.banter.cailleach_whisper.n',
+      'ui.banter.cailleach_whisper.o',
+      'ui.banter.cailleach_whisper.p',
+      'ui.banter.cailleach_whisper.q',
+      'ui.banter.cailleach_whisper.r',
+      'ui.banter.cailleach_whisper.s',
+      'ui.banter.cailleach_whisper.t',
+    ],
+  },
+  // ── B1 Phase 5 — Seasonal event banter (standalone graduation).
+  //
+  // Voice register: HEARTH (warm seasonal moments) per Voice Card; the
+  // Samhain sub-pool tilts Cailleach-edged. Tags align with
+  // `getActiveSeasonalEventKey` returns. Each tag gets ≥ 12 lines so the
+  // window's typical 7–14-day window can land lines without stutter.
+  //
+  // Priority 65 per spec §2 / PENDING_POOL_METADATA. Sits between
+  // boss_down (70) and weapon_evolve (no, weapon_evolve is also 65 in
+  // BANTER_POOLS — RECONCILIATION: spec §2 placed seasonal_event at 65,
+  // but `weapon_evolve` already lives at 65. Resolved here at 64 so the
+  // ladder stays unique and seasonal sits just below weapon evolution
+  // (a pickup tick should still own its moment). Pattern matches
+  // gran_commentary 30→28, enemy_ambient 40→41, burns_citation 45→43.
+  {
+    context: 'seasonal_event',
+    tone: 'hearth',
+    priority: 64,
+    rare: true,
+    keys: [
+      'ui.banter.seasonal_event.a',
+      'ui.banter.seasonal_event.b',
+    ],
+    keysByTag: {
+      // Tag aligns with `getActiveSeasonalEventKey('burns_night')`. 20
+      // lines — Burns canon citations + supper-ritual atmosphere. Public
+      // domain Burns quotations cite Kinsley 1968 inline in i18n.ts.
+      burns_night: [
+        'ui.banter.seasonal_event.burns_night.a',
+        'ui.banter.seasonal_event.burns_night.b',
+        'ui.banter.seasonal_event.burns_night.c',
+        'ui.banter.seasonal_event.burns_night.d',
+        'ui.banter.seasonal_event.burns_night.e',
+        'ui.banter.seasonal_event.burns_night.f',
+        'ui.banter.seasonal_event.burns_night.g',
+        'ui.banter.seasonal_event.burns_night.h',
+        'ui.banter.seasonal_event.burns_night.i',
+        'ui.banter.seasonal_event.burns_night.j',
+        'ui.banter.seasonal_event.burns_night.k',
+        'ui.banter.seasonal_event.burns_night.l',
+        'ui.banter.seasonal_event.burns_night.m',
+        'ui.banter.seasonal_event.burns_night.n',
+        'ui.banter.seasonal_event.burns_night.o',
+        'ui.banter.seasonal_event.burns_night.p',
+        'ui.banter.seasonal_event.burns_night.q',
+        'ui.banter.seasonal_event.burns_night.r',
+        'ui.banter.seasonal_event.burns_night.s',
+        'ui.banter.seasonal_event.burns_night.t',
+      ],
+      hogmanay: [
+        'ui.banter.seasonal_event.hogmanay.a',
+        'ui.banter.seasonal_event.hogmanay.b',
+        'ui.banter.seasonal_event.hogmanay.c',
+        'ui.banter.seasonal_event.hogmanay.d',
+        'ui.banter.seasonal_event.hogmanay.e',
+        'ui.banter.seasonal_event.hogmanay.f',
+        'ui.banter.seasonal_event.hogmanay.g',
+        'ui.banter.seasonal_event.hogmanay.h',
+        'ui.banter.seasonal_event.hogmanay.i',
+        'ui.banter.seasonal_event.hogmanay.j',
+        'ui.banter.seasonal_event.hogmanay.k',
+        'ui.banter.seasonal_event.hogmanay.l',
+        'ui.banter.seasonal_event.hogmanay.m',
+        'ui.banter.seasonal_event.hogmanay.n',
+        'ui.banter.seasonal_event.hogmanay.o',
+        'ui.banter.seasonal_event.hogmanay.p',
+      ],
+      samhain: [
+        'ui.banter.seasonal_event.samhain.a',
+        'ui.banter.seasonal_event.samhain.b',
+        'ui.banter.seasonal_event.samhain.c',
+        'ui.banter.seasonal_event.samhain.d',
+        'ui.banter.seasonal_event.samhain.e',
+        'ui.banter.seasonal_event.samhain.f',
+        'ui.banter.seasonal_event.samhain.g',
+        'ui.banter.seasonal_event.samhain.h',
+        'ui.banter.seasonal_event.samhain.i',
+        'ui.banter.seasonal_event.samhain.j',
+        'ui.banter.seasonal_event.samhain.k',
+        'ui.banter.seasonal_event.samhain.l',
+      ],
+      beltane: [
+        'ui.banter.seasonal_event.beltane.a',
+        'ui.banter.seasonal_event.beltane.b',
+        'ui.banter.seasonal_event.beltane.c',
+        'ui.banter.seasonal_event.beltane.d',
+        'ui.banter.seasonal_event.beltane.e',
+        'ui.banter.seasonal_event.beltane.f',
+        'ui.banter.seasonal_event.beltane.g',
+        'ui.banter.seasonal_event.beltane.h',
+        'ui.banter.seasonal_event.beltane.i',
+        'ui.banter.seasonal_event.beltane.j',
+        'ui.banter.seasonal_event.beltane.k',
+        'ui.banter.seasonal_event.beltane.l',
+      ],
+    },
+  },
 ];
 
 export function getBanterPool(context: BanterContext): BanterPool | undefined {
@@ -1597,9 +1916,13 @@ export function getBanterPool(context: BanterContext): BanterPool | undefined {
  * Tests read `POOL_PRIORITIES` (derived below) to verify the priority
  * ladder called for in `docs/superpowers/specs/2026-04-23-banter-density-push-design.md §2`.
  */
-export type PendingBanterContext =
-  | 'cailleach_whisper'
-  | 'seasonal_event';
+// B1 Phase 4 + 5 graduation (2026-04-26): both `cailleach_whisper` and
+// `seasonal_event` graduated into BANTER_POOLS. The PendingBanterContext
+// union is now empty; preserved as `never` so the type infrastructure
+// stays in place for any future deferred pool (the design pattern was
+// the most useful invariant — let it persist with zero pending pools
+// rather than ripping it out and rebuilding next time we defer one).
+export type PendingBanterContext = never;
 
 export interface PendingPoolMetadata {
   tone: BanterTone;
@@ -1607,29 +1930,31 @@ export interface PendingPoolMetadata {
 }
 
 /**
- * Tone + priority per spec §2 / §3. Priority ladder (high → low):
- *   first_time (110) > boss_warn (100) > low_hp (80) > boss_down (70) >
- *   seasonal_event (65) > weapon_evolve (65) > level_up (60) >
- *   curse_start (59) > act_complete (57) > cailleach_whisper (55) >
- *   act_intermission_enter (52) > first_blood (50) > route_picked (48) >
- *   burns_citation (45) > reliquary_pick (45) > enemy_ambient (41) >
- *   kill_streak (40) > recover (35) > moor_moment (31) >
- *   biome_change (30) > gran_commentary (28) > haggis_ambient (25) >
- *   idle (10)
+ * Tone + priority per spec §2 / §3. Priority ladder (high → low) after
+ * B1 Phase 4 + 5 graduation:
+ *   first_time (110) > boss_warn (100) > low_hp (80) > death_reflection (75) >
+ *   boss_down (70) > weapon_evolve (65) > seasonal_event (64) >
+ *   level_up (60) > curse_start (59) > act_complete (57) >
+ *   cailleach_whisper (55) > act_intermission_enter (52) >
+ *   first_blood (50) > route_picked (48) > reliquary_pick (45) >
+ *   burns_citation (43) > enemy_ambient (41) > kill_streak (40) >
+ *   recover (35) > moor_moment (31) > biome_change (30) >
+ *   gran_commentary (28) > haggis_ambient (25) > idle (10)
  *
- * B1 Phase 3 Task 17 — `enemy_ambient` graduated at 41 (spec §2's 40 was
- * already kill_streak's live slot; same resolution pattern as
- * gran_commentary landing at 28 instead of spec's 30).
+ * Reconciliation history (graduating pools shift down 1–2 slots when
+ * the spec §2 number collided with a live pool — uniqueness is the
+ * binding invariant):
+ *   - `gran_commentary` shipped at 28 (spec 30 collided with biome_change).
+ *   - `enemy_ambient` shipped at 41 (spec 40 collided with kill_streak).
+ *   - `burns_citation` shipped at 43 (spec 45 collided with reliquary_pick).
+ *   - `seasonal_event` shipped at 64 (spec 65 collided with weapon_evolve).
+ *   - `cailleach_whisper` shipped at 55 (spec 55 — clean).
  *
- * Pending pools graduate into BANTER_POOLS only after authoring lands
- * (Phase 2+). The BANTER_POOLS uniqueness invariant forbids ties, so any
- * graduating pool reconciles its priority against live entries at that
- * point — e.g. `gran_commentary` shipped at 28 (not spec §2's 30, which
- * collided with `biome_change`).
+ * PendingBanterContext is now `never`. Any future deferred pool registers
+ * here with its tone + priority; on graduation it moves into
+ * `BANTER_POOLS` and out of `PENDING_POOL_METADATA`.
  */
 export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, PendingPoolMetadata>> = {
-  cailleach_whisper: { tone: 'edge', priority: 55 },
-  seasonal_event: { tone: 'hearth', priority: 65 },
 };
 
 /**
@@ -1641,7 +1966,13 @@ export const PENDING_POOL_METADATA: Readonly<Record<PendingBanterContext, Pendin
 export const POOL_PRIORITIES: Readonly<Record<string, number>> = (() => {
   const out: Record<string, number> = {};
   for (const p of BANTER_POOLS) out[p.context] = p.priority;
-  for (const [id, meta] of Object.entries(PENDING_POOL_METADATA)) out[id] = meta.priority;
+  // After B1 Phase 4+5 graduation `PENDING_POOL_METADATA` is empty
+  // (`Record<never, …>`) — the loop is a no-op today but kept for
+  // forward-compat when a future deferred pool re-registers. Cast
+  // through unknown so the empty-record pattern doesn't widen `meta`
+  // to TS's anomalous `unknown` for `Object.entries(Record<never, X>)`.
+  const pending = PENDING_POOL_METADATA as Readonly<Record<string, PendingPoolMetadata>>;
+  for (const [id, meta] of Object.entries(pending)) out[id] = meta.priority;
   return out;
 })();
 

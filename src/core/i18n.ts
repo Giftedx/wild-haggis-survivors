@@ -317,6 +317,8 @@ export const EN_STRINGS: LocaleTree = {
         burns_citation: { label: 'Burns Echo', hint: 'Fires when a moment echoes a Burns line.' },
         reliquary_pick: { label: 'Relic Lifted', hint: 'Fires when ye lift a curio fae the moor.' },
         enemy_ambient: { label: 'Beastie Brush', hint: 'Fires when a specific beastie wanders close.' },
+        cailleach_whisper: { label: 'Cailleach\'s Whisper', hint: 'Fires when the Winter Queen leans in close.' },
+        seasonal_event: { label: 'Feast-Day', hint: 'Fires when a feast-day touches the moor.' },
       },
       back: 'BACK',
     },
@@ -1735,6 +1737,51 @@ export const EN_STRINGS: LocaleTree = {
           e: 'Keep a wee toast fer the ancestors.',
           f: 'The year\'s turnin\'. Steady yersel\'.',
         },
+        // ── B1 Phase 4 expansion — H1 Croft hub touchpoints. Gran's
+        //    voice anchors the croft per Voice Card §Gran (warmer than
+        //    Hearth, never patronising). Wired to CroftScene at first
+        //    arrival, mantel glance, drove-route returns, and the
+        //    morning-visit reset. Hearth voice throughout.
+        croft_arrival: {
+          a: 'Door\'s open. Boots on the mat. Same as ever.',
+          b: 'Aye, ye made it back. Kettle was started ten minutes ago.',
+          c: 'Coorie in. The moor can wait while ye warm.',
+          d: 'Smell that? Stew\'s on its second day. Better that way.',
+          e: 'Sit yersel\' doon — fire\'s built, blanket\'s aired.',
+          f: 'A wee dram\'s in the dresser. Dinnae act surprised.',
+          g: 'Took ye long enough. I\'ve had time fer two crosswords.',
+          h: 'The dog says hello. He\'s tactful that way.',
+        },
+        morning_hub: {
+          a: 'Mornin\', wee yin. The kettle\'s yawnin\' too.',
+          b: 'First light\'s the kindest light. Aye.',
+          c: 'Porridge wi a thumb o\' jam. Yer da\'s recipe.',
+          d: 'New day\'s a fresh sheet. Write somethin\' guid on it.',
+          e: 'I lit the fire afore I lit the lamp. Old habit.',
+          f: 'The robin\'s back at the feeder — guid omen.',
+          g: 'A wee cuppa, then the moor. In that order, mind.',
+          h: 'The dew\'s up an the heather\'s smug. Off ye go.',
+        },
+        drove_return: {
+          a: 'Back from the drove? Hooves up, kid.',
+          b: 'Drove was kind, then? Or just kind enough?',
+          c: 'Map\'s redder by an inch. That\'s yir doing.',
+          d: 'Tell me three things ye saw. Just three. Then sleep.',
+          e: 'A long road back is still a road back. Welcome.',
+          f: 'Yer satchel\'s heavy — sit, breathe, dinnae spill.',
+          g: 'Aye, aye — drove went how it went. Now: tea.',
+          h: 'Kept the fire fer ye. Had faith ye\'d find it.',
+        },
+        mantel_glance: {
+          a: 'See yon photo? Yer grandpa, day he won the Caber Toss.',
+          b: 'That tin held grandma\'s shortbread. Empty since \'82, mind.',
+          c: 'The pipes on the mantel — yer uncle\'s. Still in tune.',
+          d: 'Wee porcelain doggie. Yer ma loved that thing.',
+          e: 'That clock keeps its own time. Always has.',
+          f: 'See the medal? Sheepdog trials, second place. Robbed.',
+          g: 'Photo from the Glasgow trip. Aye, even then ye scowled.',
+          h: 'The brass kelpie. Yer da brought it back from Skye.',
+        },
       },
       idle: {
         a: 'Quiet, this. Too quiet, mibbe.',
@@ -2166,6 +2213,96 @@ export const EN_STRINGS: LocaleTree = {
           a: 'A rune, hen — older than speech. Carry it gently.',
           b: 'A stone that was carved before the glen had a name. Listen tae it.',
         },
+        // ── B1 Phase 4 expansion — first-time milestones for variants,
+        //    routes, and daily clear. Each milestone fires once-per-save
+        //    via `bumpFirstTimeEvent(eventId)`. Wiring lands at each
+        //    call surface in follow-up commits per "hook with content"
+        //    pattern (see BANTER_GAPS.md).
+        // Variant unlocks (12 non-classic). Voice tilts variant-specific
+        //  per Voice Card §Variant-scoped voices.
+        variant_moor_runner_unlocked: {
+          a: 'A moor runner — yer hooves never settle. Welcome.',
+          b: 'Always nine yards ahead. Nice tae see ye, runner.',
+        },
+        variant_iron_belly_unlocked: {
+          a: 'Iron belly, soft heart. The wall\'s yours, hen.',
+          b: 'Built to take it. Take it then, ye legend.',
+        },
+        variant_glen_forager_unlocked: {
+          a: 'A forager noo. Sticky-fingered, eagle-eyed.',
+          b: 'Glen forager — somebody\'ll wonder where their tatties went.',
+        },
+        variant_surefoot_unlocked: {
+          a: 'Surefoot. Slope, scree, scarp — same hooves.',
+          b: 'Steady ye go. The mountain trusts ye noo.',
+        },
+        variant_pipe_breath_unlocked: {
+          a: 'Pipe breath. Lung-volume, melodic intent.',
+          b: 'Pibroch lungs. Music in every gasp.',
+        },
+        variant_wee_ghostie_unlocked: {
+          a: 'A wee ghostie. Half here, half elsewhere — fully you.',
+          b: 'Faintly, friend. Faintly does it.',
+        },
+        variant_laird_unlocked: {
+          a: 'The Laird answers the moor\'s call. Tartan first.',
+          b: 'A laird wi\' lambs in his estate — earned, mind.',
+        },
+        variant_glaswegian_unlocked: {
+          a: 'Glesga haggis on the moor. Aye. Square go.',
+          b: 'Pure-mental moor energy. The city walks tae work.',
+        },
+        variant_anticlockwise_unlocked: {
+          a: 'Widdershins. Backwards. Lefty-loosey. Aye, fine.',
+          b: 'Drift\'s mirrored noo. Sun rises in yir west.',
+        },
+        variant_cailleach_unlocked: {
+          a: 'The Cailleach\'s line wakes. Winter watches through ye.',
+          b: 'Hag-stane in yir blood noo. The mountain bows.',
+        },
+        variant_doric_quinie_unlocked: {
+          a: 'Fit like, quinie. The Northeast joins the herd.',
+          b: 'A Doric haggis. The fishing village remembers.',
+        },
+        variant_peerie_shetlander_unlocked: {
+          a: 'A peerie haggis fae the Sound. Norse blood, salt breath.',
+          b: 'Welcome fae the Voe, du. The skerries sent ye.',
+        },
+        variant_burns_wee_beastie_unlocked: {
+          a: 'The Bard\'s wee beastie — quotation an thistle, both.',
+          b: 'Sleekit, cow\'rin, glorious. Burns walks beside ye.',
+        },
+        // Route first-picks (6 W2 routes). Voice: hearth, shy
+        //  acknowledgement of the choice — once-per-save accent.
+        route_up_the_brae_first: {
+          a: 'First time up the Brae. The hills owe ye nothin\' — yet.',
+          b: 'Climbed it ance. Won\'t forget the air.',
+        },
+        route_round_the_loch_first: {
+          a: 'First trip roond the Loch. Watter\'s long memory.',
+          b: 'Loch road, first time. Reflections everywhere.',
+        },
+        route_through_the_kirkyard_first: {
+          a: 'Walked through the kirkyard. The names stay polite, mostly.',
+          b: 'First time through the deid lane. Tread soft.',
+        },
+        route_stand_yer_ground_first: {
+          a: 'Stood ground first time. The moor felt the planted hooves.',
+          b: 'Held it. The wind respects a wall, however small.',
+        },
+        route_run_for_the_hills_first: {
+          a: 'First retreat. No shame — the hills hide kindly.',
+          b: 'Ran for the hills, an the hills caught ye soft.',
+        },
+        route_buckie_pitstop_first: {
+          a: 'Buckie pitstop, first round. The bottle\'s honest, even if the label\'s blue.',
+          b: 'First taste o\' the tonic. Yir heid will discuss it later.',
+        },
+        // Daily challenge first clear.
+        daily_first_clear: {
+          a: 'First daily on the books. Aye — same code, fresh hooves.',
+          b: 'Daily cleared. Tomorrow will be a different moor.',
+        },
       },
       // ── Burns citations (B1 Phase 4 Task 22). Every line is a verified
       //    quotation from Robert Burns (1759-1796). Public domain.
@@ -2242,41 +2379,239 @@ export const EN_STRINGS: LocaleTree = {
           a: 'The ground spoke louder than yer hooves. Worth a listen next time.',
           b: 'Aye — the moor hides teeth in the kindest fields.',
           c: 'The weather wasnae personal. It\'s weather aw the way doon.',
+          // ── B1 Phase 4 expansion — extra leaves on existing tags so
+          //    the no-repeat ring buffer has room to breathe.
+          d: 'Heather-pit took ye. They keep their secrets close.',
+          e: 'A hidden ruck o\' stane. Nae fault o\' yer hooves.',
+          f: 'The bog spoke saft. Ye couldnae have heard it.',
         },
         boss_crushed: {
           a: 'A big yin caught ye. Nae disgrace in that, wee yin.',
           b: 'That one had weight. It\'ll keep fer the next run.',
           c: 'Ye met a proper menace the day. Fair play fer standin\' in front of it.',
+          d: 'A heid-corp catch — ye stood when many would run. Mind that.',
+          e: 'They wear the moor like armour. Ye\'ll find a seam next time.',
+          f: 'Took it on the chin like an auld fighter. Nae shame, hen.',
         },
         elite_kill: {
           a: 'The glintin\' ones hit heavy. Mind the gold shine next time.',
           b: 'Elite\'s elite fer a reason. Respect earned.',
           c: 'Golden trouble — they work fer their shine.',
+          d: 'The shiny ones learn yir style. Change it up.',
+          e: 'Goldglow saw ye comin\'. Throw a feint next run.',
+          f: 'Their golden hour was yours an aw — ye just blinked first.',
         },
         one_shot: {
           a: 'One clap — ye never had time tae flinch.',
           b: 'A fortnight of damage in a single breath. Hardly fair, that.',
           c: 'The moor disnae negotiate wi weight like yon. Next time, steer wider.',
+          d: 'A blow oot the dark. The moor blinked an ye were doon.',
+          e: 'Nothing tae be done — that one was reservin\' a slot fer ye.',
+          f: 'A clean takin\'. Walk it off, hen.',
         },
         same_killer: {
           a: 'Same beastie, owre and owre. Kite it loose next run.',
           b: 'That one found yer rhythm. Break the beat next time.',
           c: 'Persistent bugger. Circle wide — it\'ll lose yer scent.',
+          d: 'That same brute again — it\'s personal noo. Pay it forward.',
+          e: 'Yer rhythm tells. Fake it next time, ye sneak.',
+          f: 'The moor sent the same caller — answer different.',
         },
         swarmed: {
           a: 'The moor sent a whole chorus. Nae shame in gettin\' sung at.',
           b: 'Too many hands in the pot — that\'s ambushes fer ye.',
           c: 'Outflanked. The road\'s wide — use the room next run.',
+          d: 'A hundred legs an\' nae kindness. Spin oot wider next run.',
+          e: 'Crowd-killed. The moor doesnae always queue politely.',
+          f: 'Numbers talked. Ye ken the rebuttal — keep movin\'.',
         },
         low_hp_neglect: {
           a: 'Bled doon too long. Healin\' gets shy near zero.',
           b: 'Red bar kept company. Come up earlier, bonnie.',
           c: 'Low flame burns short. Eat when the moor offers, wee yin.',
+          d: 'Riding the line wears the line through. Eat earlier.',
+          e: 'A red bar is the moor offerin\' ye chances. Next time, take ane.',
+          f: 'Heroic at one HP, gone at zero. Different sums.',
         },
         unlucky: {
           a: 'Sometimes the dice bite. The moor\'s a fair court, mostly.',
           b: 'Weird deaths come and go. Nae mystery worth keepin\'.',
           c: 'Bad weather day. The next\'ll clear.',
+          d: 'Aye, that was the moor in a mood.',
+          e: 'Variance happens. Glen\'s patient.',
+          f: 'A bad bounce, a bad day. Tomorrow\'s the moor\'s.',
+        },
+      },
+      // ── Cailleach Whispers (B1 Phase 4 Task 21). Cailleach Bheur
+      //    voice — the Winter Queen, elder hag, shaper of mountains and
+      //    keeper of wild beasts. Per VOICE_CARD §Cailleach: stern,
+      //    motherly, Gaelic-inflected. *Not* villainous; she expects
+      //    better of ye. Sparing words; every one carries weight.
+      //
+      //    Voice register: EDGE / GRAVE per Voice Card. Priority 55 —
+      //    fires at act intermissions, low-HP, Bargain events.
+      //
+      //    Cultural reference: SCOTTISH_RESEARCH.md §1.3 (Cailleach
+      //    Bheur, Beira) and CULTURAL_SENSITIVITIES_RESEARCH.md §3.1
+      //    + §4.2 (Gaelic — high care; native review required for any
+      //    Gaelic phrase).
+      //
+      //    [GAELIC-REVIEW]: Lines flagged with this comment contain
+      //    Gaelic fragments that REQUIRE native-speaker review before
+      //    public release. Fragments authored against the precedent set
+      //    by the existing Cailleach variant lines (`dè do bheachd?`
+      //    "what do you think?", `cò às a tha thu?` "where are you
+      //    from?" — flagged as well-chosen in cultural research §4.2).
+      //    Each Gaelic line provides English-clause context so meaning
+      //    survives review-bounce. See docs/top-10-tasks/blocked/
+      //    06-blocked-on-human.md for the full review list.
+      //
+      //    Anti-patterns avoided:
+      //    - No "spooky alien decoration" Gaelic — every fragment has
+      //      English context or translation.
+      //    - No witch-pastiche; she's elder, not crone-villain.
+      //    - No mockery of Gaelic; lines treat it as living speech.
+      cailleach_whisper: {
+        a: 'Winter\'s patient. Ye won\'t be.',
+        b: 'The mountain was here before ye, and after.',
+        c: 'I shaped these stanes. Mind where ye stand.',
+        d: 'Heid up, wee one. The frost respects posture.',
+        // [GAELIC-REVIEW] `a chiall` — "sense / understanding"; vocative,
+        //  used as a gentle scold from an elder. NEEDS NATIVE REVIEW.
+        e: 'A chiall — sense, child. Ye keep losing it.',
+        f: 'Cold sharpens what warmth softens. Walk on.',
+        // [GAELIC-REVIEW] `mo nighean` — "my daughter / my girl"; warm
+        //  vocative. NEEDS NATIVE REVIEW.
+        g: 'Mo nighean. Ye carry yer own weather.',
+        h: 'The hag-stane sees through ye. Stand still.',
+        // [GAELIC-REVIEW] `is fada an oidhche` — "the night is long";
+        //  proverb-fragment, common idiom. NEEDS NATIVE REVIEW.
+        i: 'Is fada an oidhche. The night is long. Steady, then.',
+        j: 'Ye are a small fire. I have warmed at smaller.',
+        // [GAELIC-REVIEW] `tog ort` — "rouse yourself / get going";
+        //  imperative. NEEDS NATIVE REVIEW.
+        k: 'Tog ort. Not pity — instruction.',
+        l: 'Frost remembers every footfall. So do I.',
+        m: 'Beira watches. The herd hears it in the wind.',
+        // [GAELIC-REVIEW] `cha mhór` — "almost / nearly"; common idiom.
+        //  NEEDS NATIVE REVIEW.
+        n: 'Cha mhór. Almost — but the mountain isn\'t fooled.',
+        o: 'A blizzard taught me silence. I\'ll teach ye, if ye ask.',
+        // [GAELIC-REVIEW] `a ghaoil` — "my dear / my beloved"; warm
+        //  vocative from elder. NEEDS NATIVE REVIEW.
+        p: 'A ghaoil. The world will not coddle ye.',
+        q: 'Ye think the dark hates ye. It only outlasts ye.',
+        // [GAELIC-REVIEW] `gabh air do shocair` — "take it easy /
+        //  steady on"; imperative. NEEDS NATIVE REVIEW.
+        r: 'Gabh air do shocair. Slow, child. Slow.',
+        s: 'I have waited longer than these hills for less worthy weans.',
+        // [GAELIC-REVIEW] `sgrìobhte sa chloich` — "written in the
+        //  stone"; literary register. NEEDS NATIVE REVIEW.
+        t: 'Sgrìobhte sa chloich. Written in stone — and read by the wind.',
+      },
+      // ── Seasonal Event pool (B1 Phase 5). Standalone graduation —
+      //    the existing `gran_commentary.seasonal_event` sub-pool stays
+      //    in place (used by E1 ceremony resolver), but this new pool
+      //    fires for in-run seasonal moments where Gran isn't already
+      //    speaking. Priority 65 per spec §2 / PENDING_POOL_METADATA.
+      //
+      //    Tone: HEARTH per voice register table (Hearth for warm
+      //    seasonal moments, Cailleach-edged for Samhain). Sub-pools
+      //    mix subtle tones to match each event's mood.
+      //
+      //    Tags align with `getActiveSeasonalEventKey` returns:
+      //    - `burns_night` (Jan 18 - Feb 1) — Burns canon citations.
+      //    - `hogmanay` (Dec 28 - Jan 3) — first-footing, year-turn.
+      //    - `samhain` (Oct 28 - Nov 3) — boundary thinning.
+      //    - `beltane` (Apr 28 - May 4) — fire festival, summer-start.
+      //
+      //    Burns Night lines that quote Burns directly are public-domain
+      //    citations against Kinsley 1968 critical edition; inline
+      //    comments cite poem + first-publication year.
+      seasonal_event: {
+        a: 'The wheel turns. The moor remembers.',
+        b: 'Auld festival. New hooves on it.',
+        burns_night: {
+          // ── "Address to a Haggis" (1786). Kinsley 1968 vol. I no. 136.
+          a: 'The Bard\'s night. "Fair fa\' your honest, sonsie face."',
+          b: '"Great chieftain o\' the puddin\'-race!" — Address to a Haggis.',
+          // ── "To a Mouse" (1785). Kinsley vol. I no. 69.
+          c: 'It\'s the Bard\'s week — even mice walk lighter.',
+          // ── "A Red, Red Rose" (1794). Kinsley vol. II no. 453.
+          d: '"O my Luve\'s like a red, red rose." Burns is in the air.',
+          // ── "Auld Lang Syne" (1788, pub. 1796). Kinsley no. 240.
+          e: 'Should auld acquaintance be forgot — no\' the night, hen.',
+          // ── "Tam o\' Shanter" (1790). Kinsley vol. II no. 321.
+          f: 'Tam\'s ride is told by every fire this week.',
+          // ── "Scots Wha Hae" (1793). Kinsley vol. II no. 425.
+          g: '"Scots, wha hae wi\' Wallace bled" — pipes carry it.',
+          // ── "A Man\'s a Man for A\' That" (1795). Kinsley no. 482.
+          h: '"A man\'s a man for a\' that." Even a wee haggis.',
+          // ── Conventional Burns Supper toast.
+          i: 'Toast the Immortal Memory before ye charge.',
+          // ── Burns Supper ritual: piping in the haggis.
+          j: 'The haggis is piped in tonight. Ye\'re royalty.',
+          // ── Selkirk Grace (popularised by Burns at Lord Selkirk\'s table).
+          k: 'Selkirk Grace tonight — somebody\'s sayin\' it for us.',
+          l: 'Kilt straightened, glass raised. The moor bows back.',
+          m: 'The Address tonight — every word a wee fire.',
+          n: 'The poet at Alloway is listening. Walk steady.',
+          o: 'Burns night across the world. Ye\'re part of it, hen.',
+          // ── "Ae Fond Kiss" (1791). Kinsley vol. II no. 337.
+          p: '"Ae fond kiss, and then we sever" — soft yin tonight.',
+          // ── "Green Grow the Rashes O" (1783). Kinsley vol. I no. 45.
+          q: '"Green grow the rashes, O." Cheery toast.',
+          // ── "Holy Willie\'s Prayer" (1785). Kinsley vol. I no. 53.
+          r: 'The Bard had a wicked grin. Dust off yer own.',
+          s: 'After the haggis, after the toasts — back tae the moor.',
+          t: 'The Bard\'s lamp glints on every dram tonight. Aye.',
+        },
+        hogmanay: {
+          a: 'Hogmanay. The year hinges. Walk through it bonnie.',
+          b: 'Bells in the distance. New year takin\' a breath.',
+          c: 'First-footing the moor — a coin, a coal, a kindness.',
+          d: 'A dark-haired haggis at the door is best luck.',
+          e: 'Auld Lang Syne hummed in the heather.',
+          f: 'Stonehaven\'s fireballs whirled the dark away. Same idea here.',
+          g: 'Edinburgh\'s street singin\'. The moor sings quieter.',
+          h: 'Twelve bells, twelve futures. Pick a guid yin.',
+          i: 'Out wi\' the auld year — gently, mind.',
+          j: 'Black bun an\' a dram waitin\' fer the survivor.',
+          k: 'A stranger\'s gift opens the year.',
+          l: 'Year\'s last wind. Push through it.',
+          m: 'Hogmanay\'s a long word fer "have a chance, hen."',
+          n: 'Saining the threshold — the moor blesses its own.',
+          o: 'A Hogmanay haggis is a lucky haggis.',
+          p: 'Three knocks, three wishes — the door opens this night.',
+        },
+        samhain: {
+          // ── Edge / Cailleach-adjacent tone: veil thins.
+          a: 'Samhain. The boundary thins. Hooves walk between.',
+          b: 'The dead nod tonight. Nod back, but keep movin\'.',
+          c: 'Cailleach reigns again. Warmth is a memory.',
+          d: 'Ancestors are nearer. Honour them by surviving.',
+          e: 'Bone-fire, soul-light — older than the calendar.',
+          f: 'A turnip wi\' a candle. A wee defiance.',
+          g: 'The Wild Hunt rides somewhere far. Don\'t look up.',
+          h: 'Soul-cake left out. Don\'t eat what\'s for the deid.',
+          i: 'Last harvest in. The earth sleeps after this.',
+          j: 'A name spoken in the dark stays heard.',
+          k: 'The moor wears a different face this week.',
+          l: 'Lantern in the kale-yard — for the ones who came.',
+        },
+        beltane: {
+          a: 'Beltane fires lit. Cattle pass between them. So do you.',
+          b: 'The young Cailleach today — May Queen wi\' the heather.',
+          c: 'Two fires, one road through. Walk lucky.',
+          d: 'Calton Hill flickers. Edinburgh remembers.',
+          e: 'Summer\'s door swings open. Mind the threshold.',
+          f: 'May-dew in the heather. Wash yer face fer luck.',
+          g: 'Green Man in the bracken. Wave back.',
+          h: 'Fire-jumpers tonight. Show \'em how a haggis hops.',
+          i: 'Wells dressed wi\' rags an\' wishes. Make ane.',
+          j: 'The birch is in leaf. The world\'s soft for a moment.',
+          k: 'Dance the bealtain widdershins — joy, no curse.',
+          l: 'Bonfire breath, sun-warm hooves. This is the bright half.',
         },
       },
     },
