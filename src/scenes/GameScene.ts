@@ -130,6 +130,7 @@ import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import { restoreHeldRelics } from './game/SavedStateHydrator';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
+import { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
 import { pickAncestor } from '@/data/ancestorWhispers';
@@ -429,6 +430,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private playerHitResolver!: PlayerHitResolver;
   private runPersistence!: RunPersistenceBridge;
   private runHistoryRecorder!: RunHistoryRecorder;
+  /**
+   * T401 P3 — replay-aware wrapper around `RunHistoryRecorder.record`
+   * and the legacy `recordRun` save call. Built once `runHistoryRecorder`
+   * exists; `RunLifecycle` reads through it so the playback no-op is
+   * unit-testable instead of an anonymous closure.
+   */
+  private runPersistenceCoordinator!: RunPersistenceCoordinator;
   private hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
@@ -1000,6 +1008,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
     });
 
+    // T401 P3 — replay-aware wrapper for the run-end persistence pair.
+    // `isReplayPlayback` reads `this.replayInput` at call time, NOT at
+    // construction, so the gate stays correct even though the
+    // coordinator is built before all of create() has run.
+    this.runPersistenceCoordinator = new RunPersistenceCoordinator({
+      isReplayPlayback: () => this.replayInput !== null,
+      getHistoryRecorder: () => this.runHistoryRecorder,
+      recordRun,
+      loadSave,
+    });
+
     if (resumeRun) {
       this.runPersistence.applyResume(resumeRun);
     }
@@ -1339,21 +1358,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       buildRunSummary: (victory) => this.runExit.buildSummary(victory),
       buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
       buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
-      // T307 — recordToHistory writes a duplicate row into Chronicle (and
-      // bumps Daily Challenge attempts) when fired during replay playback.
-      // Pair the no-op gate with the existing `recordRun` no-op below so
-      // the meta save survives playback untouched.
-      recordToHistory: (s, r) => {
-        if (this.replayInput) return;
-        this.runHistoryRecorder.record(s, r);
-      },
-      recordRun: (s, ctx) =>
-        // T1 replay playback — don't pollute run history with a replay
-        // run. The Chronicle already has the original entry; re-adding
-        // would double-count the attempt and drift achievement progress.
-        this.replayInput
-          ? { save: loadSave(), goldEarned: 0, newlyUnlockedVariants: [] }
-          : recordRun(s, ctx),
+      // T307 + T1 replay — replay-aware wrappers live on
+      // `runPersistenceCoordinator`. During playback both calls no-op
+      // (recordToHistory) or return a no-pollution RunResult (recordRun)
+      // so a replay run can't double-count Chronicle attempts or write
+      // duplicate gold/variant unlocks.
+      recordToHistory: (s, r) => this.runPersistenceCoordinator.recordToHistory(s, r),
+      recordRun: (s, ctx) => this.runPersistenceCoordinator.recordRun(s, ctx),
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
       onActComplete: (actN) => this.launchActIntermission(actN),
       isIronmoorRun: () => this.activeIronmoorRun,
