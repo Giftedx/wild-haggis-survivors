@@ -2302,3 +2302,103 @@ describe('T406 — replay-blob compaction in run history', () => {
   });
 });
 
+
+describe('Phase B Endless — bestEndlessSeconds save round-trip', () => {
+  let originalLocalStorage: Storage | undefined;
+  beforeEach(() => {
+    originalLocalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+    const mem = new Map<string, string>();
+    (globalThis as { localStorage: Storage }).localStorage = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => { mem.set(k, v); },
+      removeItem: (k: string) => { mem.delete(k); },
+      clear: () => { mem.clear(); },
+      key: () => null,
+      get length() { return mem.size; },
+    } as Storage;
+  });
+  afterEach(() => {
+    if (originalLocalStorage === undefined) {
+      delete (globalThis as { localStorage?: Storage }).localStorage;
+    } else {
+      (globalThis as { localStorage: Storage }).localStorage = originalLocalStorage;
+    }
+  });
+
+  it('migrates a pre-endless save (no bestEndlessSeconds field) to default 0', () => {
+    const legacy = {
+      schemaVersion: 3,
+      gold: 17,
+      // Crucially: NO bestEndlessSeconds field at all.
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 0,
+      bestTime: 0,
+      bestKills: 0,
+      totalKills: 0,
+      totalGoldEarned: 0,
+      bestCombo: 0,
+      victories: 0,
+      runHistory: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(legacy);
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.bestEndlessSeconds).toBe(0);
+  });
+
+  it('preserves a non-zero bestEndlessSeconds across migrate', () => {
+    const legacy = {
+      schemaVersion: 3,
+      gold: 17,
+      bestEndlessSeconds: 245,
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 0,
+      bestTime: 0,
+      bestKills: 0,
+      totalKills: 0,
+      totalGoldEarned: 0,
+      bestCombo: 0,
+      victories: 0,
+      runHistory: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(legacy);
+    expect(migrated.bestEndlessSeconds).toBe(245);
+  });
+
+  it('coerces a malformed bestEndlessSeconds (string) back to 0', () => {
+    const legacy = {
+      schemaVersion: 3,
+      gold: 0,
+      bestEndlessSeconds: 'not-a-number',
+      upgrades: {},
+      unlockedVariants: ['classic'],
+      selectedVariant: 'classic',
+      totalRuns: 0,
+      bestTime: 0,
+      bestKills: 0,
+      totalKills: 0,
+      totalGoldEarned: 0,
+      bestCombo: 0,
+      victories: 0,
+      runHistory: [],
+      settings: { soundOn: true, musicOn: true },
+    };
+    const migrated = migrateSave(legacy);
+    expect(migrated.bestEndlessSeconds).toBe(0);
+  });
+
+  it('full round-trip: write at v17 → load at v17 → recordPostBellBest persists', () => {
+    const fresh = createDefaultSave();
+    expect(fresh.bestEndlessSeconds).toBe(0);
+    writeSave(fresh);
+    recordPostBellBest(180);
+    const loaded = loadSave();
+    expect(loaded.bestEndlessSeconds).toBe(180);
+    expect(loaded.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+  });
+});
