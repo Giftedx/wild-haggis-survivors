@@ -104,3 +104,31 @@ npm run lint
 npm test
 npm run build
 ```
+
+## T401 note — 2026-04-26 node-visit finalizer extraction
+
+Extracted `finalizeNodeVisit` and `peekReplayChoiceFor` from `GameScene`
+into a pure helper module at `src/scenes/game/nodeVisitFinalizer.ts`.
+The helper takes narrow interface dependencies (`NodeVisitMarker`,
+`NodeVisitClock`) plus the existing Phaser-free types (`RunActState`,
+`ReplayRecorder`, `ReplayInput`) so the module never imports the
+Phaser-touching `NodeMapSystem` / `SpawnSystem` directly. Eleven new
+unit tests in `nodeVisitFinalizer.test.ts` cover: marking + outcome
+recording, optional `chosenRewardKey` propagation, replay-recorder
+forwarding, replay-input consumption on key match (and skip on
+mismatch / passive finalizes), cursor walk-past for contiguous visited
+slots, and every branch of `peekReplayChoiceFor`.
+
+`GameScene.finalizeNodeVisit` and `GameScene.peekReplayChoiceFor` now
+delegate to the helper; behavior is preserved at every existing call
+site. Replay determinism contract preserved — the helper's
+`consumeNodeOutcome` semantics match the inline path byte for byte.
+`npm test` 4397/4397, `npm run build` clean.
+
+Remaining T401 debt: `GameScene.create()` still wires several large
+domains inline (run-start ceremony, replay bootstrap, relic pickup
+setup, music-state bridge). The next slice should pick one of those
+domains and follow the same "pure helper + narrow interface deps"
+pattern proven across the three slices to date
+(`updateRunHudFrame.ts`, `actIntermissionOnResolve.ts`,
+`nodeVisitFinalizer.ts`).

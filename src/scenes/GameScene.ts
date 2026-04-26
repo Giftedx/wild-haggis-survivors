@@ -117,6 +117,10 @@ import { showCountdown } from './game/CountdownOverlay';
 import { MoorMomentScheduler } from './game/MoorMomentScheduler';
 import { crossesMoorMercyHpFrac } from './game/moorMercyTrigger';
 import { formatRunIdentityToast } from './game/runIdentityToast';
+import {
+  finalizeNodeVisit as finalizeNodeVisitHelper,
+  peekReplayChoiceFor as peekReplayChoiceForHelper,
+} from './game/nodeVisitFinalizer';
 import { PauseMenu } from './game/PauseMenu';
 import { canOpenPauseMenu } from './game/pauseGate';
 import { PickupSpawner } from './game/PickupSpawner';
@@ -1005,6 +1009,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // Hook name retained until a broader rename sweep (scope: future polish).
       startMainMenuScene: () => this.scene.start('Croft'),
       unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
+      // T402 — Game Over run-identity radiator (parity with pause panel).
+      // Same data sources as the pause hooks above: RunActState for act
+      // counter + picker history, RelicSystem for sporran slot labels,
+      // ownedRuneIds → RUNES table for rune labels.
+      getCurrentAct: () => this.runActState.currentAct,
+      getRouteLabels: () =>
+        this.runActState.pickerHistory
+          .map((p) => {
+            try { return t(getRoute(p.routeKey).labelKey); } catch { return null; }
+          })
+          .filter((s): s is string => typeof s === 'string'),
+      getRelicLabels: () =>
+        (this.relicSystem?.getSlots() ?? [])
+          .map((s) => s.def?.nameKey)
+          .filter((k): k is string => typeof k === 'string')
+          .map((k) => t(k)),
+      getRuneLabels: () =>
+        this.ownedRuneIds
+          .map((id) => RUNES[id]?.nameKey)
+          .filter((k): k is string => typeof k === 'string')
+          .map((k) => t(k)),
     });
 
     // Run history recorder — writes to meta save on run end, updates
@@ -1991,6 +2016,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
               .map((s) => s.def?.nameKey)
               .filter((k): k is string => typeof k === 'string')
               .map((k) => t(k)),
+          // T402 follow-up — variant label always emitted; pauseStats
+          // helper drops the line if the string is empty (default-variant
+          // runs render no variant line). Resolves the variant nameKey
+          // through `t()` here so the helper stays Phaser-free.
+          getVariantLabel: () => {
+            try { return t(this.activeVariant.nameKey); } catch { return ''; }
+          },
+          // T402 follow-up — owned rune ids → display labels. Looks up
+          // each id in RUNES; missing keys (forwards-compat for retired
+          // ids) drop silently rather than leaking 'runes.missing.name'.
+          getRuneLabels: () =>
+            this.ownedRuneIds
+              .map((id) => RUNES[id]?.nameKey)
+              .filter((k): k is string => typeof k === 'string')
+              .map((k) => t(k)),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
           isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
@@ -2235,56 +2275,36 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * event handler — callers pass `chosenRewardKey` when the event had
    * a branching outcome (reward kind picked / trade accepted).
    */
+  /**
+   * T401 — delegated to the pure helper at
+   * `src/scenes/game/nodeVisitFinalizer.ts`. The behavior contract is
+   * unchanged: mark the node visited, record outcome on RunActState,
+   * push to replay recorder, consume any matching playback outcome,
+   * walk the cursor past contiguously visited slots.
+   */
   private finalizeNodeVisit(index: number, nodeKey: string, chosenRewardKey?: string): void {
-    this.nodeMapSystem.markVisited(index);
-    const outcome = {
+    finalizeNodeVisitHelper(
+      {
+        nodeMap: this.nodeMapSystem,
+        runActState: this.runActState,
+        replayRecorder: this.replayRecorder,
+        replayInput: this.replayInput,
+        clock: this.spawnSystem,
+      },
+      index,
       nodeKey,
-      ...(chosenRewardKey ? { chosenRewardKey } : {}),
-      visitedAtGameTimeSec: this.spawnSystem.getGameTimeSec(),
-    };
-    this.runActState.recordNodeOutcome(outcome);
-    this.replayRecorder?.pushNodeOutcome(outcome);
-    // M1 F5 — playback consumes the matching recorded outcome so the
-    // cursor stays aligned with node-trigger order (passive finalizes
-    // and early-outs like 'empty_pool' / 'no_stock' consume too, so the
-    // next interactive node sees its own outcome).
-    if (this.replayInput) {
-      const next = this.replayInput.peekNextNodeOutcome();
-      if (next && next.nodeKey === nodeKey) {
-        this.replayInput.consumeNodeOutcome();
-      }
-    }
-    const map = this.runActState.currentActNodeMap;
-    if (!map) return;
-    while (
-      this.runActState.currentNodeIndex < map.nodes.length &&
-      map.visited[this.runActState.currentNodeIndex]
-    ) {
-      this.runActState.currentNodeIndex++;
-    }
+      chosenRewardKey,
+    );
   }
 
   /**
-   * M1 F5 — if the scene is in playback mode AND the next recorded
-   * outcome matches the triggered node's key, returns the recorded
-   * `chosenRewardKey`. Caller uses this to skip the NodePromptUI and
-   * apply the recorded choice inline. Non-destructive: finalize consumes
-   * the cursor so passive finalizes + interactive short-circuits stay
-   * aligned. Returns null when not in replay mode, the outcome log is
-   * exhausted, or the next outcome is for a different node (a warn is
-   * logged in the latter case and the live path falls through).
+   * M1 F5 — delegated to `peekReplayChoiceFor` in
+   * `src/scenes/game/nodeVisitFinalizer.ts`. Returns the recorded
+   * `chosenRewardKey` when in playback mode AND the next outcome
+   * matches `nodeKey`; null + warn-on-mismatch otherwise.
    */
   private peekReplayChoiceFor(nodeKey: string): string | null {
-    if (!this.replayInput) return null;
-    const outcome = this.replayInput.peekNextNodeOutcome();
-    if (!outcome) return null;
-    if (outcome.nodeKey !== nodeKey) {
-      console.warn(
-        `[replay] node-outcome mismatch: expected ${outcome.nodeKey}, got ${nodeKey} — opening live prompt`,
-      );
-      return null;
-    }
-    return outcome.chosenRewardKey ?? null;
+    return peekReplayChoiceForHelper(this.replayInput, nodeKey);
   }
 
   /**

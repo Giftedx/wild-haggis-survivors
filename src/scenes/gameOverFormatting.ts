@@ -215,6 +215,41 @@ export function boundedLoadoutSummary(rawSummary: string, maxDetailLines: number
   return visible.join('\n');
 }
 
+/**
+ * T402 — Game Over run-identity radiator (parity with pause panel).
+ * Same gating semantics as `buildPauseStatsLines`: act 2+ only, non-empty
+ * routes, non-empty relics. Re-uses the `ui.pause.stats_*` keys so the
+ * two surfaces stay in lockstep on locale + voice updates. Variant chip
+ * is rendered separately on Game Over (`gameOverVariantChip`); this
+ * helper deliberately does NOT duplicate it.
+ *
+ * Returns an array so the scene can join with its preferred separator
+ * (newline today; comma in tighter layouts later).
+ */
+export interface GameOverRunIdentityInput {
+  currentAct?: 1 | 2 | 3;
+  routeLabels?: readonly string[];
+  relicLabels?: readonly string[];
+  runeLabels?: readonly string[];
+}
+
+export function buildGameOverRunIdentityLines(input: GameOverRunIdentityInput): string[] {
+  const lines: string[] = [];
+  if (input.currentAct !== undefined && input.currentAct >= 2) {
+    lines.push(t('ui.pause.stats_act', { act: input.currentAct }));
+  }
+  if (input.routeLabels && input.routeLabels.length > 0) {
+    lines.push(t('ui.pause.stats_routes', { routes: input.routeLabels.join(', ') }));
+  }
+  if (input.relicLabels && input.relicLabels.length > 0) {
+    lines.push(t('ui.pause.stats_relics', { relics: input.relicLabels.join(', ') }));
+  }
+  if (input.runeLabels && input.runeLabels.length > 0) {
+    lines.push(t('ui.pause.stats_runes', { runes: input.runeLabels.join(', ') }));
+  }
+  return lines;
+}
+
 export interface GoldBreakdownInput {
   timeSurvivedSec: number;
   enemiesKilled: number;

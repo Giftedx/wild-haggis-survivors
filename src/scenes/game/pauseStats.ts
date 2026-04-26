@@ -40,6 +40,17 @@ export interface PauseStatsInput {
    * pure. Omitted when empty.
    */
   relicLabels?: readonly string[];
+  /**
+   * T402 follow-up — variant display label (haggis pick). Already
+   * i18n-resolved by the caller. Omitted when undefined / empty so
+   * the default-variant case stays clean.
+   */
+  variantLabel?: string;
+  /**
+   * T402 follow-up — owned rune labels (already i18n-resolved) in
+   * acquisition order. Omitted when empty.
+   */
+  runeLabels?: readonly string[];
 }
 
 /**
@@ -72,8 +83,14 @@ export function buildPauseStatsLines(input: PauseStatsInput): string[] {
   }
 
   // T402 — run identity radiator. Lines only render once the player
-  // actually has the data to show: act 2+ (skipped on the default
-  // act-1 state), at least one resolved picker, at least one relic.
+  // actually has the data to show: variant set (default omitted), act 2+
+  // (skipped on the default act-1 state), at least one resolved picker,
+  // at least one relic, at least one rune. Variant first because it's
+  // the run-defining pick; act/routes/relics/runes follow in
+  // chronological order of acquisition.
+  if (input.variantLabel !== undefined && input.variantLabel.length > 0) {
+    lines.push(t('ui.pause.stats_variant', { variant: input.variantLabel }));
+  }
   if (input.currentAct !== undefined && input.currentAct >= 2) {
     lines.push(t('ui.pause.stats_act', { act: input.currentAct }));
   }
@@ -82,6 +99,9 @@ export function buildPauseStatsLines(input: PauseStatsInput): string[] {
   }
   if (input.relicLabels && input.relicLabels.length > 0) {
     lines.push(t('ui.pause.stats_relics', { relics: input.relicLabels.join(', ') }));
+  }
+  if (input.runeLabels && input.runeLabels.length > 0) {
+    lines.push(t('ui.pause.stats_runes', { runes: input.runeLabels.join(', ') }));
   }
 
   return lines;

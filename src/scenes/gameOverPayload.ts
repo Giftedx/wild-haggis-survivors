@@ -39,4 +39,29 @@ export interface GameOverPayload {
   curseKey?: string;
   /** Display name generated for this run — shown as epigraph on the result screen. */
   name?: string;
+  /**
+   * T402 (Game Over parity with Pause radiator) — Moor-Road act reached
+   * (1-3). Omitted when undefined or 1 (act-1 default would clutter
+   * post-run polishing); shown as "Act N / 3" once the player crossed
+   * a picker. Mirrors `PauseStatsInput.currentAct`.
+   */
+  currentAct?: 1 | 2 | 3;
+  /**
+   * T402 — picker history this run, in pick order. Each entry is the
+   * already-i18n-resolved route display label (so the helper stays
+   * pure-string). Omitted when empty (pre-picker runs).
+   */
+  routeLabels?: readonly string[];
+  /**
+   * T402 — relic labels (already-i18n-resolved) held in the sporran at
+   * run-end, in slot order. Omitted when empty.
+   */
+  relicLabels?: readonly string[];
+  /**
+   * T402 follow-up — owned rune labels (already-i18n-resolved) at
+   * run-end, in acquisition order. Omitted when empty so the default
+   * (no-runes) summary stays clean. Variant label already lives in
+   * `variantLabel` above; this radiator does not duplicate it.
+   */
+  runeLabels?: readonly string[];
 }

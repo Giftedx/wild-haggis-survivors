@@ -11,6 +11,7 @@ import {
   formatRerunSeedLinkLabel,
   formatSeedReadoutLabel,
   buildPostcardPayloadFromGameOver,
+  buildGameOverRunIdentityLines,
 } from './gameOverFormatting';
 import type { GameOverPayload } from './gameOverPayload';
 import type { DeathCause, DeathCauseTag } from '../core/deathCauseClassifier';
@@ -547,5 +548,89 @@ describe('buildPostcardPayloadFromGameOver', () => {
     expect(out.tartan).toBeDefined();
     const resolved = resolveTartanProfile(out.tartan!);
     expect(resolved.authoredId).toBe('ironmoor_crown');
+  });
+});
+
+describe('buildGameOverRunIdentityLines', () => {
+  it('returns an empty array for a fresh act-1 run with no routes/relics', () => {
+    expect(buildGameOverRunIdentityLines({})).toEqual([]);
+    expect(buildGameOverRunIdentityLines({ currentAct: 1 })).toEqual([]);
+    expect(buildGameOverRunIdentityLines({ routeLabels: [] })).toEqual([]);
+    expect(buildGameOverRunIdentityLines({ relicLabels: [] })).toEqual([]);
+  });
+
+  it('emits an act line only for act 2 or higher', () => {
+    expect(buildGameOverRunIdentityLines({ currentAct: 1 })).toHaveLength(0);
+    expect(buildGameOverRunIdentityLines({ currentAct: 2 })).toHaveLength(1);
+    expect(buildGameOverRunIdentityLines({ currentAct: 3 })).toHaveLength(1);
+    expect(buildGameOverRunIdentityLines({ currentAct: 2 })[0]).toMatch(/2/);
+    expect(buildGameOverRunIdentityLines({ currentAct: 3 })[0]).toMatch(/3/);
+  });
+
+  it('joins route picks with a comma separator on a single line', () => {
+    const lines = buildGameOverRunIdentityLines({
+      routeLabels: ['Up the Brae', 'Through the Kirkyard'],
+    });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Up the Brae');
+    expect(lines[0]).toContain('Through the Kirkyard');
+    expect(lines[0]).toContain(',');
+  });
+
+  it('joins relic labels with a comma separator on a single line', () => {
+    const lines = buildGameOverRunIdentityLines({
+      relicLabels: ['Whisky Dram', "Fingal's Horn"],
+    });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Whisky Dram');
+    expect(lines[0]).toContain("Fingal's Horn");
+  });
+
+  it('emits all three lines in order when act+routes+relics all populated', () => {
+    const lines = buildGameOverRunIdentityLines({
+      currentAct: 3,
+      routeLabels: ['Up the Brae'],
+      relicLabels: ['Whisky Dram'],
+    });
+    expect(lines).toHaveLength(3);
+    expect(lines[0]).toMatch(/3/);
+    expect(lines[1]).toContain('Up the Brae');
+    expect(lines[2]).toContain('Whisky Dram');
+  });
+
+  it('emits a runes line when at least one rune is owned, omits when empty', () => {
+    expect(buildGameOverRunIdentityLines({}).length).toBe(0);
+    expect(buildGameOverRunIdentityLines({ runeLabels: [] }).length).toBe(0);
+    const lines = buildGameOverRunIdentityLines({
+      runeLabels: ['Stormcrow', 'Brackenheart'],
+    });
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toContain('Stormcrow');
+    expect(lines[0]).toContain('Brackenheart');
+    expect(lines[0]).toContain(',');
+  });
+
+  it('orders the radiator as act → routes → relics → runes when all four populated', () => {
+    const lines = buildGameOverRunIdentityLines({
+      currentAct: 2,
+      routeLabels: ['Up the Brae'],
+      relicLabels: ['Whisky Dram'],
+      runeLabels: ['Stormcrow'],
+    });
+    expect(lines).toHaveLength(4);
+    expect(lines[0]).toMatch(/2/);
+    expect(lines[1]).toContain('Up the Brae');
+    expect(lines[2]).toContain('Whisky Dram');
+    expect(lines[3]).toContain('Stormcrow');
+  });
+
+  it('does NOT include variant — variantChip renders that separately on Game Over', () => {
+    // Sanity check: the helper signature has no variant field, and a
+    // payload-shaped call with extra props doesn't crash. Variant duplication
+    // is the explicit non-goal for this radiator (per gameOverFormatting docstring).
+    const lines = buildGameOverRunIdentityLines({ currentAct: 2 });
+    for (const line of lines) {
+      expect(line).not.toMatch(/variant/i);
+    }
   });
 });

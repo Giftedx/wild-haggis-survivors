@@ -13,6 +13,7 @@ import {
   formatClockTime,
   computeGoldBreakdown,
   boundedLoadoutSummary,
+  buildGameOverRunIdentityLines,
   buildWeaponDamageRows,
   formatDeathInsightLine,
   resolveUnlockHeading,
@@ -363,11 +364,25 @@ export class GameOverScene extends Phaser.Scene {
       this.payload.weaponCount === 1
         ? t('ui.gameOver.weapons_line_one', { evolved: this.payload.evolvedCount })
         : t('ui.gameOver.weapons_line', { count: this.payload.weaponCount, evolved: this.payload.evolvedCount });
+    // T402 — run-identity radiator (parity with pause panel). Empty for
+    // fresh act-1 runs with no routes/relics; otherwise appends gated
+    // act/routes/relics lines so the summary reflects what shaped the run.
+    // Variant chip is rendered separately above; we deliberately don't
+    // duplicate it here. Reuses `ui.pause.stats_*` keys for locale parity.
+    const runIdentityLines = buildGameOverRunIdentityLines({
+      currentAct: this.payload.currentAct,
+      routeLabels: this.payload.routeLabels,
+      relicLabels: this.payload.relicLabels,
+      runeLabels: this.payload.runeLabels,
+    });
+    const summaryBlock = runIdentityLines.length > 0
+      ? `${weaponsHead}\n${loadoutSummaryText}\n${runIdentityLines.join('\n')}`
+      : `${weaponsHead}\n${loadoutSummaryText}`;
     const loadoutSummary = this.add
       .text(
         panelCenterX,
         weaponPanelTop + Math.round(15 * panelScale),
-        `${weaponsHead}\n${loadoutSummaryText}`,
+        summaryBlock,
         {
           ...textStyle('label', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(560, PANEL_W - 48) / Math.max(1, uiScale) } }),
           lineSpacing: 6,

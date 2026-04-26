@@ -58,6 +58,10 @@ export interface PauseMenuHooks {
   getRouteLabels?: () => readonly string[];
   /** T402 — held relic display labels in slot order. */
   getRelicLabels?: () => readonly string[];
+  /** T402 follow-up — variant display label (haggis pick), already i18n-resolved. */
+  getVariantLabel?: () => string;
+  /** T402 follow-up — owned rune display labels, already i18n-resolved. */
+  getRuneLabels?: () => readonly string[];
   onResumeRequested(): void;
   onQuitRequested(): void;
   /**
@@ -139,6 +143,8 @@ export class PauseMenu {
       currentAct: this.hooks.getCurrentAct?.(),
       routeLabels: this.hooks.getRouteLabels?.(),
       relicLabels: this.hooks.getRelicLabels?.(),
+      variantLabel: this.hooks.getVariantLabel?.(),
+      runeLabels: this.hooks.getRuneLabels?.(),
     });
     this.elements.push(
       scene.add.text(x + width / 2, y + height * 0.34, statLines.join('\n'), {

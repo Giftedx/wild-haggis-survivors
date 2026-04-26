@@ -135,3 +135,48 @@ describe('buildPauseStatsLines — optional lines', () => {
     expect(lines[6]).toContain('5');     // streak current
   });
 });
+
+describe('buildPauseStatsLines — variant + runes radiator (T402 follow-up)', () => {
+  it('emits a variant line when a variant label is supplied', () => {
+    const lines = buildPauseStatsLines(base({ variantLabel: 'Cailleach' }));
+    expect(lines.length).toBe(4);
+    const variantLine = lines.find((l) => l.includes('Cailleach'));
+    expect(variantLine).toBeDefined();
+  });
+
+  it('omits the variant line when the label is undefined or empty', () => {
+    expect(buildPauseStatsLines(base()).length).toBe(3);
+    expect(buildPauseStatsLines(base({ variantLabel: '' })).length).toBe(3);
+  });
+
+  it('emits a runes line when at least one rune is owned', () => {
+    const lines = buildPauseStatsLines(base({
+      runeLabels: ['Stormcrow', 'Brackenheart'],
+    }));
+    expect(lines.length).toBe(4);
+    const runesLine = lines.find((l) => l.includes('Stormcrow') && l.includes('Brackenheart'));
+    expect(runesLine).toBeDefined();
+    expect(runesLine).toContain(',');
+  });
+
+  it('omits the runes line when no runes are owned', () => {
+    expect(buildPauseStatsLines(base({ runeLabels: [] })).length).toBe(3);
+  });
+
+  it('orders the radiator as variant → act → routes → relics → runes', () => {
+    const lines = buildPauseStatsLines(base({
+      variantLabel: 'Cailleach',
+      currentAct: 3,
+      routeLabels: ['Up the Brae'],
+      relicLabels: ['Whisky Dram'],
+      runeLabels: ['Stormcrow'],
+    }));
+    // 3 base lines + 5 radiator lines = 8 total
+    expect(lines.length).toBe(8);
+    expect(lines[3]).toContain('Cailleach');
+    expect(lines[4]).toContain('3');
+    expect(lines[5]).toContain('Up the Brae');
+    expect(lines[6]).toContain('Whisky Dram');
+    expect(lines[7]).toContain('Stormcrow');
+  });
+});

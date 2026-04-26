@@ -72,6 +72,16 @@ export interface RunExitHooks {
    * next MainMenu → Resume button would offer to continue it.
    */
   unregisterRunAutoSave(): void;
+
+  /**
+   * T402 — Game Over run-identity radiator (parity with pause panel).
+   * Optional so older test rigs and partial mocks don't have to stub
+   * the methods; production wiring supplies all four.
+   */
+  getCurrentAct?(): 1 | 2 | 3;
+  getRouteLabels?(): readonly string[];
+  getRelicLabels?(): readonly string[];
+  getRuneLabels?(): readonly string[];
 }
 
 /** Number of weapons listed per line in the build summary. */
@@ -144,6 +154,25 @@ export class RunExitComposer {
       curseKey: h.getActiveCurseKey() ?? undefined,
       deathCause,
       name: h.getRunName(),
+      // T402 — only attach run-identity radiator fields when the hook is
+      // wired AND the data has shape worth showing. Avoids cluttering the
+      // payload with empty arrays / default-act on a fresh run.
+      ...(h.getCurrentAct ? (() => {
+        const act = h.getCurrentAct!();
+        return act >= 2 ? { currentAct: act } : {};
+      })() : {}),
+      ...(h.getRouteLabels ? (() => {
+        const routes = h.getRouteLabels!();
+        return routes.length > 0 ? { routeLabels: routes } : {};
+      })() : {}),
+      ...(h.getRelicLabels ? (() => {
+        const relics = h.getRelicLabels!();
+        return relics.length > 0 ? { relicLabels: relics } : {};
+      })() : {}),
+      ...(h.getRuneLabels ? (() => {
+        const runes = h.getRuneLabels!();
+        return runes.length > 0 ? { runeLabels: runes } : {};
+      })() : {}),
     };
   }
 
