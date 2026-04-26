@@ -5,10 +5,15 @@ import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
 vi.mock('phaser', () => {
+  class GeomRectangle {
+    constructor(public x: number, public y: number, public width: number, public height: number) {}
+    static Contains(_r: GeomRectangle, _x: number, _y: number) { return true; }
+  }
   const __m = {
     Math: {
       Clamp: (value: number, min: number, max: number) => Math.max(min, Math.min(max, value)),
     },
+    Geom: { Rectangle: GeomRectangle },
   };
   return { default: __m, ...__m };
 });

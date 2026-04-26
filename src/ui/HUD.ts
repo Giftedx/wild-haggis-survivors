@@ -39,6 +39,7 @@ import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
 import { textStyle } from './typography';
+import { computeMinTapHitArea } from '../utils/touchTargets';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -298,11 +299,24 @@ export class HUD {
     this.xpBarHighlight = this.addEl(this.scene.add.rectangle(0, xpY, 0, 2, 0xffe066, 0.7)
       .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2));
 
-    // Pause button (visible on touch devices, small on desktop)
+    // Pause button (visible on touch devices, small on desktop).
+    // W95 — explicit ≥44pt hit area so the bare "| |" glyphs (≈18×24px)
+    // hit the iOS HIG / Android Material minimum tap target on phones.
     this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |',
       textStyle('heading', { fontSize: '24px', color: '#b8a88a' }),
-    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)
-      .setInteractive({ useHandCursor: true })) as Phaser.GameObjects.Text;
+    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)) as Phaser.GameObjects.Text;
+    {
+      const hit = computeMinTapHitArea(
+        this.pauseText.width,
+        this.pauseText.height,
+        { x: 1, y: 0 },
+      );
+      this.pauseText.setInteractive({
+        hitArea: new Phaser.Geom.Rectangle(hit.x, hit.y, hit.width, hit.height),
+        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
+        useHandCursor: true,
+      } as Phaser.Types.Input.InputConfiguration);
+    }
     this.pauseText.on('pointerdown', () => {
       if (this.onPause) this.onPause();
     });

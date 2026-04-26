@@ -9,14 +9,19 @@ import { defineConfig, devices } from '@playwright/test';
  *                         specs unblocked after P4-13 fix to the audio-activation
  *                         retry loop (src/systems/audioContext.ts — setTimeout,
  *                         not queueMicrotask, for post-activation callbacks).
- *   - chromium-mobile   — touch + safe-area + virtual-joystick, mobile spec only
+ *   - chromium-mobile   — touch + safe-area + virtual-joystick, mobile specs only
  *
  * **Firefox WebM exclusion:** firefox's MediaRecorder doesn't accept
  * the codec the F9 clip-capture path produces. Gated inside the spec
  * via `test.skip(browserName === 'firefox', …)`; F10 (PNG) still runs.
  * Same treatment for `webkit` — codec mismatch, not a v4 blocker.
  */
-const DESKTOP_IGNORE = ['**/mobile-smoke.spec.ts'];
+// W95 — mobile-only specs are excluded from the desktop projects so the
+// touch / safe-area / HUD-reflow checks stay scoped to the iPhone runner.
+const DESKTOP_IGNORE = [
+  '**/mobile-smoke.spec.ts',
+  '**/mobile-viewport-reflow.spec.ts',
+];
 const FIREFOX_IGNORE = [
   ...DESKTOP_IGNORE,
   '**/marathon-smoke.spec.ts',
@@ -64,7 +69,7 @@ export default defineConfig({
     {
       name: 'chromium-mobile',
       use: { ...devices['iPhone 13'] },
-      testMatch: '**/mobile-smoke.spec.ts',
+      testMatch: ['**/mobile-smoke.spec.ts', '**/mobile-viewport-reflow.spec.ts'],
     },
   ],
   webServer: {
