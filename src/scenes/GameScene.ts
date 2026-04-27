@@ -79,7 +79,7 @@ import {
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
-import { getCurseByKey, type CurseKey } from '../data/curses';
+import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
@@ -155,6 +155,7 @@ import {
   recordReplayFrame,
   tickReplayPlayback,
 } from './game/replayBridgeInstall';
+import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -702,48 +703,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
 
-    // T303 — consume pending curse from the scene-data payload exactly
-    // once. Curses don't apply to resumed runs (they were already baked
-    // into the in-progress run) or daily attempts (fixed rules — seed
-    // equivalence). During v2 playback the curse key comes from the
-    // blob, which the parser already promoted into `pendingCurseKey` so
-    // replays stay deterministic even if the player picked a different
-    // curse in an intervening menu session. Always clear the field so
-    // it can't bleed into the next run on scene-reuse.
-    this.runModifiers = defaultModifiers();
-    this.activeCurseKey = null;
-    const consumedCurseKey = this.pendingCurseKey;
-    this.pendingCurseKey = null;
-    if (playbackV2 && playbackV2.curseKey) {
-      const curse = getCurseByKey(playbackV2.curseKey);
-      if (curse) {
-        curse.apply(this.runModifiers);
-        this.activeCurseKey = curse.key;
-        globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
-      }
-    } else if (!resumeRun && !this.runIsDaily) {
-      const curse = getCurseByKey(consumedCurseKey);
-      if (curse) {
-        curse.apply(this.runModifiers);
-        this.activeCurseKey = curse.key;
-        globalEventBus.emit('GLOBAL_CURSE_STARTED', { curseKey: curse.key });
-      }
-    }
-
-    // Compose with per-run modifiers layered on meta bonuses. Player reads
-    // these at construction — no post-hoc stat rewrites needed.
-    //
-    // v2 playback: the snapshot captured at record-time overrides the
-    // live meta-upgrade stat composition so the replayed run uses the
-    // exact sheet the recorder saw. BALANCE.player constants (dash etc.)
-    // come from `baseStats` as before — they're build-level.
-    const composedStats = playbackV2?.composedStats
-      ? { ...baseStats, ...playbackV2.composedStats }
-      : {
-          ...baseStats,
-          speed: baseStats.speed * this.runModifiers.moveSpeedMult,
-          maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
-        };
+    // T303 + T1 v2 — curse application + composedStats derivation.
+    // Slice in `applyCurseAndComposeStats.ts`. Resolution rules
+    // (precedence, resume/daily gates, replay-determinism override)
+    // live in the helper; this call site only owns the field
+    // assignments + the consume-once null-out for `pendingCurseKey`.
+    const curseResult = applyCurseAndComposeStats({
+      pendingCurseKey: this.pendingCurseKey,
+      resumeRun: !!resumeRun,
+      runIsDaily: this.runIsDaily,
+      playbackV2,
+      baseStats,
+    });
+    if (curseResult.consumePending) this.pendingCurseKey = null;
+    this.runModifiers = curseResult.runModifiers;
+    this.activeCurseKey = curseResult.activeCurseKey;
+    const composedStats = curseResult.composedStats;
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
