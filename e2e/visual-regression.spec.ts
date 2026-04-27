@@ -27,6 +27,14 @@ import path from 'node:path';
  * `npx playwright test visual-regression --update-snapshots --project=chromium-desktop`
  * and commit the regenerated PNGs under `e2e/visual-regression.spec.ts-snapshots/`.
  *
+ * **Cross-OS note:** Playwright suffixes baseline PNGs with `{platform}`
+ * (e.g. `-win32`, `-linux`, `-darwin`). Baselines from one OS won't satisfy
+ * a different OS's runner — instead, Playwright reports "missing baseline"
+ * and the runner author must regenerate via `--update-snapshots` and commit
+ * the new PNGs alongside the existing platform variants. CI on
+ * `ubuntu-latest` will need its own `-linux` baseline pass. (Tracked as a
+ * follow-up; see report.)
+ *
  * Currently scoped to **chromium-desktop only**. Webkit + Firefox baselines
  * are out of scope (DPR / GPU-driver variance would require per-engine
  * baseline sets). The mobile-viewport test runs on the same chromium engine
