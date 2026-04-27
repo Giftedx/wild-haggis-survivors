@@ -24,39 +24,66 @@ export function drawSheepBody(
   const rly = frame.rightLegY ?? 0; // back pair
 
   // ── Wool body — billowing ellipse behind/around the head. Dirty
-  // hill-sheep off-white with darker clumps for volume. ──
+  // hill-sheep off-white with darker clumps for volume. Slight
+  // forward lean (head dips lower-right) sells a grazing-lurch
+  // posture (audit dislike: "body is static"). ──
+  g.fillStyle(0x6a6a5a, 1);
+  g.fillEllipse(cx, cy + 4, 28, 18);
   g.fillStyle(0x888878, 1);
-  g.fillEllipse(cx, cy + 3, 28, 18);
-  // Curly wool clumps — fat circles stacked for the bouclé read
+  g.fillEllipse(cx + 0.5, cy + 3.5, 26, 16);
+  // Curly wool clumps — VARIED sizes (audit dislike: "fleece clumps
+  // are few" + uniform). Mix of large/medium/small at 4 sizes.
   g.fillStyle(0xd8d8c8, 1);
-  g.fillCircle(cx - 11, cy + 2, 5);
-  g.fillCircle(cx + 11, cy + 2, 5);
-  g.fillCircle(cx - 6, cy + 7, 5);
-  g.fillCircle(cx + 6, cy + 7, 5);
-  g.fillCircle(cx, cy + 9, 5);
+  g.fillCircle(cx - 11, cy + 2, 5.5);  // L
+  g.fillCircle(cx + 11, cy + 2, 4.5);  // M
+  g.fillCircle(cx - 6, cy + 7, 5);     // L
+  g.fillCircle(cx + 7, cy + 8, 4);     // M
+  g.fillCircle(cx + 1, cy + 9, 5);     // L
+  g.fillCircle(cx - 13, cy + 8, 3);    // S — extra clump for volume
+  g.fillCircle(cx + 13, cy + 7, 3);    // S
   g.fillStyle(0xe8e8d8, 1);
-  g.fillCircle(cx - 9, cy + 4, 3);
-  g.fillCircle(cx + 9, cy + 4, 3);
-  g.fillCircle(cx - 4, cy + 9, 3);
+  g.fillCircle(cx - 9, cy + 4, 3.2);
+  g.fillCircle(cx + 9, cy + 4, 2.8);
+  g.fillCircle(cx - 4, cy + 9, 2.6);
   g.fillCircle(cx + 4, cy + 9, 3);
-  // Grubby darker clumps for texture
-  g.fillStyle(0xa8a898, 0.8);
-  g.fillCircle(cx - 7, cy + 5, 2);
-  g.fillCircle(cx + 7, cy + 5, 2);
-  g.fillCircle(cx, cy + 5, 2);
+  g.fillCircle(cx + 2, cy + 11, 2);    // tiny S
+  g.fillCircle(cx - 11, cy + 11, 2);   // tiny S
+  // Grubby darker clumps for texture (peat-stained underside).
+  g.fillStyle(0xa8a898, 0.85);
+  g.fillCircle(cx - 7, cy + 5, 2.2);
+  g.fillCircle(cx + 7, cy + 5, 2.2);
+  g.fillCircle(cx, cy + 5, 1.8);
+  g.fillCircle(cx - 12, cy + 11, 1.6);
+  g.fillCircle(cx + 11, cy + 11, 1.6);
+  // Hayseed/heather flecks stuck in the fleece — three brown specks.
+  g.fillStyle(0x4a3018, 0.9);
+  g.fillCircle(cx - 9, cy + 7, 0.4);
+  g.fillCircle(cx + 5, cy + 6, 0.4);
+  g.fillCircle(cx + 8, cy + 11, 0.35);
 
-  // ── Black legs peeking out at the bottom — Blackface breed mark. ──
-  // Front pair (leftLegY)
+  // ── Legs — fuller detail. Knee bend hint + cloven hoof split
+  // (audit dislike: "legs are minimal"). ──
+  // Front pair (leftLegY) — slightly bent, leading leg lifted.
   g.fillStyle(0x000000, 1);
   g.fillRect(cx - 9, cy + 11 + lly, 2.5, 4);
   g.fillRect(cx - 3, cy + 12 + lly, 2.5, 3);
   // Back pair (rightLegY)
   g.fillRect(cx + 1, cy + 12 + rly, 2.5, 3);
   g.fillRect(cx + 7, cy + 11 + rly, 2.5, 4);
-  // Hoof highlight
-  g.fillStyle(0x2a2a2a, 1);
+  // Knee dab — single mid-leg highlight, sells the bend.
+  g.fillStyle(0x3a3a3a, 1);
+  g.fillRect(cx - 9, cy + 12.6 + lly, 2.5, 0.5);
+  g.fillRect(cx + 7, cy + 12.6 + rly, 2.5, 0.5);
+  // Cloven hoof split — vertical pale line down the centre of each
+  // hoof, the breed-correct two-toed mark.
+  g.fillStyle(0x4a4a4a, 1);
   g.fillRect(cx - 9, cy + 14 + lly, 2.5, 1);
   g.fillRect(cx + 7, cy + 14 + rly, 2.5, 1);
+  g.fillStyle(0x000000, 1);
+  g.fillRect(cx - 7.9, cy + 14 + lly, 0.4, 1);
+  g.fillRect(cx - 1.9, cy + 14 + lly, 0.4, 1);
+  g.fillRect(cx + 2.1, cy + 14 + rly, 0.4, 1);
+  g.fillRect(cx + 8.1, cy + 14 + rly, 0.4, 1);
 
   // ── BLACK HEAD — dominant centre element. Front-on, slightly
   // wider than tall for the Blackface breed silhouette. ──
@@ -70,38 +97,49 @@ export function drawSheepBody(
   g.fillStyle(0x3a3a3a, 0.8);
   g.fillEllipse(cx, cy + 0.5, 4, 2);
 
-  // ── MASSIVE CURLING RAM'S HORNS — asymmetric, twisted. Left horn
-  // curls tight, right horn angles outward like it grew wrong. ──
-  // Left horn — classic tight curl
-  g.fillStyle(0x665028, 1);
+  // ── MASSIVE CURLING RAM'S HORNS — asymmetric, twisted. Darker base
+  // tone separates them from the cream fleece (audit dislike: "horn
+  // color blends with fleece"). Left curls tight, right angles wrong.
+  // Left horn — outer dark rim then tan-bronze body.
+  g.fillStyle(0x2a1808, 1);
+  g.fillEllipse(cx - 9, cy - 9, 7.4, 4.4);
+  g.fillStyle(0x4a3010, 1);
   g.fillEllipse(cx - 9, cy - 9, 7, 4);
-  g.fillStyle(0x8a7038, 1);
+  g.fillStyle(0x8a6028, 1);
   g.fillEllipse(cx - 9, cy - 9, 6, 3);
   // Left horn tip curling back in
-  g.fillStyle(0x665028, 1);
+  g.fillStyle(0x2a1808, 1);
+  g.fillCircle(cx - 11, cy - 7, 2.2);
+  g.fillStyle(0x4a3010, 1);
   g.fillCircle(cx - 11, cy - 7, 2);
-  g.fillStyle(0x8a7038, 1);
+  g.fillStyle(0x8a6028, 1);
   g.fillCircle(cx - 11, cy - 7, 1.2);
-  // Horn ridges (growth rings)
-  g.fillStyle(0x4a3818, 0.8);
-  g.fillRect(cx - 11, cy - 10, 0.5, 3);
-  g.fillRect(cx - 9, cy - 10, 0.5, 3);
-  g.fillRect(cx - 7, cy - 10, 0.5, 3);
+  // Horn ridges (growth rings) — deeper, more of them.
+  g.fillStyle(0x1a0c04, 0.9);
+  g.fillRect(cx - 11.5, cy - 10, 0.4, 3.2);
+  g.fillRect(cx - 10, cy - 10, 0.4, 3.2);
+  g.fillRect(cx - 8.5, cy - 10, 0.4, 3.2);
+  g.fillRect(cx - 7, cy - 10, 0.4, 3.2);
   // Right horn — BENT WRONG, angles outward ~30° off
-  g.fillStyle(0x665028, 1);
+  g.fillStyle(0x2a1808, 1);
+  g.fillEllipse(cx + 10, cy - 8, 7.4, 4.4);
+  g.fillStyle(0x4a3010, 1);
   g.fillEllipse(cx + 10, cy - 8, 7, 4);
-  g.fillStyle(0x8a7038, 1);
+  g.fillStyle(0x8a6028, 1);
   g.fillEllipse(cx + 10, cy - 8, 6, 3);
   // Right horn tip — points outward, not curled
-  g.fillStyle(0x665028, 1);
-  g.fillTriangle(cx + 12, cy - 10, cx + 15, cy - 8, cx + 12, cy - 6);
-  g.fillStyle(0x8a7038, 1);
+  g.fillStyle(0x2a1808, 1);
+  g.fillTriangle(cx + 12, cy - 10, cx + 15.5, cy - 8, cx + 12, cy - 5.5);
+  g.fillStyle(0x4a3010, 1);
+  g.fillTriangle(cx + 12, cy - 9.6, cx + 15, cy - 8, cx + 12, cy - 6);
+  g.fillStyle(0x8a6028, 1);
   g.fillTriangle(cx + 12, cy - 9, cx + 14, cy - 8, cx + 12, cy - 7);
   // Right horn ridges
-  g.fillStyle(0x4a3818, 0.8);
-  g.fillRect(cx + 8, cy - 9, 0.5, 3);
-  g.fillRect(cx + 10, cy - 9, 0.5, 3);
-  g.fillRect(cx + 12, cy - 9, 0.5, 3);
+  g.fillStyle(0x1a0c04, 0.9);
+  g.fillRect(cx + 7.5, cy - 9, 0.4, 3.2);
+  g.fillRect(cx + 9, cy - 9, 0.4, 3.2);
+  g.fillRect(cx + 10.5, cy - 9, 0.4, 3.2);
+  g.fillRect(cx + 12, cy - 9, 0.4, 3.2);
 
   // ── Ears — small black triangles poking out from under the horns. ──
   g.fillStyle(0x000000, 1);
@@ -122,13 +160,25 @@ export function drawSheepBody(
   g.fillCircle(cx - 3.5, cy - 5.3, 0.3);
   g.fillCircle(cx + 2.5, cy - 5.3, 0.3);
 
-  // ── Manic grin showing teeth — a sheep should not smile. ──
+  // ── Manic grin showing teeth — a sheep should not smile. Bigger
+  // mouth + visible pink tongue + drool string (audit dislike: "face
+  // expression is tiny"). ──
   g.fillStyle(0x3a1a1a, 1);
-  g.fillRect(cx - 2.5, cy + 1, 5, 1.5);
+  g.fillRect(cx - 3, cy + 1, 6, 2);
+  // Pink tongue lolling out one side
+  g.fillStyle(0xc04860, 1);
+  g.fillRect(cx + 0.5, cy + 1.6, 1.6, 1.4);
+  g.fillStyle(0xe06080, 0.9);
+  g.fillRect(cx + 0.7, cy + 1.6, 0.6, 1.2);
+  // Crooked teeth
   g.fillStyle(0xeeeeee, 1);
-  g.fillRect(cx - 2, cy + 1, 0.8, 1.2);
-  g.fillRect(cx - 0.5, cy + 1.3, 0.8, 1);
-  g.fillRect(cx + 1, cy + 1, 0.8, 1.2);
+  g.fillRect(cx - 2.5, cy + 1, 0.8, 1.4);
+  g.fillRect(cx - 1, cy + 1.3, 0.8, 1);
+  g.fillRect(cx + 2, cy + 1, 0.8, 1.4);
+  // Drool drip — single thin line from the corner of the mouth.
+  g.fillStyle(0xb0c8e0, 0.85);
+  g.fillRect(cx + 1.8, cy + 3, 0.4, 1.6);
+  g.fillCircle(cx + 2, cy + 4.7, 0.5);
 
   // ── THISTLE wedged between the horns — unmistakable Scotland mark. ──
   g.fillStyle(0x336622, 1);

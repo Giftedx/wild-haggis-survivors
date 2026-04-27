@@ -36,10 +36,16 @@ import { bakeProjectiles } from '../art/sprites/projectiles';
 import { bakePickups } from '../art/sprites/pickups';
 import { bakeWeaponIcons } from '../art/sprites/icons/weapons';
 import { bakeCardIcons } from '../art/sprites/icons/cards';
+import { bakeRelicIcons } from '../art/sprites/icons/relics';
 import { bakeWildlife } from '../art/sprites/wildlife';
 import { bakeEnemies } from '../art/sprites/enemies';
 import { bakeBosses } from '../art/sprites/bosses';
 import { bakePlayerVariants } from '../art/sprites/players';
+import { bakeNodeMarkers } from '../art/sprites/nodeMarkers';
+import { bakeMoorMomentTokens } from '../art/sprites/moorMomentTokens';
+import { bakeCroftWarmthProps } from '../art/sprites/croft/warmthProps';
+import { bakeCroftVisitors } from '../art/sprites/croft/visitors';
+import { bakeUi } from '../art/sprites/ui';
 import { drawMantleTier } from '../art/sprites/haggisMantle';
 import { applyOutline, snapshotTextureKeys, outlineNewTextures } from '../art/outlinePostProcess';
 import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
@@ -356,11 +362,22 @@ export class BootScene extends Phaser.Scene {
     // Weapon + upgrade-card icons live in src/art/sprites/icons/.
     bakeWeaponIcons(this);
     bakeCardIcons(this);
+    bakeRelicIcons(this);
+    // Moor Road route markers + moor-moment tokens.
+    bakeNodeMarkers(this);
+    bakeMoorMomentTokens(this);
     // Ambient wildlife (hare, etc.) for world dressing.
     bakeWildlife(this);
     // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
     bakeGranTextures(this);
     bakeHearthTextures(this);
+    bakeCroftWarmthProps(this);
+    // Croft visitors — postie, neighbour, weans, standing sheepdog,
+    // a returning haggis pal. Warmth-only NPCs, no gameplay role yet.
+    bakeCroftVisitors(this);
+    // UI ornament — card-rarity frames, banter-bubble corners, toast
+    // parchment. Available for future UI systems to opt in.
+    bakeUi(this);
     // F1 — shared noise texture for haar fog (and future shaders that
     // sample from it: dissolve, heat-shimmer). One TextureManager entry
     // referenced by `NOISE_TEXTURE_KEY`; Phaser handles WebGL

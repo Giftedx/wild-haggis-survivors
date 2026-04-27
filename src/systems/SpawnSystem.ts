@@ -29,6 +29,17 @@ export type SpawnStallReason =
   | 'NO_TYPES_AVAILABLE'
   | 'RUN_FINALE';
 
+function bossPropTextureKey(bossKey: string): string | null {
+  switch (bossKey) {
+    case 'gordon': return 'boss_prop_gordon_chopping_board';
+    case 'tour_bus': return 'boss_prop_tour_bus_sign';
+    case 'the_laird': return 'boss_prop_laird_gate';
+    case 'hunter_general': return 'boss_prop_hunter_target_flag';
+    case 'taxman': return 'boss_prop_taxman_stamp';
+    default: return null;
+  }
+}
+
 /**
  * SpawnSystem — manages enemy object pool, wave spawning, and boss spawns.
  */
@@ -449,7 +460,7 @@ export class SpawnSystem {
   private spawnBoss(boss: BossConfig, _playerX: number, _playerY: number): void {
     // Show warning banner
     const warning = t(boss.warningKey);
-    this.showBossWarning(warning);
+    this.showBossWarning(warning, boss.key);
     this.scene.caption?.(`boss_${boss.key}`, warning, '#ff6644');
     // A beat of Glesga nerves right as the screen shakes. Pass the boss
     // key so the engine picks from the authored per-boss pool when one
@@ -512,6 +523,25 @@ export class SpawnSystem {
       this.bossActive = true;
       this.spawnedBossKeys.add(boss.key);
 
+      if (this.scene.textures.exists('fx_telegraph_stomp')) {
+        const stomp = this.scene.add.image(pos.x, pos.y, 'fx_telegraph_stomp')
+          .setDepth(10)
+          .setAlpha(0.9)
+          .setScale(0.8);
+        (this.activeBossVfx ??= []).push(stomp);
+        this.scene.tweens.add({
+          targets: stomp,
+          scale: 2.8,
+          alpha: 0,
+          duration: 700,
+          ease: 'Cubic.easeOut',
+          onComplete: () => {
+            stomp.destroy();
+            if (this.activeBossVfx) this.activeBossVfx = this.activeBossVfx.filter(o => o !== stomp);
+          },
+        });
+      }
+
       // C1 M2 Task 11 — bosses are beasties too. Skip the `enemy_ambient`
       // path (bosses own their own warning banter) but still seed the
       // DiscoveryLog so the Almanac's Beasties book reveals the sprite
@@ -566,7 +596,7 @@ export class SpawnSystem {
     });
   }
 
-  private showBossWarning(text: string): void {
+  private showBossWarning(text: string, bossKey: string): void {
     audio.playBossArrival();
     const { x, y, width, height } = this.getUiViewport();
     const settings = this.settings.load();
@@ -593,6 +623,14 @@ export class SpawnSystem {
       .setScrollFactor(0).setDepth(150);
     const glowBot = this.scene.add.rectangle(cx, cy + 40, width, 2, 0xff4422, 0)
       .setScrollFactor(0).setDepth(150);
+    const propTexture = bossPropTextureKey(bossKey);
+    const prop = propTexture && this.scene.textures.exists(propTexture)
+      ? this.scene.add.image(
+        Math.max(x + 44, cx - Math.min(width * 0.32, 220)),
+        cy,
+        propTexture,
+      ).setScrollFactor(0).setDepth(151).setAlpha(0).setScale(1.15 * settings.uiScale)
+      : null;
     const label = this.scene.add.text(cx, cy, text, {
       fontFamily: 'monospace',
       fontSize: `${scaledFontPx}px`,
@@ -600,9 +638,11 @@ export class SpawnSystem {
       fontStyle: 'bold',
       stroke: '#000',
       strokeThickness,
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(151).setAlpha(0);
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(152).setAlpha(0);
 
-    const allTargets = [vignette, bg, glowTop, glowBot, label];
+    const allTargets = prop
+      ? [vignette, bg, glowTop, glowBot, prop, label]
+      : [vignette, bg, glowTop, glowBot, label];
     (this.activeBossVfx ??= []).push(...allTargets);
 
     // Vignette darkens the edges
@@ -618,6 +658,16 @@ export class SpawnSystem {
     this.scene.tweens.add({
       targets: label, alpha: 1, scale: 1, duration: 250, ease: 'Back.easeOut',
     });
+    if (prop) {
+      prop.setScale(1.4 * settings.uiScale);
+      this.scene.tweens.add({
+        targets: prop,
+        alpha: 0.95,
+        scale: 1.15 * settings.uiScale,
+        duration: 260,
+        ease: 'Back.easeOut',
+      });
+    }
     // Red glow lines pulse
     this.scene.tweens.add({
       targets: [glowTop, glowBot], alpha: 0.8, duration: 200,

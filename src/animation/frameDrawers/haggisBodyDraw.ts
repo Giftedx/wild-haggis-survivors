@@ -207,6 +207,114 @@ export function drawHaggisBody(
   g.fillRect(cx - 1, cy + 7, 4, 1);
 
   drawHaggisAccent(g, accent, cx, cy, palette);
+  drawVariantSignature(g, variant.key, cx, cy);
+}
+
+/**
+ * Per-variant signature flourish — drawn AFTER the shared body + accent
+ * so identity-too-subtle variants (audit 7.5–7.8) gain a visual hook
+ * without disturbing variants already at 8.0+. Each motif is < 12 pixel
+ * ops and palette-anchored to the ART_STYLE_BIBLE bands. Variants not
+ * listed (classic, moor_runner, iron_belly, glen_forager, surefoot,
+ * pipe_breath, wee_ghostie, laird) fall through unchanged.
+ */
+function drawVariantSignature(
+  g: Phaser.GameObjects.Graphics,
+  key: string,
+  cx: number,
+  cy: number,
+): void {
+  switch (key) {
+    case 'haggis_doric_quinie':
+    case 'doric_quinie': {
+      // Barley/oat sprig held above the right shoulder — rural
+      // Aberdeenshire harvest tell. Sits above the brow tufts at
+      // cy-10 so the sprig reads cleanly against the dark frame.
+      g.fillStyle(0x6a4a18, 1);
+      g.fillRect(cx + 16, cy - 14, 0.8, 5);
+      g.fillStyle(0xd4a017, 1);
+      g.fillCircle(cx + 15, cy - 15, 0.9);
+      g.fillCircle(cx + 17, cy - 15, 0.9);
+      g.fillCircle(cx + 16, cy - 17, 0.9);
+      g.fillStyle(0xffdd66, 0.85);
+      g.fillCircle(cx + 16, cy - 16, 0.5);
+      g.fillStyle(0x55aa33, 0.85);
+      g.fillTriangle(cx + 18, cy - 12, cx + 20, cy - 9, cx + 16, cy - 9);
+      break;
+    }
+    case 'haggis_anticlockwise':
+    case 'anticlockwise': {
+      // Counter-clockwise spiral painted on the left flank fur —
+      // sits between the tail nub (cx-20) and the body silhouette,
+      // away from eyes (cx-8, cy-4) and smile (cx-1, cy+7).
+      g.fillStyle(0xe0d8c0, 0.9);
+      g.fillCircle(cx - 14, cy + 4, 0.9);
+      g.fillCircle(cx - 16, cy + 5, 0.8);
+      g.fillCircle(cx - 16, cy + 7, 0.7);
+      g.fillCircle(cx - 14, cy + 8, 0.6);
+      g.fillCircle(cx - 12, cy + 7, 0.5);
+      // Arrowhead pointing back-up to close the counter-clockwise loop
+      g.fillStyle(0xffffff, 0.95);
+      g.fillTriangle(cx - 14, cy + 4, cx - 13, cy + 2, cx - 12, cy + 4);
+      break;
+    }
+    case 'haggis_peerie_shetlander':
+    case 'peerie_shetlander': {
+      // White-cap wave glint at the feet — Shetland sea-edge.
+      g.fillStyle(0xcceaf8, 0.85);
+      g.fillRect(cx - 8, cy + 22, 5, 0.8);
+      g.fillRect(cx + 4, cy + 22, 5, 0.8);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(cx - 5, cy + 22, 0.6);
+      g.fillCircle(cx + 6, cy + 22, 0.6);
+      break;
+    }
+    case 'haggis_burns_wee_beastie':
+    case 'burns_wee_beastie': {
+      // Tiny rolled scroll tucked against the right flank — poet's
+      // tribute. Avoids the tail (cx-20) and the eye/snout cluster.
+      g.fillStyle(0xe8d8a8, 1);
+      g.fillRect(cx + 16, cy + 3, 6, 2);
+      g.fillStyle(0xfff0c8, 1);
+      g.fillRect(cx + 16, cy + 3, 6, 0.7);
+      g.fillStyle(0x6a4a18, 1);
+      g.fillCircle(cx + 16, cy + 4, 0.9);
+      g.fillCircle(cx + 22, cy + 4, 0.9);
+      // Ink dot — "wee, sleekit, cowrin'..."
+      g.fillStyle(0x111111, 0.85);
+      g.fillCircle(cx + 19, cy + 4, 0.5);
+      break;
+    }
+    case 'haggis_glaswegian':
+    case 'glaswegian': {
+      // Wee traffic-cone wedge atop the head — Duke of Wellington tribute.
+      g.fillStyle(0x1a0e06, 1);
+      g.fillTriangle(cx - 3, cy - 11, cx + 3, cy - 11, cx, cy - 16);
+      g.fillStyle(0xff6622, 1);
+      g.fillTriangle(cx - 2.5, cy - 11, cx + 2.5, cy - 11, cx, cy - 15.5);
+      g.fillStyle(0xffaa55, 0.85);
+      g.fillRect(cx - 1.5, cy - 13, 3, 0.6);
+      g.fillStyle(0x2a1a08, 1);
+      g.fillRect(cx - 3, cy - 11, 6, 1);
+      break;
+    }
+    case 'haggis_cailleach':
+    case 'cailleach': {
+      // Frost-rime ringing the brow — winter-hag chill. Positioned
+      // between brow tufts (cy-10) and crone-hair tuft (cy-14) without
+      // colliding with the rowan-berry pip at (cx+6, cy-10).
+      g.fillStyle(0xcceaf8, 0.9);
+      g.fillCircle(cx - 9, cy - 9, 0.8);
+      g.fillCircle(cx - 4, cy - 12, 0.7);
+      g.fillCircle(cx + 1, cy - 13, 0.7);
+      g.fillStyle(0xffffff, 0.95);
+      g.fillCircle(cx - 7, cy - 11, 0.4);
+      g.fillCircle(cx - 1, cy - 14, 0.4);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 function drawHaggisAccent(

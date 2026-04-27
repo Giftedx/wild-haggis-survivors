@@ -17,9 +17,10 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 4;
 
-  // ── Faint orange menace glow behind the whole totem. ──
-  g.fillStyle(0xff4400, 0.18);
-  g.fillCircle(cx, cy, 20);
+  // ── Faint orange menace glow behind the whole totem. Kept as an
+  // oval so it supports the silhouette instead of becoming the sprite.
+  g.fillStyle(0xff4400, 0.12);
+  g.fillEllipse(cx, cy + 1, 30, 34);
 
   // ── Grass tufts at the base — the moor is reclaiming it. ──
   g.fillStyle(0x2a5a28, 0.8);
@@ -33,39 +34,57 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   // ── Lower cone — biggest base. Hazard orange with reflective
   // bands + heavy scuffs + dent-shadows to read "battered". ──
   g.fillStyle(0x5a1e04, 1);  // dark outline
-  g.fillTriangle(cx - 11, cy + 12, cx + 11, cy + 12, cx, cy + 2);
+  g.fillTriangle(cx - 13, cy + 13, cx + 13, cy + 13, cx, cy + 1);
   g.fillStyle(0x8a3a08, 1);
-  g.fillTriangle(cx - 10, cy + 12, cx + 10, cy + 12, cx, cy + 3);
+  g.fillTriangle(cx - 12, cy + 12.5, cx + 12, cy + 12.5, cx, cy + 2);
   g.fillStyle(0xdd5a10, 1);
-  g.fillTriangle(cx - 9, cy + 11, cx + 9, cy + 11, cx, cy + 4);
+  g.fillTriangle(cx - 11, cy + 12, cx + 11, cy + 12, cx, cy + 3);
   // Reflective bands — bolder than before
   g.fillStyle(0xffe6cc, 1);
-  g.fillRect(cx - 7, cy + 6, 14, 1.2);
-  g.fillRect(cx - 6, cy + 9, 12, 1.2);
+  g.fillRect(cx - 8, cy + 6, 16, 1.2);
+  g.fillRect(cx - 7, cy + 10, 14, 1.2);
   // Scuff damage — angular dent-shadows
   g.fillStyle(0x3a1004, 0.85);
   g.fillRect(cx - 5, cy + 8, 3, 1);
   g.fillRect(cx + 2, cy + 10, 3, 1);
   g.fillRect(cx - 6, cy + 11, 2, 0.8);
+  // BASE-CONE WEATHERING CRACK — a forked split running from the
+  // rim upward, dark shadow + hairline highlight, sells "battered".
+  g.fillStyle(0x1a0602, 1);
+  g.fillRect(cx + 4, cy + 8, 0.8, 5);
+  g.fillRect(cx + 4.4, cy + 6.5, 0.6, 1.7);
+  g.fillRect(cx + 5.2, cy + 9.5, 0.6, 2.4);
+  g.fillStyle(0xff8a40, 0.45);
+  g.fillRect(cx + 4.9, cy + 8, 0.3, 5);
 
-  // ── Binding ropes — dark cord wraps across the junction between
-  // lower and middle cones. "Someone tied this together". ──
-  g.fillStyle(0x2a1808, 1);
-  g.fillRect(cx - 8, cy + 1.5, 16, 1.2);
-  g.fillStyle(0x5a3818, 1);
-  g.fillRect(cx - 8, cy + 1.5, 16, 0.4);
-  // Knot lumps at each end
+  // ── Binding ropes — thicker dark cord wraps across the junction
+  // between lower and middle cones. "Someone tied this together". ──
   g.fillStyle(0x1a0a04, 1);
-  g.fillCircle(cx - 8, cy + 2, 1.2);
-  g.fillCircle(cx + 8, cy + 2, 1.2);
+  g.fillRect(cx - 9, cy + 1.2, 18, 2);
+  g.fillStyle(0x5a3818, 1);
+  g.fillRect(cx - 9, cy + 1.2, 18, 0.7);
+  g.fillStyle(0x8a6028, 1);
+  g.fillRect(cx - 9, cy + 1.4, 18, 0.3);
+  // Rope twist striations — small ticks every couple px.
+  g.fillStyle(0x2a1808, 1);
+  for (let rx = -8; rx < 8; rx += 2) {
+    g.fillRect(cx + rx, cy + 1.6, 0.8, 1.4);
+  }
+  // Knot lumps at each end — bigger, three-tone.
+  g.fillStyle(0x1a0a04, 1);
+  g.fillCircle(cx - 9, cy + 2, 1.6);
+  g.fillCircle(cx + 9, cy + 2, 1.6);
+  g.fillStyle(0x5a3818, 1);
+  g.fillCircle(cx - 9, cy + 1.7, 1.0);
+  g.fillCircle(cx + 9, cy + 1.7, 1.0);
 
   // ── Middle cone. ──
   g.fillStyle(0x5a1e04, 1);
-  g.fillTriangle(cx - 7, cy + 1, cx + 7, cy + 1, cx, cy - 7);
+  g.fillTriangle(cx - 8, cy + 2, cx + 8, cy + 2, cx, cy - 8);
   g.fillStyle(0x8a3a08, 1);
-  g.fillTriangle(cx - 6.5, cy + 1, cx + 6.5, cy + 1, cx, cy - 6.5);
+  g.fillTriangle(cx - 7.5, cy + 1.5, cx + 7.5, cy + 1.5, cx, cy - 7.5);
   g.fillStyle(0xdd5a10, 1);
-  g.fillTriangle(cx - 6, cy, cx + 6, cy, cx, cy - 6);
+  g.fillTriangle(cx - 7, cy + 1, cx + 7, cy + 1, cx, cy - 7);
   // Reflective band
   g.fillStyle(0xffe6cc, 1);
   g.fillRect(cx - 5, cy - 3, 10, 1.1);
@@ -84,26 +103,37 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   // Tilted forward so the face aims at the player. Darker weathered
   // orange to differentiate from the body cones. ──
   g.fillStyle(0x4a1604, 1);
-  g.fillTriangle(cx - 5, cy - 7, cx + 5, cy - 7, cx + 1, cy - 15);
+  g.fillTriangle(cx - 6, cy - 7, cx + 6, cy - 7, cx + 1, cy - 16);
   g.fillStyle(0x7a2a06, 1);
-  g.fillTriangle(cx - 4.5, cy - 7, cx + 4.5, cy - 7, cx + 1, cy - 14.5);
+  g.fillTriangle(cx - 5.5, cy - 7, cx + 5.5, cy - 7, cx + 1, cy - 15.5);
   g.fillStyle(0xba4808, 1);
-  g.fillTriangle(cx - 4, cy - 7.5, cx + 4, cy - 7.5, cx + 1, cy - 14);
+  g.fillTriangle(cx - 5, cy - 7.5, cx + 5, cy - 7.5, cx + 1, cy - 15);
 
-  // ── GLOWING YELLOW EYE-SLITS — the menace anchor. Horizontal
-  // slits angled down-inward for angry brow. ──
-  // Outer bloom
-  g.fillStyle(0xffcc22, 0.45);
-  g.fillCircle(cx - 1.5, cy - 10, 2);
-  g.fillCircle(cx + 3.5, cy - 10, 2);
-  // Slits — bright yellow rects
-  g.fillStyle(0xffdd00, 1);
-  g.fillRect(cx - 2.5, cy - 10, 2.5, 0.8);
-  g.fillRect(cx + 2, cy - 10, 2.5, 0.8);
-  // Core glow
-  g.fillStyle(0xffffff, 0.85);
-  g.fillRect(cx - 2, cy - 10, 1.5, 0.4);
-  g.fillRect(cx + 2.5, cy - 10, 1.5, 0.4);
+  // ── GLOWING YELLOW EYE-SLITS — the menace anchor. Brighter
+  // bloom + asymmetric eye-light positions ("parallax tilt") to
+  // imply the head-cone leans forward toward the player. ──
+  // Outer bloom (hotter, larger)
+  g.fillStyle(0xffee44, 0.55);
+  g.fillCircle(cx - 2, cy - 10.5, 2.6);
+  g.fillCircle(cx + 3.5, cy - 10.5, 2.6);
+  g.fillStyle(0xff8a10, 0.30);
+  g.fillCircle(cx - 2, cy - 10.5, 3.4);
+  g.fillCircle(cx + 3.5, cy - 10.5, 3.4);
+  // Slits — bright yellow rects, slightly thicker.
+  g.fillStyle(0xffee44, 1);
+  g.fillRect(cx - 2.7, cy - 10, 2.8, 1.0);
+  g.fillRect(cx + 1.9, cy - 10, 2.8, 1.0);
+  // Core glow — hot inner pinprick. Offset inside each slit so the
+  // gaze "tilts" toward the same point in front of the totem.
+  g.fillStyle(0xffffff, 1);
+  g.fillRect(cx - 1.0, cy - 10, 1.4, 0.5);
+  g.fillRect(cx + 2.4, cy - 10, 1.4, 0.5);
+  // Pupil-glints — tiny white pricks placed asymmetrically (left
+  // eye glint sits right-of-centre, right eye glint sits left-of-
+  // centre) so both pupils converge forward = parallax tilt.
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx - 0.5, cy - 9.7, 0.4);
+  g.fillCircle(cx + 2.6, cy - 9.7, 0.4);
 
   // ── Angry V-brow above the eyes — angled dark bars. ──
   g.fillStyle(0x1a0602, 1);

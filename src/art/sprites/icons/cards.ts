@@ -222,14 +222,28 @@ function drawKilt(scene: Phaser.Scene, variantKey: string = 'classic'): void {
   g.fillRect(cx - 10, 8, 20, 18);
   g.fillStyle(palette.field, 1);
   g.fillRect(cx - 9, 9, 18, 16);
+  // 2-tone warp threads — primary stripe + 1px slightly-darker companion
+  // immediately to the LEFT of each. Reads as "woven fabric" instead of
+  // flat checks at 32px, killing the moiré read called out in the audit.
+  const warpDark = darkenHex(palette.stripe, 0.55);
   g.fillStyle(palette.stripe, 0.7);
   g.fillRect(cx - 6, 9, 2, 16);
   g.fillRect(cx + 1, 9, 2, 16);
   g.fillRect(cx + 6, 9, 2, 16);
+  g.fillStyle(warpDark, 0.55);
+  g.fillRect(cx - 7, 9, 1, 16);
+  g.fillRect(cx, 9, 1, 16);
+  g.fillRect(cx + 5, 9, 1, 16);
+  // 2-tone weft threads — primary stripe + 1px slightly-darker companion
+  // one row below.
   g.fillStyle(palette.stripe, 0.5);
   g.fillRect(cx - 9, 12, 18, 1);
   g.fillRect(cx - 9, 17, 18, 1);
   g.fillRect(cx - 9, 22, 18, 1);
+  g.fillStyle(warpDark, 0.4);
+  g.fillRect(cx - 9, 13, 18, 1);
+  g.fillRect(cx - 9, 18, 18, 1);
+  g.fillRect(cx - 9, 23, 18, 1);
   g.fillStyle(palette.accent, 0.6);
   g.fillRect(cx - 9, 14, 18, 1);
   g.fillRect(cx - 9, 20, 18, 1);
@@ -241,10 +255,25 @@ function drawKilt(scene: Phaser.Scene, variantKey: string = 'classic'): void {
   g.fillRect(cx - 10, 7, 20, 3);
   g.fillStyle(0x3a2a1a, 1);
   g.fillRect(cx - 9, 8, 18, 1);
+  // Belt highlight stroke — thin warm band along the top of the belt
+  // gives the leather depth the audit said was missing.
+  g.fillStyle(0x6a4818, 0.7);
+  g.fillRect(cx - 9, 7.4, 18, 0.5);
+  // Buckle — bumped from 4×3 to 5×4 so it actually reads at 32px
+  // (audit: "buckle is tiny" called on every kilt). Layered shadow +
+  // body + highlight + specular dot.
+  g.fillStyle(0x4a3008, 1);
+  g.fillRect(cx - 3, 6, 6, 5);
   g.fillStyle(0xccaa44, 1);
-  g.fillRect(cx - 2, 7, 4, 3);
+  g.fillRect(cx - 2.5, 6.5, 5, 4);
   g.fillStyle(0xffdd66, 1);
-  g.fillRect(cx - 1, 8, 2, 1);
+  g.fillRect(cx - 2, 7, 4, 1);
+  g.fillStyle(0xfff0a8, 0.9);
+  g.fillRect(cx - 1.5, 7.2, 1.5, 0.5);
+  // Per-variant signature inset — placed in the kilt's lower-centre
+  // dead space so it doesn't fight the tartan or the buckle. Each
+  // motif is a tiny 2–3px tell that ties the card to its variant.
+  drawKiltSignature(g, variantKey, cx);
   // Classic variant keeps the backwards-compat 'ucard_kilt' key;
   // all variants also get 'ucard_kilt_<key>'.
   const variantTexKey = `ucard_kilt_${variantKey}`;
@@ -253,6 +282,164 @@ function drawKilt(scene: Phaser.Scene, variantKey: string = 'classic'): void {
     g.generateTexture('ucard_kilt', s, s);
   }
   g.destroy();
+}
+
+/**
+ * Per-variant kilt signature inset. Drawn over the lower-centre tartan
+ * field so it sits inside the kilt silhouette without touching belt or
+ * buckle. Each motif is < 12 pixel ops and pulls from the variant's
+ * thematic palette so the inset reads as "this kilt belongs to this
+ * haggis", not as a generic ornament.
+ */
+function drawKiltSignature(
+  g: Phaser.GameObjects.Graphics,
+  variantKey: string,
+  cx: number,
+): void {
+  const yc = 24;
+  switch (variantKey) {
+    case 'classic': {
+      // Thistle pip — purple bloom + green calyx, the brand anchor.
+      g.fillStyle(0x4a1a6a, 1);
+      g.fillCircle(cx, yc - 1, 1.5);
+      g.fillStyle(0x8a4ab0, 1);
+      g.fillCircle(cx - 0.3, yc - 1.3, 0.9);
+      g.fillStyle(0x2a5a14, 1);
+      g.fillRect(cx - 0.5, yc, 1, 1.2);
+      break;
+    }
+    case 'moor_runner': {
+      // Green leaf — moor-grass speed.
+      g.fillStyle(0x2a5a14, 1);
+      g.fillTriangle(cx - 1.5, yc, cx + 1.5, yc, cx, yc - 2);
+      g.fillStyle(0x6fb350, 0.9);
+      g.fillRect(cx - 0.3, yc - 1.5, 0.6, 1.5);
+      break;
+    }
+    case 'iron_belly': {
+      // Rivet — armoured-belly tell, bright steel.
+      g.fillStyle(0x2a2e35, 1);
+      g.fillCircle(cx, yc - 1, 1.4);
+      g.fillStyle(0x8a8a90, 1);
+      g.fillCircle(cx, yc - 1, 1);
+      g.fillStyle(0xddddee, 0.9);
+      g.fillCircle(cx - 0.3, yc - 1.3, 0.4);
+      break;
+    }
+    case 'glen_forager': {
+      // Oat sprig — three berries on a stem.
+      g.fillStyle(0xd4a017, 1);
+      g.fillCircle(cx - 1.2, yc - 0.5, 0.7);
+      g.fillCircle(cx, yc - 1.2, 0.7);
+      g.fillCircle(cx + 1.2, yc - 0.5, 0.7);
+      g.fillStyle(0x6a4a18, 1);
+      g.fillRect(cx - 0.2, yc - 0.5, 0.5, 1.5);
+      break;
+    }
+    case 'surefoot': {
+      // Boot stud cluster — surefoot grip.
+      g.fillStyle(0x1a0a04, 1);
+      g.fillRect(cx - 2, yc - 1, 4, 1.5);
+      g.fillStyle(0x8a8a90, 1);
+      g.fillCircle(cx - 1.5, yc - 0.3, 0.4);
+      g.fillCircle(cx, yc - 0.3, 0.4);
+      g.fillCircle(cx + 1.5, yc - 0.3, 0.4);
+      break;
+    }
+    case 'pipe_breath': {
+      // Wisp — three shrinking ellipses for the moor-exhale.
+      g.fillStyle(0xcceaf8, 0.85);
+      g.fillEllipse(cx - 1.5, yc - 0.5, 2, 0.9);
+      g.fillEllipse(cx + 0.5, yc - 1, 1.6, 0.7);
+      g.fillEllipse(cx + 2, yc - 1.5, 1, 0.5);
+      break;
+    }
+    case 'wee_ghostie': {
+      // Halo dot — spectral ring + bright centre.
+      g.lineStyle(0.6, 0xe0fcff, 0.85);
+      g.strokeCircle(cx, yc - 1, 1.6);
+      g.fillStyle(0xffffff, 0.9);
+      g.fillCircle(cx, yc - 1, 0.7);
+      break;
+    }
+    case 'laird': {
+      // Crown pip — three gold tines and a ruby.
+      g.fillStyle(0xd4a017, 1);
+      g.fillRect(cx - 2, yc, 4, 1);
+      g.fillTriangle(cx - 2, yc, cx - 1, yc - 1.3, cx, yc);
+      g.fillTriangle(cx, yc, cx, yc - 1.6, cx + 1, yc);
+      g.fillTriangle(cx, yc, cx + 1, yc - 1.3, cx + 2, yc);
+      g.fillStyle(0xcc2222, 1);
+      g.fillCircle(cx, yc - 0.8, 0.4);
+      break;
+    }
+    case 'glaswegian': {
+      // Traffic-cone wedge — Duke of Wellington tribute.
+      g.fillStyle(0x1a0e06, 1);
+      g.fillTriangle(cx - 1.5, yc, cx + 1.5, yc, cx, yc - 2.4);
+      g.fillStyle(0xff6622, 1);
+      g.fillTriangle(cx - 1.2, yc, cx + 1.2, yc, cx, yc - 2.2);
+      g.fillStyle(0xffaa55, 0.85);
+      g.fillRect(cx - 0.7, yc - 1, 1.4, 0.4);
+      break;
+    }
+    case 'anticlockwise': {
+      // Counter-clockwise spiral — motion cue.
+      g.fillStyle(0xe0d8c0, 0.9);
+      g.fillCircle(cx + 1, yc, 0.5);
+      g.fillCircle(cx, yc - 1, 0.5);
+      g.fillCircle(cx - 1, yc - 0.4, 0.5);
+      g.fillCircle(cx - 0.5, yc + 0.5, 0.4);
+      g.fillStyle(0xffffff, 0.95);
+      g.fillTriangle(cx + 1.5, yc - 0.5, cx + 2, yc + 0.5, cx + 0.7, yc + 0.3);
+      break;
+    }
+    case 'cailleach': {
+      // Frost dot — winter-hag rime.
+      g.fillStyle(0xcceaf8, 0.95);
+      g.fillCircle(cx - 1.2, yc - 0.5, 0.6);
+      g.fillCircle(cx + 1.2, yc - 0.5, 0.6);
+      g.fillCircle(cx, yc - 1.2, 0.6);
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(cx, yc - 0.8, 0.4);
+      break;
+    }
+    case 'doric_quinie': {
+      // Barley ear — Aberdeenshire harvest.
+      g.fillStyle(0x6a4a18, 1);
+      g.fillRect(cx, yc - 2, 0.6, 2);
+      g.fillStyle(0xd4a017, 1);
+      g.fillCircle(cx - 0.6, yc - 1.6, 0.5);
+      g.fillCircle(cx + 1, yc - 1.6, 0.5);
+      g.fillCircle(cx - 0.4, yc - 0.6, 0.5);
+      g.fillCircle(cx + 0.8, yc - 0.6, 0.5);
+      break;
+    }
+    case 'peerie_shetlander': {
+      // White-cap wave glint — Shetland sea.
+      g.fillStyle(0xcceaf8, 0.85);
+      g.fillRect(cx - 2, yc - 0.3, 4, 0.7);
+      g.fillStyle(0xffffff, 0.95);
+      g.fillCircle(cx - 1, yc, 0.4);
+      g.fillCircle(cx + 1, yc, 0.4);
+      break;
+    }
+    case 'burns_wee_beastie': {
+      // Rolled scroll — poet's tribute.
+      g.fillStyle(0xe8d8a8, 1);
+      g.fillRect(cx - 2, yc - 0.8, 4, 1.4);
+      g.fillStyle(0xfff0c8, 1);
+      g.fillRect(cx - 2, yc - 0.8, 4, 0.4);
+      g.fillStyle(0x6a4a18, 1);
+      g.fillCircle(cx - 2, yc - 0.1, 0.6);
+      g.fillCircle(cx + 2, yc - 0.1, 0.6);
+      g.fillStyle(0x111111, 0.85);
+      g.fillCircle(cx, yc, 0.3);
+      break;
+    }
+    default:
+      break;
+  }
 }
 
 /**
@@ -775,22 +962,70 @@ function drawStatHealth(scene: Phaser.Scene): void {
 function drawStatSpeed(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   cardIconBg(g, s, 0x213047);
-  const cx = 16;
-  g.fillStyle(0x4488ff, 0.2);
-  g.fillCircle(cx, 16, 10);
-  g.fillStyle(0x3366aa, 1);
-  g.fillTriangle(cx + 4, 5, cx - 2, 15, cx + 3, 15);
-  g.fillTriangle(cx - 1, 15, cx - 5, 27, cx + 4, 15);
-  g.fillStyle(0x66aaff, 1);
-  g.fillTriangle(cx + 3, 7, cx - 1, 15, cx + 2, 15);
-  g.fillTriangle(cx, 15, cx - 3, 25, cx + 3, 15);
-  g.fillStyle(0xaaddff, 1);
-  g.fillTriangle(cx + 1, 9, cx, 15, cx + 1, 15);
-  g.fillTriangle(cx, 15, cx - 1, 23, cx + 2, 15);
-  g.fillStyle(0xffffff, 0.7);
-  g.fillCircle(cx - 3, 12, 1);
-  g.fillCircle(cx + 4, 18, 1);
-  g.fillCircle(cx - 1, 21, 0.8);
+  const cx = 16, cy = 16;
+
+  // ── Warm motion-flicker ground glow — replaces the generic cool
+  // halo so the icon reads as warm peat-and-fire instead of "lightning
+  // bolt". ART_STYLE_BIBLE Hearth band: warm peat 0x5a3e20, bright
+  // gold 0xffc840 for the flicker. ──
+  g.fillStyle(0xffc840, 0.18);
+  g.fillEllipse(cx, cy + 5, 22, 6);
+  g.fillStyle(0xffaa44, 0.28);
+  g.fillEllipse(cx, cy + 5, 14, 4);
+
+  // ── Trailing arc — three shrinking gold puffs LEFT of the haggis,
+  // following his line of motion. The arc curves slightly so it reads
+  // as "speed trail", not parallel slashes. ──
+  g.fillStyle(0xd4b055, 0.5);
+  g.fillEllipse(cx - 8, cy + 4, 4, 2);
+  g.fillStyle(0xd4b055, 0.65);
+  g.fillEllipse(cx - 5, cy + 3, 3.5, 1.8);
+  g.fillStyle(0xffc840, 0.85);
+  g.fillEllipse(cx - 2, cy + 2, 3, 1.6);
+
+  // ── Running-haggis silhouette — compact dot-body + leaning forward
+  // pose with two tiny stub legs and a tail nub. Sits centre-right so
+  // the trail reads "behind". ──
+  // Body silhouette
+  g.fillStyle(0x3a2808, 1);
+  g.fillEllipse(cx + 3, cy, 11, 7);
+  g.fillStyle(0x6b4e0a, 1);
+  g.fillEllipse(cx + 3, cy - 0.5, 9, 5.5);
+  g.fillStyle(0x8b6914, 1);
+  g.fillEllipse(cx + 3, cy - 1, 7, 4);
+  // Tail nub trailing back
+  g.fillStyle(0x3a2808, 1);
+  g.fillCircle(cx - 3, cy + 1, 1.4);
+  // Forward-leaning snout
+  g.fillStyle(0xd4956b, 1);
+  g.fillCircle(cx + 7.5, cy + 0.5, 1.5);
+  g.fillStyle(0x3a2808, 1);
+  g.fillCircle(cx + 8, cy + 0.5, 0.5);
+  // Eye (forward gaze)
+  g.fillStyle(0xffffff, 0.95);
+  g.fillCircle(cx + 5, cy - 1.5, 1);
+  g.fillStyle(0x111111, 1);
+  g.fillCircle(cx + 5.5, cy - 1.5, 0.5);
+  // Stub legs — mid-stride lean, left leg back / right leg forward
+  g.fillStyle(0x1a0e06, 1);
+  g.fillRect(cx - 0.5, cy + 3, 1.4, 3);
+  g.fillRect(cx + 5, cy + 3, 1.4, 3.5);
+
+  // ── Forward-pointing speed arrow — small chevron just ahead of the
+  // snout, locks in "this way fast". Bright gold so it's the eye-
+  // catch. ──
+  g.fillStyle(0xffc840, 1);
+  g.fillTriangle(cx + 11, cy - 2, cx + 13, cy + 1, cx + 11, cy + 4);
+  g.fillStyle(0xfff0a8, 0.95);
+  g.fillTriangle(cx + 11.5, cy - 0.5, cx + 12.3, cy + 1, cx + 11.5, cy + 2.5);
+
+  // ── Warm specular flicker pips — three tiny sparks scattered along
+  // the trail to sell heat-haze motion. ──
+  g.fillStyle(0xffffff, 0.85);
+  g.fillCircle(cx - 7, cy + 1, 0.7);
+  g.fillCircle(cx - 4, cy - 1, 0.5);
+  g.fillCircle(cx + 1, cy - 4, 0.5);
+
   g.generateTexture('ucard_stat_speed', s, s);
   g.destroy();
 }
@@ -1373,15 +1608,29 @@ function drawStatKnockback(scene: Phaser.Scene): void {
 function drawRuneGlyph(scene: Phaser.Scene): void {
   const s = 32, g = scene.add.graphics();
   // Stone panel background with rune-mauve wash.
-  cardIconBg(g, s, 0x4a3e55);
+  cardIconBg(g, s, 0x2f2940);
   const cx = 16, cy = 16;
-  // Outer carved border — two tones for incised depth.
-  g.lineStyle(1.5, 0x2a2336, 1);
-  g.strokeRoundedRect(6, 6, 20, 20, 3);
-  g.lineStyle(0.5, 0x8c7aa0, 0.7);
-  g.strokeRoundedRect(7, 7, 18, 18, 2.5);
-  // Carved rune cross — a vertical stroke + two angled branches.
-  g.lineStyle(2, 0x0e0a14, 1);
+  // Outer carved border — chipped stone, not a blank grey tile.
+  g.fillStyle(0x171320, 1);
+  g.fillRoundedRect(5, 5, 22, 22, 4);
+  g.fillStyle(0x4e465e, 1);
+  g.fillRoundedRect(6, 6, 20, 20, 3);
+  g.fillStyle(0x6a5b7a, 0.55);
+  g.fillRoundedRect(8, 8, 16, 16, 2);
+  g.lineStyle(0.7, 0x161020, 0.75);
+  g.lineBetween(8, 11, 13, 8);
+  g.lineBetween(22, 9, 20, 14);
+  g.lineBetween(10, 24, 15, 22);
+  g.lineBetween(23, 21, 19, 24);
+
+  // Warm glow behind the mark so the card reads magical at 32px.
+  g.fillStyle(0xe7c85a, 0.18);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(0x9c7df0, 0.12);
+  g.fillCircle(cx, cy, 12);
+
+  // Carved rune cross — dark incised trench first.
+  g.lineStyle(3, 0x0e0a14, 1);
   g.beginPath();
   g.moveTo(cx, cy - 7);
   g.lineTo(cx, cy + 7);
@@ -1392,12 +1641,32 @@ function drawRuneGlyph(scene: Phaser.Scene): void {
   g.moveTo(cx, cy + 3);
   g.lineTo(cx + 4, cy + 6);
   g.strokePath();
-  // Highlight stroke — mauve gleam along the carved edge.
-  g.lineStyle(0.8, 0xbca3d4, 0.85);
+
+  // Lit inlay stroke — gold plus mauve gleam along the carved edge.
+  g.lineStyle(1.4, 0xe7c85a, 0.95);
   g.beginPath();
-  g.moveTo(cx, cy - 6.5);
-  g.lineTo(cx, cy + 6.5);
+  g.moveTo(cx, cy - 7);
+  g.lineTo(cx, cy + 7);
+  g.moveTo(cx, cy - 4);
+  g.lineTo(cx - 4, cy - 7);
+  g.moveTo(cx, cy - 4);
+  g.lineTo(cx + 4, cy - 7);
+  g.moveTo(cx, cy + 3);
+  g.lineTo(cx + 4, cy + 6);
   g.strokePath();
+  g.lineStyle(0.7, 0xf6e7a5, 0.9);
+  g.beginPath();
+  g.moveTo(cx - 0.4, cy - 6);
+  g.lineTo(cx - 0.4, cy + 5);
+  g.strokePath();
+  // Four small thistle/pictish dot anchors around the glyph.
+  g.fillStyle(0xb58cff, 0.9);
+  g.fillCircle(cx - 7, cy, 1);
+  g.fillCircle(cx + 7, cy, 1);
+  g.fillCircle(cx, cy - 9, 0.9);
+  g.fillCircle(cx, cy + 9, 0.9);
+  g.fillStyle(0xffffff, 0.75);
+  g.fillCircle(cx - 7.2, cy - 0.3, 0.35);
   g.generateTexture('rune_glyph', s, s);
   g.destroy();
 }

@@ -4,6 +4,7 @@ import { BOSSES, ENEMY_TYPES } from '../data/enemies';
 import { PASSIVE_CARDS, STAT_CARDS, WEAPON_CARDS } from '../data/upgrades';
 import { VARIANTS } from '../data/variants';
 import { WEAPON_DEFS } from '../data/weapons';
+import { RELICS } from '../data/relics';
 
 /** Internal texture used as source for missing-key aliases (magenta checkerboard). */
 export const MISSING_PLACEHOLDER_KEY = '__whs_missing_texture__';
@@ -54,6 +55,10 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
 
   for (const v of VARIANTS) {
     pushKey(out, seen, 'player_variant', v.key, v.textureKey);
+  }
+
+  for (const relic of Object.values(RELICS)) {
+    pushKey(out, seen, 'relic_icon', relic.key, relic.iconSprite);
   }
 
   for (const p of [

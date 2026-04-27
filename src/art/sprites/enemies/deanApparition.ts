@@ -34,12 +34,30 @@ export function drawDeanApparitionBody(
   g.fillStyle(0x20202a, 1);
   g.fillTriangle(cx - 11, cy + 17, cx + 11, cy + 17, cx + 3, cy - 2);
   g.fillTriangle(cx - 11, cy + 17, cx - 3, cy - 2, cx + 3, cy - 2);
+  // Robe folds — three diagonal shadow lines breaking the stiff vertical
+  // slab (audit dislike: "vertical robe is stiff"). Slate streaks run
+  // outward from the waist towards the hem.
+  g.fillStyle(0x05050a, 0.85);
+  g.fillTriangle(cx - 6, cy + 6, cx - 5, cy + 6, cx - 9, cy + 17);
+  g.fillTriangle(cx + 5, cy + 6, cx + 6, cy + 6, cx + 9, cy + 17);
+  g.fillTriangle(cx - 1, cy + 8, cx, cy + 8, cx - 3, cy + 17);
+  // Lighter highlight rims either side of the centre panel — adds
+  // sculpt rather than flat mass.
+  g.fillStyle(0x3a3050, 0.6);
+  g.fillRect(cx - 7, cy + 2, 0.7, 14);
+  g.fillRect(cx + 6, cy + 2, 0.7, 14);
   // Front vertical slit — gold-piped panel
   g.fillStyle(0x4a3820, 1);
   g.fillRect(cx - 1.5, cy, 3, 16);
   g.fillStyle(0xd8a848, 0.85);
   g.fillRect(cx - 2, cy, 1, 16);
   g.fillRect(cx + 1, cy, 1, 16);
+  // Gold hem trim — a horizontal ribbon at the bottom of the robe so
+  // the silhouette no longer reads "priest cassock".
+  g.fillStyle(0xd8a848, 1);
+  g.fillRect(cx - 11, cy + 16, 22, 1.4);
+  g.fillStyle(0xfadc6a, 0.85);
+  g.fillRect(cx - 11, cy + 16, 22, 0.5);
 
   // ── Red+gold stole across the chest — the dean's ceremonial
   // mark. Two diagonal bands from shoulders to waist. ──
@@ -69,11 +87,16 @@ export function drawDeanApparitionBody(
   g.fillRect(cx - 10, cy + 2, 1, 1);
   g.fillRect(cx + 9, cy + 2, 1, 1);
 
-  // ── Head — pale, angular. ──
+  // ── Head — pale, angular. Bigger than v1 so the face reads at
+  // gameplay scale (audit dislike: "face is small"). ──
   g.fillStyle(0xd8c8b8, 0.95);
-  g.fillEllipse(cx, cy - 8, 8, 10);
-  g.fillStyle(0xe8d8c4, 0.9);
-  g.fillEllipse(cx, cy - 9, 6, 8);
+  g.fillEllipse(cx, cy - 8, 9.5, 11);
+  g.fillStyle(0xe8d8c4, 0.92);
+  g.fillEllipse(cx, cy - 9, 7.5, 9);
+  // Cheek-shadow pair — gives the face structure instead of a flat oval.
+  g.fillStyle(0x8a7860, 0.45);
+  g.fillEllipse(cx - 3.2, cy - 6, 1.5, 2);
+  g.fillEllipse(cx + 3.2, cy - 6, 1.5, 2);
 
   // ── MORTARBOARD — big flat black board, 4px thick, with a
   // dangling tassle. This is the signature anchor and must be
@@ -111,10 +134,21 @@ export function drawDeanApparitionBody(
   g.fillStyle(0x1a0e08, 1);
   g.fillRect(cx - 4, cy - 10, 3, 1);
   g.fillRect(cx + 1, cy - 10, 3, 1);
-  // Beady eyes under the brows
-  g.fillStyle(0x0a0404, 1);
-  g.fillRect(cx - 3, cy - 9, 1.2, 1);
-  g.fillRect(cx + 1.8, cy - 9, 1.2, 1);
+  // Red-glow eyes under the brows — split tones: deep blood-red core
+  // wrapped in a warmer outer bloom and a crisp white pinprick. Reads
+  // as a Grave-register threat anchor (audit row: "red eyes add threat").
+  g.fillStyle(0xff4020, 0.45);
+  g.fillCircle(cx - 2.4, cy - 8.5, 1.4);
+  g.fillCircle(cx + 2.4, cy - 8.5, 1.4);
+  g.fillStyle(0xc41818, 1);
+  g.fillRect(cx - 3, cy - 9, 1.4, 1.1);
+  g.fillRect(cx + 1.6, cy - 9, 1.4, 1.1);
+  g.fillStyle(0xff5028, 0.95);
+  g.fillRect(cx - 2.7, cy - 8.8, 0.7, 0.6);
+  g.fillRect(cx + 1.9, cy - 8.8, 0.7, 0.6);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillRect(cx - 2.5, cy - 8.9, 0.3, 0.3);
+  g.fillRect(cx + 2.1, cy - 8.9, 0.3, 0.3);
   // Long drooping handlebar moustache
   g.fillStyle(0x2a1010, 1);
   g.fillRect(cx - 4, cy - 6, 8, 1.5);
@@ -134,6 +168,34 @@ export function drawDeanApparitionBody(
   g.fillStyle(0xd8a848, 0.9);
   g.fillCircle(cx - 1, cy + 6, 0.4);
   g.fillCircle(cx + 1, cy + 6, 0.4);
+
+  // Pale skeletal hand poking out the right cuff, gripping a small
+  // rolled parchment scroll. Pushes "academic" not "priest" and gives
+  // the heavy mid-band a colour break.
+  g.fillStyle(0xd8c8b8, 1);
+  g.fillCircle(cx + 8.5, cy + 5.5, 1.5);
+  g.fillStyle(0xb0a090, 0.7);
+  g.fillRect(cx + 7.5, cy + 5.5, 1, 1.6);
+  // Rolled scroll cradled in the hand — parchment cylinder with a
+  // dark seal at one end.
+  g.fillStyle(0xeadfb8, 1);
+  g.fillRect(cx + 6, cy + 6, 4.5, 1.4);
+  g.fillStyle(0xf8eec8, 1);
+  g.fillRect(cx + 6, cy + 6, 4.5, 0.5);
+  g.fillStyle(0x8a6028, 1);
+  g.fillRect(cx + 6, cy + 6, 0.6, 1.4);
+  // Wax seal at the right end of the scroll
+  g.fillStyle(0xc41818, 1);
+  g.fillCircle(cx + 10.4, cy + 6.7, 0.7);
+  g.fillStyle(0xff5028, 0.85);
+  g.fillCircle(cx + 10.4, cy + 6.5, 0.35);
+
+  // Matching skeletal hand on the left cuff — peeks out so both arms
+  // resolve. Subtle, doesn't compete with the scroll.
+  g.fillStyle(0xd8c8b8, 1);
+  g.fillCircle(cx - 8.5, cy + 5.5, 1.4);
+  g.fillStyle(0xb0a090, 0.6);
+  g.fillRect(cx - 8.5, cy + 5.5, 1, 1.6);
 
 }
 

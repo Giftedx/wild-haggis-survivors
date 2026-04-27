@@ -22,10 +22,42 @@ interface FloraSprite {
 type WeightedEntry = readonly [string, number];
 
 const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
-  heather: [['deco_heather', 0.50], ['deco_thistle', 0.80], ['deco_rock', 1.0]],
-  bog:     [['deco_thistle', 0.50], ['deco_rock_2', 0.80], ['deco_heather', 1.0]],
-  pine:    [['deco_rock_3', 0.40], ['deco_thistle', 0.70], ['deco_heather', 1.0]],
-  loch:    [['deco_rock', 0.40], ['deco_glasgow_kite', 0.60], ['deco_heather', 1.0]],
+  heather: [
+    ['deco_heather', 0.20],
+    ['deco_bracken', 0.35],
+    ['deco_grouse_feather', 0.48],
+    ['deco_wool_tuft', 0.60],
+    ['deco_wind_grass', 0.74],
+    ['deco_thistle', 0.88],
+    ['deco_rock', 1.0],
+  ],
+  bog: [
+    ['deco_bog_cotton', 0.18],
+    ['deco_sphagnum', 0.34],
+    ['deco_peat_cut', 0.50],
+    ['deco_bog_boot', 0.56],
+    ['deco_thistle', 0.72],
+    ['deco_rock_2', 0.88],
+    ['deco_heather', 1.0],
+  ],
+  pine: [
+    ['deco_roots', 0.22],
+    ['deco_pine_cone', 0.38],
+    ['deco_mushrooms', 0.53],
+    ['deco_rowan_berries', 0.66],
+    ['deco_rock_3', 0.80],
+    ['deco_thistle', 0.91],
+    ['deco_heather', 1.0],
+  ],
+  loch: [
+    ['deco_reeds', 0.24],
+    ['deco_ripple', 0.40],
+    ['deco_driftwood', 0.56],
+    ['deco_creel', 0.66],
+    ['deco_rock', 0.82],
+    ['deco_glasgow_kite', 0.90],
+    ['deco_heather', 1.0],
+  ],
 };
 
 const FLORA_COUNT = 200;
@@ -36,6 +68,19 @@ function pickTexture(table: readonly WeightedEntry[], roll: number): string {
     if (roll < threshold) return key;
   }
   return table[table.length - 1][0];
+}
+
+function isSwayable(textureKey: string): boolean {
+  if (textureKey.includes('rock')) return false;
+  if (textureKey.includes('peat')) return false;
+  if (textureKey.includes('creel')) return false;
+  if (textureKey.includes('driftwood')) return false;
+  if (textureKey.includes('boot')) return false;
+  if (textureKey.includes('ripple')) return false;
+  if (textureKey.includes('pine_cone')) return false;
+  if (textureKey.includes('grouse_feather')) return false;
+  if (textureKey.includes('wool_tuft')) return false;
+  return true;
 }
 
 export class FloraScatter {
@@ -60,7 +105,7 @@ export class FloraScatter {
       const textureKey = pickTexture(table, rng.next());
       const scale = 0.8 + rng.next() * 0.4;
       const phase = rng.next() * Math.PI * 2;
-      const swayable = !textureKey.includes('rock');
+      const swayable = isSwayable(textureKey);
 
       const img = scene.add.image(x, y, textureKey);
       img.setDepth(-3 + (y / worldH) * 0.5);

@@ -16,20 +16,24 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // ── Outer sparse haze — faint purple-grey. ──
-  g.fillStyle(0x1a0a1a, 0.2);
-  g.fillCircle(cx, cy, 12);
-  g.fillStyle(0x1a0a1a, 0.35);
-  g.fillCircle(cx, cy, 10);
+  // ── Outer sparse haze — softened so the cluster reads as MANY
+  // small bugs, not a single portal-ring. ──
+  g.fillStyle(0x1a0a1a, 0.14);
+  g.fillEllipse(cx - 1, cy, 23, 18);
+  g.fillStyle(0x26112c, 0.20);
+  g.fillEllipse(cx + 1, cy, 16, 13);
+  g.fillStyle(0x3a2748, 0.16);
+  g.fillEllipse(cx - 5, cy + 2, 9, 5);
 
   // ── Dense BLACK core — the angry heart of the swarm. Irregular
-  // shape, not a clean circle. ──
+  // shape, not a clean circle. Slightly trimmed so the mini-midge
+  // silhouettes around it can do the "many bugs" lifting. ──
   g.fillStyle(0x0a040a, 0.85);
-  g.fillCircle(cx - 1, cy, 6);
-  g.fillCircle(cx + 2, cy - 1, 5);
-  g.fillCircle(cx, cy + 2, 5);
+  g.fillCircle(cx - 2, cy, 4.8);
+  g.fillCircle(cx + 2, cy - 1, 4.4);
+  g.fillCircle(cx, cy + 2, 3.9);
   g.fillStyle(0x1a0614, 1);
-  g.fillCircle(cx, cy, 4);
+  g.fillCircle(cx, cy, 3.0);
 
   // ── 30 PINPRICK MIDGE DOTS — scattered through and around the
   // core. Small, dark, merging into the haze but countable. ──
@@ -81,12 +85,39 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillStyle(0xffffff, 0.7);
   g.fillCircle(cx, cy, 0.4);
 
-  // ── Faint motion wisps at the edges — swarm is alive, moving. ──
-  g.fillStyle(0x332244, 0.4);
-  g.fillCircle(cx - 9, cy - 3, 0.8);
-  g.fillCircle(cx + 9, cy - 2, 0.8);
-  g.fillCircle(cx - 4, cy + 8, 0.7);
-  g.fillCircle(cx + 5, cy + 8, 0.7);
+  // ── MINI-MIDGE SILHOUETTES — four readable bugs scattered
+  // through the cluster so the swarm reads as MANY discrete insects
+  // rather than abstract haze. Each: tiny body + faint wing-smear. ──
+  type MiniMidge = { x: number; y: number; flip: number };
+  const minis: MiniMidge[] = [
+    { x: -6, y: -3, flip: 1 },
+    { x: 5, y: 4, flip: -1 },
+    { x: -3, y: 6, flip: 1 },
+    { x: 7, y: -3, flip: -1 },
+  ];
+  for (const m of minis) {
+    const mx = cx + m.x;
+    const my = cy + m.y;
+    // Wing-smear (pale, behind body)
+    g.fillStyle(0xcfe4f2, 0.55);
+    g.fillEllipse(mx - 1.2 * m.flip, my - 0.8, 3, 1.2);
+    g.fillEllipse(mx + 1.2 * m.flip, my - 0.8, 3, 1.2);
+    // Body — dark pinprick ellipse
+    g.fillStyle(0x05050c, 1);
+    g.fillEllipse(mx, my, 2.2, 1.4);
+    // Red eye dot
+    g.fillStyle(0xff2233, 1);
+    g.fillCircle(mx + 0.4 * m.flip, my - 0.2, 0.4);
+  }
+
+  // ── Pale wing glints and motion wisps at the edges — reduced
+  // count so they accent the mini-midges rather than masking them. ──
+  g.fillStyle(0xcfe4f2, 0.4);
+  g.fillRect(cx - 10, cy - 4, 2, 0.5);
+  g.fillRect(cx + 7, cy - 5, 2, 0.5);
+  g.fillStyle(0x4a345a, 0.45);
+  g.fillCircle(cx - 10, cy - 3, 0.7);
+  g.fillCircle(cx + 10, cy - 2, 0.7);
 
   g.generateTexture('midgie_swarm', s, s);
   g.destroy();

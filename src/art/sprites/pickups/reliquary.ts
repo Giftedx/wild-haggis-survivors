@@ -15,14 +15,17 @@ export function bakeReliquary(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2 + 2;
 
-  // ── Ground shadow. ──
-  g.fillStyle(0x000000, 0.4);
-  g.fillEllipse(cx, cy + 10, 18, 3);
+  // ── BASE SHADOW — wider, layered drop shadow under the
+  // reliquary so it grounds firmly on whatever surface. ──
+  g.fillStyle(0x000000, 0.5);
+  g.fillEllipse(cx, cy + 10, 22, 3.5);
+  g.fillStyle(0x000000, 0.25);
+  g.fillEllipse(cx, cy + 10.5, 26, 4);
 
   // ── Outer glow halo — warm amber light pouring out of the relic. ──
-  g.fillStyle(0xffa040, 0.2);
+  g.fillStyle(0xffa040, 0.22);
   g.fillEllipse(cx, cy - 1, 24, 20);
-  g.fillStyle(0xffc060, 0.15);
+  g.fillStyle(0xffc060, 0.16);
   g.fillEllipse(cx, cy - 1, 28, 24);
 
   // ── Clawed feet — four small gold blocks at the bottom corners. ──
@@ -33,16 +36,42 @@ export function bakeReliquary(scene: Phaser.Scene): void {
   g.fillRect(cx - 8, cy + 7, 2.5, 1);
   g.fillRect(cx + 5.5, cy + 7, 2.5, 1);
 
-  // ── Main casket body — rectangular gold box. ──
+  // ── Main casket body — rectangular gold box with THICKER FRAME
+  // (deeper outline + double-band trim so the shrine feels carved
+  // rather than painted-on). ──
+  g.fillStyle(0x1a0a04, 1);
+  g.fillRect(cx - 10, cy - 3, 20, 12);
   g.fillStyle(0x4a3010, 1);
   g.fillRect(cx - 9, cy - 2, 18, 10);
   g.fillStyle(0x8a6028, 1);
   g.fillRect(cx - 8, cy - 1, 16, 8);
+  // Inner trim band — bronze double-line.
+  g.fillStyle(0x6a4018, 1);
+  g.fillRect(cx - 8, cy - 1, 16, 0.5);
+  g.fillRect(cx - 8, cy + 7, 16, 0.5);
   g.fillStyle(0xba8840, 1);
   g.fillRect(cx - 7, cy, 14, 1.5);
   // Gold sheen on upper edge
-  g.fillStyle(0xfadc6a, 0.85);
+  g.fillStyle(0xfadc6a, 0.9);
   g.fillRect(cx - 8, cy - 1, 16, 0.5);
+
+  // ── CARVED CORNER GLYPHS — two small Celtic-style triskele dots
+  // at the lower corners of the casket face. Tiny, decorative,
+  // sells the "shrine box" identity. ──
+  g.fillStyle(0x2a1a08, 1);
+  g.fillCircle(cx - 6, cy + 5, 1);
+  g.fillCircle(cx + 6, cy + 5, 1);
+  g.fillStyle(0xfadc6a, 0.95);
+  g.fillCircle(cx - 6, cy + 5, 0.5);
+  g.fillCircle(cx + 6, cy + 5, 0.5);
+  g.fillStyle(0xfadc6a, 0.7);
+  // Triskele tick-marks at each corner glyph (3 dots).
+  g.fillRect(cx - 6.5, cy + 4.0, 0.4, 0.4);
+  g.fillRect(cx - 5.5, cy + 4.0, 0.4, 0.4);
+  g.fillRect(cx - 6.0, cy + 5.8, 0.4, 0.4);
+  g.fillRect(cx + 5.5, cy + 4.0, 0.4, 0.4);
+  g.fillRect(cx + 6.5, cy + 4.0, 0.4, 0.4);
+  g.fillRect(cx + 6.0, cy + 5.8, 0.4, 0.4);
 
   // ── Glass window in the front — round amber porthole showing the
   // ember burning inside. THE visual anchor for "relic, not chest". ──
@@ -61,9 +90,15 @@ export function bakeReliquary(scene: Phaser.Scene): void {
   g.fillCircle(cx, cy + 3, 1.8);
   g.fillStyle(0xfff0c0, 1);
   g.fillCircle(cx - 0.3, cy + 2.7, 1);
-  // Specular pinprick
+  // GEM SHIMMER POP — bright pinprick + crossed sparkle rays so the
+  // central ember reads "magical" rather than "lit candle".
   g.fillStyle(0xffffff, 1);
-  g.fillCircle(cx - 0.6, cy + 2.3, 0.4);
+  g.fillCircle(cx - 0.6, cy + 2.3, 0.5);
+  g.fillStyle(0xffffff, 0.9);
+  g.fillRect(cx - 1.4, cy + 2.5, 1.8, 0.3);
+  g.fillRect(cx - 0.5, cy + 1.6, 0.3, 1.8);
+  g.fillStyle(0xfff8d0, 0.8);
+  g.fillCircle(cx - 0.6, cy + 2.3, 1.1);
 
   // ── ARCHED CASKET LID — the giveaway shape. Semicircular dome
   // topping the rectangular box. ──

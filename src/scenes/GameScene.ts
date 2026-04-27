@@ -11,6 +11,7 @@ import {
   generateNodePath,
   placeNodes,
 } from '../systems/NodeMapSystem';
+import { NodeMarkerSystem } from '../systems/NodeMarkerSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
 import { EdgeIndicators } from '../ui/EdgeIndicators';
@@ -226,6 +227,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
   private readonly nodeMapSystem = new NodeMapSystem();
+  private readonly nodeMarkerSystem = new NodeMarkerSystem();
   /**
    * M1 F1 + F2 — defers finalize for encounter / elite nodes until the
    * spawned enemies die. Ticked once per frame from the main update loop
@@ -498,6 +500,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
       setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
     });
+    this.nodeMarkerSystem.destroy();
     this.interactivePromptIndex = -1;
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
@@ -1593,6 +1596,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       filmGrain: this.filmGrain,
       setFilmGrain: (next) => { this.filmGrain = next; },
     });
+    this.events.once('shutdown', () => this.nodeMarkerSystem.destroy());
   }
 
   private wireMantleTier(): void {
@@ -1732,6 +1736,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.runActState.currentActNodeMap,
       this.runActState.currentNodeIndex,
     );
+    this.nodeMarkerSystem.update(this.runActState.currentNodeIndex, scaledDelta);
 
     const runSec = Math.floor(this.spawnSystem.getGameTimeSec());
     if (runSec !== this.lastEmittedRunSecond) {
@@ -2126,6 +2131,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const restored = this.runActState.currentActNodeMap;
       if (restored && restored.act === act && restored.nodes.length > 0) {
         this.nodeMapSystem.setMap(restored);
+        this.nodeMarkerSystem.setMap(this, restored);
         return;
       }
     }
@@ -2146,6 +2152,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runActState.currentActNodeMap = state;
     this.runActState.currentNodeIndex = 0;
     this.nodeMapSystem.setMap(state);
+    this.nodeMarkerSystem.setMap(this, state);
   }
 
   private launchActIntermission(actN: 1 | 2): void {

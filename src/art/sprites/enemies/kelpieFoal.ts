@@ -43,45 +43,89 @@ export function drawKelpieFoalBody(
   g.fillStyle(0x6fa0c0, 0.15);
   g.fillEllipse(cx, cy + 2, 32, 26);
 
-  // ── Body — compact, dark indigo like loch water. Slightly more
-  // oval than before (was too round → read as "foal"). ──
+  // ── Body — compact, dark indigo like loch water. Pale belly stripe
+  // separates the foal palette from the kelpie boss (audit dislike:
+  // "palette overlaps kelpie"). ──
   g.fillStyle(0x0a1a28, 1);
   g.fillEllipse(cx, cy + 3, 18, 10);
   g.fillStyle(0x1a3850, 1);
   g.fillEllipse(cx, cy + 2, 16, 8);
+  // Pale belly band — foal-cue (lighter underside is a young-mammal
+  // signal, separates from the boss's solid dark-water mass).
+  g.fillStyle(0x6a98b8, 0.85);
+  g.fillEllipse(cx, cy + 5.5, 12, 3);
+  g.fillStyle(0x9ac0d8, 0.55);
+  g.fillEllipse(cx, cy + 6, 9, 1.6);
   // Wet-coat dapples
   g.fillStyle(0x4a7ea0, 0.6);
   g.fillEllipse(cx - 4, cy, 5, 2);
   g.fillEllipse(cx + 3, cy + 1, 4, 2);
 
-  // ── Legs — four thin ones with pale hooves. Slightly longer than
-  // before for a menacing gait. ──
+  // ── Legs — four with knee detail and slight wobble (foal proportion:
+  // head:leg ratio favours head). Slightly thicker than before so
+  // they don't read as toothpicks. ──
   // Back pair (rightLegY).
-  g.fillStyle(0x0a1a28, 1);
-  g.fillRect(cx - 8, cy + 6 + rly, 2, 8);
-  g.fillRect(cx - 3, cy + 7 + rly, 2, 7);
-  // Front pair (leftLegY).
-  g.fillRect(cx + 1, cy + 7 + lly, 2, 7);
-  g.fillRect(cx + 6, cy + 6 + lly, 2, 8);
-  // Pale bone-white hooves — back pair.
-  g.fillStyle(0xa0c8e0, 0.9);
-  g.fillRect(cx - 8, cy + 13 + rly, 2, 1.5);
-  g.fillRect(cx - 3, cy + 13 + rly, 2, 1.5);
-  // Pale bone-white hooves — front pair.
-  g.fillRect(cx + 1, cy + 13 + lly, 2, 1.5);
-  g.fillRect(cx + 6, cy + 13 + lly, 2, 1.5);
+  g.fillStyle(0x05101a, 1);
+  g.fillRect(cx - 8, cy + 6 + rly, 2.5, 7);
+  g.fillRect(cx - 3, cy + 7 + rly, 2.5, 6);
+  // Front pair (leftLegY) — slightly shorter to enforce foal silhouette.
+  g.fillRect(cx + 1, cy + 7 + lly, 2.5, 6);
+  g.fillRect(cx + 6, cy + 6 + lly, 2.5, 7);
+  // Knee-knobs — small lighter knobble mid-leg sells "young legs".
+  g.fillStyle(0x3a6080, 0.85);
+  g.fillCircle(cx - 6.7, cy + 9 + rly, 0.7);
+  g.fillCircle(cx - 1.7, cy + 9.5 + rly, 0.6);
+  g.fillCircle(cx + 2.3, cy + 9.5 + lly, 0.6);
+  g.fillCircle(cx + 7.3, cy + 9 + lly, 0.7);
+  // Pale bone-white hooves with a darker bottom rim — back pair.
+  g.fillStyle(0x4a7090, 1);
+  g.fillRect(cx - 8, cy + 13 + rly, 2.5, 0.4);
+  g.fillRect(cx - 3, cy + 13 + rly, 2.5, 0.4);
+  g.fillStyle(0xb0d0e8, 1);
+  g.fillRect(cx - 8, cy + 13.4 + rly, 2.5, 1.4);
+  g.fillRect(cx - 3, cy + 13.4 + rly, 2.5, 1.4);
+  // Front pair.
+  g.fillStyle(0x4a7090, 1);
+  g.fillRect(cx + 1, cy + 13 + lly, 2.5, 0.4);
+  g.fillRect(cx + 6, cy + 13 + lly, 2.5, 0.4);
+  g.fillStyle(0xb0d0e8, 1);
+  g.fillRect(cx + 1, cy + 13.4 + lly, 2.5, 1.4);
+  g.fillRect(cx + 6, cy + 13.4 + lly, 2.5, 1.4);
 
-  // ── Head — angled out-right, bigger than before so the face
-  // details land at small scale. ──
+  // ── Head — angled out-right, BIGGER (foal proportion: oversized
+  // head on short legs is the cuteness/cuckoo signal). Audit dislike:
+  // "foal cue is subtle". ──
   g.fillStyle(0x0a1a28, 1);
-  g.fillEllipse(cx + 9, cy - 3, 9, 7);
+  g.fillEllipse(cx + 9, cy - 3, 10.5, 8);
   g.fillStyle(0x1a3850, 1);
-  g.fillEllipse(cx + 9, cy - 4, 8, 5);
-  // Snout/muzzle — narrower at the front
+  g.fillEllipse(cx + 9, cy - 4, 9, 6);
+  // Cheek-fur clump — soft fluffy outline on the back of the cheek
+  // breaks the smooth "helmet" silhouette (audit dislike: "head can
+  // read as helmet").
+  g.fillStyle(0x1a3850, 0.85);
+  g.fillCircle(cx + 5, cy - 2, 1.6);
+  g.fillStyle(0x2a5070, 0.7);
+  g.fillCircle(cx + 5, cy - 2.5, 1);
+  // Snout/muzzle — narrower at the front, with a paler nose
   g.fillStyle(0x0a1a28, 1);
-  g.fillEllipse(cx + 12, cy - 2, 5, 3);
+  g.fillEllipse(cx + 12, cy - 2, 5.5, 3.2);
   g.fillStyle(0x1a3850, 1);
-  g.fillEllipse(cx + 12, cy - 2.5, 4, 2);
+  g.fillEllipse(cx + 12, cy - 2.5, 4.4, 2.2);
+  // Pale muzzle stripe — foal-cue (young equids have lighter muzzles).
+  g.fillStyle(0x6a98b8, 0.85);
+  g.fillEllipse(cx + 13, cy - 2, 2.4, 1.4);
+  // Nostril dot — depth on the snout.
+  g.fillStyle(0x000000, 1);
+  g.fillCircle(cx + 13.6, cy - 2, 0.4);
+  // Forelock — a wet kelp tuft drooping between the ears, breaks
+  // the helmet silhouette and adds wild-water-spirit identity.
+  g.fillStyle(0x2a5040, 1);
+  g.fillTriangle(cx + 7, cy - 8, cx + 8, cy - 8, cx + 7.5, cy - 4);
+  g.fillStyle(0x4a7060, 0.85);
+  g.fillRect(cx + 7.4, cy - 7.6, 0.4, 3);
+  // Forelock drip
+  g.fillStyle(0x8fd0f0, 0.8);
+  g.fillCircle(cx + 7.5, cy - 3.5, 0.6);
 
   // ── Glowing cyan eye — BIGGER than before, with a soft glow halo
   // so it pops even at gameplay scale. ──

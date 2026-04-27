@@ -10,6 +10,23 @@ import { bakeBossShadow } from './bossShadow';
 import { bakeSnowflake } from './snowflake';
 import { bakeFilmGrain } from './filmGrain';
 import { bakeFiannaSpirit } from './fiannaSpirit';
+import { bakeTelegraphFx } from './telegraphs';
+import {
+  bakeFxTrailThistle,
+  bakeFxTrailCaber,
+  bakeFxTrailHaggis,
+} from './projectileTrails';
+import {
+  bakeFxEnemyBurstSmall,
+  bakeFxEnemyBurstMedium,
+  bakeFxEnemyBurstLarge,
+} from './deathBursts';
+import {
+  bakeFxRainDrop,
+  bakeFxDrizzle,
+  bakeFxSunShaft,
+  bakeFxAuroraBand,
+} from './weather';
 
 export function bakeFx(scene: Phaser.Scene): void {
   bakeEntityShadow(scene);
@@ -17,4 +34,15 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeSnowflake(scene);
   bakeFilmGrain(scene);
   bakeFiannaSpirit(scene);
+  bakeTelegraphFx(scene);
+  bakeFxTrailThistle(scene);
+  bakeFxTrailCaber(scene);
+  bakeFxTrailHaggis(scene);
+  bakeFxEnemyBurstSmall(scene);
+  bakeFxEnemyBurstMedium(scene);
+  bakeFxEnemyBurstLarge(scene);
+  bakeFxRainDrop(scene);
+  bakeFxDrizzle(scene);
+  bakeFxSunShaft(scene);
+  bakeFxAuroraBand(scene);
 }

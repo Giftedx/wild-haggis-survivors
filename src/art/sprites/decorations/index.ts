@@ -18,6 +18,25 @@ import { bakeGlasgowKite } from './glasgowKite';
 import { bakeTrafficCone } from './trafficCone';
 import { bakeTunnock } from './tunnock';
 import { bakeAbandonedPint } from './abandonedPint';
+import { bakeBiomeProps } from './biomeProps';
+import {
+  bakeChippySign,
+  bakeBusStopPole,
+  bakeNewsprint,
+  bakeCloseDoor,
+  bakeScaffoldPost,
+} from './urbanProps';
+import {
+  bakeHazardPeatPit,
+  bakeHazardFallingSlate,
+  bakeHazardBurnWater,
+  bakeHazardLooseScree,
+} from './biomeHazards';
+import {
+  bakeAutumnLeafScatter,
+  bakeSpringShoot,
+  bakeThawPuddle,
+} from './seasonalMoor';
 
 export function bakeDecorations(scene: Phaser.Scene): void {
   bakeThistle(scene);
@@ -27,4 +46,17 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeTrafficCone(scene);
   bakeTunnock(scene);
   bakeAbandonedPint(scene);
+  bakeBiomeProps(scene);
+  bakeChippySign(scene);
+  bakeBusStopPole(scene);
+  bakeNewsprint(scene);
+  bakeCloseDoor(scene);
+  bakeScaffoldPost(scene);
+  bakeHazardPeatPit(scene);
+  bakeHazardFallingSlate(scene);
+  bakeHazardBurnWater(scene);
+  bakeHazardLooseScree(scene);
+  bakeAutumnLeafScatter(scene);
+  bakeSpringShoot(scene);
+  bakeThawPuddle(scene);
 }

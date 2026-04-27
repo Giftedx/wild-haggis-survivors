@@ -14,6 +14,7 @@ import { bakeBossTourBus } from './tourBus';
 import { bakeBossLaird } from './laird';
 import { bakeBossHunterGeneral } from './hunterGeneral';
 import { bakeBossTaxman } from './taxman';
+import { bakeBossArenaProps } from './arenaProps';
 
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
 export function bakeBosses(scene: Phaser.Scene): void {
@@ -22,4 +23,5 @@ export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossLaird(scene);
   bakeBossHunterGeneral(scene);
   bakeBossTaxman(scene);
+  bakeBossArenaProps(scene);
 }

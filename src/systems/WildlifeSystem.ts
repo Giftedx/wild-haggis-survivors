@@ -1,7 +1,7 @@
 /**
- * WildlifeSystem — decorative ambient creatures (hare, red deer, buzzard)
- * that idle in their biomes and flee when the player approaches. Purely
- * cosmetic, no collision or gameplay impact.
+ * WildlifeSystem — decorative Scottish ambient creatures that idle in their
+ * biomes and flee when the player approaches. Purely cosmetic, no collision
+ * or gameplay impact.
  *
  * Supersedes the original HareWildlife system (2026-04-22): static
  * seed-deterministic placement via RunRng remains, generalized to
@@ -13,21 +13,35 @@ import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';
 import { WILDLIFE_DEFS, type WildlifeDef, type WildlifeKey } from '../data/wildlife';
 
-// How many of each creature to place per run. Hare gets the most —
-// small, readable, and the existing game had 4 hares so keep parity.
+// How many of each creature to place per run. Counts stay conservative because
+// wildlife is background warmth, not a gameplay hazard.
 const COUNTS: Record<WildlifeKey, number> = {
   hare: 4,
   red_deer: 2,
   buzzard: 3,
+  red_squirrel: 3,
+  pine_marten: 2,
+  capercaillie: 2,
+  otter: 2,
+  puffin: 2,
+  golden_eagle: 1,
+  scottish_wildcat: 2,
 };
 
 // Which biomes each creature is allowed in. Buzzards aerial —
-// effectively always valid. Deer prefer pine/heather. Hare stays
-// in pine/heather per existing behavior.
+// effectively always valid. Woodland species use pine/heather so they can
+// appear reliably while their data weights still favour pine.
 const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
   hare: new Set(['heather', 'pine']),
   red_deer: new Set(['heather', 'pine']),
   buzzard: new Set(['bog', 'loch', 'pine', 'heather']),
+  red_squirrel: new Set(['heather', 'pine']),
+  pine_marten: new Set(['heather', 'pine']),
+  capercaillie: new Set(['heather', 'pine']),
+  otter: new Set(['bog', 'loch']),
+  puffin: new Set(['bog', 'loch', 'heather']),
+  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather']),
+  scottish_wildcat: new Set(['heather', 'pine']),
 };
 
 const FLEE_DIST = 200;

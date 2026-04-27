@@ -15,16 +15,19 @@ export function bakeFiannaSpirit(scene: Phaser.Scene): void {
   const cx = size / 2;
   const cy = size / 2;
 
-  // Outer aura — soft bone halo so the spirit pops against dark
-  // biomes (bog/pine) without losing the ghost quality.
-  g.fillStyle(FIANNA_SPIRIT_PARTICLE_COLOUR, 0.22);
-  g.fillCircle(cx, cy, 10);
-  g.fillStyle(FIANNA_SPIRIT_PARTICLE_COLOUR, 0.12);
-  g.fillCircle(cx, cy, 11.5);
+  // ── RIM HUE SPLIT — cooler outer halo (pale blue-bone) tightens
+  // into a warm bone core. Gives the spirit depth without breaking
+  // the spectral palette. Tighter arc than before. ──
+  g.fillStyle(0xa0b8d8, 0.16);
+  g.fillCircle(cx, cy, 10.5);
+  g.fillStyle(0xc8d8ec, 0.18);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(FIANNA_SPIRIT_PARTICLE_COLOUR, 0.30);
+  g.fillCircle(cx, cy, 7.5);
 
   // Core body — torso as a tall diamond (shoulders at mid, hips
   // narrower). Low alpha so the silhouette reads "translucent".
-  g.fillStyle(FIANNA_SPIRIT_PARTICLE_COLOUR, 0.85);
+  g.fillStyle(FIANNA_SPIRIT_PARTICLE_COLOUR, 0.88);
   g.beginPath();
   g.moveTo(cx, cy - 7);        // head apex
   g.lineTo(cx + 4, cy - 2);    // right shoulder
@@ -49,9 +52,20 @@ export function bakeFiannaSpirit(scene: Phaser.Scene): void {
   g.fillStyle(0xfff4d8, 1);
   g.fillCircle(cx, cy - 6, 1.5);
 
+  // ── FLOATING GOLD MOTES — three small motes orbiting the
+  // spirit's core, sells "living myth" rather than "icon". ──
+  g.fillStyle(0xffd078, 0.55);
+  g.fillCircle(cx - 7, cy - 4, 1.4);
+  g.fillCircle(cx + 7, cy + 2, 1.2);
+  g.fillCircle(cx - 5, cy + 6, 1.1);
+  g.fillStyle(0xffefb0, 0.95);
+  g.fillCircle(cx - 7, cy - 4, 0.6);
+  g.fillCircle(cx + 7, cy + 2, 0.5);
+  g.fillCircle(cx - 5, cy + 6, 0.45);
+
   // Inner glow spark — centre highlight sells "living spirit" over
   // "statue silhouette".
-  g.fillStyle(0xffffff, 0.6);
+  g.fillStyle(0xffffff, 0.7);
   g.fillRect(cx - 1, cy - 1, 2, 3);
 
   g.generateTexture('fx_fianna_spirit', size, size);

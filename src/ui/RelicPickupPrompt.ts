@@ -188,6 +188,14 @@ export function openRelicPickupPrompt(opts: RelicPickupPromptOpts): RelicPickupP
       .setScrollFactor(0)
       .setDepth(PROMPT_DEPTH + 3);
     objects.push(swatch);
+    if (scene.textures.exists(def.iconSprite)) {
+      const icon = scene.add
+        .image(cardX, cardTop + 30, def.iconSprite)
+        .setScrollFactor(0)
+        .setDepth(PROMPT_DEPTH + 4)
+        .setScale(compactCards ? 0.82 : 0.95);
+      objects.push(icon);
+    }
 
     const name = scene.add
       .text(

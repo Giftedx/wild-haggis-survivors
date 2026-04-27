@@ -28,6 +28,7 @@ import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
 import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
+import { drawWarmthProps } from '../art/sprites/croft/warmthProps';
 import {
   beastiesDiscoverySummary,
   buildBeastiesEntries,
@@ -66,6 +67,7 @@ export class CroftScene extends Phaser.Scene {
   private droveGfx: Phaser.GameObjects.Graphics | null = null;
   private droveSlots: DroveSlot[] = [];
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
+  private warmthPropsGfx: Phaser.GameObjects.Graphics | null = null;
   private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
   private seasonalBanner: SeasonalBannerHandle | null = null;
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
@@ -105,6 +107,8 @@ export class CroftScene extends Phaser.Scene {
     this.droveSlots = [];
     this.droveHits.forEach((r) => r.destroy());
     this.droveHits = [];
+    this.warmthPropsGfx?.destroy();
+    this.warmthPropsGfx = null;
     this.seasonalPropsGfx?.destroy();
     this.seasonalPropsGfx = null;
     this.seasonalBanner?.destroy();
@@ -146,6 +150,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
+    this.drawWarmth(layout);
     this.drawSeasonal(layout);
     this.drawBookshelfHit(layout);
     this.drawHeader(width);
@@ -411,6 +416,18 @@ export class CroftScene extends Phaser.Scene {
         sprite.setTexture(GRAN_TEXTURE_KEYS[this.knittingFrame]);
       },
     });
+  }
+
+  /**
+   * Always-on lived-in props. Seasonal props still layer above this
+   * when active, so Burns Night can feel special without the off-season
+   * croft going bare.
+   */
+  private drawWarmth(layout: CroftLayout): void {
+    const gfx = this.add.graphics();
+    gfx.setDepth(44);
+    drawWarmthProps(gfx, layout);
+    this.warmthPropsGfx = gfx;
   }
 
   /**

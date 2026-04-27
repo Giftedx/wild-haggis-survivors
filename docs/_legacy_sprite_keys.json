@@ -1,0 +1,597 @@
+{
+  "spritesRoot": "src/art/sprites",
+  "fileCount": 101,
+  "keyCount": 118,
+  "keys": [
+    {
+      "key": "angry_scotsman",
+      "file": "src/art/sprites/enemies/angryScotsman.ts",
+      "count": 1
+    },
+    {
+      "key": "auditor_priest",
+      "file": "src/art/sprites/enemies/auditorPriest.ts",
+      "count": 1
+    },
+    {
+      "key": "barghest",
+      "file": "src/art/sprites/enemies/barghest.ts",
+      "count": 1
+    },
+    {
+      "key": "blue_man_of_minch",
+      "file": "src/art/sprites/enemies/blueManOfMinch.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_gordon",
+      "file": "src/art/sprites/bosses/gordon.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_hunter_general",
+      "file": "src/art/sprites/bosses/hunterGeneral.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_laird",
+      "file": "src/art/sprites/bosses/laird.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_shadow",
+      "file": "src/art/sprites/fx/bossShadow.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_taxman",
+      "file": "src/art/sprites/bosses/taxman.ts",
+      "count": 1
+    },
+    {
+      "key": "boss_tour_bus",
+      "file": "src/art/sprites/bosses/tourBus.ts",
+      "count": 1
+    },
+    {
+      "key": "buckfast_ned",
+      "file": "src/art/sprites/enemies/buckfastNed.ts",
+      "count": 1
+    },
+    {
+      "key": "caber",
+      "file": "src/art/sprites/projectiles/caber.ts",
+      "count": 1
+    },
+    {
+      "key": "ceilidh_caller",
+      "file": "src/art/sprites/enemies/ceilidhCaller.ts",
+      "count": 1
+    },
+    {
+      "key": "chef",
+      "file": "src/art/sprites/enemies/chef.ts",
+      "count": 1
+    },
+    {
+      "key": "chest",
+      "file": "src/art/sprites/pickups/chest.ts",
+      "count": 1
+    },
+    {
+      "key": "dean_apparition",
+      "file": "src/art/sprites/enemies/deanApparition.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_cone",
+      "file": "src/art/sprites/decorations/trafficCone.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_glasgow_kite",
+      "file": "src/art/sprites/decorations/glasgowKite.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_heather",
+      "file": "src/art/sprites/decorations/heather.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_rock",
+      "file": "src/art/sprites/decorations/rocks.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_rock_2",
+      "file": "src/art/sprites/decorations/rocks.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_rock_3",
+      "file": "src/art/sprites/decorations/rocks.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_tennents",
+      "file": "src/art/sprites/decorations/abandonedPint.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_thistle",
+      "file": "src/art/sprites/decorations/thistle.ts",
+      "count": 1
+    },
+    {
+      "key": "deco_tunnock",
+      "file": "src/art/sprites/decorations/tunnock.ts",
+      "count": 1
+    },
+    {
+      "key": "deep_fryer",
+      "file": "src/art/sprites/enemies/deepFryer.ts",
+      "count": 1
+    },
+    {
+      "key": "eagle",
+      "file": "src/art/sprites/enemies/eagle.ts",
+      "count": 1
+    },
+    {
+      "key": "edinburgh_ghost_guide",
+      "file": "src/art/sprites/enemies/edinburghGhostGuide.ts",
+      "count": 1
+    },
+    {
+      "key": "entity_shadow",
+      "file": "src/art/sprites/fx/entityShadow.ts",
+      "count": 1
+    },
+    {
+      "key": "fx_fianna_spirit",
+      "file": "src/art/sprites/fx/fiannaSpirit.ts",
+      "count": 1
+    },
+    {
+      "key": "fx_snowflake",
+      "file": "src/art/sprites/fx/snowflake.ts",
+      "count": 1
+    },
+    {
+      "key": "gale_wraith",
+      "file": "src/art/sprites/enemies/galeWraith.ts",
+      "count": 1
+    },
+    {
+      "key": "ghost",
+      "file": "src/art/sprites/enemies/ghost.ts",
+      "count": 1
+    },
+    {
+      "key": "haar_wraith",
+      "file": "src/art/sprites/enemies/haarWraith.ts",
+      "count": 1
+    },
+    {
+      "key": "haggis_ball",
+      "file": "src/art/sprites/projectiles/haggisBall.ts",
+      "count": 1
+    },
+    {
+      "key": "haggis_hunter",
+      "file": "src/art/sprites/enemies/haggisHunter.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_hop_0",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_hop_1",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_hop_2",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_hop_3",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_idle_0",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "hare_idle_1",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "health_orb",
+      "file": "src/art/sprites/pickups/healthOrb.ts",
+      "count": 1
+    },
+    {
+      "key": "highland_cow",
+      "file": "src/art/sprites/enemies/highlandCow.ts",
+      "count": 1
+    },
+    {
+      "key": "hud_dash_pip_empty",
+      "file": "src/art/sprites/hud/dashPips.ts",
+      "count": 1
+    },
+    {
+      "key": "hud_dash_pip_full",
+      "file": "src/art/sprites/hud/dashPips.ts",
+      "count": 1
+    },
+    {
+      "key": "hud_shield",
+      "file": "src/art/sprites/hud/shield.ts",
+      "count": 1
+    },
+    {
+      "key": "kelpie",
+      "file": "src/art/sprites/enemies/kelpie.ts",
+      "count": 1
+    },
+    {
+      "key": "kelpie_foal",
+      "file": "src/art/sprites/enemies/kelpieFoal.ts",
+      "count": 1
+    },
+    {
+      "key": "ledger_wraith",
+      "file": "src/art/sprites/enemies/ledgerWraith.ts",
+      "count": 1
+    },
+    {
+      "key": "midge",
+      "file": "src/art/sprites/enemies/midge.ts",
+      "count": 1
+    },
+    {
+      "key": "midgie_swarm",
+      "file": "src/art/sprites/enemies/midgieSwarm.ts",
+      "count": 1
+    },
+    {
+      "key": "nest",
+      "file": "src/art/sprites/enemies/nest.ts",
+      "count": 1
+    },
+    {
+      "key": "piper",
+      "file": "src/art/sprites/enemies/piper.ts",
+      "count": 1
+    },
+    {
+      "key": "redcap",
+      "file": "src/art/sprites/enemies/redcap.ts",
+      "count": 1
+    },
+    {
+      "key": "reliquary",
+      "file": "src/art/sprites/pickups/reliquary.ts",
+      "count": 1
+    },
+    {
+      "key": "rune_glyph",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "seelie_piper",
+      "file": "src/art/sprites/enemies/seeliePiper.ts",
+      "count": 1
+    },
+    {
+      "key": "sheep",
+      "file": "src/art/sprites/enemies/sheep.ts",
+      "count": 1
+    },
+    {
+      "key": "thistle",
+      "file": "src/art/sprites/projectiles/thistle.ts",
+      "count": 1
+    },
+    {
+      "key": "tome_wraith",
+      "file": "src/art/sprites/enemies/tomeWraith.ts",
+      "count": 1
+    },
+    {
+      "key": "tourist",
+      "file": "src/art/sprites/enemies/tourist.ts",
+      "count": 1
+    },
+    {
+      "key": "traffic_cone_totem",
+      "file": "src/art/sprites/enemies/trafficConeTotem.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_highland_shield",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_irn_bru",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_kilt",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_loch_water",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_sporran",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_cooldown",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_damage",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_defense",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_drift",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_health",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_knockback",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_pickup",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_speed",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_stat_utility",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_tam_o_shanter",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_tartan_sash",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_thistle_crown",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "ucard_whisky_flask",
+      "file": "src/art/sprites/icons/cards.ts",
+      "count": 1
+    },
+    {
+      "key": "unseelie_fiddler",
+      "file": "src/art/sprites/enemies/unseelieFiddler.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_bagpipe_blast",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_bagpipes",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_caber_toss",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_claymore",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_haggis_cannon",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_haggis_hurler",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_highland_fling",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_highland_games",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_nessie_tentacle",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_nessie_unleashed",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_scotch_mist",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_the_haar",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_thistle_shot",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_thistle_storm",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wicon_william_blade",
+      "file": "src/art/sprites/icons/weapons.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_buzzard_idle",
+      "file": "src/art/sprites/wildlife/buzzard.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_buzzard_move",
+      "file": "src/art/sprites/wildlife/buzzard.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_capercaillie_idle",
+      "file": "src/art/sprites/wildlife/capercaillie.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_capercaillie_move",
+      "file": "src/art/sprites/wildlife/capercaillie.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_golden_eagle_idle",
+      "file": "src/art/sprites/wildlife/goldenEagle.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_golden_eagle_move",
+      "file": "src/art/sprites/wildlife/goldenEagle.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_hare_idle",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_hare_move",
+      "file": "src/art/sprites/wildlife/hare.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_otter_idle",
+      "file": "src/art/sprites/wildlife/otter.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_otter_move",
+      "file": "src/art/sprites/wildlife/otter.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_pine_marten_idle",
+      "file": "src/art/sprites/wildlife/pineMarten.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_pine_marten_move",
+      "file": "src/art/sprites/wildlife/pineMarten.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_puffin_idle",
+      "file": "src/art/sprites/wildlife/puffin.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_puffin_move",
+      "file": "src/art/sprites/wildlife/puffin.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_red_deer_idle",
+      "file": "src/art/sprites/wildlife/redDeer.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_red_deer_move",
+      "file": "src/art/sprites/wildlife/redDeer.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_red_squirrel_idle",
+      "file": "src/art/sprites/wildlife/redSquirrel.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_red_squirrel_move",
+      "file": "src/art/sprites/wildlife/redSquirrel.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_scottish_wildcat_idle",
+      "file": "src/art/sprites/wildlife/scottishWildcat.ts",
+      "count": 1
+    },
+    {
+      "key": "wildlife_scottish_wildcat_move",
+      "file": "src/art/sprites/wildlife/scottishWildcat.ts",
+      "count": 1
+    },
+    {
+      "key": "xp_gem",
+      "file": "src/art/sprites/pickups/xpGem.ts",
+      "count": 1
+    }
+  ]
+}

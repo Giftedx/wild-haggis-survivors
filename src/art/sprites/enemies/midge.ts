@@ -16,73 +16,77 @@ export function bakeMidge(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // ── Motion-blur halo — big soft circle so the sprite reads as
-  // "tiny thing in a cloud of its own wingbeats". ──
-  g.fillStyle(0x3a3348, 0.25);
-  g.fillCircle(cx, cy, 13);
-  g.fillStyle(0x5a5068, 0.18);
-  g.fillCircle(cx, cy, 10);
+  // ── Motion-blur halo — shrunk 30% so the body reads as the
+  // sprite, not a mote inside a haze. ──
+  g.fillStyle(0x3a3348, 0.22);
+  g.fillCircle(cx, cy, 9);
+  g.fillStyle(0x5a5068, 0.16);
+  g.fillCircle(cx, cy, 7);
 
-  // ── TRANSLUCENT WINGS — big blur ovals behind the body showing
-  // the wingbeat smear. Much bigger than before relative to body. ──
-  g.fillStyle(0xeaf0f8, 0.35);
-  g.fillEllipse(cx - 5, cy - 2, 10, 4);
-  g.fillEllipse(cx + 5, cy - 2, 10, 4);
-  g.fillStyle(0xffffff, 0.55);
-  g.fillEllipse(cx - 4, cy - 2, 7, 3);
-  g.fillEllipse(cx + 4, cy - 2, 7, 3);
-  // Wing leading-edge flicker lines
-  g.fillStyle(0xaabbcc, 0.7);
-  g.fillRect(cx - 8, cy - 2.5, 6, 0.4);
-  g.fillRect(cx + 2, cy - 2.5, 6, 0.4);
+  // ── TRANSLUCENT WINGS — two crossed wing-smears so the tiny
+  // body reads as an insect, not a round mote. ──
+  g.fillStyle(0x8aa4bc, 0.28);
+  g.fillEllipse(cx - 6, cy - 3, 12, 4);
+  g.fillEllipse(cx + 6, cy - 3, 12, 4);
+  g.fillEllipse(cx - 4, cy - 5, 8, 3);
+  g.fillEllipse(cx + 4, cy - 5, 8, 3);
+  g.fillStyle(0xffffff, 0.6);
+  g.fillEllipse(cx - 5, cy - 3, 7, 2.5);
+  g.fillEllipse(cx + 5, cy - 3, 7, 2.5);
+  // Wing leading-edge flicker lines.
+  g.fillStyle(0xcfe4f2, 0.85);
+  g.fillRect(cx - 9, cy - 3, 6, 0.5);
+  g.fillRect(cx + 3, cy - 3, 6, 0.5);
 
-  // ── TINY MIDGE BODY — deliberately small, dark. Reads as a
-  // pinprick of menace in the centre of the motion cloud. ──
+  // ── TINY MIDGE BODY — slightly larger silhouette so it reads at
+  // 1× without losing the "tiny biting annoyance" feel. ──
+  g.fillStyle(0x05050c, 1);
+  g.fillEllipse(cx, cy + 1, 9.5, 6);
+  g.fillStyle(0x2a1824, 1);
+  g.fillEllipse(cx, cy, 7.5, 4.6);
+  // Abdomen segmented stripes — bumped contrast so segments survive.
   g.fillStyle(0x0a0a14, 1);
-  g.fillEllipse(cx, cy + 1, 6, 4);
-  g.fillStyle(0x2a1a20, 1);
-  g.fillEllipse(cx, cy, 5, 3);
-  // Abdomen segmented stripes
-  g.fillStyle(0x0a0a14, 0.85);
-  g.fillRect(cx - 2, cy + 0.5, 4, 0.4);
-  g.fillRect(cx - 2, cy + 1.5, 4, 0.4);
+  g.fillRect(cx - 2.5, cy + 0.5, 5, 0.5);
+  g.fillRect(cx - 2.5, cy + 1.7, 5, 0.5);
 
-  // ── LARGE RED COMPOUND EYES — dominating the tiny head. This is
-  // the signature "I'm biting you" face. ──
-  g.fillStyle(0xaa0020, 1);
-  g.fillCircle(cx - 1.5, cy - 1.5, 1.2);
-  g.fillCircle(cx + 1.5, cy - 1.5, 1.2);
-  g.fillStyle(0xff4466, 1);
-  g.fillCircle(cx - 1.5, cy - 1.5, 0.7);
-  g.fillCircle(cx + 1.5, cy - 1.5, 0.7);
+  // ── LARGER RED COMPOUND EYES — dominating the tiny head. This
+  // is the signature "I'm biting you" face. ──
+  g.fillStyle(0x8a0018, 1);
+  g.fillCircle(cx - 2.0, cy - 1.6, 1.9);
+  g.fillCircle(cx + 2.0, cy - 1.6, 1.9);
+  g.fillStyle(0xff385f, 1);
+  g.fillCircle(cx - 2.0, cy - 1.6, 1.2);
+  g.fillCircle(cx + 2.0, cy - 1.6, 1.2);
   // Eye highlight pinpricks
-  g.fillStyle(0xffffff, 0.95);
-  g.fillCircle(cx - 1.8, cy - 1.8, 0.3);
-  g.fillCircle(cx + 1.2, cy - 1.8, 0.3);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx - 2.4, cy - 2.1, 0.45);
+  g.fillCircle(cx + 1.6, cy - 2.1, 0.45);
+
+  // ── SIX-LEG MICRO-STROKES — visible thin lines angling away
+  // from the body so the silhouette reads "insect" at 1×. ──
+  g.lineStyle(0.6, 0x0a0006, 1);
+  g.lineBetween(cx - 3.5, cy + 0.5, cx - 6.5, cy - 0.5);
+  g.lineBetween(cx - 3.5, cy + 1.5, cx - 6.0, cy + 2.5);
+  g.lineBetween(cx - 3.0, cy + 2.5, cx - 4.5, cy + 4.5);
+  g.lineBetween(cx + 3.5, cy + 0.5, cx + 6.5, cy - 0.5);
+  g.lineBetween(cx + 3.5, cy + 1.5, cx + 6.0, cy + 2.5);
+  g.lineBetween(cx + 3.0, cy + 2.5, cx + 4.5, cy + 4.5);
 
   // ── PROBOSCIS — sharp needle pointing DOWN FORWARD, the
   // unmistakable biting-midge tell. ──
+  g.lineStyle(1.4, 0x0a0006, 1);
+  g.lineBetween(cx + 0.4, cy + 2.5, cx + 3.8, cy + 6.5);
   g.fillStyle(0x0a0006, 1);
-  g.fillRect(cx - 0.4, cy + 1, 0.8, 3);
-  g.fillTriangle(cx - 0.6, cy + 4, cx + 0.6, cy + 4, cx, cy + 5.5);
+  g.fillTriangle(cx + 3.3, cy + 6.5, cx + 4.5, cy + 6.6, cx + 3.9, cy + 7.7);
 
-  // ── Six tiny legs — visible thin strokes angling away from the
-  // body. Kept short so they don't become leg-forest. ──
-  g.fillStyle(0x0a0006, 1);
-  // Left side
-  g.fillRect(cx - 4, cy + 1, 2, 0.5);
-  g.fillRect(cx - 3, cy + 2, 1.5, 0.5);
-  g.fillRect(cx - 2, cy + 2.5, 1, 0.5);
-  // Right side
-  g.fillRect(cx + 2, cy + 1, 2, 0.5);
-  g.fillRect(cx + 1.5, cy + 2, 1.5, 0.5);
-  g.fillRect(cx + 1, cy + 2.5, 1, 0.5);
-
-  // ── Bright spark at the proboscis tip — "bite incoming" punctuation. ──
-  g.fillStyle(0xff5555, 0.8);
-  g.fillCircle(cx, cy + 6, 0.8);
-  g.fillStyle(0xffaaaa, 1);
-  g.fillCircle(cx, cy + 6, 0.4);
+  // ── BRIGHTER PROBOSCIS-TIP FLASH — "bite incoming" punctuation
+  // bumped to a hot pinprick that reads from any background. ──
+  g.fillStyle(0xff2244, 0.65);
+  g.fillCircle(cx + 4.1, cy + 7.7, 1.6);
+  g.fillStyle(0xff7788, 1);
+  g.fillCircle(cx + 4.1, cy + 7.7, 1.0);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx + 4.1, cy + 7.7, 0.5);
 
   g.generateTexture('midge', s, s);
   g.destroy();

@@ -14,6 +14,7 @@ describe('AssetValidator', () => {
     expect(keys.has('thistle')).toBe(true);
     expect(keys.has('xp_gem')).toBe(true);
     expect(keys.has('wicon_thistle_shot')).toBe(true);
+    expect(keys.has('relic_sporran')).toBe(true);
     expect(keys.has('hud_shield')).toBe(true);
     expect(keys.has('hud_dash_pip_full')).toBe(true);
     expect(keys.has(MISSING_PLACEHOLDER_KEY)).toBe(false);

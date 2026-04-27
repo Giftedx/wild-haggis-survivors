@@ -42,6 +42,20 @@ export function drawLedgerWraithBody(
   // Inner robe highlight — slightly lighter where light catches the cowl
   g.fillStyle(0x2a2a3a, 1);
   g.fillTriangle(cx - 9, cy + 12, cx + 9, cy + 12, cx, cy - 11);
+  // Cape volume — diagonal blood-purple fold streaks breaking the
+  // static slab silhouette (audit dislike: "body is static" + "palette
+  // is subdued"). Adds a colour hint without losing the wraith mood.
+  g.fillStyle(0x3a1a3a, 0.7);
+  g.fillTriangle(cx - 8, cy - 4, cx - 7, cy - 4, cx - 11, cy + 13);
+  g.fillTriangle(cx + 7, cy - 4, cx + 8, cy - 4, cx + 11, cy + 13);
+  g.fillStyle(0x4a2050, 0.55);
+  g.fillTriangle(cx - 4, cy + 2, cx - 3, cy + 2, cx - 5, cy + 13);
+  g.fillTriangle(cx + 3, cy + 2, cx + 4, cy + 2, cx + 5, cy + 13);
+  // Trailing wisp on the left — implies drift motion behind the wraith.
+  g.fillStyle(0x1a1a2a, 0.65);
+  g.fillTriangle(cx - 13, cy + 8, cx - 17, cy + 14, cx - 12, cy + 14);
+  g.fillStyle(0x2a2a3a, 0.4);
+  g.fillCircle(cx - 16, cy + 12, 1.4);
   // Jagged tattered hem — three downward teeth at the bottom
   g.fillStyle(0x0a0a14, 1);
   g.fillTriangle(cx - 10, cy + 14, cx - 6, cy + 14, cx - 8, cy + 17);
@@ -95,36 +109,74 @@ export function drawLedgerWraithBody(
   g.fillRect(cx + 2, cy - 4, 0.6, 1);
 
   // ── Bony skeletal hands gripping the ledger at chest level.
-  // Drawn BEFORE the ledger so the fingers curl over the cover. ──
-  g.fillStyle(0xddd4b0, 1);
-  g.fillCircle(cx - 9, cy + 2, 1.8);
-  g.fillCircle(cx + 9, cy + 2, 1.8);
-  g.fillStyle(0x8a7e60, 0.7);
-  g.fillRect(cx - 10, cy + 2, 1, 1.5);
-  g.fillRect(cx + 9, cy + 2, 1, 1.5);
+  // Drawn BEFORE the ledger so the fingers curl over the cover. Lifted
+  // contrast + bigger so they actually read (audit dislike: "hands are
+  // hard to see"). ──
+  g.fillStyle(0xeae0c0, 1);
+  g.fillCircle(cx - 9, cy + 2, 2.2);
+  g.fillCircle(cx + 9, cy + 2, 2.2);
+  // Knuckle bone segmentation — three small dark stripes per hand so
+  // the fingers actually resolve.
+  g.fillStyle(0x4a3820, 0.9);
+  g.fillRect(cx - 10, cy + 2.6, 0.4, 1.4);
+  g.fillRect(cx - 9.4, cy + 2.6, 0.4, 1.4);
+  g.fillRect(cx - 8.8, cy + 2.6, 0.4, 1.4);
+  g.fillRect(cx + 8.6, cy + 2.6, 0.4, 1.4);
+  g.fillRect(cx + 9.2, cy + 2.6, 0.4, 1.4);
+  g.fillRect(cx + 9.8, cy + 2.6, 0.4, 1.4);
+  // Wrist bone hint — pale highlight strip leading into the cuff.
+  g.fillStyle(0xfdf2d0, 0.85);
+  g.fillRect(cx - 9.5, cy + 0.8, 1.4, 0.5);
+  g.fillRect(cx + 8.1, cy + 0.8, 1.4, 0.5);
 
-  // ── Ledger — SMALL, held at chest height. 16×6 (was 24×10). ──
+  // ── Ledger — slightly larger, with visible page numerals so the
+  // tax-tool reads at scale (audit dislike: "ledger pages are tiny"). ──
   g.fillStyle(0x0a0a14, 1);
-  g.fillRect(cx - 8, cy + 0.5, 16, 6);
+  g.fillRect(cx - 9, cy + 0, 18, 8);
   g.fillStyle(0x3a2010, 1);
-  g.fillRect(cx - 7.5, cy + 1, 15, 5);
+  g.fillRect(cx - 8.5, cy + 0.5, 17, 7);
+  // Cover gold trim — corner bands so the ledger reads as a bound book.
+  g.fillStyle(0xc89028, 1);
+  g.fillRect(cx - 8.5, cy + 0.5, 1.2, 1.2);
+  g.fillRect(cx + 7.3, cy + 0.5, 1.2, 1.2);
+  g.fillRect(cx - 8.5, cy + 6.3, 1.2, 1.2);
+  g.fillRect(cx + 7.3, cy + 6.3, 1.2, 1.2);
   // Parchment pages
-  g.fillStyle(0xe8ddb0, 1);
-  g.fillRect(cx - 7, cy + 1.5, 6, 4);
-  g.fillRect(cx + 1, cy + 1.5, 6, 4);
+  g.fillStyle(0xeadfb8, 1);
+  g.fillRect(cx - 8, cy + 1.2, 7, 6);
+  g.fillRect(cx + 1, cy + 1.2, 7, 6);
+  g.fillStyle(0xf8eec8, 1);
+  g.fillRect(cx - 8, cy + 1.2, 7, 0.5);
+  g.fillRect(cx + 1, cy + 1.2, 7, 0.5);
   // Spine crease
-  g.fillStyle(0x1a1006, 0.8);
-  g.fillRect(cx - 0.3, cy + 1.5, 0.6, 4);
-  // Ruled lines — two per page
-  g.fillStyle(0x1a1028, 0.85);
-  g.fillRect(cx - 7, cy + 2.5, 6, 0.4);
-  g.fillRect(cx - 7, cy + 4, 6, 0.4);
-  g.fillRect(cx + 1, cy + 2.5, 6, 0.4);
-  g.fillRect(cx + 1, cy + 4, 6, 0.4);
-  // Red tally marks on right page
+  g.fillStyle(0x1a1006, 0.85);
+  g.fillRect(cx - 0.4, cy + 1.2, 0.8, 6);
+  // Ruled lines — three per page (was two), thicker so they read.
+  g.fillStyle(0x1a1028, 0.9);
+  g.fillRect(cx - 8, cy + 2.4, 7, 0.5);
+  g.fillRect(cx - 8, cy + 4, 7, 0.5);
+  g.fillRect(cx - 8, cy + 5.6, 7, 0.5);
+  g.fillRect(cx + 1, cy + 2.4, 7, 0.5);
+  g.fillRect(cx + 1, cy + 4, 7, 0.5);
+  g.fillRect(cx + 1, cy + 5.6, 7, 0.5);
+  // Numeral hints on the LEFT page — short black bars suggesting
+  // hand-written totals (the wraith is cataloguing your debts).
+  g.fillStyle(0x0a0610, 1);
+  g.fillRect(cx - 7.5, cy + 2, 1.4, 0.3);
+  g.fillRect(cx - 5.5, cy + 2, 0.8, 0.3);
+  g.fillRect(cx - 7.5, cy + 3.6, 0.6, 0.3);
+  g.fillRect(cx - 6.4, cy + 3.6, 1.6, 0.3);
+  g.fillRect(cx - 7.5, cy + 5.2, 1.2, 0.3);
+  g.fillRect(cx - 5.7, cy + 5.2, 1, 0.3);
+  // Red column line down the right page — running tally column.
+  g.fillStyle(0x8a1818, 1);
+  g.fillRect(cx + 5, cy + 1.4, 0.4, 5.6);
+  // Red tally marks on right page — bigger, in two rows.
   g.fillStyle(0xcc2020, 1);
-  g.fillRect(cx + 2, cy + 3, 2, 0.6);
-  g.fillRect(cx + 4, cy + 4.5, 2, 0.6);
+  g.fillRect(cx + 2, cy + 2.8, 2.4, 0.5);
+  g.fillRect(cx + 5.6, cy + 2.8, 2, 0.5);
+  g.fillRect(cx + 2, cy + 5.2, 2.4, 0.5);
+  g.fillRect(cx + 5.6, cy + 5.2, 1.6, 0.5);
 
   // ── Red quill pen stabbed into the ledger at an angle — the
   // "ready to strike your name out" beat. ──

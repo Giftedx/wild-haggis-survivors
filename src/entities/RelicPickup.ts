@@ -11,10 +11,8 @@
  * Lifetime: 60s (spec §6 drop-roll flow). After that the pickup fades
  * and despawns silently — urgency without instant-lose.
  *
- * Visual: a programmatic gem using the Relic's authored particleColour
- * (M1 data) so every Relic reads visually distinct in a pile. Unique
- * per-Relic iconSprite textures land in BootScene at M3; this commit
- * renders a generic gem so M2 playable without the art pass.
+ * Visual: a soft glow plus the Relic's authored iconSprite texture, so
+ * every dropped Relic reads as a specific object instead of a generic gem.
  *
  * Multi-instance: `RelicPickupSpawner` owns the active set. Each
  * pickup registers its own overlap collider + despawn handle via the
@@ -62,7 +60,7 @@ interface RelicPickupInstance {
   x: number;
   y: number;
   source: RelicPickupSource;
-  gem: Phaser.GameObjects.Graphics;
+  icon: Phaser.GameObjects.Image;
   glow: Phaser.GameObjects.Arc;
   overlap: Phaser.Physics.Arcade.Collider | null;
   despawnHandle: TickerHandle | null;
@@ -85,8 +83,16 @@ export class RelicPickupSpawner {
     const colour = relic.particleColour;
 
     const glow = scene.add.circle(x, y, 20, colour, 0.25).setDepth(4);
-    const gem = scene.add.graphics().setDepth(5);
-    this.drawGem(gem, x, y, colour);
+    const textureKey = scene.textures.exists(relic.iconSprite) ? relic.iconSprite : 'xp_gem';
+    const icon = scene.add.image(x, y, textureKey)
+      .setDepth(5)
+      .setScale(1.2);
+    scene.tweens.add({
+      targets: icon,
+      scale: 1.05,
+      duration: 180,
+      ease: 'Sine.easeOut',
+    });
 
     // Invisible physics hitbox — we can't attach physics directly to a
     // Graphics object (no bounds for Arcade overlap), so a transparent
@@ -99,7 +105,7 @@ export class RelicPickupSpawner {
       x,
       y,
       source,
-      gem,
+      icon,
       glow,
       hitbox,
       overlap: null,
@@ -116,8 +122,8 @@ export class RelicPickupSpawner {
       ...TWEEN_INFINITE_BREATHE,
     });
     scene.tweens.add({
-      targets: gem,
-      y: -3,
+      targets: icon,
+      y: y - 3,
       duration: 900,
       ...TWEEN_INFINITE_BREATHE,
     });
@@ -142,7 +148,7 @@ export class RelicPickupSpawner {
     const scene = this.hooks.scene;
     if (instance.overlap) scene.physics.world.removeCollider(instance.overlap);
     scene.tweens.killTweensOf(instance.glow);
-    scene.tweens.killTweensOf(instance.gem);
+    scene.tweens.killTweensOf(instance.icon);
     this.active.delete(instance);
     // Collection pulse — quick scale-up + fade to read as "picked up".
     scene.tweens.add({
@@ -154,10 +160,11 @@ export class RelicPickupSpawner {
       onComplete: () => instance.glow.destroy(),
     });
     scene.tweens.add({
-      targets: [instance.gem],
+      targets: [instance.icon],
       alpha: 0,
+      scale: 1.35,
       duration: 220,
-      onComplete: () => instance.gem.destroy(),
+      onComplete: () => instance.icon.destroy(),
     });
     instance.hitbox.destroy();
     this.hooks.onCollect(instance.relic, instance.x, instance.y, instance.source);
@@ -169,15 +176,15 @@ export class RelicPickupSpawner {
     const scene = this.hooks.scene;
     if (instance.overlap) scene.physics.world.removeCollider(instance.overlap);
     scene.tweens.killTweensOf(instance.glow);
-    scene.tweens.killTweensOf(instance.gem);
+    scene.tweens.killTweensOf(instance.icon);
     this.active.delete(instance);
     scene.tweens.add({
-      targets: [instance.glow, instance.gem],
+      targets: [instance.glow, instance.icon],
       alpha: 0,
       duration: 400,
       onComplete: () => {
         instance.glow.destroy();
-        instance.gem.destroy();
+        instance.icon.destroy();
       },
     });
     instance.hitbox.destroy();
@@ -210,35 +217,4 @@ export class RelicPickupSpawner {
     return out;
   }
 
-  private drawGem(g: Phaser.GameObjects.Graphics, x: number, y: number, colour: number): void {
-    // Diamond-shape gem with a brighter inner highlight. Compact so a
-    // cluster of pickups doesn't overwhelm the play field.
-    g.clear();
-    g.fillStyle(colour, 1);
-    g.beginPath();
-    g.moveTo(x, y - 9);
-    g.lineTo(x + 7, y);
-    g.lineTo(x, y + 9);
-    g.lineTo(x - 7, y);
-    g.closePath();
-    g.fillPath();
-    // Rim
-    g.lineStyle(1, 0xffffff, 0.8);
-    g.beginPath();
-    g.moveTo(x, y - 9);
-    g.lineTo(x + 7, y);
-    g.lineTo(x, y + 9);
-    g.lineTo(x - 7, y);
-    g.closePath();
-    g.strokePath();
-    // Inner highlight
-    g.fillStyle(0xffffff, 0.55);
-    g.beginPath();
-    g.moveTo(x - 2, y - 5);
-    g.lineTo(x + 2, y - 5);
-    g.lineTo(x + 1, y - 2);
-    g.lineTo(x - 1, y - 2);
-    g.closePath();
-    g.fillPath();
-  }
 }

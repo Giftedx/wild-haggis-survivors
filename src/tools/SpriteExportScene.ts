@@ -80,11 +80,17 @@ function categorize(key: string): string {
   }
 
   if (key.startsWith('haggis_') && !key.includes('hunter') && !key.includes('ball') && !key.includes('cannon')) return 'Player Variants';
+  if (key.startsWith('boss_prop_')) return 'Boss Props';
   if (key.startsWith('boss_')) return 'Bosses';
   if (key.startsWith('wicon_')) return 'Weapon Icons';
   if (key.startsWith('ucard_')) return 'Card Icons';
+  if (key.startsWith('relic_')) return 'Relic Icons';
+  if (key.startsWith('node_marker_')) return 'Node Markers';
+  if (key.startsWith('moor_token_')) return 'Moor Moment Tokens';
+  if (key.startsWith('croft_')) return 'Croft Props';
   if (key.startsWith('deco_')) return 'Decorations';
   if (key.startsWith('hud_')) return 'HUD Elements';
+  if (key.startsWith('fx_telegraph_')) return 'Telegraph Effects';
   if (key.startsWith('fx_')) return 'Effects';
   if (['thistle', 'caber', 'haggis_ball'].includes(key)) return 'Projectiles';
   if (['xp_gem', 'health_orb', 'chest'].includes(key)) return 'Pickups';
@@ -107,9 +113,15 @@ const BASE_CATEGORY_ORDER = [
   'Pickups',
   'Weapon Icons',
   'Card Icons',
+  'Relic Icons',
+  'Node Markers',
+  'Moor Moment Tokens',
   'Decorations',
+  'Croft Props',
+  'Boss Props',
   'HUD Elements',
   'Shadows',
+  'Telegraph Effects',
   'Effects',
   'Other',
 ];

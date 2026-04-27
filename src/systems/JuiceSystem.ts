@@ -47,6 +47,7 @@ import {
 } from './juiceGoldPalette';
 import { TOAST_COLORS } from '../ui/toastPalette';
 import { RING_TIMING, FLASH_TIMING } from './effectTimingPresets';
+import { MOOR_MOMENT_TOKEN_KEYS } from '../art/sprites/moorMomentTokens';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -558,6 +559,27 @@ export class JuiceSystem {
         onComplete: () => ring2.setVisible(false),
       });
     });
+    if (!lowFx) {
+      const tokenKey = MOOR_MOMENT_TOKEN_KEYS[
+        Math.floor((this.scene.time.now + x + y) / 137) % MOOR_MOMENT_TOKEN_KEYS.length
+      ];
+      if (this.scene.textures.exists(tokenKey)) {
+        const token = this.scene.add.image(x, y - 10, tokenKey)
+          .setDepth(56)
+          .setAlpha(0.96)
+          .setScale(0.85);
+        this.scene.tweens.add({
+          targets: token,
+          y: y - 34,
+          scale: 1.1,
+          rotation: Phaser.Math.FloatBetween(-0.22, 0.22),
+          alpha: 0,
+          duration: 760,
+          ease: 'Sine.easeOut',
+          onComplete: () => token.destroy(),
+        });
+      }
+    }
     if (s.screenShake) {
       const amp = 0.0038 * s.motionScale;
       if (amp > 0) this.scene.cameras.main.shake(260, amp);
