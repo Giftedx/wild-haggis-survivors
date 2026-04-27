@@ -37,6 +37,7 @@ import {
   type HazardDef,
 } from '../data/hazards';
 import { getSettingsManager } from '../core/SettingsManager';
+import { audio } from './AudioSystem';
 
 /** Depth slot for hazards — above ground tints, below gameplay sprites. */
 const HAZARD_DEPTH = -50;
@@ -246,6 +247,11 @@ export class HazardsSystem {
     };
     this.active.add(hazard);
     image.once('destroy', () => this.active.delete(hazard));
+
+    // Per-hazard procedural chirp at the START of the telegraph
+    // window — pairs the visual fade-in with an audio cue so the
+    // player can hear a hazard appearing even off-screen.
+    audio.playHazardSpawn(def.key);
 
     // Fade-in.
     this.scene.tweens.add({

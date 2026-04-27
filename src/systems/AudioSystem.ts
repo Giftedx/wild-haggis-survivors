@@ -8,6 +8,7 @@
  */
 import { MOTION_TIMING } from '../core/motionTiming';
 import type { EliteAffixId } from '../data/eliteAffixes';
+import type { HazardKey } from '../data/hazards';
 import { getAudioContext, getOutputNode, runWhenAudioActivated } from './audioContext';
 import { sfxManager } from './audio/SFXManager';
 import { musicEngine } from './music/ProceduralMusicEngine';
@@ -192,6 +193,47 @@ export class AudioSystem {
 
   playEliteAffixSpawn(affixId: EliteAffixId): void {
     this.gatedSfx('elite_affix_spawn', () => this.playEliteAffixSpawnImmediate(affixId));
+  }
+
+  /** Per-hazard spawn warning chirp — cued by HazardsSystem at the
+   *  start of a hazard's telegraph window so the player has both a
+   *  visual fade-in AND an audio cue before the damage gate opens. */
+  playHazardSpawnImmediate(hazardKey: HazardKey): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    // Per-hazard sonic identity — short procedural chirps that cue the
+    // hazard family without overwhelming combat audio. Volumes stay
+    // below combat-hit (0.12) so a hazard spawning during a swarm
+    // doesn't drown out the swarm.
+    const presets: Record<HazardKey, { f0: number; f1: number; type: OscillatorType; dur: number; vol: number }> = {
+      peat_pit: { f0: 200, f1: 80, type: 'sine', dur: 0.18, vol: 0.10 },        // low gurgle
+      falling_slate: { f0: 1200, f1: 600, type: 'square', dur: 0.06, vol: 0.09 }, // sharp click
+      burn_water: { f0: 480, f1: 360, type: 'triangle', dur: 0.20, vol: 0.08 },   // bubbly rush
+      loose_scree: { f0: 320, f1: 180, type: 'sawtooth', dur: 0.14, vol: 0.08 },  // scrape
+    };
+    const p = presets[hazardKey];
+    osc.type = p.type;
+    applySfxDetune(osc);
+    osc.frequency.setValueAtTime(p.f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(40, p.f1), t0 + p.dur);
+
+    gain.gain.setValueAtTime(p.vol, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + p.dur);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + p.dur + 0.02);
+  }
+
+  playHazardSpawn(hazardKey: HazardKey): void {
+    this.gatedSfx('hazard_spawn', () => this.playHazardSpawnImmediate(hazardKey));
   }
 
   /** Volatile affix death — low boom + crack; GameScene skips generic kill SFX for this affix. */
