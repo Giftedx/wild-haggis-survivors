@@ -150,6 +150,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'ui_card_frame_uncommon',
     'ui_card_frame_rare',
     'ui_card_frame_legendary',
+    'ui_card_frame_mythic',
+    'ui_card_frame_rune',
     'ui_banter_corner_hearth',
     'ui_banter_corner_edge',
     'ui_banter_corner_fey',

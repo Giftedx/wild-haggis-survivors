@@ -268,8 +268,8 @@ export class UpgradeCardsUI {
       uncommon: 'ui_card_frame_uncommon',
       rare: 'ui_card_frame_rare',
       legendary: 'ui_card_frame_legendary',
-      mythic: 'ui_card_frame_legendary',
-      rune: 'ui_card_frame_legendary',
+      mythic: 'ui_card_frame_mythic',
+      rune: 'ui_card_frame_rune',
     };
     const frameKey = frameKeyByRarity[card.rarity] ?? 'ui_card_frame_common';
     let frame: Phaser.GameObjects.Sprite | undefined;

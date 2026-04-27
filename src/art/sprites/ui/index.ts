@@ -11,6 +11,8 @@ import {
   bakeCardFrameUncommon,
   bakeCardFrameRare,
   bakeCardFrameLegendary,
+  bakeCardFrameMythic,
+  bakeCardFrameRune,
   bakeBanterCornerHearth,
   bakeBanterCornerEdge,
   bakeBanterCornerFey,
@@ -22,6 +24,8 @@ export function bakeUi(scene: Phaser.Scene): void {
   bakeCardFrameUncommon(scene);
   bakeCardFrameRare(scene);
   bakeCardFrameLegendary(scene);
+  bakeCardFrameMythic(scene);
+  bakeCardFrameRune(scene);
   bakeBanterCornerHearth(scene);
   bakeBanterCornerEdge(scene);
   bakeBanterCornerFey(scene);

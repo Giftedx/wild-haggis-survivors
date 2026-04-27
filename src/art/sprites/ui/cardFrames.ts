@@ -429,3 +429,184 @@ export function bakeToastFrame(scene: Phaser.Scene): void {
   g.generateTexture('ui_toast_frame', w, h);
   g.destroy();
 }
+
+export function bakeCardFrameMythic(scene: Phaser.Scene): void {
+  const w = 36, h = 44;
+  const g = scene.add.graphics();
+
+  // Cosmic outer halo — pale-blue then violet bloom (reads above legendary's gold halo)
+  g.fillStyle(0x88aaff, 0.14);
+  g.fillRoundedRect(0, 1, w, h - 2, 5.5);
+  g.fillStyle(0x6a3aaa, 0.22);
+  g.fillRoundedRect(0, 0, w - 1, h - 1, 4.5);
+
+  // Drop shadow
+  g.fillStyle(0x080418, 0.5);
+  g.fillRoundedRect(2, 3, w - 2, h - 2, 4);
+
+  // Outer near-black trim
+  g.fillStyle(0x140820, 1);
+  g.fillRoundedRect(0, 0, w - 2, h - 2, 4);
+
+  // Silver edging
+  g.fillStyle(0xc8c8d8, 1);
+  g.fillRoundedRect(1, 1, w - 4, h - 4, 3.5);
+
+  // Indigo→violet gradient body (deep band, then brighter raised face)
+  g.fillStyle(0x2a1a4a, 1);
+  g.fillRoundedRect(2, 2, w - 6, h - 6, 3);
+  g.fillStyle(0x6a3aaa, 1);
+  g.fillRoundedRect(3, 3, w - 8, h - 8, 2.5);
+
+  // Silver top-left highlight rail (cooler than legendary's warm gold)
+  g.fillStyle(0xddddee, 0.95);
+  g.fillRect(1, 1, w - 4, 1);
+  g.fillRect(1, 1, 1, h - 4);
+  g.fillStyle(0xffffff, 0.55);
+  g.fillRect(2, 2, w - 6, 0.5);
+
+  // Inset face — empty card centre, darker than legendary so cosmic glints pop
+  g.fillStyle(0x080418, 1);
+  g.fillRoundedRect(4, 4, w - 10, h - 10, 2);
+  g.fillStyle(0x141028, 1);
+  g.fillRoundedRect(5, 5, w - 12, h - 12, 1.5);
+
+  // Faint nebula blur — alpha-low purple dots inside the inset (ambient cosmic depth)
+  g.fillStyle(0x6a3aaa, 0.35);
+  g.fillCircle(9, 12, 2.4);
+  g.fillStyle(0x88aaff, 0.22);
+  g.fillCircle(w - 10, 18, 2.0);
+  g.fillStyle(0x6a3aaa, 0.28);
+  g.fillCircle(11, h - 14, 1.8);
+  g.fillStyle(0x88aaff, 0.20);
+  g.fillCircle(w - 11, h - 11, 2.2);
+
+  // Four corner star-pips — 4-point pinprick stars on silver
+  const stars: Array<[number, number]> = [
+    [3.5, 3.5],
+    [w - 5.5, 3.5],
+    [3.5, h - 5.5],
+    [w - 5.5, h - 5.5],
+  ];
+  for (const [px, py] of stars) {
+    g.fillStyle(0x140820, 1);
+    g.fillCircle(px, py, 1.3);
+    g.fillStyle(0xddddee, 1);
+    g.fillCircle(px, py, 0.7);
+    // 4-point diagonal pinpricks (the star's rays)
+    g.fillStyle(0xffffff, 0.95);
+    g.fillRect(px - 1.1, py - 0.15, 2.2, 0.3);
+    g.fillRect(px - 0.15, py - 1.1, 0.3, 2.2);
+    // Tiny diagonal sparkle dots at the star's 45deg points
+    g.fillStyle(0x88aaff, 0.85);
+    g.fillRect(px - 0.7, py - 0.7, 0.35, 0.35);
+    g.fillRect(px + 0.35, py - 0.7, 0.35, 0.35);
+    g.fillRect(px - 0.7, py + 0.35, 0.35, 0.35);
+    g.fillRect(px + 0.35, py + 0.35, 0.35, 0.35);
+  }
+
+  // Three pale-blue glints on top + bottom rails (reads as constellation chord)
+  g.fillStyle(0x88aaff, 0.95);
+  g.fillCircle(w / 2 - 4, 2.5, 0.55);
+  g.fillCircle(w / 2, 2.5, 0.7);
+  g.fillCircle(w / 2 + 4, 2.5, 0.55);
+  g.fillStyle(0xddeeff, 1);
+  g.fillCircle(w / 2, 2.5, 0.3);
+  g.fillStyle(0x88aaff, 0.95);
+  g.fillCircle(w / 2 - 4, h - 4.5, 0.55);
+  g.fillCircle(w / 2, h - 4.5, 0.7);
+  g.fillCircle(w / 2 + 4, h - 4.5, 0.55);
+  g.fillStyle(0xddeeff, 1);
+  g.fillCircle(w / 2, h - 4.5, 0.3);
+
+  g.generateTexture('ui_card_frame_mythic', w, h);
+  g.destroy();
+}
+
+export function bakeCardFrameRune(scene: Phaser.Scene): void {
+  const w = 36, h = 44;
+  const g = scene.add.graphics();
+
+  // No halo — runes are mute stone, not radiant. Just a soft drop shadow.
+  g.fillStyle(0x0a0a0c, 0.45);
+  g.fillRoundedRect(2, 3, w - 2, h - 2, 3);
+
+  // Outer dark shadow trim — basalt under-edge
+  g.fillStyle(0x2a2a30, 1);
+  g.fillRoundedRect(0, 0, w - 2, h - 2, 3);
+
+  // Stone slab body — weathered grey (note tighter corners than gold/violet frames; stone reads blockier)
+  g.fillStyle(0x3a3a40, 1);
+  g.fillRoundedRect(1, 1, w - 4, h - 4, 2.5);
+  g.fillStyle(0x6a6a72, 1);
+  g.fillRoundedRect(2, 2, w - 6, h - 6, 2);
+
+  // Pale chalk highlight on upper-left edge (sun on the carved stone)
+  g.fillStyle(0xa8a8b0, 0.85);
+  g.fillRect(2, 2, w - 6, 1);
+  g.fillRect(2, 2, 1, h - 6);
+  // Bottom-right shadow line (stone has volume)
+  g.fillStyle(0x3a3a40, 0.8);
+  g.fillRect(2, h - 5, w - 6, 0.6);
+  g.fillRect(w - 5, 2, 0.6, h - 6);
+
+  // Inset face — recessed carved hollow
+  g.fillStyle(0x2a2a30, 1);
+  g.fillRoundedRect(3, 3, w - 8, h - 8, 1.5);
+  g.fillStyle(0x141418, 1);
+  g.fillRoundedRect(4, 4, w - 10, h - 10, 1);
+
+  // Pictish glyph — top-left corner: triangle notch (V-rod fragment)
+  g.fillStyle(0x141418, 0.9);
+  g.fillTriangle(3, 5.5, 5.5, 3, 5.5, 5.5);
+  g.fillStyle(0x3a3a40, 0.7);
+  g.fillTriangle(3.4, 5.1, 5.1, 3.4, 5.1, 5.1);
+
+  // Pictish glyph — top-right corner: cross notch (carved +)
+  g.fillStyle(0x141418, 0.9);
+  g.fillRect(w - 6, 3.5, 2.5, 0.6);
+  g.fillRect(w - 5.1, 2.6, 0.6, 2.5);
+  g.fillStyle(0x2a2a30, 0.6);
+  g.fillRect(w - 6, 3.5, 2.5, 0.3);
+
+  // Pictish glyph — bottom-left corner: spiral fragment (3 stepped rects suggesting a curl)
+  g.fillStyle(0x141418, 0.9);
+  g.fillRect(3, h - 6, 2.5, 0.6);
+  g.fillRect(3, h - 5.4, 0.6, 1.4);
+  g.fillRect(4, h - 4.2, 1.4, 0.6);
+  g.fillStyle(0x2a2a30, 0.6);
+  g.fillRect(3.3, h - 6, 1.8, 0.3);
+
+  // Pictish glyph — bottom-right corner: triangle notch mirroring top-left
+  g.fillStyle(0x141418, 0.9);
+  g.fillTriangle(w - 5.5, h - 6, w - 3, h - 3.5, w - 5.5, h - 3.5);
+  g.fillStyle(0x3a3a40, 0.7);
+  g.fillTriangle(w - 5.1, h - 5.6, w - 3.4, h - 3.9, w - 5.1, h - 3.9);
+
+  // Top + bottom rail incised line marks — three horizontal scratches each
+  g.fillStyle(0x141418, 0.85);
+  g.fillRect(w / 2 - 3, 2.3, 2, 0.5);
+  g.fillRect(w / 2, 2.3, 2, 0.5);
+  g.fillRect(w / 2 + 3, 2.3, 2, 0.5);
+  g.fillStyle(0xa8a8b0, 0.4);
+  g.fillRect(w / 2 - 3, 2.0, 2, 0.3);
+  g.fillRect(w / 2, 2.0, 2, 0.3);
+  g.fillRect(w / 2 + 3, 2.0, 2, 0.3);
+  g.fillStyle(0x141418, 0.85);
+  g.fillRect(w / 2 - 3, h - 4.3, 2, 0.5);
+  g.fillRect(w / 2, h - 4.3, 2, 0.5);
+  g.fillRect(w / 2 + 3, h - 4.3, 2, 0.5);
+
+  // Moss patina spots — scattered green-brown dim pips on the stone face
+  g.fillStyle(0x5a6a3a, 0.55);
+  g.fillCircle(8, 10, 1.4);
+  g.fillStyle(0x5a6a3a, 0.4);
+  g.fillCircle(w - 9, 14, 1.1);
+  g.fillStyle(0x5a6a3a, 0.6);
+  g.fillCircle(10, h - 12, 1.3);
+  g.fillStyle(0x5a6a3a, 0.45);
+  g.fillCircle(w - 8, h - 9, 1.5);
+
+  g.generateTexture('ui_card_frame_rune', w, h);
+  g.destroy();
+}
