@@ -6,6 +6,23 @@
 
 This document deduplicates and prioritizes findings from those audits into a single execution-oriented backlog.
 
+> **Status as of 2026-04-26 (later same day) — partial movement since synthesis.** The dispatch package at [`dispatch/2026-04-26/00_task_list.md`](dispatch/2026-04-26/00_task_list.md) and the post-audit snapshot in [`dispatch/2026-04-26/Execution_Log.md`](dispatch/2026-04-26/Execution_Log.md) are the live source of truth for ship state. Quick reconciliation against `git log` / memory:
+>
+> - **P0.1** (resume + input + nav bundle) — partial: resume/input/route fixes landed across `T401/T402/T407/T122` commits; verify against `git log --oneline -25`.
+> - **P0.2** (runes ship or don't) — **shipped** as ship: U1 M4 wired offers + 25/30 grounded rune effect consumers (commit `a86afe5`, 2026-04-26). Five ungrounded runes wait on biomes from #5; document that, not "ship or don't."
+> - **P0.3** (Assist Mode wire or hide) — partial: invincibility / post-dash grace / combo window wired; **game speed still hidden**; replay snapshot helper added but expose-vs-hide decision still open.
+> - **P0.4** (save failure UX) — **open**. Still silent on quota / private mode.
+> - **P0.5** (regression tests for resume) — partial: per-domain test growth across recent commits; matrix not formally walked.
+> - **P1.1** (boss kill vs death same frame) — **open**.
+> - **P1.2** (real-device mobile) — human gate; matrix doc tightened.
+> - **P1.3** (cultural copy gate) — **infrastructure shipped** (commit `b3bec32`: CULTURAL_REVIEW_STATUS.json + Vitest gate). Reviewer sign-off still required for Doric / Shetlandic / Burns / Gaelic+Cailleach.
+> - **P1.4** (document bagpipes utility-only in Almanac) — **open**.
+> - **P1.5** (gamepad E2E) — **open**.
+> - **P1.6** (FTUE / first-run) — partial: drift micro-practice shipped (commit `286b931`); curses/hubs gating + tooltip pass still open.
+> - **P2 / P3** — assume stale; re-verify before pulling. P2.10 bundle gate has a script + baselines (commit `7559336`) but the CI hook is still TODO.
+>
+> **Action for any agent reading this doc:** treat the table below as the *audit synthesis*, not the *to-do list*. Use the dispatch ledger for current work, and update this banner instead of the rows when state moves again.
+
 ---
 
 ## P0 — Release / trust blockers
