@@ -12,8 +12,12 @@ import path from 'node:path';
  *   2. **Thresholded diff (T408 upgrade)** — `expect(canvas).toHaveScreenshot()`
  *      compares against committed baselines under
  *      `e2e/visual-regression.spec.ts-snapshots/`. Diff budgets are
- *      per-scene: MainMenu 5%, Croft 30% (Croft animates a hearth fire +
- *      Gran's idle pulse so its natural inter-run variance is higher).
+ *      per-scene **and per-engine** (T410). Chromium tier: MainMenu 5%,
+ *      Croft 30% (Croft animates a hearth fire + Gran's idle pulse so its
+ *      natural inter-run variance is higher). Webkit/Firefox tier: +10
+ *      absolute percentage points on each scene (MainMenu 15%, Croft 40%)
+ *      to absorb DPR + GPU-driver variance across engines on the same
+ *      hardware. Selected per-call via `diffOptionsFor(browserName, scene)`.
  *
  * Why per-scene thresholds: Phaser canvas variance from random-seeded particle
  * drift, ambient wind, and GPU driver differences across runners produces
@@ -25,26 +29,32 @@ import path from 'node:path';
  *
  * **Update procedure:** when a deliberate visual change ships, run
  * `npx playwright test visual-regression --update-snapshots --project=chromium-desktop`
- * and commit the regenerated PNGs under `e2e/visual-regression.spec.ts-snapshots/`.
+ * (and the same with `--project=webkit-desktop` / `--project=firefox-desktop`
+ * to refresh those engines' baselines). Commit the regenerated PNGs under
+ * `e2e/visual-regression.spec.ts-snapshots/`. Playwright suffixes the
+ * baseline filename with `{project}-{platform}`, so the three engines have
+ * three independent PNG sets per scene.
  *
  * **Cross-OS note (T409):** Playwright suffixes baseline PNGs with `{platform}`
  * (e.g. `-win32`, `-linux`, `-darwin`). Baselines from one OS won't satisfy
  * a different OS's runner — Playwright reports "missing baseline" instead.
- * Initial baselines were captured on `-win32`; the diff comparison is
- * deliberately gated to `process.platform === 'win32'` below until linux
- * baselines are regenerated under CI (T409). On linux the spec still runs
- * the design-verify writes for parity but skips the comparison step. The
- * fix is to regen via `--update-snapshots --project=chromium-desktop` on
- * linux (locally via Docker or via a one-off CI artifact pull) and commit
- * the `-linux` PNGs alongside the existing `-win32` ones, then drop the
+ * Initial baselines were captured on `-win32` for all three engines; the
+ * diff comparison is deliberately gated to `process.platform === 'win32'`
+ * below until linux baselines are regenerated under CI (T409). On linux
+ * the spec still runs the design-verify writes for parity but skips the
+ * comparison step. The fix is to regen via
+ * `--update-snapshots --project=<engine>-desktop` on linux for each engine
+ * (locally via Docker or via a one-off CI artifact pull) and commit the
+ * `-linux` PNGs alongside the existing `-win32` ones, then drop the
  * `process.platform` guard.
  *
- * Currently scoped to **chromium-desktop only**. Webkit + Firefox baselines
- * are out of scope (DPR / GPU-driver variance would require per-engine
- * baseline sets). The mobile-viewport test runs on the same chromium engine
- * via `setViewportSize`, so it shares the chromium baseline. On firefox /
- * webkit projects the spec still produces the design-verify writes but skips
- * the diff comparison.
+ * **Engine coverage (T410):** Three desktop engines compare on win32 —
+ * `chromium-desktop`, `webkit-desktop`, `firefox-desktop`. The mobile
+ * iPhone-13 viewport test runs on chromium + firefox only (webkit skips
+ * its boot path; the existing `test.skip(browserName === 'webkit', …)`
+ * gate stays). Each engine has its own committed baseline set under
+ * `e2e/visual-regression.spec.ts-snapshots/` with the project name in
+ * the filename suffix.
  */
 
 const OUT_DIR = 'design-verify-screens/visual-regression';
@@ -54,22 +64,38 @@ const OUT_DIR = 'design-verify-screens/visual-regression';
 // `threshold` is the per-pixel colour delta tolerance (0..1) — 0.2 is
 // Playwright's default; explicit here so future readers know it's intentional.
 //
-// Per-scene tuning: MainMenu is mostly static text/UI so 5% catches real
-// layout regressions. Croft has the hearth fire, ambient drones, and Gran's
-// idle pulse — measured natural variance is ~14% even with 600ms settle, so
-// we widen its budget to 30% to cover one or two more animation tiers without
-// flaking. Both still trip on gross layout regressions (those produce 50%+
-// deltas from sprite repositioning, which is the real failure mode we care
-// about). Tighten as the canvas proves stable under repeat runs.
-const DIFF_OPTIONS_MENU = {
-  maxDiffPixelRatio: 0.05,
-  threshold: 0.2,
-} as const;
+// Per-scene tuning (chromium tier): MainMenu is mostly static text/UI so 5%
+// catches real layout regressions. Croft has the hearth fire, ambient drones,
+// and Gran's idle pulse — measured natural variance is ~14% even with 600ms
+// settle, so we widen its budget to 30% to cover one or two more animation
+// tiers without flaking. Both still trip on gross layout regressions (those
+// produce 50%+ deltas from sprite repositioning, which is the real failure
+// mode we care about). Tighten as the canvas proves stable under repeat runs.
+//
+// Per-engine tier (T410): webkit + firefox add +10 percentage points to each
+// chromium budget. Cross-engine pixel diffs are dominated by font rasterisation
+// (LCD subpixel ordering on Win32) and GPU shader-precision differences in
+// Phaser's gradient/particle render passes — those are real per-engine pixel
+// shifts that don't represent regressions. The looser tier still catches
+// 50%+ layout breaks. If a future canvas proves stable across engines under
+// repeat runs, tighten the engine tier toward chromium parity.
+type SceneTier = 'menu' | 'croft';
 
-const DIFF_OPTIONS_CROFT = {
-  maxDiffPixelRatio: 0.3,
-  threshold: 0.2,
-} as const;
+const SCENE_TIERS_CHROMIUM: Record<SceneTier, number> = {
+  menu: 0.05,
+  croft: 0.3,
+};
+// +10 percentage points absolute over chromium for non-chromium engines.
+const ENGINE_TIER_DELTA = 0.1;
+
+function diffOptionsFor(browserName: string, scene: SceneTier) {
+  const base = SCENE_TIERS_CHROMIUM[scene];
+  const ratio = browserName === 'chromium' ? base : base + ENGINE_TIER_DELTA;
+  return {
+    maxDiffPixelRatio: ratio,
+    threshold: 0.2,
+  };
+}
 
 // Extra settle time before the diff snap so particle systems / drone-pulse
 // animations have a chance to reach their resting state. The original
@@ -101,10 +127,12 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
   });
 
   test('MainMenu + Croft at uiScale 1.4 (desktop)', async ({ page, browserName }) => {
-    // Diff baselines are chromium-only. Other engines still run the
-    // design-verify writes for parity but skip the comparison step.
-    // T409: gate to win32 until linux baselines regenerated under CI.
-    const compareDiff = browserName === 'chromium' && process.platform === 'win32';
+    // T410: chromium + webkit + firefox each have their own committed
+    // baseline set on win32. The platform gate stays — linux runners
+    // still need a separate `-linux` baseline pass (T409). The mobile
+    // iPhone-13 viewport in the second test stays chromium+firefox only
+    // because webkit's boot path isn't reliable under viewport emulation.
+    const compareDiff = process.platform === 'win32';
 
     await page.addInitScript(() => {
       try {
@@ -132,7 +160,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await canvas.screenshot({ path: path.join(OUT_DIR, 'main-menu-1.4x.png') });
     if (compareDiff) {
       await page.waitForTimeout(SETTLE_MS);
-      await expect(canvas).toHaveScreenshot('main-menu-1.4x.png', DIFF_OPTIONS_MENU);
+      await expect(canvas).toHaveScreenshot(
+        'main-menu-1.4x.png',
+        diffOptionsFor(browserName, 'menu'),
+      );
     }
 
     // Drive into Croft and capture again.
@@ -152,7 +183,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await canvas.screenshot({ path: path.join(OUT_DIR, 'croft-1.4x.png') });
     if (compareDiff) {
       await page.waitForTimeout(SETTLE_MS);
-      await expect(canvas).toHaveScreenshot('croft-1.4x.png', DIFF_OPTIONS_CROFT);
+      await expect(canvas).toHaveScreenshot(
+        'croft-1.4x.png',
+        diffOptionsFor(browserName, 'croft'),
+      );
     }
   });
 
@@ -160,8 +194,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     // Reuse iPhone 13 viewport regardless of which project the runner picked.
     // Skip on browsers where viewport emulation isn't reliable for our boot path.
     test.skip(browserName === 'webkit', 'iPhone emulation only on chromium runners');
-    // T409: gate to win32 until linux baselines regenerated under CI.
-    const compareDiff = browserName === 'chromium' && process.platform === 'win32';
+    // T410: chromium + firefox each have their own mobile baseline set on
+    // win32 (webkit was already skipped above). T409 platform gate stays
+    // until linux baselines land.
+    const compareDiff = process.platform === 'win32';
     await page.setViewportSize({ width: 390, height: 664 });
     void browser;
 
@@ -175,7 +211,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await canvas.screenshot({ path: path.join(OUT_DIR, 'main-menu-mobile.png') });
     if (compareDiff) {
       await page.waitForTimeout(SETTLE_MS);
-      await expect(canvas).toHaveScreenshot('main-menu-mobile.png', DIFF_OPTIONS_MENU);
+      await expect(canvas).toHaveScreenshot(
+        'main-menu-mobile.png',
+        diffOptionsFor(browserName, 'menu'),
+      );
     }
 
     await page.evaluate(async () => {
@@ -194,7 +233,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await canvas.screenshot({ path: path.join(OUT_DIR, 'croft-mobile.png') });
     if (compareDiff) {
       await page.waitForTimeout(SETTLE_MS);
-      await expect(canvas).toHaveScreenshot('croft-mobile.png', DIFF_OPTIONS_CROFT);
+      await expect(canvas).toHaveScreenshot(
+        'croft-mobile.png',
+        diffOptionsFor(browserName, 'croft'),
+      );
     }
   });
 });
