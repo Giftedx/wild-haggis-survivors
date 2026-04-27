@@ -452,6 +452,49 @@ export class WeaponSystem {
     }
   }
 
+  private spawnWeaponFlourish(
+    x: number,
+    y: number,
+    key: string,
+    opts: {
+      scale?: number;
+      endScale?: number;
+      alpha?: number;
+      duration?: number;
+      depth?: number;
+      rotation?: number;
+    } = {},
+  ): void {
+    if (this.destroyed || !this.scene?.sys?.isActive()) return;
+    if (!this.scene.textures.exists(key)) return;
+
+    const scale = opts.scale ?? 0.85;
+    const flourish = this.scene.add.image(x, y, key)
+      .setDepth(opts.depth ?? 9)
+      .setScale(scale)
+      .setAlpha(opts.alpha ?? 0.9);
+    if (opts.rotation !== undefined) flourish.setRotation(opts.rotation);
+
+    this.scene.tweens.add({
+      targets: flourish,
+      scale: opts.endScale ?? scale * 1.35,
+      alpha: 0,
+      duration: opts.duration ?? 320,
+      ease: 'Quad.easeOut',
+      onComplete: () => flourish.destroy(),
+    });
+  }
+
+  private spawnProjectileCastFlourish(px: number, py: number, texture: string): void {
+    if (texture === 'thistle') {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_thistle_bloom', { scale: 0.72, endScale: 1.1, duration: 260 });
+    } else if (texture === 'caber') {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_caber_splinter', { scale: 0.75, endScale: 1.15, duration: 280 });
+    } else if (texture === 'haggis_ball') {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_haggis_oat_puff', { scale: 0.7, endScale: 1.05, duration: 300 });
+    }
+  }
+
   // ── Projectile-based weapons (Thistle Shot, Caber Toss) ──
 
   private fireProjectile(w: ActiveWeapon, px: number, py: number, texture: string): void {
@@ -461,6 +504,7 @@ export class WeaponSystem {
     const count = w.projectileCount;
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
     const spread = maxShot > 1 ? 15 : 0;
+    if (maxShot > 0) this.spawnProjectileCastFlourish(px, py, texture);
 
     for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile(texture);
@@ -511,6 +555,7 @@ export class WeaponSystem {
 
   private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
     const count = this.maxExtraProjectilesThisFrame(w.config.key, w.projectileCount);
+    if (count > 0) this.spawnProjectileCastFlourish(px, py, 'haggis_ball');
 
     for (let i = 0; i < count; i++) {
       const proj = this.getProjectile('haggis_ball');
@@ -538,6 +583,7 @@ export class WeaponSystem {
 
     // Visual pulse ring — pooled
     const ring = this.acquireVfxCircle(px, py, 10, resolveWeaponVfxColor(w.config.behavior), 0.4);
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipe_blast_ring', { scale: 0.85, endScale: 1.8, duration: 340, alpha: 0.78 });
     this.scene.tweens.add({
       targets: ring,
       radius: radius,
@@ -587,6 +633,7 @@ export class WeaponSystem {
     // Create a fading mist zone — pooled
     const zone = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), 0.3);
     const duration = 2000;
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_scotch_mist_wisp', { scale: 1, endScale: 1.55, duration: 700, alpha: 0.65, depth: 3 });
 
     // Damage enemies within the zone over its lifetime.
     // Each tick rolls damage+crit independently — baking a single isCrit at
@@ -642,6 +689,12 @@ export class WeaponSystem {
     if (nearest) {
       facing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
     }
+    this.spawnWeaponFlourish(
+      px + Math.cos(facing) * 28,
+      py + Math.sin(facing) * 28,
+      w.config.key === 'claymore' ? 'fx_weapon_claymore_spark' : 'fx_weapon_nessie_splash',
+      { scale: 0.85, endScale: 1.35, duration: 280, rotation: facing },
+    );
 
     // Visual sweep arc — steel wedge for claymore, murky green for Nessie — pooled
     const gfx = this.acquireVfxGraphics();
@@ -749,6 +802,9 @@ export class WeaponSystem {
     const targets = this.cachedSortedEnemies;
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
     const targetCount = Math.min(targets.length, maxShot);
+    if (maxShot > 0) {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_thistle_storm_bloom', { scale: 0.9, endScale: 1.45, duration: 360 });
+    }
 
     for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('thistle');
@@ -777,6 +833,7 @@ export class WeaponSystem {
     const radius = this.effectiveAoe(w);
     const { damage: dmg, isCrit } = this.effectiveDamage(w);
     const ring = this.acquireVfxCircle(px, py, radius, resolveWeaponVfxColor(w.config.behavior), 0.38);
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_bagpipes_drone_knot', { scale: 0.95, endScale: 1.4, duration: 360, alpha: 0.72 });
     this.scene.tweens.add({
       targets: ring,
       alpha: 0.1,
@@ -803,6 +860,7 @@ export class WeaponSystem {
     const maxR = this.effectiveAoe(w) * 2.9;
     const waveDmg = Math.ceil(baseDmg * 0.45);
     const weaponKey = w.config.key;
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_william_blade_wave', { scale: 0.9, endScale: 1.6, duration: 430, alpha: 0.82 });
     for (let wave = 0; wave < 3; wave++) {
       // Wave 0 at delay 0 fires inside the same `tickScaled` pass that
       // created it, racing with pooled-VFX cleanup timers for adjacent
@@ -820,6 +878,12 @@ export class WeaponSystem {
     const ring = this.acquireVfxCircle(px, py, 20, 0x4488ff, 0.5);
     let currentRadius = 20;
     const hitEnemies = new Set<Enemy>();
+    this.spawnWeaponFlourish(
+      px,
+      py,
+      weaponKey === 'claymore' ? 'fx_weapon_william_blade_wave' : 'fx_weapon_highland_fling_ring',
+      { scale: 0.85, endScale: 1.55, duration: 420, alpha: 0.74 },
+    );
 
     const expandHandle = this.scene.getUpdateTickers().addInterval('scaled', 50, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
@@ -880,6 +944,7 @@ export class WeaponSystem {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
 
       const blast = this.acquireVfxCircle(ex, ey, 10, 0xff6600, 0.6);
+      this.spawnWeaponFlourish(ex, ey, 'fx_weapon_highland_games_burst', { scale: 0.95, endScale: 1.7, duration: 360 });
       this.scene.tweens.add({
         targets: blast, radius: 80, alpha: 0, duration: 300,
         onComplete: () => blast.setVisible(false),
@@ -902,6 +967,7 @@ export class WeaponSystem {
   private fireMassiveFog(px: number, py: number, dmg: number, radius: number, weaponKey: string, isCrit: boolean = false): void {
     const zone = this.acquireVfxCircle(px, py, radius, 0x88aacc, 0.25);
     const duration = 2600;
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_the_haar_bank', { scale: 1.15, endScale: 1.9, duration: 900, alpha: 0.62, depth: 3 });
 
     const tickHandle = this.scene.getUpdateTickers().addInterval('scaled', 350, () => {
       if (this.destroyed || !this.scene?.sys?.isActive()) return;
@@ -933,6 +999,9 @@ export class WeaponSystem {
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
     const sectors = Math.max(1, maxShot);
     const rng = this.scene.getRunRng();
+    if (maxShot > 0) {
+      this.spawnWeaponFlourish(px, py, 'fx_weapon_haggis_cannon_pop', { scale: 0.95, endScale: 1.45, duration: 320 });
+    }
     for (let i = 0; i < maxShot; i++) {
       const proj = this.getProjectile('haggis_ball');
       if (!proj) continue;
@@ -955,6 +1024,7 @@ export class WeaponSystem {
     const gfx = this.acquireVfxGraphics();
     gfx.fillStyle(0x226644, 0.35);
     gfx.fillCircle(px, py, radius);
+    this.spawnWeaponFlourish(px, py, 'fx_weapon_nessie_unleashed_crest', { scale: 1.05, endScale: 1.75, duration: 430, alpha: 0.76 });
 
     this.scene.tweens.add({
       targets: gfx, alpha: 0, duration: 400,
