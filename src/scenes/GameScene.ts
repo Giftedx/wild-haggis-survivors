@@ -156,6 +156,7 @@ import {
   tickReplayPlayback,
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
+import { installRunEndShutdown } from './game/runEndShutdown';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -1507,94 +1508,72 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private registerShutdownCleanup(): void {
-    // Clean up on scene shutdown (prevents stale timers/listeners on restart)
-    this.events.once('shutdown', () => {
-      this.clipRecorder?.stop();
-      this.clipRecorder = null;
-      disposeRecordingAudioStream();
-      try {
-        uninstallAutoBattleTimeScale(this);
-      } catch {
-        /* ignore */
-      }
-      try {
-        this.gameplaySessionGuard.endIfStarted();
-      } catch {
-        /* ignore */
-      }
-      if (this.playerEnemyCollider) {
-        try { this.physics.world.removeCollider(this.playerEnemyCollider); } catch { /* ignore */ }
-        this.playerEnemyCollider = null;
-      }
-      sfxManager.clear();
-      audio.resetTransient();
-      this.eventBusDispose?.();
-      this.eventBusDispose = null;
-      this.runPersistence?.unregisterMidRunHooks();
-      this.debugTimeTravelApi?.uninstall();
-      try { this.subs.dispose(); } catch { /* ignore */ }
-      try { this.debugOverlay?.destroy(); } catch { /* ignore */ }
-      this.debugOverlay = null;
-      // Post-bell listener — outlives the scene if we don't remove it.
-      this.runLifecycle?.uninstallPostBellKeyHandler();
-      try { this.biomeController?.destroy(); } catch { /* ignore */ }
-      this.biomeController = null;
-      // F1 M5 — drop the haar reference; the camera's filter list is torn
-      // down with the scene, so the controller object is released with it.
-      this.haarFog = null;
-      try { this.floraScatter?.destroy(); } catch { /* ignore */ }
-      this.floraScatter = null;
-      try { this.wildlifeSystem?.destroy(); } catch { /* ignore */ }
-      this.wildlifeSystem = null;
-      try { this.mistLayer?.destroy(); } catch { /* ignore */ }
-      this.mistLayer = null;
-      try { this.captionOverlay?.destroy(); } catch { /* ignore */ }
-      this.captionOverlay = null;
-      this.captionManager?.clear();
-      this.captionManager = null;
-      // Remove event listeners before destroying systems to prevent stacking on restart
-      try { this.weaponSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
-      try { this.xpSystem?.events?.removeAllListeners(); } catch { /* ignore */ }
-      // Flush run-scoped state on teardown to prevent "second run" bleed
-      try { this.updateTickers.clear(); } catch { /* ignore */ }
-      try { this.timeManager?.destroy(); } catch { /* ignore */ }
-      try { this.weaponSystem?.destroy(); } catch { /* ignore */ }
-      try { this.spawnSystem?.destroy(); } catch { /* ignore */ }
-      try { this.tutorialSystem?.dispose(); } catch { /* ignore */ }
-      try { this.xpSystem?.destroy(); } catch { /* ignore */ }
-      try { this.statusFxPool?.destroy(); } catch { /* ignore */ }
-      this.floatTextPool.destroyAll();
-      // Close lifecycle gaps — these systems were silently orphaned before
-      try { this.juice?.destroy(); } catch { /* ignore */ }
-      try { this.hud?.destroy(); } catch { /* ignore */ }
-      try { this.minimap?.destroy(); } catch { /* ignore */ }
-      try { this.nodeMapUI?.destroy(); } catch { /* ignore */ }
-      this.nodeMapUI = null;
-      try { this.nodePromptUI?.destroy(); } catch { /* ignore */ }
-      this.nodePromptUI = null;
-      this.interactivePromptIndex = -1;
-      this.nodeMapSystem.reset();
-    this.nodeWaveTracker.reset();
-      try { this.edgeIndicators?.destroy(); } catch { /* ignore */ }
-      try { this.upgradeUI?.hide?.(); } catch { /* ignore */ }
-      try { this.gameTickers?.destroy(); } catch { /* ignore */ }
-      try { this.pauseMenu?.close(); } catch { /* ignore */ }
-      this.pauseMenu = null;
-      this.chestRegistry.forEachSprite((sprite) => {
-        try { this.tweens.killTweensOf(sprite); } catch { /* ignore */ }
-        try { sprite.destroy(); } catch { /* ignore */ }
-      });
-      this.chestRegistry.reset();
-      try { this.victoryFade?.destroy(); } catch { /* ignore */ }
-      this.victoryFade = null;
-      try { this.deathFade?.destroy(); } catch { /* ignore */ }
-      this.deathFade = null;
-      try {
-        this.filmGrain?.destroy();
-      } catch {
-        /* ignore */
-      }
-      this.filmGrain = null;
+    // Clean up on scene shutdown (prevents stale timers/listeners on restart).
+    // Body extracted to `installRunEndShutdown` (T401 slice 6) — every
+    // silenced-catch is preserved one-for-one in the helper so partial-init
+    // failures cannot short-circuit the shutdown sequence.
+    installRunEndShutdown({
+      scene: this,
+      clipRecorder: this.clipRecorder,
+      setClipRecorder: (next) => { this.clipRecorder = next; },
+      disposeRecordingAudioStream,
+      uninstallAutoBattleTimeScale,
+      gameplaySessionGuard: this.gameplaySessionGuard,
+      playerEnemyCollider: this.playerEnemyCollider,
+      setPlayerEnemyCollider: (next) => { this.playerEnemyCollider = next; },
+      clearSfx: () => sfxManager.clear(),
+      resetAudioTransient: () => audio.resetTransient(),
+      eventBusDispose: this.eventBusDispose,
+      setEventBusDispose: (next) => { this.eventBusDispose = next; },
+      runPersistence: this.runPersistence,
+      debugTimeTravelApi: this.debugTimeTravelApi,
+      subs: this.subs,
+      debugOverlay: this.debugOverlay,
+      setDebugOverlay: (next) => { this.debugOverlay = next; },
+      runLifecycle: this.runLifecycle,
+      biomeController: this.biomeController,
+      setBiomeController: (next) => { this.biomeController = next; },
+      setHaarFog: (next) => { this.haarFog = next; },
+      floraScatter: this.floraScatter,
+      setFloraScatter: (next) => { this.floraScatter = next; },
+      wildlifeSystem: this.wildlifeSystem,
+      setWildlifeSystem: (next) => { this.wildlifeSystem = next; },
+      mistLayer: this.mistLayer,
+      setMistLayer: (next) => { this.mistLayer = next; },
+      captionOverlay: this.captionOverlay,
+      setCaptionOverlay: (next) => { this.captionOverlay = next; },
+      captionManager: this.captionManager,
+      setCaptionManager: (next) => { this.captionManager = next; },
+      weaponSystem: this.weaponSystem,
+      xpSystem: this.xpSystem,
+      updateTickers: this.updateTickers,
+      timeManager: this.timeManager,
+      spawnSystem: this.spawnSystem,
+      tutorialSystem: this.tutorialSystem,
+      statusFxPool: this.statusFxPool,
+      floatTextPool: this.floatTextPool,
+      juice: this.juice,
+      hud: this.hud,
+      minimap: this.minimap,
+      nodeMapUI: this.nodeMapUI,
+      setNodeMapUI: (next) => { this.nodeMapUI = next; },
+      nodePromptUI: this.nodePromptUI,
+      setNodePromptUI: (next) => { this.nodePromptUI = next; },
+      setInteractivePromptIndex: (next) => { this.interactivePromptIndex = next; },
+      nodeMapSystem: this.nodeMapSystem,
+      nodeWaveTracker: this.nodeWaveTracker,
+      edgeIndicators: this.edgeIndicators,
+      upgradeUI: this.upgradeUI,
+      gameTickers: this.gameTickers,
+      pauseMenu: this.pauseMenu,
+      setPauseMenu: (next) => { this.pauseMenu = next; },
+      chestRegistry: this.chestRegistry,
+      victoryFade: this.victoryFade,
+      setVictoryFade: (next) => { this.victoryFade = next; },
+      deathFade: this.deathFade,
+      setDeathFade: (next) => { this.deathFade = next; },
+      filmGrain: this.filmGrain,
+      setFilmGrain: (next) => { this.filmGrain = next; },
     });
   }
 
