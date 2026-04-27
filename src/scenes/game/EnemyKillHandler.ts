@@ -214,7 +214,14 @@ export class EnemyKillHandler {
     // R1 M4.5 P1 — cairn_stone heather-kill magnet hook.
     h.tryCairnStoneMagnet?.(x, y);
 
-    juice.showKillBurst(x, y, resolveEnemyDeathColor(enemyKey));
+    // Pass the medium-tier opt only on elite kills so the regular-kill
+    // call shape (3 args) stays identical to its pre-Round-2 contract —
+    // existing test spies assert on the 3-arg invocation.
+    if (wasElite && !wasBoss) {
+      juice.showKillBurst(x, y, resolveEnemyDeathColor(enemyKey), { tier: 'medium' });
+    } else {
+      juice.showKillBurst(x, y, resolveEnemyDeathColor(enemyKey));
+    }
     juice.hitFreeze();
 
     // Volatile plays a dedicated boom in Enemy.die — skip the generic sting.

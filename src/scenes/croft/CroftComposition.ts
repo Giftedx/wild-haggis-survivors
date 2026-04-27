@@ -18,6 +18,10 @@
  *     │  (backdrop)      Gran       bookshelf │
  *     │              rug   table              │
  *     └──────────────────────────────────────┘
+ *
+ * Visitors layered on top: postie at the doorway (left edge), neighbour-
+ * wifie by the window, sheepdog standing right of Gran, weans on the rug
+ * front-and-centre, and a returning haggis pal beside the bookshelf.
  */
 
 export interface CroftLayoutInput {
@@ -65,6 +69,16 @@ export interface CroftElements {
   rug: Rect;
   /** Thistle prop beside the window. */
   thistle: Point;
+  /** Highland postie standing at the doorway (left edge). */
+  postie: Point;
+  /** Neighbour-wifie cradling a basket of eggs near the window. */
+  neighbour: Point;
+  /** Pair of weans playing on the rug, foreground-and-centre. */
+  weans: Point;
+  /** Standing border collie beside Gran, near the hearth. */
+  sheepdog: Point;
+  /** Returning haggis pal home from the moor, beside the bookshelf. */
+  returningPal: Point;
 }
 
 export interface CroftLayout extends CroftElements {
@@ -140,6 +154,21 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
       h: height * 0.08,
     },
     thistle: { x: width * 0.08, y: foreBand - height * 0.1 },
+    // Postie at the doorway — left edge, vertical mid-band so he reads as
+    // standing in the entryway. Below the drove window, above the foreground.
+    postie: { x: width * 0.1, y: midBand + height * 0.12 },
+    // Neighbour-wifie tucked between the drove window and the hearth so
+    // she shares the left half of the room without crowding the mantelpiece.
+    neighbour: { x: width * 0.28, y: midBand + height * 0.06 },
+    // Weans on the rug, foreground-centred ahead of Gran. Sits on top of
+    // the rug strip so the pair anchors the warmth-stack visually.
+    weans: { x: cx - width * 0.04, y: foreBand - height * 0.04 },
+    // Sheepdog standing alert beside Gran on the hearth side — slightly
+    // forward so he reads as nearer the viewer than she is.
+    sheepdog: { x: cx + width * 0.18, y: midBand + height * 0.13 },
+    // Returning pal beside the bookshelf on the right wall — a wee bit
+    // forward of the bookshelf hit so he doesn't block the Almanac click.
+    returningPal: { x: width * 0.82, y: midBand + height * 0.1 },
     spriteScale: uiScale,
   };
 }
@@ -157,7 +186,15 @@ export const CROFT_DRAW_ORDER: readonly (keyof CroftElements)[] = [
   'bookshelf',
   'wireless',
   'hearth',
+  // Visitors sit just behind Gran / the foreground props so she still
+  // reads as the focal point, but in front of mantelpiece / drove /
+  // bookshelf which they may visually overlap.
+  'postie',
+  'neighbour',
+  'sheepdog',
+  'returningPal',
   'rug',
+  'weans',
   'table',
   'gran',
 ] as const;

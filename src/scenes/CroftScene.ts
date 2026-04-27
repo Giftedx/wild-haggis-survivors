@@ -13,6 +13,11 @@ import {
 } from './croft/CroftComposition';
 import { GRAN_FRAME_COUNT, GRAN_TEXTURE_KEYS } from '../art/sprites/croft/gran';
 import { HEARTH_FRAME_COUNT, HEARTH_TEXTURE_KEYS } from '../art/sprites/croft/hearth';
+import { POSTIE_FRAME_COUNT, POSTIE_TEXTURE_KEYS } from '../art/sprites/croft/postie';
+import { NEIGHBOUR_FRAME_COUNT, NEIGHBOUR_TEXTURE_KEYS } from '../art/sprites/croft/neighbour';
+import { SHEEPDOG_STAND_FRAME_COUNT, SHEEPDOG_STAND_TEXTURE_KEYS } from '../art/sprites/croft/sheepdogStanding';
+import { WEANS_TEXTURE_KEY } from '../art/sprites/croft/weans';
+import { RETURNING_PAL_TEXTURE_KEY } from '../art/sprites/croft/returningPal';
 import { CroftAmbientLoop } from './croft/CroftMusic';
 import { route, type CroftActionKey } from './croft/CroftInteractionRouter';
 import { startRunTargetForCroft, visibleCroftActions } from './croftProgressiveDisclosure';
@@ -61,6 +66,15 @@ export class CroftScene extends Phaser.Scene {
   private hearthSprite: Phaser.GameObjects.Sprite | null = null;
   private hearthTimer: Phaser.Time.TimerEvent | null = null;
   private hearthFrame = 0;
+  private postieSprite: Phaser.GameObjects.Sprite | null = null;
+  private postieTimer: Phaser.Time.TimerEvent | null = null;
+  private postieFrame = 0;
+  private neighbourSprite: Phaser.GameObjects.Sprite | null = null;
+  private neighbourTimer: Phaser.Time.TimerEvent | null = null;
+  private neighbourFrame = 0;
+  private sheepdogSprite: Phaser.GameObjects.Sprite | null = null;
+  private sheepdogTimer: Phaser.Time.TimerEvent | null = null;
+  private sheepdogFrame = 0;
   private ambient: CroftAmbientLoop | null = null;
   private mantelGfx: Phaser.GameObjects.Graphics | null = null;
   private photoWallGfx: Phaser.GameObjects.Graphics | null = null;
@@ -98,6 +112,21 @@ export class CroftScene extends Phaser.Scene {
     this.hearthTimer?.remove(false);
     this.hearthTimer = null;
     this.hearthFrame = 0;
+    this.postieSprite?.destroy();
+    this.postieSprite = null;
+    this.postieTimer?.remove(false);
+    this.postieTimer = null;
+    this.postieFrame = 0;
+    this.neighbourSprite?.destroy();
+    this.neighbourSprite = null;
+    this.neighbourTimer?.remove(false);
+    this.neighbourTimer = null;
+    this.neighbourFrame = 0;
+    this.sheepdogSprite?.destroy();
+    this.sheepdogSprite = null;
+    this.sheepdogTimer?.remove(false);
+    this.sheepdogTimer = null;
+    this.sheepdogFrame = 0;
     this.mantelGfx?.destroy();
     this.mantelGfx = null;
     this.photoWallGfx?.destroy();
@@ -150,6 +179,7 @@ export class CroftScene extends Phaser.Scene {
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
+    this.drawVisitors(layout);
     this.drawWarmth(layout);
     this.drawSeasonal(layout);
     this.drawBookshelfHit(layout);
@@ -190,7 +220,18 @@ export class CroftScene extends Phaser.Scene {
     const alphaStroke = 0.55;
     for (const key of CROFT_DRAW_ORDER) {
       // Real drawers now own these elements — skip placeholders.
-      if (key === 'gran' || key === 'hearth' || key === 'mantelpiece' || key === 'photoWall' || key === 'drove') continue;
+      if (
+        key === 'gran' ||
+        key === 'hearth' ||
+        key === 'mantelpiece' ||
+        key === 'photoWall' ||
+        key === 'drove' ||
+        key === 'postie' ||
+        key === 'neighbour' ||
+        key === 'weans' ||
+        key === 'sheepdog' ||
+        key === 'returningPal'
+      ) continue;
       const el = layout[key];
       const w = 'w' in el ? el.w : 48 * layout.spriteScale;
       const h = 'h' in el ? el.h : 48 * layout.spriteScale;
@@ -416,6 +457,103 @@ export class CroftScene extends Phaser.Scene {
         sprite.setTexture(GRAN_TEXTURE_KEYS[this.knittingFrame]);
       },
     });
+  }
+
+  /**
+   * Render the croft visitors — postie at the doorway, neighbour-wifie
+   * by the window, weans on the rug, sheepdog standing by Gran, and a
+   * returning pal beside the bookshelf. Three of them are 2-frame
+   * idle animations (postie / neighbour / sheepdog) following the same
+   * `time.addEvent` swap pattern as Gran's knitting; weans + returning
+   * pal are single-frame still images.
+   *
+   * Decoration-only: no input handlers, no interaction. Each sprite
+   * addition is texture-exists guarded so test stubs that don't seed
+   * the visitor textures don't crash. Animated visitors (postie /
+   * neighbour / sheepdog) use dedicated sprite + timer fields that
+   * `create()`'s reset block wipes on scene reuse — matches Gran's
+   * pattern. Single-frame visitors (weans / returningPal) ride on the
+   * `placeholders` cleanup array. Visitors render at a depth slightly
+   * behind Gran (38) so she still reads as the focal point.
+   */
+  private drawVisitors(layout: CroftLayout): void {
+    const VISITOR_DEPTH = 38;
+
+    // Postie at the doorway — 2-frame breath wobble. Cleanup handled
+    // by dedicated postieSprite/postieTimer fields (matches Gran pattern).
+    if (this.textures.exists(POSTIE_TEXTURE_KEYS[0])) {
+      const sprite = this.add
+        .sprite(layout.postie.x, layout.postie.y, POSTIE_TEXTURE_KEYS[0])
+        .setOrigin(0.5, 0.85)
+        .setScale(layout.spriteScale * 1.4)
+        .setDepth(VISITOR_DEPTH);
+      this.postieSprite = sprite;
+      this.postieTimer = this.time.addEvent({
+        delay: 600,
+        loop: true,
+        callback: () => {
+          this.postieFrame = (this.postieFrame + 1) % POSTIE_FRAME_COUNT;
+          sprite.setTexture(POSTIE_TEXTURE_KEYS[this.postieFrame]);
+        },
+      });
+    }
+
+    // Neighbour-wifie near the window — 2-frame head-tilt + basket sway.
+    if (this.textures.exists(NEIGHBOUR_TEXTURE_KEYS[0])) {
+      const sprite = this.add
+        .sprite(layout.neighbour.x, layout.neighbour.y, NEIGHBOUR_TEXTURE_KEYS[0])
+        .setOrigin(0.5, 0.85)
+        .setScale(layout.spriteScale * 1.4)
+        .setDepth(VISITOR_DEPTH);
+      this.neighbourSprite = sprite;
+      this.neighbourTimer = this.time.addEvent({
+        delay: 620,
+        loop: true,
+        callback: () => {
+          this.neighbourFrame = (this.neighbourFrame + 1) % NEIGHBOUR_FRAME_COUNT;
+          sprite.setTexture(NEIGHBOUR_TEXTURE_KEYS[this.neighbourFrame]);
+        },
+      });
+    }
+
+    // Standing sheepdog right of Gran — 2-frame ear-flick + tail-wag.
+    if (this.textures.exists(SHEEPDOG_STAND_TEXTURE_KEYS[0])) {
+      const sprite = this.add
+        .sprite(layout.sheepdog.x, layout.sheepdog.y, SHEEPDOG_STAND_TEXTURE_KEYS[0])
+        .setOrigin(0.5, 0.9)
+        .setScale(layout.spriteScale * 1.4)
+        .setDepth(VISITOR_DEPTH);
+      this.sheepdogSprite = sprite;
+      this.sheepdogTimer = this.time.addEvent({
+        delay: 580,
+        loop: true,
+        callback: () => {
+          this.sheepdogFrame = (this.sheepdogFrame + 1) % SHEEPDOG_STAND_FRAME_COUNT;
+          sprite.setTexture(SHEEPDOG_STAND_TEXTURE_KEYS[this.sheepdogFrame]);
+        },
+      });
+    }
+
+    // Weans on the rug — single-frame still image, slightly larger so
+    // the duo reads at the same scale as the lone NPCs.
+    if (this.textures.exists(WEANS_TEXTURE_KEY)) {
+      const weans = this.add
+        .image(layout.weans.x, layout.weans.y, WEANS_TEXTURE_KEY)
+        .setOrigin(0.5, 0.9)
+        .setScale(layout.spriteScale * 1.3)
+        .setDepth(VISITOR_DEPTH);
+      this.placeholders.push(weans);
+    }
+
+    // Returning pal beside the bookshelf — single-frame still image.
+    if (this.textures.exists(RETURNING_PAL_TEXTURE_KEY)) {
+      const pal = this.add
+        .image(layout.returningPal.x, layout.returningPal.y, RETURNING_PAL_TEXTURE_KEY)
+        .setOrigin(0.5, 0.85)
+        .setScale(layout.spriteScale * 1.3)
+        .setDepth(VISITOR_DEPTH);
+      this.placeholders.push(pal);
+    }
   }
 
   /**

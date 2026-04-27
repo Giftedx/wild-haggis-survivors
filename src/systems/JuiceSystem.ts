@@ -332,22 +332,27 @@ export class JuiceSystem {
   }
 
   /** Visual burst when an enemy dies — colored particles + combo tracking */
-  showKillBurst(x: number, y: number, color: number = 0xcc4444): void {
+  showKillBurst(x: number, y: number, color: number = 0xcc4444, opts?: { tier?: 'small' | 'medium' }): void {
     const lowFx = this.settings.load().reduceParticles;
     const dots = scaledParticleCount(lowFx ? 3 : 6, 2);
 
     // Sprite-based radial burst sits above pooled dots (depth 15) but below
     // boss particles (depth 20) and damage text (depth 80). Tier defaults to
-    // small here — call site only passes (x,y,color), so elite/HP info isn't
-    // available. Boss kills route through midRunBossDeathSpectacle instead.
-    if (this.scene.textures.exists('fx_enemy_burst_small')) {
-      const burst = this.scene.add.image(x, y, 'fx_enemy_burst_small')
+    // small — elite kills opt into 'medium' via opts.tier so the larger
+    // tartan-fleck radial reads above regular fodder. Boss kills route
+    // through midRunBossDeathSpectacle (large tier) instead.
+    const tier = opts?.tier ?? 'small';
+    const burstKey = tier === 'medium' ? 'fx_enemy_burst_medium' : 'fx_enemy_burst_small';
+    const startScale = tier === 'medium' ? 0.7 : 0.6;
+    const endScale = tier === 'medium' ? 1.4 : 1.2;
+    if (this.scene.textures.exists(burstKey)) {
+      const burst = this.scene.add.image(x, y, burstKey)
         .setDepth(18)
-        .setScale(0.6)
+        .setScale(startScale)
         .setAlpha(1);
       this.scene.tweens.add({
         targets: burst,
-        scale: 1.2,
+        scale: endScale,
         alpha: 0,
         duration: 280,
         ease: 'Quad.easeOut',

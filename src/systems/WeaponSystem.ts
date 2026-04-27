@@ -521,6 +521,7 @@ export class WeaponSystem {
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
       this.applyProjectileVisual(proj, 'haggis_ball');
+      this.spawnProjectileTrail(px, py, 'haggis_ball');
     }
   }
 
@@ -762,6 +763,7 @@ export class WeaponSystem {
       proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800, isCrit);
       proj.setWeaponKey(w.config.key);
       this.applyProjectileVisual(proj, 'thistle');
+      this.spawnProjectileTrail(px, py, 'thistle');
     }
   }
 
@@ -860,6 +862,7 @@ export class WeaponSystem {
     proj.fire(px, py, target.x, target.y, w.config.projectileSpeed, dmg, w.pierce, w.config.range, isCrit);
     proj.setWeaponKey(weaponKey);
     this.applyProjectileVisual(proj, 'caber');
+    this.spawnProjectileTrail(px, py, 'caber');
 
     // Use the safe callback field instead of monkey-patching deactivate
     proj.onDeactivateCallback = () => {
@@ -938,6 +941,7 @@ export class WeaponSystem {
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
       this.applyProjectileVisual(proj, 'haggis_ball');
+      this.spawnProjectileTrail(px, py, 'haggis_ball');
     }
   }
 
