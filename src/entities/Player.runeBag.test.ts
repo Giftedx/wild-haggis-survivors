@@ -90,7 +90,12 @@ describe('Player getters fold rune bag (U1 M4)', () => {
     if (player) player.setRuneBagAccessor(() => bag);
   });
 
-  it('getDamageMultiplier composes dmgMult × allStatsMult × bonusDamageMultiplier', () => {
+  // 30s under full vitest concurrency on each `it` — the beforeEach hook does
+  // `await import('./Player')` which re-runs esbuild + the heavy Player.ts module
+  // graph (Phaser stub, animation controller, haggis container). Isolated runtime
+  // ~700ms-2s; the 432-file vitest pool can push it past the 5s default. Same root
+  // cause as T420 (commit 7411a41) for Player.di.test.ts.
+  it('getDamageMultiplier composes dmgMult × allStatsMult × bonusDamageMultiplier', { timeout: 30_000 }, () => {
     if (!player) return; // Phaser stub fell through; the consumer-level tests cover the math.
     expect(player.getDamageMultiplier()).toBeCloseTo(1.0);
     applyRuneEffect(bag, eff('dmg_mult', { mult: 2.0 }));
@@ -99,7 +104,7 @@ describe('Player getters fold rune bag (U1 M4)', () => {
     expect(player.getDamageMultiplier()).toBeCloseTo(2.2);
   });
 
-  it('getMaxHp scales with hp_max_mult + persistent', () => {
+  it('getMaxHp scales with hp_max_mult + persistent', { timeout: 30_000 }, () => {
     if (!player) return;
     const base = player.getMaxHp();
     expect(base).toBeGreaterThan(0);
@@ -109,27 +114,27 @@ describe('Player getters fold rune bag (U1 M4)', () => {
     expect(player.getMaxHp()).toBeCloseTo(Math.round(base * 1.1 * 1.2));
   });
 
-  it('getCritChance adds the crit_flat addend', () => {
+  it('getCritChance adds the crit_flat addend', { timeout: 30_000 }, () => {
     if (!player) return;
     const base = player.getCritChance();
     applyRuneEffect(bag, eff('crit_flat', { flat: 0.12 }));
     expect(player.getCritChance()).toBeCloseTo(base + 0.12);
   });
 
-  it('getXpMultiplier folds xp_mult_run', () => {
+  it('getXpMultiplier folds xp_mult_run', { timeout: 30_000 }, () => {
     if (!player) return;
     const base = player.getXpMultiplier();
     applyRuneEffect(bag, eff('xp_mult_run', { mult: 1.5 }));
     expect(player.getXpMultiplier()).toBeCloseTo(base * 1.5);
   });
 
-  it('getLuckDrawBonus adds luck_flat', () => {
+  it('getLuckDrawBonus adds luck_flat', { timeout: 30_000 }, () => {
     if (!player) return;
     applyRuneEffect(bag, eff('luck_flat', { flat: 15 }));
     expect(player.getLuckDrawBonus()).toBe(15);
   });
 
-  it('getMaxHpBase ignores rune fold', () => {
+  it('getMaxHpBase ignores rune fold', { timeout: 30_000 }, () => {
     if (!player) return;
     const base = player.getMaxHpBase();
     applyRuneEffect(bag, eff('hp_max_mult', { mult: 1.1 }));

@@ -90,7 +90,10 @@ const FIXED_STEP_MS = 16.6667; // ADR-0002 60 fps fixed-step.
 const STEADY_STATE_TICKS = 600; // 10 seconds at 60 fps.
 
 describe('animation perf — AnimationController.tick across 201 entities', () => {
-  it('records steady-state per-tick cost below the regression budget', () => {
+  // 30s under full vitest concurrency; isolated runtime ~1-2s — see T420 (commit 7411a41).
+  // 600 ticks × 201 entities can stretch past the 5s default when CI/dev machines are
+  // saturated by the 432-file vitest pool.
+  it('records steady-state per-tick cost below the regression budget', { timeout: 30_000 }, () => {
     const entities = buildEntityPool();
     const probe = createPerfProbe(STEADY_STATE_TICKS);
 

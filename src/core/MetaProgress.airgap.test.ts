@@ -25,7 +25,10 @@ vi.mock('phaser', () => {
 });
 
 describe('Meta progression air-gap', () => {
-  it('WeaponSystem loads without SaveManager dependency', async () => {
+  // 30s under full vitest concurrency; isolated runtime ~50ms — see T420 (commit 7411a41).
+  // The dynamic `await import('../systems/WeaponSystem')` re-runs esbuild transform under
+  // the 432-file vitest pool and can exceed the 5s default on saturated machines.
+  it('WeaponSystem loads without SaveManager dependency', { timeout: 30_000 }, async () => {
     await expect(import('../systems/WeaponSystem')).resolves.toBeTruthy();
   });
 });
