@@ -15,6 +15,7 @@ import * as Phaser from 'phaser';
 import { drawHaggisBody } from '../../../animation/frameDrawers/haggisBodyDraw';
 import { VARIANTS } from '../../../data/variants';
 import type { VariantDef } from '../../../data/variants';
+import { bakePlayerMoodSprites } from './moods';
 
 const SPRITE_SIZE = 56;
 
@@ -31,4 +32,5 @@ export function bakePlayerVariants(scene: Phaser.Scene): void {
   for (const variant of VARIANTS) {
     bakePlayerVariant(scene, variant);
   }
+  bakePlayerMoodSprites(scene);
 }

@@ -91,8 +91,11 @@ export class PickupSpawner {
 
     this.hooks.getJuice().showToast(t('ui.game.treasure_nearby'), TOAST_COLORS.reward);
 
-    // Create a glowing chest with sprite
-    const chest = scene.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5);
+    // Create a glowing chest with sprite. Prefer the authored Hearth
+    // variant when BootScene has baked it; fall back to the legacy key in
+    // narrow tests that stub texture generation.
+    const chestKey = scene.textures.exists('pickup_chest_hearth') ? 'pickup_chest_hearth' : 'chest';
+    const chest = scene.add.sprite(x, y, chestKey).setDepth(5).setScale(1.5);
     this.hooks.trackChest(chest, false);
     const glow = scene.add.circle(x, y, 18, COLORS.WHISKY_GOLD, 0.2).setDepth(4);
 
@@ -243,7 +246,9 @@ export class PickupSpawner {
 
     this.hooks.getJuice().showToast(t('ui.game.golden_nearby'), TOAST_COLORS.reward);
 
-    const chest = scene.add.sprite(x, y, 'chest').setDepth(5).setScale(1.5).setTint(0xffdd44);
+    const chestKey = scene.textures.exists('pickup_chest_legendary') ? 'pickup_chest_legendary' : 'chest';
+    const chest = scene.add.sprite(x, y, chestKey).setDepth(5).setScale(1.5);
+    if (chestKey === 'chest') chest.setTint(0xffdd44);
     this.hooks.trackChest(chest, true);
     const glow = scene.add.circle(x, y, 22, 0xffdd44, 0.3).setDepth(4);
 
@@ -294,7 +299,9 @@ export class PickupSpawner {
   spawnGoldCoin(x: number, y: number, goldAmount: number): void {
     const scene = this.scene;
     const player = this.hooks.getPlayer();
-    const coin = scene.add.circle(x, y, 5, COLORS.WHISKY_GOLD, 1).setDepth(5);
+    const coin = scene.textures.exists('pickup_gold_coin')
+      ? scene.add.image(x, y, 'pickup_gold_coin').setDepth(5)
+      : scene.add.circle(x, y, 5, COLORS.WHISKY_GOLD, 1).setDepth(5);
 
     // Spinning effect
     scene.tweens.add({
@@ -468,7 +475,9 @@ export class PickupSpawner {
   spawnHealthOrb(x: number, y: number, healAmount: number): void {
     const scene = this.scene;
     const player = this.hooks.getPlayer();
-    const orb = scene.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
+    const orb = scene.textures.exists('pickup_health_thistle')
+      ? scene.add.image(x, y, 'pickup_health_thistle').setDepth(5)
+      : scene.add.circle(x, y, 6, 0x44dd44, 0.9).setDepth(5);
     const glow = scene.add.circle(x, y, 10, 0x44dd44, 0.3).setDepth(4);
 
     pulsePickupGlow(scene, glow, 1.5, 700);

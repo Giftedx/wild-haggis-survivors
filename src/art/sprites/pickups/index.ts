@@ -11,6 +11,7 @@ import { bakeChest } from './chest';
 import { bakeHealthOrb } from './healthOrb';
 import { bakeReliquary } from './reliquary';
 import { bakeBurnsPlatter } from './burnsPlatter';
+import { bakePickupVariants } from './variants';
 
 export function bakePickups(scene: Phaser.Scene): void {
   bakeXpGem(scene);
@@ -18,4 +19,5 @@ export function bakePickups(scene: Phaser.Scene): void {
   bakeHealthOrb(scene);
   bakeReliquary(scene);
   bakeBurnsPlatter(scene);
+  bakePickupVariants(scene);
 }
