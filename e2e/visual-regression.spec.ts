@@ -27,13 +27,17 @@ import path from 'node:path';
  * `npx playwright test visual-regression --update-snapshots --project=chromium-desktop`
  * and commit the regenerated PNGs under `e2e/visual-regression.spec.ts-snapshots/`.
  *
- * **Cross-OS note:** Playwright suffixes baseline PNGs with `{platform}`
+ * **Cross-OS note (T409):** Playwright suffixes baseline PNGs with `{platform}`
  * (e.g. `-win32`, `-linux`, `-darwin`). Baselines from one OS won't satisfy
- * a different OS's runner — instead, Playwright reports "missing baseline"
- * and the runner author must regenerate via `--update-snapshots` and commit
- * the new PNGs alongside the existing platform variants. CI on
- * `ubuntu-latest` will need its own `-linux` baseline pass. (Tracked as a
- * follow-up; see report.)
+ * a different OS's runner — Playwright reports "missing baseline" instead.
+ * Initial baselines were captured on `-win32`; the diff comparison is
+ * deliberately gated to `process.platform === 'win32'` below until linux
+ * baselines are regenerated under CI (T409). On linux the spec still runs
+ * the design-verify writes for parity but skips the comparison step. The
+ * fix is to regen via `--update-snapshots --project=chromium-desktop` on
+ * linux (locally via Docker or via a one-off CI artifact pull) and commit
+ * the `-linux` PNGs alongside the existing `-win32` ones, then drop the
+ * `process.platform` guard.
  *
  * Currently scoped to **chromium-desktop only**. Webkit + Firefox baselines
  * are out of scope (DPR / GPU-driver variance would require per-engine
@@ -99,7 +103,8 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
   test('MainMenu + Croft at uiScale 1.4 (desktop)', async ({ page, browserName }) => {
     // Diff baselines are chromium-only. Other engines still run the
     // design-verify writes for parity but skip the comparison step.
-    const compareDiff = browserName === 'chromium';
+    // T409: gate to win32 until linux baselines regenerated under CI.
+    const compareDiff = browserName === 'chromium' && process.platform === 'win32';
 
     await page.addInitScript(() => {
       try {
@@ -155,7 +160,8 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     // Reuse iPhone 13 viewport regardless of which project the runner picked.
     // Skip on browsers where viewport emulation isn't reliable for our boot path.
     test.skip(browserName === 'webkit', 'iPhone emulation only on chromium runners');
-    const compareDiff = browserName === 'chromium';
+    // T409: gate to win32 until linux baselines regenerated under CI.
+    const compareDiff = browserName === 'chromium' && process.platform === 'win32';
     await page.setViewportSize({ width: 390, height: 664 });
     void browser;
 
