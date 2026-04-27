@@ -23,6 +23,7 @@ import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
 import { NodeWaveTracker } from '../systems/nodeEvents/NodeWaveTracker';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
+import { HazardsSystem } from '../systems/HazardsSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
 import { ClipRecorder } from '@/utils/clipRecorder';
@@ -224,6 +225,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Ambient seasonal weather overlay (drizzle / rain / sun-shafts / aurora).
    *  Pure cosmetic — `null` between runs and when no seasonal event is live. */
   private weather: AmbientWeatherSystem | null = null;
+  /** Biome-conditioned environmental hazards (peat pits / slate / burn / scree).
+   *  Damages player on overlap; `null` between runs. */
+  private hazards: HazardsSystem | null = null;
   private timeManager!: TimeManager;
   private updateTickers = new UpdateTickers();
   private clipRecorder: ClipRecorder | null = null;
@@ -1222,6 +1226,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.weather = new AmbientWeatherSystem(this);
     this.weather.start();
     this.events.once('shutdown', () => { this.weather?.stop(); this.weather = null; });
+    // Environmental hazards — biome-conditioned, damages player on overlap.
+    // Honours `disableHazards` setting (defaults enabled when absent).
+    this.hazards?.stop();
+    this.hazards = new HazardsSystem(
+      this,
+      () => this.player ?? null,
+      () => this.getCurrentBiomeId(),
+    );
+    this.hazards.start();
+    this.events.once('shutdown', () => { this.hazards?.stop(); this.hazards = null; });
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
       getScene: () => this,
@@ -1836,6 +1850,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.update(delta, this.player.getHpFraction());
     // Ambient weather likewise stays on raw delta — sky is sky.
     this.weather?.update(delta);
+    // Hazards run on raw delta too — environment is environment.
+    this.hazards?.update(delta);
 
     // Boss HP bar + edge indicators
     this.bossHpTracker.tick();

@@ -49,9 +49,21 @@ installLazyProductionSceneLoader();
 
 /** Dev: ?export=sprites — sprite sheet. ?quickplay[&seed=n] — BootScene jumps into Game (dev build only). */
 
+// `?export=sprites` forces the Canvas2D renderer instead of WebGL.
+// Headless Chromium's WebGL framebuffer attachment limits trip
+// "Framebuffer Unsupported" + ReadPixels GPU stalls when the
+// SpriteExportScene composites the full sprite set onto its
+// download canvas. Canvas2D bypasses the WebGL→canvas readback
+// path entirely, so the export pipeline can finish. Production /
+// dev / playtest paths stay on WebGL via Phaser.AUTO. See memory
+// `reference_atlas_export_phaser4_limit.md` for the failure trace.
+const isSpriteExport =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).has('export');
+
 /** Main Phaser configuration — responsive, WebGL-first with Canvas fallback */
 const config: Phaser.Types.Core.GameConfig = {
-  type: Phaser.AUTO,
+  type: isSpriteExport ? Phaser.CANVAS : Phaser.AUTO,
   parent: document.body,
   width: GAME.WIDTH,
   height: GAME.HEIGHT,
