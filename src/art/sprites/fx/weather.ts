@@ -230,3 +230,109 @@ export function bakeFxAuroraBand(scene: Phaser.Scene): void {
   gs.generateTexture('fx_aurora_band', w, h);
   gs.destroy();
 }
+
+/**
+ * `fx_ember_spark` — small sputtering ember particle. Hot-orange core
+ * with a brighter white-yellow flicker centre and a faint smoke trail
+ * curling up. Used by lava overlays + Burns Night fire moments + future
+ * boss enrage sparks. Compact 12×16 so it reads as a single hot pixel
+ * mote at gameplay scale.
+ */
+export function bakeFxEmberSpark(scene: Phaser.Scene): void {
+  const w = 12;
+  const h = 16;
+  const gs = scene.add.graphics();
+  const cx = w / 2;
+  const cy = 11;
+
+  // Outer warm halo (wide low-alpha orange glow)
+  gs.fillStyle(0xff5a08, 0.22);
+  gs.fillCircle(cx, cy, 5);
+  gs.fillStyle(0xff8a20, 0.32);
+  gs.fillCircle(cx, cy, 3.5);
+
+  // Ember body — three-layer hot core
+  gs.fillStyle(0xc41818, 1);
+  gs.fillCircle(cx, cy, 2.2);
+  gs.fillStyle(0xff5a08, 1);
+  gs.fillCircle(cx, cy, 1.6);
+  gs.fillStyle(0xffba40, 1);
+  gs.fillCircle(cx, cy - 0.3, 1.0);
+
+  // White-hot flicker centre
+  gs.fillStyle(0xfff0c0, 1);
+  gs.fillCircle(cx, cy - 0.3, 0.5);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillCircle(cx - 0.2, cy - 0.5, 0.25);
+
+  // Sputter pip — single asymmetric flare-out
+  gs.fillStyle(0xffba40, 0.85);
+  gs.fillCircle(cx + 1.6, cy - 1, 0.4);
+
+  // Smoke trail curling upward (3 fading wisps)
+  gs.fillStyle(0x6a4838, 0.4);
+  gs.fillCircle(cx + 0.5, cy - 4, 1.4);
+  gs.fillStyle(0x5a3828, 0.32);
+  gs.fillCircle(cx - 0.3, cy - 6, 1.1);
+  gs.fillStyle(0x4a2818, 0.22);
+  gs.fillCircle(cx + 0.4, cy - 8, 0.85);
+
+  gs.generateTexture('fx_ember_spark', w, h);
+  gs.destroy();
+}
+
+/**
+ * `fx_haar_drift_wisp` — a single elongated tendril of haar fog drifting
+ * sideways. Pale blue-grey core with a brighter pearl centre band and
+ * soft alpha falloff at the ends. Used for ambient Haar Wraith presence
+ * and as a layered weather particle for coastal/winter overlays.
+ * 32×10 so the tendril reads as a long horizontal smear, not a puff.
+ */
+export function bakeFxHaarDriftWisp(scene: Phaser.Scene): void {
+  const w = 32;
+  const h = 10;
+  const gs = scene.add.graphics();
+  const cy = h / 2;
+
+  // Outer tendril halo — a soft elongated pale band, low alpha throughout.
+  // Slightly brighter in the middle so the wisp tapers naturally at ends.
+  for (let x = 0; x < w; x++) {
+    // Distance from centre 0..1 (highest in middle, 0 at ends)
+    const t = 1 - Math.abs(x - w / 2) / (w / 2);
+    const a = 0.06 + t * 0.18;
+    gs.fillStyle(0x88a4b8, a);
+    gs.fillRect(x, cy - 4, 1, 8);
+  }
+
+  // Mid body — pale-cyan core, narrower band
+  for (let x = 2; x < w - 2; x++) {
+    const t = 1 - Math.abs(x - w / 2) / (w / 2 - 2);
+    const a = 0.18 + t * 0.32;
+    gs.fillStyle(0xc4dee4, a);
+    gs.fillRect(x, cy - 2, 1, 4);
+  }
+
+  // Bright pearl spine — brightest pinch in the centre, fades to ends
+  for (let x = 6; x < w - 6; x++) {
+    const t = 1 - Math.abs(x - w / 2) / (w / 2 - 6);
+    const a = 0.35 + t * 0.5;
+    gs.fillStyle(0xeaf2f8, a);
+    gs.fillRect(x, cy - 0.6, 1, 1.2);
+  }
+
+  // White-hot centre highlight (very narrow, brightest specular)
+  gs.fillStyle(0xffffff, 0.85);
+  gs.fillRect(w / 2 - 2, cy - 0.4, 4, 0.8);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillRect(w / 2 - 0.5, cy - 0.3, 1, 0.6);
+
+  // Trailing droplet pips — three tiny pale dots at the trailing edge
+  // so the wisp looks like it's shedding moisture
+  gs.fillStyle(0xeaf2f8, 0.7);
+  gs.fillCircle(4, cy + 1, 0.5);
+  gs.fillCircle(8, cy - 1, 0.4);
+  gs.fillCircle(11, cy + 1.5, 0.35);
+
+  gs.generateTexture('fx_haar_drift_wisp', w, h);
+  gs.destroy();
+}

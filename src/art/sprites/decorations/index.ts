@@ -36,6 +36,8 @@ import {
   bakeAutumnLeafScatter,
   bakeSpringShoot,
   bakeThawPuddle,
+  bakeWinterSnowcap,
+  bakeSummerBarley,
 } from './seasonalMoor';
 import { bakeStoryProps } from './storyProps';
 import { bakeCairn } from './cairn';
@@ -63,6 +65,8 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);
+  bakeWinterSnowcap(scene);
+  bakeSummerBarley(scene);
   bakeStoryProps(scene);
   bakeCairn(scene);
   bakeSheepSkull(scene);

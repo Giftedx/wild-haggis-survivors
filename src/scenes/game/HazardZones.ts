@@ -14,6 +14,12 @@ import { GAME } from '../../config';
 import type { Player } from '../../entities/Player';
 import type { JuiceSystem } from '../../systems/JuiceSystem';
 import { HAZARD_ZONE_LAVA, HAZARD_ZONE_HEAL, HAZARD_ZONE_SLICK, HAZARD_ZONE_FOG } from './hazardZonePalette';
+import {
+  spawnLavaOverlay,
+  spawnHealOverlay,
+  spawnSlickOverlay,
+  spawnFogOverlay,
+} from './hazardZoneOverlays';
 import type { Enemy } from '../../entities/Enemy';
 import {
   MEMORY_TRAIL_DURATION_MS,
@@ -31,6 +37,7 @@ import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 import { computeExtraHealingPlacement, computeHazardPlacements } from './hazardPlacement';
 import type { RNG } from '../../utils/rng';
 import { isInvincibilityEnabled } from '../../systems/accessibility/AssistMode';
+import { audio } from '../../systems/AudioSystem';
 
 export interface HazardZonesHooks {
   getPlayer(): Player;
@@ -160,6 +167,9 @@ export class HazardZones {
         duration: 1500 + z.tweenJitterMs,
         ...TWEEN_INFINITE_BREATHE,
       });
+      // Decorative cracks + ember pinpricks + cooling-edge ring overlay.
+      // Lifts the patch from "two stacked ellipses" to "fissured magma".
+      spawnLavaOverlay(scene, z.x, z.y, z.r);
       this.lavaZones.push({ x: z.x, y: z.y, r: z.r, tickAccMs: 0 });
     }
 
@@ -204,10 +214,13 @@ export class HazardZones {
       duration: 700,
       ...TWEEN_INFINITE_BREATHE,
     });
+    // Smashed-bottle silhouette + amber glaze trail. Anchors the spill
+    // to the dropped Buckfast bottle that just broke.
+    const overlay = spawnSlickOverlay(scene, x, y, r);
     this.slickZones.push({
       x, y, r,
       expireAtMs: gameTimeMs + SLICK_DURATION_MS,
-      visuals: [base, glow],
+      visuals: [base, glow, overlay],
     });
   }
 
@@ -234,10 +247,16 @@ export class HazardZones {
       duration: 1_000,
       ...TWEEN_INFINITE_BREATHE,
     });
+    // Drifting tendril wisps — three slowly-moving streaks make the
+    // patch feel like weather instead of a static puddle.
+    const overlayObjects = spawnFogOverlay(scene, x, y, r);
+    // Pair with a sustained pale-cyan whoosh so the patch announces
+    // itself audibly the same way the visual wisps announce it visually.
+    audio.playHaarDrift();
     this.fogZones.push({
       x, y, r,
       expireAtMs: gameTimeMs + FOG_DURATION_MS,
-      visuals: [base, glow],
+      visuals: [base, glow, ...overlayObjects],
     });
   }
 
@@ -283,6 +302,9 @@ export class HazardZones {
       duration: 2000 + jitterMs,
       ...TWEEN_INFINITE_BREATHE,
     });
+    // Celtic high-cross + herb sprigs + sparkle motes overlay. Reads as
+    // a sacred restorative spot rather than a generic green disc.
+    spawnHealOverlay(scene, hx, hy, hr);
     this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
   }
 

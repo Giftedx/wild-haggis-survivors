@@ -903,6 +903,39 @@ export class AudioSystem {
     }
   }
 
+  /**
+   * Haar Drift whoosh — sustained pale-cyan air-flow tone for the
+   * lingering sea-fog patches dropped on haar_wraith death. Sits an
+   * octave below playEchoTouch so the two share a tonal family but
+   * the haar reads as wider/colder. No music duck (these patches
+   * spawn often enough that ducking would chop the pad).
+   */
+  playHaarDrift(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    // Three soft layers: low body, mid air, high pearl shimmer. All
+    // long-tail decays so the sound pools like fog rather than a hit.
+    for (let d = 0; d < 3; d++) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      // Triangle for body warmth, sine for shimmer pearl
+      osc.type = d === 2 ? 'sine' : 'triangle';
+      osc.detune.value = d === 0 ? -8 : d === 1 ? 8 : 16;
+      const baseFreq = d === 0 ? 174.61 : d === 1 ? 220.0 : 440.0; // F3, A3, A4
+      osc.frequency.setValueAtTime(baseFreq, t0);
+      osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.94, t0 + 0.9);
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(d === 2 ? 0.04 : 0.06, t0 + 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.95);
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(t0);
+      osc.stop(t0 + 1.0);
+    }
+  }
+
   /** Rising tone per card slot — creates anticipation as cards fan out.
    *  Index 0/1/2 maps to ascending G4/B4/D5 pitches. */
   playCardReveal(index: number): void {

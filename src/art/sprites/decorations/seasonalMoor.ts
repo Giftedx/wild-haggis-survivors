@@ -1,9 +1,10 @@
 /**
- * Seasonal moor decoration kit — three single-frame props that dress the
- * moor between Burns Night and the spring thaw. Each leans on a Scottish
- * cultural anchor (rowan/oak/silver-birch leaf trio for Highland October;
- * primrose + first-thaw shoot for spring; meltwater puddle with frost
- * crust at one edge) so the props read as place-and-time, not generic
+ * Seasonal moor decoration kit — five single-frame props that dress the
+ * moor across all four seasons. Each leans on a Scottish cultural anchor
+ * (rowan/oak/silver-birch leaf trio for Highland October; primrose +
+ * first-thaw shoot for spring; meltwater puddle with frost crust at one
+ * edge for late-thaw; snow-cap on a heather clump for deep winter; barley
+ * ear for summer/Lammas) so the props read as place-and-time, not generic
  * "leaf/sprout/puddle". Palette pulled from ART_STYLE_BIBLE Wild + Hearth
  * tonal anchors. Companion to biomeProps.ts; FloraScatter owns placement.
  */
@@ -271,5 +272,172 @@ export function bakeThawPuddle(scene: Phaser.Scene): void {
     g.fillCircle(20, 6.4, 0.3);
     g.fillStyle(0xeaf8fc, 0.7);
     g.fillCircle(15, 6.0, 0.7);
+  });
+}
+
+/**
+ * `deco_winter_snowcap` — a heather clump capped with fresh snow. The
+ * snow sits on the windward side asymmetrically so it reads as
+ * "weather-direction memory" rather than a generic dome. Two purple
+ * bloom-tips poke through the cap so the prop carries the same heather-
+ * is-Scotland anchor as the autumn/spring leaves but in a colder palette.
+ * Cultural cue: the deep-winter moor is rarely white-bare — usually the
+ * heather colour bleeds through the snow at the tips.
+ */
+export function bakeWinterSnowcap(scene: Phaser.Scene): void {
+  bake(scene, 'deco_winter_snowcap', 24, 18, (g) => {
+    // Layered ground shadow — small, snow doesn't leave a hard cast
+    g.fillStyle(0x000000, 0.14);
+    g.fillEllipse(12, 16, 18, 3.5);
+    g.fillStyle(0x000000, 0.22);
+    g.fillEllipse(12, 16, 14, 2.4);
+
+    // Heather base (low dark-purple-green clump showing under the snow)
+    g.fillStyle(0x1a1828, 1);
+    g.fillEllipse(12, 13, 14, 5);
+    g.fillStyle(0x2a2438, 1);
+    g.fillEllipse(12, 12.5, 12, 4);
+    g.fillStyle(0x3a2848, 1);
+    g.fillEllipse(12, 12.2, 10, 3);
+    // Two heather bloom-tips poking through the snow (signature anchor)
+    g.fillStyle(0x6a2884, 1);
+    g.fillCircle(8, 9, 1.4);
+    g.fillCircle(15, 8, 1.6);
+    g.fillStyle(0x9a48d8, 1);
+    g.fillCircle(8, 9, 0.8);
+    g.fillCircle(15, 8, 0.9);
+    // Brightest petal pip on the larger bloom
+    g.fillStyle(0xcc78dd, 1);
+    g.fillCircle(15, 7.6, 0.5);
+
+    // Snow cap — asymmetric (bigger on left = windward). Three layers
+    // for depth: shadow rim, body, top-light highlight.
+    g.fillStyle(0xa8b4c4, 1);
+    g.fillEllipse(11, 7, 16, 5);
+    g.fillEllipse(7, 8, 6, 3);
+    g.fillStyle(0xeaeef6, 1);
+    g.fillEllipse(11, 6.4, 14, 4);
+    g.fillEllipse(7, 7.6, 5, 2.4);
+    g.fillStyle(0xffffff, 1);
+    g.fillEllipse(11, 5.8, 11, 3);
+    g.fillEllipse(7, 7.2, 4, 1.6);
+    // Snow drift highlight (asymmetric ridge — wind-formed)
+    g.fillStyle(0xeaf6ff, 0.9);
+    g.fillRect(6, 5.4, 9, 0.6);
+
+    // Frost crystal sparkle — three pinpricks on the cap surface
+    g.fillStyle(0xc4eaff, 0.95);
+    g.fillCircle(9, 5.4, 0.4);
+    g.fillCircle(13, 5.7, 0.35);
+    g.fillCircle(16, 6.4, 0.3);
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(9, 5.4, 0.18);
+    g.fillCircle(13, 5.7, 0.16);
+
+    // Tiny falling-snow flecks above the clump
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(4, 3, 0.4);
+    g.fillCircle(20, 4, 0.4);
+    g.fillCircle(17, 2, 0.3);
+  });
+}
+
+/**
+ * `deco_summer_barley` — a single barley ear bowed by midsummer wind.
+ * Cultural anchor: barley is *the* Scottish cereal (whisky base, oats
+ * second). The ear has visible awns (the bristly whiskers) which is the
+ * unmistakable wheat-vs-barley tell, plus a slight wind-bend so the
+ * prop carries motion memory without animation. A single field poppy
+ * peeks at the base — common companion in Highland barley fields.
+ */
+export function bakeSummerBarley(scene: Phaser.Scene): void {
+  bake(scene, 'deco_summer_barley', 22, 26, (g) => {
+    // Ground shadow
+    g.fillStyle(0x000000, 0.14);
+    g.fillEllipse(11, 24, 14, 3);
+    g.fillStyle(0x000000, 0.22);
+    g.fillEllipse(11, 24, 10, 2);
+
+    // Stalk — tall, slightly curved by wind. Drawn as 6 short segments
+    // rather than a straight rect so the bend reads naturally.
+    g.fillStyle(0x4a5818, 1);
+    g.fillRect(11, 22, 1, 2);
+    g.fillRect(11.2, 20, 1, 2);
+    g.fillRect(11.4, 18, 1, 2);
+    g.fillRect(11.6, 16, 1, 2);
+    g.fillRect(11.8, 14, 1, 2);
+    g.fillRect(12, 12, 1, 2);
+    g.fillStyle(0x8aa028, 1);
+    g.fillRect(11.2, 22, 0.5, 2);
+    g.fillRect(11.4, 20, 0.5, 2);
+    g.fillRect(11.6, 18, 0.5, 2);
+    g.fillRect(11.8, 16, 0.5, 2);
+    g.fillRect(12.0, 14, 0.5, 2);
+    g.fillRect(12.2, 12, 0.5, 2);
+
+    // One narrow leaf low on the stalk (long flag-leaf shape)
+    g.fillStyle(0x2a3a08, 1);
+    g.fillTriangle(8, 18, 11, 16, 10, 22);
+    g.fillStyle(0x4a8030, 1);
+    g.fillTriangle(8.5, 18.5, 10.6, 16.4, 9.8, 21);
+    g.fillStyle(0x8ad048, 0.85);
+    g.fillRect(9.4, 18, 0.4, 3);
+
+    // Barley ear — vertical stack of paired grain husks. Each "grain"
+    // is a small olive-tinted oval; pairs are offset so the ear looks
+    // tufted not striped.
+    const earX = 12;
+    const earTop = 4;
+    for (let i = 0; i < 6; i++) {
+      const gy = earTop + i * 1.6;
+      // Grain shadow
+      g.fillStyle(0x4a4818, 1);
+      g.fillEllipse(earX - 1.4, gy, 2.4, 1.4);
+      g.fillEllipse(earX + 1.4, gy, 2.4, 1.4);
+      // Grain body (warm gold-olive)
+      g.fillStyle(0xa89028, 1);
+      g.fillEllipse(earX - 1.4, gy, 2, 1.1);
+      g.fillEllipse(earX + 1.4, gy, 2, 1.1);
+      // Grain highlight
+      g.fillStyle(0xeac848, 1);
+      g.fillEllipse(earX - 1.4, gy - 0.2, 1.3, 0.7);
+      g.fillEllipse(earX + 1.4, gy - 0.2, 1.3, 0.7);
+      // Bright top pip
+      g.fillStyle(0xfff0b0, 0.9);
+      g.fillCircle(earX - 1.4, gy - 0.4, 0.3);
+    }
+
+    // Awns — long bristly whiskers radiating up from the top of the
+    // ear. The unmistakable barley tell.
+    g.lineStyle(0.6, 0x6a5818, 0.9);
+    for (let i = 0; i < 7; i++) {
+      const ax = 8 + i * 1.2;
+      const ay = 4 - (i % 2) * 0.5;
+      g.lineBetween(ax, ay, ax + (i - 3) * 0.6, 0);
+    }
+    g.lineStyle(0.4, 0xa89028, 0.85);
+    for (let i = 0; i < 7; i++) {
+      const ax = 8 + i * 1.2;
+      const ay = 4 - (i % 2) * 0.5;
+      g.lineBetween(ax, ay, ax + (i - 3) * 0.6, 0);
+    }
+    // Awn tip pips — pale gold
+    g.fillStyle(0xeac848, 0.95);
+    g.fillCircle(7, 0, 0.3);
+    g.fillCircle(11, 0, 0.3);
+    g.fillCircle(14, 0, 0.3);
+
+    // Companion poppy at the base — tiny bright red bloom
+    g.fillStyle(0x4a0808, 1);
+    g.fillCircle(15, 23, 1.6);
+    g.fillStyle(0xc41818, 1);
+    g.fillCircle(15, 23, 1.2);
+    g.fillStyle(0xee3030, 1);
+    g.fillCircle(15, 22.7, 0.7);
+    g.fillStyle(0x000000, 1);
+    g.fillCircle(15, 23, 0.4);
+    // Poppy stem
+    g.fillStyle(0x4a5818, 1);
+    g.fillRect(14.7, 23, 0.6, 1);
   });
 }

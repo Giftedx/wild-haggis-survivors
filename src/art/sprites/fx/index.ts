@@ -26,6 +26,8 @@ import {
   bakeFxDrizzle,
   bakeFxSunShaft,
   bakeFxAuroraBand,
+  bakeFxEmberSpark,
+  bakeFxHaarDriftWisp,
 } from './weather';
 import { bakeWeaponFlourishes } from './weaponFlourishes';
 import { bakeAtmosphereLayers } from './atmosphereLayers';
@@ -50,6 +52,8 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeFxDrizzle(scene);
   bakeFxSunShaft(scene);
   bakeFxAuroraBand(scene);
+  bakeFxEmberSpark(scene);
+  bakeFxHaarDriftWisp(scene);
   bakeWeaponFlourishes(scene);
   bakeAtmosphereLayers(scene);
   bakeEliteTelegraphs(scene);

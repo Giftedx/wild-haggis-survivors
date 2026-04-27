@@ -116,6 +116,8 @@ function inferSeasonHint(month: number): string | null {
   if (month === 9 || month === 10) return 'samhain'; // Oct, Nov → autumn leaves
   if (month === 3 || month === 4) return 'beltane'; // Apr, May → spring shoots
   if (month === 0 || month === 1) return 'hogmanay'; // Jan, Feb → thaw puddles
+  if (month === 11) return 'midwinter'; // Dec → snowcap on heather
+  if (month >= 5 && month <= 7) return 'lammas'; // Jun, Jul, Aug → summer barley
   return null;
 }
 
@@ -128,6 +130,8 @@ function inferSeasonHint(month: number): string | null {
  * - `samhain` → +deco_autumn_leaves @ ~0.12 in pine + heather
  * - `beltane` → +deco_spring_shoot @ ~0.10 in heather + bog
  * - `hogmanay`/`burns_night` → +deco_thaw_puddle @ ~0.10 in bog
+ * - `midwinter` (Dec) → +deco_winter_snowcap @ ~0.11 in heather + pine
+ * - `lammas` (Jun–Aug) → +deco_summer_barley @ ~0.10 in heather + bog
  * - heather always gets HEATHER_URBAN_PROPS @ 0.10 total (season-independent)
  */
 export function getBiomeTable(
@@ -145,6 +149,10 @@ export function getBiomeTable(
     seasonInjections.push({ biomes: ['heather', 'bog'], key: 'deco_spring_shoot', weight: 0.10 });
   } else if (seasonKey === 'hogmanay' || seasonKey === 'burns_night') {
     seasonInjections.push({ biomes: ['bog'], key: 'deco_thaw_puddle', weight: 0.10 });
+  } else if (seasonKey === 'midwinter') {
+    seasonInjections.push({ biomes: ['heather', 'pine'], key: 'deco_winter_snowcap', weight: 0.11 });
+  } else if (seasonKey === 'lammas') {
+    seasonInjections.push({ biomes: ['heather', 'bog'], key: 'deco_summer_barley', weight: 0.10 });
   }
   for (const inj of seasonInjections) {
     if (!inj.biomes.includes(biome)) continue;

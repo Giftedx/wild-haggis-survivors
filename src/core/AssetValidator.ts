@@ -202,6 +202,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_autumn_leaves',
     'deco_spring_shoot',
     'deco_thaw_puddle',
+    'deco_winter_snowcap',
+    'deco_summer_barley',
     'deco_waymarker_post',
     'deco_pictish_stone',
     'deco_ruined_croft',
