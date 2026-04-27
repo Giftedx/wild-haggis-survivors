@@ -489,6 +489,11 @@ export class WeaponSystem {
     else if (texture === 'haggis_ball') trailKey = 'fx_trail_haggis';
     if (!trailKey) return;
 
+    // Defensive: skip if the texture wasn't baked (validator should
+    // catch any drop, but unit-test stubs that don't seed BootScene
+    // textures would otherwise render the magenta missing placeholder).
+    if (!this.scene.textures.exists(trailKey)) return;
+
     const trail = this.scene.add.image(px, py, trailKey);
     trail.setDepth(-1);
     trail.setAlpha(0.85);

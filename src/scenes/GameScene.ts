@@ -1233,6 +1233,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this,
       () => this.player ?? null,
       () => this.getCurrentBiomeId(),
+      () => this.runRng,
     );
     this.hazards.start();
     this.events.once('shutdown', () => { this.hazards?.stop(); this.hazards = null; });

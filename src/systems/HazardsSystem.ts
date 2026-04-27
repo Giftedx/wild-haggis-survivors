@@ -29,6 +29,7 @@
 import type * as Phaser from 'phaser';
 import type { Player } from '../entities/Player';
 import type { BiomeId } from '../data/biomes';
+import type { RNG } from '../utils/rng';
 import {
   HAZARDS,
   HAZARD_KEYS,
@@ -83,6 +84,7 @@ export class HazardsSystem {
   private readonly scene: Phaser.Scene;
   private readonly getPlayer: () => Player | null;
   private readonly getCurrentBiome: () => BiomeId | null;
+  private readonly getRunRng?: () => RNG | null;
   /** Active hazards — swept on `stop()`. */
   private readonly active: Set<ActiveHazard> = new Set();
   /** Accumulator for the next-spawn timer (ms). */
@@ -96,10 +98,21 @@ export class HazardsSystem {
     scene: Phaser.Scene,
     getPlayer: () => Player | null,
     getCurrentBiome: () => BiomeId | null,
+    getRunRng?: () => RNG | null,
   ) {
     this.scene = scene;
     this.getPlayer = getPlayer;
     this.getCurrentBiome = getCurrentBiome;
+    this.getRunRng = getRunRng;
+  }
+
+  /** Pull a 0..1 random — uses the seeded run RNG when available so
+   *  T1 replay determinism (`reference` ADR-0002) holds for the
+   *  hazard spawn positions that drive damage events. Falls back to
+   *  Math.random() for unit-test stubs that don't wire run RNG in. */
+  private rand(): number {
+    const rng = this.getRunRng?.();
+    return rng ? rng.next() : Math.random();
   }
 
   /**
@@ -139,8 +152,15 @@ export class HazardsSystem {
 
       if (!h.expiring) {
         if (h.hitCooldownMs <= 0 && this.overlapsPlayer(h, player)) {
-          player.takeDamage(h.def.damage);
-          h.hitCooldownMs = HIT_COOLDOWN_MS;
+          // Respect dash + Burn-Leap iframes — same gate the existing
+          // HazardZones system uses (src/scenes/game/HazardZones.ts:301).
+          // Without this, a Burn Leap meant to clear a peat pit / scree
+          // slide would still take damage, breaking the iframe contract.
+          const iframed = player.isDashInvincible() || player.isHazardLeaping();
+          if (!iframed) {
+            player.takeDamage(h.def.damage);
+            h.hitCooldownMs = HIT_COOLDOWN_MS;
+          }
         }
         if (h.remainingMs <= 0) this.beginExpire(h);
       }
@@ -197,9 +217,9 @@ export class HazardsSystem {
   private spawnHazard(def: HazardDef, player: Player): void {
     if (!this.scene.textures?.exists(def.texture)) return;
 
-    const angle = Math.random() * Math.PI * 2;
+    const angle = this.rand() * Math.PI * 2;
     const dist =
-      SPAWN_RING_MIN_PX + Math.random() * (SPAWN_RING_MAX_PX - SPAWN_RING_MIN_PX);
+      SPAWN_RING_MIN_PX + this.rand() * (SPAWN_RING_MAX_PX - SPAWN_RING_MIN_PX);
     const x = player.x + Math.cos(angle) * dist;
     const y = player.y + Math.sin(angle) * dist;
 
