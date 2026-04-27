@@ -53,11 +53,10 @@ import { buildCaptureFilename } from '../utils/captureFilename';
 import { formatLocalYmd } from '../utils/formatDate';
 import { saveScreenshot } from '../utils/screenshot';
 import { TOAST_COLORS } from '../ui/toastPalette';
-import { ReplayRecorder } from '../replay/ReplayRecorder';
-import { ReplayInput } from '../replay/ReplayInput';
+import type { ReplayRecorder } from '../replay/ReplayRecorder';
+import type { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
 import { resolveReplayMode } from '../replay/replayConfig';
-import { captureComposedStats } from '../replay/composedStatsSnapshot';
 import { parseGameSceneInitData } from './gameSceneInitData';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
@@ -149,6 +148,13 @@ import { RunScoreState } from './game/RunScoreState';
 import { wireSceneEventBus } from './game/wireSceneEventBus';
 import { installRunIntroFx } from './game/installRunIntroFx';
 import { installRunStartCeremony } from './game/runStartCeremony';
+import {
+  installReplayPlayback,
+  installReplayRecording,
+  resetReplayBridge,
+  recordReplayFrame,
+  tickReplayPlayback,
+} from './game/replayBridgeInstall';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -308,27 +314,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * passed via `init(data)` — daily challenge / shared seed codes / replay.
    */
   private runRng!: RNG;
-  /**
-   * T1 deterministic replay — recorder for the current run. Constructed
-   * in create() once the run's seed + variant are resolved, and only when
-   * `resolveReplayMode() === 'record'`. `null` means recording is off;
-   * finalize/pushFrame calls are guarded by a null-check.
-   */
+  /** T1 replay state — install/teardown owned by `game/replayBridgeInstall.ts`. */
   private replayRecorder: ReplayRecorder | null = null;
-  /**
-   * T1 replay playback driver. Non-null only during a replay run. Owns
-   * its own teardown via `IInput.destroy`; GameScene reset clears the
-   * reference but doesn't force a second destroy.
-   */
   private replayInput: ReplayInput | null = null;
-  /** Replay blob captured from init data, consumed in create(). */
   private pendingReplay: ReplayBlobAny | null = null;
-  /**
-   * T1 Phase 3 — recorded route picks from a v2 playback blob, consumed
-   * in order by `launchActIntermission` so the intermission auto-resolves
-   * with the captured pick instead of showing the card UI. Empty outside
-   * of v2 playback; reset per-run.
-   */
+  /** v2 route queue — `launchActIntermission` shifts one off per act boundary during playback. */
   private pendingReplayRoutes: RoutePick[] = [];
   /** Pending seed passed via init() data. Consumed in create(). */
   private pendingRunSeed: number | null = null;
@@ -512,13 +502,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * any systems are constructed.
    */
   private resetTransientRunState(): void {
-    // T1 replay — drop the previous run's playback driver before we
-    // build the next one. Replay inputs hold no live listeners so
-    // skipping destroy() here is safe; we still null the ref to let GC
-    // reclaim the frame array.
-    this.replayInput?.destroy();
-    this.replayInput = null;
-    this.pendingReplayRoutes = [];
+    // T1 replay — drop the previous run's playback driver. Slice in `replayBridgeInstall.ts`.
+    ({
+      replayInput: this.replayInput,
+      pendingReplayRoutes: this.pendingReplayRoutes,
+    } = resetReplayBridge({ replayInput: this.replayInput }));
     this.iFrameController.reset();
     this.pauseMenu?.close();
     this.pauseMenu = null;
@@ -699,31 +687,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
 
-    // T1 replay — mutually exclusive modes:
-    //   playback: `pendingReplay` was set by init(). Build a ReplayInput
-    //     from the blob and disable recording.
-    //   record:   `resolveReplayMode() === 'record'` and no blob → build
-    //     a recorder below, after curse + composedStats resolve so the
-    //     v2 blob captures run-start metadata.
-    //   off:      both null.
-    const replayMode: 'playback' | 'record' | 'off' = this.pendingReplay
-      ? 'playback'
-      : resolveReplayMode() === 'record'
-        ? 'record'
-        : 'off';
-    this.replayInput = null;
+    // T1 replay — mutually exclusive modes (playback wins over record).
+    // Slice in `replayBridgeInstall.ts`; recorder build deferred below
+    // so the v2 meta captures the live curse + composed stats.
     this.replayRecorder = null;
-    // Capture blob into a local BEFORE clearing pendingReplay so the
-    // v2 curse / composedStats / routes can be applied below from the
-    // blob without having to re-read it through `this.pendingReplay`
-    // after the InputManager-DI consumption.
-    const playbackBlob = replayMode === 'playback' ? this.pendingReplay : null;
-    if (playbackBlob) {
-      this.replayInput = new ReplayInput(playbackBlob);
-      this.pendingReplay = null;
-    }
-    const playbackV2 =
-      playbackBlob && playbackBlob.version === 2 ? playbackBlob : null;
+    const { replayMode, replayInput, playbackV2, consumePending } =
+      installReplayPlayback({
+        pendingReplay: this.pendingReplay,
+        resolvedMode: resolveReplayMode(),
+      });
+    this.replayInput = replayInput;
+    if (consumePending) this.pendingReplay = null;
 
     const metaSave = this.metaSaveManager.load();
     const baseStats = StatComposer.getPlayerStats(metaSave);
@@ -771,23 +745,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           maxHp: Math.max(1, Math.round(baseStats.maxHp * this.runModifiers.startHpRatio)),
         };
 
-    // T1 Phase 3 — recorder construction moves here so the v2 blob
-    // captures the live curse + composed stats. `pushRoute` is fed from
-    // the Moor Road resolver further down (search: `runActState.recordPick`).
-    if (replayMode === 'record') {
-      this.replayRecorder = new ReplayRecorder({
-        seed: this.runRng.seed,
-        variantKey: selectedVariant.key,
-        build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
-        curseKey: this.activeCurseKey ?? undefined,
-        composedStats: captureComposedStats(composedStats),
-      });
-    }
-
-    // T1 Phase 3 — stash recorded route picks for the intermission
-    // resolver. `launchActIntermission` shifts one off the front per
-    // act boundary and applies it inline instead of launching the UI.
-    this.pendingReplayRoutes = playbackV2?.routes ? playbackV2.routes.slice() : [];
+    // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
+    // `replayBridgeInstall.ts`; built here so the v2 blob captures the
+    // live curse + composed stats. `pushRoute` is fed from the Moor
+    // Road resolver further down (search: `runActState.recordPick`).
+    ({
+      replayRecorder: this.replayRecorder,
+      pendingReplayRoutes: this.pendingReplayRoutes,
+    } = installReplayRecording({
+      replayMode,
+      playbackV2,
+      seed: this.runRng.seed,
+      variantKey: selectedVariant.key,
+      build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
+      curseKey: this.activeCurseKey,
+      composedStats,
+    }));
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
       : GAME.WORLD_WIDTH / 2;
@@ -1674,33 +1647,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     try {
       this.updateInner(delta);
     } finally {
-      // T1 replay — capture one frame per tick regardless of pause state, so
-      // menu edges that toggle pause are recorded at the game-time they fired.
-      // Direction + dash reflect the values `Player.update` actually saw (or
-      // stale snapshot when paused — no gameplay effect there).
-      if (this.replayRecorder && this.player) {
-        const snap = this.player.peekReplayInputFrame();
-        this.replayRecorder.pushFrame({
-          dtMs: delta,
-          dx: snap.dx,
-          dy: snap.dy,
-          dash: snap.dash,
-          menu: snap.menu,
-        });
-      }
+      // T1 replay — capture one frame per tick regardless of pause state.
+      // Pump in `replayBridgeInstall.ts`.
+      recordReplayFrame({
+        recorder: this.replayRecorder,
+        snapshot: this.player ? this.player.peekReplayInputFrame() : null,
+        dtMs: delta,
+      });
     }
   }
 
   private updateInner(delta: number): void {
     // T1 replay playback — advance the recorded cursor each tick before
-    // Player reads input. When the blob is exhausted, return to Chronicle
-    // so the run doesn't grind on stale direction state forever.
-    if (this.replayInput) {
-      const next = this.replayInput.advanceFrame();
-      if (next === null) {
-        this.scene.start('Chronicle');
-        return;
-      }
+    // Player reads input. Pump in `replayBridgeInstall.ts`.
+    if (tickReplayPlayback({ replayInput: this.replayInput }).exhausted) {
+      this.scene.start('Chronicle');
+      return;
     }
 
     // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
