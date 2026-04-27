@@ -9,6 +9,7 @@ import * as Phaser from 'phaser';
 import type { BiomeManager } from './BiomeManager';
 import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';
+import { getActiveSeasonalEventKey } from './SeasonalEventManager';
 
 interface FloraSprite {
   image: Phaser.GameObjects.Image;
@@ -20,6 +21,21 @@ interface FloraSprite {
 
 /** Weighted texture tables per biome. Each entry: [textureKey, cumulativeWeight]. */
 type WeightedEntry = readonly [string, number];
+
+/**
+ * Sparse urban props injected into the heather biome — Glasgow lurking
+ * at the moor's edge. Total weight 0.10 (≈ 1-in-10 heather scatter),
+ * five entries at 0.02 each.
+ */
+const HEATHER_URBAN_PROPS: readonly string[] = [
+  'deco_chippy_sign',
+  'deco_bus_stop',
+  'deco_newsprint',
+  'deco_close_door',
+  'deco_scaffold_post',
+];
+const HEATHER_URBAN_TOTAL = 0.10;
+const HEATHER_URBAN_PER_ENTRY = HEATHER_URBAN_TOTAL / HEATHER_URBAN_PROPS.length; // 0.02
 
 const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   heather: [
@@ -60,6 +76,67 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   ],
 };
 
+/** Map a real-month index (0-11) to a synthetic seasonal hint when no
+ *  formal seasonal event is firing. April-May → spring, October-November
+ *  → autumn, January-February → thaw. Returned as the same string keys
+ *  the seasonal-event helper uses so the rest of the lookup is uniform. */
+function inferSeasonHint(month: number): string | null {
+  if (month === 9 || month === 10) return 'samhain'; // Oct, Nov → autumn leaves
+  if (month === 3 || month === 4) return 'beltane'; // Apr, May → spring shoots
+  if (month === 0 || month === 1) return 'hogmanay'; // Jan, Feb → thaw puddles
+  return null;
+}
+
+/**
+ * Build a season-augmented + urban-augmented variant of the base biome
+ * table. Existing thresholds rescale to make room; new entries are
+ * appended (urban) or prepended (seasonal) so cumulative weight stays
+ * exactly 1.0.
+ *
+ * - `samhain` → +deco_autumn_leaves @ ~0.12 in pine + heather
+ * - `beltane` → +deco_spring_shoot @ ~0.10 in heather + bog
+ * - `hogmanay`/`burns_night` → +deco_thaw_puddle @ ~0.10 in bog
+ * - heather always gets HEATHER_URBAN_PROPS @ 0.10 total (season-independent)
+ */
+export function getBiomeTable(
+  biome: BiomeId,
+  seasonKey: string | null,
+): readonly WeightedEntry[] {
+  const base = FLORA_BY_BIOME[biome];
+  let table: WeightedEntry[] = base.map((e) => [e[0], e[1]] as WeightedEntry);
+
+  // Step 1: seasonal prepend.
+  const seasonInjections: Array<{ biomes: BiomeId[]; key: string; weight: number }> = [];
+  if (seasonKey === 'samhain') {
+    seasonInjections.push({ biomes: ['pine', 'heather'], key: 'deco_autumn_leaves', weight: 0.12 });
+  } else if (seasonKey === 'beltane') {
+    seasonInjections.push({ biomes: ['heather', 'bog'], key: 'deco_spring_shoot', weight: 0.10 });
+  } else if (seasonKey === 'hogmanay' || seasonKey === 'burns_night') {
+    seasonInjections.push({ biomes: ['bog'], key: 'deco_thaw_puddle', weight: 0.10 });
+  }
+  for (const inj of seasonInjections) {
+    if (!inj.biomes.includes(biome)) continue;
+    // Scale all existing thresholds by (1 - weight), then prepend the new entry at `weight`.
+    const scale = 1 - inj.weight;
+    table = [
+      [inj.key, inj.weight] as WeightedEntry,
+      ...table.map(([k, t]) => [k, inj.weight + t * scale] as WeightedEntry),
+    ];
+  }
+
+  // Step 2: heather urban props — append at 0.02 each, scaling existing down to 0.90.
+  if (biome === 'heather') {
+    const scale = 1 - HEATHER_URBAN_TOTAL;
+    const scaled = table.map(([k, t]) => [k, t * scale] as WeightedEntry);
+    const urbanEntries: WeightedEntry[] = HEATHER_URBAN_PROPS.map(
+      (k, i) => [k, scale + HEATHER_URBAN_PER_ENTRY * (i + 1)] as WeightedEntry,
+    );
+    table = [...scaled, ...urbanEntries];
+  }
+
+  return table;
+}
+
 const FLORA_COUNT = 200;
 const CULL_MARGIN = 150;
 
@@ -80,6 +157,12 @@ function isSwayable(textureKey: string): boolean {
   if (textureKey.includes('pine_cone')) return false;
   if (textureKey.includes('grouse_feather')) return false;
   if (textureKey.includes('wool_tuft')) return false;
+  // Static seasonal / urban props.
+  if (textureKey.includes('thaw_puddle')) return false;
+  if (textureKey.includes('chippy_sign')) return false;
+  if (textureKey.includes('bus_stop')) return false;
+  if (textureKey.includes('close_door')) return false;
+  if (textureKey.includes('scaffold_post')) return false;
   return true;
 }
 
@@ -97,11 +180,29 @@ export class FloraScatter {
     // Clean up previous run (scene instance reuse).
     this.destroy();
 
+    // Sample the seasonal hint ONCE per scatter pass — getActiveSeasonalEventKey
+    // is cheap but it shouldn't be called per tile. Fall back to a month-based
+    // hint when no formal seasonal event is firing so the moor still shifts
+    // tone with the calendar.
+    const now = new Date();
+    const seasonKey = getActiveSeasonalEventKey(now) ?? inferSeasonHint(now.getMonth());
+
+    // Memo per-biome tables so we only renormalize once per biome.
+    const tableCache = new Map<BiomeId, readonly WeightedEntry[]>();
+    const tableFor = (biome: BiomeId): readonly WeightedEntry[] => {
+      let t = tableCache.get(biome);
+      if (!t) {
+        t = getBiomeTable(biome, seasonKey);
+        tableCache.set(biome, t);
+      }
+      return t;
+    };
+
     for (let i = 0; i < FLORA_COUNT; i++) {
       const x = rng.float(0, worldW);
       const y = rng.float(0, worldH);
       const biome = biomeManager.biomeAt(x, y);
-      const table = FLORA_BY_BIOME[biome];
+      const table = tableFor(biome);
       const textureKey = pickTexture(table, rng.next());
       const scale = 0.8 + rng.next() * 0.4;
       const phase = rng.next() * Math.PI * 2;

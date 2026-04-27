@@ -79,11 +79,26 @@ const OUTLINE_SKIP = new Set([
 /**
  * Apply outlines to every texture key that appeared since `before` was
  * captured, skipping any key in the OUTLINE_SKIP set.
+ *
+ * Skipped entirely in sprite-export mode (`?export=sprites`): each
+ * `applyOutline` call mounts its own `RenderTexture`, and 200+ FBO
+ * creations in a row trip headless Chromium's framebuffer-attachment
+ * limit ("Framebuffer Unsupported" pageerror → context lost). The
+ * exported atlas PNG renders bare sprites in that mode — still a useful
+ * visual reference. Production / dev / playtest paths run with the
+ * outline pass on, unchanged. See memory
+ * `reference_atlas_export_phaser4_limit.md` for the failure trace.
  */
 export function outlineNewTextures(
   scene: Phaser.Scene,
   before: Set<string>,
 ): void {
+  if (
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).has('export')
+  ) {
+    return;
+  }
   for (const key of scene.textures.getTextureKeys()) {
     if (before.has(key)) continue;
     if (OUTLINE_SKIP.has(key)) continue;

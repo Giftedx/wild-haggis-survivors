@@ -22,6 +22,7 @@ import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
 import { NodeWaveTracker } from '../systems/nodeEvents/NodeWaveTracker';
 import { JuiceSystem } from '../systems/JuiceSystem';
+import { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
 import { ClipRecorder } from '@/utils/clipRecorder';
@@ -220,6 +221,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private upgradeUI!: UpgradeCardsUI;
   private hud!: HUD;
   private juice!: JuiceSystem;
+  /** Ambient seasonal weather overlay (drizzle / rain / sun-shafts / aurora).
+   *  Pure cosmetic — `null` between runs and when no seasonal event is live. */
+  private weather: AmbientWeatherSystem | null = null;
   private timeManager!: TimeManager;
   private updateTickers = new UpdateTickers();
   private clipRecorder: ClipRecorder | null = null;
@@ -1212,6 +1216,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       banter: this.banter,
       audio,
     });
+    // Ambient weather — purely cosmetic seasonal overlay. Idle when no
+    // event is active or `disableSeasonalEvents` / `reduceParticles` is on.
+    this.weather?.stop();
+    this.weather = new AmbientWeatherSystem(this);
+    this.weather.start();
+    this.events.once('shutdown', () => { this.weather?.stop(); this.weather = null; });
     this.gameTickers = new GameTickers({
       getPlayer: () => this.player,
       getScene: () => this,
@@ -1824,6 +1834,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // delta so VFX don't stall during slow-mo and the combo meter still decays
     // at wall-clock rate.
     this.juice.update(delta, this.player.getHpFraction());
+    // Ambient weather likewise stays on raw delta — sky is sky.
+    this.weather?.update(delta);
 
     // Boss HP bar + edge indicators
     this.bossHpTracker.tick();

@@ -19,10 +19,19 @@ interface SpriteEntry {
   category: string;
 }
 
-const SCALE = 6;
-const PADDING = 16;
-const LABEL_HEIGHT = 20;
-const SECTION_HEIGHT = 48;
+// `?compact=1` halves SCALE + MAX_CELL_DIM and tightens MAX_ITEMS_PER_CATEGORY
+// so the composite canvas fits inside headless Chromium's framebuffer
+// attachment limits. Default mode produces the high-fidelity reference PNG;
+// compact mode produces a smaller draft that always exports — useful when
+// the sprite set has grown past the headless export ceiling.
+const COMPACT_MODE =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('compact') === '1';
+
+const SCALE = COMPACT_MODE ? 3 : 6;
+const PADDING = COMPACT_MODE ? 8 : 16;
+const LABEL_HEIGHT = COMPACT_MODE ? 12 : 20;
+const SECTION_HEIGHT = COMPACT_MODE ? 28 : 48;
 const COLS = 8;
 
 type DrawableSource = HTMLCanvasElement | HTMLImageElement | ImageBitmap | OffscreenCanvas;
@@ -199,7 +208,7 @@ export class SpriteExportScene extends Phaser.Scene {
     // hundreds of transient textures (colour-shifted variants, glow
     // frames, per-hit tints). Without a cap the canvas balloons past
     // browser limits (~16k px per edge) and the export silently dies.
-    const MAX_ITEMS_PER_CATEGORY = 64;
+    const MAX_ITEMS_PER_CATEGORY = COMPACT_MODE ? 32 : 64;
     const groups = new Map<string, SpriteEntry[]>();
     const allCats = new Set(entries.map((e) => e.category));
     for (const cat of buildCategoryOrder(allCats)) {
@@ -239,7 +248,7 @@ export class SpriteExportScene extends Phaser.Scene {
      // per edge on Chromium). Any sprite larger than MAX_CELL_DIM*SCALE
      // will still render — it just won't inflate the cell beyond these
      // bounds. cellW × COLS + margins must stay < 16384 too.
-    const MAX_CELL_DIM = 96;
+    const MAX_CELL_DIM = COMPACT_MODE ? 64 : 96;
 
     for (const [cat, items] of groups) {
       // Section header
