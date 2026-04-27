@@ -255,14 +255,13 @@ export class UpgradeCardsUI {
       throw new Error(`Missing upgrade card icon texture: ${iconKey} (${card.id})`);
     }
 
-    // Card icon — leave headroom for title + body + footer (rarity strip).
-    const icon = this.scene.add.sprite(x, y - 72, iconKey)
-      .setScale(1.4).setScrollFactor(0).setDepth(depth + 1);
-    this.elements.push(icon);
-
-    // Rarity frame overlay — additive polish on top of the icon. Mythic + rune
-    // share the legendary frame (no dedicated art baked yet). Skipped when the
-    // texture isn't in the cache (test scenes mock a single-icon texture set).
+    // Rarity frame backing — wooden card with rivets + grain. Drawn FIRST
+    // (depth + 1) so the icon renders ON TOP. Pre-fix the frame was added
+    // after the icon at the same depth, meaning the frame's opaque inset
+    // face hid the icon entirely (player saw an empty rivet-bordered
+    // rectangle). Mythic + rune share the legendary frame (no dedicated
+    // art baked yet). Skipped when the texture isn't in the cache (test
+    // scenes mock a single-icon texture set).
     const frameKeyByRarity: Record<string, string> = {
       common: 'ui_card_frame_common',
       uncommon: 'ui_card_frame_uncommon',
@@ -275,9 +274,16 @@ export class UpgradeCardsUI {
     let frame: Phaser.GameObjects.Sprite | undefined;
     if (this.scene.textures && this.scene.textures.exists(frameKey)) {
       frame = this.scene.add.sprite(x, y - 72, frameKey)
-        .setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
+        .setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1)
+        .setScale(1.6);
       this.elements.push(frame);
     }
+
+    // Card icon — leave headroom for title + body + footer (rarity strip).
+    // Depth + 2 so it sits above the frame backing.
+    const icon = this.scene.add.sprite(x, y - 72, iconKey)
+      .setScale(1.4).setScrollFactor(0).setDepth(depth + 2);
+    this.elements.push(icon);
 
     // Name — fontSize scales with uiScale so a 1.4x comfort setting
     // actually enlarges card text instead of leaving it tiny. Shrink once

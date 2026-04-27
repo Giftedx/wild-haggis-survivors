@@ -70,6 +70,15 @@ interface Zone {
   y: number;
   r: number;
   tickAccMs: number;
+  /**
+   * Visual GameObjects (base ellipse + glow ellipse + decorative
+   * overlays + ember sprites for lava). Tracked so `reset()` destroys
+   * them on scene restart — without this, a death+retry on the same
+   * scene instance leaks the prior run's hazard art into the next
+   * run's display list. Pre-existing leak for base/glow; new overlay
+   * graphics + ember sprites widen the surface.
+   */
+  visuals: Phaser.GameObjects.GameObject[];
 }
 
 /**
@@ -130,7 +139,9 @@ export class HazardZones {
   ) {}
 
   reset(): void {
+    for (const z of this.lavaZones) for (const v of z.visuals) v.destroy();
     this.lavaZones = [];
+    for (const z of this.healZones) for (const v of z.visuals) v.destroy();
     this.healZones = [];
     for (const z of this.slickZones) for (const v of z.visuals) v.destroy();
     this.slickZones = [];
@@ -158,8 +169,12 @@ export class HazardZones {
     const placements = computeHazardPlacements(this.hooks.getRunRng(), W, H);
 
     for (const z of placements.lava) {
-      scene.add.ellipse(z.x, z.y, z.r * 2, z.r * 1.5, HAZARD_ZONE_LAVA.baseColor, HAZARD_ZONE_LAVA.baseAlpha).setDepth(-1);
-      const lavaGlow = scene.add.ellipse(z.x, z.y, z.r * 1.6, z.r * 1.2, HAZARD_ZONE_LAVA.glowColor, HAZARD_ZONE_LAVA.glowAlpha).setDepth(-1);
+      const lavaBase = scene.add
+        .ellipse(z.x, z.y, z.r * 2, z.r * 1.5, HAZARD_ZONE_LAVA.baseColor, HAZARD_ZONE_LAVA.baseAlpha)
+        .setDepth(-1);
+      const lavaGlow = scene.add
+        .ellipse(z.x, z.y, z.r * 1.6, z.r * 1.2, HAZARD_ZONE_LAVA.glowColor, HAZARD_ZONE_LAVA.glowAlpha)
+        .setDepth(-1);
       scene.tweens.add({
         targets: lavaGlow,
         alpha: { from: 0.15, to: 0.35 },
@@ -169,8 +184,11 @@ export class HazardZones {
       });
       // Decorative cracks + ember pinpricks + cooling-edge ring overlay.
       // Lifts the patch from "two stacked ellipses" to "fissured magma".
-      spawnLavaOverlay(scene, z.x, z.y, z.r);
-      this.lavaZones.push({ x: z.x, y: z.y, r: z.r, tickAccMs: 0 });
+      const overlayObjects = spawnLavaOverlay(scene, z.x, z.y, z.r);
+      this.lavaZones.push({
+        x: z.x, y: z.y, r: z.r, tickAccMs: 0,
+        visuals: [lavaBase, lavaGlow, ...overlayObjects],
+      });
     }
 
     for (const z of placements.heal) {
@@ -216,11 +234,11 @@ export class HazardZones {
     });
     // Smashed-bottle silhouette + amber glaze trail. Anchors the spill
     // to the dropped Buckfast bottle that just broke.
-    const overlay = spawnSlickOverlay(scene, x, y, r);
+    const overlayObjects = spawnSlickOverlay(scene, x, y, r);
     this.slickZones.push({
       x, y, r,
       expireAtMs: gameTimeMs + SLICK_DURATION_MS,
-      visuals: [base, glow, overlay],
+      visuals: [base, glow, ...overlayObjects],
     });
   }
 
@@ -294,8 +312,12 @@ export class HazardZones {
 
   private addHealingCircle(hx: number, hy: number, hr: number, jitterMs: number): void {
     const scene = this.scene;
-    scene.add.ellipse(hx, hy, hr * 2, hr * 1.5, HAZARD_ZONE_HEAL.baseColor, HAZARD_ZONE_HEAL.baseAlpha).setDepth(-1);
-    const healGlow = scene.add.ellipse(hx, hy, hr * 1.4, hr * 1.0, HAZARD_ZONE_HEAL.glowColor, HAZARD_ZONE_HEAL.glowAlpha).setDepth(-1);
+    const healBase = scene.add
+      .ellipse(hx, hy, hr * 2, hr * 1.5, HAZARD_ZONE_HEAL.baseColor, HAZARD_ZONE_HEAL.baseAlpha)
+      .setDepth(-1);
+    const healGlow = scene.add
+      .ellipse(hx, hy, hr * 1.4, hr * 1.0, HAZARD_ZONE_HEAL.glowColor, HAZARD_ZONE_HEAL.glowAlpha)
+      .setDepth(-1);
     scene.tweens.add({
       targets: healGlow,
       alpha: { from: 0.08, to: 0.2 },
@@ -304,8 +326,11 @@ export class HazardZones {
     });
     // Celtic high-cross + herb sprigs + sparkle motes overlay. Reads as
     // a sacred restorative spot rather than a generic green disc.
-    spawnHealOverlay(scene, hx, hy, hr);
-    this.healZones.push({ x: hx, y: hy, r: hr, tickAccMs: 0 });
+    const overlayObjects = spawnHealOverlay(scene, hx, hy, hr);
+    this.healZones.push({
+      x: hx, y: hy, r: hr, tickAccMs: 0,
+      visuals: [healBase, healGlow, ...overlayObjects],
+    });
   }
 
   tick(scaledDelta: number): void {

@@ -94,9 +94,13 @@ export class RunHistoryRecorder {
     const evolvedWeaponCount = h.getEvolvedWeaponCount?.() ?? 0;
     // E1 M2 T11 — resolve active event at build-context time, same
     // opt-out semantics as the Chronicle stamp so the unlock gate
-    // matches what the player sees in their run history.
+    // matches what the player sees in their run history. Thread the
+    // optional `h.now` hook (same shape `record()` uses on line 125)
+    // so unit tests can pin the clock — without this, the build-context
+    // suite breaks whenever real-world date crosses an event window.
     const seasonalDisabled = h.areSeasonalEventsDisabled?.() ?? false;
-    const seasonalEventKey = getActiveSeasonalEventKey(new Date(), seasonalDisabled);
+    const nowMs = (h.now ?? Date.now)();
+    const seasonalEventKey = getActiveSeasonalEventKey(new Date(nowMs), seasonalDisabled);
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),

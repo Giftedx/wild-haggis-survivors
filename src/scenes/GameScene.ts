@@ -760,6 +760,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // runLifecycle isn't built yet at this point. The closure over
     // `this.runLifecycle` resolves lazily — first lava tick happens much
     // later, by which time it's wired.
+    //
+    // On scene reuse (death + retry), the prior run's hazard display
+    // objects (lava base/glow ellipses, heal cross overlays, ember
+    // sprites, slick + fog visuals) are NOT auto-cleared by Phaser —
+    // they hang on the scene display list because they were added via
+    // `scene.add.*`. Reset the prior instance first so its tracked
+    // visuals + tweens are torn down before the next spawn.
+    if (this.hazardZones) this.hazardZones.reset();
     this.hazardZones = new HazardZones(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,

@@ -36,13 +36,19 @@ const OVERLAY_DEPTH = -0.5;
  * ellipses. The cracks are deterministic given `(x, y, r)` so the
  * same hazard layout produces the same crack pattern across runs —
  * keeps the T1 replay contract clean.
+ *
+ * Returns the spawned GameObjects (Graphics + optional ember images)
+ * so callers can push them into a per-zone visuals array for cleanup
+ * on `HazardZones.reset()`. Without this, scene restarts (Vampire
+ * Survivors-style death+retry on the same scene instance) leak the
+ * Graphics + image sprites into the next run.
  */
 export function spawnLavaOverlay(
   scene: Phaser.Scene,
   x: number,
   y: number,
   r: number,
-): Phaser.GameObjects.Graphics {
+): Phaser.GameObjects.GameObject[] {
   const g = scene.add.graphics();
   g.setPosition(x, y);
   g.setDepth(OVERLAY_DEPTH);
@@ -112,8 +118,16 @@ export function spawnLavaOverlay(
   });
 
   // Two rising ember sprites — wakes the patch up with motion. Each
-  // ember rises ~30px, scales down, fades, then resets via tween repeat.
-  // Texture-exists guard for unit tests that skip BootScene.
+  // ember rises ~30px, scales down, AND fades up then back out across
+  // the 2400ms cycle. Texture-exists guard for unit tests that skip
+  // BootScene.
+  //
+  // Two parallel tweens per ember: motion (y + scale) on a 2400ms
+  // repeating cycle, alpha on a 1200ms yoyo so the ember fades in over
+  // the rise then fades out as it tops out. Without the yoyo split
+  // alpha would pop to 0.95 in 400ms then stick (bright the whole
+  // cycle, then snap to 0 on repeat) — visually wrong.
+  const objects: Phaser.GameObjects.GameObject[] = [g];
   if (scene.textures.exists('fx_ember_spark')) {
     const startsForCycles: [number, number, number][] = [
       [-r * 0.25, r * 0.15, 0],
@@ -124,25 +138,37 @@ export function spawnLavaOverlay(
       ember.setDepth(OVERLAY_DEPTH);
       ember.setScale(0.8);
       ember.setAlpha(0);
+      // Motion tween: rise + shrink, then snap back via onRepeat for
+      // the next cycle (Phaser tweens repeat from the original `from`
+      // state, so the snap is a reset, not a tween-back jitter).
       scene.tweens.add({
         targets: ember,
         y: y + oy - 28,
-        alpha: { from: 0, to: 0.95, duration: 400 },
         scale: { from: 0.8, to: 0.4 },
         duration: 2400,
         delay,
         repeat: -1,
-        yoyo: false,
         onRepeat: () => {
           ember.setPosition(x + ox, y + oy);
-          ember.setAlpha(0);
           ember.setScale(0.8);
         },
       });
+      // Alpha tween: 1200ms rise to 0.95 + yoyo back to 0 over the
+      // matching 1200ms — total 2400ms cycle, in lockstep with motion.
+      scene.tweens.add({
+        targets: ember,
+        alpha: { from: 0, to: 0.95 },
+        duration: 1200,
+        yoyo: true,
+        delay,
+        repeat: -1,
+        ease: 'Sine.easeInOut',
+      });
+      objects.push(ember);
     }
   }
 
-  return g;
+  return objects;
 }
 
 /**
@@ -158,7 +184,7 @@ export function spawnHealOverlay(
   x: number,
   y: number,
   r: number,
-): Phaser.GameObjects.Graphics {
+): Phaser.GameObjects.GameObject[] {
   const g = scene.add.graphics();
   g.setPosition(x, y);
   g.setDepth(OVERLAY_DEPTH);
@@ -256,7 +282,7 @@ export function spawnHealOverlay(
     ease: 'Sine.easeInOut',
   });
 
-  return g;
+  return [g];
 }
 
 /**
@@ -270,7 +296,7 @@ export function spawnSlickOverlay(
   x: number,
   y: number,
   r: number,
-): Phaser.GameObjects.Graphics {
+): Phaser.GameObjects.GameObject[] {
   const g = scene.add.graphics();
   g.setPosition(x, y);
   g.setDepth(OVERLAY_DEPTH);
@@ -330,7 +356,7 @@ export function spawnSlickOverlay(
   g.fillCircle(r * 0.05, r * 0.08, 0.6);
   g.fillCircle(r * 0.3, r * 0.22, 0.5);
 
-  return g;
+  return [g];
 }
 
 /**
