@@ -223,3 +223,50 @@ Coordinator session resumed against the same orchestrator brief at `docs/prompts
 - **PEAT:** human PEAT-tool desktop pass over the 25 rows in `docs/status/a11y/A1_PEAT_AUDIT.md`.
 - **Cloud save:** auth, privacy policy, deployment flow are product decisions outside the spike (T421-T423).
 - **Assist Mode game-speed:** expose vs hide is a product decision (`task_03`).
+
+---
+
+## Backlog-drain dispatch — 2026-04-28 (continuation)
+
+Coordinator session resumed against the same orchestrator brief. Same hard-no list, same dispatch policy.
+
+### Tier-A round 3 — shipped to `master` (parallel single-message dispatch)
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `T425` (broaden T420 timeout pattern) | `5064b22` | Per-test `{ timeout: 30_000 }` applied to three more concurrency-flake-prone vitest cases, mirroring T420 commit `7411a41`. Targets: `animationPerf.bench.test.ts` (steady-state per-tick cost), `MetaProgress.airgap.test.ts` (WeaponSystem dynamic import), `Player.runeBag.test.ts` (six rune-bag fold tests, beforeEach does heavy `await import('./Player')`). No body / assertion / hook changes. None of the three reproduced the flake on the agent's quiet-machine pre-fix run; pre-emptive fix matches the T420 posture. |
+| `T410` (webkit + firefox VR baselines) | `d0202a5` | 6 new baseline PNGs committed (2 webkit-desktop-win32, 4 firefox-desktop-win32 — webkit mobile is `test.skip(browserName === 'webkit', …)` so 2 PNGs short of full matrix). Per-engine threshold helper: chromium MainMenu 5% / Croft 30%; webkit + firefox bumped to MainMenu 15% / Croft 40% (+10pp absolute) to absorb cross-engine GPU/DPR variance. `process.platform === 'win32'` gate kept (T409 still open for OS coverage). Three back-to-back playwright runs across all three engines green. |
+| `T401` slice 5 — curse + composedStats extraction | `217b482` | `src/scenes/game/applyCurseAndComposeStats.ts` (185 LOC, 5 typed inputs / 4 typed outputs, no Phaser imports) + `applyCurseAndComposeStats.test.ts` (368 LOC, 16 tests). GameScene 3464 → 3439 LOC (-25). Replay determinism byte-identical (7/7 `replayDeterminism.test.ts`). Order-of-operations preserved: curse-apply mutates `runModifiers` BEFORE composedStats reads `moveSpeedMult` / `startHpRatio`. `globalEventBus.emit('GLOBAL_CURSE_STARTED', …)` fires once and only once per applied curse. Bag-vs-cached-field doctrine respected — helper writes into a fresh `defaultModifiers()` bag, caller assigns onto `this.runModifiers` BEFORE SpawnSystem / WeaponSystem cache. **Slice 5 picked candidate C (lowest risk) over A (node-map lifecycle, ~70-90 LOC) and B (run-end shutdown, ~60 LOC)** — A's teardown spans two methods with divergent error-handling shapes (`resetTransientRunState` bare destroy vs `registerShutdownCleanup` try/catch), B couples to ~30 scene fields, both inflate the deps surface. C was self-contained. Slices 6 candidates: A and B carried forward. |
+
+### Hazard surfaced + reconciled mid-dispatch
+
+Three Tier-A agents committed to the same working tree in parallel. T410's reconciliation logic (`git reset --soft HEAD~1` + `git restore --staged .`) inadvertently dropped the T425 commit — its diff persisted in the working tree but the commit object was gone. Coordinator caught the discrepancy via `git log --oneline -5` cross-check against the agents' reported SHAs (T425 reported `26ae01df` but only `217b482` and `d0202a5` were in `git log`). T425 re-committed cleanly at `5064b22`. **Lesson:** when dispatching parallel agents that all touch `git`, coordinator must cross-check each agent's reported SHA against actual `git log` after Tier-A returns — a soft-reset by one agent can erase another's commit even when their file scopes don't overlap.
+
+### Tier-B not dispatched this session
+
+| Charter | Reason |
+|---|---|
+| `T409` (linux VR baselines) | **BLOCKED — Docker Desktop / WSL2 backend failed to start.** Error `0x800705aa` (Windows: "insufficient system resources to complete the requested service") from `wsl.exe --import-in-place` against `f:\docker\wsl\dockerdesktopwsl\main\ext4.vhdx`. Docker CLI version reported (29.1.3) but daemon couldn't bring up its embedded distro. Agent dispatched but cancelled before any commit. T409 stays open until WSL backend is restored OR until a CI artifact-pull workflow is set up as alternate path. The win32-only gate in `e2e/visual-regression.spec.ts` remains in place. |
+| Worktree cleanup `practical-bassi-a8c53d` | Partial — `git worktree prune` cleared the ref, but the empty directory at `.claude/worktrees/practical-bassi-a8c53d/` couldn't be removed (`rmdir: Device or resource busy` — Windows file lock from another process holding the path open). Cosmetic residue only; no git impact. |
+
+### New follow-ups surfaced this session
+
+- **T426 — empty directory leftover at `.claude/worktrees/practical-bassi-a8c53d/`.** Windows file-lock prevented removal. Try again from a clean shell or after Claude Code restart.
+- **T427 — alternate path for T409 if Docker Desktop / WSL stays broken.** GitHub Actions `--update-snapshots` workflow with artifact upload + manual download + commit. Avoids the local docker dependency entirely.
+- **Slice 6 candidates** (carried from slice 5):
+  - **A. Node-map lifecycle** — `nodeMapSystem` + `nodeMapUI` + `nodePromptUI` + `nodeWaveTracker` install/teardown. Estimated ~70-90 LOC drop. Requires consolidating two destruction call sites with divergent error-handling.
+  - **B. Run-end shutdown cleanup** — `registerShutdownCleanup` arrow + ~50 try/catch destroy walls. Estimated ~60 LOC drop. Each silenced error path must be preserved one-for-one.
+
+### Open hazards / risks (one-line callouts)
+
+- **WSL2 backend broken on host.** `0x800705aa` from `wsl.exe --import-in-place`. Affects T409 and any other docker-dependent local workflow (e.g. miniflare D1 integration tests run on host node, so unaffected; but any future linux-container test would block). Standing remediation outside the dispatch scope.
+- **Per-engine VR thresholds may be over-loose.** Webkit + firefox at MainMenu 15% / Croft 40% absorb GPU variance but would not catch a 10% layout regression. Tighten when each engine has 5+ stable runs of evidence.
+- **Slice 6 LOC payoff lower than slice 5's risk-adjusted pick suggests.** Candidate A (node-map) has the highest LOC payoff but the highest extraction risk. Future sessions should weigh whether a Tier-B charter's risk profile is worth the LOC drop or whether GameScene phase 2 should declare itself sufficiently decomposed at sub-3500 LOC.
+
+### Standing human-gated items (carried forward unchanged from prior session)
+
+- **T203:** real mobile-device evidence per `docs/status/mobile/MOBILE_DEVICE_TEST_MATRIX.md`.
+- **Doric / Shetlandic / Burns / Gaelic+Cailleach:** human review per `docs/status/cultural/CULTURAL_REVIEW_PACKET.md`.
+- **PEAT:** human PEAT-tool desktop pass over the 25 rows in `docs/status/a11y/A1_PEAT_AUDIT.md`.
+- **Cloud save:** auth, privacy policy, deployment flow are product decisions outside the spike (T421-T423).
+- **Assist Mode game-speed:** expose vs hide is a product decision (`task_03`).
