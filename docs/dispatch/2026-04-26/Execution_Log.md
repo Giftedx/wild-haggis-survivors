@@ -295,3 +295,26 @@ Reconciliation gates on master (post-round-4):
 - `npm test` — 434 files / 4530 tests passed (was 433 / 4508 — slice 6 added 22)
 - `npm run build` — 7.29s; vendor-phaser 374.43 KB gzip (under 390 KB), index 271.25 KB gzip (under 285 KB)
 - GameScene LOC ratchet: 3502 (slice 3 baseline) → 3464 (slice 4) → 3439 (slice 5) → 3418 (slice 6). Cumulative drop -84 LOC across 4 slices.
+
+### Round 5 — slice 7 (node-map lifecycle), Tier-B serial
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `T401` slice 7 — node-map lifecycle extraction | `532a0a7` | `src/scenes/game/nodeMapLifecycle.ts` (193 LOC) + `nodeMapLifecycle.test.ts` (403 LOC, 21 tests). Helper exports `installNodeMap(deps)` + `tearDownNodeMap(deps)`. Both `resetTransientRunState` AND `runEndShutdown.ts` now call `tearDownNodeMap(...)` instead of inlining destroys. Option A: helper provides mechanism only, callers retain error policy — `resetTransientRunState` calls bare so partial-init failures still surface in dev; `runEndShutdown` wraps in try/catch matching its silenced-catch policy. Replay determinism byte-identical 7/7. E2E node-map specs (`w2-moor-road.spec.ts`, `moor-road-nodes.spec.ts`) green 3/3. |
+
+**Honest LOC accounting:** slice 7 grew GameScene by +10 LOC (3418 → 3428). The Option A setter-callback boilerplate (`setNodeMapUI: (ui) => { this.nodeMapUI = ui; }` × 2 fields × 2 call sites) ate the LOC win that the slice 6 follow-up note had projected (~70-90 LOC drop). The slice still delivers value via:
+- Cohesive lifecycle contract (install + teardown live together with documented ordering)
+- 21-case unit-test coverage of install order, teardown order, scene-reuse double-install, error propagation
+- Trigger-listener closure semantics formalized (`onNodeTrigger?` callback, never eager-captures `nodePromptUI`)
+- Slice 8 micro-candidate identified by the agent: `interactivePromptIndex` (primitive) could move into a node-map state object alongside `suppressNextNodeMapRoll`, but is below the LOC threshold to justify a slice on its own
+
+**Cumulative LOC ratchet:** 3502 (slice 3) → 3464 (slice 4) → 3439 (slice 5) → 3418 (slice 6) → 3428 (slice 7). Cumulative -74 LOC across 5 slices. Slice 7 reversed -10 LOC; cumulative still strongly positive.
+
+**Slice 7 alternate-shape note for any future revisit:** to claw the LOC back, a refactor could replace the setter callbacks with a structural-type host parameter (`tearDownNodeMap(scene: NodeMapHost)` where the helper mutates `scene.nodeMapUI = null` directly through a structural type). Smaller call sites at the cost of more Phaser-coupling on the helper. Not undertaken in slice 7 because the cohesion contract was already delivered and rework risk outweighed the marginal LOC win.
+
+Reconciliation gates on master (post-round-5):
+- `npm run lint` — clean
+- `npm test` — 435 files / 4551 tests passed (was 434 / 4530 — slice 7 added 21)
+- `npm run build` — 7.98s; vendor-phaser 374.43 KB gzip, index 271.58 KB gzip (both under budget)
+- `npx vitest run src/replay/replayDeterminism.test.ts` — 7/7 byte-identical
+- E2E node-map specs — `w2-moor-road.spec.ts` + `moor-road-nodes.spec.ts` 3/3 green
