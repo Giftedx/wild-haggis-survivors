@@ -37,6 +37,38 @@ const HEATHER_URBAN_PROPS: readonly string[] = [
 const HEATHER_URBAN_TOTAL = 0.10;
 const HEATHER_URBAN_PER_ENTRY = HEATHER_URBAN_TOTAL / HEATHER_URBAN_PROPS.length; // 0.02
 
+const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
+  heather: [
+    'deco_waymarker_post',
+    'deco_pictish_stone',
+    'deco_rowan_charm',
+    'deco_burns_scrap',
+    'deco_milestone',
+  ],
+  bog: [
+    'deco_clootie_ribbons',
+    'deco_washer_cloth',
+    'deco_peat_spade',
+    'deco_fairy_ring',
+    'deco_brahan_eye_stone',
+  ],
+  pine: [
+    'deco_ruined_croft',
+    'deco_pech_tools',
+    'deco_catsith_saucer',
+    'deco_standing_stone_glyph',
+    'deco_crannog_stake',
+  ],
+  loch: [
+    'deco_selkie_skin',
+    'deco_fishing_net',
+    'deco_salmon_leap',
+    'deco_bridge_plank',
+    'deco_machair_shell',
+  ],
+};
+const STORY_PROP_TOTAL = 0.08;
+
 const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
   heather: [
     ['deco_heather', 0.20],
@@ -134,6 +166,20 @@ export function getBiomeTable(
     table = [...scaled, ...urbanEntries];
   }
 
+  // Step 3: sparse story props — low frequency, across every biome.
+  // These are visual treats, so they must not crowd out the core biome
+  // readability. Total injection is 8% of flora scatter.
+  const storyProps = STORY_PROPS_BY_BIOME[biome];
+  if (storyProps.length > 0) {
+    const scale = 1 - STORY_PROP_TOTAL;
+    const scaled = table.map(([k, t]) => [k, t * scale] as WeightedEntry);
+    const per = STORY_PROP_TOTAL / storyProps.length;
+    const storyEntries: WeightedEntry[] = storyProps.map(
+      (k, i) => [k, scale + per * (i + 1)] as WeightedEntry,
+    );
+    table = [...scaled, ...storyEntries];
+  }
+
   return table;
 }
 
@@ -163,6 +209,12 @@ function isSwayable(textureKey: string): boolean {
   if (textureKey.includes('bus_stop')) return false;
   if (textureKey.includes('close_door')) return false;
   if (textureKey.includes('scaffold_post')) return false;
+  // Story props are mostly solid landmarks or placed objects. Clootie
+  // ribbons already include visual motion in their silhouette; keep
+  // runtime sway off so they do not jitter like grass.
+  for (const props of Object.values(STORY_PROPS_BY_BIOME)) {
+    if (props.includes(textureKey)) return false;
+  }
   return true;
 }
 
