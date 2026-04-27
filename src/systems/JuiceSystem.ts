@@ -335,6 +335,25 @@ export class JuiceSystem {
   showKillBurst(x: number, y: number, color: number = 0xcc4444): void {
     const lowFx = this.settings.load().reduceParticles;
     const dots = scaledParticleCount(lowFx ? 3 : 6, 2);
+
+    // Sprite-based radial burst sits above pooled dots (depth 15) but below
+    // boss particles (depth 20) and damage text (depth 80). Tier defaults to
+    // small here — call site only passes (x,y,color), so elite/HP info isn't
+    // available. Boss kills route through midRunBossDeathSpectacle instead.
+    if (this.scene.textures.exists('fx_enemy_burst_small')) {
+      const burst = this.scene.add.image(x, y, 'fx_enemy_burst_small')
+        .setDepth(18)
+        .setScale(0.6)
+        .setAlpha(1);
+      this.scene.tweens.add({
+        targets: burst,
+        scale: 1.2,
+        alpha: 0,
+        duration: 280,
+        ease: 'Quad.easeOut',
+        onComplete: () => burst.destroy(),
+      });
+    }
     // Particle burst — pooled dots scatter outward
     for (let i = 0; i < dots; i++) {
       const angle = (i / dots) * Math.PI * 2;
@@ -969,6 +988,24 @@ export class JuiceSystem {
    *  bossDeathSpectacle. 15 gold particles + 1 expanding ring + lighter shake. */
   midRunBossDeathSpectacle(x: number, y: number): void {
     const s = this.settings.load();
+
+    // Sprite-based large burst — additive layer on top of the existing gold
+    // particle/ring spectacle. Depth 22 sits above boss particles (20) so the
+    // tartan-fleck radial reads as the boss-tier flourish.
+    if (this.scene.textures.exists('fx_enemy_burst_large')) {
+      const burst = this.scene.add.image(x, y, 'fx_enemy_burst_large')
+        .setDepth(22)
+        .setScale(0.8)
+        .setAlpha(1);
+      this.scene.tweens.add({
+        targets: burst,
+        scale: 1.8,
+        alpha: 0,
+        duration: 600,
+        ease: 'Quad.easeOut',
+        onComplete: () => burst.destroy(),
+      });
+    }
 
     const shake = resolveScreenShakeParams(
       BOSS_DEATH_SHAKE_BASE_AMP * 0.6,

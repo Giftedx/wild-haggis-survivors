@@ -260,6 +260,25 @@ export class UpgradeCardsUI {
       .setScale(1.4).setScrollFactor(0).setDepth(depth + 1);
     this.elements.push(icon);
 
+    // Rarity frame overlay — additive polish on top of the icon. Mythic + rune
+    // share the legendary frame (no dedicated art baked yet). Skipped when the
+    // texture isn't in the cache (test scenes mock a single-icon texture set).
+    const frameKeyByRarity: Record<string, string> = {
+      common: 'ui_card_frame_common',
+      uncommon: 'ui_card_frame_uncommon',
+      rare: 'ui_card_frame_rare',
+      legendary: 'ui_card_frame_legendary',
+      mythic: 'ui_card_frame_legendary',
+      rune: 'ui_card_frame_legendary',
+    };
+    const frameKey = frameKeyByRarity[card.rarity] ?? 'ui_card_frame_common';
+    let frame: Phaser.GameObjects.Sprite | undefined;
+    if (this.scene.textures && this.scene.textures.exists(frameKey)) {
+      frame = this.scene.add.sprite(x, y - 72, frameKey)
+        .setOrigin(0.5).setScrollFactor(0).setDepth(depth + 1);
+      this.elements.push(frame);
+    }
+
     // Name — fontSize scales with uiScale so a 1.4x comfort setting
     // actually enlarges card text instead of leaving it tiny. Shrink once
     // to 14px if the base 17px wraps to 3+ lines so long i18n names never
@@ -348,6 +367,7 @@ export class UpgradeCardsUI {
     // does not re-overlap the footer after hover.
     const cardElements: { setScale(x: number, y: number): void; scaleX: number; scaleY: number }[] =
       [bg, icon, name, rarityLabel, rarityPillBg];
+    if (frame) cardElements.push(frame);
     bg.on('pointerover', () => {
       bg.setFillStyle(0x2a2244);
       for (const el of cardElements) {
@@ -365,6 +385,7 @@ export class UpgradeCardsUI {
       rarityLabel.setScale(1);
       rarityPillBg.setScale(1);
       bg.setScale(1);
+      if (frame) frame.setScale(1);
     });
 
     // Click to select — legendary picks fire a quick spark trail toward

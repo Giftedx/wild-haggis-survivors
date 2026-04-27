@@ -478,7 +478,28 @@ export class WeaponSystem {
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
       proj.setWeaponKey(w.config.key);
       this.applyProjectileVisual(proj, texture);
+      this.spawnProjectileTrail(px, py, texture);
     }
+  }
+
+  private spawnProjectileTrail(px: number, py: number, texture: string): void {
+    let trailKey: string | null = null;
+    if (texture === 'thistle') trailKey = 'fx_trail_thistle';
+    else if (texture === 'caber') trailKey = 'fx_trail_caber';
+    else if (texture === 'haggis_ball') trailKey = 'fx_trail_haggis';
+    if (!trailKey) return;
+
+    const trail = this.scene.add.image(px, py, trailKey);
+    trail.setDepth(-1);
+    trail.setAlpha(0.85);
+    this.scene.tweens.add({
+      targets: trail,
+      alpha: 0,
+      scaleX: 1.4,
+      scaleY: 1.4,
+      duration: 250,
+      onComplete: () => trail.destroy(),
+    });
   }
 
   // ── Bouncing weapon (Jobby Hurler) ──
