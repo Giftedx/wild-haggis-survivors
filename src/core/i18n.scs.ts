@@ -334,10 +334,12 @@ export const SCS_STRINGS: LocaleTree = {
       title: 'Controls',
       subtitle: 'Bind every action yer ain wey. Click a slot tae capture a new key.',
       unbound: '—',
+      unbound_a11y: 'unbound',
       gamepadPrefix: 'Pad',
       rebind_hint: 'Press ony key tae set. ESC cancels.',
       conflict_warning: 'That key awready binds anither action.',
       reset_defaults: 'Back tae defaults',
+      back: 'Back',
       action: {
         moveUp: 'Move up',
         moveDown: 'Move doon',
@@ -345,6 +347,14 @@ export const SCS_STRINGS: LocaleTree = {
         moveRight: 'Move right',
         dash: 'Dash',
         pause: 'Pause',
+      },
+      a11y: {
+        slot_primary: 'primary',
+        slot_secondary: 'secondary',
+        kind_keyboard: 'keyboard',
+        kind_gamepad: 'gamepad',
+        capture_keyboard: 'Press ony key for {row}. ESC cancels.',
+        capture_gamepad: 'Press a button for {row}. ESC cancels.',
       },
     },
     photosensitivity: {

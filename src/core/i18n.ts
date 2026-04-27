@@ -596,10 +596,12 @@ export const EN_STRINGS: LocaleTree = {
       title: 'Controls',
       subtitle: 'Bind every action yer own way. Click a slot to capture a new key.',
       unbound: '—',
+      unbound_a11y: 'unbound',
       gamepadPrefix: 'Pad',
       rebind_hint: 'Press any key tae set. ESC cancels.',
       conflict_warning: 'That key already binds another action.',
       reset_defaults: 'Reset to defaults',
+      back: 'Back',
       action: {
         moveUp: 'Move up',
         moveDown: 'Move doon',
@@ -607,6 +609,22 @@ export const EN_STRINGS: LocaleTree = {
         moveRight: 'Move right',
         dash: 'Dash',
         pause: 'Pause',
+      },
+      /**
+       * T407 adoption #5 — screen-reader-only strings for the DOM focus
+       * mirror. The visible Phaser chips already render the binding code
+       * directly; the mirror folds these descriptors into a single label
+       * (e.g. "Move up — primary keyboard — W") so a screen reader hears
+       * the full row in one breath. `{row}` is substituted with the
+       * composed action + slot + kind during a live capture.
+       */
+      a11y: {
+        slot_primary: 'primary',
+        slot_secondary: 'secondary',
+        kind_keyboard: 'keyboard',
+        kind_gamepad: 'gamepad',
+        capture_keyboard: 'Press a key for {row}. Escape to cancel.',
+        capture_gamepad: 'Press a button for {row}. Escape to cancel.',
       },
     },
     /**

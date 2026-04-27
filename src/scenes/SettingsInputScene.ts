@@ -15,6 +15,12 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import {
+  buildCaptureModeActions,
+  buildSettingsInputDomFocusActions,
+  type SettingsInputActionLabels,
+} from './settingsInputDomFocusActions';
 
 type CaptureKind = 'keyboard' | 'gamepad';
 
@@ -48,6 +54,9 @@ export class SettingsInputScene extends Phaser.Scene {
    *  resolve the capture. */
   private captureGamepadBaseline: boolean[] = [];
   private returnTo: SceneReturnTarget = 'MainMenu';
+  /** T407 adoption #5 — DOM-visible focus mirror. Re-mounts on every
+   *  scene.restart() since `create()` is the single seed point. */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor() {
     super({ key: 'SettingsInput' });
@@ -106,6 +115,13 @@ export class SettingsInputScene extends Phaser.Scene {
 
     // Global keyboard capture for rebinds.
     this.input.keyboard?.on('keydown', this.onKeydown);
+
+    // T407 adoption #5 — DOM focus mirror. Re-installed every restart.
+    this.uninstallDomFocusLayer();
+    this.installDomFocusLayer();
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.uninstallDomFocusLayer();
+    });
   }
 
   private renderActionRow(
@@ -245,11 +261,7 @@ export class SettingsInputScene extends Phaser.Scene {
     });
     rect.setScale(this.uiScale);
     label.setScale(this.uiScale);
-    rect.on('pointerdown', () => {
-      audio.playClick();
-      this.resetToDefaults();
-      this.scene.restart(returnTargetData(this.returnTo));
-    });
+    rect.on('pointerdown', () => this.activateReset());
   }
 
   private renderBackButton(y: number, uiScale: number): void {
@@ -266,11 +278,20 @@ export class SettingsInputScene extends Phaser.Scene {
     });
     back.setScale(uiScale);
     backLabel.setScale(uiScale);
-    const goBack = () => {
-      audio.playClick();
-      this.scene.start('Settings', returnTargetData(this.returnTo));
-    };
-    back.on('pointerdown', goBack);
+    back.on('pointerdown', () => this.activateBack());
+  }
+
+  /** Reset action shared by visible chip + DOM focus mirror. */
+  private activateReset(): void {
+    audio.playClick();
+    this.resetToDefaults();
+    this.scene.restart(returnTargetData(this.returnTo));
+  }
+
+  /** Back action shared by visible button + DOM focus mirror. */
+  private activateBack(): void {
+    audio.playClick();
+    this.scene.start('Settings', returnTargetData(this.returnTo));
   }
 
   private onKeydown = (e: KeyboardEvent): void => {
@@ -341,5 +362,92 @@ export class SettingsInputScene extends Phaser.Scene {
       keyBindings: structuredClone(DEFAULT_KEYBINDINGS),
       gamepadBindings: structuredClone(DEFAULT_GAMEPAD_BINDINGS),
     }));
+  }
+
+  /**
+   * T407 adoption #5 — resolve the i18n chrome strings the helper needs
+   * once per render. Kept private so the helper can stay Phaser-free.
+   */
+  private resolveChromeLabels(): SettingsInputActionLabels {
+    return {
+      action: t('ui.inputRebind.title'),
+      primary: t('ui.inputRebind.a11y.slot_primary'),
+      secondary: t('ui.inputRebind.a11y.slot_secondary'),
+      keyboard: t('ui.inputRebind.a11y.kind_keyboard'),
+      gamepad: t('ui.inputRebind.a11y.kind_gamepad'),
+      unbound: t('ui.inputRebind.unbound_a11y'),
+      gamepadPrefix: t('ui.inputRebind.gamepadPrefix'),
+      reset: t('ui.inputRebind.reset_defaults'),
+      back: t('ui.settings.back'),
+      captureKeyboard: t('ui.inputRebind.a11y.capture_keyboard'),
+      captureGamepad: t('ui.inputRebind.a11y.capture_gamepad'),
+    };
+  }
+
+  private resolveActionLabels(): Record<ActionKey, string> {
+    const out = {} as Record<ActionKey, string>;
+    for (const action of ACTION_KEYS) {
+      out[action] = t(`ui.inputRebind.action.${action}`);
+    }
+    return out;
+  }
+
+  /**
+   * Mount the visually hidden DOM action mirror. When a capture is in
+   * flight the layer renders a single-action announcement so the screen
+   * reader hears the prompt; otherwise it renders the full row stack.
+   * The scene calls `scene.restart()` after every state change so this
+   * runs fresh on each render — no live `setActions` is needed.
+   */
+  private installDomFocusLayer(): void {
+    if (typeof document === 'undefined') return;
+    const chrome = this.resolveChromeLabels();
+    const labels = this.resolveActionLabels();
+
+    if (this.capture) {
+      const cap = this.capture;
+      this.domFocusLayer = createDomFocusLayer({
+        id: 'whs-settings-input-focus-layer',
+        label: t('ui.inputRebind.title'),
+        description: t('ui.inputRebind.subtitle'),
+        role: 'group',
+        actions: buildCaptureModeActions({
+          action: cap.action,
+          slot: cap.slot,
+          kind: cap.kind,
+          actionLabel: labels[cap.action],
+          chrome,
+        }),
+      });
+      return;
+    }
+
+    const { keyBindings, gamepadBindings } = this.settingsManager.load();
+    const actions = buildSettingsInputDomFocusActions({
+      actions: ACTION_KEYS,
+      keyBindings,
+      gamepadBindings,
+      labels,
+      chrome,
+      formatKeyCode,
+      onActivateSlot: (action, slot, kind) => {
+        this.beginCapture(action, slot, kind);
+      },
+      onActivateReset: () => this.activateReset(),
+      onActivateBack: () => this.activateBack(),
+    });
+
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-settings-input-focus-layer',
+      label: t('ui.inputRebind.title'),
+      description: t('ui.inputRebind.subtitle'),
+      role: 'group',
+      actions,
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 }
