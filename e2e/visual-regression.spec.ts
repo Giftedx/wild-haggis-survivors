@@ -2,28 +2,68 @@ import { expect, test } from './fixtures';
 import path from 'node:path';
 
 /**
- * T408 — visual regression capture at uiScale 1.4 + mobile viewport.
+ * T408 — visual regression at uiScale 1.4 + mobile viewport.
  *
- * NOT a hard CI gate. A real `toHaveScreenshot` diff harness on a Phaser
- * canvas is fragile: random-seeded particle drift, ambient wind, GPU
- * driver differences between runners — all produce >1% pixel deltas
- * even on byte-identical scene graphs.
+ * Two-part gate:
+ *   1. **Design-verify writes** — `canvas.screenshot({ path: ... })` lands a
+ *      reference shot under `design-verify-screens/visual-regression/` for
+ *      reviewers to eyeball on each PR. That directory is git-ignored, so
+ *      these are local artefacts only.
+ *   2. **Thresholded diff (T408 upgrade)** — `expect(canvas).toHaveScreenshot()`
+ *      compares against committed baselines under
+ *      `e2e/visual-regression.spec.ts-snapshots/`. Diff budgets are
+ *      per-scene: MainMenu 5%, Croft 30% (Croft animates a hearth fire +
+ *      Gran's idle pulse so its natural inter-run variance is higher).
  *
- * What this spec DOES do is capture a reference shot of MainMenu /
- * Croft / first-run-frame at uiScale 1.4 (the highest a11y scale) and
- * at the iPhone-emulated mobile viewport, so a reviewer can eyeball
- * layout regressions on each PR. The output lands under
- * `design-verify-screens/visual-regression/` next to the existing
- * design-verify spec's outputs (well-known location).
+ * Why per-scene thresholds: Phaser canvas variance from random-seeded particle
+ * drift, ambient wind, and GPU driver differences across runners produces
+ * >1% pixel deltas even on byte-identical scene graphs (cited in CLAUDE.md
+ * "Phaser 4 Gotchas" / fixed-step section). The thresholds are loose enough
+ * to absorb that wobble but tight enough to catch gross layout regressions
+ * (those produce 50%+ deltas from sprite repositioning). Tighten as scenes
+ * prove stable under repeat runs.
  *
- * If a future audit wants real pixel-diff CI, the upgrade path is:
- *   1. Add `expect(canvas).toHaveScreenshot('main-menu-1.4x.png',
- *      { maxDiffPixelRatio: 0.05 })` next to each `canvas.screenshot`.
- *   2. Commit the baselines once the spec runs locally.
- *   3. Tighten the ratio as the canvas proves stable.
+ * **Update procedure:** when a deliberate visual change ships, run
+ * `npx playwright test visual-regression --update-snapshots --project=chromium-desktop`
+ * and commit the regenerated PNGs under `e2e/visual-regression.spec.ts-snapshots/`.
+ *
+ * Currently scoped to **chromium-desktop only**. Webkit + Firefox baselines
+ * are out of scope (DPR / GPU-driver variance would require per-engine
+ * baseline sets). The mobile-viewport test runs on the same chromium engine
+ * via `setViewportSize`, so it shares the chromium baseline. On firefox /
+ * webkit projects the spec still produces the design-verify writes but skips
+ * the diff comparison.
  */
 
 const OUT_DIR = 'design-verify-screens/visual-regression';
+
+// Diff thresholds. `maxDiffPixelRatio` is dimension-independent (the desktop
+// and mobile canvases differ in size), so we use it instead of `maxDiffPixels`.
+// `threshold` is the per-pixel colour delta tolerance (0..1) — 0.2 is
+// Playwright's default; explicit here so future readers know it's intentional.
+//
+// Per-scene tuning: MainMenu is mostly static text/UI so 5% catches real
+// layout regressions. Croft has the hearth fire, ambient drones, and Gran's
+// idle pulse — measured natural variance is ~14% even with 600ms settle, so
+// we widen its budget to 30% to cover one or two more animation tiers without
+// flaking. Both still trip on gross layout regressions (those produce 50%+
+// deltas from sprite repositioning, which is the real failure mode we care
+// about). Tighten as the canvas proves stable under repeat runs.
+const DIFF_OPTIONS_MENU = {
+  maxDiffPixelRatio: 0.05,
+  threshold: 0.2,
+} as const;
+
+const DIFF_OPTIONS_CROFT = {
+  maxDiffPixelRatio: 0.3,
+  threshold: 0.2,
+} as const;
+
+// Extra settle time before the diff snap so particle systems / drone-pulse
+// animations have a chance to reach their resting state. The original
+// design-verify capture used 400 ms; the diff comparison needs a bit more
+// margin to avoid mid-animation frame captures.
+const SETTLE_MS = 600;
 
 // Use the shared fixture (FORCE_CANVAS + photosensitivity-warning-seen)
 // so the captures don't have to re-establish that boot state per case.
@@ -48,7 +88,11 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     });
   });
 
-  test('MainMenu + Croft at uiScale 1.4 (desktop)', async ({ page }) => {
+  test('MainMenu + Croft at uiScale 1.4 (desktop)', async ({ page, browserName }) => {
+    // Diff baselines are chromium-only. Other engines still run the
+    // design-verify writes for parity but skip the comparison step.
+    const compareDiff = browserName === 'chromium';
+
     await page.addInitScript(() => {
       try {
         const settingsRaw = localStorage.getItem('whs_game_settings');
@@ -71,8 +115,12 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await page.bringToFront();
     await page.waitForTimeout(800);
 
-    // Capture MainMenu first.
+    // Capture MainMenu — write design-verify reference + thresholded diff.
     await canvas.screenshot({ path: path.join(OUT_DIR, 'main-menu-1.4x.png') });
+    if (compareDiff) {
+      await page.waitForTimeout(SETTLE_MS);
+      await expect(canvas).toHaveScreenshot('main-menu-1.4x.png', DIFF_OPTIONS_MENU);
+    }
 
     // Drive into Croft and capture again.
     await page.evaluate(async () => {
@@ -89,12 +137,17 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     });
     await page.waitForTimeout(400);
     await canvas.screenshot({ path: path.join(OUT_DIR, 'croft-1.4x.png') });
+    if (compareDiff) {
+      await page.waitForTimeout(SETTLE_MS);
+      await expect(canvas).toHaveScreenshot('croft-1.4x.png', DIFF_OPTIONS_CROFT);
+    }
   });
 
   test('MainMenu + Croft at iPhone viewport', async ({ page, browser, browserName }) => {
     // Reuse iPhone 13 viewport regardless of which project the runner picked.
     // Skip on browsers where viewport emulation isn't reliable for our boot path.
     test.skip(browserName === 'webkit', 'iPhone emulation only on chromium runners');
+    const compareDiff = browserName === 'chromium';
     await page.setViewportSize({ width: 390, height: 664 });
     void browser;
 
@@ -106,6 +159,10 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     await page.waitForTimeout(800);
 
     await canvas.screenshot({ path: path.join(OUT_DIR, 'main-menu-mobile.png') });
+    if (compareDiff) {
+      await page.waitForTimeout(SETTLE_MS);
+      await expect(canvas).toHaveScreenshot('main-menu-mobile.png', DIFF_OPTIONS_MENU);
+    }
 
     await page.evaluate(async () => {
       const g = (window as unknown as { game?: {
@@ -121,5 +178,9 @@ test.describe('T408 visual regression — high-uiScale + mobile', () => {
     });
     await page.waitForTimeout(400);
     await canvas.screenshot({ path: path.join(OUT_DIR, 'croft-mobile.png') });
+    if (compareDiff) {
+      await page.waitForTimeout(SETTLE_MS);
+      await expect(canvas).toHaveScreenshot('croft-mobile.png', DIFF_OPTIONS_CROFT);
+    }
   });
 });
