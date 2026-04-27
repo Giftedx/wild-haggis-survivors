@@ -1820,7 +1820,10 @@ describe('RunHistoryEntry name backfill', () => {
     const entry = { isVictory: false, seed: 'seed-xyz', timeSurvivedSec: 60, enemiesKilled: 20, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] };
     const a = migrateSave({ runHistory: [entry] });
     const b = migrateSave({ runHistory: [entry] });
-    expect(a.runHistory?.[0]?.name).toBeTruthy();
+    // Stronger than toBeTruthy: ensure backfill produced an actual non-empty
+    // string (catches a regression where the field becomes 0, NaN, or '').
+    expect(typeof a.runHistory?.[0]?.name).toBe('string');
+    expect(a.runHistory?.[0]?.name?.length).toBeGreaterThan(0);
     expect(a.runHistory?.[0]?.name).toBe(b.runHistory?.[0]?.name);
   });
 
@@ -1830,7 +1833,10 @@ describe('RunHistoryEntry name backfill', () => {
         { isVictory: false, timeSurvivedSec: 90, enemiesKilled: 40, variantKey: 'classic', timestamp: 1, level: 1, bossKills: 0, goldEarned: 0, bestCombo: 0, weaponKeys: [] },
       ],
     });
-    expect(loaded.runHistory?.[0]?.name).toBeTruthy();
+    // Stronger than toBeTruthy: ensure the no-seed fallback still emits a
+    // real non-empty name string (catches '' or undefined regressions).
+    expect(typeof loaded.runHistory?.[0]?.name).toBe('string');
+    expect(loaded.runHistory?.[0]?.name?.length).toBeGreaterThan(0);
   });
 
   it('backfills different entries with different names (almost always)', () => {
@@ -1857,8 +1863,12 @@ describe('RunHistoryEntry name backfill', () => {
     };
     const a = migrateSave({ runHistory: [{ ...base, runSeed: 11111 }] });
     const b = migrateSave({ runHistory: [{ ...base, runSeed: 22222 }] });
-    expect(a.runHistory?.[0]?.name).toBeTruthy();
-    expect(b.runHistory?.[0]?.name).toBeTruthy();
+    // Stronger than toBeTruthy: each runSeed-derived name must be a real
+    // non-empty string before we then assert they differ.
+    expect(typeof a.runHistory?.[0]?.name).toBe('string');
+    expect(a.runHistory?.[0]?.name?.length).toBeGreaterThan(0);
+    expect(typeof b.runHistory?.[0]?.name).toBe('string');
+    expect(b.runHistory?.[0]?.name?.length).toBeGreaterThan(0);
     expect(a.runHistory?.[0]?.name).not.toBe(b.runHistory?.[0]?.name);
   });
 

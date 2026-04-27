@@ -53,8 +53,11 @@ describe('moorMoments', () => {
   it('home-biome moments declare both home keys (not just one)', () => {
     for (const m of MOOR_MOMENTS) {
       if (!m.homeBiome) continue;
-      expect(m.captionKeyHome, `${m.id} has homeBiome but no captionKeyHome`).toBeTruthy();
-      expect(m.toastKeyHome, `${m.id} has homeBiome but no toastKeyHome`).toBeTruthy();
+      // Stronger than toBeTruthy: the home keys are i18n dot-paths under
+      // `ui.moor_moment.*`, so pin the prefix to catch a regression that
+      // shipped a non-empty-but-malformed string (e.g. an enemy key).
+      expect(m.captionKeyHome, `${m.id} has homeBiome but no captionKeyHome`).toMatch(/^ui\.moor_moment\./);
+      expect(m.toastKeyHome, `${m.id} has homeBiome but no toastKeyHome`).toMatch(/^ui\.moor_moment\./);
     }
   });
 

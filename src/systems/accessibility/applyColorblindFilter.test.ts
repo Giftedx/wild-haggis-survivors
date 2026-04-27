@@ -92,7 +92,11 @@ describe('applyColorblindFilter (pure DOM contract)', () => {
     const doc = makeDocument() as unknown as Document;
     ensureColorblindSvgFilters(doc);
     const svg = doc.getElementById('whs-colorblind-svg') as unknown as FakeElement;
-    expect(svg).toBeTruthy();
+    // Stronger than toBeTruthy: confirm the lookup returned an actual SVG
+    // element (not just any non-null value) with the expected id.
+    expect(svg).not.toBeNull();
+    expect(svg.tagName).toBe('svg');
+    expect(svg.id).toBe('whs-colorblind-svg');
     const filters = svg.querySelectorAll('filter');
     expect(filters.length).toBe(4);
     const ids = filters.map((f) => f.id).sort();

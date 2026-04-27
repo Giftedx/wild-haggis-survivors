@@ -59,7 +59,11 @@ describe('BanterSystem', () => {
 
     it('ui.banter tree is present', () => {
       const ui = EN_STRINGS.ui as Record<string, unknown>;
-      expect(ui.banter).toBeTruthy();
+      // Stronger than toBeTruthy: the banter tree is an object containing
+      // at least the boss_warn pool. Catches a regression where the tree
+      // collapses to a string or empty record.
+      expect(ui.banter).toBeInstanceOf(Object);
+      expect(ui.banter).toMatchObject({ boss_warn: expect.any(Object) });
     });
   });
 
@@ -271,14 +275,24 @@ describe('BanterSystem', () => {
     it('has a keysByTag entry for every route key (both pickers)', () => {
       const pool = BANTER_POOLS.find((p) => p.context === 'route_picked');
       expect(pool).toBeDefined();
+      // Stronger than toBeTruthy: each entry is an array of i18n keys, so
+      // assert it's a non-empty array. A regression that left the field as
+      // an empty array (no banter) or a non-array would slip past
+      // toBeTruthy but fail these checks.
       // Picker A.
-      expect(pool!.keysByTag?.up_the_brae).toBeTruthy();
-      expect(pool!.keysByTag?.round_the_loch).toBeTruthy();
-      expect(pool!.keysByTag?.through_the_kirkyard).toBeTruthy();
+      expect(pool!.keysByTag?.up_the_brae).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.up_the_brae?.length).toBeGreaterThan(0);
+      expect(pool!.keysByTag?.round_the_loch).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.round_the_loch?.length).toBeGreaterThan(0);
+      expect(pool!.keysByTag?.through_the_kirkyard).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.through_the_kirkyard?.length).toBeGreaterThan(0);
       // Picker B.
-      expect(pool!.keysByTag?.stand_yer_ground).toBeTruthy();
-      expect(pool!.keysByTag?.run_for_the_hills).toBeTruthy();
-      expect(pool!.keysByTag?.buckie_pitstop).toBeTruthy();
+      expect(pool!.keysByTag?.stand_yer_ground).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.stand_yer_ground?.length).toBeGreaterThan(0);
+      expect(pool!.keysByTag?.run_for_the_hills).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.run_for_the_hills?.length).toBeGreaterThan(0);
+      expect(pool!.keysByTag?.buckie_pitstop).toBeInstanceOf(Array);
+      expect(pool!.keysByTag?.buckie_pitstop?.length).toBeGreaterThan(0);
     });
 
     it('all W2 banter i18n keys resolve to real strings (both pickers)', () => {

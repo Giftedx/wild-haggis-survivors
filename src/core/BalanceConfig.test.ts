@@ -135,9 +135,14 @@ describe('BALANCE', () => {
 describe('EVOLUTION_RECIPES', () => {
   it('every recipe names real base weapon + passive + evolved weapon', () => {
     for (const r of EVOLUTION_RECIPES) {
-      expect(r.baseWeapon).toBeTruthy();
-      expect(r.requiredPassive).toBeTruthy();
-      expect(r.evolvedWeapon).toBeTruthy();
+      // Stronger than toBeTruthy: enforce non-empty strings so a typo'd
+      // numeric or accidental empty literal can't slip through.
+      expect(typeof r.baseWeapon).toBe('string');
+      expect(r.baseWeapon.length).toBeGreaterThan(0);
+      expect(typeof r.requiredPassive).toBe('string');
+      expect(r.requiredPassive.length).toBeGreaterThan(0);
+      expect(typeof r.evolvedWeapon).toBe('string');
+      expect(r.evolvedWeapon.length).toBeGreaterThan(0);
       expect(r.nameKey).toMatch(/^evolution\./);
       expect(r.descriptionKey).toMatch(/^evolution\./);
     }

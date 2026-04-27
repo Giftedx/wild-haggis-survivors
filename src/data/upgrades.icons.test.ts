@@ -17,7 +17,10 @@ describe('upgrade card icon contracts', () => {
   it('uses weapon HUD icon keys for generated level-up cards', () => {
     const pool = buildCardPool(['thistle_shot'], [], { thistle_shot: 2 }, []);
     const levelCard = pool.find((card) => card.id.startsWith('levelup_thistle_shot_'));
-    expect(levelCard).toBeTruthy();
+    // Stronger than toBeTruthy: `Array.find` returns `undefined` on miss, so
+    // toBeDefined catches the regression cleanly without accepting any
+    // truthy non-undefined value.
+    expect(levelCard).toBeDefined();
     expect(levelCard!.icon).toBe('wicon_thistle_shot');
   });
 

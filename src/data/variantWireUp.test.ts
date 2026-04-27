@@ -50,7 +50,14 @@ describe('every non-classic variant is fully wired', () => {
         const def = getVariantByKey(v.key);
         expect(def.key).toBe(v.key);
         expect(def.textureKey).toBe(`haggis_${v.key}`);
-        expect(def.appearance.accentStyle).toBeTruthy();
+        // Stronger than toBeTruthy: accentStyle is a union of named string
+        // literals. `'none'` is a valid value (variants without bespoke
+        // accent art ship with it), so check membership in the documented
+        // set rather than mere truthiness.
+        expect([
+          'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
+          'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
+        ]).toContain(def.appearance.accentStyle);
       });
 
       it('ships a non-trivial modifier profile', () => {
@@ -72,7 +79,16 @@ describe('every non-classic variant is fully wired', () => {
 
       it('has a valid unlock condition', () => {
         const def = getVariantByKey(v.key);
-        expect(def.unlock.type).toBeTruthy();
+        // Stronger than toBeTruthy: unlock.type is a documented union from
+        // `VariantUnlockCondition`. Pin membership so a typo'd discriminant
+        // (e.g. 'best_kill' singular) fails loudly instead of slipping
+        // past as a non-empty string.
+        expect([
+          'default', 'best_time', 'best_kills', 'total_gold_earned',
+          'victories', 'cursed_victories', 'runs_without_healing',
+          'runs_in_coastal_only', 'runs_with_all_evolutions',
+          'burns_night_full_evo',
+        ]).toContain(def.unlock.type);
         if (def.unlock.type !== 'default') {
           expect((def.unlock as { required: number }).required).toBeGreaterThan(0);
         }

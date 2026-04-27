@@ -29,7 +29,11 @@ describe('Meta progression air-gap', () => {
   // The dynamic `await import('../systems/WeaponSystem')` re-runs esbuild transform under
   // the 432-file vitest pool and can exceed the 5s default on saturated machines.
   it('WeaponSystem loads without SaveManager dependency', { timeout: 30_000 }, async () => {
-    await expect(import('../systems/WeaponSystem')).resolves.toBeTruthy();
+    const mod = await import('../systems/WeaponSystem');
+    // Stronger than toBeTruthy: confirm the module actually exposes the
+    // WeaponSystem class. A regression that returned an empty module ({}) or
+    // an unexpected default-only shape would slip past toBeTruthy.
+    expect(mod).toMatchObject({ WeaponSystem: expect.any(Function) });
   });
 });
 

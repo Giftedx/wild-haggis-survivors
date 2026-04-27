@@ -33,7 +33,10 @@ describe('resolveButtonStyle', () => {
   it('all tiers define text color', () => {
     for (const tier of ['primary', 'secondary', 'tertiary'] as ButtonTier[]) {
       const s = resolveButtonStyle(tier);
-      expect(s.textColor).toBeTruthy();
+      // Stronger than toBeTruthy: textColor must be a 6-digit hex string
+      // (Phaser text-style format). Catches a regression that returned a
+      // numeric color, an empty string, or a malformed CSS value.
+      expect(s.textColor).toMatch(/^#[0-9a-fA-F]{6}$/);
     }
   });
 
