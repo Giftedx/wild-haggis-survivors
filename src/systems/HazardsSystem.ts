@@ -76,6 +76,13 @@ interface ActiveHazard {
   remainingMs: number;
   /** ms remaining until next damage tick can fire (0 = ready). */
   hitCooldownMs: number;
+  /** Telegraph window — ms remaining before damage can fire. Player
+   *  sees the hazard fade in during this window without taking
+   *  damage; matches the visual fade-in duration so the warning is
+   *  exactly as long as the visual lead-in. Without this, a hazard
+   *  spawning on top of a player would damage during fade-in alpha
+   *  0 → 1, which reads as "I got hit by something invisible". */
+  arrivalMs: number;
   /** Set true once the fade-out has been kicked off so we don't double-trigger. */
   expiring: boolean;
 }
@@ -124,8 +131,8 @@ export class HazardsSystem {
     if (this.started) return;
     this.started = true;
 
-    const settings = getSettingsManager().load() as { disableHazards?: boolean };
-    if (settings.disableHazards === true) {
+    const settings = getSettingsManager().load();
+    if (settings.disableHazards) {
       this.disabled = true;
       return;
     }
@@ -148,10 +155,13 @@ export class HazardsSystem {
     // Tick active hazards: cooldowns, lifetime, overlap damage.
     for (const h of this.active) {
       if (h.hitCooldownMs > 0) h.hitCooldownMs = Math.max(0, h.hitCooldownMs - delta);
+      if (h.arrivalMs > 0) h.arrivalMs = Math.max(0, h.arrivalMs - delta);
       h.remainingMs -= delta;
 
       if (!h.expiring) {
-        if (h.hitCooldownMs <= 0 && this.overlapsPlayer(h, player)) {
+        // Telegraph window: skip damage while the hazard is still
+        // fading in. Player needs to SEE the hazard before it can hit.
+        if (h.arrivalMs <= 0 && h.hitCooldownMs <= 0 && this.overlapsPlayer(h, player)) {
           // Respect dash + Burn-Leap iframes — same gate the existing
           // HazardZones system uses (src/scenes/game/HazardZones.ts:301).
           // Without this, a Burn Leap meant to clear a peat pit / scree
@@ -231,6 +241,7 @@ export class HazardsSystem {
       image,
       remainingMs: def.lifetimeMs,
       hitCooldownMs: 0,
+      arrivalMs: FADE_IN_MS,
       expiring: false,
     };
     this.active.add(hazard);

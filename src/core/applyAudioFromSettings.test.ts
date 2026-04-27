@@ -51,6 +51,7 @@ const base: ISettingsData = {
   captionTextScale: 1,
   colorblindMode: 'off',
   disableSeasonalEvents: false,
+  disableHazards: false,
   cloudSaveOptIn: false,
   keyBindings: DEFAULT_KEYBINDINGS,
   gamepadBindings: DEFAULT_GAMEPAD_BINDINGS,

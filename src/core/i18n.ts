@@ -545,6 +545,8 @@ export const EN_STRINGS: LocaleTree = {
       colorblind_monochrome: 'Monochrome',
       /** E1 M4 — opt-out for real-world-date-gated seasonal events. */
       disable_seasonal_events: 'Disable seasonal events',
+      /** Round 2 hazards — opt-out for dynamic biome hazards. */
+      disable_hazards: 'Disable biome hazards',
       /** Banter frequency row — ambient Glesga commentary volume. */
       banter_frequency: 'Banter',
       banter_off: 'Wheesht',

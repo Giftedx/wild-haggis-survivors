@@ -138,6 +138,15 @@ export interface ISettingsData {
    */
   disableSeasonalEvents: boolean;
   /**
+   * Round 2 hazards — opt-out for the dynamic biome hazard system
+   * (peat pits, falling slate, burn rapids, scree slides). Off by
+   * default. When true, `HazardsSystem.start()` early-returns into a
+   * disabled state and no hazards spawn for that run. Existing static
+   * `HazardZones` (lava patches placed at run start) are unaffected
+   * — they ship from a different system and remain on.
+   */
+  disableHazards: boolean;
+  /**
    * P3 Cloud Saves — opt-in for cloud sync of the existing `whs_save`
    * payload. Off by default; the game stays fully playable offline-
    * first when this is false (charter §Anti-patterns "Don't gate
@@ -207,6 +216,7 @@ const DEFAULT_SETTINGS: ISettingsData = {
   captionTextScale: 1,
   colorblindMode: 'off',
   disableSeasonalEvents: false,
+  disableHazards: false,
   cloudSaveOptIn: false,
   keyBindings: cloneKeyBindings(DEFAULT_KEYBINDINGS),
   gamepadBindings: cloneGamepadBindings(DEFAULT_GAMEPAD_BINDINGS),
@@ -427,6 +437,7 @@ export class SettingsManager {
         o.disableSeasonalEvents,
         DEFAULT_SETTINGS.disableSeasonalEvents,
       ),
+      disableHazards: toBool(o.disableHazards, DEFAULT_SETTINGS.disableHazards),
       cloudSaveOptIn: toBool(o.cloudSaveOptIn, DEFAULT_SETTINGS.cloudSaveOptIn),
       keyBindings: coerceKeyBindings(o.keyBindings),
       gamepadBindings: coerceGamepadBindings(o.gamepadBindings),
