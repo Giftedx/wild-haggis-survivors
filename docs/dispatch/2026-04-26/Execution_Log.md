@@ -271,3 +271,27 @@ Three Tier-A agents committed to the same working tree in parallel. T410's recon
 - **PEAT:** human PEAT-tool desktop pass over the 25 rows in `docs/status/a11y/A1_PEAT_AUDIT.md`.
 - **Cloud save:** auth, privacy policy, deployment flow are product decisions outside the spike (T421-T423).
 - **Assist Mode game-speed:** expose vs hide is a product decision (`task_03`).
+
+### Round 4 — additional Tier-A parallel batch (2026-04-28 same session, post-T427)
+
+After T427 landed, recon on user-prompted P2 candidates surfaced two were already shipped:
+
+| Candidate | Status | Evidence |
+|---|---|---|
+| **P2.12** debug hotkeys gated to DEV / flag | already shipped | `src/scenes/dev/debugHotkeys.ts:5-13` documents the T312 two-stage gate (`import.meta.env.DEV` registration check + per-handler `isDevHotkeysEnabled()` runtime check). Production bundles tree-shake the body. |
+| **P2.5** locale change preserves `returnTo` | already shipped | `src/scenes/SettingsScene.ts:1008` (locale cycle) and `:1207` (reset path) both pass `returnTargetData(this.returnTo)` to `scene.start('Settings', …)`. Comment at `:157` documents the preservation contract. |
+
+Two real charters dispatched in parallel with explicit anti-collision briefs (per `feedback_parallel_agent_git_collision` memory: brief each agent to NEVER soft-reset, only `git add <explicit-paths>`).
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `T401` slice 6 — run-end shutdown extraction | `ddc4704` | `src/scenes/game/runEndShutdown.ts` (511 LOC, Phaser-import-free helper) + `runEndShutdown.test.ts` (702 LOC, 22 cases). GameScene 3439 → 3418 LOC (-21). Dep-shape Option B: `RunEndShutdownDeps` carries 18 typed setter callbacks for the destroy/null pairs (refs are read for `.destroy()`, then nulled via the setter — preserves the per-line destroy/null order one-for-one within the `events.once('shutdown')` listener). Every silenced-catch preserved. Replay determinism byte-identical (7/7). Three throw-and-continue tests pin partial-init safety. Slice 7 candidate: A (node-map lifecycle ~70-90 LOC). |
+| `P2.15` strengthen weak `toBeTruthy()` assertions | `5c7a5b8` | 22 `toBeTruthy()` occurrences across 9 vitest files replaced with shape-asserting alternatives: `toMatchObject`, `toBeInstanceOf(Array) + length > 0`, `toMatch(/regex/)`, `typeof === 'string' + length > 0`, `toContain` over canonical literal lists, `not.toBeNull() + tagName/id` for DOM nodes. No production code touched. Strictly tighter assertions — each new check subset-implies the original `toBeTruthy()` for current values but rejects empty-string / wrong-type / malformed-shape regressions. Defensive Phaser-stub-fallback pattern in `Player.runeBag.test.ts` was excluded by charter. |
+
+Parallel dispatch went clean: cross-check of agent-reported SHAs against `git log` confirmed both commits intact, no soft-reset disturbance. The anti-collision briefs (paste-in instruction: "DO NOT soft-reset HEAD~1 if you see unrelated working-tree changes — those belong to the other agent") worked.
+
+Reconciliation gates on master (post-round-4):
+- `npm run lint` — clean
+- `npm test` — 434 files / 4530 tests passed (was 433 / 4508 — slice 6 added 22)
+- `npm run build` — 7.29s; vendor-phaser 374.43 KB gzip (under 390 KB), index 271.25 KB gzip (under 285 KB)
+- GameScene LOC ratchet: 3502 (slice 3 baseline) → 3464 (slice 4) → 3439 (slice 5) → 3418 (slice 6). Cumulative drop -84 LOC across 4 slices.
