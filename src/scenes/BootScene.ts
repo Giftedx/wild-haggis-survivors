@@ -331,53 +331,68 @@ export class BootScene extends Phaser.Scene {
   }
 
   private generateAllTextures(): void {
+    // Per-bake timing — atlas-export pipelines (Playwright + headless
+    // Chromium) trip a "Framebuffer Unsupported" pageerror during this
+    // method when the texture set is large. The console.info trail
+    // makes the failing bake call identifiable next time the export
+    // hangs. See `reference_atlas_export_phaser4_limit.md` in memory.
+    const bake = (label: string, fn: () => void): void => {
+      const t0 = performance.now();
+      const before = this.textures.getTextureKeys().length;
+      fn();
+      const after = this.textures.getTextureKeys().length;
+      console.info(
+        `[BootScene] bake ${label}: +${after - before} keys, ${(performance.now() - t0).toFixed(1)} ms`,
+      );
+    };
+
     // Player variants — outline each variant texture.
     let before = snapshotTextureKeys(this);
-    bakePlayerVariants(this);
+    bake('player-variants', () => bakePlayerVariants(this));
     outlineNewTextures(this, before);
 
     // Enemies — outline every enemy sprite (shadows excluded internally).
     before = snapshotTextureKeys(this);
-    bakeEnemies(this);
+    bake('enemies', () => bakeEnemies(this));
     outlineNewTextures(this, before);
 
     // Projectiles — outline every projectile sprite.
     before = snapshotTextureKeys(this);
-    bakeProjectiles(this);
+    bake('projectiles', () => bakeProjectiles(this));
     outlineNewTextures(this, before);
 
     // Bosses — outline every boss sprite (shadows excluded internally).
     before = snapshotTextureKeys(this);
-    bakeBosses(this);
+    bake('bosses', () => bakeBosses(this));
     outlineNewTextures(this, before);
 
     // Pickups — NO outline (glows fight with borders).
-    bakePickups(this);
+    bake('pickups', () => bakePickups(this));
     // Ground shadows + weather + film grain live in src/art/sprites/fx/.
-    bakeFx(this);
+    bake('fx', () => bakeFx(this));
     // Environmental decoration sprites (thistle, rocks, heather, etc.).
-    bakeDecorations(this);
+    bake('decorations', () => bakeDecorations(this));
     // HUD chrome (shield, dash pips) lives in src/art/sprites/hud/.
-    bakeHud(this);
+    bake('hud', () => bakeHud(this));
     // Weapon + upgrade-card icons live in src/art/sprites/icons/.
-    bakeWeaponIcons(this);
-    bakeCardIcons(this);
-    bakeRelicIcons(this);
+    bake('weapon-icons', () => bakeWeaponIcons(this));
+    bake('card-icons', () => bakeCardIcons(this));
+    bake('relic-icons', () => bakeRelicIcons(this));
     // Moor Road route markers + moor-moment tokens.
-    bakeNodeMarkers(this);
-    bakeMoorMomentTokens(this);
+    bake('node-markers', () => bakeNodeMarkers(this));
+    bake('moor-tokens', () => bakeMoorMomentTokens(this));
     // Ambient wildlife (hare, etc.) for world dressing.
-    bakeWildlife(this);
+    bake('wildlife', () => bakeWildlife(this));
     // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
-    bakeGranTextures(this);
-    bakeHearthTextures(this);
-    bakeCroftWarmthProps(this);
+    bake('croft-gran', () => bakeGranTextures(this));
+    bake('croft-hearth', () => bakeHearthTextures(this));
+    bake('croft-warmth', () => bakeCroftWarmthProps(this));
     // Croft visitors — postie, neighbour, weans, standing sheepdog,
     // a returning haggis pal. Warmth-only NPCs, no gameplay role yet.
-    bakeCroftVisitors(this);
+    bake('croft-visitors', () => bakeCroftVisitors(this));
     // UI ornament — card-rarity frames, banter-bubble corners, toast
     // parchment. Available for future UI systems to opt in.
-    bakeUi(this);
+    bake('ui', () => bakeUi(this));
     // F1 — shared noise texture for haar fog (and future shaders that
     // sample from it: dissolve, heat-shimmer). One TextureManager entry
     // referenced by `NOISE_TEXTURE_KEY`; Phaser handles WebGL

@@ -89,8 +89,73 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
 
   for (const k of [
     { id: 'fx_snowflake', key: 'fx_snowflake' },
+    // Round 2 additions (2026-04-27) — projectile trails, death bursts,
+    // weather kit. Not yet consumed by gameplay systems but locked in
+    // so a future bake-orchestrator drop is caught at boot validation.
+    { id: 'fx_trail_thistle', key: 'fx_trail_thistle' },
+    { id: 'fx_trail_caber', key: 'fx_trail_caber' },
+    { id: 'fx_trail_haggis', key: 'fx_trail_haggis' },
+    { id: 'fx_enemy_burst_small', key: 'fx_enemy_burst_small' },
+    { id: 'fx_enemy_burst_medium', key: 'fx_enemy_burst_medium' },
+    { id: 'fx_enemy_burst_large', key: 'fx_enemy_burst_large' },
+    { id: 'fx_rain_drop', key: 'fx_rain_drop' },
+    { id: 'fx_drizzle', key: 'fx_drizzle' },
+    { id: 'fx_sun_shaft', key: 'fx_sun_shaft' },
+    { id: 'fx_aurora_band', key: 'fx_aurora_band' },
   ] as const) {
     pushKey(out, seen, 'fx', k.id, k.key);
+  }
+
+  // Round 2 additions — croft visitors (postie / neighbour / weans /
+  // standing sheepdog / returning pal). NPCs available to CroftScene
+  // for between-run warmth; locked in so the orchestrator wiring can't
+  // silently regress.
+  for (const k of [
+    'croft_postie_f0',
+    'croft_postie_f1',
+    'croft_neighbour_f0',
+    'croft_neighbour_f1',
+    'croft_weans',
+    'croft_sheepdog_stand_f0',
+    'croft_sheepdog_stand_f1',
+    'croft_returning_pal',
+  ] as const) {
+    pushKey(out, seen, 'croft', k, k);
+  }
+
+  // Round 2 additions — urban Glasgow props, biome hazards, seasonal
+  // moor decorations. World-dressing pool for FloraScatter / hazard
+  // system to draw from.
+  for (const k of [
+    'deco_chippy_sign',
+    'deco_bus_stop',
+    'deco_newsprint',
+    'deco_close_door',
+    'deco_scaffold_post',
+    'hazard_peat_pit',
+    'hazard_falling_slate',
+    'hazard_burn_water',
+    'hazard_loose_scree',
+    'deco_autumn_leaves',
+    'deco_spring_shoot',
+    'deco_thaw_puddle',
+  ] as const) {
+    pushKey(out, seen, 'decoration', k, k);
+  }
+
+  // Round 2 additions — UI ornament: 4 rarity card frames + 3 banter
+  // corner ornaments + toast parchment.
+  for (const k of [
+    'ui_card_frame_common',
+    'ui_card_frame_uncommon',
+    'ui_card_frame_rare',
+    'ui_card_frame_legendary',
+    'ui_banter_corner_hearth',
+    'ui_banter_corner_edge',
+    'ui_banter_corner_fey',
+    'ui_toast_frame',
+  ] as const) {
+    pushKey(out, seen, 'ui', k, k);
   }
 
   for (const arr of [WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS]) {
