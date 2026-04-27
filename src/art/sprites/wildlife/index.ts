@@ -12,6 +12,8 @@ import { bakeOtter } from './otter';
 import { bakePuffin } from './puffin';
 import { bakeGoldenEagle } from './goldenEagle';
 import { bakeScottishWildcat } from './scottishWildcat';
+import { bakeSmallScotsWildlife } from './smallScots';
+import { bakePineMartenKit } from './pineMartenKit';
 
 export function bakeWildlife(scene: Phaser.Scene): void {
   bakeHare(scene);
@@ -24,4 +26,6 @@ export function bakeWildlife(scene: Phaser.Scene): void {
   bakePuffin(scene);
   bakeGoldenEagle(scene);
   bakeScottishWildcat(scene);
+  bakeSmallScotsWildlife(scene);
+  bakePineMartenKit(scene);
 }

@@ -27,6 +27,11 @@ import {
   bakeFxSunShaft,
   bakeFxAuroraBand,
 } from './weather';
+import { bakeWeaponFlourishes } from './weaponFlourishes';
+import { bakeAtmosphereLayers } from './atmosphereLayers';
+import { bakeEliteTelegraphs } from './eliteTelegraphs';
+import { bakeHeartPulse } from './heartPulse';
+import { bakeComboChevron } from './comboChevron';
 
 export function bakeFx(scene: Phaser.Scene): void {
   bakeEntityShadow(scene);
@@ -45,4 +50,9 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeFxDrizzle(scene);
   bakeFxSunShaft(scene);
   bakeFxAuroraBand(scene);
+  bakeWeaponFlourishes(scene);
+  bakeAtmosphereLayers(scene);
+  bakeEliteTelegraphs(scene);
+  bakeHeartPulse(scene);
+  bakeComboChevron(scene);
 }

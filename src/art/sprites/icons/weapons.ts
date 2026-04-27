@@ -113,26 +113,46 @@ function drawCaberTossIcon(scene: Phaser.Scene): void {
   const cx = s / 2, cy = s / 2;
 
   // ── MOTION ARC — curved dotted trail from lower-left hand up to
-  // the flying caber tip. ──
+  // the flying caber tip. Tightened opacity range so the trail is
+  // a clear comet-tail (was 0.9→0.3, fading away mid-arc). New
+  // bigger overlapping dots with a faint outer halo at each step
+  // suggest a rising cloud of dust. ──
   const arcPoints: [number, number, number, number][] = [
-    [cx - 12, cy + 11, 1.0, 0.9],
-    [cx - 10, cy + 7, 1.0, 0.8],
-    [cx - 7, cy + 3, 1.1, 0.7],
-    [cx - 3, cy, 1.1, 0.6],
-    [cx, cy - 3, 1.2, 0.5],
-    [cx + 4, cy - 5, 1.2, 0.4],
-    [cx + 8, cy - 6, 1.2, 0.3],
+    [cx - 12, cy + 11, 1.4, 0.88],
+    [cx - 10, cy + 7, 1.5, 0.82],
+    [cx - 7, cy + 3, 1.6, 0.76],
+    [cx - 3, cy, 1.6, 0.7],
+    [cx, cy - 3, 1.6, 0.66],
+    [cx + 4, cy - 5, 1.5, 0.6],
+    [cx + 8, cy - 6, 1.4, 0.55],
   ];
+  // Outer halo — a wider, fainter dot at each arc point.
+  for (const [x, y, r, a] of arcPoints) {
+    g.fillStyle(0xc8b478, a * 0.45);
+    g.fillCircle(x, y, r + 0.8);
+  }
+  // Core dust dots.
   for (const [x, y, r, a] of arcPoints) {
     g.fillStyle(0xe8d8a0, a);
     g.fillCircle(x, y, r);
   }
+  // Bright cores on the brightest dots.
+  g.fillStyle(0xfaf0c8, 0.95);
+  g.fillCircle(cx - 12, cy + 11, 0.6);
+  g.fillCircle(cx - 7, cy + 3, 0.6);
+  g.fillCircle(cx, cy - 3, 0.6);
 
-  // ── Speed lines — bolder white streaks behind the caber. ──
-  g.fillStyle(0xffffff, 0.95);
-  g.fillRect(cx - 11, cy - 10, 5, 1);
-  g.fillRect(cx - 13, cy - 8, 4, 1);
-  g.fillRect(cx - 9, cy - 13, 4, 1);
+  // ── Speed lines — bolder, longer white streaks behind the caber.
+  // Now framed with a darker shadow so they read against the bright
+  // arc and the wood pole. ──
+  g.fillStyle(0x6a4818, 0.7);
+  g.fillRect(cx - 11, cy - 9.6, 6, 0.6);
+  g.fillRect(cx - 13, cy - 7.6, 5, 0.6);
+  g.fillRect(cx - 9, cy - 12.6, 5, 0.6);
+  g.fillStyle(0xffffff, 0.98);
+  g.fillRect(cx - 11, cy - 10, 6, 1);
+  g.fillRect(cx - 13, cy - 8, 5, 1);
+  g.fillRect(cx - 9, cy - 13, 5, 1);
 
   // ── CABER POLE — THICK diagonal wooden pole, dominates the
   // icon. Thickness 6 outline + 5 body = massive silhouette. ──
@@ -229,21 +249,39 @@ function drawHaggisHurlerIcon(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = 16, cy = 16;
 
-  // ── Motion arc — curved trail from upper-left to the ball. ──
-  g.fillStyle(0xeaddb0, 0.9);
-  g.fillCircle(cx - 10, cy - 10, 1.2);
-  g.fillStyle(0xeaddb0, 0.75);
-  g.fillCircle(cx - 7, cy - 8, 1.3);
-  g.fillStyle(0xeaddb0, 0.6);
-  g.fillCircle(cx - 4, cy - 5, 1.4);
-  g.fillStyle(0xeaddb0, 0.45);
-  g.fillCircle(cx - 1, cy - 2, 1.5);
+  // ── Motion arc — comet-tail trail from upper-left to the ball.
+  // Outer faint halo + denser cream cores so the arc reads as a
+  // wake at 32px (was a thin 4-dot ribbon). ──
+  const arc: Array<[number, number, number, number]> = [
+    [cx - 10, cy - 10, 1.6, 0.95],
+    [cx - 7, cy - 8, 1.7, 0.88],
+    [cx - 4, cy - 5, 1.8, 0.8],
+    [cx - 1, cy - 2, 1.9, 0.72],
+    [cx + 1.5, cy + 0.5, 1.8, 0.62],
+  ];
+  for (const [x, y, r, a] of arc) {
+    g.fillStyle(0xc8a868, a * 0.45);
+    g.fillCircle(x, y, r + 0.9);
+  }
+  for (const [x, y, r, a] of arc) {
+    g.fillStyle(0xeaddb0, a);
+    g.fillCircle(x, y, r);
+  }
+  // Bright spark on the leading edge of each puff.
+  g.fillStyle(0xfff0c8, 1);
+  g.fillCircle(cx - 10, cy - 10, 0.7);
+  g.fillCircle(cx - 4, cy - 5, 0.6);
 
-  // ── Speed lines — sharp white streaks. ──
-  g.fillStyle(0xffffff, 0.9);
-  g.fillRect(cx - 14, cy - 12, 4, 1);
-  g.fillRect(cx - 13, cy - 9, 3, 1);
-  g.fillRect(cx - 15, cy - 6, 4, 1);
+  // ── Speed lines — bolder white streaks framed with a dark
+  // shadow strip so they read against the bright arc. ──
+  g.fillStyle(0x6a4818, 0.65);
+  g.fillRect(cx - 14, cy - 11.6, 5, 0.6);
+  g.fillRect(cx - 13, cy - 8.6, 4, 0.6);
+  g.fillRect(cx - 15, cy - 5.6, 5, 0.6);
+  g.fillStyle(0xffffff, 0.98);
+  g.fillRect(cx - 14, cy - 12, 5, 1);
+  g.fillRect(cx - 13, cy - 9, 4, 1);
+  g.fillRect(cx - 15, cy - 6, 5, 1);
 
   // ── HAGGIS BALL — oval silhouette offset lower-right. Natural
   // casing texture with visible seam. ──
@@ -321,10 +359,16 @@ function drawBagpipeBlastIcon(scene: Phaser.Scene): void {
   const g = scene.add.graphics();
   const cx = s / 2, cy = s / 2;
 
-  // ── Outer sonic-pulse ring — the blast energy. ──
-  g.lineStyle(1.2, 0xffcc44, 0.45);
+  // ── Outer sonic-pulse rings — thicker strokes layered close
+  // together so the rings have real weight at 32px. (Was 1.2px;
+  // now stacked 2.4-2.8px effective via twin overlapping strokes.) ──
+  g.lineStyle(2.6, 0xffcc44, 0.35);
   g.strokeCircle(cx, cy, 14);
-  g.lineStyle(1.2, 0xffcc44, 0.7);
+  g.lineStyle(1.4, 0xfff0a8, 0.55);
+  g.strokeCircle(cx, cy, 14);
+  g.lineStyle(2.6, 0xffcc44, 0.7);
+  g.strokeCircle(cx, cy, 11);
+  g.lineStyle(1.4, 0xfff0a8, 0.85);
   g.strokeCircle(cx, cy, 11);
 
   // ── Tartan bag — compact, red-green-white plaid diamond shape
@@ -591,17 +635,29 @@ function drawScotchMistIcon(scene: Phaser.Scene): void {
   g.fillStyle(0xb0bca8, 0.7);
   g.fillRect(cx - 5, cy - 7, 10, 1.5);
 
-  // ── HOLLOW EYE SOCKETS — big dark ovals with glowing toxic
-  // green centres. The kill-tell. ──
+  // ── HOLLOW EYE SOCKETS — bigger dark ovals with sharper rim,
+  // brighter toxic green core, and a hot pinprick. The kill-tell
+  // had to read at 32px so dimensions bumped 3.5×3 → 4.4×3.6. ──
+  // Outer rim of the socket (deep pit).
+  g.fillStyle(0x000000, 1);
+  g.fillEllipse(cx - 2.8, cy - 1.5, 4.4, 3.6);
+  g.fillEllipse(cx + 2.8, cy - 1.5, 4.4, 3.6);
   g.fillStyle(0x0a1a10, 1);
-  g.fillEllipse(cx - 2.8, cy - 1.5, 3.5, 3);
-  g.fillEllipse(cx + 2.8, cy - 1.5, 3.5, 3);
-  g.fillStyle(0x50dd70, 1);
-  g.fillCircle(cx - 2.8, cy - 1.5, 1.2);
-  g.fillCircle(cx + 2.8, cy - 1.5, 1.2);
-  g.fillStyle(0xa8f8c0, 1);
-  g.fillCircle(cx - 2.8, cy - 1.7, 0.5);
-  g.fillCircle(cx + 2.8, cy - 1.7, 0.5);
+  g.fillEllipse(cx - 2.8, cy - 1.5, 3.6, 2.9);
+  g.fillEllipse(cx + 2.8, cy - 1.5, 3.6, 2.9);
+  // Toxic green glow — punchier alpha + larger radius.
+  g.fillStyle(0x50dd70, 0.55);
+  g.fillCircle(cx - 2.8, cy - 1.5, 2.0);
+  g.fillCircle(cx + 2.8, cy - 1.5, 2.0);
+  g.fillStyle(0x70ee90, 1);
+  g.fillCircle(cx - 2.8, cy - 1.5, 1.4);
+  g.fillCircle(cx + 2.8, cy - 1.5, 1.4);
+  g.fillStyle(0xc0ffe0, 1);
+  g.fillCircle(cx - 2.8, cy - 1.7, 0.7);
+  g.fillCircle(cx + 2.8, cy - 1.7, 0.7);
+  g.fillStyle(0xffffff, 0.95);
+  g.fillRect(cx - 3.0, cy - 1.9, 0.4, 0.4);
+  g.fillRect(cx + 2.6, cy - 1.9, 0.4, 0.4);
 
   // ── Nose gap — dark triangle hole. ──
   g.fillStyle(0x0a1a10, 1);
@@ -1133,31 +1189,43 @@ function drawTheHaarIcon(scene: Phaser.Scene): void {
   g.fillStyle(0x5a7890, 0.85);
   g.fillEllipse(cx, cy + 1, 18, 2.5);
 
-  // ── Cold skeletal face emerging forward through the fog. ──
-  g.fillStyle(0x1a2a34, 0.9);
-  g.fillEllipse(cx, cy - 3, 10, 11);
-  g.fillStyle(0x3a5060, 0.95);
-  g.fillEllipse(cx, cy - 3, 8, 9);
-  g.fillStyle(0xc8d4dc, 0.95);
-  g.fillEllipse(cx, cy - 4, 7, 8);
-  // Gaunt cheek hollows
-  g.fillStyle(0x3a5060, 0.7);
-  g.fillEllipse(cx - 2.5, cy - 1, 1.8, 2.5);
-  g.fillEllipse(cx + 2.5, cy - 1, 1.8, 2.5);
+  // ── Cold skeletal face emerging forward through the fog.
+  // Darker rim, bumped main-plane contrast, sharper jaw line so
+  // the skull reads at 32px instead of dissolving into the bands. ──
+  g.fillStyle(0x0a1820, 1);
+  g.fillEllipse(cx, cy - 3, 11, 12);
+  g.fillStyle(0x2a4258, 1);
+  g.fillEllipse(cx, cy - 3, 8.8, 9.6);
+  g.fillStyle(0xc8d4dc, 1);
+  g.fillEllipse(cx, cy - 4, 7.2, 8.4);
+  // Brighter forehead highlight.
+  g.fillStyle(0xeaf0f4, 0.75);
+  g.fillEllipse(cx - 1, cy - 6, 4, 2.2);
+  // Gaunt cheek hollows — deeper, larger.
+  g.fillStyle(0x1a2a3a, 0.85);
+  g.fillEllipse(cx - 2.6, cy - 0.5, 2.2, 3.0);
+  g.fillEllipse(cx + 2.6, cy - 0.5, 2.2, 3.0);
+  // Sharp jaw underline.
+  g.fillStyle(0x1a2a3a, 0.85);
+  g.fillRect(cx - 3, cy + 1.6, 6, 0.5);
 
-  // Hollow eye sockets — cold cyan glow
+  // Hollow eye sockets — bigger, deeper. Cyan glow strengthened so
+  // the kill-tell pops through the fog.
+  g.fillStyle(0x000000, 1);
+  g.fillEllipse(cx - 2, cy - 4, 2.8, 3.4);
+  g.fillEllipse(cx + 2, cy - 4, 2.8, 3.4);
   g.fillStyle(0x0a1a28, 1);
   g.fillEllipse(cx - 2, cy - 4, 2.2, 2.8);
   g.fillEllipse(cx + 2, cy - 4, 2.2, 2.8);
-  g.fillStyle(0x8ad8f0, 0.5);
-  g.fillCircle(cx - 2, cy - 4, 1.5);
-  g.fillCircle(cx + 2, cy - 4, 1.5);
+  g.fillStyle(0x8ad8f0, 0.7);
+  g.fillCircle(cx - 2, cy - 4, 1.6);
+  g.fillCircle(cx + 2, cy - 4, 1.6);
   g.fillStyle(0xccf0ff, 1);
-  g.fillCircle(cx - 2, cy - 4, 0.9);
-  g.fillCircle(cx + 2, cy - 4, 0.9);
-  g.fillStyle(0xffffff, 0.9);
-  g.fillCircle(cx - 2, cy - 4.3, 0.35);
-  g.fillCircle(cx + 2, cy - 4.3, 0.35);
+  g.fillCircle(cx - 2, cy - 4, 1.0);
+  g.fillCircle(cx + 2, cy - 4, 1.0);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx - 2, cy - 4.3, 0.45);
+  g.fillCircle(cx + 2, cy - 4.3, 0.45);
 
   // Nose hollow
   g.fillStyle(0x0a1a28, 1);
