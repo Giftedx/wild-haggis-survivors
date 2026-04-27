@@ -17,6 +17,13 @@ describe('AssetValidator', () => {
     expect(keys.has('relic_sporran')).toBe(true);
     expect(keys.has('hud_shield')).toBe(true);
     expect(keys.has('hud_dash_pip_full')).toBe(true);
+    expect(keys.has('player_mood_victory_bounce')).toBe(true);
+    expect(keys.has('wildlife_rook_idle')).toBe(true);
+    expect(keys.has('fx_weapon_william_blade_wave')).toBe(true);
+    expect(keys.has('deco_pictish_stone')).toBe(true);
+    expect(keys.has('croft_brownie_bowl')).toBe(true);
+    expect(keys.has('pickup_chest_legendary')).toBe(true);
+    expect(keys.has('hud_status_comfort')).toBe(true);
     expect(keys.has(MISSING_PLACEHOLDER_KEY)).toBe(false);
   });
 

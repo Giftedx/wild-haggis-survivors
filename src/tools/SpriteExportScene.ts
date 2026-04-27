@@ -89,6 +89,8 @@ function categorize(key: string): string {
   }
 
   if (key.startsWith('haggis_') && !key.includes('hunter') && !key.includes('ball') && !key.includes('cannon')) return 'Player Variants';
+  if (key.startsWith('player_mood_')) return 'Player Expressions';
+  if (key.startsWith('wildlife_')) return 'Wildlife';
   if (key.startsWith('boss_prop_')) return 'Boss Props';
   if (key.startsWith('boss_')) return 'Bosses';
   if (key.startsWith('wicon_')) return 'Weapon Icons';
@@ -98,8 +100,12 @@ function categorize(key: string): string {
   if (key.startsWith('moor_token_')) return 'Moor Moment Tokens';
   if (key.startsWith('croft_')) return 'Croft Props';
   if (key.startsWith('deco_')) return 'Decorations';
+  if (key.startsWith('hud_status_')) return 'HUD Status Badges';
   if (key.startsWith('hud_')) return 'HUD Elements';
+  if (key.startsWith('pickup_')) return 'Pickups';
   if (key.startsWith('fx_telegraph_')) return 'Telegraph Effects';
+  if (key.startsWith('fx_weapon_')) return 'Weapon Flourishes';
+  if (key.startsWith('fx_weather_')) return 'Weather Effects';
   if (key.startsWith('fx_')) return 'Effects';
   if (['thistle', 'caber', 'haggis_ball'].includes(key)) return 'Projectiles';
   if (['xp_gem', 'health_orb', 'chest'].includes(key)) return 'Pickups';
@@ -115,11 +121,14 @@ function categorize(key: string): string {
  */
 const BASE_CATEGORY_ORDER = [
   'Player Variants',
+  'Player Expressions',
+  'Wildlife',
   'Enemies',
   'Bosses',
   'Hazards',
   'Projectiles',
   'Pickups',
+  'Weapon Flourishes',
   'Weapon Icons',
   'Card Icons',
   'Relic Icons',
@@ -129,8 +138,10 @@ const BASE_CATEGORY_ORDER = [
   'Croft Props',
   'Boss Props',
   'HUD Elements',
+  'HUD Status Badges',
   'Shadows',
   'Telegraph Effects',
+  'Weather Effects',
   'Effects',
   'Other',
 ];

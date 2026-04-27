@@ -26,6 +26,14 @@ const COUNTS: Record<WildlifeKey, number> = {
   puffin: 2,
   golden_eagle: 1,
   scottish_wildcat: 2,
+  rook: 3,
+  sheep: 3,
+  grey_seal: 2,
+  ptarmigan: 2,
+  common_frog: 3,
+  pipistrelle_bat: 2,
+  field_mouse: 3,
+  salmon: 2,
 };
 
 // Which biomes each creature is allowed in. Buzzards aerial —
@@ -42,6 +50,14 @@ const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
   puffin: new Set(['bog', 'loch', 'heather']),
   golden_eagle: new Set(['bog', 'loch', 'pine', 'heather']),
   scottish_wildcat: new Set(['heather', 'pine']),
+  rook: new Set(['bog', 'loch', 'pine', 'heather']),
+  sheep: new Set(['heather']),
+  grey_seal: new Set(['loch']),
+  ptarmigan: new Set(['heather', 'pine']),
+  common_frog: new Set(['bog', 'loch']),
+  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather']),
+  field_mouse: new Set(['heather', 'pine']),
+  salmon: new Set(['bog', 'loch']),
 };
 
 const FLEE_DIST = 200;

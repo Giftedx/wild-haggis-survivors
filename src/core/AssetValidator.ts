@@ -5,6 +5,7 @@ import { PASSIVE_CARDS, STAT_CARDS, WEAPON_CARDS } from '../data/upgrades';
 import { VARIANTS } from '../data/variants';
 import { WEAPON_DEFS } from '../data/weapons';
 import { RELICS } from '../data/relics';
+import { WILDLIFE_DEFS } from '../data/wildlife';
 
 /** Internal texture used as source for missing-key aliases (magenta checkerboard). */
 export const MISSING_PLACEHOLDER_KEY = '__whs_missing_texture__';
@@ -57,6 +58,24 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     pushKey(out, seen, 'player_variant', v.key, v.textureKey);
   }
 
+  for (const k of [
+    'player_mood_idle_blink',
+    'player_mood_hurt_flinch',
+    'player_mood_low_hp',
+    'player_mood_level_up',
+    'player_mood_dash_smear',
+    'player_mood_victory_bounce',
+    'player_mood_coorie_rest',
+    'player_mood_determined',
+  ] as const) {
+    pushKey(out, seen, 'player_mood', k, k);
+  }
+
+  for (const w of Object.values(WILDLIFE_DEFS)) {
+    pushKey(out, seen, 'wildlife', `${w.key}_idle`, w.spriteKeyIdle);
+    pushKey(out, seen, 'wildlife', `${w.key}_move`, w.spriteKeyMove);
+  }
+
   for (const relic of Object.values(RELICS)) {
     pushKey(out, seen, 'relic_icon', relic.key, relic.iconSprite);
   }
@@ -102,6 +121,40 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     { id: 'fx_drizzle', key: 'fx_drizzle' },
     { id: 'fx_sun_shaft', key: 'fx_sun_shaft' },
     { id: 'fx_aurora_band', key: 'fx_aurora_band' },
+    { id: 'fx_weapon_thistle_bloom', key: 'fx_weapon_thistle_bloom' },
+    { id: 'fx_weapon_thistle_storm_bloom', key: 'fx_weapon_thistle_storm_bloom' },
+    { id: 'fx_weapon_caber_splinter', key: 'fx_weapon_caber_splinter' },
+    { id: 'fx_weapon_highland_games_burst', key: 'fx_weapon_highland_games_burst' },
+    { id: 'fx_weapon_bagpipe_note', key: 'fx_weapon_bagpipe_note' },
+    { id: 'fx_weapon_bagpipe_blast_ring', key: 'fx_weapon_bagpipe_blast_ring' },
+    { id: 'fx_weapon_bagpipes_drone_knot', key: 'fx_weapon_bagpipes_drone_knot' },
+    { id: 'fx_weapon_highland_fling_ring', key: 'fx_weapon_highland_fling_ring' },
+    { id: 'fx_weapon_scotch_mist_wisp', key: 'fx_weapon_scotch_mist_wisp' },
+    { id: 'fx_weapon_the_haar_bank', key: 'fx_weapon_the_haar_bank' },
+    { id: 'fx_weapon_haggis_oat_puff', key: 'fx_weapon_haggis_oat_puff' },
+    { id: 'fx_weapon_haggis_cannon_pop', key: 'fx_weapon_haggis_cannon_pop' },
+    { id: 'fx_weapon_nessie_splash', key: 'fx_weapon_nessie_splash' },
+    { id: 'fx_weapon_nessie_unleashed_crest', key: 'fx_weapon_nessie_unleashed_crest' },
+    { id: 'fx_weapon_claymore_spark', key: 'fx_weapon_claymore_spark' },
+    { id: 'fx_weapon_william_blade_wave', key: 'fx_weapon_william_blade_wave' },
+    { id: 'fx_weather_haar_puff', key: 'fx_weather_haar_puff' },
+    { id: 'fx_weather_smirr_cluster', key: 'fx_weather_smirr_cluster' },
+    { id: 'fx_weather_bog_bubble', key: 'fx_weather_bog_bubble' },
+    { id: 'fx_weather_loch_ripple_wide', key: 'fx_weather_loch_ripple_wide' },
+    { id: 'fx_weather_peat_smoke', key: 'fx_weather_peat_smoke' },
+    { id: 'fx_weather_wind_leaf', key: 'fx_weather_wind_leaf' },
+    { id: 'fx_weather_bracken_turn_leaf', key: 'fx_weather_bracken_turn_leaf' },
+    { id: 'fx_weather_frost_star', key: 'fx_weather_frost_star' },
+    { id: 'fx_weather_midge_glimmer', key: 'fx_weather_midge_glimmer' },
+    { id: 'fx_weather_moon_mist', key: 'fx_weather_moon_mist' },
+    { id: 'fx_telegraph_elite_swirl', key: 'fx_telegraph_elite_swirl' },
+    { id: 'fx_telegraph_curse_seal', key: 'fx_telegraph_curse_seal' },
+    { id: 'fx_telegraph_aoe_gold', key: 'fx_telegraph_aoe_gold' },
+    { id: 'fx_telegraph_dash_red', key: 'fx_telegraph_dash_red' },
+    { id: 'fx_telegraph_projectile_blue', key: 'fx_telegraph_projectile_blue' },
+    { id: 'fx_telegraph_fey_hex', key: 'fx_telegraph_fey_hex' },
+    { id: 'fx_telegraph_loch_ripple', key: 'fx_telegraph_loch_ripple' },
+    { id: 'fx_telegraph_urban_flicker', key: 'fx_telegraph_urban_flicker' },
   ] as const) {
     pushKey(out, seen, 'fx', k.id, k.key);
   }
@@ -119,6 +172,16 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'croft_sheepdog_stand_f0',
     'croft_sheepdog_stand_f1',
     'croft_returning_pal',
+    'croft_rain_window',
+    'croft_brownie_bowl',
+    'croft_field_guide',
+    'croft_gran_radio',
+    'croft_tartan_blanket',
+    'croft_family_photo',
+    'croft_boots_by_door',
+    'croft_seed_tray',
+    'croft_knitting_basket',
+    'croft_hearth_rowan_charm',
   ] as const) {
     pushKey(out, seen, 'croft', k, k);
   }
@@ -139,8 +202,41 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_autumn_leaves',
     'deco_spring_shoot',
     'deco_thaw_puddle',
+    'deco_waymarker_post',
+    'deco_pictish_stone',
+    'deco_ruined_croft',
+    'deco_clootie_ribbons',
+    'deco_fairy_ring',
+    'deco_selkie_skin',
+    'deco_pech_tools',
+    'deco_catsith_saucer',
+    'deco_brahan_eye_stone',
+    'deco_burns_scrap',
+    'deco_milestone',
+    'deco_bridge_plank',
+    'deco_peat_spade',
+    'deco_fishing_net',
+    'deco_salmon_leap',
+    'deco_standing_stone_glyph',
+    'deco_washer_cloth',
+    'deco_rowan_charm',
+    'deco_crannog_stake',
+    'deco_machair_shell',
   ] as const) {
     pushKey(out, seen, 'decoration', k, k);
+  }
+
+  for (const k of [
+    'pickup_gold_coin',
+    'pickup_chest_hearth',
+    'pickup_chest_fey',
+    'pickup_chest_legendary',
+    'pickup_health_thistle',
+    'pickup_xp_heather',
+    'pickup_xp_loch',
+    'pickup_oatcake_glow',
+  ] as const) {
+    pushKey(out, seen, 'pickup_variant', k, k);
   }
 
   // Round 2 additions — UI ornament: 4 rarity card frames + 3 banter
@@ -158,6 +254,21 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'ui_toast_frame',
   ] as const) {
     pushKey(out, seen, 'ui', k, k);
+  }
+
+  for (const k of [
+    'hud_status_burn',
+    'hud_status_frost',
+    'hud_status_poison',
+    'hud_status_elite',
+    'hud_status_cursed',
+    'hud_status_boss_phase',
+    'hud_status_relic_full',
+    'hud_status_route',
+    'hud_status_warning',
+    'hud_status_comfort',
+  ] as const) {
+    pushKey(out, seen, 'hud_status', k, k);
   }
 
   for (const arr of [WEAPON_CARDS, PASSIVE_CARDS, STAT_CARDS]) {

@@ -10,7 +10,15 @@ export type WildlifeKey =
   | 'otter'
   | 'puffin'
   | 'golden_eagle'
-  | 'scottish_wildcat';
+  | 'scottish_wildcat'
+  | 'rook'
+  | 'sheep'
+  | 'grey_seal'
+  | 'ptarmigan'
+  | 'common_frog'
+  | 'pipistrelle_bat'
+  | 'field_mouse'
+  | 'salmon';
 
 export interface WildlifeDef {
   key: WildlifeKey;
@@ -36,6 +44,14 @@ export const WILDLIFE_KEYS: readonly WildlifeKey[] = [
   'puffin',
   'golden_eagle',
   'scottish_wildcat',
+  'rook',
+  'sheep',
+  'grey_seal',
+  'ptarmigan',
+  'common_frog',
+  'pipistrelle_bat',
+  'field_mouse',
+  'salmon',
 ];
 
 export const WILDLIFE_DEFS: Record<WildlifeKey, WildlifeDef> = {
@@ -206,6 +222,142 @@ export const WILDLIFE_DEFS: Record<WildlifeKey, WildlifeDef> = {
       loch: 0.25,
       pine: 0.9,
       heather: 1.0,
+    },
+    aerial: false,
+  },
+  rook: {
+    key: 'rook',
+    spriteKeyIdle: 'wildlife_rook_idle',
+    spriteKeyMove: 'wildlife_rook_move',
+    scale: 0.6,
+    baseSpeed: 58,
+    fleeSpeed: 58,
+    fleeRadius: 0,
+    enemyFleeRadius: 0,
+    biomeWeights: {
+      bog: 0.6,
+      loch: 0.45,
+      pine: 0.7,
+      heather: 1.0,
+    },
+    aerial: true,
+  },
+  sheep: {
+    key: 'sheep',
+    spriteKeyIdle: 'wildlife_sheep_idle',
+    spriteKeyMove: 'wildlife_sheep_move',
+    scale: 0.62,
+    baseSpeed: 24,
+    fleeSpeed: 78,
+    fleeRadius: 210,
+    enemyFleeRadius: 170,
+    biomeWeights: {
+      bog: 0.25,
+      loch: 0.35,
+      pine: 0.3,
+      heather: 1.0,
+    },
+    aerial: false,
+  },
+  grey_seal: {
+    key: 'grey_seal',
+    spriteKeyIdle: 'wildlife_grey_seal_idle',
+    spriteKeyMove: 'wildlife_grey_seal_move',
+    scale: 0.72,
+    baseSpeed: 26,
+    fleeSpeed: 90,
+    fleeRadius: 210,
+    enemyFleeRadius: 160,
+    biomeWeights: {
+      bog: 0.45,
+      loch: 1.0,
+      pine: 0.05,
+      heather: 0.2,
+    },
+    aerial: false,
+  },
+  ptarmigan: {
+    key: 'ptarmigan',
+    spriteKeyIdle: 'wildlife_ptarmigan_idle',
+    spriteKeyMove: 'wildlife_ptarmigan_move',
+    scale: 0.58,
+    baseSpeed: 32,
+    fleeSpeed: 110,
+    fleeRadius: 220,
+    enemyFleeRadius: 175,
+    biomeWeights: {
+      bog: 0.3,
+      loch: 0.2,
+      pine: 0.7,
+      heather: 1.0,
+    },
+    aerial: false,
+  },
+  common_frog: {
+    key: 'common_frog',
+    spriteKeyIdle: 'wildlife_common_frog_idle',
+    spriteKeyMove: 'wildlife_common_frog_move',
+    scale: 0.55,
+    baseSpeed: 28,
+    fleeSpeed: 105,
+    fleeRadius: 170,
+    enemyFleeRadius: 145,
+    biomeWeights: {
+      bog: 1.0,
+      loch: 0.75,
+      pine: 0.25,
+      heather: 0.35,
+    },
+    aerial: false,
+  },
+  pipistrelle_bat: {
+    key: 'pipistrelle_bat',
+    spriteKeyIdle: 'wildlife_pipistrelle_bat_idle',
+    spriteKeyMove: 'wildlife_pipistrelle_bat_move',
+    scale: 0.58,
+    baseSpeed: 70,
+    fleeSpeed: 70,
+    fleeRadius: 0,
+    enemyFleeRadius: 0,
+    biomeWeights: {
+      bog: 0.55,
+      loch: 0.6,
+      pine: 1.0,
+      heather: 0.8,
+    },
+    aerial: true,
+  },
+  field_mouse: {
+    key: 'field_mouse',
+    spriteKeyIdle: 'wildlife_field_mouse_idle',
+    spriteKeyMove: 'wildlife_field_mouse_move',
+    scale: 0.5,
+    baseSpeed: 42,
+    fleeSpeed: 150,
+    fleeRadius: 185,
+    enemyFleeRadius: 160,
+    biomeWeights: {
+      bog: 0.35,
+      loch: 0.25,
+      pine: 0.75,
+      heather: 1.0,
+    },
+    aerial: false,
+  },
+  salmon: {
+    key: 'salmon',
+    spriteKeyIdle: 'wildlife_salmon_idle',
+    spriteKeyMove: 'wildlife_salmon_move',
+    scale: 0.58,
+    baseSpeed: 34,
+    fleeSpeed: 120,
+    fleeRadius: 180,
+    enemyFleeRadius: 150,
+    biomeWeights: {
+      bog: 0.65,
+      loch: 1.0,
+      pine: 0.05,
+      heather: 0.15,
     },
     aerial: false,
   },
