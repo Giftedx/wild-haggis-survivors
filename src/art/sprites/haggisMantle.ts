@@ -46,6 +46,14 @@ export function drawMantleTier(
   const isMetal = accentStyle === 'laird' || accentStyle === 'iron_belly';
   const isFlame = accentStyle === 'pipe_breath';
   const isStorm = accentStyle === 'surefoot';
+  // These five variants share `accentStyle: 'none'` (the union doesn't
+  // carry per-variant tags for them) so we discriminate on variant.key
+  // for their tier-2 motifs instead.
+  const isGlaswegian = variant.key === 'glaswegian';
+  const isAnticlockwise = variant.key === 'anticlockwise';
+  const isDoricQuinie = variant.key === 'doric_quinie';
+  const isPeerieShetlander = variant.key === 'peerie_shetlander';
+  const isBurnsWeeBeastie = variant.key === 'burns_wee_beastie';
 
   // Spectral mantles read as gauzy cloth — soften the hard outline so
   // the wee_ghostie variant doesn't get a solid black collar that
@@ -263,5 +271,61 @@ export function drawMantleTier(
     g.lineStyle(1, 0xc8e2ff, 0.7);
     g.lineBetween(cx - 21, cy + 1, cx - 24, cy + 0.4);
     g.lineBetween(cx - 20.5, cy + 3, cx - 23.5, cy + 2.6);
+  }
+  if (isGlaswegian) {
+    // Tiny traffic-cone wedge on the cape shoulder — the Duke of
+    // Wellington tribute. Orange body + cream stripe + dark base.
+    g.fillStyle(0x2a1810, 0.95);
+    g.fillRect(cx - 7, cy - 5, 3, 1);
+    g.fillStyle(0xff7a1f, 1);
+    g.fillTriangle(cx - 5.5, cy - 9, cx - 7, cy - 5, cx - 4, cy - 5);
+    g.fillStyle(0xfff1d6, 0.95);
+    g.fillRect(cx - 6.4, cy - 7, 1.8, 0.8);
+  }
+  if (isAnticlockwise) {
+    // A counter-clockwise spiral — 4 fur-tone dots arcing across the
+    // cape mid-back with a single white pip at the spiral's tip
+    // implying rotation direction.
+    g.fillStyle(palette.fur, 0.9);
+    g.fillCircle(cx - 9, cy + 1, 0.9);
+    g.fillCircle(cx - 11, cy - 0.4, 0.85);
+    g.fillCircle(cx - 13.2, cy + 0.2, 0.8);
+    g.fillCircle(cx - 14.4, cy + 2.2, 0.75);
+    g.fillStyle(0xffffff, 0.95);
+    g.fillCircle(cx - 9, cy + 1, 0.4);
+  }
+  if (isDoricQuinie) {
+    // A barley-ear sprig pinned at the cape shoulder — 3 gold grains
+    // stacked vertically with a 1-pixel green stem. Aberdonian
+    // farmland in miniature.
+    g.lineStyle(1, 0x3a6a2a, 0.95);
+    g.lineBetween(cx - 14, cy - 1, cx - 14, cy - 4);
+    g.fillStyle(0xd4a017, 1);
+    g.fillCircle(cx - 14, cy - 4, 0.95);
+    g.fillCircle(cx - 14, cy - 2.6, 0.85);
+    g.fillCircle(cx - 14, cy - 1.4, 0.75);
+    g.fillStyle(0xf2cf5a, 0.85);
+    g.fillCircle(cx - 14.2, cy - 4.2, 0.4);
+  }
+  if (isPeerieShetlander) {
+    // Two white-cap wave glints along the cape hem — sea-foam pairs
+    // (pale-blue + white) at the bottom-back of the cape.
+    g.fillStyle(0x9ec5e8, 0.9);
+    g.fillCircle(cx - 18, cy + 5, 0.9);
+    g.fillCircle(cx - 8, cy + 5, 0.9);
+    g.fillStyle(0xffffff, 0.95);
+    g.fillCircle(cx - 18.3, cy + 4.7, 0.45);
+    g.fillCircle(cx - 8.3, cy + 4.7, 0.45);
+  }
+  if (isBurnsWeeBeastie) {
+    // A tiny rolled scroll tucked into the cape fold — Burns's
+    // poetry. Cream paper body, brown end-caps, single ink dot.
+    g.fillStyle(0x6b4a2a, 1);
+    g.fillRect(cx + 1, cy + 2, 0.8, 1.6);
+    g.fillRect(cx + 4.2, cy + 2, 0.8, 1.6);
+    g.fillStyle(0xf4ead0, 1);
+    g.fillRect(cx + 1.8, cy + 2.2, 2.4, 1.2);
+    g.fillStyle(0x2a1f12, 0.9);
+    g.fillCircle(cx + 2.6, cy + 2.8, 0.3);
   }
 }

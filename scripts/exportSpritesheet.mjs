@@ -11,12 +11,18 @@ const context = await browser.newContext({ acceptDownloads: true });
 const page = await context.newPage();
 
 page.on('console', (msg) => {
-  // Keep a tiny bit of signal for debugging if this fails in CI/local.
-  const t = msg.type();
-  if (t === 'error' || t === 'warning') console.log(`[browser:${t}]`, msg.text());
+  // Forward every browser-side message — useful for diagnosing hangs in
+  // the SpriteExportScene composite path.
+  console.log(`[browser:${msg.type()}]`, msg.text());
+});
+page.on('pageerror', (err) => {
+  console.log('[browser:pageerror]', err.message);
 });
 
-const downloadPromise = page.waitForEvent('download', { timeout: 60_000 });
+// 5min default — large sprite sets stall on ReadPixels GPU sync; override
+// with SPRITE_EXPORT_TIMEOUT_MS for slower hardware.
+const timeoutMs = Number(process.env.SPRITE_EXPORT_TIMEOUT_MS ?? 300_000);
+const downloadPromise = page.waitForEvent('download', { timeout: timeoutMs });
 await page.goto(url, { waitUntil: 'load' });
 const download = await downloadPromise;
 await download.saveAs(outPath);
