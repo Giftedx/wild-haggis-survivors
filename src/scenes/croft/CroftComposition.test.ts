@@ -13,7 +13,7 @@ describe('CroftComposition', () => {
     it('places Gran at the expected position for 800×600 default canvas', () => {
       const layout = layoutCroft({ uiScale: 1.0, width: 800, height: 600 });
       expect(layout.center).toEqual({ x: 400, y: 300 });
-      expect(layout.gran.x).toBeCloseTo(400 + 800 * 0.08);
+      expect(layout.gran.x).toBeCloseTo(400 + 800 * 0.105);
     });
 
     it('scales every element position proportionally with canvas size', () => {

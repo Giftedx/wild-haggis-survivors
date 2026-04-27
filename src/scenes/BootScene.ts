@@ -44,6 +44,8 @@ import { bakePlayerVariants } from '../art/sprites/players';
 import { bakeNodeMarkers } from '../art/sprites/nodeMarkers';
 import { bakeMoorMomentTokens } from '../art/sprites/moorMomentTokens';
 import { bakeCroftWarmthProps } from '../art/sprites/croft/warmthProps';
+import { bakeCroftInteriorTextures } from '../art/sprites/croft/interiorTextures';
+import { bakeCroftKeepsakes } from '../art/sprites/croft/keepsakes';
 import { bakeCroftVisitors } from '../art/sprites/croft/visitors';
 import { bakeUi } from '../art/sprites/ui';
 import { drawMantleTier } from '../art/sprites/haggisMantle';
@@ -386,7 +388,9 @@ export class BootScene extends Phaser.Scene {
     // H1 Gran's Croft — hub sprites (Gran, hearth, etc.).
     bake('croft-gran', () => bakeGranTextures(this));
     bake('croft-hearth', () => bakeHearthTextures(this));
+    bake('croft-interior', () => bakeCroftInteriorTextures(this));
     bake('croft-warmth', () => bakeCroftWarmthProps(this));
+    bake('croft-keepsakes', () => bakeCroftKeepsakes(this));
     // Croft visitors — postie, neighbour, weans, standing sheepdog,
     // a returning haggis pal. Warmth-only NPCs, no gameplay role yet.
     bake('croft-visitors', () => bakeCroftVisitors(this));

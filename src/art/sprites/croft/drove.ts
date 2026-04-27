@@ -40,14 +40,16 @@ export function computeDroveSlots(
 ): DroveSlot[] {
   const unlockedSet = new Set(unlockedVariants);
   const count = VARIANTS.length;
-  const totalWidth = count * SLOT_W + (count - 1) * SLOT_GAP;
+  const gap = region.w < 260 ? 2 : SLOT_GAP;
+  const slotW = Math.min(SLOT_W, (region.w - (count - 1) * gap) / count);
+  const totalWidth = count * slotW + (count - 1) * gap;
   const startX = region.x + Math.max(0, (region.w - totalWidth) / 2);
-  const y = region.y + region.h - SLOT_W * 0.6; // sit on the sill, feet at base
+  const y = region.y + region.h - slotW * 0.6; // sit on the sill, feet at base
   return VARIANTS.map((variant, idx) => ({
-    x: startX + idx * (SLOT_W + SLOT_GAP),
+    x: startX + idx * (slotW + gap),
     y,
-    w: SLOT_W,
-    h: Math.min(region.h, SLOT_W),
+    w: slotW,
+    h: Math.min(region.h, slotW),
     variant,
     unlocked: unlockedSet.has(variant.key),
     selected: selectedVariant === variant.key,

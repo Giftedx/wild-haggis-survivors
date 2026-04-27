@@ -1,12 +1,11 @@
 import * as Phaser from 'phaser';
-import { COLORS, COLORS_CSS } from '../config';
+import { COLORS_CSS } from '../config';
 import { t } from '../core/i18n';
 import { addSceneBackdrop, addAmberHeaderWash, addSceneFadeIn, startSceneFadeOut, SCENE_FADE_OUT_MS } from './sceneFade';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
 import { createBackButton } from './createBackButton';
 import { getSettingsManager } from '../core/SettingsManager';
 import {
-  CROFT_DRAW_ORDER,
   CROFT_SCENE_KEY,
   layoutCroft,
   type CroftLayout,
@@ -32,8 +31,10 @@ import { TROPHY_BOSS_KEYS } from './croft/CroftTrophies';
 import { textStyle } from '../ui/typography';
 import { drawPhotoWall } from '../art/sprites/croft/photoWall';
 import { drawDrove, type DroveSlot } from '../art/sprites/croft/drove';
+import { drawCroftActionBoard, drawCroftInterior } from '../art/sprites/croft/interior';
 import { drawSeasonalProps } from '../art/sprites/croft/seasonalProps';
 import { drawWarmthProps } from '../art/sprites/croft/warmthProps';
+import { drawCroftKeepsakes } from '../art/sprites/croft/keepsakes';
 import {
   beastiesDiscoverySummary,
   buildBeastiesEntries,
@@ -76,12 +77,15 @@ export class CroftScene extends Phaser.Scene {
   private sheepdogTimer: Phaser.Time.TimerEvent | null = null;
   private sheepdogFrame = 0;
   private ambient: CroftAmbientLoop | null = null;
+  private interiorGfx: Phaser.GameObjects.Graphics | null = null;
+  private actionBoardGfx: Phaser.GameObjects.Graphics | null = null;
   private mantelGfx: Phaser.GameObjects.Graphics | null = null;
   private photoWallGfx: Phaser.GameObjects.Graphics | null = null;
   private droveGfx: Phaser.GameObjects.Graphics | null = null;
   private droveSlots: DroveSlot[] = [];
   private droveHits: Phaser.GameObjects.Rectangle[] = [];
   private warmthPropsGfx: Phaser.GameObjects.Graphics | null = null;
+  private keepsakePropsGfx: Phaser.GameObjects.Graphics | null = null;
   private seasonalPropsGfx: Phaser.GameObjects.Graphics | null = null;
   private seasonalBanner: SeasonalBannerHandle | null = null;
   private bookshelfHit: Phaser.GameObjects.Rectangle | null = null;
@@ -138,6 +142,8 @@ export class CroftScene extends Phaser.Scene {
     this.droveHits = [];
     this.warmthPropsGfx?.destroy();
     this.warmthPropsGfx = null;
+    this.keepsakePropsGfx?.destroy();
+    this.keepsakePropsGfx = null;
     this.seasonalPropsGfx?.destroy();
     this.seasonalPropsGfx = null;
     this.seasonalBanner?.destroy();
@@ -159,6 +165,10 @@ export class CroftScene extends Phaser.Scene {
     // the new `CroftAmbientLoop` rather than overwriting a live one.
     this.ambient?.stop();
     this.ambient = null;
+    this.interiorGfx?.destroy();
+    this.interiorGfx = null;
+    this.actionBoardGfx?.destroy();
+    this.actionBoardGfx = null;
 
     const { width } = this.scale;
     const { uiScale, highContrastUi } = getSettingsManager().load();
@@ -167,6 +177,8 @@ export class CroftScene extends Phaser.Scene {
     addSceneBackdrop(this);
     addAmberHeaderWash(this);
 
+    const isMobileCroft = this.scale.width < 600;
+    this.drawInterior(layout, { includePhotoWall: !isMobileCroft });
     this.drawComposition(layout, highContrastUi);
     this.drawMantelpiece(layout);
     // P1.7 — below 600 px the right-edge action button column overlaps the
@@ -174,13 +186,13 @@ export class CroftScene extends Phaser.Scene {
     // 0.62w..0.82w, which maps to 242-320 on a 390 viewport). Hide the
     // decorative wall on mobile so the buttons read cleanly. Polaroids are
     // ambient flavor — desktop / tablet keep them.
-    const isMobileCroft = this.scale.width < 600;
     if (!isMobileCroft) this.drawPhotoWall(layout);
     this.drawDroveWindow(layout);
     this.drawHearth(layout);
     this.drawGran(layout);
     this.drawVisitors(layout);
     this.drawWarmth(layout);
+    this.drawKeepsakes(layout, { includeWallKeepsakes: !isMobileCroft });
     this.drawSeasonal(layout);
     this.drawBookshelfHit(layout);
     this.drawHeader(width);
@@ -211,36 +223,16 @@ export class CroftScene extends Phaser.Scene {
    * High-contrast still gets a stronger draw so the scene's
    * affordances stay perceivable.
    */
-  private drawComposition(layout: CroftLayout, highContrast: boolean): void {
-    // High-contrast players still get a faint outline so the scene's
-    // structure is perceivable; everyone else gets nothing — the
-    // placeholder rectangles read as broken UI in screenshots (audit 03j).
-    if (!highContrast) return;
-    const alphaFill = 0.18;
-    const alphaStroke = 0.55;
-    for (const key of CROFT_DRAW_ORDER) {
-      // Real drawers now own these elements — skip placeholders.
-      if (
-        key === 'gran' ||
-        key === 'hearth' ||
-        key === 'mantelpiece' ||
-        key === 'photoWall' ||
-        key === 'drove' ||
-        key === 'postie' ||
-        key === 'neighbour' ||
-        key === 'weans' ||
-        key === 'sheepdog' ||
-        key === 'returningPal'
-      ) continue;
-      const el = layout[key];
-      const w = 'w' in el ? el.w : 48 * layout.spriteScale;
-      const h = 'h' in el ? el.h : 48 * layout.spriteScale;
-      const color = placeholderColor(key);
-      const rect = this.add
-        .rectangle(el.x, el.y, w, h, color, alphaFill)
-        .setStrokeStyle(1, color, alphaStroke);
-      this.placeholders.push(rect);
-    }
+  private drawComposition(_layout: CroftLayout, _highContrast: boolean): void {
+    // The full Croft interior now owns the room silhouette and contrast.
+    // This hook remains so older smoke tests and call order stay stable.
+  }
+
+  private drawInterior(layout: CroftLayout, opts: { includePhotoWall: boolean }): void {
+    const gfx = this.add.graphics();
+    gfx.setDepth(0);
+    drawCroftInterior(gfx, layout, opts);
+    this.interiorGfx = gfx;
   }
 
   /**
@@ -256,6 +248,7 @@ export class CroftScene extends Phaser.Scene {
     const save = loadSave();
     const trophies = computeAllTrophies(save);
     const gfx = this.add.graphics();
+    gfx.setDepth(24);
     drawMantelpieceTrophies(gfx, trophies, layout.mantelpiece);
     this.mantelGfx = gfx;
 
@@ -342,7 +335,7 @@ export class CroftScene extends Phaser.Scene {
     text.setPosition(padX, padY);
 
     const container = this.add.container(anchorX, anchorY - bubbleH, [bg, text]);
-    container.setDepth(50);
+    container.setDepth(90);
     container.setAlpha(0);
     this.tweens.add({ targets: container, alpha: 1, duration: 140 });
 
@@ -369,6 +362,7 @@ export class CroftScene extends Phaser.Scene {
   private drawPhotoWall(layout: CroftLayout): void {
     const save = loadSave();
     const gfx = this.add.graphics();
+    gfx.setDepth(25);
     drawPhotoWall(gfx, layout.photoWall, save.firstRouteVisits);
     this.photoWallGfx = gfx;
   }
@@ -382,6 +376,7 @@ export class CroftScene extends Phaser.Scene {
   private drawDroveWindow(layout: CroftLayout): void {
     const save = loadSave();
     const gfx = this.add.graphics();
+    gfx.setDepth(26);
     this.droveSlots = drawDrove(gfx, layout.drove, save.unlockedVariants, save.selectedVariant);
     this.droveGfx = gfx;
 
@@ -426,7 +421,8 @@ export class CroftScene extends Phaser.Scene {
     const sprite = this.add
       .sprite(layout.hearth.x, layout.hearth.y, HEARTH_TEXTURE_KEYS[0])
       .setOrigin(0.5, 0.5)
-      .setScale(layout.spriteScale * 1.4);
+      .setScale(layout.spriteScale * 1.4)
+      .setDepth(34);
     this.hearthSprite = sprite;
     this.hearthTimer = this.time.addEvent({
       delay: 125,
@@ -447,7 +443,8 @@ export class CroftScene extends Phaser.Scene {
     const sprite = this.add
       .sprite(layout.gran.x, layout.gran.y, GRAN_TEXTURE_KEYS[0])
       .setOrigin(0.5, 0.6)
-      .setScale(layout.spriteScale * 2);
+      .setScale(layout.spriteScale * 2)
+      .setDepth(46);
     this.granSprite = sprite;
     this.knittingTimer = this.time.addEvent({
       delay: 260,
@@ -477,7 +474,7 @@ export class CroftScene extends Phaser.Scene {
    * behind Gran (38) so she still reads as the focal point.
    */
   private drawVisitors(layout: CroftLayout): void {
-    const VISITOR_DEPTH = 38;
+    const VISITOR_DEPTH = 40;
 
     // Postie at the doorway — 2-frame breath wobble. Cleanup handled
     // by dedicated postieSprite/postieTimer fields (matches Gran pattern).
@@ -541,7 +538,7 @@ export class CroftScene extends Phaser.Scene {
         .image(layout.weans.x, layout.weans.y, WEANS_TEXTURE_KEY)
         .setOrigin(0.5, 0.9)
         .setScale(layout.spriteScale * 1.3)
-        .setDepth(VISITOR_DEPTH);
+        .setDepth(45);
       this.placeholders.push(weans);
     }
 
@@ -566,6 +563,17 @@ export class CroftScene extends Phaser.Scene {
     gfx.setDepth(44);
     drawWarmthProps(gfx, layout);
     this.warmthPropsGfx = gfx;
+  }
+
+  /**
+   * Second layer of lived-in props: books, bowls, rain, boots, and small
+   * keepsakes that make the Croft feel tended rather than staged.
+   */
+  private drawKeepsakes(layout: CroftLayout, opts: { includeWallKeepsakes?: boolean } = {}): void {
+    const gfx = this.add.graphics();
+    gfx.setDepth(44.5);
+    drawCroftKeepsakes(gfx, layout, opts);
+    this.keepsakePropsGfx = gfx;
   }
 
   /**
@@ -596,8 +604,11 @@ export class CroftScene extends Phaser.Scene {
    * beasties are seen (chip would only nag).
    */
   private drawBookshelfHit(layout: CroftLayout): void {
+    const isMobileCroft = this.scale.width < 600;
+    const hitW = isMobileCroft ? 64 : 88;
+    const hitH = isMobileCroft ? 104 : 136;
     const hit = this.add
-      .rectangle(layout.bookshelf.x, layout.bookshelf.y, 48, 72, 0x000000, 0)
+      .rectangle(layout.bookshelf.x, layout.bookshelf.y - hitH * 0.08, hitW, hitH, 0x000000, 0)
       .setInteractive({ useHandCursor: true });
     hit.on('pointerdown', () => {
       if (this.transitioning) return;
@@ -614,12 +625,13 @@ export class CroftScene extends Phaser.Scene {
       const chip = this.add
         .text(
           layout.bookshelf.x,
-          layout.bookshelf.y + 44,
+          layout.bookshelf.y + hitH * 0.44,
           t('ui.croft.almanac_chip', { seen: summary.seen, total: summary.total }),
           textStyle('subtitle', { color: COLORS_CSS.WHISKY_GOLD, align: 'center' }),
         )
         .setOrigin(0.5, 0)
-        .setAlpha(0.85);
+        .setAlpha(0.9)
+        .setDepth(58);
       this.placeholders.push(chip);
     }
   }
@@ -627,13 +639,16 @@ export class CroftScene extends Phaser.Scene {
   private drawHeader(width: number): void {
     const title = this.add
       .text(width / 2, 50, t('ui.croft.title'), sceneHeaderTextStyle(COLORS_CSS.WHISKY_GOLD))
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(82);
     const subtitle = this.add
       .text(width / 2, 90, t('ui.croft.subtitle'), sceneSubtitleTextStyle(COLORS_CSS.WARM_TAN, width))
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(82);
     const greet = this.add
       .text(width / 2, 118, t('ui.croft.gran_greet'), sceneSubtitleTextStyle(COLORS_CSS.DUSTY_TAN, width))
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(82);
     this.placeholders.push(title, subtitle, greet);
   }
 
@@ -646,10 +661,6 @@ export class CroftScene extends Phaser.Scene {
    *   behaviour that MenuScene's PLAY button used to carry).
    */
   private drawActions(): void {
-    const { width, height } = this.scale;
-    const x = width - 88;
-    const baseY = Math.max(120, height * 0.36);
-    const gapY = 52;
     const allActions: ReadonlyArray<{ key: CroftActionKey; i18n: string; tier: 'primary' | 'secondary' }> = [
       { key: 'start_run', i18n: 'ui.croft.actions.start_run', tier: 'primary' },
       { key: 'shop', i18n: 'ui.croft.actions.shop', tier: 'secondary' },
@@ -658,16 +669,21 @@ export class CroftScene extends Phaser.Scene {
     ];
     const visible = new Set(visibleCroftActions(loadSave()));
     const actions = allActions.filter((action) => visible.has(action.key));
+    const actionLayout = this.resolveActionLayout(actions.length);
+    this.drawActionBacking(actionLayout.board);
 
     actions.forEach((action, idx) => {
       const { rect, label } = createGameButton(this, {
-        x,
-        y: baseY + gapY * idx,
-        width: 160,
-        height: 40,
+        x: actionLayout.x,
+        y: actionLayout.baseY + actionLayout.gapY * idx,
+        width: actionLayout.buttonW,
+        height: actionLayout.buttonH,
         label: t(action.i18n),
         tier: action.tier,
+        ...(actionLayout.fontSize ? { fontSize: actionLayout.fontSize } : {}),
       });
+      rect.setDepth(82);
+      label.setDepth(83);
       rect.on('pointerdown', () => this.handleAction(action.key));
       this.placeholders.push(rect, label);
       this.actionEntries.push({ key: action.key, rect });
@@ -690,6 +706,51 @@ export class CroftScene extends Phaser.Scene {
       const first = this.actionEntries[0];
       if (first) this.handleAction(first.key);
     });
+  }
+
+  private resolveActionLayout(actionCount: number): {
+    x: number;
+    baseY: number;
+    gapY: number;
+    buttonW: number;
+    buttonH: number;
+    fontSize?: string;
+    board: { x: number; y: number; w: number; h: number };
+  } {
+    const { width, height } = this.scale;
+    const isMobileCroft = width < 600;
+    const buttonW = isMobileCroft ? Math.min(226, width - 56) : 160;
+    const buttonH = isMobileCroft ? 42 : 40;
+    const gapY = isMobileCroft ? 48 : 52;
+    const count = Math.max(1, actionCount);
+    const totalSpan = buttonH + gapY * (count - 1);
+    const x = isMobileCroft ? width / 2 : width - 88;
+    const baseY = isMobileCroft
+      ? Math.max(height * 0.69, height - 86 - totalSpan + buttonH / 2)
+      : Math.max(176, height * 0.34);
+    const boardW = buttonW + (isMobileCroft ? 24 : 28);
+    const boardH = totalSpan + (isMobileCroft ? 30 : 34);
+    return {
+      x,
+      baseY,
+      gapY,
+      buttonW,
+      buttonH,
+      fontSize: isMobileCroft ? '16px' : undefined,
+      board: {
+        x: x - boardW / 2,
+        y: baseY - buttonH / 2 - (isMobileCroft ? 14 : 16),
+        w: boardW,
+        h: boardH,
+      },
+    };
+  }
+
+  private drawActionBacking(bounds: { x: number; y: number; w: number; h: number }): void {
+    const gfx = this.add.graphics();
+    gfx.setDepth(81);
+    drawCroftActionBoard(gfx, bounds);
+    this.actionBoardGfx = gfx;
   }
 
   private handleAction(key: CroftActionKey): void {
@@ -729,27 +790,5 @@ export class CroftScene extends Phaser.Scene {
     startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => {
       this.scene.start('Menu');
     });
-  }
-}
-
-/**
- * Placeholder colour per element so M1 screenshot reviews can see the
- * composition at a glance. Replaced element-by-element as proper
- * sprite drawers ship in later tasks.
- */
-function placeholderColor(key: string): number {
-  switch (key) {
-    case 'gran': return COLORS.WHISKY_GOLD;
-    case 'hearth': return COLORS.SPRITE_RED;
-    case 'mantelpiece': return COLORS.STONE;
-    case 'photoWall': return COLORS.PANEL_SURFACE;
-    case 'drove': return COLORS.HEATHER;
-    case 'bookshelf': return COLORS.STONE;
-    case 'wireless': return COLORS.COMMON;
-    case 'windowView': return COLORS.SKY;
-    case 'table': return COLORS.STONE;
-    case 'rug': return COLORS.HEATHER;
-    case 'thistle': return COLORS.HEATHER;
-    default: return COLORS.PANEL;
   }
 }

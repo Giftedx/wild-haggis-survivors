@@ -13,10 +13,9 @@
  * Composition (700 × 500 reference frame, positions scale with width/height):
  *
  *     ┌──────────────────────────────────────┐
- *     │ window/drove  mantelpiece  photo wall │
- *     │   + thistle    + hearth    + wireless │
- *     │  (backdrop)      Gran       bookshelf │
- *     │              rug   table              │
+ *     │ door  window/drove  hearth photo wall │
+ *     │ postie  neighbour   Gran    bookshelf │
+ *     │          rug + weans table + dog      │
  *     └──────────────────────────────────────┘
  *
  * Visitors layered on top: postie at the doorway (left edge), neighbour-
@@ -98,77 +97,104 @@ export function layoutCroft(input: CroftLayoutInput): CroftLayout {
   const { uiScale, width, height } = input;
   const cx = width / 2;
   const cy = height / 2;
+  const narrow = width < 600;
 
-  // Vertical bands — top wall (0.25h), mid wall (0.5h), foreground (0.85h).
-  const topBand = height * 0.25;
-  const midBand = height * 0.52;
-  const foreBand = height * 0.85;
+  if (narrow) {
+    return {
+      center: { x: cx, y: cy },
+      gran: { x: cx + width * 0.12, y: height * 0.565 },
+      hearth: { x: cx - width * 0.10, y: height * 0.555 },
+      mantelpiece: {
+        x: cx - width * 0.25,
+        y: height * 0.35,
+        w: width * 0.5,
+        h: height * 0.055,
+      },
+      photoWall: {
+        x: width * 0.66,
+        y: height * 0.22,
+        w: width * 0.26,
+        h: height * 0.18,
+      },
+      drove: {
+        x: width * 0.10,
+        y: height * 0.39,
+        w: width * 0.36,
+        h: height * 0.08,
+      },
+      bookshelf: { x: width * 0.80, y: height * 0.54 },
+      wireless: { x: width * 0.73, y: height * 0.37 },
+      windowView: {
+        x: width * 0.08,
+        y: height * 0.205,
+        w: width * 0.38,
+        h: height * 0.22,
+      },
+      table: { x: width * 0.58, y: height * 0.665 },
+      rug: {
+        x: width * 0.28,
+        y: height * 0.615,
+        w: width * 0.44,
+        h: height * 0.075,
+      },
+      thistle: { x: width * 0.14, y: height * 0.49 },
+      postie: { x: width * 0.17, y: height * 0.58 },
+      neighbour: { x: width * 0.35, y: height * 0.535 },
+      weans: { x: width * 0.46, y: height * 0.675 },
+      sheepdog: { x: width * 0.70, y: height * 0.625 },
+      returningPal: { x: width * 0.76, y: height * 0.62 },
+      spriteScale: uiScale,
+    };
+  }
 
   return {
     center: { x: cx, y: cy },
-    // Gran sits slightly right of center, close to the hearth.
-    gran: { x: cx + width * 0.08, y: midBand + height * 0.08 },
-    // Hearth left-of-center, mid-band.
-    hearth: { x: cx - width * 0.05, y: midBand + height * 0.05 },
-    // Mantelpiece above the hearth.
+    // Gran sits right of the hearth as the room's emotional focal point.
+    gran: { x: cx + width * 0.105, y: height * 0.57 },
+    // Hearth is central enough to warm the whole composition.
+    hearth: { x: cx - width * 0.055, y: height * 0.53 },
     mantelpiece: {
-      x: cx - width * 0.22,
-      y: topBand,
-      w: width * 0.4,
-      h: height * 0.08,
+      x: cx - width * 0.19,
+      y: height * 0.315,
+      w: width * 0.31,
+      h: height * 0.06,
     },
-    // Photo wall on the right interior wall. Pre-fix the wall's right
-    // edge (0.94 × width) ran 90+ px past the action-column left edge
-    // (width − 168) at desktop widths — the OOT THE DOOR / SPORRAN /
-    // ALBUM / WIRELESS buttons covered the rightmost polaroid column.
-    // Trimmed width 0.26 → 0.20 and shifted x 0.68 → 0.62 so the wall
-    // ends at 0.82 × width with a clear gutter before the buttons.
+    // Photo wall on the right interior wall, inside the room frame and
+    // clear of the action board.
     photoWall: {
-      x: width * 0.62,
-      y: topBand - height * 0.05,
-      w: width * 0.2,
-      h: height * 0.3,
+      x: width * 0.655,
+      y: height * 0.205,
+      w: width * 0.17,
+      h: height * 0.255,
     },
-    // Drove silhouettes along window sill (left half).
+    // Drove silhouettes along the window sill on the left wall.
     drove: {
-      x: width * 0.04,
-      y: midBand,
-      w: width * 0.3,
-      h: height * 0.1,
+      x: width * 0.082,
+      y: height * 0.43,
+      w: width * 0.245,
+      h: height * 0.09,
     },
-    bookshelf: { x: width * 0.9, y: midBand },
-    wireless: { x: width * 0.82, y: topBand + height * 0.05 },
-    // Window backdrop behind drove silhouettes.
+    bookshelf: { x: width * 0.805, y: height * 0.55 },
+    wireless: { x: width * 0.755, y: height * 0.39 },
     windowView: {
-      x: width * 0.04,
-      y: topBand - height * 0.08,
-      w: width * 0.3,
-      h: height * 0.3,
+      x: width * 0.075,
+      y: height * 0.215,
+      w: width * 0.25,
+      h: height * 0.285,
     },
-    // Table & cuppa foreground, centered slightly right.
-    table: { x: cx + width * 0.12, y: foreBand },
+    table: { x: cx + width * 0.12, y: height * 0.79 },
     rug: {
-      x: cx - width * 0.18,
-      y: foreBand - height * 0.02,
-      w: width * 0.36,
-      h: height * 0.08,
+      x: cx - width * 0.17,
+      y: height * 0.735,
+      w: width * 0.35,
+      h: height * 0.12,
     },
-    thistle: { x: width * 0.08, y: foreBand - height * 0.1 },
-    // Postie at the doorway — left edge, vertical mid-band so he reads as
-    // standing in the entryway. Below the drove window, above the foreground.
-    postie: { x: width * 0.1, y: midBand + height * 0.12 },
-    // Neighbour-wifie tucked between the drove window and the hearth so
-    // she shares the left half of the room without crowding the mantelpiece.
-    neighbour: { x: width * 0.28, y: midBand + height * 0.06 },
-    // Weans on the rug, foreground-centred ahead of Gran. Sits on top of
-    // the rug strip so the pair anchors the warmth-stack visually.
-    weans: { x: cx - width * 0.04, y: foreBand - height * 0.04 },
-    // Sheepdog standing alert beside Gran on the hearth side — slightly
-    // forward so he reads as nearer the viewer than she is.
-    sheepdog: { x: cx + width * 0.18, y: midBand + height * 0.13 },
-    // Returning pal beside the bookshelf on the right wall — a wee bit
-    // forward of the bookshelf hit so he doesn't block the Almanac click.
-    returningPal: { x: width * 0.82, y: midBand + height * 0.1 },
+    thistle: { x: width * 0.095, y: height * 0.67 },
+    postie: { x: width * 0.13, y: height * 0.63 },
+    neighbour: { x: width * 0.31, y: height * 0.57 },
+    weans: { x: cx - width * 0.04, y: height * 0.81 },
+    sheepdog: { x: cx + width * 0.20, y: height * 0.68 },
+    returningPal: { x: width * 0.745, y: height * 0.655 },
     spriteScale: uiScale,
   };
 }
