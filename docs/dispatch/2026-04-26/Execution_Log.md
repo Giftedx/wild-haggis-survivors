@@ -166,11 +166,60 @@ After dispatch landed, several Tier-B items in the orchestrator's serial list tu
 
 ### Standing follow-ups surfaced this session
 
-- **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated, times out at 5 s under full 425-file parallel transform. Pre-existing on `master`. Suggested fix: `timeout: 30_000` on the test, or hoist `await import('./Player')` outside the test body. Track as `T420`.
-- **SettingsInputScene keybind capture DOM mirror** — sub-scene launched from rebind row needs a different DOM gesture (announce "press a key for X" + temporary press-listener bridge). Next adoption candidate after the GameOver back-fill.
-- **Visual-regression PNG baselines still missing thresholded comparison** — covered by existing `T408` in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`; not in scope of T310.
+- **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated, times out at 5 s under full 425-file parallel transform. Pre-existing on `master`. Suggested fix: `timeout: 30_000` on the test, or hoist `await import('./Player')` outside the test body. Track as `T420`. **CLOSED** — shipped 2026-04-27 (commit `7411a41`).
+- **SettingsInputScene keybind capture DOM mirror** — sub-scene launched from rebind row needs a different DOM gesture (announce "press a key for X" + temporary press-listener bridge). Next adoption candidate after the GameOver back-fill. **CLOSED** — shipped 2026-04-27 as T407 adoption #5 (commit `59d7143`).
+- **Visual-regression PNG baselines still missing thresholded comparison** — covered by existing `T408` in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`; not in scope of T310. **CLOSED** — shipped 2026-04-27 (commits `75c374e` + `98cb76a` + `9c69d1d` + `5efff0c`).
 
-### Standing follow-ups surfaced this session
+---
 
-- **`Player.di.test.ts` flake under high vitest concurrency** — passes isolated (700 ms), times out at 5 s when run with all 425 transform-heavy files in parallel. Pre-existing on `master`; reproduced both before and after Tier-A diffs. Suggested fix: bump that test's `timeout` to 30 000 ms, or move the dynamic `await import('./Player')` outside the test body to amortise transform cost. Track as `T420`.
-- **Visual-regression PNG baselines still missing thresholded comparison** — covered by existing `T408` in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`; not in scope of T310.
+## Backlog-drain dispatch — 2026-04-27 (continuation)
+
+Coordinator session resumed against the same orchestrator brief at `docs/prompts/orchestrator-backlog-drain.md`. Worked the residual list flagged by the prior session.
+
+### Tier-A round 2 — shipped to `master` (parallel single-message dispatch)
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `T420` (Player.di.test.ts flake) | `7411a41` | Per-test `{ timeout: 30_000 }` on the DI test; comment cites T420 ledger entry. Test still asserts `throws /TimeManager/i`. Three gates green. |
+| `task_08` (Cloudflare Worker + D1 + miniflare) | `3fac689` | New `cloudflare/` workspace dir: wrangler.toml, schema/0001_initial.sql, src/{worker,routes,auth,d1Adapter,types}.ts, 30 tests (18 unit + 12 integration via miniflare against the real `HttpCloudSaveClient`). Root `npm:test:cloud` script delegates. ADR-0006 spike-outcome section appended. **Two Worker scaffolds now coexist** (`server/worker/` from earlier P3 spike + `cloudflare/` from this slice) — T423 will pick which graduates at deploy time. Offline-first untouched, no production-leak surface. |
+| `T407` adoption #5 — SettingsInputScene keybind capture DOM mirror | `59d7143` | Phaser-free `settingsInputDomFocusActions.ts` + 18-test cover; scene installs/teardowns DOM layer with capture-mode swap ("Press a key for Move up primary keyboard. Escape to cancel." while capturing). 18 row buttons + Reset + Back. New EN+SCS i18n keys under `ui.inputRebind.a11y.*`. Playwright smoke at `e2e/settings-input-dom-focus.spec.ts`. SettingsInput stays lazy-loaded. |
+
+### Tier-B serial — shipped to `master`
+
+| Charter | Commit | What landed |
+|---|---|---|
+| `T401` phase 2 slice 4 — replay bridge extraction | `fdde63f` | `src/scenes/game/replayBridgeInstall.ts` (268 LOC, 5 pure functions) + `replayBridgeInstall.test.ts` (364 LOC, 21 tests). GameScene 3502 → 3464 LOC (-38). Replay blob shape **untouched** — no v2/v3 migration. `replayDeterminism.test.ts` byte-identical (7/7 pass). Behaviour preserved across all 5 touchpoints (init, teardown, record-pump, playback-pump, reset). |
+| `T408` thresholded visual-regression diff gate | `75c374e` + `98cb76a` + `9c69d1d` | `expect(canvas).toHaveScreenshot()` layered on top of existing design-verify writes. Per-scene thresholds: MainMenu 5%, Croft 30% (Croft's hearth-fire + Gran-pulse measured 14% natural variance, 30% covers 1-2 more animation tiers without flake but still trips on 50%+ layout regressions). 4 baseline PNGs committed (`-win32` only; chromium-desktop only). Three Playwright runs green back-to-back. |
+| `T409` linux-baseline missing → win32 platform gate | `5efff0c` | The T408 baselines are `-win32` only; CI runs on `ubuntu-latest`. Gated `compareDiff` to `process.platform === 'win32'` so linux runners still execute design-verify writes but skip the thresholded compare until linux baselines are regenerated. Spec header documents the regen procedure. |
+
+### Tier-B not dispatched (product-gated or human-gated, unchanged from prior session)
+
+- `task_03` Assist Mode game-speed expose-vs-hide — product decision
+- `task_05` T203 mobile real-device — human hardware
+- `task_06` cultural review (Doric / Shetlandic / Burns / Gaelic+Cailleach) — native review
+- `task_07` PEAT 25-row desktop pass — human PEAT tool
+- `task_08` cloud save **auth + privacy + deploy** — product decisions; spike scaffold is shipped, deploy path not in scope
+
+### New follow-ups surfaced this session
+
+- **T409** — regenerate VR baselines on linux + drop the `process.platform === 'win32'` guard in `e2e/visual-regression.spec.ts`. Easiest path: one-off CI artifact pull from a `--update-snapshots` run, or local docker-desktop linux container. Until done, the diff gate runs on Windows dev machines only.
+- **T410** — webkit + firefox VR baselines. Per-engine DPR/GPU variance means engine-specific baseline sets. Punted as out of scope.
+- **T421** — replace `signInForTest` in `HttpCloudSaveClient` with real magic-link flow (token issuance, single-use enforcement, replay defence, `/auth/request` rate-limit, OWASP review).
+- **T422** — privacy policy + opt-in flow + soft-delete window for cloud saves.
+- **T423** — pick which Worker scaffold graduates (`server/worker/` vs new `cloudflare/`). Deploy pipeline (`wrangler publish`, secrets, real `database_id`, custom domain, monitoring).
+- **T424** — D1 schema migration runner beyond `0001_initial.sql`.
+- **T425 (candidate)** — broaden the T420-style `{ timeout: 30_000 }` pattern to other concurrency-flake-prone tests. Sub-agents observed `animationPerf.bench.test.ts`, `MetaProgress.airgap`, `Player.runeBag` flaking under heavy CPU load; second runs always cleared. Same root cause as T420. Three more `it(..., { timeout: 30_000 }, ...)` calls would close the flake window.
+
+### Open hazards / risks (one-line callouts)
+
+- **`-win32` VR baselines only** — see T409 above. Mitigated for now, but the gate has a hole on linux until baselines land.
+- **Two Cloudflare Worker scaffolds coexist** (`server/worker/` + `cloudflare/`) — T423 picks at deploy time. Tests cover both paths; runtime collision impossible because game bundle never imports either.
+- **Worktree leftover at `.claude/worktrees/practical-bassi-a8c53d/`** — appears to be from the prior multi-agent dispatch that already reconciled. Safe to prune; not blocking.
+
+### Standing human-gated items (carried forward unchanged)
+
+- **T203:** real mobile-device evidence per `docs/status/mobile/MOBILE_DEVICE_TEST_MATRIX.md`.
+- **Doric / Shetlandic / Burns / Gaelic+Cailleach:** human review per `docs/status/cultural/CULTURAL_REVIEW_PACKET.md`.
+- **PEAT:** human PEAT-tool desktop pass over the 25 rows in `docs/status/a11y/A1_PEAT_AUDIT.md`.
+- **Cloud save:** auth, privacy policy, deployment flow are product decisions outside the spike (T421-T423).
+- **Assist Mode game-speed:** expose vs hide is a product decision (`task_03`).
