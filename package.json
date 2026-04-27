@@ -20,7 +20,8 @@
     "budget": "node scripts/check-bundle-budget.mjs",
     "ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget",
     "test:e2e": "playwright test",
-    "ci:all": "npm run ci && npm run test:e2e"
+    "ci:all": "npm run ci && npm run test:e2e",
+    "npm:test:cloud": "cd cloudflare && npm test"
   },
   "dependencies": {
     "eventemitter3": "^5.0.0",

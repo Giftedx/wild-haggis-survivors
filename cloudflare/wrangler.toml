@@ -1,0 +1,34 @@
+# task_08 cloud-save Worker — wrangler config (LOCAL DEV ONLY).
+#
+# This file is checked in because it has no secrets, no account_id,
+# and no real D1 database_id. The D1 binding shape below is what
+# `wrangler dev --local` and miniflare pick up to provision a local
+# in-memory SQLite-backed D1 instance.
+#
+# Production deploy (T423 follow-up) replaces `database_id` with the
+# real one returned from `wrangler d1 create wild-haggis-saves`, adds
+# `account_id`, and configures real auth (T421 follow-up).
+#
+# Local dev:
+#   cd cloudflare
+#   npx wrangler d1 execute wild-haggis-saves --local --file=schema/0001_initial.sql
+#   npx wrangler dev --local
+#
+# Integration tests do NOT use this file — they construct miniflare
+# with the same bindings programmatically. See
+# `test/worker.integration.test.ts`.
+
+name = "wild-haggis-cloud-save"
+main = "src/worker.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 binding. The Worker reads `env.DB`. The local-dev `database_id`
+# below is a placeholder UUID that wrangler uses for its local SQLite
+# state (and miniflare ignores in tests). Do NOT use this id for any
+# real Cloudflare account — a real id comes from `wrangler d1 create`.
+[[d1_databases]]
+binding = "DB"
+database_name = "wild-haggis-saves"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "schema"

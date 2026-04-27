@@ -223,3 +223,106 @@ on the agent's own timeline.
   implementation (this branch).
 - `server/worker/` — Cloudflare Worker scaffold + contract tests
   (this branch). README at `server/worker/README.md`.
+- `cloudflare/` — task_08 Cloudflare Worker + D1 + miniflare
+  integration (this branch). README at `cloudflare/README.md`.
+
+## Spike outcome — 2026-04-27 (task_08)
+
+A second Cloudflare Worker scaffold landed at `cloudflare/`. Where the
+April-26 spike at `server/worker/` proved the **handler logic** in pure
+isolation (in-memory `Map`, `/v1/envelope/:userId` URL shape), this
+spike proves the **wire contract end-to-end** against the real Workers
+runtime + a real D1 binding via miniflare. Crucially, it uses the URL
+shape `httpCloudSaveClient.ts` actually sends — `/v1/envelope` (no
+userId in path; userId rides in the Bearer header).
+
+### What this spike proves
+
+- **End-to-end contract round-trip via miniflare + D1.** The
+  integration test (`cloudflare/test/worker.integration.test.ts`)
+  bundles `cloudflare/src/worker.ts` with esbuild, boots miniflare with
+  an in-memory D1 binding, applies `cloudflare/schema/0001_initial.sql`
+  per test, and runs the actual `HttpCloudSaveClient` from
+  `src/cloud/httpCloudSaveClient.ts` against the miniflare URL.
+- **D1 schema is sufficient for the v1 envelope.** A single `envelopes`
+  table (PK `user_id`, opaque `payload TEXT`, `updated_at INTEGER`)
+  round-trips the envelope JSON byte-for-byte including multi-byte
+  UTF-8 sequences. The Worker never parses the inner save payload.
+- **HttpCloudSaveClient method coverage.** Each of the six contract
+  methods (`pullEnvelope`, `pushEnvelope`, `requestAccountDeletion`,
+  `getAuthState`, `signOut`, `signInForTest`) is exercised against the
+  live miniflare backend; the auth-state-change paths (sign-out on
+  account deletion, unauthorized when no sign-in) hold.
+- **Server-side payload guard works.** A 257 KiB inner payload (one
+  byte over `MAX_PAYLOAD_BYTES`) hand-constructed past the
+  client-side guard is rejected with 413; the client correctly maps
+  to `{ ok: false, reason: 'payload-too-large' }`.
+- **Adapter contract holds for D1.** `D1Adapter.getEnvelope`,
+  `putEnvelope`, `deleteUser` map cleanly to one prepared statement
+  each; the `INSERT ... ON CONFLICT(user_id) DO UPDATE` pattern works
+  in miniflare's SQLite-backed D1.
+- **The Worker code stays small.** `worker.ts` + `routes.ts` +
+  `auth.ts` + `d1Adapter.ts` + `types.ts` total ~280 LOC, well under
+  the 500-LOC ceiling the charter set for the spike.
+- **Sibling-project isolation holds.** `cloudflare/` has its own
+  `package.json`, `tsconfig.json`, and `vitest.config.ts`; nothing in
+  it leaks into the game bundle. Root `npm test` and `npm run build`
+  are unaffected (4471 tests pass; `vendor-phaser` chunk size
+  unchanged at 1656.88 KB raw / 374.43 KB gzip).
+
+### What this spike does NOT prove
+
+- **Real D1 throughput, replication lag, or cross-region behaviour.**
+  Miniflare's D1 implementation is local SQLite; production D1's
+  replication caveats are not exercised.
+- **Real magic-link auth.** The bearer-equals-userId scheme is the
+  same spike stand-in as the April-26 worker. Production auth
+  (token issuance, single-use enforcement, replay defence,
+  rate-limit on `/auth/request`, OWASP review) is **T421** in the
+  follow-up backlog. `signInForTest` continues to throw outside
+  Vitest contexts.
+- **Production deployment.** No live `account_id`, no real
+  `database_id` (the placeholder in `cloudflare/wrangler.toml` is
+  `00000000-0000-0000-0000-000000000000`), no `wrangler deploy` run.
+  Tracked as **T423**.
+- **Privacy policy text + opt-in flow.** `DELETE /v1/account` is
+  immediate, not soft-delete with a 7-day undo window. Tracked as
+  **T422**.
+- **Schema migration runner beyond `0001_initial.sql`.** The schema
+  is applied with raw `db.exec` per test; production deploy needs a
+  proper migration runner (wrangler's built-in handles forward-only,
+  but no rollback story). Tracked as **T424**.
+- **Cost economics under load.** Same as the April-26 spike: $0/mo
+  claim is from Cloudflare's published free tier, not observed.
+
+### What's intentionally NOT in this branch
+
+- No changes to `src/cloud/*` (the Worker conforms to the existing
+  client contract; not the other way around).
+- No new root `package.json` deps (everything new lives under
+  `cloudflare/node_modules/`; root `npm install` is unchanged).
+- No `.env`, no secrets, no real Cloudflare account.
+- No game-side wiring of `HttpCloudSaveClient` into `MenuScene` or
+  Settings — the production default is still `NoopCloudSaveClient`,
+  so offline-first behaviour is unchanged.
+
+### Coexistence with `server/worker/`
+
+Both spikes ship in this branch. They're not contradictory: the
+April-26 worker proves the handler logic with a different route
+shape; the April-27 worker proves the live wire contract with the
+shape the client actually uses. T423 will replace both with one
+canonical Worker; until then the duplication is intentional and
+documented in `cloudflare/README.md` (§ "Why two backend dirs").
+
+### Next steps blocked on humans
+
+Same as the April-26 spike, plus:
+
+- Pick which of the two scaffolds to graduate (the `cloudflare/`
+  shape matches the client; the `server/worker/` shape matches the
+  earlier ADR draft sketch).
+- Decide whether the eventual Worker reads userId from the URL
+  (server/worker style) or from the Bearer (cloudflare style). The
+  cloudflare style requires real auth before deploy — a URL with
+  userId is at least cacheable; an opaque bearer is not.

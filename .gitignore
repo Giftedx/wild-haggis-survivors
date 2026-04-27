@@ -57,3 +57,6 @@ build-output.txt
 
 # Claude Code tool state (per-checkout, agent worktrees, session caches)
 .claude/
+
+# task_08 cloud-save Worker (cloudflare/) — local wrangler state
+cloudflare/.wrangler/
