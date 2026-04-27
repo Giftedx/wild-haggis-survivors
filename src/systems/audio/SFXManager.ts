@@ -16,6 +16,9 @@ export const SFX_LIMITS: Record<string, SfxLimit> = {
   elite_affix_spawn: { maxConcurrent: 3, windowMs: 120 },
   /** Volatile elite death splash — replaces generic kill sting in GameScene. */
   elite_volatile_death: { maxConcurrent: 2, windowMs: 100 },
+  /** Hazard-spawn warning chirp — biome hazards spawn ~1 per 9s, so a
+   *  tight window keeps overlapping spawns from layering chirps. */
+  hazard_spawn: { maxConcurrent: 2, windowMs: 200 },
   click: { maxConcurrent: 10, windowMs: 100 },
   /** Timed moor hearth beat — rare; allow two if schedules overlap oddly. */
   moor_moment: { maxConcurrent: 2, windowMs: 400 },
