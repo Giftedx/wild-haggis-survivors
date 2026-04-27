@@ -70,6 +70,24 @@ export function pickHazardForBiome(biome: BiomeId | null): HazardKey | null {
   return null;
 }
 
+/**
+ * Pure damage-eligibility predicate. Returns true when ALL three gates
+ * are open: telegraph window has expired (player saw the hazard),
+ * the per-hazard hit cooldown is ready (1s gap between consecutive
+ * damage ticks on the same hazard), and the player isn't iframed
+ * (dash invincibility or Burn-Leap hazard immunity).
+ *
+ * Extracted as a pure helper so the gate combinatorics can be unit-
+ * tested without mocking a Phaser scene + Player + texture stack.
+ */
+export function isHazardDamageEligible(
+  arrivalMs: number,
+  hitCooldownMs: number,
+  isIframed: boolean,
+): boolean {
+  return arrivalMs <= 0 && hitCooldownMs <= 0 && !isIframed;
+}
+
 interface ActiveHazard {
   readonly def: HazardDef;
   readonly image: Phaser.GameObjects.Image;
@@ -160,15 +178,13 @@ export class HazardsSystem {
       h.remainingMs -= delta;
 
       if (!h.expiring) {
-        // Telegraph window: skip damage while the hazard is still
-        // fading in. Player needs to SEE the hazard before it can hit.
-        if (h.arrivalMs <= 0 && h.hitCooldownMs <= 0 && this.overlapsPlayer(h, player)) {
-          // Respect dash + Burn-Leap iframes — same gate the existing
-          // HazardZones system uses (src/scenes/game/HazardZones.ts:301).
-          // Without this, a Burn Leap meant to clear a peat pit / scree
-          // slide would still take damage, breaking the iframe contract.
+        // Three-gate damage check: telegraph elapsed + cooldown ready +
+        // player not iframed. iframe gate matches HazardZones.ts:301
+        // (dash + Burn-Leap, the same hazard-only immunity contract
+        // documented at Player.ts:843).
+        if (this.overlapsPlayer(h, player)) {
           const iframed = player.isDashInvincible() || player.isHazardLeaping();
-          if (!iframed) {
+          if (isHazardDamageEligible(h.arrivalMs, h.hitCooldownMs, iframed)) {
             player.takeDamage(h.def.damage);
             h.hitCooldownMs = HIT_COOLDOWN_MS;
           }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pickHazardForBiome } from './HazardsSystem';
+import { pickHazardForBiome, isHazardDamageEligible } from './HazardsSystem';
 import { HAZARDS, HAZARD_KEYS, type HazardKey } from '../data/hazards';
 import type { BiomeId } from '../data/biomes';
 
@@ -123,5 +123,45 @@ describe('HAZARDS catalog (config integrity)', () => {
       expect(k).not.toBeNull();
       expect(HAZARDS[k].biome).toBe(b);
     }
+  });
+});
+
+describe('isHazardDamageEligible (telegraph + cooldown + iframe gate)', () => {
+  it('open-gate: telegraph elapsed, cooldown ready, no iframes → eligible', () => {
+    expect(isHazardDamageEligible(0, 0, false)).toBe(true);
+  });
+
+  it('blocks during the telegraph window', () => {
+    expect(isHazardDamageEligible(150, 0, false)).toBe(false);
+  });
+
+  it('blocks while the per-hazard hit cooldown is still ticking', () => {
+    expect(isHazardDamageEligible(0, 800, false)).toBe(false);
+  });
+
+  it('blocks when the player is iframed (dash or Burn-Leap)', () => {
+    expect(isHazardDamageEligible(0, 0, true)).toBe(false);
+  });
+
+  it('only opens when ALL three gates are open simultaneously', () => {
+    // Combinatorial: 8 (state) × {arrival, cooldown, iframe} cases — only
+    // (0, 0, false) opens; the other 7 must block.
+    const cases: Array<[number, number, boolean, boolean]> = [
+      [0, 0, false, true],   // all three open → eligible
+      [0, 0, true, false],   // iframed
+      [0, 1, false, false],  // cooldown
+      [0, 1, true, false],
+      [1, 0, false, false],  // telegraph
+      [1, 0, true, false],
+      [1, 1, false, false],
+      [1, 1, true, false],
+    ];
+    for (const [arrival, cooldown, iframed, expected] of cases) {
+      expect(isHazardDamageEligible(arrival, cooldown, iframed)).toBe(expected);
+    }
+  });
+
+  it('treats negative arrival/cooldown the same as zero (over-decremented timers)', () => {
+    expect(isHazardDamageEligible(-10, -5, false)).toBe(true);
   });
 });
