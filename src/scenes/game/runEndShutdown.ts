@@ -86,6 +86,7 @@ import type { HUD } from '../../ui/HUD';
 import type { Minimap } from '../../ui/Minimap';
 import type { NodeMapUI } from '../../ui/NodeMapUI';
 import type { NodePromptUI } from '../../ui/NodePromptUI';
+import { tearDownNodeMap } from './nodeMapLifecycle';
 import type { EdgeIndicators } from '../../ui/EdgeIndicators';
 import type { UpgradeCardsUI } from '../../ui/UpgradeCards';
 import type { GameTickers } from './GameTickers';
@@ -440,21 +441,27 @@ export function installRunEndShutdown(deps: RunEndShutdownDeps): void {
     } catch {
       /* ignore */
     }
+    // T401 slice 7 — node-map lifecycle teardown consolidated into the
+    // pure helper. Single try/catch around the whole block matches the
+    // run-end shutdown's silenced-catch policy (caller-decides; bare
+    // `tearDownNodeMap` would short-circuit the wider shutdown sequence
+    // on a thrown destroy). The helper runs `reset()` on both
+    // nodeMapSystem + nodeWaveTracker BEFORE the destroys, so even a
+    // throwing destroy still flushes run-state. `setInteractivePromptIndex(-1)`
+    // sits outside the try because it's a pure setter that cannot throw.
     try {
-      deps.nodeMapUI?.destroy();
+      tearDownNodeMap({
+        nodeMapSystem: deps.nodeMapSystem,
+        nodeWaveTracker: deps.nodeWaveTracker,
+        nodeMapUI: deps.nodeMapUI,
+        nodePromptUI: deps.nodePromptUI,
+        setNodeMapUI: deps.setNodeMapUI,
+        setNodePromptUI: deps.setNodePromptUI,
+      });
     } catch {
       /* ignore */
     }
-    deps.setNodeMapUI(null);
-    try {
-      deps.nodePromptUI?.destroy();
-    } catch {
-      /* ignore */
-    }
-    deps.setNodePromptUI(null);
     deps.setInteractivePromptIndex(-1);
-    deps.nodeMapSystem.reset();
-    deps.nodeWaveTracker.reset();
     try {
       deps.edgeIndicators?.destroy();
     } catch {

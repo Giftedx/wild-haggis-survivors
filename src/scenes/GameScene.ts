@@ -157,6 +157,7 @@ import {
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
+import { installNodeMap, tearDownNodeMap } from './game/nodeMapLifecycle';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -516,12 +517,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.tempBuffBag.clear();
     this.runActState.reset();
     this.suppressNextNodeMapRoll = false;
-    this.nodeMapSystem.reset();
-    this.nodeWaveTracker.reset();
-    this.nodeMapUI?.destroy();
-    this.nodeMapUI = null;
-    this.nodePromptUI?.destroy();
-    this.nodePromptUI = null;
+    // T401 slice 7 — node-map teardown (Option A: bare, no try/catch).
+    // Thrown destroys surface during dev as a partial-init signal.
+    tearDownNodeMap({
+      nodeMapSystem: this.nodeMapSystem,
+      nodeWaveTracker: this.nodeWaveTracker,
+      nodeMapUI: this.nodeMapUI,
+      nodePromptUI: this.nodePromptUI,
+      setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
+      setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
+    });
     this.interactivePromptIndex = -1;
     this.chestDurationBonusMs = 0;
     const runSeed = this.pendingRunSeed ?? randomSeed();
@@ -1391,18 +1396,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.minimap = new Minimap(this);
     // Phase B Biomes — paint biome regions on the minimap.
     this.minimap.setBiomeManager(this.getBiomeManager());
-    this.nodeMapUI = new NodeMapUI(this);
-    this.nodePromptUI = new NodePromptUI(this);
-    // Listener is registered once per scene-create and lives until reset.
-    // Dispatches to per-type handlers which in turn call finalizeNodeVisit.
-    // Interactive types (shrine / wee_trader / bargain) route through
-    // NodePromptUI so pointer, keyboard, and gamepad paths resolve the
-    // same outcome contract.
-    this.nodeMapSystem.setTriggerListener((index, state) => {
-      if (state.visited[index]) return;
-      // Block re-trigger while an interactive prompt is already resolving.
-      if (this.interactivePromptIndex >= 0) return;
-      this.handleNodeTriggered(state.nodes[index], index, state);
+    // T401 slice 7 — node-map lifecycle install (UIs + trigger listener).
+    // Order is load-bearing: UIs constructed + setters fire BEFORE the
+    // trigger listener registers, because the listener body reads
+    // `this.interactivePromptIndex` and dispatches to handlers that may
+    // open `this.nodePromptUI` — both fields must be set first.
+    installNodeMap({
+      scene: this,
+      nodeMapSystem: this.nodeMapSystem,
+      nodeWaveTracker: this.nodeWaveTracker,
+      setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
+      setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
+      onNodeTrigger: (index, state) => {
+        if (state.visited[index]) return;
+        // Block re-trigger while an interactive prompt is already resolving.
+        if (this.interactivePromptIndex >= 0) return;
+        this.handleNodeTriggered(state.nodes[index], index, state);
+      },
     });
     const resumeNodeTarget = resolveResumeNodeMapTarget(
       this.runActState.currentAct,
