@@ -19,18 +19,7 @@ import { NodeMapUI } from '../ui/NodeMapUI';
 import { NodePromptUI } from '../ui/NodePromptUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
-import type { NodeDef } from '../data/nodeTypes';
-import type { NodeMapState } from '../systems/NodeMapSystem';
-import { resolveEncounterEvent } from '../systems/nodeEvents/encounterEvent';
-import { resolveEliteEvent } from '../systems/nodeEvents/eliteEvent';
-import { resolveRestEvent } from '../systems/nodeEvents/restEvent';
-import { resolveHiddenEvent } from '../systems/nodeEvents/hiddenEvent';
-import { resolveShrineEvent } from '../systems/nodeEvents/shrineEvent';
-import { resolveWeeTraderEvent } from '../systems/nodeEvents/weeTraderEvent';
-import { rollRandomUnheldPassive } from '../data/upgrades';
-import { resolveBargainEvent } from '../systems/nodeEvents/bargainEvent';
-import { NodeWaveTracker, type NodeWaveMember } from '../systems/nodeEvents/NodeWaveTracker';
-import { shrineLabelFromKey, bargainLabelFromOfferKey } from './game/nodeEventLabels';
+import { NodeWaveTracker } from '../systems/nodeEvents/NodeWaveTracker';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
@@ -83,7 +72,6 @@ import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
-import { applyShrineBuff, isRegisteredShrineBuffKey } from '../systems/shrineBuffRegistry';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag, drainRunePulses } from '../systems/runes/runeEffects';
 import {
@@ -158,6 +146,7 @@ import {
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
 import { installNodeMap, tearDownNodeMap } from './game/nodeMapLifecycle';
+import { dispatchNodeTrigger } from './game/nodeTriggerHandlers';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -219,24 +208,6 @@ export interface GameSceneInitData {
    * Chronicle (not MainMenu). v1 limitations documented in ADR-0002.
    */
   replay?: import('../replay/replayBlob').ReplayBlobAny;
-}
-
-/**
- * Adapt an Enemy to the NodeWaveTracker's member contract. Alive-for-wave
- * keys off both `active` (die() path clears it) and the tag identity so
- * pool re-acquire reads as "not this wave". Position getters return the
- * enemy's live coords each tick — the tracker uses them to capture the
- * last-known centroid one frame before all members die (elite relic
- * drops at the kill site rather than the node pip).
- */
-function buildEnemyWaveMember(enemy: Enemy): NodeWaveMember {
-  return {
-    get x() { return enemy.x; },
-    get y() { return enemy.y; },
-    isAliveForWave(tag: string) {
-      return enemy.active && enemy.nodeWaveTag === tag;
-    },
-  };
 }
 
 export class GameScene extends Phaser.Scene implements ISceneContext {
@@ -1411,7 +1382,44 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         if (state.visited[index]) return;
         // Block re-trigger while an interactive prompt is already resolving.
         if (this.interactivePromptIndex >= 0) return;
-        this.handleNodeTriggered(state.nodes[index], index, state);
+        dispatchNodeTrigger(
+          {
+            player: this.player,
+            runRng: this.runRng,
+            runScore: this.runScore,
+            runModifiers: this.runModifiers,
+            tempBuffBag: this.tempBuffBag,
+            ownedPassives: this.ownedPassives,
+            nodeWaveTracker: this.nodeWaveTracker,
+            spawnSystem: this.spawnSystem,
+            relicSystem: this.relicSystem,
+            relicPickupSpawner: this.relicPickupSpawner,
+            weaponSystem: this.weaponSystem,
+            xpSystem: this.xpSystem,
+            upgradeUI: this.upgradeUI,
+            levelUpFlow: this.levelUpFlow,
+            juice: this.juice,
+            timeManager: this.timeManager,
+            nodePromptUI: this.nodePromptUI,
+            peekReplayChoiceFor: (k) => peekReplayChoiceForHelper(this.replayInput, k),
+            setInteractivePromptIndex: (n) => { this.interactivePromptIndex = n; },
+            finalizeNodeVisit: (i, k, c) => finalizeNodeVisitHelper(
+              {
+                nodeMap: this.nodeMapSystem,
+                runActState: this.runActState,
+                replayRecorder: this.replayRecorder,
+                replayInput: this.replayInput,
+                clock: this.spawnSystem,
+              },
+              i,
+              k,
+              c,
+            ),
+          },
+          state.nodes[index],
+          index,
+          state,
+        );
       },
     });
     const resumeNodeTarget = resolveResumeNodeMapTarget(
@@ -2138,487 +2146,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.runActState.currentActNodeMap = state;
     this.runActState.currentNodeIndex = 0;
     this.nodeMapSystem.setMap(state);
-  }
-
-  /**
-   * Dispatch a triggered node to the right event handler. Passive
-   * events (encounter / elite / rest / hidden) apply inline; interactive
-   * events (shrine / wee_trader / bargain) route through NodePromptUI.
-   */
-  private handleNodeTriggered(node: NodeDef, index: number, state: NodeMapState): void {
-    switch (node.type) {
-      case 'encounter':
-        this.applyEncounterNode(node, index, state);
-        break;
-      case 'elite':
-        this.applyEliteNode(node, index, state);
-        break;
-      case 'rest':
-        this.applyRestNode(node, index);
-        break;
-      case 'hidden':
-        this.applyHiddenNode(node, index, state);
-        break;
-      case 'shrine':
-        this.openShrineNode(node, index);
-        break;
-      case 'wee_trader':
-        this.openTraderNode(node, index, state);
-        break;
-      case 'bargain':
-        this.openBargainNode(node, index);
-        break;
-    }
-  }
-
-  /**
-   * Finish a node visit: mark in the system, log the outcome, advance
-   * the HUD cursor past any run of now-visited nodes. Shared by every
-   * event handler — callers pass `chosenRewardKey` when the event had
-   * a branching outcome (reward kind picked / trade accepted).
-   */
-  /**
-   * T401 — delegated to the pure helper at
-   * `src/scenes/game/nodeVisitFinalizer.ts`. The behavior contract is
-   * unchanged: mark the node visited, record outcome on RunActState,
-   * push to replay recorder, consume any matching playback outcome,
-   * walk the cursor past contiguously visited slots.
-   */
-  private finalizeNodeVisit(index: number, nodeKey: string, chosenRewardKey?: string): void {
-    finalizeNodeVisitHelper(
-      {
-        nodeMap: this.nodeMapSystem,
-        runActState: this.runActState,
-        replayRecorder: this.replayRecorder,
-        replayInput: this.replayInput,
-        clock: this.spawnSystem,
-      },
-      index,
-      nodeKey,
-      chosenRewardKey,
-    );
-  }
-
-  /**
-   * M1 F5 — delegated to `peekReplayChoiceFor` in
-   * `src/scenes/game/nodeVisitFinalizer.ts`. Returns the recorded
-   * `chosenRewardKey` when in playback mode AND the next outcome
-   * matches `nodeKey`; null + warn-on-mismatch otherwise.
-   */
-  private peekReplayChoiceFor(nodeKey: string): string | null {
-    return peekReplayChoiceForHelper(this.replayInput, nodeKey);
-  }
-
-  /**
-   * Encounter node (M1 F1) — spawn the declared enemy mix with a wave
-   * tag, then defer finalize until every spawned enemy dies. Each
-   * `forceSpawn` call returns the acquired Enemy; it's wrapped as a
-   * NodeWaveMember whose `isAliveForWave(tag)` gate keys off the
-   * scene-visible `Enemy.active` + `Enemy.nodeWaveTag`. Pool re-acquire
-   * nulls the tag in `Enemy.spawn()`, so a stale reference reads as
-   * "not alive for this wave" even if the pool recycles the object.
-   *
-   * Empty `enemyMix` (should not happen in authored data, but resolver
-   * contract allows it) falls through the tracker's zero-member path and
-   * finalizes synchronously.
-   */
-  private applyEncounterNode(node: NodeDef, index: number, state: NodeMapState): void {
-    const spec = resolveEncounterEvent(node);
-    const spawnPos = state.worldPositions[index];
-    this.nodeWaveTracker.register(
-      index,
-      node.key,
-      'encounter',
-      (tag) => {
-        const members: NodeWaveMember[] = [];
-        for (const entry of spec.enemyMix) {
-          for (let i = 0; i < entry.count; i++) {
-            const enemy = this.spawnSystem.forceSpawn(entry.key, { waveTag: tag });
-            if (enemy) members.push(buildEnemyWaveMember(enemy));
-          }
-        }
-        return members;
-      },
-      () => {
-        this.finalizeNodeVisit(index, node.key);
-      },
-      { x: spawnPos.x, y: spawnPos.y },
-    );
-  }
-
-  /**
-   * Elite node (M1 F2) — force-spawn the declared elite with a wave
-   * tag; defer finalize AND the guaranteed relic drop until the elite
-   * dies. Relic drops at the kill position (centroid from the tracker's
-   * last tick while alive) so the reward reads as earned rather than
-   * as a free pickup at the node pip. Drop roll is rolled on death so
-   * `runRng` consumption stays deterministic (same seed → same relic).
-   *
-   * If the pool is saturated and `forceSpawn` returns null, the wave has
-   * zero members and finalizes synchronously via the zero-member path
-   * (the relic drop still fires at the node position).
-   */
-  private applyEliteNode(node: NodeDef, index: number, state: NodeMapState): void {
-    const spec = resolveEliteEvent(node);
-    const spawnPos = state.worldPositions[index];
-    this.nodeWaveTracker.register(
-      index,
-      node.key,
-      'elite',
-      (tag) => {
-        const enemy = this.spawnSystem.forceSpawn(spec.enemyKey, { elite: true, waveTag: tag });
-        return enemy ? [buildEnemyWaveMember(enemy)] : [];
-      },
-      (killPos) => {
-        if (spec.guaranteedRelic && this.relicPickupSpawner) {
-          const relic = this.relicSystem.rollDrop('elite', this.runRng, { luckMultiplier: 2 });
-          if (relic) {
-            this.relicPickupSpawner.spawn(relic, killPos.x, killPos.y, 'elite');
-          }
-        }
-        this.finalizeNodeVisit(index, node.key);
-      },
-      { x: spawnPos.x, y: spawnPos.y },
-    );
-  }
-
-  /**
-   * Rest node — heal + grant a reroll token. Toast carries the flavour
-   * line (full i18n copy lands in M5).
-   */
-  private applyRestNode(node: NodeDef, index: number): void {
-    const spec = resolveRestEvent(node);
-    const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * spec.healRatio));
-    this.player.heal(heal);
-    for (let i = 0; i < spec.rerollTokens; i++) {
-      this.upgradeUI?.grantReroll();
-    }
-    this.juice.showToast(t('nodes.ui.toast.rest'), TOAST_COLORS.reward);
-    this.finalizeNodeVisit(index, node.key);
-  }
-
-  /**
-   * Hidden node — roll reward. 'relic' spawns a relic pickup at the
-   * node position; 'lore_fragment' surfaces a toast. Relic falls back
-   * to a lore toast if every relic is already held.
-   */
-  private applyHiddenNode(node: NodeDef, index: number, state: NodeMapState): void {
-    const spec = resolveHiddenEvent(node, this.runRng);
-    if (spec.kind === 'relic' && this.relicPickupSpawner) {
-      const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
-      if (relic) {
-        const pos = state.worldPositions[index];
-        this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
-        this.finalizeNodeVisit(index, node.key, 'relic');
-        return;
-      }
-    }
-    this.juice.showToast(t('nodes.ui.toast.hidden_empty'), TOAST_COLORS.reward);
-    this.finalizeNodeVisit(index, node.key, 'lore_fragment');
-  }
-
-  /** Open/close pause bracket for interactive node prompts. */
-  private enterInteractivePrompt(index: number): void {
-    this.interactivePromptIndex = index;
-    this.timeManager.request('NODE_PROMPT', { pausePhysics: true, timeScale: 0 });
-  }
-
-  private exitInteractivePrompt(index: number, nodeKey: string, chosenRewardKey: string | null): void {
-    this.timeManager.release('NODE_PROMPT');
-    this.interactivePromptIndex = -1;
-    this.finalizeNodeVisit(index, nodeKey, chosenRewardKey ?? undefined);
-  }
-
-  /**
-   * Shrine node — prompt with 3 buff candidates. Combat-buff keys
-   * (damage / speed / armor / crit / pickup) route through `TempBuffBag`
-   * with the resolver's `durationMs`; gold / xp / luck stay immediate.
-   */
-  private openShrineNode(node: NodeDef, index: number): void {
-    const spec = resolveShrineEvent(node, this.runRng);
-    if (spec.candidates.length === 0) {
-      this.finalizeNodeVisit(index, node.key, 'empty_pool');
-      return;
-    }
-    // M1 F5 — playback auto-applies the recorded boon pick instead of
-    // re-opening the modal. `applyShrineBoon` consumes runRng for
-    // `buff_luck`, so skipping it in replay would desync future rolls —
-    // we run the same apply path here.
-    const replayChoice = this.peekReplayChoiceFor(node.key);
-    if (replayChoice !== null) {
-      if (replayChoice !== 'refused') this.applyShrineBoon(replayChoice, spec.durationMs);
-      this.finalizeNodeVisit(index, node.key, replayChoice);
-      return;
-    }
-    this.enterInteractivePrompt(index);
-    this.nodePromptUI?.show({
-      title: t('nodes.ui.shrine_title'),
-      body: t('nodes.ui.shrine_body'),
-      options: spec.candidates.map((c) => ({
-        key: c.key,
-        label: shrineLabelFromKey(c.key),
-      })),
-      allowSkip: true,
-      onResolve: (chosenKey) => {
-        if (chosenKey) this.applyShrineBoon(chosenKey, spec.durationMs);
-        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
-      },
-    });
-  }
-
-  /**
-   * Apply a shrine boon. M1 F4 — combat buffs (damage / speed / armor /
-   * crit / pickup) route through `TempBuffBag` via the shrine-buff
-   * registry (single applyShrineBuff entry point so the deltas stay in
-   * one place AND the bag's snapshot stays JSON-serialisable for resume
-   * — T101 follow-up). Gold / xp / luck stay immediate, and unsupported
-   * keys (regen / reflect / dodge — missing revertible stat hooks) fall
-   * back to the pre-F4 20% heal stand-in so the pick always delivers
-   * something.
-   */
-  private applyShrineBoon(key: string, durationMs: number): void {
-    if (isRegisteredShrineBuffKey(key)) {
-      applyShrineBuff(this.tempBuffBag, key, durationMs, { player: this.player });
-      this.showShrineTimedToast(key, durationMs);
-      return;
-    }
-    switch (key) {
-      case 'buff_regen':
-      case 'buff_reflect':
-      case 'buff_dodge': {
-        // Missing revertible hooks (addHpRegen is capped, setThorns is
-        // non-additive, no dodge stat). Ship the 20% heal stand-in until
-        // the stat API grows — documented as a known F4 gap.
-        const heal = Math.max(1, Math.ceil(this.player.getMaxHp() * 0.2));
-        this.player.heal(heal);
-        this.juice.showToast(t('nodes.ui.toast.shrine_boon', { label: shrineLabelFromKey(key) }), TOAST_COLORS.reward);
-        break;
-      }
-      case 'buff_gold': {
-        this.runScore.addCoinGold(50);
-        this.juice.showToast(t('nodes.ui.toast.shrine_gold'), TOAST_COLORS.reward);
-        break;
-      }
-      case 'buff_xp': {
-        this.xpSystem?.spawnGem(this.player.x, this.player.y, 25);
-        this.juice.showToast(t('nodes.ui.toast.shrine_xp'), TOAST_COLORS.reward);
-        break;
-      }
-      case 'buff_luck': {
-        // v1: drop a rare relic right there, treated as "lucky pick".
-        if (this.relicPickupSpawner) {
-          const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
-          if (relic) {
-            this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'hidden_node');
-            this.juice.showToast(t('nodes.ui.toast.shrine_luck_relic'), TOAST_COLORS.reward);
-            break;
-          }
-        }
-        this.runScore.addCoinGold(30);
-        this.juice.showToast(t('nodes.ui.toast.shrine_luck_gold'), TOAST_COLORS.reward);
-        break;
-      }
-      default:
-        this.juice.showToast(t('nodes.ui.toast.shrine_boon', { label: shrineLabelFromKey(key) }), TOAST_COLORS.reward);
-    }
-  }
-
-  /**
-   * Wee Trader node — prompt with the resolver's stock. Each pick costs
-   * the rolled `priceGold`, deducted from `RunScoreState.coinGoldSpent`
-   * via `spendCoinGold`. Unaffordable options are disabled at the modal.
-   * F8-pending: the 'passive' slot still grants a stub +40g refund when
-   * accepted because no mid-run passive grant exists yet.
-   */
-  private openTraderNode(node: NodeDef, index: number, state: NodeMapState): void {
-    const spec = resolveWeeTraderEvent(node, this.runRng);
-    const items = spec.items;
-    if (items.length === 0) {
-      this.finalizeNodeVisit(index, node.key, 'no_stock');
-      return;
-    }
-    // M1 F5 — playback auto-applies the recorded trader pick. applyTraderRelic
-    // consumes runRng for the relic roll, so we run the same apply path here
-    // to keep the rolled-relic deterministic with the live run.
-    const replayChoice = this.peekReplayChoiceFor(node.key);
-    if (replayChoice !== null) {
-      const replayItem = items.find((it) => it.kind === replayChoice);
-      if (replayItem) this.runScore.spendCoinGold(replayItem.priceGold);
-      if (replayChoice === 'relic') {
-        this.applyTraderRelic(state.worldPositions[index]);
-      } else if (replayChoice === 'passive') {
-        this.grantTraderPassive();
-      } else if (replayChoice === 'reroll') {
-        this.upgradeUI?.grantReroll();
-        this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
-      }
-      this.finalizeNodeVisit(index, node.key, replayChoice);
-      return;
-    }
-    this.enterInteractivePrompt(index);
-    const balance = this.runScore.getGoldBalance();
-    this.nodePromptUI?.show({
-      title: t('nodes.ui.trader_title'),
-      body: t('nodes.ui.trader_body', { gold: String(balance) }),
-      options: items.map((item) => {
-        const canAfford = balance >= item.priceGold;
-        return {
-          key: item.kind,
-          label: t(`nodes.ui.trader_item.${item.kind}`),
-          subLabel: canAfford
-            ? t('nodes.ui.trader_price', { price: String(item.priceGold) })
-            : t('nodes.ui.trader_price_short', { price: String(item.priceGold) }),
-          disabled: !canAfford,
-        };
-      }),
-      allowSkip: true,
-      onResolve: (chosenKey) => {
-        const item = chosenKey ? items.find((it) => it.kind === chosenKey) : null;
-        if (item && this.runScore.spendCoinGold(item.priceGold)) {
-          if (chosenKey === 'relic') {
-            this.applyTraderRelic(state.worldPositions[index]);
-          } else if (chosenKey === 'passive') {
-            this.grantTraderPassive();
-          } else if (chosenKey === 'reroll') {
-            this.upgradeUI?.grantReroll();
-            this.juice.showToast(t('nodes.ui.toast.trader_reroll'), TOAST_COLORS.reward);
-          }
-        }
-        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
-      },
-    });
-  }
-
-  private applyTraderRelic(pos: { x: number; y: number }): void {
-    if (!this.relicPickupSpawner) return;
-    const relic = this.relicSystem.rollDrop('hidden_node', this.runRng);
-    if (!relic) {
-      this.runScore.addCoinGold(40);
-      this.juice.showToast(t('nodes.ui.toast.trader_empty_pack'), TOAST_COLORS.reward);
-      return;
-    }
-    this.relicPickupSpawner.spawn(relic, pos.x, pos.y, 'hidden_node');
-    this.juice.showToast(t('nodes.ui.toast.trader_relic'), TOAST_COLORS.reward);
-  }
-
-  /**
-   * M1 F4 — compose the shrine timed-buff toast with a rounded-seconds
-   * duration tag so the player sees how long the buff will live.
-   */
-  private showShrineTimedToast(key: string, durationMs: number): void {
-    const seconds = Math.max(1, Math.round(durationMs / 1000));
-    this.juice.showToast(
-      t('nodes.ui.toast.shrine_buff_timed', {
-        label: shrineLabelFromKey(key),
-        seconds: String(seconds),
-      }),
-      TOAST_COLORS.reward,
-    );
-  }
-
-  /**
-   * M1 F8 — trader "passive" branch. Rolls an unheld passive from the
-   * catalogue and grants it through `LevelUpFlow.grantPassive` (same
-   * effect path as the level-up modal). Falls back to the pre-F8
-   * +40g stub when the player's roster is already full, keeping the
-   * slot honest even at endgame. Uses `runRng` for replay determinism.
-   */
-  private grantTraderPassive(): void {
-    const card = rollRandomUnheldPassive(this.runRng, this.ownedPassives);
-    if (!card) {
-      this.runScore.addCoinGold(40);
-      this.juice.showToast(t('nodes.ui.toast.trader_no_passives'), TOAST_COLORS.reward);
-      return;
-    }
-    const key = (card.effect as { passiveKey: string }).passiveKey;
-    this.levelUpFlow.grantPassive(key);
-    this.juice.showToast(
-      t('nodes.ui.toast.trader_passive_granted', { name: t(card.name) }),
-      TOAST_COLORS.reward,
-    );
-  }
-
-  /**
-   * Bargain node — accept takes hpCost damage + grants the offered
-   * boon, refuse marks visited with no effect. Skip on scrim-click
-   * counts as refuse.
-   */
-  private openBargainNode(node: NodeDef, index: number): void {
-    const spec = resolveBargainEvent(node, this.runRng, this.player.getMaxHp());
-    // M1 F5 — playback auto-applies the recorded bargain pick. Accept
-    // consumes HP + applies the offer (which may roll a relic via runRng,
-    // so we run the same apply path to stay deterministic). Refuse just
-    // surfaces the toast. `canAfford` is ignored in replay — if the live
-    // run was able to accept, HP at this game-time was enough.
-    const replayChoice = this.peekReplayChoiceFor(node.key);
-    if (replayChoice !== null) {
-      if (replayChoice === 'accept') {
-        this.player.takeDamage(spec.hpCost);
-        this.applyBargainOffer(spec.offerKind, spec.offerKey);
-      } else {
-        this.juice.showToast(t('nodes.ui.toast.bargain_refused'), '#cccccc');
-      }
-      this.finalizeNodeVisit(index, node.key, replayChoice);
-      return;
-    }
-    this.enterInteractivePrompt(index);
-    const canAfford = this.player.getHp() > spec.hpCost;
-    this.nodePromptUI?.show({
-      title: t('nodes.ui.bargain_title'),
-      body: t('nodes.ui.bargain_body', {
-        hp: String(spec.hpCost),
-        offer: bargainLabelFromOfferKey(spec.offerKey),
-      }),
-      options: [
-        {
-          key: 'accept',
-          label: t('nodes.ui.accept'),
-          subLabel: t('nodes.ui.accept_cost', { hp: String(spec.hpCost) }),
-          disabled: !canAfford,
-        },
-      ],
-      allowSkip: true,
-      onResolve: (chosenKey) => {
-        if (chosenKey === 'accept') {
-          this.player.takeDamage(spec.hpCost);
-          this.applyBargainOffer(spec.offerKind, spec.offerKey);
-        } else {
-          this.juice.showToast(t('nodes.ui.toast.bargain_refused'), '#cccccc');
-        }
-        this.exitInteractivePrompt(index, node.key, chosenKey ?? 'refused');
-      },
-    });
-  }
-
-  private applyBargainOffer(offerKind: 'relic' | 'buff_run' | 'weapon_upgrade_token', offerKey: string): void {
-    if (offerKind === 'relic' && this.relicPickupSpawner) {
-      const relic = this.relicSystem.rollDrop('bargain', this.runRng);
-      if (relic) {
-        this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'bargain');
-        this.juice.showToast(t('nodes.ui.toast.bargain_relic'), TOAST_COLORS.reward);
-        return;
-      }
-    }
-    if (offerKind === 'buff_run') {
-      // v1: run-long bag multiplier bumps. One of goldMult / damageTakenMult /
-      // weaponCooldownMult depending on the key.
-      if (offerKey.includes('gold')) {
-        this.runModifiers.goldMult *= 1.1;
-        this.juice.showToast(t('nodes.ui.toast.bargain_gold'), TOAST_COLORS.reward);
-      } else if (offerKey.includes('cooldown')) {
-        this.runModifiers.weaponCooldownMult *= 0.9;
-        this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-        this.juice.showToast(t('nodes.ui.toast.bargain_cooldown'), TOAST_COLORS.reward);
-      } else {
-        this.runModifiers.damageTakenMult *= 0.9;
-        this.juice.showToast(t('nodes.ui.toast.bargain_armor'), TOAST_COLORS.reward);
-      }
-      return;
-    }
-    // weapon_upgrade_token — v1 placeholder: +1 reroll + 30g.
-    this.upgradeUI?.grantReroll();
-    this.runScore.addCoinGold(30);
-    this.juice.showToast(t('nodes.ui.toast.bargain_token'), TOAST_COLORS.reward);
   }
 
   private launchActIntermission(actN: 1 | 2): void {
