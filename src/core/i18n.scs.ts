@@ -2155,8 +2155,18 @@ export const SCS_STRINGS: LocaleTree = {
         a: 'Fair fa\' your honest, sonsie face.',
         b: 'Best-laid schemes gang aft a-gley.',
         haggis_moment: {
+          // SCS overlay of EN. Burns wrote in Scots; the original lines
+          // are already canonical Scots, so the overlay matches verbatim
+          // (no English-cleaned variant exists for these stanzas).
+          // Kinsley 1968 vol. I no. 136.
           a: 'Fair fa\' your honest, sonsie face, / Great chieftain o\' the puddin\'-race!',
           b: 'His knife see rustic Labour dight, / An\' cut you up wi\' ready slight.',
+          c: 'Trenching your gushing entrails bright, / Like onie ditch.',
+          d: 'Then, horn for horn, they stretch an\' strive: / Deil tak the hindmost! on they drive.',
+          e: 'Is there that owre his French ragout, / Or olio that wad staw a sow?',
+          f: 'Poor devil! see him owre his trash, / As feckless as a wither\'d rash.',
+          g: 'But mark the Rustic, haggis-fed, / The trembling earth resounds his tread.',
+          h: 'Auld Scotland wants nae skinking ware / That jaups in luggies; / But, if ye wish her gratefu\' prayer, / Gie her a Haggis!',
         },
         mouse_moment: {
           a: 'Wee, sleekit, cow\'rin, tim\'rous beastie.',

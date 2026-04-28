@@ -1420,8 +1420,17 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     ],
     keysByTag: {
       haggis_moment: [
+        // Eight Habbie-stanza couplets from "Address to a Haggis" (1786).
+        // Cycles through the whole anthem across a Burns Night run via
+        // the round-robin no-repeat ring.
         'ui.banter.burns_citation.haggis_moment.a',
         'ui.banter.burns_citation.haggis_moment.b',
+        'ui.banter.burns_citation.haggis_moment.c',
+        'ui.banter.burns_citation.haggis_moment.d',
+        'ui.banter.burns_citation.haggis_moment.e',
+        'ui.banter.burns_citation.haggis_moment.f',
+        'ui.banter.burns_citation.haggis_moment.g',
+        'ui.banter.burns_citation.haggis_moment.h',
       ],
       mouse_moment: [
         'ui.banter.burns_citation.mouse_moment.a',
