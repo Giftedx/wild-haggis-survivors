@@ -14,6 +14,24 @@ export const WHISPER_KEYS: readonly string[] = [
   'ancestor.whisper.12',
   'ancestor.whisper.13',
   'ancestor.whisper.14',
+  // Extension batch (2026-04-29). Doubles the pool so a player with a
+  // long run history doesn't see the same forebear-line on consecutive
+  // deaths — pick variety scales with corpus size, not just history.
+  'ancestor.whisper.15',
+  'ancestor.whisper.16',
+  'ancestor.whisper.17',
+  'ancestor.whisper.18',
+  'ancestor.whisper.19',
+  'ancestor.whisper.20',
+  'ancestor.whisper.21',
+  'ancestor.whisper.22',
+  'ancestor.whisper.23',
+  'ancestor.whisper.24',
+  'ancestor.whisper.25',
+  'ancestor.whisper.26',
+  'ancestor.whisper.27',
+  'ancestor.whisper.28',
+  'ancestor.whisper.29',
 ] as const;
 
 export interface AncestorHistoryLike {

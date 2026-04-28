@@ -3391,6 +3391,23 @@ export const SCS_STRINGS: LocaleTree = {
       '12': "Elites telegraph. Read the bluidy lowe.",
       '13': "Ye're no the first o us tae try this.",
       '14': "The glen minds ye. Mak it a guid memory.",
+      // SCS overlay of EN extension batch (2026-04-29). Scots conventions
+      // retained: aye / nae / fae / wis / kennin / muir.
+      '15': "The wee burns are aye caulder than ye reckon.",
+      '16': "Gin ye see a maukin standin tall — that's a warnin.",
+      '17': "Cu Sith bays in threes. Ye'll hear twa gin yer lucky.",
+      '18': "Watch tha haar move, nae the thing it hides.",
+      '19': "Selkies steal patience. Cairry a wee bit extra.",
+      '20': "Ye held tha line ower lang. Tha line moves.",
+      '21': "Drift's a freend. Stap fechtin her sae sair.",
+      '22': "The first XP gem is tha easiest. Aye, that's tha trap.",
+      '23': "Heather kens kindness. Sae does the haggis aneath it.",
+      '24': "Loch watter tells tha truth. Drink only efter a fecht.",
+      '25': "Crom Cruach's nae yer enemy — tha silence efter is.",
+      '26': "A dee'd wi tha wrang wapon picked. Trust yer hooves first.",
+      '27': "Whan the glen sings, sit still. Ye'll hear yer name in it.",
+      '28': "A made it tae the bell. Couldnae mak it past. Ye will.",
+      '29': "Mind tha corbies. Thay mind ye.",
     },
     kin: {
       'Great-great-gran': 'Great-great-gran',

@@ -4079,6 +4079,26 @@ export const EN_STRINGS: LocaleTree = {
       '12': "Elites telegraph. Read the bloody glow.",
       '13': "Ye're no the first o' us tae try this.",
       '14': "The glen remembers ye. Make it a good memory.",
+      // Extension batch (2026-04-29). Voice register: HEARTH per Voice
+      // Card — fallen forebears speaking softly to the next runner.
+      // Folkloric, sensory, kindly. Each leaf is a single-thought line:
+      // a remembered detail (12), a small piece of moor wisdom (15-19),
+      // a gentle correction (20-22), or a fond observation (23-29).
+      '15': "The wee burns are aye colder than ye think.",
+      '16': "If ye see a hare standing tall — that's a warning.",
+      '17': "Cu Sith bays in threes. Ye'll only hear two if yer lucky.",
+      '18': "Watch the haar move, no the thing it hides.",
+      '19': "Selkies steal patience. Carry a wee bit extra.",
+      '20': "Ye held the line too long. The line moves.",
+      '21': "Drift's a friend. Stop fightin' her sae hard.",
+      '22': "The first XP gem is the easiest. Aye, that\'s the trap.",
+      '23': "Heather kens kindness. So does the haggis under it.",
+      '24': "Loch water tells the truth. Drink only after a fight.",
+      '25': "Crom Cruach\'s nae yer enemy — the silence after is.",
+      '26': "I died wi the wrang weapon picked. Trust yer hooves first.",
+      '27': "When the glen sings, sit still. Ye\'ll hear yer name in it.",
+      '28': "I made it tae the bell. Couldnae make it past. Ye will.",
+      '29': "Mind the corbies. They mind ye.",
     },
     kin: {
       'Great-great-gran': 'Great-great-gran',
