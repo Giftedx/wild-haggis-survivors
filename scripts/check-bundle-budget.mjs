@@ -24,10 +24,18 @@ const DIST_ASSETS = join(process.cwd(), 'dist', 'assets');
 /** Measured 2026-04-27 production build (Round 2 sprite quality lift +
  *  38 new authored sprites baked through BootScene → +20KB gzipped to
  *  the index chunk). Slack tightened around the new floor so further
- *  unintentional growth still trips the gate. */
+ *  unintentional growth still trips the gate.
+ *
+ *  sprite-art budget added 2026-04-28 (B5 charter §3 Risk 1, Phase 1
+ *  prerequisite). The chunk was split out of vendor in commit ff777d2;
+ *  measured baseline ~161 KB gzip. 240_000 B leaves ~80 KB headroom
+ *  (~50% growth) for the four pending biome sprite expansions
+ *  (haar, frost, seawrack, edinburgh). If a Phase ship trips the gate,
+ *  raise to 280 — do NOT raise above 320 without a charter update. */
 const BUDGETS = [
   { re: /^vendor-phaser-.*\.js$/, label: 'vendor-phaser', maxGzipBytes: 390_000 },
   { re: /^index-.*\.js$/, label: 'index (app)', maxGzipBytes: 320_000 },
+  { re: /^sprite-art-.*\.js$/, label: 'sprite-art', maxGzipBytes: 240_000 },
 ];
 
 const argv = new Set(process.argv.slice(2));
