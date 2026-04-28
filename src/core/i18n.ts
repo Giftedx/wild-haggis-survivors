@@ -769,6 +769,18 @@ export const EN_STRINGS: LocaleTree = {
     burnsNight: {
       blessing_toast: 'Address to the haggis read aloud — the bard quickens the verse. +18 HP, weapons fire keener.',
     },
+    /**
+     * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
+     * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
+     * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
+     */
+    cuSith: {
+      bay: {
+        first: 'A Cu Sith hools across the moor.',
+        second: 'Cu Sith — second bay; closer.',
+        third: 'Cu Sith — third bay; brace.',
+      },
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -2863,6 +2875,10 @@ export const EN_STRINGS: LocaleTree = {
     echo_ready: 'Echo offered — choose a small boon.',
     /** A1 M4 — boss enrage: music swells, enemies pressure up. */
     boss_enrage: 'Boss enrages — music swells.',
+    /** Cu Sith Three-Bay telegraph captions (DESIGN_IDEAS §1). */
+    cu_sith_bay_first: 'Cu Sith hools — first bay across the moor.',
+    cu_sith_bay_second: 'Cu Sith hools — second bay closer in.',
+    cu_sith_bay_third: 'Cu Sith hools — third bay; the charge locks on.',
   },
   biomes: {
     bog: {

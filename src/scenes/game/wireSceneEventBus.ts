@@ -55,11 +55,31 @@ export function wireSceneEventBus(hooks: SceneEventBusHooks): () => void {
   const unsubSaveFailed = globalEventBus.on('GLOBAL_SAVE_FAILED', (payload) => {
     hooks.getJuice()?.showToast(t('ui.game.save_failed', { path: payload.path }), '#ffb070');
   });
+  // Cu Sith bay telegraph (DESIGN_IDEAS §1; SCOTTISH_RESEARCH §1.2).
+  // Throttle across multiple Cu Siths so dense late-game spawns don't
+  // spam toasts. The legend's "thrice across the moor" beat lands as
+  // up to three toasts per encounter — first / second / third — but
+  // only one per ~2.5 s globally to protect the HUD.
+  let lastBayToastMs = -Infinity;
+  const unsubCuSithBay = globalEventBus.on('CU_SITH_BAY', (p) => {
+    const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    if (now - lastBayToastMs < 2500) return;
+    lastBayToastMs = now;
+    const key = p.stage === 1 ? 'first' : p.stage === 2 ? 'second' : 'third';
+    hooks.getJuice()?.showToast(t(`ui.cuSith.bay.${key}`), '#88e8ff');
+    hooks.caption?.(
+      `cu_sith_bay_${key}`,
+      t(`ui.captions.cu_sith_bay_${key}`),
+      '#88e8ff',
+      2500,
+    );
+  });
 
   return () => {
     unsubAchievement();
     unsubBossEnraged();
     unsubCodexFirstCull();
     unsubSaveFailed();
+    unsubCuSithBay();
   };
 }

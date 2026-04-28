@@ -630,6 +630,8 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.threeBayStage = 1;
         this.threeBayTimerMs = HOOL_DURATION_MS;
         this.setVelocity(0, 0);
+        // First bay — fires the moment the trigger radius is crossed.
+        globalEventBus.emit('CU_SITH_BAY', { stage: 1, x: this.x, y: this.y });
       } else {
         this.setVelocityToward(tx, ty, this.speed);
       }
@@ -650,6 +652,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
           this.threeBayChargeTargetX = tx;
           this.threeBayChargeTargetY = ty;
         }
+        // Bay 2 fires when stage moves 1→2; bay 3 fires when stage 2→3
+        // (charge lock-on coincides with third bay).
+        globalEventBus.emit('CU_SITH_BAY', { stage: next, x: this.x, y: this.y });
       }
       return;
     }

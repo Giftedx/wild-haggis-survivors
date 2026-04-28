@@ -134,6 +134,23 @@ export type GlobalSaveFailedPayload = {
   reason: string;
 };
 
+/**
+ * Cu Sith Three-Bay Warning telegraph event. Fires once per bay
+ * transition from `Enemy.behaviorThreeBay`. GameScene listens, throttles
+ * across multiple Cu Siths (max 1 toast per ~3 s), and surfaces a
+ * Hearth-grave toast announcing the bay number — first / second /
+ * third (the third coincides with the charge lock-on).
+ */
+export type CuSithBayPayload = {
+  /** 1, 2, or 3. The third bay locks on; the player has the third
+   *  bay's window to sidestep before charge release. */
+  stage: 1 | 2 | 3;
+  /** Bay-source position so the GameScene listener can play
+   *  spatialised audio / scatter visual particles if it wants. */
+  x: number;
+  y: number;
+};
+
 export type GlobalEvents = {
   GLOBAL_ENEMY_KILLED: GlobalEnemyKilledPayload;
   GLOBAL_RUN_TIME_SEC: GlobalRunTimePayload;
@@ -149,6 +166,7 @@ export type GlobalEvents = {
   GLOBAL_CURSE_STARTED: GlobalCurseStartedPayload;
   GLOBAL_RELIC_PICKED: GlobalRelicPickedPayload;
   GLOBAL_SAVE_FAILED: GlobalSaveFailedPayload;
+  CU_SITH_BAY: CuSithBayPayload;
   bossEnraged: string;
 };
 

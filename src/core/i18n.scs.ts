@@ -453,6 +453,13 @@ export const SCS_STRINGS: LocaleTree = {
     burnsNight: {
       blessing_toast: 'Address tae tha haggis read aloud — tha bard quickens tha verse. +18 HP, wapens fire keener.',
     },
+    cuSith: {
+      bay: {
+        first: 'A Cu Sith hools across tha muir.',
+        second: 'Cu Sith — second bay; closer.',
+        third: 'Cu Sith — third bay; brace.',
+      },
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -2470,6 +2477,9 @@ export const SCS_STRINGS: LocaleTree = {
     level_up: 'Level up — pick a cairt.',
     echo_ready: 'Echo offered — wale a wee boon.',
     boss_enrage: 'Boss enrages — tha music swells.',
+    cu_sith_bay_first: 'Cu Sith hools — first bay across tha muir.',
+    cu_sith_bay_second: 'Cu Sith hools — second bay closer in.',
+    cu_sith_bay_third: 'Cu Sith hools — third bay; tha chairge locks on.',
   },
   tutorial: {
     move: 'WASD or stick tae roam — wapens fire theirsels. SPACE: a cheeky dash through trouble (an through beasties).',
