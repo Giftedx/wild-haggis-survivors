@@ -21,6 +21,9 @@
     "palette": "node scripts/check-palette-drift.mjs",
     "ci": "npm run lint && npm test && npm run build && npm run budget && npm run flash-budget",
     "test:e2e": "playwright test",
+    "test:e2e:firefox": "playwright test --project=firefox-desktop",
+    "test:e2e:webkit": "playwright test --project=webkit-desktop",
+    "test:e2e:cross-browser": "playwright test --project=firefox-desktop --project=webkit-desktop",
     "ci:all": "npm run ci && npm run test:e2e",
     "npm:test:cloud": "cd cloudflare && npm test"
   },
