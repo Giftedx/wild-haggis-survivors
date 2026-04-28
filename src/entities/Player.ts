@@ -21,6 +21,11 @@ import type { AccessoryDrawer } from './haggisComposition/AccessoryDrawer';
 import { getAccessoryDrawer } from './haggisComposition/accessoryRegistry';
 import type { MantleTier } from '../animation/mantleTier';
 import { applyMantleTier } from './Player.mantle';
+import {
+  MANTLE_PULSE_RADIUS_PX,
+  MANTLE_PULSE_TWEEN_MS,
+  tickMantlePulseTimer,
+} from './mantlePulse';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -169,6 +174,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private mantleOverlay: Phaser.GameObjects.Sprite | null = null;
   private mantleTier: MantleTier = 0;
   private mantleLastScale = 1;
+  /** Accumulated ms since the last mantle pulse fired. Tier-2 only. */
+  private mantlePulseAccumMs = 0;
   private ownedAccessories: Array<{
     id: string;
     drawer: AccessoryDrawer;
@@ -1135,6 +1142,50 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public getMantleTier(): MantleTier {
     return this.mantleTier;
+  }
+
+  /**
+   * Heather-mantle pulse — DESIGN_IDEAS §1. At tier 2 the mantle pulses
+   * every {@link MANTLE_PULSE_INTERVAL_MS} and staggers nearby enemies
+   * via the supplied `applyStaggerAt` callback. The visual punch is a
+   * brief scale + alpha tween on the mantle overlay; gameplay impact
+   * is pure outward knockback (no damage, no kill credit).
+   *
+   * Caller is responsible for passing scaled gameplay delta — pulse
+   * timing slows in lockstep with hit-freeze / boss-slowmo so the
+   * cinematic beats don't desync the ring's cadence.
+   *
+   * @returns true when a pulse fired this tick (caller may use the
+   *   signal for telemetry / audio cues; callback was already invoked).
+   */
+  public tickMantlePulse(
+    deltaMs: number,
+    applyStaggerAt: (centerX: number, centerY: number, radiusPx: number) => void,
+  ): boolean {
+    const result = tickMantlePulseTimer({
+      deltaMs,
+      accumulatedMs: this.mantlePulseAccumMs,
+      currentTier: this.mantleTier,
+    });
+    this.mantlePulseAccumMs = result.nextAccumulatedMs;
+    if (!result.didPulse) return false;
+
+    // Visual punch on the mantle overlay — keyframe-only, rides the
+    // existing W71 Phase 2 sprite. The tween targets `mantleLastScale`
+    // so it composes cleanly with `setScale` updates from `update()`.
+    if (this.mantleOverlay) {
+      const baseScale = this.mantleLastScale;
+      this.scene.tweens.add({
+        targets: this.mantleOverlay,
+        scale: { from: baseScale * 1.18, to: baseScale },
+        alpha: { from: 0.55, to: 1 },
+        duration: MANTLE_PULSE_TWEEN_MS,
+        ease: 'Cubic.easeOut',
+      });
+    }
+
+    applyStaggerAt(this.x, this.y, MANTLE_PULSE_RADIUS_PX);
+    return true;
   }
 
   destroy(fromScene?: boolean): void {

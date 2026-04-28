@@ -179,6 +179,7 @@ import { tickStressTest } from '../dev/StressTest';
 import { BALANCE } from '../core/BalanceConfig';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
+import { computeMantlePulseStagger } from '../entities/mantlePulse';
 import { HaarFogController } from '../systems/shaders/HaarFogController';
 import { biomeHaarTarget } from '../systems/shaders/biomeHaar';
 import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
@@ -1759,6 +1760,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // visible time-scale.
     this.player.update(delta);
     this.player.tickRegen(scaledDelta);
+    // Heather-mantle pulse — DESIGN_IDEAS §1. Tier-2 only; pure stagger
+    // (no damage). Gameplay delta so cinematic slow-mo slows the cadence.
+    this.player.tickMantlePulse(scaledDelta, (cx, cy, radius) => {
+      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
+      for (const enemy of enemies) {
+        if (!enemy.active) continue;
+        const impulse = computeMantlePulseStagger(cx, cy, enemy.x, enemy.y, radius);
+        // `applyKnockback` already early-exits on `behavior === 'hazard'`
+        // so the predicate doesn't need duplicating here.
+        if (impulse) enemy.applyKnockback(impulse.vx, impulse.vy);
+      }
+    });
     this.spawnSystem.update(scaledDelta, this.player.x, this.player.y);
 
     // M1 — tick node proximity + refresh HUD widget. Tick fires listener

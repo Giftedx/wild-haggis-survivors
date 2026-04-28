@@ -11,6 +11,8 @@ import { applyWeaponEvolutionStats } from './weaponEvolutionStats';
 import { resolveEffectiveCooldownMs } from './effectiveWeaponCooldown';
 import { resolveMuzzleFlashColor, resolveWeaponVfxColor } from './muzzleFlashColors';
 import { fillCirclePool } from './fillCirclePool';
+import { musicEngine } from './music/ProceduralMusicEngine';
+import { applyPibrochDamage, isPibrochAligned } from './music/pibrochAlignment';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -1063,7 +1065,19 @@ export class WeaponSystem {
     // damageDealt + enemy.takeDamage + damage logs all see the same
     // final number. Covers bronze_clasp, highland_torque elite mult,
     // fishermens_net (velocity-aware +30% when fleeing).
-    let finalDamage = damage;
+    //
+    // Pibroch Crescendo (DESIGN_IDEAS §1) layers ON TOP — hits aligned
+    // with the music's quarter-note downbeat get a small damage boost
+    // (rewards rhythm). Applied first so the rune/relic modifier and
+    // damage log all see the boosted base. Engine-stopped → no bonus
+    // (the helper returns false on a 0-period audio context).
+    let finalDamage = applyPibrochDamage(
+      damage,
+      isPibrochAligned(
+        musicEngine.getMsSinceLastQuarterNote(),
+        musicEngine.getQuarterNotePeriodMs(),
+      ),
+    );
     if (this.hitDamageModifier) {
       const body = enemy.body as Phaser.Physics.Arcade.Body | null;
       const vx = body?.velocity?.x ?? 0;
@@ -1075,13 +1089,15 @@ export class WeaponSystem {
         0,
         Math.ceil(
           this.hitDamageModifier(
-            damage,
+            finalDamage,
             this.scene.time.now,
             enemy.isElite(),
             velocityDotTowardPlayer,
           ),
         ),
       );
+    } else {
+      finalDamage = Math.max(0, Math.ceil(finalDamage));
     }
     this.events.emit('damageDealt', enemy.x, enemy.y, finalDamage, isCrit, weaponKey);
     const wasBoss = enemy.isBoss();
