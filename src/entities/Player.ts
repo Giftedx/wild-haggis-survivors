@@ -31,6 +31,10 @@ import {
   STUMBLE_SPEED_MUL,
   detectDashReverse,
 } from './dashReverseStumble';
+import {
+  computeBagpipeLureVector,
+  type BagpipeLureSource,
+} from '../systems/bagpipeLure';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -580,8 +584,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.lastMoveDir.y = dir.y;
     }
 
+    // Bagpipe Lure (DESIGN_IDEAS §1) — wild-haggis is drawn to pipe drone.
+    // Computed every frame regardless of player input so the pull is felt
+    // even when the player is standing still. The lure pulls in px·s⁻¹
+    // (a few px max) so it never overrides input — it supplements.
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    const enemyGroup = sceneCtx.getSpawnSystem?.().getEnemyGroup();
+    const lureSources = (enemyGroup?.getChildren() ?? []) as unknown as readonly BagpipeLureSource[];
+    const lureVector = computeBagpipeLureVector(this.x, this.y, lureSources);
+
     if (dir.x === 0 && dir.y === 0) {
-      this.setVelocity(0, 0);
+      this.setVelocity(lureVector.pullX, lureVector.pullY);
       this.tickAnimationAndSync(scaledDelta);
       return;
     }
@@ -610,8 +623,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // muls + allStats); identity when no rune is active.
     const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushX,
-      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushX + lureVector.pullX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushY + lureVector.pullY
     );
 
     // Rotate sprite to face movement direction
