@@ -26,6 +26,11 @@ import {
   MANTLE_PULSE_TWEEN_MS,
   tickMantlePulseTimer,
 } from './mantlePulse';
+import {
+  STUMBLE_DURATION_MS,
+  STUMBLE_SPEED_MUL,
+  detectDashReverse,
+} from './dashReverseStumble';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -176,6 +181,17 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private mantleLastScale = 1;
   /** Accumulated ms since the last mantle pulse fired. Tier-2 only. */
   private mantlePulseAccumMs = 0;
+
+  // Falls-If-Turning gag (DESIGN_IDEAS §1; SCOTTISH_RESEARCH_DEEP §11.5).
+  // Track the previous dash direction + time so the next dash can be
+  // checked against it; if the new dash reverses inside a short window,
+  // the haggis stumbles after the dash completes.
+  private lastDashDir: { x: number; y: number } | null = null;
+  private lastDashTimeMs: number = -Infinity;
+  /** Set during a reverse dash; consumed when isDashing flips false. */
+  private pendingStumbleAfterDash: boolean = false;
+  /** Remaining stumble duration. Halves move speed while > 0. */
+  private stumbleRemainingMs: number = 0;
   private ownedAccessories: Array<{
     id: string;
     drawer: AccessoryDrawer;
@@ -366,6 +382,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     dir.x /= len;
     dir.y /= len;
 
+    // Falls-If-Turning detection (DESIGN_IDEAS §1). Compare the new
+    // dash direction with the previous one; if it reverses inside the
+    // 2 s window, queue a stumble for when this dash ends. Pure fact:
+    // wild-haggis legs lock the curve. Fight them, fall over.
+    const reverseDetected = detectDashReverse({
+      prevDir: this.lastDashDir,
+      prevDashTimeMs: Number.isFinite(this.lastDashTimeMs)
+        ? this.lastDashTimeMs
+        : null,
+      newDir: dir,
+      currentTimeMs: this.scene.time.now,
+    });
+    if (reverseDetected) this.pendingStumbleAfterDash = true;
+    this.lastDashDir = { x: dir.x, y: dir.y };
+    this.lastDashTimeMs = this.scene.time.now;
+
     this.isDashing = true;
     this.dashInvincible = true;
     this.dashRemainingMs = this.DASH_DURATION_MS;
@@ -441,6 +473,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     if (this.burnLeapCooldownRemainingMs > 0) {
       this.burnLeapCooldownRemainingMs = Math.max(0, this.burnLeapCooldownRemainingMs - scaledDelta);
     }
+    // Falls-If-Turning stumble timer — independent from dash + burn-leap
+    // so a stumble fired by the previous dash doesn't get clobbered by
+    // a fresh leap cooldown.
+    if (this.stumbleRemainingMs > 0) {
+      this.stumbleRemainingMs = Math.max(0, this.stumbleRemainingMs - scaledDelta);
+    }
 
     // Tick dash lifecycle (bound to timeScale)
     if (this.isDashing) {
@@ -449,6 +487,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.isDashing = false;
         // Brief post-dash invincibility extra grace
         this.postDashInvincibilityRemainingMs = BALANCE.player.postDashGraceMs;
+        // Falls-If-Turning — queued stumble fires now that the dash is
+        // done. Activates the speed-halve mul for STUMBLE_DURATION_MS.
+        if (this.pendingStumbleAfterDash) {
+          this.pendingStumbleAfterDash = false;
+          this.stumbleRemainingMs = STUMBLE_DURATION_MS;
+        }
       }
     }
     if (!this.isDashing && this.dashInvincible && this.postDashInvincibilityRemainingMs > 0) {
@@ -558,12 +602,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const hazardLeaping = this.burnLeapActiveRemainingMs > 0;
     const slickMul = this.inSlick && !hazardLeaping ? this.SLICK_SPEED_MUL : 1;
     const leapBoostMul = this.burnLeapBoostRemainingMs > 0 ? this.BURN_LEAP_SPEED_MUL : 1;
+    // Falls-If-Turning stumble (DESIGN_IDEAS §1). Tier with slick + leap
+    // multiplicatively — a stumbling haggis on a slick patch under a
+    // burn-leap is a sliding cartoon, by design.
+    const stumbleMul = this.stumbleRemainingMs > 0 ? STUMBLE_SPEED_MUL : 1;
     // U1 M4 — getMoveSpeed() folds the rune bag (Trek / Peat / Frost speed
     // muls + allStats); identity when no rune is active.
     const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushX,
-      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul + pushY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushY
     );
 
     // Rotate sprite to face movement direction
