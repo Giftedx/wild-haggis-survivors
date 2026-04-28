@@ -31,12 +31,14 @@ describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
   it('M4 T113 — ungrounded biome runes are filtered out', () => {
     const cards = buildRuneCards();
     const ids = cards.map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
-    // These rune IDs reference unshipped biome / time-of-day axes.
+    // These rune IDs reference unshipped biome axes (B5 charter Phase
+    // 1-3 will ground them as biomes ship). gloaming_rune graduated
+    // 2026-04-28 (B5 Phase 0) — see computeTimeOfDayKey.
     expect(ids).not.toContain('haar_rune');     // biome_fog
     expect(ids).not.toContain('frost_rune');    // biome_cold
     expect(ids).not.toContain('seawrack_rune'); // biome_coastal
     expect(ids).not.toContain('edinburgh_rune'); // biome_urban
-    expect(ids).not.toContain('gloaming_rune'); // biome_dusk
+    expect(ids).toContain('gloaming_rune');     // biome_dusk — grounded post B5 Phase 0
   });
 
   it('buildCardPool EXCLUDES runes when bossKilledThisRun is false', () => {

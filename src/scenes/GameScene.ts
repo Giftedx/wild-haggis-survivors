@@ -86,6 +86,7 @@ import {
 } from '../systems/runes/runeConsumer';
 import { RUNES } from '../data/runes';
 import { buildRuneEvalContextFromScene } from './game/runeContextBuilder';
+import { computeTimeOfDayKey } from './game/computeTimeOfDayKey';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
@@ -1244,6 +1245,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       () => this.player ?? null,
       () => this.getCurrentBiomeId(),
       () => this.runRng,
+      () => this.iFrameController.isActive(),
     );
     this.hazards.start();
     this.events.once('shutdown', () => { this.hazards?.stop(); this.hazards = null; });
@@ -2367,7 +2369,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       // count of nodes visited across the run. Pilgrim Rune triggers at 3.
       nodesVisited: Math.max(0, (this.runActState.currentAct - 1) * 4 + this.runActState.currentNodeIndex),
       postBell: this.runScore.victoryPending,
-      timeOfDayKey: null,
+      // B5 Phase 0 — gloaming TOD producer. Maps run time to dawn/day/
+      // dusk/night so `gloaming_rune` (`biome_dusk` predicate) can fire
+      // in the 15-22min window. See computeTimeOfDayKey for boundaries.
+      timeOfDayKey: computeTimeOfDayKey(this.spawnSystem.getGameTimeSec() * 1000),
     });
     this.runeSystem.tick(ctx);
 

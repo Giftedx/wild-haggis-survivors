@@ -52,8 +52,9 @@ const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
   'biome_coastal',
   // No live biome 'urban' — Edinburgh/Glasgow biomes future work.
   'biome_urban',
-  // No time-of-day axis — `timeOfDayKey` is null in every live ctx.
-  'biome_dusk',
+  // 'biome_dusk' graduated 2026-04-28 (B5 Phase 0). GameScene now
+  // populates timeOfDayKey via computeTimeOfDayKey, so gloaming_rune
+  // fires in the 15-22min window of every run.
 ]);
 
 /**
