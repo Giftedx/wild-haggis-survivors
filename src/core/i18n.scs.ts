@@ -441,6 +441,9 @@ export const SCS_STRINGS: LocaleTree = {
         silver: 'A first-fitter at tha door — siller in tha haund. Gowd flows kinder.',
       },
     },
+    beltane: {
+      blessing_toast: 'Through tha twin fires — purified fer tha season. +15 HP, gowd flows kinder.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -1078,6 +1081,11 @@ export const SCS_STRINGS: LocaleTree = {
         b: 'Hoofprints in tha heather. Game on.',
         c: 'That\'s tha ice broken.',
         d: 'First notch on tha moor — ink\'s still weet.',
+        e: 'Wan oot tha road. Plenty mair tae gae.',
+        f: 'Tally opens. Slate winnae bide clean lang.',
+        g: 'Aye — feet mind tha muives.',
+        h: 'Drew first bluid; tha bracken taks notes.',
+        i: 'Stairted weel. Continue.',
         iron_belly: {
           a: 'First dunt boonced — tha belly never flinched.',
           b: 'Wa\'s up; wan enemy doon. Business.',
@@ -1359,6 +1367,11 @@ export const SCS_STRINGS: LocaleTree = {
         b: 'New bit o moor. Watch yer step.',
         c: 'Tha terrain\'s shiftin.',
         d: 'Postcode changed — same attitude.',
+        e: 'Hooves notice afore tha heid does.',
+        f: 'Land\'s hummin a different tune.',
+        g: 'New grund — same haggis, same drift.',
+        h: 'Tha muir changes its mind every furlong.',
+        i: 'Mind tha switch. Mind tha smell.',
         bog: {
           a: 'Squelch. Tha bog\'s got opinions aboot yer buits.',
           b: 'Peat underfit — dinnae rush it.',

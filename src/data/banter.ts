@@ -501,6 +501,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.first_blood.b',
       'ui.banter.first_blood.c',
       'ui.banter.first_blood.d',
+      'ui.banter.first_blood.e',
+      'ui.banter.first_blood.f',
+      'ui.banter.first_blood.g',
+      'ui.banter.first_blood.h',
+      'ui.banter.first_blood.i',
     ],
     keysByTag: {
       iron_belly: [
@@ -803,6 +808,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.biome_change.b',
       'ui.banter.biome_change.c',
       'ui.banter.biome_change.d',
+      'ui.banter.biome_change.e',
+      'ui.banter.biome_change.f',
+      'ui.banter.biome_change.g',
+      'ui.banter.biome_change.h',
+      'ui.banter.biome_change.i',
     ],
     keysByTag: {
       bog: [

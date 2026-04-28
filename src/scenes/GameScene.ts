@@ -77,6 +77,7 @@ import {
   rollFirstFootingGift,
   type FirstFootingGiftKind,
 } from '../systems/firstFooting';
+import { applyBeltaneBlessing } from '../systems/beltaneBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -718,23 +719,33 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeCurseKey = curseResult.activeCurseKey;
     const composedStats = curseResult.composedStats;
 
-    // Pre-Run First-Footing (DESIGN_IDEAS §1). Hogmanay seasonal hook —
-    // dark-haired NPC brings shortbread / whisky / coal / silver across
-    // the threshold for the New Year. Gift rolls deterministically off
-    // `runRng` so a given seed always lands the same gift; resume runs
-    // skip the roll (the gift fired at original run start). Toast +
-    // optional shortbread heal apply post-Player construction below.
+    // Seasonal run-start hooks. Computed once per run, applied in two
+    // halves: modifier-bag deltas now (so live consumers see them from
+    // the first frame), heal + toast after Player construction below.
+    //
+    // - Hogmanay (DESIGN_IDEAS §1) → first-footing gift rolled off
+    //   `runRng`; one of shortbread / whisky / coal / silver.
+    // - Beltane → twin-fire blessing; fixed +10% goldMult + 15-HP
+    //   purification heal. Single blessing, no roll.
+    //
+    // Resume runs skip both — the seasonal hook fired at original run
+    // start. `disableSeasonalEvents` returns null from the lookup
+    // upstream so neither helper sees an opt-out event.
+    const seasonalEventKey = resumeRun
+      ? null
+      : getActiveSeasonalEventKey(
+          new Date(),
+          this.settingsManager.load().disableSeasonalEvents,
+        );
     const firstFootingGift: FirstFootingGiftKind | null = resumeRun
       ? null
-      : rollFirstFootingGift(
-          this.runRng,
-          getActiveSeasonalEventKey(
-            new Date(),
-            this.settingsManager.load().disableSeasonalEvents,
-          ),
-        );
+      : rollFirstFootingGift(this.runRng, seasonalEventKey);
     const firstFootingResult = applyFirstFootingToModifiers(
       firstFootingGift,
+      this.runModifiers,
+    );
+    const beltaneResult = applyBeltaneBlessing(
+      seasonalEventKey,
       this.runModifiers,
     );
 
@@ -780,10 +791,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getScene: () => this,
     });
 
-    // First-Footing post-spawn application — heal (shortbread only) +
-    // toast. Defer the toast to a short delay so it lands AFTER the
-    // run-start ceremony settles into the HUD instead of getting
-    // buried under the variant intro / FTUE banner.
+    // Seasonal post-spawn application — heal + toast. Deferred so the
+    // toast lands AFTER the run-start ceremony settles into the HUD
+    // instead of getting buried under the variant intro / FTUE banner.
+    // Hogmanay first-footing OR Beltane twin-fire — never both (the
+    // event windows don't overlap; the upstream lookup returns the
+    // first match if they ever did).
     if (firstFootingResult.gift) {
       if (firstFootingResult.extraStartingHpHeal > 0) {
         this.player.heal(firstFootingResult.extraStartingHpHeal);
@@ -795,6 +808,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           t(`ui.firstFooting.toast.${giftKind}`),
           '#f0d090',
         );
+      });
+    } else if (beltaneResult.applied) {
+      this.player.heal(beltaneResult.extraStartingHpHeal);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.beltane.blessing_toast'), '#f0a060');
       });
     }
 

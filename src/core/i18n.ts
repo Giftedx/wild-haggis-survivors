@@ -735,6 +735,15 @@ export const EN_STRINGS: LocaleTree = {
         silver: 'A first-footer at the door — silver in the hand. Gold flows kinder.',
       },
     },
+    /**
+     * Beltane Twin-Fire Blessing — Apr 28 – May 4 seasonal hook
+     * (DESIGN_IDEAS §1; SCOTTISH_RESEARCH.md fire-festival entry).
+     * Single fixed blessing — heal 15 HP + +10% goldMult — paired
+     * with this Hearth-warm announcement.
+     */
+    beltane: {
+      blessing_toast: 'Through the twin fires — purified for the season. +15 HP, gold flows kinder.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -1428,6 +1437,11 @@ export const EN_STRINGS: LocaleTree = {
         b: 'Hoof prints in the heather. Game on.',
         c: 'That\'s the ice broken.',
         d: 'First notch on the moor — ink\'s still wet.',
+        e: 'Wan oot the road. Plenty mair tae go.',
+        f: 'Tally opens. Slate willnae stay clean lang.',
+        g: 'Aye — feet remember the moves.',
+        h: 'Drew first blood; the bracken takes notes.',
+        i: 'Started weel. Continue.',
         iron_belly: {
           a: 'First dunt bounced — the belly never flinched.',
           b: 'Wall\'s up; one enemy doon. Business.',
@@ -1709,6 +1723,11 @@ export const EN_STRINGS: LocaleTree = {
         b: 'New bit o\' moor. Watch yer step.',
         c: 'The terrain\'s shiftin\'.',
         d: 'Postcode changed — same attitude.',
+        e: 'Hooves notice afore the heid does.',
+        f: 'Land\'s humming a different tune.',
+        g: 'New ground — same haggis, same drift.',
+        h: 'The moor changes its mind every furlong.',
+        i: 'Mind tha switch. Mind tha smell.',
         bog: {
           a: 'Squelch. The bog\'s got opinions aboot yer boots.',
           b: 'Peat underfoot — dinnae rush it.',
