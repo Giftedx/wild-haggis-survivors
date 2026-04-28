@@ -78,6 +78,8 @@ import {
   type FirstFootingGiftKind,
 } from '../systems/firstFooting';
 import { applyBeltaneBlessing } from '../systems/beltaneBlessing';
+import { applySamhainVeil } from '../systems/samhainVeil';
+import { applyStAndrewsBlessing } from '../systems/standrewsBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -748,6 +750,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       seasonalEventKey,
       this.runModifiers,
     );
+    const samhainResult = applySamhainVeil(
+      seasonalEventKey,
+      this.runModifiers,
+    );
+    const standrewsResult = applyStAndrewsBlessing(
+      seasonalEventKey,
+      this.runModifiers,
+    );
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
@@ -814,6 +824,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.time.delayedCall(1500, () => {
         if (!this.scene.isActive('Game')) return;
         this.juice.showToast(t('ui.beltane.blessing_toast'), '#f0a060');
+      });
+    } else if (samhainResult.applied) {
+      this.player.heal(samhainResult.extraStartingHpHeal);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.samhain.blessing_toast'), '#a060c0');
+      });
+    } else if (standrewsResult.applied) {
+      this.player.heal(standrewsResult.extraStartingHpHeal);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.standrews.blessing_toast'), '#5a8acc');
       });
     }
 

@@ -1057,6 +1057,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.act_intermission_enter.a',
       'ui.banter.act_intermission_enter.b',
       'ui.banter.act_intermission_enter.c',
+      'ui.banter.act_intermission_enter.d',
+      'ui.banter.act_intermission_enter.e',
+      'ui.banter.act_intermission_enter.f',
+      'ui.banter.act_intermission_enter.g',
+      'ui.banter.act_intermission_enter.h',
     ],
   },
   {
@@ -1066,6 +1071,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     keys: [
       'ui.banter.act_complete.a',
       'ui.banter.act_complete.b',
+      'ui.banter.act_complete.c',
+      'ui.banter.act_complete.d',
+      'ui.banter.act_complete.e',
+      'ui.banter.act_complete.f',
+      'ui.banter.act_complete.g',
     ],
   },
   {

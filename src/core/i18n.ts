@@ -744,6 +744,22 @@ export const EN_STRINGS: LocaleTree = {
     beltane: {
       blessing_toast: 'Through the twin fires — purified for the season. +15 HP, gold flows kinder.',
     },
+    /**
+     * Samhain Veil — Oct 28 – Nov 3 seasonal hook (DESIGN_IDEAS §1;
+     * SCOTTISH_RESEARCH.md veil-thinning entry). The dead come closer;
+     * the bonfires hearten. +25 HP heal, slightly busier waves.
+     */
+    samhain: {
+      blessing_toast: 'The veil thins — bonfires hearten the herd. +25 HP, but the dead come faster.',
+    },
+    /**
+     * St Andrew's Saltire — Nov 27 – Dec 3 seasonal hook. National-day
+     * defensive blessing — +20 HP heal, damage taken reduced 5%. The
+     * saltire deflects the worst hits.
+     */
+    standrews: {
+      blessing_toast: 'Saltire over the moor — saint\'s hand on the brow. +20 HP, hits land softer.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -2055,10 +2071,20 @@ export const EN_STRINGS: LocaleTree = {
         a: 'Awright, which way, big yin?',
         b: 'Road forks. Choose, or don\'t.',
         c: 'Split in the path. Mind yer feet.',
+        d: 'Twa roads. Pick the one ye\'ll mind in the morning.',
+        e: 'Crossroads. Auld stones at every fork — choose canny.',
+        f: 'Path branches. The moor watches both.',
+        g: 'Stop. Breathe. Then choose.',
+        h: 'Either way leads back tae the moor — pick yer mood.',
       },
       act_complete: {
         a: 'That\'s one doon. Braw.',
         b: 'On tae the next bit.',
+        c: 'Act\'s closed. Stones rest a wee.',
+        d: 'Through that bit. Lighter for it.',
+        e: 'A chapter telt. Page turns.',
+        f: 'Cleared. Breath\'s steady.',
+        g: 'Behind ye, then. Forward, then.',
       },
       route_picked: {
         generic: {

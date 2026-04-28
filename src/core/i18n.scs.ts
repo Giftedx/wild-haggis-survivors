@@ -444,6 +444,12 @@ export const SCS_STRINGS: LocaleTree = {
     beltane: {
       blessing_toast: 'Through tha twin fires — purified fer tha season. +15 HP, gowd flows kinder.',
     },
+    samhain: {
+      blessing_toast: 'Tha veil thins — bonfires hearten tha herd. +25 HP, but tha deid come faster.',
+    },
+    standrews: {
+      blessing_toast: 'Saltire ower tha muir — saint\'s haund on tha broo. +20 HP, hits land safter.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -1691,10 +1697,20 @@ export const SCS_STRINGS: LocaleTree = {
         a: 'Awricht, whit way, big yin?',
         b: 'Road forks. Choose, or dinnae.',
         c: 'Split in tha path. Mind yer feet.',
+        d: 'Twa roads. Pick tha ane ye\'ll mind in tha mornin.',
+        e: 'Crossroads. Auld stanes at every fork — choose canny.',
+        f: 'Path branches. Tha muir watches baith.',
+        g: 'Stap. Braithe. Then choose.',
+        h: 'Aither way leads back tae tha muir — pick yer mood.',
       },
       act_complete: {
         a: 'That\'s wan doon. Braw.',
         b: 'On tae tha next bit.',
+        c: 'Act\'s closed. Stanes rest a wee.',
+        d: 'Through that bit. Lichter fer it.',
+        e: 'A chapter telt. Page turns.',
+        f: 'Cleared. Braith\'s steady.',
+        g: 'Ahint ye, then. Forrit, then.',
       },
       route_picked: {
         generic: {
