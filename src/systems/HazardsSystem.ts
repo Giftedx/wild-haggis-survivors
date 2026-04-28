@@ -38,6 +38,8 @@ import {
 } from '../data/hazards';
 import { getSettingsManager } from '../core/SettingsManager';
 import { audio } from './AudioSystem';
+import { isPlayerHazardImmune } from './isPlayerHazardImmune';
+import { isInvincibilityEnabled } from './accessibility/AssistMode';
 
 /** Depth slot for hazards — above ground tints, below gameplay sprites. */
 const HAZARD_DEPTH = -50;
@@ -72,10 +74,16 @@ export function pickHazardForBiome(biome: BiomeId | null): HazardKey | null {
 
 /**
  * Pure damage-eligibility predicate. Returns true when ALL three gates
- * are open: telegraph window has expired (player saw the hazard),
- * the per-hazard hit cooldown is ready (1s gap between consecutive
- * damage ticks on the same hazard), and the player isn't iframed
- * (dash invincibility or Burn-Leap hazard immunity).
+ * are open: telegraph window has expired (player saw the hazard), the
+ * per-hazard hit cooldown is ready (1s gap between consecutive damage
+ * ticks on the same hazard), and the player isn't currently immune to
+ * hazard damage.
+ *
+ * The `isImmune` input must be composed via `isPlayerHazardImmune` so
+ * post-hit iframes, dash, Burn-Leap, AND Assist Mode invincibility are
+ * all honoured the same way HazardZones honours them. Pre-2026-04-28
+ * this gate only checked dash + Burn-Leap and could let post-hit-
+ * iframed players take chained hazard damage.
  *
  * Extracted as a pure helper so the gate combinatorics can be unit-
  * tested without mocking a Phaser scene + Player + texture stack.
@@ -83,9 +91,9 @@ export function pickHazardForBiome(biome: BiomeId | null): HazardKey | null {
 export function isHazardDamageEligible(
   arrivalMs: number,
   hitCooldownMs: number,
-  isIframed: boolean,
+  isImmune: boolean,
 ): boolean {
-  return arrivalMs <= 0 && hitCooldownMs <= 0 && !isIframed;
+  return arrivalMs <= 0 && hitCooldownMs <= 0 && !isImmune;
 }
 
 interface ActiveHazard {
@@ -111,6 +119,7 @@ export class HazardsSystem {
   private readonly getPlayer: () => Player | null;
   private readonly getCurrentBiome: () => BiomeId | null;
   private readonly getRunRng?: () => RNG | null;
+  private readonly getIFrames?: () => boolean;
   /** Active hazards — swept on `stop()`. */
   private readonly active: Set<ActiveHazard> = new Set();
   /** Accumulator for the next-spawn timer (ms). */
@@ -125,11 +134,13 @@ export class HazardsSystem {
     getPlayer: () => Player | null,
     getCurrentBiome: () => BiomeId | null,
     getRunRng?: () => RNG | null,
+    getIFrames?: () => boolean,
   ) {
     this.scene = scene;
     this.getPlayer = getPlayer;
     this.getCurrentBiome = getCurrentBiome;
     this.getRunRng = getRunRng;
+    this.getIFrames = getIFrames;
   }
 
   /** Pull a 0..1 random — uses the seeded run RNG when available so
@@ -179,12 +190,18 @@ export class HazardsSystem {
 
       if (!h.expiring) {
         // Three-gate damage check: telegraph elapsed + cooldown ready +
-        // player not iframed. iframe gate matches HazardZones.ts:301
-        // (dash + Burn-Leap, the same hazard-only immunity contract
-        // documented at Player.ts:843).
+        // player not hazard-immune. The immunity gate is composed via
+        // `isPlayerHazardImmune` so post-hit iframes, dash, Burn-Leap,
+        // and Assist Mode invincibility are all honoured the same way
+        // HazardZones honours them (single shared predicate, no drift).
         if (this.overlapsPlayer(h, player)) {
-          const iframed = player.isDashInvincible() || player.isHazardLeaping();
-          if (isHazardDamageEligible(h.arrivalMs, h.hitCooldownMs, iframed)) {
+          const immune = isPlayerHazardImmune(
+            this.getIFrames?.() ?? false,
+            player.isDashInvincible(),
+            player.isHazardLeaping(),
+            isInvincibilityEnabled(),
+          );
+          if (isHazardDamageEligible(h.arrivalMs, h.hitCooldownMs, immune)) {
             player.takeDamage(h.def.damage);
             h.hitCooldownMs = HIT_COOLDOWN_MS;
           }
