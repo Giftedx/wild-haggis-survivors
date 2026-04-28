@@ -246,6 +246,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.boss_down.b',
       'ui.banter.boss_down.c',
       'ui.banter.boss_down.d',
+      'ui.banter.boss_down.e',
+      'ui.banter.boss_down.f',
+      'ui.banter.boss_down.g',
+      'ui.banter.boss_down.h',
+      'ui.banter.boss_down.i',
     ],
     keysByTag: {
       gordon: [
@@ -289,6 +294,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.weapon_evolve.b',
       'ui.banter.weapon_evolve.c',
       'ui.banter.weapon_evolve.d',
+      'ui.banter.weapon_evolve.e',
+      'ui.banter.weapon_evolve.f',
+      'ui.banter.weapon_evolve.g',
+      'ui.banter.weapon_evolve.h',
+      'ui.banter.weapon_evolve.i',
     ],
     keysByTag: {
       thistle_shot: [
@@ -1101,6 +1111,10 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.gran_commentary.f',
       'ui.banter.gran_commentary.g',
       'ui.banter.gran_commentary.h',
+      'ui.banter.gran_commentary.i',
+      'ui.banter.gran_commentary.j',
+      'ui.banter.gran_commentary.k',
+      'ui.banter.gran_commentary.l',
     ],
     keysByTag: {
       run_start: [

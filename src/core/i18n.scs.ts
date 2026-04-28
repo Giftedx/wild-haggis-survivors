@@ -433,6 +433,14 @@ export const SCS_STRINGS: LocaleTree = {
       echo_title: 'Muir Echo',
       echo_sub: 'Tha land minds ye — pick whit it whispers.',
     },
+    firstFooting: {
+      toast: {
+        shortbread: 'A first-fitter at tha door — shortbreid fer tha year. +20 HP.',
+        whisky: 'A first-fitter at tha door — whisky fer tha year. Tha muir braithes slawer.',
+        coal: 'A first-fitter at tha door — coal fer tha hearth. Less o tha cauld tae bite.',
+        silver: 'A first-fitter at tha door — siller in tha haund. Gowd flows kinder.',
+      },
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
@@ -840,6 +848,11 @@ export const SCS_STRINGS: LocaleTree = {
         b: 'That\'s him telt.',
         c: 'Lang may yer wee lum reek, ya beauty.',
         d: 'Boss doon — tha glen exhales.',
+        e: 'Doon — an tha muir took notes.',
+        f: 'Cleared. Glen braithes again.',
+        g: 'A boss is a man wi a job. Job\'s duin.',
+        h: 'Doon swift. Pints later.',
+        i: 'Wan less name on tha slate.',
         gordon: {
           a: 'Telt Gordon whaur tae stick tha cleaver.',
           b: 'Chef\'s oot. Last orders.',
@@ -876,6 +889,11 @@ export const SCS_STRINGS: LocaleTree = {
         b: 'Legendary. As it should be.',
         c: 'Tha moor trembles. Guid.',
         d: 'That\'s tha glow-up tha legends promised.',
+        e: 'Tha thing has wakkened.',
+        f: 'That\'s nae a wapen noo. That\'s a verdict.',
+        g: 'Heard tha muir say "aye". Heard masel say it back.',
+        h: 'Legend in yer haunds. Mind tha grip.',
+        i: 'Aye, that\'ll dae nicely.',
         thistle_shot: {
           a: 'Thistle barbs — shairpened tae spite.',
           b: 'Nae a saft prick noo. That\'s tha spirit.',
@@ -1461,6 +1479,10 @@ export const SCS_STRINGS: LocaleTree = {
       // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.
       //    Scots conventions per Phase B: yir/nae/dinnae/tae/wee/ken, tha/fae/wance.
       gran_commentary: {
+        i: 'Ma da yaised tae say — ah, niver mind.',
+        j: 'Yer ma\'d be greetin an lauchin baith.',
+        k: 'There\'s tatties in tha larder. Dinnae forget.',
+        l: 'Mind ye eat afore tha trail. Mairches on its stomach.',
         a: 'Kettle\'s on, hen. Back in a wee while.',
         b: 'Mind yersel oot there.',
         c: 'Grannie\'s watchin. Tak yer time.',
@@ -3324,6 +3346,121 @@ export const SCS_STRINGS: LocaleTree = {
       name: 'Heather Bloom',
       entry: 'Tha heather\'s singin — this is haggis kintra.',
       lore: 'Calluna vulgaris — heather — flooers in August, an tha hale muir turns purple tae tha horizon. White heather is held tae bring luck (tha lucky-heather sellers in tha Glasgow Barras still trade on it). Grouse strut an clatter; heather honey lies thick an dark in tha hives. This is haggis kintra — Burns ca\'d tha muir "wild an stern" but maist wha bide here ca\' it hame. Daunder saftly: a flooerin muir in late simmer is yin o tha things Scotland is.',
+    },
+  },
+  // ── Beastie lore Scots overlay (matches EN beastie block in i18n.ts). ──
+  beastie: {
+    tourist: {
+      lore: 'Bus pairties fae Edinburgh, cameras swung like censers. Tha wild haggis is shy o camera flashes; tha camera flashes dinnae flinch. Aff tha bus, on tha muir, askin tha wrang questions o tha wrang locals.',
+    },
+    chef: {
+      lore: 'A Sunday-roast cook in striped apron an cleaver. Sees tha haggis as Sunday lunch. Disnae see itsel as tha haggis sees it. Comes fae tha kind o kitchen whaur tha timer is anaa a weapon.',
+    },
+    midge: {
+      lore: 'Culicoides impunctatus — tha Hieland midge. Wee-er nor memory, larger nor reputation. Twa thoosand bites a meenit on a bad day at Ben Nevis. Tha real predator o tha West Hielans; tha wild haggis eats bracken tae keep them aff.',
+    },
+    highland_cow: {
+      lore: 'A heeland coo — Bos taurus, Hieland breed. Russet, fringe-eed, douce until provoked. Slaw as a glacier, hard as a horseshoe. On every ither shortbreid tin in Scotland; she has earned it.',
+    },
+    eagle: {
+      lore: 'Aquila chrysaetos in tha Cairngorms; white-tailed sea-eagle aff Mull. Wingspan twa metres, eesight at twal hunner yairds. Hunts in slaw doonwairds gyres; tha wild haggis bides close tae bracken fer a reason.',
+    },
+    haggis_hunter: {
+      lore: 'Tha hunter wi a net an a sang. Wild-haggis season rins Aug 26 tae Nov 30 by tradition; tha hunters niver read tha dates. Kens twa kinds o bait: aits an silence. Kens ae kind o mercy: shoart.',
+    },
+    angry_scotsman: {
+      lore: 'Tha man on tha corner wha took offence at somethin hauf a century back. Hisnae pit it doon. Cairries it like a kettle aff tha bile. His tartan is real but it isnae his.',
+    },
+    deep_fryer: {
+      lore: 'Deep-fried haggis is real an unmissable; tha deep-fried Mars Bar arrived fae Stonehaven 1995. Tha fryer kens naither limit nor mercy. Comes through tha muir in its ain ile, hot enough tae keep walkin.',
+    },
+    piper: {
+      lore: 'A solo piper. Three drones, ae chanter, ae braith. Walks slaw. Bites slawer. Yaised tae play funerals an waddins; nou plays on tha muir an winnae say which. Tha wild haggis is drawn tae tha drone.',
+    },
+    berserker: {
+      lore: 'Caithness still echoes tha Vikings. Tha berserker chowes her shield rim an gaes; tha shield rim chowes back. Pictish-tinged tartan; iron-rim een. Aulder nor maist kingdoms; angrier nor maist kingdoms deserve.',
+    },
+    ghost: {
+      lore: 'A generic Scots revenant. Grey-cleidit, sober, lichtly resigned. Kens whaur it dee\'d. Hings aboot pleisantly. Winnae move on athoot an argument; winnae thole an argument athoot an audience.',
+    },
+    nest: {
+      lore: 'An enemy spawner — aigs that hatch midgies an waur. Biggit o grey twigs an auld fleece. Foun in pine bracken at tha fit o cairns. Aulder nor tha cairn. Outlives tha cairn-biggar.',
+    },
+    sheep: {
+      lore: 'Blackface, Cheviot, Nor\' Country, wha kens. Stares blankly. Disnae muive much. Will chairge if ye imply it disnae belang. Ains mair o Scotland nor maist o tha fowk wha are Scots.',
+    },
+    kelpie: {
+      lore: 'Each-uisge o tha lochs. Looks like a horse on tha bank, drinks like a horse — an ye anely realise whit ye\'ve petted whan yer haund sticks. Hauls victims unner. Tha reins on its neck are skin, no leather.',
+    },
+    midgie_swarm: {
+      lore: 'Cloud, no particle. A midgie swarm at peak season is no bites — it\'s atmosphere. Tha Glen Coe hikers\' lament. Some say tha Cailleach raised them tae keep veesitors humble. Naebody disputes it.',
+    },
+    buckfast_ned: {
+      lore: 'A young man in a Lonsdale tracksuit haudin a bottle o Buckfast Tonic Wine. Bucky comes fae tha Benedictines at Buckfast Abbey, Devon — somehow, tha Lanarkshire weans claimed it. Draps a slick on daith.',
+    },
+    barghest: {
+      lore: 'A muckle black hound o tha Border country. Black-shucks territory if ye\'re sooth; barghest if ye\'re nor\'. Hools thrice; tha third hool tells tha future o somebody. Best no tae listen fer wham.',
+    },
+    kelpie_foal: {
+      lore: 'A young kelpie. Sma\'er, less drounin-pouer. Trots alang tha loch\'s edge lookin fer a haund tae haud. Tha haund it haulds, haulds it. Dinnae.',
+    },
+    blue_man_of_minch: {
+      lore: 'Na Fir Ghorma — tha Blue Men o tha Minch. Storm-speerits wha challenge passin ships tae a riddle-rhyme. Failed riddles, lost ships. Tha Sound o Shiant minds; tha haggis minds; tha muir minds.',
+    },
+    haar_wraith: {
+      lore: 'Speerit o tha haar — tha cauld sea-fog that rolls ower Edinburgh an tha East Lothian coast in simmer. Visibility gaes fae twa mile tae ten yairds in seiven meenits. Whaur tha wraith braithes, tha fog bides.',
+    },
+    ceilidh_caller: {
+      lore: 'Tha voice o Strip tha Willow — tha ceilidh daunce that hisnae lost a stap in twa centuries. Caws staps faster nor ye can tak them. Tha wild haggis cannae ceilidh; three left feet, twa richt anes, an a drift.',
+    },
+    seelie_piper: {
+      lore: 'Tha Seelie Court — tha bricht faeries wha gie afore thay tak. Pale gowd pipes, fair-o-face, generous in sang. If thay tak ye fer a daunce, tha kingdom ye return tae has muived on by a hunner year.',
+    },
+    redcap: {
+      lore: 'A Border-faerie o tha bluidy-cap tradition; he kept his cap reid wi traivelers\' bluid. Stocky, heavy-booted, iron-pike. Thirteen-fit reach fae a staundin pose. Will follow till he fails or fells.',
+    },
+    unseelie_fiddler: {
+      lore: 'Tha Unseelie Court — tha dairk faeries wha tak an dinnae return. Violet-black robes; fiddle o unstrung yew. Plays a three-note pattern that braks ony clock that hears it. Tha clock\'s banes niver reset.',
+    },
+    gale_wraith: {
+      lore: 'Speerit o tha Atlantic gale — tha kind that flattens forestry fae Skye tae tha Borders in ae nicht. Tha haggis cannae oot-walk it. Tha haggis can sometimes get ahint it; tha haggis usually disnae.',
+    },
+    edinburgh_ghost_guide: {
+      lore: 'A Victorian-era spectre in tap-hat an tails. Tells tha wrang stories aboot Greyfriars; chairges ten shillings fer tha privilege. Auld Toun content; cultural review still owed. Tha haggis cairries him back tae tha bracken if it can.',
+    },
+    traffic_cone_totem: {
+      lore: 'An accumulation o traffic cones aroond tha Duke o Wellington statue at tha fit o Royal Exchange Square, Glasgow. Tha city has tried tae remove tha cone since 1986. Tha cone has remained. A folk-monument by attrition.',
+    },
+    tome_wraith: {
+      lore: 'Auld College, Edinburgh, whaur boond beuks became legal libraries. A tome-wraith is whit happens whan a law beuk is burned but tha bindin survives. Floats; minds; pages still flap on a still day.',
+    },
+    dean_apparition: {
+      lore: 'A 19th-century university dean in mortarboard an goon. Haes a clock tae keep. Walks straucht through students wha hisnae said sir. Did so in life; sees nae reason tae revise tha practice in daith.',
+    },
+    ledger_wraith: {
+      lore: 'Edinburgh\'s Excise Office bred them. A ghaist in green-shaded ledgers, fingers stained ink-black. Kens yer debts; minds them across generations. Forgets naethin; forgies less.',
+    },
+    auditor_priest: {
+      lore: 'Hauf-Calvinist meenister, hauf-treasury auditor. Censer in ae haund, balance-sheet in tha ither. Tha Kirk an tha Croon collected fae tha same drawer fer centuries. Tha haggis minds tha drawer.',
+    },
+    // ── Bosses (6) ──
+    gordon: {
+      lore: 'A chef o tha Sunday-roast schule wha took tha haggis personally. Loud, declarative, knife in each haund. Tha first boss o ony run; tha kind ye mind efter, no durin.',
+    },
+    each_uisge: {
+      lore: 'Tha deepest o tha watter-horses. Tha kelpie\'s elder. Foun in tha open lochs — Ness, Awe, Morar. Whan bairns went missin in tha West Hielans, tha each-uisge took tha blame. Sometimes correctly.',
+    },
+    tour_bus: {
+      lore: 'A Scots-tour coach, fou o distracted tourists, wi Greyfriars Bobby ringtones. Drives ower muir wi tha same disregaird tha muir drives ower them. Boss o act 2 by sheer momentum.',
+    },
+    the_laird: {
+      lore: 'An aristocrat wi a freehauld a hunner thoosand acres wide that his grandfaither got efter Culloden. Wears tartan that disnae belang tae him. Ains a salmon river ye cannae fish.',
+    },
+    hunter_general: {
+      lore: 'Tha supervisin haggis-hunter. Haes a rifle aulder nor tha Empire an a crew aulder nor that. Treats tha hunt as inheritance. Treats tha haggis as a ledger entry.',
+    },
+    taxman: {
+      lore: 'Tha final boss. Tha Excise Office weirin a face. Haes a stamp; tha stamp\'s aulder nor tha kingdom. Aince ye face it, tha run is ower either way — defeated or paid.',
     },
   },
   /**

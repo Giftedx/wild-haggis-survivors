@@ -71,6 +71,12 @@ import {
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
+import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
+import {
+  applyFirstFootingToModifiers,
+  rollFirstFootingGift,
+  type FirstFootingGiftKind,
+} from '../systems/firstFooting';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -712,6 +718,26 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeCurseKey = curseResult.activeCurseKey;
     const composedStats = curseResult.composedStats;
 
+    // Pre-Run First-Footing (DESIGN_IDEAS §1). Hogmanay seasonal hook —
+    // dark-haired NPC brings shortbread / whisky / coal / silver across
+    // the threshold for the New Year. Gift rolls deterministically off
+    // `runRng` so a given seed always lands the same gift; resume runs
+    // skip the roll (the gift fired at original run start). Toast +
+    // optional shortbread heal apply post-Player construction below.
+    const firstFootingGift: FirstFootingGiftKind | null = resumeRun
+      ? null
+      : rollFirstFootingGift(
+          this.runRng,
+          getActiveSeasonalEventKey(
+            new Date(),
+            this.settingsManager.load().disableSeasonalEvents,
+          ),
+        );
+    const firstFootingResult = applyFirstFootingToModifiers(
+      firstFootingGift,
+      this.runModifiers,
+    );
+
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
     // live curse + composed stats. `pushRoute` is fed from the Moor
@@ -753,6 +779,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getPlayer: () => this.player,
       getScene: () => this,
     });
+
+    // First-Footing post-spawn application — heal (shortbread only) +
+    // toast. Defer the toast to a short delay so it lands AFTER the
+    // run-start ceremony settles into the HUD instead of getting
+    // buried under the variant intro / FTUE banner.
+    if (firstFootingResult.gift) {
+      if (firstFootingResult.extraStartingHpHeal > 0) {
+        this.player.heal(firstFootingResult.extraStartingHpHeal);
+      }
+      const giftKind = firstFootingResult.gift;
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(
+          t(`ui.firstFooting.toast.${giftKind}`),
+          '#f0d090',
+        );
+      });
+    }
 
     // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
