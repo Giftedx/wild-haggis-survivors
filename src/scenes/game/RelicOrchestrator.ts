@@ -303,6 +303,10 @@ export class RelicOrchestrator {
    */
   debugSpawnAt(key: string, x: number, y: number): boolean {
     if (!this.spawner) return false;
+    // Stale-callback guard — e2e tests can race scene shutdown; without
+    // this the spawner's physics body construction throws on a torn-down
+    // world. Ported from the pre-extraction GameScene.debugSpawnRelicAt.
+    if (!this.scene.scene.isActive() || !this.scene.physics?.world) return false;
     const def = (RELICS as Record<string, RelicDef>)[key];
     if (!def) return false;
     this.spawner.spawn(def, x, y);
