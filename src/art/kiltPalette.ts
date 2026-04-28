@@ -42,6 +42,9 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // V2 Track 3 — Burns's Wee Beastie. Aged-ink field, Ayrshire
   // arterial-red stripe, poet's cream accent.
   burns_wee_beastie: { field: 0x6a4030, fieldDark: 0x3a201c, stripe: 0xc82830, accent: 0xf0e4c8 },
+  // Witch's Hare — Auldearn 1662. Bruised-heather field, witch-eye
+  // green stripe, moonlight-silver accent thread.
+  witch_hare: { field: 0x4a2848, fieldDark: 0x281428, stripe: 0x6a8848, accent: 0xd0c8d4 },
 };
 
 /**

@@ -745,6 +745,11 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Gie it laldy — naethin tae lose noo.',
         d: 'Hingin by a thistle.',
         e: 'Last-chance wather — mak it coont.',
+        f: 'Hairt\'s thumpin like a drum kit.',
+        g: 'Wha\'s tha eejit on this brae? Me, evidently.',
+        h: 'Skin an shooders — that\'s aw left.',
+        i: 'No even on tha bus hame yet.',
+        j: 'Doon tae fumes. Muive smairt.',
         iron_belly: {
           a: 'Tha wa\'s shakkin — mind tha cracks.',
           b: 'Even iron rings when it\'s neer through.',
@@ -822,6 +827,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Tha best-laid schemes gang aft agley.',
           c: 'An icy blast has blawn ma hoose awa.',
           d: 'A wee bit bluid — still honest, still mine.',
+        },
+        witch_hare: {
+          a: 'Elf-shot bites. Tha hare-form stretches.',
+          b: 'Sma banes girnin. Hap yet.',
+          c: 'Doun isnae duin. Tha pelt hauds.',
+          d: 'Sych an meikle care, but no duin.',
         },
       },
       boss_down: {
@@ -1037,6 +1048,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'A man\'s a man fer aw that — an so\'s a haggis.',
           d: 'Honest growth. Sonsie at last.',
         },
+        witch_hare: {
+          a: 'Anither lowp learnt by hare.',
+          b: 'Tha covine kens. Ye grow.',
+          c: 'I sall gae intill ane haire — bigger this time.',
+          d: 'Auldwife Isobel prood. Ye\'re ridden faur.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Aff ye trot.',
@@ -1121,6 +1138,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Scots, wha hae — an taen first bluid.',
           d: 'Auld lang syne begins wi a cull.',
         },
+        witch_hare: {
+          a: 'First bluid fer Isobel\'s wirds.',
+          b: 'Tha hare-form bites first.',
+          c: 'Coorsed it. Ane doun.',
+          d: 'Sma but wickit.',
+        },
       },
       kill_streak: {
         a: 'Pure mental, this.',
@@ -1128,6 +1151,11 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Cannae stap, will nae stap.',
         d: 'Tha glen\'s tremblin.',
         e: 'Combo\'s a ceilidh — naebody leaves early.',
+        f: 'Pure dauncin — feet kent tha steps.',
+        g: 'Chef\'s in tha kitchin noo.',
+        h: 'Could dae this aw day, mind ye.',
+        i: 'Muir\'s a wee bit lichter tha noo.',
+        j: 'Got tha rhythm — a Limmy Sunday.',
         iron_belly: {
           a: 'Chain keeps gaun — tha wa\'s nae tired.',
           b: 'Momentum like a ceilidh table — nae stappin.',
@@ -1206,12 +1234,23 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Sonsie an stern — tha moor submits.',
           d: 'Coortin lichtnin, ilka straik sure.',
         },
+        witch_hare: {
+          a: 'Coorsin tha muir like Auldearn.',
+          b: 'Twal an ane — tha covine\'s coont.',
+          c: 'Hare-fit, hare-hairt, hare\'s tally.',
+          d: 'Tha auld daunce — kill, lowp, kill again.',
+        },
       },
       recover: {
         a: 'Back fae tha brink. Deep braith.',
         b: 'Still here. Still kickin.',
         c: 'Steady tha heid. Yer awricht.',
         d: 'Colour back — tha moor relents.',
+        e: 'Back tae tha warld o tha leevin.',
+        f: 'Gran wad say "telt ye". She\'d be richt.',
+        g: 'Wheesht — that wis ower close.',
+        h: 'Maw aye said tha haggis bounces back.',
+        i: 'Knees creak. Heid clears. Onwairds.',
         iron_belly: {
           a: 'Wa\'s back — paint it thicker next time.',
           b: 'Iron minds hoo tae haud.',
@@ -1289,6 +1328,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Bluid warm again, heid clair.',
           c: 'An honest recovery — sonsie noo.',
           d: 'Thou\'rt blessed — braith is lent, no owed.',
+        },
+        witch_hare: {
+          a: 'Hame again, sma an hail.',
+          b: 'Tha pelt mends. Auldwife\'s yairbs.',
+          c: 'E\'en tha witch sleeps a wee.',
+          d: 'Eldritch yairbs ower tha wound. Awa wi\'t.',
         },
       },
       biome_change: {
@@ -1517,6 +1562,11 @@ export const SCS_STRINGS: LocaleTree = {
         d: 'Somethin\'s brewin. Aye is.',
         e: 'Calm afore tha ceilidh — savour it.',
         f: 'Tha moor hums law — dinnae interrupt.',
+        g: 'Whaup up tha brae somewhaur.',
+        h: 'A breeze. That\'s aw.',
+        i: 'Far-aff pipes — or jist ma heid?',
+        j: 'Mind\'s daunered tae shortbreid.',
+        k: 'Tha muir braithes oot.',
         iron_belly: {
           a: 'Even tha wa needs a sit-doon.',
           b: 'Belly\'s quait — dinnae trust it fully.',
@@ -1594,6 +1644,12 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'A quait moment, an tha hert taks stock.',
           c: 'Ma love is like a reid, reid rose — tha moor rests.',
           d: 'Should auld acquaintance be forgot... tha glen minds.',
+        },
+        witch_hare: {
+          a: 'Hark fer elf-bow.',
+          b: 'Sit stane-still. Tha hare watches.',
+          c: 'E\'en Gowdie pauses. E\'en hares braithe.',
+          d: 'Tha covine bides patient.',
         },
       },
       act_intermission_enter: {
@@ -2648,6 +2704,11 @@ export const SCS_STRINGS: LocaleTree = {
       flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot tha bard\'s poem. Wee-er nor tha moor, fiercer nor it looks.',
       lore: '"Wee, sleekit, cow\'rin, tim\'rous beastie, O whit a panic\'s in thy breastie" — Burns spoke o mice, but tha wild haggis listened. Wee-er than tha moor; braver than it should be.',
     },
+    witch_hare: {
+      name: 'Witch\'s Hare',
+      flavor: 'Isobel\'s wirds, rinner o tha muirs. Sma siller, quick stap, quicker turn. Auld een that see ower tha loch.',
+      lore: '"I sall gae intill ane haire" — Isobel Gowdie o Auldearn, 1662. Tha covine\'s confession set tae verse: tha wee siller-pelt hare is tha witch whan tha witch is a hare. Five trials survived earn tha hare-form fer keeps.',
+    },
     summary: {
       speed: '{sign}{pct}% speed',
       hp: '{sign}{val} HP',
@@ -3247,18 +3308,22 @@ export const SCS_STRINGS: LocaleTree = {
     bog: {
       name: 'Tha Bog',
       entry: 'Intae tha bog, wee man — watch yer hooves.',
+      lore: 'Peat lies deep here — weet, black, ancient. Tha bog haes hauden things fer thoosands o year: bog cotton, sphagnum moss, tha occasional bronze-age body preserved in tha tannin. Watch tha peat hags — gullies cut by watter — an mind tha midges at gloamin. Tha smell o weet peat is tha smell o Scotland biled doon, an a peat fire warms whisky better than ony electric. Sink up tae tha knees if ye stap tae admire it.',
     },
     loch: {
       name: 'Loch Edge',
       entry: 'Tha loch\'s watchin. Somethin unner there.',
+      lore: 'By yon bonnie banks. Lochs rin deep — Ness deeper than tha North Sea, Lomond langer than London. Thay keep thair auld residents close: each-uisge, tha watter-horse that droons tha unwary; selkies wha shed thair seal-skins on rocks an daunce unner stars; kelpies wha lure traivelers in. Otter an osprey wirk tha shallows in daylight. At gloamin tha surface gaes flat as a black keekin-gless, an ye mind tha loch wis here lang afore ye arrived an will bide lang efter.',
     },
     pine: {
       name: 'Pine Thicket',
       entry: 'Mirk amang tha pines. Stay sharp.',
+      lore: 'Tha Caledonian Forest aince happit maist o tha Hielans — Pinus sylvestris, Scots pine, gnarled an twin-trunked. Tha remnant scraps (Black Wuid o Rannoch, Glen Affric) ar aulder than maist kingdoms. Hark fer capercaillie tympani-thumpin in spring, an watch tha canopy fer reid squirrels an pine martens. Midges roost in tha brackens. Tha faerie folk haud court in tha deepest groves; if ye hear a fiddle an ye cannae find tha player, dauner briskly tha ither way.',
     },
     heather: {
       name: 'Heather Bloom',
       entry: 'Tha heather\'s singin — this is haggis kintra.',
+      lore: 'Calluna vulgaris — heather — flooers in August, an tha hale muir turns purple tae tha horizon. White heather is held tae bring luck (tha lucky-heather sellers in tha Glasgow Barras still trade on it). Grouse strut an clatter; heather honey lies thick an dark in tha hives. This is haggis kintra — Burns ca\'d tha muir "wild an stern" but maist wha bide here ca\' it hame. Daunder saftly: a flooerin muir in late simmer is yin o tha things Scotland is.',
     },
   },
   /**

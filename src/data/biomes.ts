@@ -24,6 +24,13 @@ export interface BiomeDef {
   readonly tint: number;
   /** Entry-toast i18n key (Glesga patter). */
   readonly entryToastKey: string;
+  /**
+   * Long-form Almanac lore i18n key — soulful 60-80-word entry that
+   * carries the place's history, wildlife, and Scottish character.
+   * Resolved by the Almanac Weys / Beasties detail panels and by any
+   * lore-codex consumers; see `i18n.ts` `biomes.<id>.lore`.
+   */
+  readonly loreKey: string;
   /** Toast tint as CSS colour. */
   readonly toastColor: string;
   /** Weight multipliers applied per enemy key. Missing keys default to 1. */
@@ -49,6 +56,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.bog.name',
     tint: 0x3a4a1a,
     entryToastKey: 'biomes.bog.entry',
+    loreKey: 'biomes.bog.lore',
     toastColor: '#9aa070',
     spawnWeightMods: {
       tourist: 1.3,
@@ -66,6 +74,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.loch.name',
     tint: 0x2a4a6a,
     entryToastKey: 'biomes.loch.entry',
+    loreKey: 'biomes.loch.lore',
     toastColor: '#88bbdd',
     spawnWeightMods: {
       kelpie: 2.0,
@@ -83,6 +92,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.pine.name',
     tint: 0x1a3a22,
     entryToastKey: 'biomes.pine.entry',
+    loreKey: 'biomes.pine.lore',
     toastColor: '#5a8a5a',
     spawnWeightMods: {
       ghost: 1.6,
@@ -99,6 +109,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.heather.name',
     tint: COLORS.HEATHER,
     entryToastKey: 'biomes.heather.entry',
+    loreKey: 'biomes.heather.lore',
     toastColor: '#c699ee',
     spawnWeightMods: {
       sheep: 1.4,

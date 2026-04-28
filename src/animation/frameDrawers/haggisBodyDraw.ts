@@ -312,6 +312,34 @@ function drawVariantSignature(
       g.fillCircle(cx - 1, cy - 14, 0.4);
       break;
     }
+    case 'haggis_witch_hare':
+    case 'witch_hare': {
+      // Two long pointed hare ears rising from the brow plus a
+      // heather-green witch-eye gleam on the left eye. Mountain-hare
+      // silhouette tells you what she is at a glance; the gleam tells
+      // you what she was. Auldearn 1662, Isobel Gowdie's confession:
+      // "I sall gae intill ane haire" — the hare is the witch.
+      // Outline first so the inner pelt reads on the silver body.
+      g.fillStyle(0x1a1812, 1);
+      g.fillTriangle(cx - 7, cy - 12, cx - 4, cy - 12, cx - 6, cy - 19);
+      g.fillTriangle(cx + 5, cy - 12, cx + 8, cy - 12, cx + 7, cy - 19);
+      g.fillStyle(0x9a8e7e, 1);
+      g.fillTriangle(cx - 6.5, cy - 13, cx - 4.5, cy - 13, cx - 6, cy - 18);
+      g.fillTriangle(cx + 5.5, cy - 13, cx + 7.5, cy - 13, cx + 7, cy - 18);
+      // Pink ear-blush — the soft inner cartilage. Pulls the ears out
+      // of the silhouette plane so they read as living, not paper.
+      g.fillStyle(0xfba0c0, 0.7);
+      g.fillRect(cx - 6.2, cy - 17, 0.6, 2);
+      g.fillRect(cx + 7, cy - 17, 0.6, 2);
+      // Witch-eye gleam — heather-green spark with bright pip on the
+      // left eye (cx-8, cy-4 in the body draw). Sits over the eye's
+      // dark pupil so the gleam reads as a living look.
+      g.fillStyle(0x6a8848, 0.95);
+      g.fillCircle(cx - 8, cy - 4, 0.7);
+      g.fillStyle(0xa8d068, 1);
+      g.fillCircle(cx - 8, cy - 4, 0.35);
+      break;
+    }
     default:
       break;
   }

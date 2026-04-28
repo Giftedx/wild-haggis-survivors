@@ -1081,6 +1081,11 @@ export const EN_STRINGS: LocaleTree = {
         c: 'Gie it laldy — nothin\' tae lose noo.',
         d: 'Hangin\' by a thistle.',
         e: 'Last-chance weather — make it count.',
+        f: 'Heart\'s thumpin\' like a drum kit.',
+        g: 'Wha\'s the eejit on this brae? Me, evidently.',
+        h: 'Skin and shoulders — that\'s aw left.',
+        i: 'Nae even on the bus hame yet.',
+        j: 'Doon tae fumes. Move smart.',
         iron_belly: {
           a: 'The wall\'s shakin\' — mind the cracks.',
           b: 'Even iron rings when it\'s nearly through.',
@@ -1160,6 +1165,14 @@ export const EN_STRINGS: LocaleTree = {
           b: 'The best-laid schemes gang aft agley.',
           c: 'An icy blast has blawn ma hoose awa.',
           d: 'A wee bit blude — still honest, still mine.',
+        },
+        // Witch's Hare — Isobel Gowdie's confession voice (1662). Sma'
+        // bones, hare-quick, witch-eyed. Mystical-impish register.
+        witch_hare: {
+          a: 'Elf-shot bites. The hare-form stretches.',
+          b: 'Sma\' bones complainin\'. Hop yet.',
+          c: 'Doune isnae done. The pelt holds.',
+          d: 'Sych and meikle care, but no done.',
         },
       },
       boss_down: {
@@ -1377,6 +1390,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'A man\'s a man for a\' that — an\' so\'s a haggis.',
           d: 'Honest growth. Sonsie at last.',
         },
+        witch_hare: {
+          a: 'Anither leap learnt by hare.',
+          b: 'The covine kens. Ye grow.',
+          c: 'I sall gae intill ane haire — bigger this time.',
+          d: 'Auldwife Isobel proud. Ye\'re ridden far.',
+        },
       },
       first_blood: {
         a: 'First yin doon. Off ye trot.',
@@ -1461,6 +1480,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Scots, wha hae — an\' taken first blood.',
           d: 'Auld lang syne begins wi\' a cull.',
         },
+        witch_hare: {
+          a: 'First blood for Isobel\'s wirds.',
+          b: 'The hare-form bites first.',
+          c: 'Coursed it. Ane doon.',
+          d: 'Sma\' but wickit.',
+        },
       },
       kill_streak: {
         a: 'Pure mental, this.',
@@ -1468,6 +1493,11 @@ export const EN_STRINGS: LocaleTree = {
         c: 'Cannae stop, will nae stop.',
         d: 'The glen\'s tremblin\'.',
         e: 'Combo\'s a ceilidh — naebody leaves early.',
+        f: 'Pure dancin\' — feet kent the steps.',
+        g: 'Chef\'s in the kitchen noo.',
+        h: 'Could dae this aw day, mind ye.',
+        i: 'Moor\'s a wee bit lighter the noo.',
+        j: 'Got the rhythm — a Limmy Sunday.',
         iron_belly: {
           a: 'Chain keeps goin\' — the wall\'s nae tired.',
           b: 'Momentum like a ceilidh table — nae stoppin\'.',
@@ -1546,12 +1576,23 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Sonsie an\' stern — the moor submits.',
           d: 'Coortin\' lichtnin\', ilka stroke sure.',
         },
+        witch_hare: {
+          a: 'Coursing the moor like Auldearn.',
+          b: 'Twelve and ane — the covine\'s count.',
+          c: 'Hare-feet, hare-heart, hare\'s tally.',
+          d: 'The auld dance — kill, leap, kill again.',
+        },
       },
       recover: {
         a: 'Back fae the brink. Deep breath.',
         b: 'Still here. Still kickin\'.',
         c: 'Steady the heid. Yer awright.',
         d: 'Colour back — the moor relents.',
+        e: 'Back tae the world o\' the livin\'.',
+        f: 'Gran wid say "telt ye". She\'d be right.',
+        g: 'Wheesht — that wis ower close.',
+        h: 'Maw aye said the haggis bounces back.',
+        i: 'Knees creak. Heid clears. Onwards.',
         iron_belly: {
           a: 'Wall\'s back — paint it thicker next time.',
           b: 'Iron remembers how tae hold.',
@@ -1629,6 +1670,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Blude warm again, heid clear.',
           c: 'An honest recovery — sonsie noo.',
           d: 'Thou\'rt blessed — breath is lent, not owed.',
+        },
+        witch_hare: {
+          a: 'Hom again, sma\' an\' hale.',
+          b: 'The pelt mends. Auldwife\'s herbs.',
+          c: 'Even the witch sleeps a wee.',
+          d: 'Eldritch herbs ower the wound. Awa wi\' it.',
         },
       },
       biome_change: {
@@ -1864,6 +1911,11 @@ export const EN_STRINGS: LocaleTree = {
         d: 'Somethin\'s brewin\'. Always is.',
         e: 'Calm afore the ceilidh — savour it.',
         f: 'The moor hums low — dinnae interrupt.',
+        g: 'Curlew up the brae somewhere.',
+        h: 'A breeze. That\'s aw.',
+        i: 'Distant bagpipes — or just ma heid?',
+        j: 'Mind\'s wandered tae shortbread.',
+        k: 'The moor breathes oot.',
         iron_belly: {
           a: 'Even the wall needs a sit-down.',
           b: 'Belly\'s quiet — dinnae trust it fully.',
@@ -1941,6 +1993,12 @@ export const EN_STRINGS: LocaleTree = {
           b: 'A quait moment, an\' the heart takes stock.',
           c: 'My love is like a red, red rose — the moor rests.',
           d: 'Should auld acquaintance be forgot... the glen remembers.',
+        },
+        witch_hare: {
+          a: 'Listen for elf-bow.',
+          b: 'Sit still. The hare watches.',
+          c: 'Even Gowdie pauses. Even hares breathe.',
+          d: 'The covine waits patient.',
         },
       },
       // W2 Moor Road.
@@ -2716,18 +2774,22 @@ export const EN_STRINGS: LocaleTree = {
     bog: {
       name: 'The Bog',
       entry: 'Intae the bog, wee man — watch yir hooves.',
+      lore: 'Peat lies deep here — wet, black, ancient. The bog has held things for thousands of years: bog cotton, sphagnum moss, the occasional bronze-age body preserved in the tannin. Watch the peat hags — gullies cut by water — and mind the midges at dusk. The smell of wet peat is the smell of Scotland boiled doon, and a peat fire warms whisky better than any electric. Sink up tae the knees if ye stop tae admire it.',
     },
     loch: {
       name: 'Loch Edge',
       entry: 'Loch\'s watchin\'. Somethin\' under there.',
+      lore: 'By yon bonnie banks. Lochs run deep — Ness deeper than the North Sea, Lomond longer than London. They keep their old residents close: each-uisge, the water-horse that drowns the unwary; selkies who shed their seal-skins on rocks and dance under stars; kelpies who lure travellers in. Otter and osprey work the shallows in daylight. At dusk the surface goes flat as a black mirror, and ye mind the loch was here lang before ye arrived and will be here lang after.',
     },
     pine: {
       name: 'Pine Thicket',
       entry: 'Dark amang the pines. Stay sharp.',
+      lore: 'The Caledonian Forest aince covered maist o the Hielans — Pinus sylvestris, Scots pine, gnarled and twin-trunked. The remnant scraps (Black Wood o Rannoch, Glen Affric) are aulder than maist kingdoms. Listen for capercaillie tympani-thumping in spring, and watch the canopy for red squirrels and pine martens. Midges roost in the bracken. The faerie folk hold court in the deepest groves; if ye hear a fiddle and ye cannae find the player, walk briskly the other way.',
     },
     heather: {
       name: 'Heather Bloom',
       entry: 'The heather\'s singin\' — this is haggis country.',
+      lore: 'Calluna vulgaris — heather — flowers in August, and the hale moor turns purple to the horizon. White heather is held tae bring luck (the lucky-heather sellers in the Glasgow Barras still trade on it). Grouse strut and clatter; heather honey lies thick and dark in the hives. This is haggis country — Burns ca\'d the moor "wild an stern" but maist wha bide here ca\' it hame. Walk softly: a flowering moor in late summer is yin o the things Scotland is.',
     },
   },
   metaItem: {
@@ -3127,6 +3189,11 @@ export const EN_STRINGS: LocaleTree = {
       name: 'Burns\'s Wee Beastie',
       flavor: 'Wee, sleekit, cow\'rin, tim\'rous beastie — stepped oot the bard\'s poem. Smaller than the moor, fiercer than it looks.',
       lore: '"Wee, sleekit, cow\'rin, tim\'rous beastie, O what a panic\'s in thy breastie" — Burns spoke of mice, but the wild haggis listened. Smaller than the moor; braver than it should be.',
+    },
+    witch_hare: {
+      name: 'Witch\'s Hare',
+      flavor: 'Isobel\'s wirds, runner o the muirs. Sma\' siller, quick stop, quicker turn. Auld een that see ower the loch.',
+      lore: '"I sall gae intill ane haire" — Isobel Gowdie of Auldearn, 1662. The covine\'s confession set tae verse: the wee silver-pelt hare is the witch when the witch is a hare. Five trials survived earn the hare-form for keeps.',
     },
     summary: {
       speed: '{sign}{pct}% speed',

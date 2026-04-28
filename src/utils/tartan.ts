@@ -59,6 +59,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   doric_quinie:  { base: '#2a3040', primary: '#d0d4e0' }, // granite grey-blue + North Sea silver
   peerie_shetlander: { base: '#1e3545', primary: '#aa6030' }, // North Sea blue + Viking-iron rust
   burns_wee_beastie: { base: '#3a201c', primary: '#c82830' }, // aged ink + Ayrshire arterial red
+  witch_hare:    { base: '#281428', primary: '#6a8848' }, // bruised heather + witch-eye green
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 

@@ -144,6 +144,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.low_hp.c',
       'ui.banter.low_hp.d',
       'ui.banter.low_hp.e',
+      'ui.banter.low_hp.f',
+      'ui.banter.low_hp.g',
+      'ui.banter.low_hp.h',
+      'ui.banter.low_hp.i',
+      'ui.banter.low_hp.j',
     ],
     keysByTag: {
       iron_belly: [
@@ -223,6 +228,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.burns_wee_beastie.b',
         'ui.banter.low_hp.burns_wee_beastie.c',
         'ui.banter.low_hp.burns_wee_beastie.d',
+      ],
+      witch_hare: [
+        'ui.banter.low_hp.witch_hare.a',
+        'ui.banter.low_hp.witch_hare.b',
+        'ui.banter.low_hp.witch_hare.c',
+        'ui.banter.low_hp.witch_hare.d',
       ],
     },
   },
@@ -463,6 +474,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.burns_wee_beastie.c',
         'ui.banter.level_up.burns_wee_beastie.d',
       ],
+      witch_hare: [
+        'ui.banter.level_up.witch_hare.a',
+        'ui.banter.level_up.witch_hare.b',
+        'ui.banter.level_up.witch_hare.c',
+        'ui.banter.level_up.witch_hare.d',
+      ],
     },
   },
   {
@@ -554,6 +571,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.burns_wee_beastie.c',
         'ui.banter.first_blood.burns_wee_beastie.d',
       ],
+      witch_hare: [
+        'ui.banter.first_blood.witch_hare.a',
+        'ui.banter.first_blood.witch_hare.b',
+        'ui.banter.first_blood.witch_hare.c',
+        'ui.banter.first_blood.witch_hare.d',
+      ],
     },
   },
   {
@@ -566,6 +589,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.kill_streak.c',
       'ui.banter.kill_streak.d',
       'ui.banter.kill_streak.e',
+      'ui.banter.kill_streak.f',
+      'ui.banter.kill_streak.g',
+      'ui.banter.kill_streak.h',
+      'ui.banter.kill_streak.i',
+      'ui.banter.kill_streak.j',
     ],
     keysByTag: {
       iron_belly: [
@@ -646,6 +674,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.burns_wee_beastie.c',
         'ui.banter.kill_streak.burns_wee_beastie.d',
       ],
+      witch_hare: [
+        'ui.banter.kill_streak.witch_hare.a',
+        'ui.banter.kill_streak.witch_hare.b',
+        'ui.banter.kill_streak.witch_hare.c',
+        'ui.banter.kill_streak.witch_hare.d',
+      ],
     },
   },
   {
@@ -657,6 +691,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.recover.b',
       'ui.banter.recover.c',
       'ui.banter.recover.d',
+      'ui.banter.recover.e',
+      'ui.banter.recover.f',
+      'ui.banter.recover.g',
+      'ui.banter.recover.h',
+      'ui.banter.recover.i',
     ],
     keysByTag: {
       iron_belly: [
@@ -736,6 +775,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.burns_wee_beastie.b',
         'ui.banter.recover.burns_wee_beastie.c',
         'ui.banter.recover.burns_wee_beastie.d',
+      ],
+      witch_hare: [
+        'ui.banter.recover.witch_hare.a',
+        'ui.banter.recover.witch_hare.b',
+        'ui.banter.recover.witch_hare.c',
+        'ui.banter.recover.witch_hare.d',
       ],
     },
   },
@@ -890,6 +935,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.idle.d',
       'ui.banter.idle.e',
       'ui.banter.idle.f',
+      'ui.banter.idle.g',
+      'ui.banter.idle.h',
+      'ui.banter.idle.i',
+      'ui.banter.idle.j',
+      'ui.banter.idle.k',
     ],
     keysByTag: {
       iron_belly: [
@@ -969,6 +1019,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.burns_wee_beastie.b',
         'ui.banter.idle.burns_wee_beastie.c',
         'ui.banter.idle.burns_wee_beastie.d',
+      ],
+      witch_hare: [
+        'ui.banter.idle.witch_hare.a',
+        'ui.banter.idle.witch_hare.b',
+        'ui.banter.idle.witch_hare.c',
+        'ui.banter.idle.witch_hare.d',
       ],
     },
   },

@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -478,6 +478,49 @@ export const VARIANTS: VariantDef[] = [
         fur: 0xb89a78,
         snout: 0xd4c0a0,
         accent: 0xf0e4c8,
+      },
+    },
+  },
+  {
+    // Witch's Hare — Isobel Gowdie's confession (Auldearn, 1662). She
+    // testified that she would shape-shift into a hare reciting "I sall
+    // gae intill ane haire / With sorrow and sych and meikle care, /
+    // And I sall gae in the Devillis nam, / Ay quhill I com hom againe."
+    // Refs: SCOTTISH_RESEARCH.md §1.5 + SCOTTISH_RESEARCH_DEEP.md §22.9.
+    //
+    // Stats — small, fast, witch-eyed: hare-quick speed, reduced drift
+    // (hare bodies bank tight), modest crit (the witch's eye sees true),
+    // tiny sprite scale (sma' siller). The "invincible hop" dash from
+    // DESIGN_IDEAS §1 is descoped to pure speed flavour for the first
+    // ship; a dash-extension hook remains a future feature.
+    //
+    // Unlock — 5 cursed_victories. Cailleach owns the same gate at 3;
+    // witch_hare sits at 5 ("five trials survived earns the hare-form
+    // for keeps"). Same condition, harder threshold — variant ladder
+    // tightens past the elder hag rather than minting a new gate type.
+    key: 'witch_hare',
+    nameKey: 'variant.witch_hare.name',
+    flavorKey: 'variant.witch_hare.flavor',
+    textureKey: 'haggis_witch_hare',
+    modifiers: {
+      moveSpeedPct: 0.10,
+      maxHpFlat: -12,
+      driftReductionPct: 0.15,
+      critChancePct: 0.08,
+      spriteScale: 0.92,
+    },
+    unlock: { type: 'cursed_victories', required: 5 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        // Mountain-hare silver with russet undertones — Auldearn winter
+        // pelt. Heather-green accent for the witch-eye gleam.
+        outline: 0x1a1812,
+        bodyDark: 0x4a443a,
+        bodyLight: 0x6e6657,
+        fur: 0x9a8e7e,
+        snout: 0xc8b4a0,
+        accent: 0x6a8848,
       },
     },
   },
