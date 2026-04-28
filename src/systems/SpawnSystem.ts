@@ -488,7 +488,9 @@ export class SpawnSystem {
         return;
       }
 
-      // Bosses use the chase EnemyConfig shape
+      // Bosses default to chase; N1 mythos bosses can override via
+      // BossConfig.behaviorOverride (Each-uisge → 'phase' for the
+      // shapeshifter blink, future Nicnevin → 'spawner').
       const bossAsConfig: EnemyConfig = {
         key: boss.key,
         texture: boss.texture,
@@ -497,7 +499,7 @@ export class SpawnSystem {
         damage: boss.damage,
         xpValue: boss.xpValue,
         appearsAt: 0,
-        behavior: 'chase',
+        behavior: boss.behaviorOverride ?? 'chase',
         packSize: 1,
       };
 

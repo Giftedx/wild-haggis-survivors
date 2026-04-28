@@ -89,6 +89,10 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Gordon? That man salted his tatties like he owed them money.',
           b: 'Went down with the ladle still swingin. No surprise there.',
         },
+        each_uisge: {
+          a: 'The water-horse. Ma gran warned me about thon. Ye listened.',
+          b: 'Aye. Beautiful things by the loch arenae always beautiful.',
+        },
         tour_bus: {
           a: 'That bus service was a pure disgrace. Stops on a whim, so it did.',
           b: 'Heard the driver used to bill folk for the scenery. Good riddance.',
@@ -859,6 +863,7 @@ export const EN_STRINGS: LocaleTree = {
     },
     bossWarning: {
       gordon: "The kitchen's marching — Gordon's comin' and he's RAGIN!",
+      each_uisge: "Something beautiful by the water. Dinnae touch it.",
       tour_bus: "Tour bus on the horizon — it's no' stoppin' at Yoker this time.",
       the_laird: 'The Laird strides oot — mind yir manners and yir hide.',
       hunter_general: "The Hunter-General — and they've brought pals.",
@@ -890,6 +895,7 @@ export const EN_STRINGS: LocaleTree = {
       boss_enraged: 'The beast is RAGIN!',
       /** Per-boss kill celebrations — the big punchline after the big fight. */
       boss_killed_gordon: 'Gordon\'s DOON! Back tae the kitchen, big man!',
+      boss_killed_each_uisge: 'Oot the water and oot o\' luck. The loch takes its ain.',
       boss_killed_tour_bus: 'Bus terminated! Next stop: the scrapyard via Yoker.',
       boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
       boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
@@ -929,7 +935,7 @@ export const EN_STRINGS: LocaleTree = {
       /** E1 T10 — Burns Night haggis-platter pickup. */
       burns_platter_nearby: 'Smell that? Haggis on the moor — pipes\'ll be startin soon.',
       burns_platter_collected: 'The bard\'s feast — full belly, quick fists (+30% dmg, 60s).',
-      controls_hint: 'WASD to roam  •  SPACE for a cheeky dash  •  ESC, P, or Start to catch yir breath',
+      controls_hint: 'WASD to roam  •  SPACE to dash  •  ESC for a breather',
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
@@ -1042,6 +1048,11 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Heid chef\'s oot fae the kitchen. Brace yersel.',
           b: 'Smell that burnin\'? That\'s Gordon.',
           c: 'Big man wi\' a cleaver. Nae jokin\'.',
+        },
+        each_uisge: {
+          a: 'That horse\'s hooves point backwards. Run.',
+          b: 'Beautiful and deadly. The loch always sends the best ones.',
+          c: 'Dinnae let it look ye in the eye.',
         },
         tour_bus: {
           a: 'A hale busload. Aw naw.',
@@ -1161,6 +1172,11 @@ export const EN_STRINGS: LocaleTree = {
           a: 'Telt Gordon where tae stick the cleaver.',
           b: 'Chef\'s oot. Last orders.',
           c: 'Kitchen\'s closed. Yer welcome.',
+        },
+        each_uisge: {
+          a: 'Ye resisted the beautiful thing. That\'s the hardest skill.',
+          b: 'Braw. Even the deep water kenned that was over.',
+          c: 'Horse is doon. No\' a horse.',
         },
         tour_bus: {
           a: 'Bus is oot o\' service.',
@@ -3001,6 +3017,7 @@ export const EN_STRINGS: LocaleTree = {
   },
   boss: {
     gordon: { name: 'Gordon the Chef' },
+    each_uisge: { name: 'The Each-Uisge' },
     tour_bus: { name: 'The Tour Bus' },
     the_laird: { name: 'The Laird' },
     hunter_general: { name: 'The Haggis Hunter General' },

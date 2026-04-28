@@ -82,6 +82,10 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Gordon? Man salted his tatties like he owed them money, so he did.',
           b: 'Went doon wi tha ladle still swingin. Nae surprise there.',
         },
+        each_uisge: {
+          a: 'Tha water-horse. Ma gran wairnt me aboot yon. Ye listened.',
+          b: 'Aye. Bonnie things by tha loch arenae aye bonnie.',
+        },
         tour_bus: {
           a: 'Yon bus service wis a pure disgrace. Stops on a whim, so it did.',
           b: 'Heard tha driver billed folk fer tha scenery. Guid riddance.',
@@ -613,6 +617,7 @@ export const SCS_STRINGS: LocaleTree = {
     },
     bossWarning: {
       gordon: 'Tha kitchen\'s mairchin — Gordon\'s comin an he\'s RAGIN!',
+      each_uisge: 'Somethin bonnie by tha water. Dinnae touch it.',
       tour_bus: 'Tour bus on tha horizon — it\'s no stappin at Yoker tha day.',
       the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
       hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
@@ -640,6 +645,7 @@ export const SCS_STRINGS: LocaleTree = {
       boss_kill_heal: 'Boss doon! That\'s yer heal — +{hp} HP',
       boss_enraged: 'Tha beast is RAGIN!',
       boss_killed_gordon: 'Gordon\'s DOON! Back tae tha kitchen, big man!',
+      boss_killed_each_uisge: 'Oot tha water an oot o luck. Tha loch taks its ain.',
       boss_killed_tour_bus: 'Bus terminated! Next stap: tha scrappy via Yoker.',
       boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
       boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
@@ -664,7 +670,7 @@ export const SCS_STRINGS: LocaleTree = {
       golden_collected: 'Gowden kist — nice wee earner! +{gold}g',
       burns_platter_nearby: 'Smell that? Haggis on the muir — pipes\'ll be startin suin.',
       burns_platter_collected: 'The bard\'s feast — full belly, quick fists (+30% dmg, 60s).',
-      controls_hint: 'WASD tae roam  •  SPACE fer a cheeky dash  •  ESC, P, or Stairt tae catch yer braith',
+      controls_hint: 'WASD tae roam  •  SPACE tae dash  •  ESC fer a breather',
       armor_blocked: '-{amount} dinged aff',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
@@ -706,6 +712,11 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Heid chef\'s oot tha kitchen. Brace yersel.',
           b: 'Smell tha burnin? That\'s Gordon.',
           c: 'Big man wi a cleaver. Nae jokin.',
+        },
+        each_uisge: {
+          a: 'Yon horse\'s hoofs point backwarts. Leg it.',
+          b: 'Bonnie an deidly. Tha loch aye sends tha best ones.',
+          c: 'Dinnae let it luik ye in tha een.',
         },
         tour_bus: {
           a: 'A hale busload. Aw naw.',
@@ -822,6 +833,11 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'Telt Gordon whaur tae stick tha cleaver.',
           b: 'Chef\'s oot. Last orders.',
           c: 'Kitchen\'s closed. Yer welcome.',
+        },
+        each_uisge: {
+          a: 'Ye resistit tha bonnie thing. Yon\'s tha haurdest skill.',
+          b: 'Braw. Even tha deep watter kent yon wis ower.',
+          c: 'Horse is doon. No a horse.',
         },
         tour_bus: {
           a: 'Bus is oot o service.',
@@ -2237,6 +2253,7 @@ export const SCS_STRINGS: LocaleTree = {
   },
   boss: {
     gordon: { name: 'Gordon tha Chef' },
+    each_uisge: { name: 'Tha Each-Uisge' },
     tour_bus: { name: 'Tha Tour Bus' },
     the_laird: { name: 'Tha Laird' },
     hunter_general: { name: 'Tha Haggis Hunter General' },

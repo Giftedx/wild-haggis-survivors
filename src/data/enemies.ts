@@ -617,6 +617,8 @@ export interface BossConfig {
   damage: number;
   xpValue: number;
   scale: number;
+  /** Optional non-chase behavior — when omitted, SpawnSystem defaults to 'chase'. */
+  behaviorOverride?: EnemyBehavior;
 }
 
 // Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
@@ -638,6 +640,23 @@ export const BOSSES: BossConfig[] = [
     damage: 20,
     xpValue: 25,
     scale: 2.0,
+  },
+  // N1 Tier-2 Mythos boss #1 — Fey register. Phase-blink behaviour
+  // honours the Each-uisge shapeshifter folklore (SCOTTISH_RESEARCH.md:56).
+  // 7:30 slot fills the gap between Gordon and Tour Bus; HP/damage tuned
+  // to read as a Fey threat, not a comedy beat.
+  {
+    key: 'each_uisge',
+    nameKey: 'boss.each_uisge.name',
+    warningKey: 'ui.bossWarning.each_uisge',
+    spawnTimeSec: 450,     // 7:30
+    texture: 'boss_each_uisge',
+    speed: 140,
+    hp: 1200,
+    damage: 22,
+    xpValue: 35,
+    scale: 2.1,
+    behaviorOverride: 'phase',
   },
   {
     key: 'tour_bus',

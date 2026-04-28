@@ -10,6 +10,7 @@
 import * as Phaser from 'phaser';
 
 import { bakeBossGordon } from './gordon';
+import { bakeBossEachUisge } from './eachUisge';
 import { bakeBossTourBus } from './tourBus';
 import { bakeBossLaird } from './laird';
 import { bakeBossHunterGeneral } from './hunterGeneral';
@@ -19,6 +20,8 @@ import { bakeBossArenaProps } from './arenaProps';
 /** Bake every boss sprite. Called once from BootScene.generateAllTextures. */
 export function bakeBosses(scene: Phaser.Scene): void {
   bakeBossGordon(scene);
+  // N1 Tier-2 mythos: Each-uisge slots between Gordon (5:00) and Tour Bus (10:00).
+  bakeBossEachUisge(scene);
   bakeBossTourBus(scene);
   bakeBossLaird(scene);
   bakeBossHunterGeneral(scene);
