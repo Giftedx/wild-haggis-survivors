@@ -358,6 +358,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.curse_start.generic.b',
       'ui.banter.curse_start.generic.c',
       'ui.banter.curse_start.generic.d',
+      'ui.banter.curse_start.generic.e',
+      'ui.banter.curse_start.generic.f',
+      'ui.banter.curse_start.generic.g',
+      'ui.banter.curse_start.generic.h',
+      'ui.banter.curse_start.generic.i',
     ],
     keysByTag: {
       heavy_legs: [
@@ -1250,6 +1255,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.death_reflection.d',
       'ui.banter.death_reflection.e',
       'ui.banter.death_reflection.f',
+      'ui.banter.death_reflection.g',
+      'ui.banter.death_reflection.h',
+      'ui.banter.death_reflection.i',
+      'ui.banter.death_reflection.j',
+      'ui.banter.death_reflection.k',
     ],
     // B1 Phase 4 expansion — each tag grew from 3 → 6 leaves so the
     // no-repeat ring buffer (size 8) has room across consecutive

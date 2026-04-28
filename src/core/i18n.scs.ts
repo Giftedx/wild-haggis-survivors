@@ -958,6 +958,11 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Curse taen — nae takin it back noo.',
           c: 'Paid in teeth fer gold. Let\'s see it.',
           d: 'Deal\'s sealed — tha glen\'s collectin interest.',
+          e: 'Auld pouers stirred. They\'ll get thairs.',
+          f: 'Strang stuff, that. Heather notices.',
+          g: 'Crossed tha threshold willingly. Brave or daft.',
+          h: 'A pact unner stane an turf. Mind tha terms.',
+          i: 'Rune-ink barely dry — tha moor accepts.',
         },
         heavy_legs: {
           a: 'Heavy legs, heavier purse. Ye askit fer it.',
@@ -2170,6 +2175,11 @@ export const SCS_STRINGS: LocaleTree = {
         d: 'Heather disnae keep score, bonnie.',
         e: 'Tha land closed a page. Saftly.',
         f: 'Run\'s dune. Tha fire\'ll keep.',
+        g: 'Bracken maks its bed o ye. Sleep noo.',
+        h: 'Cu Sith didnae hool — ye went easy.',
+        i: 'Grannie\'s kettle still warm. Come back whan yer ready.',
+        j: 'Tha muir took ye saftly. It\'s duin that afore.',
+        k: 'Nae name on tha stane yet. Plenty time.',
         hazard: {
           a: 'Tha grund spak louder than yer hooves. Worth a listen neist time.',
           b: 'Aye — tha moor hides teeth in tha kindest fields.',

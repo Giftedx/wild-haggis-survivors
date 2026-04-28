@@ -1323,6 +1323,11 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Curse taken — nae takin\' it back noo.',
           c: 'Paid in teeth fer gold. Let\'s see it.',
           d: 'Deal\'s sealed — the glen\'s collectin\' interest.',
+          e: 'Auld powers stirred. They\'ll get theirs.',
+          f: 'Strong stuff, that. Heather notices.',
+          g: 'Crossed the threshold willingly. Brave or daft.',
+          h: 'A pact under stane and turf. Mind the terms.',
+          i: 'Rune-ink barely dry — the moor accepts.',
         },
         heavy_legs: {
           a: 'Heavy legs, heavier purse. Ye asked fer it.',
@@ -2580,6 +2585,11 @@ export const EN_STRINGS: LocaleTree = {
         d: 'Heather doesnae keep score, bonnie.',
         e: 'The land closed a page. Softly.',
         f: 'Run\'s dune. The fire\'ll keep.',
+        g: 'Bracken makes its bed o ye. Sleep noo.',
+        h: 'Cu Sith nae howled — ye went easy.',
+        i: 'Granny\'s kettle still warm. Come back when yer ready.',
+        j: 'The moor took ye gently. It\'s done that afore.',
+        k: 'Nae name on the stane yet. Plenty time.',
         hazard: {
           a: 'The ground spoke louder than yer hooves. Worth a listen next time.',
           b: 'Aye — the moor hides teeth in the kindest fields.',
