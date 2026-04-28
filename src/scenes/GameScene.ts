@@ -30,7 +30,7 @@ import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave, isLastDeathFresh,
   bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
-  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard, bumpFirstTimeEvent,
+  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard,
   bumpBossKillCount, bumpCursedVictoryByBoss, addFirstRouteVisit,
   consumeLastDeath,
 } from '../utils/save';
@@ -125,7 +125,6 @@ import { getRoute } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
-import { restoreHeldRelics } from './game/SavedStateHydrator';
 import { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
@@ -158,14 +157,8 @@ import { updateHudWeaponRows } from './game/updateHudWeaponRows';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
-import { RelicSystem } from '../systems/RelicSystem';
-import { RelicEffectDriver } from '../systems/relics/RelicEffectDriver';
-import { RelicPickupSpawner } from '../entities/RelicPickup';
-import { FiannaSpirit } from '../entities/FiannaSpirit';
-import { openRelicPickupPrompt } from '../ui/RelicPickupPrompt';
-import { RELICS, type RelicDef, type RelicKey } from '../data/relics';
-import type { RelicPickupSource } from '../entities/RelicPickup';
-import { decideRelicCollect } from '../ui/relicCollect';
+import { RelicOrchestrator } from './game/RelicOrchestrator';
+import { RELICS, type RelicKey } from '../data/relics';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
 import { GameTickers } from './game/GameTickers';
@@ -403,15 +396,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private haarFog: HaarFogController | null = null;
   private pauseMenu: PauseMenu | null = null;
   private pickupSpawner!: PickupSpawner;
-  /** R1 — Relic slots + drop-roll orchestration. Fresh instance per run. */
-  private relicSystem!: RelicSystem;
-  /** R1 — stateful effect dispatcher. Fresh instance per run. */
-  private relicEffectDriver!: RelicEffectDriver;
-  /** R1 — Phaser-bound spawner for dropped Relic pickups. */
-  private relicPickupSpawner: RelicPickupSpawner | null = null;
-  /** R1 M4.5 P5 — live Fianna summon entities (fingals_horn). Empty
-   *  until the horn is sounded; cleared on scene restart. */
-  private activeFiannaSpirits: FiannaSpirit[] = [];
+  /**
+   * R1 — Relic pickup flow + slot/effect ownership (RelicSystem +
+   * RelicEffectDriver + RelicPickupSpawner + Fianna lifecycle). Wraps
+   * the prior inline GameScene methods (rollAndSpawnRelic, modal,
+   * activateWhiskyDram, activateFingalsHorn). Fresh instance per run.
+   */
+  private relicOrchestrator!: RelicOrchestrator;
+  /** Tunnel accessor for compositor call sites that read the slot model. */
+  private get relicSystem() { return this.relicOrchestrator.getSystem(); }
+  /** Tunnel accessor for compositor call sites that read the effect driver. */
+  private get relicEffectDriver() { return this.relicOrchestrator.getDriver(); }
+  /** Tunnel accessor for compositor call sites that need the live pickup spawner. */
+  private get relicPickupSpawner() { return this.relicOrchestrator.getSpawner(); }
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
   private enemyKillHandler!: EnemyKillHandler;
@@ -552,19 +549,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.reliquary = null;
     this.ancestralEcho?.destroy();
     this.ancestralEcho = null;
-    // R1 — clear held Relics + dropped pickups before a fresh run. A
-    // scene instance can be reused across runs; without this the
-    // previous run's sporran bleeds into the next.
-    this.relicPickupSpawner?.destroyAll();
-    this.relicPickupSpawner = null;
-    // R1 M4.5 P5 — dispose lingering Fianna from prior run before a
-    // fresh start (10s lifetime straddles restart otherwise).
-    for (const spirit of this.activeFiannaSpirits) {
-      try { spirit.destroy(); } catch { /* ignore */ }
+    // R1 — clear held Relics + dropped pickups + Fianna spirits before a
+    // fresh run. A scene instance can be reused across runs; without this
+    // the previous run's sporran (and any 10s-lifetime Fianna spirits)
+    // bleed into the next.
+    if (!this.relicOrchestrator) {
+      this.relicOrchestrator = new RelicOrchestrator(this, {
+        getPlayer: () => this.player,
+        getJuice: () => this.juice,
+        getSpawnSystem: () => this.spawnSystem,
+        getTimeManager: () => this.timeManager,
+        getUpdateTickers: () => this.updateTickers,
+        getRunRng: () => this.runRng,
+        getGameTimeSec: () => this.spawnSystem?.getGameTimeSec() ?? 0,
+        requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
+      });
+    } else {
+      this.relicOrchestrator.resetForNewRun();
     }
-    this.activeFiannaSpirits = [];
-    this.relicSystem = new RelicSystem();
-    this.relicEffectDriver = new RelicEffectDriver(this.relicSystem);
     this.relicSlotUI?.destroy();
     this.relicSlotUI = null;
     this.musicStateScratch.bossActive = false;
@@ -895,7 +897,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       setOwnedPassives: (p) => { this.ownedPassives = p; },
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
-      restoreHeldRelics: (keys) => this.restoreHeldRelics(keys),
+      restoreHeldRelics: (keys) => this.relicOrchestrator.restoreHeld(keys),
       isSceneActive: () => this.scene.isActive(),
       suppressNextNodeMapRoll: () => { this.suppressNextNodeMapRoll = true; },
     });
@@ -912,13 +914,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.debugTimeTravelApi = new DebugTimeTravelApi({
       getSpawnSystem: () => this.spawnSystem,
       isSceneActive: () => this.scene.isActive(),
-      spawnRelicAt: (key, x, y) => this.debugSpawnRelicAt(key, x, y),
+      spawnRelicAt: (key, x, y) => this.relicOrchestrator.debugSpawnAt(key, x, y),
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
       getRelicCatalogue: () => RELICS,
       openRelicDiscardPromptForAudit: () => {
-        if (this.relicDiscardModalOpen) return false;
-        this.restoreHeldRelics(['sporran_of_holding', 'oatcake_stash', 'grans_thimble']);
-        this.openRelicDiscardModal(RELICS.whisky_dram, 'bargain');
+        if (this.relicOrchestrator.isDiscardModalOpen()) return false;
+        this.relicOrchestrator.restoreHeld(['sporran_of_holding', 'oatcake_stash', 'grans_thimble']);
+        this.relicOrchestrator.openDiscardModal(RELICS.whisky_dram, 'bargain');
         return true;
       },
     });
@@ -1047,14 +1049,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.hazardZones.spawnBottleSlick(x, y + offset);
       },
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
-      onEliteKilled: (x, y) => this.rollAndSpawnRelic('elite', x, y),
+      onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
       onBossKilled: (bossKey, x, y) => {
         // H1 M2 T15 — persist per-boss kill counts for the Croft
         // mantelpiece trophy tiers. Cursed-run kills also promote the
         // cursed tier regardless of whether the run ends in victory.
         bumpBossKillCount(bossKey);
         if (this.activeCurseKey) bumpCursedVictoryByBoss(bossKey);
-        this.rollAndSpawnRelic('boss', x, y, bossKey);
+        this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey);
       },
       modifyLifesteal: (base) => this.relicEffectDriver?.modifyLifesteal(base, this.time.now) ?? base,
       modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
@@ -1257,13 +1259,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     // R1 — Phaser-bound Relic pickup spawner. Constructed fresh each
     // run because the spawner holds a live reference set that must
-    // not survive a scene restart (stale sprites would leak).
-    this.relicPickupSpawner = new RelicPickupSpawner({
-      scene: this,
-      player: this.player,
-      tickers: this.updateTickers,
-      onCollect: (relic, x, y, source) => this.handleRelicCollect(relic, x, y, source),
-    });
+    // not survive a scene restart (stale sprites would leak). The
+    // orchestrator owns the spawner + onCollect routing internally.
+    this.relicOrchestrator.attachSpawner();
     this.pickupSpawner = new PickupSpawner(this, {
       getPlayer: () => this.player,
       getJuice: () => this.juice,
@@ -1312,7 +1310,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
       getDiscoveryRunId: () => this.discoveryRunId(),
-      tryChestLegendaryRelicOverride: () => this.tryRelicChestOverride(),
+      tryChestLegendaryRelicOverride: () => this.relicOrchestrator.tryChestOverride(),
       getRelicLuckPoints: () => this.relicEffectDriver?.luckDrawPoints() ?? 0,
       isBossKilledThisRun: () => this.runScore.bossKillCount > 0,
       getOwnedRuneIds: () => this.ownedRuneIds,
@@ -1842,15 +1840,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // R1 M4.5 P5 — tick live Fianna summons + sweep expired. Use
     // scaledDelta so slow-mo shortens the spirits' effective lifetime
     // in lockstep with every other timed effect.
-    if (this.activeFiannaSpirits.length > 0) {
-      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
-      const kept: FiannaSpirit[] = [];
-      for (const spirit of this.activeFiannaSpirits) {
-        spirit.tick(scaledDelta, enemies);
-        if (spirit.active && !spirit.isExpired()) kept.push(spirit);
-      }
-      this.activeFiannaSpirits = kept;
-    }
+    this.relicOrchestrator.tickFiannaSpirits(scaledDelta);
 
     this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHpFraction());
     // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw
@@ -1986,9 +1976,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
           isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
-          onWhiskyDramRequested: () => this.activateWhiskyDram(),
+          onWhiskyDramRequested: () => this.relicOrchestrator.activateWhiskyDram(),
           isFingalsHornAvailable: () => this.relicEffectDriver?.isFingalsHornAvailable() ?? false,
-          onFingalsHornRequested: () => this.activateFingalsHorn(),
+          onFingalsHornRequested: () => this.relicOrchestrator.activateFingalsHorn(),
         });
       }
       this.pauseMenu.open();
@@ -2310,35 +2300,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   /**
-   * R1 — roll a Relic drop for the given source and spawn the pickup
-   * at (x, y) if the roll fires. Wired from EnemyKillHandler's
-   * onEliteKilled / onBossKilled hooks. Routes through RelicSystem so
-   * held-key exclusion + rarity weighting share one pure path.
-   */
-  private rollAndSpawnRelic(
-    source: 'elite' | 'boss',
-    x: number,
-    y: number,
-    bossKey?: string,
-  ): void {
-    if (!this.relicPickupSpawner) return;
-    const relic = this.relicSystem.rollDrop(source, this.runRng, {
-      bossKey,
-      // Luck hookup lands with the lucky_heather_sprig effect wiring
-      // in M3. For M2 the base 15% elite rate + guaranteed boss drop
-      // is the shippable behaviour.
-      luckMultiplier: 1,
-    });
-    if (!relic) return;
-    this.relicPickupSpawner.spawn(relic, x, y, source);
-  }
-
-  /**
-   * R1 — 25% chance the legendary chest evolution roll overrides to a
-   * Relic drop. Called by LevelUpFlow.offerChestEvolution before the
-   * evolution card UI is shown. Returning true suppresses the card.
-   */
-  /**
    * U1 Task 14 — register a rune with the condition system. Called by
    * LevelUpFlow.apply() on a 'grant_rune' card pick. Also records the
    * run-owned rune id so future card draws filter it from the offer pool.
@@ -2534,15 +2495,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  private tryRelicChestOverride(): boolean {
-    if (!this.relicPickupSpawner) return false;
-    const relic = this.relicSystem.rollDrop('chest', this.runRng, {});
-    if (!relic) return false;
-    this.relicPickupSpawner.spawn(relic, this.player.x, this.player.y, 'chest');
-    this.juice.showToast(t('ui.game.relic_drop_near'), TOAST_COLORS.reward);
-    return true;
-  }
-
   /**
    * E1 M2 T10 — Burns Night platter collect callback. Records the
    * pickup timestamp so `burnsPlatterDamageBuff` reads 1.3× for the
@@ -2555,175 +2507,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.banter?.request('burns_citation', { tag: 'haggis_moment' });
   }
 
-  /**
-   * R1 — route a walked-over Relic pickup: add to an empty slot, open
-   * the 4th-relic discard modal, or silently skip a duplicate. Called
-   * by the `RelicPickupSpawner.onCollect` callback.
-   */
-  private handleRelicCollect(
-    relic: RelicDef,
-    _x: number,
-    _y: number,
-    source: RelicPickupSource,
-  ): void {
-    const isDuplicate = this.relicSystem.isHolding(relic.key);
-    const action = decideRelicCollect({
-      heldCount: this.relicSystem.heldCount(),
-      isDuplicate,
-      slotCap: 3,
-    });
-    switch (action) {
-      case 'skip_duplicate':
-        return;
-      case 'add':
-        this.relicSystem.add(relic);
-        this.onRelicAdded();
-        this.emitRelicPickedTelemetry(relic, source, null);
-        this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
-        this.juice.flashWhite(80);
-        audio.playLevelUp();
-        return;
-      case 'discard_ui':
-        this.openRelicDiscardModal(relic, source);
-        return;
-    }
-  }
-
-  /**
-   * R1 M4 T28 — fire-and-forget Relic-pickup telemetry. Global event
-   * bus bridge; AnalyticsManager gates on the `telemetryOptIn` user
-   * setting (matches the route_picked / weapon_evolved precedent).
-   */
-  private emitRelicPickedTelemetry(
-    relic: RelicDef,
-    source: RelicPickupSource,
-    replacedKey: RelicKey | null,
-  ): void {
-    globalEventBus.emit('GLOBAL_RELIC_PICKED', {
-      relicKey: relic.key,
-      rarity: relic.rarity,
-      source,
-      replacedKey: replacedKey ?? null,
-      atGameTimeSec: this.spawnSystem?.getGameTimeSec() ?? 0,
-    });
-  }
-
-  /**
-   * R1 M4 T26 — first-Relic reserved banter. Priority 110 (first_time
-   * pool) beats the standard relic_pickup tier so Gran's reserved line
-   * fires once per save regardless of which relic dropped first.
-   */
-  private onRelicAdded(): void {
-    if (bumpFirstTimeEvent('relic_first_pickup')) {
-      this.requestBanter('first_time', 'relic_first_pickup');
-    }
-  }
-
-  private relicDiscardModalOpen = false;
-
-  private openRelicDiscardModal(incoming: RelicDef, source: RelicPickupSource): void {
-    if (this.relicDiscardModalOpen) return;
-    this.relicDiscardModalOpen = true;
-    this.timeManager.request('RELIC_DISCARD', { pausePhysics: true, timeScale: 0 });
-    const held = this.relicSystem.getSlots().map((s) => s.def);
-    openRelicPickupPrompt({
-      scene: this,
-      held,
-      incoming,
-      uiScale: 1,
-      onReplaceHeld: (slotIndex) => {
-        const replaced = this.relicSystem.getSlots()[slotIndex].def?.key ?? null;
-        this.relicSystem.replaceAt(slotIndex, incoming);
-        // Replacing at full sporran still counts as the first acquired
-        // relic (if it is) — fire the reserved line.
-        this.onRelicAdded();
-        this.emitRelicPickedTelemetry(incoming, source, replaced);
-        this.juice.showToast(t('ui.game.relic_collected'), TOAST_COLORS.reward);
-        this.juice.flashWhite(80);
-        audio.playLevelUp();
-        this.closeRelicDiscardModal();
-      },
-      onReject: () => {
-        this.closeRelicDiscardModal();
-      },
-    });
-  }
-
-  private closeRelicDiscardModal(): void {
-    if (!this.relicDiscardModalOpen) return;
-    this.relicDiscardModalOpen = false;
-    this.timeManager.release('RELIC_DISCARD');
-  }
-
-  /**
-   * R1 e2e test seam — force a Relic pickup at a world position without
-   * routing through the probabilistic drop roll. Used by
-   * `e2e/relic-pickup.spec.ts`. Returns true on success, false if the
-   * key doesn't exist or the spawner isn't ready.
-   */
-  private debugSpawnRelicAt(key: string, x: number, y: number): boolean {
-    if (!this.relicPickupSpawner) return false;
-    const def = (RELICS as Record<string, RelicDef>)[key];
-    if (!def) return false;
-    this.relicPickupSpawner.spawn(def, x, y);
-    return true;
-  }
-
   /** R1 — e2e accessor; also used by the HUD slot widget in M3. */
   getHeldRelicKeys(): readonly RelicKey[] {
-    return this.relicSystem?.heldKeys() ?? [];
-  }
-
-  private restoreHeldRelics(keys: readonly string[]): void {
-    // Pure helper — see src/scenes/game/SavedStateHydrator.ts. Keeps
-    // the private method in place so existing call sites
-    // (RunPersistenceBridge hook, DebugTimeTravelApi audit hook) don't
-    // shift, but the body is one line of delegation.
-    restoreHeldRelics(this.relicSystem, this.relicEffectDriver, keys);
-  }
-
-  /**
-   * R1 M3 T21 — trigger the Whisky Dram active relic. Routes the
-   * pause-menu button through the driver's one-shot; toast + SFX fire
-   * on the first successful activation only.
-   */
-  private activateWhiskyDram(): void {
-    if (!this.relicEffectDriver) return;
-    const currentHp = this.player.getHp();
-    const maxHp = this.player.getMaxHp();
-    const result = this.relicEffectDriver.activateWhiskyDram(currentHp, maxHp);
-    if (!result.fired) return;
-    const healed = Math.max(0, Math.ceil(result.hp - currentHp));
-    if (healed > 0) this.player.heal(healed);
-    this.juice.showToast(t('ui.pause.whisky_dram_drunk'), TOAST_COLORS.reward);
-    this.juice.flashWhite(120);
-    audio.playLevelUp();
-  }
-
-  /**
-   * R1 M4.5 P5 — blow Fingal's Horn. One-shot active relic: summons
-   * `result.summonCount` Fianna at the haggis's position; each lives
-   * `result.durationMs` ms and hunts nearest non-boss enemies. Driver
-   * gates re-use so the button disappears after firing.
-   */
-  private activateFingalsHorn(): void {
-    if (!this.relicEffectDriver) return;
-    const result = this.relicEffectDriver.activateFingalsHorn();
-    if (!result.fired) return;
-    const px = this.player.x;
-    const py = this.player.y;
-    // Fan out the spawn ring so the three spirits don't stack into
-    // one visible glyph at t=0.
-    for (let i = 0; i < result.summonCount; i++) {
-      const angle = (i / result.summonCount) * Math.PI * 2;
-      const sx = px + Math.cos(angle) * 18;
-      const sy = py + Math.sin(angle) * 18;
-      const spirit = new FiannaSpirit(this, sx, sy, result.durationMs);
-      this.activeFiannaSpirits.push(spirit);
-    }
-    this.juice.showToast(t('ui.pause.fingals_horn_sounded'), TOAST_COLORS.reward);
-    this.juice.flashWhite(140);
-    audio.playLevelUp();
+    return this.relicOrchestrator?.getHeldKeys() ?? [];
   }
 
   private buildRouteResumeContext(): RouteResumeContext {
