@@ -8,6 +8,12 @@
  *
  * Keys are stable save-visible identifiers; Chronicle displays use the
  * i18n labelKey / descKey resolved through `t()`.
+ *
+ * Boss → picker mapping (see `dispatchActComplete.ts`):
+ *   - act 1 / `gordon` kill   → picker slot A
+ *   - act 2 / `tour_bus` kill → picker slot B
+ *   - `taxman` kill           → run-victory path; NOT routed through
+ *     `onActComplete` and intentionally absent from `ROUTES_BY_SLOT`.
  */
 import type { Player } from '../entities/Player';
 import type { HazardZones } from '../scenes/game/HazardZones';

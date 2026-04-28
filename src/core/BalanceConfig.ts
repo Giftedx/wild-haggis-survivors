@@ -6,6 +6,17 @@ export type WaveTimelineEntry = {
   enemyKeys: readonly string[];
 };
 
+/**
+ * Edinburgh-themed enemy keys gated until B5 Phase 3 ships
+ * (cultural consultation required — see CULTURAL_SENSITIVITIES_RESEARCH.md §2.7
+ * and docs/superpowers/specs/2026-04-28-five-missing-biomes-design.md).
+ * Mirrors the rune-offer filter in `runeCards.test.ts` (`biome_urban` excluded).
+ * Act 3 Moor Road node banks intentionally retain these as designed encounter
+ * content; only the open-world cumulative spawn pool is gated here.
+ */
+const BIOME_URBAN_READY = false;
+const URBAN_GATED_ENEMY_KEYS: ReadonlySet<string> = new Set(['edinburgh_ghost_guide']);
+
 function buildWaveTimeline(): WaveTimelineEntry[] {
   const milestones: { t: number; add: string }[] = [
     { t: 0, add: 'tourist' },
@@ -40,8 +51,11 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 930, add: 'ledger_wraith' },
     { t: 1050, add: 'auditor_priest' },
   ];
+  const gated = milestones.filter(
+    (m) => BIOME_URBAN_READY || !URBAN_GATED_ENEMY_KEYS.has(m.add),
+  );
   const keys: string[] = [];
-  return milestones.map(({ t, add }) => {
+  return gated.map(({ t, add }) => {
     keys.push(add);
     return {
       timeSec: t,

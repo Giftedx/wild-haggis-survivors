@@ -70,8 +70,15 @@ describe('WAVE_TIMELINE', () => {
       for (const k of seg.enemyKeys) timelineKeys.add(k);
     }
     const bossKeys = new Set(BOSSES.map((b) => b.key));
+    // Biome-gated enemies live in `ENEMY_TYPES` (sprite + animation +
+    // node-bank consumers) but are filtered out of the open-world
+    // wave-spawn pool until their biome ships. Mirrors the rune-offer
+    // gate at `runeCards.test.ts` (`biome_urban`). Re-enable when the
+    // matching biome lands (B5 charter Phase 3 for Edinburgh).
+    const biomeGatedKeys = new Set<string>(['edinburgh_ghost_guide']);
     for (const key of Object.keys(ENEMY_TYPES)) {
       if (bossKeys.has(key)) continue;
+      if (biomeGatedKeys.has(key)) continue;
       expect(
         timelineKeys.has(key),
         `ENEMY_TYPES['${key}'] never spawns — add to WAVE_TIMELINE or mark as boss`,
