@@ -1818,6 +1818,17 @@ export const SCS_STRINGS: LocaleTree = {
         av: 'Haud on. Wis there somethin?',
         aw: 'Forgot whit I wis thinkin aboot.',
         ax: 'Thistle. Prickly wee gits.',
+        // Wild-haggis-myth tribute. SCS overlay of the EN contraband
+        // leaves; same priority slot, same wee-monologue voice. Scots
+        // conventions retained: aye / nae / fae / cannae / wid.
+        ay: 'Thay banned me in tha States, ye ken.',
+        az: 'Nae walcome in New York. Aye, fancy.',
+        ba: 'Fae tha FDA: thou shalt nae haggis. Pure dramatic.',
+        bb: 'Contraband, me. Imagine.',
+        bc: 'Cannae cross tha Atlantic legal. Tragedy.',
+        bd: 'Forty-five year banned. Aulder than ma maw.',
+        be: 'Some folk wid sneck me in a kilt, mind.',
+        bf: 'I\'m banned an I\'m prood. Bonnie ring tae it.',
       },
       // ── Enemy flavour (B1 Phase 3 Task 17). SCS pair for
       //    ui.banter.enemy_ambient.*. Tagged sub-pools get added family-

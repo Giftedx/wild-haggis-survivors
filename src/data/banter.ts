@@ -1373,6 +1373,13 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.haggis_ambient.as', 'ui.banter.haggis_ambient.at',
       'ui.banter.haggis_ambient.au', 'ui.banter.haggis_ambient.av',
       'ui.banter.haggis_ambient.aw', 'ui.banter.haggis_ambient.ax',
+      // Wild-haggis-myth contraband tribute (8 leaves). See i18n.ts notes
+      // on the FDA sheep-lung ban — the haggis is literally illegal in
+      // the US, so the wee monologue gets to be smug about it.
+      'ui.banter.haggis_ambient.ay', 'ui.banter.haggis_ambient.az',
+      'ui.banter.haggis_ambient.ba', 'ui.banter.haggis_ambient.bb',
+      'ui.banter.haggis_ambient.bc', 'ui.banter.haggis_ambient.bd',
+      'ui.banter.haggis_ambient.be', 'ui.banter.haggis_ambient.bf',
     ],
   },
   {

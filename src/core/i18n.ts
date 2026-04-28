@@ -2205,6 +2205,20 @@ export const EN_STRINGS: LocaleTree = {
         av: 'Wait. Wis there somethin\'?',
         aw: 'Forgot whit I wis thinkin\' aboot.',
         ax: 'Thistle. Prickly wee gits.',
+        // Wild-haggis-myth tribute: the FDA's 1971 sheep-lung rule made
+        // real haggis literally illegal in the United States, and the
+        // joke writes itself. Eight leaves drop into the haggis_ambient
+        // round-robin so the wee monologue surfaces the contraband
+        // identity once or twice a run without dominating.
+        // Ref: SCOTTISH_RESEARCH_DEEP.md §11.7.
+        ay: 'They banned me in the States, ye ken.',
+        az: 'Nae welcome in New York. Aye, fancy.',
+        ba: 'Fae the FDA: thou shalt no haggis. Very dramatic.',
+        bb: 'Contraband, me. Imagine.',
+        bc: 'Cannae cross the Atlantic legal. Tragedy.',
+        bd: 'Forty-five year banned. Aulder than ma maw.',
+        be: 'Some folk wid smuggle me in a kilt, mind.',
+        bf: 'I\'m banned an\' I\'m proud. Nice ring tae it.',
       },
       // ── Enemy flavour (B1 Phase 3 Task 17). Fires on first-encounter of
       //    an enemy type and on a rare 1/20 respawn roll thereafter.
