@@ -135,10 +135,19 @@ if (typeof window !== 'undefined') {
 
 const game = new Phaser.Game(config);
 
+type WhsBrowserWindow = Window & {
+  game?: Phaser.Game;
+  __WHS_COMFORT_PROBE?: () => { reduceFlashing: boolean };
+};
+
 if (typeof window !== 'undefined') {
   // Exposed unconditionally so Playwright E2E can drive scene transitions
   // (see e2e/resume.spec.ts). Dev convenience still works identically.
-  (window as Window & { game?: Phaser.Game }).game = game;
+  const browserWindow = window as WhsBrowserWindow;
+  browserWindow.game = game;
+  browserWindow.__WHS_COMFORT_PROBE = () => ({
+    reduceFlashing: getSettingsManager().load().reduceFlashing,
+  });
   const params = new URLSearchParams(window.location.search);
   if (import.meta.env.DEV || params.has('devScenes')) {
     installLazyToolSceneLoader(game);

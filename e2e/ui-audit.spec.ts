@@ -169,6 +169,25 @@ async function waitGameTick(page: PageT, minSec: number): Promise<void> {
   }, minSec);
 }
 
+async function ensureLiveGame(page: PageT, seed: number, settleMs = 1200): Promise<void> {
+  const live = await page.evaluate(() => {
+    const g = (window as unknown as { game?: PhaserGame }).game;
+    if (!g) return false;
+    const gameActive = g.scene.isActive('Game');
+    const gameOverActive = g.scene.isActive('GameOver');
+    const gs = g.scene.scenes.find((s) => s.scene.key === 'Game') as unknown as {
+      player?: { active?: boolean; getHp?(): number };
+    } | undefined;
+    return gameActive
+      && !gameOverActive
+      && gs?.player?.active !== false
+      && (gs?.player?.getHp?.() ?? 1) > 0;
+  });
+  if (live) return;
+  await gotoScene(page, 'Game', { seed }, settleMs);
+  await waitGameTick(page, 5);
+}
+
 test.describe('UI design audit — full screenshot sweep', () => {
   test.setTimeout(180_000);
 
@@ -344,6 +363,8 @@ test.describe('UI design audit — full screenshot sweep', () => {
     await page.waitForTimeout(2500);
     await snap(page, '05f-gameplay-boss-onscreen');
 
+    await ensureLiveGame(page, 54321);
+
     // Pause overlay over a live mid-run.
     await page.keyboard.press('Escape');
     await page.waitForTimeout(700);
@@ -352,7 +373,7 @@ test.describe('UI design audit — full screenshot sweep', () => {
     await page.waitForTimeout(400);
 
     // Spawn a relic next to player → relic-pickup prompt + slot UI.
-    await page.evaluate(() => {
+    const relicSpawned = await page.evaluate(() => {
       const g = (window as unknown as { game?: PhaserGame }).game;
       const dbg = (window as unknown as { DEBUG?: {
         spawnRelicAt?(k: string, x: number, y: number): boolean;
@@ -362,8 +383,9 @@ test.describe('UI design audit — full screenshot sweep', () => {
       };
       const px = gs?.player?.x ?? 0;
       const py = (gs?.player?.y ?? 0) - 80; // offset slightly so prompt visible
-      dbg?.spawnRelicAt?.('sporran_of_holding', px, py);
+      return dbg?.spawnRelicAt?.('sporran_of_holding', px, py) ?? false;
     });
+    expect(relicSpawned, 'debug relic spawn failed').toBe(true);
     await page.waitForTimeout(900);
     await snap(page, '05h-relic-spawned-nearby');
 

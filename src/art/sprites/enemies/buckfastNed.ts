@@ -44,6 +44,11 @@ export function drawBuckfastNedBody(
 
   // Tracksuit top (matching navy, hood up) — wider shoulders so the
   // sprite reads as a person at gameplay scale rather than a thin pin.
+  // Wet pavement halo behind the torso helps the dark tracksuit separate
+  // from grave and night palettes. Drawn before the outline so it cannot
+  // soften the hostile silhouette.
+  g.fillStyle(0x405070, 0.22);
+  g.fillEllipse(cx, cy + 4, 22, 9);
   g.fillStyle(0x050810, 1);
   g.fillRoundedRect(cx - 10, cy - 7, 20, 16, 3);
   g.fillStyle(0x0a1428, 1);
@@ -62,6 +67,13 @@ export function drawBuckfastNedBody(
   // White chest zip.
   g.fillStyle(0xdcdcdc, 0.7);
   g.fillRect(cx, cy - 5, 1, 11);
+  // Tiny zipper pull and stitched cuffs give the tracksuit craft rather
+  // than a flat block silhouette.
+  g.fillStyle(0xf0f0f0, 0.9);
+  g.fillRect(cx + 0.8, cy + 2, 0.8, 1.6);
+  g.fillStyle(0x223048, 1);
+  g.fillRect(cx - 9, cy + 5.8, 3, 1.2);
+  g.fillRect(cx + 6, cy + 5.8, 3, 1.2);
   // Gold chain — heavy Sovereign-style link visible on the neckline.
   // The chain is a V of tiny gold segments + a small pendant.
   g.fillStyle(0xccaa22, 1);
@@ -105,6 +117,13 @@ export function drawBuckfastNedBody(
   // Thin scowl.
   g.lineStyle(0.8, 0x222222, 1);
   g.lineBetween(cx - 1, cy - 7, cx + 2, cy - 7);
+  // Nose highlight and cheek warmth make the face read as human, not a
+  // mask, which keeps the hostile sprite from becoming pure caricature.
+  g.fillStyle(0xf0c8aa, 0.75);
+  g.fillRect(cx - 0.4, cy - 9, 0.8, 1.6);
+  g.fillStyle(0xc88474, 0.42);
+  g.fillCircle(cx - 3.2, cy - 8.2, 0.8);
+  g.fillCircle(cx + 3.2, cy - 8.2, 0.8);
 
   // Left hand/fist breaks up the blocky torso.
   g.fillStyle(0xd8b89a, 1);
@@ -130,6 +149,10 @@ export function drawBuckfastNedBody(
   g.fillRect(cx + 8.5, cy + 2.5, 5, 1);
   g.fillStyle(0x4a1010, 1);
   g.fillRect(cx + 8.5, cy + 4.5, 5, 0.6);
+  // Small cross-hatch on the label gives it a label, not potion, read.
+  g.fillStyle(0xd8c89c, 0.9);
+  g.fillRect(cx + 9, cy + 3.7, 1, 0.5);
+  g.fillRect(cx + 12, cy + 3.7, 1, 0.5);
   // Gold foil cap — bigger.
   g.fillStyle(0x8a6a10, 1);
   g.fillRect(cx + 8.5, cy - 7, 5, 4);
@@ -144,6 +167,12 @@ export function drawBuckfastNedBody(
   g.fillStyle(0xd8b89a, 1);
   g.fillEllipse(cx + 11, cy - 1.5, 4, 2);
 
+  // Reflected trainer flecks on the wet ground, used as a grounding
+  // detail and a little urban rain texture.
+  g.fillStyle(0xb8c8e8, 0.35);
+  g.fillRect(cx - 6, cy + 21, 5, 0.6);
+  g.fillRect(cx + 1, cy + 21.2, 5, 0.6);
+
 }
 
 export function bakeBuckfastNed(scene: Phaser.Scene): void {
@@ -152,11 +181,3 @@ export function bakeBuckfastNed(scene: Phaser.Scene): void {
   g.generateTexture('buckfast_ned', BUCKFAST_NED_CANVAS_SIZE, BUCKFAST_NED_CANVAS_SIZE);
   g.destroy();
 }
-
-/**
- * Traffic Cone Totem — DESIGN_IDEAS section 3 Urban Ghaists #2.
- * Three stacked Glasgow-orange traffic cones on a slick base. Static
- * (chase at speed 0) so the hit-response path stays standard. When
- * killed the totem collapses and spits four slick patches in the
- * cardinals (wired through EnemyKillHandler.onTotemFall).
- */

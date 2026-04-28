@@ -1,18 +1,24 @@
 import { expect, test } from './fixtures';
 
-test.describe('first-run drift practice', () => {
-  test('shows the marker on a fresh run and persists skip', async ({ page }) => {
+const CURRENT_META_SAVE_VERSION = 9;
+
+test.describe('post-FTUE drift practice', () => {
+  test('shows the marker on the first eligible run and persists skip', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 
-    await page.addInitScript(() => {
+    await page.addInitScript((saveVersion) => {
       try {
-        localStorage.removeItem('whs_meta_save');
+        localStorage.setItem('whs_meta_save', JSON.stringify({
+          saveVersion,
+          hasCompletedTutorial: true,
+          hasSeenDriftTutorial: false,
+        }));
         localStorage.removeItem('whs_save');
       } catch {
         /* ignore */
       }
-    });
+    }, CURRENT_META_SAVE_VERSION);
 
     await page.goto('/');
     const canvas = page.locator('canvas[role="application"]');
@@ -43,26 +49,12 @@ test.describe('first-run drift practice', () => {
         scene: { getScene(k: string): unknown };
       } }).game;
       const scene = g?.scene.getScene('Game') as {
-        children?: { list?: Array<{ text?: string }> };
-      } | undefined;
-      return scene?.children?.list?.some((o) =>
-        typeof o.text === 'string' && o.text.includes('weapons fire themselves'),
-      ) === true;
-    }, undefined, { timeout: 20_000 });
-
-    await canvas.click({ position: { x: 400, y: 300 } });
-
-    await page.waitForFunction(() => {
-      const g = (window as unknown as { game?: {
-        scene: { getScene(k: string): unknown };
-      } }).game;
-      const scene = g?.scene.getScene('Game') as {
         children?: { list?: Array<{ name?: string }> };
       } | undefined;
       const names = scene?.children?.list?.map((o) => o.name) ?? [];
       return names.includes('drift-practice-banner')
         && names.includes('drift-practice-marker');
-    }, undefined, { timeout: 5_000 });
+    }, undefined, { timeout: 12_000 });
 
     await page.keyboard.press('Enter');
 

@@ -70,6 +70,14 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   for (let rx = -8; rx < 8; rx += 2) {
     g.fillRect(cx + rx, cy + 1.6, 0.8, 1.4);
   }
+  // Diagonal cross-bindings over the front make the stack feel bound
+  // and animate-able instead of a clean roadside pile.
+  g.lineStyle(1.3, 0x2a1808, 1);
+  g.lineBetween(cx - 8, cy + 4, cx + 7, cy - 5);
+  g.lineBetween(cx + 8, cy + 4, cx - 7, cy - 5);
+  g.lineStyle(0.7, 0xc08030, 0.85);
+  g.lineBetween(cx - 7, cy + 3.4, cx + 6, cy - 4.4);
+  g.lineBetween(cx + 7, cy + 3.4, cx - 6, cy - 4.4);
   // Knot lumps at each end — bigger, three-tone.
   g.fillStyle(0x1a0a04, 1);
   g.fillCircle(cx - 9, cy + 2, 1.6);
@@ -98,6 +106,19 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   g.fillRect(cx - 5, cy - 6.5, 10, 0.8);
   g.fillStyle(0xdd3a3a, 0.75);
   g.fillRect(cx - 5, cy - 6.5, 10, 0.3);
+  g.lineStyle(1, 0x2a1808, 0.95);
+  g.lineBetween(cx - 6.2, cy, cx + 4.8, cy - 6);
+  g.lineBetween(cx + 6.2, cy, cx - 4.8, cy - 6);
+  g.lineStyle(0.55, 0xc08030, 0.9);
+  g.lineBetween(cx - 5.6, cy - 0.3, cx + 4.2, cy - 5.6);
+  g.lineBetween(cx + 5.6, cy - 0.3, cx - 4.2, cy - 5.6);
+  // Two small reflector charms hang from the cord like warning teeth.
+  g.fillStyle(0x331000, 1);
+  g.fillTriangle(cx - 4, cy - 1, cx - 2, cy - 1, cx - 3, cy + 1.5);
+  g.fillTriangle(cx + 2, cy - 1, cx + 4, cy - 1, cx + 3, cy + 1.5);
+  g.fillStyle(0xffe6cc, 1);
+  g.fillRect(cx - 3.5, cy - 0.7, 1, 1);
+  g.fillRect(cx + 2.5, cy - 0.7, 1, 1);
 
   // ── TOP CONE — slightly larger than before, this is the HEAD.
   // Tilted forward so the face aims at the player. Darker weathered
@@ -139,6 +160,12 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   g.fillStyle(0x1a0602, 1);
   g.fillTriangle(cx - 3, cy - 11.5, cx + 0.5, cy - 11.5, cx - 0.5, cy - 10.5);
   g.fillTriangle(cx + 1.5, cy - 11.5, cx + 5, cy - 11.5, cx + 2.5, cy - 10.5);
+  // Broken crown lip on the cone head gives the top a hostile, chipped
+  // silhouette instead of a perfect road cone triangle.
+  g.fillStyle(0x1a0602, 1);
+  g.fillTriangle(cx - 1, cy - 15.2, cx + 1, cy - 18.5, cx + 2.2, cy - 14.8);
+  g.fillStyle(0xff8a30, 0.9);
+  g.fillTriangle(cx - 0.4, cy - 15.2, cx + 1, cy - 17.1, cx + 1.4, cy - 15);
 
   // ── Jagged teeth/maw slash at the bottom of the top cone. ──
   g.fillStyle(0x1a0602, 1);
@@ -153,6 +180,8 @@ export function bakeTrafficConeTotem(scene: Phaser.Scene): void {
   g.fillCircle(cx, cy - 17, 1.3);
   g.fillStyle(0xaaaaaa, 0.4);
   g.fillCircle(cx + 3, cy - 18, 1);
+  g.fillStyle(0xffeeaa, 0.45);
+  g.fillCircle(cx - 3, cy - 17.5, 0.8);
 
   g.generateTexture('traffic_cone_totem', s, s);
   g.destroy();

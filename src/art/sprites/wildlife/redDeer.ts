@@ -38,6 +38,11 @@ function drawRedDeerBody(
   // Body
   g.fillStyle(DEER_BODY, 1);
   g.fillEllipse(cx, cy, 24, 12);
+  // Shoulder and haunch planes: tiny value blocks stop the stag body
+  // reading as one sausage-like oval.
+  g.fillStyle(DEER_BODY_DARK, 0.5);
+  g.fillEllipse(cx + 6, cy + 1, 7, 8);
+  g.fillEllipse(cx - 7, cy + 1, 6, 7);
 
   // Belly highlight
   g.fillStyle(DEER_BELLY, 1);
@@ -104,6 +109,11 @@ function drawRedDeerBody(
   g.fillStyle(DEER_ANTLER_LIGHT, 0.9);
   g.fillRect(cx + 14, cy - 16, 1, 6);
   g.fillRect(cx + 11, cy - 18, 1, 1);
+  // Ivory tip glints on the crown widen the antler read at 1x.
+  g.fillStyle(0xd8c8a8, 0.95);
+  g.fillRect(cx + 11, cy - 18.4, 1, 0.8);
+  g.fillRect(cx + 13, cy - 18.4, 1, 0.8);
+  g.fillRect(cx + 18, cy - 14.4, 1, 0.8);
 
   // Eye with shine.
   g.fillStyle(DEER_EYE, 1);
@@ -140,6 +150,10 @@ function drawRedDeerBody(
   g.fillRect(cx - 4, cy + 12 - legShift, 2, 1);
   g.fillRect(cx + 4, cy + 12 - legShift, 2, 1);
   g.fillRect(cx + 8, cy + 12 + legShift, 2, 1);
+  // Fine separation shadows between front/hind legs.
+  g.fillStyle(0x120804, 0.55);
+  g.fillRect(cx - 6, cy + 6, 1, 6);
+  g.fillRect(cx + 6.5, cy + 6, 1, 6);
 
   // Fine back highlight along the shoulder line.
   g.fillStyle(0xd8b080, 0.75);

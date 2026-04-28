@@ -48,6 +48,13 @@ export function bakeCaber(scene: Phaser.Scene): void {
   g.fillStyle(0x8a6a20, 0.5);
   g.fillRect(3, cy - 1, 20, 1);
   g.fillRect(3, cy + 3, 20, 1);
+  // Diagonal bark cuts break the remaining rectangle feel.
+  g.lineStyle(0.7, 0x3a2206, 0.75);
+  g.lineBetween(6, cy - 3, 10, cy + 3);
+  g.lineBetween(14, cy - 4, 18, cy + 2.5);
+  g.lineStyle(0.5, 0xc09438, 0.65);
+  g.lineBetween(7, cy - 2.5, 10.5, cy + 2.4);
+  g.lineBetween(15, cy - 3.3, 18, cy + 1.8);
 
   // ── SIDE HIGHLIGHT along upper length — bright catchlight that
   // runs the full length of the log (light from above). Stronger
@@ -71,6 +78,15 @@ export function bakeCaber(scene: Phaser.Scene): void {
   g.fillRect(7, cy + 2.5, 1.5, 0.6);
   g.fillRect(13, cy - 2.5, 1.2, 0.6);
   g.fillRect(19, cy + 1.5, 1.4, 0.6);
+  // Flying splinters and a tiny Highland Games red marker ribbon at
+  // the trailing end add direction and specificity.
+  g.fillStyle(0xeacc70, 0.75);
+  g.fillTriangle(4, cy - 5, 6, cy - 4, 4.5, cy - 3.5);
+  g.fillTriangle(5, cy + 5.2, 7, cy + 4.2, 5.7, cy + 3.6);
+  g.fillStyle(0xb82020, 0.9);
+  g.fillRect(4, cy - 0.5, 3, 1);
+  g.fillStyle(0xffd0d0, 0.75);
+  g.fillRect(4.5, cy - 0.5, 1, 1);
 
   // ── Cut end-grain (right fat end) — concentric rings forming a
   // SPIRAL pattern (offset rings) so the centre reads as growth-

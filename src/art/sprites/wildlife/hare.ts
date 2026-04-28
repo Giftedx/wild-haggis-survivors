@@ -51,6 +51,12 @@ export function drawHareBody(g: Phaser.GameObjects.Graphics, frame: HareFrame): 
   // Lighter belly highlight
   g.fillStyle(0xa88860, 1);
   g.fillEllipse(cx, bodyY + 1, bodyW - 4, bodyH - 4);
+  // White chin and winter-fur chest patch make this read as a Scottish
+  // mountain hare, not just a generic brown rabbit.
+  g.fillStyle(0xf2eadc, 0.95);
+  g.fillEllipse(cx + 4.5, bodyY - 0.4, 3.2, 2.4);
+  g.fillStyle(0xd8c8b0, 0.75);
+  g.fillEllipse(cx + 2, bodyY + 2, 4, 2);
 
   // Back dapple — a subtle dorsal warm streak so peripheral motion shows form.
   g.fillStyle(0xb88858, 0.55);
@@ -112,6 +118,11 @@ export function drawHareBody(g: Phaser.GameObjects.Graphics, frame: HareFrame): 
   g.fillStyle(0x3a2418, 1);
   g.fillRect(cx - 4, footY, 4, 1);
   g.fillRect(cx + 1, footY, 4, 1);
+  // Longer hind foot on the trailing side is the species/action tell.
+  g.fillStyle(0x2a1a10, 1);
+  g.fillRect(cx - 7, footY + 0.8, 6, 1);
+  g.fillStyle(0x8b6c4a, 1);
+  g.fillRect(cx - 6.5, footY + 0.8, 5, 0.6);
 
   // Whisker pair — two strokes per side, brighter so they survive ambient render.
   g.lineStyle(0.8, 0xfff0d0, 0.95);

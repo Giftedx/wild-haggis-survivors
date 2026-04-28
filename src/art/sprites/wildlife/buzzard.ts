@@ -50,6 +50,10 @@ function drawBuzzardBody(
   g.fillStyle(BUZZARD_BODY, 1);
   g.fillTriangle(cx - 2, cy - 1, cx - 14, cy - 4 + wingDy, cx - 14, cy + 2 + wingDy);
   g.fillTriangle(cx + 2, cy - 1, cx + 14, cy - 4 + wingDy, cx + 14, cy + 2 + wingDy);
+  // Warm underwing panels keep the dark raptor readable over heather.
+  g.fillStyle(0x7a6248, 0.88);
+  g.fillTriangle(cx - 3, cy, cx - 10, cy - 2 + wingDy, cx - 11, cy + 1 + wingDy);
+  g.fillTriangle(cx + 3, cy, cx + 10, cy - 2 + wingDy, cx + 11, cy + 1 + wingDy);
 
   // Wing trailing edge — darker line that anchors the wing chord.
   g.fillStyle(BUZZARD_BAR_DARK, 0.7);
@@ -71,6 +75,10 @@ function drawBuzzardBody(
   g.fillStyle(BUZZARD_BAR, 0.7);
   g.fillRect(cx - 9, cy + wingDy, 4, 1);
   g.fillRect(cx + 6, cy + wingDy, 4, 1);
+  // Pale crescent windows, a common buzzard field mark in miniature.
+  g.fillStyle(0xe8d4aa, 0.8);
+  g.fillRect(cx - 7, cy - 1 + wingDy, 2, 1);
+  g.fillRect(cx + 5, cy - 1 + wingDy, 2, 1);
 
   // Head with hooked beak — top-down so the hook reads as a triangular notch.
   g.fillStyle(BUZZARD_BODY_DARK, 1);

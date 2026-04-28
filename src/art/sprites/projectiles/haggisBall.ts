@@ -35,6 +35,12 @@ export function bakeHaggisBall(scene: Phaser.Scene): void {
   g.fillCircle(cx + 3.5, cy - 9, 0.9);
   g.fillStyle(0xfff0c0, 0.5);
   g.fillCircle(cx + 4, cy - 10.5, 0.55);
+  // Trailing steam comma: a tiny backward curl makes the projectile
+  // read as moving and keeps it distinct from a static rock pickup.
+  g.fillStyle(0xeeddaa, 0.28);
+  g.fillCircle(cx - 7, cy - 2, 1.4);
+  g.fillStyle(0xfff0c0, 0.38);
+  g.fillCircle(cx - 8.5, cy - 3.2, 0.75);
 
   // ── WOBBLE SHADOW underneath — soft elliptical drop shadow
   // beneath the ball communicates "this thing is in motion". ──
@@ -85,6 +91,13 @@ export function bakeHaggisBall(scene: Phaser.Scene): void {
   g.fillCircle(cx + 3, cy - 2, 0.7);
   g.fillCircle(cx - 2, cy + 4, 0.6);
   g.fillCircle(cx + 1, cy + 1, 0.5);
+  // Tiny herb pips brighten the surface and stop the ball reading as
+  // plain stone during motion.
+  g.fillStyle(0x6a8a32, 0.75);
+  g.fillCircle(cx - 4, cy - 1.8, 0.45);
+  g.fillCircle(cx + 3.8, cy + 1.2, 0.45);
+  g.fillStyle(0xd4b060, 0.9);
+  g.fillRect(cx + 0.5, cy - 4.4, 1, 0.5);
 
   // ── SIDE HIGHLIGHT crescent — bright catchlight along the upper-
   // left curve so the ball reads spherical, not a flat blob. ──

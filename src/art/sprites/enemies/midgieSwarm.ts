@@ -24,6 +24,12 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillEllipse(cx + 1, cy, 16, 13);
   g.fillStyle(0x3a2748, 0.16);
   g.fillEllipse(cx - 5, cy + 2, 9, 5);
+  // Comma-shaped drift tail on the left breaks the portal read and
+  // sells the swarm being blown across the moor by wind.
+  g.fillStyle(0x2a1834, 0.18);
+  g.fillEllipse(cx - 8, cy + 3, 10, 4);
+  g.fillStyle(0x514168, 0.13);
+  g.fillEllipse(cx - 11, cy + 4, 6, 2.4);
 
   // ── Dense BLACK core — the angry heart of the swarm. Irregular
   // shape, not a clean circle. Slightly trimmed so the mini-midge
@@ -35,7 +41,7 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillStyle(0x1a0614, 1);
   g.fillCircle(cx, cy, 3.0);
 
-  // ── 30 PINPRICK MIDGE DOTS — scattered through and around the
+  // ── 38 PINPRICK MIDGE DOTS — scattered through and around the
   // core. Small, dark, merging into the haze but countable. ──
   const dots: [number, number, number][] = [
     // Inner dense cluster
@@ -50,6 +56,8 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
     [-7, -1, 0.4], [7, -2, 0.4], [-6, 4, 0.4], [6, 4, 0.4],
     [1, -7, 0.4], [-1, 7, 0.4], [8, 2, 0.35], [-8, 2, 0.35],
     [3, 7, 0.35], [-3, -6, 0.35],
+    [-10, 4, 0.35], [-11, 2, 0.3], [-9, 6, 0.3], [10, -4, 0.35],
+    [9, -6, 0.3], [11, -1, 0.3], [-7, -5, 0.35], [7, 6, 0.35],
   ];
   g.fillStyle(0x0a040a, 1);
   for (const [dx, dy, r] of dots) {
@@ -85,7 +93,7 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillStyle(0xffffff, 0.7);
   g.fillCircle(cx, cy, 0.4);
 
-  // ── MINI-MIDGE SILHOUETTES — four readable bugs scattered
+  // ── MINI-MIDGE SILHOUETTES — seven readable bugs scattered
   // through the cluster so the swarm reads as MANY discrete insects
   // rather than abstract haze. Each: tiny body + faint wing-smear. ──
   type MiniMidge = { x: number; y: number; flip: number };
@@ -94,6 +102,9 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
     { x: 5, y: 4, flip: -1 },
     { x: -3, y: 6, flip: 1 },
     { x: 7, y: -3, flip: -1 },
+    { x: -9, y: 3, flip: 1 },
+    { x: 9, y: 1, flip: -1 },
+    { x: 2, y: -7, flip: -1 },
   ];
   for (const m of minis) {
     const mx = cx + m.x;
@@ -115,9 +126,14 @@ export function bakeMidgieSwarm(scene: Phaser.Scene): void {
   g.fillStyle(0xcfe4f2, 0.4);
   g.fillRect(cx - 10, cy - 4, 2, 0.5);
   g.fillRect(cx + 7, cy - 5, 2, 0.5);
+  g.fillRect(cx - 12, cy + 4, 2, 0.5);
+  g.fillRect(cx + 9, cy + 5, 2, 0.5);
   g.fillStyle(0x4a345a, 0.45);
   g.fillCircle(cx - 10, cy - 3, 0.7);
   g.fillCircle(cx + 10, cy - 2, 0.7);
+  g.fillStyle(0xffb0ba, 0.45);
+  g.fillCircle(cx - 7, cy + 5, 0.55);
+  g.fillCircle(cx + 6, cy - 6, 0.5);
 
   g.generateTexture('midgie_swarm', s, s);
   g.destroy();

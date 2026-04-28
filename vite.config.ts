@@ -49,8 +49,22 @@ export default defineConfig({
     chunkSizeWarningLimit: 1750,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'vendor-phaser': ['phaser', 'eventemitter3'],
+        manualChunks(id): string | undefined {
+          const normalized = id.replaceAll('\\', '/');
+          if (
+            normalized.includes('/node_modules/phaser/') ||
+            normalized.includes('/node_modules/eventemitter3/')
+          ) {
+            return 'vendor-phaser';
+          }
+          if (
+            normalized.includes('/src/art/sprites/') ||
+            normalized.includes('/src/animation/frameDrawers/enemies/') ||
+            normalized.includes('/src/entities/haggisComposition/drawers/')
+          ) {
+            return 'sprite-art';
+          }
+          return undefined;
         },
       },
     },

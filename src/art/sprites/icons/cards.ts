@@ -1667,6 +1667,23 @@ function drawRuneGlyph(scene: Phaser.Scene): void {
   g.fillCircle(cx, cy + 9, 0.9);
   g.fillStyle(0xffffff, 0.75);
   g.fillCircle(cx - 7.2, cy - 0.3, 0.35);
+  // Pictish side spirals and a tiny thistle root make the shared rune
+  // feel authored even before per-rune glyph variants exist.
+  g.lineStyle(0.75, 0x21152e, 0.9);
+  g.beginPath();
+  g.arc(cx - 7, cy + 5, 2.2, Math.PI * 0.15, Math.PI * 1.45, false);
+  g.strokePath();
+  g.beginPath();
+  g.arc(cx + 7, cy - 5, 2.2, Math.PI * 1.15, Math.PI * 0.45, true);
+  g.strokePath();
+  g.fillStyle(0x3f7a30, 0.9);
+  g.fillRect(cx - 0.4, cy + 8.5, 0.8, 2.2);
+  g.fillStyle(0x9c7df0, 0.95);
+  g.fillCircle(cx - 1.2, cy + 8, 0.55);
+  g.fillCircle(cx, cy + 7.5, 0.65);
+  g.fillCircle(cx + 1.2, cy + 8, 0.55);
+  g.fillStyle(0xf6e7a5, 0.85);
+  g.fillRect(cx - 5, cy - 10, 10, 0.5);
   g.generateTexture('rune_glyph', s, s);
   g.destroy();
 }

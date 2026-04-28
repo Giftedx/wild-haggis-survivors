@@ -87,6 +87,17 @@ export function drawMantleTier(
   g.arc(cx - 6, cy - 9, 11, 0.25, Math.PI - 0.25, false);
   g.strokePath();
 
+  // Three woven tartan pinthreads over the collar. They are tiny, but
+  // repeated across every mantle they make the upgrade feel handmade
+  // rather than a generic coloured cap.
+  g.fillStyle(0xb82020, isSpectral ? 0.45 : 0.75);
+  g.fillRect(cx - 15, cy - 8.2, 18, 0.55);
+  g.fillStyle(0x2e6b35, isSpectral ? 0.38 : 0.65);
+  g.fillRect(cx - 13, cy - 7.2, 15, 0.45);
+  g.fillStyle(0xe3b74e, isSpectral ? 0.42 : 0.72);
+  g.fillRect(cx - 10, cy - 10.6, 0.55, 4);
+  g.fillRect(cx - 2, cy - 10.2, 0.55, 3.5);
+
   // Crossed-X stitches along the collar hem (~5px spacing). Two short
   // diagonals per stitch reads as cloth thread rather than dot noise.
   g.lineStyle(1, stitch, 0.85);
@@ -183,6 +194,16 @@ export function drawMantleTier(
   g.beginPath();
   g.arc(cx - 8, cy - 4, 13, 0.15, Math.PI - 0.15, false);
   g.strokePath();
+
+  // Lower woven edge: a red-green-gold sett compressed to pixel scale.
+  g.fillStyle(0xb82020, isSpectral ? 0.35 : 0.62);
+  g.fillRect(cx - 19, cy + 1.4, 24, 0.55);
+  g.fillStyle(0x2e6b35, isSpectral ? 0.28 : 0.52);
+  g.fillRect(cx - 18, cy + 2.2, 21, 0.45);
+  g.fillStyle(0xe3b74e, isSpectral ? 0.36 : 0.68);
+  for (const dx of [-17, -11, -5, 1]) {
+    g.fillRect(cx + dx, cy - 5.5, 0.5, 8);
+  }
 
   g.lineStyle(1, stitch, 0.8);
   for (const dx of [-18, -13, -8, -3, 2]) {
