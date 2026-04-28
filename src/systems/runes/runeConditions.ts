@@ -103,7 +103,16 @@ export function evaluateRuneCondition(
     case 'near_cairn': return ctx.nearCairn;
     case 'biome_dusk': return ctx.timeOfDayKey === 'dusk';
     case 'biome_cold': return ctx.biomeKey === 'cold';
-    case 'biome_coastal': return ctx.biomeKey === 'coastal';
+    case 'biome_coastal':
+      // B5 Phase 1 foundation grounding: until the dedicated `coastal`
+      // biome ships (Seawrack + Haar coastal cluster, ~3 weeks), Loch
+      // Edge stands in. Loch's ambientHaarDensity (0.2 — second-highest
+      // shipped) plus its `lochKnockback` modifier already evoke the
+      // coast/shore tonal palette; the rune semantics (pickup-chain
+      // hangs on by the shore) play cleanly there. When the dedicated
+      // coastal biome ships, this OR-fallback can be tightened back to
+      // `=== 'coastal'` if the design wants.
+      return ctx.biomeKey === 'coastal' || ctx.biomeKey === 'loch';
     case 'post_bell': return ctx.postBell;
     case 'biome_urban': return ctx.biomeKey === 'urban';
     // ── state ──

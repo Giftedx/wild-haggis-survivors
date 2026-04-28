@@ -46,15 +46,14 @@ const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
   'biome_fog',
   // No live biome 'cold' — Cailleach winter biome unshipped.
   'biome_cold',
-  // No live biome 'coastal' — loch is the closest live cousin but the
-  // Seawrack rune semantics (pickup-radius doubling on the shore) read
-  // as dedicated coastal flavour; gate until that biome lands.
-  'biome_coastal',
   // No live biome 'urban' — Edinburgh/Glasgow biomes future work.
   'biome_urban',
   // 'biome_dusk' graduated 2026-04-28 (B5 Phase 0). GameScene now
   // populates timeOfDayKey via computeTimeOfDayKey, so gloaming_rune
   // fires in the 15-22min window of every run.
+  // 'biome_coastal' graduated as a foundation step ahead of B5 Phase 1
+  // (Seawrack + Haar coastal cluster). The condition evaluator maps
+  // Loch Edge as the live coastal-foundation biome — see runeConditions.ts.
 ]);
 
 /**

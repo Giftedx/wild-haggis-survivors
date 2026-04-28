@@ -44,6 +44,17 @@ describe('runeConditions — biome bucket (U1 Task 5)', () => {
     expect(evaluateRuneCondition('biome_urban', ctx({ biomeKey: 'urban' }))).toBe(true);
   });
 
+  it('biome_coastal also accepts loch as the B5-Phase-1 foundation', () => {
+    // Loch Edge stands in as the live coastal biome until the Seawrack +
+    // Haar coastal cluster ships (B5 Phase 1). The OR-fallback in the
+    // evaluator grounds seawrack_rune today; the rune drops off the
+    // ungrounded filter in `runeCards.ts`.
+    expect(evaluateRuneCondition('biome_coastal', ctx({ biomeKey: 'loch' }))).toBe(true);
+    // Other biomes still reject — only coastal + loch qualify.
+    expect(evaluateRuneCondition('biome_coastal', ctx({ biomeKey: 'bog' }))).toBe(false);
+    expect(evaluateRuneCondition('biome_coastal', ctx({ biomeKey: 'pine' }))).toBe(false);
+  });
+
   it('post_bell reads flag', () => {
     expect(evaluateRuneCondition('post_bell', ctx({ postBell: true }))).toBe(true);
     expect(evaluateRuneCondition('post_bell', base)).toBe(false);
