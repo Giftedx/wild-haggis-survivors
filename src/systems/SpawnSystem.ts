@@ -102,9 +102,14 @@ export class SpawnSystem {
   private killPressure: number = 0;
   /** When true, `spawnBurst` is a no-op (final boss phase). */
   private regularSpawnsDisabled: boolean = false;
-  /** Set when a boss is ready to spawn but physics is paused (level-up / manual pause).
-   *  The next unpaused update() tick will flush and clear it. */
-  private pendingBossSpawn: (() => void) | null = null;
+  /** Bosses ready to spawn but physics is paused (level-up / manual pause).
+   *  The next unpaused update() tick flushes them in FIFO order. Used as a
+   *  queue (not a single slot) because when two boss windows cross the
+   *  player's clock simultaneously — e.g. timeline-skip from 5:00 past
+   *  10:00 lands the each_uisge (7:30) and tour_bus (10:00) warnings on
+   *  the same frame — both can hit the paused branch and a single-slot
+   *  field would silently drop one. */
+  private pendingBossSpawns: Array<() => void> = [];
   private bossCheckFrame: number = -1;
 
   /** Active boss warning / intro VFX objects — cleaned up on destroy to prevent stale tween callbacks. */
@@ -242,17 +247,34 @@ export class SpawnSystem {
   }
 
   /**
-   * Debug/test hook: find the first active boss in the pool, or null.
-   * Used by DebugTimeTravelApi.killCurrentBoss to drive the W2 E2E
-   * boss-sequence playthrough without exposing the pool directly.
+   * Debug/test hook: find the highest-priority active boss in the pool,
+   * or null. Used by DebugTimeTravelApi.killCurrentBoss to drive the W2
+   * E2E boss-sequence playthrough without exposing the pool directly.
+   *
+   * **Latest-spawn preference.** When multiple bosses are alive at once
+   * (timeline-skip past two consecutive boss windows like 7:30 each_uisge
+   * + 10:00 tour_bus, or Phase B Endless post-bell cadence overlapping
+   * the final boss at `RUN_WIN_TIME_SEC`), the boss with the latest
+   * `spawnTimeSec` wins so `DEBUG.killCurrentBoss()` deterministically
+   * targets the act-gating / final boss rather than whichever pre-act
+   * boss happens to sit earlier in the pool. Single-boss scenarios
+   * behave as before.
    */
   findActiveBoss(): Enemy | null {
     const active = this.pool.getChildren() as Enemy[];
+    let best: Enemy | null = null;
+    let bestSpawnTime = -1;
     for (let i = 0; i < active.length; i++) {
       const e = active[i];
-      if (e.active && e.isBoss()) return e;
+      if (!e.active || !e.isBoss()) continue;
+      const cfg = BOSSES.find(b => b.key === e.getEnemyKey());
+      const spawnTime = cfg?.spawnTimeSec ?? -1;
+      if (spawnTime > bestSpawnTime) {
+        best = e;
+        bestSpawnTime = spawnTime;
+      }
     }
-    return null;
+    return best;
   }
 
   /**
@@ -336,7 +358,7 @@ export class SpawnSystem {
     this.spawnedBossKeys.clear();
     this.bossSpawnScheduled.clear();
     this.bossActive = false;
-    this.pendingBossSpawn = null;
+    this.pendingBossSpawns.length = 0;
     this.bossCheckFrame = -1;
     this.runWinFinaleStarted = false;
     this.regularSpawnsDisabled = false;
@@ -381,12 +403,14 @@ export class SpawnSystem {
     // Flush a deferred boss spawn once physics is running again.
     // scene.time.delayedCall still fires during the level-up modal (physics
     // pause), but we don't want a boss to materialize and bossActive to flip
-    // while the player is picking cards. The callback sets this closure
-    // which we run here on the next unpaused tick.
-    if (this.pendingBossSpawn && !this.scene.getTimeManager().isGameplayPaused()) {
-      const fn = this.pendingBossSpawn;
-      this.pendingBossSpawn = null;
-      fn();
+    // while the player is picking cards. Warning callbacks push their
+    // doSpawn closures into the queue when paused — flush them in FIFO
+    // order on the next unpaused tick so simultaneous warnings (e.g.
+    // each_uisge + tour_bus crossing thresholds in the same skip-frame)
+    // both materialize.
+    if (this.pendingBossSpawns.length > 0 && !this.scene.getTimeManager().isGameplayPaused()) {
+      const queued = this.pendingBossSpawns.splice(0, this.pendingBossSpawns.length);
+      for (const fn of queued) fn();
     }
 
     if (!this.runWinFinaleStarted && this.gameTimeSec >= BALANCE.run.RUN_WIN_TIME_SEC) {
@@ -484,7 +508,7 @@ export class SpawnSystem {
       const enemy = Enemy.acquireFromPool(this.pool, this.scene);
       if (!enemy) {
         // Pool saturated — retry next unpaused tick (do not consume spawnedBossKeys).
-        this.pendingBossSpawn = doSpawn;
+        this.pendingBossSpawns.push(doSpawn);
         return;
       }
 
@@ -591,7 +615,7 @@ export class SpawnSystem {
     this.scene.getUpdateTickers().addOnce('raw', BALANCE.bossWarning.spawnDelayMs, () => {
       if (this.spawnedBossKeys !== runRef) return;
       if (this.scene.getTimeManager().isGameplayPaused()) {
-        this.pendingBossSpawn = doSpawn;
+        this.pendingBossSpawns.push(doSpawn);
       } else {
         doSpawn();
       }
@@ -723,6 +747,7 @@ export class SpawnSystem {
     }
 
     this.clearNonBossEnemiesForFinale();
+    this.clearLingeringNonFinalBossesForFinale();
 
     const finalBoss = BOSSES.find(b => b.key === BALANCE.run.FINAL_BOSS_KEY);
     if (!finalBoss) return;
@@ -740,6 +765,27 @@ export class SpawnSystem {
       if (e.isBoss()) continue;
       e.forceKill();
     }
+  }
+
+  /**
+   * Force-removes any non-final bosses still alive when the finale starts.
+   * In normal play, time advances continuously and the player will have
+   * already killed mid-run bosses (each_uisge / the_laird / hunter_general)
+   * by the time gameTimeSec hits `RUN_WIN_TIME_SEC`. The only way a
+   * non-final boss is alive at finale-start is via timeline-skip debug
+   * tooling, in which case we want a clean stage for taxman rather than
+   * a chaotic two-boss fight that breaks killCurrentBoss determinism.
+   * Uses `forceKill` (no XP / drops) so dev-skip flows don't gift the
+   * player extra rewards.
+   */
+  private clearLingeringNonFinalBossesForFinale(): void {
+    const enemies = this.pool.getChildren() as Enemy[];
+    for (const e of enemies) {
+      if (!e.active || !e.isBoss()) continue;
+      if (e.getEnemyKey() === BALANCE.run.FINAL_BOSS_KEY) continue;
+      e.forceKill();
+    }
+    this.bossActive = false;
   }
 
   private spawnBurst(playerX: number, playerY: number): void {

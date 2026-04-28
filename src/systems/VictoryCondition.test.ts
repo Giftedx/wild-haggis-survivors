@@ -39,16 +39,23 @@ describe('Phase 38 — run win finale / victory path', () => {
   it('beginRunWinFinale clears non-boss enemies and schedules the final boss', () => {
     const forceKill = vi.fn();
     const mob = { active: true, isBoss: () => false, forceKill };
-    const bossMob = { active: true, isBoss: () => true, forceKill: vi.fn() };
+    // Lingering final-boss-keyed mob (e.g. a stale taxman) is preserved —
+    // the finale's own spawnBoss call will materialize the canonical instance.
+    const finalBossMob = {
+      active: true, isBoss: () => true,
+      getEnemyKey: () => BALANCE.run.FINAL_BOSS_KEY,
+      forceKill: vi.fn(),
+    };
     const spawnBoss = vi.fn();
 
     const ss: any = Object.create(SpawnSystem.prototype);
 
     ss.scene = { getTimeManager: () => ({ isGameplayPaused: () => false }) };
-    const poolChildren = [mob, bossMob];
+    const poolChildren = [mob, finalBossMob];
     ss.pool = { getChildren: () => poolChildren, children: { entries: poolChildren } };
     ss.runWinFinaleStarted = false;
     ss.regularSpawnsDisabled = false;
+    ss.bossActive = true;
     ss.spawnedBossKeys = new Set();
     ss.bossSpawnScheduled = new Set();
     ss.spawnBoss = spawnBoss;
@@ -56,7 +63,7 @@ describe('Phase 38 — run win finale / victory path', () => {
     (SpawnSystem.prototype as unknown as ProtoFinale).beginRunWinFinale.call(ss, 10, 20);
 
     expect(forceKill).toHaveBeenCalledTimes(1);
-    expect(bossMob.forceKill).not.toHaveBeenCalled();
+    expect(finalBossMob.forceKill).not.toHaveBeenCalled();
     expect(ss.regularSpawnsDisabled).toBe(true);
     expect(ss.runWinFinaleStarted).toBe(true);
     expect(spawnBoss).toHaveBeenCalledTimes(1);
@@ -67,5 +74,35 @@ describe('Phase 38 — run win finale / victory path', () => {
         expect(ss.spawnedBossKeys.has(b.key)).toBe(true);
       }
     }
+  });
+
+  it('beginRunWinFinale force-kills any lingering non-final boss so the finale stage is clean', () => {
+    // Skip-jump can leave a mid-run boss alive past RUN_WIN_TIME_SEC; the
+    // finale should clear that boss instead of staging a chaotic two-boss
+    // fight that breaks `findActiveBoss` determinism for debug tooling.
+    const lingeringBossKill = vi.fn();
+    const lingering = {
+      active: true, isBoss: () => true,
+      getEnemyKey: () => 'each_uisge',
+      forceKill: lingeringBossKill,
+    };
+    const spawnBoss = vi.fn();
+
+    const ss: any = Object.create(SpawnSystem.prototype);
+    ss.scene = { getTimeManager: () => ({ isGameplayPaused: () => false }) };
+    const poolChildren = [lingering];
+    ss.pool = { getChildren: () => poolChildren, children: { entries: poolChildren } };
+    ss.runWinFinaleStarted = false;
+    ss.regularSpawnsDisabled = false;
+    ss.bossActive = true;
+    ss.spawnedBossKeys = new Set();
+    ss.bossSpawnScheduled = new Set();
+    ss.spawnBoss = spawnBoss;
+
+    (SpawnSystem.prototype as unknown as ProtoFinale).beginRunWinFinale.call(ss, 0, 0);
+
+    expect(lingeringBossKill).toHaveBeenCalledTimes(1);
+    expect(ss.bossActive).toBe(false);
+    expect(spawnBoss).toHaveBeenCalledTimes(1);
   });
 });

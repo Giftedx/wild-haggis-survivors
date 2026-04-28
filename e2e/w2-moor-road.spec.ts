@@ -195,7 +195,7 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     const bossKillBumpsAct = async (
       minute: number,
       expectedAct: 1 | 2 | 3,
-    ): Promise<{ act?: number; killed: boolean; picks?: number; pickerOpened?: boolean; bossKills?: number; lastGameTime?: number }> => {
+    ): Promise<{ act?: number; killed: boolean; killedKey?: string; picks?: number; pickerOpened?: boolean; bossKills?: number; lastGameTime?: number; bossesAlive?: string[] }> => {
       return page.evaluate(async ({ minute, expectedAct }) => {
         const dbg = (window as unknown as { DEBUG?: {
           skipToMinute(m: number): void;
@@ -219,9 +219,26 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
         // Let the boss spawn then kill it.
         const bossStart = Date.now();
         let killed = false;
+        let killedKey: string | undefined;
         let lastGameTime = 0;
+        let bossesAlive: string[] = [];
+        const gsTyped = gs0 as unknown as {
+          spawnSystem?: {
+            getGameTimeSec?(): number;
+            findActiveBoss(): { getEnemyKey?(): string } | null;
+            getEnemyGroup(): { getChildren(): Array<{ active: boolean; isBoss?(): boolean; getEnemyKey?(): string }> };
+          };
+        };
         while (Date.now() - bossStart < 20_000) {
           lastGameTime = gs0.spawnSystem?.getGameTimeSec?.() ?? 0;
+          const liveBosses = gsTyped.spawnSystem?.getEnemyGroup?.().getChildren()
+            .filter((e) => e.active && e.isBoss?.())
+            .map((e) => e.getEnemyKey?.() ?? '?') ?? [];
+          if (liveBosses.length > 0) {
+            bossesAlive = liveBosses;
+          }
+          const target = gsTyped.spawnSystem?.findActiveBoss?.();
+          killedKey = target?.getEnemyKey?.();
           if (dbg.killCurrentBoss()) { killed = true; break; }
           await new Promise((r) => setTimeout(r, 100));
         }
@@ -272,8 +289,10 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
 
         return {
           killed,
+          killedKey,
           pickerOpened,
           lastGameTime,
+          bossesAlive,
           act: gs.runActState?.currentAct,
           picks: gs.runActState?.pickerHistory.length,
           bossKills: gs.runScore?.bossKillCount,
@@ -301,12 +320,19 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     // Tour bus at 10:00. Skip past so the warning has headroom.
     const act2 = await bossKillBumpsAct(11, 3);
     expect(act2.killed, 'tour_bus was not killed').toBe(true);
-    expect(act2.act, 'RunActState.current did not advance to act 3').toBe(3);
+    expect(
+      act2.act,
+      `RunActState.current did not advance to act 3: killedKey=${act2.killedKey}, pickerOpened=${act2.pickerOpened}, picks=${act2.picks}, bossKills=${act2.bossKills}, gameTime=${act2.lastGameTime}, alive=${JSON.stringify(act2.bossesAlive)}`,
+    ).toBe(3);
 
     // Same settle wait before the final skip.
     await page.waitForTimeout(1_000);
 
-    // Taxman (act 3 final) — victory path, no picker.
+    // Taxman (act 3 final) — victory path, no picker. Skip-to-minute 25
+    // can leave a stale mid-run boss alive (each_uisge spawned alongside
+    // tour_bus during the act-2 timeline jump but was never killed); kill
+    // any non-taxman boss first to clear the stage, then wait for the
+    // finale spawn before asserting victoryPending.
     const victoryReached = await page.evaluate(async () => {
       const dbg = (window as unknown as { DEBUG?: {
         skipToMinute(m: number): void;
@@ -314,17 +340,28 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
       } }).DEBUG;
       if (!dbg) return false;
       dbg.skipToMinute(25);
-      const start = Date.now();
-      while (Date.now() - start < 15_000) {
-        if (dbg.killCurrentBoss()) break;
-        await new Promise((r) => setTimeout(r, 100));
-      }
       const g = (window as unknown as { game: {
         scene: { scenes: Array<{ scene: { key: string } }> };
       } }).game;
       const gs = g.scene.scenes.find((s) => s.scene.key === 'Game') as unknown as {
         runScore?: { victoryPending?: boolean };
+        spawnSystem?: { findActiveBoss(): { getEnemyKey?(): string } | null };
       };
+      const start = Date.now();
+      while (Date.now() - start < 15_000) {
+        const boss = gs.spawnSystem?.findActiveBoss?.();
+        const key = boss?.getEnemyKey?.();
+        if (key === 'taxman') {
+          dbg.killCurrentBoss();
+          break;
+        }
+        if (key) {
+          // Stale mid-run boss from skip-jump — clear it so taxman can
+          // spawn / become the active target without race-killing it.
+          dbg.killCurrentBoss();
+        }
+        await new Promise((r) => setTimeout(r, 100));
+      }
       const victoryStart = Date.now();
       while (Date.now() - victoryStart < 5_000) {
         if (gs.runScore?.victoryPending === true) return true;
