@@ -10,6 +10,7 @@ import type { BiomeManager } from './BiomeManager';
 import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';
 import { getActiveSeasonalEventKey } from './SeasonalEventManager';
+import { safeAddImage } from '../scenes/safeAddImage';
 
 interface FloraSprite {
   image: Phaser.GameObjects.Image;
@@ -268,7 +269,11 @@ export class FloraScatter {
       const phase = rng.next() * Math.PI * 2;
       const swayable = isSwayable(textureKey);
 
-      const img = scene.add.image(x, y, textureKey);
+      // Guard via safeAddImage — when a unit-test stub skips BootScene
+      // baking, the missing-texture key returns null and we skip the
+      // sprite. Production paths always have the texture from Boot.
+      const img = safeAddImage(scene, x, y, textureKey);
+      if (!img) continue;
       img.setDepth(-3 + (y / worldH) * 0.5);
       img.setAlpha(0.7);
       img.setScale(scale);

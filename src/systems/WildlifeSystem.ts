@@ -12,6 +12,7 @@ import type { BiomeManager } from './BiomeManager';
 import type { BiomeId } from '../data/biomes';
 import type { RNG } from '../utils/rng';
 import { WILDLIFE_DEFS, type WildlifeDef, type WildlifeKey } from '../data/wildlife';
+import { safeAddImage } from '../scenes/safeAddImage';
 
 // How many of each creature to place per run. Counts stay conservative because
 // wildlife is background warmth, not a gameplay hazard.
@@ -110,14 +111,19 @@ export class WildlifeSystem {
         const biome = biomeManager.biomeAt(x, y);
         if (!validBiomes.has(biome)) continue;
 
-        const sprite = scene.add.image(x, y, def.spriteKeyIdle)
-          .setScale(def.scale)
+        // Guard via safeAddImage — see FloraScatter for context. Wildlife
+        // sprite + shadow keys are baked by BootScene in production; the
+        // null path covers test stubs that skip the bake.
+        const sprite = safeAddImage(scene, x, y, def.spriteKeyIdle);
+        if (!sprite) continue;
+        sprite.setScale(def.scale)
           .setDepth(def.aerial ? 450 : -3 + y / worldH * 0.5);
 
         // Aerial creatures render above gameplay layer; no shadow.
-        const shadow = def.aerial ? null : scene.add.image(x, y + 8, 'entity_shadow')
-          .setScale(0.4)
-          .setDepth(-3 + y / worldH * 0.5 - 0.01);
+        const shadow = def.aerial ? null : safeAddImage(scene, x, y + 8, 'entity_shadow');
+        if (shadow) {
+          shadow.setScale(0.4).setDepth(-3 + y / worldH * 0.5 - 0.01);
+        }
 
         this.creatures.push({
           key,
