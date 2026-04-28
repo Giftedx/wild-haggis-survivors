@@ -155,8 +155,8 @@ describe('AchievementManager', () => {
     expect(save.load().unlockedAchievements).toContain('ach_moor_hearth_30');
   });
 
-  it('unlocks ach_all_bosses when 5 distinct bosses killed in one run', () => {
-    const bossKeys = ['gordon', 'tour_bus', 'the_laird', 'hunter_general', 'taxman'];
+  it('unlocks ach_all_bosses when every boss killed in one run', () => {
+    const bossKeys = ['gordon', 'each_uisge', 'tour_bus', 'the_laird', 'hunter_general', 'taxman'];
     for (const key of bossKeys) {
       globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
         enemyKey: key,

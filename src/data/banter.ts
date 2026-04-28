@@ -107,6 +107,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.gordon.b',
         'ui.banter.boss_warn.gordon.c',
       ],
+      each_uisge: [
+        'ui.banter.boss_warn.each_uisge.a',
+        'ui.banter.boss_warn.each_uisge.b',
+        'ui.banter.boss_warn.each_uisge.c',
+      ],
       tour_bus: [
         'ui.banter.boss_warn.tour_bus.a',
         'ui.banter.boss_warn.tour_bus.b',
@@ -236,6 +241,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.gordon.a',
         'ui.banter.boss_down.gordon.b',
         'ui.banter.boss_down.gordon.c',
+      ],
+      each_uisge: [
+        'ui.banter.boss_down.each_uisge.a',
+        'ui.banter.boss_down.each_uisge.b',
+        'ui.banter.boss_down.each_uisge.c',
       ],
       tour_bus: [
         'ui.banter.boss_down.tour_bus.a',
