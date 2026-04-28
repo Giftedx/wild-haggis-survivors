@@ -450,6 +450,9 @@ export const SCS_STRINGS: LocaleTree = {
     standrews: {
       blessing_toast: 'Saltire ower tha muir — saint\'s haund on tha broo. +20 HP, hits land safter.',
     },
+    burnsNight: {
+      blessing_toast: 'Address tae tha haggis read aloud — tha bard quickens tha verse. +18 HP, wapens fire keener.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',

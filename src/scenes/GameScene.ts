@@ -80,6 +80,7 @@ import {
 import { applyBeltaneBlessing } from '../systems/beltaneBlessing';
 import { applySamhainVeil } from '../systems/samhainVeil';
 import { applyStAndrewsBlessing } from '../systems/standrewsBlessing';
+import { applyBurnsNightBlessing } from '../systems/burnsNightBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -758,6 +759,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       seasonalEventKey,
       this.runModifiers,
     );
+    const burnsResult = applyBurnsNightBlessing(
+      seasonalEventKey,
+      this.runModifiers,
+    );
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
@@ -836,6 +841,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.time.delayedCall(1500, () => {
         if (!this.scene.isActive('Game')) return;
         this.juice.showToast(t('ui.standrews.blessing_toast'), '#5a8acc');
+      });
+    } else if (burnsResult.applied) {
+      this.player.heal(burnsResult.extraStartingHpHeal);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.burnsNight.blessing_toast'), '#c89060');
       });
     }
 

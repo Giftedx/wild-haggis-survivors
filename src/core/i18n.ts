@@ -760,6 +760,15 @@ export const EN_STRINGS: LocaleTree = {
     standrews: {
       blessing_toast: 'Saltire over the moor — saint\'s hand on the brow. +20 HP, hits land softer.',
     },
+    /**
+     * Burns Night Bardic Blessing — Jan 18 – Feb 1 seasonal hook.
+     * The bard of haggis quickens the verse — +18 HP heal,
+     * weaponCooldownMult ×0.95. Coexists with the Burns's Wee Beastie
+     * variant unlock that gates on full-evo runs in this window.
+     */
+    burnsNight: {
+      blessing_toast: 'Address to the haggis read aloud — the bard quickens the verse. +18 HP, weapons fire keener.',
+    },
     hud: {
       combo: '{count}× streak{bonus}',
       combo_bonus: ' · +{pct}% wallop',
