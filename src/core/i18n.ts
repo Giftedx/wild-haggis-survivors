@@ -2889,21 +2889,25 @@ export const EN_STRINGS: LocaleTree = {
     bog: {
       name: 'The Bog',
       entry: 'Intae the bog, wee man — watch yir hooves.',
+      loreSnippet: 'Peat goes deep. Watch the peat hags an mind the midges.',
       lore: 'Peat lies deep here — wet, black, ancient. The bog has held things for thousands of years: bog cotton, sphagnum moss, the occasional bronze-age body preserved in the tannin. Watch the peat hags — gullies cut by water — and mind the midges at dusk. The smell of wet peat is the smell of Scotland boiled doon, and a peat fire warms whisky better than any electric. Sink up tae the knees if ye stop tae admire it.',
     },
     loch: {
       name: 'Loch Edge',
       entry: 'Loch\'s watchin\'. Somethin\' under there.',
+      loreSnippet: 'By yon bonnie banks. Each-uisge minds the deep.',
       lore: 'By yon bonnie banks. Lochs run deep — Ness deeper than the North Sea, Lomond longer than London. They keep their old residents close: each-uisge, the water-horse that drowns the unwary; selkies who shed their seal-skins on rocks and dance under stars; kelpies who lure travellers in. Otter and osprey work the shallows in daylight. At dusk the surface goes flat as a black mirror, and ye mind the loch was here lang before ye arrived and will be here lang after.',
     },
     pine: {
       name: 'Pine Thicket',
       entry: 'Dark amang the pines. Stay sharp.',
+      loreSnippet: 'Old Caledonian pines. Faerie folk hold court in the deepest groves.',
       lore: 'The Caledonian Forest aince covered maist o the Hielans — Pinus sylvestris, Scots pine, gnarled and twin-trunked. The remnant scraps (Black Wood o Rannoch, Glen Affric) are aulder than maist kingdoms. Listen for capercaillie tympani-thumping in spring, and watch the canopy for red squirrels and pine martens. Midges roost in the bracken. The faerie folk hold court in the deepest groves; if ye hear a fiddle and ye cannae find the player, walk briskly the other way.',
     },
     heather: {
       name: 'Heather Bloom',
       entry: 'The heather\'s singin\' — this is haggis country.',
+      loreSnippet: 'Calluna vulgaris in flower. Pure haggis country.',
       lore: 'Calluna vulgaris — heather — flowers in August, and the hale moor turns purple to the horizon. White heather is held tae bring luck (the lucky-heather sellers in the Glasgow Barras still trade on it). Grouse strut and clatter; heather honey lies thick and dark in the hives. This is haggis country — Burns ca\'d the moor "wild an stern" but maist wha bide here ca\' it hame. Walk softly: a flowering moor in late summer is yin o the things Scotland is.',
     },
   },

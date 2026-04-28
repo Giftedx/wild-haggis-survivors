@@ -25,6 +25,12 @@ export interface BiomeDef {
   /** Entry-toast i18n key (Glesga patter). */
   readonly entryToastKey: string;
   /**
+   * Single-sentence lore snippet shown 2.5 s after the entry toast on
+   * the first encounter of each biome each run. Distilled from the
+   * long-form `loreKey`; same place + voice, tighter for HUD use.
+   */
+  readonly loreSnippetKey: string;
+  /**
    * Long-form Almanac lore i18n key — soulful 60-80-word entry that
    * carries the place's history, wildlife, and Scottish character.
    * Resolved by the Almanac Weys / Beasties detail panels and by any
@@ -56,6 +62,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.bog.name',
     tint: 0x3a4a1a,
     entryToastKey: 'biomes.bog.entry',
+    loreSnippetKey: 'biomes.bog.loreSnippet',
     loreKey: 'biomes.bog.lore',
     toastColor: '#9aa070',
     spawnWeightMods: {
@@ -74,6 +81,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.loch.name',
     tint: 0x2a4a6a,
     entryToastKey: 'biomes.loch.entry',
+    loreSnippetKey: 'biomes.loch.loreSnippet',
     loreKey: 'biomes.loch.lore',
     toastColor: '#88bbdd',
     spawnWeightMods: {
@@ -92,6 +100,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.pine.name',
     tint: 0x1a3a22,
     entryToastKey: 'biomes.pine.entry',
+    loreSnippetKey: 'biomes.pine.loreSnippet',
     loreKey: 'biomes.pine.lore',
     toastColor: '#5a8a5a',
     spawnWeightMods: {
@@ -109,6 +118,7 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     nameKey: 'biomes.heather.name',
     tint: COLORS.HEATHER,
     entryToastKey: 'biomes.heather.entry',
+    loreSnippetKey: 'biomes.heather.loreSnippet',
     loreKey: 'biomes.heather.lore',
     toastColor: '#c699ee',
     spawnWeightMods: {

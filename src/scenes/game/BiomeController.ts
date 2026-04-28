@@ -18,6 +18,11 @@ import type { RNG } from '../../utils/rng';
 import { t } from '../../core/i18n';
 import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 
+/** Delay between the existing biome-entry toast and the lore-snippet
+ *  follow-up. Long enough for the entry quip to register; short enough
+ *  that the player still feels they're in the moment. */
+const LORE_SNIPPET_DELAY_MS = 2500;
+
 export interface BiomeControllerOptions {
   /** F1 — invoked every time the player transitions into a biome (first-entry
    *  AND subsequent re-entries), with the new biome id. Consumers tween haar
@@ -31,6 +36,8 @@ export class BiomeController {
   private lastBiome: BiomeId | null = null;
   private toasted = new Set<BiomeId>();
   private onBiomeEnter?: (biome: BiomeId) => void;
+  /** Phaser scene retained for scheduling the lore-snippet follow-up. */
+  private scene: Phaser.Scene;
 
   constructor(
     scene: Phaser.Scene,
@@ -40,9 +47,27 @@ export class BiomeController {
     opts: BiomeControllerOptions = {},
   ) {
     const layout = createBiomeLayout(rng, worldWidth, worldHeight);
+    this.scene = scene;
     this.manager = new BiomeManager(layout);
     this.renderer = new BiomeRenderer(scene, this.manager);
     this.onBiomeEnter = opts.onBiomeEnter;
+  }
+
+  /**
+   * Defer a follow-up toast carrying the biome's lore snippet. Pulled
+   * out so the tick path stays scannable. Scene-active guard prevents
+   * the line firing into a stopped scene if the player dies inside the
+   * delay window.
+   */
+  private scheduleLoreSnippet(
+    snippetKey: string,
+    color: string,
+    juice: JuiceSystem,
+  ): void {
+    this.scene.time.delayedCall(LORE_SNIPPET_DELAY_MS, () => {
+      if (!this.scene.scene.isActive('Game')) return;
+      juice.showToast(t(snippetKey), color);
+    });
   }
 
   /** Called once per update from GameScene. Toasts on first entry;
@@ -57,6 +82,14 @@ export class BiomeController {
       juice.showToast(t(def.entryToastKey), def.toastColor);
       juice.biomeEntryBurst(player.x, player.y, current);
       musicEngine.playBiomeAccent(def.moodTimbre);
+      // Lore snippet — a 1-line distillation of the biome's long-form
+      // lore, surfaced 2.5 s after the entry toast on the first
+      // encounter each run. The capture-loop closure preserves the
+      // current biome key so the delayed call shows the correct line
+      // even if the player sprints into the next biome inside 2.5 s.
+      const snippetKey = def.loreSnippetKey;
+      const snippetColor = def.toastColor;
+      this.scheduleLoreSnippet(snippetKey, snippetColor, juice);
     }
     player.setBiomeModifier(BIOMES[current].modifier);
     this.onBiomeEnter?.(current);
