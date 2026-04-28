@@ -208,6 +208,27 @@ describe('BANTER_POOLS structure', () => {
       }
     }
   });
+
+  // Boss-roster fence (2026-04-28). Promotes the spec-doc Risk-flag
+  // pattern into a real assertion: any boss added to BOSSES must also
+  // ship i18n leaves (display name + at least 2 boss_warn + 2 boss_down
+  // banter lines). Each-Uisge shipped without these wired and silently
+  // failed CI; this fence makes the omission impossible to miss.
+  it('every boss has authored EN i18n content (name + boss_warn + boss_down)', () => {
+    for (const boss of BOSSES) {
+      const nameKey = `boss.${boss.key}.name`;
+      expect(t(nameKey), `EN missing ${nameKey}`).not.toBe(nameKey);
+
+      for (const ctx of ['boss_warn', 'boss_down'] as const) {
+        // Pool tag entries reference letter-suffixed leaves (a, b, c...).
+        // Require ≥2 to match the keysByTag pool rule.
+        for (const suffix of ['a', 'b'] as const) {
+          const key = `ui.banter.${ctx}.${boss.key}.${suffix}`;
+          expect(t(key), `EN missing ${key}`).not.toBe(key);
+        }
+      }
+    }
+  });
 });
 
 describe('B1 Phase 1 — pending pool metadata', () => {

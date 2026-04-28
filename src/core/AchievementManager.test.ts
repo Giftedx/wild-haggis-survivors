@@ -156,7 +156,12 @@ describe('AchievementManager', () => {
   });
 
   it('unlocks ach_all_bosses when every boss killed in one run', () => {
-    const bossKeys = ['gordon', 'each_uisge', 'tour_bus', 'the_laird', 'hunter_general', 'taxman'];
+    // Derive bossKeys from BOSSES so adding a boss never silently drifts
+    // this test (caught 2026-04-28 after each_uisge shipped without the
+    // hand-maintained list being updated). AchievementManager.ts:84
+    // unlocks at runBossKills.size >= BOSSES.length, so emit one kill per
+    // boss key in the source-of-truth list.
+    const bossKeys = BOSSES.map(b => b.key);
     for (const key of bossKeys) {
       globalEventBus.emit('GLOBAL_ENEMY_KILLED', {
         enemyKey: key,
