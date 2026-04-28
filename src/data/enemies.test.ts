@@ -35,7 +35,7 @@ describe('ENEMY_TYPES', () => {
   });
 
   it('every enemy has a valid behavior type', () => {
-    const validBehaviors = ['chase', 'swarm', 'tank', 'dive', 'ranged', 'hazard', 'orbit', 'flee', 'spawner', 'phase', 'flank'];
+    const validBehaviors = ['chase', 'swarm', 'tank', 'dive', 'ranged', 'hazard', 'orbit', 'flee', 'spawner', 'phase', 'flank', 'three_bay'];
     for (const key of keys) {
       expect(validBehaviors, `${key} has unknown behavior: ${ENEMY_TYPES[key].behavior}`)
         .toContain(ENEMY_TYPES[key].behavior);

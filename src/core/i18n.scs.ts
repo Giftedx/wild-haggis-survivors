@@ -3485,6 +3485,9 @@ export const SCS_STRINGS: LocaleTree = {
     auditor_priest: {
       lore: 'Hauf-Calvinist meenister, hauf-treasury auditor. Censer in ae haund, balance-sheet in tha ither. Tha Kirk an tha Croon collected fae tha same drawer fer centuries. Tha haggis minds tha drawer.',
     },
+    cu_sith: {
+      lore: 'Cù Sìth — tha Hieland fairy hound. Mossy green-coated, tha size o a young bullock, lugs tall an intact. Hools thrice across tha muir; tha third hool catches onybody caught in tha open. Kill it afore tha third bay an tha chairge fails. SCOTTISH_RESEARCH §1.2; tha Hieland version o tha daith-hound — green, no black like tha Border barghest.',
+    },
     // ── Bosses (6) ──
     gordon: {
       lore: 'A chef o tha Sunday-roast schule wha took tha haggis personally. Loud, declarative, knife in each haund. Tha first boss o ony run; tha kind ye mind efter, no durin.',

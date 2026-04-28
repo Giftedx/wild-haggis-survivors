@@ -2985,6 +2985,9 @@ export const EN_STRINGS: LocaleTree = {
     auditor_priest: {
       lore: 'Half-Calvinist minister, half-treasury auditor. Censer in one hand, balance-sheet in the other. The Church and the Crown collected from the same drawer for centuries. The haggis remembers the drawer.',
     },
+    cu_sith: {
+      lore: 'Cù Sìth — the Highland fairy hound. Mossy green-coated, the size of a young bullock, ears tall and intact. Hools thrice across the moor; the third hool catches anyone caught in the open. Kill it before the third bay and the charge fails. SCOTTISH_RESEARCH §1.2; the Highland version of the death-hound — green, not black like the Border barghest.',
+    },
     // ── Bosses (6) ──
     gordon: {
       lore: 'A chef of the Sunday-roast school who took the haggis personally. Loud, declarative, knife in each hand. The first boss of any run; the kind you remember after, not during.',

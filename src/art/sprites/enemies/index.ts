@@ -26,6 +26,7 @@ import { bakeBuckfastNed } from './buckfastNed';
 import { bakeTrafficConeTotem } from './trafficConeTotem';
 import { bakeEdinburghGhostGuide } from './edinburghGhostGuide';
 import { bakeBarghest } from './barghest';
+import { bakeCuSith } from './cuSith';
 import { bakeKelpieFoal } from './kelpieFoal';
 import { bakeBlueManOfMinch } from './blueManOfMinch';
 import { bakeHaarWraith } from './haarWraith';
@@ -59,6 +60,7 @@ export function bakeEnemies(scene: Phaser.Scene): void {
   bakeTrafficConeTotem(scene);
   bakeEdinburghGhostGuide(scene);
   bakeBarghest(scene);
+  bakeCuSith(scene);
   bakeKelpieFoal(scene);
   bakeBlueManOfMinch(scene);
   bakeHaarWraith(scene);

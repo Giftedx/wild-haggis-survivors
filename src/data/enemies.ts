@@ -21,7 +21,17 @@ export type EnemyBehavior =
   | 'flee'
   | 'spawner'
   | 'phase'
-  | 'flank';
+  | 'flank'
+  /**
+   * Three-Bay Warning — Cu Sith signature behaviour. Approaches at
+   * base speed; on reaching ~250 px from the player it pauses for
+   * three "hools" (1.5 s each), each broadcasting via toast/SFX. On
+   * the third hool it charges at 3× speed for 1.5 s. After charge
+   * decays back to chase. Killing the Cu Sith before the third hool
+   * cancels the charge — the threat depends on letting all three
+   * bays land.
+   */
+  | 'three_bay';
 
 export interface EnemyConfig {
   key: string;
@@ -509,6 +519,30 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'ranged',
     packSize: 1,
   },
+  // Cu Sith — Highland fairy hound with the Three-Bay Warning
+  // signature. Foreshadowed in `ui.banter.death_reflection.h`
+  // ("Cu Sith nae howled — ye went easy"). Approaches at base speed;
+  // on reaching ~250 px pauses for three hools (1.5 s each), then
+  // charges at 3× speed for 1.5 s. Damage is the charge — kill it
+  // before the third bay and the threat is defused.
+  // SCOTTISH_RESEARCH.md §1.2 (Cù Sìth, fairy hound, death omen).
+  cu_sith: {
+    key: 'cu_sith',
+    texture: 'cu_sith',
+    speed: 80,
+    hp: 38,             // High enough to survive 2 bays of player fire
+                        // at typical mid-run DPS so the third bay can
+                        // land; killable before then with effort.
+    damage: 24,         // Deadly charge — bigger sting than chase enemies
+                        // (the gale_wraith at this point sits at 4),
+                        // but the player has 2× warning windows.
+    xpValue: 10,        // Reward matches the threat-clear payoff.
+    appearsAt: 720,     // 12:00 — late-game first appearance, after the
+                        // Faerie Court trio + redcap have introduced the
+                        // "telegraphed threat" reading the Cu Sith mirrors.
+    behavior: 'three_bay',
+    packSize: 1,
+  },
 };
 
 /**
@@ -550,6 +584,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   dean_apparition: 'Dean Apparition',
   ledger_wraith: 'Ledger Wraith',
   auditor_priest: 'Auditor Priest',
+  cu_sith: 'Cu Sith',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

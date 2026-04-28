@@ -110,6 +110,20 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   private phaseTimer: number = 0;
   private isPhased: boolean = false;
 
+  /**
+   * Three-Bay Warning state — Cu Sith signature behaviour.
+   *  0 = approaching (chase at base speed until within trigger radius).
+   *  1, 2 = pre-charge bays — pause for hool, no movement.
+   *  3 = charging — sprint at 3× speed toward last-known player position.
+   *  4 = post-charge cooldown / chase fallback.
+   */
+  private threeBayStage: 0 | 1 | 2 | 3 | 4 = 0;
+  /** Countdown ms within the current three-bay stage. */
+  private threeBayTimerMs: number = 0;
+  /** Charge target locked at start of stage 3. */
+  private threeBayChargeTargetX: number = 0;
+  private threeBayChargeTargetY: number = 0;
+
   /** Status effects */
   private burnDamage: number = 0;
   private burnTimer: number = 0;
@@ -582,7 +596,83 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       case 'phase':
         this.behaviorPhase(targetX, targetY, delta);
         break;
+      case 'three_bay':
+        this.behaviorThreeBay(targetX, targetY, delta);
+        break;
     }
+  }
+
+  /**
+   * Cu Sith Three-Bay Warning. Approaches the player at base speed.
+   * On reaching `THREE_BAY_TRIGGER_PX` (250 px), pauses for three
+   * "hools" — each ~1500 ms — then locks the player's position and
+   * charges at 3× speed for ~1500 ms before reverting to chase.
+   *
+   * Killing the Cu Sith mid-bay cancels everything; the threat is
+   * the charge, and the charge needs all three bays to land. The
+   * player's window is the bay-and-a-half they get warned during.
+   *
+   * Stage timing is on the per-frame `delta` (gameplay time) so
+   * slow-motion + pause behave the same as other behaviours.
+   */
+  private behaviorThreeBay(tx: number, ty: number, delta: number): void {
+    const THREE_BAY_TRIGGER_PX = 250;
+    const HOOL_DURATION_MS = 1500;
+    const CHARGE_DURATION_MS = 1500;
+    const CHARGE_SPEED_MUL = 3;
+
+    if (this.threeBayStage === 0) {
+      // Approach phase — chase at base speed until inside trigger radius.
+      const dx = tx - this.x;
+      const dy = ty - this.y;
+      const distSq = dx * dx + dy * dy;
+      if (distSq <= THREE_BAY_TRIGGER_PX * THREE_BAY_TRIGGER_PX) {
+        this.threeBayStage = 1;
+        this.threeBayTimerMs = HOOL_DURATION_MS;
+        this.setVelocity(0, 0);
+      } else {
+        this.setVelocityToward(tx, ty, this.speed);
+      }
+      return;
+    }
+
+    if (this.threeBayStage === 1 || this.threeBayStage === 2) {
+      // Pre-charge bays — frozen in place, telegraphing.
+      this.setVelocity(0, 0);
+      this.threeBayTimerMs -= delta;
+      if (this.threeBayTimerMs <= 0) {
+        const next = (this.threeBayStage + 1) as 2 | 3;
+        this.threeBayStage = next;
+        this.threeBayTimerMs = next === 3 ? CHARGE_DURATION_MS : HOOL_DURATION_MS;
+        if (next === 3) {
+          // Lock player position at charge start so the player can side-
+          // step the third bay if they read it.
+          this.threeBayChargeTargetX = tx;
+          this.threeBayChargeTargetY = ty;
+        }
+      }
+      return;
+    }
+
+    if (this.threeBayStage === 3) {
+      // Charge phase — sprint toward the locked target. The locked
+      // target can be sidestepped by a quick player; the third hool
+      // is the warning, the lock-on is the read.
+      this.setVelocityToward(
+        this.threeBayChargeTargetX,
+        this.threeBayChargeTargetY,
+        this.speed * CHARGE_SPEED_MUL,
+      );
+      this.threeBayTimerMs -= delta;
+      if (this.threeBayTimerMs <= 0) {
+        this.threeBayStage = 4;
+      }
+      return;
+    }
+
+    // Stage 4 — post-charge fallback to ordinary chase. The Cu Sith
+    // doesn't re-trigger; one warning per encounter.
+    this.setVelocityToward(tx, ty, this.speed);
   }
 
   /**

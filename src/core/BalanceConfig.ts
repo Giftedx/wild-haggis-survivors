@@ -40,6 +40,8 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 660, add: 'nest' },
     { t: 690, add: 'tome_wraith' },
     { t: 720, add: 'buckfast_ned' },
+    { t: 720, add: 'cu_sith' },         // 12:00 — Three-Bay Warning fey hound
+                                          // (DESIGN_IDEAS §1; SCOTTISH_RESEARCH §1.2).
     { t: 750, add: 'haar_wraith' },
     { t: 765, add: 'dean_apparition' },
     { t: 780, add: 'angry_scotsman' },
