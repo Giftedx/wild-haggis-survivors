@@ -1833,6 +1833,11 @@ export const SCS_STRINGS: LocaleTree = {
           b: 'Barghest. Heard o them — didnae want tae see wan.',
           c: 'Black hound\'s oot. Haud low an keep gaun.',
         },
+        cu_sith: {
+          a: 'A Cu Sith — green pelt, bullock-big. Hark fer tha bays.',
+          b: 'Fairy hound on tha muir. Tha third hool\'s tha ane tae watch.',
+          c: 'Cu Sith is here. Mind tha covine that keeps it.',
+        },
         kelpie_foal: {
           a: 'Wee yin\'s aw shimmer an ribbon. Dinnae chase tha gliff.',
           b: 'Kelpie foal, tempty wee thing. Hooves on dry grund, aye?',

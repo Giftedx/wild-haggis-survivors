@@ -2223,6 +2223,11 @@ export const EN_STRINGS: LocaleTree = {
           b: 'Barghest. Heard o them — didnae want tae see one.',
           c: 'Black hound\'s oot. Keep low an keep movin\'.',
         },
+        cu_sith: {
+          a: 'A Cu Sith — green pelt, bullock-big. Listen fer the bays.',
+          b: 'Fairy hound on the moor. The third hool\'s the one tae watch.',
+          c: 'Cu Sith is here. Mind the covine that keeps it.',
+        },
         kelpie_foal: {
           a: 'Wee yin\'s aw shimmer an ribbon. Dinnae follow the glow.',
           b: 'Kelpie foal, tempty wee thing. Hooves on land, aye?',

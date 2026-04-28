@@ -1689,6 +1689,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.enemy_ambient.barghest.b',
         'ui.banter.enemy_ambient.barghest.c',
       ],
+      // Cu Sith — Highland fairy hound, sister-companion family to
+      // barghest in the Cryptids cluster. Tone: warm-wary, "listen
+      // for the bays" — the three-hool warning is the fiction's
+      // identifying feature. Refs SCOTTISH_RESEARCH §1.2.
+      cu_sith: [
+        'ui.banter.enemy_ambient.cu_sith.a',
+        'ui.banter.enemy_ambient.cu_sith.b',
+        'ui.banter.enemy_ambient.cu_sith.c',
+      ],
       kelpie_foal: [
         'ui.banter.enemy_ambient.kelpie_foal.a',
         'ui.banter.enemy_ambient.kelpie_foal.b',
