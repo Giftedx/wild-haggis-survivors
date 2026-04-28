@@ -2,8 +2,13 @@
  * A1 PEAT prep — reproducible boots with Reduce Flashing OFF vs ON.
  * Human PEAT import still required; this spec proves settings load into
  * SettingsManager (`__WHS_COMFORT_PROBE`), not only localStorage round-trip.
+ *
+ * Imports from `./fixtures` (not `@playwright/test`) so the canvas
+ * `role="application"` selector resolves on chromium-desktop — the
+ * fixture sets `FORCE_CANVAS = true` to dodge WebGL framebuffer issues
+ * in headless chromium that otherwise hang Phaser's `postBoot` callback.
  */
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('PEAT prep: reduceFlashing OFF/ON boot pair', () => {
   test.setTimeout(90_000);
