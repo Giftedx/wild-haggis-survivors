@@ -2110,6 +2110,23 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.lammas.k',
         'ui.banter.seasonal_event.lammas.l',
       ],
+      // 2026-04-29 — Bracken-turn closes the cohort banter coverage to
+      // 8/8. 12 leaves voice the autumn-cusp moor: copper fronds, first
+      // frost, rooks gathering, fires lit early at the steading.
+      bracken_turn: [
+        'ui.banter.seasonal_event.bracken_turn.a',
+        'ui.banter.seasonal_event.bracken_turn.b',
+        'ui.banter.seasonal_event.bracken_turn.c',
+        'ui.banter.seasonal_event.bracken_turn.d',
+        'ui.banter.seasonal_event.bracken_turn.e',
+        'ui.banter.seasonal_event.bracken_turn.f',
+        'ui.banter.seasonal_event.bracken_turn.g',
+        'ui.banter.seasonal_event.bracken_turn.h',
+        'ui.banter.seasonal_event.bracken_turn.i',
+        'ui.banter.seasonal_event.bracken_turn.j',
+        'ui.banter.seasonal_event.bracken_turn.k',
+        'ui.banter.seasonal_event.bracken_turn.l',
+      ],
     },
   },
 ];

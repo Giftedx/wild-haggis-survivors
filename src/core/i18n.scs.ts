@@ -2475,6 +2475,21 @@ export const SCS_STRINGS: LocaleTree = {
           k: 'Last day o tha green. Bronze creepin in.',
           l: 'A wee dram fer Lugh — an ane fer tha neist swing.',
         },
+        // SCS overlay of EN bracken_turn leaves (2026-04-29).
+        bracken_turn: {
+          a: 'Bracken\'s gane copper. Tha muir\'s chyngeit claes.',
+          b: 'First frost in tha heather. Crunches different.',
+          c: 'Rooks gatherin. Thay feel tha cauld first.',
+          d: 'Last aipples on tha rowan. Tak ane, leave nine.',
+          e: 'Sun haurdly lifts noo. Walk in its oor, ye\'ll feel it.',
+          f: 'Smell tha peat-reek fae tha steidin? Fires lit early.',
+          g: 'Tha muir\'s pullin its coat tichter. Sae should ye.',
+          h: 'Halla-een\'s past. Tha auld warld settles.',
+          i: 'Bronze unner-fit. Tha year draps wecht.',
+          j: 'Fern-fronds rust-flecked — naebody pented em, mind.',
+          k: 'Cauld snap comin. Dinnae linger by tha burn.',
+          l: 'Tha muir minds warm. Haud tha thocht.',
+        },
       },
     },
     toast: {

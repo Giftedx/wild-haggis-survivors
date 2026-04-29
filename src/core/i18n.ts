@@ -3009,6 +3009,25 @@ export const EN_STRINGS: LocaleTree = {
           k: 'Last day o\' the green. Bronze creeping in.',
           l: 'A wee dram for Lugh — and one fer the next swing.',
         },
+        // ── Bracken-turn (Nov 4 - Nov 26). The autumn cusp — fronds
+        //    bronze, first frost, rooks gather. Hearth tone with Edge
+        //    bites about the cold half closing in. SCOTTISH_RESEARCH §1
+        //    moor phenology + folk markers. Voice: warm-melancholy,
+        //    coat-pulled-tighter, the moor settling for sleep. 12 leaves.
+        bracken_turn: {
+          a: 'Bracken\'s gone copper. The moor\'s changed claes.',
+          b: 'First frost in the heather. Crunches different.',
+          c: 'Rooks gathering. They feel the cauld first.',
+          d: 'Last apples on the rowan. Take ane, leave nine.',
+          e: 'Sun barely lifts noo. Walk in its hour, ye\'ll feel it.',
+          f: 'Smell the peat-smoke fae the steading? Fires lit early.',
+          g: 'The moor\'s pullin\' its coat tighter. So should you.',
+          h: 'Hallowe\'en\'s passed. The auld wireldd settles.',
+          i: 'Bronze underfoot. The year drops weight.',
+          j: 'Fern-fronds rust-flecked — naebody painted them, mind.',
+          k: 'Cauld snap comin\'. Dinnae linger by the burn.',
+          l: 'The moor remembers warm. Hold the thocht.',
+        },
       },
     },
     toast: {
