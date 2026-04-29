@@ -70,4 +70,16 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'imbolc', minimalLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for hogmanay — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    // Hogmanay uses layout.hearth.x/y in addition to table — extend
+    // minimal layout for this case so the drawer doesn't NPE.
+    const hogmanayLayout = {
+      ...minimalLayout,
+      hearth: { x: 0, y: 0 },
+    } as unknown as CroftLayout;
+    drawSeasonalProps(gfx, 'hogmanay', hogmanayLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });
