@@ -3679,6 +3679,9 @@ export const SCS_STRINGS: LocaleTree = {
     cu_sith: {
       lore: 'Cù Sìth — tha Hieland fairy hound. Mossy green-coated, tha size o a young bullock, lugs tall an intact. Hools thrice across tha muir; tha third hool catches onybody caught in tha open. Kill it afore tha third bay an tha chairge fails. SCOTTISH_RESEARCH §1.2; tha Hieland version o tha daith-hound — green, no black like tha Border barghest.',
     },
+    bodach_glas: {
+      lore: 'Tha Grey Auld Man o Ben Macdui. Hieland climbers hae heard him pacin ahint them on tha Cairngorm taps fer twa centuries — slaw, deliberate, silent. Some hae turned tae find naebody; some hivnae come back at aw. Grey-cloaked, hooded, a single staff fer tha climb. Folk-presence raither than monster — tha dread is that ye can see him comin an ye cannae ootrun him. SCOTTISH_RESEARCH §1.2; B5 Phase 2 frost-biome signature.',
+    },
     // ── Bosses (6) ──
     gordon: {
       lore: 'A chef o tha Sunday-roast schule wha took tha haggis personally. Loud, declarative, knife in each haund. Tha first boss o ony run; tha kind ye mind efter, no durin.',

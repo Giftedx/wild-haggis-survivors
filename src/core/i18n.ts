@@ -3223,6 +3223,9 @@ export const EN_STRINGS: LocaleTree = {
     cu_sith: {
       lore: 'Cù Sìth — the Highland fairy hound. Mossy green-coated, the size of a young bullock, ears tall and intact. Hools thrice across the moor; the third hool catches anyone caught in the open. Kill it before the third bay and the charge fails. SCOTTISH_RESEARCH §1.2; the Highland version of the death-hound — green, not black like the Border barghest.',
     },
+    bodach_glas: {
+      lore: 'The Grey Old Man of Ben Macdui. Highland climbers have heard him pacing behind them on the Cairngorm tops for two centuries — slow, deliberate, silent. Some have turned to find naebody; some havenae come back at all. Grey-cloaked, hooded, a single staff for the climb. Folk-presence rather than monster — the dread is that ye can see him coming and ye cannae outrun him. SCOTTISH_RESEARCH §1.2; B5 Phase 2 frost-biome signature.',
+    },
     // ── Bosses (6) ──
     gordon: {
       lore: 'A chef of the Sunday-roast school who took the haggis personally. Loud, declarative, knife in each hand. The first boss of any run; the kind you remember after, not during.',

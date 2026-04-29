@@ -189,9 +189,12 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     loreKey: 'biomes.frost.lore',
     toastColor: '#d8dee8',
     spawnWeightMods: {
-      // Grave palette: cold-numbed pressure. Berserker (Caithness Viking
-      // hardiness), ghost (the Bodach Glas presence), eagle (tops are
-      // their territory). Tourists and chefs avoid the cold (-).
+      // Grave palette: cold-numbed pressure. Bodach Glas is the
+      // signature creature (Phase 2 follow-up — the grey old man of
+      // Ben Macdui); berserker (Caithness Viking hardiness), ghost
+      // (winter death-portent), eagle (tops are their territory).
+      // Tourists and chefs avoid the cold (-).
+      bodach_glas: 2.0,
       berserker: 1.5,
       ghost: 1.4,
       eagle: 1.3,

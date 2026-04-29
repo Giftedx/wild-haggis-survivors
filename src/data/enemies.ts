@@ -543,6 +543,33 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'three_bay',
     packSize: 1,
   },
+  // B5 Phase 2 follow-up — the Bodach Glas. Charter §4.4 calls for a
+  // "mid-screen silhouette enemy" as the frost biome's signature
+  // creature. Folklore: the grey old man of Ben Macdui, who paces
+  // behind Highland climbers in silence — a death-portent, not a
+  // chasing predator. Slow approach, high HP, hard contact damage:
+  // the dread comes from being unable to outrun him while he closes,
+  // not from spike threat. SCOTTISH_RESEARCH §1.2 (Bodach references)
+  // + frost biome lore (`biomes.frost.lore`) the player has already
+  // read on biome entry. Solo always — pack-of-Bodach breaks the
+  // "alone with him" register.
+  bodach_glas: {
+    key: 'bodach_glas',
+    texture: 'bodach_glas',
+    speed: 35,
+    hp: 60,
+    damage: 12,
+    xpValue: 8,
+    appearsAt: 1080,    // 18:00 — late-game Cairngorm threat, after
+                        // auditor_priest (17:30) and well past the
+                        // post-bell escalation. Frost biome reaches
+                        // density by then; the silhouette reads.
+    behavior: 'chase',
+    packSize: 1,
+    massOverride: 5,    // Tank contact — shoves the player on collision
+                        // like the heeland coo / berserker, sells the
+                        // "looming" presence on physical contact.
+  },
 };
 
 /**
@@ -585,6 +612,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   ledger_wraith: 'Ledger Wraith',
   auditor_priest: 'Auditor Priest',
   cu_sith: 'Cu Sith',
+  bodach_glas: 'Bodach Glas',
   // Bosses
   gordon: 'Gordon the Chef',
   tour_bus: 'Tour Bus',

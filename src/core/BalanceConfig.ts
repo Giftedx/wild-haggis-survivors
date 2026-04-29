@@ -52,6 +52,11 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 900, add: 'deep_fryer' },
     { t: 930, add: 'ledger_wraith' },
     { t: 1050, add: 'auditor_priest' },
+    { t: 1080, add: 'bodach_glas' },     // 18:00 — Cairngorm grey old
+                                          // man, frost-biome signature
+                                          // silhouette enemy. B5 Phase 2
+                                          // follow-up. SCOTTISH_RESEARCH
+                                          // §1.2 / charter §4.4.
   ];
   const gated = milestones.filter(
     (m) => BIOME_URBAN_READY || !URBAN_GATED_ENEMY_KEYS.has(m.add),

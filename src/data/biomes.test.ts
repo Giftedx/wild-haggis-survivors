@@ -101,4 +101,22 @@ describe('pickBiomeAssignment', () => {
       expect(BIOME_IDS).toContain(id);
     }
   });
+
+  // Charter §6 Risk 6 — "dead biome" guard. A biome registered in
+  // BIOMES but never selected by Voronoi seeding leaves any rune
+  // depending on it permanently ungrounded. Sweep enough seeds that
+  // the probability of missing any biome is ~0; assert every BiomeId
+  // appears at least once. Deterministic because each RNG seed is
+  // fixed.
+  it('every biome appears at least once across 200 deterministic seeds', () => {
+    const seen = new Set<string>();
+    for (let seed = 1; seed <= 200; seed++) {
+      const ids = pickBiomeAssignment(createRNG(seed), 6);
+      for (const id of ids) seen.add(id);
+      if (seen.size === BIOME_IDS.length) break;
+    }
+    for (const id of BIOME_IDS) {
+      expect(seen, `biome '${id}' never appeared in 200-seed sweep — dead biome`).toContain(id);
+    }
+  });
 });
