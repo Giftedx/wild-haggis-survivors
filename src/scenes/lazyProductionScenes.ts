@@ -102,6 +102,27 @@ async function loadProductionSceneClass(key: LazyProductionSceneKey): Promise<Sc
   }
 }
 
+/**
+ * One retry on transient module-load failure. Firefox's preview-server
+ * module loader occasionally rejects a precached lazy chunk with an
+ * empty `Content-Type` during long sessions (verified from the
+ * 2026-04-29 e2e suite — MainMenu lazy-load failed with `Loading module
+ * from "…MainMenuScene-*.js" was blocked because of a disallowed MIME
+ * type ("")` on the firefox long-session-smoke). A 250 ms-backoff retry
+ * clears the transient case in practice; permanent failures still
+ * surface to the existing catch block + console.error trail.
+ */
+async function loadProductionSceneClassWithRetry(
+  key: LazyProductionSceneKey,
+): Promise<SceneClass> {
+  try {
+    return await loadProductionSceneClass(key);
+  } catch {
+    await new Promise((r) => setTimeout(r, 250));
+    return loadProductionSceneClass(key);
+  }
+}
+
 async function ensureLazyProductionScene(
   manager: SceneManager,
   key: LazyProductionSceneKey,
@@ -117,7 +138,7 @@ async function ensureLazyProductionScene(
   const existing = loading.get(key);
   if (existing) return existing;
 
-  const promise = loadProductionSceneClass(key)
+  const promise = loadProductionSceneClassWithRetry(key)
     .then((SceneClass) => {
       if (!manager.getScene(key)) {
         manager.add(key, SceneClass, false);
