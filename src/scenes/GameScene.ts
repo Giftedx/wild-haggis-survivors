@@ -192,6 +192,7 @@ import { BALANCE } from '../core/BalanceConfig';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
 import { computeMantlePulseStagger } from '../entities/mantlePulse';
+import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../entities/whiskyBreath';
 import { HaarFogController } from '../systems/shaders/HaarFogController';
 import { biomeHaarTarget } from '../systems/shaders/biomeHaar';
 import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
@@ -2038,6 +2039,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // doesn't clutter the HUD before the mechanic's been earned.
     const driftState = this.player.getDriftMasteryState();
     this.hud.setGripPips(driftState.pips, driftState.burstRemainingMs > 0);
+    // Whisky Breath stack readout — bar fills with stacks; ready-state
+    // (>= BREATH_STACKS_REQUIRED) pulses the bar to signal "press W".
+    const whiskyState = this.player.getWhiskyBreathState();
+    this.hud.setWhiskyStacks(
+      whiskyState.stacks,
+      WHISKY_STACKS_MAX,
+      isBreathReady(whiskyState),
+    );
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),

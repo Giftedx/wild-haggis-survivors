@@ -163,6 +163,46 @@ describe('HUD', () => {
     expect((hud as any).prevGripPips).toBe(0);
   });
 
+  it('Whisky Breath bar stays hidden until first stack, then surfaces sticky', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    const fill = (hud as any).whiskyBarFill as { visible: boolean; width: number };
+    const bg = (hud as any).whiskyBarBg as { visible: boolean };
+    expect(fill.visible).toBe(false);
+    expect(bg.visible).toBe(false);
+    // Zero stacks — still hidden.
+    hud.setWhiskyStacks(0, 12, false);
+    expect(fill.visible).toBe(false);
+    // First stack — surfaces.
+    hud.setWhiskyStacks(1, 12, false);
+    expect(fill.visible).toBe(true);
+    expect(bg.visible).toBe(true);
+    // Drop back to zero — sticky-visible.
+    hud.setWhiskyStacks(0, 12, false);
+    expect(fill.visible).toBe(true);
+  });
+
+  it('Whisky Breath bar fill width scales with stacks / stacksMax', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    const bg = (hud as any).whiskyBarBg as { width: number };
+    const fill = (hud as any).whiskyBarFill as { width: number };
+    bg.width = 36;
+    hud.setWhiskyStacks(6, 12, false);
+    expect(fill.width).toBeCloseTo(18, 1);
+    hud.setWhiskyStacks(12, 12, true);
+    expect(fill.width).toBeCloseTo(36, 1);
+  });
+
+  it('Whisky Breath stacks clamp out-of-range values defensively', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    hud.setWhiskyStacks(99, 12, true);
+    expect((hud as any).prevWhiskyStacks).toBe(12);
+    hud.setWhiskyStacks(-3, 12, false);
+    expect((hud as any).prevWhiskyStacks).toBe(0);
+  });
+
   it('applies high-contrast colors to all HUD text when highContrastUi is enabled', async () => {
     // Override the SettingsManager mock to enable high contrast. We need to
     // reset the module cache because HUD reads settings in the constructor.

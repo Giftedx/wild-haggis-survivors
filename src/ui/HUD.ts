@@ -91,6 +91,17 @@ export class HUD {
   private prevGripPips = -1;
   private prevGripBurstActive = false;
 
+  /** Whisky Breath stack readout (DESIGN_IDEAS §1). A small horizontal
+   *  amber bar that fills as kills bank stacks; switches to a glowing
+   *  ready-state at the fire threshold. Sits below the grip pips on
+   *  the right side of the HP bar. Hidden until first stack banked
+   *  (matches the grip pip widget's "earn before you see it" rule). */
+  private whiskyBarBg!: Phaser.GameObjects.Rectangle;
+  private whiskyBarFill!: Phaser.GameObjects.Rectangle;
+  private whiskyBarVisible = false;
+  private prevWhiskyStacks = -1;
+  private prevWhiskyReady = false;
+
   /** HP bar width — shrinks on narrow viewports so the centered timer
    *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
    *  can rebalance against the live viewport (was a fixed 260 which
@@ -247,6 +258,25 @@ export class HUD {
       ) as Phaser.GameObjects.Arc;
       this.gripPipDots.push(dot);
     }
+
+    // Whisky Breath stack bar — 36×3 px amber fill bar tucked just
+    // below the HP bar, left-anchored to the same x as the HP fill
+    // so the two readouts share a column. Hidden until first stack
+    // banked. Background is the same dark slate as grip-empty for
+    // visual continuity; fill is whisky-amber matching the breath
+    // VFX (`0xd4a040`). The bar lives below the HP bar at y = 33.
+    const WHISKY_BAR_W = 36;
+    const WHISKY_BAR_H = 3;
+    const whiskyBarX = 12;
+    const whiskyBarY = 12 + this.HP_BAR_H + 1;
+    this.whiskyBarBg = this.addEl(
+      this.scene.add.rectangle(whiskyBarX, whiskyBarY, WHISKY_BAR_W, WHISKY_BAR_H, 0x2a2218, 1)
+        .setOrigin(0, 0).setScrollFactor(0).setDepth(d).setVisible(false),
+    );
+    this.whiskyBarFill = this.addEl(
+      this.scene.add.rectangle(whiskyBarX, whiskyBarY, 0, WHISKY_BAR_H, 0xd4a040, 1)
+        .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false),
+    );
 
     // Level
     this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
@@ -1035,6 +1065,52 @@ export class HUD {
       }
     }
     this.prevGripBurstActive = burstActive;
+  }
+
+  /**
+   * Whisky Breath stack-bar update. Caller passes the live state
+   * read from `Player.getWhiskyBreathState()` plus a `ready` flag
+   * (true when stacks >= BREATH_STACKS_REQUIRED, computed via
+   * `isBreathReady` on the helper). Bar fill scales linearly with
+   * stacks / STACKS_MAX; ready-state pulses the bar a fraction
+   * brighter to signal "press W now." Hidden until the first stack
+   * banks (matches the grip pip widget's "earn before you see it"
+   * rule); sticky-visible thereafter.
+   *
+   * `prevWhiskyStacks` / `prevWhiskyReady` skip the resize / fill
+   * calls on every frame the player isn't actively interacting with
+   * the mechanic — steady-state cost is one boolean compare per
+   * HUD update tick.
+   */
+  setWhiskyStacks(stacks: number, stacksMax: number, ready: boolean): void {
+    const safeStacks = Math.max(0, Math.min(stacksMax, Math.floor(stacks)));
+    if (!this.whiskyBarVisible && safeStacks > 0) {
+      this.whiskyBarVisible = true;
+      this.whiskyBarBg.setVisible(true);
+      this.whiskyBarFill.setVisible(true);
+    }
+    if (safeStacks !== this.prevWhiskyStacks) {
+      this.prevWhiskyStacks = safeStacks;
+      const denom = Math.max(1, stacksMax);
+      const w = this.whiskyBarBg.width * (safeStacks / denom);
+      this.whiskyBarFill.width = w;
+    }
+    if (ready !== this.prevWhiskyReady) {
+      this.prevWhiskyReady = ready;
+      // Ready-state lifts the fill colour to a brighter cream-amber
+      // and pulses a subtle scale-y bump on the rising edge so the
+      // player notices "yer breath\'s ready" without a noisy banner.
+      this.whiskyBarFill.setFillStyle(ready ? 0xfff0c8 : 0xd4a040, 1);
+      if (ready) {
+        this.scene.tweens.add({
+          targets: this.whiskyBarFill,
+          scaleY: 2,
+          duration: 140,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
   }
 
   /**
