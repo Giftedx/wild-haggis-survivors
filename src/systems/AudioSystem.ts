@@ -880,6 +880,32 @@ export class AudioSystem {
    * chop the procedural pad under every gesture.
    */
   /**
+   * Whisky Breath exhale — a warm low-mid sawtooth puff that drops
+   * 220 → 110 Hz over 280 ms, layered with a tiny crackle of fire-
+   * crackle noise. Reads as "hot exhale" not "explosion". Sits
+   * tonally between the bagpipe drone and the burn-leap whoosh.
+   */
+  playWhiskyBreath(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    // Breath body — warm sawtooth dropping in pitch.
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, t0);
+    osc.frequency.exponentialRampToValueAtTime(110, t0 + 0.28);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.10, t0 + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.32);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.34);
+  }
+
+  /**
    * Drift Mastery grip-burst chime — a short upward triangle pluck
    * (~440 → ~880 Hz over 120 ms) signalling the cancel-burst fired.
    * Sits brighter and shorter than `playBurnLeap` so the two cues

@@ -40,6 +40,12 @@ import {
   createDriftMasteryState,
   tickDriftMastery,
 } from './driftMastery';
+import {
+  type WhiskyBreathState,
+  createWhiskyBreathState,
+  tickWhiskyBreath,
+} from './whiskyBreath';
+import type { Enemy } from './Enemy';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -169,6 +175,27 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private gripFirstBankPending: boolean = true;
   /** Same shape for the first-burst tutorial toast. */
   private gripFirstBurstPending: boolean = true;
+
+  // Whisky Breath (DESIGN_IDEAS §1) — kill-stack mechanic. Each non-
+  // boss kill banks a stack; W key consumes them as an AOE damage
+  // burst around the haggis. Pure-helper-driven so replay determinism
+  // holds (helper consumes the same kill stream + input edge a replay
+  // would replay). Damage application iterates the live enemy group
+  // via `sceneCtx.getSpawnSystem().getEnemyGroup()`.
+  private whiskyBreathState: WhiskyBreathState = createWhiskyBreathState();
+  private whiskyBreathKey: Phaser.Input.Keyboard.Key | null = null;
+  private whiskyBreathKeyPrevDown: boolean = false;
+  /** Kill events buffered between Player.update ticks. Subscribed to
+   *  `weaponSystem.events.on('enemyKilled', …)` in the constructor;
+   *  flushed to the helper as `killsThisFrame` and reset to 0. Excludes
+   *  bosses (handled in the listener). */
+  private whiskyBreathKillsBuffer: number = 0;
+  /** First-bank tutorial caption — fires once per run on the first
+   *  whisky stack banked. */
+  private whiskyBreathFirstBankPending: boolean = true;
+  /** First-burst tutorial caption — fires once per run on the first
+   *  successful breath. */
+  private whiskyBreathFirstBurstPending: boolean = true;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -321,6 +348,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // in that path, which is the right behavior for unit tests.
     this.gripBurstKey = scene.input?.keyboard?.addKey('Q') ?? null;
 
+    // Whisky Breath — W key edge-poll, same hardcoded-key pattern as
+    // Drift Mastery's Q. Future graduation to a remappable ActionKey
+    // can land alongside Drift Mastery's Q in a single save-version
+    // bump rather than fragmented bumps per mechanic.
+    this.whiskyBreathKey = scene.input?.keyboard?.addKey('W') ?? null;
+    // Subscribe to the run's enemy-kill stream so the helper can bank
+    // a stack per kill. Bosses excluded — Whisky Breath rewards the
+    // sustained mob-clear rhythm, not boss damage. SubscriptionBag
+    // owns the listener so a scene-restart cleanly drops it.
+    const sceneCtxInit = scene as Phaser.Scene & Partial<ISceneContext>;
+    const ws = sceneCtxInit.getWeaponSystem?.();
+    if (ws) {
+      const killHandler = (
+        _x: number, _y: number, _xp: number, _key: string, wasBoss: boolean,
+      ): void => {
+        if (wasBoss) return;
+        this.whiskyBreathKillsBuffer += 1;
+      };
+      ws.events.on('enemyKilled', killHandler);
+      this.subs.add(() => ws.events.off('enemyKilled', killHandler));
+    }
+
     // Soft boundary — no hard wall, player slows near edges
     this.setCollideWorldBounds(false);
     const body = this.body as Phaser.Physics.Arcade.Body;
@@ -397,6 +446,58 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.scene.tweens.add({
       targets: inner,
       scale: 2.2,
+      alpha: 0,
+      duration: 180,
+      ease: 'Quad.easeOut',
+      onComplete: () => inner.destroy(),
+    });
+  }
+
+  /**
+   * Whisky Breath AOE burst — iterates the live enemy group, applies
+   * `damage` to every non-hazard enemy within `radius` of the player,
+   * and spawns a warm-amber expanding ring + inner ember flash to
+   * sell the exhale visually. Damage path is
+   * `takeDamageWithKillEvents` so kill credit + drops route through
+   * the standard kill cascade (bumps killCount, fires drops, banks
+   * the next whisky stack on overlap kills — small kill-loop
+   * compound, intentional).
+   */
+  private applyWhiskyBreathBurst(radius: number, damage: number): void {
+    if (!this.active) return;
+    const sceneCtxLocal = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    const enemyGroup = sceneCtxLocal.getSpawnSystem?.().getEnemyGroup();
+    const radSq = radius * radius;
+    if (enemyGroup) {
+      const enemies = enemyGroup.getChildren() as Enemy[];
+      for (let i = 0; i < enemies.length; i++) {
+        const e = enemies[i]!;
+        if (!e.active) continue;
+        const dx = e.x - this.x;
+        const dy = e.y - this.y;
+        if (dx * dx + dy * dy > radSq) continue;
+        e.takeDamageWithKillEvents(damage);
+      }
+    }
+    // Warm-amber expanding ring (whisky-cask glow), 220 ms life.
+    const ring = this.scene.add
+      .circle(this.x, this.y, 18, 0xd4a040, 0.55)
+      .setDepth(4);
+    this.scene.tweens.add({
+      targets: ring,
+      scale: radius / 18,
+      alpha: 0,
+      duration: 240,
+      ease: 'Quad.easeOut',
+      onComplete: () => ring.destroy(),
+    });
+    // Inner ember flash — brighter cream-white core fades fast.
+    const inner = this.scene.add
+      .circle(this.x, this.y, 9, 0xfff0c8, 0.8)
+      .setDepth(5);
+    this.scene.tweens.add({
+      targets: inner,
+      scale: 2.4,
       alpha: 0,
       duration: 180,
       ease: 'Quad.easeOut',
@@ -662,6 +763,33 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       if (this.gripFirstBurstPending) {
         this.gripFirstBurstPending = false;
         sceneCtx.caption?.('grip_burst', 'Drift mastered.', '#a8d4f0', 1800);
+      }
+    }
+
+    // Whisky Breath (DESIGN_IDEAS §1) — kill-stack mechanic. The
+    // `whiskyBreathKillsBuffer` field is incremented by the
+    // `enemyKilled` listener wired in the constructor; flush it to
+    // the helper as `killsThisFrame` and reset to 0 each tick. The
+    // input edge is a W-key down-press (debounced via prevDown).
+    const breathDown = this.whiskyBreathKey?.isDown ?? false;
+    const breathPressed = breathDown && !this.whiskyBreathKeyPrevDown;
+    this.whiskyBreathKeyPrevDown = breathDown;
+    const whiskyResult = tickWhiskyBreath(this.whiskyBreathState, {
+      killsThisFrame: this.whiskyBreathKillsBuffer,
+      breathPressed,
+    });
+    this.whiskyBreathKillsBuffer = 0;
+    this.whiskyBreathState = whiskyResult.state;
+    if (this.whiskyBreathFirstBankPending && this.whiskyBreathState.stacks >= 1) {
+      this.whiskyBreathFirstBankPending = false;
+      sceneCtx.caption?.('whisky_first_bank', 'Whisky stacks bankin\'. Press W when ready.', '#e8b070', 2400);
+    }
+    if (whiskyResult.burstFiredEdge && whiskyResult.burst) {
+      this.applyWhiskyBreathBurst(whiskyResult.burst.radius, whiskyResult.burst.damage);
+      audio.playWhiskyBreath?.();
+      if (this.whiskyBreathFirstBurstPending) {
+        this.whiskyBreathFirstBurstPending = false;
+        sceneCtx.caption?.('whisky_first_burst', 'Whisky breath — fae the belly.', '#e8b070', 1800);
       }
     }
 
@@ -979,6 +1107,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * active (HUD pulses to confirm).
    */
   getDriftMasteryState(): DriftMasteryState { return this.driftMasteryState; }
+
+  /**
+   * HUD accessor — read-only snapshot of the Whisky Breath state.
+   * Caller (HUD) renders the stack readout / ready glow. Stack count
+   * is 0..STACKS_MAX; ready-to-fire predicate lives on the helper.
+   */
+  getWhiskyBreathState(): WhiskyBreathState { return this.whiskyBreathState; }
   getDamageMultiplier(): number {
     // U1 M4 — Haar / Peat / Thirst / Warden / cascade dmg fold here so
     // every weapon path picks them up via WeaponSystem.setMultipliers.
