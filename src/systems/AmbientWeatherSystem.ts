@@ -38,6 +38,7 @@ export type AmbientWeatherMode =
   | 'aurora'
   | 'lambing_motes'
   | 'harvest_drift'
+  | 'stonehaven_fireballs'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -57,6 +58,11 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
     case 'beltane':
       return 'sun_shaft';
     case 'hogmanay':
+      // Stonehaven Fireballs — the 1908+ Aberdeenshire Hogmanay
+      // procession. Whirling fire-orbs drift across the moor as a
+      // diegetic seasonal nod. More iconic than the generic
+      // pewter-rain that previously voiced Hogmanay.
+      return 'stonehaven_fireballs';
     case 'burns_night':
       return 'rain';
     case 'st_andrews':
@@ -97,6 +103,11 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // sun-shafts — the moor breathing across a finished field.
   // ~1.5/sec → 700ms period.
   harvest_drift: { spawnPeriodMs: 700, textureKey: 'fx_harvest_sheaf' },
+  // Hogmanay Stonehaven fireballs — sparse cadence, long-lived spinning
+  // orbs that arc across the moor. One every ~2.5 s; the visual is
+  // load-bearing per fireball so we don't pile too many on screen at
+  // once.
+  stonehaven_fireballs: { spawnPeriodMs: 2500, textureKey: 'fx_stonehaven_fireball' },
 };
 
 export class AmbientWeatherSystem {
@@ -211,6 +222,9 @@ export class AmbientWeatherSystem {
         return;
       case 'harvest_drift':
         this.spawnHarvestSheaf();
+        return;
+      case 'stonehaven_fireballs':
+        this.spawnStonehavenFireball();
         return;
       default:
         return;
@@ -439,6 +453,81 @@ export class AmbientWeatherSystem {
         targets: img,
         alpha: 0,
         duration: lifetimeMs * 0.25,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Hogmanay Stonehaven Fireballs — Aberdeenshire's 1908-onward New
+   * Year procession. Whirling fire-orbs swung on chains arc across
+   * the moor at high arc-angle; the haggis sees them flicker past.
+   *
+   * Each particle spawns at one screen edge, traces a high-arc
+   * trajectory toward the opposite side with steady rotation, and
+   * fades on arrival. Ember-orange tint pulses subtly mid-flight
+   * (the chain swing). Diegetic + cosmetic — never damages or
+   * obstructs the player.
+   */
+  private spawnStonehavenFireball(): void {
+    const v = this.getViewport();
+    // Pick which side enters from — 50/50.
+    const goingRight = Math.random() < 0.5;
+    const startX = goingRight ? v.x - 24 : v.x + v.w + 24;
+    const endX = goingRight ? v.x + v.w + 24 : v.x - 24;
+    // Arc height varies — top third to mid-screen.
+    const startY = v.y + v.h * 0.15 + Math.random() * v.h * 0.25;
+    const arcMidY = startY + 30 + Math.random() * 40;
+    const img = this.addImage(startX, startY, 'fx_stonehaven_fireball');
+    if (!img) return;
+    img.setAlpha(0);
+    img.setScale(0.85 + Math.random() * 0.3);
+    const peakAlpha = 0.7 + Math.random() * 0.2;
+    const lifetimeMs = 3500 + Math.random() * 1000; // 3.5-4.5s
+    // Continuous rotation — the swinging-on-the-chain motion.
+    this.scene.tweens.add({
+      targets: img,
+      rotation: goingRight ? Math.PI * 4 : -Math.PI * 4,
+      duration: lifetimeMs,
+      ease: 'Linear',
+    });
+    // Two-stage trajectory — rise to arc peak, fall to opposite edge.
+    this.scene.tweens.add({
+      targets: img,
+      x: { value: (startX + endX) / 2, duration: lifetimeMs / 2, ease: 'Linear' },
+      y: { value: arcMidY, duration: lifetimeMs / 2, ease: 'Sine.easeOut' },
+    });
+    this.scene.time.delayedCall(lifetimeMs / 2, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        x: endX,
+        y: startY + 50,
+        duration: lifetimeMs / 2,
+        ease: 'Sine.easeIn',
+      });
+    });
+    // Fade in fast, hold, fade out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.15,
+    });
+    // Subtle alpha pulse mid-flight — the swing rhythm.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha * 0.6,
+      duration: lifetimeMs * 0.4,
+      delay: lifetimeMs * 0.15,
+      yoyo: true,
+      ease: 'Sine.easeInOut',
+    });
+    this.scene.time.delayedCall(lifetimeMs * 0.85, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.15,
         onComplete: () => img.destroy(),
       });
     });

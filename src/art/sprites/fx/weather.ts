@@ -372,6 +372,58 @@ export function bakeFxLambingMote(scene: Phaser.Scene): void {
 }
 
 /**
+ * `fx_stonehaven_fireball` — Hogmanay's Aberdeenshire fireball
+ * procession (since 1908). A swinging fire-orb on a chain: dark
+ * outer halo, bright orange-red core, white-hot centre, with three
+ * tail-spark wisps trailing the swing arc.
+ *
+ * Tonal palette: Wild + Hearth (ember-orange + warm-white) per
+ * ART_STYLE_BIBLE.md — the procession is communal warmth defying
+ * the long midwinter dark.
+ *
+ * Square 16×16 so the rotation tween in AmbientWeatherSystem reads
+ * as a clean spin without clipping at the corners.
+ */
+export function bakeFxStonehavenFireball(scene: Phaser.Scene): void {
+  const size = 16;
+  const cx = size / 2;
+  const cy = size / 2;
+  const gs = scene.add.graphics();
+
+  // Outer warm-orange halo (catches the procession crowd's torchlight).
+  gs.fillStyle(0xff5a08, 0.18);
+  gs.fillCircle(cx, cy, 7);
+  gs.fillStyle(0xff7a18, 0.32);
+  gs.fillCircle(cx, cy, 5);
+
+  // Mid ember body — three-layer hot core.
+  gs.fillStyle(0xc41818, 1);
+  gs.fillCircle(cx, cy, 3.6);
+  gs.fillStyle(0xff6a14, 1);
+  gs.fillCircle(cx, cy, 2.6);
+  gs.fillStyle(0xffba40, 1);
+  gs.fillCircle(cx - 0.3, cy - 0.5, 1.6);
+
+  // White-hot inner flicker.
+  gs.fillStyle(0xfff0c8, 1);
+  gs.fillCircle(cx - 0.4, cy - 0.7, 0.9);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillCircle(cx - 0.6, cy - 0.9, 0.4);
+
+  // Trailing tail-sparks — three small dots curling away from the
+  // swing direction. Asymmetric placement sells the chain pull.
+  gs.fillStyle(0xffba40, 0.85);
+  gs.fillCircle(cx + 3.2, cy + 1.2, 0.6);
+  gs.fillStyle(0xff7a18, 0.65);
+  gs.fillCircle(cx + 4.6, cy + 2.2, 0.4);
+  gs.fillStyle(0xc41818, 0.45);
+  gs.fillCircle(cx + 5.6, cy + 3.0, 0.3);
+
+  gs.generateTexture('fx_stonehaven_fireball', size, size);
+  gs.destroy();
+}
+
+/**
  * `fx_harvest_sheaf` — Lammas's signature ambient particle. A small
  * tan-amber wheat-grain wisp drifting sideways across the moor — chaff
  * loosed by the first reaping at the cairn. Tonal palette anchor:

@@ -10,8 +10,8 @@ describe('pickWeatherMode (season → ambient weather mapping)', () => {
     expect(pickWeatherMode('beltane')).toBe('sun_shaft');
   });
 
-  it('maps hogmanay → rain', () => {
-    expect(pickWeatherMode('hogmanay')).toBe('rain');
+  it('maps hogmanay → stonehaven_fireballs (Aberdeenshire procession)', () => {
+    expect(pickWeatherMode('hogmanay')).toBe('stonehaven_fireballs');
   });
 
   it('maps burns_night → rain', () => {
