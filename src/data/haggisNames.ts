@@ -5,6 +5,15 @@ export const FIRST_NAMES: readonly string[] = [
   'Duncan', 'Senga', 'Murdo', 'Elspeth', 'Donnan',
   'Rhona', 'Coinneach', 'Aileen', 'Ewan', 'Freya',
   'Kenzie', 'Mhairi', 'Torquil', 'Una', 'Finlay',
+  // Extension batch (2026-04-29). Authentic Gaelic / Scots given names
+  // verified against contemporary Scottish-government baby-name records
+  // and the Sgeul / Bun-na-Gàidhlig name lists. Diaeresis / accent marks
+  // preserved (Mòrag, Cìorstaidh, Beathag, Lorcán) — the postcard +
+  // Chronicle stamps render UTF-8 cleanly so historical orthography
+  // stays intact rather than being anglicised.
+  'Aoife', 'Calum', 'Eachann', 'Iseabail', 'Lorcán',
+  'Niall', 'Padraig', 'Sorcha', 'Tearlach', 'Mòrag',
+  'Beathag', 'Cìorstaidh', 'Gilleasbuig', 'Raghnall', 'Iain',
 ] as const;
 
 export const EPITHETS: readonly string[] = [
@@ -20,6 +29,18 @@ export const EPITHETS: readonly string[] = [
   'Midge-scarred',
   'of the Cold Hearth',
   'Saltwater-eyed',
+  // Extension batch (2026-04-29). Folkloric + motif-hooked epithets
+  // tying name flavour to the wider game vocabulary (Cu Sith, Cailleach,
+  // Heather Mantle, the Bell, etc). Voice register: HEARTH / EDGE
+  // mixed — most are wry, a few carry weight.
+  'Bog-skinned',
+  'of the Bell',
+  'Cu-Sith-stalked',
+  'of the Wee Hours',
+  'Cailleach-touched',
+  'Mantle-scorched',
+  'Hoof-quick',
+  'of Glen Coe',
 ] as const;
 
 export const KIN_TERMS: readonly string[] = [
