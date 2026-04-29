@@ -128,6 +128,15 @@ export class AmbientWeatherSystem {
   private started = false;
   /** Live particles — sweep on `stop()` so no tween outlives the run. */
   private readonly active: Set<Phaser.GameObjects.Image> = new Set();
+  /**
+   * Pending fade-out timers from `delayedCall`. Tracked so `stop()` can
+   * cancel them — without this, a fade scheduled before run-end can fire
+   * after `img.destroy()` and try to start a tween on a destroyed target
+   * (the inner `if (!img.active) return` guard catches it in practice
+   * but is one microtask-ordering assumption away from a stale-target
+   * tween).
+   */
+  private readonly pendingTimers: Set<Phaser.Time.TimerEvent> = new Set();
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -190,6 +199,8 @@ export class AmbientWeatherSystem {
    * a future `start()` re-resolves the season cleanly.
    */
   stop(): void {
+    for (const timer of this.pendingTimers) timer.remove();
+    this.pendingTimers.clear();
     for (const img of this.active) {
       this.scene.tweens.killTweensOf(img);
       img.destroy();
@@ -199,6 +210,20 @@ export class AmbientWeatherSystem {
     this.spawnPeriodMs = 0;
     this.accumMs = 0;
     this.started = false;
+  }
+
+  /**
+   * Schedule a fade-out callback whose timer is tracked in `pendingTimers`
+   * so `stop()` can cancel it cleanly. Without tracking, a fade scheduled
+   * just before run-end could fire after `img.destroy()` and start a
+   * tween on a destroyed target.
+   */
+  private scheduleFade(delayMs: number, callback: () => void): void {
+    const timer: Phaser.Time.TimerEvent = this.scene.time.delayedCall(delayMs, () => {
+      this.pendingTimers.delete(timer);
+      callback();
+    });
+    this.pendingTimers.add(timer);
   }
 
   // -------------------- internals --------------------
@@ -327,7 +352,7 @@ export class AmbientWeatherSystem {
       ease: 'Sine.easeInOut',
     });
     // Final fade-out + cleanup.
-    this.scene.time.delayedCall(lifetimeMs * 0.85, () => {
+    this.scheduleFade(lifetimeMs * 0.85, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -372,7 +397,7 @@ export class AmbientWeatherSystem {
       ease: 'Sine.easeInOut',
     });
     // Fade-out + cleanup.
-    this.scene.time.delayedCall(lifetimeMs * 0.85, () => {
+    this.scheduleFade(lifetimeMs * 0.85, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -415,7 +440,7 @@ export class AmbientWeatherSystem {
       alpha: peakAlpha,
       duration: lifetimeMs * 0.25,
     });
-    this.scene.time.delayedCall(lifetimeMs * 0.7, () => {
+    this.scheduleFade(lifetimeMs * 0.7, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -460,7 +485,7 @@ export class AmbientWeatherSystem {
       alpha: peakAlpha,
       duration: lifetimeMs * 0.2,
     });
-    this.scene.time.delayedCall(lifetimeMs * 0.75, () => {
+    this.scheduleFade(lifetimeMs * 0.75, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -510,7 +535,7 @@ export class AmbientWeatherSystem {
       x: { value: (startX + endX) / 2, duration: lifetimeMs / 2, ease: 'Linear' },
       y: { value: arcMidY, duration: lifetimeMs / 2, ease: 'Sine.easeOut' },
     });
-    this.scene.time.delayedCall(lifetimeMs / 2, () => {
+    this.scheduleFade(lifetimeMs / 2, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -535,7 +560,7 @@ export class AmbientWeatherSystem {
       yoyo: true,
       ease: 'Sine.easeInOut',
     });
-    this.scene.time.delayedCall(lifetimeMs * 0.85, () => {
+    this.scheduleFade(lifetimeMs * 0.85, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
@@ -587,7 +612,7 @@ export class AmbientWeatherSystem {
       alpha: peakAlpha,
       duration: lifetimeMs * 0.2,
     });
-    this.scene.time.delayedCall(lifetimeMs * 0.78, () => {
+    this.scheduleFade(lifetimeMs * 0.78, () => {
       if (!img.active) return;
       this.scene.tweens.add({
         targets: img,
