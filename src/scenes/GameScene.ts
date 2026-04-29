@@ -2331,7 +2331,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const atGameTimeSec = Math.floor(this.spawnSystem.getGameTimeSec());
     const settings = this.settingsManager.load();
 
-    this.banter?.request('act_complete');
+    // Tag the request with the act number so the banter pool can pick
+    // act-specific lines ("Act 1 wrapped" vs "Act 2 wrapped"). Generic
+    // pool still fires when no act-tagged sub-pool exists.
+    this.banter?.request('act_complete', { tag: `act_${actN}` });
 
     // Common resolver — runs whether picker was shown or auto-defaulted.
     const onResolve = (pick: RoutePick, route: RouteDef) => {

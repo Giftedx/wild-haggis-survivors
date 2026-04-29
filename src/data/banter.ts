@@ -1091,6 +1091,23 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.act_complete.f',
       'ui.banter.act_complete.g',
     ],
+    // 2026-04-29 — GameScene's `launchActIntermission` now tags the
+    // request with `act_${actN}` so each gate's outro reads as the
+    // specific gate just fallen, not the same two-liner each time.
+    keysByTag: {
+      act_1: [
+        'ui.banter.act_complete.act_1.a',
+        'ui.banter.act_complete.act_1.b',
+        'ui.banter.act_complete.act_1.c',
+        'ui.banter.act_complete.act_1.d',
+      ],
+      act_2: [
+        'ui.banter.act_complete.act_2.a',
+        'ui.banter.act_complete.act_2.b',
+        'ui.banter.act_complete.act_2.c',
+        'ui.banter.act_complete.act_2.d',
+      ],
+    },
   },
   {
     context: 'route_picked',

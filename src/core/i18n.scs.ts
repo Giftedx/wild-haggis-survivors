@@ -1742,6 +1742,19 @@ export const SCS_STRINGS: LocaleTree = {
         e: 'A chapter telt. Page turns.',
         f: 'Cleared. Braith\'s steady.',
         g: 'Ahint ye, then. Forrit, then.',
+        // SCS overlay of EN act-specific tags (2026-04-29).
+        act_1: {
+          a: 'First yett doon. Ye openit tha muir.',
+          b: 'Gordon\'s settlt. Path widens noo.',
+          c: 'Act ane\'s a lang mile, an ye walked it. Onwards.',
+          d: 'Reek clears. Tha road past tha kitchen is yours.',
+        },
+        act_2: {
+          a: 'Second yett doon. Tha auld road yields.',
+          b: 'Bus coupit. Tour\'s telt a different tale this run.',
+          c: 'Hauf-wey sang. Tha quait bit comes neist — ready yer lugs.',
+          d: 'Twa yetts passed. Final hill\'s ahint tha neist mist.',
+        },
       },
       route_picked: {
         generic: {

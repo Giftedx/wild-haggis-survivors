@@ -2146,6 +2146,25 @@ export const EN_STRINGS: LocaleTree = {
         e: 'A chapter telt. Page turns.',
         f: 'Cleared. Breath\'s steady.',
         g: 'Behind ye, then. Forward, then.',
+        // Act-specific tags (2026-04-29). GameScene now requests with
+        // `tag: 'act_${actN}'` so the round-robin can voice the
+        // moment by which gate just fell instead of repeating the same
+        // generic two-liner. 4 lines per act keeps the no-repeat ring
+        // (size 8) loose enough that consecutive runs feel fresh.
+        // Voice register: HEARTH per Voice Card — warm, exhale-after-
+        // tension, never triumphalist.
+        act_1: {
+          a: 'First gate doon. Ye opened the moor.',
+          b: 'Gordon\'s settled. Path widens noo.',
+          c: 'Act one\'s a long mile, an ye walked it. Onwards.',
+          d: 'Smoke clears. The road past the kitchen is yours.',
+        },
+        act_2: {
+          a: 'Second gate doon. The auld road yields.',
+          b: 'Bus tipped. Tour\'s telt a different tale this run.',
+          c: 'Halfway song. The quiet bit comes neist — ready yer ears.',
+          d: 'Two gates passed. Final hill\'s ahint the next mist.',
+        },
       },
       route_picked: {
         generic: {
