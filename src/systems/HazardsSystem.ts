@@ -165,7 +165,6 @@ export class HazardsSystem {
     if (rng) return rng.next();
     if (!this.rngFallbackWarned && import.meta.env.DEV) {
       this.rngFallbackWarned = true;
-      // eslint-disable-next-line no-console
       console.warn(
         '[HazardsSystem] rand() fell back to Math.random — replay determinism would drift. Wire getRunRng.',
       );

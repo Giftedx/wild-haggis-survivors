@@ -121,6 +121,8 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     { id: 'fx_drizzle', key: 'fx_drizzle' },
     { id: 'fx_sun_shaft', key: 'fx_sun_shaft' },
     { id: 'fx_aurora_band', key: 'fx_aurora_band' },
+    { id: 'fx_lambing_mote', key: 'fx_lambing_mote' },
+    { id: 'fx_harvest_sheaf', key: 'fx_harvest_sheaf' },
     { id: 'fx_weapon_thistle_bloom', key: 'fx_weapon_thistle_bloom' },
     { id: 'fx_weapon_thistle_storm_bloom', key: 'fx_weapon_thistle_storm_bloom' },
     { id: 'fx_weapon_caber_splinter', key: 'fx_weapon_caber_splinter' },

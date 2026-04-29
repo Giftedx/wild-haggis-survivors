@@ -22,6 +22,14 @@ describe('pickWeatherMode (season → ambient weather mapping)', () => {
     expect(pickWeatherMode('st_andrews')).toBe('aurora');
   });
 
+  it('maps imbolc → lambing_motes (Brigid\'s mantle)', () => {
+    expect(pickWeatherMode('imbolc')).toBe('lambing_motes');
+  });
+
+  it('maps lammas → harvest_drift (chaff on the wind)', () => {
+    expect(pickWeatherMode('lammas')).toBe('harvest_drift');
+  });
+
   it('returns null when no event is active', () => {
     expect(pickWeatherMode(null)).toBe(null);
   });

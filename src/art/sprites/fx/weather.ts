@@ -336,3 +336,78 @@ export function bakeFxHaarDriftWisp(scene: Phaser.Scene): void {
   gs.generateTexture('fx_haar_drift_wisp', w, h);
   gs.destroy();
 }
+
+/**
+ * `fx_lambing_mote` — Imbolc's signature ambient particle. A soft warm
+ * gold mote with a snowdrop-pale halo that drifts gently UPWARD —
+ * Brigid's first-of-spring breath rising from the byre. Tonal palette
+ * anchor: Hearth (warm-ivory + cream-gold) per ART_STYLE_BIBLE.md.
+ * Compact 8×8 so a screenful of motes reads as a soft wash, not a
+ * snowfall.
+ */
+export function bakeFxLambingMote(scene: Phaser.Scene): void {
+  const size = 8;
+  const cx = size / 2;
+  const cy = size / 2;
+  const gs = scene.add.graphics();
+
+  // Outer pale-cream halo — Brigid's mantle warmth.
+  gs.fillStyle(0xf5e7b8, 0.18);
+  gs.fillCircle(cx, cy, 3.5);
+  gs.fillStyle(0xfaf0d0, 0.28);
+  gs.fillCircle(cx, cy, 2.5);
+
+  // Mid warm-gold body.
+  gs.fillStyle(0xeed490, 0.65);
+  gs.fillCircle(cx, cy, 1.6);
+
+  // Bright cream-white core (catches light).
+  gs.fillStyle(0xfffbe8, 0.95);
+  gs.fillCircle(cx, cy - 0.2, 0.9);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillCircle(cx - 0.2, cy - 0.4, 0.4);
+
+  gs.generateTexture('fx_lambing_mote', size, size);
+  gs.destroy();
+}
+
+/**
+ * `fx_harvest_sheaf` — Lammas's signature ambient particle. A small
+ * tan-amber wheat-grain wisp drifting sideways across the moor — chaff
+ * loosed by the first reaping at the cairn. Tonal palette anchor:
+ * Hearth (warm-grain amber + harvest-bronze) per ART_STYLE_BIBLE.md.
+ * 14×6 so the wisp reads as a wind-borne sliver, not a clump.
+ */
+export function bakeFxHarvestSheaf(scene: Phaser.Scene): void {
+  const w = 14;
+  const h = 6;
+  const cy = h / 2;
+  const gs = scene.add.graphics();
+
+  // Outer warm-amber halo — wind-haze around the grain.
+  gs.fillStyle(0xc89060, 0.22);
+  gs.fillRect(0, cy - 0.8, w, 1.6);
+
+  // Body of the grain — three amber bands shading bronze→gold→cream.
+  gs.fillStyle(0xa67040, 0.5);
+  gs.fillRect(2, cy - 0.6, w - 4, 1.2);
+  gs.fillStyle(0xd4a040, 0.7);
+  gs.fillRect(3, cy - 0.5, w - 6, 1);
+  gs.fillStyle(0xf2cc70, 0.85);
+  gs.fillRect(4, cy - 0.4, w - 8, 0.8);
+
+  // Bright cream tip — front of the wisp catches the light.
+  gs.fillStyle(0xfff0c8, 0.95);
+  gs.fillRect(w - 5, cy - 0.4, 2, 0.8);
+  gs.fillStyle(0xffffff, 1);
+  gs.fillRect(w - 3, cy - 0.3, 1, 0.6);
+
+  // Trailing chaff pips — two small dots fading off the back.
+  gs.fillStyle(0xc89060, 0.55);
+  gs.fillCircle(2, cy + 0.5, 0.4);
+  gs.fillStyle(0xa67040, 0.4);
+  gs.fillCircle(0.6, cy - 0.5, 0.3);
+
+  gs.generateTexture('fx_harvest_sheaf', w, h);
+  gs.destroy();
+}

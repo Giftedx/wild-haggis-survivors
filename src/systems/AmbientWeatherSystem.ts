@@ -21,9 +21,10 @@
  *   - `reduceParticles`       — system stays idle (mode = null).
  *
  * Texture keys consumed (validator-locked, baked in BootScene):
- *   `fx_drizzle`, `fx_rain_drop`, `fx_sun_shaft`, `fx_aurora_band`.
- * Each `scene.add.image` call is guarded with `textures.exists(key)`
- * so headless test stubs that skip BootScene baking don't crash.
+ *   `fx_drizzle`, `fx_rain_drop`, `fx_sun_shaft`, `fx_aurora_band`,
+ *   `fx_lambing_mote`, `fx_harvest_sheaf`. Each `scene.add.image` call
+ * is guarded with `textures.exists(key)` so headless test stubs that
+ * skip BootScene baking don't crash.
  */
 import type * as Phaser from 'phaser';
 import { getActiveSeasonalEventKey } from './SeasonalEventManager';
@@ -35,6 +36,8 @@ export type AmbientWeatherMode =
   | 'rain'
   | 'sun_shaft'
   | 'aurora'
+  | 'lambing_motes'
+  | 'harvest_drift'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -58,6 +61,13 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       return 'rain';
     case 'st_andrews':
       return 'aurora';
+    case 'imbolc':
+      // Brigid's mantle warmth — soft golden motes drifting upward.
+      return 'lambing_motes';
+    case 'lammas':
+      // Harvest chaff drifting horizontally — wind-borne grain off
+      // the first reaping at the cairn.
+      return 'harvest_drift';
     default:
       return null;
   }
@@ -79,6 +89,14 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   sun_shaft: { spawnPeriodMs: 5000, textureKey: 'fx_sun_shaft' },
   // Mirrie Dancers — very slow cadence, very long-lived. One every ~10s.
   aurora: { spawnPeriodMs: 10000, textureKey: 'fx_aurora_band' },
+  // Imbolc Brigid's-mantle motes — gentle gold motes rising from the
+  // byre. Modest cadence so the screen never feels crowded; long-lived
+  // particles do the heavy lifting visually. ~2/sec → 500ms period.
+  lambing_motes: { spawnPeriodMs: 500, textureKey: 'fx_lambing_mote' },
+  // Lammas wind-borne harvest chaff. Slower than drizzle, faster than
+  // sun-shafts — the moor breathing across a finished field.
+  // ~1.5/sec → 700ms period.
+  harvest_drift: { spawnPeriodMs: 700, textureKey: 'fx_harvest_sheaf' },
 };
 
 export class AmbientWeatherSystem {
@@ -187,6 +205,12 @@ export class AmbientWeatherSystem {
         return;
       case 'aurora':
         this.spawnAurora();
+        return;
+      case 'lambing_motes':
+        this.spawnLambingMote();
+        return;
+      case 'harvest_drift':
+        this.spawnHarvestSheaf();
         return;
       default:
         return;
@@ -327,6 +351,94 @@ export class AmbientWeatherSystem {
         targets: img,
         alpha: 0,
         duration: lifetimeMs * 0.15,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Imbolc lambing-motes — soft warm-gold motes that drift slowly
+   * UPWARD across the viewport. Brigid's first-of-spring breath rising
+   * from the byre. Gentle horizontal sway makes the rise feel alive
+   * rather than mechanical.
+   */
+  private spawnLambingMote(): void {
+    const v = this.getViewport();
+    const x = v.x + Math.random() * v.w;
+    // Spawn near the bottom of the viewport so the upward drift covers
+    // most of the screen before the particle fades.
+    const y = v.y + v.h * 0.7 + Math.random() * (v.h * 0.3);
+    const img = this.addImage(x, y, 'fx_lambing_mote');
+    if (!img) return;
+    const peakAlpha = 0.4 + Math.random() * 0.25; // 0.4..0.65
+    img.setAlpha(0);
+    const lifetimeMs = 4500 + Math.random() * 1500; // 4.5-6s
+    const sway = (Math.random() - 0.5) * 24; // gentle horizontal drift
+    const rise = -(60 + Math.random() * 40); // 60-100px upward
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + sway,
+      y: img.y + rise,
+      duration: lifetimeMs,
+      ease: 'Sine.easeOut',
+    });
+    // Fade-in early, hold, fade-out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.25,
+    });
+    this.scene.time.delayedCall(lifetimeMs * 0.7, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.3,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Lammas harvest-drift — tan-amber wheat-grain wisps drifting
+   * sideways across the moor. Wind direction picked per particle so
+   * the field reads as breeze-driven, not bulk-conveyor. Slight
+   * vertical wobble keeps the chaff feeling weightless.
+   */
+  private spawnHarvestSheaf(): void {
+    const v = this.getViewport();
+    // Wind direction: 50/50 left-to-right or right-to-left.
+    const goingRight = Math.random() < 0.5;
+    const startX = goingRight ? v.x - 16 : v.x + v.w + 16;
+    const endX = goingRight ? v.x + v.w + 16 : v.x - 16;
+    const y = v.y + Math.random() * v.h;
+    const img = this.addImage(startX, y, 'fx_harvest_sheaf');
+    if (!img) return;
+    img.setAlpha(0);
+    // Mirror the wisp horizontally when blowing right-to-left so the
+    // bright tip leads the motion.
+    if (!goingRight) img.setFlipX(true);
+    const peakAlpha = 0.5 + Math.random() * 0.2; // 0.5..0.7
+    const lifetimeMs = 3500 + Math.random() * 1500; // 3.5-5s
+    const wobble = (Math.random() - 0.5) * 18;
+    this.scene.tweens.add({
+      targets: img,
+      x: endX,
+      y: img.y + wobble,
+      duration: lifetimeMs,
+      ease: 'Sine.easeInOut',
+    });
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.2,
+    });
+    this.scene.time.delayedCall(lifetimeMs * 0.75, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.25,
         onComplete: () => img.destroy(),
       });
     });
