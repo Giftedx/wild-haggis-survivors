@@ -261,3 +261,71 @@ export function bakeHazardLooseScree(scene: Phaser.Scene): void {
   g.generateTexture('hazard_loose_scree', w, h);
   g.destroy();
 }
+
+export function bakeHazardTidalWrack(scene: Phaser.Scene): void {
+  const w = 36, h = 24;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Wet-sand base wash — the tide-line where wrack settles
+  g.fillStyle(0x6a5a48, 0.55);
+  g.fillEllipse(cx, cy + 1, 32, 18);
+  g.fillStyle(0x8a7a60, 0.4);
+  g.fillEllipse(cx + 1, cy, 26, 12);
+
+  // Dark kelp tangle — main mass, draped asymmetric (deeper to the east)
+  g.fillStyle(0x1a2818, 1);
+  g.fillEllipse(cx + 2, cy + 1, 22, 8);
+  g.fillStyle(0x2a4028, 1);
+  g.fillEllipse(cx + 1, cy, 18, 6);
+
+  // Frond strands — the warning silhouette (this is what you trip on)
+  // West frond (long, twisted)
+  g.fillStyle(0x2a4028, 1);
+  g.fillRect(cx - 10, cy - 2, 6, 1);
+  g.fillRect(cx - 12, cy - 1, 4, 1);
+  g.fillRect(cx - 13, cy, 3, 1);
+  // North frond (curl up)
+  g.fillStyle(0x355030, 1);
+  g.fillRect(cx - 2, cy - 6, 1, 4);
+  g.fillRect(cx - 3, cy - 7, 2, 1);
+  g.fillRect(cx - 1, cy - 8, 2, 1);
+  // East frond (longest — reaches into hitbox edge)
+  g.fillStyle(0x2a4028, 1);
+  g.fillRect(cx + 6, cy - 1, 8, 1);
+  g.fillRect(cx + 12, cy, 4, 1);
+  g.fillStyle(0x355030, 1);
+  g.fillRect(cx + 14, cy + 1, 2, 1);
+
+  // Kelp bladders — the green glossy node-bumps along the strands
+  g.fillStyle(0x4a6a3a, 1);
+  g.fillCircle(cx - 6, cy - 1, 1.2);
+  g.fillCircle(cx + 4, cy + 2, 1.4);
+  g.fillCircle(cx + 8, cy - 0.5, 1.1);
+  g.fillStyle(0x6a8a4a, 0.85);
+  g.fillCircle(cx - 6, cy - 1.5, 0.6);
+  g.fillCircle(cx + 4, cy + 1.5, 0.7);
+
+  // Foam-line specks along the upper edge — the tide left these
+  g.fillStyle(0xeeeef0, 0.85);
+  g.fillCircle(cx - 8, cy - 5, 0.7);
+  g.fillCircle(cx - 3, cy - 5, 0.5);
+  g.fillCircle(cx + 5, cy - 5, 0.6);
+  g.fillCircle(cx + 11, cy - 4, 0.5);
+  g.fillStyle(0xffffff, 0.7);
+  g.fillCircle(cx - 8, cy - 5.5, 0.4);
+
+  // Tiny shell scatter (warning detail — tiny tells in the silhouette)
+  g.fillStyle(0xc8b89a, 1);
+  g.fillRect(cx - 4, cy + 4, 1, 1);
+  g.fillRect(cx + 6, cy + 4, 1, 1);
+  g.fillStyle(0xa89880, 1);
+  g.fillRect(cx + 2, cy + 5, 1, 1);
+
+  // Wet sheen — gloss on the central kelp (light catches here)
+  g.fillStyle(0x6a8a5a, 0.5);
+  g.fillEllipse(cx + 2, cy - 1, 8, 1.5);
+
+  g.generateTexture('hazard_tidal_wrack', w, h);
+  g.destroy();
+}

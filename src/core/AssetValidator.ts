@@ -203,6 +203,12 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'hazard_falling_slate',
     'hazard_burn_water',
     'hazard_loose_scree',
+    'hazard_tidal_wrack',
+    // B5 Phase 1 — Seawrack/Coastal flora authored sprites.
+    'deco_kelp_strand',
+    'deco_barnacle_rock',
+    'deco_whelk_shell',
+    'deco_foam_line',
     'deco_autumn_leaves',
     'deco_spring_shoot',
     'deco_thaw_puddle',

@@ -33,13 +33,14 @@ describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
     const ids = cards.map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
     // These rune IDs reference unshipped biome axes (B5 charter Phase
     // 1-3 will ground them as biomes ship). gloaming_rune graduated
-    // 2026-04-28 (B5 Phase 0); seawrack_rune graduated 2026-04-28 too
-    // via Loch-as-coastal-foundation (see runeConditions.ts biome_coastal).
+    // 2026-04-28 (B5 Phase 0). seawrack_rune is grounded by the dedicated
+    // 'coastal' biome shipped in B5 Phase 1 (this slice); the loch
+    // fallback in runeConditions.ts:biome_coastal stays as a softener.
     expect(ids).not.toContain('haar_rune');     // biome_fog
     expect(ids).not.toContain('frost_rune');    // biome_cold
     expect(ids).not.toContain('edinburgh_rune'); // biome_urban
     expect(ids).toContain('gloaming_rune');     // biome_dusk — grounded post B5 Phase 0
-    expect(ids).toContain('seawrack_rune');     // biome_coastal — grounded via loch
+    expect(ids).toContain('seawrack_rune');     // biome_coastal — grounded post B5 Phase 1
   });
 
   it('buildCardPool EXCLUDES runes when bossKilledThisRun is false', () => {

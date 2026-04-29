@@ -1436,6 +1436,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Open moor, honest fecht. Lovely.',
           d: 'Taps are honest — nae cover, nae lies.',
         },
+        coastal: {
+          a: 'Tha wrack-line — whit tha tide left.',
+          b: 'Selkie wather. Bide close tae tha heather edge.',
+          c: 'Seafaim at yer hooves. Saut in tha air.',
+          d: 'Corryvreckan\'s washin pot, miles oot. Mind tha swell.',
+        },
       },
       moor_moment: {
         a: 'Tha moor noticed ye. That\'s rare.',
@@ -3543,6 +3549,12 @@ export const SCS_STRINGS: LocaleTree = {
       entry: 'Tha heather\'s singin — this is haggis kintra.',
       loreSnippet: 'Calluna vulgaris in flooer. Pure haggis kintra.',
       lore: 'Calluna vulgaris — heather — flooers in August, an tha hale muir turns purple tae tha horizon. White heather is held tae bring luck (tha lucky-heather sellers in tha Glasgow Barras still trade on it). Grouse strut an clatter; heather honey lies thick an dark in tha hives. This is haggis kintra — Burns ca\'d tha muir "wild an stern" but maist wha bide here ca\' it hame. Daunder saftly: a flooerin muir in late simmer is yin o tha things Scotland is.',
+    },
+    coastal: {
+      name: 'Seawrack Tide',
+      entry: 'Tha tide\'s pulled tha wrack up — watch yer hooves on tha kelp.',
+      loreSnippet: 'Whaur tha kelp lands. Selkie kintra, gulls owerheid.',
+      lore: 'Tha wrack-line — whaur tha tide leaves whit it took. Bull-kelp, dulse, tangle, maerl: laminaria sae deep it mats. Selkies — tha people o tha seal — shed thair skins on tide-cut rocks; mind tha warnin, dinnae touch a skin nor mak een at its awner. Corryvreckan biles a few mile oot, tha Cailleach\'s washin pot, an tha swell that breks here is its echo. Whelk-shell an barnacle, foam-line an saut. Tha coast minds each tide; ye hardly mind tha last yin.',
     },
   },
   // ── Beastie lore Scots overlay (matches EN beastie block in i18n.ts). ──

@@ -67,6 +67,17 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bridge_plank',
     'deco_machair_shell',
   ],
+  coastal: [
+    // B5 Phase 1 — coastal-flavoured story props. Reuses loch's
+    // marine-folklore set (machair shell, fishing net, salmon leap,
+    // bridge plank) plus selkie-skin (per Risk 5: gender-neutral
+    // *people of the seal* folklore, not the seal-woman bride trope).
+    'deco_selkie_skin',
+    'deco_fishing_net',
+    'deco_machair_shell',
+    'deco_bridge_plank',
+    'deco_salmon_leap',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -106,6 +117,19 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_rock', 0.82],
     ['deco_glasgow_kite', 0.90],
     ['deco_heather', 1.0],
+  ],
+  // B5 Phase 1 — Seawrack/Coastal flora. Four new authored props
+  // (kelp_strand, barnacle_rock, whelk_shell, foam_line) carry the
+  // primary biome silhouette. driftwood + creel reused from loch
+  // give beachcomber clutter without new texture keys.
+  coastal: [
+    ['deco_kelp_strand', 0.22],
+    ['deco_foam_line', 0.40],
+    ['deco_barnacle_rock', 0.56],
+    ['deco_driftwood', 0.70],
+    ['deco_whelk_shell', 0.84],
+    ['deco_creel', 0.92],
+    ['deco_rock', 1.0],
   ],
 };
 
@@ -218,6 +242,9 @@ function isSwayable(textureKey: string): boolean {
   if (textureKey.includes('bus_stop')) return false;
   if (textureKey.includes('close_door')) return false;
   if (textureKey.includes('scaffold_post')) return false;
+  // Static coastal props (foam settled on wet sand, shells lying flat).
+  if (textureKey.includes('foam_line')) return false;
+  if (textureKey.includes('whelk_shell')) return false;
   // Story props are mostly solid landmarks or placed objects. Clootie
   // ribbons already include visual motion in their silhouette; keep
   // runtime sway off so they do not jitter like grass.

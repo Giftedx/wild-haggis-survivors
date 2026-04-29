@@ -1248,7 +1248,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * GameScene.tickBiome — inexpensive enough to re-apply each frame if
    * callers prefer, since it's just field assignment.
    */
-  setBiomeModifier(kind: 'bogSlow' | 'lochKnockback' | 'pineConcealment' | 'heatherBloom'): void {
+  setBiomeModifier(
+    kind: 'bogSlow' | 'lochKnockback' | 'pineConcealment' | 'heatherBloom' | 'coastalTide',
+  ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
     this.biomeKnockbackBonus = 1;
@@ -1266,6 +1268,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         break;
       case 'heatherBloom':
         this.biomeXpMul = 1.1;
+        break;
+      case 'coastalTide':
+        // Sea-spray push: knockback +20%. Differentiates from loch's +50%
+        // and gives the coast a distinct "tide pushes enemies back" feel
+        // without competing with heatherBloom's XP buff.
+        this.biomeKnockbackBonus = 1.2;
         break;
     }
   }

@@ -32,9 +32,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly four hazards', () => {
-    expect(HAZARD_KEYS).toHaveLength(4);
-    expect(Object.keys(HAZARDS)).toHaveLength(4);
+  it('exposes exactly five hazards (B5 Phase 1 added tidal_wrack)', () => {
+    expect(HAZARD_KEYS).toHaveLength(5);
+    expect(Object.keys(HAZARDS)).toHaveLength(5);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +45,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(4);
-    expect(biomes.sort()).toEqual(['bog', 'heather', 'loch', 'pine']);
+    expect(new Set(biomes).size).toBe(5);
+    expect(biomes.sort()).toEqual(['bog', 'coastal', 'heather', 'loch', 'pine']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -110,14 +110,20 @@ describe('HAZARDS catalog (config integrity)', () => {
   });
 
   it('every hazard.biome value is a valid BiomeId', () => {
-    const valid: ReadonlySet<BiomeId> = new Set<BiomeId>(['bog', 'loch', 'pine', 'heather']);
+    const valid: ReadonlySet<BiomeId> = new Set<BiomeId>([
+      'bog',
+      'loch',
+      'pine',
+      'heather',
+      'coastal',
+    ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);
     }
   });
 
   it('round-trips: every biome resolves to a hazard whose biome matches', () => {
-    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather'];
+    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal'];
     for (const b of biomes) {
       const k = pickHazardForBiome(b) as HazardKey;
       expect(k).not.toBeNull();

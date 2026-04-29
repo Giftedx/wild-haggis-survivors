@@ -1839,6 +1839,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Open moor, honest fight. Lovely.',
           d: 'Tops are honest — nae cover, nae lies.',
         },
+        coastal: {
+          a: 'The wrack-line — what the tide left.',
+          b: 'Selkie weather. Stay close tae the heather edge.',
+          c: 'Seafoam at yir hooves. Salt in the air.',
+          d: 'Corryvreckan\'s washing pot, miles oot. Mind the swell.',
+        },
       },
       moor_moment: {
         a: 'The moor noticed ye. That\'s rare.',
@@ -3083,6 +3089,12 @@ export const EN_STRINGS: LocaleTree = {
       entry: 'The heather\'s singin\' — this is haggis country.',
       loreSnippet: 'Calluna vulgaris in flower. Pure haggis country.',
       lore: 'Calluna vulgaris — heather — flowers in August, and the hale moor turns purple to the horizon. White heather is held tae bring luck (the lucky-heather sellers in the Glasgow Barras still trade on it). Grouse strut and clatter; heather honey lies thick and dark in the hives. This is haggis country — Burns ca\'d the moor "wild an stern" but maist wha bide here ca\' it hame. Walk softly: a flowering moor in late summer is yin o the things Scotland is.',
+    },
+    coastal: {
+      name: 'Seawrack Tide',
+      entry: 'Tide\'s pulled the wrack up — watch yir hooves on the kelp.',
+      loreSnippet: 'Where the kelp lands. Selkie country, gulls overhead.',
+      lore: 'The wrack-line — where the tide leaves what it took. Bull-kelp, dulse, tangle, maerl: laminaria so deep it mats. Selkies — the people o the seal — shed their skins on tide-cut rocks; mind the warning, dinnae touch a skin nor make eyes at its owner. Corryvreckan boils a few miles out, the Cailleach\'s washing pot, an the swell that breaks here is its echo. Whelk-shell and barnacle, foam-line and salt. The coast remembers each tide; ye hardly remember the last one.',
     },
   },
   // ── C1 Highland Almanac — beastie lore (consumed by buildBeastieDetail). ──

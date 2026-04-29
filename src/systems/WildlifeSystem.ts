@@ -40,25 +40,31 @@ const COUNTS: Record<WildlifeKey, number> = {
 // Which biomes each creature is allowed in. Buzzards aerial —
 // effectively always valid. Woodland species use pine/heather so they can
 // appear reliably while their data weights still favour pine.
+//
+// B5 Phase 1: 'coastal' biome added. Aerial + marine creatures lean
+// coastal (buzzard, eagle, golden_eagle, puffin, grey_seal, otter,
+// salmon, rook, pipistrelle_bat). Land mammals (hare, deer, sheep,
+// red_squirrel, pine_marten, capercaillie, scottish_wildcat,
+// field_mouse, ptarmigan, common_frog) stay inland.
 const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
   hare: new Set(['heather', 'pine']),
   red_deer: new Set(['heather', 'pine']),
-  buzzard: new Set(['bog', 'loch', 'pine', 'heather']),
+  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
   red_squirrel: new Set(['heather', 'pine']),
   pine_marten: new Set(['heather', 'pine']),
   capercaillie: new Set(['heather', 'pine']),
-  otter: new Set(['bog', 'loch']),
-  puffin: new Set(['bog', 'loch', 'heather']),
-  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather']),
+  otter: new Set(['bog', 'loch', 'coastal']),
+  puffin: new Set(['bog', 'loch', 'heather', 'coastal']),
+  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
   scottish_wildcat: new Set(['heather', 'pine']),
-  rook: new Set(['bog', 'loch', 'pine', 'heather']),
+  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
   sheep: new Set(['heather']),
-  grey_seal: new Set(['loch']),
+  grey_seal: new Set(['loch', 'coastal']),
   ptarmigan: new Set(['heather', 'pine']),
   common_frog: new Set(['bog', 'loch']),
-  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather']),
+  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
   field_mouse: new Set(['heather', 'pine']),
-  salmon: new Set(['bog', 'loch']),
+  salmon: new Set(['bog', 'loch', 'coastal']),
 };
 
 const FLEE_DIST = 200;

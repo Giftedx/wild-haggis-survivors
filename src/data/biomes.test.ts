@@ -3,7 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all four biomes with required fields', () => {
+  it('defines all five biomes with required fields', () => {
+    expect(BIOME_IDS.length).toBe(5);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -14,6 +15,13 @@ describe('biomes data', () => {
       expect(def.moodTimbre).toBeGreaterThanOrEqual(0);
       expect(def.moodTimbre).toBeLessThanOrEqual(1);
     }
+  });
+
+  it('coastal biome is registered (B5 Phase 1)', () => {
+    expect(BIOME_IDS).toContain('coastal');
+    const coastal = BIOMES.coastal;
+    expect(coastal.modifier).toBe('coastalTide');
+    expect(coastal.nameKey).toBe('biomes.coastal.name');
   });
 
   it('spawn weight multipliers are all positive', () => {
@@ -32,10 +40,12 @@ describe('biomes data', () => {
     }
   });
 
-  it('loch is haar-prone (highest ambient density); pine and heather are dry', () => {
-    // Haar is signature Scottish sea/water mist — lochs breathe it, open heather
-    // moors and pine forests do not. Locking the ordering prevents a balance
-    // edit from sneaking haar back into dry biomes without a design review.
+  it('coastal carries highest ambient haar (sea-fog signature); pine and heather stay dry', () => {
+    // Haar is signature Scottish sea/water mist. Coastal sits highest
+    // (the haar rolls off the sea), then loch, then bog. Pine and
+    // heather stay dry. Locking the ordering prevents a balance edit
+    // from sneaking haar back into dry biomes without a design review.
+    expect(BIOMES.coastal.ambientHaarDensity).toBeGreaterThan(BIOMES.loch.ambientHaarDensity);
     expect(BIOMES.loch.ambientHaarDensity).toBeGreaterThan(BIOMES.bog.ambientHaarDensity);
     expect(BIOMES.bog.ambientHaarDensity).toBeGreaterThan(0);
     expect(BIOMES.pine.ambientHaarDensity).toBe(0);

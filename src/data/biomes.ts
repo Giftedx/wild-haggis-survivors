@@ -9,12 +9,13 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
   | 'pineConcealment'
-  | 'heatherBloom';
+  | 'heatherBloom'
+  | 'coastalTide';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -131,9 +132,29 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     moodTimbre: 0.8,
     ambientHaarDensity: 0,
   },
+  coastal: {
+    id: 'coastal',
+    nameKey: 'biomes.coastal.name',
+    tint: 0x4a7080,
+    entryToastKey: 'biomes.coastal.entry',
+    loreSnippetKey: 'biomes.coastal.loreSnippet',
+    loreKey: 'biomes.coastal.lore',
+    toastColor: '#9ac0d0',
+    spawnWeightMods: {
+      buzzard: 1.4,
+      eagle: 1.3,
+      golden_eagle: 1.2,
+      kelpie: 1.1,
+      sheep: 0.4,
+      highland_cow: 0.3,
+    },
+    modifier: 'coastalTide',
+    moodTimbre: 0.65,
+    ambientHaarDensity: 0.35,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

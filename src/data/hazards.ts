@@ -11,6 +11,7 @@
  *   falling_slate  → pine      (mountain forest, brief deadly slab)
  *   burn_water     → loch      (water-adjacent rapids, lingers long)
  *   loose_scree    → heather   (Highland uplands, slipping chips)
+ *   tidal_wrack    → coastal   (kelp tangle, low chip on lingering)
  *
  * Tuning rationale:
  *   - peat_pit: medium damage (8), medium hitbox (16 px), longest sit
@@ -21,6 +22,9 @@
  *     lifetime (18 s) — chip damage, easy to wade out of.
  *   - loose_scree: low-mid damage (5), mid hitbox (14 px), 8 s lifetime
  *     — slipping mountain chips that scatter then settle.
+ *   - tidal_wrack: low damage (4, tied with burn_water), wide hitbox
+ *     (20 px), long lifetime (15 s) — tangle of kelp the tide left; chip
+ *     on stationary loiter, mirrors burn_water but coastline-flavoured.
  */
 import type { BiomeId } from './biomes';
 
@@ -28,7 +32,8 @@ export type HazardKey =
   | 'peat_pit'
   | 'falling_slate'
   | 'burn_water'
-  | 'loose_scree';
+  | 'loose_scree'
+  | 'tidal_wrack';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -83,6 +88,15 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 8000,
     spawnIntervalMs: 8500,
   },
+  tidal_wrack: {
+    key: 'tidal_wrack',
+    texture: 'hazard_tidal_wrack',
+    biome: 'coastal',
+    damage: 4,
+    hitboxRadius: 20,
+    lifetimeMs: 15000,
+    spawnIntervalMs: 9500,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -91,4 +105,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'falling_slate',
   'burn_water',
   'loose_scree',
+  'tidal_wrack',
 ];

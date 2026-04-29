@@ -61,7 +61,7 @@ const HAZARD_CAP = 12;
 /**
  * Pure mapping from biome → hazard key. Exported for unit tests.
  * Returns `null` if no hazard targets the biome (defensive — current
- * catalog covers all four biomes 1:1, but a future biome would land
+ * catalog covers all five biomes 1:1, but a future biome would land
  * here without breaking the system).
  */
 export function pickHazardForBiome(biome: BiomeId | null): HazardKey | null {

@@ -53,6 +53,9 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   loch: 0x6ba8c4,
   pine: 0x5d8a52,
   heather: 0xc49bd4,
+  // B5 Phase 1 — Seawrack: sea-foam blue-grey, brighter than loch
+  // (loch is freshwater dark; coastal is salt-spray light).
+  coastal: 0x9bc4d4,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

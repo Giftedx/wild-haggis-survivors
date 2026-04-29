@@ -31,6 +31,7 @@ import {
   bakeHazardFallingSlate,
   bakeHazardBurnWater,
   bakeHazardLooseScree,
+  bakeHazardTidalWrack,
 } from './biomeHazards';
 import {
   bakeAutumnLeafScatter,
@@ -62,6 +63,7 @@ export function bakeDecorations(scene: Phaser.Scene): void {
   bakeHazardFallingSlate(scene);
   bakeHazardBurnWater(scene);
   bakeHazardLooseScree(scene);
+  bakeHazardTidalWrack(scene);
   bakeAutumnLeafScatter(scene);
   bakeSpringShoot(scene);
   bakeThawPuddle(scene);
