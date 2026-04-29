@@ -372,6 +372,60 @@ export function bakeFxLambingMote(scene: Phaser.Scene): void {
 }
 
 /**
+ * `fx_bracken_leaf` — Bracken-turn's autumn copper leaf, drifting
+ * slowly down across the moor in November. Compact 10×10 leaf with
+ * an angled diamond silhouette, three-tone copper-bronze gradient
+ * (deep rust → mid copper → bright cream-gold along the central
+ * vein), and a soft outer glow that catches low autumn light.
+ *
+ * Tonal palette: Hearth + Wild (warm copper + bronze + rust) per
+ * ART_STYLE_BIBLE.md — the moor wearing its copper coat.
+ */
+export function bakeFxBrackenLeaf(scene: Phaser.Scene): void {
+  const w = 10;
+  const h = 10;
+  const cx = w / 2;
+  const cy = h / 2;
+  const gs = scene.add.graphics();
+
+  // Outer warm-rust halo — soft glow that reads at distance even
+  // when the leaf itself is dimmed by the AmbientWeatherSystem alpha.
+  gs.fillStyle(0xa05028, 0.18);
+  gs.fillCircle(cx, cy, 5);
+
+  // Leaf body — angled diamond drawn as four triangles. Outer edge
+  // is the deepest rust, inner is bright copper, central spine is
+  // a thin cream-gold highlight.
+  // Outer rust diamond.
+  gs.fillStyle(0x8a4020, 1);
+  gs.fillTriangle(cx, 1, cx - 3.5, cy, cx, h - 1);
+  gs.fillTriangle(cx, 1, cx + 3.5, cy, cx, h - 1);
+
+  // Mid copper layer (slightly inset).
+  gs.fillStyle(0xc06030, 1);
+  gs.fillTriangle(cx, 2, cx - 2.5, cy, cx, h - 2);
+  gs.fillTriangle(cx, 2, cx + 2.5, cy, cx, h - 2);
+
+  // Bright bronze inner.
+  gs.fillStyle(0xe08838, 1);
+  gs.fillTriangle(cx, 3, cx - 1.5, cy, cx, h - 3);
+  gs.fillTriangle(cx, 3, cx + 1.5, cy, cx, h - 3);
+
+  // Central vein — thin cream-gold streak head-to-tail.
+  gs.fillStyle(0xf2cc80, 0.9);
+  gs.fillRect(cx - 0.4, 2, 0.8, h - 4);
+  gs.fillStyle(0xfff0c8, 0.85);
+  gs.fillRect(cx - 0.2, 2.5, 0.4, h - 5);
+
+  // Tiny dark stem at the top — a ground anchor for the silhouette.
+  gs.fillStyle(0x2a1408, 1);
+  gs.fillRect(cx - 0.4, 0.5, 0.8, 1.2);
+
+  gs.generateTexture('fx_bracken_leaf', w, h);
+  gs.destroy();
+}
+
+/**
  * `fx_stonehaven_fireball` — Hogmanay's Aberdeenshire fireball
  * procession (since 1908). A swinging fire-orb on a chain: dark
  * outer halo, bright orange-red core, white-hot centre, with three

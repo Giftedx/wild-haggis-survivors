@@ -30,6 +30,10 @@ describe('pickWeatherMode (season → ambient weather mapping)', () => {
     expect(pickWeatherMode('lammas')).toBe('harvest_drift');
   });
 
+  it('maps bracken_turn → bracken_drift (copper-leaf fall)', () => {
+    expect(pickWeatherMode('bracken_turn')).toBe('bracken_drift');
+  });
+
   it('returns null when no event is active', () => {
     expect(pickWeatherMode(null)).toBe(null);
   });

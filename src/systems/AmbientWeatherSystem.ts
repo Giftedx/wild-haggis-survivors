@@ -39,6 +39,7 @@ export type AmbientWeatherMode =
   | 'lambing_motes'
   | 'harvest_drift'
   | 'stonehaven_fireballs'
+  | 'bracken_drift'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -74,6 +75,10 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       // Harvest chaff drifting horizontally — wind-borne grain off
       // the first reaping at the cairn.
       return 'harvest_drift';
+    case 'bracken_turn':
+      // Copper-bronze leaves spinning slowly down across the moor —
+      // the autumn-cusp colour signature in motion.
+      return 'bracken_drift';
     default:
       return null;
   }
@@ -108,6 +113,11 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // load-bearing per fireball so we don't pile too many on screen at
   // once.
   stonehaven_fireballs: { spawnPeriodMs: 2500, textureKey: 'fx_stonehaven_fireball' },
+  // Bracken-turn copper-leaf drift — slow rotational fall, mid-cadence
+  // (one every ~600 ms) so the moor reads as a steady leaf-fall
+  // without crowding the screen. Leaves are small + low-alpha so the
+  // 30-particle cap leaves room for combat readability.
+  bracken_drift: { spawnPeriodMs: 600, textureKey: 'fx_bracken_leaf' },
 };
 
 export class AmbientWeatherSystem {
@@ -225,6 +235,9 @@ export class AmbientWeatherSystem {
         return;
       case 'stonehaven_fireballs':
         this.spawnStonehavenFireball();
+        return;
+      case 'bracken_drift':
+        this.spawnBrackenLeaf();
         return;
       default:
         return;
@@ -528,6 +541,58 @@ export class AmbientWeatherSystem {
         targets: img,
         alpha: 0,
         duration: lifetimeMs * 0.15,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Bracken-turn copper-leaf drift — small leaves spin gently as they
+   * fall from the top of the viewport. Sideways sway picks a random
+   * direction per leaf so the moor reads as wind-stirred, not
+   * conveyor-belt. Slight scale jitter sells perspective. Tonal
+   * palette: copper / bronze / autumn-rust per ART_STYLE_BIBLE.
+   */
+  private spawnBrackenLeaf(): void {
+    const v = this.getViewport();
+    const x = v.x + Math.random() * v.w;
+    const startY = v.y - 12; // start above the viewport
+    const img = this.addImage(x, startY, 'fx_bracken_leaf');
+    if (!img) return;
+    const peakAlpha = 0.55 + Math.random() * 0.25; // 0.55..0.80
+    img.setAlpha(0);
+    img.setScale(0.85 + Math.random() * 0.4); // 0.85..1.25
+    const lifetimeMs = 4500 + Math.random() * 1500; // 4.5-6 s
+    const sway = (Math.random() - 0.5) * 70; // gentle horizontal drift
+    const fall = v.h + 30;
+    // Slow rotation — half-turn per leaf, direction random.
+    const spinDir = Math.random() < 0.5 ? -1 : 1;
+    this.scene.tweens.add({
+      targets: img,
+      rotation: spinDir * Math.PI * (0.6 + Math.random() * 0.8),
+      duration: lifetimeMs,
+      ease: 'Linear',
+    });
+    // Falling trajectory with horizontal sway.
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + sway,
+      y: startY + fall,
+      duration: lifetimeMs,
+      ease: 'Sine.easeIn',
+    });
+    // Fade-in early, hold, fade-out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.2,
+    });
+    this.scene.time.delayedCall(lifetimeMs * 0.78, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.22,
         onComplete: () => img.destroy(),
       });
     });
