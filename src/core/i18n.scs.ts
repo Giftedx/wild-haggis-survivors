@@ -456,6 +456,9 @@ export const SCS_STRINGS: LocaleTree = {
     imbolc: {
       blessing_toast: 'Brìde\'s mantle warms ye — first steer o spring. +12 HP, hooves a wee bit kweeker.',
     },
+    lammas: {
+      blessing_toast: 'Loaf-mass at tha cairn — Lugh\'s hairst opens. +14 HP, ilka gem reads a wee bit richer.',
+    },
     cuSith: {
       bay: {
         first: 'A Cu Sith hools across tha muir.',
@@ -3610,6 +3613,12 @@ export const SCS_STRINGS: LocaleTree = {
       description: 'Feb 2 – Feb 8 — Brìde steers; the lambin-sky leans warm.',
       badge_suffix: 'Imbolc',
       ceremony_banner: '🕯 Imbolc is live — Brìde\'s mantle is on tha byre.',
+    },
+    lammas: {
+      name: 'Lùnastal / Lammas',
+      description: 'Jul 29 – Aug 4 — first shaves cut; loaf-mass at tha cairn.',
+      badge_suffix: 'Lùnastal',
+      ceremony_banner: '🌾 Lùnastal is live — tha loaf is broken on tha muir.',
     },
   },
   relics: {

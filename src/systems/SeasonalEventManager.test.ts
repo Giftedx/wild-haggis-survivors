@@ -250,3 +250,34 @@ describe('E1 Imbolc — Brigid\'s Day (Gaelic first-of-spring)', () => {
     expect(isSeasonalEventActive('imbolc', d(2027, 7, 4))).toBe(false);
   });
 });
+
+describe('E1 Lùnastal / Lammas — Gaelic harvest-start', () => {
+  it('is active on Lùnastal traditional date (Aug 1)', () => {
+    expect(isSeasonalEventActive('lammas', d(2027, 8, 1))).toBe(true);
+  });
+
+  it('is active on the window edges (Jul 29 + Aug 4)', () => {
+    expect(isSeasonalEventActive('lammas', d(2027, 7, 29))).toBe(true);
+    expect(isSeasonalEventActive('lammas', d(2027, 8, 4))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('lammas', d(2027, 7, 28))).toBe(false);
+    expect(isSeasonalEventActive('lammas', d(2027, 8, 5))).toBe(false);
+  });
+
+  it('is inactive in midwinter', () => {
+    expect(isSeasonalEventActive('lammas', d(2027, 1, 15))).toBe(false);
+  });
+
+  it('does not overlap Beltane (the cross-quarter symmetry carries)', () => {
+    // Beltane is Apr 28 – May 4; Lammas is Jul 29 – Aug 4. The two are
+    // the bookends of the agricultural year and never share a day.
+    const beltaneDay = activeSeasonalEvents(d(2027, 5, 1));
+    expect(beltaneDay).toContain('beltane');
+    expect(beltaneDay).not.toContain('lammas');
+    const lammasDay = activeSeasonalEvents(d(2027, 8, 1));
+    expect(lammasDay).toContain('lammas');
+    expect(lammasDay).not.toContain('beltane');
+  });
+});

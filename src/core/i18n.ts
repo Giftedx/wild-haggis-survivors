@@ -779,6 +779,16 @@ export const EN_STRINGS: LocaleTree = {
       blessing_toast: 'Brìde\'s mantle warms ye — first stir of spring. +12 HP, hooves a wee bit quicker.',
     },
     /**
+     * Lùnastal / Lammas Harvest Blessing — Jul 29 – Aug 4 seasonal
+     * hook (DESIGN_IDEAS §12; SCOTTISH_RESEARCH §1 Lùnastal,
+     * SCOTTISH_RESEARCH_DEEP §13.4 Lammas / loaf-mass). The loaf is
+     * broken at the cairn and shared. +14 HP heal, +10% additive XP
+     * multiplier — the harvest cuts cleaner.
+     */
+    lammas: {
+      blessing_toast: 'Loaf-mass at the cairn — Lugh\'s harvest opens. +14 HP, every gem reads a wee bit richer.',
+    },
+    /**
      * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
      * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
      * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -4164,6 +4174,12 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Feb 2 – Feb 8 — Brigid stirs; the lambing-sky leans warm.',
       badge_suffix: 'Imbolc',
       ceremony_banner: '🕯 Imbolc is live — Brigid\'s mantle is on the byre.',
+    },
+    lammas: {
+      name: 'Lùnastal / Lammas',
+      description: 'Jul 29 – Aug 4 — first sheaves cut; loaf-mass at the cairn.',
+      badge_suffix: 'Lùnastal',
+      ceremony_banner: '🌾 Lùnastal is live — the loaf is broken on the moor.',
     },
   },
   /**

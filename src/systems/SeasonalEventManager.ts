@@ -118,6 +118,17 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.imbolc.description',
     dateWindow: { startMonth: 2, startDay: 2, endMonth: 2, endDay: 8 },
   },
+  // Lùnastal / Lammas — Gaelic harvest-start (Aug 1). Window Jul 29 –
+  // Aug 4 mirrors the Beltane symmetry (Apr 28 – May 4 around May 1) —
+  // these two cross-quarter days are the bookends of the agricultural
+  // year. Sits comfortably between Beltane and the Aug 12 grouse-
+  // shooting opening (a future tourist-hunter intensification slot).
+  lammas: {
+    key: 'lammas',
+    nameKey: 'seasonalEvent.lammas.name',
+    descriptionKey: 'seasonalEvent.lammas.description',
+    dateWindow: { startMonth: 7, startDay: 29, endMonth: 8, endDay: 4 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

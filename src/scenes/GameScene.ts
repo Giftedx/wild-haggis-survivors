@@ -82,6 +82,7 @@ import { applySamhainVeil } from '../systems/samhainVeil';
 import { applyStAndrewsBlessing } from '../systems/standrewsBlessing';
 import { applyBurnsNightBlessing } from '../systems/burnsNightBlessing';
 import { applyImbolcBlessing } from '../systems/imbolcBlessing';
+import { applyLammasBlessing } from '../systems/lammasBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -768,6 +769,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       seasonalEventKey,
       this.runModifiers,
     );
+    const lammasResult = applyLammasBlessing(
+      seasonalEventKey,
+      this.runModifiers,
+    );
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
@@ -858,6 +863,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.time.delayedCall(1500, () => {
         if (!this.scene.isActive('Game')) return;
         this.juice.showToast(t('ui.imbolc.blessing_toast'), '#f5e7b8');
+      });
+    } else if (lammasResult.applied) {
+      this.player.heal(lammasResult.extraStartingHpHeal);
+      // Lammas is the only seasonal that bumps Player.bonusXpMultiplier
+      // directly (RunModifiers has no XP slot — adding one would touch
+      // every consumer). Player.addXpMultiplier composes with the
+      // existing rune / permanent / variant XP stack.
+      this.player.addXpMultiplier(lammasResult.extraXpMultiplier);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.lammas.blessing_toast'), '#d4a040');
       });
     }
 
