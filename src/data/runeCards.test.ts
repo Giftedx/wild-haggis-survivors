@@ -31,15 +31,15 @@ describe('rune rarity + buildRuneCards (U1 Task 11 + M4 alignment)', () => {
   it('M4 T113 — ungrounded biome runes are filtered out', () => {
     const cards = buildRuneCards();
     const ids = cards.map((c) => (c.effect as { type: 'grant_rune'; runeId: string }).runeId);
-    // Remaining ungrounded keys reference unshipped biome axes
-    // (B5 Phase 2 = frost / Phase 3 = edinburgh). Graduated keys —
+    // Only edinburgh_rune remains ungrounded (Phase 3 — Edinburgh
+    // biome blocked on cultural consultation). Graduated keys —
     // biome_dusk (Phase 0), biome_coastal (Phase 1a), biome_fog
-    // (Phase 1b) — all fire in production now.
-    expect(ids).not.toContain('frost_rune');    // biome_cold
+    // (Phase 1b), biome_cold (Phase 2) — all fire in production now.
     expect(ids).not.toContain('edinburgh_rune'); // biome_urban
     expect(ids).toContain('gloaming_rune');     // biome_dusk — grounded post B5 Phase 0
     expect(ids).toContain('seawrack_rune');     // biome_coastal — grounded post B5 Phase 1a
     expect(ids).toContain('haar_rune');         // biome_fog — grounded post B5 Phase 1b
+    expect(ids).toContain('frost_rune');        // biome_cold — grounded post B5 Phase 2
   });
 
   it('buildCardPool EXCLUDES runes when bossKilledThisRun is false', () => {

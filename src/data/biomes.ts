@@ -9,14 +9,15 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar' | 'frost';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
   | 'pineConcealment'
   | 'heatherBloom'
   | 'coastalTide'
-  | 'haarConcealment';
+  | 'haarConcealment'
+  | 'frostBite';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -179,9 +180,39 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     // target via biomeHaarTarget(settings, biome) on biome enter.
     ambientHaarDensity: 0.7,
   },
+  frost: {
+    id: 'frost',
+    nameKey: 'biomes.frost.name',
+    tint: 0x8a98a8,
+    entryToastKey: 'biomes.frost.entry',
+    loreSnippetKey: 'biomes.frost.loreSnippet',
+    loreKey: 'biomes.frost.lore',
+    toastColor: '#d8dee8',
+    spawnWeightMods: {
+      // Grave palette: cold-numbed pressure. Berserker (Caithness Viking
+      // hardiness), ghost (the Bodach Glas presence), eagle (tops are
+      // their territory). Tourists and chefs avoid the cold (-).
+      berserker: 1.5,
+      ghost: 1.4,
+      eagle: 1.3,
+      golden_eagle: 1.2,
+      tourist: 0.3,
+      chef: 0.2,
+      sheep: 0.6,
+    },
+    modifier: 'frostBite',
+    // Lowest moodTimbre in the catalog — sparse cold drone, the
+    // most grounded music character. Frost sits below bog (0.15)
+    // because Cairngorm winter is heavier/quieter than peat-bog
+    // breath; the wind on the tops carries silence, not sound.
+    moodTimbre: 0.1,
+    // Cold air carries less mist than haar — the Cairngorms in winter
+    // are clear and biting, not foggy. Low ambient haar.
+    ambientHaarDensity: 0.15,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

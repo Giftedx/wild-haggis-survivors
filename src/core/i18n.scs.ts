@@ -1448,6 +1448,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Ten yairds o\' warld. Plenty.',
           d: 'Things move easier in tha haar. Maistly thaim, mind.',
         },
+        frost: {
+          a: 'Frost on tha air. Tichten yer hide.',
+          b: 'Bracken\'s white. Winter\'s claimed it.',
+          c: 'Snaw-patches still on tha ben. Cairngorm wather.',
+          d: 'Cauld taks tha tired first. Keep movin.',
+        },
       },
       moor_moment: {
         a: 'Tha moor noticed ye. That\'s rare.',
@@ -3567,6 +3573,12 @@ export const SCS_STRINGS: LocaleTree = {
       entry: 'Tha haar\'s rolled in. Twa mile tae ten yairds in seven meenit.',
       loreSnippet: 'East-coast sea-fog. Embra wather, made weet.',
       lore: 'Haar — tha cauld North Sea fog that lifts aff tha watter an walks inland ower Embra, East Lothian, Aiberdeen. Visibility gangs fae a clean horizon tae ten yairds in tha time it taks ye tae find yer gluives. Tha haar cairries silence wi it; soond gangs muffled, tha warld shrinks tae whit ye can touch. Auld stories say things move easier in tha haar — tha fey court taks a haar mornin fer crossins. Tha wraith o tha fog itsel is on tha muir tha day; tha cobbles are slick, tha heather drips, an tha silhouettes ye see are mibbe whit ye think thay are.',
+    },
+    frost: {
+      name: 'Frost Tops',
+      entry: 'Taps are bitin. Keep movin — cauld taks tha tired.',
+      loreSnippet: 'Cairngorm winter. Tha Bodach Glas walks here.',
+      lore: 'Tha high taps abuin tha tree-line — Cairngorms in winter, snaw-patches that linger past Lammas, ptarmigan chyngin white tae match tha grund. Tha Bodach Glas walks here, tha grey auld man o tha munetin — Hieland climbers hae heard him pacin ahint them on Ben Macdui fer twa centuries, an some hae turned tae find naebody, an some hivnae come back at aw. Bracken locks in rime; bare birch silhouettes ring tha corries. Cauld disnae forgie tha unprepared; tha wind is tha munetin\'s voice.',
     },
   },
   // ── Beastie lore Scots overlay (matches EN beastie block in i18n.ts). ──

@@ -1255,7 +1255,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       | 'pineConcealment'
       | 'heatherBloom'
       | 'coastalTide'
-      | 'haarConcealment',
+      | 'haarConcealment'
+      | 'frostBite',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1287,6 +1288,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // and enemy AI reading current biome. Player-side stat-neutral
         // by design — the haar is the gameplay tension, not a stat
         // change.
+        break;
+      case 'frostBite':
+        // Charter §4.4 — Cairngorms in winter punish the unprepared.
+        // -25% movement is the heaviest biome-wide speed tax in the
+        // game (bogSlow is -15%); pairs with the rime_patch hazard
+        // chip damage to make the frost biome feel like a tax-heavy
+        // run-state. The HP-conditional cold tick from the original
+        // charter dropped (HazardsSystem doesn't support conditional
+        // gates); the speed tax carries the frost tension instead.
+        this.biomeSpeedMul = 0.75;
         break;
     }
   }

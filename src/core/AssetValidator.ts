@@ -213,6 +213,16 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'hazard_slick_cobble',
     'deco_fog_pier',
     'deco_dripping_heather',
+    // B5 Phase 2 — Frost flora + hazard authored sprites.
+    'hazard_rime_patch',
+    'deco_snow_patch',
+    'deco_bare_birch',
+    'deco_rime_bracken',
+    'deco_ptarmigan_print',
+    // deco_antler_shed already authored (sprites/decorations/antlerShed.ts)
+    // — used by frost STORY_PROPS_BY_BIOME, but not previously
+    // validator-locked. Lock it now so removing the bake is caught.
+    'deco_antler_shed',
     'deco_autumn_leaves',
     'deco_spring_shoot',
     'deco_thaw_puddle',

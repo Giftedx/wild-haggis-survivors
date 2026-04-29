@@ -862,6 +862,159 @@ export function bakeBiomeProps(scene: Phaser.Scene): void {
     g.fillRect(18, 23, 0.5, 0.5);
   });
 
+  // ── B5 Phase 2 — Frost flora (4 new authored). ──
+  // Grave palette per ART_STYLE_BIBLE §Grave:80-95; desaturated
+  // greys, ashen tones, low warm long shadows. Cultural anchor:
+  // Cairngorms in winter, snow-on-ben late patches, ptarmigan
+  // changing white (SCOTTISH_RESEARCH §2.9). Bodach Glas presence
+  // implied via silhouette enemies (see B5 charter §4.4 — enemy
+  // ships in its own slice). NO ruined dwellings per Risk 4.
+
+  // ── deco_snow_patch — irregular snow patch with crystalline
+  // sparkle. The signature ground tile of the frost biome. ──
+  bake(scene, 'deco_snow_patch', (g) => {
+    // Grounded contact shadow, cold-blue tinted
+    g.fillStyle(0x4a5060, 0.18);
+    g.fillEllipse(16, 26, 22, 3);
+    // Snow patch — irregular blob, layered tones
+    g.fillStyle(0xc0c8d4, 1);
+    g.fillEllipse(16, 22, 22, 8);
+    g.fillStyle(0xdde2eb, 1);
+    g.fillEllipse(15, 21, 18, 6);
+    g.fillStyle(0xeef2f8, 1);
+    g.fillEllipse(14, 20, 14, 4);
+    // Top-side highlight — fresh snow lit
+    g.fillStyle(0xffffff, 0.95);
+    g.fillEllipse(13, 19, 9, 2);
+    // Sparkle dots — crystalline catch-lights
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(11, 19, 0.5);
+    g.fillCircle(18, 18, 0.4);
+    g.fillCircle(22, 21, 0.5);
+    g.fillCircle(8, 21, 0.4);
+    // A few exposed twigs poking through (snow always has them)
+    g.fillStyle(0x3a2818, 1);
+    g.fillRect(20, 21, 2, 1);
+    g.fillRect(9, 22, 1.5, 0.6);
+    // Bluish underbelly shadow
+    g.fillStyle(0x6a7888, 0.5);
+    g.fillEllipse(16, 24.5, 20, 1.5);
+    // A tiny rabbit-track or two in the snow (suggests wildlife)
+    g.fillStyle(0x8a92a2, 0.55);
+    g.fillCircle(20, 22, 0.4);
+    g.fillCircle(20.5, 22.4, 0.3);
+  });
+
+  // ── deco_bare_birch — leafless silver birch trunk + a few fine
+  // twig branches. Stark white-on-grey silhouette; the Cairngorm
+  // tree-line tell. ──
+  bake(scene, 'deco_bare_birch', (g) => {
+    shadow(g, 16, 27, 12, 3);
+    // Trunk — pale silver-white birch, thin, slight S-curve
+    g.fillStyle(0xeef2f8, 1);
+    g.fillRect(15, 6, 2, 20);
+    // Trunk shadow side
+    g.fillStyle(0xa8b0bc, 1);
+    g.fillRect(16.5, 7, 1, 18);
+    // Characteristic birch black bands (peeling bark)
+    g.fillStyle(0x282828, 1);
+    g.fillRect(15, 11, 2, 0.7);
+    g.fillRect(15, 16, 2, 0.6);
+    g.fillRect(15, 21, 2, 0.5);
+    g.fillStyle(0x5a4a3a, 0.85);
+    g.fillRect(15, 13.5, 2, 0.4);
+    g.fillRect(15, 18, 2, 0.4);
+    // Fine twig branches at top — bare frame
+    g.fillStyle(0x4a3828, 1);
+    // Left twig
+    g.fillRect(11, 7, 4, 0.7);
+    g.fillRect(9, 5, 2, 0.6);
+    g.fillRect(13, 9, 2, 0.5);
+    // Right twig
+    g.fillRect(17, 8, 4, 0.7);
+    g.fillRect(20, 6, 2, 0.6);
+    g.fillRect(18, 10, 2, 0.5);
+    // Top fork
+    g.fillStyle(0x3a2818, 1);
+    g.fillRect(15, 4, 2, 3);
+    g.fillRect(14, 5, 1, 1);
+    g.fillRect(17, 5, 1, 1);
+    // Frost dust on the upper trunk (thin rime line on the wind-side)
+    g.fillStyle(0xeef2f8, 0.7);
+    g.fillRect(15, 7, 0.5, 5);
+    g.fillStyle(0xffffff, 0.9);
+    g.fillCircle(15.2, 8, 0.3);
+    g.fillCircle(15.2, 10.5, 0.3);
+    // Tiny snow cap on a twig fork
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(11, 5, 0.8);
+    g.fillCircle(20, 6, 0.7);
+  });
+
+  // ── deco_rime_bracken — bracken frond locked in rime, bowed
+  // with frost weight. The bracken's the signal; the rime is the
+  // tax. ──
+  bake(scene, 'deco_rime_bracken', (g) => {
+    shadow(g, 16, 26, 16, 3);
+    // Stem — cold grey-brown
+    g.fillStyle(0x4a3a28, 1);
+    g.fillRect(15, 17, 2, 8);
+    // Bracken fronds — leaning over (frost weight bows them)
+    g.fillStyle(0x6a5a3a, 1);
+    g.fillTriangle(16, 16, 8, 14, 11, 18);
+    g.fillTriangle(16, 16, 24, 14, 21, 18);
+    g.fillStyle(0x8a7448, 0.95);
+    g.fillTriangle(16, 15, 10, 13.5, 12, 17);
+    g.fillTriangle(16, 15, 22, 13.5, 20, 17);
+    // Rime coating — thin white outline along the frond edges
+    g.fillStyle(0xeef2f8, 0.9);
+    g.fillRect(8, 14, 4, 0.6);
+    g.fillRect(20, 14, 4, 0.6);
+    g.fillRect(11, 18, 3, 0.5);
+    g.fillRect(18, 18, 3, 0.5);
+    // Crystalline sparkles on the rime
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(9, 14, 0.5);
+    g.fillCircle(23, 14, 0.5);
+    g.fillCircle(13, 18, 0.4);
+    g.fillCircle(19, 18, 0.4);
+    g.fillStyle(0xeef2f8, 0.7);
+    g.fillCircle(11, 14.3, 0.3);
+    g.fillCircle(21, 14.3, 0.3);
+    // Rime cap on the apex
+    g.fillStyle(0xffffff, 1);
+    g.fillCircle(16, 14.5, 1.1);
+    g.fillStyle(0xeef2f8, 0.85);
+    g.fillCircle(16, 14, 0.6);
+    // A drooping frond tip with an icicle bead
+    g.fillStyle(0xc0d0e0, 0.85);
+    g.fillRect(8, 15, 0.6, 1.2);
+    g.fillStyle(0xffffff, 0.85);
+    g.fillCircle(8.3, 16.2, 0.4);
+  });
+
+  // ── deco_ptarmigan_print — paired triple-toe footprints in
+  // snow. The ptarmigan's white-on-white camouflage is famous;
+  // the prints are the only tell of its passing. ──
+  bake(scene, 'deco_ptarmigan_print', (g) => {
+    // Snow under-tone (faint patch)
+    g.fillStyle(0xeef2f8, 0.6);
+    g.fillEllipse(16, 21, 22, 7);
+    g.fillStyle(0xffffff, 0.5);
+    g.fillEllipse(16, 20, 18, 5);
+    // Two paired prints (gait — left then right step)
+    // Each print: 3 forward toes + 1 small heel pad
+    // Print A (lower-left)
+    drawPtarmiganPrint(g, 11, 20, false);
+    // Print B (upper-right, smaller — implies depth recession)
+    drawPtarmiganPrint(g, 20, 17, true);
+    // A faint third partial print fading out top-right (gait continues
+    // off-screen — sells motion)
+    g.fillStyle(0x8a92a2, 0.45);
+    g.fillCircle(25, 14, 0.7);
+    g.fillCircle(26, 13.5, 0.5);
+  });
+
   // ── deco_dripping_heather — heather sprig with condensed water
   // beads pulling each tip downward. The haar shows up everywhere
   // it touches; the heather wears it. ──
@@ -915,4 +1068,26 @@ export function bakeBiomeProps(scene: Phaser.Scene): void {
     g.fillStyle(0xc0c8d4, 0.3);
     g.fillEllipse(16, 12, 12, 2);
   });
+}
+
+// ── Frost helper — paired triple-toe ptarmigan footprint, scaled
+// for either lead or trailing-step recession. Used by the
+// deco_ptarmigan_print drawer above. ──
+function drawPtarmiganPrint(g: Phaser.GameObjects.Graphics, cx: number, cy: number, smaller: boolean): void {
+  const sc = smaller ? 0.85 : 1;
+  // Toes — 3 forward triangles fanning out
+  g.fillStyle(0x6a7282, 0.85);
+  g.fillTriangle(cx - 1.5 * sc, cy - 2 * sc, cx - 2.2 * sc, cy - 0.5 * sc, cx - 1.0 * sc, cy);
+  g.fillTriangle(cx, cy - 2.5 * sc, cx - 0.6 * sc, cy - 0.5 * sc, cx + 0.6 * sc, cy);
+  g.fillTriangle(cx + 1.5 * sc, cy - 2 * sc, cx + 1.0 * sc, cy, cx + 2.2 * sc, cy - 0.5 * sc);
+  // Heel pad — small circle behind
+  g.fillCircle(cx, cy + 0.5 * sc, 0.7 * sc);
+  // Inner highlight (slight contrast lift)
+  g.fillStyle(0x8a92a2, 0.6);
+  g.fillTriangle(cx - 1.3 * sc, cy - 1.6 * sc, cx - 1.7 * sc, cy - 0.7 * sc, cx - 1.0 * sc, cy - 0.2 * sc);
+  g.fillTriangle(cx, cy - 2.0 * sc, cx - 0.4 * sc, cy - 0.7 * sc, cx + 0.4 * sc, cy - 0.2 * sc);
+  g.fillTriangle(cx + 1.3 * sc, cy - 1.6 * sc, cx + 1.0 * sc, cy - 0.2 * sc, cx + 1.7 * sc, cy - 0.7 * sc);
+  // Subtle blue cold shadow inside the print
+  g.fillStyle(0x4a6080, 0.35);
+  g.fillCircle(cx, cy - 1 * sc, 1.6 * sc);
 }

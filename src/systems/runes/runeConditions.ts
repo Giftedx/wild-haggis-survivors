@@ -107,7 +107,11 @@ export function evaluateRuneCondition(
     case 'near_water_hazard': return ctx.nearHazardWater;
     case 'near_cairn': return ctx.nearCairn;
     case 'biome_dusk': return ctx.timeOfDayKey === 'dusk';
-    case 'biome_cold': return ctx.biomeKey === 'cold';
+    case 'biome_cold':
+      // B5 Phase 2 grounded the dedicated `frost` biome (Cairngorms
+      // winter). The 'cold' literal is retained as a forward-compat
+      // alias; today only 'frost' fires this predicate in production.
+      return ctx.biomeKey === 'cold' || ctx.biomeKey === 'frost';
     case 'biome_coastal':
       // B5 Phase 1 grounded the dedicated `coastal` biome (Seawrack
       // tide). The Loch fallback stays as a design softener — both

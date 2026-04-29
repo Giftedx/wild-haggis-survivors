@@ -92,6 +92,20 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_milestone',
     'deco_standing_stone_glyph',
   ],
+  frost: [
+    // B5 Phase 2 — frost-flavoured story props. Grave palette;
+    // Cairngorms in winter. Pictish stone (the high tops have
+    // many), milestone (snow-bound waymarker), standing-stone
+    // glyph (the Bodach Glas walks past these), brahan-eye stone
+    // (cold seer-stone — the seer foresaw deep winter), antler
+    // shed (already authored — winter detail). NO ruined-croft
+    // per Risk 4 (Highland Clearances dignity).
+    'deco_pictish_stone',
+    'deco_milestone',
+    'deco_standing_stone_glyph',
+    'deco_brahan_eye_stone',
+    'deco_antler_shed',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -158,6 +172,21 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_rock_2', 0.82],
     ['deco_thistle', 0.92],
     ['deco_wind_grass', 1.0],
+  ],
+  // B5 Phase 2 — Frost flora. Four new authored props
+  // (snow_patch, bare_birch, rime_bracken, ptarmigan_print)
+  // carry the primary biome silhouette. winter_snowcap reused
+  // from existing seasonal moor pack (Dec midwinter); rocks +
+  // thistle reused. Grave palette per ART_STYLE_BIBLE §Grave:
+  // 80-95.
+  frost: [
+    ['deco_snow_patch', 0.22],
+    ['deco_bare_birch', 0.40],
+    ['deco_rime_bracken', 0.56],
+    ['deco_ptarmigan_print', 0.70],
+    ['deco_winter_snowcap', 0.84],
+    ['deco_rock_2', 0.94],
+    ['deco_thistle', 1.0],
   ],
 };
 
@@ -277,6 +306,13 @@ function isSwayable(textureKey: string): boolean {
   // its own internal water-bead motion, no need for sway jitter).
   if (textureKey.includes('fog_pier')) return false;
   if (textureKey.includes('dripping_heather')) return false;
+  // Static frost props (snow patches lie flat; rime locks bracken
+  // in place; bare birch silhouettes are wind-stiffened anyway;
+  // footprint is ground decal).
+  if (textureKey.includes('snow_patch')) return false;
+  if (textureKey.includes('bare_birch')) return false;
+  if (textureKey.includes('rime_bracken')) return false;
+  if (textureKey.includes('ptarmigan_print')) return false;
   // Story props are mostly solid landmarks or placed objects. Clootie
   // ribbons already include visual motion in their silhouette; keep
   // runtime sway off so they do not jitter like grass.

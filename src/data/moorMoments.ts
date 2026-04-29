@@ -59,6 +59,10 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   // B5 Phase 1b — Haar: cool desaturated grey-mauve, distinct from
   // coastal's saltier blue. The fog drains chroma; tint matches.
   haar: 0xa8aebc,
+  // B5 Phase 2 — Frost: cold ice-blue, brightest of the cold tones
+  // (frost reads brighter than haar despite less saturation — snow
+  // throws light back). Distinct from coastal/haar greys.
+  frost: 0xc8e0ee,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [

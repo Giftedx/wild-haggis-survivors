@@ -395,3 +395,83 @@ export function bakeHazardSlickCobble(scene: Phaser.Scene): void {
   g.generateTexture('hazard_slick_cobble', w, h);
   g.destroy();
 }
+
+export function bakeHazardRimePatch(scene: Phaser.Scene): void {
+  const w = 30, h = 24;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Frost halo on the surrounding ground — pale wash showing the rime
+  // bloom radius beyond the stone edge
+  g.fillStyle(0xc8d0e0, 0.35);
+  g.fillEllipse(cx, cy + 1, 28, 18);
+  g.fillStyle(0xeef2f8, 0.25);
+  g.fillEllipse(cx, cy, 22, 12);
+
+  // Dark stone base — Cairngorm granite undertone
+  g.fillStyle(0x2a2c34, 1);
+  g.fillEllipse(cx, cy + 1, 20, 11);
+  g.fillStyle(0x4a4c56, 1);
+  g.fillEllipse(cx, cy, 16, 8);
+  g.fillStyle(0x6a6c78, 0.85);
+  g.fillEllipse(cx - 1, cy - 1, 11, 4);
+
+  // Rime crystals — radial spike pattern around the centre
+  // Long needles sprouting outward (the frost-bloom motif)
+  const needles: ReadonlyArray<readonly [number, number, number, number]> = [
+    // [angle-deg, length, baseR, tipR]
+    [0, 6, 1.0, 0.3],
+    [45, 5, 0.8, 0.3],
+    [90, 5.5, 0.9, 0.3],
+    [135, 5, 0.8, 0.3],
+    [180, 6, 1.0, 0.3],
+    [225, 4.5, 0.7, 0.3],
+    [270, 4, 0.7, 0.3],
+    [315, 5, 0.8, 0.3],
+  ];
+  g.fillStyle(0xeef2f8, 1);
+  for (const [angDeg, len, baseR] of needles) {
+    const ang = (angDeg * Math.PI) / 180;
+    // Rough spike — single elongated triangle approximated by stacked
+    // ellipses from base to tip.
+    const segments = 4;
+    for (let i = 0; i < segments; i++) {
+      const t = i / segments;
+      const r = baseR * (1 - t);
+      const x = cx + Math.cos(ang) * (3 + len * t);
+      const y = cy + Math.sin(ang) * (2 + len * t);
+      g.fillCircle(x, y, r);
+    }
+  }
+  // Brighter highlight on the top-half spikes (light from above)
+  g.fillStyle(0xffffff, 0.85);
+  for (const [angDeg, len, baseR] of needles) {
+    if (angDeg > 180) continue; // skip lower-half
+    const ang = (angDeg * Math.PI) / 180;
+    const x = cx + Math.cos(ang) * (3 + len * 0.4);
+    const y = cy + Math.sin(ang) * (2 + len * 0.4);
+    g.fillCircle(x, y, baseR * 0.5);
+  }
+
+  // Centre frost cluster — densest crystal mass
+  g.fillStyle(0xeef2f8, 1);
+  g.fillCircle(cx, cy, 2.2);
+  g.fillStyle(0xffffff, 1);
+  g.fillCircle(cx - 0.5, cy - 0.5, 1.3);
+  g.fillStyle(0xc0d0e0, 0.5);
+  g.fillCircle(cx + 0.5, cy + 0.5, 1);
+
+  // Tiny tooth-edge crystals along stone rim
+  g.fillStyle(0xeef2f8, 0.9);
+  g.fillRect(cx - 9, cy + 4, 1, 1);
+  g.fillRect(cx + 8, cy + 3, 1, 1);
+  g.fillRect(cx - 6, cy - 5, 1, 1);
+  g.fillRect(cx + 5, cy - 5, 1, 1);
+
+  // Cold-blue undershadow (sells the freeze-reads-as-bite)
+  g.fillStyle(0x4a6080, 0.4);
+  g.fillEllipse(cx, cy + 5, 14, 2);
+
+  g.generateTexture('hazard_rime_patch', w, h);
+  g.destroy();
+}

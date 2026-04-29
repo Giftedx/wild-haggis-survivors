@@ -13,6 +13,7 @@
  *   loose_scree    → heather   (Highland uplands, slipping chips)
  *   tidal_wrack    → coastal   (kelp tangle, low chip on lingering)
  *   slick_cobble   → haar      (fog-condensed wet stones, slip chip)
+ *   rime_patch     → frost     (frost-bound stone, cold chip)
  *
  * Tuning rationale:
  *   - peat_pit: medium damage (8), medium hitbox (16 px), longest sit
@@ -30,6 +31,11 @@
  *     — fog condenses on stones; the slip is a hidden tax in low
  *     visibility. Same damage as loose_scree but slipperier-feeling
  *     because the haar already cuts your readout.
+ *   - rime_patch: low-mid damage (5), mid hitbox (16 px), 11 s lifetime
+ *     — frost-bound stone with crystal bloom. Charter §4.4 originally
+ *     wanted HP-conditional cold tick; HazardsSystem doesn't support
+ *     conditional gates, so dropped to flat chip with biome-wide
+ *     `frostBite` modifier (-25% speed) carrying the frost tax.
  */
 import type { BiomeId } from './biomes';
 
@@ -39,7 +45,8 @@ export type HazardKey =
   | 'burn_water'
   | 'loose_scree'
   | 'tidal_wrack'
-  | 'slick_cobble';
+  | 'slick_cobble'
+  | 'rime_patch';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -112,6 +119,15 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 10000,
     spawnIntervalMs: 9000,
   },
+  rime_patch: {
+    key: 'rime_patch',
+    texture: 'hazard_rime_patch',
+    biome: 'frost',
+    damage: 5,
+    hitboxRadius: 16,
+    lifetimeMs: 11000,
+    spawnIntervalMs: 9500,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -122,4 +138,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'loose_scree',
   'tidal_wrack',
   'slick_cobble',
+  'rime_patch',
 ];

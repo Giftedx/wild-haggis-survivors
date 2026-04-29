@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all six biomes with required fields', () => {
-    expect(BIOME_IDS.length).toBe(6);
+  it('defines all seven biomes with required fields', () => {
+    expect(BIOME_IDS.length).toBe(7);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -32,6 +32,17 @@ describe('biomes data', () => {
     // Charter §4.3 / Risk 7: capped at 0.7 not 1.0 for silhouette-first
     // readability. Test fence locks the cap.
     expect(haar.ambientHaarDensity).toBe(0.7);
+  });
+
+  it('frost biome is registered (B5 Phase 2)', () => {
+    expect(BIOME_IDS).toContain('frost');
+    const frost = BIOMES.frost;
+    expect(frost.modifier).toBe('frostBite');
+    expect(frost.nameKey).toBe('biomes.frost.name');
+    // Charter §4.4 — Cairngorms in winter is the lowest moodTimbre
+    // (most grounded/grave). Lock the floor so a balance edit
+    // cannot brighten it without a design pass.
+    expect(frost.moodTimbre).toBeLessThan(BIOMES.bog.moodTimbre);
   });
 
   it('spawn weight multipliers are all positive', () => {

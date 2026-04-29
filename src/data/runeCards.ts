@@ -42,19 +42,16 @@ function toUpgradeCard(rune: RuneDef): UpgradeCard {
  * with no data churn.
  */
 const UNGROUNDED_CONDITION_KEYS: ReadonlySet<RuneConditionKey> = new Set([
-  // No live biome 'cold' — Cailleach winter biome unshipped.
-  'biome_cold',
   // No live biome 'urban' — Edinburgh/Glasgow biomes future work.
   'biome_urban',
   // 'biome_dusk' graduated 2026-04-28 (B5 Phase 0). GameScene now
   // populates timeOfDayKey via computeTimeOfDayKey, so gloaming_rune
   // fires in the 15-22min window of every run.
-  // 'biome_coastal' graduated 2026-04-29 (B5 Phase 1a) when the
-  // dedicated 'coastal' biome shipped — see runeConditions.ts.
-  // 'biome_fog' graduated 2026-04-30 (B5 Phase 1b) when the
-  // dedicated 'haar' biome shipped — see runeConditions.ts. The
-  // existing case wires biomeKey === 'fog' || === 'haar' so older
-  // saves carrying haar_rune fire on the new biome key directly.
+  // 'biome_coastal' graduated 2026-04-29 (B5 Phase 1a).
+  // 'biome_fog' graduated 2026-04-30 (B5 Phase 1b).
+  // 'biome_cold' graduated 2026-04-30 (B5 Phase 2) — dedicated
+  // 'frost' biome shipped. The condition evaluator wires
+  // biomeKey === 'cold' || === 'frost' for forward-compat.
 ]);
 
 /**

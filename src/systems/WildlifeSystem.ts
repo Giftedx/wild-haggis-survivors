@@ -52,23 +52,30 @@ const COUNTS: Record<WildlifeKey, number> = {
 // fog-friendly hunters). Land mammals don't read well in fog and
 // leaving them in feels like a sprite-baking trick. puffin yes
 // (the haar rolls off the sea where puffins are anyway).
+//
+// B5 Phase 2: 'frost' biome added. Cairngorm winter — ptarmigan
+// flagship (white-on-white camouflage is the species' fame), red
+// deer + scottish wildcat (Highland mountain mammals), aerial
+// (eagle / golden_eagle / buzzard / rook / pipistrelle_bat). NO
+// sheep/highland_cow (high-tops are no grazing biome) and no
+// wetland creatures (otter / salmon / common_frog).
 const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
   hare: new Set(['heather', 'pine']),
-  red_deer: new Set(['heather', 'pine']),
-  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
+  red_deer: new Set(['heather', 'pine', 'frost']),
+  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
   red_squirrel: new Set(['heather', 'pine']),
   pine_marten: new Set(['heather', 'pine']),
   capercaillie: new Set(['heather', 'pine']),
   otter: new Set(['bog', 'loch', 'coastal']),
   puffin: new Set(['bog', 'loch', 'heather', 'coastal', 'haar']),
-  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
-  scottish_wildcat: new Set(['heather', 'pine']),
-  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
+  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
+  scottish_wildcat: new Set(['heather', 'pine', 'frost']),
+  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
   sheep: new Set(['heather']),
   grey_seal: new Set(['loch', 'coastal']),
-  ptarmigan: new Set(['heather', 'pine']),
+  ptarmigan: new Set(['heather', 'pine', 'frost']),
   common_frog: new Set(['bog', 'loch']),
-  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
+  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar', 'frost']),
   field_mouse: new Set(['heather', 'pine']),
   salmon: new Set(['bog', 'loch', 'coastal']),
 };

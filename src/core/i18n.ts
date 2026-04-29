@@ -1851,6 +1851,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Ten yards o\' world. Plenty.',
           d: 'Things move easier in the haar. Mostly them, mind.',
         },
+        frost: {
+          a: 'Frost on the air. Tighten yir hide.',
+          b: 'Bracken\'s white. Winter\'s claimed it.',
+          c: 'Snow-patches still on the ben. Cairngorms weather.',
+          d: 'Cold takes the tired first. Keep moving.',
+        },
       },
       moor_moment: {
         a: 'The moor noticed ye. That\'s rare.',
@@ -3107,6 +3113,12 @@ export const EN_STRINGS: LocaleTree = {
       entry: 'The haar\'s rolled in. Two miles tae ten yards in seven minutes.',
       loreSnippet: 'East-coast sea-fog. Edinburgh weather, made wet.',
       lore: 'Haar — the cold North Sea fog that lifts off the water and walks inland over Edinburgh, East Lothian, Aberdeen. Visibility goes from clean horizon tae ten yards in the time it takes ye tae find yir gloves. The haar carries silence wi it; sound goes muffled, the world shrinks tae what ye can touch. Auld stories say things move easier in the haar — the fey court takes a haar morning fer crossings. The wraith of the fog itsel is on the moor today; the cobbles are slick, the heather drips, an the silhouettes ye see are maybe what ye think they are.',
+    },
+    frost: {
+      name: 'Frost Tops',
+      entry: 'Tops are biting. Keep moving — cold takes the tired.',
+      loreSnippet: 'Cairngorm winter. The Bodach Glas walks here.',
+      lore: 'The high tops above the tree-line — Cairngorms in winter, snow-patches that linger past Lammas, ptarmigan changing white tae match the ground. The Bodach Glas walks here, the grey old man o the mountain — Highland climbers have heard him pacing behind them on Ben Macdui fer two centuries, an some have turned tae find naebody, an some havenae come back at all. Bracken locks in rime; bare birch silhouettes ring the corries. Cold doesnae forgive the unprepared; the wind is the mountain\'s voice.',
     },
   },
   // ── C1 Highland Almanac — beastie lore (consumed by buildBeastieDetail). ──

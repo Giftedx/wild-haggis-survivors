@@ -218,6 +218,7 @@ export class AudioSystem {
       loose_scree: { f0: 320, f1: 180, type: 'sawtooth', dur: 0.14, vol: 0.08 },  // scrape
       tidal_wrack: { f0: 380, f1: 220, type: 'sine', dur: 0.22, vol: 0.07 },     // soft wash
       slick_cobble: { f0: 560, f1: 300, type: 'sawtooth', dur: 0.10, vol: 0.07 }, // brief slip
+      rime_patch: { f0: 1500, f1: 900, type: 'triangle', dur: 0.08, vol: 0.06 },  // crystal chime
     };
     const p = presets[hazardKey];
     osc.type = p.type;
