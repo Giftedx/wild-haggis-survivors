@@ -307,6 +307,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * passed via `init(data)` — daily challenge / shared seed codes / replay.
    */
   private runRng!: RNG;
+  /**
+   * Sub-RNG branched off `runRng` for rune-pulse spawn positions (extra
+   * gems from `applyRunePulses`). Branched after biome/flora/wildlife/
+   * mist so existing fixtures' sub-seeds are preserved. Replaces a prior
+   * `Math.random()` that broke T1 replay determinism — gem positions
+   * affect pickup-radius eligibility, which alters XP totals.
+   */
+  private runePulseRng!: RNG;
   /** T1 replay state — install/teardown owned by `game/replayBridgeInstall.ts`. */
   private replayRecorder: ReplayRecorder | null = null;
   private replayInput: ReplayInput | null = null;
@@ -679,6 +687,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.settingsManager.load().reduceParticles,
       );
     }
+
+    // Rune-pulse RNG — branched after world-dressing branches so the
+    // mist/flora/wildlife sub-seeds keep their pre-2026-04-29 values.
+    this.runePulseRng = this.runRng.branch();
 
     // Post-Bell + key handler live on RunLifecycle — reset on every scene
     // create since Phaser reuses scene instances across runs.
@@ -2589,9 +2601,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     const drained = drainRunePulses(this.runeBag);
     if (drained.gems > 0) {
       // Spawn extra gems near the player so the magnet pulls them.
+      // Seeded RNG — gem positions feed into pickup-radius eligibility,
+      // so they're game state under the T1 replay contract.
       for (let i = 0; i < drained.gems; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = 24 + Math.random() * 28;
+        const angle = this.runePulseRng.next() * Math.PI * 2;
+        const r = 24 + this.runePulseRng.next() * 28;
         this.xpSystem.spawnGem(
           this.player.x + Math.cos(angle) * r,
           this.player.y + Math.sin(angle) * r,
