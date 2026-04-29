@@ -12,6 +12,7 @@ import { bakeHealthOrb } from './healthOrb';
 import { bakeReliquary } from './reliquary';
 import { bakeBurnsPlatter } from './burnsPlatter';
 import { bakePickupVariants } from './variants';
+import { bakePolaroid } from './polaroid';
 
 export function bakePickups(scene: Phaser.Scene): void {
   bakeXpGem(scene);
@@ -20,4 +21,5 @@ export function bakePickups(scene: Phaser.Scene): void {
   bakeReliquary(scene);
   bakeBurnsPlatter(scene);
   bakePickupVariants(scene);
+  bakePolaroid(scene);
 }

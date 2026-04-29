@@ -48,6 +48,7 @@ type HookMocks = {
   onBottleBreak: ReturnType<typeof vi.fn>;
   onTotemFall: ReturnType<typeof vi.fn>;
   onHaarDispel: ReturnType<typeof vi.fn>;
+  onTouristPhotographed: ReturnType<typeof vi.fn>;
   onEliteKilled: ReturnType<typeof vi.fn>;
   onBossKilled: ReturnType<typeof vi.fn>;
   tryCairnStoneMagnet: ReturnType<typeof vi.fn>;
@@ -103,6 +104,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const onBottleBreak = vi.fn<(x: number, y: number) => void>();
   const onTotemFall = vi.fn<(x: number, y: number) => void>();
   const onHaarDispel = vi.fn<(x: number, y: number) => void>();
+  const onTouristPhotographed = vi.fn<(x: number, y: number) => void>();
   const onEliteKilled = vi.fn<(x: number, y: number) => void>();
   const onBossKilled = vi.fn<(bossKey: string, x: number, y: number) => void>();
   const tryCairnStoneMagnet = vi.fn<(x: number, y: number) => void>();
@@ -124,6 +126,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onBottleBreak,
     onTotemFall,
     onHaarDispel,
+    onTouristPhotographed,
     onEliteKilled,
     onBossKilled,
     tryCairnStoneMagnet,
@@ -146,6 +149,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onBottleBreak,
     onTotemFall,
     onHaarDispel,
+    onTouristPhotographed,
     onEliteKilled,
     onBossKilled,
     tryCairnStoneMagnet,
@@ -586,6 +590,36 @@ describe('EnemyKillHandler', () => {
       expect(m.onBottleBreak).toHaveBeenCalledExactlyOnceWith(10, 10);
       expect(m.onTotemFall).toHaveBeenCalledExactlyOnceWith(20, 20);
       expect(m.onHaarDispel).toHaveBeenCalledExactlyOnceWith(30, 30);
+    });
+  });
+
+  describe('Tourist Polaroid drop (DESIGN_IDEAS §11)', () => {
+    it('fires onTouristPhotographed at kill coords when the rng roll succeeds', () => {
+      // Kill cascade calls rng.bool three times in fixed order: health
+      // orb roll, gold coin roll, tourist polaroid roll. Mock false /
+      // false / true so only the polaroid lands. (Avoids implicit
+      // dependency on the prior two rolls' arg-shape; explicit beats
+      // clever here.)
+      m.rng.bool
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true);
+      handler.handle(150, 250, 3, 'tourist', false);
+      expect(m.onTouristPhotographed).toHaveBeenCalledExactlyOnceWith(150, 250);
+    });
+
+    it('does NOT fire when the rng roll fails', () => {
+      // Default mock returns false everywhere; tourist kill should
+      // still process kill cascade (juice, sfx) but skip the drop.
+      handler.handle(10, 20, 3, 'tourist', false);
+      expect(m.onTouristPhotographed).not.toHaveBeenCalled();
+    });
+
+    it('does NOT fire for non-tourist enemies even with a successful roll', () => {
+      m.rng.bool.mockImplementation(() => true);
+      handler.handle(10, 20, 5, 'sheep', false);
+      handler.handle(30, 40, 5, 'haggis_hunter', false);
+      expect(m.onTouristPhotographed).not.toHaveBeenCalled();
     });
   });
 });

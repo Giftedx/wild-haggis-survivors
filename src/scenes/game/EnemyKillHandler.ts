@@ -94,6 +94,15 @@ export interface EnemyKillHandlerHooks {
   onHaarDispel?(x: number, y: number): void;
 
   /**
+   * Called when a `tourist` enemy dies — the camera drops to the moor
+   * as a Polaroid pickup (DESIGN_IDEAS §11 wild-haggis-myth tribute).
+   * GameScene wires this to `PickupSpawner.spawnPolaroid`. Optional so
+   * non-production tests don't need the full pickup wiring; rate is
+   * a fixed roll inside the handler so balance lives in one place.
+   */
+  onTouristPhotographed?(x: number, y: number): void;
+
+  /**
    * Called after every elite non-boss kill. R1 M2 T13: GameScene wires
    * this to a RelicSystem drop-roll + RelicPickup spawn at (x, y).
    * Fires regardless of whether a Relic actually drops — the roll
@@ -312,6 +321,15 @@ export class EnemyKillHandler {
     // Haar-wraith dispel — leaves a drifting fog patch.
     if (enemyKey === 'haar_wraith') {
       h.onHaarDispel?.(x, y);
+    }
+
+    // Tourist Polaroid drop (DESIGN_IDEAS §11). Rare-ish (1-in-6) so
+    // the moor isn't paved with cameras after a swarm clear, but
+    // common enough that a typical run sees a few. The roll uses the
+    // seeded run RNG so a recorded replay reproduces the same drop
+    // sequence, keeping ADR-0002 Phase 3 determinism intact.
+    if (enemyKey === 'tourist' && rng.bool(1 / 6)) {
+      h.onTouristPhotographed?.(x, y);
     }
 
     if (wasBoss) {

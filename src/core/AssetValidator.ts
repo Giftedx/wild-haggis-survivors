@@ -239,6 +239,7 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'pickup_xp_heather',
     'pickup_xp_loch',
     'pickup_oatcake_glow',
+    'pickup_polaroid',
   ] as const) {
     pushKey(out, seen, 'pickup_variant', k, k);
   }

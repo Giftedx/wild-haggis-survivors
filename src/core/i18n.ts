@@ -1020,6 +1020,10 @@ export const EN_STRINGS: LocaleTree = {
       armor_blocked: '-{amount} dinged off',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
+      /** Polaroid pickup (DESIGN_IDEAS §11) — tourist drops a snapshot;
+       *  the haggis "accepts being photographed" for a wee XP bonus.
+       *  String is the float-text shown above the pickup at collect. */
+      polaroid_pickup_float: 'Photogenic! +XP',
       /** Second gold elite within the chain window — see `BALANCE.enemy.eliteChain*`. */
       elite_chain_double: 'Back-to-back gold elites! +{gold}g',
       elite_chain_triple: 'Elite hat-trick — the moor pays! +{gold}g',

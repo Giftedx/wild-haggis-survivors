@@ -1174,6 +1174,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.hazardZones.spawnBottleSlick(x, y + offset);
       },
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
+      onTouristPhotographed: (x, y) => this.pickupSpawner.spawnPolaroid(x, y),
       onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
       onBossKilled: (bossKey, x, y) => {
         // H1 M2 T15 — persist per-boss kill counts for the Croft

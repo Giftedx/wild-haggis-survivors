@@ -707,6 +707,7 @@ export const SCS_STRINGS: LocaleTree = {
       armor_blocked: '-{amount} dinged aff',
       countdown_go: 'MON THEN!',
       gold_pickup_float: '+{gold}g',
+      polaroid_pickup_float: 'Bonnie photo! +XP',
       elite_chain_double: 'Back-tae-back gowd elites! +{gold}g',
       elite_chain_triple: 'Elite hat-trick — tha moor pays! +{gold}g',
       moor_mercy_luck: 'Tha moor minds tha desperate — yer draws lean finer!',

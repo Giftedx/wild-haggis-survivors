@@ -365,6 +365,105 @@ export class PickupSpawner {
   }
 
   /**
+   * Tourist Camera Polaroid pickup (DESIGN_IDEAS §11 wild-haggis-myth
+   * tribute). Dropped on a tourist enemy kill; the haggis "accepts
+   * being photographed" for a small XP bonus + a wee banter beat. The
+   * wee monologue voice carries the joke (the haggis is photogenic
+   * and proud); mechanically the pickup is a flavoured XP gem with
+   * a longer despawn window (12 s — matches gold coin) so the player
+   * has time to walk over even mid-combat.
+   *
+   * Lifecycle mirrors `spawnGoldCoin` — physics overlap, scaled
+   * despawn ticker, audio sting on collect — so the pickup pool
+   * stays uniform. The sprite gentle-bobs in place via the shared
+   * TWEEN_INFINITE_BREATHE preset so it reads as a collectible
+   * not a hazard.
+   */
+  spawnPolaroid(x: number, y: number): void {
+    const scene = this.scene;
+    const player = this.hooks.getPlayer();
+    if (!scene.textures.exists('pickup_polaroid')) return; // BootScene-skipped test stubs.
+
+    const polaroid = scene.add.image(x, y, 'pickup_polaroid')
+      .setDepth(5)
+      // Slight off-axis tilt sells the "snapshot dropped on the
+      // moor" pose without animation cost.
+      .setRotation((Math.random() - 0.5) * 0.25);
+
+    // Gentle vertical bob — same shape as health-orb / gold-coin
+    // breathing so the world reads consistent.
+    scene.tweens.add({
+      targets: polaroid,
+      y: y - 2,
+      duration: 700,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+
+    scene.physics.add.existing(polaroid, true);
+    let collected = false;
+    let despawnHandle: TickerHandle | null = null;
+
+    /** XP awarded on collect — small enough to feel like a quirk
+     *  bonus, not a wave-skip; large enough to register vs the
+     *  ambient gem stream (typical tourist gem = 1-3 XP). */
+    const POLAROID_XP_BONUS = 8;
+
+    const overlapColl = scene.physics.add.overlap(player, polaroid, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+
+      this.hooks.getXPSystem().spawnGem(polaroid.x, polaroid.y, POLAROID_XP_BONUS);
+
+      // Float text: cream-warm tint matching the polaroid sprite
+      // border so the readout connects visually to its source.
+      const txt = this.hooks.acquireFloatText(
+        polaroid.x, polaroid.y - 14,
+        t('ui.game.polaroid_pickup_float'),
+        '#f5efde', '13px', 80,
+      );
+      if (txt) {
+        scene.tweens.add({
+          targets: txt, y: txt.y - 18, alpha: 0, duration: 700,
+          onComplete: () => txt.setVisible(false),
+        });
+      }
+
+      // Camera-flash poof — a tiny white circle that scales out + fades
+      // in 220 ms. Diegetic: the photo's flash, captured one beat late.
+      const flash = scene.add.circle(polaroid.x, polaroid.y, 10, 0xffffff, 0.85)
+        .setDepth(6);
+      scene.tweens.add({
+        targets: flash,
+        scale: 2.4, alpha: 0,
+        duration: 220,
+        ease: 'Cubic.easeOut',
+        onComplete: () => flash.destroy(),
+      });
+
+      this.hooks.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      polaroid.destroy();
+      scene.physics.world.removeCollider(overlapColl);
+    });
+
+    // 12 s despawn — same as gold coin; long enough that combat won't
+    // strand the pickup, short enough that stale polaroids don't pile
+    // up over a long run.
+    despawnHandle = this.hooks.getUpdateTickers().addOnce('scaled', 12000, () => {
+      if (collected) return;
+      collected = true;
+      scene.tweens.add({
+        targets: polaroid, alpha: 0, duration: 400,
+        onComplete: () => {
+          polaroid.destroy();
+          scene.physics.world.removeCollider(overlapColl);
+        },
+      });
+    });
+    this.hooks.pushDespawnHandle(despawnHandle);
+  }
+
+  /**
    * E1 M2 T10 — Burns Night haggis-platter pickup. One-off, spawned
    * by GameScene during Burns Night runs only. Collision heals the
    * player fully, fires the 60 s damage buff (owned by GameScene),
