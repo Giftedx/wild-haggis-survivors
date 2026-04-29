@@ -29,6 +29,17 @@ function buildRecordingGraphics(): {
 
 const emptyLayout = {} as CroftLayout;
 
+/**
+ * Minimum layout for drawer dispatch — `bracken_turn` reads
+ * `layout.thistle.x/y` to position the bracken bunch; tests with
+ * bare-bones layouts pass `0/0` to verify the dispatch routes.
+ */
+const minimalLayout = {
+  thistle: { x: 0, y: 0 },
+  table: { x: 0, y: 0 },
+  mantelpiece: { x: 0, y: 0, w: 0, h: 0 },
+} as unknown as CroftLayout;
+
 describe('drawSeasonalProps', () => {
   it('is a no-op when eventKey is null (no props drawn off-season)', () => {
     const { gfx, calls } = buildRecordingGraphics();
@@ -40,5 +51,11 @@ describe('drawSeasonalProps', () => {
     const { gfx, calls } = buildRecordingGraphics();
     drawSeasonalProps(gfx, 'not_a_real_event', emptyLayout);
     expect(calls).toEqual([]);
+  });
+
+  it('routes to a drawer for bracken_turn — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'bracken_turn', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
   });
 });
