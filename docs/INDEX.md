@@ -22,7 +22,26 @@ Entry point for the docs tree. AI agents and humans should start here.
 | What research grounds this? | [research/README.md](research/README.md) |
 | What human-gated reviews block release? | [status/cultural/CULTURAL_REVIEW_PACKET.md](status/cultural/CULTURAL_REVIEW_PACKET.md), [status/a11y/A1_PEAT_AUDIT.md](status/a11y/A1_PEAT_AUDIT.md), [status/mobile/MOBILE_DEVICE_TEST_MATRIX.md](status/mobile/MOBILE_DEVICE_TEST_MATRIX.md), [archive/top-10-2026-04-26-batch/blocked/](archive/top-10-2026-04-26-batch/blocked/) |
 | Status of accessibility / cultural / mobile / cloud / engine work? | [status/](status/) — per-domain trackers |
+| Auditing for bugs / regressions? | **Read [§For audit / review agents](#for-audit--review-agents) below first.** |
 | What was the historical state before this session? | [archive/](archive/) |
+
+---
+
+## For audit / review agents
+
+Before flagging any "missing X", "silently absent X", "X is broken", or "X looks expensive" finding, run this checklist. ~50% of audit recommendations on the 2026-04-29 deep review were false positives because this step was skipped.
+
+1. **Cross-check the design intent.** Grep `docs/` for the system name. Start with [superpowers/specs/INDEX.md](superpowers/specs/INDEX.md) (initiative-keyed rows) and the [status/](status/) trackers below. If a `*_CALLSITES.md`, design spec, or ADR documents the behaviour as deliberate (e.g. "UI hidden until X is wired", "feature gated behind Y flag"), treat that note as a **veto** over your finding.
+2. **Verify perf claims against library behaviour.** Don't extrapolate complexity from call-site count. Phaser `Group.getChildren()` returns the internal array reference; the cast is a runtime no-op. Site count × array length ≠ per-frame cost — check whether sites are conditional or have early-exits.
+3. **Treat memory snapshots as point-in-time.** If a memory entry says "X tests" or "Y LOC", verify against current code before citing as truth.
+4. **A finding becomes ship-work only after the synthesizer (the human or coordinator) cross-checks the design doc.** "Audit said it's a bug" is not enough.
+
+If your finding survives all four steps, report it. If a design doc vetoes it, drop it from the punch list and note the doc that vetoed.
+
+Concrete examples of design-intent vetoes that exist today:
+- [`status/a11y/A1_ASSIST_MODE_CALLSITES.md`](status/a11y/A1_ASSIST_MODE_CALLSITES.md) — Assist Mode UI is **deliberately hidden**; only the invincibility toggle is wired, others await balance + replay-determinism passes.
+- [`adr/0002-deterministic-replay-format.md`](adr/0002-deterministic-replay-format.md) — Replay determinism contract; spawn positions affecting game state must use seeded `runRng`, not `Math.random()`.
+- [`status/cultural/CULTURAL_REVIEW_PACKET.md`](status/cultural/CULTURAL_REVIEW_PACKET.md) — Native-speaker reviews are explicitly human-gated; flagging "needs review" on already-flagged content is noise.
 
 ---
 
