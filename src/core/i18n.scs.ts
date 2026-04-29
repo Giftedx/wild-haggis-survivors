@@ -1442,6 +1442,12 @@ export const SCS_STRINGS: LocaleTree = {
           c: 'Seafaim at yer hooves. Saut in tha air.',
           d: 'Corryvreckan\'s washin pot, miles oot. Mind tha swell.',
         },
+        haar: {
+          a: 'Haar\'s in. Hooves first, een second.',
+          b: 'Cobbles weet. Mind tha slip.',
+          c: 'Ten yairds o\' warld. Plenty.',
+          d: 'Things move easier in tha haar. Maistly thaim, mind.',
+        },
       },
       moor_moment: {
         a: 'Tha moor noticed ye. That\'s rare.',
@@ -3555,6 +3561,12 @@ export const SCS_STRINGS: LocaleTree = {
       entry: 'Tha tide\'s pulled tha wrack up — watch yer hooves on tha kelp.',
       loreSnippet: 'Whaur tha kelp lands. Selkie kintra, gulls owerheid.',
       lore: 'Tha wrack-line — whaur tha tide leaves whit it took. Bull-kelp, dulse, tangle, maerl: laminaria sae deep it mats. Selkies — tha people o tha seal — shed thair skins on tide-cut rocks; mind tha warnin, dinnae touch a skin nor mak een at its awner. Corryvreckan biles a few mile oot, tha Cailleach\'s washin pot, an tha swell that breks here is its echo. Whelk-shell an barnacle, foam-line an saut. Tha coast minds each tide; ye hardly mind tha last yin.',
+    },
+    haar: {
+      name: 'Haar Bank',
+      entry: 'Tha haar\'s rolled in. Twa mile tae ten yairds in seven meenit.',
+      loreSnippet: 'East-coast sea-fog. Embra wather, made weet.',
+      lore: 'Haar — tha cauld North Sea fog that lifts aff tha watter an walks inland ower Embra, East Lothian, Aiberdeen. Visibility gangs fae a clean horizon tae ten yairds in tha time it taks ye tae find yer gluives. Tha haar cairries silence wi it; soond gangs muffled, tha warld shrinks tae whit ye can touch. Auld stories say things move easier in tha haar — tha fey court taks a haar mornin fer crossins. Tha wraith o tha fog itsel is on tha muir tha day; tha cobbles are slick, tha heather drips, an tha silhouettes ye see are mibbe whit ye think thay are.',
     },
   },
   // ── Beastie lore Scots overlay (matches EN beastie block in i18n.ts). ──

@@ -329,3 +329,69 @@ export function bakeHazardTidalWrack(scene: Phaser.Scene): void {
   g.generateTexture('hazard_tidal_wrack', w, h);
   g.destroy();
 }
+
+export function bakeHazardSlickCobble(scene: Phaser.Scene): void {
+  const w = 26, h = 22;
+  const g = scene.add.graphics();
+  const cx = w / 2, cy = h / 2;
+
+  // Wet ground halo (fog-condensed moisture pooled around the stones)
+  g.fillStyle(0x4a5260, 0.4);
+  g.fillEllipse(cx, cy + 1, 24, 16);
+  g.fillStyle(0x5a6270, 0.3);
+  g.fillEllipse(cx, cy, 18, 10);
+
+  // Three cobbles — irregular, polished smooth
+  // Largest centre cobble
+  g.fillStyle(0x282c34, 1);
+  g.fillEllipse(cx, cy + 1, 12, 8);
+  g.fillStyle(0x4a5060, 1);
+  g.fillEllipse(cx - 0.5, cy, 9, 6);
+  g.fillStyle(0x6a7282, 0.9);
+  g.fillEllipse(cx - 1, cy - 1, 5, 3);
+  // Wet sheen on top — high specular
+  g.fillStyle(0xc8d4e0, 0.6);
+  g.fillEllipse(cx - 1.5, cy - 1.5, 3, 1);
+  g.fillStyle(0xeef0f5, 0.85);
+  g.fillEllipse(cx - 2, cy - 2, 1.5, 0.5);
+
+  // Left smaller cobble
+  g.fillStyle(0x282c34, 1);
+  g.fillEllipse(cx - 8, cy + 2, 6, 4);
+  g.fillStyle(0x4a5060, 1);
+  g.fillEllipse(cx - 8, cy + 1.5, 4.5, 3);
+  g.fillStyle(0x8a92a2, 0.55);
+  g.fillEllipse(cx - 8.5, cy + 0.5, 2, 1);
+
+  // Right smaller cobble
+  g.fillStyle(0x282c34, 1);
+  g.fillEllipse(cx + 8, cy + 2, 5, 3.5);
+  g.fillStyle(0x4a5060, 1);
+  g.fillEllipse(cx + 8, cy + 1.5, 3.5, 2.5);
+  g.fillStyle(0x8a92a2, 0.55);
+  g.fillEllipse(cx + 7.5, cy + 0.5, 1.5, 0.7);
+
+  // Water droplets on stones — the slip warning
+  g.fillStyle(0xd8e0ee, 0.85);
+  g.fillCircle(cx + 1, cy - 0.5, 0.7);
+  g.fillCircle(cx - 7, cy + 0.5, 0.5);
+  g.fillCircle(cx + 9, cy + 0.5, 0.5);
+  g.fillStyle(0xffffff, 0.7);
+  g.fillCircle(cx + 1, cy - 1, 0.3);
+
+  // Faint mist tendrils rising from the wet ground (sells the haar)
+  g.fillStyle(0xaab0c0, 0.3);
+  g.fillCircle(cx - 4, cy - 6, 1.5);
+  g.fillCircle(cx + 5, cy - 7, 1.3);
+  g.fillStyle(0xc0c8d8, 0.22);
+  g.fillCircle(cx - 4, cy - 7.5, 1);
+  g.fillCircle(cx + 5, cy - 8.5, 0.8);
+
+  // Tiny green-black moss fleck between cobbles (damp-loving)
+  g.fillStyle(0x2a3a28, 0.85);
+  g.fillCircle(cx - 4, cy + 3, 0.6);
+  g.fillCircle(cx + 4, cy + 3, 0.5);
+
+  g.generateTexture('hazard_slick_cobble', w, h);
+  g.destroy();
+}

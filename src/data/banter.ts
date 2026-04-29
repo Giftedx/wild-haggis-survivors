@@ -859,6 +859,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.biome_change.coastal.c',
         'ui.banter.biome_change.coastal.d',
       ],
+      haar: [
+        'ui.banter.biome_change.haar.a',
+        'ui.banter.biome_change.haar.b',
+        'ui.banter.biome_change.haar.c',
+        'ui.banter.biome_change.haar.d',
+      ],
     },
   },
   {

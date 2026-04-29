@@ -209,6 +209,10 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     'deco_barnacle_rock',
     'deco_whelk_shell',
     'deco_foam_line',
+    // B5 Phase 1b — Haar/Fog flora + hazard authored sprites.
+    'hazard_slick_cobble',
+    'deco_fog_pier',
+    'deco_dripping_heather',
     'deco_autumn_leaves',
     'deco_spring_shoot',
     'deco_thaw_puddle',

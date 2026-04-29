@@ -1845,6 +1845,12 @@ export const EN_STRINGS: LocaleTree = {
           c: 'Seafoam at yir hooves. Salt in the air.',
           d: 'Corryvreckan\'s washing pot, miles oot. Mind the swell.',
         },
+        haar: {
+          a: 'Haar\'s in. Hooves first, eyes second.',
+          b: 'Cobbles wet. Mind the slip.',
+          c: 'Ten yards o\' world. Plenty.',
+          d: 'Things move easier in the haar. Mostly them, mind.',
+        },
       },
       moor_moment: {
         a: 'The moor noticed ye. That\'s rare.',
@@ -3095,6 +3101,12 @@ export const EN_STRINGS: LocaleTree = {
       entry: 'Tide\'s pulled the wrack up — watch yir hooves on the kelp.',
       loreSnippet: 'Where the kelp lands. Selkie country, gulls overhead.',
       lore: 'The wrack-line — where the tide leaves what it took. Bull-kelp, dulse, tangle, maerl: laminaria so deep it mats. Selkies — the people o the seal — shed their skins on tide-cut rocks; mind the warning, dinnae touch a skin nor make eyes at its owner. Corryvreckan boils a few miles out, the Cailleach\'s washing pot, an the swell that breaks here is its echo. Whelk-shell and barnacle, foam-line and salt. The coast remembers each tide; ye hardly remember the last one.',
+    },
+    haar: {
+      name: 'Haar Bank',
+      entry: 'The haar\'s rolled in. Two miles tae ten yards in seven minutes.',
+      loreSnippet: 'East-coast sea-fog. Edinburgh weather, made wet.',
+      lore: 'Haar — the cold North Sea fog that lifts off the water and walks inland over Edinburgh, East Lothian, Aberdeen. Visibility goes from clean horizon tae ten yards in the time it takes ye tae find yir gloves. The haar carries silence wi it; sound goes muffled, the world shrinks tae what ye can touch. Auld stories say things move easier in the haar — the fey court takes a haar morning fer crossings. The wraith of the fog itsel is on the moor today; the cobbles are slick, the heather drips, an the silhouettes ye see are maybe what ye think they are.',
     },
   },
   // ── C1 Highland Almanac — beastie lore (consumed by buildBeastieDetail). ──

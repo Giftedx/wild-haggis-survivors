@@ -3,8 +3,8 @@ import { BIOMES, BIOME_IDS, pickBiomeAssignment } from './biomes';
 import { createRNG } from '../utils/rng';
 
 describe('biomes data', () => {
-  it('defines all five biomes with required fields', () => {
-    expect(BIOME_IDS.length).toBe(5);
+  it('defines all six biomes with required fields', () => {
+    expect(BIOME_IDS.length).toBe(6);
     for (const id of BIOME_IDS) {
       const def = BIOMES[id];
       expect(def.id).toBe(id);
@@ -17,11 +17,21 @@ describe('biomes data', () => {
     }
   });
 
-  it('coastal biome is registered (B5 Phase 1)', () => {
+  it('coastal biome is registered (B5 Phase 1a)', () => {
     expect(BIOME_IDS).toContain('coastal');
     const coastal = BIOMES.coastal;
     expect(coastal.modifier).toBe('coastalTide');
     expect(coastal.nameKey).toBe('biomes.coastal.name');
+  });
+
+  it('haar biome is registered (B5 Phase 1b)', () => {
+    expect(BIOME_IDS).toContain('haar');
+    const haar = BIOMES.haar;
+    expect(haar.modifier).toBe('haarConcealment');
+    expect(haar.nameKey).toBe('biomes.haar.name');
+    // Charter §4.3 / Risk 7: capped at 0.7 not 1.0 for silhouette-first
+    // readability. Test fence locks the cap.
+    expect(haar.ambientHaarDensity).toBe(0.7);
   });
 
   it('spawn weight multipliers are all positive', () => {
@@ -40,11 +50,14 @@ describe('biomes data', () => {
     }
   });
 
-  it('coastal carries highest ambient haar (sea-fog signature); pine and heather stay dry', () => {
-    // Haar is signature Scottish sea/water mist. Coastal sits highest
-    // (the haar rolls off the sea), then loch, then bog. Pine and
-    // heather stay dry. Locking the ordering prevents a balance edit
-    // from sneaking haar back into dry biomes without a design review.
+  it('haar carries highest ambient density; ordering haar > coastal > loch > bog > 0; pine and heather stay dry', () => {
+    // Haar is signature Scottish sea/water mist. The dedicated 'haar'
+    // biome is the densest (0.7 — capped per Risk 7). Coastal sits
+    // next (sea-spray haar rolling inland), then loch, then bog. Pine
+    // and heather stay dry. Locking the ordering prevents a balance
+    // edit from sneaking haar back into dry biomes without a design
+    // review.
+    expect(BIOMES.haar.ambientHaarDensity).toBeGreaterThan(BIOMES.coastal.ambientHaarDensity);
     expect(BIOMES.coastal.ambientHaarDensity).toBeGreaterThan(BIOMES.loch.ambientHaarDensity);
     expect(BIOMES.loch.ambientHaarDensity).toBeGreaterThan(BIOMES.bog.ambientHaarDensity);
     expect(BIOMES.bog.ambientHaarDensity).toBeGreaterThan(0);

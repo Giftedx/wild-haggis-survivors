@@ -1249,7 +1249,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * callers prefer, since it's just field assignment.
    */
   setBiomeModifier(
-    kind: 'bogSlow' | 'lochKnockback' | 'pineConcealment' | 'heatherBloom' | 'coastalTide',
+    kind:
+      | 'bogSlow'
+      | 'lochKnockback'
+      | 'pineConcealment'
+      | 'heatherBloom'
+      | 'coastalTide'
+      | 'haarConcealment',
   ): void {
     // Default (neutral) state.
     this.biomeSpeedMul = 1;
@@ -1274,6 +1280,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         // and gives the coast a distinct "tide pushes enemies back" feel
         // without competing with heatherBloom's XP buff.
         this.biomeKnockbackBonus = 1.2;
+        break;
+      case 'haarConcealment':
+        // Mirrors pineConcealment: enforcement is at the visibility
+        // layer (HaarFogController auto-driven by ambientHaarDensity)
+        // and enemy AI reading current biome. Player-side stat-neutral
+        // by design — the haar is the gameplay tension, not a stat
+        // change.
         break;
     }
   }

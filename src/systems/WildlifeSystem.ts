@@ -46,23 +46,29 @@ const COUNTS: Record<WildlifeKey, number> = {
 // salmon, rook, pipistrelle_bat). Land mammals (hare, deer, sheep,
 // red_squirrel, pine_marten, capercaillie, scottish_wildcat,
 // field_mouse, ptarmigan, common_frog) stay inland.
+//
+// B5 Phase 1b: 'haar' biome added. Fog cuts visibility — aerial
+// creatures only (rook, golden_eagle, pipistrelle_bat as nocturnal
+// fog-friendly hunters). Land mammals don't read well in fog and
+// leaving them in feels like a sprite-baking trick. puffin yes
+// (the haar rolls off the sea where puffins are anyway).
 const VALID_BIOMES: Record<WildlifeKey, Set<BiomeId>> = {
   hare: new Set(['heather', 'pine']),
   red_deer: new Set(['heather', 'pine']),
-  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
+  buzzard: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
   red_squirrel: new Set(['heather', 'pine']),
   pine_marten: new Set(['heather', 'pine']),
   capercaillie: new Set(['heather', 'pine']),
   otter: new Set(['bog', 'loch', 'coastal']),
-  puffin: new Set(['bog', 'loch', 'heather', 'coastal']),
-  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
+  puffin: new Set(['bog', 'loch', 'heather', 'coastal', 'haar']),
+  golden_eagle: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
   scottish_wildcat: new Set(['heather', 'pine']),
-  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
+  rook: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
   sheep: new Set(['heather']),
   grey_seal: new Set(['loch', 'coastal']),
   ptarmigan: new Set(['heather', 'pine']),
   common_frog: new Set(['bog', 'loch']),
-  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal']),
+  pipistrelle_bat: new Set(['bog', 'loch', 'pine', 'heather', 'coastal', 'haar']),
   field_mouse: new Set(['heather', 'pine']),
   salmon: new Set(['bog', 'loch', 'coastal']),
 };

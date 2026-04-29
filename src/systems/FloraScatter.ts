@@ -78,6 +78,20 @@ const STORY_PROPS_BY_BIOME: Readonly<Record<BiomeId, readonly string[]>> = {
     'deco_bridge_plank',
     'deco_salmon_leap',
   ],
+  haar: [
+    // B5 Phase 1b — haar-flavoured story props. Fey palette;
+    // east-coast cold sea-fog. Reuses pine's catsith-saucer (the
+    // fog brings out the fey court) and loch's bridge plank (the
+    // pier in fog), plus heather's milestone (waymarker swallowed
+    // by haar reads as story tension), brahan_eye_stone (the seer
+    // stone — vision motif fits "what does the haar hide?"), and
+    // standing_stone_glyph (Pictish stone in fog is iconic).
+    'deco_brahan_eye_stone',
+    'deco_catsith_saucer',
+    'deco_bridge_plank',
+    'deco_milestone',
+    'deco_standing_stone_glyph',
+  ],
 };
 const STORY_PROP_TOTAL = 0.08;
 
@@ -130,6 +144,20 @@ const FLORA_BY_BIOME: Readonly<Record<BiomeId, readonly WeightedEntry[]>> = {
     ['deco_whelk_shell', 0.84],
     ['deco_creel', 0.92],
     ['deco_rock', 1.0],
+  ],
+  // B5 Phase 1b — Haar flora. Two new authored props
+  // (fog_pier, dripping_heather) sell the fog read; rest borrows
+  // from existing biomes — heather + bog_cotton + rocks read fine
+  // through the haar shader. Fey palette per ART_STYLE_BIBLE §Fey:
+  // 66-79; clarity gates per Risk 7.
+  haar: [
+    ['deco_dripping_heather', 0.24],
+    ['deco_fog_pier', 0.36],
+    ['deco_bog_cotton', 0.52],
+    ['deco_heather', 0.68],
+    ['deco_rock_2', 0.82],
+    ['deco_thistle', 0.92],
+    ['deco_wind_grass', 1.0],
   ],
 };
 
@@ -245,6 +273,10 @@ function isSwayable(textureKey: string): boolean {
   // Static coastal props (foam settled on wet sand, shells lying flat).
   if (textureKey.includes('foam_line')) return false;
   if (textureKey.includes('whelk_shell')) return false;
+  // Static haar props (pier piling is solid; dripping heather has
+  // its own internal water-bead motion, no need for sway jitter).
+  if (textureKey.includes('fog_pier')) return false;
+  if (textureKey.includes('dripping_heather')) return false;
   // Story props are mostly solid landmarks or placed objects. Clootie
   // ribbons already include visual motion in their silhouette; keep
   // runtime sway off so they do not jitter like grass.

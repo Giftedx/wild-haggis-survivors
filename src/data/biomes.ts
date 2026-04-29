@@ -9,13 +9,14 @@
 import type { RNG } from '../utils/rng';
 import { COLORS } from '../config';
 
-export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal';
+export type BiomeId = 'bog' | 'loch' | 'pine' | 'heather' | 'coastal' | 'haar';
 export type BiomeModifierKind =
   | 'bogSlow'
   | 'lochKnockback'
   | 'pineConcealment'
   | 'heatherBloom'
-  | 'coastalTide';
+  | 'coastalTide'
+  | 'haarConcealment';
 
 export interface BiomeDef {
   readonly id: BiomeId;
@@ -152,9 +153,35 @@ export const BIOMES: Readonly<Record<BiomeId, BiomeDef>> = {
     moodTimbre: 0.65,
     ambientHaarDensity: 0.35,
   },
+  haar: {
+    id: 'haar',
+    nameKey: 'biomes.haar.name',
+    tint: 0x6a7888,
+    entryToastKey: 'biomes.haar.entry',
+    loreSnippetKey: 'biomes.haar.loreSnippet',
+    loreKey: 'biomes.haar.lore',
+    toastColor: '#b8c4d4',
+    spawnWeightMods: {
+      // Fey palette: ghosts, haar wraith, blue man — fog turns the moor
+      // into faerie territory. Open-field hostiles down-weighted (you
+      // can hardly see them anyway; would feel cheap).
+      ghost: 1.6,
+      haar_wraith: 2.0,
+      blue_man_of_minch: 1.4,
+      kelpie: 1.2,
+      eagle: 0.4,
+      tourist: 0.5,
+    },
+    modifier: 'haarConcealment',
+    moodTimbre: 0.45,
+    // Charter §4.3 / Risk 7: capped at 0.7 not 1.0 so silhouette-first
+    // readability holds at >300px. HaarFogController auto-tweens to this
+    // target via biomeHaarTarget(settings, biome) on biome enter.
+    ambientHaarDensity: 0.7,
+  },
 } as const;
 
-export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal'];
+export const BIOME_IDS: readonly BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar'];
 
 /**
  * Pick a biome set for this run. We want every run to feel distinct but

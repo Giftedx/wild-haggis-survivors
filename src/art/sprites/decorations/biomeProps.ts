@@ -812,4 +812,107 @@ export function bakeBiomeProps(scene: Phaser.Scene): void {
     g.fillCircle(19, 12.5, 0.5);
     g.fillCircle(23, 13, 0.4);
   });
+
+  // ── B5 Phase 1b — Haar/Fog flora (2 new authored). ──
+  // Fey palette per ART_STYLE_BIBLE §Fey:66-79; otherworldly,
+  // shifting visibility. Cultural anchor: east-coast cold sea-fog,
+  // Edinburgh and Aberdeen signature weather (SCOTTISH_RESEARCH §2.9).
+  // Critical clarity per Risk 7: silhouettes stay readable at 300px.
+
+  // ── deco_fog_pier — partially-obscured wooden pier piling, top
+  // half fading into the haar. Reads as a coastal structure even
+  // when the player can't see the pier itself. ──
+  bake(scene, 'deco_fog_pier', (g) => {
+    groundedShadow(g, 16, 25, 14, 3);
+    // Pier post — dark wet wood
+    g.fillStyle(0x1a1208, 1);
+    g.fillRect(13, 8, 6, 17);
+    g.fillStyle(0x2a1c10, 1);
+    g.fillRect(14, 8, 4, 17);
+    // Wood grain stripes
+    g.fillStyle(0x3a2a18, 0.9);
+    g.fillRect(15, 9, 1, 16);
+    g.fillRect(17, 10, 0.6, 14);
+    // Iron banding (rusted) — coastal preservation tell
+    g.fillStyle(0x6a3818, 1);
+    g.fillRect(13, 14, 6, 1);
+    g.fillRect(13, 21, 6, 1);
+    g.fillStyle(0x8a4828, 0.85);
+    g.fillRect(13, 14, 6, 0.4);
+    // Top capping — diagonal-cut cross-grain
+    g.fillStyle(0x4a3018, 1);
+    g.fillRect(12, 7, 8, 1);
+    g.fillStyle(0x6a4828, 0.85);
+    g.fillRect(12.5, 7, 7, 0.4);
+    // Haar fade — top of post drops alpha into mist
+    // Layered fog wisps obscuring the upper post
+    g.fillStyle(0xc0c8d4, 0.45);
+    g.fillEllipse(16, 8, 14, 3);
+    g.fillStyle(0xd8dee8, 0.55);
+    g.fillEllipse(16, 7, 10, 2);
+    g.fillStyle(0xeef0f5, 0.4);
+    g.fillEllipse(16, 6, 7, 1.5);
+    // Damp fleck on lower post
+    g.fillStyle(0xc0c8d4, 0.5);
+    g.fillCircle(15, 22, 0.6);
+    g.fillCircle(17, 24, 0.5);
+    // Faint barnacle stipple at waterline (sells the coastal pier)
+    g.fillStyle(0xeeeef0, 0.7);
+    g.fillRect(13, 23, 0.6, 0.6);
+    g.fillRect(18, 23, 0.5, 0.5);
+  });
+
+  // ── deco_dripping_heather — heather sprig with condensed water
+  // beads pulling each tip downward. The haar shows up everywhere
+  // it touches; the heather wears it. ──
+  bake(scene, 'deco_dripping_heather', (g) => {
+    shadow(g, 16, 26, 14, 3);
+    // Stem cluster — central bunch
+    g.fillStyle(0x3a2818, 1);
+    g.fillRect(15, 18, 2, 7);
+    g.fillRect(13, 19, 1, 5);
+    g.fillRect(18, 19, 1, 5);
+    // Heather sprig clusters — small dense pellet bundles, drooping
+    // (water pulls them down)
+    // Centre cluster — drooping right
+    g.fillStyle(0x4a2858, 1);
+    g.fillEllipse(17, 14, 5, 3);
+    g.fillStyle(0x6a3878, 1);
+    g.fillEllipse(17, 13.5, 3.5, 2);
+    g.fillStyle(0x8a5898, 0.85);
+    g.fillEllipse(17, 13, 2, 1);
+    // Left cluster — drooping more (heavier with water)
+    g.fillStyle(0x4a2858, 1);
+    g.fillEllipse(11, 18, 4, 2.5);
+    g.fillStyle(0x6a3878, 1);
+    g.fillEllipse(11, 17.5, 2.5, 1.5);
+    // Right cluster — smaller
+    g.fillStyle(0x4a2858, 1);
+    g.fillEllipse(20, 17, 3, 2);
+    g.fillStyle(0x6a3878, 1);
+    g.fillEllipse(20, 16.5, 2, 1.2);
+    // Water beads — the haar tell
+    // Big bead on stem
+    g.fillStyle(0xd8e0ee, 0.85);
+    g.fillCircle(17, 16, 1.2);
+    g.fillStyle(0xffffff, 0.95);
+    g.fillCircle(16.7, 15.5, 0.5);
+    // Bead about to drop from heather tip
+    g.fillStyle(0xd8e0ee, 0.85);
+    g.fillCircle(11, 20, 0.9);
+    g.fillStyle(0xffffff, 0.85);
+    g.fillCircle(10.8, 19.7, 0.4);
+    // Smaller scattered beads
+    g.fillStyle(0xd8e0ee, 0.75);
+    g.fillCircle(20, 18.5, 0.7);
+    g.fillCircle(15, 13, 0.5);
+    g.fillStyle(0xffffff, 0.7);
+    g.fillCircle(20, 18.2, 0.3);
+    // A drip caught mid-fall (vertical streak)
+    g.fillStyle(0xc0c8d8, 0.65);
+    g.fillRect(11, 21, 0.5, 1.5);
+    // Faint mist wisp around the sprig
+    g.fillStyle(0xc0c8d4, 0.3);
+    g.fillEllipse(16, 12, 12, 2);
+  });
 }

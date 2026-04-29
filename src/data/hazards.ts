@@ -12,6 +12,7 @@
  *   burn_water     → loch      (water-adjacent rapids, lingers long)
  *   loose_scree    → heather   (Highland uplands, slipping chips)
  *   tidal_wrack    → coastal   (kelp tangle, low chip on lingering)
+ *   slick_cobble   → haar      (fog-condensed wet stones, slip chip)
  *
  * Tuning rationale:
  *   - peat_pit: medium damage (8), medium hitbox (16 px), longest sit
@@ -25,6 +26,10 @@
  *   - tidal_wrack: low damage (4, tied with burn_water), wide hitbox
  *     (20 px), long lifetime (15 s) — tangle of kelp the tide left; chip
  *     on stationary loiter, mirrors burn_water but coastline-flavoured.
+ *   - slick_cobble: low-mid damage (5), mid hitbox (14 px), 10 s lifetime
+ *     — fog condenses on stones; the slip is a hidden tax in low
+ *     visibility. Same damage as loose_scree but slipperier-feeling
+ *     because the haar already cuts your readout.
  */
 import type { BiomeId } from './biomes';
 
@@ -33,7 +38,8 @@ export type HazardKey =
   | 'falling_slate'
   | 'burn_water'
   | 'loose_scree'
-  | 'tidal_wrack';
+  | 'tidal_wrack'
+  | 'slick_cobble';
 
 export interface HazardDef {
   readonly key: HazardKey;
@@ -97,6 +103,15 @@ export const HAZARDS: Readonly<Record<HazardKey, HazardDef>> = {
     lifetimeMs: 15000,
     spawnIntervalMs: 9500,
   },
+  slick_cobble: {
+    key: 'slick_cobble',
+    texture: 'hazard_slick_cobble',
+    biome: 'haar',
+    damage: 5,
+    hitboxRadius: 14,
+    lifetimeMs: 10000,
+    spawnIntervalMs: 9000,
+  },
 };
 
 /** All hazard keys, in catalog order. */
@@ -106,4 +121,5 @@ export const HAZARD_KEYS: readonly HazardKey[] = [
   'burn_water',
   'loose_scree',
   'tidal_wrack',
+  'slick_cobble',
 ];

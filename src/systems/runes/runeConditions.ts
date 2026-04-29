@@ -96,7 +96,12 @@ export function evaluateRuneCondition(
 ): boolean {
   switch (key) {
     // ── biome ──
-    case 'biome_fog': return ctx.biomeKey === 'fog';
+    case 'biome_fog':
+      // B5 Phase 1b grounded the dedicated `haar` biome (east-coast
+      // sea-fog). The 'fog' literal is retained as a forward-compat
+      // alias in case future content keys haar via 'fog'; today only
+      // 'haar' fires this predicate in production.
+      return ctx.biomeKey === 'fog' || ctx.biomeKey === 'haar';
     case 'biome_bog': return ctx.biomeKey === 'bog';
     case 'biome_heather': return ctx.biomeKey === 'heather';
     case 'near_water_hazard': return ctx.nearHazardWater;

@@ -32,9 +32,9 @@ describe('pickHazardForBiome (biome → hazard mapping)', () => {
 });
 
 describe('HAZARDS catalog (config integrity)', () => {
-  it('exposes exactly five hazards (B5 Phase 1 added tidal_wrack)', () => {
-    expect(HAZARD_KEYS).toHaveLength(5);
-    expect(Object.keys(HAZARDS)).toHaveLength(5);
+  it('exposes exactly six hazards (B5 Phase 1b added slick_cobble)', () => {
+    expect(HAZARD_KEYS).toHaveLength(6);
+    expect(Object.keys(HAZARDS)).toHaveLength(6);
   });
 
   it('each catalog entry self-references its own key', () => {
@@ -45,8 +45,8 @@ describe('HAZARDS catalog (config integrity)', () => {
 
   it('each hazard maps to a distinct biome (1:1 coverage)', () => {
     const biomes = HAZARD_KEYS.map((k) => HAZARDS[k].biome);
-    expect(new Set(biomes).size).toBe(5);
-    expect(biomes.sort()).toEqual(['bog', 'coastal', 'heather', 'loch', 'pine']);
+    expect(new Set(biomes).size).toBe(6);
+    expect(biomes.sort()).toEqual(['bog', 'coastal', 'haar', 'heather', 'loch', 'pine']);
   });
 
   it('texture keys follow the validator-locked hazard_* prefix', () => {
@@ -116,6 +116,7 @@ describe('HAZARDS catalog (config integrity)', () => {
       'pine',
       'heather',
       'coastal',
+      'haar',
     ]);
     for (const key of HAZARD_KEYS) {
       expect(valid.has(HAZARDS[key].biome)).toBe(true);
@@ -123,7 +124,7 @@ describe('HAZARDS catalog (config integrity)', () => {
   });
 
   it('round-trips: every biome resolves to a hazard whose biome matches', () => {
-    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal'];
+    const biomes: BiomeId[] = ['bog', 'loch', 'pine', 'heather', 'coastal', 'haar'];
     for (const b of biomes) {
       const k = pickHazardForBiome(b) as HazardKey;
       expect(k).not.toBeNull();

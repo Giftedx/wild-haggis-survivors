@@ -56,6 +56,9 @@ export const MOOR_MOMENT_BURST_TINT: Record<BiomeId, number> = {
   // B5 Phase 1 — Seawrack: sea-foam blue-grey, brighter than loch
   // (loch is freshwater dark; coastal is salt-spray light).
   coastal: 0x9bc4d4,
+  // B5 Phase 1b — Haar: cool desaturated grey-mauve, distinct from
+  // coastal's saltier blue. The fog drains chroma; tint matches.
+  haar: 0xa8aebc,
 };
 
 export const MOOR_MOMENTS: readonly MoorMomentDef[] = [
