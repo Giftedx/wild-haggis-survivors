@@ -741,6 +741,15 @@ export const SCS_STRINGS: LocaleTree = {
         c: 'Tha moor\'s gane quait. Bad sign, that.',
         d: 'Aw naw. Here we go.',
         e: 'Big silhouette on tha horizon — nae a sheep.',
+        // SCS overlay of 2026-04-29 EN expansion. Scots conventions
+        // retained: corbie / kennin / aye / wapen / hooves.
+        f: 'Tha corbies stappit cawin. Thay ken whit\'s up.',
+        g: 'Grun\'s shakkin. Heather\'s tensin.',
+        h: 'Sun gane thin. Wind\'s haudin its braith.',
+        i: 'Get yer hooves plantit. Yer name\'s been spoken.',
+        j: 'Whitever\'s comin — it disnae miss.',
+        k: 'Aye, that\'s tha yin ye\'ve been jouking aw run.',
+        l: 'Big yin on approach. Naebody ye want tae meet twice.',
         gordon: {
           a: 'Heid chef\'s oot tha kitchen. Brace yersel.',
           b: 'Smell tha burnin? That\'s Gordon.',

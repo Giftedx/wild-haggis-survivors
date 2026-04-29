@@ -97,6 +97,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.boss_warn.c',
       'ui.banter.boss_warn.d',
       'ui.banter.boss_warn.e',
+      // 2026-04-29 expansion — 12 generic lines clears the no-repeat
+      // window-size of 8 so back-to-back boss arrivals never recycle.
+      'ui.banter.boss_warn.f',
+      'ui.banter.boss_warn.g',
+      'ui.banter.boss_warn.h',
+      'ui.banter.boss_warn.i',
+      'ui.banter.boss_warn.j',
+      'ui.banter.boss_warn.k',
+      'ui.banter.boss_warn.l',
     ],
     // Authored per-boss character moments. Each boss gets 3 lines so the
     // no-repeat window (size 8) can't starve a pool during back-to-back

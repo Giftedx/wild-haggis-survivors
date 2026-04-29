@@ -1123,6 +1123,18 @@ export const EN_STRINGS: LocaleTree = {
         c: 'The moor\'s gone quiet. Bad sign, that.',
         d: 'Aw naw. Here we go.',
         e: 'Big silhouette on the horizon — nae a sheep.',
+        // Generic-pool expansion (2026-04-29). Five originals + seven
+        // fresh = twelve total, comfortably exceeding the no-repeat
+        // window (8) so back-to-back boss arrivals never recycle the
+        // same warning. Voice register: EDGE per Voice Card — terse,
+        // braced-up, hint of dread without melodrama.
+        f: 'The corbies stopped callin\'. They ken what\'s up.',
+        g: 'Ground\'s shakin\'. Heather\'s tensin\'.',
+        h: 'Sun went thin. Wind\'s holdin\' its breath.',
+        i: 'Get yer hooves planted. Yer name\'s been spoken.',
+        j: 'Whatever\'s comin\' — it doesnae miss.',
+        k: 'Aye, that\'s the one ye\'ve been dodgin\' aw run.',
+        l: 'Big yin on approach. Naebody ye want tae meet twice.',
         // ── Per-boss character warnings (Limmy bite). Each boss gets
         //    three distinct lines anchored to their fantasy. ──
         gordon: {
