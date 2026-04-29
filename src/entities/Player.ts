@@ -339,20 +339,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
-    // Drift Mastery — Q is currently a hardcoded edge-poll key so the
+    // Drift Mastery — G is currently a hardcoded edge-poll key so the
     // mechanic ships without touching the InputMapper / SettingsManager
     // ActionKey schema (which would force a save-version bump for the
-    // new keybinding slot). Optional `?.` because vitest stubs that
-    // construct Player without a real Phaser scene won't have a
-    // keyboard plugin; the update tick falls back to "no consume edge"
-    // in that path, which is the right behavior for unit tests.
-    this.gripBurstKey = scene.input?.keyboard?.addKey('Q') ?? null;
+    // new keybinding slot). G picked because it sits free of every
+    // default ActionKey binding (WASD / arrows / Space / Esc / P);
+    // graduation to a remappable ActionKey is the proper future fix.
+    // Optional `?.` because vitest stubs that construct Player without
+    // a real Phaser scene won't have a keyboard plugin; the update
+    // tick falls back to "no consume edge" in that path.
+    this.gripBurstKey = scene.input?.keyboard?.addKey('G') ?? null;
 
-    // Whisky Breath — W key edge-poll, same hardcoded-key pattern as
-    // Drift Mastery's Q. Future graduation to a remappable ActionKey
-    // can land alongside Drift Mastery's Q in a single save-version
-    // bump rather than fragmented bumps per mechanic.
-    this.whiskyBreathKey = scene.input?.keyboard?.addKey('W') ?? null;
+    // Whisky Breath — F key edge-poll, same hardcoded-key pattern as
+    // Drift Mastery's G. F picked because the original W choice
+    // collided with `moveUp.secondary = 'KeyW'` in the default WASD
+    // bindings — every up-press would have fired the breath, an
+    // unshippable bug. F is free of every default binding. Future
+    // graduation to a remappable ActionKey can pair both F and G in
+    // a single save-version bump rather than fragmented bumps.
+    this.whiskyBreathKey = scene.input?.keyboard?.addKey('F') ?? null;
     // Subscribe to the run's enemy-kill stream so the helper can bank
     // a stack per kill. Bosses excluded — Whisky Breath rewards the
     // sustained mob-clear rhythm, not boss damage. SubscriptionBag
@@ -756,7 +761,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // arbitration (and these are pure UX hints, not voice).
     if (this.gripFirstBankPending && this.driftMasteryState.pips >= 1) {
       this.gripFirstBankPending = false;
-      sceneCtx.caption?.('grip_banked', 'Grip banked. Q to spend.', '#a8d4f0', 2400);
+      sceneCtx.caption?.('grip_banked', 'Grip banked. G to spend.', '#a8d4f0', 2400);
     }
     if (driftMasteryResult.burstFiredEdge) {
       audio.playGripBurst();
@@ -782,7 +787,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.whiskyBreathState = whiskyResult.state;
     if (this.whiskyBreathFirstBankPending && this.whiskyBreathState.stacks >= 1) {
       this.whiskyBreathFirstBankPending = false;
-      sceneCtx.caption?.('whisky_first_bank', 'Whisky stacks bankin\'. Press W when ready.', '#e8b070', 2400);
+      sceneCtx.caption?.('whisky_first_bank', 'Whisky stacks bankin\'. Press F when ready.', '#e8b070', 2400);
     }
     if (whiskyResult.burstFiredEdge && whiskyResult.burst) {
       this.applyWhiskyBreathBurst(whiskyResult.burst.radius, whiskyResult.burst.damage);
