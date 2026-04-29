@@ -1278,7 +1278,7 @@ export const EN_STRINGS: LocaleTree = {
         witch_hare: {
           a: 'Elf-shot bites. The hare-form stretches.',
           b: 'Sma\' bones complainin\'. Hop yet.',
-          c: 'Doune isnae done. The pelt holds.',
+          c: 'Doun isnae done. The pelt holds.',
           d: 'Sych and meikle care, but no done.',
         },
       },
@@ -1799,7 +1799,7 @@ export const EN_STRINGS: LocaleTree = {
           d: 'Thou\'rt blessed — breath is lent, not owed.',
         },
         witch_hare: {
-          a: 'Hom again, sma\' an\' hale.',
+          a: 'Hame again, sma\' an\' hale.',
           b: 'The pelt mends. Auldwife\'s herbs.',
           c: 'Even the witch sleeps a wee.',
           d: 'Eldritch herbs ower the wound. Awa wi\' it.',
@@ -3022,7 +3022,7 @@ export const EN_STRINGS: LocaleTree = {
           e: 'Sun barely lifts noo. Walk in its hour, ye\'ll feel it.',
           f: 'Smell the peat-smoke fae the steading? Fires lit early.',
           g: 'The moor\'s pullin\' its coat tighter. So should you.',
-          h: 'Hallowe\'en\'s passed. The auld wireldd settles.',
+          h: 'Hallowe\'en\'s passed. The auld wirld settles.',
           i: 'Bronze underfoot. The year drops weight.',
           j: 'Fern-fronds rust-flecked — naebody painted them, mind.',
           k: 'Cauld snap comin\'. Dinnae linger by the burn.',
