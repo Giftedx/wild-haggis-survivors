@@ -218,3 +218,35 @@ describe('E1 Hogmanay — year-wrap calendar', () => {
     expect(keys).not.toContain('hogmanay');
   });
 });
+
+describe('E1 Imbolc — Brigid\'s Day (Gaelic first-of-spring)', () => {
+  it('is active on Imbolc traditional date (Feb 2)', () => {
+    expect(isSeasonalEventActive('imbolc', d(2027, 2, 2))).toBe(true);
+  });
+
+  it('is active on the window edges (Feb 2 + Feb 8)', () => {
+    expect(isSeasonalEventActive('imbolc', d(2027, 2, 2))).toBe(true);
+    expect(isSeasonalEventActive('imbolc', d(2027, 2, 8))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    // Feb 1 is Burns Night's last day, not Imbolc's.
+    expect(isSeasonalEventActive('imbolc', d(2027, 2, 1))).toBe(false);
+    expect(isSeasonalEventActive('imbolc', d(2027, 2, 9))).toBe(false);
+  });
+
+  it('does not overlap Burns Night (the disjoint design carries)', () => {
+    // Feb 1 — only Burns Night.
+    const burnsKeys = activeSeasonalEvents(d(2027, 2, 1));
+    expect(burnsKeys).toContain('burns_night');
+    expect(burnsKeys).not.toContain('imbolc');
+    // Feb 2 — only Imbolc, Burns Night just closed.
+    const imbolcKeys = activeSeasonalEvents(d(2027, 2, 2));
+    expect(imbolcKeys).toContain('imbolc');
+    expect(imbolcKeys).not.toContain('burns_night');
+  });
+
+  it('is inactive in midsummer', () => {
+    expect(isSeasonalEventActive('imbolc', d(2027, 7, 4))).toBe(false);
+  });
+});

@@ -107,6 +107,17 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     // forgiving across time zones and weekend-play schedules.
     dateWindow: { startMonth: 1, startDay: 18, endMonth: 2, endDay: 1 },
   },
+  // Imbolc / Brigid's Day — Gaelic first-of-spring, traditionally Feb 1.
+  // Window starts the day after Burns Night closes (Feb 1 is Burns's
+  // last day) so the two events stay disjoint, and runs through Feb 8
+  // to give a full week — the older Gaelic reckoning treated Imbolc
+  // as a season-edge several days wide, not a single date.
+  imbolc: {
+    key: 'imbolc',
+    nameKey: 'seasonalEvent.imbolc.name',
+    descriptionKey: 'seasonalEvent.imbolc.description',
+    dateWindow: { startMonth: 2, startDay: 2, endMonth: 2, endDay: 8 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

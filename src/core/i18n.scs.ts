@@ -453,6 +453,9 @@ export const SCS_STRINGS: LocaleTree = {
     burnsNight: {
       blessing_toast: 'Address tae tha haggis read aloud — tha bard quickens tha verse. +18 HP, wapens fire keener.',
     },
+    imbolc: {
+      blessing_toast: 'Brìde\'s mantle warms ye — first steer o spring. +12 HP, hooves a wee bit kweeker.',
+    },
     cuSith: {
       bay: {
         first: 'A Cu Sith hools across tha muir.',
@@ -3601,6 +3604,12 @@ export const SCS_STRINGS: LocaleTree = {
       description: 'Apr 28 – May 4 — twin fires on tha muir; tha kye run atween.',
       badge_suffix: 'Beltane',
       ceremony_banner: '🔥 Beltane is live — pass atween tha twin fires.',
+    },
+    imbolc: {
+      name: 'Imbolc',
+      description: 'Feb 2 – Feb 8 — Brìde steers; the lambin-sky leans warm.',
+      badge_suffix: 'Imbolc',
+      ceremony_banner: '🕯 Imbolc is live — Brìde\'s mantle is on tha byre.',
     },
   },
   relics: {

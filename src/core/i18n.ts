@@ -770,6 +770,15 @@ export const EN_STRINGS: LocaleTree = {
       blessing_toast: 'Address to the haggis read aloud — the bard quickens the verse. +18 HP, weapons fire keener.',
     },
     /**
+     * Imbolc Brigid Blessing — Feb 2 – Feb 8 seasonal hook
+     * (DESIGN_IDEAS §12; SCOTTISH_RESEARCH §1 Brigid / Brìde).
+     * Brigid's mantle warms the haggis; lambing-season energy
+     * carries her hooves. +12 HP heal, moveSpeedMult ×1.05.
+     */
+    imbolc: {
+      blessing_toast: 'Brìde\'s mantle warms ye — first stir of spring. +12 HP, hooves a wee bit quicker.',
+    },
+    /**
      * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
      * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
      * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -4149,6 +4158,12 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Apr 28 – May 4 — twin fires on the moor; the cattle run between.',
       badge_suffix: 'Beltane',
       ceremony_banner: '🔥 Beltane is live — pass between the twin fires.',
+    },
+    imbolc: {
+      name: 'Imbolc',
+      description: 'Feb 2 – Feb 8 — Brigid stirs; the lambing-sky leans warm.',
+      badge_suffix: 'Imbolc',
+      ceremony_banner: '🕯 Imbolc is live — Brigid\'s mantle is on the byre.',
     },
   },
   /**
