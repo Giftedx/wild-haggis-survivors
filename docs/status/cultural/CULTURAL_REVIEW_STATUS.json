@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updated": "2026-04-26",
+  "updated": "2026-04-29",
   "sourceOfTruth": "docs/status/cultural/CULTURAL_REVIEW_PACKET.md",
   "releaseRule": "Any gate with releaseBlocking=true must remain releaseDecision=blocked_until_review until status=approved and at least one human review evidence record is present.",
   "gates": [
@@ -148,6 +148,12 @@
         "ui.banter.burns_citation.b",
         "ui.banter.burns_citation.haggis_moment.a",
         "ui.banter.burns_citation.haggis_moment.b",
+        "ui.banter.burns_citation.haggis_moment.c",
+        "ui.banter.burns_citation.haggis_moment.d",
+        "ui.banter.burns_citation.haggis_moment.e",
+        "ui.banter.burns_citation.haggis_moment.f",
+        "ui.banter.burns_citation.haggis_moment.g",
+        "ui.banter.burns_citation.haggis_moment.h",
         "ui.banter.burns_citation.mouse_moment.a",
         "ui.banter.burns_citation.mouse_moment.b",
         "ui.banter.burns_citation.loch_moment.a",
