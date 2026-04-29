@@ -58,4 +58,10 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'bracken_turn', minimalLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for lammas — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'lammas', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });
