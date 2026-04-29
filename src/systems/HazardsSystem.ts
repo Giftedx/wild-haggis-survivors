@@ -143,13 +143,34 @@ export class HazardsSystem {
     this.getIFrames = getIFrames;
   }
 
+  /** Latch — guarantees the dev-mode replay-determinism canary fires
+   *  at most once per HazardsSystem instance even if rand() is called
+   *  hundreds of times during a long run. */
+  private rngFallbackWarned: boolean = false;
+
   /** Pull a 0..1 random — uses the seeded run RNG when available so
    *  T1 replay determinism (`reference` ADR-0002) holds for the
    *  hazard spawn positions that drive damage events. Falls back to
-   *  Math.random() for unit-test stubs that don't wire run RNG in. */
+   *  Math.random() for unit-test stubs that don't wire run RNG in.
+   *
+   *  **Dev-mode replay canary.** In production GameScene always wires
+   *  `getRunRng`, so the fallback should never fire. If it does, the
+   *  hazard spawn positions silently desync from a recorded replay —
+   *  hard to spot without running every replay end-to-end. The
+   *  one-shot console.warn under `import.meta.env.DEV` makes the
+   *  drift loud in test/dev builds; production builds stay silent so
+   *  end-users never see internal noise. */
   private rand(): number {
     const rng = this.getRunRng?.();
-    return rng ? rng.next() : Math.random();
+    if (rng) return rng.next();
+    if (!this.rngFallbackWarned && import.meta.env.DEV) {
+      this.rngFallbackWarned = true;
+      // eslint-disable-next-line no-console
+      console.warn(
+        '[HazardsSystem] rand() fell back to Math.random — replay determinism would drift. Wire getRunRng.',
+      );
+    }
+    return Math.random();
   }
 
   /**
