@@ -2046,6 +2046,53 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.beltane.k',
         'ui.banter.seasonal_event.beltane.l',
       ],
+      // 2026-04-29 — three remaining seasonal cohort entries get their
+      // dedicated banter sub-pools. 12 leaves each, bilingual, voice-
+      // matched: St Andrew's Day = saltire / national-day; Imbolc =
+      // Brìde / first stir of spring; Lammas = Lùnastal / harvest +
+      // loaf-mass + Lugh's funeral games for Tailtiu.
+      st_andrews: [
+        'ui.banter.seasonal_event.st_andrews.a',
+        'ui.banter.seasonal_event.st_andrews.b',
+        'ui.banter.seasonal_event.st_andrews.c',
+        'ui.banter.seasonal_event.st_andrews.d',
+        'ui.banter.seasonal_event.st_andrews.e',
+        'ui.banter.seasonal_event.st_andrews.f',
+        'ui.banter.seasonal_event.st_andrews.g',
+        'ui.banter.seasonal_event.st_andrews.h',
+        'ui.banter.seasonal_event.st_andrews.i',
+        'ui.banter.seasonal_event.st_andrews.j',
+        'ui.banter.seasonal_event.st_andrews.k',
+        'ui.banter.seasonal_event.st_andrews.l',
+      ],
+      imbolc: [
+        'ui.banter.seasonal_event.imbolc.a',
+        'ui.banter.seasonal_event.imbolc.b',
+        'ui.banter.seasonal_event.imbolc.c',
+        'ui.banter.seasonal_event.imbolc.d',
+        'ui.banter.seasonal_event.imbolc.e',
+        'ui.banter.seasonal_event.imbolc.f',
+        'ui.banter.seasonal_event.imbolc.g',
+        'ui.banter.seasonal_event.imbolc.h',
+        'ui.banter.seasonal_event.imbolc.i',
+        'ui.banter.seasonal_event.imbolc.j',
+        'ui.banter.seasonal_event.imbolc.k',
+        'ui.banter.seasonal_event.imbolc.l',
+      ],
+      lammas: [
+        'ui.banter.seasonal_event.lammas.a',
+        'ui.banter.seasonal_event.lammas.b',
+        'ui.banter.seasonal_event.lammas.c',
+        'ui.banter.seasonal_event.lammas.d',
+        'ui.banter.seasonal_event.lammas.e',
+        'ui.banter.seasonal_event.lammas.f',
+        'ui.banter.seasonal_event.lammas.g',
+        'ui.banter.seasonal_event.lammas.h',
+        'ui.banter.seasonal_event.lammas.i',
+        'ui.banter.seasonal_event.lammas.j',
+        'ui.banter.seasonal_event.lammas.k',
+        'ui.banter.seasonal_event.lammas.l',
+      ],
     },
   },
 ];

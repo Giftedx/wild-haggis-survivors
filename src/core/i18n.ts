@@ -2924,6 +2924,62 @@ export const EN_STRINGS: LocaleTree = {
           k: 'Dance the bealtain widdershins — joy, no curse.',
           l: 'Bonfire breath, sun-warm hooves. This is the bright half.',
         },
+        // ── St Andrew's Day (Nov 30 ± 3). National-day, saltire weather.
+        //    Hearth tone with Edge bites about the cold-half winter front.
+        //    SCOTTISH_RESEARCH §13 (national identity); ART_STYLE_BIBLE
+        //    §Hearth + §Grave (saltire palette is cool-blue with warm
+        //    backbone). 12 leaves.
+        st_andrews: {
+          a: 'St Andra\'s day. Saltire weather — blue an\' bracin\'.',
+          b: 'The patron saint walks the moor wi\' a fisherman\'s rope.',
+          c: 'X marks the cross. X marks the haggis still standing.',
+          d: 'Saltire o\'er every kirk. The wind sings under it.',
+          e: 'A flag\'s just cloth — \'til it\'s ower yer ain folk.',
+          f: '"As lang as Scotland stands" — said wi\' a wee dram tonight.',
+          g: 'Andrew\'s the fisher saint. We\'re the netted, fightin\' clear.',
+          h: 'Auld days, new hooves. Same flag.',
+          i: 'Cold wind off the Firth, but the heart\'s warmer.',
+          j: 'Saint o\' the lost — keep walkin\', he kens the way.',
+          k: 'White cross on blue, like frost on slate.',
+          l: 'Pipes carry "Flower of Scotland" today. Walk straighter.',
+        },
+        // ── Imbolc (Feb 2-8). Brigid / Brìde — first stir of spring.
+        //    Hearth tone, ewes-lactating, snowdrops, healing. Per
+        //    SCOTTISH_RESEARCH §1 Brigid mythology + DESIGN_IDEAS §12.
+        //    Voice register: warm, patient, just-after-the-cold.
+        //    12 leaves.
+        imbolc: {
+          a: 'Imbolc — "i mbolg," in the belly. The lambing\'s comin\'.',
+          b: 'Brìde\'s been here. Snowdrop pushed up in the cold.',
+          c: 'First milk on the byre flagstones. The year sighs.',
+          d: 'Brat Bríde left out tonight — for healing in the morn.',
+          e: 'Her white wand touches the heather. Sleep loosens.',
+          f: 'Ewes haud their lambs in. Brigid haulds the rest.',
+          g: 'Cailleach gathers her firewood. Shorter winter or longer.',
+          h: 'Candles in every window — "let the light find ye, hen."',
+          i: 'Smith\'s fire, poet\'s fire, hearth\'s fire — three at once.',
+          j: 'St Brigid\'s cross plaited fae rushes. The moor learns it tae.',
+          k: 'A serpent stirs aneath the hill — auld weather waking.',
+          l: 'The hag\'s grip eases. Walk lighter. Push.',
+        },
+        // ── Lùnastal / Lammas (Jul 29 - Aug 4). Harvest-start, loaf-mass,
+        //    Lugh's funeral games for Tailtiu. Hearth tone — bounty,
+        //    gratitude, first-fruits. SCOTTISH_RESEARCH §1 Lùnastal +
+        //    SCOTTISH_RESEARCH_DEEP §13.4 (Lammas / cornkist). 12 leaves.
+        lammas: {
+          a: 'Lùnastal — Lugh\'s games. Run hard, the gods are watchin\'.',
+          b: 'First sheaf cut tonight. Bread fae new grain.',
+          c: 'Loaf-mass at the kirk. Loaf-mass at the cairn here.',
+          d: 'Tailtiu cleared a plain an\' died of it. Honour the dirt.',
+          e: 'A bannock o\' the first reaping — tear, share, eat.',
+          f: 'Cornkist standin\' tall. The year owes ye plenty noo.',
+          g: 'Lammas storms come in fast. Outrun \'em.',
+          h: 'Hand-fasting weather. Promise nothing ye cannae keep.',
+          i: 'Crom Dubh\'s horse trampled the grain. Lugh stopped him.',
+          j: 'Hilltop fires fer the harvest. Smoke smells like home.',
+          k: 'Last day o\' the green. Bronze creeping in.',
+          l: 'A wee dram for Lugh — and one fer the next swing.',
+        },
       },
     },
     toast: {
