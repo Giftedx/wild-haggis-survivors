@@ -95,6 +95,40 @@ interface SlickZone {
   visuals: Phaser.GameObjects.GameObject[];
 }
 
+/**
+ * Whisky-puddle zone — spawned by the player's Whisky Breath burst at
+ * the burst origin. DoT-ticks every active enemy in radius. Distinct
+ * shape from `Zone` (player-affecting) and `SlickZone` (terrain
+ * effect): puddles damage ENEMIES, not the player. Carries `tickAccMs`
+ * for the DoT cadence and `dmgPerTick` so a high-stacks burst can
+ * leave a meaner puddle without a separate puddle constant per
+ * caller.
+ */
+interface WhiskyPuddleZone {
+  x: number;
+  y: number;
+  r: number;
+  tickAccMs: number;
+  dmgPerTick: number;
+  expireAtMs: number;
+  visuals: Phaser.GameObjects.GameObject[];
+}
+
+/** Whisky puddle radius (px) — slightly tighter than the breath
+ *  burst itself so the burst clears a wider arc on first hit and
+ *  the puddle keeps damaging anything that walks back into the
+ *  spilled-fuel patch. */
+const WHISKY_PUDDLE_RADIUS_PX = 88;
+/** Whisky puddle lifetime (ms) — three seconds of follow-up DoT. */
+const WHISKY_PUDDLE_DURATION_MS = 3_000;
+/** Whisky puddle DoT cadence — every 500 ms, matching the lava-zone
+ *  cadence so combat readability stays consistent across damage
+ *  patches. */
+const WHISKY_PUDDLE_TICK_MS = 500;
+/** Whisky puddle damage per tick — flat 4 base; caller may pass a
+ *  scaled value if they want a heavier puddle. */
+const WHISKY_PUDDLE_BASE_DMG_PER_TICK = 4;
+
 /** Slick zone radius (px) — tuned so a single spill is avoidable but
  *  punishing if you walk into it while kiting. */
 const SLICK_RADIUS_PX = 36;
@@ -124,6 +158,11 @@ export class HazardZones {
   /** Accumulator driving the memory-trail emit cadence. Reset when the
    *  player leaves fog so re-entry starts a clean cadence. */
   private memoryTrailAccMs: number = 0;
+  /** Whisky-puddle DoT zones — spawned by Whisky Breath bursts.
+   *  Damages enemies (not the player). Tick cadence is 500 ms; each
+   *  tick iterates the live enemy group and applies damage to anything
+   *  within radius. Cleaned up on `reset()` and on natural expiry. */
+  private whiskyPuddleZones: WhiskyPuddleZone[] = [];
 
   /**
    * V2 Track 1 — sticky flag set the first time the player's heal-tick
@@ -151,6 +190,8 @@ export class HazardZones {
     for (const z of this.memoryTrailZones) for (const v of z.visuals) v.destroy();
     this.memoryTrailZones = [];
     this.memoryTrailAccMs = 0;
+    for (const z of this.whiskyPuddleZones) for (const v of z.visuals) v.destroy();
+    this.whiskyPuddleZones = [];
     this.enteredHealingCircle = false;
   }
 
@@ -276,6 +317,64 @@ export class HazardZones {
       x, y, r,
       expireAtMs: gameTimeMs + FOG_DURATION_MS,
       visuals: [base, glow, ...overlayObjects],
+    });
+  }
+
+  /**
+   * Spawn a whisky-breath burn-puddle at `(x, y)`. Called by the
+   * Player's Whisky Breath burst (DESIGN_IDEAS §1, slice 2). Puddle
+   * damages every active enemy within `WHISKY_PUDDLE_RADIUS_PX`
+   * every `WHISKY_PUDDLE_TICK_MS`, for `WHISKY_PUDDLE_DURATION_MS`.
+   *
+   * Optional `dmgPerTickOverride` lets the burst's stack-scaled
+   * damage carry through to the puddle's DoT — a full-charge breath
+   * leaves a meaner residue. Defaults to `WHISKY_PUDDLE_BASE_DMG_PER_TICK`
+   * when caller doesn't care.
+   *
+   * Visual: warm-amber circular base + brighter inner ember ring +
+   * subtle pulsing alpha breathe via shared `TWEEN_INFINITE_BREATHE`.
+   * Reads as "spilled fuel still burning" against the moor floor.
+   */
+  spawnWhiskyPuddle(x: number, y: number, dmgPerTickOverride?: number): void {
+    const scene = this.scene;
+    const r = WHISKY_PUDDLE_RADIUS_PX;
+    const gameTimeMs = this.hooks.getSpawnSystem().getGameTimeSec() * 1000;
+
+    // Outer warm-amber base — large soft glow.
+    const base = scene.add
+      .ellipse(x, y, r * 2, r * 1.5, 0xc8a040, 0.30)
+      .setDepth(-1);
+    // Mid ember ring — brighter copper-orange.
+    const mid = scene.add
+      .ellipse(x, y, r * 1.4, r * 1.05, 0xff8a20, 0.45)
+      .setDepth(-1);
+    // Hot core — small bright cream-amber centre.
+    const core = scene.add
+      .ellipse(x, y, r * 0.55, r * 0.4, 0xffd070, 0.6)
+      .setDepth(-1);
+
+    // Pulse breathing — sells "still burning" without a particle pool.
+    scene.tweens.add({
+      targets: mid,
+      alpha: { from: 0.45 * 0.6, to: 0.45 },
+      scale: { from: 0.92, to: 1.05 },
+      duration: 600,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+    scene.tweens.add({
+      targets: core,
+      alpha: { from: 0.6 * 0.5, to: 0.6 },
+      scale: { from: 0.85, to: 1.0 },
+      duration: 400,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+
+    this.whiskyPuddleZones.push({
+      x, y, r,
+      tickAccMs: 0,
+      dmgPerTick: Math.max(1, Math.round(dmgPerTickOverride ?? WHISKY_PUDDLE_BASE_DMG_PER_TICK)),
+      expireAtMs: gameTimeMs + WHISKY_PUDDLE_DURATION_MS,
+      visuals: [base, mid, core],
     });
   }
 
@@ -470,6 +569,35 @@ export class HazardZones {
           if (!e.active) continue;
           if (memoryTrailOverlaps(z.x, z.y, z.r, e.x, e.y)) {
             e.applyFreeze(MEMORY_TRAIL_SLOW_MUL, MEMORY_TRAIL_SLOW_MS);
+          }
+        }
+      }
+    }
+
+    // Whisky-puddle DoT zones — damages any enemy within radius every
+    // `WHISKY_PUDDLE_TICK_MS`. Distinct from lava (player-affecting):
+    // these zones are emitted by the player and damage enemies, so the
+    // immunity gate doesn't apply. Expire after `WHISKY_PUDDLE_DURATION_MS`.
+    if (this.whiskyPuddleZones.length > 0) {
+      const enemies = this.hooks.getSpawnSystem().getEnemyGroup().getChildren() as Enemy[];
+      for (let i = this.whiskyPuddleZones.length - 1; i >= 0; i--) {
+        const z = this.whiskyPuddleZones[i]!;
+        if (nowMs >= z.expireAtMs) {
+          for (const v of z.visuals) v.destroy();
+          this.whiskyPuddleZones.splice(i, 1);
+          continue;
+        }
+        z.tickAccMs += scaledDelta;
+        const rSq = z.r * z.r;
+        while (z.tickAccMs >= WHISKY_PUDDLE_TICK_MS) {
+          z.tickAccMs -= WHISKY_PUDDLE_TICK_MS;
+          for (const e of enemies) {
+            if (!e.active) continue;
+            const dx = e.x - z.x;
+            const dy = e.y - z.y;
+            if (dx * dx + dy * dy <= rSq) {
+              e.takeDamageWithKillEvents(z.dmgPerTick);
+            }
           }
         }
       }

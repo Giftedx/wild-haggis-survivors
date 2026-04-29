@@ -67,5 +67,15 @@ export interface ISceneContext {
    * relic raises it to 1.2 (clamped to 1.0 after mult).
    */
   getEliteSpawnMultiplier?(): number;
+
+  /**
+   * Whisky Breath puddle drop hook (DESIGN_IDEAS §1, slice 2). Called
+   * by Player on each successful breath burst with the burst origin
+   * + a stack-scaled DoT-per-tick override. GameScene routes this to
+   * `HazardZones.spawnWhiskyPuddle`. Optional so unit-test scenes
+   * that don't wire HazardZones can skip the puddle effect — the
+   * burst still applies its instant AOE damage either way.
+   */
+  spawnWhiskyPuddle?(x: number, y: number, dmgPerTick: number): void;
 }
 

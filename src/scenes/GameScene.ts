@@ -481,6 +481,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     return this.relicEffectDriver?.modifyEliteSpawnChance(1) ?? 1;
   }
 
+  /**
+   * Whisky Breath puddle drop hook (DESIGN_IDEAS §1, slice 2). Routes
+   * the player's burst-origin + stack-scaled DoT through to
+   * `HazardZones.spawnWhiskyPuddle`. Skips silently when hazardZones
+   * isn't wired (mid-init / abandon paths).
+   */
+  spawnWhiskyPuddle(x: number, y: number, dmgPerTick: number): void {
+    this.hazardZones?.spawnWhiskyPuddle(x, y, dmgPerTick);
+  }
+
   grantXpOverflowGold(amount: number): void {
     if (amount <= 0) return;
     this.runScore.addCoinGold(amount);

@@ -484,6 +484,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         e.takeDamageWithKillEvents(damage);
       }
     }
+    // Slice 2 — leave a burning whisky puddle at the burst origin.
+    // DoT-per-tick scales with the instant damage so a full-charge
+    // breath leaves a meaner residue (caller passes ceil(damage / 4)
+    // — instant burst lands ~5× the puddle's per-tick damage, six
+    // tick-windows over the puddle lifetime). Player bypasses this
+    // path silently when the scene doesn't wire it (test stubs).
+    sceneCtxLocal.spawnWhiskyPuddle?.(this.x, this.y, Math.max(1, Math.ceil(damage / 4)));
     // Warm-amber expanding ring (whisky-cask glow), 220 ms life.
     const ring = this.scene.add
       .circle(this.x, this.y, 18, 0xd4a040, 0.55)
