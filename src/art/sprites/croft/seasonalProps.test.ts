@@ -88,4 +88,10 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'samhain', minimalLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for beltane — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'beltane', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });
