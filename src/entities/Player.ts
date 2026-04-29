@@ -35,6 +35,11 @@ import {
   computeBagpipeLureVector,
   type BagpipeLureSource,
 } from '../systems/bagpipeLure';
+import {
+  type DriftMasteryState,
+  createDriftMasteryState,
+  tickDriftMastery,
+} from './driftMastery';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -59,6 +64,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private subs = new SubscriptionBag();
   /** Reused in update() — avoids allocating a fresh vector for drift each frame. */
   private readonly driftScratch = { x: 0, y: 0 };
+
+  /** Write the input components into the shared scratch and return it.
+   *  Used by the Drift Mastery burst path so a cancelled-drift frame
+   *  shares the same vector identity as the normal drift-rotated frame
+   *  (downstream code reads `drifted.x` / `drifted.y` either way). */
+  private assignScratch(x: number, y: number): { x: number; y: number } {
+    this.driftScratch.x = x;
+    this.driftScratch.y = y;
+    return this.driftScratch;
+  }
   /** Last non-zero movement intent, used as a dash fallback direction. */
   private readonly lastMoveDir = { x: 0, y: -1 };
   /** When set, overrides joystick/keyboard for automated balance runs. */
@@ -139,6 +154,21 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    *  multiplies — `Math.cos`/`Math.sin` only fire when stats actually change. */
   private driftCos: number = 1;
   private driftSin: number = 0;
+
+  // Drift Mastery (DESIGN_IDEAS §1) — sustained motion banks Grip pips;
+  // pressing Q (`gripBurstKey`) spends one pip for a short drift-cancel
+  // burst with a small move-speed kicker. Pure-helper-driven so replay
+  // determinism holds; the helper consumes the same scaledDelta /
+  // input stream the rest of update() uses.
+  private driftMasteryState: DriftMasteryState = createDriftMasteryState();
+  private gripBurstKey: Phaser.Input.Keyboard.Key | null = null;
+  private gripBurstKeyPrevDown: boolean = false;
+  /** True until the player banks the first pip in this run; flips false
+   *  on first bank and stays so for the rest of the run. Drives the
+   *  one-shot tutorial toast. */
+  private gripFirstBankPending: boolean = true;
+  /** Same shape for the first-burst tutorial toast. */
+  private gripFirstBurstPending: boolean = true;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -281,6 +311,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     scene.add.existing(this);
     scene.physics.add.existing(this);
+
+    // Drift Mastery — Q is currently a hardcoded edge-poll key so the
+    // mechanic ships without touching the InputMapper / SettingsManager
+    // ActionKey schema (which would force a save-version bump for the
+    // new keybinding slot). Optional `?.` because vitest stubs that
+    // construct Player without a real Phaser scene won't have a
+    // keyboard plugin; the update tick falls back to "no consume edge"
+    // in that path, which is the right behavior for unit tests.
+    this.gripBurstKey = scene.input?.keyboard?.addKey('Q') ?? null;
 
     // Soft boundary — no hard wall, player slows near edges
     this.setCollideWorldBounds(false);
@@ -593,6 +632,39 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     const lureSources = (enemyGroup?.getChildren() ?? []) as unknown as readonly BagpipeLureSource[];
     const lureVector = computeBagpipeLureVector(this.x, this.y, lureSources);
 
+    // Drift Mastery (DESIGN_IDEAS §1) — sustained motion banks Grip
+    // pips; Q-tap consumes one for a short drift-cancel + speed kicker.
+    // Tick BEFORE the early-return for stationary input so charge can
+    // decay even while idle (the helper's own dead-zone handles that
+    // case correctly). The consumePressed edge is `down && !prev-down`
+    // so a held key fires once.
+    const gripDown = this.gripBurstKey?.isDown ?? false;
+    const consumePressed = gripDown && !this.gripBurstKeyPrevDown;
+    this.gripBurstKeyPrevDown = gripDown;
+    const driftMasteryResult = tickDriftMastery(this.driftMasteryState, {
+      inputX: dir.x,
+      inputY: dir.y,
+      driftSign: this.driftSign,
+      dtMs: scaledDelta,
+      consumePressed,
+    });
+    this.driftMasteryState = driftMasteryResult.state;
+    // First-bank + first-burst tutorial toasts. Fire once per run via
+    // pending-edge fields; the GameScene caption layer is the surface
+    // here because the banter pipeline would route through priority
+    // arbitration (and these are pure UX hints, not voice).
+    if (this.gripFirstBankPending && this.driftMasteryState.pips >= 1) {
+      this.gripFirstBankPending = false;
+      sceneCtx.caption?.('grip_banked', 'Grip banked. Q to spend.', '#a8d4f0', 2400);
+    }
+    if (driftMasteryResult.burstFiredEdge) {
+      audio.playGripBurst();
+      if (this.gripFirstBurstPending) {
+        this.gripFirstBurstPending = false;
+        sceneCtx.caption?.('grip_burst', 'Drift mastered.', '#a8d4f0', 1800);
+      }
+    }
+
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(lureVector.pullX, lureVector.pullY);
       this.tickAnimationAndSync(scaledDelta);
@@ -601,8 +673,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Apply a fixed clockwise rotation bias to the input vector. Uses the
     // pre-baked drift matrix from `recalcStats()` so this hot path costs
-    // four multiplies instead of two transcendentals.
-    const drifted = rotateVectorIntoPrecomputed(this.driftScratch, dir.x, dir.y, this.driftCos, this.driftSin);
+    // four multiplies instead of two transcendentals. During a Drift
+    // Mastery burst, `driftCancelLerp` is 0 → the drifted vector
+    // collapses to the raw input direction (drift cancelled). Outside
+    // the burst, lerp is 1 → standard drift behaviour.
+    const drifted = driftMasteryResult.driftCancelLerp === 0
+      ? this.assignScratch(dir.x, dir.y)
+      : rotateVectorIntoPrecomputed(this.driftScratch, dir.x, dir.y, this.driftCos, this.driftSin);
 
     // Soft boundary — slow down near edges + gentle push-back near the wall.
     const { edgeMul, pushX, pushY } = softBoundarySteer(
@@ -619,12 +696,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // multiplicatively — a stumbling haggis on a slick patch under a
     // burn-leap is a sliding cartoon, by design.
     const stumbleMul = this.stumbleRemainingMs > 0 ? STUMBLE_SPEED_MUL : 1;
+    // Drift Mastery burst speed kicker (1.15× during burst, 1× otherwise).
+    // Composes multiplicatively with every other speed multiplier so a
+    // burst-while-stumbling (or burst-while-leaping) folds cleanly.
+    const gripBurstMul = driftMasteryResult.speedMul;
     // U1 M4 — getMoveSpeed() folds the rune bag (Trek / Peat / Frost speed
     // muls + allStats); identity when no rune is active.
     const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushX + lureVector.pullX,
-      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul + pushY + lureVector.pullY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul + pushX + lureVector.pullX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul + pushY + lureVector.pullY
     );
 
     // Rotate sprite to face movement direction

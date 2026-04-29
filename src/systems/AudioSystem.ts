@@ -879,6 +879,33 @@ export class AudioSystem {
    * No music duck — the leap fires often enough that ducking would
    * chop the procedural pad under every gesture.
    */
+  /**
+   * Drift Mastery grip-burst chime — a short upward triangle pluck
+   * (~440 → ~880 Hz over 120 ms) signalling the cancel-burst fired.
+   * Sits brighter and shorter than `playBurnLeap` so the two cues
+   * stay distinct when a Burn Leap and a Grip Burst land in the same
+   * second; both are speed-burst gestures but Grip Burst is the
+   * tight, deliberate one (rewarded mastery, not panic routing).
+   */
+  playGripBurst(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(440, t0);
+    osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.12);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.08, t0 + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.18);
+  }
+
   playBurnLeap(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();
