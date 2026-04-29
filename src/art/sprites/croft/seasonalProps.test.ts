@@ -64,4 +64,10 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'lammas', minimalLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for imbolc — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'imbolc', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });
