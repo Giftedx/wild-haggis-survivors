@@ -459,6 +459,9 @@ export const SCS_STRINGS: LocaleTree = {
     lammas: {
       blessing_toast: 'Loaf-mass at tha cairn — Lugh\'s hairst opens. +14 HP, ilka gem reads a wee bit richer.',
     },
+    brackenTurn: {
+      blessing_toast: 'Bracken bronzed, frost in tha wund — tha muir shairpens ye. +13 HP, crits land truer.',
+    },
     cuSith: {
       bay: {
         first: 'A Cu Sith hools across tha muir.',
@@ -3693,6 +3696,12 @@ export const SCS_STRINGS: LocaleTree = {
       description: 'Jul 29 – Aug 4 — first shaves cut; loaf-mass at tha cairn.',
       badge_suffix: 'Lùnastal',
       ceremony_banner: '🌾 Lùnastal is live — tha loaf is broken on tha muir.',
+    },
+    bracken_turn: {
+      name: 'Bracken-turn',
+      description: 'Nov 4 – Nov 26 — fronds bronze, frost finds tha heather.',
+      badge_suffix: 'Bracken-turn',
+      ceremony_banner: '🍂 Bracken-turn is live — tha muir weirs its copper coat.',
     },
   },
   relics: {

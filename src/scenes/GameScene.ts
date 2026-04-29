@@ -83,6 +83,7 @@ import { applyStAndrewsBlessing } from '../systems/standrewsBlessing';
 import { applyBurnsNightBlessing } from '../systems/burnsNightBlessing';
 import { applyImbolcBlessing } from '../systems/imbolcBlessing';
 import { applyLammasBlessing } from '../systems/lammasBlessing';
+import { applyBrackenTurnBlessing } from '../systems/brackenTurnBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -774,6 +775,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       seasonalEventKey,
       this.runModifiers,
     );
+    const brackenResult = applyBrackenTurnBlessing(
+      seasonalEventKey,
+      this.runModifiers,
+    );
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
@@ -875,6 +880,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       this.time.delayedCall(1500, () => {
         if (!this.scene.isActive('Game')) return;
         this.juice.showToast(t('ui.lammas.blessing_toast'), '#d4a040');
+      });
+    } else if (brackenResult.applied) {
+      this.player.heal(brackenResult.extraStartingHpHeal);
+      // Bracken-turn rides the same Player-accessor pattern as Lammas:
+      // addCritChance composes with the existing rune / permanent /
+      // variant crit stack without polluting RunModifiers.
+      this.player.addCritChance(brackenResult.extraCritChance);
+      this.time.delayedCall(1500, () => {
+        if (!this.scene.isActive('Game')) return;
+        this.juice.showToast(t('ui.brackenTurn.blessing_toast'), '#b87038');
       });
     }
 

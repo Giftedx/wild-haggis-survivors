@@ -129,6 +129,18 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.lammas.description',
     dateWindow: { startMonth: 7, startDay: 29, endMonth: 8, endDay: 4 },
   },
+  // Bracken-turn — autumn cusp (Nov 4 – Nov 26). Sits in the cohort's
+  // quiet shoulder, between Samhain (Oct 28 – Nov 3) and St Andrew's
+  // Day (Nov 27 – Dec 3). The moor's bracken fronds shift from green
+  // through copper to bronze and the first frost edges through. 23
+  // days — wider than the cross-quarter celebrations because the
+  // colour shift is gradual, not a single date.
+  bracken_turn: {
+    key: 'bracken_turn',
+    nameKey: 'seasonalEvent.bracken_turn.name',
+    descriptionKey: 'seasonalEvent.bracken_turn.description',
+    dateWindow: { startMonth: 11, startDay: 4, endMonth: 11, endDay: 26 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

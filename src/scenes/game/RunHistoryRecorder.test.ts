@@ -39,7 +39,14 @@ function buildMocks(overrides: {
     isDailyRun: () => overrides.isDaily ?? false,
     getRoutePicks: () => overrides.routes ?? [],
     isIronmoor: () => overrides.ironmoor ?? false,
-    now: () => 1700000000000,
+    // Jun 15 2027 — guaranteed off-season for every registered seasonal
+    // event window (Hogmanay, Burns, Imbolc, Beltane, Lammas, Samhain,
+    // St Andrew's, Bracken-turn). Picking an "always-no-event" anchor
+    // keeps these tests stable against future cohort additions —
+    // previously the timestamp 1700000000000 (Nov 14 2023) silently
+    // landed inside the Bracken-turn window when that event landed
+    // 2026-04-29. Fixed-day anchor avoids the recurring footgun.
+    now: () => new Date(2027, 5, 15, 12, 0, 0, 0).getTime(),
   };
 
   return { hooks, saveManager };
@@ -172,8 +179,9 @@ describe('RunHistoryRecorder', () => {
       const { hooks, saveManager } = buildMocks();
       const r = new RunHistoryRecorder(hooks);
       r.record(baseSummary as never, { goldEarned: 120 } as never);
+      const expectedNow = new Date(2027, 5, 15, 12, 0, 0, 0).getTime();
       expect(saveManager.recordRunToHistory).toHaveBeenCalledWith({
-        timestamp: 1700000000000,
+        timestamp: expectedNow,
         timeSurvivedSec: 900,
         enemiesKilled: 450,
         level: 7,

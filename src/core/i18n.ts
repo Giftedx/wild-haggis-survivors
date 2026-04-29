@@ -789,6 +789,16 @@ export const EN_STRINGS: LocaleTree = {
       blessing_toast: 'Loaf-mass at the cairn — Lugh\'s harvest opens. +14 HP, every gem reads a wee bit richer.',
     },
     /**
+     * Bracken-turn Blessing — Nov 4 – Nov 26 seasonal hook
+     * (DESIGN_IDEAS §12; the moor's bracken fronds shift through
+     * copper to bronze, first frost edges through). +13 HP heal,
+     * +5% additive crit chance — bronze hardness reads as a
+     * sharper edge.
+     */
+    brackenTurn: {
+      blessing_toast: 'Bracken bronzed, frost in the wind — the moor sharpens ye. +13 HP, crits land truer.',
+    },
+    /**
      * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
      * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
      * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -4280,6 +4290,12 @@ export const EN_STRINGS: LocaleTree = {
       description: 'Jul 29 – Aug 4 — first sheaves cut; loaf-mass at the cairn.',
       badge_suffix: 'Lùnastal',
       ceremony_banner: '🌾 Lùnastal is live — the loaf is broken on the moor.',
+    },
+    bracken_turn: {
+      name: 'Bracken-turn',
+      description: 'Nov 4 – Nov 26 — fronds bronze, frost finds the heather.',
+      badge_suffix: 'Bracken-turn',
+      ceremony_banner: '🍂 Bracken-turn is live — the moor wears its copper coat.',
     },
   },
   /**

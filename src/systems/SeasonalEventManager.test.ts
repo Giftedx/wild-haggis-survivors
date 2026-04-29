@@ -251,6 +251,42 @@ describe('E1 Imbolc — Brigid\'s Day (Gaelic first-of-spring)', () => {
   });
 });
 
+describe('E1 Bracken-turn — autumn-cusp shoulder season', () => {
+  it('is active mid-window (Nov 15)', () => {
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 11, 15))).toBe(true);
+  });
+
+  it('is active on the window edges (Nov 4 + Nov 26)', () => {
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 11, 4))).toBe(true);
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 11, 26))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 11, 3))).toBe(false);
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 11, 27))).toBe(false);
+  });
+
+  it('does not overlap Samhain or St Andrew\'s (cohort symmetry holds)', () => {
+    // Nov 3 — Samhain's last day, NOT Bracken-turn.
+    const samhainKeys = activeSeasonalEvents(d(2027, 11, 3));
+    expect(samhainKeys).toContain('samhain');
+    expect(samhainKeys).not.toContain('bracken_turn');
+    // Nov 27 — St Andrew's first day, NOT Bracken-turn.
+    const standrewsKeys = activeSeasonalEvents(d(2027, 11, 27));
+    expect(standrewsKeys).toContain('st_andrews');
+    expect(standrewsKeys).not.toContain('bracken_turn');
+    // Nov 15 — only Bracken-turn.
+    const brackenKeys = activeSeasonalEvents(d(2027, 11, 15));
+    expect(brackenKeys).toContain('bracken_turn');
+    expect(brackenKeys).not.toContain('samhain');
+    expect(brackenKeys).not.toContain('st_andrews');
+  });
+
+  it('is inactive in midsummer', () => {
+    expect(isSeasonalEventActive('bracken_turn', d(2027, 7, 4))).toBe(false);
+  });
+});
+
 describe('E1 Lùnastal / Lammas — Gaelic harvest-start', () => {
   it('is active on Lùnastal traditional date (Aug 1)', () => {
     expect(isSeasonalEventActive('lammas', d(2027, 8, 1))).toBe(true);
