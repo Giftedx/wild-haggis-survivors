@@ -81,6 +81,16 @@ export class HUD {
   private killText!: Phaser.GameObjects.Text;
   private pauseText!: Phaser.GameObjects.Text;
 
+  /** Drift Mastery pip widget (DESIGN_IDEAS §1). Three small dots
+   *  anchored below the HP bar; each fills (warm-cyan) when a Grip
+   *  pip is banked, sits dim-empty otherwise. The whole strip pulses
+   *  briefly while a burst is active. Hidden until first bank so a
+   *  fresh run doesn't surface the mechanic before it's been earned. */
+  private gripPipDots: Phaser.GameObjects.Arc[] = [];
+  private gripPipsVisible = false;
+  private prevGripPips = -1;
+  private prevGripBurstActive = false;
+
   /** HP bar width — shrinks on narrow viewports so the centered timer
    *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
    *  can rebalance against the live viewport (was a fixed 260 which
@@ -219,6 +229,24 @@ export class HUD {
     this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '',
       textStyle('body', { color: COLORS_CSS.WARM_TAN }),
     ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
+
+    // Drift Mastery pip strip — three 4 px-radius dots anchored to the
+    // RIGHT end of the HP bar so they don't compete with the level/gold
+    // column on the left. Hidden until `setGripPips()` first reports
+    // a pip > 0; until then the widget never paints. Each dot is its
+    // own Arc so the fill toggles instantly without a tween, and the
+    // whole strip can be lifted by a brief setScale tween on burst.
+    const gripBaseX = 12 + this.HP_BAR_W + 8;
+    const gripY = 12 + this.HP_BAR_H / 2;
+    for (let i = 0; i < 3; i++) {
+      const dot = this.addEl(
+        this.scene.add.circle(gripBaseX + i * 12, gripY, 4, 0x2a3344, 1)
+          .setStrokeStyle(1, 0x4a5566, 0.6)
+          .setScrollFactor(0).setDepth(d + 2)
+          .setVisible(false),
+      ) as Phaser.GameObjects.Arc;
+      this.gripPipDots.push(dot);
+    }
 
     // Level
     this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
@@ -960,6 +988,53 @@ export class HUD {
   /** Update shield indicator */
   updateShield(hasShield: boolean): void {
     this.shieldIcon.setVisible(hasShield);
+  }
+
+  /**
+   * Drift Mastery pip widget update. Caller passes the live state
+   * read from `Player.getDriftMasteryState()`; this writes the three
+   * dots' fill colour + visibility and pulses the strip on a fresh
+   * burst-fired edge.
+   *
+   * Stays hidden until the player banks the first pip — keeps the
+   * mechanic discoverable without spamming a fresh run with empty
+   * widgets. Once visible, it remains so for the rest of the run.
+   * Caching `prevGripPips` / `prevGripBurstActive` avoids per-frame
+   * setFillStyle / tween calls on the steady state (cheapest path
+   * is no-op on every frame the player isn't actively interacting
+   * with the mechanic).
+   */
+  setGripPips(pips: number, burstActive: boolean): void {
+    const safePips = Math.max(0, Math.min(3, Math.floor(pips)));
+    if (!this.gripPipsVisible && safePips > 0) {
+      this.gripPipsVisible = true;
+      for (const dot of this.gripPipDots) dot.setVisible(true);
+    }
+    if (safePips !== this.prevGripPips) {
+      this.prevGripPips = safePips;
+      // Filled = warm-cyan (0x6ad4ff, matches first-bank caption tint
+      // #a8d4f0); empty = dim slate (0x2a3344, sits on the HUD's dark
+      // chrome without competing with the HP bar).
+      for (let i = 0; i < this.gripPipDots.length; i++) {
+        this.gripPipDots[i]!.setFillStyle(i < safePips ? 0x6ad4ff : 0x2a3344, 1);
+      }
+    }
+    // Pulse the strip on burst-fired edge — a single short scale-up +
+    // fade-back tween confirms the spend without lingering. Detect
+    // the edge as `burstActive && !prevBurstActive` so a burst that
+    // straddles multiple frames doesn't restart the tween every tick.
+    if (burstActive && !this.prevGripBurstActive) {
+      for (const dot of this.gripPipDots) {
+        this.scene.tweens.add({
+          targets: dot,
+          scale: 1.6,
+          duration: 120,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
+    this.prevGripBurstActive = burstActive;
   }
 
   /**

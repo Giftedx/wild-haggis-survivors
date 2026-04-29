@@ -81,6 +81,15 @@ function createScene(): any {
         return o;
       },
       image: (_x: number, _y: number, _k: string) => new MockObject(),
+      // Drift Mastery pip widget — three Arc dots per HUD instance.
+      // Stub matches `Phaser.GameObjects.Arc` shape closely enough for
+      // the HUD's `setFillStyle` / `setStrokeStyle` / `setVisible`
+      // chains via `MockObject` to satisfy the type checker.
+      circle: (_x: number, _y: number, _radius: number, _fill: number, _alpha: number) =>
+        new MockObject(),
+    },
+    tweens: {
+      add: () => ({}),
     },
   };
 }
@@ -119,6 +128,39 @@ describe('HUD', () => {
     hud.update(100, 100, 2, 0.4, 10, 1, 2, 0, 1, 0.42);
     expect((hud as any).dashPrefixText.text as string).toContain('Dash');
     expect((hud as any).dashSuffixText.text as string).toMatch(/%/);
+  });
+
+  it('Drift Mastery pips stay hidden until the first bank, then surface for the rest of the run', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    // Fresh HUD — widget should be invisible.
+    const dots = (hud as any).gripPipDots as Array<{ visible: boolean }>;
+    expect(dots).toHaveLength(3);
+    expect(dots.every((d) => d.visible === false)).toBe(true);
+
+    // Zero pips banked — still hidden.
+    hud.setGripPips(0, false);
+    expect(dots.every((d) => d.visible === false)).toBe(true);
+
+    // First bank — widget surfaces; first dot fills.
+    hud.setGripPips(1, false);
+    expect(dots.every((d) => d.visible === true)).toBe(true);
+    expect((hud as any).gripPipsVisible).toBe(true);
+
+    // Drop back to zero (post-burst) — widget stays visible (sticky).
+    hud.setGripPips(0, false);
+    expect(dots.every((d) => d.visible === true)).toBe(true);
+  });
+
+  it('Drift Mastery pips clamp out-of-range values defensively', () => {
+    const scene = createScene();
+    const hud = new HUD(scene);
+    // Above max → clamped to 3, no throw.
+    hud.setGripPips(99, false);
+    expect((hud as any).prevGripPips).toBe(3);
+    // Negative → clamped to 0.
+    hud.setGripPips(-5, false);
+    expect((hud as any).prevGripPips).toBe(0);
   });
 
   it('applies high-contrast colors to all HUD text when highContrastUi is enabled', async () => {

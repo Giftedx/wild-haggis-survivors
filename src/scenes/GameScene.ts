@@ -2032,6 +2032,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.hud.setIronmoor(this.activeIronmoorRun);
     this.hud.setDaily(this.runIsDaily, this.getRunSeedCode());
     this.hud.setGold(this.runScore.getGoldBalance());
+    // Drift Mastery pip widget — surface the banked Grip count + flash
+    // the strip on burst-fire. Hidden until first bank so the widget
+    // doesn't clutter the HUD before the mechanic's been earned.
+    const driftState = this.player.getDriftMasteryState();
+    this.hud.setGripPips(driftState.pips, driftState.burstRemainingMs > 0);
     const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
     this.hud.update(
       this.player.getHp(), this.player.getMaxHp(),

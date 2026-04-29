@@ -970,6 +970,15 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     return this.moveSpeed * composeSpeedMul(bag);
   }
   getDriftDegrees(): number { return this.driftDegrees; }
+
+  /**
+   * HUD accessor — read-only snapshot of the Drift Mastery state for
+   * the pip widget. Returned object is the live reference; consumers
+   * read fields immediately and don't retain. `pips` is 0..3 (banked
+   * Grip count); `burstRemainingMs > 0` means a burst is currently
+   * active (HUD pulses to confirm).
+   */
+  getDriftMasteryState(): DriftMasteryState { return this.driftMasteryState; }
   getDamageMultiplier(): number {
     // U1 M4 — Haar / Peat / Thirst / Warden / cascade dmg fold here so
     // every weapon path picks them up via WeaponSystem.setMultipliers.
