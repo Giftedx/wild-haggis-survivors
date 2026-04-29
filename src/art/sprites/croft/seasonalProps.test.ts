@@ -94,4 +94,31 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'beltane', minimalLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for st_andrews — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'st_andrews', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
+
+  it('every cohort event routes to a real drawer (8/8 coverage)', () => {
+    // Locks the cohort feature-parity contract: every registered E1
+    // seasonal event must have an authored croft-prop drawer. Future
+    // cohort additions failing this test mean the croft surface
+    // drifted from the cohort. Layout extended with hearth +
+    // mantelpiece for events that read those slots.
+    const fullLayout = {
+      ...minimalLayout,
+      hearth: { x: 0, y: 0 },
+    } as unknown as CroftLayout;
+    const events = [
+      'burns_night', 'hogmanay', 'imbolc', 'beltane',
+      'lammas', 'samhain', 'bracken_turn', 'st_andrews',
+    ];
+    for (const event of events) {
+      const { gfx, calls } = buildRecordingGraphics();
+      drawSeasonalProps(gfx, event, fullLayout);
+      expect(calls.length, `${event} drawer did not paint`).toBeGreaterThan(0);
+    }
+  });
 });
