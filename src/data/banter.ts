@@ -1506,6 +1506,13 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.boss_gordon_kill.a',
         'ui.banter.first_time.boss_gordon_kill.b',
       ],
+      // each_uisge first-kill (2026-04-29) — closes the previously-missing
+      // sub-pool gap so the Fey water-horse boss gets its own first-time
+      // line instead of falling back to the generic milestone.
+      boss_each_uisge_kill: [
+        'ui.banter.first_time.boss_each_uisge_kill.a',
+        'ui.banter.first_time.boss_each_uisge_kill.b',
+      ],
       boss_tour_bus_kill: [
         'ui.banter.first_time.boss_tour_bus_kill.a',
         'ui.banter.first_time.boss_tour_bus_kill.b',

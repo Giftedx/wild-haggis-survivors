@@ -2418,6 +2418,15 @@ export const EN_STRINGS: LocaleTree = {
           a: 'First time ye bested Gordon. The kitchen shut its windaes fer ye.',
           b: 'Cleaver doon. Glen\'s takin\' notes.',
         },
+        // each_uisge first-kill fired the generic fallback until 2026-04-29
+        // because the tag had no sub-pool. Added to close the gap with the
+        // other five bosses. Voice register: GRAVE — the Each-Uisge is the
+        // Fey-tier mythos boss (water-horse / shapeshifter), not a comedy
+        // beat. Lines mark the moment without making light of it.
+        boss_each_uisge_kill: {
+          a: 'Water-horse felled. The loch\'s remembering yer name in cold.',
+          b: 'First Each-Uisge bested. The deepest waters lost a king.',
+        },
         boss_tour_bus_kill: {
           a: 'Hale busload beaten. The guidebooks will lie aboot this.',
           b: 'First tour bus ever tipped. Pure havoc — braw havoc.',

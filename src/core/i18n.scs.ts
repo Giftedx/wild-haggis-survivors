@@ -2006,6 +2006,12 @@ export const SCS_STRINGS: LocaleTree = {
           a: 'First time ye besterit Gordon. Tha kitchen shut its windaes fer ye.',
           b: 'Cleaver doon. Glen\'s takkin notes.',
         },
+        // SCS overlay of EN each_uisge first-kill leaves (2026-04-29).
+        // Voice register: GRAVE per the Fey-tier mythos.
+        boss_each_uisge_kill: {
+          a: 'Watter-horse fawed. Tha loch\'s mindin yer name in cauld.',
+          b: 'First Each-Uisge besterit. Tha deepest watters tint a king.',
+        },
         boss_tour_bus_kill: {
           a: 'Hale busload beaten. Tha guidebooks\'ll lee aboot this.',
           b: 'First tour bus iver coupit. Pure bedlam — braw bedlam.',
