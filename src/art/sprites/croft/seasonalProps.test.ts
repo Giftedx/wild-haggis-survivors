@@ -82,4 +82,10 @@ describe('drawSeasonalProps', () => {
     drawSeasonalProps(gfx, 'hogmanay', hogmanayLayout);
     expect(calls.length).toBeGreaterThan(0);
   });
+
+  it('routes to a drawer for samhain — calls graphics API at least once', () => {
+    const { gfx, calls } = buildRecordingGraphics();
+    drawSeasonalProps(gfx, 'samhain', minimalLayout);
+    expect(calls.length).toBeGreaterThan(0);
+  });
 });
