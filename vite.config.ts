@@ -125,5 +125,32 @@ export default defineConfig({
     // Production still fetches `./i18n.scs` dynamically on first use.
     setupFiles: ['./src/core/i18n.testSetup.ts'],
     ...vitestNoWebStorage,
+    coverage: {
+      provider: 'v8',
+      // text + html for human use, json-summary so CI / scripts can ratchet.
+      reporter: ['text', 'html', 'json-summary'],
+      include: ['src/**/*.ts'],
+      // Tests, type-only files, the Phaser-boot entry, and the procedural
+      // sprite-art layer are excluded — sprite-art is data + draw calls
+      // (would need an integration harness to "cover" meaningfully).
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.spec.ts',
+        'src/**/*.d.ts',
+        'src/main.ts',
+        'src/art/sprites/**',
+      ],
+      // Ratchet thresholds — measured baseline 2026-04-30 was
+      //   lines/statements 58.57%, functions 68.01%, branches 86.91%
+      // Floors set ~2 points below baseline so refactor PRs don't fail
+      // on minor reshuffling. Bump up over time as coverage genuinely
+      // improves; these are a regression floor, not an aspiration.
+      thresholds: {
+        lines: 56,
+        statements: 56,
+        functions: 66,
+        branches: 84,
+      },
+    },
   },
 });
