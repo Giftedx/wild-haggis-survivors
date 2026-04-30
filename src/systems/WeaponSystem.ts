@@ -13,6 +13,7 @@ import { resolveMuzzleFlashColor, resolveWeaponVfxColor } from './muzzleFlashCol
 import { fillCirclePool } from './fillCirclePool';
 import { musicEngine } from './music/ProceduralMusicEngine';
 import { applyPibrochDamage, isPibrochAligned } from './music/pibrochAlignment';
+import { populateEvolvedKeys } from './evolvedWeaponKeys';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -48,6 +49,12 @@ export class WeaponSystem {
 
   /** Trail frame counter — spawn trail particles every N frames */
   private trailCounter: number = 0;
+
+  /** Scratch Set holding the keys of currently-evolved weapons — populated
+   *  once per trail-spawn tick so each projectile's evolved-flag lookup is
+   *  O(1) `.has()` instead of O(weapons) `Array.some` with a per-call
+   *  closure allocation. */
+  private evolvedKeysScratch: Set<string> = new Set();
 
   /** Per-frame cache: active enemies sorted by distance to player.
    *  Built lazily on first findClosestEnemy() call per frame. */
@@ -313,13 +320,19 @@ export class WeaponSystem {
     // Update active projectiles + spawn trail particles
     this.trailCounter++;
     const spawnTrail = this.trailCounter % BALANCE.weapons.trailEveryNFrames === 0;
+    if (spawnTrail) {
+      // One sweep over `weapons` populates the scratch Set; the per-projectile
+      // loop below then does an O(1) `.has()` to decide trail style. Replaces
+      // the prior `Array.some` + closure allocation per projectile.
+      populateEvolvedKeys(this.weapons, this.evolvedKeysScratch);
+    }
     const projectiles = this.projectilePool.getChildren() as Projectile[];
     for (const proj of projectiles) {
       if (proj.active) {
         proj.update(delta);
         if (spawnTrail) {
           const wKey = proj.getWeaponKey();
-          const isEvolved = wKey ? this.weapons.some(w => w.config.key === wKey && w.evolved) : false;
+          const isEvolved = wKey ? this.evolvedKeysScratch.has(wKey) : false;
           this.events.emit('projectileTrail', proj.x, proj.y, isEvolved, wKey);
         }
       }
