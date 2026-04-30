@@ -329,6 +329,12 @@ export function resetSettingsManagerSingletonForTests(): void {
 export class SettingsManager {
   private key: string;
   private storage: StorageLike;
+  /** Memoised result of the most recent `load()`. GameScene reads
+   *  from `load()` at 14+ sites; without memo, every read hit
+   *  storage + JSON.parse + coerce. The cache is invalidated on
+   *  `save()` and `reset()` so callers always see fresh state after
+   *  a settings mutation. */
+  private cached: ISettingsData | null = null;
 
   constructor(opts?: { key?: string; storage?: StorageLike }) {
     this.key = opts?.key ?? SETTINGS_STORAGE_KEY;
@@ -336,13 +342,19 @@ export class SettingsManager {
   }
 
   load(): ISettingsData {
+    if (this.cached !== null) return this.cached;
     const raw = this.storage.getItem(this.key);
-    if (!raw) return { ...DEFAULT_SETTINGS };
+    if (!raw) {
+      this.cached = { ...DEFAULT_SETTINGS };
+      return this.cached;
+    }
     try {
       const parsed: unknown = JSON.parse(raw);
-      return this.coerce(parsed);
+      this.cached = this.coerce(parsed);
+      return this.cached;
     } catch {
-      return { ...DEFAULT_SETTINGS };
+      this.cached = { ...DEFAULT_SETTINGS };
+      return this.cached;
     }
   }
 
@@ -354,10 +366,25 @@ export class SettingsManager {
       // T131 surfaces the failure to the UI toast listener.
       emitSaveFailure('settings', err);
     }
+    // Invalidate cache so the next load() reflects the just-saved data
+    // (re-coerced to catch any version bumps `coerce` would apply).
+    this.cached = null;
   }
 
   reset(): void {
     this.storage.removeItem(this.key);
+    this.cached = null;
+  }
+
+  /**
+   * Force the next `load()` to re-read storage. Production code should
+   * never need this — `save()` and `reset()` already invalidate. Use
+   * only when storage was modified by a path that bypasses this manager
+   * (raw test fixtures via `storage.setItem`, future cross-tab `storage`
+   * events, etc.).
+   */
+  invalidateCache(): void {
+    this.cached = null;
   }
 
   update(fn: (cur: ISettingsData) => ISettingsData): ISettingsData {

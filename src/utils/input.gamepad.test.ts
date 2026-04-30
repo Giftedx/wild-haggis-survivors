@@ -1,6 +1,10 @@
 import type Phaser from 'phaser';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SETTINGS_STORAGE_KEY, resetSettingsManagerSingletonForTests } from '../core/SettingsManager';
+import {
+  SETTINGS_STORAGE_KEY,
+  getSettingsManager,
+  resetSettingsManagerSingletonForTests,
+} from '../core/SettingsManager';
 import { MemoryStorage } from '../test/MemoryStorage';
 import { InputManager } from './input';
 
@@ -54,6 +58,9 @@ function seedSettings(storage: MemoryStorage, dashPrimary: number, pausePrimary:
       pause: { primary: pausePrimary },
     },
   }));
+  // The shared SettingsManager memoises load(); direct-storage seeding
+  // bypasses save() so the cache must be told to drop its prior view.
+  getSettingsManager().invalidateCache();
 }
 
 describe('InputManager gamepad bindings', () => {
