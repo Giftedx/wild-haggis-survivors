@@ -8,6 +8,14 @@
  * match frame-for-frame. Guards against ReplayInput or the blob codec
  * silently losing state across versions.
  *
+ * Also covers gameplay-state RNG seams that GameScene drives at runtime
+ * — e.g. `enemyAngleSeed.ts` (orbit init + spawner-minion direction).
+ * Two real Math.random holes in those paths survived the original T1
+ * ship (Enemy.ts:298 + :924) because the cursor-only byte-equality
+ * check above never exercised enemy spawn output. The seam tests
+ * below close that gap by asserting same-seed RNGs produce identical
+ * angle streams under interleaved call order.
+ *
  * Complements the end-to-end `replay-loop.spec.ts` Playwright check that
  * drives a live GameScene through record → save → watch.
  */
@@ -18,10 +26,14 @@ import {
   REPLAY_BLOB_V2_VERSION,
 } from './replayBlobV2';
 import { ReplayRecorder } from './ReplayRecorder';
-import { createRNG } from '../utils/rng';
+import { createRNG, type RNG } from '../utils/rng';
 import { captureComposedStats } from './composedStatsSnapshot';
 import { BALANCE } from '../core/BalanceConfig';
 import type { ComposedPlayerStats } from '../core/StatComposer';
+import {
+  pickInitialOrbitAngle,
+  pickSpawnerMinionAngle,
+} from '../entities/enemyAngleSeed';
 
 function scriptedBlob() {
   const blob = createEmptyReplayBlobV2({
@@ -125,6 +137,26 @@ describe('replay determinism', () => {
     for (let i = 0; i < 100; i++) {
       expect(a.next()).toBeCloseTo(b.next(), 10);
     }
+  });
+
+  it('enemy gameplay-state angle stream is deterministic under shared seed', () => {
+    // Realistic-ish call mix: every spawn pulls an orbit-angle init,
+    // and every fifth tick a spawner emits a midge (interleaved draw).
+    // Asserts the two helpers + RNG plumbing keep byte-equal streams
+    // across same-seed runs; this is the seam the original T1 ship
+    // missed (Enemy.ts:298 + :924 used Math.random until 2026-04-30).
+    const draw = (rng: RNG): number[] => {
+      const stream: number[] = [];
+      for (let i = 0; i < 60; i++) {
+        stream.push(pickInitialOrbitAngle(rng));
+        if (i % 5 === 0) stream.push(pickSpawnerMinionAngle(rng));
+      }
+      return stream;
+    };
+    expect(draw(createRNG(424242))).toEqual(draw(createRNG(424242)));
+    // Different seed must not collide — guards against the helpers
+    // accidentally degenerating to a constant.
+    expect(draw(createRNG(1))).not.toEqual(draw(createRNG(2)));
   });
 
   it('seed reproducibility holds across int / float / pick draws', () => {
