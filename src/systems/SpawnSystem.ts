@@ -335,9 +335,9 @@ export class SpawnSystem {
       // itself short-circuits on a repeat key, so the cache above is
       // the per-run gate; this persists cross-run.
       bumpBeastieSeen(config.key, this.discoveryRunId, Date.now());
-      this.scene.requestBanter?.('enemy_ambient', config.key);
+      this.scene.requestBanter('enemy_ambient', config.key);
     } else if (decision === 'respawn') {
-      this.scene.requestBanter?.('enemy_ambient', config.key);
+      this.scene.requestBanter('enemy_ambient', config.key);
     }
   }
 
@@ -456,7 +456,7 @@ export class SpawnSystem {
    * first so the boss-key dedupe doesn't reject the re-spawn).
    */
   private tickPostBellBoss(playerX: number, playerY: number): void {
-    const sec = this.scene.getSecondsPastBell?.();
+    const sec = this.scene.getSecondsPastBell();
     if (!sec || sec <= 0) return;
     const pb = this.getPostBellMultipliers();
     if (this.postBellBossLastSpawnSec < 0) {
@@ -485,11 +485,11 @@ export class SpawnSystem {
     // Show warning banner
     const warning = t(boss.warningKey);
     this.showBossWarning(warning, boss.key);
-    this.scene.caption?.(`boss_${boss.key}`, warning, '#ff6644');
+    this.scene.caption(`boss_${boss.key}`, warning, '#ff6644');
     // A beat of Glesga nerves right as the screen shakes. Pass the boss
     // key so the engine picks from the authored per-boss pool when one
     // exists — Gordon, Taxman etc. each get their own warning voice.
-    this.scene.requestBanter?.('boss_warn', boss.key);
+    this.scene.requestBanter('boss_warn', boss.key);
 
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
@@ -953,7 +953,7 @@ export class SpawnSystem {
   /** Post-Bell escalation multipliers, or neutral when the run hasn't crossed
    *  the Bell yet / the scene doesn't expose the hook (e.g., unit tests). */
   private getPostBellMultipliers(): PostBellMultipliers {
-    const sec = this.scene.getSecondsPastBell?.();
+    const sec = this.scene.getSecondsPastBell();
     if (sec === undefined || sec <= 0) return NEUTRAL_POST_BELL;
     return computePostBellMultipliers(sec);
   }

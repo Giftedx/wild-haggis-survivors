@@ -223,11 +223,11 @@ export class JuiceSystem {
       // (P1.1 / P1.2 / P1.12).
       if (!this.uiPauseWasActive) {
         if (this.liveToasts.length > 0) this.dismissActiveToasts();
-        try { this.scene.getTutorialSystem?.()?.setAmbientBannersVisible(false); } catch { /* ignore */ }
+        try { this.scene.getTutorialSystem().setAmbientBannersVisible(false); } catch { /* ignore */ }
       }
     } else if (this.uiPauseWasActive) {
       // Edge-trigger on modal-close: restore ambient banners + combo if any.
-      try { this.scene.getTutorialSystem?.()?.setAmbientBannersVisible(true); } catch { /* ignore */ }
+      try { this.scene.getTutorialSystem().setAmbientBannersVisible(true); } catch { /* ignore */ }
       if (this.comboCount > 0) this.syncComboText();
     }
     this.uiPauseWasActive = modalActive;
@@ -416,7 +416,7 @@ export class JuiceSystem {
       // scene's banter shim so the priority-110 `first_time` pool beats
       // the generic `combo_100` warning toast emitted a few lines down.
       if (bumpFirstTimeEvent('combo_100')) {
-        this.scene.requestBanter?.('first_time', 'combo_100');
+        this.scene.requestBanter('first_time', 'combo_100');
       }
     }
 
@@ -455,13 +455,13 @@ export class JuiceSystem {
       // up the beat and the magnet pulses wider for 2s. A cheap joy
       // moment between the rare Glesga-patter milestones below. Uses
       // the same scene duck-call as captions (see combo_11 branch).
-      if (isCeilidhPulseMoment(this.comboCount, this.scene.getCeilidhChainPeriod?.())) {
+      if (isCeilidhPulseMoment(this.comboCount, this.scene.getCeilidhChainPeriod())) {
         const pl = this.scene.getPlayer();
         pl.grantCeilidhChainMagnet(CEILIDH_MAGNET_FLAT_PX, CEILIDH_MAGNET_DURATION_MS);
         const msg = t('ui.game.ceilidh_pulse');
         if (this.ceilidhToastCooldownMs <= 0) {
           this.showToast(msg, TOAST_COLORS.positive);
-          this.scene.caption?.(`ceilidh_${this.comboCount}`, msg, TOAST_COLORS.positive);
+          this.scene.caption(`ceilidh_${this.comboCount}`, msg, TOAST_COLORS.positive);
           this.ceilidhToastCooldownMs = this.CEILIDH_TOAST_COOLDOWN_MS;
         }
         audio.playCeilidhPulse();
@@ -488,11 +488,11 @@ export class JuiceSystem {
       if (this.comboCount === 11) {
         const msg = t('ui.game.combo_11');
         this.showToast(msg, TOAST_COLORS.reward);
-        this.scene.caption?.(`combo_11`, msg, TOAST_COLORS.reward);
+        this.scene.caption(`combo_11`, msg, TOAST_COLORS.reward);
       } else if (this.comboCount === 50) {
         const msg = t('ui.game.combo_50');
         this.showToast(msg, TOAST_COLORS.reward);
-        this.scene.caption?.(`combo_50`, msg, TOAST_COLORS.reward);
+        this.scene.caption(`combo_50`, msg, TOAST_COLORS.reward);
         // Rest beat — Great Moment Recipe (DESIGN_SOUL.md). Major milestone
         // gets a brief breath so the moment lands; guard inside slowMotion
         // skips overlap with boss-kill slow-mo. Skipped at 11 (too frequent).
@@ -500,12 +500,12 @@ export class JuiceSystem {
       } else if (this.comboCount === 100) {
         const msg = t('ui.game.combo_100');
         this.showToast(msg, TOAST_COLORS.warning);
-        this.scene.caption?.(`combo_100`, msg, TOAST_COLORS.warning);
+        this.scene.caption(`combo_100`, msg, TOAST_COLORS.warning);
         this.slowMotion(220);
       } else if (this.comboCount === 200) {
         const msg = t('ui.game.combo_200');
         this.showToast(msg, TOAST_COLORS.warning);
-        this.scene.caption?.(`combo_200`, msg, TOAST_COLORS.warning);
+        this.scene.caption(`combo_200`, msg, TOAST_COLORS.warning);
         this.slowMotion(220);
       }
     }

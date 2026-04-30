@@ -19,6 +19,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     const calls: string[] = [];
     const scene: any = {
       getTimeManager: () => ({ isGameplayPaused: () => true }),
+      getSecondsPastBell: () => 0,
     };
 
     const ss: any = Object.create(SpawnSystem.prototype);
@@ -44,6 +45,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     const calls: string[] = [];
     const scene: any = {
       getTimeManager: () => ({ isGameplayPaused: () => paused }),
+      getSecondsPastBell: () => 0,
     };
 
     const ss: any = Object.create(SpawnSystem.prototype);
@@ -74,6 +76,7 @@ describe('SpawnSystem boss deferral respects TimeManager pause', () => {
     const calls: string[] = [];
     const scene: any = {
       getTimeManager: () => ({ isGameplayPaused: () => paused }),
+      getSecondsPastBell: () => 0,
     };
 
     const ss: any = Object.create(SpawnSystem.prototype);

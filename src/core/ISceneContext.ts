@@ -35,14 +35,17 @@ export interface ISceneContext {
    */
   getRunRng(): RNG;
   /**
-   * Optional narrative + biome surfaces. Optional so unit-test scenes can
-   * omit them without a stub blizzard — production GameScene implements all.
-   * Call sites must still use `?.()` to stay safe under partial scenes.
+   * Narrative + biome surfaces. Required as of 2026-04-30 — every production
+   * scene that hosts SpawnSystem / JuiceSystem implements all four, and a
+   * codebase sweep showed zero test files construct a partial mock, so the
+   * old `?.()` defensive coding was hiding rename / signature drift without
+   * actually serving any caller. `getCurrentBiomeId` stays optional because
+   * lightweight scenes (Croft, MetaShop) genuinely don't expose a biome.
    */
-  caption?(id: string, message: string, tint?: string, durationMs?: number): void;
-  requestBanter?(context: BanterContext, tag?: string): void;
+  caption(id: string, message: string, tint?: string, durationMs?: number): void;
+  requestBanter(context: BanterContext, tag?: string): void;
   getCurrentBiomeId?(): BiomeId | null;
-  getSecondsPastBell?(): number;
+  getSecondsPastBell(): number;
   /**
    * At max player level, XP that would otherwise be lost is converted to
    * run gold (coin pickup meta). Optional so lightweight test scenes omit it.
@@ -53,7 +56,7 @@ export interface ISceneContext {
    * Ceilidh Dancer's Ribbon relic lowers it to 5. Kept as a scene-side
    * lookup so JuiceSystem doesn't import RelicSystem directly.
    */
-  getCeilidhChainPeriod?(): number;
+  getCeilidhChainPeriod(): number;
 
   /**
    * R1 M4 — boss HP multiplier. Default 1; stone_of_destiny_shard
