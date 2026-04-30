@@ -26,6 +26,7 @@ import { audio } from '../systems/AudioSystem';
 import { AnimationController } from '../animation/AnimationController';
 import type { AnimationSignals } from '../animation/animationStates';
 import { isEnemyAnimated } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
+import { pickInitialOrbitAngle, pickSpawnerMinionAngle } from './enemyAngleSeed';
 
 // Mini HP bar above enemies: dark backing + red/gold fill. Colours used
 // in both the standard setup path and the elite upgrade path, so pinning
@@ -295,7 +296,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.rangedCooldown = 0;
     this.enraged = false;
     this.phase2Done = false;
-    this.orbitAngle = Math.random() * Math.PI * 2;
+    this.orbitAngle = pickInitialOrbitAngle(this.ctx.getRunRng());
     this.piperBuffCooldown = 0;
     this.burnDamage = 0; this.burnTimer = 0; this.burnTickAccum = 0;
     this.freezeTimer = 0; this.freezeSpeedMul = 1;
@@ -921,7 +922,7 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const pool = spawnSystem.getEnemyGroup();
       const minion = Enemy.acquireFromPool(pool, this.ctxScene);
       if (!minion) return;
-      const angle = Math.random() * Math.PI * 2;
+      const angle = pickSpawnerMinionAngle(this.ctx.getRunRng());
       const dist = 20;
       const midge = { key: 'midge', texture: 'midge', speed: 130, hp: 2, damage: 3, xpValue: 1, appearsAt: 0, behavior: 'swarm' as EnemyBehavior, packSize: 1 };
       // Pass current game time so spawned midges inherit HP/damage scaling
