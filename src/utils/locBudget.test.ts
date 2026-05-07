@@ -17,7 +17,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.scs.ts', 4010],
   ['scenes/GameScene.ts', 2985],
   ['data/banter.ts', 2240],
-  ['utils/save.ts', 1840],
+  ['utils/save.ts', 100], // was 1840 (Phase 1 split — barrel re-export over save/*.ts)
   ['art/sprites/icons/cards.ts', 1725],
   ['art/sprites/icons/weapons.ts', 1615],
   ['entities/Enemy.ts', 1570],

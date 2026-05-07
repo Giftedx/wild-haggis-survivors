@@ -28,7 +28,7 @@ import {
   type DiscoveryLog,
   type RetroHistoryEntry,
 } from '../../systems/DiscoveryLog';
-import { coerceSelectedVariant, evaluateVariantUnlocks } from '../save';
+import { coerceSelectedVariant, evaluateVariantUnlocks } from './variants';
 import { DEFAULT_SAVE, DEFAULT_SETTINGS, createDefaultSave } from './io';
 import {
   MAX_RUN_HISTORY,
