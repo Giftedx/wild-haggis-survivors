@@ -10,7 +10,7 @@
 import { DEFAULT_VARIANT_KEY } from '../../data/variants';
 import { createEmptyDiscoveryLog } from '../../systems/DiscoveryLog';
 import { emitSaveFailure } from '../saveFailure';
-import { migrateSave } from '../save';
+import { migrateSave } from './migrations';
 import { SAVE_SCHEMA_VERSION } from './schema';
 import type { SaveData, SaveSettings } from './types';
 
