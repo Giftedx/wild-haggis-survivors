@@ -18,7 +18,6 @@ import {
   meetsVariantUnlockCondition,
 } from '../data/variants';
 import {
-  createEmptyDiscoveryLog,
   discoveryLogFromJSON,
   recordBanterHeard,
   recordBeastieKilled,
@@ -29,7 +28,6 @@ import {
   type DiscoveryLog,
   type RetroHistoryEntry,
 } from '../systems/DiscoveryLog';
-import { emitSaveFailure } from './saveFailure';
 import type {
   PersonalBests,
   RunHistoryContext,
@@ -50,24 +48,27 @@ export type {
   SaveSettings,
 } from './save/types';
 
-const SAVE_KEY = 'whs_save';
-export const SAVE_SCHEMA_VERSION = 17;
+import {
+  BURNS_EVOLUTION_THRESHOLD,
+  COASTAL_BIOMES,
+  LAST_DEATH_TTL_MS,
+  MAX_RUN_HISTORY,
+  REPLAY_HISTORY_CAP,
+  SAVE_SCHEMA_VERSION,
+} from './save/schema';
 
-/**
- * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander
- * unlock. Subset of the four live biomes (see `src/data/biomes.ts`).
- * `loch` = water; `pine` = forested island landscape (Scottish isles
- * carry Scots pine where heather wouldn't thrive). Bog + heather are
- * "moor" biomes and disqualify the run.
- */
-export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
+export {
+  BURNS_EVOLUTION_THRESHOLD,
+  COASTAL_BIOMES,
+  LAST_DEATH_TTL_MS,
+  MAX_RUN_HISTORY,
+  REPLAY_HISTORY_CAP,
+  SAVE_SCHEMA_VERSION,
+} from './save/schema';
 
-/**
- * V2 Track 3 — evolutions-threshold for the Burns's Wee Beastie unlock.
- * Seven of the eight weapons have an evolved form (bagpipes is
- * utility-only per CLAUDE.md); seven = the max achievable in one run.
- */
-export const BURNS_EVOLUTION_THRESHOLD = 7;
+import { createDefaultSave, DEFAULT_SAVE, DEFAULT_SETTINGS, loadSave, writeSave } from './save/io';
+
+export { createDefaultSave, loadSave, writeSave } from './save/io';
 
 /**
  * Returns true when the run was victorious AND the player visited a
@@ -84,87 +85,8 @@ export function isCoastalOnlyRun(
   return biomesVisited.every((id) => COASTAL_BIOMES.has(id));
 }
 
-/** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
-export const MAX_RUN_HISTORY = 20;
-
-
-
-
-
-const DEFAULT_SETTINGS: SaveSettings = {
-  soundOn: true,
-  musicOn: true,
-};
-
-const DEFAULT_SAVE: SaveData = {
-  schemaVersion: SAVE_SCHEMA_VERSION,
-  gold: 0,
-  upgrades: {},
-  unlockedVariants: [DEFAULT_VARIANT_KEY],
-  selectedVariant: DEFAULT_VARIANT_KEY,
-  totalRuns: 0,
-  bestTime: 0,
-  bestKills: 0,
-  totalKills: 0,
-  totalGoldEarned: 0,
-  bestCombo: 0,
-  victories: 0,
-  bestEndlessSeconds: 0,
-  bestIronmoorSeconds: 0,
-  cursedVictoriesCompleted: 0,
-  runsWithoutHealingCircleCompleted: 0,
-  runsInCoastalOnlyCompleted: 0,
-  runsWithAllEvolutionsCompleted: 0,
-  burnsNightFullEvoRunsCompleted: 0,
-  bossKillCounts: {},
-  firstRouteVisits: [],
-  cursedVictoriesByBoss: {},
-  runHistory: [],
-  seenEnemies: [],
-  firstTimeEventsFired: [],
-  discoveryLog: createEmptyDiscoveryLog(),
-  seenRunes: [],
-  settings: { ...DEFAULT_SETTINGS },
-};
 
 type SaveRecord = Record<string, unknown>;
-
-export function createDefaultSave(): SaveData {
-  return {
-    ...DEFAULT_SAVE,
-    upgrades: {},
-    unlockedVariants: [DEFAULT_VARIANT_KEY],
-    runHistory: [],
-    seenEnemies: [],
-    firstTimeEventsFired: [],
-    discoveryLog: createEmptyDiscoveryLog(),
-    seenRunes: [],
-    settings: { ...DEFAULT_SETTINGS },
-  };
-}
-
-export function loadSave(): SaveData {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return createDefaultSave();
-    return migrateSave(JSON.parse(raw));
-  } catch {
-    return createDefaultSave();
-  }
-}
-
-export function writeSave(data: SaveData): SaveData {
-  const normalized = migrateSave(data);
-
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(normalized));
-  } catch (err) {
-    // T131 — surface the failure so the UI can toast instead of silently failing.
-    emitSaveFailure('legacy_save', err);
-  }
-
-  return normalized;
-}
 
 export function recordRun(summary: RunSummary, context?: RunHistoryContext): RunResult {
   const currentSave = loadSave();
@@ -712,9 +634,6 @@ function coerceRoundedNonNegative(value: unknown, fallback: number): number {
   return Math.max(0, Math.round(value));
 }
 
-/** Ancestral Echo TTL — echoes older than this are silently dropped. */
-export const LAST_DEATH_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-
 function coerceLastDeath(raw: unknown): { x: number; y: number; ts: number } | undefined {
   if (!isRecord(raw)) return undefined;
   const x = typeof raw.x === 'number' && Number.isFinite(raw.x) ? raw.x : undefined;
@@ -979,8 +898,6 @@ function coerceRunHistory(value: unknown): RunHistoryEntry[] {
  * recent run" feature still works for the freshest runs while
  * marathon players don't blow the quota.
  */
-export const REPLAY_HISTORY_CAP = 5;
-
 function compactReplayBlobs(entries: RunHistoryEntry[]): RunHistoryEntry[] {
   if (entries.length <= REPLAY_HISTORY_CAP) return entries;
   const cutoff = entries.length - REPLAY_HISTORY_CAP;
