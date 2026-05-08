@@ -2,17 +2,8 @@ import * as Phaser from 'phaser';
 import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { getSettingsManager, type ISettingsData } from '../core/SettingsManager';
-import type { LocaleKey } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
-import { cycleLocaleKey, labelForLocale } from './settingsLocale';
-import { cycleColorblindMode, labelForColorblindMode } from './settingsColorblind';
-import { applyColorblindFilterToCanvas } from '../systems/accessibility/applyColorblindFilter';
-import {
-  banterChipStyle,
-  cycleBanterFrequency,
-  labelForBanterFrequency,
-} from './settingsBanterFrequency';
 import {
   resolveSettingsPalette,
   SETTINGS_TROUGH_STROKE,
@@ -35,6 +26,9 @@ import {
 } from './settingsDomFocusActions';
 import { addSliderRow } from './settings/addSliderRow';
 import { addToggleRow } from './settings/addToggleRow';
+import { addBanterFrequencyRow } from './settings/addBanterFrequencyRow';
+import { addLocaleRow } from './settings/addLocaleRow';
+import { addColorblindRow } from './settings/addColorblindRow';
 import type { SettingsRowContext } from './settings/rowContext';
 
 type SettingsGpRow =
@@ -669,78 +663,7 @@ export class SettingsScene extends Phaser.Scene {
    * Keeps the setting adjustable from gamepad via the same 'toggle' gp kind.
    */
   private addBanterFrequencyRow(): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
-
-    this.addRowLabel(t('ui.settings.banter_frequency'), y);
-
-    const chipW = this.isNarrowLayout() ? 104 : 110;
-    const chipH = 26;
-    const cx = this.rightControlCenter(chipW);
-    const cy = y + 18;
-    const initialStyle = banterChipStyle(this.working.banterFrequency);
-    const btn = this.add
-      .rectangle(cx, cy, chipW, chipH, initialStyle.fillColor, 1)
-      .setStrokeStyle(1.5, initialStyle.strokeColor, 0.9)
-      .setInteractive({ useHandCursor: true });
-    btn.setScale(this.uiScale);
-
-    const txt = this.add
-      .text(cx, cy, labelForBanterFrequency(this.working.banterFrequency), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: initialStyle.textColor,
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale);
-
-    const sync = () => {
-      const v = this.working.banterFrequency;
-      const style = banterChipStyle(v);
-      txt.setText(labelForBanterFrequency(v));
-      txt.setColor(style.textColor);
-      btn.setFillStyle(style.fillColor);
-      btn.setStrokeStyle(1.5, style.strokeColor, 0.9);
-    };
-
-    const cycle = () => {
-      audio.playClick();
-      this.working = {
-        ...this.working,
-        banterFrequency: cycleBanterFrequency(this.working.banterFrequency),
-      };
-      sync();
-      this.persistAndApply();
-      this.refreshDomActions();
-    };
-
-    btn.on('pointerdown', cycle);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', cycle);
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale.
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: cycle,
-      mark,
-    });
-    // DOM mirror — cycles forward through the four banter levels.
-    const banterLabel = t('ui.settings.banter_frequency');
-    this.domRowSyncs.push(() => ({
-      id: 'cycle-banter',
-      kind: 'cycle',
-      label: this.compactSettingsLabel(banterLabel),
-      valueText: labelForBanterFrequency(this.working.banterFrequency),
-      onActivate: cycle,
-    }));
+    addBanterFrequencyRow(this.rowContext());
   }
 
   /**
@@ -750,78 +673,12 @@ export class SettingsScene extends Phaser.Scene {
    * into `LOCALE_ORDER` without scene-level forks.
    */
   private addLocaleRow(): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
-
-    this.addRowLabel(t('ui.settings.language'), y);
-
-    const chipW = this.isNarrowLayout() ? 118 : 130;
-    const chipH = 26;
-    const cx = this.rightControlCenter(chipW);
-    const cy = y + 18;
-    const btn = this.add
-      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
-      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
-      .setInteractive({ useHandCursor: true });
-    btn.setScale(this.uiScale);
-
-    const current = (): LocaleKey => this.working.localeKey ?? 'en';
-    const localeLabel = () => this.isNarrowLayout() ? current().toUpperCase() : labelForLocale(current());
-    const txt = this.add
-      .text(cx, cy, localeLabel(), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#d4c2e8',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale);
-
-    const sync = () => {
-      txt.setText(localeLabel());
-    };
-
-    const cycle = () => {
-      audio.playClick();
-      this.working = { ...this.working, localeKey: cycleLocaleKey(current()) };
-      sync();
-      this.persistAndApply();
-      // Existing labels were rendered against the previous locale.
-      // scene.restart() doesn't reliably tear down the rendered display
-      // list before create() re-runs; stop + start forces a clean rebuild
-      // so every row picks up the new overlay.
-      this.scene.stop();
-      this.scene.start('Settings', returnTargetData(this.returnTo));
-    };
-
-    btn.on('pointerdown', cycle);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', cycle);
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale.
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: cycle,
-      mark,
+    addLocaleRow(this.rowContext(), {
+      restartScene: () => {
+        this.scene.stop();
+        this.scene.start('Settings', returnTargetData(this.returnTo));
+      },
     });
-    // DOM mirror — locale cycle. Activation restarts the scene which
-    // reinstalls the layer with the new locale's labels, so no
-    // refreshDomActions is needed here.
-    const langLabel = t('ui.settings.language');
-    this.domRowSyncs.push(() => ({
-      id: 'cycle-locale',
-      kind: 'cycle',
-      label: this.compactSettingsLabel(langLabel),
-      valueText: localeLabel(),
-      onActivate: cycle,
-    }));
   }
 
   /**
@@ -831,71 +688,7 @@ export class SettingsScene extends Phaser.Scene {
    * the scene so downstream palette references re-resolve cleanly.
    */
   private addColorblindRow(): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
-
-    this.addRowLabel(t('ui.settings.colorblind_mode'), y);
-
-    const chipW = this.isNarrowLayout() ? 118 : 130;
-    const chipH = 26;
-    const cx = this.rightControlCenter(chipW);
-    const cy = y + 18;
-    const btn = this.add
-      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
-      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
-      .setInteractive({ useHandCursor: true });
-    btn.setScale(this.uiScale);
-
-    const current = () => this.working.colorblindMode;
-    const txt = this.add
-      .text(cx, cy, labelForColorblindMode(current()), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#d4c2e8',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale);
-
-    const cycle = () => {
-      audio.playClick();
-      this.working = { ...this.working, colorblindMode: cycleColorblindMode(current()) };
-      txt.setText(labelForColorblindMode(current()));
-      this.persistAndApply();
-      // Apply live so player previews without a restart. Canvas ref
-      // taken from the game game instance.
-      const canvas = this.sys.game.canvas as HTMLCanvasElement | undefined;
-      if (canvas) applyColorblindFilterToCanvas(canvas, current());
-      this.refreshDomActions();
-    };
-
-    btn.on('pointerdown', cycle);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', cycle);
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale.
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: cycle,
-      mark,
-    });
-    // DOM mirror — colorblind cycle. Re-emit the action set after each
-    // step so the announce string carries the new mode label.
-    const cbLabel = t('ui.settings.colorblind_mode');
-    this.domRowSyncs.push(() => ({
-      id: 'cycle-colorblind',
-      kind: 'cycle',
-      label: this.compactSettingsLabel(cbLabel),
-      valueText: labelForColorblindMode(current()),
-      onActivate: cycle,
-    }));
+    addColorblindRow(this.rowContext());
   }
 
   /**
