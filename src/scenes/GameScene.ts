@@ -131,7 +131,6 @@ import {
   installReplayPlayback,
   installReplayRecording,
   recordReplayFrame,
-  tickReplayPlayback,
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
@@ -143,7 +142,7 @@ import {
 } from './game/seasonalRunStart';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
-import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
+import { tickFrameHeader } from './game/tickFrameHeader';
 import { updateRunHudFrame } from './game/updateRunHudFrame';
 import type { LevelUpFlow } from './game/LevelUpFlow';
 import type { RunLifecycle } from './game/RunLifecycle';
@@ -1488,59 +1487,29 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private updateInner(delta: number): void {
-    // T1 replay playback — advance the recorded cursor each tick before
-    // Player reads input. Pump in `replayBridgeInstall.ts`.
-    if (tickReplayPlayback({ replayInput: this.replayInput }).exhausted) {
+    const headerResult = tickFrameHeader({
+      getReplayInput: () => this.replayInput,
+      getPlayer: () => this.player,
+      timeManager: this.timeManager,
+      updateTickers: this.updateTickers,
+      getDebugOverlay: () => this.debugOverlay,
+      getCaptionOverlay: () => this.captionOverlay,
+      iFrameController: this.iFrameController,
+      runEndTickers: this.runEndTickers,
+      tempBuffBag: this.tempBuffBag,
+      getRuneSystemController: () => this.runeSystemController,
+      nodeWaveTracker: this.nodeWaveTracker,
+      getXPSystem: () => this.xpSystem,
+      getSpawnSystem: () => this.spawnSystem,
+      togglePause: () => this.toggleUiPause(),
+      runStressTest: () => tickStressTest(this),
+    }, delta);
+    if (headerResult.kind === 'replay-exhausted') {
       this.scene.start('Chronicle');
       return;
     }
-
-    // Gamepad Start / Options — same pause stack as ESC / P (see `toggleUiPause` guards).
-    if (this.player.consumePauseMenuEdge()) {
-      this.toggleUiPause();
-    }
-
-    this.timeManager.update(delta);
-
-    // Raw tickers always advance (UI/run-end domain)
-    this.updateTickers.tickRaw(delta);
-    this.debugOverlay?.update(delta);
-    // Captions tick on raw delta so they keep fading during pause / run-end.
-    this.captionOverlay?.update(delta);
-
-    // Scaled tickers freeze whenever gameplay is paused (including HIT_FREEZE which pauses physics
-    // without mutating timeScale).
-    const scaledDelta = this.timeManager.isGameplayPaused()
-      ? 0
-      : delta * this.timeManager.getEffectiveTimeScale();
-    this.updateTickers.tickScaled(scaledDelta);
-
-    this.iFrameController.tick(scaledDelta);
-    this.runEndTickers.tick(delta);
-
-    // M1 F4 — shrine-granted timed buffs. Ticks on scaledDelta so pause
-    // / HIT_FREEZE / slow-mo freeze the countdown the same way they
-    // freeze XP collection and spawn timing; a paused buff at 12s
-    // remaining stays at 12s until play resumes.
-    this.tempBuffBag.tick(scaledDelta);
-
-    // U1 Task 14 — rune condition tick. Evaluate each active rune against
-    // a fresh context built from live scene state; transitions fire
-    // apply/remove on the shared runeBag which Player / WeaponSystem read.
-    this.runeSystemController.tick(delta);
-
-    // M1 F1+F2 — poll pending encounter/elite waves every frame (raw
-    // bookkeeping; must tick regardless of the pause early-return below
-    // so a wave that resolved during a COUNTDOWN / pause window still
-    // finalizes the node).
-    this.nodeWaveTracker.tick();
-
-    tickAutoBattleSteering(this.player, this.xpSystem, this.spawnSystem);
-
-    // Dev-only: top-up entity pools + sample FPS when stress test is active.
-    tickStressTest(this);
-
-    if (this.timeManager.isGameplayPaused()) return;
+    if (headerResult.kind === 'paused') return;
+    const { scaledDelta } = headerResult;
 
     // Advance the "last time player was healthy" pointer — feeds the
     // low_hp_neglect classifier. Only tracks game-time, not wall-clock, so
