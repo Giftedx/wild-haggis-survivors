@@ -28,7 +28,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['entities/Player.ts', 1540], // current 1537 + 3 grace; hot path, factored via entities/ siblings
   ['systems/JuiceSystem.ts', 1065], // was 1380 → 1065 (Phase 6 sub-system split; current 1059 + 6 grace)
   ['scenes/SettingsScene.ts', 685], // was 1350 → 845 → 685 (Phase 7 re-baseline; row builders under scenes/settings/; current 677 + 8 grace)
-  ['systems/WeaponSystem.ts', 1335], // bumped 2026-05-09 (1330→1335) for Pibroch sting wire (`pibrochAligned` + audio.playPibrochSting); current 1332 + 3 grace; orchestrator, no obvious sub-system seams
+  ['systems/WeaponSystem.ts', 1360], // bumped 2026-05-09 (1335→1360) for Pibroch on-fire stamping (`currentPibrochAligned` helper + 5 fire-site stamps + `pibrochAlignedOverride` plumb on `dealDamageToEnemy`); current 1353 + 7 grace; orchestrator, no obvious sub-system seams
   ['scenes/GameOverScene.ts', 300], // was 1310 → 300 (Phase 7 re-baseline; panel/row/link/action builders under scenes/game-over/; current 292 + 8 grace)
   ['ui/HUD.ts', 1100], // was 1225 → 1100 (Phase 4 widget builders; current 1097 + 3 grace)
   ['systems/AudioSystem.ts', 1245], // bumped 2026-05-09 (1210→1245) for Pibroch sting (`playPibrochStingImmediate` + `playPibrochSting`); current 1239 + 6 grace; orchestrator, no obvious sub-system seams

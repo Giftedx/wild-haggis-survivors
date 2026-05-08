@@ -536,6 +536,7 @@ export class WeaponSystem {
       const { damage, isCrit } = this.effectiveDamage(w);
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, w.pierce, w.config.range, isCrit);
       proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
       this.applyProjectileVisual(proj, texture);
       this.spawnProjectileTrail(px, py, texture);
     }
@@ -585,6 +586,7 @@ export class WeaponSystem {
       proj.fire(px, py, tx, ty, w.config.projectileSpeed, damage, 0, w.config.range, isCrit);
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
       this.applyProjectileVisual(proj, 'haggis_ball');
       this.spawnProjectileTrail(px, py, 'haggis_ball');
     }
@@ -838,6 +840,7 @@ export class WeaponSystem {
 
       proj.fire(px, py, tx, ty, w.config.projectileSpeed * 1.3, dmg, 2, 800, isCrit);
       proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
       this.applyProjectileVisual(proj, 'thistle');
       this.spawnProjectileTrail(px, py, 'thistle');
     }
@@ -945,6 +948,7 @@ export class WeaponSystem {
     const weaponKey = w.config.key;
     proj.fire(px, py, target.x, target.y, w.config.projectileSpeed, dmg, w.pierce, w.config.range, isCrit);
     proj.setWeaponKey(weaponKey);
+    proj.setPibrochAligned(this.currentPibrochAligned());
     this.applyProjectileVisual(proj, 'caber');
     this.spawnProjectileTrail(px, py, 'caber');
 
@@ -1029,6 +1033,7 @@ export class WeaponSystem {
       );
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
+      proj.setPibrochAligned(this.currentPibrochAligned());
       this.applyProjectileVisual(proj, 'haggis_ball');
       this.spawnProjectileTrail(px, py, 'haggis_ball');
     }
@@ -1068,26 +1073,37 @@ export class WeaponSystem {
     }
   }
 
+  /**
+   * Pibroch Crescendo (DESIGN_IDEAS §1) — true when the live music engine
+   * is within ±80 ms of a quarter-note downbeat. Used both as the on-hit
+   * fallback for melee/aoe/aura sources and as the on-fire stamp captured
+   * by `Projectile.setPibrochAligned()` before flight. Engine-stopped →
+   * false (zero-period guard inside `isPibrochAligned`).
+   */
+  private currentPibrochAligned(): boolean {
+    return isPibrochAligned(
+      musicEngine.getMsSinceLastQuarterNote(),
+      musicEngine.getQuarterNotePeriodMs(),
+    );
+  }
+
   private dealDamageToEnemy(
     enemy: Enemy,
     damage: number,
     isCrit: boolean = false,
-    weaponKey: string = 'unknown'
+    weaponKey: string = 'unknown',
+    pibrochAlignedOverride?: boolean,
   ): void {
     // R1 M3 T20d + M4 + M4.5 P3 — per-hit damage modifier runs first so
     // damageDealt + enemy.takeDamage + damage logs all see the same
     // final number. Covers bronze_clasp, highland_torque elite mult,
     // fishermens_net (velocity-aware +30% when fleeing).
     //
-    // Pibroch Crescendo (DESIGN_IDEAS §1) layers ON TOP — hits aligned
-    // with the music's quarter-note downbeat get a small damage boost
-    // (rewards rhythm). Applied first so the rune/relic modifier and
-    // damage log all see the boosted base. Engine-stopped → no bonus
-    // (the helper returns false on a 0-period audio context).
-    const pibrochAligned = isPibrochAligned(
-      musicEngine.getMsSinceLastQuarterNote(),
-      musicEngine.getQuarterNotePeriodMs(),
-    );
+    // Pibroch Crescendo bonus is captured at fire-time for projectile
+    // weapons (the override) so flight-desync stops punishing rhythm
+    // play. Non-projectile sources (melee/aoe/aura/splash) fall back to
+    // a live query — for those, hit-time ≈ fire-time anyway.
+    const pibrochAligned = pibrochAlignedOverride ?? this.currentPibrochAligned();
     let finalDamage = applyPibrochDamage(damage, pibrochAligned);
     if (pibrochAligned) {
       // Soft grace-note chime; SFXManager 'pibroch_sting' caps at one
@@ -1278,7 +1294,13 @@ export class WeaponSystem {
     // Check if this hit should be processed (bouncing projectiles track per-enemy hits)
     if (proj.shouldSkipHit(enemy)) return;
 
-    this.dealDamageToEnemy(enemy, proj.getDamage(), proj.isCrit(), proj.getWeaponKey() || 'unknown');
+    this.dealDamageToEnemy(
+      enemy,
+      proj.getDamage(),
+      proj.isCrit(),
+      proj.getWeaponKey() || 'unknown',
+      proj.isPibrochAlignedAtFire(),
+    );
 
     // Caber Toss applies burn (3 dps for 3s)
     if (proj.getWeaponKey() === 'caber_toss') {

@@ -18,6 +18,13 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   private isBouncing: boolean = false;
   /** Time-to-live in ms for bouncing projectiles (range check is unreliable with bounces) */
   private bouncingTTL: number = 0;
+  /**
+   * Stamped at fire-time so projectile-flight desync no longer punishes
+   * rhythm play (DESIGN_IDEAS §1 Pibroch Crescendo, on-fire stamping).
+   * Reset to false on every fire() so a recycled pool slot can't carry
+   * a stale "yes" flag from the previous shot.
+   */
+  private pibrochAlignedAtFire: boolean = false;
   /** Tracks enemies already hit by this projectile (prevents per-frame multi-hits on one enemy for both piercing and bouncing projectiles). */
   private hitTargets = new WeakSet<Phaser.GameObjects.GameObject>();
   /** Optional callback fired when this projectile deactivates (used by Highland Games explosion) */
@@ -54,6 +61,7 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
     this.pierceCount = pierce;
     this.maxRange = maxRange;
     this.isBouncing = false;
+    this.pibrochAlignedAtFire = false;
     this.hitTargets = new WeakSet();
     this.onDeactivateCallback = null; // Clear any prior override
     // Clear weapon key — non-projectile fire paths (bouncing, homing,
@@ -176,4 +184,6 @@ export class Projectile extends Phaser.Physics.Arcade.Sprite {
   isCrit(): boolean { return this.critFlag; }
   getWeaponKey(): string { return this.weaponKey; }
   setWeaponKey(key: string): void { this.weaponKey = key; }
+  setPibrochAligned(aligned: boolean): void { this.pibrochAlignedAtFire = aligned; }
+  isPibrochAlignedAtFire(): boolean { return this.pibrochAlignedAtFire; }
 }
