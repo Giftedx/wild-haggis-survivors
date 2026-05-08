@@ -40,7 +40,7 @@ import { getVariantByKey, VariantDef, formatRunVariantLabel } from '../data/vari
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
-import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
+import { encodeSeed, type RNG } from '../utils/rng';
 import { createCaptureHandlers } from './game/captureHandlers';
 import type { ReplayRecorder } from '../replay/ReplayRecorder';
 import type { ReplayInput } from '../replay/ReplayInput';
@@ -106,7 +106,7 @@ import { canOpenPauseMenu } from './game/pauseGate';
 import type { PickupSpawner } from './game/PickupSpawner';
 import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
-import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
+import { Reliquary } from './game/reliquary';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
@@ -130,13 +130,12 @@ import { installRunStartCeremony } from './game/runStartCeremony';
 import {
   installReplayPlayback,
   installReplayRecording,
-  resetReplayBridge,
   recordReplayFrame,
   tickReplayPlayback,
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
-import { tearDownNodeMap } from './game/nodeMapLifecycle';
+import { resetTransientRunState as resetTransientRunStateImpl } from './game/resetTransientRunState';
 import { installNodeMapDispatch } from './game/installNodeMapDispatch';
 import {
   applySeasonalRunStartPostSpawn,
@@ -501,76 +500,69 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * any systems are constructed.
    */
   private resetTransientRunState(): void {
-    // T1 replay — drop the previous run's playback driver. Slice in `replayBridgeInstall.ts`.
-    ({
+    resetTransientRunStateImpl({
       replayInput: this.replayInput,
-      pendingReplayRoutes: this.pendingReplayRoutes,
-    } = resetReplayBridge({ replayInput: this.replayInput }));
-    this.iFrameController.reset();
-    this.pauseMenu?.close();
-    this.pauseMenu = null;
-    this.runScore.reset();
-    this.tempBuffBag.clear();
-    this.runActState.reset();
-    this.suppressNextNodeMapRoll = false;
-    // T401 slice 7 — node-map teardown (Option A: bare, no try/catch).
-    // Thrown destroys surface during dev as a partial-init signal.
-    tearDownNodeMap({
+      iFrameController: this.iFrameController,
+      pauseMenu: this.pauseMenu,
+      runScore: this.runScore,
+      tempBuffBag: this.tempBuffBag,
+      runActState: this.runActState,
       nodeMapSystem: this.nodeMapSystem,
       nodeWaveTracker: this.nodeWaveTracker,
       nodeMapUI: this.nodeMapUI,
       nodePromptUI: this.nodePromptUI,
-      setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
-      setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
+      nodeMarkerSystem: this.nodeMarkerSystem,
+      pendingRunSeed: this.pendingRunSeed,
+      updateTickers: this.updateTickers,
+      runEndTickers: this.runEndTickers,
+      victoryFade: this.victoryFade,
+      deathFade: this.deathFade,
+      hazardZones: this.hazardZones ?? null,
+      chestRegistry: this.chestRegistry,
+      announcedEvolutionReady: this.announcedEvolutionReady,
+      runStatsTracker: this.runStatsTracker,
+      deathCauseTracker: this.deathCauseTracker,
+      gameTickers: this.gameTickers ?? null,
+      musicStateScratch: this.musicStateScratch,
+      moorMomentsState: this.moorMomentsState,
+      standingStones: this.standingStones,
+      reliquary: this.reliquary,
+      ancestralEcho: this.ancestralEcho,
+      relicSlotUI: this.relicSlotUI,
+      setReplayInput: (v) => { this.replayInput = v; },
+      setPendingReplayRoutes: (v) => { this.pendingReplayRoutes = v; },
+      setPauseMenu: (v) => { this.pauseMenu = v; },
+      setNodeMapUI: (v) => { this.nodeMapUI = v; },
+      setNodePromptUI: (v) => { this.nodePromptUI = v; },
+      setSuppressNextNodeMapRoll: (v) => { this.suppressNextNodeMapRoll = v; },
+      setInteractivePromptIndex: (v) => { this.interactivePromptIndex = v; },
+      setChestDurationBonusMs: (v) => { this.chestDurationBonusMs = v; },
+      setRunRng: (v) => { this.runRng = v; },
+      setPendingRunSeed: (v) => { this.pendingRunSeed = v; },
+      setReliquarySpawnSec: (v) => { this.reliquarySpawnSec = v; },
+      setPendingChests: (v) => { this.pendingChests = v; },
+      setPickupDespawnHandles: (v) => { this.pickupDespawnHandles = v; },
+      setVictoryFade: (v) => { this.victoryFade = v; },
+      setDeathFade: (v) => { this.deathFade = v; },
+      setLastEmittedRunSecond: (v) => { this.lastEmittedRunSecond = v; },
+      setSubs: (v) => { this.subs = v; },
+      setRunName: (v) => { this.runName = v; },
+      setBurnsPlatterSpawned: (v) => { this.burnsPlatterSpawned = v; },
+      setBurnsPlatterPickedUpAtMs: (v) => { this.burnsPlatterPickedUpAtMs = v; },
+      setStandingStones: (v) => { this.standingStones = v; },
+      setStonesWarned: (v) => { this.stonesWarned = v; },
+      setReliquary: (v) => { this.reliquary = v; },
+      setAncestralEcho: (v) => { this.ancestralEcho = v; },
+      setRelicSlotUI: (v) => { this.relicSlotUI = v; },
+      setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
     });
-    this.nodeMarkerSystem.destroy();
-    this.interactivePromptIndex = -1;
-    this.chestDurationBonusMs = 0;
-    const runSeed = this.pendingRunSeed ?? randomSeed();
-    this.runRng = createRNG(runSeed);
-    this.pendingRunSeed = null;
-    // Reliquary spawn moment rolled once per run so the same seed always
-    // places the relic at the same second (daily runs + replay reproduce).
-    this.reliquarySpawnSec = chooseReliquarySpawnSec(this.runRng);
-    this.pendingChests = [];
-    this.pickupDespawnHandles = [];
-    this.updateTickers.clear();
-    this.runEndTickers.reset();
-    this.victoryFade?.destroy();
-    this.victoryFade = null;
-    this.deathFade?.destroy();
-    this.deathFade = null;
-    this.hazardZones?.reset();
-    this.lastEmittedRunSecond = -1;
-    this.chestRegistry.reset();
-    this.announcedEvolutionReady.clear();
-    this.runStatsTracker.reset();
-    this.deathCauseTracker.reset(0);
-    this.gameTickers?.reset();
-    this.subs = new SubscriptionBag();
-    this.musicStateScratch.hp = 0;
-    this.musicStateScratch.maxHp = 0;
-    this.musicStateScratch.gameTimeSec = 0;
-    this.musicStateScratch.enemyCount = 0;
-    this.musicStateScratch.comboCount = 0;
-    this.musicStateScratch.killCount = 0;
-    this.moorMomentsState.mercyLuckGranted = false;
-    this.runName = '';
-    // E1 M2 T10 — wipe Burns platter state so a recycled scene instance
-    // never claims it already spawned/collected across runs.
-    this.burnsPlatterSpawned = false;
-    this.burnsPlatterPickedUpAtMs = null;
-    this.standingStones?.destroy();
-    this.standingStones = null;
-    this.stonesWarned = false;
-    this.reliquary?.destroy();
-    this.reliquary = null;
-    this.ancestralEcho?.destroy();
-    this.ancestralEcho = null;
+
     // R1 — clear held Relics + dropped pickups + Fianna spirits before a
     // fresh run. A scene instance can be reused across runs; without this
     // the previous run's sporran (and any 10s-lifetime Fianna spirits)
-    // bleed into the next.
+    // bleed into the next. Construction needs `this` (Phaser scene) + 7
+    // hooks, so it stays at the call site rather than ballooning the
+    // helper's dep bag.
     if (!this.relicOrchestrator) {
       this.relicOrchestrator = new RelicOrchestrator(this, {
         getPlayer: () => this.player,
@@ -585,11 +577,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     } else {
       this.relicOrchestrator.resetForNewRun();
     }
-    this.relicSlotUI?.destroy();
-    this.relicSlotUI = null;
-    this.musicStateScratch.bossActive = false;
-    this.musicStateScratch.biomeTimbre = 0.45;
-    this.xpOverflowGoldBatch = 0;
   }
 
   init(data?: GameSceneInitData): void {
