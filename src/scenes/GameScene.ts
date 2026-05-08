@@ -84,9 +84,10 @@ import { BIOMES, type BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { shouldReseedAtSec } from '../systems/biomeReseedSchedule';
-import { FloraScatter } from '../systems/FloraScatter';
-import { WildlifeSystem } from '../systems/WildlifeSystem';
-import { MistLayer } from '../systems/MistLayer';
+import type { FloraScatter } from '../systems/FloraScatter';
+import type { WildlifeSystem } from '../systems/WildlifeSystem';
+import type { MistLayer } from '../systems/MistLayer';
+import { installWorldDressing } from './game/installWorldDressing';
 import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
@@ -687,24 +688,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       { onBiomeEnter: (biome) => this.handleBiomeEnteredForHaar(biome) },
     );
     // World dressing — decorations + atmospheric mist.
-    const bm = this.getBiomeManager();
-    if (bm) {
-      this.floraScatter?.destroy();
-      this.floraScatter = new FloraScatter();
-      this.floraScatter.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
-
-      this.wildlifeSystem?.destroy();
-      this.wildlifeSystem = new WildlifeSystem();
-      this.wildlifeSystem.create(this, bm, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT, this.runRng.branch());
-
-      this.mistLayer?.destroy();
-      this.mistLayer = new MistLayer();
-      this.mistLayer.create(
-        this, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT,
-        this.runRng.branch(),
-        this.settingsManager.load().reduceParticles,
-      );
-    }
+    const dressing = installWorldDressing({
+      scene: this,
+      biomeManager: this.getBiomeManager(),
+      runRng: this.runRng,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      reduceParticles: this.settingsManager.load().reduceParticles,
+      prior: {
+        floraScatter: this.floraScatter,
+        wildlifeSystem: this.wildlifeSystem,
+        mistLayer: this.mistLayer,
+      },
+    });
+    this.floraScatter = dressing.floraScatter;
+    this.wildlifeSystem = dressing.wildlifeSystem;
+    this.mistLayer = dressing.mistLayer;
 
     // Rune-pulse RNG — branched after world-dressing branches so the
     // mist/flora/wildlife sub-seeds keep their pre-2026-04-29 values.
