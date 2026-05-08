@@ -103,10 +103,6 @@ import {
   spawnReliquary as moorMomentsSpawnReliquary,
   showRunIdentityToast as moorMomentsShowRunIdentityToast,
 } from './game/moorMoments';
-import {
-  finalizeNodeVisit as finalizeNodeVisitHelper,
-  peekReplayChoiceFor as peekReplayChoiceForHelper,
-} from './game/nodeVisitFinalizer';
 import { PauseMenu } from './game/PauseMenu';
 import { canOpenPauseMenu } from './game/pauseGate';
 import type { PickupSpawner } from './game/PickupSpawner';
@@ -142,12 +138,12 @@ import {
 } from './game/replayBridgeInstall';
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
-import { installNodeMap, tearDownNodeMap } from './game/nodeMapLifecycle';
+import { tearDownNodeMap } from './game/nodeMapLifecycle';
+import { installNodeMapDispatch } from './game/installNodeMapDispatch';
 import {
   applySeasonalRunStartPostSpawn,
   buildSeasonalRunStartPlan,
 } from './game/seasonalRunStart';
-import { dispatchNodeTrigger } from './game/nodeTriggerHandlers';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
@@ -1305,60 +1301,35 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Phase B Biomes — paint biome regions on the minimap.
     this.minimap.setBiomeManager(this.getBiomeManager());
     // T401 slice 7 — node-map lifecycle install (UIs + trigger listener).
-    // Order is load-bearing: UIs constructed + setters fire BEFORE the
-    // trigger listener registers, because the listener body reads
-    // `this.interactivePromptIndex` and dispatches to handlers that may
-    // open `this.nodePromptUI` — both fields must be set first.
-    installNodeMap({
+    // Phase 5 Bucket 6 partial — onNodeTrigger callback hoisted to the
+    // helper so the dispatch context bag lives in one place.
+    installNodeMapDispatch({
       scene: this,
       nodeMapSystem: this.nodeMapSystem,
       nodeWaveTracker: this.nodeWaveTracker,
       setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
       setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
-      onNodeTrigger: (index, state) => {
-        if (state.visited[index]) return false;
-        // Block re-trigger while an interactive prompt is already resolving.
-        if (this.interactivePromptIndex >= 0) return false;
-        dispatchNodeTrigger(
-          {
-            player: this.player,
-            runRng: this.runRng,
-            runScore: this.runScore,
-            runModifiers: this.runModifiers,
-            tempBuffBag: this.tempBuffBag,
-            ownedPassives: this.ownedPassives,
-            nodeWaveTracker: this.nodeWaveTracker,
-            spawnSystem: this.spawnSystem,
-            relicSystem: this.relicSystem,
-            relicPickupSpawner: this.relicPickupSpawner,
-            weaponSystem: this.weaponSystem,
-            xpSystem: this.xpSystem,
-            upgradeUI: this.upgradeUI,
-            levelUpFlow: this.levelUpFlow,
-            juice: this.juice,
-            timeManager: this.timeManager,
-            nodePromptUI: this.nodePromptUI,
-            peekReplayChoiceFor: (k) => peekReplayChoiceForHelper(this.replayInput, k),
-            setInteractivePromptIndex: (n) => { this.interactivePromptIndex = n; },
-            finalizeNodeVisit: (i, k, c) => finalizeNodeVisitHelper(
-              {
-                nodeMap: this.nodeMapSystem,
-                runActState: this.runActState,
-                replayRecorder: this.replayRecorder,
-                replayInput: this.replayInput,
-                clock: this.spawnSystem,
-              },
-              i,
-              k,
-              c,
-            ),
-          },
-          state.nodes[index],
-          index,
-          state,
-        );
-        return true;
-      },
+      getPlayer: () => this.player,
+      getRunRng: () => this.runRng,
+      getRunScore: () => this.runScore,
+      getRunModifiers: () => this.runModifiers,
+      getTempBuffBag: () => this.tempBuffBag,
+      getOwnedPassives: () => this.ownedPassives,
+      getSpawnSystem: () => this.spawnSystem,
+      getRelicSystem: () => this.relicSystem,
+      getRelicPickupSpawner: () => this.relicPickupSpawner,
+      getWeaponSystem: () => this.weaponSystem,
+      getXPSystem: () => this.xpSystem,
+      getUpgradeUI: () => this.upgradeUI,
+      getLevelUpFlow: () => this.levelUpFlow,
+      getJuice: () => this.juice,
+      getTimeManager: () => this.timeManager,
+      getNodePromptUI: () => this.nodePromptUI,
+      getReplayInput: () => this.replayInput,
+      getReplayRecorder: () => this.replayRecorder,
+      getRunActState: () => this.runActState,
+      getInteractivePromptIndex: () => this.interactivePromptIndex,
+      setInteractivePromptIndex: (n) => { this.interactivePromptIndex = n; },
     });
     const resumeNodeTarget = resolveResumeNodeMapTarget(
       this.runActState.currentAct,
