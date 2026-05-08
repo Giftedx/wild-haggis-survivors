@@ -2062,6 +2062,10 @@ export const ui = {
       i: 'Distant bagpipes — or just ma heid?',
       j: 'Mind\'s wandered tae shortbread.',
       k: 'The moor breathes oot.',
+      l: 'They banned me in the States. Sheep-lung law, ken — flatterin\'.',
+      m: 'Tourist crouched by the gorse. Took a snap. Smiled fer them.',
+      n: 'Naturalist measured ma left leg. Then ma right. Smiled tae himsel\'.',
+      o: 'Field guide says I\'m no\' real. Aye, an\' yet — here we are.',
       iron_belly: {
         a: 'Even the wall needs a sit-down.',
         b: 'Belly\'s quiet — dinnae trust it fully.',

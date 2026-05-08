@@ -277,7 +277,7 @@ Concrete content derivable from the myth:
 - **Falls-if-turning gag** — see §1.
 - **The Haggis Wildlife Foundation** — a faux-naturalist NPC faction. Studies, counts, tags wild haggis. Issue field guides as collectible lore documents. Very-serious-delivery about a not-real animal. Comedy goldmine.
 - **Haggis Hurling sport event** — real-world "sport" (1977 invention by Robin Dunseath). Seasonal/Highland Games event where players compete for distance/accuracy. World record ~66m.
-- **"Banned in America" easter egg banter** — haggis meat is literally illegal in the USA (FDA rule on sheep lung). One-off banter: "They banned me in the States, ye ken." / "Nae welcome in New York." / "Aye, I'm contraband." (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §11.7.*)
+- ~~**"Banned in America" easter egg banter**~~ — ✅ shipped 2026-05-09 as four wild-haggis-myth lines (`l, m, n, o`) in the generic idle pool (`src/data/banter.ts` + `src/core/i18n/ui.ts` + SCS overlay). Hearth-toned reflections — sheep-lung law, tourist photo, naturalist measuring legs, "field guide says I'm no' real". Ride the existing idle round-robin alongside the original 11 lines. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §11.7.*)
 - **Address-to-a-Haggis quote banter** — a run-long banter thread that slowly recites Burns's "Address to a Haggis" in fragments over the course of a 25-minute run. Culminates at the final boss with "Fair fa' your honest, sonsie face…" spoken as the boss drops.
 - **Burns Night seasonal event** — see §13.
 - **Haggis Hunter's field notes** — collected lore documents where the haggis hunters describe the player-haggis in absurd naturalist terms ("Note the characteristic clockwise drift — the hallmark of Haggis scoticus dextrogyrus").

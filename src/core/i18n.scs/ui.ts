@@ -1644,6 +1644,10 @@ export const ui = {
       i: 'Far-aff pipes — or jist ma heid?',
       j: 'Mind\'s daunered tae shortbreid.',
       k: 'Tha muir braithes oot.',
+      l: 'Bannit in tha States. Sheep-lung law, ken — flatterin\'.',
+      m: 'Tourist crouchit by tha gorse. Took a snap. Gied them yin.',
+      n: 'Naturalist mizured ma left leg. Then ma richt. Smiled tae himsel.',
+      o: 'Field guide says I\'m no real. Aye, an yet — here we are.',
       iron_belly: {
         a: 'Even tha wa needs a sit-doon.',
         b: 'Belly\'s quait — dinnae trust it fully.',

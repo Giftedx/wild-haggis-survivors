@@ -992,6 +992,10 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.idle.i',
       'ui.banter.idle.j',
       'ui.banter.idle.k',
+      'ui.banter.idle.l',
+      'ui.banter.idle.m',
+      'ui.banter.idle.n',
+      'ui.banter.idle.o',
     ],
     keysByTag: {
       iron_belly: [
