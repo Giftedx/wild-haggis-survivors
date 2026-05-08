@@ -69,6 +69,7 @@ export interface UpdateRunHudFrameInput {
   seedCode?: string;
   goldBalance: number;
   activeCurseKey: CurseKey | null;
+  beforeUpdate?: () => void;
 }
 
 /**
@@ -93,6 +94,7 @@ export function updateRunHudFrame(input: UpdateRunHudFrameInput): number {
     seedCode,
     goldBalance,
     activeCurseKey,
+    beforeUpdate,
   } = input;
 
   hud.updateDPS(delta);
@@ -101,6 +103,7 @@ export function updateRunHudFrame(input: UpdateRunHudFrameInput): number {
   hud.setIronmoor(ironmoor);
   hud.setDaily(daily, seedCode);
   hud.setGold(goldBalance);
+  beforeUpdate?.();
 
   const weaponSlotCount = updateHudWeaponRows(weaponRows, weapons);
   hud.update(

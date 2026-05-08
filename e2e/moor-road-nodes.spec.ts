@@ -9,6 +9,15 @@ import { expect, test } from './fixtures';
 
 const CURRENT_SAVE_VERSION = 16;
 
+type NodeKillSnapshot = {
+  error?: string;
+  killedCount?: number;
+  visited0?: boolean;
+  outcomeCount?: number;
+  firstOutcomeKey?: string | null;
+  taggedRemaining?: number;
+};
+
 test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
   test('Act 1 node map generates + first-node proximity fires', async ({ page }) => {
     const pageErrors: string[] = [];
@@ -60,7 +69,7 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
       const g = (window as unknown as { game?: {
         scene: { getScene(k: string): unknown };
       } }).game;
-      if (!g) return null;
+      if (!g) return { error: 'no-game' };
       const game = g.scene.getScene('Game') as {
         getRunActState?(): {
           currentAct: number;
@@ -132,9 +141,12 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
     expect(afterProximity?.visited0).toBe(false);
     expect(afterProximity?.outcomeCount).toBe(0);
 
-    // Kill every enemy tagged for this encounter wave, then wait a frame
-    // so NodeWaveTracker.tick picks up the empty-roster and finalizes.
-    const afterKill = await page.evaluate(async () => {
+    // Kill every enemy tagged for this encounter wave, then poll in
+    // small page evaluations so the browser gets normal rAF turns
+    // between checks. This keeps the assertion about live game state
+    // while avoiding a single long in-page wait that some engines can
+    // starve under full-suite load.
+    const killStart = await page.evaluate((): NodeKillSnapshot => {
       const g = (window as unknown as { game?: {
         scene: { getScene(k: string): unknown };
       } }).game;
@@ -154,22 +166,68 @@ test.describe('M1 Moor Road multi-node — act 1 smoke', () => {
       const taggedEnemies = game.getSpawnSystem().getEnemyGroup().getChildren()
         .filter((e) => e.active && typeof e.nodeWaveTag === 'string' && e.nodeWaveTag.length > 0);
       const killedCount = taggedEnemies.length;
-      for (const e of taggedEnemies) e.takeDamageWithKillEvents(99999);
-      // Wait several frames so the tracker's tick finalizes the node +
-      // adds the outcome. 400 ms keeps headroom for concurrent-browser
-      // rAF throttling when the whole e2e suite runs in parallel.
-      await new Promise((r) => setTimeout(r, 400));
+      for (const e of taggedEnemies) {
+        // Sheep wool armor absorbs a full hit, so a single giant damage
+        // packet is not always lethal. Keep the kill path routed through
+        // takeDamageWithKillEvents so the live enemy-kill cascade still
+        // runs, but retry a few times until the pooled enemy goes inactive.
+        for (let attempts = 0; e.active && attempts < 5; attempts++) {
+          e.takeDamageWithKillEvents(999_999_999);
+        }
+      }
       const after = game.getRunActState();
       return {
         killedCount,
         visited0: after.currentActNodeMap?.visited[0] === true,
         outcomeCount: after.nodeOutcomes.length,
         firstOutcomeKey: after.nodeOutcomes[0]?.nodeKey ?? null,
+        taggedRemaining: game.getSpawnSystem().getEnemyGroup().getChildren()
+          .filter((e) => e.active && typeof e.nodeWaveTag === 'string' && e.nodeWaveTag.length > 0)
+          .length,
       };
     });
 
-    expect(afterKill?.killedCount ?? 0).toBeGreaterThan(0);
-    expect(afterKill?.visited0).toBe(true);
+    expect(killStart?.error).toBeUndefined();
+    expect(killStart?.killedCount ?? 0).toBeGreaterThan(0);
+
+    let afterKill: NodeKillSnapshot | null = killStart;
+    const waitStarted = Date.now();
+    while (Date.now() - waitStarted < 15_000) {
+      afterKill = await page.evaluate((): NodeKillSnapshot => {
+        const g = (window as unknown as { game?: {
+          scene: { getScene(k: string): unknown };
+        } }).game;
+        if (!g) return { error: 'no-game' };
+        const game = g.scene.getScene('Game') as {
+          getRunActState?(): {
+            currentActNodeMap: { visited: boolean[] } | null;
+            nodeOutcomes: { nodeKey: string; visitedAtGameTimeSec: number }[];
+          };
+          getSpawnSystem?(): { getEnemyGroup(): { getChildren(): Array<{
+            active: boolean;
+            nodeWaveTag: string | null;
+          }> } };
+        } | null;
+        if (!game?.getRunActState || !game?.getSpawnSystem) return { error: 'no-hooks' };
+        const after = game.getRunActState();
+        const taggedRemaining = game.getSpawnSystem().getEnemyGroup().getChildren()
+          .filter((e) => e.active && typeof e.nodeWaveTag === 'string' && e.nodeWaveTag.length > 0)
+          .length;
+        return {
+          visited0: after.currentActNodeMap?.visited[0] === true,
+          outcomeCount: after.nodeOutcomes.length,
+          firstOutcomeKey: after.nodeOutcomes[0]?.nodeKey ?? null,
+          taggedRemaining,
+        };
+      });
+      if (afterKill.visited0 === true && (afterKill.outcomeCount ?? 0) > 0) break;
+      await page.waitForTimeout(100);
+    }
+
+    expect(
+      afterKill?.visited0,
+      `Node wave did not finalize: ${JSON.stringify(afterKill)}`,
+    ).toBe(true);
     expect(afterKill?.outcomeCount).toBeGreaterThanOrEqual(1);
     expect(afterKill?.firstOutcomeKey).toBe(initialMap?.firstNodeKey);
 

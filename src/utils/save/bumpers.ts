@@ -232,11 +232,18 @@ export function flushBeastieKills(): void {
     for (const [key, n] of beastieKillBuffer) {
       for (let i = 0; i < n; i++) log = recordBeastieKilled(log, key);
     }
-    beastieKillBuffer.clear();
-    if (log === cur.discoveryLog) return; // every key was unseen
+    if (log === cur.discoveryLog) {
+      // Every key was unseen — drop the buffer so unseen-only kills
+      // don't accumulate forever and re-trigger autoflush every kill.
+      beastieKillBuffer.clear();
+      return;
+    }
     writeSave({ ...cur, discoveryLog: log });
+    // Only clear once writeSave has applied — if it ever throws, the
+    // catch leaves the buffer intact for the next flush to retry.
+    beastieKillBuffer.clear();
   } catch {
-    /* best-effort — keep the buffer populated so the next flush retries */
+    /* best-effort — buffer stays populated so the next flush retries */
   }
 }
 

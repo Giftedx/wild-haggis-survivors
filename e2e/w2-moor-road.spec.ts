@@ -195,8 +195,22 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     const bossKillBumpsAct = async (
       minute: number,
       expectedAct: 1 | 2 | 3,
-    ): Promise<{ act?: number; killed: boolean; killedKey?: string; picks?: number; pickerOpened?: boolean; bossKills?: number; lastGameTime?: number; bossesAlive?: string[] }> => {
-      return page.evaluate(async ({ minute, expectedAct }) => {
+      expectedBossKey: 'gordon' | 'tour_bus',
+    ): Promise<{
+      act?: number;
+      killed: boolean;
+      killedKey?: string;
+      picks?: number;
+      pickerOpened?: boolean;
+      bossKills?: number;
+      lastGameTime?: number;
+      bossesAlive?: string[];
+      lastActiveBossKey?: string;
+      paused?: boolean;
+      tokens?: string[];
+      targetSeen?: boolean;
+    }> => {
+      return page.evaluate(async ({ minute, expectedAct, expectedBossKey }) => {
         const dbg = (window as unknown as { DEBUG?: {
           skipToMinute(m: number): void;
           killCurrentBoss(): boolean;
@@ -204,11 +218,11 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
         if (!dbg) return { killed: false };
 
         dbg.skipToMinute(minute);
-        // Give rAF a few ticks to process the warning + 1.5s spawn delay
-        // under headless throttling before we start polling.
-        await new Promise((r) => setTimeout(r, 2500));
 
-        // Poll game time to confirm the skip took effect + director ticks.
+        // Poll game time and live boss identity. Timeline skips can queue
+        // adjacent warnings in the same frame (e.g. each_uisge + tour_bus),
+        // so only fire DEBUG.killCurrentBoss once the debug target is the
+        // act-gating boss this step is meant to exercise.
         const g0 = (window as unknown as { game: {
           scene: { scenes: Array<{ scene: { key: string } }> };
         } }).game;
@@ -222,15 +236,25 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
         let killedKey: string | undefined;
         let lastGameTime = 0;
         let bossesAlive: string[] = [];
+        let lastActiveBossKey: string | undefined;
+        let paused = false;
+        let tokens: string[] = [];
+        let targetSeen = false;
         const gsTyped = gs0 as unknown as {
+          timeManager?: {
+            isGameplayPaused?(): boolean;
+            getActiveTokenKeys?(): string[];
+          };
           spawnSystem?: {
             getGameTimeSec?(): number;
             findActiveBoss(): { getEnemyKey?(): string } | null;
             getEnemyGroup(): { getChildren(): Array<{ active: boolean; isBoss?(): boolean; getEnemyKey?(): string }> };
           };
         };
-        while (Date.now() - bossStart < 20_000) {
+        while (Date.now() - bossStart < 30_000) {
           lastGameTime = gs0.spawnSystem?.getGameTimeSec?.() ?? 0;
+          paused = gsTyped.timeManager?.isGameplayPaused?.() ?? false;
+          tokens = gsTyped.timeManager?.getActiveTokenKeys?.() ?? [];
           const liveBosses = gsTyped.spawnSystem?.getEnemyGroup?.().getChildren()
             .filter((e) => e.active && e.isBoss?.())
             .map((e) => e.getEnemyKey?.() ?? '?') ?? [];
@@ -238,8 +262,16 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
             bossesAlive = liveBosses;
           }
           const target = gsTyped.spawnSystem?.findActiveBoss?.();
-          killedKey = target?.getEnemyKey?.();
-          if (dbg.killCurrentBoss()) { killed = true; break; }
+          lastActiveBossKey = target?.getEnemyKey?.();
+          if (liveBosses.includes(expectedBossKey) || lastActiveBossKey === expectedBossKey) {
+            targetSeen = true;
+          }
+          killedKey = lastActiveBossKey;
+          if (lastActiveBossKey === expectedBossKey && dbg.killCurrentBoss()) {
+            killed = true;
+            killedKey = expectedBossKey;
+            break;
+          }
           await new Promise((r) => setTimeout(r, 100));
         }
 
@@ -293,19 +325,23 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
           pickerOpened,
           lastGameTime,
           bossesAlive,
+          lastActiveBossKey,
+          paused,
+          tokens,
+          targetSeen,
           act: gs.runActState?.currentAct,
           picks: gs.runActState?.pickerHistory.length,
           bossKills: gs.runScore?.bossKillCount,
         };
-      }, { minute, expectedAct });
+      }, { minute, expectedAct, expectedBossKey });
     };
 
     // Gordon spawns at 5:00. Skip to 6:00 so the 1.5s warning has room
     // to resolve under headless rAF throttling before we poll.
-    const act1 = await bossKillBumpsAct(6, 2);
+    const act1 = await bossKillBumpsAct(6, 2, 'gordon');
     expect(
       act1.killed,
-      `gordon was not killed — bossKills=${act1.bossKills} gameTime=${act1.lastGameTime}`,
+      `gordon was not killed — targetSeen=${act1.targetSeen}, active=${act1.lastActiveBossKey}, alive=${JSON.stringify(act1.bossesAlive)}, paused=${act1.paused}, tokens=${JSON.stringify(act1.tokens)}, bossKills=${act1.bossKills}, gameTime=${act1.lastGameTime}`,
     ).toBe(true);
     expect(
       act1.act,
@@ -318,8 +354,11 @@ test.describe('W2 Moor Road — ActIntermissionScene smoke', () => {
     await page.waitForTimeout(1_000);
 
     // Tour bus at 10:00. Skip past so the warning has headroom.
-    const act2 = await bossKillBumpsAct(11, 3);
-    expect(act2.killed, 'tour_bus was not killed').toBe(true);
+    const act2 = await bossKillBumpsAct(11, 3, 'tour_bus');
+    expect(
+      act2.killed,
+      `tour_bus was not killed — targetSeen=${act2.targetSeen}, active=${act2.lastActiveBossKey}, alive=${JSON.stringify(act2.bossesAlive)}, paused=${act2.paused}, tokens=${JSON.stringify(act2.tokens)}, bossKills=${act2.bossKills}, gameTime=${act2.lastGameTime}`,
+    ).toBe(true);
     expect(
       act2.act,
       `RunActState.current did not advance to act 3: killedKey=${act2.killedKey}, pickerOpened=${act2.pickerOpened}, picks=${act2.picks}, bossKills=${act2.bossKills}, gameTime=${act2.lastGameTime}, alive=${JSON.stringify(act2.bossesAlive)}`,

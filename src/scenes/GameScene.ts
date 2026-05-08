@@ -71,19 +71,6 @@ import {
 import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
-import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
-import {
-  applyFirstFootingToModifiers,
-  rollFirstFootingGift,
-  type FirstFootingGiftKind,
-} from '../systems/firstFooting';
-import { applyBeltaneBlessing } from '../systems/beltaneBlessing';
-import { applySamhainVeil } from '../systems/samhainVeil';
-import { applyStAndrewsBlessing } from '../systems/standrewsBlessing';
-import { applyBurnsNightBlessing } from '../systems/burnsNightBlessing';
-import { applyImbolcBlessing } from '../systems/imbolcBlessing';
-import { applyLammasBlessing } from '../systems/lammasBlessing';
-import { applyBrackenTurnBlessing } from '../systems/brackenTurnBlessing';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import { StatusFxPool } from '../systems/StatusFxPool';
@@ -162,12 +149,16 @@ import {
 import { applyCurseAndComposeStats } from './game/applyCurseAndComposeStats';
 import { installRunEndShutdown } from './game/runEndShutdown';
 import { installNodeMap, tearDownNodeMap } from './game/nodeMapLifecycle';
+import {
+  applySeasonalRunStartPostSpawn,
+  buildSeasonalRunStartPlan,
+} from './game/seasonalRunStart';
 import { dispatchNodeTrigger } from './game/nodeTriggerHandlers';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
 import { updateMusicStateScratch } from './game/updateMusicStateScratch';
-import { updateHudWeaponRows } from './game/updateHudWeaponRows';
+import { updateRunHudFrame } from './game/updateRunHudFrame';
 import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -748,59 +739,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeCurseKey = curseResult.activeCurseKey;
     const composedStats = curseResult.composedStats;
 
-    // Seasonal run-start hooks. Computed once per run, applied in two
-    // halves: modifier-bag deltas now (so live consumers see them from
-    // the first frame), heal + toast after Player construction below.
-    //
-    // - Hogmanay (DESIGN_IDEAS §1) → first-footing gift rolled off
-    //   `runRng`; one of shortbread / whisky / coal / silver.
-    // - Beltane → twin-fire blessing; fixed +10% goldMult + 15-HP
-    //   purification heal. Single blessing, no roll.
-    //
-    // Resume runs skip both — the seasonal hook fired at original run
-    // start. `disableSeasonalEvents` returns null from the lookup
-    // upstream so neither helper sees an opt-out event.
-    const seasonalEventKey = resumeRun
-      ? null
-      : getActiveSeasonalEventKey(
-          new Date(),
-          this.settingsManager.load().disableSeasonalEvents,
-        );
-    const firstFootingGift: FirstFootingGiftKind | null = resumeRun
-      ? null
-      : rollFirstFootingGift(this.runRng, seasonalEventKey);
-    const firstFootingResult = applyFirstFootingToModifiers(
-      firstFootingGift,
-      this.runModifiers,
-    );
-    const beltaneResult = applyBeltaneBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const samhainResult = applySamhainVeil(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const standrewsResult = applyStAndrewsBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const burnsResult = applyBurnsNightBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const imbolcResult = applyImbolcBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const lammasResult = applyLammasBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
-    const brackenResult = applyBrackenTurnBlessing(
-      seasonalEventKey,
-      this.runModifiers,
-    );
+    // Seasonal run-start hooks. Modifier-bag deltas apply now, before
+    // systems snapshot the bag; post-spawn heal/player bonuses/toast
+    // apply after Player construction below.
+    const seasonalRunStart = buildSeasonalRunStartPlan({
+      resumeRun: !!resumeRun,
+      disableSeasonalEvents: this.settingsManager.load().disableSeasonalEvents,
+      now: new Date(),
+      runRng: this.runRng,
+      runModifiers: this.runModifiers,
+    });
 
     // T1 Phase 3 — recorder construction + route-queue seeding. Slice in
     // `replayBridgeInstall.ts`; built here so the v2 blob captures the
@@ -844,76 +792,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getScene: () => this,
     });
 
-    // Seasonal post-spawn application — heal + toast. Deferred so the
-    // toast lands AFTER the run-start ceremony settles into the HUD
-    // instead of getting buried under the variant intro / FTUE banner.
-    // Hogmanay first-footing OR Beltane twin-fire — never both (the
-    // event windows don't overlap; the upstream lookup returns the
-    // first match if they ever did).
-    if (firstFootingResult.gift) {
-      if (firstFootingResult.extraStartingHpHeal > 0) {
-        this.player.heal(firstFootingResult.extraStartingHpHeal);
-      }
-      const giftKind = firstFootingResult.gift;
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(
-          t(`ui.firstFooting.toast.${giftKind}`),
-          '#f0d090',
-        );
-      });
-    } else if (beltaneResult.applied) {
-      this.player.heal(beltaneResult.extraStartingHpHeal);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.beltane.blessing_toast'), '#f0a060');
-      });
-    } else if (samhainResult.applied) {
-      this.player.heal(samhainResult.extraStartingHpHeal);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.samhain.blessing_toast'), '#a060c0');
-      });
-    } else if (standrewsResult.applied) {
-      this.player.heal(standrewsResult.extraStartingHpHeal);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.standrews.blessing_toast'), '#5a8acc');
-      });
-    } else if (burnsResult.applied) {
-      this.player.heal(burnsResult.extraStartingHpHeal);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.burnsNight.blessing_toast'), '#c89060');
-      });
-    } else if (imbolcResult.applied) {
-      this.player.heal(imbolcResult.extraStartingHpHeal);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.imbolc.blessing_toast'), '#f5e7b8');
-      });
-    } else if (lammasResult.applied) {
-      this.player.heal(lammasResult.extraStartingHpHeal);
-      // Lammas is the only seasonal that bumps Player.bonusXpMultiplier
-      // directly (RunModifiers has no XP slot — adding one would touch
-      // every consumer). Player.addXpMultiplier composes with the
-      // existing rune / permanent / variant XP stack.
-      this.player.addXpMultiplier(lammasResult.extraXpMultiplier);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.lammas.blessing_toast'), '#d4a040');
-      });
-    } else if (brackenResult.applied) {
-      this.player.heal(brackenResult.extraStartingHpHeal);
-      // Bracken-turn rides the same Player-accessor pattern as Lammas:
-      // addCritChance composes with the existing rune / permanent /
-      // variant crit stack without polluting RunModifiers.
-      this.player.addCritChance(brackenResult.extraCritChance);
-      this.time.delayedCall(1500, () => {
-        if (!this.scene.isActive('Game')) return;
-        this.juice.showToast(t('ui.brackenTurn.blessing_toast'), '#b87038');
-      });
-    }
+    // Seasonal post-spawn application. Toast is delayed so it lands
+    // after the run-start ceremony settles into the HUD.
+    applySeasonalRunStartPostSpawn(seasonalRunStart, {
+      heal: (amount) => this.player.heal(amount),
+      addXpMultiplier: (amount) => this.player.addXpMultiplier(amount),
+      addCritChance: (amount) => this.player.addCritChance(amount),
+      showToastAfter: (delayMs, key, color) => {
+        this.time.delayedCall(delayMs, () => {
+          if (!this.scene.isActive('Game')) return;
+          this.juice.showToast(t(key), color);
+        });
+      },
+    });
 
     // Camera before GrowthSystem so baseZoom matches the zoom used in-game (GrowthSystem reads cameras.main.zoom in its ctor).
     this.cameras.main.startFollow(this.player, true, 0.08, 0.08);
@@ -1578,9 +1469,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setNodeMapUI: (ui) => { this.nodeMapUI = ui; },
       setNodePromptUI: (ui) => { this.nodePromptUI = ui; },
       onNodeTrigger: (index, state) => {
-        if (state.visited[index]) return;
+        if (state.visited[index]) return false;
         // Block re-trigger while an interactive prompt is already resolving.
-        if (this.interactivePromptIndex >= 0) return;
+        if (this.interactivePromptIndex >= 0) return false;
         dispatchNodeTrigger(
           {
             player: this.player,
@@ -1619,6 +1510,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           index,
           state,
         );
+        return true;
       },
     });
     const resumeNodeTarget = resolveResumeNodeMapTarget(
@@ -2065,41 +1957,40 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // World boundary warning — red tint when near edges
     this.gameTickers.updateBoundaryWarning();
 
-    this.hud.updateDPS(delta);
-    this.hud.updateShield(this.player.hasShield());
-    this.hud.setAct(this.runActState.currentAct);
-    this.hud.setIronmoor(this.activeIronmoorRun);
-    this.hud.setDaily(this.runIsDaily, this.getRunSeedCode());
-    this.hud.setGold(this.runScore.getGoldBalance());
-    // Drift Mastery pip widget — surface the banked Grip count + flash
-    // the strip on burst-fire. Hidden until first bank so the widget
-    // doesn't clutter the HUD before the mechanic's been earned.
-    const driftState = this.player.getDriftMasteryState();
-    this.hud.setGripPips(driftState.pips, driftState.burstRemainingMs > 0);
-    // Whisky Breath stack readout — bar fills with stacks; ready-state
-    // (>= BREATH_STACKS_REQUIRED) pulses the bar to signal "press W".
-    const whiskyState = this.player.getWhiskyBreathState();
-    this.hud.setWhiskyStacks(
-      whiskyState.stacks,
-      WHISKY_STACKS_MAX,
-      isBreathReady(whiskyState),
-    );
-    const wn = updateHudWeaponRows(this.hudWeaponScratch, this.weaponSystem.getWeapons());
-    this.hud.update(
-      this.player.getHp(), this.player.getMaxHp(),
-      this.xpSystem.getLevel(),
-      this.xpSystem.getXPFraction(),
-      this.spawnSystem.getGameTimeSec(),
-      this.runScore.killCount,
-      this.spawnSystem.getActiveCount(),
-      this.player.getDashCharges(),
-      this.player.getMaxDashCharges(),
-      this.player.getDashCooldownFraction(),
-      this.hudWeaponScratch,
-      this.ownedPassives,
-      wn,
-      this.activeCurseKey,
-    );
+    updateRunHudFrame({
+      delta,
+      hud: this.hud,
+      player: this.player,
+      xpSystem: this.xpSystem,
+      spawnSystem: this.spawnSystem,
+      weaponRows: this.hudWeaponScratch,
+      weapons: this.weaponSystem.getWeapons(),
+      ownedPassives: this.ownedPassives,
+      killCount: this.runScore.killCount,
+      currentAct: this.runActState.currentAct,
+      ironmoor: this.activeIronmoorRun,
+      daily: this.runIsDaily,
+      seedCode: this.getRunSeedCode(),
+      goldBalance: this.runScore.getGoldBalance(),
+      activeCurseKey: this.activeCurseKey,
+      beforeUpdate: () => {
+        // Drift Mastery pip widget — surface the banked Grip count +
+        // flash the strip on burst-fire. Hidden until first bank so
+        // the widget doesn't clutter the HUD before the mechanic's
+        // been earned.
+        const driftState = this.player.getDriftMasteryState();
+        this.hud.setGripPips(driftState.pips, driftState.burstRemainingMs > 0);
+        // Whisky Breath stack readout — bar fills with stacks; ready
+        // state (>= BREATH_STACKS_REQUIRED) pulses the bar to signal
+        // "press W".
+        const whiskyState = this.player.getWhiskyBreathState();
+        this.hud.setWhiskyStacks(
+          whiskyState.stacks,
+          WHISKY_STACKS_MAX,
+          isBreathReady(whiskyState),
+        );
+      },
+    });
   }
 
   armIFrames(durationMs: number): void {

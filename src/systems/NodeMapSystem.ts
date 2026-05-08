@@ -253,7 +253,7 @@ export function directionToNextNode(
 // System class — per-run orchestrator
 // ----------------------------------------------------------------------------
 
-export type NodeTriggerListener = (index: number, state: NodeMapState) => void;
+export type NodeTriggerListener = (index: number, state: NodeMapState) => boolean | void;
 
 /**
  * NodeMapSystem — holds the active map for the current act and fires a
@@ -272,9 +272,11 @@ export class NodeMapSystem {
   private state: NodeMapState | null = null;
   private listener: NodeTriggerListener | null = null;
   private triggerRadius: number = NODE_TRIGGER_RADIUS_PX;
+  private consumedTriggers = new Set<number>();
 
   setMap(state: NodeMapState | null): void {
     this.state = state;
+    this.consumedTriggers.clear();
   }
 
   getMap(): NodeMapState | null {
@@ -294,7 +296,9 @@ export class NodeMapSystem {
     if (!this.state || !this.listener) return;
     const hit = findTriggerableNode(this.state, playerPos, this.triggerRadius);
     if (hit === null) return;
-    this.listener(hit.index, this.state);
+    if (this.consumedTriggers.has(hit.index)) return;
+    const accepted = this.listener(hit.index, this.state) !== false;
+    if (accepted) this.consumedTriggers.add(hit.index);
   }
 
   /** Marks the node at `index` as visited — callers pair this with a NodeOutcome log entry. */
@@ -302,11 +306,13 @@ export class NodeMapSystem {
     if (!this.state) return;
     if (index < 0 || index >= this.state.visited.length) return;
     this.state.visited[index] = true;
+    this.consumedTriggers.delete(index);
   }
 
   reset(): void {
     this.state = null;
     this.listener = null;
     this.triggerRadius = NODE_TRIGGER_RADIUS_PX;
+    this.consumedTriggers.clear();
   }
 }

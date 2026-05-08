@@ -76,7 +76,7 @@ import { NodePromptUI } from '../../ui/NodePromptUI';
  * `src/systems/NodeMapSystem.ts` so the helper does not pull the type
  * through a re-export.
  */
-export type NodeMapTriggerListener = (index: number, state: NodeMapState) => void;
+export type NodeMapTriggerListener = (index: number, state: NodeMapState) => boolean | void;
 
 /**
  * Inputs to {@link installNodeMap}. Setter callbacks (Option B-style

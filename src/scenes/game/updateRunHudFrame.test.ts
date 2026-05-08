@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { ActiveWeapon } from '../../systems/WeaponSystem';
 import { updateRunHudFrame, type RunHudSink } from './updateRunHudFrame';
@@ -97,6 +99,7 @@ describe('updateRunHudFrame', () => {
       seedCode: 'HAG-123',
       goldBalance: 17,
       activeCurseKey: 'thin_hide',
+      beforeUpdate: () => calls.push({ name: 'beforeUpdate', args: [] }),
     });
 
     expect(weaponSlotCount).toBe(2);
@@ -107,6 +110,7 @@ describe('updateRunHudFrame', () => {
       'setIronmoor',
       'setDaily',
       'setGold',
+      'beforeUpdate',
       'update',
     ]);
     expect(calls[0].args).toEqual([16.7]);
@@ -129,7 +133,8 @@ describe('updateRunHudFrame', () => {
       evolutionKey: 'legendary_claymore',
       cooldownFrac: 1,
     });
-    expect(calls[6].args).toEqual([
+    expect(calls[6].args).toEqual([]);
+    expect(calls[7].args).toEqual([
       42,
       55,
       7,
@@ -188,5 +193,14 @@ describe('updateRunHudFrame', () => {
       0,
       null,
     ]);
+  });
+});
+
+describe('GameScene HUD integration guard', () => {
+  it('routes the per-frame HUD update through updateRunHudFrame', () => {
+    const src = readFileSync(resolve(__dirname, '..', 'GameScene.ts'), 'utf8');
+
+    expect(src).toContain("import { updateRunHudFrame } from './game/updateRunHudFrame';");
+    expect(src).toContain('updateRunHudFrame({');
   });
 });

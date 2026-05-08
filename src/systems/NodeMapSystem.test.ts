@@ -246,24 +246,41 @@ describe('NodeMapSystem class', () => {
     const map = makeFixtureMap();
     sys.setMap(map);
     const triggered: number[] = [];
-    sys.setTriggerListener((idx) => triggered.push(idx));
+    sys.setTriggerListener((idx) => { triggered.push(idx); });
     sys.tick({ x: 1000, y: 1000 }); // out of range
     sys.tick({ x: 10, y: 0 });      // in range of n0
     expect(triggered).toEqual([0]);
   });
 
-  it('continues firing for the same node until markVisited is called', () => {
+  it('fires a node trigger once while the node event is unresolved', () => {
     const sys = new NodeMapSystem();
     sys.setMap(makeFixtureMap());
     const triggered: number[] = [];
-    sys.setTriggerListener((idx) => triggered.push(idx));
+    sys.setTriggerListener((idx) => { triggered.push(idx); });
     sys.tick({ x: 10, y: 0 });
+    sys.tick({ x: 10, y: 0 });
+    sys.tick({ x: 10, y: 0 });
+    expect(triggered).toEqual([0]);
+    sys.markVisited(0);
+    sys.tick({ x: 10, y: 0 });
+    expect(triggered).toEqual([0]); // no new trigger — node is visited
+  });
+
+  it('retries a trigger when the listener explicitly rejects it', () => {
+    const sys = new NodeMapSystem();
+    sys.setMap(makeFixtureMap());
+    const triggered: number[] = [];
+    let accepted = false;
+    sys.setTriggerListener((idx) => {
+      triggered.push(idx);
+      return accepted;
+    });
+    sys.tick({ x: 10, y: 0 });
+    sys.tick({ x: 10, y: 0 });
+    accepted = true;
     sys.tick({ x: 10, y: 0 });
     sys.tick({ x: 10, y: 0 });
     expect(triggered).toEqual([0, 0, 0]);
-    sys.markVisited(0);
-    sys.tick({ x: 10, y: 0 });
-    expect(triggered).toEqual([0, 0, 0]); // no new trigger — node is visited
   });
 
   it('no-ops with no map or no listener', () => {
@@ -290,7 +307,7 @@ describe('NodeMapSystem class', () => {
     expect(sys.getMap()).toBeNull();
     const fired: number[] = [];
     sys.setMap(makeFixtureMap());
-    sys.setTriggerListener((i) => fired.push(i));
+    sys.setTriggerListener((i) => { fired.push(i); });
     sys.tick({ x: 10, y: 0 });
     // listener reassigned after reset — should still fire
     expect(fired).toEqual([0]);
