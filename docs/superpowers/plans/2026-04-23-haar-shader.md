@@ -1,6 +1,6 @@
 # F1 — Shader pipeline + Haar fog implementation plan
 
-> **STATUS:** In progress (2026-04-24 Phaser 4 rebase).
+> **STATUS:** SHIPPED 2026-04-24 — Phaser 4 rebase complete; haar applied on ActIntermissionScene + biome-driven on GameScene. ShaderRegistry infra open for future shaders. +1.8 KB gzip.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

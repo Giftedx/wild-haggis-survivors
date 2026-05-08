@@ -22,6 +22,7 @@ records; a handful track follow-up rows that span multiple sessions.
 | `2026-04-24-m1-moor-nodes-followups.md` | Human playtest gate only | `project_m1_moor_nodes_status` |
 | `2026-04-24-r1-m45-manual-playtest-followups.md` | Balance playtest deferred | `project_r1_relics_status` |
 | `2026-04-24-v2-variants-followups.md` | Doric + Shetlandic native review, Burns Canongate audit | `project_v2_variants_status` |
+| `2026-04-30-codebase-restructure.md` | Phase 0 + Phase 1 shipped 2026-05-07; Phases 2–6 open | `project_restructure_phase1_status` |
 
 ## Shipped (historical execution records)
 

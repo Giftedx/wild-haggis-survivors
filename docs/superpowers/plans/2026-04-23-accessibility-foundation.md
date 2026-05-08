@@ -1,6 +1,6 @@
 # A1 — Accessibility foundation implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED M2–M6 2026-04-24 (PEAT audit M1 still human-gated — see `docs/A1_PEAT_AUDIT.md`). Original plan preserved below; deltas tracked in `docs/superpowers/plans/2026-04-24-a1-m5-manual-playtest-followups.md`.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

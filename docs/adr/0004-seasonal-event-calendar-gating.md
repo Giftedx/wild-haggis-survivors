@@ -1,9 +1,11 @@
 # ADR 0004 — SeasonalEventManager uses device-local date, not server time or in-game clock
 
-**Status:** Proposed (drafted with E1 flagship spec + plan, 2026-04-23)
-**Date:** 2026-04-23
+**Status:** Accepted
+**Date:** 2026-04-23 (proposed); 2026-04-24 (accepted on E1 ship)
 **Supersedes:** —
 **Superseded by:** —
+
+> **Update 2026-04-24:** E1 flagship shipped. `src/systems/SeasonalEventManager.ts` is live with device-local date math; `SEASONAL_EVENTS` cohort grew to eight (beltane, samhain, st_andrews, hogmanay, burns_night, imbolc, lammas, bracken_turn) by 2026-04-29 — the original calendar in this ADR documented six. Decision unchanged.
 
 ## Context
 

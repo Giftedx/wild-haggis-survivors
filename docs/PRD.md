@@ -1,15 +1,62 @@
 # Wild Haggis Survivors — PRD / Roadmap
 
-**Scope:** Stability, maintainability, and shipping velocity without changing
-core gameplay feel. Ralph-mode managed.
+**Scope:** Stability, maintainability, and shipping velocity without changing core gameplay feel.
 
-## Current Snapshot (2026-04-23 — research + planning pass complete)
+## Current Snapshot (2026-05-08)
 
-### This refresh
+### Stack
 
-**2026-04-23 delivered:** Research phase complete (8 deep docs, ~150k words) across roguelite patterns, Scottish content ×2, game feel, music/art tech, accessibility, cultural sensitivities, narrative design. Foundational docs refreshed (Soul Charter, Voice Card, Art Style Bible, Design Ideas, CLAUDE, AGENTS). Master plan updated with 10 new flagship rows + 1 polish ticket. **11 design specs** drafted at `docs/superpowers/specs/2026-04-23-*.md` + **11 execution plans** at `docs/superpowers/plans/2026-04-23-*.md`. Research-corpus index at `docs/research/README.md`. Two new ADRs (0003 ShaderRegistry, 0004 SeasonalEventManager). Fact corrections applied to pre-existing content (Gaelic census 57→70k, Scottish wildcat figures, Lemmings sales, Hades voice lines).
+- **Engine:** Phaser **4.0** + Vite 6 + TypeScript 6 + Vitest 3 (migrated 2026-04-23, see memory `project_phaser4_status` and `docs/superpowers/plans/2026-04-23-phaser4-migration.md`).
+- **Game version:** `2.3.2` (`package.json`).
+- **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes + curses + post-bell endless + W2 Moor Road acts + M1 multi-node graph) → Shop / MetaShop. CroftScene is the persistent hub between runs (H1, shipped 2026-04-24).
+- **Persistence:**
+  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 17` (see `src/utils/save/schema.ts`).
+  - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts:306`).
+  - `whs_game_settings` (`SettingsManager`) — settings schema v1.
+- **Tests:** ~462 vitest files; 4716+ test cases (per memory `project_repo_health`).
+- **TODO/FIXME markers in production:** zero.
+- **Production `as any` count:** zero (residual hits are doc-comment self-references).
 
-**Next flagship (pending stakeholder selection):** research recommends **A1 Accessibility foundation** first (non-optional before public ship), then **B1 Banter Density Push** (highest ROI + unblocks downstream content) + **R1 Relics** + **V2 Variants Pack**.
+### Flagship status (10 of 11 shipped; 1 partial; 3 deferred)
+
+| ID | Flagship | State (as of 2026-05-08) |
+|---|---|---|
+| **W2** Moor Road | ✅ Shipped 2026-04-16 |
+| **W18** Bilingual SCS | ✅ Shipped 2026-04-18 (Phase A + B; banter parity fence locks future additions) |
+| **W66** Ironmoor | ✅ Shipped 2026-04-16 |
+| **T1** Deterministic replay | ✅ Shipped 2026-04-17/18 (3 phases, see `project_t1_replay_status`) |
+| **F1** Shader pipeline + Haar | ✅ Shipped 2026-04-24 |
+| **H1** Gran's Croft | ✅ Shipped 2026-04-24 |
+| **M1** Moor Road multi-node | ✅ Shipped 2026-04-24 + all 8 follow-ups (F1–F8) |
+| **C1** Highland Almanac | ✅ Shipped 2026-04-24 (`9bd56cd`) |
+| **R1** Relics third tier | ✅ Shipped 2026-04-24 (`214e9ce`) — all 18 effects live |
+| **V2** Variants pack | ✅ Shipped 2026-04-24 (14-roster); 15th variant Witch's Hare added 2026-04-28 |
+| **U1** Runes | ✅ Shipped 2026-04-25 (30 runes); B5 Phases 0/1a/1b/2 grounded 31/31 except `edinburgh_rune` |
+| **E1** Seasonal events + Burns Night | ✅ Shipped 2026-04-24 (4 milestones; cohort grew 5→8 events 2026-04-29) |
+| **C2** Weapon lore pass | ✅ Shipped (truth-up 2026-04-26 — actual lore footprint 103 EN leaves; 30 SCS rune overlays + flavour parity fence). Native + Burns review still open. |
+| **A1** Accessibility foundation | 🟡 M2–M6 shipped 2026-04-24; **M1 PEAT audit human-gated** (see `docs/A1_PEAT_AUDIT.md`). |
+| **W71** Skeletal animation rig | 🟡 Phase 0 prototype shipped 2026-04-22; Phase 1 enemy animation + Phase 2 secondary motion shipped 2026-04-23 (memory `project_w71_phase2_status`). Full rig still open. |
+| **B5** Biomes charter | ✅ Phases 0–2 shipped 2026-04-29/30 (Seawrack `a160662`, Haar `4c97626`, Frost `24c9301`); Phase 3 Edinburgh blocked on cultural consultation. |
+| **W95** Mobile rework | ⏳ Not started — playtest matrix at `docs/MOBILE_DEVICE_TEST_MATRIX.md` pending hardware. |
+| **W27** Capture & share | ⏳ Phase 0 prototype shipped 2026-04-22; Phase 2 not yet scoped (see plan `2026-04-22-w27-capture-pipeline-phase2.md`). |
+| **P3** Cloud saves | ⏳ Worker + D1 backend prototype shipped via top-10 #3 (2026-04-27); UX + conflict resolution awaits stakeholder approval (ADR-0006 still draft). |
+| **B1** Banter density push | ✅ All phases (1–5) shipped 2026-04-26; native Gaelic review on 8 leaves still open. |
+
+### Active fronts
+
+- **T401 GameScene decomposition** — ongoing slice extractions; running journal at `docs/status/engine/SCENE_REFACTOR_GAP_AUDIT.md`. GameScene 3526 → ~3418 LOC across recent slices (memory `project_backlog_drain_2026_04_28_status`).
+- **Codebase restructure (2026-04-30)** — Phase 0+1 LOC ratchet + `save.ts` 8-module split shipped 2026-05-07 (6 commits, memory `project_restructure_phase1_status`); Phases 2–6 open.
+- **Cultural review gates** — Doric + Shetlandic native-speaker review (`docs/C2_DIALECT_REVIEW.md`), Burns Kinsley + Canongate audit (`docs/C2_BURNS_PROVENANCE.md`), 8 Gaelic banter leaves flagged.
+
+### Next flagship slot (open)
+
+No single flagship is on-deck. With A1, B1, R1, V2, F1, H1, M1, U1, E1, C1 done, remaining roadmap candidates are W71 full rig, W95 mobile, W27 Phase 2, P3 cloud, or scoping a new flagship. Per the rule of thumb (one flagship at a time), pick when there's owner + non-goals + kill criterion (see `docs/HUGE_INITIATIVES_MASTER_PLAN.md` §"Next steps").
+
+---
+
+## Previous snapshot (2026-04-23 — research + planning pass complete)
+
+**2026-04-23 delivered:** Research phase complete (8 deep docs, ~150k words) across roguelite patterns, Scottish content ×2, game feel, music/art tech, accessibility, cultural sensitivities, narrative design. Foundational docs refreshed. Master plan updated with 10 new flagship rows + 1 polish ticket. **11 design specs** drafted at `docs/superpowers/specs/2026-04-23-*.md` + **11 execution plans** at `docs/superpowers/plans/2026-04-23-*.md`. Research-corpus index at `docs/research/README.md`. Two new ADRs (0003 ShaderRegistry, 0004 SeasonalEventManager).
 
 ---
 

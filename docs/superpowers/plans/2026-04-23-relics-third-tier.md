@@ -1,6 +1,6 @@
 # R1 — Relics (third progression tier) implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED 2026-04-24 (commit `214e9ce`) — all 18 relics live; T29 histogram on `?devRelicStats=1`. M4.5 polish landed same day per `docs/superpowers/plans/2026-04-24-relics-m45-polish.md`.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

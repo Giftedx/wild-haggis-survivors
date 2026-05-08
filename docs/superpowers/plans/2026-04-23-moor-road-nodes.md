@@ -1,6 +1,6 @@
 # M1 — Moor Road multi-node expansion implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED 2026-04-24 — base + all 8 follow-ups (F1–F8) shipped same week per memory `project_m1_moor_nodes_status`. Only human playtest gate open.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

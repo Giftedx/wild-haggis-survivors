@@ -1,6 +1,6 @@
 # U1 — Rune upgrades (rule-stack card tier) implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED 2026-04-25 — full ship; all 30 runes live. B5 Phases 0+1a+1b+2 grounded post-ship (gloaming, seawrack, haar, frost). Edinburgh rune ungrounded pending B5 Phase 3 cultural consultation.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

@@ -1,6 +1,6 @@
 # C1 — Highland Almanac implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED 2026-04-24 (commit `9bd56cd`) — all 5 milestones live; MainMenu + Chronicle entry points + keyboard nav wired.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

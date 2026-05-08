@@ -1,6 +1,6 @@
 # B1 — Banter Density Push implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED — all phases (1–5) complete by 2026-04-26 (Phases 4 + 5 graduated 2026-04-26 per memory `project_b1_phase1_status`); native Gaelic review on 8 flagged leaves still open.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Content authoring is not agentic; prose phases ship via the author-review-commit workflow per `docs/BANTER_AUTHORING.md`.
 

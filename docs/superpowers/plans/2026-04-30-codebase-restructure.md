@@ -1,5 +1,7 @@
 # Codebase Restructure Implementation Plan
 
+> **STATUS:** Phase 0 + Phase 1 SHIPPED 2026-05-07 (LOC ratchet + `save.ts` 8-module split, 6 commits per memory `project_restructure_phase1_status`). Phases 2–6 open.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reduce structural debt across the seven biggest files in the codebase, install a regression guard, and continue the established helper-extraction pattern from `scenes/game/` and `entities/` rather than introducing new abstractions.

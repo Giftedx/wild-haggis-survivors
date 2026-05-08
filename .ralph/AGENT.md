@@ -1,6 +1,10 @@
 # AGENTS.md — Working Agreement for AI Agents
 
-This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bundled with Vite.
+> **Frozen 2026-04-14 (loop 92).** This file is the working brief used by the `ralph-loop` plugin during the early hardening phase. **It is no longer authoritative** — active development has moved to superpowers + dispatch workflows. The repo is now Phaser 4 (migrated 2026-04-23), test count is ~4716+ (was 828 here), and the project priorities have shifted considerably. Read the live docs first: [`/AGENTS.md`](../AGENTS.md) (root), [`/CLAUDE.md`](../CLAUDE.md) (root), [`/docs/PRD.md`](../docs/PRD.md), [`/docs/INDEX.md`](../docs/INDEX.md).
+>
+> Kept in tree because the `ralph-loop` skill expects this directory to exist; do not delete without coordinating with that plugin.
+
+This repo is **Wild Haggis Survivors**, a Phaser 3 + TypeScript browser game bundled with Vite. *(Phaser 3 reference is historical — current stack is Phaser 4; see notice above.)*
 
 ## How to run / verify
 - **Dev**: `npm run dev`

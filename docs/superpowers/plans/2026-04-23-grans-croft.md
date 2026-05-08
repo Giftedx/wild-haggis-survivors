@@ -1,6 +1,6 @@
 # H1 — Gran's Croft implementation plan
 
-> **STATUS:** Draft.
+> **STATUS:** SHIPPED 2026-04-24 (commits `659570b → 12689cf`, 24 files) — all 3 milestones (CroftScene + Gran/hearth/mantel/photos/drove/seasonal-props + save v14 + live hooks + e2e) in one session.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development.
 

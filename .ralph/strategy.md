@@ -1,5 +1,7 @@
 # Strategy — Wild Haggis Survivors
 
+> **Frozen.** Last ralph-loop run was loop 92 on 2026-04-14. Active strategy now lives in [`docs/PRD.md`](../docs/PRD.md) "Flagship status" and the `project_*_status` memory entries. Numbers below are stale (828 tests; current is ~4716+). Kept for ralph-plugin compatibility.
+
 **Last updated:** 2026-04-14 (loop 92 BUILD)
 
 ## Project Phase

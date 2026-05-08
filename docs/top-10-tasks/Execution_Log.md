@@ -144,7 +144,7 @@ _Updated as agents complete (notification-driven; not polled)._
   4. `59e3e10` Overcharge mythic-tier rarity — new `'mythic'` Rarity, `WeaponSystem.applyOvercharge`, `LevelUpFlow` handles `overcharge_weapon`, `buildCardPool` gains `isPostBell` + `overchargedWeaponKeys` context, mythic glow style, EN+SCS i18n.
   5. `79c6c05` Endless save round-trip migration tests — 4 tests pinning `bestEndlessSeconds` across schemaVersion bumps.
   6. `2dad0fc` Minimap biome region tints — `Minimap.setBiomeManager` paints 48×48 cell tints at alpha 0.35 under existing dot layer.
-- **Audit doc:** `docs/SCENE_REFACTOR_GAP_AUDIT.md` shipped before code.
+- **Audit doc:** `docs/SCENE_REFACTOR_AUDIT_2026-04-26.md` shipped before code (renamed 2026-05-08 to disambiguate from the running journal at `docs/status/engine/SCENE_REFACTOR_GAP_AUDIT.md`).
 - **New pure helpers (each with tests):** `src/systems/cursedSpawnRoll.ts`, `src/systems/postBellBossCadence.ts`, `src/systems/biomeReseedSchedule.ts`.
 - **CI:** lint clean, **4152/4152** vitest (was 4131 — +21 new tests), build clean.
 - **Bundle delta:** **+0.90 KB gzip** (310.14 → 311.04 KB) vs +15 KB target.
