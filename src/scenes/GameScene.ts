@@ -123,7 +123,7 @@ import { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
-import { pickAncestor } from '@/data/ancestorWhispers';
+import { showRunIntroToasts } from './game/runIntroToasts';
 import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
@@ -1445,35 +1445,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
-    // T1 replay — fire the watching-toast once JuiceSystem exists, and
-    // flip the persistent HUD chip on. The chip stays visible for the
-    // whole playback because the toast is transient.
-    if (this.replayInput) {
-      this.juice.showToast(t('ui.replay.watching_toast'), '#88ccff');
-      this.hud.setReplayMode(true);
-    }
-    // Ancestor whisper — 3s into the run, surface a quote from a past run's
-    // haggis. Only fires when history has at least one prior entry (no whisper
-    // on a player's very first run). Not fired during replay playback.
-    if (!this.replayInput) {
-      this.time.delayedCall(3000, () => {
-        if (!this.scene.isActive()) return;
-        const save = this.metaSaveManager.load();
-        const history = save.runHistory ?? [];
-        if (history.length === 0) return;
-        const pick = pickAncestor({
-          runHistory: history.map((h) => ({ name: h.name ?? '', seed: String(h.runSeed ?? '') })),
-          rngSample: Math.random(),
-        });
-        if (!pick || !pick.name) return;
-        const line = t(pick.whisperKey);
-        const kinKeys = ['Great-great-gran', 'Great-gran', 'Gran', 'Auntie', 'Uncle', 'Cousin', 'Elder', 'Forebear'] as const;
-        const kinKey = kinKeys[Math.floor(Math.random() * kinKeys.length)]!;
-        const kin = t(`ancestor.kin.${kinKey}`);
-        const msg = t('ancestor.toast', { kin, name: pick.name, line });
-        this.getJuice()?.showToast(msg, TOAST_COLORS.info);
-      });
-    }
+    showRunIntroToasts({
+      scene: this,
+      replayInput: this.replayInput,
+      juice: this.juice,
+      hud: this.hud,
+      loadMetaSave: () => this.metaSaveManager.load(),
+      getJuice: () => this.getJuice() ?? null,
+    });
 
     this.eventBusDispose?.();
     this.eventBusDispose = wireSceneEventBus({
