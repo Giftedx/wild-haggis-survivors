@@ -32,18 +32,21 @@ describe('wireXpSystemListeners', () => {
     const notifyCelebrate = vi.fn();
     const requestBanter = vi.fn();
     const caption = vi.fn();
-    let liveLevelUpFlow: { handleLevelUp: typeof handleLevelUp; handleEcho: ReturnType<typeof vi.fn> } | undefined;
+    // Deferred assignment — proves the wire helper resolves at fire time
+    // (line below `wireXpSystemListeners`), not capture time. Wrapping
+    // ref keeps `prefer-const` quiet without weakening the lazy contract.
+    const ref: { value?: { handleLevelUp: typeof handleLevelUp; handleEcho: ReturnType<typeof vi.fn> } } = {};
 
     wireXpSystemListeners({
       xpSystem: { events } as never,
-      getLevelUpFlow: () => liveLevelUpFlow as never,
+      getLevelUpFlow: () => ref.value as never,
       player: { notifyCelebrate } as never,
       getBanter: () => ({ request: requestBanter }) as never,
       getActiveVariantKey: () => 'classic_haggis',
       caption,
     });
 
-    liveLevelUpFlow = { handleLevelUp, handleEcho: vi.fn() };
+    ref.value = { handleLevelUp, handleEcho: vi.fn() };
 
     events.emit('levelup', 5);
     expect(handleLevelUp).toHaveBeenCalledWith(5);
@@ -56,18 +59,18 @@ describe('wireXpSystemListeners', () => {
     const events = makeEmitter();
     const handleEcho = vi.fn();
     const caption = vi.fn();
-    let liveLevelUpFlow: { handleLevelUp: ReturnType<typeof vi.fn>; handleEcho: typeof handleEcho } | undefined;
+    const ref: { value?: { handleLevelUp: ReturnType<typeof vi.fn>; handleEcho: typeof handleEcho } } = {};
 
     wireXpSystemListeners({
       xpSystem: { events } as never,
-      getLevelUpFlow: () => liveLevelUpFlow as never,
+      getLevelUpFlow: () => ref.value as never,
       player: { notifyCelebrate: vi.fn() } as never,
       getBanter: () => null,
       getActiveVariantKey: () => undefined,
       caption,
     });
 
-    liveLevelUpFlow = { handleLevelUp: vi.fn(), handleEcho };
+    ref.value = { handleLevelUp: vi.fn(), handleEcho };
 
     events.emit('echoReady');
     expect(handleEcho).toHaveBeenCalled();
