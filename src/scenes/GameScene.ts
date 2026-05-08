@@ -117,7 +117,7 @@ import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
-import { getRoute } from '../data/routes';
+import { resolveRouteLabels, resolveRelicLabels, resolveRuneLabels } from './game/runIdentityLabels';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
@@ -1039,22 +1039,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
       // T402 — Game Over run-identity radiator (parity with pause panel).
       getCurrentAct: () => this.runActState.currentAct,
-      getRouteLabels: () =>
-        this.runActState.pickerHistory
-          .map((p) => {
-            try { return t(getRoute(p.routeKey).labelKey); } catch { return null; }
-          })
-          .filter((s): s is string => typeof s === 'string'),
-      getRelicLabels: () =>
-        (this.relicSystem?.getSlots() ?? [])
-          .map((s) => s.def?.nameKey)
-          .filter((k): k is string => typeof k === 'string')
-          .map((k) => t(k)),
-      getRuneLabels: () =>
-        this.ownedRuneIds
-          .map((id) => RUNES[id]?.nameKey)
-          .filter((k): k is string => typeof k === 'string')
-          .map((k) => t(k)),
+      getRouteLabels: () => resolveRouteLabels(this.runActState.pickerHistory),
+      getRelicLabels: () => resolveRelicLabels(this.relicSystem ?? null),
+      getRuneLabels: () => resolveRuneLabels(this.ownedRuneIds),
       getBossKillCount: () => this.runScore.bossKillCount,
       getRoutePicks: () => this.runActState.pickerHistory,
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
@@ -1903,32 +1890,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           // Each line in pauseStats only renders when the data is non-
           // default, so the panel stays clean on a fresh act-1 run.
           getCurrentAct: () => this.runActState.currentAct,
-          getRouteLabels: () =>
-            this.runActState.pickerHistory
-              .map((p) => {
-                try { return t(getRoute(p.routeKey).labelKey); } catch { return null; }
-              })
-              .filter((s): s is string => typeof s === 'string'),
-          getRelicLabels: () =>
-            (this.relicSystem?.getSlots() ?? [])
-              .map((s) => s.def?.nameKey)
-              .filter((k): k is string => typeof k === 'string')
-              .map((k) => t(k)),
-          // T402 follow-up — variant label always emitted; pauseStats
-          // helper drops the line if the string is empty (default-variant
-          // runs render no variant line). Resolves the variant nameKey
-          // through `t()` here so the helper stays Phaser-free.
+          getRouteLabels: () => resolveRouteLabels(this.runActState.pickerHistory),
+          getRelicLabels: () => resolveRelicLabels(this.relicSystem ?? null),
           getVariantLabel: () => {
             try { return t(this.activeVariant.nameKey); } catch { return ''; }
           },
-          // T402 follow-up — owned rune ids → display labels. Looks up
-          // each id in RUNES; missing keys (forwards-compat for retired
-          // ids) drop silently rather than leaking 'runes.missing.name'.
-          getRuneLabels: () =>
-            this.ownedRuneIds
-              .map((id) => RUNES[id]?.nameKey)
-              .filter((k): k is string => typeof k === 'string')
-              .map((k) => t(k)),
+          getRuneLabels: () => resolveRuneLabels(this.ownedRuneIds),
           onResumeRequested: () => this.toggleUiPause(),
           onQuitRequested: () => this.runExit.abandonToMainMenu(),
           isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
