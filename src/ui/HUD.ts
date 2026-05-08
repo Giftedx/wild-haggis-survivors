@@ -40,6 +40,10 @@ import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
 import { textStyle } from './typography';
 import { computeMinTapHitArea } from '../utils/touchTargets';
+import type { HudWidgetContext } from './hud/hudWidget';
+import { buildHpBar } from './hud/hpBar';
+import { buildGripPips } from './hud/gripPips';
+import { buildWhiskyBar } from './hud/whiskyBar';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -231,52 +235,30 @@ export class HUD {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
     const style = textStyle('body', { color: COLORS_CSS.WARM_TAN });
+    const ctx: HudWidgetContext = {
+      scene: this.scene,
+      viewport: this.getUiViewport(),
+      depth: d,
+      uiScale: this.uiScale,
+      hpBarW: this.HP_BAR_W,
+      hpBarH: this.HP_BAR_H,
+      xpBarH: this.XP_BAR_H,
+      addEl: this.addEl.bind(this),
+    };
 
     // HP bar
-    this.hpBarBg = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, 0x1a1420)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
-    this.hpBarFill = this.addEl(this.scene.add.rectangle(12, 12, this.HP_BAR_W, this.HP_BAR_H, COLORS.HP_RED)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
-    this.hpText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W / 2, 12 + this.HP_BAR_H / 2, '',
-      textStyle('body', { color: COLORS_CSS.WARM_TAN }),
-    ).setOrigin(0.5).setScrollFactor(0).setDepth(d + 2));
+    const hpRefs = buildHpBar(ctx);
+    this.hpBarBg = hpRefs.bg;
+    this.hpBarFill = hpRefs.fill;
+    this.hpText = hpRefs.text;
 
-    // Drift Mastery pip strip — three 4 px-radius dots anchored to the
-    // RIGHT end of the HP bar so they don't compete with the level/gold
-    // column on the left. Hidden until `setGripPips()` first reports
-    // a pip > 0; until then the widget never paints. Each dot is its
-    // own Arc so the fill toggles instantly without a tween, and the
-    // whole strip can be lifted by a brief setScale tween on burst.
-    const gripBaseX = 12 + this.HP_BAR_W + 8;
-    const gripY = 12 + this.HP_BAR_H / 2;
-    for (let i = 0; i < 3; i++) {
-      const dot = this.addEl(
-        this.scene.add.circle(gripBaseX + i * 12, gripY, 4, 0x2a3344, 1)
-          .setStrokeStyle(1, 0x4a5566, 0.6)
-          .setScrollFactor(0).setDepth(d + 2)
-          .setVisible(false),
-      ) as Phaser.GameObjects.Arc;
-      this.gripPipDots.push(dot);
-    }
+    // Drift Mastery pip strip — anchored to the right end of the HP bar.
+    this.gripPipDots = buildGripPips(ctx);
 
-    // Whisky Breath stack bar — 36×3 px amber fill bar tucked just
-    // below the HP bar, left-anchored to the same x as the HP fill
-    // so the two readouts share a column. Hidden until first stack
-    // banked. Background is the same dark slate as grip-empty for
-    // visual continuity; fill is whisky-amber matching the breath
-    // VFX (`0xd4a040`). The bar lives below the HP bar at y = 33.
-    const WHISKY_BAR_W = 36;
-    const WHISKY_BAR_H = 3;
-    const whiskyBarX = 12;
-    const whiskyBarY = 12 + this.HP_BAR_H + 1;
-    this.whiskyBarBg = this.addEl(
-      this.scene.add.rectangle(whiskyBarX, whiskyBarY, WHISKY_BAR_W, WHISKY_BAR_H, 0x2a2218, 1)
-        .setOrigin(0, 0).setScrollFactor(0).setDepth(d).setVisible(false),
-    );
-    this.whiskyBarFill = this.addEl(
-      this.scene.add.rectangle(whiskyBarX, whiskyBarY, 0, WHISKY_BAR_H, 0xd4a040, 1)
-        .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false),
-    );
+    // Whisky Breath stack bar — sits just below the HP bar.
+    const whiskyRefs = buildWhiskyBar(ctx);
+    this.whiskyBarBg = whiskyRefs.bg;
+    this.whiskyBarFill = whiskyRefs.fill;
 
     // Level
     this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
