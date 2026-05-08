@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { evolutionRecipeToUpgradeCard, findEligibleChestEvolution } from './evolutionChest';
@@ -99,11 +99,18 @@ describe('weapon evolution (chest-gated)', () => {
 
 describe('weapon icon texture consistency (static check)', () => {
   // Icons were extracted out of BootScene.ts into src/art/sprites/icons/
-  // as part of the 2026-04-19 asset refactor. Tests scan both locations
-  // so this check stays green across further moves.
+  // as part of the 2026-04-19 asset refactor; the 2026-05-08 Phase 2.2
+  // restructure further split weapons.ts into per-icon files under
+  // weapons/. Scan all relevant sources so this check stays green
+  // across further moves.
+  const weaponsDir = join(__dirname, '..', 'art', 'sprites', 'icons', 'weapons');
+  const weaponSources = readdirSync(weaponsDir)
+    .filter((f) => f.endsWith('.ts'))
+    .map((f) => readFileSync(join(weaponsDir, f), 'utf-8'));
   const sources = [
     readFileSync(join(__dirname, '..', 'scenes', 'BootScene.ts'), 'utf-8'),
     readFileSync(join(__dirname, '..', 'art', 'sprites', 'icons', 'weapons.ts'), 'utf-8'),
+    ...weaponSources,
   ].join('\n');
 
   it('every base weapon has an icon texture baked somewhere', () => {
