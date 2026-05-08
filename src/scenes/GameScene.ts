@@ -152,8 +152,9 @@ import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
 import { updateRunHudFrame } from './game/updateRunHudFrame';
-import { LevelUpFlow } from './game/LevelUpFlow';
-import { RunLifecycle } from './game/RunLifecycle';
+import type { LevelUpFlow } from './game/LevelUpFlow';
+import type { RunLifecycle } from './game/RunLifecycle';
+import { installRunFlow } from './game/installRunFlow';
 import { RelicOrchestrator } from './game/RelicOrchestrator';
 import { RELICS, type RelicKey } from '../data/relics';
 import { createHighlandTerrain } from './game/highlandTerrain';
@@ -1213,15 +1214,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onWeatherShutdown: () => { this.weather = null; },
       onHazardsShutdown: () => { this.hazards = null; },
     }));
-    this.levelUpFlow = new LevelUpFlow(this, {
+    // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.
+    ({ levelUpFlow: this.levelUpFlow, runLifecycle: this.runLifecycle } = installRunFlow({
+      scene: this,
       getPlayer: () => this.player,
-      getWeaponSystem: () => this.weaponSystem,
       getXPSystem: () => this.xpSystem,
       getSpawnSystem: () => this.spawnSystem,
       getJuice: () => this.juice,
+      getTimeManager: () => this.timeManager,
+      getUiViewport: () => this.getUiViewport(),
+      armIFrames: (ms) => this.armIFrames(ms),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+      getWeaponSystem: () => this.weaponSystem,
       getStatusFxPool: () => this.statusFxPool,
       getTutorialSystem: () => this.tutorialSystem,
-      getTimeManager: () => this.timeManager,
       getUpgradeUI: () => this.upgradeUI,
       getRunRng: () => this.runRng,
       getOwnedPassives: () => this.ownedPassives,
@@ -1236,10 +1242,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         // level-up cards like "destroy N nearest enemies."
         for (let i = 0; i < n; i++) this.runScore.incrementKillCount();
       },
-      getUiViewport: () => this.getUiViewport(),
-      armIFrames: (ms) => this.armIFrames(ms),
       drainPendingChests: () => this.drainPendingChests(),
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       requestBanter: (ctx, tag) => this.requestBanter(ctx, tag),
       getDiscoveryRunId: () => this.discoveryRunId(),
       tryChestLegendaryRelicOverride: () => this.relicOrchestrator.tryChestOverride(),
@@ -1247,22 +1250,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       isBossKilledThisRun: () => this.runScore.bossKillCount > 0,
       getOwnedRuneIds: () => this.ownedRuneIds,
       grantRune: (runeId) => this.grantRune(runeId),
-      // Phase B Endless — Overcharge mythic-tier card hooks.
       isPostBell: () => this.runLifecycle?.isPostBell() ?? false,
       getOverchargedWeaponKeys: () => this.weaponSystem.getOverchargedKeys(),
-    });
-    this.runLifecycle = new RunLifecycle(this, {
-      getPlayer: () => this.player,
-      getSpawnSystem: () => this.spawnSystem,
-      getXPSystem: () => this.xpSystem,
-      getJuice: () => this.juice,
-      getTimeManager: () => this.timeManager,
       getSaveManager: () => this.metaSaveManager,
       getDeathCauseTracker: () => this.deathCauseTracker,
       getBanter: () => this.banter,
       getSettingsManager: () => this.settingsManager,
       getCamera: () => this.cameras.main,
-      getUiViewport: () => this.getUiViewport(),
       getVictoryPending: () => this.runScore.victoryPending,
       setVictoryPending: (v) => { this.runScore.victoryPending = v; },
       invalidatePendingVictoryTicker: () => { this.runScore.nextVictoryDelayGen(); },
@@ -1275,8 +1269,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setVictoryResultTicker: (ms, cb) => this.runEndTickers.armVictoryResultOverlay(ms, cb),
       setDeathResultTicker: (ms, cb) => this.runEndTickers.armDeathResultOverlay(ms, cb),
       setVictoryDeferMs: (ms) => this.runEndTickers.armVictoryDefer(ms, () => this.runLifecycle.handleVictory()),
-      armIFrames: (ms) => this.armIFrames(ms),
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       buildRunSummary: (victory) => this.runExit.buildSummary(victory),
       buildRunHistoryContext: () => this.runHistoryRecorder.buildContext(),
       buildGameOverPayload: (mode, s, r, pb, dc) => this.runExit.buildGameOverPayload(mode, s, r, pb, dc),
@@ -1290,7 +1282,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
       onActComplete: (actN) => this.launchActIntermission(actN),
       isIronmoorRun: () => this.activeIronmoorRun,
-    });
+    }));
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
