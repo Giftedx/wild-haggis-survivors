@@ -130,6 +130,36 @@ export class AudioSystem {
     this.gatedSfx('hit', () => this.playHitImmediate());
   }
 
+  /**
+   * Pibroch Crescendo grace-note sting — soft A5 chime layered under the
+   * regular hit SFX whenever a hit lands within the ±80 ms downbeat
+   * window (`isPibrochAligned`). Pure sine + quick exponential decay so
+   * the sting reads as ceremonial-pibroch grace rather than alert. Routes
+   * through SFXManager `pibroch_sting` so AOE bursts on a single
+   * downbeat collapse to one chime per quarter-note.
+   */
+  playPibrochStingImmediate(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880; // A5 grace-note
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(0.06, t + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t);
+    osc.stop(t + 0.2);
+  }
+
+  playPibrochSting(): void {
+    this.gatedSfx('pibroch_sting', () => this.playPibrochStingImmediate());
+  }
+
   playKillImmediate(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();

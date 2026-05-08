@@ -1084,13 +1084,16 @@ export class WeaponSystem {
     // (rewards rhythm). Applied first so the rune/relic modifier and
     // damage log all see the boosted base. Engine-stopped → no bonus
     // (the helper returns false on a 0-period audio context).
-    let finalDamage = applyPibrochDamage(
-      damage,
-      isPibrochAligned(
-        musicEngine.getMsSinceLastQuarterNote(),
-        musicEngine.getQuarterNotePeriodMs(),
-      ),
+    const pibrochAligned = isPibrochAligned(
+      musicEngine.getMsSinceLastQuarterNote(),
+      musicEngine.getQuarterNotePeriodMs(),
     );
+    let finalDamage = applyPibrochDamage(damage, pibrochAligned);
+    if (pibrochAligned) {
+      // Soft grace-note chime; SFXManager 'pibroch_sting' caps at one
+      // per ~quarter-note so AOE bursts on a downbeat collapse cleanly.
+      audio.playPibrochSting();
+    }
     if (this.hitDamageModifier) {
       const body = enemy.body as Phaser.Physics.Arcade.Body | null;
       const vx = body?.velocity?.x ?? 0;

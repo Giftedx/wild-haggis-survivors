@@ -40,8 +40,8 @@ Passive guards (already-tight files on the ratchet, not primary deflation target
 |------|-----------------|------|
 | `entities/Enemy.ts` | 1570 | Hot path; factored via `entities/` siblings |
 | `entities/Player.ts` | 1540 | Hot path; factored via `entities/` siblings |
-| `systems/AudioSystem.ts` | 1210 | Orchestrator; no obvious sub-system seams |
-| `systems/WeaponSystem.ts` | 1330 | Orchestrator; sub-system seams thin |
+| `systems/AudioSystem.ts` | 1245 | Orchestrator; no obvious sub-system seams. Bumped 2026-05-09 (1210→1245) for Pibroch sting (`playPibrochStingImmediate` / `playPibrochSting`) |
+| `systems/WeaponSystem.ts` | 1335 | Orchestrator; sub-system seams thin. Bumped 2026-05-09 (1330→1335) for Pibroch sting wiring (`pibrochAligned` const + `audio.playPibrochSting()`) |
 | `data/banter.ts` | 2240 | Pure data, parity-fenced |
 
 ## Updating
@@ -61,7 +61,7 @@ The CI gate fires when a file grows past its ceiling. Either split the file or o
 These sit on the ratchet at their natural size as anti-regrowth guardrails, not
 as primary deflation targets:
 
-- `entities/Player.ts` — heavily factored via `entities/` siblings (driftMastery, whiskyBreath, burnLeapInput, dashReverseStumble, mantlePulse, playerLevelScaling, bagpipeLure, softBoundarySteer, playerGrowthScale, runeConsumer). Marginal yield, hot-path risk.
+- `entities/Player.ts` — heavily factored via `entities/` siblings (driftMastery, whiskyBreath, burnLeapInput, dashReverseStumble, mantlePulse, Player.mantle, playerLevelScaling, softBoundarySteer, playerGrowthScale, xpGemMagnet, xpGemTier) plus cross-system consumers (`systems/runes/runeConsumer.ts`). Marginal yield, hot-path risk.
 - `entities/Enemy.ts` — same shape as Player, hot path.
 - `data/banter.ts` — pure data, parity-fenced; splitting would move bytes without architectural payoff.
 - `systems/AudioSystem.ts` — orchestrator with no obvious sub-system seams.

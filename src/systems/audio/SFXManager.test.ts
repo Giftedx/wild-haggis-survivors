@@ -33,6 +33,24 @@ describe('SFXManager', () => {
     expect(plays).toBe(cfg.maxConcurrent + 1);
   });
 
+  it('pibroch_sting collapses bursts to a single chime per quarter-note window', () => {
+    let t = 0;
+    const mgr = new SFXManager(() => t);
+    const cfg = SFX_LIMITS.pibroch_sting;
+    expect(cfg.maxConcurrent).toBe(1);
+    let plays = 0;
+    // Burst of 30 aligned hits inside the same downbeat window.
+    for (let i = 0; i < 30; i++) {
+      mgr.tryPlay('pibroch_sting', () => { plays++; });
+    }
+    expect(plays).toBe(1);
+    // Advance past the window — next aligned hit on a fresh downbeat
+    // should chime again.
+    t += cfg.windowMs + 1;
+    mgr.tryPlay('pibroch_sting', () => { plays++; });
+    expect(plays).toBe(2);
+  });
+
   it('clear() resets gates', () => {
     const mgr = new SFXManager(() => 0);
     let plays = 0;

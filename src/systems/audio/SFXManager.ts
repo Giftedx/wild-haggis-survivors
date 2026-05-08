@@ -22,6 +22,10 @@ export const SFX_LIMITS: Record<string, SfxLimit> = {
   click: { maxConcurrent: 10, windowMs: 100 },
   /** Timed moor hearth beat — rare; allow two if schedules overlap oddly. */
   moor_moment: { maxConcurrent: 2, windowMs: 400 },
+  /** Pibroch grace-note chime on beat-aligned hits — at most one per
+   *  ~quarter-note (240ms ≈ a 250bpm cap, far above the engine's 90bpm
+   *  default) so AOE bursts on a downbeat don't layer multiple stings. */
+  pibroch_sting: { maxConcurrent: 1, windowMs: 240 },
 };
 
 const DEFAULT_LIMIT: SfxLimit = { maxConcurrent: 24, windowMs: 50 };

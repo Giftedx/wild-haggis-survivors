@@ -11,7 +11,10 @@
  * This module is framework-free and side-effect-free: callers feed in
  * `msSinceLastBeat` + `periodMs` (queried from the music engine) and
  * receive an alignment boolean. WeaponSystem.dealDamageToEnemy applies
- * the multiplier; the engine + audio integration ride this helper.
+ * the damage multiplier AND fires a soft A5 grace-note chime
+ * (`audio.playPibrochSting()`) on aligned hits — the SFXManager
+ * `pibroch_sting` slot caps at one chime per quarter-note so AOE
+ * bursts on a single downbeat collapse to a single sting.
  *
  * Practical note: the live wiring queries on hit, not on fire (the
  * spec wording). For melee / aoe / aura weapons the two are the same;
