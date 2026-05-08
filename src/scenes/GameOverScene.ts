@@ -6,28 +6,16 @@ import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
-import { getCurseByKey } from '../data/curses';
 import {
   formatClockTime,
   computeGoldBreakdown,
   boundedLoadoutSummary,
   buildGameOverRunIdentityLines,
   buildWeaponDamageRows,
-  formatRerunSeedLinkLabel,
-  formatSeedReadoutLabel,
-  buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
 import { resolveGameOverPanelTheme } from './gameOverPanelTheme';
 import { renderVariantChip } from './gameOverVariantChip';
-import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
-import { downloadPostcard } from '../utils/postcard';
-import { copyTextToClipboard, copyCanvasToClipboard } from '../utils/clipboard';
-import { saveScreenshot } from '../utils/screenshot';
-import { buildCaptureFilename } from '../utils/captureFilename';
-import { ClipRecorder } from '../utils/clipRecorder';
 import type { GameScene } from './GameScene';
-import { formatLocalYmd } from '../utils/formatDate';
-import { TOAST_COLORS } from '../ui/toastPalette';
 import { textStyle } from '../ui/typography';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
@@ -43,12 +31,12 @@ import {
 import { renderGameOverTitleAndSubtitle } from './game-over/renderGameOverTitleAndSubtitle';
 import { renderGameOverIronmoorBanner } from './game-over/renderGameOverIronmoorBanner';
 import { renderGameOverCurseChip } from './game-over/renderGameOverCurseChip';
-
-// Shared text style for the small italic action links under the
-// big result panel (seed copy, postcard download, rerun ↻). Each
-// site varies the colour from its own palette.idle on hover/press,
-// so the colour stays a per-call argument; everything else is fixed.
-const COPY_ACTION_LINK_TEXT_BASE = textStyle('subtitle', { fontSize: '12px', align: 'center' });
+import { renderGameOverSeedReadout } from './game-over/gameOverSeedReadout';
+import { renderGameOverPostcardLink } from './game-over/gameOverPostcardLink';
+import { renderGameOverSaveFrameLink } from './game-over/gameOverSaveFrameLink';
+import { renderGameOverCopyFrameLink } from './game-over/gameOverCopyFrameLink';
+import { renderGameOverSaveClipLink } from './game-over/gameOverSaveClipLink';
+import { renderGameOverRerunSeedLink } from './game-over/gameOverRerunSeedLink';
 
 /**
  * W27 Phase 4 — feature-detect the modern image clipboard API.
@@ -429,6 +417,8 @@ export class GameOverScene extends Phaser.Scene {
     const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
     const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale), buttonsY - Math.round(compact ? 28 : 0));
 
+    const getPayload = (): GameOverPayload | null => this.payload;
+
     if (this.payload.seedCode) {
       // Clamp seed readout above canvas bottom — default offset assumes a
       // 720px-tall design target, but native 600 clips this by a couple px.
@@ -438,7 +428,14 @@ export class GameOverScene extends Phaser.Scene {
         Math.max(panelTop + 590, unlockPanelY + unlockPanelH / 2 + Math.round(14 * panelScale)),
         compact ? linkY - Math.round(18 * panelScale) : height - Math.round(42 * panelScale),
       );
-      this.renderSeedReadout(panelCenterX, seedY, d + 3, this.payload.seedCode, this.payload.isDaily === true, 1160);
+      renderGameOverSeedReadout(this, {
+        centerX: panelCenterX,
+        y: seedY,
+        depth: d + 3,
+        code: this.payload.seedCode,
+        isDaily: this.payload.isDaily === true,
+        delay: 1160,
+      });
     }
 
     // Two small text links side-by-side under the seed readout. Postcard
@@ -446,10 +443,10 @@ export class GameOverScene extends Phaser.Scene {
     // rerun when the payload actually carries a numeric seed.
     const hasRerun = typeof this.payload.runSeed === 'number';
     if (hasRerun) {
-      this.renderPostcardLink(panelCenterX - 100, linkY, d + 3, 1180);
-      this.renderRerunSeedLink(panelCenterX + 100, linkY, d + 3, 1200);
+      renderGameOverPostcardLink(this, { centerX: panelCenterX - 100, y: linkY, depth: d + 3, delay: 1180, getPayload });
+      renderGameOverRerunSeedLink(this, { centerX: panelCenterX + 100, y: linkY, depth: d + 3, delay: 1200, getPayload });
     } else {
-      this.renderPostcardLink(panelCenterX, linkY, d + 3, 1180);
+      renderGameOverPostcardLink(this, { centerX: panelCenterX, y: linkY, depth: d + 3, delay: 1180, getPayload });
     }
     // Save frame link — gated by captureEnabled setting; sits on a second
     // row directly below the postcard/rerun link row. Phase 4 — Copy frame
@@ -460,15 +457,15 @@ export class GameOverScene extends Phaser.Scene {
       const saveFrameLinkY = linkY + 16;
       const hasImageClipboard = isImageClipboardAvailable();
       if (hasImageClipboard) {
-        this.renderSaveFrameLink(panelCenterX - 100, saveFrameLinkY, d + 3, 1220);
-        this.renderCopyFrameLink(panelCenterX + 100, saveFrameLinkY, d + 3, 1230);
+        renderGameOverSaveFrameLink(this, { centerX: panelCenterX - 100, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
+        renderGameOverCopyFrameLink(this, { centerX: panelCenterX + 100, y: saveFrameLinkY, depth: d + 3, delay: 1230 });
       } else {
-        this.renderSaveFrameLink(panelCenterX, saveFrameLinkY, d + 3, 1220);
+        renderGameOverSaveFrameLink(this, { centerX: panelCenterX, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
       }
       const gameScene = this.scene.get('Game') as GameScene | undefined;
       const recorder = gameScene?.getClipRecorder();
       if (recorder?.isAvailable()) {
-        this.renderSaveClipLink(panelCenterX, saveFrameLinkY + 16, d + 3, 1240, recorder);
+        renderGameOverSaveClipLink(this, { centerX: panelCenterX, y: saveFrameLinkY + 16, depth: d + 3, delay: 1240, recorder, getPayload });
       }
     }
 
@@ -578,321 +575,6 @@ export class GameOverScene extends Phaser.Scene {
   private uninstallDomFocusLayer(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
-  }
-
-  /**
-   * Renders the seed code with a clickable "copy" affordance. Clipboard
-   * support varies (desktop: navigator.clipboard; older Safari: textarea +
-   * execCommand); we fall back through them and update the label to
-   * confirm when the copy worked.
-   */
-  private renderSeedReadout(
-    centerX: number,
-    y: number,
-    depth: number,
-    code: string,
-    isDaily: boolean,
-    delay: number,
-  ): void {
-    const label = formatSeedReadoutLabel(code, isDaily);
-    const tail = t('ui.gameOver.seed_copy_hint');
-    const palette = resolveCopyActionLinkPalette(isDaily);
-    const text = this.add
-      .text(centerX, y, `${label}  ·  ${tail}`, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    let copied = false;
-    const doCopy = () => {
-      const ok = copyTextToClipboard(code);
-      if (ok && !copied) {
-        copied = true;
-        text.setText(t('ui.gameOver.seed_copied', { code }));
-        text.setColor(palette.success);
-      }
-    };
-    text.on('pointerover', () => { if (!copied) text.setColor(palette.hover); });
-    text.on('pointerout', () => { if (!copied) text.setColor(palette.idle); });
-    text.on('pointerdown', doCopy);
-  }
-
-  /**
-   * W27 Capture & Share: small "save postcard" text link that downloads
-   * the current canvas as a PNG. Sits below the seed readout so it
-   * doesn't crowd the main action buttons.
-   */
-  private renderPostcardLink(
-    centerX: number,
-    y: number,
-    depth: number,
-    delay: number,
-  ): void {
-    const hint = t('ui.gameOver.postcard_hint');
-    const palette = resolveCopyActionLinkPalette(false);
-    const text = this.add
-      .text(centerX, y, `📮 ${hint}`, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    let saved = false;
-    const doSave = () => {
-      if (saved) return;
-      const p = this.payload;
-      if (!p) return;
-      const canvas = this.game.canvas as HTMLCanvasElement | undefined;
-      const curseDef = getCurseByKey(p.curseKey ?? null);
-      const ok = downloadPostcard(
-        canvas,
-        buildPostcardPayloadFromGameOver(p, curseDef ? t(curseDef.nameKey) : null),
-      );
-      if (ok) {
-        saved = true;
-        text.setText(`📮 ${t('ui.gameOver.postcard_saved')}`);
-        text.setColor(palette.success);
-        audio.playClick();
-      }
-    };
-    text.on('pointerover', () => { if (!saved) text.setColor(palette.hover); });
-    text.on('pointerout', () => { if (!saved) text.setColor(palette.idle); });
-    text.on('pointerdown', doSave);
-  }
-
-  /**
-   * W27 Phase 2 — "Save frame" text link. Downloads the current canvas as
-   * a PNG named with run context. Only rendered when captureEnabled is true
-   * (gate evaluated in create() before this method is called).
-   */
-  private renderSaveFrameLink(
-    centerX: number,
-    y: number,
-    depth: number,
-    delay: number,
-  ): void {
-    const hint = t('ui.gameOver.save_frame');
-    const palette = resolveCopyActionLinkPalette(false);
-    const text = this.add
-      .text(centerX, y, `📷 ${hint}`, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    let saving = false;
-    const doSave = () => {
-      if (saving) return;
-      const p = this.payload;
-      if (!p) return;
-      saving = true;
-      const filename = buildCaptureFilename('screenshot', {
-        mode: p.mode,
-        variantLabel: p.variantLabel,
-        timeSurvivedSec: p.summary.timeSurvivedSec,
-        seedCode: p.seedCode,
-        dateYmd: formatLocalYmd(new Date()),
-      });
-      saveScreenshot(this.game.canvas as HTMLCanvasElement, filename).then((ok) => {
-        if (ok) {
-          text.setText(`📷 ${t('ui.toast.screenshot_saved')}`);
-          text.setColor(palette.success);
-        } else {
-          text.setText(`📷 ${t('ui.toast.screenshot_failed')}`);
-          text.setColor(TOAST_COLORS.warning);
-          saving = false;
-        }
-        audio.playClick();
-      });
-    };
-    text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
-    text.on('pointerout', () => { if (!saving) text.setColor(palette.idle); });
-    text.on('pointerdown', doSave);
-  }
-
-  /**
-   * W27 Phase 4 — "Copy frame" text link. Pushes the current canvas as a
-   * PNG into the user's clipboard via `navigator.clipboard.write`. The
-   * caller already feature-detected `ClipboardItem` so this method
-   * assumes the API is available; if the write rejects (iframe
-   * permission denial), the link surfaces the failure inline.
-   *
-   * Pairs with renderSaveFrameLink as a 2-link row when the modern
-   * clipboard API is available; otherwise Save frame stays solo.
-   */
-  private renderCopyFrameLink(
-    centerX: number,
-    y: number,
-    depth: number,
-    delay: number,
-  ): void {
-    const hint = t('ui.gameOver.copy_frame');
-    const palette = resolveCopyActionLinkPalette(false);
-    const text = this.add
-      .text(centerX, y, `📋 ${hint}`, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    let copying = false;
-    const doCopy = () => {
-      if (copying) return;
-      copying = true;
-      copyCanvasToClipboard(this.game.canvas as HTMLCanvasElement).then((ok) => {
-        if (ok) {
-          text.setText(`📋 ${t('ui.toast.frame_copied')}`);
-          text.setColor(palette.success);
-        } else {
-          text.setText(`📋 ${t('ui.toast.frame_copy_failed')}`);
-          text.setColor(TOAST_COLORS.warning);
-          copying = false;
-        }
-        audio.playClick();
-      });
-    };
-    text.on('pointerover', () => { if (!copying) text.setColor(palette.hover); });
-    text.on('pointerout', () => { if (!copying) text.setColor(palette.idle); });
-    text.on('pointerdown', doCopy);
-  }
-
-  /**
-   * W27 Phase 2 — "Save clip" text link. Downloads the last 15s of canvas
-   * recording as a WebM file. Only rendered when the ClipRecorder is
-   * available (MediaRecorder + captureStream support) and captureEnabled.
-   */
-  private renderSaveClipLink(
-    centerX: number,
-    y: number,
-    depth: number,
-    delay: number,
-    recorder: ClipRecorder,
-  ): void {
-    const hint = t('ui.gameOver.save_clip');
-    const palette = resolveCopyActionLinkPalette(false);
-    const text = this.add
-      .text(centerX, y, `📼 ${hint}`, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    let saving = false;
-    const doSave = () => {
-      if (saving) return;
-      const p = this.payload;
-      if (!p) return;
-      saving = true;
-      const filename = buildCaptureFilename('clip', {
-        mode: p.mode,
-        variantLabel: p.variantLabel,
-        timeSurvivedSec: p.summary.timeSurvivedSec,
-        seedCode: p.seedCode,
-        dateYmd: formatLocalYmd(new Date()),
-      });
-      recorder.saveLast((blob) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }).then((blob) => {
-        if (blob === null) {
-          text.setText(`📼 ${t('ui.toast.clip_empty')}`);
-          text.setColor(TOAST_COLORS.warning);
-          saving = false;
-        } else {
-          text.setText(`📼 ${t('ui.toast.clip_saved')}`);
-          text.setColor(palette.success);
-          audio.playClick();
-        }
-      }).catch(() => {
-        text.setText(`📼 ${t('ui.toast.clip_failed')}`);
-        text.setColor(TOAST_COLORS.warning);
-        saving = false;
-      });
-    };
-    text.on('pointerover', () => { if (!saving) text.setColor(palette.hover); });
-    text.on('pointerout', () => { if (!saving) text.setColor(palette.idle); });
-    text.on('pointerdown', doSave);
-  }
-
-  /**
-   * "↻ same seed" text link that restarts the run with its exact seed
-   * and variant. Mirrors the Chronicle rerun pattern. Only called when
-   * the payload carries a numeric runSeed (see hasRerun gate above).
-   */
-  private renderRerunSeedLink(
-    centerX: number,
-    y: number,
-    depth: number,
-    delay: number,
-  ): void {
-    // Surface the curse on the link itself so the player knows the
-    // rerun re-applies it (parallels the chronicle ↻ tooltip).
-    const linkCurseDef = getCurseByKey(this.payload?.curseKey ?? null);
-    const label = formatRerunSeedLinkLabel(linkCurseDef ? t(linkCurseDef.nameKey) : null);
-    const palette = resolveRerunLinkPalette();
-    const text = this.add
-      .text(centerX, y, label, {
-        ...COPY_ACTION_LINK_TEXT_BASE,
-        color: palette.idle,
-      })
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setInteractive({ useHandCursor: true });
-    this.tweens.add({ targets: text, alpha: 1, duration: 260, delay });
-
-    text.on('pointerover', () => text.setColor(palette.hover));
-    text.on('pointerout', () => text.setColor(palette.idle));
-    text.on('pointerdown', () => {
-      audio.playClick();
-      musicEngine.stop();
-      const p = this.payload;
-      if (!p || typeof p.runSeed !== 'number') return;
-      try { new SaveManager().clearActiveRun(); } catch { /* best-effort */ }
-      // Rerun must carry the curse — otherwise the "same seed" replay
-      // is silently easier than the original (and the boss/spawn cadence
-      // diverges since several modifiers gate their flow on a curse).
-      const def = getCurseByKey(p.curseKey ?? null);
-      this.scene.start('Game', {
-        seed: p.runSeed,
-        forceVariantKey: p.variantKey,
-        curseKey: def ? def.key : null,
-      });
-    });
   }
 
 }
