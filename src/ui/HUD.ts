@@ -44,6 +44,8 @@ import type { HudWidgetContext } from './hud/hudWidget';
 import { buildHpBar } from './hud/hpBar';
 import { buildGripPips } from './hud/gripPips';
 import { buildWhiskyBar } from './hud/whiskyBar';
+import { buildLevelGold } from './hud/levelGold';
+import { buildTimerStack } from './hud/timerStack';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -234,7 +236,6 @@ export class HUD {
   private build(): void {
     const { width, height } = this.getUiViewport();
     const d = this.DEPTH;
-    const style = textStyle('body', { color: COLORS_CSS.WARM_TAN });
     const ctx: HudWidgetContext = {
       scene: this.scene,
       viewport: this.getUiViewport(),
@@ -260,34 +261,17 @@ export class HUD {
     this.whiskyBarBg = whiskyRefs.bg;
     this.whiskyBarFill = whiskyRefs.fill;
 
-    // Level
-    this.levelText = this.addEl(this.scene.add.text(12, 40, '', style)
-      .setScrollFactor(0).setDepth(d));
+    // Level + gold balance (whisky-gold tint, hidden until first setText fires).
+    const levelGoldRefs = buildLevelGold(ctx);
+    this.levelText = levelGoldRefs.level;
+    this.goldText = levelGoldRefs.gold;
 
-    // Gold balance chip (whisky-gold tint — matches dash/coin palette).
-    // Updated in `update()` whenever the balance changes; hidden until
-    // the first setText fires from GameScene.
-    this.goldText = this.addEl(this.scene.add.text(12, 62, '',
-      textStyle('body', { color: COLORS_CSS.WHISKY_GOLD }),
-    ).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
-
-    // Timer
-    this.timerText = this.addEl(this.scene.add.text(width / 2, 12, '',
-      textStyle('title', { color: COLORS_CSS.WARM_TAN }),
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d));
-    // Wraps divided by uiScale so scaled text still fits inside the
-    // responsive horizontal budget (setScale(uiScale) multiplies the
-    // pre-wrap measurement — leaving the wrap un-divided means a 1.4x
-    // UI scale pushes a centered 720px wrap to ~1008px rendered width,
-    // clipping off the canvas edges).
+    // Centered top stack: timer + objective + curse chip.
+    const timerRefs = buildTimerStack(ctx);
+    this.timerText = timerRefs.timer;
+    this.objectiveText = timerRefs.objective;
+    this.curseChipText = timerRefs.curseChip;
     const uiScaleClamp = Math.max(1, this.uiScale);
-    this.objectiveText = this.addEl(this.scene.add.text(width / 2, 42, '',
-      textStyle('label', { color: COLORS_CSS.DUSTY_TAN, wordWrap: { width: Math.max(160, (width - 80) / uiScaleClamp) } }),
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
-
-    this.curseChipText = this.addEl(this.scene.add.text(width / 2, 62, '',
-      textStyle('label', { color: '#c49bbf', wordWrap: { width: Math.max(160, (width - 80) / uiScaleClamp) } }),
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d).setVisible(false)) as Phaser.GameObjects.Text;
 
     // W2 Moor Road act chip — hidden until the first picker resolves.
     this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '',
