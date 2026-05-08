@@ -1192,6 +1192,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       transitionToGameOver: (payload) => this.runExit.transitionToGameOver(payload),
       onActComplete: (actN) => this.launchActIntermission(actN),
       isIronmoorRun: () => this.activeIronmoorRun,
+      isDailyRun: () => this.runIsDaily,
     }));
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);

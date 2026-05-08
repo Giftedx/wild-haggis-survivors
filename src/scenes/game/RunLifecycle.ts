@@ -32,6 +32,10 @@ import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
 import { tryCameraShake } from '../../utils/cameraShake';
 import { classifyDeath } from '../../core/deathCauseClassifier';
 import { t } from '../../core/i18n';
+import {
+  fireDailyFirstClearBanter,
+  fireFirstNewVariantUnlockBanter,
+} from './firstTimeBanters';
 
 export interface RunLifecycleHooks {
   getPlayer(): Player;
@@ -107,6 +111,13 @@ export interface RunLifecycleHooks {
    * or silently drop it from the leaderboard.
    */
   isIronmoorRun(): boolean;
+
+  /**
+   * Daily Challenge mode: true when the run was launched as a daily
+   * attempt. Used to gate the `daily_first_clear` first-time banter on
+   * victory.
+   */
+  isDailyRun(): boolean;
 }
 
 export class RunLifecycle {
@@ -209,6 +220,27 @@ export class RunLifecycle {
         this.hooks.getBanter()?.request('first_time', { tag: 'ironmoor_first_victory' });
       }
     }
+
+    // B1 Phase 4 task 6 follow-up — wire the three deferred first_time
+    // sub-pools authored alongside the variant + route + daily content.
+    // Bumps every newly-unlocked variant id (so the per-save flag retires
+    // even when multiple variants unlock in one run); the helper requests
+    // banter for the first one only because the system renders one
+    // pending request per tick. Daily-clear is single-shot. If both fire
+    // in the same tick the banter system's same-context cooldown drops
+    // the second; we accept that trade because (a) hitting the daily +
+    // unlocking a variant on the same run is rare, and (b) the variant
+    // line is the more event-defining of the two so it wins on register.
+    fireFirstNewVariantUnlockBanter(
+      runResult.newlyUnlockedVariants,
+      bumpFirstTimeEvent,
+      this.hooks.getBanter(),
+    );
+    fireDailyFirstClearBanter(
+      this.hooks.isDailyRun(),
+      bumpFirstTimeEvent,
+      this.hooks.getBanter(),
+    );
 
     const { x: uiX, y: uiY, width: uiW, height: uiH } = this.hooks.getUiViewport();
     this.hooks.getVictoryFade()?.destroy();
@@ -366,6 +398,17 @@ export class RunLifecycle {
       flushBeastieKills();
       const runResult = this.hooks.recordRun(summary, context);
       this.hooks.recordToHistory(summary, runResult);
+
+      // B1 Phase 4 task 6 follow-up — defeat paths can still cross
+      // stat-gated unlock thresholds (e.g. `total_gold_earned`,
+      // `cursed_victories` if the run wasn't a victory but tipped a
+      // separate counter). Mirror the victory-path call so the
+      // first-time line gets its chance even on a death.
+      fireFirstNewVariantUnlockBanter(
+        runResult.newlyUnlockedVariants,
+        bumpFirstTimeEvent,
+        this.hooks.getBanter(),
+      );
 
       if (this.postBell) {
         recordPostBellBest(Math.floor(this.getSecondsPastBell()));

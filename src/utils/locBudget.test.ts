@@ -19,7 +19,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
   ['scenes/GameScene.ts', 1680], // was 2985 → 2182 → 1680 (Phase 7 re-baseline 2026-05-09; Phase 5 buckets 1-11+14 shipped; current 1672 + 8 grace; T401 floor 1656)
-  ['data/banter.ts', 2240], // current 2234 + 6 grace; pure data, kept whole
+  ['data/banter.ts', 2255], // bumped 2026-05-09 (2240→2255) for witch_hare first-time-unlock sub-pool entry (covers banter parity gap from the 2026-04-28 variant ship); current 2243 + 12 grace; pure data, parity-fenced, kept whole
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)

@@ -2605,6 +2605,15 @@ export const ui = {
         a: 'The Bard\'s wee beastie — quotation an thistle, both.',
         b: 'Sleekit, cow\'rin, glorious. Burns walks beside ye.',
       },
+      variant_witch_hare_unlocked: {
+        // Isobel Gowdie's 1662 confession — "I shall go intill ane
+        //  hare" — gives this variant her covenant cadence. Cursed-
+        //  victories gate (5) means the line lands on a player who
+        //  has chosen difficulty repeatedly; voice tilts mythic-grave
+        //  accordingly.
+        a: 'Five cursed victories. The hare watches frae the heather.',
+        b: 'I shall go intill ane hare — and the moor lets ye.',
+      },
       // Route first-picks (6 W2 routes). Voice: hearth, shy
       //  acknowledgement of the choice — once-per-save accent.
       route_up_the_brae_first: {

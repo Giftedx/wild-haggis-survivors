@@ -1681,6 +1681,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_time.variant_burns_wee_beastie_unlocked.a',
         'ui.banter.first_time.variant_burns_wee_beastie_unlocked.b',
       ],
+      // Witch's Hare — Isobel Gowdie 1662 confession. Cursed-victories:5
+      // gate. Filed alongside the V2 cohort even though the variant
+      // shipped 2026-04-28 (post-V2) — the banter pool was missed in
+      // that ship and gets its couplet here as part of the first-time
+      // wire-up.
+      variant_witch_hare_unlocked: [
+        'ui.banter.first_time.variant_witch_hare_unlocked.a',
+        'ui.banter.first_time.variant_witch_hare_unlocked.b',
+      ],
       // ── B1 Phase 4 expansion — first-pick of each W2 route. Fires
       //    once per route via
       //    `bumpFirstTimeEvent('route_${routeKey}_first')` on the

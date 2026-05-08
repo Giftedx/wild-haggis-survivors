@@ -107,6 +107,7 @@ export interface InstallRunFlowOpts {
   transitionToGameOver(payload: GameOverPayload): void;
   onActComplete(actN: 1 | 2): void;
   isIronmoorRun(): boolean;
+  isDailyRun(): boolean;
 }
 
 export interface InstallRunFlowResult {
@@ -182,6 +183,7 @@ export function installRunFlow(opts: InstallRunFlowOpts): InstallRunFlowResult {
     transitionToGameOver: opts.transitionToGameOver,
     onActComplete: opts.onActComplete,
     isIronmoorRun: opts.isIronmoorRun,
+    isDailyRun: opts.isDailyRun,
   };
   const runLifecycle = new RunLifecycle(opts.scene, runLifecycleHooks);
 

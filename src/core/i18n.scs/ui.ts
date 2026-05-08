@@ -2158,6 +2158,10 @@ export const ui = {
         a: 'Tha Bard\'s wee beastie — quotation an thrissle, baith.',
         b: 'Sleekit, cow\'rin, glorious. Burns walks aside ye.',
       },
+      variant_witch_hare_unlocked: {
+        a: 'Five cursit victories. Tha mauchin watches fae tha heather.',
+        b: 'A\'ll gang intill ane hare — an tha muir lets ye.',
+      },
       route_up_the_brae_first: {
         a: 'First time up tha Brae. Tha hills owe ye nocht — yet.',
         b: 'Climbed it ance. Winnae forget tha air.',
