@@ -74,12 +74,11 @@ import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
-import { noteCascadeKill } from '../systems/runes/runeConsumer';
 import { applyWeaponMultiplierFold } from './game/weaponMultiplierFold';
+import { wireWeaponSystemListeners } from './game/wireWeaponSystemListeners';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { TutorialSystem } from '../systems/TutorialSystem';
-import type { EliteAffixId } from '../data/eliteAffixes';
 import { BIOMES, type BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
@@ -153,7 +152,6 @@ import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
 import { updateMusicStateScratch } from './game/updateMusicStateScratch';
 import { updateRunHudFrame } from './game/updateRunHudFrame';
-import { pickTrailColor } from '../data/weaponTrailColors';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
 import { RelicOrchestrator } from './game/RelicOrchestrator';
@@ -1155,45 +1153,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.player.grantCeilidhChainMagnet(40, 2000);
       },
     });
-    this.weaponSystem.events.on(
-      'enemyKilled',
-      (
-        x: number,
-        y: number,
-        xpValue: number,
-        enemyKey: string,
-        wasBoss: boolean,
-        wasElite: boolean = false,
-        eliteAffixId?: EliteAffixId | null,
-      ) => this.enemyKillHandler.handle(x, y, xpValue, enemyKey, wasBoss, wasElite, eliteAffixId),
-    );
-    // U1 M4 — Cascade Rune kill bookkeeper. Independent listener so the
-    // primary kill cascade owner stays unchanged. No-op when no cascade
-    // rune is equipped (the consumer guard short-circuits on null cfg).
-    this.weaponSystem.events.on('enemyKilled', () => {
-      noteCascadeKill(this.runeBag);
-    });
-
-    // Floating damage numbers + hit sound + DPS tracking + impact ring burst
-    this.weaponSystem.events.on('damageDealt', (x: number, y: number, amount: number, isCrit: boolean, weaponKey?: string) => {
-      this.juice.showDamageNumber(x, y, amount, isCrit);
-      this.juice.spawnImpactRing(x, y);
-      this.hud.logDamage(amount);
-      this.runStatsTracker.addWeaponDamage(weaponKey ?? 'unknown', amount);
-      this.getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
-    });
-
-    // Projectile trails — palette lookup lives in src/data/weaponTrailColors.
-    // Math.random here is cosmetic (not gameplay RNG) so unseeded is fine.
-    this.weaponSystem.events.on('projectileTrail', (x: number, y: number, evolved: boolean, wKey: string) => {
-      this.juice.spawnTrail(x, y, pickTrailColor(wKey, evolved, Math.random()));
-    });
-
-    // Body-pulse animation beat — any weapon fire flags the attacking
-    // one-shot on the player. AnimationController gates so a 167 ms
-    // beat completes before the next fire can retrigger it.
-    this.weaponSystem.events.on('weaponFired', () => {
-      this.player.notifyWeaponFired();
+    wireWeaponSystemListeners({
+      weaponSystem: this.weaponSystem,
+      enemyKillHandler: this.enemyKillHandler,
+      player: this.player,
+      juice: this.juice,
+      hud: this.hud,
+      runStatsTracker: this.runStatsTracker,
+      runeBag: this.runeBag,
+      getSFXManager: () => this.getSFXManager(),
     });
 
     // When player levels up, pause and show upgrade choices
