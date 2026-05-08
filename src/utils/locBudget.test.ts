@@ -27,7 +27,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['scenes/SettingsScene.ts', 1350],
   ['systems/WeaponSystem.ts', 1330],
   ['scenes/GameOverScene.ts', 1310],
-  ['ui/HUD.ts', 1225],
+  ['ui/HUD.ts', 1100], // was 1225 (Phase 4 split — per-widget builders under ui/hud/*.ts; class retains lifecycle + update paths)
   ['systems/AudioSystem.ts', 1210],
   ['art/sprites/decorations/biomeProps.ts', 5], // was 1095 (Phase 2.4 split — barrel re-export over biomeProps/*.ts)
 ];

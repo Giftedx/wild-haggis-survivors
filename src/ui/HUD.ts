@@ -28,13 +28,7 @@ import {
   dashPulseAlpha,
   DASH_PULSE_PHASE_STEP,
 } from './hudDashStyle';
-import {
-  bossHpBarStyle,
-  BOSS_BAR_BG,
-  BOSS_BAR_BASELINE_FILL,
-  BOSS_BAR_BASELINE_HIGHLIGHT,
-  BOSS_BAR_WARN_GLOW_COLOR,
-} from './hudBossBar';
+import { bossHpBarStyle } from './hudBossBar';
 import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
@@ -51,6 +45,7 @@ import { buildXpBar } from './hud/xpBar';
 import { buildPauseButton } from './hud/pauseButton';
 import { buildShieldDash } from './hud/shieldDash';
 import { buildDpsReadout } from './hud/dpsReadout';
+import { buildBossBar } from './hud/bossBar';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -239,12 +234,10 @@ export class HUD {
   }
 
   private build(): void {
-    const { width } = this.getUiViewport();
-    const d = this.DEPTH;
     const ctx: HudWidgetContext = {
       scene: this.scene,
       viewport: this.getUiViewport(),
-      depth: d,
+      depth: this.DEPTH,
       uiScale: this.uiScale,
       hpBarW: this.HP_BAR_W,
       hpBarH: this.HP_BAR_H,
@@ -276,7 +269,6 @@ export class HUD {
     this.timerText = timerRefs.timer;
     this.objectiveText = timerRefs.objective;
     this.curseChipText = timerRefs.curseChip;
-    const uiScaleClamp = Math.max(1, this.uiScale);
 
     // W2 act chip + W66 ironmoor chip + P2.12 daily chip + T1 replay chip
     // — all hidden until their setter fires; replay anchors above XP bar.
@@ -318,30 +310,14 @@ export class HUD {
     // DPS counter (dev/observability — hidden unless ?devDps=1).
     this.dpsText = buildDpsReadout(ctx);
 
-    // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight.
-    // Boss bar lives ABOVE the banter / tutorial-tip layer (depths 85-92) so a
-    // boss fight can never have its HP bar hidden behind ambient toast text
-    // (P1.11 fix). Stays well below modal underlays (599+) so pause/level-up
-    // still occlude it.
-    const bossBarW = width * 0.55;
-    const bossBarY = 98;
-    const bd = 95;
-    // Warning glow (sits behind everything, fades in when low HP)
-    this.bossBarGlow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW + 12, 30, BOSS_BAR_WARN_GLOW_COLOR, 0)
-      .setScrollFactor(0).setDepth(bd - 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarBg = this.addEl(this.scene.add.rectangle(width / 2, bossBarY, bossBarW, 22, BOSS_BAR_BG)
-      .setScrollFactor(0).setDepth(bd).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    // Inner shadow line
-    this.bossBarShadow = this.addEl(this.scene.add.rectangle(width / 2, bossBarY - 9, bossBarW, 2, 0x000000, 0.6)
-      .setScrollFactor(0).setDepth(bd).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossBarFill = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY, bossBarW, 22, BOSS_BAR_BASELINE_FILL)
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(bd + 1).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    // Top highlight on fill (reads as 3D depth)
-    this.bossBarHighlight = this.addEl(this.scene.add.rectangle(width / 2 - bossBarW / 2, bossBarY - 8, bossBarW, 3, BOSS_BAR_BASELINE_HIGHLIGHT, 0.6)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(bd + 2).setVisible(false)) as Phaser.GameObjects.Rectangle;
-    this.bossNameText = this.addEl(this.scene.add.text(width / 2, bossBarY - 14, '',
-      textStyle('body', { fontSize: '17px', color: '#ff9999', wordWrap: { width: Math.max(200, bossBarW / uiScaleClamp) } }),
-    ).setOrigin(0.5, 1).setScrollFactor(0).setDepth(bd + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    // Boss HP bar — layered glow / bg / shadow / fill / highlight + name.
+    const bossRefs = buildBossBar(ctx);
+    this.bossBarGlow = bossRefs.glow;
+    this.bossBarBg = bossRefs.bg;
+    this.bossBarShadow = bossRefs.shadow;
+    this.bossBarFill = bossRefs.fill;
+    this.bossBarHighlight = bossRefs.highlight;
+    this.bossNameText = bossRefs.name;
     if (this.uiScale !== 1) {
       const scaleTargets: Phaser.GameObjects.GameObject[] = [
         this.hpText,
