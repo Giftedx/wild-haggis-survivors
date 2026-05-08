@@ -155,7 +155,8 @@ import { installRunFlow } from './game/installRunFlow';
 import { RelicOrchestrator } from './game/RelicOrchestrator';
 import { RELICS, type RelicKey } from '../data/relics';
 import { createHighlandTerrain } from './game/highlandTerrain';
-import { HazardZones } from './game/HazardZones';
+import type { HazardZones } from './game/HazardZones';
+import { installHazardZones } from './game/installHazardZones';
 import type { GameTickers } from './game/GameTickers';
 import { installRuntimeAmbient } from './game/installRuntimeAmbient';
 import {
@@ -832,36 +833,23 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.cameras.main.setZoom(1.3);
     this.cameras.main.setBounds(0, 0, GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
 
-    // Spawn map hazard and healing zones (lava + healing circles).
-    // HazardZones needs runLifecycle.onPlayerHitZero for lava deaths, but
-    // runLifecycle isn't built yet at this point. The closure over
-    // `this.runLifecycle` resolves lazily — first lava tick happens much
-    // later, by which time it's wired.
-    //
-    // On scene reuse (death + retry), the prior run's hazard display
-    // objects (lava base/glow ellipses, heal cross overlays, ember
-    // sprites, slick + fog visuals) are NOT auto-cleared by Phaser —
-    // they hang on the scene display list because they were added via
-    // `scene.add.*`. Reset the prior instance first so its tracked
-    // visuals + tweens are torn down before the next spawn.
-    if (this.hazardZones) this.hazardZones.reset();
-    this.hazardZones = new HazardZones(this, {
+    // Phase 5 Bucket 6 partial — HazardZones reset/construct/spawn bundled.
+    this.hazardZones = installHazardZones({
+      scene: this,
+      prior: this.hazardZones,
       getPlayer: () => this.player,
       getJuice: () => this.juice,
       getDeathCauseTracker: () => this.deathCauseTracker,
       getSpawnSystem: () => this.spawnSystem,
       getRunRng: () => this.runRng,
-      isIFrames: () => this.iFrameController.isActive(),
-      isVictoryPending: () => this.runScore.victoryPending,
-      getDamageTakenMult: () => this.runModifiers.damageTakenMult,
-      onPlayerKilled: () => this.runLifecycle.onPlayerHitZero(),
-      onAfterPlayerDamaged: (hpBefore) => {
-        this.relicEffectDriver?.noteDamageTaken(this.time.now);
-        if (this.player.getHp() > 0) this.tryMoorMercyLuck(hpBefore);
-      },
-      modifyFireDamageTaken: (d) => this.relicEffectDriver.modifyFireDamageTaken(d),
+      getIFrameController: () => this.iFrameController,
+      getRunScore: () => this.runScore,
+      getRunModifiers: () => this.runModifiers,
+      getRunLifecycle: () => this.runLifecycle,
+      getRelicEffectDriver: () => this.relicEffectDriver ?? null,
+      getCurrentTimeMs: () => this.time.now,
+      tryMoorMercyLuck: (hp) => this.tryMoorMercyLuck(hp),
     });
-    this.hazardZones.spawn();
 
     // Phase 5 Bucket 6 partial — core combat systems bundled.
     ({
