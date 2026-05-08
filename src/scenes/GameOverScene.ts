@@ -17,7 +17,7 @@ import {
   formatSeedReadoutLabel,
   buildPostcardPayloadFromGameOver,
 } from './gameOverFormatting';
-import { resolveGameOverPanelTheme, pickGameOverTitleKeys, ironmoorBannerStyle } from './gameOverPanelTheme';
+import { resolveGameOverPanelTheme } from './gameOverPanelTheme';
 import { renderVariantChip } from './gameOverVariantChip';
 import { resolveCopyActionLinkPalette, resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { downloadPostcard } from '../utils/postcard';
@@ -40,6 +40,9 @@ import {
   createResultStat,
   createResultActionButton,
 } from './game-over/resultPanelBuilders';
+import { renderGameOverTitleAndSubtitle } from './game-over/renderGameOverTitleAndSubtitle';
+import { renderGameOverIronmoorBanner } from './game-over/renderGameOverIronmoorBanner';
+import { renderGameOverCurseChip } from './game-over/renderGameOverCurseChip';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -158,68 +161,32 @@ export class GameOverScene extends Phaser.Scene {
     this.tweens.add({ targets: panel, alpha: 0.98, duration: 420 });
 
     // Rotating death titles/subtitles — each death feels different
-    const { titleKey: deathTitleKey, subKey: deathSubKey } = pickGameOverTitleKeys(
+    renderGameOverTitleAndSubtitle(this, {
       isVictory,
-      Phaser.Math.Between(0, 3),
-      Phaser.Math.Between(0, 3),
-    );
-
-    const title = this.add
-      .text(panelCenterX, panelTop + (compact ? 38 : 54), t(deathTitleKey),
-        textStyle('display', {
-          color: titleColor,
-          align: 'center',
-          fontSize: compact ? '30px' : '48px',
-          wordWrap: { width: (PANEL_W - 32) / Math.max(1, uiScale) },
-        }),
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(d + 2)
-      .setAlpha(0)
-      .setScale(compact ? uiScale : theme.titleStartScale);
-    title.setScale((compact ? 1 : theme.titleStartScale) * uiScale);
-    const subtitle = this.add
-      .text(panelCenterX, panelTop + (compact ? 78 : 94), t(deathSubKey),
-        textStyle('body', {
-          color: COLORS_CSS.DUSTY_TAN,
-          align: 'center',
-          fontSize: compact ? '12px' : '16px',
-          wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) },
-        }),
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(d + 2)
-      .setAlpha(0);
-    subtitle.setScale(uiScale);
-
-    this.tweens.add({
-      targets: title,
-      alpha: 1,
-      scale: uiScale,
-      duration: 480,
-      delay: 180,
-      ease: 'Back.easeOut',
+      panelCenterX,
+      panelTop,
+      PANEL_W,
+      compact,
+      uiScale,
+      titleColor,
+      titleStartScale: theme.titleStartScale,
+      depthBase: d,
     });
-    this.tweens.add({ targets: subtitle, alpha: 1, duration: 320, delay: 320 });
 
     // W66 Ironmoor amplification: an extra rose-pink banner on any
     // Ironmoor run (victory or death) so the posture is acknowledged
     // in the ceremony. Victory copy leans into the pride moment;
     // death copy keeps the Soul Charter compassionate register.
     if (this.payload.ironmoor) {
-      const banner_ = ironmoorBannerStyle(isVictory);
-      const banner = this.add
-        .text(panelCenterX, panelTop + (compact ? 104 : 118), t(banner_.key),
-          textStyle('body', { color: banner_.color, align: 'center', wordWrap: { width: (PANEL_W - 48) / Math.max(1, uiScale) } }),
-        )
-        .setOrigin(0.5)
-        .setScrollFactor(0)
-        .setDepth(d + 2)
-        .setAlpha(0)
-        .setScale(uiScale);
-      this.tweens.add({ targets: banner, alpha: 1, duration: 320, delay: 520 });
+      renderGameOverIronmoorBanner(this, {
+        isVictory,
+        panelCenterX,
+        panelTop,
+        PANEL_W,
+        compact,
+        uiScale,
+        depthBase: d,
+      });
     }
 
     // "Whit got ye" insight — death only. Single compact line combining the
@@ -264,30 +231,15 @@ export class GameOverScene extends Phaser.Scene {
 
     // Curse chip — small one-liner acknowledging the curse the player bore.
     // Sits below the variant chip (one row), above the stats panel. Only
-    // rendered if the run had a curse active.
-    const curseDef = getCurseByKey(this.payload.curseKey ?? null);
-    if (curseDef) {
-      const curseChipY = variantChipY + 38;
-      const curseChip = this.add
-        .rectangle(panelCenterX, curseChipY, Math.min(560, PANEL_W - 48), 22, 0x2a1830, 0.96)
-        .setScrollFactor(0)
-        .setDepth(d + 2)
-        .setStrokeStyle(1, 0xb35287, 0.9)
-        .setAlpha(0);
-      const curseText = this.add
-        .text(panelCenterX, curseChipY, t('ui.gameOver.curse_chip', {
-          curse: t(curseDef.nameKey),
-          pct: curseDef.goldBonusPct,
-        }),
-          textStyle('label', { fontSize: '12px', color: COLORS_CSS.CURSE_MAUVE_BRIGHT }),
-        )
-        .setOrigin(0.5)
-        .setScrollFactor(0)
-        .setDepth(d + 3)
-        .setAlpha(0);
-      curseText.setScale(uiScale);
-      this.tweens.add({ targets: [curseChip, curseText], alpha: 1, duration: 260, delay: 500 });
-    }
+    // rendered if the run had a curse active (helper early-returns when null).
+    renderGameOverCurseChip(this, {
+      curseKey: this.payload.curseKey ?? null,
+      panelCenterX,
+      variantChipY,
+      PANEL_W,
+      uiScale,
+      depthBase: d,
+    });
 
     const innerW = compact ? PANEL_W - 32 : PANEL_W - 88;
     // Panel heights scale with uiScale so the scaled text inside each one
