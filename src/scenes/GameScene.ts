@@ -72,7 +72,7 @@ import type { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
-import { applyWeaponMultiplierFold } from './game/weaponMultiplierFold';
+import { tickFrameWorld } from './game/tickFrameWorld';
 import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
@@ -80,7 +80,6 @@ import { TutorialSystem } from '../systems/TutorialSystem';
 import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
-import { shouldReseedAtSec } from '../systems/biomeReseedSchedule';
 import type { FloraScatter } from '../systems/FloraScatter';
 import type { WildlifeSystem } from '../systems/WildlifeSystem';
 import type { MistLayer } from '../systems/MistLayer';
@@ -170,10 +169,7 @@ import { tickStressTest } from '../dev/StressTest';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { wireMantleTier } from './game/wireMantleTier';
 import {
-  tickMantlePulse,
   tickPresentationFrame,
-  tickRelicEffectFrame,
-  tickSecondCounter,
   type SecondTickHookContext,
 } from './game/runtimeTickHooks';
 import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../entities/whiskyBreath';
@@ -1511,105 +1507,48 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     if (headerResult.kind === 'paused') return;
     const { scaledDelta } = headerResult;
 
-    // Advance the "last time player was healthy" pointer — feeds the
-    // low_hp_neglect classifier. Only tracks game-time, not wall-clock, so
-    // a long pause doesn't incorrectly age the player's health state.
-    this.deathCauseTracker.tickHealthyPointer(
-      this.spawnSystem.getGameTimeSec(),
-      this.player.getHp(),
-      this.player.getMaxHp(),
-    );
-
-    this.hazardZones.tick(scaledDelta);
-    if (this.haarFog) this.haarFog.advanceTime(delta * 0.001);
-    if (this.biomeController) {
-      this.biomeController.tick(this.player, this.juice);
-      // Phase B Endless — fresh voronoi every 3 min past the bell so
-      // the world keeps shifting under a player who refuses to leave.
-      const sec = this.runLifecycle?.getSecondsPastBell() ?? 0;
-      if (sec > 0) {
-        if (this.postBellLastReseedSec < 0) this.postBellLastReseedSec = 0;
-        if (shouldReseedAtSec(sec, this.postBellLastReseedSec)) {
-          this.postBellLastReseedSec = sec;
-          this.biomeController.reseed(this, this.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT);
-          this.minimap?.setBiomeManager(this.getBiomeManager());
-          this.juice.showToast(t('ui.gameOver.post_bell_reseed'), '#aa66dd');
-        }
-      }
-    }
-    this.floraScatter?.update(scaledDelta, this.cameras.main);
-    this.wildlifeSystem?.update(scaledDelta, this.player.x, this.player.y);
-    this.mistLayer?.update(scaledDelta, GAME.WORLD_WIDTH);
-    this.gameTickers.tickLowHpCaption();
-    this.gameTickers.tickBanter();
-    // Player input/movement stays on raw delta so controls stay snappy during
-    // boss-kill slow-motion (the cinematic effect shouldn't rob the player of
-    // responsiveness). Game-time systems below use scaledDelta so regen, AI,
-    // spawns, cooldowns, and projectile TTLs all slow in lockstep with the
-    // visible time-scale.
-    this.player.update(delta);
-    this.player.tickRegen(scaledDelta);
-    tickMantlePulse(this.player, this.spawnSystem, scaledDelta);
-    this.spawnSystem.update(scaledDelta, this.player.x, this.player.y);
-
-    // M1 — tick node proximity + refresh HUD widget. Tick fires listener
-    // while player is within trigger radius of an un-visited node; the
-    // registered listener marks visited + logs outcome + advances cursor.
-    this.nodeMapSystem.tick({ x: this.player.x, y: this.player.y });
-    this.nodeMapUI?.update(
-      this.runActState.currentActNodeMap,
-      this.runActState.currentNodeIndex,
-    );
-    this.nodeMarkerSystem.update(this.runActState.currentNodeIndex, scaledDelta);
-
-    this.lastEmittedRunSecond = tickSecondCounter(
-      this.buildSecondTickHookContext(),
-      this.lastEmittedRunSecond,
-    );
-
-    this.standingStones?.tick();
-    this.reliquary?.tick();
-    tickRelicEffectFrame({
-      scaledDelta,
-      player: this.player,
-      relicEffectDriver: this.relicEffectDriver ?? null,
-      relicSlotUI: this.relicSlotUI,
-    });
-
-    if (this.ancestralEcho) {
-      const resolved = this.ancestralEcho.tick(scaledDelta);
-      if (resolved) this.ancestralEcho = null;
-    }
-
-    // Pass player facing — own concern, kept out of the multiplier fold.
-    // Always read from `player.rotation` (persists when stationary) so
-    // directional weapons like arc_sweep don't use a stale angle.
-    this.weaponSystem.setPlayerFacing(this.player.rotation - Math.PI / 2);
-    applyWeaponMultiplierFold({
+    tickFrameWorld({
+      deathCauseTracker: this.deathCauseTracker,
+      hazardZones: this.hazardZones,
+      getHaarFog: () => this.haarFog,
+      getBiomeController: () => this.biomeController,
+      getRunLifecycle: () => this.runLifecycle ?? null,
+      getFloraScatter: () => this.floraScatter,
+      getWildlifeSystem: () => this.wildlifeSystem,
+      getMistLayer: () => this.mistLayer,
+      gameTickers: this.gameTickers,
+      getWeather: () => this.weather,
+      getHazards: () => this.hazards,
       player: this.player,
       juice: this.juice,
+      spawnSystem: this.spawnSystem,
+      nodeMapSystem: this.nodeMapSystem,
+      nodeMarkerSystem: this.nodeMarkerSystem,
+      getNodeMapUI: () => this.nodeMapUI,
+      runActState: this.runActState,
+      getStandingStones: () => this.standingStones,
+      getReliquary: () => this.reliquary,
+      getAncestralEcho: () => this.ancestralEcho,
+      setAncestralEcho: (v) => { this.ancestralEcho = v; },
+      getRelicSlotUI: () => this.relicSlotUI,
+      getRelicEffectDriver: () => this.relicEffectDriver,
+      relicOrchestrator: this.relicOrchestrator,
       weaponSystem: this.weaponSystem,
-      runeBag: this.runeBag,
-      relicEffectDriver: this.relicEffectDriver,
-      timeNowMs: this.time.now,
-      burnsPlatterPickedUpAtMs: this.burnsPlatterPickedUpAtMs,
-    });
-    this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
-
-    // R1 M4.5 P5 — tick live Fianna summons + sweep expired. Use
-    // scaledDelta so slow-mo shortens the spirits' effective lifetime
-    // in lockstep with every other timed effect.
-    this.relicOrchestrator.tickFiannaSpirits(scaledDelta);
-
-    this.xpSystem.update(this.player.x, this.player.y, this.player.getPickupRadius(), this.player.getHpFraction());
-    // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw
-    // delta so VFX don't stall during slow-mo and the combo meter still decays
-    // at wall-clock rate.
-    this.juice.update(delta, this.player.getHpFraction());
-    // Ambient weather likewise stays on raw delta — sky is sky.
-    this.weather?.update(delta);
-    // Hazards run on raw delta too — environment is environment.
-    this.hazards?.update(delta);
+      xpSystem: this.xpSystem,
+      getRuneBag: () => this.runeBag,
+      getBurnsPlatterPickedUpAtMs: () => this.burnsPlatterPickedUpAtMs,
+      getMinimap: () => this.minimap,
+      getRunRng: () => this.runRng,
+      getBiomeManager: () => this.getBiomeManager(),
+      getTimeNowMs: () => this.time.now,
+      getMainCamera: () => this.cameras.main,
+      getSecondTickContext: () => this.buildSecondTickHookContext(),
+      getPostBellLastReseedSec: () => this.postBellLastReseedSec,
+      setPostBellLastReseedSec: (v) => { this.postBellLastReseedSec = v; },
+      getLastEmittedRunSecond: () => this.lastEmittedRunSecond,
+      setLastEmittedRunSecond: (v) => { this.lastEmittedRunSecond = v; },
+      reseedBiome: () => this.biomeController?.reseed(this, this.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT),
+    }, delta, scaledDelta);
 
     tickPresentationFrame({
       delta,
