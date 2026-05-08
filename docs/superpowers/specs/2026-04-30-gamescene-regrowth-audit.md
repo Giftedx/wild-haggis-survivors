@@ -88,7 +88,7 @@ A single `runtimeTickHooks.tickAll(scene, delta)` taking the GameScene as a type
 1. **Audit** (this doc) — done.
 2. **Bucket 1: Rune system controller** — single helper, 180-LOC yield, no UI surface, low blast radius. **SHIPPED 2026-05-08 (commit a8b2529).** GameScene 2874→2706 LOC.
 3. **Bucket 2: Moor moments** — five named functions in `scenes/game/moorMoments.ts` (mercy luck, ancestral echo, standing stones, reliquary, run-identity toast). **SHIPPED 2026-05-08.** GameScene 2706→2616 LOC (delegators retained for call-site compat; net yield −90 LOC vs audit's projected −180 because state fields stay on scene for the existing tick / minimap / destroy paths).
-4. **Bucket 3: launchActIntermission slim-down** — 90-LOC yield. E2E gate (Moor Road act sequence).
+4. **Bucket 3: launchActIntermission slim-down** — 90-LOC yield. E2E gate (Moor Road act sequence). **SHIPPED 2026-05-08.** Resolver + scene-launch path extracted to `scenes/game/actIntermissionLauncher.ts` as a hooks-based named function. GameScene 2616→2533 LOC. Both `e2e/w2-moor-road.spec.ts` specs (smoke + full boss sequence) green on chromium-desktop.
 5. **Bucket 4: `runtimeTickHooks`** — extract one feature at a time (rune tick, mantle pulse, weapon multiplier fold, etc), commit per bucket. ~200-LOC yield. E2E gate after every two buckets.
 6. **Bucket 5: `create()` `*Install.ts` modules** — 6 install helpers, 600-LOC yield. **Highest blast radius** — full E2E + manual smoke per install module. Stop condition: GameScene ≤1700 LOC.
 

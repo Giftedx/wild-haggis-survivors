@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { GAME, COLORS_CSS } from '../config';
+import { GAME } from '../config';
 import { Player } from '../entities/Player';
 import { Enemy } from '../entities/Enemy';
 import { SpawnSystem } from '../systems/SpawnSystem';
@@ -29,8 +29,8 @@ import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/syste
 import { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave,
-  bumpRoutePicked, bumpBanterHeard,
-  bumpBossKillCount, bumpCursedVictoryByBoss, addFirstRouteVisit,
+  bumpBanterHeard,
+  bumpBossKillCount, bumpCursedVictoryByBoss,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -118,9 +118,8 @@ import { RunActState } from './game/RunActState';
 import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC } from './game/standingStones';
 import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
 import { AncestralEcho } from './game/ancestralEcho';
-import { ActIntermissionScene } from './ActIntermissionScene';
-import { applyRouteModifierDeltas } from './actIntermissionResolve';
-import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
+import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
+import type { RoutePick, RouteResumeContext } from '../data/routes';
 import { getRoute } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
@@ -2201,108 +2200,26 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private launchActIntermission(actN: 1 | 2): void {
-    const slot: PickerSlot = actN === 1 ? 'A' : 'B';
-    const atGameTimeSec = Math.floor(this.spawnSystem.getGameTimeSec());
-    const settings = this.settingsManager.load();
-
-    // Tag the request with the act number so the banter pool can pick
-    // act-specific lines ("Act 1 wrapped" vs "Act 2 wrapped"). Generic
-    // pool still fires when no act-tagged sub-pool exists.
-    this.banter?.request('act_complete', { tag: `act_${actN}` });
-
-    // Common resolver — runs whether picker was shown or auto-defaulted.
-    const onResolve = (pick: RoutePick, route: RouteDef) => {
-      this.runActState.recordPick(pick);
-      this.replayRecorder?.pushRoute(pick);
-      this.runModifiers.routePicks.push(pick);
-      // C1 M3 Task 14 — persist into the DiscoveryLog so the Almanac's
-      // Weys book lights up the entry. Best-effort write; the act
-      // transition still proceeds even if the save fails.
-      bumpRoutePicked(pick.routeKey, this.discoveryRunId(), Date.now());
-      // H1 M2 T16 — light up the Croft photo-wall polaroid on first pick.
-      addFirstRouteVisit(pick.routeKey);
-      this.banter?.request('route_picked', { tag: pick.routeKey });
-      applyRouteModifierDeltas(this.runModifiers, route);
-      // Mid-run bag writes don't propagate through the cached private
-      // fields that their consumers hold. No current route uses these
-      // besides `spawnIntervalMult`, but the generic bag applicator
-      // would silently no-op a future route writing to either field
-      // — preempt the footgun by resyncing every run-distribution
-      // multiplier that has a cached reader:
-      //   - `SpawnSystem.spawnIntervalMult` → cached at run start
-      //   - `WeaponSystem.curseCooldownMul` → cached at run start
-      // `moveSpeedMult` / `startHpRatio` fold into the Player's
-      // composed base stats at construction; routes MUST NOT touch
-      // them (Player.runBase* are `readonly`, no setter exists).
-      this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
-      this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-      this.runActState.advanceToAct(
-        (actN + 1) as 1 | 2 | 3,
-        this.spawnSystem.getGameTimeSec(),
-      );
-      // M1 — fresh node path for the new act. Runs after advanceToAct so
-      // `runActState.currentAct` reads the new value everywhere downstream.
-      this.initNodeMapForAct((actN + 1) as 1 | 2 | 3);
-      route.onResume?.(this.buildRouteResumeContext());
-      this.timeManager.release('ACT_INTERMISSION');
-      // Telemetry fan-out — AnalyticsManager logs `route_picked` (opt-in
-      // only). Shape mirrors `RoutePick` so route-monotony and skip-rate
-      // kill-criteria can be computed directly from portal stats.
-      globalEventBus.emit('GLOBAL_ROUTE_PICKED', {
-        slot: pick.slot,
-        routeKey: pick.routeKey,
-        atGameTimeSec: pick.atGameTimeSec,
-        defaultedBySetting: pick.defaultedBySetting,
-      });
-    };
-
-    // T1 Phase 3 — playback: the recorded pick wins. No card UI, no
-    // pause — shift the next route off the queue and apply inline.
-    // Slot mismatch would indicate a corrupt blob; bail to the live
-    // path in that case so the run keeps moving.
-    if (this.pendingReplayRoutes.length > 0) {
-      const next = this.pendingReplayRoutes[0];
-      if (next.slot === slot) {
-        this.pendingReplayRoutes.shift();
-        const route = getRoute(next.routeKey);
-        this.time.delayedCall(0, () => onResolve(next, route));
-        return;
-      }
-      // Slot mismatch: log + fall through to live handling. Don't pop
-      // the queue — later picks may still line up.
-      console.warn('[replay] route slot mismatch', { expected: slot, got: next.slot });
-    }
-
-    if (settings.skipActIntermissions) {
-      const { pick, route } = ActIntermissionScene.resolveDefault(slot, atGameTimeSec);
-      // T301 — surface the auto-picked route so a player who toggled
-      // Skip Intermissions still sees which fork the moor took. Without
-      // this toast the route silently changes the run's modifiers and
-      // the player has no way to learn what just happened.
-      this.juice.showToast(
-        t('ui.game.skip_route_picked', { route: t(route.labelKey) }),
-        '#ffe080',
-      );
-      // No pause, no scene launch — apply inline on a delayedCall(0) so
-      // current frame (camera shake, XP gem spawn, banter) finishes.
-      this.time.delayedCall(0, () => onResolve(pick, route));
-      return;
-    }
-
-    this.timeManager.request('ACT_INTERMISSION', { pausePhysics: true, timeScale: 0 });
-    this.banter?.request('act_intermission_enter');
-    // A11y caption — surfaces the fork moment for audio-off / deaf play.
-    this.caption(
-      'act_intermission_open',
-      t('ui.captions.act_intermission_open'),
-      COLORS_CSS.TOAST_GOLD,
-      3000,
+    launchActIntermissionImpl(
+      {
+        scene: this,
+        spawnSystem: this.spawnSystem,
+        weaponSystem: this.weaponSystem,
+        timeManager: this.timeManager,
+        juice: this.juice,
+        banter: this.banter,
+        settingsManager: this.settingsManager,
+        runActState: this.runActState,
+        runModifiers: this.runModifiers,
+        replayRecorder: this.replayRecorder,
+        pendingReplayRoutes: this.pendingReplayRoutes,
+        caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+        discoveryRunId: () => this.discoveryRunId(),
+        buildRouteResumeContext: () => this.buildRouteResumeContext(),
+        initNodeMapForAct: (act) => this.initNodeMapForAct(act),
+      },
+      actN,
     );
-    this.scene.launch(ActIntermissionScene.KEY, {
-      slot,
-      atGameTimeSec,
-      onResolve,
-    });
   }
 
   /**
