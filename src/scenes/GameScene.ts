@@ -76,6 +76,7 @@ import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
 import { applyWeaponMultiplierFold } from './game/weaponMultiplierFold';
 import { wireWeaponSystemListeners } from './game/wireWeaponSystemListeners';
+import { wireXpSystemListeners } from './game/wireXpSystemListeners';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { TutorialSystem } from '../systems/TutorialSystem';
@@ -1164,31 +1165,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSFXManager: () => this.getSFXManager(),
     });
 
-    // When player levels up, pause and show upgrade choices
-    this.xpSystem.events.on('levelup', (newLevel: number) => {
-      this.levelUpFlow.handleLevelUp(newLevel);
-      // Celebrating one-shot — haggis hops in place. Plays once, loops
-      // four frames while the upgrade overlay is up, then the FSM
-      // returns to idle/walking when the overlay dismisses.
-      this.player.notifyCelebrate();
-      // Tag with the active variant so iron_belly/moor_runner flavor
-      // their celebration; other variants fall through to the generic
-      // pool silently (missing sub-pool == no special handling).
-      this.banter?.request('level_up', { tag: this.activeVariant?.key });
-      // A1 M4 — accessibility caption.
-      this.caption('level_up', t('ui.captions.level_up'), '#ffdd66', 3500);
-    });
-
-    // Post-cap echo cards — XP past MAX_LEVEL accumulates into an echo
-    // buffer. When it crosses the threshold, XPSystem emits `echoReady`
-    // and the player picks a small stat boost from the ECHO_CARDS pool.
-    // Same UI as a level-up but without the ceremony (no heal, no aura,
-    // no milestone pulse). Gives the back half of the 15-min run real
-    // agency instead of the old AFK XP-to-gold tail.
-    this.xpSystem.events.on('echoReady', () => {
-      this.levelUpFlow.handleEcho();
-      // A1 M4 — accessibility caption.
-      this.caption('echo_ready', t('ui.captions.echo_ready'), '#c8a8e8', 3500);
+    wireXpSystemListeners({
+      xpSystem: this.xpSystem,
+      levelUpFlow: this.levelUpFlow,
+      player: this.player,
+      getBanter: () => this.banter,
+      getActiveVariantKey: () => this.activeVariant?.key,
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
 
     // Player ↔ Enemy collision
