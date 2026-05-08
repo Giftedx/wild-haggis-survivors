@@ -1,10 +1,11 @@
 import * as Phaser from 'phaser';
 import { GAME } from '../config';
 import { Player } from '../entities/Player';
-import { Enemy } from '../entities/Enemy';
-import { SpawnSystem } from '../systems/SpawnSystem';
-import { WeaponSystem } from '../systems/WeaponSystem';
-import { XPSystem } from '../systems/XPSystem';
+import type { Enemy } from '../entities/Enemy';
+import type { SpawnSystem } from '../systems/SpawnSystem';
+import type { WeaponSystem } from '../systems/WeaponSystem';
+import type { XPSystem } from '../systems/XPSystem';
+import { installCoreCombatSystems } from './game/installCoreCombatSystems';
 import {
   NodeMapSystem,
   buildNodeMapState,
@@ -70,7 +71,7 @@ import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { type CurseKey } from '../data/curses';
 import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
-import { StatusFxPool } from '../systems/StatusFxPool';
+import type { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
@@ -862,29 +863,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     });
     this.hazardZones.spawn();
 
-    // Systems
-    this.statusFxPool = new StatusFxPool(this);
-    this.spawnSystem = new SpawnSystem(this);
-    this.spawnSystem.setSpawnIntervalMult(this.runModifiers.spawnIntervalMult);
-    this.weaponSystem = new WeaponSystem(this, this.spawnSystem.getEnemyGroup());
-    this.weaponSystem.setCurseCooldownMul(this.runModifiers.weaponCooldownMult);
-    // R1 M3 T20d + M4 + M4.5 P3/P4 — per-hit damage stack. Bronze
-    // clasp first-hit window runs before highland_torque elite mult
-    // so +15% + +100% compose predictably; fishermens_net applies
-    // after (velocity-aware), then bodhran_skin's on-beat window on
-    // top. Beat phase is sampled from the shared music engine at
-    // hit-time so a 60Hz frame lines up with the audio-ctx clock.
-    this.weaponSystem.setHitDamageModifier((dmg, now, isElite, velocityDot) => {
-      const afterClasp = this.relicEffectDriver.modifyWeaponDamage(dmg, now);
-      const afterElite = this.relicEffectDriver.modifyEliteDamage(afterClasp, isElite);
-      const afterFisher = this.relicEffectDriver.modifyFishermensNetDamage(afterElite, velocityDot);
-      const beatMs = musicEngine.getMsSinceLastQuarterNote();
-      const periodMs = musicEngine.getQuarterNotePeriodMs();
-      return this.relicEffectDriver.modifyBodhranBeatDamage(afterFisher, beatMs, periodMs);
-    });
-    this.xpSystem = new XPSystem(this);
-    Enemy.refreshSettings();
-    this.bossHpTracker?.reset();
+    // Phase 5 Bucket 6 partial — core combat systems bundled.
+    ({
+      statusFxPool: this.statusFxPool,
+      spawnSystem: this.spawnSystem,
+      weaponSystem: this.weaponSystem,
+      xpSystem: this.xpSystem,
+    } = installCoreCombatSystems({
+      scene: this,
+      runModifiers: this.runModifiers,
+      bossHpTracker: this.bossHpTracker,
+      getRelicEffectDriver: () => this.relicEffectDriver ?? null,
+    }));
     this.ownedPassives = [];
     this.evolvedWeapons = [];
     this.ownedRuneIds = [];
