@@ -14,11 +14,11 @@
 | 2 | [W71 Skeletal Animation Rig (Phase 1+)](02-w71-skeletal-animation-rig.md) | S | 8–12 weeks | Phase 0 gate A/B + perf budget |
 | 3 | [P3 Cloud Saves & Cross-Device](03-p3-cloud-saves.md) | S | 6–10 weeks | Backend selection + auth |
 | 4 | [W95 Mobile Platform Rework](04-w95-mobile-rework.md) | S | 4–6 weeks | Real-device QA matrix |
-| 5 | [Scene Refactor + Biomes + Endless Mode](05-scene-refactor-biomes-endless.md) | S | 4–6 weeks | Phase A+B before C |
+| 5 | [Scene Refactor + Biomes + Endless Mode](05-scene-refactor-biomes-endless.md) **— A+B+C functionally shipped 2026-04-29 → 2026-05-09 under different module names; see Notes** | S | 4–6 weeks | Phase A+B before C |
 | 6 | [B1 Banter Density Phase 4+5 (~390 leaves)](06-b1-banter-density-phase4-5.md) | A | 2–3 weeks | Cailleach Gaelic review |
 | 7 | [W27 Capture Pipeline Phase 2 (clip + highlight)](07-w27-capture-pipeline-phase2.md) | A | 2–3 weeks | Bundle ≤+200 KB |
 | 8 | [C2 Weapon Lore Pass completion](08-c2-weapon-lore-completion.md) | A | 1–2 weeks | Native + Burns audit |
-| 9 | [U1 Runes M4 — wire offers + consumers](09-u1-runes-m4-wire-consumers.md) | A | 1–2 weeks | Triple-audit T111 reversal |
+| 9 | [U1 Runes M4 — wire offers + consumers](09-u1-runes-m4-wire-consumers.md) **— SHIPPED 2026-04-26 (`a86afe5`); see [blocked/09-shipped.md](blocked/09-shipped.md)** | A | 1–2 weeks | Triple-audit T111 reversal |
 | 10 | [T401 GameScene Decomposition](10-t401-gamescene-decomposition.md) | A | 2–3 weeks | Zero behaviour change |
 
 ---
@@ -53,13 +53,20 @@
 - **Phaser depth budget** (per memory) — HUD chrome 50–60 < banter 80–92 < gameplay-critical 95–101 < countdown 1000 < node prompt 1400 < relic prompt 1600. Anything new must claim a slot or risk z-order regressions.
 
 ### Branch state at scan time
-Current branch `master` has uncommitted changes that look like in-flight work on **T213 (FTUE progressive disclosure)** and **T310 (bundle lazy-loading)**:
-- `src/scenes/croftProgressiveDisclosure.ts` + `.test.ts` (new — T213)
-- `src/scenes/lazyProductionScenes.ts` (new — T310)
-- `src/main.ts`, `src/scenes/CroftScene.ts`, `e2e/croft-smoke.spec.ts`, `e2e/design-verify.spec.ts` (modified)
-- `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` (modified)
 
-These are **not** in the top 10 because they're already in-progress on this branch.
+**2026-04-26 snapshot:** Current branch `master` has uncommitted changes that look like in-flight work on **T213 (FTUE progressive disclosure)** and **T310 (bundle lazy-loading)** — both shipped in subsequent commits same day per Closeout block in `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md`.
+
+**2026-05-09 update:** Since the original scan, the codebase restructure (Phases 0–7) completed
+2026-05-09 (`c0097d8`). GameScene 2874 → 1672 LOC. Many helper modules previously
+named in #5 Phase A (`CollisionRouter`, `LevelUpFlow`, `RunLifecycle`, `OverlayStack`,
+`SceneResetter`) shipped under nearby names (`installCombatCollisions`, `LevelUpFlow`,
+`RunLifecycle`, `RunPersistenceCoordinator`, `RunPersistenceBridge`, `IFrameController`).
+Phase B (biomes) shipped 2026-04-29/30 (Seawrack `a160662`, Haar `4c97626`, Frost `24c9301`).
+Phase C (endless / post-bell) is wired through `src/core/PostBellEscalation.ts`,
+`src/scenes/game/RunLifecycle.ts:isPostBell()`, `src/systems/postBellBossCadence.ts`,
+`src/systems/cursedSpawnRoll.ts`, and surfaces in `gameOverFormatting`,
+`chronicleAggregates`, `save.endless.test.ts`. **#5 charter is functionally shipped under
+different module names; #9 is fully shipped (see `blocked/09-shipped.md`).**
 
 ### Triple-audit 2026-04-26 deferral list (for context)
 - **T401** — GameScene decomposition (this list, #10) explicitly P3-deferred, allowed post-ship if timeboxed.

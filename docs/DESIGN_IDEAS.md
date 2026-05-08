@@ -14,15 +14,15 @@
 
 One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 
-- **Drift Mastery** — tap perpendicular to drift to bank a "Grip" meter; spend for a tight burst-turn. The drift becomes a dance, not a bug. Touches `Player.ts`.
+- ~~**Drift Mastery**~~ — ✅ shipped 2026-04-28 (`src/entities/driftMastery.ts` + `driftMastery.test.ts`). Counter-drift input rate-gates a Grip meter (`MS_PER_PIP`); each pip caps at `MAX_PIPS`. Pressing G consumes a pip → `BURST_MS` of drift-cancel + `BURST_SPEED_MUL` move-speed boost. Pure helper — caller (`Player.update`) supplies inputs and receives a `BurstStatus` describing what the velocity-apply path should do. Replay-deterministic given identical input streams. Default keybind G (rebound from W to avoid WASD conflict per `b2f88e5`). See `CLAUDE.md` Drift Mastery entry.
 - **Pibroch Crescendo** — firing within ±80 ms of a music downbeat gains a small damage bonus and a sting. Rewards rhythm. Touches `src/systems/music/Conductor.ts`.
 - **Sporran Deck** — pre-run: draw 7 cards, keep 3. Curses, blessings, quirks combine into emergent runs. Touches `runStartModifiers.ts` + `curses.ts`.
 - **Cairn Stacking** — rare interact points during a run; hold to place a stone; three stones = a small run-scoped boon. Non-shoot tension. Touches `PickupSpawner.ts`.
 - **Whistle-Call Companions** — one familiar slot: sheepdog, stoat, eagle, kelpie-foal. Unlocked via deeds. Extra entity load — pair with a perf budget.
 - **Stance Toggle (Braced / Loose / Reeling)** — cycle with Shift. Modifies drift, speed, defence. Skill layer for veterans.
-- **Heather Mantle** — kills grow a visible mantle; at max kill-threshold the mantle pulses and staggers nearby enemies. Needs a rig layer (see **W71** in master plan).
+- ~~**Heather Mantle**~~ — ✅ shipped via W71 Phase 2 (2026-04-23). Kill-stack grows a tiered visible mantle on the haggis rig; at max tier it pulses and staggers nearby enemies via the heather-mantle pulse hook in `runtimeTickHooks.ts`. See `CLAUDE.md` Heather Mantle reference + `project_w71_phase2_status` memory.
 - ~~**Burn Leap**~~ — ✅ shipped 2026-04-18 (`src/entities/burnLeapInput.ts` + Player integration). Double-tap direction arms a 280 ms hazard-iframe window + 180 ms speed boost (1.55×); suppresses slick slow, fog pickup-halve, and lava tick damage. Enemy contact still hurts — it's routing, not combat immunity. Pure detector keeps replay determinism.
-- **Whisky Breath** — collect stacks; hold to breathe a short cone of fire that leaves a burn puddle.
+- ~~**Whisky Breath**~~ — ✅ shipped 2026-04-28 (`src/entities/whiskyBreath.ts` + `whiskyBreath.test.ts`). Each non-boss kill banks +1 stack (cap `STACKS_MAX = 12`). Pressing F when stacks ≥ `BREATH_STACKS_REQUIRED` (8) consumes the stack and fires a one-frame `burstFiredEdge: true`; caller applies the AOE in scene-space + drops a burn-puddle DoT. Pure helper, replay-deterministic. HUD bar at top-right shows stack count + ready-state pulse. See `CLAUDE.md` Whisky Breath entry.
 - **Taxman Grudge Ledger** — silent tracker of how you finish elites/bosses; end-of-game dialogue shifts accordingly. Hidden state; save schema care.
 - ~~**Ceilidh Chain Combo**~~ — ✅ shipped: every 8th kill in a streak pulls coins and gems in close (see `ach_ceilidh_commander`).
 - ~~**Standing Stones**~~ — ✅ shipped: three-stone mid-run boon picker (see `ach_stone_circle`).
@@ -33,7 +33,7 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 - **Falls-If-Turning Gag** — dash reverse direction triggers a 400 ms stumble animation; haggis falls over briefly per the myth. Pure comedy; tiny mechanical penalty (speed drop). Optional variant ability.
 - **Bagpipe Lure** — when certain enemies (seelie piper, unseelie fiddler) play, the haggis is drawn toward them by a few pixels per second. Invertible: haggis can be "lured" toward bonuses. (*Ref: wild haggis myth.*)
 - **Clootie Rag Wager** — walking through a Clootie Tree landmark = sacrifice max HP for a run-long buff. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.4.*)
-- **Pre-Run First-Footing** — at run start, a dark-haired NPC first-foots the croft bringing shortbread/whisky/coal/silver. Small rolled bonus. Hogmanay seasonal hook. (*Ref: §13.*)
+- ~~**Pre-Run First-Footing**~~ — ✅ shipped (`src/systems/firstFooting.ts`). During the Hogmanay seasonal window (Dec 28 – Jan 3) every run starts with a rolled first-footing gift — one of four small visible boons (shortbread / whisky / coal / silver). Hearth-warm toast announces the visitor. Pure helpers, replay-deterministic via `runRng`. (*Ref: §13.*)
 - **Three-Bay Warning** — Cu Sith enemy howls thrice; each howl buffs it; third = deadly charge unless killed. (*Ref: `SCOTTISH_RESEARCH.md` §1.2.*)
 - **Race the Beithir** — on sting by a Beithir enemy, a race-timer appears; reach a healing circle before it expires or take massive damage. Diegetic hazard. (*Ref: `SCOTTISH_RESEARCH.md` §1.2.*)
 - ~~**Ancestral Echoes**~~ — ✅ shipped: spectral haggis on the first 30 s at the prior death spot (see `ach_echo_touched`).
