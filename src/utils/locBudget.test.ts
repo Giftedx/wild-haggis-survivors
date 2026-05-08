@@ -13,8 +13,8 @@ const SRC_ROOT = join(__dirname, '..');
  * GameScene: ≤1200 (T401 spec). See docs/superpowers/plans/2026-04-30-codebase-restructure.md.
  */
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
-  ['core/i18n.ts', 4720],
-  ['core/i18n.scs.ts', 4010],
+  ['core/i18n.ts', 120], // was 4720 (Phase 3.1 split — namespaces under i18n/*.ts; resolver + locale machinery remain)
+  ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 split — namespaces under i18n.scs/*.ts; barrel re-export only)
   ['scenes/GameScene.ts', 2985],
   ['data/banter.ts', 2240],
   ['utils/save.ts', 100], // was 1840 (Phase 1 split — barrel re-export over save/*.ts)

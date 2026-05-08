@@ -1,0 +1,51 @@
+export const seasonalEvent = {
+  burns_night: {
+    name: 'Burns Night',
+    description: 'Jan 18 – Feb 1 — the bard\'s week on the moor.',
+    badge_suffix: 'Burns Night',
+    /** E1 T9/T22 — on-screen banner at run start / Croft re-entry. */
+    ceremony_banner: '🕯 Burns Night is live — the bard keeps watch.',
+  },
+  hogmanay: {
+    name: 'Hogmanay',
+    description: 'Dec 28 – Jan 3 — kirk bells crack the year open.',
+    badge_suffix: 'Hogmanay',
+    ceremony_banner: '🔔 Hogmanay is live — a guid new year tae ye.',
+  },
+  samhain: {
+    name: 'Samhain',
+    description: 'Oct 28 – Nov 3 — the veil is thin; mind yer manners.',
+    badge_suffix: 'Samhain',
+    ceremony_banner: '🕯 Samhain is live — the Cailleach is watching.',
+  },
+  st_andrews: {
+    name: 'St Andrew\'s Day',
+    description: 'Nov 27 – Dec 3 — saltire weather on the moor.',
+    badge_suffix: 'St Andrew\'s Day',
+    ceremony_banner: '🏴󠁧󠁢󠁳󠁣󠁴󠁿 St Andrew\'s Day is live — haud on fer hame.',
+  },
+  beltane: {
+    name: 'Beltane',
+    description: 'Apr 28 – May 4 — twin fires on the moor; the cattle run between.',
+    badge_suffix: 'Beltane',
+    ceremony_banner: '🔥 Beltane is live — pass between the twin fires.',
+  },
+  imbolc: {
+    name: 'Imbolc',
+    description: 'Feb 2 – Feb 8 — Brigid stirs; the lambing-sky leans warm.',
+    badge_suffix: 'Imbolc',
+    ceremony_banner: '🕯 Imbolc is live — Brigid\'s mantle is on the byre.',
+  },
+  lammas: {
+    name: 'Lùnastal / Lammas',
+    description: 'Jul 29 – Aug 4 — first sheaves cut; loaf-mass at the cairn.',
+    badge_suffix: 'Lùnastal',
+    ceremony_banner: '🌾 Lùnastal is live — the loaf is broken on the moor.',
+  },
+  bracken_turn: {
+    name: 'Bracken-turn',
+    description: 'Nov 4 – Nov 26 — fronds bronze, frost finds the heather.',
+    badge_suffix: 'Bracken-turn',
+    ceremony_banner: '🍂 Bracken-turn is live — the moor wears its copper coat.',
+  },
+} as const;

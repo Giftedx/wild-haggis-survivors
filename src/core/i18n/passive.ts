@@ -1,0 +1,29 @@
+export const passive = {
+  sporran: {
+    flavour: 'Capacious beyond reason. Gran insists it\'s just well-organised. It holds the day\'s pickings and, sometimes, things the haggis doesn\'t remember collecting.',
+  },
+  whisky_flask: {
+    flavour: 'Filled from a distillery that was drowned when the dam went up. The ten-year-old lasts forever. It is not quite the same as the ten-year-old one can buy.',
+  },
+  kilt: {
+    flavour: 'The great kilt, the feileadh mòr — eighteen feet of wool, belted at the waist and thrown over the shoulder. Gran pinned it. Gran mends it.',
+  },
+  tam_o_shanter: {
+    flavour: "Red toorie on a flat bonnet, named for Burns's drunk, who rode past Alloway Kirk one winter and saw what he oughtn't have. The haggis rides lighter.",
+  },
+  irn_bru: {
+    flavour: "Cumbernauld's contribution to the canon. 1901. The recipe is secret; the caffeine is real. The orange stains of it have been known to save marriages.",
+  },
+  loch_water: {
+    flavour: 'Drawn from a burn that feeds into a loch that no-one names. Peat-dark. Cold. The haggis holds it close; so does whatever else is in it.',
+  },
+  thistle_crown: {
+    flavour: 'Woven by the bairn who invented the Thistle Shot. Gran says it has never been removed; the haggis is not sure who is wearing whom.',
+  },
+  highland_shield: {
+    flavour: 'Round, oak-faced, oxhide-bound. The targe at Culloden. It saved some and not others. The haggis carries one anyway.',
+  },
+  tartan_sash: {
+    flavour: 'Royal Stewart, by the design — though the wearer has no right to it. The moor does not mind. The sash is proud to be worn.',
+  },
+} as const;
