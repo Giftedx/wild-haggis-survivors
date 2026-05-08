@@ -56,7 +56,6 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
-import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
 import { sfxManager, type SFXManager } from '../systems/audio/SFXManager';
 import { getCameraViewport } from '../ui/cameraViewport';
@@ -111,7 +110,7 @@ import { canOpenPauseMenu } from './game/pauseGate';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
-import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC } from './game/standingStones';
+import { StandingStones } from './game/standingStones';
 import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
@@ -176,7 +175,12 @@ import {
 import { tickStressTest } from '../dev/StressTest';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
-import { computeMantlePulseStagger } from '../entities/mantlePulse';
+import {
+  tickMantlePulse,
+  tickRelicEffectFrame,
+  tickSecondCounter,
+  type SecondTickHookContext,
+} from './game/runtimeTickHooks';
 import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../entities/whiskyBreath';
 import { HaarFogController } from '../systems/shaders/HaarFogController';
 import { biomeHaarTarget } from '../systems/shaders/biomeHaar';
@@ -1837,18 +1841,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // visible time-scale.
     this.player.update(delta);
     this.player.tickRegen(scaledDelta);
-    // Heather-mantle pulse — DESIGN_IDEAS §1. Tier-2 only; pure stagger
-    // (no damage). Gameplay delta so cinematic slow-mo slows the cadence.
-    this.player.tickMantlePulse(scaledDelta, (cx, cy, radius) => {
-      const enemies = this.spawnSystem.getEnemyGroup().getChildren() as Enemy[];
-      for (const enemy of enemies) {
-        if (!enemy.active) continue;
-        const impulse = computeMantlePulseStagger(cx, cy, enemy.x, enemy.y, radius);
-        // `applyKnockback` already early-exits on `behavior === 'hazard'`
-        // so the predicate doesn't need duplicating here.
-        if (impulse) enemy.applyKnockback(impulse.vx, impulse.vy);
-      }
-    });
+    tickMantlePulse(this.player, this.spawnSystem, scaledDelta);
     this.spawnSystem.update(scaledDelta, this.player.x, this.player.y);
 
     // M1 — tick node proximity + refresh HUD widget. Tick fires listener
@@ -1861,43 +1854,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     );
     this.nodeMarkerSystem.update(this.runActState.currentNodeIndex, scaledDelta);
 
-    const runSec = Math.floor(this.spawnSystem.getGameTimeSec());
-    if (runSec !== this.lastEmittedRunSecond) {
-      this.lastEmittedRunSecond = runSec;
-      globalEventBus.emit('GLOBAL_RUN_TIME_SEC', {
-        gameTimeSec: this.spawnSystem.getGameTimeSec(),
-        wholeSecond: runSec,
-      });
-      this.moorMoments.tick(runSec);
-      // Use `>=` so a lag spike or paused-then-resumed second-counter that
-      // skips the exact tick still triggers — once-only guard prevents repeats.
-      if (runSec >= STONE_WARN_SEC && !this.stonesWarned && !this.standingStones) {
-        this.stonesWarned = true;
-        this.juice.showToast(t('ui.standingStones.warn_toast'), '#ffe080');
-        this.caption('standing_stones_warn', t('ui.standingStones.warn_caption'), '#ffe080', 3000);
-      }
-      if (runSec >= STONE_SPAWN_SEC && !this.standingStones) {
-        this.spawnStandingStones();
-      }
-      if (this.reliquarySpawnSec > 0 && runSec >= this.reliquarySpawnSec && !this.reliquary) {
-        this.spawnReliquary();
-      }
-    }
+    this.lastEmittedRunSecond = tickSecondCounter(
+      this.buildSecondTickHookContext(),
+      this.lastEmittedRunSecond,
+    );
 
     this.standingStones?.tick();
     this.reliquary?.tick();
-    // R1 — per-frame relic effect tick. Scaled delta so timer-based
-    // rare effects (Gran's Teapot damage-free seconds) pause correctly
-    // with the game rather than running off wall-clock.
-    this.relicEffectDriver?.updatePerFrame(scaledDelta);
-    // grans_teapot — heal 5% max HP/s after 5s unharmed. Integer heals
-    // only; fractional carry lives inside the driver state.
-    const teapotHeal = this.relicEffectDriver?.tickGransTeapotFrame(
+    tickRelicEffectFrame({
       scaledDelta,
-      this.player.getMaxHp(),
-    ) ?? 0;
-    if (teapotHeal > 0) this.player.heal(teapotHeal);
-    this.relicSlotUI?.update();
+      player: this.player,
+      relicEffectDriver: this.relicEffectDriver ?? null,
+      relicSlotUI: this.relicSlotUI,
+    });
 
     if (this.ancestralEcho) {
       const resolved = this.ancestralEcho.tick(scaledDelta);
@@ -2084,6 +2053,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // `scenes/game/moorMoments.ts`. Methods below are thin delegators so
   // existing call sites keep their `this.tryMoorMercyLuck(...)` /
   // `this.spawnStandingStones(...)` shape.
+
+  private buildSecondTickHookContext(): SecondTickHookContext {
+    return {
+      spawnSystem: this.spawnSystem,
+      juice: this.juice,
+      moorMoments: this.moorMoments,
+      getStandingStones: () => this.standingStones,
+      getReliquary: () => this.reliquary,
+      getReliquarySpawnSec: () => this.reliquarySpawnSec,
+      getStonesWarned: () => this.stonesWarned,
+      markStonesWarned: () => { this.stonesWarned = true; },
+      spawnStandingStones: () => this.spawnStandingStones(),
+      spawnReliquary: () => this.spawnReliquary(),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    };
+  }
 
   private buildMoorMomentsContext(): MoorMomentsContext {
     return {
