@@ -13,11 +13,11 @@
   - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 17` (see `src/utils/save/schema.ts`).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts:306`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** ~462 vitest files; 4716+ test cases (per memory `project_repo_health`).
+- **Tests:** 463 vitest files; 4828 test cases (verified 2026-05-08 via `npm test`).
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
 
-### Flagship status (10 of 11 shipped; 1 partial; 3 deferred)
+### Flagship status (15 of 20 shipped; 2 partial; 3 deferred)
 
 | ID | Flagship | State (as of 2026-05-08) |
 |---|---|---|

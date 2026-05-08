@@ -31,7 +31,7 @@ existing repo memory, and the master plan.
 | C4 | GDPR (UK + EU) compliance — data controller is the maintainer. Right-to-delete (Article 17), right-to-access (Article 15), data minimisation (Article 5). | `CULTURAL_SENSITIVITIES_RESEARCH.md` privacy posture; charter §Phase 3. | Must support full account deletion within 30 days; minimal PII (email only). |
 | C5 | Privacy-conscious user (the project owner is the primary daily user; email on file `michael.mcmillan93@gmail.com`). | Charter §Anti-patterns, project memory. | No telemetry beyond what's strictly needed. |
 | C6 | Bundle budget: client auth + sync layer ≤30 KB gzip. | Charter §Phase 4 + acceptance criteria. | Heavy SDKs (Firebase JS) need lazy-load or rejection. |
-| C7 | Save payload size: existing `whs_save` JSON is on the order of 5–50 KB depending on Almanac progress + replay blob. Worst case ≤200 KB. | Inspection of `src/utils/save.ts` (1837 lines, schema v17). | Per-row storage budget must comfortably fit; not a row-DB sweet spot but trivial for any modern KV/SQL. |
+| C7 | Save payload size: existing `whs_save` JSON is on the order of 5–50 KB depending on Almanac progress + replay blob. Worst case ≤200 KB. | Inspection of `src/utils/save/` module (post-2026-05-07 split: schema in `schema.ts`, types in `types.ts`, migrations in `migrations.ts`; barrel re-export at `src/utils/save.ts`; schema v17). | Per-row storage budget must comfortably fit; not a row-DB sweet spot but trivial for any modern KV/SQL. |
 | C8 | Auth: magic-link minimum, no password (charter explicit). OAuth Google/Apple is optional. | Charter §Phase 1.2 + §Anti-patterns. | Provider must support email magic-link or we build it; SMTP/email service required. |
 | C9 | Cost ceiling: <$5/mo at 10k MAU. | Charter §Risk. | Rules out always-on VM hosting; rules out per-row hot-path pricing at scale. |
 | C10 | Data residency: prefer EU/UK pop. UK player base implied by Scottish theming; GDPR controller in UK. | `CULTURAL_SENSITIVITIES_RESEARCH.md`. | Vendor must let us pin to EU region, OR be globally-distributed enough that this is moot. |
@@ -242,7 +242,7 @@ of `docs/top-10-tasks/blocked/03-blocked-on-human.md`:
 - `docs/HUGE_INITIATIVES_MASTER_PLAN.md §P3` — strategic context.
 - `docs/HUGE_INITIATIVES_VERDICT.md §32` — verdict and trade-offs.
 - `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md` — GDPR + Scottish-content privacy.
-- `src/utils/save.ts` — current schema (`whs_save`, v17).
+- `src/utils/save/` — current schema (`whs_save`, v17). Module split: `schema.ts` (version + helpers), `types.ts` (`SaveData` shape), `migrations.ts` (full chain), `bumpers.ts`/`history.ts`/`queries.ts`/`variants.ts`/`io.ts`. Barrel at `src/utils/save.ts`.
 - `src/core/SaveManager.ts` — meta save (`whs_meta_save`, v9).
 - `src/core/SettingsManager.ts` — settings save (`whs_game_settings`, v1).
 - `src/utils/saveFailure.ts` — T131 emitter; cloud sync will route through here.

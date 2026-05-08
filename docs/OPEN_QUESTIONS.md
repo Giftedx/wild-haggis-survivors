@@ -36,17 +36,11 @@ Stakeholder decisions blocking work. Each entry: what's blocked, what we know, w
 
 ---
 
-### Q3 — `fix_plan.md` at root
+### ~~Q3~~ — `fix_plan.md` at root
 
-**Blocks:** root tidiness.
+**Resolved 2026-05-08:** deleted per the recommendation. Every item was checked off; full content remains in git history. `.ralph/fix_plan.md` stayed in place (frozen with the rest of `.ralph/`). No other doc referenced the file.
 
-**Context:** `fix_plan.md` at repo root has all 6 P1/P2 items checked off. There's also an older `.ralph/fix_plan.md`. Both are historical.
-
-**Decision needed:** Delete `fix_plan.md` (root)? Move to `docs/archive/`? Keep as a closed-issues record?
-
-**Recommendation:** delete `fix_plan.md` at root — every item is resolved and the work is in git history. `.ralph/fix_plan.md` stays where it is (frozen with the rest of `.ralph/`).
-
-**Priority:** Low.
+**Original context:** `fix_plan.md` at repo root had all 6 P1/P2 items checked off; there's also an older `.ralph/fix_plan.md`. Recommendation was delete — done.
 
 ---
 

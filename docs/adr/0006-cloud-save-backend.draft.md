@@ -10,7 +10,7 @@
 ## Context
 
 WHS currently persists everything to `localStorage`:
-- `whs_save` — `src/utils/save.ts`, schema v17, biggest payload
+- `whs_save` — `src/utils/save/` module (barrel at `src/utils/save.ts`), schema v17, biggest payload
 - `whs_meta_save` — `src/core/SaveManager.ts`, schema v9
 - `whs_game_settings` — `src/core/SettingsManager.ts`, settings v1
 

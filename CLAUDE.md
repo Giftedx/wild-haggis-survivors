@@ -31,7 +31,7 @@ Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Pha
 - `npm run ci` — Lint + Vitest + build (no E2E)
 - `npm run ci:all` — Full gate: `ci` then E2E (matches `.github/workflows/ci.yml` after `playwright install`)
 
-Vitest is configured (see `src/utils/save.test.ts`).
+Vitest is configured (see `src/utils/save.test.ts` and the suites under `src/utils/save/`).
 
 ### Windows: Git “everything modified” (file mode only)
 If `git status` lists a huge set of files with **no line changes**—often `old mode 100755` / `new mode 100644` in `git diff`—that is **executable-bit noise** on Windows. In this repo run once:
@@ -87,12 +87,14 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 - **The Drift**: A constant clockwise rotational offset on input (configurable in `PLAYER.DRIFT_DEGREES`). Reduced by leveling and upgrades. Core identity of the game.
 - **Weapon Evolution**: 7 of the 8 weapons have a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool. Bagpipes is utility-only with no evolution.
 - **Soft World Boundaries**: No hard walls — player slows near edges with a gentle push-back force.
-- **Persistence**: `localStorage` via `src/utils/save.ts` (key: `whs_save`). Stores gold, permanent upgrades, settings, and run stats.
+- **Persistence**: `localStorage` via the `src/utils/save/` module (key: `whs_save`; barrel re-export at `src/utils/save.ts`). Schema lives in `src/utils/save/schema.ts` (`SAVE_SCHEMA_VERSION = 17`); types in `types.ts`; migration chain in `migrations.ts`; bumpers/queries/history/variants/io split into sibling files. Stores gold, permanent upgrades, settings, and run stats. Two other independent stores: `whs_meta_save` (`src/core/SaveManager.ts`, schema v9) and `whs_game_settings` (`src/core/SettingsManager.ts`, settings v1).
 - **Elite Enemies**: 10% spawn chance after 2 minutes. Golden glow, 2× HP, 1.3× speed, 3× XP. Marked via `Enemy.markAsElite()`. Never applied to bosses or hazards.
 - **Card Reroll**: 1 free reroll per level-up. Managed by `UpgradeCardsUI.grantReroll()` / `rerollsLeft` counter.
 - **Minimap** (`src/ui/Minimap.ts`): Corner radar showing enemy dots, elite (gold), boss (diamond), player (green), camera viewport.
 - **Hit Freeze**: 20ms `timeScale = 0` on kills via `JuiceSystem.hitFreeze()`. Uses real `setTimeout` (not delayedCall). Skipped during slow-motion.
 - **Moor Road acts (W2)**: Boss kills on `gordon` and `tour_bus` complete acts 1 and 2 respectively (see `dispatchActComplete.ts` pure mapping). `taxman` triggers the existing victory path and is NOT routed through `onActComplete`. `RunActState` tracks act counter + `pickerHistory`; the array is snapshot into `RunHistoryEntry.routes` by `RunHistoryRecorder`.
+- **Drift Mastery** (`src/entities/driftMastery.ts`): Pure helper turning the haggis's signature drift bias from a tax into a dance. Rotating input AGAINST the drift sign accumulates a "Grip" charge (rate-gated by `MS_PER_PIP`); each pip caps at `MAX_PIPS`. Consume input edge spends one pip → `BURST_MS` of drift-cancel + `BURST_SPEED_MUL` move-speed multiplier. No Phaser, no scene state — caller (`Player.update`) supplies inputs and receives a `BurstStatus` describing what the velocity-apply path should do. Replay-deterministic given identical input streams (parity test in `driftMastery.test.ts`). Default keybind G (rebound from W to avoid WASD conflict per `b2f88e5`). Refs: `SCOTTISH_RESEARCH_DEEP.md §11.5`, `DESIGN_IDEAS.md §1`.
+- **Whisky Breath** (`src/entities/whiskyBreath.ts`): Sister mechanic to Drift Mastery — kill-stack AOE burst rewarding sustained kill streams without coupling to combo/XP. Each non-boss kill banks +1 stack (cap `STACKS_MAX = 12`). Pressing F when stacks ≥ `BREATH_STACKS_REQUIRED` (8) consumes the stack and fires a one-frame burst flag (`burstFiredEdge: true`); caller applies the AOE in scene-space + drops a burn-puddle DoT. One-tick edge — no lingering "burst active" timer. Pure helper, replay-deterministic. HUD bar at top-right shows stack count + ready-state pulse. Refs: `SCOTTISH_RESEARCH_DEEP.md §13.6`, `DESIGN_IDEAS.md §1`.
 
 ### Path Alias
 `@/*` maps to `./src/*` (configured in both `tsconfig.json` and `vite.config.ts`).
