@@ -23,8 +23,6 @@ import {
   resolveScreenShakeParams,
   BOSS_SHAKE_BASE_AMP,
   BOSS_SHAKE_DURATION_MS,
-  BOSS_DEATH_SHAKE_BASE_AMP,
-  BOSS_DEATH_SHAKE_DURATION_MS,
 } from './screenShakeParams';
 import {
   CEILIDH_MAGNET_DURATION_MS,
@@ -36,9 +34,6 @@ import { bumpCeilidhPulsesLifetime, bumpFirstTimeEvent } from '../utils/save';
 import { comboDamageMultiplier } from './comboDamage';
 import { globalEventBus } from '../core/GlobalEventBus';
 import {
-  JUICE_BOSS_DEATH_GOLDS,
-  JUICE_BOSS_DEATH_RING_PRIMARY,
-  JUICE_BOSS_DEATH_RING_SECONDARY,
   JUICE_EVOLUTION_GOLDS,
   JUICE_EVOLUTION_RING_GOLDS,
   JUICE_EVOLUTION_BEAM_COLOR,
@@ -48,6 +43,8 @@ import {
 import { TOAST_COLORS } from '../ui/toastPalette';
 import { RING_TIMING, FLASH_TIMING } from './effectTimingPresets';
 import { MOOR_MOMENT_TOKEN_KEYS } from '../art/sprites/moorMomentTokens';
+import type { BossSpectaclePools } from './juice/bossSpectacle';
+import { playBossDeathSpectacle, playMidRunBossDeathSpectacle } from './juice/bossSpectacle';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -80,13 +77,13 @@ export class JuiceSystem {
   private burstRingPool: Phaser.GameObjects.Arc[] = [];
   private burstRingIdx: number = 0;
 
-  /** Pooled boss death spectacle particles — 30 per boss kill. */
-  private bossParticlePool: Phaser.GameObjects.Arc[] = [];
-  private bossParticleIdx: number = 0;
-
-  /** Pooled boss death rings — 2 per boss kill (+ 1 delayed). */
-  private bossRingPool: Phaser.GameObjects.Arc[] = [];
-  private bossRingIdx: number = 0;
+  /** Pooled boss death spectacle state — 30 particles, 2 rings (+1 delayed) per boss kill. */
+  private bossSpectaclePools: BossSpectaclePools = {
+    particlePool: [],
+    particleIdx: 0,
+    ringPool: [],
+    ringIdx: 0,
+  };
 
   // Kill combo tracking
   private comboCount: number = 0;
@@ -185,8 +182,8 @@ export class JuiceSystem {
     // Kill burst rings: warm golden, not cold white.
     fillCirclePool(scene, this.burstRingPool, BALANCE.juice.burstRingPoolSize, 5, 0xffcc44, 0.6, 15);
     // Boss death spectacle: gold particles + larger gold rings.
-    fillCirclePool(scene, this.bossParticlePool, BALANCE.juice.bossParticlePoolSize, 5, COLORS.WHISKY_GOLD, 0.9, 20);
-    fillCirclePool(scene, this.bossRingPool, BALANCE.juice.bossRingPoolSize, 10, COLORS.WHISKY_GOLD, 0.5, 20);
+    fillCirclePool(scene, this.bossSpectaclePools.particlePool, BALANCE.juice.bossParticlePoolSize, 5, COLORS.WHISKY_GOLD, 0.9, 20);
+    fillCirclePool(scene, this.bossSpectaclePools.ringPool, BALANCE.juice.bossRingPoolSize, 10, COLORS.WHISKY_GOLD, 0.5, 20);
   }
 
   /** Spawn a small white burst at a hit location — pooled, overflow is dropped. */
@@ -910,169 +907,23 @@ export class JuiceSystem {
   /** Boss kill celebration — gold particle shower + expanded kill burst.
    *  Count + shake both scale with motionScale. */
   bossDeathSpectacle(x: number, y: number): void {
-    const lowFx = this.settings.load().reduceParticles;
-    const shakeOn = this.settings.load().screenShake;
-    // Big white flash
-    this.flashWhite(FLASH_TIMING.long);
-
-    const bossDeathShake = resolveScreenShakeParams(
-      BOSS_DEATH_SHAKE_BASE_AMP,
-      BOSS_DEATH_SHAKE_DURATION_MS,
-      shakeOn,
-      this.settings.load().motionScale,
-    );
-    if (bossDeathShake) {
-      this.scene.cameras.main.shake(bossDeathShake.durationMs, bossDeathShake.amplitude);
-    }
-
-    const baseCount = lowFx ? 12 : 30;
-    const particleCount = scaledParticleCount(baseCount, 6);
-    // Gold particle shower — pooled
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
-      const speed = 80 + Math.random() * 200;
-      const size = Phaser.Math.Between(3, 8);
-      const color = Phaser.Utils.Array.GetRandom(JUICE_BOSS_DEATH_GOLDS as number[]) as number;
-      const particle = this.bossParticlePool[this.bossParticleIdx];
-      this.bossParticleIdx = (this.bossParticleIdx + 1) % this.bossParticlePool.length;
-      this.scene.tweens.killTweensOf(particle);
-      particle.setPosition(x, y);
-      particle.setRadius(size);
-      particle.setFillStyle(color, 0.9);
-      particle.setAlpha(0.9);
-      particle.setScale(1);
-      particle.setVisible(true);
-      this.scene.tweens.add({
-        targets: particle,
-        x: x + Math.cos(angle) * speed,
-        y: y + Math.sin(angle) * speed,
-        alpha: 0,
-        scale: 0,
-        duration: 800 + Math.random() * 600,
-        ease: 'Power2',
-        onComplete: () => particle.setVisible(false),
-      });
-    }
-
-    // Expanding ring — pooled
-    const ring = this.bossRingPool[this.bossRingIdx];
-    this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
-    this.scene.tweens.killTweensOf(ring);
-    ring.setPosition(x, y);
-    ring.setRadius(10);
-    ring.setFillStyle(JUICE_BOSS_DEATH_RING_PRIMARY, 0.5);
-    ring.setAlpha(0.5);
-    ring.setScale(1);
-    ring.setVisible(true);
-    this.scene.tweens.add({
-      targets: ring,
-      radius: 80,
-      alpha: 0,
-      duration: 500,
-      onComplete: () => ring.setVisible(false),
-    });
-
-    // Second delayed ring — pooled. Use 'raw' so the 150ms delay is wall-clock:
-    // scaled mode freezes during HIT_FREEZE physics-pause and stretches to
-    // ~500ms during slow-motion, breaking the intended layered animation.
-    this.tickers.addOnce('raw', 150, () => {
-      const ring2 = this.bossRingPool[this.bossRingIdx];
-      this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
-      this.scene.tweens.killTweensOf(ring2);
-      ring2.setPosition(x, y);
-      ring2.setRadius(10);
-      ring2.setFillStyle(JUICE_BOSS_DEATH_RING_SECONDARY, 0.3);
-      ring2.setAlpha(0.3);
-      ring2.setScale(1);
-      ring2.setVisible(true);
-      this.scene.tweens.add({
-        targets: ring2,
-        radius: 120,
-        alpha: 0,
-        duration: 600,
-        onComplete: () => ring2.setVisible(false),
-      });
-    });
+    playBossDeathSpectacle(x, y, this.bossSpectacleDeps());
   }
 
   /** Mid-run boss kill — between regular killBurst and the full victory
    *  bossDeathSpectacle. 15 gold particles + 1 expanding ring + lighter shake. */
   midRunBossDeathSpectacle(x: number, y: number): void {
-    const s = this.settings.load();
+    playMidRunBossDeathSpectacle(x, y, this.bossSpectacleDeps());
+  }
 
-    // Sprite-based large burst — additive layer on top of the existing gold
-    // particle/ring spectacle. Depth 22 sits above boss particles (20) so the
-    // tartan-fleck radial reads as the boss-tier flourish.
-    if (this.scene.textures.exists('fx_enemy_burst_large')) {
-      const burst = this.scene.add.image(x, y, 'fx_enemy_burst_large')
-        .setDepth(22)
-        .setScale(0.8)
-        .setAlpha(1);
-      this.scene.tweens.add({
-        targets: burst,
-        scale: 1.8,
-        alpha: 0,
-        duration: 600,
-        ease: 'Quad.easeOut',
-        onComplete: () => burst.destroy(),
-      });
-    }
-
-    const shake = resolveScreenShakeParams(
-      BOSS_DEATH_SHAKE_BASE_AMP * 0.6,
-      BOSS_DEATH_SHAKE_DURATION_MS,
-      s.screenShake,
-      s.motionScale,
-    );
-    if (shake) {
-      this.scene.cameras.main.shake(shake.durationMs, shake.amplitude);
-    }
-
-    const baseCount = s.reduceParticles ? 6 : 15;
-    const particleCount = scaledParticleCount(baseCount, 3);
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (i / particleCount) * Math.PI * 2 + Math.random() * 0.4;
-      const speed = 100 + Math.random() * 160;
-      const size = Phaser.Math.Between(2, 5);
-      const color = Phaser.Utils.Array.GetRandom(JUICE_BOSS_DEATH_GOLDS as number[]) as number;
-      const particle = this.bossParticlePool[this.bossParticleIdx];
-      this.bossParticleIdx = (this.bossParticleIdx + 1) % this.bossParticlePool.length;
-      this.scene.tweens.killTweensOf(particle);
-      particle.setPosition(x, y);
-      particle.setRadius(size);
-      particle.setFillStyle(color, 0.9);
-      particle.setAlpha(0.9);
-      particle.setScale(1);
-      particle.setVisible(true);
-      this.scene.tweens.add({
-        targets: particle,
-        x: x + Math.cos(angle) * speed,
-        y: y + Math.sin(angle) * speed,
-        alpha: 0,
-        scale: 0,
-        duration: 600 + Math.random() * 400,
-        ease: 'Power2',
-        onComplete: () => particle.setVisible(false),
-      });
-    }
-
-    // Single expanding ring
-    const ring = this.bossRingPool[this.bossRingIdx];
-    this.bossRingIdx = (this.bossRingIdx + 1) % this.bossRingPool.length;
-    this.scene.tweens.killTweensOf(ring);
-    ring.setPosition(x, y);
-    ring.setRadius(10);
-    ring.setFillStyle(JUICE_BOSS_DEATH_RING_PRIMARY, 0.5);
-    ring.setAlpha(0.5);
-    ring.setScale(1);
-    ring.setVisible(true);
-    this.scene.tweens.add({
-      targets: ring,
-      radius: 60,
-      alpha: 0,
-      duration: 450,
-      onComplete: () => ring.setVisible(false),
-    });
+  private bossSpectacleDeps() {
+    return {
+      scene: this.scene,
+      settings: this.settings,
+      pools: this.bossSpectaclePools,
+      flashWhite: (durationMs?: number) => this.flashWhite(durationMs),
+      scheduleRawOnce: (delayMs: number, cb: () => void) => this.tickers.addOnce('raw', delayMs, cb),
+    };
   }
 
   /** Weapon evolution spectacle — THE peak reward moment of the game.
@@ -1335,15 +1186,15 @@ export class JuiceSystem {
     killAndDestroy(this.trailPool);
     killAndDestroy(this.burstDotPool);
     killAndDestroy(this.burstRingPool);
-    killAndDestroy(this.bossParticlePool);
-    killAndDestroy(this.bossRingPool);
+    killAndDestroy(this.bossSpectaclePools.particlePool);
+    killAndDestroy(this.bossSpectaclePools.ringPool);
     this.dmgTextPool = [];
     this.impactRingPool = [];
     this.trailPool = [];
     this.burstDotPool = [];
     this.burstRingPool = [];
-    this.bossParticlePool = [];
-    this.bossRingPool = [];
+    this.bossSpectaclePools.particlePool = [];
+    this.bossSpectaclePools.ringPool = [];
     this.scene.tweens.killTweensOf(this.comboText);
     this.comboText.destroy();
     this.vignette.destroy();
