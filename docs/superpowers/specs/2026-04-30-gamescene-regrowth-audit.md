@@ -3,8 +3,13 @@
 **Date:** 2026-05-08
 **Author:** Phase 5 prep (codebase restructure plan, `docs/superpowers/plans/2026-04-30-codebase-restructure.md`)
 **Floor:** 1656 LOC at T401 closeout (commit `37187f8`, 2026-04-26)
-**Current:** 2874 LOC at HEAD (`01262b1`, 2026-05-08)
-**Delta:** +1218 LOC across ~25 feature commits in 12 days
+**Current:** 1672 LOC at HEAD (2026-05-09; Phase 5 effectively complete — within 16 LOC of T401 floor)
+**Delta from audit start:** -1202 LOC reabsorbed via the bucketed extractions enumerated below.
+
+> **STATUS (2026-05-09):** Phase 5 deflation complete. GameScene now 1672 LOC,
+> ratchet locked at 1680 by Phase 7 re-baseline. Reaching the T401 charter target
+> ≤1200 requires the formal facade rewrite (Combat / Progression / Nodes /
+> Persistence) which is explicitly out of scope for this restructure plan.
 
 ## Method-by-method LOC distribution
 
