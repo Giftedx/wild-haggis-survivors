@@ -5,7 +5,6 @@ import { getSettingsManager, type ISettingsData } from '../core/SettingsManager'
 import type { LocaleKey } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
-import { toggleStateDisplay, resolveToggleTrackStyle } from './settingsToggle';
 import { cycleLocaleKey, labelForLocale } from './settingsLocale';
 import { cycleColorblindMode, labelForColorblindMode } from './settingsColorblind';
 import { applyColorblindFilterToCanvas } from '../systems/accessibility/applyColorblindFilter';
@@ -35,6 +34,7 @@ import {
   type SettingsDomActionInput,
 } from './settingsDomFocusActions';
 import { addSliderRow } from './settings/addSliderRow';
+import { addToggleRow } from './settings/addToggleRow';
 import type { SettingsRowContext } from './settings/rowContext';
 
 type SettingsGpRow =
@@ -658,138 +658,9 @@ export class SettingsScene extends Phaser.Scene {
   private addToggleRow(
     label: string,
     key: ToggleKey,
-    confirmOnEnable?: (proceed: () => void) => void
+    confirmOnEnable?: (proceed: () => void) => void,
   ): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
-
-    this.addRowLabel(label, y);
-
-    // Proper toggle switch: track + sliding thumb + side labels
-    const trackStyle = resolveToggleTrackStyle(this.working[key]);
-    const narrow = this.isNarrowLayout();
-    const cx = this.rightControlCenter(narrow ? 54 : 58);
-    const cy = y + 18;
-    const trackW = narrow ? 54 : 58;
-    const trackH = 22;
-    const thumbR = 9;
-    // Track (rounded rect appearance via stroked rect)
-    const btn = this.add
-      .rectangle(cx, cy, trackW, trackH, trackStyle.trackFill, 1)
-      .setStrokeStyle(1.5, trackStyle.trackBorder, 0.9)
-      .setInteractive({ useHandCursor: true });
-    btn.setScale(this.uiScale);
-    // Track inner shadow (depth)
-    const shadow = this.add
-      .rectangle(cx, cy - (trackH / 2) + Math.round(2 * this.uiScale), trackW - 4, 2, 0x000000, 0.3)
-      .setScale(this.uiScale);
-    // Thumb (sliding circle)
-    const thumbLeftX = cx - trackW / 2 + thumbR + 3;
-    const thumbRightX = cx + trackW / 2 - thumbR - 3;
-    const thumb = this.add
-      .circle(
-        this.working[key] ? thumbRightX : thumbLeftX,
-        cy,
-        thumbR,
-        trackStyle.thumbFill,
-        1
-      )
-      .setStrokeStyle(1, 0x000000, 0.4)
-      .setScale(this.uiScale);
-    // Thumb highlight (glossy top)
-    const thumbGloss = this.add
-      .circle(
-        this.working[key] ? thumbRightX : thumbLeftX,
-        cy - 2,
-        thumbR * 0.5,
-        0xffffff,
-        0.35
-      )
-      .setScale(this.uiScale);
-    // Status text beside the toggle
-    const initialState = toggleStateDisplay(this.working[key]);
-    const txt = this.add
-      .text(narrow ? cx : cx - trackW / 2 - 8, cy, initialState.text, {
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        color: initialState.color,
-        fontStyle: 'bold',
-      })
-      .setOrigin(narrow ? 0.5 : 1, 0.5)
-      .setScale(this.uiScale);
-
-    const sync = () => {
-      const isOn = this.working[key];
-      const s = resolveToggleTrackStyle(isOn);
-      btn.setFillStyle(s.trackFill);
-      btn.setStrokeStyle(1.5, s.trackBorder, 0.9);
-      const state = toggleStateDisplay(isOn);
-      txt.setText(state.text);
-      txt.setColor(state.color);
-      // Animate the thumb slide
-      this.tweens.killTweensOf(thumb);
-      this.tweens.killTweensOf(thumbGloss);
-      const targetX = isOn ? thumbRightX : thumbLeftX;
-      this.tweens.add({
-        targets: [thumb, thumbGloss],
-        x: targetX,
-        duration: 140,
-        ease: 'Quad.easeOut',
-      });
-      thumb.setFillStyle(s.thumbFill);
-    };
-
-    const doToggle = () => {
-      audio.playClick();
-      const nextValue = !this.working[key];
-      if (nextValue && confirmOnEnable) {
-        // Opt-in ceremony: defer the flip until the player commits through
-        // the confirmation modal. Cancel leaves the toggle in its prior state.
-        confirmOnEnable(() => {
-          this.working[key] = true;
-          sync();
-          this.persistAndApply();
-          this.refreshDomActions();
-        });
-        return;
-      }
-      this.working[key] = nextValue;
-      sync();
-      this.persistAndApply();
-      this.refreshDomActions();
-    };
-
-    btn.on('pointerdown', doToggle);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', doToggle);
-    // Shadow and thumb components also clickable for forgiving hitbox
-    thumb.setInteractive({ useHandCursor: true });
-    thumb.on('pointerdown', doToggle);
-    // Silence unused-variable warning for shadow (it's drawn, not interacted with)
-    void shadow;
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale.
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: doToggle,
-      mark,
-    });
-    // DOM mirror — Enter / Space drives the same flip-or-confirm path as
-    // the canvas pointer. The current ON/OFF state folds into the label.
-    this.domRowSyncs.push(() => ({
-      id: `toggle-${key}`,
-      kind: 'toggle',
-      label: this.compactSettingsLabel(label),
-      valueText: toggleStateDisplay(this.working[key]).text,
-      onActivate: doToggle,
-    }));
+    addToggleRow(this.rowContext(), label, key, confirmOnEnable);
   }
 
   /**
