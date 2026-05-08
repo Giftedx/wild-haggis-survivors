@@ -46,6 +46,7 @@ import { buildGripPips } from './hud/gripPips';
 import { buildWhiskyBar } from './hud/whiskyBar';
 import { buildLevelGold } from './hud/levelGold';
 import { buildTimerStack } from './hud/timerStack';
+import { buildStatusChips } from './hud/statusChips';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -273,33 +274,13 @@ export class HUD {
     this.curseChipText = timerRefs.curseChip;
     const uiScaleClamp = Math.max(1, this.uiScale);
 
-    // W2 Moor Road act chip — hidden until the first picker resolves.
-    this.actChipText = this.addEl(this.scene.add.text(width / 2, 78, '',
-      textStyle('body', { color: COLORS_CSS.WARM_TAN }),
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
-
-    // W66 Ironmoor chip — only shown when single-life mode is active.
-    this.ironmoorChipText = this.addEl(this.scene.add.text(width / 2, 94, '',
-      textStyle('label', { color: '#c8a0a0' }),
-    ).setOrigin(0.5, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
-
-    // P2.12 — DAILY chip. Shown only when the run was launched via the
-    // Daily Challenge button. Pre-fix: a daily run looked identical to
-    // a normal run during play — no on-screen reminder. Right-anchored
-    // top-band so it pairs with the Kills readout and doesn't fight
-    // the centred countdown / banter overlays.
-    this.dailyChipText = this.addEl(this.scene.add.text(width - 12, 64, '',
-      textStyle('label', { color: '#e2c97a' }),
-    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
-
-    // T1 replay chip — persistent indicator during best-effort playback.
-    // Bottom-right, above the XP bar, right-origin so it doesn't clash
-    // with the minimap at the bottom-right corner (minimap anchors from
-    // the scene edge). Light-blue tint matches the watching-toast so the
-    // two cues read as one language.
-    this.replayChipText = this.addEl(this.scene.add.text(width - 12, height - this.XP_BAR_H - 24, '',
-      textStyle('label', { color: '#88ccff' }),
-    ).setOrigin(1, 1).setScrollFactor(0).setDepth(d + 1).setVisible(false)) as Phaser.GameObjects.Text;
+    // W2 act chip + W66 ironmoor chip + P2.12 daily chip + T1 replay chip
+    // — all hidden until their setter fires; replay anchors above XP bar.
+    const chipRefs = buildStatusChips(ctx);
+    this.actChipText = chipRefs.act;
+    this.ironmoorChipText = chipRefs.ironmoor;
+    this.dailyChipText = chipRefs.daily;
+    this.replayChipText = chipRefs.replay;
 
     // Kill count — constrain width so it doesn't overlap the centered timer.
     // 0.30 ratio divided by uiScale keeps the right-anchored kill readout
