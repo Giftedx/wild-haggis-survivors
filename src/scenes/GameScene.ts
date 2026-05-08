@@ -25,8 +25,9 @@ import { JuiceSystem } from '../systems/JuiceSystem';
 import { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
 import { HazardsSystem } from '../systems/HazardsSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
-import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
-import { ClipRecorder } from '@/utils/clipRecorder';
+import { disposeRecordingAudioStream } from '@/systems/audioContext';
+import type { ClipRecorder } from '@/utils/clipRecorder';
+import { installClipRecorder } from './game/installClipRecorder';
 import {
   recordRun, loadSave,
   bumpBanterHeard,
@@ -1593,19 +1594,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.filmGrain.install();
     this.filmGrain.bindViewportResize();
 
-    // Start clip recorder if capture is enabled
-    if (getSettingsManager().load().captureEnabled) {
-      const canvas = this.game.canvas;
-      if (canvas) {
-        this.clipRecorder = new ClipRecorder(canvas, { fps: 30, durationSec: 15 });
-        if (this.clipRecorder.isAvailable()) {
-          const audioStream = createRecordingAudioStream();
-          this.clipRecorder.start(audioStream ?? undefined);
-        } else {
-          this.clipRecorder = null;
-        }
-      }
-    }
+    this.clipRecorder = installClipRecorder({
+      enabled: getSettingsManager().load().captureEnabled,
+      canvas: this.game.canvas ?? null,
+    });
 
     // Start countdown — game is paused until it finishes. FTUE banner waits
     // for countdown to clear so the depth-1000 countdown text doesn't sit on
