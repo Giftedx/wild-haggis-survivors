@@ -31,6 +31,11 @@ import { addColorblindRow } from './settings/addColorblindRow';
 import { addInputRebindRow } from './settings/addInputRebindRow';
 import { addResetChip } from './settings/addResetChip';
 import type { SettingsRowContext } from './settings/rowContext';
+import {
+  createSettingsGamepadState,
+  tickSettingsGamepad,
+  type SettingsGamepadState,
+} from './settings/tickSettingsGamepad';
 
 type SettingsGpRow =
   | {
@@ -117,12 +122,7 @@ export class SettingsScene extends Phaser.Scene {
    *  this array stay in lockstep. */
   private domRowSyncs: Array<() => SettingsDomActionInput> = [];
   private domFocusLayer: DomFocusLayer | null = null;
-  private gpIdx = 0;
-  private gpPrevU = false;
-  private gpPrevD = false;
-  private gpPrevL = false;
-  private gpPrevR = false;
-  private gpPrevA = false;
+  private gamepadState: SettingsGamepadState = createSettingsGamepadState();
   private gpUpdate?: (time: number, delta: number) => void;
   private glowTweens: Phaser.Tweens.Tween[] = [];
   private previewHandle?: SettingsPreviewHandle;
@@ -382,11 +382,11 @@ export class SettingsScene extends Phaser.Scene {
     // confirmation, so no modal.
     this.addResetChip(backY);
 
-    this.gpIdx = 0;
+    this.gamepadState.index = 0;
     this.applyGpHighlight();
     this.installDomFocusLayer();
 
-    this.gpUpdate = (_t: number, delta: number) => this.tickGamepad(delta);
+    this.gpUpdate = () => this.tickGamepad();
     this.events.on('update', this.gpUpdate);
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
@@ -465,12 +465,12 @@ export class SettingsScene extends Phaser.Scene {
     for (let i = 0; i < this.gpRows.length; i++) {
       const m = this.gpRows[i].mark;
       if (!m.active) continue;
-      if (i === this.gpIdx) m.setStrokeStyle(2, 0xffe066, 0.9);
+      if (i === this.gamepadState.index) m.setStrokeStyle(2, 0xffe066, 0.9);
       else m.setStrokeStyle(0);
     }
     // Mirror the visible Phaser cursor into the DOM focus layer so an
     // assistive-tech user hears the same row the sighted player sees.
-    this.domFocusLayer?.setFocusedIndex(this.gpIdx);
+    this.domFocusLayer?.setFocusedIndex(this.gamepadState.index);
   }
 
   /**
@@ -489,17 +489,17 @@ export class SettingsScene extends Phaser.Scene {
       description: t('ui.settings.subtitle'),
       role: 'group',
       actions,
-      initialFocusIndex: this.gpIdx >= 0 ? this.gpIdx : 0,
+      initialFocusIndex: this.gamepadState.index >= 0 ? this.gamepadState.index : 0,
       onFocusIndexChange: (index) => {
         // DOM-side focus drives the canonical gamepad index. Re-render
         // the visible Phaser focus stroke without round-tripping back
         // into setFocusedIndex on the layer (it's already current).
         if (index < 0 || index >= this.gpRows.length) return;
-        this.gpIdx = index;
+        this.gamepadState.index = index;
         for (let i = 0; i < this.gpRows.length; i++) {
           const m = this.gpRows[i].mark;
           if (!m.active) continue;
-          if (i === this.gpIdx) m.setStrokeStyle(2, 0xffe066, 0.9);
+          if (i === this.gamepadState.index) m.setStrokeStyle(2, 0xffe066, 0.9);
           else m.setStrokeStyle(0);
         }
       },
@@ -521,71 +521,16 @@ export class SettingsScene extends Phaser.Scene {
     if (!this.domFocusLayer) return;
     const inputs = this.domRowSyncs.map((sync) => sync());
     this.domFocusLayer.setActions(buildSettingsDomFocusActions(inputs));
-    this.domFocusLayer.setFocusedIndex(this.gpIdx);
+    this.domFocusLayer.setFocusedIndex(this.gamepadState.index);
   }
 
-  private tickGamepad(delta: number): void {
-    const pad = this.input.gamepad?.pad1;
-    if (!pad?.connected) {
-      this.gpPrevU = this.gpPrevD = this.gpPrevL = this.gpPrevR = this.gpPrevA = false;
-      return;
-    }
-
-    const up = pad.up || pad.leftStick.y < -0.5;
-    const down = pad.down || pad.leftStick.y > 0.5;
-    const uE = up && !this.gpPrevU;
-    const dE = down && !this.gpPrevD;
-    this.gpPrevU = up;
-    this.gpPrevD = down;
-
-    if (uE) {
-      this.gpIdx = (this.gpIdx - 1 + this.gpRows.length) % this.gpRows.length;
-      this.applyGpHighlight();
-    } else if (dE) {
-      this.gpIdx = (this.gpIdx + 1) % this.gpRows.length;
-      this.applyGpHighlight();
-    }
-
-    const row = this.gpRows[this.gpIdx];
-    if (!row) return;
-
-    const left = pad.left || pad.leftStick.x < -0.45;
-    const right = pad.right || pad.leftStick.x > 0.45;
-    const lE = left && !this.gpPrevL;
-    const rE = right && !this.gpPrevR;
-    this.gpPrevL = left;
-    this.gpPrevR = right;
-
-    if (row.kind === 'slider') {
-      if (lE) {
-        audio.playClick();
-        row.minus();
-      }
-      if (rE) {
-        audio.playClick();
-        row.plus();
-      }
-    }
-
-    const a = pad.buttons[0]?.pressed ?? false;
-    const startB = pad.buttons[9]?.pressed ?? false;
-    const confirm = a || startB;
-    const aE = confirm && !this.gpPrevA;
-    this.gpPrevA = confirm;
-    if (aE) {
-      if (row.kind === 'slider') {
-        audio.playClick();
-        row.plus();
-      } else if (row.kind === 'toggle') {
-        row.toggle();
-      } else {
-        row.go();
-      }
-    }
-
-    // delta is wired for a future held-direction accumulator; edge-only
-    // for now so the gamepad behaviour matches keyboard.
-    void delta;
+  private tickGamepad(): void {
+    tickSettingsGamepad(
+      this.input.gamepad?.pad1,
+      this.gamepadState,
+      this.gpRows,
+      () => this.applyGpHighlight(),
+    );
   }
 
   private persistAndApply(): void {
