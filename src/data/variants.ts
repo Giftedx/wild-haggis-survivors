@@ -354,8 +354,9 @@ export const VARIANTS: VariantDef[] = [
     },
   },
   {
-    // Cailleach — mythic elder. Slow, tanky, massive pickup radius.
-    // +8% crit deferred — VariantModifier has no crit field today.
+    // Cailleach — mythic elder. Slow, tanky, massive pickup radius,
+    // strikes true (+8% crit — V2 added the field; the mythic-elder
+    // fantasy is "every blow weighs", not "many blows").
     key: 'cailleach',
     nameKey: 'variant.cailleach.name',
     flavorKey: 'variant.cailleach.flavor',
@@ -364,6 +365,7 @@ export const VARIANTS: VariantDef[] = [
       moveSpeedPct: -15,
       maxHpFlat: 10,
       pickupRadiusFlat: 35,
+      critChancePct: 0.08,
     },
     unlock: { type: 'cursed_victories', required: 3 },
     appearance: {
