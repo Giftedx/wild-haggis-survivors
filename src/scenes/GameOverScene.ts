@@ -1,55 +1,27 @@
 import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS, UI } from '../config';
-import { audio } from '../systems/AudioSystem';
-import { musicEngine } from '../systems/music/ProceduralMusicEngine';
 import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
-import { SaveManager } from '../core/SaveManager';
-import {
-  formatClockTime,
-  computeGoldBreakdown,
-} from './gameOverFormatting';
+import { computeGoldBreakdown } from './gameOverFormatting';
 import { resolveGameOverPanelTheme } from './gameOverPanelTheme';
 import { renderVariantChip } from './gameOverVariantChip';
-import type { GameScene } from './GameScene';
 import { textStyle } from '../ui/typography';
-import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
-import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
+import type { DomFocusLayer } from '../ui/domFocusLayer';
 import { GameOverFocusController } from './game-over/GameOverFocusController';
 import {
   renderDeathInsight,
   addRunResultUnlockContent,
 } from './game-over/runResultContent';
-import {
-  createResultStat,
-  createResultActionButton,
-} from './game-over/resultPanelBuilders';
 import { renderGameOverTitleAndSubtitle } from './game-over/renderGameOverTitleAndSubtitle';
 import { renderGameOverIronmoorBanner } from './game-over/renderGameOverIronmoorBanner';
 import { renderGameOverCurseChip } from './game-over/renderGameOverCurseChip';
-import { renderGameOverSeedReadout } from './game-over/gameOverSeedReadout';
-import { renderGameOverPostcardLink } from './game-over/gameOverPostcardLink';
-import { renderGameOverSaveFrameLink } from './game-over/gameOverSaveFrameLink';
-import { renderGameOverCopyFrameLink } from './game-over/gameOverCopyFrameLink';
-import { renderGameOverSaveClipLink } from './game-over/gameOverSaveClipLink';
-import { renderGameOverRerunSeedLink } from './game-over/gameOverRerunSeedLink';
 import { renderGameOverInnerPanels } from './game-over/renderGameOverInnerPanels';
 import { renderGameOverLoadoutSummary } from './game-over/renderGameOverLoadoutSummary';
 import { renderGameOverGoldPanel } from './game-over/renderGameOverGoldPanel';
-
-/**
- * W27 Phase 4 — feature-detect the modern image clipboard API.
- * Chrome 76+, Firefox 127+, Safari 16.4+ (write). Older browsers
- * fall back to the existing "Save frame" download path.
- */
-function isImageClipboardAvailable(): boolean {
-  const g = globalThis as unknown as {
-    navigator?: { clipboard?: { write?: unknown } };
-    ClipboardItem?: unknown;
-  };
-  return Boolean(g.navigator?.clipboard?.write && g.ClipboardItem);
-}
+import { renderGameOverStatGrid } from './game-over/renderGameOverStatGrid';
+import { renderGameOverSeedAndLinkRows } from './game-over/renderGameOverSeedAndLinkRows';
+import { renderGameOverActionRow } from './game-over/renderGameOverActionRow';
 
 /**
  * Run result screen — owns UI after GameScene tears down (macro lifecycle).
@@ -102,7 +74,6 @@ export class GameOverScene extends Phaser.Scene {
     const theme = resolveGameOverPanelTheme(isVictory);
     const titleColor = theme.titleColor;
     const panelStroke = theme.panelStroke;
-    const summaryTime = formatClockTime(summary.timeSurvivedSec);
     const gb = computeGoldBreakdown({
       timeSurvivedSec: summary.timeSurvivedSec,
       enemiesKilled: summary.enemiesKilled,
@@ -241,20 +212,15 @@ export class GameOverScene extends Phaser.Scene {
         depthBase: d,
       });
 
-    const statBaseY = panelTop + (compact ? 178 : 200);
-    const statGap = Math.min(142, Math.floor(PANEL_W * 0.21));
-    const statRowGap = Math.round((compact ? 36 : 42) * uiScale);
-    const pb = this.payload.previousBests;
-    createResultStat(this,panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600, uiScale,
-      pb && summary.timeSurvivedSec > pb.bestTime);
-    createResultStat(this,panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660, uiScale,
-      pb && summary.enemiesKilled > pb.bestKills);
-    createResultStat(this,panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720, uiScale,
-      pb && this.payload.xpLevel > pb.bestLevel);
-    createResultStat(this,panelCenterX - statGap, statBaseY + statRowGap, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780, uiScale);
-    createResultStat(this,panelCenterX, statBaseY + statRowGap, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840, uiScale);
-    createResultStat(this,panelCenterX + statGap, statBaseY + statRowGap, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900, uiScale,
-      pb && (summary.bestCombo ?? 0) > pb.bestCombo);
+    renderGameOverStatGrid(this, {
+      panelCenterX,
+      panelTop,
+      PANEL_W,
+      compact,
+      uiScale,
+      depthBase: d,
+      payload: this.payload,
+    });
 
     renderGameOverLoadoutSummary(this, {
       panelCenterX,
@@ -286,164 +252,35 @@ export class GameOverScene extends Phaser.Scene {
     // uiScale 1.4 instead of using the old fixed `panelTop + 512`.
     addRunResultUnlockContent(this, panelCenterX, unlockPanelY - Math.round(38 * panelScale), d + 3, runResult.newlyUnlockedVariants, 1140);
 
-    // Seed readout — sits just above the action buttons. For daily runs it
-    // prefixes "DAILY" and shows the date; for seeded runs just the code.
-    // Tapping copies the code to the clipboard so players can share.
-    const buttonsY = Math.min(panelTop + PANEL_H - Math.round(22 * panelScale), height - Math.round(32 * panelScale));
-    const linkY = Math.min(panelTop + PANEL_H - Math.round(44 * panelScale), height - Math.round(56 * panelScale), buttonsY - Math.round(compact ? 28 : 0));
-
     const getPayload = (): GameOverPayload | null => this.payload;
+    const { buttonsY } = renderGameOverSeedAndLinkRows(this, {
+      panelCenterX,
+      panelTop,
+      PANEL_H,
+      height,
+      compact,
+      panelScale,
+      unlockPanelY,
+      unlockPanelH,
+      depthBase: d,
+      getPayload,
+      payload: this.payload,
+    });
 
-    if (this.payload.seedCode) {
-      // Clamp seed readout above canvas bottom — default offset assumes a
-      // 720px-tall design target, but native 600 clips this by a couple px.
-      // At uiScale 1.4 we also anchor it above the scaled unlock panel so
-      // the seed code isn't swallowed by the unlock banner.
-      const seedY = Math.min(
-        Math.max(panelTop + 590, unlockPanelY + unlockPanelH / 2 + Math.round(14 * panelScale)),
-        compact ? linkY - Math.round(18 * panelScale) : height - Math.round(42 * panelScale),
-      );
-      renderGameOverSeedReadout(this, {
-        centerX: panelCenterX,
-        y: seedY,
-        depth: d + 3,
-        code: this.payload.seedCode,
-        isDaily: this.payload.isDaily === true,
-        delay: 1160,
-      });
-    }
-
-    // Two small text links side-by-side under the seed readout. Postcard
-    // saves the frame; rerun starts the exact seed again. Only render
-    // rerun when the payload actually carries a numeric seed.
-    const hasRerun = typeof this.payload.runSeed === 'number';
-    if (hasRerun) {
-      renderGameOverPostcardLink(this, { centerX: panelCenterX - 100, y: linkY, depth: d + 3, delay: 1180, getPayload });
-      renderGameOverRerunSeedLink(this, { centerX: panelCenterX + 100, y: linkY, depth: d + 3, delay: 1200, getPayload });
-    } else {
-      renderGameOverPostcardLink(this, { centerX: panelCenterX, y: linkY, depth: d + 3, delay: 1180, getPayload });
-    }
-    // Save frame link — gated by captureEnabled setting; sits on a second
-    // row directly below the postcard/rerun link row. Phase 4 — Copy frame
-    // sits beside Save frame when the modern Clipboard API is available
-    // (Chrome 76+, FF 127+, Safari 16.4+). Otherwise Save frame keeps the
-    // centre slot solo.
-    if (getSettingsManager().load().captureEnabled && !compact) {
-      const saveFrameLinkY = linkY + 16;
-      const hasImageClipboard = isImageClipboardAvailable();
-      if (hasImageClipboard) {
-        renderGameOverSaveFrameLink(this, { centerX: panelCenterX - 100, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
-        renderGameOverCopyFrameLink(this, { centerX: panelCenterX + 100, y: saveFrameLinkY, depth: d + 3, delay: 1230 });
-      } else {
-        renderGameOverSaveFrameLink(this, { centerX: panelCenterX, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
-      }
-      const gameScene = this.scene.get('Game') as GameScene | undefined;
-      const recorder = gameScene?.getClipRecorder();
-      if (recorder?.isAvailable()) {
-        renderGameOverSaveClipLink(this, { centerX: panelCenterX, y: saveFrameLinkY + 16, depth: d + 3, delay: 1240, recorder, getPayload });
-      }
-    }
-
-    // Responsive gap — default design target is ±196 between centre
-    // buttons at 800px, but on narrow viewports the left button otherwise
-    // clips the canvas edge. Floor keeps the 24px between-button breathing
-    // room intact (172 button width + 24 gap = 196 centre-to-centre).
-    const actionBtnW = compact ? Math.floor((PANEL_W - 52) / 3) : 172;
-    const actionSideGap = compact
-      ? actionBtnW + 14
-      : Math.min(196, Math.max(actionBtnW / 2 + 12, Math.floor((width - actionBtnW - 40) / 2)));
-    // Action callbacks shared between the visible Phaser buttons and the
-    // T407 DOM focus mirror — single source of truth for activation
-    // behaviour so a screen-reader Tab + Enter takes the same path as a
-    // pointer click.
-    const onPlayAgain = () => {
-      audio.playClick();
-      musicEngine.stop();
-      // Match MenuScene: wipe any lingering suspended-run snapshot before
-      // starting a fresh run. GameScene's end-of-run cleanup already clears
-      // it, but swallowed storage errors could otherwise resurrect a ghost run.
-      try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
-      // T403 — route through Curse picker instead of straight into Game.
-      // Lets the player swap curses (or pick A CLEAN RUN) without bouncing
-      // through MainMenu — the previous path silently re-launched with no
-      // curse, hiding the choice from anyone who cleared a brutal one and
-      // wanted a different bargain. The "Rerun seed" link (one row down)
-      // still carries the original curse for masochist re-attempts.
-      this.scene.start('Curse');
-    };
-    const onGoldShop = () => {
-      audio.playClick();
-      musicEngine.stop();
-      this.scene.start('Shop');
-    };
-    const onTaeGran = () => {
-      audio.playClick();
-      musicEngine.stop();
-      // H1 T9 — return to Croft hub, not MainMenu.
-      this.scene.start('Croft');
-    };
-
-    createResultActionButton(this, this.focusController,panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, onPlayAgain);
-    createResultActionButton(this, this.focusController,panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
-    createResultActionButton(this, this.focusController,panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
-
-    this.focusController.seedFocusFromActions();
-    this.focusController.installKeyboard();
-    this.focusController.installGamepad();
-    // T407 — install the DOM-visible focus mirror after all three action
-    // buttons exist. Mirrors the Phaser focus state via setFocusedIndex
-    // (driven from applyStyles); DOM-side activation routes through
-    // the same callbacks the visible buttons use.
-    this.installDomFocusLayer({ onPlayAgain, onGoldShop, onTaeGran });
+    this.domFocusLayer = renderGameOverActionRow(this, {
+      panelCenterX,
+      buttonsY,
+      width,
+      PANEL_W,
+      compact,
+      uiScale,
+      payload: this.payload,
+      focusController: this.focusController,
+    });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.focusController.dispose();
       this.uninstallDomFocusLayer();
-    });
-  }
-
-  /**
-   * T407 — mount the visually hidden DOM action mirror. Three buttons
-   * (PLAY AGAIN / GOLD SHOP / TAE GRAN'S) reflect the visible row;
-   * `aria-label` carries the resolved death/victory title and
-   * `aria-describedby` carries a one-line run digest (variant +
-   * kills/time/gold). The layer's polite live region announces the
-   * focused button as the user navigates.
-   */
-  private installDomFocusLayer(callbacks: {
-    onPlayAgain: () => void;
-    onGoldShop: () => void;
-    onTaeGran: () => void;
-  }): void {
-    if (typeof document === 'undefined') return;
-    const p = this.payload;
-    if (!p?.summary || !p.runResult) return;
-
-    const isVictory = p.isVictory ?? (p.mode === 'victory');
-    const titleKey = isVictory ? 'ui.gameOver.victory_title' : 'ui.gameOver.death_title';
-    const summaryDigest = `${p.variantLabel} · ${t('ui.gameOver.damage_summary', {
-      kills: p.summary.enemiesKilled,
-      time: formatClockTime(p.summary.timeSurvivedSec),
-      gold: p.runResult.goldEarned,
-    })}`;
-
-    const actions = buildGameOverDomFocusActions(callbacks);
-    this.domFocusLayer = createDomFocusLayer({
-      id: 'whs-game-over-focus-layer',
-      label: t(titleKey),
-      description: summaryDigest,
-      role: 'dialog',
-      actions,
-      initialFocusIndex: Math.max(this.focusController.getFocusedIndex(), 0),
-      onFocusIndexChange: (index) => {
-        // Mirror DOM-side focus changes (screen-reader Tab) back into the
-        // Phaser-side index so the visible stroke follows assistive-tech
-        // navigation. applyStyles → setFocusedIndex on the layer is
-        // a no-op when the index is already current, so re-entry is safe.
-        const entry = this.focusController.getAction(index);
-        if (!entry || entry.disabled) return;
-        this.focusController.setFocusedIndex(index);
-      },
     });
   }
 
