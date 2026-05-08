@@ -6,12 +6,7 @@ import type { SpawnSystem } from '../systems/SpawnSystem';
 import type { WeaponSystem } from '../systems/WeaponSystem';
 import type { XPSystem } from '../systems/XPSystem';
 import { installCoreCombatSystems } from './game/installCoreCombatSystems';
-import {
-  NodeMapSystem,
-  buildNodeMapState,
-  generateNodePath,
-  placeNodes,
-} from '../systems/NodeMapSystem';
+import { NodeMapSystem } from '../systems/NodeMapSystem';
 import { NodeMarkerSystem } from '../systems/NodeMarkerSystem';
 import { UpgradeCardsUI } from '../ui/UpgradeCards';
 import { HUD } from '../ui/HUD';
@@ -20,7 +15,7 @@ import { Minimap } from '../ui/Minimap';
 import { NodeMapUI } from '../ui/NodeMapUI';
 import { NodePromptUI } from '../ui/NodePromptUI';
 import { RelicSlotUI } from '../ui/RelicSlotUI';
-import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
+import type { Act3Stretch } from '../data/nodeBanks';
 import { NodeWaveTracker } from '../systems/nodeEvents/NodeWaveTracker';
 import { JuiceSystem } from '../systems/JuiceSystem';
 import type { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
@@ -76,6 +71,8 @@ import { tickFrameWorld } from './game/tickFrameWorld';
 import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
+import { buildRuneSystemControllerHooks } from './game/buildRuneSystemControllerHooks';
+import { initNodeMapForAct as initNodeMapForActImpl } from './game/initNodeMapForAct';
 import { TutorialSystem } from '../systems/TutorialSystem';
 import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
@@ -201,14 +198,14 @@ export interface GameSceneInitData {
 }
 
 export class GameScene extends Phaser.Scene implements ISceneContext {
-  private player!: Player;
-  private spawnSystem!: SpawnSystem;
-  private weaponSystem!: WeaponSystem;
-  private xpSystem!: XPSystem;
+  player!: Player;
+  spawnSystem!: SpawnSystem;
+  weaponSystem!: WeaponSystem;
+  xpSystem!: XPSystem;
   private tutorialSystem!: TutorialSystem;
-  private upgradeUI!: UpgradeCardsUI;
+  upgradeUI!: UpgradeCardsUI;
   private hud!: HUD;
-  private juice!: JuiceSystem;
+  juice!: JuiceSystem;
   /** Ambient seasonal weather overlay (drizzle / rain / sun-shafts / aurora).
    *  Pure cosmetic — `null` between runs and when no seasonal event is live. */
   private weather: AmbientWeatherSystem | null = null;
@@ -235,29 +232,29 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private interactivePromptIndex = -1;
   /** R1 M3 T22 — 3-slot HUD widget for held Relics. */
   private relicSlotUI: RelicSlotUI | null = null;
-  private readonly chestRegistry = new ChestSpriteRegistry();
+  readonly chestRegistry = new ChestSpriteRegistry();
   private readonly iFrameController = new IFrameController(() => this.player);
 
   private ownedPassives: string[] = [];
-  private evolvedWeapons: string[] = [];
+  evolvedWeapons: string[] = [];
   /** U1 Rune tier — per-run owned rune ids. Filter for buildCardPool's
    *  ownedRuneIds ctx so duplicate offers are filtered. Cleared on scene
    *  restart. */
   private ownedRuneIds: string[] = [];
   /** U1 — shared effect accumulator read by Player/WeaponSystem readers.
    *  The RuneConditionSystem mutates it via apply/remove on transitions. */
-  private runeBag = createRuneEffectBag();
+  runeBag = createRuneEffectBag();
   /** U1 — transition-driven rune orchestrator. Ticked from update() with
    *  a freshly-built RuneEvalContext each frame. */
-  private runeSystem = new RuneConditionSystem(this.runeBag);
+  runeSystem = new RuneConditionSystem(this.runeBag);
   /** Controller for per-frame rune tick + pulse drain (Phase 5 Bucket 2). */
   private runeSystemController!: RuneSystemController;
   /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
-  private readonly runScore = new RunScoreState();
+  readonly runScore = new RunScoreState();
   /** M1 F4 — timed shrine buffs. Cleared (not reverted) on scene restart. */
   private readonly tempBuffBag = new TempBuffBag();
   /** W2 Moor Road: act number + picker history across the run. */
-  private readonly runActState = new RunActState();
+  readonly runActState = new RunActState();
   /** Mutable mercy-luck flag, owned by the moor-moments helper module. */
   private readonly moorMomentsState: MoorMomentsState = createMoorMomentsState();
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
@@ -294,7 +291,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * `Math.random()` that broke T1 replay determinism — gem positions
    * affect pickup-radius eligibility, which alters XP totals.
    */
-  private runePulseRng!: RNG;
+  runePulseRng!: RNG;
   /** T1 replay state — install/teardown owned by `game/replayBridgeInstall.ts`. */
   private replayRecorder: ReplayRecorder | null = null;
   private replayInput: ReplayInput | null = null;
@@ -375,7 +372,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * run — see the reset block near the top.
    */
   private burnsPlatterSpawned: boolean = false;
-  private burnsPlatterPickedUpAtMs: number | null = null;
+  burnsPlatterPickedUpAtMs: number | null = null;
   /**
    * W66 Ironmoor — locked in at run start (from Settings on a fresh run,
    * from the snapshot on resume). Every ironmoor-sensitive decision
@@ -388,7 +385,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runName = '';
   private lastEmittedRunSecond = -1;
   private eventBusDispose: (() => void) | null = null;
-  private biomeController: BiomeController | null = null;
+  biomeController: BiomeController | null = null;
   /**
    * Phase B Endless — secondsPastBell at which we last reseeded
    * the biome layout. -1 = never. Reset on scene reuse via the
@@ -408,7 +405,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private relicOrchestrator!: RelicOrchestrator;
   /** Tunnel accessor for compositor call sites that read the slot model. */
-  private get relicSystem() { return this.relicOrchestrator.getSystem(); }
+  get relicSystem() { return this.relicOrchestrator.getSystem(); }
   /** Tunnel accessor for compositor call sites that read the effect driver. */
   private get relicEffectDriver() { return this.relicOrchestrator.getDriver(); }
   /** Tunnel accessor for compositor call sites that need the live pickup spawner. */
@@ -428,7 +425,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private captionManager: CaptionManager | null = null;
   private captionOverlay: CaptionOverlay | null = null;
   private filmGrain: FilmGrainOverlay | null = null;
-  private banter: BanterSystem | null = null;
+  banter: BanterSystem | null = null;
   private readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
     getAnalyticsManager().endGameplaySession();
   });
@@ -602,29 +599,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // scene state so the ref stays correct across resetTransientRunState
     // (which rebinds runeBag / runeSystem) and across late-construction
     // systems (banter / upgradeUI / relicOrchestrator built further down).
-    this.runeSystemController = new RuneSystemController({
-      getPlayer: () => this.player,
-      getJuice: () => this.juice,
-      getSpawnSystem: () => this.spawnSystem,
-      getWeaponSystem: () => this.weaponSystem,
-      getXPSystem: () => this.xpSystem,
-      getRunScore: () => this.runScore,
-      getRunActState: () => this.runActState,
-      getRuneBag: () => this.runeBag,
-      getRuneSystem: () => this.runeSystem,
-      getRunePulseRng: () => this.runePulseRng,
-      currentBiomeAtPlayer: () =>
-        this.biomeController
-          ? this.biomeController.currentBiomeAt(this.player.x, this.player.y)
-          : null,
-      getRelicHeldCount: () => this.relicSystem?.heldCount() ?? 0,
-      getEvolvedWeaponsCount: () => this.evolvedWeapons.length,
-      getChestRegistry: () => this.chestRegistry,
-      getUpgradeUI: () => this.upgradeUI ?? null,
-      getBanter: () => this.banter,
-      getTimeNowMs: () => this.time.now,
-      setBurnsPlatterPickedUpAtMs: (ms) => { this.burnsPlatterPickedUpAtMs = ms; },
-    });
+    this.runeSystemController = new RuneSystemController(buildRuneSystemControllerHooks(this));
 
     // Cosmetic run name — uses Math.random(), not runRng (keeps gameplay
     // determinism intact per rng.ts policy). Generated here so the name
@@ -1747,37 +1722,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * bank + cursor care about.
    */
   private initNodeMapForAct(act: 1 | 2 | 3, stretch: Act3Stretch = 1): void {
-    // T101 — when the resume hydrate just rebuilt the rolled map from
-    // the IRunState snapshot, reuse it instead of re-rolling. The flag
-    // is one-shot so later act-3 stretch transitions still roll fresh
-    // banks normally.
-    if (this.suppressNextNodeMapRoll) {
-      this.suppressNextNodeMapRoll = false;
-      const restored = this.runActState.currentActNodeMap;
-      if (restored && restored.act === act && restored.nodes.length > 0) {
-        this.nodeMapSystem.setMap(restored);
-        this.nodeMarkerSystem.setMap(this, restored);
-        return;
-      }
-    }
-    const bank = act === 3 ? getAct3Bank(stretch) : getActBank(act);
-    const rng = this.runRng.branch();
-    const nodes = generateNodePath(bank, act, rng);
-    const origin = { x: this.player.x, y: this.player.y };
-    const positions = placeNodes(nodes.length, origin, rng.branch(), {
-      separation: 1000,
-      worldBounds: {
-        minX: 40,
-        minY: 40,
-        maxX: GAME.WORLD_WIDTH - 40,
-        maxY: GAME.WORLD_HEIGHT - 40,
+    initNodeMapForActImpl(
+      {
+        scene: this,
+        getSuppressNextNodeMapRoll: () => this.suppressNextNodeMapRoll,
+        setSuppressNextNodeMapRoll: (v) => { this.suppressNextNodeMapRoll = v; },
+        runActState: this.runActState,
+        nodeMapSystem: this.nodeMapSystem,
+        nodeMarkerSystem: this.nodeMarkerSystem,
+        runRng: this.runRng,
+        player: this.player,
       },
-    });
-    const state = buildNodeMapState(act, nodes, positions);
-    this.runActState.currentActNodeMap = state;
-    this.runActState.currentNodeIndex = 0;
-    this.nodeMapSystem.setMap(state);
-    this.nodeMarkerSystem.setMap(this, state);
+      act,
+      stretch,
+    );
   }
 
   private launchActIntermission(actN: 1 | 2): void {
