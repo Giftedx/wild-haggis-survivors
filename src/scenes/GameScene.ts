@@ -121,15 +121,16 @@ import { getRoute } from '../data/routes';
 import { FloatTextPool } from './game/FloatTextPool';
 import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
-import { RunHistoryRecorder } from './game/RunHistoryRecorder';
-import { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
+import type { RunHistoryRecorder } from './game/RunHistoryRecorder';
+import type { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
+import { installRunEndComposers } from './game/installRunEndComposers';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
 import { showRunIntroToasts } from './game/runIntroToasts';
 import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
 import { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
-import { RunExitComposer } from './game/RunExitComposer';
+import type { RunExitComposer } from './game/RunExitComposer';
 import { RunScoreState } from './game/RunScoreState';
 import { wireSceneEventBus } from './game/wireSceneEventBus';
 import { installRunIntroFx } from './game/installRunIntroFx';
@@ -1005,9 +1006,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       },
     });
 
-    // Run-end composer — builds RunSummary / GameOverPayload and
-    // orchestrates the Game → GameOver / Game → MainMenu transitions.
-    this.runExit = new RunExitComposer({
+    // Phase 5 Bucket 6 partial — RunExitComposer + RunHistoryRecorder +
+    // RunPersistenceCoordinator construction. De-duplicated hook bag
+    // (~9 fields used to repeat across the three composers' ctors).
+    ({
+      runExit: this.runExit,
+      runHistoryRecorder: this.runHistoryRecorder,
+      runPersistenceCoordinator: this.runPersistenceCoordinator,
+    } = installRunEndComposers({
       getWeaponSystem: () => this.weaponSystem,
       getSpawnSystem: () => this.spawnSystem,
       getJuice: () => this.juice,
@@ -1018,11 +1024,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getActiveCurseKey: () => this.activeCurseKey,
       getRunRng: () => this.runRng,
       getRunModifiers: () => this.runModifiers,
+      getRunScore: () => this.runScore,
+      getRunName: () => this.runName,
       isDailyRun: () => this.runIsDaily,
       isIronmoorRun: () => this.activeIronmoorRun,
       getSecondsPastBell: () => this.runLifecycle?.getSecondsPastBell() ?? 0,
-      getRunName: () => this.runName,
-      getRunScore: () => this.runScore,
       getOwnedPassivesLength: () => this.ownedPassives.length,
       getEvolvedWeaponsLength: () => this.evolvedWeapons.length,
       stopGameScene: () => this.scene.stop('Game'),
@@ -1032,9 +1038,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       startMainMenuScene: () => this.scene.start('Croft'),
       unregisterRunAutoSave: () => this.runPersistence?.unregisterMidRunHooks(),
       // T402 — Game Over run-identity radiator (parity with pause panel).
-      // Same data sources as the pause hooks above: RunActState for act
-      // counter + picker history, RelicSystem for sporran slot labels,
-      // ownedRuneIds → RUNES table for rune labels.
       getCurrentAct: () => this.runActState.currentAct,
       getRouteLabels: () =>
         this.runActState.pickerHistory
@@ -1052,40 +1055,20 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
           .map((id) => RUNES[id]?.nameKey)
           .filter((k): k is string => typeof k === 'string')
           .map((k) => t(k)),
-    });
-
-    // Run history recorder — writes to meta save on run end, updates
-    // the per-day daily challenge record when applicable.
-    this.runHistoryRecorder = new RunHistoryRecorder({
-      getSaveManager: () => this.metaSaveManager,
-      getXPSystem: () => this.xpSystem,
-      getWeaponSystem: () => this.weaponSystem,
-      getActiveVariant: () => this.activeVariant,
-      getActiveCurseKey: () => this.activeCurseKey,
       getBossKillCount: () => this.runScore.bossKillCount,
-      getRunRng: () => this.runRng,
-      isDailyRun: () => this.runIsDaily,
       getRoutePicks: () => this.runActState.pickerHistory,
-      isIronmoor: () => this.activeIronmoorRun,
-      getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
-      getRunName: () => this.runName,
       getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
+      getReplayBlob: () => this.replayRecorder?.finalize() ?? null,
       getEnteredHealingCircle: () => this.hazardZones?.didEnterHealingCircle() ?? false,
       getBiomesVisited: () => this.biomeController?.getBiomesVisited() ?? [],
       getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
       areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
-    });
-
-    // T401 P3 — replay-aware wrapper for the run-end persistence pair.
-    // `isReplayPlayback` reads `this.replayInput` at call time, NOT at
-    // construction, so the gate stays correct even though the
-    // coordinator is built before all of create() has run.
-    this.runPersistenceCoordinator = new RunPersistenceCoordinator({
+      // T401 P3 — replay-aware persistence; reads `this.replayInput` at
+      // call time so the gate stays correct across create()'s lifecycle.
       isReplayPlayback: () => this.replayInput !== null,
-      getHistoryRecorder: () => this.runHistoryRecorder,
       recordRun,
       loadSave,
-    });
+    }));
 
     if (resumeRun) {
       this.runPersistence.applyResume(resumeRun);
