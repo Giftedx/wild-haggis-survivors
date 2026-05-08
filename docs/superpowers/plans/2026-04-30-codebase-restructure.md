@@ -1,6 +1,6 @@
 # Codebase Restructure Implementation Plan
 
-> **STATUS:** Phases 0–4 SHIPPED. Phase 0+1 (LOC ratchet + `save.ts` split) on 2026-05-07; Phase 2+3 (sprite icons + i18n namespaces) on 2026-05-08; **Phase 4 (HUD per-widget builders) on 2026-05-08 — 12 builders under `src/ui/hud/`, HUD 1222→1097 LOC, ratchet 1225→1100**. Phases 5–7 open.
+> **STATUS:** Phases 0–4 + 6 SHIPPED. Phase 0+1 (LOC ratchet + `save.ts` split) on 2026-05-07; Phase 2+3 (sprite icons + i18n namespaces) on 2026-05-08; **Phase 4 (HUD per-widget builders) on 2026-05-08 — 12 builders under `src/ui/hud/`, HUD 1222→1097 LOC, ratchet 1225→1100**; **Phase 6 (JuiceSystem sub-system split) on 2026-05-08 — bossSpectacle / evolutionSpectacle / vignette under `src/systems/juice/`, JuiceSystem 1374→1059 LOC, ratchet 1380→1065**. Phases 5 + 7 open.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
