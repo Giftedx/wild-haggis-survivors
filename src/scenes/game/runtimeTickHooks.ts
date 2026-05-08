@@ -22,9 +22,19 @@ import type { JuiceSystem } from '../../systems/JuiceSystem';
 import type { SpawnSystem } from '../../systems/SpawnSystem';
 import type { RelicEffectDriver } from '../../systems/relics/RelicEffectDriver';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
+import type { RelicPickupSpawner } from '../../entities/RelicPickup';
+import type { EdgeIndicators } from '../../ui/EdgeIndicators';
+import type { Minimap } from '../../ui/Minimap';
+import type { ChestSpriteRegistry } from './ChestSpriteRegistry';
 import type { MoorMomentScheduler } from './MoorMomentScheduler';
 import type { Reliquary } from './reliquary';
 import type { StandingStones } from './standingStones';
+import type { BossHpTracker } from './BossHpTracker';
+import type { GameTickers } from './GameTickers';
+import type { GameMusicState } from '../../systems/music/ProceduralMusicEngine';
+import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
+import { updateMusicStateScratch } from './updateMusicStateScratch';
+import { BIOMES, type BiomeId } from '../../data/biomes';
 import { STONE_SPAWN_SEC, STONE_WARN_SEC } from './standingStones';
 import { computeMantlePulseStagger } from '../../entities/mantlePulse';
 import { globalEventBus } from '../../core/GlobalEventBus';
@@ -132,4 +142,94 @@ export function tickRelicEffectFrame(inputs: RelicEffectFrameTickInputs): void {
   ) ?? 0;
   if (teapotHeal > 0) player.heal(teapotHeal);
   relicSlotUI?.update();
+}
+
+export interface PresentationFrameInputs {
+  /** Wall-clock delta (raw, not scaled) for music + tickers. */
+  delta: number;
+  player: Player;
+  spawnSystem: SpawnSystem;
+  juice: JuiceSystem;
+  bossHpTracker: BossHpTracker;
+  edgeIndicators: EdgeIndicators;
+  minimap: Minimap;
+  chestRegistry: ChestSpriteRegistry;
+  gameTickers: GameTickers;
+  /** Reused state object — the helper mutates it before each musicEngine.update. */
+  musicStateScratch: GameMusicState;
+  /** Live biome under the player (null mid-transition or pre-BiomeController). */
+  biomeId: BiomeId | null;
+  killCount: number;
+  /** weaponCount + ownedPassives length — caller-computed to avoid pulling weaponSystem into the helper. */
+  weaponAndPassiveCount: number;
+  /** Driver may be null briefly during scene-restart between resetTransientRunState and create() reattaching. */
+  relicEffectDriver: RelicEffectDriver | null;
+  relicPickupSpawner: RelicPickupSpawner | null;
+  /** Live reliquary marker (null when no reliquary spawned). */
+  reliquaryMinimapMarker: ReturnType<Reliquary['getMinimapMarker']> | null;
+}
+
+/**
+ * Per-frame presentation block — boss HP tracker, edge indicators,
+ * minimap (with pictish_compass relic-pin overlay), music-state
+ * compositor + musicEngine tick, and the dash + boundary HUD tickers.
+ *
+ * All work here is read-only on gameplay state; the only mutation is
+ * `musicStateScratch` (reused buffer to avoid per-frame allocs) and
+ * the various UI surfaces this hook drives. Caller ticks this AFTER
+ * the gameplay-systems pass and BEFORE `updateRunHudFrame` so HUD
+ * reads see the same frame's data.
+ */
+export function tickPresentationFrame(inputs: PresentationFrameInputs): void {
+  const {
+    delta,
+    player,
+    spawnSystem,
+    juice,
+    bossHpTracker,
+    edgeIndicators,
+    minimap,
+    chestRegistry,
+    gameTickers,
+    musicStateScratch,
+    biomeId,
+    killCount,
+    weaponAndPassiveCount,
+    relicEffectDriver,
+    relicPickupSpawner,
+    reliquaryMinimapMarker,
+  } = inputs;
+
+  bossHpTracker.tick();
+  edgeIndicators.update(player.x, player.y, spawnSystem.getEnemyGroup());
+
+  // R1 M4.5 P2 — pictish_compass surfaces live relic pickup pins on
+  // the minimap. Gated on isHolding so non-holders see no change.
+  const relicPins =
+    relicEffectDriver?.isHolding('pictish_compass') && relicPickupSpawner
+      ? relicPickupSpawner.getActivePickupPositions()
+      : [];
+  minimap.update(
+    player.x,
+    player.y,
+    spawnSystem.getEnemyGroup(),
+    chestRegistry.getMarkers(),
+    player.rotation,
+    reliquaryMinimapMarker,
+    relicPins,
+  );
+
+  updateMusicStateScratch(
+    musicStateScratch,
+    player,
+    spawnSystem,
+    juice,
+    killCount,
+    biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
+    weaponAndPassiveCount / 17,
+  );
+  musicEngine.update(delta, musicStateScratch);
+
+  gameTickers.updateDashIndicator();
+  gameTickers.updateBoundaryWarning();
 }

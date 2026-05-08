@@ -79,7 +79,7 @@ import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { TutorialSystem } from '../systems/TutorialSystem';
-import { BIOMES, type BiomeId } from '../data/biomes';
+import type { BiomeId } from '../data/biomes';
 import type { BiomeManager } from '../systems/BiomeManager';
 import { BiomeController } from './game/BiomeController';
 import { shouldReseedAtSec } from '../systems/biomeReseedSchedule';
@@ -151,7 +151,6 @@ import { dispatchNodeTrigger } from './game/nodeTriggerHandlers';
 import { installTreasureChestTimer } from './game/installTreasureChestTimer';
 import { wireSceneKeybindings } from './game/wireSceneKeybindings';
 import { tickAutoBattleSteering } from './game/tickAutoBattleSteering';
-import { updateMusicStateScratch } from './game/updateMusicStateScratch';
 import { updateRunHudFrame } from './game/updateRunHudFrame';
 import { LevelUpFlow } from './game/LevelUpFlow';
 import { RunLifecycle } from './game/RunLifecycle';
@@ -178,6 +177,7 @@ import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
 import {
   tickMantlePulse,
+  tickPresentationFrame,
   tickRelicEffectFrame,
   tickSecondCounter,
   type SecondTickHookContext,
@@ -1722,41 +1722,24 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // Hazards run on raw delta too — environment is environment.
     this.hazards?.update(delta);
 
-    // Boss HP bar + edge indicators
-    this.bossHpTracker.tick();
-    this.edgeIndicators.update(this.player.x, this.player.y, this.spawnSystem.getEnemyGroup());
-    // R1 M4.5 P2 — pictish_compass surfaces live relic pickup pins on
-    // the minimap. Gated on isHolding so non-holders see no change.
-    const relicPins =
-      this.relicEffectDriver?.isHolding('pictish_compass') && this.relicPickupSpawner
-        ? this.relicPickupSpawner.getActivePickupPositions()
-        : [];
-    this.minimap.update(
-      this.player.x,
-      this.player.y,
-      this.spawnSystem.getEnemyGroup(),
-      this.chestRegistry.getMarkers(),
-      this.player.rotation,
-      this.reliquary?.getMinimapMarker() ?? null,
-      relicPins,
-    );
-    const biomeId = this.getCurrentBiomeId();
-    updateMusicStateScratch(
-      this.musicStateScratch,
-      this.player,
-      this.spawnSystem,
-      this.juice,
-      this.runScore.killCount,
-      biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
-      (this.weaponSystem.getWeapons().length + this.ownedPassives.length) / 17,
-    );
-    musicEngine.update(delta, this.musicStateScratch);
-
-    // Dash cooldown indicator (small arc under player)
-    this.gameTickers.updateDashIndicator();
-
-    // World boundary warning — red tint when near edges
-    this.gameTickers.updateBoundaryWarning();
+    tickPresentationFrame({
+      delta,
+      player: this.player,
+      spawnSystem: this.spawnSystem,
+      juice: this.juice,
+      bossHpTracker: this.bossHpTracker,
+      edgeIndicators: this.edgeIndicators,
+      minimap: this.minimap,
+      chestRegistry: this.chestRegistry,
+      gameTickers: this.gameTickers,
+      musicStateScratch: this.musicStateScratch,
+      biomeId: this.getCurrentBiomeId(),
+      killCount: this.runScore.killCount,
+      weaponAndPassiveCount: this.weaponSystem.getWeapons().length + this.ownedPassives.length,
+      relicEffectDriver: this.relicEffectDriver,
+      relicPickupSpawner: this.relicPickupSpawner,
+      reliquaryMinimapMarker: this.reliquary?.getMinimapMarker() ?? null,
+    });
 
     updateRunHudFrame({
       delta,
