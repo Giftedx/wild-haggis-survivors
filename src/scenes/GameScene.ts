@@ -1157,8 +1157,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       weaponSystem: this.weaponSystem,
       enemyKillHandler: this.enemyKillHandler,
       player: this.player,
-      juice: this.juice,
-      hud: this.hud,
+      // Lazy: `this.juice` / `this.hud` are constructed ~65 lines below
+      // (`new HUD` + `new JuiceSystem`). Direct refs would capture
+      // undefined at wire time and throw on the first damageDealt event.
+      getJuice: () => this.juice,
+      getHud: () => this.hud,
       runStatsTracker: this.runStatsTracker,
       runeBag: this.runeBag,
       getSFXManager: () => this.getSFXManager(),
@@ -1166,7 +1169,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
     wireXpSystemListeners({
       xpSystem: this.xpSystem,
-      levelUpFlow: this.levelUpFlow,
+      // Lazy: `this.levelUpFlow` is constructed ~150 lines below.
+      // Direct ref would capture undefined and throw on first levelup.
+      getLevelUpFlow: () => this.levelUpFlow,
       player: this.player,
       getBanter: () => this.banter,
       getActiveVariantKey: () => this.activeVariant?.key,

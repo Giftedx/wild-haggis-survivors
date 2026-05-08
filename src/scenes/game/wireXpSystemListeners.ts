@@ -7,6 +7,14 @@
  *  - `echoReady` → LevelUpFlow.handleEcho + accessibility caption.
  *    Echo cards are post-cap XP picks; same UI, no ceremony.
  *
+ * `getLevelUpFlow` is lazy because the live GameScene wires listeners
+ * ~150 lines BEFORE `this.levelUpFlow` is constructed (search
+ * `this.levelUpFlow = new LevelUpFlow`). Resolving at fire time
+ * matches the pre-extraction inline `(newLevel) => this.levelUpFlow.handleLevelUp(...)`
+ * arrow which read `this.levelUpFlow` lexically; capturing by value
+ * at wire time would have bound `undefined` and thrown on the first
+ * level-up.
+ *
  * Listeners are added via `events.on` only — the scene reuses the
  * XPSystem instance for the run, and a scene restart builds a fresh
  * instance, so old listeners die with the old instance. No teardown
@@ -20,7 +28,8 @@ import { t } from '../../core/i18n';
 
 export interface WireXpSystemListenersInputs {
   xpSystem: XPSystem;
-  levelUpFlow: LevelUpFlow;
+  /** Lazy: GameScene wires before `this.levelUpFlow` is constructed. */
+  getLevelUpFlow: () => LevelUpFlow;
   player: Player;
   /** Lazy because banter is constructed late in `create()`. */
   getBanter: () => BanterSystem | null;
@@ -30,10 +39,10 @@ export interface WireXpSystemListenersInputs {
 }
 
 export function wireXpSystemListeners(inputs: WireXpSystemListenersInputs): void {
-  const { xpSystem, levelUpFlow, player, getBanter, getActiveVariantKey, caption } = inputs;
+  const { xpSystem, getLevelUpFlow, player, getBanter, getActiveVariantKey, caption } = inputs;
 
   xpSystem.events.on('levelup', (newLevel: number) => {
-    levelUpFlow.handleLevelUp(newLevel);
+    getLevelUpFlow().handleLevelUp(newLevel);
     // Celebrating one-shot — haggis hops in place. Plays once, loops
     // four frames while the upgrade overlay is up, then the FSM
     // returns to idle/walking when the overlay dismisses.
@@ -48,7 +57,7 @@ export function wireXpSystemListeners(inputs: WireXpSystemListenersInputs): void
   // Post-cap echo cards — same UI as a level-up but without the
   // ceremony (no heal, no aura, no milestone pulse).
   xpSystem.events.on('echoReady', () => {
-    levelUpFlow.handleEcho();
+    getLevelUpFlow().handleEcho();
     caption('echo_ready', t('ui.captions.echo_ready'), '#c8a8e8', 3500);
   });
 }

@@ -17,6 +17,13 @@
  *  - `weaponFired` → flags the player's "attacking" one-shot animation
  *    beat (FSM gates it to ~167ms).
  *
+ * `getJuice` / `getHud` are lazy because the live GameScene wires
+ * listeners ~65 lines BEFORE `this.juice` / `this.hud` are constructed
+ * (search `this.juice = new JuiceSystem`). Resolving at fire time
+ * matches the pre-extraction inline `(...) => this.juice.showDamageNumber(...)`
+ * arrow which read `this.juice` lexically; capturing by value at wire
+ * time would have bound `undefined` and thrown on the first kill.
+ *
  * Listeners are added via `events.on` only — the scene reuses the
  * same WeaponSystem instance across a run, and a scene restart
  * builds a fresh instance, so the old listeners die with the old
@@ -39,8 +46,10 @@ export interface WireWeaponSystemListenersInputs {
   weaponSystem: WeaponSystem;
   enemyKillHandler: EnemyKillHandler;
   player: Player;
-  juice: JuiceSystem;
-  hud: HUD;
+  /** Lazy: GameScene wires before `this.juice` is constructed. */
+  getJuice: () => JuiceSystem;
+  /** Lazy: GameScene wires before `this.hud` is constructed. */
+  getHud: () => HUD;
   runStatsTracker: RunStatsTracker;
   runeBag: RuneEffectBag;
   getSFXManager: () => SFXManager;
@@ -51,8 +60,8 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
     weaponSystem,
     enemyKillHandler,
     player,
-    juice,
-    hud,
+    getJuice,
+    getHud,
     runStatsTracker,
     runeBag,
     getSFXManager,
@@ -80,9 +89,10 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
   weaponSystem.events.on(
     'damageDealt',
     (x: number, y: number, amount: number, isCrit: boolean, weaponKey?: string) => {
+      const juice = getJuice();
       juice.showDamageNumber(x, y, amount, isCrit);
       juice.spawnImpactRing(x, y);
-      hud.logDamage(amount);
+      getHud().logDamage(amount);
       runStatsTracker.addWeaponDamage(weaponKey ?? 'unknown', amount);
       getSFXManager().tryPlay('hit', () => audio.playHitImmediate());
     },
@@ -92,7 +102,7 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
   weaponSystem.events.on(
     'projectileTrail',
     (x: number, y: number, evolved: boolean, wKey: string) => {
-      juice.spawnTrail(x, y, pickTrailColor(wKey, evolved, Math.random()));
+      getJuice().spawnTrail(x, y, pickTrailColor(wKey, evolved, Math.random()));
     },
   );
 
