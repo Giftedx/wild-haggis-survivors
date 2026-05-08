@@ -2,12 +2,10 @@ import * as Phaser from 'phaser';
 import { COLORS, COLORS_CSS, UI } from '../config';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine } from '../systems/music/ProceduralMusicEngine';
-import { getVariantByKey, VariantKey } from '../data/variants';
 import type { GameOverPayload } from './gameOverPayload';
 import { t } from '../core/i18n';
 import { getSettingsManager } from '../core/SettingsManager';
 import { SaveManager } from '../core/SaveManager';
-import type { DeathCause } from '../core/deathCauseClassifier';
 import { getCurseByKey } from '../data/curses';
 import {
   formatClockTime,
@@ -15,9 +13,6 @@ import {
   boundedLoadoutSummary,
   buildGameOverRunIdentityLines,
   buildWeaponDamageRows,
-  formatDeathInsightLine,
-  resolveUnlockHeading,
-  formatUnlockBodyText,
   formatRerunSeedLinkLabel,
   formatSeedReadoutLabel,
   buildPostcardPayloadFromGameOver,
@@ -38,6 +33,10 @@ import { textStyle } from '../ui/typography';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
 import { GameOverFocusController } from './game-over/GameOverFocusController';
+import {
+  renderDeathInsight,
+  addRunResultUnlockContent,
+} from './game-over/runResultContent';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -225,7 +224,7 @@ export class GameOverScene extends Phaser.Scene {
     // (+94) and variant chip (+140). Soul Charter: failure must be
     // *informative and compassionate, never shaming*.
     if (!isVictory && this.payload.deathCause) {
-      this.renderDeathInsight(panelCenterX, panelTop + (compact ? 104 : 116), d + 3, this.payload.deathCause, uiScale, PANEL_W);
+      renderDeathInsight(this, panelCenterX, panelTop + (compact ? 104 : 116), d + 3, this.payload.deathCause, uiScale, PANEL_W);
     }
 
     // Run name epigraph — gentle "Here lies {name}" / "{name} walked home."
@@ -467,7 +466,7 @@ export class GameOverScene extends Phaser.Scene {
     // Unlock content sits inside the unlockPanel — anchor on panel centre
     // minus a small top-padding so scaled text stays visually contained at
     // uiScale 1.4 instead of using the old fixed `panelTop + 512`.
-    this.addRunResultUnlockContent(panelCenterX, unlockPanelY - Math.round(38 * panelScale), d + 3, runResult.newlyUnlockedVariants, 1140);
+    addRunResultUnlockContent(this, panelCenterX, unlockPanelY - Math.round(38 * panelScale), d + 3, runResult.newlyUnlockedVariants, 1140);
 
     // Seed readout — sits just above the action buttons. For daily runs it
     // prefixes "DAILY" and shows the date; for seeded runs just the code.
@@ -624,142 +623,6 @@ export class GameOverScene extends Phaser.Scene {
   private uninstallDomFocusLayer(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
-  }
-
-  /**
-   * Renders a single italic line blending the classified headline + takeaway
-   * tip for the death insight. `{source}` is interpolated with a
-   * display-name-resolved enemy label when the classifier identified a
-   * dominant source; otherwise "something" as a voice-appropriate fallback.
-   */
-  private renderDeathInsight(
-    centerX: number,
-    y: number,
-    depth: number,
-    cause: DeathCause,
-    uiScale: number,
-    panelWidth: number,
-  ): void {
-    const text = this.add
-      .text(centerX, y, formatDeathInsightLine(cause),
-        textStyle('subtitle', { color: COLORS_CSS.LABEL_TAN, align: 'center', wordWrap: { width: (panelWidth - 48) / Math.max(1, uiScale) } }),
-      )
-      .setOrigin(0.5, 0)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0);
-    text.setScale(uiScale);
-    this.tweens.add({ targets: text, alpha: 1, duration: 320, delay: 380 });
-  }
-
-  private addRunResultUnlockContent(
-    centerX: number,
-    y: number,
-    depth: number,
-    variantKeys: VariantKey[],
-    delay: number
-  ): void {
-    const tips = [
-      t('ui.tips.dash'),
-      t('ui.tips.combo'),
-      t('ui.tips.armor'),
-      t('ui.tips.evolve'),
-      t('ui.tips.piper'),
-      t('ui.tips.kite'),
-    ];
-    const hasUnlocks = variantKeys.length > 0;
-    const { text: headingText, color: headingColor } = resolveUnlockHeading(variantKeys);
-
-    const heading = this.add
-      .text(centerX, y, headingText, {
-        ...textStyle('label', { fontSize: '12px', color: headingColor }),
-        letterSpacing: 1,
-      })
-      .setOrigin(0.5, 0)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0);
-    this.tweens.add({ targets: heading, alpha: 1, duration: 260, delay });
-
-    if (!hasUnlocks) {
-      const tip = this.add
-        .text(centerX, y + 34, tips[Math.floor(Math.random() * tips.length)],
-          textStyle('subtitle', { color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(520, this.scale.width - 80) } }),
-        )
-        .setOrigin(0.5, 0)
-        .setScrollFactor(0)
-        .setDepth(depth)
-        .setAlpha(0);
-      this.tweens.add({ targets: tip, alpha: 1, duration: 260, delay: delay + 90 });
-      return;
-    }
-
-    // Sparkle burst around the unlock heading — celebratory soul moment
-    this.addUnlockSparkles(centerX, y + 20, depth + 1, delay + 60);
-
-    if (variantKeys.length === 1) {
-      const variant = getVariantByKey(variantKeys[0]);
-      const nameText = this.add
-        .text(centerX, y + 26, t(variant.nameKey),
-          textStyle('heading', { fontSize: '26px', color: COLORS_CSS.WHISKY_GOLD, align: 'center' }),
-        )
-        .setOrigin(0.5, 0)
-        .setScrollFactor(0)
-        .setDepth(depth)
-        .setAlpha(0);
-      const flavorText = this.add
-        .text(centerX, y + 58, t(variant.flavorKey),
-          textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SECONDARY, align: 'center', wordWrap: { width: Math.min(520, this.scale.width - 80) } }),
-        )
-        .setOrigin(0.5, 0)
-        .setScrollFactor(0)
-        .setDepth(depth)
-        .setAlpha(0);
-      this.tweens.add({ targets: [nameText, flavorText], alpha: 1, duration: 300, delay: delay + 90 });
-      return;
-    }
-
-    // Invariant: variantKeys.length >= 2 here (length === 1 branch returned above).
-    const bodyText = formatUnlockBodyText(variantKeys) ?? '';
-    const unlockList = this.add
-      .text(centerX, y + 30, bodyText, {
-        ...textStyle('body', { fontSize: variantKeys.length === 2 ? '18px' : '14px', color: COLORS_CSS.WHISKY_GOLD, align: 'center', wordWrap: { width: Math.min(500, this.scale.width - 100) } }),
-        lineSpacing: 6,
-      })
-      .setOrigin(0.5, 0)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0);
-    this.tweens.add({ targets: unlockList, alpha: 1, duration: 300, delay: delay + 90 });
-  }
-
-  /** Celebratory sparkle burst — 8 golden particles radiating outward from center. */
-  private addUnlockSparkles(cx: number, cy: number, depth: number, delay: number): void {
-    const { uiScale } = getSettingsManager().load();
-    for (let i = 0; i < 8; i++) {
-      const angle = (i / 8) * Math.PI * 2;
-      const sparkle = this.add.circle(cx, cy, 3, 0xffdd44, 0)
-        .setScrollFactor(0).setDepth(depth);
-      this.tweens.add({
-        targets: sparkle,
-        x: cx + Math.cos(angle) * Math.round(60 * uiScale),
-        y: cy + Math.sin(angle) * Math.round(40 * uiScale),
-        alpha: { from: 0, to: 0.9 },
-        scale: { from: 0.3, to: 1.5 },
-        duration: 600,
-        delay: delay + i * 50,
-        ease: 'Power2',
-        onComplete: () => {
-          this.tweens.add({
-            targets: sparkle,
-            alpha: 0,
-            scale: 0,
-            duration: 400,
-            onComplete: () => sparkle.destroy(),
-          });
-        },
-      });
-    }
   }
 
   private createResultStat(
