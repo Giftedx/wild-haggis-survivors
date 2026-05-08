@@ -35,20 +35,9 @@ import { formatLocalYmd } from '../utils/formatDate';
 import { TOAST_COLORS } from '../ui/toastPalette';
 import { createGameButton } from '../ui/gameButton';
 import { textStyle } from '../ui/typography';
-import {
-  firstEnabledModalFocusIndex,
-  moveModalFocusIndex,
-  type ModalFocusEntry,
-} from '../ui/modalFocus';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
-
-interface GameOverActionFocusEntry extends ModalFocusEntry {
-  readonly rect: Phaser.GameObjects.Rectangle;
-  readonly onActivate: () => void;
-  /** Snapshot of the rect's idle stroke (HC tier border or none) so applyActionFocus can restore it on de-focus. */
-  readonly idleStroke: { width: number; color: number; alpha: number };
-}
+import { GameOverFocusController } from './game-over/GameOverFocusController';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -78,13 +67,6 @@ export class GameOverScene extends Phaser.Scene {
   // We fall back to MainMenu in create() when it's missing rather than
   // asserting non-null here and crashing on the first field access.
   private payload: GameOverPayload | null = null;
-  private actionEntries: GameOverActionFocusEntry[] = [];
-  private focusedActionIndex = -1;
-  private keyHandler?: (e: KeyboardEvent) => void;
-  private gamepadUpdateHandler: (() => void) | null = null;
-  private prevPadBack = false;
-  private prevPadForward = false;
-  private prevPadConfirm = false;
   /**
    * T407 — DOM-visible focus mirror. Visually hidden (1×1 clipped div)
    * but readable by screen readers + Tab-focusable. Mirrors the Phaser
@@ -95,6 +77,10 @@ export class GameOverScene extends Phaser.Scene {
    * hence `role="dialog"` rather than `role="group"`.
    */
   private domFocusLayer: DomFocusLayer | null = null;
+  private readonly focusController = new GameOverFocusController({
+    scene: this,
+    getDomFocusLayer: () => this.domFocusLayer,
+  });
 
   constructor() {
     super({ key: 'GameOver' });
@@ -109,9 +95,7 @@ export class GameOverScene extends Phaser.Scene {
     // prior shutdown didn't fire (e.g. mid-tween scene swap), tear down
     // the lingering DOM mirror first so we don't leak a hidden node.
     this.uninstallDomFocusLayer();
-    this.actionEntries = [];
-    this.focusedActionIndex = -1;
-    this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
+    this.focusController.reset();
     if (!this.payload?.summary || !this.payload.runResult) {
       this.scene.start('MainMenu');
       return;
@@ -577,128 +561,19 @@ export class GameOverScene extends Phaser.Scene {
     this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
     this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
 
-    this.focusedActionIndex = firstEnabledModalFocusIndex(this.actionEntries);
-    this.applyActionFocus();
-    this.installKeyboardShortcuts();
-    this.installGamepadShortcuts();
+    this.focusController.seedFocusFromActions();
+    this.focusController.installKeyboard();
+    this.focusController.installGamepad();
     // T407 — install the DOM-visible focus mirror after all three action
     // buttons exist. Mirrors the Phaser focus state via setFocusedIndex
-    // (driven from applyActionFocus); DOM-side activation routes through
+    // (driven from applyStyles); DOM-side activation routes through
     // the same callbacks the visible buttons use.
     this.installDomFocusLayer({ onPlayAgain, onGoldShop, onTaeGran });
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
-      this.uninstallKeyboardShortcuts();
-      this.uninstallGamepadShortcuts();
+      this.focusController.dispose();
       this.uninstallDomFocusLayer();
     });
-  }
-
-  private installKeyboardShortcuts(): void {
-    const keyboard = this.input.keyboard;
-    if (!keyboard) return;
-    this.keyHandler = (e: KeyboardEvent) => {
-      const digit = parseInt(e.key, 10);
-      if (Number.isFinite(digit) && digit >= 1 && digit <= this.actionEntries.length) {
-        const entry = this.actionEntries[digit - 1];
-        if (entry && !entry.disabled) {
-          e.preventDefault();
-          this.focusedActionIndex = digit - 1;
-          this.applyActionFocus();
-          entry.onActivate();
-        }
-        return;
-      }
-      if (
-        e.key === 'ArrowLeft' || e.key === 'ArrowUp'
-        || (e.key === 'Tab' && e.shiftKey)
-      ) {
-        e.preventDefault();
-        this.moveActionFocus(-1);
-        return;
-      }
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'Tab') {
-        e.preventDefault();
-        this.moveActionFocus(1);
-        return;
-      }
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      this.activateFocusedAction();
-    };
-    keyboard.on('keydown', this.keyHandler);
-  }
-
-  private uninstallKeyboardShortcuts(): void {
-    if (!this.keyHandler) return;
-    this.input.keyboard?.off('keydown', this.keyHandler);
-    this.keyHandler = undefined;
-  }
-
-  private installGamepadShortcuts(): void {
-    this.uninstallGamepadShortcuts();
-    this.gamepadUpdateHandler = () => {
-      const pad = this.input.gamepad?.pad1;
-      if (!pad?.connected) {
-        this.prevPadBack = this.prevPadForward = this.prevPadConfirm = false;
-        return;
-      }
-      const back = pad.left || pad.up || pad.leftStick.x < -0.5 || pad.leftStick.y < -0.5;
-      const forward = pad.right || pad.down || pad.leftStick.x > 0.5 || pad.leftStick.y > 0.5;
-      const confirm = pad.buttons[0]?.pressed === true || pad.buttons[9]?.pressed === true;
-      if (back && !this.prevPadBack) this.moveActionFocus(-1);
-      if (forward && !this.prevPadForward) this.moveActionFocus(1);
-      if (confirm && !this.prevPadConfirm) this.activateFocusedAction();
-      this.prevPadBack = back;
-      this.prevPadForward = forward;
-      this.prevPadConfirm = confirm;
-    };
-    this.events.on('update', this.gamepadUpdateHandler);
-  }
-
-  private uninstallGamepadShortcuts(): void {
-    if (!this.gamepadUpdateHandler) return;
-    this.events.off('update', this.gamepadUpdateHandler);
-    this.gamepadUpdateHandler = null;
-  }
-
-  private moveActionFocus(direction: -1 | 1): void {
-    this.focusedActionIndex = moveModalFocusIndex(
-      this.actionEntries,
-      this.focusedActionIndex,
-      direction,
-    );
-    this.applyActionFocus();
-  }
-
-  private activateFocusedAction(): void {
-    const entry = this.actionEntries[this.focusedActionIndex];
-    if (!entry || entry.disabled) return;
-    entry.onActivate();
-  }
-
-  private applyActionFocus(): void {
-    for (let i = 0; i < this.actionEntries.length; i++) {
-      const entry = this.actionEntries[i]!;
-      if (i === this.focusedActionIndex) {
-        entry.rect.setStrokeStyle(3, 0xffe080, 1);
-      } else if (entry.idleStroke.width > 0) {
-        entry.rect.setStrokeStyle(
-          entry.idleStroke.width,
-          entry.idleStroke.color,
-          entry.idleStroke.alpha,
-        );
-      } else {
-        entry.rect.setStrokeStyle();
-      }
-    }
-    // T407 — keep the DOM focus mirror lockstep with the visible Phaser
-    // cursor so assistive tech announces the same action the sighted
-    // player sees. Layer's setFocusedIndex is a no-op when the index is
-    // already current, so we don't need a guard against re-entry.
-    if (this.domFocusLayer && this.focusedActionIndex >= 0) {
-      this.domFocusLayer.setFocusedIndex(this.focusedActionIndex);
-    }
   }
 
   /**
@@ -733,16 +608,15 @@ export class GameOverScene extends Phaser.Scene {
       description: summaryDigest,
       role: 'dialog',
       actions,
-      initialFocusIndex: this.focusedActionIndex >= 0 ? this.focusedActionIndex : 0,
+      initialFocusIndex: Math.max(this.focusController.getFocusedIndex(), 0),
       onFocusIndexChange: (index) => {
         // Mirror DOM-side focus changes (screen-reader Tab) back into the
         // Phaser-side index so the visible stroke follows assistive-tech
-        // navigation. applyActionFocus → setFocusedIndex on the layer is
+        // navigation. applyStyles → setFocusedIndex on the layer is
         // a no-op when the index is already current, so re-entry is safe.
-        const entry = this.actionEntries[index];
+        const entry = this.focusController.getAction(index);
         if (!entry || entry.disabled) return;
-        this.focusedActionIndex = index;
-        this.applyActionFocus();
+        this.focusController.setFocusedIndex(index);
       },
     });
   }
@@ -973,14 +847,13 @@ export class GameOverScene extends Phaser.Scene {
 
     button.on('pointerdown', onClick);
     button.on('pointerover', () => {
-      const idx = this.actionEntries.findIndex((e) => e.rect === button);
+      const idx = this.focusController.getActions().findIndex((e) => e.rect === button);
       if (idx === -1) return;
-      this.focusedActionIndex = idx;
-      this.applyActionFocus();
+      this.focusController.setFocusedIndex(idx);
     });
     // Snapshot the idle stroke (createGameButton may have set an HC tier
-    // border) so applyActionFocus can restore it on de-focus.
-    this.actionEntries.push({
+    // border) so applyStyles can restore it on de-focus.
+    this.focusController.addAction({
       rect: button,
       onActivate: onClick,
       idleStroke: {
