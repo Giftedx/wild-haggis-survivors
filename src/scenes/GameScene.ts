@@ -58,7 +58,6 @@ import { RunStatsTracker } from '../systems/RunStatsTracker';
 import { DeathCauseTracker } from '../systems/DeathCauseTracker';
 import { defaultModifiers, type RunModifiers } from '../core/RunModifiers';
 import { type CurseKey } from '../data/curses';
-import { formatHudCurseChipLine } from '../ui/formatHudCurseChip';
 import type { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
@@ -93,6 +92,7 @@ import {
   showRunIdentityToast as moorMomentsShowRunIdentityToast,
 } from './game/moorMoments';
 import { PauseMenu } from './game/PauseMenu';
+import { buildPauseMenuHooks } from './game/buildPauseMenuHooks';
 import { canOpenPauseMenu } from './game/pauseGate';
 import type { PickupSpawner } from './game/PickupSpawner';
 import { RunActState } from './game/RunActState';
@@ -229,7 +229,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** U1 Rune tier — per-run owned rune ids. Filter for buildCardPool's
    *  ownedRuneIds ctx so duplicate offers are filtered. Cleared on scene
    *  restart. */
-  private ownedRuneIds: string[] = [];
+  ownedRuneIds: string[] = [];
   /** U1 — shared effect accumulator read by Player/WeaponSystem readers.
    *  The RuneConditionSystem mutates it via apply/remove on transitions. */
   runeBag = createRuneEffectBag();
@@ -323,7 +323,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
   private bossHpTracker!: BossHpTracker;
   debugTimeTravelApi!: DebugTimeTravelApi;
-  private runExit!: RunExitComposer;
+  runExit!: RunExitComposer;
 
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
   private readonly musicStateScratch: GameMusicState = {
@@ -346,7 +346,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private statusFxPool!: StatusFxPool;
   /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
   private readonly floatTextPool = new FloatTextPool();
-  private readonly runStatsTracker = new RunStatsTracker();
+  readonly runStatsTracker = new RunStatsTracker();
   private readonly deathCauseTracker = new DeathCauseTracker();
   /** Per-run modifier bag (from curse pick). Defaults to identity — an un-cursed run behaves identically to the pre-curse codebase. */
   runModifiers: RunModifiers = defaultModifiers();
@@ -392,11 +392,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * the prior inline GameScene methods (rollAndSpawnRelic, modal,
    * activateWhiskyDram, activateFingalsHorn). Fresh instance per run.
    */
-  private relicOrchestrator!: RelicOrchestrator;
+  relicOrchestrator!: RelicOrchestrator;
   /** Tunnel accessor for compositor call sites that read the slot model. */
   get relicSystem() { return this.relicOrchestrator.getSystem(); }
   /** Tunnel accessor for compositor call sites that read the effect driver. */
-  private get relicEffectDriver() { return this.relicOrchestrator.getDriver(); }
+  get relicEffectDriver() { return this.relicOrchestrator.getDriver(); }
   /** Tunnel accessor for compositor call sites that need the live pickup spawner. */
   get relicPickupSpawner() { return this.relicOrchestrator.getSpawner(); }
   levelUpFlow!: LevelUpFlow;
@@ -1441,7 +1441,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.iFrameController.arm(durationMs);
   }
 
-  private toggleUiPause(): void {
+  toggleUiPause(): void {
     // Gated on any other modal that owns time — see pauseGate for the set.
     if (!canOpenPauseMenu((tok) => this.timeManager.has(tok))) return;
 
@@ -1453,38 +1453,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     } else {
       this.timeManager.request('UI_PAUSE', { pausePhysics: true, timeScale: 0 });
       if (!this.pauseMenu) {
-        this.pauseMenu = new PauseMenu(this, {
-          getUiViewport: () => this.getUiViewport(),
-          getGameTimeSec: () => this.spawnSystem.getGameTimeSec(),
-          getKillCount: () => this.runScore.killCount,
-          getLevel: () => this.xpSystem.getLevel(),
-          getEquippedWeaponCount: () => this.weaponSystem.getWeapons().length,
-          getOwnedPassives: () => this.ownedPassives,
-          getActiveCurseLine: () => formatHudCurseChipLine(this.activeCurseKey),
-          getRunGoldEarned: () => this.runScore.coinGoldEarned,
-          getKillStreakStats: () => ({
-            current: this.juice.getComboCount(),
-            best: this.juice.getBestCombo(),
-          }),
-          getLastHudDps: () => this.hud.getLastDisplayedDps(),
-          getRunDamageDealt: () => this.runStatsTracker.getTotalDamage(),
-          // T402 — run identity radiator: act, route picks, held relics.
-          // Each line in pauseStats only renders when the data is non-
-          // default, so the panel stays clean on a fresh act-1 run.
-          getCurrentAct: () => this.runActState.currentAct,
-          getRouteLabels: () => resolveRouteLabels(this.runActState.pickerHistory),
-          getRelicLabels: () => resolveRelicLabels(this.relicSystem ?? null),
-          getVariantLabel: () => {
-            try { return t(this.activeVariant.nameKey); } catch { return ''; }
-          },
-          getRuneLabels: () => resolveRuneLabels(this.ownedRuneIds),
-          onResumeRequested: () => this.toggleUiPause(),
-          onQuitRequested: () => this.runExit.abandonToMainMenu(),
-          isWhiskyDramAvailable: () => this.relicEffectDriver?.isWhiskyDramAvailable() ?? false,
-          onWhiskyDramRequested: () => this.relicOrchestrator.activateWhiskyDram(),
-          isFingalsHornAvailable: () => this.relicEffectDriver?.isFingalsHornAvailable() ?? false,
-          onFingalsHornRequested: () => this.relicOrchestrator.activateFingalsHorn(),
-        });
+        this.pauseMenu = new PauseMenu(this, buildPauseMenuHooks(this));
       }
       this.pauseMenu.open();
     }
