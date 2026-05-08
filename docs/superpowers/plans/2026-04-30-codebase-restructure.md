@@ -1,6 +1,6 @@
 # Codebase Restructure Implementation Plan
 
-> **STATUS:** Phase 0 + Phase 1 SHIPPED 2026-05-07 (LOC ratchet + `save.ts` 8-module split, 6 commits per memory `project_restructure_phase1_status`). Phases 2–6 open.
+> **STATUS:** Phases 0–4 SHIPPED. Phase 0+1 (LOC ratchet + `save.ts` split) on 2026-05-07; Phase 2+3 (sprite icons + i18n namespaces) on 2026-05-08; **Phase 4 (HUD per-widget builders) on 2026-05-08 — 12 builders under `src/ui/hud/`, HUD 1222→1097 LOC, ratchet 1225→1100**. Phases 5–7 open.
 >
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
