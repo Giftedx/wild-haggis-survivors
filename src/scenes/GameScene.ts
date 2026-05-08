@@ -41,10 +41,7 @@ import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
 import { createRNG, randomSeed, encodeSeed, type RNG } from '../utils/rng';
-import { buildCaptureFilename } from '../utils/captureFilename';
-import { formatLocalYmd } from '../utils/formatDate';
-import { saveScreenshot } from '../utils/screenshot';
-import { TOAST_COLORS } from '../ui/toastPalette';
+import { createCaptureHandlers } from './game/captureHandlers';
 import type { ReplayRecorder } from '../replay/ReplayRecorder';
 import type { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
@@ -1361,11 +1358,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       enqueuePendingChest: (chest) => { this.pendingChests.push(chest); },
     });
 
+    const captureHandlers = createCaptureHandlers({
+      getCanvas: () => this.game.canvas,
+      getClipRecorder: () => this.clipRecorder,
+      getJuice: () => this.getJuice(),
+      getRunContextForCapture: () => this.getRunContextForCapture(),
+    });
     wireSceneKeybindings(this.input.keyboard, this.subs, {
       togglePause: () => this.toggleUiPause(),
       getDebugOverlay: () => this.debugOverlay,
-      saveClipF9: () => this.handleF9SaveClip(),
-      saveScreenshotF10: () => this.handleF10Screenshot(),
+      saveClipF9: captureHandlers.handleF9SaveClip,
+      saveScreenshotF10: captureHandlers.handleF10Screenshot,
     });
 
     // Run-intro ceremony — fade in from black + controls hint auto-hide.
@@ -2110,66 +2113,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       timeSurvivedSec: Math.floor(this.spawnSystem.getGameTimeSec()),
       seedCode: this.getRunSeedCode(),
     };
-  }
-
-  /** F10 screenshot handler — check captureEnabled, snap canvas, show toast. */
-  private lastClipSaveAt = 0;
-
-  private handleF10Screenshot(): void {
-    if (!getSettingsManager().load().captureEnabled) return;
-    const canvas = this.game.canvas;
-    if (!canvas) return;
-    const ctx = this.getRunContextForCapture();
-    const filename = buildCaptureFilename('screenshot', {
-      mode: ctx.mode,
-      variantLabel: ctx.variantLabel,
-      timeSurvivedSec: ctx.timeSurvivedSec,
-      seedCode: ctx.seedCode,
-      dateYmd: formatLocalYmd(new Date()),
-    });
-    void saveScreenshot(canvas, filename).then((ok) => {
-      this.getJuice()?.showToast(
-        ok ? t('ui.toast.screenshot_saved') : t('ui.toast.screenshot_failed'),
-        ok ? TOAST_COLORS.positive : TOAST_COLORS.warning,
-      );
-    });
-  }
-
-  private handleF9SaveClip(): void {
-    if (!getSettingsManager().load().captureEnabled) return;
-    const recorder = this.clipRecorder;
-    if (!recorder?.isAvailable()) return;
-
-    const now = performance.now();
-    if (now - this.lastClipSaveAt < 500) return;
-    this.lastClipSaveAt = now;
-
-    const ctx = this.getRunContextForCapture();
-    const filename = buildCaptureFilename('clip', {
-      mode: ctx.mode,
-      variantLabel: ctx.variantLabel,
-      timeSurvivedSec: ctx.timeSurvivedSec,
-      seedCode: ctx.seedCode,
-      dateYmd: formatLocalYmd(new Date()),
-    });
-
-    void recorder.saveLast((blob) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }).then((blob) => {
-      const key = blob === null ? 'ui.toast.clip_empty' : 'ui.toast.clip_saved';
-      const color = blob ? TOAST_COLORS.positive : TOAST_COLORS.warning;
-      this.getJuice()?.showToast(t(key), color);
-    }).catch(() => {
-      this.getJuice()?.showToast(t('ui.toast.clip_failed'), TOAST_COLORS.warning);
-    });
   }
 
   // Chest sprite track/untrack/markers extracted to ChestSpriteRegistry.
