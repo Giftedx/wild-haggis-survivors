@@ -75,8 +75,7 @@ import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
 import { applyWeaponMultiplierFold } from './game/weaponMultiplierFold';
-import { wireWeaponSystemListeners } from './game/wireWeaponSystemListeners';
-import { wireXpSystemListeners } from './game/wireXpSystemListeners';
+import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { TutorialSystem } from '../systems/TutorialSystem';
@@ -110,7 +109,6 @@ import {
 import { PauseMenu } from './game/PauseMenu';
 import { canOpenPauseMenu } from './game/pauseGate';
 import type { PickupSpawner } from './game/PickupSpawner';
-import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
 import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
@@ -119,7 +117,6 @@ import { launchActIntermission as launchActIntermissionImpl } from './game/actIn
 import type { RoutePick, RouteResumeContext } from '../data/routes';
 import { resolveRouteLabels, resolveRelicLabels, resolveRuneLabels } from './game/runIdentityLabels';
 import { FloatTextPool } from './game/FloatTextPool';
-import { PlayerHitResolver } from './game/PlayerHitResolver';
 import { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import type { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import type { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
@@ -427,8 +424,6 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private get relicPickupSpawner() { return this.relicOrchestrator.getSpawner(); }
   private levelUpFlow!: LevelUpFlow;
   private runLifecycle!: RunLifecycle;
-  private enemyKillHandler!: EnemyKillHandler;
-  private playerHitResolver!: PlayerHitResolver;
   private runPersistence!: RunPersistenceBridge;
   private runHistoryRecorder!: RunHistoryRecorder;
   /**
@@ -1070,21 +1065,37 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.upgradeUI.setRerollCallback(() => this.levelUpFlow.reroll());
     this.upgradeUI.setVariantKey(this.activeVariant.key);
 
-    // Enemy kill cascade: XP gem, elite chain, juice, drops, boss celebration,
-    // victory trigger. Hooks use lazy getters so pickupSpawner / runLifecycle
-    // (constructed below) resolve at handle-time, not now.
-    this.enemyKillHandler = new EnemyKillHandler({
-      getPlayer: () => this.player,
+    // Phase 5 Bucket 7 finish — combat cascade install. Builds
+    // EnemyKillHandler + WeaponSystem listeners + XPSystem listeners +
+    // PlayerHitResolver and registers the player↔enemy overlap. Lazy
+    // getters preserve the wire-before-construct contract for juice /
+    // hud / banter / pickupSpawner / levelUpFlow (all constructed
+    // below).
+    ({ playerEnemyCollider: this.playerEnemyCollider } = installCombatCollisions({
+      scene: this,
+      player: this.player,
+      spawnSystem: this.spawnSystem,
+      weaponSystem: this.weaponSystem,
+      xpSystem: this.xpSystem,
+      timeManager: this.timeManager,
+      deathCauseTracker: this.deathCauseTracker,
+      iFrameController: this.iFrameController,
+      floatTextPool: this.floatTextPool,
+      runScore: this.runScore,
+      runRng: this.runRng,
+      runStatsTracker: this.runStatsTracker,
+      runeBag: this.runeBag,
+      updateTickers: this.updateTickers,
       getJuice: () => this.juice,
-      getXPSystem: () => this.xpSystem,
-      getSpawnSystem: () => this.spawnSystem,
+      getHud: () => this.hud,
       getBanter: () => this.banter,
       getPickupSpawner: () => this.pickupSpawner,
-      getUpdateTickers: () => this.updateTickers,
-      getSFXManager: () => this.getSFXManager(),
-      getRunRng: () => this.runRng,
+      getLevelUpFlow: () => this.levelUpFlow,
+      getRunModifiers: () => this.runModifiers,
       getActiveVariantKey: () => this.activeVariant?.key,
-      getRunScore: () => this.runScore,
+      getActiveCurseKey: () => this.activeCurseKey,
+      getSFXManager: () => this.getSFXManager(),
+      getSettingsManager: () => this.settingsManager,
       triggerVictory: () => this.runLifecycle.handleVictory(),
       onActComplete: (actN) => this.launchActIntermission(actN),
       onStretchComplete: (stretch) => this.initNodeMapForAct(3, stretch),
@@ -1101,15 +1112,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onHaarDispel: (x, y) => this.hazardZones.spawnHaarFog(x, y),
       onTouristPhotographed: (x, y) => this.pickupSpawner.spawnPolaroid(x, y),
       onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
-      onBossKilled: (bossKey, x, y) => {
-        // H1 M2 T15 — persist per-boss kill counts for the Croft
-        // mantelpiece trophy tiers. Cursed-run kills also promote the
-        // cursed tier regardless of whether the run ends in victory.
-        bumpBossKillCount(bossKey);
-        if (this.activeCurseKey) bumpCursedVictoryByBoss(bossKey);
-        this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey);
-      },
-      modifyLifesteal: (base) => this.relicEffectDriver?.modifyLifesteal(base, this.time.now) ?? base,
+      onBossKilled: (bossKey, x, y) => this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey),
+      bumpBossKillCount,
+      bumpCursedVictoryByBoss,
+      modifyLifesteal: (base, nowMs) => this.relicEffectDriver?.modifyLifesteal(base, nowMs) ?? base,
       modifyXpGain: (base) => this.relicEffectDriver?.modifyXpGain(base) ?? base,
       tryCairnStoneMagnet: (x, y) => {
         // R1 M4.5 P1 — heather-biome kills grant a short pickup-magnet
@@ -1122,49 +1128,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         if (!driver.tryCairnStoneHeatherKill(this.time.now)) return;
         this.player.grantCeilidhChainMagnet(40, 2000);
       },
-    });
-    wireWeaponSystemListeners({
-      weaponSystem: this.weaponSystem,
-      enemyKillHandler: this.enemyKillHandler,
-      player: this.player,
-      // Lazy: `this.juice` / `this.hud` are constructed ~65 lines below
-      // (`new HUD` + `new JuiceSystem`). Direct refs would capture
-      // undefined at wire time and throw on the first damageDealt event.
-      getJuice: () => this.juice,
-      getHud: () => this.hud,
-      runStatsTracker: this.runStatsTracker,
-      runeBag: this.runeBag,
-      getSFXManager: () => this.getSFXManager(),
-    });
-
-    wireXpSystemListeners({
-      xpSystem: this.xpSystem,
-      // Lazy: `this.levelUpFlow` is constructed ~150 lines below.
-      // Direct ref would capture undefined and throw on first levelup.
-      getLevelUpFlow: () => this.levelUpFlow,
-      player: this.player,
-      getBanter: () => this.banter,
-      getActiveVariantKey: () => this.activeVariant?.key,
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-    });
-
-    // Player ↔ Enemy collision
-    // Player ↔ Enemy overlap → PlayerHitResolver.handle (full cascade).
-    // Hooks use lazy getters so this resolver safely references systems
-    // (juice, runLifecycle) that may still be constructing below.
-    this.playerHitResolver = new PlayerHitResolver({
-      getPlayer: () => this.player,
-      getJuice: () => this.juice,
-      getSpawnSystem: () => this.spawnSystem,
-      getTimeManager: () => this.timeManager,
-      getDeathCauseTracker: () => this.deathCauseTracker,
-      getIFrameController: () => this.iFrameController,
-      getFloatTextPool: () => this.floatTextPool,
-      getRunModifiers: () => this.runModifiers,
-      getCamera: () => this.cameras.main,
-      getTweens: () => this.tweens,
-      getSettingsManager: () => this.settingsManager,
-      isVictoryPending: () => this.runScore.victoryPending,
       onAfterNonFatalHit: (hpBefore) => {
         // R1 M4 — stamp clootie_rag lifesteal-double window + reset
         // grans_teapot damage-free timer on every hit the haggis
@@ -1181,16 +1145,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         }
         return base;
       },
-    });
-    this.playerEnemyCollider = this.physics.add.overlap(
-      this.player,
-      this.spawnSystem.getEnemyGroup(),
-      (_playerObj, enemyObj) => this.playerHitResolver.handle(
-        enemyObj as Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.Tilemaps.Tile,
-      ),
-      undefined,
-      this,
-    );
+    }));
 
     // HUD + Juice
     this.hud = new HUD(this);

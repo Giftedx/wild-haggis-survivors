@@ -15,7 +15,7 @@ const SRC_ROOT = join(__dirname, '..');
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 120], // was 4720 (Phase 3.1 split — namespaces under i18n/*.ts; resolver + locale machinery remain)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 split — namespaces under i18n.scs/*.ts; barrel re-export only)
-  ['scenes/GameScene.ts', 2331], // was 2364 (Phase 5 dedup — runIdentityLabels: resolveRouteLabels + resolveRelicLabels + resolveRuneLabels remove inline duplication between RunEnd composers + PauseMenu hook bags; current 2324 + 7 grace)
+  ['scenes/GameScene.ts', 2285], // was 2331 (Phase 5 Bucket 7 finish — installCombatCollisions: EnemyKillHandler + WeaponSystem listeners + XPSystem listeners + PlayerHitResolver + overlap collider extracted; current 2279 + 6 grace)
   ['data/banter.ts', 2240],
   ['utils/save.ts', 100], // was 1840 (Phase 1 split — barrel re-export over save/*.ts)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 split — barrel re-export over cards/*.ts)
