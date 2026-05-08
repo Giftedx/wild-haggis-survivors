@@ -39,7 +39,6 @@ import { resolveHudWeaponSlotStyle } from './hudWeaponSlotStyle';
 import { resolveHudCooldownBarStyle } from './hudCooldownBarStyle';
 import { clamp01 } from '../utils/math';
 import { textStyle } from './typography';
-import { computeMinTapHitArea } from '../utils/touchTargets';
 import type { HudWidgetContext } from './hud/hudWidget';
 import { buildHpBar } from './hud/hpBar';
 import { buildGripPips } from './hud/gripPips';
@@ -47,6 +46,11 @@ import { buildWhiskyBar } from './hud/whiskyBar';
 import { buildLevelGold } from './hud/levelGold';
 import { buildTimerStack } from './hud/timerStack';
 import { buildStatusChips } from './hud/statusChips';
+import { buildKillReadout } from './hud/killReadout';
+import { buildXpBar } from './hud/xpBar';
+import { buildPauseButton } from './hud/pauseButton';
+import { buildShieldDash } from './hud/shieldDash';
+import { buildDpsReadout } from './hud/dpsReadout';
 
 /**
  * HUD — in-game overlay showing HP, XP bar, timer, level, kill count.
@@ -235,7 +239,7 @@ export class HUD {
   }
 
   private build(): void {
-    const { width, height } = this.getUiViewport();
+    const { width } = this.getUiViewport();
     const d = this.DEPTH;
     const ctx: HudWidgetContext = {
       scene: this.scene,
@@ -282,46 +286,18 @@ export class HUD {
     this.dailyChipText = chipRefs.daily;
     this.replayChipText = chipRefs.replay;
 
-    // Kill count — constrain width so it doesn't overlap the centered timer.
-    // 0.30 ratio divided by uiScale keeps the right-anchored kill readout
-    // clear of the 30px-title timer even at 1.4x comfort scale (previously
-    // 0.38 × 1.4 overlapped the timer bounding box).
-    const killStyle = textStyle('body', { color: COLORS_CSS.WARM_TAN, wordWrap: { width: Math.max(100, Math.floor((width * 0.30) / uiScaleClamp)) } });
-    this.killText = this.addEl(this.scene.add.text(width - 12, 12, '', killStyle)
-      .setOrigin(1, 0).setScrollFactor(0).setDepth(d));
+    // Right-anchored kill readout (constrained to clear the centered timer).
+    this.killText = buildKillReadout(ctx);
 
-    // XP bar — layered for depth (bg → dark shadow → fill → top highlight)
-    const xpY = height - this.XP_BAR_H - 4;
-    // Dark slate — not near-black — so an empty XP track reads as UI chrome, not a dead band.
-    this.xpBarBg = this.addEl(this.scene.add.rectangle(0, xpY, width, this.XP_BAR_H, 0x161a22)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d));
-    // Inner shadow line at top of bg (depth)
-    this.xpBarTopLine = this.addEl(this.scene.add.rectangle(0, xpY, width, 1, 0x000000, 0.38)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Rectangle;
-    this.xpBarFill = this.addEl(this.scene.add.rectangle(0, xpY, 0, this.XP_BAR_H, COLORS.XP_BAR)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 1));
-    // Top highlight on fill (gold shimmer line at top)
-    this.xpBarHighlight = this.addEl(this.scene.add.rectangle(0, xpY, 0, 2, 0xffe066, 0.7)
-      .setOrigin(0, 0).setScrollFactor(0).setDepth(d + 2));
+    // XP bar — full-width track at the bottom edge, layered for depth.
+    const xpRefs = buildXpBar(ctx);
+    this.xpBarBg = xpRefs.bg;
+    this.xpBarTopLine = xpRefs.topLine;
+    this.xpBarFill = xpRefs.fill;
+    this.xpBarHighlight = xpRefs.highlight;
 
-    // Pause button (visible on touch devices, small on desktop).
-    // W95 — explicit ≥44pt hit area so the bare "| |" glyphs (≈18×24px)
-    // hit the iOS HIG / Android Material minimum tap target on phones.
-    this.pauseText = this.addEl(this.scene.add.text(width - 12, 40, '| |',
-      textStyle('heading', { fontSize: '24px', color: '#b8a88a' }),
-    ).setOrigin(1, 0).setScrollFactor(0).setDepth(d + 1)) as Phaser.GameObjects.Text;
-    {
-      const hit = computeMinTapHitArea(
-        this.pauseText.width,
-        this.pauseText.height,
-        { x: 1, y: 0 },
-      );
-      this.pauseText.setInteractive({
-        hitArea: new Phaser.Geom.Rectangle(hit.x, hit.y, hit.width, hit.height),
-        hitAreaCallback: Phaser.Geom.Rectangle.Contains,
-        useHandCursor: true,
-      } as Phaser.Types.Input.InputConfiguration);
-    }
+    // Pause button — top-right, ≥44pt hit area for touch.
+    this.pauseText = buildPauseButton(ctx);
     this.pauseText.on('pointerdown', () => {
       if (this.onPause) this.onPause();
     });
@@ -332,39 +308,15 @@ export class HUD {
       this.pauseText.setColor('#666666');
     });
 
-    this.shieldIcon = this.addEl(this.scene.add.image(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2, 'hud_shield')
-      .setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
-    // Dash row — bumped 12px → 14px for readability under combat stress, and
-    // pip pool rebuilt slightly larger so they scale along with the text.
-    const dashStyle = textStyle('body', { fontSize: '14px', color: COLORS_CSS.WHISKY_GOLD });
-    this.dashPrefixText = this.addEl(this.scene.add.text(12 + this.HP_BAR_W + 10, 12 + this.HP_BAR_H / 2 + 20, '',
-      dashStyle,
-    ).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
-    for (let i = 0; i < this.dashPipPool; i++) {
-      const pip = this.addEl(this.scene.add.image(0, 0, 'hud_dash_pip_full')
-        .setOrigin(0.5, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Image;
-      this.dashPipImages.push(pip);
-    }
-    this.dashSuffixText = this.addEl(this.scene.add.text(0, 0, '',
-      dashStyle,
-    ).setOrigin(0, 0.5).setScrollFactor(0).setDepth(d + 2).setVisible(false)) as Phaser.GameObjects.Text;
+    // Shield icon + dash row right of HP bar — all start hidden.
+    const sdRefs = buildShieldDash(ctx, { dashPipPool: this.dashPipPool });
+    this.shieldIcon = sdRefs.shield;
+    this.dashPrefixText = sdRefs.dashPrefix;
+    this.dashSuffixText = sdRefs.dashSuffix;
+    this.dashPipImages = sdRefs.dashPips;
 
-    // DPS counter — dev/observability HUD element. Hidden in normal play
-    // so the bottom-left edge stays clean (the pause menu already shows
-    // DPS in the run-stats column). Re-enable with `?devDps=1` in the
-    // URL or by setting `window.__SHOW_HUD_DPS = true` before scene.start.
-    this.dpsText = this.addEl(this.scene.add.text(12, height - 26, '',
-      textStyle('body', { color: '#8a7a6a' }),
-    ).setScrollFactor(0).setDepth(d)) as Phaser.GameObjects.Text;
-    const showDps = (() => {
-      try {
-        const w = window as unknown as { __SHOW_HUD_DPS?: boolean };
-        if (w.__SHOW_HUD_DPS === true) return true;
-        const params = new URLSearchParams(window.location?.search ?? '');
-        return params.get('devDps') === '1';
-      } catch { return false; }
-    })();
-    if (!showDps) this.dpsText.setVisible(false);
+    // DPS counter (dev/observability — hidden unless ?devDps=1).
+    this.dpsText = buildDpsReadout(ctx);
 
     // Boss HP bar — layered: dark bg → dark fill shadow → red fill → bright top highlight.
     // Boss bar lives ABOVE the banter / tutorial-tip layer (depths 85-92) so a
