@@ -28,11 +28,9 @@ import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { createRecordingAudioStream, disposeRecordingAudioStream } from '@/systems/audioContext';
 import { ClipRecorder } from '@/utils/clipRecorder';
 import {
-  recordRun, loadSave, isLastDeathFresh,
-  bumpStandingStonePick, bumpAncestralEchoesTouched, bumpReliquaryCurioPick,
-  bumpRoutePicked, bumpItemAcquired, bumpBanterHeard,
+  recordRun, loadSave,
+  bumpRoutePicked, bumpBanterHeard,
   bumpBossKillCount, bumpCursedVictoryByBoss, addFirstRouteVisit,
-  consumeLastDeath,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { musicEngine, GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -98,8 +96,16 @@ import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import { showCountdown } from './game/CountdownOverlay';
 import { MoorMomentScheduler } from './game/MoorMomentScheduler';
-import { crossesMoorMercyHpFrac } from './game/moorMercyTrigger';
-import { formatRunIdentityToast } from './game/runIdentityToast';
+import {
+  type MoorMomentsState,
+  createMoorMomentsState,
+  type MoorMomentsContext,
+  tryMoorMercyLuck as moorMomentsTryMercyLuck,
+  trySpawnAncestralEcho as moorMomentsTrySpawnAncestralEcho,
+  spawnStandingStones as moorMomentsSpawnStandingStones,
+  spawnReliquary as moorMomentsSpawnReliquary,
+  showRunIdentityToast as moorMomentsShowRunIdentityToast,
+} from './game/moorMoments';
 import {
   finalizeNodeVisit as finalizeNodeVisitHelper,
   peekReplayChoiceFor as peekReplayChoiceForHelper,
@@ -109,13 +115,9 @@ import { canOpenPauseMenu } from './game/pauseGate';
 import { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
-import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC, type StoneBoon } from './game/standingStones';
-import { Reliquary, chooseReliquarySpawnSec, type ReliquaryCurio } from './game/reliquary';
-import {
-  AncestralEcho,
-  ECHO_GOLD_REWARD,
-  ECHO_HEAL_REWARD,
-} from './game/ancestralEcho';
+import { StandingStones, STONE_SPAWN_SEC, STONE_WARN_SEC } from './game/standingStones';
+import { Reliquary, chooseReliquarySpawnSec } from './game/reliquary';
+import { AncestralEcho } from './game/ancestralEcho';
 import { ActIntermissionScene } from './ActIntermissionScene';
 import { applyRouteModifierDeltas } from './actIntermissionResolve';
 import type { PickerSlot, RouteDef, RoutePick, RouteResumeContext } from '../data/routes';
@@ -177,7 +179,6 @@ import {
   uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
 import { tickStressTest } from '../dev/StressTest';
-import { BALANCE } from '../core/BalanceConfig';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
 import { computeMantleTier } from '../animation/mantleTier';
 import { computeMantlePulseStagger } from '../entities/mantlePulse';
@@ -268,8 +269,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private readonly tempBuffBag = new TempBuffBag();
   /** W2 Moor Road: act number + picker history across the run. */
   private readonly runActState = new RunActState();
-  /** One-time +luck draw weight when HP first crosses into the mercy band. */
-  private moorMercyLuckGranted = false;
+  /** Mutable mercy-luck flag, owned by the moor-moments helper module. */
+  private readonly moorMomentsState: MoorMomentsState = createMoorMomentsState();
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
   private standingStones: StandingStones | null = null;
   /** True once the 4:45 "stones stir" pre-warning has fired this run. */
@@ -560,7 +561,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.musicStateScratch.enemyCount = 0;
     this.musicStateScratch.comboCount = 0;
     this.musicStateScratch.killCount = 0;
-    this.moorMercyLuckGranted = false;
+    this.moorMomentsState.mercyLuckGranted = false;
     this.runName = '';
     // E1 M2 T10 — wipe Burns platter state so a recycled scene instance
     // never claims it already spawned/collected across runs.
@@ -2093,142 +2094,51 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
   }
 
-  /**
-   * First time each run the player crosses from above → at/below the mercy HP
-   * fraction, grant one-time luck weight to level-up draws (see `BALANCE.player`).
-   */
+  // Phase 5 Bucket 3 — moor moments (mercy luck, ancestral echo, standing
+  // stones, reliquary, run-identity toast) extracted to
+  // `scenes/game/moorMoments.ts`. Methods below are thin delegators so
+  // existing call sites keep their `this.tryMoorMercyLuck(...)` /
+  // `this.spawnStandingStones(...)` shape.
+
+  private buildMoorMomentsContext(): MoorMomentsContext {
+    return {
+      scene: this,
+      player: this.player,
+      juice: this.juice,
+      banter: this.banter,
+      tutorialSystem: this.tutorialSystem ?? null,
+      runRng: this.runRng,
+      runScore: this.runScore,
+      activeVariant: this.activeVariant,
+      discoveryRunId: () => this.discoveryRunId(),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    };
+  }
+
   private tryMoorMercyLuck(hpBefore: number): void {
-    if (this.moorMercyLuckGranted) return;
-    const hpAfter = this.player.getHp();
-    const maxHp = this.player.getMaxHp();
-    const th = BALANCE.player.moorMercyHpFrac;
-    if (!crossesMoorMercyHpFrac(hpBefore, hpAfter, maxHp, th)) return;
-    this.moorMercyLuckGranted = true;
-    this.player.addLuckDrawBonus(BALANCE.player.moorMercyLuckBonus);
-    this.juice.showToast(t('ui.game.moor_mercy_luck'), '#c8a8e8');
-    this.caption('moor_mercy', t('ui.game.moor_mercy_luck_caption'), '#c8a8e8', 4200);
+    moorMomentsTryMercyLuck(this.moorMomentsState, this.buildMoorMomentsContext(), hpBefore);
   }
 
-  // onPlayerHitEnemy extracted to src/scenes/game/PlayerHitResolver.ts
-
-  /**
-   * Unified death/revival handler. Called from any damage source that can
-   * reduce HP to zero (contact damage, lava zones, future DoT effects, etc.).
-   * Safe to no-op if victory is already pending.
-   */
-  /**
-   * Soul weave — run start: hand off variant identity + intent in the first moments of play.
-   */
-  /**
-   * Ancestral Echo — if the player died recently (within TTL), spawn
-   * a spectral haggis at the death spot that fades after 30s or on
-   * touch. Touching grants a small pity reward. Best-effort: a save
-   * read that throws is swallowed, no echo shows.
-   */
   private trySpawnAncestralEcho(): void {
-    if (this.ancestralEcho) return;
-    try {
-      const save = loadSave();
-      if (!save.lastDeath || !isLastDeathFresh(save.lastDeath)) return;
-      const deathX = save.lastDeath.x;
-      const deathY = save.lastDeath.y;
-      this.ancestralEcho = new AncestralEcho({
-        scene: this,
-        player: this.player,
-        textureKey: this.activeVariant.textureKey,
-        echoX: deathX,
-        echoY: deathY,
-        onTouch: () => {
-          // Reward: gold + small heal. XP overflow batching handles
-          // max-level gracefully via existing coins path; we just add
-          // gold directly and heal the player.
-          this.runScore.addBossGold(ECHO_GOLD_REWARD);
-          this.player.heal(ECHO_HEAL_REWARD);
-          this.juice.showToast(t('ui.ancestralEcho.touch_toast'), '#b0d4ff');
-          this.caption('ancestral_echo_touch', t('ui.ancestralEcho.touch_caption'), '#b0d4ff', 3000);
-          audio.playEchoTouch();
-          bumpAncestralEchoesTouched();
-          // B1 Phase 4 Task 22 — "John Anderson My Jo" sub-pool. Echo touch
-          // is naturally once-per-run (consumeLastDeath + ancestralEcho
-          // guard), so no extra throttle needed. Priority 43 wins the tick
-          // after the echo reward toast lands.
-          this.banter?.request('burns_citation', { tag: 'lineage_moment' });
-        },
-      });
-      this.ancestralEcho.spawn();
-      this.juice.showToast(t('ui.ancestralEcho.announce_toast'), '#b0d4ff');
-      this.caption('ancestral_echo_announce', t('ui.ancestralEcho.announce_caption'), '#b0d4ff', 3500);
-      this.tutorialSystem?.notifyAncestralEchoIfFirst();
-      // Consume the echo so it doesn't re-spawn every run. Fresh death
-      // on this run will write a new one via RunLifecycle.
-      consumeLastDeath();
-    } catch {
-      /* best-effort */
-    }
+    const echo = moorMomentsTrySpawnAncestralEcho(
+      this.buildMoorMomentsContext(),
+      this.ancestralEcho !== null,
+    );
+    if (echo) this.ancestralEcho = echo;
   }
 
-  /**
-   * Standing Stones — spawn the 5:00 trinity. First approach within
-   * STONE_PICK_RADIUS_PX wins its boon, the other two crumble.
-   */
   private spawnStandingStones(): void {
     if (this.standingStones) return;
-    this.standingStones = new StandingStones({
-      scene: this,
-      player: this.player,
-      rng: this.runRng,
-      onPick: (boon: StoneBoon) => {
-        const title = t(boon.titleKey);
-        this.juice.showToast(t('ui.standingStones.grant_toast', { title }), '#ffe080');
-        this.caption('standing_stones_pick', t(boon.descKey), '#ffe080', 3500);
-        audio.playStoneGrant();
-        bumpStandingStonePick(boon.id);
-      },
-    });
-    this.standingStones.spawn();
-    this.juice.showToast(t('ui.standingStones.announce_toast'), '#ffe080');
-    this.caption('standing_stones_announce', t('ui.standingStones.announce_caption'), '#ffe080', 3000);
-    this.tutorialSystem?.notifyStandingStonesIfFirst();
+    this.standingStones = moorMomentsSpawnStandingStones(this.buildMoorMomentsContext());
   }
 
-  /**
-   * Reliquary — single off-path relic. Grants a run-scoped curio when
-   * the player walks into it. No pre-warning, no crumble — finding it
-   * is itself the reward, so the announcement stays tight.
-   */
   private spawnReliquary(): void {
     if (this.reliquary) return;
-    this.reliquary = new Reliquary({
-      scene: this,
-      player: this.player,
-      rng: this.runRng,
-      worldWidth: GAME.WORLD_WIDTH,
-      worldHeight: GAME.WORLD_HEIGHT,
-      onPick: (curio: ReliquaryCurio) => {
-        const title = t(curio.titleKey);
-        const desc = t(curio.descKey);
-        this.juice.showToast(t('ui.reliquary.grant_toast', { title }), '#ffb060');
-        this.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
-        audio.playStoneGrant();
-        bumpReliquaryCurioPick(curio.id);
-        // C1 M3 Task 16 — also persist into the DiscoveryLog so the
-        // Almanac's Finds book lights up the relic entry. Lifetime
-        // counter (`bumpReliquaryCurioPick`) and discovery counter
-        // are kept distinct: the lifetime counter powers the
-        // `ach_relic_seeker` deed, the discovery log feeds Finds.
-        bumpItemAcquired(curio.id, this.discoveryRunId(), Date.now());
-        this.banter?.request('reliquary_pick');
-      },
-    });
-    this.reliquary.spawn();
+    this.reliquary = moorMomentsSpawnReliquary(this.buildMoorMomentsContext());
   }
 
   private showRunIdentityToast(isResume: boolean): void {
-    const v = this.activeVariant;
-    this.juice.showToast(
-      formatRunIdentityToast(isResume, t(v.nameKey), t(v.flavorKey)),
-      '#c8dcff',
-    );
+    moorMomentsShowRunIdentityToast(this.buildMoorMomentsContext(), isResume);
   }
 
   /**
