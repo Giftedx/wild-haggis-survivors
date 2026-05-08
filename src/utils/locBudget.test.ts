@@ -23,7 +23,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['entities/Enemy.ts', 1570],
   ['art/sprites/croft/seasonalProps.ts', 5], // was 1550 (Phase 2.3 split — barrel re-export over seasonalProps/*.ts)
   ['entities/Player.ts', 1540],
-  ['systems/JuiceSystem.ts', 1380],
+  ['systems/JuiceSystem.ts', 1065], // was 1380 (Phase 6 split — bossSpectacle / evolutionSpectacle / vignette under systems/juice/)
   ['scenes/SettingsScene.ts', 1350],
   ['systems/WeaponSystem.ts', 1330],
   ['scenes/GameOverScene.ts', 1310],

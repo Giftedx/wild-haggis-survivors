@@ -39,6 +39,7 @@ import { MOOR_MOMENT_TOKEN_KEYS } from '../art/sprites/moorMomentTokens';
 import type { BossSpectaclePools } from './juice/bossSpectacle';
 import { playBossDeathSpectacle, playMidRunBossDeathSpectacle } from './juice/bossSpectacle';
 import { playEvolutionSpectacle } from './juice/evolutionSpectacle';
+import { drawDangerVignette } from './juice/vignette';
 
 /**
  * JuiceSystem — visual feedback effects.
@@ -811,37 +812,8 @@ export class JuiceSystem {
     });
   }
 
-  /** Draw the vignette — warm ember danger glow, not cold alarm red.
-   *  Two layers: deep crimson base + amber outer edge for a hearthfire-dying feel. */
   private drawVignette(): void {
-    const w = this.layoutWidth;
-    const h = this.layoutHeight;
-    const gfx = this.vignette;
-    gfx.clear();
-
-    // Deep crimson base layer — the danger signal
-    const steps = 8;
-    for (let i = 0; i < steps; i++) {
-      const t = i / steps;
-      const inset = (1 - t) * 80;
-      const alpha = t * t * 0.5;
-      gfx.fillStyle(0x881111, alpha);
-      gfx.fillRect(0, 0, w, inset);
-      gfx.fillRect(0, h - inset, w, inset);
-      gfx.fillRect(0, 0, inset, h);
-      gfx.fillRect(w - inset, 0, inset, h);
-    }
-    // Warm amber outer fringe — like embers at the edge of the hearth
-    for (let i = 0; i < 4; i++) {
-      const t = i / 4;
-      const inset = (1 - t) * 30;
-      const alpha = t * t * 0.25;
-      gfx.fillStyle(0xcc6622, alpha);
-      gfx.fillRect(0, 0, w, inset);
-      gfx.fillRect(0, h - inset, w, inset);
-      gfx.fillRect(0, 0, inset, h);
-      gfx.fillRect(w - inset, 0, inset, h);
-    }
+    drawDangerVignette(this.vignette, this.layoutWidth, this.layoutHeight);
   }
 
   /** Hide combo text (called when level-up screen opens) */
