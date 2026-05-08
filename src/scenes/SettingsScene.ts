@@ -5,12 +5,6 @@ import { getSettingsManager, type ISettingsData } from '../core/SettingsManager'
 import type { LocaleKey } from '../core/i18n';
 import { audio } from '../systems/AudioSystem';
 import { t } from '../core/i18n';
-import {
-  sliderRatioFromValue,
-  sliderValueFromRatio,
-  steppedSliderBump,
-  formatSliderValue,
-} from './settingsSliderMath';
 import { toggleStateDisplay, resolveToggleTrackStyle } from './settingsToggle';
 import { cycleLocaleKey, labelForLocale } from './settingsLocale';
 import { cycleColorblindMode, labelForColorblindMode } from './settingsColorblind';
@@ -22,9 +16,7 @@ import {
 } from './settingsBanterFrequency';
 import {
   resolveSettingsPalette,
-  SETTINGS_TROUGH_FILL,
   SETTINGS_TROUGH_STROKE,
-  SETTINGS_THUMB_STROKE,
 } from './settingsPalette';
 import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
@@ -42,6 +34,8 @@ import {
   buildSettingsDomFocusActions,
   type SettingsDomActionInput,
 } from './settingsDomFocusActions';
+import { addSliderRow } from './settings/addSliderRow';
+import type { SettingsRowContext } from './settings/rowContext';
 
 type SettingsGpRow =
   | {
@@ -621,123 +615,44 @@ export class SettingsScene extends Phaser.Scene {
     key: VolumeKey,
     min: number,
     max: number,
-    step: number
+    step: number,
   ): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
+    addSliderRow(this.rowContext(), label, key, min, max, step);
+  }
 
-    this.addRowLabel(label, y, 6);
-
-    // Slider track geometry — keep the right margin clear for the value text.
-    const narrow = this.isNarrowLayout();
-    const trackX = narrow ? Math.round(width * 0.46) : Math.round(width * 0.46);
-    const trackY = y + 14;
-    const trackW = narrow ? Math.max(104, width - trackX - 76) : 240;
-    const trackH = 8;
-
-    // Dim background trough.
-    const trough = this.add
-      .rectangle(trackX, trackY, trackW, trackH, SETTINGS_TROUGH_FILL, 1)
-      .setStrokeStyle(1, SETTINGS_TROUGH_STROKE, 0.8)
-      .setOrigin(0, 0.5);
-    trough.setScale(this.uiScale, this.uiScale);
-
-    // Warm fill showing the current value.
-    const fillColor = resolveSettingsPalette(this.highContrastUi).sectionAccent;
-    const fill = this.add.rectangle(trackX, trackY, 1, trackH - 2, fillColor, 1).setOrigin(0, 0.5);
-    fill.setScale(1, this.uiScale);
-
-    // Round thumb sits centered on the fill end.
-    const thumb = this.add
-      .circle(trackX, trackY, 7, fillColor, 1)
-      .setStrokeStyle(2, SETTINGS_THUMB_STROKE, 1)
-      .setInteractive({ useHandCursor: true, draggable: true });
-    thumb.setScale(this.uiScale);
-
-    // Readable value on the right of the track.
-    const valText = this.add
-      .text(Math.min(width - 44, trackX + (trackW + 14) * this.uiScale), y + 6, '', {
-        fontFamily: 'monospace',
-        fontSize: narrow ? '11px' : '14px',
-        color: this.valueColor,
-      })
-      .setOrigin(0, 0)
-      .setScale(this.uiScale);
-
-    const scaledTrackW = trackW * this.uiScale;
-    const trackLeftScaled = trackX;
-
-    const syncVisual = () => {
-      const current = this.working[key];
-      const ratio = sliderRatioFromValue(current, min, max);
-      // Fill width lives in track-local units so it respects the scaleX.
-      fill.width = Math.max(1, ratio * trackW);
-      thumb.x = trackLeftScaled + ratio * scaledTrackW;
-      valText.setText(formatSliderValue(key, current));
+  /**
+   * Builds the shared row-builder context the per-row helpers use.
+   * One context is fine across every row — `takeRowY` advances the
+   * shared cursor field, and `gpRows`/`domRowSyncs` are mutated by
+   * reference. `working` is also shared; the slider+toggle path
+   * mutates by property assignment, while cycle rows that replace
+   * `this.working` always restart the scene immediately so any stale
+   * reference inside a domAction thunk dies with the old layer.
+   */
+  private rowContext(): SettingsRowContext {
+    return {
+      scene: this,
+      working: this.working,
+      uiScale: this.uiScale,
+      layoutScale: this.layoutScale,
+      baseRowStep: this.BASE_ROW_STEP,
+      valueColor: this.valueColor,
+      highContrastUi: this.highContrastUi,
+      takeRowY: () => {
+        const y = this.rowY;
+        const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
+        this.rowY += rowStep;
+        return { y, rowStep };
+      },
+      gpRows: this.gpRows,
+      domRowSyncs: this.domRowSyncs,
+      isNarrowLayout: () => this.isNarrowLayout(),
+      addRowLabel: (l, y, yOffset) => this.addRowLabel(l, y, yOffset),
+      rightControlCenter: (w) => this.rightControlCenter(w),
+      compactSettingsLabel: (l) => this.compactSettingsLabel(l),
+      persistAndApply: () => this.persistAndApply(),
+      refreshDomActions: () => this.refreshDomActions(),
     };
-
-    const setFromRatio = (ratio: number) => {
-      this.working[key] = sliderValueFromRatio(ratio, min, max, step);
-      syncVisual();
-      this.persistAndApply();
-      this.refreshDomActions();
-    };
-
-    const bump = (direction: number) => {
-      this.working[key] = steppedSliderBump(this.working[key], direction, min, max, step);
-      syncVisual();
-      this.persistAndApply();
-      this.refreshDomActions();
-    };
-
-    syncVisual();
-
-    // Click-anywhere-on-track-to-jump. Uses a transparent hit area
-    // the full width of the visible track (scaled).
-    const hit = this.add
-      .rectangle(trackLeftScaled, trackY, scaledTrackW, 30 * this.uiScale, 0x000000, 0)
-      .setOrigin(0, 0.5)
-      .setInteractive({ useHandCursor: true });
-    hit.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
-      const ratio = (pointer.x - trackLeftScaled) / scaledTrackW;
-      audio.playClick();
-      setFromRatio(ratio);
-    });
-
-    // Draggable thumb — Phaser handles the drag loop for us.
-    thumb.on('drag', (_pointer: Phaser.Input.Pointer, dragX: number) => {
-      const ratio = (dragX - trackLeftScaled) / scaledTrackW;
-      setFromRatio(ratio);
-    });
-    thumb.on('dragend', () => {
-      audio.playClick();
-    });
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale (was fixed 36 px while rowStep
-    // can drop to ~21 px when settings condense to fit a small viewport).
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 14, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'slider',
-      minus: () => bump(-1),
-      plus: () => bump(+1),
-      mark,
-    });
-    // DOM mirror — Enter / Space activates the same +1 bump path the
-    // gamepad confirm button uses. The current value is folded into the
-    // accessible label so a screen reader announces "Master volume — 80%".
-    this.domRowSyncs.push(() => ({
-      id: `slider-${key}`,
-      kind: 'slider',
-      label: this.compactSettingsLabel(label),
-      valueText: formatSliderValue(key, this.working[key]),
-      onActivate: () => bump(+1),
-    }));
   }
 
   private addToggleRow(

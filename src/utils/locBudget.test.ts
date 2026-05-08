@@ -24,7 +24,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['art/sprites/croft/seasonalProps.ts', 5], // was 1550 (Phase 2.3 split — barrel re-export over seasonalProps/*.ts)
   ['entities/Player.ts', 1540],
   ['systems/JuiceSystem.ts', 1065], // was 1380 (Phase 6 split — bossSpectacle / evolutionSpectacle / vignette under systems/juice/)
-  ['scenes/SettingsScene.ts', 1350],
+  ['scenes/SettingsScene.ts', 1265], // was 1350 (Phase 5 settings split — addSliderRow body extracted to scenes/settings/addSliderRow.ts; current 1263 + 2 grace)
   ['systems/WeaponSystem.ts', 1330],
   ['scenes/GameOverScene.ts', 1310],
   ['ui/HUD.ts', 1100], // was 1225 (Phase 4 split — per-widget builders under ui/hud/*.ts; class retains lifecycle + update paths)
