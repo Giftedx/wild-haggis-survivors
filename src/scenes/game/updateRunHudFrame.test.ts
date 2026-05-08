@@ -198,9 +198,12 @@ describe('updateRunHudFrame', () => {
 
 describe('GameScene HUD integration guard', () => {
   it('routes the per-frame HUD update through updateRunHudFrame', () => {
-    const src = readFileSync(resolve(__dirname, '..', 'GameScene.ts'), 'utf8');
+    // The call site moved out of GameScene into the runFrameTick
+    // helper as part of the updateInner consolidation. The guard now
+    // tracks the helper that owns the HUD pump.
+    const src = readFileSync(resolve(__dirname, 'runFrameTick.ts'), 'utf8');
 
-    expect(src).toContain("import { updateRunHudFrame } from './game/updateRunHudFrame';");
+    expect(src).toContain("import { updateRunHudFrame } from './updateRunHudFrame';");
     expect(src).toContain('updateRunHudFrame({');
   });
 });

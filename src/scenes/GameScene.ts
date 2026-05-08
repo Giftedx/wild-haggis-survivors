@@ -62,7 +62,7 @@ import type { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
-import { tickFrameWorld } from './game/tickFrameWorld';
+import { runFrameTick } from './game/runFrameTick';
 import { installCombatCollisions } from './game/installCombatCollisions';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
@@ -127,8 +127,6 @@ import {
   applySeasonalRunStartPostSpawn,
   buildSeasonalRunStartPlan,
 } from './game/seasonalRunStart';
-import { tickFrameHeader } from './game/tickFrameHeader';
-import { updateRunHudFrame } from './game/updateRunHudFrame';
 import type { LevelUpFlow } from './game/LevelUpFlow';
 import type { RunLifecycle } from './game/RunLifecycle';
 import { installRunFlow } from './game/installRunFlow';
@@ -151,13 +149,8 @@ import {
   isAutoBattleEnabled,
   uninstallAutoBattleTimeScale,
 } from '../dev/AutoBattler';
-import { tickStressTest } from '../dev/StressTest';
 import { registerDebugHotkeys } from './dev/debugHotkeys';
-import {
-  tickPresentationFrame,
-  type SecondTickHookContext,
-} from './game/runtimeTickHooks';
-import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../entities/whiskyBreath';
+import { type SecondTickHookContext } from './game/runtimeTickHooks';
 import type { HaarFogController } from '../systems/shaders/HaarFogController';
 import { installHaarFog, handleBiomeEnteredForHaar } from './game/haarFogInstall';
 import { installRunStartupHud } from './game/installRunStartupHud';
@@ -197,10 +190,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   juice!: JuiceSystem;
   /** Ambient seasonal weather overlay (drizzle / rain / sun-shafts / aurora).
    *  Pure cosmetic — `null` between runs and when no seasonal event is live. */
-  private weather: AmbientWeatherSystem | null = null;
+  weather: AmbientWeatherSystem | null = null;
   /** Biome-conditioned environmental hazards (peat pits / slate / burn / scree).
    *  Damages player on overlap; `null` between runs. */
-  private hazards: HazardsSystem | null = null;
+  hazards: HazardsSystem | null = null;
   timeManager!: TimeManager;
   updateTickers = new UpdateTickers();
   clipRecorder: ClipRecorder | null = null;
@@ -208,7 +201,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
   readonly nodeMapSystem = new NodeMapSystem();
-  private readonly nodeMarkerSystem = new NodeMarkerSystem();
+  readonly nodeMarkerSystem = new NodeMarkerSystem();
   /**
    * M1 F1 + F2 — defers finalize for encounter / elite nodes until the
    * spawned enemies die. Ticked once per frame from the main update loop
@@ -222,7 +215,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** R1 M3 T22 — 3-slot HUD widget for held Relics. */
   relicSlotUI: RelicSlotUI | null = null;
   readonly chestRegistry = new ChestSpriteRegistry();
-  private readonly iFrameController = new IFrameController(() => this.player);
+  readonly iFrameController = new IFrameController(() => this.player);
 
   ownedPassives: string[] = [];
   evolvedWeapons: string[] = [];
@@ -237,7 +230,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    *  a freshly-built RuneEvalContext each frame. */
   runeSystem = new RuneConditionSystem(this.runeBag);
   /** Controller for per-frame rune tick + pulse drain (Phase 5 Bucket 2). */
-  private runeSystemController!: RuneSystemController;
+  runeSystemController!: RuneSystemController;
   /** All per-run counters (kills, boss/coin gold, elite chain, victory state). */
   readonly runScore = new RunScoreState();
   /** M1 F4 — timed shrine buffs. Cleared (not reverted) on scene restart. */
@@ -247,21 +240,21 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Mutable mercy-luck flag, owned by the moor-moments helper module. */
   private readonly moorMomentsState: MoorMomentsState = createMoorMomentsState();
   /** Standing Stones trinity — nulls out between runs, spawned at 5:00 mark. */
-  private standingStones: StandingStones | null = null;
+  standingStones: StandingStones | null = null;
   /** True once the 4:45 "stones stir" pre-warning has fired this run. */
   private stonesWarned: boolean = false;
   /** Reliquary — single rare pickup, placed off-path between 6:00 and 12:00. */
-  private reliquary: Reliquary | null = null;
+  reliquary: Reliquary | null = null;
   /** Run-specific second at which the reliquary spawns. Rolled from runRng
    *  at run start so the same seed always produces the same placement. */
   private reliquarySpawnSec: number = 0;
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
-  private ancestralEcho: AncestralEcho | null = null;
+  ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
   private xpOverflowGoldBatch: number = 0;
   /** Chests deferred while paused — queued so multiple timer callbacks don't overwrite each other. */
   pendingChests: Array<{ golden: boolean }> = [];
-  private gameTickers!: GameTickers;
+  gameTickers!: GameTickers;
   private revivalAvailable: boolean = false;
   activeVariant!: VariantDef;
   /** Extra ms added to chest/coin despawn windows by the Treasure Magnet permanent upgrade. */
@@ -311,7 +304,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   /** Pickup lifetimes — scheduled on scene-owned UpdateTickers. */
   private pickupDespawnHandles: TickerHandle[] = [];
-  private readonly runEndTickers = new RunEndTickers();
+  readonly runEndTickers = new RunEndTickers();
   /** End-of-run screen-space fade overlays — tracked as fields so shutdown
    *  can destroy them; anonymous locals would orphan on scene restart since
    *  Phaser's scene.stop() doesn't clear the display list. */
@@ -321,17 +314,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   debugOverlay: DebugOverlay | null = null;
   private announcedEvolutionReady = new Set<string>();
   private playerEnemyCollider: Phaser.Physics.Arcade.Collider | null = null;
-  private bossHpTracker!: BossHpTracker;
+  bossHpTracker!: BossHpTracker;
   debugTimeTravelApi!: DebugTimeTravelApi;
   runExit!: RunExitComposer;
 
   /** Reused each frame — avoids allocating a new object for `musicEngine.update`. */
-  private readonly musicStateScratch: GameMusicState = {
+  readonly musicStateScratch: GameMusicState = {
     hp: 0, maxHp: 0, gameTimeSec: 0, enemyCount: 0, comboCount: 0, killCount: 0, bossActive: false,
     biomeTimbre: 0.45, buildDensity: 0,
   };
   /** Reused HUD weapon rows — mutated in place; length capped at max equippable weapons. */
-  private readonly hudWeaponScratch: Array<{
+  readonly hudWeaponScratch: Array<{
     key: string;
     level: number;
     evolved: boolean;
@@ -347,7 +340,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Pooled floating text for high-frequency combat/pickup feedback (armor, gold). */
   private readonly floatTextPool = new FloatTextPool();
   readonly runStatsTracker = new RunStatsTracker();
-  private readonly deathCauseTracker = new DeathCauseTracker();
+  readonly deathCauseTracker = new DeathCauseTracker();
   /** Per-run modifier bag (from curse pick). Defaults to identity — an un-cursed run behaves identically to the pre-curse codebase. */
   runModifiers: RunModifiers = defaultModifiers();
   /** Curse key chosen for this run, if any — persisted into run history. */
@@ -372,7 +365,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   activeIronmoorRun = false;
   private runName = '';
-  private lastEmittedRunSecond = -1;
+  lastEmittedRunSecond = -1;
   eventBusDispose: (() => void) | null = null;
   biomeController: BiomeController | null = null;
   /**
@@ -380,10 +373,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * the biome layout. -1 = never. Reset on scene reuse via the
    * BiomeController construction path which already resets this.
    */
-  private postBellLastReseedSec: number = -1;
+  postBellLastReseedSec: number = -1;
   /** F1 M5 — persistent haar fog controller on the main camera. Null when
    *  the Canvas renderer is in use (filter pipeline unavailable there). */
-  private haarFog: HaarFogController | null = null;
+  haarFog: HaarFogController | null = null;
   private pauseMenu: PauseMenu | null = null;
   pickupSpawner!: PickupSpawner;
   /**
@@ -400,7 +393,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Tunnel accessor for compositor call sites that need the live pickup spawner. */
   get relicPickupSpawner() { return this.relicOrchestrator.getSpawner(); }
   levelUpFlow!: LevelUpFlow;
-  private runLifecycle!: RunLifecycle;
+  runLifecycle!: RunLifecycle;
   runPersistence!: RunPersistenceBridge;
   private runHistoryRecorder!: RunHistoryRecorder;
   /**
@@ -410,9 +403,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * unit-testable instead of an anonymous closure.
    */
   private runPersistenceCoordinator!: RunPersistenceCoordinator;
-  private hazardZones!: HazardZones;
+  hazardZones!: HazardZones;
   private captionManager: CaptionManager | null = null;
-  private captionOverlay: CaptionOverlay | null = null;
+  captionOverlay: CaptionOverlay | null = null;
   filmGrain: FilmGrainOverlay | null = null;
   banter: BanterSystem | null = null;
   readonly gameplaySessionGuard = createGameplaySessionGuard(() => {
@@ -420,9 +413,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   });
 
   private moorMoments!: MoorMomentScheduler;
-  private floraScatter: FloraScatter | null = null;
-  private wildlifeSystem: WildlifeSystem | null = null;
-  private mistLayer: MistLayer | null = null;
+  floraScatter: FloraScatter | null = null;
+  wildlifeSystem: WildlifeSystem | null = null;
+  mistLayer: MistLayer | null = null;
 
   constructor() {
     super({ key: 'Game' });
@@ -1315,126 +1308,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   }
 
   private updateInner(delta: number): void {
-    const headerResult = tickFrameHeader({
-      getReplayInput: () => this.replayInput,
-      getPlayer: () => this.player,
-      timeManager: this.timeManager,
-      updateTickers: this.updateTickers,
-      getDebugOverlay: () => this.debugOverlay,
-      getCaptionOverlay: () => this.captionOverlay,
-      iFrameController: this.iFrameController,
-      runEndTickers: this.runEndTickers,
-      tempBuffBag: this.tempBuffBag,
-      getRuneSystemController: () => this.runeSystemController,
-      nodeWaveTracker: this.nodeWaveTracker,
-      getXPSystem: () => this.xpSystem,
-      getSpawnSystem: () => this.spawnSystem,
-      togglePause: () => this.toggleUiPause(),
-      runStressTest: () => tickStressTest(this),
-    }, delta);
-    if (headerResult.kind === 'replay-exhausted') {
-      this.scene.start('Chronicle');
-      return;
-    }
-    if (headerResult.kind === 'paused') return;
-    const { scaledDelta } = headerResult;
-
-    tickFrameWorld({
-      deathCauseTracker: this.deathCauseTracker,
-      hazardZones: this.hazardZones,
-      getHaarFog: () => this.haarFog,
-      getBiomeController: () => this.biomeController,
-      getRunLifecycle: () => this.runLifecycle ?? null,
-      getFloraScatter: () => this.floraScatter,
-      getWildlifeSystem: () => this.wildlifeSystem,
-      getMistLayer: () => this.mistLayer,
-      gameTickers: this.gameTickers,
-      getWeather: () => this.weather,
-      getHazards: () => this.hazards,
-      player: this.player,
-      juice: this.juice,
-      spawnSystem: this.spawnSystem,
-      nodeMapSystem: this.nodeMapSystem,
-      nodeMarkerSystem: this.nodeMarkerSystem,
-      getNodeMapUI: () => this.nodeMapUI,
-      runActState: this.runActState,
-      getStandingStones: () => this.standingStones,
-      getReliquary: () => this.reliquary,
-      getAncestralEcho: () => this.ancestralEcho,
-      setAncestralEcho: (v) => { this.ancestralEcho = v; },
-      getRelicSlotUI: () => this.relicSlotUI,
-      getRelicEffectDriver: () => this.relicEffectDriver,
-      relicOrchestrator: this.relicOrchestrator,
-      weaponSystem: this.weaponSystem,
-      xpSystem: this.xpSystem,
-      getRuneBag: () => this.runeBag,
-      getBurnsPlatterPickedUpAtMs: () => this.burnsPlatterPickedUpAtMs,
-      getMinimap: () => this.minimap,
-      getRunRng: () => this.runRng,
-      getBiomeManager: () => this.getBiomeManager(),
-      getTimeNowMs: () => this.time.now,
-      getMainCamera: () => this.cameras.main,
-      getSecondTickContext: () => this.buildSecondTickHookContext(),
-      getPostBellLastReseedSec: () => this.postBellLastReseedSec,
-      setPostBellLastReseedSec: (v) => { this.postBellLastReseedSec = v; },
-      getLastEmittedRunSecond: () => this.lastEmittedRunSecond,
-      setLastEmittedRunSecond: (v) => { this.lastEmittedRunSecond = v; },
-      reseedBiome: () => this.biomeController?.reseed(this, this.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT),
-    }, delta, scaledDelta);
-
-    tickPresentationFrame({
-      delta,
-      player: this.player,
-      spawnSystem: this.spawnSystem,
-      juice: this.juice,
-      bossHpTracker: this.bossHpTracker,
-      edgeIndicators: this.edgeIndicators,
-      minimap: this.minimap,
-      chestRegistry: this.chestRegistry,
-      gameTickers: this.gameTickers,
-      musicStateScratch: this.musicStateScratch,
-      biomeId: this.getCurrentBiomeId(),
-      killCount: this.runScore.killCount,
-      weaponAndPassiveCount: this.weaponSystem.getWeapons().length + this.ownedPassives.length,
-      relicEffectDriver: this.relicEffectDriver,
-      relicPickupSpawner: this.relicPickupSpawner,
-      reliquaryMinimapMarker: this.reliquary?.getMinimapMarker() ?? null,
-    });
-
-    updateRunHudFrame({
-      delta,
-      hud: this.hud,
-      player: this.player,
-      xpSystem: this.xpSystem,
-      spawnSystem: this.spawnSystem,
-      weaponRows: this.hudWeaponScratch,
-      weapons: this.weaponSystem.getWeapons(),
-      ownedPassives: this.ownedPassives,
-      killCount: this.runScore.killCount,
-      currentAct: this.runActState.currentAct,
-      ironmoor: this.activeIronmoorRun,
-      daily: this.runIsDaily,
-      seedCode: this.getRunSeedCode(),
-      goldBalance: this.runScore.getGoldBalance(),
-      activeCurseKey: this.activeCurseKey,
-      beforeUpdate: () => {
-        // Drift Mastery pip widget — surface the banked Grip count +
-        // flash the strip on burst-fire. Hidden until first bank so
-        // the widget doesn't clutter the HUD before the mechanic's
-        // been earned.
-        const driftState = this.player.getDriftMasteryState();
-        this.hud.setGripPips(driftState.pips, driftState.burstRemainingMs > 0);
-        // Whisky Breath stack readout — bar fills with stacks; ready
-        // state (>= BREATH_STACKS_REQUIRED) pulses the bar to signal
-        // "press W".
-        const whiskyState = this.player.getWhiskyBreathState();
-        this.hud.setWhiskyStacks(
-          whiskyState.stacks,
-          WHISKY_STACKS_MAX,
-          isBreathReady(whiskyState),
-        );
-      },
-    });
+    runFrameTick(this, delta);
   }
 
   armIFrames(durationMs: number): void {
@@ -1465,7 +1339,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   // existing call sites keep their `this.tryMoorMercyLuck(...)` /
   // `this.spawnStandingStones(...)` shape.
 
-  private buildSecondTickHookContext(): SecondTickHookContext {
+  buildSecondTickHookContext(): SecondTickHookContext {
     return {
       spawnSystem: this.spawnSystem,
       juice: this.juice,
