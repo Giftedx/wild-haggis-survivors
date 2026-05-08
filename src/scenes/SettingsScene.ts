@@ -11,7 +11,6 @@ import {
 import { addSceneBackdrop } from './sceneFade';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { createGameButton } from '../ui/gameButton';
-import { performSettingsReset } from './settingsResetAction';
 import { renderSettingsPreview, type SettingsPreviewHandle } from './settingsPreviewCard';
 import {
   resolveSceneReturnTarget,
@@ -29,6 +28,8 @@ import { addToggleRow } from './settings/addToggleRow';
 import { addBanterFrequencyRow } from './settings/addBanterFrequencyRow';
 import { addLocaleRow } from './settings/addLocaleRow';
 import { addColorblindRow } from './settings/addColorblindRow';
+import { addInputRebindRow } from './settings/addInputRebindRow';
+import { addResetChip } from './settings/addResetChip';
 import type { SettingsRowContext } from './settings/rowContext';
 
 type SettingsGpRow =
@@ -697,63 +698,11 @@ export class SettingsScene extends Phaser.Scene {
    * rest of the accessibility cluster.
    */
   private addInputRebindRow(): void {
-    const { width } = this.scale;
-    const y = this.rowY;
-    const rowStep = Math.round(this.BASE_ROW_STEP * this.layoutScale);
-    this.rowY += rowStep;
-
-    this.addRowLabel(t('ui.inputRebind.title'), y);
-
-    const chipW = this.isNarrowLayout() ? 118 : 130;
-    const chipH = 26;
-    const cx = this.rightControlCenter(chipW);
-    const cy = y + 18;
-    const btn = this.add
-      .rectangle(cx, cy, chipW, chipH, 0x2d6a3e, 1)
-      .setStrokeStyle(1.5, 0x4a9a5e, 0.9)
-      .setInteractive({ useHandCursor: true });
-    btn.setScale(this.uiScale);
-
-    const txt = this.add
-      .text(cx, cy, t('ui.inputRebind.title'), {
-        fontFamily: 'monospace',
-        fontSize: '12px',
-        color: '#d4c2e8',
-        fontStyle: 'bold',
-      })
-      .setOrigin(0.5)
-      .setScale(this.uiScale);
-
-    const openRebindScene = () => {
-      audio.playClick();
-      this.persistAndApply();
-      this.scene.start('SettingsInput', returnTargetData(this.returnTo));
-    };
-
-    btn.on('pointerdown', openRebindScene);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', openRebindScene);
-
-    // P1.3 — mark height tracks rowStep so the focus ring doesn't overflow
-    // into adjacent rows at low layoutScale.
-    const markH = Math.max(20, rowStep - 4);
-    const mark = this.add
-      .rectangle(width / 2, y + 10, width - 56, markH, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: openRebindScene,
-      mark,
+    addInputRebindRow(this.rowContext(), {
+      openRebindScene: () => {
+        this.scene.start('SettingsInput', returnTargetData(this.returnTo));
+      },
     });
-    // DOM mirror — launch action; opens the rebind sub-scene which
-    // restarts SettingsScene on return, so no live refresh needed.
-    const rebindLabel = t('ui.inputRebind.title');
-    this.domRowSyncs.push(() => ({
-      id: 'launch-rebind',
-      kind: 'launch',
-      label: this.compactSettingsLabel(rebindLabel),
-      onActivate: openRebindScene,
-    }));
   }
 
   /**
@@ -764,52 +713,14 @@ export class SettingsScene extends Phaser.Scene {
    * every slider/toggle snaps back to default in one visible motion.
    */
   private addResetChip(y: number): void {
-    const { width } = this.scale;
-    const narrow = this.isNarrowLayout();
-    const chipW = narrow ? 84 : 110;
-    const chipH = 32;
-    const cx = narrow ? width - chipW / 2 - 28 : width - 90;
-    const { rect: btn, label: txt } = createGameButton(this, {
-      x: cx, y, width: chipW, height: chipH,
-      label: t('ui.settings.reset_action'),
-      tier: 'secondary', fontSize: narrow ? '11px' : '13px', uiScale: this.uiScale,
-      fillOverride: 0x2a2430, hoverOverride: 0x3a3040, textColorOverride: '#c8b8d4',
+    addResetChip(this.rowContext(), {
+      y,
+      settingsManager: this.settingsManager,
+      restartScene: () => {
+        this.scene.stop();
+        this.scene.start('Settings', returnTargetData(this.returnTo));
+      },
     });
-    btn.setStrokeStyle(1.5, 0x5a4e64, 0.9);
-    btn.setScale(this.uiScale).setDepth(21);
-    txt.setScale(this.uiScale).setDepth(22);
-
-    const doReset = () => {
-      audio.playClick();
-      performSettingsReset({
-        settingsManager: this.settingsManager,
-        restartScene: () => {
-          this.scene.stop();
-          this.scene.start('Settings', returnTargetData(this.returnTo));
-        },
-      });
-    };
-
-    btn.on('pointerdown', doReset);
-    txt.setInteractive({ useHandCursor: true });
-    txt.on('pointerdown', doReset);
-
-    const mark = this.add
-      .rectangle(cx, y, chipW + 10, chipH + 6, 0x000000, 0)
-      .setStrokeStyle(0);
-    this.gpRows.push({
-      kind: 'toggle',
-      toggle: doReset,
-      mark,
-    });
-    // DOM mirror — RESET action restarts the scene so no live refresh.
-    const resetLabel = t('ui.settings.reset_action');
-    this.domRowSyncs.push(() => ({
-      id: 'launch-reset',
-      kind: 'launch',
-      label: resetLabel,
-      onActivate: doReset,
-    }));
   }
 
   /**
