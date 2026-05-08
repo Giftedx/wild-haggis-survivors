@@ -28,7 +28,6 @@ import { ClipRecorder } from '../utils/clipRecorder';
 import type { GameScene } from './GameScene';
 import { formatLocalYmd } from '../utils/formatDate';
 import { TOAST_COLORS } from '../ui/toastPalette';
-import { createGameButton } from '../ui/gameButton';
 import { textStyle } from '../ui/typography';
 import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
 import { buildGameOverDomFocusActions } from './gameOverDomFocusActions';
@@ -37,6 +36,10 @@ import {
   renderDeathInsight,
   addRunResultUnlockContent,
 } from './game-over/runResultContent';
+import {
+  createResultStat,
+  createResultActionButton,
+} from './game-over/resultPanelBuilders';
 
 // Shared text style for the small italic action links under the
 // big result panel (seed copy, postcard download, rerun ↻). Each
@@ -347,15 +350,15 @@ export class GameOverScene extends Phaser.Scene {
     const statGap = Math.min(142, Math.floor(PANEL_W * 0.21));
     const statRowGap = Math.round((compact ? 36 : 42) * uiScale);
     const pb = this.payload.previousBests;
-    this.createResultStat(panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600, uiScale,
+    createResultStat(this,panelCenterX - statGap, statBaseY, t('ui.gameOver.stat_time'), summaryTime, d + 3, 600, uiScale,
       pb && summary.timeSurvivedSec > pb.bestTime);
-    this.createResultStat(panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660, uiScale,
+    createResultStat(this,panelCenterX, statBaseY, t('ui.gameOver.stat_kills'), `${summary.enemiesKilled}`, d + 3, 660, uiScale,
       pb && summary.enemiesKilled > pb.bestKills);
-    this.createResultStat(panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720, uiScale,
+    createResultStat(this,panelCenterX + statGap, statBaseY, t('ui.gameOver.stat_level'), `${this.payload.xpLevel}`, d + 3, 720, uiScale,
       pb && this.payload.xpLevel > pb.bestLevel);
-    this.createResultStat(panelCenterX - statGap, statBaseY + statRowGap, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780, uiScale);
-    this.createResultStat(panelCenterX, statBaseY + statRowGap, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840, uiScale);
-    this.createResultStat(panelCenterX + statGap, statBaseY + statRowGap, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900, uiScale,
+    createResultStat(this,panelCenterX - statGap, statBaseY + statRowGap, t('ui.gameOver.stat_bosses'), `${this.payload.bossKillCount}`, d + 3, 780, uiScale);
+    createResultStat(this,panelCenterX, statBaseY + statRowGap, t('ui.gameOver.stat_passives'), `${this.payload.ownedPassiveCount}`, d + 3, 840, uiScale);
+    createResultStat(this,panelCenterX + statGap, statBaseY + statRowGap, t('ui.gameOver.stat_combo'), `${summary.bestCombo ?? 0}x`, d + 3, 900, uiScale,
       pb && (summary.bestCombo ?? 0) > pb.bestCombo);
 
     const loadoutSummaryText = boundedLoadoutSummary(this.payload.buildSummary, 2);
@@ -556,9 +559,9 @@ export class GameOverScene extends Phaser.Scene {
       this.scene.start('Croft');
     };
 
-    this.createResultActionButton(panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, onPlayAgain);
-    this.createResultActionButton(panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
-    this.createResultActionButton(panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
+    createResultActionButton(this, this.focusController,panelCenterX - actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.play_again'), 'primary', 1240, uiScale, onPlayAgain);
+    createResultActionButton(this, this.focusController,panelCenterX, buttonsY, actionBtnW, 42, t('ui.gameOver.upgrades'), 'secondary', 1300, uiScale, onGoldShop, { fillOverride: COLORS.WHISKY_GOLD, hoverOverride: 0xe0b830, textColorOverride: COLORS_CSS.BLACK });
+    createResultActionButton(this, this.focusController,panelCenterX + actionSideGap, buttonsY, actionBtnW, 42, t('ui.gameOver.menu'), 'secondary', 1360, uiScale, onTaeGran);
 
     this.focusController.seedFocusFromActions();
     this.focusController.installKeyboard();
@@ -623,108 +626,6 @@ export class GameOverScene extends Phaser.Scene {
   private uninstallDomFocusLayer(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
-  }
-
-  private createResultStat(
-    x: number,
-    y: number,
-    label: string,
-    value: string,
-    depth: number,
-    delay: number,
-    uiScale: number,
-    isNewBest?: boolean
-  ): void {
-    const labelText = this.add
-      .text(x, y, label,
-        textStyle('label', { fontSize: '12px', color: COLORS_CSS.TEXT_SUBTITLE }),
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setScale(uiScale);
-    const valueText = this.add
-      .text(x, y + Math.round(18 * uiScale), value,
-        textStyle('body', { fontSize: '20px', color: isNewBest ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.WHITE }),
-      )
-      .setOrigin(0.5)
-      .setScrollFactor(0)
-      .setDepth(depth)
-      .setAlpha(0)
-      .setScale(uiScale);
-
-    this.tweens.add({ targets: [labelText, valueText], alpha: 1, duration: 220, delay });
-
-    if (isNewBest) {
-      const badge = this.add
-        .text(x + Math.round(46 * uiScale), y + Math.round(10 * uiScale), t('ui.gameOver.new_best'),
-          textStyle('small', { fontSize: '8px', color: COLORS_CSS.WHISKY_GOLD }),
-        )
-        .setOrigin(0, 0.5)
-        .setScrollFactor(0)
-        .setDepth(depth + 1)
-        .setAlpha(0)
-        .setScale(0.5 * uiScale);
-      this.tweens.add({
-        targets: badge,
-        alpha: 1,
-        scale: uiScale,
-        duration: 360,
-        delay: delay + 200,
-        ease: 'Back.easeOut',
-      });
-    }
-  }
-
-  private createResultActionButton(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    label: string,
-    tier: import('../ui/gameButton').ButtonTier,
-    delay: number,
-    uiScale: number,
-    onClick: () => void,
-    overrides?: { fillOverride?: number; hoverOverride?: number; textColorOverride?: string },
-  ): void {
-    // setInteractive is called at construction by the factory — alpha-0
-    // fade-in still provides the visual delay without softlocking the
-    // buttons if a tween is interrupted by tab-backgrounding.
-    const { rect: button, label: text } = createGameButton(this, {
-      x, y, width, height, label, tier, uiScale,
-      fillOverride: overrides?.fillOverride,
-      hoverOverride: overrides?.hoverOverride,
-      textColorOverride: overrides?.textColorOverride,
-    });
-    button.setScrollFactor(0).setDepth(203).setAlpha(0);
-    text.setScrollFactor(0).setDepth(204).setAlpha(0);
-
-    this.tweens.add({
-      targets: [button, text],
-      alpha: 1,
-      duration: 260,
-      delay,
-    });
-
-    button.on('pointerdown', onClick);
-    button.on('pointerover', () => {
-      const idx = this.focusController.getActions().findIndex((e) => e.rect === button);
-      if (idx === -1) return;
-      this.focusController.setFocusedIndex(idx);
-    });
-    // Snapshot the idle stroke (createGameButton may have set an HC tier
-    // border) so applyStyles can restore it on de-focus.
-    this.focusController.addAction({
-      rect: button,
-      onActivate: onClick,
-      idleStroke: {
-        width: button.lineWidth,
-        color: button.strokeColor,
-        alpha: button.strokeAlpha,
-      },
-    });
   }
 
   /**
