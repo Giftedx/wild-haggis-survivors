@@ -29,7 +29,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['scenes/GameOverScene.ts', 1310],
   ['ui/HUD.ts', 1225],
   ['systems/AudioSystem.ts', 1210],
-  ['art/sprites/decorations/biomeProps.ts', 1095],
+  ['art/sprites/decorations/biomeProps.ts', 5], // was 1095 (Phase 2.4 split — barrel re-export over biomeProps/*.ts)
 ];
 
 describe('LOC budget ratchet', () => {
