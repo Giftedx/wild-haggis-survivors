@@ -55,7 +55,6 @@ import { applyAudioFromUserSettings } from '../core/applyAudioFromSettings';
 import { getSettingsManager } from '../core/SettingsManager';
 import { BanterSystem } from '../systems/BanterSystem';
 import type { BanterContext } from '../data/banter';
-import { burnsPlatterDamageBuff } from '../systems/seasonal/burnsNightEffects';
 import { getAnalyticsManager } from '../core/AnalyticsManager';
 import { globalEventBus } from '../core/GlobalEventBus';
 import { t } from '../core/i18n';
@@ -75,11 +74,8 @@ import { StatusFxPool } from '../systems/StatusFxPool';
 import { TempBuffBag } from '../systems/TempBuffBag';
 import { RuneConditionSystem } from '../systems/RuneConditionSystem';
 import { createRuneEffectBag } from '../systems/runes/runeEffects';
-import {
-  composeBagpipesRadiusMul,
-  composeBassAttackSpeedMul,
-  noteCascadeKill,
-} from '../systems/runes/runeConsumer';
+import { noteCascadeKill } from '../systems/runes/runeConsumer';
+import { applyWeaponMultiplierFold } from './game/weaponMultiplierFold';
 import { RUNES } from '../data/runes';
 import { RuneSystemController } from './game/runeSystemController';
 import { TutorialSystem } from '../systems/TutorialSystem';
@@ -1908,29 +1904,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       if (resolved) this.ancestralEcho = null;
     }
 
-    // Pass player facing and upgrade multipliers to weapon system.
-    // Always update from player.rotation (persists when stationary) so
+    // Pass player facing — own concern, kept out of the multiplier fold.
+    // Always read from `player.rotation` (persists when stationary) so
     // directional weapons like arc_sweep don't use a stale angle.
     this.weaponSystem.setPlayerFacing(this.player.rotation - Math.PI / 2);
-    // U1 M4 — fold rune bass-attack-speed flag (Song Rune) on top of the
-    // player's attack-speed stack so the weapon cooldown formula sees a
-    // single composed value. Identity (1.0) when the rune is inactive.
-    const bassAtkSpeedMul = composeBassAttackSpeedMul(this.runeBag);
-    this.weaponSystem.setMultipliers(
-      this.player.getDamageMultiplier()
-        * this.juice.getComboDamageMultiplier()
-        * burnsPlatterDamageBuff(this.time.now, this.burnsPlatterPickedUpAtMs),
-      this.player.getAoeMultiplier(),
-      this.player.getAttackSpeedMultiplier() * bassAtkSpeedMul,
-      this.player.getCritChance(),
-      this.player.getCooldownReduction(),
-      // R1 M3 T20a — grans_thimble +8% crit multiplier composes on top
-      // of existing stacks so it scales with other crit bonuses rather
-      // than replacing them.
-      this.relicEffectDriver.modifyCritMultiplier(this.player.getCritDamageMultiplier()),
-    );
-    // U1 M4 — Piper Rune folds bagpipes radius once per frame.
-    this.weaponSystem.setBagpipesRadiusMul(composeBagpipesRadiusMul(this.runeBag));
+    applyWeaponMultiplierFold({
+      player: this.player,
+      juice: this.juice,
+      weaponSystem: this.weaponSystem,
+      runeBag: this.runeBag,
+      relicEffectDriver: this.relicEffectDriver,
+      timeNowMs: this.time.now,
+      burnsPlatterPickedUpAtMs: this.burnsPlatterPickedUpAtMs,
+    });
     this.weaponSystem.update(scaledDelta, this.player.x, this.player.y);
 
     // R1 M4.5 P5 — tick live Fianna summons + sweep expired. Use
