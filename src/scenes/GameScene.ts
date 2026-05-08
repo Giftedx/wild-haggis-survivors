@@ -91,7 +91,8 @@ import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import { showCountdown } from './game/CountdownOverlay';
-import { MoorMomentScheduler } from './game/MoorMomentScheduler';
+import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
+import { installRunBookkeeping } from './game/installRunBookkeeping';
 import {
   type MoorMomentsState,
   createMoorMomentsState,
@@ -117,15 +118,15 @@ import { launchActIntermission as launchActIntermissionImpl } from './game/actIn
 import type { RoutePick, RouteResumeContext } from '../data/routes';
 import { resolveRouteLabels, resolveRelicLabels, resolveRuneLabels } from './game/runIdentityLabels';
 import { FloatTextPool } from './game/FloatTextPool';
-import { RunPersistenceBridge } from './game/RunPersistenceBridge';
+import type { RunPersistenceBridge } from './game/RunPersistenceBridge';
 import type { RunHistoryRecorder } from './game/RunHistoryRecorder';
 import type { RunPersistenceCoordinator } from './game/RunPersistenceCoordinator';
 import { installRunEndComposers } from './game/installRunEndComposers';
 import { resolveResumeNodeMapTarget } from './game/resumeNodeMapTarget';
 import { generateHaggisName } from '@/data/haggisNames';
 import { showRunIntroToasts } from './game/runIntroToasts';
-import { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
-import { BossHpTracker } from './game/BossHpTracker';
+import type { DebugTimeTravelApi } from './game/DebugTimeTravelApi';
+import type { BossHpTracker } from './game/BossHpTracker';
 import { ChestSpriteRegistry } from './game/ChestSpriteRegistry';
 import type { RunExitComposer } from './game/RunExitComposer';
 import { RunScoreState } from './game/RunScoreState';
@@ -927,71 +928,54 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     }
     this.chestDurationBonusMs = permResult.chestDurationBonusMs;
 
-    // Moor-moment scheduler must exist before applyResumeHydration — hydration
-    // calls pushAfterResume on it. Getters below are lazy; player/juice/xp/etc
-    // are still under construction here but only accessed during tick()/fire().
-    this.moorMoments = new MoorMomentScheduler({
+    // Phase 5 Bucket 6 finish — four run-bookkeeping ctors bundled into
+    // a single helper. MoorMomentScheduler must exist before resume
+    // hydration (its pushAfterResume is called); RunPersistenceBridge
+    // owns snapshot/hydrate; BossHpTracker pushes HUD fraction; the
+    // dev API wires globalThis.DEBUG + Shift+] (install() fires later
+    // once `relicSystem` is built).
+    ({
+      moorMoments: this.moorMoments,
+      runPersistence: this.runPersistence,
+      bossHpTracker: this.bossHpTracker,
+      debugTimeTravelApi: this.debugTimeTravelApi,
+    } = installRunBookkeeping({
       getRunRng: () => this.runRng,
       getPlayer: () => this.player,
+      getXPSystem: () => this.xpSystem,
+      getJuice: () => this.juice,
+      getSpawnSystem: () => this.spawnSystem,
+      getRunModifiers: () => this.runModifiers,
+      isSceneActive: () => this.scene.isActive(),
       getVictoryPending: () => this.runScore.victoryPending,
       getCurrentBiomeId: () => this.getCurrentBiomeId(),
       getTutorialSystem: () => this.tutorialSystem,
-      getRunModifiers: () => this.runModifiers,
-      getXPSystem: () => this.xpSystem,
-      getJuice: () => this.juice,
       getBanter: () => this.banter,
       getSFXManager: () => this.getSFXManager(),
       addCoinGold: (amount) => { this.runScore.addCoinGold(amount); },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-    });
-    this.moorMoments.reset();
-
-    // Run persistence bridge — snapshot / save / hydrate / pagehide hooks.
-    // Constructed before resume hydration; lazy getters let it reach
-    // levelUpFlow (built later in create()) at hydrate time.
-    this.runPersistence = new RunPersistenceBridge({
-      getPlayer: () => this.player,
-      getXPSystem: () => this.xpSystem,
       getWeaponSystem: () => this.weaponSystem,
-      getSpawnSystem: () => this.spawnSystem,
-      getJuice: () => this.juice,
       getTimeManager: () => this.timeManager,
       getRunStatsTracker: () => this.runStatsTracker,
-      getMoorMoments: () => this.moorMoments,
       getLevelUpFlow: () => this.levelUpFlow,
       getSaveManager: () => this.metaSaveManager,
       getActiveVariant: () => this.activeVariant,
       getRunScore: () => this.runScore,
       getRunActState: () => this.runActState,
-      getRunModifiers: () => this.runModifiers,
       isIronmoorRun: () => this.activeIronmoorRun,
       getTempBuffBag: () => this.tempBuffBag,
       getRevivalAvailable: () => this.revivalAvailable,
       getOwnedPassives: () => this.ownedPassives,
       getEvolvedWeapons: () => this.evolvedWeapons,
-      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
+      getHeldRelicKeysForPersistence: () => this.relicSystem?.heldKeys() ?? [],
       setRevivalAvailable: (v) => { this.revivalAvailable = v; },
       setOwnedPassives: (p) => { this.ownedPassives = p; },
       setEvolvedWeapons: (e) => { this.evolvedWeapons = e; },
       restoreHeldRelics: (keys) => this.relicOrchestrator.restoreHeld(keys),
-      isSceneActive: () => this.scene.isActive(),
       suppressNextNodeMapRoll: () => { this.suppressNextNodeMapRoll = true; },
-    });
-
-    // Boss HP bar tracker — caches current spotlight boss and pushes
-    // fraction to HUD each frame. Lazy getters so HUD (built later in
-    // create()) resolves at tick time.
-    this.bossHpTracker = new BossHpTracker({
-      getSpawnSystem: () => this.spawnSystem,
       updateBossBar: (data) => this.hud.updateBossBar(data),
-    });
-
-    // Dev time-travel controls — globalThis.DEBUG + Shift+] keybind.
-    this.debugTimeTravelApi = new DebugTimeTravelApi({
-      getSpawnSystem: () => this.spawnSystem,
-      isSceneActive: () => this.scene.isActive(),
       spawnRelicAt: (key, x, y) => this.relicOrchestrator.debugSpawnAt(key, x, y),
-      getHeldRelicKeys: () => this.relicSystem?.heldKeys() ?? [],
+      getHeldRelicKeysForDebug: () => this.relicSystem?.heldKeys() ?? [],
       getRelicCatalogue: () => RELICS,
       openRelicDiscardPromptForAudit: () => {
         if (this.relicOrchestrator.isDiscardModalOpen()) return false;
@@ -999,7 +983,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.relicOrchestrator.openDiscardModal(RELICS.whisky_dram, 'bargain');
         return true;
       },
-    });
+    }));
 
     // Phase 5 Bucket 6 partial — RunExitComposer + RunHistoryRecorder +
     // RunPersistenceCoordinator construction. De-duplicated hook bag
