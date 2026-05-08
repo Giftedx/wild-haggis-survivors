@@ -15,7 +15,7 @@ const SRC_ROOT = join(__dirname, '..');
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 120], // was 4720 (Phase 3.1 split — namespaces under i18n/*.ts; resolver + locale machinery remain)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 split — namespaces under i18n.scs/*.ts; barrel re-export only)
-  ['scenes/GameScene.ts', 2420], // was 2432 (Phase 5 Bucket 6 partial — installRunEndComposers extracted: RunExitComposer + RunHistoryRecorder + RunPersistenceCoordinator de-duped through one opts bag; current 2413 + 7 grace)
+  ['scenes/GameScene.ts', 2405], // was 2420 (Phase 5 Bucket 10 partial — installRuntimeAmbient extracted: AmbientWeather + Hazards + GameTickers + PickupSpawner; current 2398 + 7 grace)
   ['data/banter.ts', 2240],
   ['utils/save.ts', 100], // was 1840 (Phase 1 split — barrel re-export over save/*.ts)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 split — barrel re-export over cards/*.ts)

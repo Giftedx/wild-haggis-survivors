@@ -22,8 +22,8 @@ import { RelicSlotUI } from '../ui/RelicSlotUI';
 import { getActBank, getAct3Bank, type Act3Stretch } from '../data/nodeBanks';
 import { NodeWaveTracker } from '../systems/nodeEvents/NodeWaveTracker';
 import { JuiceSystem } from '../systems/JuiceSystem';
-import { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
-import { HazardsSystem } from '../systems/HazardsSystem';
+import type { AmbientWeatherSystem } from '../systems/AmbientWeatherSystem';
+import type { HazardsSystem } from '../systems/HazardsSystem';
 import { createPhaserTimeAdapter, TimeManager } from '../systems/TimeManager';
 import { disposeRecordingAudioStream } from '@/systems/audioContext';
 import type { ClipRecorder } from '@/utils/clipRecorder';
@@ -109,7 +109,7 @@ import {
 } from './game/nodeVisitFinalizer';
 import { PauseMenu } from './game/PauseMenu';
 import { canOpenPauseMenu } from './game/pauseGate';
-import { PickupSpawner } from './game/PickupSpawner';
+import type { PickupSpawner } from './game/PickupSpawner';
 import { EnemyKillHandler } from './game/EnemyKillHandler';
 import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
@@ -161,7 +161,8 @@ import { RelicOrchestrator } from './game/RelicOrchestrator';
 import { RELICS, type RelicKey } from '../data/relics';
 import { createHighlandTerrain } from './game/highlandTerrain';
 import { HazardZones } from './game/HazardZones';
-import { GameTickers } from './game/GameTickers';
+import type { GameTickers } from './game/GameTickers';
+import { installRuntimeAmbient } from './game/installRuntimeAmbient';
 import {
   applyPermanentUpgrades,
   applyVariantModifiers,
@@ -1251,58 +1252,42 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       banter: this.banter,
       audio,
     });
-    // Ambient weather — purely cosmetic seasonal overlay. Idle when no
-    // event is active or `disableSeasonalEvents` / `reduceParticles` is on.
+    // Phase 5 Bucket 10 partial — runtime ambient + pickup install.
+    // Stop prior-run instances first (scene reuse on retry).
     this.weather?.stop();
-    this.weather = new AmbientWeatherSystem(this);
-    this.weather.start();
-    this.events.once('shutdown', () => { this.weather?.stop(); this.weather = null; });
-    // Environmental hazards — biome-conditioned, damages player on overlap.
-    // Honours `disableHazards` setting (defaults enabled when absent).
     this.hazards?.stop();
-    this.hazards = new HazardsSystem(
-      this,
-      () => this.player ?? null,
-      () => this.getCurrentBiomeId(),
-      () => this.runRng,
-      () => this.iFrameController.isActive(),
-    );
-    this.hazards.start();
-    this.events.once('shutdown', () => { this.hazards?.stop(); this.hazards = null; });
-    this.gameTickers = new GameTickers({
-      getPlayer: () => this.player,
-      getScene: () => this,
-      getUiViewport: () => this.getUiViewport(),
-      getBanter: () => this.banter,
-      getCurrentBiomeId: () => this.getCurrentBiomeId(),
-      getActiveVariantKey: () => this.activeVariant.key,
-      hasEnemyNearby: (radiusPx) => this.hasEnemyNearby(radiusPx),
-      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
-    });
-    // R1 — Phaser-bound Relic pickup spawner. Constructed fresh each
-    // run because the spawner holds a live reference set that must
-    // not survive a scene restart (stale sprites would leak). The
-    // orchestrator owns the spawner + onCollect routing internally.
-    this.relicOrchestrator.attachSpawner();
-    this.pickupSpawner = new PickupSpawner(this, {
+    ({
+      weather: this.weather,
+      hazards: this.hazards,
+      gameTickers: this.gameTickers,
+      pickupSpawner: this.pickupSpawner,
+    } = installRuntimeAmbient({
+      scene: this,
       getPlayer: () => this.player,
       getJuice: () => this.juice,
+      getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      getRunRng: () => this.runRng,
+      isIFramesActive: () => this.iFrameController.isActive(),
+      getUiViewport: () => this.getUiViewport(),
+      getBanter: () => this.banter,
+      getActiveVariantKey: () => this.activeVariant.key,
+      hasEnemyNearby: (r) => this.hasEnemyNearby(r),
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
       getXPSystem: () => this.xpSystem,
       getUpdateTickers: () => this.updateTickers,
       getSFXManager: () => this.getSFXManager(),
       getChestDurationBonusMs: () => this.chestDurationBonusMs,
-      onCoinCollected: (amount) => {
-        // R1 M3 T20b — sporran_of_holding grants +2 per gold pickup.
-        this.runScore.addCoinGold(this.relicEffectDriver.modifyGoldPickup(amount));
-      },
-      trackChest: (s, g) => this.chestRegistry.track(s, g),
-      untrackChest: (s) => this.chestRegistry.untrack(s),
-      pushDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
-      offerTreasureEvolutionIfEligible: () => this.levelUpFlow.offerChestEvolution(),
-      acquireFloatText: (x, y, str, color, fs, d) => this.floatTextPool.acquire(x, y, str, color, fs, d),
-      modifyHealOrbAmount: (a) => this.relicEffectDriver.modifyHealOnOrb(a),
-      onBurnsPlatterCollect: () => this.runeSystemController.onBurnsPlatterCollect(),
-    });
+      getChestRegistry: () => this.chestRegistry,
+      getFloatTextPool: () => this.floatTextPool,
+      getRelicEffectDriver: () => this.relicEffectDriver,
+      getLevelUpFlow: () => this.levelUpFlow,
+      getRuneSystemController: () => this.runeSystemController,
+      getRunScore: () => this.runScore,
+      pushPickupDespawnHandle: (h) => { this.pickupDespawnHandles.push(h); },
+      attachRelicSpawner: () => this.relicOrchestrator.attachSpawner(),
+      onWeatherShutdown: () => { this.weather = null; },
+      onHazardsShutdown: () => { this.hazards = null; },
+    }));
     this.levelUpFlow = new LevelUpFlow(this, {
       getPlayer: () => this.player,
       getWeaponSystem: () => this.weaponSystem,
