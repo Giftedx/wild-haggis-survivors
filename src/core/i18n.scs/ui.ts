@@ -499,6 +499,12 @@ export const ui = {
       braced: 'SET',
       reeling: 'REISHLIN',
     },
+    /** Shinty Parry chip — SCS overlay. Same three states as EN. */
+    parry: {
+      ready: 'PAIRRY',
+      active: '!',
+      cooldown: '···',
+    },
   },
   replay: {
     watching_toast: 'Watchin replay · recorded run',
@@ -1615,6 +1621,14 @@ export const ui = {
         a: 'Reishlin. Faster, daftler, drift fair wild.',
         b: 'Het fit — tha moor blurs, an that\'s tha pint.',
       },
+    },
+    // ── Shinty Parry (DESIGN_IDEAS §1). SCS overlay for shinty_parry.
+    //    Hearth — pleased low-key pride. Camanachd is the Highland
+    //    stick game; the caman is the curved ash club. "Aff the ash"
+    //    is the parry-on-stick Scots phrase the EN draws from.
+    shinty_parry: {
+      a: 'Caman flick — that\'s hoo it\'s done.',
+      b: 'Aff tha ash, easy as that.',
     },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.
     //    Scots conventions per Phase B: yir/nae/dinnae/tae/wee/ken, tha/fae/wance.

@@ -965,6 +965,72 @@ export class AudioSystem {
     osc.stop(t0 + 0.18);
   }
 
+  /**
+   * Shinty Parry window open — short low woosh as the haggis raises
+   * its caman, sweeping ~180 → 240 Hz over 90 ms. Quiet enough to
+   * cue without dominating; the player should mostly hear the
+   * incoming projectile in the parry beat.
+   */
+  playShintyParryOpen(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, t0);
+    osc.frequency.exponentialRampToValueAtTime(240, t0 + 0.09);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.05, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.12);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.14);
+  }
+
+  /**
+   * Shinty Parry hit — bright "tok!" of caman striking projectile.
+   * Square-wave click at ~1200 Hz with a noise transient layered for
+   * the wood-on-leather snap. Reads as crisp/decisive contact, not a
+   * weighty crash; the parry is a precision flick, not a slam.
+   */
+  playShintyParry(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    // Tonal "tok" — bright square pluck, sharp decay.
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1200, t0);
+    osc.frequency.exponentialRampToValueAtTime(700, t0 + 0.07);
+    oscGain.gain.setValueAtTime(0, t0);
+    oscGain.gain.linearRampToValueAtTime(0.09, t0 + 0.005);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.10);
+    osc.connect(oscGain);
+    oscGain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.12);
+    // Noise transient — single short burst for the snap. Buffer is
+    // 50 ms of white noise; played once at near-silent gain so the
+    // tonal pluck stays foreground.
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.05), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.04, t0);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.05);
+    src.connect(noiseGain);
+    noiseGain.connect(this.masterGain);
+    src.start(t0);
+    src.stop(t0 + 0.06);
+  }
+
   playBurnLeap(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();

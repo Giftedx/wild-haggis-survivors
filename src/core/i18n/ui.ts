@@ -904,6 +904,14 @@ export const ui = {
       braced: 'BRACED',
       reeling: 'REELING',
     },
+    /** Shinty Parry chip labels (DESIGN_IDEAS §1). Defensive timed-window
+     *  flick on E. Three states map to three labels: ready (idle, can
+     *  press E), active (window open, commit), cooldown (recovering). */
+    parry: {
+      ready: 'PARRY',
+      active: '!',
+      cooldown: '···',
+    },
   },
   /** T1 replay playback UI. */
   replay: {
@@ -2095,6 +2103,16 @@ export const ui = {
         a: 'Reelin\'. Faster, daftler, drift fair wild.',
         b: 'Hot foot — the moor blurs, an\' that\'s the point.',
       },
+    },
+    /** Shinty Parry (DESIGN_IDEAS §1). Fires on consume edge — the
+     *  player flicked the caman at exactly the right moment and the
+     *  projectile died on the ash. Two leaves keep the no-repeat
+     *  ring honest on dense parry play. Hearth-warm tone, low-key
+     *  pride; the parry already speaks loudly via VFX/SFX so the
+     *  voice line stays a pleased murmur, not a celebration. */
+    shinty_parry: {
+      a: 'Caman flick — that\'s how it\'s done.',
+      b: 'Aff the ash, easy as that.',
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder
     //    warmth *about* the run. Keep lines short and tender. Never

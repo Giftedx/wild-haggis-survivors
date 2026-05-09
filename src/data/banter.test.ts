@@ -47,6 +47,8 @@ describe('BANTER_POOLS structure', () => {
     'cairn_moment',
     // DESIGN_IDEAS §1 — Stance Toggle cycle (Q-edge, three sub-pools)
     'stance_change',
+    // DESIGN_IDEAS §1 — Shinty Parry consume edge (E-window success)
+    'shinty_parry',
   ];
 
   it('covers every BanterContext exactly once', () => {

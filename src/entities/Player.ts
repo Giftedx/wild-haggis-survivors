@@ -51,6 +51,15 @@ import {
   cycleStance,
   getStanceModifiers,
 } from './stanceToggle';
+import {
+  type ShintyParryState,
+  createShintyParryState,
+  tickShintyParry,
+  consumeParry,
+  isParryActive,
+  isParryReady,
+  parryCooldownFraction,
+} from './shintyParry';
 import type { Enemy } from './Enemy';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
@@ -218,6 +227,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** First-cycle tutorial caption — fires once per run on the first
    *  Q-press. */
   private stanceFirstCyclePending: boolean = true;
+
+  // Shinty Parry (DESIGN_IDEAS §1) — fourth skill-expression layer.
+  // E-edge opens a short timed window (`PARRY_WINDOW_MS`); any enemy
+  // projectile contact during the window is negated, transitions the
+  // helper to cooldown, and grants a brief iframe burst. Pure-helper
+  // driven so replay determinism holds; the consume path is invoked
+  // by Enemy.fireNet's overlap callback through `tryParryProjectile`.
+  private shintyParryState: ShintyParryState = createShintyParryState();
+  private shintyParryKey: Phaser.Input.Keyboard.Key | null = null;
+  private shintyParryKeyPrevDown: boolean = false;
+  /** First-success tutorial caption — fires once per run on the first
+   *  consumed parry. */
+  private parryFirstSuccessPending: boolean = true;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -387,6 +409,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // graduation to a remappable ActionKey can pair F + G + Q in a
     // single save-version bump.
     this.stanceCycleKey = scene.input?.keyboard?.addKey('Q') ?? null;
+
+    // Shinty Parry — E opens a 350 ms window vs enemy projectiles.
+    // Same hardcoded edge-poll pattern as F/G/Q; E sits free of every
+    // default ActionKey binding. Future graduation to a remappable
+    // ActionKey can fold E into the same save-version bump alongside
+    // the other skill-layer keys.
+    this.shintyParryKey = scene.input?.keyboard?.addKey('E') ?? null;
     // Subscribe to the run's enemy-kill stream so the helper can bank
     // a stack per kill. Bosses excluded — Whisky Breath rewards the
     // sustained mob-clear rhythm, not boss damage. SubscriptionBag
@@ -864,6 +893,23 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         sceneCtx.caption?.('stance_first_cycle', 'Stance shift. Q to cycle.', '#d4c8a8', 2400);
       }
       sceneCtx.requestBanter?.('stance_change', this.stance);
+    }
+
+    // Shinty Parry (DESIGN_IDEAS §1) — E-edge opens the parry window.
+    // The helper owns the cooldown gate; presses during cooldown are
+    // no-ops. `consumeParry` is called from Enemy.fireNet's overlap
+    // path via `tryParryProjectile` (below), keeping the negation
+    // logic at the contact site rather than inside Player.update.
+    const parryDown = this.shintyParryKey?.isDown ?? false;
+    const parryPressedEdge = parryDown && !this.shintyParryKeyPrevDown;
+    this.shintyParryKeyPrevDown = parryDown;
+    const parryResult = tickShintyParry(this.shintyParryState, {
+      dtMs: scaledDelta,
+      parryPressed: parryPressedEdge,
+    });
+    this.shintyParryState = parryResult.state;
+    if (parryResult.windowOpenedEdge) {
+      audio.playShintyParryOpen?.();
     }
 
     if (dir.x === 0 && dir.y === 0) {
@@ -1492,6 +1538,41 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.heal(healed);
     }
   }
+
+  /**
+   * Shinty Parry intercept (DESIGN_IDEAS §1). Called by Enemy.fireNet's
+   * overlap callback when an enemy projectile contacts the player.
+   *
+   * - Returns true: the parry window was active. The projectile is
+   *   considered negated; the caller MUST skip `applyNetSlow` and may
+   *   skip any other on-hit side effects. SFX/banter/tutorial caption
+   *   fire here so the contact site stays a single boolean check.
+   * - Returns false: no active window. Caller proceeds with normal
+   *   on-hit behaviour (`applyNetSlow`).
+   *
+   * The consume call also rolls the helper into cooldown — one window,
+   * one parry, even if a barrage arrives in the same tick.
+   */
+  tryParryProjectile(): boolean {
+    const r = consumeParry(this.shintyParryState);
+    if (!r.consumed) return false;
+    this.shintyParryState = r.state;
+    audio.playShintyParry?.();
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    if (this.parryFirstSuccessPending) {
+      this.parryFirstSuccessPending = false;
+      sceneCtx.caption?.('parry_first_success', 'Caman flick — that\'s a parry.', '#9fcad9', 2400);
+    }
+    sceneCtx.requestBanter?.('shinty_parry');
+    return true;
+  }
+
+  /** HUD readout — true while the parry window is open. */
+  isShintyParryActive(): boolean { return isParryActive(this.shintyParryState); }
+  /** HUD readout — true when ready to parry (idle, not on cooldown). */
+  isShintyParryReady(): boolean { return isParryReady(this.shintyParryState); }
+  /** HUD readout — fraction [0..1] of cooldown elapsed; 1 = ready. */
+  shintyParryCooldownFraction(): number { return parryCooldownFraction(this.shintyParryState); }
 
   /** Apply net slow — only takes effect on first stack, subsequent nets just increment counter */
   applyNetSlow(durationMs: number = 2000): void {

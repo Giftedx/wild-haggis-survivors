@@ -65,7 +65,12 @@ export type BanterContext =
   // DESIGN_IDEAS §1 Stance Toggle — fires on Q-cycle. Sub-pool tags
   // mirror the three stance keys: `loose`, `braced`, `reeling`.
   // Hearth-warm register; the haggis voicing its own posture shift.
-  | 'stance_change';
+  | 'stance_change'
+  // DESIGN_IDEAS §1 Shinty Parry — fires on consume edge (a successful
+  // E-parry of an enemy projectile). Hearth-warm pride; the parry
+  // already speaks loudly via VFX/SFX so the line is a low-key murmur,
+  // not a celebration. No sub-pool tags — single consume context.
+  | 'shinty_parry';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1243,6 +1248,22 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.stance_change.reeling.b',
       ],
     },
+  },
+  {
+    // Shinty Parry (DESIGN_IDEAS §1) — fires on consume edge (a
+    // successful E-parry of an enemy projectile). Priority 27 — sits
+    // *just* above stance_change (26) so a parry mid-stance-cycle
+    // wins (the parry is the more meaningful event), but below Gran
+    // (28) so an elder-voice beat is never overrun by a defensive
+    // flick. Hearth tone — pleased, low-key. No sub-pool tags: a
+    // parry is a single discrete win.
+    context: 'shinty_parry',
+    tone: 'hearth',
+    priority: 27,
+    keys: [
+      'ui.banter.shinty_parry.a',
+      'ui.banter.shinty_parry.b',
+    ],
   },
   {
     // B1 Phase 2 — Gran's commentary. Hearth, elder warmth *about* the run.

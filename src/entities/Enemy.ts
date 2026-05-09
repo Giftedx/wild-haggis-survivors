@@ -831,6 +831,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       const currentPlayer = this.ctx.getPlayer();
       if (currentPlayer !== spawnedPlayer) return;
 
+      // Shinty Parry (DESIGN_IDEAS §1) — if the player has an active
+      // parry window, the projectile is negated. tryParryProjectile
+      // returns true on consume + handles SFX/banter/tutorial caption
+      // internally so the contact site stays a single check. The net
+      // is already destroyed (cleanup() above), so a parried hit just
+      // skips the slow.
+      if (currentPlayer.tryParryProjectile()) return;
+
       // Apply a game-tick net slow (duration freezes with timeScale/pause).
       spawnedPlayer.applyNetSlow(2000);
     });

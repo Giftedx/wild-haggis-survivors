@@ -39,6 +39,10 @@ import { buildGripPips } from './hud/gripPips';
 import { buildWhiskyBar } from './hud/whiskyBar';
 import { buildStanceChip } from './hud/stanceChip';
 import type { Stance } from '../entities/stanceToggle';
+import {
+  buildParryChip,
+  PARRY_CHIP_PIXEL_WIDTH,
+} from './hud/parryChip';
 import { buildLevelGold } from './hud/levelGold';
 import { buildTimerStack } from './hud/timerStack';
 import { buildStatusChips } from './hud/statusChips';
@@ -119,6 +123,14 @@ export class HUD {
   private stanceChipBg!: Phaser.GameObjects.Rectangle;
   private stanceChipText!: Phaser.GameObjects.Text;
   private prevStance: Stance | null = null;
+
+  /** Shinty Parry chip widget refs — bg, cooldown sweep fill, label. */
+  private parryChipBg!: Phaser.GameObjects.Rectangle;
+  private parryChipCooldownFill!: Phaser.GameObjects.Rectangle;
+  private parryChipText!: Phaser.GameObjects.Text;
+  /** Cached parry visual state ('ready' / 'active' / 'cooldown') so
+   *  per-frame setText / setFillStyle calls only fire on transition. */
+  private prevParryState: 'ready' | 'active' | 'cooldown' | null = null;
 
   /** HP bar width — shrinks on narrow viewports so the centered timer
    *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
@@ -275,6 +287,13 @@ export class HUD {
     const stanceRefs = buildStanceChip(ctx);
     this.stanceChipBg = stanceRefs.bg;
     this.stanceChipText = stanceRefs.text;
+
+    // Shinty Parry chip — sits below the stance chip. Bottom of the
+    // four-widget skill column (HP / whisky / stance / parry).
+    const parryRefs = buildParryChip(ctx);
+    this.parryChipBg = parryRefs.bg;
+    this.parryChipCooldownFill = parryRefs.cooldownFill;
+    this.parryChipText = parryRefs.text;
 
     // Level + gold balance (whisky-gold tint, hidden until first setText fires).
     const levelGoldRefs = buildLevelGold(ctx);
@@ -1047,6 +1066,65 @@ export class HUD {
         yoyo: true,
         ease: 'Sine.easeOut',
       });
+    }
+  }
+
+  /**
+   * Shinty Parry chip readout — three states (ready / active / cooldown)
+   * derived from `Player.isShintyParryActive` + `isShintyParryReady` +
+   * `shintyParryCooldownFraction`. Always visible (matches stance chip
+   * "current player capability" pattern).
+   *
+   * `prevParryState` skips the setText / setFillStyle calls on every
+   * frame the visual state isn't transitioning. The cooldown sweep
+   * fill width is updated every frame during cooldown only — fraction
+   * is continuous so a per-frame width-write is unavoidable there.
+   */
+  setShintyParry(active: boolean, ready: boolean, cooldownFraction: number, label: string): void {
+    const visualState: 'ready' | 'active' | 'cooldown' = active
+      ? 'active'
+      : ready
+        ? 'ready'
+        : 'cooldown';
+    if (visualState !== this.prevParryState) {
+      this.prevParryState = visualState;
+      this.parryChipText.setText(label);
+      // Per-state palette. Active uses a bright cyan flash to signal
+      // "the window is open — commit"; cooldown dims so the chip
+      // visually recedes; ready is the neutral slate that matches
+      // the rest of the chrome.
+      if (visualState === 'active') {
+        this.parryChipBg.setFillStyle(0x2a4a66, 0.95);
+        this.parryChipBg.setStrokeStyle(1, 0x9fcad9, 0.95);
+        this.parryChipText.setColor('#e0f0ff');
+        this.parryChipCooldownFill.setVisible(false);
+        // One-shot pulse on the open edge — same gesture as stance
+        // cycle's pulse but tuned shorter (the window itself is short).
+        this.scene.tweens.add({
+          targets: [this.parryChipBg, this.parryChipText],
+          scale: 1.18,
+          duration: 90,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      } else if (visualState === 'cooldown') {
+        this.parryChipBg.setFillStyle(0x1a2030, 0.7);
+        this.parryChipBg.setStrokeStyle(1, 0x3a4050, 0.5);
+        this.parryChipText.setColor('#5a6878');
+        this.parryChipCooldownFill.setVisible(true);
+      } else {
+        // ready
+        this.parryChipBg.setFillStyle(0x2a3344, 0.85);
+        this.parryChipBg.setStrokeStyle(1, 0x4a5566, 0.6);
+        this.parryChipText.setColor('#9fcad9');
+        this.parryChipCooldownFill.setVisible(false);
+      }
+    }
+    if (visualState === 'cooldown') {
+      // Sweep grows from 0 → full width as the cooldown elapses.
+      // Caller gives `cooldownFraction` already in [0..1], 1 = ready.
+      const f = Math.max(0, Math.min(1, cooldownFraction));
+      this.parryChipCooldownFill.width = Math.round(f * PARRY_CHIP_PIXEL_WIDTH);
     }
   }
 

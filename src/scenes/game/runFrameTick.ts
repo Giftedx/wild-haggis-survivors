@@ -172,6 +172,19 @@ export function runFrameTick(scene: GameScene, delta: number): void {
       // when the posture isn't changing.
       const stance = scene.player.getStance();
       scene.hud.setStance(stance, t(`ui.hud.stance.${stance}`));
+      // Shinty Parry chip — three discrete visual states (ready /
+      // active / cooldown) wrapping `parryCooldownFraction`. Label
+      // is localised; cooldown sweep is driven inside the HUD setter
+      // by the same fraction read every frame.
+      const parryActive = scene.player.isShintyParryActive();
+      const parryReady = scene.player.isShintyParryReady();
+      const parryFrac = scene.player.shintyParryCooldownFraction();
+      const parryLabel = parryActive
+        ? t('ui.hud.parry.active')
+        : parryReady
+          ? t('ui.hud.parry.ready')
+          : t('ui.hud.parry.cooldown');
+      scene.hud.setShintyParry(parryActive, parryReady, parryFrac, parryLabel);
     },
   });
 }
