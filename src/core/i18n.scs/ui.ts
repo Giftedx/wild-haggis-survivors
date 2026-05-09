@@ -708,10 +708,16 @@ export const ui = {
     countdown_go: 'MON THEN!',
     gold_pickup_float: '+{gold}g',
     polaroid_pickup_float: 'Bonnie photo! +XP',
+    cairn_stone_nearby: 'A stane on tha path — leave ane fer tha next traveller.',
     elite_chain_double: 'Back-tae-back gowd elites! +{gold}g',
     elite_chain_triple: 'Elite hat-trick — tha moor pays! +{gold}g',
     moor_mercy_luck: 'Tha moor minds tha desperate — yer draws lean finer!',
     moor_mercy_luck_caption: 'Mercy luck — next level-up cairds favour rare finds.',
+  },
+  cairn: {
+    stack_toast: 'Stane laid on tha cairn ({count}/{cap}).',
+    boon_toast: 'Tha cairn stauns. Tha moor minds ye nou.',
+    boon_caption: 'Cairn\'s Blessin — fully mendit, tha moor draws tha gleanings closer.',
   },
   passive: {
     pause_short: {
@@ -1552,6 +1558,25 @@ export const ui = {
         d: 'Purple held its braith — then braithed fortune at ye.',
         e: 'Ridge wind threw ye a wee paircel.',
         f: 'Taps tilted — tha hill hud yer back tha day.',
+      },
+    },
+    // ── Cairn Stacking (DESIGN_IDEAS §1). SCS overlay for cairn_moment.
+    //    Pilgrim-warm hearth register, light Scots — `stane` for stone,
+    //    `cairn` retained, `nou/nae/wee` per Phase B conventions.
+    cairn_moment: {
+      generic: {
+        a: 'Stane added — wee weight, big quiet.',
+        b: 'A wee chuckie fer tha path.',
+      },
+      stack: {
+        a: 'Stane laid — moor minds wee things.',
+        b: 'Wee weight added. Cairn nods.',
+        c: 'A stane fer tha next walker — fair pay.',
+      },
+      boon: {
+        a: 'Tha cairn stauns. Tha moor minds ye nou.',
+        b: 'Three stanes, ane blessin — auld arithmetic.',
+        c: 'Pilgrim duin — tha glen pays its tithe.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.

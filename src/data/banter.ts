@@ -58,7 +58,10 @@ export type BanterContext =
   // B1 Phase 5 — seasonal-event banter. Fires when a seasonal window is
   // active (see SeasonalEventManager.activeSeasonalEvents). Sub-pool tags
   // mirror event keys: burns_night | hogmanay | samhain | beltane.
-  | 'seasonal_event';
+  | 'seasonal_event'
+  // DESIGN_IDEAS §1 Cairn Stacking — fires on stone collect (`stack`)
+  // and the third-stone Cairn's Blessing (`boon`). Pilgrim-warm register.
+  | 'cairn_moment';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1173,6 +1176,36 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       buckie_pitstop: [
         'ui.banter.route_picked.buckie_pitstop.a',
         'ui.banter.route_picked.buckie_pitstop.b',
+      ],
+    },
+  },
+  {
+    // Cairn Stacking (DESIGN_IDEAS §1) — fires on stone collect (tag
+    // `stack`) and on the third-stone boon (tag `boon`). Priority 32
+    // beats moor_moment (31) for the rare same-tick collision; cairn
+    // is rarer (3 fires/run) and collect is a player-action so the
+    // tick-priority lift is justified. Hearth-pilgrim register —
+    // ceremonial, no punch, the kind of small rite a Munro-walker
+    // performs without a thought. Two leaves per tag = the no-repeat
+    // ring still alternates within a single run.
+    context: 'cairn_moment',
+    tone: 'hearth',
+    priority: 32,
+    rare: true,
+    keys: [
+      'ui.banter.cairn_moment.generic.a',
+      'ui.banter.cairn_moment.generic.b',
+    ],
+    keysByTag: {
+      stack: [
+        'ui.banter.cairn_moment.stack.a',
+        'ui.banter.cairn_moment.stack.b',
+        'ui.banter.cairn_moment.stack.c',
+      ],
+      boon: [
+        'ui.banter.cairn_moment.boon.a',
+        'ui.banter.cairn_moment.boon.b',
+        'ui.banter.cairn_moment.boon.c',
       ],
     },
   },

@@ -1059,6 +1059,10 @@ export const ui = {
      *  the haggis "accepts being photographed" for a wee XP bonus.
      *  String is the float-text shown above the pickup at collect. */
     polaroid_pickup_float: 'Photogenic! +XP',
+    /** Cairn Stacking (DESIGN_IDEAS §1) — toast at stone-spawn time
+     *  pointing the player at a moor-bound stone they can stack into a
+     *  cairn. Hearth-warm, low-key — pilgrim-marker, not loot beacon. */
+    cairn_stone_nearby: 'A stone on the path — leave one for the next traveller.',
     /** Second gold elite within the chain window — see `BALANCE.enemy.eliteChain*`. */
     elite_chain_double: 'Back-to-back gold elites! +{gold}g',
     elite_chain_triple: 'Elite hat-trick — the moor pays! +{gold}g',
@@ -1069,6 +1073,20 @@ export const ui = {
     save_failed: 'The cairn won\'t take it — saving failed ({path}). Yer last steps may not stick.',
     /** T301 — surfaces the auto-picked route name when Skip Intermissions is on. */
     skip_route_picked: 'Moor chose for ye — {route}.',
+  },
+  /**
+   * Cairn Stacking (DESIGN_IDEAS §1) — three highland stones across a run;
+   * third stone fires the Cairn's Blessing (full heal + 8 s pickup-radius
+   * pulse). Voice: pilgrimage-warm, ceremonial, the kind of small rite a
+   * Munro-walker performs without a thought. Distinct register from the
+   * combat banter — no punch, all reverence.
+   */
+  cairn: {
+    /** Per-stone collect toast — shows {count}/{cap} so the player tracks progress. */
+    stack_toast: 'Stone laid on the cairn ({count}/{cap}).',
+    /** Third stone — the boon fires. Toast lands first, caption sits longer for ceremony. */
+    boon_toast: 'The cairn stands. The moor minds ye now.',
+    boon_caption: 'Cairn\'s Blessing — fully mended, the moor draws the gleanings closer.',
   },
   /**
    * Moor moments — timed hearth beats mid-run (caption + toast + small gift).
@@ -1987,6 +2005,27 @@ export const ui = {
         d: 'Purple held its breath — then breathed fortune at ye.',
         e: 'Ridge wind threw ye a wee parcel.',
         f: 'Tops tilted — the hill had yer back the day.',
+      },
+    },
+    // ── Cairn Stacking (DESIGN_IDEAS §1). Hearth, pilgrim-warm:
+    //    ceremonial register, no punch, the kind of small rite a Munro-
+    //    walker performs without a thought. Two sub-pools: `stack` per
+    //    individual stone collect, `boon` for the third-stone Cairn's
+    //    Blessing. Generic fallback covers the rare tagless request.
+    cairn_moment: {
+      generic: {
+        a: 'Stone added — wee weight, big quiet.',
+        b: 'A pebble for the path.',
+      },
+      stack: {
+        a: 'Stone laid — moor remembers small things.',
+        b: 'Wee weight added. Cairn nods.',
+        c: 'A stone fer the next walker — fair pay.',
+      },
+      boon: {
+        a: 'The cairn stands. The moor minds ye now.',
+        b: 'Three stones, one blessing — auld arithmetic.',
+        c: 'Pilgrim done — the glen pays its tithe.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder

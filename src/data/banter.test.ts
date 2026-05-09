@@ -43,6 +43,8 @@ describe('BANTER_POOLS structure', () => {
     'cailleach_whisper',
     // B1 Phase 5 — Seasonal event banter
     'seasonal_event',
+    // DESIGN_IDEAS §1 — Cairn Stacking pickup + boon
+    'cairn_moment',
   ];
 
   it('covers every BanterContext exactly once', () => {

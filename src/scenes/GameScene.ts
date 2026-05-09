@@ -80,6 +80,7 @@ import { FilmGrainOverlay } from './game/FilmGrainOverlay';
 import { IFrameController } from './game/IFrameController';
 import { RunEndTickers } from './game/RunEndTickers';
 import type { MoorMomentScheduler } from './game/MoorMomentScheduler';
+import { CairnStackingScheduler } from './game/CairnStackingScheduler';
 import { installRunBookkeeping } from './game/installRunBookkeeping';
 import {
   type MoorMomentsState,
@@ -417,6 +418,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   });
 
   private moorMoments!: MoorMomentScheduler;
+  private cairnStacking!: CairnStackingScheduler;
   floraScatter: FloraScatter | null = null;
   wildlifeSystem: WildlifeSystem | null = null;
   mistLayer: MistLayer | null = null;
@@ -1137,6 +1139,25 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onWeatherShutdown: () => { this.weather = null; },
       onHazardsShutdown: () => { this.hazards = null; },
     }));
+
+    // Cairn Stacking scheduler (DESIGN_IDEAS §1) — three highland-stone
+    // pickups across the run, third collect fires the Cairn's Blessing
+    // (full heal + 8 s magnet pulse). In-line ctor here (not in
+    // installRunBookkeeping) because the spawn hook needs `pickupSpawner`,
+    // which is built one block above.
+    this.cairnStacking = new CairnStackingScheduler({
+      getRunRng: () => this.runRng,
+      getPlayer: () => this.player,
+      getVictoryPending: () => this.runScore.victoryPending,
+      getJuice: () => this.juice,
+      getBanter: () => this.banter,
+      spawnCairnStone: (onCollect, onExpired) => {
+        this.pickupSpawner.spawnCairnStone(onCollect, onExpired);
+      },
+      caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+    });
+    this.cairnStacking.reset();
+
     // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.
     ({ levelUpFlow: this.levelUpFlow, runLifecycle: this.runLifecycle } = installRunFlow({
       scene: this,
@@ -1360,6 +1381,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       spawnSystem: this.spawnSystem,
       juice: this.juice,
       moorMoments: this.moorMoments,
+      cairnStacking: this.cairnStacking,
       getStandingStones: () => this.standingStones,
       getReliquary: () => this.reliquary,
       getReliquarySpawnSec: () => this.reliquarySpawnSec,

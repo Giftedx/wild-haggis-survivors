@@ -27,6 +27,7 @@ import type { EdgeIndicators } from '../../ui/EdgeIndicators';
 import type { Minimap } from '../../ui/Minimap';
 import type { ChestSpriteRegistry } from './ChestSpriteRegistry';
 import type { MoorMomentScheduler } from './MoorMomentScheduler';
+import type { CairnStackingScheduler } from './CairnStackingScheduler';
 import type { Reliquary } from './reliquary';
 import type { StandingStones } from './standingStones';
 import type { BossHpTracker } from './BossHpTracker';
@@ -69,6 +70,7 @@ export interface SecondTickHookContext {
   spawnSystem: SpawnSystem;
   juice: JuiceSystem;
   moorMoments: MoorMomentScheduler;
+  cairnStacking: CairnStackingScheduler;
   getStandingStones: () => StandingStones | null;
   getReliquary: () => Reliquary | null;
   getReliquarySpawnSec: () => number;
@@ -104,6 +106,7 @@ export function tickSecondCounter(
     wholeSecond: runSec,
   });
   ctx.moorMoments.tick(runSec);
+  ctx.cairnStacking.tick(runSec);
   if (runSec >= STONE_WARN_SEC && !ctx.getStonesWarned() && !ctx.getStandingStones()) {
     ctx.markStonesWarned();
     ctx.juice.showToast(t('ui.standingStones.warn_toast'), '#ffe080');

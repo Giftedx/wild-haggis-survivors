@@ -18,8 +18,8 @@ const SRC_ROOT = join(__dirname, '..');
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
-  ['scenes/GameScene.ts', 1692], // bumped 2026-05-09 (1680→1692) for nae_haste delayed Burns echo wiring (curse_start +9 s sub-pool surfaces "Nae man can tether time or tide"); current 1687 + 5 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
-  ['data/banter.ts', 2320], // bumped 2026-05-09 (2295→2320) for Glorious Twelfth 12-leaf seasonal_event sub-pool entry + comment header (E1 Glorious Twelfth 10th cohort event closing the cohort to 10/10); current 2313 + 7 grace; pure data, parity-fenced, kept whole
+  ['scenes/GameScene.ts', 1715], // bumped 2026-05-09 (1692→1715) for Cairn Stacking scheduler ctor + buildSecondTickHookContext field (DESIGN_IDEAS §1); current 1711 + 4 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
+  ['data/banter.ts', 2350], // bumped 2026-05-09 (2320→2350) for cairn_moment pool (DESIGN_IDEAS §1) — generic + stack + boon sub-pools; current 2347 + 3 grace; pure data, parity-fenced, kept whole
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)

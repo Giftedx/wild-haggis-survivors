@@ -27,6 +27,7 @@ import { TWEEN_INFINITE_BREATHE } from '../../utils/tweenPresets';
 import { pulsePickupGlow } from './pickupGlowPulse';
 import { TOAST_COLORS } from '../../ui/toastPalette';
 import { BURNS_PLATTER_TEXTURE_KEY } from '../../art/sprites/pickups/burnsPlatter';
+import { CAIRN_STONE_TEXTURE_KEY } from '../../art/sprites/pickups/cairnStone';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -456,6 +457,110 @@ export class PickupSpawner {
         targets: polaroid, alpha: 0, duration: 400,
         onComplete: () => {
           polaroid.destroy();
+          scene.physics.world.removeCollider(overlapColl);
+        },
+      });
+    });
+    this.hooks.pushDespawnHandle(despawnHandle);
+  }
+
+  /**
+   * Cairn Stacking pickup (DESIGN_IDEAS §1) — a single highland stone
+   * sitting on the moor for the haggis to add to a memory cairn. Each
+   * collected stone advances a per-run counter; on the third stone
+   * `CairnStackingScheduler` fires the Cairn's Blessing boon. The
+   * pickup itself is dumb — lifecycle + audio + bob + despawn — and
+   * the supplied `onCollect` callback owns the run-state mutation.
+   *
+   * Lifecycle mirrors `spawnPolaroid`: `pickNearbyPosition` for spawn
+   * site, scaled despawn ticker (15 s — slightly longer than polaroid
+   * because the stone reads as static landmark, not transient drop),
+   * physics overlap → `onCollect()` once. Glow is muted slate-blue
+   * to read as wild-palette ceremonial, distinct from the Hearth/Wild-
+   * Comedy pickup family.
+   */
+  spawnCairnStone(onCollect: () => void, onExpired?: () => void): void {
+    const scene = this.scene;
+    const player = this.hooks.getPlayer();
+    if (!scene.textures.exists(CAIRN_STONE_TEXTURE_KEY)) {
+      onExpired?.();
+      return;
+    }
+
+    const { x, y } = pickNearbyPosition({
+      playerX: player.x,
+      playerY: player.y,
+      worldWidth: GAME.WORLD_WIDTH,
+      worldHeight: GAME.WORLD_HEIGHT,
+      rand: Math.random,
+    });
+
+    this.hooks.getJuice().showToast(t('ui.game.cairn_stone_nearby'), '#a8b4b8');
+
+    const stone = scene.add.image(x, y, CAIRN_STONE_TEXTURE_KEY)
+      .setDepth(5)
+      .setScale(1.4);
+
+    const glow = scene.add.circle(x, y, 14, 0xa8b4b8, 0.18).setDepth(4);
+    pulsePickupGlow(scene, glow, 1.25, 1100);
+
+    scene.tweens.add({
+      targets: stone,
+      y: y - 1.5,
+      duration: 1100,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+
+    scene.physics.add.existing(stone, true);
+    let collected = false;
+    let despawnHandle: TickerHandle | null = null;
+
+    const overlapColl = scene.physics.add.overlap(player, stone, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+
+      onCollect();
+
+      const ring = scene.add.circle(x, y, 12, 0xa8b4b8, 0.7).setDepth(6);
+      scene.tweens.add({
+        targets: ring,
+        scale: 3.2,
+        alpha: 0,
+        duration: 380,
+        ease: 'Cubic.easeOut',
+        onComplete: () => ring.destroy(),
+      });
+
+      this.hooks.getSFXManager().tryPlay('cairn_stone', () => audio.playXPCollectImmediate());
+
+      scene.tweens.killTweensOf(stone);
+      scene.tweens.killTweensOf(glow);
+      scene.tweens.add({
+        targets: [stone, glow],
+        alpha: 0,
+        duration: 240,
+        onComplete: () => {
+          stone.destroy();
+          glow.destroy();
+        },
+      });
+      scene.physics.world.removeCollider(overlapColl);
+    });
+
+    despawnHandle = this.hooks.getUpdateTickers().addOnce('scaled', 15000, () => {
+      if (collected) return;
+      collected = true;
+      onExpired?.();
+      scene.tweens.killTweensOf(stone);
+      scene.tweens.killTweensOf(glow);
+      scene.tweens.add({
+        targets: [stone, glow],
+        alpha: 0,
+        duration: 500,
+        onComplete: () => {
+          stone.destroy();
+          glow.destroy();
           scene.physics.world.removeCollider(overlapColl);
         },
       });
