@@ -1073,6 +1073,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       const curseTag = this.activeCurseKey;
       this.time.delayedCall(1200, () => {
         this.banter?.request('curse_start', { tag: curseTag });
+        // Burns echo — "Nae man can tether time or tide" Tam-o'-Shanter
+        // couplet on the cursed-run slow window. Scheduled past the
+        // 8 s banter cooldown + a small grace so it lands on a quiet
+        // tick after curse_start has flushed.
+        this.time.delayedCall(9_000, () => {
+          this.banter?.request('burns_citation', { tag: 'nae_haste' });
+        });
       });
     }
     // B1 Phase 2 + E1 M2 T9/T10 — Gran's opening wink, Burns Night

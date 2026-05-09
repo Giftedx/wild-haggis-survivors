@@ -776,6 +776,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.gripFirstBurstPending = false;
         sceneCtx.caption?.('grip_burst', 'Drift mastered.', '#a8d4f0', 1800);
       }
+      // Burns echo — "Scots, wha hae wi' Wallace bled" Bannockburn
+      // charge couplet. Drift Mastery burst is the player's
+      // signature charge moment; the burns_citation pool's `charge`
+      // sub-pool surfaces here. Banter cooldown + no-repeat ring
+      // keep it sparse without scene-side gating.
+      sceneCtx.requestBanter?.('burns_citation', 'charge');
     }
 
     // Whisky Breath (DESIGN_IDEAS §1) — kill-stack mechanic. The

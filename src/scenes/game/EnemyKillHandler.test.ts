@@ -245,6 +245,38 @@ describe('EnemyKillHandler', () => {
     });
   });
 
+  describe('mouse_moment burns echo', () => {
+    it('fires burns_citation mouse_moment on a sheep kill', () => {
+      m.score.firstKillSeen = true; // isolate from first_blood
+      handler.handle(0, 0, 5, 'sheep', false);
+      expect(m.banter!.request).toHaveBeenCalledWith('burns_citation', { tag: 'mouse_moment' });
+    });
+
+    it('fires burns_citation mouse_moment on a midge kill', () => {
+      m.score.firstKillSeen = true;
+      handler.handle(0, 0, 5, 'midge', false);
+      expect(m.banter!.request).toHaveBeenCalledWith('burns_citation', { tag: 'mouse_moment' });
+    });
+
+    it('does not fire mouse_moment on a tourist kill', () => {
+      m.score.firstKillSeen = true;
+      handler.handle(0, 0, 5, 'tourist', false);
+      expect(m.banter!.request).not.toHaveBeenCalledWith(
+        'burns_citation',
+        expect.anything(),
+      );
+    });
+
+    it('does not fire mouse_moment for boss kills (sheep boss is hypothetical)', () => {
+      m.score.firstKillSeen = true;
+      handler.handle(0, 0, 5, 'sheep', true);
+      expect(m.banter!.request).not.toHaveBeenCalledWith(
+        'burns_citation',
+        expect.anything(),
+      );
+    });
+  });
+
   describe('elite chain', () => {
     it('second elite within window grants eliteChainGoldSecond', () => {
       handler.handle(0, 0, 5, 'ghost', false, true); // #1

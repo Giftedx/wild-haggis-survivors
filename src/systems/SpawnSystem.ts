@@ -491,6 +491,17 @@ export class SpawnSystem {
     // exists — Gordon, Taxman etc. each get their own warning voice.
     this.scene.requestBanter('boss_warn', boss.key);
 
+    // Burns echo — final-boss approach overlay. "Now's the day, and now's
+    // the hour" / "Kings may be blest, but Tam was glorious" couplets in
+    // the burns_citation.victory_open sub-pool. Scheduled past the 8 s
+    // banter cooldown + a small grace so it lands on a quiet tick after
+    // boss_warn (priority 100) has flushed.
+    if (boss.key === 'taxman') {
+      this.scene.time.delayedCall(9_000, () => {
+        this.scene.requestBanter('burns_citation', 'victory_open');
+      });
+    }
+
     // The actual spawn work — captured so we can defer it if physics is
     // paused (e.g. level-up modal open) when the 1500ms warning finishes.
     const doSpawn = () => {

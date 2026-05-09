@@ -250,6 +250,14 @@ export class EnemyKillHandler {
       if (combo === 20 || combo === 75 || combo === 150) {
         banter?.request('kill_streak', { tag: h.getActiveVariantKey() });
       }
+      // Burns echo — "Wee, sleekit, cow'rin, tim'rous beastie" / "best-laid
+      // schemes o' mice an' men gang aft a-gley". Fires the mouse_moment
+      // sub-pool inside burns_citation when a small-flee enemy dies. Beats
+      // kill_streak (43 > 40) on the rare same-tick collision; the
+      // round-robin ring keeps the two authored couplets fresh.
+      if (enemyKey === 'sheep' || enemyKey === 'midge') {
+        banter?.request('burns_citation', { tag: 'mouse_moment' });
+      }
     }
 
     // Lifesteal heal on kill. clootie_rag (R1 M4) doubles this for

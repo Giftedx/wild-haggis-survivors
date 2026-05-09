@@ -1452,22 +1452,26 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     // quieter moments. Still beats enemy_ambient (41) / kill_streak
     // (40) / moor_moment (31) same-tick.
     //
-    // Trigger wiring deferred per plan Task 6 pattern — content ships
-    // now so the voice is authored before wires decide which surfaces
-    // earn a Burns moment. Seasonal Burns-Night firing lands with
-    // Phase 5 (coordinated with E1).
+    // Trigger wiring lives at each call site — eight of nine sub-pools
+    // are now wired (2026-05-09). Original Phase 5 deferral removed.
     //
     // Tag register per spec §3: context-justified, never random. Tags
     // map to the trigger surface each sub-pool is authored against:
-    //   haggis_moment   → haggis_hurler evolution + haggis moor tags
-    //   mouse_moment    → sheep / midge / small-flee enemy moments
-    //   loch_moment     → loch-biome moor_moment
-    //   highland_moment → heather / pine biome moor_moment
-    //   victory_open    → final-boss approach + victory fade-in
-    //   defeat_lament   → death_reflection Burns variant
-    //   charge          → act-intermission "press on" route picks
-    //   nae_haste       → curse_start or post-Bell slow window
-    //   lineage_moment  → ancestral echo touch / variant unlock
+    //   haggis_moment   → ✅ runeSystemController.ts (rune-pulse burst)
+    //   mouse_moment    → ✅ EnemyKillHandler.handle (sheep / midge kill)
+    //   loch_moment     → ✅ MoorMomentScheduler (loch biome)
+    //   highland_moment → ✅ MoorMomentScheduler (heather / pine biome)
+    //   victory_open    → ✅ SpawnSystem.spawnBoss (taxman warn + 9 s)
+    //   defeat_lament   → ⏸ DEFERRED. death_reflection (priority 75) wins
+    //                       same-tick arbitration over burns_citation (43)
+    //                       on player death; GameOverScene has no banter
+    //                       sink wired today. Reserved for the post-mortem
+    //                       pane wire-up (paired with Gran's defeat sub-
+    //                       pool, also currently deferred). Two couplets
+    //                       authored ("Ae fond kiss"; "wan moon setting").
+    //   charge          → ✅ Player.tickDriftMastery (burst consume edge)
+    //   nae_haste       → ✅ GameScene curse_start delayed echo (+9 s)
+    //   lineage_moment  → ✅ moorMoments.ts (ancestral echo / variant unlock)
     context: 'burns_citation',
     tone: 'hearth',
     priority: 43,
