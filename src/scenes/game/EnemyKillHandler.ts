@@ -103,6 +103,18 @@ export interface EnemyKillHandlerHooks {
   onTouristPhotographed?(x: number, y: number): void;
 
   /**
+   * Called when a `haggis_hunter` enemy dies — the cataloguer drops
+   * a Foundation field-note (DESIGN_IDEAS §11 wild-haggis-myth
+   * tribute). Sister-hook to `onTouristPhotographed`: same 1/6 roll
+   * shape, same XP bonus on collect, but a *different faction* —
+   * tourists snap photos, hunters write notebooks. GameScene wires
+   * this to `PickupSpawner.spawnFieldNote`. Optional so non-
+   * production tests don't need the full pickup wiring; rate is a
+   * fixed roll inside the handler so balance lives in one place.
+   */
+  onHunterFieldNote?(x: number, y: number): void;
+
+  /**
    * Called after every elite non-boss kill. R1 M2 T13: GameScene wires
    * this to a RelicSystem drop-roll + RelicPickup spawn at (x, y).
    * Fires regardless of whether a Relic actually drops — the roll
@@ -338,6 +350,18 @@ export class EnemyKillHandler {
     // sequence, keeping ADR-0002 Phase 3 determinism intact.
     if (enemyKey === 'tourist' && rng.bool(1 / 6)) {
       h.onTouristPhotographed?.(x, y);
+    }
+
+    // Haggis-hunter Foundation field-note drop (DESIGN_IDEAS §11).
+    // Mirrors the tourist polaroid path one-for-one: 1-in-6 seeded
+    // roll, replay-deterministic. Sister-prop, different faction —
+    // tourists drop polaroids, hunters drop notebook pages. The roll
+    // is sequenced AFTER the tourist roll so the rng-stream order is
+    // {health orb → gold coin → tourist polaroid → hunter field
+    // note}; existing tourist tests stay byte-identical because the
+    // hunter branch never runs on a `tourist` kill.
+    if (enemyKey === 'haggis_hunter' && rng.bool(1 / 6)) {
+      h.onHunterFieldNote?.(x, y);
     }
 
     if (wasBoss) {

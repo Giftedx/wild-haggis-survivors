@@ -140,6 +140,7 @@ export function installRuntimeAmbient(
       opts.getFloatTextPool().acquire(x, y, str, color, fs, d),
     modifyHealOrbAmount: (a) => opts.getRelicEffectDriver().modifyHealOnOrb(a),
     onBurnsPlatterCollect: () => opts.getRuneSystemController().onBurnsPlatterCollect(),
+    onFieldNoteCollect: () => opts.getBanter()?.request('field_note_pickup'),
   });
 
   return { weather, hazards, gameTickers, pickupSpawner };

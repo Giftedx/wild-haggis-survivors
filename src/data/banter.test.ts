@@ -57,6 +57,8 @@ describe('BANTER_POOLS structure', () => {
     'lemmings_remember',
     // DESIGN_IDEAS §1 — Race the Beithir venom-sting race window
     'beithir_sting',
+    // DESIGN_IDEAS §11 — Haggis Wildlife Foundation field-note pickup
+    'field_note_pickup',
   ];
 
   it('covers every BanterContext exactly once', () => {

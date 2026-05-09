@@ -95,7 +95,20 @@ export type BanterContext =
   // the pool contract — same pattern as taxman_grudge's `even` leaves.
   // Priority 90 wins over `low_hp` (80) since the race is structurally
   // a "you might die in 8 s" beat, but loses to `boss_warn` (100).
-  | 'beithir_sting';
+  | 'beithir_sting'
+  // DESIGN_IDEAS §11 wild-haggis-myth — Haggis Wildlife Foundation
+  // field-note pickup. Fires on collect of a `pickup_field_note`
+  // dropped by a haggis_hunter kill (1/6 roll, mirrors polaroid).
+  // Sister-context to the polaroid drop — the polaroid is the
+  // *tourist's* faction (no banter pool, just the float text), the
+  // field-note is the *Foundation's* faction (banter line on every
+  // collect). Hearth tone — the haggis reads a fragment of the
+  // absurd-serious naturalist prose from the page he just picked up
+  // and reacts in his own voice. Priority 44 sits one rung below
+  // reliquary_pick (45) since reliquary is rarer (once-per-run
+  // landmark) and one rung above burns_citation (43) since the field
+  // note is a held-in-the-paw artefact, not an ambient lyric.
+  | 'field_note_pickup';
 
 export interface BanterPool {
   context: BanterContext;
@@ -2157,6 +2170,40 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.reliquary_pick.b',
       'ui.banter.reliquary_pick.c',
       'ui.banter.reliquary_pick.d',
+    ],
+  },
+  {
+    // Haggis Wildlife Foundation field-note pickup (DESIGN_IDEAS §11
+    // wild-haggis-myth). Fires on collect of a `pickup_field_note`
+    // dropped by a haggis_hunter kill — the cataloguer dropped a
+    // notebook page on death and the haggis lifts it on the moor.
+    // Hearth tone: the *page* speaks in absurd-naturalist Foundation
+    // prose (Latin binomials, footnotes, terrain notes), but the
+    // *line* is the haggis reading a fragment and reacting in his
+    // own voice. Six leaves on the no-repeat ring give variety
+    // across a long run where multiple hunters fall.
+    //
+    // Priority 44 sits between burns_citation (43) and reliquary_pick
+    // (45). Below reliquary because reliquary is once-per-run; above
+    // burns_citation because the field note is a held-in-the-paw
+    // artefact rather than an ambient lyric — the player just walked
+    // over to it and lifted it, the moment deserves a beat.
+    //
+    // `rare: true` — the drop itself is gated 1/6 on a sometimes-
+    // spawning enemy, so the Almanac surfaces these lines as
+    // collectibles alongside reliquary_pick / burns_citation /
+    // first_time / cailleach_whisper.
+    context: 'field_note_pickup',
+    tone: 'hearth',
+    priority: 44,
+    rare: true,
+    keys: [
+      'ui.banter.field_note_pickup.a',
+      'ui.banter.field_note_pickup.b',
+      'ui.banter.field_note_pickup.c',
+      'ui.banter.field_note_pickup.d',
+      'ui.banter.field_note_pickup.e',
+      'ui.banter.field_note_pickup.f',
     ],
   },
   // ── B1 Phase 4 Task 21 — Cailleach whispers.

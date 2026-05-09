@@ -28,6 +28,7 @@ import { pulsePickupGlow } from './pickupGlowPulse';
 import { TOAST_COLORS } from '../../ui/toastPalette';
 import { BURNS_PLATTER_TEXTURE_KEY } from '../../art/sprites/pickups/burnsPlatter';
 import { CAIRN_STONE_TEXTURE_KEY } from '../../art/sprites/pickups/cairnStone';
+import { FIELD_NOTE_TEXTURE_KEY } from '../../art/sprites/pickups/fieldNote';
 
 export interface PickupSpawnerHooks {
   getPlayer(): Player;
@@ -58,6 +59,16 @@ export interface PickupSpawnerHooks {
    * a reference.
    */
   onBurnsPlatterCollect?(): void;
+  /**
+   * DESIGN_IDEAS §11 wild-haggis-myth — Haggis Wildlife Foundation
+   * field-note pickup. Called on collision with a `pickup_field_note`
+   * dropped by a haggis_hunter kill (1/6 roll, mirrors polaroid).
+   * GameScene owns the banter request (`field_note_pickup` pool, rare
+   * naturalist-voice line) so the spawner stays Phaser-only and the
+   * banter fires through the same path as reliquary_pick. Optional so
+   * non-production tests don't need the full wiring.
+   */
+  onFieldNoteCollect?(): void;
 }
 
 export class PickupSpawner {
@@ -457,6 +468,116 @@ export class PickupSpawner {
         targets: polaroid, alpha: 0, duration: 400,
         onComplete: () => {
           polaroid.destroy();
+          scene.physics.world.removeCollider(overlapColl);
+        },
+      });
+    });
+    this.hooks.pushDespawnHandle(despawnHandle);
+  }
+
+  /**
+   * Haggis Wildlife Foundation field-note pickup (DESIGN_IDEAS §11
+   * wild-haggis-myth tribute). Dropped on a haggis_hunter enemy kill;
+   * the haggis "accepts being catalogued" for a small XP bonus + a
+   * naturalist-voice banter line. Sister-prop to the tourist Polaroid
+   * — the polaroid is the *tourist* faction's drop, the field-note is
+   * the *Foundation* faction's drop. Same lifecycle, different voice.
+   *
+   * Lifecycle mirrors `spawnPolaroid` exactly: physics overlap, scaled
+   * despawn ticker (12 s), audio sting on collect, gentle vertical bob
+   * via TWEEN_INFINITE_BREATHE, off-axis tilt to sell the "page
+   * dropped on the moor" pose. The XP bonus matches polaroid (8 XP)
+   * so the two pickups feel mechanically equivalent — only the voice
+   * differs. On collect the `onFieldNoteCollect` hook fires so the
+   * caller (GameScene) can dispatch the `field_note_pickup` banter
+   * request from a single owner.
+   *
+   * The off-axis tilt range is wider than the polaroid's
+   * (0.35 vs 0.25 rad) — paper crumples and folds at sharper angles
+   * than a stiff polaroid, so the prop reads as a *folded fieldwork
+   * page* rather than a *stiff snapshot*.
+   */
+  spawnFieldNote(x: number, y: number): void {
+    const scene = this.scene;
+    const player = this.hooks.getPlayer();
+    if (!scene.textures.exists(FIELD_NOTE_TEXTURE_KEY)) return; // BootScene-skipped test stubs.
+
+    const fieldNote = scene.add.image(x, y, FIELD_NOTE_TEXTURE_KEY)
+      .setDepth(5)
+      // Slightly wider tilt than the polaroid — paper folds at
+      // sharper angles than stiff card, sells the "fieldworker
+      // dropped a notebook page" silhouette without animation cost.
+      .setRotation((Math.random() - 0.5) * 0.35);
+
+    // Gentle vertical bob — same shape as polaroid / health-orb /
+    // gold-coin breathing so the world reads consistent.
+    scene.tweens.add({
+      targets: fieldNote,
+      y: y - 2,
+      duration: 700,
+      ...TWEEN_INFINITE_BREATHE,
+    });
+
+    scene.physics.add.existing(fieldNote, true);
+    let collected = false;
+    let despawnHandle: TickerHandle | null = null;
+
+    /** XP awarded on collect — matches polaroid for mechanical
+     *  equivalence. The flavour difference lives in the banter pool,
+     *  not the gem amount. */
+    const FIELD_NOTE_XP_BONUS = 8;
+
+    const overlapColl = scene.physics.add.overlap(player, fieldNote, () => {
+      if (collected) return;
+      collected = true;
+      despawnHandle?.cancel();
+
+      this.hooks.getXPSystem().spawnGem(fieldNote.x, fieldNote.y, FIELD_NOTE_XP_BONUS);
+
+      // Float text — moss-green tint matching the field-note's
+      // specimen-tag cord so the readout connects visually to its
+      // source. Distinct from the polaroid's cream-warm float so
+      // the player can read which faction just paid out.
+      const txt = this.hooks.acquireFloatText(
+        fieldNote.x, fieldNote.y - 14,
+        t('ui.game.field_note_pickup_float'),
+        '#8aae6a', '13px', 80,
+      );
+      if (txt) {
+        scene.tweens.add({
+          targets: txt, y: txt.y - 18, alpha: 0, duration: 700,
+          onComplete: () => txt.setVisible(false),
+        });
+      }
+
+      // Ink-bloom poof — a tiny tan-ink ring that scales out + fades
+      // in 220 ms. Diegetic: the cataloguer's ink stamp captured one
+      // beat late. Distinct from the polaroid's white camera-flash
+      // so the two pickup feedbacks read as two voices, not one.
+      const flash = scene.add.circle(fieldNote.x, fieldNote.y, 10, 0xb8a574, 0.7)
+        .setDepth(6);
+      scene.tweens.add({
+        targets: flash,
+        scale: 2.4, alpha: 0,
+        duration: 220,
+        ease: 'Cubic.easeOut',
+        onComplete: () => flash.destroy(),
+      });
+
+      this.hooks.getSFXManager().tryPlay('xp_pickup', () => audio.playXPCollectImmediate());
+      this.hooks.onFieldNoteCollect?.();
+      fieldNote.destroy();
+      scene.physics.world.removeCollider(overlapColl);
+    });
+
+    // 12 s despawn — same as polaroid / gold coin.
+    despawnHandle = this.hooks.getUpdateTickers().addOnce('scaled', 12000, () => {
+      if (collected) return;
+      collected = true;
+      scene.tweens.add({
+        targets: fieldNote, alpha: 0, duration: 400,
+        onComplete: () => {
+          fieldNote.destroy();
           scene.physics.world.removeCollider(overlapColl);
         },
       });

@@ -107,6 +107,7 @@ export interface InstallCombatCollisionsOpts {
   onTotemFall: (x: number, y: number) => void;
   onHaarDispel: (x: number, y: number) => void;
   onTouristPhotographed: (x: number, y: number) => void;
+  onHunterFieldNote: (x: number, y: number) => void;
   onEliteKilled: (x: number, y: number) => void;
   onBossKilled: (bossKey: string, x: number, y: number) => void;
   bumpBossKillCount: (bossKey: string) => void;
@@ -150,6 +151,7 @@ export function installCombatCollisions(
     onTotemFall: opts.onTotemFall,
     onHaarDispel: opts.onHaarDispel,
     onTouristPhotographed: opts.onTouristPhotographed,
+    onHunterFieldNote: opts.onHunterFieldNote,
     onEliteKilled: opts.onEliteKilled,
     onBossKilled: (bossKey, x, y) => {
       opts.bumpBossKillCount(bossKey);

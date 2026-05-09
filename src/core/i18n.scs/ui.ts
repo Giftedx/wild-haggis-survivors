@@ -758,6 +758,7 @@ export const ui = {
     countdown_go: 'MON THEN!',
     gold_pickup_float: '+{gold}g',
     polaroid_pickup_float: 'Bonnie photo! +XP',
+    field_note_pickup_float: 'Catalogued! +XP',
     cairn_stone_nearby: 'A stane on tha path — leave ane fer tha next traveller.',
     elite_chain_double: 'Back-tae-back gowd elites! +{gold}g',
     elite_chain_triple: 'Elite hat-trick — tha moor pays! +{gold}g',
@@ -2027,6 +2028,21 @@ export const ui = {
       b: 'Tha relic\'s been waitin on ye.',
       c: 'Aye — tha hum hud yer name on it.',
       d: 'Aff-path pays, noo an again.',
+    },
+    /** SCS overlay for ui.banter.field_note_pickup.* — Haggis Wildlife
+     *  Foundation field-note pickup (DESIGN_IDEAS §11). Six leaves;
+     *  hearth tone. The Foundation's quoted prose stays in English (a
+     *  cataloguer's pen, the joke is the page is *officious* English
+     *  while the haggis answers in Scots) — only the haggis's reply
+     *  shifts to Scots register. The Latin binomial stays Latin: it's
+     *  a binomial, not English. */
+    field_note_pickup: {
+      a: 'Field note: "subject drifts clockwise." Aye, dae I noo.',
+      b: 'Latin name says A\'m magnificent. A\'ll tak it.',
+      c: 'Tha Foundation\'s ink, dryin on tha moor.',
+      d: '"Haggis scoticus dextrogyrus." Means tha wee richt-leanin yin.',
+      e: 'They\'ve meisured ma legs. Tha wee man\'s pencil broke.',
+      f: 'Footnote — "unfit for shores below 53°N." Aye, that\'s truth.',
     },
     // ── Haggis inner monologue (B1 Phase 2 Task 10). SCS pair for
     //    ui.banter.haggis_ambient.*. Scots conventions: tha/fae/aye/

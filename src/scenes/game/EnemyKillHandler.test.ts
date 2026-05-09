@@ -49,6 +49,7 @@ type HookMocks = {
   onTotemFall: ReturnType<typeof vi.fn>;
   onHaarDispel: ReturnType<typeof vi.fn>;
   onTouristPhotographed: ReturnType<typeof vi.fn>;
+  onHunterFieldNote: ReturnType<typeof vi.fn>;
   onEliteKilled: ReturnType<typeof vi.fn>;
   onBossKilled: ReturnType<typeof vi.fn>;
   tryCairnStoneMagnet: ReturnType<typeof vi.fn>;
@@ -105,6 +106,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
   const onTotemFall = vi.fn<(x: number, y: number) => void>();
   const onHaarDispel = vi.fn<(x: number, y: number) => void>();
   const onTouristPhotographed = vi.fn<(x: number, y: number) => void>();
+  const onHunterFieldNote = vi.fn<(x: number, y: number) => void>();
   const onEliteKilled = vi.fn<(x: number, y: number) => void>();
   const onBossKilled = vi.fn<(bossKey: string, x: number, y: number) => void>();
   const tryCairnStoneMagnet = vi.fn<(x: number, y: number) => void>();
@@ -127,6 +129,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onTotemFall,
     onHaarDispel,
     onTouristPhotographed,
+    onHunterFieldNote,
     onEliteKilled,
     onBossKilled,
     tryCairnStoneMagnet,
@@ -150,6 +153,7 @@ function buildHooks(overrides: { withBanter?: boolean } = {}): HookMocks {
     onTotemFall,
     onHaarDispel,
     onTouristPhotographed,
+    onHunterFieldNote,
     onEliteKilled,
     onBossKilled,
     tryCairnStoneMagnet,
@@ -652,6 +656,37 @@ describe('EnemyKillHandler', () => {
       handler.handle(10, 20, 5, 'sheep', false);
       handler.handle(30, 40, 5, 'haggis_hunter', false);
       expect(m.onTouristPhotographed).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Haggis-hunter Foundation field-note drop (DESIGN_IDEAS §11)', () => {
+    it('fires onHunterFieldNote at kill coords when the rng roll succeeds', () => {
+      // Kill cascade calls rng.bool four times in fixed order on a
+      // haggis_hunter kill: health orb, gold coin, tourist polaroid
+      // (skipped — wrong key), hunter field note. Mock false / false
+      // / false / true so only the field note lands. The tourist
+      // polaroid roll IS consumed (the if-condition tests `enemyKey
+      // === 'tourist'` first and short-circuits before the rng call,
+      // so on a hunter kill only three rolls fire: orb, coin, note).
+      m.rng.bool
+        .mockReturnValueOnce(false) // health orb
+        .mockReturnValueOnce(false) // gold coin
+        .mockReturnValueOnce(true); // hunter field note
+      handler.handle(75, 175, 4, 'haggis_hunter', false);
+      expect(m.onHunterFieldNote).toHaveBeenCalledExactlyOnceWith(75, 175);
+    });
+
+    it('does NOT fire when the rng roll fails', () => {
+      // Default mock returns false everywhere.
+      handler.handle(10, 20, 4, 'haggis_hunter', false);
+      expect(m.onHunterFieldNote).not.toHaveBeenCalled();
+    });
+
+    it('does NOT fire for non-hunter enemies even with a successful roll', () => {
+      m.rng.bool.mockImplementation(() => true);
+      handler.handle(10, 20, 5, 'sheep', false);
+      handler.handle(30, 40, 5, 'tourist', false);
+      expect(m.onHunterFieldNote).not.toHaveBeenCalled();
     });
   });
 });

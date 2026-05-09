@@ -1142,6 +1142,14 @@ export const ui = {
      *  the haggis "accepts being photographed" for a wee XP bonus.
      *  String is the float-text shown above the pickup at collect. */
     polaroid_pickup_float: 'Photogenic! +XP',
+    /** Field-note pickup (DESIGN_IDEAS §11) — haggis_hunter drops a
+     *  Foundation notebook page; the haggis "accepts being catalogued"
+     *  for a wee XP bonus. Sister-string to polaroid_pickup_float;
+     *  voiced as the page's tag-line rather than the page's prose
+     *  (the naturalist-voice quotes live in the banter pool, not on
+     *  the float). Moss-green tint to match the specimen-tag cord
+     *  on the sprite. */
+    field_note_pickup_float: 'Catalogued! +XP',
     /** Cairn Stacking (DESIGN_IDEAS §1) — toast at stone-spawn time
      *  pointing the player at a moor-bound stone they can stack into a
      *  cairn. Hearth-warm, low-key — pilgrim-marker, not loot beacon. */
@@ -2540,6 +2548,26 @@ export const ui = {
       b: 'That relic\'s been waitin\' on ye.',
       c: 'Aye — the hum had yer name on it.',
       d: 'Off-path pays, noo and again.',
+    },
+    /** Haggis Wildlife Foundation field-note pickup (DESIGN_IDEAS §11
+     *  wild-haggis-myth). Fires on collect of a `pickup_field_note`
+     *  dropped by a haggis_hunter. Voice tint: the page itself is in
+     *  absurd-naturalist Foundation prose (Latin binomials, terrain
+     *  footnotes, leg-asymmetry inventories); the haggis reads a
+     *  fragment and reacts in his own voice. Six leaves on the no-
+     *  repeat ring; hearth-warm, with the Foundation's footnotes
+     *  carried as quoted snippets ("subject drifts clockwise" /
+     *  "Haggis scoticus dextrogyrus" / "unfit for shores below 53°N").
+     *  Pairs with the polaroid float text — tourists drop photos,
+     *  hunters drop notebooks; the two factions read as kindred but
+     *  voiced apart. */
+    field_note_pickup: {
+      a: 'Field note: "subject drifts clockwise." Aye, dae I noo.',
+      b: 'Latin name says I\'m magnificent. I\'ll take it.',
+      c: 'The Foundation\'s ink, dryin\' on the moor.',
+      d: '"Haggis scoticus dextrogyrus." Means the wee right-leanin\' wan.',
+      e: 'They\'ve measured ma legs. The wee man\'s pencil broke.',
+      f: 'Footnote — "unfit for shores below 53°N." Aye, that\'s truth.',
     },
     // ── Haggis inner monologue (B1 Phase 2 Task 10). Hearth,
     //    wee-beastie simple — peaceful sensory notes, food daydreams,
