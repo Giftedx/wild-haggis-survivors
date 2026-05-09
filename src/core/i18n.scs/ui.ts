@@ -459,6 +459,9 @@ export const ui = {
   tartanDay: {
     blessing_toast: 'Tartan Day. Diaspora reach. +14 HP, ilka pickup pous a touch farer.',
   },
+  simmerDim: {
+    blessing_toast: 'Simmer Dim. Held twilicht. +12 HP, tha strike lands hairder whan it lands.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -2607,6 +2610,25 @@ export const ui = {
         j: 'Sixt Aprile thirteen-twenty. Tha Declaration. Tha muir minds it yet.',
         k: 'Cousins in Otago, Manitoba, Glesga. Same bluid; same muir-pou.',
         l: 'Walk wide. Tha claith reaches as faur as tha hairt wills.',
+      },
+      // SCS overlay of EN simmer_dim leaves (2026-05-09). Shetlandic /
+      // Orcadian phrase fer tha perpetual twilicht o Scottish midsummer
+      // at heich latitudes. SCS register stays general Scots (nae
+      // Shetlandic-specific) — Peerie Shetlander variant carries tha
+      // dedicated Shetlandic content. 12 leaves — lifts cohort tae 12/12.
+      simmer_dim: {
+        a: 'Simmer dim. Tha nicht niver quite comes.',
+        b: 'Solstice held tha licht. Tha muir steys hauf-lit.',
+        c: 'Twilicht hauds. Tha hares dinnae gang in.',
+        d: 'Mind tha fey rings tha nicht — midsummer fae walk soft.',
+        e: 'Tha Shetlanders ken — north o sixty, tha mirk forgets tae come.',
+        f: 'Held licht. Held braith. Tha muir minds tha langest day.',
+        g: 'Solstice quait. Tha strike, whan it lands, lands hairder.',
+        h: 'Twenty-first o Juin. Tha sun barely set. Walk wide.',
+        i: 'Gloamin fer days. Tha breckan keeps watch.',
+        j: 'Midsummer\'s e\'en — tha auld fowk left tha hairth burnin laich.',
+        k: 'Held twilicht. Tha crit lands like tha sun bid lang.',
+        l: 'Tha muir disnae darken. Tha haggis keeps movin.',
       },
     },
   },

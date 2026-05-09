@@ -377,6 +377,38 @@ describe('E1 Glorious Twelfth — grouse season opening', () => {
   });
 });
 
+describe('E1 Simmer Dim — held twilight at the solstice', () => {
+  it('is active on the solstice itself (Jun 21)', () => {
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 6, 21))).toBe(true);
+  });
+
+  it('is active on the window edges (Jun 18 + Jun 21)', () => {
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 6, 18))).toBe(true);
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 6, 21))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 6, 17))).toBe(false);
+    // Jun 22 is Bannockburn's first day, not Simmer Dim's.
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 6, 22))).toBe(false);
+  });
+
+  it('is inactive in midwinter', () => {
+    expect(isSeasonalEventActive('simmer_dim', d(2027, 1, 15))).toBe(false);
+  });
+
+  it('does not overlap Bannockburn (the disjoint solstice / battlefield split holds)', () => {
+    // Jun 21 — only Simmer Dim, Bannockburn opens tomorrow.
+    const solsticeKeys = activeSeasonalEvents(d(2027, 6, 21));
+    expect(solsticeKeys).toContain('simmer_dim');
+    expect(solsticeKeys).not.toContain('bannockburn');
+    // Jun 22 — only Bannockburn, Simmer Dim has just closed.
+    const bannockburnKeys = activeSeasonalEvents(d(2027, 6, 22));
+    expect(bannockburnKeys).toContain('bannockburn');
+    expect(bannockburnKeys).not.toContain('simmer_dim');
+  });
+});
+
 describe('E1 Tartan Day — diaspora + Declaration of Arbroath', () => {
   it('is active on the named day (Apr 6)', () => {
     expect(isSeasonalEventActive('tartan_day', d(2027, 4, 6))).toBe(true);

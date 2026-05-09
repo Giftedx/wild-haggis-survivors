@@ -172,6 +172,26 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.bracken_turn.description',
     dateWindow: { startMonth: 11, startDay: 4, endMonth: 11, endDay: 26 },
   },
+  // Simmer Dim — Shetlandic / Orcadian phrase for the perpetual
+  // twilight of Scottish midsummer at high latitudes. North of 60°N
+  // the sun barely sets between mid-June and early July; the night
+  // never fully darkens, the gloaming holds. The phenomenon peaks
+  // at the summer solstice (21 June). Window Jun 18–21 (4 days,
+  // anchored on the solstice with a 3-day lead-in) — narrowed past
+  // the typical 5-day single-anniversary band to dodge Bannockburn
+  // (Jun 22–25), which sits the day after the solstice. Cultural
+  // framing: hush, not festival. The simmer dim is a quiet
+  // phenomenon — the moor doesn't go dark, the hares stay out, the
+  // light waits at the horizon. Banter rides the held-light, the
+  // solstice quiet, and the fey-ring caution that midsummer carries
+  // across Scottish folklore. SCOTTISH_RESEARCH_DEEP §22.6
+  // (solstice / simmer dim).
+  simmer_dim: {
+    key: 'simmer_dim',
+    nameKey: 'seasonalEvent.simmer_dim.name',
+    descriptionKey: 'seasonalEvent.simmer_dim.description',
+    dateWindow: { startMonth: 6, startDay: 18, endMonth: 6, endDay: 21 },
+  },
   // Tartan Day (Apr 6) — North-American diaspora's national-Scottish
   // holiday, the date of the Declaration of Arbroath signing in 1320.
   // Window Apr 4–8 (5 days) — wider than the single-anniversary

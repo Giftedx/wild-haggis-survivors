@@ -17,6 +17,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraLifesteal: 0,
     extraAoeMultiplier: 0,
     extraPickupRadius: 0,
+    extraCritDamageMultiplier: 0,
   };
 }
 
@@ -182,6 +183,35 @@ describe('buildSeasonalRunStartPlan', () => {
       },
     });
   });
+
+  it('applies the Simmer Dim crit-damage bonus + solstice heal', () => {
+    const modifiers = defaultModifiers();
+    const plan = buildSeasonalRunStartPlan({
+      resumeRun: false,
+      disableSeasonalEvents: false,
+      // June 21, 2027 — solstice peak.
+      now: new Date(2027, 5, 21),
+      runRng: { pick: vi.fn() } as unknown as RNG,
+      runModifiers: modifiers,
+    });
+
+    expect(modifiers).toEqual(defaultModifiers());
+    expect(plan).toMatchObject({
+      seasonalEventKey: 'simmer_dim',
+      extraStartingHpHeal: 12,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0.25,
+      toast: {
+        key: 'ui.simmerDim.blessing_toast',
+        color: '#9080c0',
+        delayMs: 1500,
+      },
+    });
+  });
 });
 
 describe('applySeasonalRunStartPostSpawn', () => {
@@ -196,6 +226,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -205,6 +236,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -226,6 +258,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraLifesteal: 0.5,
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -235,6 +268,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -256,6 +290,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraLifesteal: 0,
       extraAoeMultiplier: 0.10,
       extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -265,6 +300,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -286,6 +322,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
       extraPickupRadius: 20,
+      extraCritDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -295,6 +332,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -302,6 +340,38 @@ describe('applySeasonalRunStartPostSpawn', () => {
       'heal:14',
       'pickup:20',
       'toast:1500:ui.tartanDay.blessing_toast:#b04050',
+    ]);
+  });
+
+  it('applies crit-damage bonus on a simmer_dim plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'simmer_dim',
+      toast: { key: 'ui.simmerDim.blessing_toast', color: '#9080c0', delayMs: 1500 },
+      extraStartingHpHeal: 12,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0.25,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:12',
+      'critDmg:0.25',
+      'toast:1500:ui.simmerDim.blessing_toast:#9080c0',
     ]);
   });
 
@@ -313,6 +383,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addLifesteal: vi.fn(),
       addAoeMultiplier: vi.fn(),
       addPickupRadius: vi.fn(),
+      addCritDamageMultiplier: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -324,6 +395,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.addLifesteal).not.toHaveBeenCalled();
     expect(calls.addAoeMultiplier).not.toHaveBeenCalled();
     expect(calls.addPickupRadius).not.toHaveBeenCalled();
+    expect(calls.addCritDamageMultiplier).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

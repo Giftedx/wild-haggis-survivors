@@ -2279,6 +2279,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.tartan_day.k',
         'ui.banter.seasonal_event.tartan_day.l',
       ],
+      // 2026-05-09 — Simmer Dim (Jun 18-21) lifts the cohort banter
+      // coverage to 12/12. Shetlandic / Orcadian phrase for the
+      // perpetual twilight of Scottish midsummer at high latitudes;
+      // peaks at the solstice (Jun 21). Cultural framing: hush, not
+      // festival. Banter rides the held-light, the solstice quiet,
+      // and the fey-ring caution that midsummer carries across
+      // Scottish folklore. Hearth tone with one fey-edge bite (d).
+      // SCOTTISH_RESEARCH_DEEP §22.6.
+      simmer_dim: [
+        'ui.banter.seasonal_event.simmer_dim.a',
+        'ui.banter.seasonal_event.simmer_dim.b',
+        'ui.banter.seasonal_event.simmer_dim.c',
+        'ui.banter.seasonal_event.simmer_dim.d',
+        'ui.banter.seasonal_event.simmer_dim.e',
+        'ui.banter.seasonal_event.simmer_dim.f',
+        'ui.banter.seasonal_event.simmer_dim.g',
+        'ui.banter.seasonal_event.simmer_dim.h',
+        'ui.banter.seasonal_event.simmer_dim.i',
+        'ui.banter.seasonal_event.simmer_dim.j',
+        'ui.banter.seasonal_event.simmer_dim.k',
+        'ui.banter.seasonal_event.simmer_dim.l',
+      ],
     },
   },
 ];

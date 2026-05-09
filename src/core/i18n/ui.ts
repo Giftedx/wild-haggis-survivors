@@ -834,6 +834,24 @@ export const ui = {
     blessing_toast: 'Tartan Day. Diaspora reach. +14 HP, every pickup pulls a touch farther.',
   },
   /**
+   * Simmer Dim (Jun 18-21). Shetlandic / Orcadian phrase for the
+   * perpetual twilight of Scottish midsummer at high latitudes; north
+   * of 60°N the sun barely sets between mid-June and early July.
+   * Window 4 days, anchored on the solstice (Jun 21) with a 3-day
+   * lead-in — narrowed past the typical 5-day single-anniversary band
+   * to dodge Bannockburn (Jun 22-25). +12 HP heal post-spawn (the
+   * haggis takes the held light, modest heal — solstice is quiet not
+   * abundant) + +0.25 additive crit-damage multiplier via
+   * `Player.addCritDamageMultiplier`. Twelfth distinct mechanical
+   * slot in the cohort, first to touch crit-DAMAGE (Bracken-turn
+   * rides crit CHANCE — different stat). Cultural framing: hush,
+   * not festival; held light, fey-ring caution. SCOTTISH_RESEARCH_
+   * DEEP §22.6.
+   */
+  simmerDim: {
+    blessing_toast: 'Simmer Dim. Held twilight. +12 HP, the strike lands harder when it lands.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -3224,6 +3242,31 @@ export const ui = {
         j: 'Six April thirteen-twenty. The Declaration. The moor minds it yet.',
         k: 'Cousins in Otago, Manitoba, Glasgow. Same blood; same moor-pull.',
         l: 'Walk wide. The cloth reaches as far as the heart wills.',
+      },
+      // ── Simmer Dim (Jun 18-21). Shetlandic / Orcadian phrase for the
+      //    perpetual twilight of Scottish midsummer at high latitudes;
+      //    north of 60°N the sun barely sets between mid-June and
+      //    early July. The phenomenon peaks at the solstice (Jun 21).
+      //    Window 4 days, anchored on the solstice with a 3-day lead-
+      //    in — narrowed past the typical 5-day band to dodge
+      //    Bannockburn (Jun 22-25). Cultural framing: hush, not
+      //    festival. Held light, hares stay out, fey-ring caution.
+      //    SCOTTISH_RESEARCH_DEEP §22.6. Hearth tone with one fey-
+      //    edge bite (d) for midsummer-eve folklore. 12 leaves —
+      //    lifts the cohort to 12/12.
+      simmer_dim: {
+        a: 'Simmer dim. The night never quite arrives.',
+        b: 'Solstice held the light. The moor stays half-lit.',
+        c: 'Twilight holds. The hares dinnae go in.',
+        d: 'Mind the fey rings tonight — midsummer fae walk soft.',
+        e: 'The Shetlanders ken — north o\' sixty, the dark forgets to come.',
+        f: 'Held light. Held breath. The moor minds the longest day.',
+        g: 'Solstice quiet. The strike, when it lands, lands harder.',
+        h: 'Twenty-first of June. The sun barely set. Walk wide.',
+        i: 'Gloaming for days. The bracken keeps watch.',
+        j: 'Midsummer\'s e\'en — the auld folk left the hearth burning low.',
+        k: 'Held twilight. The crit lands like the sun lingered.',
+        l: 'The moor doesn\'t darken. The haggis keeps moving.',
       },
     },
   },

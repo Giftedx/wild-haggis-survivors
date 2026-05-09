@@ -66,4 +66,10 @@ export const seasonalEvent = {
     badge_suffix: 'Tartan Day',
     ceremony_banner: '🧶 Tartan Day is live — the moor reaches further.',
   },
+  simmer_dim: {
+    name: 'Simmer Dim',
+    description: 'Jun 18 – Jun 21 — held twilight; the moor never goes fully dark.',
+    badge_suffix: 'Simmer Dim',
+    ceremony_banner: '🌒 Simmer Dim is live — the gloaming holds.',
+  },
 } as const;

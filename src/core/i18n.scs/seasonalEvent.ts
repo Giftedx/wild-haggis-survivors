@@ -65,4 +65,10 @@ export const seasonalEvent = {
     badge_suffix: 'Tartan Day',
     ceremony_banner: '🧶 Tartan Day is live — tha muir reaches farer.',
   },
+  simmer_dim: {
+    name: 'Simmer Dim',
+    description: 'Juin 18 – Juin 21 — held twilicht; tha muir niver gangs fully mirk.',
+    badge_suffix: 'Simmer Dim',
+    ceremony_banner: '🌒 Simmer Dim is live — tha gloamin hauds.',
+  },
 } as const;
