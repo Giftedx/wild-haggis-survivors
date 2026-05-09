@@ -1,5 +1,7 @@
 # The Moor Renders Itself — design spec (v3, no-time-box, 25-ship-surface)
 
+> **Spec status (2026-05-09):** Phase 0 prototype shipped — see [`docs/PHASE_0_GATE_NOTES.md`](../../PHASE_0_GATE_NOTES.md). Phases 1–4 superseded by separate flagships (W71 rig + secondary motion, B5 biomes charter, art-music polish passes). The references below to `docs/ACCESSORY_AUTHORING.md`, `docs/BIOME_DRESSING.md`, and `docs/AUDIO_AUTHORING.md` are **deferred deliverables** — those authoring docs were never produced because the work moved into status trackers + memory snapshots + per-feature plans instead. Treat this v3 spec as historical scope intent, not a live deliverables list.
+
 **Date:** 2026-04-18 (third rewrite after three tear-down passes)
 **Scope:** Multi-phase procedural-art push at handcrafted quality.
 Ships when the craft bar is met, not when a clock runs out. Explicitly

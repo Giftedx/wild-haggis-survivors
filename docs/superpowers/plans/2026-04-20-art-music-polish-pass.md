@@ -1,5 +1,7 @@
 # Art & Music Polish Pass — Unified Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-20 — atmosphere-shift batch (per `superpowers/plans/INDEX.md` "Soul + voice + art canon").
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Five targeted improvements that together transform the game's atmosphere: ambient music beds that shift per biome, animated boss encounters, a living world with flora and mist, spinning projectiles, and accessory celebrating/dying frames.

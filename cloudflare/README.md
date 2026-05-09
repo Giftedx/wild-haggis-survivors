@@ -82,7 +82,7 @@ The spike proves the contract works. It does NOT do:
 | Schema migration runner beyond `0001_initial.sql` | T424 — schema migration runner |
 
 These are blocked on human/product decisions documented in
-`docs/adr/0006-cloud-save-backend.draft.md` and
+`docs/adr/0006-cloud-save-backend.md` and
 `docs/P3_BACKEND_DECISION_MATRIX.md`. The spike's job is to prove
 the local seam exists and the contract holds; everything above is
 the work that turns the seam into a service.

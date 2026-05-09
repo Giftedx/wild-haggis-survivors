@@ -2,7 +2,7 @@
 
 **Scope:** Stability, maintainability, and shipping velocity without changing core gameplay feel.
 
-## Current Snapshot (2026-05-08)
+## Current Snapshot (2026-05-09)
 
 ### Stack
 
@@ -10,10 +10,11 @@
 - **Game version:** `2.3.2` (`package.json`).
 - **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes + curses + post-bell endless + W2 Moor Road acts + M1 multi-node graph) → Shop / MetaShop. CroftScene is the persistent hub between runs (H1, shipped 2026-04-24).
 - **Persistence:**
-  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 17` (see `src/utils/save/schema.ts`).
-  - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts:306`).
+  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 18` (see `src/utils/save/schema.ts`; v18 added `lemmingsSeenForVariant` for the DMA-Design easter egg gate, 2026-05-09).
+  - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 463 vitest files; 4828 test cases (verified 2026-05-08 via `npm test`).
+- **Tests:** 481 vitest files; 5065 test cases (verified 2026-05-09 via `npm test`).
+- **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = 10` in `src/utils/save/schema.ts`.
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
 
@@ -42,15 +43,43 @@
 | **P3** Cloud saves | ⏳ Worker + D1 backend prototype shipped via top-10 #3 (2026-04-27); UX + conflict resolution awaits stakeholder approval (ADR-0006 still draft). |
 | **B1** Banter density push | ✅ All phases (1–5) shipped 2026-04-26; native Gaelic review on 8 leaves still open. |
 
+### 2026-05-09 mechanics ship sprint
+
+A solo-dev sprint shipped 12 features in one day from `docs/DESIGN_IDEAS.md` §1+§3+§5+§11+§13. All carry STATUS markers in memory (`project_<name>_status`) and are reflected in `CLAUDE.md` "Key Mechanics". Sprint commits between today's session start and tip:
+
+| Item | Source | Commit | Notes |
+|---|---|---|---|
+| N1 Nicnevin (boss #2) | DESIGN_IDEAS §3 | `c93cb3c` | Wild-Hunt gem-pull; Solway Remnant cultural-review-gated |
+| Cairn Stacking pickup | DESIGN_IDEAS §1 | `e3c3455` | 3-stone heal+magnet boon |
+| Stance Toggle (Q) | DESIGN_IDEAS §1 | `611ca51` | loose/braced/reeling persistent posture |
+| Shinty Parry (E) | DESIGN_IDEAS §1 | `12357dc` | 350ms negate window vs enemy projectiles |
+| Clootie Wager landmark | DESIGN_IDEAS §1 | `a6da306` | Walk-through wages 12% max-HP for run-long boon |
+| Taxman Grudge Ledger | DESIGN_IDEAS §1 | `50623c8` | Silent finish-tracker → Taxman victory line verdict |
+| Lemmings easter egg | DESIGN_IDEAS §13 | `58664e7` | 90s coastal idle → DMA Design 1991 cliff-fall homage |
+| Shinty Stick + Caman Storm evolution | DESIGN_IDEAS §1+§5 | (today) | 9th weapon + 8th evolution |
+| Race the Beithir | DESIGN_IDEAS §1+§3 | `9f6a694` | Venom-fang opens 8s heal-or-kill race |
+| Sgian Dubh + Sgian Geal evolution | DESIGN_IDEAS §5 | `92a0e2a` | 10th weapon + 9th evolution; forced-crit |
+| Stag Antler + Monarch's Charge | DESIGN_IDEAS §5 | `805e03c` | 11th weapon + 10th evolution; dash-strike fork |
+| Field Note Pickup | DESIGN_IDEAS §11 | `8e9487d` | haggis_hunter Foundation notebook page |
+
+`BURNS_EVOLUTION_THRESHOLD` lifted 7→8→9→10 across the four weapon ships.
+
 ### Active fronts
 
 - **T401 GameScene decomposition** — ongoing slice extractions; running journal at `docs/status/engine/SCENE_REFACTOR_GAP_AUDIT.md`. GameScene 3526 → ~3418 LOC across recent slices (memory `project_backlog_drain_2026_04_28_status`).
-- **Codebase restructure (2026-04-30)** — Phase 0+1 LOC ratchet + `save.ts` 8-module split shipped 2026-05-07 (6 commits, memory `project_restructure_phase1_status`); Phases 2–6 open.
+- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09 (`c0097d8` re-baselines ratchet at post-Phase-5 floor); GameScene 1672 LOC (ceiling 1680, T401 floor 1656); ≤1200 charter target requires facade rewrite (out of scope).
 - **Cultural review gates** — Doric + Shetlandic native-speaker review (`docs/C2_DIALECT_REVIEW.md`), Burns Kinsley + Canongate audit (`docs/C2_BURNS_PROVENANCE.md`), 8 Gaelic banter leaves flagged.
 
-### Next flagship slot (open)
+### Next flagship slot — declared polish / content phase (2026-05-09)
 
-No single flagship is on-deck. With A1, B1, R1, V2, F1, H1, M1, U1, E1, C1 done, remaining roadmap candidates are W71 full rig, W95 mobile, W27 Phase 2, P3 cloud, or scoping a new flagship. Per the rule of thumb (one flagship at a time), pick when there's owner + non-goals + kill criterion (see `docs/HUGE_INITIATIVES_MASTER_PLAN.md` §"Next steps").
+**Lead-dev decision:** No flagship picked. The project is in a polish + content-density phase until one of the re-open triggers in [`OPEN_QUESTIONS.md`](OPEN_QUESTIONS.md) Q8 fires. Rationale:
+
+- A1 PEAT, native cultural review, W95 mobile device matrix, and P3 cloud-save humans-in-the-loop work all need real human action a solo dev can't self-execute.
+- Today's mechanics ship sprint (12 features) shows momentum is in mechanics + content, not flagship infrastructure.
+- Codebase restructure shipped Phases 0–7 on the same day; the ≤1200 GameScene facade target is explicitly out-of-scope.
+- A flagship without owner + non-goals + kill criterion is an idea, not a flagship (master plan rule).
+
+**P3 architectural ratification (2026-05-09):** ADR-0006 promoted from `.draft.md` → `.md`; Cloudflare Workers + D1 + magic-link via Resend is the locked architectural choice. P3 itself stays parked behind privacy-policy text + Cloudflare account provisioning humans-in-the-loop work.
 
 ---
 

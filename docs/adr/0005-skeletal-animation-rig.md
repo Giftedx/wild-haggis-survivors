@@ -1,6 +1,6 @@
 # ADR 0005 — Skeletal Animation Rig: Texture-Swap Atlases over Bone Hierarchy
 
-**Status:** Accepted
+**Status:** Accepted (2026-04-26 — Phase 0 + Phase 2 secondary motion shipped; Phase 1 partial)
 **Date:** 2026-04-26
 **Supersedes:** —
 **Superseded by:** —

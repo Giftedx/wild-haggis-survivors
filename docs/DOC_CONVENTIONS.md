@@ -38,9 +38,18 @@ These are evergreen and cited by `CLAUDE.md`/`AGENTS.md` as primary references:
 - `DESIGN_IDEAS.md` — sketchpad.
 - `BANTER_AUTHORING.md` — recipe for adding banter leaves.
 - `HUGE_INITIATIVES_MASTER_PLAN.md` — flagship roster.
-- `HUGE_INITIATIVES_VERDICT.md` — 2026-04-16 audit trail.
 - `DOC_CONVENTIONS.md` — this file.
 - `OPEN_QUESTIONS.md` — stakeholder decisions blocking work.
+
+### `docs/archive/` — historical / superseded
+
+Docs that have been **explicitly superseded** by a current canon doc move here, not into the bin. Git history alone isn't enough — file moves preserve the historical doc as a clickable artifact for decision-history reads.
+
+- `archive/HUGE_INITIATIVES_VERDICT.md` — 2026-04-16 audit trail (archived 2026-05-09; superseded by current PRD + plans INDEX).
+- `archive/2026-04-26-multi-model-audit/` — 4 historical audit reports (Claude / GPT-5.5 / Composer-2-Fast + reconciled backlog) (archived 2026-05-09).
+- `archive/prompts/` — 4 historical session prompts (particle budget / polish onboarding / perf balance / visual art review) (archived 2026-05-09). The active `docs/prompts/orchestrator-backlog-drain.md` stayed at root.
+
+**When to archive.** A doc graduates to `archive/` when (a) `INDEX.md` already labels it superseded, AND (b) at least one current canon doc fully covers what it once tracked. Don't archive doc that's still cited from code/tests by absolute path — those rename in lockstep with the code change.
 
 ### Status trackers
 
@@ -65,7 +74,7 @@ The `status/cultural/CULTURAL_REVIEW_STATUS.json` manifest is read by `src/data/
 ### ADRs
 
 - `docs/adr/NNNN-kebab-case-title.md`. Numbered sequentially.
-- DRAFT ADRs use `.draft.md` suffix (e.g. `0006-cloud-save-backend.draft.md`).
+- DRAFT ADRs use `.draft.md` suffix until accepted (rename on accept; example: 0006 was renamed `0006-cloud-save-backend.draft.md` → `0006-cloud-save-backend.md` on 2026-05-09).
 - ADRs have a `**Status:**` field at the top: `Proposed | Accepted | Superseded by NNNN | Deprecated | DRAFT`. When implementation ships, flip Proposed → Accepted with the date and add an `**Update:**` block summarising deltas from the original decision.
 - Template: `docs/adr/0000-template.md`.
 

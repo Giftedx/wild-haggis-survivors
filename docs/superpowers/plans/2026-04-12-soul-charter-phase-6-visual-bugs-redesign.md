@@ -1,5 +1,7 @@
 # Phase 6 — Visual Review, Bug Hunt, and Redesign Plan
 
+> **STATUS:** ✅ SHIPPED — findings doc; converted into subsequent Phase-6 visual-bug plans (per `superpowers/plans/INDEX.md` "Soul + voice + art canon").
+>
 > **For agentic workers:** This is a FINDINGS + PLAN document. It enumerates every issue caught during a live-browser visual audit of Wild Haggis Survivors after Phases 1–5 of the Soul Charter polish pass landed. It is **not** yet a TDD task breakdown — it is the research step that precedes one. A subsequent `writing-plans` pass will convert the "Proposed Work" sections into concrete task blocks.
 
 **Goal:** Capture every visual issue, bug, and redesign opportunity observed in a real browser running the game, grouped by severity and surface, so the user can pick what to fix and in what order.

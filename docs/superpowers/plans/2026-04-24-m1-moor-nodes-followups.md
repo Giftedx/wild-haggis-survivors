@@ -1,5 +1,7 @@
 # M1 Moor Road multi-node — post-ship follow-ups
 
+> **STATUS:** Open — base + 8 follow-ups (F1–F8) shipped 2026-04-24; only human playtest gate (act-completion ≥90%, no node-type skipped >80%) remains. Memory `project_m1_moor_nodes_status` is the live tracker.
+
 **Created:** 2026-04-24. **Parent:** M1 flagship (`docs/superpowers/plans/2026-04-23-moor-road-nodes.md`) shipped same day in commit `1acf4c2`.
 
 Scope: v1 simplifications flagged in code comments during the M1 ship window. Each lists the exact touch-point so a future session can pick one up cold.

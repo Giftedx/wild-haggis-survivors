@@ -1,5 +1,7 @@
 # Art Audit & Asset Refactor — Phase 1 Plan
 
+> **STATUS:** ✅ SHIPPED — sprite audit + asset modules. See memory `project_sprite_lift_2026_04_27_status` for the Round-2 lift on top.
+>
 > **Ties to:** Phase 0 prototype (`2026-04-18-moor-phase-0-prototype-plan.md`) shipped the animation atlas + 9 accessory drawers + visible wear-build. This plan covers what comes next: using the existing tooling to audit every sprite in the game, tightening the ones that don't meet the bar, and making the asset code neat enough that future edits don't require scrolling through a 6840-line boot scene.
 
 **Goal:** Every sprite in Wild Haggis Survivors reads as lovingly-handcrafted pixel art; the code that draws them lives in focused files, not one monster scene; and the tooling to verify the art is a 10-second workflow for a developer or reviewer.

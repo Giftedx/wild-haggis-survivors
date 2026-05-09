@@ -1,17 +1,18 @@
 /**
  * P3 Cloud Saves — envelope shape.
  *
- * The cloud envelope wraps the existing `whs_save` payload (schema v17,
- * see `src/utils/save.ts`) without modifying the inner shape. The server
- * is schema-blind passthrough; client-side migrations stay where they
- * already live.
+ * The cloud envelope wraps the existing `whs_save` payload (schema v18,
+ * see `src/utils/save/schema.ts`) without modifying the inner shape. The
+ * server is schema-blind passthrough; client-side migrations stay where
+ * they already live.
  *
  * Pure module — no Phaser, no DOM, no network. Safe to import from any
  * layer; covered by Vitest at `cloudSaveEnvelope.test.ts`.
  *
  * Charter: `docs/top-10-tasks/03-p3-cloud-saves.md` §Phase 2.1.
- * Decision: `docs/P3_BACKEND_DECISION_MATRIX.md` (recommendation pending).
- * ADR: `docs/adr/0006-cloud-save-backend.draft.md`.
+ * Decision: `docs/P3_BACKEND_DECISION_MATRIX.md` (architectural choice
+ * ratified 2026-05-09).
+ * ADR: `docs/adr/0006-cloud-save-backend.md`.
  *
  * No backend dependency — this file ships independent of which provider
  * the maintainer eventually picks.

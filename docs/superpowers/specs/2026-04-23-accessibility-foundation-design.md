@@ -242,7 +242,7 @@ interface ComfortSettingsV2 {
 
 ### PEAT audit artefact
 
-A living document `docs/ACCESSIBILITY_PEAT_AUDIT.md` records:
+A living document [`docs/A1_PEAT_AUDIT.md`](../../A1_PEAT_AUDIT.md) records:
 - Each VFX component tested.
 - PEAT result (pass / fail / observation).
 - Date audited.

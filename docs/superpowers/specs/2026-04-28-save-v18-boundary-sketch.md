@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-28
 **Initiative:** Preventive sketch (no urgency; activates when next save bump lands)
-**Status:** Note — no implementation begun, no code change required today.
+**Status:** Note — schema bumped v17 → v18 on 2026-05-09 alongside the lemmings easter egg ship (`58664e7`). The bump landed via the existing inline-migration pattern, NOT the per-version-module boundary this sketch proposed. The boundary is therefore deferred to v19; the sketch's argument still applies. v18 itself added a single field (`lemmingsSeenForVariant: string[]`) — see migration chain in `src/utils/save/migrations.ts`.
 **Word count:** ~1,000
 
 ---
@@ -13,8 +13,8 @@ Two save schemas live in the codebase:
 
 | Schema | Version | Source | Migration shape |
 |--------|---------|--------|-----------------|
-| Save data (run state, history, achievements) | **v17** | `src/utils/save.ts:35` `SAVE_SCHEMA_VERSION = 17` | Inline `migrateAndCoerce` helpers in `src/utils/save.ts` |
-| Meta save (per-version branches) | **v9** | `src/core/SaveManager.ts:306` `CURRENT_SAVE_VERSION = 9` | Long inline if-ladder in `SaveManager.migrateAndCoerce()` (`src/core/SaveManager.ts:692-921`) |
+| Save data (run state, history, achievements) | **v18** *(was v17 at sketch time)* | `src/utils/save/schema.ts` `SAVE_SCHEMA_VERSION = 18` | Migration chain in `src/utils/save/migrations.ts` (post 2026-05-07 split — see `project_restructure_status`) |
+| Meta save (per-version branches) | **v9** | `src/core/SaveManager.ts` `CURRENT_SAVE_VERSION = 9` | Long inline if-ladder in `SaveManager.migrateAndCoerce()` |
 
 The meta-save migration in particular is a 7-branch `if (v === N) { return { ... explicit field defaults ... } }` ladder. Each branch repeats every field with version-appropriate defaults. The pattern has worked through nine bumps but has three real costs:
 

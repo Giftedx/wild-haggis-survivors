@@ -44,17 +44,11 @@ Stakeholder decisions blocking work. Each entry: what's blocked, what we know, w
 
 ---
 
-### Q4 — P3 cloud-save backend selection
+### ~~Q4~~ — P3 cloud-save backend selection
 
-**Blocks:** P3 flagship from progressing past prototype.
+**Resolved 2026-05-09 (architectural):** Lead-dev ratification — **Cloudflare Workers + D1 + magic-link via Resend**. ADR-0006 renamed `.draft.md` → `.md`, Status flipped to Accepted. Decision matrix evaluated 6 options against 10 constraints; D1 won every distinguishing cell. The `cloudflare/` Worker scaffold + `server/worker/` handler tests stand. Remaining humans-in-the-loop work (privacy-policy text at `/privacy.html`, GDPR controller legal name + UK address, Resend account creation + Cloudflare D1 provision) is non-architectural and stays in P3's blocked-on-human stub. P3 NOT picked as next flagship — see Q2 below.
 
-**Context:** Worker + D1 backend prototype shipped 2026-04-27 via top-10 batch. Conflict-resolution UX spec drafted at `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`. ADR-0006 (`docs/adr/0006-cloud-save-backend.draft.md`) still draft. Decision matrix at `docs/P3_BACKEND_DECISION_MATRIX.md`.
-
-**Decision needed:** Commit to D1 (current prototype) or pick a different backend (see decision matrix). Then ADR-0006 ratifies and P3 work resumes.
-
-**Priority:** Medium — only blocks P3 specifically.
-
-**Where to record:** ratify ADR-0006 (rename `0006-cloud-save-backend.draft.md` → `0006-cloud-save-backend.md`, flip Status to Accepted, date the decision).
+**Original context preserved:** Worker + D1 backend prototype shipped 2026-04-27 via top-10 batch. Conflict-resolution UX spec drafted at `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`. ADR-0006 was draft; decision matrix at `docs/P3_BACKEND_DECISION_MATRIX.md`.
 
 ---
 
@@ -97,17 +91,17 @@ Stakeholder decisions blocking work. Each entry: what's blocked, what we know, w
 
 ---
 
-### Q8 — Next flagship slot (currently empty)
+### ~~Q8~~ — Next flagship slot (currently empty)
 
-**Blocks:** clear "what's next" for new contributors.
+**Resolved 2026-05-09:** Lead-dev decision — **declare polish / content phase**. No flagship picked. Rationale:
+- A1 PEAT (Q6), native cultural review (Q5), W95 mobile-device matrix (Q7), and P3 humans-in-the-loop legal text are all gated on real human action that the solo dev cannot self-execute.
+- Today's mechanics ship sprint (12 features) shows momentum is in mechanics + content density, not flagship-tier infrastructure.
+- Codebase restructure shipped Phases 0–7 on the same day; the ≤1200 GameScene facade target is explicitly out-of-scope and would require disproportionate refactor to pass.
+- A flagship without a clear non-goals + kill criterion is an idea, not a flagship (per `HUGE_INITIATIVES_MASTER_PLAN.md` rule of thumb).
 
-**Context:** Of the 2026-04-23 cohort (10 flagships), all shipped by 2026-04-26 (with A1 partial — M1 PEAT human-gated). Master plan rule is "one flagship at a time"; no flagship is currently active. Remaining candidates per master plan: W71 full rig (Phase 1 partial), W95 mobile (gated by Q7), W27 Phase 2 (cross-cuts capture work), P3 cloud (gated by Q4).
+**Re-open trigger:** any of (a) Q4 humans-in-the-loop work clears + decision to ship cloud saves, (b) Q5/Q6 native review or PEAT delivers + opens an A1 closeout flagship slot, (c) external stakeholder ask raises a new flagship candidate, (d) the polish phase starts feeling like drift rather than productive maintenance.
 
-**Decision needed:** Pick the next flagship — or declare "polish/maintenance phase" until a stakeholder ask surfaces.
-
-**Recommendation:** with A1 PEAT, native review, and cloud backend all human-gated, the productive solo-dev work is currently the codebase-restructure plan (Phases 2–6) plus the GameScene T401 decomposition. Both are in flight without flagship status. Confirm or pick a flagship.
-
-**Priority:** Medium — blocks long-term planning visibility, not day-to-day work.
+**Original context preserved:** Of the 2026-04-23 cohort (10 flagships), all shipped by 2026-04-26 (with A1 partial — M1 PEAT human-gated). Master plan rule is "one flagship at a time"; remaining candidates: W71 full rig (Phase 1 partial), W95 mobile (gated by Q7), W27 Phase 2 (cross-cuts capture work), P3 cloud (architectural ratified Q4; legal/ops humans-in-the-loop remain).
 
 ---
 

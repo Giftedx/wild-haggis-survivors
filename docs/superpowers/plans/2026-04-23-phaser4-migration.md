@@ -1,8 +1,8 @@
 # Phaser 3.90 → Phaser 4 Migration — Draft Plan
 
-> **Status:** Draft. Not scheduled. Evidence-gathered, not yet committed to.
+> **STATUS:** ✅ SHIPPED 2026-04-23 — see memory `project_phaser4_status` and follow-up tickets P4-11/12/13 (closed same day). The "TL;DR recommendation: Defer" below is preserved as historical context — the migration was de-deferred and executed on the same day this plan was written. Phaser 4 has been live in production since.
 >
-> **For agentic workers:** This plan is a migration survey + candidate execution sheet. If we commit to migration, use `superpowers:executing-plans` to work it task-by-task. If we defer, keep this doc as the reference when we revisit in 2026-Q3.
+> **For agentic workers:** Treat this plan as a historical record + reference for surface area touched. Architectural notes still useful when authoring new render-node / filter code.
 
 **Goal:** Move the codebase from Phaser `^3.90.0` to Phaser 4 with zero gameplay regressions, preserved T1 replay determinism (byte-equality guarantee from ADR-0002 Phase 3), and an intact dev-tuning panel.
 

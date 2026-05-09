@@ -3,7 +3,7 @@
 -- One row per signed-in user. The Worker is schema-blind for the inner
 -- save payload — it stores the envelope JSON as an opaque TEXT column.
 -- See `src/cloud/cloudSaveEnvelope.ts` for the envelope shape and
--- ADR `docs/adr/0006-cloud-save-backend.draft.md` for context.
+-- ADR `docs/adr/0006-cloud-save-backend.md` for context.
 --
 -- Apply locally:
 --   npx wrangler d1 execute wild-haggis-saves --local --file=schema/0001_initial.sql

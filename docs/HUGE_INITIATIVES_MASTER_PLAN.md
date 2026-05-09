@@ -1,6 +1,6 @@
 # Huge Initiatives — Master Plan
 
-**Status.** Short list. Honest flagships only. Everything else is either already shipped, not a flagship, or an idea (see `docs/DESIGN_IDEAS.md`). Full audit trail in `docs/HUGE_INITIATIVES_VERDICT.md`.
+**Status.** Short list. Honest flagships only. Everything else is either already shipped, not a flagship, or an idea (see `docs/DESIGN_IDEAS.md`). Full audit trail in `docs/archive/HUGE_INITIATIVES_VERDICT.md` (archived 2026-05-09).
 
 **Rule of thumb for a small team.** Run **at most one** flagship at a time. If a flagship lacks an owner, a non-goals list, and a kill criterion, it is not a flagship yet — it is an idea.
 
@@ -101,4 +101,4 @@ Without those six, the row is an idea, not a flagship.
 
 ---
 
-*Previous drafts bloated to 100+ W-rows, 20 M-rows, 14 H-rows, a broken scoring rubric, and ~40 synonym clusters. The audit trail is in `docs/HUGE_INITIATIVES_VERDICT.md`; the creative reference salvaged from the cut is in `docs/DESIGN_IDEAS.md`. This file stays short on purpose.*
+*Previous drafts bloated to 100+ W-rows, 20 M-rows, 14 H-rows, a broken scoring rubric, and ~40 synonym clusters. The audit trail is in `docs/archive/HUGE_INITIATIVES_VERDICT.md` (archived 2026-05-09); the creative reference salvaged from the cut is in `docs/DESIGN_IDEAS.md`. This file stays short on purpose.*

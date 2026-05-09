@@ -43,6 +43,6 @@ Don't write an ADR for:
 | [0003](0003-shader-registry-phaser-postfx-pipeline.md) | ShaderRegistry uses Phaser's filter render-node system, not a bespoke GL layer | Accepted (2026-04-23 original; 2026-04-24 Phaser 4 addendum rebases to `BaseFilterShader` + `Filters.Controller`) |
 | [0004](0004-seasonal-event-calendar-gating.md) | SeasonalEventManager uses device-local date, not server time or in-game clock | Accepted (2026-04-24; cohort grew 6 → 8 events by 2026-04-29) |
 | [0005](0005-skeletal-animation-rig.md) | Skeletal animation rig: texture-swap atlases over bone hierarchy | Accepted (2026-04-26) |
-| [0006](0006-cloud-save-backend.draft.md) | Cloud-save backend (DRAFT) | DRAFT — awaiting stakeholder approval per [OPEN_QUESTIONS Q4](../OPEN_QUESTIONS.md). Rename to `0006-cloud-save-backend.md` on accept. |
+| [0006](0006-cloud-save-backend.md) | Cloud-save backend | Accepted (2026-05-09 — architectural choice ratified by lead dev; Cloudflare Workers + D1 + magic-link via Resend) |
 
 When an ADR ships its decision (Proposed → Accepted), update both the file's `**Status:**` line and the row above. When superseding, leave both rows in place — never edit a historical Accepted ADR; record the reversal in a new ADR and link them via `**Supersedes:**` / `**Superseded by:**`.

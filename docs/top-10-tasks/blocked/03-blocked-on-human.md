@@ -125,13 +125,9 @@ Player gets one "undo" email link.
 
 ## 7. ADR-0006 review
 
-Once items 1–4 are approved, the agent (or maintainer) writes
-`docs/adr/0006-cloud-save-backend.md` capturing the decision in the
-project's ADR format. Draft template already prepped in this branch as
-`docs/adr/0006-cloud-save-backend.draft.md`. Review and rename to
-`.md` (drop the `.draft`) once content is finalised.
+✅ **Resolved 2026-05-09 (architectural-only):** Lead-dev ratification — Cloudflare Workers + D1 + magic-link via Resend. ADR-0006 renamed `0006-cloud-save-backend.draft.md` → `0006-cloud-save-backend.md`, Status flipped to Accepted. The remaining items 1–6 above stay open as humans-in-the-loop legal/ops work.
 
-- [ ] Approve ADR-0006 wording.
+- [x] Approve ADR-0006 wording. *(Architectural choice ratified.)*
 
 ---
 
@@ -156,7 +152,7 @@ not depend on backend selection:
    flag and renders a "Coming soon" stub. No live network calls.
 6. **Documentation:** matrix (`docs/P3_BACKEND_DECISION_MATRIX.md`),
    conflict-UX spec (`docs/specs/2026-04-26-cloud-save-conflict-ux.md`),
-   ADR draft (`docs/adr/0006-cloud-save-backend.draft.md`), this
+   ADR (`docs/adr/0006-cloud-save-backend.md`, accepted 2026-05-09), this
    blocked doc.
 7. **No Phaser scene changes outside the gated preview flag.** The
    live Settings panel and MenuScene render unchanged when

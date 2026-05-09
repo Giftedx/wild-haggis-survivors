@@ -1,5 +1,7 @@
 # Final Art & Music Polish — Remaining Gaps
 
+> **STATUS:** ✅ SHIPPED 2026-04-20 — biome VFX + wildlife + victory celebration (per `superpowers/plans/INDEX.md`).
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Three targeted additions that fill the last genuine atmosphere gaps: biome-specific entry VFX, wildlife that makes the moor feel inhabited, and a dedicated victory celebration.

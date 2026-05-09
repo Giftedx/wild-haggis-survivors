@@ -1,5 +1,7 @@
 # Phase 1 — Enemy Animation Foundation
 
+> **STATUS:** ✅ SHIPPED 2026-04-20 — texture-swap animation for 3 archetypes (chase, ranged, dive). Per `superpowers/plans/INDEX.md`.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add texture-swap animation to 3 enemy archetypes (chase, ranged, dive), wiring the same AnimationController infrastructure that already drives the player. Retire `bobPhase` scaleY wobble for animated enemies; non-animated enemies keep their current behavior unchanged.

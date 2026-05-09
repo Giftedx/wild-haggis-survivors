@@ -1,7 +1,9 @@
 # Triple-audit ship-readiness — full execution plan
 
+> **STATUS:** Open (Active) — most P0–P3 items shipped via top-10 dispatch + 2026-04-27/28 backlog drains. Open: T203 (mobile real-device, OPEN_QUESTIONS Q7), T211 (native review, Q5), T407 (DOM/focus a11y, slice underway), T213/T214 (FTUE/drift). Memory `project_audit_followups_status`.
+
 **Created:** 2026-04-26  
-**Sources:** `docs/report-claude-opus-4.7-250426.md`, `docs/report-gpt5.5-250426.md`, `docs/report-composer-2-fast-250426.md`, `docs/report-backlog-consolidated-250426.md`  
+**Sources:** `docs/archive/2026-04-26-multi-model-audit/report-claude-opus-4.7-250426.md`, `docs/archive/2026-04-26-multi-model-audit/report-gpt5.5-250426.md`, `docs/archive/2026-04-26-multi-model-audit/report-composer-2-fast-250426.md`, `docs/archive/2026-04-26-multi-model-audit/report-backlog-consolidated-250426.md` *(reports archived 2026-05-09 per docs restructure)*  
 **Intent:** One ordered, checkable plan so a **single follow-up session** can drive **all** backlog items from P0 through P3 to completion (or explicitly defer with a recorded product decision).
 
 **Global definition of done (before claiming “plan complete”):**

@@ -1,5 +1,7 @@
 # T1 Phase 3 — Deterministic Playback Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-18 — fixed-step physics + ReplayBlob v2 + GameScene playback branch. M1 Moor Road later widened blob to v3 (`nodeOutcomes?`). ADR-0002 has the full Update block. Memory `project_t1_replay_status` confirms.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task (inline, autonomous 5-hour run). Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the "best-effort playback" gap in T1 by (1) migrating Phaser Arcade to fixed-step physics, (2) bumping `ReplayBlob` to v2 with `curseKey` + `routes` + a `composedStats` snapshot, (3) wiring the GameScene playback branch to consume those fields instead of live singletons, and (4) proving it with a determinism regression vitest.

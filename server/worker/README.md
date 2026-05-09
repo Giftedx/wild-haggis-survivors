@@ -84,6 +84,6 @@ the stored row is rejected with 409. Same-timestamp writes win as ties.
 - Privacy policy / GDPR-deletion soft-delete window.
 - Bundle/cost economics under load.
 
-See `docs/adr/0006-cloud-save-backend.draft.md` for the broader plan
+See `docs/adr/0006-cloud-save-backend.md` for the broader plan
 and `docs/status/cloud/P3_BACKEND_DECISION_MATRIX.md` for the tradeoff
 analysis.

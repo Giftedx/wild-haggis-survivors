@@ -3,7 +3,7 @@
 # Copy to `wrangler.toml` and fill in the placeholders to deploy.
 # Do NOT commit the live `wrangler.toml` — credentials and IDs vary
 # per environment and the template intentionally has no `account_id`
-# or real `database_id`. See ADR `docs/adr/0006-cloud-save-backend.draft.md`.
+# or real `database_id`. See ADR `docs/adr/0006-cloud-save-backend.md`.
 #
 # Local-dev (no D1 binding): `wrangler dev` falls back to in-memory
 # storage (see `src/index.ts` `pickStorage`). Data resets on Worker

@@ -1,5 +1,7 @@
 # Secondary Motion (W71 Phase 2 slice) — Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-23 — keyframe tail lag + tier-gated heather mantle. See ADR-0005 + memory `project_w71_phase2_status`.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the first W71 Phase 2 slice — keyframe tail phase-offset lag + tier-gated heather mantle overlay — without introducing any runtime rig solver.

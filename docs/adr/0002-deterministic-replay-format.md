@@ -1,8 +1,10 @@
 # ADR 0002 — Deterministic replay format: seed + per-frame input + delta
 
-**Status:** Accepted (record side shipped; playback engine deferred)
-**Date:** 2026-04-17
+**Status:** Accepted — fully shipped 2026-04-17/18
+**Date:** 2026-04-17 (initial); 2026-04-18 (Phase 3 fixed-step physics + ReplayBlob v2); 2026-04-24 (Moor Road bumped to ReplayBlobAny v3)
 **Relates to:** T1 flagship (`docs/HUGE_INITIATIVES_MASTER_PLAN.md`)
+
+> **Update 2026-04-18 / 24:** All three phases live. Phase 1 — recorder + ReplayBlob v1 + GameScene record wire. Phase 2 — `IInput` + `ReplayInput` DI + Chronicle ▶ Watch + auto-return. Phase 3 — Phaser Arcade `fps:60, fixedStep:true`; ReplayBlob v2 (`curseKey` / `routes` / `composedStats`); save v5 → v6 with `ReplayBlobAny` union. M1 Moor Road later widened the union to v3 with `nodeOutcomes?` (auto-upgraded by `ReplayRecorder.pushNodeOutcome`). Memory `project_t1_replay_status` confirms remaining non-determinism is intentional (cosmetic-RNG paths per `rng.ts` policy).
 
 ## Context
 

@@ -1,6 +1,8 @@
-# Banter coverage audit — 2026-04-24
+# Banter coverage audit — 2026-04-24 (status update 2026-04-26)
 
-**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools + Phase 3 flavour authoring** shipped (2026-04-23). Phase 4 **Task 22 (Burns citations) shipped (2026-04-24)**; Task 21 (Cailleach) blocked on Gaelic native-speaker review. Phase 5 seasonal coupled with E1 (unshipped).
+> **Status update 2026-04-26:** B1 flagship **all phases (1–5) shipped** by 2026-04-26 via top-10 dispatch #6 (`b163eb3`, 368 leaves). Phase 4 Task 21 (Cailleach) graduated; Phase 5 seasonal authored. Native Gaelic review on 8 flagged leaves still open per `docs/status/cultural/CULTURAL_REVIEW_PACKET.md` and memory `project_b1_phase1_status`. The phase-by-phase shipping log below is preserved as historical detail.
+
+**Current state:** Phase B shipped (2026-04-18). Phase C **Phase 1 infra + Phase 2 core pools + Phase 3 flavour authoring** shipped (2026-04-23). Phase 4 **Task 22 (Burns citations) shipped (2026-04-24)**; Task 21 (Cailleach) blocked on Gaelic native-speaker review. Phase 5 seasonal coupled with E1 (unshipped at the time of original audit; **shipped 2026-04-26**).
 
 ---
 

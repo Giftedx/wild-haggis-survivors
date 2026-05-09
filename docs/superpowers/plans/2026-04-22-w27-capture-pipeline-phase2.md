@@ -1,5 +1,7 @@
 # W27 Capture Pipeline — Phase 2 Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-22 — Phase 2a/2b live; Phase 4 clipboard 2026-04-26. Charter [stale](../../top-10-tasks/blocked/07-charter-stale.md) per top-10 #7. Per `superpowers/plans/INDEX.md`.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add full-canvas PNG screenshot and rolling 15-second WebM clip export to the existing postcard capture surface, gated by a Comfort setting, following Phase 1 conventions.

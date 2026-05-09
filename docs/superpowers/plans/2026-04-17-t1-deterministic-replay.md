@@ -1,5 +1,7 @@
 # T1 Deterministic Replay — Record-Side MVP Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-17 — record side MVP. Phase 3 (playback) shipped 2026-04-18 per sibling plan `2026-04-18-t1-phase3-deterministic-playback.md`. ADR-0002 documents the format. Memory `project_t1_replay_status` confirms all phases live.
+>
 > **Scope:** 5-hour agentic run. Ships record side of T1 flagship + fixes the two
 > non-determinism blockers surfaced by the RNG/Timer audits. Playback engine is
 > explicitly deferred — ADR-0002 captures the contract for the next session.

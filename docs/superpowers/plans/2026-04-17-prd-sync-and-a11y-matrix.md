@@ -1,5 +1,7 @@
 # PRD Sync + A11y Matrix Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-17 — PRD reconciled + a11y matrix landed in `docs/DESIGN_SOUL.md` (per `superpowers/plans/INDEX.md`).
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reconcile `docs/PRD.md` with the last three commits (5696ddb, 199083f, c621b09) that quietly closed P-queue items, then add the missing a11y matrix to `docs/DESIGN_SOUL.md` (the last open PRD P3 doc task).

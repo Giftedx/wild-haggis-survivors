@@ -1,5 +1,7 @@
 # Moor Phase 0 — Prototype + Style Bible + Dev Affordances
 
+> **STATUS:** ✅ SHIPPED 2026-04-18 — atlas + 9 accessory drawers + visible wear-build live. See `docs/PHASE_0_GATE_NOTES.md` for gate evidence and `superpowers/plans/INDEX.md` "Content systems" row.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Prove the procedural-art path can hit the handcrafted craft bar the existing enemy sprites set (dean_apparition, tome_wraith, redcap, ceilidh_caller), by shipping one animated classic haggis + one accessory (tam-o-shanter) + the infrastructure Phases 1-4 depend on. Ships when Gate A (charter + 24 h cooldown self-review) and Gate B (external review by ≥ 2 non-developers) both pass.

@@ -1,5 +1,7 @@
 # Variant #10 Cailleach — Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-22 — Cailleach (V2 prep). Roster has since grown to 15 (Witch's Hare 2026-04-28). See `src/data/variants.ts`.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship the tenth playable haggis variant — Cailleach — with stat deltas, palette, sprite, unlock, and full bilingual banter pool.

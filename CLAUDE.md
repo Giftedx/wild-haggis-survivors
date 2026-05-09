@@ -53,7 +53,7 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages all 9 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 8 of the 9 weapons; bagpipes is utility-only with no evolution).
+- **WeaponSystem**: Manages all 11 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 10 of the 11 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD = 10` in `src/utils/save/schema.ts`.
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **GrowthSystem**: Player visual/hitbox scaling as they level up.
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
@@ -85,7 +85,7 @@ Player stats use a layered calculation: **base value × level scaling + upgrade 
 
 ### Key Mechanics
 - **The Drift**: A constant clockwise rotational offset on input (configurable in `PLAYER.DRIFT_DEGREES`). Reduced by leveling and upgrades. Core identity of the game.
-- **Weapon Evolution**: 8 of the 9 weapons have a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool. Bagpipes is utility-only with no evolution.
+- **Weapon Evolution**: 10 of the 11 weapons have a paired passive item. Max-level weapon + passive = legendary evolution card appearing in the level-up pool. Bagpipes is utility-only with no evolution.
 - **Soft World Boundaries**: No hard walls — player slows near edges with a gentle push-back force.
 - **Persistence**: `localStorage` via the `src/utils/save/` module (key: `whs_save`; barrel re-export at `src/utils/save.ts`). Schema lives in `src/utils/save/schema.ts` (`SAVE_SCHEMA_VERSION = 18`); types in `types.ts`; migration chain in `migrations.ts`; bumpers/queries/history/variants/io split into sibling files. Stores gold, permanent upgrades, settings, and run stats. Two other independent stores: `whs_meta_save` (`src/core/SaveManager.ts`, schema v9) and `whs_game_settings` (`src/core/SettingsManager.ts`, settings v1).
 - **Elite Enemies**: 10% spawn chance after 2 minutes. Golden glow, 2× HP, 1.3× speed, 3× XP. Marked via `Enemy.markAsElite()`. Never applied to bosses or hazards.

@@ -1,5 +1,7 @@
 # Haggis Lineage Phase 0 — Implementation Plan
 
+> **STATUS:** ✅ SHIPPED 2026-04-22 — named haggis + ancestor whisper toast at run start. Per `superpowers/plans/INDEX.md`.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Named haggis per run + past-ancestor whisper toast at new-run start. Narrative-only, no mechanical inheritance.

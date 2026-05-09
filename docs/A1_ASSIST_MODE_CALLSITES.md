@@ -1,5 +1,7 @@
 # A1 M4 — Assist Mode call-site map
 
+> **Audit veto:** Assist Mode UI rows other than the invincibility toggle are **deliberately hidden** until each effect's call-site lands plus the replay-determinism pass clears. Do NOT flag missing UI as a bug — the persistence-without-UI shape is the design, documented here. Cited from [`docs/INDEX.md` §"For audit / review agents"](INDEX.md#for-audit--review-agents) as a top-level veto.
+
 > **Status:** Engineering map of Assist Mode readers and the gameplay
 > sites where each effect must hook in. M6 already shipped the
 > persisted settings + `AssistMode.ts` reader API. This doc documents

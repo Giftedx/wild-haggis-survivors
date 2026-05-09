@@ -1,5 +1,7 @@
 # W95 Phase 0 — Mobile Safe-Area Pass
 
+> **STATUS:** ✅ SHIPPED 2026-04-22 — Phase 0 safe-area pass; full W95 mobile rework remains a separate flagship blocked on T203 device matrix (see [`docs/MOBILE_DEVICE_TEST_MATRIX.md`](../../MOBILE_DEVICE_TEST_MATRIX.md) + [`docs/OPEN_QUESTIONS.md`](../../OPEN_QUESTIONS.md) Q7).
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the game visually playable on notched phones + gesture-nav Androids without UI clipping. Tight scope; full W95 mobile-posture remains a separate flagship.
