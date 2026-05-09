@@ -809,6 +809,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.whiskyBreathFirstBurstPending = false;
         sceneCtx.caption?.('whisky_first_burst', 'Whisky breath — fae the belly.', '#e8b070', 1800);
       }
+      // Burns echo — symmetry with Drift Mastery G-burst above. Whisky
+      // Breath F-burst is the player's other "charge" moment; the
+      // burns_citation `charge` sub-pool ("Scots, wha hae wi' Wallace
+      // bled") fires from both signature mechanics. The 8 s banter
+      // cooldown keeps double-fires sparse on dense F→G play.
+      sceneCtx.requestBanter?.('burns_citation', 'charge');
     }
 
     if (dir.x === 0 && dir.y === 0) {

@@ -25,7 +25,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)
   ['entities/Enemy.ts', 1585], // bumped 2026-05-09 (1570→1585) for spawnerMinionKey passthrough (Nicnevin's unseelie_fiddler summoner); current 1577 + 8 grace; hot path, factored via entities/ siblings
   ['art/sprites/croft/seasonalProps.ts', 5], // was 1550 (Phase 2.3 barrel)
-  ['entities/Player.ts', 1548], // bumped 2026-05-09 (1540→1548) for charge sub-pool burns_citation echo on Drift Mastery burst-edge ("Scots, wha hae"); current 1544 + 4 grace; hot path, factored via entities/ siblings
+  ['entities/Player.ts', 1556], // bumped 2026-05-09 (1548→1556) for charge sub-pool burns_citation echo on BOTH Drift Mastery G-burst AND Whisky Breath F-burst (signature-mechanic symmetry — "Scots, wha hae"); current 1550 + 6 grace; hot path, factored via entities/ siblings
   ['systems/JuiceSystem.ts', 1065], // was 1380 → 1065 (Phase 6 sub-system split; current 1059 + 6 grace)
   ['scenes/SettingsScene.ts', 685], // was 1350 → 845 → 685 (Phase 7 re-baseline; row builders under scenes/settings/; current 677 + 8 grace)
   ['systems/WeaponSystem.ts', 1360], // bumped 2026-05-09 (1335→1360) for Pibroch on-fire stamping (`currentPibrochAligned` helper + 5 fire-site stamps + `pibrochAlignedOverride` plumb on `dealDamageToEnemy`); current 1353 + 7 grace; orchestrator, no obvious sub-system seams
