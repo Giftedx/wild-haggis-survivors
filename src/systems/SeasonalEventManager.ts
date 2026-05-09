@@ -172,6 +172,26 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.bracken_turn.description',
     dateWindow: { startMonth: 11, startDay: 4, endMonth: 11, endDay: 26 },
   },
+  // Tartan Day (Apr 6) — North-American diaspora's national-Scottish
+  // holiday, the date of the Declaration of Arbroath signing in 1320.
+  // Window Apr 4–8 (5 days) — wider than the single-anniversary
+  // windows (Bannockburn 4 days, Glorious Twelfth 3 days) because the
+  // diaspora spans every time zone and the celebration tends to land
+  // across a weekend more often than not. Slots cleanly between
+  // Imbolc (Feb 2 – Feb 8) and Beltane (Apr 28 – May 4) — months of
+  // margin both ways. Cultural framing: warmth, not flag-waving;
+  // Arbroath is 1320 context, no contemporary political stance, no
+  // anti-English content. Banter rides the cloth, the cousins, and
+  // "for freedom alone, which no honest man gives up but with life
+  // itself". Bundles the two sketchpad rows DESIGN_IDEAS §12 named
+  // separately (Tartan Day + Declaration of Arbroath anniversary) —
+  // they share the date.
+  tartan_day: {
+    key: 'tartan_day',
+    nameKey: 'seasonalEvent.tartan_day.name',
+    descriptionKey: 'seasonalEvent.tartan_day.description',
+    dateWindow: { startMonth: 4, startDay: 4, endMonth: 4, endDay: 8 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

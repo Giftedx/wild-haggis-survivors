@@ -13,6 +13,7 @@ import { applyLammasBlessing } from '../../systems/lammasBlessing';
 import { applyBrackenTurnBlessing } from '../../systems/brackenTurnBlessing';
 import { applyBannockburnBlessing } from '../../systems/bannockburnBlessing';
 import { applyGloriousTwelfthBlessing } from '../../systems/gloriousTwelfthBlessing';
+import { applyTartanDayBlessing } from '../../systems/tartanDayBlessing';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -31,6 +32,7 @@ export interface SeasonalRunStartPlan {
   readonly extraCritChance: number;
   readonly extraLifesteal: number;
   readonly extraAoeMultiplier: number;
+  readonly extraPickupRadius: number;
 }
 
 export interface SeasonalRunStartDeps {
@@ -47,6 +49,7 @@ export interface SeasonalRunStartPostSpawnDeps {
   readonly addCritChance: (amount: number) => void;
   readonly addLifesteal: (amount: number) => void;
   readonly addAoeMultiplier: (amount: number) => void;
+  readonly addPickupRadius: (amount: number) => void;
   readonly showToastAfter: (delayMs: number, key: string, color: string) => void;
 }
 
@@ -63,6 +66,7 @@ function inertPlan(seasonalEventKey: string | null = null): SeasonalRunStartPlan
     extraCritChance: 0,
     extraLifesteal: 0,
     extraAoeMultiplier: 0,
+    extraPickupRadius: 0,
   };
 }
 
@@ -93,6 +97,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -106,6 +111,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -119,6 +125,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -132,6 +139,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -145,6 +153,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -158,6 +167,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -171,6 +181,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -184,6 +195,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: brackenResult.extraCritChance,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -197,6 +209,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: bannockburnResult.extraLifesteal,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
   }
 
@@ -210,6 +223,21 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: gloriousTwelfthResult.extraAoeMultiplier,
+      extraPickupRadius: 0,
+    };
+  }
+
+  const tartanDayResult = applyTartanDayBlessing(seasonalEventKey, deps.runModifiers);
+  if (tartanDayResult.applied) {
+    return {
+      seasonalEventKey,
+      toast: toast('ui.tartanDay.blessing_toast', '#b04050'),
+      extraStartingHpHeal: tartanDayResult.extraStartingHpHeal,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: tartanDayResult.extraPickupRadius,
     };
   }
 
@@ -234,6 +262,9 @@ export function applySeasonalRunStartPostSpawn(
   }
   if (plan.extraAoeMultiplier > 0) {
     deps.addAoeMultiplier(plan.extraAoeMultiplier);
+  }
+  if (plan.extraPickupRadius > 0) {
+    deps.addPickupRadius(plan.extraPickupRadius);
   }
   if (plan.toast) {
     deps.showToastAfter(plan.toast.delayMs, plan.toast.key, plan.toast.color);

@@ -59,4 +59,10 @@ export const seasonalEvent = {
     badge_suffix: 'Tha Twelfth',
     ceremony_banner: '🦆 Tha Glorious Twelfth is live — gang tae grund, walk wider.',
   },
+  tartan_day: {
+    name: 'Tartan Day',
+    description: 'Aprile 4 – Aprile 8 — diaspora warmth; tha Declaration o Arbroath.',
+    badge_suffix: 'Tartan Day',
+    ceremony_banner: '🧶 Tartan Day is live — tha muir reaches farer.',
+  },
 } as const;

@@ -456,6 +456,9 @@ export const ui = {
   gloriousTwelfth: {
     blessing_toast: 'Tha Twelfth opens. Gang tae grund; walk wider. +16 HP, ilka weapon\'s airc widens.',
   },
+  tartanDay: {
+    blessing_toast: 'Tartan Day. Diaspora reach. +14 HP, ilka pickup pous a touch farer.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -2585,6 +2588,25 @@ export const ui = {
         j: 'Dugs in tha gully — nae fer ye. Tha haggis is nae on tha rote.',
         k: 'A wider airc reads tha muir better. Ye\'re nae tha only thing breathin.',
         l: 'Whan tha slope\'s thrang, walk slaw. Tha slope forgets fast.',
+      },
+      // SCS overlay of EN tartan_day leaves (2026-05-09). Tha
+      // diaspora's national-Scottish day, anchored on Sixt Aprile —
+      // date o tha Declaration o Arbroath (1320). Hearth tone wi twa
+      // grave-edge moments (c, i) fer tha Declaration's gravity. Nae
+      // anti-English content. 12 leaves — lifts tha cohort tae 11/11.
+      tartan_day: {
+        a: 'Tartan Day. Tha muir reaches farer tha day.',
+        b: 'Sixt o Aprile. Cousins in Cape Breton mind it.',
+        c: 'Tha Declaration\'s day. "Fer freedom alane."',
+        d: 'Diaspora warmth. Ilka clan in ane weave.',
+        e: 'Saunt Andra\'s auld cousin — whan Scotland telt tha warld.',
+        f: 'A piper somewhar in Vermont. Tha muir hears.',
+        g: 'Tha reach is langer tha day. Tha pickups ken it.',
+        h: 'Tartan Day — ilka wanderin haggis comes hame in tha claith.',
+        i: '"Sae lang as a hunder o us bide alive…" — tha Auld lines haud.',
+        j: 'Sixt Aprile thirteen-twenty. Tha Declaration. Tha muir minds it yet.',
+        k: 'Cousins in Otago, Manitoba, Glesga. Same bluid; same muir-pou.',
+        l: 'Walk wide. Tha claith reaches as faur as tha hairt wills.',
       },
     },
   },

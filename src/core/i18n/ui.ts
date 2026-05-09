@@ -818,6 +818,22 @@ export const ui = {
     blessing_toast: 'The Twelfth opens. Go to ground; walk wider. +16 HP, every weapon\'s arc widens.',
   },
   /**
+   * Tartan Day (Apr 4-8). North-American diaspora's national-Scottish
+   * day, anchored on Apr 6 — the date the Declaration of Arbroath was
+   * signed in 1320. Window 5 days because the diaspora spans every
+   * time zone and the celebration tends to land across a weekend more
+   * often than not. +14 HP heal post-spawn (the haggis takes the
+   * cloth) + +20 px additive pickup-radius — gems, coins, polaroids,
+   * every world pickup pulls a touch farther all run. Eleventh
+   * distinct mechanical slot in the cohort. Cultural framing warmth
+   * without flag-waving; Arbroath is 1320 context, no contemporary
+   * political stance. SCOTTISH_RESEARCH_DEEP.md §6.7 (Declaration of
+   * Arbroath) + §14.5 (diaspora).
+   */
+  tartanDay: {
+    blessing_toast: 'Tartan Day. Diaspora reach. +14 HP, every pickup pulls a touch farther.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -3186,6 +3202,28 @@ export const ui = {
         j: 'Dogs in the gully — not for ye. The haggis is no\' on the schedule.',
         k: 'A wider arc reads the moor better. Ye\'re no\' the only thing breathing.',
         l: 'When the slope\'s busy, walk slow. The slope forgets fast.',
+      },
+      // ── Tartan Day (Apr 4-8). The diaspora's national-Scottish day,
+      //    anchored on Apr 6 — date of the Declaration of Arbroath
+      //    (1320). Banter rides the cloth, the cousins, and the line
+      //    "for freedom alone, which no honest man gives up but with
+      //    life itself". Hearth tone with two grave-edge moments (c, i)
+      //    for the Declaration's gravity. SCOTTISH_RESEARCH_DEEP §6.7
+      //    + §14.5. No anti-English content; warmth without flag-
+      //    waving. 12 leaves — lifts the cohort to 11/11.
+      tartan_day: {
+        a: 'Tartan Day. The moor reaches further today.',
+        b: 'Six o\' April. Cousins in Cape Breton remember.',
+        c: 'The Declaration\'s day. "For freedom alone."',
+        d: 'Diaspora warmth. Every clan in one weave.',
+        e: 'Saint Andrew\'s older cousin — when Scotland told the world.',
+        f: 'A piper somewhere in Vermont. The moor hears.',
+        g: 'The reach is longer today. The pickups know it.',
+        h: 'Tartan Day — every wandering haggis comes home in the cloth.',
+        i: '"Sae lang as a hunder o us bide alive…" — the Auld lines hold.',
+        j: 'Six April thirteen-twenty. The Declaration. The moor minds it yet.',
+        k: 'Cousins in Otago, Manitoba, Glasgow. Same blood; same moor-pull.',
+        l: 'Walk wide. The cloth reaches as far as the heart wills.',
       },
     },
   },

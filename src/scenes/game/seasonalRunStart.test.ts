@@ -16,6 +16,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraCritChance: 0,
     extraLifesteal: 0,
     extraAoeMultiplier: 0,
+    extraPickupRadius: 0,
   };
 }
 
@@ -154,6 +155,33 @@ describe('buildSeasonalRunStartPlan', () => {
       },
     });
   });
+
+  it('applies the Tartan Day pickup-radius bonus + diaspora heal', () => {
+    const modifiers = defaultModifiers();
+    const plan = buildSeasonalRunStartPlan({
+      resumeRun: false,
+      disableSeasonalEvents: false,
+      now: new Date(2027, 3, 6),
+      runRng: { pick: vi.fn() } as unknown as RNG,
+      runModifiers: modifiers,
+    });
+
+    expect(modifiers).toEqual(defaultModifiers());
+    expect(plan).toMatchObject({
+      seasonalEventKey: 'tartan_day',
+      extraStartingHpHeal: 14,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 20,
+      toast: {
+        key: 'ui.tartanDay.blessing_toast',
+        color: '#b04050',
+        delayMs: 1500,
+      },
+    });
+  });
 });
 
 describe('applySeasonalRunStartPostSpawn', () => {
@@ -167,6 +195,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -175,6 +204,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addCritChance: (amount) => log.push(`crit:${amount}`),
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -195,6 +225,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraCritChance: 0,
       extraLifesteal: 0.5,
       extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -203,6 +234,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addCritChance: (amount) => log.push(`crit:${amount}`),
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -223,6 +255,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraCritChance: 0,
       extraLifesteal: 0,
       extraAoeMultiplier: 0.10,
+      extraPickupRadius: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -231,6 +264,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addCritChance: (amount) => log.push(`crit:${amount}`),
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -241,6 +275,36 @@ describe('applySeasonalRunStartPostSpawn', () => {
     ]);
   });
 
+  it('applies pickup-radius bonus on a tartan_day plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'tartan_day',
+      toast: { key: 'ui.tartanDay.blessing_toast', color: '#b04050', delayMs: 1500 },
+      extraStartingHpHeal: 14,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 20,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:14',
+      'pickup:20',
+      'toast:1500:ui.tartanDay.blessing_toast:#b04050',
+    ]);
+  });
+
   it('does not touch post-spawn callbacks for an inert plan', () => {
     const calls = {
       heal: vi.fn(),
@@ -248,6 +312,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addCritChance: vi.fn(),
       addLifesteal: vi.fn(),
       addAoeMultiplier: vi.fn(),
+      addPickupRadius: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -258,6 +323,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.addCritChance).not.toHaveBeenCalled();
     expect(calls.addLifesteal).not.toHaveBeenCalled();
     expect(calls.addAoeMultiplier).not.toHaveBeenCalled();
+    expect(calls.addPickupRadius).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

@@ -2257,6 +2257,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.glorious_twelfth.k',
         'ui.banter.seasonal_event.glorious_twelfth.l',
       ],
+      // 2026-05-09 — Tartan Day (Apr 4-8) lifts the cohort banter
+      // coverage to 11/11. Diaspora's national-Scottish day, anchored
+      // on Apr 6 — the date of the Declaration of Arbroath signing in
+      // 1320. Banter rides the cloth, the cousins, and "for freedom
+      // alone, which no honest man gives up but with life itself".
+      // Hearth tone with two grave-edge moments (c, i) for the
+      // Declaration's gravity. No anti-English content. SCOTTISH_
+      // RESEARCH_DEEP §6.7 (Declaration of Arbroath) + §14.5 (diaspora).
+      tartan_day: [
+        'ui.banter.seasonal_event.tartan_day.a',
+        'ui.banter.seasonal_event.tartan_day.b',
+        'ui.banter.seasonal_event.tartan_day.c',
+        'ui.banter.seasonal_event.tartan_day.d',
+        'ui.banter.seasonal_event.tartan_day.e',
+        'ui.banter.seasonal_event.tartan_day.f',
+        'ui.banter.seasonal_event.tartan_day.g',
+        'ui.banter.seasonal_event.tartan_day.h',
+        'ui.banter.seasonal_event.tartan_day.i',
+        'ui.banter.seasonal_event.tartan_day.j',
+        'ui.banter.seasonal_event.tartan_day.k',
+        'ui.banter.seasonal_event.tartan_day.l',
+      ],
     },
   },
 ];

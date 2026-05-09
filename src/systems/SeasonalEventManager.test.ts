@@ -376,3 +376,33 @@ describe('E1 Glorious Twelfth — grouse season opening', () => {
     expect(twelfthDay).not.toContain('bracken_turn');
   });
 });
+
+describe('E1 Tartan Day — diaspora + Declaration of Arbroath', () => {
+  it('is active on the named day (Apr 6)', () => {
+    expect(isSeasonalEventActive('tartan_day', d(2027, 4, 6))).toBe(true);
+  });
+
+  it('is active on the window edges (Apr 4 + Apr 8)', () => {
+    expect(isSeasonalEventActive('tartan_day', d(2027, 4, 4))).toBe(true);
+    expect(isSeasonalEventActive('tartan_day', d(2027, 4, 8))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('tartan_day', d(2027, 4, 3))).toBe(false);
+    expect(isSeasonalEventActive('tartan_day', d(2027, 4, 9))).toBe(false);
+  });
+
+  it('is inactive in midwinter', () => {
+    expect(isSeasonalEventActive('tartan_day', d(2027, 1, 15))).toBe(false);
+  });
+
+  it('does not overlap Imbolc or Beltane (clean spring slot)', () => {
+    // Imbolc closes Feb 8; Beltane opens Apr 28. Tartan Day Apr 4–8
+    // sits with eight weeks of margin to Imbolc and three weeks to
+    // Beltane.
+    const tartanDay = activeSeasonalEvents(d(2027, 4, 6));
+    expect(tartanDay).toContain('tartan_day');
+    expect(tartanDay).not.toContain('imbolc');
+    expect(tartanDay).not.toContain('beltane');
+  });
+});
