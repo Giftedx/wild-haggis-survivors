@@ -14,6 +14,7 @@ import { bakeBurnsPlatter } from './burnsPlatter';
 import { bakePickupVariants } from './variants';
 import { bakePolaroid } from './polaroid';
 import { bakeCairnStone } from './cairnStone';
+import { bakeClootieTree } from './clootieTree';
 
 export function bakePickups(scene: Phaser.Scene): void {
   bakeXpGem(scene);
@@ -24,4 +25,5 @@ export function bakePickups(scene: Phaser.Scene): void {
   bakePickupVariants(scene);
   bakePolaroid(scene);
   bakeCairnStone(scene);
+  bakeClootieTree(scene);
 }

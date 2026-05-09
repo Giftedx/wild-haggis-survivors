@@ -47,6 +47,8 @@ import {
 } from './ancestralEcho';
 import { StandingStones, type StoneBoon } from './standingStones';
 import { Reliquary, type ReliquaryCurio } from './reliquary';
+import { ClootieTree } from './clootieTree';
+import type { ClootieBoon } from '../../entities/clootieRagWager';
 import { crossesMoorMercyHpFrac } from './moorMercyTrigger';
 import { formatRunIdentityToast } from './runIdentityToast';
 
@@ -199,6 +201,48 @@ export function spawnReliquary(ctx: MoorMomentsContext): Reliquary {
   });
   reliquary.spawn();
   return reliquary;
+}
+
+/**
+ * Clootie Tree — single sacred-supplication landmark per run. Walking
+ * into the trunk wagers a slice of max-HP for a single rolled boon
+ * (wrath / patience / haste). Cost is visible above the tree from the
+ * moment it spawns; walking around it is the "decline" path.
+ *
+ * Mirrors `spawnReliquary` but distinct: where the reliquary is a
+ * gift, the clootie tree is a *trade*. Save bumps land in a new
+ * `bumpClootieWagerCommit` slot once the save schema is bumped to
+ * track it; v1 ships the gameplay loop without the deed counter.
+ *
+ * Refs: SCOTTISH_RESEARCH_DEEP.md §22.4 (clootie wells); DESIGN_IDEAS.md §1.
+ */
+export function spawnClootieTree(ctx: MoorMomentsContext): ClootieTree {
+  const tree = new ClootieTree({
+    scene: ctx.scene,
+    player: ctx.player,
+    rng: ctx.runRng,
+    worldWidth: GAME.WORLD_WIDTH,
+    worldHeight: GAME.WORLD_HEIGHT,
+    runBaseMaxHp: ctx.player.getRunBaseMaxHp(),
+    onPick: (boon: ClootieBoon, hpCost: number) => {
+      const title = t(boon.titleKey);
+      const desc = t(boon.descKey);
+      ctx.juice.showToast(
+        t('ui.clootie.commit_toast', { title, cost: String(hpCost) }),
+        '#cfd0a8',
+      );
+      ctx.caption('clootie_commit', desc, '#cfd0a8', 3500);
+      // Reuse the stone-grant chime — soft sub-bell, sits beside the
+      // hearth tone of the wager. A bespoke clootie sting is open as
+      // a v2 followup if a sound pass widens the audio palette.
+      audio.playStoneGrant();
+      ctx.banter?.request('clootie_wager', { tag: 'bound' });
+    },
+  });
+  tree.spawn();
+  ctx.juice.showToast(t('ui.clootie.announce_toast'), '#cfd0a8');
+  ctx.caption('clootie_announce', t('ui.clootie.announce_caption'), '#cfd0a8', 3000);
+  return tree;
 }
 
 /**

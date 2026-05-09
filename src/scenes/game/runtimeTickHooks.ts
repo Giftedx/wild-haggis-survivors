@@ -29,6 +29,7 @@ import type { ChestSpriteRegistry } from './ChestSpriteRegistry';
 import type { MoorMomentScheduler } from './MoorMomentScheduler';
 import type { CairnStackingScheduler } from './CairnStackingScheduler';
 import type { Reliquary } from './reliquary';
+import type { ClootieTree } from './clootieTree';
 import type { StandingStones } from './standingStones';
 import type { BossHpTracker } from './BossHpTracker';
 import type { GameTickers } from './GameTickers';
@@ -74,10 +75,13 @@ export interface SecondTickHookContext {
   getStandingStones: () => StandingStones | null;
   getReliquary: () => Reliquary | null;
   getReliquarySpawnSec: () => number;
+  getClootieTree: () => ClootieTree | null;
+  getClootieSpawnSec: () => number;
   getStonesWarned: () => boolean;
   markStonesWarned: () => void;
   spawnStandingStones: () => void;
   spawnReliquary: () => void;
+  spawnClootieTree: () => void;
   caption: (id: string, msg: string, tint: string, dur: number) => void;
 }
 
@@ -118,6 +122,14 @@ export function tickSecondCounter(
   const reliqSec = ctx.getReliquarySpawnSec();
   if (reliqSec > 0 && runSec >= reliqSec && !ctx.getReliquary()) {
     ctx.spawnReliquary();
+  }
+  // DESIGN_IDEAS §1 Clootie Rag Wager — sister to reliquary, sits in
+  // the same boundary-cross pattern. Once-only via `getClootieTree()`
+  // null-check; the `>=` tolerance handles a paused-then-resumed
+  // counter that skips the exact tick.
+  const clootieSec = ctx.getClootieSpawnSec();
+  if (clootieSec > 0 && runSec >= clootieSec && !ctx.getClootieTree()) {
+    ctx.spawnClootieTree();
   }
   return runSec;
 }

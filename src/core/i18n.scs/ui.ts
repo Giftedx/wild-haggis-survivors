@@ -393,6 +393,28 @@ export const ui = {
       desc: 'Moss cool unnerfit — tha moor mends ye steady.',
     },
   },
+  /** Clootie Rag Wager (DESIGN_IDEAS §1). SCS overlay for ui.clootie —
+   *  toast / caption / banner / boon titles. "Cloot" is the canonical
+   *  Scots word for cloth/rag. Light Scots conventions per Phase B:
+   *  tae/wee/o'/grace, bough → bough (kept). */
+  clootie: {
+    announce_toast: 'A cloot tree, hung wi\' rags. Tha moor offers a trade.',
+    announce_caption: 'Walkin through binds tha wager — cloth o\' yer HP fer tha boon shown abune.',
+    banner: '−{cost} HP · {boon}',
+    commit_toast: '{title} bound — {cost} HP gien.',
+    wrath: {
+      title: 'Wrath',
+      desc: 'A reid rag knottit ticht — yer blows bite a quarter herder.',
+    },
+    patience: {
+      title: 'Patience',
+      desc: 'A peelie rag, slaw-twirlin — tha moor draws pickups in fae further.',
+    },
+    haste: {
+      title: 'Haste',
+      desc: 'A green rag whuppin — weapons answer fifteen percent quicker.',
+    },
+  },
   standingStones: {
     announce_toast: 'Three stanes stir — pick yer blessin.',
     announce_caption: 'Three standin stanes hae risen — walk tae wan tae claim it.',
@@ -1629,6 +1651,23 @@ export const ui = {
     shinty_parry: {
       a: 'Caman flick — that\'s hoo it\'s done.',
       b: 'Aff tha ash, easy as that.',
+    },
+    // ── Clootie Rag Wager (DESIGN_IDEAS §1). SCS overlay for clootie_wager.
+    //    Hearth + grave register, ceremonial gravity. "Cloot" is Scots
+    //    for cloth/rag (origin of the well-name). "Bound" is the
+    //    Scots-vernacular for the act of tying the cloth to the bough
+    //    — the moment the wager is made. Light Scots throughout per
+    //    Phase B conventions: tae/wee/o'/grace.
+    clootie_wager: {
+      generic: {
+        a: 'Tied a wee piece o\' me tae tha bough.',
+        b: 'Trade made. Fair price.',
+      },
+      bound: {
+        a: 'Cloot on tha bough — bargain bound.',
+        b: 'Strip o\' me fer a strip o\' grace.',
+        c: 'Tha well taks its share. Tha moor pays back.',
+      },
     },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.
     //    Scots conventions per Phase B: yir/nae/dinnae/tae/wee/ken, tha/fae/wance.

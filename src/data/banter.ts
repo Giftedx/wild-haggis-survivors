@@ -70,7 +70,11 @@ export type BanterContext =
   // E-parry of an enemy projectile). Hearth-warm pride; the parry
   // already speaks loudly via VFX/SFX so the line is a low-key murmur,
   // not a celebration. No sub-pool tags — single consume context.
-  | 'shinty_parry';
+  | 'shinty_parry'
+  // DESIGN_IDEAS §1 Clootie Rag Wager — fires on commit edge (player
+  // walked into the trunk and paid the HP cost). Sub-pool tag `bound`.
+  // Hearth + grave register: ceremonial, the moment of supplication.
+  | 'clootie_wager';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1264,6 +1268,34 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.shinty_parry.a',
       'ui.banter.shinty_parry.b',
     ],
+  },
+  {
+    // Clootie Rag Wager (DESIGN_IDEAS §1) — fires on commit edge (the
+    // player walked into the trunk and paid the HP cost). Priority 33
+    // sits *just above* cairn_moment (32): the cairn is a pilgrimage,
+    // the clootie is a *trade*, and the trade reads as the heavier
+    // moment (cost-bearing, irreversible). Still below the moor-event
+    // band (35+) and Gran (28 — the elder voice belongs to Gran, not
+    // the moor's lower folk-spirits). Hearth + grave register —
+    // ceremonial gravity, the kind of small rite a Munro-walker pauses
+    // to acknowledge with a head-bow. Single tag `bound` (commit edge)
+    // for v1; an `offered` echo on tree-spawn could surface in v2 if
+    // the announce toast feels too quiet.
+    context: 'clootie_wager',
+    tone: 'hearth',
+    priority: 33,
+    rare: true,
+    keys: [
+      'ui.banter.clootie_wager.generic.a',
+      'ui.banter.clootie_wager.generic.b',
+    ],
+    keysByTag: {
+      bound: [
+        'ui.banter.clootie_wager.bound.a',
+        'ui.banter.clootie_wager.bound.b',
+        'ui.banter.clootie_wager.bound.c',
+      ],
+    },
   },
   {
     // B1 Phase 2 — Gran's commentary. Hearth, elder warmth *about* the run.

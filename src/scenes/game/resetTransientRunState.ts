@@ -54,6 +54,8 @@ import type { MoorMomentsState } from './moorMoments';
 import { resetReplayBridge } from './replayBridgeInstall';
 import { tearDownNodeMap } from './nodeMapLifecycle';
 import { chooseReliquarySpawnSec } from './reliquary';
+import { chooseClootieSpawnSec } from '../../entities/clootieRagWager';
+import type { ClootieTree } from './clootieTree';
 import type { StandingStones } from './standingStones';
 import type { Reliquary } from './reliquary';
 import type { AncestralEcho } from './ancestralEcho';
@@ -94,6 +96,7 @@ export interface ResetTransientRunStateDeps {
   moorMomentsState: MoorMomentsState;
   standingStones: StandingStones | null;
   reliquary: Reliquary | null;
+  clootieTree: ClootieTree | null;
   ancestralEcho: AncestralEcho | null;
   relicSlotUI: RelicSlotUI | null;
 
@@ -109,6 +112,7 @@ export interface ResetTransientRunStateDeps {
   setRunRng: (v: RngType) => void;
   setPendingRunSeed: (v: number | null) => void;
   setReliquarySpawnSec: (v: number) => void;
+  setClootieSpawnSec: (v: number) => void;
   setPendingChests: (v: Array<{ golden: boolean }>) => void;
   setPickupDespawnHandles: (v: TickerHandle[]) => void;
   setVictoryFade: (v: null) => void;
@@ -121,6 +125,7 @@ export interface ResetTransientRunStateDeps {
   setStandingStones: (v: StandingStones | null) => void;
   setStonesWarned: (v: boolean) => void;
   setReliquary: (v: Reliquary | null) => void;
+  setClootieTree: (v: ClootieTree | null) => void;
   setAncestralEcho: (v: AncestralEcho | null) => void;
   setRelicSlotUI: (v: RelicSlotUI | null) => void;
   setXpOverflowGoldBatch: (v: number) => void;
@@ -166,6 +171,11 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   // Reliquary spawn moment rolled once per run so the same seed always
   // places the relic at the same second (daily runs + replay reproduce).
   deps.setReliquarySpawnSec(chooseReliquarySpawnSec(runRng));
+  // Clootie tree spawn moment — rolled adjacent to the reliquary roll
+  // so RNG-stream order is fixed, replays reproduce. The two roll
+  // independently from the same `runRng`, so the order is part of the
+  // replay contract — NEVER reorder them.
+  deps.setClootieSpawnSec(chooseClootieSpawnSec(runRng));
   deps.setPendingChests([]);
   deps.setPickupDespawnHandles([]);
   deps.updateTickers.clear();
@@ -199,6 +209,8 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.setStonesWarned(false);
   deps.reliquary?.destroy();
   deps.setReliquary(null);
+  deps.clootieTree?.destroy();
+  deps.setClootieTree(null);
   deps.ancestralEcho?.destroy();
   deps.setAncestralEcho(null);
   deps.relicSlotUI?.destroy();

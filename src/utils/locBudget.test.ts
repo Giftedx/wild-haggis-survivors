@@ -18,14 +18,14 @@ const SRC_ROOT = join(__dirname, '..');
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
-  ['scenes/GameScene.ts', 1715], // bumped 2026-05-09 (1692→1715) for Cairn Stacking scheduler ctor + buildSecondTickHookContext field (DESIGN_IDEAS §1); current 1711 + 4 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
-  ['data/banter.ts', 2455], // bumped 2026-05-09 (2430→2455) for shinty_parry pool (DESIGN_IDEAS §1 Shinty Parry — context union member + pool entry, hearth tone, priority 27, two leaves on consume edge, no sub-pools); current 2447 + 8 grace; pure data, parity-fenced, kept whole. Earlier bumps same day: 2400→2430 (stance_change) + 2375→2400 (simmer_dim seasonal)
+  ['scenes/GameScene.ts', 1740], // bumped 2026-05-09 (1715→1740) for Clootie Rag Wager wiring (DESIGN_IDEAS §1 — clootieTree field + clootieSpawnSec field + reset deps + buildSecondTickHookContext entries + spawnClootieTree method, all sister-pattern to reliquary); current 1731 + 9 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
+  ['data/banter.ts', 2490], // bumped 2026-05-09 (2455→2490) for clootie_wager pool (DESIGN_IDEAS §1 Clootie Rag Wager — context union member + pool entry, hearth tone, priority 33, generic + bound sub-pool, three leaves on commit edge); current 2479 + 11 grace; pure data, parity-fenced, kept whole. Earlier bumps same day: 2430→2455 (shinty_parry) + 2400→2430 (stance_change) + 2375→2400 (simmer_dim seasonal)
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)
   ['entities/Enemy.ts', 1585], // bumped 2026-05-09 (1570→1585) for spawnerMinionKey passthrough (Nicnevin's unseelie_fiddler summoner); current 1577 + 8 grace; hot path, factored via entities/ siblings
   ['art/sprites/croft/seasonalProps.ts', 5], // was 1550 (Phase 2.3 barrel)
-  ['entities/Player.ts', 1705], // bumped 2026-05-09 (1620→1705) for Shinty Parry wiring (DESIGN_IDEAS §1 — fourth skill-expression layer; E-key edge poll + parry tick + tryParryProjectile method + first-success caption + banter request + three HUD accessors); current 1696 + 9 grace; hot path, helper-extracted via entities/shintyParry.ts. Earlier bump same day (1556→1620) for Stance Toggle
+  ['entities/Player.ts', 1720], // bumped 2026-05-09 (1705→1720) for Clootie Rag Wager (DESIGN_IDEAS §1 — applyClootieWagerCost method clamps current HP to new max with floor 1, sister to addMaxHp); current 1715 + 5 grace; hot path. Earlier bumps same day: 1620→1705 (Shinty Parry), 1556→1620 (Stance Toggle)
   ['systems/JuiceSystem.ts', 1065], // was 1380 → 1065 (Phase 6 sub-system split; current 1059 + 6 grace)
   ['scenes/SettingsScene.ts', 685], // was 1350 → 845 → 685 (Phase 7 re-baseline; row builders under scenes/settings/; current 677 + 8 grace)
   ['systems/WeaponSystem.ts', 1360], // bumped 2026-05-09 (1335→1360) for Pibroch on-fire stamping (`currentPibrochAligned` helper + 5 fire-site stamps + `pibrochAlignedOverride` plumb on `dealDamageToEnemy`); current 1353 + 7 grace; orchestrator, no obvious sub-system seams

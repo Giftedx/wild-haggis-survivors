@@ -1455,6 +1455,25 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.hp = Math.min(this.hp + amount, this.maxHp);
   }
 
+  /**
+   * Clootie Rag Wager — DESIGN_IDEAS §1. Subtracts a permanent slice
+   * of max-HP for the rest of the run AND clamps current HP to the new
+   * max, mirroring the folkloric act of giving something of yourself in
+   * exchange for a boon. Distinct from `addMaxHp(-N)` because the floor
+   * at 1 HP keeps the tree from killing a low-HP supplicant: clootie
+   * wells in folklore ask for a permanent diminishment, not a death.
+   *
+   * Caller (`clootieTree.commit()`) follows this with the boon
+   * application via `applyClootieBoon`. No-op for non-positive amounts
+   * so a noisy caller can't accidentally heal here.
+   */
+  applyClootieWagerCost(amount: number): void {
+    if (amount <= 0) return;
+    this.bonusMaxHp -= amount;
+    this.recalcStats();
+    this.hp = Math.max(1, Math.min(this.hp - amount, this.maxHp));
+  }
+
   addPickupRadius(amount: number): void {
     this.bonusPickupRadius += amount;
     this.recalcStats();

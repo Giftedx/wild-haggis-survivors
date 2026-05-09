@@ -90,6 +90,7 @@ import {
   trySpawnAncestralEcho as moorMomentsTrySpawnAncestralEcho,
   spawnStandingStones as moorMomentsSpawnStandingStones,
   spawnReliquary as moorMomentsSpawnReliquary,
+  spawnClootieTree as moorMomentsSpawnClootieTree,
   showRunIdentityToast as moorMomentsShowRunIdentityToast,
 } from './game/moorMoments';
 import { PauseMenu } from './game/PauseMenu';
@@ -99,6 +100,7 @@ import type { PickupSpawner } from './game/PickupSpawner';
 import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
 import { Reliquary } from './game/reliquary';
+import { ClootieTree } from './game/clootieTree';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
@@ -249,6 +251,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Run-specific second at which the reliquary spawns. Rolled from runRng
    *  at run start so the same seed always produces the same placement. */
   private reliquarySpawnSec: number = 0;
+  /** Clootie Tree — single sacred-supplication landmark per run. Walking
+   *  through commits the wager: a slice of max-HP for a rolled boon. */
+  clootieTree: ClootieTree | null = null;
+  /** Run-specific second at which the clootie tree spawns (DESIGN_IDEAS §1). */
+  private clootieSpawnSec: number = 0;
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
   ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
@@ -507,6 +514,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       moorMomentsState: this.moorMomentsState,
       standingStones: this.standingStones,
       reliquary: this.reliquary,
+      clootieTree: this.clootieTree,
       ancestralEcho: this.ancestralEcho,
       relicSlotUI: this.relicSlotUI,
       setReplayInput: (v) => { this.replayInput = v; },
@@ -520,6 +528,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setRunRng: (v) => { this.runRng = v; },
       setPendingRunSeed: (v) => { this.pendingRunSeed = v; },
       setReliquarySpawnSec: (v) => { this.reliquarySpawnSec = v; },
+      setClootieSpawnSec: (v) => { this.clootieSpawnSec = v; },
       setPendingChests: (v) => { this.pendingChests = v; },
       setPickupDespawnHandles: (v) => { this.pickupDespawnHandles = v; },
       setVictoryFade: (v) => { this.victoryFade = v; },
@@ -532,6 +541,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setStandingStones: (v) => { this.standingStones = v; },
       setStonesWarned: (v) => { this.stonesWarned = v; },
       setReliquary: (v) => { this.reliquary = v; },
+      setClootieTree: (v) => { this.clootieTree = v; },
       setAncestralEcho: (v) => { this.ancestralEcho = v; },
       setRelicSlotUI: (v) => { this.relicSlotUI = v; },
       setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
@@ -1387,10 +1397,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getStandingStones: () => this.standingStones,
       getReliquary: () => this.reliquary,
       getReliquarySpawnSec: () => this.reliquarySpawnSec,
+      getClootieTree: () => this.clootieTree,
+      getClootieSpawnSec: () => this.clootieSpawnSec,
       getStonesWarned: () => this.stonesWarned,
       markStonesWarned: () => { this.stonesWarned = true; },
       spawnStandingStones: () => this.spawnStandingStones(),
       spawnReliquary: () => this.spawnReliquary(),
+      spawnClootieTree: () => this.spawnClootieTree(),
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     };
   }
@@ -1430,6 +1443,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private spawnReliquary(): void {
     if (this.reliquary) return;
     this.reliquary = moorMomentsSpawnReliquary(this.buildMoorMomentsContext());
+  }
+
+  private spawnClootieTree(): void {
+    if (this.clootieTree) return;
+    this.clootieTree = moorMomentsSpawnClootieTree(this.buildMoorMomentsContext());
   }
 
   private showRunIdentityToast(isResume: boolean): void {

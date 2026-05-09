@@ -49,6 +49,8 @@ describe('BANTER_POOLS structure', () => {
     'stance_change',
     // DESIGN_IDEAS §1 — Shinty Parry consume edge (E-window success)
     'shinty_parry',
+    // DESIGN_IDEAS §1 — Clootie Rag Wager commit edge (walk-through trunk)
+    'clootie_wager',
   ];
 
   it('covers every BanterContext exactly once', () => {

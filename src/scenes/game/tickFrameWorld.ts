@@ -62,6 +62,7 @@ import type { RunActState } from './RunActState';
 import type { RunLifecycle } from './RunLifecycle';
 import type { StandingStones } from './standingStones';
 import type { Reliquary } from './reliquary';
+import type { ClootieTree } from './clootieTree';
 import type { AncestralEcho } from './ancestralEcho';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import type { RelicOrchestrator } from './RelicOrchestrator';
@@ -108,6 +109,7 @@ export interface TickFrameWorldDeps {
   /** Lazy — destroyed + nulled between runs. */
   getStandingStones: () => StandingStones | null;
   getReliquary: () => Reliquary | null;
+  getClootieTree: () => ClootieTree | null;
   getAncestralEcho: () => AncestralEcho | null;
   /** Setter for the `null` write when the ancestral echo resolves. */
   setAncestralEcho: (v: AncestralEcho | null) => void;
@@ -222,6 +224,7 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
 
   deps.getStandingStones()?.tick();
   deps.getReliquary()?.tick();
+  deps.getClootieTree()?.tick();
   tickRelicEffectFrame({
     scaledDelta,
     player: deps.player,

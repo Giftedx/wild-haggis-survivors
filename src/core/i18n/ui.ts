@@ -685,6 +685,30 @@ export const ui = {
       desc: 'Moss cool underfoot — the moor mends ye steady.',
     },
   },
+  /** Clootie Rag Wager (DESIGN_IDEAS §1). One sacred-supplication tree
+   *  per run; walking through the trunk wagers a slice of max-HP for a
+   *  rolled boon. The banner above the tree always shows the cost +
+   *  boon name, so the player commits eyes-open. Hearth + grave voice:
+   *  the lines reference the folkloric act (cloth on the branch, water
+   *  from the well, an offering for grace) without ironic varnish. */
+  clootie: {
+    announce_toast: 'A clootie tree, hung wi\' rags. The moor offers a trade.',
+    announce_caption: 'Walkin\' through binds the wager — cloth o\' yer HP for the boon shown above.',
+    banner: '−{cost} HP · {boon}',
+    commit_toast: '{title} bound — {cost} HP given.',
+    wrath: {
+      title: 'Wrath',
+      desc: 'A red rag knotted tight — yir blows bite a quarter harder.',
+    },
+    patience: {
+      title: 'Patience',
+      desc: 'A pale rag, slow-twirlin\' — the moor draws pickups in fae further.',
+    },
+    haste: {
+      title: 'Haste',
+      desc: 'A green rag whippin\' — weapons answer fifteen percent quicker.',
+    },
+  },
   /** Standing Stones — mid-run trinity at the 5:00 mark. */
   standingStones: {
     announce_toast: 'Three stones stir — pick yer blessing.',
@@ -2113,6 +2137,26 @@ export const ui = {
     shinty_parry: {
       a: 'Caman flick — that\'s how it\'s done.',
       b: 'Aff the ash, easy as that.',
+    },
+    /** Clootie Rag Wager (DESIGN_IDEAS §1). Fires on commit edge — the
+     *  player walked through the trunk and paid the HP cost. Hearth +
+     *  grave register: ceremonial gravity, no celebration. The act is
+     *  a folkloric supplication for healing or favour, real in
+     *  Munlochy / Avoch / Culloden wells today; the haggis voices it
+     *  as a quiet trade, eyes on the rags. Three sub-pool leaves clear
+     *  the no-repeat ring on the rare same-run double-pass (impossible
+     *  in v1 — one tree per run — but defensive against v2 expansions).
+     *  Generic two-leaf fallback covers a tagless `request`. */
+    clootie_wager: {
+      generic: {
+        a: 'Tied a wee piece o\' me to the branch.',
+        b: 'Trade made. Fair price.',
+      },
+      bound: {
+        a: 'Cloth on the bough — bargain bound.',
+        b: 'Strip o\' me for a strip o\' grace.',
+        c: 'The well takes its share. The moor pays back.',
+      },
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder
     //    warmth *about* the run. Keep lines short and tender. Never
