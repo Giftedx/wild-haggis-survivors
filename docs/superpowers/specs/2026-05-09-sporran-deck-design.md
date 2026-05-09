@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-09
 **Initiative:** S1 (new). Pulled from DESIGN_IDEAS §1 Sporran Deck.
-**Status:** Draft — Phase 0 (pure helper + tests + spec/plan) ready to ship same day.
+**Status:** Phase 0 + Phase 1 shipped 2026-05-09 (Phase 0 commit `eabe2a6`; Phase 1 commit `6275720`). Phase 2 (chronicle persistence) + Phase 3 (pool expansion) deferred. Phase 1.5 follow-up logged: DOM-focus mirror parity with CurseScene's T407 a11y layer.
 **Word count:** ~2,000
 **Prerequisite:** None. Sits alongside CurseScene + RunModifiers, replaces nothing.
 
