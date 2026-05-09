@@ -74,7 +74,13 @@ export type BanterContext =
   // DESIGN_IDEAS §1 Clootie Rag Wager — fires on commit edge (player
   // walked into the trunk and paid the HP cost). Sub-pool tag `bound`.
   // Hearth + grave register: ceremonial, the moment of supplication.
-  | 'clootie_wager';
+  | 'clootie_wager'
+  // DESIGN_IDEAS §1 Taxman Grudge Ledger — fires once at run-end victory
+  // (the Taxman is the final boss; only victory routes reach his
+  // closing word). Sub-pool tags = grudge verdicts: coward | bruiser |
+  // precise | reckless | even. Edge register — auditor's sneer; this
+  // is the antagonist getting the curtain line on the run he just lost.
+  | 'taxman_grudge';
 
 export interface BanterPool {
   context: BanterContext;
@@ -2388,6 +2394,46 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.simmer_dim.j',
         'ui.banter.seasonal_event.simmer_dim.k',
         'ui.banter.seasonal_event.simmer_dim.l',
+      ],
+    },
+  },
+  // Taxman Grudge Ledger (DESIGN_IDEAS §1) — verdict-keyed closing
+  // line at run-end victory. Priority 85 sits between death_reflection
+  // (75) and boss_warn (100): wins same-tick over gran_commentary (28)
+  // so the Taxman gets his ledger word on a victory tick, but the
+  // ironmoor first-time line (110) and any active boss-warn still
+  // outrank if they happen to fire same-tick. Edge tone — this is the
+  // antagonist's voice, the auditor's sneer. Four sub-pools cover the
+  // *opinionated* verdicts (coward / bruiser / precise / reckless);
+  // the `even` verdict — "no clear pattern, forgettable" — falls
+  // through to the pool's `keys` fallback by passing tag 'even' which
+  // misses keysByTag and lands on the unconditional pair. This keeps
+  // every authored leaf reachable through exactly one path so the
+  // global-uniqueness pool-key test (BanterSystem.test) stays green.
+  {
+    context: 'taxman_grudge',
+    tone: 'edge',
+    priority: 85,
+    keys: [
+      'ui.banter.taxman_grudge.even.a',
+      'ui.banter.taxman_grudge.even.b',
+    ],
+    keysByTag: {
+      coward: [
+        'ui.banter.taxman_grudge.coward.a',
+        'ui.banter.taxman_grudge.coward.b',
+      ],
+      bruiser: [
+        'ui.banter.taxman_grudge.bruiser.a',
+        'ui.banter.taxman_grudge.bruiser.b',
+      ],
+      precise: [
+        'ui.banter.taxman_grudge.precise.a',
+        'ui.banter.taxman_grudge.precise.b',
+      ],
+      reckless: [
+        'ui.banter.taxman_grudge.reckless.a',
+        'ui.banter.taxman_grudge.reckless.b',
       ],
     },
   },

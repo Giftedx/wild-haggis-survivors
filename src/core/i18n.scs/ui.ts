@@ -1669,6 +1669,35 @@ export const ui = {
         c: 'Tha well taks its share. Tha moor pays back.',
       },
     },
+    // ── Taxman Grudge Ledger (DESIGN_IDEAS §1). SCS overlay for
+    //    taxman_grudge. Edge tone — bureaucrat-sneer in Scots register.
+    //    The Taxman in Scots is sharper, not softer: ledger / column /
+    //    audit / mairgin land verbatim, but the consonants bite. He
+    //    speaks first-person as the bureaucrat the run just buried —
+    //    not the haggis, who only voices him via boss_warn.taxman.*.
+    //    Five verdict sub-pools mirror the EN pool, two leaves each.
+    taxman_grudge: {
+      coward: {
+        a: 'Distance markit. Tha ledger pits ye under "cannie".',
+        b: 'Aye, ye kept yer haggis trig. Mine peyed tha rent in reid ink.',
+      },
+      bruiser: {
+        a: 'Richt in their teeth. Nae airt — jist hunger.',
+        b: 'Brawler\'s column. Nane o\' mine got tae retire weel.',
+      },
+      precise: {
+        a: 'Untouched by tha wark. Suspicious tidy buiks.',
+        b: 'No a scart on yer ledger. I\'ll audit that yin twice.',
+      },
+      reckless: {
+        a: 'On tha brink, ilka time. Daft or darin — same column.',
+        b: 'Ye feenisht mine tha wey ye\'ll feenish yersel.',
+      },
+      even: {
+        a: 'A column o\' middlin entries. Forgettable.',
+        b: 'Naethin worth merkin in tha mairgin. Buik\'s steekit.',
+      },
+    },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.
     //    Scots conventions per Phase B: yir/nae/dinnae/tae/wee/ken, tha/fae/wance.
     gran_commentary: {

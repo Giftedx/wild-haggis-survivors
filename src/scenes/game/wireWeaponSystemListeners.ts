@@ -38,6 +38,8 @@ import type { RunStatsTracker } from '../../systems/RunStatsTracker';
 import type { SFXManager } from '../../systems/audio/SFXManager';
 import type { EnemyKillHandler } from './EnemyKillHandler';
 import type { RuneEffectBag } from '../../systems/runes/runeEffects';
+import type { GrudgeLedgerState } from '../../entities/grudgeLedger';
+import { recordGrudgeFinish } from '../../entities/grudgeLedger';
 import { audio } from '../../systems/AudioSystem';
 import { noteCascadeKill } from '../../systems/runes/runeConsumer';
 import { pickTrailColor } from '../../data/weaponTrailColors';
@@ -53,6 +55,13 @@ export interface WireWeaponSystemListenersInputs {
   runStatsTracker: RunStatsTracker;
   runeBag: RuneEffectBag;
   getSFXManager: () => SFXManager;
+  /**
+   * Taxman Grudge Ledger — per-run finish buffer. The listener subscribes
+   * to `weaponSystem.events.on('eliteOrBossFinished', …)` and pushes a
+   * snapshot of (distancePx, hpFraction, wasBoss) at each elite/boss
+   * kill. Verdict consumed at run-end (`RunLifecycle.handleVictory`).
+   */
+  grudgeLedger: GrudgeLedgerState;
 }
 
 export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInputs): void {
@@ -65,6 +74,7 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
     runStatsTracker,
     runeBag,
     getSFXManager,
+    grudgeLedger,
   } = inputs;
 
   weaponSystem.events.on(
@@ -85,6 +95,21 @@ export function wireWeaponSystemListeners(inputs: WireWeaponSystemListenersInput
   weaponSystem.events.on('enemyKilled', () => {
     noteCascadeKill(runeBag);
   });
+
+  // Taxman Grudge Ledger — record elite/boss finishes for the run-end
+  // verdict. Player HP fraction is read live (cheap synchronous getter)
+  // so it reflects the moment the kill landed. Distance is precomputed
+  // by WeaponSystem at the emit site.
+  weaponSystem.events.on(
+    'eliteOrBossFinished',
+    (payload: { enemyKey: string; wasBoss: boolean; distancePx: number }) => {
+      recordGrudgeFinish(grudgeLedger, {
+        distancePx: payload.distancePx,
+        hpFraction: player.getHpFraction(),
+        wasBoss: payload.wasBoss,
+      });
+    },
+  );
 
   weaponSystem.events.on(
     'damageDealt',

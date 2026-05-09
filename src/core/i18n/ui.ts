@@ -2158,6 +2158,38 @@ export const ui = {
         c: 'The well takes its share. The moor pays back.',
       },
     },
+    /** Taxman Grudge Ledger (DESIGN_IDEAS §1). Fires once at run-end
+     *  victory: the Taxman speaks in his own voice from beyond the
+     *  ledger he just lost. Edge tone — bureaucrat-sneer, ink-cold,
+     *  Lowland-stiff. Two leaves per verdict so the no-repeat ring
+     *  stays honest across replays of the same finishing style; sub-
+     *  pool tag = `GrudgeVerdict` (`coward` | `bruiser` | `precise` |
+     *  `reckless` | `even`). Voice register: HE speaks here, not the
+     *  haggis — first-person column-talk, paperwork metaphor, never
+     *  panicked. Compare to `boss_warn.taxman.*` (haggis-voice
+     *  *about* the Taxman) — that's a different speaker. */
+    taxman_grudge: {
+      coward: {
+        a: 'Distance noted. The ledger files ye under "cautious".',
+        b: 'Aye, ye kept yer haggis tidy. Mine paid the rent in red ink.',
+      },
+      bruiser: {
+        a: 'Right in their teeth. No artistry — just appetite.',
+        b: 'Brawler\'s column. None o\' mine retired comfortable.',
+      },
+      precise: {
+        a: 'Untouched by the work. Suspicious clean books.',
+        b: 'No\' a scratch on yer ledger. I\'ll audit that twice.',
+      },
+      reckless: {
+        a: 'On the brink each time. Daft or daring — same column.',
+        b: 'Ye finished mine the way ye\'ll finish yersel\'.',
+      },
+      even: {
+        a: 'A column o\' middlin\' entries. Forgettable.',
+        b: 'Nothin\' worth notin\' in the margin. Book\'s closed.',
+      },
+    },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder
     //    warmth *about* the run. Keep lines short and tender. Never
     //    shaming, especially in the defeat sub-pool (per DESIGN_SOUL

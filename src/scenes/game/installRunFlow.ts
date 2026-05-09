@@ -33,6 +33,7 @@ import type { UpgradeCardsUI } from '../../ui/UpgradeCards';
 import type { RNG } from '../../utils/rng';
 import type { SaveManager } from '../../core/SaveManager';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
+import type { GrudgeLedgerState } from '../../entities/grudgeLedger';
 import type { BanterSystem } from '../../systems/BanterSystem';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
@@ -79,6 +80,7 @@ export interface InstallRunFlowOpts {
   getSaveManager(): SaveManager;
   getDeathCauseTracker(): DeathCauseTracker;
   getBanter(): BanterSystem | null;
+  getGrudgeLedger(): GrudgeLedgerState;
   getSettingsManager(): ReturnType<typeof import('../../core/SettingsManager').getSettingsManager>;
   getCamera(): Phaser.Cameras.Scene2D.Camera;
   getVictoryPending(): boolean;
@@ -158,6 +160,7 @@ export function installRunFlow(opts: InstallRunFlowOpts): InstallRunFlowResult {
     getSaveManager: opts.getSaveManager,
     getDeathCauseTracker: opts.getDeathCauseTracker,
     getBanter: opts.getBanter,
+    getGrudgeLedger: opts.getGrudgeLedger,
     getSettingsManager: opts.getSettingsManager,
     getCamera: opts.getCamera,
     getUiViewport: opts.getUiViewport,

@@ -83,7 +83,14 @@ export class WeaponSystem {
   /** Run-scoped curse multiplier. 1.0 identity; >1 slower fire. */
   private curseCooldownMul: number = 1;
 
-  /** Emits 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?) and 'damageDealt' (x, y, amount, isCrit, weaponKey) */
+  /** Emits:
+   *  - 'enemyKilled' (x, y, xpValue, key, wasBoss, wasElite, eliteAffixId?)
+   *  - 'damageDealt' (x, y, amount, isCrit, weaponKey)
+   *  - 'eliteOrBossFinished' ({enemyKey, wasBoss, distancePx}) — only
+   *    when the dying enemy was an elite or boss. Drives the Taxman
+   *    Grudge Ledger (`src/entities/grudgeLedger.ts`); listener
+   *    snapshots the player HP fraction at receipt and records.
+   */
   readonly events = new Phaser.Events.EventEmitter();
 
   /** Set true when GameScene shuts down — stops stale callbacks from touching freed state. */
@@ -1153,6 +1160,23 @@ export class WeaponSystem {
         wasElite,
         eliteAffixId: wasElite ? enemy.getEliteAffixId() : undefined,
       });
+      // Taxman Grudge Ledger: only fire on elite/boss kills via the
+      // canonical weapon-damage path. Enemy.ts has its own enemyKilled
+      // emit for non-weapon kill paths (hazards / DoT / drown); v1
+      // grudge restricts to weapon finishes — those are the deaths the
+      // Taxman would judge. Distance is precomputed here because the
+      // listener doesn't have cached player coords.
+      if (wasBoss || wasElite) {
+        const distancePx = Math.hypot(
+          enemy.x - this.cachePlayerX,
+          enemy.y - this.cachePlayerY,
+        );
+        this.events.emit('eliteOrBossFinished', {
+          enemyKey: enemy.getEnemyKey(),
+          wasBoss,
+          distancePx,
+        });
+      }
     }
   }
 

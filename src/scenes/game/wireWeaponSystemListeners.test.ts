@@ -54,6 +54,7 @@ describe('wireWeaponSystemListeners', () => {
       runStatsTracker: runStatsTracker as never,
       runeBag: {} as never,
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger: { finishes: [] },
     });
 
     // Simulate the late-construction window: live GameScene assigns
@@ -82,6 +83,7 @@ describe('wireWeaponSystemListeners', () => {
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger: { finishes: [] },
     });
 
     liveJuice = { spawnTrail };
@@ -102,6 +104,7 @@ describe('wireWeaponSystemListeners', () => {
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger: { finishes: [] },
     });
 
     events.emit('weaponFired');
@@ -120,9 +123,34 @@ describe('wireWeaponSystemListeners', () => {
       runStatsTracker: { addWeaponDamage: vi.fn() } as never,
       runeBag: {} as never,
       getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger: { finishes: [] },
     });
 
     events.emit('enemyKilled', 1, 2, 3, 'midge', false, false, null);
     expect(handle).toHaveBeenCalledWith(1, 2, 3, 'midge', false, false, null);
+  });
+
+  it('eliteOrBossFinished pushes a snapshot to the grudge ledger', () => {
+    const events = makeEmitter();
+    const grudgeLedger: { finishes: Array<{ distancePx: number; hpFraction: number; wasBoss: boolean }> } = { finishes: [] };
+    wireWeaponSystemListeners({
+      weaponSystem: { events } as never,
+      enemyKillHandler: { handle: vi.fn() } as never,
+      player: { notifyWeaponFired: vi.fn(), getHpFraction: () => 0.42 } as never,
+      getJuice: () => ({ showDamageNumber: vi.fn(), spawnImpactRing: vi.fn(), spawnTrail: vi.fn() }) as never,
+      getHud: () => ({ logDamage: vi.fn() }) as never,
+      runStatsTracker: { addWeaponDamage: vi.fn() } as never,
+      runeBag: {} as never,
+      getSFXManager: () => ({ tryPlay: vi.fn() }) as never,
+      grudgeLedger,
+    });
+
+    events.emit('eliteOrBossFinished', { enemyKey: 'taxman', wasBoss: true, distancePx: 220 });
+    expect(grudgeLedger.finishes).toHaveLength(1);
+    expect(grudgeLedger.finishes[0]).toEqual({
+      distancePx: 220,
+      hpFraction: 0.42,
+      wasBoss: true,
+    });
   });
 });

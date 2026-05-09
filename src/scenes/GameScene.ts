@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { GAME } from '../config';
 import { Player } from '../entities/Player';
 import type { Enemy } from '../entities/Enemy';
+import { createGrudgeLedger, type GrudgeLedgerState } from '../entities/grudgeLedger';
 import type { SpawnSystem } from '../systems/SpawnSystem';
 import type { WeaponSystem } from '../systems/WeaponSystem';
 import type { XPSystem } from '../systems/XPSystem';
@@ -256,6 +257,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   clootieTree: ClootieTree | null = null;
   /** Run-specific second at which the clootie tree spawns (DESIGN_IDEAS §1). */
   private clootieSpawnSec: number = 0;
+  /** Taxman Grudge Ledger — silent per-run finish buffer (DESIGN_IDEAS §1).
+   *  Weapon listener appends one entry per elite/boss kill;
+   *  `RunLifecycle.handleVictory` reads + judges the verdict at run end.
+   *  Reset on scene reuse via `resetTransientRunState`. */
+  grudgeLedger: GrudgeLedgerState = createGrudgeLedger();
   /** Ancestral Echo — spectral haggis at last-death spot. Nulls on resolve. */
   ancestralEcho: AncestralEcho | null = null;
   /** Batched toast for max-level XP → gold conversion (avoids spam). */
@@ -517,6 +523,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       clootieTree: this.clootieTree,
       ancestralEcho: this.ancestralEcho,
       relicSlotUI: this.relicSlotUI,
+      grudgeLedger: this.grudgeLedger,
       setReplayInput: (v) => { this.replayInput = v; },
       setPendingReplayRoutes: (v) => { this.pendingReplayRoutes = v; },
       setPauseMenu: (v) => { this.pauseMenu = v; },
@@ -1001,6 +1008,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       runStatsTracker: this.runStatsTracker,
       runeBag: this.runeBag,
       updateTickers: this.updateTickers,
+      grudgeLedger: this.grudgeLedger,
       getJuice: () => this.juice,
       getHud: () => this.hud,
       getBanter: () => this.banter,
@@ -1211,6 +1219,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getSaveManager: () => this.metaSaveManager,
       getDeathCauseTracker: () => this.deathCauseTracker,
       getBanter: () => this.banter,
+      getGrudgeLedger: () => this.grudgeLedger,
       getSettingsManager: () => this.settingsManager,
       getCamera: () => this.cameras.main,
       getVictoryPending: () => this.runScore.victoryPending,

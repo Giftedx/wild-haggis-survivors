@@ -61,6 +61,7 @@ import type { Reliquary } from './reliquary';
 import type { AncestralEcho } from './ancestralEcho';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import { createRNG, randomSeed, type RNG as RngType } from '../../utils/rng';
+import { clearGrudgeLedger, type GrudgeLedgerState } from '../../entities/grudgeLedger';
 
 /** Anything destroyable — narrowed so the helper avoids a Phaser import
  *  for the run-end fade rectangles. */
@@ -99,6 +100,9 @@ export interface ResetTransientRunStateDeps {
   clootieTree: ClootieTree | null;
   ancestralEcho: AncestralEcho | null;
   relicSlotUI: RelicSlotUI | null;
+  /** Taxman Grudge Ledger — cleared in-place between runs so the weapon
+   *  listener's captured ref stays live. */
+  grudgeLedger: GrudgeLedgerState;
 
   // ── setters (out) ─────────────────────────────────────────────────
   setReplayInput: (v: ReplayInput | null) => void;
@@ -218,4 +222,5 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.musicStateScratch.bossActive = false;
   deps.musicStateScratch.biomeTimbre = 0.45;
   deps.setXpOverflowGoldBatch(0);
+  clearGrudgeLedger(deps.grudgeLedger);
 }

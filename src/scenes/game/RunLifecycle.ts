@@ -21,6 +21,7 @@ import type { TimeManager } from '../../systems/TimeManager';
 import type { SaveManager } from '../../core/SaveManager';
 import type { DeathCauseTracker } from '../../systems/DeathCauseTracker';
 import type { BanterSystem } from '../../systems/BanterSystem';
+import { judgeGrudge, type GrudgeLedgerState } from '../../entities/grudgeLedger';
 import type { RunResult, RunSummary, RunHistoryContext } from '../../utils/save';
 import type { GameOverPayload } from '../gameOverPayload';
 import {
@@ -51,6 +52,15 @@ export interface RunLifecycleHooks {
    * or headless tests; handlers must tolerate absence.
    */
   getBanter(): BanterSystem | null;
+  /**
+   * Taxman Grudge Ledger — silent finish buffer the weapon listener
+   * appends to during the run. `handleVictory` reads + judges it to
+   * fire a verdict-keyed line on the `taxman_grudge` banter pool.
+   * Defeat path leaves it untouched: cause-aware `death_reflection`
+   * keeps the headline when the player goes down, since the Taxman
+   * never spoke (player didn't reach him).
+   */
+  getGrudgeLedger(): GrudgeLedgerState;
   getSettingsManager(): ReturnType<typeof import('../../core/SettingsManager').getSettingsManager>;
   getCamera(): Phaser.Cameras.Scene2D.Camera;
   getUiViewport(): { x: number; y: number; width: number; height: number };
@@ -188,6 +198,18 @@ export class RunLifecycle {
     juice.showToast(t('ui.gameOver.victory_title'), COLORS_CSS.WHISKY_GOLD);
     this.hooks.caption('victory', t('ui.captions.victory_chorus'), '#ffe08a');
     juice.showToast(t('ui.gameOver.keep_going_offer'), COLORS_CSS.TOAST_GOLD);
+    // Taxman Grudge Ledger (DESIGN_IDEAS §1) — judge how the player
+    // finished elites and bosses through the run, fire a verdict-keyed
+    // line on the Taxman's pool. Priority 85 wins same-tick arbitration
+    // over gran (28) below: the Taxman gets the closing word because
+    // the run only reaches `handleVictory` by putting him in the ground.
+    // Boss_warn (100) and the ironmoor first-time line (110) remain
+    // higher; if either is also requested this tick, they take the
+    // moment as before. The Burns address coda at +1500 ms is on
+    // `forceLine` so it bypasses arbitration regardless.
+    const grudgeVerdict = judgeGrudge(this.hooks.getGrudgeLedger());
+    this.hooks.getBanter()?.request('taxman_grudge', { tag: grudgeVerdict });
+
     // B1 Phase 2 — Gran's proud-modest line after victory. Priority 28
     // yields to louder pools; fires cleanly here because RUN_END pauses
     // combat chatter and the keep-going-offer toast is already above it.

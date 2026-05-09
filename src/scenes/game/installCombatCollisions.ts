@@ -53,6 +53,7 @@ import type { UpdateTickers } from '../../utils/UpdateTickers';
 import type { RuneEffectBag } from '../../systems/runes/runeEffects';
 import type { Act3Stretch } from '../../data/nodeBanks';
 import type { getSettingsManager as getSettingsManagerFn } from '../../core/SettingsManager';
+import type { GrudgeLedgerState } from '../../entities/grudgeLedger';
 
 export interface InstallCombatCollisionsOpts {
   // Phaser scene seam — needed for `physics.add.overlap`, camera + tweens.
@@ -78,6 +79,9 @@ export interface InstallCombatCollisionsOpts {
   runStatsTracker: RunStatsTracker;
   runeBag: RuneEffectBag;
   updateTickers: UpdateTickers;
+  /** Taxman Grudge Ledger — per-run finish buffer the weapon listener
+   *  pushes into; consumed at run end by `RunLifecycle.handleVictory`. */
+  grudgeLedger: GrudgeLedgerState;
 
   // Lazy getters — these wrap fields constructed AFTER this install
   // runs. Resolving at fire time matches the pre-extraction inline
@@ -166,6 +170,7 @@ export function installCombatCollisions(
     runStatsTracker: opts.runStatsTracker,
     runeBag: opts.runeBag,
     getSFXManager: opts.getSFXManager,
+    grudgeLedger: opts.grudgeLedger,
   });
 
   wireXpSystemListeners({

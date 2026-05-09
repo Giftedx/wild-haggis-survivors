@@ -51,6 +51,8 @@ describe('BANTER_POOLS structure', () => {
     'shinty_parry',
     // DESIGN_IDEAS §1 — Clootie Rag Wager commit edge (walk-through trunk)
     'clootie_wager',
+    // DESIGN_IDEAS §1 — Taxman Grudge Ledger run-end verdict line
+    'taxman_grudge',
   ];
 
   it('covers every BanterContext exactly once', () => {
