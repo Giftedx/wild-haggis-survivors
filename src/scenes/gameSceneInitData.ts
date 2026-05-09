@@ -9,6 +9,22 @@
  */
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
 
+/**
+ * Validate the raw `pickedSporranIds` payload. Accepts a list of
+ * non-empty strings; coerces empty lists / non-arrays / non-string
+ * entries away. Returns `null` on any rejection so consumers can
+ * branch on a single shape (`null` = no Sporran picks).
+ */
+function parseSporranIds(
+  raw: readonly string[] | null | undefined,
+): readonly string[] | null {
+  if (!Array.isArray(raw)) return null;
+  const cleaned = raw.filter(
+    (id): id is string => typeof id === 'string' && id.length > 0,
+  );
+  return cleaned.length > 0 ? cleaned : null;
+}
+
 /** Shape of `scene.start('Game', data)` payload. */
 export interface GameSceneInitDataInput {
   seed?: number | null;
@@ -23,6 +39,15 @@ export interface GameSceneInitDataInput {
    * was live at record-time).
    */
   curseKey?: string | null;
+  /**
+   * S1 Phase 1 — Sporran Deck picks (3 of 7 drawn cards) handed off
+   * by `SporranScene`. The IDs reference cards in `ALL_SPORRAN_CARDS`;
+   * unknown IDs are silently skipped at apply time. `null`, absent, or
+   * an empty array means the player took the Curse / clean-run path
+   * instead. Replay blobs do not yet carry these picks (Phase 2 work),
+   * so playback always reads the caller-passed list.
+   */
+  pickedSporranIds?: readonly string[] | null;
 }
 
 /**
@@ -36,6 +61,12 @@ export interface ResolvedGameSceneInit {
   pendingReplay: ReplayBlobAny | null;
   /** T303 — resolved curse key (string) or null for a clean run. */
   pendingCurseKey: string | null;
+  /**
+   * S1 Phase 1 — Sporran Deck picks (3 of 7 drawn cards). `null` if
+   * the run did not go through the Sporran path. Empty array is
+   * canonicalised to `null` so consumers can branch on a single shape.
+   */
+  pendingSporranIds: readonly string[] | null;
 }
 
 /**
@@ -64,6 +95,7 @@ export function parseGameSceneInitData(
       typeof data?.curseKey === 'string' && data.curseKey.length > 0
         ? data.curseKey
         : null,
+    pendingSporranIds: parseSporranIds(data?.pickedSporranIds),
   };
 
   if (data?.replay && isReplayBlobAny(data.replay)) {

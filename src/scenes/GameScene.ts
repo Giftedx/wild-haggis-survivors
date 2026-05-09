@@ -133,6 +133,10 @@ import {
   applySeasonalRunStartPostSpawn,
   buildSeasonalRunStartPlan,
 } from './game/seasonalRunStart';
+import {
+  applySporranRunStartPostSpawn,
+  buildSporranRunStartPlan,
+} from './game/sporranRunStart';
 import type { LevelUpFlow } from './game/LevelUpFlow';
 import type { RunLifecycle } from './game/RunLifecycle';
 import { installRunFlow } from './game/installRunFlow';
@@ -314,6 +318,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * init() (or the v2 replay blob), consumed once in create().
    */
   private pendingCurseKey: string | null = null;
+  /**
+   * S1 Phase 1 — Sporran Deck picks passed via
+   * `scene.start('Game', { pickedSporranIds })`. Consumed once in
+   * `create()` after the curse pass and before the seasonal pass —
+   * `applySporranRunStart` mutates `runModifiers` then post-spawn
+   * heals fire alongside the seasonal toast pipeline. `null` for any
+   * run that did not go through `SporranScene`.
+   */
+  private pendingSporranIds: readonly string[] | null = null;
   /**
    * T101 — set by `RunPersistenceBridge.applyResume` when it reconstructs
    * the rolled `currentActNodeMap` from the snapshot. The next
@@ -596,6 +609,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingForceVariantKey = resolved.pendingForceVariantKey;
     this.pendingReplay = resolved.pendingReplay;
     this.pendingCurseKey = resolved.pendingCurseKey;
+    this.pendingSporranIds = resolved.pendingSporranIds;
   }
 
   create(): void {
@@ -729,6 +743,19 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.activeCurseKey = curseResult.activeCurseKey;
     const composedStats = curseResult.composedStats;
 
+    // S1 Phase 1 — Sporran Deck picks. Mutates the modifier bag in
+    // place BEFORE seasonal so first-footing / blessing layering still
+    // multiplies on top of any sporran curse penalties + boons. The
+    // post-spawn heal lands alongside the seasonal heal pipeline below.
+    // Resumed runs short-circuit: the picks were already absorbed at
+    // the original run-start.
+    const sporranRunStart = buildSporranRunStartPlan({
+      resumeRun: !!resumeRun,
+      pickedSporranIds: this.pendingSporranIds,
+      runModifiers: this.runModifiers,
+    });
+    this.pendingSporranIds = null;
+
     // Seasonal run-start hooks. Modifier-bag deltas apply now, before
     // systems snapshot the bag; post-spawn heal/player bonuses/toast
     // apply after Player construction below.
@@ -780,6 +807,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     registerDebugHotkeys(this, {
       getPlayer: () => this.player,
       getScene: () => this,
+    });
+
+    // S1 Phase 1 — Sporran Deck post-spawn. Heal-only today; toast is
+    // surfaced from the picker scene itself rather than via a delayed
+    // GameScene toast (the player just confirmed the picks, the moor
+    // already knows what's in the pocket).
+    applySporranRunStartPostSpawn(sporranRunStart, {
+      heal: (amount) => this.player.heal(amount),
     });
 
     // Seasonal post-spawn application. Toast is delayed so it lands

@@ -1,0 +1,57 @@
+/**
+ * Sporran Deck — Scots overlay (W18 Phase B parity).
+ *
+ * Curse cards delegate to existing `curse.*.{name,desc}` keys so the
+ * Scots curse-copy already authored covers them. Boon + quirk leaves
+ * are localised here. Voice register matches the Scots overlay
+ * elsewhere (`tae` / `wi` / `o` / `oot` / `quait`).
+ */
+
+export const sporran = {
+  title: 'THA SPORRAN',
+  subtitle: 'Seven chairms in tha pooch. Keep three for tha moor.',
+  back: 'BACK',
+  pick_label: 'KEEP',
+  unpick_label: 'DRAP',
+  picked_counter: 'KEPT {count}/{max}',
+  confirm: 'FILL THA POOCH',
+  confirm_disabled: 'PICK {remaining} MAIR',
+  draw_link: 'DRAW THA SPORRAN',
+  draw_link_desc: 'Pre-run draft — keep three chairms o\' yer choosin.',
+  toast: {
+    confirmed: 'Pooch filled — three chairms for tha moor.',
+  },
+  kind: {
+    curse: 'CURSE',
+    boon: 'BOON',
+    quirk: 'QUIRK',
+  },
+  boon: {
+    shortbread: {
+      name: 'Shortbreid Crumbs',
+      desc: 'A wee pooch o\' crumbs. Stairts ye fed — +20 HP afore tha bell.',
+    },
+    whisky: {
+      name: 'Hip-Flask Whisky',
+      desc: 'A nip for tha road. Tha moor\'s drinkin tae — spawns ease a touch.',
+    },
+    coal: {
+      name: 'Lump o\' Coal',
+      desc: 'Wairmth in tha pooch. Tha first hits land a shade safter.',
+    },
+    silver: {
+      name: 'Siller Sixpence',
+      desc: 'A coin tae promise tha year. +10% gowd this run.',
+    },
+  },
+  quirk: {
+    light_step: {
+      name: 'Licht Step',
+      desc: 'Licht on yer hooves — quicker, but a wee bit easier tae rattle.',
+    },
+    hardy_breath: {
+      name: 'Hardy Breath',
+      desc: 'Lungs fou o\' moor wind. Bigger heirt — slower stride.',
+    },
+  },
+} as const;

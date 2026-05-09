@@ -11,6 +11,7 @@ export type LazyProductionSceneKey =
   | 'Deeds'
   | 'Almanac'
   | 'Curse'
+  | 'Sporran'
   | 'Settings'
   | 'SettingsInput';
 
@@ -39,6 +40,7 @@ const LAZY_KEYS = new Set<LazyProductionSceneKey>([
   'Deeds',
   'Almanac',
   'Curse',
+  'Sporran',
   'Settings',
   'SettingsInput',
 ]);
@@ -90,6 +92,10 @@ async function loadProductionSceneClass(key: LazyProductionSceneKey): Promise<Sc
     case 'Curse': {
       const mod = await import('./CurseScene');
       return mod.CurseScene;
+    }
+    case 'Sporran': {
+      const mod = await import('./SporranScene');
+      return mod.SporranScene;
     }
     case 'Settings': {
       const mod = await import('./SettingsScene');

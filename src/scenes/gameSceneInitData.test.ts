@@ -23,6 +23,7 @@ describe('parseGameSceneInitData', () => {
         pendingForceVariantKey: null,
         pendingReplay: null,
         pendingCurseKey: null,
+        pendingSporranIds: null,
       });
     });
 
@@ -33,6 +34,7 @@ describe('parseGameSceneInitData', () => {
         pendingForceVariantKey: null,
         pendingReplay: null,
         pendingCurseKey: null,
+        pendingSporranIds: null,
       });
     });
   });
@@ -124,6 +126,42 @@ describe('parseGameSceneInitData', () => {
         replay: validReplay,
       });
       expect(resolved.pendingCurseKey).toBeNull();
+    });
+  });
+
+  describe('pickedSporranIds (S1 Phase 1)', () => {
+    it('captures string array', () => {
+      expect(
+        parseGameSceneInitData({
+          pickedSporranIds: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+        }).pendingSporranIds,
+      ).toEqual(['boon_silver', 'boon_coal', 'curse_heavy_legs']);
+    });
+
+    it('null / undefined / empty → null', () => {
+      expect(parseGameSceneInitData({}).pendingSporranIds).toBeNull();
+      expect(
+        parseGameSceneInitData({ pickedSporranIds: null }).pendingSporranIds,
+      ).toBeNull();
+      expect(
+        parseGameSceneInitData({ pickedSporranIds: [] }).pendingSporranIds,
+      ).toBeNull();
+    });
+
+    it('drops non-string / empty-string entries', () => {
+      const resolved = parseGameSceneInitData({
+        // @ts-expect-error — deliberately mixed
+        pickedSporranIds: ['boon_silver', '', null, 42, 'boon_coal'],
+      });
+      expect(resolved.pendingSporranIds).toEqual(['boon_silver', 'boon_coal']);
+    });
+
+    it('all-bad list resolves to null (not an empty array)', () => {
+      const resolved = parseGameSceneInitData({
+        // @ts-expect-error — deliberately bad
+        pickedSporranIds: [null, 0, ''],
+      });
+      expect(resolved.pendingSporranIds).toBeNull();
     });
   });
 });

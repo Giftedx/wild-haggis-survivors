@@ -20,6 +20,7 @@ import { beastie } from './beastie';
 import { seasonalEvent } from './seasonalEvent';
 import { relics } from './relics';
 import { runes } from './runes';
+import { sporran } from './sporran';
 
 export const SCS_STRINGS: LocaleTree = {
   ui,
@@ -43,4 +44,5 @@ export const SCS_STRINGS: LocaleTree = {
   seasonalEvent,
   relics,
   runes,
+  sporran,
 };

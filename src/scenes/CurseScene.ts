@@ -135,6 +135,33 @@ export class CurseScene extends Phaser.Scene {
     this.installKeyboardShortcuts();
     this.installGamepadShortcuts();
 
+    // ── Sporran Deck opt-in ──
+    // S1 Phase 1 — the Sporran picker is a parallel pre-run path: the
+    // player draws 7 cards and keeps 3 instead of picking a single
+    // curse. Surfaced here as a quiet secondary-tier link so first-run
+    // players see the existing curse flow first, with the deck as an
+    // adjacent option rather than a competing modal.
+    const sporranLinkY = height - 70;
+    const { rect: sporranBtn, label: sporranLabel } = createGameButton(this, {
+      x: width / 2, y: sporranLinkY, width: 280, height: 36,
+      label: t('sporran.draw_link'), tier: 'secondary', fontSize: '15px', uiScale,
+    });
+    sporranBtn.setScale(uiScale);
+    sporranLabel.setScale(uiScale);
+    const goSporran = (): void => {
+      audio.playClick();
+      this.scene.start('Sporran');
+    };
+    sporranBtn.on('pointerdown', goSporran);
+    // Sub-line under the link explaining what the deck does. Quiet,
+    // hearth-warm — this is an *option*, not a CTA.
+    this.add
+      .text(width / 2, sporranLinkY + Math.round(24 * uiScale), t('sporran.draw_link_desc'),
+        textStyle('small', { color: COLORS_CSS.COOL_GREY, align: 'center' }),
+      )
+      .setOrigin(0.5)
+      .setScale(uiScale);
+
     // ── Back ──
     const backY = height - 22;
     const backBtn = createBackButton(this, {
