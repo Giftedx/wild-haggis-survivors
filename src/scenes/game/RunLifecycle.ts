@@ -192,6 +192,22 @@ export class RunLifecycle {
     // yields to louder pools; fires cleanly here because RUN_END pauses
     // combat chatter and the keep-going-offer toast is already above it.
     this.hooks.getBanter()?.request('gran_commentary', { tag: 'run_end_victory' });
+
+    // Burns Address coda (DESIGN_IDEAS §11). The run-long thread of
+    // "Address to a Haggis" stanza fragments (haggis_moment a–h, fired
+    // through rune-pulse triggers across the run) closes on the opener
+    // — the welcome-toast every Burns Supper begins with. Spoken at
+    // victory ceremony as the haggis IS the chieftain o' the puddin'-
+    // race the address welcomes. forceLine bypasses cooldown so the
+    // gran_commentary line above doesn't bury it; scheduleRealTime
+    // because RUN_END set timeScale 0 (delayedCall would never fire).
+    timeManager.scheduleRealTime(1500, () => {
+      this.hooks.getBanter()?.forceLine(
+        'ui.banter.burns_citation.haggis_moment.a',
+        'hearth',
+        'burns_citation',
+      );
+    });
     this.postBellOfferActive = true;
     this.installPostBellKeyHandler();
 

@@ -380,6 +380,83 @@ describe('BanterSystem', () => {
     });
   });
 
+  describe('forceLine — ceremonial bypass', () => {
+    const codaKey = 'ui.banter.burns_citation.haggis_moment.a';
+
+    it('fires through the sink even when cooldown is active', () => {
+      const { sys, lines } = makeSystem(freq, clock);
+      // Burn through cooldown via a normal line first.
+      sys.request('boss_warn');
+      sys.flush();
+      expect(lines).toHaveLength(1);
+      // Cooldown is now in effect — a regular request would be blocked.
+      clock.now = 1_000;
+      expect(sys.request('boss_warn')).toBe(false);
+      // forceLine ignores cooldown.
+      const ok = sys.forceLine(codaKey, 'hearth', 'burns_citation');
+      expect(ok).toBe(true);
+      expect(lines).toHaveLength(2);
+      expect(lines[1].message).toBe(t(codaKey));
+      expect(lines[1].captionId).toBe('banter_burns_citation');
+    });
+
+    it('returns false and stays silent when banter is off', () => {
+      freq.value = 'off';
+      const { sys, lines } = makeSystem(freq, clock);
+      const ok = sys.forceLine(codaKey, 'hearth', 'burns_citation');
+      expect(ok).toBe(false);
+      expect(lines).toHaveLength(0);
+    });
+
+    it('returns false when translation is missing (does not emit a bare key)', () => {
+      const lines: CapturedLine[] = [];
+      const sys = new BanterSystem({
+        sink: { toast: (message, color) => lines.push({ message, color }) },
+        translate: (k) => k,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+      });
+      const ok = sys.forceLine('ui.banter.does_not_exist', 'hearth', 'burns_citation');
+      expect(ok).toBe(false);
+      expect(lines).toHaveLength(0);
+    });
+
+    it('records the forced key into the no-repeat ring', () => {
+      const fired: { key: string; context: string; tag?: string }[] = [];
+      const sys = new BanterSystem({
+        sink: { toast: () => {} },
+        translate: t,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: (e) => fired.push(e),
+      });
+      sys.forceLine(codaKey, 'hearth', 'burns_citation', 'address_coda');
+      expect(fired).toEqual([{ key: codaKey, context: 'burns_citation', tag: 'address_coda' }]);
+    });
+
+    it('sets cooldown so subsequent ambient requests are gated', () => {
+      const { sys, lines } = makeSystem(freq, clock);
+      sys.forceLine(codaKey, 'hearth', 'burns_citation');
+      expect(lines).toHaveLength(1);
+      // Same tick — a normal idle request is still cooldown-blocked.
+      expect(sys.request('idle')).toBe(false);
+    });
+
+    it('swallows a throwing onLineFired listener', () => {
+      const sys = new BanterSystem({
+        sink: { toast: () => {} },
+        translate: t,
+        now: () => clock.now,
+        rng: () => 0,
+        getFrequency: () => 'normal',
+        onLineFired: () => { throw new Error('boom'); },
+      });
+      expect(() => sys.forceLine(codaKey, 'hearth', 'burns_citation')).not.toThrow();
+    });
+  });
+
   describe('translation fallback', () => {
     it('stays silent if the pool key has no translation', () => {
       // Construct a system with a translate that always returns the key —

@@ -16,7 +16,7 @@
  * exercise every branch without Phaser or timing flake.
  */
 
-import { BANTER_POOLS, BanterContext, BanterPool, getBanterPool } from '../data/banter';
+import { BANTER_POOLS, BanterContext, BanterPool, BanterTone, getBanterPool } from '../data/banter';
 import type { BanterFrequency } from '../core/SettingsManager';
 
 /**
@@ -163,6 +163,45 @@ export class BanterSystem {
         /* swallowed */
       }
     }
+  }
+
+  /**
+   * Ceremonial line — fires a specific i18n key directly through the sink,
+   * bypassing cooldown and same-tick arbitration. Use only for once-per-run
+   * or once-per-save moments where the engine's normal pacing is wrong
+   * (e.g. the Burns "Address to a Haggis" coda at victory: the run-long
+   * thread of stanza fragments must close on the opener regardless of what
+   * just spoke).
+   *
+   * Records the fire into the no-repeat ring buffer + lastFireMs/lastContext
+   * so subsequent normal `request()` calls still respect cooldown from this
+   * line — preventing ambient banter from immediately burying the coda.
+   * Also calls `onLineFired` so the Almanac's Banter book counts it.
+   *
+   * Returns false if banter is `off` or the translation is missing.
+   */
+  forceLine(key: string, tone: BanterTone, context: BanterContext, tag?: string): boolean {
+    if (this.getFrequency() === 'off') return false;
+    const line = this.translate(key);
+    if (!line || line === key) return false;
+
+    const color = TONE_COLORS[tone];
+    this.sink.toast(line, color);
+    this.sink.caption?.(`banter_${context}`, line, color);
+
+    this.lastFireMs = this.now();
+    this.lastContext = context;
+    this.recent.push(key);
+    if (this.recent.length > BANTER_NO_REPEAT_WINDOW) this.recent.shift();
+
+    if (this.onLineFired) {
+      try {
+        this.onLineFired({ key, context, tag });
+      } catch {
+        /* swallowed */
+      }
+    }
+    return true;
   }
 
   /** Forget all history — call on new run so lines are fresh. */

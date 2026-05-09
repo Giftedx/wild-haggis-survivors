@@ -1472,6 +1472,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     //   charge          → ✅ Player.tickDriftMastery (burst consume edge)
     //   nae_haste       → ✅ GameScene curse_start delayed echo (+9 s)
     //   lineage_moment  → ✅ moorMoments.ts (ancestral echo / variant unlock)
+    //
+    // Address coda: the run-long Address-to-a-Haggis thread (haggis_moment
+    // a–h, fired through rune-pulse triggers across the run) closes on
+    // the opener at victory ceremony in `RunLifecycle.handleVictory` —
+    // "Fair fa' your honest, sonsie face..." spoken as the haggis takes
+    // the chieftain's seat. Wires through `BanterSystem.forceLine` so it
+    // bypasses cooldown after the gran_commentary line just spoke.
+    // No new sub-pool: the coda is the existing `haggis_moment.a` line.
     context: 'burns_citation',
     tone: 'hearth',
     priority: 43,
