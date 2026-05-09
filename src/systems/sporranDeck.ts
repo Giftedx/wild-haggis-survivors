@@ -51,12 +51,25 @@ export interface SporranCard {
 export interface SporranCardApplyResult {
   /** Post-spawn HP heal to invoke on the Player. 0 for most cards. */
   readonly extraStartingHpHeal: number;
+  /**
+   * Post-spawn damage-multiplier delta to invoke on the Player via
+   * `Player.addDamageMultiplier`. 0 for most cards. Lives on the
+   * apply-result rather than as a `RunModifiers` lever because damage
+   * multiplication is owned Player-side (applied during weapon
+   * resolution); mirrors the same hook-point as
+   * `extraStartingHpHeal`. Phase 1.5 lift — earlier deferred per spec
+   * §6 because the underlying `RunModifiers.damageMult` lever does
+   * not exist; routing via post-spawn dependency dodges that.
+   */
+  readonly extraDamageMultiplier: number;
 }
 
 /** Aggregate result of applying all picked cards to the bag. */
 export interface SporranDraftResult {
   /** Sum of `extraStartingHpHeal` across all picks. */
   readonly extraStartingHpHeal: number;
+  /** Sum of `extraDamageMultiplier` across all picks. */
+  readonly extraDamageMultiplier: number;
   /** Ordered list of picked card ids — for replay/persistence. */
   readonly appliedIds: readonly string[];
 }
@@ -104,14 +117,17 @@ export function applySporranPicks(
   modifiers: RunModifiers,
 ): SporranDraftResult {
   let totalHeal = 0;
+  let totalDamageMult = 0;
   const ids: string[] = [];
   for (const card of picks) {
     const result = card.apply(modifiers);
     totalHeal += result.extraStartingHpHeal;
+    totalDamageMult += result.extraDamageMultiplier;
     ids.push(card.id);
   }
   return {
     extraStartingHpHeal: totalHeal,
+    extraDamageMultiplier: totalDamageMult,
     appliedIds: ids,
   };
 }

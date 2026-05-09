@@ -53,5 +53,9 @@ export const sporran = {
       name: 'Hardy Breath',
       desc: 'Lungs fou o\' moor wind. Bigger heirt — slower stride.',
     },
+    haggis_blooded: {
+      name: 'Haggis-Bluidit',
+      desc: 'Rins hot. Bigger bite — but tha moor reads ye hot back.',
+    },
   },
 } as const;

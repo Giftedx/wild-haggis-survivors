@@ -70,8 +70,18 @@ describe('applySporranPicks', () => {
     const m = defaultModifiers();
     const result = applySporranPicks([], m);
     expect(result.extraStartingHpHeal).toBe(0);
+    expect(result.extraDamageMultiplier).toBe(0);
     expect(result.appliedIds).toEqual([]);
     expect(m).toEqual(defaultModifiers());
+  });
+
+  it('quirk_haggis_blooded routes its damage delta through extraDamageMultiplier (Phase 1.5)', () => {
+    const m = defaultModifiers();
+    const result = applySporranPicks([pick('quirk_haggis_blooded')], m);
+    expect(result.extraDamageMultiplier).toBeCloseTo(0.12, 5);
+    // The +damage-taken side rides RunModifiers.damageTakenMult.
+    expect(m.damageTakenMult).toBeCloseTo(1.12, 5);
+    expect(result.extraStartingHpHeal).toBe(0);
   });
 
   it('records picked ids in pick order', () => {
@@ -136,14 +146,14 @@ describe('applySporranPicks', () => {
 });
 
 describe('ALL_SPORRAN_CARDS pool integrity', () => {
-  it('contains exactly 11 cards (Phase 0 size)', () => {
-    expect(ALL_SPORRAN_CARDS).toHaveLength(11);
+  it('contains exactly 12 cards (Phase 1.5 — quirk_haggis_blooded lifted)', () => {
+    expect(ALL_SPORRAN_CARDS).toHaveLength(12);
   });
 
-  it('splits as 5 curses + 4 boons + 2 quirks', () => {
+  it('splits as 5 curses + 4 boons + 3 quirks', () => {
     const counts = { curse: 0, boon: 0, quirk: 0 };
     for (const card of ALL_SPORRAN_CARDS) counts[card.kind]++;
-    expect(counts).toEqual({ curse: 5, boon: 4, quirk: 2 });
+    expect(counts).toEqual({ curse: 5, boon: 4, quirk: 3 });
   });
 
   it('every card has a unique non-empty id matching ^[a-z_]+$', () => {

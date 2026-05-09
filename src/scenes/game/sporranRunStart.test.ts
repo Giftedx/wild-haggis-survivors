@@ -14,6 +14,7 @@ describe('buildSporranRunStartPlan', () => {
       runModifiers: m,
     });
     expect(plan.extraStartingHpHeal).toBe(0);
+    expect(plan.extraDamageMultiplier).toBe(0);
     expect(plan.appliedIds).toEqual([]);
     expect(m).toEqual(defaultModifiers());
   });
@@ -26,6 +27,7 @@ describe('buildSporranRunStartPlan', () => {
       runModifiers: m,
     });
     expect(plan.extraStartingHpHeal).toBe(0);
+    expect(plan.extraDamageMultiplier).toBe(0);
     expect(plan.appliedIds).toEqual([]);
     expect(m).toEqual(defaultModifiers());
   });
@@ -38,8 +40,21 @@ describe('buildSporranRunStartPlan', () => {
       runModifiers: m,
     });
     expect(plan.extraStartingHpHeal).toBe(0);
+    expect(plan.extraDamageMultiplier).toBe(0);
     expect(plan.appliedIds).toEqual([]);
     expect(m).toEqual(defaultModifiers());
+  });
+
+  it('quirk_haggis_blooded threads damageMultiplier through the plan (Phase 1.5)', () => {
+    const m = defaultModifiers();
+    const plan = buildSporranRunStartPlan({
+      resumeRun: false,
+      pickedSporranIds: ['quirk_haggis_blooded'],
+      runModifiers: m,
+    });
+    expect(plan.appliedIds).toEqual(['quirk_haggis_blooded']);
+    expect(plan.extraDamageMultiplier).toBeCloseTo(0.12, 5);
+    expect(m.damageTakenMult).toBeCloseTo(1.12, 5);
   });
 
   it('applies recognised cards in pick order (replay contract)', () => {
@@ -92,29 +107,57 @@ describe('buildSporranRunStartPlan', () => {
 describe('applySporranRunStartPostSpawn', () => {
   it('calls heal once with the plan amount when > 0', () => {
     const heal = vi.fn();
+    const addDamageMultiplier = vi.fn();
     applySporranRunStartPostSpawn(
-      { extraStartingHpHeal: 20, appliedIds: ['boon_shortbread'] },
-      { heal },
+      { extraStartingHpHeal: 20, extraDamageMultiplier: 0, appliedIds: ['boon_shortbread'] },
+      { heal, addDamageMultiplier },
     );
     expect(heal).toHaveBeenCalledTimes(1);
     expect(heal).toHaveBeenCalledWith(20);
+    expect(addDamageMultiplier).not.toHaveBeenCalled();
   });
 
   it('does not call heal when amount is 0', () => {
     const heal = vi.fn();
+    const addDamageMultiplier = vi.fn();
     applySporranRunStartPostSpawn(
-      { extraStartingHpHeal: 0, appliedIds: [] },
-      { heal },
+      { extraStartingHpHeal: 0, extraDamageMultiplier: 0, appliedIds: [] },
+      { heal, addDamageMultiplier },
     );
     expect(heal).not.toHaveBeenCalled();
+    expect(addDamageMultiplier).not.toHaveBeenCalled();
   });
 
   it('does not call heal when amount is negative (defensive)', () => {
     const heal = vi.fn();
+    const addDamageMultiplier = vi.fn();
     applySporranRunStartPostSpawn(
-      { extraStartingHpHeal: -5, appliedIds: [] },
-      { heal },
+      { extraStartingHpHeal: -5, extraDamageMultiplier: 0, appliedIds: [] },
+      { heal, addDamageMultiplier },
     );
     expect(heal).not.toHaveBeenCalled();
+    expect(addDamageMultiplier).not.toHaveBeenCalled();
+  });
+
+  it('calls addDamageMultiplier once when the plan carries a positive delta (Phase 1.5)', () => {
+    const heal = vi.fn();
+    const addDamageMultiplier = vi.fn();
+    applySporranRunStartPostSpawn(
+      { extraStartingHpHeal: 0, extraDamageMultiplier: 0.12, appliedIds: ['quirk_haggis_blooded'] },
+      { heal, addDamageMultiplier },
+    );
+    expect(addDamageMultiplier).toHaveBeenCalledTimes(1);
+    expect(addDamageMultiplier).toHaveBeenCalledWith(0.12);
+    expect(heal).not.toHaveBeenCalled();
+  });
+
+  it('does not call addDamageMultiplier when the delta is 0', () => {
+    const heal = vi.fn();
+    const addDamageMultiplier = vi.fn();
+    applySporranRunStartPostSpawn(
+      { extraStartingHpHeal: 20, extraDamageMultiplier: 0, appliedIds: ['boon_shortbread'] },
+      { heal, addDamageMultiplier },
+    );
+    expect(addDamageMultiplier).not.toHaveBeenCalled();
   });
 });

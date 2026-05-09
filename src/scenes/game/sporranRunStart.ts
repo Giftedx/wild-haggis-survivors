@@ -28,6 +28,13 @@ import { applySporranPicks, type SporranCard } from '../../systems/sporranDeck';
 /** Aggregate plan returned by `buildSporranRunStartPlan`. */
 export interface SporranRunStartPlan {
   readonly extraStartingHpHeal: number;
+  /**
+   * Sum of damage-multiplier deltas across the picked cards. Phase
+   * 1.5 hook for `quirk_haggis_blooded`. Applied via
+   * `Player.addDamageMultiplier` at post-spawn so the lever stays
+   * Player-side (RunModifiers has no damage-mult field).
+   */
+  readonly extraDamageMultiplier: number;
   readonly appliedIds: readonly string[];
 }
 
@@ -48,40 +55,52 @@ const cardsById: ReadonlyMap<string, SporranCard> = new Map(
  * resumed bag has already absorbed the original picks and re-applying
  * would compound. Same for a null / empty pick list.
  */
+const INERT_PLAN: SporranRunStartPlan = {
+  extraStartingHpHeal: 0,
+  extraDamageMultiplier: 0,
+  appliedIds: [],
+};
+
 export function buildSporranRunStartPlan(
   deps: SporranRunStartDeps,
 ): SporranRunStartPlan {
-  if (deps.resumeRun) return { extraStartingHpHeal: 0, appliedIds: [] };
+  if (deps.resumeRun) return INERT_PLAN;
   const ids = deps.pickedSporranIds ?? [];
-  if (ids.length === 0) return { extraStartingHpHeal: 0, appliedIds: [] };
+  if (ids.length === 0) return INERT_PLAN;
 
   const picks: SporranCard[] = [];
   for (const id of ids) {
     const card = cardsById.get(id);
     if (card) picks.push(card);
   }
-  if (picks.length === 0) return { extraStartingHpHeal: 0, appliedIds: [] };
+  if (picks.length === 0) return INERT_PLAN;
 
   const result = applySporranPicks(picks, deps.runModifiers);
   return {
     extraStartingHpHeal: result.extraStartingHpHeal,
+    extraDamageMultiplier: result.extraDamageMultiplier,
     appliedIds: result.appliedIds,
   };
 }
 
 export interface SporranRunStartPostSpawnDeps {
   readonly heal: (amount: number) => void;
+  readonly addDamageMultiplier: (amount: number) => void;
 }
 
 /**
- * Apply post-spawn side-effects from a plan (today only `heal`). Kept
- * as its own function so the GameScene wiring matches the seasonal
- * pattern: build plan before Player construction (mutates bag), apply
- * post-spawn after Player construction (touches Player API).
+ * Apply post-spawn side-effects from a plan (heal +
+ * damage-multiplier). Kept as its own function so the GameScene
+ * wiring matches the seasonal pattern: build plan before Player
+ * construction (mutates bag), apply post-spawn after Player
+ * construction (touches Player API). Damage-mult lives Player-side
+ * (RunModifiers has no damage-mult lever) — same hook-point as the
+ * heal, sister-shape to seasonalRunStart's `addDamageMultiplier`.
  */
 export function applySporranRunStartPostSpawn(
   plan: SporranRunStartPlan,
   deps: SporranRunStartPostSpawnDeps,
 ): void {
   if (plan.extraStartingHpHeal > 0) deps.heal(plan.extraStartingHpHeal);
+  if (plan.extraDamageMultiplier > 0) deps.addDamageMultiplier(plan.extraDamageMultiplier);
 }

@@ -809,12 +809,13 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getScene: () => this,
     });
 
-    // S1 Phase 1 — Sporran Deck post-spawn. Heal-only today; toast is
-    // surfaced from the picker scene itself rather than via a delayed
-    // GameScene toast (the player just confirmed the picks, the moor
-    // already knows what's in the pocket).
+    // S1 Phase 1 + 1.5 — Sporran Deck post-spawn. Heal +
+    // damage-multiplier (the latter for `quirk_haggis_blooded`).
+    // Damage-mult lives Player-side; the addDamageMultiplier hook
+    // mirrors the seasonal pipeline.
     applySporranRunStartPostSpawn(sporranRunStart, {
       heal: (amount) => this.player.heal(amount),
+      addDamageMultiplier: (amount) => this.player.addDamageMultiplier(amount),
     });
 
     // Seasonal post-spawn application. Toast is delayed so it lands
