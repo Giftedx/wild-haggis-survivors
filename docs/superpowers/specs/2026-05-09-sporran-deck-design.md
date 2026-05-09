@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-09
 **Initiative:** S1 (new). Pulled from DESIGN_IDEAS §1 Sporran Deck.
-**Status:** Phase 0 + Phase 1 shipped 2026-05-09 (Phase 0 commit `eabe2a6`; Phase 1 commit `6275720`). Phase 2 (chronicle persistence) + Phase 3 (pool expansion) deferred. Phase 1.5 follow-up logged: DOM-focus mirror parity with CurseScene's T407 a11y layer.
+**Status:** Phase 0 + Phase 1 + Phase 1.5 (`quirk_haggis_blooded` lifted from Phase 2 deferral via `extraDamageMultiplier` post-spawn hook) shipped 2026-05-09→10 (Phase 0 commit `eabe2a6`; Phase 1 commit `6275720`; Phase 1.5 commit `a5043e5`). Pool now 12 cards (was 11). Phase 2 (chronicle persistence — `RunHistoryEntry.sporranPicks` + schema bump v18→v19 + replay-side pick replay) + Phase 3 (rare/seasonal/variant-keyed pool expansion) deferred. Phase 1.5 a11y follow-up still open: DOM-focus mirror parity with CurseScene's T407 layer.
 **Word count:** ~2,000
 **Prerequisite:** None. Sits alongside CurseScene + RunModifiers, replaces nothing.
 
@@ -74,11 +74,11 @@ These are deliberately *smaller* than first-footing boons (which are date-gated 
 
 | ID | Positive | Negative |
 |---|---|---|
-| `quirk_haggis_blooded` | (deferred — needs damageMult on RunModifiers; Phase 2) | — |
+| `quirk_haggis_blooded` | +12 % damage (post-spawn `Player.addDamageMultiplier(0.12)`) | ×1.12 damageTakenMult |
 | `quirk_light_step` | ×1.05 moveSpeedMult | ×1.05 damageTakenMult |
 | `quirk_hardy_breath` | ×1.10 startHpRatio | ×0.97 moveSpeedMult |
 
-Phase 0 ships 2 quirks. `quirk_haggis_blooded` requires `RunModifiers.damageMult` which doesn't exist yet (today damage-mult lives on Player, applied during weapon resolution). Adding it is non-trivial and out of Phase 0 scope. Total Phase 0 pool: **5 + 4 + 2 = 11 cards**.
+Phase 0 shipped 2 quirks; Phase 1.5 (commit `a5043e5`) lifted `quirk_haggis_blooded` by routing the +damage delta through a new `extraDamageMultiplier` field on `SporranCardApplyResult` / `SporranDraftResult` / `SporranRunStartPlan` instead of through the bag — sidesteps the missing `RunModifiers.damageMult` lever. The post-spawn helper calls `Player.addDamageMultiplier(amount)` alongside the existing `Player.heal(amount)` hook, sister-shape to seasonalRunStart's `addDamageMultiplier`. Total pool: **5 + 4 + 3 = 12 cards**.
 
 ---
 
