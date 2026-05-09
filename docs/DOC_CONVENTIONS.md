@@ -31,6 +31,7 @@ These are referenced by tooling and CLAUDE/AGENTS docs:
 These are evergreen and cited by `CLAUDE.md`/`AGENTS.md` as primary references:
 
 - `INDEX.md` — top-level map.
+- `QUALITY_BAR.md` — non-negotiable engineering standard (five filters, chains, invariants, pre-ship gate).
 - `PRD.md` — live product snapshot.
 - `DESIGN_SOUL.md` — Soul charter, voice, tone.
 - `VOICE_CARD.md` — two-register voice, variants.

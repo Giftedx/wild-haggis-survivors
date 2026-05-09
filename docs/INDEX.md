@@ -14,6 +14,7 @@ Entry point for the docs tree. AI agents and humans should start here.
 
 | Looking for | Read |
 |---|---|
+| **The standard every change must clear?** | **[QUALITY_BAR.md](QUALITY_BAR.md) — non-negotiable.** Five filters, five chains, sacred invariants, pre-ship gate. |
 | What's currently being worked on? | Most recent dispatch — [dispatch/2026-04-26/](dispatch/2026-04-26/) (concluded 2026-04-28; round 5). No flagship currently active per [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q8 — solo-dev mechanics sprint shipped 12 features 2026-05-09 (see [PRD.md](PRD.md) §"2026-05-09 mechanics ship sprint"). |
 | Is feature X shipped? | [PRD.md](PRD.md) "Flagship status" table, then [superpowers/plans/INDEX.md](superpowers/plans/INDEX.md), then memory `project_*_status` |
 | What's the project about? | [PRD.md](PRD.md), [DESIGN_SOUL.md](DESIGN_SOUL.md), repo-root [README.md](../README.md) |
@@ -52,6 +53,7 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 
 | File | Purpose |
 |---|---|
+| [QUALITY_BAR.md](QUALITY_BAR.md) | **Non-negotiable engineering standard.** Five filters, five cross-cutting chains, sacred invariants, pre-ship gate, trade-off template. |
 | [PRD.md](PRD.md) | Product roadmap; 2026-04-26 snapshot at top |
 | [DESIGN_SOUL.md](DESIGN_SOUL.md) | Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Soul Check |
 | [VOICE_CARD.md](VOICE_CARD.md) | Hearth + Edge registers, variant voices, Burns guidance, Do/Don't examples |

@@ -2,6 +2,12 @@
 
 This repo is **Wild Haggis Survivors**, a Phaser 4 + TypeScript browser game bundled with Vite.
 
+## Non-negotiable: read this first
+
+**[`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md) is the project standard.** Every change — code, content, copy, doc, commit — clears its five filters (stand the test of time / ultra efficient / secure / technically impressive / minimal slop), walks the relevant cross-cutting chains (save / i18n / damage / RNG / new-mechanic), and respects the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity). Trade-offs declared, not hidden.
+
+If the bar conflicts with a task you've been given, surface the conflict — don't paper over it.
+
 ## How to run / verify
 - **Dev**: `npm run dev`
 - **Test**: `npm test` (Vitest)
@@ -84,7 +90,7 @@ Before merging any change that touches visuals, copy, audio, pacing, or player f
 5. **Moment stack** — if it's a "moment" (boss kill, evolution, level-up, etc.), does it cover the 7-ingredient Great Moment Recipe?
 6. **Kindness** — failures feel supportive; successes feel earned?
 
-A "no" answer isn't a block — it's a known trade-off to document. Soul is about intention, not perfection.
+The Soul check is the **player-facing** filter. The [Quality Bar](docs/QUALITY_BAR.md) is the **engineering** filter. Player-facing changes pass both; pure-engine changes pass the Quality Bar alone. Both surface trade-offs through their declaration templates rather than burying them — a "no" answer isn't a block, it's a documented trade-off.
 
 ## Commit conventions
 - Follow existing commit style (examples in `git log`): `fix: ...`, `feat: ...`, `refactor: ...`, `docs: ...`, `chore: ...`

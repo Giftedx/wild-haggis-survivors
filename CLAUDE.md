@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Non-negotiable quality bar
+
+**Every change clears the five filters in [`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md): stand the test of time, ultra efficient, secure, technically impressive, minimal slop.** That doc names the five cross-cutting chains (save / i18n / damage / RNG / new-mechanic), the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity), and the pre-ship 5-question gate. Trade-offs declared via the template — not buried.
+
+This is the project standard. Read it before non-trivial work.
+
 ## Project Overview
 
 Wild Haggis Survivors is a Vampire Survivors-style browser game built with **Phaser 4** and **TypeScript**, bundled with **Vite**. The player controls a wild haggis with a unique "drift" mechanic (clockwise rotation bias on movement due to uneven legs) while fighting waves of Scottish-themed enemies.
@@ -147,3 +153,5 @@ Technical correctness is necessary but not sufficient. Every player-facing chang
 - **Moment check** — if the change is a "moment" (evolution pickup, boss kill, act complete, first-time event), verify it covers the 7-ingredient Great Moment Recipe.
 
 None of this replaces shipping discipline (`npm test`, `npm run build`). It augments it. The masterpiece bar requires both.
+
+The Soul check is the **player-facing** filter; the [Quality Bar](docs/QUALITY_BAR.md) is the **engineering** filter. Player-facing changes pass both. Pure-engine changes pass the Quality Bar alone.
