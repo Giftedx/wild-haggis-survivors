@@ -491,6 +491,23 @@ export class HazardZones {
     for (const z of this.healZones) {
       z.tickAccMs += scaledDelta;
       const rSq = z.r * z.r;
+
+      // Race the Beithir cure (DESIGN_IDEAS §1) — folkloric "running
+      // water under a bridge". Fires *immediately* on overlap rather
+      // than waiting up to 1 s for the next 1-Hz heal tick; the cure
+      // is an edge-driven one-shot, so it runs outside the throttled
+      // heal loop. No-op when the player isn't stung. The player's
+      // own helper short-circuits a no-overlap re-entry without
+      // re-firing the SFX/banter, so it's safe to call every frame
+      // while overlapping.
+      if (player.active && player.isBeithirStung()) {
+        const dx = player.x - z.x;
+        const dy = player.y - z.y;
+        if (dx * dx + dy * dy < rSq) {
+          player.cureBeithirStingFromHeal();
+        }
+      }
+
       while (z.tickAccMs >= 1000) {
         z.tickAccMs -= 1000;
         if (!player.active) continue;

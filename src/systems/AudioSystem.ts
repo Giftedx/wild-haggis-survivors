@@ -1032,6 +1032,137 @@ export class AudioSystem {
   }
 
   /**
+   * Race the Beithir — fang strikes. Three layers in tight sequence:
+   *   1. Pre-strike hiss: filtered-noise burst at the high end (~3 kHz),
+   *      80 ms — the venom warning.
+   *   2. Bite click: triangle 600 → 200 Hz over 60 ms — the fang's
+   *      contact moment, dropped a beat after the hiss starts.
+   *   3. Tail bite drop: low triangle 80 → 40 Hz over 220 ms — the
+   *      venom committing to the body.
+   * Reads instantly as "you've been struck by something venomous"
+   * without coupling to existing damage SFX (which would imply normal
+   * damage, not a status start).
+   */
+  playBeithirSting(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+
+    // (1) Pre-strike hiss — short noise burst.
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.08), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.6;
+    const hiss = ctx.createBufferSource();
+    hiss.buffer = buf;
+    const hissGain = ctx.createGain();
+    hissGain.gain.setValueAtTime(0.07, t0);
+    hissGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.08);
+    hiss.connect(hissGain);
+    hissGain.connect(this.masterGain);
+    hiss.start(t0);
+    hiss.stop(t0 + 0.09);
+
+    // (2) Bite click — triangle pluck dropping in pitch, lands ~30 ms
+    // after the hiss begins so the sequence reads as "warn → strike".
+    const bite = ctx.createOscillator();
+    const biteGain = ctx.createGain();
+    bite.type = 'triangle';
+    bite.frequency.setValueAtTime(600, t0 + 0.03);
+    bite.frequency.exponentialRampToValueAtTime(200, t0 + 0.09);
+    biteGain.gain.setValueAtTime(0, t0 + 0.03);
+    biteGain.gain.linearRampToValueAtTime(0.10, t0 + 0.04);
+    biteGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.10);
+    bite.connect(biteGain);
+    biteGain.connect(this.masterGain);
+    bite.start(t0 + 0.03);
+    bite.stop(t0 + 0.12);
+
+    // (3) Tail drop — low triangle hum trails 80 → 40 Hz, the venom
+    // committing. Volume kept low so it doesn't stomp the bite.
+    const tail = ctx.createOscillator();
+    const tailGain = ctx.createGain();
+    tail.type = 'triangle';
+    tail.frequency.setValueAtTime(80, t0 + 0.08);
+    tail.frequency.exponentialRampToValueAtTime(40, t0 + 0.30);
+    tailGain.gain.setValueAtTime(0.05, t0 + 0.08);
+    tailGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.30);
+    tail.connect(tailGain);
+    tailGain.connect(this.masterGain);
+    tail.start(t0 + 0.08);
+    tail.stop(t0 + 0.32);
+  }
+
+  /**
+   * Race the Beithir — venom cure. Bright clean upward sine sweep
+   * 660 → 990 Hz over 220 ms. Reads as "lifted, escaped" — sister to
+   * other relief beats (heal pickup) but tonally distinct so the
+   * player parses it as a *status* clear, not a heal tick.
+   */
+  playBeithirCure(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(660, t0);
+    osc.frequency.exponentialRampToValueAtTime(990, t0 + 0.22);
+    gain.gain.setValueAtTime(0, t0);
+    gain.gain.linearRampToValueAtTime(0.07, t0 + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.26);
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.28);
+  }
+
+  /**
+   * Race the Beithir — venom commits (timer ran out). Heavy low square
+   * wave 80 → 40 Hz over 320 ms layered with a dirty noise transient
+   * at the start. Reads as a serious consequence — paired with the
+   * slice-of-max-HP `takeDamage` it sells the cost of failing the
+   * race. Distinct from generic-damage SFX so the player can recognise
+   * the *expire* moment audially even off-screen.
+   */
+  playBeithirExpire(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+
+    // Low square thud.
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(80, t0);
+    osc.frequency.exponentialRampToValueAtTime(40, t0 + 0.30);
+    oscGain.gain.setValueAtTime(0, t0);
+    oscGain.gain.linearRampToValueAtTime(0.12, t0 + 0.02);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.34);
+    osc.connect(oscGain);
+    oscGain.connect(this.masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.36);
+
+    // Dirty noise transient overlapping the start — "the venom
+    // breaking through". 60 ms.
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.06), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.5;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.06, t0);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.06);
+    src.connect(noiseGain);
+    noiseGain.connect(this.masterGain);
+    src.start(t0);
+    src.stop(t0 + 0.07);
+  }
+
+  /**
    * Lemmings Easter Egg — cartoon "OH NO!" warble that plays once when
    * the parade fires. Two-syllable vocal-style sweep:
    *   - "OH"  — short descending sine ~440 → 280 Hz over 200 ms.

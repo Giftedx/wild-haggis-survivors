@@ -55,6 +55,8 @@ describe('BANTER_POOLS structure', () => {
     'taxman_grudge',
     // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
     'lemmings_remember',
+    // DESIGN_IDEAS §1 — Race the Beithir venom-sting race window
+    'beithir_sting',
   ];
 
   it('covers every BanterContext exactly once', () => {

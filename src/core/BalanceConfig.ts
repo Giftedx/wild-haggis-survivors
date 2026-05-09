@@ -38,6 +38,9 @@ function buildWaveTimeline(): WaveTimelineEntry[] {
     { t: 630, add: 'blue_man_of_minch' },
     { t: 645, add: 'ceilidh_caller' },
     { t: 660, add: 'nest' },
+    { t: 660, add: 'beithir' },          // 11:00 — Argyll viper, opens
+                                          // the Race the Beithir mechanic
+                                          // (DESIGN_IDEAS §1; SCOTTISH_RESEARCH §1.2).
     { t: 690, add: 'tome_wraith' },
     { t: 720, add: 'buckfast_ned' },
     { t: 720, add: 'cu_sith' },         // 12:00 — Three-Bay Warning fey hound

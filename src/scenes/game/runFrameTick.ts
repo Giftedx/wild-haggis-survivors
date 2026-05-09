@@ -187,6 +187,13 @@ export function runFrameTick(scene: GameScene, delta: number): void {
           ? t('ui.hud.parry.ready')
           : t('ui.hud.parry.cooldown');
       scene.hud.setShintyParry(parryActive, parryReady, parryFrac, parryLabel);
+      // Race the Beithir HUD bar — hidden when not stung; appears only
+      // while a sting is running. The bar drains visually; cure/expire
+      // collapse to hidden via the same boolean.
+      const beithirStung = scene.player.isBeithirStung();
+      const beithirFrac = scene.player.beithirRemainingFraction();
+      const beithirLabel = beithirStung ? t('ui.hud.beithir.race') : '';
+      scene.hud.setBeithirRace(beithirStung, beithirFrac, beithirLabel);
     },
   });
 }

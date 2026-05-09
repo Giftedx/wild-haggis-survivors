@@ -527,6 +527,13 @@ export const ui = {
       active: '!',
       cooldown: '···',
     },
+    /** Race the Beithir HUD bar — SCS overlay. The Argyll viper word
+     *  "beithir" sits identically in Gaelic and Scots; the verbs
+     *  shift Scots-style: heal → "heal", kill → "kill" (Scots holds
+     *  these verbatim). */
+    beithir: {
+      race: 'BEITHIR — HEAL OR KILL',
+    },
   },
   replay: {
     watching_toast: 'Watchin replay · recorded run',
@@ -1712,6 +1719,31 @@ export const ui = {
       even: {
         a: 'A column o\' middlin entries. Forgettable.',
         b: 'Naethin worth merkin in tha mairgin. Buik\'s steekit.',
+      },
+    },
+    //    beithir_sting (DESIGN_IDEAS §1). Scots overlay for the venom
+    //    race. The beithir is named verbatim (Scots/Gaelic loanword
+    //    holds same in either tongue — Argyll viper-folklore is one of
+    //    the cross-register words). Edge for the urgency beats, hearth
+    //    for the cure beats. Per CULTURAL_SENSITIVITIES_RESEARCH the
+    //    folklore is from Argyll Highland tradition; the Scots register
+    //    here is general Lowland — the variant haggis carries the
+    //    register, the pool sits in the lingua-franca register so any
+    //    variant can voice it.
+    beithir_sting: {
+      a: 'Bit. Aicht seconds — heal water or its heid.',
+      b: 'Beithir fang. Rin, or fecht, or faw.',
+      cured_heal: {
+        a: 'Healin water — tha venom lifts.',
+        b: 'Brig\'s blessin. Clean again.',
+      },
+      cured_kill: {
+        a: 'Kilt tha beast. Venom dees wi\' it.',
+        b: 'Heid aff, curse aff. Fair trade.',
+      },
+      expired: {
+        a: 'Tha venom fund hame. That stang.',
+        b: 'Aicht seconds, an\' I wasted them. Learnt.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.

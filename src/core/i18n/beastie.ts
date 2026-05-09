@@ -98,6 +98,9 @@ export const beastie = {
   bodach_glas: {
     lore: 'The Grey Old Man of Ben Macdui. Highland climbers have heard him pacing behind them on the Cairngorm tops for two centuries — slow, deliberate, silent. Some have turned to find naebody; some havenae come back at all. Grey-cloaked, hooded, a single staff for the climb. Folk-presence rather than monster — the dread is that ye can see him coming and ye cannae outrun him. SCOTTISH_RESEARCH §1.2; B5 Phase 2 frost-biome signature.',
   },
+  beithir: {
+    lore: 'The Argyll viper — the largest of Highland serpents, said to live high on the bens and come down to drink at lochs of an evening. A sting from a beithir was famously cured by one of two routes: the venom drew off through running water that had passed under a bridge, or it lifted of its own when the beast itself was killed. Older folk tellings make it a winged dragon of the western mountains; modern reports settle on a long, dark snake with bronze-glinting scales and a single amber eye. SCOTTISH_RESEARCH §1.2; the venom-race mechanic (DESIGN_IDEAS §1) is built from both folkloric cures.',
+  },
   // ── Bosses (6) ──
   gordon: {
     lore: 'A chef of the Sunday-roast school who took the haggis personally. Loud, declarative, knife in each hand. The first boss of any run; the kind you remember after, not during.',

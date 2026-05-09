@@ -790,11 +790,17 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       this.setVelocity(-dy * inv, dx * inv);
     }
 
-    // Fire a "net" (slowing projectile) at the player on cooldown
+    // Fire a "net" (slowing projectile) at the player on cooldown.
+    // Beithir is a ranged enemy whose projectile is a venom fang
+    // (Race the Beithir mechanic, DESIGN_IDEAS §1) rather than a net,
+    // so it forks here keyed on config — sister to WeaponSystem.fire
+    // Bouncing's shinty_stick texture fork. The strafe + standoff AI
+    // is the same; only the projectile behaviour changes.
     this.rangedCooldown -= delta;
     if (this.rangedCooldown <= 0 && dist <= standoff * 1.5) {
       this.rangedCooldown = BALANCE.enemy.rangedCooldownMs;
-      this.fireNet(tx, ty);
+      if (this.enemyKey === 'beithir') this.fireBeithirFang(tx, ty);
+      else this.fireNet(tx, ty);
     }
   }
 
@@ -844,6 +850,64 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     });
 
     // Auto-cleanup after 2 seconds if it misses (raw = wall-clock, survives pause)
+    this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
+  }
+
+  /**
+   * Fire a venom fang (Race the Beithir, DESIGN_IDEAS §1). Mirrors
+   * `fireNet`'s shape — Phaser circle + Arcade body + parry hook +
+   * cleanup ticker — but on contact applies the sting via
+   * `Player.applyBeithirStingFromFang` instead of the net's slow.
+   *
+   * Visual: rust-bronze circle (matches the sprite's scale-glint
+   * accent) at radius 4 — slightly tighter than the net's 5 so the
+   * fang reads as a *projectile*, not an area. Speed 220 (vs net's
+   * 180): a sharper threat, not a held area-denial.
+   *
+   * Single-projectile invariant per enemy: reuses `activeNetCleanup`
+   * because rangedCooldown > the cleanup TTL (2 s), so a Beithir
+   * never has two fangs in flight at once.
+   */
+  private fireBeithirFang(tx: number, ty: number): void {
+    const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
+    const speed = 220;
+
+    const fang = this.scene.add.circle(this.x, this.y, 4, 0xb88a4a, 0.95);
+    this.scene.physics.add.existing(fang);
+    const body = fang.body as Phaser.Physics.Arcade.Body;
+    body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
+
+    let hit = false;
+    const spawnedPlayer = this.ctx.getPlayer();
+
+    const cleanup = () => {
+      if (hit) return;
+      hit = true;
+      if (this.activeNetCleanup === cleanup) this.activeNetCleanup = null;
+      try {
+        this.scene.physics.world.removeCollider(overlapRef);
+        if (fang.active) fang.destroy();
+      } catch { /* scene may have restarted */ }
+    };
+    this.activeNetCleanup?.();
+    this.activeNetCleanup = cleanup;
+
+    const overlapRef = this.scene.physics.add.overlap(fang, spawnedPlayer, () => {
+      if (hit) return;
+      cleanup();
+
+      const currentPlayer = this.ctx.getPlayer();
+      if (currentPlayer !== spawnedPlayer) return;
+
+      // Same parry hook as fireNet — a parried fang is fully negated,
+      // no sting applied, the player keeps the agency beat. Sister to
+      // the existing parry/applyNetSlow chain so future projectile
+      // types pick up parry support uniformly.
+      if (currentPlayer.tryParryProjectile()) return;
+
+      currentPlayer.applyBeithirStingFromFang();
+    });
+
     this.ctx.getUpdateTickers().addOnce('raw', 2000, cleanup);
   }
 
@@ -1358,6 +1422,14 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   private die(): void {
     if (!this.active) return;
+
+    // Race the Beithir (DESIGN_IDEAS §1) — slaying ANY beithir cleanses
+    // the venom in folklore. Hooked at the top of die() so the cure
+    // fires regardless of how the beithir died (weapon, hazard, DoT).
+    // No-op when the player isn't currently stung.
+    if (this.enemyKey === 'beithir') {
+      this.ctx.getPlayer().cureBeithirStingFromKill();
+    }
 
     const volatileSplash = this.eliteAffixId === 'volatile' && this.scene?.sys.isActive();
     if (volatileSplash) {

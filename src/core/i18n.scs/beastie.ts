@@ -98,6 +98,9 @@ export const beastie = {
   bodach_glas: {
     lore: 'Tha Grey Auld Man o Ben Macdui. Hieland climbers hae heard him pacin ahint them on tha Cairngorm taps fer twa centuries — slaw, deliberate, silent. Some hae turned tae find naebody; some hivnae come back at aw. Grey-cloaked, hooded, a single staff fer tha climb. Folk-presence raither than monster — tha dread is that ye can see him comin an ye cannae ootrun him. SCOTTISH_RESEARCH §1.2; B5 Phase 2 frost-biome signature.',
   },
+  beithir: {
+    lore: 'Tha Argyll viper — tha biggest o Hieland serpents, said tae bide high on tha bens an come doon tae drink at lochs o an evenin. A sting frae a beithir wis kent tae lift by yin o twa weys: tha venom drew aff through rinnin watter that hud passed unner a brig, or it lifted o its ain when tha beast itsel wis kilt. Auld folk-tellins mak it a winged dragon o tha wast mountains; modern reports settle on a lang, daurk snake wi bronze-glintin scales an a single amber ee. SCOTTISH_RESEARCH §1.2; tha venom-race mechanic (DESIGN_IDEAS §1) is biggit frae baith folkloric cures.',
+  },
   // ── Bosses (6) ──
   gordon: {
     lore: 'A chef o tha Sunday-roast schule wha took tha haggis personally. Loud, declarative, knife in each haund. Tha first boss o ony run; tha kind ye mind efter, no durin.',

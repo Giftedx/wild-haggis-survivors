@@ -40,6 +40,10 @@ import { buildWhiskyBar } from './hud/whiskyBar';
 import { buildStanceChip } from './hud/stanceChip';
 import type { Stance } from '../entities/stanceToggle';
 import {
+  buildBeithirRaceBar,
+  BEITHIR_RACE_BAR_PIXEL_WIDTH,
+} from './hud/beithirRaceBar';
+import {
   buildParryChip,
   PARRY_CHIP_PIXEL_WIDTH,
 } from './hud/parryChip';
@@ -131,6 +135,14 @@ export class HUD {
   /** Cached parry visual state ('ready' / 'active' / 'cooldown') so
    *  per-frame setText / setFillStyle calls only fire on transition. */
   private prevParryState: 'ready' | 'active' | 'cooldown' | null = null;
+
+  /** Race the Beithir HUD bar refs — top-centre live-tension widget;
+   *  hidden by default, appears only while a sting is running. */
+  private beithirRaceBarBg!: Phaser.GameObjects.Rectangle;
+  private beithirRaceBarFill!: Phaser.GameObjects.Rectangle;
+  private beithirRaceBarText!: Phaser.GameObjects.Text;
+  /** Cached visibility so setVisible / setText only fire on edge. */
+  private prevBeithirStung: boolean | null = null;
 
   /** HP bar width — shrinks on narrow viewports so the centered timer
    *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
@@ -294,6 +306,17 @@ export class HUD {
     this.parryChipBg = parryRefs.bg;
     this.parryChipCooldownFill = parryRefs.cooldownFill;
     this.parryChipText = parryRefs.text;
+
+    // Race the Beithir bar — top-centre live-tension widget; hidden
+    // by default, appears only while a Beithir sting is running. Lives
+    // *outside* the bottom-left skill-widget column on purpose: the
+    // race is an event, not a passive state, and dramatic top-centre
+    // placement signals "drop everything, this is now the loop's main
+    // frame".
+    const beithirRaceRefs = buildBeithirRaceBar(ctx);
+    this.beithirRaceBarBg = beithirRaceRefs.bg;
+    this.beithirRaceBarFill = beithirRaceRefs.fill;
+    this.beithirRaceBarText = beithirRaceRefs.text;
 
     // Level + gold balance (whisky-gold tint, hidden until first setText fires).
     const levelGoldRefs = buildLevelGold(ctx);
@@ -1125,6 +1148,39 @@ export class HUD {
       // Caller gives `cooldownFraction` already in [0..1], 1 = ready.
       const f = Math.max(0, Math.min(1, cooldownFraction));
       this.parryChipCooldownFill.width = Math.round(f * PARRY_CHIP_PIXEL_WIDTH);
+    }
+  }
+
+  /**
+   * Race the Beithir bar (DESIGN_IDEAS §1) — top-centre live-tension
+   * widget. Visibility flips on the stung edge so setVisible / setText
+   * fire once per race, not every frame; only the fill width updates
+   * continuously while the timer drains. Cure / expire collapse to
+   * `stung=false` and the widget hides.
+   */
+  setBeithirRace(stung: boolean, fraction: number, label: string): void {
+    if (stung !== this.prevBeithirStung) {
+      this.prevBeithirStung = stung;
+      this.beithirRaceBarBg.setVisible(stung);
+      this.beithirRaceBarFill.setVisible(stung);
+      this.beithirRaceBarText.setVisible(stung);
+      if (stung) {
+        this.beithirRaceBarText.setText(label);
+        // One-shot scale pulse on onset so the widget *appears* with a
+        // beat — tells the player something just changed even if their
+        // attention was elsewhere on screen.
+        this.scene.tweens.add({
+          targets: [this.beithirRaceBarBg, this.beithirRaceBarFill, this.beithirRaceBarText],
+          scale: 1.1,
+          duration: 110,
+          yoyo: true,
+          ease: 'Sine.easeOut',
+        });
+      }
+    }
+    if (stung) {
+      const f = Math.max(0, Math.min(1, fraction));
+      this.beithirRaceBarFill.width = Math.round(f * BEITHIR_RACE_BAR_PIXEL_WIDTH);
     }
   }
 

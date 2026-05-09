@@ -86,7 +86,16 @@ export type BanterContext =
   // lifetime). Hearth tone; the toast that follows the OH NO! parade.
   // No sub-pool tags — single discrete moment, two leaves on the
   // no-repeat ring for variety across variants.
-  | 'lemmings_remember';
+  | 'lemmings_remember'
+  // DESIGN_IDEAS §1 Race the Beithir — venom-fang sting opens the 8 s
+  // race window. Edge tone for `stung` + `expired`; hearth-warm relief
+  // for `cured_heal` + `cured_kill`. Sub-pool tags: `cured_heal`,
+  // `cured_kill`, `expired`. Top-level `keys` carries the `stung` lines
+  // (the most-fired tag) and doubles as the unknown-tag fallback per
+  // the pool contract — same pattern as taxman_grudge's `even` leaves.
+  // Priority 90 wins over `low_hp` (80) since the race is structurally
+  // a "you might die in 8 s" beat, but loses to `boss_warn` (100).
+  | 'beithir_sting';
 
 export interface BanterPool {
   context: BanterContext;
@@ -2468,6 +2477,37 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       reckless: [
         'ui.banter.taxman_grudge.reckless.a',
         'ui.banter.taxman_grudge.reckless.b',
+      ],
+    },
+  },
+  // DESIGN_IDEAS §1 Race the Beithir. Venom-fang sting opens the 8 s
+  // race window. Top-level `keys` are the `stung` onset lines, also
+  // serving as the unknown-tag fallback per pool contract (mirror of
+  // taxman_grudge's `even` fallback). Three cure/expire sub-pools each
+  // hold two authored leaves — clears the no-repeat ring on the rare
+  // same-run double-sting. Priority 90 sits above low_hp (80) so a
+  // sting-during-low-HP moment delivers the urgency line; below boss_
+  // warn (100) so a boss arriving still owns the channel.
+  {
+    context: 'beithir_sting',
+    tone: 'edge',
+    priority: 90,
+    keys: [
+      'ui.banter.beithir_sting.a',
+      'ui.banter.beithir_sting.b',
+    ],
+    keysByTag: {
+      cured_heal: [
+        'ui.banter.beithir_sting.cured_heal.a',
+        'ui.banter.beithir_sting.cured_heal.b',
+      ],
+      cured_kill: [
+        'ui.banter.beithir_sting.cured_kill.a',
+        'ui.banter.beithir_sting.cured_kill.b',
+      ],
+      expired: [
+        'ui.banter.beithir_sting.expired.a',
+        'ui.banter.beithir_sting.expired.b',
       ],
     },
   },

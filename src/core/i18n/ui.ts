@@ -936,6 +936,14 @@ export const ui = {
       active: '!',
       cooldown: '···',
     },
+    /** Race the Beithir HUD bar label (DESIGN_IDEAS §1). Top-centre
+     *  live-tension widget; shown only while a sting is running. The
+     *  label spells out the two cure paths so a first-time-stung
+     *  player knows what to do. Short enough to fit a 168 px bar at
+     *  10 px monospace. */
+    beithir: {
+      race: 'BEITHIR — HEAL OR KILL',
+    },
   },
   /** T1 replay playback UI. */
   replay: {
@@ -2209,6 +2217,32 @@ export const ui = {
       even: {
         a: 'A column o\' middlin\' entries. Forgettable.',
         b: 'Nothin\' worth notin\' in the margin. Book\'s closed.',
+      },
+    },
+    /** Race the Beithir (DESIGN_IDEAS §1). The Beithir's venom-fang
+     *  opens an 8 s race window — reach a heal patch (folkloric
+     *  "running water under a bridge") OR kill the beast before the
+     *  timer expires. Edge tone for the urgency beats (`stung`,
+     *  `expired`); hearth-warm relief for the cure beats (`cured_heal`,
+     *  `cured_kill`). Two leaves per tag clear the no-repeat ring on
+     *  the rare same-run double-sting. The top-level `keys` is the
+     *  `stung` line set, doubling as the unknown-tag fallback per the
+     *  pool contract (taxman_grudge mirror). Voice register: haggis
+     *  diegetic — first-person under venom, with the moor as witness. */
+    beithir_sting: {
+      a: 'Bit. Eight seconds — heal water or its head.',
+      b: 'Beithir fang. Run, or fight, or fall.',
+      cured_heal: {
+        a: 'Healing water — the venom lifts.',
+        b: 'Bridge\'s blessing. Clean again.',
+      },
+      cured_kill: {
+        a: 'Kilt the beast. Venom dies wi\' it.',
+        b: 'Head off, curse off. Fair trade.',
+      },
+      expired: {
+        a: 'The venom found home. That hurt.',
+        b: 'Eight seconds, an\' I wasted them. Lesson.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder

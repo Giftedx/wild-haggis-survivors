@@ -548,6 +548,34 @@ export const ENEMY_TYPES: Record<string, EnemyConfig> = {
     behavior: 'three_bay',
     packSize: 1,
   },
+  // Cryptids #4 — DESIGN_IDEAS §1 + §3, SCOTTISH_RESEARCH §1.2. The
+  // Beithir is an Argyll viper-style serpent of Highland folklore;
+  // its venom-laced fang fires the Race the Beithir mechanic — an
+  // 8 s race window where the player must reach a heal patch
+  // (folkloric "running water under a bridge") OR kill the snake
+  // before the timer expires and they eat a slice-of-max-HP bite.
+  // Reuses the `'ranged'` standoff/strafe AI; the projectile fork
+  // happens in Enemy.behaviorRanged keyed on config.key === 'beithir'
+  // (sister to WeaponSystem.fireBouncing's shinty_stick texture
+  // fork). Pack size 1 — the race is a memorable beat, not a
+  // constant punishment. Slot 11:00 sits just after the first
+  // Cryptids/ranged echelon (kelpie_foal 6:30, blue_man_of_minch
+  // 10:30, barghest 9:30) so the player has projectile-dodge
+  // muscle before the venom arrives.
+  beithir: {
+    key: 'beithir',
+    texture: 'beithir',
+    speed: 60,            // Slow stalker — kiting feels right for a
+                          // serpent that wants to keep its standoff.
+    hp: 30,               // Killable-but-earnt — the kill-cure path
+                          // for the race must be a real ask.
+    damage: 4,            // Low contact — the sting is the punishment.
+    xpValue: 7,           // Premium reward for clearing a new mechanic.
+    appearsAt: 660,       // 11:00 — after the first cryptid wave but
+                          // before late-game density spikes.
+    behavior: 'ranged',
+    packSize: 1,
+  },
   // B5 Phase 2 follow-up — the Bodach Glas. Charter §4.4 calls for a
   // "mid-screen silhouette enemy" as the frost biome's signature
   // creature. Folklore: the grey old man of Ben Macdui, who paces
@@ -618,6 +646,7 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   auditor_priest: 'Auditor Priest',
   cu_sith: 'Cu Sith',
   bodach_glas: 'Bodach Glas',
+  beithir: 'Beithir',
   // Bosses
   gordon: 'Gordon the Chef',
   each_uisge: 'The Each-Uisge',

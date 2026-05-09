@@ -60,6 +60,16 @@ import {
   isParryReady,
   parryCooldownFraction,
 } from './shintyParry';
+import {
+  type RaceTheBeithirState,
+  initialBeithirState,
+  applyBeithirSting,
+  cureBeithirSting,
+  tickBeithir,
+  isStung as isBeithirStungHelper,
+  stingRemainingFraction,
+  computeStingExpireDamage,
+} from './raceTheBeithir';
 import type { Enemy } from './Enemy';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
@@ -240,6 +250,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** First-success tutorial caption — fires once per run on the first
    *  consumed parry. */
   private parryFirstSuccessPending: boolean = true;
+
+  // Race the Beithir (DESIGN_IDEAS §1) — venom-fang projectile from
+  // the Beithir enemy opens an 8 s race window. While stung, the
+  // player is unimpaired but the timer drains; on expire, takes a
+  // slice of max-HP. Cure paths: touch a heal patch (HazardZones
+  // folkloric "running water under a bridge") OR kill the Beithir
+  // (Enemy.die when key === 'beithir'). The pure helper owns state;
+  // Player owns the SFX/banter/damage side-effects + max-HP lock.
+  private beithirState: RaceTheBeithirState = initialBeithirState();
+  /** Locked at sting time so a max-HP shift mid-race (level-up,
+   *  rune-bag, relic) doesn't drift the expire damage. Mirrors
+   *  clootieTree's runBaseMaxHp lock. */
+  private beithirMaxHpAtSting: number = 0;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -910,6 +933,18 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.shintyParryState = parryResult.state;
     if (parryResult.windowOpenedEdge) {
       audio.playShintyParryOpen?.();
+    }
+
+    // Race the Beithir (DESIGN_IDEAS §1) — drain the race timer; on
+    // expire, the venom commits and the player eats a slice of max-HP.
+    // Cure paths (heal-patch overlap in HazardZones, kill the Beithir
+    // in Enemy.die) call the public cure methods directly and short-
+    // circuit this drain. Pause/slow-mo respect scaledDelta so the
+    // race freezes with the rest of gameplay.
+    const beithirTick = tickBeithir(this.beithirState, scaledDelta);
+    this.beithirState = beithirTick.state;
+    if (beithirTick.expiredEdge) {
+      this.fireBeithirExpired();
     }
 
     if (dir.x === 0 && dir.y === 0) {
@@ -1592,6 +1627,81 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   isShintyParryReady(): boolean { return isParryReady(this.shintyParryState); }
   /** HUD readout — fraction [0..1] of cooldown elapsed; 1 = ready. */
   shintyParryCooldownFraction(): number { return parryCooldownFraction(this.shintyParryState); }
+
+  /**
+   * Race the Beithir (DESIGN_IDEAS §1) — apply a fresh sting from a
+   * Beithir fang projectile. From idle, opens the 8 s race window
+   * with full timer + onset SFX + banter + run-base-HP lock. From
+   * stung, refreshes the timer to full silently (a barrage of fangs
+   * from one or many Beithirs is one race, not a stack — see
+   * `raceTheBeithir.ts` header).
+   *
+   * Caller (Enemy.fireBeithirFang) MUST run `tryParryProjectile` first
+   * and skip the sting if parried; this method assumes the sting is
+   * committed.
+   */
+  applyBeithirStingFromFang(): void {
+    const r = applyBeithirSting(this.beithirState);
+    this.beithirState = r.state;
+    if (!r.appliedEdge) return; // refresh — silent, timer reset
+    this.beithirMaxHpAtSting = this.runBaseMaxHp;
+    audio.playBeithirSting?.();
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    sceneCtx.requestBanter?.('beithir_sting', 'stung');
+  }
+
+  /**
+   * Cure path — folkloric "running water under a bridge". Called from
+   * HazardZones when the player overlaps a heal patch. No-op when not
+   * stung (the heal still ticks regardless via the heal-patch loop).
+   */
+  cureBeithirStingFromHeal(): void {
+    const r = cureBeithirSting(this.beithirState);
+    this.beithirState = r.state;
+    if (!r.curedEdge) return;
+    this.beithirMaxHpAtSting = 0;
+    audio.playBeithirCure?.();
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    sceneCtx.requestBanter?.('beithir_sting', 'cured_heal');
+  }
+
+  /**
+   * Cure path — folkloric "slay the beast that bit you". Called from
+   * Enemy.die when the dying enemy's key === 'beithir'. Any beithir's
+   * death cleanses the venom — tracking the specific stinger by-
+   * instance is brittle (Enemy pool reuse), and folklore-wise breaking
+   * any beithir's spell would feel correct. No-op when not stung.
+   */
+  cureBeithirStingFromKill(): void {
+    const r = cureBeithirSting(this.beithirState);
+    this.beithirState = r.state;
+    if (!r.curedEdge) return;
+    this.beithirMaxHpAtSting = 0;
+    audio.playBeithirCure?.();
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    sceneCtx.requestBanter?.('beithir_sting', 'cured_kill');
+  }
+
+  /**
+   * Race the Beithir expire — the venom commits. Called from the per-
+   * frame tick when the timer crosses zero. Bites a `computeStingExpire
+   * Damage(maxHpAtSting)` slice off HP, plays the consequence SFX,
+   * fires the consequence banter sub-pool. Lifestyle-low-HP variants
+   * still feel a real bite via the helper's floor.
+   */
+  private fireBeithirExpired(): void {
+    const damage = computeStingExpireDamage(this.beithirMaxHpAtSting);
+    this.beithirMaxHpAtSting = 0;
+    this.takeDamage(damage);
+    audio.playBeithirExpire?.();
+    const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
+    sceneCtx.requestBanter?.('beithir_sting', 'expired');
+  }
+
+  /** HUD readout — true while a Beithir race is running. */
+  isBeithirStung(): boolean { return isBeithirStungHelper(this.beithirState); }
+  /** HUD readout — fraction [0..1] of timer remaining; 0 when idle. */
+  beithirRemainingFraction(): number { return stingRemainingFraction(this.beithirState); }
 
   /** Apply net slow — only takes effect on first stack, subsequent nets just increment counter */
   applyNetSlow(durationMs: number = 2000): void {
