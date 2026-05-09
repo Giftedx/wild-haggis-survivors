@@ -92,8 +92,8 @@ describe('weapon evolution (chest-gated)', () => {
     }
   );
 
-  it('covers all 7 evolution recipes (not accidentally truncated)', () => {
-    expect(EVOLUTION_RECIPES.length).toBe(7);
+  it('covers all 8 evolution recipes (not accidentally truncated)', () => {
+    expect(EVOLUTION_RECIPES.length).toBe(8);
   });
 });
 

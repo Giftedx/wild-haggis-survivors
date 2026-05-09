@@ -26,4 +26,7 @@ export const passive = {
   tartan_sash: {
     flavour: 'Royal Stewart, bi tha design — though tha wearer\'s nae richt tae it. Tha moor disnae mind. Tha sash is prood tae be worn.',
   },
+  shinty_ball: {
+    flavour: 'Cork hert, leather skin, twa stitched hauves. Heavier than it looks. Tha pro baw is regulated; tha haggis prefers tha auld kind, ane wi a clootie wrapper an a wee scuff at tha seam.',
+  },
 } as const;

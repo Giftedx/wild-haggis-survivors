@@ -28,6 +28,10 @@ export const upgradeCard = {
     name: 'Ceòl Mòr Bagpipes',
     description: 'A great drone that presses on the crowd till it folds.',
   },
+  add_shinty_stick: {
+    name: 'Shinty Stick',
+    description: 'A curved ash caman cracks a wee ball oot — bouncin till it sticks. Pair wi the Shinty Ball for legendary form.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -64,6 +68,10 @@ export const upgradeCard = {
   add_tartan_sash: {
     name: 'Tartan Sash',
     description: 'Pattern o\' clan and courage. +8% damage on everything. Evolves Highland Claymore.',
+  },
+  add_shinty_ball: {
+    name: 'Shinty Ball',
+    description: 'Cork core, leather skin. The wee ball wants tae fly truer (+15% projectile speed). Evolves Shinty Stick.',
   },
   // Stat boost cards
   boost_hp: {

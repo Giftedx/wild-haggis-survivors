@@ -14,6 +14,8 @@ import { drawNessieUnleashedIcon } from './nessieUnleashed';
 import { drawClaymoreIcon } from './claymore';
 import { drawBagpipesUtilityIcon } from './bagpipesUtility';
 import { drawWilliamBladeIcon } from './williamBlade';
+import { drawShintyStickIcon } from './shintyStick';
+import { drawShintyCamanIcon } from './shintyCaman';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -27,6 +29,7 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawBagpipeBlastIcon(scene);
   drawScotchMistIcon(scene);
   drawNessieTentacleIcon(scene);
+  drawShintyStickIcon(scene);
   // Evolutions
   drawThistleStormIcon(scene);
   drawHighlandGamesIcon(scene);
@@ -34,6 +37,7 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawHighlandFlingIcon(scene);
   drawTheHaarIcon(scene);
   drawNessieUnleashedIcon(scene);
+  drawShintyCamanIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

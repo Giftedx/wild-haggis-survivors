@@ -6,8 +6,8 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 7 evolution recipes (all weapons except bagpipes)', () => {
-    expect(EVOLUTION_RECIPES).toHaveLength(7);
+  it('has 8 evolution recipes (all weapons except bagpipes)', () => {
+    expect(EVOLUTION_RECIPES).toHaveLength(8);
   });
 
   it('every recipe references a valid base weapon', () => {
@@ -78,11 +78,12 @@ describe('P1.4 — bagpipes utility-only player-facing copy', () => {
     const desc = t('achievement.ach_burns_beastie_unlock.description');
     // Hard string-match guard. Any future edit that puts "every weapon"
     // back in the same line trips the test loudly.
-    expect(desc.toLowerCase(), `EN achievement copy implies all 8 weapons evolve: ${desc}`)
+    expect(desc.toLowerCase(), `EN achievement copy implies all 9 weapons evolve: ${desc}`)
       .not.toContain('every weapon');
-    // Truth-anchor: the line must reference the seven legendary forms
-    // the recipe table actually delivers.
-    expect(desc.toLowerCase()).toContain('seven');
+    // Truth-anchor: the line must reference the eight legendary forms
+    // the recipe table actually delivers (post Shinty Stick / Caman
+    // Storm addition 2026-05-09 lifted the count from 7 to 8).
+    expect(desc.toLowerCase()).toContain('eight');
   });
 
   it('no orphan evo_bagpipes leaf in EN banter (data/banter.ts has no pool)', () => {

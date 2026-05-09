@@ -34,4 +34,9 @@ export const evolution = {
     description: 'Legendary claymore — shockwaves tear across the moor like a battle-cry.',
     flavour: 'Blessed in his name, not his possession. Wallace never held it; the blade has pretended otherwise since 1305.',
   },
+  shinty_caman: {
+    name: 'Caman Storm',
+    description: 'A blur o ash an wee balls in every direction. The hail field at once — Newtonmore against the wurld.',
+    flavour: 'The Camanachd Cup, won and lost a thousand times in the haggis\'s mind. Newtonmore claim 35 of them, Kingussie close behind. The moor keeps no scoreboard. The moor remembers anyway.',
+  },
 } as const;

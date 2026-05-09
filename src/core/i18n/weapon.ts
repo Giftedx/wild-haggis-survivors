@@ -39,4 +39,9 @@ export const weapon = {
     description: 'A great drone that presses on yir enemies like weather.',
     flavour: "Drones older than speech. In the Highland tongue they are the \"great music\" — ceòl mòr. Enemies who know the old tunes keep their distance. Those who don't, learn.",
   },
+  shinty_stick: {
+    name: 'Shinty Stick',
+    description: 'A curved ash caman cracks a wee ball oot, bouncin till it stops something.',
+    flavour: 'Camanachd: the auld Highland game older than golf, older than cricket, near as auld as the hills. The ash bends; the ball remembers.',
+  },
 } as const;

@@ -43,7 +43,7 @@ export function collectRequiredTextureRequirements(): TextureRequirement[] {
     pushKey(out, seen, 'boss', b.key, b.texture);
   }
 
-  for (const k of ['thistle', 'caber', 'haggis_ball'] as const) {
+  for (const k of ['thistle', 'caber', 'haggis_ball', 'shinty_ball'] as const) {
     pushKey(out, seen, 'projectile', k, k);
   }
 

@@ -6,8 +6,8 @@ import { t } from '../core/i18n';
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 8 weapons', () => {
-    expect(keys).toHaveLength(8);
+  it('has exactly 9 weapons', () => {
+    expect(keys).toHaveLength(9);
   });
 
   it('every weapon key matches its .key field', () => {

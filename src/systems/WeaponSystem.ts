@@ -574,14 +574,22 @@ export class WeaponSystem {
     });
   }
 
-  // ── Bouncing weapon (Jobby Hurler) ──
+  // ── Bouncing weapon (Jobby Hurler / Shinty Stick) ──
 
+  /**
+   * Bouncing-projectile dispatch. Two weapons share this path —
+   * Jobby Hurler (the lumpy haggis ball) and Shinty Stick (the wee
+   * cork-leather camanachd ball). The texture key is the only fork:
+   * everything else (random direction + bouncing physics + run-RNG-
+   * less FloatBetween) is identical.
+   */
   private fireBouncing(w: ActiveWeapon, px: number, py: number): void {
     const count = this.maxExtraProjectilesThisFrame(w.config.key, w.projectileCount);
-    if (count > 0) this.spawnProjectileCastFlourish(px, py, 'haggis_ball');
+    const tex = w.config.key === 'shinty_stick' ? 'shinty_ball' : 'haggis_ball';
+    if (count > 0) this.spawnProjectileCastFlourish(px, py, tex);
 
     for (let i = 0; i < count; i++) {
-      const proj = this.getProjectile('haggis_ball');
+      const proj = this.getProjectile(tex);
       if (!proj) continue;
 
       // Fire in a random direction
@@ -594,8 +602,8 @@ export class WeaponSystem {
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
       proj.setPibrochAligned(this.currentPibrochAligned());
-      this.applyProjectileVisual(proj, 'haggis_ball');
-      this.spawnProjectileTrail(px, py, 'haggis_ball');
+      this.applyProjectileVisual(proj, tex);
+      this.spawnProjectileTrail(px, py, tex);
     }
   }
 
@@ -806,7 +814,12 @@ export class WeaponSystem {
         this.fireMassiveFog(px, py, dmg, radius * 2, w.config.key, isCrit);
         break;
       case 'haggis_cannon':
-        this.fireRapidBounce(w, px, py, dmg, 4, isCrit);
+        this.fireRapidBounce(w, px, py, dmg, 4, isCrit, 'haggis_ball');
+        break;
+      case 'shinty_caman':
+        // Caman Storm — same rapid bounce dispatch as Jobby Cannon
+        // but with the cleaner cork-leather shinty ball texture.
+        this.fireRapidBounce(w, px, py, dmg, 4, isCrit, 'shinty_ball');
         break;
       case 'nessie_unleashed':
         this.fireFullSweep(px, py, dmg, radius * 1.6, w.config.key, isCrit);
@@ -1020,16 +1033,24 @@ export class WeaponSystem {
     });
   }
 
-  /** Jobby Cannon — rapid burst of wee jobbies in all directions */
-  private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false): void {
+  /**
+   * Jobby Cannon / Caman Storm — rapid burst of bouncing projectiles
+   * in all directions. Texture key forks at the call-site:
+   * `haggis_ball` for Jobby Cannon, `shinty_ball` for Caman Storm.
+   * The `'fx_weapon_haggis_cannon_pop'` flourish only fires when the
+   * texture matches — the brown haggis-cannon pop would read wrong
+   * over a clean cream-leather shinty ball, so the shinty path skips
+   * the muzzle pop and lets the projectile fan speak for itself.
+   */
+  private fireRapidBounce(w: ActiveWeapon, px: number, py: number, dmg: number, count: number, isCrit: boolean = false, texture: string = 'haggis_ball'): void {
     const maxShot = this.maxExtraProjectilesThisFrame(w.config.key, count);
     const sectors = Math.max(1, maxShot);
     const rng = this.scene.getRunRng();
-    if (maxShot > 0) {
+    if (maxShot > 0 && texture === 'haggis_ball') {
       this.spawnWeaponFlourish(px, py, 'fx_weapon_haggis_cannon_pop', { scale: 0.95, endScale: 1.45, duration: 320 });
     }
     for (let i = 0; i < maxShot; i++) {
-      const proj = this.getProjectile('haggis_ball');
+      const proj = this.getProjectile(texture);
       if (!proj) continue;
       // Space by actual shots fired — `count` can exceed `maxShot` when the pool caps fire rate.
       // Jitter draws from runRng so the seed reproduces Jobby Cannon trajectories byte-for-byte.
@@ -1041,8 +1062,8 @@ export class WeaponSystem {
       proj.setBouncing();
       proj.setWeaponKey(w.config.key);
       proj.setPibrochAligned(this.currentPibrochAligned());
-      this.applyProjectileVisual(proj, 'haggis_ball');
-      this.spawnProjectileTrail(px, py, 'haggis_ball');
+      this.applyProjectileVisual(proj, texture);
+      this.spawnProjectileTrail(px, py, texture);
     }
   }
 
@@ -1216,6 +1237,12 @@ export class WeaponSystem {
     } else if (texture === 'haggis_ball') {
       body.setAllowRotation(true);
       body.setAngularVelocity(540);
+    } else if (texture === 'shinty_ball') {
+      // Shinty ball spins faster + tighter than the lumpy haggis
+      // ball — sells the cork-cored, leather-skinned regulation
+      // sphere flying truer through the air.
+      body.setAllowRotation(true);
+      body.setAngularVelocity(900);
     }
   }
 

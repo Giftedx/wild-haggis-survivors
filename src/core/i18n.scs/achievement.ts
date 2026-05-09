@@ -109,6 +109,6 @@ export const achievement = {
   },
   ach_burns_beastie_unlock: {
     title: 'Earnt Whan Tha Baird Is Honoured',
-    description: 'Wan a run wi aw seeven legends forged. Burns smiles.',
+    description: 'Wan a run wi aw echt legends forged. Burns smiles.',
   },
 } as const;

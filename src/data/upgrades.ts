@@ -24,7 +24,8 @@ export type PassiveKey =
   | 'loch_water'
   | 'thistle_crown'
   | 'highland_shield'
-  | 'tartan_sash';
+  | 'tartan_sash'
+  | 'shinty_ball';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -146,6 +147,14 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_bagpipes',
     effect: { type: 'add_weapon', weaponKey: 'bagpipes' },
   },
+  {
+    id: 'add_shinty_stick',
+    name: 'upgradeCard.add_shinty_stick.name',
+    description: 'upgradeCard.add_shinty_stick.description',
+    rarity: 'uncommon',
+    icon: 'wicon_shinty_stick',
+    effect: { type: 'add_weapon', weaponKey: 'shinty_stick' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -222,6 +231,14 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_tartan_sash',
     effect: { type: 'add_passive', passiveKey: 'tartan_sash' },
+  },
+  {
+    id: 'add_shinty_ball',
+    name: 'upgradeCard.add_shinty_ball.name',
+    description: 'upgradeCard.add_shinty_ball.description',
+    rarity: 'uncommon',
+    icon: 'ucard_shinty_ball',
+    effect: { type: 'add_passive', passiveKey: 'shinty_ball' },
   },
 ];
 

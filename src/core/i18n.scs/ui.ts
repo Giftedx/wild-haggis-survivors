@@ -1030,6 +1030,12 @@ export const ui = {
         c: 'Steel wi stories. Mair stories comin.',
         d: 'Claymore sings — choir o wan.',
       },
+      shinty_stick: {
+        a: 'Caman storm. Newtonmore wid be prood.',
+        b: 'Ash blur — tha field\'s nae safe noo.',
+        c: 'Camanachd Cup energy. Naebody dodges this lot.',
+        d: 'Wee baws ivverywhaur — whaur\'s tha goalie?',
+      },
       bagpipes: {
         a: 'Tha pipes woke up proper. Rin.',
         b: 'Skirl turnt slaughter — beautiful.',

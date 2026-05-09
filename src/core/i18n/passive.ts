@@ -26,4 +26,7 @@ export const passive = {
   tartan_sash: {
     flavour: 'Royal Stewart, by the design — though the wearer has no right to it. The moor does not mind. The sash is proud to be worn.',
   },
+  shinty_ball: {
+    flavour: 'Cork core, leather skin, two stitched halves. Heavier than it looks. The professional ball is regulated; the haggis prefers the auld kind, the one with a clootie wrapper and a wee scuff at the seam.',
+  },
 } as const;

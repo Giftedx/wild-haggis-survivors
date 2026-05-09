@@ -29,7 +29,8 @@ export type WeaponKey =
   | 'haggis_hurler'
   | 'nessie_tentacle'
   | 'claymore'
-  | 'bagpipes';
+  | 'bagpipes'
+  | 'shinty_stick';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -252,6 +253,35 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [],
       pierce: 0,
       radius: 1.14,
+    },
+  },
+
+  // DESIGN_IDEAS §1 + §5 — Shinty Stick. Sister weapon to the
+  // already-shipped Shinty Parry mechanic (camanachd fantasy: defensive
+  // flick + offensive flick, one fantasy across two systems). Bouncing
+  // behaviour for the small wood ball — snappier than Jobby Hurler and
+  // a lighter hit, but zippier projectile + tighter range so it reads
+  // as a quick wrist-snap rather than the haggis-lump heave.
+  shinty_stick: {
+    key: 'shinty_stick',
+    nameKey: 'weapon.shinty_stick.name',
+    descriptionKey: 'weapon.shinty_stick.description',
+    behavior: 'bouncing',
+    cooldownMs: 1700,
+    damage: 8,
+    projectileSpeed: 380,
+    projectileCount: 1,
+    pierce: 0,
+    range: 1200,
+    aoeRadius: 0,
+    arcDegrees: 0,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [3, 5],
+      pierce: 0,
+      radius: 1,
     },
   },
 };

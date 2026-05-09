@@ -256,6 +256,18 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.william_blade.name',
     descriptionKey: 'evolution.william_blade.description',
   },
+  {
+    // DESIGN_IDEAS §1 + §5 — Shinty Stick + Shinty Ball → Shinty Caman.
+    // The wee wood ball + the curved ash caman = camanachd, the ancient
+    // Highland game. The evolved form rapid-fires bouncing balls in all
+    // directions (ash blur). Sister-fantasy to the already-shipped
+    // Shinty Parry mechanic — defence + offence under one banner.
+    baseWeapon: 'shinty_stick',
+    requiredPassive: 'shinty_ball',
+    evolvedWeapon: 'shinty_caman',
+    nameKey: 'evolution.shinty_caman.name',
+    descriptionKey: 'evolution.shinty_caman.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

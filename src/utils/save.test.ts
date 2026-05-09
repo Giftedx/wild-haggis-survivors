@@ -1288,22 +1288,22 @@ describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)
     expect(loaded.runsWithAllEvolutionsCompleted).toBe(0);
   });
 
-  it('applyRunSummary increments on victory when evolvedWeaponCount >= 7 (threshold)', () => {
+  it('applyRunSummary increments on victory when evolvedWeaponCount >= 8 (threshold)', () => {
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 8 },
+    );
+    expect(result.save.runsWithAllEvolutionsCompleted).toBe(1);
+  });
+
+  it('applyRunSummary does NOT increment when evolvedWeaponCount is 7 (one short of new 8 threshold)', () => {
     const save = createDefaultSave();
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
       { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
-    );
-    expect(result.save.runsWithAllEvolutionsCompleted).toBe(1);
-  });
-
-  it('applyRunSummary does NOT increment when evolvedWeaponCount is 6 (one short)', () => {
-    const save = createDefaultSave();
-    const result = applyRunSummary(
-      save,
-      { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
-      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 6 },
     );
     expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
   });
@@ -1313,7 +1313,7 @@ describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
-      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+      { level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 8 },
     );
     expect(result.save.runsWithAllEvolutionsCompleted).toBe(0);
   });
@@ -1325,7 +1325,7 @@ describe('V2 T3 — runsWithAllEvolutionsCompleted (Burns\'s Wee Beastie unlock)
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
-      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 8 },
     );
     expect(result.save.unlockedVariants).not.toContain('burns_wee_beastie');
     expect(result.newlyUnlockedVariants).not.toContain('burns_wee_beastie');
@@ -1366,7 +1366,7 @@ describe('E1 T11 — burnsNightFullEvoRunsCompleted (Burns\'s Wee Beastie gate)'
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
       {
         level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
-        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+        evolvedWeaponCount: 8, seasonalEventKey: 'burns_night',
       },
     );
     expect(result.save.burnsNightFullEvoRunsCompleted).toBe(1);
@@ -1377,19 +1377,19 @@ describe('E1 T11 — burnsNightFullEvoRunsCompleted (Burns\'s Wee Beastie gate)'
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
-      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 7 },
+      { level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [], evolvedWeaponCount: 8 },
     );
     expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
   });
 
-  it('does NOT increment when evolvedWeaponCount is 6 (one short) even on Burns Night', () => {
+  it('does NOT increment when evolvedWeaponCount is 7 (one short of new 8 threshold) even on Burns Night', () => {
     const save = createDefaultSave();
     const result = applyRunSummary(
       save,
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
       {
         level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
-        evolvedWeaponCount: 6, seasonalEventKey: 'burns_night',
+        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
       },
     );
     expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
@@ -1402,7 +1402,7 @@ describe('E1 T11 — burnsNightFullEvoRunsCompleted (Burns\'s Wee Beastie gate)'
       { timeSurvivedSec: 120, enemiesKilled: 40, bossGold: 0, coinGold: 5, bestCombo: 10, victory: false },
       {
         level: 3, bossKills: 0, variantKey: 'classic', weaponKeys: [],
-        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+        evolvedWeaponCount: 8, seasonalEventKey: 'burns_night',
       },
     );
     expect(result.save.burnsNightFullEvoRunsCompleted).toBe(0);
@@ -1415,7 +1415,7 @@ describe('E1 T11 — burnsNightFullEvoRunsCompleted (Burns\'s Wee Beastie gate)'
       { timeSurvivedSec: 900, enemiesKilled: 200, bossGold: 50, coinGold: 30, bestCombo: 80, victory: true },
       {
         level: 20, bossKills: 5, variantKey: 'classic', weaponKeys: [],
-        evolvedWeaponCount: 7, seasonalEventKey: 'burns_night',
+        evolvedWeaponCount: 8, seasonalEventKey: 'burns_night',
       },
     );
     expect(result.save.unlockedVariants).toContain('burns_wee_beastie');

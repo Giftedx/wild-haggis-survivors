@@ -39,4 +39,9 @@ export const weapon = {
     description: 'A great drone that presses on yer beasties like wather.',
     flavour: 'Drones aulder than speech. In tha Heiland tongue they\'re tha "great music" — ceòl mòr. Foes wha ken tha auld tunes keep their distance. Them that dinnae, learn.',
   },
+  shinty_stick: {
+    name: 'Shinty Stick',
+    description: 'A curved ash caman cracks a wee baw oot, bouncin til it staps somethin.',
+    flavour: 'Camanachd: tha auld Heiland gemme aulder than gowf, aulder than cricket, near as auld as tha hills. Tha ash bends; tha baw minds.',
+  },
 } as const;

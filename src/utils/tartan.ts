@@ -75,6 +75,7 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   nessie_tentacle: '#2f7a7a', // loch teal
   claymore:        '#7a8fa8', // steel blue
   bagpipes:        COLORS_CSS.WHISKY_GOLD, // ceilidh gold
+  shinty_stick:    '#3a6a28', // Camanachd-Cup turf-green (Newtonmore / Kingussie pitch)
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

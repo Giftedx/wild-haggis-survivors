@@ -49,5 +49,14 @@ export function applyPassiveEffect(player: Player, key: string): void {
       player.addDamageMultiplier(0.08);
       player.equipAccessory('tartan_sash');
       break;
+    case 'shinty_ball':
+      // +15% projectile speed — the cork-leather ball wants to fly
+      // truer (matches the upgradeCard description for shinty_ball).
+      // Pairs with the Shinty Stick weapon for the Caman Storm
+      // legendary evolution. No accessory equip — the ball is
+      // weapon-side, not on the haggis silhouette (the caman in the
+      // weapon icon already carries the visible tell).
+      player.addProjectileSpeedMul(0.15);
+      break;
   }
 }

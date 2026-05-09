@@ -27,6 +27,10 @@ export const upgradeCard = {
     name: 'Ceòl Mòr Bagpipes',
     description: 'A great drone that presses on tha crood til it folds.',
   },
+  add_shinty_stick: {
+    name: 'Shinty Stick',
+    description: 'A curved ash caman cracks a wee baw oot — bouncin til it sticks. Pair wi tha Shinty Baw fer legendary form.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -62,6 +66,10 @@ export const upgradeCard = {
   add_tartan_sash: {
     name: 'Tartan Sash',
     description: 'Pattern o clan an courage. +8% damage on a\'thing. Evolves Heiland Claymore.',
+  },
+  add_shinty_ball: {
+    name: 'Shinty Baw',
+    description: 'Cork hert, leather skin. Tha wee baw wants tae flee truer (+15% projectile speed). Evolves Shinty Stick.',
   },
   boost_hp: {
     name: 'Thick Hide',
