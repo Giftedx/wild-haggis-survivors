@@ -45,6 +45,8 @@ describe('BANTER_POOLS structure', () => {
     'seasonal_event',
     // DESIGN_IDEAS §1 — Cairn Stacking pickup + boon
     'cairn_moment',
+    // DESIGN_IDEAS §1 — Stance Toggle cycle (Q-edge, three sub-pools)
+    'stance_change',
   ];
 
   it('covers every BanterContext exactly once', () => {

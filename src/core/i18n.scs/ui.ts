@@ -490,6 +490,15 @@ export const ui = {
     dash_zone_hint: 'TAP TAE DASH',
     dps_line: 'DPS (1s): {dps}',
     gold_chip: '{gold}g',
+    /** Stance Toggle chip labels — Scots overlay. Lowse (slack/free)
+     *  / set (planted) / reishlin (raging/restive). Distinct enough
+     *  to land as flavour without losing "this is the loose / braced
+     *  / reeling stance" clarity. */
+    stance: {
+      loose: 'LOWSE',
+      braced: 'SET',
+      reeling: 'REISHLIN',
+    },
   },
   replay: {
     watching_toast: 'Watchin replay · recorded run',
@@ -1583,6 +1592,28 @@ export const ui = {
         a: 'Tha cairn stauns. Tha moor minds ye nou.',
         b: 'Three stanes, ane blessin — auld arithmetic.',
         c: 'Pilgrim duin — tha glen pays its tithe.',
+      },
+    },
+    // ── Stance Toggle (DESIGN_IDEAS §1). SCS overlay for stance_change.
+    //    Hearth — the haggis voicing its own posture shift. Three sub-
+    //    pool tags mirror the cycle: loose / braced / reeling. Light
+    //    Scots, terse: a stance shift is a small physical act.
+    stance_change: {
+      generic: {
+        a: 'Different banes the day.',
+        b: 'Posture\'s tha wee thing that minds.',
+      },
+      loose: {
+        a: 'Lowse again. Legs ken tha ordinar gait.',
+        b: 'Easin aff — let tha drift dae whit it does.',
+      },
+      braced: {
+        a: 'Set. Slaw an steady, drift held in.',
+        b: 'Bracin — feet planted, ilka step counted.',
+      },
+      reeling: {
+        a: 'Reishlin. Faster, daftler, drift fair wild.',
+        b: 'Het fit — tha moor blurs, an that\'s tha pint.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). SCS pair for ui.banter.gran_commentary.

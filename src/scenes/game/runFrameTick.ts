@@ -34,6 +34,7 @@ import { tickPresentationFrame } from './runtimeTickHooks';
 import { updateRunHudFrame } from './updateRunHudFrame';
 import { tickStressTest } from '../../dev/StressTest';
 import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../../entities/whiskyBreath';
+import { t } from '../../core/i18n';
 import type { GameScene } from '../GameScene';
 
 /**
@@ -165,6 +166,12 @@ export function runFrameTick(scene: GameScene, delta: number): void {
         WHISKY_STACKS_MAX,
         isBreathReady(whiskyState),
       );
+      // Stance Toggle chip — shows the active posture (loose / braced
+      // / reeling) once the player has cycled at least once. Localised
+      // label; the HUD's prev-stance cache skips per-frame setText
+      // when the posture isn't changing.
+      const stance = scene.player.getStance();
+      scene.hud.setStance(stance, t(`ui.hud.stance.${stance}`));
     },
   });
 }

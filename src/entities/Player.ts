@@ -45,6 +45,12 @@ import {
   createWhiskyBreathState,
   tickWhiskyBreath,
 } from './whiskyBreath';
+import {
+  type Stance,
+  DEFAULT_STANCE,
+  cycleStance,
+  getStanceModifiers,
+} from './stanceToggle';
 import type { Enemy } from './Enemy';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
@@ -196,6 +202,22 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   /** First-burst tutorial caption — fires once per run on the first
    *  successful breath. */
   private whiskyBreathFirstBurstPending: boolean = true;
+
+  // Stance Toggle (DESIGN_IDEAS §1) — third skill-expression layer
+  // alongside Drift Mastery (burst) + Whisky Breath (kill-stack burst).
+  // A persistent posture the player cycles with Q: loose (neutral) →
+  // braced (slow + drift halved) → reeling (fast + drift amplified).
+  // No charge meter; the mode itself is the loop. Stance modifies
+  // `driftDegrees` via recalcStats() so the precomputed drift matrix
+  // re-bakes on cycle (rare event, cheap), and feeds a `stanceSpeedMul`
+  // into the velocity-apply line alongside the other multipliers.
+  // Replay-deterministic: cycle is an edge-driven enum step.
+  private stance: Stance = DEFAULT_STANCE;
+  private stanceCycleKey: Phaser.Input.Keyboard.Key | null = null;
+  private stanceCycleKeyPrevDown: boolean = false;
+  /** First-cycle tutorial caption — fires once per run on the first
+   *  Q-press. */
+  private stanceFirstCyclePending: boolean = true;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -358,6 +380,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // graduation to a remappable ActionKey can pair both F and G in
     // a single save-version bump rather than fragmented bumps.
     this.whiskyBreathKey = scene.input?.keyboard?.addKey('F') ?? null;
+
+    // Stance Toggle — Q cycles loose → braced → reeling. Same hardcoded
+    // edge-poll pattern as F/G; Q sits free of every default ActionKey
+    // binding (WASD / arrows / Space / Esc / P / F / G). Future
+    // graduation to a remappable ActionKey can pair F + G + Q in a
+    // single save-version bump.
+    this.stanceCycleKey = scene.input?.keyboard?.addKey('Q') ?? null;
     // Subscribe to the run's enemy-kill stream so the helper can bank
     // a stack per kill. Bosses excluded — Whisky Breath rewards the
     // sustained mob-clear rhythm, not boss damage. SubscriptionBag
@@ -817,6 +846,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       sceneCtx.requestBanter?.('burns_citation', 'charge');
     }
 
+    // Stance Toggle (DESIGN_IDEAS §1) — Q-edge cycles the stance.
+    // recalcStats() re-bakes the drift matrix with the new stance
+    // driftMul; the stance speedMul is read in the velocity line below.
+    // Cycle event also requests a banter beat — a small voice of "the
+    // haggis is changing posture" that grounds the input in fiction.
+    const stanceDown = this.stanceCycleKey?.isDown ?? false;
+    const stancePressed = stanceDown && !this.stanceCycleKeyPrevDown;
+    this.stanceCycleKeyPrevDown = stanceDown;
+    if (stancePressed) {
+      const prev = this.stance;
+      this.stance = cycleStance(prev);
+      this.recalcStats();
+      audio.playGripBurst?.();
+      if (this.stanceFirstCyclePending) {
+        this.stanceFirstCyclePending = false;
+        sceneCtx.caption?.('stance_first_cycle', 'Stance shift. Q to cycle.', '#d4c8a8', 2400);
+      }
+      sceneCtx.requestBanter?.('stance_change', this.stance);
+    }
+
     if (dir.x === 0 && dir.y === 0) {
       this.setVelocity(lureVector.pullX, lureVector.pullY);
       this.tickAnimationAndSync(scaledDelta);
@@ -852,12 +901,16 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     // Composes multiplicatively with every other speed multiplier so a
     // burst-while-stumbling (or burst-while-leaping) folds cleanly.
     const gripBurstMul = driftMasteryResult.speedMul;
+    // Stance Toggle speed multiplier — 0.80 braced / 1.00 loose / 1.25
+    // reeling. Composes multiplicatively alongside the other muls; a
+    // braced-stumble-on-slick is dramatically slow by design.
+    const stanceSpeedMul = getStanceModifiers(this.stance).speedMul;
     // U1 M4 — getMoveSpeed() folds the rune bag (Trek / Peat / Frost speed
     // muls + allStats); identity when no rune is active.
     const speed = this.getMoveSpeed();
     this.setVelocity(
-      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul + pushX + lureVector.pullX,
-      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul + pushY + lureVector.pullY
+      drifted.x * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushX + lureVector.pullX,
+      drifted.y * speed * edgeMul * this.biomeSpeedMul * slickMul * leapBoostMul * stumbleMul * gripBurstMul * stanceSpeedMul + pushY + lureVector.pullY
     );
 
     // Rotate sprite to face movement direction
@@ -947,9 +1000,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.baseMoveSpeed = this.runBaseSpeed * playerLevelSpeedMul(level);
     this.moveSpeed = Math.max(20, this.baseMoveSpeed + this.bonusSpeed);
 
-    // Drift: base * level reduction * upgrade reduction * sign
+    // Drift: base * level reduction * upgrade reduction * stance * sign
     this.baseDriftDegrees = this.runBaseDrift * playerLevelDriftMul(level);
-    this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction);
+    // Stance Toggle (DESIGN_IDEAS §1) — driftMul scales the drift before
+    // the matrix bakes. Braced halves drift (precision); reeling
+    // amplifies it (rush). recalcStats is called on stance cycle so
+    // the per-frame hot path keeps the cheap pre-baked sin/cos.
+    const stanceDriftMul = getStanceModifiers(this.stance).driftMul;
+    this.driftDegrees = this.baseDriftDegrees * (1 - this.bonusDriftReduction) * stanceDriftMul;
     // Pre-bake the drift rotation matrix so per-frame movement skips the trig.
     // Sign flip mirrors the Drift (anticlockwise subspecies) without changing magnitude.
     const driftRad = this.driftDegrees * (Math.PI / 180) * this.driftSign;
@@ -1138,6 +1196,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * is 0..STACKS_MAX; ready-to-fire predicate lives on the helper.
    */
   getWhiskyBreathState(): WhiskyBreathState { return this.whiskyBreathState; }
+
+  /**
+   * HUD accessor — current Stance Toggle posture. HUD renders a small
+   * chip showing the active stance; the cycle is a value, not a state
+   * machine, so no further fields are exposed.
+   */
+  getStance(): Stance { return this.stance; }
   getDamageMultiplier(): number {
     // U1 M4 — Haar / Peat / Thirst / Warden / cascade dmg fold here so
     // every weapon path picks them up via WeaponSystem.setMultipliers.

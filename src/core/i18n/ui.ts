@@ -895,6 +895,15 @@ export const ui = {
     curse_chip: 'Curse: {name} (+{pct}% gold)',
     /** M1 F3 — mid-run gold balance shown under the level readout. */
     gold_chip: '{gold}g',
+    /** Stance Toggle chip labels (DESIGN_IDEAS §1). Three postures the
+     *  player cycles with Q: loose (neutral), braced (slow + drift
+     *  halved, "set" stance), reeling (fast + drift amplified, "hot"
+     *  stance). Chip width is fixed; labels are short enough to fit. */
+    stance: {
+      loose: 'LOOSE',
+      braced: 'BRACED',
+      reeling: 'REELING',
+    },
   },
   /** T1 replay playback UI. */
   replay: {
@@ -2060,6 +2069,31 @@ export const ui = {
         a: 'The cairn stands. The moor minds ye now.',
         b: 'Three stones, one blessing — auld arithmetic.',
         c: 'Pilgrim done — the glen pays its tithe.',
+      },
+    },
+    // ── Stance Toggle (DESIGN_IDEAS §1). Hearth — the haggis voicing
+    //    its own posture shift, never commentary on the world. Three
+    //    sub-pool tags mirror the cycle: loose / braced / reeling.
+    //    Generic fallback covers the rare tagless request. Two leaves
+    //    per tag clears the no-repeat ring so back-to-back cycles
+    //    alternate. Lines stay terse — a stance shift is a small
+    //    physical act, not a soliloquy.
+    stance_change: {
+      generic: {
+        a: 'Different bones the day.',
+        b: 'Posture\'s the wee thing that minds.',
+      },
+      loose: {
+        a: 'Loose again. Legs ken the ordinar gait.',
+        b: 'Easin\' off — let the drift dae what it does.',
+      },
+      braced: {
+        a: 'Set. Slow an\' steady, drift held in.',
+        b: 'Bracin\' — feet planted, every step counted.',
+      },
+      reeling: {
+        a: 'Reelin\'. Faster, daftler, drift fair wild.',
+        b: 'Hot foot — the moor blurs, an\' that\'s the point.',
       },
     },
     // ── Gran's commentary (B1 Phase 2). Hearth — Gran-voice: elder

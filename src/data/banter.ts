@@ -61,7 +61,11 @@ export type BanterContext =
   | 'seasonal_event'
   // DESIGN_IDEAS §1 Cairn Stacking — fires on stone collect (`stack`)
   // and the third-stone Cairn's Blessing (`boon`). Pilgrim-warm register.
-  | 'cairn_moment';
+  | 'cairn_moment'
+  // DESIGN_IDEAS §1 Stance Toggle — fires on Q-cycle. Sub-pool tags
+  // mirror the three stance keys: `loose`, `braced`, `reeling`.
+  // Hearth-warm register; the haggis voicing its own posture shift.
+  | 'stance_change';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1206,6 +1210,37 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.cairn_moment.boon.a',
         'ui.banter.cairn_moment.boon.b',
         'ui.banter.cairn_moment.boon.c',
+      ],
+    },
+  },
+  {
+    // Stance Toggle (DESIGN_IDEAS §1) — fires on Q-cycle, voiced as the
+    // haggis announcing its own posture shift. Three sub-pool tags
+    // mirror the cycle: loose / braced / reeling. Priority 26 sits
+    // beneath Gran (28) and biome_change (30) so a stance shift on a
+    // biome boundary or during a Gran beat doesn't talk over the more
+    // load-bearing voice. Hearth tone — the haggis describing its own
+    // stance to itself, not commentary on the world. Two leaves per
+    // tag clears the no-repeat ring so back-to-back cycles alternate.
+    context: 'stance_change',
+    tone: 'hearth',
+    priority: 26,
+    keys: [
+      'ui.banter.stance_change.generic.a',
+      'ui.banter.stance_change.generic.b',
+    ],
+    keysByTag: {
+      loose: [
+        'ui.banter.stance_change.loose.a',
+        'ui.banter.stance_change.loose.b',
+      ],
+      braced: [
+        'ui.banter.stance_change.braced.a',
+        'ui.banter.stance_change.braced.b',
+      ],
+      reeling: [
+        'ui.banter.stance_change.reeling.a',
+        'ui.banter.stance_change.reeling.b',
       ],
     },
   },

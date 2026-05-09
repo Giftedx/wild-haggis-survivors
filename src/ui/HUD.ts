@@ -37,6 +37,8 @@ import type { HudWidgetContext } from './hud/hudWidget';
 import { buildHpBar } from './hud/hpBar';
 import { buildGripPips } from './hud/gripPips';
 import { buildWhiskyBar } from './hud/whiskyBar';
+import { buildStanceChip } from './hud/stanceChip';
+import type { Stance } from '../entities/stanceToggle';
 import { buildLevelGold } from './hud/levelGold';
 import { buildTimerStack } from './hud/timerStack';
 import { buildStatusChips } from './hud/statusChips';
@@ -107,6 +109,16 @@ export class HUD {
   private whiskyBarVisible = false;
   private prevWhiskyStacks = -1;
   private prevWhiskyReady = false;
+
+  /** Stance Toggle chip (DESIGN_IDEAS §1). Small text pill stacked
+   *  beneath the whisky bar; shows the active stance label. Always
+   *  visible — stance is the player's current posture and matters
+   *  every frame, so unlike grip / whisky widgets it doesn't gate on
+   *  "earn before you see it". A loose-default chip on a fresh run
+   *  also doubles as discoverability. */
+  private stanceChipBg!: Phaser.GameObjects.Rectangle;
+  private stanceChipText!: Phaser.GameObjects.Text;
+  private prevStance: Stance | null = null;
 
   /** HP bar width — shrinks on narrow viewports so the centered timer
    *  doesn't overlap the HP fill. Mutable so `refreshResponsiveLayout`
@@ -258,6 +270,11 @@ export class HUD {
     const whiskyRefs = buildWhiskyBar(ctx);
     this.whiskyBarBg = whiskyRefs.bg;
     this.whiskyBarFill = whiskyRefs.fill;
+
+    // Stance Toggle chip — sits just below the whisky bar.
+    const stanceRefs = buildStanceChip(ctx);
+    this.stanceChipBg = stanceRefs.bg;
+    this.stanceChipText = stanceRefs.text;
 
     // Level + gold balance (whisky-gold tint, hidden until first setText fires).
     const levelGoldRefs = buildLevelGold(ctx);
@@ -985,6 +1002,51 @@ export class HUD {
           ease: 'Sine.easeOut',
         });
       }
+    }
+  }
+
+  /**
+   * Stance Toggle chip update (DESIGN_IDEAS §1). Caller passes the
+   * live `Player.getStance()` plus the localised label string. Hidden
+   * until the player cycles for the first time (matches grip / whisky
+   * "earn before you see it" rule); sticky-visible thereafter.
+   *
+   * The chip's fill colour shifts per stance — neutral slate for
+   * loose, cool blue for braced, warm amber for reeling — so the
+   * posture reads at a glance without requiring text scan.
+   *
+   * `prevStance` skips the setText / setFillStyle calls on every
+   * frame the player isn't cycling — steady-state cost is one
+   * equality compare.
+   */
+  setStance(stance: Stance, label: string): void {
+    if (stance === this.prevStance) return;
+    const isFirstCall = this.prevStance === null;
+    this.prevStance = stance;
+    this.stanceChipText.setText(label);
+    // Neutral slate / cool blue / warm amber. Matches the audio /
+    // banter mood the three stances voice — loose is steady, braced
+    // is held, reeling is hot.
+    const fill = stance === 'braced' ? 0x3a4a66
+      : stance === 'reeling' ? 0x6a3a20
+      : 0x2a3344;
+    const stroke = stance === 'braced' ? 0x6a8aa6
+      : stance === 'reeling' ? 0xa8704a
+      : 0x4a5566;
+    this.stanceChipBg.setFillStyle(fill, 0.85);
+    this.stanceChipBg.setStrokeStyle(1, stroke, 0.7);
+    // Brief one-shot pulse on cycle so the chip's colour change
+    // reads as a deliberate posture shift rather than a passive
+    // tint update. Skip on the very first call (HUD construction)
+    // so a fresh run doesn't pulse the chip just for existing.
+    if (!isFirstCall) {
+      this.scene.tweens.add({
+        targets: [this.stanceChipBg, this.stanceChipText],
+        scale: 1.15,
+        duration: 110,
+        yoyo: true,
+        ease: 'Sine.easeOut',
+      });
     }
   }
 
