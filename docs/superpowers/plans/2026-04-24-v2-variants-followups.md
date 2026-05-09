@@ -36,14 +36,12 @@ Spec: `docs/superpowers/specs/2026-04-23-haggis-variants-pack-design.md`. Plan: 
 
 ## Deferred polish (non-blocking)
 
-### Accent art for all three variants
+### Accent art for all three variants ✅ shipped 2026-05-09 (`d7c8ead`)
 
-- All shipped with `accentStyle: 'none'`. Kilt + body palette carry visual identity. Not a blocker.
-- Spec proposed:
-  - Doric Quinie: "longer fisherman's bonnet tuft; upright posture."
-  - Peerie Shetlander: "wisps of kelp at the collar; slight lean into wind."
-  - Burns's Wee Beastie: already ships at `spriteScale: 0.85` (distinct silhouette); no additional accent cue.
-- Implementation when picked up: new `HaggisAccentStyle` enum entries + BootScene render blocks.
+- Doric Quinie + Peerie Shetlander now carry bespoke `HaggisAccentStyle` body art (knit fisherman bonnet w/ silver-blue band + pompom; bladderwrack kelp wisps + sea-glass bead). Glaswegian also lifted from `'none'` to a Wellington-statue traffic-cone in the same pass.
+- Burns's Wee Beastie keeps `accentStyle: 'none'` by design — `spriteScale: 0.85` is the silhouette cue (Witch's Hare follows the same pattern at 0.92×).
+- Tier-2 mantle motifs (haggisMantle.ts) were already authored per-variant; both layers now reinforce identity from kill-zero through cape unlock.
+- Verified via DynamicTexture pixel sampling. New union members: `'glaswegian' | 'doric_quinie' | 'peerie_shetlander'`.
 
 ### MenuScene `VariantProgressSnapshot` field-name adapter
 
