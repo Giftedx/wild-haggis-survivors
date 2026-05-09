@@ -122,12 +122,28 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
   // Aug 4 mirrors the Beltane symmetry (Apr 28 – May 4 around May 1) —
   // these two cross-quarter days are the bookends of the agricultural
   // year. Sits comfortably between Beltane and the Aug 12 grouse-
-  // shooting opening (a future tourist-hunter intensification slot).
+  // shooting opening (`glorious_twelfth` below — the slot the older
+  // comment promised).
   lammas: {
     key: 'lammas',
     nameKey: 'seasonalEvent.lammas.name',
     descriptionKey: 'seasonalEvent.lammas.description',
     dateWindow: { startMonth: 7, startDay: 29, endMonth: 8, endDay: 4 },
+  },
+  // Glorious Twelfth — Aug 12 opens the UK red-grouse-shooting season.
+  // Window Aug 11–13 covers the named day plus a 24-hour grace either
+  // side for time-zone shift. Slots cleanly between Lammas (Jul 29 –
+  // Aug 4) and Bracken-turn (Nov 4 – Nov 26). Cultural framing is
+  // diegetic and warm: tourists in tweed fan out, dogs in heather,
+  // shotguns over the brae; the haggis answers by going to ground +
+  // widening its arc. Existing tourist + haggis_hunter enemies carry
+  // the comic register; banter rides the same warmth without anti-
+  // hunter venom or class polemic.
+  glorious_twelfth: {
+    key: 'glorious_twelfth',
+    nameKey: 'seasonalEvent.glorious_twelfth.name',
+    descriptionKey: 'seasonalEvent.glorious_twelfth.description',
+    dateWindow: { startMonth: 8, startDay: 11, endMonth: 8, endDay: 13 },
   },
   // Bannockburn anniversary — Robert the Bruce's victory over Edward II's
   // army on Jun 23–24, 1314. Window Jun 22–25 covers both medieval days

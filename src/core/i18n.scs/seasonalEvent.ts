@@ -53,4 +53,10 @@ export const seasonalEvent = {
     badge_suffix: 'Bannockburn',
     ceremony_banner: '⚔ Bannockburn is live — ilka G-press echoes tha anthem.',
   },
+  glorious_twelfth: {
+    name: 'Tha Glorious Twelfth',
+    description: 'Aug 11 – Aug 13 — grouse season opens; tha muir gangs lood.',
+    badge_suffix: 'Tha Twelfth',
+    ceremony_banner: '🦆 Tha Glorious Twelfth is live — gang tae grund, walk wider.',
+  },
 } as const;

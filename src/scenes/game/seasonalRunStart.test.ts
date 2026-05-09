@@ -15,6 +15,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraXpMultiplier: 0,
     extraCritChance: 0,
     extraLifesteal: 0,
+    extraAoeMultiplier: 0,
   };
 }
 
@@ -127,6 +128,32 @@ describe('buildSeasonalRunStartPlan', () => {
       toast: { key: 'ui.brackenTurn.blessing_toast', color: '#b87038', delayMs: 1500 },
     });
   });
+
+  it('applies the Glorious Twelfth AoE bonus + stock-up heal', () => {
+    const modifiers = defaultModifiers();
+    const plan = buildSeasonalRunStartPlan({
+      resumeRun: false,
+      disableSeasonalEvents: false,
+      now: new Date(2027, 7, 12),
+      runRng: { pick: vi.fn() } as unknown as RNG,
+      runModifiers: modifiers,
+    });
+
+    expect(modifiers).toEqual(defaultModifiers());
+    expect(plan).toMatchObject({
+      seasonalEventKey: 'glorious_twelfth',
+      extraStartingHpHeal: 16,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0.10,
+      toast: {
+        key: 'ui.gloriousTwelfth.blessing_toast',
+        color: '#9c8838',
+        delayMs: 1500,
+      },
+    });
+  });
 });
 
 describe('applySeasonalRunStartPostSpawn', () => {
@@ -139,6 +166,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraXpMultiplier: 0.1,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -146,6 +174,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addXpMultiplier: (amount) => log.push(`xp:${amount}`),
       addCritChance: (amount) => log.push(`crit:${amount}`),
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -165,6 +194,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0.5,
+      extraAoeMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -172,6 +202,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addXpMultiplier: (amount) => log.push(`xp:${amount}`),
       addCritChance: (amount) => log.push(`crit:${amount}`),
       addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -182,12 +213,41 @@ describe('applySeasonalRunStartPostSpawn', () => {
     ]);
   });
 
+  it('applies AoE bonus on a glorious_twelfth plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'glorious_twelfth',
+      toast: { key: 'ui.gloriousTwelfth.blessing_toast', color: '#9c8838', delayMs: 1500 },
+      extraStartingHpHeal: 16,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0.10,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:16',
+      'aoe:0.1',
+      'toast:1500:ui.gloriousTwelfth.blessing_toast:#9c8838',
+    ]);
+  });
+
   it('does not touch post-spawn callbacks for an inert plan', () => {
     const calls = {
       heal: vi.fn(),
       addXpMultiplier: vi.fn(),
       addCritChance: vi.fn(),
       addLifesteal: vi.fn(),
+      addAoeMultiplier: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -197,6 +257,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.addXpMultiplier).not.toHaveBeenCalled();
     expect(calls.addCritChance).not.toHaveBeenCalled();
     expect(calls.addLifesteal).not.toHaveBeenCalled();
+    expect(calls.addAoeMultiplier).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

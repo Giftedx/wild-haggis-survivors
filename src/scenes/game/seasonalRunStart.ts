@@ -12,6 +12,7 @@ import { applyImbolcBlessing } from '../../systems/imbolcBlessing';
 import { applyLammasBlessing } from '../../systems/lammasBlessing';
 import { applyBrackenTurnBlessing } from '../../systems/brackenTurnBlessing';
 import { applyBannockburnBlessing } from '../../systems/bannockburnBlessing';
+import { applyGloriousTwelfthBlessing } from '../../systems/gloriousTwelfthBlessing';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -29,6 +30,7 @@ export interface SeasonalRunStartPlan {
   readonly extraXpMultiplier: number;
   readonly extraCritChance: number;
   readonly extraLifesteal: number;
+  readonly extraAoeMultiplier: number;
 }
 
 export interface SeasonalRunStartDeps {
@@ -44,6 +46,7 @@ export interface SeasonalRunStartPostSpawnDeps {
   readonly addXpMultiplier: (amount: number) => void;
   readonly addCritChance: (amount: number) => void;
   readonly addLifesteal: (amount: number) => void;
+  readonly addAoeMultiplier: (amount: number) => void;
   readonly showToastAfter: (delayMs: number, key: string, color: string) => void;
 }
 
@@ -59,6 +62,7 @@ function inertPlan(seasonalEventKey: string | null = null): SeasonalRunStartPlan
     extraXpMultiplier: 0,
     extraCritChance: 0,
     extraLifesteal: 0,
+    extraAoeMultiplier: 0,
   };
 }
 
@@ -88,6 +92,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -100,6 +105,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -112,6 +118,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -124,6 +131,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -136,6 +144,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -148,6 +157,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -160,6 +170,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: lammasResult.extraXpMultiplier,
       extraCritChance: 0,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -172,6 +183,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: brackenResult.extraCritChance,
       extraLifesteal: 0,
+      extraAoeMultiplier: 0,
     };
   }
 
@@ -184,6 +196,20 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraXpMultiplier: 0,
       extraCritChance: 0,
       extraLifesteal: bannockburnResult.extraLifesteal,
+      extraAoeMultiplier: 0,
+    };
+  }
+
+  const gloriousTwelfthResult = applyGloriousTwelfthBlessing(seasonalEventKey, deps.runModifiers);
+  if (gloriousTwelfthResult.applied) {
+    return {
+      seasonalEventKey,
+      toast: toast('ui.gloriousTwelfth.blessing_toast', '#9c8838'),
+      extraStartingHpHeal: gloriousTwelfthResult.extraStartingHpHeal,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: gloriousTwelfthResult.extraAoeMultiplier,
     };
   }
 
@@ -205,6 +231,9 @@ export function applySeasonalRunStartPostSpawn(
   }
   if (plan.extraLifesteal > 0) {
     deps.addLifesteal(plan.extraLifesteal);
+  }
+  if (plan.extraAoeMultiplier > 0) {
+    deps.addAoeMultiplier(plan.extraAoeMultiplier);
   }
   if (plan.toast) {
     deps.showToastAfter(plan.toast.delayMs, plan.toast.key, plan.toast.color);

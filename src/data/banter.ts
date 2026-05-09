@@ -2203,6 +2203,27 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.bannockburn.k',
         'ui.banter.seasonal_event.bannockburn.l',
       ],
+      // 2026-05-09 — Glorious Twelfth (Aug 11-13) closes the cohort
+      // banter coverage to 10/10. 12 leaves voice the noisy moor:
+      // tweed-clad hunters, dogs in the heather, shotguns up the
+      // brae, the haggis going to ground + widening its arc. Voice
+      // is warm-wry — the haggis isn't fighting hunters, it's
+      // outwaiting them. No anti-hunter venom; the comic register
+      // is the existing tourist + haggis_hunter vein.
+      glorious_twelfth: [
+        'ui.banter.seasonal_event.glorious_twelfth.a',
+        'ui.banter.seasonal_event.glorious_twelfth.b',
+        'ui.banter.seasonal_event.glorious_twelfth.c',
+        'ui.banter.seasonal_event.glorious_twelfth.d',
+        'ui.banter.seasonal_event.glorious_twelfth.e',
+        'ui.banter.seasonal_event.glorious_twelfth.f',
+        'ui.banter.seasonal_event.glorious_twelfth.g',
+        'ui.banter.seasonal_event.glorious_twelfth.h',
+        'ui.banter.seasonal_event.glorious_twelfth.i',
+        'ui.banter.seasonal_event.glorious_twelfth.j',
+        'ui.banter.seasonal_event.glorious_twelfth.k',
+        'ui.banter.seasonal_event.glorious_twelfth.l',
+      ],
     },
   },
 ];

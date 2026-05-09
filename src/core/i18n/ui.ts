@@ -806,6 +806,18 @@ export const ui = {
     blessing_toast: 'Bruce held — every blow tastes of the field. +22 HP, half a HP back per kill.',
   },
   /**
+   * Glorious Twelfth (Aug 11-13). Grouse-season opens; the moor on
+   * the brae fills with tweed + tweed-clad dogs + shotguns. The haggis
+   * goes to ground and walks wider — +16 HP heal post-spawn (stocking
+   * up before the moor gets noisy) + +0.10 AoE multiplier (the haggis
+   * answers the spread with spread). Tenth distinct mechanical slot
+   * in the cohort. Cultural framing diegetic-warm; no anti-hunter
+   * venom, no class polemic. SCOTTISH_RESEARCH_DEEP.md §6.10.
+   */
+  gloriousTwelfth: {
+    blessing_toast: 'The Twelfth opens. Go to ground; walk wider. +16 HP, every weapon\'s arc widens.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -3113,6 +3125,28 @@ export const ui = {
         j: 'Spider on the wa\'? Bruce watched ane till he kent persistence.',
         k: 'Hold thy ground. The next charge minds the last.',
         l: 'Walk on the field. Walk softly. Then walk on.',
+      },
+      // ── Glorious Twelfth (Aug 11-13). Grouse-season opens; tweed
+      //    fans out across the brae, dogs in the heather, shotguns
+      //    cracking somewhere up the slope. The haggis goes to ground
+      //    + widens its arc. Hearth tone with wry Edge bites about
+      //    the noise. SCOTTISH_RESEARCH_DEEP §6.10 (sporting estates)
+      //    + §22.3 (sporting calendar). Voice: warm-wry, not anti-
+      //    hunter; the haggis isn't fighting them, it's outwaiting
+      //    them. 12 leaves — lifts the cohort to 10/10.
+      glorious_twelfth: {
+        a: 'The Twelfth opens. Up by the brae, somebody\'s aiming.',
+        b: 'Tweed an\' tweed an\' a wee bit dog. Goes-to-ground oclock.',
+        c: 'Grouse season — the moor\'s loud. Walk wider; eat wider.',
+        d: 'Haggis Wildlife Foundation guidance: lie still; nobody\'s found us yet.',
+        e: 'The hunters open their season. The haggis opens its eyes.',
+        f: 'Heather smells o\' powder for three days. Then the moor forgets.',
+        g: 'Naebody\'s after a wild haggis. Just dinnae stand against the sky.',
+        h: 'Shotgun crack — distant. The bracken stays bracken.',
+        i: 'Twelve August. Auld word: "the moor on the Twelfth is no\' yours".',
+        j: 'Dogs in the gully — not for ye. The haggis is no\' on the schedule.',
+        k: 'A wider arc reads the moor better. Ye\'re no\' the only thing breathing.',
+        l: 'When the slope\'s busy, walk slow. The slope forgets fast.',
       },
     },
   },

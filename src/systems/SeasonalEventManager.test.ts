@@ -347,3 +347,32 @@ describe('E1 Bannockburn anniversary — Bruce 1314', () => {
     expect(bannockburnDay).not.toContain('lammas');
   });
 });
+
+describe('E1 Glorious Twelfth — grouse season opening', () => {
+  it('is active on the named day (Aug 12)', () => {
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 8, 12))).toBe(true);
+  });
+
+  it('is active on the window edges (Aug 11 + Aug 13)', () => {
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 8, 11))).toBe(true);
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 8, 13))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 8, 10))).toBe(false);
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 8, 14))).toBe(false);
+  });
+
+  it('is inactive in midwinter', () => {
+    expect(isSeasonalEventActive('glorious_twelfth', d(2027, 1, 15))).toBe(false);
+  });
+
+  it('does not overlap Lammas or Bracken-turn (clean late-summer slot)', () => {
+    // Lammas closes Aug 4; Bracken-turn opens Nov 4. Glorious Twelfth
+    // sits a clean week past Lammas with months of margin to Bracken.
+    const twelfthDay = activeSeasonalEvents(d(2027, 8, 12));
+    expect(twelfthDay).toContain('glorious_twelfth');
+    expect(twelfthDay).not.toContain('lammas');
+    expect(twelfthDay).not.toContain('bracken_turn');
+  });
+});

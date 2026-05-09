@@ -54,4 +54,10 @@ export const seasonalEvent = {
     badge_suffix: 'Bannockburn',
     ceremony_banner: '⚔ Bannockburn is live — every G-press echoes the anthem.',
   },
+  glorious_twelfth: {
+    name: 'The Glorious Twelfth',
+    description: 'Aug 11 – Aug 13 — grouse season opens; the moor goes loud.',
+    badge_suffix: 'The Twelfth',
+    ceremony_banner: '🦆 The Glorious Twelfth is live — go to ground, walk wider.',
+  },
 } as const;

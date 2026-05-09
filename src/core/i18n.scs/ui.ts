@@ -453,6 +453,9 @@ export const ui = {
   bannockburn: {
     blessing_toast: 'Bruce held — ilka blow tastes o the field. +22 HP, hauf a HP back fer ilk kill.',
   },
+  gloriousTwelfth: {
+    blessing_toast: 'Tha Twelfth opens. Gang tae grund; walk wider. +16 HP, ilka weapon\'s airc widens.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -2540,6 +2543,23 @@ export const ui = {
         j: 'Spider on tha wa? Bruce watched ane till he kent threap.',
         k: 'Haud thy grund. Tha neist chairge minds tha last.',
         l: 'Walk on tha field. Walk saftly. Syne walk on.',
+      },
+      // SCS overlay of EN glorious_twelfth leaves (2026-05-09). Tha
+      // muir on tha Twelfth — tweed, dugs, shotguns up tha brae. Tha
+      // haggis gangs tae grund an widens its airc. Cohort closes 10/10.
+      glorious_twelfth: {
+        a: 'Tha Twelfth opens. Up by tha brae, somebodie\'s aimin.',
+        b: 'Tweed an tweed an a wee bit dug. Gangs-tae-grund o\'clock.',
+        c: 'Grouse season — tha muir\'s lood. Walk wider; eat wider.',
+        d: 'Haggis Wildlife Foundation guidance: lie still; naebodie\'s fund us yet.',
+        e: 'Tha hunters open thair season. Tha haggis opens its een.',
+        f: 'Heather smells o pouder fer three days. Syne tha muir forgets.',
+        g: 'Naebodie\'s efter a wild haggis. Jist dinnae staund agin tha lift.',
+        h: 'Shotgun crack — fer awa. Tha breckan steys breckan.',
+        i: 'Twel August. Auld wird: "tha muir on tha Twelfth is nae yours".',
+        j: 'Dugs in tha gully — nae fer ye. Tha haggis is nae on tha rote.',
+        k: 'A wider airc reads tha muir better. Ye\'re nae tha only thing breathin.',
+        l: 'Whan tha slope\'s thrang, walk slaw. Tha slope forgets fast.',
       },
     },
   },
