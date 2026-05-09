@@ -18,8 +18,8 @@ const SRC_ROOT = join(__dirname, '..');
 const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
-  ['scenes/GameScene.ts', 1740], // bumped 2026-05-09 (1715→1740) for Clootie Rag Wager wiring (DESIGN_IDEAS §1 — clootieTree field + clootieSpawnSec field + reset deps + buildSecondTickHookContext entries + spawnClootieTree method, all sister-pattern to reliquary); current 1731 + 9 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
-  ['data/banter.ts', 2535], // bumped 2026-05-09 (2490→2535) for taxman_grudge pool (DESIGN_IDEAS §1 Taxman Grudge Ledger — context union member + pool entry, edge tone, priority 85, four verdict sub-pools coward/bruiser/precise/reckless + generic-even fallback through `keys`); current 2524 + 11 grace; pure data, parity-fenced, kept whole. Earlier bumps same day: 2455→2490 (clootie_wager) + 2430→2455 (shinty_parry) + 2400→2430 (stance_change) + 2375→2400 (simmer_dim seasonal)
+  ['scenes/GameScene.ts', 1790], // bumped 2026-05-09 (1740→1790) for Lemmings Easter Egg wiring (DESIGN_IDEAS §13 — lemmingsEasterEgg field + LemmingsEasterEgg ctor block + reset deps + setter); current 1781 + 9 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
+  ['data/banter.ts', 2565], // bumped 2026-05-09 (2535→2565) for lemmings_remember pool (DESIGN_IDEAS §13 Lemmings Easter Egg — context union member + pool entry, hearth tone, priority 51, two leaves on the once-per-variant cliff-edge parade); current 2553 + 12 grace; pure data, parity-fenced, kept whole. Earlier bumps same day: 2490→2535 (taxman_grudge) + 2455→2490 (clootie_wager) + 2430→2455 (shinty_parry) + 2400→2430 (stance_change) + 2375→2400 (simmer_dim seasonal)
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)
@@ -31,7 +31,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['systems/WeaponSystem.ts', 1385], // bumped 2026-05-09 (1360→1385) for Taxman Grudge Ledger emit (DESIGN_IDEAS §1 — `eliteOrBossFinished` event added in dealDamageToEnemy, fires only on elite/boss kill with precomputed distancePx); current 1377 + 8 grace; orchestrator, no obvious sub-system seams. Earlier bump same day (1335→1360) for Pibroch on-fire stamping
   ['scenes/GameOverScene.ts', 300], // was 1310 → 300 (Phase 7 re-baseline; panel/row/link/action builders under scenes/game-over/; current 292 + 8 grace)
   ['ui/HUD.ts', 1245], // bumped 2026-05-09 (1165→1245) for Shinty Parry setShintyParry method + chip refs + per-state fill/stroke palette + cooldown sweep fill + one-shot pulse tween (DESIGN_IDEAS §1); chip widget itself extracted to ui/hud/parryChip.ts; current 1238 + 7 grace. Earlier bump same day (1100→1165) for Stance Toggle
-  ['systems/AudioSystem.ts', 1315], // bumped 2026-05-09 (1245→1315) for Shinty Parry SFX pair (`playShintyParryOpen` woosh + `playShintyParry` caman-tok with noise transient, DESIGN_IDEAS §1); current 1305 + 10 grace; orchestrator, no obvious sub-system seams. Earlier bump same day (1210→1245) for Pibroch sting
+  ['systems/AudioSystem.ts', 1365], // bumped 2026-05-09 (1315→1365) for Lemmings OH NO! warble (DESIGN_IDEAS §13 — `playLemmingsOhNo` two-syllable vocal-style sweep, sine "OH" + triangle "NOOO!"); current 1354 + 11 grace; orchestrator, no obvious sub-system seams. Earlier bumps same day: 1245→1315 (Shinty Parry SFX pair) + 1210→1245 (Pibroch sting)
   ['art/sprites/decorations/biomeProps.ts', 5], // was 1095 (Phase 2.4 barrel)
 ];
 

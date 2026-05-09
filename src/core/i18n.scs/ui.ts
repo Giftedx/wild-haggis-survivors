@@ -1669,6 +1669,16 @@ export const ui = {
         c: 'Tha well taks its share. Tha moor pays back.',
       },
     },
+    // ── Lemmings Easter Egg (DESIGN_IDEAS §13). SCS overlay for
+    //    lemmings_remember. Hearth tone — pleased, fond. Scots `mind`
+    //    = "remember" (Doric / Highland-Scots holds tighter to it than
+    //    Lowland). `Aff` = "off" (the parade goes off the cliff). The
+    //    homage stays gentle — DMA Design / Dundee 1991 — no quoted
+    //    text or trademark, just the silhouette and the quiet beat.
+    lemmings_remember: {
+      a: 'Tha lemmings mind ye. Aff they go.',
+      b: 'Wee green-heidit anes — they\'ve passed.',
+    },
     // ── Taxman Grudge Ledger (DESIGN_IDEAS §1). SCS overlay for
     //    taxman_grudge. Edge tone — bureaucrat-sneer in Scots register.
     //    The Taxman in Scots is sharper, not softer: ledger / column /

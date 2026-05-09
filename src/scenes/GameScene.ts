@@ -102,6 +102,8 @@ import { RunActState } from './game/RunActState';
 import { StandingStones } from './game/standingStones';
 import { Reliquary } from './game/reliquary';
 import { ClootieTree } from './game/clootieTree';
+import { LemmingsEasterEgg } from './game/lemmingsEasterEgg';
+import { bumpLemmingsSeenForVariant } from '../utils/save';
 import { AncestralEcho } from './game/ancestralEcho';
 import { launchActIntermission as launchActIntermissionImpl } from './game/actIntermissionLauncher';
 import type { RoutePick, RouteResumeContext } from '../data/routes';
@@ -255,6 +257,11 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   /** Clootie Tree — single sacred-supplication landmark per run. Walking
    *  through commits the wager: a slice of max-HP for a rolled boon. */
   clootieTree: ClootieTree | null = null;
+  /** Lemmings Easter Egg (DESIGN_IDEAS §13) — once-per-variant cliff-edge
+   *  parade. Idle 90 s in coastal biome triggers the homage to DMA Design
+   *  / Dundee 1991. Cosmetic-only; no balance impact. Null between runs;
+   *  re-built each create() pass. */
+  lemmingsEasterEgg: LemmingsEasterEgg | null = null;
   /** Run-specific second at which the clootie tree spawns (DESIGN_IDEAS §1). */
   private clootieSpawnSec: number = 0;
   /** Taxman Grudge Ledger — silent per-run finish buffer (DESIGN_IDEAS §1).
@@ -521,6 +528,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       standingStones: this.standingStones,
       reliquary: this.reliquary,
       clootieTree: this.clootieTree,
+      lemmingsEasterEgg: this.lemmingsEasterEgg,
       ancestralEcho: this.ancestralEcho,
       relicSlotUI: this.relicSlotUI,
       grudgeLedger: this.grudgeLedger,
@@ -549,6 +557,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setStonesWarned: (v) => { this.stonesWarned = v; },
       setReliquary: (v) => { this.reliquary = v; },
       setClootieTree: (v) => { this.clootieTree = v; },
+      setLemmingsEasterEgg: (v) => { this.lemmingsEasterEgg = v; },
       setAncestralEcho: (v) => { this.ancestralEcho = v; },
       setRelicSlotUI: (v) => { this.relicSlotUI = v; },
       setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
@@ -1177,6 +1186,38 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
     });
     this.cairnStacking.reset();
+
+    // Lemmings Easter Egg (DESIGN_IDEAS §13) — cliff-edge parade homage
+    // to DMA Design / Dundee 1991. Always-on per-run orchestrator; idle
+    // 90 s in coastal biome triggers the once-per-variant parade. Pure
+    // cosmetic. In-line ctor here (after banter init upstream and the
+    // pickupSpawner block) so all deps are resolved.
+    this.lemmingsEasterEgg = new LemmingsEasterEgg({
+      scene: this,
+      getPlayerXY: () => ({ x: this.player.x, y: this.player.y }),
+      getActiveVariantKey: () => this.activeVariant.key,
+      getCurrentBiomeId: () => this.getCurrentBiomeId(),
+      // "Still" threshold — 8 px/s lets drag-decay below player intent
+      // count as still without forcing absolute zero. Player input
+      // resumes ticking the trigger to 0 the moment movement intent
+      // drives velocity above the threshold.
+      isPlayerStill: () => {
+        const body = this.player.body as Phaser.Physics.Arcade.Body | null;
+        const vx = body?.velocity.x ?? 0;
+        const vy = body?.velocity.y ?? 0;
+        return Math.hypot(vx, vy) < 8;
+      },
+      hasVariantSeen: (key) => {
+        try {
+          return loadSave().lemmingsSeenForVariant.includes(key);
+        } catch {
+          return false;
+        }
+      },
+      persistVariantSeen: (key) => bumpLemmingsSeenForVariant(key),
+      requestBanter: () => this.requestBanter('lemmings_remember'),
+      playSfx: () => audio.playLemmingsOhNo(),
+    });
 
     // Phase 5 Bucket 6 partial — LevelUpFlow + RunLifecycle ctors bundled.
     ({ levelUpFlow: this.levelUpFlow, runLifecycle: this.runLifecycle } = installRunFlow({

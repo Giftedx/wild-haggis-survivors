@@ -379,8 +379,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 17', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(17);
+  it('SAVE_SCHEMA_VERSION is 18', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(18);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -2257,6 +2257,40 @@ describe('save schema v16 → v17 (U1 seenRunes)', () => {
   it('coerces non-array seenRunes to empty', () => {
     const migrated = migrateSave({ schemaVersion: SAVE_SCHEMA_VERSION, seenRunes: { x: 1 } });
     expect(migrated.seenRunes).toEqual([]);
+  });
+});
+
+describe('save schema v17 → v18 (Lemmings Easter Egg)', () => {
+  it('fresh save defaults lemmingsSeenForVariant to an empty array', () => {
+    const fresh = createDefaultSave();
+    expect(fresh.lemmingsSeenForVariant).toEqual([]);
+  });
+
+  it('migrates a v17 save to current, defaults lemmingsSeenForVariant to []', () => {
+    const migrated = migrateSave({ schemaVersion: 17, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.lemmingsSeenForVariant).toEqual([]);
+  });
+
+  it('preserves lemmingsSeenForVariant on round-trip', () => {
+    const migrated = migrateSave({
+      ...createDefaultSave(),
+      lemmingsSeenForVariant: ['classic', 'glaswegian'],
+    });
+    expect(migrated.lemmingsSeenForVariant).toEqual(['classic', 'glaswegian']);
+  });
+
+  it('drops non-string entries and dedupes lemmingsSeenForVariant', () => {
+    const migrated = migrateSave({
+      schemaVersion: SAVE_SCHEMA_VERSION,
+      lemmingsSeenForVariant: ['classic', 42, null, 'classic', 'glaswegian', ''],
+    });
+    expect(migrated.lemmingsSeenForVariant).toEqual(['classic', 'glaswegian']);
+  });
+
+  it('coerces non-array lemmingsSeenForVariant to empty', () => {
+    const migrated = migrateSave({ schemaVersion: SAVE_SCHEMA_VERSION, lemmingsSeenForVariant: { x: 1 } });
+    expect(migrated.lemmingsSeenForVariant).toEqual([]);
   });
 });
 

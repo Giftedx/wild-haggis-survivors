@@ -158,6 +158,29 @@ export function bumpSeenRune(runeId: string): void {
 }
 
 /**
+ * Lemmings Easter Egg (DESIGN_IDEAS §13) — persist a variant key into
+ * `lemmingsSeenForVariant` when the cliff-edge parade fires for that
+ * variant for the first time. Once-per-variant lifetime trigger; after
+ * the variant is in this list the parade never fires again for it.
+ * Best-effort — swallow storage errors so the parade (which is purely
+ * cosmetic) never blocks gameplay even if persistence fails. No-op
+ * when the key is already tracked.
+ */
+export function bumpLemmingsSeenForVariant(variantKey: string): void {
+  if (!variantKey) return;
+  try {
+    const cur = loadSave();
+    if (cur.lemmingsSeenForVariant.includes(variantKey)) return;
+    writeSave({
+      ...cur,
+      lemmingsSeenForVariant: [...cur.lemmingsSeenForVariant, variantKey],
+    });
+  } catch {
+    /* best-effort */
+  }
+}
+
+/**
  * C1 M2 Task 11 — record a beastie sighting into the DiscoveryLog.
  * Best-effort — swallow storage errors so spawns never block. Writes
  * only on the first-encounter transition per key to keep the spawn

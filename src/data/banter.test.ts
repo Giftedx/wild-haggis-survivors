@@ -53,6 +53,8 @@ describe('BANTER_POOLS structure', () => {
     'clootie_wager',
     // DESIGN_IDEAS §1 — Taxman Grudge Ledger run-end verdict line
     'taxman_grudge',
+    // DESIGN_IDEAS §13 — Lemmings Easter Egg cliff-edge parade trigger
+    'lemmings_remember',
   ];
 
   it('covers every BanterContext exactly once', () => {

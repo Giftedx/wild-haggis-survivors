@@ -49,6 +49,7 @@ export const DEFAULT_SAVE: SaveData = {
   firstTimeEventsFired: [],
   discoveryLog: createEmptyDiscoveryLog(),
   seenRunes: [],
+  lemmingsSeenForVariant: [],
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -62,6 +63,7 @@ export function createDefaultSave(): SaveData {
     firstTimeEventsFired: [],
     discoveryLog: createEmptyDiscoveryLog(),
     seenRunes: [],
+    lemmingsSeenForVariant: [],
     settings: { ...DEFAULT_SETTINGS },
   };
 }

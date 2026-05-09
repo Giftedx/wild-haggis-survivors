@@ -1031,6 +1031,55 @@ export class AudioSystem {
     src.stop(t0 + 0.06);
   }
 
+  /**
+   * Lemmings Easter Egg — cartoon "OH NO!" warble that plays once when
+   * the parade fires. Two-syllable vocal-style sweep:
+   *   - "OH"  — short descending sine ~440 → 280 Hz over 200 ms.
+   *   - "NO!" — rising-then-falling triangle 380 → 540 → 360 Hz over
+   *             400 ms, slightly louder.
+   * The procedural shape avoids any licensed sample (the original
+   * Lemmings clip is © DMA / Sony / etc) while reading instantly to
+   * anyone who recognises the source: a small panicked voice, falling.
+   */
+  playLemmingsOhNo(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    const t0 = ctx.currentTime;
+
+    // "OH" — sine sweep down. Vowel-like with a tiny pitch wobble for
+    // the "voice" feel. 0.0 → 0.20 s.
+    const oh = ctx.createOscillator();
+    const ohGain = ctx.createGain();
+    oh.type = 'sine';
+    oh.frequency.setValueAtTime(440, t0);
+    oh.frequency.exponentialRampToValueAtTime(280, t0 + 0.18);
+    ohGain.gain.setValueAtTime(0, t0);
+    ohGain.gain.linearRampToValueAtTime(0.13, t0 + 0.03);
+    ohGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.20);
+    oh.connect(ohGain);
+    ohGain.connect(this.masterGain);
+    oh.start(t0);
+    oh.stop(t0 + 0.22);
+
+    // "NOOO!" — triangle, slight delay, rises then falls. Triangle
+    // wave is closer to a vocal "oh"-vowel than sine alone. 0.22 → 0.62 s.
+    const no = ctx.createOscillator();
+    const noGain = ctx.createGain();
+    const noStart = t0 + 0.22;
+    no.type = 'triangle';
+    no.frequency.setValueAtTime(380, noStart);
+    no.frequency.linearRampToValueAtTime(540, noStart + 0.10);
+    no.frequency.exponentialRampToValueAtTime(360, noStart + 0.40);
+    noGain.gain.setValueAtTime(0, noStart);
+    noGain.gain.linearRampToValueAtTime(0.16, noStart + 0.03);
+    noGain.gain.exponentialRampToValueAtTime(0.001, noStart + 0.40);
+    no.connect(noGain);
+    noGain.connect(this.masterGain);
+    no.start(noStart);
+    no.stop(noStart + 0.42);
+  }
+
   playBurnLeap(): void {
     if (!this.enabled) return;
     const ctx = this.ensureContext();

@@ -2158,6 +2158,21 @@ export const ui = {
         c: 'The well takes its share. The moor pays back.',
       },
     },
+    /** Lemmings Easter Egg (DESIGN_IDEAS §13). Fires once when the cliff-
+     *  edge parade triggers — a quiet hearth-toned toast riding under
+     *  the OH NO! SFX. Pays affectionate tribute to DMA Design / Dundee
+     *  1991, Scotland's foundational games studio. Hearth tone — pleased,
+     *  fond, the haggis acknowledging a small wonder it was patient
+     *  enough to witness. Two leaves on the no-repeat ring give variety
+     *  for the player who unlocks the parade across multiple variants;
+     *  the homage stays gentle (no in-game "Lemmings"-the-trademark
+     *  verbatim). Per CULTURAL_SENSITIVITIES_RESEARCH §trademark — the
+     *  SCS overlay echoes the EN beats without quoting copyrighted
+     *  audio or text. */
+    lemmings_remember: {
+      a: 'The lemmings remember ye. Aff they go.',
+      b: 'Wee green-haired ones — they\'ve passed.',
+    },
     /** Taxman Grudge Ledger (DESIGN_IDEAS §1). Fires once at run-end
      *  victory: the Taxman speaks in his own voice from beyond the
      *  ledger he just lost. Edge tone — bureaucrat-sneer, ink-cold,

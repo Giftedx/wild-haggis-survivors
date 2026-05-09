@@ -288,6 +288,17 @@ export interface SaveData {
    */
   seenRunes: string[];
 
+  /**
+   * Lemmings Easter Egg (DESIGN_IDEAS §13) — variant keys that have
+   * already earned the cliff-edge parade. The trigger is once-per-
+   * variant lifetime, so `LemmingsTriggerInput.variantAlreadyFired`
+   * is sourced from `includes(activeVariant)` against this array.
+   * Deduped + string-coerced at load. Pre-v18 saves default to `[]`
+   * so returning players can earn the parade for every variant from
+   * the upgrade onward. v18 addition.
+   */
+  lemmingsSeenForVariant: string[];
+
   /** Settings */
   settings: SaveSettings;
 }

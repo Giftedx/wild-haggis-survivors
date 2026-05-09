@@ -82,6 +82,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV15ToV16(raw));
     case 16:
       return finalizeSaveCandidate(migrateV16ToV17(raw));
+    case 17:
+      return finalizeSaveCandidate(migrateV17ToV18(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -257,6 +259,20 @@ function migrateV16ToV17(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v17 → v18 (Lemmings Easter Egg, DESIGN_IDEAS §13). Adds
+ * `lemmingsSeenForVariant: string[]` — variant keys that have already
+ * earned the cliff-edge parade. Once-per-variant lifetime trigger.
+ * Pre-v18 saves default to `[]`; the field is lazily populated when
+ * the trigger fires the first time per variant. No field-level
+ * migration beyond the version bump — the coercer in
+ * `finalizeSaveCandidate` handles absent / malformed arrays via
+ * `coerceStringArray`.
+ */
+function migrateV17ToV18(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -320,6 +336,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),
     discoveryLog,
     seenRunes: coerceStringArray(candidate.seenRunes),
+    lemmingsSeenForVariant: coerceStringArray(candidate.lemmingsSeenForVariant),
     settings: coerceSettings(candidate.settings),
   };
 }

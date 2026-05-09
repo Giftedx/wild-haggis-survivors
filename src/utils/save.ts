@@ -56,6 +56,7 @@ export {
   bumpRoutePicked,
   bumpSeenEnemy,
   bumpSeenRune,
+  bumpLemmingsSeenForVariant,
   bumpStandingStonePick,
   flushBeastieKills,
 } from './save/bumpers';

@@ -38,6 +38,7 @@ import { bakeAtmosphereLayers } from './atmosphereLayers';
 import { bakeEliteTelegraphs } from './eliteTelegraphs';
 import { bakeHeartPulse } from './heartPulse';
 import { bakeComboChevron } from './comboChevron';
+import { bakeLemming } from './lemming';
 
 export function bakeFx(scene: Phaser.Scene): void {
   bakeEntityShadow(scene);
@@ -67,4 +68,5 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeEliteTelegraphs(scene);
   bakeHeartPulse(scene);
   bakeComboChevron(scene);
+  bakeLemming(scene);
 }

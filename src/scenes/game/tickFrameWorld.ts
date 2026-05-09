@@ -63,6 +63,7 @@ import type { RunLifecycle } from './RunLifecycle';
 import type { StandingStones } from './standingStones';
 import type { Reliquary } from './reliquary';
 import type { ClootieTree } from './clootieTree';
+import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { AncestralEcho } from './ancestralEcho';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import type { RelicOrchestrator } from './RelicOrchestrator';
@@ -110,6 +111,9 @@ export interface TickFrameWorldDeps {
   getStandingStones: () => StandingStones | null;
   getReliquary: () => Reliquary | null;
   getClootieTree: () => ClootieTree | null;
+  /** Lemmings Easter Egg orchestrator (DESIGN_IDEAS §13). Lazy — null
+   *  between runs / before the in-line ctor in GameScene.create() runs. */
+  getLemmingsEasterEgg: () => LemmingsEasterEgg | null;
   getAncestralEcho: () => AncestralEcho | null;
   /** Setter for the `null` write when the ancestral echo resolves. */
   setAncestralEcho: (v: AncestralEcho | null) => void;
@@ -225,6 +229,12 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   deps.getStandingStones()?.tick();
   deps.getReliquary()?.tick();
   deps.getClootieTree()?.tick();
+  // Lemmings Easter Egg (DESIGN_IDEAS §13) — once-per-variant cliff-edge
+  // parade trigger. Drives off scaledDelta so paused frames don't tick
+  // toward the 90 s threshold (a pause-menu camp must not earn the
+  // joke). Cosmetic only; the orchestrator handles the parade tweens
+  // internally via Phaser's scene tween manager.
+  deps.getLemmingsEasterEgg()?.tick(scaledDelta);
   tickRelicEffectFrame({
     scaledDelta,
     player: deps.player,

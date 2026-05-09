@@ -80,7 +80,13 @@ export type BanterContext =
   // closing word). Sub-pool tags = grudge verdicts: coward | bruiser |
   // precise | reckless | even. Edge register — auditor's sneer; this
   // is the antagonist getting the curtain line on the run he just lost.
-  | 'taxman_grudge';
+  | 'taxman_grudge'
+  // DESIGN_IDEAS §13 Lemmings Easter Egg — fires once when the cliff-edge
+  // parade triggers (90 s idle in coastal biome, once per variant
+  // lifetime). Hearth tone; the toast that follows the OH NO! parade.
+  // No sub-pool tags — single discrete moment, two leaves on the
+  // no-repeat ring for variety across variants.
+  | 'lemmings_remember';
 
 export interface BanterPool {
   context: BanterContext;
@@ -1302,6 +1308,28 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.clootie_wager.bound.c',
       ],
     },
+  },
+  {
+    // Lemmings Easter Egg (DESIGN_IDEAS §13). Fires on the parade-trigger
+    // edge — the once-per-variant cliff-fall homage to DMA Design /
+    // Dundee 1991. Priority 51 sits *above* reliquary (45) and
+    // first_blood (50) because the moment is rarer (once-per-variant
+    // lifetime vs once-per-run) and the player has earned it by
+    // staying still 90 s — but well below curse_start (59),
+    // death_reflection (75), boss_warn (100) so any gameplay-critical
+    // event still wins same-tick. Hearth tone — the toast follows a
+    // loud OH NO! SFX, the line is the *quiet* echo ("the wee green-
+    // haired ones — they've passed"), not a fanfare. Two leaves on
+    // the no-repeat ring give variety across variants for players
+    // who unlock the parade more than once.
+    context: 'lemmings_remember',
+    tone: 'hearth',
+    priority: 51,
+    rare: true,
+    keys: [
+      'ui.banter.lemmings_remember.a',
+      'ui.banter.lemmings_remember.b',
+    ],
   },
   {
     // B1 Phase 2 — Gran's commentary. Hearth, elder warmth *about* the run.

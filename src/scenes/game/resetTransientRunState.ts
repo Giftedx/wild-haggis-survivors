@@ -56,6 +56,7 @@ import { tearDownNodeMap } from './nodeMapLifecycle';
 import { chooseReliquarySpawnSec } from './reliquary';
 import { chooseClootieSpawnSec } from '../../entities/clootieRagWager';
 import type { ClootieTree } from './clootieTree';
+import type { LemmingsEasterEgg } from './lemmingsEasterEgg';
 import type { StandingStones } from './standingStones';
 import type { Reliquary } from './reliquary';
 import type { AncestralEcho } from './ancestralEcho';
@@ -98,6 +99,7 @@ export interface ResetTransientRunStateDeps {
   standingStones: StandingStones | null;
   reliquary: Reliquary | null;
   clootieTree: ClootieTree | null;
+  lemmingsEasterEgg: LemmingsEasterEgg | null;
   ancestralEcho: AncestralEcho | null;
   relicSlotUI: RelicSlotUI | null;
   /** Taxman Grudge Ledger — cleared in-place between runs so the weapon
@@ -130,6 +132,7 @@ export interface ResetTransientRunStateDeps {
   setStonesWarned: (v: boolean) => void;
   setReliquary: (v: Reliquary | null) => void;
   setClootieTree: (v: ClootieTree | null) => void;
+  setLemmingsEasterEgg: (v: LemmingsEasterEgg | null) => void;
   setAncestralEcho: (v: AncestralEcho | null) => void;
   setRelicSlotUI: (v: RelicSlotUI | null) => void;
   setXpOverflowGoldBatch: (v: number) => void;
@@ -215,6 +218,8 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.setReliquary(null);
   deps.clootieTree?.destroy();
   deps.setClootieTree(null);
+  deps.lemmingsEasterEgg?.destroy();
+  deps.setLemmingsEasterEgg(null);
   deps.ancestralEcho?.destroy();
   deps.setAncestralEcho(null);
   deps.relicSlotUI?.destroy();

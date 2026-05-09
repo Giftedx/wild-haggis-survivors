@@ -92,6 +92,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     getStandingStones: () => scene.standingStones,
     getReliquary: () => scene.reliquary,
     getClootieTree: () => scene.clootieTree,
+    getLemmingsEasterEgg: () => scene.lemmingsEasterEgg,
     getAncestralEcho: () => scene.ancestralEcho,
     setAncestralEcho: (v) => { scene.ancestralEcho = v; },
     getRelicSlotUI: () => scene.relicSlotUI,
