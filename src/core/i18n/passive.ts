@@ -32,4 +32,7 @@ export const passive = {
   whetstone: {
     flavour: "A flat carborundum slab, fits the palm. Gran soaks it overnight in burn water; the grit drinks the moor. The haggis sharpens between fights, slow strokes, never against the edge. A blade that has felt the Whetstone never quite goes back to dull.",
   },
+  velvet_antler: {
+    flavour: "Velvet — the soft skin a stag wears across its growing antler all summer, full of blood and stored sun. Gran cuts a strip of it for the haggis at Lùnastal each year and pins it to the brow-band; the haggis has one extra dash in him for every day the velvet stays warm. Sheds clean by the rut. Grows back by the harvest.",
+  },
 } as const;

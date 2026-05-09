@@ -284,6 +284,20 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.sgian_geal.name',
     descriptionKey: 'evolution.sgian_geal.description',
   },
+  {
+    // DESIGN_IDEAS §5 — Stag Antler + Velvet Antler → Monarch's Charge.
+    // The lowered-head goring + the stored summer energy of velvet =
+    // the moment after the rut, the king-stag turning his full crown
+    // through the herd. Mechanically the evolved form keeps the
+    // baseline arc but the dash-strike becomes a 360° antler-sweep at
+    // 3.5× damage that briefly stuns the wounded — the kind of beat
+    // that tells a player "this is yours, you earned the throne".
+    baseWeapon: 'stag_antler',
+    requiredPassive: 'velvet_antler',
+    evolvedWeapon: 'monarch_charge',
+    nameKey: 'evolution.monarch_charge.name',
+    descriptionKey: 'evolution.monarch_charge.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

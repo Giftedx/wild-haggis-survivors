@@ -49,4 +49,9 @@ export const weapon = {
     description: 'A wee black-handled blade tucked in the stocking. Tight arc, fast hand, always sharp.',
     flavour: "The black knife — sgian dubh, kept in the hose at the calf where any guest could see it, plain. Hospitality required the showing; honour required the keeping. Gran wraps the haggis's bonemeal-grip every Hogmanay; the haggis has never asked who made the blade.",
   },
+  stag_antler: {
+    name: 'Stag Antler',
+    description: 'A red-deer tine carried low. Auto-arc on cooldown, but every dash gores a wider, meatier sweep.',
+    flavour: "The monarch of the glen sheds his crown each spring, and the moor remembers where. Gran picked this one up at the head of Glen Tilt the autumn the haggis was a poult, and bound it to the brow with linen and rosin. Every dash since has put weight behind it.",
+  },
 } as const;

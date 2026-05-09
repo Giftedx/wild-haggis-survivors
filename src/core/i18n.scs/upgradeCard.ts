@@ -35,6 +35,10 @@ export const upgradeCard = {
     name: 'Sgian Dubh',
     description: 'Tha hidden hose-knife. Fest wee arcs that lean on crit. Pair wi tha Whetstane fer legendary form.',
   },
+  add_stag_antler: {
+    name: 'Stag Antler',
+    description: 'A reid-deer tine boond tae tha broo. Steady arc on cooldoun — ivvery dash gores a meaty bonus sweep. Pair wi tha Velvet Antler fer legendary form.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -78,6 +82,10 @@ export const upgradeCard = {
   add_whetstone: {
     name: 'Whetstane',
     description: 'A grit slab fae Gran. Ivvery blade ye cairry feels it (+10% crit chance). Evolves Sgian Dubh.',
+  },
+  add_velvet_antler: {
+    name: 'Velvet Antler',
+    description: 'Simmer-skin on tha rack, fou o stored sun. +1 max dash chairge. Evolves Stag Antler.',
   },
   boost_hp: {
     name: 'Thick Hide',

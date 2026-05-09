@@ -198,12 +198,13 @@ export interface SaveData {
 
   /**
    * V2 Track 3 — total victorious runs where the player reached the
-   * `BURNS_EVOLUTION_THRESHOLD` (9) — i.e. all nine evolvable weapons
-   * reached evolved form in the same run. No retroactive seed possible
-   * (pre-v12 runs didn't persist per-run evolution count). Fresh
-   * counter starts at 0 for all. (Kept for internal stat tracking;
-   * Burns's Wee Beastie unlock now gates on the tightened v15
-   * `burnsNightFullEvoRunsCompleted` counter instead.)
+   * `BURNS_EVOLUTION_THRESHOLD` (10 — lifted 9 → 10 alongside the
+   * Stag Antler / Monarch's Charge ship) — i.e. all ten evolvable
+   * weapons reached evolved form in the same run. No retroactive seed
+   * possible (pre-v12 runs didn't persist per-run evolution count).
+   * Fresh counter starts at 0 for all. (Kept for internal stat
+   * tracking; Burns's Wee Beastie unlock now gates on the tightened
+   * v15 `burnsNightFullEvoRunsCompleted` counter instead.)
    */
   runsWithAllEvolutionsCompleted: number;
 
@@ -353,7 +354,7 @@ export interface RunHistoryContext {
   biomesVisited?: readonly string[];
   /**
    * V2 Track 3 — number of weapons that reached evolved form this run.
-   * Compared against `BURNS_EVOLUTION_THRESHOLD` (9); a victory at
+   * Compared against `BURNS_EVOLUTION_THRESHOLD` (10); a victory at
    * threshold bumps `runsWithAllEvolutionsCompleted` and unlocks the
    * Burns's Wee Beastie. Not persisted per history entry.
    */

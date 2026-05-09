@@ -36,6 +36,10 @@ export const upgradeCard = {
     name: 'Sgian Dubh',
     description: 'The hidden stocking-knife. Fast wee arcs that lean on crit. Pair wi the Whetstone for legendary form.',
   },
+  add_stag_antler: {
+    name: 'Stag Antler',
+    description: 'A red-deer tine bound to the brow. Steady arc on cooldown — every dash gores a meaty bonus sweep. Pair wi Velvet Antler for legendary form.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -80,6 +84,10 @@ export const upgradeCard = {
   add_whetstone: {
     name: 'Whetstone',
     description: 'A grit slab fae Gran. Every blade ye carry feels it (+10% crit chance). Evolves Sgian Dubh.',
+  },
+  add_velvet_antler: {
+    name: 'Velvet Antler',
+    description: 'Summer-skin on the rack, full o stored sun. +1 max dash charge. Evolves Stag Antler.',
   },
   // Stat boost cards
   boost_hp: {

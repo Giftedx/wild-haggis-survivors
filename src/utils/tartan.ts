@@ -77,6 +77,7 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   bagpipes:        COLORS_CSS.WHISKY_GOLD, // ceilidh gold
   shinty_stick:    '#3a6a28', // Camanachd-Cup turf-green (Newtonmore / Kingussie pitch)
   sgian_dubh:      '#2a2a32', // sgian-dubh black-leather grip
+  stag_antler:     '#c8b890', // bone-cream antler tine
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

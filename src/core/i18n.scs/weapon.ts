@@ -49,4 +49,9 @@ export const weapon = {
     description: 'A wee black-haunlit blade tucked in tha hose. Ticht arc, fest haund, aye shairp.',
     flavour: 'Tha black knife — sgian dubh, kept in tha hose at tha cauf whaur ony guest could see it, plain. Hospitality requirit tha shawin; honour requirit tha keepin. Gran wraps tha haggis\'s banemeal-grip ivvery Hogmanay; tha haggis haes nivver speirt wha made tha blade.',
   },
+  stag_antler: {
+    name: 'Stag Antler',
+    description: 'A reid-deer tine cairried laich. Auto-arc on cooldoun, but ivvery dash gores a wider, meatier sweep.',
+    flavour: 'Tha monarch o tha glen sheds his croun ilka spring, an tha moor minds whaur. Gran liftit this ane at tha heid o Glen Tilt tha autumn tha haggis wis a poult, an boond it tae tha broo wi linen an rosin. Ivvery dash since haes pit wecht ahint it.',
+  },
 } as const;

@@ -18,6 +18,8 @@ import { drawShintyStickIcon } from './shintyStick';
 import { drawShintyCamanIcon } from './shintyCaman';
 import { drawSgianDubhIcon } from './sgianDubh';
 import { drawSgianGealIcon } from './sgianGeal';
+import { drawStagAntlerIcon } from './stagAntler';
+import { drawMonarchChargeIcon } from './monarchCharge';
 
 /**
  * Bake every weapon-HUD icon. Called once from BootScene
@@ -33,6 +35,7 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawNessieTentacleIcon(scene);
   drawShintyStickIcon(scene);
   drawSgianDubhIcon(scene);
+  drawStagAntlerIcon(scene);
   // Evolutions
   drawThistleStormIcon(scene);
   drawHighlandGamesIcon(scene);
@@ -42,6 +45,7 @@ export function bakeWeaponIcons(scene: Phaser.Scene): void {
   drawNessieUnleashedIcon(scene);
   drawShintyCamanIcon(scene);
   drawSgianGealIcon(scene);
+  drawMonarchChargeIcon(scene);
   // Standalone + utility
   drawClaymoreIcon(scene);
   drawBagpipesUtilityIcon(scene);

@@ -31,7 +31,8 @@ export type WeaponKey =
   | 'claymore'
   | 'bagpipes'
   | 'shinty_stick'
-  | 'sgian_dubh';
+  | 'sgian_dubh'
+  | 'stag_antler';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -314,4 +315,58 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       radius: 1.08,
     },
   },
+
+  // DESIGN_IDEAS §5 — Stag Antler. The monarch-of-the-glen lowers
+  // his head and gores. Auto-fires a frontal arc on cooldown like a
+  // standard arc_sweep weapon (so it does steady work even when the
+  // player isn't dashing), but the killer trick lives in the
+  // dash-strike fork in `WeaponSystem.update`: every player dash
+  // (gated by a 1.5 s per-weapon cooldown) fires a juicier bonus
+  // arc in the dash direction at 2.5× damage. Sister-fantasy to the
+  // Drift Mastery / Whisky Breath / Stance / Shinty Parry skill
+  // expression layers — the dash IS the weapon's signature beat.
+  // Pairs with Velvet Antler at lv5 for the legendary Monarch's
+  // Charge: same baseline arc but the dash-strike becomes a 360°
+  // antler-sweep at 3.5× damage that briefly stuns hits.
+  stag_antler: {
+    key: 'stag_antler',
+    nameKey: 'weapon.stag_antler.name',
+    descriptionKey: 'weapon.stag_antler.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 1100,
+    damage: 7,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 90,
+    arcDegrees: 80,
+    knockback: 35,
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
 };
+
+/**
+ * DESIGN_IDEAS §5 — bonus dash-strike cooldown per stag-family weapon.
+ * Stag Antler ships at 1500 ms; the evolved Monarch's Charge is
+ * marginally snappier (1300 ms) to reward the king-stag fantasy.
+ * Lives outside `WeaponDef` because no other weapon needs this knob;
+ * adding a `dashStrikeCooldownMs` field to `WeaponDef` would force
+ * every weapon entry to think about a mechanic only one weapon uses.
+ */
+export const STAG_ANTLER_DASH_STRIKE_COOLDOWN_MS = 1500;
+export const MONARCH_CHARGE_DASH_STRIKE_COOLDOWN_MS = 1300;
+/** Damage multiplier the dash-strike applies on top of the weapon's
+ *  rolled effective-damage. Base form gores; the evolution charges. */
+export const STAG_ANTLER_DASH_STRIKE_DAMAGE_MUL = 2.5;
+export const MONARCH_CHARGE_DASH_STRIKE_DAMAGE_MUL = 3.5;
+/** Monarch's Charge stuns the hits with a brief freeze — the king-
+ *  stag's antler sweep is heavy enough to staggered the wounded. */
+export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_MS = 600;
+export const MONARCH_CHARGE_DASH_STRIKE_FREEZE_FRACTION = 0.4;

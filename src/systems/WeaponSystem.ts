@@ -14,6 +14,20 @@ import { fillCirclePool } from './fillCirclePool';
 import { musicEngine } from './music/ProceduralMusicEngine';
 import { applyPibrochDamage, isPibrochAligned } from './music/pibrochAlignment';
 import { populateEvolvedKeys } from './evolvedWeaponKeys';
+import {
+  createDashStrikeState,
+  tickDashStrike,
+  resetDashStrike,
+  type DashStrikeState,
+} from '../entities/dashStrikeTrigger';
+import {
+  STAG_ANTLER_DASH_STRIKE_COOLDOWN_MS,
+  MONARCH_CHARGE_DASH_STRIKE_COOLDOWN_MS,
+  STAG_ANTLER_DASH_STRIKE_DAMAGE_MUL,
+  MONARCH_CHARGE_DASH_STRIKE_DAMAGE_MUL,
+  MONARCH_CHARGE_DASH_STRIKE_FREEZE_MS,
+  MONARCH_CHARGE_DASH_STRIKE_FREEZE_FRACTION,
+} from '../data/weapons';
 
 /** Runtime state for an equipped weapon */
 export interface ActiveWeapon {
@@ -46,6 +60,19 @@ export class WeaponSystem {
 
   /** Last known player facing angle (radians) — used for directional weapons */
   private playerFacing: number = 0;
+
+  /** DESIGN_IDEAS §5 — live player dash state, snapshotted each
+   *  frame by `setPlayerDashState`. Drives the Stag Antler /
+   *  Monarch's Charge dash-strike fork in `update`. */
+  private playerIsDashing: boolean = false;
+  private playerDashFacing: number | null = null;
+
+  /** DESIGN_IDEAS §5 — per-weapon dash-strike state. One entry per
+   *  stag-family weapon owned this run (today: stag_antler only —
+   *  Monarch's Charge re-uses the same weapon slot when evolved).
+   *  Lazily initialised on first dash-strike-eligible weapon to
+   *  avoid allocating for every WeaponSystem instance. */
+  private dashStrikeStates: Map<string, DashStrikeState> = new Map();
 
   /** Trail frame counter — spawn trail particles every N frames */
   private trailCounter: number = 0;
@@ -102,6 +129,12 @@ export class WeaponSystem {
     this.weapons = [];
     this.trailCounter = 0;
     this.playerFacing = 0;
+    this.playerIsDashing = false;
+    this.playerDashFacing = null;
+    // Reset dash-strike cooldowns + edge memory; a stale cooldown
+    // from the prior run must not gate the first dash of a fresh run.
+    for (const state of this.dashStrikeStates.values()) resetDashStrike(state);
+    this.dashStrikeStates.clear();
 
     const projectiles = this.projectilePool.getChildren() as Projectile[];
     for (const p of projectiles) {
@@ -282,6 +315,17 @@ export class WeaponSystem {
     this.playerFacing = angle;
   }
 
+  /**
+   * DESIGN_IDEAS §5 — snapshot the live player dash state so the
+   * Stag Antler dash-strike fork in `update()` can edge-detect on
+   * `isDashing` and aim the bonus arc at `dashFacing`. Called each
+   * frame by `tickFrameWorld` next to `setPlayerFacing`.
+   */
+  setPlayerDashState(isDashing: boolean, facing: number | null): void {
+    this.playerIsDashing = isDashing;
+    this.playerDashFacing = facing;
+  }
+
   /** Update multipliers from player stats (called by GameScene each frame) */
   setMultipliers(damage: number, aoe: number, attackSpeed: number, critChance: number = 0.10, cooldownReduction: number = 0, critDmgMul: number = 2.0): void {
     this.damageMultiplier = damage;
@@ -372,6 +416,51 @@ export class WeaponSystem {
         }
       }
     }
+
+    // DESIGN_IDEAS §5 — Stag Antler dash-strike. Runs AFTER the
+    // standard weapon-cooldown pass so a dash-frame can fire both
+    // the auto-arc AND the bonus arc, but on the player-input edge,
+    // not the cooldown clock. Fully gated by the per-weapon
+    // dash-strike cooldown (1500 ms base / 1300 ms evolved); a player
+    // with stacked dash charges + a refresh route can't auto-spam the
+    // bonus arc, the weapon's own pace caps it.
+    for (const weapon of this.weapons) {
+      if (!this.weaponSupportsDashStrike(weapon)) continue;
+      const state = this.getOrCreateDashStrikeState(weapon.config.key);
+      const cooldown = weapon.evolved
+        ? MONARCH_CHARGE_DASH_STRIKE_COOLDOWN_MS
+        : STAG_ANTLER_DASH_STRIKE_COOLDOWN_MS;
+      const result = tickDashStrike(state, {
+        isDashing: this.playerIsDashing,
+        deltaMs: delta,
+        cooldownMsOnFire: cooldown,
+      });
+      if (!result.shouldFire) continue;
+      // Only fire when we have a dash facing — `getDashFacingAngle`
+      // returns null only before the first dash of a run, which the
+      // rising-edge gate has already excluded. Defensive guard for
+      // unit-test stubs that might not seed `lastDashDir`.
+      const facing = this.playerDashFacing;
+      if (facing === null) continue;
+      this.fireDashStrike(weapon, playerX, playerY, facing);
+    }
+  }
+
+  /** DESIGN_IDEAS §5 — only stag-family weapons (today: stag_antler
+   *  base + monarch_charge evolution) opt into the dash-strike fork.
+   *  All other weapons fall through; the helper's per-weapon Map
+   *  stays empty for them. */
+  private weaponSupportsDashStrike(weapon: ActiveWeapon): boolean {
+    return weapon.config.key === 'stag_antler';
+  }
+
+  private getOrCreateDashStrikeState(key: string): DashStrikeState {
+    let state = this.dashStrikeStates.get(key);
+    if (!state) {
+      state = createDashStrikeState();
+      this.dashStrikeStates.set(key, state);
+    }
+    return state;
   }
 
   // ── Fire dispatch ──
@@ -729,14 +818,20 @@ export class WeaponSystem {
     // Sgian Dubh + Sgian Geal share the cold-steel flash (claymore_spark
     // texture). The white-knife twin gets a brighter scale + faster
     // duration to read as the ceremonial cut, not the everyday wrist-
-    // flick. Nessie keeps the murky-green splash; default-default stays
-    // claymore for any future arc_sweep weapon.
+    // flick. Stag Antler / Monarch's Charge ride the same flash but at
+    // a wider, slower beat (the haggis's HEAD swings, not a wrist) and
+    // colour the wedge bone-cream rather than steel. Nessie keeps the
+    // murky-green splash; default-default stays claymore for any future
+    // arc_sweep weapon.
     const isSgian = w.config.key === 'sgian_dubh';
     const isClaymore = w.config.key === 'claymore';
-    const flashKey = isClaymore || isSgian ? 'fx_weapon_claymore_spark' : 'fx_weapon_nessie_splash';
-    const flashScale = isSgian ? (forceCrit ? 0.65 : 0.5) : 0.85;
-    const flashEndScale = isSgian ? (forceCrit ? 1.05 : 0.85) : 1.35;
-    const flashDuration = isSgian ? 200 : 280;
+    const isStag = w.config.key === 'stag_antler';
+    const flashKey = isClaymore || isSgian || isStag
+      ? 'fx_weapon_claymore_spark'
+      : 'fx_weapon_nessie_splash';
+    const flashScale = isSgian ? (forceCrit ? 0.65 : 0.5) : isStag ? 0.7 : 0.85;
+    const flashEndScale = isSgian ? (forceCrit ? 1.05 : 0.85) : isStag ? 1.15 : 1.35;
+    const flashDuration = isSgian ? 200 : isStag ? 240 : 280;
     this.spawnWeaponFlourish(
       px + Math.cos(facing) * 28,
       py + Math.sin(facing) * 28,
@@ -745,14 +840,17 @@ export class WeaponSystem {
     );
 
     // Visual sweep arc — steel wedge for claymore, bright steel for sgian
-    // (white-knife twin glints a touch hotter), murky green for Nessie.
+    // (white-knife twin glints a touch hotter), bone-cream for stag, murky
+    // green for Nessie.
     const gfx = this.acquireVfxGraphics();
     const wedgeColor = isClaymore
       ? 0xc8d8e8
       : isSgian
         ? (forceCrit ? 0xf6f8fa : 0xd8dde4)
-        : 0x226644;
-    const wedgeAlpha = isClaymore ? 0.35 : isSgian ? 0.42 : 0.4;
+        : isStag
+          ? 0xd8c8a0
+          : 0x226644;
+    const wedgeAlpha = isClaymore ? 0.35 : isSgian ? 0.42 : isStag ? 0.4 : 0.4;
     gfx.fillStyle(wedgeColor, wedgeAlpha);
     gfx.slice(
       px, py, radius,
@@ -815,6 +913,131 @@ export class WeaponSystem {
     }
   }
 
+  /**
+   * DESIGN_IDEAS §5 — Stag Antler / Monarch's Charge bonus arc.
+   *
+   * Shares the arc_sweep math with `fireArcSweep` but routes
+   * through this dedicated path for three reasons: (1) the bonus
+   * applies a fat damage multiplier on top of `effectiveDamage`,
+   * (2) the facing is FIXED to the player's last dash direction
+   * (not the live aim-at-nearest-enemy fallback fireArcSweep uses
+   * for the auto-arc — the dash-strike must point where the
+   * haggis actually went), and (3) the evolved Monarch's Charge
+   * sweeps a full 360° + applies a brief freeze stun, neither of
+   * which fits the standard `fireEvolved` signature cleanly.
+   *
+   * No RNG consumed beyond the standard `effectiveDamage` crit
+   * roll, preserving replay determinism.
+   */
+  private fireDashStrike(
+    w: ActiveWeapon,
+    px: number,
+    py: number,
+    facing: number,
+  ): void {
+    const isMonarch = w.evolved && w.evolutionKey === 'monarch_charge';
+    const damageMul = isMonarch
+      ? MONARCH_CHARGE_DASH_STRIKE_DAMAGE_MUL
+      : STAG_ANTLER_DASH_STRIKE_DAMAGE_MUL;
+    const radius = this.effectiveAoe(w);
+    const { damage: baseDmg, isCrit } = this.effectiveDamage(w);
+    const dmg = Math.ceil(baseDmg * damageMul);
+    // Monarch's Charge sweeps the full crown 360° (the king-stag
+    // turns through the herd); base form gores the dash arc only.
+    const arcDeg = isMonarch ? 360 : Math.max(120, w.config.arcDegrees + 40);
+    const halfArc = Phaser.Math.DegToRad(arcDeg / 2);
+
+    // Cast flourish — antler-spread visual at the player's snout,
+    // pointed in the dash direction. Reuses the claymore spark texture
+    // (cold-steel wedge); the Monarch form gets a hotter scale.
+    if (this.scene.textures.exists('fx_weapon_claymore_spark')) {
+      this.spawnWeaponFlourish(
+        px + Math.cos(facing) * 28,
+        py + Math.sin(facing) * 28,
+        'fx_weapon_claymore_spark',
+        {
+          scale: isMonarch ? 1.0 : 0.78,
+          endScale: isMonarch ? 1.6 : 1.2,
+          duration: isMonarch ? 320 : 240,
+          rotation: facing,
+        },
+      );
+    }
+
+    // Visual sweep — bone-cream wedge for stag-antler (the colour of
+    // a polished antler tine), bright gold-cream for Monarch (the
+    // crown caught in autumn light).
+    const gfx = this.acquireVfxGraphics();
+    const wedgeColor = isMonarch ? 0xf6e0a0 : 0xd8c8a0;
+    const wedgeAlpha = isMonarch ? 0.5 : 0.42;
+    gfx.fillStyle(wedgeColor, wedgeAlpha);
+    if (isMonarch) {
+      gfx.fillCircle(px, py, radius);
+    } else {
+      gfx.slice(px, py, radius, facing - halfArc, facing + halfArc, false);
+      gfx.fillPath();
+    }
+    this.scene.tweens.add({
+      targets: gfx,
+      alpha: 0,
+      duration: 280,
+      onComplete: () => { gfx.setVisible(false); gfx.clear(); },
+    });
+
+    // Damage enemies within the arc — same dot-product gate as
+    // fireArcSweep. Skipped entirely for Monarch (full 360° hits
+    // every enemy in radius without the facing test).
+    const radiusSq = radius * radius;
+    const fcos = Math.cos(facing);
+    const fsin = Math.sin(facing);
+    const arcThresh = Math.cos(halfArc);
+    const enemies = this.enemyGroup.getChildren() as Enemy[];
+    for (const enemy of enemies) {
+      if (!enemy.active) continue;
+      const dx = enemy.x - px;
+      const dy = enemy.y - py;
+      const distSq = dx * dx + dy * dy;
+      if (distSq > radiusSq) continue;
+
+      const dist = Math.sqrt(distSq);
+      if (dist < 1e-6) continue;
+
+      if (!isMonarch) {
+        const nx = dx / dist;
+        const ny = dy / dist;
+        const dot = nx * fcos + ny * fsin;
+        if (dot < arcThresh) continue;
+      }
+
+      this.dealDamageToEnemy(enemy, dmg, isCrit, w.config.key);
+
+      // Knockback uses the dash direction unit vector, not enemy
+      // direction — the gore drives enemies AWAY from the haggis
+      // along the line of charge, which reads as "lowered head ploughs
+      // through" rather than "gentle radial push". Monarch's Charge
+      // fans knockback radially since the sweep is full 360°.
+      if (enemy.active && w.config.knockback > 0) {
+        const body = enemy.body as Phaser.Physics.Arcade.Body;
+        const mass = Math.max(0.05, body.mass);
+        const kb = (w.config.knockback * (isMonarch ? 1.4 : 1.2)) / mass;
+        if (isMonarch) {
+          enemy.applyKnockback((dx / dist) * kb, (dy / dist) * kb, 180);
+        } else {
+          enemy.applyKnockback(fcos * kb, fsin * kb, 180);
+        }
+      }
+
+      // Monarch's Charge briefly stuns hits — a heavy antler-sweep
+      // staggers the wounded enough to read as "the king is here".
+      if (enemy.active && isMonarch) {
+        enemy.applyFreeze(
+          MONARCH_CHARGE_DASH_STRIKE_FREEZE_FRACTION,
+          MONARCH_CHARGE_DASH_STRIKE_FREEZE_MS,
+        );
+      }
+    }
+  }
+
   /** Central damage handler — applies damage, emits events */
   // ── Evolved weapon behaviors ──
 
@@ -852,6 +1075,16 @@ export class WeaponSystem {
         // fresh from the current weapon stats — not the {dmg, isCrit}
         // tuple we destructured above.
         this.fireArcSweep(w, px, py, true);
+        break;
+      case 'monarch_charge':
+        // Monarch's Charge — the king-stag retains the auto baseline
+        // (a steady frontal goring on cooldown) and trades the bonus
+        // arc for a 360° antler-sweep that stuns. The auto-arc here
+        // re-uses the standard arc_sweep dispatch (no special case);
+        // the dash-strike branch in `update()` does the heavy lift via
+        // `fireDashStrike`, which inspects `w.evolved` to upgrade the
+        // bonus to the full crown sweep.
+        this.fireArcSweep(w, px, py);
         break;
       case 'nessie_unleashed':
         this.fireFullSweep(px, py, dmg, radius * 1.6, w.config.key, isCrit);

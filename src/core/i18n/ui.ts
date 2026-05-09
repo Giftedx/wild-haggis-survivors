@@ -1528,6 +1528,12 @@ export const ui = {
         c: 'The bone grip kens its work. Nothin\' grazed; everythin\' opened.',
         d: 'Edge past sharp. The Whetstane held its end.',
       },
+      stag_antler: {
+        a: 'Croun\'s on. The herd parts.',
+        b: 'Monarch\'s Charge — ivvery dash a sweep.',
+        c: 'Antler turns the field. Naebody stands tae the king.',
+        d: 'Velvet shed clean. The rut is mine.',
+      },
       bagpipes: {
         a: 'The pipes woke up proper. Run.',
         b: 'Skirl turned slaughter — beautiful.',

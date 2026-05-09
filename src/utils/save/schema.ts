@@ -19,12 +19,13 @@ export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
 
 /**
  * V2 Track 3 — evolutions-threshold for the Burns's Wee Beastie unlock.
- * Nine of the ten weapons have an evolved form (bagpipes is the
- * utility-only one per CLAUDE.md); nine = the max achievable in one
+ * Ten of the eleven weapons have an evolved form (bagpipes is the
+ * utility-only one per CLAUDE.md); ten = the max achievable in one
  * run via the legendary-build path (variant/relic/curse can lift the
- * card-pool's 6-weapon offer cap).
+ * card-pool's 6-weapon offer cap). Lifted 9 → 10 alongside the Stag
+ * Antler / Monarch's Charge ship (DESIGN_IDEAS §5).
  */
-export const BURNS_EVOLUTION_THRESHOLD = 9;
+export const BURNS_EVOLUTION_THRESHOLD = 10;
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;

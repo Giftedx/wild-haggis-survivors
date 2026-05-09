@@ -1049,6 +1049,12 @@ export const ui = {
         c: 'Tha bane grip kens its wark. Naethin grazed; a\'thing opened.',
         d: 'Edge past shairp. Tha Whetstane held its end.',
       },
+      stag_antler: {
+        a: 'Croun\'s on. Tha herd pairts.',
+        b: 'Monarch\'s Charge — ivvery dash a sweep.',
+        c: 'Antler turns tha field. Naebody staunds tae tha king.',
+        d: 'Velvet shed clean. Tha rut is mine.',
+      },
       bagpipes: {
         a: 'Tha pipes woke up proper. Rin.',
         b: 'Skirl turnt slaughter — beautiful.',

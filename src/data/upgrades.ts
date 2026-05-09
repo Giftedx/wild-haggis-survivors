@@ -26,7 +26,8 @@ export type PassiveKey =
   | 'highland_shield'
   | 'tartan_sash'
   | 'shinty_ball'
-  | 'whetstone';
+  | 'whetstone'
+  | 'velvet_antler';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -164,6 +165,14 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_sgian_dubh',
     effect: { type: 'add_weapon', weaponKey: 'sgian_dubh' },
   },
+  {
+    id: 'add_stag_antler',
+    name: 'upgradeCard.add_stag_antler.name',
+    description: 'upgradeCard.add_stag_antler.description',
+    rarity: 'uncommon',
+    icon: 'wicon_stag_antler',
+    effect: { type: 'add_weapon', weaponKey: 'stag_antler' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -256,6 +265,14 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_whetstone',
     effect: { type: 'add_passive', passiveKey: 'whetstone' },
+  },
+  {
+    id: 'add_velvet_antler',
+    name: 'upgradeCard.add_velvet_antler.name',
+    description: 'upgradeCard.add_velvet_antler.description',
+    rarity: 'uncommon',
+    icon: 'ucard_velvet_antler',
+    effect: { type: 'add_passive', passiveKey: 'velvet_antler' },
   },
 ];
 

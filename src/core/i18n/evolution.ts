@@ -44,4 +44,9 @@ export const evolution = {
     description: 'The white knife — twin to the sgian dubh, but ceremonial. Every cut a guaranteed crit.',
     flavour: "Sgian geal — the bright knife, drawn at oaths and weddings, never at table. Bone-grip, clear-quartz pommel, an edge the Whetstone has lifted past sharp into something quieter. The black knife was hidden; the white knife is shown. The haggis has reasons for both.",
   },
+  monarch_charge: {
+    name: "Monarch's Charge",
+    description: 'A full crown sweep. Every dash spins the rack 360°, staggers the wounded — the king-stag turning through the herd.',
+    flavour: "Velvet shed clean, antler bone-bright, the rut won by silence rather than fight. The Monarch's Charge is the moment after — the herd stands still, the king turns once on his hooves, and what falls falls. The haggis carries it forward; the antler remembers who it came from.",
+  },
 } as const;

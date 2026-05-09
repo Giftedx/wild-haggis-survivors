@@ -44,4 +44,9 @@ export const evolution = {
     description: 'Tha white knife — twin tae tha sgian dubh, but ceremonial. Ivvery cut a guaranteed crit.',
     flavour: 'Sgian geal — tha bricht knife, drawn at oaths an weddins, nivver at tha buird. Bane-grip, clear-quartz pommel, an edge tha Whetstane has liftit past shairp intae somethin quieter. Tha black knife wis hidden; tha white knife is shawn. Tha haggis haes reasons fer baith.',
   },
+  monarch_charge: {
+    name: "Monarch's Charge",
+    description: 'A hail croun sweep. Ivvery dash spins tha rack 360°, staggers tha woundit — tha king-stag turnin throu tha herd.',
+    flavour: 'Velvet shed clean, antler bane-bricht, tha rut wun by silence raither than fecht. Tha Monarch\'s Charge is tha moment efter — tha herd staunds still, tha king turns yince on his hooves, an whit faws faws. Tha haggis cairries it forrit; tha antler minds wha it cam fae.',
+  },
 } as const;

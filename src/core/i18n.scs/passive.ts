@@ -32,4 +32,7 @@ export const passive = {
   whetstone: {
     flavour: 'A flat carborundum slab, fits tha luif. Gran soaks it owernicht in burn watter; tha grit drinks tha moor. Tha haggis shairpens atween fechts, slow strokes, nivver agin tha edge. A blade that\'s felt tha Whetstane nivver quite gangs back tae dull.',
   },
+  velvet_antler: {
+    flavour: 'Velvet — tha saft skin a stag wears across his growin antler aw simmer, fou o bluid an stored sun. Gran cuts a strip o it fer tha haggis at Lùnastal each year an pins it tae tha broo-baund; tha haggis haes wan extra dash in him fer ilka day tha velvet stays warm. Sheds clean by tha rut. Growes back by tha hairst.',
+  },
 } as const;

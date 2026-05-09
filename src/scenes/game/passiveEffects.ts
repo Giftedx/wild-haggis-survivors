@@ -67,5 +67,16 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // carries the visible tell.
       player.addCritChance(0.10);
       break;
+    case 'velvet_antler':
+      // +1 max dash charge — stags grow their antlers IN VELVET
+      // through summer (the soft skin sheaths storing the season's
+      // energy); shedding the velvet for the autumn rut releases
+      // that stored power. Mechanically: an extra dash banked. Pairs
+      // with Stag Antler at lv5 to unlock Monarch's Charge — every
+      // dash now opens a 360° antler-sweep beat. No accessory equip:
+      // the antlers live on the weapon icon, not on the haggis
+      // silhouette (the haggis isn't a stag — he carries one).
+      player.addDashCharge();
+      break;
   }
 }

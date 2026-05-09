@@ -1332,6 +1332,28 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.dashCharges = this.maxDashCharges;
   }
   /**
+   * DESIGN_IDEAS §5 — Stag Antler weapon dash-strike trigger reads
+   * this each frame; the rising edge fires the bonus arc. Public
+   * because `WeaponSystem` (a sibling system, not a subclass) needs
+   * cross-system access. Exposing the flag rather than synthesising
+   * a "edge" event keeps the helper (`dashStrikeTrigger.ts`) the
+   * single owner of edge-detection state.
+   */
+  getIsDashing(): boolean { return this.isDashing; }
+  /**
+   * DESIGN_IDEAS §5 — Dash facing in radians (atan2 over the unit
+   * `lastDashDir`). Returns null only before the first dash of a
+   * run; after that, the last-dash direction is sticky and reads as
+   * "the haggis's last committed lunge". Stag Antler bonus arcs use
+   * this to point the goring sweep where the player actually went,
+   * which is more intuitive than `playerFacing` (which trails movement
+   * input and would point sideways during a perpendicular dash).
+   */
+  getDashFacingAngle(): number | null {
+    if (!this.lastDashDir) return null;
+    return Math.atan2(this.lastDashDir.y, this.lastDashDir.x);
+  }
+  /**
    * W2 Moor Road: refill current dash charges to max and clear the
    * cooldown. Used by run_for_the_hills route onResume.
    */

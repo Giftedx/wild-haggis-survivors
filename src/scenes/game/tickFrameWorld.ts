@@ -252,6 +252,15 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   // Always read from `player.rotation` (persists when stationary) so
   // directional weapons like arc_sweep don't use a stale angle.
   deps.weaponSystem.setPlayerFacing(deps.player.rotation - Math.PI / 2);
+  // DESIGN_IDEAS §5 — Stag Antler dash-strike trigger reads these
+  // each frame; the rising edge of `isDashing` (gated by a per-
+  // weapon cooldown) fires the bonus arc. Kept here next to
+  // `setPlayerFacing` because both are weapon-system reads of the
+  // live player state, neither belonging in the multiplier fold.
+  deps.weaponSystem.setPlayerDashState(
+    deps.player.getIsDashing(),
+    deps.player.getDashFacingAngle(),
+  );
   applyWeaponMultiplierFold({
     player: deps.player,
     juice: deps.juice,
