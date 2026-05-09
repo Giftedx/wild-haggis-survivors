@@ -97,6 +97,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     relicOrchestrator: scene.relicOrchestrator,
     weaponSystem: scene.weaponSystem,
     xpSystem: scene.xpSystem,
+    getNicnevinWildHunt: () => scene.nicnevinWildHunt,
     getRuneBag: () => scene.runeBag,
     getBurnsPlatterPickedUpAtMs: () => scene.burnsPlatterPickedUpAtMs,
     getMinimap: () => scene.minimap,

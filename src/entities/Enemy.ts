@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
 import { getSettingsManager } from '../core/SettingsManager';
 import { tryCameraShake } from '../utils/cameraShake';
-import { EnemyConfig, EnemyBehavior } from '../data/enemies';
+import { EnemyConfig, EnemyBehavior, ENEMY_TYPES } from '../data/enemies';
 import { COLORS, COLORS_CSS, ENEMIES, GAME } from '../config';
 import { ISceneContext } from '../core/ISceneContext';
 import { BALANCE } from '../core/BalanceConfig';
@@ -104,6 +104,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /** Spawner enemies summon minions periodically */
   private spawnerCooldown: number = 0;
+  /** Configured minion key for spawner enemies — null falls back to midge.
+   *  Set per-spawn from `config.spawnerMinionKey` so Nicnevin (the only
+   *  current non-default user) summons unseelie_fiddler instead of midge. */
+  private spawnerMinionKey: string | null = null;
   /** Guard against same-frame double-fire of chemical explosion synergy */
   private chemicalExplosionFired: boolean = false;
 
@@ -317,6 +321,10 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     this.spawnerCooldown = config.behavior === 'spawner'
       ? BALANCE.enemy.spawnerWarmupMs
       : BALANCE.enemy.spawnerIntervalMs;
+    // Stamp the configured minion key — null falls through to the
+    // historical 'midge' default in behaviorSpawner so existing nests
+    // are unaffected.
+    this.spawnerMinionKey = config.spawnerMinionKey ?? null;
     // Reset Ghost phase state — if a Ghost died mid-phase, the next
     // recycled enemy would inherit invisibility + projectile-immunity
     this.phaseTimer = BALANCE.enemy.phaseToggleMs;
@@ -913,7 +921,9 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   private behaviorSpawner(delta: number): void {
-    // Stationary — summon a midge on spawnerCooldown interval
+    // Stationary — summon a configured minion on spawnerCooldown interval.
+    // Default minion is midge (nest's historical contract); Nicnevin overrides
+    // via `spawnerMinionKey: 'unseelie_fiddler'` for the Unseelie ring fantasy.
     this.setVelocity(0, 0);
     this.spawnerCooldown -= delta;
     if (this.spawnerCooldown <= 0) {
@@ -924,10 +934,12 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       if (!minion) return;
       const angle = pickSpawnerMinionAngle(this.ctx.getRunRng());
       const dist = 20;
-      const midge = { key: 'midge', texture: 'midge', speed: 130, hp: 2, damage: 3, xpValue: 1, appearsAt: 0, behavior: 'swarm' as EnemyBehavior, packSize: 1 };
-      // Pass current game time so spawned midges inherit HP/damage scaling
+      const minionConfig: EnemyConfig =
+        (this.spawnerMinionKey && ENEMY_TYPES[this.spawnerMinionKey])
+          || { key: 'midge', texture: 'midge', speed: 130, hp: 2, damage: 3, xpValue: 1, appearsAt: 0, behavior: 'swarm' as EnemyBehavior, packSize: 1 };
+      // Pass current game time so spawned minions inherit HP/damage scaling
       const gameTime = spawnSystem.getGameTimeSec?.() ?? 0;
-      minion.spawn(this.x + Math.cos(angle) * dist, this.y + Math.sin(angle) * dist, midge, gameTime);
+      minion.spawn(this.x + Math.cos(angle) * dist, this.y + Math.sin(angle) * dist, minionConfig, gameTime);
     }
   }
 

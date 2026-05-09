@@ -53,6 +53,11 @@ export interface EnemyConfig {
    *  regular chase enemy because the collision resolver respects mass
    *  in the rebound velocity. */
   massOverride?: number;
+  /** Optional minion key for `behavior: 'spawner'` enemies — looked up
+   *  in ENEMY_TYPES at spawn time. When omitted, defaults to 'midge'
+   *  (preserves nest's historical behaviour). Used by N1 Tier-2 boss
+   *  Nicnevin to summon `unseelie_fiddler` minions instead. */
+  spawnerMinionKey?: string;
 }
 
 export const ENEMY_TYPES: Record<string, EnemyConfig> = {
@@ -615,7 +620,9 @@ const ENEMY_DISPLAY_NAMES: Record<string, string> = {
   bodach_glas: 'Bodach Glas',
   // Bosses
   gordon: 'Gordon the Chef',
+  each_uisge: 'The Each-Uisge',
   tour_bus: 'Tour Bus',
+  nicnevin: 'Nicnevin',
   the_laird: 'The Laird',
   hunter_general: 'Haggis Hunter General',
   taxman: 'Taxman',
@@ -682,6 +689,10 @@ export interface BossConfig {
   scale: number;
   /** Optional non-chase behavior — when omitted, SpawnSystem defaults to 'chase'. */
   behaviorOverride?: EnemyBehavior;
+  /** Optional minion key passed through to the spawned boss enemy when
+   *  `behaviorOverride === 'spawner'` — controls what the boss summons.
+   *  Defaults to 'midge' on the Enemy side if omitted. */
+  spawnerMinionKey?: string;
 }
 
 // Boss HP rebalanced ~×6 from launch values. Evolved weapon builds were
@@ -732,6 +743,27 @@ export const BOSSES: BossConfig[] = [
     damage: 25,
     xpValue: 50,
     scale: 2.5,
+  },
+  // N1 Tier-2 Mythos boss #2 — Fey register, Unseelie dark edge.
+  // Queen of the Scottish witches (SCOTTISH_RESEARCH.md:126,
+  // SCOTTISH_RESEARCH_DEEP.md Part 22). 12:30 slot fills the gap
+  // between Tour Bus and the Laird with a slow, presiding spawner that
+  // summons unseelie_fiddler minions in an orbit ring; her Wild Hunt
+  // gem-pull proc (50 % HP threshold, repeats every 20 s) is wired in
+  // GameScene.tickNicnevinWildHunt.
+  {
+    key: 'nicnevin',
+    nameKey: 'boss.nicnevin.name',
+    warningKey: 'ui.bossWarning.nicnevin',
+    spawnTimeSec: 750,     // 12:30
+    texture: 'boss_nicnevin',
+    speed: 55,
+    hp: 3200,
+    damage: 28,
+    xpValue: 60,
+    scale: 2.4,
+    behaviorOverride: 'spawner',
+    spawnerMinionKey: 'unseelie_fiddler',
   },
   {
     key: 'the_laird',

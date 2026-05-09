@@ -367,6 +367,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   private runName = '';
   lastEmittedRunSecond = -1;
   eventBusDispose: (() => void) | null = null;
+  /** N1 Tier-2 mythos boss #2 — Wild Hunt gem-pull controller. Lives
+   *  for the run; owns its own bossEnraged subscription. Null between
+   *  runs / before installRunStartupHud has set it. */
+  nicnevinWildHunt: import('./game/NicnevinWildHuntController').NicnevinWildHuntController | null = null;
   biomeController: BiomeController | null = null;
   /**
    * Phase B Endless — secondsPastBell at which we last reseeded
@@ -1236,6 +1240,8 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       resetAudioTransient: () => audio.resetTransient(),
       eventBusDispose: this.eventBusDispose,
       setEventBusDispose: (next) => { this.eventBusDispose = next; },
+      nicnevinWildHunt: this.nicnevinWildHunt,
+      setNicnevinWildHunt: (next) => { this.nicnevinWildHunt = next; },
       runPersistence: this.runPersistence,
       debugTimeTravelApi: this.debugTimeTravelApi,
       subs: this.subs,

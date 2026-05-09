@@ -514,7 +514,8 @@ export class SpawnSystem {
 
       // Bosses default to chase; N1 mythos bosses can override via
       // BossConfig.behaviorOverride (Each-uisge → 'phase' for the
-      // shapeshifter blink, future Nicnevin → 'spawner').
+      // shapeshifter blink, Nicnevin → 'spawner' with unseelie_fiddler
+      // as the configured minion).
       const bossAsConfig: EnemyConfig = {
         key: boss.key,
         texture: boss.texture,
@@ -525,6 +526,7 @@ export class SpawnSystem {
         appearsAt: 0,
         behavior: boss.behaviorOverride ?? 'chase',
         packSize: 1,
+        spawnerMinionKey: boss.spawnerMinionKey,
       };
 
       // Scale boss HP with game time — keeps bosses challenging as player
@@ -979,6 +981,25 @@ export class SpawnSystem {
     }
     this.bossActive = found;
     return this.bossActive;
+  }
+
+  /**
+   * Look up the live boss Enemy with the given key, or null if no
+   * matching boss is currently active. Walks the enemy pool — call
+   * sites should cache the result per frame, not per gem.
+   *
+   * Used by N1 Nicnevin's Wild Hunt controller to read her position
+   * each frame for the gem-pull magnet target.
+   */
+  getActiveBossByKey(key: string): Enemy | null {
+    if (!this.bossActive) return null;
+    const active = this.pool.getChildren() as Enemy[];
+    for (let i = 0; i < active.length; i++) {
+      const e = active[i];
+      if (!e.active || !e.isBoss()) continue;
+      if (e.getEnemyKey() === key) return e;
+    }
+    return null;
   }
 
   /**

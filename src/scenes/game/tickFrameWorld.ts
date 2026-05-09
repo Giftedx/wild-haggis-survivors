@@ -68,6 +68,7 @@ import type { RelicOrchestrator } from './RelicOrchestrator';
 import type { RNG } from '../../utils/rng';
 import type { RuneEffectBag } from '../../systems/runes/runeEffects';
 import type { RelicEffectDriver } from '../../systems/relics/RelicEffectDriver';
+import type { NicnevinWildHuntController } from './NicnevinWildHuntController';
 import type { SecondTickHookContext } from './runtimeTickHooks';
 import { tickMantlePulse, tickRelicEffectFrame, tickSecondCounter } from './runtimeTickHooks';
 import { applyWeaponMultiplierFold } from './weaponMultiplierFold';
@@ -118,6 +119,9 @@ export interface TickFrameWorldDeps {
   relicOrchestrator: RelicOrchestrator;
   weaponSystem: WeaponSystem;
   xpSystem: XPSystem;
+  /** N1 Tier-2 mythos boss #2 — Wild Hunt controller. Null between
+   *  runs / before installRunStartupHud has run. */
+  getNicnevinWildHunt: () => NicnevinWildHuntController | null;
   /** Lazy — bag rebuilt per run. */
   getRuneBag: () => RuneEffectBag;
   /** Lazy — null until Burns platter is picked up. */
@@ -250,6 +254,20 @@ export function tickFrameWorld(deps: TickFrameWorldDeps, delta: number, scaledDe
   // scaledDelta so slow-mo shortens the spirits' effective lifetime
   // in lockstep with every other timed effect.
   deps.relicOrchestrator.tickFiannaSpirits(scaledDelta);
+
+  // N1 Wild Hunt — tick BEFORE xpSystem.update so the override pin
+  // (or its release) is reflected on the same frame's gem magnet pass.
+  // Reads Nicnevin's live position via SpawnSystem.getActiveBossByKey;
+  // null = no active Nicnevin (cycle force-resets to idle on next tick).
+  const wildHunt = deps.getNicnevinWildHunt();
+  if (wildHunt) {
+    const nicnevin = deps.spawnSystem.getActiveBossByKey('nicnevin');
+    wildHunt.tick(scaledDelta, {
+      bossX: nicnevin?.x ?? 0,
+      bossY: nicnevin?.y ?? 0,
+      bossActive: !!nicnevin,
+    });
+  }
 
   deps.xpSystem.update(deps.player.x, deps.player.y, deps.player.getPickupRadius(), deps.player.getHpFraction());
   // Juice is cosmetic (shake, combo toasts, damage numbers) — stays on raw

@@ -89,6 +89,10 @@ export const ui = {
         a: 'That bus service was a pure disgrace. Stops on a whim, so it did.',
         b: 'Heard the driver used to bill folk for the scenery. Good riddance.',
       },
+      nicnevin: {
+        a: 'The witch-queen herself. Yer name\'s threaded into the Hunt noo, hen.',
+        b: 'Aye. Ma gran said to never bow tae the white-horse rider. Ye didnae.',
+      },
       the_laird: {
         a: 'The Laird thought the glen belonged tae him. The moor disagreed.',
         b: 'A stick like that, an\' still couldnae outwalk a wee haggis.',
@@ -948,6 +952,7 @@ export const ui = {
     gordon: "The kitchen's marching — Gordon's comin' and he's RAGIN!",
     each_uisge: "Something beautiful by the water. Dinnae touch it.",
     tour_bus: "Tour bus on the horizon — it's no' stoppin' at Yoker this time.",
+    nicnevin: "The Unblessed court rides oot — and she's brought her parliament.",
     the_laird: 'The Laird strides oot — mind yir manners and yir hide.',
     hunter_general: "The Hunter-General — and they've brought pals.",
     taxman: "The Taxman's here — and he's no' takin' a cheque.",
@@ -976,10 +981,15 @@ export const ui = {
     combo_dropped_big: '{count} streak doon the pan! Ye were pure flying and aw.',
     boss_kill_heal: 'Boss doon! That\'s yir heal — +{hp} HP',
     boss_enraged: 'The beast is RAGIN!',
+    /** N1 Tier-2 mythos — Nicnevin Wild Hunt gem-pull cycle toast.
+     *  Fires on every pull-start (initial 50 % HP enrage + every 20 s
+     *  re-proc). Edge voice: clipped, cold, queen-shaped. */
+    nicnevin_wild_hunt: 'The Wild Hunt rides — gems lift tae the queen!',
     /** Per-boss kill celebrations — the big punchline after the big fight. */
     boss_killed_gordon: 'Gordon\'s DOON! Back tae the kitchen, big man!',
     boss_killed_each_uisge: 'Oot the water and oot o\' luck. The loch takes its ain.',
     boss_killed_tour_bus: 'Bus terminated! Next stop: the scrapyard via Yoker.',
+    boss_killed_nicnevin: 'Nicnevin\'s court dissolved. The moor breathes again.',
     boss_killed_the_laird: 'The Laird\'s on his erse! Yer bum\'s oot the windae, pal!',
     boss_killed_hunter_general: 'Hunter-General floored! Take yir medals and yir pith helmet!',
     boss_killed_taxman: 'THE TAXMAN IS DOON! Tax-free zone declared!',
@@ -1158,6 +1168,14 @@ export const ui = {
         b: 'Forty tourists wi\' cameras. Run.',
         c: 'That coach isnae stoppin\' fer a tea-break.',
       },
+      // Nicnevin — Queen of the Unblessed. Edge voice on warning,
+      // hearth on the post-kill pool. The fiddlers are hers, the white
+      // horse is hers, and so is the air she settles in.
+      nicnevin: {
+        a: 'The fiddlers are hers. Aw o\' them.',
+        b: 'White horse on the moor. No good. No good at all.',
+        c: 'The queen o\' the wicked fae. Dinnae bow and dinnae run.',
+      },
       the_laird: {
         a: 'The Laird\'s come tae collect.',
         b: 'Posh git on horseback. Snobby dunter.',
@@ -1299,6 +1317,12 @@ export const ui = {
         a: 'Bus is oot o\' service.',
         b: 'Tourist trap, that. Snap shut.',
         c: 'End o\' the line fer them.',
+      },
+      // Nicnevin — court dispersed; warmth reasserts after Edge.
+      nicnevin: {
+        a: 'The queen fell. The crown lands in the heather.',
+        b: 'Even the Unseelie host goes quiet sometimes.',
+        c: 'That was the hard wan. Ye earned the quiet.',
       },
       the_laird: {
         a: 'Laird\'s nae laird nae mair.',
@@ -2489,6 +2513,13 @@ export const ui = {
       boss_tour_bus_kill: {
         a: 'Hale busload beaten. The guidebooks will lie aboot this.',
         b: 'First tour bus ever tipped. Pure havoc — braw havoc.',
+      },
+      // Nicnevin first-kill — Fey-Grave register, queen-on-her-knees
+      // gravity. The Unseelie court does not forget who broke its ring;
+      // mark the first time without making light of it.
+      boss_nicnevin_kill: {
+        a: 'First Nicnevin felled. The Wild Hunt rides without its queen.',
+        b: 'Unseelie crown bested ance. The fiddlers played the silence.',
       },
       boss_the_laird_kill: {
         a: 'Laird\'s fallen ance. The tenants are stunned quiet.',

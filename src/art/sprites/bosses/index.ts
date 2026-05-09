@@ -11,6 +11,7 @@ import * as Phaser from 'phaser';
 
 import { bakeBossGordon } from './gordon';
 import { bakeBossEachUisge } from './eachUisge';
+import { bakeBossNicnevin } from './nicnevin';
 import { bakeBossTourBus } from './tourBus';
 import { bakeBossLaird } from './laird';
 import { bakeBossHunterGeneral } from './hunterGeneral';
@@ -23,6 +24,8 @@ export function bakeBosses(scene: Phaser.Scene): void {
   // N1 Tier-2 mythos: Each-uisge slots between Gordon (5:00) and Tour Bus (10:00).
   bakeBossEachUisge(scene);
   bakeBossTourBus(scene);
+  // N1 Tier-2 mythos: Nicnevin slots at 12:30 between Tour Bus (10:00) and the Laird (15:00).
+  bakeBossNicnevin(scene);
   bakeBossLaird(scene);
   bakeBossHunterGeneral(scene);
   bakeBossTaxman(scene);

@@ -125,7 +125,7 @@ Families worth sketching (pick one per content drop):
 - **The Auld Reekie Ghaist** — Edinburgh gas-lamp boss; LOS pillars; ghost-tour-crowd shields.
 - **Nessie, Reconsidered** — full boss form of the existing `nessie_tentacle` weapon flavour.
 - **Father Taxman** — current Taxman expanded with a Grudge-Ledger phase (see mechanics).
-- **Nicnevin, Queen of the Witches** — Unseelie-court final boss. Rides a white horse; leads the Wild Hunt. Fife folklore. (*Ref: `SCOTTISH_RESEARCH.md` §1.3.*)
+- ~~**Nicnevin, Queen of the Witches**~~ — ✅ shipped 2026-05-09 (`src/data/enemies.ts` key `nicnevin`, sprite `src/art/sprites/bosses/nicnevin.ts`). N1 Tier-2 Mythos boss #2 at 12:30 between Tour Bus and the Laird. Slow `spawner` behavior summons `unseelie_fiddler` minions (configurable `spawnerMinionKey` extension); 50 % HP triggers the **Wild Hunt** — a 3 s gem-pull cycle that redirects every XP gem on screen to the queen instead of the player, repeats every 20 s. Voice register Edge → Hearth on kill. Cailleach variant `low_hp` lines re-read perfectly here as peer-to-peer tension between old-Scottish-power figures, no new banter required. (*Ref: `SCOTTISH_RESEARCH.md` §1.3, `SCOTTISH_RESEARCH_DEEP.md` Part 22.*)
 - **The Nuckelavee** — Orcadian horror. Skinless man-horse, breath causes droughts + plague. Weakness: fresh water (healing circles force retreat). (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Stoor Worm** — Orcadian giant sea-serpent; secret final-final-boss for a hidden route. Scale-shift mechanic — climb the worm and break weak points. (*Ref: `SCOTTISH_RESEARCH.md` §1.1.*)
 - **Earl Beardie** — Glamis-card-game mini-boss. Wager an upgrade vs the devil himself. (*Ref: `SCOTTISH_RESEARCH.md` §1.4.*)

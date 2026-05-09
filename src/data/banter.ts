@@ -126,6 +126,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_warn.tour_bus.b',
         'ui.banter.boss_warn.tour_bus.c',
       ],
+      nicnevin: [
+        'ui.banter.boss_warn.nicnevin.a',
+        'ui.banter.boss_warn.nicnevin.b',
+        'ui.banter.boss_warn.nicnevin.c',
+      ],
       the_laird: [
         'ui.banter.boss_warn.the_laird.a',
         'ui.banter.boss_warn.the_laird.b',
@@ -276,6 +281,11 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.boss_down.tour_bus.a',
         'ui.banter.boss_down.tour_bus.b',
         'ui.banter.boss_down.tour_bus.c',
+      ],
+      nicnevin: [
+        'ui.banter.boss_down.nicnevin.a',
+        'ui.banter.boss_down.nicnevin.b',
+        'ui.banter.boss_down.nicnevin.c',
       ],
       the_laird: [
         'ui.banter.boss_down.the_laird.a',
@@ -1564,6 +1574,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       boss_tour_bus_kill: [
         'ui.banter.first_time.boss_tour_bus_kill.a',
         'ui.banter.first_time.boss_tour_bus_kill.b',
+      ],
+      // nicnevin first-kill — Fey-Grave register; matches the spec's
+      // post-kill pool tone (queen fell, court silenced).
+      boss_nicnevin_kill: [
+        'ui.banter.first_time.boss_nicnevin_kill.a',
+        'ui.banter.first_time.boss_nicnevin_kill.b',
       ],
       boss_the_laird_kill: [
         'ui.banter.first_time.boss_the_laird_kill.a',

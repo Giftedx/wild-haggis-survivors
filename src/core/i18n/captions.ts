@@ -16,4 +16,6 @@ export const captions = {
   cu_sith_bay_first: 'Cu Sith hools — first bay across the moor.',
   cu_sith_bay_second: 'Cu Sith hools — second bay closer in.',
   cu_sith_bay_third: 'Cu Sith hools — third bay; the charge locks on.',
+  /** N1 Tier-2 mythos — Nicnevin Wild Hunt gem-pull cycle start. */
+  nicnevin_wild_hunt: 'Wild Hunt rides — gems pulled to the queen.',
 } as const;

@@ -172,6 +172,11 @@ export interface RunEndShutdownDeps {
   eventBusDispose: (() => void) | null;
   /** Setter that nulls `scene.eventBusDispose` after invocation. */
   setEventBusDispose: (next: (() => void) | null) => void;
+  /** N1 Wild Hunt controller — disposed (its bossEnraged listener
+   *  outlives the scene otherwise). Optional — null on a shutdown that
+   *  fired before installRunStartupHud constructed the controller. */
+  nicnevinWildHunt?: import('./NicnevinWildHuntController').NicnevinWildHuntController | null;
+  setNicnevinWildHunt?: (next: import('./NicnevinWildHuntController').NicnevinWildHuntController | null) => void;
   /** RunPersistenceBridge whose `unregisterMidRunHooks` is called. */
   runPersistence: RunPersistenceBridge | null | undefined;
   /** Debug time-travel API uninstaller. */
@@ -327,6 +332,12 @@ export function installRunEndShutdown(deps: RunEndShutdownDeps): void {
     deps.resetAudioTransient();
     deps.eventBusDispose?.();
     deps.setEventBusDispose(null);
+    try {
+      deps.nicnevinWildHunt?.dispose();
+    } catch {
+      /* ignore — defensive; partial init can leave the controller half-built */
+    }
+    deps.setNicnevinWildHunt?.(null);
     deps.runPersistence?.unregisterMidRunHooks();
     deps.debugTimeTravelApi?.uninstall();
     try {

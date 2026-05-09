@@ -108,6 +108,9 @@ export const beastie = {
   tour_bus: {
     lore: 'A Scots-tour coach, fou o distracted tourists, wi Greyfriars Bobby ringtones. Drives ower muir wi tha same disregaird tha muir drives ower them. Boss o act 2 by sheer momentum.',
   },
+  nicnevin: {
+    lore: 'Queen o tha Scots witches; commander o tha Unseelie host on its Wild Hunt. First named in Alexander Montgomerie\'s 1580s flytin; ridden through Fife folklore on a white horse fer fower hunner year. She disnae arrive alane — a court o fiddlers attends every appearance, an tha gems on tha muir lift tae her haund o their ain accord. Mortal wapens reach her, but tha rite o *attendin* is hers; ye\'re interruptin a pageant. SCOTTISH_RESEARCH §1.3; SCOTTISH_RESEARCH_DEEP Pairt 22.',
+  },
   the_laird: {
     lore: 'An aristocrat wi a freehauld a hunner thoosand acres wide that his grandfaither got efter Culloden. Wears tartan that disnae belang tae him. Ains a salmon river ye cannae fish.',
   },

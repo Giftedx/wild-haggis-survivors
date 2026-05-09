@@ -26,6 +26,14 @@ export class XPSystem {
   private dropValueMultiplier: number = 1;
 
   /**
+   * N1 Mythos boss #2 (Nicnevin) Wild Hunt — when set, gems magnetize
+   * toward this point instead of the player and player collection is
+   * suppressed for the pull window. Cleared back to `null` at pull-end.
+   * Set/cleared via `setPullSourceOverride`; consumed in `update`.
+   */
+  private pullSourceOverride: { x: number; y: number } | null = null;
+
+  /**
    * Post-cap echo cards — XP accumulated past MAX_LEVEL. When this buffer
    * crosses XP.ECHO_XP_THRESHOLD, an echo card draw is queued. Each XP
    * also still converts to overflow gold (both paid, intentional).
@@ -62,6 +70,7 @@ export class XPSystem {
     this.pendingLevelUps = [];
     this.levelUpInProgress = false;
     this.dropValueMultiplier = 1;
+    this.pullSourceOverride = null;
     this.postCapEchoBuffer = 0;
     this.pendingEchoes = 0;
     this.echoInProgress = false;
@@ -119,6 +128,35 @@ export class XPSystem {
     this.dropValueMultiplier = Math.min(5, Math.max(0.25, mult));
   }
 
+  /**
+   * N1 Mythos boss #2 — redirect the gem-magnet target to (x, y) and
+   * suppress player collection for the active window. Pass `null` to
+   * release. The Wild Hunt controller in `scenes/game/nicnevinWildHunt.ts`
+   * is the only caller today; the seam is reusable for any future
+   * gem-pull mechanic that needs to steal pickups from the player.
+   */
+  setPullSourceOverride(source: { x: number; y: number } | null): void {
+    this.pullSourceOverride = source;
+  }
+
+  /**
+   * Apply a small deterministic scatter (8–24 px in a random direction)
+   * to every active gem. Used by Nicnevin's Wild Hunt at pull-end so
+   * the freed gems read as flung from the queen's grip. RNG comes from
+   * the caller (typically a `runRng.branch()` already wired through
+   * `getRunRng()`) so byte-accurate replay holds.
+   */
+  scatterAllGems(rng01: () => number): void {
+    const gems = this.gemPool.getChildren() as XPGem[];
+    for (const gem of gems) {
+      if (!gem.active) continue;
+      const angle = rng01() * Math.PI * 2;
+      const dist = 8 + rng01() * 16;
+      gem.x += Math.cos(angle) * dist;
+      gem.y += Math.sin(angle) * dist;
+    }
+  }
+
   /** Update magnet behavior and check collection.
    *  hpFraction: when < 0.15, pickup radius triples (XP magnet pulse) */
   update(playerX: number, playerY: number, pickupRadius: number, hpFraction: number = 1): void {
@@ -126,6 +164,15 @@ export class XPSystem {
     if (hpFraction > 0 && hpFraction < BALANCE.xp.criticalHpMagnetThreshold) {
       pickupRadius *= BALANCE.xp.criticalHpMagnetMultiplier;
     }
+
+    // N1 Wild Hunt — when an override is set, gems home on (overrideX,
+    // overrideY) and player collection is gated off until the proc
+    // releases. The override does NOT change pickup-radius; the boss
+    // just steals the pull target.
+    const override = this.pullSourceOverride;
+    const magnetX = override ? override.x : playerX;
+    const magnetY = override ? override.y : playerY;
+
     const gems = this.gemPool.getChildren() as XPGem[];
     // Squared-distance gate for the collect ring — sqrt would fire per gem
     // per frame for ~200 gems just to compare against a constant radius.
@@ -133,7 +180,11 @@ export class XPSystem {
     for (const gem of gems) {
       if (!gem.active) continue;
 
-      gem.updateMagnet(playerX, playerY, pickupRadius);
+      gem.updateMagnet(magnetX, magnetY, pickupRadius);
+
+      // Skip the player-collection check while the Wild Hunt override
+      // is active — gems are travelling to the queen, not the haggis.
+      if (override) continue;
 
       const dx = playerX - gem.x;
       const dy = playerY - gem.y;

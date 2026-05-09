@@ -32,6 +32,9 @@ import type { GameScene } from '../GameScene';
 import type { IRunState } from '../../core/SaveManager';
 import type { Act3Stretch } from '../../data/nodeBanks';
 import { wireSceneEventBus } from './wireSceneEventBus';
+import { NicnevinWildHuntController } from './NicnevinWildHuntController';
+import { COLORS_CSS } from '../../config';
+import { t } from '../../core/i18n';
 import { EdgeIndicators } from '../../ui/EdgeIndicators';
 import { Minimap } from '../../ui/Minimap';
 import { installNodeMapDispatch } from './installNodeMapDispatch';
@@ -79,6 +82,24 @@ export function installRunStartupHud(
   scene.eventBusDispose = wireSceneEventBus({
     getJuice: () => scene.juice,
     caption: (id, msg, tint, dur) => scene.caption(id, msg, tint, dur),
+  });
+
+  // N1 Tier-2 mythos boss #2 — Nicnevin's Wild Hunt controller. Owns
+  // its own bossEnraged subscription; tickFrameWorld drives the cycle
+  // and reads the boss position via SpawnSystem.getActiveBossByKey.
+  // Branch a dedicated RNG off runRng so the pull-end scatter stays
+  // deterministic across replays without consuming the main run RNG
+  // sequence (which would shift downstream rolls every Wild Hunt proc).
+  scene.nicnevinWildHunt?.dispose();
+  const wildHuntRng = scene.runRng.branch();
+  scene.nicnevinWildHunt = new NicnevinWildHuntController({
+    setPullSourceOverride: (source) => scene.xpSystem.setPullSourceOverride(source),
+    scatterGems: () => scene.xpSystem.scatterAllGems(() => wildHuntRng.next()),
+    onPullStart: () => {
+      scene.juice.showToast(t('ui.game.nicnevin_wild_hunt'), COLORS_CSS.DANGER_RED);
+      audio.playBossEnrage();
+      scene.caption('nicnevin_wild_hunt', t('ui.captions.nicnevin_wild_hunt'), COLORS_CSS.DANGER_RED, 2500);
+    },
   });
   scene.edgeIndicators = new EdgeIndicators(scene);
   scene.minimap = new Minimap(scene);

@@ -52,8 +52,11 @@ describe('ENEMY_TYPES', () => {
 });
 
 describe('BOSSES', () => {
-  it('has at least 5 bosses', () => {
-    expect(BOSSES.length).toBeGreaterThanOrEqual(5);
+  it('has at least 7 bosses', () => {
+    // Floor was 5 at launch; raised to 7 once the N1 Tier-2 mythos
+    // additions (Each-uisge 7:30, Nicnevin 12:30) shipped. Solway
+    // Remnant brings the floor to 8 once cultural review clears.
+    expect(BOSSES.length).toBeGreaterThanOrEqual(7);
   });
 
   it('every boss has a unique key', () => {

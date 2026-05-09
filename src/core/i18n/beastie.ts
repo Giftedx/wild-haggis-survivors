@@ -108,6 +108,9 @@ export const beastie = {
   tour_bus: {
     lore: 'A Scottish-tour coach, full of distracted tourists, with Greyfriars Bobby ringtones. Drives over moor with the same disregard the moor drives over them. Boss of act 2 by sheer momentum.',
   },
+  nicnevin: {
+    lore: 'Queen of the Scottish witches; commander of the Unseelie host on its Wild Hunt. First named in Alexander Montgomerie\'s 1580s flyting; ridden through Fife folklore on a white horse for four hundred years. She does not arrive alone — a court of fiddlers attends every appearance, and the gems on the moor lift toward her hand of their own accord. Mortal weapons reach her, but the rite of *attending* is hers; you are interrupting a pageant. SCOTTISH_RESEARCH §1.3; SCOTTISH_RESEARCH_DEEP Part 22.',
+  },
   the_laird: {
     lore: 'An aristocrat with a freehold a hundred thousand acres wide that his grandfather got after Culloden. Wears tartan that doesn\'t belong to him. Owns a salmon river you can\'t fish.',
   },

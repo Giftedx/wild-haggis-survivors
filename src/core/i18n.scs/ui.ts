@@ -74,6 +74,10 @@ export const ui = {
         a: 'Yon bus service wis a pure disgrace. Stops on a whim, so it did.',
         b: 'Heard tha driver billed folk fer tha scenery. Guid riddance.',
       },
+      nicnevin: {
+        a: 'Tha witch-queen hersel. Yer name\'s threidit intae tha Hunt noo, hen.',
+        b: 'Aye. Ma gran said tae niver bow tae tha white-horse rider. Ye didnae.',
+      },
       the_laird: {
         a: 'Tha Laird thocht tha glen belonged tae him. Tha moor disagreed.',
         b: 'Stick like yon, an still couldnae outwalk a wee haggis.',
@@ -639,6 +643,7 @@ export const ui = {
     gordon: 'Tha kitchen\'s mairchin — Gordon\'s comin an he\'s RAGIN!',
     each_uisge: 'Somethin bonnie by tha water. Dinnae touch it.',
     tour_bus: 'Tour bus on tha horizon — it\'s no stappin at Yoker tha day.',
+    nicnevin: 'Tha Unblesst court rides oot — an she\'s brocht her parliament.',
     the_laird: 'Tha Laird strides oot — mind yer manners an yer hide.',
     hunter_general: 'Tha Hunter-General — an they\'ve brought pals.',
     taxman: 'Tha Taxman\'s here — an he\'s no takin a cheque.',
@@ -664,9 +669,11 @@ export const ui = {
     combo_dropped_big: '{count} streak doon tha pan! Ye were pure flein an aw.',
     boss_kill_heal: 'Boss doon! That\'s yer heal — +{hp} HP',
     boss_enraged: 'Tha beast is RAGIN!',
+    nicnevin_wild_hunt: 'Tha Wild Hunt rides — gems lift tae tha queen!',
     boss_killed_gordon: 'Gordon\'s DOON! Back tae tha kitchen, big man!',
     boss_killed_each_uisge: 'Oot tha water an oot o luck. Tha loch taks its ain.',
     boss_killed_tour_bus: 'Bus terminated! Next stap: tha scrappy via Yoker.',
+    boss_killed_nicnevin: 'Nicnevin\'s court dissolved. Tha muir braithes again.',
     boss_killed_the_laird: 'Tha Laird\'s on his erse! Yer bum\'s oot tha windae, pal!',
     boss_killed_hunter_general: 'Hunter-General floored! Tak yer medals an yer pith helmet!',
     boss_killed_taxman: 'THA TAXMAN IS DOON! Tax-free zone declared!',
@@ -752,6 +759,11 @@ export const ui = {
         a: 'A hale busload. Aw naw.',
         b: 'Forty tourists wi cameras. Leg it.',
         c: 'That coach isnae stappin fer a tea-break.',
+      },
+      nicnevin: {
+        a: 'Tha fiddlers ar hers. Aw o them.',
+        b: 'White horse on tha muir. Nae guid. Nae guid at aw.',
+        c: 'Tha queen o tha wickit fae. Dinnae bow an dinnae rin.',
       },
       the_laird: {
         a: 'Tha Laird\'s come tae collect.',
@@ -889,6 +901,11 @@ export const ui = {
         a: 'Bus is oot o service.',
         b: 'Tourist trap, that. Snap shut.',
         c: 'End o tha line fer them.',
+      },
+      nicnevin: {
+        a: 'Tha queen fell. Tha croun lands in tha heather.',
+        b: 'Even tha Unseelie host gangs quait sometimes.',
+        c: 'Yon wis tha hard wan. Ye earnt tha quait.',
       },
       the_laird: {
         a: 'Laird\'s nae laird nae mair.',
@@ -2047,6 +2064,12 @@ export const ui = {
       boss_tour_bus_kill: {
         a: 'Hale busload beaten. Tha guidebooks\'ll lee aboot this.',
         b: 'First tour bus iver coupit. Pure bedlam — braw bedlam.',
+      },
+      // SCS overlay of EN nicnevin first-kill leaves. Voice register:
+      // Fey-Grave — queen-fawed gravity, no comedy.
+      boss_nicnevin_kill: {
+        a: 'First Nicnevin fawed. Tha Wild Hunt rides wi\'oot its queen.',
+        b: 'Unseelie croun besterit ance. Tha fiddlers played tha silence.',
       },
       boss_the_laird_kill: {
         a: 'Laird\'s fawed ance. Tha tenants are stunned quait.',

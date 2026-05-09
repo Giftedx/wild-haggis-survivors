@@ -19,11 +19,11 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
   ['scenes/GameScene.ts', 1680], // was 2985 → 2182 → 1680 (Phase 7 re-baseline 2026-05-09; Phase 5 buckets 1-11+14 shipped; current 1672 + 8 grace; T401 floor 1656)
-  ['data/banter.ts', 2255], // bumped 2026-05-09 (2240→2255) for witch_hare first-time-unlock sub-pool entry (covers banter parity gap from the 2026-04-28 variant ship); current 2243 + 12 grace; pure data, parity-fenced, kept whole
+  ['data/banter.ts', 2270], // bumped 2026-05-09 (2255→2270) for nicnevin boss_warn + boss_down + first_time pool entries (N1 Tier-2 Mythos boss #2); current 2264 + 6 grace; pure data, parity-fenced, kept whole
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)
-  ['entities/Enemy.ts', 1570], // current 1564 + 6 grace; hot path, factored via entities/ siblings
+  ['entities/Enemy.ts', 1585], // bumped 2026-05-09 (1570→1585) for spawnerMinionKey passthrough (Nicnevin's unseelie_fiddler summoner); current 1577 + 8 grace; hot path, factored via entities/ siblings
   ['art/sprites/croft/seasonalProps.ts', 5], // was 1550 (Phase 2.3 barrel)
   ['entities/Player.ts', 1540], // current 1537 + 3 grace; hot path, factored via entities/ siblings
   ['systems/JuiceSystem.ts', 1065], // was 1380 → 1065 (Phase 6 sub-system split; current 1059 + 6 grace)

@@ -9,4 +9,5 @@ export const captions = {
   cu_sith_bay_first: 'Cu Sith hools — first bay across tha muir.',
   cu_sith_bay_second: 'Cu Sith hools — second bay closer in.',
   cu_sith_bay_third: 'Cu Sith hools — third bay; tha chairge locks on.',
+  nicnevin_wild_hunt: 'Wild Hunt rides — gems pulled tae tha queen.',
 } as const;
