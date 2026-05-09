@@ -31,10 +31,10 @@ One-line fantasy + mechanic. Cherry-pick when a flagship calls.
 - **Shinty Parry** — a new weapon with a 350 ms reflect window against projectiles. High-skill defensive layer.
 - ~~**Anticlockwise Haggis**~~ — ✅ shipped (`src/data/variants.ts` key `anticlockwise`). Drift mirrored anticlockwise instead of clockwise. Per wild haggis lore, two subspecies exist with opposite-leg-asymmetry. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §11.5.*)
 - ~~**Falls-If-Turning Gag**~~ — ✅ shipped (`src/entities/dashReverseStumble.ts` + test). Reverse-dash within 2s window triggers a 400ms 50% speed-half stumble penalty. Pure comedy; pairs with The Drift as a second mechanical fingerprint of the wild-haggis fiction. Pure helper, replay-deterministic.
-- **Bagpipe Lure** — when certain enemies (seelie piper, unseelie fiddler) play, the haggis is drawn toward them by a few pixels per second. Invertible: haggis can be "lured" toward bonuses. (*Ref: wild haggis myth.*)
+- ~~**Bagpipe Lure**~~ — ✅ shipped (`src/systems/bagpipeLure.ts` + test). When a piper / seelie_piper / unseelie_fiddler is within `LURE_RADIUS_PX` (200 px), the haggis is pulled toward them at `LURE_PULL_PER_S` (8 px·s⁻¹) — a few pixels per second per spec, never enough to override player input. Per-source unit-vector contributions sum without renormalisation so stacked pipers feel insistent and opposing pipers feel like a held breath. Pure helper, called every frame from `Player.update` regardless of input so the pull is felt at rest. (*Ref: wild haggis myth.*)
 - **Clootie Rag Wager** — walking through a Clootie Tree landmark = sacrifice max HP for a run-long buff. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §22.4.*)
 - ~~**Pre-Run First-Footing**~~ — ✅ shipped (`src/systems/firstFooting.ts`). During the Hogmanay seasonal window (Dec 28 – Jan 3) every run starts with a rolled first-footing gift — one of four small visible boons (shortbread / whisky / coal / silver). Hearth-warm toast announces the visitor. Pure helpers, replay-deterministic via `runRng`. (*Ref: §13.*)
-- **Three-Bay Warning** — Cu Sith enemy howls thrice; each howl buffs it; third = deadly charge unless killed. (*Ref: `SCOTTISH_RESEARCH.md` §1.2.*)
+- ~~**Three-Bay Warning**~~ — ✅ shipped (`src/data/enemies.ts` key `cu_sith` `behavior: 'three_bay'` + `Enemy.behaviorThreeBay`). Cu Sith approaches at base speed; on reaching `THREE_BAY_TRIGGER_PX` (250 px) it pauses for three 1500 ms hools (the third locks player position at charge start), then sprints at 3× speed for 1500 ms before reverting to ordinary chase. Killing it mid-bay defuses the charge. `globalEventBus.emit('CU_SITH_BAY')` per stage drives the wireSceneEventBus toast layer + audio sting; `ui.cuSith.bay.{first,second,third}` carry the in-character warnings. (*Ref: `SCOTTISH_RESEARCH.md` §1.2.*)
 - **Race the Beithir** — on sting by a Beithir enemy, a race-timer appears; reach a healing circle before it expires or take massive damage. Diegetic hazard. (*Ref: `SCOTTISH_RESEARCH.md` §1.2.*)
 - ~~**Ancestral Echoes**~~ — ✅ shipped: spectral haggis on the first 30 s at the prior death spot (see `ach_echo_touched`).
 - ~~**Tartan Banner** (postcard slice)~~ — ✅ shipped 2026-04-18: procedural plaid composited into the postcard footer, derived from variant + top-damage weapon + mode tags (`src/utils/tartan.ts`). **Mantle half** of the bullet is still blocked on the W71 rig layer and stays open as a future extension.
@@ -282,7 +282,7 @@ Concrete content derivable from the myth:
 - **Burns Night seasonal event** — see §13.
 - **Haggis Hunter's field notes** — collected lore documents where the haggis hunters describe the player-haggis in absurd naturalist terms ("Note the characteristic clockwise drift — the hallmark of Haggis scoticus dextrogyrus").
 - **Lured-by-bagpipes mechanic** — see §1.
-- **Tourist cameras** — tourist enemy drops a Polaroid of the haggis on death; the player can "accept being photographed" for bonus.
+- ~~**Tourist cameras**~~ — ✅ shipped (`src/scenes/game/PickupSpawner.ts` `spawnPolaroid`). Tourist enemies drop a Polaroid pickup on death; collect = `POLAROID_XP_BONUS` (8 XP) + a wee banter beat. Lifecycle mirrors `spawnGoldCoin` — physics overlap, scaled despawn ticker, audio sting on collect. Off-axis tilt + TWEEN_INFINITE_BREATHE bob sells the "snapshot dropped on the moor" pose without animation cost.
 
 ---
 
