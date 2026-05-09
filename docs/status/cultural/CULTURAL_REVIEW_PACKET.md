@@ -19,10 +19,10 @@ CI guard: `src/data/culturalReviewStatus.test.ts`
 
 This is the single reviewer-facing entry point for cultural release gates. It consolidates the open Doric, Shetlandic, Gaelic/Cailleach, and Burns/Canongate review work from:
 
-- `docs/status/cultural/C2_DIALECT_REVIEW.md`
-- `docs/status/cultural/C2_BURNS_PROVENANCE.md`
-- `docs/status/cultural/C2_VOICE_AUDIT.md`
-- `docs/status/banter/BANTER_GAPS.md`
+- `docs/C2_DIALECT_REVIEW.md`
+- `docs/C2_BURNS_PROVENANCE.md`
+- `docs/C2_VOICE_AUDIT.md`
+- `docs/BANTER_GAPS.md`
 - `docs/superpowers/plans/2026-04-24-v2-variants-followups.md`
 - `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` T211
 - `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md`
@@ -125,11 +125,11 @@ Scope:
 Ask:
 
 - Verify direct quotations and paraphrases against The Canongate Burns.
-- Confirm the Kinsley-based corrections in `docs/status/cultural/C2_BURNS_PROVENANCE.md` remain acceptable.
+- Confirm the Kinsley-based corrections in `docs/C2_BURNS_PROVENANCE.md` remain acceptable.
 - Confirm punctuation/editorial drift decisions.
 - Confirm Burns is contextually justified and not used as decorative prestige.
 
-Known deferred items from `docs/status/cultural/C2_BURNS_PROVENANCE.md`:
+Known deferred items from `docs/C2_BURNS_PROVENANCE.md`:
 
 - `ui.banter.burns_citation.loch_moment.a` - punctuation drift from original exclamation.
 - `ui.banter.burns_citation.loch_moment.b` - punctuation drift after "Afton".

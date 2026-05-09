@@ -1,5 +1,7 @@
 # Prompt #5 — Scene Refactor + Biomes + Endless Mode
 
+> **STATUS:** ✅ FUNCTIONALLY SHIPPED 2026-04-29 → 2026-05-09 under different module names. See `00-INDEX.md` Notes Worth Carrying Forward §"Branch state at scan time" for the module-name mapping. Phase A modules shipped as `installCombatCollisions`, `LevelUpFlow`, `RunLifecycle`, `RunPersistenceCoordinator`, `RunPersistenceBridge`, `IFrameController`. Phase B biomes shipped Seawrack `a160662` / Haar `4c97626` / Frost `24c9301`. Phase C endless wired through `src/core/PostBellEscalation.ts` + `src/scenes/game/RunLifecycle.ts:isPostBell()`. The original-charter framing below is preserved as historical context.
+
 ## Goal
 
 Land the three-phase cascade in `docs/superpowers/specs/2026-04-13-scene-refactor-biomes-endless-design.md`:

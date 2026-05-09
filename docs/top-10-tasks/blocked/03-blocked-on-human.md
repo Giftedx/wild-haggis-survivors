@@ -2,7 +2,7 @@
 
 **Charter:** `docs/top-10-tasks/03-p3-cloud-saves.md`
 **Decision matrix:** `docs/P3_BACKEND_DECISION_MATRIX.md`
-**Status:** Awaiting human review — agent has shipped non-backend-dependent scaffolding only.
+**Status:** Architectural decisions ratified 2026-05-09 (items 1 + 2 + 7 closed); legal/ops humans-in-the-loop work remains open (items 3–6 + Cloudflare account provision + Resend account provision).
 
 The agent session executing P3 stopped short of standing up live cloud
 infrastructure because every remaining step requires a stakeholder
@@ -15,7 +15,7 @@ single yes; the matrix doc captures the reasoning.
 
 ---
 
-## 1. Approve backend pick
+## 1. ✅ Approve backend pick — RESOLVED 2026-05-09
 
 **Recommendation:** Cloudflare Workers + D1 (SQLite at edge).
 **Alternatives:** Supabase (next best), Firebase (rejected on bundle + privacy), self-host (rejected on ops).
@@ -25,12 +25,11 @@ single yes; the matrix doc captures the reasoning.
 at projected MAU, but non-zero-effort) ops surface. Picking wrong here
 costs a migration later.
 
-- [ ] **Approve Cloudflare Workers + D1**, OR
-- [ ] Pick alternative: ____
+- [x] **Approve Cloudflare Workers + D1** — ratified 2026-05-09 by lead dev. ADR-0006 promoted `.draft.md` → `.md`, Status flipped to Accepted. Per OPEN_QUESTIONS.md Q4. Items 2–6 below remain humans-in-the-loop.
 
 ---
 
-## 2. Approve auth provider
+## 2. ✅ Approve auth provider — RESOLVED 2026-05-09
 
 **Recommendation:** Magic-link (email-only, one-time tokens, 15-min expiry,
 HttpOnly cookie session). Implemented in ~50 lines of Worker code.
@@ -41,10 +40,7 @@ HttpOnly cookie session). Implemented in ~50 lines of Worker code.
 **Why this is a human call:** privacy-sensitive; the auth provider is the
 only third party (besides Cloudflare) that touches user PII (email).
 
-- [ ] **Approve magic-link via Resend**, OR
-- [ ] Pick alternative email provider (Postmark, SES, Mailgun): ____
-- [ ] Add OAuth (Google / Apple) at v1? Default no — defer to v2 if
-  magic-link friction surfaces.
+- [x] **Approve magic-link via Resend** — ratified 2026-05-09 alongside item 1 (Cloudflare D1). Resend account creation + API-key provision still humans-in-the-loop (tracked under "What ships in this branch" §1 below).
 
 ---
 

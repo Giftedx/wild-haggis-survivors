@@ -40,7 +40,7 @@ Before flagging any "missing X", "silently absent X", "X is broken", or "X looks
 If your finding survives all four steps, report it. If a design doc vetoes it, drop it from the punch list and note the doc that vetoed.
 
 Concrete examples of design-intent vetoes that exist today:
-- [`status/a11y/A1_ASSIST_MODE_CALLSITES.md`](status/a11y/A1_ASSIST_MODE_CALLSITES.md) — Assist Mode UI is **deliberately hidden**; only the invincibility toggle is wired, others await balance + replay-determinism passes.
+- [`A1_ASSIST_MODE_CALLSITES.md`](A1_ASSIST_MODE_CALLSITES.md) — Assist Mode UI is **deliberately hidden**; only the invincibility toggle is wired, others await balance + replay-determinism passes.
 - [`adr/0002-deterministic-replay-format.md`](adr/0002-deterministic-replay-format.md) — Replay determinism contract; spawn positions affecting game state must use seeded `runRng`, not `Math.random()`.
 - [`status/cultural/CULTURAL_REVIEW_PACKET.md`](status/cultural/CULTURAL_REVIEW_PACKET.md) — Native-speaker reviews are explicitly human-gated; flagging "needs review" on already-flagged content is noise.
 

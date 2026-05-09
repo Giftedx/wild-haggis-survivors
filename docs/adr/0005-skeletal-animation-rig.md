@@ -54,7 +54,7 @@ frame clock (`frameClock.ts`), composed through `AnimationController`.**
   delegates to a shared body-draw function with the offset applied.
 - **Variants are per-variant atlases.** A single rig + palette swap was
   rejected (see *Alternatives* below); each variant gets its own bake of every
-  (state, frame) pair. 14 variants × 6 states × ~3 frames/state = ~270
+  (state, frame) pair. 15 variants × 6 states × ~3 frames/state = ~270
   textures for the player alone, plus ~57 for the 3 lead enemy archetypes,
   plus accessory + mantle overlays. Total atlas footprint stays inside the
   2 MB precache budget set by the PWA precedent.
@@ -98,7 +98,7 @@ frame clock (`frameClock.ts`), composed through `AnimationController`.**
    bundle size (one bake set instead of 14). *Rejected*: each variant has
    palette-anchor differences beyond hue (Cailleach's silver mantle, Iron
    Belly's plate, Hebridean's seaweed) that don't reduce to a flat LUT
-   without losing identity. The 14-variant atlas footprint is small in
+   without losing identity. The 15-variant atlas footprint is small in
    absolute terms (texture-swap atlases compress well) and the authoring
    path stays simple — each variant's body draw runs through the same
    shared `drawHaggisBody` helper, parameterized by the variant's palette.

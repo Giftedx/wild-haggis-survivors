@@ -40,7 +40,7 @@ Estimated 8–12 weeks across phases. High regression surface. Memory says Phase
 
 3. **State machine.** States: idle, walk, run, hit, dash (if added), level-up, death. Transitions must respect drift (clockwise rotation during walk = visible in the rig).
 
-4. **Variant overlays.** Each of the 14 variants currently re-tints procedural draw. Two strategies:
+4. **Variant overlays.** Each of the 15 variants currently re-tints procedural draw. Two strategies:
    - **Palette swap only** — single rig, per-variant palette texture. Cheapest.
    - **Per-variant overlay layer** — rig stays, each variant adds a costume sprite (Cailleach robe, etc.). Better visual variety.
    Pick one; document in ADR.
@@ -62,7 +62,7 @@ Don't expand to all enemy types in this prompt — stop at three archetypes and 
 3. Build rig editor / authoring tool OR adopt off-the-shelf. If hand-rolled, plain JSON in `src/animation/rigs/*.json`.
 4. Implement runtime: `src/animation/SkeletalRig.ts`, `src/animation/StateMachine.ts`, `src/animation/AnimationPlayer.ts`. Pure modules — no Phaser imports — so vitest can cover them in node env.
 5. Wire rig into Player. Keep procedural fallback behind a feature flag (`USE_SKELETAL_PLAYER`) for first month so revert is one flag.
-6. Per-variant palette / overlay system. Validate all 14 variants render correctly.
+6. Per-variant palette / overlay system. Validate all 15 variants render correctly.
 7. Perf benchmark spec (`src/animation/SkeletalRig.bench.test.ts` or e2e perf gate). Compare procedural baseline to rigged.
 8. Phase 3 enemies (humanoid first, beast second, boss third).
 9. Update `BootScene` to no longer generate procedural textures for migrated entities.
@@ -71,7 +71,7 @@ Don't expand to all enemy types in this prompt — stop at three archetypes and 
 ## Acceptance criteria
 
 - Player + 3 enemy archetypes render via skeletal rig in production builds.
-- All 14 variants visually distinct.
+- All 15 variants visually distinct.
 - Frame-time regression ≤10% on the perf-bench scene.
 - Drift visibly readable in the player walk cycle.
 - Replay byte size unchanged ±5%; determinism test green.
@@ -95,12 +95,12 @@ npm run lint
 npm run build
 npm test                # incl. SkeletalRig + StateMachine vitest
 npm run test:e2e        # playwright smoke
-npm run preview         # eyeball in browser, all 14 variants, drift cycle, hit reactions
+npm run preview         # eyeball in browser, all 15 variants, drift cycle, hit reactions
 ```
 
 Plus:
 - Perf-bench scene at 200 enemies, frame time before vs after.
-- Loom recording of all 14 variants idle + walk + hit for visual review.
+- Loom recording of all 15 variants idle + walk + hit for visual review.
 
 ## Soul checks
 

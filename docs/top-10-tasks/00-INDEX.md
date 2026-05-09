@@ -78,7 +78,7 @@ different module names; #9 is fully shipped (see `blocked/09-shipped.md`).**
 - **Forking act maps** (Slay-the-Spire 14+ nodes per act with visible rewards). M1 Moor Road shipped a single picker per act; multi-path tree is a separate big feature with no spec yet.
 - **Active equipment item slot** (Hades cast, Isaac active). New slot-mechanic; no spec, no balance pass scoped.
 - **Weapon fusion / unions** (HoloCure 2-weapon fusion, Vampire Survivors unions). Beyond current evolution paths; would invalidate parts of WeaponSystem + balance.
-- **Multi-protagonist beyond variants** (separate movement profiles, not just stat tweaks). Memory shows 14-variant roster; conceptually capped at ~10 in design, real new protagonists would be a different track.
+- **Multi-protagonist beyond variants** (separate movement profiles, not just stat tweaks). Memory shows 15-variant roster (Witch's Hare added 2026-04-28); conceptually capped at ~10 in design — pool is now over the original ceiling. Real new protagonists with distinct movement profiles would be a different track.
 - **Item encyclopedia depth** (Spelunky/Isaac log every entity). C1 Almanac shipped four books, but tier coverage may stop short of full encyclopedia ambition.
 
 These are noted so a future planning session can scope them; not promoted to top-10 yet.

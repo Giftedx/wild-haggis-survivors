@@ -1,5 +1,7 @@
 # Prompt #9 — U1 Runes M4: Wire Offers + Consumers
 
+> **STATUS:** ✅ SHIPPED 2026-04-26 (`a86afe5`). `RUNE_CARD_OFFERS_ENABLED` flipped true; runeBag read by 11 files; runeConsumer + runeConditions tied into Player / WeaponSystem / XPSystem / SpawnSystem. See [`blocked/09-shipped.md`](blocked/09-shipped.md) for the closure record. The original-charter framing below is preserved as historical context.
+
 ## Goal
 
 Flip `RUNE_CARD_OFFERS_ENABLED = true` and wire the rune-effect consumers across Player / WeaponSystem / XPSystem / SpawnSystem so the 30 rule-stack runes shipped in U1 (2026-04-25) actually do something. Currently the data + condition system + tests exist (memory: "SHIPPED 2026-04-25: 30 rule-stack cards, 3 milestones, save v17, +8.13 KB gzip, 4047 vitest"), but per triple-audit T111 product decision = B (keep gated) — the offers don't appear in the level-up card pool, and no system reads the equipped rune bag.

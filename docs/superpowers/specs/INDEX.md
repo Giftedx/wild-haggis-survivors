@@ -36,6 +36,7 @@ Each row links spec ↔ plan ↔ status doc(s) ↔ ADR(s). "Live" means there is
 | **Boss Tier 2 mythos** | [2026-04-28-boss-tier-2-mythos-design](2026-04-28-boss-tier-2-mythos-design.md) | (no plan yet — bosses shipped inline) | Spec live; **Each-Uisge** shipped 2026-04-28 (`12a2b1d`); **Nicnevin** shipped 2026-05-09 (`c93cb3c`, see memory `project_n1_nicnevin_status`). Bosses #3+ pending plan. Solway Remnant blocked on cultural review. |
 | **Save v18 boundary** | [2026-04-28-save-v18-boundary-sketch](2026-04-28-save-v18-boundary-sketch.md) | (no plan yet) | DRAFT — sketches the v18 schema migration boundary |
 | **Codebase restructure** | [2026-04-30-gamescene-regrowth-audit](2026-04-30-gamescene-regrowth-audit.md) (working notes) | [2026-04-30-codebase-restructure](../plans/2026-04-30-codebase-restructure.md) | All Phases 0–7 SHIPPED 2026-05-09 (`c0097d8` re-baselines ratchet); GameScene 1672 (ceiling 1680, floor 1656); ≤1200 facade target out of scope (memory `project_restructure_status`) |
+| **S1** Sporran Deck (pre-run draft) | [2026-05-09-sporran-deck-design](2026-05-09-sporran-deck-design.md) | [2026-05-09-sporran-deck-phase0](../plans/2026-05-09-sporran-deck-phase0.md) | Phase 0 SHIPPED 2026-05-09 (`eabe2a6` — helper + 11-card pool + 20 tests, no runtime wiring). Phase 1 (UI + scene wire + i18n) open (memory `project_sporran_deck_status`). |
 
 ---
 

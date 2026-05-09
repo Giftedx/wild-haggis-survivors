@@ -61,10 +61,10 @@ These items require live-Phaser, RAF-driven, GPU-bound conditions that vitest's 
 
 **Risk if skipped:** Medium. Drift is "core identity of the game" per the charter. If the walk cycle hides the bias, the rig has failed the Soul Check.
 
-### 5. 14-variant Loom recording (charter Verification §"Loom recording of all 14 variants idle + walk + hit for visual review")
+### 5. 15-variant Loom recording (charter Verification §"Loom recording of all 15 variants idle + walk + hit for visual review")
 
 **Procedure:**
-1. `npm run dev`. Switch through each of the 14 variants (Cailleach, Iron Belly, Hebridean, etc.) via the variant-select UI (or via `?variant=<key>` URL param if supported).
+1. `npm run dev`. Switch through each of the 15 variants (Cailleach, Iron Belly, Hebridean, etc.) via the variant-select UI (or via `?variant=<key>` URL param if supported).
 2. For each variant: 5 s idle + 5 s walking + 1 hit reaction.
 3. Loom-record + share for visual review.
 
@@ -89,4 +89,4 @@ The charter called for a `USE_SKELETAL_PLAYER` flag for emergency revert. ADR-00
 - Screenshots from Gate A → `.superpowers/captures/phase0_*.png`
 - Gameplay clip from Gate B → `.superpowers/captures/phase0_gameplay.mp4`
 - FPS A/B numbers → fill into `docs/PHASE_0_GATE_NOTES.md` §FPS baseline
-- Loom URL for 14-variant review → record in this file or in `docs/PHASE_0_GATE_NOTES.md`
+- Loom URL for 15-variant review → record in this file or in `docs/PHASE_0_GATE_NOTES.md`

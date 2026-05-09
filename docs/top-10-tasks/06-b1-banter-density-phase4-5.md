@@ -40,7 +40,7 @@ Per memory: gated on Cailleach Gaelic native review. Ship steps:
    - **Beltane** (May 1 ± 7d) — 12 EN + 12 SCS. Spring fire + cattle blessing tone.
    - **Lughnasadh / Lammas** (Aug 1 ± 7d) — 12 EN + 12 SCS. Harvest + craft fairs.
    - **Samhain** (Oct 31 ± 3d) — 16 EN + 16 SCS. Boundary thinning + ancestor recognition. Coordinate with C1 Almanac discovery banter.
-3. **Variant-specific banter overlays** for any of the 14 variants whose voice/persona intersects a season — Burns Wee Beastie obviously matches Burns Night, Cailleach matches Samhain, Gran always matches Hogmanay (if we add that as a fifth event).
+3. **Variant-specific banter overlays** for any of the 15 variants whose voice/persona intersects a season — Burns Wee Beastie obviously matches Burns Night, Cailleach matches Samhain, Gran always matches Hogmanay (if we add that as a fifth event).
 
 ### Phase 6 (stretch — only if 4+5 ship clean) — Banter triggers + dynamic re-roll
 Memory note: `src/data/banter.ts:1199, 1278` flag deferred trigger wiring per "Task 6 pattern". If time allows, close those.

@@ -1,7 +1,7 @@
 # P3 Cloud Saves — Backend Decision Matrix
 
-**Status:** Recommendation, awaiting stakeholder approval (single human: project owner).
-**Date:** 2026-04-26
+**Status:** ✅ Accepted 2026-05-09 — Cloudflare Workers + D1 + magic-link via Resend ratified by lead dev. ADR-0006 promoted `.draft.md` → `.md`, Status flipped to Accepted. Per OPEN_QUESTIONS.md Q4. Legal/ops humans-in-the-loop work (privacy text, GDPR controller, account provisions) tracked in `docs/top-10-tasks/blocked/03-blocked-on-human.md` items 3–6.
+**Date:** 2026-04-26 (matrix authored); 2026-05-09 (architectural decision ratified).
 **Author:** Agent 3 of P3 charter execution.
 **Charter:** `docs/top-10-tasks/03-p3-cloud-saves.md`
 

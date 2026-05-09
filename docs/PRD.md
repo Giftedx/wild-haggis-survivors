@@ -13,7 +13,7 @@
   - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 18` (see `src/utils/save/schema.ts`; v18 added `lemmingsSeenForVariant` for the DMA-Design easter egg gate, 2026-05-09).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 481 vitest files; 5065 test cases (verified 2026-05-09 via `npm test`).
+- **Tests:** 483 vitest files; 5092 test cases (verified 2026-05-09 via `npm test`).
 - **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = 10` in `src/utils/save/schema.ts`.
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
@@ -45,7 +45,7 @@
 
 ### 2026-05-09 mechanics ship sprint
 
-A solo-dev sprint shipped 12 features in one day from `docs/DESIGN_IDEAS.md` §1+§3+§5+§11+§13. All carry STATUS markers in memory (`project_<name>_status`) and are reflected in `CLAUDE.md` "Key Mechanics". Sprint commits between today's session start and tip:
+A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS.md` §1+§3+§5+§11+§13 plus a thirteenth pre-run system foundation (Sporran Deck Phase 0). All carry STATUS markers in memory (`project_<name>_status`) and are reflected in `CLAUDE.md` "Key Mechanics". Sprint commits between today's session start and tip:
 
 | Item | Source | Commit | Notes |
 |---|---|---|---|
@@ -61,6 +61,7 @@ A solo-dev sprint shipped 12 features in one day from `docs/DESIGN_IDEAS.md` §1
 | Sgian Dubh + Sgian Geal evolution | DESIGN_IDEAS §5 | `92a0e2a` | 10th weapon + 9th evolution; forced-crit |
 | Stag Antler + Monarch's Charge | DESIGN_IDEAS §5 | `805e03c` | 11th weapon + 10th evolution; dash-strike fork |
 | Field Note Pickup | DESIGN_IDEAS §11 | `8e9487d` | haggis_hunter Foundation notebook page |
+| Sporran Deck Phase 0 | DESIGN_IDEAS §1 (S1) | `eabe2a6` | Pure helper + 11-card pool + 20 tests; pre-run 7-card draft, no runtime wiring yet |
 
 `BURNS_EVOLUTION_THRESHOLD` lifted 7→8→9→10 across the four weapon ships.
 

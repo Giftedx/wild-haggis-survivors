@@ -14,7 +14,7 @@
       "releaseDecision": "blocked_until_review",
       "reviewEvidence": [],
       "sourceDocs": [
-        "docs/status/cultural/C2_DIALECT_REVIEW.md",
+        "docs/C2_DIALECT_REVIEW.md",
         "docs/VOICE_CARD.md",
         "docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md",
         "docs/research/SCOTTISH_RESEARCH_DEEP.md"
@@ -62,7 +62,7 @@
       "releaseDecision": "blocked_until_review",
       "reviewEvidence": [],
       "sourceDocs": [
-        "docs/status/cultural/C2_DIALECT_REVIEW.md",
+        "docs/C2_DIALECT_REVIEW.md",
         "docs/VOICE_CARD.md",
         "docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md",
         "docs/research/SCOTTISH_RESEARCH_DEEP.md"
@@ -110,7 +110,7 @@
       "releaseDecision": "blocked_until_review",
       "reviewEvidence": [],
       "sourceDocs": [
-        "docs/status/cultural/C2_BURNS_PROVENANCE.md",
+        "docs/C2_BURNS_PROVENANCE.md",
         "docs/VOICE_CARD.md",
         "docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md",
         "docs/research/SCOTTISH_RESEARCH.md",
@@ -211,7 +211,7 @@
       "reviewEvidence": [],
       "sourceDocs": [
         "docs/VOICE_CARD.md",
-        "docs/status/banter/BANTER_GAPS.md",
+        "docs/BANTER_GAPS.md",
         "docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md",
         "docs/research/SCOTTISH_RESEARCH.md",
         "docs/research/SCOTTISH_RESEARCH_DEEP.md"

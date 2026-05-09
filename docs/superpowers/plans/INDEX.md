@@ -23,6 +23,7 @@ records; a handful track follow-up rows that span multiple sessions.
 | `2026-04-24-r1-m45-manual-playtest-followups.md` | Balance playtest deferred | `project_r1_relics_status` |
 | `2026-04-24-v2-variants-followups.md` | Doric + Shetlandic native review, Burns Canongate audit | `project_v2_variants_status` |
 | `2026-04-30-codebase-restructure.md` | All Phases 0–7 SHIPPED 2026-05-09 (`c0097d8` re-baselines ratchet at post-Phase-5 floor); ≤1200 GameScene charter target requires facade rewrite explicitly out of scope | `project_restructure_status` |
+| `2026-05-09-sporran-deck-phase0.md` | Phase 0 SHIPPED 2026-05-09 (`eabe2a6` — pure helper + 11-card pool + 20 tests, no runtime wiring). Phase 1 (UI lift + scene wire + i18n) and Phase 2 (chronicle persistence + schema bump) open. | `project_sporran_deck_status` |
 
 ## Shipped (historical execution records)
 

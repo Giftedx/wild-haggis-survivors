@@ -6,7 +6,7 @@
 
 This document deduplicates and prioritizes findings from those audits into a single execution-oriented backlog.
 
-> **Status as of 2026-04-26 (later same day) — partial movement since synthesis.** The dispatch package at [`dispatch/2026-04-26/00_task_list.md`](dispatch/2026-04-26/00_task_list.md) and the post-audit snapshot in [`dispatch/2026-04-26/Execution_Log.md`](dispatch/2026-04-26/Execution_Log.md) are the live source of truth for ship state. Quick reconciliation against `git log` / memory:
+> **Status as of 2026-04-26 (later same day) — partial movement since synthesis.** The dispatch package at [`dispatch/2026-04-26/00_task_list.md`](../../dispatch/2026-04-26/00_task_list.md) and the post-audit snapshot in [`dispatch/2026-04-26/Execution_Log.md`](../../dispatch/2026-04-26/Execution_Log.md) are the live source of truth for ship state. Quick reconciliation against `git log` / memory:
 >
 > - **P0.1** (resume + input + nav bundle) — partial: resume/input/route fixes landed across `T401/T402/T407/T122` commits; verify against `git log --oneline -25`.
 > - **P0.2** (runes ship or don't) — **shipped** as ship: U1 M4 wired offers + 25/30 grounded rune effect consumers (commit `a86afe5`, 2026-04-26). Five ungrounded runes wait on biomes from #5; document that, not "ship or don't."
