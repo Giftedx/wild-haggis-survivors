@@ -86,6 +86,15 @@ const FLASH_OVERLAY_ALLOWLIST = new Map([
   // whole-file scan can't tell. The dawn reveal is a slow
   // multi-second ramp on a dark indigo, not a flash.
   ['src/scenes/BootScene.ts', { kind: 'static-backdrop' }],
+  // Evolution-spectacle banner — extracted from JuiceSystem.ts
+  // (commit 27976b3) into its own helper. The full-width "✦
+  // LEGENDARY ✦" banner band fades in (200 ms → α 0.9), holds
+  // 1.4 s, then fades out (500 ms). Single non-strobe envelope on
+  // a 52 px-tall band (≈9 % screen area, well under 25 % PEAT
+  // threshold); no flash rate concern. Behavior was already
+  // shipped under JuiceSystem.ts's `flash` allowlist entry —
+  // this entry restores parity after the refactor moved the file.
+  ['src/systems/juice/evolutionSpectacle.ts', { kind: 'fade-transition' }],
 ]);
 
 /**
