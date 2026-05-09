@@ -484,6 +484,9 @@ export const ui = {
   simmerDim: {
     blessing_toast: 'Simmer Dim. Held twilicht. +12 HP, tha strike lands hairder whan it lands.',
   },
+  upHellyAa: {
+    blessing_toast: 'Up Helly Aa. Galley afire. +18 HP, tha haggis sweengs hairder.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -2818,6 +2821,27 @@ export const ui = {
         j: 'Midsummer\'s e\'en — tha auld fowk left tha hairth burnin laich.',
         k: 'Held twilicht. Tha crit lands like tha sun bid lang.',
         l: 'Tha muir disnae darken. Tha haggis keeps movin.',
+      },
+      // SCS overlay of EN up_helly_aa leaves (2026-05-09). Shetland
+      // fire-festival cycle. SCS register stays general Scots — the
+      // Peerie Shetlander variant carries dedicated Shetlandic /
+      // Norn-flavoured content; this overlay matches the Burns-Night /
+      // Hogmanay general-Scots register so the seasonal pool reads
+      // consistently across the cohort. 12 leaves — lifts cohort tae
+      // 13/13.
+      up_helly_aa: {
+        a: 'Up Helly Aa. Tha torches mairch. Tha wee yin keeps laich.',
+        b: 'A thousand guizers in Lerwick tha nicht. Steal a glance.',
+        c: 'Tha galley waits at tha herbour — they aye burn tha galley.',
+        d: 'Norn echoes in tha patter. Shetland\'s its ain muir.',
+        e: 'Bressay athort tha soond. Tha fire reaches.',
+        f: 'Jarl\'s squad in helms an beards. Walk smaa.',
+        g: 'Tha procession sings. Tha haggis sweengs tha hairder.',
+        h: 'They pit a langship tae flame an caa it a year. Mind that weight.',
+        i: 'Cunningsburgh tha nicht. Syne Cullivoe, syne Norwick. Tha fire keeps movin.',
+        j: 'Tar-barrels an torchlicht. Tha auld yule burnin, made formal.',
+        k: 'Echteen-echty-yin they made it formal. Aulder nor that in tha bane.',
+        l: 'Tha galley sinks burnin. Tha strike lands tha hairder fer it.',
       },
     },
   },

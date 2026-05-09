@@ -18,6 +18,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraAoeMultiplier: 0,
     extraPickupRadius: 0,
     extraCritDamageMultiplier: 0,
+    extraDamageMultiplier: 0,
   };
 }
 
@@ -205,9 +206,40 @@ describe('buildSeasonalRunStartPlan', () => {
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0.25,
+      extraDamageMultiplier: 0,
       toast: {
         key: 'ui.simmerDim.blessing_toast',
         color: '#9080c0',
+        delayMs: 1500,
+      },
+    });
+  });
+
+  it('applies the Up Helly Aa damage-multiplier bonus + galley heal', () => {
+    const modifiers = defaultModifiers();
+    const plan = buildSeasonalRunStartPlan({
+      resumeRun: false,
+      disableSeasonalEvents: false,
+      // Feb 12, 2027 — mid-window (Cunningsburgh's Up Helly Aa cohort).
+      now: new Date(2027, 1, 12),
+      runRng: { pick: vi.fn() } as unknown as RNG,
+      runModifiers: modifiers,
+    });
+
+    expect(modifiers).toEqual(defaultModifiers());
+    expect(plan).toMatchObject({
+      seasonalEventKey: 'up_helly_aa',
+      extraStartingHpHeal: 18,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0.18,
+      toast: {
+        key: 'ui.upHellyAa.blessing_toast',
+        color: '#e07840',
         delayMs: 1500,
       },
     });
@@ -227,6 +259,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -237,6 +270,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -259,6 +293,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -269,6 +304,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -291,6 +327,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraAoeMultiplier: 0.10,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -301,6 +338,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -323,6 +361,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraAoeMultiplier: 0,
       extraPickupRadius: 20,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -333,6 +372,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -340,6 +380,40 @@ describe('applySeasonalRunStartPostSpawn', () => {
       'heal:14',
       'pickup:20',
       'toast:1500:ui.tartanDay.blessing_toast:#b04050',
+    ]);
+  });
+
+  it('applies damage-multiplier bonus on an up_helly_aa plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'up_helly_aa',
+      toast: { key: 'ui.upHellyAa.blessing_toast', color: '#e07840', delayMs: 1500 },
+      extraStartingHpHeal: 18,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0.18,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
+      addPickupRadius: (amount) => log.push(`pickup:${amount}`),
+      addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:18',
+      'dmg:0.18',
+      'toast:1500:ui.upHellyAa.blessing_toast:#e07840',
     ]);
   });
 
@@ -355,6 +429,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0.25,
+      extraDamageMultiplier: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
@@ -365,6 +440,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: (amount) => log.push(`aoe:${amount}`),
       addPickupRadius: (amount) => log.push(`pickup:${amount}`),
       addCritDamageMultiplier: (amount) => log.push(`critDmg:${amount}`),
+      addDamageMultiplier: (amount) => log.push(`dmg:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -384,6 +460,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
       addAoeMultiplier: vi.fn(),
       addPickupRadius: vi.fn(),
       addCritDamageMultiplier: vi.fn(),
+      addDamageMultiplier: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -396,6 +473,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.addAoeMultiplier).not.toHaveBeenCalled();
     expect(calls.addPickupRadius).not.toHaveBeenCalled();
     expect(calls.addCritDamageMultiplier).not.toHaveBeenCalled();
+    expect(calls.addDamageMultiplier).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

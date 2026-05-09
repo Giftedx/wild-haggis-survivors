@@ -2497,6 +2497,30 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.simmer_dim.k',
         'ui.banter.seasonal_event.simmer_dim.l',
       ],
+      // 2026-05-09 — Up Helly Aa (Feb 9-15) lifts the cohort banter
+      // coverage to 13/13. Shetland fire-festival cycle. Marquee
+      // Lerwick procession is end-of-Jan but sits under Burns Night;
+      // window honours the broader Shetland season (Cunningsburgh,
+      // Cullivoe, Norwick, Bressay, Nesting, Uyeasound — eleven
+      // outlying community fire festivals). Banter rides torch-
+      // procession, guizer brotherhood, the galley burning at the
+      // harbour, Norn echoes. Hearth tone with one grave-edge bite
+      // (h) for the longship's commitment-to-flame. SCOTTISH_RESEARCH_
+      // DEEP §22.7.
+      up_helly_aa: [
+        'ui.banter.seasonal_event.up_helly_aa.a',
+        'ui.banter.seasonal_event.up_helly_aa.b',
+        'ui.banter.seasonal_event.up_helly_aa.c',
+        'ui.banter.seasonal_event.up_helly_aa.d',
+        'ui.banter.seasonal_event.up_helly_aa.e',
+        'ui.banter.seasonal_event.up_helly_aa.f',
+        'ui.banter.seasonal_event.up_helly_aa.g',
+        'ui.banter.seasonal_event.up_helly_aa.h',
+        'ui.banter.seasonal_event.up_helly_aa.i',
+        'ui.banter.seasonal_event.up_helly_aa.j',
+        'ui.banter.seasonal_event.up_helly_aa.k',
+        'ui.banter.seasonal_event.up_helly_aa.l',
+      ],
     },
   },
   // Taxman Grudge Ledger (DESIGN_IDEAS §1) — verdict-keyed closing

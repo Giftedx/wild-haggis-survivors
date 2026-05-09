@@ -212,6 +212,29 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.tartan_day.description',
     dateWindow: { startMonth: 4, startDay: 4, endMonth: 4, endDay: 8 },
   },
+  // Up Helly Aa — Shetland fire festival cycle. The marquee Lerwick
+  // event is the **last Tuesday of January** (Jan 25-31 across years),
+  // but the wider Shetland season runs through February into early
+  // March: Cunningsburgh, Cullivoe (Yell), Norwick (Unst), Bressay,
+  // Nesting/Girlsta, Uyeasound — eleven outlying community fire
+  // festivals dot the calendar. Window Feb 9-15 (7 days) honours the
+  // broader Shetland season — the marquee Lerwick date sits SQUARELY
+  // inside Burns Night (Jan 18 - Feb 1) in real life, and this code-
+  // base resolves overlap by insertion order (Burns wins). Feb 9-15
+  // sits cleanly between Imbolc (Feb 2-8) and Tartan Day (Apr 4-8) and
+  // catches Cunningsburgh's mid-February event. Cultural framing:
+  // torchlight + brotherhood + Norse heritage + the galley burns.
+  // Hearth tone with one grave-edge bite for the longship's
+  // commitment-to-flame. SCOTTISH_RESEARCH_DEEP §22.7. Sister surface
+  // to the existing Peerie Shetlander variant, whose Up Helly Aa
+  // passive was descoped to voice-only at variant ship time —
+  // this seasonal is the first true Up Helly Aa surface.
+  up_helly_aa: {
+    key: 'up_helly_aa',
+    nameKey: 'seasonalEvent.up_helly_aa.name',
+    descriptionKey: 'seasonalEvent.up_helly_aa.description',
+    dateWindow: { startMonth: 2, startDay: 9, endMonth: 2, endDay: 15 },
+  },
 };
 
 function monthDay(now: Date): { m: number; d: number } {

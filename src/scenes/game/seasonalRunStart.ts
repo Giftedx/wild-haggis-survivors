@@ -15,6 +15,7 @@ import { applyBannockburnBlessing } from '../../systems/bannockburnBlessing';
 import { applyGloriousTwelfthBlessing } from '../../systems/gloriousTwelfthBlessing';
 import { applyTartanDayBlessing } from '../../systems/tartanDayBlessing';
 import { applySimmerDimBlessing } from '../../systems/simmerDimBlessing';
+import { applyUpHellyAaBlessing } from '../../systems/upHellyAaBlessing';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -35,6 +36,7 @@ export interface SeasonalRunStartPlan {
   readonly extraAoeMultiplier: number;
   readonly extraPickupRadius: number;
   readonly extraCritDamageMultiplier: number;
+  readonly extraDamageMultiplier: number;
 }
 
 export interface SeasonalRunStartDeps {
@@ -53,6 +55,7 @@ export interface SeasonalRunStartPostSpawnDeps {
   readonly addAoeMultiplier: (amount: number) => void;
   readonly addPickupRadius: (amount: number) => void;
   readonly addCritDamageMultiplier: (amount: number) => void;
+  readonly addDamageMultiplier: (amount: number) => void;
   readonly showToastAfter: (delayMs: number, key: string, color: string) => void;
 }
 
@@ -71,6 +74,7 @@ function inertPlan(seasonalEventKey: string | null = null): SeasonalRunStartPlan
     extraAoeMultiplier: 0,
     extraPickupRadius: 0,
     extraCritDamageMultiplier: 0,
+    extraDamageMultiplier: 0,
   };
 }
 
@@ -103,6 +107,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -118,6 +123,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -133,6 +139,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -148,6 +155,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -163,6 +171,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -178,6 +187,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -193,6 +203,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -208,6 +219,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -223,6 +235,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -238,6 +251,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: gloriousTwelfthResult.extraAoeMultiplier,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -253,6 +267,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: tartanDayResult.extraPickupRadius,
       extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: 0,
     };
   }
 
@@ -268,6 +283,23 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraAoeMultiplier: 0,
       extraPickupRadius: 0,
       extraCritDamageMultiplier: simmerDimResult.extraCritDamageMultiplier,
+      extraDamageMultiplier: 0,
+    };
+  }
+
+  const upHellyAaResult = applyUpHellyAaBlessing(seasonalEventKey, deps.runModifiers);
+  if (upHellyAaResult.applied) {
+    return {
+      seasonalEventKey,
+      toast: toast('ui.upHellyAa.blessing_toast', '#e07840'),
+      extraStartingHpHeal: upHellyAaResult.extraStartingHpHeal,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0,
+      extraAoeMultiplier: 0,
+      extraPickupRadius: 0,
+      extraCritDamageMultiplier: 0,
+      extraDamageMultiplier: upHellyAaResult.extraDamageMultiplier,
     };
   }
 
@@ -298,6 +330,9 @@ export function applySeasonalRunStartPostSpawn(
   }
   if (plan.extraCritDamageMultiplier > 0) {
     deps.addCritDamageMultiplier(plan.extraCritDamageMultiplier);
+  }
+  if (plan.extraDamageMultiplier > 0) {
+    deps.addDamageMultiplier(plan.extraDamageMultiplier);
   }
   if (plan.toast) {
     deps.showToastAfter(plan.toast.delayMs, plan.toast.key, plan.toast.color);

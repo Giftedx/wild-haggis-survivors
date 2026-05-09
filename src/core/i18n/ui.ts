@@ -876,6 +876,24 @@ export const ui = {
     blessing_toast: 'Simmer Dim. Held twilight. +12 HP, the strike lands harder when it lands.',
   },
   /**
+   * Up Helly Aa (Feb 9-15). Shetland fire festival cycle. The marquee
+   * Lerwick event is the **last Tuesday of January** but sits inside
+   * Burns Night in real life; this codebase resolves overlap by
+   * insertion order (Burns wins). Window Feb 9-15 honours the broader
+   * Shetland season (Cunningsburgh, Cullivoe, Norwick, Bressay,
+   * Nesting, Uyeasound — eleven outlying community fire festivals).
+   * Mechanic: +18 HP heal post-spawn (longship-warmth) + +0.18
+   * additive damage-multiplier via `Player.addDamageMultiplier` —
+   * thirteenth distinct mechanical slot in the cohort, first to touch
+   * generic damage-mult (Simmer Dim crit-DAMAGE only fires on crit
+   * hits; Glorious Twelfth AoE widens arc not wallop). Cultural
+   * framing: torchlight + brotherhood + Norse heritage + the galley
+   * burns. SCOTTISH_RESEARCH_DEEP §22.7.
+   */
+  upHellyAa: {
+    blessing_toast: 'Up Helly Aa. Galley afire. +18 HP, the haggis swings harder.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -3490,6 +3508,30 @@ export const ui = {
         j: 'Midsummer\'s e\'en — the auld folk left the hearth burning low.',
         k: 'Held twilight. The crit lands like the sun lingered.',
         l: 'The moor doesn\'t darken. The haggis keeps moving.',
+      },
+      // 2026-05-09 — Up Helly Aa (Feb 9-15) lifts the cohort banter
+      // coverage to 13/13. Shetland fire-festival cycle; the marquee
+      // Lerwick procession is the last Tuesday of January but sits
+      // inside Burns Night in real life — this window honours the
+      // broader Shetland season (Cunningsburgh mid-Feb, Cullivoe,
+      // Norwick, Bressay, Nesting, Uyeasound). Banter rides the
+      // torch-procession, the guizer brotherhood, the galley burning
+      // at the harbour end, and the Norn echoes still in the dialect.
+      // Hearth tone with one grave-edge bite (h) for the longship's
+      // commitment-to-flame. SCOTTISH_RESEARCH_DEEP §22.7.
+      up_helly_aa: {
+        a: 'Up Helly Aa. The torches march. The wee one keeps low.',
+        b: 'A thousand guizers in Lerwick the night. Steel a glance.',
+        c: 'The galley waits at the harbour — they always burn the galley.',
+        d: 'Norn echoes in the patter. Shetland\'s its own moor.',
+        e: 'Bressay across the sound. The fire reaches.',
+        f: 'Jarl\'s squad in helms and beards. Walk small.',
+        g: 'The procession sings. The haggis swings the harder.',
+        h: 'They put a longship to flame and call it a year. Mind that weight.',
+        i: 'Cunningsburgh tonight. Then Cullivoe, then Norwick. The fire keeps moving.',
+        j: 'Tar-barrels and torchlight. The auld yule burning, formalised.',
+        k: 'Eighteen-eighty-one they made it formal. Older than that in the bone.',
+        l: 'The galley sinks burning. The strike lands the harder for it.',
       },
     },
   },

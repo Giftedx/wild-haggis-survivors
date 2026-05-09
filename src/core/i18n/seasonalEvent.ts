@@ -72,4 +72,10 @@ export const seasonalEvent = {
     badge_suffix: 'Simmer Dim',
     ceremony_banner: '🌒 Simmer Dim is live — the gloaming holds.',
   },
+  up_helly_aa: {
+    name: 'Up Helly Aa',
+    description: 'Feb 9 – Feb 15 — Shetland torch processions; the galley burns at the harbour.',
+    badge_suffix: 'Up Helly Aa',
+    ceremony_banner: '🔥 Up Helly Aa is live — the guizers march, the galley burns.',
+  },
 } as const;

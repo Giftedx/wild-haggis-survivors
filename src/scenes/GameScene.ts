@@ -792,6 +792,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       addAoeMultiplier: (amount) => this.player.addAoeMultiplier(amount),
       addPickupRadius: (amount) => this.player.addPickupRadius(amount),
       addCritDamageMultiplier: (amount) => this.player.addCritDamageMultiplier(amount),
+      addDamageMultiplier: (amount) => this.player.addDamageMultiplier(amount),
       showToastAfter: (delayMs, key, color) => {
         this.time.delayedCall(delayMs, () => {
           if (!this.scene.isActive('Game')) return;
