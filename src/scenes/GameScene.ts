@@ -760,6 +760,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       heal: (amount) => this.player.heal(amount),
       addXpMultiplier: (amount) => this.player.addXpMultiplier(amount),
       addCritChance: (amount) => this.player.addCritChance(amount),
+      addLifesteal: (amount) => this.player.addLifesteal(amount),
       showToastAfter: (delayMs, key, color) => {
         this.time.delayedCall(delayMs, () => {
           if (!this.scene.isActive('Game')) return;

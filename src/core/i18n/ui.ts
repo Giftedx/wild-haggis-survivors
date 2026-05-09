@@ -795,6 +795,17 @@ export const ui = {
     blessing_toast: 'Bracken bronzed, frost in the wind — the moor sharpens ye. +13 HP, crits land truer.',
   },
   /**
+   * Bannockburn Anniversary Blessing — Jun 22 – Jun 25 seasonal hook
+   * (DESIGN_IDEAS §12; Robert the Bruce's victory over Edward II's
+   * army on Jun 23–24, 1314; Burns "Scots, Wha Hae" 1793). +22 HP
+   * heal post-spawn (battlefield medic) + +0.5 lifesteal — the
+   * Scots fed off the field. Cultural framing celebrates Scottish
+   * resilience without contemporary politics.
+   */
+  bannockburn: {
+    blessing_toast: 'Bruce held — every blow tastes of the field. +22 HP, half a HP back per kill.',
+  },
+  /**
    * Cu Sith Three-Bay Warning toasts (DESIGN_IDEAS §1; SCOTTISH_
    * RESEARCH §1.2). Fires from `wireSceneEventBus` on the
    * `CU_SITH_BAY` global event, throttled to 2.5 s globally.
@@ -3081,6 +3092,27 @@ export const ui = {
         j: 'Fern-fronds rust-flecked — naebody painted them, mind.',
         k: 'Cauld snap comin\'. Dinnae linger by the burn.',
         l: 'The moor remembers warm. Hold the thocht.',
+      },
+      // ── Bannockburn anniversary (Jun 22-25). Bruce's victory in 1314;
+      //    Burns wrote "Scots, Wha Hae" 1793 about it. Hearth tone with
+      //    Edge bites about the field. SCOTTISH_RESEARCH_DEEP §6.3
+      //    (Wars of Independence) + §17.2 (Burns canon). Voice: warm-
+      //    proud, low-rumble pike-wall, kindred-with-Bruce. Cultural
+      //    framing celebrates resilience, not anti-English politics.
+      //    12 leaves.
+      bannockburn: {
+        a: 'Bannockburn weighs in. The field still kens its names.',
+        b: 'Bruce held the line wi\' a haggis-fed army. Eat hard.',
+        c: '"Scots, wha hae wi\' Wallace bled" — Burns kent the day.',
+        d: 'Pike-wall stood. Ye stand the same way — feet planted.',
+        e: 'Six hunner years past, an\' the moor still mind.',
+        f: 'Bruce\'s heart\'s buried at Melrose. The body lies elsewhere.',
+        g: 'Schiltron — auld word for a circle that does not break.',
+        h: 'Twa days o\' the field. The third day, the ploughs returned.',
+        i: 'A king kissed the soil after. Mark that — dirt is honest.',
+        j: 'Spider on the wa\'? Bruce watched ane till he kent persistence.',
+        k: 'Hold thy ground. The next charge minds the last.',
+        l: 'Walk on the field. Walk softly. Then walk on.',
       },
     },
   },

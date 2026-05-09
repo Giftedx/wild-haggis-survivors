@@ -317,3 +317,33 @@ describe('E1 Lùnastal / Lammas — Gaelic harvest-start', () => {
     expect(lammasDay).not.toContain('beltane');
   });
 });
+
+describe('E1 Bannockburn anniversary — Bruce 1314', () => {
+  it('is active on the historical days (Jun 23 + Jun 24)', () => {
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 23))).toBe(true);
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 24))).toBe(true);
+  });
+
+  it('is active on the window edges (Jun 22 + Jun 25)', () => {
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 22))).toBe(true);
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 25))).toBe(true);
+  });
+
+  it('is inactive the day before + day after the window', () => {
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 21))).toBe(false);
+    expect(isSeasonalEventActive('bannockburn', d(2027, 6, 26))).toBe(false);
+  });
+
+  it('is inactive in midwinter', () => {
+    expect(isSeasonalEventActive('bannockburn', d(2027, 1, 15))).toBe(false);
+  });
+
+  it('does not overlap Beltane or Lammas (clean summer slot)', () => {
+    // Beltane is Apr 28 – May 4; Lammas is Jul 29 – Aug 4. Bannockburn
+    // sits between them with margin on either side.
+    const bannockburnDay = activeSeasonalEvents(d(2027, 6, 23));
+    expect(bannockburnDay).toContain('bannockburn');
+    expect(bannockburnDay).not.toContain('beltane');
+    expect(bannockburnDay).not.toContain('lammas');
+  });
+});

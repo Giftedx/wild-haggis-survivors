@@ -129,6 +129,21 @@ export const SEASONAL_EVENTS: Readonly<Record<string, SeasonalEventDef>> = {
     descriptionKey: 'seasonalEvent.lammas.description',
     dateWindow: { startMonth: 7, startDay: 29, endMonth: 8, endDay: 4 },
   },
+  // Bannockburn anniversary — Robert the Bruce's victory over Edward II's
+  // army on Jun 23–24, 1314. Window Jun 22–25 covers both medieval days
+  // plus a 24-h grace either side for time-zone shift. Slots cleanly
+  // between Beltane (Apr 28 – May 4) and Lammas (Jul 29 – Aug 4) — the
+  // only summer-side seasonal in the cohort. Cultural framing is
+  // celebratory of Scottish resilience, not anti-English; banter and
+  // i18n stay focused on Bruce, the field, and Burns's "Scots, Wha Hae"
+  // (1793) which the freshly-wired burns_citation `charge` sub-pool
+  // already echoes from Drift Mastery's burst-edge.
+  bannockburn: {
+    key: 'bannockburn',
+    nameKey: 'seasonalEvent.bannockburn.name',
+    descriptionKey: 'seasonalEvent.bannockburn.description',
+    dateWindow: { startMonth: 6, startDay: 22, endMonth: 6, endDay: 25 },
+  },
   // Bracken-turn — autumn cusp (Nov 4 – Nov 26). Sits in the cohort's
   // quiet shoulder, between Samhain (Oct 28 – Nov 3) and St Andrew's
   // Day (Nov 27 – Dec 3). The moor's bracken fronds shift from green

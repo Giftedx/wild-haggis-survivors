@@ -14,6 +14,7 @@ function inertPlan(): SeasonalRunStartPlan {
     extraStartingHpHeal: 0,
     extraXpMultiplier: 0,
     extraCritChance: 0,
+    extraLifesteal: 0,
   };
 }
 
@@ -137,12 +138,14 @@ describe('applySeasonalRunStartPostSpawn', () => {
       extraStartingHpHeal: 14,
       extraXpMultiplier: 0.1,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
 
     applySeasonalRunStartPostSpawn(plan, {
       heal: (amount) => log.push(`heal:${amount}`),
       addXpMultiplier: (amount) => log.push(`xp:${amount}`),
       addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
       showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
     });
 
@@ -153,11 +156,38 @@ describe('applySeasonalRunStartPostSpawn', () => {
     ]);
   });
 
+  it('applies lifesteal bonus on a bannockburn plan', () => {
+    const log: string[] = [];
+    const plan: SeasonalRunStartPlan = {
+      seasonalEventKey: 'bannockburn',
+      toast: { key: 'ui.bannockburn.blessing_toast', color: '#a8c0d0', delayMs: 1500 },
+      extraStartingHpHeal: 22,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: 0.5,
+    };
+
+    applySeasonalRunStartPostSpawn(plan, {
+      heal: (amount) => log.push(`heal:${amount}`),
+      addXpMultiplier: (amount) => log.push(`xp:${amount}`),
+      addCritChance: (amount) => log.push(`crit:${amount}`),
+      addLifesteal: (amount) => log.push(`lifesteal:${amount}`),
+      showToastAfter: (delayMs, key, color) => log.push(`toast:${delayMs}:${key}:${color}`),
+    });
+
+    expect(log).toEqual([
+      'heal:22',
+      'lifesteal:0.5',
+      'toast:1500:ui.bannockburn.blessing_toast:#a8c0d0',
+    ]);
+  });
+
   it('does not touch post-spawn callbacks for an inert plan', () => {
     const calls = {
       heal: vi.fn(),
       addXpMultiplier: vi.fn(),
       addCritChance: vi.fn(),
+      addLifesteal: vi.fn(),
       showToastAfter: vi.fn(),
     };
 
@@ -166,6 +196,7 @@ describe('applySeasonalRunStartPostSpawn', () => {
     expect(calls.heal).not.toHaveBeenCalled();
     expect(calls.addXpMultiplier).not.toHaveBeenCalled();
     expect(calls.addCritChance).not.toHaveBeenCalled();
+    expect(calls.addLifesteal).not.toHaveBeenCalled();
     expect(calls.showToastAfter).not.toHaveBeenCalled();
   });
 });

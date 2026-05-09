@@ -19,7 +19,7 @@ const LOC_BUDGET: ReadonlyArray<readonly [string, number]> = [
   ['core/i18n.ts', 115], // was 4720 → 120 (Phase 3.1 split) → 115 (Phase 7 re-baseline 2026-05-09; current 110 + 5 grace)
   ['core/i18n.scs.ts', 20], // was 4010 (Phase 3.2 barrel; current 14 + 6 grace)
   ['scenes/GameScene.ts', 1692], // bumped 2026-05-09 (1680→1692) for nae_haste delayed Burns echo wiring (curse_start +9 s sub-pool surfaces "Nae man can tether time or tide"); current 1687 + 5 grace; was 2985 → 2182 → 1680 (Phase 7 re-baseline); T401 floor 1656
-  ['data/banter.ts', 2270], // bumped 2026-05-09 (2255→2270) for nicnevin boss_warn + boss_down + first_time pool entries (N1 Tier-2 Mythos boss #2); current 2264 + 6 grace; pure data, parity-fenced, kept whole
+  ['data/banter.ts', 2295], // bumped 2026-05-09 (2270→2295) for bannockburn anniversary 12-leaf seasonal_event sub-pool entry + comment header (E1 Bannockburn 9th cohort event); current 2286 + 9 grace; pure data, parity-fenced, kept whole
   ['utils/save.ts', 95], // was 1840 → 100 (Phase 1 split) → 95 (Phase 7 re-baseline; current 89 + 6 grace)
   ['art/sprites/icons/cards.ts', 5], // was 1725 (Phase 2.1 barrel)
   ['art/sprites/icons/weapons.ts', 5], // was 1615 (Phase 2.2 barrel)

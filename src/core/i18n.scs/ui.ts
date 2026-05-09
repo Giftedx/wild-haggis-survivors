@@ -450,6 +450,9 @@ export const ui = {
   brackenTurn: {
     blessing_toast: 'Bracken bronzed, frost in tha wund — tha muir shairpens ye. +13 HP, crits land truer.',
   },
+  bannockburn: {
+    blessing_toast: 'Bruce held — ilka blow tastes o the field. +22 HP, hauf a HP back fer ilk kill.',
+  },
   cuSith: {
     bay: {
       first: 'A Cu Sith hools across tha muir.',
@@ -2522,6 +2525,21 @@ export const ui = {
         j: 'Fern-fronds rust-flecked — naebody pented em, mind.',
         k: 'Cauld snap comin. Dinnae linger by tha burn.',
         l: 'Tha muir minds warm. Haud tha thocht.',
+      },
+      // SCS overlay of EN bannockburn leaves (2026-05-09).
+      bannockburn: {
+        a: 'Bannockburn wechs in. Tha field still kens its nemmes.',
+        b: 'Bruce held tha line wi a haggis-fed airmie. Eat haurd.',
+        c: '"Scots, wha hae wi Wallace bled" — Burns kent tha day.',
+        d: 'Pike-wa stood. Ye staund tha same wey — feit plantit.',
+        e: 'Sax hunner year past, an tha muir still minds.',
+        f: 'Bruce\'s hairt\'s buriet at Melrose. Tha bouk lies elsewhar.',
+        g: 'Schiltron — auld wird fer a circle thit disnae brek.',
+        h: 'Twa days o tha field. Tha thrid day, tha pleuchs returnt.',
+        i: 'A king kissed tha sile efter. Mark thon — dirt is honest.',
+        j: 'Spider on tha wa? Bruce watched ane till he kent threap.',
+        k: 'Haud thy grund. Tha neist chairge minds tha last.',
+        l: 'Walk on tha field. Walk saftly. Syne walk on.',
       },
     },
   },

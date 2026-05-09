@@ -303,7 +303,7 @@ Date-gated content that activates when the real-world date hits. Transforms the 
 - ~~**Bracken-turn (October–November)**~~ — ✅ shipped (`SeasonalEventManager.ts` key `bracken_turn`). Copper-bronze palette overlay.
 - **Tartan Day (6 April, North America diaspora)** — diaspora-flavoured event. Accessible tartan patterns for cosmetics.
 - **Declaration of Arbroath anniversary (6 April)** — overlaps Tartan Day. Narrative-banter thread: "For as long as but a hundred of us remain alive…"
-- **Bannockburn anniversary (23–24 June)** — victory-themed. Wallace/Bruce relic drop rate bumped.
+- ~~**Bannockburn anniversary (23–24 June)**~~ — ✅ shipped 2026-05-09 (`SeasonalEventManager.ts` key `bannockburn`). Window Jun 22-25, ninth event in cohort. Run-start blessing: +22 HP heal + +0.5 lifesteal (warrior battlefield-medic mechanic, ninth distinct slot in the blessing-cohort symmetry). 12-leaf seasonal_event banter sub-pool; 9/9 cohort coverage achieved. Ties to the burns_citation.charge sub-pool (Burns "Scots, wha hae" 1793) which Drift Mastery's burst-edge now echoes — Bannockburn-window runs synthesise the wiring. Wallace/Bruce relic drop bump deferred for a future tighter relic pass.
 - **Culloden anniversary (16 April)** — sombre, respectfully handled. Jacobite spectre enemies spawn. No festive banter. (*Ref: `SCOTTISH_RESEARCH_DEEP.md` §6.9.*)
 - **Stonehaven Fireballs (31 Dec)** — Hogmanay sub-event. Fireball-swing hazard overlay.
 

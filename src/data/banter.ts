@@ -2178,6 +2178,24 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.seasonal_event.bracken_turn.k',
         'ui.banter.seasonal_event.bracken_turn.l',
       ],
+      // 2026-05-09 — Bannockburn anniversary lifts the cohort to 9/9.
+      // 12 leaves voice Bruce's stand: pike-wall, the field, Burns's
+      // anthem, the freshly-wired charge sub-pool. Cultural framing
+      // celebrates Scottish resilience without contemporary politics.
+      bannockburn: [
+        'ui.banter.seasonal_event.bannockburn.a',
+        'ui.banter.seasonal_event.bannockburn.b',
+        'ui.banter.seasonal_event.bannockburn.c',
+        'ui.banter.seasonal_event.bannockburn.d',
+        'ui.banter.seasonal_event.bannockburn.e',
+        'ui.banter.seasonal_event.bannockburn.f',
+        'ui.banter.seasonal_event.bannockburn.g',
+        'ui.banter.seasonal_event.bannockburn.h',
+        'ui.banter.seasonal_event.bannockburn.i',
+        'ui.banter.seasonal_event.bannockburn.j',
+        'ui.banter.seasonal_event.bannockburn.k',
+        'ui.banter.seasonal_event.bannockburn.l',
+      ],
     },
   },
 ];

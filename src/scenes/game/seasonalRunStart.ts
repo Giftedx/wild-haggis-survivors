@@ -11,6 +11,7 @@ import { applyBurnsNightBlessing } from '../../systems/burnsNightBlessing';
 import { applyImbolcBlessing } from '../../systems/imbolcBlessing';
 import { applyLammasBlessing } from '../../systems/lammasBlessing';
 import { applyBrackenTurnBlessing } from '../../systems/brackenTurnBlessing';
+import { applyBannockburnBlessing } from '../../systems/bannockburnBlessing';
 import type { RNG } from '../../utils/rng';
 
 const SEASONAL_TOAST_DELAY_MS = 1500;
@@ -27,6 +28,7 @@ export interface SeasonalRunStartPlan {
   readonly extraStartingHpHeal: number;
   readonly extraXpMultiplier: number;
   readonly extraCritChance: number;
+  readonly extraLifesteal: number;
 }
 
 export interface SeasonalRunStartDeps {
@@ -41,6 +43,7 @@ export interface SeasonalRunStartPostSpawnDeps {
   readonly heal: (amount: number) => void;
   readonly addXpMultiplier: (amount: number) => void;
   readonly addCritChance: (amount: number) => void;
+  readonly addLifesteal: (amount: number) => void;
   readonly showToastAfter: (delayMs: number, key: string, color: string) => void;
 }
 
@@ -55,6 +58,7 @@ function inertPlan(seasonalEventKey: string | null = null): SeasonalRunStartPlan
     extraStartingHpHeal: 0,
     extraXpMultiplier: 0,
     extraCritChance: 0,
+    extraLifesteal: 0,
   };
 }
 
@@ -83,6 +87,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: firstFootingResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -94,6 +99,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: beltaneResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -105,6 +111,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: samhainResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -116,6 +123,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: standrewsResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -127,6 +135,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: burnsResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -138,6 +147,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: imbolcResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -149,6 +159,7 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: lammasResult.extraStartingHpHeal,
       extraXpMultiplier: lammasResult.extraXpMultiplier,
       extraCritChance: 0,
+      extraLifesteal: 0,
     };
   }
 
@@ -160,6 +171,19 @@ export function buildSeasonalRunStartPlan(deps: SeasonalRunStartDeps): SeasonalR
       extraStartingHpHeal: brackenResult.extraStartingHpHeal,
       extraXpMultiplier: 0,
       extraCritChance: brackenResult.extraCritChance,
+      extraLifesteal: 0,
+    };
+  }
+
+  const bannockburnResult = applyBannockburnBlessing(seasonalEventKey, deps.runModifiers);
+  if (bannockburnResult.applied) {
+    return {
+      seasonalEventKey,
+      toast: toast('ui.bannockburn.blessing_toast', '#a8c0d0'),
+      extraStartingHpHeal: bannockburnResult.extraStartingHpHeal,
+      extraXpMultiplier: 0,
+      extraCritChance: 0,
+      extraLifesteal: bannockburnResult.extraLifesteal,
     };
   }
 
@@ -178,6 +202,9 @@ export function applySeasonalRunStartPostSpawn(
   }
   if (plan.extraCritChance > 0) {
     deps.addCritChance(plan.extraCritChance);
+  }
+  if (plan.extraLifesteal > 0) {
+    deps.addLifesteal(plan.extraLifesteal);
   }
   if (plan.toast) {
     deps.showToastAfter(plan.toast.delayMs, plan.toast.key, plan.toast.color);

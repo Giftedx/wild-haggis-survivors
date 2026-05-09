@@ -47,4 +47,10 @@ export const seasonalEvent = {
     badge_suffix: 'Bracken-turn',
     ceremony_banner: '🍂 Bracken-turn is live — tha muir weirs its copper coat.',
   },
+  bannockburn: {
+    name: 'Bannockburn',
+    description: 'Jun 22 – Jun 25 — tha field whar Bruce held; "Scots, wha hae".',
+    badge_suffix: 'Bannockburn',
+    ceremony_banner: '⚔ Bannockburn is live — ilka G-press echoes tha anthem.',
+  },
 } as const;
