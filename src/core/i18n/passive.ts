@@ -29,4 +29,7 @@ export const passive = {
   shinty_ball: {
     flavour: 'Cork core, leather skin, two stitched halves. Heavier than it looks. The professional ball is regulated; the haggis prefers the auld kind, the one with a clootie wrapper and a wee scuff at the seam.',
   },
+  whetstone: {
+    flavour: "A flat carborundum slab, fits the palm. Gran soaks it overnight in burn water; the grit drinks the moor. The haggis sharpens between fights, slow strokes, never against the edge. A blade that has felt the Whetstone never quite goes back to dull.",
+  },
 } as const;

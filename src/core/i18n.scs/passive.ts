@@ -29,4 +29,7 @@ export const passive = {
   shinty_ball: {
     flavour: 'Cork hert, leather skin, twa stitched hauves. Heavier than it looks. Tha pro baw is regulated; tha haggis prefers tha auld kind, ane wi a clootie wrapper an a wee scuff at tha seam.',
   },
+  whetstone: {
+    flavour: 'A flat carborundum slab, fits tha luif. Gran soaks it owernicht in burn watter; tha grit drinks tha moor. Tha haggis shairpens atween fechts, slow strokes, nivver agin tha edge. A blade that\'s felt tha Whetstane nivver quite gangs back tae dull.',
+  },
 } as const;

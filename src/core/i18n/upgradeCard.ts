@@ -32,6 +32,10 @@ export const upgradeCard = {
     name: 'Shinty Stick',
     description: 'A curved ash caman cracks a wee ball oot — bouncin till it sticks. Pair wi the Shinty Ball for legendary form.',
   },
+  add_sgian_dubh: {
+    name: 'Sgian Dubh',
+    description: 'The hidden stocking-knife. Fast wee arcs that lean on crit. Pair wi the Whetstone for legendary form.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -72,6 +76,10 @@ export const upgradeCard = {
   add_shinty_ball: {
     name: 'Shinty Ball',
     description: 'Cork core, leather skin. The wee ball wants tae fly truer (+15% projectile speed). Evolves Shinty Stick.',
+  },
+  add_whetstone: {
+    name: 'Whetstone',
+    description: 'A grit slab fae Gran. Every blade ye carry feels it (+10% crit chance). Evolves Sgian Dubh.',
   },
   // Stat boost cards
   boost_hp: {

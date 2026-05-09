@@ -44,4 +44,9 @@ export const weapon = {
     description: 'A curved ash caman cracks a wee ball oot, bouncin till it stops something.',
     flavour: 'Camanachd: the auld Highland game older than golf, older than cricket, near as auld as the hills. The ash bends; the ball remembers.',
   },
+  sgian_dubh: {
+    name: 'Sgian Dubh',
+    description: 'A wee black-handled blade tucked in the stocking. Tight arc, fast hand, always sharp.',
+    flavour: "The black knife — sgian dubh, kept in the hose at the calf where any guest could see it, plain. Hospitality required the showing; honour required the keeping. Gran wraps the haggis's bonemeal-grip every Hogmanay; the haggis has never asked who made the blade.",
+  },
 } as const;

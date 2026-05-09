@@ -101,11 +101,12 @@ describe('drawCards', () => {
 
 describe('PASSIVE_KEYS', () => {
   it('is derived from PASSIVE_CARDS and contains all passive keys', () => {
-    expect(PASSIVE_KEYS).toHaveLength(10);
+    expect(PASSIVE_KEYS).toHaveLength(11);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');
     expect(PASSIVE_KEYS).toContain('shinty_ball');
+    expect(PASSIVE_KEYS).toContain('whetstone');
   });
 });
 

@@ -1043,6 +1043,12 @@ export const ui = {
         c: 'Camanachd Cup energy. Naebody dodges this lot.',
         d: 'Wee baws ivverywhaur — whaur\'s tha goalie?',
       },
+      sgian_dubh: {
+        a: 'White knife oot. Ivvery cut coonts.',
+        b: 'Sgian geal — Gran will hae wirds aboot drawin it.',
+        c: 'Tha bane grip kens its wark. Naethin grazed; a\'thing opened.',
+        d: 'Edge past shairp. Tha Whetstane held its end.',
+      },
       bagpipes: {
         a: 'Tha pipes woke up proper. Rin.',
         b: 'Skirl turnt slaughter — beautiful.',

@@ -1522,6 +1522,12 @@ export const ui = {
         c: 'Camanachd Cup energy. Naebody dodges this lot.',
         d: 'Wee balls everywhere — whaur\'s the goalie?',
       },
+      sgian_dubh: {
+        a: 'White knife oot. Every cut counts.',
+        b: 'Sgian geal — Gran will have words aboot drawin\' it.',
+        c: 'The bone grip kens its work. Nothin\' grazed; everythin\' opened.',
+        d: 'Edge past sharp. The Whetstane held its end.',
+      },
       bagpipes: {
         a: 'The pipes woke up proper. Run.',
         b: 'Skirl turned slaughter — beautiful.',

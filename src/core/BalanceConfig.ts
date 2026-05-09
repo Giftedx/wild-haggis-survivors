@@ -271,6 +271,19 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.shinty_caman.name',
     descriptionKey: 'evolution.shinty_caman.description',
   },
+  {
+    // DESIGN_IDEAS §5 — Sgian Dubh + Whetstone → Sgian Geal. The "black
+    // knife" tucked in the stocking + the sharpening stone in the
+    // pocket = Sgian Geal, the "white knife" — the ceremonial twin of
+    // the dirk-set. Mechanically the evolved form trades base damage
+    // for a guaranteed crit on every hit; the Whetstone has put such
+    // an edge on the blade that nothing it touches can be glanced.
+    baseWeapon: 'sgian_dubh',
+    requiredPassive: 'whetstone',
+    evolvedWeapon: 'sgian_geal',
+    nameKey: 'evolution.sgian_geal.name',
+    descriptionKey: 'evolution.sgian_geal.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */

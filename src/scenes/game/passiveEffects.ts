@@ -58,5 +58,14 @@ export function applyPassiveEffect(player: Player, key: string): void {
       // weapon icon already carries the visible tell).
       player.addProjectileSpeedMul(0.15);
       break;
+    case 'whetstone':
+      // +10% crit chance — sharpens every blade the haggis carries,
+      // not just the Sgian Dubh. Pairs with Sgian Dubh at lv5 to
+      // unlock the Sgian Geal legendary evolution (every hit a crit).
+      // No accessory equip — a whetstone lives in the pocket, not
+      // on the silhouette; the sharper sgian-dubh blade already
+      // carries the visible tell.
+      player.addCritChance(0.10);
+      break;
   }
 }

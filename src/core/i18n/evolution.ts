@@ -39,4 +39,9 @@ export const evolution = {
     description: 'A blur o ash an wee balls in every direction. The hail field at once — Newtonmore against the wurld.',
     flavour: 'The Camanachd Cup, won and lost a thousand times in the haggis\'s mind. Newtonmore claim 35 of them, Kingussie close behind. The moor keeps no scoreboard. The moor remembers anyway.',
   },
+  sgian_geal: {
+    name: 'Sgian Geal',
+    description: 'The white knife — twin to the sgian dubh, but ceremonial. Every cut a guaranteed crit.',
+    flavour: "Sgian geal — the bright knife, drawn at oaths and weddings, never at table. Bone-grip, clear-quartz pommel, an edge the Whetstone has lifted past sharp into something quieter. The black knife was hidden; the white knife is shown. The haggis has reasons for both.",
+  },
 } as const;

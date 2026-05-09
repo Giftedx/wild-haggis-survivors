@@ -198,7 +198,7 @@ export interface SaveData {
 
   /**
    * V2 Track 3 — total victorious runs where the player reached the
-   * `BURNS_EVOLUTION_THRESHOLD` (7) — i.e. all seven evolvable weapons
+   * `BURNS_EVOLUTION_THRESHOLD` (9) — i.e. all nine evolvable weapons
    * reached evolved form in the same run. No retroactive seed possible
    * (pre-v12 runs didn't persist per-run evolution count). Fresh
    * counter starts at 0 for all. (Kept for internal stat tracking;
@@ -353,7 +353,7 @@ export interface RunHistoryContext {
   biomesVisited?: readonly string[];
   /**
    * V2 Track 3 — number of weapons that reached evolved form this run.
-   * Compared against `BURNS_EVOLUTION_THRESHOLD` (7); a victory at
+   * Compared against `BURNS_EVOLUTION_THRESHOLD` (9); a victory at
    * threshold bumps `runsWithAllEvolutionsCompleted` and unlocks the
    * Burns's Wee Beastie. Not persisted per history entry.
    */

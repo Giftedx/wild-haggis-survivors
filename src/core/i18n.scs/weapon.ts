@@ -44,4 +44,9 @@ export const weapon = {
     description: 'A curved ash caman cracks a wee baw oot, bouncin til it staps somethin.',
     flavour: 'Camanachd: tha auld Heiland gemme aulder than gowf, aulder than cricket, near as auld as tha hills. Tha ash bends; tha baw minds.',
   },
+  sgian_dubh: {
+    name: 'Sgian Dubh',
+    description: 'A wee black-haunlit blade tucked in tha hose. Ticht arc, fest haund, aye shairp.',
+    flavour: 'Tha black knife — sgian dubh, kept in tha hose at tha cauf whaur ony guest could see it, plain. Hospitality requirit tha shawin; honour requirit tha keepin. Gran wraps tha haggis\'s banemeal-grip ivvery Hogmanay; tha haggis haes nivver speirt wha made tha blade.',
+  },
 } as const;

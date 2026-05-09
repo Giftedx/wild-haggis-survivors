@@ -39,4 +39,9 @@ export const evolution = {
     description: 'A blur o ash an wee baws in ivvery direction. Tha hail field at yince — Newtonmore agin tha warld.',
     flavour: 'Tha Camanachd Cup, won an lost a thoosan times in tha haggis\'s heid. Newtonmore claim 35 o them, Kingussie close ahint. Tha moor keeps nae scoreboard. Tha moor minds onyway.',
   },
+  sgian_geal: {
+    name: 'Sgian Geal',
+    description: 'Tha white knife — twin tae tha sgian dubh, but ceremonial. Ivvery cut a guaranteed crit.',
+    flavour: 'Sgian geal — tha bricht knife, drawn at oaths an weddins, nivver at tha buird. Bane-grip, clear-quartz pommel, an edge tha Whetstane has liftit past shairp intae somethin quieter. Tha black knife wis hidden; tha white knife is shawn. Tha haggis haes reasons fer baith.',
+  },
 } as const;

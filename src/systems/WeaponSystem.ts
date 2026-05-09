@@ -376,12 +376,17 @@ export class WeaponSystem {
 
   // ── Fire dispatch ──
 
-  /** Compute effective damage with global multiplier + crit roll */
-  private effectiveDamage(w: ActiveWeapon): { damage: number; isCrit: boolean } {
+  /** Compute effective damage with global multiplier + crit roll.
+   *  `forceCrit` skips the RNG roll and treats the hit as a guaranteed
+   *  crit — used by Sgian Geal evolution (the white-knife twin's edge
+   *  is sharp enough that nothing it touches can be glanced). The
+   *  forced-crit branch still consumes no RNG, preserving replay
+   *  determinism across runs that mix sgian_geal with other weapons. */
+  private effectiveDamage(w: ActiveWeapon, forceCrit: boolean = false): { damage: number; isCrit: boolean } {
     const baseDmg = Math.ceil(w.damage * this.damageMultiplier);
     // Crit via seeded RNG — replaying a run with the same seed produces the
     // same crits on the same enemies, which is what makes shared seeds fair.
-    const isCrit = this.scene.getRunRng().bool(this.critChance);
+    const isCrit = forceCrit ? true : this.scene.getRunRng().bool(this.critChance);
     return { damage: isCrit ? Math.ceil(baseDmg * this.critDamageMultiplier) : baseDmg, isCrit };
   }
 
@@ -710,9 +715,9 @@ export class WeaponSystem {
 
   // ── Arc Sweep (Nessie's Tentacle) — damages enemies in a frontal arc ──
 
-  private fireArcSweep(w: ActiveWeapon, px: number, py: number): void {
+  private fireArcSweep(w: ActiveWeapon, px: number, py: number, forceCrit: boolean = false): void {
     const radius = this.effectiveAoe(w);
-    const { damage: dmg, isCrit } = this.effectiveDamage(w);
+    const { damage: dmg, isCrit } = this.effectiveDamage(w, forceCrit);
     const halfArc = Phaser.Math.DegToRad(w.config.arcDegrees / 2);
 
     // If stationary, aim at nearest enemy instead of stale facing angle
@@ -721,17 +726,34 @@ export class WeaponSystem {
     if (nearest) {
       facing = Phaser.Math.Angle.Between(px, py, nearest.x, nearest.y);
     }
+    // Sgian Dubh + Sgian Geal share the cold-steel flash (claymore_spark
+    // texture). The white-knife twin gets a brighter scale + faster
+    // duration to read as the ceremonial cut, not the everyday wrist-
+    // flick. Nessie keeps the murky-green splash; default-default stays
+    // claymore for any future arc_sweep weapon.
+    const isSgian = w.config.key === 'sgian_dubh';
+    const isClaymore = w.config.key === 'claymore';
+    const flashKey = isClaymore || isSgian ? 'fx_weapon_claymore_spark' : 'fx_weapon_nessie_splash';
+    const flashScale = isSgian ? (forceCrit ? 0.65 : 0.5) : 0.85;
+    const flashEndScale = isSgian ? (forceCrit ? 1.05 : 0.85) : 1.35;
+    const flashDuration = isSgian ? 200 : 280;
     this.spawnWeaponFlourish(
       px + Math.cos(facing) * 28,
       py + Math.sin(facing) * 28,
-      w.config.key === 'claymore' ? 'fx_weapon_claymore_spark' : 'fx_weapon_nessie_splash',
-      { scale: 0.85, endScale: 1.35, duration: 280, rotation: facing },
+      flashKey,
+      { scale: flashScale, endScale: flashEndScale, duration: flashDuration, rotation: facing },
     );
 
-    // Visual sweep arc — steel wedge for claymore, murky green for Nessie — pooled
+    // Visual sweep arc — steel wedge for claymore, bright steel for sgian
+    // (white-knife twin glints a touch hotter), murky green for Nessie.
     const gfx = this.acquireVfxGraphics();
-    const isClaymore = w.config.key === 'claymore';
-    gfx.fillStyle(isClaymore ? 0xc8d8e8 : 0x226644, isClaymore ? 0.35 : 0.4);
+    const wedgeColor = isClaymore
+      ? 0xc8d8e8
+      : isSgian
+        ? (forceCrit ? 0xf6f8fa : 0xd8dde4)
+        : 0x226644;
+    const wedgeAlpha = isClaymore ? 0.35 : isSgian ? 0.42 : 0.4;
+    gfx.fillStyle(wedgeColor, wedgeAlpha);
     gfx.slice(
       px, py, radius,
       facing - halfArc,
@@ -820,6 +842,16 @@ export class WeaponSystem {
         // Caman Storm — same rapid bounce dispatch as Jobby Cannon
         // but with the cleaner cork-leather shinty ball texture.
         this.fireRapidBounce(w, px, py, dmg, 4, isCrit, 'shinty_ball');
+        break;
+      case 'sgian_geal':
+        // Sgian Geal — the white-knife twin. Same arc-sweep dispatch
+        // as Sgian Dubh but every hit forces a crit. Discards the
+        // base-form damage we just rolled and re-rolls inside
+        // fireArcSweep with forceCrit=true so the crit-damage math
+        // (Math.ceil(baseDmg * critDamageMultiplier)) is computed
+        // fresh from the current weapon stats — not the {dmg, isCrit}
+        // tuple we destructured above.
+        this.fireArcSweep(w, px, py, true);
         break;
       case 'nessie_unleashed':
         this.fireFullSweep(px, py, dmg, radius * 1.6, w.config.key, isCrit);

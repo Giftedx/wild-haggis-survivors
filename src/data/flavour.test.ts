@@ -31,6 +31,7 @@ const PASSIVE_KEYS: PassiveKey[] = [
   'highland_shield',
   'tartan_sash',
   'shinty_ball',
+  'whetstone',
 ];
 
 function expectFlavour(key: string): void {

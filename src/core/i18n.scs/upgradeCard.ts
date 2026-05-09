@@ -31,6 +31,10 @@ export const upgradeCard = {
     name: 'Shinty Stick',
     description: 'A curved ash caman cracks a wee baw oot — bouncin til it sticks. Pair wi tha Shinty Baw fer legendary form.',
   },
+  add_sgian_dubh: {
+    name: 'Sgian Dubh',
+    description: 'Tha hidden hose-knife. Fest wee arcs that lean on crit. Pair wi tha Whetstane fer legendary form.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -70,6 +74,10 @@ export const upgradeCard = {
   add_shinty_ball: {
     name: 'Shinty Baw',
     description: 'Cork hert, leather skin. Tha wee baw wants tae flee truer (+15% projectile speed). Evolves Shinty Stick.',
+  },
+  add_whetstone: {
+    name: 'Whetstane',
+    description: 'A grit slab fae Gran. Ivvery blade ye cairry feels it (+10% crit chance). Evolves Sgian Dubh.',
   },
   boost_hp: {
     name: 'Thick Hide',

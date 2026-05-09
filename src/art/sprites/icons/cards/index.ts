@@ -10,6 +10,7 @@ import { drawThistleCrown } from './thistleCrown';
 import { drawHighlandShield } from './highlandShield';
 import { drawTartanSash } from './tartanSash';
 import { drawShintyBall } from './shintyBall';
+import { drawWhetstone } from './whetstone';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -40,6 +41,7 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawHighlandShield(scene);
   drawTartanSash(scene);
   drawShintyBall(scene);
+  drawWhetstone(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

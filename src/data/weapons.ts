@@ -30,7 +30,8 @@ export type WeaponKey =
   | 'nessie_tentacle'
   | 'claymore'
   | 'bagpipes'
-  | 'shinty_stick';
+  | 'shinty_stick'
+  | 'sgian_dubh';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -282,6 +283,35 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
       countAt: [3, 5],
       pierce: 0,
       radius: 1,
+    },
+  },
+
+  // DESIGN_IDEAS §5 — Sgian Dubh ("black knife"). Traditional Highland
+  // dress dagger, kept tucked in the stocking. Tightest, fastest,
+  // narrowest arc-sweep weapon in the catalogue: a wrist-flick blade
+  // that lives on volume + crit, not weight. Pairs with the Whetstone
+  // passive (+10% crit) at lv5 to evolve into Sgian Geal — the white
+  // knife, the ceremonial twin, every hit a guaranteed crit.
+  sgian_dubh: {
+    key: 'sgian_dubh',
+    nameKey: 'weapon.sgian_dubh.name',
+    descriptionKey: 'weapon.sgian_dubh.description',
+    behavior: 'arc_sweep',
+    cooldownMs: 700,
+    damage: 4,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 70,
+    arcDegrees: 60,
+    knockback: 15,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.08,
     },
   },
 };

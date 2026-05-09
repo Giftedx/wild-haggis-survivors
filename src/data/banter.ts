@@ -405,8 +405,14 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.shinty_stick.c',
         'ui.banter.weapon_evolve.shinty_stick.d',
       ],
+      sgian_dubh: [
+        'ui.banter.weapon_evolve.sgian_dubh.a',
+        'ui.banter.weapon_evolve.sgian_dubh.b',
+        'ui.banter.weapon_evolve.sgian_dubh.c',
+        'ui.banter.weapon_evolve.sgian_dubh.d',
+      ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
-      // CLAUDE.md "8 of the 9 weapons have a paired passive". Banter pool
+      // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
       // intentionally omits a `bagpipes` tag so the system can never queue
       // a line that promises a non-existent evolution (T212).
     },

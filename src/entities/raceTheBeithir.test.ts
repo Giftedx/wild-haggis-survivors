@@ -59,7 +59,7 @@ describe('raceTheBeithir — pure helper', () => {
     });
 
     it('drains the remaining timer by deltaMs', () => {
-      let s = applyBeithirSting(initialBeithirState()).state;
+      const s = applyBeithirSting(initialBeithirState()).state;
       const r = tickBeithir(s, 1500);
       expect(r.expiredEdge).toBe(false);
       if (r.state.kind === 'stung') {
@@ -78,7 +78,7 @@ describe('raceTheBeithir — pure helper', () => {
     });
 
     it('does not double-fire expiredEdge — second tick after expire is idle no-op', () => {
-      let s = applyBeithirSting(initialBeithirState()).state;
+      const s = applyBeithirSting(initialBeithirState()).state;
       const first = tickBeithir(s, RACE_DURATION_MS + 100);
       expect(first.expiredEdge).toBe(true);
       const second = tickBeithir(first.state, 100);
