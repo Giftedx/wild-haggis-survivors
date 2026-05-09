@@ -29,6 +29,8 @@ import {
   moveModalFocusIndex,
   type ModalFocusEntry,
 } from '../ui/modalFocus';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildSporranDomFocusActions } from './sporranDomFocusActions';
 import { createRNG } from '../utils/rng';
 
 /**
@@ -75,6 +77,15 @@ export class SporranScene extends Phaser.Scene {
   private prevPadForward = false;
   private prevPadConfirm = false;
   private prevPadStart = false;
+  /**
+   * S1 Phase 1.5 — DOM-visible focus mirror. Mirrors CurseScene's T407
+   * a11y layer onto the Sporran draft. Read-only from Phaser's view:
+   * label updates flow scene → DOM via `setActions`; focus updates flow
+   * DOM → scene via `onFocusIndexChange`. Visually hidden 1×1 div with
+   * one button per card + Confirm + Back; screen readers announce the
+   * picked / dropped state and confirm-disabled gate.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor() {
     super({ key: 'Sporran' });
@@ -161,9 +172,15 @@ export class SporranScene extends Phaser.Scene {
     this.applyTileFocus();
     this.refreshConfirmAndCounter();
 
+    // Install AFTER tiles + confirm + back exist and the picked-state
+    // counter is baked, so the layer's first label render reflects the
+    // ground truth of an empty pick set.
+    this.installDomFocusLayer(goBack);
+
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.uninstallKeyboardShortcuts();
       this.uninstallGamepadShortcuts();
+      this.uninstallDomFocusLayer();
     });
 
     stopAmbientWindOnShutdown(this);
@@ -289,6 +306,12 @@ export class SporranScene extends Phaser.Scene {
         entry.bg.setStrokeStyle(picked ? 3 : 2, entry.accentColor, picked ? 1 : 0.55);
       }
     }
+    // Keep the DOM focus mirror in lockstep with the visible Phaser
+    // cursor. Indices < tileEntries.length map to a card button; the
+    // trailing Confirm + Back actions are reached by Tab past the row.
+    if (this.domFocusLayer && this.focusedTileIndex >= 0 && this.focusedTileIndex < this.tileEntries.length) {
+      this.domFocusLayer.setFocusedIndex(this.focusedTileIndex);
+    }
   }
 
   /**
@@ -339,6 +362,58 @@ export class SporranScene extends Phaser.Scene {
         enabled ? COLORS.SCOTTISH_BLUE : 0x2a3658,
       );
     }
+    // Mirror the new picked-state into the DOM layer so screen readers
+    // hear KEEP / DROP labels + the confirm-disabled gate update in
+    // lockstep with the visible UI. Re-render preserves focus index;
+    // see SettingsScene.refreshDomActions for the same pattern.
+    this.refreshDomActions();
+  }
+
+  private refreshDomActions(): void {
+    if (!this.domFocusLayer) return;
+    this.domFocusLayer.setActions(
+      buildSporranDomFocusActions({
+        drawnHand: this.drawnHand,
+        pickedIndices: this.pickedIndices,
+        onTogglePick: (idx) => this.togglePick(idx),
+        onConfirm: () => this.commitPicks(),
+        onBack: () => this.scene.start('Curse'),
+      }),
+    );
+    if (this.focusedTileIndex >= 0 && this.focusedTileIndex < this.tileEntries.length) {
+      this.domFocusLayer.setFocusedIndex(this.focusedTileIndex);
+    }
+  }
+
+  private installDomFocusLayer(goBack: () => void): void {
+    if (typeof document === 'undefined') return;
+    const actions = buildSporranDomFocusActions({
+      drawnHand: this.drawnHand,
+      pickedIndices: this.pickedIndices,
+      onTogglePick: (idx) => this.togglePick(idx),
+      onConfirm: () => this.commitPicks(),
+      onBack: goBack,
+    });
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-sporran-focus-layer',
+      label: t('sporran.title'),
+      description: t('sporran.subtitle'),
+      role: 'group',
+      actions,
+      initialFocusIndex: this.focusedTileIndex >= 0 ? this.focusedTileIndex : 0,
+      onFocusIndexChange: (index) => {
+        // Only mirror DOM focus back into Phaser when the focus lands on
+        // a card tile — Confirm / Back live past the tile range.
+        if (index >= 0 && index < this.tileEntries.length) {
+          this.focusedTileIndex = index;
+        }
+      },
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 
   private commitPicks(): void {
