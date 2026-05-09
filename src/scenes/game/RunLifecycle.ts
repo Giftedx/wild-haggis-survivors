@@ -380,6 +380,27 @@ export class RunLifecycle {
       });
       this.hooks.getBanter()?.request('death_reflection', { tag: deathCause.tag });
 
+      // Burns defeat coda — closes a death the way the address coda closes
+      // a victory: with a Burns couplet ("Ae fond kiss…"; "wan moon setting").
+      // Authored in burns_citation.defeat_lament; previously deferred because
+      // death_reflection (priority 75) wins same-tick arbitration over
+      // burns_citation (43). `forceLine` bypasses arbitration. Scheduled
+      // +600 ms past the reflection toast so the cause-aware line lands
+      // first and the Burns couplet follows as quiet final-word, comfortably
+      // inside the 1100 ms fade window. scheduleRealTime because RUN_END
+      // set timeScale 0 — delayedCall would never fire.
+      timeManager.scheduleRealTime(600, () => {
+        this.hooks.getBanter()?.forcePoolLine(
+          [
+            'ui.banter.burns_citation.defeat_lament.a',
+            'ui.banter.burns_citation.defeat_lament.b',
+          ],
+          'hearth',
+          'burns_citation',
+          'defeat_lament',
+        );
+      });
+
       const px = player.x;
       const py = player.y;
       player.setActive(false);

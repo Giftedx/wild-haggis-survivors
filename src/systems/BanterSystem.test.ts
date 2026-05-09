@@ -457,6 +457,49 @@ describe('BanterSystem', () => {
     });
   });
 
+  describe('forcePoolLine — ceremonial pool pick', () => {
+    const lamentKeys = [
+      'ui.banter.burns_citation.defeat_lament.a',
+      'ui.banter.burns_citation.defeat_lament.b',
+    ];
+
+    it('picks via rng + recent ring, alternates across calls', () => {
+      const { sys, lines } = makeSystem(freq, clock, [0, 0]);
+      sys.forcePoolLine(lamentKeys, 'hearth', 'burns_citation');
+      const first = lines[0].message;
+      // Recent ring now has the first key; next call picks the other.
+      sys.forcePoolLine(lamentKeys, 'hearth', 'burns_citation');
+      const second = lines[1].message;
+      expect(first).not.toBe(second);
+    });
+
+    it('returns false when banter is off', () => {
+      freq.value = 'off';
+      const { sys, lines } = makeSystem(freq, clock);
+      const ok = sys.forcePoolLine(lamentKeys, 'hearth', 'burns_citation');
+      expect(ok).toBe(false);
+      expect(lines).toHaveLength(0);
+    });
+
+    it('returns false on empty key list', () => {
+      const { sys, lines } = makeSystem(freq, clock);
+      const ok = sys.forcePoolLine([], 'hearth', 'burns_citation');
+      expect(ok).toBe(false);
+      expect(lines).toHaveLength(0);
+    });
+
+    it('falls back to picking from blocked candidates when ring rejects all', () => {
+      const { sys, lines } = makeSystem(freq, clock, [0, 0, 0]);
+      // Drive the recent ring to contain BOTH lament keys.
+      sys.forceLine(lamentKeys[0], 'hearth', 'burns_citation');
+      sys.forceLine(lamentKeys[1], 'hearth', 'burns_citation');
+      // forcePoolLine still fires — fallback path picks from the original keys.
+      const ok = sys.forcePoolLine(lamentKeys, 'hearth', 'burns_citation');
+      expect(ok).toBe(true);
+      expect(lines).toHaveLength(3);
+    });
+  });
+
   describe('translation fallback', () => {
     it('stays silent if the pool key has no translation', () => {
       // Construct a system with a translate that always returns the key —

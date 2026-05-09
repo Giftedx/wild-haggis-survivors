@@ -204,6 +204,26 @@ export class BanterSystem {
     return true;
   }
 
+  /**
+   * Ceremonial pool pick — like `forceLine` but picks from a list of i18n
+   * keys via the existing RNG and no-repeat ring. Use when the ceremonial
+   * moment has multiple authored lines and any one of them is right
+   * (e.g. defeat_lament — two Burns couplets, alternated across deaths
+   * by the engine's recent-ring rather than the call site).
+   *
+   * Returns false if banter is `off`, `keys` is empty, or every candidate
+   * line is missing a translation.
+   */
+  forcePoolLine(keys: readonly string[], tone: BanterTone, context: BanterContext, tag?: string): boolean {
+    if (this.getFrequency() === 'off') return false;
+    if (keys.length === 0) return false;
+    const candidates = keys.filter((k) => !this.recent.includes(k));
+    const source = candidates.length > 0 ? candidates : keys;
+    const idx = Math.floor(this.rng() * source.length);
+    const key = source[Math.min(idx, source.length - 1)];
+    return this.forceLine(key, tone, context, tag);
+  }
+
   /** Forget all history — call on new run so lines are fresh. */
   reset(): void {
     this.lastFireMs = -Infinity;

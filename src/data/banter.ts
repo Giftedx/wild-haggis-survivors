@@ -1462,13 +1462,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
     //   loch_moment     → ✅ MoorMomentScheduler (loch biome)
     //   highland_moment → ✅ MoorMomentScheduler (heather / pine biome)
     //   victory_open    → ✅ SpawnSystem.spawnBoss (taxman warn + 9 s)
-    //   defeat_lament   → ⏸ DEFERRED. death_reflection (priority 75) wins
-    //                       same-tick arbitration over burns_citation (43)
-    //                       on player death; GameOverScene has no banter
-    //                       sink wired today. Reserved for the post-mortem
-    //                       pane wire-up (paired with Gran's defeat sub-
-    //                       pool, also currently deferred). Two couplets
-    //                       authored ("Ae fond kiss"; "wan moon setting").
+    //   defeat_lament   → ✅ RunLifecycle.handlePlayerDeath via forcePoolLine
+    //                       (+600 ms past death_reflection toast; the
+    //                       arbitration-bypass primitive that closed the
+    //                       address coda also closes this. Two couplets
+    //                       alternated by the no-repeat ring — "Ae fond
+    //                       kiss"; "wan moon setting").
     //   charge          → ✅ Player.tickDriftMastery (burst consume edge)
     //   nae_haste       → ✅ GameScene curse_start delayed echo (+9 s)
     //   lineage_moment  → ✅ moorMoments.ts (ancestral echo / variant unlock)
