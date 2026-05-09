@@ -30,7 +30,7 @@ This is a 60-FPS browser game on a single canvas. Every frame is 16.67 ms; every
 
 **Fail:** `new Vector2()` inside `update()`. `array.filter().map().reduce()` chains allocating intermediate arrays per frame. Re-reading `RunModifiers` from the bag every tick when the value can't change mid-run. Adding a feature ≥2 KB gzip without justification.
 
-**Verify:** for hot-path code, eyeball allocations (`new`, object literals, array methods that return new arrays). For bundle adds, run `npm run build` and check the chunk sizes in [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) and the dist output. **Current budget reference (2026-05-10):** `index` 211 KB gzip, `sprite-art` 191 KB gzip, `vendor-phaser` 374 KB gzip (pinned), `i18n.scs` 64 KB gzip (lazy). New systems should sit in the < 5 KB gzip / system band.
+**Verify:** for hot-path code, eyeball allocations (`new`, object literals, array methods that return new arrays). Frame budget is 16.67 ms at 60 FPS — hot paths (`Player.update` / `Enemy.update` / `WeaponSystem.fire*`) are measured in fractions of a millisecond × N entities, so an inner-loop allocation compounds fast. Don't guess — if you suspect a regression, profile in DevTools Performance with a live battle. For bundle adds, run `npm run build` and check the chunk sizes in [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) and the dist output. **Current budget reference (2026-05-10):** `index` 211 KB gzip, `sprite-art` 191 KB gzip, `vendor-phaser` 374 KB gzip (pinned), `i18n.scs` 64 KB gzip (lazy). New systems should sit in the < 5 KB gzip / system band.
 
 ### 3. Secure
 
@@ -64,7 +64,60 @@ Every line earns its place. Every file earns its existence. Every commit is a si
 
 ---
 
-## The five chains
+## Engineering practices
+
+These aren't surface-keyed (so they're not chains) and aren't constants (so they're not invariants). They're the cross-cutting disciplines that make the filters self-enforcing.
+
+### Tests are how the bar self-enforces
+
+Pure helpers ship with unit tests at `<name>.test.ts` next to the source. State machines test invariants (e.g. `cycleStance` round-trip, `judgeGrudge` precedence). Save migration steps have roundtrip tests. New mechanics include ≥1 test that would have failed before the implementation existed. No `.skip`, `.todo`, `.only`, `xit`, or `it.only` left in committed code. **Vitest passes ≠ tsc passes** — `npm run build` is the type-correctness gate; vitest's esbuild is permissive on TS shape errors. Always run both before declaring green.
+
+### Dependency restraint
+
+Repo runs lean: Phaser, Vite, Vitest, Playwright, ESLint, TypeScript. Adding an npm package needs three checks documented in the PR or spec body:
+
+1. **Bundle delta** — gzip cost vs. status quo. > 5 KB gzip needs strong justification.
+2. **Maintenance signal** — last commit, open advisories (`npm audit`), license compatibility (no copyleft).
+3. **Alternative considered** — could a 50-line helper or an already-loaded dep do the job?
+
+New deps with player-facing impact require an ADR. The lean dep tree is part of the bar — protect it.
+
+### No bypassing safety nets
+
+- No `git commit --no-verify` (skips hooks).
+- No `as any` / `as unknown as X` to silence type errors. Cast at the boundary; narrow inside. If you must, add a paired `// SAFETY:` comment naming the invariant that holds.
+- No `// @ts-ignore` / `// @ts-expect-error` without paired comment + follow-up task ID.
+- No `it.skip` / `xit` / `it.only` shipped to main.
+- No `console.log` debugging artifacts in committed code (use a structured logger or remove).
+- No swallowing exceptions — `try { ... } catch {}` without action is a bug. Log, recover with a known-good default, or rethrow.
+
+Failures are signal. Debug the root cause; don't suppress it.
+
+### Single source of truth for constants
+
+Gameplay tunables live in [`src/config.ts`](../src/config.ts) or [`src/data/*.ts`](../src/data/). UI tokens live in [`DESIGN.md`](../DESIGN.md) frontmatter (per [`DOC_CONVENTIONS.md`](DOC_CONVENTIONS.md)). Magic numbers inline in scenes are bug magnets — if a value appears in two files, one of them is wrong. The one exception: tightly-scoped helper-internal constants (e.g. `BURST_MS = 320` inside `driftMastery.ts`) that are never read from outside the helper.
+
+When a magic number escapes the helper into a sibling system, it gets named and moved to the right data file in the same change. Don't ship the second copy.
+
+### Verify before report
+
+When dispatching agents, when citing memory, when paraphrasing prior conversation: cross-check against current code state before treating the claim as truth. Memory snapshots are point-in-time, not authoritative. Agent reports describe intent, not necessarily what was done. A remembered fact gets verified before it becomes a recommendation; an agent's diff gets read before it gets reported as shipped.
+
+This applies inside this doc too — when citing a file path or line number, confirm it resolves before publishing.
+
+### Documentation is part of done
+
+- New mechanic = entry in [`CLAUDE.md`](../CLAUDE.md) `### Key Mechanics`.
+- Architectural change = ADR under [`docs/adr/`](adr/).
+- Spec drift on a charter'd item = spec truth-up before close.
+- New canon doc = entry in [`docs/INDEX.md`](INDEX.md) + [`docs/DOC_CONVENTIONS.md`](DOC_CONVENTIONS.md) root-canon list.
+- Memory bump on ship for non-trivial work (per `~/.claude/CLAUDE.md` reflect rule).
+
+A change that exists only in the commit message will rot. Externalize to docs that future-self (or future-contributor) can find by structure.
+
+---
+
+## The six chains
 
 Cross-cutting changes ship the whole chain or none of it. Partial chains rot fast.
 
@@ -124,6 +177,17 @@ Adding a new mechanic / system:
 8. CLAUDE.md entry under `### Key Mechanics` (replay status declared, sister-systems cited, references to research).
 9. Memory bump on ship.
 10. Spec truth-up if the work was charter'd.
+
+### Accessibility chain
+
+Touching anything player-facing visual, audio, or input. The repo has earned scaffolding here ([`docs/ACCESSIBILITY_RESEARCH.md`](research/ACCESSIBILITY_RESEARCH.md), the `A1_*` audit docs, a Settings layer with `reducedMotion` / `disableHazards` / `reduceParticles` / `disableSeasonalEvents` opt-outs); new work has to compose with it, not undo it.
+
+1. **Reduce-motion respected.** Honor the existing settings. New screen-shake / parallax / continuous animation routes through the relevant opt-out — don't add a fourth toggle without an ADR.
+2. **Photosensitive-safe.** No rapid full-screen flashes at > 3 Hz. New flash / burst / strobe effects clear [`docs/A1_PEAT_AUDIT.md`](A1_PEAT_AUDIT.md) (the canonical photosensitivity audit) before ship. When in doubt, gate behind `reducedMotion`.
+3. **Colorblind-distinct.** Signal via shape + intensity + position, never color alone. See [`docs/A1_NON_COLOUR_ALONE.md`](A1_NON_COLOUR_ALONE.md). Elite glyph + boss diamond + hazard shape are the canonical patterns.
+4. **Captions where audio carries meaning.** Tracked in [`docs/A1_CAPTIONS_INDEX.md`](A1_CAPTIONS_INDEX.md). Boss warnings, intro stings, narrative beats all need text equivalents.
+5. **Input parity.** Any new mouse / touch interaction also works on keyboard + gamepad. CurseScene/SporranScene tile pickers are the model.
+6. **Assist Mode considered.** See [`docs/A1_ASSIST_MODE_CALLSITES.md`](A1_ASSIST_MODE_CALLSITES.md) — the UI is deliberately hidden until balance + replay-determinism passes; new damage-mod / speed-mod / invincibility toggles must respect that gate (don't ship them visible).
 
 ---
 

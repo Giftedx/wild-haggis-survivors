@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Non-negotiable quality bar
 
-**Every change clears the five filters in [`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md): stand the test of time, ultra efficient, secure, technically impressive, minimal slop.** That doc names the five cross-cutting chains (save / i18n / damage / RNG / new-mechanic), the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity), and the pre-ship 5-question gate. Trade-offs declared via the template — not buried.
+**Every change clears the five filters in [`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md): stand the test of time, ultra efficient, secure, technically impressive, minimal slop.** That doc names the six cross-cutting chains (save / i18n / damage / RNG / new-mechanic / accessibility), the engineering practices (tests / deps / no-safety-net-bypass / SSOT / verify-before-report / docs-are-part-of-done), the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity), and the pre-ship 5-question gate. Trade-offs declared via the template — not buried.
 
 This is the project standard. Read it before non-trivial work.
 

@@ -4,7 +4,7 @@ This repo is **Wild Haggis Survivors**, a Phaser 4 + TypeScript browser game bun
 
 ## Non-negotiable: read this first
 
-**[`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md) is the project standard.** Every change — code, content, copy, doc, commit — clears its five filters (stand the test of time / ultra efficient / secure / technically impressive / minimal slop), walks the relevant cross-cutting chains (save / i18n / damage / RNG / new-mechanic), and respects the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity). Trade-offs declared, not hidden.
+**[`docs/QUALITY_BAR.md`](docs/QUALITY_BAR.md) is the project standard.** Every change — code, content, copy, doc, commit — clears its five filters (stand the test of time / ultra efficient / secure / technically impressive / minimal slop), follows its engineering practices (tests / dep restraint / no-safety-net-bypass / single source of truth for constants / verify-before-report / docs-are-part-of-done), walks the relevant cross-cutting chains (save / i18n / damage / RNG / new-mechanic / accessibility), and respects the sacred invariants (replay determinism, LOC budgets, i18n parity, schema migration, hazard immunity). Trade-offs declared, not hidden.
 
 If the bar conflicts with a task you've been given, surface the conflict — don't paper over it.
 
