@@ -57,6 +57,7 @@ describe('every non-classic variant is fully wired', () => {
         expect([
           'none', 'racing_band', 'iron_belly', 'forager', 'surefoot',
           'pipe_breath', 'laird', 'wee_ghostie', 'cailleach',
+          'glaswegian', 'doric_quinie', 'peerie_shetlander',
         ]).toContain(def.appearance.accentStyle);
       });
 

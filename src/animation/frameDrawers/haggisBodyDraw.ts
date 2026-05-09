@@ -511,6 +511,64 @@ function drawHaggisAccent(
       g.fillCircle(cx + 6, cy - 10, 1.2);
       break;
     }
+    case 'glaswegian': {
+      // Wee traffic cone on the heid — Duke of Wellington statue
+      // tribute. Cream stripe + dark base anchor it; tram-orange
+      // body uses the variant's signature `accent` to keep the
+      // motif palette-driven. Mirrors the tier-2 mantle's
+      // shoulder-cone at sprite scale.
+      g.fillStyle(0x2a1810, 1);
+      g.fillRect(cx - 3, cy - 11, 6, 1.2);
+      g.fillStyle(palette.accent, 1);
+      g.fillTriangle(cx, cy - 17, cx - 3, cy - 11, cx + 3, cy - 11);
+      g.fillStyle(0xfff1d6, 0.95);
+      g.fillRect(cx - 2.4, cy - 14, 4.8, 1);
+      // 1-pixel highlight up the cone's left edge.
+      g.fillStyle(0xffffff, 0.4);
+      g.fillRect(cx - 1.4, cy - 16, 0.6, 4);
+      break;
+    }
+    case 'doric_quinie': {
+      // Fisherman's bonnet — a knit cap pulled low with a tuft
+      // pompom on top. Silver-blue band runs the brim; the
+      // pompom uses a paler accent so it reads at sprite scale.
+      // Aberdonian quine on the harbour wall.
+      g.fillStyle(palette.outline, 1);
+      g.fillEllipse(cx, cy - 11, 14, 4);
+      g.fillStyle(0x4a5868, 1);
+      g.fillEllipse(cx, cy - 12, 13, 4);
+      // Silver-blue band along the brim.
+      g.fillStyle(palette.accent, 0.95);
+      g.fillRect(cx - 6, cy - 11, 12, 1);
+      // Pompom tuft on top.
+      g.fillStyle(0x6a7888, 1);
+      g.fillCircle(cx, cy - 14, 1.6);
+      g.fillStyle(0xc8d4e4, 0.9);
+      g.fillCircle(cx - 0.4, cy - 14.4, 0.7);
+      break;
+    }
+    case 'peerie_shetlander': {
+      // Kelp wisps trailing from the collar — two strands of
+      // bladderwrack draped over the shoulders, fronds tapering
+      // toward the body. Norn-shore cue. Bladder-pip dots stand
+      // in for the seaweed's air sacs.
+      g.fillStyle(0x2a4a32, 1);
+      // Right strand — longer, drooping outward.
+      g.fillRect(cx + 7, cy - 4, 1.2, 6);
+      g.fillRect(cx + 7.6, cy + 2, 1.2, 4);
+      g.fillStyle(0x3a6a44, 0.95);
+      g.fillCircle(cx + 7.6, cy + 6.2, 1);
+      g.fillCircle(cx + 8.4, cy + 0, 0.7);
+      // Left strand — shorter.
+      g.fillStyle(0x2a4a32, 1);
+      g.fillRect(cx - 8.2, cy - 3, 1.2, 5);
+      g.fillStyle(0x3a6a44, 0.95);
+      g.fillCircle(cx - 7.6, cy + 2.2, 0.9);
+      // Sea-glass bead on the right — pale accent matches palette.
+      g.fillStyle(palette.accent, 0.85);
+      g.fillCircle(cx + 8, cy - 3, 0.7);
+      break;
+    }
     case 'none':
     default:
       break;

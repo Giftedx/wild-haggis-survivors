@@ -46,9 +46,12 @@ export function drawMantleTier(
   const isMetal = accentStyle === 'laird' || accentStyle === 'iron_belly';
   const isFlame = accentStyle === 'pipe_breath';
   const isStorm = accentStyle === 'surefoot';
-  // These five variants share `accentStyle: 'none'` (the union doesn't
-  // carry per-variant tags for them) so we discriminate on variant.key
-  // for their tier-2 motifs instead.
+  // The remaining variant motifs are keyed by `variant.key` rather
+  // than accentStyle: anticlockwise + burns_wee_beastie ship with
+  // accentStyle 'none' (silhouette/scale carry the body cue), and
+  // glaswegian/doric_quinie/peerie_shetlander now have body accent
+  // styles of their own — but the cape's tier-2 motif is independent
+  // of the body and scoped per variant.key for clarity.
   const isGlaswegian = variant.key === 'glaswegian';
   const isAnticlockwise = variant.key === 'anticlockwise';
   const isDoricQuinie = variant.key === 'doric_quinie';

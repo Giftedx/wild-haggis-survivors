@@ -74,7 +74,19 @@ export interface HaggisPalette {
   accent: number;
 }
 
-export type HaggisAccentStyle = 'none' | 'racing_band' | 'iron_belly' | 'forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'cailleach';
+export type HaggisAccentStyle =
+  | 'none'
+  | 'racing_band'
+  | 'iron_belly'
+  | 'forager'
+  | 'surefoot'
+  | 'pipe_breath'
+  | 'laird'
+  | 'wee_ghostie'
+  | 'cailleach'
+  | 'glaswegian'
+  | 'doric_quinie'
+  | 'peerie_shetlander';
 
 export interface VariantAppearance {
   palette: HaggisPalette;
@@ -315,7 +327,7 @@ export const VARIANTS: VariantDef[] = [
     modifiers: { damagePct: 0.18, moveSpeedPct: 0.05, maxHpFlat: -20 },
     unlock: { type: 'best_kills', required: 2000 },
     appearance: {
-      accentStyle: 'none',
+      accentStyle: 'glaswegian',
       palette: {
         outline: 0x0a0c12,
         bodyDark: 0x2a3540,
@@ -385,8 +397,9 @@ export const VARIANTS: VariantDef[] = [
     // Stats per spec §2 with `startWithPassives` absorbed into
     // xpMultiplierPct (Arbroath Smokie starter flavour: +5% XP from
     // pickups). pickupRadiusFlat = +10 approximates spec's "+15%".
-    // Accent art deferred — ships with `accentStyle: 'none'` and
-    // inline palette (granite body, silver-blue accent). Unlock:
+    // Accent art: a fisherman's bonnet tuft with a silver-blue
+    // band — Aberdonian quine on the harbour wall. Mirrors the
+    // tier-2 mantle's barley-ear sprig at body scale. Unlock:
     // first run completed without ever overlapping a healing circle
     // ("survive on what you caught yesterday").
     key: 'doric_quinie',
@@ -402,7 +415,7 @@ export const VARIANTS: VariantDef[] = [
     },
     unlock: { type: 'runs_without_healing', required: 1 },
     appearance: {
-      accentStyle: 'none',
+      accentStyle: 'doric_quinie',
       palette: {
         outline: 0x2a2418,
         bodyDark: 0x4a4030,
@@ -421,8 +434,9 @@ export const VARIANTS: VariantDef[] = [
     // for a future winter-biome initiative). Up Helly Aa passive is
     // similarly descoped to pure voice colour. Unlock: first run
     // where visited biomes ⊆ {loch, pine} ("the sea way home" — no
-    // moor, no bog). Ships with `accentStyle: 'none'`; dedicated
-    // kelp-collar silhouette cue is a follow-up.
+    // moor, no bog). Accent art: kelp wisps trailing from the
+    // collar, a Norn-shore cue at body scale. Mirrors the tier-2
+    // mantle's wave-glints.
     key: 'peerie_shetlander',
     nameKey: 'variant.peerie_shetlander.name',
     flavorKey: 'variant.peerie_shetlander.flavor',
@@ -435,7 +449,7 @@ export const VARIANTS: VariantDef[] = [
     },
     unlock: { type: 'runs_in_coastal_only', required: 1 },
     appearance: {
-      accentStyle: 'none',
+      accentStyle: 'peerie_shetlander',
       palette: {
         outline: 0x121e26,
         bodyDark: 0x1e3545,
