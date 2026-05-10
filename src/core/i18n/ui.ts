@@ -642,6 +642,19 @@ export const ui = {
     hint: 'Settings → Accessibility → Reduce flashing',
     dismiss: 'I understand',
   },
+  /**
+   * 2026-05-10 — first-launch cultural-content notice. Sister to
+   * `photosensitivity` above; same depth, same dismissal pattern. Copy
+   * leans warm + diegetic — this is a respect-signal to dialect speakers
+   * that the project knows its drafted Scots/Doric/Shetlandic/Gaelic
+   * voices need native review and is actively inviting feedback.
+   */
+  culturalContent: {
+    title: 'Aboot the voices ye\'ll hear',
+    body: 'The wee haggis speaks Scots, Doric, Shetlandic, and Gaelic in different places — drafted with care by one developer, but no\' yet checked by native speakers in every register. If ye hear something that disnae quite ring true, that\'s on me. Yer feedback is welcome at the project page.',
+    hint: 'Native-speaker review is open — see docs/C2_DIALECT_REVIEW.md',
+    dismiss: 'Aye, understood',
+  },
   /** W2 Moor Road — the between-act modal. */
   actIntermission: {
     title_act_1: 'Awright, which way then?',

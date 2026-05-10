@@ -116,6 +116,7 @@ describe('Settings / Comfort panel smoke', () => {
       localeKey: 'scs',
       reduceFlashing: true,
       photosensitivityWarningSeen: true,
+      culturalContentSplashSeen: true,
       assistMode: true,
       assistModeGameSpeed: 0.75,
       assistModeExtendedIFrames: true,

@@ -74,10 +74,10 @@ describe('accessibility settings', () => {
     expect(loaded.captionsEnabled).toBe(false);
   });
 
-  it('reduceFlashing + photosensitivityWarningSeen default to false', () => {
+  it('reduceFlashing defaults to true (PEAT-pending safety default; 2026-05-10) and photosensitivityWarningSeen defaults to false', () => {
     const s = new SettingsManager({ storage: new MemoryStorage(), key: 's' });
     const d = s.load();
-    expect(d.reduceFlashing).toBe(false);
+    expect(d.reduceFlashing).toBe(true);
     expect(d.photosensitivityWarningSeen).toBe(false);
   });
 
@@ -113,11 +113,11 @@ describe('accessibility settings', () => {
     }));
     const s = new SettingsManager({ storage: mem, key: 's' });
     const loaded = s.load();
-    expect(loaded.reduceFlashing).toBe(false);
+    expect(loaded.reduceFlashing).toBe(true); // PEAT-pending safety default
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
 
-  it('legacy save without reduceFlashing / warning-seen fields loads with defaults', () => {
+  it('legacy save without reduceFlashing / warning-seen fields loads with defaults (reduceFlashing safety-on)', () => {
     const mem = new MemoryStorage();
     mem.setItem('s', JSON.stringify({
       settingsVersion: 1,
@@ -135,7 +135,8 @@ describe('accessibility settings', () => {
     }));
     const s = new SettingsManager({ storage: mem, key: 's' });
     const loaded = s.load();
-    expect(loaded.reduceFlashing).toBe(false);
+    // Pre-A1-M5 saves missing the field opt into the safer default.
+    expect(loaded.reduceFlashing).toBe(true);
     expect(loaded.photosensitivityWarningSeen).toBe(false);
   });
 

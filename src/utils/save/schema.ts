@@ -19,13 +19,18 @@ export const COASTAL_BIOMES: ReadonlySet<string> = new Set(['loch', 'pine']);
 
 /**
  * V2 Track 3 — evolutions-threshold for the Burns's Wee Beastie unlock.
- * Ten of the eleven weapons have an evolved form (bagpipes is the
- * utility-only one per CLAUDE.md); ten = the max achievable in one
- * run via the legendary-build path (variant/relic/curse can lift the
- * card-pool's 6-weapon offer cap). Lifted 9 → 10 alongside the Stag
- * Antler / Monarch's Charge ship (DESIGN_IDEAS §5).
+ *
+ * Re-exported from `BalanceConfig.ts`, where it's derived from
+ * `EVOLUTION_RECIPES.length`. Adding a recipe automatically lifts the
+ * threshold; the achievement copy interpolates `{count}` from this constant
+ * (see `descriptionVars` on `ach_burns_beastie_unlock` and the `{count}`
+ * placeholders in `i18n/achievement.ts` + `i18n.scs/achievement.ts`).
+ *
+ * Lives in `BalanceConfig` to avoid the circular import that would result
+ * from `BalanceConfig` (achievement defs) reading a derived constant from
+ * `save/schema.ts`. Re-exported here so existing call-sites keep working.
  */
-export const BURNS_EVOLUTION_THRESHOLD = 10;
+export { BURNS_EVOLUTION_THRESHOLD } from '../../core/BalanceConfig';
 
 /** Maximum number of run history entries kept (FIFO — oldest dropped on overflow). */
 export const MAX_RUN_HISTORY = 20;

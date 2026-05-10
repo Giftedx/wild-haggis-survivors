@@ -29,6 +29,11 @@ import {
   shouldShowPhotosensitivityWarning,
 } from '../ui/photosensitivityWarning';
 import { showPhotosensitivityWarningSplash } from '../ui/PhotosensitivityWarningSplash';
+import {
+  markCulturalContentSplashSeen,
+  shouldShowCulturalContentSplash,
+} from '../ui/culturalContent';
+import { showCulturalContentSplash } from '../ui/CulturalContentSplash';
 import { ensureLazyToolScene } from '../tools/lazyToolScenes';
 import { bakeHud } from '../art/sprites/hud';
 import { bakeFx } from '../art/sprites/fx';
@@ -290,24 +295,37 @@ export class BootScene extends Phaser.Scene {
   }
 
   /**
-   * A1 M5 — first-launch photosensitivity warning gate. Called once the
-   * boot dawn painting has faded. On a fresh save the splash shows; the
-   * "I understand" button persists the flag and then transitions to the
-   * MainMenu. Returning players skip straight to the MainMenu. The flag
-   * is strictly sticky — there is no way to re-trigger the splash short
-   * of wiping the settings storage entirely.
+   * A1 M5 (+ 2026-05-10 cultural splash) — first-launch acknowledgement
+   * chain. Called once the boot dawn painting has faded. On a fresh save
+   * the photosensitivity splash shows first (safety-critical), then on
+   * dismissal the cultural-content notice shows (respect-signal for the
+   * dialect content), then MainMenu. Returning players skip whichever
+   * splash they've already dismissed. Both flags are sticky — there is
+   * no way to re-trigger short of wiping settings storage.
    */
   private maybeShowPhotosensitivityWarningThenStart(): void {
     const settings = getSettingsManager();
     const goMenu = () => this.scene.start('MainMenu');
+    const maybeCulturalThenMenu = () => {
+      if (!shouldShowCulturalContentSplash(settings.load())) {
+        goMenu();
+        return;
+      }
+      showCulturalContentSplash(this, {
+        onDismiss: () => {
+          settings.update((cur) => markCulturalContentSplashSeen(cur));
+          goMenu();
+        },
+      });
+    };
     if (!shouldShowPhotosensitivityWarning(settings.load())) {
-      goMenu();
+      maybeCulturalThenMenu();
       return;
     }
     showPhotosensitivityWarningSplash(this, {
       onDismiss: () => {
         settings.update((cur) => markPhotosensitivityWarningSeen(cur));
-        goMenu();
+        maybeCulturalThenMenu();
       },
     });
   }

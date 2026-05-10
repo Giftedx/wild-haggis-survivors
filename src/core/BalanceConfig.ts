@@ -303,6 +303,16 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
 /** Max weapon level before an evolution can be offered from a chest. */
 export const EVOLUTION_MIN_WEAPON_LEVEL = 5;
 
+/**
+ * Burns's Wee Beastie unlock threshold — derived from the number of evolution
+ * recipes so adding a recipe automatically lifts the gate. Achievement copy
+ * interpolates `{count}` from this value via `descriptionVars` below; see
+ * `i18n/achievement.ts` + `i18n.scs/achievement.ts` for the placeholder strings.
+ *
+ * Re-exported from `src/utils/save/schema.ts` for existing call-sites.
+ */
+export const BURNS_EVOLUTION_THRESHOLD = EVOLUTION_RECIPES.length;
+
 /** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
 export type AchievementId =
   | 'ach_kills_1000'
@@ -339,6 +349,7 @@ export const ACHIEVEMENT_DEFS: Record<
   {
     titleKey: string;
     descriptionKey: string;
+    descriptionVars?: Readonly<Record<string, string | number>>;
   }
 > = {
   ach_kills_1000: {
@@ -452,6 +463,7 @@ export const ACHIEVEMENT_DEFS: Record<
   ach_burns_beastie_unlock: {
     titleKey: 'achievement.ach_burns_beastie_unlock.title',
     descriptionKey: 'achievement.ach_burns_beastie_unlock.description',
+    descriptionVars: { count: BURNS_EVOLUTION_THRESHOLD },
   },
 };
 

@@ -107,6 +107,14 @@ This is a solo-dev project. The conventions, voice, and tone matter as much as t
 
 ---
 
+## Accessibility & content notes
+
+**Photosensitivity:** the live build's VFX has not yet been independently audited with PEAT (Photosensitive Epilepsy Analysis Tool). As a precaution the **`reduceFlashing` setting is enabled by default** (≤ 0.4 alpha cap on screen flashes + 200 ms duration floor). Players can disable it in Settings → Accessibility once the audit lands. PEAT pass is on the open-questions list (`docs/OPEN_QUESTIONS.md` Q6).
+
+**Scottish dialect content:** the project ships drafted Scots, Doric, Shetlandic, and Gaelic content drawn from research-backed sources (`docs/research/SCOTTISH_RESEARCH.md` + `SCOTTISH_RESEARCH_DEEP.md`). **Native-speaker review is in progress, not yet complete.** Voices may be revised as feedback comes in. Reviewer briefs at `docs/C2_DIALECT_REVIEW.md` + `docs/C2_BURNS_PROVENANCE.md`.
+
+---
+
 ## License & deploy
 
 Live build at [wild-haggis-survivors.pages.dev](https://wild-haggis-survivors.pages.dev) (Cloudflare Pages, manual `wrangler` deploys — no GitHub remote integration).

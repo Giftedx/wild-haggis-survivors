@@ -331,7 +331,7 @@ export class DeedsScene extends Phaser.Scene {
     const desc = resolveDeedDescription({
       status: deed.status,
       isBinary: deed.isBinary,
-      fullDescription: t(def.descriptionKey),
+      fullDescription: t(def.descriptionKey, def.descriptionVars),
       mysteryHint: t('ui.deeds.locked_mystery'),
     });
     const descColor = palette.descColor;

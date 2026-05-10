@@ -24,6 +24,7 @@ const makeDefaults = (): ISettingsData => ({
   localeKey: 'en',
   reduceFlashing: false,
   photosensitivityWarningSeen: false,
+  culturalContentSplashSeen: false,
   assistMode: false,
   assistModeGameSpeed: 1,
   assistModeExtendedIFrames: false,

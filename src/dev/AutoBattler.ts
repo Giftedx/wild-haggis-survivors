@@ -75,10 +75,14 @@ export function reportAutoBattleRunEnd(payload: {
 }): void {
   if (!isAutoBattleEnabled()) return;
   console.info('[AutoBattler] Run summary');
+  // Dev-only diagnostic dump for the auto-battle benchmark CLI; not reachable
+  // in production builds (gated behind isAutoBattleEnabled() URL/env flag).
+  // eslint-disable-next-line no-console
   console.table([
     { key: 'outcome', value: payload.outcome },
     { key: 'gameTimeSec', value: payload.gameTimeSec },
   ]);
   const rows = Object.entries(payload.weaponDamage).map(([weapon, damage]) => ({ weapon, damage }));
+  // eslint-disable-next-line no-console -- see comment above; dev-only
   if (rows.length > 0) console.table(rows);
 }

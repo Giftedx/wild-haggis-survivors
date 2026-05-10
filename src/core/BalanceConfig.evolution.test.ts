@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EVOLUTION_RECIPES } from './BalanceConfig';
+import { ACHIEVEMENT_DEFS, BURNS_EVOLUTION_THRESHOLD, EVOLUTION_RECIPES } from './BalanceConfig';
 import { WEAPON_DEFS } from '../data/weapons';
 import { PASSIVE_KEYS } from '../data/upgrades';
 import { EN_STRINGS, t, type LocaleTree } from './i18n';
@@ -75,15 +75,24 @@ describe('P1.4 — bagpipes utility-only player-facing copy', () => {
   }
 
   it('Burns Wee Beastie achievement description does not promise "every weapon" evolves', () => {
-    const desc = t('achievement.ach_burns_beastie_unlock.description');
+    const rawDesc = t('achievement.ach_burns_beastie_unlock.description');
     // Hard string-match guard. Any future edit that puts "every weapon"
     // back in the same line trips the test loudly.
-    expect(desc.toLowerCase(), `EN achievement copy implies all 10 weapons evolve: ${desc}`)
+    expect(rawDesc.toLowerCase(), `EN achievement copy implies all 11 weapons evolve: ${rawDesc}`)
       .not.toContain('every weapon');
-    // Truth-anchor: the line must reference the ten legendary forms
-    // the recipe table actually delivers (post Stag Antler / Monarch's
-    // Charge addition 2026-05-09 lifted the count from 9 to 10).
-    expect(desc.toLowerCase()).toContain('ten');
+    // The string MUST contain the {count} placeholder — that's the contract
+    // that `BURNS_EVOLUTION_THRESHOLD` (derived from `EVOLUTION_RECIPES.length`
+    // since 2026-05-10) interpolates against. If a future edit drops the
+    // placeholder back to a literal, the threshold-vs-copy drift returns.
+    expect(rawDesc).toContain('{count}');
+    // Truth-anchor: the interpolated form must reference the actual recipe
+    // count (10 today; lifts automatically when a new recipe ships).
+    const interpolated = t(
+      ACHIEVEMENT_DEFS.ach_burns_beastie_unlock.descriptionKey,
+      ACHIEVEMENT_DEFS.ach_burns_beastie_unlock.descriptionVars,
+    );
+    expect(interpolated).toContain(String(BURNS_EVOLUTION_THRESHOLD));
+    expect(interpolated).not.toContain('{count}');
   });
 
   it('no orphan evo_bagpipes leaf in EN banter (data/banter.ts has no pool)', () => {

@@ -22,6 +22,7 @@ test.describe('PEAT prep: reduceFlashing OFF/ON boot pair', () => {
           ...o,
           settingsVersion: 1,
           photosensitivityWarningSeen: true,
+          culturalContentSplashSeen: true,
           reduceFlashing: r,
         }));
       } catch { /* ignore */ }

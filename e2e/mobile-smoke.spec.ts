@@ -64,6 +64,7 @@ test.describe('Mobile smoke', () => {
         localStorage.setItem('whs_game_settings', JSON.stringify({
           ...settings,
           photosensitivityWarningSeen: true,
+          culturalContentSplashSeen: true,
         }));
       } catch {
         /* ignore */
@@ -184,6 +185,7 @@ test.describe('Mobile smoke', () => {
         localStorage.setItem('whs_game_settings', JSON.stringify({
           ...settings,
           photosensitivityWarningSeen: true,
+          culturalContentSplashSeen: true,
         }));
       } catch {
         /* ignore */

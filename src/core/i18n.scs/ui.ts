@@ -356,6 +356,12 @@ export const ui = {
     hint: 'Settings → Accessibility → Cut flashin',
     dismiss: 'Aye, Ah hear ye',
   },
+  culturalContent: {
+    title: 'Aboot the voices ye\'ll hear',
+    body: 'The wee haggis speaks Scots, Doric, Shetlandic, an Gaelic in different airts — drafted wi care by ae developer, but no\' yet checkit by native speakers in ilk register. If ye hear something that disnae quite ring true, that\'s on me. Yer feedback is welcomed at the project page.',
+    hint: 'Native-speaker review is open — see docs/C2_DIALECT_REVIEW.md',
+    dismiss: 'Aye, understood',
+  },
   actIntermission: {
     title_act_1: 'Awright, whit way then?',
     title_act_2: 'Last stretch — pick yer poison.',

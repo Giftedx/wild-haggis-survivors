@@ -100,6 +100,15 @@ export interface ISettingsData {
    */
   photosensitivityWarningSeen: boolean;
   /**
+   * 2026-05-10 — has the player dismissed the first-launch cultural-content
+   * notice? Mirrors `photosensitivityWarningSeen` shape. The notice tells
+   * the player Scots / Doric / Shetlandic / Gaelic content is drafted by
+   * the developer and is being native-reviewed; it sits between the
+   * photosensitivity splash and the main menu on fresh saves. Sticky;
+   * no settings-panel toggle — this is a one-way acknowledgement.
+   */
+  culturalContentSplashSeen: boolean;
+  /**
    * A1 M6 — Assist Mode master toggle. Persisted for future builds, but
    * hidden from the Settings panel until the runtime effects are wired.
    */
@@ -206,8 +215,16 @@ const DEFAULT_SETTINGS: ISettingsData = {
   speedrunTimerVisible: false,
   captureEnabled: true,
   localeKey: 'en',
-  reduceFlashing: false,
+  // 2026-05-10: defaulted ON for safety. The live build has not been
+  // independently photosensitivity-audited (PEAT pass pending — see
+  // README.md and docs/A1_PEAT_AUDIT.md). The cap (≤ 0.4 alpha + 200ms
+  // floor) is a small fidelity loss for non-photosensitive players and
+  // a meaningful safety guarantee for photosensitive ones. Existing
+  // saves keep their stored value (toBool below); only fresh saves
+  // pick up the new default.
+  reduceFlashing: true,
   photosensitivityWarningSeen: false,
+  culturalContentSplashSeen: false,
   assistMode: false,
   assistModeGameSpeed: 1,
   assistModeExtendedIFrames: false,
@@ -433,6 +450,10 @@ export class SettingsManager {
       photosensitivityWarningSeen: toBool(
         o.photosensitivityWarningSeen,
         DEFAULT_SETTINGS.photosensitivityWarningSeen,
+      ),
+      culturalContentSplashSeen: toBool(
+        o.culturalContentSplashSeen,
+        DEFAULT_SETTINGS.culturalContentSplashSeen,
       ),
       assistMode: toBool(o.assistMode, DEFAULT_SETTINGS.assistMode),
       assistModeGameSpeed: clampRange(

@@ -109,6 +109,6 @@ export const achievement = {
   },
   ach_burns_beastie_unlock: {
     title: 'Earned When the Bard Is Honoured',
-    description: 'Won a run wi\' all ten legends forged. Burns smiles.',
+    description: 'Won a run wi\' all {count} legends forged. Burns smiles.',
   },
 } as const;

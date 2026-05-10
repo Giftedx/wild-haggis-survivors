@@ -154,7 +154,7 @@ export function buildMetaShopLockReasonSuffix(
     const achDef = ACHIEVEMENT_DEFS[req];
     parts.push(t('ui.metaShop.requires_achievement', {
       title: t(achDef.titleKey),
-      hint: t(achDef.descriptionKey),
+      hint: t(achDef.descriptionKey, achDef.descriptionVars),
     }));
   }
   if (prevReq && !state.prevMet) {

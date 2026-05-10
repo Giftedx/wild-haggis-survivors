@@ -181,6 +181,10 @@ export function installTuningPanel(): Pane {
   actions.addButton({ title: 'Copy overrides as JSON' }).on('click', () => {
     const text = JSON.stringify(loadOverrides(), null, 2);
     void navigator.clipboard?.writeText(text);
+    // Dev-only: clipboard write may be denied in some contexts; dump JSON to
+    // console so the caller can hand-copy. Production gameplay never reaches
+    // this path (TuningPanel is gated behind dev flags).
+    // eslint-disable-next-line no-console
     console.log('[TuningPanel] overrides:', text);
   });
 
