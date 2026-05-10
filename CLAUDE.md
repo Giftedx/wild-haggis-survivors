@@ -121,7 +121,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | Mechanic | File | Note |
 |---|---|---|
 | Reliquary | `scenes/game/Reliquary.ts` | First-tier landmark, original sister pattern. |
-| Cairn Stacking | `scenes/game/cairnStacking.ts` | Pickup → 3 stones → heal + magnet boon. |
+| Cairn Stacking | `scenes/game/CairnStackingScheduler.ts` | Pickup → 3 stones → heal + magnet boon. |
 | Clootie Rag Wager | `entities/clootieRagWager.ts` + `scenes/game/clootieTree.ts` | 12% max-HP cost → run-long boon (wrath/patience/haste). Refs §22.4. |
 
 **Run-shape systems:**
