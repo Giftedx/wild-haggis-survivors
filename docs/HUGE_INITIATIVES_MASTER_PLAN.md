@@ -39,9 +39,9 @@ Work I'd like to do, in roughly the order I'd like to do it. None has a deadline
 
 ### Active or near-term
 
-- **Backfill e2e smoke specs for the 2026-05-09 sprint mechanics.** 7 specs landed 2026-05-10 (`stance-toggle`, `shinty-parry`, `sporran-deck`, `race-the-beithir`, `clootie-wager`, `grudge-ledger`, `lemmings-easter-egg`). Phase-3 commit-pending.
-- **Sporran Deck Phase 2.** Spec at `docs/superpowers/specs/2026-05-10-sporran-deck-phase2-design.md`. Adds chronicle persistence + replay-side pick replay; needs save schema bump v18→v19.
-- **PEAT photosensitivity audit** ([`docs/A1_PEAT_AUDIT.md`](A1_PEAT_AUDIT.md)). Either commission paid audit or formally accept the disclosure-as-mitigation posture (`reduceFlashing` defaulted ON 2026-05-10 — README discloses).
+- ~~**Backfill e2e smoke specs for the 2026-05-09 sprint mechanics.**~~ ✅ Shipped 2026-05-10. 4 new + 3 fixed Phase-3 specs in `5d9edf6`; grudge event-split fix in `0a1915b`. 10 mechanic specs pass + 1 declaratively skipped. Closed REVIEW C3.
+- ~~**Sporran Deck Phase 2.**~~ ✅ Shipped 2026-05-10. Phase 2 chronicle persistence + v19 save migration + v4 replay blob in `e183bcb`. Phase 3 pool 12→18 with deed/seasonal/variant gates in `f514cb8`. Pip-strip hover tooltip in `1c3dd31`. Spec at `docs/superpowers/specs/2026-05-10-sporran-deck-phase2-design.md`.
+- **PEAT photosensitivity audit** ([`docs/A1_PEAT_AUDIT.md`](A1_PEAT_AUDIT.md)). Resolved-by-acceptance per REVIEW C5: `reduceFlashing` defaulted ON + first-launch photosensitivity splash + README §"Photosensitivity" discloses unaudited status. Paid PEAT pass remains a candidate, not a blocking gate.
 
 ### Blocked on humans (not me)
 
