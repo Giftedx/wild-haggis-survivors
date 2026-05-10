@@ -1272,6 +1272,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.cairn_moment.boon.b',
         'ui.banter.cairn_moment.boon.c',
       ],
+      // First Cairn's Blessing ever (lifetime). Routed by the scheduler
+      // when bumpCairnBlessing() returns 0. Pilgrim wonder beat — the
+      // small rite paid out for the first time, not a familiar tariff.
+      // Sister to clootie_wager.bound_first (v21) + beithir_sting.cured_*_first (v20).
+      boon_first: [
+        'ui.banter.cairn_moment.boon_first.a',
+        'ui.banter.cairn_moment.boon_first.b',
+        'ui.banter.cairn_moment.boon_first.c',
+      ],
     },
   },
   {

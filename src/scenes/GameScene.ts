@@ -27,7 +27,7 @@ import type { ClipRecorder } from '@/utils/clipRecorder';
 import {
   recordRun, loadSave,
   bumpBanterHeard,
-  bumpBossKillCount, bumpCursedVictoryByBoss,
+  bumpBossKillCount, bumpCairnBlessing, bumpCursedVictoryByBoss,
 } from '../utils/save';
 import { audio } from '../systems/AudioSystem';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
@@ -1243,6 +1243,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
         this.pickupSpawner.spawnCairnStone(onCollect, onExpired);
       },
       caption: (id, msg, tint, dur) => this.caption(id, msg, tint, dur),
+      bumpCairnBlessing: () => bumpCairnBlessing(),
     });
     this.cairnStacking.reset();
 

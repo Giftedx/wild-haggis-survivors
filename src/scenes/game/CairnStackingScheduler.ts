@@ -54,6 +54,14 @@ export interface CairnStackingSchedulerHooks {
   getBanter(): BanterSystem | null;
   spawnCairnStone(onCollect: () => void, onExpired?: () => void): void;
   caption(id: string, message: string, tint?: string, durationMs?: number): void;
+  /**
+   * Bump the lifetime Cairn's Blessing counter and return the pre-bump
+   * value. Production wires this to `bumpCairnBlessing()` (v22 save
+   * field). Pre-bump 0 routes the boon banter to the `boon_first`
+   * sub-pool (pilgrim wonder beat); subsequent grants fall back to the
+   * existing `boon` pool. Sister to clootie + beithir lifetime bumpers.
+   */
+  bumpCairnBlessing(): number;
 }
 
 export class CairnStackingScheduler {
@@ -134,7 +142,13 @@ export class CairnStackingScheduler {
       this.hooks.getJuice().showMoorMomentBurst(player.x, player.y);
       this.hooks.getJuice().flashWhite(96);
       this.hooks.caption('cairn_blessing', t('ui.cairn.boon_caption'), '#e8d8a8', 3600);
-      this.hooks.getBanter()?.request('cairn_moment', { tag: 'boon' });
+      // Lifetime counter routes the first blessing ever to boon_first
+      // (pilgrim wonder beat) and subsequent blessings to the existing
+      // boon pool (familiar rite). Pre-bump 0 = first ever; bumper
+      // persists to v22 save. Sister to clootie + beithir routing.
+      const beforeCount = this.hooks.bumpCairnBlessing();
+      const tag = beforeCount === 0 ? 'boon_first' : 'boon';
+      this.hooks.getBanter()?.request('cairn_moment', { tag });
     } else {
       this.hooks.getJuice().showToast(
         t('ui.cairn.stack_toast', { count: this.stoneCount, cap: CAIRN_STONE_CAP }),

@@ -8,6 +8,7 @@ import {
   bumpBeastieKilled,
   bumpBeastieSeen,
   bumpBeithirCured,
+  bumpCairnBlessing,
   bumpClootieWagerCommit,
   bumpItemAcquired,
   bumpRoutePicked,
@@ -381,8 +382,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 21', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(21);
+  it('SAVE_SCHEMA_VERSION is 22', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(22);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1568,6 +1569,21 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().clootieWagersLifetime).toBe(8);
   });
 
+  it('bumpCairnBlessing returns 0 on first blessing, 1 on second, and persists the count', () => {
+    expect(bumpCairnBlessing()).toBe(0);
+    expect(loadSave().cairnBlessingsLifetime).toBe(1);
+    expect(bumpCairnBlessing()).toBe(1);
+    expect(loadSave().cairnBlessingsLifetime).toBe(2);
+    expect(bumpCairnBlessing()).toBe(2);
+    expect(loadSave().cairnBlessingsLifetime).toBe(3);
+  });
+
+  it('bumpCairnBlessing preserves an existing seeded count', () => {
+    writeSave({ ...createDefaultSave(), cairnBlessingsLifetime: 5 });
+    expect(bumpCairnBlessing()).toBe(5);
+    expect(loadSave().cairnBlessingsLifetime).toBe(6);
+  });
+
   it('recordPostBellBest writes a new record when secPast > current', () => {
     writeSave({ ...createDefaultSave(), bestEndlessSeconds: 30 });
     recordPostBellBest(45);
@@ -2379,6 +2395,30 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
       clootieWagersLifetime: 'not a number',
     });
     expect(migrated.clootieWagersLifetime).toBe(0);
+  });
+
+  it('v21 → v22 (Cairn lifetime blessings counter): pre-v22 save defaults cairnBlessingsLifetime to 0', () => {
+    const migrated = migrateSave({ schemaVersion: 21, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.cairnBlessingsLifetime).toBe(0);
+  });
+
+  it('v22 coerce: existing cairnBlessingsLifetime is preserved on round-trip', () => {
+    const migrated = migrateSave({
+      schemaVersion: 22,
+      runHistory: [],
+      cairnBlessingsLifetime: 6,
+    });
+    expect(migrated.cairnBlessingsLifetime).toBe(6);
+  });
+
+  it('v22 coerce: malformed cairnBlessingsLifetime falls back to 0', () => {
+    const migrated = migrateSave({
+      schemaVersion: 22,
+      runHistory: [],
+      cairnBlessingsLifetime: 'not a number',
+    });
+    expect(migrated.cairnBlessingsLifetime).toBe(0);
   });
 
   it('coerces sporranPicks on history entries — drops unknown ids, omits empty', () => {

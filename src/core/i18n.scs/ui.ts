@@ -1656,6 +1656,14 @@ export const ui = {
         b: 'Three stanes, ane blessin — auld arithmetic.',
         c: 'Pilgrim duin — tha glen pays its tithe.',
       },
+      // First Cairn's Blessing ever (lifetime, v22). Pilgrim wonder beat,
+      // SCS overlay. Light Scots, hushed register; the cairn answered
+      // something the haggis didn't know it had asked.
+      boon_first: {
+        a: 'Three stanes, ane answer — niver kent tha moor wis listenin.',
+        b: 'First cairn iver. Wee rite, lang echo.',
+        c: 'A blessin frae three chuckies? Ye learn somethin every walk.',
+      },
     },
     // ── Stance Toggle (DESIGN_IDEAS §1). SCS overlay for stance_change.
     //    Hearth — the haggis voicing its own posture shift. Three sub-

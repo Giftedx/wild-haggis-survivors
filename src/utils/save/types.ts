@@ -201,6 +201,17 @@ export interface SaveData {
   clootieWagersLifetime?: number;
 
   /**
+   * Cairn Stacking (DESIGN_IDEAS §1) — lifetime count of Cairn's Blessings
+   * granted (third-stone cap-reached edge in `CairnStackingScheduler`).
+   * Pre-bump 0 gates the `boon_first` banter sub-pool — the first cairn
+   * blessing ever is a pilgrim's wonder beat (the small rite paid out
+   * for the first time); subsequent blessings fall back to the existing
+   * terse `boon` pool. v22 addition. Sister to `beithirCuresLifetime` +
+   * `clootieWagersLifetime`. Optional + defaulted to 0 via coerce.
+   */
+  cairnBlessingsLifetime?: number;
+
+  /**
    * Total cursed-run victories across all time. Unlocks the Cailleach
    * variant at count=3. Retroactively seeded from runHistory on first
    * load for existing players who already have past cursed victories.

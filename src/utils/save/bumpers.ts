@@ -171,6 +171,26 @@ export function bumpClootieWagerCommit(): number {
 }
 
 /**
+ * Cairn Stacking (DESIGN_IDEAS §1) — bump the lifetime Cairn's Blessing
+ * counter and return the **pre-bump** value. Caller uses pre-bump 0 to
+ * gate the `boon_first` banter sub-pool (first blessing ever = pilgrim
+ * wonder; subsequent = familiar rite). Sister to `bumpBeithirCured` +
+ * `bumpClootieWagerCommit`. v22 addition. Storage failures return
+ * `Number.MAX_SAFE_INTEGER` so the first-blessing gate (`=== 0`) never
+ * trips falsely on a corrupted save.
+ */
+export function bumpCairnBlessing(): number {
+  try {
+    const cur = loadSave();
+    const before = cur.cairnBlessingsLifetime ?? 0;
+    writeSave({ ...cur, cairnBlessingsLifetime: before + 1 });
+    return before;
+  } catch {
+    return Number.MAX_SAFE_INTEGER;
+  }
+}
+
+/**
  * B1 Phase 3 Task 17 — persist an enemy key into `seenEnemies` the first
  * time SpawnSystem encounters it. Best-effort — swallow storage errors
  * so banter never blocks gameplay. No-op when the key is already tracked.

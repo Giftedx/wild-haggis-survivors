@@ -91,6 +91,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV19ToV20(raw));
     case 20:
       return finalizeSaveCandidate(migrateV20ToV21(raw));
+    case 21:
+      return finalizeSaveCandidate(migrateV21ToV22(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -327,6 +329,23 @@ function migrateV20ToV21(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v21 → v22 (Cairn Stacking lifetime blessings counter, DESIGN_IDEAS §1
+ * v2 follow-up). Adds `cairnBlessingsLifetime?: number` — bumped on each
+ * granted Cairn's Blessing (third-stone cap-reached edge); pre-bump 0
+ * gates the `boon_first` banter sub-pool so the first blessing ever
+ * feels like discovery, not a familiar rite. Sister to v20 beithir +
+ * v21 clootie. Pure version bump — `finalizeSaveCandidate` coerces the
+ * missing field to 0 via `coerceInteger`. No retroactive seed: per-run
+ * blessing outcomes were never persisted, so past blessings are
+ * unrecoverable. Fresh counter starts at 0 for all returning players,
+ * so they get one more "first-blessing" pilgrim beat the next time
+ * they stack three stones.
+ */
+function migrateV21ToV22(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -387,6 +406,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     beithirCuresLifetime: coerceInteger(candidate.beithirCuresLifetime, 0),
     clootieWagersLifetime: coerceInteger(candidate.clootieWagersLifetime, 0),
+    cairnBlessingsLifetime: coerceInteger(candidate.cairnBlessingsLifetime, 0),
     runHistory,
     seenEnemies: coerceStringArray(candidate.seenEnemies),
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),

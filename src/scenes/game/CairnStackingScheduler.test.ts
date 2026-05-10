@@ -29,6 +29,7 @@ interface FixtureBundle {
   banter: { request: ReturnType<typeof vi.fn> };
   spawnSpy: ReturnType<typeof vi.fn>;
   captionSpy: ReturnType<typeof vi.fn>;
+  bumpSpy: ReturnType<typeof vi.fn>;
   player: PlayerStub;
 }
 
@@ -51,6 +52,10 @@ function makeFixture(
   const banter = { request: vi.fn() };
   const spawnSpy = vi.fn();
   const captionSpy = vi.fn();
+  // Default mock: every call returns 1 (subsequent blessing — boon pool,
+  // not boon_first). Tests asserting first-blessing routing override
+  // this via the `bumpCairnBlessing` field on the hooks payload.
+  const bumpSpy = vi.fn().mockReturnValue(1);
 
   const baseHooks: CairnStackingSchedulerHooks = {
     getRunRng: () => createRNG(42),
@@ -62,6 +67,7 @@ function makeFixture(
       banter as unknown as ReturnType<CairnStackingSchedulerHooks['getBanter']>,
     spawnCairnStone: spawnSpy,
     caption: captionSpy,
+    bumpCairnBlessing: bumpSpy,
   };
   return {
     hooks: { ...baseHooks, ...overrides },
@@ -69,6 +75,7 @@ function makeFixture(
     banter,
     spawnSpy,
     captionSpy,
+    bumpSpy,
     player,
   };
 }
@@ -154,8 +161,8 @@ describe('CairnStackingScheduler', () => {
     expect(juice.showToast).toHaveBeenCalledTimes(1);
   });
 
-  it('third stone fires the Cairn Blessing boon — heal + magnet + boon banter', () => {
-    const { hooks, spawnSpy, juice, banter, player, captionSpy } = makeFixture();
+  it('third stone fires the Cairn Blessing boon — heal + magnet + boon banter (subsequent)', () => {
+    const { hooks, spawnSpy, juice, banter, player, captionSpy, bumpSpy } = makeFixture();
     const scheduler = new CairnStackingScheduler(hooks);
     scheduler.reset();
 
@@ -174,10 +181,53 @@ describe('CairnStackingScheduler', () => {
       CAIRN_BOON_MAGNET_FLAT_PX,
       CAIRN_BOON_MAGNET_DURATION_MS,
     );
+    // Default fixture's bumpCairnBlessing returns 1 — subsequent blessing
+    // routes to the existing `boon` pool, not `boon_first`.
+    expect(bumpSpy).toHaveBeenCalledTimes(1);
     expect(banter.request).toHaveBeenCalledWith('cairn_moment', { tag: 'boon' });
     expect(captionSpy).toHaveBeenCalledTimes(1);
     expect(juice.showMoorMomentBurst).toHaveBeenCalledTimes(1);
     expect(juice.flashWhite).toHaveBeenCalledTimes(1);
+  });
+
+  it('first lifetime blessing routes to boon_first sub-pool (pre-bump 0)', () => {
+    // Override the bumper to return 0 — the v22 contract for "this is
+    // the first Cairn's Blessing the player has ever earned."
+    const firstEverBumper = vi.fn().mockReturnValue(0);
+    const { hooks, spawnSpy, banter, bumpSpy } = makeFixture({
+      bumpCairnBlessing: firstEverBumper,
+    });
+    const scheduler = new CairnStackingScheduler(hooks);
+    scheduler.reset();
+
+    let nextRunSec = CAIRN_FIRST_SPAWN_SEC;
+    for (let i = 0; i < CAIRN_STONE_CAP; i++) {
+      scheduler.tick(nextRunSec);
+      const onCollect = spawnSpy.mock.calls[i][0] as () => void;
+      onCollect();
+      nextRunSec = scheduler.getNextSpawnAtSec();
+    }
+
+    expect(firstEverBumper).toHaveBeenCalledTimes(1);
+    // The default bumpSpy on the un-overridden fixture is a different
+    // mock; assert it was untouched (the override took precedence).
+    expect(bumpSpy).not.toHaveBeenCalled();
+    expect(banter.request).toHaveBeenCalledWith('cairn_moment', {
+      tag: 'boon_first',
+    });
+  });
+
+  it('first stone collect does NOT bump the lifetime counter (only the third does)', () => {
+    const { hooks, spawnSpy, bumpSpy } = makeFixture();
+    const scheduler = new CairnStackingScheduler(hooks);
+    scheduler.reset();
+
+    scheduler.tick(CAIRN_FIRST_SPAWN_SEC);
+    const onCollect = spawnSpy.mock.calls[0][0] as () => void;
+    onCollect();
+
+    // Stack edge — no blessing, no counter bump.
+    expect(bumpSpy).not.toHaveBeenCalled();
   });
 
   it('after cap is reached, scheduler stops spawning new stones', () => {

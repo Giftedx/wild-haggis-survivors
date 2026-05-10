@@ -2167,6 +2167,17 @@ export const ui = {
         b: 'Three stones, one blessing — auld arithmetic.',
         c: 'Pilgrim done — the glen pays its tithe.',
       },
+      // First Cairn's Blessing ever (lifetime, v22). Pilgrim wonder beat
+      // — the haggis discovers what three small stones can ask of the
+      // glen, before it becomes a familiar rite. Sister to bound_first
+      // (clootie) + cured_*_first (beithir). Hearth-warm, slightly
+      // hushed; the cairn answered something the haggis didn't know
+      // it had asked.
+      boon_first: {
+        a: 'Three stones, an answer — never kent the moor was listenin.',
+        b: 'First cairn ever. Wee rite, lang echo.',
+        c: 'A blessin frae three pebbles? Ye learn somethin every walk.',
+      },
     },
     // ── Stance Toggle (DESIGN_IDEAS §1). Hearth — the haggis voicing
     //    its own posture shift, never commentary on the world. Three
