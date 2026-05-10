@@ -201,6 +201,8 @@ Kill criteria written in product-team voice for a project that has no users + no
 
 ### S4 — Replay determinism cosmetic-only carve-outs are author-asserted, not test-enforced.
 
+> **2026-05-10 update — closed.** Static allowlist test landed at [`src/replay/replayMathRandomAllowlist.test.ts`](../src/replay/replayMathRandomAllowlist.test.ts). Every shipped `src/**/*.ts` file using `Math.random` must appear in the allowlist with a one-line justification; CI fails on (a) an unjustified file, (b) a stale entry where the file no longer matches, (c) a dangling entry pointing to a deleted path. Initial population covers 35 files (cosmetic VFX, audio, ambient, banter, UI chrome, dev tooling, and seed bootstrap). [CONTRIBUTING.md sacred-invariants](../CONTRIBUTING.md#sacred-invariants) cites the test as the enforcer of the cosmetic carve-out.
+
 [ADR-0002](adr/0002-deterministic-replay-format.md) Phase 3 added fixed-step physics + the `runRng` discipline. The QUALITY_BAR.md replay chain says: *"Cosmetic-only randomness (UI shuffle with no replay-side effect) may use `Math.random` but state the cosmetic-only carve-out explicitly."*
 
 The Sporran v1 spec calls out a `Date.now()`-seeded ephemeral RNG for the DRAW shuffle as cosmetic-only. **Nothing tests this.** A future agent could add a different `Math.random()` call, claim "cosmetic", and the test gate at [`src/replay/replayDeterminism.test.ts`](../src/replay/replayDeterminism.test.ts) would only catch it if the call influences a recorded frame's output.

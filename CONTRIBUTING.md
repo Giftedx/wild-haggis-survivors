@@ -40,7 +40,7 @@ Constraints that look arbitrary but are load-bearing. Documented at the site AND
 
 | Invariant | Source | Lock |
 |---|---|---|
-| Replay determinism | [ADR-0002](docs/adr/0002-deterministic-replay-format.md) | All state-affecting RNG via `runRng` (never `Math.random()`); arcade fixed-step `fps:60`; lifecycle RNG-stream order locked (append-only) |
+| Replay determinism | [ADR-0002](docs/adr/0002-deterministic-replay-format.md) | All state-affecting RNG via `runRng` (never `Math.random()`); arcade fixed-step `fps:60`; lifecycle RNG-stream order locked (append-only). Cosmetic `Math.random()` use enforced by allowlist in [`replayMathRandomAllowlist.test.ts`](src/replay/replayMathRandomAllowlist.test.ts) — every shipped file must appear with a one-line justification |
 | i18n parity (banter) | [`i18n.locale.test.ts`](src/core/i18n.locale.test.ts) | EN→SCS scoped to `ui.banter.*`; orphan SCS keys also blocked |
 | Save schema | [`save/schema.ts`](src/utils/save/schema.ts) | `SAVE_SCHEMA_VERSION` bump requires matching migration step; chain runs every load |
 | Hazard immunity | [`isPlayerHazardImmune.ts`](src/systems/isPlayerHazardImmune.ts) | Single shared predicate; both HazardZones + HazardsSystem read it (don't inline the OR-chain) |
@@ -58,7 +58,7 @@ If your change touches one of these surfaces, every step in the chain lands in t
 
 **Damage to player** → use [`isPlayerHazardImmune`](src/systems/isPlayerHazardImmune.ts) (don't inline) → respect post-hit iframes → respect parry hooks where relevant.
 
-**State-affecting randomness** → `getRunRng()` only (never `Math.random()` for state) → if in lifecycle reset, append at tail (don't reorder).
+**State-affecting randomness** → `getRunRng()` only (never `Math.random()` for state) → if in lifecycle reset, append at tail (don't reorder) → cosmetic `Math.random()` use must be added to the allowlist in [`replayMathRandomAllowlist.test.ts`](src/replay/replayMathRandomAllowlist.test.ts) with a one-line justification (CI fails on unjustified additions).
 
 **New mechanic** → pure helper at `src/entities/<name>.ts` or `src/systems/<name>.ts` + test → Phaser-bound orchestrator at `src/scenes/game/<name>.ts` → wire from `Player.update` / `GameScene.update` (after `isGameplayPaused()` early-return) → texture-exists guards on every `scene.add.image/sprite` → i18n keys → banter pool entry if voiceful → **e2e smoke spec for input-wiring features**.
 
