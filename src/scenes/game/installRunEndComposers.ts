@@ -87,6 +87,12 @@ export interface InstallRunEndComposersOpts {
   getBiomesVisited(): readonly string[];
   getEvolvedWeaponCount(): number;
   areSeasonalEventsDisabled(): boolean;
+  /**
+   * S1 Phase 2 — snapshot of Sporran Deck picks committed at run start
+   * (filtered to known card IDs). Threaded into RunHistoryRecorder for
+   * chronicle persistence + Phase 2 replay-side pick replay.
+   */
+  getSporranPicks(): readonly string[];
 
   // RunPersistenceCoordinator-only.
   isReplayPlayback(): boolean;
@@ -150,6 +156,7 @@ export function installRunEndComposers(
     getBiomesVisited: opts.getBiomesVisited,
     getEvolvedWeaponCount: opts.getEvolvedWeaponCount,
     areSeasonalEventsDisabled: opts.areSeasonalEventsDisabled,
+    getSporranPicks: opts.getSporranPicks,
   };
   const runHistoryRecorder = new RunHistoryRecorder(runHistoryHooks);
 

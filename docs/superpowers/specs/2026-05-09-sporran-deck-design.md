@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-09
 **Initiative:** S1 (new). Pulled from DESIGN_IDEAS §1 Sporran Deck.
-**Status:** Phase 0 + Phase 1 + Phase 1.5 (`quirk_haggis_blooded` lifted from Phase 2 deferral via `extraDamageMultiplier` post-spawn hook) shipped 2026-05-09→10 (Phase 0 commit `eabe2a6`; Phase 1 commit `6275720`; Phase 1.5 commit `a5043e5`). Pool now 12 cards (was 11). Phase 2 (chronicle persistence — `RunHistoryEntry.sporranPicks` + schema bump v18→v19 + replay-side pick replay) + Phase 3 (rare/seasonal/variant-keyed pool expansion) deferred. Phase 1.5 a11y follow-up still open: DOM-focus mirror parity with CurseScene's T407 layer.
+**Status:** Phase 0 + Phase 1 + Phase 1.5 + Phase 2 SHIPPED 2026-05-09→10 (Phase 0 `eabe2a6`; Phase 1 `6275720`; Phase 1.5 `a5043e5`; Phase 1.5 a11y mirror `be1ac02`; Phase 2 chronicle persistence + replay-side pick replay = this session). Pool now 12 cards (was 11). Phase 3 (rare/seasonal/variant-keyed pool expansion) deferred. All a11y follow-ups closed.
 **Word count:** ~2,000
 **Prerequisite:** None. Sits alongside CurseScene + RunModifiers, replaces nothing.
 

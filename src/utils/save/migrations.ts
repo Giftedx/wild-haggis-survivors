@@ -15,6 +15,7 @@
 import type { NodeOutcome } from '../../data/nodeTypes';
 import type { RoutePick } from '../../data/routes';
 import { RELIC_KEYS, type RelicKey } from '../../data/relics';
+import { SPORRAN_CARD_IDS } from '../../data/sporranCards';
 import { generateHaggisNameFromHash } from '../../data/haggisNames';
 import { isReplayBlobAny } from '../../replay/replayBlob';
 import {
@@ -84,6 +85,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV16ToV17(raw));
     case 17:
       return finalizeSaveCandidate(migrateV17ToV18(raw));
+    case 18:
+      return finalizeSaveCandidate(migrateV18ToV19(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -270,6 +273,21 @@ function migrateV16ToV17(raw: SaveRecord): SaveRecord {
  * `coerceStringArray`.
  */
 function migrateV17ToV18(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
+/**
+ * v18 → v19 (S1 Phase 2 — Sporran Deck chronicle persistence). Adds
+ * `RunHistoryEntry.sporranPicks?: string[]` — the 3 Sporran card IDs
+ * the player kept at the start of each run. Pure version bump; the
+ * field is optional, absent on every pre-v19 entry by default. No
+ * retroactive seed: pre-v19 runs didn't track picks, and reconstructing
+ * from the embedded replay blob (when present) is brittle for runs that
+ * never recorded one. The coercer in `coerceRunHistoryEntry` validates
+ * IDs against `SPORRAN_CARD_IDS` so a renamed / removed card never
+ * survives load; absent / malformed → field omitted.
+ */
+function migrateV18ToV19(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
@@ -588,6 +606,7 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
   if (!isRecord(raw)) return null;
   const variantKey = typeof raw.variantKey === 'string' && raw.variantKey ? raw.variantKey : '';
   if (!variantKey) return null;
+  const sporranPicks = coerceSporranPicks(raw.sporranPicks);
   return {
     timestamp: coerceInteger(raw.timestamp, 0),
     timeSurvivedSec: coerceInteger(raw.timeSurvivedSec, 0),
@@ -616,7 +635,28 @@ function coerceRunHistoryEntry(raw: unknown): RunHistoryEntry | null {
       : {}),
     nodeOutcomes: coerceNodeOutcomes(raw.nodeOutcomes),
     name: coerceRunHistoryName(raw),
+    ...(sporranPicks ? { sporranPicks: sporranPicks.slice() } : {}),
   };
+}
+
+/**
+ * S1 Phase 2 — coerce + validate persisted Sporran pick IDs. Drops
+ * non-string / empty / stale IDs (anything not in `SPORRAN_CARD_IDS`)
+ * so a renamed or removed card from a future release doesn't poison
+ * the Chronicle. Returns `null` on absent / empty / fully-invalid
+ * input so the caller can omit the field entirely from the entry —
+ * keeps pre-v19 history rows lean and avoids stamping `[]` on every
+ * legacy entry at migration time.
+ */
+function coerceSporranPicks(value: unknown): readonly string[] | null {
+  if (!Array.isArray(value)) return null;
+  const out: string[] = [];
+  for (const raw of value) {
+    if (typeof raw !== 'string' || raw.length === 0) continue;
+    if (!SPORRAN_CARD_IDS.has(raw)) continue;
+    out.push(raw);
+  }
+  return out.length > 0 ? out : null;
 }
 
 function coerceNodeOutcomes(value: unknown): NodeOutcome[] {

@@ -165,6 +165,35 @@ describe('RunHistoryRecorder', () => {
       }).buildContext();
       expect('replay' in withNullHook).toBe(false);
     });
+
+    describe('S1 Phase 2 — sporranPicks', () => {
+      it('omits sporranPicks when hook is absent', () => {
+        const { hooks } = buildMocks();
+        const ctx = new RunHistoryRecorder(hooks).buildContext();
+        expect('sporranPicks' in ctx).toBe(false);
+      });
+
+      it('omits sporranPicks when hook returns empty array', () => {
+        const { hooks } = buildMocks();
+        const ctx = new RunHistoryRecorder({
+          ...hooks,
+          getSporranPicks: () => [],
+        }).buildContext();
+        expect('sporranPicks' in ctx).toBe(false);
+      });
+
+      it('snapshots sporranPicks when hook returns non-empty array', () => {
+        const { hooks } = buildMocks();
+        const picks = ['boon_silver', 'boon_coal', 'curse_heavy_legs'];
+        const ctx = new RunHistoryRecorder({
+          ...hooks,
+          getSporranPicks: () => picks,
+        }).buildContext();
+        expect(ctx.sporranPicks).toEqual(picks);
+        // Snapshot — mutating the source must not poison the context.
+        expect(ctx.sporranPicks).not.toBe(picks);
+      });
+    });
   });
 
   describe('record', () => {

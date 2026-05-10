@@ -74,6 +74,15 @@ export interface RunHistoryHooks {
    * Optional so tests that don't exercise the path keep compiling.
    */
   getEvolvedWeaponCount?(): number;
+  /**
+   * S1 Phase 2 — snapshot of Sporran Deck picks committed at run start
+   * (filtered to known card IDs by `applySporranPicks`). Threaded onto
+   * `RunHistoryEntry.sporranPicks` for chronicle display so the UI can
+   * render the picked cards without parsing the embedded replay blob.
+   * Optional so tests that don't exercise the path keep compiling;
+   * empty array → field omitted from the entry.
+   */
+  getSporranPicks?(): readonly string[];
   /** Injected for test determinism; defaults to Date.now. */
   now?: () => number;
 }
@@ -101,6 +110,7 @@ export class RunHistoryRecorder {
     const seasonalDisabled = h.areSeasonalEventsDisabled?.() ?? false;
     const nowMs = (h.now ?? Date.now)();
     const seasonalEventKey = getActiveSeasonalEventKey(new Date(nowMs), seasonalDisabled);
+    const sporranPicks = h.getSporranPicks?.() ?? [];
     return {
       level: h.getXPSystem().getLevel(),
       bossKills: h.getBossKillCount(),
@@ -114,6 +124,7 @@ export class RunHistoryRecorder {
       ...(replay ? { replay } : {}),
       ...(name ? { name } : {}),
       ...(seasonalEventKey ? { seasonalEventKey } : {}),
+      ...(sporranPicks.length > 0 ? { sporranPicks: [...sporranPicks] } : {}),
       enteredHealingCircle,
       biomesVisited: [...biomesVisited],
       evolvedWeaponCount,

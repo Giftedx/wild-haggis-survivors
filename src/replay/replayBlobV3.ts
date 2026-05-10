@@ -8,6 +8,12 @@
  * alone via `generateNodePath(bank, act, runRng.branch())`, so v3 only
  * records player-driven decision points.
  *
+ * S1 Phase 2 (2026-05-10) — extended in place with the optional
+ * `sporranPicks?: string[]` field rather than bumping to v4. The new
+ * field is back-compat-shaped (optional, additive); pre-Phase 2 v3
+ * blobs continue to load with the field absent, and `parseGameSceneInitData`
+ * applies the picks during playback so the same modifier deltas land.
+ *
  * v1/v2 readers reject v3 blobs by design (version mismatch). Callers
  * that accept any shape go through `ReplayBlobAny` + `isReplayBlobAny`
  * in `./replayBlob.ts`.
@@ -23,6 +29,7 @@ import type { ReplayBlobV2Meta } from './replayBlobV2';
 import type { NodeOutcome } from '../data/nodeTypes';
 import type { PickerSlot, RoutePick } from '../data/routes';
 import { getRoute } from '../data/routes';
+import { SPORRAN_CARD_IDS } from '../data/sporranCards';
 import {
   isComposedStatsSnapshot,
   type ComposedStatsSnapshot,
@@ -33,6 +40,14 @@ export const REPLAY_BLOB_V3_VERSION = 3 as const;
 export interface ReplayBlobV3Meta extends ReplayBlobV2Meta {
   /** Ordered log of every resolved node outcome (all acts concatenated). */
   nodeOutcomes?: NodeOutcome[];
+  /**
+   * S1 Phase 2 — Sporran Deck picks (3 of 7 drawn cards) committed at
+   * run start. Captured into the blob so playback re-applies the same
+   * modifier deltas without re-rolling. Stale / unknown card IDs are
+   * dropped at deserialize time so a removed card from a future release
+   * never crashes playback.
+   */
+  sporranPicks?: string[];
 }
 
 export interface ReplayBlobV3 extends ReplayBlobV3Meta {
@@ -51,6 +66,7 @@ export function createEmptyReplayBlobV3(meta: ReplayBlobV3Meta): ReplayBlobV3 {
     routes: meta.routes,
     composedStats: meta.composedStats,
     nodeOutcomes: meta.nodeOutcomes,
+    sporranPicks: meta.sporranPicks,
     frameCount: 0,
     frames: [],
   };
@@ -75,6 +91,9 @@ export function deserializeReplayV3(raw: string): ReplayBlobV3 | null {
   const nodeOutcomes = Array.isArray(parsed.nodeOutcomes)
     ? coerceNodeOutcomes(parsed.nodeOutcomes)
     : undefined;
+  const sporranPicks = Array.isArray(parsed.sporranPicks)
+    ? coerceSporranPicks(parsed.sporranPicks)
+    : undefined;
 
   return {
     version: REPLAY_BLOB_V3_VERSION,
@@ -85,6 +104,7 @@ export function deserializeReplayV3(raw: string): ReplayBlobV3 | null {
     routes,
     composedStats,
     nodeOutcomes,
+    sporranPicks,
   };
 }
 
@@ -125,6 +145,24 @@ function coerceRoutes(arr: unknown[]): RoutePick[] | undefined {
       atGameTimeSec,
       defaultedBySetting,
     });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+/**
+ * S1 Phase 2 — coerce + validate Sporran pick IDs from the persisted
+ * blob. Drops non-string / empty / stale entries (anything not in
+ * `SPORRAN_CARD_IDS`) so a renamed or removed card from a future
+ * release never crashes a stored replay. Returns `undefined` on
+ * absent / fully-invalid input so the field stays absent on the
+ * deserialized shape (matches `nodeOutcomes` / `routes` precedent).
+ */
+function coerceSporranPicks(arr: unknown[]): string[] | undefined {
+  const out: string[] = [];
+  for (const raw of arr) {
+    if (typeof raw !== 'string' || raw.length === 0) continue;
+    if (!SPORRAN_CARD_IDS.has(raw)) continue;
+    out.push(raw);
   }
   return out.length > 0 ? out : undefined;
 }

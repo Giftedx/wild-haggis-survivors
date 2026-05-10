@@ -81,6 +81,14 @@ export interface RunHistoryEntry {
    * without rerolling RNG.
    */
   nodeOutcomes?: NodeOutcome[];
+  /**
+   * S1 Phase 2 — Sporran Deck picks (3 of 7 drawn cards) committed at
+   * run start. Absent on runs that took the Curse / clean path and on
+   * pre-v19 entries. The IDs reference cards in `ALL_SPORRAN_CARDS`;
+   * unknown / stale IDs are dropped at coerce time so a renamed or
+   * removed card doesn't corrupt the Chronicle. v19 addition.
+   */
+  sporranPicks?: string[];
 }
 
 export interface SaveData {
@@ -389,6 +397,16 @@ export interface RunHistoryContext {
    * out — the downstream check short-circuits without special-casing.
    */
   seasonalEventKey?: string;
+  /**
+   * S1 Phase 2 — Sporran Deck picks (3 of 7 drawn cards) committed at
+   * run start, threaded through to `RunHistoryEntry.sporranPicks` for
+   * Chronicle display. Empty / absent for runs that took the Curse or
+   * clean path. The same data is also captured inside the replay blob
+   * when recording was active, but persisting it on the history entry
+   * lets the Chronicle UI render the picked cards without parsing the
+   * replay payload.
+   */
+  sporranPicks?: readonly string[];
 }
 
 export interface RunResult {

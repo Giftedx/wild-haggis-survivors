@@ -60,6 +60,9 @@ export function applyRunSummary(save: SaveData, summary: RunSummary, context?: R
     ...(context?.nodeOutcomes && context.nodeOutcomes.length > 0
       ? { nodeOutcomes: [...context.nodeOutcomes] }
       : { nodeOutcomes: [] }),
+    ...(context?.sporranPicks && context.sporranPicks.length > 0
+      ? { sporranPicks: [...context.sporranPicks] }
+      : {}),
   };
 
   const isCursedVictory =

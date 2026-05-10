@@ -328,6 +328,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    */
   private pendingSporranIds: readonly string[] | null = null;
   /**
+   * S1 Phase 2 — snapshot of the picks that actually landed at run
+   * start (filtered to known cards via `applySporranPicks`). Read by
+   * `installReplayRecording` to fold the picks into the v3 blob and by
+   * `RunHistoryRecorder.buildContext` to surface them in the chronicle
+   * row. Empty when the player took the Curse / clean path or for a
+   * resumed run (which already absorbed picks at the original start).
+   */
+  private committedSporranIds: readonly string[] = [];
+  /**
    * T101 — set by `RunPersistenceBridge.applyResume` when it reconstructs
    * the rolled `currentActNodeMap` from the snapshot. The next
    * `initNodeMapForAct` call clears the flag and reuses the restored map
@@ -576,6 +585,12 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
     });
 
+    // S1 Phase 2 — clear last run's snapshot. The field is overwritten
+    // a few lines into create() once `buildSporranRunStartPlan` returns,
+    // but explicit reset keeps the "blank every transient field" contract
+    // honest if a future create() pivot reads it earlier.
+    this.committedSporranIds = [];
+
     // R1 — clear held Relics + dropped pickups + Fianna spirits before a
     // fresh run. A scene instance can be reused across runs; without this
     // the previous run's sporran (and any 10s-lifetime Fianna spirits)
@@ -755,6 +770,10 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       runModifiers: this.runModifiers,
     });
     this.pendingSporranIds = null;
+    // Snapshot what actually applied (stale-id filtered) so the replay
+    // recorder + run-history recorder both pull from the same source
+    // of truth — see field doc above.
+    this.committedSporranIds = sporranRunStart.appliedIds;
 
     // Seasonal run-start hooks. Modifier-bag deltas apply now, before
     // systems snapshot the bag; post-spawn heal/player bonuses/toast
@@ -782,6 +801,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       build: import.meta.env.PROD ? 'whs-prod' : 'whs-dev',
       curseKey: this.activeCurseKey,
       composedStats,
+      sporranPicks: this.committedSporranIds,
     }));
     const spawnPx = resumeRun
       ? Phaser.Math.Clamp(resumeRun.playerX, 40, GAME.WORLD_WIDTH - 40)
@@ -1013,6 +1033,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       getBiomesVisited: () => this.biomeController?.getBiomesVisited() ?? [],
       getEvolvedWeaponCount: () => this.weaponSystem?.getEvolvedWeaponCount() ?? 0,
       areSeasonalEventsDisabled: () => this.settingsManager.load().disableSeasonalEvents,
+      getSporranPicks: () => this.committedSporranIds,
       // T401 P3 — replay-aware persistence; reads `this.replayInput` at
       // call time so the gate stays correct across create()'s lifecycle.
       isReplayPlayback: () => this.replayInput !== null,

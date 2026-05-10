@@ -132,6 +132,13 @@ export interface InstallReplayRecordingInput {
    *  Captured via `captureComposedStats` and frozen into the blob so
    *  playback uses the same starting sheet the recorder saw. */
   composedStats: ComposedPlayerStats;
+  /**
+   * S1 Phase 2 — Sporran Deck picks snapshotted AFTER
+   * `buildSporranRunStartPlan` filters stale ids. Folded into the v3
+   * meta so playback re-applies the same modifier deltas. Empty for
+   * Curse / clean / resumed runs.
+   */
+  sporranPicks?: readonly string[];
 }
 
 export interface InstallReplayRecordingResult {
@@ -161,6 +168,7 @@ export function installReplayRecording(
           build: input.build,
           curseKey: input.curseKey ?? undefined,
           composedStats: captureComposedStats(input.composedStats),
+          sporranPicks: input.sporranPicks,
         })
       : null;
 

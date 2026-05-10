@@ -81,4 +81,60 @@ describe('replayBlobV3', () => {
     });
     expect(deserializeReplayV3(raw)).toBeNull();
   });
+
+  describe('S1 Phase 2 — sporranPicks', () => {
+    it('createEmptyReplayBlobV3 carries sporranPicks meta through', () => {
+      const blob = createEmptyReplayBlobV3({
+        ...baseMeta(),
+        sporranPicks: ['boon_silver', 'curse_heavy_legs', 'quirk_haggis_blooded'],
+      });
+      expect(blob.sporranPicks).toEqual([
+        'boon_silver',
+        'curse_heavy_legs',
+        'quirk_haggis_blooded',
+      ]);
+    });
+
+    it('deserialize round-trips known sporranPicks', () => {
+      const src = createEmptyReplayBlobV3({
+        ...baseMeta(),
+        sporranPicks: ['boon_coal', 'boon_whisky', 'curse_thin_hide'],
+      });
+      const back = deserializeReplayV3(serializeReplayV3(src));
+      expect(back?.sporranPicks).toEqual(['boon_coal', 'boon_whisky', 'curse_thin_hide']);
+    });
+
+    it('drops unknown / malformed sporranPicks at deserialize', () => {
+      const raw = JSON.stringify({
+        version: REPLAY_BLOB_V3_VERSION,
+        ...baseMeta(),
+        frameCount: 0,
+        frames: [],
+        sporranPicks: ['boon_silver', '', null, 42, 'not_a_card', 'curse_heavy_legs'],
+      });
+      const blob = deserializeReplayV3(raw);
+      expect(blob?.sporranPicks).toEqual(['boon_silver', 'curse_heavy_legs']);
+    });
+
+    it('omits sporranPicks when all entries are stale', () => {
+      const raw = JSON.stringify({
+        version: REPLAY_BLOB_V3_VERSION,
+        ...baseMeta(),
+        frameCount: 0,
+        frames: [],
+        sporranPicks: ['nope_a', 'nope_b'],
+      });
+      expect(deserializeReplayV3(raw)?.sporranPicks).toBeUndefined();
+    });
+
+    it('absent sporranPicks deserializes to undefined (back-compat)', () => {
+      const raw = JSON.stringify({
+        version: REPLAY_BLOB_V3_VERSION,
+        ...baseMeta(),
+        frameCount: 0,
+        frames: [],
+      });
+      expect(deserializeReplayV3(raw)?.sporranPicks).toBeUndefined();
+    });
+  });
 });

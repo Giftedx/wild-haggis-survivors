@@ -44,8 +44,10 @@ export interface GameSceneInitDataInput {
    * by `SporranScene`. The IDs reference cards in `ALL_SPORRAN_CARDS`;
    * unknown IDs are silently skipped at apply time. `null`, absent, or
    * an empty array means the player took the Curse / clean-run path
-   * instead. Replay blobs do not yet carry these picks (Phase 2 work),
-   * so playback always reads the caller-passed list.
+   * instead. Replay blobs (v3 from Phase 2 onward) carry their own
+   * picks and override the caller-passed list during playback so the
+   * recorded run reproduces with byte-identical pre-spawn modifier
+   * deltas.
    */
   pickedSporranIds?: readonly string[] | null;
 }
@@ -106,11 +108,22 @@ export function parseGameSceneInitData(
     // Replay carries its own curseKey when v2+ recorded one. That always
     // overrides anything the caller stamped on the init payload — the
     // replay must reproduce the run that was actually recorded.
-    const blob = data.replay as { curseKey?: unknown };
+    const blob = data.replay as { curseKey?: unknown; sporranPicks?: unknown };
     base.pendingCurseKey =
       typeof blob.curseKey === 'string' && blob.curseKey.length > 0
         ? blob.curseKey
         : null;
+    // S1 Phase 2 — replay-side pick replay. v3+ blobs may carry the
+    // recorded sporran picks; if present, override the caller-passed
+    // list so the replayed run lands the same RunModifiers deltas +
+    // post-spawn heal / damage-mult. v1 / v2 blobs (and v3 blobs from
+    // before Phase 2 shipped) lack the field — the override no-ops and
+    // the caller-passed list (or null) wins.
+    base.pendingSporranIds = parseSporranIds(
+      Array.isArray(blob.sporranPicks)
+        ? (blob.sporranPicks as readonly string[])
+        : (data.pickedSporranIds ?? null),
+    );
   }
 
   return base;

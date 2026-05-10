@@ -33,12 +33,21 @@ import type { ComposedStatsSnapshot } from './composedStatsSnapshot';
 import type { RoutePick } from '../data/routes';
 import type { NodeOutcome } from '../data/nodeTypes';
 
-/** Extended meta accepted at construction. v2 fields are optional. */
+/** Extended meta accepted at construction. v2 / v3 fields are optional. */
 export interface ReplayRecorderMeta extends ReplayBlobMeta {
   /** Active curse key if the player took one for this run. */
   curseKey?: string;
   /** Snapshot of composed player stats at run start. */
   composedStats?: ComposedStatsSnapshot;
+  /**
+   * S1 Phase 2 — Sporran Deck picks (3 of 7 drawn cards) committed at
+   * run start. Captured into the v3 blob so playback re-applies the
+   * same modifier deltas without re-rolling. Empty / absent = the
+   * player took the Curse / clean path; recorder needs the field at
+   * construction (not per-frame) because picks are immutable post
+   * run-start.
+   */
+  sporranPicks?: readonly string[];
 }
 
 /**
@@ -56,6 +65,7 @@ export const REPLAY_RECORDER_FRAME_CAP = 90_000;
 
 export class ReplayRecorder {
   private readonly meta: ReplayRecorderMeta;
+  private readonly sporranPicks: readonly string[];
   private frames: ReplayFrame[] = [];
   private routes: RoutePick[] = [];
   private nodeOutcomes: NodeOutcome[] = [];
@@ -69,6 +79,12 @@ export class ReplayRecorder {
       curseKey: meta.curseKey,
       composedStats: meta.composedStats,
     };
+    // Snapshot at construction — picks are immutable post run-start.
+    // Filtering empty strings here keeps `needsV3` honest if a caller
+    // passes an array with bad shape.
+    this.sporranPicks = meta.sporranPicks
+      ? meta.sporranPicks.filter((id): id is string => typeof id === 'string' && id.length > 0)
+      : [];
   }
 
   /** Push a single frame; values are clamped by the schema. */
@@ -135,9 +151,9 @@ export class ReplayRecorder {
     );
   }
 
-  /** True when captured node outcomes require a v3 blob. */
+  /** True when captured node outcomes OR sporran picks require a v3 blob. */
   private needsV3(): boolean {
-    return this.nodeOutcomes.length > 0;
+    return this.nodeOutcomes.length > 0 || this.sporranPicks.length > 0;
   }
 
   /**
@@ -178,7 +194,8 @@ export class ReplayRecorder {
       curseKey: this.meta.curseKey,
       routes: this.routes.length > 0 ? this.routes.slice() : undefined,
       composedStats: this.meta.composedStats,
-      nodeOutcomes: this.nodeOutcomes.slice(),
+      nodeOutcomes: this.nodeOutcomes.length > 0 ? this.nodeOutcomes.slice() : undefined,
+      sporranPicks: this.sporranPicks.length > 0 ? this.sporranPicks.slice() : undefined,
     });
     blob.frames = this.frames.slice();
     blob.frameCount = blob.frames.length;

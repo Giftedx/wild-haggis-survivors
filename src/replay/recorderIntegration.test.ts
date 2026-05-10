@@ -97,6 +97,47 @@ describe('replay recorder ↔ save v5 integration', () => {
     expect(blob.seed).toBe(META.seed);
   });
 
+  it('S1 Phase 2 — sporranPicks survive save migration round-trip on v3 blob', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+    });
+    r.pushFrame({ dtMs: 16, dx: 1, dy: 0, dash: false, menu: false });
+    const blob = r.finalize();
+    expect(blob.version).toBe(3);
+
+    const save = createDefaultSave();
+    const result = applyRunSummary(
+      save,
+      { timeSurvivedSec: 5, enemiesKilled: 1, bossGold: 0, victory: false },
+      {
+        level: 1,
+        bossKills: 0,
+        variantKey: META.variantKey,
+        weaponKeys: [],
+        runSeed: META.seed,
+        replay: blob,
+        sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+      },
+    );
+    const entry = result.save.runHistory[0];
+    expect(entry.sporranPicks).toEqual(['boon_silver', 'boon_coal', 'curse_heavy_legs']);
+    expect(entry.replay?.version).toBe(3);
+
+    const reloaded = migrateSave(JSON.parse(JSON.stringify(result.save)));
+    const reloadedEntry = reloaded.runHistory[0];
+    expect(reloadedEntry.sporranPicks).toEqual([
+      'boon_silver',
+      'boon_coal',
+      'curse_heavy_legs',
+    ]);
+    expect((reloadedEntry.replay as { sporranPicks?: string[] }).sporranPicks).toEqual([
+      'boon_silver',
+      'boon_coal',
+      'curse_heavy_legs',
+    ]);
+  });
+
   it('recorder → ReplayInput round-trip preserves direction + edge sequence', () => {
     // Scripted recording: 5 frames with varied direction, dash at 2, menu at 4.
     const script = [

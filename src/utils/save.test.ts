@@ -379,8 +379,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 18', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(18);
+  it('SAVE_SCHEMA_VERSION is 19', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(19);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -2291,6 +2291,65 @@ describe('save schema v17 → v18 (Lemmings Easter Egg)', () => {
   it('coerces non-array lemmingsSeenForVariant to empty', () => {
     const migrated = migrateSave({ schemaVersion: SAVE_SCHEMA_VERSION, lemmingsSeenForVariant: { x: 1 } });
     expect(migrated.lemmingsSeenForVariant).toEqual([]);
+  });
+});
+
+describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
+  it('migrates a v18 save to current with no field touch', () => {
+    const migrated = migrateSave({ schemaVersion: 18, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.runHistory).toEqual([]);
+  });
+
+  it('coerces sporranPicks on history entries — drops unknown ids, omits empty', () => {
+    const migrated = migrateSave({
+      schemaVersion: 19,
+      runHistory: [
+        {
+          timestamp: 1,
+          timeSurvivedSec: 10,
+          enemiesKilled: 0,
+          level: 1,
+          bossKills: 0,
+          goldEarned: 0,
+          bestCombo: 0,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: [],
+          sporranPicks: ['boon_silver', 'not_a_card', 'curse_heavy_legs'],
+        },
+        {
+          timestamp: 2,
+          timeSurvivedSec: 10,
+          enemiesKilled: 0,
+          level: 1,
+          bossKills: 0,
+          goldEarned: 0,
+          bestCombo: 0,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: [],
+          sporranPicks: ['nope_a', 'nope_b'],
+        },
+        {
+          timestamp: 3,
+          timeSurvivedSec: 10,
+          enemiesKilled: 0,
+          level: 1,
+          bossKills: 0,
+          goldEarned: 0,
+          bestCombo: 0,
+          variantKey: 'classic',
+          isVictory: false,
+          weaponKeys: [],
+        },
+      ],
+    });
+    expect(migrated.runHistory[0].sporranPicks).toEqual(['boon_silver', 'curse_heavy_legs']);
+    // Fully-stale entry → field omitted, not stamped as [].
+    expect(migrated.runHistory[1].sporranPicks).toBeUndefined();
+    // Pre-v19 entry (no field) → field omitted.
+    expect(migrated.runHistory[2].sporranPicks).toBeUndefined();
   });
 });
 

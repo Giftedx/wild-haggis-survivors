@@ -164,4 +164,38 @@ describe('parseGameSceneInitData', () => {
       expect(resolved.pendingSporranIds).toBeNull();
     });
   });
+
+  describe('replay-side sporranPicks override (S1 Phase 2)', () => {
+    it('replay blob carrying sporranPicks overrides caller list', () => {
+      const resolved = parseGameSceneInitData({
+        pickedSporranIds: ['curse_thin_hide'],
+        replay: {
+          ...validReplay,
+          sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+        } as typeof validReplay & { sporranPicks: string[] },
+      });
+      expect(resolved.pendingSporranIds).toEqual([
+        'boon_silver',
+        'boon_coal',
+        'curse_heavy_legs',
+      ]);
+    });
+
+    it('replay blob without sporranPicks falls back to caller list', () => {
+      const resolved = parseGameSceneInitData({
+        pickedSporranIds: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+        replay: validReplay,
+      });
+      expect(resolved.pendingSporranIds).toEqual([
+        'boon_silver',
+        'boon_coal',
+        'curse_heavy_legs',
+      ]);
+    });
+
+    it('replay blob without sporranPicks AND no caller list → null', () => {
+      const resolved = parseGameSceneInitData({ replay: validReplay });
+      expect(resolved.pendingSporranIds).toBeNull();
+    });
+  });
 });

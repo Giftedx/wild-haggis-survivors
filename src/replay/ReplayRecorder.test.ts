@@ -196,6 +196,72 @@ describe('ReplayRecorder v3 upgrade (M1 nodeOutcomes)', () => {
   });
 });
 
+describe('ReplayRecorder S1 Phase 2 (sporranPicks)', () => {
+  it('stays v1 with empty / absent sporranPicks', () => {
+    expect(new ReplayRecorder(META).finalize().version).toBe(1);
+    expect(new ReplayRecorder({ ...META, sporranPicks: [] }).finalize().version).toBe(1);
+  });
+
+  it('upgrades to v3 when at least one sporranPick is set', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      sporranPicks: ['boon_silver', 'boon_coal', 'curse_heavy_legs'],
+    });
+    const blob = r.finalize();
+    expect(blob.version).toBe(3);
+    expect((blob as { sporranPicks?: string[] }).sporranPicks).toEqual([
+      'boon_silver',
+      'boon_coal',
+      'curse_heavy_legs',
+    ]);
+  });
+
+  it('drops empty / non-string ids at construction', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      sporranPicks: [
+        'boon_silver',
+        '',
+        null as unknown as string,
+        42 as unknown as string,
+        'curse_heavy_legs',
+      ],
+    });
+    const blob = r.finalize();
+    expect((blob as { sporranPicks?: string[] }).sporranPicks).toEqual([
+      'boon_silver',
+      'curse_heavy_legs',
+    ]);
+  });
+
+  it('co-exists with curseKey + nodeOutcomes — single v3 blob carries all three', () => {
+    const r = new ReplayRecorder({
+      ...META,
+      curseKey: 'heavy_legs',
+      sporranPicks: ['boon_whisky'],
+    });
+    r.pushNodeOutcome({ nodeKey: 'a1_rest_bothy', visitedAtGameTimeSec: 100 });
+    const blob = r.finalize() as {
+      version: number;
+      curseKey?: string;
+      sporranPicks?: string[];
+      nodeOutcomes?: unknown[];
+    };
+    expect(blob.version).toBe(3);
+    expect(blob.curseKey).toBe('heavy_legs');
+    expect(blob.sporranPicks).toEqual(['boon_whisky']);
+    expect(blob.nodeOutcomes).toHaveLength(1);
+  });
+
+  it('finalize emits independent copies — mutating the returned blob does not leak', () => {
+    const r = new ReplayRecorder({ ...META, sporranPicks: ['boon_silver'] });
+    const a = r.finalize() as { sporranPicks?: string[] };
+    a.sporranPicks!.push('boon_coal');
+    const b = r.finalize() as { sporranPicks?: string[] };
+    expect(b.sporranPicks).toEqual(['boon_silver']);
+  });
+});
+
 describe('ReplayRecorder T308 frame cap', () => {
   const SAMPLE_FRAME = { dx: 0, dy: 0, dtMs: 16, dash: false, menu: false } as const;
 

@@ -180,6 +180,42 @@ describe('installReplayRecording', () => {
     }
   });
 
+  it('S1 Phase 2 — folds sporranPicks into the recorder meta when present', () => {
+    const out = installReplayRecording({
+      replayMode: 'record',
+      playbackV2: null,
+      seed: 11,
+      variantKey: 'classic',
+      build: 'whs-dev',
+      curseKey: null,
+      composedStats: sampleStats,
+      sporranPicks: ['boon_silver', 'curse_heavy_legs', 'quirk_haggis_blooded'],
+    });
+    const blob = out.replayRecorder!.finalize() as { version: number; sporranPicks?: string[] };
+    expect(blob.version).toBe(3);
+    expect(blob.sporranPicks).toEqual([
+      'boon_silver',
+      'curse_heavy_legs',
+      'quirk_haggis_blooded',
+    ]);
+  });
+
+  it('S1 Phase 2 — empty sporranPicks does not bump v2 → v3', () => {
+    const out = installReplayRecording({
+      replayMode: 'record',
+      playbackV2: null,
+      seed: 12,
+      variantKey: 'classic',
+      build: 'whs-dev',
+      curseKey: null,
+      composedStats: sampleStats,
+      sporranPicks: [],
+    });
+    const blob = out.replayRecorder!.finalize();
+    // composedStats already triggers v2; empty sporranPicks must not push to v3.
+    expect(blob.version).toBe(2);
+  });
+
   it('folds the active curse key into the recorder meta when present', () => {
     const out = installReplayRecording({
       replayMode: 'record',

@@ -160,3 +160,13 @@ export const ALL_SPORRAN_CARDS: readonly SporranCard[] = [
   ...BOON_CARDS,
   ...QUIRK_CARDS,
 ];
+
+/**
+ * Stable ID set derived from `ALL_SPORRAN_CARDS`. Sister to `RELIC_KEYS`
+ * — used by `coerceRunHistoryEntry` (S1 Phase 2) to drop stale picks
+ * from older saves so a renamed or removed card never poisons the
+ * Chronicle. Frozen so callers can't mutate at the import boundary.
+ */
+export const SPORRAN_CARD_IDS: ReadonlySet<string> = new Set(
+  ALL_SPORRAN_CARDS.map((c) => c.id),
+);
