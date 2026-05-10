@@ -2584,9 +2584,27 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.beithir_sting.cured_heal.a',
         'ui.banter.beithir_sting.cured_heal.b',
       ],
+      // First heal-cure ever (lifetime counter pre-bump 0). Wonder /
+      // discovery beat — auld stories paid out. Player.cureBeithirSting
+      // FromHeal routes here when bumpBeithirCured() returns 0.
+      cured_heal_first: [
+        'ui.banter.beithir_sting.cured_heal_first.a',
+        'ui.banter.beithir_sting.cured_heal_first.b',
+        'ui.banter.beithir_sting.cured_heal_first.c',
+      ],
       cured_kill: [
         'ui.banter.beithir_sting.cured_kill.a',
         'ui.banter.beithir_sting.cured_kill.b',
+      ],
+      // First kill-cure ever (lifetime counter pre-bump 0). Wonder /
+      // revenge-discovery beat. Cures share the counter so a prior
+      // heal-cure suppresses this beat (the wonder is "the cure works
+      // at all", not "this specific path"). Three leaves give the
+      // BanterSystem no-repeat ring some room.
+      cured_kill_first: [
+        'ui.banter.beithir_sting.cured_kill_first.a',
+        'ui.banter.beithir_sting.cured_kill_first.b',
+        'ui.banter.beithir_sting.cured_kill_first.c',
       ],
       expired: [
         'ui.banter.beithir_sting.expired.a',

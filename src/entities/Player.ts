@@ -71,6 +71,7 @@ import {
   computeStingExpireDamage,
 } from './raceTheBeithir';
 import type { Enemy } from './Enemy';
+import { bumpBeithirCured } from '../utils/save/bumpers';
 import { isInvincibilityEnabled } from '../systems/accessibility/AssistMode';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
@@ -1685,7 +1686,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.beithirMaxHpAtSting = 0;
     audio.playBeithirCure?.();
     const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
-    sceneCtx.requestBanter?.('beithir_sting', 'cured_heal');
+    // Lifetime counter routes the first cure ever to the *_first sub-pool
+    // (wonder / discovery beat) and subsequent cures to the existing pool
+    // (muscle memory). Pre-bump 0 = first ever; bumper persists to v20 save.
+    const beforeCount = bumpBeithirCured();
+    const tag = beforeCount === 0 ? 'cured_heal_first' : 'cured_heal';
+    sceneCtx.requestBanter?.('beithir_sting', tag);
   }
 
   /**
@@ -1702,7 +1708,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.beithirMaxHpAtSting = 0;
     audio.playBeithirCure?.();
     const sceneCtx = this.scene as Phaser.Scene & Partial<ISceneContext>;
-    sceneCtx.requestBanter?.('beithir_sting', 'cured_kill');
+    // See cureBeithirStingFromHeal — same first-vs-subsequent routing.
+    // The two cure paths share the lifetime counter so a heal-cure
+    // followed by a kill-cure both register as subsequent (the wonder
+    // beat is "the cure works at all", not "this specific cure path").
+    const beforeCount = bumpBeithirCured();
+    const tag = beforeCount === 0 ? 'cured_kill_first' : 'cured_kill';
+    sceneCtx.requestBanter?.('beithir_sting', tag);
   }
 
   /**

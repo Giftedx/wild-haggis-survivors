@@ -47,6 +47,7 @@ export {
   bumpBanterHeard,
   bumpBeastieKilled,
   bumpBeastieSeen,
+  bumpBeithirCured,
   bumpBossKillCount,
   bumpCeilidhPulsesLifetime,
   bumpCursedVictoryByBoss,

@@ -1759,9 +1759,19 @@ export const ui = {
         a: 'Healin water — tha venom lifts.',
         b: 'Brig\'s blessin. Clean again.',
       },
+      cured_heal_first: {
+        a: 'Brig water — folk werenae leein. Clean.',
+        b: 'First time tha auld tales peyed out.',
+        c: 'Rinnin water unner a stane. Aye, richt.',
+      },
       cured_kill: {
         a: 'Kilt tha beast. Venom dees wi\' it.',
         b: 'Heid aff, curse aff. Fair trade.',
+      },
+      cured_kill_first: {
+        a: 'Kilt it. Venom dees on its ain tongue. Aye.',
+        b: 'First Beithir doun. Tha lore wis richt.',
+        c: 'Fang for fang. Auld debt settled.',
       },
       expired: {
         a: 'Tha venom fund hame. That stang.',

@@ -125,6 +125,33 @@ export function bumpCeilidhPulsesLifetime(): void {
 }
 
 /**
+ * Race the Beithir (DESIGN_IDEAS §1) — bump the lifetime cure counter and
+ * return the **pre-bump** value. Caller uses pre-bump 0 to gate the
+ * `cured_heal_first` / `cured_kill_first` banter sub-pools (first cure
+ * ever = wonder; subsequent = muscle memory).
+ *
+ * Returns the pre-bump count so the cure callsite has a single source
+ * of truth for "is this the first cure ever?" without re-reading the
+ * save (matches `bumpFirstTimeEvent`'s precedent of bumpers that return
+ * a routing signal). On storage failure returns the same value as if
+ * the counter had been bumped — i.e. `Infinity` would be too cute, so we
+ * return a number that defeats the first-time gate (`Number.MAX_SAFE_INTEGER`).
+ * Callers always treat `=== 0` as "first ever"; any non-zero (including
+ * the storage-failure sentinel) routes to the existing pool. Banter is
+ * cosmetic; gameplay never blocks on the counter.
+ */
+export function bumpBeithirCured(): number {
+  try {
+    const cur = loadSave();
+    const before = cur.beithirCuresLifetime ?? 0;
+    writeSave({ ...cur, beithirCuresLifetime: before + 1 });
+    return before;
+  } catch {
+    return Number.MAX_SAFE_INTEGER;
+  }
+}
+
+/**
  * B1 Phase 3 Task 17 — persist an enemy key into `seenEnemies` the first
  * time SpawnSystem encounters it. Best-effort — swallow storage errors
  * so banter never blocks gameplay. No-op when the key is already tracked.

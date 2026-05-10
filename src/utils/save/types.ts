@@ -181,6 +181,16 @@ export interface SaveData {
   ceilidhPulsesLifetime?: number;
 
   /**
+   * Race the Beithir (DESIGN_IDEAS §1) — lifetime count of cured stings
+   * across both cure paths (heal-water + kill-the-beast). Pre-bump 0
+   * gates the `cured_heal_first` / `cured_kill_first` banter sub-pools
+   * — the first cure ever is a *learning* beat (auld stories paid out);
+   * subsequent cures fall back to the existing terse pools. v20 addition.
+   * Optional + defaulted to 0 via coerce; back-compat.
+   */
+  beithirCuresLifetime?: number;
+
+  /**
    * Total cursed-run victories across all time. Unlocks the Cailleach
    * variant at count=3. Retroactively seeded from runHistory on first
    * load for existing players who already have past cursed victories.

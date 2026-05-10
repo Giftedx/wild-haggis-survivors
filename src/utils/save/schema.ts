@@ -6,7 +6,7 @@
  * `migrateV{N-1}ToV{N}` step in `migrations.ts`.
  */
 
-export const SAVE_SCHEMA_VERSION = 19;
+export const SAVE_SCHEMA_VERSION = 20;
 
 /**
  * V2 Track 2 — the "coastal" biome set for the Peerie Shetlander

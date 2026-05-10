@@ -7,6 +7,7 @@ import {
   bumpAncestralEchoesTouched,
   bumpBeastieKilled,
   bumpBeastieSeen,
+  bumpBeithirCured,
   bumpItemAcquired,
   bumpRoutePicked,
   bumpCeilidhPulsesLifetime,
@@ -379,8 +380,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 19', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(19);
+  it('SAVE_SCHEMA_VERSION is 20', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(20);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1536,6 +1537,21 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().ceilidhPulsesLifetime).toBe(15);
   });
 
+  it('bumpBeithirCured returns 0 on first cure, 1 on second, and persists the count', () => {
+    expect(bumpBeithirCured()).toBe(0);
+    expect(loadSave().beithirCuresLifetime).toBe(1);
+    expect(bumpBeithirCured()).toBe(1);
+    expect(loadSave().beithirCuresLifetime).toBe(2);
+    expect(bumpBeithirCured()).toBe(2);
+    expect(loadSave().beithirCuresLifetime).toBe(3);
+  });
+
+  it('bumpBeithirCured preserves an existing seeded count', () => {
+    writeSave({ ...createDefaultSave(), beithirCuresLifetime: 9 });
+    expect(bumpBeithirCured()).toBe(9);
+    expect(loadSave().beithirCuresLifetime).toBe(10);
+  });
+
   it('recordPostBellBest writes a new record when secPast > current', () => {
     writeSave({ ...createDefaultSave(), bestEndlessSeconds: 30 });
     recordPostBellBest(45);
@@ -2299,6 +2315,30 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
     const migrated = migrateSave({ schemaVersion: 18, runHistory: [] });
     expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
     expect(migrated.runHistory).toEqual([]);
+  });
+
+  it('v19 → v20 (Beithir lifetime cure counter): pre-v20 save defaults beithirCuresLifetime to 0', () => {
+    const migrated = migrateSave({ schemaVersion: 19, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.beithirCuresLifetime).toBe(0);
+  });
+
+  it('v20 coerce: existing beithirCuresLifetime is preserved on round-trip', () => {
+    const migrated = migrateSave({
+      schemaVersion: 20,
+      runHistory: [],
+      beithirCuresLifetime: 7,
+    });
+    expect(migrated.beithirCuresLifetime).toBe(7);
+  });
+
+  it('v20 coerce: malformed beithirCuresLifetime falls back to 0', () => {
+    const migrated = migrateSave({
+      schemaVersion: 20,
+      runHistory: [],
+      beithirCuresLifetime: 'not a number',
+    });
+    expect(migrated.beithirCuresLifetime).toBe(0);
   });
 
   it('coerces sporranPicks on history entries — drops unknown ids, omits empty', () => {
