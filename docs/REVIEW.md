@@ -49,7 +49,7 @@ But the rest of the project assumes the answer is settled:
 
 - [`docs/HUGE_INITIATIVES_MASTER_PLAN.md`](HUGE_INITIATIVES_MASTER_PLAN.md) lists kill criteria like "If 15-relic launch tests show build dominance (one relic picked >60% of runs), rebalance and defer launch." There are no launch tests. There is no telemetry. The kill criterion can never fire.
 - [`docs/PRD.md`](PRD.md) tracks "Flagship status" with shipped/partial/deferred markers as if towards a release.
-- [`docs/QUALITY_BAR.md`](QUALITY_BAR.md) Filter #1 says "stand the test of time, after the contributor who wrote it has rotated off." For whom? There is no team to rotate.
+- [`docs/QUALITY_BAR.md`](../CONTRIBUTING.md) Filter #1 says "stand the test of time, after the contributor who wrote it has rotated off." For whom? There is no team to rotate. *(file demoted/renamed to `CONTRIBUTING.md` 2026-05-10; link redirected.)*
 - [ADR-0006](adr/0006-cloud-save-backend.md) ratifies a Workers + D1 + Resend cloud-save architecture. Cloud save for what user count? On what timeline?
 
 Without Q9 answered, the apparatus is **velocity theatre**. The 2026-05-09 mechanics sprint shipped 13 features in one day (PRD lines 46–66). Twelve of the thirteen ([`9f6a694`](https://github.com/...) Race the Beithir / [`12357dc`](https://github.com/...) Shinty Parry / [`805e03c`](https://github.com/...) Stag Antler / etc.) have been touched only by AI agents. Per the user's own framing, no human has played them. The project's growth rate is decoupled from any consumer.
@@ -64,7 +64,7 @@ Refuse to do any more flagship work until Q9 is closed. The cost of that refusal
 
 ### C2 — The LOC ratchet is a logbook of permission slips, not a ratchet.
 
-[`src/utils/locBudget.test.ts`](../src/utils/locBudget.test.ts) docstring says: *"Lower an entry only after that file has been split. Never raise silently."* [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) reinforces: *"each top-of-file ceiling can only be lowered, never raised silently."*
+`src/utils/locBudget.test.ts` docstring used to say: *"Lower an entry only after that file has been split. Never raise silently."* [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) reinforced this with: *"each top-of-file ceiling can only be lowered, never raised silently."* *(The ratchet test was deleted 2026-05-10 per C2 closure; LOC_BUDGET.md now describes a reporter-only flow.)*
 
 In reality, on **2026-05-09 alone**, six ceilings were raised, multiple times each:
 
@@ -79,7 +79,7 @@ In reality, on **2026-05-09 alone**, six ceilings were raised, multiple times ea
 
 The ratchet didn't ratchet. It documented the bumps with paragraph-long inline comments and let them through. The "never raise silently" rule is satisfied (every bump has a comment), but the *intent* — force extraction before raising — is dead.
 
-[`docs/PRD.md:71`](PRD.md) still claims "GameScene 1672 LOC (ceiling 1680, T401 floor 1656)". The actual current state is **1818 LOC, ceiling 1830**. PRD is stale by one day; my own [`docs/QUALITY_BAR.md`](QUALITY_BAR.md) sacred-invariants table says "GameScene ≤ 1680" and is wrong on day three.
+[`docs/PRD.md:71`](PRD.md) still claims "GameScene 1672 LOC (ceiling 1680, T401 floor 1656)". The actual current state is **1818 LOC, ceiling 1830**. PRD is stale by one day; my own [`docs/QUALITY_BAR.md`](../CONTRIBUTING.md) sacred-invariants table says "GameScene ≤ 1680" and is wrong on day three. *(QUALITY_BAR.md was renamed to CONTRIBUTING.md and the per-file LOC ratchet retired 2026-05-10; see C2 closure note above.)*
 
 The 2026-04-30 codebase-restructure plan landed with seven phases of extraction work specifically to enable the ratchet. One day later (2026-05-09) the ratchet was raised six times in a single sprint. The discipline survived approximately 24 hours.
 
@@ -104,7 +104,7 @@ Unit tests for the pure helpers exist (verified — `raceTheBeithir.test.ts`, `s
 - Whether the Lemmings parade fires after 90s coastal idle (wiring + biome detection + idle predicate).
 - Whether a Sporran-deck pre-run pick actually applies its modifier in-game (wiring + RunModifiers + scene init data).
 
-[`docs/QUALITY_BAR.md`](QUALITY_BAR.md) "New mechanic chain" requires a helper test. It does not require integration test or e2e. The chain passes for shipped-but-unwired features.
+[`docs/QUALITY_BAR.md`](../CONTRIBUTING.md) "New mechanic chain" requires a helper test. It does not require integration test or e2e. The chain passes for shipped-but-unwired features. *(File demoted to `CONTRIBUTING.md` 2026-05-10; link redirected. The "e2e smoke spec for input-wiring features" rule recommended below was added to the new chain.)*
 
 The PRD claims the sprint shipped "13 features in one day". That is a code-shipped count, not a play-shipped count. The implicit assumption is that helper tests + types + lint passing = feature works. **It doesn't.** Phaser scene wiring is glue logic that helper tests don't cover. Field-test of any of the 13 features may reveal: keybind clashes, scene-pause edge cases, save-roundtrip drops, replay non-determinism, audio scheduling races.
 

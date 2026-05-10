@@ -1,9 +1,11 @@
 # ADR 0005 — Skeletal Animation Rig: Texture-Swap Atlases over Bone Hierarchy
 
-**Status:** Accepted (2026-04-26 — Phase 0 + Phase 2 secondary motion shipped; Phase 1 partial)
+**Status:** Accepted (2026-04-26 — Phase 0 prototype gate, Phase 1 enemy animation, and Phase 2 secondary motion all shipped; Phase 3 broader enemy + attack-state coverage deferred to W71 backlog)
 **Date:** 2026-04-26
 **Supersedes:** —
 **Superseded by:** —
+
+> **Update 2026-05-10 (housekeeping).** The original status line said "Phase 1 partial," which contradicted the Context body ("Phase 1 — Shipped 2026-04-23 to 2026-04-26"). The status line above is rewritten to match the body. The "partial" framing referred to the broader full-skeletal-rig vision (bones / IK / blend trees), which the ADR explicitly rejected in favour of texture-swap atlases — that's not a Phase 1 deliverable, it's a non-goal. Phase 3 remains open per W71 backlog. No decision change; doc-truth-up only.
 
 ## Context
 
@@ -22,7 +24,7 @@ roadmap (`docs/HUGE_INITIATIVES_MASTER_PLAN.md` row W71) defined three phases:
   bosses; tracked in W71 backlog.
 
 Phase 0's gate question was the format choice. Three credible candidates were
-on the table per the original Phase 1 charter (`docs/top-10-tasks/02-w71-skeletal-animation-rig.md`):
+on the table per the original Phase 1 charter (`docs/archive/top-10-tasks/02-w71-skeletal-animation-rig.md`):
 
 1. **Hand-rolled JSON skeleton + bone hierarchy + keyframe tracks.** A true
    "rig" in the animator's sense — bones, transforms, IK, blend trees, weighted
@@ -166,7 +168,7 @@ frame clock (`frameClock.ts`), composed through `AnimationController`.**
   grows past ~25 or if frame counts double across the board. Mitigation
   triggers documented in W71 Phase 3 backlog.
 - **Procedural-fallback feature flag explicitly NOT shipped.** The original
-  charter (`docs/top-10-tasks/02-w71-skeletal-animation-rig.md` Acceptance
+  charter (`docs/archive/top-10-tasks/02-w71-skeletal-animation-rig.md` Acceptance
   §6) called for a `USE_SKELETAL_PLAYER` flag for emergency revert. Phase 1
   has been live in production since 2026-04-23 (per memory's
   `project_w71_phase2_status.md` entry); the 30-day revert window has
@@ -219,7 +221,7 @@ non-skeletal subjects.
 - **Phase 1 enemy plan (executed):** `docs/superpowers/plans/2026-04-20-phase1-enemy-animation.md`.
 - **Phase 2 secondary-motion plan (executed):** `docs/superpowers/plans/2026-04-23-secondary-motion.md`.
 - **Phase 2 design spec:** `docs/superpowers/specs/2026-04-23-secondary-motion-design.md`.
-- **Charter reference:** `docs/top-10-tasks/02-w71-skeletal-animation-rig.md`.
+- **Charter reference:** `docs/archive/top-10-tasks/02-w71-skeletal-animation-rig.md`.
 - **Determinism contract:** ADR-0002 — replay format covers the deterministic
   fixed-step physics + input-only replay byte budget that this ADR's pure
   modules slot into without modification.

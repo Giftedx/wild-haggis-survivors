@@ -9,7 +9,7 @@
 
 The repo persists state to **three** independent `localStorage` keys, each owned by one module:
 
-- `whs_save` — `src/utils/save/` module, schema **v18**. Combined save: meta progression (gold, unlocks, deeds), run history (last 20), replay blobs, run-specific bookkeeping (`lemmingsSeenForVariant`, `seenRunes`, etc.).
+- `whs_save` — `src/utils/save/` module, schema **v19** (was **v18** when this ADR was drafted; Sporran Deck Phase 2 chronicle persistence bumped to v19 same-day, 2026-05-10). Combined save: meta progression (gold, unlocks, deeds), run history (last 20), replay blobs, run-specific bookkeeping (`lemmingsSeenForVariant`, `seenRunes`, sporran chronicle, etc.).
 - `whs_meta_save` — `src/core/SaveManager.ts`, schema **v9**. Kills, achievements, mid-run resume (`activeRun: IRunState | null`).
 - `whs_game_settings` — `src/core/SettingsManager.ts`, settings v1. Audio / motion / accessibility / keybindings / locale / first-launch flags (`photosensitivityWarningSeen`, `culturalContentSplashSeen`).
 

@@ -121,5 +121,5 @@ These are guesses to verify during T203. Confirm or refute each:
 ## Cross-references
 
 - `docs/MOBILE_DEVICE_TEST_MATRIX.md` — playtest manifest
-- `docs/top-10-tasks/blocked/04-blocked-on-human.md` — what only humans can close
+- `docs/archive/top-10-tasks/blocked/04-blocked-on-human.md` — what only humans can close
 - `docs/research/ACCESSIBILITY_RESEARCH.md` §motor — tap target + touch latency canon

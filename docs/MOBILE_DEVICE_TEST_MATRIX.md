@@ -71,8 +71,8 @@ crossref.)
 
 ## Cross-references
 
-- `docs/top-10-tasks/04-w95-mobile-rework.md` — full charter
-- `docs/top-10-tasks/blocked/04-blocked-on-human.md` — items requiring hardware
+- `docs/archive/top-10-tasks/04-w95-mobile-rework.md` — full charter
+- `docs/archive/top-10-tasks/blocked/04-blocked-on-human.md` — items requiring hardware
 - `docs/MOBILE_QUIRKS.md` — running notebook of mobile-only behaviour
 - `docs/superpowers/plans/2026-04-22-w95-phase0-mobile-safe-area.md` — shipped Phase 0
 - `e2e/mobile-viewport-reflow.spec.ts` — automated engine-side coverage

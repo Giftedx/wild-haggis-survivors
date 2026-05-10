@@ -13,7 +13,7 @@
   - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 19` (see `src/utils/save/schema.ts`; v19 added Sporran chronicle persistence, 2026-05-10).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 488 vitest files; 5174 test cases (verified 2026-05-10 via `npm test`).
+- **Tests:** 487 vitest files; 5174 test cases (verified 2026-05-10 via `npm test`).
 - **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = EVOLUTION_RECIPES.length` (derived; see `src/core/BalanceConfig.ts`).
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
@@ -49,7 +49,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
 
 | Item | Source | Commit | Notes |
 |---|---|---|---|
-| N1 Nicnevin (boss #2) | DESIGN_IDEAS §3 | `c93cb3c` | Wild-Hunt gem-pull; Solway Remnant cultural-review-gated |
+| N1 Nicnevin | DESIGN_IDEAS §3 | `c93cb3c` | Wild-Hunt gem-pull boss; Solway Remnant cultural-review-gated |
 | Cairn Stacking pickup | DESIGN_IDEAS §1 | `e3c3455` | 3-stone heal+magnet boon |
 | Stance Toggle (Q) | DESIGN_IDEAS §1 | `611ca51` | loose/braced/reeling persistent posture |
 | Shinty Parry (E) | DESIGN_IDEAS §1 | `12357dc` | 350ms negate window vs enemy projectiles |
@@ -129,7 +129,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
     (2026-04-16 → 2026-04-17) — `LOCALES` map, `setLocale`,
     populated `SCS_STRINGS` across UI shell, toasts, decision
     moments, loadout, bosses, biomes, tutorial; parity regression
-    test. Banter pool still deferred.
+    test. Banter pool still deferred (closed via Phase B 2026-04-18 — see [`docs/archive/BANTER_GAPS.md`](archive/BANTER_GAPS.md)).
   - **Analytics / portal telemetry** (2026-04-17) — six-commit pass:
     variant/curse/ironmoor/daily/deathCause tags on run_start /
     run_end, weapon_evolved + achievement_unlocked +
@@ -216,7 +216,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
   register per `feedback_voice_register` (Still Game hearth default,
   Limmy edge for boss warnings / low-HP / decision moments). Parity
   guard in `src/core/i18n.locale.test.ts` enforces every EN banter
-  leaf has a Scots translation. See `docs/BANTER_GAPS.md`.
+  leaf has a Scots translation. See `docs/archive/BANTER_GAPS.md`.
 
 ### P5 — Observability
 - [x] Ship a telemetry toggle (opt-in) for run-completion distribution

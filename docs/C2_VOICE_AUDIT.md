@@ -1,6 +1,6 @@
 # C2 Voice Consistency Audit — 2026-04-26
 
-Charter: `docs/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task A.
+Charter: `docs/archive/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task A.
 
 Reviewer: Agent 8 (autonomous, single-writer pass).
 

@@ -62,6 +62,14 @@ If your change touches one of these surfaces, every step in the chain lands in t
 
 **New mechanic** → pure helper at `src/entities/<name>.ts` or `src/systems/<name>.ts` + test → Phaser-bound orchestrator at `src/scenes/game/<name>.ts` → wire from `Player.update` / `GameScene.update` (after `isGameplayPaused()` early-return) → texture-exists guards on every `scene.add.image/sprite` → i18n keys → banter pool entry if voiceful → **e2e smoke spec for input-wiring features**.
 
+**Data-driven additions** (data row + sister-file plumbing, no new system):
+- **Weapon** → row in [`src/data/weapons.ts`](src/data/weapons.ts) → sprite-icon bake in [`src/art/sprites/icons/weapons.ts`](src/art/sprites/icons/weapons.ts) → i18n EN+SCS leaves (`weapon.<key>.name` + flavour) → if evolved: recipe in [`EVOLUTION_RECIPES`](src/core/BalanceConfig.ts) (auto-lifts `BURNS_EVOLUTION_THRESHOLD`) → upgrade-pool card in [`src/data/upgrades.ts`](src/data/upgrades.ts) → banter `weapon_evolve` sub-tag if voiceful.
+- **Variant** → row in [`src/data/variants.ts`](src/data/variants.ts) (stat profile + palette + voice register + unlock condition) → haggis-atlas key in `src/animation/textureAtlas.ts` → accessory bakes if distinct silhouette → i18n EN+SCS for the variant's voice leaves → banter pool entry per `docs/BANTER_AUTHORING.md`.
+- **Biome** → row in [`src/data/biomes.ts`](src/data/biomes.ts) (tint + weights + modifier + mood + haar density) → routed hazard in [`src/data/hazards.ts`](src/data/hazards.ts) if distinct footing → minimap colour → i18n EN+SCS biome name + ambient lines → optional run-start blessing surface.
+- **Seasonal event** → row in `SEASONAL_EVENTS` ([`src/systems/SeasonalEventManager.ts`](src/systems/SeasonalEventManager.ts), MM-DD window) → run-start blessing slot in [`src/scenes/game/seasonalRunStart.ts`](src/scenes/game/seasonalRunStart.ts) → ambient overlay in [`AmbientWeatherSystem.ts`](src/systems/AmbientWeatherSystem.ts) if distinct → i18n EN+SCS for the event title + greeting line.
+
+The data file's existing rows ARE the recipe — match the closest sister's shape rather than re-deriving the schema. Sister patterns are documented inline in CLAUDE.md "Key Mechanics".
+
 **Player-facing visual / audio** → reduce-motion respected (existing settings: `motionScale`, `reduceParticles`, `reduceFlashing`, `disableSeasonalEvents`, `disableHazards`) → no rapid full-screen flashes >3 Hz → colorblind-distinct (shape + intensity, not color alone) → captions where audio carries meaning ([`docs/A1_CAPTIONS_INDEX.md`](docs/A1_CAPTIONS_INDEX.md)) → keyboard + gamepad parity for any new mouse/touch interaction.
 
 ---

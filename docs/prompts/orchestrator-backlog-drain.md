@@ -15,10 +15,10 @@ You will be tempted to "just fix this one thing" inline. Don't. Stay in coordina
 1. `CLAUDE.md` — project gotchas, especially Phaser 4 scene reuse, `vitest` vs `tsc`, lazy-scene loader constraint (GameScene + ActIntermission must stay eager), bag-vs-cached-field divergence, replay determinism contract.
 2. `AGENTS.md` — cross-agent conventions.
 3. `docs/INDEX.md` — top-level map and source-of-truth hierarchy.
-4. `docs/dispatch/2026-04-26/00_task_list.md` — the 10 charters, with a recommended pickup-order table.
-5. `docs/dispatch/2026-04-26/Execution_Log.md` — **the post-audit snapshot is ground truth for what's shipped since dispatch.** Re-extracting an already-extracted slice will waste the whole session.
-6. For every charter you intend to dispatch: `docs/dispatch/2026-04-26/task_NN.md`. Each has a "Status as of 2026-04-26 (post-audit)" header — read it before writing the sub-agent prompt.
-7. `docs/report-backlog-consolidated-250426.md` — the broader P0/P1/P2/P3 backlog. Read the status banner at the top; it reflects what's moved since the synthesis.
+4. `docs/archive/dispatch/2026-04-26/00_task_list.md` — the 10 charters, with a recommended pickup-order table.
+5. `docs/archive/dispatch/2026-04-26/Execution_Log.md` — **the post-audit snapshot is ground truth for what's shipped since dispatch.** Re-extracting an already-extracted slice will waste the whole session.
+6. For every charter you intend to dispatch: `docs/archive/dispatch/2026-04-26/task_NN.md`. Each has a "Status as of 2026-04-26 (post-audit)" header — read it before writing the sub-agent prompt.
+7. `docs/archive/2026-04-26-multi-model-audit/report-backlog-consolidated-250426.md` — the broader P0/P1/P2/P3 backlog (archived 2026-05-09). Read the status banner at the top; it reflects what's moved since the synthesis.
 8. `docs/superpowers/plans/INDEX.md` — plan-level status markers.
 9. `~/.claude/projects/C--Users-aggis-hlooper-wild-haggis-survivors/memory/MEMORY.md` — initiative-status memory entries (one-liners pointing into per-file memories). Especially: `project_top10_dispatch_status`, `feedback_dispatch_resistance`, `reference_worktree_isolation_hazard`, `feedback_lazy_scene_loader_constraint`, `feedback_test_runner_vs_tsc`.
 
@@ -77,7 +77,7 @@ For every sub-agent dispatch:
    ```
    You are an autonomous coding agent in C:\Users\aggis\hlooper\wild-haggis-survivors.
 
-   Charter: docs/dispatch/2026-04-26/task_NN.md (or P-tier item: <one-line summary>).
+   Charter: docs/archive/dispatch/2026-04-26/task_NN.md (or P-tier item: <one-line summary>).
    Read the charter and its "Status as of 2026-04-26 (post-audit)" header BEFORE editing.
    Re-extracting an already-shipped slice is a hard fail.
 
@@ -120,7 +120,7 @@ For every sub-agent dispatch:
    - `git status --short` — confirm only expected files changed
    - `npm run lint && npm test && npm run build` — re-run on main tree to catch sub-agent drift
    - If on a worktree, cherry-pick or merge back to `master` carefully (see `reference_worktree_isolation_hazard` memory's reconciliation playbook)
-   - Update the row in `docs/dispatch/2026-04-26/Execution_Log.md` "Post-audit implementation snapshot" table — never silently leave the table stale
+   - Update the row in `docs/archive/dispatch/2026-04-26/Execution_Log.md` "Post-audit implementation snapshot" table — never silently leave the table stale
    - Optionally update the matching `project_*_status` memory entry
 
 ## Recommended execution order
@@ -155,7 +155,7 @@ For every sub-agent dispatch:
 - Follow-ups created
 
 **End of session, before you stop:**
-- Updated `docs/dispatch/2026-04-26/Execution_Log.md` post-audit snapshot table
+- Updated `docs/archive/dispatch/2026-04-26/Execution_Log.md` post-audit snapshot table
 - A one-screen summary: shipped / partial / blocked per charter, plus the standing human-gate list
 - A reflection line appended to `~/.claude/memory/reflections.jsonl` per the user-level CLAUDE.md rule
 - If any new gaps surfaced that don't fit the existing charters, drop a `docs/dispatch/<next-date>/00_task_list.md` skeleton — do not silently leave them

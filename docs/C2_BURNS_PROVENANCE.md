@@ -1,6 +1,6 @@
 # C2 Burns Provenance Audit — 2026-04-26
 
-Charter: `docs/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task B.
+Charter: `docs/archive/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task B.
 
 Source-of-truth: every Burns citation or paraphrase in `src/core/i18n.ts` and `src/core/i18n.scs.ts` as of 2026-04-26 (commit `cf613ac`).
 
@@ -219,7 +219,7 @@ Six items flagged. Three are punctuation-only and within editorial discretion (F
 - **F-Burns-5** (`nae_haste.a`): replace "nor" with "or" to match Burns's "Nae man can tether time or tide."
 - **F-Burns-6** (`lineage_moment.b`): replace "clam" with "clamb" to restore Burns's distinctive Scots past tense.
 
-Punctuation-only flags (F-Burns-1, F-Burns-2, F-Burns-4) are recorded but **not** rewritten in this pass — they sit on the editorial line between Burns's exact MS punctuation and house style for in-game banter readability. Defer to native-speaker reviewer (see `docs/top-10-tasks/blocked/08-blocked-on-human.md`).
+Punctuation-only flags (F-Burns-1, F-Burns-2, F-Burns-4) are recorded but **not** rewritten in this pass — they sit on the editorial line between Burns's exact MS punctuation and house style for in-game banter readability. Defer to native-speaker reviewer (see `docs/archive/top-10-tasks/blocked/08-blocked-on-human.md`).
 
 ## Conclusion
 

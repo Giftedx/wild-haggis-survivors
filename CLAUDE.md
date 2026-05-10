@@ -100,7 +100,7 @@ Index. One-line-per-mechanic; deeper notes live as docstrings on the helper file
 | The Drift | `PLAYER.DRIFT_DEGREES` | Constant clockwise rotational input offset; reduced by leveling and upgrades. Core identity. |
 | Weapon Evolution | `EVOLUTION_RECIPES` (`BalanceConfig.ts`) | 10 of 11 weapons paired-passive evolve at chest. `BURNS_EVOLUTION_THRESHOLD` derived from recipe count. |
 | Soft World Boundaries | gentle push-back near edges | No hard walls. |
-| Persistence (3 stores) | `whs_save` v18 + `whs_meta_save` v9 + `whs_game_settings` v1 | See `src/utils/save/`, `core/SaveManager.ts`, `core/SettingsManager.ts`. Overlap by design — see ADR-0007. |
+| Persistence (3 stores) | `whs_save` v19 + `whs_meta_save` v9 + `whs_game_settings` v1 | See `src/utils/save/`, `core/SaveManager.ts`, `core/SettingsManager.ts`. Overlap by design — see ADR-0007. |
 | Elite Enemies | `Enemy.markAsElite()` | 10% chance >2min; 2× HP, 1.3× speed, 3× XP. |
 | Card Reroll | `UpgradeCardsUI.grantReroll()` | 1 free per level-up. |
 | Minimap | `src/ui/Minimap.ts` | Enemy / elite / boss / player / viewport. |

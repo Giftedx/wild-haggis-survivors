@@ -4,7 +4,7 @@
 > tool-runs require a Windows machine with the
 > [Photosensitive Epilepsy Analysis Tool](https://trace.umd.edu/peat/)
 > installed and OBS captures of in-game moments. Fill rows as humans
-> run the tool. See `docs/top-10-tasks/blocked/01-blocked-on-human.md`.
+> run the tool. See `docs/archive/top-10-tasks/blocked/01-blocked-on-human.md`.
 
 ## Tool
 

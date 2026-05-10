@@ -44,5 +44,6 @@ Don't write an ADR for:
 | [0004](0004-seasonal-event-calendar-gating.md) | SeasonalEventManager uses device-local date, not server time or in-game clock | Accepted (2026-04-24; cohort grew 6 → 8 events by 2026-04-29) |
 | [0005](0005-skeletal-animation-rig.md) | Skeletal animation rig: texture-swap atlases over bone hierarchy | Accepted (2026-04-26) |
 | [0006](0006-cloud-save-backend.md) | Cloud-save backend | Accepted (2026-05-09 — architectural choice ratified by lead dev; Cloudflare Workers + D1 + magic-link via Resend) |
+| [0007](0007-three-localstorage-stores-by-design.md) | Three `localStorage` stores by design (no consolidation) | Accepted (2026-05-10 — ratifies the trinity over consolidation; closes `docs/REVIEW.md` S1) |
 
 When an ADR ships its decision (Proposed → Accepted), update both the file's `**Status:**` line and the row above. When superseding, leave both rows in place — never edit a historical Accepted ADR; record the reversal in a new ADR and link them via `**Supersedes:**` / `**Superseded by:**`.

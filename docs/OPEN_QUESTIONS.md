@@ -48,34 +48,43 @@ Stakeholder decisions blocking work. Each entry: what's blocked, what we know, w
 
 **Resolved 2026-05-09 (architectural):** Lead-dev ratification — **Cloudflare Workers + D1 + magic-link via Resend**. ADR-0006 renamed `.draft.md` → `.md`, Status flipped to Accepted. Decision matrix evaluated 6 options against 10 constraints; D1 won every distinguishing cell. The `cloudflare/` Worker scaffold + `server/worker/` handler tests stand. Remaining humans-in-the-loop work (privacy-policy text at `/privacy.html`, GDPR controller legal name + UK address, Resend account creation + Cloudflare D1 provision) is non-architectural and stays in P3's blocked-on-human stub. P3 NOT picked as next flagship — see Q2 below.
 
-**Original context preserved:** Worker + D1 backend prototype shipped 2026-04-27 via top-10 batch. Conflict-resolution UX spec drafted at `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`. ADR-0006 was draft; decision matrix at `docs/P3_BACKEND_DECISION_MATRIX.md`.
+**Original context preserved:** Worker + D1 backend prototype shipped 2026-04-27 via top-10 batch. Conflict-resolution UX spec drafted at `docs/archive/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md`. ADR-0006 was draft; decision matrix at `docs/archive/P3_BACKEND_DECISION_MATRIX.md` (archived 2026-05-10).
 
 ---
 
 ### Q5 — Native-speaker review for Doric / Shetlandic / Gaelic
 
-**Blocks:** V2 Variants ship-quality bar (variants live but voice not native-reviewed). C2 Lore native review on 8 Gaelic banter leaves. Cross-cuts B5 Phase 3 Edinburgh rune.
+**Blocks:** Nothing currently — Q9 (public ship) was resolved 2026-05-10 as "passion project / continuous-deployment live build, no commercial release," which removes the public-ship gate this question used to attach to.
 
 **Context:** Variants pack (V2) shipped 2026-04-24 with author-only voice. C2 Lore truth-up 2026-04-26. Reviewer-facing entry at `docs/status/cultural/CULTURAL_REVIEW_PACKET.md`. Three review briefs:
 - `docs/C2_DIALECT_REVIEW.md` — Doric + Shetlandic
 - `docs/C2_BURNS_PROVENANCE.md` — Burns Kinsley + Canongate
 - 8 Gaelic banter leaves (per B1 Phase 4 followup memory)
 
-**Decision needed:** Engage native-speaker reviewers (Doric, Shetlandic, Burns Canongate, Gaelic). Logistics + budget. Not Claude's call.
+**Posture (lead-dev decision 2026-05-10):** **Mitigation accepted.** The live build ships a cultural-content first-launch splash inviting feedback, plus README §"Scottish dialect content" disclosure that native review is in progress and voices may be revised. Reviewer briefs stay current so a paid consultant could be engaged without re-spinning a packet.
 
-**Priority:** Medium-high — required before public ship; not blocking dev work today.
+**Re-open triggers:** (a) a paid consultant for any of the four dialects becomes available within budget, (b) specific feedback on a leaf surfaces from the live-build cultural splash and warrants targeted review, (c) the project posture changes (e.g. paid release framing returns and Q9 re-opens).
+
+**Priority:** Low — mitigation in place; no longer blocking development or shipping.
 
 ---
 
 ### Q6 — A1 PEAT audit (human-gated)
 
-**Blocks:** A1 Accessibility foundation closing M1.
+**Blocks:** Formally closing A1 M1; previously cited as gating "Steam accessibility tag" claim, which is now moot per Q9 resolution (no Steam release).
 
-**Context:** A1 M2–M6 shipped 2026-04-24. M1 PEAT photosensitivity audit cannot be automated — it needs the PEAT desktop tool with a human reviewer. Audit doc + 25-row matrix at `docs/A1_PEAT_AUDIT.md`. Followup checklist at `docs/superpowers/plans/2026-04-24-a1-m5-manual-playtest-followups.md` (F1–F4).
+**Context:** A1 M2–M6 shipped 2026-04-24. M1 PEAT photosensitivity audit cannot be automated — it needs the PEAT desktop tool with a human reviewer. Audit doc + 25-row matrix at `docs/A1_PEAT_AUDIT.md`. Followup checklist at `docs/archive/superpowers/plans/2026-04-24-a1-m5-manual-playtest-followups.md` (F1–F4).
 
-**Decision needed:** Schedule the PEAT pass. Possibly engage a third-party a11y auditor.
+**Posture (lead-dev decision 2026-05-10, ratified by REVIEW.md C5):** **Mitigation accepted.** Three layers:
+1. `reduceFlashing` defaulted **ON** in [`SettingsManager.ts:225`](../src/core/SettingsManager.ts) — fresh saves get the safe behaviour without opting in.
+2. First-launch photosensitivity warning splash gated by `photosensitivityWarningSeen` setting.
+3. [`README.md`](../README.md) §"Photosensitivity" discloses the unaudited status and points players at the toggle.
 
-**Priority:** Medium — blocks A1 closeout and any "Steam accessibility tag" claim.
+The "audited" claim is removed from PRD; PEAT pass is an open candidate, not a blocking gate.
+
+**Re-open triggers:** (a) a paid PEAT consultant becomes available within budget (typically $500–$2000), (b) a specific seizure-risk concern surfaces from a player or external auditor, (c) project posture shifts (e.g. distribution platform requires audited claim).
+
+**Priority:** Low — mitigation in place; no longer blocking shipping.
 
 ---
 

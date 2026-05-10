@@ -14,7 +14,7 @@ Lower-priority docs that conflict with these should be brought into line, not pr
 
 ## File location rules
 
-### Repo-root canon (5 files, do not move)
+### Repo-root canon (6 files, do not move)
 
 These are referenced by tooling and CLAUDE/AGENTS docs:
 
@@ -58,7 +58,7 @@ Two acceptable locations. Pick by **who cites the file**:
 
 | Cited from | Location | Example |
 |---|---|---|
-| Code, tests, e2e (absolute path) | `docs/<NAME>.md` (root of `docs/`) | `docs/A1_PEAT_AUDIT.md`, `docs/MOBILE_DEVICE_TEST_MATRIX.md`, `docs/P3_BACKEND_DECISION_MATRIX.md` |
+| Code, tests, e2e (absolute path) | `docs/<NAME>.md` (root of `docs/`) | `docs/A1_PEAT_AUDIT.md`, `docs/MOBILE_DEVICE_TEST_MATRIX.md` |
 | Only other docs | `docs/status/<domain>/<NAME>.md` | `docs/status/cultural/CULTURAL_REVIEW_PACKET.md`, `docs/status/engine/SCENE_REFACTOR_GAP_AUDIT.md` |
 
 Why the split: moving a file referenced from code (e.g. via a hardcoded relative path in a test) is a code change. Keep those at `docs/` root unless you're prepared to update every reference. New trackers with no code references should land under `docs/status/<domain>/`.
@@ -70,7 +70,7 @@ The `status/cultural/CULTURAL_REVIEW_STATUS.json` manifest is read by `src/data/
 - **Specs** live at `docs/superpowers/specs/YYYY-MM-DD-<slug>-design.md` (date-prefixed).
 - **Plans** live at `docs/superpowers/plans/YYYY-MM-DD-<slug>.md` (date-prefixed, no `-design` suffix).
 - Each spec is paired with a plan of the same `<slug>`. Cross-cutting work may have a spec without a plan or vice versa — note the asymmetry in the relevant INDEX.
-- **Don't move shipped specs/plans to `archive/`.** They're cited from ADRs, status docs, and other plans. The plans INDEX itself notes "Files are kept in-tree (not archived) because 28+ references across `docs/` link to plan paths."
+- **Archive shipped specs/plans older than ~14 days** under `docs/archive/superpowers/{specs,plans}/` (sweep landed 2026-05-10 per `docs/REVIEW.md` C6). The active directories should hold live work only. Inbound prose references to archived paths will 404 — that's the trade-off; treat each broken link as a signal to update the citing doc to point at the archive path.
 
 ### ADRs
 
@@ -84,7 +84,7 @@ The `status/cultural/CULTURAL_REVIEW_STATUS.json` manifest is read by `src/data/
 - New dispatch session: `docs/dispatch/YYYY-MM-DD/`.
 - Each session gets a `00_task_list.md`, `Execution_Log.md`, and `task_NN.md` per work unit.
 - After reconciliation to `master`, leave the directory in place. The dirname carries the date and the `Execution_Log.md` records the reconciliation tip.
-- One reconciled batch lives under `docs/top-10-tasks/` (the 2026-04-26 morning top-10 batch). It's preserved there as a self-contained record; the dispatch dir at `docs/dispatch/2026-04-26/` is a separate, later session.
+- One reconciled batch lives under `docs/archive/top-10-tasks/` (the 2026-04-26 morning top-10 batch — archived 2026-05-10). It's preserved there as a self-contained record; the dispatch dir at `docs/archive/dispatch/2026-04-26/` is a separate, later session (also archived).
 
 ### Audit / one-off docs
 

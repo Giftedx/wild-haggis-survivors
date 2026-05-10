@@ -15,6 +15,8 @@ Entry point for the docs tree. AI agents and humans should start here.
 | Looking for | Read |
 |---|---|
 | The standard every change must clear? | [CONTRIBUTING.md](../CONTRIBUTING.md) — read first. |
+| Most recent adversarial review of the project? | [REVIEW.md](REVIEW.md) — 2026-05-10 audit; 18 of 20 findings closed, 1 partial, 1 blocked on paid consultants. |
+| Where is the LOC reporter / GameScene hard-ceiling defined? | [LOC_BUDGET.md](LOC_BUDGET.md) — `npm run loc-report` baseline + `GameScene.ts` 2200-line hard-fail. |
 | What's currently being worked on? | Most recent dispatch — [dispatch/2026-04-26/](archive/dispatch/2026-04-26/) (concluded 2026-04-28; round 5). No flagship currently active per [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q8 — solo-dev mechanics sprint shipped 12 features 2026-05-09 (see [PRD.md](PRD.md) §"2026-05-09 mechanics ship sprint"). |
 | Is feature X shipped? | [PRD.md](PRD.md) "Flagship status" table, then [superpowers/plans/INDEX.md](superpowers/plans/INDEX.md), then memory `project_*_status` |
 | What's the project about? | [PRD.md](PRD.md), [DESIGN_SOUL.md](DESIGN_SOUL.md), repo-root [README.md](../README.md) |
@@ -145,7 +147,9 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 
 | File | Purpose |
 |---|---|
-| [HUGE_INITIATIVES_MASTER_PLAN.md](HUGE_INITIATIVES_MASTER_PLAN.md) | Flagship roster (with shipped strikethroughs) |
+| [HUGE_INITIATIVES_MASTER_PLAN.md](HUGE_INITIATIVES_MASTER_PLAN.md) | Initiatives — done / open / won't ship (reframed 2026-05-10) |
+| [REVIEW.md](REVIEW.md) | 2026-05-10 adversarial audit (18 of 20 closed; tracks remaining open work) |
+| [LOC_BUDGET.md](LOC_BUDGET.md) | LOC reporter baseline + GameScene.ts 2200-line hard ceiling |
 | [CROSS_BROWSER_CALIBRATION.md](CROSS_BROWSER_CALIBRATION.md) | Per-browser e2e calibration data |
 | [archive/HUGE_INITIATIVES_VERDICT.md](archive/HUGE_INITIATIVES_VERDICT.md) | Historical 2026-04-16 verdict against master plan; archived 2026-05-09, superseded by current PRD + plans INDEX |
 | [archive/2026-04-26-multi-model-audit/](archive/2026-04-26-multi-model-audit/) | Historical 2026-04-26 multi-model audit reports + reconciled backlog (basis for top-10 dispatch) — archived 2026-05-09 |

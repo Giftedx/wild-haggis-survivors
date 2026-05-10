@@ -10,7 +10,7 @@
 ## Context
 
 WHS currently persists everything to `localStorage`:
-- `whs_save` — `src/utils/save/` module (barrel at `src/utils/save.ts`), schema v18, biggest payload
+- `whs_save` — `src/utils/save/` module (barrel at `src/utils/save.ts`), schema v19 (v18 when this ADR was drafted; bumped same-day via Sporran Phase 2), biggest payload
 - `whs_meta_save` — `src/core/SaveManager.ts`, schema v9
 - `whs_game_settings` — `src/core/SettingsManager.ts`, settings v1
 
@@ -207,12 +207,12 @@ on the agent's own timeline.
 
 ## References
 
-- `docs/top-10-tasks/03-p3-cloud-saves.md` — charter.
+- `docs/archive/top-10-tasks/03-p3-cloud-saves.md` — charter.
 - `docs/archive/P3_BACKEND_DECISION_MATRIX.md` — full tradeoff analysis.
-- `docs/top-10-tasks/blocked/03-blocked-on-human.md` — open decisions.
-- `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md` — conflict UX spec.
-- `docs/HUGE_INITIATIVES_MASTER_PLAN.md §P3` — strategic context.
-- `docs/HUGE_INITIATIVES_VERDICT.md §32` — verdict and trade-offs.
+- `docs/archive/top-10-tasks/blocked/03-blocked-on-human.md` — open decisions.
+- `docs/archive/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md` — conflict UX spec.
+- `docs/HUGE_INITIATIVES_MASTER_PLAN.md` — strategic context (kill-criterion column removed in 2026-05-10 reframe; P3 sits under "Blocked on humans").
+- `docs/archive/HUGE_INITIATIVES_VERDICT.md §32` — historical verdict and trade-offs (archived 2026-05-09).
 - `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md` — GDPR + Scottish
   privacy posture.
 - `src/cloud/cloudSaveEnvelope.ts` — envelope shape (this branch).

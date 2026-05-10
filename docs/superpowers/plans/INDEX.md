@@ -10,7 +10,7 @@
 
 ## Archived
 
-Browse [`docs/archive/superpowers/plans/`](../../archive/superpowers/plans/). 43 plans covering 2026-04-09 through 2026-04-30, each documenting a shipped or stalled initiative.
+Browse [`docs/archive/superpowers/plans/`](../../archive/superpowers/plans/). 43 plans covering 2026-04-09 through 2026-04-30 (verified 2026-05-10), each documenting a shipped or stalled initiative.
 
 ## Convention going forward
 

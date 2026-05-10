@@ -22,7 +22,7 @@ This is the single reviewer-facing entry point for cultural release gates. It co
 - `docs/C2_DIALECT_REVIEW.md`
 - `docs/C2_BURNS_PROVENANCE.md`
 - `docs/C2_VOICE_AUDIT.md`
-- `docs/BANTER_GAPS.md`
+- `docs/archive/BANTER_GAPS.md`
 - `docs/superpowers/plans/2026-04-24-v2-variants-followups.md`
 - `docs/superpowers/plans/2026-04-26-triple-audit-execution-plan.md` T211
 - `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md`

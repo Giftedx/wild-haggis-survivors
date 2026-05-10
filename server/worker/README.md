@@ -85,5 +85,5 @@ the stored row is rejected with 409. Same-timestamp writes win as ties.
 - Bundle/cost economics under load.
 
 See `docs/adr/0006-cloud-save-backend.md` for the broader plan
-and `docs/status/cloud/P3_BACKEND_DECISION_MATRIX.md` for the tradeoff
+and `docs/archive/P3_BACKEND_DECISION_MATRIX.md` for the tradeoff
 analysis.

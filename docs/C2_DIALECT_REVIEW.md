@@ -1,6 +1,6 @@
 # C2 Doric & Shetlandic Native-Speaker Review — 2026-04-26
 
-Charter: `docs/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task C.
+Charter: `docs/archive/top-10-tasks/08-c2-weapon-lore-completion.md` Sub-task C.
 
 This doc identifies every shipped lore / flavour / banter line written in **Doric** (Northeast Scotland — Aberdeenshire) or **Shetlandic / Norn-influenced Shetland Scots**, and presents them for native-speaker review.
 
@@ -73,7 +73,7 @@ These ship under `ui.banter.*.doric_quinie.*`. Reviewer is asked to flag any of 
 
 ## Status
 
-**HUMAN-GATED.** Tracked in `docs/top-10-tasks/blocked/08-blocked-on-human.md`.
+**HUMAN-GATED.** Tracked in `docs/archive/top-10-tasks/blocked/08-blocked-on-human.md`.
 
 This audit lists 9 primary-target lines (Doric: 4, Shetlandic: 5) plus an estimated 20+ banter pool lines pulled in for one-pass reviewer convenience. Estimated reviewer time: 1.5h per dialect.
 
