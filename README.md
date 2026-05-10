@@ -18,7 +18,7 @@ npm run dev          # Vite dev server on :3000, opens browser
 | Command | What |
 |---|---|
 | `npm run dev` | Vite dev server on :3000 (auto-opens browser) |
-| `npm test` | Vitest unit tests (~483 spec files, ~5092 cases as of 2026-05-09) |
+| `npm test` | Vitest unit tests (~487 spec files, ~5137 cases as of 2026-05-10) |
 | `npm run lint` | ESLint flat config across `src/`, `e2e/`, configs |
 | `npm run build` | `tsc --noEmit` → Vite build → `dist/` |
 | `npm run preview` | Serves `dist/` locally; Playwright E2E uses this on :4180 |
@@ -34,7 +34,7 @@ Before declaring anything fixed/done, run at least `npm test` and `npm run build
 
 ## Architecture in 30 seconds
 
-- **Scene flow:** `BootScene` → `MenuScene` → `GameScene` ↔ `ShopScene`. Hub between runs is `CroftScene` (Gran's Croft, persistent).
+- **Scene flow:** `BootScene` → (first-launch splashes) → `MainMenuScene` → `MenuScene` (variant pick) → `GameScene` (run) → `GameOverScene` → `CroftScene` (persistent hub) ↔ `ShopScene` / `MetaShopScene`. The full graph and per-scene gotchas live in [`CLAUDE.md`](CLAUDE.md) "Architecture".
 - **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `BiomeController`, `RuneConditionSystem`, `NodeMapSystem`, …
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, runes, and node banks live under `src/data/`. Code consumes them; balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module —
@@ -68,7 +68,7 @@ For deeper detail read [`CLAUDE.md`](CLAUDE.md) (architecture quick map + Phaser
     ├── DESIGN_IDEAS.md               Active sketchpad (not a roadmap)
     ├── BANTER_AUTHORING.md           Recipe doc for adding banter leaves
     ├── HUGE_INITIATIVES_MASTER_PLAN.md  Flagship roster (with shipped strikethroughs)
-    ├── HUGE_INITIATIVES_VERDICT.md   2026-04-16 audit trail (historical)
+    ├── archive/HUGE_INITIATIVES_VERDICT.md   2026-04-16 audit trail (archived 2026-05-09)
     ├── A1_*.md, MOBILE_*.md, …       Per-domain status trackers (see INDEX.md)
     ├── adr/                          Architecture Decision Records (numbered)
     ├── research/                     Eight deep reference docs (~150k words)

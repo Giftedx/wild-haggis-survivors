@@ -1,68 +1,55 @@
-# LOC Budget Ratchet
+# LOC Budget Report (formerly: ratchet)
 
-Test: `src/utils/locBudget.test.ts`
+**Status (2026-05-10).** The per-file LOC ratchet test (`src/utils/locBudget.test.ts`) was deleted. It was raised six times in one day on 2026-05-09 and survived ~24 hours after the Phase-7 restructure shipped — the discipline fought the actual workflow on a single-author codebase and became a logbook of permission slips. See [`docs/REVIEW.md` C2](REVIEW.md) for the audit.
 
-Policy: each top-of-file ceiling can only be **lowered**, never raised silently. Raising one requires an inline comment explaining why (e.g. "post-merge of feature X — to be split in follow-up Y").
+It's been replaced with a **reporter** at [`scripts/report-loc.mjs`](../scripts/report-loc.mjs), wired into `npm run ci` via `npm run loc-report`. The reporter:
 
-## Why this exists
+- **Reports** every watched file's current LOC against a 2026-05-10 baseline. Output surfaces in CI logs; no failure on growth.
+- **Hard-fails** only on `src/scenes/GameScene.ts > 2200 lines`. Single guardrail; everything else informational.
+- **Optional `--strict` mode** (`node scripts/report-loc.mjs --strict`) fails on >25% growth from baseline. Not wired into CI; available for one-off audits.
 
-GameScene shipped to ≤1656 LOC under T401 (charter target ≤1200). Within four months it regrew to 2983 LOC as features landed inline. Without a guardrail, every helper extraction silently leaks back as the next feature lands as orchestrator code. The ratchet locks the floor.
+## Why one guardrail not seventeen
 
-Same pattern applies to every god-shaped file in the codebase. Extract → lower the ceiling → next feature is forced to extract.
+The original ratchet had 17 ceilings. New mechanics overwhelmingly land in `Player.ts` (state) + `Enemy.ts` (AI) + `WeaponSystem.ts` (combat) + `AudioSystem.ts` (SFX) + `HUD.ts` (UI) + `data/banter.ts` (voice) + `GameScene.ts` (wiring). Forcing extraction on every feature in those files was friction without proportional benefit on a single-author codebase. The reporter makes growth visible; humans (or future agents auditing growth) still see the trend, but no commit gets blocked just because a feature added 30 lines to one file.
 
-## Status (2026-05-09)
+`GameScene.ts` keeps the hard ceiling because it's the wiring file and growth there compounds — every new system bolts a new init/update/destroy cycle on top. 2200 lines is ~21% past the 2026-05-10 baseline of 1819. Past that, the file stops being legible to a fresh reader and a slice extraction is genuinely warranted.
 
-After Phase 0–7 of `docs/superpowers/plans/2026-04-30-codebase-restructure.md`:
+## When to act on the report
 
-| File | Original | Current ceiling | Reduction |
-|------|----------|-----------------|-----------|
-| `core/i18n.ts` | 4720 | 115 | -98% (Phase 3 namespaces) |
-| `core/i18n.scs.ts` | 4010 | 20 | -100% (Phase 3 barrel) |
-| `utils/save.ts` | 1840 | 95 | -95% (Phase 1 split) |
-| `art/sprites/icons/cards.ts` | 1725 | 5 | -100% (Phase 2 barrel) |
-| `art/sprites/icons/weapons.ts` | 1615 | 5 | -100% (Phase 2 barrel) |
-| `art/sprites/croft/seasonalProps.ts` | 1550 | 5 | -100% (Phase 2 barrel) |
-| `art/sprites/decorations/biomeProps.ts` | 1095 | 5 | -100% (Phase 2 barrel) |
-| `ui/HUD.ts` | 1225 | 1100 | -10% (Phase 4 builders) |
-| `systems/JuiceSystem.ts` | 1380 | 1065 | -23% (Phase 6 sub-systems) |
-| `scenes/GameScene.ts` | 2985 | 1680 | -44% (Phase 5 helper extraction; T401 floor 1656 honoured) |
-| `scenes/GameOverScene.ts` | 1310 | 300 | -77% (Phase 5 panel/row/link/action builders under scenes/game-over/) |
-| `scenes/SettingsScene.ts` | 1350 | 685 | -49% (Phase 5 row builders under scenes/settings/) |
+- **Any single file >25% past baseline:** a slice extraction probably belongs in the next commit. Run `--strict` to surface explicitly.
+- **GameScene approaching 2200:** a slice extraction is required before the next mechanic lands. Hard-fail catches this on next commit.
+- **Cumulative growth across the watched files exceeds ~5% in a sprint:** worth a "did we just bolt 7 mechanics onto fat files" reflection. The reporter output makes this visible week-to-week.
 
-Charter target for `scenes/GameScene.ts` is ≤1200 (T401 spec). Reaching it requires
-the formal facade rewrite (Combat / Progression / Nodes / Persistence) explicitly
-out of scope for the 2026-04-30 restructure plan. The ratchet at 1680 locks the
-post-Phase-5 floor against silent regrowth.
+## Baseline (2026-05-10)
 
-Passive guards (already-tight files on the ratchet, not primary deflation targets):
+The reporter holds the same list as below. To rebaseline (e.g. after a major restructure ships), edit `BASELINE` in `scripts/report-loc.mjs` and update this table.
 
-| File | Current ceiling | Note |
-|------|-----------------|------|
-| `entities/Enemy.ts` | 1570 | Hot path; factored via `entities/` siblings |
-| `entities/Player.ts` | 1540 | Hot path; factored via `entities/` siblings |
-| `systems/AudioSystem.ts` | 1245 | Orchestrator; no obvious sub-system seams. Bumped 2026-05-09 (1210→1245) for Pibroch sting (`playPibrochStingImmediate` / `playPibrochSting`) |
-| `systems/WeaponSystem.ts` | 1335 | Orchestrator; sub-system seams thin. Bumped 2026-05-09 (1330→1335) for Pibroch sting wiring (`pibrochAligned` const + `audio.playPibrochSting()`) |
-| `data/banter.ts` | 2240 | Pure data, parity-fenced |
+| File | Baseline LOC | Note |
+|------|-------------|------|
+| `core/i18n.ts` | 111 | Phase 3.1 split barrel |
+| `core/i18n.scs.ts` | 15 | Phase 3.2 barrel |
+| `scenes/GameScene.ts` | **1819** | **Hard-ceilinged at 2200** |
+| `data/banter.ts` | 2682 | Pure data, parity-fenced |
+| `utils/save.ts` | 91 | Phase 1 split barrel |
+| `art/sprites/icons/cards.ts` | 2 | Phase 2 barrel |
+| `art/sprites/icons/weapons.ts` | 2 | Phase 2 barrel |
+| `entities/Enemy.ts` | 1657 | Hot path; heavily factored |
+| `art/sprites/croft/seasonalProps.ts` | 2 | Phase 2 barrel |
+| `entities/Player.ts` | 1847 | Hot path; heavily factored |
+| `systems/JuiceSystem.ts` | 1060 | Phase 6 sub-system split |
+| `scenes/SettingsScene.ts` | 678 | Phase 5 row builders |
+| `systems/WeaponSystem.ts` | 1670 | Orchestrator |
+| `scenes/GameOverScene.ts` | 293 | Phase 7 splits |
+| `ui/HUD.ts` | 1294 | Widget builders |
+| `systems/AudioSystem.ts` | 1485 | Orchestrator |
+| `art/sprites/decorations/biomeProps.ts` | 2 | Phase 2 barrel |
 
-## Updating
+## Files kept whole (no extraction planned)
 
-**Lower a ceiling:** edit the constant in `src/utils/locBudget.test.ts`, run `npm test -- locBudget`.
+These sit at their natural size as anti-regrowth guardrails, not primary deflation targets. The original Phase-7 restructure already factored them where seams existed.
 
-**Raise a ceiling:** **strongly discouraged**. If absolutely necessary, add an inline comment with the linked task that will lower it again, e.g.:
-
-```ts
-['ui/HUD.ts', 1300], // raised from 1100 for spec X — split in T999
-```
-
-The CI gate fires when a file grows past its ceiling. Either split the file or own the ceiling raise with a comment that names the next deflation work.
-
-## Files audited but kept whole (passive ratchet guards)
-
-These sit on the ratchet at their natural size as anti-regrowth guardrails, not
-as primary deflation targets:
-
-- `entities/Player.ts` — heavily factored via `entities/` siblings (driftMastery, whiskyBreath, burnLeapInput, dashReverseStumble, mantlePulse, Player.mantle, playerLevelScaling, softBoundarySteer, playerGrowthScale, xpGemMagnet, xpGemTier) plus cross-system consumers (`systems/runes/runeConsumer.ts`). Marginal yield, hot-path risk.
-- `entities/Enemy.ts` — same shape as Player, hot path.
-- `data/banter.ts` — pure data, parity-fenced; splitting would move bytes without architectural payoff.
+- `entities/Player.ts` — heavily factored via `entities/` siblings (driftMastery, whiskyBreath, burnLeapInput, dashReverseStumble, mantlePulse, Player.mantle, playerLevelScaling, softBoundarySteer, playerGrowthScale, xpGemMagnet, xpGemTier) + `systems/runes/runeConsumer.ts`. Marginal further yield, hot-path risk.
+- `entities/Enemy.ts` — same shape, hot path.
+- `data/banter.ts` — pure data, parity-fenced; splitting moves bytes without architectural payoff.
 - `systems/AudioSystem.ts` — orchestrator with no obvious sub-system seams.
 - `systems/WeaponSystem.ts` — orchestrator; sub-system seams thin.

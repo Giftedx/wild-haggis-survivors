@@ -52,7 +52,7 @@ Adding picks to the run-history card crowds an already-busy card. **Mitigation:*
 
 ### Files (all changes additive — no rewrites)
 
-#### Save state chain (per QUALITY_BAR §"Save state chain")
+#### Save state chain (per CONTRIBUTING.md §"Save state chain")
 
 - **`src/utils/save/schema.ts`** — `SAVE_SCHEMA_VERSION = 18 → 19`.
 - **`src/utils/save/types.ts`** — extend `RunHistoryEntry`:
@@ -69,7 +69,7 @@ Adding picks to the run-history card crowds an already-busy card. **Mitigation:*
 - **`src/utils/save/migrations.ts`** — add `migrateV18ToV19(raw: SaveRecord): SaveRecord` (pure version bump, no retroactive seed possible) + thread through the switch in `migrateSave`. Coercer in `coerceRunHistoryEntry` adds the `sporranPicks` filter using the same `coerceStringArray`-style pattern as `weaponKeys`, but kept as a private helper `coerceSporranPicks(raw, knownIds)` that drops IDs not in `ALL_SPORRAN_CARDS`.
 - **`src/utils/save/migrations.test.ts`** — new test: pre-v19 entry round-trips clean with `sporranPicks` absent; v19 entry with sporran picks round-trips identically; v19 entry with stale ID has it dropped.
 
-#### Replay chain (per QUALITY_BAR §"State RNG / replay chain")
+#### Replay chain (per CONTRIBUTING.md §"State RNG / replay chain")
 
 - **`src/replay/replayBlobV4.ts`** (new) — sister to `replayBlobV3.ts`. Adds:
   ```ts
@@ -111,7 +111,7 @@ Adding picks to the run-history card crowds an already-busy card. **Mitigation:*
 - **`src/scenes/ChronicleScene.ts`** (or its row builder under `src/scenes/chronicle/`) — render a 3-icon strip on entries where `sporranPicks` is present. Icon comes from the kind chip palette (`SPORRAN_KIND_ACCENT` from `sporranTileLayout.ts`) — three small coloured pips per card kind. Hover/tooltip out of scope; Phase 3 work.
 - **`src/core/i18n/sporran.ts`** + **`src/core/i18n.scs/sporran.ts`** — add `chronicle.label` ("Sporran picks") for the row label. Curse / boon / quirk chip tooltips reuse existing keys.
 
-### i18n parity chain (per QUALITY_BAR §"i18n parity chain")
+### i18n parity chain (per CONTRIBUTING.md §"i18n parity chain")
 
 Single new EN+SCS leaf: `sporran.chronicle.label`. SCS→EN parity walk catches missing entries; manually add SCS at the same commit.
 
@@ -155,7 +155,7 @@ Estimated +12-16 unit assertions. Bundle delta < 1 KB gzip (typed parser + new f
 
 ---
 
-## 6. Pre-ship 5-question gate (per QUALITY_BAR)
+## 6. Pre-ship 5-question gate (per CONTRIBUTING.md)
 
 1. **Filters cleared?** Stand-the-test (mirrors v3 shape exactly) ✓ ; ultra-efficient (no per-frame allocation; one `Array.filter` at coercion time) ✓ ; secure (defensive ID coercion, same pattern as `weaponKeys`) ✓ ; technically impressive (composes with replay blob layer + save migration chain + sporran helper) ✓ ; minimal slop (no premature feature flag, no defensive try/catch, three optional fields) ✓ .
 2. **Chains walked?** Save chain (9 steps): bump version, migration, types, NO bumper (only mid-session writers need bumpers — sporran picks are write-once), NO query helper (single Chronicle reader is fine inline), history coercion update, migration test, NO i18n add for picks themselves (cards already have keys), declare cosmetic-only carve-out for the cosmetic chronicle icons. Replay chain (5 steps): runRng usage unchanged (no new gameplay rolls), RNG-stream order unchanged, fixed-step unchanged, determinism test extended, replay status declared.

@@ -1,5 +1,7 @@
 # REVIEW.md — Adversarial Read of the Project, 2026-05-10
 
+> **2026-05-10 update.** The `docs/QUALITY_BAR.md` doc cited throughout this review was demoted, shrunk, and renamed to [`CONTRIBUTING.md`](../CONTRIBUTING.md) on the same day in response to finding C7. The review's links to `QUALITY_BAR.md` now 404; the substantive arguments still apply against the new CONTRIBUTING.md doc, just at a smaller surface area.
+
 **Reviewer:** skeptical senior engineer who just inherited the codebase. **Posture:** the previous owner is suspected of overconfidence. Earlier work is not sacred, including the planning pass that wrote `docs/QUALITY_BAR.md` two days ago.
 
 > **Methodology.** Read the canon docs (root + `docs/` north stars + a sample of ADRs/specs/status) with fresh eyes. Cross-checked claimed numbers against `wc -l`, `git log`, dist build output, e2e specs, and source code. Spent equal time looking for what's **not** said as for what is.

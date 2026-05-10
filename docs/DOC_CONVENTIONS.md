@@ -23,6 +23,7 @@ These are referenced by tooling and CLAUDE/AGENTS docs:
 | `README.md` | Entry point for humans + tooling (npm, GitHub, Cloudflare Pages). |
 | `AGENTS.md` | Cross-agent working agreement. Cited from `.cursor/`, plugins, etc. |
 | `CLAUDE.md` | Claude Code's project memory. Loaded automatically. |
+| `CONTRIBUTING.md` | AI-agent working agreement; CI gates + chains + invariants. Cited from AGENTS.md and CLAUDE.md. |
 | `DESIGN.md` | Frontmatter design-system tokens (colors, typography, motion). Consumed by tooling. |
 | `REVISION_NOTES.md` | Out-of-scope sprite-pass items kept at root for visibility. |
 
@@ -31,7 +32,6 @@ These are referenced by tooling and CLAUDE/AGENTS docs:
 These are evergreen and cited by `CLAUDE.md`/`AGENTS.md` as primary references:
 
 - `INDEX.md` — top-level map.
-- `QUALITY_BAR.md` — non-negotiable engineering standard (five filters, chains, invariants, pre-ship gate).
 - `PRD.md` — live product snapshot.
 - `DESIGN_SOUL.md` — Soul charter, voice, tone.
 - `VOICE_CARD.md` — two-register voice, variants.
