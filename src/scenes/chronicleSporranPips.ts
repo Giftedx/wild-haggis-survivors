@@ -25,10 +25,16 @@ export interface SporranPipDescriptor {
   readonly color: number;
   /** Original card id (preserved for tooltip / accessibility lookups). */
   readonly cardId: string;
+  /** i18n key for the card's display name — caller resolves with `t()`. */
+  readonly nameKey: string;
 }
 
 const cardKindById: ReadonlyMap<string, SporranCardKind> = new Map(
   ALL_SPORRAN_CARDS.map((c) => [c.id, c.kind]),
+);
+
+const cardNameKeyById: ReadonlyMap<string, string> = new Map(
+  ALL_SPORRAN_CARDS.map((c) => [c.id, c.nameKey]),
 );
 
 /**
@@ -49,10 +55,12 @@ export function buildSporranPipsForChronicle(
     if (typeof id !== 'string' || id.length === 0) continue;
     const kind = cardKindById.get(id);
     if (!kind) continue;
+    const nameKey = cardNameKeyById.get(id) ?? '';
     out.push({
       kind,
       color: SPORRAN_KIND_ACCENT[kind as SporranKindAccentKey],
       cardId: id,
+      nameKey,
     });
   }
   return out;

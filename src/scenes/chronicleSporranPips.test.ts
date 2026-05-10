@@ -24,10 +24,36 @@ describe('buildSporranPipsForChronicle', () => {
       'boon_silver',
       'quirk_haggis_blooded',
     ]);
-    expect(pips).toEqual([
-      { kind: 'curse', color: SPORRAN_KIND_ACCENT.curse, cardId: 'curse_heavy_legs' },
-      { kind: 'boon', color: SPORRAN_KIND_ACCENT.boon, cardId: 'boon_silver' },
-      { kind: 'quirk', color: SPORRAN_KIND_ACCENT.quirk, cardId: 'quirk_haggis_blooded' },
+    expect(pips).toHaveLength(3);
+    expect(pips[0]).toMatchObject({
+      kind: 'curse',
+      color: SPORRAN_KIND_ACCENT.curse,
+      cardId: 'curse_heavy_legs',
+    });
+    expect(pips[1]).toMatchObject({
+      kind: 'boon',
+      color: SPORRAN_KIND_ACCENT.boon,
+      cardId: 'boon_silver',
+      nameKey: 'sporran.boon.silver.name',
+    });
+    expect(pips[2]).toMatchObject({
+      kind: 'quirk',
+      color: SPORRAN_KIND_ACCENT.quirk,
+      cardId: 'quirk_haggis_blooded',
+      nameKey: 'sporran.quirk.haggis_blooded.name',
+    });
+  });
+
+  it('threads each pickable card id to its i18n nameKey', () => {
+    const pips = buildSporranPipsForChronicle([
+      'boon_whisky',
+      'rare_taxman_grudge',
+      'seasonal_burns_dram',
+    ]);
+    expect(pips.map((p) => p.nameKey)).toEqual([
+      'sporran.boon.whisky.name',
+      'sporran.rare.taxman_grudge.name',
+      'sporran.seasonal.burns_dram.name',
     ]);
   });
 

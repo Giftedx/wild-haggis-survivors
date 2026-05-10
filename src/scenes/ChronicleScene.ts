@@ -543,19 +543,39 @@ export class ChronicleScene extends Phaser.Scene {
       // kind-coloured circles (curse purple / boon green / quirk amber)
       // immediately left of the curse-chip slot, rendered only when the
       // run went through SporranScene. Resolves stale ids defensively.
-      // Title text powers SR / hover label without forcing a tooltip
-      // layer.
+      // Hover any pip → tooltip lists every pick by name (sister to
+      // the rerun glyph's pointerover/pointerout pattern below).
       const sporranPips = buildSporranPipsForChronicle(entry.sporranPicks);
       if (sporranPips.length > 0) {
         const stripCx = width - 270;
         const pipR = 4;
         const pipGap = 11;
+        const tooltipText = sporranPips
+          .map((pip) => (pip.nameKey ? t(pip.nameKey) : pip.cardId))
+          .join(' · ');
+        let pipTooltip: Phaser.GameObjects.Text | null = null;
+        const showPipTooltip = () => {
+          if (pipTooltip) return;
+          pipTooltip = this.add.text(stripCx + sporranPips.length * pipGap, y - 14, tooltipText, {
+            fontFamily: 'monospace', fontSize: '10px', color: COLORS_CSS.TEXT_SUBTITLE, fontStyle: 'italic',
+          }).setOrigin(0, 0.5).setScale(uiScale).setDepth(10);
+          this.runRowObjects.push(pipTooltip);
+        };
+        const hidePipTooltip = () => {
+          if (pipTooltip) {
+            pipTooltip.destroy();
+            pipTooltip = null;
+          }
+        };
         sporranPips.forEach((pip, idx) => {
           const cx = stripCx + idx * pipGap;
           const dot = this.add
             .circle(cx, y, pipR, pip.color, 0.95)
             .setStrokeStyle(1, 0x000000, 0.4)
-            .setScale(uiScale);
+            .setScale(uiScale)
+            .setInteractive({ useHandCursor: false });
+          dot.on('pointerover', showPipTooltip);
+          dot.on('pointerout', hidePipTooltip);
           this.runRowObjects.push(dot);
         });
       }
