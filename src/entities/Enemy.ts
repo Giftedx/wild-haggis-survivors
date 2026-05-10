@@ -855,14 +855,23 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
   /**
    * Fire a venom fang (Race the Beithir, DESIGN_IDEAS §1). Mirrors
-   * `fireNet`'s shape — Phaser circle + Arcade body + parry hook +
+   * `fireNet`'s shape — Phaser sprite + Arcade body + parry hook +
    * cleanup ticker — but on contact applies the sting via
    * `Player.applyBeithirStingFromFang` instead of the net's slow.
    *
-   * Visual: rust-bronze circle (matches the sprite's scale-glint
-   * accent) at radius 4 — slightly tighter than the net's 5 so the
-   * fang reads as a *projectile*, not an area. Speed 220 (vs net's
-   * 180): a sharper threat, not a held area-denial.
+   * Visual: baked `beithir_fang` sprite — sharp asymmetric fang
+   * silhouette (rust-bronze body, cream outline, green venom bead).
+   * Distinct *shape* from the net's circle so colorblind players
+   * read fang-vs-net by silhouette, not just colour. Rotated to
+   * point along the velocity vector. Falls back to the prior radius-
+   * 4 rust-bronze circle when the texture is missing (unit-test
+   * stubs that skip BootScene baking, per CLAUDE.md sister-system
+   * safety pattern (c)). Speed 220 (vs net's 180): a sharper threat,
+   * not a held area-denial.
+   *
+   * Hitbox stays a radius-4 circle either way — same physics as the
+   * prior implementation, so the parry hook + immunity gates
+   * (`isPlayerHazardImmune`) keep the same geometry.
    *
    * Single-projectile invariant per enemy: reuses `activeNetCleanup`
    * because rangedCooldown > the cleanup TTL (2 s), so a Beithir
@@ -872,9 +881,18 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
     const angle = Phaser.Math.Angle.Between(this.x, this.y, tx, ty);
     const speed = 220;
 
-    const fang = this.scene.add.circle(this.x, this.y, 4, 0xb88a4a, 0.95);
+    const fang: Phaser.GameObjects.Image | Phaser.GameObjects.Arc = this.scene.textures.exists('beithir_fang')
+      ? this.scene.add.image(this.x, this.y, 'beithir_fang').setRotation(angle)
+      : this.scene.add.circle(this.x, this.y, 4, 0xb88a4a, 0.95);
     this.scene.physics.add.existing(fang);
     const body = fang.body as Phaser.Physics.Arcade.Body;
+    if ('texture' in fang) {
+      // Image branch: AABB body defaults to displaySize. Re-anchor as
+      // a radius-4 circle centred on the visual mid so collision
+      // matches the prior `add.circle(r=4)` exactly. Offsets are in
+      // image-local pixels: top-left of the inscribed 8×8 box.
+      body.setCircle(4, fang.displayWidth / 2 - 4, fang.displayHeight / 2 - 4);
+    }
     body.setVelocity(Math.cos(angle) * speed, Math.sin(angle) * speed);
 
     let hit = false;
