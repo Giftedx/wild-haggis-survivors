@@ -1,7 +1,26 @@
 /**
- * RunHistoryRecorder — captures a finished run into the meta save's
- * run-history log, plus the per-day Daily Challenge record when the
- * run was a daily attempt.
+ * RunHistoryRecorder — two paths, two stores, by design (ADR-0007):
+ *
+ *   1. `buildContext()` — assembles the FULL `RunHistoryContext` (every
+ *      field on the interface: curseKey, replay, ironmoor, nodeOutcomes,
+ *      sporranPicks, biomesVisited, evolvedWeaponCount, …). Consumed by
+ *      `applyRunSummary` in `utils/save/history.ts`, which writes the
+ *      full `RunHistoryEntry` into the `whs_save.runHistory` array.
+ *      **`ChronicleScene` reads from this store** — every UI-visible
+ *      field on the chronicle row comes from this path.
+ *
+ *   2. `record()` — writes a partial shadow `RunHistoryEntry` to the
+ *      `whs_meta_save.runHistory` array via `SaveManager.recordRunToHistory`.
+ *      Consumed only by `SaveManager.getPersonalBests` (best time / kills /
+ *      combo / level / gold). Fields not used by personal-bests math
+ *      (curseKey, replay, ironmoor, sporranPicks, …) are intentionally
+ *      not threaded — they would just be coerced-and-stored dead data.
+ *
+ * If you're reviewing this file looking for "missing fields on the
+ * persisted entry", check which store + which reader. The full chronicle
+ * data lives in `whs_save.runHistory` (path 1). `record()` is the
+ * personal-bests sidecar (path 2). Per the same ADR, the duplication is
+ * a failure-isolation feature, not a consolidation bug.
  *
  * Extracted from GameScene (buildRunHistoryContext + recordToHistory +
  * recordDailyChallengeResult). Doesn't own scene state — pure bridge
@@ -132,8 +151,17 @@ export class RunHistoryRecorder {
   }
 
   /**
-   * Append this run to the full run-history log. For daily runs, also
-   * updates the per-day challenge record (best time / kills / attempts).
+   * Append this run to the **`whs_meta_save`** run-history log (the
+   * personal-bests sidecar). Writes a deliberate subset of
+   * `RunHistoryEntry` — only the fields `getPersonalBests` consumes.
+   *
+   * Chronicle UI does NOT read this store. The full entry (curseKey,
+   * replay, ironmoor, sporranPicks, nodeOutcomes, …) is written by
+   * `applyRunSummary` from the `RunHistoryContext` produced by
+   * `buildContext()` above into `whs_save.runHistory`. See class JSDoc.
+   *
+   * For daily runs, also updates the per-day challenge record (best
+   * time / kills / attempts).
    */
   record(summary: RunSummary, runResult: RunResult): void {
     const h = this.hooks;
