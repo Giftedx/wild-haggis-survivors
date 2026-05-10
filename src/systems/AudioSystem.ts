@@ -1119,6 +1119,77 @@ export class AudioSystem {
   }
 
   /**
+   * Clootie Rag Wager — a wager bound. Sister to playStoneGrant but
+   * the texture is *intimate trade* rather than *triadic blessing*:
+   * a low triangle drone (bough leaning, slightly off-pitch) under a
+   * brief noise rustle (cloth tying) with a single warm mid bell
+   * arriving last (the blessing settling into the bough). Distinct
+   * from the rising stone triad so a player who triggers both the
+   * standing stones and a clootie wager in the same run hears two
+   * different supplication shapes — one ascending, one folding in.
+   */
+  playClootieBound(): void {
+    if (!this.enabled) return;
+    const ctx = this.ensureContext();
+    if (!ctx || !this.masterGain) return;
+    this.duckMusicForGameplaySfx(MOTION_TIMING.musicDuckAchievement);
+    const t0 = ctx.currentTime;
+
+    // Bough drone — low triangle with a hair-flat detune for unsteady,
+    // hand-bent wood. 130 Hz held 0.5 s with a slow swell + quiet tail.
+    const drone = ctx.createOscillator();
+    const droneGain = ctx.createGain();
+    drone.type = 'triangle';
+    applySfxDetune(drone);
+    drone.frequency.setValueAtTime(130, t0);
+    droneGain.gain.setValueAtTime(0, t0);
+    droneGain.gain.linearRampToValueAtTime(0.10, t0 + 0.06);
+    droneGain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.55);
+    drone.connect(droneGain);
+    droneGain.connect(this.masterGain);
+    drone.start(t0);
+    drone.stop(t0 + 0.58);
+
+    // Cloth rustle — short noise burst at 60 ms in, fades fast.
+    const rustleStart = t0 + 0.06;
+    const rustleBuf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.10), ctx.sampleRate);
+    const rustleData = rustleBuf.getChannelData(0);
+    for (let i = 0; i < rustleData.length; i++) {
+      // Lightly band-passed noise — multiply by a sine envelope to
+      // give the rustle a gentle "tying motion" curve rather than a
+      // flat hiss. Caller is short enough that this adds no load.
+      const t = i / rustleData.length;
+      rustleData[i] = (Math.random() * 2 - 1) * 0.35 * Math.sin(t * Math.PI);
+    }
+    const rustle = ctx.createBufferSource();
+    rustle.buffer = rustleBuf;
+    const rustleGain = ctx.createGain();
+    rustleGain.gain.setValueAtTime(0.05, rustleStart);
+    rustleGain.gain.exponentialRampToValueAtTime(0.001, rustleStart + 0.10);
+    rustle.connect(rustleGain);
+    rustleGain.connect(this.masterGain);
+    rustle.start(rustleStart);
+    rustle.stop(rustleStart + 0.11);
+
+    // Warm mid bell — E4 sine pulse arriving 220 ms in, settles the
+    // wager. Soft attack + medium release so it folds *into* the
+    // drone tail rather than ringing on top.
+    const bellStart = t0 + 0.22;
+    const bell = ctx.createOscillator();
+    const bellGain = ctx.createGain();
+    bell.type = 'sine';
+    applySfxDetune(bell);
+    bell.frequency.value = 329.63;
+    bellGain.gain.setValueAtTime(0, bellStart);
+    bellGain.gain.linearRampToValueAtTime(0.11, bellStart + 0.04);
+    bellGain.gain.exponentialRampToValueAtTime(0.001, bellStart + 0.40);
+    bell.connect(bellGain);
+    bellGain.connect(this.masterGain);
+    bell.start(bellStart);
+    bell.stop(bellStart + 0.42);
+  }
+
+  /**
    * Race the Beithir — venom commits (timer ran out). Heavy low square
    * wave 80 → 40 Hz over 320 ms layered with a dirty noise transient
    * at the start. Reads as a serious consequence — paired with the

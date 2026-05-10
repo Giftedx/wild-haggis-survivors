@@ -233,10 +233,12 @@ export function spawnClootieTree(ctx: MoorMomentsContext): ClootieTree {
         '#cfd0a8',
       );
       ctx.caption('clootie_commit', desc, '#cfd0a8', 3500);
-      // Reuse the stone-grant chime — soft sub-bell, sits beside the
-      // hearth tone of the wager. A bespoke clootie sting is open as
-      // a v2 followup if a sound pass widens the audio palette.
-      audio.playStoneGrant();
+      // Bespoke clootie SFX — a low triangle drone (bough leaning)
+      // under a soft cloth-rustle and a warm mid bell that folds
+      // into the drone tail. Sister to playStoneGrant but distinct
+      // shape: the stones rise (triadic blessing), the clootie folds
+      // in (intimate trade). v2 followup #3 (DESIGN_IDEAS §1).
+      audio.playClootieBound();
       // Lifetime counter routes the first wager ever to bound_first
       // (folkloric supplication wonder) and subsequent commits to the
       // existing bound pool (familiar trade). Pre-bump 0 = first
