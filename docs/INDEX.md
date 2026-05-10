@@ -5,7 +5,7 @@ Entry point for the docs tree. AI agents and humans should start here.
 > **Source-of-truth hierarchy** (when files disagree):
 > 1. `~/.claude/projects/.../memory/MEMORY.md` + per-initiative `project_*_status.md` — most current.
 > 2. [`superpowers/plans/INDEX.md`](superpowers/plans/INDEX.md) — index over per-file STATUS markers.
-> 3. [`dispatch/2026-04-26/00_task_list.md`](dispatch/2026-04-26/00_task_list.md) + `Execution_Log.md` + `task_01..10.md` — current dispatch.
+> 3. [`dispatch/2026-04-26/00_task_list.md`](archive/dispatch/2026-04-26/00_task_list.md) + `Execution_Log.md` + `task_01..10.md` — current dispatch.
 > 4. `git log --oneline` + working-tree files — ground truth for code claims.
 
 ---
@@ -15,13 +15,13 @@ Entry point for the docs tree. AI agents and humans should start here.
 | Looking for | Read |
 |---|---|
 | The standard every change must clear? | [CONTRIBUTING.md](../CONTRIBUTING.md) — read first. |
-| What's currently being worked on? | Most recent dispatch — [dispatch/2026-04-26/](dispatch/2026-04-26/) (concluded 2026-04-28; round 5). No flagship currently active per [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q8 — solo-dev mechanics sprint shipped 12 features 2026-05-09 (see [PRD.md](PRD.md) §"2026-05-09 mechanics ship sprint"). |
+| What's currently being worked on? | Most recent dispatch — [dispatch/2026-04-26/](archive/dispatch/2026-04-26/) (concluded 2026-04-28; round 5). No flagship currently active per [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) Q8 — solo-dev mechanics sprint shipped 12 features 2026-05-09 (see [PRD.md](PRD.md) §"2026-05-09 mechanics ship sprint"). |
 | Is feature X shipped? | [PRD.md](PRD.md) "Flagship status" table, then [superpowers/plans/INDEX.md](superpowers/plans/INDEX.md), then memory `project_*_status` |
 | What's the project about? | [PRD.md](PRD.md), [DESIGN_SOUL.md](DESIGN_SOUL.md), repo-root [README.md](../README.md) |
 | How do I write copy / art / banter in voice? | [VOICE_CARD.md](VOICE_CARD.md), [ART_STYLE_BIBLE.md](ART_STYLE_BIBLE.md), [BANTER_AUTHORING.md](BANTER_AUTHORING.md) |
 | Why was this technical decision made? | [adr/README.md](adr/README.md) |
 | What research grounds this? | [research/README.md](research/README.md) |
-| What human-gated reviews block release? | [status/cultural/CULTURAL_REVIEW_PACKET.md](status/cultural/CULTURAL_REVIEW_PACKET.md), [A1_PEAT_AUDIT.md](A1_PEAT_AUDIT.md) (root), [MOBILE_DEVICE_TEST_MATRIX.md](MOBILE_DEVICE_TEST_MATRIX.md) (root), [top-10-tasks/blocked/](top-10-tasks/blocked/) |
+| What human-gated reviews block release? | [status/cultural/CULTURAL_REVIEW_PACKET.md](status/cultural/CULTURAL_REVIEW_PACKET.md), [A1_PEAT_AUDIT.md](A1_PEAT_AUDIT.md) (root), [MOBILE_DEVICE_TEST_MATRIX.md](MOBILE_DEVICE_TEST_MATRIX.md) (root), [top-10-tasks/blocked/](archive/top-10-tasks/blocked/) |
 | Status of accessibility / cultural / mobile / cloud / engine work? | A1: root `A1_*.md` + [status/a11y/](status/a11y/). Cultural: [status/cultural/](status/cultural/) + root `C2_*.md`. Mobile: root `MOBILE_*.md`. Cloud: root [P3_BACKEND_DECISION_MATRIX.md](P3_BACKEND_DECISION_MATRIX.md). Engine: [status/engine/](status/engine/) + root [SCENE_REFACTOR_AUDIT_2026-04-26.md](SCENE_REFACTOR_AUDIT_2026-04-26.md). Banter: root [BANTER_GAPS.md](BANTER_GAPS.md). Art: root [ART_AUDIT.md](ART_AUDIT.md). |
 | Auditing for bugs / regressions? | **Read [§For audit / review agents](#for-audit--review-agents) below first.** |
 | Doc conventions (filename rules, where new docs go, STATUS markers) | [DOC_CONVENTIONS.md](DOC_CONVENTIONS.md) |
@@ -69,8 +69,8 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 | Directory | Purpose | Entry point |
 |---|---|---|
 | [status/](status/) | Partially-populated domain trackers (a11y, cultural, engine — others remain at `docs/` root, see "Status trackers" below) | (sub-tables below) |
-| [dispatch/](dispatch/) | Per-session dispatch sets. Each session lives in its own dated subdir; the dirname carries the *kickoff* date even if the dispatch ran multiple rounds (e.g. `2026-04-26/` ran rounds through 2026-04-28). | [dispatch/2026-04-26/00_task_list.md](dispatch/2026-04-26/00_task_list.md) |
-| [top-10-tasks/](top-10-tasks/) | 2026-04-26 top-10 dispatch (reconciled to `master`); kept here as a self-contained record. | [top-10-tasks/00-INDEX.md](top-10-tasks/00-INDEX.md) |
+| [dispatch/](archive/dispatch/) | Per-session dispatch sets. Each session lives in its own dated subdir; the dirname carries the *kickoff* date even if the dispatch ran multiple rounds (e.g. `2026-04-26/` ran rounds through 2026-04-28). | [dispatch/2026-04-26/00_task_list.md](archive/dispatch/2026-04-26/00_task_list.md) |
+| [top-10-tasks/](archive/top-10-tasks/) | 2026-04-26 top-10 dispatch (reconciled to `master`); kept here as a self-contained record. | [top-10-tasks/00-INDEX.md](archive/top-10-tasks/00-INDEX.md) |
 | [research/](research/) | 8 deep reference docs (~150k words) — roguelite, Scottish ×2, game feel, music/art tech, accessibility, cultural sensitivities, narrative | [research/README.md](research/README.md) |
 | [superpowers/specs/](superpowers/specs/) | Design specs (chronological, date-prefixed) | [superpowers/specs/INDEX.md](superpowers/specs/INDEX.md) |
 | [superpowers/plans/](superpowers/plans/) | Implementation plans (chronological, date-prefixed) | [superpowers/plans/INDEX.md](superpowers/plans/INDEX.md) |
@@ -151,7 +151,7 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 | [archive/2026-04-26-multi-model-audit/](archive/2026-04-26-multi-model-audit/) | Historical 2026-04-26 multi-model audit reports + reconciled backlog (basis for top-10 dispatch) — archived 2026-05-09 |
 | [prompts/orchestrator-backlog-drain.md](prompts/orchestrator-backlog-drain.md) | Live reusable orchestrator brief (the only prompts file still in active use) |
 | [archive/prompts/](archive/prompts/) | 4 historical session prompts (particle budget, polish onboarding, perf balance, visual art review) — archived 2026-05-09 |
-| [top-10-tasks/](top-10-tasks/) | 2026-04-26 morning top-10 dispatch — all 10 charters reconciled to `master` (tip `89ca11a`). Includes `00-INDEX.md`, `01..10` charters, `Execution_Log.md`, and `blocked/` human-gated stubs. The next-session dispatch lives at `dispatch/2026-04-26/`. |
+| [top-10-tasks/](archive/top-10-tasks/) | 2026-04-26 morning top-10 dispatch — all 10 charters reconciled to `master` (tip `89ca11a`). Includes `00-INDEX.md`, `01..10` charters, `Execution_Log.md`, and `blocked/` human-gated stubs. The next-session dispatch lives at `dispatch/2026-04-26/`. |
 
 ---
 
