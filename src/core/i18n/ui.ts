@@ -2222,6 +2222,16 @@ export const ui = {
         b: 'Strip o\' me for a strip o\' grace.',
         c: 'The well takes its share. The moor pays back.',
       },
+      // First wager ever (lifetime). Routed by clootieTree.commit when
+      // bumpClootieWagerCommit() returns 0 — the haggis is *learning*
+      // what the well asks. Wonder beat, hearth + grave; no repeat
+      // across a save lifetime so all three carry the same supplication
+      // weight. Sister to beithir_sting.cured_*_first.
+      bound_first: {
+        a: 'First time the bough\'s asked. Aye — a strip o\' me, then.',
+        b: 'I felt the bough lean before I tied. So this is how it goes.',
+        c: 'Auld stories said the rag did somethin\'. Now I ken what.',
+      },
     },
     /** Lemmings Easter Egg (DESIGN_IDEAS §13). Fires once when the cliff-
      *  edge parade triggers — a quiet hearth-toned toast riding under

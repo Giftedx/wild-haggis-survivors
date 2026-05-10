@@ -1703,6 +1703,15 @@ export const ui = {
         b: 'Strip o\' me fer a strip o\' grace.',
         c: 'Tha well taks its share. Tha moor pays back.',
       },
+      // First wager ever (lifetime). Routed by clootieTree.commit when
+      // bumpClootieWagerCommit() returns 0. Discovery beat — auld
+      // stories paying out for the first time. Sister to
+      // beithir_sting.cured_*_first SCS overlay.
+      bound_first: {
+        a: 'First time tha bough\'s asked. Aye — a strip o\' me, then.',
+        b: 'I felt tha bough lean afore I tied. So this is hoo it goes.',
+        c: 'Auld stories said tha cloot did somethin\'. Now I ken whit.',
+      },
     },
     // ── Lemmings Easter Egg (DESIGN_IDEAS §13). SCS overlay for
     //    lemmings_remember. Hearth tone — pleased, fond. Scots `mind`

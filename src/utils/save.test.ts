@@ -8,6 +8,7 @@ import {
   bumpBeastieKilled,
   bumpBeastieSeen,
   bumpBeithirCured,
+  bumpClootieWagerCommit,
   bumpItemAcquired,
   bumpRoutePicked,
   bumpCeilidhPulsesLifetime,
@@ -380,8 +381,8 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 20', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(20);
+  it('SAVE_SCHEMA_VERSION is 21', () => {
+    expect(SAVE_SCHEMA_VERSION).toBe(21);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {
@@ -1552,6 +1553,21 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().beithirCuresLifetime).toBe(10);
   });
 
+  it('bumpClootieWagerCommit returns 0 on first wager, 1 on second, and persists the count', () => {
+    expect(bumpClootieWagerCommit()).toBe(0);
+    expect(loadSave().clootieWagersLifetime).toBe(1);
+    expect(bumpClootieWagerCommit()).toBe(1);
+    expect(loadSave().clootieWagersLifetime).toBe(2);
+    expect(bumpClootieWagerCommit()).toBe(2);
+    expect(loadSave().clootieWagersLifetime).toBe(3);
+  });
+
+  it('bumpClootieWagerCommit preserves an existing seeded count', () => {
+    writeSave({ ...createDefaultSave(), clootieWagersLifetime: 7 });
+    expect(bumpClootieWagerCommit()).toBe(7);
+    expect(loadSave().clootieWagersLifetime).toBe(8);
+  });
+
   it('recordPostBellBest writes a new record when secPast > current', () => {
     writeSave({ ...createDefaultSave(), bestEndlessSeconds: 30 });
     recordPostBellBest(45);
@@ -2339,6 +2355,30 @@ describe('save schema v18 → v19 (S1 Phase 2 — Sporran chronicle)', () => {
       beithirCuresLifetime: 'not a number',
     });
     expect(migrated.beithirCuresLifetime).toBe(0);
+  });
+
+  it('v20 → v21 (Clootie lifetime wager counter): pre-v21 save defaults clootieWagersLifetime to 0', () => {
+    const migrated = migrateSave({ schemaVersion: 20, runHistory: [] });
+    expect(migrated.schemaVersion).toBe(SAVE_SCHEMA_VERSION);
+    expect(migrated.clootieWagersLifetime).toBe(0);
+  });
+
+  it('v21 coerce: existing clootieWagersLifetime is preserved on round-trip', () => {
+    const migrated = migrateSave({
+      schemaVersion: 21,
+      runHistory: [],
+      clootieWagersLifetime: 4,
+    });
+    expect(migrated.clootieWagersLifetime).toBe(4);
+  });
+
+  it('v21 coerce: malformed clootieWagersLifetime falls back to 0', () => {
+    const migrated = migrateSave({
+      schemaVersion: 21,
+      runHistory: [],
+      clootieWagersLifetime: 'not a number',
+    });
+    expect(migrated.clootieWagersLifetime).toBe(0);
   });
 
   it('coerces sporranPicks on history entries — drops unknown ids, omits empty', () => {

@@ -50,6 +50,7 @@ export {
   bumpBeithirCured,
   bumpBossKillCount,
   bumpCeilidhPulsesLifetime,
+  bumpClootieWagerCommit,
   bumpCursedVictoryByBoss,
   bumpFirstTimeEvent,
   bumpItemAcquired,

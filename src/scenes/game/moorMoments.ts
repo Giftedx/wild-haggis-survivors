@@ -39,6 +39,7 @@ import {
   bumpStandingStonePick,
   bumpReliquaryCurioPick,
   bumpItemAcquired,
+  bumpClootieWagerCommit,
 } from '../../utils/save';
 import {
   AncestralEcho,
@@ -236,7 +237,14 @@ export function spawnClootieTree(ctx: MoorMomentsContext): ClootieTree {
       // hearth tone of the wager. A bespoke clootie sting is open as
       // a v2 followup if a sound pass widens the audio palette.
       audio.playStoneGrant();
-      ctx.banter?.request('clootie_wager', { tag: 'bound' });
+      // Lifetime counter routes the first wager ever to bound_first
+      // (folkloric supplication wonder) and subsequent commits to the
+      // existing bound pool (familiar trade). Pre-bump 0 = first
+      // ever; bumper persists to v21 save. Sister to beithir cure
+      // routing pattern.
+      const beforeCount = bumpClootieWagerCommit();
+      const tag = beforeCount === 0 ? 'bound_first' : 'bound';
+      ctx.banter?.request('clootie_wager', { tag });
     },
   });
   tree.spawn();

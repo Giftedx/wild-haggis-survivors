@@ -1347,6 +1347,15 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.clootie_wager.bound.b',
         'ui.banter.clootie_wager.bound.c',
       ],
+      // First wager ever (lifetime). Routed by clootieTree.commit when
+      // bumpClootieWagerCommit() returns 0. Discovery beat — the haggis
+      // is *learning* what the well asks, not paying a familiar tariff.
+      // Sister to beithir_sting.cured_*_first (v20 precedent).
+      bound_first: [
+        'ui.banter.clootie_wager.bound_first.a',
+        'ui.banter.clootie_wager.bound_first.b',
+        'ui.banter.clootie_wager.bound_first.c',
+      ],
     },
   },
   {

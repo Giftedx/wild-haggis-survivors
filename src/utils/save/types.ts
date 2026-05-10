@@ -191,6 +191,16 @@ export interface SaveData {
   beithirCuresLifetime?: number;
 
   /**
+   * Clootie Rag Wager (DESIGN_IDEAS §1) — lifetime count of committed
+   * wagers across all runs. Pre-bump 0 gates the `bound_first` banter
+   * sub-pool — the first wager ever is a folkloric supplication beat
+   * (the haggis discovers what the well asks of it); subsequent wagers
+   * fall back to the existing terse `bound` pool. v21 addition. Sister
+   * to `beithirCuresLifetime`. Optional + defaulted to 0 via coerce.
+   */
+  clootieWagersLifetime?: number;
+
+  /**
    * Total cursed-run victories across all time. Unlocks the Cailleach
    * variant at count=3. Retroactively seeded from runHistory on first
    * load for existing players who already have past cursed victories.

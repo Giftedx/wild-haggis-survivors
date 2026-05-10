@@ -89,6 +89,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV18ToV19(raw));
     case 19:
       return finalizeSaveCandidate(migrateV19ToV20(raw));
+    case 20:
+      return finalizeSaveCandidate(migrateV20ToV21(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -309,6 +311,22 @@ function migrateV19ToV20(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v20 → v21 (Clootie Rag Wager lifetime counter, DESIGN_IDEAS §1
+ * v2 follow-up). Adds `clootieWagersLifetime?: number` — bumped on
+ * each committed wager (walk-through commits the supplication); pre-
+ * bump 0 gates the `bound_first` banter sub-pool so the first wager
+ * ever feels like discovery, not muscle memory. Sister to v20 beithir.
+ * Pure version bump — `finalizeSaveCandidate` coerces the missing
+ * field to 0 via `coerceInteger`. No retroactive seed: per-run wager
+ * outcomes were never persisted, so past wagers are unrecoverable.
+ * Fresh counter starts at 0 for all returning players, so they get
+ * one more "first-wager" supplication beat next time they bind a rag.
+ */
+function migrateV20ToV21(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -368,6 +386,7 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     ancestralEchoesTouched: coerceInteger(candidate.ancestralEchoesTouched, 0),
     ceilidhPulsesLifetime: coerceInteger(candidate.ceilidhPulsesLifetime, 0),
     beithirCuresLifetime: coerceInteger(candidate.beithirCuresLifetime, 0),
+    clootieWagersLifetime: coerceInteger(candidate.clootieWagersLifetime, 0),
     runHistory,
     seenEnemies: coerceStringArray(candidate.seenEnemies),
     firstTimeEventsFired: coerceStringArray(candidate.firstTimeEventsFired),
