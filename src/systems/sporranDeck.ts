@@ -27,9 +27,59 @@
 
 import type { RNG } from '../utils/rng';
 import type { RunModifiers } from '../core/RunModifiers';
+import type { VariantKey, VariantProgressSnapshot } from '../data/variants';
 
 /** Three families of card. Each maps to a Voice Card register. */
 export type SporranCardKind = 'curse' | 'boon' | 'quirk';
+
+/**
+ * Phase 3 — gating predicate for a card. Sister to `VariantUnlockCondition`
+ * (`src/data/variants.ts`): a discriminated union evaluated against an
+ * eligibility context built once per draft. A card with `eligibility`
+ * absent (or `{ type: 'always' }`) is always drawable; everything else
+ * is filtered out at draw-time when the context says so.
+ *
+ * Three gates today:
+ * - `deed` — a `VariantProgressSnapshot` threshold (lifetime stat)
+ * - `seasonal` — the active SeasonalEvent key matches `eventKey`
+ * - `variant` — the player's currently selected variant matches
+ *
+ * Future gates (curse-completed, achievement-unlocked) extend the union
+ * additively. Filter callers stay forward-compatible: an unrecognised
+ * gate returns `false` (ineligible) so a legacy save can never accidentally
+ * draw a card from a future patch.
+ */
+export type SporranEligibility =
+  | { readonly type: 'always' }
+  | { readonly type: 'deed'; readonly condition: SporranDeedCondition }
+  | { readonly type: 'seasonal'; readonly eventKey: string }
+  | { readonly type: 'variant'; readonly variantKey: VariantKey };
+
+/**
+ * Deed-gating predicate. Sister to `VariantUnlockCondition` — same shape
+ * but a strict subset (sporran rares are smaller-stakes than variant
+ * unlocks). Add new types here as more lifetime stats become useful
+ * gates. Reuses `VariantProgressSnapshot` so save-side coercion + the
+ * MenuScene unlock summary keep paying for themselves.
+ */
+export type SporranDeedCondition =
+  | { readonly type: 'victories'; readonly required: number }
+  | { readonly type: 'cursed_victories'; readonly required: number }
+  | { readonly type: 'best_kills'; readonly required: number }
+  | { readonly type: 'burns_night_full_evo'; readonly required: number };
+
+/**
+ * Eligibility context — passed once into `filterEligibleSporranCards`
+ * before the draw. Built from save state in `SporranScene.create()`;
+ * tests pass synthetic contexts directly.
+ */
+export interface SporranEligibilityContext {
+  readonly progress: VariantProgressSnapshot;
+  /** Result of `getActiveSeasonalEventKey(now, disabled)` at draft time. */
+  readonly activeSeasonalEventKey: string | null;
+  /** Player's currently selected variant. */
+  readonly variantKey: VariantKey;
+}
 
 /**
  * One sporran card. `apply(m)` mutates the bag in place AND returns a
@@ -46,6 +96,12 @@ export interface SporranCard {
   readonly descKey: string;
   /** Mutates the modifier bag in place; returns post-spawn side effects. */
   readonly apply: (m: RunModifiers) => SporranCardApplyResult;
+  /**
+   * Phase 3 — optional draw-time gate. Absent = `{ type: 'always' }`. A
+   * gated card is excluded from the pool when the eligibility context
+   * doesn't satisfy the gate.
+   */
+  readonly eligibility?: SporranEligibility;
 }
 
 export interface SporranCardApplyResult {
@@ -78,6 +134,52 @@ export interface SporranDraftResult {
 export const SPORRAN_DRAW_COUNT = 7;
 /** Number of cards the player keeps from the drawn hand. */
 export const SPORRAN_PICK_COUNT = 3;
+
+/**
+ * Phase 3 — evaluate one card's eligibility against a context. Pure;
+ * tests pass synthetic contexts. An absent `eligibility` field is
+ * always-true (back-compat with Phase 0 cards). Unrecognised gate types
+ * fall through to `false` so a save authored on a future patch never
+ * accidentally draws a card whose gate the running build can't reason
+ * about.
+ */
+export function isSporranCardEligible(
+  card: SporranCard,
+  ctx: SporranEligibilityContext,
+): boolean {
+  const gate = card.eligibility;
+  if (!gate || gate.type === 'always') return true;
+  if (gate.type === 'variant') return ctx.variantKey === gate.variantKey;
+  if (gate.type === 'seasonal') return ctx.activeSeasonalEventKey === gate.eventKey;
+  if (gate.type === 'deed') {
+    const c = gate.condition;
+    switch (c.type) {
+      case 'victories':
+        return ctx.progress.victories >= c.required;
+      case 'cursed_victories':
+        return (ctx.progress.cursedVictories ?? 0) >= c.required;
+      case 'best_kills':
+        return ctx.progress.bestKills >= c.required;
+      case 'burns_night_full_evo':
+        return (ctx.progress.burnsNightFullEvoRuns ?? 0) >= c.required;
+    }
+  }
+  return false;
+}
+
+/**
+ * Phase 3 — filter a card pool to only the eligible entries. Compose
+ * with `drawSporran` at the call site:
+ * `drawSporran(rng, filterEligibleSporranCards(ALL, ctx))`.
+ * Order of the input pool is preserved (filter, not shuffle) so the
+ * draw RNG remains the only source of order.
+ */
+export function filterEligibleSporranCards(
+  pool: readonly SporranCard[],
+  ctx: SporranEligibilityContext,
+): SporranCard[] {
+  return pool.filter((c) => isSporranCardEligible(c, ctx));
+}
 
 /**
  * Draw `drawCount` distinct cards from `pool` using `rng`. Fisher-Yates

@@ -58,4 +58,34 @@ export const sporran = {
       desc: 'Rins hot. Bigger bite — but tha moor reads ye hot back.',
     },
   },
+  rare: {
+    taxman_grudge: {
+      name: 'Cairried Grudge',
+      desc: 'Brocht hame frae a Taxman faw. +20% gowd; tha moor minds — stairt wi less heirt.',
+    },
+    witchs_thread: {
+      name: 'Witch\'s Threid',
+      desc: 'Spool unrowed frae a coat ye sudnae hae touched. +14% skaith, +14% skaith taen.',
+    },
+  },
+  seasonal: {
+    burns_dram: {
+      name: 'Burns\' Dram',
+      desc: 'A wee dram poured for tha Bard. +20 HP, +5% skaith. Burns Nicht anely.',
+    },
+    samhain_lantern: {
+      name: 'Tumshie Lantern',
+      desc: 'Carved face keeps three folk awa. +15 HP, spawns ease 5%. Samhain anely.',
+    },
+  },
+  variant: {
+    cailleach_frost: {
+      name: 'Hag\'s Braith',
+      desc: 'Frost rims tha spear. +8% skaith, slower stride. Cailleach anely.',
+    },
+    glaswegian_buckie: {
+      name: 'Buckie Unner Yer Airm',
+      desc: 'Ready fur onybody. +6% skaith, +6% skaith taen. Glaswegian anely.',
+    },
+  },
 } as const;

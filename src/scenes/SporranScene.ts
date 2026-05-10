@@ -6,10 +6,15 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { ALL_SPORRAN_CARDS } from '../data/sporranCards';
 import {
   drawSporran,
+  filterEligibleSporranCards,
   SPORRAN_DRAW_COUNT,
   SPORRAN_PICK_COUNT,
   type SporranCard,
+  type SporranEligibilityContext,
 } from '../systems/sporranDeck';
+import { loadSave, progressSnapshotFromSave } from '../utils/save';
+import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
+import { isVariantKey, type VariantKey, DEFAULT_VARIANT_KEY } from '../data/variants';
 import {
   sporranKindAccent,
   sporranTileRowLayout,
@@ -124,8 +129,11 @@ export class SporranScene extends Phaser.Scene {
 
     // Cosmetic shuffle — Date.now() RNG. Determinism contract is on the
     // PICKS, not the draw, so a non-replay seed is intentional.
+    // Phase 3: filter the pool by eligibility before drawing so deed /
+    // seasonal / variant gates can hide cards the context doesn't earn.
     const rng = createRNG(Date.now());
-    this.drawnHand = drawSporran(rng, ALL_SPORRAN_CARDS, SPORRAN_DRAW_COUNT);
+    const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, this.buildEligibilityContext());
+    this.drawnHand = drawSporran(rng, eligible, SPORRAN_DRAW_COUNT);
 
     // Tile row
     const layout = sporranTileRowLayout(width);
@@ -414,6 +422,24 @@ export class SporranScene extends Phaser.Scene {
   private uninstallDomFocusLayer(): void {
     this.domFocusLayer?.destroy();
     this.domFocusLayer = null;
+  }
+
+  /**
+   * Phase 3 — assemble the eligibility context from save state +
+   * settings + clock. Defensive: a corrupt save returns a default
+   * context (DEFAULT_VARIANT_KEY, no events, empty progress) so the
+   * draft falls back to the un-gated 12-card pool rather than crashing
+   * the picker. Read-once per draft (no per-frame work).
+   */
+  private buildEligibilityContext(): SporranEligibilityContext {
+    const save = loadSave();
+    const progress = progressSnapshotFromSave(save);
+    const variantKey: VariantKey = isVariantKey(save.selectedVariant)
+      ? save.selectedVariant
+      : DEFAULT_VARIANT_KEY;
+    const { disableSeasonalEvents } = getSettingsManager().load();
+    const activeSeasonalEventKey = getActiveSeasonalEventKey(new Date(), disableSeasonalEvents);
+    return { progress, activeSeasonalEventKey, variantKey };
   }
 
   private commitPicks(): void {

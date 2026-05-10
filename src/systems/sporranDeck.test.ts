@@ -1,14 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { defaultModifiers } from '../core/RunModifiers';
 import { ALL_SPORRAN_CARDS } from '../data/sporranCards';
+import { DEFAULT_VARIANT_KEY } from '../data/variants';
 import { createRNG } from '../utils/rng';
 import {
   SPORRAN_DRAW_COUNT,
   SPORRAN_PICK_COUNT,
   applySporranPicks,
   drawSporran,
+  filterEligibleSporranCards,
+  isSporranCardEligible,
   type SporranCard,
+  type SporranEligibilityContext,
 } from './sporranDeck';
+
+/** Synth context for the tests — empty-deed default-variant no-event. */
+const baseContext: SporranEligibilityContext = {
+  progress: {
+    bestTime: 0,
+    bestKills: 0,
+    totalGoldEarned: 0,
+    victories: 0,
+  },
+  activeSeasonalEventKey: null,
+  variantKey: DEFAULT_VARIANT_KEY,
+};
 
 const cardById = new Map(ALL_SPORRAN_CARDS.map((c) => [c.id, c]));
 
@@ -146,14 +162,15 @@ describe('applySporranPicks', () => {
 });
 
 describe('ALL_SPORRAN_CARDS pool integrity', () => {
-  it('contains exactly 12 cards (Phase 1.5 — quirk_haggis_blooded lifted)', () => {
-    expect(ALL_SPORRAN_CARDS).toHaveLength(12);
+  it('contains exactly 18 cards (Phase 3 — 12 base + 2 rare + 2 seasonal + 2 variant)', () => {
+    expect(ALL_SPORRAN_CARDS).toHaveLength(18);
   });
 
-  it('splits as 5 curses + 4 boons + 3 quirks', () => {
+  it('splits as 5 curses + 6 boons + 7 quirks across the full pool', () => {
     const counts = { curse: 0, boon: 0, quirk: 0 };
     for (const card of ALL_SPORRAN_CARDS) counts[card.kind]++;
-    expect(counts).toEqual({ curse: 5, boon: 4, quirk: 3 });
+    // base 5+4+3 + Phase 3 (2 boons in seasonal + 4 quirks in rare/variant) = 5/6/7
+    expect(counts).toEqual({ curse: 5, boon: 6, quirk: 7 });
   });
 
   it('every card has a unique non-empty id matching ^[a-z_]+$', () => {
@@ -180,5 +197,153 @@ describe('ALL_SPORRAN_CARDS pool integrity', () => {
 
   it('default draw fits within the pool (no degradation in normal use)', () => {
     expect(SPORRAN_DRAW_COUNT).toBeLessThanOrEqual(ALL_SPORRAN_CARDS.length);
+  });
+
+  it('the 12 base cards remain un-gated (no eligibility field)', () => {
+    const baseIds = new Set([
+      'curse_heavy_legs', 'curse_thin_hide', 'curse_restless_spirits',
+      'curse_empty_larder', 'curse_windless_pipes',
+      'boon_shortbread', 'boon_whisky', 'boon_coal', 'boon_silver',
+      'quirk_light_step', 'quirk_hardy_breath', 'quirk_haggis_blooded',
+    ]);
+    for (const card of ALL_SPORRAN_CARDS) {
+      if (baseIds.has(card.id)) {
+        expect(card.eligibility).toBeUndefined();
+      }
+    }
+  });
+
+  it('the 6 Phase 3 cards each carry an explicit eligibility gate', () => {
+    const gatedIds = new Set([
+      'rare_taxman_grudge', 'rare_witchs_thread',
+      'seasonal_burns_dram', 'seasonal_samhain_lantern',
+      'variant_cailleach_frost', 'variant_glaswegian_buckie',
+    ]);
+    for (const card of ALL_SPORRAN_CARDS) {
+      if (gatedIds.has(card.id)) {
+        expect(card.eligibility).toBeDefined();
+        expect(card.eligibility?.type).not.toBe('always');
+      }
+    }
+  });
+});
+
+describe('isSporranCardEligible — Phase 3 gating', () => {
+  it('an un-gated card is always eligible', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'boon_shortbread')!;
+    expect(isSporranCardEligible(card, baseContext)).toBe(true);
+  });
+
+  it('a deed gate fails on a fresh save and passes when the threshold is met', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'rare_taxman_grudge')!;
+    expect(isSporranCardEligible(card, baseContext)).toBe(false);
+    const ctx: SporranEligibilityContext = {
+      ...baseContext,
+      progress: { ...baseContext.progress, victories: 1 },
+    };
+    expect(isSporranCardEligible(card, ctx)).toBe(true);
+  });
+
+  it('cursed_victories deed gate honours the threshold (rare_witchs_thread = 5)', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'rare_witchs_thread')!;
+    const ctxBelow: SporranEligibilityContext = {
+      ...baseContext,
+      progress: { ...baseContext.progress, cursedVictories: 4 },
+    };
+    const ctxAt: SporranEligibilityContext = {
+      ...baseContext,
+      progress: { ...baseContext.progress, cursedVictories: 5 },
+    };
+    expect(isSporranCardEligible(card, ctxBelow)).toBe(false);
+    expect(isSporranCardEligible(card, ctxAt)).toBe(true);
+  });
+
+  it('a seasonal gate fails outside the window and passes inside', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'seasonal_burns_dram')!;
+    expect(isSporranCardEligible(card, baseContext)).toBe(false);
+    const ctxOff: SporranEligibilityContext = {
+      ...baseContext,
+      activeSeasonalEventKey: 'samhain',
+    };
+    expect(isSporranCardEligible(card, ctxOff)).toBe(false);
+    const ctxOn: SporranEligibilityContext = {
+      ...baseContext,
+      activeSeasonalEventKey: 'burns_night',
+    };
+    expect(isSporranCardEligible(card, ctxOn)).toBe(true);
+  });
+
+  it('a variant gate fails on the wrong variant and passes on the matching one', () => {
+    const card = ALL_SPORRAN_CARDS.find((c) => c.id === 'variant_cailleach_frost')!;
+    expect(isSporranCardEligible(card, baseContext)).toBe(false);
+    const ctxWrong: SporranEligibilityContext = {
+      ...baseContext,
+      variantKey: 'glaswegian',
+    };
+    expect(isSporranCardEligible(card, ctxWrong)).toBe(false);
+    const ctxRight: SporranEligibilityContext = {
+      ...baseContext,
+      variantKey: 'cailleach',
+    };
+    expect(isSporranCardEligible(card, ctxRight)).toBe(true);
+  });
+});
+
+describe('filterEligibleSporranCards — Phase 3 pool filter', () => {
+  it('default-variant fresh-save context yields the 12 un-gated cards', () => {
+    const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, baseContext);
+    expect(eligible).toHaveLength(12);
+    expect(eligible.every((c) => !c.eligibility)).toBe(true);
+  });
+
+  it('preserves source-pool order (filter, not shuffle)', () => {
+    const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, baseContext);
+    const ids = eligible.map((c) => c.id);
+    const expectedOrder = ALL_SPORRAN_CARDS
+      .filter((c) => !c.eligibility)
+      .map((c) => c.id);
+    expect(ids).toEqual(expectedOrder);
+  });
+
+  it('a fully-loaded context (1 victory, Burns Night, cailleach) admits the matching gated cards', () => {
+    const ctx: SporranEligibilityContext = {
+      progress: {
+        bestTime: 0, bestKills: 0, totalGoldEarned: 0, victories: 1,
+        cursedVictories: 5,
+      },
+      activeSeasonalEventKey: 'burns_night',
+      variantKey: 'cailleach',
+    };
+    const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, ctx);
+    const eligibleIds = new Set(eligible.map((c) => c.id));
+    expect(eligibleIds.has('rare_taxman_grudge')).toBe(true);
+    expect(eligibleIds.has('rare_witchs_thread')).toBe(true);
+    expect(eligibleIds.has('seasonal_burns_dram')).toBe(true);
+    expect(eligibleIds.has('seasonal_samhain_lantern')).toBe(false);
+    expect(eligibleIds.has('variant_cailleach_frost')).toBe(true);
+    expect(eligibleIds.has('variant_glaswegian_buckie')).toBe(false);
+    // 12 base + 2 rare + 1 seasonal + 1 variant = 16
+    expect(eligible).toHaveLength(16);
+  });
+
+  it('does not mutate the source pool', () => {
+    const beforeLen = ALL_SPORRAN_CARDS.length;
+    filterEligibleSporranCards(ALL_SPORRAN_CARDS, baseContext);
+    expect(ALL_SPORRAN_CARDS).toHaveLength(beforeLen);
+  });
+});
+
+describe('drawSporran with filter — pool degradation safety', () => {
+  it('returns the whole filtered pool when filter shrinks below draw count', () => {
+    // Fresh save → 12 eligible. Pool size 12 ≥ draw 7 → still 7.
+    const eligible = filterEligibleSporranCards(ALL_SPORRAN_CARDS, baseContext);
+    const drawn = drawSporran(createRNG(13), eligible);
+    expect(drawn).toHaveLength(SPORRAN_DRAW_COUNT);
+  });
+
+  it('handles the synthetic case where the filter is smaller than the draw', () => {
+    // Empty pool → empty draw, no throw.
+    const drawn = drawSporran(createRNG(1), []);
+    expect(drawn).toEqual([]);
   });
 });

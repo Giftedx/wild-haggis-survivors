@@ -74,4 +74,47 @@ export const sporran = {
       desc: 'Runs hot. Bigger bite — but the moor reads ye hot back.',
     },
   },
+  /**
+   * Phase 3 — deed-gated rares. Edge register: scars from past runs,
+   * not first-footer warmth. Only drawable when the lifetime stat
+   * threshold is met.
+   */
+  rare: {
+    taxman_grudge: {
+      name: 'Carried Grudge',
+      desc: 'Brought home from a Taxman fall. +20% gold; the moor remembers — start with less heart.',
+    },
+    witchs_thread: {
+      name: 'Witch\'s Thread',
+      desc: 'Spool unwound from a coat ye should not have touched. +14% damage, +14% damage taken.',
+    },
+  },
+  /**
+   * Phase 3 — seasonal-date-gated. Only drawable while the matching
+   * SeasonalEvent window is open. Hearth register, season-flavoured.
+   */
+  seasonal: {
+    burns_dram: {
+      name: 'Burns\' Dram',
+      desc: 'A wee dram poured for the Bard. +20 HP, +5% damage. Burns Night only.',
+    },
+    samhain_lantern: {
+      name: 'Tumshie Lantern',
+      desc: 'Carved face keeps three folk away. +15 HP, spawns ease 5%. Samhain only.',
+    },
+  },
+  /**
+   * Phase 3 — variant-keyed. Only drawable when the matching variant
+   * is selected. Tone matches the variant's voice register.
+   */
+  variant: {
+    cailleach_frost: {
+      name: 'Hag\'s Breath',
+      desc: 'Frost rims the spear. +8% damage, slower stride. Cailleach only.',
+    },
+    glaswegian_buckie: {
+      name: 'Buckie Under Yer Arm',
+      desc: 'Ready fer onybody. +6% damage, +6% damage taken. Glaswegian only.',
+    },
+  },
 } as const;
