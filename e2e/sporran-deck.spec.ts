@@ -56,9 +56,17 @@ test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
     expect(tiles.tiles, 'tileEntries should hold 7 picker tiles').toBe(7);
 
     // Digit 1/2/3 pick first three tiles; Enter at full picks routes to Game.
-    await page.keyboard.press('1');
-    await page.keyboard.press('2');
-    await page.keyboard.press('3');
+    // Hold each press across a Phaser frame — `press()` can fire keydown→
+    // keyup inside one frame, missing the picker's edge debounce.
+    const tap = async (k: string) => {
+      await page.keyboard.down(k);
+      await page.waitForTimeout(80);
+      await page.keyboard.up(k);
+      await page.waitForTimeout(60);
+    };
+    await tap('1');
+    await tap('2');
+    await tap('3');
 
     const picked = await page.evaluate(() => {
       const s = (window as unknown as GameWin).game!.scene.getScene('Sporran') as {
@@ -68,7 +76,7 @@ test.describe('sporran deck pre-run picker (DESIGN_IDEAS §1)', () => {
     });
     expect(picked, 'three digit presses should bank three picks').toBe(3);
 
-    await page.keyboard.press('Enter');
+    await tap('Enter');
 
     const gameActive = await page.evaluate(async () => {
       const g = (window as unknown as GameWin).game!;

@@ -57,16 +57,36 @@ test.describe('stance toggle (DESIGN_IDEAS §1)', () => {
 
     expect(await readStance()).toBe('loose');
 
-    await page.keyboard.press('q');
-    await page.waitForTimeout(50);
+    // Wait for COUNTDOWN — Player.update is gated on
+    // `!timeManager.isGameplayPaused()`. Without the wait, Q lands
+    // during the 3-2-1 freeze and the stance never cycles.
+    await page.waitForFunction(() => {
+      const g = (window as unknown as { game?: {
+        scene: { getScene(k: string): unknown };
+      } }).game;
+      const gs = g?.scene.getScene('Game') as {
+        timeManager?: { isGameplayPaused(): boolean };
+      } | undefined;
+      return gs?.timeManager?.isGameplayPaused?.() === false;
+    }, undefined, { timeout: 10_000 });
+
+    // Hold/release Q so each press spans at least one Phaser frame —
+    // `press()` can fire keydown→keyup inside a single frame, missing
+    // the rising-edge debounce on `stanceCycleKeyPrevDown`.
+    const tapQ = async () => {
+      await page.keyboard.down('q');
+      await page.waitForTimeout(80);
+      await page.keyboard.up('q');
+      await page.waitForTimeout(80);
+    };
+
+    await tapQ();
     expect(await readStance()).toBe('braced');
 
-    await page.keyboard.press('q');
-    await page.waitForTimeout(50);
+    await tapQ();
     expect(await readStance()).toBe('reeling');
 
-    await page.keyboard.press('q');
-    await page.waitForTimeout(50);
+    await tapQ();
     expect(await readStance()).toBe('loose');
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);

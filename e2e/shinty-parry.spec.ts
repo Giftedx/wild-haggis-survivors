@@ -22,7 +22,9 @@ test.describe('shinty parry (DESIGN_IDEAS §1)', () => {
           hasCompletedTutorial: true,
         }));
         localStorage.removeItem('whs_save');
-        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = true;
+        // AUTO_BATTLE intentionally OFF — its `timeScale: 10` would
+        // fast-forward the parry cooldown past the 450ms wall-time wait
+        // below, masking the cooldown phase the assertion checks.
       } catch {
         /* ignore */
       }
@@ -66,13 +68,32 @@ test.describe('shinty parry (DESIGN_IDEAS §1)', () => {
     // 1) Idle: ready, not active.
     await expect.poll(readPhase, { timeout: 5_000 }).toMatchObject({ active: false, ready: true });
 
-    // 2) Active: E-edge opens the window.
-    await page.keyboard.press('e');
-    await expect.poll(readPhase, { timeout: 1_000 }).toMatchObject({ active: true });
+    // 2) Wait for COUNTDOWN — Player.update is gated on
+    //    `!timeManager.isGameplayPaused()`. Without the wait, the E
+    //    keydown lands during the 3-2-1 freeze and the parry helper
+    //    never ticks the rising edge.
+    await page.waitForFunction(() => {
+      const g = (window as unknown as { game?: {
+        scene: { getScene(k: string): unknown };
+      } }).game;
+      const gs = g?.scene.getScene('Game') as {
+        timeManager?: { isGameplayPaused(): boolean };
+      } | undefined;
+      return gs?.timeManager?.isGameplayPaused?.() === false;
+    }, undefined, { timeout: 10_000 });
 
-    // 3) Cooldown: window expires (>350ms) into recovery.
+    // 3) Active: E-edge opens the window. Hold to keep `key.isDown`
+    //    true across at least one Phaser frame (`press()` can fire
+    //    keydown→keyup inside a single frame, missing the edge).
+    await page.keyboard.down('e');
+    await expect.poll(readPhase, { timeout: 1_000 }).toMatchObject({ active: true });
+    await page.keyboard.up('e');
+
+    // 4) Window expires (>350ms) and parry returns to ready (no hit
+    //    landed → cooldown stays 0 per `tickShintyParry`; cooldown
+    //    only fires on a successful parry via `consumeParry`).
     await page.waitForTimeout(450);
-    await expect.poll(readPhase, { timeout: 1_000 }).toMatchObject({ active: false, ready: false });
+    await expect.poll(readPhase, { timeout: 1_000 }).toMatchObject({ active: false, ready: true });
 
     expect(pageErrors, `Uncaught page errors: ${pageErrors.join('\n')}`).toEqual([]);
   });
