@@ -71,6 +71,7 @@ import {
   computeStingExpireDamage,
 } from './raceTheBeithir';
 import type { Enemy } from './Enemy';
+import { isInvincibilityEnabled } from '../systems/accessibility/AssistMode';
 import type { RuneEffectBag } from '../systems/runes/runeEffects';
 import {
   composeDamageMul,
@@ -1663,7 +1664,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    * committed.
    */
   applyBeithirStingFromFang(): void {
-    const r = applyBeithirSting(this.beithirState);
+    const r = applyBeithirSting(this.beithirState, isInvincibilityEnabled());
     this.beithirState = r.state;
     if (!r.appliedEdge) return; // refresh — silent, timer reset
     this.beithirMaxHpAtSting = this.runBaseMaxHp;

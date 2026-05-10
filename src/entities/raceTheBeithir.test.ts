@@ -48,6 +48,34 @@ describe('raceTheBeithir — pure helper', () => {
         expect(r.state.remainingMs).toBe(RACE_DURATION_MS);
       }
     });
+
+    it('Assist Mode invincibility short-circuits idle → stung (no race starts)', () => {
+      const r = applyBeithirSting(initialBeithirState(), true);
+      expect(r.appliedEdge).toBe(false);
+      expect(r.state.kind).toBe('idle');
+      expect(isStung(r.state)).toBe(false);
+    });
+
+    it('Assist Mode invincibility short-circuits stung → stung refresh (timer not reset)', () => {
+      // Race underway, then assist mode toggled on mid-flight: refusing
+      // the refresh is the right call — the existing timer continues
+      // draining (will hit cure or expire-which-is-also-gated at
+      // Player.fireBeithirExpired wire site) without being topped up.
+      let s = applyBeithirSting(initialBeithirState()).state;
+      s = tickBeithir(s, 3000).state;
+      const r = applyBeithirSting(s, true);
+      expect(r.appliedEdge).toBe(false);
+      expect(r.state.kind).toBe('stung');
+      if (r.state.kind === 'stung') {
+        expect(r.state.remainingMs).toBe(RACE_DURATION_MS - 3000);
+      }
+    });
+
+    it('isPlayerInvincible = false (default) preserves legacy behaviour', () => {
+      const r = applyBeithirSting(initialBeithirState(), false);
+      expect(r.appliedEdge).toBe(true);
+      expect(r.state.kind).toBe('stung');
+    });
   });
 
   describe('tickBeithir', () => {

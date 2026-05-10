@@ -130,8 +130,19 @@ export interface BeithirApplyResult {
  * timer and `appliedEdge: true`. From stung, refreshes the timer to
  * full but reports `appliedEdge: false` — the venom is a single
  * status, not a stack.
+ *
+ * Assist Mode invincibility short-circuits the bite: even though the
+ * sting itself is status-setup (no immediate damage), it commits a
+ * future damage payload on expire. Refusing to start the timer is
+ * cleaner than letting it run with the commit gated — the HUD would
+ * otherwise show a race that "doesn't matter". Sister to
+ * `PlayerHitResolver.handle`'s `isInvincibilityEnabled()` short-circuit.
  */
-export function applyBeithirSting(state: RaceTheBeithirState): BeithirApplyResult {
+export function applyBeithirSting(
+  state: RaceTheBeithirState,
+  isPlayerInvincible: boolean = false,
+): BeithirApplyResult {
+  if (isPlayerInvincible) return { state, appliedEdge: false };
   const refreshed: RaceTheBeithirState = { kind: 'stung', remainingMs: RACE_DURATION_MS };
   if (state.kind === 'stung') return { state: refreshed, appliedEdge: false };
   return { state: refreshed, appliedEdge: true };
