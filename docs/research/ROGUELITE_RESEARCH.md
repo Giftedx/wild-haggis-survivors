@@ -1109,7 +1109,7 @@ Opportunities are sorted into four tiers:
 
 #### S5. Banter Density Push — 300+ lines
 
-- **Current state.** Banter framework scaffolded, ~0 lines shipped, content deferred per `BANTER_GAPS.md`.
+- **Current state (2026-04 snapshot).** Banter framework scaffolded, ~0 lines shipped, content deferred per [`archive/BANTER_GAPS.md`](../archive/BANTER_GAPS.md). **2026-04-26 update — B1 flagship all phases shipped (368 leaves); audit doc archived 2026-05-10.**
 - **The gap.** Hades has ~21,000 voiced lines. WHS will never approach that, but *text* banter at ~300–500 lines is achievable and transformative.
 - **The opportunity.** Write **a dense banter script** across trigger categories:
   - **Gran commentary** (30+) — appears at run start, first-time boss kills, Moor Road route picks, death screens.

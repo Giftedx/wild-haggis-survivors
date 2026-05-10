@@ -83,7 +83,7 @@ The spike proves the contract works. It does NOT do:
 
 These are blocked on human/product decisions documented in
 `docs/adr/0006-cloud-save-backend.md` and
-`docs/P3_BACKEND_DECISION_MATRIX.md`. The spike's job is to prove
+`docs/archive/P3_BACKEND_DECISION_MATRIX.md`. The spike's job is to prove
 the local seam exists and the contract holds; everything above is
 the work that turns the seam into a service.
 

@@ -88,7 +88,7 @@ The `status/cultural/CULTURAL_REVIEW_STATUS.json` manifest is read by `src/data/
 
 ### Audit / one-off docs
 
-Date-prefix one-off audits: `docs/<NAME>_AUDIT_YYYY-MM-DD.md` (e.g. `SPRITE_AUDIT_2026-04-27.md`, `SCENE_REFACTOR_AUDIT_2026-04-26.md`). This disambiguates from running journals (which use a stable name without a date suffix).
+Date-prefix one-off audits: `docs/<NAME>_AUDIT_YYYY-MM-DD.md` (e.g. `SPRITE_AUDIT_2026-04-27.md`, `SCENE_REFACTOR_AUDIT_2026-04-26.md` — both now in `docs/archive/`). This disambiguates from running journals (which use a stable name without a date suffix). Once the audit's actionable findings are closed and the doc is referenced only as historical evidence, move to `docs/archive/<NAME>_AUDIT_YYYY-MM-DD.md` and update inbound `INDEX.md` rows to cite the archive path.
 
 ### Multi-model audit reports
 
@@ -118,7 +118,7 @@ Specs do not carry STATUS markers — they're evergreen design intent. Live stat
 
 ## Naming
 
-- **Filenames:** kebab-case for non-status content (`grans-croft.md`, `art-music-polish-pass.md`); `SCREAMING_SNAKE` for status trackers and root-canon files (`A1_PEAT_AUDIT.md`, `BANTER_GAPS.md`).
+- **Filenames:** kebab-case for non-status content (`grans-croft.md`, `art-music-polish-pass.md`); `SCREAMING_SNAKE` for status trackers and root-canon files (`A1_PEAT_AUDIT.md`, `ART_AUDIT.md`).
 - **Slugs:** stable across spec ↔ plan ↔ status ↔ ADR for the same initiative. Example: `accessibility-foundation` appears in spec, plan, and (under the A1 prefix) in `A1_*` status trackers.
 - **Date prefix:** ISO format `YYYY-MM-DD-`. Specs, plans, dispatch dirs, and one-off audits all use this.
 - **No emojis in filenames.** Emojis in headers are allowed (`✅`, `🟡`, `⏳`); they're searchable and don't break paths.

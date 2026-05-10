@@ -5,7 +5,7 @@
 **Supersedes:** —
 **Superseded by:** —
 
-> **Ratification scope (2026-05-09):** This ADR ratifies the **architectural** choice — Cloudflare Workers + D1, magic-link auth via Resend, schema-blind passthrough envelope, last-writer-wins conflict resolution. The remaining stakeholder gates (privacy-policy text at `/privacy.html`, GDPR controller legal name + UK address, Resend account creation + cost-alert thresholds, Cloudflare account D1 provision) are non-architectural humans-in-the-loop and stay open as P3 implementation tasks. The decision matrix in [`docs/P3_BACKEND_DECISION_MATRIX.md`](../P3_BACKEND_DECISION_MATRIX.md) evaluated 6 options against 10 constraints; D1 won every distinguishing cell. P3 itself is NOT picked as the next flagship — see [`docs/PRD.md`](../PRD.md) §"Next flagship slot" for the polish/content-phase decision.
+> **Ratification scope (2026-05-09):** This ADR ratifies the **architectural** choice — Cloudflare Workers + D1, magic-link auth via Resend, schema-blind passthrough envelope, last-writer-wins conflict resolution. The remaining stakeholder gates (privacy-policy text at `/privacy.html`, GDPR controller legal name + UK address, Resend account creation + cost-alert thresholds, Cloudflare account D1 provision) are non-architectural humans-in-the-loop and stay open as P3 implementation tasks. The decision matrix in [`docs/archive/P3_BACKEND_DECISION_MATRIX.md`](../archive/P3_BACKEND_DECISION_MATRIX.md) evaluated 6 options against 10 constraints; D1 won every distinguishing cell. P3 itself is NOT picked as the next flagship — see [`docs/PRD.md`](../PRD.md) §"Next flagship slot" for the polish/content-phase decision.
 
 ## Context
 
@@ -20,7 +20,7 @@ history. Cross-device play is impossible. P3 in
 `docs/HUGE_INITIATIVES_MASTER_PLAN.md` flags this as S-tier
 infrastructure.
 
-Constraints (full set in `docs/P3_BACKEND_DECISION_MATRIX.md §1`):
+Constraints (full set in `docs/archive/P3_BACKEND_DECISION_MATRIX.md §1`):
 
 - C1: Offline-first — game must remain fully playable without account.
 - C2: Solo maintainer — backend must be near-zero-ops.
@@ -47,7 +47,7 @@ ambiguous. Spec: `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-desig
 
 ## Alternatives considered
 
-Full matrix in `docs/P3_BACKEND_DECISION_MATRIX.md §3`. Summary:
+Full matrix in `docs/archive/P3_BACKEND_DECISION_MATRIX.md §3`. Summary:
 
 - **Cloudflare Workers + KV** — strong second. KV is eventually
   consistent (~60s) and lacks SQL range queries we want for audit log
@@ -208,7 +208,7 @@ on the agent's own timeline.
 ## References
 
 - `docs/top-10-tasks/03-p3-cloud-saves.md` — charter.
-- `docs/P3_BACKEND_DECISION_MATRIX.md` — full tradeoff analysis.
+- `docs/archive/P3_BACKEND_DECISION_MATRIX.md` — full tradeoff analysis.
 - `docs/top-10-tasks/blocked/03-blocked-on-human.md` — open decisions.
 - `docs/superpowers/specs/2026-04-26-cloud-save-conflict-ux-design.md` — conflict UX spec.
 - `docs/HUGE_INITIATIVES_MASTER_PLAN.md §P3` — strategic context.

@@ -2935,7 +2935,7 @@ export const ui = {
       //    routes, and daily clear. Each milestone fires once-per-save
       //    via `bumpFirstTimeEvent(eventId)`. Wiring lands at each
       //    call surface in follow-up commits per "hook with content"
-      //    pattern (see BANTER_GAPS.md).
+      //    pattern (see docs/archive/BANTER_GAPS.md).
       // Variant unlocks (12 non-classic). Voice tilts variant-specific
       //  per Voice Card §Variant-scoped voices.
       variant_moor_runner_unlocked: {

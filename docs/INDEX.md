@@ -22,7 +22,7 @@ Entry point for the docs tree. AI agents and humans should start here.
 | Why was this technical decision made? | [adr/README.md](adr/README.md) |
 | What research grounds this? | [research/README.md](research/README.md) |
 | What human-gated reviews block release? | [status/cultural/CULTURAL_REVIEW_PACKET.md](status/cultural/CULTURAL_REVIEW_PACKET.md), [A1_PEAT_AUDIT.md](A1_PEAT_AUDIT.md) (root), [MOBILE_DEVICE_TEST_MATRIX.md](MOBILE_DEVICE_TEST_MATRIX.md) (root), [top-10-tasks/blocked/](archive/top-10-tasks/blocked/) |
-| Status of accessibility / cultural / mobile / cloud / engine work? | A1: root `A1_*.md` + [status/a11y/](status/a11y/). Cultural: [status/cultural/](status/cultural/) + root `C2_*.md`. Mobile: root `MOBILE_*.md`. Cloud: root [P3_BACKEND_DECISION_MATRIX.md](P3_BACKEND_DECISION_MATRIX.md). Engine: [status/engine/](status/engine/) + root [SCENE_REFACTOR_AUDIT_2026-04-26.md](SCENE_REFACTOR_AUDIT_2026-04-26.md). Banter: root [BANTER_GAPS.md](BANTER_GAPS.md). Art: root [ART_AUDIT.md](ART_AUDIT.md). |
+| Status of accessibility / cultural / mobile / cloud / engine work? | A1: root `A1_*.md` + [status/a11y/](status/a11y/). Cultural: [status/cultural/](status/cultural/) + root `C2_*.md`. Mobile: root `MOBILE_*.md`. Cloud: [adr/0006-cloud-save-backend.md](adr/0006-cloud-save-backend.md) (decision matrix archived at [archive/P3_BACKEND_DECISION_MATRIX.md](archive/P3_BACKEND_DECISION_MATRIX.md)). Engine: [status/engine/](status/engine/) (one-off audit archived at [archive/SCENE_REFACTOR_AUDIT_2026-04-26.md](archive/SCENE_REFACTOR_AUDIT_2026-04-26.md)). Banter: shipped — coverage audit archived at [archive/BANTER_GAPS.md](archive/BANTER_GAPS.md). Art: root [ART_AUDIT.md](ART_AUDIT.md). |
 | Auditing for bugs / regressions? | **Read [§For audit / review agents](#for-audit--review-agents) below first.** |
 | Doc conventions (filename rules, where new docs go, STATUS markers) | [DOC_CONVENTIONS.md](DOC_CONVENTIONS.md) |
 | Open questions or stakeholder decisions blocking work? | [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md) |
@@ -117,29 +117,29 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 
 | File | Purpose |
 |---|---|
-| [P3_BACKEND_DECISION_MATRIX.md](P3_BACKEND_DECISION_MATRIX.md) | Backend selection rationale (awaiting stakeholder approval) |
+| [archive/P3_BACKEND_DECISION_MATRIX.md](archive/P3_BACKEND_DECISION_MATRIX.md) | Backend selection rationale — decision accepted 2026-05-09 (ADR-0006); archived 2026-05-10 |
 
 ### Engine / refactor
 
 | File | Purpose |
 |---|---|
 | [status/engine/SCENE_REFACTOR_GAP_AUDIT.md](status/engine/SCENE_REFACTOR_GAP_AUDIT.md) | T401 running journal of GameScene-decomposition slices (chronological, newest first) |
-| [SCENE_REFACTOR_AUDIT_2026-04-26.md](SCENE_REFACTOR_AUDIT_2026-04-26.md) | Spec-vs-live audit for Phase A biomes / Phase B endless (one-off, 2026-04-26) |
-| [PHASE_0_GATE_NOTES.md](PHASE_0_GATE_NOTES.md) | W71 Phase 0 prototype gate evidence |
+| [archive/SCENE_REFACTOR_AUDIT_2026-04-26.md](archive/SCENE_REFACTOR_AUDIT_2026-04-26.md) | Spec-vs-live audit for Phase A biomes / Phase B endless (one-off, 2026-04-26; archived 2026-05-10) |
+| [archive/PHASE_0_GATE_NOTES.md](archive/PHASE_0_GATE_NOTES.md) | W71 Phase 0 prototype gate evidence (archived 2026-05-10) |
 | [status/engine/BUNDLE_BUDGET.md](status/engine/BUNDLE_BUDGET.md) | Per-feature bundle-size budget tracking |
 
 ### Banter (B1)
 
 | File | Purpose |
 |---|---|
-| [BANTER_GAPS.md](BANTER_GAPS.md) | Banter pool coverage audit (B1 phases) |
+| [archive/BANTER_GAPS.md](archive/BANTER_GAPS.md) | Banter pool coverage audit (B1 phases — all phases shipped; archived 2026-05-10) |
 
 ### Art
 
 | File | Purpose |
 |---|---|
 | [ART_AUDIT.md](ART_AUDIT.md) | Per-sprite priority audit (P0–P3) |
-| [SPRITE_AUDIT_2026-04-27.md](SPRITE_AUDIT_2026-04-27.md) | Sprite Round-2 lift audit (253 lifted + 38 new keys) |
+| [archive/SPRITE_AUDIT_2026-04-27.md](archive/SPRITE_AUDIT_2026-04-27.md) | Sprite Round-2 lift audit (253 lifted + 38 new keys; archived 2026-05-10) |
 
 ### Other one-off audits / sessions at root
 

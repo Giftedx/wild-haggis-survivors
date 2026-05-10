@@ -13,7 +13,7 @@ roadmap (`docs/HUGE_INITIATIVES_MASTER_PLAN.md` row W71) defined three phases:
 
 - **Phase 0 (gate)** — prototype animation pipeline, prove ≤5% perf delta against
   the static baseline, prove pixel-art soul survives. Shipped 2026-04-18 to
-  2026-04-23 (see `docs/PHASE_0_GATE_NOTES.md`).
+  2026-04-23 (see `docs/archive/PHASE_0_GATE_NOTES.md`).
 - **Phase 1** — full player rig + 3 enemy archetypes wired through the
   pipeline. Shipped 2026-04-23 to 2026-04-26.
 - **Phase 2** — secondary motion (keyframe tail lag + tier-gated heather
@@ -198,7 +198,7 @@ frame clock (`frameClock.ts`), composed through `AnimationController`.**
 
 Phase 0 + Phase 1 can be reverted as a sequence of `git revert` commits on
 the 17 Phase 0 commits + the Phase 1 commits listed in
-`docs/PHASE_0_GATE_NOTES.md`. The pre-Phase-0 baseline is the static
+`docs/archive/PHASE_0_GATE_NOTES.md`. The pre-Phase-0 baseline is the static
 single-texture model — reverting restores `BootScene.bake<Subject>()` calls
 without the per-state loop, and `Player`/`Enemy` falls back to a single
 `setTexture(textureKey)` at spawn.
@@ -215,7 +215,7 @@ non-skeletal subjects.
 
 ## Notes
 
-- **Phase 0 ship report:** `docs/PHASE_0_GATE_NOTES.md`.
+- **Phase 0 ship report:** `docs/archive/PHASE_0_GATE_NOTES.md`.
 - **Phase 1 enemy plan (executed):** `docs/superpowers/plans/2026-04-20-phase1-enemy-animation.md`.
 - **Phase 2 secondary-motion plan (executed):** `docs/superpowers/plans/2026-04-23-secondary-motion.md`.
 - **Phase 2 design spec:** `docs/superpowers/specs/2026-04-23-secondary-motion-design.md`.
