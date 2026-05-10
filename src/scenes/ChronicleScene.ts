@@ -40,6 +40,7 @@ import { paginationState } from '../ui/pagination';
 import { createPaginationNav } from '../ui/gamePagination';
 import { resolveRerunLinkPalette } from './gameOverLinkPalette';
 import { resolveChronicleRowVictoryStyle } from './chronicleRowVictoryStyle';
+import { buildSporranPipsForChronicle } from './chronicleSporranPips';
 import { addSceneFadeIn, addAmberHeaderWash, addSceneBackdrop } from './sceneFade';
 import { createBackButton } from './createBackButton';
 import { sceneHeaderTextStyle, sceneSubtitleTextStyle } from './sceneHeaderStyle';
@@ -536,6 +537,27 @@ export class ChronicleScene extends Phaser.Scene {
           .setOrigin(1, 0.5)
           .setScale(uiScale);
         this.runRowObjects.push(imBadge);
+      }
+
+      // S1 Phase 2 follow-up — sporran picks pip strip. Three small
+      // kind-coloured circles (curse purple / boon green / quirk amber)
+      // immediately left of the curse-chip slot, rendered only when the
+      // run went through SporranScene. Resolves stale ids defensively.
+      // Title text powers SR / hover label without forcing a tooltip
+      // layer.
+      const sporranPips = buildSporranPipsForChronicle(entry.sporranPicks);
+      if (sporranPips.length > 0) {
+        const stripCx = width - 270;
+        const pipR = 4;
+        const pipGap = 11;
+        sporranPips.forEach((pip, idx) => {
+          const cx = stripCx + idx * pipGap;
+          const dot = this.add
+            .circle(cx, y, pipR, pip.color, 0.95)
+            .setStrokeStyle(1, 0x000000, 0.4)
+            .setScale(uiScale);
+          this.runRowObjects.push(dot);
+        });
       }
 
       // Curse badge — sits just left of the timestamp for rows that bore a
