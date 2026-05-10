@@ -10,11 +10,11 @@
 - **Game version:** `2.3.2` (`package.json`).
 - **Game loop:** Boot → Menu (variants) → Game (survivors loop + biomes + curses + post-bell endless + W2 Moor Road acts + M1 multi-node graph) → Shop / MetaShop. CroftScene is the persistent hub between runs (H1, shipped 2026-04-24).
 - **Persistence:**
-  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 18` (see `src/utils/save/schema.ts`; v18 added `lemmingsSeenForVariant` for the DMA-Design easter egg gate, 2026-05-09).
+  - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 19` (see `src/utils/save/schema.ts`; v19 added Sporran chronicle persistence, 2026-05-10).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 483 vitest files; 5092 test cases (verified 2026-05-09 via `npm test`).
-- **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = 10` in `src/utils/save/schema.ts`.
+- **Tests:** 487 vitest files; 5149 test cases (verified 2026-05-10 via `npm test`).
+- **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = EVOLUTION_RECIPES.length` (derived; see `src/core/BalanceConfig.ts`).
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
 
@@ -67,8 +67,7 @@ A solo-dev sprint shipped 13 features in one day, twelve from `docs/DESIGN_IDEAS
 
 ### Active fronts
 
-- **T401 GameScene decomposition** — ongoing slice extractions; running journal at `docs/status/engine/SCENE_REFACTOR_GAP_AUDIT.md`. GameScene 3526 → ~3418 LOC across recent slices (memory `project_backlog_drain_2026_04_28_status`).
-- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09 (`c0097d8` re-baselines ratchet at post-Phase-5 floor); GameScene 1672 LOC (ceiling 1680, T401 floor 1656); ≤1200 charter target requires facade rewrite (out of scope).
+- **Codebase restructure (2026-04-30)** — Phases 0–7 SHIPPED by 2026-05-09; T401 GameScene decomposition is the historical chain that fed it (3526 → 1819 LOC at the 2026-05-10 baseline). Current GameScene **1839 LOC** (hard-ceilinged at 2200; per-file ratchet retired 2026-05-10 — see [`docs/LOC_BUDGET.md`](LOC_BUDGET.md) + [`docs/REVIEW.md` C2](REVIEW.md)). ≤1200 facade-rewrite target remains out of scope.
 - **Cultural review gates** — Doric + Shetlandic native-speaker review (`docs/C2_DIALECT_REVIEW.md`), Burns Kinsley + Canongate audit (`docs/C2_BURNS_PROVENANCE.md`), 8 Gaelic banter leaves flagged.
 
 ### Next flagship slot — declared polish / content phase (2026-05-09)

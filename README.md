@@ -18,7 +18,7 @@ npm run dev          # Vite dev server on :3000, opens browser
 | Command | What |
 |---|---|
 | `npm run dev` | Vite dev server on :3000 (auto-opens browser) |
-| `npm test` | Vitest unit tests (~487 spec files, ~5137 cases as of 2026-05-10) |
+| `npm test` | Vitest unit tests (487 spec files, 5149 cases as of 2026-05-10) |
 | `npm run lint` | ESLint flat config across `src/`, `e2e/`, configs |
 | `npm run build` | `tsc --noEmit` → Vite build → `dist/` |
 | `npm run preview` | Serves `dist/` locally; Playwright E2E uses this on :4180 |
@@ -38,7 +38,7 @@ Before declaring anything fixed/done, run at least `npm test` and `npm run build
 - **Systems** (instantiated by `GameScene`): `SpawnSystem`, `WeaponSystem`, `XPSystem`, `GrowthSystem`, `JuiceSystem`, `AudioSystem`, `ProceduralMusicEngine`, `HazardsSystem`, `AmbientWeatherSystem`, `BiomeController`, `RuneConditionSystem`, `NodeMapSystem`, …
 - **Data-driven balance:** all weapons, enemies, upgrades, variants, routes, banter, curses, biomes, hazards, relics, runes, and node banks live under `src/data/`. Code consumes them; balance work is data-only.
 - **Persistence:** three independent `localStorage` keys, each owned by one module —
-  - `whs_save` (`src/utils/save/*`, schema v18 — combined save: meta + run history + replay blob)
+  - `whs_save` (`src/utils/save/*`, schema v19 — combined save: meta + run history + replay blob)
   - `whs_meta_save` (`src/core/SaveManager.ts`, schema v9 — kills, unlocks, achievements, mid-run resume)
   - `whs_game_settings` (`src/core/SettingsManager.ts`, schema v1 — audio / motion / a11y / keybindings / locale)
 - **Bilingual:** English baseline in `src/core/i18n.ts`; Scots overlay code-split via `src/core/i18n.scs.ts` and lazy-loaded. Two parity fences in CI — see `src/core/i18n.locale.test.ts`.

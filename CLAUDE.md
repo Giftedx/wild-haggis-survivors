@@ -59,7 +59,7 @@ If `git status` lists a huge set of files with **no line changes**—often `old 
 
 ### System Architecture (all instantiated by GameScene)
 - **SpawnSystem**: Enemy wave spawning based on game time; manages enemy group and boss spawns.
-- **WeaponSystem**: Manages all 11 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 10 of the 11 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD = 10` in `src/utils/save/schema.ts`.
+- **WeaponSystem**: Manages all 11 weapon types with distinct behaviors (projectile, piercing, bouncing, aoe_pulse, trail, arc_sweep, aura_pulse). Uses a shared projectile pool (max 200). Handles weapon evolution (lv5 weapon + matching passive = legendary form for 10 of the 11 weapons; bagpipes is utility-only with no evolution). `BURNS_EVOLUTION_THRESHOLD` is derived from `EVOLUTION_RECIPES.length` in `src/core/BalanceConfig.ts` and re-exported from `src/utils/save/schema.ts` for back-compat.
 - **XPSystem**: XP gem spawning, collection (overlap with player pickup radius), and level-up triggering.
 - **GrowthSystem**: Player visual/hitbox scaling as they level up.
 - **JuiceSystem**: Screen shake, kill bursts, damage numbers, particle trails, hit freeze, boss death spectacle, combo counter, toast notifications.
