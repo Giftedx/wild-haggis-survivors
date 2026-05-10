@@ -34,6 +34,7 @@ class TestElement {
   tabIndex = 0;
   type = '';
   focusCalls = 0;
+  ownerDoc: TestDocument | null = null;
 
   constructor(readonly tagName: string) {}
 
@@ -77,15 +78,24 @@ class TestElement {
 
   focus(): void {
     this.focusCalls += 1;
+    if (this.ownerDoc) this.ownerDoc.activeElement = this;
     this.dispatch('focus');
   }
 }
 
 class TestDocument {
-  readonly body = new TestElement('body');
+  readonly body: TestElement;
+  activeElement: TestElement | null = null;
+
+  constructor() {
+    this.body = new TestElement('body');
+    this.body.ownerDoc = this;
+  }
 
   createElement(tagName: string): TestElement {
-    return new TestElement(tagName);
+    const el = new TestElement(tagName);
+    el.ownerDoc = this;
+    return el;
   }
 }
 
@@ -214,6 +224,145 @@ describe('dom focus layer helpers', () => {
     buttons[2].dispatch('click');
     buttons[1].dispatch('click');
     expect(activated).toEqual(['croft']);
+  });
+
+  it('restores DOM focus to matching action.id across setActions rebuild', () => {
+    const doc = new TestDocument();
+    const layer = createDomFocusLayer({
+      id: 'focus-restore',
+      label: 'Sporran picker',
+      ownerDocument: doc as unknown as Document,
+      actions: [
+        { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+        { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+        { id: 'confirm', label: 'Confirm', disabled: true, onActivate: () => undefined },
+      ],
+    });
+    const root = layer.root as unknown as TestElement;
+    const before = childButtons(root);
+
+    before[1].focus();
+    expect(doc.activeElement).toBe(before[1]);
+
+    layer.setActions([
+      { id: 'card_a', label: 'KEEP Card A', onActivate: () => undefined },
+      { id: 'card_b', label: 'KEEP Card B', onActivate: () => undefined },
+      { id: 'confirm', label: 'Confirm picks', onActivate: () => undefined },
+    ]);
+
+    const after = childButtons(root);
+    expect(after).not.toBe(before);
+    expect(after[1].textContent).toBe('KEEP Card B');
+    expect(doc.activeElement).toBe(after[1]);
+    expect(after[1].focusCalls).toBe(1);
+    expect(after[1].getAttribute('aria-current')).toBe('true');
+  });
+
+  it('falls back to first enabled when previously focused action is now disabled', () => {
+    const doc = new TestDocument();
+    const layer = createDomFocusLayer({
+      id: 'focus-disable-fallback',
+      label: 'Sporran picker',
+      ownerDocument: doc as unknown as Document,
+      actions: [
+        { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+        { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+        { id: 'card_c', label: 'Card C', onActivate: () => undefined },
+      ],
+    });
+    const root = layer.root as unknown as TestElement;
+    const before = childButtons(root);
+    before[2].focus();
+    expect(doc.activeElement).toBe(before[2]);
+
+    layer.setActions([
+      { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+      { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+      { id: 'card_c', label: 'Card C', disabled: true, onActivate: () => undefined },
+    ]);
+
+    const after = childButtons(root);
+    expect(doc.activeElement).not.toBe(after[2]);
+    expect(after[2].focusCalls).toBe(0);
+  });
+
+  it('falls back when previously focused action is removed entirely', () => {
+    const doc = new TestDocument();
+    const layer = createDomFocusLayer({
+      id: 'focus-removed-fallback',
+      label: 'Sporran picker',
+      ownerDocument: doc as unknown as Document,
+      actions: [
+        { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+        { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+      ],
+    });
+    const root = layer.root as unknown as TestElement;
+    const before = childButtons(root);
+    before[1].focus();
+    expect(doc.activeElement).toBe(before[1]);
+
+    layer.setActions([
+      { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+    ]);
+
+    const after = childButtons(root);
+    expect(after.length).toBe(1);
+    expect(after[0].focusCalls).toBe(0);
+  });
+
+  it('does not steal focus from outside the layer on setActions', () => {
+    const doc = new TestDocument();
+    const layer = createDomFocusLayer({
+      id: 'focus-no-steal',
+      label: 'Sporran picker',
+      ownerDocument: doc as unknown as Document,
+      actions: [
+        { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+      ],
+    });
+    const root = layer.root as unknown as TestElement;
+
+    const outsideButton = doc.createElement('button');
+    outsideButton.setAttribute('data-focus-id', 'card_a');
+    doc.body.appendChild(outsideButton);
+    outsideButton.focus();
+    expect(doc.activeElement).toBe(outsideButton);
+
+    layer.setActions([
+      { id: 'card_a', label: 'Card A renamed', onActivate: () => undefined },
+    ]);
+
+    const after = childButtons(root);
+    expect(doc.activeElement).toBe(outsideButton);
+    expect(after[0].focusCalls).toBe(0);
+  });
+
+  it('reorders focus follow-through when actions list reorders', () => {
+    const doc = new TestDocument();
+    const layer = createDomFocusLayer({
+      id: 'focus-reorder',
+      label: 'Sporran picker',
+      ownerDocument: doc as unknown as Document,
+      actions: [
+        { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+        { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+        { id: 'card_c', label: 'Card C', onActivate: () => undefined },
+      ],
+    });
+    const root = layer.root as unknown as TestElement;
+    const before = childButtons(root);
+    before[0].focus();
+
+    layer.setActions([
+      { id: 'card_c', label: 'Card C', onActivate: () => undefined },
+      { id: 'card_a', label: 'Card A', onActivate: () => undefined },
+      { id: 'card_b', label: 'Card B', onActivate: () => undefined },
+    ]);
+
+    const after = childButtons(root);
+    expect(doc.activeElement).toBe(after[1]);
+    expect(after[1].getAttribute('data-focus-id')).toBe('card_a');
   });
 
   it('removes the layer root on destroy', () => {

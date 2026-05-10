@@ -201,13 +201,29 @@ export function createDomFocusLayer(options: DomFocusLayerOptions): DomFocusLaye
   renderActions();
   parent.appendChild(root);
 
+  const captureFocusedActionId = (): string | null => {
+    const active = ownerDocument.activeElement as HTMLElement | null;
+    if (!active) return null;
+    if (!buttons.includes(active as HTMLButtonElement)) return null;
+    return active.getAttribute('data-focus-id');
+  };
+
   return {
     root,
     setActions(nextActions: readonly DomFocusAction[]): void {
       if (destroyed) return;
+      const previousFocusId = captureFocusedActionId();
       actions = [...nextActions];
       focusedIndex = normalizeDomFocusIndex(actions, focusedIndex);
       renderActions();
+      if (previousFocusId !== null) {
+        const restoredIdx = actions.findIndex(
+          (a) => a.id === previousFocusId && a.disabled !== true,
+        );
+        if (restoredIdx >= 0) {
+          buttons[restoredIdx]?.focus();
+        }
+      }
     },
     setFocusedIndex(index: number): void {
       if (destroyed) return;
