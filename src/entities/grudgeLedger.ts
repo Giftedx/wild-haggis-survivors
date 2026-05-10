@@ -20,6 +20,13 @@
  * `player.x/y` are deterministic at any tick of an arcade-fixed-step
  * physics world driven by a recorded input stream (T1 replay contract).
  *
+ * The event fires for ALL elite/boss finishes — weapon-damage path
+ * (WeaponSystem.dealDamage) AND external paths routed through
+ * `Enemy.emitKillEvents` (hazard / DoT / drown / `DEBUG.killCurrentBoss`).
+ * The Taxman judges the result, not the weapon: a boss drowned in a
+ * peat pit is still a finish, and the player's HP fraction + position
+ * at the moment of death still tells the same story.
+ *
  * Skill-expression sister to Drift Mastery (G burst), Whisky Breath
  * (F burst), Stance (Q posture), Shinty Parry (E flick): grudge is
  * not a player-input mechanic at all. It is a *silent observer*

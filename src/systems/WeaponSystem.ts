@@ -1446,12 +1446,14 @@ export class WeaponSystem {
         wasElite,
         eliteAffixId: wasElite ? enemy.getEliteAffixId() : undefined,
       });
-      // Taxman Grudge Ledger: only fire on elite/boss kills via the
-      // canonical weapon-damage path. Enemy.ts has its own enemyKilled
-      // emit for non-weapon kill paths (hazards / DoT / drown); v1
-      // grudge restricts to weapon finishes — those are the deaths the
-      // Taxman would judge. Distance is precomputed here because the
-      // listener doesn't have cached player coords.
+      // Taxman Grudge Ledger: fire on elite/boss kills from the
+      // weapon-damage path. External death paths (hazard / DoT / drown
+      // / `DEBUG.killCurrentBoss`) route through `Enemy.emitKillEvents`
+      // which fires its own `eliteOrBossFinished` for the same shape
+      // — paths are disjoint (this branch is reached only when
+      // `enemy.takeDamage` returns killed=true), so no double-count.
+      // Distance is precomputed here because the listener doesn't have
+      // cached player coords.
       if (wasBoss || wasElite) {
         const distancePx = Math.hypot(
           enemy.x - this.cachePlayerX,

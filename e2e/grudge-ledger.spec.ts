@@ -19,17 +19,13 @@ import { expect, test } from './fixtures';
 const CURRENT_META_SAVE_VERSION = 9;
 
 test.describe('taxman grudge ledger (DESIGN_IDEAS §1)', () => {
-  // 2026-05-10 — TODO(grudge-event-split): the ledger listens to
-  // `weaponSystem.events.on('eliteOrBossFinished')` (see
-  // wireWeaponSystemListeners.ts:103); `DEBUG.killCurrentBoss` routes
-  // through `Enemy.takeDamageWithKillEvents` which only fires
-  // `Enemy.events.emit('enemyKilled')` — so the debug boss-kill never
-  // hits the grudge listener. AUTO_BATTLE natural elite kills CAN
-  // land in the ledger but timing is non-deterministic against
-  // headless WebGL. Wiring smoke needs the WeaponSystem to also
-  // forward Enemy-emitted kills (or the grudge listener to attach
-  // to both event sources). Tracked in REVIEW.md C3 follow-ups.
-  test.skip('records elite + boss finishes during a run', async ({ page }) => {
+  // 2026-05-10 — un-skipped after `Enemy.emitKillEvents` was extended
+  // to forward `eliteOrBossFinished` for elite/boss kills routed via
+  // `takeDamageWithKillEvents` (REVIEW.md C3 close-out). Both paths
+  // now reach the grudge listener: weapon damage via
+  // `WeaponSystem.dealDamage`, external (hazard/DoT/debug) via
+  // `Enemy.emitKillEvents`. Distance is precomputed at each emit site.
+  test('records elite + boss finishes during a run', async ({ page }) => {
     const pageErrors: string[] = [];
     page.on('pageerror', (err) => { pageErrors.push(err.message); });
 

@@ -1273,6 +1273,22 @@ export class Enemy extends Phaser.Physics.Arcade.Sprite {
       wasElite,
       eliteAffixId: wasElite ? this.eliteAffixId : undefined,
     });
+    // Taxman Grudge Ledger — fire `eliteOrBossFinished` for elite/boss
+    // finishes routed through Enemy (hazard / DoT / drown / debug-kill).
+    // The weapon-damage path emits the same event from `WeaponSystem`
+    // directly — paths are disjoint (WeaponSystem calls `enemy.takeDamage`
+    // which doesn't reach this method), so no double-count. Distance is
+    // measured from the live player position because external death
+    // sources don't precompute it the way `WeaponSystem` does.
+    if (wasBoss || wasElite) {
+      const player = this.ctx.getPlayer();
+      const distancePx = Math.hypot(killX - player.x, killY - player.y);
+      ws.events.emit('eliteOrBossFinished', {
+        enemyKey: key,
+        wasBoss,
+        distancePx,
+      });
+    }
   }
 
   takeDamage(amount: number): boolean {
