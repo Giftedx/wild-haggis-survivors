@@ -190,14 +190,19 @@ export function spawnReliquary(ctx: MoorMomentsContext): Reliquary {
       ctx.juice.showToast(t('ui.reliquary.grant_toast', { title }), '#ffb060');
       ctx.caption('reliquary_pick', t('ui.reliquary.grant_caption', { desc }), '#ffb060', 3500);
       audio.playStoneGrant();
-      bumpReliquaryCurioPick(curio.id);
+      // bumpReliquaryCurioPick returns the pre-bump TOTAL across all
+      // curios — pre-bump 0 routes the first curio ever to a wonder
+      // sub-pool, subsequent picks to the generic reliquary_pick pool.
+      // Sister to clootie/beithir/cairn first-time routing (v22 cohort).
+      const beforeTotal = bumpReliquaryCurioPick(curio.id);
       // C1 M3 Task 16 — also persist into the DiscoveryLog so the
       // Almanac's Finds book lights up the relic entry. Lifetime
       // counter (`bumpReliquaryCurioPick`) and discovery counter are
       // kept distinct: the lifetime counter powers the
       // `ach_relic_seeker` deed, the discovery log feeds Finds.
       bumpItemAcquired(curio.id, ctx.discoveryRunId(), Date.now());
-      ctx.banter?.request('reliquary_pick');
+      const tag = beforeTotal === 0 ? 'first_curio' : undefined;
+      ctx.banter?.request('reliquary_pick', tag !== undefined ? { tag } : undefined);
     },
   });
   reliquary.spawn();

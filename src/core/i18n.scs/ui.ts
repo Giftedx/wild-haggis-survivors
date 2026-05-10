@@ -2064,6 +2064,13 @@ export const ui = {
       b: 'Tha relic\'s been waitin on ye.',
       c: 'Aye — tha hum hud yer name on it.',
       d: 'Aff-path pays, noo an again.',
+      // First Reliquary curio ever (lifetime total, v22 cohort). Pilgrim
+      // wonder beat, SCS overlay. Light Scots, hushed register.
+      first_curio: {
+        a: 'First curio iver — didnae ken tha moor kept gifts.',
+        b: 'Wee thing, aff tha path. First time it\'s iver been mine.',
+        c: 'A relic? An auld trade — an I jist learnt tha price.',
+      },
     },
     /** SCS overlay for ui.banter.field_note_pickup.* — Haggis Wildlife
      *  Foundation field-note pickup (DESIGN_IDEAS §11). Six leaves;

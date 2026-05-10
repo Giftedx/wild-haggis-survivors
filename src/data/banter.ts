@@ -2189,6 +2189,19 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.reliquary_pick.c',
       'ui.banter.reliquary_pick.d',
     ],
+    keysByTag: {
+      // First Reliquary curio ever pulled (lifetime, pre-bump TOTAL = 0
+      // across all curios). Routed by moorMoments.spawnReliquary.onPick
+      // when bumpReliquaryCurioPick returns 0. Pilgrim wonder beat —
+      // the moor's first off-path gift, before the haggis knows what
+      // a curio is. Sister to cairn boon_first / clootie bound_first /
+      // beithir cured_*_first (v20-v22 cohort).
+      first_curio: [
+        'ui.banter.reliquary_pick.first_curio.a',
+        'ui.banter.reliquary_pick.first_curio.b',
+        'ui.banter.reliquary_pick.first_curio.c',
+      ],
+    },
   },
   {
     // Haggis Wildlife Foundation field-note pickup (DESIGN_IDEAS §11

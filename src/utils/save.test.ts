@@ -1516,6 +1516,18 @@ describe('lifetime-counter bumps', () => {
     expect(loadSave().reliquaryCuriosPicked).toEqual({ cairn_moss: 3, echoing_reed: 1, flint_charm: 1 });
   });
 
+  it('bumpReliquaryCurioPick returns 0 on the first curio ever pulled (across all ids)', () => {
+    expect(bumpReliquaryCurioPick('echoing_reed')).toBe(0);
+    expect(loadSave().reliquaryCuriosPicked).toEqual({ echoing_reed: 1 });
+  });
+
+  it('bumpReliquaryCurioPick returns the pre-bump TOTAL across all ids on subsequent picks', () => {
+    writeSave({ ...createDefaultSave(), reliquaryCuriosPicked: { echoing_reed: 2, flint_charm: 1 } });
+    // Pre-bump total = 2 + 1 = 3 (across distinct ids).
+    expect(bumpReliquaryCurioPick('cairn_moss')).toBe(3);
+    expect(loadSave().reliquaryCuriosPicked).toEqual({ echoing_reed: 2, flint_charm: 1, cairn_moss: 1 });
+  });
+
   it('bumpAncestralEchoesTouched starts a new counter from 0', () => {
     bumpAncestralEchoesTouched();
     expect(loadSave().ancestralEchoesTouched).toBe(1);

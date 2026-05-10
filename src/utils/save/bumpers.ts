@@ -94,15 +94,28 @@ export function bumpStandingStonePick(boonId: string): void {
  * {@link bumpStandingStonePick} — best-effort, silent on storage failure.
  * Used by GameScene's Reliquary.onPick callback so the chronicle +
  * `ach_relic_seeker` deed pick up the event at run-end unlock check.
+ *
+ * Returns the **pre-bump TOTAL** across all curios — caller uses
+ * pre-bump 0 to gate the `first_curio` banter sub-pool (first curio
+ * ever pulled = pilgrim wonder beat; subsequent picks fall back to
+ * the existing reliquary_pick generic pool). Sister routing to
+ * `bumpBeithirCured` / `bumpClootieWagerCommit` / `bumpCairnBlessing`
+ * — those are single-counter; this is summed-across-id because each
+ * curio is unique. Storage failures return `Number.MAX_SAFE_INTEGER`
+ * so the first-curio gate (`=== 0`) never trips falsely on a corrupted
+ * save.
  */
-export function bumpReliquaryCurioPick(curioId: string): void {
+export function bumpReliquaryCurioPick(curioId: string): number {
   try {
     const cur = loadSave();
     const picked = { ...(cur.reliquaryCuriosPicked ?? {}) };
+    let beforeTotal = 0;
+    for (const v of Object.values(picked)) beforeTotal += v;
     picked[curioId] = (picked[curioId] ?? 0) + 1;
     writeSave({ ...cur, reliquaryCuriosPicked: picked });
+    return beforeTotal;
   } catch {
-    /* best-effort */
+    return Number.MAX_SAFE_INTEGER;
   }
 }
 

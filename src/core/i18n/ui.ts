@@ -2610,6 +2610,15 @@ export const ui = {
       b: 'That relic\'s been waitin\' on ye.',
       c: 'Aye — the hum had yer name on it.',
       d: 'Off-path pays, noo and again.',
+      // First Reliquary curio ever (lifetime total across all curios, v22
+      // cohort). Pilgrim wonder beat — before the haggis knows what a
+      // curio *is*. Sister to cairn boon_first / clootie bound_first /
+      // beithir cured_*_first. Hearth-warm, slightly hushed.
+      first_curio: {
+        a: 'First curio iver — didnae ken the moor kept gifts.',
+        b: 'Wee thing, off the path. First time it\'s ever been mine.',
+        c: 'A relic? An auld trade — an\' I just learnt the price.',
+      },
     },
     /** Haggis Wildlife Foundation field-note pickup (DESIGN_IDEAS §11
      *  wild-haggis-myth). Fires on collect of a `pickup_field_note`
