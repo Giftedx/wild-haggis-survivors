@@ -16,7 +16,7 @@ import tseslint from 'typescript-eslint';
  *     `describe.only` / `xdescribe` / `test.skip` / `test.only`). These
  *     suppress entire test cases; if a test is broken, fix it or delete.
  *
- * Phase 2 (this commit):
+ * Phase 2 (earlier commit 9e947d7):
  *   - `@typescript-eslint/no-explicit-any` → `error` in production `src/`
  *     code, `off` in `*.test.ts` files. Tests legitimately cast through
  *     `any` to mock private fields and partial Phaser shapes; production
@@ -25,10 +25,17 @@ import tseslint from 'typescript-eslint';
  *     callback shapes — both reviewed, both load-bearing.
  *   - `no-debugger` → `error`. Zero existing hits in `src/`.
  *
- * Deferred (Phase 3):
- *   - `eqeqeq` → `error`. Working tree has 20+ files with loose-equality
- *     comparisons; a sweep pass needs to convert each before lint can
- *     enforce.
+ * Phase 3 (this commit):
+ *   - `eqeqeq` → `['error', 'always', { null: 'ignore' }]`. Strict equality
+ *     required everywhere except `x == null` / `x != null` null-checks,
+ *     which legitimately match both null + undefined in one comparison
+ *     (the alternative `x === null || x === undefined` is verbose for no
+ *     gain). Working-tree audit (2026-05-10) found ALL 22 src/ hits were
+ *     this null-check idiom — the original "20+ sweep needed" estimate in
+ *     the Phase 2 comment double-counted the idiom. Zero true loose-equality
+ *     comparisons existed; the rule is green from frame 1.
+ *
+ * Deferred (open):
  *   - Custom no-Math.random rule with allowlist (S4 closed via static
  *     allowlist test at `src/replay/replayMathRandomAllowlist.test.ts`;
  *     lint rule would be redundant).
@@ -74,6 +81,10 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      // Strict equality required everywhere except `x == null` / `x != null`
+      // null-checks (idiom: matches null + undefined in one comparison).
+      // Phase 3 closure of REVIEW S8.
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-console': ['error', { allow: ['warn', 'error', 'info', 'debug'] }],
       'no-debugger': 'error',
       'no-restricted-syntax': [
@@ -101,6 +112,8 @@ export default tseslint.config(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      // Same strict-equality contract as src/ — null-check idiom carved out.
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       // Playwright specs legitimately use `test.skip(condition, reason)` for
       // runtime browser-feature gating (e.g. WebM codec on Firefox). The
       // static `test.skip()` declaration form would also be allowed — accept
