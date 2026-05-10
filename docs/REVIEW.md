@@ -1,5 +1,32 @@
 # REVIEW.md — Adversarial Read of the Project, 2026-05-10
 
+> **2026-05-10 status table (post-day-of-review).** 12 of 22 findings closed within 24 hours of the review landing; 8 open (3 awaiting human/paid-consultant input, 5 philosophical or partial). Concrete commits below; substantive claims still apply where the cell says "open".
+>
+> | # | Status | Closed by / blocker |
+> |---|---|---|
+> | C1 — no ship target | open | requires owner/portfolio decision (Q9) |
+> | C2 — LOC ratchet permission slips | **closed** | `c836b4a` ratchet retired, replaced with reporter-only `npm run loc-report` + GameScene 2200 hard-ceiling |
+> | C3 — 13 mechanics shipped without integration coverage | **closed** | `5d9edf6` (Phase 3 batch) + `0a1915b` (grudge event-split fix) — 10 mechanic specs pass + 1 declaratively skipped |
+> | C4 — dialect content shipped without native review | open | requires paid consultants for Doric / Shetlandic / Burns / Gaelic |
+> | C5 — A1 PEAT audit not run | open | requires paid consultancy or descope of "audited" claim |
+> | C6 — doc industry / 866 markdown files | partial | `9cbf6ee` archival sweep on 2026-05-09; deeper consolidation deferred |
+> | C7 — QUALITY_BAR solved wrong problem | **closed** | `c836b4a` demoted + renamed to [`CONTRIBUTING.md`](../CONTRIBUTING.md), 261→108 lines, headline reduced to one question |
+> | S1 — three save stores, deferred | **closed by ADR** | [ADR-0007](adr/0007-three-localstorage-stores-by-design.md) ratifies the trinity (failure isolation > consolidation; `whs_meta_save` is **NOT** merged into `whs_save`) |
+> | S2 — PRD line 70 / 71 contradiction | **closed** | `413edcd` PRD/README/CLAUDE.md truth-up |
+> | S3 — kill criteria unverifiable | open | each criterion needs telemetry-or-manual rewrite |
+> | S4 — replay determinism cosmetic carve-outs unenforced | **closed** | `d254432` static allowlist test at [`replayMathRandomAllowlist.test.ts`](../src/replay/replayMathRandomAllowlist.test.ts) |
+> | S5 — AI-only framing post-dates the bar | open | rewrite as 2-pass spec (programmatic + weekly review) |
+> | S6 — charter creep | partial | `c836b4a` shrank chains via CONTRIBUTING.md demote; touch surface still ~10 per mechanic |
+> | S7 — `BURNS_EVOLUTION_THRESHOLD` brittle | **closed** | already derived from `EVOLUTION_RECIPES.length` in [`src/core/BalanceConfig.ts`](../src/core/BalanceConfig.ts), re-exported from `save/schema.ts` |
+> | S8 — engineering practices honour-system | **closed** | Phase 1 `a189883` (`no-console` + test-focus syntax bans), Phase 2 `9e947d7` (`no-explicit-any: error` in prod / `off` in tests, `no-debugger: error`); `eqeqeq` deferred (20+ existing sites) |
+> | M1 — test count drift | **closed** | `413edcd` PRD aligned (5149/487 at write-time; live now 5152/488 — one-day drift only) |
+> | M2 — README arch incomplete | **closed** | README.md:37 now lists full scene graph (BootScene → splashes → MainMenu → Menu → Game → GameOver → Croft ↔ Shop / MetaShop) |
+> | M3 — README VERDICT path stale | **closed** | README.md:71 now points at `archive/HUGE_INITIATIVES_VERDICT.md` |
+> | M4 — CLAUDE.md ### Key Mechanics walls | partial | rewritten as one-liner-per-mechanic table; cross-cutting design notes still live as prose at section foot |
+> | M5 — INDEX.md redundant priority signalling | **closed** | "non-negotiable" highlight removed; single CONTRIBUTING.md row |
+>
+> Closure rate of 55% in 24h is mostly because the review's review-able items were correctly diagnosed; the problem with code-shipped-but-unplayed reviews (C1, C5) is that they require non-engineering action — paid consultants or owner decisions — and no agent can ship past those.
+>
 > **2026-05-10 update.** The `docs/QUALITY_BAR.md` doc cited throughout this review was demoted, shrunk, and renamed to [`CONTRIBUTING.md`](../CONTRIBUTING.md) on the same day in response to finding C7. The review's links to `QUALITY_BAR.md` now 404; the substantive arguments still apply against the new CONTRIBUTING.md doc, just at a smaller surface area.
 
 **Reviewer:** skeptical senior engineer who just inherited the codebase. **Posture:** the previous owner is suspected of overconfidence. Earlier work is not sacred, including the planning pass that wrote `docs/QUALITY_BAR.md` two days ago.
@@ -165,6 +192,8 @@ What it does:
 
 ### S1 — Three save stores. Duplication. Migration to one owner deferred indefinitely.
 
+> **2026-05-10 update — closed via [ADR-0007](adr/0007-three-localstorage-stores-by-design.md).** The trinity is ratified, not consolidated. Failure isolation + independent migration chains + small bounded overlap > consolidation benefits. The `whs_meta_save` is **not** merged into `whs_save`. Cleanup follow-ups (drop legacy achievement fields once pre-v6 saves <1% of population) are tracked in the ADR's follow-ups section.
+
 [`README.md:40-43`](../README.md) and [`docs/PRD.md:12-15`](PRD.md): three independent localStorage keys (`whs_save` v18, `whs_meta_save` v9, `whs_game_settings` v1). Per CLAUDE.md, "the historical `whs_save` and the newer `whs_meta_save` overlap on some fields by design — the migration to a single owner is a future cleanup tracked in P3."
 
 P3 (cloud saves) is its own gated-on-humans flagship. It's not a save-architecture cleanup. The "future cleanup" has been future-cleanup-ish for unknown duration — the deferred-overlap predates the 2026-04-23 master-plan refresh, which is at least 17 days ago, and probably longer.
@@ -174,6 +203,8 @@ Three save stores in a solo-dev game is an architectural smell that compounds: e
 **What I'd do.** Schedule a 1-day spike to merge `whs_meta_save` into `whs_save`. Schema bump v18→v19 + migration step + delete `whs_meta_save` reads after one playable session loads cleanly from the merged store. If the spike fails, the answer is "the duplication is structural" and that goes in an ADR. Right now it's deferred without analysis.
 
 ### S2 — PRD line 70 contradicts line 71.
+
+> **2026-05-10 update — closed.** `413edcd` truth-up: line 70 (T401 historical chain) reframed as past-tense, line 71 (current state) carries the live LOC + 2200 hard-ceiling. PRD `npm test` count synced to 5149/487 (live drift to 5152/488 within 24h, expected).
 
 [`docs/PRD.md`](PRD.md):
 
@@ -251,6 +282,8 @@ Accept that the result is less documented; gain that the docs you keep aren't dr
 
 ### S7 — `BURNS_EVOLUTION_THRESHOLD` is a brittle compile-time invariant.
 
+> **2026-05-10 update — closed (already shipped pre-review).** The constant is **derived** from `EVOLUTION_RECIPES.length` in [`src/core/BalanceConfig.ts`](../src/core/BalanceConfig.ts) and re-exported from [`src/utils/save/schema.ts`](../src/utils/save/schema.ts) for back-compat. Achievement copy interpolates `{count}` from the same source (see `descriptionVars` on `ach_burns_beastie_unlock` + `{count}` placeholders in `i18n/achievement.ts` + `i18n.scs/achievement.ts`). The 2026-05-09 sprint's three lifts (7→8→9→10) happened automatically as recipes landed.
+
 [`src/utils/save/schema.ts:28`](../src/utils/save/schema.ts) — `BURNS_EVOLUTION_THRESHOLD = 10` — must be lifted in lockstep with adding a new evolution recipe. **And** the achievement copy in EN + SCS must be updated to match ("all nine legends" → "all ten legends"). The QUALITY_BAR sacred-invariants table even surfaces this lock.
 
 Across the 2026-05-09 sprint this lifted **three times** (7→8→9→10) for Shinty + Sgian + Stag. Three opportunities for the EN/SCS copy + threshold to drift.
@@ -260,6 +293,8 @@ The discipline appears to have held (CLAUDE.md current says "10 of the 11 weapon
 **What I'd do.** Make the threshold **derived** from `EVOLUTION_RECIPES.length` in `src/data/upgrades.ts` rather than a manually-lifted constant. The achievement copy interpolates the count from the same source. Eliminate the manual sync.
 
 ### S8 — Engineering practices in QUALITY_BAR are honour-system, not lint-enforced.
+
+> **2026-05-10 update — closed.** Phase 1 (`a189883`) added `no-console` (with `info`/`warn`/`error`/`debug` allowed) + `no-restricted-syntax` banning `it.skip` / `it.only` / `xit` / `xtest` / `test.skip` / `test.only` / `describe.skip` / `describe.only` / `xdescribe`. Phase 2 (`9e947d7`) flipped `@typescript-eslint/no-explicit-any` to `error` in production `src/` code (with `off` override on `**/*.test.ts` for legitimate mock casts) and added `no-debugger: error`. Three production files carry file-level disables for Phaser type-erasure boundaries (`SubscriptionBag.ts`, `ShaderRegistry.ts`, `GlobalEventBus.ts`); each disable comment documents why. `eqeqeq` deferred — 20+ existing loose-equality sites need a sweep before the gate can fire green.
 
 I expected the codebase to violate the bar. Verified — the rules **are** being followed in the working tree:
 
