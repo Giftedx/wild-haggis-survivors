@@ -5,6 +5,7 @@ import tseslint from 'typescript-eslint';
  * lint gates so future agents can't drift past audit. The rules below are
  * green in the working tree as of this commit; CI fails on regression.
  *
+ * Phase 1 (committed earlier today):
  *   - `no-console` (src) — prevents debug logs from shipping to prod.
  *     `console.warn` / `error` / `info` allowed for legitimate runtime
  *     surfacing (e.g. structured save failure logs in `saveFailure.ts`).
@@ -15,13 +16,22 @@ import tseslint from 'typescript-eslint';
  *     `describe.only` / `xdescribe` / `test.skip` / `test.only`). These
  *     suppress entire test cases; if a test is broken, fix it or delete.
  *
- * Deferred (Phase 2):
- *   - `@typescript-eslint/no-explicit-any` → `error` (still `off`; the
- *     working tree is genuinely zero in production code, but tightening
- *     would block a wide blast-radius of legitimate test-shape `as`
- *     casts).
- *   - Custom no-Math.random rule with allowlist (138 sites need triage
- *     for cosmetic-vs-state before this can land — see review S4).
+ * Phase 2 (this commit):
+ *   - `@typescript-eslint/no-explicit-any` → `error` in production `src/`
+ *     code, `off` in `*.test.ts` files. Tests legitimately cast through
+ *     `any` to mock private fields and partial Phaser shapes; production
+ *     prod files must not. Two prod files (`SubscriptionBag.ts` +
+ *     `ShaderRegistry.ts`) carry inline disables for Phaser variadic
+ *     callback shapes — both reviewed, both load-bearing.
+ *   - `no-debugger` → `error`. Zero existing hits in `src/`.
+ *
+ * Deferred (Phase 3):
+ *   - `eqeqeq` → `error`. Working tree has 20+ files with loose-equality
+ *     comparisons; a sweep pass needs to convert each before lint can
+ *     enforce.
+ *   - Custom no-Math.random rule with allowlist (S4 closed via static
+ *     allowlist test at `src/replay/replayMathRandomAllowlist.test.ts`;
+ *     lint rule would be redundant).
  */
 
 const NO_FOCUSED_OR_SKIPPED_TESTS = [
@@ -54,13 +64,18 @@ export default tseslint.config(
       },
     },
     rules: {
-      // Phaser / game code uses many `any`-shaped externals; keep noise down without disabling type-safety in TS.
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Production prod code must not reach for `any`. Two carve-out files
+      // (`SubscriptionBag.ts`, `ShaderRegistry.ts`) ship with inline disables
+      // documenting why their Phaser variadic boundary needs `any`. Tests
+      // override this back to `off` below — they legitimately cast for mock
+      // shapes that aren't worth full typing.
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
       'no-console': ['error', { allow: ['warn', 'error', 'info', 'debug'] }],
+      'no-debugger': 'error',
       'no-restricted-syntax': [
         'error',
         ...NO_FOCUSED_OR_SKIPPED_TESTS.map((selector) => ({
@@ -68,6 +83,15 @@ export default tseslint.config(
           message: 'Committed test focus / skip / todo is forbidden — fix or delete the test.',
         })),
       ],
+    },
+  },
+  {
+    // Test files carry partial-shape mocks + private-field reads that don't
+    // pay back the cost of fully-typed fixtures. Keep `any` available; the
+    // rest of the prod-side rules still apply.
+    files: ['src/**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
   {

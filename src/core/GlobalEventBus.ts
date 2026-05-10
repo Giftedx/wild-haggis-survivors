@@ -1,3 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- the bus stores typed
+   handlers in a single Map with type-erased values (`Set<Handler<any>>`).
+   The public `on/off/emit<K>(...)` API enforces the per-event payload type;
+   the internal `any` is the type-erasure boundary. Replacing with `unknown`
+   would force every callsite to add a redundant cast for no real benefit. */
+
 import type { EliteAffixId } from '../data/eliteAffixes';
 import type { BiomeId } from '../data/biomes';
 import type { PickerSlot, RouteKey } from '../data/routes';

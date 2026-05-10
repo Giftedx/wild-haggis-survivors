@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Phaser EventEmitter
+   handlers are variadic by design (`on(event, ...args) => void`); narrowing
+   to `unknown[]` would force every callsite to add its own cast for no real
+   safety gain. The `any` is contained to the variadic boundary. */
+
 export type Unsubscribe = () => void;
 
 type MinimalEmitter = {

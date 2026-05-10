@@ -1,3 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- Phaser shader
+   constructors are variadic; the registry's `ShaderClass` type erases the
+   constructor arg list. Narrowing to `unknown[]` would force every caller
+   site to add `as unknown` casts for no real safety gain. */
+
 /**
  * Central registry for custom Phaser 4 render-node shader classes.
  *
