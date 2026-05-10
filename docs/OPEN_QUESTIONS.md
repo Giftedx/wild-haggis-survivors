@@ -105,15 +105,19 @@ Stakeholder decisions blocking work. Each entry: what's blocked, what we know, w
 
 ---
 
-### Q9 — Public ship decision (timeline + venue)
+### ~~Q9~~ — Public ship decision (timeline + venue)
 
-**Blocks:** prioritisation between polish and net-new content.
+**Resolved 2026-05-10 (lead-dev decision, recorded in `9cbf6ee` master-plan reframe):** option 1 — **passion project / continuous-deployment live build** at [`wild-haggis-survivors.pages.dev`](https://wild-haggis-survivors.pages.dev). The build is its own product. No commercial-release framing; no Steam; no native bundle; no date target. Every commit is a release. "Steam release with collaborators" and "Telemetry / analytics" both moved to the **What won't ship** column in [`HUGE_INITIATIVES_MASTER_PLAN.md`](HUGE_INITIATIVES_MASTER_PLAN.md).
 
-**Context:** Project is in steady-state for solo-dev. Cloudflare Pages live build at `wild-haggis-survivors.pages.dev`. Memory `reference_deploy_cloudflare` notes manual `wrangler` deploys. No GitHub remote integration set up.
+This decision cascades:
+- Q5 (native review) — remains open but no longer a blocking gate; mitigation = cultural-content first-launch splash on live build invites feedback.
+- Q6 (PEAT audit) — recorded as resolved-by-acceptance in [`docs/REVIEW.md`](REVIEW.md) C5: `reduceFlashing` defaulted ON + first-launch splash + README disclosure of unaudited status.
+- Q7 (mobile matrix) — remains open but stays Low priority; informs no shipping urgency.
+- Q8 (flagship slot) — already resolved 2026-05-09 as "polish / content phase"; this Q9 close ratifies that posture.
 
-**Decision needed:** Steam? itch.io? Browser-only? Native bundle? Date target?
+**Re-open trigger:** any of (a) external stakeholder ask requests a paid release, (b) the live build acquires a meaningful audience and a release vehicle becomes useful, (c) lead-dev wants commercial framing back.
 
-**Priority:** Low — but informs Q5 (review urgency), Q6 (PEAT urgency), Q7 (mobile urgency), Q8 (flagship choice).
+**Original context preserved:** Project was in steady-state for solo-dev. Cloudflare Pages live build at `wild-haggis-survivors.pages.dev`. Memory `reference_deploy_cloudflare` noted manual `wrangler` deploys. No GitHub remote integration set up.
 
 ---
 
