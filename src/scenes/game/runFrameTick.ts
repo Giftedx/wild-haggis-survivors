@@ -134,6 +134,7 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     relicEffectDriver: scene.relicEffectDriver,
     relicPickupSpawner: scene.relicPickupSpawner,
     reliquaryMinimapMarker: scene.reliquary?.getMinimapMarker() ?? null,
+    clootieMinimapMarker: scene.clootieTree?.getMinimapMarker() ?? null,
   });
 
   updateRunHudFrame({

@@ -48,6 +48,12 @@ export const MINIMAP_CHEST_NORMAL = 0x66ccff;
 /** Camera viewport rectangle (faint white). */
 export const MINIMAP_VIEWPORT_STROKE = 0xffffff;
 export const MINIMAP_VIEWPORT_ALPHA = 0.3;
+/** Clootie tree pin — sage-rag diamond. Distinct hue from the amber Reliquary
+ *  pin so a run that has both landmarks reads two different cool/warm cues
+ *  on the radar. Sage outer + cream rag inner echoes ART_STYLE_BIBLE Wild
+ *  palette: hawthorn over rag-tied sacred-supplication well. */
+export const MINIMAP_CLOOTIE_OUTER = 0x4f7a52;
+export const MINIMAP_CLOOTIE_INNER = 0xead8b0;
 /** Edge-warn rectangle (red, only when player is very close to wall). */
 export const MINIMAP_WARN_STROKE = 0xff4444;
 /** How close (px) to the world edge triggers the warn rectangle. */

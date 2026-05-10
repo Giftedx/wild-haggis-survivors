@@ -182,6 +182,8 @@ export interface PresentationFrameInputs {
   relicPickupSpawner: RelicPickupSpawner | null;
   /** Live reliquary marker (null when no reliquary spawned). */
   reliquaryMinimapMarker: ReturnType<Reliquary['getMinimapMarker']> | null;
+  /** Live clootie tree marker (null when wagered, unspawned, or absent). */
+  clootieMinimapMarker: ReturnType<ClootieTree['getMinimapMarker']> | null;
 }
 
 /**
@@ -213,6 +215,7 @@ export function tickPresentationFrame(inputs: PresentationFrameInputs): void {
     relicEffectDriver,
     relicPickupSpawner,
     reliquaryMinimapMarker,
+    clootieMinimapMarker,
   } = inputs;
 
   bossHpTracker.tick();
@@ -232,6 +235,7 @@ export function tickPresentationFrame(inputs: PresentationFrameInputs): void {
     player.rotation,
     reliquaryMinimapMarker,
     relicPins,
+    clootieMinimapMarker,
   );
 
   updateMusicStateScratch(

@@ -18,6 +18,8 @@ import {
   MINIMAP_CHEST_OUTLINE_ALPHA,
   MINIMAP_CHEST_GOLDEN,
   MINIMAP_CHEST_NORMAL,
+  MINIMAP_CLOOTIE_OUTER,
+  MINIMAP_CLOOTIE_INNER,
   MINIMAP_VIEWPORT_STROKE,
   MINIMAP_VIEWPORT_ALPHA,
   MINIMAP_WARN_STROKE,
@@ -92,6 +94,9 @@ export class Minimap {
     /** R1 M4.5 P2 — optional per-Relic pickup pins, rendered only when the
      *  pictish_compass relic is held. Empty array when not held. */
     relicMarkers: Array<{ x: number; y: number; colour: number }> = [],
+    /** Optional sage pin for the Clootie Tree landmark — null when wagered,
+     *  unspawned, or the mode doesn't use it. Sister to reliquaryMarker. */
+    clootieMarker: { x: number; y: number } | null = null,
   ): void {
     this.gfx.clear();
 
@@ -185,6 +190,22 @@ export class Minimap {
       this.gfx.fillStyle(0xffb060, 1);
       this.gfx.fillTriangle(rx, ry - 4, rx + 3, ry, rx, ry + 4);
       this.gfx.fillTriangle(rx, ry - 4, rx - 3, ry, rx, ry + 4);
+    }
+
+    // Clootie tree pin — sage diamond with cream rag inner. Sister to
+    // the amber Reliquary diamond above; same shape vocabulary, distinct
+    // hue so a run that spawns both reads two cool/warm cues at a glance.
+    if (clootieMarker) {
+      const cx = Phaser.Math.Clamp(mapX + clootieMarker.x * scaleX, mapX, mapX + this.SIZE);
+      const cy = Phaser.Math.Clamp(mapY + clootieMarker.y * scaleY, mapY, mapY + this.SIZE);
+      this.gfx.fillStyle(0x000000, 0.6);
+      this.gfx.fillTriangle(cx, cy - 5, cx + 4, cy, cx, cy + 5);
+      this.gfx.fillTriangle(cx, cy - 5, cx - 4, cy, cx, cy + 5);
+      this.gfx.fillStyle(MINIMAP_CLOOTIE_OUTER, 1);
+      this.gfx.fillTriangle(cx, cy - 4, cx + 3, cy, cx, cy + 4);
+      this.gfx.fillTriangle(cx, cy - 4, cx - 3, cy, cx, cy + 4);
+      this.gfx.fillStyle(MINIMAP_CLOOTIE_INNER, 1);
+      this.gfx.fillCircle(cx, cy, 1.4);
     }
 
     // Relic pickup pins — coloured diamonds, one per live pickup. Only

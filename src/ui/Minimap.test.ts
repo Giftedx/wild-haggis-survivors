@@ -1,5 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Minimap } from './Minimap';
+import {
+  MINIMAP_CLOOTIE_OUTER,
+  MINIMAP_CLOOTIE_INNER,
+} from './minimapPalette';
 
 vi.mock('phaser', () => {
   const __m = {
@@ -39,14 +43,16 @@ class MockRect {
 }
 
 class MockGraphics {
-  clear() { return this; }
+  public fillStyleCalls: number[] = [];
+  clear() { this.fillStyleCalls.length = 0; return this; }
   setScrollFactor() { return this; }
   setDepth() { return this; }
-  fillStyle() { return this; }
+  fillStyle(colour: number, _alpha?: number) { this.fillStyleCalls.push(colour); return this; }
   fillCircle() { return this; }
   fillTriangle() { return this; }
   lineStyle() { return this; }
   strokeRect() { return this; }
+  fillRect() { return this; }
   destroy() {}
 }
 
@@ -117,5 +123,28 @@ describe('Minimap', () => {
 
     expect(bg.x).toBeCloseTo(expectedX, 4);
     expect(bg.y).toBeCloseTo(expectedY, 4);
+  });
+
+  it('renders the clootie pin only when a marker is passed', () => {
+    const bg = new MockRect();
+    const gfx = new MockGraphics();
+    const scene: any = {
+      scale: { width: 1366, height: 768 },
+      cameras: { main: { zoom: 1, width: 1366, height: 768, scrollX: 0, scrollY: 0 } },
+      add: {
+        rectangle: (x: number, y: number) => { bg.x = x; bg.y = y; return bg; },
+        graphics: () => gfx,
+      },
+    };
+    const enemyGroup: any = { getChildren: () => [], children: { entries: [] } };
+    const minimap = new Minimap(scene);
+
+    minimap.update(100, 100, enemyGroup, [], 0, null, [], null);
+    expect(gfx.fillStyleCalls).not.toContain(MINIMAP_CLOOTIE_OUTER);
+    expect(gfx.fillStyleCalls).not.toContain(MINIMAP_CLOOTIE_INNER);
+
+    minimap.update(100, 100, enemyGroup, [], 0, null, [], { x: 500, y: 500 });
+    expect(gfx.fillStyleCalls).toContain(MINIMAP_CLOOTIE_OUTER);
+    expect(gfx.fillStyleCalls).toContain(MINIMAP_CLOOTIE_INNER);
   });
 });
