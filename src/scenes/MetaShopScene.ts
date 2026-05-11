@@ -25,12 +25,19 @@ import { createBackButton } from './createBackButton';
 import { resolveShopRowBgColor } from './shopRowBg';
 import { installShopBackdrop } from './installShopBackdrop';
 import { textStyle } from '../ui/typography';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildMetaShopDomFocusActions } from './metaShopDomFocusActions';
 
 /**
  * Spend meta kill currency on StatComposer upgrade keys (SaveManager v2).
  */
 export class MetaShopScene extends Phaser.Scene {
   private saveManager = new SaveManager();
+  /**
+   * T407 — visually hidden DOM mirror for screen readers + keyboard entry.
+   * Sister pattern to `ShopScene` / `CurseScene`.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
   private rowElements: Phaser.GameObjects.GameObject[] = [];
   private killsText!: Phaser.GameObjects.Text;
   private backButton!: Phaser.GameObjects.Rectangle;
@@ -88,11 +95,75 @@ export class MetaShopScene extends Phaser.Scene {
     this.page = 0;
     this.renderRows();
 
+    this.installMetaShopDomFocusLayer();
+
     this.events.once('shutdown', () => {
       audio.stopAmbientWind();
+      this.uninstallMetaShopDomFocusLayer();
       this.gamepadNav?.destroy();
       this.gamepadNav = null;
       this.paginationNav.destroy();
+    });
+  }
+
+  private installMetaShopDomFocusLayer(): void {
+    if (typeof document === 'undefined') return;
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-meta-shop-focus-layer',
+      label: t('ui.metaShop.title'),
+      description: t('ui.metaShop.subtitle'),
+      role: 'dialog',
+      actions: this.buildMetaShopDomFocusActionList(),
+      initialFocusIndex: 0,
+    });
+  }
+
+  private uninstallMetaShopDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  }
+
+  private refreshMetaShopDomActions(): void {
+    if (!this.domFocusLayer) return;
+    this.domFocusLayer.setActions(this.buildMetaShopDomFocusActionList());
+  }
+
+  private buildMetaShopDomFocusActionList() {
+    const save = this.saveManager.load();
+    const metaSave = {
+      unlockedUpgrades: save.unlockedUpgrades,
+      unlockedAchievements: save.unlockedAchievements,
+      totalKills: save.totalKills,
+    };
+    const allKeys = listMetaShopItemKeys();
+    const pagination = paginationState(allKeys.length, this.ROWS_PER_PAGE, this.page);
+    const pageKeys = allKeys.slice(pagination.startIndex, pagination.endIndex);
+    const perPage = this.ROWS_PER_PAGE;
+
+    return buildMetaShopDomFocusActions({
+      pageKeys,
+      save: metaSave,
+      pageNavVisible: pagination.pageVisible,
+      hasPrevPage: pagination.prevEnabled,
+      hasNextPage: pagination.nextEnabled,
+      onBuy: (key) => {
+        this.tryBuy(key);
+      },
+      onPrevPage: () => {
+        const p = paginationState(allKeys.length, perPage, this.page);
+        if (!p.prevEnabled) return;
+        this.page = p.clampedPage - 1;
+        this.renderRows();
+      },
+      onNextPage: () => {
+        const p = paginationState(allKeys.length, perPage, this.page);
+        if (!p.nextEnabled) return;
+        this.page = p.clampedPage + 1;
+        this.renderRows();
+      },
+      onBack: () => {
+        clickToScene(this, 'MainMenu')();
+      },
     });
   }
 
@@ -202,6 +273,8 @@ export class MetaShopScene extends Phaser.Scene {
       activate: clickToScene(this, 'MainMenu'),
     });
     this.gamepadNav = new GamepadMenuNav(this, entries);
+
+    this.refreshMetaShopDomActions();
   }
 
   private tryBuy(key: MetaShopItemKey): void {
