@@ -34,6 +34,8 @@ import { buildCaptureFilename } from '../../utils/captureFilename';
 import { formatLocalYmd } from '../../utils/formatDate';
 import { TOAST_COLORS } from '../../ui/toastPalette';
 import { ClipRecorder } from '../../utils/clipRecorder';
+import { createDomFocusLayer, type DomFocusAction, type DomFocusLayer } from '../../ui/domFocusLayer';
+import { buildPauseMenuDomFocusActions } from './pauseMenuDomFocusActions';
 
 export interface PauseMenuHooks {
   getUiViewport(): { x: number; y: number; width: number; height: number; zoom: number };
@@ -90,6 +92,8 @@ export interface PauseMenuHooks {
 export class PauseMenu {
   private elements: Phaser.GameObjects.GameObject[] = [];
   private readonly settings = getSettingsManager();
+  /** T407 — visually hidden DOM mirror for pause actions (screen readers / Tab). */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor(private readonly scene: GameScene, private readonly hooks: PauseMenuHooks) {}
 
@@ -98,6 +102,7 @@ export class PauseMenu {
   }
 
   open(): void {
+    let refreshPauseDomActions: () => void = () => {};
     const { x, y, width, height } = this.hooks.getUiViewport();
     const d = 250;
     const scene = this.scene;
@@ -274,6 +279,7 @@ export class PauseMenu {
       sfxText.setColor(resolveToggleTextColor(sfxOn));
       this.settings.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
       applyAudioFromUserSettings(this.settings.load());
+      refreshPauseDomActions();
     });
     this.elements.push(sfxText);
 
@@ -293,6 +299,7 @@ export class PauseMenu {
       this.settings.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
       applyAudioFromUserSettings(this.settings.load());
       if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
+      refreshPauseDomActions();
     });
     this.elements.push(musicText);
 
@@ -358,6 +365,83 @@ export class PauseMenu {
     quitLabel.setScrollFactor(0).setDepth(d + 2);
     this.elements.push(quitBtn);
     this.elements.push(quitLabel);
+
+    const buildPauseDomActions = (): DomFocusAction[] =>
+      buildPauseMenuDomFocusActions({
+        showWhiskyDram: this.hooks.isWhiskyDramAvailable?.() === true,
+        whiskyDramLabel: t('ui.pause.whisky_dram_use'),
+        onWhiskyDram: () => {
+          this.hooks.onWhiskyDramRequested?.();
+          this.close();
+          this.open();
+        },
+        showFingalsHorn: this.hooks.isFingalsHornAvailable?.() === true,
+        fingalsHornLabel: t('ui.pause.fingals_horn_use'),
+        onFingalsHorn: () => {
+          this.hooks.onFingalsHornRequested?.();
+          this.close();
+          this.open();
+        },
+        resumeLabel: t('ui.pause.resume'),
+        onResume: () => this.hooks.onResumeRequested(),
+        sfxLabel: sfxLabel(sfxOn),
+        onToggleSfx: () => {
+          audio.playClick();
+          sfxOn = !sfxOn;
+          sfxText.setText(sfxLabel(sfxOn));
+          sfxText.setColor(resolveToggleTextColor(sfxOn));
+          this.settings.update((st) => ({ ...st, sfxVolume: sfxOn ? 1 : 0 }));
+          applyAudioFromUserSettings(this.settings.load());
+          refreshPauseDomActions();
+        },
+        musicLabel: musicLabel(musicOn),
+        onToggleMusic: () => {
+          audio.playClick();
+          musicOn = !musicOn;
+          musicText.setText(musicLabel(musicOn));
+          musicText.setColor(resolveToggleTextColor(musicOn));
+          this.settings.update((st) => ({ ...st, musicVolume: musicOn ? 1 : 0 }));
+          applyAudioFromUserSettings(this.settings.load());
+          if (musicOn && !musicEngine.isPlaying()) musicEngine.start();
+          refreshPauseDomActions();
+        },
+        showSaveClip: clipAvailable,
+        saveClipLabel: t('ui.pause.save_clip'),
+        onSaveClip: () => {
+          if (clipRecorder != null) void this.handleSaveClip(clipRecorder);
+        },
+        showSaveScreenshot: captureEnabled,
+        saveScreenshotLabel: t('ui.pause.save_screenshot'),
+        onSaveScreenshot: () => {
+          void this.handleSaveScreenshot();
+        },
+        quitLabel: t('ui.pause.quit'),
+        onQuit: () => this.hooks.onQuitRequested(),
+      });
+
+    refreshPauseDomActions = () => {
+      this.domFocusLayer?.setActions(buildPauseDomActions());
+    };
+
+    this.mountPauseDomFocusLayer(buildPauseDomActions);
+  }
+
+  private mountPauseDomFocusLayer(buildActions: () => DomFocusAction[]): void {
+    this.unmountPauseDomFocusLayer();
+    if (typeof document === 'undefined') return;
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-pause-focus-layer',
+      label: t('ui.pause.title'),
+      description: t('ui.pause.keys_resume'),
+      role: 'dialog',
+      actions: buildActions(),
+      initialFocusIndex: 0,
+    });
+  }
+
+  private unmountPauseDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
   }
 
   private async handleSaveClip(recorder: ClipRecorder): Promise<void> {
@@ -410,6 +494,7 @@ export class PauseMenu {
   }
 
   close(): void {
+    this.unmountPauseDomFocusLayer();
     for (const el of this.elements) {
       if ('removeAllListeners' in el) {
         (el as Phaser.GameObjects.GameObject).removeAllListeners();
