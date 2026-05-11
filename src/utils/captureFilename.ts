@@ -6,6 +6,7 @@ export interface CaptureFilenamePayload {
   timeSurvivedSec: number;
   seedCode?: string;
   dateYmd: string;
+  clipExtension?: 'webm' | 'mp4';
 }
 
 const EXTENSIONS: Record<CaptureKind, string> = {
@@ -37,5 +38,8 @@ export function buildCaptureFilename(
   parts.push(formatMmSs(p.timeSurvivedSec));
   parts.push(p.dateYmd);
   if (p.seedCode) parts.push(p.seedCode);
-  return `${parts.join('_')}.${EXTENSIONS[kind]}`;
+  const extension = kind === 'clip'
+    ? p.clipExtension ?? EXTENSIONS.clip
+    : EXTENSIONS.screenshot;
+  return `${parts.join('_')}.${extension}`;
 }

@@ -1,7 +1,7 @@
 /**
  * F9 / F10 capture handlers — extracted from GameScene as part of the
  * Phase 5 GameScene drain. F10 snaps the live canvas and saves a PNG;
- * F9 dumps the clip-recorder buffer to a downloadable WebM. Both paths
+ * F9 dumps the clip-recorder buffer to a downloadable clip. Both paths
  * are gated on the `captureEnabled` setting and surface a toast to
  * confirm success / failure.
  *
@@ -67,7 +67,10 @@ export function createCaptureHandlers(deps: CaptureHandlersDeps): CaptureHandler
   const handleF9SaveClip = (): void => {
     if (!getSettingsManager().load().captureEnabled) return;
     const recorder = deps.getClipRecorder();
-    if (!recorder?.isAvailable()) return;
+    if (!recorder?.isAvailable()) {
+      deps.getJuice()?.showToast(t('ui.toast.clip_unsupported'), TOAST_COLORS.warning);
+      return;
+    }
 
     const now = performance.now();
     if (now - lastClipSaveAtMs < 500) return;
@@ -80,6 +83,7 @@ export function createCaptureHandlers(deps: CaptureHandlersDeps): CaptureHandler
       timeSurvivedSec: ctx.timeSurvivedSec,
       seedCode: ctx.seedCode,
       dateYmd: formatLocalYmd(new Date()),
+      clipExtension: recorder.selectedExtension(),
     });
 
     void recorder.saveLast((blob) => {

@@ -111,6 +111,28 @@ describe('ClipRecorder', () => {
     expect(calls).toContain('video/webm;codecs=vp8');
     expect(calls).toContain('video/webm');
   });
+
+  it('falls back to mp4 when WebM is not supported', () => {
+    const calls: string[] = [];
+    const MR = function (this: MockRecorder, _stream: MediaStream) {
+      return makeMockRecorder();
+    } as unknown as typeof MediaRecorder & { isTypeSupported: (t: string) => boolean };
+    MR.isTypeSupported = (t: string) => {
+      calls.push(t);
+      return t === 'video/mp4';
+    };
+    vi.stubGlobal('MediaRecorder', MR);
+
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { fps: 30, durationSec: 2 });
+
+    expect(rec.selectedMimeType()).toBe('video/mp4');
+    expect(rec.selectedExtension()).toBe('mp4');
+    expect(calls).toContain('video/webm;codecs=vp9');
+    expect(calls).toContain('video/webm;codecs=vp8');
+    expect(calls).toContain('video/webm');
+    expect(calls).toContain('video/mp4');
+  });
 });
 
 describe('ClipRecorder audio support', () => {

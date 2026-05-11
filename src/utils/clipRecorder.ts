@@ -12,10 +12,21 @@ export interface ClipRecorderOptions {
   timesliceMs?: number;
 }
 
-const CODEC_PRIORITY = [
-  'video/webm;codecs=vp9',
-  'video/webm;codecs=vp8',
-  'video/webm',
+export type ClipExtension = 'webm' | 'mp4';
+
+interface CodecOption {
+  readonly mimeType: string;
+  readonly extension: ClipExtension;
+}
+
+const CODEC_PRIORITY: readonly CodecOption[] = [
+  { mimeType: 'video/webm;codecs=vp9', extension: 'webm' },
+  { mimeType: 'video/webm;codecs=vp8', extension: 'webm' },
+  { mimeType: 'video/webm', extension: 'webm' },
+  // Safari 17+ exposes MediaRecorder with MP4 support rather than WebM.
+  // Prefer WebM when present (Chromium/Firefox), but don't make Safari
+  // look unsupported if it can record a playable MP4 container.
+  { mimeType: 'video/mp4', extension: 'mp4' },
 ] as const;
 
 export class ClipRecorder {
@@ -28,6 +39,7 @@ export class ClipRecorder {
   private recorder: MediaRecorder | null = null;
   private stream: MediaStream | null = null;
   private mimeType: string | null = null;
+  private extension: ClipExtension | null = null;
   private running = false;
   private audioAttached = false;
 
@@ -40,11 +52,17 @@ export class ClipRecorder {
       1,
       Math.ceil((this.durationSec * 1000) / this.timesliceMs),
     );
-    this.mimeType = this.pickMimeType();
+    const codec = this.pickCodec();
+    this.mimeType = codec?.mimeType ?? null;
+    this.extension = codec?.extension ?? null;
   }
 
   selectedMimeType(): string | null {
     return this.mimeType;
+  }
+
+  selectedExtension(): ClipExtension {
+    return this.extension ?? 'webm';
   }
 
   isAvailable(): boolean {
@@ -132,11 +150,11 @@ export class ClipRecorder {
     return blob;
   }
 
-  private pickMimeType(): string | null {
+  private pickCodec(): CodecOption | null {
     const MR = (globalThis as unknown as { MediaRecorder?: { isTypeSupported: (t: string) => boolean } }).MediaRecorder;
     if (!MR) return null;
     for (const codec of CODEC_PRIORITY) {
-      if (MR.isTypeSupported(codec)) return codec;
+      if (MR.isTypeSupported(codec.mimeType)) return codec;
     }
     return null;
   }

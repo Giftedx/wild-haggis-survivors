@@ -237,8 +237,8 @@ Earlier drafts split this into W20 postcards / W27 highlights / W50 photo / W79 
 Outputs the pipeline should produce:
 
 - ~~Still postcard (PNG) with run facts + tartan frame~~ — ✅ shipped (`src/utils/postcard.ts`, 2026-04-17; tartan added 2026-04-18).
-- Short clip (WebM/GIF, 6–15 s), deterministic camera path.
-- Full screenshot at any pause.
+- ~~Short clip (WebM, 15 s rolling buffer)~~ — ✅ shipped 2026-04-22; audio tap + clipboard follow-ups shipped 2026-04-26. 2026-05-11 hardening added MP4 fallback for browsers that expose `MediaRecorder` without WebM support, extension-correct filenames, and explicit unsupported-browser feedback. Still open: automatic highlight selection / deterministic camera-path reel.
+- ~~Full screenshot at any pause~~ — ✅ shipped (F10 + Pause save screenshot + Game Over save/copy frame).
 
 **Not in v1:** public CDN, in-browser video editor, network upload.
 

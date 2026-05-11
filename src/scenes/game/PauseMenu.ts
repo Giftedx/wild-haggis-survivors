@@ -369,6 +369,7 @@ export class PauseMenu {
       timeSurvivedSec: ctx.timeSurvivedSec,
       seedCode: ctx.seedCode,
       dateYmd: formatLocalYmd(new Date()),
+      clipExtension: recorder.selectedExtension(),
     });
     try {
       const blob = await recorder.saveLast((b) => {

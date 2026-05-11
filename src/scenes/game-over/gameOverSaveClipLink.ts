@@ -1,7 +1,7 @@
 /**
  * Save clip link — extracted from GameOverScene as part of the Phase 5
  * render*Link drain. Downloads the last 15s of canvas recording as a
- * WebM file. Only rendered when the ClipRecorder is available
+ * browser-supported video file. Only rendered when the ClipRecorder is available
  * (MediaRecorder + captureStream support) and captureEnabled.
  *
  * Pure presentation; no replay determinism dependency.
@@ -58,6 +58,7 @@ export function renderGameOverSaveClipLink(
       timeSurvivedSec: p.summary.timeSurvivedSec,
       seedCode: p.seedCode,
       dateYmd: formatLocalYmd(new Date()),
+      clipExtension: recorder.selectedExtension(),
     });
     recorder.saveLast((blob) => {
       const url = URL.createObjectURL(blob);

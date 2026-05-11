@@ -3594,6 +3594,7 @@ export const ui = {
     clip_saved: 'Clip saved to downloads.',
     clip_failed: "Couldnae save the clip — gie it a wee minute.",
     clip_empty: 'Play a wee bit longer before saving a clip.',
+    clip_unsupported: 'Clip saving is not supported in this browser.',
     frame_copied: 'Frame copied — paste it where ye like.',
     frame_copy_failed: "Couldnae copy the frame — try Save instead.",
   },

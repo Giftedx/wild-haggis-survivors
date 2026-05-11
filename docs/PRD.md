@@ -39,7 +39,7 @@
 | **W71** Skeletal animation rig | 🟡 Phase 0 prototype shipped 2026-04-22; Phase 1 enemy animation + Phase 2 secondary motion shipped 2026-04-23 (memory `project_w71_phase2_status`). Full rig still open. |
 | **B5** Biomes charter | ✅ Phases 0–2 shipped 2026-04-29/30 (Seawrack `a160662`, Haar `4c97626`, Frost `24c9301`); Phase 3 Edinburgh blocked on cultural consultation. |
 | **W95** Mobile rework | ⏳ Not started — playtest matrix at `docs/MOBILE_DEVICE_TEST_MATRIX.md` pending hardware. |
-| **W27** Capture & share | ⏳ Phase 0 prototype shipped 2026-04-22; Phase 2 not yet scoped (see plan `2026-04-22-w27-capture-pipeline-phase2.md`). |
+| **W27** Capture & share | 🟡 Phase 0 postcard prototype shipped 2026-04-17/18; Phase 2 screenshot + rolling clip export + audio tap + clipboard path shipped 2026-04-22/26. 2026-05-11 reliability hardening added MP4 fallback + extension-correct filenames + unsupported-browser feedback. Automatic highlight selection / unified share surface still open. |
 | **P3** Cloud saves | ⏳ Worker + D1 backend prototype shipped via top-10 #3 (2026-04-27); UX + conflict resolution + privacy/legal humans-in-the-loop still open ([`ADR-0006`](adr/0006-cloud-save-backend.md) **Accepted** 2026-05-09 — architecture only). |
 | **B1** Banter density push | ✅ All phases (1–5) shipped 2026-04-26; native Gaelic review on 8 leaves still open. |
 

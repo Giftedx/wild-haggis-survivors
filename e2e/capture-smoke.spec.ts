@@ -8,7 +8,9 @@ import { expect, test } from './fixtures';
  *
  * Both tests use page.waitForEvent('download') to assert that pressing F10 /
  * F9 in an active run triggers a browser download with the expected filename
- * pattern produced by buildCaptureFilename().
+ * pattern produced by buildCaptureFilename(). Chromium currently chooses
+ * WebM; Safari-family browsers may choose MP4 through ClipRecorder's
+ * container fallback.
  *
  * captureEnabled defaults to true in SettingsManager — no localStorage seeding
  * required. The FORCE_CANVAS fixture (fixtures.ts) keeps captureStream()
@@ -76,7 +78,7 @@ test.describe('W27 capture: F9 + F10 keybinds', () => {
     expect(download.suggestedFilename()).toMatch(/^whs_(victory|death)_.*\.png$/);
   });
 
-  test('F9 saves a WebM clip during gameplay', async ({ page, browserName }) => {
+  test('F9 saves a browser-supported clip during gameplay', async ({ page, browserName }) => {
     // Firefox's MediaRecorder doesn't accept the codec the project's
     // ClipRecorder writes. WebKit (Safari) has a closely related codec
     // mismatch — WebM is a second-class format on WebKit-headless. Real
@@ -98,7 +100,7 @@ test.describe('W27 capture: F9 + F10 keybinds', () => {
     await page.keyboard.press('F9');
 
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toMatch(/^whs_(victory|death)_.*\.webm$/);
+    expect(download.suggestedFilename()).toMatch(/^whs_(victory|death)_.*\.(webm|mp4)$/);
 
     // Assert ClipRecorder reports audio was attached. Use page.evaluate
     // to reach into GameScene's clipRecorder instance. GameScene exposes

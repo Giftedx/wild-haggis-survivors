@@ -2891,6 +2891,7 @@ export const ui = {
     clip_saved: 'Clip saved, braw.',
     clip_failed: 'Couldnae save the clip — wait a wee minute.',
     clip_empty: 'Play a bit longer before clipping.',
+    clip_unsupported: 'Clip saving isnae supported in this browser.',
     frame_copied: 'Frame copied — paste awa.',
     frame_copy_failed: 'Couldnae copy — try Keep instead.',
   },

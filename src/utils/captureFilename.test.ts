@@ -23,6 +23,18 @@ describe('buildCaptureFilename', () => {
     expect(name).toBe('whs_death_the-laird_05m21s_2026-04-22_AB12CD.webm');
   });
 
+  it('uses an explicit clip extension when the recorder chooses a non-WebM container', () => {
+    const payload = {
+      mode: 'death' as const,
+      variantLabel: 'Peerie Shetlander',
+      timeSurvivedSec: 122,
+      dateYmd: '2026-05-11',
+      clipExtension: 'mp4' as const,
+    };
+    const name = buildCaptureFilename('clip', payload);
+    expect(name).toBe('whs_death_peerie-shetlander_02m02s_2026-05-11.mp4');
+  });
+
   it('omits variant slug when label is empty', () => {
     const name = buildCaptureFilename('screenshot', {
       mode: 'death',
