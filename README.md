@@ -18,11 +18,11 @@ npm run dev          # Vite dev server on :3000, opens browser
 | Command | What |
 |---|---|
 | `npm run dev` | Vite dev server on :3000 (auto-opens browser) |
-| `npm test` | Vitest unit tests (487 spec files, 5174 cases as of 2026-05-10) |
+| `npm test` | Vitest unit tests (488 spec files, 5194 cases as of 2026-05-11) |
 | `npm run lint` | ESLint flat config across `src/`, `e2e/`, configs |
 | `npm run build` | `tsc --noEmit` → Vite build → `dist/` |
 | `npm run preview` | Serves `dist/` locally; Playwright E2E uses this on :4180 |
-| `npm run test:e2e` | Playwright smoke against the production build |
+| `npm run test:e2e` | Playwright against the production build (~50 `e2e/*.spec.ts` files, ~218 enumerated cases across desktop + mobile projects — `npx playwright test --list`) |
 | `npm run ci` | Lint + Vitest + build (no E2E) |
 | `npm run ci:all` | Full local gate matching CI: `ci` then E2E |
 

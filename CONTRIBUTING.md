@@ -28,7 +28,7 @@ These run on every commit via `npm run ci`. If your change breaks one, fix the r
 | **Save schema migration** | [`src/utils/save/`](src/utils/save/) `*.test.ts` | Schema bump requires `migrateV{N-1}ToV{N}` step + roundtrip |
 | **Bundle budget** | [`scripts/check-bundle-budget.mjs`](scripts/check-bundle-budget.mjs) | vendor-phaser ≤390 KB gzip / index ≤320 KB / sprite-art ≤240 KB |
 | **Flash budget** | [`scripts/check-flash-budget.mjs`](scripts/check-flash-budget.mjs) | All flash methods route through `motionScale` + `reduceFlashing` caps |
-| **Playwright e2e** | `npm run test:e2e` (after `npm run build`) | 37+ smoke specs across desktop browsers. `e2e/fixtures.ts` forces `AUTO_BATTLE` off before each navigation; specs that need auto-picks / soak throughput set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after the fixture hook). |
+| **Playwright e2e** | `npm run test:e2e` (after `npm run build`) | ~50 `e2e/*.spec.ts` files (~218 enumerated cases across chromium / firefox / webkit + mobile — `npx playwright test --list`). `e2e/fixtures.ts` forces `AUTO_BATTLE` off before each navigation; specs that need auto-picks / soak throughput set `AUTO_BATTLE = true` in their own `page.addInitScript` (runs after the fixture hook). |
 
 `npm run ci` runs lint + vitest + build. `npm run ci:all` adds e2e. Use `ci:all` before declaring UI-touching work done.
 

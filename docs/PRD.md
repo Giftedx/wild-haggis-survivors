@@ -13,7 +13,7 @@
   - `whs_save` (legacy combined save) — schema `SAVE_SCHEMA_VERSION = 19` (see `src/utils/save/schema.ts`; v19 added Sporran chronicle persistence, 2026-05-10).
   - `whs_meta_save` (`SaveManager`) — `CURRENT_SAVE_VERSION = 9` (see `src/core/SaveManager.ts`).
   - `whs_game_settings` (`SettingsManager`) — settings schema v1.
-- **Tests:** 487 vitest files; 5174 test cases (verified 2026-05-10 via `npm test`).
+- **Tests:** 488 vitest files; 5194 test cases (verified 2026-05-11 via `npm test`).
 - **Weapons:** 11 (10 with paired-passive evolutions; bagpipes utility-only). `BURNS_EVOLUTION_THRESHOLD = EVOLUTION_RECIPES.length` (derived; see `src/core/BalanceConfig.ts`).
 - **TODO/FIXME markers in production:** zero.
 - **Production `as any` count:** zero (residual hits are doc-comment self-references).
