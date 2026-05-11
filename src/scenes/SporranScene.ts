@@ -56,8 +56,8 @@ import { createRNG } from '../utils/rng';
  *
  * Sister patterns: `CurseScene` (single-row tile grid + keyboard +
  * gamepad), `ActIntermissionScene` (3-card pick within a paused run).
- * DOM-focus mirror parity with CurseScene's T407 layer is a Phase 1.5
- * follow-up — keyboard + gamepad + mouse work today.
+ * DOM-focus mirror (T407 parity with `CurseScene`) — contract smoke in
+ * `e2e/sporran-dom-focus.spec.ts`.
  */
 interface SporranTileFocusEntry extends ModalFocusEntry {
   readonly bg: Phaser.GameObjects.Rectangle;
