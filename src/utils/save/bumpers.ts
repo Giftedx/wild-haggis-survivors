@@ -23,6 +23,8 @@ import {
   recordItemAcquired,
   recordRoutePicked,
 } from '../../systems/DiscoveryLog';
+import type { CompanionKey } from '../../entities/companions/companionTypes';
+import { COMPANION_KEYS_IN_ORDER } from '../../entities/companions/companionTypes';
 import { loadSave, writeSave } from './io';
 
 /**
@@ -432,6 +434,68 @@ export function bumpFirstTimeEvent(eventId: string): boolean {
     const cur = loadSave();
     if (cur.firstTimeEventsFired.includes(eventId)) return false;
     writeSave({ ...cur, firstTimeEventsFired: [...cur.firstTimeEventsFired, eventId] });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Wild Living World Phase 2 — set the active Companion for the next run.
+ *
+ * Treated as a hard write (no merge) — the persisted bag is whatever
+ * the picker last committed. Defensive guard: refuses to set a key
+ * that isn't in `COMPANION_KEYS_IN_ORDER` so a stale localStorage edit
+ * can't strand the player with a missing companion def. Accepts
+ * `null` so the player can opt out of running with any companion.
+ *
+ * Best-effort on storage failure — the Croft picker UI will toast via
+ * `emitSaveFailure` and the runtime defaults to whatever the last
+ * successful write committed.
+ */
+export function setSelectedCompanion(key: CompanionKey | null): void {
+  try {
+    if (key !== null && !(COMPANION_KEYS_IN_ORDER as readonly string[]).includes(key)) {
+      return;
+    }
+    const cur = loadSave();
+    const unlockedCompanions = [...cur.livingWorldUnlocks.unlockedCompanions];
+    // Defensive: setting requires either explicit null or a currently-
+    // unlocked key. If the caller passes an un-unlocked key we just
+    // refuse the write — the picker should never have offered it.
+    if (key !== null && !unlockedCompanions.includes(key)) return;
+    writeSave({
+      ...cur,
+      livingWorldUnlocks: {
+        unlockedCompanions,
+        selectedCompanion: key,
+      },
+    });
+  } catch {
+    /* best-effort — picker UI surfaces via emitSaveFailure */
+  }
+}
+
+/**
+ * Wild Living World Phase 2 — mark a companion key as unlocked.
+ * Idempotent: writes only on first unlock. Best-effort on storage
+ * failure. Returns whether the unlock changed state — callers (future
+ * unlock-condition triggers) can chain a celebratory toast.
+ */
+export function unlockCompanion(key: CompanionKey): boolean {
+  if (!(COMPANION_KEYS_IN_ORDER as readonly string[]).includes(key)) return false;
+  try {
+    const cur = loadSave();
+    const have = cur.livingWorldUnlocks.unlockedCompanions;
+    if (have.includes(key)) return false;
+    const next = [...have, key];
+    writeSave({
+      ...cur,
+      livingWorldUnlocks: {
+        unlockedCompanions: next,
+        selectedCompanion: cur.livingWorldUnlocks.selectedCompanion,
+      },
+    });
     return true;
   } catch {
     return false;

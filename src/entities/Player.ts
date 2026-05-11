@@ -70,6 +70,13 @@ import {
   stingRemainingFraction,
   computeStingExpireDamage,
 } from './raceTheBeithir';
+import {
+  type SelkieForm,
+  type SelkieFormState,
+  createSelkieFormState,
+  getSelkieFormModifiers,
+  toggleSelkieFormOnDashEdge,
+} from './selkieForm';
 import type { Enemy } from './Enemy';
 import { bumpBeithirCured } from '../utils/save/bumpers';
 import { isInvincibilityEnabled } from '../systems/accessibility/AssistMode';
@@ -265,6 +272,36 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
    *  rune-bag, relic) doesn't drift the expire damage. Mirrors
    *  clootieTree's runBaseMaxHp lock. */
   private beithirMaxHpAtSting: number = 0;
+
+  // Wild Living World — Selkie Dual-Form state. Only meaningful when
+  // the active variant is `selkie`; for other runs the dash-edge
+  // helper short-circuits and the form stays `haggis`. The Player
+  // owns the state so the form survives weapon/spawn ticks; HUD reads
+  // through `getSelkieForm()`.
+  private selkieFormState: SelkieFormState = createSelkieFormState();
+  /**
+   * Snapshot of the variant key captured at run start. Cached because
+   * the Player doesn't re-bind the variant mid-run and we want the
+   * dash-edge helper to short-circuit on every dash without an
+   * indirect lookup.
+   */
+  private selkieVariantKey: string = 'classic';
+  /**
+   * Callback used to notify the LivingWorld director of a form
+   * shift. Optional — `null` for tests or scenes that don't wire
+   * the director. The Player invokes it AFTER the state mutation so
+   * listeners read the new form.
+   */
+  private onSelkieFormShifted: ((form: SelkieForm) => void) | null = null;
+  /**
+   * Wild Living World Phase 2 — biome accessor for the Selkie coastal
+   * affinity bloom. Returns the biome ID the Player currently stands
+   * in, or `null` when the BiomeController isn't bound (tests / scene
+   * tear-down). The accessor is queried each call to
+   * `getMoveSpeed` / `getDriftDegrees` / `getEffectivePickupRadius`,
+   * so the bloom resolves against the live biome with no extra plumbing.
+   */
+  private biomeAccessor: (() => string | null) | null = null;
 
   // Burn Leap (M8) — double-tap direction for a short hazard-iframe hop.
   // Distinct from dash: no enemy-damage immunity, shorter windows, own
@@ -642,6 +679,14 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     this.dashRemainingMs = this.DASH_DURATION_MS;
     this.postDashInvincibilityRemainingMs = 0;
     this.dashCharges--;
+
+    // Wild Living World — Selkie Dual-Form toggle on dash edge. The
+    // helper short-circuits for non-selkie variants so this stays
+    // free for every other run.
+    const newForm = toggleSelkieFormOnDashEdge(this.selkieFormState, this.selkieVariantKey);
+    if (newForm !== null) {
+      this.onSelkieFormShifted?.(newForm);
+    }
     // Start regen timer only if it isn't already running (sharing one timer
     // across all missing charges).
     if (this.dashCooldown <= 0) this.dashCooldown = this.DASH_COOLDOWN_MS;
@@ -1250,19 +1295,81 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   getRunBasePickupRadius(): number { return this.runBasePickup; }
   getRunBaseDriftDegrees(): number { return this.runBaseDrift; }
   getLevel(): number { return this.currentLevel; }
+  /**
+   * Pickup radius readback. Selkie seal form adds a small flat bonus
+   * (`SelkieFormModifiers.pickupRadiusFlat`) to widen the seal's "tide
+   * ring" feel; haggis form / non-selkie runs return identity.
+   */
   getPickupRadius(): number {
     // Burn Leap iframe also suppresses fog's magnet halving — same justification
     // as the slick suppression: leap is the routing escape valve for hazards.
     const fogMul = this.inFog && this.burnLeapActiveRemainingMs <= 0 ? this.FOG_PICKUP_MUL : 1;
-    return this.pickupRadius * fogMul;
+    const biome = this.biomeAccessor?.() ?? null;
+    const selkieBonus = getSelkieFormModifiers(this.selkieFormState.form, biome).pickupRadiusFlat;
+    return this.pickupRadius * fogMul + selkieBonus;
   }
   getMoveSpeed(): number {
     // U1 M4 — Trek / Peat / Frost runes (peat slows speed, trek boosts it).
     const bag = this.runeBagAccessor();
-    if (!bag) return this.moveSpeed;
-    return this.moveSpeed * composeSpeedMul(bag);
+    const runeMul = bag ? composeSpeedMul(bag) : 1;
+    // Wild Living World — Selkie speed multiplier. Base seal form is
+    // 1.08 in seal, 1 in haggis. Phase 2 adds a small coastal-affinity
+    // bloom on loch/pine biomes (the seal "feels at home"). Bloom is
+    // a small extra multiplicative — bounded under 1.2 total to keep
+    // the dash-toggle game-feel the dominant variable.
+    const biome = this.biomeAccessor?.() ?? null;
+    const selkieMul = getSelkieFormModifiers(this.selkieFormState.form, biome).speedMul;
+    return this.moveSpeed * runeMul * selkieMul;
   }
-  getDriftDegrees(): number { return this.driftDegrees; }
+  getDriftDegrees(): number {
+    // Wild Living World — Selkie seal form damps the drift so a player
+    // in the sea-body banks tighter. Haggis form is unchanged. Phase 2
+    // bloom multiplies the seal-form drift damping further only when
+    // the bloom is active (loch / pine biomes); both factors collapse
+    // to identity off-biome.
+    const biome = this.biomeAccessor?.() ?? null;
+    const selkieMul = getSelkieFormModifiers(this.selkieFormState.form, biome).driftMul;
+    return this.driftDegrees * selkieMul;
+  }
+
+  /**
+   * Wild Living World — bind the Selkie form to the active variant
+   * + a listener callback. GameScene calls this once per run from
+   * runStartCeremony after `applyVariantModifiers`.
+   */
+  bindSelkieRun(variantKey: string, listener: ((form: SelkieForm) => void) | null): void {
+    this.selkieVariantKey = variantKey;
+    this.selkieFormState = createSelkieFormState();
+    this.onSelkieFormShifted = listener;
+    // Clear the biome accessor on each bind so a stale BiomeController
+    // reference from a prior run can't leak. GameScene re-installs the
+    // live accessor immediately after `bindSelkieRun` returns.
+    this.biomeAccessor = null;
+  }
+
+  /**
+   * Wild Living World Phase 2 — wire the Player's Selkie coastal-affinity
+   * resolver into a scene-side biome accessor. Accepts `null` to clear
+   * the binding (test scenes / scene tear-down). Called once per run by
+   * GameScene right after `bindSelkieRun`.
+   *
+   * Why a callback and not a direct BiomeController reference: keeps
+   * Player free of scene-internal types and lets unit tests inject a
+   * deterministic biome with no Phaser imports.
+   */
+  setBiomeAccessor(accessor: (() => string | null) | null): void {
+    this.biomeAccessor = accessor;
+  }
+
+  /** Read-only — current Selkie form. */
+  getSelkieForm(): SelkieForm {
+    return this.selkieFormState.form;
+  }
+
+  /** Read-only — number of dash-driven form shifts this run. */
+  getSelkieShiftCount(): number {
+    return this.selkieFormState.shiftCount;
+  }
 
   /**
    * HUD accessor — read-only snapshot of the Drift Mastery state for

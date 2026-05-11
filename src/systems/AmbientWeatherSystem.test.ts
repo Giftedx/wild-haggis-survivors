@@ -34,6 +34,18 @@ describe('pickWeatherMode (season → ambient weather mapping)', () => {
     expect(pickWeatherMode('bracken_turn')).toBe('bracken_drift');
   });
 
+  it('maps up_helly_aa → up_helly_aa_embers (Lerwick galley sparks)', () => {
+    expect(pickWeatherMode('up_helly_aa')).toBe('up_helly_aa_embers');
+  });
+
+  it('maps bannockburn → bannockburn_dust (the air remembers the haugh)', () => {
+    expect(pickWeatherMode('bannockburn')).toBe('bannockburn_dust');
+  });
+
+  it('maps glorious_twelfth → grouse_feather_drift (feathers on the moor wind)', () => {
+    expect(pickWeatherMode('glorious_twelfth')).toBe('grouse_feather_drift');
+  });
+
   it('returns null when no event is active', () => {
     expect(pickWeatherMode(null)).toBe(null);
   });

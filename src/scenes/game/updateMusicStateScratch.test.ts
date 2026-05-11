@@ -38,7 +38,7 @@ describe('updateMusicStateScratch', () => {
   it('writes every field from the collaborators into the scratch', () => {
     const scratch = freshScratch();
     const { player, spawn, juice } = stubs();
-    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 99, 0.5, 0.35);
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 99, 0.5, 0.35, 0.4, 0.6);
     expect(scratch).toEqual({
       hp: 80,
       maxHp: 100,
@@ -49,7 +49,23 @@ describe('updateMusicStateScratch', () => {
       bossActive: false,
       biomeTimbre: 0.5,
       buildDensity: 0.35,
+      livingWorldPresence: 0.4,
+      hazardPressure: 0.6,
     });
+  });
+
+  it('living-world presence defaults to 0 when omitted', () => {
+    const scratch = freshScratch();
+    const { player, spawn, juice } = stubs();
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0, 0);
+    expect(scratch.livingWorldPresence).toBe(0);
+  });
+
+  it('hazard pressure defaults to 0 when omitted (WLW Phase 2)', () => {
+    const scratch = freshScratch();
+    const { player, spawn, juice } = stubs();
+    updateMusicStateScratch(scratch, player as never, spawn as never, juice as never, 0, 0, 0);
+    expect(scratch.hazardPressure).toBe(0);
   });
 
   it('mutates the same reference (no allocation)', () => {

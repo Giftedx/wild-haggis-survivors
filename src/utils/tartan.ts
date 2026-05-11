@@ -60,6 +60,7 @@ const VARIANT_PALETTES: Readonly<Record<VariantKey, { base: string; primary: str
   peerie_shetlander: { base: '#1e3545', primary: '#aa6030' }, // North Sea blue + Viking-iron rust
   burns_wee_beastie: { base: '#3a201c', primary: '#c82830' }, // aged ink + Ayrshire arterial red
   witch_hare:    { base: '#281428', primary: '#6a8848' }, // bruised heather + witch-eye green
+  selkie:        { base: '#12181e', primary: '#4a8a7c' }, // wet-stone + kelp-green
 };
 const VARIANT_FALLBACK = { base: '#2a2420', primary: '#8a5a3a' };
 
@@ -78,6 +79,8 @@ const WEAPON_ACCENTS: Readonly<Record<WeaponKey, string>> = {
   shinty_stick:    '#3a6a28', // Camanachd-Cup turf-green (Newtonmore / Kingussie pitch)
   sgian_dubh:      '#2a2a32', // sgian-dubh black-leather grip
   stag_antler:     '#c8b890', // bone-cream antler tine
+  waulking_mallet: '#8a6630', // waulking-oak tan
+  pibroch_hammer:  '#e6c468', // pibroch brass-band gold
 };
 const WEAPON_ACCENT_FALLBACK = '#a8c068';
 

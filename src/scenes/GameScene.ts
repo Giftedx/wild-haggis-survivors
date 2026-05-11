@@ -170,6 +170,9 @@ import { type SecondTickHookContext } from './game/runtimeTickHooks';
 import type { HaarFogController } from '../systems/shaders/HaarFogController';
 import { installHaarFog, handleBiomeEnteredForHaar } from './game/haarFogInstall';
 import { installRunStartupHud } from './game/installRunStartupHud';
+import { LivingWorldDirector } from './game/LivingWorldDirector';
+import { CompanionSystem } from './game/CompanionSystem';
+import { getSelkieRunStartPickupBonus } from '../entities/selkieForm';
 
 /**
  * GameScene — the core gameplay loop.
@@ -232,6 +235,22 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * Reset in `resetTransientRunState`.
    */
   bossKilledKeys: string[] = [];
+  /**
+   * Wild Living World Initiative (2026-05-11) — cross-track
+   * coordinator for companions, Selkie form, rhythm weapon,
+   * atmosphere shader, music bridge, Croft surface. Owns no
+   * gameplay randomness and no Phaser objects; subsystems register
+   * with it as they come up. Reset in `resetTransientRunState`.
+   */
+  readonly livingWorldDirector = new LivingWorldDirector();
+  /**
+   * Wild Living World — Whistle-Call Companions system. Spawns +
+   * follows the single sheepdog companion this run. Cosmetic-only on
+   * its first ship; future slices widen via `companionTypes.ts`.
+   * Nullable between runs because it lives in scene-managed memory
+   * (sprite + tweens) and is rebuilt each `create()` pass.
+   */
+  companionSystem: CompanionSystem | null = null;
   edgeIndicators!: EdgeIndicators;
   minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
@@ -587,6 +606,9 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       ancestralEcho: this.ancestralEcho,
       relicSlotUI: this.relicSlotUI,
       grudgeLedger: this.grudgeLedger,
+      livingWorldDirector: this.livingWorldDirector,
+      companionSystem: this.companionSystem,
+      setCompanionSystem: (v) => { this.companionSystem = v; },
       setReplayInput: (v) => { this.replayInput = v; },
       setPendingReplayRoutes: (v) => { this.pendingReplayRoutes = v; },
       setPauseMenu: (v) => { this.pauseMenu = v; },
@@ -955,6 +977,40 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     // upgrades so lucky_start reads the pre-populated ownedPassives.
     applyVariantStartPassives(this.player, this.ownedPassives, selectedVariant);
 
+    // Wild Living World — Selkie Dual-Form bind. Player owns the form
+    // state; the listener routes the shift into the LivingWorld
+    // director so future subsystems (music bridge, atmosphere) can
+    // react to it. Phase 2 — also bind a biome accessor so the seal
+    // form's coastal-affinity bloom resolves against the live biome,
+    // and apply the run-start pickup-radius blessing (no-op for any
+    // non-Selkie variant — `getSelkieRunStartPickupBonus` short-circuits).
+    this.player.bindSelkieRun(selectedVariant.key, (form) => {
+      this.livingWorldDirector.notify({
+        kind: 'form_shifted',
+        from: form === 'seal' ? 'haggis' : 'seal',
+        to: form,
+      });
+      // Wild Living World Phase 2 — banter follow-up. Pass the new form
+      // as the sub-pool tag so the engine picks `seal` / `haggis` lines
+      // appropriately. Priority 27 keeps dash-spam from outshouting
+      // higher-tier events (boss warnings, low-HP); the no-repeat ring
+      // handles cadence within the pool.
+      this.requestBanter('form_shifted', form);
+    });
+    this.player.setBiomeAccessor(() => {
+      if (!this.biomeController) return null;
+      return this.biomeController.currentBiomeAt(this.player.x, this.player.y);
+    });
+    {
+      // Selkie Phase 2 — small one-shot pickup-radius blessing at run
+      // start so the seal's coastal affinity reads as "kit the player
+      // brought" rather than purely a biome reaction. Goes through the
+      // public `addPickupRadius` accessor so the bonus participates in
+      // `recalcStats` (which clamps + reapplies fog mul + selkie flat).
+      const bonus = getSelkieRunStartPickupBonus(selectedVariant.key);
+      if (bonus > 0) this.player.addPickupRadius(bonus);
+    }
+
     // Apply permanent upgrades from save data. The two flag outputs
     // don't live on Player so come back as a result object.
     const permResult = applyPermanentUpgrades({
@@ -1301,6 +1357,34 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onWeatherShutdown: () => { this.weather = null; },
       onHazardsShutdown: () => { this.hazards = null; },
     }));
+
+    // Wild Living World — companion system. Construction is cheap (no
+    // sprite yet); `whistleCall` allocates the sprite + tween. Tied
+    // into the director so its update tick runs after the pause guard
+    // and `notify` fans moments to listeners. A short delayed call
+    // brings the sheepdog into the run so the first frame doesn't
+    // already have an ally on screen (gives the run identity toast a
+    // moment to read first).
+    this.companionSystem?.destroy();
+    this.companionSystem = new CompanionSystem({
+      scene: this,
+      getPlayer: () => this.player,
+    });
+    this.companionSystem.attachDirector(this.livingWorldDirector);
+    if (!this.replayInput) {
+      // Wild Living World Phase 2 — Croft picker selection drives the
+      // whistle-call. `selectedCompanion === null` is the explicit
+      // opt-out and skips the call entirely; any other unlocked key
+      // gets whistled in after the run-intro toast settles.
+      const sys = this.companionSystem;
+      const selected = loadSave().livingWorldUnlocks.selectedCompanion;
+      if (selected) {
+        this.time.delayedCall(2400, () => {
+          if (!sys || sys !== this.companionSystem) return;
+          sys.whistleCall(selected);
+        });
+      }
+    }
 
     // Cairn Stacking scheduler (DESIGN_IDEAS §1) — three highland-stone
     // pickups across the run, third collect fires the Cairn's Blessing

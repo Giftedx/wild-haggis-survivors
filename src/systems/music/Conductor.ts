@@ -28,6 +28,28 @@ export interface GameMusicState {
   enragePressure?: number;
   /** 0–1 — how full the player's weapon+passive build is (items owned / 17). */
   buildDensity?: number;
+  /**
+   * 0–1 — Wild Living World presence: companions on field, Selkie form
+   * shifts, rhythm-aligned hits, atmosphere motifs active. Smoothed
+   * inside the conductor with a slow time-constant so the moor's
+   * "aliveness" reads as a gentle bloom, never a click.
+   *
+   * Cosmetic-only: feeds tiny modulations on the ambient pad. Replay
+   * determinism is unaffected — audio mix is not authoritative.
+   */
+  livingWorldPresence?: number;
+  /**
+   * 0–1 — Wild Living World Phase 2. Density of live environmental
+   * hazards (peat pits, scree, rime patches, tidal wrack, falling
+   * slate). Sourced from `HazardsSystem.getActiveHazardCount() / 6`
+   * with a clamp; the conductor smooths it further with a slow time-
+   * constant so a single hazard pop doesn't audibly click.
+   *
+   * Cosmetic-only: modulates the ambient bed's bandpass + Q so the
+   * moor reads as "tighter" when the footing fills with traps. NEVER
+   * authoritative on damage or replay state.
+   */
+  hazardPressure?: number;
 }
 
 export interface MoodValues {
@@ -75,6 +97,22 @@ export class Conductor {
   /** Lerp target from `GameMusicState.biomeTimbre` — exposed for the audio graph. */
   private smoothedBiomeTimbre = 0.45;
 
+  /**
+   * Lerp target from `GameMusicState.livingWorldPresence` — smoothed
+   * with a slow time-constant (~1500ms equivalent) so transient
+   * companion/form/rhythm events bloom rather than click. Always in
+   * `[0, 1]`; clamped on input AND output for defense-in-depth.
+   */
+  private smoothedLivingWorldPresence = 0;
+
+  /**
+   * Lerp target from `GameMusicState.hazardPressure` — smoothed with
+   * a moderately-slow time-constant so a hazard appearing or fading
+   * doesn't click the ambient bed. Always in `[0, 1]`; clamped on
+   * input AND output. Wild Living World Phase 2.
+   */
+  private smoothedHazardPressure = 0;
+
   /** Snapshot each `updateMood` — used by phrase walk + `getFrequency` + releases. */
   private accentMoorBloom = 0;
   private accentEvolutionGlow = 0;
@@ -90,6 +128,24 @@ export class Conductor {
 
     const targetBt = clamp01(state.biomeTimbre);
     this.smoothedBiomeTimbre = lerp(this.smoothedBiomeTimbre, targetBt, delta * 0.0011);
+
+    // Living-world presence smoothing. Slightly slower than biome timbre
+    // so a single companion call or form-shift doesn't pop the mix —
+    // the bloom should feel like the moor "noticing" the player.
+    const livingTarget = clamp01(state.livingWorldPresence ?? 0);
+    this.smoothedLivingWorldPresence = clamp01(
+      lerp(this.smoothedLivingWorldPresence, livingTarget, delta * 0.0008),
+    );
+
+    // Hazard-pressure smoothing — same defense-in-depth shape. Use a
+    // slightly faster constant (≈ delta * 0.001) than the living-world
+    // axis so the moor reacts to footing changes a hair sooner than to
+    // companion presence; both still slow enough to bloom rather than
+    // click. Wild Living World Phase 2.
+    const hazardTarget = clamp01(state.hazardPressure ?? 0);
+    this.smoothedHazardPressure = clamp01(
+      lerp(this.smoothedHazardPressure, hazardTarget, delta * 0.001),
+    );
 
     this.buildDensity = lerp(this.buildDensity, state.buildDensity ?? 0, delta * 0.001);
 
@@ -150,6 +206,26 @@ export class Conductor {
   /** Smoothed 0–1 moor colour for filters, pad, and delay — not a "mood axis". */
   getSmoothedBiomeTimbre(): number {
     return this.smoothedBiomeTimbre;
+  }
+
+  /**
+   * Smoothed 0–1 Living-World presence (companions / form-shifts /
+   * rhythm alignment). Cosmetic-only: a layer modulator, never a
+   * gameplay-affecting authority. See `livingWorldPresence` doc on
+   * `GameMusicState` for the design rationale.
+   */
+  getSmoothedLivingWorldPresence(): number {
+    return this.smoothedLivingWorldPresence;
+  }
+
+  /**
+   * Smoothed 0–1 hazard-pressure (live environmental hazards on the
+   * field). Drives the AmbientBed's bandpass-Q nudge so a moor full
+   * of traps reads as audibly tighter. Cosmetic-only — never affects
+   * damage, replay, or gameplay state. Wild Living World Phase 2.
+   */
+  getSmoothedHazardPressure(): number {
+    return this.smoothedHazardPressure;
   }
 
   nextNote(): { freq: number; velocity: number; intervalSec: number; releaseSec: number } | null {

@@ -11,6 +11,7 @@ import { bakePostieTextures } from './postie';
 import { bakeNeighbourTextures } from './neighbour';
 import { bakeWeansTexture } from './weans';
 import { bakeSheepdogStandingTextures } from './sheepdogStanding';
+import { bakeStoatStandingTextures } from './stoatStanding';
 import { bakeReturningPalTexture } from './returningPal';
 
 export function bakeCroftVisitors(scene: Phaser.Scene): void {
@@ -18,5 +19,6 @@ export function bakeCroftVisitors(scene: Phaser.Scene): void {
   bakeNeighbourTextures(scene);
   bakeWeansTexture(scene);
   bakeSheepdogStandingTextures(scene);
+  bakeStoatStandingTextures(scene);
   bakeReturningPalTexture(scene);
 }

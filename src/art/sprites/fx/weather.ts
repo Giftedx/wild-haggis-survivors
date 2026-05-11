@@ -517,3 +517,111 @@ export function bakeFxHarvestSheaf(scene: Phaser.Scene): void {
   gs.generateTexture('fx_harvest_sheaf', w, h);
   gs.destroy();
 }
+
+/**
+ * `fx_bannockburn_dust` — Wild Living World Phase 2.
+ *
+ * Bannockburn anniversary (24 June, 1314) seasonal event particle.
+ * Reads as battlefield-dust kicked up from a packed haugh: muted ochre,
+ * cool-iron undertones from blade and bridle, no sparkle. Tonal palette:
+ * Grave (history-cosy, see ART_STYLE_BIBLE.md `Grave` register). Slow
+ * horizontal drift, low alpha so the moor reads as "the air remembers"
+ * rather than gameplay-relevant haze.
+ *
+ * Visually distinct from `fx_harvest_sheaf` (amber-cream chaff, fast)
+ * by being cooler / muddier / drifting horizontally with a slight
+ * downward bias rather than sideways.
+ *
+ * 14×7 — wider than tall so the mote reads as drifting dust band, not
+ * a pebble. Mid-alpha throughout so screen never feels obscured.
+ */
+export function bakeFxBannockburnDust(scene: Phaser.Scene): void {
+  const w = 14;
+  const h = 7;
+  const cy = h / 2;
+  const gs = scene.add.graphics();
+
+  // Outer grit halo — muddy ochre, very low alpha.
+  gs.fillStyle(0x8a7048, 0.18);
+  gs.fillRect(0, cy - 1.4, w, 2.8);
+  // Mid body — warmer mid-tone ochre band.
+  gs.fillStyle(0xa68858, 0.36);
+  gs.fillRect(2, cy - 0.9, w - 4, 1.8);
+  // Highlight band — pale ivory streak suggesting sun catching motes.
+  gs.fillStyle(0xd8c098, 0.55);
+  gs.fillRect(4, cy - 0.5, w - 8, 1);
+
+  // Cool-iron undertone pips — two small grey-blue specks reading as
+  // ash or bridle dust mixed into the drift. Sit asymmetrically so
+  // the wisp doesn't pattern-tile when several spawn near each other.
+  gs.fillStyle(0x5a6470, 0.55);
+  gs.fillCircle(3, cy - 1.2, 0.45);
+  gs.fillStyle(0x484e58, 0.65);
+  gs.fillCircle(w - 4, cy + 1.1, 0.4);
+
+  // Bright tip — front of the drift catches sun. Subtle, not bright.
+  gs.fillStyle(0xffe6b8, 0.7);
+  gs.fillRect(w - 4, cy - 0.3, 1.6, 0.6);
+
+  gs.generateTexture('fx_bannockburn_dust', w, h);
+  gs.destroy();
+}
+
+/**
+ * `fx_grouse_feather` — Wild Living World Phase 2.
+ *
+ * Glorious Twelfth (12 August, grouse shooting opener) seasonal event
+ * particle. A single fleck of grouse feather drifting on the moor wind:
+ * russet body with the canonical white quill stripe and the dark
+ * eye-spot near the base. Tonal palette: Wild (heather-tone, see
+ * ART_STYLE_BIBLE.md `Wild` register). Per particle the feather
+ * tumbles slowly as it falls — the parent system handles rotation.
+ *
+ * Visually distinct from `fx_bracken_leaf` (copper-bronze, larger,
+ * paler) by being smaller, russet-and-white striped, with a single
+ * dark eye-spot that reads at glance as "feather not leaf".
+ *
+ * 9×11 — taller than wide so the silhouette reads as a quill.
+ */
+export function bakeFxGrouseFeather(scene: Phaser.Scene): void {
+  const w = 9;
+  const h = 11;
+  const cx = w / 2;
+  const gs = scene.add.graphics();
+
+  // Soft russet halo around the whole feather — keeps it readable
+  // against any biome tint.
+  gs.fillStyle(0x6e3018, 0.22);
+  gs.fillEllipse(cx, h * 0.55, w - 1, h - 2);
+
+  // Body — russet teardrop. Built from stacked ellipses for organic
+  // silhouette.
+  gs.fillStyle(0x8a4220, 0.85);
+  gs.fillEllipse(cx, h * 0.55, w - 2, h - 3);
+  gs.fillStyle(0xa85a30, 1);
+  gs.fillEllipse(cx, h * 0.55 - 0.4, w - 3.5, h - 5);
+  gs.fillStyle(0xc47648, 1);
+  gs.fillEllipse(cx, h * 0.5, w - 5, h - 7);
+
+  // Central quill — pale cream stripe down the middle.
+  gs.fillStyle(0xece0c0, 1);
+  gs.fillRect(cx - 0.3, 1, 0.6, h - 2);
+  gs.fillStyle(0xffffff, 0.85);
+  gs.fillRect(cx - 0.15, 2, 0.3, h - 4);
+
+  // Dark eye-spot near the base — the canonical grouse-feather tell.
+  gs.fillStyle(0x1f0e08, 1);
+  gs.fillCircle(cx, h - 2.4, 0.85);
+  gs.fillStyle(0x0a0604, 1);
+  gs.fillCircle(cx, h - 2.4, 0.4);
+
+  // Wisp at the tip — three tiny barbs fading toward the top.
+  gs.fillStyle(0xc47648, 0.7);
+  gs.fillRect(cx - 1.4, 0.6, 0.8, 0.5);
+  gs.fillRect(cx + 0.6, 0.6, 0.8, 0.5);
+  gs.fillStyle(0x8a4220, 0.55);
+  gs.fillRect(cx - 0.5, 0, 1, 0.6);
+
+  gs.generateTexture('fx_grouse_feather', w, h);
+  gs.destroy();
+}

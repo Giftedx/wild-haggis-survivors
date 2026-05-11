@@ -80,6 +80,10 @@ function save(overrides: Partial<SaveData> = {}): SaveData {
     },
     seenRunes: [],
     lemmingsSeenForVariant: [],
+    livingWorldUnlocks: {
+      unlockedCompanions: ['sheepdog'],
+      selectedCompanion: 'sheepdog',
+    },
     settings: { soundOn: true, musicOn: true },
     ...overrides,
   };

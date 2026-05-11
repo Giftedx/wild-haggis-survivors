@@ -66,6 +66,65 @@ describe('Conductor', () => {
       expect(c.getSmoothedBiomeTimbre()).toBeGreaterThan(0.65);
     });
 
+    it('living-world presence starts at 0 and smooths toward target', () => {
+      const c = new Conductor();
+      expect(c.getSmoothedLivingWorldPresence()).toBe(0);
+      pumpMood(c, 16, baseState({ livingWorldPresence: 1 }), 1500);
+      expect(c.getSmoothedLivingWorldPresence()).toBeGreaterThan(0.7);
+      expect(c.getSmoothedLivingWorldPresence()).toBeLessThanOrEqual(1);
+    });
+
+    it('living-world presence clamps invalid values into [0, 1]', () => {
+      const c = new Conductor();
+      pumpMood(c, 16, baseState({ livingWorldPresence: 5 }), 400);
+      expect(c.getSmoothedLivingWorldPresence()).toBeLessThanOrEqual(1);
+      pumpMood(c, 16, baseState({ livingWorldPresence: -2 }), 400);
+      // Smoothing pulls toward 0 (the clamped target). Must never go negative.
+      expect(c.getSmoothedLivingWorldPresence()).toBeGreaterThanOrEqual(0);
+    });
+
+    it('hazard pressure starts at 0 and smooths toward target (WLW Phase 2)', () => {
+      const c = new Conductor();
+      expect(c.getSmoothedHazardPressure()).toBe(0);
+      pumpMood(c, 16, baseState({ hazardPressure: 1 }), 1500);
+      expect(c.getSmoothedHazardPressure()).toBeGreaterThan(0.7);
+      expect(c.getSmoothedHazardPressure()).toBeLessThanOrEqual(1);
+    });
+
+    it('hazard pressure clamps invalid values into [0, 1]', () => {
+      const c = new Conductor();
+      pumpMood(c, 16, baseState({ hazardPressure: 5 }), 400);
+      expect(c.getSmoothedHazardPressure()).toBeLessThanOrEqual(1);
+      pumpMood(c, 16, baseState({ hazardPressure: -2 }), 400);
+      // Smoothing pulls toward 0 (the clamped target). Must never go negative.
+      expect(c.getSmoothedHazardPressure()).toBeGreaterThanOrEqual(0);
+    });
+
+    it('hazard pressure decays when target drops back to 0', () => {
+      const c = new Conductor();
+      pumpMood(c, 16, baseState({ hazardPressure: 1 }), 2000);
+      const peak = c.getSmoothedHazardPressure();
+      expect(peak).toBeGreaterThan(0.5);
+      pumpMood(c, 16, baseState({ hazardPressure: 0 }), 2000);
+      expect(c.getSmoothedHazardPressure()).toBeLessThan(peak);
+    });
+
+    it('living-world presence lerp constant is smaller than biome timbre lerp (anti-click)', () => {
+      // Both start at 0 and target 1 so the comparison isolates the
+      // lerp coefficient. Smaller coefficient ⇒ less per-frame motion ⇒
+      // smaller smoothed value after the same number of frames.
+      const cA = new Conductor();
+      const cB = new Conductor();
+      const frames = 30;
+      // Override biome smoothed start to 0 for an apples-to-apples test.
+      (cA as unknown as { smoothedBiomeTimbre: number }).smoothedBiomeTimbre = 0;
+      (cB as unknown as { smoothedBiomeTimbre: number }).smoothedBiomeTimbre = 0;
+      pumpMood(cA, 16, baseState({ biomeTimbre: 1, livingWorldPresence: 0 }), frames);
+      pumpMood(cB, 16, baseState({ biomeTimbre: 0, livingWorldPresence: 1 }), frames);
+      // Biome moved further toward 1 than presence did in the same span.
+      expect(cA.getSmoothedBiomeTimbre()).toBeGreaterThan(cB.getSmoothedLivingWorldPresence());
+    });
+
     it('hpFrac defaults to 1 when maxHp is 0', () => {
       const c = new Conductor();
       pumpMood(c, 16, baseState({ hp: 0, maxHp: 0 }), 100);

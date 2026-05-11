@@ -102,6 +102,41 @@ export const ui = {
       settings: 'THA WIRELESS',
     },
     almanac_chip: '{seen} / {total} kent',
+    livingWorld: {
+      panel_title: 'THA LIVIN MOOR',
+      panel_subtitle: 'Tha braes are stirrin — here\'s whit\'s afoot.',
+      status_shipped: 'OOT ON THA MOOR',
+      status_introduced: 'JUST AWA',
+      status_planned: 'NO YET',
+      companions: {
+        name: 'WHUSTLE-CALL COMPANIONS',
+        description: 'A wee collie at yir heel — tha moor feels less lonesome already.',
+      },
+      selkieForms: {
+        name: 'SELKIE FORMS',
+        description: 'Twa shapes in tha wan run. Tha water-folk mind tha dance.',
+      },
+      rhythm: {
+        name: 'WAULKING MALLET',
+        description: 'A heavy mallet — sing wi tha beat an tha bairn hits harder.',
+      },
+      atmosphere: {
+        name: 'UP HELLY AA EMBERS',
+        description: 'Embers risin fae tha galley fire — Lerwick wears its tartan in flame.',
+      },
+      musicBridge: {
+        name: 'A MOOR THAT LISTENS',
+        description: 'Tha drone warms when tha moor\'s alive aboot ye. Subtle, mind — but it\'s there.',
+      },
+      croftHome: {
+        name: 'THIS VERY PANEL',
+        description: 'A wee bench tae see whit\'s growin. Mair tae come — this is tha front step.',
+      },
+      picker: {
+        title: 'WHA\'S AT YER HEEL?',
+        no_companion: 'Gae alane',
+      },
+    },
   },
   chronicle: {
     title: 'THA HERD CHRONICLE',
@@ -546,6 +581,19 @@ export const ui = {
     beithir: {
       race: 'BEITHIR — HEAL OR KILL',
     },
+    /** Whistle-Call companion chip — Scots overlay. "Collie" is the
+     *  near-universal Scots word for a sheepdog; same syllable count
+     *  as the EN "SHEEPDOG" so the fixed-width chip stays balanced. */
+    companion: {
+      sheepdog: 'COLLIE',
+      stoat_scout: 'WHITRET',
+    },
+    /** Selkie Dual-Form chip — Scots overlay. "SELKIE" sits in
+     *  Scots verbatim; the haggis form is the same word. */
+    selkie: {
+      haggis: 'HAGGIS',
+      seal: 'SELKIE',
+    },
   },
   replay: {
     watching_toast: 'Watchin replay · recorded run',
@@ -951,6 +999,12 @@ export const ui = {
         c: 'Doun isnae duin. Tha pelt hauds.',
         d: 'Sych an meikle care, but no duin.',
       },
+      selkie: {
+        a: 'Saut in tha cuts — keep tae tha shore.',
+        b: 'Seal-skin\'s thin, but tha tide\'s no duin wi ye.',
+        c: 'Ae mair wave like that an we\'re driftwood.',
+        d: 'Haud tha borrowed skin tight. Braithe.',
+      },
     },
     boss_down: {
       a: 'Awa in a box. Pure textbook.',
@@ -1073,6 +1127,12 @@ export const ui = {
         b: 'Skirl turnt slaughter — beautiful.',
         c: 'Every note a cut. Pure ceilidh violence.',
         d: 'Ceilidh\'s cancelled — fer them.',
+      },
+      waulking_mallet: {
+        a: 'Tha pibroch lands — that\'s tha echo finishin tha tune.',
+        b: 'Mallet keeps tha beat; pibroch answers fae tha hills.',
+        c: 'Tunin fork hummed true. Noo tha bar drops on ivvery fourth.',
+        d: 'Hammer on tha strang beat — tha moor sings alang.',
       },
     },
     curse_start: {
@@ -1209,6 +1269,12 @@ export const ui = {
         c: 'I sall gae intill ane haire — bigger this time.',
         d: 'Auldwife Isobel prood. Ye\'re ridden faur.',
       },
+      selkie: {
+        a: 'Tide lifts ye — new strength in tha skin.',
+        b: 'Seal or haggis, tha sea approves.',
+        c: 'Anither sang learnt under tha waves.',
+        d: 'Up ye rise, slick as kelp.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Aff ye trot.',
@@ -1303,6 +1369,12 @@ export const ui = {
         b: 'Tha hare-form bites first.',
         c: 'Coorsed it. Ane doun.',
         d: 'Sma but wickit.',
+      },
+      selkie: {
+        a: 'First splash o tha hunt. Tide is wi us.',
+        b: 'Tha shore heard that. Keep movin.',
+        c: 'First bluid under moonlit watter.',
+        d: 'Seal-skin shakes dry. Onward.',
       },
     },
     kill_streak: {
@@ -1400,6 +1472,12 @@ export const ui = {
         c: 'Hare-fit, hare-hairt, hare\'s tally.',
         d: 'Tha auld daunce — kill, lowp, kill again.',
       },
+      selkie: {
+        a: 'Like fish through foam — they cannae pin ye.',
+        b: 'Tha tide is coontin culls fer ye.',
+        c: 'Seal-slick, haggis-hard. Keep tha rhythm.',
+        d: 'A whole shoal doon. Braw wark.',
+      },
     },
     recover: {
       a: 'Back fae tha brink. Deep braith.',
@@ -1494,6 +1572,12 @@ export const ui = {
         b: 'Tha pelt mends. Auldwife\'s yairbs.',
         c: 'E\'en tha witch sleeps a wee.',
         d: 'Eldritch yairbs ower tha wound. Awa wi\'t.',
+      },
+      selkie: {
+        a: 'Saut closes tha scrape. Back in.',
+        b: 'Tide washed tha warst o it awa.',
+        c: 'Skin settles richt again. Move.',
+        d: 'A wee shore-braith, then back tae danger.',
       },
     },
     biome_change: {
@@ -1733,6 +1817,23 @@ export const ui = {
     lemmings_remember: {
       a: 'Tha lemmings mind ye. Aff they go.',
       b: 'Wee green-heidit anes — they\'ve passed.',
+    },
+    // Wild Living World Phase 2 — Selkie form-shift commentary in Scots.
+    form_shifted: {
+      a: 'New shape. Same wee banes.',
+      b: 'Tha skin slips. Tha hert bides.',
+      seal: {
+        a: 'Saut in the lungs aince mair.',
+        b: 'Sea-side bouk. Drift smoothed oot.',
+        c: 'Tha water-folk nod aince.',
+        d: 'Smooth like the loch on a still mornin.',
+      },
+      haggis: {
+        a: 'Hame in the moor-banes.',
+        b: 'Wee legs back. Heather aneath.',
+        c: 'Skin minds the haggis wey.',
+        d: 'Saut washed aff. Hert\'s in the heather.',
+      },
     },
     // ── Taxman Grudge Ledger (DESIGN_IDEAS §1). SCS overlay for
     //    taxman_grudge. Edge tone — bureaucrat-sneer in Scots register.
@@ -1998,6 +2099,12 @@ export const ui = {
         b: 'Sit stane-still. Tha hare watches.',
         c: 'E\'en Gowdie pauses. E\'en hares braithe.',
         d: 'Tha covine bides patient.',
+      },
+      selkie: {
+        a: 'Sea quiet in tha lugs. Moor quiet underhoof.',
+        b: 'If ye hear singin, it isnae aw wind.',
+        c: 'Kelp at tha ankle, heather at tha nose.',
+        d: 'Borrowed skin, borrowed minute. Use it weel.',
       },
     },
     act_intermission_enter: {

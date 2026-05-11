@@ -92,8 +92,11 @@ describe('weapon evolution (chest-gated)', () => {
     }
   );
 
-  it('covers all 10 evolution recipes (not accidentally truncated)', () => {
-    expect(EVOLUTION_RECIPES.length).toBe(10);
+  it('covers all 11 evolution recipes (not accidentally truncated)', () => {
+    // Phase 2 (2026-05-11) added Pibroch Hammer (waulking_mallet +
+    // tuning_fork). If this count changes, double-check the BURNS
+    // threshold sibling test in `BalanceConfig.evolution.test.ts`.
+    expect(EVOLUTION_RECIPES.length).toBe(11);
   });
 });
 

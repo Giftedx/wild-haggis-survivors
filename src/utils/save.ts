@@ -19,6 +19,7 @@
  */
 
 export type {
+  LivingWorldUnlocks,
   PersonalBests,
   RunHistoryContext,
   RunHistoryEntry,
@@ -62,6 +63,8 @@ export {
   bumpLemmingsSeenForVariant,
   bumpStandingStonePick,
   flushBeastieKills,
+  setSelectedCompanion,
+  unlockCompanion,
 } from './save/bumpers';
 
 export {

@@ -269,6 +269,17 @@ export class HazardsSystem {
     this.disabled = false;
   }
 
+  /**
+   * Wild Living World Phase 2 — read-only count of currently-live
+   * hazard zones (telegraphing + active). Used by the music bridge
+   * to derive a smoothed `hazardPressure` axis that gently tightens
+   * the ambient pad when the moor "fills up". Cosmetic-only — never
+   * authoritative on damage / replay state.
+   */
+  getActiveHazardCount(): number {
+    return this.active.size;
+  }
+
   // -------------------- internals --------------------
 
   private overlapsPlayer(h: ActiveHazard, player: Player): boolean {

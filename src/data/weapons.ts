@@ -32,7 +32,9 @@ export type WeaponKey =
   | 'bagpipes'
   | 'shinty_stick'
   | 'sgian_dubh'
-  | 'stag_antler';
+  | 'stag_antler'
+  | 'waulking_mallet'
+  | 'pibroch_hammer';
 
 export interface WeaponDef {
   key: WeaponKey;
@@ -345,6 +347,68 @@ export const WEAPON_DEFS: Record<WeaponKey, WeaponDef> = {
     levelScaling: {
       damage: 1.22,
       cooldown: 0.88,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+
+  // Wild Living World Initiative — Waulking Mallet. Soft rhythm
+  // weapon. Aura-pulse beat that matches the procedural music
+  // engine's quarter-note clock: on-beat hits land at +30%; off-beat
+  // hits still output baseline damage so muted/blocked audio never
+  // creates zero DPS (see `waulkingRhythm.ts` for the math). The
+  // weapon's identity is "the song hits with you"; ceiling stays
+  // below "rhythm dominates the run" to keep it inclusive.
+  waulking_mallet: {
+    key: 'waulking_mallet',
+    nameKey: 'weapon.waulking_mallet.name',
+    descriptionKey: 'weapon.waulking_mallet.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 2000,
+    damage: 9,
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 96,
+    arcDegrees: 360,
+    knockback: 30,
+    levelScaling: {
+      damage: 1.20,
+      cooldown: 0.90,
+      countAt: [],
+      pierce: 0,
+      radius: 1.10,
+    },
+  },
+  // Wild Living World Phase 2 — Pibroch Hammer (Waulking Mallet
+  // evolution). The waulking song is a *call*; the pibroch (piob
+  // mhor) is the *answer* — a great-pipe lament rolling out across
+  // the moor. Mechanically the evolved form trades the Waulking
+  // Mallet's per-beat sting for a wider, heavier pulse that lands
+  // a full crescendo on every fourth beat. Identity: "the song
+  // already hit; the pibroch is the echo coming back". Behaviour
+  // stays `aura_pulse` so it doesn't need a new branch in WeaponSystem;
+  // the extra crescendo damage rides through `applyPibrochHammerRhythm`
+  // in `src/systems/music/waulkingRhythm.ts`.
+  pibroch_hammer: {
+    key: 'pibroch_hammer',
+    nameKey: 'weapon.pibroch_hammer.name',
+    descriptionKey: 'weapon.pibroch_hammer.description',
+    behavior: 'aura_pulse',
+    cooldownMs: 1700, // ↓ from 2000 — faster downbeats.
+    damage: 14,       // ↑ from 9 — heavier sting per pulse.
+    projectileSpeed: 0,
+    projectileCount: 0,
+    pierce: 0,
+    range: 0,
+    aoeRadius: 144,   // ↑ from 96 — pibroch carries further.
+    arcDegrees: 360,
+    knockback: 42,    // ↑ from 30 — every pulse a kick of air.
+    levelScaling: {
+      damage: 1.22,
+      cooldown: 0.92,
       countAt: [],
       pierce: 0,
       radius: 1.10,

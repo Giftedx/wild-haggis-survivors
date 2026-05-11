@@ -74,6 +74,11 @@ export const variant = {
     flavor: 'Isobel\'s wirds, rinner o tha muirs. Sma siller, quick stap, quicker turn. Auld een that see ower tha loch.',
     lore: '"I sall gae intill ane haire" — Isobel Gowdie o Auldearn, 1662. Tha covine\'s confession set tae verse: tha wee siller-pelt hare is tha witch whan tha witch is a hare. Five trials survived earn tha hare-form fer keeps.',
   },
+  selkie: {
+    name: 'Selkie',
+    flavor: 'Twa forms, ane tide. Dash slips tha pelt on or aff. Tha seal swims throu tha muir.',
+    lore: 'O tha seal-folk o tha Hebrides — them as slip tha pelt tae walk ashore, an slip back whan tha tide minds them. Tha dash is tha seam.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

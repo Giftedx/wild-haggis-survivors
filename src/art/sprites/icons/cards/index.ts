@@ -12,6 +12,7 @@ import { drawTartanSash } from './tartanSash';
 import { drawShintyBall } from './shintyBall';
 import { drawWhetstone } from './whetstone';
 import { drawVelvetAntler } from './velvetAntler';
+import { drawTuningFork } from './tuningFork';
 import { drawStatHealth } from './statHealth';
 import { drawStatSpeed } from './statSpeed';
 import { drawStatPickup } from './statPickup';
@@ -44,6 +45,7 @@ export function bakeCardIcons(scene: Phaser.Scene): void {
   drawShintyBall(scene);
   drawWhetstone(scene);
   drawVelvetAntler(scene);
+  drawTuningFork(scene);
   drawStatHealth(scene);
   drawStatSpeed(scene);
   drawStatPickup(scene);

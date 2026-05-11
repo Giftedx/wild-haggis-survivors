@@ -54,4 +54,14 @@ export const weapon = {
     description: 'A reid-deer tine cairried laich. Auto-arc on cooldoun, but ivvery dash gores a wider, meatier sweep.',
     flavour: 'Tha monarch o tha glen sheds his croun ilka spring, an tha moor minds whaur. Gran liftit this ane at tha heid o Glen Tilt tha autumn tha haggis wis a poult, an boond it tae tha broo wi linen an rosin. Ivvery dash since haes pit wecht ahint it.',
   },
+  waulking_mallet: {
+    name: 'Waulkin Mallet',
+    description: 'A heavy aik beater that keeps tha sang. On tha beat hits harder; aff tha beat still hits.',
+    flavour: "Frae tha waulkin sangs o tha Heberides — tha weemin's wirkin chorus that softened tha tweed an boond tha clachan tae ane rhythm. Tha mallet hears for tha doonbeat. Sae dae tha moor.",
+  },
+  pibroch_hammer: {
+    name: 'Piobaireachd Haimmer',
+    description: 'Tha waulkin sang answered by tha great pipes. Wider sweep, heavier sting on tha beat, a fou crescendo ilk fowert.',
+    flavour: "Piob mhor — tha lang, slaw lament that hings athort tha glen at daw. Tha mallet wis tha cry; tha piobaireachd is tha answer comin back ower tha moor. List for tha fowert beat. That's whaur tha ruim shaks.",
+  },
 } as const;

@@ -39,6 +39,10 @@ export const upgradeCard = {
     name: 'Stag Antler',
     description: 'A reid-deer tine boond tae tha broo. Steady arc on cooldoun — ivvery dash gores a meaty bonus sweep. Pair wi tha Velvet Antler fer legendary form.',
   },
+  add_waulking_mallet: {
+    name: 'Waulkin Mallet',
+    description: 'A heavy aik beater. Hits on tha beat laund harder; aff-beat hits still hit.',
+  },
   add_sporran: {
     name: 'Sporran',
     description: 'A wee leather pooch. Somehow rarer cairds turn up mair often (+15% Luck). Evolves Thistle Shot.',
@@ -86,6 +90,10 @@ export const upgradeCard = {
   add_velvet_antler: {
     name: 'Velvet Antler',
     description: 'Simmer-skin on tha rack, fou o stored sun. +1 max dash chairge. Evolves Stag Antler.',
+  },
+  add_tuning_fork: {
+    name: 'Tuning Fork',
+    description: 'Tap it aince, the moor tunes tae the bar. Aligned-beat pulses ring looder. Evolves Waulkin Mallet.',
   },
   boost_hp: {
     name: 'Thick Hide',

@@ -58,21 +58,36 @@ export class AmbientBedLayer {
     buildDensity: number,
     intensity: number,
     danger: number,
+    hazardPressure: number = 0,
     transitionSec: number = 2.0,
   ): void {
     if (!this.osc1 || !this.osc2 || !this.padGain || !this.bandpass) return;
     const t = ctx.currentTime + transitionSec;
 
-    // Volume: buildDensity drives presence, attenuated by danger
-    const vol = buildDensity * 0.10 * (1 - danger * 0.5) * (0.5 + intensity * 0.5);
+    // Clamp the cosmetic hazardPressure axis defensively — out-of-
+    // range values upstream should never destabilise the bandpass
+    // filter. Wild Living World Phase 2.
+    const hp = Math.max(0, Math.min(1, hazardPressure));
+
+    // Volume: buildDensity drives presence, attenuated by danger.
+    // Hazard-dense moor pushes pad a hair quieter so the chirps of
+    // hazard SFX have room — modest pull (-15 % at full pressure).
+    const vol = buildDensity * 0.10 * (1 - danger * 0.5) * (0.5 + intensity * 0.5) *
+      (1 - hp * 0.15);
     this.padGain.gain.linearRampToValueAtTime(Math.max(0, vol), t);
 
-    // Filter: bog (timbre~0.15) = 200Hz dark, heather (timbre~0.8) = 550Hz bright
-    const freq = 180 + biomeTimbre * 450;
+    // Filter: bog (timbre~0.15) = 200Hz dark, heather (timbre~0.8) = 550Hz bright.
+    // Hazard pressure pulls the centre slightly LOWER so the moor
+    // reads as muddier when full of traps. Cap at -80 Hz so the
+    // biome-timbre axis remains the dominant colour authority.
+    const freq = 180 + biomeTimbre * 450 - hp * 80;
     this.bandpass.frequency.linearRampToValueAtTime(freq, t);
 
-    // Q: tighter under danger (more anxious, nasal)
-    const q = 1.5 + danger * 2.5;
+    // Q: tighter under danger (more anxious, nasal). Hazard pressure
+    // contributes a smaller secondary tightening — the moor "holds
+    // its breath" without competing with the danger axis. Cap at
+    // +1.0 so the danger axis still dominates Q.
+    const q = 1.5 + danger * 2.5 + hp * 1.0;
     this.bandpass.Q.linearRampToValueAtTime(q, t);
 
     // Pitch: slight drop in bog, slight rise in heather

@@ -49,4 +49,9 @@ export const evolution = {
     description: 'A hail croun sweep. Ivvery dash spins tha rack 360°, staggers tha woundit — tha king-stag turnin throu tha herd.',
     flavour: 'Velvet shed clean, antler bane-bricht, tha rut wun by silence raither than fecht. Tha Monarch\'s Charge is tha moment efter — tha herd staunds still, tha king turns yince on his hooves, an whit faws faws. Tha haggis cairries it forrit; tha antler minds wha it cam fae.',
   },
+  pibroch_hammer: {
+    name: 'Piobaireachd Haimmer',
+    description: 'A great sweep that answers tha waulkin sang wi pipes. Wider, heavier — an ilka fowert beat lands a crescendo.',
+    flavour: 'Tha tuning fork rang yince an tha moor minded tha lang, slaw tune. Piobaireachd — piob mhor — tha great-pipe lament that walks at burial pace throu tha glen. Tha waulkin sang wis weemin\'s wark; tha piobaireachd is tha answerin grief. They wir aye ae music. Tha haimmer at last hears baith ends.',
+  },
 } as const;

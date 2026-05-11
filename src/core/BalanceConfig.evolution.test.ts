@@ -6,8 +6,14 @@ import { EN_STRINGS, t, type LocaleTree } from './i18n';
 import { SCS_STRINGS } from './i18n.scs';
 
 describe('EVOLUTION_RECIPES', () => {
-  it('has 10 evolution recipes (all weapons except bagpipes)', () => {
-    expect(EVOLUTION_RECIPES).toHaveLength(10);
+  it('has 11 evolution recipes (every weapon except utility-only bagpipes)', () => {
+    // Wild Living World Phase 2 (2026-05-11) added Pibroch Hammer
+    // (`waulking_mallet` + `tuning_fork`). The Burns Wee Beastie
+    // unlock threshold is now hand-pinned in `BalanceConfig.ts` (no
+    // longer derived from this length) so adding a new evolution
+    // doesn't silently raise the achievement bar — see the test for
+    // `BURNS_EVOLUTION_THRESHOLD === 10` below.
+    expect(EVOLUTION_RECIPES).toHaveLength(11);
   });
 
   it('every recipe references a valid base weapon', () => {
@@ -85,8 +91,10 @@ describe('P1.4 — bagpipes utility-only player-facing copy', () => {
     // since 2026-05-10) interpolates against. If a future edit drops the
     // placeholder back to a literal, the threshold-vs-copy drift returns.
     expect(rawDesc).toContain('{count}');
-    // Truth-anchor: the interpolated form must reference the actual recipe
-    // count (10 today; lifts automatically when a new recipe ships).
+    // Truth-anchor: the interpolated form must reference the active
+    // Burns threshold (10 — pinned in BalanceConfig.ts after the
+    // 2026-05-11 Pibroch Hammer recipe shipped without raising the
+    // achievement bar; see comment on BURNS_EVOLUTION_THRESHOLD).
     const interpolated = t(
       ACHIEVEMENT_DEFS.ach_burns_beastie_unlock.descriptionKey,
       ACHIEVEMENT_DEFS.ach_burns_beastie_unlock.descriptionVars,

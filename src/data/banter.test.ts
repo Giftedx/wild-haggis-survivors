@@ -59,6 +59,8 @@ describe('BANTER_POOLS structure', () => {
     'beithir_sting',
     // DESIGN_IDEAS §11 — Haggis Wildlife Foundation field-note pickup
     'field_note_pickup',
+    // Wild Living World Phase 2 — Selkie Dual-Form transformation cue
+    'form_shifted',
   ];
 
   it('covers every BanterContext exactly once', () => {

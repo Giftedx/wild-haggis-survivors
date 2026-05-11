@@ -1,13 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { WEAPON_DEFS, type WeaponKey } from './weapons';
-import { EVOLUTION_RECIPES } from '../core/BalanceConfig';
+import { BURNS_EVOLUTION_THRESHOLD, EVOLUTION_RECIPES } from '../core/BalanceConfig';
 import { t } from '../core/i18n';
 
 describe('WEAPON_DEFS', () => {
   const keys = Object.keys(WEAPON_DEFS) as WeaponKey[];
 
-  it('has exactly 11 weapons', () => {
-    expect(keys).toHaveLength(11);
+  it('has exactly 13 weapons', () => {
+    expect(keys).toHaveLength(13);
+  });
+
+  it('Burns evolution threshold is decoupled from EVOLUTION_RECIPES length', () => {
+    // Wild Living World Phase 2 — Pibroch Hammer pushed the recipe
+    // count to 11, but Burns's Wee Beastie unlock gate was authored
+    // around 10 "Burns-relevant" evolutions. The constant lives in
+    // `core/BalanceConfig.ts` as a hard-coded 10; the test locks the
+    // decoupling so a future recipe addition can't silently re-bind
+    // the gate to recipe count.
+    expect(BURNS_EVOLUTION_THRESHOLD).toBe(10);
+    expect(EVOLUTION_RECIPES.length).toBeGreaterThanOrEqual(BURNS_EVOLUTION_THRESHOLD);
   });
 
   it('every weapon key matches its .key field', () => {

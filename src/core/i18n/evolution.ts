@@ -49,4 +49,9 @@ export const evolution = {
     description: 'A full crown sweep. Every dash spins the rack 360°, staggers the wounded — the king-stag turning through the herd.',
     flavour: "Velvet shed clean, antler bone-bright, the rut won by silence rather than fight. The Monarch's Charge is the moment after — the herd stands still, the king turns once on his hooves, and what falls falls. The haggis carries it forward; the antler remembers who it came from.",
   },
+  pibroch_hammer: {
+    name: 'Pibroch Hammer',
+    description: 'A great sweep that answers the waulking song with pipes. Wider, heavier — and every fourth beat lands a crescendo.',
+    flavour: "The tuning fork rang once and the moor remembered the long, slow tune. Pibroch — piob mhor — the great-pipe lament that walks at funeral pace through the glen. The waulking song was women's work; the pibroch is the answering grief. They were always one music. The hammer finally hears both ends.",
+  },
 } as const;

@@ -38,7 +38,15 @@ import { buildHpBar } from './hud/hpBar';
 import { buildGripPips } from './hud/gripPips';
 import { buildWhiskyBar } from './hud/whiskyBar';
 import { buildStanceChip } from './hud/stanceChip';
+import { buildCompanionChip } from './hud/companionChip';
+import { buildSelkieFormChip } from './hud/selkieFormChip';
+import {
+  applyPibrochBeatChipState,
+  buildPibrochBeatChip,
+  type PibrochBeatChipRefs,
+} from './hud/pibrochBeatChip';
 import type { Stance } from '../entities/stanceToggle';
+import type { SelkieForm } from '../entities/selkieForm';
 import {
   buildBeithirRaceBar,
   BEITHIR_RACE_BAR_PIXEL_WIDTH,
@@ -135,6 +143,22 @@ export class HUD {
   /** Cached parry visual state ('ready' / 'active' / 'cooldown') so
    *  per-frame setText / setFillStyle calls only fire on transition. */
   private prevParryState: 'ready' | 'active' | 'cooldown' | null = null;
+
+  /** Whistle-Call companion chip (Wild Living World Initiative). Hidden
+   *  by default; surfaces once a companion is active for the run. */
+  private companionChipBg!: Phaser.GameObjects.Rectangle;
+  private companionChipText!: Phaser.GameObjects.Text;
+  private prevCompanionLabel: string | null = null;
+
+  /** Selkie Dual-Form chip — visible only while the Selkie variant
+   *  is the active run. Two forms toggled by dash. */
+  private selkieFormChipBg!: Phaser.GameObjects.Rectangle;
+  private selkieFormChipText!: Phaser.GameObjects.Text;
+
+  // Wild Living World Phase 2 — Pibroch beat indicator. Refs bundled
+  // so the apply helper can update the whole chip atomically.
+  private pibrochBeatChip!: PibrochBeatChipRefs;
+  private prevSelkieForm: SelkieForm | null = null;
 
   /** Race the Beithir HUD bar refs — top-centre live-tension widget;
    *  hidden by default, appears only while a sting is running. */
@@ -306,6 +330,24 @@ export class HUD {
     this.parryChipBg = parryRefs.bg;
     this.parryChipCooldownFill = parryRefs.cooldownFill;
     this.parryChipText = parryRefs.text;
+
+    // Whistle-Call companion chip — hidden until a companion is
+    // active. Sits below the parry chip in the left skill column.
+    const companionRefs = buildCompanionChip(ctx);
+    this.companionChipBg = companionRefs.bg;
+    this.companionChipText = companionRefs.text;
+
+    // Selkie Dual-Form chip — hidden until the Selkie variant is the
+    // active run. Sits below the companion chip in the column.
+    const selkieRefs = buildSelkieFormChip(ctx);
+    this.selkieFormChipBg = selkieRefs.bg;
+    this.selkieFormChipText = selkieRefs.text;
+
+    // Wild Living World Phase 2 — Pibroch beat indicator. Sits at the
+    // bottom of the skill column; hidden by default + auto-shown when
+    // the player holds a Waulking Mallet or Pibroch Hammer (via the
+    // `setPibrochBeatState` accessor below).
+    this.pibrochBeatChip = buildPibrochBeatChip(ctx);
 
     // Race the Beithir bar — top-centre live-tension widget; hidden
     // by default, appears only while a Beithir sting is running. Lives
@@ -1103,6 +1145,83 @@ export class HUD {
    * fill width is updated every frame during cooldown only — fraction
    * is continuous so a per-frame width-write is unavoidable there.
    */
+  /**
+   * Whistle-Call companion chip update. `label` is the localised
+   * companion name (`t('ui.hud.companion.<key>')`) or null when no
+   * companion is active. Chip hides on null and fades back on
+   * non-null. The `prevCompanionLabel` cache skips the setText path
+   * on steady-state frames.
+   */
+  /**
+   * Selkie Dual-Form chip update. `form` is `null` when the run is
+   * NOT the Selkie variant; the chip stays hidden in that case.
+   * Otherwise a localised form name is shown. Tint shifts between
+   * forms so the active body is unambiguous.
+   */
+  setSelkieForm(form: SelkieForm | null, label: string): void {
+    if (form === this.prevSelkieForm) return;
+    const visible = form !== null;
+    this.selkieFormChipBg.setVisible(visible);
+    this.selkieFormChipText.setVisible(visible);
+    this.prevSelkieForm = form;
+    if (!visible) return;
+    this.selkieFormChipText.setText(label);
+    // Wet-stone (haggis) → kelp (seal) palette toggle.
+    const fill = form === 'seal' ? 0x14322c : 0x1f3340;
+    const stroke = form === 'seal' ? 0x6ec4a6 : 0x4a8a7c;
+    this.selkieFormChipBg.setFillStyle(fill, 0.9);
+    this.selkieFormChipBg.setStrokeStyle(1, stroke, 0.85);
+    this.scene.tweens.add({
+      targets: [this.selkieFormChipBg, this.selkieFormChipText],
+      scale: 1.18,
+      duration: 110,
+      yoyo: true,
+      ease: 'Sine.easeOut',
+    });
+  }
+
+  setCompanion(label: string | null): void {
+    if (label === this.prevCompanionLabel) return;
+    this.prevCompanionLabel = label;
+    const visible = label !== null;
+    this.companionChipBg.setVisible(visible);
+    this.companionChipText.setVisible(visible);
+    if (visible) {
+      this.companionChipText.setText(label as string);
+      // Soft scale pulse so the chip's appearance signals "new ally"
+      // without stealing focus from the run.
+      this.scene.tweens.add({
+        targets: [this.companionChipBg, this.companionChipText],
+        scale: { from: 0.6, to: 1 },
+        duration: 180,
+        ease: 'Sine.easeOut',
+      });
+    }
+  }
+
+  /**
+   * Wild Living World Phase 2 — push beat indicator state into the
+   * Pibroch chip. Caller decides:
+   *   - `visible`: whether the player holds a rhythm weapon at all.
+   *   - `reducedMode`: respect the `reduceFlashing` setting (no pulse,
+   *     just a static "BEAT" label).
+   *   - `beatIndex`: the music engine's current quarter-note index
+   *     (>= 0 when audio is playing).
+   *   - `aligned`: whether the current frame is inside the on-beat
+   *     window. Drives the brightness of lit pips.
+   *
+   * Delegates to the pure presenter `applyPibrochBeatChipState` so the
+   * helper has unit-test coverage independent of Phaser.
+   */
+  setPibrochBeatState(state: {
+    visible: boolean;
+    reducedMode: boolean;
+    beatIndex: number;
+    aligned: boolean;
+  }): void {
+    applyPibrochBeatChipState(this.pibrochBeatChip, state);
+  }
+
   setShintyParry(active: boolean, ready: boolean, cooldownFraction: number, label: string): void {
     const visualState: 'ready' | 'active' | 'cooldown' = active
       ? 'active'

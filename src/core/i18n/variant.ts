@@ -74,6 +74,15 @@ export const variant = {
     flavor: 'Isobel\'s wirds, runner o the muirs. Sma\' siller, quick stop, quicker turn. Auld een that see ower the loch.',
     lore: '"I sall gae intill ane haire" — Isobel Gowdie of Auldearn, 1662. The covine\'s confession set tae verse: the wee silver-pelt hare is the witch when the witch is a hare. Five trials survived earn the hare-form for keeps.',
   },
+  // Wild Living World Initiative — Selkie. The shape-shifter who walks
+  // ashore one form, dives the next. Dash to slip between haggis and
+  // seal. The voice is Hebridean tide-warm; the body is two halves of
+  // the same creature.
+  selkie: {
+    name: 'Selkie',
+    flavor: 'Two forms, one tide. Dash slips the pelt on or off. The seal swims through the moor.',
+    lore: 'Of the seal-people of the Hebrides — they who slip the pelt to walk ashore, and slip back when the tide remembers them. The dash is the seam between forms.',
+  },
   summary: {
     speed: '{sign}{pct}% speed',
     hp: '{sign}{val} HP',

@@ -45,6 +45,10 @@ const KILT_PALETTES: Record<VariantKey, KiltPalette> = {
   // Witch's Hare — Auldearn 1662. Bruised-heather field, witch-eye
   // green stripe, moonlight-silver accent thread.
   witch_hare: { field: 0x4a2848, fieldDark: 0x281428, stripe: 0x6a8848, accent: 0xd0c8d4 },
+  // Wild Living World — Selkie. Wet-stone field with kelp-green
+  // stripe and surf-foam accent. The two-form mechanic carries the
+  // identity; the kilt sits quiet.
+  selkie:       { field: 0x2a3540, fieldDark: 0x12181e, stripe: 0x4a8a7c, accent: 0xe8f0ec },
 };
 
 /**

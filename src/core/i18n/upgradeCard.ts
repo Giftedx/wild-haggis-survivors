@@ -40,6 +40,10 @@ export const upgradeCard = {
     name: 'Stag Antler',
     description: 'A red-deer tine bound to the brow. Steady arc on cooldown — every dash gores a meaty bonus sweep. Pair wi Velvet Antler for legendary form.',
   },
+  add_waulking_mallet: {
+    name: 'Waulking Mallet',
+    description: 'A weighted oak beater. Hits on the beat land harder; off-beat hits still hit.',
+  },
   // Passive cards
   add_sporran: {
     name: 'Sporran',
@@ -88,6 +92,10 @@ export const upgradeCard = {
   add_velvet_antler: {
     name: 'Velvet Antler',
     description: 'Summer-skin on the rack, full o stored sun. +1 max dash charge. Evolves Stag Antler.',
+  },
+  add_tuning_fork: {
+    name: 'Tuning Fork',
+    description: 'Tap it once, the moor tunes to the bar. Aligned-beat pulses ring louder. Evolves Waulking Mallet.',
   },
   // Stat boost cards
   boost_hp: {

@@ -27,7 +27,12 @@ export type PassiveKey =
   | 'tartan_sash'
   | 'shinty_ball'
   | 'whetstone'
-  | 'velvet_antler';
+  | 'velvet_antler'
+  // Wild Living World Phase 2 — Waulking Mallet evolution paired passive.
+  // "Tuning Fork" — a thumb-sized fork the haggis taps before a sweep,
+  // the audible test-note before the pipes drone in. Paired with a
+  // level-5 Waulking Mallet at chest grants the Pibroch Hammer.
+  | 'tuning_fork';
 
 export type UpgradeEffect =
   | { type: 'add_weapon'; weaponKey: string }
@@ -173,6 +178,17 @@ export const WEAPON_CARDS: UpgradeCard[] = [
     icon: 'wicon_stag_antler',
     effect: { type: 'add_weapon', weaponKey: 'stag_antler' },
   },
+  // Wild Living World Initiative — Waulking Mallet. Soft rhythm
+  // weapon. Off-beat hits still output baseline damage so muted
+  // audio never zeroes the weapon; on-beat hits land at +30%.
+  {
+    id: 'add_waulking_mallet',
+    name: 'upgradeCard.add_waulking_mallet.name',
+    description: 'upgradeCard.add_waulking_mallet.description',
+    rarity: 'uncommon',
+    icon: 'wicon_bagpipes',
+    effect: { type: 'add_weapon', weaponKey: 'waulking_mallet' },
+  },
 ];
 
 // ── Passive item cards ──
@@ -273,6 +289,18 @@ export const PASSIVE_CARDS: UpgradeCard[] = [
     rarity: 'uncommon',
     icon: 'ucard_velvet_antler',
     effect: { type: 'add_passive', passiveKey: 'velvet_antler' },
+  },
+  {
+    // Wild Living World Phase 2 — Tuning Fork passive (Waulking Mallet
+    // evolution pair). Held in-paw, struck once at the start of each
+    // sweep so the song aligns to the room. Pairing it with a
+    // level-5 Waulking Mallet at chest grants the Pibroch Hammer.
+    id: 'add_tuning_fork',
+    name: 'upgradeCard.add_tuning_fork.name',
+    description: 'upgradeCard.add_tuning_fork.description',
+    rarity: 'uncommon',
+    icon: 'ucard_tuning_fork',
+    effect: { type: 'add_passive', passiveKey: 'tuning_fork' },
   },
 ];
 

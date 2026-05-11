@@ -184,6 +184,21 @@ export interface PresentationFrameInputs {
   reliquaryMinimapMarker: ReturnType<Reliquary['getMinimapMarker']> | null;
   /** Live clootie tree marker (null when wagered, unspawned, or absent). */
   clootieMinimapMarker: ReturnType<ClootieTree['getMinimapMarker']> | null;
+  /**
+   * 0–1 Living-World presence — sourced from `LivingWorldDirector.getPresence()`
+   * each frame. Forwarded to the music engine as a cosmetic-only axis;
+   * Conductor smooths it further before any layer modulation. Defaults
+   * to 0 when the caller omits it (caller adoption is staged).
+   */
+  livingWorldPresence?: number;
+  /**
+   * 0–1 hazard-pressure — caller-computed normalised hazard density
+   * (e.g. `HazardsSystem.getActiveHazardCount() / 6`, clamped). The
+   * Conductor smooths it before modulating the ambient bed; this
+   * function just forwards it into the scratch. Wild Living World
+   * Phase 2. Cosmetic-only — never affects replay determinism.
+   */
+  hazardPressure?: number;
 }
 
 /**
@@ -216,6 +231,8 @@ export function tickPresentationFrame(inputs: PresentationFrameInputs): void {
     relicPickupSpawner,
     reliquaryMinimapMarker,
     clootieMinimapMarker,
+    livingWorldPresence,
+    hazardPressure,
   } = inputs;
 
   bossHpTracker.tick();
@@ -246,6 +263,8 @@ export function tickPresentationFrame(inputs: PresentationFrameInputs): void {
     killCount,
     biomeId ? BIOMES[biomeId].moodTimbre : 0.45,
     weaponAndPassiveCount / 17,
+    livingWorldPresence ?? 0,
+    hazardPressure ?? 0,
   );
   musicEngine.update(delta, musicStateScratch);
 

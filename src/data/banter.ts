@@ -108,7 +108,18 @@ export type BanterContext =
   // reliquary_pick (45) since reliquary is rarer (once-per-run
   // landmark) and one rung above burns_citation (43) since the field
   // note is a held-in-the-paw artefact, not an ambient lyric.
-  | 'field_note_pickup';
+  | 'field_note_pickup'
+  // Wild Living World Phase 2 — Selkie form shift. Fires on the dash
+  // edge that toggles the Selkie variant between `haggis` and `seal`
+  // forms. Sub-pool tags: `seal` (entering seal form) and `haggis`
+  // (returning to haggis form). Hearth-soft register — the seal
+  // is a relief, the haggis is a homecoming; no celebration, no
+  // gloating. Priority 25 is intentionally low so dash-spam can't
+  // outshout boss warnings (100), boss kills (70), low-hp lament
+  // (80), or first-time beats (110). The line is incidental flavour,
+  // not a recurring drumbeat — the no-repeat ring keeps it quiet
+  // even on Selkie's fast-toggle runs.
+  | 'form_shifted';
 
 export interface BanterPool {
   context: BanterContext;
@@ -299,6 +310,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.low_hp.witch_hare.c',
         'ui.banter.low_hp.witch_hare.d',
       ],
+      selkie: [
+        'ui.banter.low_hp.selkie.a',
+        'ui.banter.low_hp.selkie.b',
+        'ui.banter.low_hp.selkie.c',
+        'ui.banter.low_hp.selkie.d',
+      ],
     },
   },
   {
@@ -429,6 +446,16 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.weapon_evolve.stag_antler.b',
         'ui.banter.weapon_evolve.stag_antler.c',
         'ui.banter.weapon_evolve.stag_antler.d',
+      ],
+      // Wild Living World Phase 2 — Waulking Mallet + Tuning Fork →
+      // Pibroch Hammer. Lines lean into the rhythm coupling: the song
+      // hits, then the echo lands. Voice register matches the other
+      // Hearth lines (warm wonder, not boast).
+      waulking_mallet: [
+        'ui.banter.weapon_evolve.waulking_mallet.a',
+        'ui.banter.weapon_evolve.waulking_mallet.b',
+        'ui.banter.weapon_evolve.waulking_mallet.c',
+        'ui.banter.weapon_evolve.waulking_mallet.d',
       ],
       // Bagpipes is utility-only (no entry in EVOLUTION_RECIPES) — see
       // CLAUDE.md "9 of the 10 weapons have a paired passive". Banter pool
@@ -582,6 +609,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.level_up.witch_hare.c',
         'ui.banter.level_up.witch_hare.d',
       ],
+      selkie: [
+        'ui.banter.level_up.selkie.a',
+        'ui.banter.level_up.selkie.b',
+        'ui.banter.level_up.selkie.c',
+        'ui.banter.level_up.selkie.d',
+      ],
     },
   },
   {
@@ -683,6 +716,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.first_blood.witch_hare.b',
         'ui.banter.first_blood.witch_hare.c',
         'ui.banter.first_blood.witch_hare.d',
+      ],
+      selkie: [
+        'ui.banter.first_blood.selkie.a',
+        'ui.banter.first_blood.selkie.b',
+        'ui.banter.first_blood.selkie.c',
+        'ui.banter.first_blood.selkie.d',
       ],
     },
   },
@@ -787,6 +826,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.kill_streak.witch_hare.c',
         'ui.banter.kill_streak.witch_hare.d',
       ],
+      selkie: [
+        'ui.banter.kill_streak.selkie.a',
+        'ui.banter.kill_streak.selkie.b',
+        'ui.banter.kill_streak.selkie.c',
+        'ui.banter.kill_streak.selkie.d',
+      ],
     },
   },
   {
@@ -888,6 +933,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.recover.witch_hare.b',
         'ui.banter.recover.witch_hare.c',
         'ui.banter.recover.witch_hare.d',
+      ],
+      selkie: [
+        'ui.banter.recover.selkie.a',
+        'ui.banter.recover.selkie.b',
+        'ui.banter.recover.selkie.c',
+        'ui.banter.recover.selkie.d',
       ],
     },
   },
@@ -1160,6 +1211,12 @@ export const BANTER_POOLS: readonly BanterPool[] = [
         'ui.banter.idle.witch_hare.c',
         'ui.banter.idle.witch_hare.d',
       ],
+      selkie: [
+        'ui.banter.idle.selkie.a',
+        'ui.banter.idle.selkie.b',
+        'ui.banter.idle.selkie.c',
+        'ui.banter.idle.selkie.d',
+      ],
     },
   },
   // W2 Moor Road.
@@ -1388,6 +1445,41 @@ export const BANTER_POOLS: readonly BanterPool[] = [
       'ui.banter.lemmings_remember.a',
       'ui.banter.lemmings_remember.b',
     ],
+  },
+  {
+    // Wild Living World Phase 2 — Selkie form-shifted commentary.
+    // Priority 24 sits just below haggis_ambient (25) so passive
+    // inner-monologue still wins same-tick arbitration on long quiet
+    // stretches, while form-shifts (a rare, deliberate input) speak
+    // through the no-repeat ring at their own cadence. Spec §2 placed
+    // this at 27 but `shinty_parry` already lives at 27 — uniqueness
+    // is the binding invariant (B1 arbitration), so this slot drifted
+    // down to the next clean integer. Sub-pool tags split commentary
+    // by direction-of-shift: `seal` (entering) and `haggis`
+    // (returning). The fallback `keys` carries direction-agnostic
+    // lines so a future request site that doesn't pass a tag still
+    // resolves a line.
+    context: 'form_shifted',
+    tone: 'hearth',
+    priority: 24,
+    keys: [
+      'ui.banter.form_shifted.a',
+      'ui.banter.form_shifted.b',
+    ],
+    keysByTag: {
+      seal: [
+        'ui.banter.form_shifted.seal.a',
+        'ui.banter.form_shifted.seal.b',
+        'ui.banter.form_shifted.seal.c',
+        'ui.banter.form_shifted.seal.d',
+      ],
+      haggis: [
+        'ui.banter.form_shifted.haggis.a',
+        'ui.banter.form_shifted.haggis.b',
+        'ui.banter.form_shifted.haggis.c',
+        'ui.banter.form_shifted.haggis.d',
+      ],
+    },
   },
   {
     // B1 Phase 2 — Gran's commentary. Hearth, elder warmth *about* the run.
@@ -2685,7 +2777,8 @@ export interface PendingPoolMetadata {
  *   first_blood (50) > route_picked (48) > reliquary_pick (45) >
  *   burns_citation (43) > enemy_ambient (41) > kill_streak (40) >
  *   recover (35) > moor_moment (31) > biome_change (30) >
- *   gran_commentary (28) > haggis_ambient (25) > idle (10)
+ *   gran_commentary (28) > shinty_parry (27) > stance_change (26) >
+ *   haggis_ambient (25) > form_shifted (24) > idle (10)
  *
  * Reconciliation history (graduating pools shift down 1–2 slots when
  * the spec §2 number collided with a live pool — uniqueness is the

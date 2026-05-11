@@ -101,13 +101,16 @@ describe('drawCards', () => {
 
 describe('PASSIVE_KEYS', () => {
   it('is derived from PASSIVE_CARDS and contains all passive keys', () => {
-    expect(PASSIVE_KEYS).toHaveLength(12);
+    // Wild Living World Phase 2 (2026-05-11) added `tuning_fork` —
+    // the Waulking Mallet's evolution pairing for the Pibroch Hammer.
+    expect(PASSIVE_KEYS).toHaveLength(13);
     expect(PASSIVE_KEYS).toContain('sporran');
     expect(PASSIVE_KEYS).toContain('thistle_crown');
     expect(PASSIVE_KEYS).toContain('tartan_sash');
     expect(PASSIVE_KEYS).toContain('shinty_ball');
     expect(PASSIVE_KEYS).toContain('whetstone');
     expect(PASSIVE_KEYS).toContain('velvet_antler');
+    expect(PASSIVE_KEYS).toContain('tuning_fork');
   });
 });
 

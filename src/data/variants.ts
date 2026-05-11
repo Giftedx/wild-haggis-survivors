@@ -1,7 +1,7 @@
 import { t } from '../core/i18n';
 import { formatClockTime } from '../utils/formatClockTime';
 
-export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare';
+export type VariantKey = 'classic' | 'moor_runner' | 'iron_belly' | 'glen_forager' | 'surefoot' | 'pipe_breath' | 'laird' | 'wee_ghostie' | 'glaswegian' | 'cailleach' | 'anticlockwise' | 'doric_quinie' | 'peerie_shetlander' | 'burns_wee_beastie' | 'witch_hare' | 'selkie';
 
 export interface VariantModifier {
   moveSpeedPct?: number;
@@ -537,6 +537,42 @@ export const VARIANTS: VariantDef[] = [
         fur: 0x9a8e7e,
         snout: 0xc8b4a0,
         accent: 0x6a8848,
+      },
+    },
+  },
+  {
+    // Wild Living World Initiative (2026-05-11) — Selkie. Hebridean
+    // shape-shifter who slips between haggis and seal forms on every
+    // dash edge. The mechanic is run-shaping rather than damage-shaping:
+    // form modifiers are small per-axis nudges (see
+    // `getSelkieFormModifiers`) so the run can be played from either
+    // form. Voice register: Hebridean-tinged. Unlock keeps the base-
+    // line "first run completed in coastal biomes" gate the Peerie
+    // Shetlander already uses, but at higher threshold so the
+    // variant ladder stays meaningfully stepped.
+    key: 'selkie',
+    nameKey: 'variant.selkie.name',
+    flavorKey: 'variant.selkie.flavor',
+    textureKey: 'haggis_selkie',
+    modifiers: {
+      // The stat profile is intentionally close to classic — the
+      // dual-form is where the mechanic lives, not the variant card.
+      // A small drift reduction signals "Hebridean composure" without
+      // skewing the baseline.
+      driftReductionPct: 0.08,
+      pickupRadiusFlat: 8,
+    },
+    unlock: { type: 'runs_in_coastal_only', required: 2 },
+    appearance: {
+      accentStyle: 'none',
+      palette: {
+        // Wet-stone grey with a kelp-green accent — silkie-coat read.
+        outline: 0x10171a,
+        bodyDark: 0x2a3540,
+        bodyLight: 0x44525e,
+        fur: 0x6d7d8a,
+        snout: 0xb8a890,
+        accent: 0x4a8a7c,
       },
     },
   },

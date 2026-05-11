@@ -298,20 +298,49 @@ export const EVOLUTION_RECIPES: readonly EvolutionRecipeDef[] = [
     nameKey: 'evolution.monarch_charge.name',
     descriptionKey: 'evolution.monarch_charge.description',
   },
+  {
+    // Wild Living World Phase 2 — Waulking Mallet + Tuning Fork →
+    // Pibroch Hammer. The Tuning Fork's pre-strike test-note grants
+    // the mallet a wider, heavier sweep that lands a crescendo on
+    // every fourth beat. Identity: "the song hits with you, and the
+    // pipes answer." Burns's threshold stays at 10 (decoupled in
+    // `BURNS_EVOLUTION_THRESHOLD`) — this is the 11th evolution but
+    // not Burns-relevant.
+    baseWeapon: 'waulking_mallet',
+    requiredPassive: 'tuning_fork',
+    evolvedWeapon: 'pibroch_hammer',
+    nameKey: 'evolution.pibroch_hammer.name',
+    descriptionKey: 'evolution.pibroch_hammer.description',
+  },
 ];
 
 /** Max weapon level before an evolution can be offered from a chest. */
 export const EVOLUTION_MIN_WEAPON_LEVEL = 5;
 
 /**
- * Burns's Wee Beastie unlock threshold — derived from the number of evolution
- * recipes so adding a recipe automatically lifts the gate. Achievement copy
- * interpolates `{count}` from this value via `descriptionVars` below; see
- * `i18n/achievement.ts` + `i18n.scs/achievement.ts` for the placeholder strings.
+ * Burns's Wee Beastie unlock threshold.
+ *
+ * Pre-Wild-Living-World-Phase-2 this was derived from
+ * `EVOLUTION_RECIPES.length` so adding a recipe automatically lifted
+ * the gate. Phase 2's Pibroch Hammer (Waulking Mallet → rhythm
+ * evolution) is the 11th recipe but Burns's gate was authored around
+ * "all weapon-family evolutions in a run" — adding a rhythm-coupled
+ * 11th would silently tighten the unlock from 10→11 and break the
+ * existing achievement contract for players already mid-progress.
+ *
+ * Resolution: hard-code the threshold to 10 and let the value drift
+ * intentionally from `EVOLUTION_RECIPES.length`. A vitest guard in
+ * `src/data/weapons.test.ts` keeps the two values reconciled — if a
+ * future recipe is meant to be "Burns-relevant", bump the constant
+ * *and* update the achievement copy explicitly.
+ *
+ * Achievement copy interpolates `{count}` from this value via
+ * `descriptionVars` below; see `i18n/achievement.ts` +
+ * `i18n.scs/achievement.ts` for the placeholder strings.
  *
  * Re-exported from `src/utils/save/schema.ts` for existing call-sites.
  */
-export const BURNS_EVOLUTION_THRESHOLD = EVOLUTION_RECIPES.length;
+export const BURNS_EVOLUTION_THRESHOLD = 10;
 
 /** Achievement ids persisted on `SaveManager.unlockedAchievements`. */
 export type AchievementId =

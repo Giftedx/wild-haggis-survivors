@@ -16,6 +16,10 @@ import type { NodeOutcome } from '../../data/nodeTypes';
 import type { RoutePick } from '../../data/routes';
 import { RELIC_KEYS, type RelicKey } from '../../data/relics';
 import { SPORRAN_CARD_IDS } from '../../data/sporranCards';
+import {
+  COMPANION_KEYS_IN_ORDER,
+  type CompanionKey,
+} from '../../entities/companions/companionTypes';
 import { generateHaggisNameFromHash } from '../../data/haggisNames';
 import { isReplayBlobAny } from '../../replay/replayBlob';
 import {
@@ -37,6 +41,7 @@ import {
   SAVE_SCHEMA_VERSION,
 } from './schema';
 import type {
+  LivingWorldUnlocks,
   RunHistoryEntry,
   RunSummary,
   SaveData,
@@ -93,6 +98,8 @@ export function migrateSave(raw: unknown): SaveData {
       return finalizeSaveCandidate(migrateV20ToV21(raw));
     case 21:
       return finalizeSaveCandidate(migrateV21ToV22(raw));
+    case 22:
+      return finalizeSaveCandidate(migrateV22ToV23(raw));
     default:
       if (schemaVersion > SAVE_SCHEMA_VERSION) {
         console.warn(`Save schemaVersion ${schemaVersion} is newer than supported (${SAVE_SCHEMA_VERSION}); fields may be lost.`);
@@ -346,6 +353,23 @@ function migrateV21ToV22(raw: SaveRecord): SaveRecord {
   return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
 }
 
+/**
+ * v22 → v23 (Wild Living World Phase 2 — Living World unlocks bag).
+ * Adds `livingWorldUnlocks: { unlockedCompanions, selectedCompanion }`
+ * so the Croft-side companion picker has lifetime state to read.
+ *
+ * Pure version bump — `coerceLivingWorldUnlocks` in
+ * `finalizeSaveCandidate` defaults the missing field to
+ * `{ unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' }`
+ * for pre-v23 saves so returning players retain the foundation
+ * sheepdog (the WLW Phase 1 first slice) exactly as it shipped.
+ * Fresh saves get the same default — sheepdog is the foundation
+ * companion and is always unlocked.
+ */
+function migrateV22ToV23(raw: SaveRecord): SaveRecord {
+  return { ...raw, schemaVersion: SAVE_SCHEMA_VERSION };
+}
+
 function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
   const unlockedVariants = coerceVariantKeys(candidate.unlockedVariants);
   const progress = buildProgressSnapshot(candidate, unlockedVariants);
@@ -413,8 +437,68 @@ function finalizeSaveCandidate(candidate: SaveRecord): SaveData {
     discoveryLog,
     seenRunes: coerceStringArray(candidate.seenRunes),
     lemmingsSeenForVariant: coerceStringArray(candidate.lemmingsSeenForVariant),
+    livingWorldUnlocks: coerceLivingWorldUnlocks(candidate.livingWorldUnlocks),
     settings: coerceSettings(candidate.settings),
   };
+}
+
+/**
+ * Wild Living World Phase 2 — coerce + default the persisted
+ * `livingWorldUnlocks` bag.
+ *
+ * Defaults:
+ *   - `unlockedCompanions` always contains `sheepdog` (the foundation
+ *     companion is always available — adding a stoat scout to the
+ *     roster shouldn't strand returning players without their dog).
+ *   - `selectedCompanion` defaults to `sheepdog` (the player's existing
+ *     experience) on pre-v23 saves. `null` means "no companion" and
+ *     is honoured if explicitly persisted by the picker.
+ *
+ * Coercion rules:
+ *   - non-string companion keys → dropped.
+ *   - companion keys not in `COMPANION_KEYS_IN_ORDER` → dropped (handles
+ *     a renamed / removed companion gracefully).
+ *   - `sheepdog` is force-included in `unlockedCompanions` even if the
+ *     persisted payload omitted it — defensive default-on for the
+ *     foundation companion.
+ *   - `selectedCompanion` falls back to `sheepdog` when the persisted
+ *     value isn't a valid known key (and isn't explicit `null`).
+ */
+function coerceLivingWorldUnlocks(raw: unknown): LivingWorldUnlocks {
+  const validKeys = new Set<CompanionKey>(COMPANION_KEYS_IN_ORDER);
+
+  if (!isRecord(raw)) {
+    return { unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' };
+  }
+
+  const unlockedSet = new Set<CompanionKey>(['sheepdog']);
+  if (Array.isArray(raw.unlockedCompanions)) {
+    for (const item of raw.unlockedCompanions) {
+      if (typeof item !== 'string') continue;
+      if (!validKeys.has(item as CompanionKey)) continue;
+      unlockedSet.add(item as CompanionKey);
+    }
+  }
+  const unlockedCompanions: CompanionKey[] = [];
+  for (const key of COMPANION_KEYS_IN_ORDER) {
+    if (unlockedSet.has(key)) unlockedCompanions.push(key);
+  }
+
+  let selectedCompanion: CompanionKey | null;
+  const persistedSelected = raw.selectedCompanion;
+  if (persistedSelected === null) {
+    selectedCompanion = null;
+  } else if (
+    typeof persistedSelected === 'string' &&
+    validKeys.has(persistedSelected as CompanionKey) &&
+    unlockedCompanions.includes(persistedSelected as CompanionKey)
+  ) {
+    selectedCompanion = persistedSelected as CompanionKey;
+  } else {
+    selectedCompanion = 'sheepdog';
+  }
+
+  return { unlockedCompanions, selectedCompanion };
 }
 
 /**

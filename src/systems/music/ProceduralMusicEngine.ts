@@ -407,8 +407,26 @@ class ProceduralMusicEngine {
     );
 
     const droneDanger = Math.min(1, mood.danger + this.enragePressureAcc * 0.36);
-    this.drone.applyMood(this.ctx, mood.intensity, droneDanger, mood.triumph, 2.0, moor);
-    this.ambientBed.applyMood(this.ctx, moor, mood.buildDensity, mood.intensity, mood.danger);
+    // Wild Living World bridge — the smoothed living-world presence
+    // axis gently lifts the drone's warmth target. Cap the additive
+    // contribution at +0.08 so a fully-blooming run never overpowers
+    // the danger/triumph mix. Replay determinism is unaffected: audio
+    // mix is non-authoritative and the input is purely cosmetic state.
+    const livingPresence = this.conductor.getSmoothedLivingWorldPresence();
+    const droneTriumph = Math.min(1, mood.triumph + livingPresence * 0.08);
+    this.drone.applyMood(this.ctx, mood.intensity, droneDanger, droneTriumph, 2.0, moor);
+    // Wild Living World Phase 2 — smoothed hazardPressure axis pulls
+    // the ambient bed slightly muddier + tighter when the moor fills
+    // with traps. Cosmetic-only; replay determinism unaffected.
+    const hazardPressure = this.conductor.getSmoothedHazardPressure();
+    this.ambientBed.applyMood(
+      this.ctx,
+      moor,
+      mood.buildDensity,
+      mood.intensity,
+      mood.danger,
+      hazardPressure,
+    );
 
     // E1 M4 T21 — Burns Night piper accent. Pure helper gates on
     // cooldown + intensity; a subsequent RNG roll adds the "might
@@ -527,6 +545,28 @@ class ProceduralMusicEngine {
     const periodMs = 60000 / bpm;
     const nowMs = this.ctx.currentTime * 1000;
     return ((nowMs % periodMs) + periodMs) % periodMs;
+  }
+
+  /**
+   * Wild Living World Phase 2 — current quarter-note index derived
+   * directly from the shared AudioContext clock. Same source-of-truth
+   * as `getMsSinceLastQuarterNote` so callers compare apples to apples.
+   *
+   * Returns -1 when the engine isn't playing (caller's pure fn treats
+   * negative as "no beat right now" → baseline damage; matches the
+   * defensive guard in `applyPibrochHammerRhythm`).
+   *
+   * Pibroch Hammer reads this to land its every-fourth-beat crescendo.
+   * Cosmetic-leaning: the index drives a damage multiplier but the
+   * weapon still hits without it (audio muted → bonus disabled,
+   * baseline damage preserved).
+   */
+  getQuarterNoteIndex(): number {
+    if (!this.playing || !this.ctx) return -1;
+    const bpm = Math.max(30, this.rhythmBPM);
+    const periodMs = 60000 / bpm;
+    const nowMs = this.ctx.currentTime * 1000;
+    return Math.floor(nowMs / periodMs);
   }
 
   /**

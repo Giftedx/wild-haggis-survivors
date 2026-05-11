@@ -42,6 +42,13 @@ import {
 import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
 import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
 import { returnTargetData } from './returnTarget';
+import { buildLivingWorldTracks, livingWorldTracksSummary } from './croft/livingWorldTracks';
+import {
+  buildCompanionPickerRows,
+  resolveNextSelection,
+  type CompanionPickerRow,
+} from './croft/companionPicker';
+import { setSelectedCompanion } from '../utils/save/bumpers';
 
 /**
  * H1 Gran's Croft — persistent between-runs hub that grows with the
@@ -61,6 +68,12 @@ import { returnTargetData } from './returnTarget';
 export class CroftScene extends Phaser.Scene {
   private transitioning = false;
   private placeholders: Phaser.GameObjects.GameObject[] = [];
+  /**
+   * Wild Living World Phase 2 — picker panel container, tracked so
+   * the click-to-pick redraw destroys ONLY the picker and rebuilds
+   * it (vs. wiping the whole scene's placeholder list).
+   */
+  private companionPickerContainer: Phaser.GameObjects.Container | null = null;
   private granSprite: Phaser.GameObjects.Sprite | null = null;
   private knittingTimer: Phaser.Time.TimerEvent | null = null;
   private knittingFrame = 0;
@@ -106,6 +119,12 @@ export class CroftScene extends Phaser.Scene {
     this.transitioning = false;
     this.placeholders.forEach((obj) => obj.destroy());
     this.placeholders = [];
+    // Wild Living World Phase 2 — companion picker is tracked
+    // separately from `placeholders` (click-to-redraw owns its
+    // lifetime). Destroy here so a reused scene instance starts
+    // with a clean ref before `drawCompanionPicker` reassigns.
+    this.companionPickerContainer?.destroy();
+    this.companionPickerContainer = null;
     this.granSprite?.destroy();
     this.granSprite = null;
     this.knittingTimer?.remove(false);
@@ -197,6 +216,8 @@ export class CroftScene extends Phaser.Scene {
     this.drawBookshelfHit(layout);
     this.drawHeader(width);
     this.drawActions();
+    this.drawLivingWorldPanel(layout);
+    this.drawCompanionPicker(layout);
     this.drawBack();
     // E1 M4 T22 — seasonal banner appears only when an event window
     // is live; the helper itself handles the no-op path.
@@ -634,6 +655,232 @@ export class CroftScene extends Phaser.Scene {
         .setDepth(58);
       this.placeholders.push(chip);
     }
+  }
+
+  /**
+   * Wild Living World Initiative — first Croft-facing stub surface.
+   *
+   * This is intentionally read-only and runtime-derived: no schema bump,
+   * no unlock persistence yet. It gives the player a persistent home for
+   * the new systems by naming the shipped tracks and status, while the
+   * pure builder (`livingWorldTracks.ts`) stays ready for real unlock
+   * data in a later slice.
+   */
+  private drawLivingWorldPanel(layout: CroftLayout): void {
+    const narrow = this.scale.width < 600;
+    const tracks = buildLivingWorldTracks();
+    const summary = livingWorldTracksSummary(tracks);
+    const x = narrow ? this.scale.width * 0.5 : Math.max(168, layout.windowView.x + layout.windowView.w * 0.44);
+    const y = narrow ? this.scale.height - 148 : Math.min(this.scale.height - 118, layout.rug.y + layout.rug.h * 0.34);
+    const w = narrow ? Math.min(this.scale.width - 24, 340) : 330;
+    const h = narrow ? 118 : 136;
+
+    const panel = this.add.container(x, y).setDepth(74);
+    const bg = this.add
+      .rectangle(0, 0, w, h, 0x1f1712, 0.72)
+      .setStrokeStyle(2, 0xd6a650, 0.78)
+      .setOrigin(0.5);
+    const title = this.add
+      .text(
+        -w / 2 + 12,
+        -h / 2 + 10,
+        t('ui.croft.livingWorld.panel_title'),
+        textStyle('label', { color: COLORS_CSS.WHISKY_GOLD, align: 'left' }),
+      )
+      .setOrigin(0, 0);
+    const subtitle = this.add
+      .text(
+        -w / 2 + 12,
+        -h / 2 + 30,
+        t('ui.croft.livingWorld.panel_subtitle'),
+        textStyle('small', { color: COLORS_CSS.WARM_TAN, align: 'left' }),
+      )
+      .setOrigin(0, 0)
+      .setAlpha(0.92);
+    const liveChip = this.add
+      .text(
+        w / 2 - 12,
+        -h / 2 + 10,
+        `${summary.shipped}/${summary.total}`,
+        textStyle('small', { color: COLORS_CSS.WHISKY_GOLD, align: 'right' }),
+      )
+      .setOrigin(1, 0);
+    panel.add([bg, title, subtitle, liveChip]);
+
+    const visibleTracks = narrow ? tracks.slice(0, 3) : tracks.slice(0, 4);
+    visibleTracks.forEach((entry, i) => {
+      const rowY = -h / 2 + 56 + i * 18;
+      const statusKey = entry.status === 'shipped'
+        ? 'status_shipped'
+        : entry.status === 'introduced'
+          ? 'status_introduced'
+          : 'status_planned';
+      const label = this.add
+        .text(
+          -w / 2 + 14,
+          rowY,
+          t(entry.displayNameKey),
+          textStyle('small', { color: COLORS_CSS.WHITE, align: 'left' }),
+        )
+        .setOrigin(0, 0)
+        .setAlpha(0.96);
+      const status = this.add
+        .text(
+          w / 2 - 14,
+          rowY,
+          t(`ui.croft.livingWorld.${statusKey}`),
+          textStyle('small', {
+            color: entry.status === 'shipped' ? COLORS_CSS.WHISKY_GOLD : COLORS_CSS.DUSTY_TAN,
+            align: 'right',
+          }),
+        )
+        .setOrigin(1, 0)
+        .setAlpha(entry.status === 'shipped' ? 0.95 : 0.78);
+      panel.add([label, status]);
+    });
+
+    this.placeholders.push(panel);
+  }
+
+  /**
+   * Wild Living World Phase 2 — Croft companion picker panel.
+   *
+   * Reads the persisted unlock + selection bag (`livingWorldUnlocks`)
+   * through `loadSave()`, renders one tap-able row per `CompanionKey`
+   * plus a "go alone" opt-out row, and writes the new pick back via
+   * `setSelectedCompanion` when the player taps a row. The next run
+   * picks up the new selection through the run-start whistle path in
+   * GameScene (`livingWorldUnlocks.selectedCompanion` is read in
+   * `initSystems`).
+   *
+   * Visual contract:
+   *   - locked rows render greyed; clicks are ignored even if the
+   *     hit-area covers them (defense-in-depth — `companionPicker.ts`
+   *     also rejects them in pure logic).
+   *   - selected row gets the `WHISKY_GOLD` accent + a tiny pip.
+   *   - opt-out row always renders (not gated on any unlock); clicking
+   *     it sets the selection to `null`.
+   */
+  private drawCompanionPicker(layout: CroftLayout): void {
+    const save = loadSave();
+    const rows = buildCompanionPickerRows({
+      unlockedCompanions: save.livingWorldUnlocks.unlockedCompanions,
+      selectedCompanion: save.livingWorldUnlocks.selectedCompanion,
+    });
+
+    // Sit the picker to the LEFT of the Living Moor panel so they
+    // share the lower-right corner without overlap. Narrow viewports
+    // collapse below the Living Moor panel.
+    const narrow = this.scale.width < 600;
+    const w = narrow ? Math.min(this.scale.width - 24, 280) : 240;
+    const h = narrow ? 124 : 156;
+    const x = narrow ? this.scale.width * 0.5 : Math.max(40, layout.windowView.x + layout.windowView.w * 0.12);
+    const y = narrow
+      ? this.scale.height - 24
+      : Math.min(this.scale.height - 116, layout.rug.y + layout.rug.h * 0.34);
+
+    const panel = this.add.container(x, y).setDepth(74);
+    this.companionPickerContainer = panel;
+    const bg = this.add
+      .rectangle(0, 0, w, h, 0x1f1712, 0.78)
+      .setStrokeStyle(2, 0xd6a650, 0.78)
+      .setOrigin(0.5);
+    const title = this.add
+      .text(-w / 2 + 12, -h / 2 + 10, t('ui.croft.livingWorld.picker.title'),
+        textStyle('label', { color: COLORS_CSS.WHISKY_GOLD, align: 'left' }))
+      .setOrigin(0, 0);
+    panel.add([bg, title]);
+
+    // Row stack — companion rows + opt-out at the bottom.
+    rows.forEach((row, i) => {
+      const rowY = -h / 2 + 38 + i * 22;
+      const isSelected = row.selected;
+      // Locked companion rows render in a dimmed colour so the panel
+      // legibly communicates which slots are still locked. Opt-out
+      // and unlocked rows use the normal palette.
+      const baseColor = this.companionPickerRowColor(row);
+      const label = this.add
+        .text(-w / 2 + 16, rowY, t(row.displayNameKey),
+          textStyle('small', {
+            color: baseColor,
+            align: 'left',
+          }))
+        .setOrigin(0, 0)
+        .setAlpha(this.companionPickerRowAlpha(row));
+      panel.add(label);
+
+      // Selection pip — a small gold square next to the active row.
+      if (isSelected) {
+        const pip = this.add
+          .rectangle(-w / 2 + 8, rowY + 6, 4, 4, 0xd6a650, 0.95)
+          .setOrigin(0.5);
+        panel.add(pip);
+      }
+
+      // Hit-area covers the row but only fires when the row is
+      // pickable. We attach a rectangle as an invisible hit zone
+      // rather than making the text interactive so non-clickable
+      // rows still surface their label without confusing pointer
+      // cursors.
+      if (this.companionPickerRowClickable(row)) {
+        const hit = this.add
+          .rectangle(0, rowY + 6, w - 24, 18, 0x000000, 0)
+          .setOrigin(0.5, 0.5)
+          .setInteractive({ useHandCursor: true });
+        hit.on('pointerdown', () => {
+          this.handleCompanionPickerClick(i);
+        });
+        panel.add(hit);
+      }
+    });
+
+    // Picker container is NOT pushed to `placeholders` — its lifetime
+    // is owned by `companionPickerContainer` so a click-to-redraw
+    // cycle never strands a destroyed reference in the scene-wide
+    // placeholder list. Scene `create()` destroys it directly.
+  }
+
+  /** Pure-data colour helper so unit tests can grow it later if needed. */
+  private companionPickerRowColor(row: CompanionPickerRow): string {
+    if (row.kind === 'opt_out') return COLORS_CSS.WARM_TAN;
+    if (row.selected) return COLORS_CSS.WHISKY_GOLD;
+    return row.unlocked ? COLORS_CSS.WHITE : COLORS_CSS.DUSTY_TAN;
+  }
+
+  private companionPickerRowAlpha(row: CompanionPickerRow): number {
+    if (row.kind === 'opt_out') return 0.92;
+    if (row.selected) return 0.97;
+    return row.unlocked ? 0.92 : 0.55;
+  }
+
+  private companionPickerRowClickable(row: CompanionPickerRow): boolean {
+    return row.kind === 'opt_out' || row.unlocked;
+  }
+
+  /**
+   * Persist the player's pick and refresh the panel. We track the
+   * panel container directly (`companionPickerContainer`) so the
+   * redraw destroys only that surface, not the whole scene's
+   * `placeholders` list (header / actions / drove / etc.).
+   */
+  private handleCompanionPickerClick(clickedIndex: number): void {
+    const save = loadSave();
+    const rows = buildCompanionPickerRows({
+      unlockedCompanions: save.livingWorldUnlocks.unlockedCompanions,
+      selectedCompanion: save.livingWorldUnlocks.selectedCompanion,
+    });
+    const next = resolveNextSelection(rows, clickedIndex, save.livingWorldUnlocks.selectedCompanion);
+    if (next === save.livingWorldUnlocks.selectedCompanion) return;
+    setSelectedCompanion(next);
+    audio.playClick();
+    if (this.companionPickerContainer) {
+      this.companionPickerContainer.destroy();
+      this.companionPickerContainer = null;
+    }
+    const { uiScale } = getSettingsManager().load();
+    this.drawCompanionPicker(
+      layoutCroft({ uiScale, width: this.scale.width, height: this.scale.height }),
+    );
   }
 
   private drawHeader(width: number): void {

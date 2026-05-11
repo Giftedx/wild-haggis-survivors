@@ -40,6 +40,9 @@ export type AmbientWeatherMode =
   | 'harvest_drift'
   | 'stonehaven_fireballs'
   | 'bracken_drift'
+  | 'up_helly_aa_embers'
+  | 'bannockburn_dust'
+  | 'grouse_feather_drift'
   | null;
 
 /** Depth slot for ambient weather — behind every gameplay sprite. */
@@ -79,6 +82,27 @@ export function pickWeatherMode(eventKey: string | null): AmbientWeatherMode {
       // Copper-bronze leaves spinning slowly down across the moor —
       // the autumn-cusp colour signature in motion.
       return 'bracken_drift';
+    case 'up_helly_aa':
+      // Wild Living World Initiative — Up Helly Aa embers. The Lerwick
+      // fire festival's procession sends a slow rise of warm embers
+      // drifting upward as the galley burns. Cosmetic-only; respects
+      // `reduceParticles` and `reduceFlashing` like every other mode.
+      return 'up_helly_aa_embers';
+    case 'bannockburn':
+      // Wild Living World Phase 2 — Bannockburn dust motes. Anniversary
+      // of the 24 June 1314 battle. Ochre + cool-iron motes drift
+      // horizontally across the moor with a slight downward bias —
+      // "the air remembers the haugh", not gameplay-blocking haze.
+      // Cosmetic-only; respects accessibility settings like every
+      // other mode.
+      return 'bannockburn_dust';
+    case 'glorious_twelfth':
+      // Wild Living World Phase 2 — Glorious Twelfth grouse-feather
+      // drift. 12 August opens the grouse season; the moor wind
+      // carries the leavings. Russet-and-white quill flecks tumble
+      // down with slow rotation — visually distinct from bracken-turn
+      // (smaller, striped quill instead of solid copper leaf).
+      return 'grouse_feather_drift';
     default:
       return null;
   }
@@ -118,6 +142,22 @@ const MODE_CONFIG: Record<Exclude<AmbientWeatherMode, null>, ModeConfig> = {
   // without crowding the screen. Leaves are small + low-alpha so the
   // 30-particle cap leaves room for combat readability.
   bracken_drift: { spawnPeriodMs: 600, textureKey: 'fx_bracken_leaf' },
+  // Up Helly Aa galley embers — warm sparks rising slowly from the
+  // burning longship. Sparse cadence (~1.4/sec → 700ms period) so the
+  // moor reads as ember-strewn without overwhelming the player's
+  // combat readability. Embers travel upward with gentle horizontal
+  // sway — the opposite vector to lambing motes' but visually warmer
+  // and shorter-lived per particle.
+  up_helly_aa_embers: { spawnPeriodMs: 700, textureKey: 'fx_ember_spark' },
+  // Bannockburn-dust motes. Long-lived per particle (4-6s) so even
+  // sparse cadence reads as continuous haze. ~1.1/sec spawn — quieter
+  // than harvest drift, quieter still than bracken-turn, matching the
+  // Grave register (history-cosy reverence, not visual noise).
+  bannockburn_dust: { spawnPeriodMs: 900, textureKey: 'fx_bannockburn_dust' },
+  // Grouse-feather drift. Mid-cadence (~1.5/sec → 650 ms period) and
+  // medium-lived; the 30-particle cap keeps screen readable even
+  // mid-feather-fall. Wild register — heather + feather, low-key.
+  grouse_feather_drift: { spawnPeriodMs: 650, textureKey: 'fx_grouse_feather' },
 };
 
 export class AmbientWeatherSystem {
@@ -263,6 +303,15 @@ export class AmbientWeatherSystem {
         return;
       case 'bracken_drift':
         this.spawnBrackenLeaf();
+        return;
+      case 'up_helly_aa_embers':
+        this.spawnUpHellyAaEmber();
+        return;
+      case 'bannockburn_dust':
+        this.spawnBannockburnDust();
+        return;
+      case 'grouse_feather_drift':
+        this.spawnGrouseFeather();
         return;
       default:
         return;
@@ -607,6 +656,188 @@ export class AmbientWeatherSystem {
       ease: 'Sine.easeIn',
     });
     // Fade-in early, hold, fade-out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.2,
+    });
+    this.scheduleFade(lifetimeMs * 0.78, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.22,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Up Helly Aa galley embers — warm sparks rise slowly from the
+   * Lerwick fire-festival's burning longship. Spawns near the bottom
+   * of the viewport, drifts UPWARD with gentle horizontal sway and a
+   * very slow rotation. Diegetic + cosmetic: respects the same
+   * accessibility gates as every other mode (system stays idle when
+   * `reduceParticles` is set, and the per-particle peak alpha is
+   * intentionally modest so `reduceFlashing` settings face no rapid
+   * brightness spikes).
+   *
+   * Visually distinct from `stonehaven_fireballs`:
+   *   - small + many vs. large + sparse
+   *   - vertical rise vs. horizontal arc
+   *   - short particle lifetime so frame budget stays low
+   */
+  private spawnUpHellyAaEmber(): void {
+    const v = this.getViewport();
+    const x = v.x + Math.random() * v.w;
+    // Spawn in the lower third — embers rise from the procession.
+    const y = v.y + v.h * 0.65 + Math.random() * (v.h * 0.35);
+    const img = this.addImage(x, y, 'fx_ember_spark');
+    if (!img) return;
+    // Peak alpha is intentionally low — the screen ships dozens of
+    // these across a run, and the bake already has a hot core. Keep
+    // brightness mild so `reduceFlashing` users see no harsh strobing.
+    const peakAlpha = 0.4 + Math.random() * 0.2; // 0.4..0.6
+    img.setAlpha(0);
+    img.setScale(0.7 + Math.random() * 0.5); // 0.7..1.2
+    const lifetimeMs = 3500 + Math.random() * 1500; // 3.5-5s
+    const sway = (Math.random() - 0.5) * 40; // gentle horizontal drift
+    const rise = -(80 + Math.random() * 60); // 80-140px upward
+    // Slow lazy rotation — the spark tumbling in updraft.
+    const spinDir = Math.random() < 0.5 ? -1 : 1;
+    this.scene.tweens.add({
+      targets: img,
+      rotation: spinDir * Math.PI * (0.4 + Math.random() * 0.5),
+      duration: lifetimeMs,
+      ease: 'Linear',
+    });
+    // Rising trajectory with horizontal sway.
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + sway,
+      y: img.y + rise,
+      duration: lifetimeMs,
+      ease: 'Sine.easeOut',
+    });
+    // Fade-in fast, hold steady, fade-out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.2,
+    });
+    this.scheduleFade(lifetimeMs * 0.7, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.3,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Bannockburn-dust motes — Wild Living World Phase 2.
+   *
+   * Anniversary of 24 June 1314. Ochre + cool-iron motes drift
+   * horizontally across the moor with a slight downward bias —
+   * "the air remembers the haugh".
+   *
+   * Visually distinct from `harvest_drift` (warm-amber, fast wind)
+   * by being cooler / muddier and shorter horizontal travel with a
+   * subtle vertical settle. Each mote lives 4-6 s so even at the
+   * 900 ms cadence the screen reads as continuous haze.
+   *
+   * Tonal register: Grave (history-cosy reverence — see
+   * `ART_STYLE_BIBLE.md`). Peak alpha intentionally modest so
+   * `reduceFlashing` users see no harsh contrast.
+   */
+  private spawnBannockburnDust(): void {
+    const v = this.getViewport();
+    // Wind direction: 50/50 left-to-right or right-to-left so the
+    // moor doesn't pattern-tile when several motes spawn close.
+    const goingRight = Math.random() < 0.5;
+    const startX = goingRight ? v.x - 18 : v.x + v.w + 18;
+    const endX = goingRight ? v.x + v.w + 18 : v.x - 18;
+    const y = v.y + Math.random() * v.h;
+    const img = this.addImage(startX, y, 'fx_bannockburn_dust');
+    if (!img) return;
+    img.setAlpha(0);
+    if (!goingRight) img.setFlipX(true);
+    img.setScale(0.85 + Math.random() * 0.4); // 0.85..1.25
+    const peakAlpha = 0.35 + Math.random() * 0.2; // 0.35..0.55
+    const lifetimeMs = 4000 + Math.random() * 2000; // 4-6s
+    // Slight downward settle as the dust travels — gravity nudge
+    // without it feeling like falling. 18..36 px over lifetime.
+    const settle = 18 + Math.random() * 18;
+    this.scene.tweens.add({
+      targets: img,
+      x: endX,
+      y: img.y + settle,
+      duration: lifetimeMs,
+      ease: 'Sine.easeIn',
+    });
+    // Fade in early, hold, fade-out late.
+    this.scene.tweens.add({
+      targets: img,
+      alpha: peakAlpha,
+      duration: lifetimeMs * 0.25,
+    });
+    this.scheduleFade(lifetimeMs * 0.7, () => {
+      if (!img.active) return;
+      this.scene.tweens.add({
+        targets: img,
+        alpha: 0,
+        duration: lifetimeMs * 0.3,
+        onComplete: () => img.destroy(),
+      });
+    });
+  }
+
+  /**
+   * Grouse-feather drift — Wild Living World Phase 2.
+   *
+   * Glorious Twelfth (12 August). Russet + white quill flecks tumble
+   * down across the moor as the season opens. Slow rotation per
+   * feather, mid-cadence falls so the moor reads as feather-strewn
+   * without overwhelming the screen.
+   *
+   * Visually distinct from `bracken_drift` (copper-leaf, fall) by
+   * the striped quill silhouette + smaller body + tighter alpha
+   * range, and from `harvest_drift` (horizontal wind chaff) by the
+   * vertical fall vector.
+   *
+   * Tonal register: Wild (heather + feather — see
+   * `ART_STYLE_BIBLE.md`).
+   */
+  private spawnGrouseFeather(): void {
+    const v = this.getViewport();
+    const x = v.x + Math.random() * v.w;
+    const startY = v.y - 14; // start above the viewport
+    const img = this.addImage(x, startY, 'fx_grouse_feather');
+    if (!img) return;
+    const peakAlpha = 0.55 + Math.random() * 0.2; // 0.55..0.75
+    img.setAlpha(0);
+    img.setScale(0.85 + Math.random() * 0.35); // 0.85..1.20
+    const lifetimeMs = 4200 + Math.random() * 1400; // 4.2-5.6s
+    const sway = (Math.random() - 0.5) * 60; // gentle horizontal drift
+    const fall = v.h + 30;
+    // Slow rotation — feathers tumble lazily as they fall. Random
+    // direction so the moor doesn't read as conveyor-belt.
+    const spinDir = Math.random() < 0.5 ? -1 : 1;
+    this.scene.tweens.add({
+      targets: img,
+      rotation: spinDir * Math.PI * (0.5 + Math.random() * 0.7),
+      duration: lifetimeMs,
+      ease: 'Linear',
+    });
+    this.scene.tweens.add({
+      targets: img,
+      x: img.x + sway,
+      y: startY + fall,
+      duration: lifetimeMs,
+      ease: 'Sine.easeIn',
+    });
     this.scene.tweens.add({
       targets: img,
       alpha: peakAlpha,

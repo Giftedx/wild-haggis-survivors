@@ -50,6 +50,7 @@ export const DEFAULT_SAVE: SaveData = {
   discoveryLog: createEmptyDiscoveryLog(),
   seenRunes: [],
   lemmingsSeenForVariant: [],
+  livingWorldUnlocks: { unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' },
   settings: { ...DEFAULT_SETTINGS },
 };
 
@@ -64,6 +65,7 @@ export function createDefaultSave(): SaveData {
     discoveryLog: createEmptyDiscoveryLog(),
     seenRunes: [],
     lemmingsSeenForVariant: [],
+    livingWorldUnlocks: { unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' },
     settings: { ...DEFAULT_SETTINGS },
   };
 }

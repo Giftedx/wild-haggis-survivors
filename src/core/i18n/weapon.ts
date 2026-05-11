@@ -54,4 +54,14 @@ export const weapon = {
     description: 'A red-deer tine carried low. Auto-arc on cooldown, but every dash gores a wider, meatier sweep.',
     flavour: "The monarch of the glen sheds his crown each spring, and the moor remembers where. Gran picked this one up at the head of Glen Tilt the autumn the haggis was a poult, and bound it to the brow with linen and rosin. Every dash since has put weight behind it.",
   },
+  waulking_mallet: {
+    name: 'Waulking Mallet',
+    description: 'A weighted oak beater that keeps the song. On the beat hits harder; off the beat still hits.',
+    flavour: "From the waulking songs of the Hebrides — the women's working chorus that softened the tweed and bound the village to one rhythm. The mallet listens for the downbeat. So does the moor.",
+  },
+  pibroch_hammer: {
+    name: 'Pibroch Hammer',
+    description: 'The waulking song answered by the great pipes. Wider sweep, heavier sting on the beat, a full crescendo every fourth.',
+    flavour: "Piob mhor — the long, slow lament that hangs across the glen at dawn. The mallet was the call; the pibroch is the answer coming back across the moor. Listen for the fourth beat. That's where the room shakes.",
+  },
 } as const;

@@ -63,6 +63,7 @@ import type { AncestralEcho } from './ancestralEcho';
 import type { RelicSlotUI } from '../../ui/RelicSlotUI';
 import { createRNG, randomSeed, type RNG as RngType } from '../../utils/rng';
 import { clearGrudgeLedger, type GrudgeLedgerState } from '../../entities/grudgeLedger';
+import type { LivingWorldDirector } from './LivingWorldDirector';
 
 /** Anything destroyable — narrowed so the helper avoids a Phaser import
  *  for the run-end fade rectangles. */
@@ -105,6 +106,19 @@ export interface ResetTransientRunStateDeps {
   /** Taxman Grudge Ledger — cleared in-place between runs so the weapon
    *  listener's captured ref stays live. */
   grudgeLedger: GrudgeLedgerState;
+  /**
+   * Wild Living World Initiative — cross-track coordinator. Reset clears
+   * its subsystem + listener registries; subsystems are responsible for
+   * their own destroy paths and re-register from the next run's wiring.
+   */
+  livingWorldDirector: LivingWorldDirector;
+  /**
+   * Wild Living World — companion orchestrator. Destroyed + nulled so a
+   * recycled scene instance never reuses last run's sprite. The next
+   * run's wiring constructs a fresh one.
+   */
+  companionSystem: { destroy(): void } | null;
+  setCompanionSystem: (v: null) => void;
 
   // ── setters (out) ─────────────────────────────────────────────────
   setReplayInput: (v: ReplayInput | null) => void;
@@ -244,4 +258,11 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.setBossKillHighlight(null);
   // Wee Tales — clear the boss-kill key roster.
   deps.setBossKilledKeys([]);
+  // Wild Living World Initiative — destroy the per-run companion
+  // orchestrator BEFORE the director resets so its `destroy` is
+  // visible to subsystem teardown ordering checks; then clear the
+  // director's subsystem + listener registries.
+  deps.companionSystem?.destroy();
+  deps.setCompanionSystem(null);
+  deps.livingWorldDirector.reset();
 }

@@ -13,6 +13,7 @@ import { resolveMuzzleFlashColor, resolveWeaponVfxColor } from './muzzleFlashCol
 import { fillCirclePool } from './fillCirclePool';
 import { musicEngine } from './music/ProceduralMusicEngine';
 import { applyPibrochDamage, isPibrochAligned } from './music/pibrochAlignment';
+import { applyPibrochHammerRhythm, applyWaulkingRhythm } from './music/waulkingRhythm';
 import { populateEvolvedKeys } from './evolvedWeaponKeys';
 import {
   createDashStrikeState,
@@ -1398,6 +1399,23 @@ export class WeaponSystem {
     // a live query — for those, hit-time ≈ fire-time anyway.
     const pibrochAligned = pibrochAlignedOverride ?? this.currentPibrochAligned();
     let finalDamage = applyPibrochDamage(damage, pibrochAligned);
+    // Wild Living World — Waulking Mallet rhythm bonus stacks on top
+    // of the global pibroch sting. The mallet's identity is "the song
+    // hits with you", so its aligned multiplier is heavier (+30%)
+    // than the shared pibroch sting. Non-aligned hits fall through
+    // to baseline damage so muted audio never zeroes the weapon.
+    if (weaponKey === 'waulking_mallet') {
+      finalDamage = applyWaulkingRhythm(finalDamage, pibrochAligned);
+    }
+    // Wild Living World Phase 2 — Pibroch Hammer (evolved Waulking
+    // Mallet). Heavier aligned multiplier than the base, plus an
+    // every-fourth-beat crescendo. Beat index reads from the live
+    // music engine; -1 (not-playing path) collapses to baseline
+    // multiplier behaviour via the helper's defensive guard.
+    if (weaponKey === 'pibroch_hammer') {
+      const beatIdx = musicEngine.getQuarterNoteIndex();
+      finalDamage = applyPibrochHammerRhythm(finalDamage, pibrochAligned, beatIdx);
+    }
     if (pibrochAligned) {
       // Soft grace-note chime; SFXManager 'pibroch_sting' caps at one
       // per ~quarter-note so AOE bursts on a downbeat collapse cleanly.

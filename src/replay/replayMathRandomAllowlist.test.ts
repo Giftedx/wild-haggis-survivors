@@ -193,6 +193,18 @@ const ALLOWLIST: AllowlistEntry[] = [
     reason: 'comment-only — explains gap jitter uses runRng; PickupSpawner placement is cosmetic',
   },
   {
+    path: 'entities/companions/sheepdogCompanion.ts',
+    reason: 'comment-only — declares sheepdog follow math never calls Math.random',
+  },
+  {
+    path: 'scenes/game/CompanionSystem.ts',
+    reason: 'comment-only — declares companion system has no gameplay-visible Math.random use',
+  },
+  {
+    path: 'scenes/game/livingWorldTypes.ts',
+    reason: 'comment-only — documents cosmetic-only Math.random allowance for Living World consumers',
+  },
+  {
     path: 'utils/save/types.ts',
     reason: 'comment-only — documents that runName is Math.random-generated outside runRng',
   },

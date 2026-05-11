@@ -382,8 +382,13 @@ describe('applyRunSummary run history context', () => {
 });
 
 describe('save schema v3 → v4 (W2 routes)', () => {
-  it('SAVE_SCHEMA_VERSION is 22', () => {
-    expect(SAVE_SCHEMA_VERSION).toBe(22);
+  it('SAVE_SCHEMA_VERSION is 23', () => {
+    // Wild Living World Phase 2 (2026-05-11) bumped v22 → v23 to
+    // persist `livingWorldUnlocks` (companion roster + selection).
+    // Schema-V3 → V4 (W2 routes) is still the historical anchor for
+    // this describe block; the assertion just pins the latest live
+    // schema number so a silent bump trips CI.
+    expect(SAVE_SCHEMA_VERSION).toBe(23);
   });
 
   it('migrates v3 save: adds routes:[] to each RunHistoryEntry, no data loss', () => {

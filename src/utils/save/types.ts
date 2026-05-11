@@ -12,6 +12,28 @@ import type { RelicKey } from '../../data/relics';
 import type { ReplayBlobAny } from '../../replay/replayBlob';
 import type { VariantKey } from '../../data/variants';
 import type { DiscoveryLog } from '../../systems/DiscoveryLog';
+import type { CompanionKey } from '../../entities/companions/companionTypes';
+
+/**
+ * Wild Living World Phase 2 — persistent unlock state for the Living
+ * World tracks. Lives in its own typed bag so additions (eagle marker,
+ * kelpie-foal hint, future tracks) are append-only.
+ *
+ * Companion semantics:
+ *   - `unlockedCompanions` — every companion the player has ever earned.
+ *     `sheepdog` is always included for back-compat (the foundation
+ *     ships unlocked).
+ *   - `selectedCompanion` — the companion that whistle-calls in next
+ *     run. Persisted between runs. `null` means "no companion" (the
+ *     player can opt out). Defaulting to `'sheepdog'` on fresh saves
+ *     keeps the experience the player already has.
+ */
+export interface LivingWorldUnlocks {
+  /** Companion keys the player has ever unlocked. */
+  unlockedCompanions: CompanionKey[];
+  /** Active companion for the next run, or null to opt out. */
+  selectedCompanion: CompanionKey | null;
+}
 
 /**
  * @deprecated Legacy audio on/off booleans — real audio state lives in
@@ -338,6 +360,20 @@ export interface SaveData {
    * the upgrade onward. v18 addition.
    */
   lemmingsSeenForVariant: string[];
+
+  /**
+   * Wild Living World Phase 2 — persistent Living World unlocks. The
+   * roster (`unlockedCompanions`) and the picker selection
+   * (`selectedCompanion`) live here. v23 addition; pre-v23 saves
+   * default via `coerceLivingWorldUnlocks` to
+   * `{ unlockedCompanions: ['sheepdog'], selectedCompanion: 'sheepdog' }`
+   * so returning players retain the foundation experience.
+   *
+   * Future additions (eagle marker, kelpie-foal hint, etc.) widen
+   * `CompanionKey` and the coercer's allowlist — no schema bump
+   * needed for new companion keys.
+   */
+  livingWorldUnlocks: LivingWorldUnlocks;
 
   /** Settings */
   settings: SaveSettings;

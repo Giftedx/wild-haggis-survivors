@@ -36,6 +36,11 @@ import { tickStressTest } from '../../dev/StressTest';
 import { isBreathReady, STACKS_MAX as WHISKY_STACKS_MAX } from '../../entities/whiskyBreath';
 import { t } from '../../core/i18n';
 import type { GameScene } from '../GameScene';
+import { buildLivingWorldRunContext } from './buildLivingWorldRunContext';
+import { getActiveSeasonalEventKey } from '../../systems/SeasonalEventManager';
+import { getSettingsManager } from '../../core/SettingsManager';
+import { musicEngine } from '../../systems/music/ProceduralMusicEngine';
+import { isWaulkingBeatAligned } from '../../systems/music/waulkingRhythm';
 
 /**
  * Run one frame's worth of GameScene updates, dispatching to the four
@@ -117,6 +122,30 @@ export function runFrameTick(scene: GameScene, delta: number): void {
       scene.biomeController?.reseed(scene, scene.getRunRng(), GAME.WORLD_WIDTH, GAME.WORLD_HEIGHT),
   }, delta, scaledDelta);
 
+  // Wild Living World Initiative — cross-track coordinator. Runs after
+  // the gameplay-pause guard (header returned non-paused above) so
+  // companions / atmosphere / music-bridge subsystems stay in lockstep
+  // with the rest of the world tick.
+  const settings = getSettingsManager().load();
+  const lwCtx = buildLivingWorldRunContext({
+    getRunSeed: () => scene.runRng.seed,
+    getVariantKey: () => scene.activeVariant.key,
+    getCurseKey: () => scene.activeCurseKey,
+    getSeasonalEventKey: () =>
+      getActiveSeasonalEventKey(new Date(), settings.disableSeasonalEvents === true),
+    getBiomeId: () => scene.getCurrentBiomeId(),
+    getHpFraction: () => {
+      const player = scene.player;
+      if (!player) return 0;
+      const max = player.getMaxHp();
+      return max > 0 ? player.getHp() / max : 0;
+    },
+    getGameTimeSec: () => scene.spawnSystem?.getGameTimeSec() ?? 0,
+    getReduceParticles: () => settings.reduceParticles === true,
+    getReduceFlashing: () => settings.reduceFlashing === true,
+  });
+  scene.livingWorldDirector.update(scaledDelta, lwCtx);
+
   tickPresentationFrame({
     delta,
     player: scene.player,
@@ -135,6 +164,16 @@ export function runFrameTick(scene: GameScene, delta: number): void {
     relicPickupSpawner: scene.relicPickupSpawner,
     reliquaryMinimapMarker: scene.reliquary?.getMinimapMarker() ?? null,
     clootieMinimapMarker: scene.clootieTree?.getMinimapMarker() ?? null,
+    livingWorldPresence: scene.livingWorldDirector.getPresence(),
+    // Wild Living World Phase 2 — hazardPressure axis. 6 simultaneous
+    // hazards is the practical ceiling on a busy run; normalising to
+    // `/6` and clamping keeps the axis in the 0..1 contract the
+    // Conductor expects. Cosmetic-only — never authoritative. Field
+    // is nullable (HazardsSystem instantiation is lazy / disable-able)
+    // so we coerce to 0 when not yet constructed.
+    hazardPressure: scene.hazards
+      ? Math.min(1, scene.hazards.getActiveHazardCount() / 6)
+      : 0,
   });
 
   updateRunHudFrame({
@@ -195,6 +234,52 @@ export function runFrameTick(scene: GameScene, delta: number): void {
       const beithirFrac = scene.player.beithirRemainingFraction();
       const beithirLabel = beithirStung ? t('ui.hud.beithir.race') : '';
       scene.hud.setBeithirRace(beithirStung, beithirFrac, beithirLabel);
+      // Whistle-Call companion chip — surfaces the active companion's
+      // localised name. Hidden when no companion is in the run; the
+      // HUD setter no-ops on steady-state frames so this stays cheap.
+      const companionKey = scene.companionSystem?.getActiveKey() ?? null;
+      const companionLabel = companionKey ? t(`ui.hud.companion.${companionKey}`) : null;
+      scene.hud.setCompanion(companionLabel);
+      // Selkie Dual-Form chip — visible only when the run is the
+      // Selkie variant. Pulls the active form from Player and feeds
+      // the localised label to the HUD setter.
+      if (scene.activeVariant.key === 'selkie') {
+        const form = scene.player.getSelkieForm();
+        scene.hud.setSelkieForm(form, t(`ui.hud.selkie.${form}`));
+      } else {
+        scene.hud.setSelkieForm(null, '');
+      }
+      // Wild Living World Phase 2 — Pibroch beat indicator. The chip
+      // is visible only when the player holds the Waulking Mallet or
+      // its evolved Pibroch Hammer; otherwise we hide and skip the
+      // beat-index query entirely. Reduced mode respects the global
+      // `reduceFlashing` setting (no pulse, single static label).
+      const hasRhythmWeapon = scene.weaponSystem.hasWeapon('waulking_mallet') ||
+        scene.weaponSystem.hasWeapon('pibroch_hammer');
+      if (hasRhythmWeapon) {
+        const beatIndex = musicEngine.getQuarterNoteIndex();
+        const msSinceBeat = musicEngine.getMsSinceLastQuarterNote();
+        const periodMs = musicEngine.getQuarterNotePeriodMs();
+        // Single-source alignment math: the chip displays the same
+        // window the weapon damage path uses, so route both through
+        // `isWaulkingBeatAligned` rather than duplicating the ±80 ms
+        // window constant.
+        const aligned = isWaulkingBeatAligned(msSinceBeat, periodMs);
+        const settings = getSettingsManager().load();
+        scene.hud.setPibrochBeatState({
+          visible: true,
+          reducedMode: settings.reduceFlashing,
+          beatIndex,
+          aligned,
+        });
+      } else {
+        scene.hud.setPibrochBeatState({
+          visible: false,
+          reducedMode: false,
+          beatIndex: 0,
+          aligned: false,
+        });
+      }
     },
   });
 }

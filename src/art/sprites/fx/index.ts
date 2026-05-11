@@ -32,6 +32,8 @@ import {
   bakeFxHarvestSheaf,
   bakeFxStonehavenFireball,
   bakeFxBrackenLeaf,
+  bakeFxBannockburnDust,
+  bakeFxGrouseFeather,
 } from './weather';
 import { bakeWeaponFlourishes } from './weaponFlourishes';
 import { bakeAtmosphereLayers } from './atmosphereLayers';
@@ -63,6 +65,8 @@ export function bakeFx(scene: Phaser.Scene): void {
   bakeFxHarvestSheaf(scene);
   bakeFxStonehavenFireball(scene);
   bakeFxBrackenLeaf(scene);
+  bakeFxBannockburnDust(scene);
+  bakeFxGrouseFeather(scene);
   bakeWeaponFlourishes(scene);
   bakeAtmosphereLayers(scene);
   bakeEliteTelegraphs(scene);

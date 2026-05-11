@@ -131,6 +131,51 @@ export const ui = {
      * as "0 / N" nag. Kept short — it sits next to the diegetic prop.
      */
     almanac_chip: '{seen} / {total} kent',
+    /**
+     * Wild Living World Initiative — Croft surface (first slice). Each
+     * entry has a short name + a one-line description in Hearth voice.
+     * Surfaced via `buildLivingWorldTracks()` (pure view-model). The
+     * actual Croft panel rendering is a follow-up slice; these strings
+     * land first so EN + SCS parity stays locked.
+     */
+    livingWorld: {
+      panel_title: 'THE LIVING MOOR',
+      panel_subtitle: 'The braes are stirrin — here\'s wha\'s afoot.',
+      status_shipped: 'OOT ON THE MOOR',
+      status_introduced: 'JUST AWA',
+      status_planned: 'NO YET',
+      companions: {
+        name: 'WHISTLE-CALL COMPANIONS',
+        description: 'A wee collie at yir heel — the moor feels less lonely already.',
+      },
+      selkieForms: {
+        name: 'SELKIE FORMS',
+        description: 'Twa shapes in the wan run. The water-folk remember the dance.',
+      },
+      rhythm: {
+        name: 'WAULKING MALLET',
+        description: 'A heavy mallet — sing wi\' the beat an\' the bairn hits harder.',
+      },
+      atmosphere: {
+        name: 'UP HELLY AA EMBERS',
+        description: 'Embers risin\' fae the galley fire — Lerwick wears its tartan in flame.',
+      },
+      musicBridge: {
+        name: 'A MOOR THAT LISTENS',
+        description: 'The drone warms when the moor\'s alive aboot ye. Subtle, mind — but it\'s there.',
+      },
+      croftHome: {
+        name: 'THIS VERY PANEL',
+        description: 'A wee bench tae see wha\'s growin\'. More tae come — this is the front step.',
+      },
+      picker: {
+        // Wild Living World Phase 2 — Croft companion picker. Hearth
+        // voice; the title nods to the whistle-call ritual rather
+        // than a cold "Select Companion" menu label.
+        title: 'WHA\'S AT YIR HEEL?',
+        no_companion: 'Gae alane',
+      },
+    },
   },
   chronicle: {
     // ── Header (Hearth voice default, Edge voice for failure/victory moods) ──
@@ -986,6 +1031,20 @@ export const ui = {
     beithir: {
       race: 'BEITHIR — HEAL OR KILL',
     },
+    /** Whistle-Call companion chip (Wild Living World Initiative).
+     *  Short names — chip is 56 px wide at 9 px monospace, so all
+     *  registers must fit "SHEEPDOG"-length. New companions widen
+     *  the union; keep labels at-most 9 characters. */
+    companion: {
+      sheepdog: 'SHEEPDOG',
+      stoat_scout: 'STOAT',
+    },
+    /** Selkie Dual-Form chip (Wild Living World Initiative). Two
+     *  forms toggled by dash. Short labels — fit the 56 px chip. */
+    selkie: {
+      haggis: 'HAGGIS',
+      seal: 'SEAL',
+    },
   },
   /** T1 replay playback UI. */
   replay: {
@@ -1465,6 +1524,12 @@ export const ui = {
         c: 'Doun isnae done. The pelt holds.',
         d: 'Sych and meikle care, but no done.',
       },
+      selkie: {
+        a: 'Salt in the cuts — keep tae the shore.',
+        b: 'Seal-skin\'s thin, but the tide\'s no done wi\' ye.',
+        c: 'One mair wave like that and we\'re driftwood.',
+        d: 'Haud the borrowed skin tight. Breathe.',
+      },
     },
     boss_down: {
       a: 'Away in a box. Pure textbook.',
@@ -1589,6 +1654,12 @@ export const ui = {
         b: 'Skirl turned slaughter — beautiful.',
         c: 'Every note a cut. Pure ceilidh violence.',
         d: 'Ceilidh\'s cancelled — fer them.',
+      },
+      waulking_mallet: {
+        a: 'The pibroch lands — that\'s the echo finishing the song.',
+        b: 'Mallet keeps the beat; pibroch answers from the hills.',
+        c: 'Tuning fork hummed true. Now the bar drops on every fourth.',
+        d: 'Hammer on the strong beat — the moor sings along.',
       },
     },
     curse_start: {
@@ -1726,6 +1797,12 @@ export const ui = {
         c: 'I sall gae intill ane haire — bigger this time.',
         d: 'Auldwife Isobel proud. Ye\'re ridden far.',
       },
+      selkie: {
+        a: 'Tide lifts ye — new strength in the skin.',
+        b: 'Seal or haggis, the sea approves.',
+        c: 'Another song learnt under the waves.',
+        d: 'Up ye rise, slick as kelp.',
+      },
     },
     first_blood: {
       a: 'First yin doon. Off ye trot.',
@@ -1820,6 +1897,12 @@ export const ui = {
         b: 'The hare-form bites first.',
         c: 'Coursed it. Ane doon.',
         d: 'Sma\' but wickit.',
+      },
+      selkie: {
+        a: 'First splash o\' the hunt. Tide is wi\' us.',
+        b: 'The shore heard that. Keep movin.',
+        c: 'First blood under moonlit water.',
+        d: 'Seal-skin shakes dry. Onward.',
       },
     },
     kill_streak: {
@@ -1917,6 +2000,12 @@ export const ui = {
         c: 'Hare-feet, hare-heart, hare\'s tally.',
         d: 'The auld dance — kill, leap, kill again.',
       },
+      selkie: {
+        a: 'Like fish through foam — they cannae pin ye.',
+        b: 'The tide is countin culls for ye.',
+        c: 'Seal-slick, haggis-hard. Keep the rhythm.',
+        d: 'A whole shoal doon. Braw work.',
+      },
     },
     recover: {
       a: 'Back fae the brink. Deep breath.',
@@ -2011,6 +2100,12 @@ export const ui = {
         b: 'The pelt mends. Auldwife\'s herbs.',
         c: 'Even the witch sleeps a wee.',
         d: 'Eldritch herbs ower the wound. Awa wi\' it.',
+      },
+      selkie: {
+        a: 'Salt closes the scrape. Back in.',
+        b: 'Tide washed the worst o\' it away.',
+        c: 'Skin settles right again. Move.',
+        d: 'A wee shore-breath, then back tae danger.',
       },
     },
     biome_change: {
@@ -2269,6 +2364,28 @@ export const ui = {
     lemmings_remember: {
       a: 'The lemmings remember ye. Aff they go.',
       b: 'Wee green-haired ones — they\'ve passed.',
+    },
+    /** Wild Living World Phase 2 — Selkie form-shift commentary. Hearth
+     *  register, soft and considered: the seal is a relief; the haggis
+     *  is a homecoming. Tag `seal` fires entering the seal form; tag
+     *  `haggis` fires returning. The fallback `a` / `b` lines stay
+     *  direction-agnostic so a caller without a tag still resolves
+     *  copy without dropping the line. */
+    form_shifted: {
+      a: 'New shape. Same wee bones.',
+      b: 'The skin slips. The heart stays.',
+      seal: {
+        a: 'Salt in the lungs again.',
+        b: 'Sea-side body. Drift smoothed oot.',
+        c: 'The water-folk nod once.',
+        d: 'Smooth like the loch on a still mornin.',
+      },
+      haggis: {
+        a: 'Hame in the moor-bones.',
+        b: 'Wee legs back. Heather underneath.',
+        c: 'Skin remembers the haggis way.',
+        d: 'Salt washed off. Heart\'s in the heather.',
+      },
     },
     /** Taxman Grudge Ledger (DESIGN_IDEAS §1). Fires once at run-end
      *  victory: the Taxman speaks in his own voice from beyond the
@@ -2545,6 +2662,12 @@ export const ui = {
         b: 'Sit still. The hare watches.',
         c: 'Even Gowdie pauses. Even hares breathe.',
         d: 'The covine waits patient.',
+      },
+      selkie: {
+        a: 'Sea quiet in the lugs. Moor quiet underhoof.',
+        b: 'If ye hear singin, it isnae all wind.',
+        c: 'Kelp at the ankle, heather at the nose.',
+        d: 'Borrowed skin, borrowed minute. Use it weel.',
       },
     },
     // W2 Moor Road.

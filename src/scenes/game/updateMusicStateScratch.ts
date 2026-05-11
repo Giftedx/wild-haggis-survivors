@@ -17,6 +17,8 @@ export function updateMusicStateScratch(
   killCount: number,
   biomeTimbre: number,
   buildDensity: number,
+  livingWorldPresence = 0,
+  hazardPressure = 0,
 ): void {
   scratch.hp = player.getHp();
   scratch.maxHp = player.getMaxHp();
@@ -27,4 +29,6 @@ export function updateMusicStateScratch(
   scratch.bossActive = spawnSystem.isBossActive();
   scratch.biomeTimbre = biomeTimbre;
   scratch.buildDensity = buildDensity;
+  scratch.livingWorldPresence = livingWorldPresence;
+  scratch.hazardPressure = hazardPressure;
 }
