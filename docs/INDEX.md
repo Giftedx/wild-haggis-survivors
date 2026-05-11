@@ -56,7 +56,7 @@ Every player-facing change should pass the Soul Check + voice + art + research g
 | File | Purpose |
 |---|---|
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | **The working agreement for AI agents.** One headline question + CI gates + cross-cutting chains + sacred invariants. Read first. |
-| [PRD.md](PRD.md) | Product roadmap; 2026-04-26 snapshot at top |
+| [PRD.md](PRD.md) | Product roadmap / flagship table — dated **Current Snapshot** header at top of file (update when reality shifts). |
 | [DESIGN_SOUL.md](DESIGN_SOUL.md) | Soul charter, weave matrix, tonal spectrum, Great Moment Recipe, Soul Check |
 | [VOICE_CARD.md](VOICE_CARD.md) | Hearth + Edge registers, variant voices, Burns guidance, Do/Don't examples |
 | [ART_STYLE_BIBLE.md](ART_STYLE_BIBLE.md) | Palette anchors, tonal palette map, signature motifs |
