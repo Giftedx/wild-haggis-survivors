@@ -38,6 +38,8 @@ import { HaarFogController } from '../systems/shaders/HaarFogController';
 import { capHaarForA11y } from '../systems/shaders/haarA11y';
 import { DEFAULT_HAAR_TRANSITION } from '../systems/shaders/haarTransition';
 import { resolveActIntermissionCardStyle } from './actIntermissionCardStyle';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildActIntermissionDomFocusActions } from './actIntermissionDomFocusActions';
 
 export interface ActIntermissionLaunchData {
   slot: PickerSlot;
@@ -66,6 +68,11 @@ export class ActIntermissionScene extends Phaser.Scene {
   private prevPadConfirm = false;
   /** F1 — haar fog filter controller applied to this scene's camera. */
   private haar?: HaarFogController;
+  /**
+   * T407 — visually hidden DOM mirror for route picks. Sister pattern to
+   * CurseScene / ActIntermission keyboard row.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
 
   constructor() {
     super({ key: ActIntermissionScene.KEY });
@@ -87,10 +94,40 @@ export class ActIntermissionScene extends Phaser.Scene {
     audio.startAmbientWind(0.04);
     // Uninstall keyboard handler and fade wind when the scene tears down.
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.uninstallDomFocusLayer();
       this.uninstallKeyboardShortcuts();
       this.uninstallGamepadShortcuts();
       audio.fadeOutAmbientWind(400);
       this.haar = undefined;
+    });
+  }
+
+  private uninstallDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  }
+
+  private installDomFocusLayer(routes: readonly RouteDef[]): void {
+    if (typeof document === 'undefined') return;
+    this.uninstallDomFocusLayer();
+    const titleKey = this.launchData.slot === 'A'
+      ? 'ui.actIntermission.title_act_1'
+      : 'ui.actIntermission.title_act_2';
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-act-intermission-focus-layer',
+      label: t(titleKey),
+      description: t('ui.actIntermission.pick_hint'),
+      role: 'dialog',
+      actions: buildActIntermissionDomFocusActions({
+        routes,
+        onPickRoute: (route) => this.resolve(route),
+      }),
+      initialFocusIndex: Math.max(0, this.focusedRouteIndex),
+      onFocusIndexChange: (index) => {
+        if (index < 0 || index >= this.routeFocusEntries.length) return;
+        this.focusedRouteIndex = index;
+        this.updateRouteFocusVisuals();
+      },
     });
   }
 
@@ -194,6 +231,7 @@ export class ActIntermissionScene extends Phaser.Scene {
       card.bg.on('pointerout', () => this.applyRouteFocus());
     });
     this.focusedRouteIndex = firstEnabledModalFocusIndex(this.routeFocusEntries);
+    this.installDomFocusLayer(routes);
     this.applyRouteFocus();
   }
 
@@ -294,7 +332,7 @@ export class ActIntermissionScene extends Phaser.Scene {
     this.resolve(entry.route);
   }
 
-  private applyRouteFocus(): void {
+  private updateRouteFocusVisuals(): void {
     const style = resolveActIntermissionCardStyle();
     for (let i = 0; i < this.routeFocusEntries.length; i++) {
       const entry = this.routeFocusEntries[i]!;
@@ -306,11 +344,23 @@ export class ActIntermissionScene extends Phaser.Scene {
     }
   }
 
+  private applyRouteFocus(): void {
+    this.updateRouteFocusVisuals();
+    if (
+      this.domFocusLayer
+      && this.focusedRouteIndex >= 0
+      && this.focusedRouteIndex < this.routeFocusEntries.length
+    ) {
+      this.domFocusLayer.setFocusedIndex(this.focusedRouteIndex);
+    }
+  }
+
   /**
    * Apply a pick and close. Skip-setting path calls this directly with the
    * slot's default route.
    */
   resolve(route: RouteDef, opts?: { defaultedBySetting?: boolean }): void {
+    this.uninstallDomFocusLayer();
     this.uninstallKeyboardShortcuts();
     this.uninstallGamepadShortcuts();
     const pick = buildRoutePick(route, this.launchData.atGameTimeSec, opts);
