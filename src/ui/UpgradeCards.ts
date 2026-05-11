@@ -10,6 +10,8 @@ import { computeUpgradeCardLayout } from './upgradeCardLayout';
 import { numberToCssColor } from '../utils/colorFormat';
 import { TWEEN_INFINITE_BREATHE } from '../utils/tweenPresets';
 import { legendaryTrailSpec, resolveRarityPillPulseSpec } from './upgradeCardCelebration';
+import { createDomFocusLayer, type DomFocusLayer } from './domFocusLayer';
+import { buildUpgradeCardsDomFocusActions } from './upgradeCardsDomFocusActions';
 
 /**
  * UpgradeCards — renders 3 selectable upgrade cards on level-up.
@@ -47,6 +49,13 @@ export class UpgradeCardsUI {
   private keyHandler?: (e: KeyboardEvent) => void;
   /** Subscription to scene shutdown — guarantees listener cleanup even if hide() never fires. */
   private shutdownSub?: () => void;
+  /**
+   * T407 — visually hidden DOM mirror for level-up (cards + optional reroll).
+   * Sister pattern to ShopScene / MetaShopScene / CurseScene.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
+  /** Card centre positions for legendary trail + DOM parity (set each `show()`). */
+  private lastPickCenters: Array<{ x: number; y: number }> = [];
 
   constructor(scene: Phaser.Scene, onSelect: (card: UpgradeCard) => void, tickers: import('../utils/UpdateTickers').UpdateTickers) {
     this.scene = scene;
@@ -59,7 +68,10 @@ export class UpgradeCardsUI {
     // minimal mock); the keyboard listener is also installed against a
     // possibly-absent `input.keyboard` so the no-event case is safe.
     if (this.scene.events && typeof this.scene.events.once === 'function') {
-      const shutdownHandler = () => this.uninstallKeyboardShortcuts();
+      const shutdownHandler = () => {
+        this.uninstallKeyboardShortcuts();
+        this.uninstallUpgradeDomFocusLayer();
+      };
       this.scene.events.once('shutdown', shutdownHandler);
       this.shutdownSub = () => this.scene.events?.off?.('shutdown', shutdownHandler);
     }
@@ -165,18 +177,24 @@ export class UpgradeCardsUI {
       left, top, width, height, cardCount: cards.length,
     });
 
+    this.lastPickCenters = cards.map((_, i) => ({
+      x: startX + i * (cardW + gap),
+      y: cardY,
+    }));
+
     cards.forEach((card, i) => {
       const x = startX + i * (cardW + gap);
 
       // Stagger animation — raw tickers (UI continues during gameplay pause)
       const handle = this.tickers.addOnce('raw', i * 120, () => {
         audio.playCardReveal(i);
-        this.createCard(x, cardY, cardW, cardH, card, depth + 2);
+        this.createCard(x, cardY, cardW, cardH, card, depth + 2, i);
       });
       this.pendingHandles.push(handle);
     });
 
     this.installKeyboardShortcuts(cards);
+    this.installUpgradeDomFocusLayer(cards, opts, titleStr, subtitleStr);
 
     if (typeof globalThis !== 'undefined') {
       const win = globalThis as unknown as { AUTO_BATTLE?: boolean };
@@ -184,17 +202,80 @@ export class UpgradeCardsUI {
         const first = cards[0];
         const maxStaggerMs = (cards.length - 1) * 120;
         const autoPickHandle = this.tickers.addOnce('raw', maxStaggerMs + 100, () => {
-          this.hide();
-          this.onSelect(first);
+          this.commitCardPick(first, 0);
         });
         this.pendingHandles.push(autoPickHandle);
       }
     }
   }
 
+  private uninstallUpgradeDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  }
+
+  private installUpgradeDomFocusLayer(
+    cards: UpgradeCard[],
+    opts: { bannerTitle?: string; bannerSubtitle?: string; hideReroll?: boolean } | undefined,
+    titleStr: string,
+    subtitleStr: string,
+  ): void {
+    if (typeof document === 'undefined') return;
+    this.uninstallUpgradeDomFocusLayer();
+    const rerollVisible = this.rerollsLeft > 0 && this.onReroll !== null && !opts?.hideReroll;
+    const rerollLabel = rerollVisible
+      ? t('ui.upgradeCards.reroll', { count: this.rerollsLeft })
+      : '';
+    const rerollCb = this.onReroll;
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-levelup-focus-layer',
+      label: titleStr,
+      description: subtitleStr,
+      role: 'dialog',
+      actions: buildUpgradeCardsDomFocusActions({
+        cards,
+        rerollVisible,
+        rerollLabel,
+        onPickIndex: (idx) => {
+          const card = cards[idx];
+          if (!card) return;
+          this.commitCardPick(card, idx);
+        },
+        onReroll:
+          rerollVisible && rerollCb
+            ? () => {
+              if (this.rerollsLeft <= 0) return;
+              audio.playClick();
+              this.rerollsLeft--;
+              this.hide();
+              rerollCb();
+            }
+            : null,
+      }),
+      initialFocusIndex: 0,
+    });
+  }
+
+  /**
+   * Shared pick path for pointer, keyboard 1–3, and DOM focus layer.
+   */
+  private commitCardPick(card: UpgradeCard, cardIndex: number): void {
+    const origin = this.lastPickCenters[cardIndex];
+    if (card.rarity === 'legendary' && origin) {
+      audio.playLegendarySelect();
+      this.spawnLegendaryTrail(origin.x, origin.y);
+    } else if (card.effect.type === 'add_passive') {
+      audio.playBoonSelect();
+    } else {
+      audio.playLevelUp();
+    }
+    this.hide();
+    this.onSelect(card);
+  }
+
   private createCard(
     x: number, y: number, w: number, h: number,
-    card: UpgradeCard, depth: number
+    card: UpgradeCard, depth: number, cardIndex: number,
   ): void {
     const borderColor = RARITY_COLORS[card.rarity];
 
@@ -399,16 +480,7 @@ export class UpgradeCardsUI {
     // just vanish. Spawn the trail directly on the scene (not into
     // `this.elements`) so hide() doesn't kill mid-flight particles.
     bg.on('pointerdown', () => {
-      if (card.rarity === 'legendary') {
-        audio.playLegendarySelect();
-        this.spawnLegendaryTrail(x, y);
-      } else if (card.effect.type === 'add_passive') {
-        audio.playBoonSelect();
-      } else {
-        audio.playLevelUp();
-      }
-      this.hide();
-      this.onSelect(card);
+      this.commitCardPick(card, cardIndex);
     });
   }
 
@@ -441,9 +513,11 @@ export class UpgradeCardsUI {
   }
 
   hide(): void {
+    this.uninstallUpgradeDomFocusLayer();
     for (const h of this.pendingHandles) h.cancel();
     this.pendingHandles = [];
     this.uninstallKeyboardShortcuts();
+    this.lastPickCenters = [];
 
     for (const el of this.elements) {
       this.scene.tweens.killTweensOf(el);
@@ -475,8 +549,7 @@ export class UpgradeCardsUI {
       const card = cards[idx];
       if (!card) return;
       e.preventDefault();
-      this.hide();
-      this.onSelect(card);
+      this.commitCardPick(card, idx);
     };
     kb.on('keydown', this.keyHandler);
   }
@@ -490,6 +563,7 @@ export class UpgradeCardsUI {
   /** Test / explicit-teardown helper — releases the shutdown subscription. */
   destroy(): void {
     this.uninstallKeyboardShortcuts();
+    this.uninstallUpgradeDomFocusLayer();
     this.shutdownSub?.();
     this.shutdownSub = undefined;
   }
