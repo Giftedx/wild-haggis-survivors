@@ -32,6 +32,7 @@ import {
 import { audio } from '../systems/AudioSystem';
 import { GameMusicState } from '../systems/music/ProceduralMusicEngine';
 import { getVariantByKey, VariantDef, formatRunVariantLabel } from '../data/variants';
+import { ensureVariantAtlas } from './boot/variantAtlasBaker';
 import { ISceneContext } from '../core/ISceneContext';
 import { UpdateTickers, TickerHandle } from '../utils/UpdateTickers';
 import { SubscriptionBag } from '../utils/SubscriptionBag';
@@ -725,6 +726,15 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       : getVariantByKey(this.pendingForceVariantKey ?? save.selectedVariant);
     this.pendingForceVariantKey = null;
     this.activeVariant = selectedVariant;
+
+    // ADR-0005 lazy-bake descope (2026-05-11): BootScene only warms the
+    // default + saved variants. If the active variant is neither (replay
+    // playback of a non-default seed, daily challenge, /forceVariant
+    // debug path), bake the atlas now — idempotent, ~13ms per cold
+    // variant, well under the run-start budget. AnimationController
+    // calls `sprite.setTexture(atlasKey(...))` during Player
+    // construction below, so the cache MUST be warm before then.
+    ensureVariantAtlas(this, selectedVariant.key);
 
     // T1 replay — mutually exclusive modes (playback wins over record).
     // Slice in `replayBridgeInstall.ts`; recorder build deferred below

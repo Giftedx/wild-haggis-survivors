@@ -2,7 +2,6 @@ import * as Phaser from 'phaser';
 import { COLORS_CSS } from '../config';
 import {
   DEFAULT_VARIANT_KEY,
-  VARIANTS,
   getVariantByKey,
 } from '../data/variants';
 import { achievementManager } from '../core/AchievementManager';
@@ -14,12 +13,13 @@ import { SaveManager } from '../core/SaveManager';
 import { getSettingsManager } from '../core/SettingsManager';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
-import { allAtlasKeysForVariant, ALL_ANIMATION_STATES } from '../animation/textureAtlas';
-import { getFrameCountForState } from '../animation/frameClock';
-import { drawHaggisFrame, getHaggisSpriteSize } from '../animation/frameDrawers/haggisFrames';
-import { CLASSIC_VARIANT } from '../art/palettes';
-import type { AnimationState } from '../animation/animationStates';
-import { ACCESSORY_REGISTRY } from '../entities/haggisComposition/accessoryRegistry';
+import { loadSave } from '../utils/save';
+import {
+  bakeEnemyAtlas,
+  bakeNonVariantAccessoryAtlas,
+  ensureAllVariantAtlases,
+  ensureVariantAtlas,
+} from './boot/variantAtlasBaker';
 import { bakeDecorations } from '../art/sprites/decorations';
 import { bakeGranTextures } from '../art/sprites/croft/gran';
 import { bakeHearthTextures } from '../art/sprites/croft/hearth';
@@ -53,9 +53,10 @@ import { bakeCroftInteriorTextures } from '../art/sprites/croft/interiorTextures
 import { bakeCroftKeepsakes } from '../art/sprites/croft/keepsakes';
 import { bakeCroftVisitors } from '../art/sprites/croft/visitors';
 import { bakeUi } from '../art/sprites/ui';
-import { drawMantleTier } from '../art/sprites/haggisMantle';
-import { applyOutline, snapshotTextureKeys, outlineNewTextures } from '../art/outlinePostProcess';
-import { getAllAnimatedEnemyDrawers } from '../animation/frameDrawers/enemies/enemyFrameRegistry';
+import { snapshotTextureKeys, outlineNewTextures } from '../art/outlinePostProcess';
+// Side-effect imports — registers each animated enemy drawer into the
+// registry on module load; the lazy bake helper in `boot/variantAtlasBaker`
+// iterates the registry but does not own the registration.
 // Side-effect imports — registers each drawer into the registry on module load:
 import '../animation/frameDrawers/enemies/buckfastNedFrames';
 import '../animation/frameDrawers/enemies/eagleFrames';
@@ -125,20 +126,61 @@ export class BootScene extends Phaser.Scene {
     // sprite-export included — so Game never starts with `__MISSING`
     // textures and so the export PNG contains every Phase-0 atlas
     // frame alongside the legacy sprites.
-    const bakeMs = this.bakeHaggisAtlas();
-    console.info(`[BootScene] Haggis atlas bake: ${bakeMs.toFixed(1)} ms`);
+    //
+    // ADR-0005 descope (2026-05-11): boot now bakes only the default
+    // variant + the saved selected variant (~13ms total instead of
+    // ~210ms for all 15 variants). Other variants bake lazily via
+    // `ensureVariantAtlas(scene, key)` in `GameScene.create()` once the
+    // active variant is resolved. The sprite-export tool below force-
+    // bakes every variant so the composite PNG stays complete.
+    const nonVariantAccessoryStart = performance.now();
+    const nonVariantAccessoryCount = bakeNonVariantAccessoryAtlas(this);
+    console.info(
+      `[BootScene] Non-variant accessory bake: +${nonVariantAccessoryCount} keys, ${(performance.now() - nonVariantAccessoryStart).toFixed(1)} ms`,
+    );
 
-    const accessoryBakeMs = this.bakeAccessoryAtlas();
-    console.info(`[BootScene] Accessory atlas bake: ${accessoryBakeMs.toFixed(1)} ms`);
+    const classicReport = ensureVariantAtlas(this, DEFAULT_VARIANT_KEY);
+    console.info(
+      `[BootScene] Variant atlas bake (default ${DEFAULT_VARIANT_KEY}): +${classicReport.bakedHaggis + classicReport.bakedAccessories + classicReport.bakedMantle} keys, ${classicReport.totalMs.toFixed(1)} ms`,
+    );
 
-    const mantleBakeMs = this.bakeHaggisMantleAtlas();
-    console.info(`[BootScene] Mantle atlas bake: ${mantleBakeMs.toFixed(1)} ms`);
+    // Saved-variant warmup keeps the cold-vs-Play latency invariant the
+    // ADR optimised for: a returning player who picked, say, the
+    // Cailleach last session sees zero bake hitch when they hit Play
+    // because the atlas is already in cache before MainMenu renders.
+    try {
+      const savedSave = loadSave();
+      const savedVariant = savedSave.selectedVariant;
+      if (savedVariant && savedVariant !== DEFAULT_VARIANT_KEY) {
+        const savedReport = ensureVariantAtlas(this, savedVariant);
+        console.info(
+          `[BootScene] Variant atlas bake (saved ${savedVariant}): +${savedReport.bakedHaggis + savedReport.bakedAccessories + savedReport.bakedMantle} keys, ${savedReport.totalMs.toFixed(1)} ms`,
+        );
+      }
+    } catch {
+      /* Save read failures are surfaced by `emitSaveFailure` elsewhere; the
+         classic-only fallback above keeps boot functional in the meantime. */
+    }
 
-    const enemyBakeMs = this.bakeEnemyAtlas();
-    console.info(`[BootScene] Enemy atlas bake: ${enemyBakeMs.toFixed(1)} ms`);
+    const enemyBakeStart = performance.now();
+    const enemyCount = bakeEnemyAtlas(this);
+    console.info(
+      `[BootScene] Enemy atlas bake: +${enemyCount} keys, ${(performance.now() - enemyBakeStart).toFixed(1)} ms`,
+    );
 
-    // Dev tool: skip splash and go straight to sprite export
+    // Dev tool: skip splash and go straight to sprite export. The
+    // export tool needs every variant atlas in cache (it composites
+    // a single PNG over all variants), so warm the rest here.
     if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('export')) {
+      const exportStart = performance.now();
+      const exportReports = ensureAllVariantAtlases(this);
+      const exportTotal = exportReports.reduce(
+        (a, r) => a + r.bakedHaggis + r.bakedAccessories + r.bakedMantle,
+        0,
+      );
+      console.info(
+        `[BootScene] Sprite-export warmup: +${exportTotal} keys, ${(performance.now() - exportStart).toFixed(1)} ms`,
+      );
       void this.startSpriteExportScene();
       return;
     }
@@ -424,104 +466,5 @@ export class BootScene extends Phaser.Scene {
   }
 
 
-
-  private bakeHaggisAtlas(): number {
-    const startMs = performance.now();
-    const size = getHaggisSpriteSize();
-    for (const variant of VARIANTS) {
-      const allKeys = allAtlasKeysForVariant('haggis', variant.key);
-      for (const key of allKeys) {
-        // Atlas key shape: `haggis_<variant>_<state>_<frame>`. All FSM
-        // state names are single tokens (idle, walking, attacking,
-        // hurt, celebrating, dying), so the state always sits at [-2]
-        // regardless of how many underscores the variant key contains.
-        const parts = key.split('_');
-        const frame = Number(parts[parts.length - 1]);
-        const state = parts[parts.length - 2] as AnimationState;
-        const g = this.add.graphics();
-        drawHaggisFrame(g, {
-          variantPalette: CLASSIC_VARIANT,
-          state,
-          frame,
-          variantKey: variant.key,
-        });
-        g.generateTexture(key, size, size);
-        g.destroy();
-        applyOutline(this, key, size, size);
-      }
-    }
-    return performance.now() - startMs;
-  }
-
-  private bakeEnemyAtlas(): number {
-    const startMs = performance.now();
-    const drawers = getAllAnimatedEnemyDrawers();
-    for (const drawer of drawers) {
-      const size = drawer.canvasSize;
-      for (const state of ALL_ANIMATION_STATES) {
-        const frameCount = getFrameCountForState(state);
-        for (let frame = 0; frame < frameCount; frame++) {
-          const g = this.add.graphics();
-          const bodyFrame = drawer.authoredStates.has(state)
-            ? drawer.getFrame(state, frame)
-            : drawer.getFrame('idle', 0);
-          drawer.draw(g, bodyFrame);
-          const key = `${drawer.enemyKey}_${state}_${frame}`;
-          g.generateTexture(key, size, size);
-          g.destroy();
-          applyOutline(this, key, size, size);
-        }
-      }
-    }
-    return performance.now() - startMs;
-  }
-
-  private bakeHaggisMantleAtlas(): number {
-    const startMs = performance.now();
-    const size = getHaggisSpriteSize();
-    // Tier 0 is not baked — overlay sprite stays hidden until tier 1 is
-    // reached, so no texture is needed for the empty state.
-    for (const variant of VARIANTS) {
-      for (const tier of [1, 2] as const) {
-        const g = this.add.graphics();
-        drawMantleTier(g, variant, tier);
-        g.generateTexture(`mantle_${variant.key}_${tier}`, size, size);
-        g.destroy();
-      }
-    }
-    return performance.now() - startMs;
-  }
-
-  private bakeAccessoryAtlas(): number {
-    const startMs = performance.now();
-    for (const drawer of Object.values(ACCESSORY_REGISTRY)) {
-      const authored = new Set<AnimationState>(drawer.authoredStates);
-      // Variant-aware accessories (e.g. kilt) are baked once per variant;
-      // all others are baked once with no variant suffix.
-      const variantList = drawer.variantAware
-        ? VARIANTS.map((v) => v.key)
-        : [null];
-      for (const variantKey of variantList) {
-        for (const state of ALL_ANIMATION_STATES) {
-          const frameCount = getFrameCountForState(state);
-          for (let frame = 0; frame < frameCount; frame++) {
-            const g = this.add.graphics();
-            const ctx = authored.has(state)
-              ? { variantPalette: CLASSIC_VARIANT, state, frame, variantKey: variantKey ?? undefined }
-              : { variantPalette: CLASSIC_VARIANT, state: 'idle' as AnimationState, frame: 0, variantKey: variantKey ?? undefined };
-            drawer.draw(g, ctx);
-            // Variant-aware: `kilt_classic_idle_0`; generic: `sporran_idle_0`
-            const key = variantKey !== null
-              ? `${drawer.id}_${variantKey}_${state}_${frame}`
-              : `${drawer.id}_${state}_${frame}`;
-            g.generateTexture(key, 80, 80);
-            g.destroy();
-            applyOutline(this, key, 80, 80);
-          }
-        }
-      }
-    }
-    return performance.now() - startMs;
-  }
 
 }

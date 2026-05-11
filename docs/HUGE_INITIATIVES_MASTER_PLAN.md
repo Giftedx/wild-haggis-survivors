@@ -51,7 +51,7 @@ Work I'd like to do, in roughly the order I'd like to do it. None has a deadline
 
 ### Open candidates (interesting but not picked)
 
-- **W71 Skeletal animation rig** — Phase 0 prototype + Phase 1 enemy animation + Phase 2 secondary motion shipped 2026-04-22/23. Full rig still open. Hot-path performance risk not yet measured.
+- **W71 Skeletal animation rig** — Phase 0 prototype + Phase 1 enemy animation + Phase 2 secondary motion shipped 2026-04-22/23. Full rig still open; JS hot path is covered by `src/animation/animationPerf.bench.test.ts`, and boot atlas bake cost is guarded by `e2e/w71-atlas-bake-budget.spec.ts`. 2026-05-11: ADR-0005's lazy-bake descope landed (`src/scenes/boot/variantAtlasBaker.ts` + `variantAtlasKeys.ts`); boot bake dropped from ~430 ms to ~251 ms by deferring non-active-variant atlases to `GameScene.create()`. Next descope candidate is enemy spawn-time lazy bake; deferred until a measurable trigger fires.
 - **W27 Capture & share Phase 2** — Phase 0 prototype shipped 2026-04-22. Postcards + highlight clips not yet scoped beyond the prototype.
 - **Bodach Glas (boss #3)** — flagged in N1 follow-ups; cultural review pending (Solway Remnant lineage).
 - **B5 Phase 3 Edinburgh biome** — gated on cultural consultation per `docs/research/CULTURAL_SENSITIVITIES_RESEARCH.md §2.7`.

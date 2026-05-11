@@ -195,6 +195,29 @@ frame clock (`frameClock.ts`), composed through `AnimationController`.**
   cross 8 across the board, profile precache size + boot bake time. If the
   precache exceeds 2.5 MB or bake time exceeds 200 ms, descope to
   on-demand (per-variant) bakes triggered when a variant is selected.
+  **Addendum 2026-05-11: descope landed.** The variant count reached 15
+  and the animated-enemy registry grew to 30+ subjects; on local headless
+  Chromium boot bake measured ~430 ms total (variant families ~210 ms +
+  enemies ~213 ms), breaching the 200 ms threshold above. The descope
+  this clause pre-authorised is now implemented in
+  `src/scenes/boot/variantAtlasBaker.ts` (imperative bake) +
+  `src/scenes/boot/variantAtlasKeys.ts` (pure key enumeration, unit-
+  tested). BootScene now bakes only the default variant + the saved
+  selected variant + the non-variant accessories + the enemy atlas.
+  Other 13 variants bake lazily on first use via `ensureVariantAtlas()`,
+  called defensively in `GameScene.create()` right after the active
+  variant is resolved (the cache must be warm before Player
+  construction, since AnimationController's first `applyTexture()`
+  reads the atlas). The same helper services the `?export` sprite-tool
+  path by warming every variant before SpriteExportScene boots, so the
+  composite PNG stays complete. Post-descope total bake measured
+  **~251 ms** (~42% reduction); the new floor is locked in by
+  `e2e/w71-atlas-bake-budget.spec.ts` with `TOTAL_BAKE_BUDGET_MS = 400`
+  and `ENEMY_BAKE_BUDGET_MS = 300`. Next descope candidate is enemy
+  spawn-time lazy bake (~197 ms of remaining bake), but that risks
+  spawn-time hitches and is deferred until either (a) the enemy
+  registry pushes total bake back over 400 ms or (b) measurable cold-
+  start friction is reported.
 
 ## Rollback
 
