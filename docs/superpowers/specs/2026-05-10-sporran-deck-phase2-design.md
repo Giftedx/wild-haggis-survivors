@@ -2,9 +2,31 @@
 
 **Date:** 2026-05-10
 **Initiative:** S1 Phase 2. Direct continuation of `2026-05-09-sporran-deck-design.md` (Phase 0 + 1 + 1.5 shipped).
-**Status:** Draft — ready to dispatch as one cohesive change. No code yet.
+**Status:** ✅ Shipped 2026-05-10 — see "Shipping note" below for the v3-in-place vs v4-bump deviation. Phase 3 pool expansion shipped same day in `f514cb8`.
 **Word count:** ~1,800
 **Prerequisite:** Phase 0 (`eabe2a6`) + Phase 1 (`6275720`) + Phase 1.5 12th card (`a5043e5`) + Phase 1.5 DOM-focus mirror (`d3221b8`) all shipped on master.
+
+---
+
+## Shipping note (truth-up 2026-05-11)
+
+The body below is the design as originally drafted. Two deviations from the implementation that landed:
+
+1. **Replay blob versioning.** The spec proposed bumping to `ReplayBlobV4` with a new codec module. Implementation extended `ReplayBlobV3` in place with an optional `sporranPicks?: readonly string[]` field (see the v3 module docstring + `src/replay/ReplayRecorder.test.ts` `describe('ReplayRecorder S1 Phase 2 (sporranPicks)')`). Reason: the new field is purely additive and back-compat-shaped, so the v3 → v4 ladder argument in §4 below was redundant for this slice. Sister-shape held; the version ladder rationale stays valid for the next state-affecting addition.
+2. **Save schema version.** The spec planned `SAVE_SCHEMA_VERSION 18 → 19` solely for `sporranPicks`. By ship time the schema chain had already moved beyond v19 for other features; `sporranPicks` rode along on the broader migration pass rather than triggering its own bump. Current `SAVE_SCHEMA_VERSION` is **22** (see `src/utils/save/schema.ts`); `sporranPicks` is read/written through `src/utils/save/history.ts` `coerceRunHistoryEntry`.
+
+Shipping commits (in order):
+
+| Commit | Surface |
+|---|---|
+| `e183bcb` | Phase 2 — chronicle persistence + replay-side pick replay |
+| `b658b8d` | Chronicle row pip strip — surface drafted picks per run |
+| `f514cb8` | Phase 3 — pool expansion (deed / seasonal / variant gates) |
+| `8d92dfa` | DOM-focus restore-target fix unblocking the SporranScene a11y path |
+| `1c3dd31` | Chronicle pip-strip hover tooltip — surface card names |
+| `e77fda3` | RunHistoryRecorder two-store split clarification (trinity-by-design) |
+
+The "Draft — no code yet" status line above is the original spec status and is left in the prose as decision history; the frontmatter status is the source of truth.
 
 ---
 
