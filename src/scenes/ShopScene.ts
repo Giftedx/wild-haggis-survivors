@@ -28,6 +28,8 @@ import {
   type SceneReturnData,
   type SceneReturnTarget,
 } from './returnTarget';
+import { createDomFocusLayer, type DomFocusLayer } from '../ui/domFocusLayer';
+import { buildShopDomFocusActions } from './shopDomFocusActions';
 
 /**
  * ShopScene — paged upgrade shop that fits the default 800x600 canvas.
@@ -37,6 +39,11 @@ export class ShopScene extends Phaser.Scene {
   private readonly upgradesPerPage = 8;
   private saveData!: SaveData;
   private shopMusic = new ShopAmbientLoop();
+  /**
+   * T407 — visually hidden DOM mirror for screen readers + Tab/Enter on
+   * upgrade rows, pagination, and back. Sister to CurseScene / SporranScene.
+   */
+  private domFocusLayer: DomFocusLayer | null = null;
   private rowElements: Phaser.GameObjects.GameObject[] = [];
   private footerElements: Phaser.GameObjects.GameObject[] = [];
   private goldText!: Phaser.GameObjects.Text;
@@ -112,10 +119,80 @@ export class ShopScene extends Phaser.Scene {
     this.renderRows();
     this.renderFooter();
 
+    this.installShopDomFocusLayer();
+
     this.shopMusic.start();
     stopAmbientWindOnShutdown(this);
-    this.events.once('shutdown', () => this.shopMusic.stop());
+    this.events.once('shutdown', () => {
+      this.shopMusic.stop();
+      this.uninstallShopDomFocusLayer();
+    });
     addSceneFadeIn(this, 400, 0x1a1008);
+  }
+
+  private installShopDomFocusLayer(): void {
+    if (typeof document === 'undefined') return;
+    this.domFocusLayer = createDomFocusLayer({
+      id: 'whs-shop-focus-layer',
+      label: t('ui.shop.title'),
+      description: t('ui.shop.tier_pip_legend'),
+      role: 'dialog',
+      actions: this.buildShopDomFocusActionList(),
+      initialFocusIndex: 0,
+    });
+  }
+
+  private uninstallShopDomFocusLayer(): void {
+    this.domFocusLayer?.destroy();
+    this.domFocusLayer = null;
+  }
+
+  private refreshShopDomActions(): void {
+    if (!this.domFocusLayer) return;
+    this.domFocusLayer.setActions(this.buildShopDomFocusActionList());
+  }
+
+  private buildShopDomFocusActionList() {
+    const pagination = this.getPagination();
+    const visibleUpgrades = PERMANENT_UPGRADES.slice(pagination.startIndex, pagination.endIndex);
+    const totalPages = this.getTotalPages();
+    return buildShopDomFocusActions({
+      visibleUpgrades,
+      upgrades: this.saveData.upgrades,
+      gold: this.saveData.gold,
+      hasPrevPage: this.currentPage > 0,
+      hasNextPage: this.currentPage < totalPages - 1,
+      onBuy: (upgradeKey) => {
+        const upgrade = PERMANENT_UPGRADES.find((u) => u.key === upgradeKey);
+        if (!upgrade) return;
+        const rowState = resolveShopUpgradeRowState(
+          upgrade,
+          this.saveData.upgrades[upgrade.key],
+          this.saveData.gold,
+        );
+        this.purchaseUpgrade(upgrade, rowState);
+      },
+      onPrevPage: () => {
+        if (this.currentPage <= 0) return;
+        audio.playClick();
+        this.currentPage--;
+        this.updateHeader();
+        this.renderRows();
+        this.renderFooter();
+      },
+      onNextPage: () => {
+        if (this.currentPage >= totalPages - 1) return;
+        audio.playClick();
+        this.currentPage++;
+        this.updateHeader();
+        this.renderRows();
+        this.renderFooter();
+      },
+      onBack: () => {
+        audio.playClick();
+        startSceneFadeOut(this, SCENE_FADE_OUT_MS, () => this.scene.start(this.returnTo));
+      },
+    });
   }
 
   private getPagination() {
@@ -294,6 +371,8 @@ export class ShopScene extends Phaser.Scene {
     });
 
     this.footerElements.push(backButton, backText);
+
+    this.refreshShopDomActions();
   }
 
   private createPageButton(
