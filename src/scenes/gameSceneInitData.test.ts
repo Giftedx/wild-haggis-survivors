@@ -24,6 +24,7 @@ describe('parseGameSceneInitData', () => {
         pendingReplay: null,
         pendingCurseKey: null,
         pendingSporranIds: null,
+        pendingSharedRunMeta: null,
       });
     });
 
@@ -35,6 +36,7 @@ describe('parseGameSceneInitData', () => {
         pendingReplay: null,
         pendingCurseKey: null,
         pendingSporranIds: null,
+        pendingSharedRunMeta: null,
       });
     });
   });
@@ -196,6 +198,36 @@ describe('parseGameSceneInitData', () => {
     it('replay blob without sporranPicks AND no caller list → null', () => {
       const resolved = parseGameSceneInitData({ replay: validReplay });
       expect(resolved.pendingSporranIds).toBeNull();
+    });
+  });
+
+  describe('sharedRunMeta (W82)', () => {
+    it('captures setup verbatim', () => {
+      const meta = {
+        seed: 12345,
+        variantKey: 'classic' as const,
+        curseKey: 'heavy_legs' as const,
+      };
+      const resolved = parseGameSceneInitData({ sharedRunMeta: meta });
+      expect(resolved.pendingSharedRunMeta).toEqual(meta);
+    });
+
+    it('null sharedRunMeta resolves to null', () => {
+      expect(
+        parseGameSceneInitData({ sharedRunMeta: null }).pendingSharedRunMeta,
+      ).toBeNull();
+    });
+
+    it('replay clears sharedRunMeta even when caller stamped it', () => {
+      const resolved = parseGameSceneInitData({
+        sharedRunMeta: {
+          seed: 1,
+          variantKey: 'classic',
+          curseKey: null,
+        },
+        replay: validReplay,
+      });
+      expect(resolved.pendingSharedRunMeta).toBeNull();
     });
   });
 });

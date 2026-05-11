@@ -239,6 +239,7 @@ Outputs the pipeline should produce:
 - ~~Still postcard (PNG) with run facts + tartan frame~~ — ✅ shipped (`src/utils/postcard.ts`, 2026-04-17; tartan added 2026-04-18).
 - ~~Short clip (WebM, 15 s rolling buffer)~~ — ✅ shipped 2026-04-22; audio tap + clipboard follow-ups shipped 2026-04-26. 2026-05-11 hardening added MP4 fallback for browsers that expose `MediaRecorder` without WebM support, extension-correct filenames, and explicit unsupported-browser feedback. Still open: automatic highlight selection / deterministic camera-path reel.
 - ~~Full screenshot at any pause~~ — ✅ shipped (F10 + Pause save screenshot + Game Over save/copy frame).
+- ~~Seed-share deep link~~ — ✅ shipped 2026-05-11 (W82). Game Over "↗ share this run" link copies `?run=<seedCode>&v=<variant>&c=<curse>` to clipboard; recipient lands directly in Game with the same starting conditions and sees a "↗ Shared run · <variant> · <curse>" banner. Codec `src/utils/sharedRunUrl.ts`; BootScene router scrubs the URL after dispatch so refresh / back-nav lands cleanly. Builds on T1 deterministic replay — recipient plays their own inputs, not the sharer's frames.
 
 **Not in v1:** public CDN, in-browser video editor, network upload.
 

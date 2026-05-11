@@ -14,6 +14,7 @@ import { getSettingsManager } from '../core/SettingsManager';
 import { applyLocaleFromUserSettings } from '../core/applyLocaleFromSettings';
 import { t } from '../core/i18n';
 import { loadSave } from '../utils/save';
+import { parseSharedRunUrl } from '../utils/sharedRunUrl';
 import {
   bakeEnemyAtlas,
   bakeNonVariantAccessoryAtlas,
@@ -206,6 +207,31 @@ export class BootScene extends Phaser.Scene {
         const n = raw != null && raw !== '' ? Number(raw) : NaN;
         const seed = Number.isFinite(n) ? n : undefined;
         this.scene.start('Game', seed !== undefined ? { seed } : {});
+        return;
+      }
+    }
+
+    // W82 Shared-run URL — `?run=<seed code>&v=<variant>[&c=<curse>]`.
+    // Visiting a shared link drops the recipient straight into the
+    // sender's exact starting conditions (seed + variant + curse). The
+    // recipient still plays their own inputs — this is a setup share,
+    // not a frame-by-frame replay. URL params are scrubbed via
+    // history.replaceState so a refresh / back-nav lands cleanly on
+    // the menu instead of re-triggering the run. Production-safe;
+    // unlike `?quickplay` this path runs outside dev mode too.
+    if (typeof window !== 'undefined') {
+      const shared = parseSharedRunUrl(window.location.search);
+      if (shared) {
+        try { new SaveManager().clearActiveRun(); } catch { /* ignore */ }
+        try {
+          window.history.replaceState({}, '', window.location.pathname);
+        } catch { /* ignore — best-effort URL hygiene */ }
+        this.scene.start('Game', {
+          seed: shared.seed,
+          forceVariantKey: shared.variantKey,
+          curseKey: shared.curseKey,
+          sharedRunMeta: shared,
+        });
         return;
       }
     }

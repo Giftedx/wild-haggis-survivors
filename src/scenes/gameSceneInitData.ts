@@ -8,6 +8,7 @@
  * in CLAUDE.md.
  */
 import { isReplayBlobAny, type ReplayBlobAny } from '../replay/replayBlob';
+import type { SharedRunSetup } from '../utils/sharedRunUrl';
 
 /**
  * Validate the raw `pickedSporranIds` payload. Accepts a list of
@@ -50,6 +51,14 @@ export interface GameSceneInitDataInput {
    * deltas.
    */
   pickedSporranIds?: readonly string[] | null;
+  /**
+   * W82 Shared-run URL — present when the run was launched from a
+   * `?run=<seed>&v=<variant>&c=<curse>` deep link (BootScene parses the
+   * URL, GameScene shows the welcome banner). Decoupled from the
+   * other init fields so the seed / variant / curse pipeline doesn't
+   * need a special branch.
+   */
+  sharedRunMeta?: SharedRunSetup | null;
 }
 
 /**
@@ -69,6 +78,12 @@ export interface ResolvedGameSceneInit {
    * canonicalised to `null` so consumers can branch on a single shape.
    */
   pendingSporranIds: readonly string[] | null;
+  /**
+   * W82 Shared-run URL — populated when launched from a deep link;
+   * GameScene reads this to show the "Shared run loaded · <variant> ·
+   * <curse>" banner on run start. `null` for normal runs.
+   */
+  pendingSharedRunMeta: SharedRunSetup | null;
 }
 
 /**
@@ -98,6 +113,10 @@ export function parseGameSceneInitData(
         ? data.curseKey
         : null,
     pendingSporranIds: parseSporranIds(data?.pickedSporranIds),
+    // Shared-run banner — opaque metadata, presence-only flag. Replay
+    // playback paths (below) clear it because a replay was never
+    // launched by a shared URL.
+    pendingSharedRunMeta: data?.sharedRunMeta ?? null,
   };
 
   if (data?.replay && isReplayBlobAny(data.replay)) {
@@ -124,6 +143,10 @@ export function parseGameSceneInitData(
         ? (blob.sporranPicks as readonly string[])
         : (data.pickedSporranIds ?? null),
     );
+    // A replay is internal playback — never a shared run, even if the
+    // caller (Chronicle) somehow stamped both fields. Keep the banner
+    // off so the replay HUD reads cleanly.
+    base.pendingSharedRunMeta = null;
   }
 
   return base;

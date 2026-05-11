@@ -201,6 +201,8 @@ export const ui = {
     seed_copied: 'Copied: {code}',
     postcard_hint: 'save postcaird',
     postcard_saved: 'postcaird saved',
+    share_run_hint: 'share this run',
+    share_run_copied: 'link copied · paste tae share',
     rerun_same_seed: '↻ same seed',
     rerun_same_seed_with_curse: '↻ same seed ☠ {curse}',
     victory_title: 'Tha moor\'s yours!',
@@ -2894,5 +2896,7 @@ export const ui = {
     clip_unsupported: 'Clip saving isnae supported in this browser.',
     frame_copied: 'Frame copied — paste awa.',
     frame_copy_failed: 'Couldnae copy — try Keep instead.',
+    shared_run_loaded: '↗ Shared run · {variant} · {curse}',
+    shared_run_loaded_clean: '↗ Shared run · {variant}',
   },
 } as const;

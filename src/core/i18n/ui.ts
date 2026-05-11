@@ -423,6 +423,11 @@ export const ui = {
     // W27 Capture & Share — small link beside the seed readout.
     postcard_hint: 'save postcard',
     postcard_saved: 'postcard saved',
+    // W82 Shared-run URL — companion link to the rerun-seed action.
+    // Copies a deep-link URL to the clipboard so a friend can paste it
+    // and play the same starting conditions (seed + variant + curse).
+    share_run_hint: 'share this run',
+    share_run_copied: 'link copied · paste to share',
     // ── Postcard footer labels (W18 Phase B — localized render). ──
     // These ride the exported PNG's summary strip; each label fronts
     // the next field so a Scots postcard reads "culls 432" instead of
@@ -3597,5 +3602,10 @@ export const ui = {
     clip_unsupported: 'Clip saving is not supported in this browser.',
     frame_copied: 'Frame copied — paste it where ye like.',
     frame_copy_failed: "Couldnae copy the frame — try Save instead.",
+    // W82 Shared-run URL — banner shown on the recipient side when a
+    // run launches from a `?run=...` deep link. `{variant}` and
+    // `{curse}` are already i18n-resolved labels.
+    shared_run_loaded: '↗ Shared run · {variant} · {curse}',
+    shared_run_loaded_clean: '↗ Shared run · {variant}',
   },
 } as const;

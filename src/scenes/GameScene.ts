@@ -42,6 +42,11 @@ import type { ReplayInput } from '../replay/ReplayInput';
 import type { ReplayBlobAny } from '../replay/replayBlob';
 import { resolveReplayMode } from '../replay/replayConfig';
 import { parseGameSceneInitData } from './gameSceneInitData';
+import type { SharedRunSetup } from '../utils/sharedRunUrl';
+import {
+  formatSharedRunIdentityToast,
+  SHARED_RUN_TOAST_COLOR,
+} from './game/sharedRunIdentityToast';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { SaveManager } from '../core/SaveManager';
 import { StatComposer } from '../core/StatComposer';
@@ -328,6 +333,14 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
    * run that did not go through `SporranScene`.
    */
   private pendingSporranIds: readonly string[] | null = null;
+  /**
+   * W82 Shared-run URL — set when BootScene launched this run from a
+   * `?run=...&v=...` deep link. GameScene consumes it once during
+   * `create()` to show the "Shared run loaded · <variant> · <curse>"
+   * welcome toast, then nulls it (so a hot-replay through the same
+   * scene instance doesn't re-fire the banner).
+   */
+  private pendingSharedRunMeta: SharedRunSetup | null = null;
   /**
    * S1 Phase 2 — snapshot of the picks that actually landed at run
    * start (filtered to known cards via `applySporranPicks`). Read by
@@ -626,6 +639,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.pendingReplay = resolved.pendingReplay;
     this.pendingCurseKey = resolved.pendingCurseKey;
     this.pendingSporranIds = resolved.pendingSporranIds;
+    this.pendingSharedRunMeta = resolved.pendingSharedRunMeta;
   }
 
   create(): void {
@@ -1363,6 +1377,18 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
     this.juice.setResumeBestCombo(resumeRun?.bestCombo);
     this.juice.setResumeComboState(resumeRun?.comboCount, resumeRun?.comboTimerMs);
     this.showRunIdentityToast(Boolean(resumeRun));
+    // W82 Shared-run banner — fired right after the identity toast so
+    // the queue order is "Classic · The original" → "Shared run ·
+    // Classic · Heavy Legs". `pendingSharedRunMeta` is consumed once
+    // (nulled) so a hot replay through the same scene instance does
+    // not re-fire the welcome.
+    if (this.pendingSharedRunMeta && !resumeRun) {
+      this.juice.showToast(
+        formatSharedRunIdentityToast(this.pendingSharedRunMeta),
+        SHARED_RUN_TOAST_COLOR,
+      );
+    }
+    this.pendingSharedRunMeta = null;
     showRunIntroToasts({
       scene: this,
       replayInput: this.replayInput,

@@ -20,6 +20,7 @@ import { renderGameOverSaveFrameLink } from './gameOverSaveFrameLink';
 import { renderGameOverCopyFrameLink } from './gameOverCopyFrameLink';
 import { renderGameOverSaveClipLink } from './gameOverSaveClipLink';
 import { renderGameOverRerunSeedLink } from './gameOverRerunSeedLink';
+import { renderGameOverShareRunLink } from './gameOverShareRunLink';
 
 /**
  * W27 Phase 4 — feature-detect the modern image clipboard API.
@@ -108,16 +109,24 @@ export function renderGameOverSeedAndLinkRows(
   if (hasRerun) {
     renderGameOverPostcardLink(scene, { centerX: panelCenterX - 100, y: linkY, depth: d + 3, delay: 1180, getPayload });
     renderGameOverRerunSeedLink(scene, { centerX: panelCenterX + 100, y: linkY, depth: d + 3, delay: 1200, getPayload });
+    // W82 Share-run link — third in the rerun family. Sits centred on
+    // the next row so it doesn't crowd the postcard/rerun pair. Same
+    // seed/variant/curse contract as rerun-seed, but writes a deep-link
+    // URL to the clipboard instead of restarting the run locally.
+    renderGameOverShareRunLink(scene, { centerX: panelCenterX, y: linkY + 16, depth: d + 3, delay: 1210, getPayload });
   } else {
     renderGameOverPostcardLink(scene, { centerX: panelCenterX, y: linkY, depth: d + 3, delay: 1180, getPayload });
   }
-  // Save frame link — gated by captureEnabled setting; sits on a second
-  // row directly below the postcard/rerun link row. Phase 4 — Copy frame
-  // sits beside Save frame when the modern Clipboard API is available
-  // (Chrome 76+, FF 127+, Safari 16.4+). Otherwise Save frame keeps the
-  // centre slot solo.
+  // Save frame link — gated by captureEnabled setting; sits below the
+  // share-run link (which already occupies `linkY + 16` when a rerun
+  // seed exists). Phase 4 — Copy frame sits beside Save frame when the
+  // modern Clipboard API is available (Chrome 76+, FF 127+, Safari
+  // 16.4+). Otherwise Save frame keeps the centre slot solo.
   if (getSettingsManager().load().captureEnabled && !compact) {
-    const saveFrameLinkY = linkY + 16;
+    // Capture rows shift down by one row when the share-run link is
+    // rendered (rerun case); otherwise they keep the historical
+    // tight stacking under the postcard.
+    const saveFrameLinkY = linkY + (hasRerun ? 32 : 16);
     const hasImageClipboard = isImageClipboardAvailable();
     if (hasImageClipboard) {
       renderGameOverSaveFrameLink(scene, { centerX: panelCenterX - 100, y: saveFrameLinkY, depth: d + 3, delay: 1220, getPayload });
