@@ -19,6 +19,7 @@ import { renderGameOverPostcardLink } from './gameOverPostcardLink';
 import { renderGameOverSaveFrameLink } from './gameOverSaveFrameLink';
 import { renderGameOverCopyFrameLink } from './gameOverCopyFrameLink';
 import { renderGameOverSaveClipLink } from './gameOverSaveClipLink';
+import { renderGameOverSaveHighlightLink } from './gameOverSaveHighlightLink';
 import { renderGameOverRerunSeedLink } from './gameOverRerunSeedLink';
 import { renderGameOverShareRunLink } from './gameOverShareRunLink';
 
@@ -136,8 +137,26 @@ export function renderGameOverSeedAndLinkRows(
     }
     const gameScene = scene.scene.get('Game') as GameScene | undefined;
     const recorder = gameScene?.getClipRecorder();
+    let nextClipRowY = saveFrameLinkY + 16;
     if (recorder?.isAvailable()) {
-      renderGameOverSaveClipLink(scene, { centerX: panelCenterX, y: saveFrameLinkY + 16, depth: d + 3, delay: 1240, recorder, getPayload });
+      renderGameOverSaveClipLink(scene, { centerX: panelCenterX, y: nextClipRowY, depth: d + 3, delay: 1240, recorder, getPayload });
+      nextClipRowY += 16;
+    }
+    // W82 Phase 3 — save-highlight link sits on its own row below the
+    // generic save-clip link when a boss was killed this run. Live
+    // accessor so a recycled scene / hot-reload never serves a stale
+    // Blob, and so the link stays inert if the snapshot is gone by
+    // click time.
+    const highlightAccessor = () => gameScene?.getBossKillHighlight() ?? null;
+    if (highlightAccessor() !== null) {
+      renderGameOverSaveHighlightLink(scene, {
+        centerX: panelCenterX,
+        y: nextClipRowY,
+        depth: d + 3,
+        delay: 1250,
+        getHighlight: highlightAccessor,
+        getPayload,
+      });
     }
   }
 

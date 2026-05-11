@@ -150,6 +150,28 @@ export class ClipRecorder {
     return blob;
   }
 
+  /**
+   * W82 highlight — non-destructive snapshot of the current buffer.
+   *
+   * Returns a `Blob` of the chunks currently in the rolling window, or
+   * `null` if the recorder hasn't accumulated anything yet. The
+   * underlying buffer is **not** drained, so the recorder keeps
+   * rolling for future highlights (a subsequent boss kill still gets
+   * its own clean snapshot of the moment that follows).
+   *
+   * Chunks captured at snapshot time stay readable even after the
+   * live buffer rolls past them — the returned `Blob` holds its own
+   * references, independent of any later `splice` on `this.buffer`.
+   * Inherits the same multi-chunk WebM/MP4 layout assumption as
+   * `saveLast()`: the first chunk in the buffer carries the
+   * container header, so a snapshot taken before the rolling window
+   * has overwritten that chunk produces a playable file.
+   */
+  snapshot(): Blob | null {
+    if (this.buffer.length === 0) return null;
+    return new Blob(this.buffer, { type: this.mimeType ?? 'video/webm' });
+  }
+
   private pickCodec(): CodecOption | null {
     const MR = (globalThis as unknown as { MediaRecorder?: { isTypeSupported: (t: string) => boolean } }).MediaRecorder;
     if (!MR) return null;

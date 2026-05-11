@@ -260,6 +260,7 @@ export const ui = {
     save_frame: 'Keep this frame',
     save_clip: 'Keep the clip',
     copy_frame: 'Copy this frame',
+    save_highlight: 'Keep the {boss} kill',
     name_framing: {
       death: 'Here lies {name}.',
       victory: '{name} gaed hame.',
@@ -2894,6 +2895,8 @@ export const ui = {
     clip_failed: 'Couldnae save the clip — wait a wee minute.',
     clip_empty: 'Play a bit longer before clipping.',
     clip_unsupported: 'Clip saving isnae supported in this browser.',
+    highlight_saved: 'Highlight kept — that yin\'s yours.',
+    highlight_failed: 'Couldnae save the highlight — try again.',
     frame_copied: 'Frame copied — paste awa.',
     frame_copy_failed: 'Couldnae copy — try Keep instead.',
     shared_run_loaded: '↗ Shared run · {variant} · {curse}',

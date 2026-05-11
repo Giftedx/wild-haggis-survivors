@@ -54,4 +54,38 @@ describe('buildCaptureFilename', () => {
     });
     expect(name).toBe('whs_victory_fancy-haggis-prime_01m01s_2026-04-22.png');
   });
+
+  it('builds a highlight filename with the boss slug', () => {
+    const name = buildCaptureFilename('highlight', {
+      mode: 'victory',
+      variantLabel: 'Classic Haggis',
+      timeSurvivedSec: 754,
+      dateYmd: '2026-05-11',
+      seedCode: 'AB12CD',
+      bossKey: 'taxman',
+    });
+    expect(name).toBe('whs_highlight_classic-haggis_taxman_12m34s_2026-05-11_AB12CD.webm');
+  });
+
+  it('honours an mp4 clip extension on a highlight filename', () => {
+    const name = buildCaptureFilename('highlight', {
+      mode: 'death',
+      variantLabel: 'Peerie Shetlander',
+      timeSurvivedSec: 122,
+      dateYmd: '2026-05-11',
+      bossKey: 'gordon',
+      clipExtension: 'mp4',
+    });
+    expect(name).toBe('whs_highlight_peerie-shetlander_gordon_02m02s_2026-05-11.mp4');
+  });
+
+  it('omits the boss slot when bossKey is missing', () => {
+    const name = buildCaptureFilename('highlight', {
+      mode: 'death',
+      variantLabel: 'Classic Haggis',
+      timeSurvivedSec: 60,
+      dateYmd: '2026-05-11',
+    });
+    expect(name).toBe('whs_highlight_classic-haggis_01m00s_2026-05-11.webm');
+  });
 });

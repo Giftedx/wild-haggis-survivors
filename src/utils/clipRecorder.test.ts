@@ -183,3 +183,75 @@ describe('ClipRecorder audio support', () => {
     expect(rec.hasAudio()).toBe(false);
   });
 });
+
+describe('ClipRecorder.snapshot (W82 highlight)', () => {
+  beforeEach(() => {
+    installMediaRecorderMock();
+  });
+
+  it('returns null when the buffer is empty', () => {
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    rec.start();
+    expect(rec.snapshot()).toBeNull();
+  });
+
+  it('returns a Blob of the current buffer without draining it', () => {
+    const instances = installMediaRecorderMock();
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2, timesliceMs: 500 });
+    rec.start();
+    const mr = instances[0]!;
+    for (let i = 0; i < 3; i++) {
+      mr.ondataavailable?.({ data: new Blob([`chunk-${i}`], { type: 'video/webm' }) });
+    }
+
+    const before = rec.bufferedChunkCount();
+    const snap = rec.snapshot();
+    expect(snap).toBeInstanceOf(Blob);
+    expect(snap!.size).toBeGreaterThan(0);
+    // Buffer is not drained — the recorder keeps rolling for future
+    // highlights (a subsequent boss kill still gets its own snapshot).
+    expect(rec.bufferedChunkCount()).toBe(before);
+  });
+
+  it('snapshot survives future rolling — chunks captured at snapshot time stay readable', async () => {
+    const instances = installMediaRecorderMock();
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2, timesliceMs: 500 });
+    rec.start();
+    const mr = instances[0]!;
+    // Push 4 chunks (the full buffer capacity), snapshot, then push 4
+    // more so the original chunks roll out of the live buffer.
+    for (let i = 0; i < 4; i++) {
+      mr.ondataavailable?.({ data: new Blob([`early-${i}`], { type: 'video/webm' }) });
+    }
+    const snap = rec.snapshot();
+    expect(snap).not.toBeNull();
+    const snapSize = snap!.size;
+
+    for (let i = 0; i < 4; i++) {
+      mr.ondataavailable?.({ data: new Blob([`late-${i}`], { type: 'video/webm' }) });
+    }
+    // The held snapshot still has its original payload — the Blob
+    // copy is independent of any subsequent buffer mutation.
+    expect(snap!.size).toBe(snapSize);
+
+    // A fresh snapshot reflects the new buffer content (different
+    // bytes, different size since the chunks differ).
+    const freshSnap = rec.snapshot();
+    expect(freshSnap).not.toBeNull();
+    expect(freshSnap!.size).toBeGreaterThan(0);
+  });
+
+  it('snapshot Blob honours the chosen mime type (webm)', async () => {
+    const instances = installMediaRecorderMock();
+    const canvas = makeMockCanvas();
+    const rec = new ClipRecorder(canvas, { durationSec: 2 });
+    rec.start();
+    const mr = instances[0]!;
+    mr.ondataavailable?.({ data: new Blob(['x'], { type: 'video/webm' }) });
+    const snap = rec.snapshot();
+    expect(snap!.type).toContain('webm');
+  });
+});

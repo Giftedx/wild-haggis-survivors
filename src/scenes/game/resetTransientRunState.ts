@@ -136,6 +136,11 @@ export interface ResetTransientRunStateDeps {
   setAncestralEcho: (v: AncestralEcho | null) => void;
   setRelicSlotUI: (v: RelicSlotUI | null) => void;
   setXpOverflowGoldBatch: (v: number) => void;
+  /**
+   * W82 Phase 3 — wipes the boss-kill highlight snapshot so a recycled
+   * scene instance never serves the previous run's clip Blob.
+   */
+  setBossKillHighlight: (v: null) => void;
 }
 
 /**
@@ -228,4 +233,8 @@ export function resetTransientRunState(deps: ResetTransientRunStateDeps): void {
   deps.musicStateScratch.biomeTimbre = 0.45;
   deps.setXpOverflowGoldBatch(0);
   clearGrudgeLedger(deps.grudgeLedger);
+  // W82 Phase 3 — clear the held boss-kill highlight Blob (releases
+  // the rolling-buffer chunks for GC) so the recycled scene starts
+  // fresh.
+  deps.setBossKillHighlight(null);
 }

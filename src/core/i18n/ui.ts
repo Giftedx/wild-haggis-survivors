@@ -485,6 +485,12 @@ export const ui = {
     save_frame: 'Save frame',
     save_clip: 'Save clip',
     copy_frame: 'Copy frame',
+    // W82 Phase 3 — save-highlight link. Appears below "Save clip"
+    // when the player killed a boss this run. `{boss}` resolves to
+    // the boss display name (e.g. "Gordon", "Tour Bus", "Death (The
+    // Taxman)"). The clip itself is the rolling buffer at the moment
+    // the boss died, not at click time.
+    save_highlight: 'Save {boss} kill',
     name_framing: {
       death: 'Here lies {name}.',
       victory: '{name} walked home.',
@@ -3600,6 +3606,11 @@ export const ui = {
     clip_failed: "Couldnae save the clip — gie it a wee minute.",
     clip_empty: 'Play a wee bit longer before saving a clip.',
     clip_unsupported: 'Clip saving is not supported in this browser.',
+    // W82 Phase 3 — feedback toasts for the save-highlight link.
+    // Voice mirrors the existing clip family so the player reads a
+    // consistent register across both download paths.
+    highlight_saved: 'Highlight saved — keep that moment.',
+    highlight_failed: "Couldnae save the highlight — gie it another go.",
     frame_copied: 'Frame copied — paste it where ye like.',
     frame_copy_failed: "Couldnae copy the frame — try Save instead.",
     // W82 Shared-run URL — banner shown on the recipient side when a

@@ -213,6 +213,16 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
   timeManager!: TimeManager;
   updateTickers = new UpdateTickers();
   clipRecorder: ClipRecorder | null = null;
+  /**
+   * W82 Phase 3 — most recent boss-kill highlight snapshot. Captured
+   * non-destructively from `clipRecorder.snapshot()` inside the
+   * `onBossKilled` callback at run time; consumed live by the Game
+   * Over save-highlight link. Reset in `resetTransientRunState` so
+   * a recycled scene instance never serves the previous run's clip.
+   * Held only in memory — does not survive a page refresh. See
+   * `src/scenes/game/bossKillHighlight.ts` for the contract.
+   */
+  bossKillHighlight: import('./game/bossKillHighlight').BossKillHighlight | null = null;
   edgeIndicators!: EdgeIndicators;
   minimap!: Minimap;
   /** M1 Moor Road — per-run node-path system + HUD widget. */
@@ -597,6 +607,7 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       setAncestralEcho: (v) => { this.ancestralEcho = v; },
       setRelicSlotUI: (v) => { this.relicSlotUI = v; },
       setXpOverflowGoldBatch: (v) => { this.xpOverflowGoldBatch = v; },
+      setBossKillHighlight: (v) => { this.bossKillHighlight = v; },
     });
 
     // S1 Phase 2 — clear last run's snapshot. The field is overwritten
@@ -1127,7 +1138,27 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
       onTouristPhotographed: (x, y) => this.pickupSpawner.spawnPolaroid(x, y),
       onHunterFieldNote: (x, y) => this.pickupSpawner.spawnFieldNote(x, y),
       onEliteKilled: (x, y) => this.relicOrchestrator.rollAndSpawn('elite', x, y),
-      onBossKilled: (bossKey, x, y) => this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey),
+      onBossKilled: (bossKey, x, y) => {
+        this.relicOrchestrator.rollAndSpawn('boss', x, y, bossKey);
+        // W82 Phase 3 — snapshot the rolling buffer at the kill
+        // moment. Non-destructive: the recorder keeps rolling so a
+        // subsequent boss kill produces its own clean snapshot
+        // (replaces this one). Skipped silently when the recorder
+        // is unavailable, audio-only, or hasn't yet accumulated a
+        // chunk.
+        const rec = this.clipRecorder;
+        if (rec && rec.isAvailable()) {
+          const blob = rec.snapshot();
+          if (blob !== null) {
+            this.bossKillHighlight = {
+              bossKey,
+              blob,
+              extension: rec.selectedExtension(),
+              capturedAtSec: this.spawnSystem?.getGameTimeSec() ?? 0,
+            };
+          }
+        }
+      },
       bumpBossKillCount,
       bumpCursedVictoryByBoss,
       modifyLifesteal: (base, nowMs) => this.relicEffectDriver?.modifyLifesteal(base, nowMs) ?? base,
@@ -1851,6 +1882,17 @@ export class GameScene extends Phaser.Scene implements ISceneContext {
 
   public getClipRecorder(): ClipRecorder | null {
     return this.clipRecorder;
+  }
+
+  /**
+   * W82 Phase 3 — live accessor for the most recent boss-kill
+   * highlight snapshot. Returns `null` until the player kills their
+   * first boss this run, or after `resetTransientRunState` wipes
+   * the field at the top of a fresh `create()` pass. Consumed by
+   * the Game Over save-highlight link.
+   */
+  public getBossKillHighlight(): import('./game/bossKillHighlight').BossKillHighlight | null {
+    return this.bossKillHighlight;
   }
 
   /**

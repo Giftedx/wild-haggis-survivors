@@ -1,4 +1,4 @@
-export type CaptureKind = 'screenshot' | 'clip';
+export type CaptureKind = 'screenshot' | 'clip' | 'highlight';
 
 export interface CaptureFilenamePayload {
   mode: 'victory' | 'death';
@@ -7,11 +7,18 @@ export interface CaptureFilenamePayload {
   seedCode?: string;
   dateYmd: string;
   clipExtension?: 'webm' | 'mp4';
+  /**
+   * W82 highlight — when present, the filename gets a `_<bossSlug>`
+   * slot between variant and mm-ss so a player can recognise which
+   * boss kill the clip captures. Ignored for non-highlight kinds.
+   */
+  bossKey?: string;
 }
 
 const EXTENSIONS: Record<CaptureKind, string> = {
   screenshot: 'png',
   clip: 'webm',
+  highlight: 'webm',
 };
 
 function slugify(s: string): string {
@@ -32,14 +39,19 @@ export function buildCaptureFilename(
   kind: CaptureKind,
   p: CaptureFilenamePayload,
 ): string {
-  const parts: string[] = ['whs', p.mode];
+  const prefix = kind === 'highlight' ? 'highlight' : p.mode;
+  const parts: string[] = ['whs', prefix];
   const slug = slugify(p.variantLabel);
   if (slug) parts.push(slug);
+  if (kind === 'highlight' && p.bossKey) {
+    const bossSlug = slugify(p.bossKey);
+    if (bossSlug) parts.push(bossSlug);
+  }
   parts.push(formatMmSs(p.timeSurvivedSec));
   parts.push(p.dateYmd);
   if (p.seedCode) parts.push(p.seedCode);
-  const extension = kind === 'clip'
-    ? p.clipExtension ?? EXTENSIONS.clip
+  const extension = (kind === 'clip' || kind === 'highlight')
+    ? p.clipExtension ?? EXTENSIONS[kind]
     : EXTENSIONS.screenshot;
   return `${parts.join('_')}.${extension}`;
 }
