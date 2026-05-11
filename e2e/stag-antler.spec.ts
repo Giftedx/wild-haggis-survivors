@@ -40,6 +40,7 @@ test.describe('stag antler dash-strike (DESIGN_IDEAS §5)', () => {
         // gated by `!this.autoBattleSteering` so the dash key path is
         // skipped entirely. Without auto-steering the manual Space
         // press routes through tryDash → isDashing → tickFrameWorld.
+        (window as unknown as { AUTO_BATTLE: boolean }).AUTO_BATTLE = false;
       } catch { /* ignore */ }
     }, CURRENT_META_SAVE_VERSION);
 
