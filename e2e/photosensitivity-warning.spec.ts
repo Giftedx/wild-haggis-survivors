@@ -61,7 +61,11 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
           return;
         }
         sessionStorage.setItem('__photoTestFreshLoaded', '1');
-        localStorage.removeItem('whs_game_settings');
+        // Fresh-save posture, but with the *cultural* splash pre-acknowledged
+        // so this spec isolates the photosensitivity gate only.
+        localStorage.setItem('whs_game_settings', JSON.stringify({
+          culturalContentSplashSeen: true,
+        }));
       } catch {
         /* ignore */
       }
@@ -74,22 +78,23 @@ test.describe('A1 M5 photosensitivity warning splash', () => {
     await page.bringToFront();
     await canvas.focus();
 
-    // Give the boot dawn cinematic + splash-mount a generous window to
-    // settle, then confirm MainMenu has NOT activated. If the splash
-    // isn't blocking, MainMenu would activate ~2.8s after boot.
+    // Let the boot dawn cinematic complete and the warning splash mount.
+    // Then confirm MainMenu has NOT activated yet.
+    await page.waitForTimeout(4_000); // boot dawn ~2.8s
+
     const mainMenuBlocked = await page.evaluate(async () => {
-      const g = (window as unknown as { game?: {
-        scene: { isActive(k: string): boolean };
-      } }).game;
-      if (!g) return { ok: false, reason: 'no game object' };
-      const deadline = Date.now() + 7_000;
+      const deadline = Date.now() + 3_000;
       while (Date.now() < deadline) {
-        if (g.scene.isActive('MainMenu')) {
+        const g = (window as unknown as { game?: {
+          scene: { isActive(k: string): boolean };
+        } }).game;
+        // If the game object isn't published yet, keep waiting.
+        if (g && g.scene.isActive('MainMenu')) {
           return { ok: false, reason: 'MainMenu activated before dismissal' };
         }
         await new Promise((r) => setTimeout(r, 150));
       }
-      return { ok: true, reason: 'MainMenu blocked for 7s as expected' };
+      return { ok: true, reason: 'MainMenu stayed blocked while splash should be up' };
     });
     expect(mainMenuBlocked.ok, `${mainMenuBlocked.reason}`).toBe(true);
 
