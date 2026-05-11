@@ -21,7 +21,10 @@ import { audio } from '../../systems/AudioSystem';
 import { getCurseByKey, type CurseKey } from '../../data/curses';
 import { VARIANT_KEYS, type VariantKey } from '../../data/variants';
 import { copyTextToClipboard } from '../../utils/clipboard';
-import { buildSharedRunUrl } from '../../utils/sharedRunUrl';
+import {
+  buildSharedRunUrl,
+  type SharedRunChallenge,
+} from '../../utils/sharedRunUrl';
 import { resolveCopyActionLinkPalette } from '../gameOverLinkPalette';
 import type { GameOverPayload } from '../gameOverPayload';
 import { COPY_ACTION_LINK_TEXT_BASE } from './copyActionLinkText';
@@ -38,6 +41,25 @@ export interface RenderGameOverShareRunLinkOpts {
 function pickVariantKey(raw: string | undefined): VariantKey | null {
   if (!raw) return null;
   return (VARIANT_KEYS as readonly string[]).includes(raw) ? (raw as VariantKey) : null;
+}
+
+/**
+ * Distil the sharer's outcome from `payload` into a `SharedRunChallenge`,
+ * or null if the run wasn't winnable yet (zero-second crash before any
+ * play). The codec's defensive bounds catch tampering on the receiving
+ * side; this just funnels the live values through.
+ */
+function buildChallengeFromPayload(
+  payload: GameOverPayload,
+): SharedRunChallenge | null {
+  const secs = payload.summary?.timeSurvivedSec;
+  if (typeof secs !== 'number' || !Number.isFinite(secs) || secs <= 0) {
+    return null;
+  }
+  return {
+    outcome: payload.mode === 'victory' ? 'victory' : 'death',
+    timeSurvivedSec: Math.floor(secs),
+  };
 }
 
 /**
@@ -87,13 +109,21 @@ export function renderGameOverShareRunLink(
     // build-removed curse falls back to "clean" — same forward-
     // compat policy the URL codec uses on the recipient side.
     const curse = getCurseByKey(p.curseKey ?? null);
+    // V2 — attach the sharer's outcome (time + win/loss flag) so the
+    // recipient lands on a "↗ Shared run · 12:34 to beat" banner.
+    // The codec floors fractional seconds and rejects non-finite /
+    // out-of-range values, so a malformed payload silently degrades
+    // to the V1 (setup-only) share rather than refusing the whole URL.
+    const challenge = buildChallengeFromPayload(p);
     const url = buildSharedRunUrl(
       {
         seed: p.runSeed,
         variantKey: variant,
         curseKey: curse ? (curse.key as CurseKey) : null,
+        challenge: null,
       },
       base,
+      { challenge },
     );
     const ok = copyTextToClipboard(url);
     if (ok) {

@@ -3607,5 +3607,15 @@ export const ui = {
     // `{curse}` are already i18n-resolved labels.
     shared_run_loaded: '↗ Shared run · {variant} · {curse}',
     shared_run_loaded_clean: '↗ Shared run · {variant}',
+    // W82 V2 (challenge mode) — when the URL carries the sharer's
+    // outcome (t + o params), the banner gains a friendly "time to
+    // beat / outlast" tail. Voice register is Hearth: "to beat" /
+    // "to outlast" framing puts the recipient alongside the sharer
+    // (picking up a friend's run) rather than racing them. `{time}`
+    // is already a formatted mm:ss string from formatClockTime.
+    shared_run_challenge_victory: '↗ Shared run · {variant} · {curse} · {time} to beat',
+    shared_run_challenge_death: '↗ Shared run · {variant} · {curse} · {time} to outlast',
+    shared_run_challenge_victory_clean: '↗ Shared run · {variant} · {time} to beat',
+    shared_run_challenge_death_clean: '↗ Shared run · {variant} · {time} to outlast',
   },
 } as const;

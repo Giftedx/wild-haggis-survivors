@@ -2898,5 +2898,9 @@ export const ui = {
     frame_copy_failed: 'Couldnae copy — try Keep instead.',
     shared_run_loaded: '↗ Shared run · {variant} · {curse}',
     shared_run_loaded_clean: '↗ Shared run · {variant}',
+    shared_run_challenge_victory: '↗ Shared run · {variant} · {curse} · {time} tae beat',
+    shared_run_challenge_death: '↗ Shared run · {variant} · {curse} · {time} tae outlast',
+    shared_run_challenge_victory_clean: '↗ Shared run · {variant} · {time} tae beat',
+    shared_run_challenge_death_clean: '↗ Shared run · {variant} · {time} tae outlast',
   },
 } as const;

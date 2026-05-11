@@ -13,6 +13,7 @@
 import { t } from '../../core/i18n';
 import { getVariantByKey } from '../../data/variants';
 import { getCurseByKey } from '../../data/curses';
+import { formatClockTime } from '../../utils/formatClockTime';
 import type { SharedRunSetup } from '../../utils/sharedRunUrl';
 
 /**
@@ -24,16 +25,49 @@ import type { SharedRunSetup } from '../../utils/sharedRunUrl';
 export const SHARED_RUN_TOAST_COLOR = '#e8c060';
 
 /**
- * Format the shared-run welcome line for `meta`. Returns one of two
- * shapes depending on whether the shared run carried a curse:
+ * Format the shared-run welcome line for `meta`. Picks one of four
+ * shapes based on the presence of a curse and a challenge metadata
+ * block:
  *
- *   - clean:  `"Shared run · <variant>"`
- *   - cursed: `"Shared run · <variant> · <curse>"`
+ *   V1 (no challenge):
+ *     - clean:  `"Shared run · <variant>"`
+ *     - cursed: `"Shared run · <variant> · <curse>"`
+ *
+ *   V2 (challenge present — sharer's outcome + time):
+ *     - cursed + victory: `"Shared run · <variant> · <curse> · <time> to beat"`
+ *     - cursed + death:   `"Shared run · <variant> · <curse> · <time> to outlast"`
+ *     - clean + victory:  `"Shared run · <variant> · <time> to beat"`
+ *     - clean + death:    `"Shared run · <variant> · <time> to outlast"`
+ *
+ * Voice register: Hearth, not competitive — "to beat" and "to outlast"
+ * frame the recipient as picking up a friend's run, not racing them.
+ * Time uses `formatClockTime` so the mm:ss representation matches
+ * the rest of the game's HUD / Game Over labels.
  */
 export function formatSharedRunIdentityToast(meta: SharedRunSetup): string {
   const variant = getVariantByKey(meta.variantKey);
   const variantLabel = t(variant.nameKey);
   const curseDef = getCurseByKey(meta.curseKey);
+  const challenge = meta.challenge;
+
+  if (challenge) {
+    const time = formatClockTime(challenge.timeSurvivedSec);
+    if (curseDef) {
+      const key = challenge.outcome === 'victory'
+        ? 'ui.toast.shared_run_challenge_victory'
+        : 'ui.toast.shared_run_challenge_death';
+      return t(key, {
+        variant: variantLabel,
+        curse: t(curseDef.nameKey),
+        time,
+      });
+    }
+    const key = challenge.outcome === 'victory'
+      ? 'ui.toast.shared_run_challenge_victory_clean'
+      : 'ui.toast.shared_run_challenge_death_clean';
+    return t(key, { variant: variantLabel, time });
+  }
+
   if (curseDef) {
     return t('ui.toast.shared_run_loaded', {
       variant: variantLabel,

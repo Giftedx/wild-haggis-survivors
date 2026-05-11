@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildSharedRunUrl,
   parseSharedRunUrl,
+  type SharedRunChallenge,
   type SharedRunSetup,
 } from './sharedRunUrl';
 
@@ -56,6 +57,7 @@ describe('sharedRunUrl', () => {
         seed: 12345 & 0x03ffffff,
         variantKey: 'classic',
         curseKey: 'heavy_legs',
+        challenge: null,
       };
       const url = buildSharedRunUrl(setup, 'https://wildhaggis.example.com/');
       const parsed = parseSharedRunUrl(url);
@@ -67,8 +69,8 @@ describe('sharedRunUrl', () => {
         seed: 7777 & 0x03ffffff,
         variantKey: 'moor_runner',
         curseKey: null,
+        challenge: null,
       };
-      // Use the codec to get a valid seed code (with checksum).
       const url = buildSharedRunUrl(setup, 'https://wildhaggis.example.com/');
       const query = url.slice(url.indexOf('?'));
       expect(parseSharedRunUrl(query)).toEqual(setup);
@@ -79,6 +81,7 @@ describe('sharedRunUrl', () => {
         seed: 555 & 0x03ffffff,
         variantKey: 'iron_belly',
         curseKey: null,
+        challenge: null,
       };
       const url = buildSharedRunUrl(setup, 'https://wildhaggis.example.com/');
       const params = new URLSearchParams(url.slice(url.indexOf('?')));
@@ -100,7 +103,7 @@ describe('sharedRunUrl', () => {
     it('returns null when the variant key is missing or unknown', () => {
       // Generate a valid seed code so only the variant is invalid.
       const valid = buildSharedRunUrl(
-        { seed: 100, variantKey: 'classic', curseKey: null },
+        { seed: 100, variantKey: 'classic', curseKey: null, challenge: null },
         'https://wildhaggis.example.com/',
       );
       const runCode = new URLSearchParams(valid.slice(valid.indexOf('?'))).get('run');
@@ -110,7 +113,7 @@ describe('sharedRunUrl', () => {
 
     it('drops an unknown curse key (returns curseKey: null, keeps the rest)', () => {
       const valid = buildSharedRunUrl(
-        { seed: 100, variantKey: 'classic', curseKey: null },
+        { seed: 100, variantKey: 'classic', curseKey: null, challenge: null },
         'https://wildhaggis.example.com/',
       );
       const runCode = new URLSearchParams(valid.slice(valid.indexOf('?'))).get('run');
@@ -122,12 +125,13 @@ describe('sharedRunUrl', () => {
         seed: 100 & 0x03ffffff,
         variantKey: 'classic',
         curseKey: null,
+        challenge: null,
       });
     });
 
     it('accepts case-insensitive seed codes', () => {
       const url = buildSharedRunUrl(
-        { seed: 99999, variantKey: 'classic', curseKey: null },
+        { seed: 99999, variantKey: 'classic', curseKey: null, challenge: null },
         'https://wildhaggis.example.com/',
       );
       const runCode = new URLSearchParams(url.slice(url.indexOf('?'))).get('run')!;
@@ -142,6 +146,113 @@ describe('sharedRunUrl', () => {
       expect(parseSharedRunUrl(null)).toBeNull();
       // @ts-expect-error — deliberately passing the wrong type
       expect(parseSharedRunUrl(undefined)).toBeNull();
+    });
+  });
+
+  describe('challenge metadata (V2 — outcome + time)', () => {
+    const baseSetup: SharedRunSetup = {
+      seed: 12345 & 0x03ffffff,
+      variantKey: 'classic',
+      curseKey: 'heavy_legs',
+    };
+
+    it('encodes outcome=victory + time as t / o params', () => {
+      const challenge: SharedRunChallenge = { outcome: 'victory', timeSurvivedSec: 754 };
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', { challenge });
+      expect(url).toMatch(/\bt=754\b/);
+      expect(url).toMatch(/\bo=v\b/);
+    });
+
+    it('encodes outcome=death with o=d', () => {
+      const challenge: SharedRunChallenge = { outcome: 'death', timeSurvivedSec: 553 };
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', { challenge });
+      expect(url).toMatch(/\bt=553\b/);
+      expect(url).toMatch(/\bo=d\b/);
+    });
+
+    it('omits t / o when no challenge is supplied', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      expect(url).not.toMatch(/[?&]t=/);
+      expect(url).not.toMatch(/[?&]o=/);
+    });
+
+    it('floors fractional seconds to keep the URL stable', () => {
+      const challenge: SharedRunChallenge = { outcome: 'victory', timeSurvivedSec: 753.81 };
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', { challenge });
+      expect(url).toMatch(/\bt=753\b/);
+    });
+
+    it('refuses non-finite / negative times by omitting t (and the outcome alone is meaningless, drop it too)', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', {
+        challenge: { outcome: 'victory', timeSurvivedSec: -1 },
+      });
+      expect(url).not.toMatch(/[?&]t=/);
+      expect(url).not.toMatch(/[?&]o=/);
+    });
+
+    it('scrubs stale t / o params before re-stamping', () => {
+      const url = buildSharedRunUrl(
+        baseSetup,
+        'https://wildhaggis.example.com/?run=STALE12&t=999&o=d&keepme=yes',
+        { challenge: { outcome: 'victory', timeSurvivedSec: 100 } },
+      );
+      expect(url).toContain('keepme=yes');
+      expect(url).toMatch(/\bt=100\b/);
+      expect(url).toMatch(/\bo=v\b/);
+      // The stale 999 / d values are gone.
+      expect(url).not.toMatch(/t=999/);
+      expect(url.match(/o=d\b/)).toBeNull();
+    });
+
+    it('parses a challenge URL through to a populated challenge field', () => {
+      const challenge: SharedRunChallenge = { outcome: 'death', timeSurvivedSec: 600 };
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/', { challenge });
+      const parsed = parseSharedRunUrl(url);
+      expect(parsed).not.toBeNull();
+      expect(parsed!.challenge).toEqual(challenge);
+    });
+
+    it('parses with no t / o → challenge field is null', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      const parsed = parseSharedRunUrl(url);
+      expect(parsed).not.toBeNull();
+      expect(parsed!.challenge).toBeNull();
+    });
+
+    it('drops the challenge if outcome is unknown but keeps the setup', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      // Build the URL legitimately, then hand-stamp a bogus outcome on top.
+      const tampered = url + '&t=600&o=x';
+      const parsed = parseSharedRunUrl(tampered);
+      expect(parsed).not.toBeNull();
+      expect(parsed!.challenge).toBeNull();
+      // The setup half still resolves cleanly.
+      expect(parsed!.variantKey).toBe('classic');
+    });
+
+    it('drops the challenge if time is missing but outcome is present', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      const tampered = url + '&o=v';
+      const parsed = parseSharedRunUrl(tampered);
+      expect(parsed).not.toBeNull();
+      expect(parsed!.challenge).toBeNull();
+    });
+
+    it('drops the challenge if time is non-numeric', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      const tampered = url + '&t=abc&o=v';
+      const parsed = parseSharedRunUrl(tampered);
+      expect(parsed).not.toBeNull();
+      expect(parsed!.challenge).toBeNull();
+    });
+
+    it('clamps absurd times by rejecting them outright (24h cap)', () => {
+      const url = buildSharedRunUrl(baseSetup, 'https://wildhaggis.example.com/');
+      const tampered = url + `&t=${24 * 60 * 60 + 1}&o=v`;
+      const parsed = parseSharedRunUrl(tampered);
+      expect(parsed).not.toBeNull();
+      // Out of range → challenge dropped (defensive cap on URL tampering).
+      expect(parsed!.challenge).toBeNull();
     });
   });
 });

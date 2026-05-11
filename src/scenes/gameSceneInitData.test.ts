@@ -207,6 +207,18 @@ describe('parseGameSceneInitData', () => {
         seed: 12345,
         variantKey: 'classic' as const,
         curseKey: 'heavy_legs' as const,
+        challenge: null,
+      };
+      const resolved = parseGameSceneInitData({ sharedRunMeta: meta });
+      expect(resolved.pendingSharedRunMeta).toEqual(meta);
+    });
+
+    it('captures challenge metadata verbatim', () => {
+      const meta = {
+        seed: 12345,
+        variantKey: 'classic' as const,
+        curseKey: 'heavy_legs' as const,
+        challenge: { outcome: 'victory' as const, timeSurvivedSec: 754 },
       };
       const resolved = parseGameSceneInitData({ sharedRunMeta: meta });
       expect(resolved.pendingSharedRunMeta).toEqual(meta);
@@ -224,6 +236,7 @@ describe('parseGameSceneInitData', () => {
           seed: 1,
           variantKey: 'classic',
           curseKey: null,
+          challenge: null,
         },
         replay: validReplay,
       });
