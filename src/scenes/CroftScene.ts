@@ -42,7 +42,11 @@ import {
 import { getActiveSeasonalEventKey } from '../systems/SeasonalEventManager';
 import { installSeasonalEventBanner, type SeasonalBannerHandle } from '../ui/SeasonalEventBanner';
 import { returnTargetData } from './returnTarget';
-import { buildLivingWorldTracks, livingWorldTracksSummary } from './croft/livingWorldTracks';
+import {
+  buildLivingWorldTracks,
+  deriveLivingWorldTrackContextFromSave,
+  livingWorldTracksSummary,
+} from './croft/livingWorldTracks';
 import {
   buildCompanionPickerRows,
   resolveNextSelection,
@@ -658,17 +662,17 @@ export class CroftScene extends Phaser.Scene {
   }
 
   /**
-   * Wild Living World Initiative — first Croft-facing stub surface.
+   * Wild Living World — Croft "Living Moor" panel.
    *
-   * This is intentionally read-only and runtime-derived: no schema bump,
-   * no unlock persistence yet. It gives the player a persistent home for
-   * the new systems by naming the shipped tracks and status, while the
-   * pure builder (`livingWorldTracks.ts`) stays ready for real unlock
-   * data in a later slice.
+   * Track statuses are derived from `loadSave()` (`totalRuns` +
+   * `runHistory` weapon / variant / seasonal / survival signals) via
+   * `deriveLivingWorldTrackContextFromSave` — no extra persistence.
    */
   private drawLivingWorldPanel(layout: CroftLayout): void {
     const narrow = this.scale.width < 600;
-    const tracks = buildLivingWorldTracks();
+    const save = loadSave();
+    const lwCtx = deriveLivingWorldTrackContextFromSave(save);
+    const tracks = buildLivingWorldTracks(lwCtx);
     const summary = livingWorldTracksSummary(tracks);
     const x = narrow ? this.scale.width * 0.5 : Math.max(168, layout.windowView.x + layout.windowView.w * 0.44);
     const y = narrow ? this.scale.height - 148 : Math.min(this.scale.height - 118, layout.rug.y + layout.rug.h * 0.34);

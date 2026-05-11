@@ -1,23 +1,22 @@
 /**
- * Wild Living World Initiative — Croft surface (first slice).
+ * Wild Living World Initiative — Croft "Living Moor" panel view-model.
  *
- * Pure view-model for a Croft / Chronicle entry-point that lists the
- * Living World tracks currently shipped and their status. The first
- * slice is intentionally read-only: no save schema bump, no persistent
- * unlock state. The function ingests `LivingWorldTrackContext` (which
- * a future slice can hydrate from real save reads) and returns an
- * ordered list of entries the Croft UI can render.
+ * Pure data: maps persisted save slices (`runHistory`, `totalRuns`) into
+ * `LivingWorldTrackContext`, then resolves each track to shipped vs
+ * introduced vs planned for the Croft UI. No schema bump — only reads
+ * fields that already exist on `SaveData`.
  *
- * Design intent:
- *   - Surface the initiative as a "Living Moor" / "Whistle Post" panel.
- *   - Show each track in one of three states: shipped, introduced
- *     (mechanic exists but no unlock UX yet), or planned.
- *   - Keep i18n keys stable so EN + SCS overlays can grow independently.
+ * Status semantics (player-facing chip + rows):
+ *   - **shipped** — "OOT ON THE MOOR": this player has touched the slice
+ *     in a logged run (or the hub row for `croft_home`).
+ *   - **introduced** — "JUST AWA": ships in the build, not yet earned on
+ *     this save from history signals we trust.
+ *   - **planned** — "NO YET": reserved for future tracks / keys.
  *
- * Replay determinism: not coupled. This is a between-runs view layer.
- * Save migrations: none — `LivingWorldTrackContext` is constructed
- * from already-persisted fields by the caller.
+ * Replay determinism: not coupled. Between-runs view layer only.
  */
+
+import type { SaveData } from '../../utils/save/types';
 
 /** Stable identifiers for each Living World track. */
 export type LivingWorldTrackKey =
@@ -46,20 +45,51 @@ export interface LivingWorldTrackVM {
 }
 
 /**
- * Minimal context that drives status resolution. The first slice does
- * not read any of these — every track is hard-coded. Future slices
- * will check unlock flags here so adding a new track stays a single
- * data-edit.
+ * Signals derived from save + run history. Callers normally build this
+ * with `deriveLivingWorldTrackContextFromSave(save)`; tests may set fields
+ * directly.
  */
 export interface LivingWorldTrackContext {
-  /** Has the player ever finished a run with a companion present? */
+  /** Any finished run on this save (`totalRuns` or non-empty history). */
   readonly hasFinishedCompanionRun?: boolean;
-  /** Has the player ever started a Selkie run? */
+  /** Logged run used the Selkie variant. */
   readonly hasPlayedSelkie?: boolean;
-  /** Has the player ever fired the Waulking Mallet? */
+  /** Logged run had Waulking Mallet or Pibroch Hammer in the end-of-run weapon list. */
   readonly hasFiredWaulkingMallet?: boolean;
-  /** Has the player ever encountered the Up Helly Aa motif? */
+  /** Logged run was taken during the Up Helly Aa seasonal window. */
   readonly hasSeenUpHellyAaMotif?: boolean;
+  /**
+   * Long enough survival for reactive score layers to register — proxy
+   * for "A Moor That Listens" without replaying audio in Croft.
+   */
+  readonly hasHeardReactiveMusicBridge?: boolean;
+}
+
+/** Seconds survived on any single run — at or above counts for music-bridge shipped. */
+export const LIVING_WORLD_MUSIC_BRIDGE_MIN_SURVIVAL_SEC = 45;
+
+/**
+ * Hydrate track context from persisted save fields (no I/O).
+ */
+export function deriveLivingWorldTrackContextFromSave(
+  save: Pick<SaveData, 'totalRuns' | 'runHistory'>,
+): LivingWorldTrackContext {
+  const runs = save.runHistory ?? [];
+  const anyRunFinished = save.totalRuns > 0 || runs.length > 0;
+
+  return {
+    hasFinishedCompanionRun: anyRunFinished,
+    hasPlayedSelkie: runs.some((e) => e.variantKey === 'selkie'),
+    hasFiredWaulkingMallet: runs.some((e) =>
+      (e.weaponKeys ?? []).some(
+        (w) => w === 'waulking_mallet' || w === 'pibroch_hammer',
+      ),
+    ),
+    hasSeenUpHellyAaMotif: runs.some((e) => e.seasonalEvent === 'up_helly_aa'),
+    hasHeardReactiveMusicBridge: runs.some(
+      (e) => (e.timeSurvivedSec ?? 0) >= LIVING_WORLD_MUSIC_BRIDGE_MIN_SURVIVAL_SEC,
+    ),
+  };
 }
 
 const TRACKS: ReadonlyArray<Omit<LivingWorldTrackVM, 'status'>> = [
@@ -104,22 +134,28 @@ const TRACKS: ReadonlyArray<Omit<LivingWorldTrackVM, 'status'>> = [
 /**
  * Resolve status for a single track against the supplied context.
  *
- * Phase 2 rules (every shipped track is `'shipped'`; `croft_home`
- * graduated to `'shipped'` once the persistent companion picker
- * (`livingWorldUnlocks` + Croft picker panel) landed).
+ * Rules: `croft_home` is always shipped (this panel). Other tracks flip
+ * to shipped only when `runHistory` / `totalRuns` shows the player has
+ * encountered that slice; otherwise `introduced` (in the build, not yet
+ * on their hoofprint).
  */
 function resolveStatus(
   key: LivingWorldTrackKey,
-  _ctx: LivingWorldTrackContext,
+  ctx: LivingWorldTrackContext,
 ): LivingWorldTrackStatus {
   switch (key) {
-    case 'companions':
-    case 'selkie_forms':
-    case 'rhythm':
-    case 'atmosphere':
-    case 'music_bridge':
     case 'croft_home':
       return 'shipped';
+    case 'companions':
+      return ctx.hasFinishedCompanionRun ? 'shipped' : 'introduced';
+    case 'selkie_forms':
+      return ctx.hasPlayedSelkie ? 'shipped' : 'introduced';
+    case 'rhythm':
+      return ctx.hasFiredWaulkingMallet ? 'shipped' : 'introduced';
+    case 'atmosphere':
+      return ctx.hasSeenUpHellyAaMotif ? 'shipped' : 'introduced';
+    case 'music_bridge':
+      return ctx.hasHeardReactiveMusicBridge ? 'shipped' : 'introduced';
     default:
       return 'planned';
   }
