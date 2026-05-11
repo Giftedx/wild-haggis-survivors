@@ -3,10 +3,10 @@
 Entry point for the docs tree. AI agents and humans should start here.
 
 > **Source-of-truth hierarchy** (when files disagree):
-> 1. `~/.claude/projects/.../memory/MEMORY.md` + per-initiative `project_*_status.md` — most current.
-> 2. [`superpowers/plans/INDEX.md`](superpowers/plans/INDEX.md) — index over per-file STATUS markers.
-> 3. [`dispatch/2026-04-26/00_task_list.md`](archive/dispatch/2026-04-26/00_task_list.md) + `Execution_Log.md` + `task_01..10.md` — current dispatch.
-> 4. `git log --oneline` + working-tree files — ground truth for code claims.
+> 1. **`git log` + working tree** — canonical for code. [`CONTRIBUTING.md`](../CONTRIBUTING.md) + [`PRD.md`](PRD.md) (**Current Snapshot** header) for the working agreement + shipped-state table.
+> 2. [`superpowers/plans/INDEX.md`](superpowers/plans/INDEX.md) — in-repo initiative STATUS markers.
+> 3. [`archive/dispatch/2026-04-26/`](archive/dispatch/2026-04-26/) — concluded dispatch + execution log (historical; mind the dates).
+> 4. **Optional:** host-local Claude Code memory (`~/.claude/projects/.../memory/` + `project_*_status.md`) when present — may run ahead of or behind git; on contradiction, **(1) wins**.
 
 ---
 
